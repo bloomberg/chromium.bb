@@ -26,9 +26,9 @@ class SequencedTaskRunner;
 
 namespace drive {
 
+class CacheEntry;
 class CacheMetadata;
 class CacheObserver;
-class DriveCacheEntry;
 
 // Callback for GetFileFromCache.
 typedef base::Callback<void(FileError error,
@@ -39,7 +39,7 @@ typedef base::Callback<void(FileError error,
 // |success| indicates if the operation was successful.
 // |cache_entry| is the obtained cache entry. On failure, |cache_state| is
 // set to TEST_CACHE_STATE_NONE.
-typedef base::Callback<void(bool success, const DriveCacheEntry& cache_entry)>
+typedef base::Callback<void(bool success, const CacheEntry& cache_entry)>
     GetCacheEntryCallback;
 
 // Callback for RequestInitialize.
@@ -258,7 +258,7 @@ class DriveCache {
 
   // Returns the type of the sub directory where the cache file is stored.
   static CacheSubDirectoryType GetSubDirectoryType(
-      const DriveCacheEntry& cache_entry);
+      const CacheEntry& cache_entry);
 
  private:
   friend class DriveCacheTest;
@@ -301,7 +301,7 @@ class DriveCache {
   // See also GetCacheEntry().
   bool GetCacheEntryOnBlockingPool(const std::string& resource_id,
                                    const std::string& md5,
-                                   DriveCacheEntry* entry);
+                                   CacheEntry* entry);
 
   // Used to implement Iterate().
   void IterateOnBlockingPool(const CacheIterateCallback& iteration_callback);

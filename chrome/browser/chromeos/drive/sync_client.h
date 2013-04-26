@@ -17,8 +17,8 @@
 
 namespace drive {
 
+class CacheEntry;
 class DriveCache;
-class DriveCacheEntry;
 class DriveEntryProto;
 class DriveFileSystemInterface;
 
@@ -102,11 +102,11 @@ class SyncClient : public FileSystemObserver,
 
   // Called when the resource ID of a pinned file is obtained.
   void OnGetResourceIdOfExistingPinnedFile(const std::string& resource_id,
-                                           const DriveCacheEntry& cache_entry);
+                                           const CacheEntry& cache_entry);
 
   // Called when a file entry is obtained.
   void OnGetEntryInfoByResourceId(const std::string& resource_id,
-                                  const DriveCacheEntry& cache_entry,
+                                  const CacheEntry& cache_entry,
                                   FileError error,
                                   const base::FilePath& file_path,
                                   scoped_ptr<DriveEntryProto> entry_proto);
@@ -115,7 +115,7 @@ class SyncClient : public FileSystemObserver,
   void OnGetCacheEntry(const std::string& resource_id,
                        const std::string& latest_md5,
                        bool success,
-                       const DriveCacheEntry& cache_entry);
+                       const CacheEntry& cache_entry);
 
   // Called when an existing cache entry and the local files are removed.
   void OnRemove(const std::string& resource_id, FileError error);

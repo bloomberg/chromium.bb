@@ -94,7 +94,7 @@ message ResourceMetadataHeader {
 // Message to store information of an existing cache file.
 // Cache files are stored in 'tmp' or 'persistent' directory under the
 // root cache directory. See DriveCache::GetCacheRootPath().
-message DriveCacheEntry {
+message CacheEntry {
   // MD5 of the cache file. "local" if the file is locally modified.
   optional string md5 = 1;
 

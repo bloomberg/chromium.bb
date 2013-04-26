@@ -93,7 +93,7 @@ class CacheMetadataTest : public testing::Test {
   // |md5| and |cache_state| are used to create the value CacheEntry.
   void InsertIntoMap(CacheMetadata::CacheMap* cache_map,
                      const std::string& resource_id,
-                     const DriveCacheEntry& cache_entry) {
+                     const CacheEntry& cache_entry) {
     cache_map->insert(std::make_pair(
         resource_id, cache_entry));
   }
@@ -123,7 +123,7 @@ TEST_F(CacheMetadataTest, CacheTest) {
   std::string test_resource_id("test_resource_id");
   std::string test_file_md5("test_file_md5");
   {
-    DriveCacheEntry new_cache_entry;
+    CacheEntry new_cache_entry;
     new_cache_entry.set_md5(test_file_md5);
     new_cache_entry.set_is_present(true);
     new_cache_entry.set_is_persistent(true);
@@ -131,7 +131,7 @@ TEST_F(CacheMetadataTest, CacheTest) {
   }
 
   // Test that the entry can be retrieved.
-  DriveCacheEntry cache_entry;
+  CacheEntry cache_entry;
   ASSERT_TRUE(metadata_->GetCacheEntry(
       test_resource_id, test_file_md5, &cache_entry));
   EXPECT_EQ(test_file_md5, cache_entry.md5());
@@ -154,7 +154,7 @@ TEST_F(CacheMetadataTest, CacheTest) {
   // Update all attributes.
   test_file_md5 = "test_file_md5_2";
   {
-    DriveCacheEntry updated_cache_entry;
+    CacheEntry updated_cache_entry;
     updated_cache_entry.set_md5(test_file_md5);
     updated_cache_entry.set_is_pinned(true);
     metadata_->AddOrUpdateCacheEntry(test_resource_id, updated_cache_entry);
@@ -174,7 +174,7 @@ TEST_F(CacheMetadataTest, CacheTest) {
   // Test dirty cache.
   test_file_md5 = "test_file_md5_3";
   {
-    DriveCacheEntry new_cache_entry;
+    CacheEntry new_cache_entry;
     new_cache_entry.set_md5(test_file_md5);
     new_cache_entry.set_is_dirty(true);
     metadata_->AddOrUpdateCacheEntry(test_resource_id, new_cache_entry);
@@ -205,7 +205,7 @@ TEST_F(CacheMetadataTest, CacheTest) {
   test_resource_id = "test_resource_id_2";
   test_file_md5 = "test_file_md5_4";
   {
-    DriveCacheEntry new_cache_entry;
+    CacheEntry new_cache_entry;
     new_cache_entry.set_md5(test_file_md5);
     new_cache_entry.set_is_present(true);
     metadata_->AddOrUpdateCacheEntry(test_resource_id, new_cache_entry);
@@ -243,7 +243,7 @@ TEST_F(CacheMetadataTest, CorruptDB) {
   // Check contents in "persistent" directory.
   //
   // "id_foo" is moved to temporary directory.
-  DriveCacheEntry cache_entry;
+  CacheEntry cache_entry;
   ASSERT_TRUE(metadata_->GetCacheEntry("id_foo", "md5foo", &cache_entry));
   EXPECT_EQ("md5foo", cache_entry.md5());
   EXPECT_FALSE(cache_entry.is_persistent());
@@ -309,27 +309,27 @@ TEST_F(CacheMetadataTest, RemoveTemporaryFiles) {
 
   CacheMetadata::CacheMap cache_map;
   {
-    DriveCacheEntry cache_entry;
+    CacheEntry cache_entry;
     cache_entry.set_md5("<md5>");
     cache_entry.set_is_present(true);
     InsertIntoMap(&cache_map, "<resource_id_1>", cache_entry);
   }
   {
-    DriveCacheEntry cache_entry;
+    CacheEntry cache_entry;
     cache_entry.set_md5("<md5>");
     cache_entry.set_is_present(true);
     cache_entry.set_is_persistent(true);
     InsertIntoMap(&cache_map, "<resource_id_2>", cache_entry);
   }
   {
-    DriveCacheEntry cache_entry;
+    CacheEntry cache_entry;
     cache_entry.set_md5("<md5>");
     cache_entry.set_is_present(true);
     cache_entry.set_is_persistent(true);
     InsertIntoMap(&cache_map, "<resource_id_3>", cache_entry);
   }
   {
-    DriveCacheEntry cache_entry;
+    CacheEntry cache_entry;
     cache_entry.set_md5("<md5>");
     cache_entry.set_is_present(true);
     InsertIntoMap(&cache_map, "<resource_id_4>", cache_entry);
@@ -338,7 +338,7 @@ TEST_F(CacheMetadataTest, RemoveTemporaryFiles) {
   AddAllMapEntries(cache_map);
   metadata_->RemoveTemporaryFiles();
   // resource 1 and 4 should be gone, as these are temporary.
-  DriveCacheEntry cache_entry;
+  CacheEntry cache_entry;
   EXPECT_FALSE(metadata_->GetCacheEntry("<resource_id_1>", "", &cache_entry));
   EXPECT_TRUE(metadata_->GetCacheEntry("<resource_id_2>", "", &cache_entry));
   EXPECT_TRUE(metadata_->GetCacheEntry("<resource_id_3>", "", &cache_entry));

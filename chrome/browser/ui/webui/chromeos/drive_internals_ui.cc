@@ -236,7 +236,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
 
   // Called as the iterator for DriveCache::Iterate().
   void UpdateCacheEntry(const std::string& resource_id,
-                        const drive::DriveCacheEntry& cache_entry);
+                        const drive::CacheEntry& cache_entry);
 
   // Called when GetFreeDiskSpace() is complete.
   void OnGetFreeDiskSpace(base::DictionaryValue* local_storage_summary);
@@ -700,7 +700,7 @@ void DriveInternalsWebUIHandler::OnReadDirectoryByPath(
 
 void DriveInternalsWebUIHandler::UpdateCacheEntry(
     const std::string& resource_id,
-    const drive::DriveCacheEntry& cache_entry) {
+    const drive::CacheEntry& cache_entry) {
   // Convert |cache_entry| into a dictionary.
   base::DictionaryValue value;
   value.SetString("resource_id", resource_id);

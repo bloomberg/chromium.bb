@@ -20,8 +20,8 @@ namespace drive {
 
 namespace test_util {
 
-DriveCacheEntry ToCacheEntry(int cache_state) {
-  DriveCacheEntry cache_entry;
+CacheEntry ToCacheEntry(int cache_state) {
+  CacheEntry cache_entry;
   cache_entry.set_is_present(cache_state & TEST_CACHE_STATE_PRESENT);
   cache_entry.set_is_pinned(cache_state & TEST_CACHE_STATE_PINNED);
   cache_entry.set_is_dirty(cache_state & TEST_CACHE_STATE_DIRTY);
@@ -30,7 +30,7 @@ DriveCacheEntry ToCacheEntry(int cache_state) {
   return cache_entry;
 }
 
-bool CacheStatesEqual(const DriveCacheEntry& a, const DriveCacheEntry& b) {
+bool CacheStatesEqual(const CacheEntry& a, const CacheEntry& b) {
   return (a.is_present() == b.is_present() &&
           a.is_pinned() == b.is_pinned() &&
           a.is_dirty() == b.is_dirty() &&

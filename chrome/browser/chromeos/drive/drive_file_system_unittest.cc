@@ -279,7 +279,7 @@ class DriveFileSystemTest : public testing::Test {
   // Helper function to call GetCacheEntry from origin thread.
   bool GetCacheEntryFromOriginThread(const std::string& resource_id,
                                      const std::string& md5,
-                                     DriveCacheEntry* cache_entry) {
+                                     CacheEntry* cache_entry) {
     bool result = false;
     cache_->GetCacheEntry(resource_id, md5,
                           google_apis::test_util::CreateCopyResultCallback(
@@ -291,7 +291,7 @@ class DriveFileSystemTest : public testing::Test {
   // Returns true if the cache entry exists for the given resource ID and MD5.
   bool CacheEntryExists(const std::string& resource_id,
                         const std::string& md5) {
-    DriveCacheEntry cache_entry;
+    CacheEntry cache_entry;
     return GetCacheEntryFromOriginThread(resource_id, md5, &cache_entry);
   }
 
@@ -2073,7 +2073,7 @@ TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
   EXPECT_TRUE(file_util::ReadFileToString(opened_file_path, &cache_file_data));
   EXPECT_EQ(kExpectedContent, cache_file_data);
 
-  DriveCacheEntry cache_entry;
+  CacheEntry cache_entry;
   EXPECT_TRUE(GetCacheEntryFromOriginThread(file_resource_id, file_md5,
                                             &cache_entry));
   EXPECT_TRUE(cache_entry.is_present());
@@ -2168,7 +2168,7 @@ TEST_F(DriveFileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   bool success = false;
-  DriveCacheEntry cache_entry;
+  CacheEntry cache_entry;
   cache_->GetCacheEntry(
       entry->resource_id(),
       entry->file_specific_info().file_md5(),

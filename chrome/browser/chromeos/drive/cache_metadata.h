@@ -22,11 +22,11 @@ class SequencedTaskRunner;
 
 namespace drive {
 
-class DriveCacheEntry;
+class CacheEntry;
 
 // Callback for Iterate().
 typedef base::Callback<void(const std::string& resource_id,
-                            const DriveCacheEntry& cache_entry)>
+                            const CacheEntry& cache_entry)>
     CacheIterateCallback;
 
 // CacheMetadata is interface to maintain metadata of DriveCache's cached
@@ -36,7 +36,7 @@ typedef base::Callback<void(const std::string& resource_id,
 class CacheMetadata {
  public:
   // A map table of cache file's resource id to its CacheEntry* entry.
-  typedef std::map<std::string, DriveCacheEntry> CacheMap;
+  typedef std::map<std::string, CacheEntry> CacheMap;
 
   // Database path.
   static const base::FilePath::CharType* kCacheMetadataDBPath;
@@ -57,7 +57,7 @@ class CacheMetadata {
   // Adds a new cache entry corresponding to |resource_id| if it doesn't
   // exist, otherwise update the existing entry.
   virtual void AddOrUpdateCacheEntry(const std::string& resource_id,
-                                     const DriveCacheEntry& cache_entry) = 0;
+                                     const CacheEntry& cache_entry) = 0;
 
   // Removes entry corresponding to |resource_id| from cache map.
   virtual void RemoveCacheEntry(const std::string& resource_id) = 0;
@@ -69,7 +69,7 @@ class CacheMetadata {
   // extension and hence no md5.
   virtual bool GetCacheEntry(const std::string& resource_id,
                              const std::string& md5,
-                             DriveCacheEntry* entry) = 0;
+                             CacheEntry* entry) = 0;
 
   // Removes temporary files (files in CACHE_TYPE_TMP) from the cache map.
   virtual void RemoveTemporaryFiles() = 0;

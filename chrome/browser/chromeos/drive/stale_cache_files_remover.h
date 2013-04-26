@@ -15,8 +15,8 @@
 
 namespace drive{
 
+class CacheEntry;
 class DriveCache;
-class DriveCacheEntry;
 class DriveFileSystemInterface;
 
 // This class removes stale cache files, which are present locally, but no
@@ -38,7 +38,7 @@ class StaleCacheFilesRemover : public FileSystemObserver {
   // This is called from StaleCacheFilesRemover::OnInitialLoadFinished.
   void GetEntryInfoAndRemoveCacheIfNecessary(
       const std::string& resource_id,
-      const DriveCacheEntry& cache_entry);
+      const CacheEntry& cache_entry);
 
   // Check the cache file and removes if it is unavailable or invalid (eg. md5
   // mismatch). This is called from GetCacheEntryAndRemoveCacheIfNecessary();

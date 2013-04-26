@@ -2410,7 +2410,7 @@ void GetDriveFilePropertiesFunction::OnGetFileInfo(
 
 void GetDriveFilePropertiesFunction::CacheStateReceived(
     bool /* success */,
-    const drive::DriveCacheEntry& cache_entry) {
+    const drive::CacheEntry& cache_entry) {
   // In case of an error (i.e. success is false), cache_entry.is_*() all
   // returns false.
   properties_->SetBoolean("isPinned", cache_entry.is_pinned());

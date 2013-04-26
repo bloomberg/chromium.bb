@@ -41,7 +41,7 @@ const int kDelaySeconds = 5;
 void CollectBacklog(std::vector<std::string>* to_fetch,
                     std::vector<std::string>* to_upload,
                     const std::string& resource_id,
-                    const DriveCacheEntry& cache_entry) {
+                    const CacheEntry& cache_entry) {
   DCHECK(to_fetch);
   DCHECK(to_upload);
 
@@ -228,7 +228,7 @@ void SyncClient::OnGetResourceIdsOfBacklog(
 
 void SyncClient::OnGetResourceIdOfExistingPinnedFile(
     const std::string& resource_id,
-    const DriveCacheEntry& cache_entry) {
+    const CacheEntry& cache_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (cache_entry.is_pinned() && cache_entry.is_present()) {
@@ -243,7 +243,7 @@ void SyncClient::OnGetResourceIdOfExistingPinnedFile(
 
 void SyncClient::OnGetEntryInfoByResourceId(
     const std::string& resource_id,
-    const DriveCacheEntry& cache_entry,
+    const CacheEntry& cache_entry,
     FileError error,
     const base::FilePath& /* drive_file_path */,
     scoped_ptr<DriveEntryProto> entry_proto) {

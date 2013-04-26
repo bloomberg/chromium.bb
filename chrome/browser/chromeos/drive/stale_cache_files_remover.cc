@@ -52,7 +52,7 @@ void StaleCacheFilesRemover::OnInitialLoadFinished() {
 
 void StaleCacheFilesRemover::GetEntryInfoAndRemoveCacheIfNecessary(
     const std::string& resource_id,
-    const DriveCacheEntry& cache_entry) {
+    const CacheEntry& cache_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   file_system_->GetEntryInfoByResourceId(

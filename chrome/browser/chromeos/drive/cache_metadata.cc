@@ -69,7 +69,8 @@ void ScanCacheDirectory(
   DCHECK(cache_map);
   DCHECK(processed_file_map);
 
-  file_util::FileEnumerator enumerator(cache_paths[sub_dir_type],
+  file_util::FileEnumerator enumerator(
+      cache_paths[sub_dir_type],
       false,  // not recursive
       file_util::FileEnumerator::FILES |
       file_util::FileEnumerator::SHOW_SYM_LINKS,
@@ -83,7 +84,7 @@ void ScanCacheDirectory(
     util::ParseCacheFilePath(current, &resource_id, &md5, &extra_extension);
 
     // Determine cache state.
-    DriveCacheEntry cache_entry;
+    CacheEntry cache_entry;
     cache_entry.set_md5(md5);
     if (sub_dir_type == DriveCache::CACHE_TYPE_OUTGOING) {
       std::string reason;
@@ -188,7 +189,7 @@ void ScanCachePaths(const std::vector<base::FilePath>& cache_paths,
     CacheMetadata::CacheMap::iterator cache_map_iter =
         cache_map->find(resource_id);
     if (cache_map_iter != cache_map->end()) {
-      DriveCacheEntry* cache_entry = &cache_map_iter->second;
+      CacheEntry* cache_entry = &cache_map_iter->second;
       const bool is_dirty = cache_entry->is_dirty();
       const bool is_committed = outgoing_file_map.count(resource_id) != 0;
       if (!is_dirty && !is_committed) {
@@ -215,7 +216,7 @@ void ScanCachePaths(const std::vector<base::FilePath>& cache_paths,
 // exceptions. See the function definition for details.
 bool CheckIfMd5Matches(
     const std::string& md5,
-    const DriveCacheEntry& cache_entry) {
+    const CacheEntry& cache_entry) {
   if (cache_entry.is_dirty()) {
     // If the entry is dirty, its MD5 may have been replaced by "local"
     // during cache initialization, so we don't compare MD5.
@@ -253,11 +254,11 @@ class FakeCacheMetadata : public CacheMetadata {
       const std::vector<base::FilePath>& cache_paths) OVERRIDE;
   virtual void AddOrUpdateCacheEntry(
       const std::string& resource_id,
-      const DriveCacheEntry& cache_entry) OVERRIDE;
+      const CacheEntry& cache_entry) OVERRIDE;
   virtual void RemoveCacheEntry(const std::string& resource_id) OVERRIDE;
   virtual bool GetCacheEntry(const std::string& resource_id,
                              const std::string& md5,
-                             DriveCacheEntry* cache_entry) OVERRIDE;
+                             CacheEntry* cache_entry) OVERRIDE;
   virtual void RemoveTemporaryFiles() OVERRIDE;
   virtual void Iterate(const CacheIterateCallback& callback) OVERRIDE;
 
@@ -286,7 +287,7 @@ bool FakeCacheMetadata::Initialize(
 
 void FakeCacheMetadata::AddOrUpdateCacheEntry(
     const std::string& resource_id,
-    const DriveCacheEntry& cache_entry) {
+    const CacheEntry& cache_entry) {
   AssertOnSequencedWorkerPool();
 
   CacheMap::iterator iter = cache_map_.find(resource_id);
@@ -308,8 +309,8 @@ void FakeCacheMetadata::RemoveCacheEntry(const std::string& resource_id) {
 }
 
 bool FakeCacheMetadata::GetCacheEntry(const std::string& resource_id,
-                                          const std::string& md5,
-                                          DriveCacheEntry* entry) {
+                                      const std::string& md5,
+                                      CacheEntry* entry) {
   DCHECK(entry);
   AssertOnSequencedWorkerPool();
 
@@ -319,7 +320,7 @@ bool FakeCacheMetadata::GetCacheEntry(const std::string& resource_id,
     return false;
   }
 
-  const DriveCacheEntry& cache_entry = iter->second;
+  const CacheEntry& cache_entry = iter->second;
 
   if (!CheckIfMd5Matches(md5, cache_entry)) {
     return false;
@@ -368,11 +369,11 @@ class CacheMetadataDB : public CacheMetadata {
       const std::vector<base::FilePath>& cache_paths) OVERRIDE;
   virtual void AddOrUpdateCacheEntry(
       const std::string& resource_id,
-      const DriveCacheEntry& cache_entry) OVERRIDE;
+      const CacheEntry& cache_entry) OVERRIDE;
   virtual void RemoveCacheEntry(const std::string& resource_id) OVERRIDE;
   virtual bool GetCacheEntry(const std::string& resource_id,
                              const std::string& md5,
-                             DriveCacheEntry* cache_entry) OVERRIDE;
+                             CacheEntry* cache_entry) OVERRIDE;
   virtual void RemoveTemporaryFiles() OVERRIDE;
   virtual void Iterate(const CacheIterateCallback& callback) OVERRIDE;
 
@@ -417,7 +418,7 @@ bool CacheMetadataDB::Initialize(
   if (!db_status.ok()) {
     LOG(WARNING) << "Cache db failed to open: " << db_status.ToString();
     uma_status = db_status.IsCorruption() ?
-                 DB_OPEN_FAILURE_CORRUPTION : DB_OPEN_FAILURE_OTHER;
+        DB_OPEN_FAILURE_CORRUPTION : DB_OPEN_FAILURE_OTHER;
     const bool deleted = file_util::Delete(db_path, true);
     DCHECK(deleted);
     db_status = leveldb::DB::Open(options, db_path.value(), &level_db);
@@ -458,7 +459,7 @@ void CacheMetadataDB::InsertMapIntoDB(const CacheMap& cache_map) {
 
 void CacheMetadataDB::AddOrUpdateCacheEntry(
     const std::string& resource_id,
-    const DriveCacheEntry& cache_entry) {
+    const CacheEntry& cache_entry) {
   AssertOnSequencedWorkerPool();
 
   DVLOG(1) << "AddOrUpdateCacheEntry, resource_id=" << resource_id;
@@ -478,20 +479,21 @@ void CacheMetadataDB::RemoveCacheEntry(const std::string& resource_id) {
 }
 
 bool CacheMetadataDB::GetCacheEntry(const std::string& resource_id,
-                                          const std::string& md5,
-                                          DriveCacheEntry* entry) {
+                                    const std::string& md5,
+                                    CacheEntry* entry) {
   DCHECK(entry);
   AssertOnSequencedWorkerPool();
 
   std::string serialized;
-  const leveldb::Status status = level_db_->Get(leveldb::ReadOptions(),
+  const leveldb::Status status = level_db_->Get(
+      leveldb::ReadOptions(),
       leveldb::Slice(resource_id), &serialized);
   if (!status.ok()) {
     DVLOG(1) << "Can't find " << resource_id << " in cache db";
     return false;
   }
 
-  DriveCacheEntry cache_entry;
+  CacheEntry cache_entry;
   const bool ok = cache_entry.ParseFromString(serialized);
   if (!ok) {
     LOG(ERROR) << "Failed to parse " << serialized;
@@ -510,9 +512,9 @@ void CacheMetadataDB::RemoveTemporaryFiles() {
   AssertOnSequencedWorkerPool();
 
   scoped_ptr<leveldb::Iterator> iter(level_db_->NewIterator(
-        leveldb::ReadOptions()));
+      leveldb::ReadOptions()));
   for (iter->SeekToFirst(); iter->Valid(); iter->Next()) {
-    DriveCacheEntry cache_entry;
+    CacheEntry cache_entry;
     const bool ok = cache_entry.ParseFromArray(iter->value().data(),
                                                iter->value().size());
     if (ok && !cache_entry.is_persistent())
@@ -524,9 +526,9 @@ void CacheMetadataDB::Iterate(const CacheIterateCallback& callback) {
   AssertOnSequencedWorkerPool();
 
   scoped_ptr<leveldb::Iterator> iter(level_db_->NewIterator(
-        leveldb::ReadOptions()));
+      leveldb::ReadOptions()));
   for (iter->SeekToFirst(); iter->Valid(); iter->Next()) {
-    DriveCacheEntry cache_entry;
+    CacheEntry cache_entry;
     const bool ok = cache_entry.ParseFromArray(iter->value().data(),
                                                iter->value().size());
     if (ok)

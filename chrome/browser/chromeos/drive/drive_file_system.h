@@ -34,9 +34,9 @@ class ResourceEntry;
 
 namespace drive {
 
+class CacheEntry;
 class ChangeList;
 class ChangeListLoader;
-class DriveCacheEntry;
 class DriveWebAppsRegistry;
 class FileSystemObserver;
 class JobScheduler;
@@ -390,7 +390,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const std::string& resource_id,
       const std::string& md5,
       bool success,
-      const DriveCacheEntry& cache_entry);
+      const CacheEntry& cache_entry);
   void GetResolvedFileByPathAfterStore(
       scoped_ptr<GetResolvedFileParams> params,
       const base::FilePath& downloaded_file_path,
@@ -451,7 +451,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
       scoped_ptr<DriveEntryProto> entry_proto,
       const GetEntryInfoCallback& callback,
       bool success,
-      const DriveCacheEntry& cache_entry);
+      const CacheEntry& cache_entry);
   void CheckLocalModificationAndRunAfterGetCacheFile(
       scoped_ptr<DriveEntryProto> entry_proto,
       const GetEntryInfoCallback& callback,
