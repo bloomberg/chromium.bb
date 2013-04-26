@@ -119,10 +119,13 @@
         # Only compile the program_fragment and avoid linking so that
         # it will be just a program fragment to test error handling
         # of link failures.
-        'objdir_pnacl_newlib': '>(nacl_pnacl_newlib_out_dir)',
         'extra_args': [
           '--compile',
         ],
+        # Explicitly state the name of the gyp output.  The default is a
+        # ".pexe" and --compile causes the compilation to stop with a ".o".
+        'out_pnacl_newlib': '>(nacl_pnacl_newlib_out_dir)/program_fragment.o',
+        'objdir_pnacl_newlib': '>(nacl_pnacl_newlib_out_dir)',
         # Keep debug metadata out, so that the "program" can roughly
         # follow the PNaCl stable ABI.
         'compile_flags!': [
