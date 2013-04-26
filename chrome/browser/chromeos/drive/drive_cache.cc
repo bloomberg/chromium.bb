@@ -229,7 +229,8 @@ base::FilePath DriveCache::GetCacheFilePath(
     base_name += base::FilePath::kExtensionSeparator;
     base_name += util::kMountedArchiveFileExtension;
   }
-  return GetCacheDirectoryPath(sub_dir_type).Append(base_name);
+  return GetCacheDirectoryPath(sub_dir_type).Append(
+      base::FilePath::FromUTF8Unsafe(base_name));
 }
 
 void DriveCache::AssertOnSequencedWorkerPool() {

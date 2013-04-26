@@ -61,8 +61,8 @@ class FileWriteHelperTest : public testing::Test {
 };
 
 TEST_F(FileWriteHelperTest, PrepareFileForWritingSuccess) {
-  const base::FilePath kDrivePath("/drive/file.txt");
-  const base::FilePath kLocalPath("/tmp/dummy.txt");
+  const base::FilePath kDrivePath(FILE_PATH_LITERAL("/drive/file.txt"));
+  const base::FilePath kLocalPath(FILE_PATH_LITERAL("/tmp/dummy.txt"));
 
   EXPECT_CALL(*mock_file_system_, CreateFile(kDrivePath, false, _))
       .WillOnce(MockCreateFile(FILE_ERROR_OK));
@@ -83,7 +83,7 @@ TEST_F(FileWriteHelperTest, PrepareFileForWritingSuccess) {
 }
 
 TEST_F(FileWriteHelperTest, PrepareFileForWritingCreateFail) {
-  const base::FilePath kDrivePath("/drive/file.txt");
+  const base::FilePath kDrivePath(FILE_PATH_LITERAL("/drive/file.txt"));
 
   EXPECT_CALL(*mock_file_system_, CreateFile(kDrivePath, false, _))
       .WillOnce(MockCreateFile(FILE_ERROR_ACCESS_DENIED));
@@ -102,7 +102,7 @@ TEST_F(FileWriteHelperTest, PrepareFileForWritingCreateFail) {
 }
 
 TEST_F(FileWriteHelperTest, PrepareFileForWritingOpenFail) {
-  const base::FilePath kDrivePath("/drive/file.txt");
+  const base::FilePath kDrivePath(FILE_PATH_LITERAL("/drive/file.txt"));
 
   EXPECT_CALL(*mock_file_system_, CreateFile(kDrivePath, false, _))
       .WillOnce(MockCreateFile(FILE_ERROR_OK));

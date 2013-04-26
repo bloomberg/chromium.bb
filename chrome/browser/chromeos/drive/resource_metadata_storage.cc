@@ -92,7 +92,7 @@ bool ResourceMetadataStorage::Initialize() {
   options.create_if_missing = false;
 
   leveldb::Status status =
-      leveldb::DB::Open(options, resource_map_path.value(), &db);
+      leveldb::DB::Open(options, resource_map_path.AsUTF8Unsafe(), &db);
   DBInitStatus open_existing_result = LevelDBStatusToDBInitStatus(status);
 
   if (open_existing_result == DB_INIT_SUCCESS) {
@@ -129,7 +129,7 @@ bool ResourceMetadataStorage::Initialize() {
     // Create DB.
     options.create_if_missing = true;
 
-    status = leveldb::DB::Open(options, resource_map_path.value(), &db);
+    status = leveldb::DB::Open(options, resource_map_path.AsUTF8Unsafe(), &db);
     if (status.ok()) {
       resource_map_.reset(db);
 

@@ -408,7 +408,7 @@ bool CacheMetadataDB::Initialize(
   leveldb::DB* level_db = NULL;
   leveldb::Options options;
   options.create_if_missing = true;
-  leveldb::Status db_status = leveldb::DB::Open(options, db_path.value(),
+  leveldb::Status db_status = leveldb::DB::Open(options, db_path.AsUTF8Unsafe(),
                                                 &level_db);
 
   // Delete the db and scan the physical cache. This will fix a corrupt db, but

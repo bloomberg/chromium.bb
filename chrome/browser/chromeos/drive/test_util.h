@@ -5,25 +5,14 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_TEST_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_TEST_UTIL_H_
 
-#include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
-#include "chrome/browser/chromeos/drive/search_metadata.h"
-#include "chrome/browser/google_apis/gdata_errorcode.h"
-#include "chrome/browser/google_apis/test_util.h"
+#include <string>
 
-namespace base {
-class FilePath;
-class Value;
-}
+#include "chrome/browser/google_apis/test_util.h"
 
 namespace drive {
 
-class DriveCache;
-class DriveCacheEntry;
-class DriveEntryProto;
 class ChangeListLoader;
-
-typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
+class DriveCacheEntry;
 
 namespace test_util {
 

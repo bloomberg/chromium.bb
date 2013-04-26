@@ -4,34 +4,27 @@
 
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 
-#include <algorithm>
+#include <string>
 #include <vector>
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
-#include "base/path_service.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_file_system.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/mock_cache_observer.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/google_apis/test_util.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::AtLeast;
-using ::testing::Return;
 using ::testing::StrictMock;
 
 namespace drive {
 namespace {
-
-const char kSymLinkToDevNull[] = "/dev/null";
 
 struct TestCacheResource {
   const char* source_file;
@@ -93,25 +86,22 @@ class DriveCacheTest : public testing::Test {
  protected:
   DriveCacheTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        cache_(NULL),
         expected_error_(FILE_ERROR_OK),
         expected_cache_state_(0),
         expected_sub_dir_type_(DriveCache::CACHE_TYPE_META),
         expected_success_(true),
-        expect_outgoing_symlink_(false),
-        root_feed_changestamp_(0) {
+        expect_outgoing_symlink_(false) {
   }
 
   virtual void SetUp() OVERRIDE {
-    profile_.reset(new TestingProfile);
-
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
     scoped_refptr<base::SequencedWorkerPool> pool =
         content::BrowserThread::GetBlockingPool();
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
-    cache_.reset(new DriveCache(DriveCache::GetCacheRootPath(profile_.get()),
+    cache_.reset(new DriveCache(temp_dir_.path(),
                                 blocking_task_runner_,
                                 fake_free_disk_space_getter_.get()));
 
@@ -127,7 +117,6 @@ class DriveCacheTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     cache_.reset();
-    profile_.reset(NULL);
   }
 
   void PrepareTestCacheResources() {
@@ -539,7 +528,7 @@ class DriveCacheTest : public testing::Test {
       EXPECT_TRUE(exists);
       base::FilePath target_path;
       EXPECT_TRUE(file_util::ReadSymbolicLink(symlink_path, &target_path));
-      EXPECT_TRUE(target_path.value() != kSymLinkToDevNull);
+      EXPECT_NE(util::kSymLinkToDevNull, target_path.value());
       if (test_util::ToCacheEntry(expected_cache_state_).is_present())
         EXPECT_EQ(dest_path, target_path);
     } else {
@@ -584,7 +573,8 @@ class DriveCacheTest : public testing::Test {
         DriveCache::CACHED_FILE_FROM_SERVER);
     base::FilePath expected_path =
         cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_TMP);
-    expected_path = expected_path.Append(expected_filename);
+    expected_path = expected_path.Append(
+        base::FilePath::FromUTF8Unsafe(expected_filename));
     EXPECT_EQ(expected_path, actual_path);
 
     base::FilePath base_name = actual_path.BaseName();
@@ -624,11 +614,10 @@ class DriveCacheTest : public testing::Test {
   }
 
   MessageLoopForUI message_loop_;
-  // The order of the test threads is important, do not change the order.
-  // See also content/browser/browser_thread_imple.cc.
   content::TestBrowserThread ui_thread_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  scoped_ptr<TestingProfile> profile_;
+  base::ScopedTempDir temp_dir_;
+
   scoped_ptr<DriveCache, test_util::DestroyHelperForTests> cache_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
   scoped_ptr<StrictMock<MockCacheObserver> > mock_cache_observer_;
@@ -639,7 +628,6 @@ class DriveCacheTest : public testing::Test {
   bool expected_success_;
   bool expect_outgoing_symlink_;
   std::string expected_file_extension_;
-  int root_feed_changestamp_;
 };
 
 TEST_F(DriveCacheTest, GetCacheFilePath) {

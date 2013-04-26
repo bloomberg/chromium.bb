@@ -94,8 +94,6 @@ class CreateDirectoryOperationTest
 
  private:
   MessageLoopForUI message_loop_;
-  // The order of the test threads is important, do not change the order.
-  // See also content/browser/browser_thread_impl.cc.
   content::TestBrowserThread ui_thread_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 

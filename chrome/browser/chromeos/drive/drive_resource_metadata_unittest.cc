@@ -27,9 +27,6 @@
 namespace drive {
 namespace {
 
-// See drive.proto for the difference between the two URLs.
-const char kResumableEditMediaUrl[] = "http://resumable-edit-media/";
-
 const char kTestRootResourceId[] = "test_root";
 
 // The changestamp of the resource metadata used in

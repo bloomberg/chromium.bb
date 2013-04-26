@@ -38,8 +38,6 @@ class FakeDriveFileSystemTest : public ::testing::Test {
   }
 
   MessageLoopForUI message_loop_;
-  // The order of the test threads is important, do not change the order.
-  // See also content/browser/browser_thread_impl.cc.
   content::TestBrowserThread ui_thread_;
 
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;

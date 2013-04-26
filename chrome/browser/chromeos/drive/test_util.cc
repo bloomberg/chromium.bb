@@ -8,13 +8,12 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/json/json_file_value_serializer.h"
 #include "base/message_loop.h"
 #include "base/threading/worker_pool.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/change_list_processor.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 
 namespace drive {

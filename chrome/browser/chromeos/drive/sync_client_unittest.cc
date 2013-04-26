@@ -118,7 +118,6 @@ class SyncClientTest : public testing::Test {
     // Prepare a pinned-and-fetched file.
     const std::string resource_id_fetched = "resource_id_fetched";
     const std::string md5_fetched = "md5";
-    base::FilePath cache_file_path;
     cache_->Store(resource_id_fetched, md5_fetched, temp_file,
                   DriveCache::FILE_OPERATION_COPY,
                   google_apis::test_util::CreateCopyResultCallback(&error));

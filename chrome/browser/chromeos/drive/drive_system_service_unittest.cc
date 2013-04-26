@@ -40,9 +40,8 @@ class DriveSystemServiceTest : public testing::Test {
 
  protected:
   MessageLoopForUI message_loop_;
-  // The order of the test threads is important, do not change the order.
-  // See also content/browser/browser_thread_impl.cc.
   content::TestBrowserThread ui_thread_;
+
   scoped_ptr<TestingProfile> profile_;
 
   MockDriveFileSystem* file_system_;

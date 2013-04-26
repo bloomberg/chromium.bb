@@ -37,7 +37,6 @@ namespace drive {
 namespace {
 
 const char kMimeTypeJson[] = "application/json";
-const char kEmptyFilePath[] = "/dev/null";
 
 //================================ Helper functions ============================
 
@@ -466,7 +465,7 @@ void DriveFileSystem::OnGetEntryInfoForCreateFile(
   // No entry found at |file_path|. Let's create a brand new file.
   // For now, it is implemented by uploading an empty file (/dev/null).
   // TODO(kinaba): http://crbug.com/135143. Implement in a nicer way.
-  drive_operations_.TransferRegularFile(base::FilePath(kEmptyFilePath),
+  drive_operations_.TransferRegularFile(base::FilePath(util::kSymLinkToDevNull),
                                         file_path,
                                         callback);
 }
