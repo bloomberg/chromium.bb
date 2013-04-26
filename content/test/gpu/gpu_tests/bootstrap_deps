@@ -12,6 +12,8 @@ deps = {
     "https://src.chromium.org/chrome/trunk/src/content/test/gpu/gpu_tests",
   "src/content/test/gpu/page_sets":
     "https://src.chromium.org/chrome/trunk/src/content/test/gpu/page_sets",
+  "src/third_party/webgl_conformance":
+    "https://src.chromium.org/chrome/trunk/deps/third_party/webgl/sdk/tests",
   }
 
 # gpu_tests depends on Telemetry, so pull in the Telemetry deps, too.
