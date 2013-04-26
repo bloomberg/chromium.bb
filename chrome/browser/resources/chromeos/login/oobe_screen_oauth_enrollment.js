@@ -285,7 +285,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     onMessage_: function(m) {
       var msg = m.data;
       if (msg.method == 'completeLogin' && this.isSigninMessage_(m))
-        chrome.send('oauthEnrollCompleteLogin', [msg.email, msg.password]);
+        chrome.send('oauthEnrollCompleteLogin', [msg.email]);
     }
   };
 });
