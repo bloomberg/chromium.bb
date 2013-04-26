@@ -165,6 +165,11 @@ class WEBKIT_STORAGE_EXPORT QuotaManager
     return origins_in_use_.find(origin) != origins_in_use_.end();
   }
 
+  void SetUsageCacheEnabled(QuotaClient::ID client_id,
+                            const GURL& origin,
+                            StorageType type,
+                            bool enabled);
+
   // DeleteOriginData and DeleteHostData (surprisingly enough) delete data of a
   // particular StorageType associated with either a specific origin or set of
   // origins. Each method additionally requires a |quota_client_mask| which
@@ -452,6 +457,11 @@ class WEBKIT_STORAGE_EXPORT QuotaManagerProxy
                                      int64 delta);
   virtual void NotifyOriginInUse(const GURL& origin);
   virtual void NotifyOriginNoLongerInUse(const GURL& origin);
+
+  virtual void SetUsageCacheEnabled(QuotaClient::ID client_id,
+                                    const GURL& origin,
+                                    StorageType type,
+                                    bool enabled);
 
   // This method may only be called on the IO thread.
   // It may return NULL if the manager has already been deleted.

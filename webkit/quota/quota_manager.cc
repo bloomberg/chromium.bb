@@ -1014,6 +1014,13 @@ void QuotaManager::NotifyOriginNoLongerInUse(const GURL& origin) {
     origins_in_use_.erase(origin);
 }
 
+void QuotaManager::SetUsageCacheEnabled(QuotaClient::ID client_id,
+                                        const GURL& origin,
+                                        StorageType type,
+                                        bool enabled) {
+  GetUsageTracker(type)->SetUsageCacheEnabled(client_id, origin, enabled);
+}
+
 void QuotaManager::DeleteOriginData(
     const GURL& origin, StorageType type, int quota_client_mask,
     const StatusCallback& callback) {
@@ -1773,6 +1780,21 @@ void QuotaManagerProxy::NotifyOriginNoLongerInUse(
   }
   if (manager_)
     manager_->NotifyOriginNoLongerInUse(origin);
+}
+
+void QuotaManagerProxy::SetUsageCacheEnabled(QuotaClient::ID client_id,
+                                             const GURL& origin,
+                                             StorageType type,
+                                             bool enabled) {
+  if (!io_thread_->BelongsToCurrentThread()) {
+    io_thread_->PostTask(
+        FROM_HERE,
+        base::Bind(&QuotaManagerProxy::SetUsageCacheEnabled, this,
+                   client_id, origin, type, enabled));
+    return;
+  }
+  if (manager_)
+    manager_->SetUsageCacheEnabled(client_id, origin, type, enabled);
 }
 
 QuotaManager* QuotaManagerProxy::quota_manager() const {

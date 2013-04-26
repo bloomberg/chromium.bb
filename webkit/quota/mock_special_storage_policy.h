@@ -32,6 +32,10 @@ class MockSpecialStoragePolicy : public quota::SpecialStoragePolicy {
     unlimited_.insert(origin);
   }
 
+  void RemoveUnlimited(const GURL& origin) {
+    unlimited_.erase(origin);
+  }
+
   void AddSessionOnly(const GURL& origin) {
     session_only_.insert(origin);
   }
@@ -55,6 +59,14 @@ class MockSpecialStoragePolicy : public quota::SpecialStoragePolicy {
     can_query_disk_size_.clear();
     file_handlers_.clear();
     all_unlimited_ = false;
+  }
+
+  void NotifyGranted(const GURL& origin, int change_flags) {
+    SpecialStoragePolicy::NotifyGranted(origin, change_flags);
+  }
+
+  void NotifyRevoked(const GURL& origin, int change_flags) {
+    SpecialStoragePolicy::NotifyRevoked(origin, change_flags);
   }
 
   void NotifyCleared() {

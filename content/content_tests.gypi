@@ -531,6 +531,7 @@
         '../webkit/quota/quota_database_unittest.cc',
         '../webkit/quota/quota_manager_unittest.cc',
         '../webkit/quota/quota_temporary_storage_evictor_unittest.cc',
+        '../webkit/quota/usage_tracker_unittest.cc',
         '../webkit/user_agent/user_agent_unittest.cc',
       ],
       'conditions': [

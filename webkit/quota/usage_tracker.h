@@ -27,7 +27,7 @@ class ClientUsageTracker;
 // A helper class that gathers and tracks the amount of data stored in
 // all quota clients.
 // An instance of this class is created per storage type.
-class UsageTracker : public QuotaTaskObserver {
+class WEBKIT_STORAGE_EXPORT UsageTracker : public QuotaTaskObserver {
  public:
   UsageTracker(const QuotaClientList& clients, StorageType type,
                SpecialStoragePolicy* special_storage_policy);
@@ -47,6 +47,10 @@ class UsageTracker : public QuotaTaskObserver {
     return global_usage_callbacks_.HasCallbacks() ||
            host_usage_callbacks_.HasAnyCallbacks();
   }
+
+  void SetUsageCacheEnabled(QuotaClient::ID client_id,
+                            const GURL& origin,
+                            bool enabled);
 
  private:
   struct TrackingInfo {
@@ -94,11 +98,16 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   void UpdateUsageCache(const GURL& origin, int64 delta);
   void GetCachedHostsUsage(std::map<std::string, int64>* host_usage) const;
   void GetCachedOrigins(std::set<GURL>* origins) const;
+  int64 GetCachedOriginsUsage(const std::set<GURL>& origins,
+                              std::vector<GURL>* origins_not_in_cache);
+  bool IsUsageCacheEnabledForOrigin(const GURL& origin) const;
+  void SetUsageCacheEnabled(const GURL& origin, bool enabled);
 
  private:
   typedef std::set<std::string> HostSet;
   typedef std::map<GURL, int64> UsageMap;
   typedef std::map<std::string, UsageMap> HostUsageMap;
+  typedef std::map<std::string, std::set<GURL> > OriginSetByHost;
 
   class GatherUsageTaskBase;
   class GatherGlobalUsageTask;
@@ -108,8 +117,11 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   // origins and hosts are added incrementally to the cache.
   void AddCachedOrigin(const GURL& origin, int64 usage);
   void AddCachedHost(const std::string& host);
-  void GatherGlobalUsageComplete();
-  void GatherHostUsageComplete(const std::string& host);
+  void GatherGlobalUsageComplete(
+      int64 global_usage,
+      int64 non_cached_global_usage,
+      const std::map<std::string, int64>& non_cached_usage_by_host);
+  void GatherHostUsageComplete(const std::string& host, int64 host_usage);
 
   int64 GetCachedHostUsage(const std::string& host) const;
   int64 GetCachedGlobalUnlimitedUsage();
@@ -131,7 +143,9 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   int64 global_unlimited_usage_;
   bool global_usage_retrieved_;
   HostSet cached_hosts_;
-  HostUsageMap cached_usage_;
+  HostUsageMap cached_usage_by_host_;
+
+  OriginSetByHost non_cached_origins_by_host_;
 
   GatherGlobalUsageTask* global_usage_task_;
   GlobalUsageCallbackQueue global_usage_callback_;
