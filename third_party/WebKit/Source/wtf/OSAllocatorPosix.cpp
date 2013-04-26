@@ -38,12 +38,7 @@ namespace WTF {
 
 void* OSAllocator::reserveUncommitted(size_t bytes, Usage usage, bool writable, bool executable, bool includesGuardPages)
 {
-#if OS(QNX)
-    // Reserve memory with PROT_NONE and MAP_LAZY so it isn't committed now.
-    void* result = mmap(0, bytes, PROT_NONE, MAP_LAZY | MAP_PRIVATE | MAP_ANON, -1, 0);
-    if (result == MAP_FAILED)
-        CRASH();
-#elif OS(LINUX)
+#if OS(LINUX)
     UNUSED_PARAM(usage);
     UNUSED_PARAM(writable);
     UNUSED_PARAM(executable);
@@ -60,7 +55,7 @@ void* OSAllocator::reserveUncommitted(size_t bytes, Usage usage, bool writable, 
     while (madvise(result, bytes, MADV_FREE_REUSABLE) == -1 && errno == EAGAIN) { }
 #endif
 
-#endif // OS(QNX)
+#endif // OS(LINUX)
 
     return result;
 }
@@ -126,15 +121,7 @@ void* OSAllocator::reserveAndCommit(size_t bytes, Usage usage, bool writable, bo
 
 void OSAllocator::commit(void* address, size_t bytes, bool writable, bool executable)
 {
-#if OS(QNX)
-    int protection = PROT_READ;
-    if (writable)
-        protection |= PROT_WRITE;
-    if (executable)
-        protection |= PROT_EXEC;
-    if (MAP_FAILED == mmap(address, bytes, protection, MAP_FIXED | MAP_PRIVATE | MAP_ANON, -1, 0))
-        CRASH();
-#elif OS(LINUX)
+#if OS(LINUX)
     int protection = PROT_READ;
     if (writable)
         protection |= PROT_WRITE;
@@ -158,10 +145,7 @@ void OSAllocator::commit(void* address, size_t bytes, bool writable, bool execut
 
 void OSAllocator::decommit(void* address, size_t bytes)
 {
-#if OS(QNX)
-    // Use PROT_NONE and MAP_LAZY to decommit the pages.
-    mmap(address, bytes, PROT_NONE, MAP_FIXED | MAP_LAZY | MAP_PRIVATE | MAP_ANON, -1, 0);
-#elif OS(LINUX)
+#if OS(LINUX)
     madvise(address, bytes, MADV_DONTNEED);
     if (mprotect(address, bytes, PROT_NONE))
         CRASH();
