@@ -123,15 +123,13 @@ class ToastContentsView : public views::WidgetDelegateView,
     if (!timer_.get())
       return;
 
-    if (timeout_ <= passed_) {
-      CloseWithAnimation();
-    } else {
-      start_time_ = base::Time::Now();
-      timer_->Start(FROM_HERE,
-                    timeout_ - passed_,
-                    base::Bind(&ToastContentsView::CloseWithAnimation,
-                               base::Unretained(this)));
-    }
+    base::TimeDelta timeout_to_close =
+        timeout_ <= passed_ ? base::TimeDelta() : timeout_ - passed_;
+    start_time_ = base::Time::Now();
+    timer_->Start(FROM_HERE,
+                  timeout_to_close,
+                  base::Bind(&ToastContentsView::CloseWithAnimation,
+                             base::Unretained(this)));
   }
 
   // Overridden from views::WidgetDelegate:
