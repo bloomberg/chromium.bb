@@ -92,8 +92,6 @@ def OverrideConfigForTrybot(build_config, options):
         and not my_config['arm']):
       my_config['vm_tests'] = constants.SIMPLE_AU_TEST_TYPE
       my_config['quick_unit'] = False
-    my_config['pgo_generate'] = False
-    my_config['pgo_use'] = False
 
   return copy_config
 
