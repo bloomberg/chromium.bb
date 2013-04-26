@@ -5775,6 +5775,52 @@ other types of suffix sets.
   <summary>Error codes returned by sqlite the web db.</summary>
 </histogram>
 
+<histogram name="Touchpad.Device" enum="TouchpadDeviceState">
+  <summary>Tracks touchpad device state.</summary>
+</histogram>
+
+<histogram name="Touchpad.NaturalScroll.Changed" enum="BooleanEnabled">
+  <summary>Tracks touchpad natural scroll setting changes by the user.</summary>
+</histogram>
+
+<histogram name="Touchpad.NaturalScroll.Started" enum="BooleanEnabled">
+  <summary>Tracks touchpad natural scroll setting on startup.</summary>
+</histogram>
+
+<histogram name="Touchpad.Sensitivity.Changed" enum="PointerSensitivity">
+  <summary>Tracks touchpad sensitivity setting changes by the user.</summary>
+</histogram>
+
+<histogram name="Touchpad.Sensitivity.Started" enum="PointerSensitivity">
+  <summary>Tracks touchpad sensitivity setting on startup.</summary>
+</histogram>
+
+<histogram name="Touchpad.TapDragging.Changed" enum="BooleanEnabled">
+  <summary>Tracks touchpad TapDragging setting changes by the user.</summary>
+</histogram>
+
+<histogram name="Touchpad.TapDragging.Started" enum="BooleanEnabled">
+  <summary>Tracks touchpad TapDragging setting on startup.</summary>
+</histogram>
+
+<histogram name="Touchpad.TapToClick.Changed" enum="BooleanEnabled">
+  <summary>Tracks touchpad TapToClick setting changes by the user.</summary>
+</histogram>
+
+<histogram name="Touchpad.TapToClick.Started" enum="BooleanEnabled">
+  <summary>Tracks touchpad TapToClick setting on startup.</summary>
+</histogram>
+
+<histogram name="Touchpad.ThreeFingerSwipe.Changed" enum="BooleanEnabled">
+  <summary>
+    Tracks touchpad ThreeFingerSwipe setting changes by the user.
+  </summary>
+</histogram>
+
+<histogram name="Touchpad.ThreeFingerSwipe.Started" enum="BooleanEnabled">
+  <summary>Tracks touchpad ThreeFingerSwipe setting on startup.</summary>
+</histogram>
+
 <histogram name="Variations.DisabledNoEntropyProvider" enum="BooleanHit">
   <summary>
     A count of the number of times we hit the code where a field trial is
@@ -8661,6 +8707,14 @@ other types of suffix sets.
   <int value="3" label="INIT_FAILED"/>
 </enum>
 
+<enum name="PointerSensitivity" type="int">
+  <int value="1" label="1"/>
+  <int value="2" label="2"/>
+  <int value="3" label="3"/>
+  <int value="4" label="4"/>
+  <int value="5" label="5"/>
+</enum>
+
 <enum name="PreconnectMotivation" type="int">
   <int value="0" label="MOUSE_OVER_MOTIVATED"/>
   <int value="1" label="PAGE_SCAN_MOTIVATED"/>
@@ -9194,6 +9248,29 @@ other types of suffix sets.
 <enum name="TLSRenegotiationPatched" type="int">
   <int value="0" label="Not renegotiation patched"/>
   <int value="1" label="Renegotiation patched"/>
+</enum>
+
+<enum name="TouchpadDeviceState" type="int">
+  <int value="0" label="NO_TP_PRESENT_NO_TP_EXPECTED">
+    No touchpad detected on a device without built-in touchpad
+  </int>
+  <int value="1" label="TP_PRESENT_NO_TP_EXPECTED">
+    External touchpad detected on a device without built-in touchpad
+  </int>
+  <int value="2" label="NO_TP_PRESENT_TP_EXPECTED_BOOT">
+    Built-in touchpad not detected at boot time on a device with built-in
+    touchpad (touchpad failure at boot time)
+  </int>
+  <int value="3" label="TP_PRESENT_TP_EXPECTED_BOOT">
+    Built-in touchpad detected at boot time on a device with built-in touchpad
+  </int>
+  <int value="4" label="NO_TP_PRESENT_TP_EXPECTED_RESUME">
+    Built-in touchpad not detected at resume time on a device with built-in
+    touchpad (touchpad failure at resume time)
+  </int>
+  <int value="5" label="TP_PRESENT_TP_EXPECTED_RESUME">
+    Built-in touchpad detected at resume time on a device with built-in touchpad
+  </int>
 </enum>
 
 <enum name="UniformityTrialGroupNotActive" type="int">
