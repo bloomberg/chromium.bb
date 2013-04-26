@@ -26,9 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Callback
-] interface DatabaseCallback {
+callback interface DatabaseCallback {
     boolean handleEvent(Database database);
     boolean handleEvent(DatabaseSync database);
 };

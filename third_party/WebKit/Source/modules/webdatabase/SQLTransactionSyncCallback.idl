@@ -28,8 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Callback
-] interface SQLTransactionSyncCallback {
+callback interface SQLTransactionSyncCallback {
     boolean handleEvent(SQLTransactionSync transaction);
 };

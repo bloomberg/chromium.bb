@@ -28,8 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Callback
-] interface StorageUsageCallback {
+callback interface StorageUsageCallback {
     boolean handleEvent(unsigned long long currentUsageInBytes, unsigned long long currentQuotaInBytes);
 };

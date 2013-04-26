@@ -28,9 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Callback,
-] interface RequestAnimationFrameCallback{
+callback interface RequestAnimationFrameCallback{
     // highResTime is passed as high resolution timestamp, see
     // http://www.w3.org/TR/hr-time/ for details.
     boolean handleEvent(double highResTime);

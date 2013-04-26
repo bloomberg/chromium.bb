@@ -22,8 +22,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Callback
-] interface PositionCallback {
+callback interface PositionCallback {
     boolean handleEvent(Geoposition position);
 };

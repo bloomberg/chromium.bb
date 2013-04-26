@@ -51,6 +51,7 @@ struct( domInterface => {
     constructors => '@', # Constructors, list of 'domFunction'
     customConstructors => '@', # Custom constructors, list of 'domFunction'
     isException => '$', # Used for exception interfaces
+    isCallback => '$', # Used for callback interfaces
 });
 
 # Used to represent domInterface contents (name of method, signature)
@@ -470,7 +471,9 @@ sub parseCallbackRestOrInterface
 
     my $next = $self->nextToken();
     if ($next->value() eq "interface") {
-        return $self->parseInterface($extendedAttributeList);
+        my $interface = $self->parseInterface($extendedAttributeList);
+        $interface->isCallback(1);
+        return $interface;
     }
     if ($next->type() == IdentifierToken) {
         return $self->parseCallbackRest($extendedAttributeList);

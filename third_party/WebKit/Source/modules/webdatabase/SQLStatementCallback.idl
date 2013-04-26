@@ -26,8 +26,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Callback
-] interface SQLStatementCallback {
+callback interface SQLStatementCallback {
     boolean handleEvent(SQLTransaction transaction, SQLResultSet resultSet);
 };
