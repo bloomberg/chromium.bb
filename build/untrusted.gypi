@@ -672,7 +672,7 @@
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_glibc64)',
                     '>(source_list_glibc64)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.prep',
                  ],
                  'outputs': ['>(out_glibc64)'],
                  'action': [
@@ -713,7 +713,7 @@
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_glibc32)',
                     '>(source_list_glibc32)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.prep',
                  ],
                  'outputs': ['>(out_glibc32)'],
                  'action': [
