@@ -132,8 +132,12 @@ void ChromotingClient::OnConnectionState(
     protocol::ErrorCode error) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   VLOG(1) << "ChromotingClient::OnConnectionState(" << state << ")";
-  if (state == protocol::ConnectionToHost::AUTHENTICATED)
-    Initialize();
+
+  if (state == protocol::ConnectionToHost::AUTHENTICATED) {
+    OnAuthenticated();
+  } else if (state == protocol::ConnectionToHost::CONNECTED) {
+    OnChannelsConnected();
+  }
   user_interface_->OnConnectionState(state, error);
 }
 
@@ -142,13 +146,26 @@ void ChromotingClient::OnConnectionReady(bool ready) {
   user_interface_->OnConnectionReady(ready);
 }
 
-void ChromotingClient::Initialize() {
+void ChromotingClient::OnAuthenticated() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // Initialize the decoder.
   rectangle_decoder_->Initialize(connection_->config());
   if (connection_->config().is_audio_enabled())
     audio_decode_scheduler_->Initialize(connection_->config());
+
+  // Do not negotiate capabilities with the host if the host does not support
+  // them.
+  if (!connection_->config().SupportsCapabilities()) {
+    VLOG(1) << "The host does not support any capabilities.";
+
+    host_capabilities_received_ = true;
+    user_interface_->SetCapabilities(host_capabilities_);
+  }
+}
+
+void ChromotingClient::OnChannelsConnected() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   // Negotiate capabilities with the host.
   if (connection_->config().SupportsCapabilities()) {
@@ -157,11 +174,6 @@ void ChromotingClient::Initialize() {
     protocol::Capabilities capabilities;
     capabilities.set_capabilities(config_.capabilities);
     connection_->host_stub()->SetCapabilities(capabilities);
-  } else {
-    VLOG(1) << "The host does not support any capabilities.";
-
-    host_capabilities_received_ = true;
-    user_interface_->SetCapabilities(host_capabilities_);
   }
 }
 

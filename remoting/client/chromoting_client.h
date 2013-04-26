@@ -80,8 +80,11 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   virtual void OnConnectionReady(bool ready) OVERRIDE;
 
  private:
-  // Initializes connection.
-  void Initialize();
+  // Called when the connection is authenticated.
+  void OnAuthenticated();
+
+  // Called when all channels are connected.
+  void OnChannelsConnected();
 
   void OnDisconnected(const base::Closure& shutdown_task);
 
