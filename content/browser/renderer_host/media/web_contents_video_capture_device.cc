@@ -193,6 +193,7 @@ class CaptureOracle : public base::RefCountedThreadSafe<CaptureOracle> {
 
   // Callback invoked upon completion of all captures.
   void DidCaptureFrame(const scoped_refptr<media::VideoFrame>& frame,
+                       int frame_number,
                        base::Time timestamp,
                        bool success);
 
@@ -207,6 +208,9 @@ class CaptureOracle : public base::RefCountedThreadSafe<CaptureOracle> {
 
   // Incremented every time a paint or update event occurs.
   int frame_number_;
+
+  // Stores the frame number from the last delivered frame.
+  int last_delivered_frame_number_;
 
   // Whether capturing is currently allowed. Can toggle back and forth.
   bool is_started_;
@@ -431,6 +435,7 @@ CaptureOracle::CaptureOracle(media::VideoCaptureDevice::EventHandler* consumer,
     : capture_period_(capture_period),
       consumer_(consumer),
       frame_number_(0),
+      last_delivered_frame_number_(0),
       is_started_(false),
       sampler_(capture_period_, kAcceleratedSubscriberIsSupported,
                kNumRedundantCapturesOfStaticContent) {}
@@ -495,7 +500,7 @@ bool CaptureOracle::ObserveEventAndDecideCapture(
                            "trigger", event_name);
   *storage = output_buffer;
   *callback = base::Bind(&CaptureOracle::DidCaptureFrame,
-                         this, output_buffer);
+                         this, output_buffer, frame_number_);
   return true;
 }
 
@@ -527,6 +532,7 @@ void CaptureOracle::InvalidateConsumer() {
 
 void CaptureOracle::DidCaptureFrame(
     const scoped_refptr<media::VideoFrame>& frame,
+    int frame_number,
     base::Time timestamp,
     bool success) {
   base::AutoLock guard(lock_);
@@ -537,6 +543,12 @@ void CaptureOracle::DidCaptureFrame(
 
   if (!consumer_ || !is_started_)
     return;  // Capture is stopped.
+
+  // Drop the frame if a frame with a higher frame number was already delivered.
+  if (last_delivered_frame_number_ > frame_number)
+    return;
+
+  last_delivered_frame_number_ = frame_number;
 
   if (success)
     consumer_->OnIncomingCapturedVideoFrame(frame, timestamp);
