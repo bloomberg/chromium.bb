@@ -15,6 +15,8 @@
       '../blob/blob_url_request_job_factory.h',
       '../blob/local_file_stream_reader.cc',
       '../blob/local_file_stream_reader.h',
+      '../blob/scoped_file.cc',
+      '../blob/scoped_file.h',
       '../blob/shareable_file_reference.cc',
       '../blob/shareable_file_reference.h',
       '../blob/view_blob_internals_job.cc',

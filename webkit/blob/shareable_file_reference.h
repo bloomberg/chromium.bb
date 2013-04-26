@@ -7,29 +7,22 @@
 
 #include <vector>
 
-#include "base/callback.h"
-#include "base/files/file_path.h"
-#include "base/memory/ref_counted.h"
-#include "webkit/storage/webkit_storage_export.h"
-
-namespace base {
-class TaskRunner;
-}
+#include "webkit/blob/scoped_file.h"
 
 namespace webkit_blob {
 
-// A refcounted wrapper around a FilePath that can optionally schedule
-// the file to be deleted upon final release and/or to notify a consumer
-// when final release occurs. This class is single-threaded and should
-// only be invoked on the IO thread in chrome.
+// ShareableFileReference allows consumers to share FileReference for the
+// same path if it already exists in its internal map.
+// This class is non-thread-safe and all methods must be called on a single
+// thread.
 class WEBKIT_STORAGE_EXPORT ShareableFileReference
     : public base::RefCounted<ShareableFileReference> {
  public:
-  typedef base::Callback<void(const base::FilePath&)> FinalReleaseCallback;
+  typedef ScopedFile::ScopeOutCallback FinalReleaseCallback;
 
   enum FinalReleasePolicy {
-    DELETE_ON_FINAL_RELEASE,
-    DONT_DELETE_ON_FINAL_RELEASE,
+    DELETE_ON_FINAL_RELEASE = ScopedFile::DELETE_ON_SCOPE_OUT,
+    DONT_DELETE_ON_FINAL_RELEASE = ScopedFile::DONT_DELETE_ON_SCOPE_OUT,
   };
 
   // Returns a ShareableFileReference for the given path, if no reference
@@ -38,35 +31,40 @@ class WEBKIT_STORAGE_EXPORT ShareableFileReference
 
   // Returns a ShareableFileReference for the given path, creating a new
   // reference if none yet exists. If there's a pre-existing reference for
-  // the path, the deletable parameter of this method is ignored.
+  // the path, the policy parameter of this method is ignored.
   static scoped_refptr<ShareableFileReference> GetOrCreate(
       const base::FilePath& path,
       FinalReleasePolicy policy,
       base::TaskRunner* file_task_runner);
 
+  // Returns a ShareableFileReference for the given path of the |scoped_file|,
+  // creating a new reference if none yet exists. The ownership of |scoped_file|
+  // is passed to this reference.
+  // If there's a pre-existing reference for the path, the scope out policy
+  // and scope-out-callbacks of the given |scoped_file| is ignored.
+  // If the given scoped_file has an empty path (e.g. maybe already
+  // released) this returns NULL reference.
+  //
+  // TODO(kinuko): Make sure if this behavior is ok, we could alternatively
+  // merge callbacks to the existing one.
+  static scoped_refptr<ShareableFileReference> GetOrCreate(
+      ScopedFile scoped_file);
+
   // The full file path.
-  const base::FilePath& path() const { return path_; }
+  const base::FilePath& path() const { return scoped_file_.path(); }
 
-  // Whether it's to be deleted on final release.
-  FinalReleasePolicy final_release_policy() const {
-    return final_release_policy_;
-  }
-
+  // The |callback| is fired when the final reference of this instance
+  // is released. If release policy is DELETE_ON_FINAL_RELEASE the
+  // callback task(s) is/are posted before the deletion is scheduled.
   void AddFinalReleaseCallback(const FinalReleaseCallback& callback);
 
  private:
   friend class base::RefCounted<ShareableFileReference>;
 
-  ShareableFileReference(
-      const base::FilePath& path,
-      FinalReleasePolicy policy,
-      base::TaskRunner* file_task_runner);
+  ShareableFileReference(ScopedFile scoped_file);
   ~ShareableFileReference();
 
-  const base::FilePath path_;
-  const FinalReleasePolicy final_release_policy_;
-  const scoped_refptr<base::TaskRunner> file_task_runner_;
-  std::vector<FinalReleaseCallback> final_release_callbacks_;
+  ScopedFile scoped_file_;
 
   DISALLOW_COPY_AND_ASSIGN(ShareableFileReference);
 };
