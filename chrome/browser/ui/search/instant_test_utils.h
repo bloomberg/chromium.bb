@@ -35,9 +35,9 @@ class InstantTestModelObserver : public InstantOverlayModelObserver {
                            SearchMode::Type expected_mode_type);
   virtual ~InstantTestModelObserver();
 
-  // Returns true if the |expected_mode_type_| was observed in
-  // OverlayStateChanged.
-  bool WaitForExpectedOverlayState();
+  // Returns the observed mode type, may be different than the
+  // |expected_mode_type_| that was observed in OverlayStateChanged.
+  SearchMode::Type WaitForExpectedOverlayState();
 
   // Overridden from InstantOverlayModelObserver:
   virtual void OverlayStateChanged(const InstantOverlayModel& model) OVERRIDE;
