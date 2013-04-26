@@ -26,7 +26,6 @@
 
 #include "HTMLNames.h"
 #include "HTMLScriptElement.h"
-#include "ScriptCallStack.h"
 #include "ScriptController.h"
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
@@ -38,6 +37,7 @@
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/dom/Text.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/inspector/ScriptCallStack.h"
 #include "core/loader/CrossOriginAccessControl.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/cache/CachedResourceLoader.h"

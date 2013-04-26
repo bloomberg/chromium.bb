@@ -27,8 +27,8 @@
 #include "config.h"
 #include "core/dom/ElementShadow.h"
 
-#include "InspectorInstrumentation.h"
 #include "core/dom/ContainerNodeAlgorithms.h"
+#include "core/inspector/InspectorInstrumentation.h"
 
 namespace WebCore {
 

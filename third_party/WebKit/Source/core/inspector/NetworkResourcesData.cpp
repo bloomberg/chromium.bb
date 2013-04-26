@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "NetworkResourcesData.h"
+#include "core/inspector/NetworkResourcesData.h"
 
 #include "core/dom/DOMImplementation.h"
 #include "core/loader/TextResourceDecoder.h"

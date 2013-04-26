@@ -33,7 +33,7 @@
 
 #include "InspectorTypeBuilder.h"
 
-#include "ScriptCallFrame.h"
+#include "core/inspector/ScriptCallFrame.h"
 #include <wtf/Forward.h>
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>

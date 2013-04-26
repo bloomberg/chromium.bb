@@ -31,8 +31,8 @@
 #ifndef WebDevToolsAgentImpl_h
 #define WebDevToolsAgentImpl_h
 
-#include "InspectorClient.h"
-#include "InspectorFrontendChannel.h"
+#include "core/inspector/InspectorClient.h"
+#include "core/inspector/InspectorFrontendChannel.h"
 
 #include "WebDevToolsAgentPrivate.h"
 #include "WebPageOverlay.h"

@@ -31,7 +31,7 @@
 #ifndef InspectorFileSystemAgent_h
 #define InspectorFileSystemAgent_h
 
-#include "InspectorBaseAgent.h"
+#include "core/inspector/InspectorBaseAgent.h"
 
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>

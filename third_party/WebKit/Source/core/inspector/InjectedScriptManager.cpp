@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "InjectedScriptManager.h"
+#include "core/inspector/InjectedScriptManager.h"
 
-#include "InjectedScript.h"
-#include "InjectedScriptHost.h"
 #include "InjectedScriptSource.h"
-#include "InspectorValues.h"
 #include "ScriptObject.h"
+#include "core/inspector/InjectedScript.h"
+#include "core/inspector/InjectedScriptHost.h"
+#include "core/inspector/InspectorValues.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

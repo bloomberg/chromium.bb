@@ -29,14 +29,14 @@
  */
 
 #include "config.h"
-#include "PageConsoleAgent.h"
+#include "core/inspector/PageConsoleAgent.h"
 
-#include "InjectedScriptHost.h"
-#include "InjectedScriptManager.h"
-#include "InspectorAgent.h"
-#include "InspectorDOMAgent.h"
 #include "ScriptObject.h"
 #include "core/dom/Node.h"
+#include "core/inspector/InjectedScriptHost.h"
+#include "core/inspector/InjectedScriptManager.h"
+#include "core/inspector/InspectorAgent.h"
+#include "core/inspector/InspectorDOMAgent.h"
 #include "core/page/DOMWindow.h"
 
 namespace WebCore {

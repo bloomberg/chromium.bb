@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/dom/ScriptedAnimationController.h"
 
-#include "InspectorInstrumentation.h"
 #include "core/dom/Document.h"
 #include "core/dom/RequestAnimationFrameCallback.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/FrameView.h"
 

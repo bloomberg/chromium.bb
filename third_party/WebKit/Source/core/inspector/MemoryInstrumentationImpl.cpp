@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "MemoryInstrumentationImpl.h"
+#include "core/inspector/MemoryInstrumentationImpl.h"
 
-#include "HeapGraphSerializer.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/inspector/HeapGraphSerializer.h"
 #include <wtf/Assertions.h>
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationHashSet.h>

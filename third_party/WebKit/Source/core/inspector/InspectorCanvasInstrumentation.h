@@ -31,10 +31,10 @@
 #ifndef InspectorCanvasInstrumentation_h
 #define InspectorCanvasInstrumentation_h
 
-#include "InspectorCanvasAgent.h"
-#include "InspectorInstrumentation.h"
-#include "InstrumentingAgents.h"
 #include "ScriptObject.h"
+#include "core/inspector/InspectorCanvasAgent.h"
+#include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InstrumentingAgents.h"
 #include <wtf/UnusedParam.h>
 
 namespace WebCore {

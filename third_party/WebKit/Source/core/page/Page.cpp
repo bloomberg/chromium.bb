@@ -21,8 +21,6 @@
 #include "core/page/Page.h"
 
 #include "HTMLElement.h"
-#include "InspectorController.h"
-#include "InspectorInstrumentation.h"
 #include "PluginData.h"
 #include "PluginViewBase.h"
 #include "ScriptController.h"
@@ -40,6 +38,8 @@
 #include "core/editing/FrameSelection.h"
 #include "core/history/BackForwardController.h"
 #include "core/history/HistoryItem.h"
+#include "core/inspector/InspectorController.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/ProgressTracker.h"

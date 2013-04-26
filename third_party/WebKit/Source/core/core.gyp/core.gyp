@@ -52,7 +52,6 @@
       '<(bindings_dir)/v8',
       '<(bindings_dir)/v8/custom',
       '../html',
-      '../inspector',
       '../platform/graphics/skia',
       '../plugins',
       '../svg',
@@ -328,6 +327,7 @@
         # includes for these correctly. (Sequences don't work yet.)
         '../dom',
         '../html/shadow',
+        '../inspector',
         '../page',
       ],
       'sources': [

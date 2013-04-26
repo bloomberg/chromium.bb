@@ -31,8 +31,8 @@
 #ifndef WorkerDebuggerAgent_h
 #define WorkerDebuggerAgent_h
 
-#include "InspectorDebuggerAgent.h"
 #include "WorkerScriptDebugServer.h"
+#include "core/inspector/InspectorDebuggerAgent.h"
 
 namespace WebCore {
 

@@ -32,7 +32,7 @@
 #define InspectorDatabaseInstrumentation_h
 
 #include "Database.h"
-#include "InspectorInstrumentation.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/UnusedParam.h>
 

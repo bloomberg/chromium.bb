@@ -28,14 +28,10 @@
 
 #include "config.h"
 
-#include "InspectorDatabaseAgent.h"
+#include "core/inspector/InspectorDatabaseAgent.h"
 
 #include "Database.h"
-#include "InspectorDatabaseResource.h"
 #include "InspectorFrontend.h"
-#include "InspectorState.h"
-#include "InspectorValues.h"
-#include "InstrumentingAgents.h"
 #include "SQLError.h"
 #include "SQLResultSet.h"
 #include "SQLResultSetRowList.h"
@@ -47,6 +43,10 @@
 #include "VoidCallback.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
+#include "core/inspector/InspectorDatabaseResource.h"
+#include "core/inspector/InspectorState.h"
+#include "core/inspector/InspectorValues.h"
+#include "core/inspector/InstrumentingAgents.h"
 #include "core/platform/sql/SQLValue.h"
 
 #include <wtf/Vector.h>

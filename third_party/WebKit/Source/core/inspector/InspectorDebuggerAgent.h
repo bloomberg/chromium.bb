@@ -30,13 +30,13 @@
 #ifndef InspectorDebuggerAgent_h
 #define InspectorDebuggerAgent_h
 
-#include "ConsoleAPITypes.h"
-#include "InjectedScript.h"
-#include "InspectorBaseAgent.h"
 #include "InspectorFrontend.h"
-#include "ScriptBreakpoint.h"
-#include "ScriptDebugListener.h"
 #include "ScriptState.h"
+#include "core/inspector/ConsoleAPITypes.h"
+#include "core/inspector/InjectedScript.h"
+#include "core/inspector/InspectorBaseAgent.h"
+#include "core/inspector/ScriptBreakpoint.h"
+#include "core/inspector/ScriptDebugListener.h"
 #include "core/page/ConsoleTypes.h"
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>

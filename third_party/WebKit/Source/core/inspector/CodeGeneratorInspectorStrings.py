@@ -87,7 +87,7 @@ frontend_h = (
 #define InspectorFrontend_h
 
 #include "InspectorTypeBuilder.h"
-#include "InspectorValues.h"
+#include "core/inspector/InspectorValues.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/text/WTFString.h>
 
@@ -198,9 +198,9 @@ backend_cpp = (
 #include "InspectorBackendDispatcher.h"
 
 
-#include "InspectorAgent.h"
-#include "InspectorFrontendChannel.h"
-#include "InspectorValues.h"
+#include "core/inspector/InspectorAgent.h"
+#include "core/inspector/InspectorFrontendChannel.h"
+#include "core/inspector/InspectorValues.h"
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
 
@@ -501,8 +501,8 @@ frontend_cpp = (
 #include "config.h"
 
 #include "InspectorFrontend.h"
-#include "InspectorFrontendChannel.h"
-#include "InspectorValues.h"
+#include "core/inspector/InspectorFrontendChannel.h"
+#include "core/inspector/InspectorValues.h"
 
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
@@ -524,7 +524,7 @@ typebuilder_h = (
 #ifndef InspectorTypeBuilder_h
 #define InspectorTypeBuilder_h
 
-#include "InspectorValues.h"
+#include "core/inspector/InspectorValues.h"
 
 #include <wtf/Assertions.h>
 #include <wtf/PassRefPtr.h>

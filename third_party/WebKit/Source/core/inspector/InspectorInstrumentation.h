@@ -31,7 +31,6 @@
 #ifndef InspectorInstrumentation_h
 #define InspectorInstrumentation_h
 
-#include "ConsoleAPITypes.h"
 #include "ScriptState.h"
 #include "WebSocketFrame.h"
 #include "WebSocketHandshakeRequest.h"
@@ -43,6 +42,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/EventContext.h"
 #include "core/dom/ScriptExecutionContext.h"
+#include "core/inspector/ConsoleAPITypes.h"
 #include "core/page/ConsoleTypes.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"

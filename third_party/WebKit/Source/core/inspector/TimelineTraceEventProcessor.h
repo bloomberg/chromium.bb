@@ -32,16 +32,16 @@
 #define TimelineTraceEventProcessor_h
 
 
-#include "InspectorTimelineAgent.h"
-#include "InspectorValues.h"
+#include "core/inspector/InspectorTimelineAgent.h"
+#include "core/inspector/InspectorValues.h"
 
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
 #include <wtf/Noncopyable.h>
+#include <wtf/text/WTFString.h>
 #include <wtf/Threading.h>
 #include <wtf/Vector.h>
 #include <wtf/WeakPtr.h>
-#include <wtf/text/WTFString.h>
 
 namespace WebCore {
 

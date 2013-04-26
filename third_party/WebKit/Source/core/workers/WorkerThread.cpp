@@ -30,9 +30,9 @@
 
 #include "DatabaseManager.h"
 #include "DatabaseTask.h"
-#include "InspectorInstrumentation.h"
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/platform/KURL.h"
 #include "core/platform/ThreadGlobalData.h"
 #include "core/workers/DedicatedWorkerContext.h"

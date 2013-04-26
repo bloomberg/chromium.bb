@@ -32,11 +32,11 @@
 #include "config.h"
 #include "core/dom/EventTarget.h"
 
-#include "InspectorInstrumentation.h"
 #include "ScriptController.h"
 #include "core/dom/Event.h"
 #include "core/dom/EventException.h"
 #include "core/dom/TransitionEvent.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include <wtf/MainThread.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/Vector.h>

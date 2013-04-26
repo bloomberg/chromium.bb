@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "WorkerConsoleAgent.h"
+#include "core/inspector/WorkerConsoleAgent.h"
 
 namespace WebCore {
 

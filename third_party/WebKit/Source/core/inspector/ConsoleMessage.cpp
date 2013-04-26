@@ -31,18 +31,18 @@
 #include "config.h"
 
 
-#include "ConsoleMessage.h"
+#include "core/inspector/ConsoleMessage.h"
 
-#include "IdentifiersFactory.h"
-#include "InjectedScript.h"
-#include "InjectedScriptManager.h"
 #include "InspectorFrontend.h"
-#include "InspectorValues.h"
-#include "ScriptArguments.h"
-#include "ScriptCallFrame.h"
-#include "ScriptCallStack.h"
 #include "ScriptCallStackFactory.h"
 #include "ScriptValue.h"
+#include "core/inspector/IdentifiersFactory.h"
+#include "core/inspector/InjectedScript.h"
+#include "core/inspector/InjectedScriptManager.h"
+#include "core/inspector/InspectorValues.h"
+#include "core/inspector/ScriptArguments.h"
+#include "core/inspector/ScriptCallFrame.h"
+#include "core/inspector/ScriptCallStack.h"
 #include "core/page/Console.h"
 #include <wtf/MainThread.h>
 

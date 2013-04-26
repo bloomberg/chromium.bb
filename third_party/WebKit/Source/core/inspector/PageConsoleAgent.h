@@ -31,7 +31,7 @@
 #ifndef PageConsoleAgent_h
 #define PageConsoleAgent_h
 
-#include "InspectorConsoleAgent.h"
+#include "core/inspector/InspectorConsoleAgent.h"
 #include <wtf/PassOwnPtr.h>
 
 

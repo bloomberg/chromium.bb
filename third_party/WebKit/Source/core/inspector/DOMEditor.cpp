@@ -31,15 +31,15 @@
 #include "config.h"
 
 
-#include "DOMEditor.h"
+#include "core/inspector/DOMEditor.h"
 
-#include "DOMPatchSupport.h"
-#include "InspectorHistory.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/Node.h"
 #include "core/dom/Text.h"
+#include "core/inspector/DOMPatchSupport.h"
+#include "core/inspector/InspectorHistory.h"
 
 #include "core/editing/markup.h"
 

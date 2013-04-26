@@ -22,9 +22,9 @@
 #ifndef ChromeClient_h
 #define ChromeClient_h
 
-#include "ConsoleAPITypes.h"
 #include "DatabaseDetails.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/inspector/ConsoleAPITypes.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/ConsoleTypes.h"
 #include "core/page/FocusDirection.h"

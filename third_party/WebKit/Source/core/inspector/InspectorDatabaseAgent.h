@@ -29,8 +29,8 @@
 #ifndef InspectorDatabaseAgent_h
 #define InspectorDatabaseAgent_h
 
-#include "InspectorBaseAgent.h"
 #include "InspectorFrontend.h"
+#include "core/inspector/InspectorBaseAgent.h"
 #include <wtf/HashMap.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/WTFString.h>

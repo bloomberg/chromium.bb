@@ -27,8 +27,8 @@
 #include "config.h"
 #include "core/platform/ThreadGlobalData.h"
 
-#include "InspectorCounters.h"
 #include "core/dom/EventNames.h"
+#include "core/inspector/InspectorCounters.h"
 #include "core/loader/cache/CachedResourceRequestInitiators.h"
 #include "core/platform/ThreadTimers.h"
 #include "core/platform/text/TextCodecICU.h"

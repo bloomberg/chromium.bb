@@ -31,9 +31,9 @@
 #ifndef InspectorClientImpl_h
 #define InspectorClientImpl_h
 
-#include "InspectorClient.h"
-#include "InspectorController.h"
-#include "InspectorFrontendChannel.h"
+#include "core/inspector/InspectorClient.h"
+#include "core/inspector/InspectorController.h"
+#include "core/inspector/InspectorFrontendChannel.h"
 #include <wtf/OwnPtr.h>
 
 namespace WebKit {

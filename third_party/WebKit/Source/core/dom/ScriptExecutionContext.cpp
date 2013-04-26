@@ -30,11 +30,11 @@
 
 #include "DatabaseContext.h"
 #include "PublicURLManager.h"
-#include "ScriptCallStack.h"
 #include "core/dom/ErrorEvent.h"
 #include "core/dom/EventTarget.h"
 #include "core/dom/MessagePort.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/inspector/ScriptCallStack.h"
 #include "core/loader/cache/CachedScript.h"
 #include "core/page/DOMTimer.h"
 #include "core/workers/WorkerContext.h"

@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "InspectorIndexedDBAgent.h"
+#include "core/inspector/InspectorIndexedDBAgent.h"
 
 #include "DOMWindowIndexedDatabase.h"
 #include "IDBCursor.h"
@@ -48,12 +48,7 @@
 #include "IDBPendingTransactionMonitor.h"
 #include "IDBRequest.h"
 #include "IDBTransaction.h"
-#include "InjectedScript.h"
 #include "InspectorFrontend.h"
-#include "InspectorPageAgent.h"
-#include "InspectorState.h"
-#include "InspectorValues.h"
-#include "InstrumentingAgents.h"
 #include "ScriptController.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
@@ -61,6 +56,11 @@
 #include "core/dom/EventListener.h"
 #include "core/dom/EventTarget.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/inspector/InjectedScript.h"
+#include "core/inspector/InspectorPageAgent.h"
+#include "core/inspector/InspectorState.h"
+#include "core/inspector/InspectorValues.h"
+#include "core/inspector/InstrumentingAgents.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
 #include "core/page/SecurityOrigin.h"

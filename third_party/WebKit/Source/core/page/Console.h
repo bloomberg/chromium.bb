@@ -29,9 +29,9 @@
 #ifndef Console_h
 #define Console_h
 
-#include "ScriptProfile.h"
 #include "ScriptState.h"
 #include "ScriptWrappable.h"
+#include "core/inspector/ScriptProfile.h"
 #include "core/page/DOMWindowProperty.h"
 #include <wtf/Forward.h>
 #include <wtf/PassRefPtr.h>

@@ -34,7 +34,6 @@
 #include "core/page/EventSource.h"
 
 #include "Dictionary.h"
-#include "ScriptCallStack.h"
 #include "ScriptController.h"
 #include "SerializedScriptValue.h"
 #include "core/dom/Document.h"
@@ -43,6 +42,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/MessageEvent.h"
 #include "core/dom/ScriptExecutionContext.h"
+#include "core/inspector/ScriptCallStack.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/cache/MemoryCache.h"

@@ -29,9 +29,9 @@
 #ifndef EmptyClients_h
 #define EmptyClients_h
 
-#include "InspectorClient.h"
 #include "core/dom/DeviceOrientationClient.h"
 #include "core/history/BackForwardClient.h"
+#include "core/inspector/InspectorClient.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/ContextMenuClient.h"

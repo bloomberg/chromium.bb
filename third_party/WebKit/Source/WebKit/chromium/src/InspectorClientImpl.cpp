@@ -31,10 +31,10 @@
 #include "config.h"
 #include "InspectorClientImpl.h"
 
-#include "InspectorInstrumentation.h"
 #include "WebDevToolsAgentImpl.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"

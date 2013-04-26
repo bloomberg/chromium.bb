@@ -31,9 +31,7 @@
 #include "config.h"
 #include "WebDevToolsFrontendImpl.h"
 
-#include "InspectorController.h"
 #include "InspectorFrontendClientImpl.h"
-#include "InspectorFrontendHost.h"
 #include "ScriptController.h"
 #include "V8Binding.h"
 #include "V8DOMWrapper.h"
@@ -48,6 +46,8 @@
 #include "core/dom/Document.h"
 #include "core/dom/Event.h"
 #include "core/dom/Node.h"
+#include "core/inspector/InspectorController.h"
+#include "core/inspector/InspectorFrontendHost.h"
 #include "core/page/ContextMenuController.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"

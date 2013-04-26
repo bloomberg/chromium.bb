@@ -31,7 +31,7 @@
 #ifndef InspectorFrontendClientLocal_h
 #define InspectorFrontendClientLocal_h
 
-#include "InspectorFrontendClient.h"
+#include "core/inspector/InspectorFrontendClient.h"
 #include <wtf/Forward.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/text/WTFString.h>

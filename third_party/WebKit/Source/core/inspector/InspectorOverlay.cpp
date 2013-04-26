@@ -27,11 +27,9 @@
  */
 
 #include "config.h"
-#include "InspectorOverlay.h"
+#include "core/inspector/InspectorOverlay.h"
 
-#include "InspectorClient.h"
 #include "InspectorOverlayPage.h"
-#include "InspectorValues.h"
 #include "ScriptController.h"
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
@@ -39,6 +37,8 @@
 #include "core/dom/Node.h"
 #include "core/dom/StyledElement.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/inspector/InspectorClient.h"
+#include "core/inspector/InspectorValues.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/EmptyClients.h"
 #include "core/page/Frame.h"

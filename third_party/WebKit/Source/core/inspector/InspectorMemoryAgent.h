@@ -32,8 +32,8 @@
 #define InspectorMemoryAgent_h
 
 
-#include "InspectorBaseAgent.h"
 #include "InspectorFrontend.h"
+#include "core/inspector/InspectorBaseAgent.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefPtr.h>
 

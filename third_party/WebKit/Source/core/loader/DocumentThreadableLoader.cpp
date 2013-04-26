@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/loader/DocumentThreadableLoader.h"
 
-#include "InspectorInstrumentation.h"
 #include "core/dom/Document.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/CrossOriginAccessControl.h"
 #include "core/loader/CrossOriginPreflightResultCache.h"
 #include "core/loader/DocumentThreadableLoaderClient.h"

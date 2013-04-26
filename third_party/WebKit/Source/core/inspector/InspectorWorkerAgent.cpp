@@ -30,13 +30,13 @@
 
 #include "config.h"
 
-#include "InspectorWorkerAgent.h"
+#include "core/inspector/InspectorWorkerAgent.h"
 
 #include "InspectorFrontend.h"
-#include "InspectorFrontendChannel.h"
-#include "InspectorState.h"
-#include "InspectorValues.h"
-#include "InstrumentingAgents.h"
+#include "core/inspector/InspectorFrontendChannel.h"
+#include "core/inspector/InspectorState.h"
+#include "core/inspector/InspectorValues.h"
+#include "core/inspector/InstrumentingAgents.h"
 #include "core/platform/KURL.h"
 #include "core/workers/WorkerContextProxy.h"
 #include <wtf/PassOwnPtr.h>

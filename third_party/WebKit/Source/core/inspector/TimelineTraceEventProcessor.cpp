@@ -29,11 +29,11 @@
 */
 
 #include "config.h"
-#include "TimelineTraceEventProcessor.h"
+#include "core/inspector/TimelineTraceEventProcessor.h"
 
-#include "InspectorClient.h"
-#include "InspectorInstrumentation.h"
-#include "TimelineRecordFactory.h"
+#include "core/inspector/InspectorClient.h"
+#include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/TimelineRecordFactory.h"
 
 #include <wtf/CurrentTime.h>
 #include <wtf/MainThread.h>

@@ -29,13 +29,13 @@
 
 #include "core/workers/Worker.h"
 
-#include "InspectorInstrumentation.h"
 #include "core/dom/Document.h"
 #include "core/dom/EventException.h"
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/MessageEvent.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/page/DOMWindow.h"

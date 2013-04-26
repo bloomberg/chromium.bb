@@ -31,14 +31,14 @@
 #include "config.h"
 
 
-#include "InjectedScript.h"
+#include "core/inspector/InjectedScript.h"
 
-#include "InjectedScriptHost.h"
-#include "InjectedScriptModule.h"
-#include "InspectorValues.h"
 #include "ScriptFunctionCall.h"
 #include "SerializedScriptValue.h"
 #include "core/dom/Node.h"
+#include "core/inspector/InjectedScriptHost.h"
+#include "core/inspector/InjectedScriptModule.h"
+#include "core/inspector/InspectorValues.h"
 #include <wtf/text/WTFString.h>
 
 using WebCore::TypeBuilder::Array;

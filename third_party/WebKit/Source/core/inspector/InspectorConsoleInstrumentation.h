@@ -31,10 +31,10 @@
 #ifndef InspectorConsoleInstrumentation_h
 #define InspectorConsoleInstrumentation_h
 
-#include "InspectorInstrumentation.h"
-#include "ScriptArguments.h"
-#include "ScriptCallStack.h"
-#include "ScriptProfile.h"
+#include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/ScriptArguments.h"
+#include "core/inspector/ScriptCallStack.h"
+#include "core/inspector/ScriptProfile.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/UnusedParam.h>
 

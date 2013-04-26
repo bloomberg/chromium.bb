@@ -27,10 +27,10 @@
 #include "config.h"
 #include "core/page/DOMTimer.h"
 
-#include "InspectorInstrumentation.h"
 #include "ScheduledAction.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/HashSet.h>
 #include <wtf/StdLibExtras.h>

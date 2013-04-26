@@ -32,12 +32,12 @@
 
 #include "HTMLFormElement.h"
 #include "HTMLFrameOwnerElement.h"
-#include "InspectorInstrumentation.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
 #include "core/dom/Event.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/history/HistoryItem.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentWriter.h"
 #include "core/loader/FormState.h"
 #include "core/loader/FrameLoader.h"

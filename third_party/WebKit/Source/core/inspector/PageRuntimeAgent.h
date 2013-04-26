@@ -33,8 +33,8 @@
 
 
 #include "InspectorFrontend.h"
-#include "InspectorRuntimeAgent.h"
 #include "ScriptState.h"
+#include "core/inspector/InspectorRuntimeAgent.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

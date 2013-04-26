@@ -28,7 +28,6 @@
 
 #include "HTMLDocument.h"
 #include "HTMLNames.h"
-#include "InspectorInstrumentation.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Element.h"
 #include "core/html/parser/AtomicHTMLToken.h"
@@ -42,6 +41,7 @@
 #include "core/html/parser/HTMLTokenizer.h"
 #include "core/html/parser/HTMLTreeBuilder.h"
 #include "core/html/parser/NestingLevelIncrementer.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/Frame.h"

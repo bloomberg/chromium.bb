@@ -25,12 +25,12 @@
 #ifndef InspectorCSSAgent_h
 #define InspectorCSSAgent_h
 
-#include "InspectorBaseAgent.h"
-#include "InspectorDOMAgent.h"
-#include "InspectorStyleSheet.h"
-#include "InspectorValues.h"
 #include "core/css/CSSSelector.h"
 #include "core/dom/SecurityContext.h"
+#include "core/inspector/InspectorBaseAgent.h"
+#include "core/inspector/InspectorDOMAgent.h"
+#include "core/inspector/InspectorStyleSheet.h"
+#include "core/inspector/InspectorValues.h"
 #include "core/page/ContentSecurityPolicy.h"
 
 #include <wtf/HashMap.h>

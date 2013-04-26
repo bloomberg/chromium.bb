@@ -29,12 +29,12 @@
  */
 
 #include "config.h"
-#include "PageDebuggerAgent.h"
+#include "core/inspector/PageDebuggerAgent.h"
 
-#include "InspectorOverlay.h"
-#include "InspectorPageAgent.h"
-#include "InstrumentingAgents.h"
 #include "PageScriptDebugServer.h"
+#include "core/inspector/InspectorOverlay.h"
+#include "core/inspector/InspectorPageAgent.h"
+#include "core/inspector/InstrumentingAgents.h"
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
 

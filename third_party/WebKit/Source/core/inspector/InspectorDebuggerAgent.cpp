@@ -28,18 +28,18 @@
  */
 
 #include "config.h"
-#include "InspectorDebuggerAgent.h"
+#include "core/inspector/InspectorDebuggerAgent.h"
 
-#include "ContentSearchUtils.h"
-#include "InjectedScript.h"
-#include "InjectedScriptManager.h"
 #include "InspectorFrontend.h"
-#include "InspectorPageAgent.h"
-#include "InspectorState.h"
-#include "InspectorValues.h"
-#include "InstrumentingAgents.h"
 #include "ScriptDebugServer.h"
 #include "ScriptObject.h"
+#include "core/inspector/ContentSearchUtils.h"
+#include "core/inspector/InjectedScript.h"
+#include "core/inspector/InjectedScriptManager.h"
+#include "core/inspector/InspectorPageAgent.h"
+#include "core/inspector/InspectorState.h"
+#include "core/inspector/InspectorValues.h"
+#include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/cache/CachedResource.h"
 #include "core/platform/text/RegularExpression.h"
 #include <wtf/MemoryInstrumentationHashMap.h>

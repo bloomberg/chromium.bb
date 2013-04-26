@@ -26,7 +26,7 @@
 #include "config.h"
 
 
-#include "IdentifiersFactory.h"
+#include "core/inspector/IdentifiersFactory.h"
 
 #include <wtf/text/StringBuilder.h>
 

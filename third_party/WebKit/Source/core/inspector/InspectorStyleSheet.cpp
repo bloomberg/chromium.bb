@@ -23,15 +23,11 @@
  */
 
 #include "config.h"
-#include "InspectorStyleSheet.h"
+#include "core/inspector/InspectorStyleSheet.h"
 
 #include "CSSPropertyNames.h"
-#include "ContentSearchUtils.h"
 #include "HTMLHeadElement.h"
 #include "HTMLNames.h"
-#include "InspectorCSSAgent.h"
-#include "InspectorPageAgent.h"
-#include "InspectorValues.h"
 #include "SVGNames.h"
 #include "core/css/CSSHostRule.h"
 #include "core/css/CSSImportRule.h"
@@ -54,6 +50,10 @@
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/inspector/ContentSearchUtils.h"
+#include "core/inspector/InspectorCSSAgent.h"
+#include "core/inspector/InspectorPageAgent.h"
+#include "core/inspector/InspectorValues.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/platform/text/RegularExpression.h"
 

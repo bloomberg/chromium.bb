@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "ScriptArguments.h"
+#include "core/inspector/ScriptArguments.h"
 
 #include "ScriptValue.h"
 

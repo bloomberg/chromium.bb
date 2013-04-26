@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "InspectorValues.h"
+#include "core/inspector/InspectorValues.h"
 
 #include <wtf/DecimalNumber.h>
 #include <wtf/dtoa.h>

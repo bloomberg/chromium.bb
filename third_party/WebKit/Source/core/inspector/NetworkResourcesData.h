@@ -29,7 +29,7 @@
 #ifndef NetworkResourcesData_h
 #define NetworkResourcesData_h
 
-#include "InspectorPageAgent.h"
+#include "core/inspector/InspectorPageAgent.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/platform/network/HTTPHeaderMap.h"
 #include <wtf/Deque.h>

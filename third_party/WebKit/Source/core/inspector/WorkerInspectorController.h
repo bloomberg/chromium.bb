@@ -31,7 +31,7 @@
 #ifndef WorkerInspectorController_h
 #define WorkerInspectorController_h
 
-#include "InspectorBaseAgent.h"
+#include "core/inspector/InspectorBaseAgent.h"
 #include <wtf/FastAllocBase.h>
 #include <wtf/Forward.h>
 #include <wtf/Noncopyable.h>

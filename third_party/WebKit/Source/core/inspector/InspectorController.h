@@ -32,7 +32,7 @@
 #define InspectorController_h
 
 
-#include "InspectorBaseAgent.h"
+#include "core/inspector/InspectorBaseAgent.h"
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
 #include <wtf/Noncopyable.h>

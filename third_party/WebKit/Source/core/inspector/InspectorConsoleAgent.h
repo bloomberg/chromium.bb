@@ -26,10 +26,10 @@
 #define InspectorConsoleAgent_h
 
 
-#include "ConsoleAPITypes.h"
-#include "InspectorBaseAgent.h"
 #include "InspectorFrontend.h"
 #include "ScriptState.h"
+#include "core/inspector/ConsoleAPITypes.h"
+#include "core/inspector/InspectorBaseAgent.h"
 #include "core/page/ConsoleTypes.h"
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>

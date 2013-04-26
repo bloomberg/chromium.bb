@@ -33,9 +33,9 @@
 
 
 #include "GeolocationPosition.h"
-#include "InspectorBaseAgent.h"
 #include "InspectorFrontend.h"
 #include "core/dom/DeviceOrientationData.h"
+#include "core/inspector/InspectorBaseAgent.h"
 #include "core/page/Frame.h"
 #include <wtf/HashMap.h>
 #include <wtf/RefCounted.h>

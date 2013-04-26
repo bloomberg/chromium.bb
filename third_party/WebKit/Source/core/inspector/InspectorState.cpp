@@ -27,9 +27,9 @@
  */
 
 #include "config.h"
-#include "InspectorState.h"
+#include "core/inspector/InspectorState.h"
 
-#include "InspectorStateClient.h"
+#include "core/inspector/InspectorStateClient.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

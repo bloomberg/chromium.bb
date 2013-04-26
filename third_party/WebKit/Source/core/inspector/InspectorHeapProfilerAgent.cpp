@@ -29,14 +29,14 @@
  */
 
 #include "config.h"
-#include "InspectorHeapProfilerAgent.h"
+#include "core/inspector/InspectorHeapProfilerAgent.h"
 
-#include "InjectedScript.h"
-#include "InjectedScriptHost.h"
-#include "InspectorState.h"
-#include "InstrumentingAgents.h"
 #include "ScriptProfiler.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/inspector/InjectedScript.h"
+#include "core/inspector/InjectedScriptHost.h"
+#include "core/inspector/InspectorState.h"
+#include "core/inspector/InstrumentingAgents.h"
 #include "core/platform/Timer.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MemoryInstrumentationHashMap.h>

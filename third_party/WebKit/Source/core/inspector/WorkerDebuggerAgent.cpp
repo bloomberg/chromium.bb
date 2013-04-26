@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "WorkerDebuggerAgent.h"
+#include "core/inspector/WorkerDebuggerAgent.h"
 
 #include "ScriptDebugServer.h"
 #include "core/workers/WorkerContext.h"

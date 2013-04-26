@@ -29,17 +29,17 @@
  */
 
 #include "config.h"
-#include "InspectorDOMDebuggerAgent.h"
+#include "core/inspector/InspectorDOMDebuggerAgent.h"
 
 #include "HTMLElement.h"
-#include "InspectorAgent.h"
-#include "InspectorDOMAgent.h"
-#include "InspectorDebuggerAgent.h"
 #include "InspectorFrontend.h"
-#include "InspectorInstrumentation.h"
-#include "InspectorState.h"
-#include "InspectorValues.h"
-#include "InstrumentingAgents.h"
+#include "core/inspector/InspectorAgent.h"
+#include "core/inspector/InspectorDOMAgent.h"
+#include "core/inspector/InspectorDebuggerAgent.h"
+#include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InspectorState.h"
+#include "core/inspector/InspectorValues.h"
+#include "core/inspector/InstrumentingAgents.h"
 #include <wtf/text/WTFString.h>
 
 namespace {

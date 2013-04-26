@@ -28,9 +28,9 @@
 
 #include "config.h"
 
-#include "ContentSearchUtils.h"
+#include "core/inspector/ContentSearchUtils.h"
 
-#include "InspectorValues.h"
+#include "core/inspector/InspectorValues.h"
 #include "core/platform/text/RegularExpression.h"
 #include <wtf/StdLibExtras.h>
 

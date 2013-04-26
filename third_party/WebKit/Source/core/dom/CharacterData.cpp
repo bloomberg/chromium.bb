@@ -22,7 +22,6 @@
 #include "config.h"
 #include "core/dom/CharacterData.h"
 
-#include "InspectorInstrumentation.h"
 #include "core/dom/Document.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCode.h"
@@ -33,6 +32,7 @@
 #include "core/dom/Text.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/editing/FrameSelection.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/platform/text/TextBreakIterator.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/style/StyleInheritedData.h"

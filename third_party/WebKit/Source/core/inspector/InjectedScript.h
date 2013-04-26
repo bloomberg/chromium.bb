@@ -31,11 +31,11 @@
 #ifndef InjectedScript_h
 #define InjectedScript_h
 
-#include "InjectedScriptBase.h"
-#include "InjectedScriptManager.h"
 #include "InspectorTypeBuilder.h"
-#include "ScriptArguments.h"
 #include "ScriptObject.h"
+#include "core/inspector/InjectedScriptBase.h"
+#include "core/inspector/InjectedScriptManager.h"
+#include "core/inspector/ScriptArguments.h"
 #include <wtf/Forward.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/PassRefPtr.h>

@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "ScriptCallStack.h"
+#include "core/inspector/ScriptCallStack.h"
 
 #include "InspectorTypeBuilder.h"
-#include "InspectorValues.h"
+#include "core/inspector/InspectorValues.h"
 
 namespace WebCore {
 

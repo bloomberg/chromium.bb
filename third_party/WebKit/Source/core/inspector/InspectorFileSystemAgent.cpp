@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "InspectorFileSystemAgent.h"
+#include "core/inspector/InspectorFileSystemAgent.h"
 
 #include "DOMFileSystem.h"
 #include "DirectoryEntry.h"
@@ -43,9 +43,6 @@
 #include "FileEntry.h"
 #include "FileSystemCallback.h"
 #include "FileSystemCallbacks.h"
-#include "InspectorPageAgent.h"
-#include "InspectorState.h"
-#include "InstrumentingAgents.h"
 #include "LocalFileSystem.h"
 #include "Metadata.h"
 #include "MetadataCallback.h"
@@ -57,6 +54,9 @@
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileError.h"
 #include "core/fileapi/FileReader.h"
+#include "core/inspector/InspectorPageAgent.h"
+#include "core/inspector/InspectorState.h"
+#include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/page/Frame.h"
 #include "core/page/SecurityOrigin.h"

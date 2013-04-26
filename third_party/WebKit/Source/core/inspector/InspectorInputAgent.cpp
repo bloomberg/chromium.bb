@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "InspectorInputAgent.h"
+#include "core/inspector/InspectorInputAgent.h"
 
 #include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"

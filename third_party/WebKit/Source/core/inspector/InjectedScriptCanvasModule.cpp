@@ -31,13 +31,13 @@
 #include "config.h"
 
 
-#include "InjectedScriptCanvasModule.h"
+#include "core/inspector/InjectedScriptCanvasModule.h"
 
-#include "InjectedScript.h"
 #include "InjectedScriptCanvasModuleSource.h"
-#include "InjectedScriptManager.h"
 #include "ScriptFunctionCall.h"
 #include "ScriptObject.h"
+#include "core/inspector/InjectedScript.h"
+#include "core/inspector/InjectedScriptManager.h"
 
 using WebCore::TypeBuilder::Array;
 using WebCore::TypeBuilder::Canvas::ResourceId;

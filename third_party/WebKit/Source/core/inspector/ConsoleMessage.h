@@ -31,9 +31,9 @@
 #ifndef ConsoleMessage_h
 #define ConsoleMessage_h
 
-#include "ConsoleAPITypes.h"
 #include "InspectorFrontend.h"
 #include "ScriptState.h"
+#include "core/inspector/ConsoleAPITypes.h"
 #include "core/page/ConsoleTypes.h"
 #include <wtf/Forward.h>
 #include <wtf/Vector.h>

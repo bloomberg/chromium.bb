@@ -32,11 +32,11 @@
 #define InspectorTimelineAgent_h
 
 
-#include "InspectorBaseAgent.h"
 #include "InspectorFrontend.h"
-#include "InspectorValues.h"
 #include "ScriptGCEvent.h"
-#include "ScriptGCEventListener.h"
+#include "core/inspector/InspectorBaseAgent.h"
+#include "core/inspector/InspectorValues.h"
+#include "core/inspector/ScriptGCEventListener.h"
 #include "core/platform/PlatformInstrumentation.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include <wtf/PassOwnPtr.h>

@@ -29,8 +29,8 @@
 #ifndef PageConsole_h
 #define PageConsole_h
 
-#include "ScriptCallStack.h"
 #include "ScriptState.h"
+#include "core/inspector/ScriptCallStack.h"
 #include "core/page/ConsoleTypes.h"
 #include <wtf/BitVector.h>
 #include <wtf/Forward.h>

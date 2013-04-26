@@ -30,14 +30,14 @@
 
 #include "config.h"
 
-#include "InspectorLayerTreeAgent.h"
+#include "core/inspector/InspectorLayerTreeAgent.h"
 
-#include "IdentifiersFactory.h"
-#include "InspectorDOMAgent.h"
 #include "InspectorFrontend.h"
-#include "InspectorState.h"
-#include "InstrumentingAgents.h"
 #include "core/dom/PseudoElement.h"
+#include "core/inspector/IdentifiersFactory.h"
+#include "core/inspector/InspectorDOMAgent.h"
+#include "core/inspector/InspectorState.h"
+#include "core/inspector/InstrumentingAgents.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerBacking.h"

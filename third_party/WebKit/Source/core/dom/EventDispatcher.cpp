@@ -27,7 +27,6 @@
 #include "core/dom/EventDispatcher.h"
 
 #include "HTMLMediaElement.h"
-#include "InspectorInstrumentation.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/ElementShadow.h"
 #include "core/dom/EventContext.h"
@@ -39,6 +38,7 @@
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/WindowEventContext.h"
 #include "core/html/shadow/InsertionPoint.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/FrameView.h"
 #include <wtf/RefPtr.h>
 #include <wtf/UnusedParam.h>

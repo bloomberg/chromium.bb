@@ -31,8 +31,6 @@
 #include "config.h"
 #include "WebWorkerClientImpl.h"
 
-#include "InspectorInstrumentation.h"
-#include "ScriptCallStack.h"
 #include "WorkerScriptController.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
@@ -41,6 +39,8 @@
 #include "core/dom/MessagePort.h"
 #include "core/dom/MessagePortChannel.h"
 #include "core/dom/ScriptExecutionContext.h"
+#include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/ScriptCallStack.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Frame.h"
 #include "core/page/GroupSettings.h"

@@ -29,7 +29,7 @@
 */
 
 #include "config.h"
-#include "InspectorCounters.h"
+#include "core/inspector/InspectorCounters.h"
 
 #include "core/platform/ThreadGlobalData.h"
 

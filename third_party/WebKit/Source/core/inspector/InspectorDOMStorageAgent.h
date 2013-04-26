@@ -29,7 +29,7 @@
 #ifndef InspectorDOMStorageAgent_h
 #define InspectorDOMStorageAgent_h
 
-#include "InspectorBaseAgent.h"
+#include "core/inspector/InspectorBaseAgent.h"
 #include "core/storage/StorageArea.h"
 #include <wtf/HashMap.h>
 #include <wtf/PassOwnPtr.h>

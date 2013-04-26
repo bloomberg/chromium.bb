@@ -29,10 +29,10 @@
 #include <limits>
 #include "Database.h"
 #include "HTMLMediaElement.h"
-#include "InspectorInstrumentation.h"
 #include "core/dom/Document.h"
 #include "core/history/BackForwardController.h"
 #include "core/history/HistoryItem.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameTree.h"

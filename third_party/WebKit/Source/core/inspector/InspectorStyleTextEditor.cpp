@@ -23,11 +23,11 @@
  */
 
 #include "config.h"
-#include "InspectorStyleTextEditor.h"
+#include "core/inspector/InspectorStyleTextEditor.h"
 
-#include "InspectorStyleSheet.h"
 #include "core/css/CSSPropertySourceData.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/inspector/InspectorStyleSheet.h"
 
 namespace WebCore {
 

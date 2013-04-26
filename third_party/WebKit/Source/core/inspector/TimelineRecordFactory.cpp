@@ -29,12 +29,12 @@
  */
 
 #include "config.h"
-#include "TimelineRecordFactory.h"
+#include "core/inspector/TimelineRecordFactory.h"
 
-#include "InspectorValues.h"
-#include "ScriptCallStack.h"
 #include "ScriptCallStackFactory.h"
 #include "core/dom/Event.h"
+#include "core/inspector/InspectorValues.h"
+#include "core/inspector/ScriptCallStack.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/LayoutRect.h"

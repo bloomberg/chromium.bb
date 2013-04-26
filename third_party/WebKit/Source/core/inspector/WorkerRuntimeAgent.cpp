@@ -30,12 +30,12 @@
 
 #include "config.h"
 
-#include "WorkerRuntimeAgent.h"
+#include "core/inspector/WorkerRuntimeAgent.h"
 
-#include "InjectedScript.h"
-#include "InstrumentingAgents.h"
 #include "ScriptState.h"
-#include "WorkerDebuggerAgent.h"
+#include "core/inspector/InjectedScript.h"
+#include "core/inspector/InstrumentingAgents.h"
+#include "core/inspector/WorkerDebuggerAgent.h"
 #include "core/workers/WorkerContext.h"
 #include "core/workers/WorkerRunLoop.h"
 #include "core/workers/WorkerThread.h"

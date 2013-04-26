@@ -23,8 +23,8 @@
 #include "core/rendering/TextAutosizer.h"
 
 #include "HTMLElement.h"
-#include "InspectorInstrumentation.h"
 #include "core/dom/Document.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Settings.h"
 #include "core/platform/graphics/IntSize.h"
 #include "core/rendering/RenderObject.h"

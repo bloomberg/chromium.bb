@@ -31,7 +31,7 @@
 #ifndef InspectorFrontendClientImpl_h
 #define InspectorFrontendClientImpl_h
 
-#include "InspectorFrontendClient.h"
+#include "core/inspector/InspectorFrontendClient.h"
 #include <wtf/Noncopyable.h>
 
 namespace WebCore {

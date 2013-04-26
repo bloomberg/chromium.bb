@@ -34,12 +34,12 @@
 
 #include "HTMLFormElement.h"
 #include "HTMLFrameOwnerElement.h"
-#include "InspectorInstrumentation.h"
 #include "ScriptController.h"
 #include "core/dom/Event.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/history/BackForwardController.h"
 #include "core/history/HistoryItem.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FormState.h"
 #include "core/loader/FormSubmission.h"

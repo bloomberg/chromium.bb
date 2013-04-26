@@ -23,9 +23,9 @@
 #define ContainerNodeAlgorithms_h
 
 #include "HTMLFrameOwnerElement.h"
-#include "InspectorInstrumentation.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Frame.h"
 #include <wtf/Assertions.h>
 

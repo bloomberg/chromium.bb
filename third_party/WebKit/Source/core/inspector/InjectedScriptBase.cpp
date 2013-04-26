@@ -31,11 +31,11 @@
 #include "config.h"
 
 
-#include "InjectedScriptBase.h"
+#include "core/inspector/InjectedScriptBase.h"
 
-#include "InspectorInstrumentation.h"
-#include "InspectorValues.h"
 #include "ScriptFunctionCall.h"
+#include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InspectorValues.h"
 #include <wtf/text/WTFString.h>
 
 using WebCore::TypeBuilder::Runtime::RemoteObject;

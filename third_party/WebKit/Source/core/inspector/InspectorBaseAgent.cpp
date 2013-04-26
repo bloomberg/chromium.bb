@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "InspectorBaseAgent.h"
+#include "core/inspector/InspectorBaseAgent.h"
 
-#include "InspectorState.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/inspector/InspectorState.h"
 
 namespace WebCore {
 

@@ -30,8 +30,9 @@
 
 #include "config.h"
 
-#include "HeapGraphSerializer.h"
-#include "MemoryInstrumentationImpl.h"
+#include <gtest/gtest.h>
+#include "core/inspector/HeapGraphSerializer.h"
+#include "core/inspector/MemoryInstrumentationImpl.h"
 #include "wtf/Assertions.h"
 #include "wtf/MemoryInstrumentation.h"
 #include "wtf/MemoryInstrumentationHashSet.h"
@@ -40,7 +41,6 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
-#include <gtest/gtest.h>
 
 namespace WTF {
 

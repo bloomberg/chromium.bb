@@ -24,14 +24,14 @@
  */
 
 #include "config.h"
-#include "InspectorApplicationCacheAgent.h"
+#include "core/inspector/InspectorApplicationCacheAgent.h"
 
-#include "InspectorAgent.h"
 #include "InspectorFrontend.h"
-#include "InspectorPageAgent.h"
-#include "InspectorState.h"
-#include "InspectorValues.h"
-#include "InstrumentingAgents.h"
+#include "core/inspector/InspectorAgent.h"
+#include "core/inspector/InspectorPageAgent.h"
+#include "core/inspector/InspectorState.h"
+#include "core/inspector/InspectorValues.h"
+#include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"

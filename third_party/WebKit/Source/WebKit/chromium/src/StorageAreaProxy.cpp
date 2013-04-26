@@ -27,11 +27,11 @@
 #include "config.h"
 #include "StorageAreaProxy.h"
 
-#include "InspectorInstrumentation.h"
 #include "StorageNamespaceProxy.h"
 #include "core/dom/Document.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"

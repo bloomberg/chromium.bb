@@ -32,7 +32,7 @@
 #define InspectorState_h
 
 
-#include "InspectorValues.h"
+#include "core/inspector/InspectorValues.h"
 #include <wtf/HashMap.h>
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>

@@ -30,9 +30,9 @@
 #define InspectorLayerTreeAgent_h
 
 
-#include "InspectorBaseAgent.h"
 #include "InspectorFrontend.h"
 #include "InspectorTypeBuilder.h"
+#include "core/inspector/InspectorBaseAgent.h"
 #include "core/rendering/RenderLayer.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>

@@ -28,17 +28,17 @@
  */
 
 #include "config.h"
-#include "InspectorFrontendHost.h"
+#include "core/inspector/InspectorFrontendHost.h"
 
 #include "DOMFileSystem.h"
 #include "DOMWrapperWorld.h"
 #include "HTMLFrameOwnerElement.h"
-#include "InspectorAgent.h"
-#include "InspectorController.h"
-#include "InspectorFrontendClient.h"
 #include "ScriptFunctionCall.h"
 #include "core/dom/Element.h"
 #include "core/dom/UserGestureIndicator.h"
+#include "core/inspector/InspectorAgent.h"
+#include "core/inspector/InspectorController.h"
+#include "core/inspector/InspectorFrontendClient.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/ContextMenuController.h"
 #include "core/page/ContextMenuProvider.h"

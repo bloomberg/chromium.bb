@@ -30,13 +30,13 @@
 #ifndef InspectorDOMAgent_h
 #define InspectorDOMAgent_h
 
-#include "InjectedScript.h"
-#include "InjectedScriptManager.h"
-#include "InspectorBaseAgent.h"
 #include "InspectorFrontend.h"
-#include "InspectorOverlay.h"
-#include "InspectorValues.h"
 #include "core/dom/EventTarget.h"
+#include "core/inspector/InjectedScript.h"
+#include "core/inspector/InjectedScriptManager.h"
+#include "core/inspector/InspectorBaseAgent.h"
+#include "core/inspector/InspectorOverlay.h"
+#include "core/inspector/InspectorValues.h"
 #include "core/platform/Timer.h"
 #include "core/rendering/RenderLayer.h"
 

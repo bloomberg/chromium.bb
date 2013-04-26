@@ -31,7 +31,7 @@
 #ifndef WorkerRuntimeAgent_h
 #define WorkerRuntimeAgent_h
 
-#include "InspectorRuntimeAgent.h"
+#include "core/inspector/InspectorRuntimeAgent.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

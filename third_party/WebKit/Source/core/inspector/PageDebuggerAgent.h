@@ -31,8 +31,8 @@
 #ifndef PageDebuggerAgent_h
 #define PageDebuggerAgent_h
 
-#include "InspectorDebuggerAgent.h"
 #include "PageScriptDebugServer.h"
+#include "core/inspector/InspectorDebuggerAgent.h"
 
 namespace WebCore {
 

@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/workers/SharedWorkerRepository.h"
 
-#include "InspectorInstrumentation.h"
 #include "WebContentSecurityPolicy.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
@@ -44,6 +43,7 @@
 #include "core/dom/MessagePortChannel.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/dom/default/chromium/PlatformMessagePortChannelChromium.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/platform/network/ResourceResponse.h"
 #include "core/workers/SharedWorker.h"

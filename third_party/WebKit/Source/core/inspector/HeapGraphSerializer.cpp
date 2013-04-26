@@ -31,7 +31,7 @@
 #include "config.h"
 
 
-#include "HeapGraphSerializer.h"
+#include "core/inspector/HeapGraphSerializer.h"
 
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include <wtf/MemoryInstrumentationHashMap.h>

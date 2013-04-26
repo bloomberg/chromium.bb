@@ -27,7 +27,7 @@
 #ifndef InspectorClient_h
 #define InspectorClient_h
 
-#include "InspectorStateClient.h"
+#include "core/inspector/InspectorStateClient.h"
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>

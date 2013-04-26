@@ -32,8 +32,8 @@
 #define InspectorRuntimeAgent_h
 
 
-#include "InspectorBaseAgent.h"
 #include "ScriptState.h"
+#include "core/inspector/InspectorBaseAgent.h"
 #include <wtf/Forward.h>
 #include <wtf/Noncopyable.h>
 

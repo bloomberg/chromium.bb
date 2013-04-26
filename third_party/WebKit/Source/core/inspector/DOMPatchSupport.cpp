@@ -31,20 +31,20 @@
 #include "config.h"
 
 
-#include "DOMPatchSupport.h"
+#include "core/inspector/DOMPatchSupport.h"
 
-#include "DOMEditor.h"
 #include "HTMLDocument.h"
 #include "HTMLElement.h"
 #include "HTMLHeadElement.h"
 #include "HTMLNames.h"
-#include "InspectorHistory.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Node.h"
 #include "core/html/parser/HTMLDocumentParser.h"
+#include "core/inspector/DOMEditor.h"
+#include "core/inspector/InspectorHistory.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 
 #include <wtf/Deque.h>

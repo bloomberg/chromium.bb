@@ -31,7 +31,7 @@
 #ifndef WorkerConsoleAgent_h
 #define WorkerConsoleAgent_h
 
-#include "InspectorConsoleAgent.h"
+#include "core/inspector/InspectorConsoleAgent.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

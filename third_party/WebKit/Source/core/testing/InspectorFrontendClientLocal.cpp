@@ -31,9 +31,9 @@
 #include "config.h"
 #include "InspectorFrontendClientLocal.h"
 
-#include "InspectorController.h"
-#include "InspectorFrontendHost.h"
 #include "ScriptObject.h"
+#include "core/inspector/InspectorController.h"
+#include "core/inspector/InspectorFrontendHost.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/Timer.h"

@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "InspectorRuntimeAgent.h"
+#include "core/inspector/InspectorRuntimeAgent.h"
 
-#include "InjectedScript.h"
-#include "InjectedScriptManager.h"
-#include "InspectorValues.h"
+#include "core/inspector/InjectedScript.h"
+#include "core/inspector/InjectedScriptManager.h"
+#include "core/inspector/InspectorValues.h"
 #include <wtf/PassRefPtr.h>
 
 

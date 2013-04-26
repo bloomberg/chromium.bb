@@ -31,8 +31,8 @@
 #ifndef InjectedScriptCanvasModule_h
 #define InjectedScriptCanvasModule_h
 
-#include "InjectedScriptModule.h"
 #include "ScriptState.h"
+#include "core/inspector/InjectedScriptModule.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

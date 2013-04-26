@@ -32,11 +32,11 @@
 
 #include "core/fileapi/BlobBuilder.h"
 
-#include "ScriptCallStack.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/File.h"
+#include "core/inspector/ScriptCallStack.h"
 #include "core/platform/HistogramSupport.h"
 #include "core/platform/text/LineEnding.h"
 #include "core/platform/text/TextEncoding.h"

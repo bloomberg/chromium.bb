@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "InspectorClient.h"
+#include "core/inspector/InspectorClient.h"
 
 #include "ScriptController.h"
 #include "ScriptSourceCode.h"

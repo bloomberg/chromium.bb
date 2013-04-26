@@ -27,10 +27,10 @@
 #include "config.h"
 #include "core/dom/DeviceOrientationController.h"
 
-#include "InspectorInstrumentation.h"
 #include "core/dom/DeviceOrientationClient.h"
 #include "core/dom/DeviceOrientationData.h"
 #include "core/dom/DeviceOrientationEvent.h"
+#include "core/inspector/InspectorInstrumentation.h"
 
 namespace WebCore {
 

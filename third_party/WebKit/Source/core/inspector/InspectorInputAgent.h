@@ -32,7 +32,7 @@
 #define InspectorInputAgent_h
 
 
-#include "InspectorBaseAgent.h"
+#include "core/inspector/InspectorBaseAgent.h"
 
 #include <wtf/Noncopyable.h>
 #include <wtf/PassOwnPtr.h>

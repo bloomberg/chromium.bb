@@ -30,10 +30,10 @@
 #include "config.h"
 #include "core/dom/NamedFlowCollection.h"
 
-#include "InspectorInstrumentation.h"
 #include "core/dom/DOMNamedFlowCollection.h"
 #include "core/dom/Document.h"
 #include "core/dom/NamedFlow.h"
+#include "core/inspector/InspectorInstrumentation.h"
 
 #include <wtf/text/StringHash.h>
 #include <wtf/text/WTFString.h>

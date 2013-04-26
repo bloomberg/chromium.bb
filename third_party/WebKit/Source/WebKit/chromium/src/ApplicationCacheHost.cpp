@@ -32,10 +32,10 @@
 #include "core/loader/appcache/ApplicationCacheHost.h"
 
 #include "ApplicationCacheHostInternal.h"
-#include "InspectorApplicationCacheAgent.h"
-#include "InspectorInstrumentation.h"
 #include "WebFrameImpl.h"
 #include "core/dom/ProgressEvent.h"
+#include "core/inspector/InspectorApplicationCacheAgent.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/appcache/DOMApplicationCache.h"

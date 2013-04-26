@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "InspectorHistory.h"
+#include "core/inspector/InspectorHistory.h"
 
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/Node.h"

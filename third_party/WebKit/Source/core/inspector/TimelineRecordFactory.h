@@ -31,7 +31,7 @@
 #ifndef TimelineRecordFactory_h
 #define TimelineRecordFactory_h
 
-#include "InspectorValues.h"
+#include "core/inspector/InspectorValues.h"
 #include "core/platform/KURL.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include <wtf/Forward.h>

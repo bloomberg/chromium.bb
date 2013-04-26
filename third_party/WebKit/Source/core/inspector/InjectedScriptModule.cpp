@@ -29,12 +29,12 @@
  */
 
 #include "config.h"
-#include "InjectedScriptModule.h"
+#include "core/inspector/InjectedScriptModule.h"
 
-#include "InjectedScript.h"
-#include "InjectedScriptManager.h"
 #include "ScriptFunctionCall.h"
 #include "ScriptObject.h"
+#include "core/inspector/InjectedScript.h"
+#include "core/inspector/InjectedScriptManager.h"
 
 namespace WebCore {
 

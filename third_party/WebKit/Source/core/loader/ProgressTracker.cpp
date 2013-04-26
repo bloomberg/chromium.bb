@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/loader/ProgressTracker.h"
 
-#include "InspectorInstrumentation.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"

@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/html/parser/XSSAuditorDelegate.h"
 
-#include "InspectorValues.h"
 #include "core/dom/Document.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/inspector/InspectorValues.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"

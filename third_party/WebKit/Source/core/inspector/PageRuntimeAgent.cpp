@@ -29,15 +29,15 @@
  */
 
 #include "config.h"
-#include "PageRuntimeAgent.h"
+#include "core/inspector/PageRuntimeAgent.h"
 
-#include "InjectedScript.h"
-#include "InjectedScriptManager.h"
-#include "InspectorPageAgent.h"
-#include "InspectorState.h"
-#include "InstrumentingAgents.h"
 #include "ScriptController.h"
 #include "core/dom/Document.h"
+#include "core/inspector/InjectedScript.h"
+#include "core/inspector/InjectedScriptManager.h"
+#include "core/inspector/InspectorPageAgent.h"
+#include "core/inspector/InspectorState.h"
+#include "core/inspector/InstrumentingAgents.h"
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
 #include "core/page/SecurityOrigin.h"

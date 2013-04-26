@@ -30,11 +30,11 @@
 
 #include "config.h"
 
-#include "InspectorDatabaseResource.h"
+#include "core/inspector/InspectorDatabaseResource.h"
 
 #include "Database.h"
 #include "InspectorFrontend.h"
-#include "InspectorValues.h"
+#include "core/inspector/InspectorValues.h"
 
 namespace WebCore {
 

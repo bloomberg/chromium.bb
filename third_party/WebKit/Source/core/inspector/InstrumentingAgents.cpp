@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "InstrumentingAgents.h"
+#include "core/inspector/InstrumentingAgents.h"
 
-#include "InspectorController.h"
-#include "WorkerInspectorController.h"
+#include "core/inspector/InspectorController.h"
+#include "core/inspector/WorkerInspectorController.h"
 #include "core/page/Page.h"
 #include "core/workers/WorkerContext.h"
 #include <wtf/MainThread.h>
