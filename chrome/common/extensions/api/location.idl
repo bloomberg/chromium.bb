@@ -40,8 +40,8 @@ namespace location {
 
   // Parameter of onLocationUpdate event's listener.
   dictionary Location {
-    // Names of all requests that this location update matches.
-    DOMString[] requestNames;
+    // Location watch request name.
+    DOMString name;
 
     // Coordinates and their accuracy.
     Coordinates coords;

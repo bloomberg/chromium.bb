@@ -21,10 +21,9 @@ bool LocationWatchLocationFunction::RunImpl() {
       WatchLocation::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  // TODO(vadimt): validate request info.
-  LocationRequest location_request(params->name, params->request_info);
+  // TODO(vadimt): validate and use params->request_info.
   ExtensionSystem::Get(profile())->location_manager()->AddLocationRequest(
-      extension_id(), location_request);
+      extension_id(), params->name);
 
   return true;
 }

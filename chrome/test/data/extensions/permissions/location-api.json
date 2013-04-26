@@ -1,0 +1,5 @@
+{
+  "name": "Permission Warnings for chrome.location API!!",
+  "version": "1.0",
+  "permissions": ["location"]
+}

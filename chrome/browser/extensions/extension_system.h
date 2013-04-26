@@ -266,7 +266,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
   // incoming resource requests from extension processes and those require
   // access to the ResourceContext owned by |io_data_|.
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
-  scoped_refptr<LocationManager> location_manager_;
+  scoped_ptr<LocationManager> location_manager_;
   scoped_ptr<ApiResourceManager<SerialConnection> > serial_connection_manager_;
   scoped_ptr<ApiResourceManager<Socket> > socket_manager_;
   scoped_ptr<ApiResourceManager<

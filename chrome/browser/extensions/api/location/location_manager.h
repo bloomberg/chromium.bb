@@ -9,9 +9,9 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner_helpers.h"
-#include "content/browser/geolocation/geolocation_observer.h"
+#include "base/memory/weak_ptr.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class Profile;
 
@@ -21,59 +21,40 @@ struct Geoposition;
 
 namespace extensions {
 class LocationManager;
+class LocationRequest;
 
 namespace api {
 namespace location {
 
 struct Coordinates;
-struct WatchLocationRequestInfo;
 
 }  // namespace location
 }  // namespace api
 
-// Data for a location watch request created by chrome.location.watchLocation().
-struct LocationRequest {
-  // Request name
-  std::string name;
-
-  LocationRequest(
-      const std::string& request_name,
-      const api::location::WatchLocationRequestInfo& request_info);
-};
-
-// Traits for LocationManager to delete it in the IO thread.
-struct LocationManagerTraits {
-  static void Destruct(const LocationManager* location_manager);
-};
-
 // Profile's manager of all location watch requests created by chrome.location
-// API.
+// API. Lives in the UI thread.
 class LocationManager
-    : public content::GeolocationObserver,
-      public base::RefCountedThreadSafe<LocationManager,
-                                        LocationManagerTraits> {
+    : public content::NotificationObserver,
+      public base::SupportsWeakPtr<LocationManager> {
  public:
   explicit LocationManager(Profile* profile);
+  virtual ~LocationManager();
 
-  // Adds |location_request| for the given |extension|, and starts the location
+  // Adds location request for the given extension, and starts the location
   // tracking.
-  void AddLocationRequest(
-      const std::string& extension_id,
-      const LocationRequest& location_request);
+  void AddLocationRequest(const std::string& extension_id,
+                          const std::string& request_name);
 
   // Cancels and removes the request with the given |name| for the given
-  // |extension|.
+  // extension.
   void RemoveLocationRequest(const std::string& extension_id,
                              const std::string& name);
 
-  // GeolocationObserver
-  virtual void OnLocationUpdate(const content::Geoposition& position) OVERRIDE;
-
  private:
-  friend struct LocationManagerTraits;
-  friend class base::DeleteHelper<LocationManager>;
+  friend class LocationRequest;
 
-  typedef std::vector<LocationRequest> LocationRequestList;
+  typedef scoped_refptr<LocationRequest> LocationRequestPointer;
+  typedef std::vector<LocationRequestPointer> LocationRequestList;
   typedef std::string ExtensionId;
 
   // TODO(vadimt): Consider converting to multimap.
@@ -84,8 +65,6 @@ class LocationManager
   typedef std::pair<LocationRequestMap::iterator, LocationRequestList::iterator>
       LocationRequestIterator;
 
-  virtual ~LocationManager();
-
   // Helper to return the iterators within the LocationRequestMap and
   // LocationRequestList for the  matching request, or an iterator to the end of
   // the LocationRequestMap if none were found.
@@ -95,7 +74,7 @@ class LocationManager
 
   // Converts |position| from GeolocationProvider to the location API
   // |coordinates|.
-  void GeopositionToApiCoordinates(
+  static void GeopositionToApiCoordinates(
       const content::Geoposition& position,
       api::location::Coordinates* coordinates);
 
@@ -103,24 +82,25 @@ class LocationManager
   // must be valid.
   void RemoveLocationRequestIterator(const LocationRequestIterator& iter);
 
-  void AddLocationRequestOnIOThread(const std::string& extension_id,
-                                    const LocationRequest& location_request);
-  void RemoveLocationRequestOnIOThread(const std::string& extension_id,
-                                       const std::string& name);
-  void OnLocationUpdateOnUIThread(const content::Geoposition& position,
-                                  const LocationRequestMap& location_requests);
+  // Sends a location update to the extension.
+  void SendLocationUpdate(const std::string& extension_id,
+                          const std::string& request_name,
+                          const content::Geoposition& position);
 
-  // Deteled 'this' in IO thread once refcount reaches 0.
-  void OnDestruct() const;
+  // NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Profile for this location manager.
-  // Must be accessed only from the UI thread.
   Profile* const profile_;
 
   // A map of our pending location requests, per extension.
   // Invariant: None of the LocationRequestLists are empty.
-  // Must only be accessed from the IO thread.
   LocationRequestMap location_requests_;
+
+  // Used for tracking registrations to profile's extensions events.
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationManager);
 };

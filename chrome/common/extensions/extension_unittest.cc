@@ -427,6 +427,17 @@ TEST_F(ExtensionTest, GetPermissionMessages_ManyApiPermissions) {
             UTF16ToUTF8(warnings[5]));
 }
 
+TEST_F(ExtensionTest, GetPermissionMessages_LocationApiPermission) {
+  scoped_refptr<Extension> extension;
+  extension = LoadManifest("permissions",
+                           "location-api.json",
+                           Manifest::COMPONENT,
+                           Extension::NO_FLAGS);
+  std::vector<string16> warnings = extension->GetPermissionMessageStrings();
+  ASSERT_EQ(1u, warnings.size());
+  EXPECT_EQ("Detect your physical location", UTF16ToUTF8(warnings[0]));
+}
+
 TEST_F(ExtensionTest, GetPermissionMessages_ManyHosts) {
   (new ContentScriptsHandler)->Register();
   scoped_refptr<Extension> extension;

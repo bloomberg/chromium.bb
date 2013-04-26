@@ -127,6 +127,17 @@ var tests = [
     }));
   },
 
+  function permissionWarningsLocationApi() {
+    var manifest_str = "{ \"name\": \"Location!\", \"version\": \"1.0\", " +
+                       "\"permissions\": [\"location\"] }";
+
+    chrome.management.getPermissionWarningsByManifest(
+        manifest_str, callback(function(warnings) {
+      chrome.test.assertEq(1, warnings.length);
+      chrome.test.assertEq("Detect your physical location", warnings[0]);
+    }));
+  },
+
   // Disables an enabled app.
   function disable() {
     listenOnce(chrome.management.onDisabled, function(info) {
