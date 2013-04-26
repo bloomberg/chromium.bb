@@ -35,3 +35,6 @@ StorageInfoProviderTest.*
 # Speculative disabling to see if it stops unit_tests hangs.
 # http://crbug.com/180467
 TopSitesTest.CreateTopSitesThenHistory
+
+# Flaky, see http://crbug.com/235778
+SyncFileSystemServiceTest.SimpleSyncFlowWithFileBusy
