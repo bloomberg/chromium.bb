@@ -209,7 +209,8 @@ std::string IsolatedContext::RegisterFileSystemForPath(
     const base::FilePath& path_in,
     std::string* register_name) {
   base::FilePath path(path_in.NormalizePathSeparators());
-  DCHECK(!path.ReferencesParent() && path.IsAbsolute());
+  if (path.ReferencesParent() || !path.IsAbsolute())
+    return std::string();
   std::string name;
   if (register_name && !register_name->empty()) {
     name = *register_name;

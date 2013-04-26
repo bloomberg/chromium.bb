@@ -363,10 +363,13 @@ std::string GetIsolatedFileSystemRootURIString(
     const std::string& optional_root_name) {
   std::string root = GetFileSystemRootURI(origin_url,
                                           kFileSystemTypeIsolated).spec();
+  if (base::FilePath::FromUTF8Unsafe(filesystem_id).ReferencesParent())
+    return std::string();
   root.append(filesystem_id);
   root.append("/");
   if (!optional_root_name.empty()) {
-    DCHECK(!base::FilePath::FromUTF8Unsafe(optional_root_name).ReferencesParent());
+    if (base::FilePath::FromUTF8Unsafe(optional_root_name).ReferencesParent())
+      return std::string();
     root.append(optional_root_name);
     root.append("/");
   }
