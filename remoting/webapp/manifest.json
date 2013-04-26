@@ -40,7 +40,7 @@
     "https://relay.google.com/*",
     "storage",
     "clipboardRead",
-    "clipboardWrite",
+    "clipboardWrite"
   ],
   "plugins": [
     { "path": "remoting_host_plugin.dll", "public": false },
