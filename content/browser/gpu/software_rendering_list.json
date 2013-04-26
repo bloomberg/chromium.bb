@@ -75,7 +75,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "5.1",
+  "version": "5.2",
   "entries": [
     {
       "id": 1,
@@ -1062,6 +1062,19 @@
       },
       "features": [
         "flash_stage3d_baseline"
+      ]
+    },
+    {
+      "id": 72,
+      "description": "NVIDIA GeForce 6200 LE is buggy with WebGL.",
+      "cr_bugs": [232529],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x10de",
+      "device_id": ["0x0163"],
+      "features": [
+        "webgl"
       ]
     }
   ]
