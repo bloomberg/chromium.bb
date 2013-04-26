@@ -299,6 +299,9 @@ class ChangeInfo(object):
   def get_reviewers(self):
     return self._desc.get_reviewers()
 
+  def update_reviewers(self, reviewers):
+    self._desc.update_reviewers(reviewers)
+
   def NeedsUpload(self):
     return self.needs_upload
 
@@ -382,6 +385,11 @@ class ChangeInfo(object):
     """Updates self.description with the issue description from Rietveld."""
     self._desc = git_cl.ChangeDescription(
         self.SendToRietveld('/%d/description' % self.issue))
+
+  def GetApprovingReviewers(self):
+    """Returns the issue reviewers list from Rietveld."""
+    return git_cl.get_approving_reviewers(
+        self.rietveld.get_issue_properties(self.issue, False))
 
   def AddComment(self, comment):
     """Adds a comment for an issue on Rietveld.
@@ -994,6 +1002,8 @@ def CMDcommit(change_info, args):
   if change_info.issue:
     # Get the latest description from Rietveld.
     change_info.UpdateDescriptionFromIssue()
+
+  change_info.update_reviewers(change_info.GetApprovingReviewers())
 
   commit_desc = git_cl.ChangeDescription(change_info.description)
   if change_info.issue:

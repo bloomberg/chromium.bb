@@ -192,14 +192,15 @@ class ChangeInfoUnittest(GclTestsBase):
     self.mox.ReplayAll()
     members = [
       'AddComment', 'CloseIssue', 'Delete', 'Exists', 'GetFiles',
-      'GetFileNames', 'GetLocalRoot', 'GetIssueDescription', 'Load',
+      'GetApprovingReviewers', 'GetFileNames', 'GetIssueDescription',
+      'GetLocalRoot', 'Load',
       'MissingTests', 'NeedsUpload', 'PrimeLint', 'RpcServer', 'Save',
       'SendToRietveld',
       'SEPARATOR',
       'UpdateDescriptionFromIssue', 'UpdateRietveldDescription',
       'append_footer',
       'description', 'force_description', 'get_reviewers', 'issue', 'name',
-      'needs_upload', 'patch', 'patchset', 'rietveld',
+      'needs_upload', 'patch', 'patchset', 'rietveld', 'update_reviewers',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(
@@ -576,6 +577,8 @@ class CMDCommitUnittest(GclTestsBase):
     self.mockCommit(
         change_info, 'deescription\n\nReview URL: https://my_server/1', '')
     change_info.UpdateDescriptionFromIssue()
+    change_info.GetApprovingReviewers().AndReturn(['a@c'])
+    change_info.update_reviewers(['a@c'])
     self.mox.ReplayAll()
 
     retval = gcl.CMDcommit(['naame'])
@@ -594,6 +597,8 @@ class CMDCommitUnittest(GclTestsBase):
         'deescription\n\nReview URL: https://my_server/1',
         '\nCommitted revision 12345')
     change_info.UpdateDescriptionFromIssue()
+    change_info.GetApprovingReviewers().AndReturn(['a@c'])
+    change_info.update_reviewers(['a@c'])
     change_info.append_footer('Committed: http://view/12345')
     self.mox.ReplayAll()
 

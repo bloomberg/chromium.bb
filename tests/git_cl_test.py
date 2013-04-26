@@ -98,11 +98,13 @@ class TestGitCl(TestCase):
         self.calls,
         '@%d  Expected: <Missing>   Actual: %r' % (self._calls_done, args))
     expected_args, result = self.calls.pop(0)
-    self.assertEquals(
-        expected_args,
-        args,
-        '@%d  Expected: %r   Actual: %r' % (
-          self._calls_done, expected_args, args))
+    # Also logs otherwise it could get caught in a try/finally and be hard to
+    # diagnose.
+    if expected_args != args:
+      msg = '@%d  Expected: %r   Actual: %r' % (
+          self._calls_done, expected_args, args)
+      git_cl.logging.error(msg)
+      self.fail(msg)
     self._calls_done += 1
     return result
 
@@ -284,7 +286,7 @@ class TestGitCl(TestCase):
       ((['git', 'checkout', '-q', '-b', 'git-cl-commit'],), ''),
       ((['git', 'reset', '--soft', 'fake_ancestor_sha'],), ''),
       ((['git', 'commit', '-m',
-         'Issue: 12345\n\n'
+         'Issue: 12345\n\nR=john@chromium.org\n\n'
          'Review URL: https://codereview.example.com/12345'],),
        ''),
       ((['git', 'svn', 'dcommit', '-C50', '--no-rebase', '--rmdir'],),

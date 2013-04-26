@@ -647,6 +647,10 @@ or verify this branch is set up to track another (via the --track argument to
     return self.RpcServer().get(
         '/download/issue%s_%s.diff' % (issue, patchset))
 
+  def GetApprovingReviewers(self, issue):
+    return get_approving_reviewers(
+        self.RpcServer().get_issue_properties(int(issue), True))
+
   def SetIssue(self, issue):
     """Set this branch's issue.  If issue=0, clears the issue."""
     if issue:
@@ -871,6 +875,22 @@ class ChangeDescription(object):
     regexp = re.compile(self.R_LINE, re.MULTILINE)
     reviewers = [i.group(2).strip() for i in regexp.finditer(self._description)]
     return cleanup_list(reviewers)
+
+
+def get_approving_reviewers(props):
+  """Retrieves the reviewers that approved a CL from the issue properties with
+  messages.
+
+  Note that the list may contain reviewers that are not committer, thus are not
+  considered by the CQ.
+  """
+  return sorted(
+      set(
+        message['sender']
+        for message in props['messages']
+        if message['approval'] and message['sender'] in props['reviewers']
+      )
+  )
 
 
 def FindCodereviewSettingsFile(filename='codereview.settings'):
@@ -1486,6 +1506,10 @@ def SendUpstream(parser, args, cmd):
   # Keep a separate copy for the commit message, because the commit message
   # contains the link to the Rietveld issue, while the Rietveld message contains
   # the commit viewvc url.
+  # Keep a separate copy for the commit message.
+  if cl.GetIssue():
+    change_desc.update_reviewers(cl.GetApprovingReviewers(cl.GetIssue()))
+
   commit_desc = ChangeDescription(change_desc.description)
   if cl.GetIssue():
     commit_desc.append_footer('Review URL: %s' % cl.GetIssueURL())
