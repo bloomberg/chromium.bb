@@ -720,6 +720,8 @@
         'browser/ui/cocoa/notifications/balloon_view_bridge.mm',
         'browser/ui/cocoa/notifications/balloon_view_host_mac.h',
         'browser/ui/cocoa/notifications/balloon_view_host_mac.mm',
+        'browser/ui/cocoa/notifications/message_center_tray_bridge.h',
+        'browser/ui/cocoa/notifications/message_center_tray_bridge.mm',
         'browser/ui/cocoa/nsmenuitem_additions.h',
         'browser/ui/cocoa/nsmenuitem_additions.mm',
         'browser/ui/cocoa/nsview_additions.h',

@@ -21,13 +21,6 @@ const int kEnableQuietModeDay = 2;
 
 }
 
-#if !defined(TOOLKIT_VIEWS)
-MESSAGE_CENTER_EXPORT MessageCenterTrayDelegate* CreateMessageCenterTray() {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-#endif
-
 MessageCenterTray::MessageCenterTray(
     MessageCenterTrayDelegate* delegate,
     message_center::MessageCenter* message_center)

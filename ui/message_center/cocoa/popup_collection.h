@@ -9,6 +9,7 @@
 
 #import "base/memory/scoped_nsobject.h"
 #import "base/memory/scoped_ptr.h"
+#include "ui/message_center/message_center_export.h"
 
 namespace message_center {
 class MessageCenter;
@@ -19,6 +20,7 @@ class MessageCenterObserver;
 // arrange notifications on the screen as popups, starting in the upper-right
 // corner, going to the bottom of the screen. This class maintains ownership of
 // the Cocoa controllers and windows of the notifications.
+MESSAGE_CENTER_EXPORT
 @interface MCPopupCollection : NSObject {
  @private
   // The message center that is responsible for the notifications. Weak, global.
