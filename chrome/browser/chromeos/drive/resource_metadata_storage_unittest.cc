@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/drive_resource_metadata_storage.h"
+#include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
 
 #include <algorithm>
 
@@ -25,12 +25,12 @@ void StoreEntryToMap(std::map<std::string,DriveEntryProto>* out,
 
 }  // namespace
 
-class DriveResourceMetadataStorageTest : public testing::Test {
+class ResourceMetadataStorageTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    storage_.reset(new DriveResourceMetadataStorage(temp_dir_.path()));
+    storage_.reset(new ResourceMetadataStorage(temp_dir_.path()));
     ASSERT_TRUE(storage_->Initialize());
   }
 
@@ -55,8 +55,8 @@ class DriveResourceMetadataStorageTest : public testing::Test {
                 const std::string& child_resource_id) {
     storage_->resource_map_->Put(
         leveldb::WriteOptions(),
-        DriveResourceMetadataStorage::GetChildEntryKey(parent_resource_id,
-                                                       child_base_name),
+        ResourceMetadataStorage::GetChildEntryKey(parent_resource_id,
+                                                  child_base_name),
         child_resource_id);
   }
 
@@ -65,21 +65,21 @@ class DriveResourceMetadataStorageTest : public testing::Test {
                    const std::string& child_base_name) {
     storage_->resource_map_->Delete(
         leveldb::WriteOptions(),
-        DriveResourceMetadataStorage::GetChildEntryKey(parent_resource_id,
-                                                       child_base_name));
+        ResourceMetadataStorage::GetChildEntryKey(parent_resource_id,
+                                                  child_base_name));
   }
 
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<DriveResourceMetadataStorage> storage_;
+  scoped_ptr<ResourceMetadataStorage> storage_;
 };
 
-TEST_F(DriveResourceMetadataStorageTest, LargestChangestamp) {
+TEST_F(ResourceMetadataStorageTest, LargestChangestamp) {
   const int64 kLargestChangestamp = 1234567890;
   storage_->SetLargestChangestamp(kLargestChangestamp);
   EXPECT_EQ(kLargestChangestamp, storage_->GetLargestChangestamp());
 }
 
-TEST_F(DriveResourceMetadataStorageTest, PutEntry) {
+TEST_F(ResourceMetadataStorageTest, PutEntry) {
   const std::string key1 = "abcdefg";
   const std::string key2 = "abcd";
   const std::string key3 = "efgh";
@@ -143,7 +143,7 @@ TEST_F(DriveResourceMetadataStorageTest, PutEntry) {
   EXPECT_FALSE(storage_->GetEntry(key1));
 }
 
-TEST_F(DriveResourceMetadataStorageTest, Iterate) {
+TEST_F(ResourceMetadataStorageTest, Iterate) {
   // Prepare data.
   std::vector<DriveEntryProto> entries;
   DriveEntryProto entry;
@@ -169,7 +169,7 @@ TEST_F(DriveResourceMetadataStorageTest, Iterate) {
     EXPECT_EQ(1U, result.count(entries[i].resource_id()));
 }
 
-TEST_F(DriveResourceMetadataStorageTest, GetChildren) {
+TEST_F(ResourceMetadataStorageTest, GetChildren) {
   const std::string parents_id[] = { "mercury", "venus", "mars", "jupiter",
                                      "saturn" };
   std::vector<std::vector<std::pair<std::string, std::string> > >
@@ -220,7 +220,7 @@ TEST_F(DriveResourceMetadataStorageTest, GetChildren) {
   }
 }
 
-TEST_F(DriveResourceMetadataStorageTest, OpenExistingDB) {
+TEST_F(ResourceMetadataStorageTest, OpenExistingDB) {
   const std::string parent_id1 = "abcdefg";
   const std::string child_name1 = "WXYZABC";
   const std::string child_id1 = "qwerty";
@@ -237,7 +237,7 @@ TEST_F(DriveResourceMetadataStorageTest, OpenExistingDB) {
   EXPECT_TRUE(storage_->PutEntry(entry2));
 
   // Close DB and reopen.
-  storage_.reset(new DriveResourceMetadataStorage(temp_dir_.path()));
+  storage_.reset(new ResourceMetadataStorage(temp_dir_.path()));
   ASSERT_TRUE(storage_->Initialize());
 
   // Can read data.
@@ -255,7 +255,7 @@ TEST_F(DriveResourceMetadataStorageTest, OpenExistingDB) {
   EXPECT_EQ(child_id1, storage_->GetChild(parent_id1, child_name1));
 }
 
-TEST_F(DriveResourceMetadataStorageTest, IncompatibleDB) {
+TEST_F(ResourceMetadataStorageTest, IncompatibleDB) {
   const int64 kLargestChangestamp = 1234567890;
   const std::string key1 = "abcd";
 
@@ -268,8 +268,8 @@ TEST_F(DriveResourceMetadataStorageTest, IncompatibleDB) {
   EXPECT_TRUE(storage_->GetEntry(key1));
 
   // Set incompatible version and reopen DB.
-  SetDBVersion(DriveResourceMetadataStorage::kDBVersion - 1);
-  storage_.reset(new DriveResourceMetadataStorage(temp_dir_.path()));
+  SetDBVersion(ResourceMetadataStorage::kDBVersion - 1);
+  storage_.reset(new ResourceMetadataStorage(temp_dir_.path()));
   ASSERT_TRUE(storage_->Initialize());
 
   // Data is erased because of the incompatible version.
@@ -277,17 +277,17 @@ TEST_F(DriveResourceMetadataStorageTest, IncompatibleDB) {
   EXPECT_FALSE(storage_->GetEntry(key1));
 }
 
-TEST_F(DriveResourceMetadataStorageTest, WrongPath) {
+TEST_F(ResourceMetadataStorageTest, WrongPath) {
   // Create a file.
   base::FilePath path;
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(), &path));
 
-  storage_.reset(new DriveResourceMetadataStorage(path));
+  storage_.reset(new ResourceMetadataStorage(path));
   // Cannot initialize DB beacause the path does not point a directory.
   ASSERT_FALSE(storage_->Initialize());
 }
 
-TEST_F(DriveResourceMetadataStorageTest, CheckValidity) {
+TEST_F(ResourceMetadataStorageTest, CheckValidity) {
   const std::string key1 = "foo";
   const std::string name1 = "hoge";
   const std::string key2 = "bar";

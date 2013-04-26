@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_RESOURCE_METADATA_STORAGE_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_RESOURCE_METADATA_STORAGE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_RESOURCE_METADATA_STORAGE_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_RESOURCE_METADATA_STORAGE_H_
 
 #include <string>
 #include <vector>
@@ -26,14 +26,14 @@ typedef base::Callback<void(const DriveEntryProto& entry)> IterateCallback;
 
 // Storage for DriveResourceMetadata which is responsible to manage entry info
 // and child-parent relationships between entries.
-class DriveResourceMetadataStorage {
+class ResourceMetadataStorage {
  public:
   // This should be incremented when incompatibility change is made to DB
   // format.
   static const int kDBVersion = 4;
 
-  explicit DriveResourceMetadataStorage(const base::FilePath& directory_path);
-  virtual ~DriveResourceMetadataStorage();
+  explicit ResourceMetadataStorage(const base::FilePath& directory_path);
+  virtual ~ResourceMetadataStorage();
 
   // Initializes this object.
   bool Initialize();
@@ -65,7 +65,7 @@ class DriveResourceMetadataStorage {
                    std::vector<std::string>* children);
 
  private:
-  friend class DriveResourceMetadataStorageTest;
+  friend class ResourceMetadataStorageTest;
 
   // Returns a string to be used as a key for child entry.
   static std::string GetChildEntryKey(const std::string& parent_resource_id,
@@ -86,9 +86,9 @@ class DriveResourceMetadataStorage {
   // Entries stored in this storage.
   scoped_ptr<leveldb::DB> resource_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(DriveResourceMetadataStorage);
+  DISALLOW_COPY_AND_ASSIGN(ResourceMetadataStorage);
 };
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_RESOURCE_METADATA_STORAGE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_RESOURCE_METADATA_STORAGE_H_

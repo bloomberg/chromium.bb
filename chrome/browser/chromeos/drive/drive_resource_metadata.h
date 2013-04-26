@@ -15,8 +15,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
-#include "chrome/browser/chromeos/drive/drive_resource_metadata_storage.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
+#include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -25,7 +25,7 @@ class SequencedTaskRunner;
 namespace drive {
 
 class DriveEntryProto;
-class DriveResourceMetadataStorage;
+class ResourceMetadataStorage;
 
 typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 typedef std::map<std::string /* resource_id */, DriveEntryProto>
@@ -359,7 +359,7 @@ class DriveResourceMetadata {
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
-  scoped_ptr<DriveResourceMetadataStorage> storage_;
+  scoped_ptr<ResourceMetadataStorage> storage_;
 
   // This should remain the last member so it'll be destroyed first and
   // invalidate its weak pointers before other members are destroyed.
