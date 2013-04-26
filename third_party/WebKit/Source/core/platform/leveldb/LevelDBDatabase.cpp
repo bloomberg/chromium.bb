@@ -113,6 +113,12 @@ static leveldb::Status openDB(leveldb::Comparator* comparator, leveldb::Env* env
     options.comparator = comparator;
     options.create_if_missing = true;
     options.paranoid_checks = true;
+
+    // Marking compression as explicitly off so snappy support can be
+    // compiled in for other leveldb clients without implicitly enabling
+    // it for IndexedDB. http://crbug.com/81384
+    options.compression = leveldb::kNoCompression;
+
     // 20 max_open_files is the minimum LevelDB allows but its cache behaves
     // poorly with less than 4 files per shard. As of this writing the latest
     // leveldb (1.9) hardcodes 16 shards. See
