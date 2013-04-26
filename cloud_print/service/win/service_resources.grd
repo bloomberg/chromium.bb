@@ -40,7 +40,7 @@ file.
         &amp;Password:
       </message>
       <message name="IDS_STATE_LABEL">
-        State:
+        Service state:
       </message>
       <message name="IDS_LOGGING_LABEL">
         Enable &amp;logging
@@ -52,7 +52,7 @@ file.
         Uninstall
       </message>
       <message name="IDS_SERVICE_NOT_FOUND">
-        Not Found
+        Not registered
       </message>
       <message name="IDS_SERVICE_STOPPED">
         Stopped
@@ -82,7 +82,70 @@ file.
         Continue in Chrome
       </message>
       <message name="IDS_ADD_PRINTERS_USING_CHROME">
-        Login and add printers using opened Chrome window. Close Chrome to cancel process.
+        Use Chrome to sign in and add printers. Close Chrome to cancel.
+      </message>
+      <message name="IDS_COMMAND_LINE_HELP_TITLE">
+        Usage:
+      </message>
+      <message name="IDS_COMMAND_LINE_DESCRIPTION">
+        Manages Google Cloud Print Service for Windows.
+      </message>
+      <message name="IDS_SWITCH_HELP_INSTALL">
+        Installs cloud print as service.
+      </message>
+      <message name="IDS_SWITCH_HELP_DATA_DIR">
+        User data directory with "Service State" file.
+      </message>
+      <message name="IDS_SWITCH_HELP_UNINSTALL">
+        Uninstalls service.
+      </message>
+      <message name="IDS_SWITCH_HELP_START">
+        Starts service. May be combined with installation.
+      </message>
+      <message name="IDS_SWITCH_HELP_STOP">
+        Stops service.
+      </message>
+      <message name="IDS_WINDOWS_USER_PROMPT1">
+        Windows user in form DOMAIN\USERNAME.
+      </message>
+      <message name="IDS_WINDOWS_USER_PROMPT2">
+        Press [ENTER] to keep <ph name="USER">'$1'</ph>:
+      </message>
+      <message name="IDS_WINDOWS_PASSWORD_PROMPT">
+        Password:
+      </message>
+      <message name="IDS_SERVICE_ENV_CHECK">
+        Service will use following settings:
+      </message>
+      <message name="IDS_SERVICE_ENV_USER">
+        User name:
+      </message>
+      <message name="IDS_SERVICE_ENV_CHROME">
+        Chrome path:
+      </message>
+      <message name="IDS_SERVICE_ENV_DATADIR">
+        Data directory:
+      </message>
+      <message name="IDS_SERVICE_ENV_PRINTERS">
+        Printers:
+      </message>
+      <message name="IDS_ERROR_FAILED_INSTALL_SERVICE">
+        Failed to install service.
+      </message>
+      <message name="IDS_ERROR_FAILED_START_SERVICE">
+        Failed to start service.
+      </message>
+      <message name="IDS_ERROR_NO_DATA_DIR">
+        Service can't write data directory.
+      </message>
+      <message name="IDS_ERROR_NO_CHROME">
+        Service can't find Chrome.
+      </message>
+      <message name="IDS_ERROR_NO_XPS">
+        XPS pack is not installed.
+      </message>
+      <message name="IDS_ERROR_FAILED_CREATE_CONFIG">
+        Failed to create configuration file.
       </message>
     </messages>
 

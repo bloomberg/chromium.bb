@@ -102,9 +102,11 @@ class SetupDialog : public base::RefCounted<SetupDialog>,
   void Uninstall();
   // Update service state.
   void UpdateState();
-  // Posts task to UI thread to show error.
+  // Posts task to UI thread to show error using string id.
+  void ShowError(int string_id);
+  // Posts task to UI thread to show error using string.
   void ShowError(const string16& error_message);
-  // Posts task to UI thread to show error.
+  // Posts task to UI thread to show error using error code.
   void ShowError(HRESULT hr);
 
   ServiceController::State state_;
@@ -312,6 +314,10 @@ void SetupDialog::ShowError(const string16& error_message) {
   LOG(ERROR) << error_message;
 }
 
+void SetupDialog::ShowError(int string_id) {
+  ShowError(cloud_print::LoadLocalString(string_id));
+}
+
 void SetupDialog::ShowError(HRESULT hr) {
   ShowError(GetErrorMessage(hr));
 }
@@ -341,17 +347,17 @@ void SetupDialog::Install(const string16& user, const string16& password,
       return ShowError(hr);
 
     if (!setup.WaitResponce(base::TimeDelta::FromSeconds(30)))
-      return ShowError(L"Failed to check environment.");
+      return ShowError(IDS_ERROR_FAILED_START_SERVICE);
   }
 
   if (setup.user_data_dir().empty())
-    return ShowError(L"Service can't access user data dir.");
+    return ShowError(IDS_ERROR_NO_DATA_DIR);
 
   if (setup.chrome_path().empty())
-    return ShowError(L"Chrome is not available.");
+    return ShowError(IDS_ERROR_NO_CHROME);
 
   if (!setup.is_xps_available())
-    return ShowError(L"XPS pack is not installed.");
+    return ShowError(IDS_ERROR_NO_XPS);
 
   base::FilePath file = setup.user_data_dir();
   file = file.Append(chrome::kServiceStateFileName);
@@ -368,14 +374,14 @@ void SetupDialog::Install(const string16& user, const string16& password,
   contents = ChromeLauncher::CreateServiceStateFile(proxy_id, setup.printers());
 
   if (contents.empty())
-    return ShowError(L"Chrome failed Service state.");
+    return ShowError(IDS_ERROR_FAILED_CREATE_CONFIG);
 
   size_t written = file_util::WriteFile(file, contents.c_str(),
-                                         contents.size());
+                                        contents.size());
   if (written != contents.size()) {
     DWORD last_error = GetLastError();
     if (!last_error)
-      return ShowError(L"Failed to write file.");
+      return ShowError(IDS_ERROR_FAILED_CREATE_CONFIG);
     return ShowError(HRESULT_FROM_WIN32(last_error));
   }
 
