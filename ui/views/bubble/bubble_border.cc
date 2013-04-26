@@ -151,14 +151,15 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
   size.Enlarge(insets.width(), insets.height());
 
   // Ensure the bubble is large enough to not overlap border and arrow images.
-  const int min = 2 * images_->border_thickness + images_->top_arrow.width();
+  const int min = 2 * images_->border_thickness;
+  const int min_with_arrow_width = min + images_->top_arrow.width();
   const int min_with_arrow_thickness = images_->border_thickness +
       std::max(images_->arrow_thickness + images_->border_interior_thickness,
                images_->border_thickness);
   if (is_arrow_on_horizontal(arrow_))
-    size.ClampToMin(gfx::Size(min, min_with_arrow_thickness));
+    size.ClampToMin(gfx::Size(min_with_arrow_width, min_with_arrow_thickness));
   else if (has_arrow(arrow_))
-    size.ClampToMin(gfx::Size(min_with_arrow_thickness, min));
+    size.ClampToMin(gfx::Size(min_with_arrow_thickness, min_with_arrow_width));
   else
     size.ClampToMin(gfx::Size(min, min));
 
