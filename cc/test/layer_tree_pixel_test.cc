@@ -47,35 +47,25 @@ LayerTreePixelTest::OffscreenContextProviderForCompositorThread() {
   return provider;
 }
 
-void LayerTreePixelTest::SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
-                                             bool result) {
-  EXPECT_TRUE(result);
-
-  gfx::Rect device_viewport_rect(
-      host_impl->active_tree()->device_viewport_size());
-
-  SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                   device_viewport_rect.width(),
-                   device_viewport_rect.height());
-  bitmap.allocPixels();
-  unsigned char* pixels = static_cast<unsigned char*>(bitmap.getPixels());
-  host_impl->Readback(pixels, device_viewport_rect);
+void LayerTreePixelTest::ReadbackResult(scoped_ptr<SkBitmap> bitmap) {
+  ASSERT_TRUE(bitmap);
 
   base::FilePath test_data_dir;
   EXPECT_TRUE(PathService::Get(cc::DIR_TEST_DATA, &test_data_dir));
 
   // To rebaseline:
-  // EXPECT_TRUE(WritePNGFile(bitmap, test_data_dir.Append(ref_file_), true));
+  // EXPECT_TRUE(WritePNGFile(*bitmap, test_data_dir.Append(ref_file_), true));
 
-  EXPECT_TRUE(MatchesPNGFile(bitmap,
+  EXPECT_TRUE(MatchesPNGFile(*bitmap,
                              test_data_dir.Append(ref_file_),
                              *pixel_comparator_));
-
   EndTest();
 }
 
 void LayerTreePixelTest::BeginTest() {
+  layer_tree_host()->root_layer()->RequestCopyAsBitmap(
+      base::Bind(&LayerTreePixelTest::ReadbackResult,
+                 base::Unretained(this)));
   PostSetNeedsCommitToMainThread();
 }
 

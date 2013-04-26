@@ -109,6 +109,8 @@ class CC_EXPORT DirectRenderer : public Renderer {
   virtual bool FlippedFramebuffer() const = 0;
   virtual void EnsureScissorTestEnabled() = 0;
   virtual void EnsureScissorTestDisabled() = 0;
+  virtual void CopyCurrentRenderPassToBitmap(DrawingFrame* frame,
+                                             SkBitmap* bitmap) = 0;
 
   ScopedPtrHashMap<RenderPass::Id, CachedResource> render_pass_textures_;
   ResourceProvider* resource_provider_;
