@@ -15,13 +15,13 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_type.h"
 
-class SkBitmap;
 struct ViewHostMsg_FrameNavigate_Params;
 
 namespace content {
 class NavigationEntryImpl;
 class RenderViewHost;
 class WebContentsImpl;
+class WebContentsScreenshotManager;
 class SiteInstance;
 struct LoadCommittedDetails;
 
@@ -188,13 +188,12 @@ class CONTENT_EXPORT NavigationControllerImpl
   // Takes a screenshot of the page at the current state.
   void TakeScreenshot();
 
-  void SetTakeScreenshotCallbackForTest(
-      const base::Callback<void(RenderViewHost*)>& take_screenshot_callback);
-
-  void set_min_screenshot_interval(int interval_ms) {
-    DCHECK_GE(interval_ms, 0);
-    min_screenshot_interval_ms_ = interval_ms;
-  }
+  // Sets the screenshot manager for this NavigationControllerImpl. The
+  // controller takes ownership of the screenshot manager and destroys it when
+  // a new screenshot-manager is set, or when the controller is destroyed.
+  // Setting a NULL manager recreates the default screenshot manager and uses
+  // that.
+  void SetScreenshotManager(WebContentsScreenshotManager* manager);
 
  private:
   friend class RestoreHelper;
@@ -316,24 +315,6 @@ class CONTENT_EXPORT NavigationControllerImpl
   // specified |offset|.  The index returned is not guaranteed to be valid.
   int GetIndexForOffset(int offset) const;
 
-  // The callback invoked when taking the screenshot of the page is complete.
-  // This sets the screenshot on the navigation entry.
-  void OnScreenshotTaken(int unique_id,
-                         bool success,
-                         const SkBitmap& bitmap);
-
-  // Removes the screenshot for the entry, returning true if the entry had a
-  // screenshot.
-  bool ClearScreenshot(NavigationEntryImpl* entry);
-
-  // The screenshots in the NavigationEntryImpls can accumulate and consume a
-  // large amount of memory. This function makes sure that the memory
-  // consumption is within a certain limit.
-  void PurgeScreenshotsIfNecessary();
-
-  // Returns the number of entries with screenshots.
-  int GetScreenshotCount() const;
-
   // ---------------------------------------------------------------------------
 
   // The user browser context associated with this controller.
@@ -404,24 +385,14 @@ class CONTENT_EXPORT NavigationControllerImpl
   // Used to get timestamps for newly-created navigation entries.
   base::Callback<base::Time()> get_timestamp_callback_;
 
-  // A callback that gets called before taking the screenshot of the page. This
-  // is used only for testing.
-  base::Callback<void(RenderViewHost*)> take_screenshot_callback_;
-
-  // Taking a screenshot can be async. So use a weakptr for the callback to make
-  // sure that the screenshot completion callback does not trigger on a
-  // destroyed NavigationControllerImpl.
-  base::WeakPtrFactory<NavigationControllerImpl> take_screenshot_factory_;
-
-  base::Time last_screenshot_time_;
-  int min_screenshot_interval_ms_;
-
   // Used to smooth out timestamps from |get_timestamp_callback_|.
   // Without this, whenever there is a run of redirects or
   // code-generated navigations, those navigations may occur within
   // the timer resolution, leading to things sometimes showing up in
   // the wrong order in the history view.
   TimeSmoother time_smoother_;
+
+  scoped_ptr<WebContentsScreenshotManager> screenshot_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationControllerImpl);
 };

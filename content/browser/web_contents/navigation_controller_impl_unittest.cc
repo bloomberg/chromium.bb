@@ -24,6 +24,7 @@
 #include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/browser/web_contents/navigation_entry_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/web_contents/web_contents_screenshot_manager.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_registrar.h"
@@ -68,6 +69,37 @@ bool DoImagesMatch(const gfx::Image& a, const gfx::Image& b) {
                 b_bitmap.getPixels(),
                 a_bitmap.getSize()) == 0;
 }
+
+class MockScreenshotManager : public content::WebContentsScreenshotManager {
+ public:
+  explicit MockScreenshotManager(content::NavigationControllerImpl* owner)
+      : content::WebContentsScreenshotManager(owner) {
+  }
+
+  virtual ~MockScreenshotManager() {
+  }
+
+  void TakeScreenshotFor(content::NavigationEntryImpl* entry) {
+    SkBitmap bitmap;
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
+    bitmap.allocPixels();
+    bitmap.eraseRGB(0, 0, 0);
+    OnScreenshotTaken(entry->GetUniqueID(), true, bitmap);
+  }
+
+  int GetScreenshotCount() {
+    return content::WebContentsScreenshotManager::GetScreenshotCount();
+  }
+
+ private:
+  // Overridden from content::WebContentsScreenshotManager:
+  virtual void TakeScreenshotImpl(
+      content::RenderViewHost* host,
+      content::NavigationEntryImpl* entry) OVERRIDE {
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(MockScreenshotManager);
+};
 
 }  // namespace
 
@@ -3190,11 +3222,6 @@ TEST_F(NavigationControllerTest, BackNavigationDoesNotClearFavicon) {
 TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
   NavigationControllerImpl& controller = controller_impl();
 
-  // Prepare some data to use as screenshot for each navigation.
-  SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
-  ASSERT_TRUE(bitmap.allocPixels());
-  bitmap.eraseRGB(0, 0, 0);
   NavigationEntryImpl* entry;
 
   // Navigate enough times to make sure that some screenshots are purged.
@@ -3204,10 +3231,13 @@ TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
     EXPECT_EQ(i, controller.GetCurrentEntryIndex());
   }
 
+  MockScreenshotManager* screenshot_manager =
+      new MockScreenshotManager(&controller);
+  controller.SetScreenshotManager(screenshot_manager);
   for (int i = 0; i < controller.GetEntryCount(); ++i) {
     entry = NavigationEntryImpl::FromNavigationEntry(
         controller.GetEntryAtIndex(i));
-    controller.OnScreenshotTaken(entry->GetUniqueID(), true, bitmap);
+    screenshot_manager->TakeScreenshotFor(entry);
     EXPECT_TRUE(entry->screenshot());
   }
 
@@ -3215,7 +3245,7 @@ TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
   EXPECT_EQ(13, controller.GetEntryCount());
   entry = NavigationEntryImpl::FromNavigationEntry(
       controller.GetEntryAtIndex(11));
-  controller.OnScreenshotTaken(entry->GetUniqueID(), true, bitmap);
+  screenshot_manager->TakeScreenshotFor(entry);
 
   for (int i = 0; i < 2; ++i) {
     entry = NavigationEntryImpl::FromNavigationEntry(
@@ -3236,14 +3266,14 @@ TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
   for (int i = 0; i < controller.GetEntryCount() - 1; ++i) {
     entry = NavigationEntryImpl::FromNavigationEntry(
         controller.GetEntryAtIndex(i));
-    controller.OnScreenshotTaken(entry->GetUniqueID(), true, bitmap);
+    screenshot_manager->TakeScreenshotFor(entry);
   }
 
   for (int i = 10; i <= 12; ++i) {
     entry = NavigationEntryImpl::FromNavigationEntry(
         controller.GetEntryAtIndex(i));
     EXPECT_FALSE(entry->screenshot()) << "Screenshot " << i << " not purged";
-    controller.OnScreenshotTaken(entry->GetUniqueID(), true, bitmap);
+    screenshot_manager->TakeScreenshotFor(entry);
   }
 
   // Navigate to index 7 and assign screenshot to all entries.
@@ -3253,7 +3283,7 @@ TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
   for (int i = 0; i < controller.GetEntryCount() - 1; ++i) {
     entry = NavigationEntryImpl::FromNavigationEntry(
         controller.GetEntryAtIndex(i));
-    controller.OnScreenshotTaken(entry->GetUniqueID(), true, bitmap);
+    screenshot_manager->TakeScreenshotFor(entry);
   }
 
   for (int i = 0; i < 2; ++i) {
@@ -3264,9 +3294,9 @@ TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
 
   // Clear all screenshots.
   EXPECT_EQ(13, controller.GetEntryCount());
-  EXPECT_EQ(10, controller.GetScreenshotCount());
+  EXPECT_EQ(10, screenshot_manager->GetScreenshotCount());
   controller.ClearAllScreenshots();
-  EXPECT_EQ(0, controller.GetScreenshotCount());
+  EXPECT_EQ(0, screenshot_manager->GetScreenshotCount());
   for (int i = 0; i < controller.GetEntryCount(); ++i) {
     entry = NavigationEntryImpl::FromNavigationEntry(
         controller.GetEntryAtIndex(i));

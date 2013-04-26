@@ -968,6 +968,8 @@
     'browser/web_contents/web_contents_drag_win.h',
     'browser/web_contents/web_contents_impl.cc',
     'browser/web_contents/web_contents_impl.h',
+    'browser/web_contents/web_contents_screenshot_manager.cc',
+    'browser/web_contents/web_contents_screenshot_manager.h',
     'browser/web_contents/web_contents_view_android.cc',
     'browser/web_contents/web_contents_view_android.h',
     'browser/web_contents/web_contents_view_aura.cc',
