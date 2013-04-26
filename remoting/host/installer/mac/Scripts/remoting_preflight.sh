@@ -22,6 +22,13 @@ function on_error {
   logger An error occurred during Chrome Remote Desktop setup.
 }
 
+function find_users_with_active_hosts {
+  ps -eo uid,command | awk -v script="$SCRIPT_FILE" '
+    $2 == "/bin/sh" && $3 == script && $4 == "--run-from-launchd" {
+      print $1
+    }'
+}
+
 trap on_error ERR
 
 logger Running Chrome Remote Desktop preflight script @@VERSION@@
@@ -36,15 +43,7 @@ fi
 # postflight script.
 rm -f "$USERS_TMP_FILE"
 
-# Escape '.' -> '\.' for regular-expression matching in pgrep, as pgrep doesn't
-# have any option for fixed-string matching.
-script_command_regex="${SCRIPT_FILE//./\\.} --run-from-launchd"
-
-# '-f' for full argument matching has to be used, as the executable command is
-# just '/bin/sh'.
-for pid in $(pgrep -f "$script_command_regex" || true); do
-  # 'tail' is needed to strip the header from 'ps'.
-  uid="$(ps -p "$pid" -o uid | tail -n 1)"
+for uid in $(find_users_with_active_hosts); do
   if [[ -n "$uid" ]]; then
     echo "$uid" >> "$USERS_TMP_FILE"
     if [[ "$uid" = "0" ]]; then

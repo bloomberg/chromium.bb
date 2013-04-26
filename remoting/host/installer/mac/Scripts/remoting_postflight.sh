@@ -27,6 +27,13 @@ function on_error {
   exit 1
 }
 
+function find_login_window_for_user {
+  # This function mimics the behaviour of pgrep, which may not be installed
+  # on Mac OS X.
+  local user=$1
+  ps -ec -u "$user" -o comm,pid | awk '$1 == "loginwindow" { print $2; exit }'
+}
+
 trap on_error ERR
 trap 'rm -f "$USERS_TMP_FILE"' EXIT
 
@@ -99,7 +106,7 @@ if [[ -r "$USERS_TMP_FILE" ]]; then
     # find the PID of a process which is running in that context. The
     # loginwindow process is a good candidate since the user (if logged in to
     # a session) will definitely be running it.
-    pid="$(pgrep -n -x -u "$uid" loginwindow || true)"
+    pid="$(find_login_window_for_user "$uid")"
     if [[ -n "$pid" ]]; then
       launchctl bsexec "$pid" sudo -u "#$uid" launchctl load -w -S Aqua "$PLIST"
       launchctl bsexec "$pid" sudo -u "#$uid" launchctl start "$SERVICE_NAME"
