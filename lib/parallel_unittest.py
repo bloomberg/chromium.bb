@@ -188,6 +188,34 @@ class TestFastPrinting(TestBackgroundWrapper):
     self.assertEquals(len(out), _TOTAL_BYTES)
 
 
+class TestRunParallelSteps(cros_test_lib.TestCase):
+  """Tests for RunParallelSteps."""
+
+  def testReturnValues(self):
+    """Test that we pass return values through when requested."""
+    def f1():
+      return 1
+    def f2():
+      return 2
+    def f3():
+      pass
+
+    return_values = parallel.RunParallelSteps([f1, f2, f3], return_values=True)
+    self.assertEquals(return_values, [1, 2, None])
+
+  def testLargeReturnValues(self):
+    """Test that the managed queue prevents hanging on large return values."""
+    def f1():
+      return ret_value
+
+    ret_value = ""
+    for _ in xrange(10000):
+      ret_value += 'This will be repeated many times.\n'
+
+    return_values = parallel.RunParallelSteps([f1], return_values=True)
+    self.assertEquals(return_values, [ret_value])
+
+
 class TestParallelMock(TestBackgroundWrapper):
   """Test the ParallelMock class."""
 

@@ -18,7 +18,9 @@ build directory) and rsyncs the contents of the staging directory onto your
 device's rootfs.
 """
 
+import collections
 import contextlib
+import functools
 import logging
 import multiprocessing
 import os
@@ -64,6 +66,10 @@ class DeployFailure(results_lib.StepFailure):
   """Raised whenever the deploy fails."""
 
 
+DeviceInfo = collections.namedtuple(
+    'DeviceInfo', ['target_dir_size', 'target_fs_free'])
+
+
 class DeployChrome(object):
   """Wraps the core deployment functionality."""
   def __init__(self, options, tempdir, staging_dir):
@@ -79,6 +85,20 @@ class DeployChrome(object):
     self.staging_dir = staging_dir
     self.host = remote.RemoteAccess(options.to, tempdir, port=options.port)
     self._rootfs_is_still_readonly = multiprocessing.Event()
+
+  def _GetRemoteMountFree(self, remote_dir):
+    result = self.host.RemoteSh('df -k %s' % remote_dir)
+    line = result.output.splitlines()[1]
+    return int(line.split()[3])
+
+  def _GetRemoteDirSize(self, remote_dir):
+    result = self.host.RemoteSh('du -ks %s' % remote_dir)
+    return int(result.output.split()[0])
+
+  def _GetStagingDirSize(self):
+    result = cros_build_lib.DebugRunCommand(['du', '-ks', self.staging_dir],
+                                            redirect_stdout=True)
+    return int(result.output.split()[0])
 
   def _ChromeFileInUse(self):
     result = self.host.RemoteSh(LSOF_COMMAND % (self.options.target_dir,),
@@ -169,6 +189,30 @@ class DeployChrome(object):
     if result.returncode:
       self._rootfs_is_still_readonly.set()
 
+  def _GetDeviceInfo(self):
+    steps = [
+        functools.partial(self._GetRemoteDirSize, self.options.target_dir),
+        functools.partial(self._GetRemoteMountFree, self.options.target_dir)
+    ]
+    return_values = parallel.RunParallelSteps(steps, return_values=True)
+    return DeviceInfo(*return_values)
+
+  def _CheckDeviceFreeSpace(self, device_info):
+    """See if target device has enough space for Chrome.
+
+    Arguments:
+      device_info: A DeviceInfo named tuple.
+    """
+    effective_free = device_info.target_dir_size + device_info.target_fs_free
+    staging_size = self._GetStagingDirSize()
+    if effective_free < staging_size:
+      raise DeployFailure(
+          'Not enough free space on the device.  Required: %s MB, '
+          'actual: %s MB.' % (staging_size/1024, effective_free/1024))
+    if device_info.target_fs_free < (100 * 1024):
+      logging.warning('The device has less than 100MB free.  deploy_chrome may '
+                      'hang during the transfer.')
+
   def _Deploy(self):
     logging.info('Copying Chrome to %s on device...', self.options.target_dir)
     # Show the output (status) for this command.
@@ -199,9 +243,12 @@ class DeployChrome(object):
 
     # Run setup steps in parallel. If any step fails, RunParallelSteps will
     # stop printing output at that point, and halt any running steps.
-    steps = [self._PrepareStagingDir, self._CheckConnection,
-             self._KillProcsIfNeeded, self._MountRootfsAsWritable]
-    parallel.RunParallelSteps(steps, halt_on_error=True)
+    steps = [self._GetDeviceInfo, self._PrepareStagingDir,
+             self._CheckConnection, self._KillProcsIfNeeded,
+             self._MountRootfsAsWritable]
+    ret = parallel.RunParallelSteps(steps, halt_on_error=True,
+                                    return_values=True)
+    self._CheckDeviceFreeSpace(ret[0])
 
     # If we failed to mark the rootfs as writable, try disabling rootfs
     # verification.

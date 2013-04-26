@@ -417,7 +417,8 @@ class _BackgroundTask(multiprocessing.Process):
       raise BackgroundFailure('\n' + ''.join(tracebacks))
 
 
-def RunParallelSteps(steps, max_parallel=None, halt_on_error=False):
+def RunParallelSteps(steps, max_parallel=None, halt_on_error=False,
+                     return_values=False):
   """Run a list of functions in parallel.
 
   This function blocks until all steps are completed.
@@ -435,6 +436,12 @@ def RunParallelSteps(steps, max_parallel=None, halt_on_error=False):
       By default, run all tasks in parallel.
     halt_on_error: After the first exception occurs, halt any running steps,
       and squelch any further output, including any exceptions that might occur.
+    return_values: If set to True, RunParallelSteps returns a list containing
+      the return values of the steps.  Defaults to False.
+
+  Returns:
+    If |return_values| is True, the function will return a list containing the
+    return values of the steps.
 
   Example:
     # This snippet will execute in parallel:
@@ -445,9 +452,35 @@ def RunParallelSteps(steps, max_parallel=None, halt_on_error=False):
     RunParallelSteps(steps)
     # Blocks until all calls have completed.
   """
-  with _BackgroundTask.ParallelTasks(steps, max_parallel=max_parallel,
+  def ReturnWrapper(queue, fn):
+    """A function that """
+    queue.put(fn())
+
+  full_steps = []
+  queues = []
+  manager = None
+  if return_values:
+    # We use a managed queue here, because the child process will wait for the
+    # queue(pipe) to be flushed (i.e., when items are read from the queue)
+    # before exiting, and with a regular queue this may result in hangs for
+    # large return values.  But with a managed queue, the manager process will
+    # read the items and hold on to them until the managed queue goes out of
+    # scope and is cleaned up.
+    manager = multiprocessing.Manager()
+    for step in steps:
+      # pylint: disable=E1101
+      queue = manager.Queue()
+      queues.append(queue)
+      full_steps.append(functools.partial(ReturnWrapper, queue, step))
+  else:
+    full_steps = steps
+
+  with _BackgroundTask.ParallelTasks(full_steps, max_parallel=max_parallel,
                                      halt_on_error=halt_on_error):
     pass
+
+  if return_values:
+    return [queue.get_nowait() for queue in queues]
 
 
 class _AllTasksComplete(object):
