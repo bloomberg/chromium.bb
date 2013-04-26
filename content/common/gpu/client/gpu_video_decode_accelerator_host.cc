@@ -23,17 +23,22 @@ namespace content {
 GpuVideoDecodeAcceleratorHost::GpuVideoDecodeAcceleratorHost(
     GpuChannelHost* channel,
     int32 decoder_route_id,
-    VideoDecodeAccelerator::Client* client)
+    VideoDecodeAccelerator::Client* client,
+    CommandBufferProxyImpl* impl)
     : channel_(channel),
       decoder_route_id_(decoder_route_id),
-      client_(client) {
+      client_(client),
+      impl_(impl) {
   DCHECK(channel_);
   DCHECK(client_);
+  channel_->AddRoute(decoder_route_id, base::AsWeakPtr(this));
+  impl_->AddDeletionObserver(this);
 }
 
 void GpuVideoDecodeAcceleratorHost::OnChannelError() {
   DLOG(ERROR) << "GpuVideoDecodeAcceleratorHost::OnChannelError()";
   OnErrorNotification(PLATFORM_FAILURE);
+  channel_->RemoveRoute(decoder_route_id_);
   channel_ = NULL;
 }
 
@@ -120,16 +125,26 @@ void GpuVideoDecodeAcceleratorHost::Reset() {
 
 void GpuVideoDecodeAcceleratorHost::Destroy() {
   DCHECK(CalledOnValidThread());
-  if (channel_)
-    channel_->RemoveRoute(decoder_route_id_);
   client_ = NULL;
   Send(new AcceleratedVideoDecoderMsg_Destroy(decoder_route_id_));
   delete this;
 }
 
+void GpuVideoDecodeAcceleratorHost::OnWillDeleteImpl() {
+  impl_ = NULL;
+
+  // The CommandBufferProxyImpl is going away; error out this VDA.
+  OnChannelError();
+}
+
 GpuVideoDecodeAcceleratorHost::~GpuVideoDecodeAcceleratorHost() {
   DCHECK(CalledOnValidThread());
   DCHECK(!client_) << "destructor called without Destroy being called!";
+
+  if (channel_)
+    channel_->RemoveRoute(decoder_route_id_);
+  if (impl_)
+    impl_->RemoveDeletionObserver(this);
 }
 
 void GpuVideoDecodeAcceleratorHost::Send(IPC::Message* message) {

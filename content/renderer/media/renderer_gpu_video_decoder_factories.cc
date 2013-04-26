@@ -90,9 +90,9 @@ void RendererGpuVideoDecoderFactories::AsyncCreateVideoDecodeAccelerator(
   DCHECK(message_loop_->BelongsToCurrentThread());
 
   if (context_ && context_->GetCommandBufferProxy()) {
-    vda_.reset(gpu_channel_host_->CreateVideoDecoder(
+    vda_ = gpu_channel_host_->CreateVideoDecoder(
         context_->GetCommandBufferProxy()->GetRouteID(),
-        profile, client));
+        profile, client);
   }
   compositor_loop_async_waiter_.Signal();
 }

@@ -13,6 +13,7 @@
 #include "content/common/child_process_messages.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
+#include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/view_messages.h"
@@ -33,6 +34,10 @@ CommandBufferProxyImpl::CommandBufferProxyImpl(
 }
 
 CommandBufferProxyImpl::~CommandBufferProxyImpl() {
+  FOR_EACH_OBSERVER(DeletionObserver,
+                    deletion_observers_,
+                    OnWillDeleteImpl());
+
   // Delete all the locally cached shared memory objects, closing the handle
   // in this process.
   for (TransferBufferMap::iterator it = transfer_buffers_.begin();
@@ -40,11 +45,6 @@ CommandBufferProxyImpl::~CommandBufferProxyImpl() {
        ++it) {
     delete it->second.shared_memory;
     it->second.shared_memory = NULL;
-  }
-  for (Decoders::iterator it = video_decoder_hosts_.begin();
-      it != video_decoder_hosts_.end(); ++it) {
-    if (it->second)
-      it->second->OnChannelError();
   }
 }
 
@@ -108,6 +108,15 @@ void CommandBufferProxyImpl::SetMemoryAllocationChangedCallback(
   memory_allocation_changed_callback_ = callback;
   Send(new GpuCommandBufferMsg_SetClientHasMemoryAllocationChangedCallback(
       route_id_, !memory_allocation_changed_callback_.is_null()));
+}
+
+void CommandBufferProxyImpl::AddDeletionObserver(DeletionObserver* observer) {
+  deletion_observers_.AddObserver(observer);
+}
+
+void CommandBufferProxyImpl::RemoveDeletionObserver(
+    DeletionObserver* observer) {
+  deletion_observers_.RemoveObserver(observer);
 }
 
 void CommandBufferProxyImpl::OnSetMemoryAllocation(
@@ -461,31 +470,28 @@ bool CommandBufferProxyImpl::SetParent(
   return result;
 }
 
-GpuVideoDecodeAcceleratorHost*
+scoped_ptr<media::VideoDecodeAccelerator>
 CommandBufferProxyImpl::CreateVideoDecoder(
     media::VideoCodecProfile profile,
     media::VideoDecodeAccelerator::Client* client) {
   int decoder_route_id;
+  scoped_ptr<media::VideoDecodeAccelerator> vda;
   if (!Send(new GpuCommandBufferMsg_CreateVideoDecoder(route_id_, profile,
                                                        &decoder_route_id))) {
     LOG(ERROR) << "Send(GpuCommandBufferMsg_CreateVideoDecoder) failed";
-    return NULL;
+    return vda.Pass();
   }
 
   if (decoder_route_id < 0) {
     DLOG(ERROR) << "Failed to Initialize GPU decoder on profile: " << profile;
-    return NULL;
+    return vda.Pass();
   }
 
   GpuVideoDecodeAcceleratorHost* decoder_host =
-      new GpuVideoDecodeAcceleratorHost(channel_, decoder_route_id, client);
-  bool inserted = video_decoder_hosts_.insert(std::make_pair(
-      decoder_route_id, base::AsWeakPtr(decoder_host))).second;
-  DCHECK(inserted);
-
-  channel_->AddRoute(decoder_route_id, base::AsWeakPtr(decoder_host));
-
-  return decoder_host;
+      new GpuVideoDecodeAcceleratorHost(channel_, decoder_route_id, client,
+                                        this);
+  vda.reset(decoder_host);
+  return vda.Pass();
 }
 
 gpu::error::Error CommandBufferProxyImpl::GetLastError() {

@@ -17,13 +17,13 @@
 #include "base/process_util.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
-#include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/message_router.h"
 #include "content/public/common/gpu_info.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sync_channel.h"
+#include "media/video/video_decode_accelerator.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gpu_preference.h"
@@ -47,6 +47,7 @@ class SyncMessageFilter;
 
 namespace content {
 class CommandBufferProxyImpl;
+class GpuChannelHost;
 struct GpuRenderingStats;
 
 struct GpuListenerInfo {
@@ -137,8 +138,7 @@ class GpuChannelHost : public IPC::Sender,
       gfx::GpuPreference gpu_preference);
 
   // Creates a video decoder in the GPU process.
-  // Returned pointer is owned by the CommandBufferProxy for |route_id|.
-  GpuVideoDecodeAcceleratorHost* CreateVideoDecoder(
+  scoped_ptr<media::VideoDecodeAccelerator> CreateVideoDecoder(
       int command_buffer_route_id,
       media::VideoCodecProfile profile,
       media::VideoDecodeAccelerator::Client* client);

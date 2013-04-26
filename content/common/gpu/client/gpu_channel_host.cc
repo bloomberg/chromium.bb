@@ -200,7 +200,7 @@ CommandBufferProxyImpl* GpuChannelHost::CreateOffscreenCommandBuffer(
   return command_buffer;
 }
 
-GpuVideoDecodeAcceleratorHost* GpuChannelHost::CreateVideoDecoder(
+scoped_ptr<media::VideoDecodeAccelerator> GpuChannelHost::CreateVideoDecoder(
     int command_buffer_route_id,
     media::VideoCodecProfile profile,
     media::VideoDecodeAccelerator::Client* client) {
@@ -208,7 +208,7 @@ GpuVideoDecodeAcceleratorHost* GpuChannelHost::CreateVideoDecoder(
   ProxyMap::iterator it = proxies_.find(command_buffer_route_id);
   DCHECK(it != proxies_.end());
   CommandBufferProxyImpl* proxy = it->second;
-  return proxy->CreateVideoDecoder(profile, client);
+  return proxy->CreateVideoDecoder(profile, client).Pass();
 }
 
 void GpuChannelHost::DestroyCommandBuffer(
