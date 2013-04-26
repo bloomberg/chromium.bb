@@ -1437,7 +1437,7 @@ TEST_F(DiskCacheEntryTest, MissingData) {
 
   // Attempt to read the data.
   ASSERT_EQ(net::OK, OpenEntry(key, &entry));
-  EXPECT_EQ(net::ERR_FAILED, ReadData(entry, 0, 0, buffer, kSize));
+  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, ReadData(entry, 0, 0, buffer, kSize));
   entry->Close();
 
   // The entry should be gone.
