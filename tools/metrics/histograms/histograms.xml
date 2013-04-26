@@ -381,6 +381,27 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="CrosDisks.ArchiveType" enum="CrosDisksArchiveType">
+  <summary>
+    The type of archive file that Chrome OS cros-disks daemon is requested to
+    mount.
+  </summary>
+</histogram>
+
+<histogram name="CrosDisks.DeviceMediaType" enum="CrosDisksDeviceMediaType">
+  <summary>
+    The media type of removable device that Chrome OS cros-disks daemon is
+    requested to mount.
+  </summary>
+</histogram>
+
+<histogram name="CrosDisks.FilesystemType" enum="CrosDisksFilesystemType">
+  <summary>
+    The type of file system that Chrome OS cros-disks daemon is requested to
+    mount.
+  </summary>
+</histogram>
+
 <histogram name="DiskCache.TotalIOTime" units="milliseconds">
   <obsolete>
     Deprecated.
@@ -5426,6 +5447,38 @@ other types of suffix sets.
     The cookie deletion occurred because the server overwrote it with an already
     expired cookie (this is a common idiom for server deletions of cookies).
   </int>
+</enum>
+
+<enum name="CrosDisksArchiveType" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="ZIP"/>
+  <int value="2" label="RAR"/>
+  <int value="3" label="Tar"/>
+  <int value="4" label="Bzip2-compressed Tar"/>
+  <int value="5" label="Gzip-compressed Tar"/>
+</enum>
+
+<enum name="CrosDisksDeviceMediaType" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="USB Drive"/>
+  <int value="2" label="SD Card"/>
+  <int value="3" label="Optical Disc"/>
+  <int value="4" label="Mobile Device"/>
+  <int value="5" label="DVD"/>
+</enum>
+
+<enum name="CrosDisksFilesystemType" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Others"/>
+  <int value="2" label="FAT"/>
+  <int value="3" label="exFAT"/>
+  <int value="4" label="NTFS"/>
+  <int value="5" label="HFS+"/>
+  <int value="6" label="Ext2"/>
+  <int value="7" label="Ext3"/>
+  <int value="8" label="Ext4"/>
+  <int value="9" label="ISO9660"/>
+  <int value="10" label="UDF"/>
 </enum>
 
 <enum name="DomainBoundCerts.GetCertResult" type="int">
