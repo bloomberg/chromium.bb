@@ -164,7 +164,6 @@ public:
     virtual float visibleContentScaleFactor() const OVERRIDE { return m_visibleContentScaleFactor; }
     void setVisibleContentScaleFactor(float);
 
-    virtual void setFixedVisibleContentRect(const IntRect&) OVERRIDE;
     virtual void setScrollPosition(const IntPoint&) OVERRIDE;
     virtual void repaintFixedElementsAfterScrolling();
     virtual void updateFixedElementsAfterScrolling();

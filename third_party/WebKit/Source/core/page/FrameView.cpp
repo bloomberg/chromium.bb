@@ -1629,32 +1629,6 @@ void FrameView::setScrollPosition(const IntPoint& scrollPoint)
     ScrollView::setScrollPosition(newScrollPosition);
 }
 
-void FrameView::setFixedVisibleContentRect(const IntRect& visibleContentRect)
-{
-    bool visibleContentSizeDidChange = false;
-    if (visibleContentRect.size() != this->fixedVisibleContentRect().size()) {
-        // When the viewport size changes or the content is scaled, we need to
-        // reposition the fixed and sticky positioned elements.
-        setViewportConstrainedObjectsNeedLayout();
-        visibleContentSizeDidChange = true;
-    }
-
-    IntSize offset = scrollOffset();
-    ScrollView::setFixedVisibleContentRect(visibleContentRect);
-    if (offset != scrollOffset()) {
-        repaintFixedElementsAfterScrolling();
-        if (m_frame->page()->settings()->acceleratedCompositingForFixedPositionEnabled())
-            updateFixedElementsAfterScrolling();
-        scrollAnimator()->setCurrentPosition(scrollPosition());
-        scrollPositionChanged();
-    }
-    if (visibleContentSizeDidChange) {
-        // Update the scroll-bars to calculate new page-step size.
-        updateScrollbars(scrollOffset());
-    }
-    frame()->loader()->client()->didChangeScrollOffset();
-}
-
 void FrameView::setViewportConstrainedObjectsNeedLayout()
 {
     if (!hasViewportConstrainedObjects())

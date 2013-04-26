@@ -2232,7 +2232,7 @@ void WebFrameImpl::createFrameView()
     if (isMainFrame)
         webView->suppressInvalidations(true);
  
-    frame()->createView(webView->size(), Color::white, webView->isTransparent(), webView->fixedLayoutSize(), IntRect(), isMainFrame ? webView->isFixedLayoutModeEnabled() : 0);
+    frame()->createView(webView->size(), Color::white, webView->isTransparent(), webView->fixedLayoutSize(), isMainFrame ? webView->isFixedLayoutModeEnabled() : 0);
     if (webView->shouldAutoResize() && isMainFrame)
         frame()->view()->enableAutoSizeMode(true, webView->minAutoSize(), webView->maxAutoSize());
 

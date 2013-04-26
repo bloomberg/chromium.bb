@@ -196,9 +196,6 @@ void ScrollView::setClipsRepaints(bool clipsRepaints)
 
 IntSize ScrollView::unscaledVisibleContentSize(VisibleContentRectIncludesScrollbars scrollbarInclusion) const
 {
-    if (!m_fixedVisibleContentRect.isEmpty())
-        return m_fixedVisibleContentRect.size();
-
     int verticalScrollbarWidth = 0;
     int horizontalScrollbarHeight = 0;
 
@@ -215,9 +212,6 @@ IntSize ScrollView::unscaledVisibleContentSize(VisibleContentRectIncludesScrollb
 
 IntRect ScrollView::visibleContentRect(VisibleContentRectIncludesScrollbars scollbarInclusion) const
 {
-    if (!m_fixedVisibleContentRect.isEmpty())
-        return m_fixedVisibleContentRect;
-
     FloatSize visibleContentSize = unscaledVisibleContentSize(scollbarInclusion);
     visibleContentSize.scale(1 / visibleContentScaleFactor());
     return IntRect(IntPoint(m_scrollOffset), expandedIntSize(visibleContentSize));
