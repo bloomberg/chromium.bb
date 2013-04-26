@@ -29,6 +29,7 @@
 
 #include "GrContext.h"
 #include "SkDevice.h"
+#include "SkSurface.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/chromium/support/GraphicsContext3DPrivate.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
@@ -44,10 +45,8 @@ using WebKit::WebTextureUpdater;
 
 namespace WebCore {
 
-Canvas2DLayerBridge::Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, const IntSize& size, ThreadMode threadMode, unsigned textureId)
-    : m_backBufferTexture(textureId)
-    , m_size(size)
-    , m_canvas(0)
+Canvas2DLayerBridge::Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, SkDeferredCanvas* canvas, ThreadMode threadMode)
+    : m_canvas(canvas)
     , m_context(context)
     , m_bytesAllocated(0)
     , m_didRecordDrawCommand(false)
@@ -55,12 +54,16 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, 
     , m_next(0)
     , m_prev(0)
 {
+    ASSERT(m_canvas);
     // Used by browser tests to detect the use of a Canvas2DLayerBridge.
     TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation");
-
+    m_canvas->setNotificationClient(this);
     m_layer = adoptPtr(WebKit::Platform::current()->compositorSupport()->createExternalTextureLayer(this));
-    m_layer->setTextureId(textureId);
     m_layer->setRateLimitContext(threadMode == SingleThread);
+    GrRenderTarget* renderTarget = reinterpret_cast<GrRenderTarget*>(m_canvas->getDevice()->accessRenderTarget());
+    if (renderTarget) {
+        m_layer->setTextureId(renderTarget->asTexture()->getTextureHandle());
+    }
     GraphicsLayerChromium::registerContentsLayer(m_layer->layer());
 }
 
@@ -68,8 +71,7 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge()
 {
     GraphicsLayerChromium::unregisterContentsLayer(m_layer->layer());
     Canvas2DLayerManager::get().layerToBeDestroyed(this);
-    if (m_canvas)
-        m_canvas->setNotificationClient(0);
+    m_canvas->setNotificationClient(0);
     m_layer->setTextureId(0);
 }
 
@@ -98,7 +100,7 @@ void Canvas2DLayerBridge::storageAllocatedForRecordingChanged(size_t bytesAlloca
 
 size_t Canvas2DLayerBridge::storageAllocatedForRecording()
 {
-    return m_canvas ? m_canvas->storageAllocatedForRecording() : 0;
+    return m_canvas->storageAllocatedForRecording();
 }
 
 void Canvas2DLayerBridge::flushedDrawCommands()
@@ -114,7 +116,7 @@ void Canvas2DLayerBridge::skippedPendingDrawCommands()
 
 size_t Canvas2DLayerBridge::freeMemoryIfPossible(size_t bytesToFree)
 {
-    size_t bytesFreed = m_canvas ? m_canvas->freeMemoryIfPossible(bytesToFree) : 0;
+    size_t bytesFreed = m_canvas->freeMemoryIfPossible(bytesToFree);
     if (bytesFreed)
         Canvas2DLayerManager::get().layerAllocatedStorageChanged(this, -((intptr_t)bytesFreed));
     m_bytesAllocated -= bytesFreed;
@@ -123,37 +125,26 @@ size_t Canvas2DLayerBridge::freeMemoryIfPossible(size_t bytesToFree)
 
 void Canvas2DLayerBridge::flush()
 {
-    if (m_canvas && m_canvas->hasPendingCommands())
+    if (m_canvas->hasPendingCommands())
         m_canvas->flush();
 }
-
-SkCanvas* Canvas2DLayerBridge::skCanvas(SkDevice* device)
-{
-    ASSERT(!m_canvas);
-    m_canvas = new SkDeferredCanvas(device);
-    m_canvas->setNotificationClient(this);
-    return m_canvas;
-}
-
 
 unsigned Canvas2DLayerBridge::prepareTexture(WebTextureUpdater& updater)
 {
     m_context->makeContextCurrent();
 
-    if (m_canvas) {
-        TRACE_EVENT0("cc", "Canvas2DLayerBridge::SkCanvas::flush");
-        m_canvas->flush();
-    }
-
+    TRACE_EVENT0("cc", "Canvas2DLayerBridge::SkCanvas::flush");
+    m_canvas->flush();
     m_context->flush();
 
-    if (m_canvas) {
-        // Notify skia that the state of the backing store texture object will be touched by the compositor
-        GrRenderTarget* renderTarget = reinterpret_cast<GrRenderTarget*>(m_canvas->getDevice()->accessRenderTarget());
-        if (renderTarget)
-            renderTarget->asTexture()->invalidateCachedState();
+    // Notify skia that the state of the backing store texture object will be touched by the compositor
+    GrRenderTarget* renderTarget = reinterpret_cast<GrRenderTarget*>(m_canvas->getDevice()->accessRenderTarget());
+    if (renderTarget) {
+        GrTexture* texture = renderTarget->asTexture();
+        texture->invalidateCachedState();
+        return texture->getTextureHandle();
     }
-    return m_backBufferTexture;
+    return 0;
 }
 
 WebGraphicsContext3D* Canvas2DLayerBridge::context()
@@ -175,10 +166,13 @@ void Canvas2DLayerBridge::contextAcquired()
 unsigned Canvas2DLayerBridge::backBufferTexture()
 {
     contextAcquired();
-    if (m_canvas)
-        m_canvas->flush();
+    m_canvas->flush();
     m_context->flush();
-    return m_backBufferTexture;
+    GrRenderTarget* renderTarget = reinterpret_cast<GrRenderTarget*>(m_canvas->getDevice()->accessRenderTarget());
+    if (renderTarget) {
+        return renderTarget->asTexture()->getTextureHandle();
+    }
+    return 0;
 }
 
 }

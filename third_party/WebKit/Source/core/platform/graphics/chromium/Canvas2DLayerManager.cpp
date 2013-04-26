@@ -59,6 +59,10 @@ void Canvas2DLayerManager::init(size_t maxBytesAllocated, size_t targetBytesAllo
     ASSERT(maxBytesAllocated >= targetBytesAllocated);
     m_maxBytesAllocated = maxBytesAllocated;
     m_targetBytesAllocated = targetBytesAllocated;
+    if (m_taskObserverActive) {
+        WebKit::Platform::current()->currentThread()->removeTaskObserver(this);
+        m_taskObserverActive = false;
+    }
 }
 
 Canvas2DLayerManager& Canvas2DLayerManager::get()

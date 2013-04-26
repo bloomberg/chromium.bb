@@ -41,6 +41,7 @@
 #include "SkColorPriv.h"
 #include "SkGpuDevice.h"
 #include "SkiaUtils.h"
+#include "SkSurface.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/Extensions3D.h"
@@ -78,20 +79,19 @@ static SkCanvas* createAcceleratedCanvas(const IntSize& size, ImageBufferData* d
     if (!gr)
         return 0;
     gr->resetContext();
-    GrTextureDesc desc;
-    desc.fFlags = kRenderTarget_GrTextureFlagBit;
-    desc.fSampleCnt = 0;
-    desc.fWidth = size.width();
-    desc.fHeight = size.height();
-    desc.fConfig = kSkia8888_GrPixelConfig;
-    SkAutoTUnref<GrTexture> texture(gr->createUncachedTexture(desc, 0, 0));
-    if (!texture.get())
-        return 0;
-    SkCanvas* canvas;
-    SkAutoTUnref<SkDevice> device(new SkGpuDevice(gr, texture.get()));
     Canvas2DLayerBridge::ThreadMode threadMode = WebKit::Platform::current()->isThreadedCompositingEnabled() ? Canvas2DLayerBridge::Threaded : Canvas2DLayerBridge::SingleThread;
-    data->m_layerBridge = Canvas2DLayerBridge::create(context3D.release(), size, threadMode, texture.get()->getTextureHandle());
-    canvas = data->m_layerBridge->skCanvas(device.get());
+    SkImage::Info info;
+    info.fWidth = size.width();
+    info.fHeight = size.height();
+    info.fColorType = SkImage::kPMColor_ColorType;
+    info.fAlphaType = SkImage::kPremul_AlphaType;
+    SkAutoTUnref<SkSurface> surface(SkSurface::NewRenderTarget(context3D->grContext(), info));
+    if (!surface.get())
+        return 0;
+    SkDeferredCanvas* canvas = new SkDeferredCanvas(surface.get());
+    data->m_layerBridge = Canvas2DLayerBridge::create(context3D.release(), canvas, threadMode);
+    // If canvas buffer allocation failed, debug build will have asserted
+    // For release builds, we must verify whether the device has a render target
     data->m_platformContext.setAccelerated(true);
     return canvas;
 }

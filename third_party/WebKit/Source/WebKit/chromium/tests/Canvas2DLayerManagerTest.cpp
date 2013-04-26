@@ -29,6 +29,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "FakeWebGraphicsContext3D.h"
+#include "SkDevice.h"
 #include "core/platform/chromium/support/GraphicsContext3DPrivate.h"
 #include <public/Platform.h>
 #include <public/WebThread.h>
@@ -41,8 +42,8 @@ using testing::Test;
 
 class FakeCanvas2DLayerBridge : public Canvas2DLayerBridge {
 public:
-    FakeCanvas2DLayerBridge() 
-        : Canvas2DLayerBridge(GraphicsContext3DPrivate::createGraphicsContextFromWebContext(adoptPtr(new WebKit::FakeWebGraphicsContext3D)), IntSize(1, 1), SingleThread, 0)
+    FakeCanvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, SkDeferredCanvas* canvas)
+        : Canvas2DLayerBridge(context, canvas, SingleThread)
         , m_freeableBytes(0)
         , m_freeMemoryIfPossibleCount(0)
         , m_flushCount(0)
@@ -86,6 +87,11 @@ public:
     int m_flushCount;
 };
 
+static PassOwnPtr<SkDeferredCanvas> createCanvas(GraphicsContext3D* context) {
+    SkAutoTUnref<SkDevice> device(new SkDevice(SkBitmap::kARGB_8888_Config, 1, 1));
+    return adoptPtr(new SkDeferredCanvas(device.get()));
+}
+
 class Canvas2DLayerManagerTest : public Test {
 protected:
     void storageAllocationTrackingTest()
@@ -93,7 +99,9 @@ protected:
         Canvas2DLayerManager& manager = Canvas2DLayerManager::get();
         manager.init(10, 10);
         {
-            FakeCanvas2DLayerBridge layer1;
+            RefPtr<GraphicsContext3D> context = GraphicsContext3DPrivate::createGraphicsContextFromWebContext(adoptPtr(new WebKit::FakeWebGraphicsContext3D));
+            OwnPtr<SkDeferredCanvas> canvas1 = createCanvas(context.get());
+            FakeCanvas2DLayerBridge layer1(context, canvas1.get());
             EXPECT_EQ((size_t)0, manager.m_bytesAllocated);
             layer1.storageAllocatedForRecordingChanged(1);
             EXPECT_EQ((size_t)1, manager.m_bytesAllocated);
@@ -104,7 +112,8 @@ protected:
             layer1.storageAllocatedForRecordingChanged(1);
             EXPECT_EQ((size_t)1, manager.m_bytesAllocated);
             {
-                FakeCanvas2DLayerBridge layer2;
+                OwnPtr<SkDeferredCanvas> canvas2 = createCanvas(context.get());
+                FakeCanvas2DLayerBridge layer2(context, canvas2.get());
                 EXPECT_EQ((size_t)1, manager.m_bytesAllocated);
                 // verify multi-layer allocation tracking
                 layer2.storageAllocatedForRecordingChanged(2);
@@ -117,9 +126,11 @@ protected:
 
     void evictionTest()
     {
+        RefPtr<GraphicsContext3D> context = GraphicsContext3DPrivate::createGraphicsContextFromWebContext(adoptPtr(new WebKit::FakeWebGraphicsContext3D));
         Canvas2DLayerManager& manager = Canvas2DLayerManager::get();
         manager.init(10, 5);
-        FakeCanvas2DLayerBridge layer;
+        OwnPtr<SkDeferredCanvas> canvas = createCanvas(context.get());
+        FakeCanvas2DLayerBridge layer(context, canvas.get());
         layer.fakeFreeableBytes(10);
         layer.storageAllocatedForRecordingChanged(8); // under the max
         EXPECT_EQ(0, layer.m_freeMemoryIfPossibleCount);
@@ -132,9 +143,11 @@ protected:
 
     void flushEvictionTest()
     {
+        RefPtr<GraphicsContext3D> context = GraphicsContext3DPrivate::createGraphicsContextFromWebContext(adoptPtr(new WebKit::FakeWebGraphicsContext3D));
         Canvas2DLayerManager& manager = Canvas2DLayerManager::get();
         manager.init(10, 5);
-        FakeCanvas2DLayerBridge layer;
+        OwnPtr<SkDeferredCanvas> canvas = createCanvas(context.get());
+        FakeCanvas2DLayerBridge layer(context, canvas.get());
         layer.fakeFreeableBytes(1); // Not enough freeable bytes, will cause aggressive eviction by flushing
         layer.storageAllocatedForRecordingChanged(8); // under the max
         EXPECT_EQ(0, layer.m_freeMemoryIfPossibleCount);
@@ -181,8 +194,10 @@ protected:
 
     void deferredFrameTest()
     {
+        RefPtr<GraphicsContext3D> context = GraphicsContext3DPrivate::createGraphicsContextFromWebContext(adoptPtr(new WebKit::FakeWebGraphicsContext3D));
         Canvas2DLayerManager::get().init(10, 10);
-        FakeCanvas2DLayerBridge fakeLayer;
+        OwnPtr<SkDeferredCanvas> canvas = createCanvas(context.get());
+        FakeCanvas2DLayerBridge fakeLayer(context, canvas.get());
         WebKit::Platform::current()->currentThread()->postTask(new DeferredFrameTestTask(this, &fakeLayer, true));
         WebKit::Platform::current()->currentThread()->enterRunLoop();
         // Verify that didProcessTask was called upon completion

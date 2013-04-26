@@ -27,6 +27,7 @@
 #include "core/platform/graphics/chromium/Canvas2DLayerBridge.h"
 
 #include "FakeWebGraphicsContext3D.h"
+#include "SkDeferredCanvas.h"
 #include "WebCompositorInitializer.h"
 #include "core/platform/chromium/support/GraphicsContext3DPrivate.h"
 #include "core/platform/graphics/ImageBuffer.h"
@@ -71,21 +72,25 @@ protected:
 
         MockWebTextureUpdater updater;
 
-        const IntSize size(300, 150);
+        SkDevice device(SkBitmap::kARGB_8888_Config, 300, 150);
+        SkDeferredCanvas canvas(&device);
 
-        WebGLId backTextureId = 1;
-        WebGLId frontTextureId = 1;
+        ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 
-        OwnPtr<Canvas2DLayerBridge> bridge = Canvas2DLayerBridge::create(mainContext.get(), size, threadMode, backTextureId);
+        OwnPtr<Canvas2DLayerBridge> bridge = Canvas2DLayerBridge::create(mainContext.release(), &canvas, threadMode);
 
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 
         EXPECT_CALL(mainMock, flush());
-        EXPECT_EQ(frontTextureId, bridge->prepareTexture(updater));
+        unsigned textureId = bridge->backBufferTexture();
+        EXPECT_TRUE(textureId == 0);
+
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
-        ::testing::Mock::VerifyAndClearExpectations(&updater);
 
         bridge.clear();
+
+        ::testing::Mock::VerifyAndClearExpectations(&mainMock);
+        ::testing::Mock::VerifyAndClearExpectations(&updater);
     }
 };
 

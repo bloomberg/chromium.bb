@@ -49,9 +49,9 @@ public:
         Threaded
     };
 
-    static PassOwnPtr<Canvas2DLayerBridge> create(PassRefPtr<GraphicsContext3D> context, const IntSize& size, ThreadMode threading, unsigned textureId)
+    static PassOwnPtr<Canvas2DLayerBridge> create(PassRefPtr<GraphicsContext3D> context, SkDeferredCanvas* canvas, ThreadMode threading)
     {
-        return adoptPtr(new Canvas2DLayerBridge(context, size, threading, textureId));
+        return adoptPtr(new Canvas2DLayerBridge(context, canvas, threading));
     }
 
     virtual ~Canvas2DLayerBridge();
@@ -75,17 +75,14 @@ public:
     size_t bytesAllocated() const {return m_bytesAllocated;}
     void limitPendingFrames();
 
-    SkCanvas* skCanvas(SkDevice*);
     WebKit::WebLayer* layer();
     void contextAcquired();
 
     unsigned backBufferTexture();
 
 protected:
-    Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D>, const IntSize&, ThreadMode, unsigned textureId);
+    Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D>, SkDeferredCanvas* canvas, ThreadMode);
 
-    unsigned m_backBufferTexture;
-    IntSize m_size;
     SkDeferredCanvas* m_canvas;
     OwnPtr<WebKit::WebExternalTextureLayer> m_layer;
     RefPtr<GraphicsContext3D> m_context;
