@@ -21,6 +21,8 @@
 
 namespace {
 
+const wchar_t kConfigBinaryName[] = L"cloud_print_service_config.exe";
+
 base::FilePath GetShortcutPath(int dir_key, bool with_subdir) {
   base::FilePath path;
   if (!PathService::Get(dir_key, &path))
@@ -42,6 +44,7 @@ void CreateShortcut(int dir_key, bool with_subdir,
   base::FilePath exe_path;
   if (!PathService::Get(base::FILE_EXE, &exe_path))
     return;
+  exe_path = exe_path.DirName().Append(base::FilePath(kConfigBinaryName));
   properties.set_target(exe_path);
   properties.set_working_dir(exe_path.DirName());
   CreateOrUpdateShortcutLink(path, properties, operation);
