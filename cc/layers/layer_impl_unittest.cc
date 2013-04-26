@@ -131,8 +131,6 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->ScrollBy(arbitrary_vector2d));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetScrollDelta(gfx::Vector2d()));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetScrollOffset(arbitrary_vector2d));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
-      root->SetImplTransform(arbitrary_transform));
 
   // Changing these properties only affects the layer itself.
   EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(root->SetContentBounds(arbitrary_size));
@@ -184,8 +182,6 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
       root->SetScrollDelta(gfx::Vector2d()));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
       root->SetScrollOffset(arbitrary_vector2d));
-  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
-      root->SetImplTransform(arbitrary_transform));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
       root->SetContentBounds(arbitrary_size));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
@@ -256,8 +252,6 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetPreserves3d(true));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
       root->SetDoubleSided(false));  // constructor initializes it to "true".
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
-      root->SetImplTransform(arbitrary_transform));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetContentBounds(arbitrary_size));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
       root->SetContentsScale(arbitrary_number, arbitrary_number));
@@ -282,8 +276,6 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetPreserves3d(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
       root->SetDoubleSided(false));  // constructor initializes it to "true".
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
-      root->SetImplTransform(arbitrary_transform));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
       root->SetContentBounds(arbitrary_size));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(

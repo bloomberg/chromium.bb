@@ -782,11 +782,9 @@ void LayerTreeHost::UpdateLayers(Layer* root_layer,
 
   LayerList update_list;
   {
-    Layer* root_scroll = FindFirstScrollableLayer(root_layer);
-    if (root_scroll)
-      root_scroll->SetImplTransform(impl_transform_);
-
     UpdateHudLayer();
+
+    Layer* root_scroll = FindFirstScrollableLayer(root_layer);
 
     TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::CalcDrawProps");
     LayerTreeHostCommon::CalculateDrawProperties(
@@ -794,6 +792,7 @@ void LayerTreeHost::UpdateLayers(Layer* root_layer,
         device_viewport_size(),
         device_scale_factor_,
         page_scale_factor_,
+        root_scroll,
         GetRendererCapabilities().max_texture_size,
         settings_.can_use_lcd_text,
         &update_list);
@@ -1010,10 +1009,6 @@ void LayerTreeHost::ApplyScrollAndScale(const ScrollAndScaleSet& info) {
   }
   if (!root_scroll_delta.IsZero() || info.page_scale_delta != 1.f)
     client_->ApplyScrollAndScale(root_scroll_delta, info.page_scale_delta);
-}
-
-void LayerTreeHost::SetImplTransform(const gfx::Transform& transform) {
-  impl_transform_ = transform;
 }
 
 void LayerTreeHost::StartRateLimiter(WebKit::WebGraphicsContext3D* context3d) {

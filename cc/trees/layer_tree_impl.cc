@@ -222,12 +222,6 @@ void LayerTreeImpl::UpdateMaxScrollOffset() {
   root_scroll_layer_->SetMaxScrollOffset(gfx::ToFlooredVector2d(max_scroll));
 }
 
-gfx::Transform LayerTreeImpl::ImplTransform() const {
-  gfx::Transform transform;
-  transform.Scale(total_page_scale_factor(), total_page_scale_factor());
-  return transform;
-}
-
 void LayerTreeImpl::UpdateSolidColorScrollbars() {
   DCHECK(settings().solid_color_scrollbars);
 
@@ -294,12 +288,6 @@ void LayerTreeImpl::UpdateDrawProperties(UpdateDrawPropertiesReason reason) {
   if (!root_layer())
     return;
 
-  if (root_scroll_layer_) {
-    root_scroll_layer_->SetImplTransform(ImplTransform());
-    // Setting the impl transform re-sets this.
-    needs_update_draw_properties_ = false;
-  }
-
   {
     TRACE_EVENT1("cc",
                  "LayerTreeImpl::UpdateDrawProperties",
@@ -313,6 +301,7 @@ void LayerTreeImpl::UpdateDrawProperties(UpdateDrawPropertiesReason reason) {
         device_viewport_size(),
         device_scale_factor(),
         total_page_scale_factor(),
+        root_scroll_layer_,
         MaxTextureSize(),
         settings().can_use_lcd_text,
         &render_surface_layer_list_,

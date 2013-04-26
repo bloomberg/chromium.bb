@@ -127,8 +127,6 @@ class CC_EXPORT LayerTreeImpl {
     UPDATE_ACTIVE_TREE_FOR_DRAW
   };
 
-  gfx::Transform ImplTransform() const;
-
   void SetPageScaleFactorAndLimits(float page_scale_factor,
       float min_page_scale_factor, float max_page_scale_factor);
   void SetPageScaleDelta(float delta);

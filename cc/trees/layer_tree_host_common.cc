@@ -476,6 +476,7 @@ void ApplyPositionAdjustment(
 
 gfx::Transform ComputeScrollCompensationForThisLayer(
     LayerImpl* scrolling_layer,
+    float current_page_scale,
     const gfx::Transform& parent_matrix) {
   // For every layer that has non-zero scroll_delta, we have to compute a
   // transform that can undo the scroll_delta translation. In particular, we
@@ -499,8 +500,7 @@ gfx::Transform ComputeScrollCompensationForThisLayer(
   //
 
   gfx::Transform partial_layer_origin_transform = parent_matrix;
-  partial_layer_origin_transform.PreconcatTransform(
-      scrolling_layer->impl_transform());
+  partial_layer_origin_transform.Scale(current_page_scale, current_page_scale);
 
   gfx::Transform scroll_compensation_for_this_layer =
       partial_layer_origin_transform;        // Step 3
@@ -522,6 +522,7 @@ gfx::Transform ComputeScrollCompensationForThisLayer(
 
 gfx::Transform ComputeScrollCompensationMatrixForChildren(
     Layer* current_layer,
+    float current_page_scale,
     const gfx::Transform& current_parent_matrix,
     const gfx::Transform& current_scroll_compensation) {
   // The main thread (i.e. Layer) does not need to worry about scroll
@@ -531,6 +532,7 @@ gfx::Transform ComputeScrollCompensationMatrixForChildren(
 
 gfx::Transform ComputeScrollCompensationMatrixForChildren(
     LayerImpl* layer,
+    float current_page_scale,
     const gfx::Transform& parent_matrix,
     const gfx::Transform& current_scroll_compensation_matrix) {
   // "Total scroll compensation" is the transform needed to cancel out all
@@ -574,7 +576,8 @@ gfx::Transform ComputeScrollCompensationMatrixForChildren(
   // next_scroll_compensation_matrix.
   if (!layer->scroll_delta().IsZero()) {
     gfx::Transform scroll_compensation_for_this_layer =
-        ComputeScrollCompensationForThisLayer(layer, parent_matrix);
+        ComputeScrollCompensationForThisLayer(
+            layer, current_page_scale, parent_matrix);
     next_scroll_compensation_matrix.PreconcatTransform(
         scroll_compensation_for_this_layer);
   }
@@ -659,9 +662,8 @@ static inline void UpdateLayerContentsScale(
     gfx::Vector2dF transform_scale =
         MathUtil::ComputeTransform2dScaleComponents(combined_transform, 0.f);
     float combined_scale = std::max(transform_scale.x(), transform_scale.y());
-    float ideal_raster_scale = combined_scale / device_scale_factor;
-    if (!layer->bounds_contain_page_scale())
-      ideal_raster_scale /= page_scale_factor;
+    float ideal_raster_scale = combined_scale /
+          (device_scale_factor * page_scale_factor);
 
     bool need_to_set_raster_scale = !raster_scale;
 
@@ -686,9 +688,7 @@ static inline void UpdateLayerContentsScale(
   if (!raster_scale)
     raster_scale = 1.f;
 
-  float contents_scale = raster_scale * device_scale_factor;
-  if (!layer->bounds_contain_page_scale())
-    contents_scale *= page_scale_factor;
+  float contents_scale = raster_scale * device_scale_factor * page_scale_factor;
 
   CalculateContentsScale(layer, contents_scale, animating_transform_to_screen);
 }
@@ -779,6 +779,8 @@ static void CalculateDrawPropertiesInternal(
     int max_texture_size,
     float device_scale_factor,
     float page_scale_factor,
+    LayerType* page_scale_application_layer,
+    bool in_subtree_of_page_scale_application_layer,
     bool subtree_can_use_lcd_text,
     gfx::Rect* drawable_content_rect_of_subtree,
     bool update_tile_priorities) {
@@ -904,6 +906,10 @@ static void CalculateDrawPropertiesInternal(
   //            Tr[replica] * Tr[origin2anchor].inverse()
   //
 
+  // It makes no sense to have a non-unit page_scale_factor without specifying
+  // which layer roots the subtree the scale is applied to.
+  DCHECK(page_scale_application_layer || (page_scale_factor == 1.f));
+
   // If we early-exit anywhere in this function, the drawable_content_rect of
   // this subtree should be considered empty.
   *drawable_content_rect_of_subtree = gfx::Rect();
@@ -969,20 +975,32 @@ static void CalculateDrawPropertiesInternal(
     combined_transform.Translate(position.x(), position.y());
   }
 
+  float page_scale_factor_for_transforms = 1.f;
+  if (layer == page_scale_application_layer) {
+    in_subtree_of_page_scale_application_layer = true;
+    page_scale_factor_for_transforms = page_scale_factor;
+  }
+
+  float page_scale_factor_for_contents_scale =
+      in_subtree_of_page_scale_application_layer ? page_scale_factor : 1.f;
+
+  // Note carefully: this is Concat, not Preconcat (page_scale_matrix *
+  // combined_transform).
+  if (page_scale_factor_for_transforms != 1.f) {
+    gfx::Transform page_scale_matrix;
+    page_scale_matrix.Scale(page_scale_factor_for_transforms,
+                            page_scale_factor_for_transforms);
+    combined_transform.ConcatTransform(page_scale_matrix);
+  }
+
   // The layer's contents_scale is determined from the combined_transform, which
   // then informs the layer's draw_transform.
-  UpdateLayerContentsScale(layer,
-                           combined_transform,
-                           device_scale_factor,
-                           page_scale_factor,
-                           animating_transform_to_screen);
-
-  // If there is a transformation from the impl thread then it should be at
-  // the start of the combined_transform, but we don't want it to affect the
-  // computation of contents_scale above.
-  // Note carefully: this is Concat, not Preconcat (impl_transform *
-  // combined_transform).
-  combined_transform.ConcatTransform(layer->impl_transform());
+  UpdateLayerContentsScale(
+      layer,
+      combined_transform,
+      device_scale_factor,
+      page_scale_factor_for_contents_scale,
+      animating_transform_to_screen);
 
   if (!animating_transform_to_target && layer->scrollable() &&
       combined_transform.IsScaleOrTranslation()) {
@@ -1232,7 +1250,10 @@ static void CalculateDrawPropertiesInternal(
 
   gfx::Transform next_scroll_compensation_matrix =
       ComputeScrollCompensationMatrixForChildren(
-          layer, parent_matrix, current_scroll_compensation_matrix);
+          layer,
+          page_scale_factor_for_transforms,
+          parent_matrix,
+          current_scroll_compensation_matrix);
   LayerType* next_fixed_container =
       layer->IsContainerForFixedPositionLayers() ?
           layer : current_fixed_container;
@@ -1258,6 +1279,8 @@ static void CalculateDrawPropertiesInternal(
         max_texture_size,
         device_scale_factor,
         page_scale_factor,
+        page_scale_application_layer,
+        in_subtree_of_page_scale_application_layer,
         subtree_can_use_lcd_text,
         &drawable_content_rect_of_child_subtree,
         update_tile_priorities);
@@ -1432,6 +1455,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
     gfx::Size device_viewport_size,
     float device_scale_factor,
     float page_scale_factor,
+    Layer* page_scale_application_layer,
     int max_texture_size,
     bool can_use_lcd_text,
     LayerList* render_surface_layer_list) {
@@ -1446,31 +1470,33 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   bool subtree_should_be_clipped = true;
   gfx::Rect device_viewport_rect(device_viewport_size);
   bool update_tile_priorities = false;
+  bool in_subtree_of_page_scale_application_layer = false;
 
   // This function should have received a root layer.
   DCHECK(IsRootLayer(root_layer));
 
   PreCalculateMetaInformation<Layer>(root_layer);
-  CalculateDrawPropertiesInternal<Layer,
-                                  LayerList,
-                                  RenderSurface>(root_layer,
-                                                 device_scale_transform,
-                                                 identity_matrix,
-                                                 identity_matrix,
-                                                 NULL,
-                                                 device_viewport_rect,
-                                                 device_viewport_rect,
-                                                 subtree_should_be_clipped,
-                                                 NULL,
-                                                 render_surface_layer_list,
-                                                 &dummy_layer_list,
-                                                 NULL,
-                                                 max_texture_size,
-                                                 device_scale_factor,
-                                                 page_scale_factor,
-                                                 can_use_lcd_text,
-                                                 &total_drawable_content_rect,
-                                                 update_tile_priorities);
+  CalculateDrawPropertiesInternal<Layer, LayerList, RenderSurface>(
+      root_layer,
+      device_scale_transform,
+      identity_matrix,
+      identity_matrix,
+      NULL,
+      device_viewport_rect,
+      device_viewport_rect,
+      subtree_should_be_clipped,
+      NULL,
+      render_surface_layer_list,
+      &dummy_layer_list,
+      NULL,
+      max_texture_size,
+      device_scale_factor,
+      page_scale_factor,
+      page_scale_application_layer,
+      in_subtree_of_page_scale_application_layer,
+      can_use_lcd_text,
+      &total_drawable_content_rect,
+      update_tile_priorities);
 
   // The dummy layer list should not have been used.
   DCHECK_EQ(0u, dummy_layer_list.size());
@@ -1484,6 +1510,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
     gfx::Size device_viewport_size,
     float device_scale_factor,
     float page_scale_factor,
+    LayerImpl* page_scale_application_layer,
     int max_texture_size,
     bool can_use_lcd_text,
     LayerImplList* render_surface_layer_list,
@@ -1499,6 +1526,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   // initial clip rect.
   bool subtree_should_be_clipped = true;
   gfx::Rect device_viewport_rect(device_viewport_size);
+  bool in_subtree_of_page_scale_application_layer = false;
 
   // This function should have received a root layer.
   DCHECK(IsRootLayer(root_layer));
@@ -1522,6 +1550,8 @@ void LayerTreeHostCommon::CalculateDrawProperties(
       max_texture_size,
       device_scale_factor,
       page_scale_factor,
+      page_scale_application_layer,
+      in_subtree_of_page_scale_application_layer,
       can_use_lcd_text,
       &total_drawable_content_rect,
       update_tile_priorities);

@@ -141,8 +141,9 @@ TEST(LayerIteratorTest, SimpleTree) {
   LayerList render_surface_layerList;
   LayerTreeHostCommon::CalculateDrawProperties(root_layer.get(),
                                                root_layer->bounds(),
-                                               1,
-                                               1,
+                                               1.f,
+                                               1.f,
+                                               NULL,
                                                256,
                                                false,
                                                &render_surface_layerList);
@@ -187,8 +188,9 @@ TEST(LayerIteratorTest, ComplexTree) {
   LayerList render_surface_layerList;
   LayerTreeHostCommon::CalculateDrawProperties(root_layer.get(),
                                                root_layer->bounds(),
-                                               1,
-                                               1,
+                                               1.f,
+                                               1.f,
+                                               NULL,
                                                256,
                                                false,
                                                &render_surface_layerList);
@@ -248,8 +250,9 @@ TEST(LayerIteratorTest, ComplexTreeMultiSurface) {
   LayerList render_surface_layerList;
   LayerTreeHostCommon::CalculateDrawProperties(root_layer.get(),
                                                root_layer->bounds(),
-                                               1,
-                                               1,
+                                               1.f,
+                                               1.f,
+                                               NULL,
                                                256,
                                                false,
                                                &render_surface_layerList);

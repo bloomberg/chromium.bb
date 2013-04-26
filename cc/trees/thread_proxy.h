@@ -122,7 +122,6 @@ class ThreadProxy : public Proxy,
 
     base::TimeTicks monotonic_frame_begin_time;
     scoped_ptr<ScrollAndScaleSet> scroll_info;
-    gfx::Transform impl_transform;
     size_t memory_allocation_limit_bytes;
   };
 

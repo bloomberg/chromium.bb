@@ -247,9 +247,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   gfx::Vector2d scroll_delta() const { return gfx::Vector2d(); }
 
-  void SetImplTransform(const gfx::Transform& transform);
-  const gfx::Transform& impl_transform() const { return impl_transform_; }
-
   void SetDoubleSided(bool double_sided);
   bool double_sided() const { return double_sided_; }
 
@@ -324,12 +321,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void SetAutomaticallyComputeRasterScale(bool automatic);
 
   void ForceAutomaticRasterScaleToBeRecomputed();
-
-  // When true, the layer's contents are not scaled by the current page scale
-  // factor. SetBoundsContainPageScale() recursively sets the value on all
-  // child layers.
-  void SetBoundsContainPageScale(bool bounds_contain_page_scale);
-  bool bounds_contain_page_scale() const { return bounds_contain_page_scale_; }
 
   LayerTreeHost* layer_tree_host() const { return layer_tree_host_; }
 
@@ -489,9 +480,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // Transient properties.
   float raster_scale_;
   bool automatically_compute_raster_scale_;
-  bool bounds_contain_page_scale_;
-
-  gfx::Transform impl_transform_;
 
   std::vector<RequestCopyAsBitmapCallback> request_copy_callbacks_;
 

@@ -136,6 +136,7 @@ class TiledLayerTest : public testing::Test {
         layer_tree_host_->device_viewport_size(),
         layer_tree_host_->device_scale_factor(),
         1.f,    // page_scale_factor
+        NULL,
         layer_tree_host_->GetRendererCapabilities().max_texture_size,
         false,  // can_use_lcd_text
         &render_surface_layer_list);

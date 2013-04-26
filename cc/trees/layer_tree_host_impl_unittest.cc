@@ -709,7 +709,6 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
   DCHECK(scroll_layer);
 
   float min_page_scale = 1.f, max_page_scale = 4.f;
-  gfx::Transform identity_scale_transform;
 
   // The impl-based pinch zoom should adjust the max scroll position.
   {
@@ -717,7 +716,6 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
                                                            min_page_scale,
                                                            max_page_scale);
     host_impl_->active_tree()->SetPageScaleDelta(1.f);
-    scroll_layer->SetImplTransform(identity_scale_transform);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
 
     float page_scale_delta = 2.f;
@@ -742,7 +740,6 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
                                                            min_page_scale,
                                                            max_page_scale);
     host_impl_->active_tree()->SetPageScaleDelta(1.f);
-    scroll_layer->SetImplTransform(identity_scale_transform);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
 
     float page_scale_delta = 2.f;
@@ -775,14 +772,12 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
 
   float min_page_scale = 1.f;
   float max_page_scale = 4.f;
-  gfx::Transform identity_scale_transform;
 
   // Basic pinch zoom in gesture
   {
     host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f,
                                                            min_page_scale,
                                                            max_page_scale);
-    scroll_layer->SetImplTransform(identity_scale_transform);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
 
     float page_scale_delta = 2.f;
@@ -802,7 +797,6 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
     host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f,
                                                            min_page_scale,
                                                            max_page_scale);
-    scroll_layer->SetImplTransform(identity_scale_transform);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
     float page_scale_delta = 10.f;
 
@@ -820,7 +814,6 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
     host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f,
                                                            min_page_scale,
                                                            max_page_scale);
-    scroll_layer->SetImplTransform(identity_scale_transform);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
     scroll_layer->SetScrollOffset(gfx::Vector2d(50, 50));
 
@@ -841,7 +834,6 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
     host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f,
                                                            min_page_scale,
                                                            max_page_scale);
-    scroll_layer->SetImplTransform(identity_scale_transform);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
     scroll_layer->SetScrollOffset(gfx::Vector2d(20, 20));
 
@@ -862,7 +854,6 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
     host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f,
                                                            min_page_scale,
                                                            max_page_scale);
-    scroll_layer->SetImplTransform(identity_scale_transform);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
     scroll_layer->SetScrollOffset(gfx::Vector2d(20, 20));
 
@@ -897,14 +888,12 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimation) {
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(100);
   base::TimeTicks halfway_through_animation = start_time + duration / 2;
   base::TimeTicks end_time = start_time + duration;
-  gfx::Transform identity_scale_transform;
 
   // Non-anchor zoom-in
   {
     host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f,
                                                            min_page_scale,
                                                            max_page_scale);
-    scroll_layer->SetImplTransform(identity_scale_transform);
     scroll_layer->SetScrollOffset(gfx::Vector2d(50, 50));
 
     host_impl_->StartPageScaleAnimation(gfx::Vector2d(),
@@ -928,7 +917,6 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimation) {
     host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f,
                                                            min_page_scale,
                                                            max_page_scale);
-    scroll_layer->SetImplTransform(identity_scale_transform);
     scroll_layer->SetScrollOffset(gfx::Vector2d(50, 50));
 
     host_impl_->StartPageScaleAnimation(gfx::Vector2d(25, 25),
@@ -962,14 +950,12 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationNoOp) {
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(100);
   base::TimeTicks halfway_through_animation = start_time + duration / 2;
   base::TimeTicks end_time = start_time + duration;
-  gfx::Transform identity_scale_transform;
 
   // Anchor zoom with unchanged page scale should not change scroll or scale.
   {
     host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f,
                                                            min_page_scale,
                                                            max_page_scale);
-    scroll_layer->SetImplTransform(identity_scale_transform);
     scroll_layer->SetScrollOffset(gfx::Vector2d(50, 50));
 
     host_impl_->StartPageScaleAnimation(gfx::Vector2d(),
@@ -1542,58 +1528,7 @@ TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnMainThread) {
 
   // The page scale delta remains constant because the impl thread did not
   // scale.
-  // TODO(shawnsingh): If possible, use gfx::Transform() or Skia equality
-  //   functions. At the moment we avoid that because skia does exact bit-wise
-  //   equality checking that does not consider -0 == +0.
-  //   http://code.google.com/p/chromium/issues/detail?id=162747
-  EXPECT_EQ(1.0,
-            host_impl_->active_tree()->root_layer()->
-                impl_transform().matrix().getDouble(0, 0));
-  EXPECT_EQ(0.0,
-            host_impl_->active_tree()->root_layer()->
-                impl_transform().matrix().getDouble(0, 1));
-  EXPECT_EQ(0.0,
-            host_impl_->active_tree()->root_layer()->
-                impl_transform().matrix().getDouble(0, 2));
-  EXPECT_EQ(0.0,
-            host_impl_->active_tree()->root_layer()->
-                impl_transform().matrix().getDouble(0, 3));
-  EXPECT_EQ(0.0,
-            host_impl_->active_tree()->root_layer()->
-                impl_transform().matrix().getDouble(1, 0));
-  EXPECT_EQ(1.0,
-            host_impl_->active_tree()->root_layer()->
-                impl_transform().matrix().getDouble(1, 1));
-  EXPECT_EQ(0.0,
-            host_impl_->active_tree()->root_layer()->
-                impl_transform().matrix().getDouble(1, 2));
-  EXPECT_EQ(0.0,
-            host_impl_->active_tree()->root_layer()->
-                impl_transform().matrix().getDouble(1, 3));
-  EXPECT_EQ(0.0,
-            host_impl_->active_tree()->root_layer()->
-                impl_transform().matrix().getDouble(2, 0));
-  EXPECT_EQ(0.0,
-            host_impl_->active_tree()->root_layer()->
-                impl_transform().matrix().getDouble(2, 1));
-  EXPECT_EQ(1.0,
-            host_impl_->active_tree()->root_layer()->
-                impl_transform().matrix().getDouble(2, 2));
-  EXPECT_EQ(0.0,
-            host_impl_->active_tree()->root_layer()->
-                impl_transform().matrix().getDouble(2, 3));
-  EXPECT_EQ(0.0,
-            host_impl_->active_tree()->root_layer()->
-                impl_transform().matrix().getDouble(3, 0));
-  EXPECT_EQ(0.0,
-            host_impl_->active_tree()->root_layer()->
-                impl_transform().matrix().getDouble(3, 1));
-  EXPECT_EQ(0.0,
-            host_impl_->active_tree()->root_layer()->
-                impl_transform().matrix().getDouble(3, 2));
-  EXPECT_EQ(1.0,
-            host_impl_->active_tree()->root_layer()->
-                impl_transform().matrix().getDouble(3, 3));
+  EXPECT_EQ(1.f, host_impl_->active_tree()->page_scale_delta());
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnImplThread) {
@@ -1633,10 +1568,7 @@ TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnImplThread) {
             host_impl_->active_tree()->root_layer()->max_scroll_offset());
 
   // The page scale delta should match the new scale on the impl side.
-  gfx::Transform expected_scale;
-  expected_scale.Scale(page_scale, page_scale);
-  EXPECT_EQ(expected_scale,
-            host_impl_->active_tree()->root_layer()->impl_transform());
+  EXPECT_EQ(page_scale, host_impl_->active_tree()->total_page_scale_factor());
 }
 
 TEST_F(LayerTreeHostImplTest, PageScaleDeltaAppliedToRootScrollLayerOnly) {
@@ -1665,10 +1597,12 @@ TEST_F(LayerTreeHostImplTest, PageScaleDeltaAppliedToRootScrollLayerOnly) {
   host_impl_->PinchGestureEnd();
   DrawOneFrame();
 
-  // The page scale delta should only be applied to the scrollable root layer.
-  EXPECT_EQ(root->impl_transform(), new_page_scale_matrix);
-  EXPECT_EQ(child->impl_transform(), default_page_scale_matrix);
-  EXPECT_EQ(grand_child->impl_transform(), default_page_scale_matrix);
+  EXPECT_EQ(1.f, root->contents_scale_x());
+  EXPECT_EQ(1.f, root->contents_scale_y());
+  EXPECT_EQ(1.f, child->contents_scale_x());
+  EXPECT_EQ(1.f, child->contents_scale_y());
+  EXPECT_EQ(1.f, grand_child->contents_scale_x());
+  EXPECT_EQ(1.f, grand_child->contents_scale_y());
 
   // Make sure all the layers are drawn with the page scale delta applied, i.e.,
   // the page scale delta on the root layer is applied hierarchically.
@@ -1727,8 +1661,7 @@ TEST_F(LayerTreeHostImplTest, ScrollChildAndChangePageScaleOnMainThread) {
 
   // The page scale delta remains constant because the impl thread did not
   // scale.
-  gfx::Transform identity_transform;
-  EXPECT_EQ(child->impl_transform(), gfx::Transform());
+  EXPECT_EQ(1.f, host_impl_->active_tree()->page_scale_delta());
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollChildBeyondLimit) {
@@ -1849,9 +1782,6 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
     // Scrolling should be adjusted from viewport space.
     host_impl_->active_tree()->SetPageScaleFactorAndLimits(2.f, 2.f, 2.f);
     host_impl_->active_tree()->SetPageScaleDelta(1.f);
-    gfx::Transform scale_transform;
-    scale_transform.Scale(2.f, 2.f);
-    host_impl_->active_tree()->root_layer()->SetImplTransform(scale_transform);
 
     scroll_delta = gfx::Vector2d(0, -2);
     EXPECT_EQ(InputHandlerClient::ScrollStarted,

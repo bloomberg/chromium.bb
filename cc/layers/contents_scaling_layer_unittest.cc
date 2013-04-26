@@ -53,6 +53,7 @@ void CalcDrawProps(Layer* root, float device_scale) {
       gfx::Size(500, 500),
       device_scale,
       1.f,
+      NULL,
       1024,
       false,
       &render_surface_layer_list);

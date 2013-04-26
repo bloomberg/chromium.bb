@@ -4,6 +4,8 @@
 
 #include "cc/layers/layer_position_constraint.h"
 
+#include <vector>
+
 #include "cc/layers/layer_impl.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
@@ -33,6 +35,7 @@ void SetLayerPropertiesForTesting(LayerImpl* layer,
 void ExecuteCalculateDrawProperties(LayerImpl* root_layer,
                                     float device_scale_factor,
                                     float page_scale_factor,
+                                    LayerImpl* page_scale_application_layer,
                                     bool can_use_lcd_text) {
   gfx::Transform identity_matrix;
   std::vector<LayerImpl*> dummy_render_surface_layer_list;
@@ -48,6 +51,7 @@ void ExecuteCalculateDrawProperties(LayerImpl* root_layer,
                                                device_viewport_size,
                                                device_scale_factor,
                                                page_scale_factor,
+                                               page_scale_application_layer,
                                                dummy_max_texture_size,
                                                can_use_lcd_text,
                                                &dummy_render_surface_layer_list,
@@ -55,7 +59,9 @@ void ExecuteCalculateDrawProperties(LayerImpl* root_layer,
 }
 
 void ExecuteCalculateDrawProperties(LayerImpl* root_layer) {
-  ExecuteCalculateDrawProperties(root_layer, 1.f, 1.f, false);
+  LayerImpl* page_scale_application_layer = NULL;
+  ExecuteCalculateDrawProperties(
+      root_layer, 1.f, 1.f, page_scale_application_layer, false);
 }
 
 class LayerPositionConstraintTest : public testing::Test {
@@ -118,6 +124,7 @@ class LayerPositionConstraintTest : public testing::Test {
 
     return root.Pass();
   }
+
  protected:
   FakeImplProxy proxy_;
   FakeLayerTreeHostImpl host_impl_;

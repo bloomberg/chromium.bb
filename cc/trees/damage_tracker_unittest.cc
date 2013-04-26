@@ -38,6 +38,7 @@ void ExecuteCalculateDrawProperties(
                                                root->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list,

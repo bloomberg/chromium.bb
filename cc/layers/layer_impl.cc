@@ -903,14 +903,6 @@ gfx::Vector2dF LayerImpl::TotalScrollOffset() const {
   return scroll_offset_ + scroll_delta_;
 }
 
-void LayerImpl::SetImplTransform(const gfx::Transform& transform) {
-  if (impl_transform_ == transform)
-    return;
-
-  impl_transform_ = transform;
-  NoteLayerPropertyChangedForSubtree();
-}
-
 void LayerImpl::SetDoubleSided(bool double_sided) {
   if (double_sided_ == double_sided)
     return;

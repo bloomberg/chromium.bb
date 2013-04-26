@@ -318,6 +318,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
         root->bounds(),
         1.f,
         1.f,
+        NULL,
         dummy_max_texture_size,
         false,
         &render_surface_layer_list_impl_,
@@ -337,6 +338,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
                                                  root->bounds(),
                                                  1.f,
                                                  1.f,
+                                                 NULL,
                                                  dummy_max_texture_size,
                                                  false,
                                                  &render_surface_layer_list_);

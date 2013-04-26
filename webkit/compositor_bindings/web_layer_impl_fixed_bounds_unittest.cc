@@ -133,6 +133,7 @@ void CompareFixedBoundsLayerAndNormalLayer(
       kDeviceViewportSize,
       kDeviceScaleFactor,
       kPageScaleFactor,
+      root_layer->layer(),
       kMaxTextureSize,
       false,
       &render_surface_layer_list);
@@ -149,6 +150,7 @@ void CompareFixedBoundsLayerAndNormalLayer(
       kDeviceViewportSize,
       kDeviceScaleFactor,
       kPageScaleFactor,
+      root_layer->layer(),
       kMaxTextureSize,
       false,
       &render_surface_layer_list);

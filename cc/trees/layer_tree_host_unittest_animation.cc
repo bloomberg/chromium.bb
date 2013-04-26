@@ -778,6 +778,7 @@ class LayerTreeHostAnimationTestPinchZoomScrollbars
 
   virtual void SetupTree() OVERRIDE {
     root_layer_->SetBounds(gfx::Size(100, 100));
+    root_layer_->SetScrollable(true);
     layer_tree_host()->SetRootLayer(root_layer_);
     LayerTreeHostAnimationTest::SetupTree();
   }

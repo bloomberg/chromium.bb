@@ -295,9 +295,6 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
 
   gfx::Vector2dF TotalScrollOffset() const;
 
-  void SetImplTransform(const gfx::Transform& transform);
-  const gfx::Transform& impl_transform() const { return impl_transform_; }
-
   void SetSentScrollDelta(gfx::Vector2d sent_scroll_delta);
   gfx::Vector2d sent_scroll_delta() const { return sent_scroll_delta_; }
 
@@ -504,7 +501,6 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   gfx::Vector2dF scroll_delta_;
   gfx::Vector2d sent_scroll_delta_;
   gfx::Vector2d max_scroll_offset_;
-  gfx::Transform impl_transform_;
   gfx::Vector2dF last_scroll_offset_;
 
   // The global depth value of the center of the layer. This value is used

@@ -48,15 +48,6 @@ void WebContentLayerImpl::setDoubleSided(bool double_sided) {
   layer_->layer()->SetDoubleSided(double_sided);
 }
 
-void WebContentLayerImpl::setBoundsContainPageScale(
-    bool bounds_contain_page_scale) {
-  return layer_->layer()->SetBoundsContainPageScale(bounds_contain_page_scale);
-}
-
-bool WebContentLayerImpl::boundsContainPageScale() const {
-  return layer_->layer()->bounds_contain_page_scale();
-}
-
 void WebContentLayerImpl::setAutomaticallyComputeRasterScale(bool automatic) {
   layer_->layer()->SetAutomaticallyComputeRasterScale(automatic);
 }

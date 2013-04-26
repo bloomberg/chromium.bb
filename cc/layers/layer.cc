@@ -54,7 +54,6 @@ Layer::Layer()
       replica_layer_(NULL),
       raster_scale_(1.f),
       automatically_compute_raster_scale_(false),
-      bounds_contain_page_scale_(false),
       layer_scroll_client_(NULL) {
   if (layer_id_ < 0) {
     s_next_layer_id = 1;
@@ -556,14 +555,6 @@ void Layer::SetForceRenderSurface(bool force) {
   SetNeedsCommit();
 }
 
-void Layer::SetImplTransform(const gfx::Transform& transform) {
-  DCHECK(IsPropertyChangeAllowed());
-  if (impl_transform_ == transform)
-    return;
-  impl_transform_ = transform;
-  SetNeedsCommit();
-}
-
 void Layer::SetDoubleSided(bool double_sided) {
   DCHECK(IsPropertyChangeAllowed());
   if (double_sided_ == double_sided)
@@ -775,17 +766,6 @@ void Layer::ForceAutomaticRasterScaleToBeRecomputed() {
     return;
   raster_scale_ = 0.f;
   SetNeedsCommit();
-}
-
-void Layer::SetBoundsContainPageScale(bool bounds_contain_page_scale) {
-  for (size_t i = 0; i < children_.size(); ++i)
-    children_[i]->SetBoundsContainPageScale(bounds_contain_page_scale);
-
-  if (bounds_contain_page_scale == bounds_contain_page_scale_)
-    return;
-
-  bounds_contain_page_scale_ = bounds_contain_page_scale;
-  SetNeedsDisplay();
 }
 
 void Layer::CreateRenderSurface() {

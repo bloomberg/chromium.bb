@@ -84,7 +84,9 @@ void SetLayerPropertiesForTesting(LayerImpl* layer,
 void ExecuteCalculateDrawProperties(Layer* root_layer,
                                     float device_scale_factor,
                                     float page_scale_factor,
+                                    Layer* page_scale_application_layer,
                                     bool can_use_lcd_text) {
+  EXPECT_TRUE(page_scale_application_layer || (page_scale_factor == 1.f));
   gfx::Transform identity_matrix;
   LayerList dummy_render_surface_layer_list;
   int dummy_max_texture_size = 512;
@@ -100,6 +102,7 @@ void ExecuteCalculateDrawProperties(Layer* root_layer,
       device_viewport_size,
       device_scale_factor,
       page_scale_factor,
+      page_scale_application_layer,
       dummy_max_texture_size,
       can_use_lcd_text,
       &dummy_render_surface_layer_list);
@@ -108,6 +111,7 @@ void ExecuteCalculateDrawProperties(Layer* root_layer,
 void ExecuteCalculateDrawProperties(LayerImpl* root_layer,
                                     float device_scale_factor,
                                     float page_scale_factor,
+                                    LayerImpl* page_scale_application_layer,
                                     bool can_use_lcd_text) {
   gfx::Transform identity_matrix;
   LayerImplList dummy_render_surface_layer_list;
@@ -123,6 +127,7 @@ void ExecuteCalculateDrawProperties(LayerImpl* root_layer,
                                                device_viewport_size,
                                                device_scale_factor,
                                                page_scale_factor,
+                                               page_scale_application_layer,
                                                dummy_max_texture_size,
                                                can_use_lcd_text,
                                                &dummy_render_surface_layer_list,
@@ -131,21 +136,32 @@ void ExecuteCalculateDrawProperties(LayerImpl* root_layer,
 
 template <class LayerType>
 void ExecuteCalculateDrawProperties(LayerType* root_layer) {
-  ExecuteCalculateDrawProperties(root_layer, 1.f, 1.f, false);
+  LayerType* page_scale_application_layer = NULL;
+  ExecuteCalculateDrawProperties(
+      root_layer, 1.f, 1.f, page_scale_application_layer, false);
 }
 
 template <class LayerType>
 void ExecuteCalculateDrawProperties(LayerType* root_layer,
                                     float device_scale_factor) {
-  ExecuteCalculateDrawProperties(root_layer, device_scale_factor, 1.f, false);
+  LayerType* page_scale_application_layer = NULL;
+  ExecuteCalculateDrawProperties(root_layer,
+                                 device_scale_factor,
+                                 1.f,
+                                 page_scale_application_layer,
+                                 false);
 }
 
 template <class LayerType>
 void ExecuteCalculateDrawProperties(LayerType* root_layer,
                                     float device_scale_factor,
-                                    float page_scale_factor) {
-  ExecuteCalculateDrawProperties(
-      root_layer, device_scale_factor, page_scale_factor, false);
+                                    float page_scale_factor,
+                                    LayerType* page_scale_application_layer) {
+  ExecuteCalculateDrawProperties(root_layer,
+                                 device_scale_factor,
+                                 page_scale_factor,
+                                 page_scale_application_layer,
+                                 false);
 }
 
 class LayerWithForcedDrawsContent : public Layer {
@@ -413,8 +429,6 @@ TEST(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
   scroll_layer->SetScrollOffset(kScrollOffset);
   scroll_layer->SetScrollDelta(kScrollDelta);
   gfx::Transform impl_transform;
-  impl_transform.Scale(kPageScale, kPageScale);
-  scroll_layer->SetImplTransform(impl_transform);
   scroll_layer->AddChild(sublayer_scoped_ptr.Pass());
 
   scoped_ptr<LayerImpl> root(LayerImpl::Create(host_impl.active_tree(), 3));
@@ -427,7 +441,8 @@ TEST(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
                                false);
   root->AddChild(scroll_layerScopedPtr.Pass());
 
-  ExecuteCalculateDrawProperties(root.get(), kDeviceScale, kPageScale);
+  ExecuteCalculateDrawProperties(
+      root.get(), kDeviceScale, kPageScale, scroll_layer);
   gfx::Transform expected_transform = identity_matrix;
   gfx::PointF sub_layer_screen_position = kScrollLayerPosition - kScrollDelta;
   sub_layer_screen_position.Scale(kPageScale * kDeviceScale);
@@ -449,7 +464,8 @@ TEST(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
                                kScrollLayerPosition,
                                gfx::Size(10, 20),
                                false);
-  ExecuteCalculateDrawProperties(root.get(), kDeviceScale, kPageScale);
+  ExecuteCalculateDrawProperties(
+      root.get(), kDeviceScale, kPageScale, scroll_layer);
   expected_transform.MakeIdentity();
   expected_transform.Translate(
       MathUtil::Round(kTranslateX * kPageScale * kDeviceScale +
@@ -1508,6 +1524,7 @@ TEST(LayerTreeHostCommonTest,
                                                parent->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
@@ -1555,6 +1572,7 @@ TEST(LayerTreeHostCommonTest, RenderSurfaceListForTransparentChild) {
                                                parent->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
@@ -1612,6 +1630,7 @@ TEST(LayerTreeHostCommonTest, ForceRenderSurface) {
                                                parent->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
@@ -1627,6 +1646,7 @@ TEST(LayerTreeHostCommonTest, ForceRenderSurface) {
                                                parent->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
@@ -1726,6 +1746,7 @@ TEST(LayerTreeHostCommonTest, ClipRectCullsRenderSurfaces) {
                                                parent->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
@@ -1805,6 +1826,7 @@ TEST(LayerTreeHostCommonTest, ClipRectCullsSurfaceWithoutVisibleContent) {
                                                parent->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
@@ -1827,6 +1849,7 @@ TEST(LayerTreeHostCommonTest, ClipRectCullsSurfaceWithoutVisibleContent) {
                                                parent->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
@@ -1929,6 +1952,7 @@ TEST(LayerTreeHostCommonTest, IsClippedIsSetCorrectly) {
                                                parent->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
@@ -1956,6 +1980,7 @@ TEST(LayerTreeHostCommonTest, IsClippedIsSetCorrectly) {
                                                parent->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
@@ -1982,6 +2007,7 @@ TEST(LayerTreeHostCommonTest, IsClippedIsSetCorrectly) {
                                                parent->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
@@ -2088,6 +2114,7 @@ TEST(LayerTreeHostCommonTest, drawable_content_rectForLayers) {
                                                parent->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
@@ -2231,6 +2258,7 @@ TEST(LayerTreeHostCommonTest, ClipRectIsPropagatedCorrectlyToSurfaces) {
                                                parent->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
@@ -3559,6 +3587,7 @@ TEST(LayerTreeHostCommonTest, BackFaceCullingWithoutPreserves3d) {
                                                parent->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
@@ -3751,6 +3780,7 @@ TEST(LayerTreeHostCommonTest, BackFaceCullingWithPreserves3d) {
                                                parent->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
@@ -3889,6 +3919,7 @@ TEST(LayerTreeHostCommonTest, BackFaceCullingWithAnimatingTransforms) {
                                                parent->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
@@ -4015,6 +4046,7 @@ TEST(LayerTreeHostCommonTest,
                                                parent->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
@@ -4091,6 +4123,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSingleLayer) {
                                                root->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list,
@@ -4166,6 +4199,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSingleLayerAndHud) {
                                                hud_bounds,
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list,
@@ -4233,6 +4267,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForUninvertibleTransform) {
                                                root->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list,
@@ -4309,6 +4344,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSinglePositionedLayer) {
                                                root->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list,
@@ -4374,6 +4410,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSingleRotatedLayer) {
                                                root->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list,
@@ -4452,6 +4489,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSinglePerspectiveLayer) {
                                                root->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list,
@@ -4541,6 +4579,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSingleLayerWithScaledContents) {
                                                root->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list,
@@ -4641,6 +4680,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSimpleClippedLayer) {
                                                root->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list,
@@ -4774,6 +4814,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForMultiClippedRotatedLayer) {
                                                root->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list,
@@ -4900,6 +4941,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForNonClippingIntermediateLayer) {
                                                root->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list,
@@ -5017,6 +5059,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForMultipleLayers) {
                                                root->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list,
@@ -5170,6 +5213,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForMultipleLayerLists) {
                                                root->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list,
@@ -5287,6 +5331,7 @@ TEST(LayerTreeHostCommonTest, HitCheckingTouchHandlerRegionsForSingleLayer) {
                                                root->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list,
@@ -5384,6 +5429,7 @@ TEST(LayerTreeHostCommonTest,
                                                root->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list,
@@ -5471,6 +5517,7 @@ TEST(LayerTreeHostCommonTest,
                                                root->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list,
@@ -5576,6 +5623,7 @@ TEST(LayerTreeHostCommonTest,
                                                root->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list,
@@ -5682,16 +5730,13 @@ TEST(LayerTreeHostCommonTest,
   int dummy_max_texture_size = 512;
   float device_scale_factor = 3.f;
   float page_scale_factor = 5.f;
-  gfx::Transform page_scale_transform;
-  page_scale_transform.Scale(page_scale_factor, page_scale_factor);
-  // Applying the page_scale_factor through impl_transform.
-  root->SetImplTransform(page_scale_transform);
   gfx::Size scaled_bounds_for_root = gfx::ToCeiledSize(
       gfx::ScaleSize(root->bounds(), device_scale_factor * page_scale_factor));
   LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                scaled_bounds_for_root,
                                                device_scale_factor,
-                                               1,
+                                               page_scale_factor,
+                                               root.get(),
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list,
@@ -5831,6 +5876,7 @@ TEST(LayerTreeHostCommonTest,
                                                root->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list,
@@ -5971,6 +6017,7 @@ TEST(LayerTreeHostCommonTest, LayerTransformsInHighDPI) {
                                                parent->bounds(),
                                                device_scale_factor,
                                                page_scale_factor,
+                                               parent.get(),
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
@@ -6102,14 +6149,11 @@ TEST(LayerTreeHostCommonTest, SurfaceLayerTransformsInHighDPI) {
   float device_scale_factor = 2.5f;
   float page_scale_factor = 3.f;
 
-  gfx::Transform page_scale_transform;
-  page_scale_transform.Scale(page_scale_factor, page_scale_factor);
-  parent->SetImplTransform(page_scale_transform);
-
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
                                                device_scale_factor,
                                                page_scale_factor,
+                                               parent.get(),
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
@@ -6209,6 +6253,7 @@ TEST(LayerTreeHostCommonTest,
                                                parent->bounds(),
                                                device_scale_factor,
                                                page_scale_factor,
+                                               parent.get(),
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
@@ -6341,10 +6386,6 @@ TEST(LayerTreeHostCommonTest, ContentsScale) {
   child_no_auto_scale->SetAutomaticallyComputeRasterScale(false);
   child_no_auto_scale->SetRasterScale(fixed_raster_scale);
 
-  // FIXME: Remove this when page_scale_factor is applied in the compositor.
-  // Page scale should not apply to the parent.
-  parent->SetBoundsContainPageScale(true);
-
   parent->AddChild(child_scale);
   parent->AddChild(child_empty);
   parent->AddChild(child_no_scale);
@@ -6365,11 +6406,13 @@ TEST(LayerTreeHostCommonTest, ContentsScale) {
                                                parent->bounds(),
                                                device_scale_factor,
                                                page_scale_factor,
+                                               parent.get(),
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
 
-  EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * initial_parent_scale, parent);
+  EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor *
+                           initial_parent_scale, parent);
   EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor *
                            initial_parent_scale * initial_child_scale,
                            child_scale);
@@ -6408,21 +6451,18 @@ TEST(LayerTreeHostCommonTest, ContentsScale) {
   device_scale_factor = 2.25f;
   page_scale_factor = 1.25f;
 
-  // FIXME: Remove this when page_scale_factor is applied in the compositor.
-  page_scale_matrix = identity_matrix;
-  page_scale_matrix.Scale(page_scale_factor, page_scale_factor);
-  parent->SetSublayerTransform(page_scale_matrix);
-
   render_surface_layer_list.clear();
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
                                                device_scale_factor,
                                                page_scale_factor,
+                                               parent.get(),
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
-
-  EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * initial_parent_scale, parent);
+  EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor *
+                           initial_parent_scale,
+                           parent);
   EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor *
                            initial_parent_scale * initial_child_scale,
                            child_scale);
@@ -6446,11 +6486,14 @@ TEST(LayerTreeHostCommonTest, ContentsScale) {
                                                parent->bounds(),
                                                device_scale_factor,
                                                page_scale_factor,
+                                               parent.get(),
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
 
-  EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * initial_parent_scale, parent);
+  EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor *
+                           initial_parent_scale,
+                           parent);
   EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor,
                            child_scale);
   EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor,
@@ -6462,21 +6505,19 @@ TEST(LayerTreeHostCommonTest, ContentsScale) {
   device_scale_factor = 2.75f;
   page_scale_factor = 1.75f;
 
-  // FIXME: Remove this when page_scale_factor is applied in the compositor.
-  page_scale_matrix = identity_matrix;
-  page_scale_matrix.Scale(page_scale_factor, page_scale_factor);
-  parent->SetSublayerTransform(page_scale_matrix);
-
   render_surface_layer_list.clear();
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
                                                device_scale_factor,
                                                page_scale_factor,
+                                               parent.get(),
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
 
-  EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * initial_parent_scale, parent);
+  EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor *
+                           initial_parent_scale,
+                           parent);
   EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor,
                            child_scale);
   EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor,
@@ -6518,10 +6559,6 @@ TEST(LayerTreeHostCommonTest, SmallContentsScale) {
                                gfx::Size(10, 10),
                                true);
 
-  // FIXME: Remove this when page_scale_factor is applied in the compositor.
-  // Page scale should not apply to the parent.
-  parent->SetBoundsContainPageScale(true);
-
   parent->AddChild(child_scale);
 
   LayerList render_surface_layer_list;
@@ -6530,20 +6567,18 @@ TEST(LayerTreeHostCommonTest, SmallContentsScale) {
   float device_scale_factor = 2.5f;
   float page_scale_factor = 0.01f;
 
-  // FIXME: Remove this when page_scale_factor is applied in the compositor.
-  gfx::Transform page_scale_matrix;
-  page_scale_matrix.Scale(page_scale_factor, page_scale_factor);
-  parent->SetSublayerTransform(page_scale_matrix);
-
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
                                                device_scale_factor,
                                                page_scale_factor,
+                                               parent.get(),
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
 
-  EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * initial_parent_scale, parent);
+  EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor *
+                           initial_parent_scale,
+                           parent);
   // The child's scale is < 1, so we should not save and use that scale factor.
   EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor * 1,
                            child_scale);
@@ -6560,11 +6595,14 @@ TEST(LayerTreeHostCommonTest, SmallContentsScale) {
                                                parent->bounds(),
                                                device_scale_factor,
                                                page_scale_factor,
+                                               parent.get(),
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
 
-  EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * initial_parent_scale, parent);
+  EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor *
+                           initial_parent_scale,
+                           parent);
   EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor *
                            initial_parent_scale * final_child_scale,
                            child_scale);
@@ -6685,10 +6723,6 @@ TEST(LayerTreeHostCommonTest, ContentsScaleForSurfaces) {
                                gfx::Size(10, 10),
                                true);
 
-  // FIXME: Remove this when page_scale_factor is applied in the compositor.
-  // Page scale should not apply to the parent.
-  parent->SetBoundsContainPageScale(true);
-
   parent->AddChild(surface_scale);
   parent->AddChild(surface_no_scale);
   parent->AddChild(surface_no_auto_scale);
@@ -6711,20 +6745,17 @@ TEST(LayerTreeHostCommonTest, ContentsScaleForSurfaces) {
   double device_scale_factor = 5;
   double page_scale_factor = 7;
 
-  // FIXME: Remove this when page_scale_factor is applied in the compositor.
-  gfx::Transform page_scale_matrix;
-  page_scale_matrix.Scale(page_scale_factor, page_scale_factor);
-  parent->SetSublayerTransform(page_scale_matrix);
-
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
                                                device_scale_factor,
                                                page_scale_factor,
+                                               parent.get(),
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
-
-  EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * initial_parent_scale, parent);
+  EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor *
+                           initial_parent_scale,
+                           parent);
   EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor *
                            initial_parent_scale * initial_child_scale,
                            surface_scale);
@@ -6732,7 +6763,6 @@ TEST(LayerTreeHostCommonTest, ContentsScaleForSurfaces) {
   EXPECT_CONTENTS_SCALE_EQ(
       device_scale_factor * page_scale_factor * fixed_raster_scale,
       surface_no_auto_scale);
-
   EXPECT_CONTENTS_SCALE_EQ(
       device_scale_factor * page_scale_factor * initial_parent_scale *
       initial_child_scale * initial_child_scale,
@@ -6921,6 +6951,7 @@ TEST(LayerTreeHostCommonTest, ContentsScaleForAnimatingLayer) {
                                                parent->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
@@ -6937,6 +6968,7 @@ TEST(LayerTreeHostCommonTest, ContentsScaleForAnimatingLayer) {
                                                parent->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
@@ -7004,7 +7036,8 @@ TEST(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
                                                device_scale_factor,
-                                               1,
+                                               1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
@@ -7140,6 +7173,7 @@ TEST(LayerTreeHostCommonTest,
                                                parent->bounds(),
                                                device_scale_factor,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list);
@@ -7292,6 +7326,7 @@ TEST(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
                                                root->bounds(),
                                                1.f,
                                                1.f,
+                                               NULL,
                                                dummy_max_texture_size,
                                                false,
                                                &render_surface_layer_list,
@@ -7350,7 +7385,7 @@ class LCDTextTest : public testing::TestWithParam<LCDTextTestParam> {
 TEST_P(LCDTextTest, CanUseLCDText) {
   // Case 1: Identity transform.
   gfx::Transform identity_matrix;
-  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, can_use_lcd_text_);
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_);
   EXPECT_EQ(can_use_lcd_text_, root_->can_use_lcd_text());
   EXPECT_EQ(can_use_lcd_text_, child_->can_use_lcd_text());
   EXPECT_EQ(can_use_lcd_text_, grand_child_->can_use_lcd_text());
@@ -7359,7 +7394,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   gfx::Transform integral_translation;
   integral_translation.Translate(1.0, 2.0);
   child_->SetTransform(integral_translation);
-  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, can_use_lcd_text_);
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_);
   EXPECT_EQ(can_use_lcd_text_, root_->can_use_lcd_text());
   EXPECT_EQ(can_use_lcd_text_, child_->can_use_lcd_text());
   EXPECT_EQ(can_use_lcd_text_, grand_child_->can_use_lcd_text());
@@ -7368,7 +7403,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   gfx::Transform non_integral_translation;
   non_integral_translation.Translate(1.5, 2.5);
   child_->SetTransform(non_integral_translation);
-  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, can_use_lcd_text_);
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_);
   EXPECT_EQ(can_use_lcd_text_, root_->can_use_lcd_text());
   EXPECT_FALSE(child_->can_use_lcd_text());
   EXPECT_FALSE(grand_child_->can_use_lcd_text());
@@ -7377,7 +7412,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   gfx::Transform rotation;
   rotation.Rotate(10.0);
   child_->SetTransform(rotation);
-  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, can_use_lcd_text_);
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_);
   EXPECT_EQ(can_use_lcd_text_, root_->can_use_lcd_text());
   EXPECT_FALSE(child_->can_use_lcd_text());
   EXPECT_FALSE(grand_child_->can_use_lcd_text());
@@ -7386,7 +7421,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   gfx::Transform scale;
   scale.Scale(2.0, 2.0);
   child_->SetTransform(scale);
-  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, can_use_lcd_text_);
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_);
   EXPECT_EQ(can_use_lcd_text_, root_->can_use_lcd_text());
   EXPECT_FALSE(child_->can_use_lcd_text());
   EXPECT_FALSE(grand_child_->can_use_lcd_text());
@@ -7395,7 +7430,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   gfx::Transform skew;
   skew.SkewX(10.0);
   child_->SetTransform(skew);
-  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, can_use_lcd_text_);
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_);
   EXPECT_EQ(can_use_lcd_text_, root_->can_use_lcd_text());
   EXPECT_FALSE(child_->can_use_lcd_text());
   EXPECT_FALSE(grand_child_->can_use_lcd_text());
@@ -7403,7 +7438,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   // Case 7: Translucent.
   child_->SetTransform(identity_matrix);
   child_->SetOpacity(0.5f);
-  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, can_use_lcd_text_);
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_);
   EXPECT_EQ(can_use_lcd_text_, root_->can_use_lcd_text());
   EXPECT_FALSE(child_->can_use_lcd_text());
   EXPECT_FALSE(grand_child_->can_use_lcd_text());
@@ -7411,7 +7446,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   // Case 8: Sanity check: restore transform and opacity.
   child_->SetTransform(identity_matrix);
   child_->SetOpacity(1.f);
-  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, can_use_lcd_text_);
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_);
   EXPECT_EQ(can_use_lcd_text_, root_->can_use_lcd_text());
   EXPECT_EQ(can_use_lcd_text_, child_->can_use_lcd_text());
   EXPECT_EQ(can_use_lcd_text_, grand_child_->can_use_lcd_text());
@@ -7419,7 +7454,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
 
 TEST_P(LCDTextTest, verifycan_use_lcd_textWithAnimation) {
   // Sanity check: Make sure can_use_lcd_text_ is set on each node.
-  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, can_use_lcd_text_);
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_);
   EXPECT_EQ(can_use_lcd_text_, root_->can_use_lcd_text());
   EXPECT_EQ(can_use_lcd_text_, child_->can_use_lcd_text());
   EXPECT_EQ(can_use_lcd_text_, grand_child_->can_use_lcd_text());
@@ -7429,7 +7464,7 @@ TEST_P(LCDTextTest, verifycan_use_lcd_textWithAnimation) {
   AddOpacityTransitionToController(
       child_->layer_animation_controller(), 10.0, 0.9f, 0.1f, false);
 
-  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, can_use_lcd_text_);
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_);
   // Text AA should not be adjusted while animation is active.
   // Make sure LCD text AA setting remains unchanged.
   EXPECT_EQ(can_use_lcd_text_, root_->can_use_lcd_text());

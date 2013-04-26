@@ -600,8 +600,6 @@ void ThreadProxy::ScheduledActionBeginFrame() {
       new BeginFrameAndCommitState);
   begin_frame_state->monotonic_frame_begin_time = base::TimeTicks::Now();
   begin_frame_state->scroll_info = layer_tree_host_impl_->ProcessScrollDeltas();
-  begin_frame_state->impl_transform =
-      layer_tree_host_impl_->active_tree()->ImplTransform();
   DCHECK_GT(layer_tree_host_impl_->memory_allocation_limit_bytes(), 0u);
   begin_frame_state->memory_allocation_limit_bytes =
       layer_tree_host_impl_->memory_allocation_limit_bytes();
@@ -642,10 +640,8 @@ void ThreadProxy::BeginFrame(
   // callbacks will trigger another frame.
   animate_requested_ = false;
 
-  if (begin_frame_state) {
+  if (begin_frame_state)
     layer_tree_host_->ApplyScrollAndScale(*begin_frame_state->scroll_info);
-    layer_tree_host_->SetImplTransform(begin_frame_state->impl_transform);
-  }
 
   if (!in_composite_and_readback_ && !layer_tree_host_->visible()) {
     commit_requested_ = false;
