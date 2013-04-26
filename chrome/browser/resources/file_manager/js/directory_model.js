@@ -1056,18 +1056,18 @@ DirectoryModel.prototype.selectIndex = function(index) {
  */
 DirectoryModel.prototype.resolveRoots_ = function(callback) {
   var groups = {
+    drive: null,
     downloads: null,
     archives: null,
-    removables: null,
-    drive: null,
-    driveSpecialSearchRoots: null
+    removables: null
   };
-  if (util.platform.newUI()) {
+  if (!util.platform.newUI()) {
     groups = {
+      drive: null,
+      driveSpecialSearchRoots: null,
       downloads: null,
       archives: null,
-      removables: null,
-      drive: null
+      removables: null
     };
   }
   var self = this;
