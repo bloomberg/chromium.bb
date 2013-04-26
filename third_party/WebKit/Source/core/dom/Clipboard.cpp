@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/dom/Clipboard.h"
 
-#include "FileList.h"
+#include "core/fileapi/FileList.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/page/Frame.h"

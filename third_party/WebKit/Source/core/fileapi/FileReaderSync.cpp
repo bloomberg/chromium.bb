@@ -30,12 +30,12 @@
 
 #include "config.h"
 
-#include "FileReaderSync.h"
+#include "core/fileapi/FileReaderSync.h"
 
-#include "Blob.h"
-#include "BlobURL.h"
-#include "FileException.h"
-#include "FileReaderLoader.h"
+#include "core/fileapi/Blob.h"
+#include "core/fileapi/BlobURL.h"
+#include "core/fileapi/FileException.h"
+#include "core/fileapi/FileReaderLoader.h"
 #include <wtf/ArrayBuffer.h>
 #include <wtf/PassRefPtr.h>
 

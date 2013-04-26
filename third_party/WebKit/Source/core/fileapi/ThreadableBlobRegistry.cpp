@@ -30,9 +30,9 @@
 
 #include "config.h"
 
-#include "ThreadableBlobRegistry.h"
+#include "core/fileapi/ThreadableBlobRegistry.h"
 
-#include "BlobURL.h"
+#include "core/fileapi/BlobURL.h"
 #include "core/page/SecurityOrigin.h"
 #include "core/platform/network/BlobData.h"
 #include "core/platform/network/BlobRegistry.h"

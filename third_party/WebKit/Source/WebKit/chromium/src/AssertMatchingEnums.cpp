@@ -33,7 +33,6 @@
 
 #include "config.h"
 
-#include "FileError.h"
 #include "FileSystemType.h"
 #include "GeolocationError.h"
 #include "GeolocationPosition.h"
@@ -90,6 +89,7 @@
 #include "core/dom/IconURL.h"
 #include "core/editing/EditorInsertAction.h"
 #include "core/editing/TextAffinity.h"
+#include "core/fileapi/FileError.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/PageVisibilityState.h"

@@ -29,9 +29,9 @@
 #include "config.h"
 #include "core/page/SecurityOrigin.h"
 
-#include "BlobURL.h"
-#include "ThreadableBlobRegistry.h"
 #include "core/dom/Document.h"
+#include "core/fileapi/BlobURL.h"
+#include "core/fileapi/ThreadableBlobRegistry.h"
 #include "core/page/SecurityPolicy.h"
 #include "core/platform/FileSystem.h"
 #include "core/platform/KURL.h"

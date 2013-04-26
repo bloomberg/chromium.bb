@@ -27,7 +27,7 @@
 #ifndef ResourceResponse_h
 #define ResourceResponse_h
 
-#include "File.h"
+#include "core/fileapi/File.h"
 #include "core/platform/KURL.h"
 #include "core/platform/network/HTTPHeaderMap.h"
 #include "core/platform/network/ResourceLoadInfo.h"

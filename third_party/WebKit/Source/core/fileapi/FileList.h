@@ -26,8 +26,8 @@
 #ifndef FileList_h
 #define FileList_h
 
-#include "File.h"
 #include "ScriptWrappable.h"
+#include "core/fileapi/File.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>

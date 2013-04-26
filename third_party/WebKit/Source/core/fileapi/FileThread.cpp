@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "FileThread.h"
+#include "core/fileapi/FileThread.h"
 
 #include "core/platform/Logging.h"
 #include <wtf/AutodrainedPool.h>

@@ -31,9 +31,9 @@
 #include "config.h"
 #include "DOMFormData.h"
 
-#include "Blob.h"
 #include "HTMLFormControlElement.h"
 #include "HTMLFormElement.h"
+#include "core/fileapi/Blob.h"
 #include "core/platform/text/TextEncoding.h"
 #include <wtf/text/WTFString.h>
 

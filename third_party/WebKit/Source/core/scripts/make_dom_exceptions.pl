@@ -55,9 +55,10 @@ sub generateCode()
 {
     my $parsedParametersRef = shift;
     my $parsedItemsRef = shift;
+    my $parsedItemPathsRef = shift;
 
     generateHeader($parsedParametersRef, $parsedItemsRef);
-    generateImplementation($parsedParametersRef, $parsedItemsRef);
+    generateImplementation($parsedParametersRef, $parsedItemsRef, $parsedItemPathsRef);
     $InCompiler->generateInterfacesHeader();
     $InCompiler->generateHeadersHeader()
 }
@@ -128,9 +129,11 @@ sub generateImplementation()
 {
     my $parsedParametersRef = shift;
     my $parsedItemsRef = shift;
+    my $parsedItemPathsRef = shift;
 
     my $F;
     my %parsedItems = %{ $parsedItemsRef };
+    my %parsedItemPaths = %{ $parsedItemPathsRef };
 
     my $outputFile = "$outputDir/ExceptionCodeDescription.cpp";
 
@@ -147,7 +150,9 @@ sub generateImplementation()
         my $conditional = $parsedItems{$exceptionType}{"conditional"};
 
         print F "#if ENABLE($conditional)\n" if $conditional;
-        print F "#include \"$exceptionType.h\"\n";
+        my $path = "$exceptionType.h";
+        $path = $parsedItemPaths{$exceptionType} . "/" . $path if defined($parsedItemPaths{$exceptionType});
+        print F "#include \"$path\"\n";
         print F "#endif\n" if $conditional;
     }
 

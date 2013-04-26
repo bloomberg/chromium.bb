@@ -31,11 +31,11 @@
 #ifndef FileReader_h
 #define FileReader_h
 
-#include "FileError.h"
-#include "FileReaderLoader.h"
-#include "FileReaderLoaderClient.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventTarget.h"
+#include "core/fileapi/FileError.h"
+#include "core/fileapi/FileReaderLoader.h"
+#include "core/fileapi/FileReaderLoaderClient.h"
 #include <wtf/Forward.h>
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>

@@ -23,9 +23,7 @@
 #include "config.h"
 #include "XMLHttpRequest.h"
 
-#include "Blob.h"
 #include "DOMFormData.h"
-#include "File.h"
 #include "HTMLDocument.h"
 #include "InspectorInstrumentation.h"
 #include "ScriptCallStack.h"
@@ -43,6 +41,8 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/editing/markup.h"
+#include "core/fileapi/Blob.h"
+#include "core/fileapi/File.h"
 #include "core/loader/CrossOriginAccessControl.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/ThreadableLoader.h"

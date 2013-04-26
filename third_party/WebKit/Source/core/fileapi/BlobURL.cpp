@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "BlobURL.h"
+#include "core/fileapi/BlobURL.h"
 
 #include "core/page/SecurityOrigin.h"
 #include "core/platform/KURL.h"

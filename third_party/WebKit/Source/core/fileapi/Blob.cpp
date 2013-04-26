@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "Blob.h"
+#include "core/fileapi/Blob.h"
 
-#include "BlobURL.h"
-#include "File.h"
 #include "ScriptCallStack.h"
-#include "ThreadableBlobRegistry.h"
 #include "core/dom/ScriptExecutionContext.h"
+#include "core/fileapi/BlobURL.h"
+#include "core/fileapi/File.h"
+#include "core/fileapi/ThreadableBlobRegistry.h"
 #include "core/platform/HistogramSupport.h"
 
 namespace WebCore {

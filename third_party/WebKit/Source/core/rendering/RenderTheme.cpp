@@ -23,7 +23,6 @@
 #include "core/rendering/RenderTheme.h"
 
 #include "CSSValueKeywords.h"
-#include "FileList.h"
 #include "HTMLInputElement.h"
 #include "HTMLMeterElement.h"
 #include "HTMLNames.h"
@@ -32,6 +31,7 @@
 #include "TextControlInnerElements.h"
 #include "core/dom/Document.h"
 #include "core/editing/FrameSelection.h"
+#include "core/fileapi/FileList.h"
 #include "core/page/FocusController.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"

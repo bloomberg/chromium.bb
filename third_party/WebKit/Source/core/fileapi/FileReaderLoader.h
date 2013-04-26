@@ -31,7 +31,7 @@
 #ifndef FileReaderLoader_h
 #define FileReaderLoader_h
 
-#include "FileError.h"
+#include "core/fileapi/FileError.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/platform/KURL.h"
 #include "core/platform/text/TextEncoding.h"

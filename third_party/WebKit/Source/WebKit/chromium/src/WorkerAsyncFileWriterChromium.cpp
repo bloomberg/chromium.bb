@@ -31,7 +31,6 @@
 #include "config.h"
 #include "WorkerAsyncFileWriterChromium.h"
 
-#include "Blob.h"
 #include "WebFileWriter.h"
 #include "WebWorkerBase.h"
 #include "WorkerContext.h"
@@ -39,6 +38,7 @@
 #include "WorkerLoaderProxy.h"
 #include "WorkerThread.h"
 #include "core/dom/ScriptExecutionContext.h"
+#include "core/fileapi/Blob.h"
 #include "core/platform/AsyncFileSystem.h"
 #include <public/WebFileSystem.h>
 #include <public/WebURL.h>

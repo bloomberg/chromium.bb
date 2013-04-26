@@ -32,8 +32,8 @@
 #include "AsyncFileWriterChromium.h"
 
 #include "AsyncFileWriterClient.h"
-#include "Blob.h"
 #include "WebFileWriter.h"
+#include "core/fileapi/Blob.h"
 #include <public/WebURL.h>
 
 namespace WebCore {

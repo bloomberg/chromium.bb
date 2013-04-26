@@ -51,7 +51,6 @@
       '<(bindings_dir)',
       '<(bindings_dir)/v8',
       '<(bindings_dir)/v8/custom',
-      '../fileapi',
       '../html',
       '../html/canvas',
       '../html/parser',

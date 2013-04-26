@@ -31,10 +31,10 @@
 #include "AsyncFileSystemChromium.h"
 
 #include "AsyncFileWriterChromium.h"
-#include "BlobURL.h"
-#include "ThreadableBlobRegistry.h"
 #include "WebFileSystemCallbacksImpl.h"
 #include "WebFileWriter.h"
+#include "core/fileapi/BlobURL.h"
+#include "core/fileapi/ThreadableBlobRegistry.h"
 #include "core/page/SecurityOrigin.h"
 #include "core/platform/AsyncFileSystemCallbacks.h"
 #include "core/platform/FileMetadata.h"

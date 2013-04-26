@@ -22,8 +22,6 @@
 #include "config.h"
 #include "FileInputType.h"
 
-#include "File.h"
-#include "FileList.h"
 #include "FormController.h"
 #include "FormDataList.h"
 #include "HTMLInputElement.h"
@@ -33,6 +31,8 @@
 #include "core/dom/ElementShadow.h"
 #include "core/dom/Event.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/fileapi/File.h"
+#include "core/fileapi/FileList.h"
 #include "core/page/Chrome.h"
 #include "core/page/Frame.h"
 #include "core/page/RuntimeEnabledFeatures.h"

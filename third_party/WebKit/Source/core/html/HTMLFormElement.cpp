@@ -27,7 +27,6 @@
 
 #include <limits>
 #include "DOMFormData.h"
-#include "FileList.h"
 #include "FormController.h"
 #include "FormDataList.h"
 #include "HTMLCollection.h"
@@ -45,6 +44,7 @@
 #include "core/dom/EventNames.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/fileapi/FileList.h"
 #include "core/loader/FormState.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"

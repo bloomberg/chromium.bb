@@ -26,8 +26,8 @@
 #ifndef PublicURLManager_h
 #define PublicURLManager_h
 
-#include "ThreadableBlobRegistry.h"
 #include "core/dom/ScriptExecutionContext.h"
+#include "core/fileapi/ThreadableBlobRegistry.h"
 #include <wtf/HashSet.h>
 #include <wtf/text/WTFString.h>
 

@@ -28,14 +28,14 @@
 
 #include "DOMURL.h"
 
-#include "Blob.h"
-#include "BlobURL.h"
 #include "MediaSource.h"
 #include "MediaSourceRegistry.h"
 #include "PublicURLManager.h"
-#include "ThreadableBlobRegistry.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ScriptExecutionContext.h"
+#include "core/fileapi/Blob.h"
+#include "core/fileapi/BlobURL.h"
+#include "core/fileapi/ThreadableBlobRegistry.h"
 #include "core/loader/cache/MemoryCache.h"
 #include "core/page/SecurityOrigin.h"
 #include "core/platform/KURL.h"

@@ -30,13 +30,13 @@
 
 #include "config.h"
 
-#include "FileReaderLoader.h"
+#include "core/fileapi/FileReaderLoader.h"
 
-#include "Blob.h"
-#include "BlobURL.h"
-#include "FileReaderLoaderClient.h"
-#include "ThreadableBlobRegistry.h"
 #include "core/dom/ScriptExecutionContext.h"
+#include "core/fileapi/Blob.h"
+#include "core/fileapi/BlobURL.h"
+#include "core/fileapi/FileReaderLoaderClient.h"
+#include "core/fileapi/ThreadableBlobRegistry.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/platform/network/ResourceRequest.h"

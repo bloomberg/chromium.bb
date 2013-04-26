@@ -6,7 +6,7 @@ DedicatedWorkerContext
 core/loader/appcache/DOMApplicationCache
 DOMWindow
 EventSource
-FileReader
+core/fileapi/FileReader
 FileWriter
 core/css/FontLoader
 IDBDatabase

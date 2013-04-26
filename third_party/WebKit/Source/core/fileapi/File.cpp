@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "File.h"
+#include "core/fileapi/File.h"
 
 #include "core/platform/FileMetadata.h"
 #include "core/platform/FileSystem.h"

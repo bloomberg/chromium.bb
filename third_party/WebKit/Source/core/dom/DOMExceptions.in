@@ -2,7 +2,7 @@ namespace=Exception
 
 core/dom/DOMCoreException
 core/dom/EventException
-FileException
+core/fileapi/FileException
 core/dom/RangeException
 SQLException
 SVGException conditional=SVG

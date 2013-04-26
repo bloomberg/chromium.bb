@@ -31,7 +31,7 @@
 #ifndef ChromiumDataObjectItem_h 
 #define ChromiumDataObjectItem_h
 
-#include "File.h"
+#include "core/fileapi/File.h"
 #include "core/platform/KURL.h"
 #include "core/platform/SharedBuffer.h"
 #include <wtf/RefCounted.h>

@@ -28,7 +28,7 @@
 
 #include "config.h"
 
-#include "FileException.h"
+#include "core/fileapi/FileException.h"
 
 namespace WebCore {
 

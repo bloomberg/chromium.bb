@@ -21,7 +21,7 @@
 #ifndef FormDataList_h
 #define FormDataList_h
 
-#include "Blob.h"
+#include "core/fileapi/Blob.h"
 #include "core/platform/text/TextEncoding.h"
 #include <wtf/Forward.h>
 #include <wtf/text/CString.h>

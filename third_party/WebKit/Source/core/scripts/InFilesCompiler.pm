@@ -115,7 +115,7 @@ sub compile()
     close($file);
     die "Failed to read from file: $inputFile" if (keys %parsedItems == 0);
 
-    &$generateCode(\%parsedParameters, \%parsedItems);
+    &$generateCode(\%parsedParameters, \%parsedItems, \%parsedItemPaths);
 }
 
 sub license()

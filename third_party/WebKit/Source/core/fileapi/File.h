@@ -26,7 +26,7 @@
 #ifndef File_h
 #define File_h
 
-#include "Blob.h"
+#include "core/fileapi/Blob.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>
