@@ -83,7 +83,9 @@ SurfaceTextureTransportClient::GetCompositingSurface(int surface_id) {
 }
 
 void SurfaceTextureTransportClient::SetSize(const gfx::Size& size) {
-  surface_texture_->SetDefaultBufferSize(size.width(), size.height());
+  if (size.width() > 0 && size.height() > 0) {
+    surface_texture_->SetDefaultBufferSize(size.width(), size.height());
+  }
   video_layer_->SetBounds(size);
   video_frame_ = NULL;
 }

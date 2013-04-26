@@ -113,9 +113,14 @@ void SurfaceTextureBridge::SetDefaultBufferSize(int width, int height) {
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
 
-  JNI_SurfaceTexture::Java_SurfaceTexture_setDefaultBufferSize(
-      env, j_surface_texture_.obj(), static_cast<jint>(width),
-      static_cast<jint>(height));
+  if (width > 0 && height > 0) {
+    JNI_SurfaceTexture::Java_SurfaceTexture_setDefaultBufferSize(
+        env, j_surface_texture_.obj(), static_cast<jint>(width),
+        static_cast<jint>(height));
+  } else {
+    LOG(WARNING) << "Not setting surface texture buffer size - "
+                    "width or height is 0";
+  }
 }
 
 void SurfaceTextureBridge::AttachToGLContext(int texture_id) {
