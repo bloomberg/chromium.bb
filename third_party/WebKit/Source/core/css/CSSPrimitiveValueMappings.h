@@ -1256,6 +1256,9 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EDisplay e)
         case INLINE_GRID:
             m_value.ident = CSSValueWebkitInlineGrid;
             break;
+        case LAZY_BLOCK:
+            m_value.ident = CSSValueLazyBlock;
+            break;
         case NONE:
             m_value.ident = CSSValueNone;
             break;

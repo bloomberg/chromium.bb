@@ -99,6 +99,7 @@
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderLayerCompositor.h"
+#include "core/rendering/RenderLazyBlock.h"
 #include "core/rendering/RenderMarquee.h"
 #include "core/rendering/RenderReplica.h"
 #include "core/rendering/RenderScrollbar.h"
@@ -2340,6 +2341,8 @@ void RenderLayer::scrollTo(int x, int y)
             view->frameView()->updateAnnotatedRegions();
 
             view->updateWidgetPositions();
+
+            view->markLazyBlocksForLayout();
         }
 
         if (!m_updatingMarqueePosition) {

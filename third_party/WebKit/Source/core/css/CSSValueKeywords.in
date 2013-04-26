@@ -335,6 +335,7 @@ table-caption
 -webkit-inline-flex
 -webkit-grid
 -webkit-inline-grid
+lazy-block
 //none
 //
 // CSS_PROP_CURSOR:

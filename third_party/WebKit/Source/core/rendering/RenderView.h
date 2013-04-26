@@ -32,6 +32,7 @@ namespace WebCore {
 
 class FlowThreadController;
 class RenderLayerCompositor;
+class RenderLazyBlock;
 class RenderQuote;
 class RenderWidget;
 
@@ -203,6 +204,10 @@ public:
     void setRenderQuoteHead(RenderQuote* head) { m_renderQuoteHead = head; }
     RenderQuote* renderQuoteHead() const { return m_renderQuoteHead; }
 
+    void setFirstLazyBlock(RenderLazyBlock* block) { m_firstLazyBlock = block; }
+    RenderLazyBlock* firstLazyBlock() const { return m_firstLazyBlock; }
+    void markLazyBlocksForLayout();
+
     // FIXME: This is a work around because the current implementation of counters
     // requires walking the entire tree repeatedly and most pages don't actually use either
     // feature so we shouldn't take the performance hit when not needed. Long term we should
@@ -318,6 +323,7 @@ private:
     OwnPtr<FlowThreadController> m_flowThreadController;
     RefPtr<IntervalArena> m_intervalArena;
 
+    RenderLazyBlock* m_firstLazyBlock;
     RenderQuote* m_renderQuoteHead;
     unsigned m_renderCounterCount;
 };

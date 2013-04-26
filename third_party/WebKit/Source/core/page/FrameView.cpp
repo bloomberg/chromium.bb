@@ -68,6 +68,7 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderLayerCompositor.h"
+#include "core/rendering/RenderLazyBlock.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderScrollbarPart.h"
@@ -1119,6 +1120,8 @@ void FrameView::layout(bool allowSubtree)
         cache->postNotification(root, AXObjectCache::AXLayoutComplete, true);
     updateAnnotatedRegions();
 
+    layoutLazyBlocks();
+
     ASSERT(!root->needsLayout());
 
     updateCanBlitOnScrollRecursively();
@@ -1166,6 +1169,35 @@ void FrameView::layout(bool allowSubtree)
         return;
 
     page->chrome()->client()->layoutUpdated(frame());
+}
+
+void FrameView::layoutLazyBlocks()
+{
+    // FIXME: This infinite recursion protection would seem to break plugins
+    // doing things that require lazy blocks to layout.
+    if (m_nestedLayoutCount != 1)
+        return;
+
+    if (!renderView()->firstLazyBlock())
+        return;
+
+    // First mark all lazy blocks as needing layout and perform another layout.
+    for (RenderLazyBlock* block = renderView()->firstLazyBlock(); block; block = block->next())
+        block->markForNestedLayout();
+
+    layout();
+
+    // FIXME: This is pretty awful if you start nesting lazy blocks, we should
+    // signal to the nested blocks to avoid doing work until the second pass.
+
+    // Next walk all lazy blocks and find nested ones, these need another layout
+    // since the first one would not have placed them correctly inside the viewport.
+    for (RenderLazyBlock* block = renderView()->firstLazyBlock(); block; block = block->next()) {
+        if (!block->isNested())
+            continue;
+        block->setNeedsLayout(true);
+        layout();
+    }
 }
 
 RenderBox* FrameView::embeddedContentBox() const
@@ -1644,6 +1676,8 @@ void FrameView::scrollPositionChanged()
     if (RenderView* renderView = this->renderView()) {
         if (renderView->usesCompositing())
             renderView->compositor()->frameViewDidScroll();
+
+        renderView->markLazyBlocksForLayout();
     }
 }
 

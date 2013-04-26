@@ -676,11 +676,13 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         // inline | block | list-item | run-in | inline-block | table |
         // inline-table | table-row-group | table-header-group | table-footer-group | table-row |
         // table-column-group | table-column | table-cell | table-caption | -webkit-box | -webkit-inline-box | none | inherit
-        // -webkit-flex | -webkit-inline-flex | -webkit-grid | -webkit-inline-grid
+        // -webkit-flex | -webkit-inline-flex | -webkit-grid | -webkit-inline-grid | lazy-block
         if ((valueID >= CSSValueInline && valueID <= CSSValueWebkitInlineFlex) || valueID == CSSValueNone)
             return true;
         if (parserContext.isCSSGridLayoutEnabled && (valueID == CSSValueWebkitGrid || valueID == CSSValueWebkitInlineGrid))
             return true;
+        if (valueID == CSSValueLazyBlock)
+            return RuntimeEnabledFeatures::lazyLayoutEnabled();
         break;
 
     case CSSPropertyEmptyCells: // show | hide | inherit
