@@ -1882,6 +1882,8 @@
         'browser/ui/webui/chrome_web_ui_controller_factory.h',
         'browser/ui/webui/chromeos/about_network.cc',
         'browser/ui/webui/chromeos/about_network.h',
+        'browser/ui/webui/chromeos/app_login_ui.cc',
+        'browser/ui/webui/chromeos/app_login_ui.h',
         'browser/ui/webui/chromeos/app_launch_ui.cc',
         'browser/ui/webui/chromeos/app_launch_ui.h',
         'browser/ui/webui/chromeos/bluetooth_pairing_ui.cc',

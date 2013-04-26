@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/identity/identity_signin_flow.h"
 
+#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
@@ -23,8 +24,17 @@ IdentitySigninFlow::~IdentitySigninFlow() {
 }
 
 void IdentitySigninFlow::Start() {
-#if !defined(OS_CHROMEOS)
   DCHECK(delegate_);
+
+#if defined(OS_CHROMEOS)
+  // In normal mode (i.e. non-forced app mode), the user has to log out to
+  // re-establish credentials. Let the global error popup handle everything.
+  if (!chrome::IsRunningInForcedAppMode()) {
+    delegate_->SigninFailed();
+    return;
+  }
+#endif
+
   TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
   registrar_.Add(this,
                  chrome::NOTIFICATION_TOKEN_AVAILABLE,
@@ -33,11 +43,6 @@ void IdentitySigninFlow::Start() {
   LoginUIService* login_ui_service =
       LoginUIServiceFactory::GetForProfile(profile_);
   login_ui_service->ShowLoginPopup();
-#else
-  // On Chrome OS, the user has to log out to re-establish credentials. Let the
-  // global error popup handle everything.
-  delegate_->SigninFailed();
-#endif
 }
 
 void IdentitySigninFlow::Observe(int type,

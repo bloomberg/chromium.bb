@@ -599,8 +599,10 @@ void UserManagerImpl::Observe(int type,
       RetrieveTrustedDevicePolicies();
       break;
     case chrome::NOTIFICATION_PROFILE_ADDED:
-      if (IsUserLoggedIn() && !IsLoggedInAsGuest() &&
-          !IsLoggedInAsLocallyManagedUser()) {
+      if (IsUserLoggedIn() &&
+          !IsLoggedInAsGuest() &&
+          !IsLoggedInAsLocallyManagedUser() &&
+          !IsLoggedInAsKioskApp()) {
         Profile* profile = content::Source<Profile>(source).ptr();
         if (!profile->IsOffTheRecord() &&
             // TODO(nkostylev): We should observe all logged in user's profiles.

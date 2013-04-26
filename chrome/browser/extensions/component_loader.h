@@ -119,10 +119,6 @@ class ComponentLoader {
   void AddFileManagerExtension();
   void AddImageLoaderExtension();
 
-#if defined(OS_CHROMEOS)
-  void AddGaiaAuthExtension();
-#endif
-
   // Add the enterprise webstore extension, or reload it if already loaded.
   void AddOrReloadEnterpriseWebStore();
 

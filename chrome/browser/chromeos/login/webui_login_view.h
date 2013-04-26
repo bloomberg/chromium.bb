@@ -8,6 +8,8 @@
 #include <map>
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/login/scoped_gaia_auth_extension.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -156,6 +158,8 @@ class WebUILoginView : public views::View,
 
   // True to forward keyboard event.
   bool forward_keyboard_event_;
+
+  scoped_ptr<ScopedGaiaAuthExtension> auth_extension_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUILoginView);
 };

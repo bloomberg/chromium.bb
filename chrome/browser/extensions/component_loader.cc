@@ -284,19 +284,6 @@ void ComponentLoader::AddImageLoaderExtension() {
 #endif  // defined(IMAGE_LOADER_EXTENSION)
 }
 
-#if defined(OS_CHROMEOS)
-void ComponentLoader::AddGaiaAuthExtension() {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAuthExtensionPath)) {
-    base::FilePath auth_extension_path =
-        command_line->GetSwitchValuePath(switches::kAuthExtensionPath);
-    Add(IDR_GAIA_TEST_AUTH_MANIFEST, auth_extension_path);
-    return;
-  }
-  Add(IDR_GAIA_AUTH_MANIFEST, base::FilePath(FILE_PATH_LITERAL("gaia_auth")));
-}
-#endif  // NDEBUG
-
 void ComponentLoader::AddOrReloadEnterpriseWebStore() {
   base::FilePath path(FILE_PATH_LITERAL("enterprise_web_store"));
 
@@ -361,9 +348,6 @@ void ComponentLoader::AddDefaultComponentExtensions(
 #if defined(OS_CHROMEOS)
   Add(IDR_MOBILE_MANIFEST,
       base::FilePath(FILE_PATH_LITERAL("/usr/share/chromeos-assets/mobile")));
-
-  if (skip_session_components)
-    AddGaiaAuthExtension();
 
 #if defined(GOOGLE_CHROME_BUILD)
   if (browser_defaults::enable_help_app) {

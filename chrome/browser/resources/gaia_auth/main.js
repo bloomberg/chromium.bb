@@ -5,6 +5,10 @@
 function Authenticator() {
 }
 
+/**
+ * Singleton getter of Authenticator.
+ * @return {Object} The singleton instance of Authenticator.
+ */
 Authenticator.getInstance = function() {
   if (!Authenticator.instance_) {
     Authenticator.instance_ = new Authenticator();
@@ -31,6 +35,7 @@ Authenticator.prototype = {
 
   initialize: function() {
     var params = getUrlSearchParams(location.search);
+    this.parentPage_ = params['parentPage'] || this.PARENT_PAGE;
     this.gaiaOrigin_ = params['gaiaOrigin'] || this.GAIA_PAGE_ORIGIN;
     this.gaiaUrlPath_ = params['gaiaUrlPath'] || '';
     this.inputLang_ = params['hl'];
@@ -85,7 +90,7 @@ Authenticator.prototype = {
     var msg = {
       'method': 'loginUILoaded'
     };
-    window.parent.postMessage(msg, this.PARENT_PAGE);
+    window.parent.postMessage(msg, this.parentPage_);
   },
 
   onMessage: function(e) {
@@ -106,7 +111,7 @@ Authenticator.prototype = {
           'email': this.email_,
           'password': this.password_
         };
-        window.parent.postMessage(msg, this.PARENT_PAGE);
+        window.parent.postMessage(msg, this.parentPage_);
       } else {
         console.log('#### Authenticator.onMessage: unexpected attemptToken!?');
       }
@@ -117,4 +122,3 @@ Authenticator.prototype = {
 };
 
 Authenticator.getInstance().initialize();
-
