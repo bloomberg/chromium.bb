@@ -8,9 +8,9 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
+#include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -20,7 +20,7 @@ namespace drive {
 
 namespace {
 
-// Callback for DriveResourceMetadata::SetLargestChangestamp.
+// Callback for ResourceMetadata::SetLargestChangestamp.
 // Runs |on_complete_callback|. |on_complete_callback| must not be null.
 void RunOnCompleteCallback(const base::Closure& on_complete_callback,
                            FileError error) {
@@ -82,7 +82,7 @@ class ChangeListProcessor::ChangeListToEntryProtoMapUMAStats {
 };
 
 ChangeListProcessor::ChangeListProcessor(
-    DriveResourceMetadata* resource_metadata)
+    ResourceMetadata* resource_metadata)
   : resource_metadata_(resource_metadata),
     largest_changestamp_(0),
     ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {

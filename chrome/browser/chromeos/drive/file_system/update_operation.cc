@@ -20,7 +20,7 @@ namespace file_system {
 
 UpdateOperation::UpdateOperation(
     DriveCache* cache,
-    DriveResourceMetadata* metadata,
+    ResourceMetadata* metadata,
     JobScheduler* scheduler,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     OperationObserver* observer)

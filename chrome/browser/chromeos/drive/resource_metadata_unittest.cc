@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
+#include "chrome/browser/chromeos/drive/resource_metadata.h"
 
 #include <algorithm>
 #include <string>
@@ -30,7 +30,7 @@ namespace {
 const char kTestRootResourceId[] = "test_root";
 
 // The changestamp of the resource metadata used in
-// DriveResourceMetadataTest.
+// ResourceMetadataTest.
 const int64 kTestChangestamp = 100;
 
 // Returns the sorted base names from |entries|.
@@ -52,9 +52,9 @@ void CountFile(int* count, const DriveEntryProto& entry) {
 
 }  // namespace
 
-class DriveResourceMetadataTest : public testing::Test {
+class ResourceMetadataTest : public testing::Test {
  protected:
-  DriveResourceMetadataTest()
+  ResourceMetadataTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_) {
   }
 
@@ -69,7 +69,7 @@ class DriveResourceMetadataTest : public testing::Test {
   // drive/root/dir2/file8
   // drive/root/dir1/dir3/file9
   // drive/root/dir1/dir3/file10
-  static void Init(DriveResourceMetadata* resource_metadata);
+  static void Init(ResourceMetadata* resource_metadata);
 
   // Creates a DriveEntryProto.
   static DriveEntryProto CreateDriveEntryProto(
@@ -78,7 +78,7 @@ class DriveResourceMetadataTest : public testing::Test {
       const std::string& parent_resource_id);
 
   // Adds a DriveEntryProto to the metadata tree. Returns true on success.
-  static bool AddDriveEntryProto(DriveResourceMetadata* resource_metadata,
+  static bool AddDriveEntryProto(ResourceMetadata* resource_metadata,
                                  int sequence_id,
                                  bool is_directory,
                                  const std::string& parent_resource_id);
@@ -91,8 +91,8 @@ class DriveResourceMetadataTest : public testing::Test {
         content::BrowserThread::GetBlockingPool();
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
-    resource_metadata_.reset(new DriveResourceMetadata(temp_dir_.path(),
-                                                       blocking_task_runner_));
+    resource_metadata_.reset(new ResourceMetadata(temp_dir_.path(),
+                                                  blocking_task_runner_));
     Init(resource_metadata_.get());
   }
 
@@ -130,7 +130,7 @@ class DriveResourceMetadataTest : public testing::Test {
 
   base::ScopedTempDir temp_dir_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
+  scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;
 
  private:
@@ -139,7 +139,7 @@ class DriveResourceMetadataTest : public testing::Test {
 };
 
 // static
-void DriveResourceMetadataTest::Init(DriveResourceMetadata* resource_metadata) {
+void ResourceMetadataTest::Init(ResourceMetadata* resource_metadata) {
   FileError error = FILE_ERROR_FAILED;
   resource_metadata->Initialize(
       google_apis::test_util::CreateCopyResultCallback(&error));
@@ -190,7 +190,7 @@ void DriveResourceMetadataTest::Init(DriveResourceMetadata* resource_metadata) {
 }
 
 // static
-DriveEntryProto DriveResourceMetadataTest::CreateDriveEntryProto(
+DriveEntryProto ResourceMetadataTest::CreateDriveEntryProto(
     int sequence_id,
     bool is_directory,
     const std::string& parent_resource_id) {
@@ -218,8 +218,8 @@ DriveEntryProto DriveResourceMetadataTest::CreateDriveEntryProto(
   return entry_proto;
 }
 
-bool DriveResourceMetadataTest::AddDriveEntryProto(
-    DriveResourceMetadata* resource_metadata,
+bool ResourceMetadataTest::AddDriveEntryProto(
+    ResourceMetadata* resource_metadata,
     int sequence_id,
     bool is_directory,
     const std::string& parent_resource_id) {
@@ -236,10 +236,10 @@ bool DriveResourceMetadataTest::AddDriveEntryProto(
   return FILE_ERROR_OK == error;
 }
 
-TEST_F(DriveResourceMetadataTest, LargestChangestamp) {
-  scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
-      resource_metadata(new DriveResourceMetadata(temp_dir_.path(),
-                                                  blocking_task_runner_));
+TEST_F(ResourceMetadataTest, LargestChangestamp) {
+  scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
+      resource_metadata(new ResourceMetadata(temp_dir_.path(),
+                                             blocking_task_runner_));
   FileError error = FILE_ERROR_FAILED;
   resource_metadata->Initialize(
       google_apis::test_util::CreateCopyResultCallback(&error));
@@ -260,10 +260,10 @@ TEST_F(DriveResourceMetadataTest, LargestChangestamp) {
   DCHECK_EQ(in_changestamp, out_changestamp);
 }
 
-TEST_F(DriveResourceMetadataTest, GetEntryInfoByResourceId_RootDirectory) {
-  scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
-      resource_metadata(new DriveResourceMetadata(temp_dir_.path(),
-                                                  blocking_task_runner_));
+TEST_F(ResourceMetadataTest, GetEntryInfoByResourceId_RootDirectory) {
+  scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
+      resource_metadata(new ResourceMetadata(temp_dir_.path(),
+                                             blocking_task_runner_));
   FileError error = FILE_ERROR_FAILED;
   resource_metadata->Initialize(
       google_apis::test_util::CreateCopyResultCallback(&error));
@@ -285,7 +285,7 @@ TEST_F(DriveResourceMetadataTest, GetEntryInfoByResourceId_RootDirectory) {
   EXPECT_EQ("drive", entry_proto->base_name());
 }
 
-TEST_F(DriveResourceMetadataTest, GetEntryInfoByResourceId) {
+TEST_F(ResourceMetadataTest, GetEntryInfoByResourceId) {
   // Confirm that an existing file is found.
   FileError error = FILE_ERROR_FAILED;
   base::FilePath drive_file_path;
@@ -313,7 +313,7 @@ TEST_F(DriveResourceMetadataTest, GetEntryInfoByResourceId) {
   EXPECT_FALSE(entry_proto.get());
 }
 
-TEST_F(DriveResourceMetadataTest, GetEntryInfoByPath) {
+TEST_F(ResourceMetadataTest, GetEntryInfoByPath) {
   // Confirm that an existing file is found.
   FileError error = FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProto> entry_proto;
@@ -366,7 +366,7 @@ TEST_F(DriveResourceMetadataTest, GetEntryInfoByPath) {
   EXPECT_FALSE(entry_proto.get());
 }
 
-TEST_F(DriveResourceMetadataTest, ReadDirectoryByPath) {
+TEST_F(ResourceMetadataTest, ReadDirectoryByPath) {
   // Confirm that an existing directory is found.
   FileError error = FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProtoVector> entries;
@@ -404,7 +404,7 @@ TEST_F(DriveResourceMetadataTest, ReadDirectoryByPath) {
   EXPECT_FALSE(entries.get());
 }
 
-TEST_F(DriveResourceMetadataTest, GetEntryInfoPairByPaths) {
+TEST_F(ResourceMetadataTest, GetEntryInfoPairByPaths) {
   // Confirm that existing two files are found.
   scoped_ptr<EntryInfoPairResult> pair_result;
   resource_metadata_->GetEntryInfoPairByPaths(
@@ -462,7 +462,7 @@ TEST_F(DriveResourceMetadataTest, GetEntryInfoPairByPaths) {
   ASSERT_FALSE(pair_result->second.proto.get());
 }
 
-TEST_F(DriveResourceMetadataTest, RemoveEntry) {
+TEST_F(ResourceMetadataTest, RemoveEntry) {
   // Make sure file9 is found.
   FileError error = FILE_ERROR_FAILED;
   base::FilePath drive_file_path;
@@ -546,7 +546,7 @@ TEST_F(DriveResourceMetadataTest, RemoveEntry) {
   EXPECT_EQ(FILE_ERROR_ACCESS_DENIED, error);
 }
 
-TEST_F(DriveResourceMetadataTest, MoveEntryToDirectory) {
+TEST_F(ResourceMetadataTest, MoveEntryToDirectory) {
   FileError error = FILE_ERROR_FAILED;
   base::FilePath drive_file_path;
   scoped_ptr<DriveEntryProto> entry_proto;
@@ -635,7 +635,7 @@ TEST_F(DriveResourceMetadataTest, MoveEntryToDirectory) {
             drive_file_path);
 }
 
-TEST_F(DriveResourceMetadataTest, RenameEntry) {
+TEST_F(ResourceMetadataTest, RenameEntry) {
   FileError error = FILE_ERROR_FAILED;
   base::FilePath drive_file_path;
   scoped_ptr<DriveEntryProto> entry_proto;
@@ -693,7 +693,7 @@ TEST_F(DriveResourceMetadataTest, RenameEntry) {
   EXPECT_EQ(base::FilePath(), drive_file_path);
 }
 
-TEST_F(DriveResourceMetadataTest, RefreshEntry) {
+TEST_F(ResourceMetadataTest, RefreshEntry) {
   FileError error = FILE_ERROR_FAILED;
   base::FilePath drive_file_path;
   scoped_ptr<DriveEntryProto> entry_proto;
@@ -799,7 +799,7 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry) {
   EXPECT_EQ(FILE_ERROR_INVALID_OPERATION, error);
 }
 
-TEST_F(DriveResourceMetadataTest, RefreshDirectory_EmtpyMap) {
+TEST_F(ResourceMetadataTest, RefreshDirectory_EmtpyMap) {
   base::FilePath kDirectoryPath(FILE_PATH_LITERAL("drive/root/dir1"));
   const int64 kNewChangestamp = kTestChangestamp + 1;
 
@@ -849,7 +849,7 @@ TEST_F(DriveResourceMetadataTest, RefreshDirectory_EmtpyMap) {
   ASSERT_TRUE(entries->empty());
 }
 
-TEST_F(DriveResourceMetadataTest, RefreshDirectory_NonEmptyMap) {
+TEST_F(ResourceMetadataTest, RefreshDirectory_NonEmptyMap) {
   base::FilePath kDirectoryPath(FILE_PATH_LITERAL("drive/root/dir1"));
   const int64 kNewChangestamp = kTestChangestamp + 1;
 
@@ -990,7 +990,7 @@ TEST_F(DriveResourceMetadataTest, RefreshDirectory_NonEmptyMap) {
   ASSERT_EQ(3U, entries->size());
 }
 
-TEST_F(DriveResourceMetadataTest, RefreshDirectory_WrongParentResourceId) {
+TEST_F(ResourceMetadataTest, RefreshDirectory_WrongParentResourceId) {
   base::FilePath kDirectoryPath(FILE_PATH_LITERAL("drive/root/dir1"));
   const int64 kNewChangestamp = kTestChangestamp + 1;
 
@@ -1027,7 +1027,7 @@ TEST_F(DriveResourceMetadataTest, RefreshDirectory_WrongParentResourceId) {
   ASSERT_TRUE(entries->empty());
 }
 
-TEST_F(DriveResourceMetadataTest, AddEntry) {
+TEST_F(ResourceMetadataTest, AddEntry) {
   int sequence_id = 100;
   DriveEntryProto file_entry_proto = CreateDriveEntryProto(
       sequence_id++, false, "resource_id:dir3");
@@ -1078,7 +1078,7 @@ TEST_F(DriveResourceMetadataTest, AddEntry) {
   EXPECT_EQ(FILE_ERROR_EXISTS, error);
 }
 
-TEST_F(DriveResourceMetadataTest, GetChildDirectories) {
+TEST_F(ResourceMetadataTest, GetChildDirectories) {
   std::set<base::FilePath> child_directories;
 
   // file9: not a directory, so no children.
@@ -1144,7 +1144,7 @@ TEST_F(DriveResourceMetadataTest, GetChildDirectories) {
       "drive/root/dir2/dir101/dir102/dir105/dir106/dir107")));
 }
 
-TEST_F(DriveResourceMetadataTest, RemoveAll) {
+TEST_F(ResourceMetadataTest, RemoveAll) {
   // The grand root has "root" which is not empty.
   scoped_ptr<DriveEntryProtoVector> entries;
   entries = ReadDirectoryByPathSync(
@@ -1177,7 +1177,7 @@ TEST_F(DriveResourceMetadataTest, RemoveAll) {
   EXPECT_TRUE(entries_in_other->empty());
 }
 
-TEST_F(DriveResourceMetadataTest, IterateEntries) {
+TEST_F(ResourceMetadataTest, IterateEntries) {
   int count = 0;
   bool completed = false;
   resource_metadata_->IterateEntries(

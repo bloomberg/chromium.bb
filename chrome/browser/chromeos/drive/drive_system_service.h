@@ -33,11 +33,11 @@ namespace drive {
 class DownloadHandler;
 class DriveCache;
 class DriveFileSystemInterface;
-class DriveResourceMetadata;
 class DriveWebAppsRegistry;
 class FileSystemProxy;
 class FileWriteHelper;
 class JobListInterface;
+class ResourceMetadata;
 class StaleCacheFilesRemover;
 class SyncClient;
 
@@ -156,7 +156,7 @@ class DriveSystemService
   scoped_ptr<google_apis::DriveServiceInterface> drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<DriveWebAppsRegistry> webapps_registry_;
-  scoped_ptr<DriveResourceMetadata, util::DestroyHelper> resource_metadata_;
+  scoped_ptr<ResourceMetadata, util::DestroyHelper> resource_metadata_;
   scoped_ptr<DriveFileSystemInterface> file_system_;
   scoped_ptr<FileWriteHelper> file_write_helper_;
   scoped_ptr<DownloadHandler> download_handler_;

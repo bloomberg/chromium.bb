@@ -12,7 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
+#include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class GURL;
@@ -39,7 +39,7 @@ typedef base::Callback<void(ScopedVector<ChangeList> change_lists,
 // Documents List API) or Google Drive API and load the cached metadata.
 class ChangeListLoader {
  public:
-  ChangeListLoader(DriveResourceMetadata* resource_metadata,
+  ChangeListLoader(ResourceMetadata* resource_metadata,
                    JobScheduler* scheduler,
                    DriveWebAppsRegistry* webapps_registry);
   ~ChangeListLoader();
@@ -266,7 +266,7 @@ class ChangeListLoader {
   void NotifyDirectoryChangedAfterApplyFeed(bool should_notify,
                                             const base::Closure& callback);
 
-  DriveResourceMetadata* resource_metadata_;  // Not owned.
+  ResourceMetadata* resource_metadata_;  // Not owned.
   JobScheduler* scheduler_;  // Not owned.
   DriveWebAppsRegistry* webapps_registry_;  // Not owned.
   ObserverList<ChangeListLoaderObserver> observers_;

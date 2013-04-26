@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
-#include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
+#include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class GURL;
@@ -34,7 +34,7 @@ class OperationObserver;
 class UpdateOperation {
  public:
   UpdateOperation(DriveCache* cache,
-                  DriveResourceMetadata* metadata,
+                  ResourceMetadata* metadata,
                   JobScheduler* scheduler,
                   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
                   OperationObserver* observer);
@@ -55,7 +55,7 @@ class UpdateOperation {
 
  private:
   // Part of UpdateFileByResourceId(). Called when
-  // DriveResourceMetadata::GetEntryInfoByResourceId() is complete.
+  // ResourceMetadata::GetEntryInfoByResourceId() is complete.
   // |callback| must not be null.
   void UpdateFileByEntryInfo(
       DriveClientContext context,
@@ -95,7 +95,7 @@ class UpdateOperation {
                               scoped_ptr<DriveEntryProto> entry_proto);
 
   DriveCache* cache_;
-  DriveResourceMetadata* metadata_;
+  ResourceMetadata* metadata_;
   JobScheduler* scheduler_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;

@@ -22,7 +22,7 @@ using content::BrowserThread;
 
 namespace drive {
 
-ChangeListLoader::ChangeListLoader(DriveResourceMetadata* resource_metadata,
+ChangeListLoader::ChangeListLoader(ResourceMetadata* resource_metadata,
                                    JobScheduler* scheduler,
                                    DriveWebAppsRegistry* webapps_registry)
     : resource_metadata_(resource_metadata),

@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
+#include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class GURL;
@@ -40,7 +40,7 @@ class CopyOperation {
  public:
   CopyOperation(JobScheduler* job_scheduler,
                 DriveFileSystemInterface* drive_file_system,
-                DriveResourceMetadata* metadata,
+                ResourceMetadata* metadata,
                 scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
                 OperationObserver* observer);
   virtual ~CopyOperation();
@@ -199,7 +199,7 @@ class CopyOperation {
 
   JobScheduler* job_scheduler_;
   DriveFileSystemInterface* drive_file_system_;
-  DriveResourceMetadata* metadata_;
+  ResourceMetadata* metadata_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;
 

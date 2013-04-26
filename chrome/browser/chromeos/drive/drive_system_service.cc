@@ -132,7 +132,7 @@ DriveSystemService::DriveSystemService(
 
   // We can call DriveCache::GetCacheDirectoryPath safely even before the cache
   // gets initialized.
-  resource_metadata_.reset(new DriveResourceMetadata(
+  resource_metadata_.reset(new ResourceMetadata(
       cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META),
       blocking_task_runner_));
 

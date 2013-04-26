@@ -23,8 +23,8 @@ class ResourceEntry;
 namespace drive {
 
 class DriveEntryProto;
-class DriveResourceMetadata;
 class JobScheduler;
+class ResourceMetadata;
 
 namespace file_system {
 
@@ -36,7 +36,7 @@ class OperationObserver;
 class CreateDirectoryOperation {
  public:
   CreateDirectoryOperation(JobScheduler* job_scheduler,
-                           DriveResourceMetadata* metadata,
+                           ResourceMetadata* metadata,
                            OperationObserver* observer);
   ~CreateDirectoryOperation();
 
@@ -116,7 +116,7 @@ class CreateDirectoryOperation {
                        google_apis::GDataErrorCode status,
                        scoped_ptr<google_apis::ResourceEntry> entry);
 
-  // Callback for DriveResourceMetadata::AddEntryToDirectory. Continues the
+  // Callback for ResourceMetadata::AddEntryToDirectory. Continues the
   // recursive creation of a directory path by calling CreateDirectory again.
   void ContinueCreateDirectory(scoped_ptr<CreateDirectoryParams> params,
                                const base::FilePath& created_directory_path,
@@ -142,7 +142,7 @@ class CreateDirectoryOperation {
       scoped_ptr<DriveEntryProto> entry_proto);
 
   JobScheduler* job_scheduler_;
-  DriveResourceMetadata* metadata_;
+  ResourceMetadata* metadata_;
   OperationObserver* observer_;
 
   // WeakPtrFactory bound to the UI thread.

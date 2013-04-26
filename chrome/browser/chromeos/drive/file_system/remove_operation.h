@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
+#include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class GURL;
@@ -38,7 +38,7 @@ class RemoveOperation {
  public:
   RemoveOperation(JobScheduler* job_scheduler,
                   DriveCache* cache,
-                  DriveResourceMetadata* metadata,
+                  ResourceMetadata* metadata,
                   OperationObserver* observer);
   virtual ~RemoveOperation();
 
@@ -74,7 +74,7 @@ class RemoveOperation {
 
   JobScheduler* job_scheduler_;
   DriveCache* cache_;
-  DriveResourceMetadata* metadata_;
+  ResourceMetadata* metadata_;
   OperationObserver* observer_;
 
   // WeakPtrFactory bound to the UI thread.

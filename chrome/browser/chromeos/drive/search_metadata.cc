@@ -103,7 +103,7 @@ bool IsEligibleEntry(const DriveEntryProto& entry, int options) {
 // Helper class for searching the local resource metadata.
 class SearchMetadataHelper {
  public:
-  SearchMetadataHelper(DriveResourceMetadata* resource_metadata,
+  SearchMetadataHelper(ResourceMetadata* resource_metadata,
                        const std::string& query,
                        int options,
                        int at_most_num_matches,
@@ -192,7 +192,7 @@ class SearchMetadataHelper {
     delete this;
   }
 
-  DriveResourceMetadata* resource_metadata_;
+  ResourceMetadata* resource_metadata_;
   const std::string query_;
   const int options_;
   const int at_most_num_matches_;
@@ -206,7 +206,7 @@ class SearchMetadataHelper {
   base::WeakPtrFactory<SearchMetadataHelper> weak_ptr_factory_;
 };
 
-void SearchMetadata(DriveResourceMetadata* resource_metadata,
+void SearchMetadata(ResourceMetadata* resource_metadata,
                     const std::string& query,
                     int options,
                     int at_most_num_matches,

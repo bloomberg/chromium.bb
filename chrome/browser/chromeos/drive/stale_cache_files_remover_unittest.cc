@@ -60,7 +60,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
 
     drive_webapps_registry_.reset(new DriveWebAppsRegistry);
 
-    resource_metadata_.reset(new DriveResourceMetadata(
+    resource_metadata_.reset(new ResourceMetadata(
         cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META),
         blocking_task_runner_));
 
@@ -105,7 +105,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<DriveWebAppsRegistry> drive_webapps_registry_;
-  scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
+  scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
   scoped_ptr<StaleCacheFilesRemover> stale_cache_files_remover_;

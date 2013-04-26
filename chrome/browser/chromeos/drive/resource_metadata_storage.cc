@@ -99,7 +99,7 @@ bool ResourceMetadataStorage::Initialize() {
     resource_map_.reset(db);
 
     // Check the validity of existing DB.
-    scoped_ptr<DriveResourceMetadataHeader> header = GetHeader();
+    scoped_ptr<ResourceMetadataHeader> header = GetHeader();
     if (!header || header->version() != kDBVersion) {
       open_existing_result = DB_INIT_INCOMPATIBLE;
       LOG(INFO) << "Reject incompatible DB.";
@@ -134,7 +134,7 @@ bool ResourceMetadataStorage::Initialize() {
       resource_map_.reset(db);
 
       // Set up header.
-      DriveResourceMetadataHeader header;
+      ResourceMetadataHeader header;
       header.set_version(kDBVersion);
       PutHeader(header);
     } else {
@@ -153,7 +153,7 @@ void ResourceMetadataStorage::SetLargestChangestamp(
     int64 largest_changestamp) {
   base::ThreadRestrictions::AssertIOAllowed();
 
-  scoped_ptr<DriveResourceMetadataHeader> header = GetHeader();
+  scoped_ptr<ResourceMetadataHeader> header = GetHeader();
   DCHECK(header);
   header->set_largest_changestamp(largest_changestamp);
   PutHeader(*header);
@@ -161,7 +161,7 @@ void ResourceMetadataStorage::SetLargestChangestamp(
 
 int64 ResourceMetadataStorage::GetLargestChangestamp() {
   base::ThreadRestrictions::AssertIOAllowed();
-  scoped_ptr<DriveResourceMetadataHeader> header = GetHeader();
+  scoped_ptr<ResourceMetadataHeader> header = GetHeader();
   DCHECK(header);
   return header->largest_changestamp();
 }
@@ -303,7 +303,7 @@ std::string ResourceMetadataStorage::GetChildEntryKey(
 }
 
 void ResourceMetadataStorage::PutHeader(
-    const DriveResourceMetadataHeader& header) {
+    const ResourceMetadataHeader& header) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   std::string serialized_header;
@@ -319,7 +319,7 @@ void ResourceMetadataStorage::PutHeader(
   DCHECK(status.ok());
 }
 
-scoped_ptr<DriveResourceMetadataHeader>
+scoped_ptr<ResourceMetadataHeader>
 ResourceMetadataStorage::GetHeader() {
   base::ThreadRestrictions::AssertIOAllowed();
 
@@ -329,12 +329,12 @@ ResourceMetadataStorage::GetHeader() {
       leveldb::Slice(GetHeaderDBKey()),
       &serialized_header);
   if (!status.ok())
-    return scoped_ptr<DriveResourceMetadataHeader>();
+    return scoped_ptr<ResourceMetadataHeader>();
 
-  scoped_ptr<DriveResourceMetadataHeader> header(
-      new DriveResourceMetadataHeader);
+  scoped_ptr<ResourceMetadataHeader> header(
+      new ResourceMetadataHeader);
   if (!header->ParseFromString(serialized_header))
-    return scoped_ptr<DriveResourceMetadataHeader>();
+    return scoped_ptr<ResourceMetadataHeader>();
   return header.Pass();
 }
 
@@ -349,7 +349,7 @@ bool ResourceMetadataStorage::CheckValidity() {
   it->SeekToFirst();
 
   // Check the header.
-  DriveResourceMetadataHeader header;
+  ResourceMetadataHeader header;
   if (!it->Valid() ||
       it->key() != GetHeaderDBKey() ||  // Header entry must come first.
       !header.ParseFromArray(it->value().data(), it->value().size()) ||

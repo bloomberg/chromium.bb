@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_RESOURCE_METADATA_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_RESOURCE_METADATA_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_RESOURCE_METADATA_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_RESOURCE_METADATA_H_
 
 #include <map>
 #include <set>
@@ -125,10 +125,10 @@ typedef base::Callback<void(scoped_ptr<EntryInfoPairResult> pair_result)>
     GetEntryInfoPairCallback;
 
 // Storage for Drive Metadata.
-class DriveResourceMetadata {
+class ResourceMetadata {
  public:
   // |root_resource_id| is the resource id for the root directory.
-  DriveResourceMetadata(
+  ResourceMetadata(
       const base::FilePath& data_directory_path,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
@@ -232,7 +232,7 @@ class DriveResourceMetadata {
 
  private:
   // Note: Use Destroy() to delete this object.
-  ~DriveResourceMetadata();
+  ~ResourceMetadata();
 
   // Used to implement Initialize();
   FileError InitializeOnBlockingPool() WARN_UNUSED_RESULT;
@@ -363,11 +363,11 @@ class DriveResourceMetadata {
 
   // This should remain the last member so it'll be destroyed first and
   // invalidate its weak pointers before other members are destroyed.
-  base::WeakPtrFactory<DriveResourceMetadata> weak_ptr_factory_;
+  base::WeakPtrFactory<ResourceMetadata> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(DriveResourceMetadata);
+  DISALLOW_COPY_AND_ASSIGN(ResourceMetadata);
 };
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_RESOURCE_METADATA_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_RESOURCE_METADATA_H_

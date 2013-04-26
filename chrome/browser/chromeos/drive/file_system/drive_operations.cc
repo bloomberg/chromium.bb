@@ -29,7 +29,7 @@ void DriveOperations::Init(
     JobScheduler* job_scheduler,
     DriveFileSystemInterface* drive_file_system,
     DriveCache* cache,
-    DriveResourceMetadata* metadata,
+    ResourceMetadata* metadata,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     OperationObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

@@ -12,7 +12,7 @@
 
 namespace drive {
 
-class DriveResourceMetadata;
+class ResourceMetadata;
 
 // Searches the local resource metadata, and returns the entries
 // |at_most_num_matches| that contain |query| in their base names. Search is
@@ -20,7 +20,7 @@ class DriveResourceMetadata;
 // on the given |options|, which is a bit-wise OR of SearchMetadataOptions.
 // |callback| must not be null. Must be called on UI thread. Empty |query|
 // matches any base name. i.e. returns everything.
-void SearchMetadata(DriveResourceMetadata* resource_metadata,
+void SearchMetadata(ResourceMetadata* resource_metadata,
                     const std::string& query,
                     int search_options,
                     int at_most_num_matches,

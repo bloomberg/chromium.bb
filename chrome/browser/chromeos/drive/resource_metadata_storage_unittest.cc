@@ -39,7 +39,7 @@ class ResourceMetadataStorageTest : public testing::Test {
 
   // Overwrites |storage_|'s version.
   void SetDBVersion(int version) {
-    scoped_ptr<DriveResourceMetadataHeader> header = storage_->GetHeader();
+    scoped_ptr<ResourceMetadataHeader> header = storage_->GetHeader();
     ASSERT_TRUE(header);
     header->set_version(version);
     storage_->PutHeader(*header);

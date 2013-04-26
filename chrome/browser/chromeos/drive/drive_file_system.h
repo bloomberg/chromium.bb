@@ -37,10 +37,10 @@ namespace drive {
 class ChangeList;
 class ChangeListLoader;
 class DriveCacheEntry;
-class DriveResourceMetadata;
 class DriveWebAppsRegistry;
 class FileSystemObserver;
 class JobScheduler;
+class ResourceMetadata;
 
 // The production implementation of DriveFileSystemInterface.
 class DriveFileSystem : public DriveFileSystemInterface,
@@ -52,7 +52,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
                   google_apis::DriveServiceInterface* drive_service,
                   JobScheduler* scheduler,
                   DriveWebAppsRegistry* webapps_registry,
-                  DriveResourceMetadata* resource_metadata,
+                  ResourceMetadata* resource_metadata,
                   base::SequencedTaskRunner* blocking_task_runner);
   virtual ~DriveFileSystem();
 
@@ -194,7 +194,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
                 ScopedVector<ChangeList> change_lists,
                 FileError error);
 
-  // Callback for DriveResourceMetadata::RefreshEntry, from OnSearch.
+  // Callback for ResourceMetadata::RefreshEntry, from OnSearch.
   // Adds |drive_file_path| to |results|. When |entry_proto| is not present in
   // the local file system snapshot, it is not added to |results|. Instead,
   // CheckForUpdates is called. Runs |callback| with |results| if
@@ -314,11 +314,11 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void InitializePreferenceObserver();
 
   // Part of GetEntryInfoByPath()
-  // 1) Called when DriveResourceMetadata::GetEntryInfoByPath() is complete.
+  // 1) Called when ResourceMetadata::GetEntryInfoByPath() is complete.
   //    If succeeded, GetEntryInfoByPath() returns immediately here.
   //    Otherwise, starts loading the file system.
   // 2) Called when LoadIfNeeded() is complete.
-  // 3) Called when DriveResourceMetadata::GetEntryInfoByPath() is complete.
+  // 3) Called when ResourceMetadata::GetEntryInfoByPath() is complete.
   void GetEntryInfoByPathAfterGetEntry1(
       const base::FilePath& file_path,
       const GetEntryInfoCallback& callback,
@@ -333,9 +333,9 @@ class DriveFileSystem : public DriveFileSystemInterface,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Part of ReadDirectoryByPath()
-  // 1) Called when DriveResourceMetadata::GetEntryInfoByPath() is complete.
+  // 1) Called when ResourceMetadata::GetEntryInfoByPath() is complete.
   // 2) Called when LoadIfNeeded() is complete.
-  // 3) Called when DriveResourceMetadata::ReadDirectoryByPath() is complete.
+  // 3) Called when ResourceMetadata::ReadDirectoryByPath() is complete.
   // |callback| must not be null.
   void ReadDirectoryByPathAfterGetEntry(
       const base::FilePath& directory_path,
@@ -401,7 +401,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const base::FilePath& cache_file);
 
   // Part of GetEntryInfoByResourceId(). Called after
-  // DriveResourceMetadata::GetEntryInfoByResourceId() is complete.
+  // ResourceMetadata::GetEntryInfoByResourceId() is complete.
   // |callback| must not be null.
   void GetEntryInfoByResourceIdAfterGetEntry(
       const GetEntryInfoWithFilePathCallback& callback,
@@ -410,7 +410,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Part of GetFileByResourceId(). Called after
-  // DriveResourceMetadata::GetEntryInfoByResourceId() is complete.
+  // ResourceMetadata::GetEntryInfoByResourceId() is complete.
   // |get_file_callback| must not be null.
   // |get_content_callback| may be null.
   void GetFileByResourceIdAfterGetEntry(
@@ -422,7 +422,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Part of GetFileContentByPath(). Called after
-  // DriveResourceMetadata::GetEntryInfoByPath() is complete.
+  // ResourceMetadata::GetEntryInfoByPath() is complete.
   // |initialized_callback|, |get_content_callback| and |completion_callback|
   // must not be null.
   void GetFileContentByPathAfterGetEntry(
@@ -478,7 +478,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   google_apis::DriveServiceInterface* drive_service_;
   JobScheduler* scheduler_;
   DriveWebAppsRegistry* webapps_registry_;
-  DriveResourceMetadata* resource_metadata_;
+  ResourceMetadata* resource_metadata_;
 
   // Time of the last update check.
   base::Time last_update_check_time_;

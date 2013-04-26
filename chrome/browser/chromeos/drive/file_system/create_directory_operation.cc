@@ -75,7 +75,7 @@ struct CreateDirectoryOperation::FindFirstMissingParentDirectoryParams {
 
 CreateDirectoryOperation::CreateDirectoryOperation(
     JobScheduler* job_scheduler,
-    DriveResourceMetadata* metadata,
+    ResourceMetadata* metadata,
     OperationObserver* observer)
     : job_scheduler_(job_scheduler),
       metadata_(metadata),

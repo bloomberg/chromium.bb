@@ -77,7 +77,7 @@ struct CopyOperation::StartFileUploadParams {
 CopyOperation::CopyOperation(
     JobScheduler* job_scheduler,
     DriveFileSystemInterface* drive_file_system,
-    DriveResourceMetadata* metadata,
+    ResourceMetadata* metadata,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     OperationObserver* observer)
   : job_scheduler_(job_scheduler),

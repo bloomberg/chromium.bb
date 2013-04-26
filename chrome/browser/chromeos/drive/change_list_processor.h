@@ -25,7 +25,7 @@ class ResourceList;
 namespace drive {
 
 class DriveEntryProto;
-class DriveResourceMetadata;
+class ResourceMetadata;
 
 // Class to represent a change list.
 class ChangeList {
@@ -56,7 +56,7 @@ class ChangeListProcessor {
   // Class used to record UMA stats with FeedToEntryProtoMap().
   class ChangeListToEntryProtoMapUMAStats;
 
-  explicit ChangeListProcessor(DriveResourceMetadata* resource_metadata);
+  explicit ChangeListProcessor(ResourceMetadata* resource_metadata);
   ~ChangeListProcessor();
 
   // Applies the documents feeds to the file system using |resource_metadata_|.
@@ -106,7 +106,7 @@ class ChangeListProcessor {
   void ApplyEntryProto(const DriveEntryProto& entry_proto);
 
   // Continue ApplyEntryProto. This is a callback for
-  // DriveResourceMetadata::GetEntryInfoByResourceId.
+  // ResourceMetadata::GetEntryInfoByResourceId.
   void ContinueApplyEntryProto(
       const DriveEntryProto& entry_proto,
       FileError error,
@@ -120,7 +120,7 @@ class ChangeListProcessor {
   // as a side effect.
   void AddEntry(const DriveEntryProto& entry_proto);
 
-  // Callback for DriveResourceMetadata::AddEntry.
+  // Callback for ResourceMetadata::AddEntry.
   void NotifyForAddEntry(bool is_directory,
                          FileError error,
                          const base::FilePath& file_path);
@@ -132,13 +132,13 @@ class ChangeListProcessor {
       const base::FilePath& file_path);
 
   // Continues RemoveEntryFromParent after
-  // DriveResourceMetadata::GetChildDirectories.
+  // ResourceMetadata::GetChildDirectories.
   void OnGetChildrenForRemove(
       const DriveEntryProto& entry_proto,
       const base::FilePath& file_path,
       const std::set<base::FilePath>& child_directories);
 
-  // Callback for DriveResourceMetadata::RemoveEntryFromParent.
+  // Callback for ResourceMetadata::RemoveEntryFromParent.
   void NotifyForRemoveEntryFromParent(
       bool is_directory,
       const base::FilePath& file_path,
@@ -146,12 +146,12 @@ class ChangeListProcessor {
       FileError error,
       const base::FilePath& parent_path);
 
-  // Refreshes DriveResourceMetadata entry that has the same resource_id as
+  // Refreshes ResourceMetadata entry that has the same resource_id as
   // |entry_proto| with |entry_proto|. Updates changed_dirs_ as a side effect.
   void RefreshEntry(const DriveEntryProto& entry_proto,
                     const base::FilePath& file_path);
 
-  // Callback for DriveResourceMetadata::RefreshEntry.
+  // Callback for ResourceMetadata::RefreshEntry.
   void NotifyForRefreshEntry(
       const base::FilePath& old_file_path,
       FileError error,
@@ -164,14 +164,14 @@ class ChangeListProcessor {
   void UpdateRootEntry(const base::Closure& closure);
 
   // Part of UpdateRootEntry(). Called after
-  // DriveResourceMetadata::GetEntryInfoByPath is complete. Updates the root
+  // ResourceMetadata::GetEntryInfoByPath is complete. Updates the root
   // proto, and refreshes the root entry with the proto.
   void UpdateRootEntryAfterGetEntry(const base::Closure& closure,
                                     FileError error,
                                     scoped_ptr<DriveEntryProto> root_proto);
 
   // Part of UpdateRootEntry(). Called after
-  // DriveResourceMetadata::RefreshEntry() is complete. Calls OnComplete() to
+  // ResourceMetadata::RefreshEntry() is complete. Calls OnComplete() to
   // finish the change list processing.
   void UpdateRootEntryAfterRefreshEntry(const base::Closure& closure,
                                         FileError error,
@@ -184,7 +184,7 @@ class ChangeListProcessor {
   // Reset the state of this object.
   void Clear();
 
-  DriveResourceMetadata* resource_metadata_;  // Not owned.
+  ResourceMetadata* resource_metadata_;  // Not owned.
 
   DriveEntryProtoMap entry_proto_map_;
   std::set<base::FilePath> changed_dirs_;

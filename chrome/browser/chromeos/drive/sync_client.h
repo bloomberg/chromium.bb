@@ -12,8 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/drive/cache_observer.h"
-#include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
 #include "chrome/browser/chromeos/drive/file_system_observer.h"
+#include "chrome/browser/chromeos/drive/resource_metadata.h"
 
 namespace drive {
 

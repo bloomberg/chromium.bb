@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
+#include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class GURL;
@@ -21,8 +21,8 @@ namespace drive {
 
 class DriveCache;
 class DriveEntryProto;
-class DriveResourceMetadata;
 class JobScheduler;
+class ResourceMetadata;
 
 namespace file_system {
 
@@ -34,7 +34,7 @@ class OperationObserver;
 class MoveOperation {
  public:
   MoveOperation(JobScheduler* job_scheduler,
-                DriveResourceMetadata* metadata,
+                ResourceMetadata* metadata,
                 OperationObserver* observer);
   virtual ~MoveOperation();
 
@@ -119,7 +119,7 @@ class MoveOperation {
                                     google_apis::GDataErrorCode status);
 
   JobScheduler* job_scheduler_;
-  DriveResourceMetadata* metadata_;
+  ResourceMetadata* metadata_;
   OperationObserver* observer_;
 
   // WeakPtrFactory bound to the UI thread.

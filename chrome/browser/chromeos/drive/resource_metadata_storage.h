@@ -20,11 +20,11 @@ class DB;
 namespace drive {
 
 class DriveEntryProto;
-class DriveResourceMetadataHeader;
+class ResourceMetadataHeader;
 
 typedef base::Callback<void(const DriveEntryProto& entry)> IterateCallback;
 
-// Storage for DriveResourceMetadata which is responsible to manage entry info
+// Storage for ResourceMetadata which is responsible to manage entry info
 // and child-parent relationships between entries.
 class ResourceMetadataStorage {
  public:
@@ -72,10 +72,10 @@ class ResourceMetadataStorage {
                                       const std::string& child_name);
 
   // Puts header.
-  void PutHeader(const DriveResourceMetadataHeader& header);
+  void PutHeader(const ResourceMetadataHeader& header);
 
   // Gets header.
-  scoped_ptr<DriveResourceMetadataHeader> GetHeader();
+  scoped_ptr<ResourceMetadataHeader> GetHeader();
 
   // Checks validity of the data.
   bool CheckValidity();

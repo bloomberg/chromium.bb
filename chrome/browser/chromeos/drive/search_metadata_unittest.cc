@@ -34,7 +34,7 @@ class SearchMetadataTest : public testing::Test {
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
-    resource_metadata_.reset(new DriveResourceMetadata(
+    resource_metadata_.reset(new ResourceMetadata(
         temp_dir_.path(),
         blocking_task_runner_));
 
@@ -119,7 +119,7 @@ class SearchMetadataTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   base::ScopedTempDir temp_dir_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
+  scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;
 };
 

@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
-#include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
+#include "chrome/browser/chromeos/drive/resource_metadata.h"
 
 namespace base {
 class FilePath;
@@ -39,7 +39,7 @@ class DriveOperations {
   void Init(JobScheduler* job_scheduler,
             DriveFileSystemInterface* drive_file_system,
             DriveCache* cache,
-            DriveResourceMetadata* metadata,
+            ResourceMetadata* metadata,
             scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
             OperationObserver* observer);
 

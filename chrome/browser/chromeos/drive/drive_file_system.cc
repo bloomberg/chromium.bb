@@ -78,7 +78,7 @@ void RunGetEntryInfoWithFilePathCallback(
   callback.Run(error, path, entry_proto.Pass());
 }
 
-// Callback for DriveResourceMetadata::GetLargestChangestamp.
+// Callback for ResourceMetadata::GetLargestChangestamp.
 // |callback| must not be null.
 void OnGetLargestChangestamp(
     DriveFileSystemMetadata metadata,  // Will be modified.
@@ -210,7 +210,7 @@ DriveFileSystem::DriveFileSystem(
     google_apis::DriveServiceInterface* drive_service,
     JobScheduler* scheduler,
     DriveWebAppsRegistry* webapps_registry,
-    DriveResourceMetadata* resource_metadata,
+    ResourceMetadata* resource_metadata,
     base::SequencedTaskRunner* blocking_task_runner)
     : profile_(profile),
       cache_(cache),
@@ -679,8 +679,8 @@ void DriveFileSystem::GetEntryInfoByPath(const base::FilePath& file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // DriveResourceMetadata may know about the entry even if the resource
-  // metadata is not yet fully loaded. For instance, DriveResourceMetadata()
+  // ResourceMetadata may know about the entry even if the resource
+  // metadata is not yet fully loaded. For instance, ResourceMetadata()
   // always knows about the root directory. For "fast fetch"
   // (crbug.com/178348) to work, it's needed to delay the resource metadata
   // loading until the first call to ReadDirectoryByPath().
@@ -757,9 +757,9 @@ void DriveFileSystem::ReadDirectoryByPath(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // As described in GetEntryInfoByPath(), DriveResourceMetadata may know
+  // As described in GetEntryInfoByPath(), ResourceMetadata may know
   // about the entry even if the file system is not yet fully loaded, hence we
-  // should just ask DriveResourceMetadata first.
+  // should just ask ResourceMetadata first.
   resource_metadata_->GetEntryInfoByPath(
       directory_path,
       base::Bind(&DriveFileSystem::ReadDirectoryByPathAfterGetEntry,

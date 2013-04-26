@@ -15,7 +15,7 @@
 #include "content/public/browser/url_data_source.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
+#include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #endif

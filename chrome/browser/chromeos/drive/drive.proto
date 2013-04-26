@@ -82,8 +82,8 @@ message DriveEntryProto {
   optional DriveDirectorySpecificInfo directory_specific_info = 13;
 }
 
-// Container for the header part of DriveResourceMetadata.
-message DriveResourceMetadataHeader {
+// Container for the header part of ResourceMetadata.
+message ResourceMetadataHeader {
   // Monotonically increasing version number, which is changed when
   // incompatible change is made to the DB format. kDBVersion in
   // drive_resource_metadata_storage.h defines the current version.
