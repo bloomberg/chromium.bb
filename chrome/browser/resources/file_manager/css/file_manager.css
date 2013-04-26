@@ -478,7 +478,8 @@ body[new-ui] #directory-tree:focus:hover .tree-row[anchor]:hover {
   color: white;
 }
 
-#directory-tree .tree-row > div.root-eject {
+body[new-ui] #volume-list .root-item > div.root-eject,
+body:not([new-ui]) #directory-tree .tree-row > div.root-eject {
   /* The transition commented out to work around crbug.com/157813 */
   /*-webkit-transition: opacity 70ms linear;*/
   background-image: -webkit-image-set(
