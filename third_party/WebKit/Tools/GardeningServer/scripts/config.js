@@ -30,36 +30,6 @@ var config = config || {};
 config.kBuildNumberLimit = 20;
 
 config.kPlatforms = {
-    'apple' : {
-        label : 'Apple',
-        buildConsoleURL: 'http://build.webkit.org',
-        layoutTestResultsURL: 'http://build.webkit.org/results',
-        waterfallURL: 'http://build.webkit.org/waterfall',
-        builders: {
-            'Apple Lion Release WK1 (Tests)' : {version: 'lion' },
-            'Apple Lion Debug WK1 (Tests)' : {version: 'lion', debug: true},
-            'Apple Lion Release WK2 (Tests)' : {version: 'lion' },
-            'Apple Lion Debug WK2 (Tests)' : {version: 'lion', debug: true},
-            'Apple MountainLion Release WK1 (Tests)' : {version: 'mountainlion' },
-            'Apple MountainLion Debug WK1 (Tests)' : {version: 'mountainlion', debug: true},
-            'Apple MountainLion Release WK2 (Tests)' : {version: 'mountainlion' },
-            'Apple MountainLion Debug WK2 (Tests)' : {version: 'mountainlion', debug: true},
-            // 'Apple Win XP Debug (Tests)' : {version: 'xp',debug: true},
-            // 'Apple Win 7 Release (Tests)' : {version: 'win7'},
-        },
-        haveBuilderAccumulatedResults : false,
-        useDirectoryListingForOldBuilds: false,
-        useFlakinessDashboard: false,
-        resultsDirectoryNameFromBuilderName: function(builderName) {
-            return encodeURIComponent(builderName);
-        },
-        resultsDirectoryForBuildNumber: function(buildNumber, revision) {
-            return encodeURIComponent('r' + revision + ' (' + buildNumber + ')');
-        },
-        _builderApplies: function(builderName) {
-            return builderName.indexOf('Apple') != -1;
-        },
-    },
     'chromium' : {
         label : 'Chromium',
         buildConsoleURL: 'http://build.chromium.org/p/chromium.webkit',
@@ -89,88 +59,18 @@ config.kPlatforms = {
             return buildNumber;
         },
         _builderApplies: function(builderName) {
-            // FIXME: Should garden-o-matic show these? I can imagine showing the deps bots being useful at least so
-            // that the gardener only need to look at garden-o-matic and never at the waterfall. Not really sure who
-            // watches the GPU bots.
-            // The 10.8 Tests bot is really an FYI bot at this point
-            // WebKit Android doesn't upload its results yet.
+            // FIXME: Should garden-o-matic show these?
+            // WebKit Android and ASAN are red all the time.
+            // Remove this function entirely once they are better supported.
             return builderName.indexOf('GPU') == -1 &&
-                   builderName.indexOf('deps') == -1 &&
                    builderName.indexOf('ASAN') == -1 &&
                    builderName.indexOf('WebKit (Content Shell) Android') == -1 &&
-                   builderName.indexOf('Mac10.8 Tests') == -1 &&
                    builderName.indexOf('WebKit Android') == -1;
-        },
-    },
-    'gtk' : {
-        label : 'GTK',
-        buildConsoleURL: 'http://build.webkit.org',
-        layoutTestResultsURL: 'http://build.webkit.org/results',
-        waterfallURL: 'http://build.webkit.org/waterfall',
-        builders: {
-            'GTK Linux 32-bit Release' : {version: '32-bit release'},
-            'GTK Linux 64-bit Release' : {version: '64-bit release'},
-            'GTK Linux 64-bit Debug' : {version: '64-bit debug', debug: true},
-        },
-        haveBuilderAccumulatedResults : false,
-        useDirectoryListingForOldBuilds: false,
-        useFlakinessDashboard: false,
-        resultsDirectoryNameFromBuilderName: function(builderName) {
-            return encodeURIComponent(builderName);
-        },
-        resultsDirectoryForBuildNumber: function(buildNumber, revision) {
-            return encodeURIComponent('r' + revision + ' (' + buildNumber + ')');
-        },
-        _builderApplies: function(builderName) {
-            return builderName.indexOf('GTK') != -1;
-        },
-    },
-    'qt' : {
-        label : 'Qt',
-        buildConsoleURL: 'http://build.webkit.org',
-        layoutTestResultsURL: 'http://build.webkit.org/results',
-        waterfallURL: 'http://build.webkit.org/waterfall',
-        builders: {
-            'Qt Linux Release' : {version : '32-bit release'},
-        },
-        haveBuilderAccumulatedResults : false,
-        useDirectoryListingForOldBuilds: false,
-        useFlakinessDashboard: false,
-        resultsDirectoryNameFromBuilderName: function(builderName) {
-            return encodeURIComponent(builderName);
-        },
-        resultsDirectoryForBuildNumber: function(buildNumber, revision) {
-            return encodeURIComponent('r' + revision + ' (' + buildNumber + ')');
-        },
-        _builderApplies: function(builderName) {
-            return builderName.indexOf('Qt') != -1;
-        },
-    },
-    'efl' : {
-        label : 'EFL',
-        buildConsoleURL: 'http://build.webkit.org',
-        layoutTestResultsURL: 'http://build.webkit.org/results',
-        waterfallURL: 'http://build.webkit.org/waterfall',
-        builders: {
-            'EFL Linux 64-bit Debug WK2' : {version : '64-bit WK2', debug: true},
-            'EFL Linux 64-bit Release WK2' : {version: '64-bit WK2'},
-            'EFL Linux 64-bit Release' : {version: '64-bit'},
-        },
-        haveBuilderAccumulatedResults : false,
-        useDirectoryListingForOldBuilds: false,
-        useFlakinessDashboard: false,
-        resultsDirectoryNameFromBuilderName: function(builderName) {
-            return encodeURIComponent(builderName);
-        },
-        resultsDirectoryForBuildNumber: function(buildNumber, revision) {
-            return encodeURIComponent('r' + revision + ' (' + buildNumber + ')');
-        },
-        _builderApplies: function(builderName) {
-            return builderName.indexOf('EFL') != -1;
         },
     },
 };
 
+config.currentPlatform = 'chromium';
 config.kBlinkSvnURL = 'svn://svn.chromium.org/blink/trunk';
 config.kBlinkRevisionURL = 'http://src.chromium.org/viewvc/blink';
 config.kSvnLogURL = 'http://build.chromium.org/cgi-bin/svn-log';
@@ -211,14 +111,6 @@ config.builderApplies = function(builderName) {
     if (config.currentBuilder)
         return builderName == config.currentBuilder;
     return config.kPlatforms[config.currentPlatform]._builderApplies(builderName);
-};
-
-config.setPlatform = function(platform) {
-    if (!this.kPlatforms[platform]) {
-        window.console.log(platform + ' is not a recognized platform');
-        return;
-    }
-    config.currentPlatform = platform;
 };
 
 config.useLocalResults = Boolean(base.getURLParameter('useLocalResults')) || false;
