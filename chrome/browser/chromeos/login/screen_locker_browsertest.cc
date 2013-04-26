@@ -137,8 +137,8 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
         cros_mock_->mock_network_library();
     EXPECT_CALL(*mock_network_library, AddUserActionObserver(_))
         .Times(AnyNumber());
-    EXPECT_CALL(*mock_network_library, LoadOncNetworks(_, _, _, _))
-        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_network_library, LoadOncNetworks(_, _))
+        .Times(AnyNumber());
     zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
         ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
   }

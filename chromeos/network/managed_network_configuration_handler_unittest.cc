@@ -111,7 +111,11 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
     else
       policy = test_utils::ReadTestDictionary(path_to_onc);
 
-    managed_handler()->SetPolicy(onc::ONC_SOURCE_USER_POLICY, *policy);
+    base::ListValue* network_configs = NULL;
+    policy->GetListWithoutPathExpansion(
+        onc::toplevel_config::kNetworkConfigurations, &network_configs);
+
+    managed_handler()->SetPolicy(onc::ONC_SOURCE_USER_POLICY, *network_configs);
   }
 
   ManagedNetworkConfigurationHandler* managed_handler() {

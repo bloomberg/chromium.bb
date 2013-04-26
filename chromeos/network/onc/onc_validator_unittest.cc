@@ -285,7 +285,12 @@ INSTANTIATE_TEST_CASE_P(
                                   &kNetworkConfigurationSignature,
                                   false),
                         RepairParams("",
-                                     "network-nested-state-field-repaired"))));
+                                     "network-nested-state-field-repaired")),
+         std::make_pair(OncParams("toplevel-with-repairable-networks",
+                                  &kToplevelConfigurationSignature,
+                                  false,
+                                  ONC_SOURCE_DEVICE_POLICY),
+                        RepairParams("", "toplevel-with-repaired-networks"))));
 
 // Strict and liberal validator repair identically.
 INSTANTIATE_TEST_CASE_P(

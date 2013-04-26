@@ -7,11 +7,14 @@
 #include "base/base64.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/onc/onc_mapper.h"
 #include "chromeos/network/onc/onc_signature.h"
+#include "chromeos/network/onc/onc_utils.h"
+#include "chromeos/network/onc/onc_validator.h"
 #include "crypto/encryptor.h"
 #include "crypto/hmac.h"
 #include "crypto/symmetric_key.h"
@@ -211,6 +214,8 @@ void ExpandStringsInOncObject(
 
     const OncFieldSignature* field_signature =
         GetFieldSignature(signature, it.key());
+    if (!field_signature)
+      continue;
 
     ExpandStringsInOncObject(*field_signature->value_signature,
                              substitution, inner_object);
@@ -255,11 +260,92 @@ class OncMaskValues : public onc::Mapper {
 
 }  // namespace
 
-CHROMEOS_EXPORT scoped_ptr<base::DictionaryValue> MaskCredentialsInOncObject(
+scoped_ptr<base::DictionaryValue> MaskCredentialsInOncObject(
     const onc::OncValueSignature& signature,
     const base::DictionaryValue& onc_object,
     const std::string& mask) {
   return OncMaskValues::Mask(signature, onc_object, mask);
+}
+
+bool ParseAndValidateOncForImport(
+    const std::string& onc_blob,
+    chromeos::onc::ONCSource onc_source,
+    const std::string& passphrase,
+    base::ListValue* network_configs,
+    base::ListValue* certificates) {
+  certificates->Clear();
+  network_configs->Clear();
+  if (onc_blob.empty())
+    return true;
+
+  scoped_ptr<base::DictionaryValue> toplevel_onc =
+      onc::ReadDictionaryFromJson(onc_blob);
+  if (toplevel_onc.get() == NULL) {
+    LOG(ERROR) << "ONC loaded from " << onc::GetSourceAsString(onc_source)
+               << " is not a valid JSON dictionary.";
+    return false;
+  }
+
+  // Check and see if this is an encrypted ONC file. If so, decrypt it.
+  std::string onc_type;
+  toplevel_onc->GetStringWithoutPathExpansion(onc::toplevel_config::kType,
+                                              &onc_type);
+  if (onc_type == onc::toplevel_config::kEncryptedConfiguration) {
+    toplevel_onc = onc::Decrypt(passphrase, *toplevel_onc);
+    if (toplevel_onc.get() == NULL) {
+      LOG(ERROR) << "Couldn't decrypt the ONC from "
+                 << onc::GetSourceAsString(onc_source);
+      return false;
+    }
+  }
+
+  bool from_policy = (onc_source == onc::ONC_SOURCE_USER_POLICY ||
+                      onc_source == onc::ONC_SOURCE_DEVICE_POLICY);
+
+  // Validate the ONC dictionary. We are liberal and ignore unknown field
+  // names and ignore invalid field names in kRecommended arrays.
+  onc::Validator validator(false,  // Ignore unknown fields.
+                           false,  // Ignore invalid recommended field names.
+                           true,   // Fail on missing fields.
+                           from_policy);
+  validator.SetOncSource(onc_source);
+
+  onc::Validator::Result validation_result;
+  toplevel_onc = validator.ValidateAndRepairObject(
+      &onc::kToplevelConfigurationSignature,
+      *toplevel_onc,
+      &validation_result);
+
+  if (from_policy) {
+    UMA_HISTOGRAM_BOOLEAN("Enterprise.ONC.PolicyValidation",
+                          validation_result == onc::Validator::VALID);
+  }
+
+  bool success = true;
+  if (validation_result == onc::Validator::VALID_WITH_WARNINGS) {
+    LOG(WARNING) << "ONC from " << onc::GetSourceAsString(onc_source)
+                 << " produced warnings.";
+    success = false;
+  } else if (validation_result == onc::Validator::INVALID ||
+             toplevel_onc == NULL) {
+    LOG(ERROR) << "ONC from " << onc::GetSourceAsString(onc_source)
+               << " is invalid and couldn't be repaired.";
+    return false;
+  }
+
+  base::ListValue* validated_certs = NULL;
+  if (toplevel_onc->GetListWithoutPathExpansion(
+          onc::toplevel_config::kCertificates, &validated_certs)) {
+    certificates->Swap(validated_certs);
+  }
+
+  base::ListValue* validated_networks = NULL;
+  if (toplevel_onc->GetListWithoutPathExpansion(
+          onc::toplevel_config::kNetworkConfigurations, &validated_networks)) {
+    network_configs->Swap(validated_networks);
+  }
+
+  return success;
 }
 
 }  // namespace onc

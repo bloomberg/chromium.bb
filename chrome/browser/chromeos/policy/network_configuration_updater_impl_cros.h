@@ -18,6 +18,10 @@ namespace base {
 class Value;
 }
 
+namespace chromeos {
+class CertificateHandler;
+}
+
 namespace policy {
 
 class PolicyMap;
@@ -34,7 +38,8 @@ class NetworkConfigurationUpdaterImplCros
  public:
   NetworkConfigurationUpdaterImplCros(
       PolicyService* policy_service,
-      chromeos::NetworkLibrary* network_library);
+      chromeos::NetworkLibrary* network_library,
+      scoped_ptr<chromeos::CertificateHandler> certificate_handler);
   virtual ~NetworkConfigurationUpdaterImplCros();
 
   // NetworkProfileObserver overrides.
@@ -44,8 +49,6 @@ class NetworkConfigurationUpdaterImplCros
 
   // In this implementation, this function applies both device and user policy.
   virtual void OnUserPolicyInitialized() OVERRIDE;
-  virtual void set_allow_trusted_certificates_from_policy(bool allow) OVERRIDE;
-  virtual net::CertTrustAnchorProvider* GetCertTrustAnchorProvider() OVERRIDE;
 
  private:
   // Callback that's called by |policy_service_| if the respective ONC policy
@@ -70,18 +73,13 @@ class NetworkConfigurationUpdaterImplCros
   // Network library to write network configuration to.
   chromeos::NetworkLibrary* network_library_;
 
+  scoped_ptr<chromeos::CertificateHandler> certificate_handler_;
+
   // Whether the user policy is already available.
   bool user_policy_initialized_;
 
-  // Whether Web trust is allowed or not.
-  bool allow_trusted_certificates_from_policy_;
-
   // The policy service storing the ONC policies.
   PolicyService* policy_service_;
-
-  // An implementation of CertTrustAnchorProvider. Owned by the updater, but
-  // lives on the IO thread.
-  net::CertTrustAnchorProvider* cert_trust_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConfigurationUpdaterImplCros);
 };

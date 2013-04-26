@@ -73,6 +73,8 @@
 #include "chromeos/cryptohome/cryptohome_library.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/network/certificate_handler.h"
+#include "chromeos/network/managed_network_configuration_handler.h"
 #else
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
@@ -408,12 +410,16 @@ NetworkConfigurationUpdater*
     if (command_line->HasSwitch(
             chromeos::switches::kUseNewNetworkConfigurationHandlers)) {
       network_configuration_updater_.reset(
-          new NetworkConfigurationUpdaterImpl(GetPolicyService()));
+          new NetworkConfigurationUpdaterImpl(
+              GetPolicyService(),
+              chromeos::ManagedNetworkConfigurationHandler::Get(),
+              make_scoped_ptr(new chromeos::CertificateHandler)));
     } else {
       network_configuration_updater_.reset(
           new NetworkConfigurationUpdaterImplCros(
               GetPolicyService(),
-              chromeos::CrosLibrary::Get()->GetNetworkLibrary()));
+              chromeos::CrosLibrary::Get()->GetNetworkLibrary(),
+              make_scoped_ptr(new chromeos::CertificateHandler)));
     }
   }
   return network_configuration_updater_.get();

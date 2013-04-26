@@ -14,6 +14,7 @@
 
 namespace base {
 class DictionaryValue;
+class ListValue;
 }
 
 namespace chromeos {
@@ -72,6 +73,18 @@ CHROMEOS_EXPORT scoped_ptr<base::DictionaryValue> MaskCredentialsInOncObject(
     const OncValueSignature& signature,
     const base::DictionaryValue& onc_object,
     const std::string& mask);
+
+// Decrypts |onc_blob| with |passphrase| if necessary. Clears |network_configs|
+// and |certificates| and fills them with the validated NetworkConfigurations
+// and Certificates of |onc_blob|. Returns false if any validation errors or
+// warnings occurred. Still, some networks or certificates might be added to the
+// output lists and should be further processed by the caller.
+CHROMEOS_EXPORT bool ParseAndValidateOncForImport(
+    const std::string& onc_blob,
+    chromeos::onc::ONCSource onc_source,
+    const std::string& passphrase,
+    base::ListValue* network_configs,
+    base::ListValue* certificates);
 
 }  // namespace onc
 }  // namespace chromeos

@@ -66,50 +66,63 @@ class ONCCertificateImporterTest : public testing::Test {
     ASSERT_TRUE(slot_->os_module_handle());
 
     // Test db should be empty at start of test.
-    EXPECT_EQ(0ul, ListCertsInSlot(slot_->os_module_handle()).size());
+    EXPECT_EQ(0ul, ListCertsInSlot().size());
   }
 
   virtual void TearDown() {
-    EXPECT_TRUE(CleanupSlotContents(slot_->os_module_handle()));
-    EXPECT_EQ(0ul, ListCertsInSlot(slot_->os_module_handle()).size());
+    EXPECT_TRUE(CleanupSlotContents());
+    EXPECT_EQ(0ul, ListCertsInSlot().size());
   }
 
   virtual ~ONCCertificateImporterTest() {}
 
  protected:
-  void AddCertificateFromFile(std::string filename,
-                              net::CertType expected_type,
-                              std::string* guid) {
+  void AddCertificatesFromFile(
+      std::string filename,
+      CertificateImporter::ParseResult expected_parse_result) {
     scoped_ptr<base::DictionaryValue> onc =
         test_utils::ReadTestDictionary(filename);
+    base::Value* certificates_value = NULL;
     base::ListValue* certificates = NULL;
-    onc->GetListWithoutPathExpansion(toplevel_config::kCertificates,
-                                     &certificates);
-
-    base::DictionaryValue* certificate = NULL;
-    certificates->GetDictionary(0, &certificate);
-    certificate->GetStringWithoutPathExpansion(certificate::kGUID, guid);
+    onc->RemoveWithoutPathExpansion(toplevel_config::kCertificates,
+                                    &certificates_value);
+    certificates_value->GetAsList(&certificates);
+    onc_certificates_.reset(certificates);
 
     web_trust_certificates_.clear();
     CertificateImporter importer(true /* allow web trust */);
-    EXPECT_EQ(CertificateImporter::IMPORT_OK,
+    EXPECT_EQ(expected_parse_result,
               importer.ParseAndStoreCertificates(*certificates,
                                                  &web_trust_certificates_));
 
     result_list_.clear();
+    result_list_ = ListCertsInSlot();
+  }
+
+  void AddCertificateFromFile(std::string filename,
+                              net::CertType expected_type,
+                              std::string* guid) {
+    AddCertificatesFromFile(filename, CertificateImporter::IMPORT_OK);
+    EXPECT_EQ(1ul, result_list_.size());
+
+    base::DictionaryValue* certificate = NULL;
+    onc_certificates_->GetDictionary(0, &certificate);
+    certificate->GetStringWithoutPathExpansion(certificate::kGUID, guid);
+
     CertificateImporter::ListCertsWithNickname(*guid, &result_list_);
     ASSERT_EQ(1ul, result_list_.size());
     EXPECT_EQ(expected_type, GetCertType(result_list_[0]->os_cert_handle()));
   }
 
+  scoped_ptr<base::ListValue> onc_certificates_;
   scoped_refptr<net::CryptoModule> slot_;
   net::CertificateList result_list_;
   net::CertificateList web_trust_certificates_;
 
  private:
-  net::CertificateList ListCertsInSlot(PK11SlotInfo* slot) {
+  net::CertificateList ListCertsInSlot() {
     net::CertificateList result;
-    CERTCertList* cert_list = PK11_ListCertsInSlot(slot);
+    CERTCertList* cert_list = PK11_ListCertsInSlot(slot_->os_module_handle());
     for (CERTCertListNode* node = CERT_LIST_HEAD(cert_list);
          !CERT_LIST_END(node, cert_list);
          node = CERT_LIST_NEXT(node)) {
@@ -123,9 +136,9 @@ class ONCCertificateImporterTest : public testing::Test {
     return result;
   }
 
-  bool CleanupSlotContents(PK11SlotInfo* slot) {
+  bool CleanupSlotContents() {
     bool ok = true;
-    net::CertificateList certs = ListCertsInSlot(slot);
+    net::CertificateList certs = ListCertsInSlot();
     for (size_t i = 0; i < certs.size(); ++i) {
       if (!net::NSSCertDatabase::GetInstance()->DeleteCertAndKey(certs[i]))
         ok = false;
@@ -135,6 +148,19 @@ class ONCCertificateImporterTest : public testing::Test {
 
   crypto::ScopedTestNSSDB test_nssdb_;
 };
+
+TEST_F(ONCCertificateImporterTest, MultipleCertificates) {
+  AddCertificatesFromFile("managed_toplevel2.onc",
+                          CertificateImporter::IMPORT_OK);
+  EXPECT_EQ(onc_certificates_->GetSize(), result_list_.size());
+}
+
+TEST_F(ONCCertificateImporterTest, MultipleCertificatesWithFailures) {
+  AddCertificatesFromFile("toplevel_partially_invalid.onc",
+                          CertificateImporter::IMPORT_INCOMPLETE);
+  EXPECT_EQ(2ul, onc_certificates_->GetSize());
+  EXPECT_EQ(1ul, result_list_.size());
+}
 
 TEST_F(ONCCertificateImporterTest, AddClientCertificate) {
   std::string guid;

@@ -8,20 +8,27 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/debug/stack_trace.h"
+#include "base/logging.h"
+#include "base/values.h"
 #include "chrome/browser/policy/policy_map.h"
+#include "chromeos/network/certificate_handler.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
+#include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "policy/policy_constants.h"
 
 namespace policy {
 
 NetworkConfigurationUpdaterImpl::NetworkConfigurationUpdaterImpl(
-    PolicyService* policy_service)
+    PolicyService* policy_service,
+    chromeos::ManagedNetworkConfigurationHandler* network_config_handler,
+    scoped_ptr<chromeos::CertificateHandler> certificate_handler)
     : user_policy_initialized_(false),
       policy_change_registrar_(
           policy_service, PolicyNamespace(POLICY_DOMAIN_CHROME, std::string())),
-      policy_service_(policy_service) {
+      policy_service_(policy_service),
+      network_config_handler_(network_config_handler),
+      certificate_handler_(certificate_handler.Pass()) {
   policy_change_registrar_.Observe(
       key::kDeviceOpenNetworkConfiguration,
       base::Bind(&NetworkConfigurationUpdaterImpl::OnPolicyChanged,
@@ -33,6 +40,7 @@ NetworkConfigurationUpdaterImpl::NetworkConfigurationUpdaterImpl(
                  base::Unretained(this),
                  chromeos::onc::ONC_SOURCE_USER_POLICY));
 
+  // Apply the current device policies immediately.
   ApplyNetworkConfiguration(chromeos::onc::ONC_SOURCE_DEVICE_POLICY);
 }
 
@@ -43,11 +51,6 @@ void NetworkConfigurationUpdaterImpl::OnUserPolicyInitialized() {
   VLOG(1) << "User policy initialized.";
   user_policy_initialized_ = true;
   ApplyNetworkConfiguration(chromeos::onc::ONC_SOURCE_USER_POLICY);
-}
-
-net::CertTrustAnchorProvider*
-NetworkConfigurationUpdaterImpl::GetCertTrustAnchorProvider() {
-  return NULL;
 }
 
 void NetworkConfigurationUpdaterImpl::OnPolicyChanged(
@@ -85,19 +88,19 @@ void NetworkConfigurationUpdaterImpl::ApplyNetworkConfiguration(
   }
   VLOG(2) << "The policy contains this ONC: " << onc_blob;
 
-  if (onc_blob.empty())
-    onc_blob = chromeos::onc::kEmptyUnencryptedConfiguration;
+  base::ListValue network_configs;
+  base::ListValue certificates;
+  ParseAndValidateOncForImport(
+      onc_blob, onc_source, "", &network_configs, &certificates);
 
-  scoped_ptr<base::DictionaryValue> onc_dict =
-      chromeos::onc::ReadDictionaryFromJson(onc_blob);
-  if (!onc_dict) {
-    LOG(ERROR) << "ONC loaded from policy " << policy_key
-               << " is not a valid JSON dictionary.";
-    return;
-  }
+  network_config_handler_->SetPolicy(onc_source, network_configs);
 
-  chromeos::ManagedNetworkConfigurationHandler::Get()->SetPolicy(onc_source,
-                                                                 *onc_dict);
+  scoped_ptr<net::CertificateList> web_trust_certs(new net::CertificateList);
+  certificate_handler_->ImportCertificates(
+      certificates, onc_source, web_trust_certs.get());
+
+  if (onc_source == chromeos::onc::ONC_SOURCE_USER_POLICY)
+    SetTrustAnchors(web_trust_certs.Pass());
 }
 
 }  // namespace policy

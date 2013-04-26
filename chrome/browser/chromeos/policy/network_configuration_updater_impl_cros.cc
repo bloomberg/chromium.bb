@@ -9,58 +9,26 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/policy/policy_map.h"
+#include "chromeos/network/certificate_handler.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_utils.h"
-#include "content/public/browser/browser_thread.h"
-#include "net/cert/cert_trust_anchor_provider.h"
-#include "net/cert/x509_certificate.h"
 #include "policy/policy_constants.h"
-
-using content::BrowserThread;
 
 namespace policy {
 
-namespace {
-
-// A simple implementation of net::CertTrustAnchorProvider that returns a list
-// of certificates that can be set by the owner of this object.
-class CrosTrustAnchorProvider : public net::CertTrustAnchorProvider {
- public:
-  CrosTrustAnchorProvider() {}
-  virtual ~CrosTrustAnchorProvider() {}
-
-  // CertTrustAnchorProvider overrides.
-  virtual const net::CertificateList& GetAdditionalTrustAnchors() OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    return trust_anchors_;
-  }
-
-  void SetTrustAnchors(scoped_ptr<net::CertificateList> trust_anchors) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    trust_anchors_.swap(*trust_anchors);
-  }
-
- private:
-  net::CertificateList trust_anchors_;
-
-  DISALLOW_COPY_AND_ASSIGN(CrosTrustAnchorProvider);
-};
-
-}  // namespace
-
 NetworkConfigurationUpdaterImplCros::NetworkConfigurationUpdaterImplCros(
     PolicyService* policy_service,
-    chromeos::NetworkLibrary* network_library)
+    chromeos::NetworkLibrary* network_library,
+    scoped_ptr<chromeos::CertificateHandler> certificate_handler)
     : policy_change_registrar_(
           policy_service, PolicyNamespace(POLICY_DOMAIN_CHROME, std::string())),
       network_library_(network_library),
+      certificate_handler_(certificate_handler.Pass()),
       user_policy_initialized_(false),
-      allow_trusted_certificates_from_policy_(false),
-      policy_service_(policy_service),
-      cert_trust_provider_(new CrosTrustAnchorProvider()) {
+      policy_service_(policy_service) {
   DCHECK(network_library_);
   policy_change_registrar_.Observe(
       key::kDeviceOpenNetworkConfiguration,
@@ -81,10 +49,6 @@ NetworkConfigurationUpdaterImplCros::NetworkConfigurationUpdaterImplCros(
 
 NetworkConfigurationUpdaterImplCros::~NetworkConfigurationUpdaterImplCros() {
   network_library_->RemoveNetworkProfileObserver(this);
-  bool posted = BrowserThread::DeleteSoon(
-      BrowserThread::IO, FROM_HERE, cert_trust_provider_);
-  if (!posted)
-    delete cert_trust_provider_;
 }
 
 void NetworkConfigurationUpdaterImplCros::OnProfileListChanged() {
@@ -96,17 +60,6 @@ void NetworkConfigurationUpdaterImplCros::OnUserPolicyInitialized() {
   VLOG(1) << "User policy initialized, applying policies.";
   user_policy_initialized_ = true;
   ApplyNetworkConfigurations();
-}
-
-void NetworkConfigurationUpdaterImplCros::
-set_allow_trusted_certificates_from_policy(bool allow) {
-  allow_trusted_certificates_from_policy_ = allow;
-}
-
-net::CertTrustAnchorProvider*
-    NetworkConfigurationUpdaterImplCros::GetCertTrustAnchorProvider() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return cert_trust_provider_;
 }
 
 void NetworkConfigurationUpdaterImplCros::OnPolicyChanged(
@@ -136,37 +89,30 @@ void NetworkConfigurationUpdaterImplCros::ApplyNetworkConfiguration(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
   const base::Value* policy_value = policies.GetValue(policy_key);
 
-  std::string new_network_config;
+  std::string onc_blob;
   if (policy_value != NULL) {
     // If the policy is not a string, we issue a warning, but still clear the
     // network configuration.
-    if (!policy_value->GetAsString(&new_network_config)) {
+    if (!policy_value->GetAsString(&onc_blob)) {
       LOG(WARNING) << "ONC policy for source "
                    << chromeos::onc::GetSourceAsString(onc_source)
                    << " is not a string value.";
     }
   }
 
-  // An empty string is not a valid ONC and generates warnings and
-  // errors. Replace by a valid empty configuration.
-  if (new_network_config.empty())
-    new_network_config = chromeos::onc::kEmptyUnencryptedConfiguration;
+  base::ListValue network_configs;
+  base::ListValue certificates;
+  ParseAndValidateOncForImport(
+      onc_blob, onc_source, "", &network_configs, &certificates);
 
-  scoped_ptr<net::CertificateList> web_trust_certs(new net::CertificateList());
-  if (!network_library_->LoadOncNetworks(new_network_config, "", onc_source,
-                                         web_trust_certs.get())) {
-    LOG(ERROR) << "Errors occurred during the ONC policy application.";
-  }
+  network_library_->LoadOncNetworks(network_configs, onc_source);
 
-  if (onc_source == chromeos::onc::ONC_SOURCE_USER_POLICY &&
-      allow_trusted_certificates_from_policy_) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&CrosTrustAnchorProvider::SetTrustAnchors,
-                   base::Unretained(static_cast<CrosTrustAnchorProvider*>(
-                       cert_trust_provider_)),
-                   base::Passed(&web_trust_certs)));
-  }
+  scoped_ptr<net::CertificateList> web_trust_certs(new net::CertificateList);
+  certificate_handler_->ImportCertificates(
+      certificates, onc_source, web_trust_certs.get());
+
+  if (onc_source == chromeos::onc::ONC_SOURCE_USER_POLICY)
+    SetTrustAnchors(web_trust_certs.Pass());
 }
 
 }  // namespace policy

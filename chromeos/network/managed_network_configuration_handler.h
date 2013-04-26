@@ -18,6 +18,7 @@
 
 namespace base {
 class DictionaryValue;
+class ListValue;
 }
 
 namespace chromeos {
@@ -118,13 +119,14 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler {
       const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback) const;
 
-  // Only to be called by NetworkConfigurationUpdater or from tests.
-  // Sets |toplevel_onc| as the current policy of |onc_source|. The network
+  // Only to be called by NetworkConfigurationUpdater or from tests.  Sets
+  // |network_configs_onc| as the current policy of |onc_source|. The network
   // configurations of the policy will be applied (not necessarily immediately)
   // to Shill's profiles and enforced in future configurations until the policy
   // associated with |onc_source| is changed again with this function.
+  // This function doesn't validate the policy. The caller must ensure validity.
   void SetPolicy(onc::ONCSource onc_source,
-                 const base::DictionaryValue& toplevel_onc);
+                 const base::ListValue& network_configs_onc);
 
  private:
   class PolicyApplicator;

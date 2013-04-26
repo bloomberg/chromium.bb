@@ -77,8 +77,8 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
         .Times(AnyNumber());
     EXPECT_CALL(*mock_network_library_, FindEthernetDevice())
         .Times(AnyNumber());
-    EXPECT_CALL(*mock_network_library_, LoadOncNetworks(_, _, _, _))
-        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_network_library_, LoadOncNetworks(_, _))
+        .Times(AnyNumber());
 
     cros_mock_->SetStatusAreaMocksExpectations();
   }

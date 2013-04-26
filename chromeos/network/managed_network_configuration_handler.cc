@@ -799,34 +799,9 @@ class ManagedNetworkConfigurationHandler::PolicyApplicator
 
 void ManagedNetworkConfigurationHandler::SetPolicy(
     onc::ONCSource onc_source,
-    const base::DictionaryValue& toplevel_onc) {
+    const base::ListValue& network_configs_onc) {
   VLOG(1) << "Setting policies for ONC source "
           << onc::GetSourceAsString(onc_source) << ".";
-
-  // Validate the ONC dictionary. We are liberal and ignore unknown field
-  // names and ignore invalid field names in kRecommended arrays.
-  onc::Validator validator(false,  // Ignore unknown fields.
-                           false,  // Ignore invalid recommended field names.
-                           true,  // Fail on missing fields.
-                           true);  // This ONC comes from policy.
-  validator.SetOncSource(onc_source);
-
-  onc::Validator::Result validation_result;
-  scoped_ptr<base::DictionaryValue> onc_validated =
-      validator.ValidateAndRepairObject(
-          &onc::kToplevelConfigurationSignature,
-          toplevel_onc,
-          &validation_result);
-
-  if (validation_result == onc::Validator::VALID_WITH_WARNINGS) {
-    LOG(WARNING) << "ONC from " << onc::GetSourceAsString(onc_source)
-                 << " produced warnings.";
-  } else if (validation_result == onc::Validator::INVALID ||
-             onc_validated == NULL) {
-    LOG(ERROR) << "ONC from " << onc::GetSourceAsString(onc_source)
-               << " is invalid and couldn't be repaired.";
-    return;
-  }
 
   PolicyMap* policies;
   std::string profile;
@@ -846,37 +821,28 @@ void ManagedNetworkConfigurationHandler::SetPolicy(
   // This stores all GUIDs of policies that have changed or are new.
   std::set<std::string> modified_policies;
 
-  base::ListValue* network_configurations = NULL;
-  onc_validated->GetListWithoutPathExpansion(
-      onc::toplevel_config::kNetworkConfigurations,
-      &network_configurations);
+  for (base::ListValue::const_iterator it = network_configs_onc.begin();
+       it != network_configs_onc.end(); ++it) {
+    const base::DictionaryValue* network = NULL;
+    (*it)->GetAsDictionary(&network);
+    DCHECK(network);
 
-  if (network_configurations) {
-    while (!network_configurations->empty()) {
-      base::Value* network_value = NULL;
-      // Passes ownership of network_value.
-      network_configurations->Remove(network_configurations->GetSize() - 1,
-                                     &network_value);
-      const base::DictionaryValue* network = NULL;
-      network_value->GetAsDictionary(&network);
-      std::string guid;
-      network->GetStringWithoutPathExpansion(onc::network_config::kGUID,
-                                             &guid);
+    std::string guid;
+    network->GetStringWithoutPathExpansion(onc::network_config::kGUID, &guid);
+    DCHECK(!guid.empty());
 
-      const base::DictionaryValue* old_entry = old_policies[guid];
-      const base::DictionaryValue*& new_entry = (*policies)[guid];
-      if (new_entry) {
-        LOG(ERROR) << "ONC from " << onc::GetSourceAsString(onc_source)
-                   << " contains several entries for the same GUID "
-                   << guid << ".";
-        delete new_entry;
-      }
-      new_entry = network;
-
-      if (!old_entry || !old_entry->Equals(new_entry)) {
-        modified_policies.insert(guid);
-      }
+    if (policies->count(guid) > 0) {
+      LOG(ERROR) << "ONC from " << onc::GetSourceAsString(onc_source)
+                 << " contains several entries for the same GUID "
+                 << guid << ".";
+      delete (*policies)[guid];
     }
+    const base::DictionaryValue* new_entry = network->DeepCopy();
+    (*policies)[guid] = new_entry;
+
+    const base::DictionaryValue* old_entry = old_policies[guid];
+    if (!old_entry || !old_entry->Equals(new_entry))
+      modified_policies.insert(guid);
   }
 
   STLDeleteValues(&old_policies);

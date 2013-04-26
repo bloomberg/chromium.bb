@@ -78,7 +78,9 @@
 #include "chrome/browser/chromeos/system/syslogs_provider.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
+#include "chromeos/network/certificate_handler.h"
 #include "chromeos/network/onc/onc_constants.h"
+#include "chromeos/network/onc/onc_utils.h"
 #endif
 #if defined(OS_WIN)
 #include "chrome/browser/net/service_providers_win.h"
@@ -1508,19 +1510,29 @@ void NetInternalsMessageHandler::OnImportONCFile(const ListValue* list) {
     NOTREACHED();
   }
 
+  chromeos::onc::ONCSource onc_source = chromeos::onc::ONC_SOURCE_USER_IMPORT;
+
+  base::ListValue network_configs;
+  base::ListValue certificates;
   std::string error;
-  chromeos::NetworkLibrary* cros_network =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  if (!cros_network->LoadOncNetworks(onc_blob, passcode,
-                                     chromeos::onc::ONC_SOURCE_USER_IMPORT,
-                                     NULL)) {
-    error = "Errors occurred during the ONC import.";
+  if (!chromeos::onc::ParseAndValidateOncForImport(
+          onc_blob, onc_source, passcode, &network_configs, &certificates)) {
+    error = "Errors occurred during the ONC parsing.";
     LOG(ERROR) << error;
   }
 
+  chromeos::NetworkLibrary* network_library =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  network_library->LoadOncNetworks(network_configs, onc_source);
   // Now that we've added the networks, we need to rescan them so they'll be
   // available from the menu more immediately.
-  cros_network->RequestNetworkScan();
+  network_library->RequestNetworkScan();
+
+  chromeos::CertificateHandler certificate_handler;
+  if (!certificate_handler.ImportCertificates(certificates, onc_source, NULL)) {
+    error += "Some certificates couldn't be imported.";
+    LOG(ERROR) << error;
+  }
 
   SendJavascriptCommand("receivedONCFileParse",
                         Value::CreateStringValue(error));

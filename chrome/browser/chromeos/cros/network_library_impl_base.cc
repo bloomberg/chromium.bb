@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_vector.h"
-#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/cros/network_constants.h"
@@ -15,13 +14,11 @@
 #include "chrome/browser/chromeos/net/onc_utils.h"
 #include "chrome/browser/chromeos/network_login_observer.h"
 #include "chromeos/network/network_ui_data.h"
-#include "chromeos/network/onc/onc_certificate_importer.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_normalizer.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translator.h"
 #include "chromeos/network/onc/onc_utils.h"
-#include "chromeos/network/onc/onc_validator.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/nss_util.h"  // crypto::GetTPMTokenInfo() for 802.1X and VPN.
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -1063,12 +1060,10 @@ class UserStringSubstitution : public onc::StringSubstitution {
 
 }  // namespace
 
-bool NetworkLibraryImplBase::LoadOncNetworks(
-    const std::string& onc_blob,
-    const std::string& passphrase,
-    onc::ONCSource source,
-    net::CertificateList* onc_trusted_certificates) {
-  VLOG(2) << __func__ << ": called on " << onc_blob;
+void NetworkLibraryImplBase::LoadOncNetworks(
+    const base::ListValue& network_configs,
+    onc::ONCSource source) {
+  VLOG(2) << __func__ << ": called on " << network_configs;
   NetworkProfile* profile = NULL;
   bool from_policy = (source == onc::ONC_SOURCE_USER_POLICY ||
                       source == onc::ONC_SOURCE_DEVICE_POLICY);
@@ -1082,192 +1077,112 @@ bool NetworkLibraryImplBase::LoadOncNetworks(
     if (profile == NULL) {
       VLOG(2) << "Profile for ONC source " << onc::GetSourceAsString(source)
               << " doesn't exist.";
-      return true;
-    }
-  }
-
-  scoped_ptr<base::DictionaryValue> root_dict =
-      onc::ReadDictionaryFromJson(onc_blob);
-  if (root_dict.get() == NULL) {
-    LOG(ERROR) << "ONC loaded from " << onc::GetSourceAsString(source)
-               << " is not a valid JSON dictionary.";
-    return false;
-  }
-
-  // Check and see if this is an encrypted ONC file. If so, decrypt it.
-  std::string onc_type;
-  root_dict->GetStringWithoutPathExpansion(onc::toplevel_config::kType,
-                                           &onc_type);
-  if (onc_type == onc::toplevel_config::kEncryptedConfiguration) {
-    root_dict = onc::Decrypt(passphrase, *root_dict);
-    if (root_dict.get() == NULL) {
-      LOG(ERROR) << "Couldn't decrypt the ONC from "
-                 << onc::GetSourceAsString(source);
-      return false;
-    }
-  }
-
-  // Validate the ONC dictionary. We are liberal and ignore unknown field
-  // names and ignore invalid field names in kRecommended arrays.
-  onc::Validator validator(false,  // Ignore unknown fields.
-                           false,  // Ignore invalid recommended field names.
-                           true,  // Fail on missing fields.
-                           from_policy);
-  validator.SetOncSource(source);
-
-  onc::Validator::Result validation_result;
-  root_dict = validator.ValidateAndRepairObject(
-      &onc::kToplevelConfigurationSignature,
-      *root_dict,
-      &validation_result);
-
-  if (from_policy) {
-    UMA_HISTOGRAM_BOOLEAN("Enterprise.ONC.PolicyValidation",
-                          validation_result == onc::Validator::VALID);
-  }
-
-  bool success = true;
-  if (validation_result == onc::Validator::VALID_WITH_WARNINGS) {
-    LOG(WARNING) << "ONC from " << onc::GetSourceAsString(source)
-                 << " produced warnings.";
-    success = false;
-  } else if (validation_result == onc::Validator::INVALID ||
-             root_dict == NULL) {
-    LOG(ERROR) << "ONC from " << onc::GetSourceAsString(source)
-               << " is invalid and couldn't be repaired.";
-    return false;
-  }
-
-  const base::ListValue* certificates;
-  bool has_certificates =
-      root_dict->GetListWithoutPathExpansion(
-          onc::toplevel_config::kCertificates,
-          &certificates);
-
-  const base::ListValue* network_configs;
-  bool has_network_configurations = root_dict->GetListWithoutPathExpansion(
-      onc::toplevel_config::kNetworkConfigurations,
-      &network_configs);
-
-  if (has_certificates) {
-    VLOG(2) << "ONC file has " << certificates->GetSize() << " certificates";
-
-    // Web trust is only granted to certificates imported by the user.
-    bool allow_trust_imports = source == onc::ONC_SOURCE_USER_IMPORT;
-    onc::CertificateImporter cert_importer(allow_trust_imports);
-    if (cert_importer.ParseAndStoreCertificates(
-            *certificates, onc_trusted_certificates) !=
-        onc::CertificateImporter::IMPORT_OK) {
-      LOG(ERROR) << "Cannot parse some of the certificates in the ONC from "
-                 << onc::GetSourceAsString(source);
-      success = false;
+      return;
     }
   }
 
   std::set<std::string> removal_ids;
   std::set<std::string>& network_ids(network_source_map_[source]);
   network_ids.clear();
-  if (has_network_configurations) {
-    VLOG(2) << "ONC file has " << network_configs->GetSize() << " networks";
-    for (base::ListValue::const_iterator it(network_configs->begin());
-         it != network_configs->end(); ++it) {
-      const base::DictionaryValue* network;
-      (*it)->GetAsDictionary(&network);
+  VLOG(2) << "ONC file has " << network_configs.GetSize() << " networks";
+  for (base::ListValue::const_iterator it(network_configs.begin());
+       it != network_configs.end(); ++it) {
+    const base::DictionaryValue* network;
+    (*it)->GetAsDictionary(&network);
 
-      bool marked_for_removal = false;
-      network->GetBooleanWithoutPathExpansion(onc::kRemove,
-                                              &marked_for_removal);
+    bool marked_for_removal = false;
+    network->GetBooleanWithoutPathExpansion(onc::kRemove,
+                                            &marked_for_removal);
 
-      std::string type;
-      network->GetStringWithoutPathExpansion(onc::network_config::kType, &type);
+    std::string type;
+    network->GetStringWithoutPathExpansion(onc::network_config::kType, &type);
 
-      std::string guid;
-      network->GetStringWithoutPathExpansion(onc::network_config::kGUID, &guid);
+    std::string guid;
+    network->GetStringWithoutPathExpansion(onc::network_config::kGUID, &guid);
 
-      if (source == onc::ONC_SOURCE_USER_IMPORT && marked_for_removal) {
-        // User import supports the removal of networks by ID.
-        removal_ids.insert(guid);
-        continue;
-      }
-
-      // Don't configure a network that is supposed to be removed. For
-      // policy-managed networks, the "remove" functionality of ONC is
-      // irrelevant. Instead, in general, all previously configured networks
-      // that are no longer configured are removed.
-      if (marked_for_removal)
-        continue;
-
-      // Expand strings like LoginID
-      base::DictionaryValue* expanded_network = network->DeepCopy();
-      UserStringSubstitution substitution;
-      onc::ExpandStringsInOncObject(onc::kNetworkConfigurationSignature,
-                                    substitution,
-                                    expanded_network);
-
-      // Update the ONC map.
-      const base::DictionaryValue*& entry = network_onc_map_[guid];
-      delete entry;
-      entry = expanded_network;
-
-      // Normalize the ONC: Remove irrelevant fields.
-      onc::Normalizer normalizer(true /* remove recommended fields */);
-      scoped_ptr<base::DictionaryValue> normalized_network =
-          normalizer.NormalizeObject(&onc::kNetworkConfigurationSignature,
-                                     *expanded_network);
-
-      // Configure the network.
-      scoped_ptr<base::DictionaryValue> shill_dict =
-          onc::TranslateONCObjectToShill(&onc::kNetworkConfigurationSignature,
-                                         *normalized_network);
-
-      // Set the ProxyConfig.
-      const base::DictionaryValue* proxy_settings;
-      if (normalized_network->GetDictionaryWithoutPathExpansion(
-              onc::network_config::kProxySettings,
-              &proxy_settings)) {
-        scoped_ptr<base::DictionaryValue> proxy_config =
-            onc::ConvertOncProxySettingsToProxyConfig(*proxy_settings);
-        std::string proxy_json;
-        base::JSONWriter::Write(proxy_config.get(), &proxy_json);
-        shill_dict->SetStringWithoutPathExpansion(
-            flimflam::kProxyConfigProperty,
-            proxy_json);
-      }
-
-      // Set the UIData.
-      scoped_ptr<NetworkUIData> ui_data =
-          chromeos::CreateUIDataFromONC(source, *normalized_network);
-      base::DictionaryValue ui_data_dict;
-      ui_data->FillDictionary(&ui_data_dict);
-      std::string ui_data_json;
-      base::JSONWriter::Write(&ui_data_dict, &ui_data_json);
-      shill_dict->SetStringWithoutPathExpansion(flimflam::kUIDataProperty,
-                                                ui_data_json);
-
-      // Set the appropriate profile for |source|.
-      if (profile != NULL) {
-        shill_dict->SetStringWithoutPathExpansion(flimflam::kProfileProperty,
-                                                  profile->path);
-      }
-
-      // For Ethernet networks, apply them to the current Ethernet service.
-      if (type == onc::network_type::kEthernet) {
-        const EthernetNetwork* ethernet = ethernet_network();
-        if (ethernet) {
-          CallConfigureService(ethernet->unique_id(), shill_dict.get());
-        } else {
-          LOG(WARNING) << "Tried to import ONC with an Ethernet network when "
-                       << "there is no active Ethernet connection.";
-        }
-      } else {
-        CallConfigureService(guid, shill_dict.get());
-      }
-
-      // Store the network's identifier. The identifiers are later used to clean
-      // out any previously-existing networks that had been configured through
-      // policy but are no longer specified in the updated ONC blob.
-      network_ids.insert(guid);
+    if (source == onc::ONC_SOURCE_USER_IMPORT && marked_for_removal) {
+      // User import supports the removal of networks by ID.
+      removal_ids.insert(guid);
+      continue;
     }
+
+    // Don't configure a network that is supposed to be removed. For
+    // policy-managed networks, the "remove" functionality of ONC is
+    // irrelevant. Instead, in general, all previously configured networks
+    // that are no longer configured are removed.
+    if (marked_for_removal)
+      continue;
+
+    // Expand strings like LoginID
+    base::DictionaryValue* expanded_network = network->DeepCopy();
+    UserStringSubstitution substitution;
+    onc::ExpandStringsInOncObject(onc::kNetworkConfigurationSignature,
+                                  substitution,
+                                  expanded_network);
+
+    // Update the ONC map.
+    const base::DictionaryValue*& entry = network_onc_map_[guid];
+    delete entry;
+    entry = expanded_network;
+
+    // Normalize the ONC: Remove irrelevant fields.
+    onc::Normalizer normalizer(true /* remove recommended fields */);
+    scoped_ptr<base::DictionaryValue> normalized_network =
+        normalizer.NormalizeObject(&onc::kNetworkConfigurationSignature,
+                                   *expanded_network);
+
+    // Configure the network.
+    scoped_ptr<base::DictionaryValue> shill_dict =
+        onc::TranslateONCObjectToShill(&onc::kNetworkConfigurationSignature,
+                                       *normalized_network);
+
+    // Set the ProxyConfig.
+    const base::DictionaryValue* proxy_settings;
+    if (normalized_network->GetDictionaryWithoutPathExpansion(
+            onc::network_config::kProxySettings,
+            &proxy_settings)) {
+      scoped_ptr<base::DictionaryValue> proxy_config =
+          onc::ConvertOncProxySettingsToProxyConfig(*proxy_settings);
+      std::string proxy_json;
+      base::JSONWriter::Write(proxy_config.get(), &proxy_json);
+      shill_dict->SetStringWithoutPathExpansion(
+          flimflam::kProxyConfigProperty,
+          proxy_json);
+    }
+
+    // Set the UIData.
+    scoped_ptr<NetworkUIData> ui_data =
+        chromeos::CreateUIDataFromONC(source, *normalized_network);
+    base::DictionaryValue ui_data_dict;
+    ui_data->FillDictionary(&ui_data_dict);
+    std::string ui_data_json;
+    base::JSONWriter::Write(&ui_data_dict, &ui_data_json);
+    shill_dict->SetStringWithoutPathExpansion(flimflam::kUIDataProperty,
+                                              ui_data_json);
+
+    // Set the appropriate profile for |source|.
+    if (profile != NULL) {
+      shill_dict->SetStringWithoutPathExpansion(flimflam::kProfileProperty,
+                                                profile->path);
+    }
+
+    // For Ethernet networks, apply them to the current Ethernet service.
+    if (type == onc::network_type::kEthernet) {
+      const EthernetNetwork* ethernet = ethernet_network();
+      if (ethernet) {
+        CallConfigureService(ethernet->unique_id(), shill_dict.get());
+      } else {
+        LOG(WARNING) << "Tried to import ONC with an Ethernet network when "
+                     << "there is no active Ethernet connection.";
+      }
+    } else {
+      CallConfigureService(guid, shill_dict.get());
+    }
+
+    // Store the network's identifier. The identifiers are later used to clean
+    // out any previously-existing networks that had been configured through
+    // policy but are no longer specified in the updated ONC blob.
+    network_ids.insert(guid);
   }
 
   if (from_policy) {
@@ -1279,8 +1194,6 @@ bool NetworkLibraryImplBase::LoadOncNetworks(
   } else if (source == onc::ONC_SOURCE_USER_IMPORT && !removal_ids.empty()) {
     ForgetNetworksById(source, removal_ids, true);
   }
-
-  return success;
 }
 
 ////////////////////////////////////////////////////////////////////////////

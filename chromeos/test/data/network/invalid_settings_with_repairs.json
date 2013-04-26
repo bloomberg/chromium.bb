@@ -271,5 +271,52 @@
         { "GUID": "3",
           "PKCS12": "abc" ,
           "Type": "Client" } ]
+    },
+    "toplevel-with-repaired-networks": {
+      "NetworkConfigurations":
+      [ { "GUID": "{485d6076-dd44-6b6d-69787465725f5045}",
+          "Type": "WiFi",
+          "Name": "My WiFi Network",
+          "WiFi": {
+            "SSID": "ssid-none",
+            "Security": "None" }
+        },
+        { "GUID": "{485d6076-dd44-6b6d-69787465725f5046}",
+          "Type": "WiFi",
+          "Name": "My WiFi Network2",
+          "WiFi": {
+            "Passphrase": "12345678",
+            "SSID": "ssid-wpa",
+            "Security": "WPA-PSK" }
+        }
+      ],
+      "Certificates": [],
+      "Type": "UnencryptedConfiguration",
+    },
+    "toplevel-with-repairable-networks": {
+      "NetworkConfigurations":
+      [ { "GUID": "{485d6076-dd44-6b6d-69787465725f5045}",
+          "Type": "WiFi",
+          "Name": "My WiFi Network",
+          "UnknownField1": "Value1",
+          "UnknownField2": {
+            "UnknownSubField": "Value2" },
+          "WiFi": {
+            "SSID": "ssid-none",
+            "Security": "None" }
+        },
+        { "GUID": "{485d6076-dd44-6b6d-69787465725f5046}",
+          "Type": "WiFi",
+          "Name": "My WiFi Network2",
+          "WiFi": {
+            "Passphrase": "12345678",
+            "SSID": "ssid-wpa",
+            "UnknownField1": "Value1",
+            "Security": "WPA-PSK" }
+        }
+      ],
+      "Certificates": [],
+      "Type": "UnencryptedConfiguration",
+      "UnknownField3": [],
     }
 }

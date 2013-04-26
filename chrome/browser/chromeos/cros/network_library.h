@@ -22,7 +22,6 @@
 #include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_constants.h"
-#include "net/cert/x509_certificate.h"
 
 namespace chromeos {
 
@@ -1720,13 +1719,9 @@ class NetworkLibrary {
   // changes.
   virtual void SwitchToPreferredNetwork() = 0;
 
-  // Load networks from an Open Network Configuration blob.
-  // If there was an error, returns false.
-  virtual bool LoadOncNetworks(
-      const std::string& onc_blob,
-      const std::string& passcode,
-      onc::ONCSource source,
-      net::CertificateList* onc_trusted_certificates) = 0;
+  // Load networks from an NetworkConfigurations list of ONC.
+  virtual void LoadOncNetworks(const base::ListValue& network_configs,
+                               onc::ONCSource source) = 0;
 
   // This sets the active network for the network type. Note: priority order
   // is unchanged (i.e. if a wifi network is set to active, but an ethernet

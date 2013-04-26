@@ -599,6 +599,7 @@
         'browser/chromeos/policy/enrollment_status_chromeos.h',
         'browser/chromeos/policy/enterprise_install_attributes.cc',
         'browser/chromeos/policy/enterprise_install_attributes.h',
+        'browser/chromeos/policy/network_configuration_updater.cc',
         'browser/chromeos/policy/network_configuration_updater.h',
         'browser/chromeos/policy/network_configuration_updater_impl.cc',
         'browser/chromeos/policy/network_configuration_updater_impl.h',

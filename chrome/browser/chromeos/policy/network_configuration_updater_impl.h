@@ -5,14 +5,17 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_NETWORK_CONFIGURATION_UPDATER_IMPL_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_NETWORK_CONFIGURATION_UPDATER_IMPL_H_
 
-#include <string>
-
 #include "chrome/browser/chromeos/policy/network_configuration_updater.h"
 #include "chrome/browser/policy/policy_service.h"
 #include "chromeos/network/onc/onc_constants.h"
 
 namespace base {
 class Value;
+}
+
+namespace chromeos {
+class CertificateHandler;
+class ManagedNetworkConfigurationHandler;
 }
 
 namespace policy {
@@ -26,15 +29,14 @@ class PolicyMap;
 // ignored.
 class NetworkConfigurationUpdaterImpl : public NetworkConfigurationUpdater {
  public:
-  explicit NetworkConfigurationUpdaterImpl(PolicyService* policy_service);
+  NetworkConfigurationUpdaterImpl(
+      PolicyService* policy_service,
+      chromeos::ManagedNetworkConfigurationHandler* network_config_handler,
+      scoped_ptr<chromeos::CertificateHandler> certificate_handler);
   virtual ~NetworkConfigurationUpdaterImpl();
 
   // NetworkConfigurationUpdater overrides.
-
   virtual void OnUserPolicyInitialized() OVERRIDE;
-  virtual void set_allow_trusted_certificates_from_policy(bool allow) OVERRIDE {
-  }
-  virtual net::CertTrustAnchorProvider* GetCertTrustAnchorProvider() OVERRIDE;
 
  private:
   // Callback that's called by |policy_service_| if the respective ONC policy
@@ -53,6 +55,11 @@ class NetworkConfigurationUpdaterImpl : public NetworkConfigurationUpdater {
 
   // The policy service storing the ONC policies.
   PolicyService* policy_service_;
+
+  // Pointer to the global singleton or mock provided to the constructor.
+  chromeos::ManagedNetworkConfigurationHandler* network_config_handler_;
+
+  scoped_ptr<chromeos::CertificateHandler> certificate_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConfigurationUpdaterImpl);
 };

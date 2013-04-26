@@ -54,8 +54,8 @@ class LoginTestBase : public chromeos::CrosInProcessBrowserTest {
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_network_library_, AddUserActionObserver(_))
         .Times(AnyNumber());
-    EXPECT_CALL(*mock_network_library_, LoadOncNetworks(_, _, _, _))
-        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_network_library_, LoadOncNetworks(_, _))
+        .Times(AnyNumber());
   }
 
   scoped_ptr<chromeos::MockCryptohomeLibrary> mock_cryptohome_library_;
