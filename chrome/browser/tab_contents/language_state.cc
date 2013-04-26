@@ -59,20 +59,26 @@ void LanguageState::LanguageDetermined(const std::string& page_language,
   current_lang_ = page_language;
 }
 
-std::string LanguageState::AutoTranslateTo() const {
-  // Only auto-translate if:
-  // - no translation is pending
-  // - this page is in the same language as the previous page
-  // - the previous page had been translated
-  // - this page is not already translated
-  // - the new page was navigated through a link.
-  if (!translation_pending_ &&
+bool LanguageState::InTranslateNavigation() const {
+  // The user is in the same translate session if
+  //   - no translation is pending
+  //   - this page is in the same language as the previous page
+  //   - the previous page had been translated
+  //   - the new page was navigated through a link.
+  return
+      !translation_pending_ &&
       prev_original_lang_ == original_lang_ &&
       prev_original_lang_ != prev_current_lang_ &&
-      original_lang_ == current_lang_ &&
       navigation_controller_->GetActiveEntry() &&
       navigation_controller_->GetActiveEntry()->GetTransitionType() ==
-          content::PAGE_TRANSITION_LINK) {
+          content::PAGE_TRANSITION_LINK;
+}
+
+
+std::string LanguageState::AutoTranslateTo() const {
+  if (InTranslateNavigation() &&
+      // The page is not yet translated.
+      original_lang_ == current_lang_ ) {
     return prev_current_lang_;
   }
 

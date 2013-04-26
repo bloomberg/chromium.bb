@@ -44,6 +44,9 @@ class LanguageState {
   // Returns an empty string if the page should not be auto-translated.
   std::string AutoTranslateTo() const;
 
+  // Returns true if the user is navigating through translated links.
+  bool InTranslateNavigation() const;
+
   // Returns true if the current page in the associated tab has been translated.
   bool IsPageTranslated() const { return original_lang_ != current_lang_; }
 

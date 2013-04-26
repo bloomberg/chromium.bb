@@ -146,6 +146,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   string16 GetMessageInfoBarButtonText();
   void MessageInfoBarButtonPressed();
   bool ShouldShowMessageInfoBarButton();
+  bool InTranslateNavigation();
 
   // Called by the before translate infobar to figure-out if it should show
   // an extra shortcut to let the user black-list/white-list that language

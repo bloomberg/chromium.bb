@@ -113,6 +113,14 @@ void TranslateInfoBarDelegate::TranslationDeclined() {
   UMA_HISTOGRAM_COUNTS("Translate.DeclineTranslate", 1);
 }
 
+bool TranslateInfoBarDelegate::InTranslateNavigation() {
+  TranslateTabHelper* translate_tab_helper =
+      TranslateTabHelper::FromWebContents(web_contents());
+  if (!translate_tab_helper)
+    return false;
+  return translate_tab_helper->language_state().InTranslateNavigation();
+}
+
 bool TranslateInfoBarDelegate::IsLanguageBlacklisted() {
   return prefs_.IsLanguageBlacklisted(original_language_code());
 }
