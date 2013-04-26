@@ -1263,13 +1263,17 @@ TEST_F(DriveFileSyncServiceMockTest, RemoteChange_Override) {
       kOrigin, kFilePath, true /* is_deleted */,
       kFileResourceId, 6, "deleted_file_md5"));
 
-  // Expect not to drop these changes even if they have different resource IDs.
-  EXPECT_TRUE(AppendIncrementalRemoteChange(
+  // Expect to drop this delete change since it has a different resource ID with
+  // the previous one.
+  EXPECT_FALSE(AppendIncrementalRemoteChange(
       kOrigin, kFilePath, true /* is_deleted */,
       kFileResourceId2, 7, "deleted_file_md5"));
+
+  // Expect not to drop this change even if it has a different resource ID with
+  // the previous one.
   EXPECT_TRUE(AppendIncrementalRemoteChange(
       kOrigin, kFilePath, false /* is_deleted */,
-      kFileResourceId, 8, "updated_file_md5"));
+      kFileResourceId2, 8, "updated_file_md5"));
 }
 
 TEST_F(DriveFileSyncServiceMockTest, RemoteChange_Folder) {

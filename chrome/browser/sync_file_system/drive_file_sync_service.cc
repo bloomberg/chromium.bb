@@ -1889,6 +1889,11 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
       remote_resource_id != local_resource_id)
     return false;
 
+  // Drop any change if the change is for deletion and local resource id is
+  // empty.
+  if (is_deleted && local_resource_id.empty())
+    return false;
+
   FileChange file_change(CreateFileChange(is_deleted));
 
   if (is_deleted) {
