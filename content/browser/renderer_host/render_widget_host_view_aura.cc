@@ -2010,9 +2010,8 @@ bool RenderWidgetHostViewAura::ChangeTextDirectionAndLayoutAlignment(
 
 void RenderWidgetHostViewAura::ExtendSelectionAndDelete(
     size_t before, size_t after) {
-  // TODO(horo): implement this method if it is required.
-  // http://crbug.com/149155
-  NOTIMPLEMENTED();
+  if (host_)
+    host_->ExtendSelectionAndDelete(before, after);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
