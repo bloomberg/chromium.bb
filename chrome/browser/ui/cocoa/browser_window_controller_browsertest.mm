@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #import "testing/gtest_mac.h"
 
 namespace {
@@ -500,4 +501,39 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, InstantSearchResultsMode) {
   EXPECT_TRUE(browser()->search_model()->mode().is_search_results());
   EXPECT_EQ(browser_window_controller::kInstantUIFullPageResults,
             [controller() currentInstantUIState]);
+}
+
+// Verify that in fast resize mode the web contents is not resized.
+IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, FastResize) {
+  browser()->window()->ToggleBookmarkBar();
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  NSView* web_contents_view = web_contents->GetView()->GetNativeView();
+  [web_contents_view setPostsFrameChangedNotifications:YES];
+
+  // Count the number of resizes.
+  __block int count = 0;
+  [[NSNotificationCenter defaultCenter]
+      addObserverForName:NSViewFrameDidChangeNotification
+                  object:web_contents_view
+                   queue:nil
+              usingBlock:^(NSNotification* note) { ++count; }];
+
+  // Enter fast resize mode.
+  [controller() setAnimationInProgress:YES];
+
+  // Resize bookmark bar and verify that the web contents is not resized.
+  NSView* bookmark_view = [[controller() bookmarkBarController] view];
+  [controller() resizeView:bookmark_view newHeight:100];
+  EXPECT_EQ(0, count);
+
+  // Resize the window verify that the web contents is not resized.
+  NSRect window_frame = [[controller() window] frame];
+  window_frame.size.height -= 100;
+  [[controller() window] setFrame:window_frame display:NO];
+  EXPECT_EQ(0, count);
+
+  // Exit fast resize mode.
+  [controller() setAnimationInProgress:NO];
+  EXPECT_EQ(1, count);
 }

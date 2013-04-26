@@ -68,6 +68,8 @@ class WebContents;
   // used in presentation mode to push the overlay below the floating toolbar
   // view.
   CGFloat overlayContentsOffset_;
+
+  BOOL shouldSuppressLayout_;
 }
 
 @property(readonly, nonatomic) NSView* activeContainer;
@@ -75,6 +77,7 @@ class WebContents;
 @property(readonly, nonatomic) BOOL drawDropShadow;
 @property(assign, nonatomic) CGFloat activeContainerOffset;
 @property(assign, nonatomic) CGFloat overlayContentsOffset;
+@property(assign, nonatomic) BOOL shouldSuppressLayout;
 
 // Initialization.
 - (id)initWithBrowser:(Browser*)browser

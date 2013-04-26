@@ -989,6 +989,7 @@ enum {
 }
 
 - (void)setAnimationInProgress:(BOOL)inProgress {
+  [overlayableContentsController_ setShouldSuppressLayout:inProgress];
   [[self tabContentArea] setFastResizeMode:inProgress];
 }
 

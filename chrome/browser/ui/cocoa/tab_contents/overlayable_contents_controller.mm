@@ -23,6 +23,7 @@
 @synthesize drawDropShadow = drawDropShadow_;
 @synthesize activeContainerOffset = activeContainerOffset_;
 @synthesize overlayContentsOffset = overlayContentsOffset_;
+@synthesize shouldSuppressLayout = shouldSuppressLayout_;
 
 - (id)initWithBrowser:(Browser*)browser
      windowController:(BrowserWindowController*)windowController {
@@ -169,6 +170,9 @@
 }
 
 - (void)layoutViews {
+  if (shouldSuppressLayout_)
+    return;
+
   NSRect bounds = [[self view] bounds];
 
   // Layout the separator at the top of the view.
