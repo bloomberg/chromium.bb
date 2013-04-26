@@ -54,9 +54,8 @@ public:
     static void setGeolocationEnabled(bool isEnabled) { isGeolocationEnabled = isEnabled; }
     static bool geolocationEnabled() { return isGeolocationEnabled; }
 
-    static void setWebkitIndexedDBEnabled(bool isEnabled) { isWebkitIndexedDBEnabled = isEnabled; }
-    static bool webkitIndexedDBEnabled() { return isWebkitIndexedDBEnabled; }
-    static bool indexedDBEnabled() { return isWebkitIndexedDBEnabled; }
+    static void setIndexedDBEnabled(bool isEnabled) { isIndexedDBEnabled = isEnabled; }
+    static bool indexedDBEnabled() { return isIndexedDBEnabled; }
 
     static void setCanvasPathEnabled(bool isEnabled) { isCanvasPathEnabled = isEnabled; }
     static bool canvasPathEnabled() { return isCanvasPathEnabled; }
@@ -88,20 +87,8 @@ public:
     static void setFontLoadEventsEnabled(bool isEnabled) { isFontLoadEventsEnabled = isEnabled; }
     static bool fontLoadEventsEnabled() { return isFontLoadEventsEnabled; }
 
-    // Mozilla version
-    static void setWebkitFullScreenAPIEnabled(bool isEnabled) { isWebkitFullScreenAPIEnabled = isEnabled; }
-    static bool webkitFullScreenAPIEnabled() { return isWebkitFullScreenAPIEnabled; }
-    static bool webkitRequestFullScreenEnabled() { return isWebkitFullScreenAPIEnabled; }
-    static bool webkitIsFullScreenEnabled() { return isWebkitFullScreenAPIEnabled; }
-    static bool webkitFullScreenKeyboardInputAllowedEnabled() { return isWebkitFullScreenAPIEnabled; }
-    static bool webkitCurrentFullScreenElementEnabled() { return isWebkitFullScreenAPIEnabled; }
-    static bool webkitCancelFullScreenEnabled() { return isWebkitFullScreenAPIEnabled; }
-
-    // W3C version
-    static bool webkitFullscreenEnabledEnabled() { return isWebkitFullScreenAPIEnabled; }
-    static bool webkitFullscreenElementEnabled() { return isWebkitFullScreenAPIEnabled; }
-    static bool webkitExitFullscreenEnabled() { return isWebkitFullScreenAPIEnabled; }
-    static bool webkitRequestFullscreenEnabled() { return isWebkitFullScreenAPIEnabled; }
+    static void setFullscreenEnabled(bool isEnabled) { isFullscreenEnabled = isEnabled; }
+    static bool fullscreenEnabled() { return isFullscreenEnabled; }
 
     static bool audioEnabled();
     static bool htmlMediaElementEnabled();
@@ -120,9 +107,11 @@ public:
     static bool openDatabaseSyncEnabled();
 
 #if ENABLE(WEB_AUDIO)
-    static void setWebkitAudioContextEnabled(bool isEnabled) { isWebkitAudioContextEnabled = isEnabled; }
-    static bool webkitAudioContextEnabled() { return isWebkitAudioContextEnabled; }
-    static bool webkitOfflineAudioContextEnabled() { return isWebkitAudioContextEnabled; }
+    static void setAudioContextEnabled(bool isEnabled) { isAudioContextEnabled = isEnabled; }
+    static bool audioContextEnabled() { return isAudioContextEnabled; }
+#else
+    static void setAudioContextEnabled(bool) { }
+    static bool audioContextEnabled() { return false; }
 #endif
 
     static void setWebMIDIEnabled(bool isEnabled) { isWebMIDIEnabled = isEnabled; }
@@ -133,18 +122,12 @@ public:
 
     static void setDeviceMotionEnabled(bool isEnabled) { isDeviceMotionEnabled = isEnabled; }
     static bool deviceMotionEnabled() { return isDeviceMotionEnabled; }
-    static bool deviceMotionEventEnabled() { return isDeviceMotionEnabled; }
-    static bool ondevicemotionEnabled() { return isDeviceMotionEnabled; }
 
     static void setDeviceOrientationEnabled(bool isEnabled) { isDeviceOrientationEnabled = isEnabled; }
     static bool deviceOrientationEnabled() { return isDeviceOrientationEnabled; }
-    static bool deviceOrientationEventEnabled() { return isDeviceOrientationEnabled; }
-    static bool ondeviceorientationEnabled() { return isDeviceOrientationEnabled; }
 
     static void setSpeechInputEnabled(bool isEnabled) { isSpeechInputEnabled = isEnabled; }
     static bool speechInputEnabled() { return isSpeechInputEnabled; }
-    static bool webkitSpeechEnabled() { return isSpeechInputEnabled; }
-    static bool webkitGrammarEnabled() { return isSpeechInputEnabled; }
 
     static void setScriptedSpeechEnabled(bool isEnabled) { isScriptedSpeechEnabled = isEnabled; }
     static bool scriptedSpeechEnabled() { return isScriptedSpeechEnabled; }
@@ -259,7 +242,7 @@ private:
     static bool isWebkitNotificationsEnabled;
     static bool isApplicationCacheEnabled;
     static bool isGeolocationEnabled;
-    static bool isWebkitIndexedDBEnabled;
+    static bool isIndexedDBEnabled;
     static bool isCanvasPathEnabled;
 #if ENABLE(CSS_EXCLUSIONS)
     static bool isCSSExclusionsEnabled;
@@ -271,9 +254,9 @@ private:
     static bool isCSSCompositingEnabled;
 #endif
     static bool isFontLoadEventsEnabled;
-    static bool isWebkitFullScreenAPIEnabled;
+    static bool isFullscreenEnabled;
 #if ENABLE(WEB_AUDIO)
-    static bool isWebkitAudioContextEnabled;
+    static bool isAudioContextEnabled;
 #endif
     static bool isWebMIDIEnabled;
     static bool isTouchEnabled;

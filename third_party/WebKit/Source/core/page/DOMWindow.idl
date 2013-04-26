@@ -143,7 +143,7 @@
                                    [TreatNullAs=NullString, TreatUndefinedAs=NullString,Default=Undefined] optional DOMString pseudoElement);
 
     [Replaceable] readonly attribute double devicePixelRatio;
-    
+
     DOMPoint webkitConvertPointFromPageToNode([Default=Undefined] optional Node node,
                                               [Default=Undefined] optional DOMPoint p);
     DOMPoint webkitConvertPointFromNodeToPage([Default=Undefined] optional Node node,
@@ -273,8 +273,8 @@
     [EnabledAtRuntime=touch] attribute EventListener ontouchend;
     [EnabledAtRuntime=touch] attribute EventListener ontouchcancel;
 
-    [EnabledAtRuntime] attribute EventListener ondevicemotion;
-    [EnabledAtRuntime] attribute EventListener ondeviceorientation;
+    [EnabledAtRuntime=deviceMotion] attribute EventListener ondevicemotion;
+    [EnabledAtRuntime=deviceOrientation] attribute EventListener ondeviceorientation;
 
     // EventTarget interface
     [Custom] void addEventListener(DOMString type,
@@ -314,7 +314,7 @@
     attribute CSSMediaRuleConstructor CSSMediaRule;
     attribute CSSPageRuleConstructor CSSPageRule;
     attribute CSSStyleRuleConstructor CSSStyleRule;
-    
+
     attribute CSSStyleDeclarationConstructor CSSStyleDeclaration;
     attribute MediaListConstructor MediaList;
     attribute CounterConstructor Counter;
@@ -514,8 +514,8 @@
     attribute TransitionEventConstructor WebKitTransitionEvent;
     attribute WheelEventConstructor WheelEvent;
     attribute XMLHttpRequestProgressEventConstructor XMLHttpRequestProgressEvent;
-    [EnabledAtRuntime] attribute DeviceMotionEventConstructor DeviceMotionEvent;
-    [EnabledAtRuntime] attribute DeviceOrientationEventConstructor DeviceOrientationEvent;
+    [EnabledAtRuntime=deviceMotion] attribute DeviceMotionEventConstructor DeviceMotionEvent;
+    [EnabledAtRuntime=deviceOrientation] attribute DeviceOrientationEventConstructor DeviceOrientationEvent;
     [EnabledAtRuntime=touch] attribute TouchConstructor Touch;
     [EnabledAtRuntime=touch] attribute TouchEventConstructor TouchEvent;
     [EnabledAtRuntime=touch] attribute TouchListConstructor TouchList;
@@ -550,7 +550,7 @@
 
     attribute EventSourceConstructor EventSource; // Usable with new the operator
 
-    // Mozilla has a separate XMLDocument object for XML documents. 
+    // Mozilla has a separate XMLDocument object for XML documents.
     // We just use Document for this.
     attribute DocumentConstructor XMLDocument;
     attribute DOMParserConstructor DOMParser;

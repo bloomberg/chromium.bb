@@ -124,28 +124,22 @@ bool WebRuntimeFeatures::isGeolocationEnabled()
 
 void WebRuntimeFeatures::enableIndexedDatabase(bool enable)
 {
-    RuntimeEnabledFeatures::setWebkitIndexedDBEnabled(enable);
+    RuntimeEnabledFeatures::setIndexedDBEnabled(enable);
 }
 
 bool WebRuntimeFeatures::isIndexedDatabaseEnabled()
 {
-    return RuntimeEnabledFeatures::webkitIndexedDBEnabled();
+    return RuntimeEnabledFeatures::indexedDBEnabled();
 }
 
 void WebRuntimeFeatures::enableWebAudio(bool enable)
 {
-#if ENABLE(WEB_AUDIO)
-    RuntimeEnabledFeatures::setWebkitAudioContextEnabled(enable);
-#endif
+    RuntimeEnabledFeatures::setAudioContextEnabled(enable);
 }
 
 bool WebRuntimeFeatures::isWebAudioEnabled()
 {
-#if ENABLE(WEB_AUDIO)
-    return RuntimeEnabledFeatures::webkitAudioContextEnabled();
-#else
-    return false;
-#endif
+    return RuntimeEnabledFeatures::audioContextEnabled();
 }
 
 void WebRuntimeFeatures::enableTouch(bool enable)
@@ -281,12 +275,12 @@ bool WebRuntimeFeatures::isPeerConnectionEnabled()
 
 void WebRuntimeFeatures::enableFullScreenAPI(bool enable)
 {
-    RuntimeEnabledFeatures::setWebkitFullScreenAPIEnabled(enable);
+    RuntimeEnabledFeatures::setFullscreenEnabled(enable);
 }
 
 bool WebRuntimeFeatures::isFullScreenAPIEnabled()
 {
-    return RuntimeEnabledFeatures::webkitFullScreenAPIEnabled();
+    return RuntimeEnabledFeatures::fullscreenEnabled();
 }
 
 void WebRuntimeFeatures::enableMediaSource(bool enable)

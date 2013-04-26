@@ -82,8 +82,8 @@
                         unsigned long end,
                         [Default=NullString] optional DOMString selectionMode);
 
-    [Custom] void setSelectionRange([Default=Undefined] optional long start, 
-                                    [Default=Undefined] optional long end, 
+    [Custom] void setSelectionRange([Default=Undefined] optional long start,
+                                    [Default=Undefined] optional long end,
                                     optional DOMString direction);
 
     // Non-standard attributes
@@ -91,8 +91,8 @@
     [Reflect, EnabledAtRuntime=directoryUpload] attribute boolean webkitdirectory;
     [Reflect] attribute DOMString useMap;
     [Reflect] attribute boolean incremental;
-    [Conditional=INPUT_SPEECH, Reflect, EnabledAtRuntime] attribute boolean webkitSpeech;
-    [Conditional=INPUT_SPEECH, Reflect, EnabledAtRuntime] attribute boolean webkitGrammar;
+    [Conditional=INPUT_SPEECH, Reflect, EnabledAtRuntime=speechInput] attribute boolean webkitSpeech;
+    [Conditional=INPUT_SPEECH, Reflect, EnabledAtRuntime=speechInput] attribute boolean webkitGrammar;
     [Conditional=INPUT_SPEECH, NotEnumerable] attribute EventListener onwebkitspeechchange;
 
     // See http://www.w3.org/TR/html-media-capture/

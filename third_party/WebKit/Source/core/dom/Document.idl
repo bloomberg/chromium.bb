@@ -145,9 +145,9 @@
     [TreatReturnedNullStringAs=Undefined] readonly attribute DOMString defaultCharset;
     [TreatReturnedNullStringAs=Undefined] readonly attribute DOMString readyState;
 
-    Element            elementFromPoint([Default=Undefined] optional long x, 
+    Element            elementFromPoint([Default=Undefined] optional long x,
                                         [Default=Undefined] optional long y);
-    Range              caretRangeFromPoint([Default=Undefined] optional long x, 
+    Range              caretRangeFromPoint([Default=Undefined] optional long x,
                                            [Default=Undefined] optional long y);
 
     // Mozilla extensions
@@ -171,15 +171,15 @@
     [RaisesException] NodeList querySelectorAll(DOMString selectors);
 
     // Mozilla version
-    [EnabledAtRuntime] readonly attribute boolean webkitIsFullScreen;
-    [EnabledAtRuntime] readonly attribute boolean webkitFullScreenKeyboardInputAllowed;
-    [EnabledAtRuntime] readonly attribute Element webkitCurrentFullScreenElement;
-    [EnabledAtRuntime] void webkitCancelFullScreen();
+    [EnabledAtRuntime=fullscreen] readonly attribute boolean webkitIsFullScreen;
+    [EnabledAtRuntime=fullscreen] readonly attribute boolean webkitFullScreenKeyboardInputAllowed;
+    [EnabledAtRuntime=fullscreen] readonly attribute Element webkitCurrentFullScreenElement;
+    [EnabledAtRuntime=fullscreen] void webkitCancelFullScreen();
 
     // W3C version
-    [EnabledAtRuntime] readonly attribute boolean webkitFullscreenEnabled;
-    [EnabledAtRuntime] readonly attribute Element webkitFullscreenElement;
-    [EnabledAtRuntime] void webkitExitFullscreen();
+    [EnabledAtRuntime=fullscreen] readonly attribute boolean webkitFullscreenEnabled;
+    [EnabledAtRuntime=fullscreen] readonly attribute Element webkitFullscreenElement;
+    [EnabledAtRuntime=fullscreen] void webkitExitFullscreen();
 
     void webkitExitPointerLock();
     readonly attribute Element webkitPointerLockElement;

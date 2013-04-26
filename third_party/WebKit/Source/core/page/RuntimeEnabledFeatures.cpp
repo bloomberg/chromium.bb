@@ -44,7 +44,7 @@ bool RuntimeEnabledFeatures::isSessionStorageEnabled = true;
 bool RuntimeEnabledFeatures::isWebkitNotificationsEnabled = false;
 bool RuntimeEnabledFeatures::isApplicationCacheEnabled = true;
 bool RuntimeEnabledFeatures::isGeolocationEnabled = true;
-bool RuntimeEnabledFeatures::isWebkitIndexedDBEnabled = false;
+bool RuntimeEnabledFeatures::isIndexedDBEnabled = false;
 bool RuntimeEnabledFeatures::isCanvasPathEnabled = false;
 #if ENABLE(CSS_EXCLUSIONS)
 bool RuntimeEnabledFeatures::isCSSExclusionsEnabled = false;
@@ -56,9 +56,9 @@ bool RuntimeEnabledFeatures::isCSSRegionsEnabled = false;
 bool RuntimeEnabledFeatures::isCSSCompositingEnabled = false;
 #endif
 bool RuntimeEnabledFeatures::isFontLoadEventsEnabled = false;
-bool RuntimeEnabledFeatures::isWebkitFullScreenAPIEnabled = true;
+bool RuntimeEnabledFeatures::isFullscreenEnabled = true;
 #if ENABLE(WEB_AUDIO)
-bool RuntimeEnabledFeatures::isWebkitAudioContextEnabled = false;
+bool RuntimeEnabledFeatures::isAudioContextEnabled = false;
 #endif
 bool RuntimeEnabledFeatures::isWebMIDIEnabled = false;
 bool RuntimeEnabledFeatures::isTouchEnabled = true;
