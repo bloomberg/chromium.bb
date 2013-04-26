@@ -102,10 +102,12 @@ static const char kDeviceTypePhone[] = "phone";
 static const char kDeviceTypeTablet[] = "tablet";
 
 content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
+  PrefService* prefs = profile->GetPrefs();
+
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIHistoryFrameHost);
   source->AddBoolean("isUserSignedIn",
-      !profile->GetPrefs()->GetString(prefs::kGoogleServicesUsername).empty());
+      !prefs->GetString(prefs::kGoogleServicesUsername).empty());
   source->AddLocalizedString("collapseSessionMenuItemText",
       IDS_NEW_TAB_OTHER_SESSIONS_COLLAPSE_SESSION);
   source->AddLocalizedString("expandSessionMenuItemText",
@@ -164,6 +166,9 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   source->AddBoolean("groupByDomain",
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kHistoryEnableGroupByDomain));
+  source->AddBoolean("allowDeletingHistory",
+      prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory));
+
   source->SetJsonPath(kStringsJsFile);
   source->AddResourcePath(kHistoryJsFile, IDR_HISTORY_JS);
   source->AddResourcePath(kOtherDevicesJsFile, IDR_OTHER_DEVICES_JS);
@@ -560,12 +565,13 @@ void BrowsingHistoryHandler::HandleQueryHistory(const ListValue* args) {
 }
 
 void BrowsingHistoryHandler::HandleRemoveVisits(const ListValue* args) {
-  if (delete_task_tracker_.HasTrackedTasks()) {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  if (delete_task_tracker_.HasTrackedTasks() ||
+      !profile->GetPrefs()->GetBoolean(prefs::kAllowDeletingBrowserHistory)) {
     web_ui()->CallJavascriptFunction("deleteFailed");
     return;
   }
 
-  Profile* profile = Profile::FromWebUI(web_ui());
   HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS);
   history::WebHistoryService* web_history =

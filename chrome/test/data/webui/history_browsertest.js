@@ -2,8 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+GEN('#include "chrome/test/data/webui/history_ui_browsertest.h"');
+
 /** @const */ var TOTAL_RESULT_COUNT = 160;
 /** @const */ var WAIT_TIMEOUT = 200;
+
+/**
+ * Test fixture for history WebUI testing.
+ * @constructor
+ * @extends {testing.Test}
+ */
+function HistoryUIBrowserTest() {}
 
 /**
  * Create a fake history result with the given timestamp.
@@ -127,6 +136,9 @@ BaseHistoryWebUITest.prototype = {
    */
   browsePreload: 'chrome://history-frame',
 
+  /** @override */
+  typedefCppFixture: 'HistoryUIBrowserTest',
+
   isAsync: true,
 
   /**
@@ -244,8 +256,7 @@ HistoryWebUITest.prototype = {
   preLoad: function() {
     BaseHistoryWebUITest.prototype.preLoad.call(this);
 
-    this.registerMockHandler_(
-        'removeVisits', this.removeVisitsStub_.bind(this));
+    this.registerRemoveVisitsStub_();
 
     // Prepare a list of fake history results. The entries will begin at
     // 1:00 AM on Sept 2, 2008, and will be spaced two minutes apart.
@@ -257,6 +268,15 @@ HistoryWebUITest.prototype = {
           createHistoryEntry(timestamp, 'http://google.com/' + timestamp));
       timestamp -= 2 * 60 * 1000;  // Next visit is two minutes earlier.
     }
+  },
+
+  /**
+   * Register a mock handler for the 'removeVisits' message. This is pulled out
+   * into a separate method so subclasses can override it.
+   */
+   registerRemoveVisitsStub_: function() {
+     this.registerMockHandler_(
+         'removeVisits', this.removeVisitsStub_.bind(this));
   },
 
   /**
@@ -422,7 +442,7 @@ TEST_F('HistoryWebUITest', 'deletion', function() {
     okCallback();
   };
 
-  // The "remote" button should be initially selected.
+  // The "remove" button should be initially disabled.
   var removeButton = $('remove-selected');
   expectTrue(removeButton.disabled);
 
@@ -711,4 +731,50 @@ TEST_F('RangeHistoryWebUITest', 'monthViewEmptyMonth', function() {
 
     testDone();
   });
+});
+
+/**
+ * Fixture for History WebUI testing when deletions are prohibited.
+ * @extends {BaseHistoryWebUITest}
+ * @constructor
+ */
+function HistoryWebUIDeleteProhibitedTest() {}
+
+HistoryWebUIDeleteProhibitedTest.prototype = {
+  __proto__: HistoryWebUITest.prototype,
+
+  /**
+   * Don't stub out the 'removeVisits' call in this class.
+   * @override
+   */
+  registerRemoveVisitsStub_: function() {},
+
+  /** @override */
+  testGenPreamble: function() {
+    GEN('  SetDeleteAllowed(false);');
+  },
+};
+
+// Test UI when removing entries is prohibited.
+TEST_F('HistoryWebUIDeleteProhibitedTest', 'deleteProhibited', function() {
+  // No checkboxes should be created.
+  var checkboxes = document.querySelectorAll(
+      '#results-display input[type=checkbox]');
+  expectEquals(0, checkboxes.length);
+
+  // The "remove" button should be disabled.
+  var removeButton = $('remove-selected');
+  expectTrue(removeButton.disabled);
+
+  // The "Remove from history" drop-down item should be disabled.
+  var removeVisit = $('remove-visit');
+  expectTrue(removeVisit.disabled);
+
+  // Attempting to remove items anyway should fail.
+  historyModel.removeVisitsFromHistory(this.fakeHistory_.slice(0, 2),
+                                       function () {
+    // The callback is only called on success.
+    testDone([false, 'Delete succeeded even though it was prohibited.']);
+  });
+  waitForCallback('deleteFailed', testDone);
 });

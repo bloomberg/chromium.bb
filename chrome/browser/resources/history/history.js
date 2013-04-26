@@ -127,13 +127,20 @@ Visit.prototype.getResultDOM = function(propertyBag) {
 
   this.id_ = this.model_.nextVisitId_++;
 
-  // Checkbox is always created, but only visible on hover & when checked.
-  var checkbox = document.createElement('input');
-  checkbox.type = 'checkbox';
-  checkbox.id = 'checkbox-' + this.id_;
-  checkbox.time = this.date.getTime();
-  checkbox.addEventListener('click', checkboxClicked);
-  time.appendChild(checkbox);
+  // Only create the checkbox if it can be used either to delete an entry or to
+  // block/allow it.
+  if (this.model_.editingEntriesAllowed) {
+    var checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.id = 'checkbox-' + this.id_;
+    checkbox.time = this.date.getTime();
+    checkbox.addEventListener('click', checkboxClicked);
+    time.appendChild(checkbox);
+
+    // Clicking anywhere in the entryBox will check/uncheck the checkbox.
+    entryBox.setAttribute('for', checkbox.id);
+    entryBox.addEventListener('mousedown', entryBoxMousedown);
+  }
 
   // Keep track of the drop down that triggered the menu, so we know
   // which element to apply the command to.
@@ -146,10 +153,6 @@ Visit.prototype.getResultDOM = function(propertyBag) {
     menu.dataset.devicetype = self.deviceType;
   };
   domain.textContent = this.getDomainFromURL_(this.url_);
-
-  // Clicking anywhere in the entryBox will check/uncheck the checkbox.
-  entryBox.setAttribute('for', checkbox.id);
-  entryBox.addEventListener('mousedown', entryBoxMousedown);
 
   entryBox.appendChild(time);
   var titleAndDomainWrapper = entryBox.appendChild(
@@ -563,6 +566,12 @@ HistoryModel.prototype.clearModel_ = function() {
   this.searchText_ = '';
   // Whether this user is a managed user.
   this.isManagedProfile = loadTimeData.getBoolean('isManagedProfile');
+  this.deletingHistoryAllowed = loadTimeData.getBoolean('allowDeletingHistory');
+
+  // Only create checkboxes for editing entries if they can be used either to
+  // delete an entry or to block/allow it.
+  this.editingEntriesAllowed = this.deletingHistoryAllowed ||
+                               this.isManagedProfile;
 
   // Flag to show that the results are grouped by domain or not.
   this.groupByDomain_ = false;
@@ -897,8 +906,12 @@ HistoryView.prototype.onModelReady = function(doneLoading) {
  * whether there are any checked boxes.
  */
 HistoryView.prototype.updateSelectionEditButtons = function() {
-  var anyChecked = document.querySelector('.entry input:checked') != null;
-  $('remove-selected').disabled = !anyChecked;
+  if (loadTimeData.getBoolean('allowDeletingHistory')) {
+    var anyChecked = document.querySelector('.entry input:checked') != null;
+    $('remove-selected').disabled = !anyChecked;
+  } else {
+    $('remove-selected').disabled = true;
+  }
   $('allow-selected').disabled = !anyChecked;
   $('block-selected').disabled = !anyChecked;
 };
@@ -1020,15 +1033,22 @@ HistoryView.prototype.getGroupedVisitsDOM_ = function(
   // Add a new domain entry.
   var siteResults = results.appendChild(
       createElementWithClassName('li', 'site-entry'));
-  var siteDomainCheckbox =
-      createElementWithClassName('input', 'domain-checkbox');
-  siteDomainCheckbox.type = 'checkbox';
-  siteDomainCheckbox.addEventListener('click', domainCheckboxClicked);
-  siteDomainCheckbox.domain_ = domain;
+
   // Make a wrapper that will contain the arrow, the favicon and the domain.
   var siteDomainWrapper = siteResults.appendChild(
       createElementWithClassName('div', 'site-domain-wrapper'));
-  siteDomainWrapper.appendChild(siteDomainCheckbox);
+
+  if (this.model_.editingEntriesAllowed) {
+    var siteDomainCheckbox =
+        createElementWithClassName('input', 'domain-checkbox');
+
+    siteDomainCheckbox.type = 'checkbox';
+    siteDomainCheckbox.addEventListener('click', domainCheckboxClicked);
+    siteDomainCheckbox.domain_ = domain;
+
+    siteDomainWrapper.appendChild(siteDomainCheckbox);
+  }
+
   var siteArrow = siteDomainWrapper.appendChild(
       createElementWithClassName('div', 'site-domain-arrow collapse'));
   var siteDomain = siteDomainWrapper.appendChild(
@@ -1459,13 +1479,19 @@ function load() {
       searchField.blur();  // Dismiss the keyboard.
   };
 
+  var mayRemoveVisits = loadTimeData.getBoolean('allowDeletingHistory');
+  $('remove-visit').disabled = !mayRemoveVisits;
+
+  if (mayRemoveVisits) {
+    $('remove-visit').addEventListener('activate', function(e) {
+      activeVisit.removeFromHistory_();
+      activeVisit = null;
+    });
+  }
+
   searchField.addEventListener('search', doSearch);
   $('search-button').addEventListener('click', doSearch);
 
-  $('remove-visit').addEventListener('activate', function(e) {
-    activeVisit.removeFromHistory();
-    activeVisit = null;
-  });
   $('more-from-site').addEventListener('activate', function(e) {
     activeVisit.showMoreFromSite_();
     activeVisit = null;
@@ -1646,6 +1672,9 @@ function confirmDeletion(okCallback, cancelCallback) {
  * Confirms the deletion with the user, and then deletes the selected visits.
  */
 function removeItems() {
+  if (!loadTimeData.getBoolean('allowDeletingHistory'))
+    return;
+
   var checked = $('results-display').querySelectorAll(
       '.entry-box input[type=checkbox]:checked:not([disabled])');
   var disabledItems = [];
