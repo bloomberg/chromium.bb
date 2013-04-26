@@ -27,7 +27,10 @@ package CodeGenerator;
 
 use strict;
 
+use Cwd;
+use File::Basename;
 use File::Find;
+use File::Spec;
 
 my $useDocument = "";
 my $useOutputDir = "";
@@ -36,6 +39,8 @@ my $useDirectories = "";
 my $preprocessor;
 my $defines = "";
 my $verbose = 0;
+my $dependentIdlFiles = "";
+my $sourceRoot = "";
 
 my $codeGenerator = 0;
 
@@ -103,6 +108,9 @@ sub new
     $useOutputHeadersDir = shift;
     $preprocessor = shift;
     $verbose = shift;
+    $dependentIdlFiles = shift;
+
+    $sourceRoot = getcwd();
 
     bless($reference, $object);
     return $reference;
@@ -248,11 +256,13 @@ sub IDLFileForInterface
     my $interfaceName = shift;
 
     unless ($idlFiles) {
-        my $sourceRoot = $ENV{SOURCE_ROOT};
-        my @directories = map { $_ = "$sourceRoot/$_" if $sourceRoot && -d "$sourceRoot/$_"; $_ } @$useDirectories;
+        my @directories = map { $_ = "$sourceRoot/$_" if -d "$sourceRoot/$_"; $_ } @$useDirectories;
         push(@directories, ".");
 
         $idlFiles = { };
+        foreach my $idlFile (@$dependentIdlFiles) {
+            $idlFiles->{fileparse(basename($idlFile), ".idl")} = $idlFile;
+        }
 
         my $wanted = sub {
             $idlFiles->{$1} = $File::Find::name if /^([A-Z].*)\.idl$/;
@@ -262,6 +272,19 @@ sub IDLFileForInterface
     }
 
     return $idlFiles->{$interfaceName};
+}
+
+sub HeaderFileForInterface
+{
+    my $object = shift;
+    my $interfaceName = shift;
+
+    my $idlFilename = $object->IDLFileForInterface($interfaceName)
+        or die("Could NOT find IDL file for interface \"$interfaceName\"!\n");
+
+    $idlFilename = "bindings/" . File::Spec->abs2rel($idlFilename, $sourceRoot);
+    $idlFilename =~ s/idl$/h/;
+    return $idlFilename;
 }
 
 sub ParseInterface

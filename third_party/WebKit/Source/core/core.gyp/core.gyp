@@ -340,10 +340,6 @@
         # a map from header name to absolute include path. For now, let the
         # generated bindings files use relative paths.
         '../page',
-        '../loader/appcache',
-        '../platform/leveldb',
-        '../platform/sql',
-        '../storage',
       ],
       'sources': [
         # These files include all the .cpp files generated from the .idl files

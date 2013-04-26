@@ -185,7 +185,8 @@ foreach my $idlFile (@supplementedIdlFiles) {
 }
 
 # Generate desired output for the target IDL file.
-my $codeGen = CodeGenerator->new(\@idlDirectories, $outputDirectory, $outputHeadersDirectory, $preprocessor, $verbose);
+my @dependentIdlFiles = ($targetDocument->fileName(), @supplementedIdlFiles);
+my $codeGen = CodeGenerator->new(\@idlDirectories, $outputDirectory, $outputHeadersDirectory, $preprocessor, $verbose, \@dependentIdlFiles);
 $codeGen->ProcessDocument($targetDocument, $defines);
 
 sub generateEmptyHeaderAndCpp

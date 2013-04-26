@@ -111,6 +111,14 @@ sub AddToImplIncludes
     }
 }
 
+sub AddInterfaceToImplIncludes
+{
+    my $interface = shift;
+    my $include = $codeGenerator->HeaderFileForInterface($interface);
+
+    AddToImplIncludes($include);
+}
+
 sub AddToHeader
 {
     my $code = shift;
@@ -684,10 +692,11 @@ sub GetHeaderClassInclude
     my $v8InterfaceName = shift;
     if ($v8InterfaceName =~ /SVGPathSeg/) {
         $v8InterfaceName =~ s/Abs|Rel//;
+        return "${v8InterfaceName}.h";
     }
     return "wtf/${v8InterfaceName}.h" if $codeGenerator->IsTypedArrayType($v8InterfaceName);
     return "" if ($codeGenerator->SkipIncludeHeader($v8InterfaceName));
-    return "${v8InterfaceName}.h";
+    return $codeGenerator->HeaderFileForInterface($v8InterfaceName);
 }
 
 sub GenerateHeaderCustomInternalFieldIndices
@@ -1164,7 +1173,7 @@ END
         push(@arguments, "ec") if $useExceptions;
         if ($attribute->signature->extendedAttributes->{"ImplementedBy"}) {
             my $implementedBy = $attribute->signature->extendedAttributes->{"ImplementedBy"};
-            AddToImplIncludes("${implementedBy}.h");
+            AddInterfaceToImplIncludes($implementedBy);
             unshift(@arguments, "imp") if !$attribute->isStatic;
             $functionName = "${implementedBy}::${functionName}";
         } elsif ($attribute->isStatic) {
@@ -1588,7 +1597,7 @@ END
             push(@arguments, "ec") if $useExceptions;
             if ($attribute->signature->extendedAttributes->{"ImplementedBy"}) {
                 my $implementedBy = $attribute->signature->extendedAttributes->{"ImplementedBy"};
-                AddToImplIncludes("${implementedBy}.h");
+                AddInterfaceToImplIncludes($implementedBy);
                 unshift(@arguments, "imp") if !$attribute->isStatic;
                 $functionName = "${implementedBy}::${functionName}";
             } elsif ($attribute->isStatic) {
@@ -3367,7 +3376,7 @@ END
         my $conditional = $attrExt->{"Conditional"};
         my $implementedBy = $attrExt->{"ImplementedBy"};
         if ($implementedBy) {
-            AddToImplIncludes("${implementedBy}.h");
+            AddInterfaceToImplIncludes($implementedBy);
         }
         if ($attrExt->{"EnabledAtRuntime"}) {
             push(@constantsEnabledAtRuntime, $constant);
@@ -3805,7 +3814,8 @@ sub GenerateCallbackHeader
     my @unsortedIncludes = ();
     push(@unsortedIncludes, "#include \"ActiveDOMCallback.h\"");
     push(@unsortedIncludes, "#include \"DOMWrapperWorld.h\"");
-    push(@unsortedIncludes, "#include \"$interfaceName.h\"");
+    my $interfaceHeader = $codeGenerator->HeaderFileForInterface($interfaceName);
+    push(@unsortedIncludes, "#include \"$interfaceHeader\"");
     push(@unsortedIncludes, "#include \"ScopedPersistent.h\"");
     push(@unsortedIncludes, "#include <v8.h>");
     push(@unsortedIncludes, "#include <wtf/Forward.h>");
@@ -4219,7 +4229,7 @@ sub GenerateFunctionCallString
     my $functionName;
     my $implementedBy = $function->signature->extendedAttributes->{"ImplementedBy"};
     if ($implementedBy) {
-        AddToImplIncludes("${implementedBy}.h");
+        AddInterfaceToImplIncludes($implementedBy);
         unshift(@arguments, "imp") if !$function->isStatic;
         $functionName = "${implementedBy}::${name}";
     } elsif ($function->isStatic) {
