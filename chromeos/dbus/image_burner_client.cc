@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "chromeos/dbus/fake_image_burner_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -132,23 +133,6 @@ class ImageBurnerClientImpl : public ImageBurnerClient {
   DISALLOW_COPY_AND_ASSIGN(ImageBurnerClientImpl);
 };
 
-// A stub implementaion of ImageBurnerClient.
-class ImageBurnerClientStubImpl : public ImageBurnerClient {
- public:
-  ImageBurnerClientStubImpl() {}
-  virtual ~ImageBurnerClientStubImpl() {}
-  virtual void BurnImage(const std::string& from_path,
-                         const std::string& to_path,
-                         const ErrorCallback& error_callback) OVERRIDE {}
-  virtual void SetEventHandlers(
-      const BurnFinishedHandler& burn_finished_handler,
-      const BurnProgressUpdateHandler& burn_progress_update_handler) OVERRIDE {}
-  virtual void ResetEventHandlers() OVERRIDE {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ImageBurnerClientStubImpl);
-};
-
 }  // namespace
 
 ImageBurnerClient::ImageBurnerClient() {
@@ -163,7 +147,7 @@ ImageBurnerClient* ImageBurnerClient::Create(DBusClientImplementationType type,
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new ImageBurnerClientImpl(bus);
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new ImageBurnerClientStubImpl();
+  return new FakeImageBurnerClient();
 }
 
 }  // namespace chromeos

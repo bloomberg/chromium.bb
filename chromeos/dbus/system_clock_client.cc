@@ -5,6 +5,7 @@
 #include "chromeos/dbus/system_clock_client.h"
 
 #include "base/bind.h"
+#include "chromeos/dbus/fake_system_clock_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -75,22 +76,6 @@ class SystemClockClientImpl : public SystemClockClient {
   DISALLOW_COPY_AND_ASSIGN(SystemClockClientImpl);
 };
 
-// The SystemClockClient implementation used on Linux desktop,
-// which does nothing.
-class SystemClockClientStubImpl : public SystemClockClient {
- public:
-  SystemClockClientStubImpl() {}
-  ~SystemClockClientStubImpl() {}
-
-  // SystemClockClient overrides:
-  virtual void AddObserver(Observer* observer) OVERRIDE {}
-  virtual void RemoveObserver(Observer* observer) OVERRIDE {}
-  virtual bool HasObserver(Observer* observer) OVERRIDE { return false; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SystemClockClientStubImpl);
-};
-
 SystemClockClient::SystemClockClient() {
 }
 
@@ -105,7 +90,7 @@ SystemClockClient* SystemClockClient::Create(
     return new SystemClockClientImpl(bus);
   }
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new SystemClockClientStubImpl();
+  return new FakeSystemClockClient();
 }
 
 }  // namespace chromeos

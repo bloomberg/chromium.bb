@@ -12,7 +12,9 @@
 #include "chromeos/dbus/fake_bluetooth_profile_manager_client.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
+#include "chromeos/dbus/fake_image_burner_client.h"
 #include "chromeos/dbus/fake_shill_manager_client.h"
+#include "chromeos/dbus/fake_system_clock_client.h"
 #include "chromeos/dbus/ibus/mock_ibus_client.h"
 #include "chromeos/dbus/ibus/mock_ibus_config_client.h"
 #include "chromeos/dbus/ibus/mock_ibus_engine_factory_service.h"
@@ -31,7 +33,9 @@ MockDBusThreadManagerWithoutGMock::MockDBusThreadManagerWithoutGMock()
         new FakeBluetoothProfileManagerClient()),
     fake_cros_disks_client_(new FakeCrosDisksClient),
     fake_cryptohome_client_(new FakeCryptohomeClient),
+    fake_image_burner_client_(new FakeImageBurnerClient),
     fake_shill_manager_client_(new FakeShillManagerClient),
+    fake_system_clock_client_(new FakeSystemClockClient),
     mock_ibus_client_(new MockIBusClient),
     mock_ibus_config_client_(new MockIBusConfigClient),
     mock_ibus_input_context_client_(new MockIBusInputContextClient),
@@ -183,8 +187,7 @@ GsmSMSClient* MockDBusThreadManagerWithoutGMock::GetGsmSMSClient() {
 }
 
 ImageBurnerClient* MockDBusThreadManagerWithoutGMock::GetImageBurnerClient() {
-  NOTIMPLEMENTED();
-  return NULL;
+  return fake_image_burner_client_.get();
 }
 
 IntrospectableClient*
@@ -228,8 +231,7 @@ SMSClient* MockDBusThreadManagerWithoutGMock::GetSMSClient() {
 }
 
 SystemClockClient* MockDBusThreadManagerWithoutGMock::GetSystemClockClient() {
-  NOTIMPLEMENTED();
-  return NULL;
+  return fake_system_clock_client_.get();
 }
 
 UpdateEngineClient* MockDBusThreadManagerWithoutGMock::GetUpdateEngineClient() {

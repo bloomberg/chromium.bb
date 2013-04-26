@@ -27,6 +27,8 @@ class FakeBluetoothProfileManagerClient;
 class FakeCrosDisksClient;
 class FakeCryptohomeClient;
 class FakeShillManagerClient;
+class FakeImageBurnerClient;
+class FakeSystemClockClient;
 class MockIBusClient;
 class MockIBusConfigClient;
 class MockIBusEngineFactoryService;
@@ -125,6 +127,14 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
     return fake_shill_manager_client_.get();
   }
 
+  FakeImageBurnerClient* fake_image_burner_client() {
+    return fake_image_burner_client_.get();
+  }
+
+  FakeSystemClockClient* fake_system_clock_client() {
+    return fake_system_clock_client_.get();
+  }
+
   MockIBusClient* mock_ibus_client() {
     return mock_ibus_client_.get();
   }
@@ -163,7 +173,9 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
       fake_bluetooth_profile_manager_client_;
   scoped_ptr<FakeCrosDisksClient> fake_cros_disks_client_;
   scoped_ptr<FakeCryptohomeClient> fake_cryptohome_client_;
+  scoped_ptr<FakeImageBurnerClient> fake_image_burner_client_;
   scoped_ptr<FakeShillManagerClient> fake_shill_manager_client_;
+  scoped_ptr<FakeSystemClockClient> fake_system_clock_client_;
 
   scoped_ptr<MockIBusClient> mock_ibus_client_;
   scoped_ptr<MockIBusConfigClient> mock_ibus_config_client_;
