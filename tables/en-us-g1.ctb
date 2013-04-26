@@ -134,6 +134,7 @@ repeated ---- 36
 always .\s.\s." 3-3-3-356
 always .\s.\s. 3-3-3 . . .
 begnum $ 256
+nofor begnum $ 256-3456
 always $ 4-256
 
 # special character sequences
