@@ -56,11 +56,11 @@ class WEBKIT_PLUGINS_EXPORT ResourceCreationImpl
   virtual PP_Resource CreateHostResolverPrivate(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateImageData(PP_Instance instance,
                                       PP_ImageDataFormat format,
-                                      const PP_Size& size,
+                                      const PP_Size* size,
                                       PP_Bool init_to_zero) OVERRIDE;
   virtual PP_Resource CreateImageDataNaCl(PP_Instance instance,
                                           PP_ImageDataFormat format,
-                                          const PP_Size& size,
+                                          const PP_Size* size,
                                           PP_Bool init_to_zero) OVERRIDE;
   virtual PP_Resource CreateIMEInputEvent(PP_Instance instance,
                                           PP_InputEvent_Type type,

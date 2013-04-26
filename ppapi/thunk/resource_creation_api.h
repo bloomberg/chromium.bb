@@ -130,11 +130,11 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateHostResolverPrivate(PP_Instance instance) = 0;
   virtual PP_Resource CreateImageData(PP_Instance instance,
                                       PP_ImageDataFormat format,
-                                      const PP_Size& size,
+                                      const PP_Size* size,
                                       PP_Bool init_to_zero) = 0;
   virtual PP_Resource CreateImageDataNaCl(PP_Instance instance,
                                           PP_ImageDataFormat format,
-                                          const PP_Size& size,
+                                          const PP_Size* size,
                                           PP_Bool init_to_zero) = 0;
   virtual PP_Resource CreateNetworkMonitor(
       PP_Instance instance,

@@ -382,7 +382,7 @@ bool PepperPDFHost::CreateImageData(
     return false;
 
   PP_Resource resource = enter.functions()->CreateImageData(instance, format,
-                                                            size, PP_FALSE);
+                                                            &size, PP_FALSE);
   if (!resource)
     return false;
   result->SetHostResource(instance, resource);

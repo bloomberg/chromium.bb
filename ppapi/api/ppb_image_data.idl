@@ -8,9 +8,11 @@
  * a browser handles image data.
  */
 
- label Chrome {
-   M14 = 1.0
- };
+[generate_thunk]
+
+label Chrome {
+  M14 = 1.0
+};
 
 /**
  * <code>PP_ImageDataFormat</code> is an enumeration of the different types of
@@ -157,6 +159,7 @@ interface PPB_ImageData {
    * <code>PP_FALSE</code>, the <code>desc</code> structure will be filled
    * with 0.
    */
+  [always_set_output_parameters]
   PP_Bool Describe(
       [in] PP_Resource image_data,
       [out] PP_ImageDataDesc desc);

@@ -533,7 +533,7 @@ void PPB_ImageData_Proxy::OnHostMsgCreate(PP_Instance instance,
     return;
 
   PP_Resource resource = enter.functions()->CreateImageData(
-      instance, static_cast<PP_ImageDataFormat>(format), size, init_to_zero);
+      instance, static_cast<PP_ImageDataFormat>(format), &size, init_to_zero);
   if (!resource)
     return;
   result->SetHostResource(instance, resource);
@@ -577,7 +577,7 @@ void PPB_ImageData_Proxy::OnHostMsgCreateNaCl(
     return;
 
   PP_Resource resource = enter.functions()->CreateImageDataNaCl(
-      instance, static_cast<PP_ImageDataFormat>(format), size, init_to_zero);
+      instance, static_cast<PP_ImageDataFormat>(format), &size, init_to_zero);
   if (!resource)
     return;
   result->SetHostResource(instance, resource);

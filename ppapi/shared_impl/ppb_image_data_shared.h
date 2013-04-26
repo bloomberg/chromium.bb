@@ -23,7 +23,7 @@ namespace ppapi {
 class PPAPI_SHARED_EXPORT PPB_ImageData_Shared {
  public:
   static PP_ImageDataFormat GetNativeImageDataFormat();
-  static bool IsImageDataFormatSupported(PP_ImageDataFormat format);
+  static PP_Bool IsImageDataFormatSupported(PP_ImageDataFormat format);
 };
 
 }  // namespace ppapi

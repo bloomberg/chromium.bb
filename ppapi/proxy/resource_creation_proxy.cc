@@ -256,16 +256,16 @@ PP_Resource ResourceCreationProxy::CreateHostResolverPrivate(
 
 PP_Resource ResourceCreationProxy::CreateImageData(PP_Instance instance,
                                                    PP_ImageDataFormat format,
-                                                   const PP_Size& size,
+                                                   const PP_Size* size,
                                                    PP_Bool init_to_zero) {
-  return PPB_ImageData_Proxy::CreateProxyResource(instance, format, size,
+  return PPB_ImageData_Proxy::CreateProxyResource(instance, format, *size,
                                                   init_to_zero);
 }
 
 PP_Resource ResourceCreationProxy::CreateImageDataNaCl(
     PP_Instance instance,
     PP_ImageDataFormat format,
-    const PP_Size& size,
+    const PP_Size* size,
     PP_Bool init_to_zero) {
   // These really only are different on the host side. On the plugin side, we
   // always request a "platform" ImageData if we're trusted, or a "NaCl" one

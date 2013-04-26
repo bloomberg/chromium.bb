@@ -36,10 +36,10 @@ PP_ImageDataFormat PPB_ImageData_Shared::GetNativeImageDataFormat() {
 }
 
 // static
-bool PPB_ImageData_Shared::IsImageDataFormatSupported(
+PP_Bool PPB_ImageData_Shared::IsImageDataFormatSupported(
     PP_ImageDataFormat format) {
-  return format == PP_IMAGEDATAFORMAT_BGRA_PREMUL ||
-         format == PP_IMAGEDATAFORMAT_RGBA_PREMUL;
+  return PP_FromBool(format == PP_IMAGEDATAFORMAT_BGRA_PREMUL ||
+                     format == PP_IMAGEDATAFORMAT_RGBA_PREMUL);
 }
 
 }  // namespace ppapi

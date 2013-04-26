@@ -90,9 +90,8 @@ def _GetThunkFileName(filenode, relpath):
   return name
 
 
-def _AddApiHeader(filenode, meta):
-  """Adds an API header for the given file to the ThunkBodyMetadata."""
-  # The API header matches the file name, not the interface name.
+def _StripFileName(filenode):
+  """Strips path  and dev, trusted, and private suffixes from the file name."""
   api_basename = _GetBaseFileName(filenode)
   if api_basename.endswith('_dev'):
     api_basename = api_basename[:-len('_dev')]
@@ -100,20 +99,24 @@ def _AddApiHeader(filenode, meta):
     api_basename = api_basename[:-len('_trusted')]
   if api_basename.endswith('_private'):
     api_basename = api_basename[:-len('_private')]
-  meta.AddApi(api_basename + '_api')
+  return api_basename
 
 
-def _MakeEnterLine(filenode, interface, member, arg, handle_errors, callback,
-                   meta):
-  """Returns an EnterInstance/EnterResource string for a function."""
-  api_name = interface.GetName()
+def _StripApiName(api_name):
+  """Strips Dev, Private, and Trusted suffixes from the API name."""
   if api_name.endswith('Trusted'):
     api_name = api_name[:-len('Trusted')]
   if api_name.endswith('_Dev'):
     api_name = api_name[:-len('_Dev')]
   if api_name.endswith('_Private'):
     api_name = api_name[:-len('_Private')]
-  api_name += '_API'
+  return api_name
+
+
+def _MakeEnterLine(filenode, interface, member, arg, handle_errors, callback,
+                   meta):
+  """Returns an EnterInstance/EnterResource string for a function."""
+  api_name = _StripApiName(interface.GetName()) + '_API'
   if member.GetProperty('api'):  # Override API name.
     manually_provided_api = True
     # TODO(teravest): Automatically guess the API header file.
@@ -128,14 +131,14 @@ def _MakeEnterLine(filenode, interface, member, arg, handle_errors, callback,
       arg_string = '%s, %s' % (arg[1], callback)
     if interface.GetProperty('singleton') or member.GetProperty('singleton'):
       if not manually_provided_api:
-        _AddApiHeader(filenode, meta)
+        meta.AddApi('ppapi/thunk/%s_api.h' % _StripFileName(filenode))
       return 'EnterInstanceAPI<%s> enter(%s);' % (api_name, arg_string)
     else:
       return 'EnterInstance enter(%s);' % arg_string
   elif arg[0] == 'PP_Resource':
     enter_type = 'EnterResource<%s>' % api_name
     if not manually_provided_api:
-      _AddApiHeader(filenode, meta)
+      meta.AddApi('ppapi/thunk/%s_api.h' % _StripFileName(filenode))
     if callback is None:
       return '%s enter(%s, %s);' % (enter_type, arg[1],
                                     str(handle_errors).lower())
@@ -180,6 +183,7 @@ def _GetDefaultFailureValue(t):
       'uint16_t': '0',
       'uint32_t': '0',
       'uint64_t': '0',
+      'void*': 'NULL'
   }
   if t in values:
     return values[t]
@@ -256,6 +260,14 @@ def _MakeNormalMemberBody(filenode, release, node, member, rtype, args,
     include_version - whether to include the version in the invocation
     meta - ThunkBodyMetadata for header hints
   """
+  if len(args) == 0:
+    # Calling into the "Shared" code for the interface seems like a reasonable
+    # heuristic when we don't have any arguments; some thunk code follows this
+    # convention today.
+    meta.AddApi('ppapi/shared_impl/%s_shared.h' % _StripFileName(filenode))
+    return 'return %s::%s();' % (_StripApiName(node.GetName()) + '_Shared',
+                                 member.GetName())
+
   is_callback_func = args[len(args) - 1][0] == 'struct PP_CompletionCallback'
 
   if is_callback_func:
@@ -267,9 +279,17 @@ def _MakeNormalMemberBody(filenode, release, node, member, rtype, args,
   if args[0][0] == 'PP_Instance':
     call_arglist = ', '.join(a[1] for a in call_args)
     function_container = 'functions'
-  else:
+  elif args[0][0] == 'PP_Resource':
     call_arglist = ', '.join(a[1] for a in call_args[1:])
     function_container = 'object'
+  else:
+    # Calling into the "Shared" code for the interface seems like a reasonable
+    # heuristic when the first argument isn't a PP_Instance or a PP_Resource;
+    # some thunk code follows this convention today.
+    meta.AddApi('ppapi/shared_impl/%s_shared.h' % _StripFileName(filenode))
+    return 'return %s::%s(%s);' % (_StripApiName(node.GetName()) + '_Shared',
+                                   member.GetName(),
+                                   ', '.join(a[1] for a in args))
 
   function_name = member.GetName()
   if include_version:
@@ -443,7 +463,7 @@ class TGen(GeneratorByFile):
                 'ppapi/thunk/thunk.h']
     includes.append(_GetHeaderFileName(filenode))
     for api in meta.Apis():
-      includes.append('ppapi/thunk/%s.h' % api.lower())
+      includes.append('%s' % api.lower())
     for i in meta.Includes():
       includes.append(i)
     for include in sorted(includes):
