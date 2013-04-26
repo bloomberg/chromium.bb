@@ -64,7 +64,7 @@ class Simulator {
      : current_sim_(NULL),
        output_path_(output_path),
        seconds_per_test_(seconds_per_test),
-       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+       weak_factory_(this),
        display_(NULL),
        window_(0),
        gl_context_(NULL),

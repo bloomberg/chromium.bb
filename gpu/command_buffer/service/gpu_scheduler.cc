@@ -37,7 +37,7 @@ GpuScheduler::GpuScheduler(
       parser_(NULL),
       unscheduled_count_(0),
       rescheduled_count_(0),
-      reschedule_task_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      reschedule_task_factory_(this),
       was_preempted_(false) {
 }
 
