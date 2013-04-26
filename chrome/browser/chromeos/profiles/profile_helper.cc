@@ -43,7 +43,8 @@ ProfileHelper::~ProfileHelper() {
 Profile* ProfileHelper::GetProfileByUserIdHash(
     const std::string& user_id_hash) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  return profile_manager->GetProfile(base::FilePath(user_id_hash));
+  return profile_manager->GetProfile(
+      GetChromeOSProfileDir(base::FilePath(user_id_hash)));
 }
 
 // static
