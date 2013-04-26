@@ -273,9 +273,17 @@ bool OmniboxViewViews::OnKeyPressed(const ui::KeyEvent& event) {
       model()->OnUpOrDownKeyPressed(1);
       return true;
     case ui::VKEY_PRIOR:
+      if (event.IsControlDown() || event.IsAltDown() ||
+          event.IsShiftDown()) {
+        return false;
+      }
       model()->OnUpOrDownKeyPressed(-1 * model()->result().size());
       return true;
     case ui::VKEY_NEXT:
+      if (event.IsControlDown() || event.IsAltDown() ||
+          event.IsShiftDown()) {
+        return false;
+      }
       model()->OnUpOrDownKeyPressed(model()->result().size());
       return true;
     case ui::VKEY_V:
