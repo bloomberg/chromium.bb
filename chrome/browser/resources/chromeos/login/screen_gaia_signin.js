@@ -6,6 +6,8 @@
  * @fileoverview Oobe signin screen implementation.
  */
 
+<include src="../../gaia_auth_host/gaia_auth_host.js"></include>
+
 login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
   // Gaia loading time after which error message must be displayed and
   // lazy portal check should be fired.
@@ -27,37 +29,61 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       'onFrameError',
     ],
 
-    // Frame loading error code (0 - no error).
+    /**
+     * Frame loading error code (0 - no error).
+     * @type {number}
+     * @private
+     */
     error_: 0,
 
-    // Authentication extension's start page URL.
-    extensionUrl_: null,
+    /**
+     * Saved gaia auth host load params.
+     * @type {?string}
+     * @private
+     */
+    gaiaAuthParams_: null,
 
-    // Whether extension should be loaded silently.
+    /**
+     * Whether extension should be loaded silently.
+     * @type {boolean}
+     * @private
+     */
     silentLoad_: false,
 
-    // Whether local version of Gaia page is used.
-    // @type {boolean}
+    /**
+     * Whether local version of Gaia page is used.
+     * @type {boolean}
+     * @private
+     */
     isLocal_: false,
 
-    // Email of the user, which is logging in using offline mode.
-    // @type {string}
+    /**
+     * Email of the user, which is logging in using offline mode.
+     * @type {string}
+     */
     email: '',
 
-    // Timer id of pending load.
+    /**
+     * Timer id of pending load.
+     * @type {number}
+     * @private
+     */
     loadingTimer_: undefined,
 
-    // Whether user can cancel Gaia screen.
-    // @type {boolean}
+    /**
+     * Whether user can cancel Gaia screen.
+     * @type {boolean}
+     * @private
+     */
     cancelAllowed_: undefined,
 
     /** @override */
     decorate: function() {
-      this.frame_ = $('signin-frame');
+      this.gaiaAuthHost_ = new cr.login.GaiaAuthHost($('signin-frame'));
+      this.gaiaAuthHost_.addEventListener('ready',
+                                          this.onAuthReady_.bind(this));
 
       this.updateLocalizedContent();
-      window.addEventListener('message',
-          this.onMessage_.bind(this), false);
     },
 
     /**
@@ -92,7 +118,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     showLoadingUI_: function(show) {
       $('gaia-loading').hidden = !show;
-      this.frame_.hidden = show;
+      this.gaiaAuthHost_.frame.hidden = show;
       $('signin-right').hidden = show;
       $('enterprise-info-container').hidden = show;
       $('gaia-signin-divider').hidden = show;
@@ -195,48 +221,29 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       this.updateAuthExtension(data);
 
-      var params = [];
-      if (data.gaiaOrigin)
-        params.push('gaiaOrigin=' + encodeURIComponent(data.gaiaOrigin));
-      if (data.gaiaUrlPath)
-        params.push('gaiaUrlPath=' + encodeURIComponent(data.gaiaUrlPath));
-      if (data.hl)
-        params.push('hl=' + encodeURIComponent(data.hl));
-      if (data.localizedStrings) {
-        var strings = data.localizedStrings;
-        for (var name in strings) {
-          params.push(name + '=' + encodeURIComponent(strings[name]));
-        }
+      var params = {};
+      for (var i in cr.login.GaiaAuthHost.SUPPORTED_PARAMS) {
+        var name = cr.login.GaiaAuthHost.SUPPORTED_PARAMS[i];
+        if (data[name])
+          params[name] = data[name];
       }
-      if (data.email)
-        params.push('email=' + encodeURIComponent(data.email));
-      if (data.test_email)
-        params.push('test_email=' + encodeURIComponent(data.test_email));
-      if (data.test_password)
-        params.push('test_password=' + encodeURIComponent(data.test_password));
 
-      var url = data.startUrl;
-      if (params.length)
-        url += '?' + params.join('&');
+      if (data.localizedStrings)
+        params.localizedStrings = data.localizedStrings;
 
-      if (data.forceReload || this.extensionUrl_ != url) {
-        console.log('Opening extension: ' + url +
-                    ', opt_email=' + data.email);
-
+      if (data.forceReload ||
+          JSON.stringify(this.gaiaAuthParams_) != JSON.stringify(params)) {
         this.error_ = 0;
-        this.frame_.src = url;
-        this.extensionUrl_ = url;
+        this.gaiaAuthHost_.load(data.useOffline,
+                                params,
+                                this.onAuthCompleted_.bind(this));
+        this.gaiaAuthParams_ = params;
 
         this.loading = true;
         this.startLoadingTimer_();
-      } else if (this.loading) {
-        if (this.error_) {
-          // An error has occurred, so trying to reload.
-          this.doReload();
-        } else {
-          console.log('Gaia is still loading.');
-          // Nothing to do here. Just wait until the extension loads.
-        }
+      } else if (this.loading && this.error_) {
+        // An error has occurred, so trying to reload.
+        this.doReload();
       }
     },
 
@@ -273,67 +280,52 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
-     * Checks if message comes from the loaded authentication extension.
-     * @param {object} e Payload of the received HTML5 message.
-     * @type {boolean}
+     * Invoked when the auth host emits 'ready' event.
+     * @private
      */
-    isAuthExtMessage_: function(e) {
-      return this.extensionUrl_ != null &&
-          this.extensionUrl_.indexOf(e.origin) == 0 &&
-          e.source == this.frame_.contentWindow;
+    onAuthReady_: function() {
+      this.loading = false;
+      chrome.send('loginScreenUpdate');
+      this.clearLoadingTimer_();
+
+      // Show deferred error bubble.
+      if (this.errorBubble_) {
+        this.showErrorBubble(this.errorBubble_[0], this.errorBubble_[1]);
+        this.errorBubble_ = undefined;
+      }
+
+      chrome.send('loginWebuiReady');
+      chrome.send('loginVisible', ['gaia-signin']);
+
+      // Warm up the user images screen.
+      Oobe.getInstance().preloadScreen({id: SCREEN_USER_IMAGE_PICKER});
     },
 
     /**
-     * Event handler that is invoked when HTML5 message is received.
-     * @param {object} e Payload of the received HTML5 message.
+     * Invoked when auth is completed successfully.
+     * @param {!Object} credentials Credentials of the completed authentication.
+     * @private
      */
-    onMessage_: function(e) {
-      if (!this.isAuthExtMessage_(e)) {
-        console.log('GaiaSigninScreen.onMessage_: Unknown message origin, ' +
-            'e.origin=' + e.origin);
-        return;
+    onAuthCompleted_: function(credentials) {
+      if (credentials.useOffline) {
+        this.email = credentials.email;
+        chrome.send('authenticateUser',
+                    [credentials.email, credentials.password]);
+      } else if (credentials.authCode) {
+        chrome.send('completeAuthentication',
+                    [credentials.email,
+                     credentials.password,
+                     credentials.authCode]);
+      } else {
+        chrome.send('completeLogin',
+                    [credentials.email, credentials.password]);
       }
 
-      var msg = e.data;
-      console.log('GaiaSigninScreen.onMessage_: method=' + msg.method);
-
-      if (msg.method == 'completeLogin') {
-        chrome.send('completeLogin', [msg.email, msg.password]);
-        this.loading = true;
-        // Now that we're in logged in state header should be hidden.
-        Oobe.getInstance().headerHidden = true;
-        // Clear any error messages that were shown before login.
-        Oobe.clearErrors();
-      } else if (msg.method == 'completeAuthentication') {
-        chrome.send('completeAuthentication', [msg.email,
-                                               msg.password,
-                                               msg.authCode]);
-        this.loading = true;
-        // Now that we're in logged in state header should be hidden.
-        Oobe.getInstance().headerHidden = true;
-        // Clear any error messages that were shown before login.
-        Oobe.clearErrors();
-      } else if (msg.method == 'loginUILoaded') {
-        this.loading = false;
-        chrome.send('loginScreenUpdate');
-        this.clearLoadingTimer_();
-        // Show deferred error bubble.
-        if (this.errorBubble_) {
-          this.showErrorBubble(this.errorBubble_[0], this.errorBubble_[1]);
-          this.errorBubble_ = undefined;
-        }
-        chrome.send('loginWebuiReady');
-        chrome.send('loginVisible', ['gaia-signin']);
-        // Warm up the user images screen.
-        window.setTimeout(function() {
-            Oobe.getInstance().preloadScreen({id: SCREEN_USER_IMAGE_PICKER});
-        }, 0);
-      } else if (msg.method == 'offlineLogin') {
-        this.email = msg.email;
-        chrome.send('authenticateUser', [msg.email, msg.password]);
-        this.loading = true;
-        Oobe.getInstance().headerHidden = true;
-      }
+      this.loading = true;
+      // Now that we're in logged in state header should be hidden.
+      Oobe.getInstance().headerHidden = true;
+      // Clear any error messages that were shown before login.
+      Oobe.clearErrors();
     },
 
     /**
@@ -361,9 +353,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * Reloads extension frame.
      */
     doReload: function() {
-      console.log('Reload auth extension frame.');
       this.error_ = 0;
-      this.frame_.src = this.extensionUrl_;
+      this.gaiaAuthHost_.reload();
       this.loading = true;
       this.startLoadingTimer_();
     },
@@ -441,7 +432,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @param {number} error Error code.
      */
     onFrameError: function(error) {
-      console.log('Gaia frame error = ' + error);
+      console.error('Gaia frame error = ' + error);
       if (error == NET_ERROR.ABORTED_BY_USER) {
         // Gaia frame was reloaded. Nothing to do here.
         return;

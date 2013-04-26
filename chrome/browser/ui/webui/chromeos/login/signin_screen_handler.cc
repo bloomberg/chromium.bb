@@ -66,13 +66,6 @@ using content::RenderViewHost;
 
 namespace {
 
-// Start page of GAIA authentication extension.
-const char kGaiaExtStartPage[] =
-    "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/main.html";
-// Same as above but offline version.
-const char kGaiaExtStartPageOffline[] =
-    "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/offline.html";
-
 // User dictionary keys.
 const char kKeyUsername[] = "username";
 const char kKeyDisplayName[] = "displayName";
@@ -971,8 +964,7 @@ void SigninScreenHandler::LoadAuthExtension(
                     !email_.empty() && password_changed_for_.count(email_));
   if (delegate_)
     params.SetBoolean("isShowUsers", delegate_->IsShowUsers());
-  params.SetString("startUrl",
-                   offline ? kGaiaExtStartPageOffline : kGaiaExtStartPage);
+  params.SetBoolean("useOffline", offline);
   params.SetString("email", email_);
   email_.clear();
 
