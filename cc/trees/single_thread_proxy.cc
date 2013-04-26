@@ -229,10 +229,7 @@ void SingleThreadProxy::SetNeedsCommit() {
 }
 
 void SingleThreadProxy::SetNeedsRedraw(gfx::Rect damage_rect) {
-  // FIXME: Once we move render_widget scheduling into this class, we can
-  // treat redraw requests more efficiently than CommitAndRedraw requests.
-  layer_tree_host_impl_->SetViewportDamage(damage_rect);
-  SetNeedsCommit();
+  SetNeedsRedrawRectOnImplThread(damage_rect);
 }
 
 void SingleThreadProxy::OnHasPendingTreeStateChanged(bool have_pending_tree) {
@@ -272,6 +269,13 @@ void SingleThreadProxy::OnCanDrawStateChanged(bool can_draw) {
 
 void SingleThreadProxy::SetNeedsRedrawOnImplThread() {
   layer_tree_host_->ScheduleComposite();
+}
+
+void SingleThreadProxy::SetNeedsRedrawRectOnImplThread(gfx::Rect damage_rect) {
+  // FIXME: Once we move render_widget scheduling into this class, we can
+  // treat redraw requests more efficiently than CommitAndRedraw requests.
+  layer_tree_host_impl_->SetViewportDamage(damage_rect);
+  SetNeedsCommit();
 }
 
 void SingleThreadProxy::DidInitializeVisibleTileOnImplThread() {

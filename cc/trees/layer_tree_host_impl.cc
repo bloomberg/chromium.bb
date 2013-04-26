@@ -995,6 +995,10 @@ void LayerTreeHostImpl::SetManagedMemoryPolicy(
     client_->SetNeedsCommitOnImplThread();
 }
 
+void LayerTreeHostImpl::SetNeedsRedrawRect(gfx::Rect damage_rect) {
+  client_->SetNeedsRedrawRectOnImplThread(damage_rect);
+}
+
 void LayerTreeHostImpl::OnVSyncParametersChanged(base::TimeTicks timebase,
                                                  base::TimeDelta interval) {
   client_->OnVSyncParametersChanged(timebase, interval);

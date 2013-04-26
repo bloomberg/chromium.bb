@@ -106,6 +106,9 @@ class LayerTreeHostImplTest : public testing::Test,
   virtual void SetNeedsRedrawOnImplThread() OVERRIDE {
     did_request_redraw_ = true;
   }
+  virtual void SetNeedsRedrawRectOnImplThread(gfx::Rect damage_rect) OVERRIDE {
+    did_request_redraw_ = true;
+  }
   virtual void DidInitializeVisibleTileOnImplThread() OVERRIDE {
     did_upload_visible_tile_ = true;
   }

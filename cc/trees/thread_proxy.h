@@ -71,6 +71,7 @@ class ThreadProxy : public Proxy,
   virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE;
   virtual void OnHasPendingTreeStateChanged(bool has_pending_tree) OVERRIDE;
   virtual void SetNeedsRedrawOnImplThread() OVERRIDE;
+  virtual void SetNeedsRedrawRectOnImplThread(gfx::Rect dirty_rect) OVERRIDE;
   virtual void DidInitializeVisibleTileOnImplThread() OVERRIDE;
   virtual void SetNeedsCommitOnImplThread() OVERRIDE;
   virtual void SetNeedsManageTilesOnImplThread() OVERRIDE;
@@ -164,7 +165,6 @@ class ThreadProxy : public Proxy,
                                       RendererCapabilities* capabilities);
   void LayerTreeHostClosedOnImplThread(CompletionEvent* completion);
   void ManageTilesOnImplThread();
-  void SetViewportDamageOnImplThread(gfx::Rect damage_rect);
   void AcquireLayerTexturesForMainThreadOnImplThread(
       CompletionEvent* completion);
   void RecreateOutputSurfaceOnImplThread(

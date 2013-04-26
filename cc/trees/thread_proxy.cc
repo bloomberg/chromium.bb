@@ -459,10 +459,8 @@ void ThreadProxy::SetNeedsRedraw(gfx::Rect damage_rect) {
   DCHECK(IsMainThread());
   TRACE_EVENT0("cc", "ThreadProxy::SetNeedsRedraw");
   Proxy::ImplThread()->PostTask(base::Bind(
-      &ThreadProxy::SetViewportDamageOnImplThread,
+      &ThreadProxy::SetNeedsRedrawRectOnImplThread,
       impl_thread_weak_ptr_, damage_rect));
-  Proxy::ImplThread()->PostTask(base::Bind(
-      &ThreadProxy::SetNeedsRedrawOnImplThread, impl_thread_weak_ptr_));
 }
 
 void ThreadProxy::SetDeferCommits(bool defer_commits) {
@@ -491,6 +489,12 @@ void ThreadProxy::SetNeedsRedrawOnImplThread() {
   DCHECK(IsImplThread());
   TRACE_EVENT0("cc", "ThreadProxy::SetNeedsRedrawOnImplThread");
   scheduler_on_impl_thread_->SetNeedsRedraw();
+}
+
+void ThreadProxy::SetNeedsRedrawRectOnImplThread(gfx::Rect damage_rect) {
+  DCHECK(IsImplThread());
+  layer_tree_host_impl_->SetViewportDamage(damage_rect);
+  SetNeedsRedrawOnImplThread();
 }
 
 void ThreadProxy::DidSwapUseIncompleteTileOnImplThread() {
@@ -1160,11 +1164,6 @@ void ThreadProxy::LayerTreeHostClosedOnImplThread(CompletionEvent* completion) {
   weak_factory_on_impl_thread_.InvalidateWeakPtrs();
   vsync_client_ = NULL;
   completion->Signal();
-}
-
-void ThreadProxy::SetViewportDamageOnImplThread(gfx::Rect damage_rect) {
-  DCHECK(IsImplThread());
-  layer_tree_host_impl_->SetViewportDamage(damage_rect);
 }
 
 size_t ThreadProxy::MaxPartialTextureUpdates() const {
