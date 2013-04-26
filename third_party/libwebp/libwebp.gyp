@@ -61,7 +61,7 @@
     {
       'target_name': 'libwebp_dsp_neon',
       'conditions': [
-        ['armv7 == 1', {
+        ['target_arch == "arm" and arm_version >= 7', {
           'type': 'static_library',
           'include_dirs': ['.'],
           'sources': [
@@ -72,7 +72,7 @@
           # behavior similar to *.c.neon in an Android.mk
           'cflags!': [ '-mfpu=vfpv3-d16' ],
           'cflags': [ '-mfpu=neon' ],
-        },{  # "armv7 != 1"
+        },{  # "target_arch != "arm" or arm_version < 7"
           'type': 'none',
         }],
         ['order_profiling != 0', {

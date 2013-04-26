@@ -123,6 +123,9 @@
         # build (0).
         'inside_chromium_build%': 1,
 
+        # Set ARM architecture version.
+        'arm_version%': 7,
+
         'conditions': [
           # Set default value of toolkit_views based on OS.
           ['OS=="win" or chromeos==1 or use_aura==1', {
@@ -190,6 +193,7 @@
       'enable_message_center%': '<(enable_message_center)',
       'use_default_render_theme%': '<(use_default_render_theme)',
       'buildtype%': '<(buildtype)',
+      'arm_version%': '<(arm_version)',
 
       # Override branding to select the desired branding flavor.
       'branding%': 'Chromium',
@@ -211,11 +215,12 @@
       # Python version.
       'python_ver%': '2.6',
 
-      # Set ARM-v7 compilation flags
-      'armv7%': 0,
 
-      # Set Neon compilation flags (only meaningful if armv7==1).
+      # Set NEON compilation flags.
       'arm_neon%': 1,
+
+      # Detect NEON support at run-time.
+      'arm_neon_optional%': 0,
 
       # The system root for cross-compiles. Default: none.
       'sysroot%': '',
@@ -424,6 +429,13 @@
           'os_bsd%': 0,
         }],
 
+        # Set armv7 for backward compatibility.
+        ['arm_version==7', {
+          'armv7': 1,
+        }, {
+          'armv7': 0,
+        }],
+
         # NSS usage.
         ['(OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris") and use_openssl==0', {
           'use_nss%': 1,
@@ -489,6 +501,8 @@
           'enable_themes%': 0,
           'proprietary_codecs%': 1,
           'remoting%': 0,
+          'arm_neon%': 0,
+          'arm_neon_optional%': 1,
         }],
 
         # Enable autofill dialog for Android and Views-enabled platforms for now.
@@ -610,7 +624,6 @@
 
         ['OS=="linux" and target_arch=="arm" and chromeos==0', {
           # Set some defaults for arm/linux chrome builds
-          'armv7%': 1,
           'linux_breakpad%': 0,
           'linux_use_tcmalloc%': 0,
           # sysroot needs to be an absolute path otherwise it generates
@@ -721,8 +734,10 @@
     'fastbuild%': '<(fastbuild)',
     'dcheck_always_on%': '<(dcheck_always_on)',
     'python_ver%': '<(python_ver)',
+    'arm_version%': '<(arm_version)',
     'armv7%': '<(armv7)',
     'arm_neon%': '<(arm_neon)',
+    'arm_neon_optional%': '<(arm_neon_optional)',
     'sysroot%': '<(sysroot)',
     'system_libdir%': '<(system_libdir)',
     'component%': '<(component)',
@@ -940,16 +955,6 @@
     'linux_link_gnome_keyring%': 0,
     # Set to 1 to link against gsettings APIs instead of using dlopen().
     'linux_link_gsettings%': 0,
-
-    # Set Thumb compilation flags.
-    'arm_thumb%': 0,
-
-    # Set ARM fpu compilation flags (only meaningful if armv7==1 and
-    # arm_neon==0).
-    'arm_fpu%': 'vfpv3',
-
-    # Set ARM float abi compilation flag.
-    'arm_float_abi%': 'softfp',
 
     # Enable use of OpenMAX DL FFT routines.
     'use_openmax_dl_fft%': '<(use_openmax_dl_fft)',
@@ -1188,7 +1193,7 @@
             }],
             ['target_arch=="arm"', {
               'conditions': [
-                ['armv7==0', {
+                ['arm_version<7', {
                   'android_app_abi%': 'armeabi',
                 }, {
                   'android_app_abi%': 'armeabi-v7a',
@@ -1606,6 +1611,45 @@
       # Enable RLZ on Win, Mac and ChromeOS.
       ['branding=="Chrome" and (OS=="win" or OS=="mac" or chromeos==1)', {
         'enable_rlz%': 1,
+      }],
+
+      # Set default compiler flags depending on ARM version.
+      ['arm_version==5 and android_webview_build==0', {
+        # Flags suitable for Android emulator
+        'arm_arch%': 'armv5te',
+        'arm_tune%': 'xscale',
+        'arm_fpu%': '',
+        'arm_float_abi%': 'soft',
+        'arm_thumb%': 0,
+      }],
+      ['arm_version==6 and android_webview_build==0', {
+        'arm_arch%': 'armv6',
+        'arm_tune%': '',
+        'arm_fpu%': '',
+        'arm_float_abi%': 'soft',
+        'arm_thumb%': 0,
+      }],
+      ['arm_version==7 and android_webview_build==0', {
+        'arm_arch%': 'armv7-a',
+        'arm_tune%': 'cortex-a8',
+        'conditions': [
+          ['arm_neon==1', {
+            'arm_fpu%': 'neon',
+          }, {
+            'arm_fpu%': 'vfpv3-d16',
+          }],
+        ],
+        'arm_float_abi%': 'softfp',
+        'arm_thumb%': 1,
+      }],
+
+      ['android_webview_build==1', {
+        # The WebView build gets its cpu-specific flags from the Android build system.
+        'arm_arch%': '',
+        'arm_tune%': '',
+        'arm_fpu%': '',
+        'arm_float_abi%': '',
+        'arm_thumb%': 0,
       }],
     ],
 
@@ -2822,24 +2866,30 @@
                   '-Wno-abi',
                 ],
                 'conditions': [
-                  ['arm_thumb==1 and android_webview_build==0', {
+                  ['arm_arch!=""', {
+                    'cflags': [
+                      '-march=<(arm_arch)',
+                    ],
+                  }],
+                  ['arm_tune!=""', {
+                    'cflags': [
+                      '-mtune=<(arm_tune)',
+                    ],
+                  }],
+                  ['arm_fpu!=""', {
+                    'cflags': [
+                      '-mfpu=<(arm_fpu)',
+                    ],
+                  }],
+                  ['arm_float_abi!=""', {
+                    'cflags': [
+                      '-mfloat-abi=<(arm_float_abi)',
+                    ],
+                  }],
+                  ['arm_thumb==1', {
                     'cflags': [
                     '-mthumb',
                     ]
-                  }],
-                  ['armv7==1 and android_webview_build==0', {
-                    'cflags': [
-                      '-march=armv7-a',
-                      '-mtune=cortex-a8',
-                      '-mfloat-abi=<(arm_float_abi)',
-                    ],
-                    'conditions': [
-                      ['arm_neon==1', {
-                        'cflags': [ '-mfpu=neon', ],
-                      }, {
-                        'cflags': [ '-mfpu=<(arm_fpu)', ],
-                      }],
-                    ],
                   }],
                   ['OS=="android"', {
                     # Most of the following flags are derived from what Android
@@ -2866,22 +2916,8 @@
                         '-fuse-ld=gold',
                     ],
                     'conditions': [
-                      ['arm_thumb==1 and android_webview_build==0', {
+                      ['arm_thumb==1', {
                         'cflags': [ '-mthumb-interwork' ],
-                      }],
-                      ['armv7==0 and android_webview_build==0', {
-                        # Flags suitable for Android emulator
-                        'cflags': [
-                          '-march=armv5te',
-                          '-mtune=xscale',
-                          '-msoft-float',
-                        ],
-                        'defines': [
-                          '__ARM_ARCH_5__',
-                          '__ARM_ARCH_5T__',
-                          '__ARM_ARCH_5E__',
-                          '__ARM_ARCH_5TE__',
-                        ],
                       }],
                       ['profiling==1', {
                         'cflags': [

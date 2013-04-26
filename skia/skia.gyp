@@ -343,12 +343,7 @@
         [ 'OS != "win"', {
           'sources/': [ ['exclude', '_win\\.(cc|cpp)$'] ],
         }],
-        [ 'armv7 == 1', {
-          'defines': [
-            '__ARM_ARCH__=7',
-          ],
-        }],
-        [ 'armv7 == 1 and arm_neon == 1', {
+        [ 'target_arch == "arm" and arm_version >= 7 and arm_neon == 1', {
           'defines': [
             '__ARM_HAVE_NEON',
           ],
@@ -674,12 +669,7 @@
         }],
         [ 'target_arch == "arm"', {
           'conditions': [
-            [ 'armv7 == 1', {
-              'defines': [
-                '__ARM_ARCH__=7',
-              ],
-            }],
-            [ 'armv7 == 1 and arm_neon == 1', {
+            [ 'arm_version >= 7 and arm_neon == 1', {
               'defines': [
                 '__ARM_HAVE_NEON',
               ],
@@ -708,12 +698,12 @@
             '../third_party/skia/src/opts/SkBitmapProcState_opts_arm.cpp',
           ],
         }],
-        [ 'armv7 == 1 and arm_neon == 0', {
+        [ 'target_arch == "arm" and (arm_version < 7 or arm_neon == 0)', {
           'sources': [
             '../third_party/skia/src/opts/memset.arm.S',
         ],
         }],
-        [ 'armv7 == 1 and arm_neon == 1', {
+        [ 'target_arch == "arm" and arm_version >= 7 and arm_neon == 1', {
           'sources': [
             '../third_party/skia/src/opts/memset16_neon.S',
             '../third_party/skia/src/opts/memset32_neon.S',
@@ -724,13 +714,13 @@
             '../third_party/skia/src/opts/SkBlitRow_opts_arm_neon.cpp',
           ],
         }],
-        [ 'target_arch == "arm" and armv7 == 0', {
+        [ 'target_arch == "arm" and arm_version < 6', {
           'sources': [
             '../third_party/skia/src/opts/SkBlitRow_opts_none.cpp',
             '../third_party/skia/src/opts/SkUtils_opts_none.cpp',
           ],
         }],
-        [ 'target_arch == "arm" and armv7 == 1', {
+        [ 'target_arch == "arm" and arm_version >= 6', {
           'sources': [
             '../third_party/skia/src/opts/SkBlitRow_opts_arm.cpp',
             '../third_party/skia/src/opts/SkBlitRow_opts_arm.h',
