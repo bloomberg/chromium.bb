@@ -76,10 +76,10 @@ file.
         &amp;Close
       </message>
       <message name="IDS_OPERATION_FAILED_TITLE">
-        Operaton failed.
+        Operaton failed
       </message>
       <message name="IDS_CONTINUE_IN_CHROME_TITLE">
-        Continue in Chrome.
+        Continue in Chrome
       </message>
       <message name="IDS_ADD_PRINTERS_USING_CHROME">
         Login and add printers using opened Chrome window. Close Chrome to cancel process.
