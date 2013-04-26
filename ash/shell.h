@@ -150,6 +150,7 @@ class ASH_EXPORT Shell
 
   // A shell must be explicitly created so that it can call |Init()| with the
   // delegate set. |delegate| can be NULL (if not required for initialization).
+  // Takes ownership of |delegate|.
   static Shell* CreateInstance(ShellDelegate* delegate);
 
   // Should never be called before |CreateInstance()|.
@@ -456,6 +457,7 @@ class ASH_EXPORT Shell
 
   typedef std::pair<aura::Window*, gfx::Rect> WindowAndBoundsPair;
 
+  // Takes ownership of |delegate|.
   explicit Shell(ShellDelegate* delegate);
   virtual ~Shell();
 

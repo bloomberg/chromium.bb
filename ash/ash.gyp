@@ -537,6 +537,8 @@
       'sources': [
         'test/ash_test_base.cc',
         'test/ash_test_base.h',
+        'test/ash_test_helper.cc',
+        'test/ash_test_helper.h',
         'test/cursor_manager_test_api.cc',
         'test/cursor_manager_test_api.h',
         'test/launcher_view_test_api.cc',
@@ -662,6 +664,7 @@
         'system/chromeos/network/network_state_notifier_unittest.cc',
         'system/tray/system_tray_unittest.cc',
         'system/web_notification/web_notification_tray_unittest.cc',
+        'test/ash_test_helper_unittest.cc',
         'test/ash_unittests.cc',
         'tooltips/tooltip_controller_unittest.cc',
         'touch/touch_observer_hud_unittest.cc',
