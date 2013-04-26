@@ -26,7 +26,7 @@ const SkColor kSelectionHandleColor =
 // The minimum selection size to trigger selection controller.
 const int kMinSelectionSize = 4;
 
-const int kContextMenuTimoutMs = 500;
+const int kContextMenuTimoutMs = 200;
 
 // Convenience struct to represent a circle shape.
 struct Circle {

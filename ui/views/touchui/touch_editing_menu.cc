@@ -26,7 +26,8 @@ const int kMenuCommands[] = {IDS_APP_CUT,
                              IDS_APP_PASTE};
 const int kSpacingBetweenButtons = 0;
 const int kButtonSeparatorColor = SkColorSetARGB(13, 0, 0, 0);
-const int kMenuButtonBorderThickness = 10;
+const int kMenuButtonHeight = 40;
+const int kMenuButtonWidth = 65;
 const SkColor kMenuButtonColorNormal = SkColorSetARGB(102, 255, 255, 255);
 const SkColor kMenuButtonColorHover = SkColorSetARGB(13, 0, 0, 0);
 
@@ -38,8 +39,10 @@ namespace views {
 
 class TouchEditingMenuButtonBorder : public LabelButtonBorder {
  public:
-  explicit TouchEditingMenuButtonBorder(Button::ButtonStyle style)
-      : LabelButtonBorder(style) {
+  TouchEditingMenuButtonBorder(Button::ButtonStyle style,
+                               const gfx::Insets& insets)
+      : LabelButtonBorder(style),
+        insets_(insets) {
   }
 
   virtual ~TouchEditingMenuButtonBorder() {
@@ -48,9 +51,10 @@ class TouchEditingMenuButtonBorder : public LabelButtonBorder {
  private:
   // Overridden from LabelButtonBorder
   virtual gfx::Insets GetInsets() const OVERRIDE {
-    return gfx::Insets(kMenuButtonBorderThickness, kMenuButtonBorderThickness,
-                       kMenuButtonBorderThickness, kMenuButtonBorderThickness);
+    return insets_;
   }
+
+  gfx::Insets insets_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchEditingMenuButtonBorder);
 };
@@ -133,13 +137,17 @@ void TouchEditingMenuView::CreateButtons() {
 }
 
 Button* TouchEditingMenuView::CreateButton(const string16& title, int tag) {
-  LabelButton* button = new LabelButton(this, gfx::RemoveAcceleratorChar(
-      title, '&', NULL, NULL));
+  string16 label = gfx::RemoveAcceleratorChar(title, '&', NULL, NULL);
+  LabelButton* button = new LabelButton(this, label);
   button->set_focusable(true);
   button->set_request_focus_on_press(false);
-  button->set_border(new TouchEditingMenuButtonBorder(button->style()));
-  button->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
-      ui::ResourceBundle::SmallFont));
+  gfx::Font font = ui::ResourceBundle::GetSharedInstance().GetFont(
+      ui::ResourceBundle::SmallFont);
+  int v_border = (kMenuButtonHeight - font.GetHeight()) / 2;
+  int h_border = (kMenuButtonWidth - font.GetStringWidth(label)) / 2;
+  button->set_border(new TouchEditingMenuButtonBorder(button->style(),
+      gfx::Insets(v_border, h_border, v_border, h_border)));
+  button->SetFont(font);
   button->set_tag(tag);
   return button;
 }
