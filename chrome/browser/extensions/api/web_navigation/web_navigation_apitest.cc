@@ -403,7 +403,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ServerRedirect) {
 }
 
 // http://crbug.com/235171
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || (defined(OS_LINUX) && defined(USE_AURA))
 #define MAYBE_ServerRedirectSingleProcess DISABLED_ServerRedirectSingleProcess
 #else
 #define MAYBE_ServerRedirectSingleProcess ServerRedirectSingleProcess
