@@ -246,10 +246,10 @@ void UpdateScreen::OnPortalDetectionCompleted(
       state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN) {
     return;
   }
-  VLOG(1) << "UpdateScreen::OnPortalDetectionCompleted(): "
-          << "network=" << network->service_path() << ", "
-          << "state.status=" << state.status << ", "
-          << "state.response_code=" << state.response_code;
+  LOG(WARNING) << "UpdateScreen::OnPortalDetectionCompleted(): "
+               << "network=" << network->service_path() << ", "
+               << "state.status=" << state.status << ", "
+               << "state.response_code=" << state.response_code;
   NetworkPortalDetector::CaptivePortalStatus status = state.status;
   if (state_ == STATE_ERROR) {
     // In the case of online state hide error message and proceed to
@@ -473,12 +473,14 @@ void UpdateScreen::StartUpdateCheck() {
 }
 
 void UpdateScreen::ShowErrorMessage() {
+  LOG(WARNING) << "UpdateScreen::ShowErrorMessage()";
   state_ = STATE_ERROR;
   GetErrorScreen()->SetUIState(ErrorScreen::UI_STATE_UPDATE);
   get_screen_observer()->ShowErrorScreen();
 }
 
 void UpdateScreen::HideErrorMessage() {
+  LOG(WARNING) << "UpdateScreen::HideErrorMessage()";
   get_screen_observer()->HideErrorScreen(this);
 }
 
