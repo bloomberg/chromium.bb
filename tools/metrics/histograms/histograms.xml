@@ -364,6 +364,54 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Cellular.ActivationFailure">
+  <summary>
+    The count of cellular device activation failures (Chrome OS).
+  </summary>
+</histogram>
+
+<histogram name="Cellular.ActivationTry">
+  <summary>The count of cellular device activation tries (Chrome OS).</summary>
+</histogram>
+
+<histogram name="Cellular.ConnectionFailed">
+  <summary>
+    The count of cellular reconnect failures during activation (Chrome OS).
+  </summary>
+</histogram>
+
+<histogram name="Cellular.ConnectionRetry">
+  <summary>
+    The count of cellular device reconnect tries during activation (Chrome OS).
+  </summary>
+</histogram>
+
+<histogram name="Cellular.MobileSetupFailed">
+  <summary>
+    The count of successful cellular plan established (Chrome OS).
+  </summary>
+</histogram>
+
+<histogram name="Cellular.MobileSetupStart">
+  <summary>
+    The count of initiated cellular device setup starts (Chrome OS).
+  </summary>
+</histogram>
+
+<histogram name="Cellular.MobileSetupSucceeded">
+  <summary>The count of failed cellular plan setup tries (Chrome OS).</summary>
+</histogram>
+
+<histogram name="Cellular.PaymentFailed">
+  <summary>The count of failed cellular plan purchases (Chrome OS).</summary>
+</histogram>
+
+<histogram name="Cellular.PaymentReceived">
+  <summary>
+    The count of successfully completed cellular plan purchases (Chrome OS).
+  </summary>
+</histogram>
+
 <histogram name="Clipboard.IncognitoUseCase" enum="ClipboardAction">
   <obsolete>
     Deprecated as of 4/2013, experiment confirmed correctness of our patch.
@@ -3368,6 +3416,856 @@ other types of suffix sets.
   <summary/>
 </histogram>
 
+<histogram name="Network.3G.Gobi.Activation" units="milliseconds">
+  <summary>The time the Gobi modem takes to complete activation.</summary>
+</histogram>
+
+<histogram name="Network.3G.Gobi.Connect" units="milliseconds">
+  <summary>
+    The time the Gobi modem takes to connect to the cellular network.
+  </summary>
+</histogram>
+
+<histogram name="Network.3G.Gobi.Disconnect" units="milliseconds">
+  <summary>
+    The time the Gobi modem takes to disconnect from the cellular network.
+  </summary>
+</histogram>
+
+<histogram name="Network.3G.Gobi.FirmwareDownload.Attempts">
+  <summary>Number of attempts taken to install Gobi firmware.</summary>
+</histogram>
+
+<histogram name="Network.3G.Gobi.FirmwareDownload.Time" units="milliseconds">
+  <summary>The time it takes to install Gobi firmware.</summary>
+</histogram>
+
+<histogram name="Network.3G.Gobi.Registration" units="milliseconds">
+  <summary>
+    The time the Gobi modem takes to register on the cellular network.
+  </summary>
+</histogram>
+
+<histogram name="Network.3G.Gobi.SetPower" enum="Network3GGobiError">
+  <summary>Errors experienced during Gobi device powerup.</summary>
+</histogram>
+
+<histogram name="Network.Cellular.TimeOnline" units="seconds">
+  <summary>
+    Chrome OS network metric sampling the time spent using Cellular to transport
+    data.  These data are mostly useful when summed and compared to TimeOnline
+    for other network technologies (e.g. WiFi vs Cellular).
+  </summary>
+</histogram>
+
+<histogram name="Network.Cellular.TimeToConfig" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to join a 3G/Cellular
+    network and configure Layer 3 state.
+  </summary>
+</histogram>
+
+<histogram name="Network.Cellular.TimeToOnline" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to determine that a
+    3G/Cellular network is online after configuring Layer 3 state.
+  </summary>
+</histogram>
+
+<histogram name="Network.Cellular.TimeToPortal" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to determine that a
+    3G/Cellular network is in a captive portal after configuring Layer 3 state.
+  </summary>
+</histogram>
+
+<histogram name="Network.Cellular.UsageRequestStatus"
+    enum="NetworkCellularUsageRequestStatus">
+  <summary>Chrome OS cellular usage API request status codes.</summary>
+</histogram>
+
+<histogram name="Network.Ethernet.TimeOnline" units="seconds">
+  <summary>
+    Chrome OS network metric sampling the time spent using Ethernet to transport
+    data.  These data are mostly useful when summed and compared to TimeOnline
+    for other network technologies (e.g. WiFi vs Cellular).
+  </summary>
+</histogram>
+
+<histogram name="Network.Ethernet.TimeToConfig" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to join a wired
+    Ethernet network and configure Layer 3 state (typically acquire a DHCP
+    lease).
+  </summary>
+</histogram>
+
+<histogram name="Network.Ethernet.TimeToOnline" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to determine that an
+    Ethernet network is online after configuring Layer 3 state.
+  </summary>
+</histogram>
+
+<histogram name="Network.Ethernet.TimeToPortal" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to determine that an
+    Ethernet network is in a captive portal after configuring Layer 3 state.
+  </summary>
+</histogram>
+
+<histogram name="Network.ServiceErrors" enum="NetworkServiceError">
+  <summary>Chrome OS connection manager service errors seen.</summary>
+</histogram>
+
+<histogram name="Network.Shill.Cellular.AutoConnectTotalTime"
+    units="milliseconds">
+  <summary>
+    Chrome OS network diagnostic metric sampling the total amount of time spent
+    from the start of the first auto-connect request until when the cellular
+    modem successfully connects to the network.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Cellular.AutoConnectTries">
+  <summary>
+    Chrome OS network diagnostic metric sampling the number of auto-connect
+    tries that were attempted before the cellular modem successfully connected
+    to the network.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Cellular.Disconnect"
+    enum="NetworkDisconnectType">
+  <summary>
+    Chrome OS network usage metric that tracks whether the cellular network was
+    disconnected due to an error or was explicitly disconnected by the user.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Cellular.Drop" enum="NetworkCellularTechnology">
+  <summary>
+    Chrome OS cellular network metric that tracks the number of drops based on
+    the network technology.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Cellular.OutOfCreditsReason"
+    enum="NetworkCellularOutOfCreditsReason">
+  <summary>
+    Chrome OS cellular network metric that tracks the number of out-of-credits
+    detected based on the cause that triggered the out-of-credits.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Cellular.PortalAttempts">
+  <summary>
+    Chrome OS network diagnostic metric sampling the number of portal detection
+    attempts per pass for a cellular network. This includes failure, timeout and
+    successful attempts.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Cellular.PortalAttemptsToOnline">
+  <summary>
+    Chrome OS network diagnostic metric sampling the total number of portal
+    detection attempts performed for a cellular network between the Connected
+    and Online state. This includes failure, timeout and successful attempts.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Cellular.PortalResult"
+    enum="NetworkPortalResult">
+  <summary>
+    Chrome OS network diagnostic metric sampling the result of portal detections
+    for a cellular network.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Cellular.SignalStrengthBeforeDrop">
+  <summary>
+    Chrome OS network metric sampling the signal strength (0-100) of the
+    cellular modem before it dropped from the network.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Cellular.TimeOnline" units="seconds">
+  <summary>
+    Chrome OS network metric sampling the time spent using cellular to transport
+    data.  These data are mostly useful when summed and compared to TimeOnline
+    for other network technologies (e.g. WiFi vs Cellular).
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Cellular.TimeToConfig" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to join a cellular
+    network and configure Layer 3 state.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Cellular.TimeToConnect" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to connect a cellular
+    modem.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Cellular.TimeToDisable" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to disable a cellular
+    modem.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Cellular.TimeToEnable" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to enable a cellular
+    modem.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Cellular.TimeToInitialize" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to initialize a
+    cellular modem.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Cellular.TimeToOnline" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to determine that a
+    cellular network is online after configuring Layer 3 state.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Cellular.TimeToPortal" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to determine that a
+    cellular network is in a captive portal after configuring Layer 3 state.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Cellular.TimeToScan" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to scan a cellular
+    network and register a modem.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.CorruptedProfile" enum="NetworkCorruptedProfile">
+  <summary>
+    Chrome OS cellular network metric that tracks the number of corrupted
+    profiles encountered by Shill.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Ethernet.Disconnect"
+    enum="NetworkDisconnectType">
+  <summary>
+    Chrome OS network usage metric that tracks whether the Ethernet network was
+    disconnected due to an error or was explicitly disconnected by the user.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Ethernet.LinkMonitorBroadcastErrorsAtFailure">
+  <summary>
+    Chrome OS network performance metric that tracks the number of LinkMonitor
+    broadcast errors that were accrued on an Ethernet network at the time that
+    the link was declaired to be failed.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Ethernet.LinkMonitorFailure"
+    enum="LinkMonitorFailureType">
+  <summary>
+    Chrome OS metric that signals the type of failure the LinkMonitor
+    encountered which caused it to stop monitoring an Ethernet network.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Ethernet.LinkMonitorResponseTimeSample"
+    units="milliseconds">
+  <summary>
+    Chrome OS network performance metric that tracks the number of milliseconds
+    between an ARP request and a received reply on an Ethernet network.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Ethernet.LinkMonitorSecondsToFailure"
+    units="seconds">
+  <summary>
+    Chrome OS network performance metric that tracks the number of seconds from
+    the start of the LinkMonitor until failure on an Ethernet network.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Ethernet.LinkMonitorUnicastErrorsAtFailure">
+  <summary>
+    Chrome OS network performance metric that tracks the number of LinkMonitor
+    unicast errors that were accrued on an Ethernet network at the time that the
+    link was declaired to be failed.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Ethernet.PortalAttempts">
+  <summary>
+    Chrome OS network diagnostic metric sampling the number of portal detection
+    attempts per pass for an Ethernet network. This includes failure, timeout
+    and successful attempts.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Ethernet.PortalAttemptsToOnline">
+  <summary>
+    Chrome OS network diagnostic metric sampling the total number of portal
+    detection attempts performed for an Ethernet network between the Connected
+    and Online state. This includes failure, timeout and successful attempts.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Ethernet.PortalResult"
+    enum="NetworkPortalResult">
+  <summary>
+    Chrome OS network diagnostic metric sampling the result of portal detections
+    for an Ethernet network.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Ethernet.TimeOnline" units="seconds">
+  <summary>
+    Chrome OS network metric sampling the time spent using Ethernet to transport
+    data.  These data are mostly useful when summed and compared to TimeOnline
+    for other network technologies (e.g. WiFi vs Cellular).
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Ethernet.TimeToConfig" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to join a wired
+    Ethernet network and configure Layer 3 state (typically acquire a DHCP
+    lease).
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Ethernet.TimeToInitialize" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to initialize an
+    Ethernet device.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Ethernet.TimeToOnline" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to determine that an
+    Ethernet network is online after configuring Layer 3 state.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Ethernet.TimeToPortal" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to determine that an
+    Ethernet network is in a captive portal after configuring Layer 3 state.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.ServiceErrors" enum="NetworkServiceError">
+  <summary>Chrome OS connection manager service errors seen.</summary>
+</histogram>
+
+<histogram name="Network.Shill.TerminationActionResult"
+    enum="ShillTerminationActionResult">
+  <obsolete>
+    Deprecated 10/2012. No longer tracked.
+  </obsolete>
+  <summary>
+    Chrome OS network diagnostic metric sampling the number of termination
+    actions that successfully complete or fail when shill terminates.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.TerminationActionResult.OnSuspend"
+    enum="ShillTerminationActionResult">
+  <summary>
+    Chrome OS network diagnostic metric sampling the number of termination
+    actions that successfully complete or fail when shill suspends.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.TerminationActionResult.OnTerminate"
+    enum="ShillTerminationActionResult">
+  <summary>
+    Chrome OS network diagnostic metric sampling the number of termination
+    actions that successfully complete or fail when shill terminates.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.TerminationActionTime.OnSuspend"
+    units="milliseconds">
+  <summary>
+    Chrome OS network diagnostic metric sampling the time in milliseconds it
+    takes termination actions to complete when shill suspends.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.TerminationActionTime.OnTerminate"
+    units="milliseconds">
+  <summary>
+    Chrome OS network diagnostic metric sampling the time in milliseconds it
+    takes termination actions to complete when shill terminates.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.TimeToDrop" units="seconds">
+  <summary>
+    Chrome OS network stability metric sampling the time in seconds between the
+    networking going online to going offline. Offline events due to device
+    shutdown or suspend are ignored (along with the online time before that
+    offline event).
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.Driver" enum="VPNDriver">
+  <summary>
+    Chrome OS network usage metric sampled on each successful VPN connection
+    that tracks the VPN connection type.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.RemoteAuthenticationType"
+    enum="VPNRemoteAuthenticationType">
+  <summary>
+    Chrome OS network usage metric sampled on each successful VPN connection
+    that tracks the remote authentication method.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.VPN.TimeToConfig" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to configure Layer 3
+    state on a VPN network (typically acquire a DHCP lease).
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.VPN.TimeToOnline" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to determine that a
+    WiMax network is online after configuring Layer 3 state.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.UserAuthenticationType"
+    enum="VPNUserAuthenticationType">
+  <summary>
+    Chrome OS network usage metric sampled on each successful VPN connection
+    that tracks the user authentication method.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.WiFi.ApDisconnectReason" enum="WiFiReasonCode">
+  <summary>
+    Chrome OS network usage metric.  Reason code reported when the AP
+    disconnects a wifi connection.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.WiFi.ApDisconnectType" enum="WiFiStatusType">
+  <summary>
+    Chrome OS network usage metric.  Broad category of reason AP disconnected a
+    WiFi connection.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.Channel" enum="NetworkChannelType">
+  <summary>
+    Chrome OS network usage metric.  The channel used for each successful WiFi
+    connection.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.WiFi.ClientDisconnectReason"
+    enum="WiFiReasonCode">
+  <summary>
+    Chrome OS network usage metric.  Reason code reported when the client
+    disconnects a wifi connection.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.WiFi.ClientDisconnectType" enum="WiFiStatusType">
+  <summary>
+    Chrome OS network usage metric.  Broad category of reason client
+    disconnected a WiFi connection.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.Disconnect" enum="NetworkDisconnectType">
+  <summary>
+    Chrome OS network usage metric that tracks whether an 802.11 wireless
+    network was disconnected due to an error or was explicitly disconnected by
+    the user.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.EapInnerProtocol" enum="EAPInnerProtocol">
+  <summary>
+    Chrome OS network usage metric sampled on each successful 802.1x wireless
+    connection that tracks the configured inner authentication method.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.EapOuterProtocol" enum="EAPOuterProtocol">
+  <summary>
+    Chrome OS network usage metric sampled on each successful 802.1x wireless
+    connection that tracks the configured outer authentication method.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.FrequenciesConnectedEver">
+  <summary>
+    Chrome OS network diagnostic metric sampling the number of different WiFi
+    frequencies to which the user's machine has ever connected.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.LinkMonitorBroadcastErrorsAtFailure">
+  <summary>
+    Chrome OS network performance metric that tracks the number of LinkMonitor
+    broadcast errors that were accrued on an 802.11 wireiless network at the
+    time that the link was declaired to be failed.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.LinkMonitorFailure"
+    enum="LinkMonitorFailureType">
+  <summary>
+    Chrome OS metric that signals the type of failure the LinkMonitor
+    encountered which caused it to stop monitoring an 802.11 wireless network.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.LinkMonitorResponseTimeSample"
+    units="milliseconds">
+  <summary>
+    Chrome OS network performance metric that tracks the number of milliseconds
+    between an ARP request and a received reply on an 802.11 wireless network.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.LinkMonitorSecondsToFailure"
+    units="seconds">
+  <summary>
+    Chrome OS network performance metric that tracks the number of seconds from
+    the start of the LinkMonitor until failure on an 802.11 wireless network.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.LinkMonitorUnicastErrorsAtFailure">
+  <summary>
+    Chrome OS network performance metric that tracks the number of LinkMonitor
+    unicast errors that were accrued on an 802.11 wireless network at the time
+    that the link was declaired to be failed.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.PhyMode" enum="NetworkPhyModeType">
+  <summary>
+    Chrome OS network usage metric.  The channel type used for each successful
+    WiFi connection.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.PortalAttempts">
+  <summary>
+    Chrome OS network diagnostic metric sampling the number of portal detection
+    attempts per pass for an 802.11 wireless network. This includes failure,
+    timeout and successful attempts.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.PortalAttemptsToOnline">
+  <summary>
+    Chrome OS network diagnostic metric sampling the total number of portal
+    detection attempts performed for an 802.11 wireless network between the
+    Connected and Online state. This includes failure, timeout and successful
+    attempts.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.PortalResult" enum="NetworkPortalResult">
+  <summary>
+    Chrome OS network diagnostic metric sampling the result of portal detections
+    for an 802.11 wireless network.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.Security" enum="NetworkSecurityType">
+  <summary>
+    Chrome OS network usage metric.  The security setting for each successful
+    WiFi connection.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.SignalStrength" units="negative dBm">
+  <summary>
+    Chrome OS network metric indicating the negative of the dBm received signal
+    strength recorded at the time a successful WiFi connection started.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.TimeOnline" units="seconds">
+  <summary>
+    Chrome OS network metric sampling the time spent using WiFi to transport
+    data.  These data are mostly useful when summed and compared to TimeOnline
+    for other network technologies (e.g. WiFi vs Cellular).
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.TimeResumeToReady" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time from the resume event
+    to the time when an 802.11 wireless network has configured its Layer 3
+    state.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.TimeToConfig" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to configure Layer 3
+    state on an 802.11 wireless network (typically acquire a DHCP lease).
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.TimeToInitialize" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to initialize an
+    802.11 wireless device.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.TimeToJoin" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to join (associate
+    plus authenticate) an 802.11 wireless network.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.TimeToOnline" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to determine that an
+    802.11 wireless network is online after configuring Layer 3 state.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.TimeToPortal" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to determine that an
+    802.11 wireless network is in a captive portal after configuring Layer 3
+    state.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.TimeToScan" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to scan WiFi until a
+    connection is found.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.WiMax.TimeToConfig" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to configure Layer 3
+    state on a WiMax network (typically acquire a DHCP lease).
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.WiMax.TimeToInitialize" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to initialize a WiMax
+    device.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.WiMax.TimeToOnline" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to determine that a
+    WiMax network is online after configuring Layer 3 state.
+  </summary>
+</histogram>
+
+<histogram name="Network.TimeToConfig.Cellular" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to join a 3G/Cellular
+    network and configure Layer 3 state. Note this metric is deprecated; see
+    Network.Cellular.TimeToConfig.
+  </summary>
+</histogram>
+
+<histogram name="Network.TimeToConfig.Ethernet" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to join a wired
+    Ethernet network and configure Layer 3 state (typically acquire a DHCP
+    lease). Note this metric is deprecated; see Network.Ethernet.TimeToConfig.
+  </summary>
+</histogram>
+
+<histogram name="Network.TimeToConfig.Wifi" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to configure Layer 3
+    state on an 802.11 wireless network (typically acquire a DHCP lease). Note
+    this metric is deprecated; see Network.Wifi.TimeToConfig.
+  </summary>
+</histogram>
+
+<histogram name="Network.TimeToDrop" units="seconds">
+  <summary>
+    Chrome OS network stability metric sampling the time in seconds between the
+    networking going online to going offline. Offline events due to device
+    shutdown or suspend are ignored (along with the online time before that
+    offline event).
+  </summary>
+</histogram>
+
+<histogram name="Network.TimeToJoin.Wifi" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to join (associate
+    plus authenticate) an 802.11 wireless network. Note this metric is
+    deprecated; see Network.Wifi.TimeToJoin.
+  </summary>
+</histogram>
+
+<histogram name="Network.Wifi.AuthMode" enum="NetworkAuthModeType">
+  <summary>
+    Chrome OS network performance metric sampling the time to configure Layer 3
+    state on an 802.11 wireless network (typically acquire a DHCP lease).
+  </summary>
+</histogram>
+
+<histogram name="Network.Wifi.BitRate" units="bps">
+  <summary>
+    Network metric reporting the download speed test results run at setup time.
+    Recorded at least once per day.
+  </summary>
+</histogram>
+
+<histogram name="Network.Wifi.Channel" enum="NetworkChannelType">
+  <summary>
+    Chrome OS network usage metric.  The channel used for each successful WiFi
+    connection.
+  </summary>
+</histogram>
+
+<histogram name="Network.Wifi.Idle.NoiseLevel" units="negative dBm">
+  <summary>
+    Network metric indicating the negative of the dBm noise level recorded at
+    the time the metric is collected.  Reported at least once per day and only
+    when the device is idle.
+  </summary>
+</histogram>
+
+<histogram name="Network.Wifi.Idle.SignalLevel" units="negative dBm">
+  <summary>
+    Network metric indicating the negative of the dBm received signal level
+    recorded at the time the metric is collected.  Reported at least once per
+    day and only when the device is idle.
+  </summary>
+</histogram>
+
+<histogram name="Network.Wifi.Idle.SignalToNoiseRatio" units="negative dBm">
+  <summary>
+    Network metric indicating signal minus noise in dBm recorded at the time the
+    metrics is collected.  Reported at least once per day and only when the
+    device is idle.
+  </summary>
+</histogram>
+
+<histogram name="Network.Wifi.NoiseLevel" units="negative dBm">
+  <summary>
+    Network metric indicating the negative of the dBm noise level recorded at
+    the time the metric is collected.  Reported at least once per day.
+  </summary>
+</histogram>
+
+<histogram name="Network.Wifi.PhyMode" enum="NetworkPhyModeType">
+  <summary>
+    Chrome OS network usage metric.  The channel type used for each successful
+    WiFi connection.
+  </summary>
+</histogram>
+
+<histogram name="Network.Wifi.RoundTripTime" units="ms">
+  <summary>
+    Network metric reporting the average round trip time to the wifi gateway.
+    Recorded at least once per day.
+  </summary>
+</histogram>
+
+<histogram name="Network.Wifi.Security" enum="NetworkSecurityType">
+  <summary>
+    Chrome OS network usage metric.  The security setting for each successful
+    WiFi connection.
+  </summary>
+</histogram>
+
+<histogram name="Network.Wifi.SignalLevel" units="negative dBm">
+  <summary>
+    Network metric indicating the negative of the dBm received signal level
+    recorded at the time the metric is collected.  Reported at least once per
+    day.
+  </summary>
+</histogram>
+
+<histogram name="Network.Wifi.SignalToNoiseRatio" units="negative dBm">
+  <summary>
+    Network metric indicating signal minus noise in dBm recorded at the time the
+    metrics is collected.  Reported at least once per day.
+  </summary>
+</histogram>
+
+<histogram name="Network.Wifi.TimeOnline" units="seconds">
+  <summary>
+    Chrome OS network metric sampling the time spent using WiFi to transport
+    data.  These data are mostly useful when summed and compared to TimeOnline
+    for other network technologies (e.g. WiFi vs Cellular).
+  </summary>
+</histogram>
+
+<histogram name="Network.Wifi.TimeResumeToReady" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time from the resume event
+    to the time when an 802.11 wireless network has configured its Layer 3
+    state.
+  </summary>
+</histogram>
+
+<histogram name="Network.Wifi.TimeToConfig" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to configure Layer 3
+    state on an 802.11 wireless network (typically acquire a DHCP lease).
+  </summary>
+</histogram>
+
+<histogram name="Network.Wifi.TimeToJoin" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to join (associate
+    plus authenticate) an 802.11 wireless network.
+  </summary>
+</histogram>
+
+<histogram name="Network.Wifi.TimeToOnline" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to determine that an
+    802.11 wireless network is online after configuring Layer 3 state.
+  </summary>
+</histogram>
+
+<histogram name="Network.Wifi.TimeToPortal" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to determine that an
+    802.11 wireless network is in a captive portal after configuring Layer 3
+    state.
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.AggressiveHistoryURLProviderFieldTrialBeacon"
     enum="OmniboxAggressiveHistoryURLProviderFieldTrialBeacon">
   <obsolete>
@@ -5588,6 +6486,27 @@ other types of suffix sets.
   <int value="6" label="DB is broken"/>
 </enum>
 
+<enum name="EAPInnerProtocol" type="int">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="NONE"/>
+  <int value="2" label="PEAP-MD5"/>
+  <int value="3" label="PEAP-MSCHAPV2"/>
+  <int value="4" label="TTLS-EAP-MD5"/>
+  <int value="5" label="TTLS-EAP-MSCHAPV2"/>
+  <int value="6" label="TTLS-MSCHAPV2"/>
+  <int value="7" label="TTLS-MSCHAP"/>
+  <int value="8" label="TTLS-PAP"/>
+  <int value="9" label="TTLS-CHAP"/>
+</enum>
+
+<enum name="EAPOuterProtocol" type="int">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="LEAP"/>
+  <int value="2" label="PEAP"/>
+  <int value="3" label="TLS"/>
+  <int value="4" label="TTLS"/>
+</enum>
+
 <enum name="EnterprisePolicies" type="int">
 <!-- Generated from ../../../chrome/app/policy/policy_templates.json -->
 
@@ -7052,6 +7971,13 @@ other types of suffix sets.
   <int value="18" label="NewLogger"/>
 </enum>
 
+<enum name="LinkMonitorFailureType" type="int">
+  <int value="0" label="Local MAC Address Not Found"/>
+  <int value="1" label="Client Startup Failure"/>
+  <int value="2" label="Transmission Failure"/>
+  <int value="3" label="Failure Threshold Reached"/>
+</enum>
+
 <enum name="LinuxGlibcVersion" type="int">
   <int value="0" label="Not Parseable"/>
   <int value="1" label="Unknown"/>
@@ -7311,6 +8237,190 @@ other types of suffix sets.
   <int value="6" label="subresource never connected"/>
   <int value="7" label="subresource never used"/>
   <int value="8" label="subresource and used"/>
+</enum>
+
+<enum name="Network3GGobiError" type="int">
+  <summary>
+    These error indexes are produced by QCErrorToMetricIndex() in
+    gobi-cromo-plugin.
+  </summary>
+  <int value="0" label="NONE"/>
+  <int value="1" label="QMI_HARDWARE_RESTRICTED"/>
+</enum>
+
+<enum name="NetworkAuthModeType" type="int">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="EAP-AKA"/>
+  <int value="2" label="EAP-FAST"/>
+  <int value="3" label="EAP-GPSK"/>
+  <int value="4" label="EAP-GTC"/>
+  <int value="5" label="EAP-IKEV2"/>
+  <int value="6" label="EAP-LEAP"/>
+  <int value="7" label="EAP-MD5"/>
+  <int value="8" label="EAP-MSCHAPV2"/>
+  <int value="9" label="EAP-OTP"/>
+  <int value="10" label="EAP-PAX"/>
+  <int value="11" label="EAP-PEAP"/>
+  <int value="12" label="EAP-PSK"/>
+  <int value="13" label="EAP-SAKE"/>
+  <int value="14" label="EAP-SIM"/>
+  <int value="15" label="EAP-TLS"/>
+  <int value="16" label="EAP-TNC"/>
+  <int value="17" label="EAP-TTLS"/>
+</enum>
+
+<enum name="NetworkCellularOutOfCreditsReason" type="int">
+  <int value="0" label="Connect-Disconnect Loop"/>
+  <int value="1" label="TX-Queue Congestion"/>
+  <int value="2" label="Elongated Time Wait"/>
+</enum>
+
+<enum name="NetworkCellularTechnology" type="int">
+  <int value="0" label="1XRTT"/>
+  <int value="1" label="EDGE"/>
+  <int value="2" label="EVDO"/>
+  <int value="3" label="GPRS"/>
+  <int value="4" label="GSM"/>
+  <int value="5" label="HSPA"/>
+  <int value="6" label="HSPA_PLUS"/>
+  <int value="7" label="LTE"/>
+  <int value="8" label="UMTS"/>
+  <int value="9" label="Unknown"/>
+</enum>
+
+<enum name="NetworkCellularUsageRequestStatus" type="int">
+  <summary>
+    Status code that we received in response to a cellular usage API request.
+  </summary>
+  <int value="0" label="Failed">
+    This value is distinct from the others in that it indicates that we were
+    unable to issue a request or that we received no reply. The other values
+    represent the status code contained in a reply.
+  </int>
+  <int value="1" label="Ok"/>
+  <int value="2" label="Error"/>
+  <int value="3" label="Malformed Request"/>
+  <int value="4" label="Internal Error"/>
+  <int value="5" label="Service Unavailable"/>
+  <int value="6" label="Request Refused"/>
+  <int value="7" label="Unknown Device"/>
+</enum>
+
+<enum name="NetworkChannelType" type="int">
+  <int value="0" label="UNDEF"/>
+  <int value="1" label="2412"/>
+  <int value="2" label="2417"/>
+  <int value="3" label="2422"/>
+  <int value="4" label="2427"/>
+  <int value="5" label="2432"/>
+  <int value="6" label="2437"/>
+  <int value="7" label="2442"/>
+  <int value="8" label="2447"/>
+  <int value="9" label="2452"/>
+  <int value="10" label="2457"/>
+  <int value="11" label="2462"/>
+  <int value="12" label="2467"/>
+  <int value="13" label="2472"/>
+  <int value="14" label="2484"/>
+  <int value="15" label="5180"/>
+  <int value="16" label="5200"/>
+  <int value="17" label="5220"/>
+  <int value="18" label="5240"/>
+  <int value="19" label="5260"/>
+  <int value="20" label="5280"/>
+  <int value="21" label="5300"/>
+  <int value="22" label="5320"/>
+  <int value="23" label="5500"/>
+  <int value="24" label="5520"/>
+  <int value="25" label="5540"/>
+  <int value="26" label="5560"/>
+  <int value="27" label="5580"/>
+  <int value="28" label="5600"/>
+  <int value="29" label="5620"/>
+  <int value="30" label="5640"/>
+  <int value="31" label="5660"/>
+  <int value="32" label="5680"/>
+  <int value="33" label="5700"/>
+  <int value="34" label="5745"/>
+  <int value="35" label="5765"/>
+  <int value="36" label="5785"/>
+  <int value="37" label="5805"/>
+  <int value="38" label="5825"/>
+  <int value="39" label="5170"/>
+  <int value="40" label="5190"/>
+  <int value="41" label="5210"/>
+  <int value="42" label="5230"/>
+</enum>
+
+<enum name="NetworkCorruptedProfile" type="int">
+  <int value="0" label="Corrupted Profile"/>
+</enum>
+
+<enum name="NetworkDisconnectType" type="int">
+  <int value="0" label="System Disconnect"/>
+  <int value="1" label="User Disconnect"/>
+</enum>
+
+<enum name="NetworkPhyModeType" type="int">
+  <int value="0" label="UNDEF"/>
+  <int value="1" label="802.11a"/>
+  <int value="2" label="802.11b"/>
+  <int value="3" label="802.11g"/>
+  <int value="4" label="802.11n"/>
+  <int value="5" label="PSB 10MHz-wide"/>
+  <int value="6" label="PSB 5MHz-wide"/>
+</enum>
+
+<enum name="NetworkPortalResult" type="int">
+  <summary>
+    The portal result types come from PortalResult in shill/metrics.h
+  </summary>
+  <int value="0" label="Success"/>
+  <int value="1" label="DNS Failure"/>
+  <int value="2" label="DNS Timeout"/>
+  <int value="3" label="Connection Failure"/>
+  <int value="4" label="Connection Timeout"/>
+  <int value="5" label="HTTP Failure"/>
+  <int value="6" label="HTTP Timeout"/>
+  <int value="7" label="Content Failure"/>
+  <int value="8" label="Content Timeout"/>
+  <int value="9" label="Unknown"/>
+</enum>
+
+<enum name="NetworkSecurityType" type="int">
+  <summary>
+    The security types come from the connman_service_security enum in
+    flimflam/include/service.h
+  </summary>
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="NONE"/>
+  <int value="2" label="WEP"/>
+  <int value="3" label="WPA"/>
+  <int value="4" label="802.11i/RSN"/>
+  <int value="5" label="802.1x"/>
+  <int value="6" label="PSK"/>
+</enum>
+
+<enum name="NetworkServiceError" type="int">
+  <summary>
+    The error types come from the connman_service_error enum in
+    flimflam/include/service.h
+  </summary>
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="OUT_OF_RANGE"/>
+  <int value="2" label="PIN_MISSING"/>
+  <int value="3" label="DHCP_FAILED"/>
+  <int value="4" label="CONNECT_FAILED"/>
+  <int value="5" label="BAD_PASSPHRASE"/>
+  <int value="6" label="BAD_WEPKEY"/>
+  <int value="7" label="ACTIVATION_FAILED"/>
+  <int value="8" label="NEED_EVDO"/>
+  <int value="9" label="NEED_HOME_NETWORK"/>
+  <int value="10" label="OTASP_FAILED"/>
+  <int value="11" label="AAA_FAILED"/>
+  <int value="12" label="INTERNAL"/>
+  <int value="13" label="DNS_LOOKUP_FAILED"/>
+  <int value="14" label="HTTP_GET_FAILED"/>
 </enum>
 
 <enum name="OmniboxAggressiveHistoryURLProviderFieldTrialBeacon" type="int">
@@ -7829,6 +8939,15 @@ other types of suffix sets.
   <int value="5" label="MODEL_MISSING_FIELDS"/>
 </enum>
 
+<enum name="ShillTerminationActionResult" type="int">
+  <summary>
+    The termination action result types come from TerminationActionResult in
+    shill/metrics.h
+  </summary>
+  <int value="0" label="Success"/>
+  <int value="1" label="Failure"/>
+</enum>
+
 <enum name="SocketStreamConnectionType" type="int">
   <int value="0" label="none"/>
   <int value="1" label="all connections"/>
@@ -8031,6 +9150,29 @@ other types of suffix sets.
   <int value="48" label=".xlsx"/>
 </enum>
 
+<enum name="VPNDriver" type="int">
+  <int value="0" label="OpenVPN"/>
+  <int value="1" label="L2TP/IPSec"/>
+</enum>
+
+<enum name="VPNRemoteAuthenticationType" type="int">
+  <int value="0" label="OpenVPN Default"/>
+  <int value="1" label="OpenVPN Certificate"/>
+  <int value="2" label="L2TP/IPSec Default"/>
+  <int value="3" label="L2TP/IPSec Certificate"/>
+  <int value="4" label="L2TP/IPSec PSK"/>
+</enum>
+
+<enum name="VPNUserAuthenticationType" type="int">
+  <int value="0" label="OpenVPN None"/>
+  <int value="1" label="OpenVPN Certificate"/>
+  <int value="2" label="OpenVPN Username/Password"/>
+  <int value="3" label="OpenVPN Username/Password/OTP"/>
+  <int value="4" label="L2TP/IPSec None"/>
+  <int value="5" label="L2TP/IPSec Certificate"/>
+  <int value="6" label="L2TP/IPSec Username/Password"/>
+</enum>
+
 <enum name="WalletErrors" type="int">
   <int value="0" label="Baseline: Issued request"/>
   <int value="1" label="Fatal error (deprecated)"/>
@@ -8058,6 +9200,57 @@ other types of suffix sets.
   <int value="9" label="Verify CVV"/>
   <int value="10" label="Invalid form field"/>
   <int value="11" label="Require phone number"/>
+</enum>
+
+<enum name="WiFiReasonCode" type="int">
+  <int value="0" label="kReasonReserved0"/>
+  <int value="1" label="kReasonCodeUnspecified"/>
+  <int value="2" label="kReasonCodePreviousAuthenticationInvalid"/>
+  <int value="3" label="kReasonCodeSenderHasLeft"/>
+  <int value="4" label="kReasonCodeInactivity"/>
+  <int value="5" label="kReasonCodeTooManySTAs"/>
+  <int value="6" label="kReasonCodeNonAuthenticated"/>
+  <int value="7" label="kReasonCodeNonAssociated"/>
+  <int value="8" label="kReasonCodeDisassociatedHasLeft"/>
+  <int value="9" label="kReasonCodeReassociationNotAuthenticated"/>
+  <int value="10" label="kReasonCodeUnacceptablePowerCapability"/>
+  <int value="11" label="kReasonCodeUnacceptableSupportedChannelInfo"/>
+  <int value="12" label="kReasonReserved12"/>
+  <int value="13" label="kReasonCodeInvalidInfoElement"/>
+  <int value="14" label="kReasonCodeMICFailure"/>
+  <int value="15" label="kReasonCode4WayTimeout"/>
+  <int value="16" label="kReasonCodeGroupKeyHandshakeTimeout"/>
+  <int value="17" label="kReasonCodeDifferenIE"/>
+  <int value="18" label="kReasonCodeGroupCipherInvalid"/>
+  <int value="19" label="kReasonCodePairwiseCipherInvalid"/>
+  <int value="20" label="kReasonCodeAkmpInvalid"/>
+  <int value="21" label="kReasonCodeUnsupportedRsnIeVersion"/>
+  <int value="22" label="kReasonCodeInvalidRsnIeCaps"/>
+  <int value="23" label="kReasonCode8021XAuth"/>
+  <int value="24" label="kReasonCodeCipherSuiteRejected"/>
+  <int value="25" label="kReasonReserved25"/>
+  <int value="26" label="kReasonReserved26"/>
+  <int value="27" label="kReasonReserved27"/>
+  <int value="28" label="kReasonReserved28"/>
+  <int value="29" label="kReasonReserved29"/>
+  <int value="30" label="kReasonReserved30"/>
+  <int value="31" label="kReasonReserved31"/>
+  <int value="32" label="kReasonCodeUnspecifiedQoS"/>
+  <int value="33" label="kReasonCodeQoSBandwidth"/>
+  <int value="34" label="kReasonCodeiPoorConditions"/>
+  <int value="35" label="kReasonCodeOutsideTxop"/>
+  <int value="36" label="kReasonCodeStaLeaving"/>
+  <int value="37" label="kReasonCodeUnacceptableMechanism"/>
+  <int value="38" label="kReasonCodeSetupRequired"/>
+  <int value="39" label="kReasonCodeTimeout"/>
+  <int value="45" label="kReasonCodeCipherSuiteNotSupported"/>
+</enum>
+
+<enum name="WiFiStatusType" type="int">
+  <int value="0" label="kStatusCodeTypeByAp"/>
+  <int value="1" label="kStatusCodeTypeByClient"/>
+  <int value="2" label="kStatusCodeTypeByUser"/>
+  <int value="3" label="kStatusCodeTypeConsideredDead"/>
 </enum>
 
 </enums>
