@@ -426,14 +426,12 @@ void CurrentHistoryCleaner::DidStopLoading(
   // Have to wait until something else gets added to history before removal.
   if (history_index_to_remove_ < nc.GetLastCommittedEntryIndex()) {
     nc.RemoveEntryAtIndex(history_index_to_remove_);
-    Observe(NULL);
     delete this;  /* success */
   }
 }
 
 void CurrentHistoryCleaner::WebContentsDestroyed(
     content::WebContents* contents) {
-  Observe(NULL);
   delete this;  /* failure */
 }
 
