@@ -170,8 +170,7 @@ void UIAutomationClient::Context::DeleteOnAutomationThread() {
   delete this;
 }
 
-UIAutomationClient::Context::Context()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {}
+UIAutomationClient::Context::Context() : weak_ptr_factory_(this) {}
 
 UIAutomationClient::Context::~Context() {
   DCHECK(thread_checker_.CalledOnValidThread());

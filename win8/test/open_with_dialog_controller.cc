@@ -99,7 +99,7 @@ OpenWithDialogController::Context::Context()
       open_as_info_flags_(),
       open_with_result_(E_FAIL),
       automation_result_(E_FAIL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {}
+      weak_ptr_factory_(this) {}
 
 OpenWithDialogController::Context::~Context() {
   DCHECK(thread_checker_.CalledOnValidThread());
