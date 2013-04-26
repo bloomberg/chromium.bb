@@ -142,7 +142,6 @@ static bool supportsFocus(ControlPart appearance)
     case SquareButtonPart:
     case PushButtonPart:
     case ButtonPart:
-    case DefaultButtonPart:
     case SearchFieldPart:
     case TextFieldPart:
     case TextAreaPart:

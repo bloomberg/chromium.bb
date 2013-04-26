@@ -50,13 +50,11 @@ typedef struct _NSPoint NSPoint;
 typedef struct _NSRect NSRect;
 #endif
 
-OBJC_CLASS NSButtonCell;
 OBJC_CLASS NSFont;
 OBJC_CLASS NSString;
 
 extern "C" {
 
-extern void WKAdvanceDefaultButtonPulseAnimation(NSButtonCell*);
 extern void WKDrawBezeledTextFieldCell(NSRect, BOOL enabled);
 extern void WKDrawCapsLockIndicator(CGContextRef, CGRect);
 extern void WKDrawBezeledTextArea(NSRect, BOOL enabled);

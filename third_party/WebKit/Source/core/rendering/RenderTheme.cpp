@@ -108,7 +108,6 @@ void RenderTheme::adjustStyle(StyleResolver* styleResolver, RenderStyle* style, 
     case RadioPart:
     case PushButtonPart:
     case SquareButtonPart:
-    case DefaultButtonPart:
     case ButtonPart: {
         // Border
         LengthBox borderBox(style->borderTopWidth(), style->borderRightWidth(), style->borderBottomWidth(), style->borderLeftWidth());
@@ -190,7 +189,6 @@ void RenderTheme::adjustStyle(StyleResolver* styleResolver, RenderStyle* style, 
         return adjustRadioStyle(styleResolver, style, e);
     case PushButtonPart:
     case SquareButtonPart:
-    case DefaultButtonPart:
     case ButtonPart:
         return adjustButtonStyle(styleResolver, style, e);
     case InnerSpinButtonPart:
@@ -269,7 +267,6 @@ bool RenderTheme::paint(RenderObject* o, const PaintInfo& paintInfo, const IntRe
     case RadioPart:
     case PushButtonPart:
     case SquareButtonPart:
-    case DefaultButtonPart:
     case ButtonPart:
     case InnerSpinButtonPart:
         m_theme->paint(part, controlStatesForRenderer(o), const_cast<GraphicsContext*>(paintInfo.context), r, o->style()->effectiveZoom(), o->view()->frameView());
@@ -288,7 +285,6 @@ bool RenderTheme::paint(RenderObject* o, const PaintInfo& paintInfo, const IntRe
         return paintRadio(o, paintInfo, r);
     case PushButtonPart:
     case SquareButtonPart:
-    case DefaultButtonPart:
     case ButtonPart:
         return paintButton(o, paintInfo, r);
     case InnerSpinButtonPart:
@@ -396,7 +392,6 @@ bool RenderTheme::paintBorderOnly(RenderObject* o, const PaintInfo& paintInfo, c
     case RadioPart:
     case PushButtonPart:
     case SquareButtonPart:
-    case DefaultButtonPart:
     case ButtonPart:
     case MenulistPart:
     case MeterPart:
@@ -439,7 +434,6 @@ bool RenderTheme::paintDecorations(RenderObject* o, const PaintInfo& paintInfo, 
     case RadioPart:
     case PushButtonPart:
     case SquareButtonPart:
-    case DefaultButtonPart:
     case ButtonPart:
     case MenulistPart:
     case MeterPart:
@@ -625,7 +619,6 @@ bool RenderTheme::isControlStyled(const RenderStyle* style, const BorderData& bo
     switch (style->appearance()) {
     case PushButtonPart:
     case SquareButtonPart:
-    case DefaultButtonPart:
     case ButtonPart:
     case ProgressBarPart:
     case MeterPart:
@@ -702,8 +695,6 @@ ControlStates RenderTheme::controlStatesForRenderer(const RenderObject* o) const
         result |= CheckedState;
     if (isReadOnlyControl(o))
         result |= ReadOnlyState;
-    if (isDefault(o))
-        result |= DefaultState;
     if (!isActive(o))
         result |= WindowInactiveState;
     if (isIndeterminate(o))
@@ -815,11 +806,6 @@ bool RenderTheme::isSpinUpButtonPartHovered(const RenderObject* o) const
         return false;
     SpinButtonElement* element = static_cast<SpinButtonElement*>(node);
     return element->upDownState() == SpinButtonElement::Up;
-}
-
-bool RenderTheme::isDefault(const RenderObject* o) const
-{
-    return false;
 }
 
 #if !USE(NEW_THEME)

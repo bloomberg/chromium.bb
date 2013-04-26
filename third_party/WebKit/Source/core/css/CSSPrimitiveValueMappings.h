@@ -401,9 +401,6 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ControlPart e)
         case ButtonBevelPart:
             m_value.ident = CSSValueButtonBevel;
             break;
-        case DefaultButtonPart:
-            m_value.ident = CSSValueDefaultButton;
-            break;
         case InnerSpinButtonPart:
             m_value.ident = CSSValueInnerSpinButton;
             break;

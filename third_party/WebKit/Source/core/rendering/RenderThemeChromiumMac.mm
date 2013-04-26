@@ -526,7 +526,6 @@ void RenderThemeChromiumMac::adjustRepaintRect(const RenderObject* o, IntRect& r
         case RadioPart:
         case PushButtonPart:
         case SquareButtonPart:
-        case DefaultButtonPart:
         case ButtonPart:
         case InnerSpinButtonPart:
             return RenderTheme::adjustRepaintRect(o, r);

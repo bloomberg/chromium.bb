@@ -21,9 +21,7 @@
 #ifndef RenderButton_h
 #define RenderButton_h
 
-#include "core/platform/Timer.h"
 #include "core/rendering/RenderFlexibleBox.h"
-#include <wtf/OwnPtr.h>
 
 namespace WebCore {
 
@@ -65,13 +63,8 @@ private:
 
     virtual bool requiresForcedStyleRecalcPropagation() const { return true; }
 
-    void timerFired(Timer<RenderButton>*);
-
     RenderTextFragment* m_buttonText;
     RenderBlock* m_inner;
-
-    OwnPtr<Timer<RenderButton> > m_timer;
-    bool m_default;
 };
 
 inline RenderButton* toRenderButton(RenderObject* object)

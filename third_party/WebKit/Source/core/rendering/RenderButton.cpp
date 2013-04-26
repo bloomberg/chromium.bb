@@ -37,7 +37,6 @@ RenderButton::RenderButton(Element* element)
     : RenderFlexibleBox(element)
     , m_buttonText(0)
     , m_inner(0)
-    , m_default(false)
 {
 }
 
@@ -94,16 +93,6 @@ void RenderButton::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
         m_buttonText->setStyle(style());
     if (m_inner) // RenderBlock handled updating the anonymous block's style.
         setupInnerStyle(m_inner->style());
-
-    if (!m_default && theme()->isDefault(this)) {
-        if (!m_timer)
-            m_timer = adoptPtr(new Timer<RenderButton>(this, &RenderButton::timerFired));
-        m_timer->startRepeating(0.03);
-        m_default = true;
-    } else if (m_default && !theme()->isDefault(this)) {
-        m_default = false;
-        m_timer.clear();
-    }
 }
 
 void RenderButton::setupInnerStyle(RenderStyle* innerStyle) 
@@ -164,11 +153,6 @@ LayoutRect RenderButton::controlClipRect(const LayoutPoint& additionalOffset) co
 {
     // Clip to the padding box to at least give content the extra padding space.
     return LayoutRect(additionalOffset.x() + borderLeft(), additionalOffset.y() + borderTop(), width() - borderLeft() - borderRight(), height() - borderTop() - borderBottom());
-}
-
-void RenderButton::timerFired(Timer<RenderButton>*)
-{
-    repaint();
 }
 
 } // namespace WebCore

@@ -253,7 +253,6 @@ bool RenderThemeChromiumDefault::paintButton(RenderObject* o, const PaintInfo& i
 {
     WebKit::WebThemeEngine::ExtraParams extraParams;
     WebKit::WebCanvas* canvas = i.context->platformContext()->canvas();
-    extraParams.button.isDefault = isDefault(o);
     extraParams.button.hasBorder = true;
     extraParams.button.backgroundColor = defaultButtonBackgroundColor;
     if (o->hasBackground())

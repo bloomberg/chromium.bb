@@ -331,7 +331,6 @@ public:
     bool isHovered(const RenderObject*) const;
     bool isSpinUpButtonPartHovered(const RenderObject*) const;
     bool isReadOnlyControl(const RenderObject*) const;
-    bool isDefault(const RenderObject*) const;
 
 private:
     mutable Color m_activeSelectionBackgroundColor;

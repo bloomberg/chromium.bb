@@ -30,7 +30,6 @@
 #import "BlockExceptions.h"
 #import "LocalCurrentGraphicsContext.h"
 #import "WebCoreNSCellExtras.h"
-#import "WebCoreSystemInterface.h"
 #import "core/platform/ScrollView.h"
 #import "core/platform/graphics/GraphicsContext.h"
 #include <wtf/StdLibExtras.h>
@@ -89,8 +88,6 @@ NSRect focusRingClipRect;
 }
 
 @end
-
-// FIXME: Default buttons really should be more like push buttons and not like buttons.
 
 namespace WebCore {
 
@@ -409,18 +406,6 @@ static const int* buttonMargins(NSControlSize controlSize)
     return margins[controlSize];
 }
 
-enum ButtonCellType { NormalButtonCell, DefaultButtonCell };
-
-static NSButtonCell *leakButtonCell(ButtonCellType type)
-{
-    NSButtonCell *cell = [[NSButtonCell alloc] init];
-    [cell setTitle:nil];
-    [cell setButtonType:NSMomentaryPushInButton];
-    if (type == DefaultButtonCell)
-        [cell setKeyEquivalent:@"\r"];
-    return cell;
-}
-
 static void setUpButtonCell(NSButtonCell *cell, ControlPart part, ControlStates states, const IntRect& zoomedRect, float zoomFactor)
 {
     // Set the control size based off the rectangle we're painting into.
@@ -440,15 +425,13 @@ static void setUpButtonCell(NSButtonCell *cell, ControlPart part, ControlStates 
 
 static NSButtonCell *button(ControlPart part, ControlStates states, const IntRect& zoomedRect, float zoomFactor)
 {
-    NSButtonCell *cell;
-    if (states & DefaultState) {
-        static NSButtonCell *defaultCell = leakButtonCell(DefaultButtonCell);
-        cell = defaultCell;
-    } else {
-        static NSButtonCell *normalCell = leakButtonCell(NormalButtonCell);
-        cell = normalCell;
+    static NSButtonCell *cell = nil;
+    if (!cell) {
+        cell = [[NSButtonCell alloc] init];
+        [cell setTitle:nil];
+        [cell setButtonType:NSMomentaryPushInButton];
     }
-    setUpButtonCell(cell, part, states, zoomedRect, zoomFactor);    
+    setUpButtonCell(cell, part, states, zoomedRect, zoomFactor);
     return cell;
 }
 
@@ -487,13 +470,6 @@ static void paintButton(ControlPart part, ControlStates states, GraphicsContext*
     LocalCurrentGraphicsContext localContext(context);
     NSView *view = ThemeMac::ensuredView(scrollView);
     NSWindow *window = [view window];
-    NSButtonCell *previousDefaultButtonCell = [window defaultButtonCell];
-
-    if (states & DefaultState) {
-        [window setDefaultButtonCell:buttonCell];
-        WKAdvanceDefaultButtonPulseAnimation(buttonCell);
-    } else if ([previousDefaultButtonCell isEqual:buttonCell])
-        [window setDefaultButtonCell:nil];
 
     [buttonCell drawWithFrame:NSRect(inflatedRect) inView:view];
 #if !BUTTON_CELL_DRAW_WITH_FRAME_DRAWS_FOCUS_RING
@@ -501,9 +477,6 @@ static void paintButton(ControlPart part, ControlStates states, GraphicsContext*
         [buttonCell _web_drawFocusRingWithFrame:NSRect(inflatedRect) inView:view];
 #endif
     [buttonCell setControlView:nil];
-
-    if (![previousDefaultButtonCell isEqual:buttonCell])
-        [window setDefaultButtonCell:previousDefaultButtonCell];
 
     END_BLOCK_OBJC_EXCEPTIONS
 }
@@ -636,7 +609,6 @@ LengthSize ThemeMac::minimumControlSize(ControlPart part, const Font& font, floa
 {
     switch (part) {
         case SquareButtonPart:
-        case DefaultButtonPart:
         case ButtonPart:
             return LengthSize(Length(0, Fixed), Length(static_cast<int>(15 * zoomFactor), Fixed));
         case InnerSpinButtonPart:{
@@ -653,7 +625,6 @@ LengthBox ThemeMac::controlBorder(ControlPart part, const Font& font, const Leng
 {
     switch (part) {
         case SquareButtonPart:
-        case DefaultButtonPart:
         case ButtonPart:
             return LengthBox(0, zoomedBox.right().value(), 0, zoomedBox.left().value());
         default:
@@ -705,7 +676,6 @@ void ThemeMac::inflateControlPaintRect(ControlPart part, ControlStates states, I
             break;
         }
         case PushButtonPart:
-        case DefaultButtonPart:
         case ButtonPart: {
             NSButtonCell *cell = button(part, states, zoomedRect, zoomFactor);
             NSControlSize controlSize = [cell controlSize];
@@ -744,7 +714,6 @@ void ThemeMac::paint(ControlPart part, ControlStates states, GraphicsContext* co
             paintRadio(states, context, zoomedRect, zoomFactor, scrollView);
             break;
         case PushButtonPart:
-        case DefaultButtonPart:
         case ButtonPart:
         case SquareButtonPart:
             paintButton(part, states, context, zoomedRect, zoomFactor, scrollView);
