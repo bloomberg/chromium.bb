@@ -8,7 +8,7 @@
 #include <X11/extensions/XInput2.h>
 
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
-#include "chrome/browser/chromeos/input_method/input_method_manager.h"
+#include "chromeos/ime/input_method_manager.h"
 #include "chromeos/ime/xkeyboard.h"
 #include "ui/base/x/x11_util.h"
 

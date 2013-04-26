@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
-#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/ibus/mock_ibus_client.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_update_engine_client.h"
 #include "chromeos/ime/input_method_descriptor.h"
+#include "chromeos/ime/input_method_manager.h"
 #include "dbus/mock_bus.h"
 
 // TODO(nona): Remove gmock dependency once crbug.com/223061 is fixed.

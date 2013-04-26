@@ -14,9 +14,9 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/ibus_controller.h"
-#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chromeos/ime/ibus_daemon_controller.h"
+#include "chromeos/ime/input_method_manager.h"
 #include "chromeos/ime/input_method_whitelist.h"
 
 namespace chromeos {

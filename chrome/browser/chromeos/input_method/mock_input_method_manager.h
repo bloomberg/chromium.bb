@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_MOCK_INPUT_METHOD_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_MOCK_INPUT_METHOD_MANAGER_H_
 
-#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chromeos/ime/fake_input_method_delegate.h"
+#include "chromeos/ime/input_method_manager.h"
 #include "chromeos/ime/input_method_whitelist.h"
 #include "chromeos/ime/mock_xkeyboard.h"
 

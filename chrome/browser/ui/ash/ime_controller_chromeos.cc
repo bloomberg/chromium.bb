@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/ash/ime_controller_chromeos.h"
 
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
-#include "chrome/browser/chromeos/input_method/input_method_manager.h"
+#include "chromeos/ime/input_method_manager.h"
 #include "ui/base/accelerators/accelerator.h"
 
 bool ImeController::HandleNextIme() {

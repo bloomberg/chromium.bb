@@ -17,7 +17,7 @@
 #include "ui/views/controls/textfield/textfield_controller.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/input_method/input_method_manager.h"
+#include "chromeos/ime/input_method_manager.h"
 #endif
 
 class LocationBarView;
