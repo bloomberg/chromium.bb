@@ -6,7 +6,9 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/debug/alias.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "chrome/common/child_process_logging.h"
@@ -15,6 +17,7 @@
 #include "chrome/common/extensions/api/extension_api.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/extensions/features/feature.h"
@@ -575,15 +578,19 @@ void Dispatcher::OnLoaded(
     const std::vector<ExtensionMsg_Loaded_Params>& loaded_extensions) {
   std::vector<ExtensionMsg_Loaded_Params>::const_iterator i;
   for (i = loaded_extensions.begin(); i != loaded_extensions.end(); ++i) {
-    scoped_refptr<const Extension> extension(i->ConvertToExtension());
+    std::string error;
+    scoped_refptr<const Extension> extension = i->ConvertToExtension(&error);
     if (!extension) {
-      // This can happen if extension parsing fails for any reason. One reason
-      // this can legitimately happen is if the
-      // --enable-experimental-extension-apis changes at runtime, which happens
-      // during browser tests. Existing renderers won't know about the change.
-      continue;
+      // Tests sometimes enable experimental APIs, but the flag doesn't get
+      // set on the renderer. It's the only legitimate time this should fail.
+      if (error == extension_manifest_errors::kExperimentalFlagRequired)
+        continue;
+      char minidump[256];
+      base::debug::Alias(&minidump);
+      base::snprintf(
+          minidump, arraysize(minidump), "e::dispatcher:%s", error.c_str());
+      CHECK(extension) << error;
     }
-
     extensions_.Insert(extension);
   }
 }
