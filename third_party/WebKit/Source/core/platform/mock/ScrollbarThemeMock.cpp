@@ -25,7 +25,6 @@
 
 #include "config.h"
 #include "core/platform/mock/ScrollbarThemeMock.h"
-
 #include "core/page/Settings.h"
 #include "core/platform/Scrollbar.h"
 
@@ -41,11 +40,6 @@ IntRect ScrollbarThemeMock::trackRect(ScrollbarThemeClient* scrollbar, bool)
 int ScrollbarThemeMock::scrollbarThickness(ScrollbarControlSize controlSize)
 {
     return cScrollbarThickness[controlSize];
-}
-
-bool ScrollbarThemeMock::usesOverlayScrollbars() const
-{
-    return Settings::usesOverlayScrollbars();
 }
 
 void ScrollbarThemeMock::paintTrackBackground(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& trackRect)

@@ -34,7 +34,6 @@ namespace WebCore {
 class ScrollbarThemeMock : public ScrollbarThemeComposite {
 public:
     virtual int scrollbarThickness(ScrollbarControlSize = RegularScrollbar);
-    virtual bool usesOverlayScrollbars() const OVERRIDE;
 
 protected:
     virtual bool hasButtons(ScrollbarThemeClient*) { return false; }
