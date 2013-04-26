@@ -4,7 +4,6 @@
 # SLOW TESTS
 # -----------------------------------------------------------------
 
-crbug.com/24182 [ Win ] http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-method.html [ Slow ]
 crbug.com/24182 [ Debug ] css3/flexbox/multiline-justify-content.html [ Slow ]
 webkit.org/b/91666 [ Mac ] editing/input/emacs-ctrl-o.html [ Failure Slow ]
 webkit.org/b/91666 [ Mac ] editing/pasteboard/emacs-ctrl-k-y-001.html [ Failure Slow ]
@@ -2876,3 +2875,11 @@ crbug.com/169374 compositing/culling/tile-occlusion-boundaries.html [ ImageOnlyF
 crbug.com/169374 transforms/3d/point-mapping/3d-point-mapping-coplanar.html [ ImageOnlyFailure ]
 crbug.com/169374 transforms/3d/point-mapping/3d-point-mapping-overlapping.html [ ImageOnlyFailure ]
 crbug.com/169374 transitions/default-timing-function.html [ ImageOnlyFailure ]
+
+Bug(ojan) http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-method.html [ Slow Failure ImageOnlyFailure Pass ]
+Bug(ojan) http/tests/xmlhttprequest/methods.html [ Failure ImageOnlyFailure Pass ]
+Bug(ojan) http/tests/xmlhttprequest/web-apps/012.html [ Failure ImageOnlyFailure Pass ]
+Bug(ojan) http/tests/xmlhttprequest/web-apps/013.html [ Failure ImageOnlyFailure Pass ]
+Bug(ojan) http/tests/xmlhttprequest/xmlhttprequest-setrequestheader-no-value.html [ Failure ImageOnlyFailure Pass ]
+Bug(ojan) fast/repaint/overflow-outline-repaint.html [ Failure ImageOnlyFailure Pass ]
+Bug(ojan) css3/selectors3/xml/css3-modsel-d4.xml [ Failure ImageOnlyFailure Pass ]
