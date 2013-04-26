@@ -43,6 +43,7 @@ class CSSFontFaceRule;
 class DOMError;
 class DOMWindow;
 class IDBKeyRange;
+class MIDIPort;
 class MediaKeyError;
 class Notification;
 class SpeechRecognitionError;
@@ -77,6 +78,7 @@ public:
     bool get(const String&, RefPtr<Storage>&) const;
     bool get(const String&, MessagePortArray&) const;
     bool get(const String&, RefPtr<Uint8Array>&) const;
+    bool get(const String&, RefPtr<MIDIPort>&) const;
 #if ENABLE(ENCRYPTED_MEDIA)
     bool get(const String&, RefPtr<MediaKeyError>&) const;
 #endif

@@ -29,8 +29,7 @@
  */
 
 [
-    Supplemental=DOMWindow
-] interface DOMWindowWebMIDI {
-    [EnabledAtRuntime=webMIDI] attribute MIDIConnectionEventConstructor MIDIConnectionEvent;
-    [EnabledAtRuntime=webMIDI] attribute MIDIMessageEventConstructor MIDIMessageEvent;
+    ConstructorTemplate=Event
+] interface MIDIConnectionEvent : Event {
+    [InitializedByEventConstructor] readonly attribute MIDIPort port;
 };

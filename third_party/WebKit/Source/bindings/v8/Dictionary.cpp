@@ -31,6 +31,7 @@
 #include "V8DOMWindow.h"
 #include "V8EventTarget.h"
 #include "V8IDBKeyRange.h"
+#include "V8MIDIPort.h"
 #include "V8SpeechRecognitionError.h"
 #include "V8SpeechRecognitionResult.h"
 #include "V8SpeechRecognitionResultList.h"
@@ -328,6 +329,18 @@ bool Dictionary::get(const String& key, RefPtr<Uint8Array>& value) const
     value = 0;
     if (V8Uint8Array::HasInstance(v8Value, m_isolate, worldType(m_isolate)))
         value = V8Uint8Array::toNative(v8::Handle<v8::Object>::Cast(v8Value));
+    return true;
+}
+
+bool Dictionary::get(const String& key, RefPtr<MIDIPort>& value) const
+{
+    v8::Local<v8::Value> v8Value;
+    if (!getKey(key, v8Value))
+        return false;
+
+    value = 0;
+    if (V8MIDIPort::HasInstance(v8Value, m_isolate, worldType(m_isolate)))
+        value = V8MIDIPort::toNative(v8::Handle<v8::Object>::Cast(v8Value));
     return true;
 }
 
