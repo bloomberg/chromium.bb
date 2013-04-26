@@ -58,8 +58,7 @@ void RendererWebApplicationCacheHostImpl::OnCacheSelected(
 }
 
 RenderViewImpl* RendererWebApplicationCacheHostImpl::GetRenderView() {
-  return static_cast<RenderViewImpl*>
-      (RenderThreadImpl::current()->ResolveRoute(routing_id_));
+  return RenderViewImpl::FromRoutingID(routing_id_);
 }
 
 // static

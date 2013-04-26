@@ -513,10 +513,10 @@ bool RenderThreadImpl::Send(IPC::Message* msg) {
     if (notify_webkit_of_modal_loop)
       WebView::willEnterModalLoop();
 
-    RenderWidget* widget =
-        static_cast<RenderWidget*>(ResolveRoute(msg->routing_id()));
-    if (widget) {
-      render_view_id = widget->routing_id();
+    RenderViewImpl* render_view =
+        RenderViewImpl::FromRoutingID(msg->routing_id());
+    if (render_view) {
+      render_view_id = msg->routing_id();
       PluginChannelHost::Broadcast(
           new PluginMsg_SignalModalDialogEvent(render_view_id));
     }

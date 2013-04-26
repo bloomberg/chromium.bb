@@ -58,8 +58,6 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   void AddRoute(int32 routing_id, IPC::Listener* listener);
   void RemoveRoute(int32 routing_id);
 
-  IPC::Listener* ResolveRoute(int32 routing_id);
-
   IPC::SyncChannel* channel() { return channel_.get(); }
 
   // Creates a ResourceLoaderBridge.

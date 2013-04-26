@@ -805,8 +805,8 @@ bool BrowserPlugin::InAutoSizeBounds(const gfx::Size& size) const {
 NPObject* BrowserPlugin::GetContentWindow() const {
   if (content_window_routing_id_ == MSG_ROUTING_NONE)
     return NULL;
-  RenderViewImpl* guest_render_view = static_cast<RenderViewImpl*>(
-      ChildThread::current()->ResolveRoute(content_window_routing_id_));
+  RenderViewImpl* guest_render_view = RenderViewImpl::FromRoutingID(
+      content_window_routing_id_);
   if (!guest_render_view)
     return NULL;
   WebKit::WebFrame* guest_frame = guest_render_view->GetWebView()->mainFrame();

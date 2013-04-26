@@ -186,12 +186,6 @@ void ChildThread::RemoveRoute(int32 routing_id) {
   router_.RemoveRoute(routing_id);
 }
 
-IPC::Listener* ChildThread::ResolveRoute(int32 routing_id) {
-  DCHECK(MessageLoop::current() == message_loop());
-
-  return router_.ResolveRoute(routing_id);
-}
-
 webkit_glue::ResourceLoaderBridge* ChildThread::CreateBridge(
     const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info) {
   return resource_dispatcher()->CreateBridge(request_info);
