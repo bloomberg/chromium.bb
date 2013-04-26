@@ -43,6 +43,13 @@ class SpellcheckService : public ProfileKeyedService,
     BDICT_CORRUPTED,
   };
 
+  // Dictionary format used for loading an external dictionary.
+  enum DictionaryFormat {
+    DICT_HUNSPELL,
+    DICT_TEXT,
+    DICT_UNKNOWN,
+  };
+
   explicit SpellcheckService(Profile* profile);
   virtual ~SpellcheckService();
 
@@ -84,6 +91,17 @@ class SpellcheckService : public ProfileKeyedService,
 
   // Returns the instance of the Hunspell dictionary.
   SpellcheckHunspellDictionary* GetHunspellDictionary();
+
+  // Load a dictionary from a given path. Format specifies how the dictionary
+  // is stored. Return value is true if successful.
+  bool LoadExternalDictionary(std::string language,
+                              std::string locale,
+                              std::string path,
+                              DictionaryFormat format);
+
+  // Unload a dictionary. The path is given to identify the dictionary.
+  // Return value is true if successful.
+  bool UnloadExternalDictionary(std::string path);
 
   // NotificationProfile implementation.
   virtual void Observe(int type,

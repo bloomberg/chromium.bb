@@ -121,6 +121,11 @@ namespace extension_manifest_keys {
   extern const char kShiftKey[];
   extern const char kShortcutKey[];
   extern const char kSignature[];
+  extern const char kSpellcheck[];
+  extern const char kSpellcheckDictionaryFormat[];
+  extern const char kSpellcheckDictionaryLanguage[];
+  extern const char kSpellcheckDictionaryLocale[];
+  extern const char kSpellcheckDictionaryPath[];
   extern const char kSuggestedKey[];
   extern const char kSystemIndicator[];
   extern const char kTheme[];
@@ -320,6 +325,11 @@ namespace extension_manifest_errors {
   extern const char kInvalidSandboxedPagesCSP[];
   extern const char kInvalidScriptBadge[];
   extern const char kInvalidSignature[];
+  extern const char kInvalidSpellcheck[];
+  extern const char kInvalidSpellcheckDictionaryFormat[];
+  extern const char kInvalidSpellcheckDictionaryLanguage[];
+  extern const char kInvalidSpellcheckDictionaryLocale[];
+  extern const char kInvalidSpellcheckDictionaryPath[];
   extern const char kInvalidSystemIndicator[];
   extern const char kInvalidTheme[];
   extern const char kInvalidThemeColors[];

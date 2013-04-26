@@ -44,6 +44,7 @@
 #include "chrome/browser/extensions/api/processes/processes_api.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_api.h"
 #include "chrome/browser/extensions/api/session_restore/session_restore_api.h"
+#include "chrome/browser/extensions/api/spellcheck/spellcheck_api.h"
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 #include "chrome/browser/extensions/api/system_indicator/system_indicator_api.h"
 #include "chrome/browser/extensions/api/system_info/system_info_api.h"
@@ -308,6 +309,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::ProcessesAPI::GetFactoryInstance();
   extensions::PushMessagingAPI::GetFactoryInstance();
   extensions::SessionRestoreAPI::GetFactoryInstance();
+  extensions::SpellcheckAPI::GetFactoryInstance();
   extensions::StreamsPrivateAPI::GetFactoryInstance();
   extensions::SystemIndicatorAPI::GetFactoryInstance();
   extensions::SystemInfoAPI::GetFactoryInstance();

@@ -354,6 +354,8 @@
         'browser/extensions/api/socket/tcp_socket.h',
         'browser/extensions/api/socket/udp_socket.cc',
         'browser/extensions/api/socket/udp_socket.h',
+        'browser/extensions/api/spellcheck/spellcheck_api.cc',
+        'browser/extensions/api/spellcheck/spellcheck_api.h',
         'browser/extensions/api/storage/leveldb_settings_storage_factory.cc',
         'browser/extensions/api/storage/leveldb_settings_storage_factory.h',
         'browser/extensions/api/storage/managed_value_store_cache.cc',

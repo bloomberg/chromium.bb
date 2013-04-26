@@ -115,6 +115,11 @@ const char kScriptBadge[] = "script_badge";
 const char kShiftKey[] = "shiftKey";
 const char kShortcutKey[] = "shortcutKey";
 const char kSignature[] = "signature";
+const char kSpellcheck[] = "spellcheck";
+const char kSpellcheckDictionaryFormat[] = "dictionary_format";
+const char kSpellcheckDictionaryLanguage[] = "dictionary_language";
+const char kSpellcheckDictionaryLocale[] = "dictionary_locale";
+const char kSpellcheckDictionaryPath[] = "dictionary_path";
 const char kSuggestedKey[] = "suggested_key";
 const char kSystemIndicator[] = "system_indicator";
 const char kSystemInfoDisplay[] = "systemInfo.display";
@@ -466,6 +471,16 @@ const char kInvalidScriptBadge[] =
     "Invalid value for 'script_badge'.";
 const char kInvalidSignature[] =
     "Value 'signature' is missing or invalid.";
+const char kInvalidSpellcheck[] =
+    "Invalid value for 'spellcheck'.";
+const char kInvalidSpellcheckDictionaryFormat[] =
+    "Invalid value for spellcheck dictionary format.";
+const char kInvalidSpellcheckDictionaryLanguage[] =
+    "Invalid value for spellcheck dictionary language.";
+const char kInvalidSpellcheckDictionaryLocale[] =
+    "Invalid value for spellcheck dictionary locale.";
+const char kInvalidSpellcheckDictionaryPath[] =
+    "Invalid value for spellcheck dictionary path.";
 const char kInvalidSystemIndicator[] =
     "Invalid value for 'system_indicator'.";
 const char kInvalidTheme[] =

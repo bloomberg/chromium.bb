@@ -296,6 +296,10 @@
     "channel": "stable",
     "extension_types": "all"
   },
+  "spellcheck": {
+    "channel": "dev",
+    "extension_types": ["extension"]
+  },
   "system_indicator": {
     "channel": "dev",
     "extension_types": ["extension", "packaged_app", "platform_app"]

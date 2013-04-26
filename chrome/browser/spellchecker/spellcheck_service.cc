@@ -66,7 +66,6 @@ SpellcheckService::SpellcheckService(Profile* profile)
   registrar_.Add(weak_ptr_factory_.GetWeakPtr(),
                  content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllSources());
-
 }
 
 SpellcheckService::~SpellcheckService() {
@@ -192,6 +191,17 @@ SpellcheckCustomDictionary* SpellcheckService::GetCustomDictionary() {
 
 SpellcheckHunspellDictionary* SpellcheckService::GetHunspellDictionary() {
   return hunspell_dictionary_.get();
+}
+
+bool SpellcheckService::LoadExternalDictionary(std::string language,
+                                               std::string locale,
+                                               std::string path,
+                                               DictionaryFormat format) {
+  return false;
+}
+
+bool SpellcheckService::UnloadExternalDictionary(std::string path) {
+  return false;
 }
 
 void SpellcheckService::Observe(int type,
