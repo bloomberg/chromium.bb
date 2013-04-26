@@ -1344,7 +1344,7 @@ bool SmoothEventSampler::IsOverdueForSamplingAt(base::Time event_time) const {
   // If we're dirty but not yet old, then we've recently gotten updates, so we
   // won't request a sample just yet.
   base::TimeDelta dirty_interval = event_time - last_sample_;
-  if (dirty_interval < capture_period_ * 2)
+  if (dirty_interval < capture_period_ * 4)
     return false;
   else
     return true;

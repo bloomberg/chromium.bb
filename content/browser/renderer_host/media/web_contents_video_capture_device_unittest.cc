@@ -759,7 +759,7 @@ void TestRedundantCaptureStrategy(base::TimeDelta capture_period,
   // After more than one capture period has passed without considering an event,
   // we should repeatedly be overdue for sampling.  However, once the redundant
   // capture goal is achieved, we should no longer be overdue for sampling.
-  *t += capture_period * 2;
+  *t += capture_period * 4;
   for (int i = 0; i < redundant_capture_goal; i++) {
     SCOPED_TRACE(base::StringPrintf("Iteration %d", i));
     ASSERT_FALSE(sampler->HasUnrecordedEvent());
@@ -795,9 +795,9 @@ TEST(SmoothEventSamplerTest, Sample60HertzAt30Hertz) {
 
   // Now pretend we're limited by backpressure in the pipeline. In this scenario
   // case we are adding events but not sampling them.
-  for (int i = 0; i < 7; i++) {
+  for (int i = 0; i < 20; i++) {
     SCOPED_TRACE(base::StringPrintf("Iteration %d", i));
-    ASSERT_EQ(i >= 3, sampler.IsOverdueForSamplingAt(t));
+    ASSERT_EQ(i >= 7, sampler.IsOverdueForSamplingAt(t));
     ASSERT_TRUE(sampler.AddEventAndConsiderSampling(t));
     ASSERT_TRUE(sampler.HasUnrecordedEvent());
     t += vsync;
@@ -839,9 +839,9 @@ TEST(SmoothEventSamplerTest, Sample50HertzAt30Hertz) {
 
   // Now pretend we're limited by backpressure in the pipeline. In this scenario
   // case we are adding events but not sampling them.
-  for (int i = 0; i < 7; i++) {
+  for (int i = 0; i < 12; i++) {
     SCOPED_TRACE(base::StringPrintf("Iteration %d", i));
-    ASSERT_EQ(i >= 2, sampler.IsOverdueForSamplingAt(t));
+    ASSERT_EQ(i >= 5, sampler.IsOverdueForSamplingAt(t));
     ASSERT_TRUE(sampler.AddEventAndConsiderSampling(t));
     t += vsync;
   }
@@ -887,9 +887,9 @@ TEST(SmoothEventSamplerTest, Sample75HertzAt30Hertz) {
 
   // Now pretend we're limited by backpressure in the pipeline. In this scenario
   // case we are adding events but not sampling them.
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 20; i++) {
     SCOPED_TRACE(base::StringPrintf("Iteration %d", i));
-    ASSERT_EQ(i >= 3, sampler.IsOverdueForSamplingAt(t));
+    ASSERT_EQ(i >= 8, sampler.IsOverdueForSamplingAt(t));
     ASSERT_TRUE(sampler.AddEventAndConsiderSampling(t));
     t += vsync;
   }
@@ -932,7 +932,7 @@ TEST(SmoothEventSamplerTest, Sample30HertzAt30Hertz) {
   // case we are adding events but not sampling them.
   for (int i = 0; i < 7; i++) {
     SCOPED_TRACE(base::StringPrintf("Iteration %d", i));
-    ASSERT_EQ(i >= 1, sampler.IsOverdueForSamplingAt(t));
+    ASSERT_EQ(i >= 3, sampler.IsOverdueForSamplingAt(t));
     ASSERT_TRUE(sampler.AddEventAndConsiderSampling(t));
     t += vsync;
   }
@@ -968,7 +968,7 @@ TEST(SmoothEventSamplerTest, Sample24HertzAt30Hertz) {
   // case we are adding events but not sampling them.
   for (int i = 0; i < 7; i++) {
     SCOPED_TRACE(base::StringPrintf("Iteration %d", i));
-    ASSERT_EQ(i >= 1, sampler.IsOverdueForSamplingAt(t));
+    ASSERT_EQ(i >= 3, sampler.IsOverdueForSamplingAt(t));
     ASSERT_TRUE(sampler.AddEventAndConsiderSampling(t));
     t += vsync;
   }
@@ -1022,11 +1022,13 @@ TEST(SmoothEventSamplerTest, FallbackToPollingIfUpdatesUnreliable) {
   should_poll.RecordSample();
 
   // One time period ahead, neither sampler says we're overdue.
-  t += timer_interval;
-  ASSERT_FALSE(should_not_poll.IsOverdueForSamplingAt(t))
-      << "Sampled last event; should not be dirty.";
-  ASSERT_FALSE(should_poll.IsOverdueForSamplingAt(t))
-      << "Dirty interval has not elapsed yet.";
+  for (int i = 0; i < 3; i++) {
+    t += timer_interval;
+    ASSERT_FALSE(should_not_poll.IsOverdueForSamplingAt(t))
+        << "Sampled last event; should not be dirty.";
+    ASSERT_FALSE(should_poll.IsOverdueForSamplingAt(t))
+        << "Dirty interval has not elapsed yet.";
+  }
 
   // Next time period ahead, both samplers say we're overdue.  The non-polling
   // sampler is returning true here because it has been configured to allow one
