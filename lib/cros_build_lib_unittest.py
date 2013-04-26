@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))
 
 import contextlib
+import datetime
 import errno
 import functools
 import itertools
@@ -652,19 +653,22 @@ class HelperMethodSimpleTests(cros_test_lib.TestCase):
     self._TestChromeosVersion(None)
 
   def testUserDateTime(self):
-    old_tz = os.environ.get('TZ')
+    # cros_test_lib.TestCase takes care of saving/restoring the environ.
     os.environ['TZ'] = '0'
     time.tzset()
     timeval = 330005000
     expected = 'Mon, 16 Jun 1980 12:03:20 +0000 ()'
-    try:
-      self.assertEqual(cros_build_lib.UserDateTimeFormat(timeval=timeval),
-                       expected)
-    finally:
-      if old_tz:
-        os.environ['TZ'] = old_tz
-      else:
-        os.environ.pop('TZ')
+    self.assertEqual(cros_build_lib.UserDateTimeFormat(timeval=timeval),
+                     expected)
+
+  def testUserDateTimeDateTime(self):
+    # cros_test_lib.TestCase takes care of saving/restoring the environ.
+    os.environ['TZ'] = '0'
+    time.tzset()
+    timeval = datetime.datetime(1980, 6, 16)
+    expected = 'Mon, 16 Jun 1980 00:00:00 +0000 ()'
+    self.assertEqual(cros_build_lib.UserDateTimeFormat(timeval=timeval),
+                     expected)
 
 
 class YNInteraction():

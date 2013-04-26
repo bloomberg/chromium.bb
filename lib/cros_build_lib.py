@@ -1482,10 +1482,12 @@ def UserDateTimeFormat(timeval=None):
   use the RFC 2822 date format (with timezone name appended).
 
   Arguments:
-    timeval: Floating point time value as accepted by gmtime()/localtime(),
-             otherwise the current time is used.
+    timeval: Either a datetime object or a floating point time value as accepted
+             by gmtime()/localtime().  If None, the current time is used.
   Returns:
     A string format such as 'Wed, 20 Feb 2013 15:25:15 -0500 (EST)'
   """
+  if isinstance(timeval, datetime):
+    timeval = time.mktime(timeval.timetuple())
   return '%s (%s)' % (formatdate(timeval=timeval, localtime=True),
                       time.tzname[0])
