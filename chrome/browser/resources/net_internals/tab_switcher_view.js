@@ -93,7 +93,12 @@ var TabSwitcherView = (function() {
 
     showMenuItem: function(tabId, isVisible) {
       var wasActive = this.activeTabId_ == tabId;
-      setNodeDisplay(this.getMenuItemNode_(tabId), isVisible);
+
+      // Hide the menuitem from the list. Note it needs to be 'disabled' to
+      // prevent it being selectable from keyboard.
+      var menuitem = this.getMenuItemNode_(tabId);
+      setNodeDisplay(menuitem, isVisible);
+      menuitem.disabled = !isVisible;
 
       if (wasActive && !isVisible) {
         // If the active tab is being hidden in the dropdown menu, then
