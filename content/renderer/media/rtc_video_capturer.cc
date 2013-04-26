@@ -15,7 +15,8 @@ RtcVideoCapturer::RtcVideoCapturer(
     bool is_screencast)
     : is_screencast_(is_screencast),
       delegate_(new RtcVideoCaptureDelegate(id, vc_manager)),
-      state_(VIDEO_CAPTURE_STATE_STOPPED) {
+      state_(VIDEO_CAPTURE_STATE_STOPPED),
+      last_frame_timestamp_(0) {
 }
 
 RtcVideoCapturer::~RtcVideoCapturer() {
@@ -107,6 +108,16 @@ void RtcVideoCapturer::OnFrameCaptured(
   frame.data = buf.memory_pointer;
   frame.pixel_height = 1;
   frame.pixel_width = 1;
+
+  // Frame timestamps should be monotonically increasing. There may be bugs that
+  // can cause delivering frames with past or same timestamps, which will cause
+  // issues to WebRTC.
+  if (frame.time_stamp <= last_frame_timestamp_) {
+    LOG(ERROR) << "RtcVideoCapturer::OnFrameCaptured received a frame with "
+               << "earlier or same timestamp as previous frame. Dropping it.";
+    return;
+  }
+  last_frame_timestamp_ = frame.time_stamp;
 
   TRACE_EVENT_INSTANT2("rtc_video_capturer",
                        "OnFrameCaptured",
