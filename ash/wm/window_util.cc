@@ -142,7 +142,7 @@ void CenterWindow(aura::Window* window) {
       Shell::GetScreen()->GetDisplayNearestWindow(window);
   gfx::Rect center = display.work_area();
   center.ClampToCenteredSize(window->bounds().size());
-  window->SetBounds(center);
+  window->SetBoundsInScreen(center, display);
 }
 
 bool IsWindowPositionManaged(const aura::Window* window) {

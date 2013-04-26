@@ -691,6 +691,7 @@
         'wm/window_cycle_controller_unittest.cc',
         'wm/window_manager_unittest.cc',
         'wm/window_modality_controller_unittest.cc',
+        'wm/window_util_unittest.cc',
         'wm/workspace_controller_test_helper.cc',
         'wm/workspace_controller_test_helper.h',
         'wm/workspace/magnetism_matcher_unittest.cc',
