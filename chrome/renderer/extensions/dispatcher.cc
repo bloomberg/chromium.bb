@@ -135,11 +135,15 @@ class SchemaRegistryNativeHandler : public ObjectBackedNativeHandler {
 
 class V8ContextNativeHandler : public ObjectBackedNativeHandler {
  public:
-  explicit V8ContextNativeHandler(ChromeV8Context* context)
+  V8ContextNativeHandler(ChromeV8Context* context, Dispatcher* dispatcher)
       : ObjectBackedNativeHandler(context->v8_context()),
-        context_(context) {
+        context_(context),
+        dispatcher_(dispatcher) {
     RouteFunction("GetAvailability",
         base::Bind(&V8ContextNativeHandler::GetAvailability,
+                   base::Unretained(this)));
+    RouteFunction("GetModuleSystem",
+        base::Bind(&V8ContextNativeHandler::GetModuleSystem,
                    base::Unretained(this)));
   }
 
@@ -157,7 +161,18 @@ class V8ContextNativeHandler : public ObjectBackedNativeHandler {
     return ret;
   }
 
+  v8::Handle<v8::Value> GetModuleSystem(const v8::Arguments& args) {
+    CHECK_EQ(args.Length(), 1);
+    CHECK(args[0]->IsObject());
+    v8::Handle<v8::Context> v8_context =
+        v8::Handle<v8::Object>::Cast(args[0])->CreationContext();
+    ChromeV8Context* context = dispatcher_->v8_context_set().GetByV8Context(
+        v8_context);
+    return context->module_system()->NewInstance();
+  }
+
   ChromeV8Context* context_;
+  Dispatcher* dispatcher_;
 };
 
 class ChromeHiddenNativeHandler : public ObjectBackedNativeHandler {
@@ -1006,7 +1021,7 @@ void Dispatcher::DidCreateScriptContext(
       scoped_ptr<NativeHandler>(
           new SchemaRegistryNativeHandler(v8_schema_registry(), v8_context)));
   module_system->RegisterNativeHandler("v8_context",
-      scoped_ptr<NativeHandler>(new V8ContextNativeHandler(context)));
+      scoped_ptr<NativeHandler>(new V8ContextNativeHandler(context, this)));
 
   int manifest_version = extension ? extension->manifest_version() : 1;
   bool send_request_disabled =
