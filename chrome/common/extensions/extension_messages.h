@@ -202,8 +202,7 @@ struct ExtensionMsg_Loaded_Params {
   explicit ExtensionMsg_Loaded_Params(const extensions::Extension* extension);
 
   // Creates a new extension from the data in this object.
-  scoped_refptr<extensions::Extension> ConvertToExtension(
-      std::string* error) const;
+  scoped_refptr<extensions::Extension> ConvertToExtension() const;
 
   // The subset of the extension manifest data we send to renderers.
   linked_ptr<DictionaryValue> manifest;
