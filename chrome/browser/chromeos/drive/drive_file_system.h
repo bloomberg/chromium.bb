@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/drive/file_system/drive_operations.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/drive/job_list.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class PrefChangeRegistrar;
@@ -469,6 +470,9 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const OpenFileCallback& callback,
       FileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
+
+  // Cancels the job with |id| in the scheduler.
+  void CancelJobInScheduler(JobID id);
 
   // The profile hosts the DriveFileSystem via DriveSystemService.
   Profile* profile_;

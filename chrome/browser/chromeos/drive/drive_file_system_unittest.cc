@@ -1763,32 +1763,71 @@ TEST_F(DriveFileSystemTest, GetFileContentByPath) {
 
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
 
-  FileError initialized_error = FILE_ERROR_FAILED;
-  scoped_ptr<DriveEntryProto> entry_proto;
-  base::FilePath local_path;
+  {
+    FileError initialized_error = FILE_ERROR_FAILED;
+    scoped_ptr<DriveEntryProto> entry_proto;
+    base::FilePath local_path;
+    base::Closure cancel_download;
 
-  std::vector<std::string> content_buffer;
+    std::vector<std::string> content_buffer;
 
-  FileError completion_error = FILE_ERROR_FAILED;
+    FileError completion_error = FILE_ERROR_FAILED;
 
-  file_system_->GetFileContentByPath(
+    file_system_->GetFileContentByPath(
+        file_in_root,
+        google_apis::test_util::CreateCopyResultCallback(
+            &initialized_error, &entry_proto, &local_path, &cancel_download),
+        base::Bind(&AppendContent, &content_buffer),
+        google_apis::test_util::CreateCopyResultCallback(&completion_error));
+    google_apis::test_util::RunBlockingPoolTask();
+
+    // For the first time, file is downloaded from the remote server.
+    // In this case, |local_path| is empty while |cancel_download| is not.
+    EXPECT_EQ(FILE_ERROR_OK, initialized_error);
+    ASSERT_TRUE(entry_proto);
+    ASSERT_TRUE(local_path.empty());
+    EXPECT_TRUE(!cancel_download.is_null());
+    // Content is available through the second callback arguemnt.
+    size_t content_size = 0;
+    for (size_t i = 0; i < content_buffer.size(); ++i) {
+      content_size += content_buffer[i].size();
+    }
+    EXPECT_EQ(static_cast<size_t>(entry_proto->file_info().size()),
+              content_size);
+    EXPECT_EQ(FILE_ERROR_OK, completion_error);
+  }
+
+  {
+    FileError initialized_error = FILE_ERROR_FAILED;
+    scoped_ptr<DriveEntryProto> entry_proto;
+    base::FilePath local_path;
+    base::Closure cancel_download;
+
+    std::vector<std::string> content_buffer;
+
+    FileError completion_error = FILE_ERROR_FAILED;
+
+    file_system_->GetFileContentByPath(
       file_in_root,
       google_apis::test_util::CreateCopyResultCallback(
-          &initialized_error, &entry_proto, &local_path),
+          &initialized_error, &entry_proto, &local_path, &cancel_download),
       base::Bind(&AppendContent, &content_buffer),
       google_apis::test_util::CreateCopyResultCallback(&completion_error));
-  google_apis::test_util::RunBlockingPoolTask();
+    google_apis::test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(FILE_ERROR_OK, initialized_error);
-  ASSERT_TRUE(entry_proto);
-  ASSERT_TRUE(local_path.empty());
-  size_t content_size = 0;
-  for (size_t i = 0; i < content_buffer.size(); ++i) {
-    content_size += content_buffer[i].size();
+    // Try second download. In this case, the file should be cached, so
+    // |local_path| should not be empty while |cancel_download| is empty.
+    EXPECT_EQ(FILE_ERROR_OK, initialized_error);
+    ASSERT_TRUE(entry_proto);
+    ASSERT_TRUE(!local_path.empty());
+    EXPECT_TRUE(cancel_download.is_null());
+    // The content is available from the cache file.
+    EXPECT_TRUE(content_buffer.empty());
+    int64 local_file_size = 0;
+    file_util::GetFileSize(local_path, &local_file_size);
+    EXPECT_EQ(entry_proto->file_info().size(), local_file_size);
+    EXPECT_EQ(FILE_ERROR_OK, completion_error);
   }
-  EXPECT_EQ(static_cast<size_t>(entry_proto->file_info().size()),
-            content_size);
-  EXPECT_EQ(FILE_ERROR_OK, completion_error);
 }
 
 TEST_F(DriveFileSystemTest, CancelGetFile) {

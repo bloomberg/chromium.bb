@@ -155,7 +155,8 @@ class DriveFileStreamReader {
       const InitializeCompletionCallback& callback,
       FileError error,
       scoped_ptr<DriveEntryProto> entry,
-      const base::FilePath& local_cache_file_path);
+      const base::FilePath& local_cache_file_path,
+      const base::Closure& cancel_download_closure);
 
   // Part of Initialize. Called when the local file open process is done.
   void InitializeAfterLocalFileOpen(

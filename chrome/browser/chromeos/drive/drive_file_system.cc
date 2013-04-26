@@ -152,16 +152,18 @@ struct DriveFileSystem::GetResolvedFileParams {
     }
 
     scoped_ptr<DriveEntryProto> entry(new DriveEntryProto(*entry_proto));
-    initialized_callback.Run(FILE_ERROR_OK, entry.Pass(), local_file_path);
+    initialized_callback.Run(FILE_ERROR_OK, entry.Pass(), local_file_path,
+                             base::Closure());
   }
 
-  void OnStartDownloading() {
+  void OnStartDownloading(const base::Closure& cancel_download_closure) {
     if (initialized_callback.is_null()) {
       return;
     }
 
     scoped_ptr<DriveEntryProto> entry(new DriveEntryProto(*entry_proto));
-    initialized_callback.Run(FILE_ERROR_OK, entry.Pass(), base::FilePath());
+    initialized_callback.Run(FILE_ERROR_OK, entry.Pass(), base::FilePath(),
+                             cancel_download_closure);
   }
 
   void OnComplete(const base::FilePath& local_file_path) {
@@ -1046,9 +1048,8 @@ void DriveFileSystem::GetResolveFileByPathAfterCreateTemporaryFile(
     return;
   }
 
-  params->OnStartDownloading();
   GetResolvedFileParams* params_ptr = params.get();
-  scheduler_->DownloadFile(
+  JobID id = scheduler_->DownloadFile(
       params_ptr->drive_file_path,
       *temp_file,
       download_url,
@@ -1057,6 +1058,10 @@ void DriveFileSystem::GetResolveFileByPathAfterCreateTemporaryFile(
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(&params)),
       params_ptr->get_content_callback);
+  params_ptr->OnStartDownloading(
+      base::Bind(&DriveFileSystem::CancelJobInScheduler,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 id));
 }
 
 void DriveFileSystem::GetResolvedFileByPathAfterDownloadFile(
@@ -1825,6 +1830,10 @@ void DriveFileSystem::CheckLocalModificationAndRunAfterGetFileInfo(
   util::ConvertPlatformFileInfoToProto(*file_info, &entry_file_info);
   *entry_proto->mutable_file_info() = entry_file_info;
   callback.Run(FILE_ERROR_OK, entry_proto.Pass());
+}
+
+void DriveFileSystem::CancelJobInScheduler(JobID id) {
+  scheduler_->CancelJob(id);
 }
 
 }  // namespace drive

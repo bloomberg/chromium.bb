@@ -75,9 +75,16 @@ typedef base::Callback<void(FileError error,
                             DriveFileType file_type)> GetFileCallback;
 
 // Used to get file content from the file system.
+// If the file content is available in local cache, |local_file| is filled with
+// the path to the cache file and |cancel_download_closure| is null. If the file
+// content starts to be downloaded from the server, |local_file| is empty and
+// |cancel_download_closure| is filled with a closure by calling which the
+// download job can be cancelled.
+// |cancel_download_closure| must be called on the UI thread.
 typedef base::Callback<void(FileError error,
                             scoped_ptr<DriveEntryProto> entry_proto,
-                            const base::FilePath& local_file)>
+                            const base::FilePath& local_file,
+                            const base::Closure& cancel_download_closure)>
     GetFileContentInitializedCallback;
 
 // Used to read a directory from the file system.

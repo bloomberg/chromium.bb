@@ -322,7 +322,8 @@ void DriveFileStreamReader::InitializeAfterGetFileContentByPathInitialized(
     const InitializeCompletionCallback& callback,
     FileError error,
     scoped_ptr<DriveEntryProto> entry,
-    const base::FilePath& local_cache_file_path) {
+    const base::FilePath& local_cache_file_path,
+    const base::Closure& cancel_download_closure) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (error != FILE_ERROR_OK) {

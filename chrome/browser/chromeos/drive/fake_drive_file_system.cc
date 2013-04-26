@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/drive/fake_drive_file_system.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -397,15 +398,16 @@ void FakeDriveFileSystem::GetFileContentByPathAfterGetEntryInfo(
       cache_dir_.path().AppendASCII(entry_proto->resource_id());
   if (file_util::PathExists(cache_path)) {
     // Cache file is found.
-    initialized_callback.Run(FILE_ERROR_OK, entry_proto.Pass(), cache_path);
+    initialized_callback.Run(FILE_ERROR_OK, entry_proto.Pass(), cache_path,
+                             base::Closure());
     completion_callback.Run(FILE_ERROR_OK);
     return;
   }
 
   // Copy the URL here before passing |entry_proto| to the callback.
   const GURL download_url(entry_proto->download_url());
-  initialized_callback.Run(
-      FILE_ERROR_OK, entry_proto.Pass(), base::FilePath());
+  initialized_callback.Run(FILE_ERROR_OK, entry_proto.Pass(), base::FilePath(),
+                           base::Bind(&base::DoNothing));
   drive_service_->DownloadFile(
       file_path,
       cache_path,

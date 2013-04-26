@@ -316,7 +316,7 @@ void JobScheduler::AddNewDirectory(
   StartNewJob(new_job.Pass(), TYPE_ADD_NEW_DIRECTORY);
 }
 
-void JobScheduler::DownloadFile(
+JobID JobScheduler::DownloadFile(
     const base::FilePath& virtual_path,
     const base::FilePath& local_cache_path,
     const GURL& download_url,
@@ -333,7 +333,7 @@ void JobScheduler::DownloadFile(
   new_job->download_action_callback = download_action_callback;
   new_job->get_content_callback = get_content_callback;
 
-  StartNewJob(new_job.Pass(), TYPE_DOWNLOAD_FILE);
+  return StartNewJob(new_job.Pass(), TYPE_DOWNLOAD_FILE);
 }
 
 void JobScheduler::UploadNewFile(
@@ -380,7 +380,7 @@ void JobScheduler::UploadExistingFile(
   StartNewJob(new_job.Pass(), TYPE_UPLOAD_EXISTING_FILE);
 }
 
-void JobScheduler::StartNewJob(scoped_ptr<QueueEntry> job, JobType type) {
+JobID JobScheduler::StartNewJob(scoped_ptr<QueueEntry> job, JobType type) {
   // job_info is owned by job_map_ and released when it is removed in OnJobDone.
   JobInfo* job_info = new JobInfo(type);
   job->job_id = job_info->job_id = job_map_.Add(job_info);
@@ -389,6 +389,7 @@ void JobScheduler::StartNewJob(scoped_ptr<QueueEntry> job, JobType type) {
   QueueJob(job.Pass());
   NotifyJobAdded(*job_info);
   StartJobLoop(GetJobQueueType(type));
+  return job_info->job_id;
 }
 
 void JobScheduler::QueueJob(scoped_ptr<QueueEntry> job) {

@@ -117,7 +117,7 @@ class JobScheduler
                        const google_apis::GetResourceEntryCallback& callback);
 
   // Adds a DownloadFile operation to the queue.
-  void DownloadFile(
+  JobID DownloadFile(
       const base::FilePath& virtual_path,
       const base::FilePath& local_cache_path,
       const GURL& download_url,
@@ -283,8 +283,8 @@ class JobScheduler
   };
 
   // Adds the specified job to the queue and starts the job loop for the queue
-  // if needed.
-  void StartNewJob(scoped_ptr<QueueEntry> job, JobType type);
+  // if needed. Returns the job ID for the new job.
+  JobID StartNewJob(scoped_ptr<QueueEntry> job, JobType type);
 
   // Adds the specified job to the queue.  Takes ownership of |job|
   void QueueJob(scoped_ptr<QueueEntry> job);

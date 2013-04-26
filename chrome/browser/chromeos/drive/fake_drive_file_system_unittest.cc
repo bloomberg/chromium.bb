@@ -99,6 +99,7 @@ TEST_F(FakeDriveFileSystemTest, GetFileContentByPath) {
   FileError initialize_error = FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProto> entry_proto;
   base::FilePath cache_file_path;
+  base::Closure cancel_download;
   google_apis::test_util::TestGetContentCallback get_content_callback;
   FileError completion_error = FILE_ERROR_FAILED;
 
@@ -109,7 +110,7 @@ TEST_F(FakeDriveFileSystemTest, GetFileContentByPath) {
   fake_drive_file_system_->GetFileContentByPath(
       kDriveFile,
       google_apis::test_util::CreateCopyResultCallback(
-          &initialize_error, &entry_proto, &cache_file_path),
+          &initialize_error, &entry_proto, &cache_file_path, &cancel_download),
       get_content_callback.callback(),
       google_apis::test_util::CreateCopyResultCallback(&completion_error));
   google_apis::test_util::RunBlockingPoolTask();
@@ -135,7 +136,7 @@ TEST_F(FakeDriveFileSystemTest, GetFileContentByPath) {
   fake_drive_file_system_->GetFileContentByPath(
       kDriveFile,
       google_apis::test_util::CreateCopyResultCallback(
-          &initialize_error, &entry_proto, &cache_file_path),
+          &initialize_error, &entry_proto, &cache_file_path, &cancel_download),
       get_content_callback.callback(),
       google_apis::test_util::CreateCopyResultCallback(&completion_error));
   google_apis::test_util::RunBlockingPoolTask();
@@ -163,11 +164,12 @@ TEST_F(FakeDriveFileSystemTest, GetFileContentByPath_Directory) {
   base::FilePath cache_file_path;
   google_apis::test_util::TestGetContentCallback get_content_callback;
   FileError completion_error = FILE_ERROR_FAILED;
+  base::Closure cancel_download;
 
   fake_drive_file_system_->GetFileContentByPath(
       util::GetDriveMyDriveRootPath(),
       google_apis::test_util::CreateCopyResultCallback(
-          &initialize_error, &entry_proto, &cache_file_path),
+          &initialize_error, &entry_proto, &cache_file_path, &cancel_download),
       get_content_callback.callback(),
       google_apis::test_util::CreateCopyResultCallback(&completion_error));
   google_apis::test_util::RunBlockingPoolTask();
