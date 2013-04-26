@@ -29,39 +29,6 @@ using base::TimeDelta;
 
 namespace media {
 
-PipelineStatusNotification::PipelineStatusNotification()
-    : cv_(&lock_), status_(PIPELINE_OK), notified_(false) {
-}
-
-PipelineStatusNotification::~PipelineStatusNotification() {
-  DCHECK(notified_);
-}
-
-PipelineStatusCB PipelineStatusNotification::Callback() {
-  return base::Bind(&PipelineStatusNotification::Notify,
-                    base::Unretained(this));
-}
-
-void PipelineStatusNotification::Notify(media::PipelineStatus status) {
-  base::AutoLock auto_lock(lock_);
-  DCHECK(!notified_);
-  notified_ = true;
-  status_ = status;
-  cv_.Signal();
-}
-
-void PipelineStatusNotification::Wait() {
-  base::AutoLock auto_lock(lock_);
-  while (!notified_)
-    cv_.Wait();
-}
-
-media::PipelineStatus PipelineStatusNotification::status() {
-  base::AutoLock auto_lock(lock_);
-  DCHECK(notified_);
-  return status_;
-}
-
 Pipeline::Pipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
                    MediaLog* media_log)
     : message_loop_(message_loop),

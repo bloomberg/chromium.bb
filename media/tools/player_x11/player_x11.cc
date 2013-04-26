@@ -100,8 +100,15 @@ static void NeedKey(const std::string& type, scoped_ptr<uint8[]> init_data,
   std::cout << "File is encrypted." << std::endl;
 }
 
+static void SaveStatusAndSignal(base::WaitableEvent* event,
+                                media::PipelineStatus* status_out,
+                                media::PipelineStatus status) {
+  *status_out = status;
+  event->Signal();
+}
+
 // TODO(vrk): Re-enabled audio. (crbug.com/112159)
-bool InitPipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
+void InitPipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
                   media::Demuxer* demuxer,
                   const PaintCB& paint_cb,
                   bool /* enable_audio */,
@@ -133,23 +140,21 @@ bool InitPipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
   collection->SetAudioRenderer(audio_renderer.Pass());
 
   // Create the pipeline and start it.
+  base::WaitableEvent event(true, false);
+  media::PipelineStatus status;
+
   *pipeline = new media::Pipeline(message_loop, new media::MediaLog());
-  media::PipelineStatusNotification note;
   (*pipeline)->Start(
       collection.Pass(), base::Closure(), media::PipelineStatusCB(),
-      note.Callback(), base::Bind(&OnBufferingState), base::Closure());
+      base::Bind(&SaveStatusAndSignal, &event, &status),
+      base::Bind(&OnBufferingState), base::Closure());
 
   // Wait until the pipeline is fully initialized.
-  note.Wait();
-  if (note.status() != media::PIPELINE_OK) {
-    std::cout << "InitPipeline: " << note.status() << std::endl;
-    (*pipeline)->Stop(base::Closure());
-    return false;
-  }
+  event.Wait();
+  CHECK_EQ(status, media::PIPELINE_OK) << "Pipeline initialization failed";
 
   // And start the playback.
   (*pipeline)->SetPlaybackRate(1.0f);
-  return true;
 }
 
 void TerminateHandler(int signal) {
@@ -281,18 +286,16 @@ int main(int argc, char** argv) {
   scoped_ptr<media::Demuxer> demuxer(new media::FFmpegDemuxer(
       media_thread.message_loop_proxy(), data_source, base::Bind(&NeedKey)));
 
-  if (InitPipeline(media_thread.message_loop_proxy(), demuxer.get(),
-                   paint_cb, command_line->HasSwitch("audio"),
-                   &pipeline, &message_loop)) {
-    // Main loop of the application.
-    g_running = true;
+  InitPipeline(media_thread.message_loop_proxy(), demuxer.get(),
+               paint_cb, command_line->HasSwitch("audio"), &pipeline,
+               &message_loop);
 
-    message_loop.PostTask(FROM_HERE, base::Bind(
-        &PeriodicalUpdate, pipeline, &message_loop, !pipeline->HasVideo()));
-    message_loop.Run();
-  } else {
-    std::cout << "Pipeline initialization failed..." << std::endl;
-  }
+  // Main loop of the application.
+  g_running = true;
+
+  message_loop.PostTask(FROM_HERE, base::Bind(
+      &PeriodicalUpdate, pipeline, &message_loop, !pipeline->HasVideo()));
+  message_loop.Run();
 
   // Cleanup tasks.
   media_thread.Stop();

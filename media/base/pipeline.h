@@ -32,33 +32,6 @@ class FilterCollection;
 class MediaLog;
 class VideoRenderer;
 
-// Adapter for using asynchronous Pipeline methods in code that wants to run
-// synchronously.  To use, construct an instance of this class and pass the
-// |Callback()| to the Pipeline method requiring a callback.  Then Wait() for
-// the callback to get fired and call status() to see what the callback's
-// argument was.  This object is for one-time use; call |Callback()| exactly
-// once.
-class MEDIA_EXPORT PipelineStatusNotification {
- public:
-  PipelineStatusNotification();
-  ~PipelineStatusNotification();
-
-  // See class-level comment for usage.
-  PipelineStatusCB Callback();
-  void Wait();
-  PipelineStatus status();
-
- private:
-  void Notify(media::PipelineStatus status);
-
-  base::Lock lock_;
-  base::ConditionVariable cv_;
-  media::PipelineStatus status_;
-  bool notified_;
-
-  DISALLOW_COPY_AND_ASSIGN(PipelineStatusNotification);
-};
-
 // Pipeline runs the media pipeline.  Filters are created and called on the
 // message loop injected into this object. Pipeline works like a state
 // machine to perform asynchronous initialization, pausing, seeking and playing.
