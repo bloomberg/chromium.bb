@@ -14,6 +14,7 @@
 
 using testing::AtLeast;
 using testing::Return;
+using testing::_;
 
 class TestTranslateHelper : public TranslateHelper {
  public:
@@ -40,6 +41,11 @@ class TestTranslateHelper : public TranslateHelper {
   MOCK_METHOD0(HasTranslationFailed, bool());
   MOCK_METHOD0(GetOriginalPageLanguage, std::string());
   MOCK_METHOD0(StartTranslation, bool());
+  MOCK_METHOD1(ExecuteScript, void(const std::string&));
+  MOCK_METHOD2(ExecuteScriptAndGetBoolResult, bool(const std::string&, bool));
+  MOCK_METHOD1(ExecuteScriptAndGetStringResult,
+               std::string(const std::string&));
+  MOCK_METHOD1(ExecuteScriptAndGetDoubleResult, double(const std::string&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestTranslateHelper);
@@ -136,6 +142,10 @@ TEST_F(TranslateHelperBrowserTest, TranslateSuccess) {
       .WillOnce(Return(false))
       .WillOnce(Return(true));
 
+  // V8 call for performance monitoring should be ignored.
+  EXPECT_CALL(*translate_helper_,
+              ExecuteScriptAndGetDoubleResult(_)).Times(3);
+
   std::string original_lang("en");
   std::string target_lang("fr");
   translate_helper_->TranslatePage(
@@ -181,6 +191,10 @@ TEST_F(TranslateHelperBrowserTest, TranslateFailure) {
       .Times(AtLeast(1))
       .WillRepeatedly(Return(false));
 
+  // V8 call for performance monitoring should be ignored.
+  EXPECT_CALL(*translate_helper_,
+              ExecuteScriptAndGetDoubleResult(_)).Times(2);
+
   translate_helper_->TranslatePage(
       view_->GetPageId(), "en", "fr", std::string());
   MessageLoop::current()->RunUntilIdle();
@@ -213,6 +227,10 @@ TEST_F(TranslateHelperBrowserTest, UndefinedSourceLang) {
   EXPECT_CALL(*translate_helper_, HasTranslationFinished())
       .Times(AtLeast(1))
       .WillRepeatedly(Return(true));
+
+  // V8 call for performance monitoring should be ignored.
+  EXPECT_CALL(*translate_helper_,
+              ExecuteScriptAndGetDoubleResult(_)).Times(3);
 
   translate_helper_->TranslatePage(view_->GetPageId(),
                                    chrome::kUnknownLanguageCode, "fr",
@@ -248,6 +266,10 @@ TEST_F(TranslateHelperBrowserTest, MultipleSimilarTranslations) {
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*translate_helper_, HasTranslationFinished())
       .WillOnce(Return(true));
+
+  // V8 call for performance monitoring should be ignored.
+  EXPECT_CALL(*translate_helper_,
+              ExecuteScriptAndGetDoubleResult(_)).Times(3);
 
   std::string original_lang("en");
   std::string target_lang("fr");
@@ -286,6 +308,10 @@ TEST_F(TranslateHelperBrowserTest, MultipleDifferentTranslations) {
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*translate_helper_, HasTranslationFinished())
       .WillOnce(Return(true));
+
+  // V8 call for performance monitoring should be ignored.
+  EXPECT_CALL(*translate_helper_,
+              ExecuteScriptAndGetDoubleResult(_)).Times(5);
 
   std::string original_lang("en");
   std::string target_lang("fr");

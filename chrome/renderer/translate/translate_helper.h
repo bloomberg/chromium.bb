@@ -66,6 +66,26 @@ class TranslateHelper : public content::RenderViewObserver {
   // immediately by returning 0.
   virtual base::TimeDelta AdjustDelay(int delayInMs);
 
+  // Executes the JavaScript code in |script| in the main frame of RenderView.
+  virtual void ExecuteScript(const std::string& script);
+
+  // Executes the JavaScript code in |script| in the main frame of RenderView,
+  // and returns the boolean returned by the script evaluation if the script was
+  // run successfully. Otherwise, returns |fallback| value.
+  virtual bool ExecuteScriptAndGetBoolResult(const std::string& script,
+                                             bool fallback);
+
+  // Executes the JavaScript code in |script| in the main frame of RenderView,
+  // and returns the string returned by the script evaluation if the script was
+  // run successfully. Otherwise, returns empty string.
+  virtual std::string ExecuteScriptAndGetStringResult(
+      const std::string& script);
+
+  // Executes the JavaScript code in |script| in the main frame of RenderView.
+  // and returns the number returned by the script evaluation if the script was
+  // run successfully. Otherwise, returns 0.0.
+  virtual double ExecuteScriptAndGetDoubleResult(const std::string& script);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, LanguageCodeTypoCorrection);
   FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, LanguageCodeSynonyms);
@@ -110,19 +130,6 @@ class TranslateHelper : public content::RenderViewObserver {
   // notifies the browser accordingly.  If the translation has not terminated,
   // posts a task to check again later.
   void CheckTranslateStatus();
-
-  // Executes the JavaScript code in |script| in the main frame of RenderView.
-  void ExecuteScript(const std::string& script);
-
-  // Executes the JavaScript code in |script| in the main frame of RenderView,
-  // and returns the boolean returned by the script evaluation if the script was
-  // run successfully. Otherwise, returns |fallback| value.
-  bool ExecuteScriptAndGetBoolResult(const std::string& script, bool fallback);
-
-  // Executes the JavaScript code in |script| in the main frame of RenderView,
-  // and returns the string returned by the script evaluation if the script was
-  // run successfully. Otherwise, returns empty string.
-  std::string ExecuteScriptAndGetStringResult(const std::string& script);
 
   // Called by TranslatePage to do the actual translation.  |count| is used to
   // limit the number of retries.

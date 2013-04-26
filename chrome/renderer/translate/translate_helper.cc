@@ -180,6 +180,67 @@ base::TimeDelta TranslateHelper::AdjustDelay(int delayInMs) {
   return base::TimeDelta::FromMilliseconds(delayInMs);
 }
 
+void TranslateHelper::ExecuteScript(const std::string& script) {
+  WebFrame* main_frame = GetMainFrame();
+  if (main_frame)
+    main_frame->executeScript(WebScriptSource(ASCIIToUTF16(script)));
+}
+
+bool TranslateHelper::ExecuteScriptAndGetBoolResult(const std::string& script,
+                                                    bool fallback) {
+  WebFrame* main_frame = GetMainFrame();
+  if (!main_frame)
+    return fallback;
+
+  v8::HandleScope handle_scope;
+  v8::Handle<v8::Value> v = main_frame->executeScriptAndReturnValue(
+      WebScriptSource(ASCIIToUTF16(script)));
+  if (v.IsEmpty() || !v->IsBoolean()) {
+    NOTREACHED();
+    return fallback;
+  }
+
+  return v->BooleanValue();
+}
+
+std::string TranslateHelper::ExecuteScriptAndGetStringResult(
+    const std::string& script) {
+  WebFrame* main_frame = GetMainFrame();
+  if (!main_frame)
+    return std::string();
+
+  v8::HandleScope handle_scope;
+  v8::Handle<v8::Value> v = main_frame->executeScriptAndReturnValue(
+      WebScriptSource(ASCIIToUTF16(script)));
+  if (v.IsEmpty() || !v->IsString()) {
+    NOTREACHED();
+    return std::string();
+  }
+
+  v8::Local<v8::String> v8_str = v->ToString();
+  int length = v8_str->Utf8Length() + 1;
+  scoped_ptr<char[]> str(new char[length]);
+  v8_str->WriteUtf8(str.get(), length);
+  return std::string(str.get());
+}
+
+double TranslateHelper::ExecuteScriptAndGetDoubleResult(
+    const std::string& script) {
+  WebFrame* main_frame = GetMainFrame();
+  if (!main_frame)
+    return 0.0;
+
+  v8::HandleScope handle_scope;
+  v8::Handle<v8::Value> v = main_frame->executeScriptAndReturnValue(
+      WebScriptSource(ASCIIToUTF16(script)));
+  if (v.IsEmpty() || !v->IsNumber()) {
+    NOTREACHED();
+    return 0.0;
+  }
+
+  return v->NumberValue();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TranslateHelper, private:
 //
@@ -391,6 +452,13 @@ void TranslateHelper::CheckTranslateStatus() {
 
     translation_pending_ = false;
 
+    // Check JavaScript performance counters for UMA reports.
+    double time_to_translate =
+        ExecuteScriptAndGetDoubleResult("cr.googleTranslate.translationTime");
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "Translate.TimeToTranslate",
+        base::TimeDelta::FromMicroseconds(time_to_translate * 1000.0));
+
     // Notify the browser we are done.
     render_view()->Send(new ChromeViewHostMsg_PageTranslated(
         render_view()->GetRoutingID(), render_view()->GetPageId(),
@@ -404,50 +472,6 @@ void TranslateHelper::CheckTranslateStatus() {
       base::Bind(&TranslateHelper::CheckTranslateStatus,
                  weak_method_factory_.GetWeakPtr()),
       AdjustDelay(kTranslateStatusCheckDelayMs));
-}
-
-void TranslateHelper::ExecuteScript(const std::string& script) {
-  WebFrame* main_frame = GetMainFrame();
-  if (main_frame)
-    main_frame->executeScript(WebScriptSource(ASCIIToUTF16(script)));
-}
-
-bool TranslateHelper::ExecuteScriptAndGetBoolResult(const std::string& script,
-                                                    bool fallback) {
-  WebFrame* main_frame = GetMainFrame();
-  if (!main_frame)
-    return fallback;
-
-  v8::HandleScope handle_scope;
-  v8::Handle<v8::Value> v = main_frame->executeScriptAndReturnValue(
-      WebScriptSource(ASCIIToUTF16(script)));
-  if (v.IsEmpty() || !v->IsBoolean()) {
-    NOTREACHED();
-    return fallback;
-  }
-
-  return v->BooleanValue();
-}
-
-std::string TranslateHelper::ExecuteScriptAndGetStringResult(
-    const std::string& script) {
-  WebFrame* main_frame = GetMainFrame();
-  if (!main_frame)
-    return std::string();
-
-  v8::HandleScope handle_scope;
-  v8::Handle<v8::Value> v = main_frame->executeScriptAndReturnValue(
-      WebScriptSource(ASCIIToUTF16(script)));
-  if (v.IsEmpty() || !v->IsString()) {
-    NOTREACHED();
-    return std::string();
-  }
-
-  v8::Local<v8::String> v8_str = v->ToString();
-  int length = v8_str->Utf8Length() + 1;
-  scoped_ptr<char[]> str(new char[length]);
-  v8_str->WriteUtf8(str.get(), length);
-  return std::string(str.get());
 }
 
 void TranslateHelper::TranslatePageImpl(int count) {
@@ -469,6 +493,19 @@ void TranslateHelper::TranslatePageImpl(int count) {
         AdjustDelay(count * kTranslateInitCheckDelayMs));
     return;
   }
+
+  // The library is loaded, and ready for translation now.
+  // Check JavaScript performance counters for UMA reports.
+  double time_to_load =
+      ExecuteScriptAndGetDoubleResult("cr.googleTranslate.loadTime");
+  double time_to_be_ready =
+      ExecuteScriptAndGetDoubleResult("cr.googleTranslate.readyTime");
+  UMA_HISTOGRAM_MEDIUM_TIMES(
+      "Translate.TimeToLoad",
+      base::TimeDelta::FromMicroseconds(time_to_load * 1000.0));
+  UMA_HISTOGRAM_MEDIUM_TIMES(
+      "Translate.TimeToBeReady",
+      base::TimeDelta::FromMicroseconds(time_to_be_ready * 1000.0));
 
   if (!StartTranslation()) {
     NotifyBrowserTranslationFailed(TranslateErrors::TRANSLATION_ERROR);
