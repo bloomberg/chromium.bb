@@ -489,6 +489,9 @@ public:
     // FIXME: Make implementations of this class override this method instead and then remove onCreateGrGLInterface().
     virtual GrGLInterface* createGrGLInterface() { return onCreateGrGLInterface(); }
 
+    // GL_CHROMIUM_gpu_memory_buffer
+    virtual void imageBufferDataCHROMIUM(WGC3Denum target, WGC3Dsizei width, WGC3Dsizei height) { }
+
 protected:
     virtual GrGLInterface* onCreateGrGLInterface() { return 0; }
 
