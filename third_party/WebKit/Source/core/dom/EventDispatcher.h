@@ -61,7 +61,6 @@ public:
     bool dispatch();
     Node* node() const { return m_node.get(); }
     Event* event() const { return m_event.get(); }
-    EventPath& eventPath() { return m_eventPath; }
 
 private:
     EventDispatcher(Node*, PassRefPtr<Event>);
@@ -73,7 +72,6 @@ private:
     void dispatchEventAtBubbling(WindowEventContext&);
     void dispatchEventPostProcess(void* preDispatchEventHandlerResult);
 
-    EventPath m_eventPath;
     RefPtr<Node> m_node;
     RefPtr<Event> m_event;
     RefPtr<FrameView> m_view;

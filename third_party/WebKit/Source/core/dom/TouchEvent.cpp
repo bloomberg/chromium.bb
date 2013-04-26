@@ -107,7 +107,7 @@ TouchEvent* TouchEventDispatchMediator::event() const
 
 bool TouchEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) const
 {
-    EventRetargeter::adjustForTouchEvent(dispatcher->node(), *event(), dispatcher->eventPath());
+    EventRetargeter::adjustForTouchEvent(dispatcher->node(), *event());
     return dispatcher->dispatch();
 }
 

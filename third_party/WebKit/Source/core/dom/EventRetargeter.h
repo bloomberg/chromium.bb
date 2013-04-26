@@ -49,11 +49,11 @@ enum EventDispatchBehavior {
 
 class EventRetargeter {
 public:
-    static void calculateEventPath(Node*, Event*, EventPath&);
-    static void adjustForMouseEvent(Node*, const MouseEvent&, EventPath&);
-    static void adjustForFocusEvent(Node*, const FocusEvent&, EventPath&);
+    static void calculateEventPath(Node*, Event*);
+    static void adjustForMouseEvent(Node*, MouseEvent&);
+    static void adjustForFocusEvent(Node*, FocusEvent&);
     typedef Vector<RefPtr<TouchList> > EventPathTouchLists;
-    static void adjustForTouchEvent(Node*, const TouchEvent&, EventPath&);
+    static void adjustForTouchEvent(Node*, TouchEvent&);
     static EventTarget* eventTargetRespectingTargetRules(Node* referenceNode);
 
 private:

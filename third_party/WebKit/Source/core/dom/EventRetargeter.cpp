@@ -71,8 +71,10 @@ static inline EventDispatchBehavior determineDispatchBehavior(Event* event, Shad
     return RetargetEvent;
 }
 
-void EventRetargeter::calculateEventPath(Node* node, Event* event, EventPath& eventPath)
+void EventRetargeter::calculateEventPath(Node* node, Event* event)
 {
+    EventPath& eventPath = event->eventPath();
+    eventPath.clear();
     bool inDocument = node->inDocument();
     bool isSVGElement = node->isSVGElement();
     bool isMouseOrFocusEvent = event->isMouseEvent() || event->isFocusEvent();
@@ -103,18 +105,19 @@ void EventRetargeter::calculateEventPath(Node* node, Event* event, EventPath& ev
     }
 }
 
-void EventRetargeter::adjustForMouseEvent(Node* node, const MouseEvent& mouseEvent, EventPath& eventPath)
+void EventRetargeter::adjustForMouseEvent(Node* node, MouseEvent& mouseEvent)
 {
-    adjustForRelatedTarget(node, mouseEvent.relatedTarget(), eventPath);
+    adjustForRelatedTarget(node, mouseEvent.relatedTarget(), mouseEvent.eventPath());
 }
 
-void EventRetargeter::adjustForFocusEvent(Node* node, const FocusEvent& focusEvent, EventPath& eventPath)
+void EventRetargeter::adjustForFocusEvent(Node* node, FocusEvent& focusEvent)
 {
-    adjustForRelatedTarget(node, focusEvent.relatedTarget(), eventPath);
+    adjustForRelatedTarget(node, focusEvent.relatedTarget(), focusEvent.eventPath());
 }
 
-void EventRetargeter::adjustForTouchEvent(Node* node, const TouchEvent& touchEvent, EventPath& eventPath)
+void EventRetargeter::adjustForTouchEvent(Node* node, TouchEvent& touchEvent)
 {
+    EventPath& eventPath = touchEvent.eventPath();
     size_t eventPathSize = eventPath.size();
 
     EventPathTouchLists eventPathTouches(eventPathSize);

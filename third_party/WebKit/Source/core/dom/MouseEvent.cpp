@@ -281,7 +281,7 @@ MouseEvent* MouseEventDispatchMediator::event() const
 bool MouseEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) const
 {
     if (isSyntheticMouseEvent()) {
-        EventRetargeter::adjustForMouseEvent(dispatcher->node(), *event(),  dispatcher->eventPath());
+        EventRetargeter::adjustForMouseEvent(dispatcher->node(), *event());
         return dispatcher->dispatch();
     }
 
@@ -294,7 +294,7 @@ bool MouseEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) cons
     ASSERT(!event()->target() || event()->target() != event()->relatedTarget());
 
     EventTarget* relatedTarget = event()->relatedTarget();
-    EventRetargeter::adjustForMouseEvent(dispatcher->node(), *event(),  dispatcher->eventPath());
+    EventRetargeter::adjustForMouseEvent(dispatcher->node(), *event());
 
     dispatcher->dispatch();
     bool swallowEvent = event()->defaultHandled() || event()->defaultPrevented();

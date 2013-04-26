@@ -25,6 +25,7 @@
 #define Event_h
 
 #include "DOMTimeStamp.h"
+#include "EventContext.h"
 #include "EventNames.h"
 #include "ScriptWrappable.h"
 #include <wtf/HashMap.h>
@@ -155,6 +156,8 @@ public:
     Event* underlyingEvent() const { return m_underlyingEvent.get(); }
     void setUnderlyingEvent(PassRefPtr<Event>);
 
+    EventPath& eventPath() { return m_eventPath; }
+
     virtual bool storesResultAsString() const;
     virtual void storeResult(const String&);
 
@@ -189,8 +192,8 @@ private:
     EventTarget* m_currentTarget;
     RefPtr<EventTarget> m_target;
     DOMTimeStamp m_createTime;
-
     RefPtr<Event> m_underlyingEvent;
+    EventPath m_eventPath;
 };
 
 } // namespace WebCore
