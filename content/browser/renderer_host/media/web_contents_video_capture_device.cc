@@ -1312,6 +1312,8 @@ bool SmoothEventSampler::AddEventAndConsiderSampling(base::Time event_time) {
     // greater than |event_time|, everything here will simply gracefully adjust.
     if (token_bucket_ < base::TimeDelta())
       token_bucket_ = base::TimeDelta();
+    TRACE_COUNTER1("mirroring",
+                   "MirroringTokenBucketUsec", token_bucket_.InMicroseconds());
   }
   current_event_ = event_time;
 
@@ -1321,6 +1323,8 @@ bool SmoothEventSampler::AddEventAndConsiderSampling(base::Time event_time) {
 
 void SmoothEventSampler::RecordSample() {
   token_bucket_ -= capture_period_;
+  TRACE_COUNTER1("mirroring",
+                 "MirroringTokenBucketUsec", token_bucket_.InMicroseconds());
   if (HasUnrecordedEvent()) {
     last_sample_ = current_event_;
     overdue_sample_count_ = 0;
