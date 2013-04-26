@@ -25,9 +25,9 @@ class MediaGalleriesDialogControllerMock
   MOCK_METHOD0(OnAddFolderClicked, void());
   MOCK_METHOD2(DidToggleGallery, void(const MediaGalleryPrefInfo* pref_info,
                                       bool enabled));
-  MOCK_METHOD1(DialogFinished, void(bool));
+  MOCK_METHOD1(DialogFinished, void(bool accepted));
 };
 
-}  // namespace
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_GALLERIES_DIALOG_CONTROLLER_MOCK_H_

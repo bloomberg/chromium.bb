@@ -12,13 +12,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/utf_string_conversions.h"
-#include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/media_galleries/media_file_system_context.h"
@@ -258,7 +253,6 @@ class ExtensionGalleriesHost
     }
   }
 
-  // TODO(kmadhusu): Clean up this code. http://crbug.com/140340.
   // Revoke the file system for |id| if this extension has created one for |id|.
   void RevokeGalleryByPrefId(MediaGalleryPrefId id) {
     PrefIdFsInfoMap::iterator gallery = pref_id_map_.find(id);
