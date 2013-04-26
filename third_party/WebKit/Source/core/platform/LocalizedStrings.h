@@ -181,9 +181,6 @@ namespace WebCore {
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     String validationMessageBadInputForDateTimeText();
 #endif
-#if USE(SOUP)
-    String unacceptableTLSCertificate();
-#endif
 
     String clickToExitFullScreenText();
 

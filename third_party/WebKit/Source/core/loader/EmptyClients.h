@@ -378,12 +378,6 @@ public:
     virtual void textWillBeDeletedInTextField(Element*) { }
     virtual void textDidChangeInTextArea(Element*) { }
 
-#if USE(APPKIT)
-    virtual void uppercaseWord() { }
-    virtual void lowercaseWord() { }
-    virtual void capitalizeWord() { }
-#endif
-
 #if USE(AUTOMATIC_TEXT_REPLACEMENT)
     virtual void showSubstitutionsPanel(bool) { }
     virtual bool substitutionsPanelIsShowing() { return false; }

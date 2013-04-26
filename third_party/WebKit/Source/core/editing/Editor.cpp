@@ -1107,28 +1107,6 @@ int Editor::spellCheckerDocumentTag()
     return client() ? client()->spellCheckerDocumentTag() : 0;
 }
 
-#if USE(APPKIT)
-
-void Editor::uppercaseWord()
-{
-    if (client())
-        client()->uppercaseWord();
-}
-
-void Editor::lowercaseWord()
-{
-    if (client())
-        client()->lowercaseWord();
-}
-
-void Editor::capitalizeWord()
-{
-    if (client())
-        client()->capitalizeWord();
-}
-    
-#endif
-
 #if USE(AUTOMATIC_TEXT_REPLACEMENT)
 
 void Editor::showSubstitutionsPanel()

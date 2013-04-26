@@ -201,10 +201,6 @@ namespace WebCore {
 
         static bool gMockScrollbarsEnabled;
         static bool gUsesOverlayScrollbars;
-
-#if USE(SAFARI_THEME)
-        static bool gShouldPaintNativeControls;
-#endif
     };
 
 } // namespace WebCore

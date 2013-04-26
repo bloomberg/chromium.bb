@@ -31,14 +31,14 @@
 
 namespace WebCore {
 
-TransformSource::TransformSource(const PlatformTransformSource& source)
+TransformSource::TransformSource(xmlDocPtr source)
     : m_source(source)
 {
 }
 
 TransformSource::~TransformSource()
 {
-    xmlFreeDoc((xmlDocPtr)m_source);
+    xmlFreeDoc(m_source);
 }
 
 } // namespace WebCore

@@ -110,12 +110,6 @@ public:
     virtual void textWillBeDeletedInTextField(Element*) = 0;
     virtual void textDidChangeInTextArea(Element*) = 0;
 
-#if USE(APPKIT)
-    virtual void uppercaseWord() = 0;
-    virtual void lowercaseWord() = 0;
-    virtual void capitalizeWord() = 0;
-#endif
-
 #if USE(AUTOMATIC_TEXT_REPLACEMENT)
     virtual void showSubstitutionsPanel(bool show) = 0;
     virtual bool substitutionsPanelIsShowing() = 0;

@@ -300,10 +300,6 @@ float HTMLCanvasElement::targetDeviceScaleFactor() const
 bool HTMLCanvasElement::paintsIntoCanvasBuffer() const
 {
     ASSERT(m_context);
-#if USE(IOSURFACE_CANVAS_BACKING_STORE)
-    if (m_context->is2d())
-        return true;
-#endif
 
     if (!m_context->isAccelerated())
         return true;
