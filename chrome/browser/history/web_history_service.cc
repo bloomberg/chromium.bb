@@ -62,10 +62,10 @@ class RequestImpl : public WebHistoryService::Request,
   typedef base::Callback<void(Request*, bool)> CompletionCallback;
 
   RequestImpl(Profile* profile,
-              const std::string& url,
+              const GURL& url,
               const CompletionCallback& callback)
       : profile_(profile),
-        url_(GURL(url)),
+        url_(url),
         response_code_(0),
         auth_retry_count_(0),
         callback_(callback),
@@ -197,19 +197,10 @@ scoped_ptr<DictionaryValue> ReadResponse(RequestImpl* request) {
     Value* value = base::JSONReader::Read(request->response_body());
     if (value && value->IsType(base::Value::TYPE_DICTIONARY))
       result.reset(static_cast<DictionaryValue*>(value));
+    else
+      DLOG(WARNING) << "Non-JSON response received from history server.";
   }
   return result.Pass();
-}
-
-// Called when a query to web history has completed, successfully or not.
-void QueryHistoryCompletionCallback(
-    const WebHistoryService::QueryWebHistoryCallback& callback,
-    WebHistoryService::Request* request,
-    bool success) {
-  scoped_ptr<DictionaryValue> response_value;
-  if (success)
-    response_value = ReadResponse(static_cast<RequestImpl*>(request));
-  callback.Run(request, response_value.get());
 }
 
 // Converts a time into a string for use as a parameter in a request to the
@@ -222,9 +213,9 @@ std::string ServerTimeString(base::Time time) {
 // |options|. |version_info|, if not empty, should be a token that was received
 // from the server in response to a write operation. It is used to help ensure
 // read consistency after a write.
-std::string GetQueryUrl(const string16& text_query,
-                        const QueryOptions& options,
-                        const std::string& version_info) {
+GURL GetQueryUrl(const string16& text_query,
+                 const QueryOptions& options,
+                 const std::string& version_info) {
   GURL url = GURL(kHistoryQueryHistoryUrl);
   url = net::AppendQueryParameter(url, "titles", "1");
 
@@ -252,7 +243,7 @@ std::string GetQueryUrl(const string16& text_query,
   if (!version_info.empty())
     url = net::AppendQueryParameter(url, "kvi", version_info);
 
-  return url.spec();
+  return url;
 }
 
 // Creates a DictionaryValue to hold the parameters for a deletion.
@@ -280,7 +271,8 @@ WebHistoryService::Request::~Request() {
 }
 
 WebHistoryService::WebHistoryService(Profile* profile)
-    : profile_(profile) {
+    : profile_(profile),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 WebHistoryService::~WebHistoryService() {
@@ -292,26 +284,13 @@ scoped_ptr<WebHistoryService::Request> WebHistoryService::QueryHistory(
     const WebHistoryService::QueryWebHistoryCallback& callback) {
   // Wrap the original callback into a generic completion callback.
   RequestImpl::CompletionCallback completion_callback = base::Bind(
-      &QueryHistoryCompletionCallback, callback);
+      &WebHistoryService::QueryHistoryCompletionCallback, callback);
 
-  std::string url = GetQueryUrl(text_query, options, server_version_info_);
+  GURL url = GetQueryUrl(text_query, options, server_version_info_);
   scoped_ptr<RequestImpl> request(
       new RequestImpl(profile_, url, completion_callback));
   request->Start();
   return request.PassAs<Request>();
-}
-
-void WebHistoryService::ExpireHistoryCompletionCallback(
-    const WebHistoryService::ExpireWebHistoryCallback& callback,
-    WebHistoryService::Request* request,
-    bool success) {
-  scoped_ptr<DictionaryValue> response_value;
-  if (success) {
-    response_value = ReadResponse(static_cast<RequestImpl*>(request));
-    if (response_value.get())
-      response_value->GetString("version_info", &server_version_info_);
-  }
-  callback.Run(request, response_value.get() && success);
 }
 
 scoped_ptr<WebHistoryService::Request> WebHistoryService::ExpireHistory(
@@ -352,13 +331,13 @@ scoped_ptr<WebHistoryService::Request> WebHistoryService::ExpireHistory(
     url = net::AppendQueryParameter(url, "kvi", server_version_info_);
 
   // Wrap the original callback into a generic completion callback.
-  RequestImpl::CompletionCallback completion_callback = base::Bind(
+  RequestImpl::CompletionCallback completion_callback =
       base::Bind(&WebHistoryService::ExpireHistoryCompletionCallback,
-                 base::Unretained(this),
-                 callback));
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback);
 
   scoped_ptr<RequestImpl> request(
-      new RequestImpl(profile_, url.spec(), completion_callback));
+      new RequestImpl(profile_, url, completion_callback));
   request->set_post_data(post_data);
   request->Start();
   return request.PassAs<Request>();
@@ -374,6 +353,30 @@ scoped_ptr<WebHistoryService::Request> WebHistoryService::ExpireHistoryBetween(
   expire_list.back().begin_time = begin_time;
   expire_list.back().end_time = end_time;
   return ExpireHistory(expire_list, callback);
+}
+
+// static
+void WebHistoryService::QueryHistoryCompletionCallback(
+    const WebHistoryService::QueryWebHistoryCallback& callback,
+    WebHistoryService::Request* request,
+    bool success) {
+  scoped_ptr<DictionaryValue> response_value;
+  if (success)
+    response_value = ReadResponse(static_cast<RequestImpl*>(request));
+  callback.Run(request, response_value.get());
+}
+
+void WebHistoryService::ExpireHistoryCompletionCallback(
+    const WebHistoryService::ExpireWebHistoryCallback& callback,
+    WebHistoryService::Request* request,
+    bool success) {
+  scoped_ptr<DictionaryValue> response_value;
+  if (success) {
+    response_value = ReadResponse(static_cast<RequestImpl*>(request));
+    if (response_value.get())
+      response_value->GetString("version_info", &server_version_info_);
+  }
+  callback.Run(request, response_value.get() && success);
 }
 
 }  // namespace history

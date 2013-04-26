@@ -79,6 +79,14 @@ class WebHistoryService : public ProfileKeyedService {
       const ExpireWebHistoryCallback& callback);
 
  private:
+  // Called by |request| when a web history query has completed. Unpacks the
+  // response and calls |callback|, which is the original callback that was
+  // passed to QueryHistory().
+  static void QueryHistoryCompletionCallback(
+      const WebHistoryService::QueryWebHistoryCallback& callback,
+      WebHistoryService::Request* request,
+      bool success);
+
   // Called by |request| when a request to delete history from the server has
   // completed. Unpacks the response and calls |callback|, which is the original
   // callback that was passed to ExpireHistory().
@@ -93,6 +101,8 @@ class WebHistoryService : public ProfileKeyedService {
   // a mutation operation (e.g., deleting history). This is used to ensure that
   // subsequent reads see a version of the data that includes the mutation.
   std::string server_version_info_;
+
+  base::WeakPtrFactory<WebHistoryService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebHistoryService);
 };
