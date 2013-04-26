@@ -203,7 +203,7 @@ void OneClickSigninDialogView::LinkClicked(views::Link* source,
   if (source == learn_more_link_) {
     if (!clicked_learn_more_) {
       OneClickSigninHelper::LogConfirmHistogramValue(
-          one_click_signin::HISTOGRAM_LEARN_MORE);
+          one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE);
       clicked_learn_more_ = true;
     }
     content::OpenURLParams params(
