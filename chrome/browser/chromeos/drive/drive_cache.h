@@ -27,8 +27,8 @@ class SequencedTaskRunner;
 namespace drive {
 
 class CacheMetadata;
+class CacheObserver;
 class DriveCacheEntry;
-class DriveCacheObserver;
 
 // Callback for GetFileFromCache.
 typedef base::Callback<void(FileError error,
@@ -109,10 +109,10 @@ class DriveCache {
   bool IsUnderDriveCacheDirectory(const base::FilePath& path) const;
 
   // Adds observer.
-  void AddObserver(DriveCacheObserver* observer);
+  void AddObserver(CacheObserver* observer);
 
   // Removes observer.
-  void RemoveObserver(DriveCacheObserver* observer);
+  void RemoveObserver(CacheObserver* observer);
 
   // Gets the cache entry for file corresponding to |resource_id| and |md5|
   // and runs |callback| with true and the entry found if entry exists in cache
@@ -386,7 +386,7 @@ class DriveCache {
   scoped_ptr<CacheMetadata> metadata_;
 
   // List of observers, this member must be accessed on UI thread.
-  ObserverList<DriveCacheObserver> observers_;
+  ObserverList<CacheObserver> observers_;
 
   FreeDiskSpaceGetterInterface* free_disk_space_getter_;  // Not owned.
 

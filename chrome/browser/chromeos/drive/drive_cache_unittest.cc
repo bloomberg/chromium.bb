@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/drive/drive_file_system.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/drive/mock_drive_cache_observer.h"
+#include "chrome/browser/chromeos/drive/mock_cache_observer.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/common/chrome_paths.h"
@@ -115,7 +115,7 @@ class DriveCacheTest : public testing::Test {
                                 blocking_task_runner_,
                                 fake_free_disk_space_getter_.get()));
 
-    mock_cache_observer_.reset(new StrictMock<MockDriveCacheObserver>);
+    mock_cache_observer_.reset(new StrictMock<MockCacheObserver>);
     cache_->AddObserver(mock_cache_observer_.get());
 
     bool success = false;
@@ -631,7 +631,7 @@ class DriveCacheTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<DriveCache, test_util::DestroyHelperForTests> cache_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
-  scoped_ptr<StrictMock<MockDriveCacheObserver> > mock_cache_observer_;
+  scoped_ptr<StrictMock<MockCacheObserver> > mock_cache_observer_;
 
   FileError expected_error_;
   int expected_cache_state_;

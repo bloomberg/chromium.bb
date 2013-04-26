@@ -23,8 +23,8 @@
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
+#include "chrome/browser/chromeos/drive/mock_cache_observer.h"
 #include "chrome/browser/chromeos/drive/mock_directory_change_observer.h"
-#include "chrome/browser/chromeos/drive/mock_drive_cache_observer.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/fake_drive_service.h"
@@ -149,7 +149,7 @@ class DriveFileSystemTest : public testing::Test {
 
     drive_webapps_registry_.reset(new DriveWebAppsRegistry);
 
-    mock_cache_observer_.reset(new StrictMock<MockDriveCacheObserver>);
+    mock_cache_observer_.reset(new StrictMock<MockCacheObserver>);
     cache_->AddObserver(mock_cache_observer_.get());
 
     mock_directory_observer_.reset(new StrictMock<MockDirectoryChangeObserver>);
@@ -454,7 +454,7 @@ class DriveFileSystemTest : public testing::Test {
   scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
-  scoped_ptr<StrictMock<MockDriveCacheObserver> > mock_cache_observer_;
+  scoped_ptr<StrictMock<MockCacheObserver> > mock_cache_observer_;
   scoped_ptr<StrictMock<MockDirectoryChangeObserver> > mock_directory_observer_;
 
   int root_feed_changestamp_;

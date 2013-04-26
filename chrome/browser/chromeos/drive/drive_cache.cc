@@ -13,8 +13,8 @@
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/cache_metadata.h"
+#include "chrome/browser/chromeos/drive/cache_observer.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_cache_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -241,12 +241,12 @@ bool DriveCache::IsUnderDriveCacheDirectory(const base::FilePath& path) const {
   return cache_root_path_ == path || cache_root_path_.IsParent(path);
 }
 
-void DriveCache::AddObserver(DriveCacheObserver* observer) {
+void DriveCache::AddObserver(CacheObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.AddObserver(observer);
 }
 
-void DriveCache::RemoveObserver(DriveCacheObserver* observer) {
+void DriveCache::RemoveObserver(CacheObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.RemoveObserver(observer);
 }
@@ -1101,7 +1101,7 @@ void DriveCache::OnPinned(const std::string& resource_id,
   callback.Run(error);
 
   if (error == FILE_ERROR_OK)
-    FOR_EACH_OBSERVER(DriveCacheObserver,
+    FOR_EACH_OBSERVER(CacheObserver,
                       observers_,
                       OnCachePinned(resource_id, md5));
 }
@@ -1116,7 +1116,7 @@ void DriveCache::OnUnpinned(const std::string& resource_id,
   callback.Run(error);
 
   if (error == FILE_ERROR_OK)
-    FOR_EACH_OBSERVER(DriveCacheObserver,
+    FOR_EACH_OBSERVER(CacheObserver,
                       observers_,
                       OnCacheUnpinned(resource_id, md5));
 
@@ -1139,7 +1139,7 @@ void DriveCache::OnCommitDirty(const std::string& resource_id,
   callback.Run(error);
 
   if (error == FILE_ERROR_OK)
-    FOR_EACH_OBSERVER(DriveCacheObserver,
+    FOR_EACH_OBSERVER(CacheObserver,
                       observers_,
                       OnCacheCommitted(resource_id));
 }
