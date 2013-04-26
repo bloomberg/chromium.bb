@@ -25,9 +25,9 @@
 #ifndef StyledElement_h
 #define StyledElement_h
 
-#include "CSSPrimitiveValue.h"
 #include "CSSPropertyNames.h"
 #include "Element.h"
+#include "core/css/CSSPrimitiveValue.h"
 
 namespace WebCore {
 

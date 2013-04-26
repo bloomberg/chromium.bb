@@ -26,7 +26,6 @@
 #if ENABLE(SVG)
 #include "SVGElement.h"
 
-#include "CSSCursorImageValue.h"
 #include "DOMImplementation.h"
 #include "Document.h"
 #include "Event.h"
@@ -42,6 +41,7 @@
 #include "SVGTextElement.h"
 #include "ScriptEventListener.h"
 #include "XMLNames.h"
+#include "core/css/CSSCursorImageValue.h"
 #include "core/rendering/RenderObject.h"
 
 namespace WebCore {

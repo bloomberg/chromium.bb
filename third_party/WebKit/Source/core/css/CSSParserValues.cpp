@@ -19,13 +19,13 @@
  */
 
 #include "config.h"
-#include "CSSParserValues.h"
+#include "core/css/CSSParserValues.h"
 
-#include "CSSPrimitiveValue.h"
-#include "CSSFunctionValue.h"
-#include "CSSSelector.h"
-#include "CSSSelectorList.h"
-#include "CSSVariableValue.h"
+#include "core/css/CSSFunctionValue.h"
+#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSSelector.h"
+#include "core/css/CSSSelectorList.h"
+#include "core/css/CSSVariableValue.h"
 
 namespace WebCore {
 

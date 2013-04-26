@@ -31,12 +31,12 @@
 #ifndef InsertionPoint_h
 #define InsertionPoint_h
 
-#include "CSSSelectorList.h"
 #include "ContentDistributor.h"
 #include "ElementShadow.h"
 #include "HTMLElement.h"
 #include "HTMLNames.h"
 #include "ShadowRoot.h"
+#include "core/css/CSSSelectorList.h"
 #include <wtf/Forward.h>
 
 namespace WebCore {

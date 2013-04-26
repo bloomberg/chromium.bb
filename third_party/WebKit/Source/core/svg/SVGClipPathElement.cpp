@@ -29,7 +29,7 @@
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
 #include "SVGTransformList.h"
-#include "StyleResolver.h"
+#include "core/css/StyleResolver.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 
 namespace WebCore {

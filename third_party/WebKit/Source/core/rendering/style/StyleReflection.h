@@ -25,7 +25,7 @@
 #ifndef StyleReflection_h
 #define StyleReflection_h
 
-#include "CSSReflectionDirection.h"
+#include "core/css/CSSReflectionDirection.h"
 #include "core/platform/Length.h"
 #include "core/rendering/style/NinePieceImage.h"
 #include <wtf/RefCounted.h>

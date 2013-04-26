@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-#include "CSSImageGeneratorValue.h"
+#include "core/css/CSSImageGeneratorValue.h"
 
-#include "CSSCanvasValue.h"
-#include "CSSCrossfadeValue.h"
-#include "CSSGradientValue.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/css/CSSCanvasValue.h"
+#include "core/css/CSSCrossfadeValue.h"
+#include "core/css/CSSGradientValue.h"
 #include "core/platform/graphics/Image.h"
 #include "core/rendering/RenderObject.h"
 #include <wtf/MemoryInstrumentationHashCountedSet.h>

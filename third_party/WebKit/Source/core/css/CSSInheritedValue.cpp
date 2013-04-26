@@ -19,7 +19,7 @@
  */
 
 #include "config.h"
-#include "CSSInheritedValue.h"
+#include "core/css/CSSInheritedValue.h"
 
 #include "WebCoreMemoryInstrumentation.h"
 #include <wtf/text/WTFString.h>

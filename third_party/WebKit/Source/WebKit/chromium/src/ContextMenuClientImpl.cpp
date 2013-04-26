@@ -32,7 +32,6 @@
 #include "ContextMenuClientImpl.h"
 
 #include "CSSPropertyNames.h"
-#include "CSSStyleDeclaration.h"
 #include "Document.h"
 #include "DocumentMarkerController.h"
 #include "ExceptionCodePlaceholder.h"
@@ -53,6 +52,7 @@
 #include "WebSpellCheckClient.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "core/css/CSSStyleDeclaration.h"
 #include "core/editing/Editor.h"
 #include "core/history/HistoryItem.h"
 #include "core/loader/DocumentLoader.h"

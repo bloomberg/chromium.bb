@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "WebKitCSSTransformValue.h"
+#include "core/css/WebKitCSSTransformValue.h"
 
-#include "CSSValueList.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/css/CSSValueList.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/text/WTFString.h>
 

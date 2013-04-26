@@ -24,14 +24,14 @@
  */
 
 #include "config.h"
-#include "WebKitCSSMatrix.h"
+#include "core/css/WebKitCSSMatrix.h"
 
-#include "CSSParser.h"
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "ExceptionCode.h"
-#include "StylePropertySet.h"
-#include "StyleResolver.h"
+#include "core/css/CSSParser.h"
+#include "core/css/StylePropertySet.h"
+#include "core/css/StyleResolver.h"
 #include <wtf/MathExtras.h>
 
 namespace WebCore {

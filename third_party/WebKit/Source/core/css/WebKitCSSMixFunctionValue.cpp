@@ -28,7 +28,7 @@
  */
 
 #include "config.h"
-#include "WebKitCSSMixFunctionValue.h"
+#include "core/css/WebKitCSSMixFunctionValue.h"
 
 #include "WebCoreMemoryInstrumentation.h"
 

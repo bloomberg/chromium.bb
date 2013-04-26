@@ -27,10 +27,10 @@
 #include "Position.h"
 
 #include <stdio.h>
-#include "CSSComputedStyleDeclaration.h"
 #include "HTMLNames.h"
 #include "PositionIterator.h"
 #include "Text.h"
+#include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"

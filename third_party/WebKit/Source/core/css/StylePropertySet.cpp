@@ -20,18 +20,18 @@
  */
 
 #include "config.h"
-#include "StylePropertySet.h"
+#include "core/css/StylePropertySet.h"
 
-#include "core/page/RuntimeCSSEnabled.h"
-#include "CSSParser.h"
 #include "CSSValueKeywords.h"
-#include "CSSValueList.h"
-#include "CSSValuePool.h"
-#include "CSSVariableValue.h"
 #include "Document.h"
-#include "PropertySetCSSStyleDeclaration.h"
-#include "StylePropertyShorthand.h"
-#include "StyleSheetContents.h"
+#include "core/css/CSSParser.h"
+#include "core/css/CSSValueList.h"
+#include "core/css/CSSValuePool.h"
+#include "core/css/CSSVariableValue.h"
+#include "core/css/PropertySetCSSStyleDeclaration.h"
+#include "core/css/StylePropertyShorthand.h"
+#include "core/css/StyleSheetContents.h"
+#include "core/page/RuntimeCSSEnabled.h"
 #include <wtf/BitArray.h>
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/text/StringBuilder.h>

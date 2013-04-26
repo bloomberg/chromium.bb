@@ -21,7 +21,7 @@
 #ifndef Counter_h
 #define Counter_h
 
-#include "CSSPrimitiveValue.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

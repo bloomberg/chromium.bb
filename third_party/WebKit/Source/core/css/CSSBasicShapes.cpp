@@ -29,8 +29,8 @@
 
 #include "config.h"
 
-#include "CSSBasicShapes.h"
-#include "CSSPrimitiveValueMappings.h"
+#include "core/css/CSSBasicShapes.h"
+#include "core/css/CSSPrimitiveValueMappings.h"
 
 #include <wtf/text/StringBuilder.h>
 

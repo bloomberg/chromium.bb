@@ -22,7 +22,7 @@
 #define CSSProperty_h
 
 #include "CSSPropertyNames.h"
-#include "CSSValue.h"
+#include "core/css/CSSValue.h"
 #include "core/platform/text/TextDirection.h"
 #include "core/platform/text/WritingMode.h"
 #include "core/rendering/style/RenderStyleConstants.h"

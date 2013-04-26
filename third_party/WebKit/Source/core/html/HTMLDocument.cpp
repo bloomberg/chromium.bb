@@ -63,7 +63,7 @@
 #include "HTMLNames.h"
 #include "InspectorInstrumentation.h"
 #include "ScriptController.h"
-#include "StyleResolver.h"
+#include "core/css/StyleResolver.h"
 #include "core/loader/CookieJar.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"

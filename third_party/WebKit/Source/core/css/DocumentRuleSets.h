@@ -23,8 +23,8 @@
 #ifndef DocumentRuleSets_h
 #define DocumentRuleSets_h
 
-#include "RuleFeature.h"
-#include "RuleSet.h"
+#include "core/css/RuleFeature.h"
+#include "core/css/RuleSet.h"
 
 #include <wtf/OwnPtr.h>
 #include <wtf/RefPtr.h>

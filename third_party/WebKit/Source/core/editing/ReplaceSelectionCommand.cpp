@@ -29,7 +29,6 @@
 
 #include "BeforeTextInsertedEvent.h"
 #include "CSSPropertyNames.h"
-#include "CSSStyleDeclaration.h"
 #include "CSSValueKeywords.h"
 #include "Document.h"
 #include "DocumentFragment.h"
@@ -42,8 +41,9 @@
 #include "NodeList.h"
 #include "NodeRenderStyle.h"
 #include "NodeTraversal.h"
-#include "StylePropertySet.h"
 #include "Text.h"
+#include "core/css/CSSStyleDeclaration.h"
+#include "core/css/StylePropertySet.h"
 #include "core/editing/ApplyStyleCommand.h"
 #include "core/editing/BreakBlockquoteCommand.h"
 #include "core/editing/FrameSelection.h"

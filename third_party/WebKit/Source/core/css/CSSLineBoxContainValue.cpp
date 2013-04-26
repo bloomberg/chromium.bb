@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "CSSLineBoxContainValue.h"
+#include "core/css/CSSLineBoxContainValue.h"
 
-#include "CSSPrimitiveValue.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/WTFString.h>
 

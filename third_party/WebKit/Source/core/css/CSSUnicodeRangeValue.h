@@ -26,7 +26,7 @@
 #ifndef CSSUnicodeRangeValue_h
 #define CSSUnicodeRangeValue_h
 
-#include "CSSValue.h"
+#include "core/css/CSSValue.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/unicode/Unicode.h>
 

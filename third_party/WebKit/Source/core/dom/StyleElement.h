@@ -21,7 +21,7 @@
 #ifndef StyleElement_h
 #define StyleElement_h
 
-#include "CSSStyleSheet.h"
+#include "core/css/CSSStyleSheet.h"
 #include <wtf/text/TextPosition.h>
 
 namespace WebCore {

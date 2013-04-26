@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "CSSFontFaceLoadEvent.h"
+#include "core/css/CSSFontFaceLoadEvent.h"
 
 namespace WebCore {
 

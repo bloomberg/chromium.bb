@@ -26,9 +26,9 @@
 #include "Attribute.h"
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-#include "CSSValuePool.h"
 #include "HTMLNames.h"
-#include "StylePropertySet.h"
+#include "core/css/CSSValuePool.h"
+#include "core/css/StylePropertySet.h"
 
 namespace WebCore {
 

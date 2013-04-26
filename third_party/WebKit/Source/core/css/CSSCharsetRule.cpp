@@ -19,7 +19,7 @@
  */
 
 #include "config.h"
-#include "CSSCharsetRule.h"
+#include "core/css/CSSCharsetRule.h"
 
 #include "WebCoreMemoryInstrumentation.h"
 

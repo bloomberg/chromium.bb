@@ -19,14 +19,14 @@
  */
 
 #include "config.h"
-#include "CSSImageValue.h"
+#include "core/css/CSSImageValue.h"
 
-#include "CSSCursorImageValue.h"
-#include "CSSParser.h"
 #include "CSSValueKeywords.h"
 #include "Document.h"
 #include "Element.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/css/CSSCursorImageValue.h"
+#include "core/css/CSSParser.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"

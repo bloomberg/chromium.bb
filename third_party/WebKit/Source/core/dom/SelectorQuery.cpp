@@ -26,14 +26,14 @@
 #include "config.h"
 #include "SelectorQuery.h"
 
-#include "CSSParser.h"
-#include "CSSSelectorList.h"
 #include "Document.h"
-#include "SelectorChecker.h"
-#include "SelectorCheckerFastPath.h"
-#include "SiblingTraversalStrategies.h"
 #include "StaticNodeList.h"
 #include "StyledElement.h"
+#include "core/css/CSSParser.h"
+#include "core/css/CSSSelectorList.h"
+#include "core/css/SelectorChecker.h"
+#include "core/css/SelectorCheckerFastPath.h"
+#include "core/css/SiblingTraversalStrategies.h"
 
 namespace WebCore {
 

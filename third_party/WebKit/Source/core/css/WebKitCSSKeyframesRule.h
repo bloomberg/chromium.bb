@@ -26,8 +26,8 @@
 #ifndef WebKitCSSKeyframesRule_h
 #define WebKitCSSKeyframesRule_h
 
-#include "CSSRule.h"
-#include "StyleRule.h"
+#include "core/css/CSSRule.h"
+#include "core/css/StyleRule.h"
 #include <wtf/Forward.h>
 #include <wtf/text/AtomicString.h>
 

@@ -24,7 +24,7 @@
 #ifndef StyleImage_h
 #define StyleImage_h
 
-#include "CSSValue.h"
+#include "core/css/CSSValue.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/IntSize.h"
 #include "core/platform/graphics/LayoutSize.h"

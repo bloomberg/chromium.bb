@@ -27,11 +27,11 @@
  */
 
 #include "config.h"
-#include "PageRuleCollector.h"
+#include "core/css/PageRuleCollector.h"
 
-#include "CSSDefaultStyleSheets.h"
-#include "StylePropertySet.h"
-#include "StyleRule.h"
+#include "core/css/CSSDefaultStyleSheets.h"
+#include "core/css/StylePropertySet.h"
+#include "core/css/StyleRule.h"
 
 namespace WebCore {
 

@@ -24,10 +24,10 @@
 #if ENABLE(SVG)
 #include "SVGColor.h"
 
-#include "CSSParser.h"
-#include "RGBColor.h"
 #include "SVGException.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/css/CSSParser.h"
+#include "core/css/RGBColor.h"
 
 namespace WebCore {
 

@@ -30,11 +30,11 @@
 
 #include "config.h"
 
-#include "WebKitCSSRegionRule.h"
+#include "core/css/WebKitCSSRegionRule.h"
 
-#include "CSSParser.h"
-#include "CSSRuleList.h"
-#include "StyleRule.h"
+#include "core/css/CSSParser.h"
+#include "core/css/CSSRuleList.h"
+#include "core/css/StyleRule.h"
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/text/StringBuilder.h>
 

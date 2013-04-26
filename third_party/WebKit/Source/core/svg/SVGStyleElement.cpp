@@ -26,10 +26,10 @@
 #include "SVGStyleElement.h"
 
 #include "Attribute.h"
-#include "CSSStyleSheet.h"
 #include "Document.h"
 #include "ExceptionCode.h"
 #include "SVGNames.h"
+#include "core/css/CSSStyleSheet.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {

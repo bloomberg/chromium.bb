@@ -30,7 +30,7 @@
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
 #include "SVGUnitTypes.h"
-#include "StyleResolver.h"
+#include "core/css/StyleResolver.h"
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 

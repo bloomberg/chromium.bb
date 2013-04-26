@@ -21,9 +21,9 @@
 #ifndef Pair_h
 #define Pair_h
 
-#include <wtf/RefCounted.h>
-#include "CSSPrimitiveValue.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include <wtf/PassRefPtr.h>
+#include <wtf/RefCounted.h>
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

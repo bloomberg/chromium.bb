@@ -19,22 +19,22 @@
  */
 
 #include "config.h"
-#include "CSSPrimitiveValue.h"
+#include "core/css/CSSPrimitiveValue.h"
 
-#include "CSSBasicShapes.h"
-#include "CSSCalculationValue.h"
-#include "CSSHelper.h"
-#include "CSSParser.h"
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-#include "Counter.h"
 #include "ExceptionCode.h"
 #include "Node.h"
-#include "Pair.h"
-#include "RGBColor.h"
-#include "Rect.h"
-#include "StyleSheetContents.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/css/CSSBasicShapes.h"
+#include "core/css/CSSCalculationValue.h"
+#include "core/css/CSSHelper.h"
+#include "core/css/CSSParser.h"
+#include "core/css/Counter.h"
+#include "core/css/Pair.h"
+#include "core/css/RGBColor.h"
+#include "core/css/Rect.h"
+#include "core/css/StyleSheetContents.h"
 #include "core/platform/CalculationValue.h"
 #include "core/platform/LayoutUnit.h"
 #include "core/platform/graphics/Color.h"
@@ -125,7 +125,7 @@ static inline bool isValidCSSUnitTypeForDoubleConversion(CSSPrimitiveValue::Unit
 static CSSPrimitiveValue::UnitCategory unitCategory(CSSPrimitiveValue::UnitTypes type)
 {
     // Here we violate the spec (http://www.w3.org/TR/DOM-Level-2-Style/css.html#CSS-CSSPrimitiveValue) and allow conversions
-    // between CSS_PX and relative lengths (see cssPixelsPerInch comment in CSSHelper.h for the topic treatment).
+    // between CSS_PX and relative lengths (see cssPixelsPerInch comment in core/css/CSSHelper.h for the topic treatment).
     switch (type) {
     case CSSPrimitiveValue::CSS_NUMBER:
         return CSSPrimitiveValue::UNumber;

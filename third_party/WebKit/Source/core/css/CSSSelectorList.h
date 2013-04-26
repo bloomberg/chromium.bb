@@ -26,7 +26,7 @@
 #ifndef CSSSelectorList_h
 #define CSSSelectorList_h
 
-#include "CSSSelector.h"
+#include "core/css/CSSSelector.h"
 
 namespace WebCore {
 

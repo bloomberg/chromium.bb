@@ -24,13 +24,13 @@
  */
 
 #include "config.h"
-#include "CSSFontFace.h"
+#include "core/css/CSSFontFace.h"
 
-#include "CSSFontFaceSource.h"
-#include "CSSFontSelector.h"
-#include "CSSSegmentedFontFace.h"
 #include "Document.h"
-#include "FontLoader.h"
+#include "core/css/CSSFontFaceSource.h"
+#include "core/css/CSSFontSelector.h"
+#include "core/css/CSSSegmentedFontFace.h"
+#include "core/css/FontLoader.h"
 #include "core/page/RuntimeEnabledFeatures.h"
 #include "core/platform/graphics/FontDescription.h"
 #include "core/platform/graphics/SimpleFontData.h"

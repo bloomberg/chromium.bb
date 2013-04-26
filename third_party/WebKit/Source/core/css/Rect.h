@@ -21,7 +21,7 @@
 #ifndef Rect_h
 #define Rect_h
 
-#include "CSSPrimitiveValue.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include <wtf/RefPtr.h>
 #include <wtf/text/StringBuilder.h>
 

@@ -19,18 +19,18 @@
  */
 
 #include "config.h"
-#include "StyleSheetContents.h"
+#include "core/css/StyleSheetContents.h"
 
-#include "CSSImportRule.h"
-#include "CSSParser.h"
-#include "CSSStyleSheet.h"
 #include "Document.h"
-#include "MediaList.h"
 #include "Node.h"
-#include "StylePropertySet.h"
-#include "StyleRule.h"
-#include "StyleRuleImport.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/css/CSSImportRule.h"
+#include "core/css/CSSParser.h"
+#include "core/css/CSSStyleSheet.h"
+#include "core/css/MediaList.h"
+#include "core/css/StylePropertySet.h"
+#include "core/css/StyleRule.h"
+#include "core/css/StyleRuleImport.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"
 #include "core/page/SecurityOrigin.h"
 #include <wtf/Deque.h>

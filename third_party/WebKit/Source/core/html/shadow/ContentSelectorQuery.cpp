@@ -27,11 +27,11 @@
 #include "config.h"
 #include "ContentSelectorQuery.h"
 
-#include "CSSSelectorList.h"
 #include "InsertionPoint.h"
-#include "SelectorChecker.h"
 #include "ShadowRoot.h"
-#include "SiblingTraversalStrategies.h"
+#include "core/css/CSSSelectorList.h"
+#include "core/css/SelectorChecker.h"
+#include "core/css/SiblingTraversalStrategies.h"
 
 namespace WebCore {
 

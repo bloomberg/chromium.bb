@@ -29,8 +29,8 @@
 
 #include "CanvasPattern.h"
 #include "CanvasStyle.h"
-#include "CSSParser.h"
 #include "ExceptionCode.h"
+#include "core/css/CSSParser.h"
 
 namespace WebCore {
 

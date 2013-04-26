@@ -26,8 +26,8 @@
 #ifndef CSSFontFace_h
 #define CSSFontFace_h
 
-#include "CSSFontFaceRule.h"
-#include "CSSFontFaceSource.h"
+#include "core/css/CSSFontFaceRule.h"
+#include "core/css/CSSFontFaceSource.h"
 #include "core/platform/graphics/FontTraitsMask.h"
 #include <wtf/Forward.h>
 #include <wtf/HashSet.h>

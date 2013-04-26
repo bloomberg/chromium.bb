@@ -26,11 +26,8 @@
 #include "HTMLTableElement.h"
 
 #include "Attribute.h"
-#include "CSSImageValue.h"
 #include "CSSPropertyNames.h"
-#include "CSSStyleSheet.h"
 #include "CSSValueKeywords.h"
-#include "CSSValuePool.h"
 #include "ExceptionCode.h"
 #include "ExceptionCodePlaceholder.h"
 #include "HTMLNames.h"
@@ -39,8 +36,11 @@
 #include "HTMLTableRowElement.h"
 #include "HTMLTableRowsCollection.h"
 #include "HTMLTableSectionElement.h"
-#include "StylePropertySet.h"
 #include "Text.h"
+#include "core/css/CSSImageValue.h"
+#include "core/css/CSSStyleSheet.h"
+#include "core/css/CSSValuePool.h"
+#include "core/css/StylePropertySet.h"
 #include "core/rendering/RenderTable.h"
 
 namespace WebCore {

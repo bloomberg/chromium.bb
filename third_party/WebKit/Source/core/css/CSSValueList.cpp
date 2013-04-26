@@ -19,10 +19,10 @@
  */
 
 #include "config.h"
-#include "CSSValueList.h"
+#include "core/css/CSSValueList.h"
 
-#include "CSSParserValues.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/css/CSSParserValues.h"
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/StringBuilder.h>

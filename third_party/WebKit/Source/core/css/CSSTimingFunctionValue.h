@@ -26,7 +26,7 @@
 #ifndef CSSTimingFunctionValue_h
 #define CSSTimingFunctionValue_h
 
-#include "CSSValue.h"
+#include "core/css/CSSValue.h"
 #include <wtf/PassRefPtr.h>
 
 namespace WebCore {

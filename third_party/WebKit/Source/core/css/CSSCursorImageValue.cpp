@@ -20,11 +20,11 @@
  */
 
 #include "config.h"
-#include "CSSCursorImageValue.h"
+#include "core/css/CSSCursorImageValue.h"
 
-#include "CSSImageValue.h"
 #include "TreeScope.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/css/CSSImageValue.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/rendering/style/StyleCachedImage.h"
@@ -43,7 +43,7 @@
 #endif
 
 #if ENABLE(CSS_IMAGE_SET)
-#include "CSSImageSetValue.h"
+#include "core/css/CSSImageSetValue.h"
 #include "core/rendering/style/StyleCachedImageSet.h"
 #endif
 

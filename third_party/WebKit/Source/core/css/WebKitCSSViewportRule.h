@@ -33,7 +33,7 @@
 
 #if ENABLE(CSS_DEVICE_ADAPTATION)
 
-#include "CSSRule.h"
+#include "core/css/CSSRule.h"
 
 namespace WebCore {
 

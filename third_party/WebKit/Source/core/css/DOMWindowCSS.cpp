@@ -28,11 +28,11 @@
  */
 
 #include "config.h"
-#include "DOMWindowCSS.h"
+#include "core/css/DOMWindowCSS.h"
 
-#include "CSSParser.h"
+#include "core/css/CSSParser.h"
+#include "core/css/StylePropertySet.h"
 #include "core/page/RuntimeCSSEnabled.h"
-#include "StylePropertySet.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

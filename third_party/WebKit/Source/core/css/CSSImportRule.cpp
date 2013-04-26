@@ -20,14 +20,14 @@
  */
 
 #include "config.h"
-#include "CSSImportRule.h"
+#include "core/css/CSSImportRule.h"
 
-#include "CSSStyleSheet.h"
 #include "Document.h"
-#include "MediaList.h"
-#include "StyleRuleImport.h"
-#include "StyleSheetContents.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/css/CSSStyleSheet.h"
+#include "core/css/MediaList.h"
+#include "core/css/StyleRuleImport.h"
+#include "core/css/StyleSheetContents.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/page/SecurityOrigin.h"

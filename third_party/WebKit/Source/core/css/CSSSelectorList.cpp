@@ -25,10 +25,10 @@
  */
 
 #include "config.h"
-#include "CSSSelectorList.h"
+#include "core/css/CSSSelectorList.h"
 
-#include "CSSParserValues.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/css/CSSParserValues.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

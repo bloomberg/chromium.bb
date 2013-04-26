@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "SelectorCheckerFastPath.h"
+#include "core/css/SelectorCheckerFastPath.h"
 
 #include "HTMLDocument.h"
 #include "HTMLNames.h"

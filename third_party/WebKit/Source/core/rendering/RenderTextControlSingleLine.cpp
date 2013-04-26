@@ -24,11 +24,11 @@
 #include "config.h"
 #include "core/rendering/RenderTextControlSingleLine.h"
 
-#include "CSSFontSelector.h"
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
-#include "StyleResolver.h"
 #include "TextControlInnerElements.h"
+#include "core/css/CSSFontSelector.h"
+#include "core/css/StyleResolver.h"
 #include "core/editing/FrameSelection.h"
 #include "core/page/Chrome.h"
 #include "core/page/Frame.h"

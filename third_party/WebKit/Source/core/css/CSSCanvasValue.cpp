@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "CSSCanvasValue.h"
+#include "core/css/CSSCanvasValue.h"
 
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/platform/graphics/ImageBuffer.h"

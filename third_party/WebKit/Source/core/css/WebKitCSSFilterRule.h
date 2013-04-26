@@ -30,7 +30,7 @@
 #ifndef WebKitCSSFilterRule_h
 #define WebKitCSSFilterRule_h
 
-#include "CSSRule.h"
+#include "core/css/CSSRule.h"
 
 namespace WebCore {
 

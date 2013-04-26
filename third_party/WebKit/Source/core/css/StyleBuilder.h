@@ -26,7 +26,7 @@
 #define StyleBuilder_h
 
 #include "CSSPropertyNames.h"
-#include "StylePropertyShorthand.h"
+#include "core/css/StylePropertyShorthand.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 

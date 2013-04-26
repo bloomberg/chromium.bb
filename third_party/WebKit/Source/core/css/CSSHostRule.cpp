@@ -21,7 +21,7 @@
  */
 
 #include "config.h"
-#include "CSSHostRule.h"
+#include "core/css/CSSHostRule.h"
 
 #include <wtf/text/StringBuilder.h>
 

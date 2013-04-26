@@ -22,7 +22,7 @@
 #ifndef CSSPrimitiveValue_h
 #define CSSPrimitiveValue_h
 
-#include "CSSValue.h"
+#include "core/css/CSSValue.h"
 #include "core/platform/graphics/Color.h"
 #include <wtf/Forward.h>
 #include <wtf/MathExtras.h>

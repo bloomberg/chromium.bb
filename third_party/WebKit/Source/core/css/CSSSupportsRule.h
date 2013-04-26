@@ -29,7 +29,7 @@
 #ifndef CSSSupportsRule_h
 #define CSSSupportsRule_h
 
-#include "CSSGroupingRule.h"
+#include "core/css/CSSGroupingRule.h"
 
 namespace WebCore {
 

@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-#include "CSSValuePool.h"
+#include "core/css/CSSValuePool.h"
 
-#include "CSSParser.h"
-#include "CSSStyleSheet.h"
 #include "CSSValueKeywords.h"
-#include "CSSValueList.h"
+#include "core/css/CSSParser.h"
+#include "core/css/CSSStyleSheet.h"
+#include "core/css/CSSValueList.h"
 
 namespace WebCore {
 

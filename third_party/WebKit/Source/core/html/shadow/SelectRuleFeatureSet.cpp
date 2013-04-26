@@ -31,7 +31,7 @@
 #include "config.h"
 #include "SelectRuleFeatureSet.h"
 
-#include "CSSSelector.h"
+#include "core/css/CSSSelector.h"
 
 namespace WebCore {
 

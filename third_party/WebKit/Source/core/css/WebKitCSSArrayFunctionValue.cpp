@@ -28,7 +28,7 @@
  */
 
 #include "config.h"
-#include "WebKitCSSArrayFunctionValue.h"
+#include "core/css/WebKitCSSArrayFunctionValue.h"
 
 #include "WebCoreMemoryInstrumentation.h"
 

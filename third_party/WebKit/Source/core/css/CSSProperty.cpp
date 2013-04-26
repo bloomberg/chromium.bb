@@ -19,12 +19,12 @@
  */
 
 #include "config.h"
-#include "CSSProperty.h"
+#include "core/css/CSSProperty.h"
 
-#include "CSSValueList.h"
-#include "CSSVariableValue.h"
-#include "StylePropertyShorthand.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/css/CSSValueList.h"
+#include "core/css/CSSVariableValue.h"
+#include "core/css/StylePropertyShorthand.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 
 #include <wtf/text/StringBuilder.h>

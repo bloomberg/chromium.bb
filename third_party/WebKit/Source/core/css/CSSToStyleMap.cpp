@@ -26,16 +26,16 @@
  */
 
 #include "config.h"
-#include "CSSToStyleMap.h"
+#include "core/css/CSSToStyleMap.h"
 
-#include "CSSBorderImageSliceValue.h"
-#include "CSSPrimitiveValue.h"
-#include "CSSPrimitiveValueMappings.h"
-#include "CSSTimingFunctionValue.h"
 #include "CSSValueKeywords.h"
-#include "Pair.h"
-#include "Rect.h"
-#include "StyleResolver.h"
+#include "core/css/CSSBorderImageSliceValue.h"
+#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSPrimitiveValueMappings.h"
+#include "core/css/CSSTimingFunctionValue.h"
+#include "core/css/Pair.h"
+#include "core/css/Rect.h"
+#include "core/css/StyleResolver.h"
 #include "core/platform/animation/Animation.h"
 #include "core/rendering/style/FillLayer.h"
 

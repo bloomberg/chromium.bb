@@ -26,10 +26,10 @@
 #ifndef SelectorQuery_h
 #define SelectorQuery_h
 
-#include "CSSSelectorList.h"
+#include "core/css/CSSSelectorList.h"
 #include <wtf/HashMap.h>
-#include <wtf/Vector.h>
 #include <wtf/text/AtomicStringHash.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

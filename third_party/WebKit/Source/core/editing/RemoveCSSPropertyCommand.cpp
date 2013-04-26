@@ -26,10 +26,10 @@
 #include "config.h"
 #include "core/editing/RemoveCSSPropertyCommand.h"
 
-#include "CSSStyleDeclaration.h"
 #include "ExceptionCodePlaceholder.h"
-#include "StylePropertySet.h"
 #include "StyledElement.h"
+#include "core/css/CSSStyleDeclaration.h"
+#include "core/css/StylePropertySet.h"
 #include <wtf/Assertions.h>
 
 namespace WebCore {

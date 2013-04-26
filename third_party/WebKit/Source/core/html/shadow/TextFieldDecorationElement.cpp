@@ -39,7 +39,7 @@
 #include "HTMLShadowElement.h"
 #include "NodeRenderStyle.h"
 #include "ShadowRoot.h"
-#include "StyleResolver.h"
+#include "core/css/StyleResolver.h"
 #include "core/rendering/RenderImage.h"
 
 namespace WebCore {

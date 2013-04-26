@@ -22,7 +22,7 @@
 #ifndef StyleRuleImport_h
 #define StyleRuleImport_h
 
-#include "StyleRule.h"
+#include "core/css/StyleRule.h"
 #include "core/loader/cache/CachedResourceHandle.h"
 #include "core/loader/cache/CachedStyleSheetClient.h"
 

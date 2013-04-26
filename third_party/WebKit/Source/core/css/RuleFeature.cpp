@@ -27,10 +27,10 @@
  */
 
 #include "config.h"
-#include "RuleFeature.h"
+#include "core/css/RuleFeature.h"
 
-#include "CSSSelector.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/css/CSSSelector.h"
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationHashSet.h>
 #include <wtf/MemoryInstrumentationVector.h>

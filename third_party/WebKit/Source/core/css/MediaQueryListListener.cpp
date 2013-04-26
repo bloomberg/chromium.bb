@@ -18,10 +18,10 @@
  */
 
 #include "config.h"
-#include "MediaQueryListListener.h"
+#include "core/css/MediaQueryListListener.h"
 
-#include "MediaQueryList.h"
 #include "ScriptFunctionCall.h"
+#include "core/css/MediaQueryList.h"
 
 #include "V8MediaQueryList.h"
 

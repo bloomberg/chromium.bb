@@ -30,7 +30,7 @@
 #ifndef WebKitCSSMixFunctionValue_h
 #define WebKitCSSMixFunctionValue_h
 
-#include "CSSValueList.h"
+#include "core/css/CSSValueList.h"
 #include <wtf/PassRefPtr.h>
 
 namespace WebCore {

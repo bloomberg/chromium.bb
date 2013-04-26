@@ -24,7 +24,6 @@
 #include "SVGStyledElement.h"
 
 #include "Attr.h"
-#include "CSSParser.h"
 #include "Document.h"
 #include "EventNames.h"
 #include "HTMLNames.h"
@@ -36,6 +35,7 @@
 #include "SVGSVGElement.h"
 #include "SVGUseElement.h"
 #include "ShadowRoot.h"
+#include "core/css/CSSParser.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/SVGRenderStyle.h"
 #include "core/rendering/svg/RenderSVGResource.h"

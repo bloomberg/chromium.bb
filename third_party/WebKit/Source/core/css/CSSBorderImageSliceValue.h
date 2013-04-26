@@ -26,7 +26,7 @@
 #ifndef CSSBorderImageSliceValue_h
 #define CSSBorderImageSliceValue_h
 
-#include "CSSPrimitiveValue.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 

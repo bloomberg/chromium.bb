@@ -39,7 +39,7 @@
 #include "HTMLSelectElement.h"
 #include "NodeTraversal.h"
 #include "Range.h"
-#include "StylePropertySet.h"
+#include "core/css/StylePropertySet.h"
 #include "core/editing/DeleteSelectionCommand.h"
 #include "core/editing/Editor.h"
 #include "core/editing/RenderedPosition.h"

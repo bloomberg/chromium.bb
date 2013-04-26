@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "CSSBorderImageSliceValue.h"
+#include "core/css/CSSBorderImageSliceValue.h"
 
-#include "Rect.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/css/Rect.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

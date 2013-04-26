@@ -26,7 +26,7 @@
 #ifndef WebKitCSSTransformValue_h
 #define WebKitCSSTransformValue_h
 
-#include "CSSValueList.h"
+#include "core/css/CSSValueList.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 

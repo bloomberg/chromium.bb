@@ -28,7 +28,7 @@
 
 #if ENABLE(CSS_IMAGE_SET)
 
-#include "CSSImageSetValue.h"
+#include "core/css/CSSImageSetValue.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/rendering/RenderObject.h"
 

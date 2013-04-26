@@ -27,7 +27,7 @@
 
 #include "HTMLNames.h"
 #include "HTMLTableCellElement.h"
-#include "StylePropertySet.h"
+#include "core/css/StylePropertySet.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/transforms/TransformState.h"

@@ -30,7 +30,7 @@
 #include "CSSValueKeywords.h"
 #include "Element.h"
 #include "HTMLNames.h"
-#include "StylePropertySet.h"
+#include "core/css/StylePropertySet.h"
 #include "core/editing/ApplyStyleCommand.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/FrameSelection.h"

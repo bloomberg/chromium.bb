@@ -26,10 +26,10 @@
 #include "ExceptionCode.h"
 #include "HTMLNames.h"
 #include "ScopedEventQueue.h"
-#include "StylePropertySet.h"
 #include "StyledElement.h"
 #include "Text.h"
 #include "XMLNSNames.h"
+#include "core/css/StylePropertySet.h"
 #include <wtf/text/AtomicString.h>
 #include <wtf/text/StringBuilder.h>
 

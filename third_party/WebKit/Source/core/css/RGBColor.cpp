@@ -25,8 +25,8 @@
  */
 
 #include "config.h"
-#include "RGBColor.h"
-#include "CSSPrimitiveValue.h"
+#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/RGBColor.h"
 
 namespace WebCore {
 

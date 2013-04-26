@@ -24,9 +24,9 @@
 #define SVGRenderStyle_h
 
 #if ENABLE(SVG)
-#include "CSSValueList.h"
 #include "ExceptionCodePlaceholder.h"
 #include "SVGPaint.h"
+#include "core/css/CSSValueList.h"
 #include "core/platform/graphics/GraphicsTypes.h"
 #include "core/platform/graphics/Path.h"
 #include "core/rendering/style/DataRef.h"

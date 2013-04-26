@@ -31,7 +31,7 @@
 
 #include "core/rendering/style/StyleCachedShader.h"
 
-#include "CSSPrimitiveValue.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/loader/cache/CachedShader.h"
 
 namespace WebCore {

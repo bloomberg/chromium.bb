@@ -21,8 +21,8 @@
 #ifndef CSSParserValues_h
 #define CSSParserValues_h
 
-#include "CSSSelector.h"
-#include "CSSValueList.h"
+#include "core/css/CSSSelector.h"
+#include "core/css/CSSValueList.h"
 #include <wtf/text/AtomicString.h>
 #include <wtf/text/WTFString.h>
 

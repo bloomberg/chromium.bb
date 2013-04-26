@@ -30,11 +30,11 @@
 #include "Event.h"
 #include "EventSender.h"
 #include "HTMLNames.h"
-#include "MediaList.h"
 #include "ScriptEventListener.h"
 #include "ScriptableDocumentParser.h"
 #include "ShadowRoot.h"
-#include "StyleSheetContents.h"
+#include "core/css/MediaList.h"
+#include "core/css/StyleSheetContents.h"
 
 namespace WebCore {
 

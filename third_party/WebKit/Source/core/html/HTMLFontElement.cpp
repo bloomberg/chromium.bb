@@ -25,13 +25,13 @@
 
 #include "Attribute.h"
 #include "CSSPropertyNames.h"
-#include "CSSStyleSheet.h"
 #include "CSSValueKeywords.h"
-#include "CSSValueList.h"
-#include "CSSValuePool.h"
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
-#include "StylePropertySet.h"
+#include "core/css/CSSStyleSheet.h"
+#include "core/css/CSSValueList.h"
+#include "core/css/CSSValuePool.h"
+#include "core/css/StylePropertySet.h"
 #include <wtf/text/StringBuilder.h>
 
 using namespace WTF;

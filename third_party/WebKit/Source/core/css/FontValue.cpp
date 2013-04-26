@@ -18,11 +18,11 @@
  * Boston, MA 02110-1301, USA.
  */
 #include "config.h"
-#include "FontValue.h"
+#include "core/css/FontValue.h"
 
-#include "CSSValueList.h"
-#include "CSSPrimitiveValue.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSValueList.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

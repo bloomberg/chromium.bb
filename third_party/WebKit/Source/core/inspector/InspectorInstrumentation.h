@@ -31,10 +31,6 @@
 #ifndef InspectorInstrumentation_h
 #define InspectorInstrumentation_h
 
-#include "CSSImportRule.h"
-#include "CSSRule.h"
-#include "CSSSelector.h"
-#include "CSSStyleSheet.h"
 #include "ConsoleAPITypes.h"
 #include "Element.h"
 #include "EventContext.h"
@@ -43,6 +39,10 @@
 #include "WebSocketFrame.h"
 #include "WebSocketHandshakeRequest.h"
 #include "WebSocketHandshakeResponse.h"
+#include "core/css/CSSImportRule.h"
+#include "core/css/CSSRule.h"
+#include "core/css/CSSSelector.h"
+#include "core/css/CSSStyleSheet.h"
 #include "core/page/ConsoleTypes.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"

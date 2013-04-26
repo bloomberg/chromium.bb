@@ -30,7 +30,7 @@
 #ifndef WebKitCSSShaderValue_h
 #define WebKitCSSShaderValue_h
 
-#include "CSSValue.h"
+#include "core/css/CSSValue.h"
 
 namespace WebCore {
 

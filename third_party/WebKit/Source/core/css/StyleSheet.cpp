@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 #include "config.h"
-#include "StyleSheet.h"
+#include "core/css/StyleSheet.h"
 
 namespace WebCore {
 

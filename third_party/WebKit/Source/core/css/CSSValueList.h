@@ -21,7 +21,7 @@
 #ifndef CSSValueList_h
 #define CSSValueList_h
 
-#include "CSSValue.h"
+#include "core/css/CSSValue.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/Vector.h>
 

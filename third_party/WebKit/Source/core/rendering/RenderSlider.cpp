@@ -34,7 +34,7 @@
 #include "ShadowRoot.h"
 #include "SliderThumbElement.h"
 #include "StepRange.h"
-#include "StyleResolver.h"
+#include "core/css/StyleResolver.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
 #include "core/rendering/RenderLayer.h"

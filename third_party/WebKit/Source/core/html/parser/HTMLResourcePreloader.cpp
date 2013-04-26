@@ -29,8 +29,8 @@
 #include "Document.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 
-#include "MediaList.h"
-#include "MediaQueryEvaluator.h"
+#include "core/css/MediaList.h"
+#include "core/css/MediaQueryEvaluator.h"
 #include "core/rendering/RenderObject.h"
 
 namespace WebCore {

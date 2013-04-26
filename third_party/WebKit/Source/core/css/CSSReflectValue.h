@@ -26,8 +26,8 @@
 #ifndef CSSReflectValue_h
 #define CSSReflectValue_h
 
-#include "CSSReflectionDirection.h"
-#include "CSSValue.h"
+#include "core/css/CSSReflectionDirection.h"
+#include "core/css/CSSValue.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 

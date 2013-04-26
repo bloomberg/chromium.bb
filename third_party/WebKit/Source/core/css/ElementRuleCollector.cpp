@@ -27,20 +27,20 @@
  */
 
 #include "config.h"
-#include "ElementRuleCollector.h"
+#include "core/css/ElementRuleCollector.h"
 
-#include "CSSDefaultStyleSheets.h"
-#include "CSSRule.h"
-#include "CSSRuleList.h"
-#include "CSSSelector.h"
-#include "CSSSelectorList.h"
 #include "CSSValueKeywords.h"
 #include "HTMLElement.h"
 #include "SVGElement.h"
-#include "SelectorCheckerFastPath.h"
-#include "SiblingTraversalStrategies.h"
-#include "StylePropertySet.h"
 #include "StyledElement.h"
+#include "core/css/CSSDefaultStyleSheets.h"
+#include "core/css/CSSRule.h"
+#include "core/css/CSSRuleList.h"
+#include "core/css/CSSSelector.h"
+#include "core/css/CSSSelectorList.h"
+#include "core/css/SelectorCheckerFastPath.h"
+#include "core/css/SiblingTraversalStrategies.h"
+#include "core/css/StylePropertySet.h"
 #include "core/rendering/RenderRegion.h"
 
 #include <wtf/TemporaryChange.h>

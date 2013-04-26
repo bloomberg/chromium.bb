@@ -21,7 +21,7 @@
 #ifndef StyleSheet_h
 #define StyleSheet_h
 
-#include "CSSParserMode.h"
+#include "core/css/CSSParserMode.h"
 #include "core/platform/KURLHash.h"
 #include <wtf/Forward.h>
 #include <wtf/ListHashSet.h>

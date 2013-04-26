@@ -55,7 +55,7 @@ MediaKeyMessageEvent conditional=ENCRYPTED_MEDIA_V2
 MediaKeyNeededEvent conditional=ENCRYPTED_MEDIA_V2
 TrackEvent
 AutocompleteErrorEvent
-CSSFontFaceLoadEvent
+core/css/CSSFontFaceLoadEvent
 SecurityPolicyViolationEvent
 MIDIConnectionEvent
 MIDIMessageEvent

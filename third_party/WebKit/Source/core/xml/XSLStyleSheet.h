@@ -23,10 +23,10 @@
 #ifndef XSLStyleSheet_h
 #define XSLStyleSheet_h
 
-#include "ProcessingInstruction.h"
-#include "StyleSheet.h"
 #include <libxml/tree.h>
 #include <libxslt/transform.h>
+#include "ProcessingInstruction.h"
+#include "core/css/StyleSheet.h"
 #include <wtf/PassRefPtr.h>
 
 namespace WebCore {

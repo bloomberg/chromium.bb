@@ -34,7 +34,7 @@
 #define CSSPROPERTYSOURCEDATA_HIDE_GLOBALS 1
 #endif
 
-#include "CSSPropertySourceData.h"
+#include "core/css/CSSPropertySourceData.h"
 
 #include <wtf/StaticConstructors.h>
 #include <wtf/text/StringBuilder.h>

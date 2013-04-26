@@ -26,10 +26,8 @@
  */
 
 #include "config.h"
-#include "SelectorChecker.h"
+#include "core/css/SelectorChecker.h"
 
-#include "CSSSelector.h"
-#include "CSSSelectorList.h"
 #include "Document.h"
 #include "HTMLDocument.h"
 #include "HTMLFrameElementBase.h"
@@ -42,9 +40,11 @@
 #include "InspectorInstrumentation.h"
 #include "NodeRenderStyle.h"
 #include "ShadowRoot.h"
-#include "SiblingTraversalStrategies.h"
 #include "StyledElement.h"
 #include "Text.h"
+#include "core/css/CSSSelector.h"
+#include "core/css/CSSSelectorList.h"
+#include "core/css/SiblingTraversalStrategies.h"
 #include "core/editing/FrameSelection.h"
 #include "core/page/FocusController.h"
 #include "core/page/Frame.h"

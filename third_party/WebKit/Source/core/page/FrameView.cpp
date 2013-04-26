@@ -28,7 +28,6 @@
 #include "core/page/FrameView.h"
 
 #include "DocumentMarkerController.h"
-#include "FontLoader.h"
 #include "HTMLDocument.h"
 #include "HTMLFrameElement.h"
 #include "HTMLFrameSetElement.h"
@@ -38,8 +37,9 @@
 #include "InspectorController.h"
 #include "InspectorInstrumentation.h"
 #include "OverflowEvent.h"
-#include "StyleResolver.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/css/FontLoader.h"
+#include "core/css/StyleResolver.h"
 #include "core/editing/FrameSelection.h"
 #include "core/history/BackForwardController.h"
 #include "core/loader/FrameLoader.h"

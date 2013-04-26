@@ -22,8 +22,8 @@
 #ifndef RuleSet_h
 #define RuleSet_h
 
-#include "RuleFeature.h"
-#include "StyleRule.h"
+#include "core/css/RuleFeature.h"
+#include "core/css/StyleRule.h"
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>

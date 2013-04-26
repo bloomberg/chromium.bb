@@ -19,13 +19,13 @@
  */
 
 #include "config.h"
-#include "StyleSheetList.h"
+#include "core/css/StyleSheetList.h"
 
-#include "CSSStyleSheet.h"
 #include "Document.h"
 #include "DocumentStyleSheetCollection.h"
 #include "HTMLNames.h"
 #include "HTMLStyleElement.h"
+#include "core/css/CSSStyleSheet.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

@@ -30,7 +30,7 @@
 #ifndef WebKitCSSArrayFunctionValue_h
 #define WebKitCSSArrayFunctionValue_h
 
-#include "CSSValueList.h"
+#include "core/css/CSSValueList.h"
 #include <wtf/PassRefPtr.h>
 
 namespace WebCore {

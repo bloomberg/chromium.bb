@@ -26,12 +26,12 @@
 #ifndef StylePendingImage_h
 #define StylePendingImage_h
 
-#include "CSSCursorImageValue.h"
-#include "CSSImageGeneratorValue.h"
+#include "core/css/CSSCursorImageValue.h"
+#include "core/css/CSSImageGeneratorValue.h"
 #if ENABLE(CSS_IMAGE_SET)
-#include "CSSImageSetValue.h"
+#include "core/css/CSSImageSetValue.h"
 #endif
-#include "CSSImageValue.h"
+#include "core/css/CSSImageValue.h"
 #include "core/platform/graphics/Image.h"
 #include "core/rendering/style/StyleImage.h"
 

@@ -25,10 +25,10 @@
 #ifndef RenderStyle_h
 #define RenderStyle_h
 
-#include "CSSLineBoxContainValue.h"
-#include "CSSPrimitiveValue.h"
 #include "CSSPropertyNames.h"
-#include "LengthFunctions.h"
+#include "core/css/CSSLineBoxContainValue.h"
+#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/LengthFunctions.h"
 #include "core/platform/Length.h"
 #include "core/platform/LengthBox.h"
 #include "core/platform/LengthSize.h"

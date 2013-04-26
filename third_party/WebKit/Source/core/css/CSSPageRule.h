@@ -22,7 +22,7 @@
 #ifndef CSSPageRule_h
 #define CSSPageRule_h
 
-#include "CSSRule.h"
+#include "core/css/CSSRule.h"
 
 namespace WebCore {
 

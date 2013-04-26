@@ -26,14 +26,14 @@
 #include "HTMLTablePartElement.h"
 
 #include "Attribute.h"
-#include "CSSImageValue.h"
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "Document.h"
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
 #include "HTMLTableElement.h"
-#include "StylePropertySet.h"
+#include "core/css/CSSImageValue.h"
+#include "core/css/StylePropertySet.h"
 
 namespace WebCore {
 

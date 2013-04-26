@@ -170,11 +170,11 @@ sub AddIncludesForType
     }
 
     if ($type eq "CSSStyleSheet" or $type eq "StyleSheet") {
-        AddToImplIncludes("CSSImportRule.h");
+        AddToImplIncludes("core/css/CSSImportRule.h");
     }
 
     if ($type eq "CSSStyleDeclaration") {
-        AddToImplIncludes("StylePropertySet.h");
+        AddToImplIncludes("core/css/StylePropertySet.h");
     }
 
     if ($type eq "Plugin" or $type eq "PluginArray" or $type eq "MimeTypeArray") {
@@ -4495,7 +4495,7 @@ sub JSValueToNative
     }
 
     if ($type eq "MediaQueryListListener") {
-        AddToImplIncludes("MediaQueryListListener.h");
+        AddToImplIncludes("core/css/MediaQueryListListener.h");
         return "MediaQueryListListener::create(" . $value . ")";
     }
 

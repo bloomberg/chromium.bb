@@ -18,10 +18,10 @@
  * Boston, MA 02110-1301, USA.
  */
 #include "config.h"
-#include "ShadowValue.h"
+#include "core/css/ShadowValue.h"
 
-#include "CSSPrimitiveValue.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/WTFString.h>
 

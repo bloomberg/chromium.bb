@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "CSSOMUtils.h"
+#include "core/css/CSSOMUtils.h"
 
 #include <wtf/HexNumber.h>
 #include <wtf/text/StringBuilder.h>

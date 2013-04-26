@@ -27,10 +27,10 @@
 #ifndef Internals_h
 #define Internals_h
 
-#include "CSSComputedStyleDeclaration.h"
 #include "ContextDestructionObserver.h"
 #include "ExceptionCodePlaceholder.h"
 #include "NodeList.h"
+#include "core/css/CSSComputedStyleDeclaration.h"
 #include <wtf/ArrayBuffer.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

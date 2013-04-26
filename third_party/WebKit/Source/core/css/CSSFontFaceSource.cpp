@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include "CSSFontFaceSource.h"
+#include "core/css/CSSFontFaceSource.h"
 
-#include "CSSFontFace.h"
-#include "CSSFontSelector.h"
 #include "Document.h"
+#include "core/css/CSSFontFace.h"
+#include "core/css/CSSFontSelector.h"
 #include "core/loader/cache/CachedFont.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/platform/graphics/FontCache.h"

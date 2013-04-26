@@ -26,7 +26,7 @@
 #ifndef FontFeatureValue_h
 #define FontFeatureValue_h
 
-#include "CSSValue.h"
+#include "core/css/CSSValue.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

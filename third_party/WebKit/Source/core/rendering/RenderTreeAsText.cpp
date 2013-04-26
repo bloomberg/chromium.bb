@@ -29,7 +29,7 @@
 #include "Document.h"
 #include "HTMLElement.h"
 #include "HTMLNames.h"
-#include "StylePropertySet.h"
+#include "core/css/StylePropertySet.h"
 #include "core/editing/FrameSelection.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"

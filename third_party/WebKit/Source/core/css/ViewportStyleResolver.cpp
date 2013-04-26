@@ -28,15 +28,15 @@
  */
 
 #include "config.h"
-#include "ViewportStyleResolver.h"
+#include "core/css/ViewportStyleResolver.h"
 
 #if ENABLE(CSS_DEVICE_ADAPTATION)
 
 #include "CSSValueKeywords.h"
 #include "Document.h"
-#include "StylePropertySet.h"
-#include "StyleRule.h"
 #include "ViewportArguments.h"
+#include "core/css/StylePropertySet.h"
+#include "core/css/StyleRule.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderView.h"
 

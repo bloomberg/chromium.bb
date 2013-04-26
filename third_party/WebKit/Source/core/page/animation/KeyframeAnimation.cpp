@@ -31,7 +31,7 @@
 
 #include "CSSPropertyNames.h"
 #include "EventNames.h"
-#include "StyleResolver.h"
+#include "core/css/StyleResolver.h"
 #include "core/page/animation/AnimationControllerPrivate.h"
 #include "core/page/animation/CSSPropertyAnimation.h"
 #include "core/page/animation/CompositeAnimation.h"

@@ -24,20 +24,20 @@
 
 #include "config.h"
 
-#include "CSSParser.h"
-#include "CSSParserMode.h"
-#include "CSSPrimitiveValue.h"
 #include "CSSPropertyNames.h"
-#include "CSSSelector.h"
-#include "CSSSelectorList.h"
 #include "Document.h"
 #include "HTMLNames.h"
-#include "MediaList.h"
-#include "MediaQueryExp.h"
-#include "StyleRule.h"
-#include "StyleSheetContents.h"
-#include "WebKitCSSKeyframeRule.h"
-#include "WebKitCSSKeyframesRule.h"
+#include "core/css/CSSParser.h"
+#include "core/css/CSSParserMode.h"
+#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSSelector.h"
+#include "core/css/CSSSelectorList.h"
+#include "core/css/MediaList.h"
+#include "core/css/MediaQueryExp.h"
+#include "core/css/StyleRule.h"
+#include "core/css/StyleSheetContents.h"
+#include "core/css/WebKitCSSKeyframeRule.h"
+#include "core/css/WebKitCSSKeyframesRule.h"
 #include <wtf/FastMalloc.h>
 #include <stdlib.h>
 #include <string.h>

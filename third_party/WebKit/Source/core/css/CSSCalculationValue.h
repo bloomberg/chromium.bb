@@ -31,8 +31,8 @@
 #ifndef CSSCalculationValue_h
 #define CSSCalculationValue_h
 
-#include "CSSParserValues.h"
-#include "CSSValue.h"
+#include "core/css/CSSParserValues.h"
+#include "core/css/CSSValue.h"
 #include "core/platform/CalculationValue.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefCounted.h>

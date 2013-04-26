@@ -27,15 +27,15 @@
  */
 
 #include "config.h"
-#include "CSSSupportsRule.h"
+#include "core/css/CSSSupportsRule.h"
 
-#include "CSSParser.h"
-#include "CSSRule.h"
-#include "CSSRuleList.h"
-#include "CSSStyleSheet.h"
 #include "ExceptionCode.h"
-#include "StyleRule.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/css/CSSParser.h"
+#include "core/css/CSSRule.h"
+#include "core/css/CSSRuleList.h"
+#include "core/css/CSSStyleSheet.h"
+#include "core/css/StyleRule.h"
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/text/StringBuilder.h>
 

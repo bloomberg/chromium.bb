@@ -30,8 +30,8 @@
 #ifndef StylePendingShader_h
 #define StylePendingShader_h
 
-#include "CSSValue.h"
-#include "WebKitCSSShaderValue.h"
+#include "core/css/CSSValue.h"
+#include "core/css/WebKitCSSShaderValue.h"
 #include "core/rendering/style/StyleShader.h"
 #include <wtf/PassRefPtr.h>
 

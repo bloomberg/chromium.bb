@@ -38,8 +38,8 @@
 #include "NodeRenderingContext.h"
 #include "NodeTraversal.h"
 #include "ScriptElement.h"
-#include "StyleResolver.h"
 #include "Text.h"
+#include "core/css/StyleResolver.h"
 #include "core/rendering/RenderMenuList.h"
 #include "core/rendering/RenderTheme.h"
 #include <wtf/StdLibExtras.h>

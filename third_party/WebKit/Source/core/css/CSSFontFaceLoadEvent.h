@@ -31,11 +31,11 @@
 #ifndef CSSFontFaceLoadEvent_h
 #define CSSFontFaceLoadEvent_h
 
-#include "CSSFontFaceRule.h"
-#include "CSSValue.h"
 #include "DOMError.h"
 #include "Event.h"
 #include "EventNames.h"
+#include "core/css/CSSFontFaceRule.h"
+#include "core/css/CSSValue.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 

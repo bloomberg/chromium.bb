@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "CSSUnicodeRangeValue.h"
+#include "core/css/CSSUnicodeRangeValue.h"
 
 #include "WebCoreMemoryInstrumentation.h"
 #include <wtf/text/WTFString.h>

@@ -25,19 +25,19 @@
 #ifndef InspectorStyleSheet_h
 #define InspectorStyleSheet_h
 
-#include "CSSPropertySourceData.h"
-#include "CSSStyleDeclaration.h"
 #include "ExceptionCode.h"
 #include "InspectorStyleTextEditor.h"
 #include "InspectorTypeBuilder.h"
 #include "InspectorValues.h"
+#include "core/css/CSSPropertySourceData.h"
+#include "core/css/CSSStyleDeclaration.h"
 
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 class ParsedStyleSheet;
 

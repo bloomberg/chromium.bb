@@ -30,10 +30,10 @@
 #ifndef CSSPrimitiveValueMappings_h
 #define CSSPrimitiveValueMappings_h
 
-#include "CSSCalculationValue.h"
-#include "CSSPrimitiveValue.h"
-#include "CSSReflectionDirection.h"
 #include "CSSValueKeywords.h"
+#include "core/css/CSSCalculationValue.h"
+#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSReflectionDirection.h"
 #include "core/platform/graphics/ColorSpace.h"
 #include "core/platform/graphics/FontDescription.h"
 #include "core/platform/graphics/FontSmoothingMode.h"

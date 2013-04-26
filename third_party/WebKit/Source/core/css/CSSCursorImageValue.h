@@ -21,7 +21,7 @@
 #ifndef CSSCursorImageValue_h
 #define CSSCursorImageValue_h
 
-#include "CSSImageValue.h"
+#include "core/css/CSSImageValue.h"
 #include "core/platform/graphics/IntPoint.h"
 #include <wtf/HashSet.h>
 

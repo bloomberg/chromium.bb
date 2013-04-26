@@ -21,7 +21,7 @@
 #ifndef CSSImageValue_h
 #define CSSImageValue_h
 
-#include "CSSValue.h"
+#include "core/css/CSSValue.h"
 #include <wtf/RefPtr.h>
 
 namespace WebCore {

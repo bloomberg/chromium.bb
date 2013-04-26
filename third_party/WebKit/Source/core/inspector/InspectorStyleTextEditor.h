@@ -25,10 +25,10 @@
 #ifndef InspectorStyleTextEditor_h
 #define InspectorStyleTextEditor_h
 
-#include "CSSPropertySourceData.h"
+#include "core/css/CSSPropertySourceData.h"
 
-#include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

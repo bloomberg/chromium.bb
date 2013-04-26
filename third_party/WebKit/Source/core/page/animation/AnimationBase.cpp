@@ -30,9 +30,9 @@
 #include "core/page/animation/AnimationBase.h"
 
 #include <algorithm>
-#include "CSSPrimitiveValue.h"
 #include "Document.h"
 #include "EventNames.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/page/animation/AnimationControllerPrivate.h"
 #include "core/page/animation/CSSPropertyAnimation.h"
 #include "core/page/animation/CompositeAnimation.h"

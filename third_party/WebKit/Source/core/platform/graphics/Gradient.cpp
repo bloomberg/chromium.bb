@@ -28,10 +28,10 @@
 #include "config.h"
 #include "core/platform/graphics/Gradient.h"
 
-#include "CSSParser.h"
 #include "SkColorShader.h"
 #include "SkGradientShader.h"
 #include "SkiaUtils.h"
+#include "core/css/CSSParser.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"

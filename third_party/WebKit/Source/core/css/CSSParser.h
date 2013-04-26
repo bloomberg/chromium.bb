@@ -23,15 +23,15 @@
 #ifndef CSSParser_h
 #define CSSParser_h
 
-#include "CSSCalculationValue.h"
-#include "CSSGradientValue.h"
-#include "CSSParserMode.h"
-#include "CSSParserValues.h"
-#include "CSSProperty.h"
 #include "CSSPropertyNames.h"
-#include "CSSPropertySourceData.h"
-#include "CSSSelector.h"
-#include "MediaQuery.h"
+#include "core/css/CSSCalculationValue.h"
+#include "core/css/CSSGradientValue.h"
+#include "core/css/CSSParserMode.h"
+#include "core/css/CSSParserValues.h"
+#include "core/css/CSSProperty.h"
+#include "core/css/CSSPropertySourceData.h"
+#include "core/css/CSSSelector.h"
+#include "core/css/MediaQuery.h"
 #include "core/platform/graphics/Color.h"
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
@@ -39,7 +39,7 @@
 #include <wtf/text/AtomicString.h>
 #include <wtf/Vector.h>
 
-#include "WebKitCSSFilterValue.h"
+#include "core/css/WebKitCSSFilterValue.h"
 
 namespace WebCore {
 

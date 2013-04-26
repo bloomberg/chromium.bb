@@ -21,12 +21,12 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "CSSComputedStyleDeclaration.h"
+#include "core/css/CSSComputedStyleDeclaration.h"
 
-#include "CSSPrimitiveValueMappings.h"
 #include "CSSPropertyNames.h"
 #include "Document.h"
 #include "SVGPaint.h"
+#include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {

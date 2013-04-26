@@ -32,11 +32,11 @@
 #include "config.h"
 #include "core/loader/LinkLoader.h"
 
-#include "CSSStyleSheet.h"
 #include "ContainerNode.h"
 #include "Document.h"
 #include "LinkRelAttribute.h"
-#include "StyleResolver.h"
+#include "core/css/CSSStyleSheet.h"
+#include "core/css/StyleResolver.h"
 #include "core/loader/Prerenderer.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"
 #include "core/loader/cache/CachedResourceLoader.h"

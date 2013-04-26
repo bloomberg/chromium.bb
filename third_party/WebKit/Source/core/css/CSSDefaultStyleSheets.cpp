@@ -27,12 +27,12 @@
  */
 
 #include "config.h"
-#include "CSSDefaultStyleSheets.h"
+#include "core/css/CSSDefaultStyleSheets.h"
 
-#include "MediaQueryEvaluator.h"
-#include "RuleSet.h"
-#include "StyleSheetContents.h"
 #include "UserAgentStyleSheets.h"
+#include "core/css/MediaQueryEvaluator.h"
+#include "core/css/RuleSet.h"
+#include "core/css/StyleSheetContents.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"

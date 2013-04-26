@@ -29,8 +29,8 @@
 #ifndef CSSAspectRatioValue_h
 #define CSSAspectRatioValue_h
 
-#include "CSSPrimitiveValue.h"
-#include "CSSValue.h"
+#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSValue.h"
 
 namespace WebCore {
 

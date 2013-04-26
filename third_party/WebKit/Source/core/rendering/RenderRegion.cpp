@@ -31,7 +31,7 @@
 #include "core/rendering/RenderRegion.h"
 
 #include "Range.h"
-#include "StyleResolver.h"
+#include "core/css/StyleResolver.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/rendering/FlowThreadController.h"

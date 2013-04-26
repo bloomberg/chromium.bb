@@ -24,7 +24,7 @@
 #define CSS_MEDIAQUERY_NAMES_HIDE_GLOBALS 1
 #endif
 
-#include "MediaFeatureNames.h"
+#include "core/css/MediaFeatureNames.h"
 #include <wtf/StaticConstructors.h>
 
 namespace WebCore {

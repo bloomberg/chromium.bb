@@ -25,10 +25,10 @@
 #include "Document.h"
 #include "DocumentStyleSheetCollection.h"
 #include "Element.h"
-#include "MediaList.h"
-#include "MediaQueryEvaluator.h"
 #include "ScriptableDocumentParser.h"
-#include "StyleSheetContents.h"
+#include "core/css/MediaList.h"
+#include "core/css/MediaQueryEvaluator.h"
+#include "core/css/StyleSheetContents.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/TextPosition.h>

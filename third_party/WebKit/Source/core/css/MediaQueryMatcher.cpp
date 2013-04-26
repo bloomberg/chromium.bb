@@ -18,15 +18,15 @@
  */
 
 #include "config.h"
-#include "MediaQueryMatcher.h"
+#include "core/css/MediaQueryMatcher.h"
 
 #include "Document.h"
 #include "Element.h"
-#include "MediaList.h"
-#include "MediaQueryEvaluator.h"
-#include "MediaQueryList.h"
-#include "MediaQueryListListener.h"
-#include "StyleResolver.h"
+#include "core/css/MediaList.h"
+#include "core/css/MediaQueryEvaluator.h"
+#include "core/css/MediaQueryList.h"
+#include "core/css/MediaQueryListListener.h"
+#include "core/css/StyleResolver.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 

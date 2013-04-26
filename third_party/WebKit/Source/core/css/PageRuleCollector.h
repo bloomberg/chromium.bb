@@ -22,8 +22,8 @@
 #ifndef PageRuleCollector_h
 #define PageRuleCollector_h
 
-#include "DocumentRuleSets.h"
-#include "StyleResolver.h"
+#include "core/css/DocumentRuleSets.h"
+#include "core/css/StyleResolver.h"
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>
 

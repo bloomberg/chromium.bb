@@ -21,13 +21,13 @@
 #ifndef StylePropertySet_h
 #define StylePropertySet_h
 
-#include "CSSParserMode.h"
-#include "CSSPrimitiveValue.h"
-#include "CSSProperty.h"
 #include "CSSPropertyNames.h"
+#include "core/css/CSSParserMode.h"
+#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSProperty.h"
 #include <wtf/ListHashSet.h>
-#include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

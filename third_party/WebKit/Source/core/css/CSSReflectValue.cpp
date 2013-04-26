@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "CSSReflectValue.h"
+#include "core/css/CSSReflectValue.h"
 
-#include "CSSPrimitiveValue.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include <wtf/text/StringBuilder.h>
 
 using namespace std;

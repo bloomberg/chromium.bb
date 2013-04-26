@@ -24,13 +24,13 @@
  */
 
 #include "config.h"
-#include "CSSFontFaceSrcValue.h"
 #include "Document.h"
 #include "FontCustomPlatformData.h"
 #include "Node.h"
 #include "SVGFontFaceElement.h"
-#include "StyleSheetContents.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/css/CSSFontFaceSrcValue.h"
+#include "core/css/StyleSheetContents.h"
 #include "core/loader/cache/CachedFont.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"

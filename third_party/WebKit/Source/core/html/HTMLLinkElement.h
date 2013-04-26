@@ -24,11 +24,11 @@
 #ifndef HTMLLinkElement_h
 #define HTMLLinkElement_h
 
-#include "CSSStyleSheet.h"
 #include "DOMSettableTokenList.h"
 #include "HTMLElement.h"
 #include "IconURL.h"
 #include "LinkRelAttribute.h"
+#include "core/css/CSSStyleSheet.h"
 #include "core/loader/LinkLoader.h"
 #include "core/loader/LinkLoaderClient.h"
 #include "core/loader/cache/CachedResourceHandle.h"

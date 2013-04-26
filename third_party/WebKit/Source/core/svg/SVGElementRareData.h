@@ -20,9 +20,9 @@
 #ifndef SVGElementRareData_h
 #define SVGElementRareData_h
 
-#include "CSSParserMode.h"
-#include "StylePropertySet.h"
-#include "StyleResolver.h"
+#include "core/css/CSSParserMode.h"
+#include "core/css/StylePropertySet.h"
+#include "core/css/StyleResolver.h"
 #include <wtf/HashSet.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/StdLibExtras.h>

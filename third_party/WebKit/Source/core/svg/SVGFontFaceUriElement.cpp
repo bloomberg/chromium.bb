@@ -24,11 +24,11 @@
 #include "SVGFontFaceUriElement.h"
 
 #include "Attribute.h"
-#include "CSSFontFaceSrcValue.h"
 #include "Document.h"
 #include "SVGFontFaceElement.h"
 #include "SVGNames.h"
 #include "XLinkNames.h"
+#include "core/css/CSSFontFaceSrcValue.h"
 #include "core/loader/cache/CachedFont.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"

@@ -31,8 +31,8 @@
 #ifndef HTMLContentElement_h
 #define HTMLContentElement_h
 
-#include "CSSSelectorList.h"
 #include "InsertionPoint.h"
+#include "core/css/CSSSelectorList.h"
 #include <wtf/Forward.h>
 
 namespace WebCore {

@@ -29,12 +29,12 @@
 #include "config.h"
 #include "CanvasStyle.h"
 
-#include "CSSParser.h"
 #include "CSSPropertyNames.h"
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"
 #include "HTMLCanvasElement.h"
-#include "StylePropertySet.h"
+#include "core/css/CSSParser.h"
+#include "core/css/StylePropertySet.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include <wtf/Assertions.h>
 #include <wtf/PassRefPtr.h>

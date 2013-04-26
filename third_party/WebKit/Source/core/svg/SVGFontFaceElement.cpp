@@ -26,21 +26,21 @@
 
 #include <math.h>
 #include "Attribute.h"
-#include "CSSFontFaceSrcValue.h"
-#include "CSSParser.h"
 #include "CSSPropertyNames.h"
-#include "CSSStyleSheet.h"
 #include "CSSValueKeywords.h"
-#include "CSSValueList.h"
 #include "Document.h"
 #include "SVGDocumentExtensions.h"
 #include "SVGFontElement.h"
 #include "SVGFontFaceSrcElement.h"
 #include "SVGGlyphElement.h"
 #include "SVGNames.h"
-#include "StylePropertySet.h"
-#include "StyleResolver.h"
-#include "StyleRule.h"
+#include "core/css/CSSFontFaceSrcValue.h"
+#include "core/css/CSSParser.h"
+#include "core/css/CSSStyleSheet.h"
+#include "core/css/CSSValueList.h"
+#include "core/css/StylePropertySet.h"
+#include "core/css/StyleResolver.h"
+#include "core/css/StyleRule.h"
 #include "core/platform/graphics/Font.h"
 
 namespace WebCore {

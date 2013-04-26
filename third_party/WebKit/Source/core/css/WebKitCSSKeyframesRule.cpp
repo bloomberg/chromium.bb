@@ -24,14 +24,14 @@
  */
 
 #include "config.h"
-#include "WebKitCSSKeyframesRule.h"
+#include "core/css/WebKitCSSKeyframesRule.h"
 
-#include "CSSParser.h"
-#include "CSSRuleList.h"
-#include "CSSStyleSheet.h"
-#include "StylePropertySet.h"
-#include "StyleSheet.h"
-#include "WebKitCSSKeyframeRule.h"
+#include "core/css/CSSParser.h"
+#include "core/css/CSSRuleList.h"
+#include "core/css/CSSStyleSheet.h"
+#include "core/css/StylePropertySet.h"
+#include "core/css/StyleSheet.h"
+#include "core/css/WebKitCSSKeyframeRule.h"
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/text/StringBuilder.h>
 

@@ -30,10 +30,10 @@
 #include "core/page/animation/AnimationController.h"
 
 #include "AnimationEvent.h"
-#include "CSSParser.h"
 #include "EventNames.h"
 #include "PseudoElement.h"
 #include "TransitionEvent.h"
+#include "core/css/CSSParser.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/animation/AnimationBase.h"

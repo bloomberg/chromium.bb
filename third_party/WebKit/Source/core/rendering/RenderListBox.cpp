@@ -31,7 +31,6 @@
 #include "core/rendering/RenderListBox.h"
 
 #include <math.h>
-#include "CSSFontSelector.h"
 #include "Document.h"
 #include "DocumentEventQueue.h"
 #include "HTMLNames.h"
@@ -39,8 +38,9 @@
 #include "HTMLOptionElement.h"
 #include "HTMLSelectElement.h"
 #include "NodeRenderStyle.h"
-#include "StyleResolver.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/css/CSSFontSelector.h"
+#include "core/css/StyleResolver.h"
 #include "core/editing/FrameSelection.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"

@@ -27,19 +27,19 @@
  */
 
 #include "config.h"
-#include "InspectorCSSOMWrappers.h"
+#include "core/css/InspectorCSSOMWrappers.h"
 
-#include "CSSDefaultStyleSheets.h"
-#include "CSSHostRule.h"
-#include "CSSImportRule.h"
-#include "CSSMediaRule.h"
-#include "CSSRule.h"
-#include "CSSStyleRule.h"
-#include "CSSStyleSheet.h"
-#include "CSSSupportsRule.h"
 #include "DocumentStyleSheetCollection.h"
-#include "StyleSheetContents.h"
-#include "WebKitCSSRegionRule.h"
+#include "core/css/CSSDefaultStyleSheets.h"
+#include "core/css/CSSHostRule.h"
+#include "core/css/CSSImportRule.h"
+#include "core/css/CSSMediaRule.h"
+#include "core/css/CSSRule.h"
+#include "core/css/CSSStyleRule.h"
+#include "core/css/CSSStyleSheet.h"
+#include "core/css/CSSSupportsRule.h"
+#include "core/css/StyleSheetContents.h"
+#include "core/css/WebKitCSSRegionRule.h"
 
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationHashSet.h>

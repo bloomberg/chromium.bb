@@ -19,7 +19,7 @@
  */
 
 #include "config.h"
-#include "CSSInitialValue.h"
+#include "core/css/CSSInitialValue.h"
 
 #include "WebCoreMemoryInstrumentation.h"
 #include <wtf/text/WTFString.h>

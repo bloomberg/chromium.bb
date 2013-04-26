@@ -27,12 +27,12 @@
 #include "config.h"
 #include "HTMLContentElement.h"
 
-#include "CSSParser.h"
 #include "ContentDistributor.h"
 #include "ContentSelectorQuery.h"
 #include "HTMLNames.h"
 #include "QualifiedName.h"
 #include "ShadowRoot.h"
+#include "core/css/CSSParser.h"
 #include "core/page/RuntimeEnabledFeatures.h"
 #include <wtf/StdLibExtras.h>
 

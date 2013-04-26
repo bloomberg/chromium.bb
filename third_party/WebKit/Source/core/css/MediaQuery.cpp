@@ -27,10 +27,10 @@
  */
 
 #include "config.h"
-#include "MediaQuery.h"
+#include "core/css/MediaQuery.h"
 
-#include "MediaQueryExp.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/css/MediaQueryExp.h"
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/NonCopyingSort.h>
 #include <wtf/text/StringBuilder.h>

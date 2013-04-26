@@ -25,7 +25,6 @@
 #include "SVGSVGElement.h"
 
 #include "Attribute.h"
-#include "CSSHelper.h"
 #include "Document.h"
 #include "EventListener.h"
 #include "EventNames.h"
@@ -44,6 +43,7 @@
 #include "SVGZoomEvent.h"
 #include "ScriptEventListener.h"
 #include "StaticNodeList.h"
+#include "core/css/CSSHelper.h"
 #include "core/editing/FrameSelection.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameTree.h"

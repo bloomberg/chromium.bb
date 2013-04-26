@@ -26,8 +26,8 @@
 #ifndef CSSCrossfadeValue_h
 #define CSSCrossfadeValue_h
 
-#include "CSSImageGeneratorValue.h"
-#include "CSSPrimitiveValue.h"
+#include "core/css/CSSImageGeneratorValue.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedImageClient.h"
 #include "core/loader/cache/CachedResourceHandle.h"

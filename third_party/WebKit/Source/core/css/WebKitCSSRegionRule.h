@@ -31,7 +31,7 @@
 #ifndef WebKitCSSRegionRule_h
 #define WebKitCSSRegionRule_h
 
-#include "CSSGroupingRule.h"
+#include "core/css/CSSGroupingRule.h"
 
 #if ENABLE(CSS_REGIONS)
 

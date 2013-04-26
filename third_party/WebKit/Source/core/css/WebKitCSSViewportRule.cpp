@@ -29,14 +29,14 @@
  */
 
 #include "config.h"
-#include "WebKitCSSViewportRule.h"
+#include "core/css/WebKitCSSViewportRule.h"
 
 #if ENABLE(CSS_DEVICE_ADAPTATION)
 
-#include "PropertySetCSSStyleDeclaration.h"
-#include "StylePropertySet.h"
-#include "StyleRule.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/css/PropertySetCSSStyleDeclaration.h"
+#include "core/css/StylePropertySet.h"
+#include "core/css/StyleRule.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

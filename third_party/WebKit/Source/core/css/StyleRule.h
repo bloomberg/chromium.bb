@@ -22,8 +22,8 @@
 #ifndef StyleRule_h
 #define StyleRule_h
 
-#include "CSSSelectorList.h"
-#include "MediaList.h"
+#include "core/css/CSSSelectorList.h"
+#include "core/css/MediaList.h"
 #include <wtf/RefPtr.h>
 
 namespace WebCore {

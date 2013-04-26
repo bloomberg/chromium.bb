@@ -24,13 +24,13 @@
  */
 
 #include "config.h"
-#include "CSSGradientValue.h"
+#include "core/css/CSSGradientValue.h"
 
-#include "CSSCalculationValue.h"
 #include "CSSValueKeywords.h"
 #include "NodeRenderStyle.h"
-#include "StyleResolver.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/css/CSSCalculationValue.h"
+#include "core/css/StyleResolver.h"
 #include "core/platform/graphics/GeneratorGeneratedImage.h"
 #include "core/platform/graphics/Gradient.h"
 #include "core/platform/graphics/Image.h"

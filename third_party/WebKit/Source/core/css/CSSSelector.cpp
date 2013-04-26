@@ -24,16 +24,16 @@
  */
 
 #include "config.h"
-#include "CSSSelector.h"
+#include "core/css/CSSSelector.h"
 
-#include "CSSOMUtils.h"
-#include "CSSSelectorList.h"
 #include "HTMLNames.h"
+#include "core/css/CSSOMUtils.h"
+#include "core/css/CSSSelectorList.h"
 #include <wtf/Assertions.h>
 #include <wtf/HashMap.h>
 #include <wtf/StdLibExtras.h>
-#include <wtf/Vector.h>
 #include <wtf/text/StringBuilder.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

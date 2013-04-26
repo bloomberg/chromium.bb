@@ -21,7 +21,7 @@
 #ifndef FontValue_h
 #define FontValue_h
 
-#include "CSSValue.h"
+#include "core/css/CSSValue.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 

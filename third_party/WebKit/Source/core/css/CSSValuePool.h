@@ -26,13 +26,13 @@
 #ifndef CSSValuePool_h
 #define CSSValuePool_h
 
-#include "CSSInheritedValue.h"
-#include "CSSInitialValue.h"
-#include "CSSPrimitiveValue.h"
 #include "CSSValueKeywords.h"
-#include <wtf/text/AtomicStringHash.h>
+#include "core/css/CSSInheritedValue.h"
+#include "core/css/CSSInitialValue.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include <wtf/HashMap.h>
 #include <wtf/RefPtr.h>
+#include <wtf/text/AtomicStringHash.h>
 
 namespace WebCore {
 

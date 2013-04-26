@@ -32,7 +32,7 @@
 #define SelectRuleFeatureSet_h
 
 #include "Element.h"
-#include "RuleFeature.h"
+#include "core/css/RuleFeature.h"
 
 namespace WebCore {
 

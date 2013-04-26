@@ -24,14 +24,14 @@
  */
 
 #include "config.h"
-#include "CSSImageSetValue.h"
+#include "core/css/CSSImageSetValue.h"
 
 #if ENABLE(CSS_IMAGE_SET)
 
-#include "CSSImageValue.h"
-#include "CSSPrimitiveValue.h"
 #include "Document.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/css/CSSImageValue.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"

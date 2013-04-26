@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include "FontFeatureValue.h"
+#include "core/css/FontFeatureValue.h"
 
-#include "CSSParser.h"
 #include "CSSValueKeywords.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/css/CSSParser.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

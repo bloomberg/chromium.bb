@@ -26,8 +26,8 @@
 #ifndef CSSGradientValue_h
 #define CSSGradientValue_h
 
-#include "CSSImageGeneratorValue.h"
-#include "CSSPrimitiveValue.h"
+#include "core/css/CSSImageGeneratorValue.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>
 

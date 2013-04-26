@@ -26,7 +26,7 @@
 #ifndef CSSFontFaceSrcValue_h
 #define CSSFontFaceSrcValue_h
 
-#include "CSSValue.h"
+#include "core/css/CSSValue.h"
 #include "core/loader/cache/CachedResourceHandle.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/text/WTFString.h>

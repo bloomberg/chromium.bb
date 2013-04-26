@@ -28,8 +28,6 @@
 #include "SVGAnimationElement.h"
 
 #include "Attribute.h"
-#include "CSSComputedStyleDeclaration.h"
-#include "CSSParser.h"
 #include "CSSPropertyNames.h"
 #include "Document.h"
 #include "SVGAnimateElement.h"
@@ -37,6 +35,8 @@
 #include "SVGNames.h"
 #include "SVGParserUtilities.h"
 #include "SVGStyledElement.h"
+#include "core/css/CSSComputedStyleDeclaration.h"
+#include "core/css/CSSParser.h"
 #include "core/platform/FloatConversion.h"
 #include "core/rendering/RenderObject.h"
 #include <wtf/MathExtras.h>

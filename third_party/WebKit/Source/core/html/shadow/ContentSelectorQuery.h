@@ -31,9 +31,9 @@
 #ifndef ContentSelectorQuery_h
 #define ContentSelectorQuery_h
 
-#include "CSSSelectorList.h"
-#include "SelectorChecker.h"
 #include "SelectorQuery.h"
+#include "core/css/CSSSelectorList.h"
+#include "core/css/SelectorChecker.h"
 #include <wtf/Forward.h>
 #include <wtf/Vector.h>
 

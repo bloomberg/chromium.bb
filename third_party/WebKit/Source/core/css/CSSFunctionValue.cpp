@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include "CSSFunctionValue.h"
+#include "core/css/CSSFunctionValue.h"
 
-#include "CSSParserValues.h"
-#include "CSSValueList.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/css/CSSParserValues.h"
+#include "core/css/CSSValueList.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/StringBuilder.h>
 

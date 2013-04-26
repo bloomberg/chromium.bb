@@ -30,8 +30,8 @@
 #include "config.h"
 #include "core/rendering/ExclusionShape.h"
 
-#include "BasicShapeFunctions.h"
-#include "LengthFunctions.h"
+#include "core/css/BasicShapeFunctions.h"
+#include "core/css/LengthFunctions.h"
 #include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/WindRule.h"
 #include "core/rendering/ExclusionPolygon.h"

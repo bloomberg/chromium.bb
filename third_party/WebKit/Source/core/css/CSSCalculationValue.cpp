@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "CSSCalculationValue.h"
+#include "core/css/CSSCalculationValue.h"
 
-#include "CSSValueList.h"
-#include "StyleResolver.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/css/CSSValueList.h"
+#include "core/css/StyleResolver.h"
 #include "core/platform/Length.h"
 
 #include <wtf/OwnPtr.h>
