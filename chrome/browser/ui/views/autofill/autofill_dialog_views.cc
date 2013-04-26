@@ -1340,6 +1340,8 @@ void AutofillDialogViews::UpdateSectionImpl(
   }
 
   UpdateDetailsGroupState(*group);
+  if (group->container && group->container->visible())
+    ValidateGroup(group, AutofillDialogController::VALIDATE_EDIT);
 }
 
 void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
