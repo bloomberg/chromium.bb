@@ -2514,6 +2514,8 @@ void Document::processBaseElement()
                 if (!value.isNull())
                     target = &value;
             }
+            if (contentSecurityPolicy()->isActive())
+                UseCounter::observe(this, UseCounter::ContentSecurityPolicyWithBaseElement);
         }
     }
 
