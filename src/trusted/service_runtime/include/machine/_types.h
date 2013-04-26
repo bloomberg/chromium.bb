@@ -41,7 +41,11 @@
 #endif
 
 #define NACL_CONCAT3_(a, b, c) a ## b ## c
+#ifdef __native_client__
+#define NACL_PRI_(fmt, size) NACL_CONCAT3_(PRI, fmt, size)
+#else
 #define NACL_PRI_(fmt, size) NACL_CONCAT3_(NACL_PRI, fmt, size)
+#endif
 
 #ifndef nacl_abi___dev_t_defined
 #define nacl_abi___dev_t_defined
