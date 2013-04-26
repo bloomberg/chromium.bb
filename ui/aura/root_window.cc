@@ -288,31 +288,15 @@ void RootWindow::OnMouseEventsEnableStateChanged(bool enabled) {
 }
 
 void RootWindow::MoveCursorTo(const gfx::Point& location_in_dip) {
-  gfx::Point location(location_in_dip);
-  ConvertPointToHost(&location);
-  host_->MoveCursorTo(location);
-  SetLastMouseLocation(this, location_in_dip);
-  client::CursorClient* cursor_client = client::GetCursorClient(this);
-  if (cursor_client) {
-    const gfx::Display& display =
-        gfx::Screen::GetScreenFor(this)->GetDisplayNearestWindow(this);
-    cursor_client->SetDisplay(display);
-  }
+  gfx::Point host_location(location_in_dip);
+  ConvertPointToHost(&host_location);
+  MoveCursorToInternal(location_in_dip, host_location);
 }
 
-void RootWindow::MoveCursorToHostLoation(const gfx::Point& host_location) {
-  host_->MoveCursorTo(host_location);
+void RootWindow::MoveCursorToHostLocation(const gfx::Point& host_location) {
   gfx::Point root_location(host_location);
   ConvertPointFromHost(&root_location);
-  SetLastMouseLocation(this, root_location);
-  client::CursorClient* cursor_client = client::GetCursorClient(this);
-  if (cursor_client) {
-    const gfx::Display& display =
-        gfx::Screen::GetScreenFor(this)->GetDisplayNearestWindow(this);
-    cursor_client->SetDisplay(display);
-  }
-
-  synthesize_mouse_move_ = false;
+  MoveCursorToInternal(root_location, host_location);
 }
 
 bool RootWindow::ConfineCursorToWindow() {
@@ -710,6 +694,19 @@ void RootWindow::ClearMouseHandlers() {
 void RootWindow::TransformEventForDeviceScaleFactor(bool keep_inside_root,
                                                     ui::LocatedEvent* event) {
   event->UpdateForRootTransform(GetInverseRootTransform());
+}
+
+void RootWindow::MoveCursorToInternal(const gfx::Point& root_location,
+                                      const gfx::Point& host_location) {
+  host_->MoveCursorTo(host_location);
+  SetLastMouseLocation(this, root_location);
+  client::CursorClient* cursor_client = client::GetCursorClient(this);
+  if (cursor_client) {
+    const gfx::Display& display =
+        gfx::Screen::GetScreenFor(this)->GetDisplayNearestWindow(this);
+    cursor_client->SetDisplay(display);
+  }
+  synthesize_mouse_move_ = false;
 }
 
 void RootWindow::HandleMouseMoved(const ui::MouseEvent& event, Window* target) {

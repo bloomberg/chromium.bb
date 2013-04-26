@@ -73,11 +73,6 @@ namespace {
 
 using internal::DisplayInfo;
 
-// Factor of magnification scale. For example, when this value is 1.189, scale
-// value will be changed x1.000, x1.189, x1.414, x1.681, x2.000, ...
-// Note: this value is 2.0 ^ (1 / 4).
-const float kMagnificationFactor = 1.18920712f;
-
 bool DebugShortcutsEnabled() {
 #if defined(NDEBUG)
   return CommandLine::ForCurrentProcess()->HasSwitch(
@@ -228,18 +223,17 @@ bool HandleToggleRootWindowFullScreen() {
 // Magnify the screen
 bool HandleMagnifyScreen(int delta_index) {
   if (ash::Shell::GetInstance()->magnification_controller()->IsEnabled()) {
-    // TODO(yoshiki): Create the class like MagnifierStepScaleController, and
-    // move the following scale control to it.
+    // TODO(yoshiki): Move the following logic to MagnificationController.
     float scale =
         ash::Shell::GetInstance()->magnification_controller()->GetScale();
-    // Calculate rounded logarithm (base kMagnificationFactor) of scale.
+    // Calculate rounded logarithm (base kMagnificationScaleFactor) of scale.
     int scale_index =
-        std::floor(std::log(scale) / std::log(kMagnificationFactor) + 0.5);
+        std::floor(std::log(scale) / std::log(kMagnificationScaleFactor) + 0.5);
 
     int new_scale_index = std::max(0, std::min(8, scale_index + delta_index));
 
     ash::Shell::GetInstance()->magnification_controller()->
-        SetScale(std::pow(kMagnificationFactor, new_scale_index), true);
+        SetScale(std::pow(kMagnificationScaleFactor, new_scale_index), true);
   } else if (ash::Shell::GetInstance()->
              partial_magnification_controller()->is_enabled()) {
     float scale = delta_index > 0 ? kDefaultPartialMagnifiedScale : 1;

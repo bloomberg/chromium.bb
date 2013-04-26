@@ -47,6 +47,11 @@ class MagnificationController {
   virtual void EnsureRectIsVisible(const gfx::Rect& rect, bool animate) = 0;
   virtual void EnsurePointIsVisible(const gfx::Point& point, bool animate) = 0;
 
+  // Returns |point_of_interest_| in MagnificationControllerImpl. This is
+  // the internal variable to stores the last mouse cursor (or last touched)
+  // location. This method is only for test purpose.
+  virtual gfx::Point GetPointOfInterestForTesting() = 0;
+
  protected:
   MagnificationController() {}
 };

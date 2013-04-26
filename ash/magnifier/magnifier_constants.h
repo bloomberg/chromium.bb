@@ -17,6 +17,11 @@ const int kMaxMagnifierType = 2;
 
 const MagnifierType kDefaultMagnifierType = MAGNIFIER_FULL;
 
+// Factor of magnification scale. For example, when this value is 1.189, scale
+// value will be changed x1.000, x1.189, x1.414, x1.681, x2.000, ...
+// Note: this value is 2.0 ^ (1 / 4).
+const float kMagnificationScaleFactor = 1.18920712f;
+
 }  // namespace ash
 
 #endif  // ASH_MAGNIFIER_MAGNIFIER_CONSTANTS_H_

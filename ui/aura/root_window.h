@@ -130,7 +130,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   virtual void MoveCursorTo(const gfx::Point& location) OVERRIDE;
 
   // Moves the cursor to the |host_location| given in host coordinates.
-  void MoveCursorToHostLoation(const gfx::Point& host_location);
+  void MoveCursorToHostLocation(const gfx::Point& host_location);
 
   // Clips the cursor movement to the root_window.
   bool ConfineCursorToWindow();
@@ -317,6 +317,11 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // kept inside the root window's bounds.
   void TransformEventForDeviceScaleFactor(bool keep_inside_root,
                                           ui::LocatedEvent* event);
+
+  // Moves the cursor to the specified location. This method is internally used
+  // by MoveCursorTo() and MoveCursorToHostLocation().
+  void MoveCursorToInternal(const gfx::Point& root_location,
+                            const gfx::Point& host_location);
 
   // Called whenever the mouse moves, tracks the current |mouse_moved_handler_|,
   // sending exited and entered events as its value changes.

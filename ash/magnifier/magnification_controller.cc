@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "base/synchronization/waitable_event.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/root_window_transformer.h"
@@ -46,7 +47,7 @@ void MoveCursorTo(aura::RootWindow* root_window,
                   const gfx::Point root_location) {
   gfx::Point3F host_location_3f(root_location);
   root_window->layer()->transform().TransformPoint(host_location_3f);
-  root_window->MoveCursorToHostLoation(
+  root_window->MoveCursorToHostLocation(
       gfx::ToCeiledPoint(host_location_3f.AsPointF()));
 }
 
@@ -79,6 +80,10 @@ class MagnificationControllerImpl : virtual public MagnificationController,
                                    bool animate) OVERRIDE;
   virtual void EnsurePointIsVisible(const gfx::Point& point,
                                     bool animate) OVERRIDE;
+  // For test
+  virtual gfx::Point GetPointOfInterestForTesting() OVERRIDE {
+    return point_of_interest_;
+  }
 
  private:
   // ui::ImplicitAnimationObserver overrides:
