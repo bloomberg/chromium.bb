@@ -122,8 +122,8 @@ AwContents::AwContents(JNIEnv* env,
           new AwWebContentsDelegate(env, web_contents_delegate)),
       contents_client_bridge_(
           new AwContentsClientBridge(env, contents_client_bridge)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(browser_view_renderer_(
-          BrowserViewRendererImpl::Create(this, &java_renderer_helper))) {
+      browser_view_renderer_(
+          BrowserViewRendererImpl::Create(this, &java_renderer_helper)) {
   android_webview::AwBrowserDependencyFactory* dependency_factory =
       android_webview::AwBrowserDependencyFactory::GetInstance();
 

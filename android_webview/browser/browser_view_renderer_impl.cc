@@ -132,7 +132,7 @@ BrowserViewRendererImpl::BrowserViewRendererImpl(
     : client_(client),
       java_helper_(java_helper),
       view_renderer_host_(new ViewRendererHost(NULL, this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(compositor_(Compositor::Create(this))),
+      compositor_(Compositor::Create(this)),
       view_clip_layer_(cc::Layer::Create()),
       transform_layer_(cc::Layer::Create()),
       scissor_clip_layer_(cc::Layer::Create()),
@@ -147,7 +147,7 @@ BrowserViewRendererImpl::BrowserViewRendererImpl(
       web_contents_(NULL),
       update_frame_info_callback_(
           base::Bind(&BrowserViewRendererImpl::OnFrameInfoUpdated,
-                     base::Unretained(ALLOW_THIS_IN_INITIALIZER_LIST(this)))),
+                     base::Unretained(this))),
       prevent_client_invalidate_(false) {
 
   DCHECK(java_helper);

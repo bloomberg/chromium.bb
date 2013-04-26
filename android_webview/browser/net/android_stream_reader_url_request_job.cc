@@ -90,7 +90,7 @@ AndroidStreamReaderURLRequestJob::AndroidStreamReaderURLRequestJob(
     scoped_ptr<Delegate> delegate)
     : URLRequestJob(request, network_delegate),
       delegate_(delegate.Pass()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   DCHECK(delegate_);
 }
 

@@ -157,7 +157,7 @@ jint GetDefaultNativeAwQuotaManagerBridge(JNIEnv* env, jclass clazz) {
 
 AwQuotaManagerBridgeImpl::AwQuotaManagerBridgeImpl(
     AwBrowserContext* browser_context)
-    : weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+    : weak_factory_(this),
       browser_context_(browser_context) {
 }
 
