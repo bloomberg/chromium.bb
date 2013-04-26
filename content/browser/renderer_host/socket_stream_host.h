@@ -34,7 +34,7 @@ class SocketStreamHost {
   ~SocketStreamHost();
 
   // Gets socket_id associated with |socket|.
-  static int SocketIdFromSocketStream(net::SocketStream* socket);
+  static int SocketIdFromSocketStream(const net::SocketStream* socket);
 
   int render_view_id() const { return render_view_id_; }
   int socket_id() const { return socket_id_; }

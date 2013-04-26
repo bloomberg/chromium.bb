@@ -51,6 +51,7 @@ class SocketStreamDispatcherHost
   virtual void OnReceivedData(net::SocketStream* socket,
                               const char* data, int len) OVERRIDE;
   virtual void OnClose(net::SocketStream* socket) OVERRIDE;
+  virtual void OnError(const net::SocketStream* socket, int error) OVERRIDE;
   virtual void OnSSLCertificateError(net::SocketStream* socket,
                                      const net::SSLInfo& ssl_info,
                                      bool fatal) OVERRIDE;

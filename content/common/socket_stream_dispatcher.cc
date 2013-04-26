@@ -11,11 +11,14 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
+#include "base/string16.h"
+#include "base/utf_string_conversions.h"
 #include "content/common/child_thread.h"
 #include "content/common/socket_stream.h"
 #include "content/common/socket_stream_handle_data.h"
 #include "content/common/socket_stream_messages.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/net_errors.h"
 #include "webkit/glue/websocketstreamhandle_bridge.h"
 #include "webkit/glue/websocketstreamhandle_delegate.h"
 
@@ -48,6 +51,7 @@ class IPCWebSocketStreamHandleBridge
   void OnSentData(int amount_sent);
   void OnReceivedData(const std::vector<char>& data);
   void OnClosed();
+  void OnFailed(int error_code, const char* error_msg);
 
  private:
   virtual ~IPCWebSocketStreamHandleBridge();
@@ -159,6 +163,14 @@ void IPCWebSocketStreamHandleBridge::OnClosed() {
   Release();
 }
 
+void IPCWebSocketStreamHandleBridge::OnFailed(int error_code,
+                                              const char* error_msg) {
+  DVLOG(1) << "Bridge #" << socket_id_ << " OnFailed (error_code=" << error_code
+           << ")";
+  if (delegate_)
+    delegate_->DidFail(handle_, error_code, ASCIIToUTF16(error_msg));
+}
+
 void IPCWebSocketStreamHandleBridge::DoConnect(const GURL& url) {
   DCHECK(child_thread_);
   DCHECK_EQ(socket_id_, kNoSocketId);
@@ -207,6 +219,7 @@ bool SocketStreamDispatcher::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(SocketStreamMsg_SentData, OnSentData)
     IPC_MESSAGE_HANDLER(SocketStreamMsg_ReceivedData, OnReceivedData)
     IPC_MESSAGE_HANDLER(SocketStreamMsg_Closed, OnClosed)
+    IPC_MESSAGE_HANDLER(SocketStreamMsg_Failed, OnFailed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -257,6 +270,15 @@ void SocketStreamDispatcher::OnClosed(int socket_id) {
       IPCWebSocketStreamHandleBridge::FromSocketId(socket_id);
   if (bridge)
     bridge->OnClosed();
+  else
+    DLOG(ERROR) << "No bridge for socket_id=" << socket_id;
+}
+
+void SocketStreamDispatcher::OnFailed(int socket_id, int error_code) {
+  IPCWebSocketStreamHandleBridge* bridge =
+      IPCWebSocketStreamHandleBridge::FromSocketId(socket_id);
+  if (bridge)
+    bridge->OnFailed(error_code, net::ErrorToString(error_code));
   else
     DLOG(ERROR) << "No bridge for socket_id=" << socket_id;
 }
