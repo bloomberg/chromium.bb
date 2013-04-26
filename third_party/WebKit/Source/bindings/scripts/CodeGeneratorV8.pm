@@ -865,7 +865,7 @@ sub GenerateDomainSafeFunctionGetter
     my $v8InterfaceName = "V8" . $interfaceName;
     my $funcName = $function->signature->name;
 
-    my ($numMandatoryParams, $parametersCheck) = GenerateFunctionParametersCheck($function);
+    my $functionLength = GetFunctionLength($function);
     my $signature = "v8::Signature::New(V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&" . $v8InterfaceName . "::info, currentWorldType))";
     if ($function->signature->extendedAttributes->{"DoNotCheckSignature"}) {
         $signature = "v8::Local<v8::Signature>()";
@@ -881,7 +881,7 @@ static v8::Handle<v8::Value> ${funcName}AttrGetter(v8::Local<v8::String> name, c
     static const char* privateTemplateUniqueKey = "${funcName}PrivateTemplate";
     WrapperWorldType currentWorldType = worldType(info.GetIsolate());
     V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());
-    v8::Persistent<v8::FunctionTemplate> privateTemplate = data->privateTemplate(currentWorldType, &privateTemplateUniqueKey, $newTemplateParams, $numMandatoryParams);
+    v8::Persistent<v8::FunctionTemplate> privateTemplate = data->privateTemplate(currentWorldType, &privateTemplateUniqueKey, $newTemplateParams, $functionLength);
 
     v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(${v8InterfaceName}::GetTemplate(info.GetIsolate(), currentWorldType));
     if (holder.IsEmpty()) {
@@ -892,7 +892,7 @@ static v8::Handle<v8::Value> ${funcName}AttrGetter(v8::Local<v8::String> name, c
     ${interfaceName}* imp = ${v8InterfaceName}::toNative(holder);
     if (!BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), imp->frame(), DoNotReportSecurityError)) {
         static const char* sharedTemplateUniqueKey = "${funcName}SharedTemplate";
-        v8::Persistent<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, $newTemplateParams, $numMandatoryParams);
+        v8::Persistent<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, $newTemplateParams, $functionLength);
         return sharedTemplate->GetFunction();
     }
 
@@ -1680,6 +1680,22 @@ sub GenerateParametersCheckExpression
     return $res;
 }
 
+# As per Web IDL specification, the length of a function Object is
+# its number of mandatory parameters.
+sub GetFunctionLength
+{
+    my $function = shift;
+
+    my $numMandatoryParams = 0;
+    foreach my $parameter (@{$function->parameters}) {
+        # Abort as soon as we find the first optional parameter as no mandatory
+        # parameter can follow an optional one.
+        last if $parameter->isOptional;
+        $numMandatoryParams++;
+    }
+    return $numMandatoryParams;
+}
+
 sub GenerateFunctionParametersCheck
 {
     my $function = shift;
@@ -2299,20 +2315,20 @@ sub GetInterfaceLength
 {
     my $interface = shift;
 
-    my $leastNumMandatoryParams = 0;
+    my $leastConstructorLength = 0;
     if ($codeGenerator->IsConstructorTemplate($interface, "Event") || $codeGenerator->IsConstructorTemplate($interface, "TypedArray")) {
-        $leastNumMandatoryParams = 1;
+        $leastConstructorLength = 1;
     } elsif ($interface->extendedAttributes->{"Constructor"} || $interface->extendedAttributes->{"CustomConstructor"}) {
         my @constructors = @{$interface->constructors};
         my @customConstructors = @{$interface->customConstructors};
-        $leastNumMandatoryParams = 255;
+        $leastConstructorLength = 255;
         foreach my $constructor (@constructors, @customConstructors) {
-            my ($numMandatoryParams, $parametersCheck) = GenerateFunctionParametersCheck($constructor);
-            $leastNumMandatoryParams = $numMandatoryParams if ($numMandatoryParams < $leastNumMandatoryParams);
+            my $constructorLength = GetFunctionLength($constructor);
+            $leastConstructorLength = $constructorLength if ($constructorLength < $leastConstructorLength);
         }
     }
 
-    return $leastNumMandatoryParams;
+    return $leastConstructorLength;
 }
 
 sub GenerateConstructorCallback
@@ -2789,18 +2805,18 @@ END
         die "This shouldn't happen: Intraface '$interfaceName' $commentInfo\n";
     }
 
-    my ($numMandatoryParams, $parametersCheck) = GenerateFunctionParametersCheck($function);
+    my $functionLength = GetFunctionLength($function);
 
     my $conditionalString = $codeGenerator->GenerateConditionalString($function->signature);
     $code .= "#if ${conditionalString}\n" if $conditionalString;
     if ($function->signature->extendedAttributes->{"PerWorldBindings"}) {
         $code .= "    if (currentWorldType == MainWorld) {\n";
-        $code .= "        ${conditional}$template->Set(v8::String::NewSymbol(\"$name\"), v8::FunctionTemplate::New(${interfaceName}V8Internal::${name}MethodCallbackForMainWorld, v8Undefined(), ${signature}, $numMandatoryParams)$property_attributes);\n";
+        $code .= "        ${conditional}$template->Set(v8::String::NewSymbol(\"$name\"), v8::FunctionTemplate::New(${interfaceName}V8Internal::${name}MethodCallbackForMainWorld, v8Undefined(), ${signature}, $functionLength)$property_attributes);\n";
         $code .= "    } else {\n";
-        $code .= "        ${conditional}$template->Set(v8::String::NewSymbol(\"$name\"), v8::FunctionTemplate::New(${interfaceName}V8Internal::${name}MethodCallback, v8Undefined(), ${signature}, $numMandatoryParams)$property_attributes);\n";
+        $code .= "        ${conditional}$template->Set(v8::String::NewSymbol(\"$name\"), v8::FunctionTemplate::New(${interfaceName}V8Internal::${name}MethodCallback, v8Undefined(), ${signature}, $functionLength)$property_attributes);\n";
         $code .= "    }\n";
     } else {
-        $code .= "    ${conditional}$template->Set(v8::String::NewSymbol(\"$name\"), v8::FunctionTemplate::New(${interfaceName}V8Internal::${name}MethodCallback, v8Undefined(), ${signature}, $numMandatoryParams)$property_attributes);\n";
+        $code .= "    ${conditional}$template->Set(v8::String::NewSymbol(\"$name\"), v8::FunctionTemplate::New(${interfaceName}V8Internal::${name}MethodCallback, v8Undefined(), ${signature}, $functionLength)$property_attributes);\n";
     }
     $code .= "#endif // ${conditionalString}\n" if $conditionalString;
     return $code;
@@ -3324,12 +3340,11 @@ END
         if ($function->signature->extendedAttributes->{"PerWorldBindings"}) {
             $methodForMainWorld = "${interfaceName}V8Internal::${name}MethodCallbackForMainWorld";
         }
-        # numMandatoryParams is used to set the "length" property of the Function object.
-        my ($numMandatoryParams, $parametersCheck) = GenerateFunctionParametersCheck($function);
+        my $functionLength = GetFunctionLength($function);
         my $conditionalString = $codeGenerator->GenerateConditionalString($function->signature);
         $code .= "#if ${conditionalString}\n" if $conditionalString;
         $code .= <<END;
-    {"$name", ${interfaceName}V8Internal::${name}MethodCallback, ${methodForMainWorld}, ${numMandatoryParams}},
+    {"$name", ${interfaceName}V8Internal::${name}MethodCallback, ${methodForMainWorld}, ${functionLength}},
 END
         $code .= "#endif\n" if $conditionalString;
         $num_callbacks++;
@@ -3660,13 +3675,13 @@ END
 
         foreach my $runtimeFunc (@enabledPerContextFunctions) {
             my $enableFunction = GetContextEnableFunction($runtimeFunc->signature);
-            my ($numMandatoryParams, $parametersCheck) = GenerateFunctionParametersCheck($runtimeFunc);
+            my $functionLength = GetFunctionLength($runtimeFunc);
             my $conditionalString = $codeGenerator->GenerateConditionalString($runtimeFunc->signature);
             $code .= "\n#if ${conditionalString}\n" if $conditionalString;
             $code .= "    if (context && context->isDocument() && ${enableFunction}(toDocument(context))) {\n";
             my $name = $runtimeFunc->signature->name;
             $code .= <<END;
-        proto->Set(v8::String::NewSymbol("${name}"), v8::FunctionTemplate::New(${interfaceName}V8Internal::${name}MethodCallback, v8Undefined(), defaultSignature, $numMandatoryParams)->GetFunction());
+        proto->Set(v8::String::NewSymbol("${name}"), v8::FunctionTemplate::New(${interfaceName}V8Internal::${name}MethodCallback, v8Undefined(), defaultSignature, $functionLength)->GetFunction());
 END
             $code .= "    }\n";
             $code .= "#endif // ${conditionalString}\n" if $conditionalString;
