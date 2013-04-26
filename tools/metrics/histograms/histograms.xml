@@ -505,6 +505,17 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Drive.MetadataDBInitResult" enum="DriveMetadataDBInitStatus">
+  <summary>Result of drive resource metadata database initialization.</summary>
+</histogram>
+
+<histogram name="Drive.MetadataDBOpenExistingResult"
+    enum="DriveMetadataDBInitStatus">
+  <summary>
+    Result of attempt to open existing drive resource metadata database.
+  </summary>
+</histogram>
+
 <histogram name="Drive.NumberOfHostedDocuments">
   <summary>
     Number of hosted documents (spreadsheets etc.) on Drive. Logged when Drive
@@ -5565,6 +5576,16 @@ other types of suffix sets.
   <int value="21" label="XLS"/>
   <int value="22" label="XLSX"/>
   <int value="23" label="ZIP"/>
+</enum>
+
+<enum name="DriveMetadataDBInitStatus" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Not found"/>
+  <int value="2" label="Corruption"/>
+  <int value="3" label="IO error"/>
+  <int value="4" label="Failed to open DB for unknown reason"/>
+  <int value="5" label="Incompatible DB format"/>
+  <int value="6" label="DB is broken"/>
 </enum>
 
 <enum name="EnterprisePolicies" type="int">
