@@ -78,7 +78,7 @@ void UseCounter::observe(Document* document, Feature feature)
     if (!page)
         return;
 
-    ASSERT(page->useCounter()->deprecationMessage(feature)->isEmpty());
+    ASSERT(page->useCounter()->deprecationMessage(feature).isEmpty());
     page->useCounter()->recordObservation(feature);
 }
 
@@ -112,7 +112,7 @@ void UseCounter::measureDeprecatedFeature(Document* document, Feature feature)
         return;
 
     if (page->useCounter()->recordObservation(feature)) {
-        ASSERT(!page->useCounter()->deprecationMessage(feature)->isEmpty());
+        ASSERT(!page->useCounter()->deprecationMessage(feature).isEmpty());
         page->console()->addMessage(DeprecationMessageSource, WarningMessageLevel, page->useCounter()->deprecationMessage(feature));
     }
 }
