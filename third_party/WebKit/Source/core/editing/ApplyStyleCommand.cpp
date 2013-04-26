@@ -1075,6 +1075,7 @@ void ApplyStyleCommand::removeInlineStyle(EditingStyle* style, const Position &s
     ASSERT(start.anchorNode()->inDocument());
     ASSERT(end.anchorNode()->inDocument());
     ASSERT(comparePositions(start, end) <= 0);
+    // FIXME: We should assert that start/end are not in the middle of a text node.
 
     Position pushDownStart = start.downstream();
     // If the pushDownStart is at the end of a text node, then this node is not fully selected.
@@ -1085,6 +1086,11 @@ void ApplyStyleCommand::removeInlineStyle(EditingStyle* style, const Position &s
         && pushDownStart.computeOffsetInContainerNode() == pushDownStartContainer->maxCharacterOffset())
         pushDownStart = nextVisuallyDistinctCandidate(pushDownStart);
     Position pushDownEnd = end.upstream();
+    // If pushDownEnd is at the start of a text node, then this node is not fully selected.
+    // Move it to the previous deep equivalent position to avoid removing the style from this node.
+    Node* pushDownEndContainer = pushDownEnd.containerNode();
+    if (pushDownEndContainer && pushDownEndContainer->isTextNode() && !pushDownEnd.computeOffsetInContainerNode())
+        pushDownEnd = previousVisuallyDistinctCandidate(pushDownEnd);
 
     pushDownInlineStyleAroundNode(style, pushDownStart.deprecatedNode());
     pushDownInlineStyleAroundNode(style, pushDownEnd.deprecatedNode());
@@ -1150,6 +1156,9 @@ bool ApplyStyleCommand::nodeFullySelected(Node *node, const Position &start, con
 {
     ASSERT(node);
     ASSERT(node->isElementNode());
+
+    // The tree may have changed and Position::upstream() relies on an up-to-date layout.
+    node->document()->updateLayoutIgnorePendingStylesheets();
 
     return comparePositions(firstPositionInOrBeforeNode(node), start) >= 0
         && comparePositions(lastPositionInOrAfterNode(node).upstream(), end) <= 0;
