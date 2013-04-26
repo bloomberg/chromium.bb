@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/string16.h"
 #include "chrome/browser/devtools/devtools_file_helper.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
 #include "content/public/browser/devtools_client_host.h"
@@ -205,8 +206,10 @@ class DevToolsWindow : private content::NotificationObserver,
   void AppendedTo(const std::string& url);
   void FileSystemsLoaded(
       const std::vector<DevToolsFileHelper::FileSystem>& file_systems);
-  void FileSystemAdded(std::string error_string,
-                       const DevToolsFileHelper::FileSystem& file_system);
+  void ShowDevToolsConfirmInfoBar(
+      const string16& message,
+      const base::Callback<void(bool)>& callback);
+  void FileSystemAdded(const DevToolsFileHelper::FileSystem& file_system);
 
   void UpdateBrowserToolbar();
   bool IsDocked();

@@ -55,9 +55,6 @@ namespace {
 typedef Callback<void(const base::FilePath&)> SelectedCallback;
 typedef Callback<void(void)> CanceledCallback;
 
-const base::FilePath::CharType kMagicFileName[] =
-    FILE_PATH_LITERAL(".allow-devtools-edit");
-
 class SelectFileDialog : public ui::SelectFileDialog::Listener,
                          public base::RefCounted<SelectFileDialog> {
  public:
@@ -155,23 +152,6 @@ std::string RegisterFileSystem(WebContents* web_contents,
     policy->GrantReadFile(renderer_id, path);
 
   return file_system_id;
-}
-
-typedef Callback<void(const std::vector<base::FilePath>&)>
-    ValidateFoldersCallback;
-
-void ValidateFoldersOnFileThread(const std::vector<base::FilePath>& file_paths,
-                                 const ValidateFoldersCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  std::vector<base::FilePath> permitted_paths;
-  std::vector<base::FilePath>::const_iterator it;
-  for (it = file_paths.begin(); it != file_paths.end(); ++it) {
-    base::FilePath security_file_path = it->Append(kMagicFileName);
-    if (file_util::PathExists(security_file_path))
-      permitted_paths.push_back(*it);
-  }
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          Bind(callback, permitted_paths));
 }
 
 DevToolsFileHelper::FileSystem CreateFileSystemStruct(
@@ -294,43 +274,41 @@ void DevToolsFileHelper::SaveAsFileSelected(const std::string& url,
 void DevToolsFileHelper::SaveAsFileSelectionCanceled() {
 }
 
-void DevToolsFileHelper::AddFileSystem(const AddFileSystemCallback& callback) {
+void DevToolsFileHelper::AddFileSystem(
+    const AddFileSystemCallback& callback,
+    const ShowInfoBarCallback& show_info_bar_callback) {
   scoped_refptr<SelectFileDialog> select_file_dialog = new SelectFileDialog(
       Bind(&DevToolsFileHelper::InnerAddFileSystem,
            weak_factory_.GetWeakPtr(),
-           callback),
-      Bind(callback, "", FileSystem()));
+           callback,
+           show_info_bar_callback),
+      Bind(callback, FileSystem()));
   select_file_dialog->Show(ui::SelectFileDialog::SELECT_FOLDER,
                            base::FilePath());
 }
 
 void DevToolsFileHelper::InnerAddFileSystem(
     const AddFileSystemCallback& callback,
+    const ShowInfoBarCallback& show_info_bar_callback,
     const base::FilePath& path) {
-  std::vector<base::FilePath> file_paths(1, path);
-  ValidateFoldersCallback validate_folders_callback = Bind(
-      &DevToolsFileHelper::AddValidatedFileSystem,
-      weak_factory_.GetWeakPtr(),
-      callback);
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          Bind(&ValidateFoldersOnFileThread,
-                               file_paths,
-                               validate_folders_callback));
+  string16 message = l10n_util::GetStringFUTF16(
+      IDS_DEV_TOOLS_CONFIRM_ADD_FILE_SYSTEM_MESSAGE,
+      UTF8ToUTF16(path.AsUTF8Unsafe() + "/"));
+  show_info_bar_callback.Run(
+      message,
+      Bind(&DevToolsFileHelper::AddUserConfirmedFileSystem,
+           weak_factory_.GetWeakPtr(),
+           callback, path));
 }
 
-void DevToolsFileHelper::AddValidatedFileSystem(
+void DevToolsFileHelper::AddUserConfirmedFileSystem(
     const AddFileSystemCallback& callback,
-    const std::vector<base::FilePath>& permitted_paths) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (permitted_paths.empty()) {
-    std::string magic_file_name = base::FilePath(kMagicFileName).AsUTF8Unsafe();
-    std::string error_string = l10n_util::GetStringFUTF8(
-        IDS_DEV_TOOLS_MAGIC_FILE_NOT_EXISTS_MESSAGE,
-        UTF8ToUTF16(magic_file_name));
-    callback.Run(error_string, FileSystem());
+    const base::FilePath& path,
+    bool allowed) {
+  if (!allowed) {
+    callback.Run(FileSystem());
     return;
   }
-  base::FilePath path = permitted_paths.at(0);
   std::string registered_name;
   std::string file_system_id = RegisterFileSystem(web_contents_,
                                                   path,
@@ -346,43 +324,23 @@ void DevToolsFileHelper::AddValidatedFileSystem(
                                                  file_system_id,
                                                  registered_name,
                                                  file_system_path);
-  callback.Run(std::string(), filesystem);
+  callback.Run(filesystem);
 }
 
 void DevToolsFileHelper::RequestFileSystems(
     const RequestFileSystemsCallback& callback) {
   const DictionaryValue* file_systems_paths_value =
       profile_->GetPrefs()->GetDictionary(prefs::kDevToolsFileSystemPaths);
-  std::vector<base::FilePath> saved_paths;
+  std::vector<FileSystem> file_systems;
   for (DictionaryValue::Iterator it(*file_systems_paths_value); !it.IsAtEnd();
        it.Advance()) {
     std::string file_system_path = it.key();
     base::FilePath path = base::FilePath::FromUTF8Unsafe(file_system_path);
-    saved_paths.push_back(path);
-  }
 
-  ValidateFoldersCallback validate_folders_callback = Bind(
-      &DevToolsFileHelper::RestoreValidatedFileSystems,
-      weak_factory_.GetWeakPtr(),
-      callback);
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          Bind(&ValidateFoldersOnFileThread,
-                               saved_paths,
-                               validate_folders_callback));
-}
-
-void DevToolsFileHelper::RestoreValidatedFileSystems(
-    const RequestFileSystemsCallback& callback,
-    const std::vector<base::FilePath>& permitted_paths) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::vector<FileSystem> file_systems;
-  std::vector<base::FilePath>::const_iterator it;
-  for (it = permitted_paths.begin(); it != permitted_paths.end(); ++it) {
     std::string registered_name;
     std::string file_system_id = RegisterFileSystem(web_contents_,
-                                                    *it,
+                                                    path,
                                                     &registered_name);
-    std::string file_system_path = it->AsUTF8Unsafe();
     FileSystem filesystem = CreateFileSystemStruct(web_contents_,
                                                    file_system_id,
                                                    registered_name,

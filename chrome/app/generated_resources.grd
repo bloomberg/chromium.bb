@@ -4233,8 +4233,17 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       </message>
 
       <!-- DevTools file system access -->
-      <message name="IDS_DEV_TOOLS_MAGIC_FILE_NOT_EXISTS_MESSAGE" desc="Message that is shown in DevTools when user selects file system folder without security file while adding file system to DevTools.">
-        The selected folder should contain an empty file with the following name: "$1".
+      <message name="IDS_DEV_TOOLS_CONFIRM_ADD_FILE_SYSTEM_MESSAGE" desc="Message displayed in DevTools infobar when user attempts to add file system to DevTools.">
+        DevTools requests full access to $1.
+Make sure you do not expose any sensitive information.
+      </message>
+
+      <!-- DevTools confirm infobar button labels -->
+      <message name="IDS_DEV_TOOLS_CONFIRM_ALLOW_BUTTON" desc="Used as an 'Allow' button label.">
+        Allow
+      </message>
+      <message name="IDS_DEV_TOOLS_CONFIRM_DENY_BUTTON" desc="Used as an 'Deny' button label.">
+        Deny
       </message>
 
       <!-- Advanced reload button menu -->

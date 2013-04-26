@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/file_select_helper.h"
+#include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -58,6 +59,7 @@
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/url_constants.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 typedef std::vector<DevToolsWindow*> DevToolsWindowList;
 namespace {
@@ -66,6 +68,7 @@ base::LazyInstance<DevToolsWindowList>::Leaky
 }  // namespace
 
 using base::Bind;
+using base::Callback;
 using content::DevToolsAgentHost;
 using content::DevToolsClientHost;
 using content::DevToolsManager;
@@ -120,6 +123,52 @@ class DevToolsWindow::FrontendWebContentsObserver
       RenderViewHost* render_view_host) OVERRIDE {
     content::DevToolsClientHost::SetupDevToolsFrontendClient(render_view_host);
   }
+};
+
+typedef Callback<void(bool)> ConfirmInfoBarCallback;
+
+class DevToolsConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
+ public:
+  DevToolsConfirmInfoBarDelegate(
+      InfoBarService* infobar_service,
+      const ConfirmInfoBarCallback& callback,
+      string16 message)
+      : ConfirmInfoBarDelegate(infobar_service),
+        callback_(callback),
+        message_(message) {
+  }
+
+  virtual string16 GetMessageText() const {
+    return message_;
+  }
+
+  virtual bool Accept() {
+    callback_.Run(true);
+    callback_.Reset();
+    return true;
+  }
+
+  virtual bool Cancel() {
+    callback_.Run(false);
+    callback_.Reset();
+    return true;
+  }
+
+  string16 GetButtonLabel(InfoBarButton button) const {
+    return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
+        IDS_DEV_TOOLS_CONFIRM_ALLOW_BUTTON :
+        IDS_DEV_TOOLS_CONFIRM_DENY_BUTTON);
+  }
+
+ private:
+  virtual ~DevToolsConfirmInfoBarDelegate() {
+    if (!callback_.is_null()) {
+      callback_.Run(false);
+    }
+  }
+
+  ConfirmInfoBarCallback callback_;
+  string16 message_;
 };
 
 // static
@@ -980,7 +1029,9 @@ void DevToolsWindow::RequestFileSystems() {
 void DevToolsWindow::AddFileSystem() {
   CHECK(web_contents_->GetURL().SchemeIs(chrome::kChromeDevToolsScheme));
   file_helper_->AddFileSystem(
-      Bind(&DevToolsWindow::FileSystemAdded, weak_factory_.GetWeakPtr()));
+      Bind(&DevToolsWindow::FileSystemAdded, weak_factory_.GetWeakPtr()),
+      Bind(&DevToolsWindow::ShowDevToolsConfirmInfoBar,
+           weak_factory_.GetWeakPtr()));
 }
 
 void DevToolsWindow::RemoveFileSystem(const std::string& file_system_path) {
@@ -1012,9 +1063,8 @@ void DevToolsWindow::FileSystemsLoaded(
 }
 
 void DevToolsWindow::FileSystemAdded(
-    std::string error_string,
     const DevToolsFileHelper::FileSystem& file_system) {
-  StringValue error_string_value(error_string);
+  StringValue error_string_value("");
   DictionaryValue* file_system_value = NULL;
   if (!file_system.file_system_path.empty())
     file_system_value = CreateFileSystemValue(file_system);
@@ -1023,6 +1073,24 @@ void DevToolsWindow::FileSystemAdded(
                      file_system_value);
   if (file_system_value)
     delete file_system_value;
+}
+
+void DevToolsWindow::ShowDevToolsConfirmInfoBar(
+    const string16& message,
+    const ConfirmInfoBarCallback& callback) {
+  InfoBarService* infobar_service = IsDocked() ?
+      InfoBarService::FromWebContents(GetInspectedWebContents()) :
+      InfoBarService::FromWebContents(web_contents_);
+
+  if (infobar_service) {
+    infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+        new DevToolsConfirmInfoBarDelegate(
+            infobar_service,
+            callback,
+            message)));
+  } else {
+    callback.Run(false);
+  }
 }
 
 content::JavaScriptDialogManager* DevToolsWindow::GetJavaScriptDialogManager() {
