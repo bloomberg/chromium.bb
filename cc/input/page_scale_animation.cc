@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include "base/logging.h"
+#include "cc/animation/timing_function.h"
 #include "ui/gfx/point_f.h"
 #include "ui/gfx/rect_f.h"
 #include "ui/gfx/vector2d_conversions.h"
@@ -44,19 +45,23 @@ scoped_ptr<PageScaleAnimation> PageScaleAnimation::Create(
     float start_page_scale_factor,
     gfx::SizeF viewport_size,
     gfx::SizeF root_layer_size,
-    double start_time) {
+    double start_time,
+    scoped_ptr<TimingFunction> timing_function) {
   return make_scoped_ptr(new PageScaleAnimation(start_scroll_offset,
                                                 start_page_scale_factor,
                                                 viewport_size,
                                                 root_layer_size,
-                                                start_time));
+                                                start_time,
+                                                timing_function.Pass()));
 }
 
-PageScaleAnimation::PageScaleAnimation(gfx::Vector2dF start_scroll_offset,
-                                       float start_page_scale_factor,
-                                       gfx::SizeF viewport_size,
-                                       gfx::SizeF root_layer_size,
-                                       double start_time)
+PageScaleAnimation::PageScaleAnimation(
+    gfx::Vector2dF start_scroll_offset,
+    float start_page_scale_factor,
+    gfx::SizeF viewport_size,
+    gfx::SizeF root_layer_size,
+    double start_time,
+    scoped_ptr<TimingFunction> timing_function)
     : start_page_scale_factor_(start_page_scale_factor),
       target_page_scale_factor_(0.f),
       start_scroll_offset_(start_scroll_offset),
@@ -65,7 +70,8 @@ PageScaleAnimation::PageScaleAnimation(gfx::Vector2dF start_scroll_offset,
       viewport_size_(viewport_size),
       root_layer_size_(root_layer_size),
       start_time_(start_time),
-      duration_(0.0) {}
+      duration_(0.0),
+      timing_function_(timing_function.Pass()) {}
 
 PageScaleAnimation::~PageScaleAnimation() {}
 
@@ -176,7 +182,8 @@ float PageScaleAnimation::InterpAtTime(double time) const {
   if (IsAnimationCompleteAtTime(time))
     return 1.f;
 
-  return (time - start_time_) / duration_;
+  const double normalized_time = (time - start_time_) / duration_;
+  return timing_function_->GetValue(normalized_time);
 }
 
 gfx::Vector2dF PageScaleAnimation::ScrollOffsetAt(float interp) const {

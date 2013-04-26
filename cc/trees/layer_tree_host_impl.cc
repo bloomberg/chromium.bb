@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "cc/animation/scrollbar_animation_controller.h"
+#include "cc/animation/timing_function.h"
 #include "cc/base/math_util.h"
 #include "cc/base/util.h"
 #include "cc/debug/debug_rect_history.h"
@@ -317,12 +318,18 @@ void LayerTreeHostImpl::StartPageScaleAnimation(gfx::Vector2d target_offset,
   gfx::SizeF viewport_size = VisibleViewportSize();
 
   double start_time_seconds = (start_time - base::TimeTicks()).InSecondsF();
+
+  // Easing constants experimentally determined.
+  scoped_ptr<TimingFunction> timing_function =
+      CubicBezierTimingFunction::Create(.8, 0, .3, .9).PassAs<TimingFunction>();
+
   page_scale_animation_ =
       PageScaleAnimation::Create(scroll_total,
                                  active_tree_->total_page_scale_factor(),
                                  viewport_size,
                                  scaled_scrollable_size,
-                                 start_time_seconds);
+                                 start_time_seconds,
+                                 timing_function.Pass());
 
   if (anchor_point) {
     gfx::Vector2dF anchor(target_offset);

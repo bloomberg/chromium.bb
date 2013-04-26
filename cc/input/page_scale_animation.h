@@ -11,11 +11,13 @@
 #include "ui/gfx/vector2d_f.h"
 
 namespace cc {
+class TimingFunction;
 
 // A small helper class that does the math for zoom animations, primarily for
 // double-tap zoom. Initialize it with starting and ending scroll/page scale
 // positions and an animation length time, then call ...AtTime() at every frame
-// to obtain the current interpolated position.
+// to obtain the current interpolated position. The supplied timing function
+// is used to ease the animation.
 //
 // All sizes and vectors in this class's public methods are in the root scroll
 // layer's coordinate space.
@@ -27,7 +29,8 @@ class PageScaleAnimation {
       float start_page_scale_factor,
       gfx::SizeF viewport_size,
       gfx::SizeF root_layer_size,
-      double start_time);
+      double start_time,
+      scoped_ptr<TimingFunction> timing_function);
 
   ~PageScaleAnimation();
 
@@ -66,7 +69,8 @@ class PageScaleAnimation {
                      float start_page_scale_factor,
                      gfx::SizeF viewport_size,
                      gfx::SizeF root_layer_size,
-                     double start_time);
+                     double start_time,
+                     scoped_ptr<TimingFunction> timing_function);
 
  private:
   void ClampTargetScrollOffset();
@@ -95,6 +99,8 @@ class PageScaleAnimation {
 
   double start_time_;
   double duration_;
+
+  scoped_ptr<TimingFunction> timing_function_;
 
   DISALLOW_COPY_AND_ASSIGN(PageScaleAnimation);
 };
