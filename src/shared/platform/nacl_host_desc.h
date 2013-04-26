@@ -151,17 +151,6 @@ extern uintptr_t NaClHostDescMap(struct NaClHostDesc  *d,
  *
  * start_addr and len must be multiples of NACL_MAP_PAGESIZE.
  *
- * Underlying host-OS syscalls: mmap / UnmapViewOfFile/VirtualAlloc
- */
-extern int NaClHostDescUnmap(void   *start_addr,
-                             size_t len) NACL_WUR;
-
-/*
- * Undo a file mapping.  The memory range specified by start_address,
- * len must be memory that came from NaClHostDescMap.
- *
- * start_addr and len must be multiples of NACL_MAP_PAGESIZE.
- *
  * Underlying host-OS syscalls: munmap / UnmapViewOfFile
  */
 extern int NaClHostDescUnmapUnsafe(void   *start_addr,

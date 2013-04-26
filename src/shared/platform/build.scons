@@ -147,21 +147,22 @@ nacl_host_dir_test_exe = env.ComponentProgram('nacl_host_dir_test',
 # wants to create a file the name of which is the original with
 # '.svn-base' appended.
 
-tmpdir = tempfile.mkdtemp()
-
-def CleanupDirBinder(dirname):
+def MakeTempDir():
+  temporary_dir = tempfile.mkdtemp()
   def Cleanup():
-    shutil.rmtree(dirname, True)
-  return Cleanup
-
-atexit.register(CleanupDirBinder(tmpdir))
+    try:
+      shutil.rmtree(temporary_dir)
+    except OSError:
+      pass
+  atexit.register(Cleanup)
+  return temporary_dir
 
 node = env.CommandTest('nacl_host_dir_test.out',
                        [nacl_host_dir_test_exe,
                         '-f',
                         env.File('testdata/sample_dir1_expected.txt'),
                         '-d',
-                        tmpdir])
+                        MakeTempDir()])
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_host_dir_test')
 
 
@@ -193,22 +194,25 @@ nacl_host_desc_mmap_test_exe = env.ComponentProgram(
     EXTRA_LIBS=['platform',
                 'nrd_xfer'])  # nrd_xfer for NaClDescEffectorTrustedMem
 
-temporary_file = tempfile.mktemp()
-
-def CleanupFileBinder(fn):
-  def Cleanup():
-    try:
-      os.unlink(fn)
-    except OSError:
-      pass
-  return Cleanup
-
-atexit.register(CleanupFileBinder(temporary_file))
 
 node = env.CommandTest('nacl_host_desc_mmap_test.out',
-                       [nacl_host_desc_mmap_test_exe, '-f', temporary_file])
+                       [nacl_host_desc_mmap_test_exe, '-t', MakeTempDir()])
 
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_host_desc_mmap_test',
                        is_broken=env.UsingEmulator())
+
+if env.Bit('windows'):
+  nacl_host_desc_mmap_win_test_exe = env.ComponentProgram(
+    'nacl_host_desc_mmap_win_test',
+    ['win/nacl_host_desc_mmap_win_test.c'],
+    EXTRA_LIBS=['platform',
+                'nrd_xfer'])
+
+  node = env.CommandTest('nacl_host_desc_mmap_win_test.out',
+                         [nacl_host_desc_mmap_win_test_exe,
+                          '-t', MakeTempDir()])
+
+  env.AddNodeToTestSuite(node, ['small_tests'],
+                         'run_nacl_host_desc_mmap_win_test')
 
 env.EnsureRequiredBuildWarnings()

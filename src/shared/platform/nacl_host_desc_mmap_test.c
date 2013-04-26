@@ -4,6 +4,7 @@
  * found in the LICENSE file.
  */
 
+#include <limits.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -12,6 +13,7 @@
 #endif
 
 #include "native_client/src/include/portability.h"
+#include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/include/nacl_macros.h"
 
@@ -278,27 +280,30 @@ struct TestParams {
 void CreateTestFile(struct NaClHostDesc *d_out,
                     char const *pathname,
                     struct TestParams *param) {
+  struct NaClHostDesc hd;
   int err;
   nacl_off64_t off;
   size_t desired_write;
   ssize_t bytes_written;
 
-  printf("pathname = %s\n", pathname);
-  if (0 != (err = NaClHostDescOpen(d_out,
+  printf("pathname = %s, perms 0%o\n", pathname, param->file_perms);
+  if (0 != (err = NaClHostDescOpen(&hd,
                                    pathname,
-                                   param->open_flags,
+                                   NACL_ABI_O_WRONLY |
+                                   NACL_ABI_O_CREAT |
+                                   NACL_ABI_O_TRUNC,
                                    param->file_perms))) {
     fprintf(stderr, "Could not open test scratch file: NaCl errno %d\n", -err);
     exit(1);
   }
-  if (0 != (err = CreateTestData(d_out))) {
+  if (0 != (err = CreateTestData(&hd))) {
     fprintf(stderr,
             "Could not write test data into test scratch file: NaCl errno %d\n",
             -err);
     exit(1);
   }
   if (NULL != param->test_data_start) {
-    off = NaClHostDescSeek(d_out, 0, 0);
+    off = NaClHostDescSeek(&hd, 0, 0);
     if (off < 0) {
       fprintf(stderr,
               "Could not seek to create test data: NaCl errno %d\n",
@@ -306,7 +311,7 @@ void CreateTestFile(struct NaClHostDesc *d_out,
       exit(1);
     }
     desired_write = param->test_data_size;
-    bytes_written = NaClHostDescWrite(d_out,
+    bytes_written = NaClHostDescWrite(&hd,
                                       param->test_data_start,
                                       desired_write);
     if (bytes_written < 0) {
@@ -322,6 +327,18 @@ void CreateTestFile(struct NaClHostDesc *d_out,
               (int) desired_write, (int) bytes_written);
       exit(1);
     }
+  }
+  if (0 != (err = NaClHostDescClose(&hd))) {
+    fprintf(stderr,
+            "Error while closing test data file, errno %d\n", -err);
+    exit(1);
+  }
+  if (0 != (err = NaClHostDescOpen(d_out,
+                                   pathname,
+                                   param->open_flags,
+                                   param->file_perms))) {
+    fprintf(stderr, "Could not open test scratch file: NaCl errno %d\n", -err);
+    exit(1);
   }
 }
 
@@ -382,25 +399,25 @@ struct TestParams tests[] = {
   {
     "Shared Mapping Test",
     map_shared_test,
-    (NACL_ABI_O_RDWR | NACL_ABI_O_CREAT | NACL_ABI_O_TRUNC), 0666,
+    (NACL_ABI_O_RDWR | NACL_ABI_O_CREAT), 0666,
     NULL, 0,
     NULL,
   }, {
     "Private Mapping Test, modify by write",
     map_private_test,
-    (NACL_ABI_O_RDWR | NACL_ABI_O_CREAT | NACL_ABI_O_TRUNC), 0666,
+    (NACL_ABI_O_RDWR | NACL_ABI_O_CREAT), 0666,
     NULL, 0,
     &test0,
   }, {
     "Private Mapping Test, modify by shm",
     map_private_test,
-    (NACL_ABI_O_RDWR | NACL_ABI_O_CREAT | NACL_ABI_O_TRUNC), 0666,
+    (NACL_ABI_O_RDWR | NACL_ABI_O_CREAT), 0666,
     NULL, 0,
     &test1,
   }, {
     "PROT_EXEC Mapping Test",
     prot_exec_test,
-    (NACL_ABI_O_RDWR | NACL_ABI_O_CREAT | NACL_ABI_O_TRUNC), 0777,
+    (NACL_ABI_O_RDWR | NACL_ABI_O_CREAT), 0777,
     test_machine_code,
     sizeof test_machine_code,
     NULL,
@@ -412,7 +429,7 @@ struct TestParams tests[] = {
  * file passed as command-line argument.  See the build.scons file.
  */
 int main(int ac, char **av) {
-  char const *test_file_name = "/tmp/nacl_host_desc_test";
+  char const *test_dir_name = "/tmp/nacl_host_desc_test";
   struct NaClHostDesc hd;
   size_t err_count;
   size_t ix;
@@ -420,18 +437,18 @@ int main(int ac, char **av) {
   int num_runs = 1;
   int test_run;
 
-  while (EOF != (opt = getopt(ac, av, "c:f:"))) {
+  while (EOF != (opt = getopt(ac, av, "c:t:"))) {
     switch (opt) {
       case 'c':
         num_runs = atoi(optarg);
         break;
-      case 'f':
-        test_file_name = optarg;
+      case 't':
+        test_dir_name = optarg;
         break;
       default:
         fprintf(stderr,
                 "Usage: nacl_host_desc_mmap_test [-c run_count]\n"
-                "                                [-f test_file]\n");
+                "                                [-t test_temp_dir]\n");
         exit(1);
     }
   }
@@ -442,6 +459,9 @@ int main(int ac, char **av) {
   for (test_run = 0; test_run < num_runs; ++test_run) {
     printf("Test run %d\n\n", test_run);
     for (ix = 0; ix < NACL_ARRAY_SIZE(tests); ++ix) {
+      char test_file_name[PATH_MAX];
+      SNPRINTF(test_file_name, sizeof test_file_name,
+               "%s/f%d.%"NACL_PRIuS, test_dir_name, test_run, ix);
       printf("%s\n", tests[ix].test_name);
       CreateTestFile(&hd, test_file_name, &tests[ix]);
       err_count += (*tests[ix].test_func)(&hd, tests[ix].test_specifics);

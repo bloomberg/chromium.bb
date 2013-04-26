@@ -464,13 +464,20 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
                              dwMaximumSizeHigh,
                              dwMaximumSizeLow,
                              NULL);
-    if (NULL == hMap && retry_fallback != 0) {
-      NaClLog(3,
-              "NaClHostDescMap: CreateFileMapping failed, retrying without"
-              " execute permission.  Original flProtect 0x%x\n", flProtect);
-      flProtect = NaClflProtectRemoveExecute(flProtect);
-      NaClLog(3,
-              "NaClHostDescMap: fallback flProtect 0x%x\n", flProtect);
+    if (NULL == hMap) {
+      if (retry_fallback && 0 == (prot & NACL_ABI_PROT_EXEC)) {
+        NaClLog(3,
+                "NaClHostDescMap: CreateFileMapping failed, retrying without"
+                " execute permission.  Original flProtect 0x%x\n", flProtect);
+        flProtect = NaClflProtectRemoveExecute(flProtect);
+        NaClLog(3,
+                "NaClHostDescMap: fallback flProtect 0x%x\n", flProtect);
+      } else {
+        NaClLog(3,
+                "NaClHostDescMap: not retrying, since caller explicitly asked"
+                " for NACL_ABI_PROT_EXEC\n");
+        break;
+      }
     } else {
       /* remember successful flProtect used */
       d->flProtect = flProtect;
@@ -634,6 +641,12 @@ int NaClHostDescOpen(struct NaClHostDesc  *d,
   if (0 != (flags & NACL_ABI_O_APPEND)) {
     oflags |= _O_APPEND;
   }
+
+  NaClLog(1,
+          "NaClHostDescOpen: CreateFileA(path=%s, desired_access=%d,"
+          " share_mode=ALL, security_attributes=NULL, creation_disposition=%d,"
+          " flags_and_attributes=%d, template_file=NULL)\n",
+          path, dwDesiredAccess, dwCreationDisposition, dwFlagsAndAttributes);
 
   hFile = CreateFileA(path, dwDesiredAccess,
                       (FILE_SHARE_DELETE |

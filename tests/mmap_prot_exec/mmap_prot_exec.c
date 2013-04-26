@@ -396,6 +396,42 @@ int map_private_test(int d, size_t map_size, void *test_specifics) {
   return 0;
 }
 
+struct MapPrivateRoSpecifics {
+  unsigned char const *expected_data;
+  size_t expected_bytes;
+};
+
+/*
+ * mmap MAP_PRIVATE test of a read-only file
+ *
+ * Make sure that a MAP_PRIVATE view works.
+ */
+int map_private_test_ro(int d, size_t file_size, void *test_specifics) {
+  struct MapPrivateRoSpecifics *params =
+      (struct MapPrivateRoSpecifics *) test_specifics;
+  void *view1;
+  unsigned char const *v1ptr;
+
+  if (MAP_FAILED ==
+      (view1 = mmap(NULL,
+                    file_size,
+                    PROT_READ,
+                    MAP_SHARED,
+                    d,
+                    /* offset */ 0))) {
+    fprintf(stderr, "map_private_test_ro: view1 map failed, errno %d\n",
+            errno);
+    return 1;
+  }
+
+  v1ptr = (unsigned char const *) view1;
+
+  CHECK(!memcmp(v1ptr, params->expected_data, params->expected_bytes));
+
+  CHECK(0 == munmap(view1, file_size));
+  return 0;
+}
+
 /*
  * Write out num_bytes (a multiple of 4) bytes of data.  If
  * !halt_fill, ASCII NUL is used; otherwise NACL_HALT_WORD is used.
@@ -435,6 +471,7 @@ struct TestParams {
   char const *test_name;
   int (*test_func)(int fd, size_t map_size, void *test_specifics);
   int open_flags;
+  int file_mode;
   size_t file_size;
   size_t map_size;
   int halt_fill;
@@ -456,7 +493,7 @@ int CreateTestFile(char const *pathname,
   printf("pathname = %s, %d bytes\n", pathname, param->file_size);
   if (-1 == (d = open(pathname,
                       O_WRONLY | O_CREAT | O_TRUNC,
-                      0777))) {
+                      param->file_mode))) {
     fprintf(stderr, "Could not open test scratch file: NaCl errno %d\n", errno);
     exit(1);
   }
@@ -515,8 +552,8 @@ void CloseTestFile(int d) {
   CHECK(0 == close(d));
 }
 
-struct MapPrivateSpecifics test0 = { 0 };
-struct MapPrivateSpecifics test1 = { 1 };
+struct MapPrivateSpecifics g_map_private_modify_by_write = { 0 };
+struct MapPrivateSpecifics g_map_private_modify_by_shm = { 1 };
 
 struct ProtExecSpecifics prot_exec_non_functional = {
   /* non-functional: no NACL_FI */
@@ -571,11 +608,26 @@ struct ProtExecSpecifics prot_exec_not_fixed_without_addr_hint = {
   /* expected_errno= */ 0, /* maps_into_data_region= */ 1,
 };
 
+struct MapPrivateRoSpecifics g_map_private_ro_machine_code = {
+  test_machine_code, sizeof test_machine_code,
+};
+
+unsigned char const g_verse[] = "But only when these three together meet,\n"
+    "As they always incline,\n"
+    "And make one soul the seat,\n"
+    "And favorite retreat,\n"
+    "Of loveliness;";
+
+struct MapPrivateRoSpecifics g_map_private_ro_verse = {
+  g_verse, sizeof g_verse,
+};
+
 struct TestParams tests[] = {
   {
     "Shared Mapping Test",
     map_shared_test,
-    (O_RDWR | O_CREAT),
+    /* open_flags= */ (O_RDWR | O_CREAT),
+    /* file_mode= */ 0666,
     /* file_size= */ NUM_FILE_BYTES,
     /* map_size= */ NUM_FILE_BYTES,
     0,
@@ -584,26 +636,49 @@ struct TestParams tests[] = {
   }, {
     "Private Mapping Test, modify by write",
     map_private_test,
-    (O_RDWR | O_CREAT),
+    /* open_flags= */ (O_RDWR | O_CREAT),
+    /* file_mode= */ 0666,
     /* file_size= */ NUM_FILE_BYTES,
     /* map_size= */ NUM_FILE_BYTES,
     0,
     NULL, 0,
-    &test0,
+    &g_map_private_modify_by_write,
   }, {
     "Private Mapping Test, modify by shm",
     map_private_test,
-    (O_RDWR | O_CREAT),
+    /* open_flags= */ (O_RDWR | O_CREAT),
+    /* file_mode= */ 0666,
     /* file_size= */ NUM_FILE_BYTES,
     /* map_size= */ NUM_FILE_BYTES,
     0,
     NULL, 0,
-    &test1,
+    &g_map_private_modify_by_shm,
+  }, {
+    "Private Mapping Test, read-only file, binary data",
+    map_private_test_ro,
+    /* open_flags= */ O_RDONLY,
+    /* file_mode= */ 0444,
+    /* file_size= */ NUM_FILE_BYTES,
+    /* map_size= */ NUM_FILE_BYTES,
+    0,
+    test_machine_code, sizeof test_machine_code,
+    &g_map_private_ro_machine_code,
+  }, {
+    "Private Mapping Test, read-only file, text",
+    map_private_test_ro,
+    /* open_flags= */ O_RDONLY,
+    /* file_mode= */ 0444,
+    /* file_size= */ NUM_FILE_BYTES,
+    /* map_size= */ NUM_FILE_BYTES,
+    0,
+    g_verse, sizeof g_verse,
+    &g_map_private_ro_verse,
   }, {
     "PROT_EXEC Mapping Test: non-functional"
     " (no MMAP_BYPASS_DESCRIPTOR_SAFETY_CHECK)",
     prot_exec_test,
-    (O_RDWR | O_CREAT),
+    /* open_flags= */ (O_RDWR | O_CREAT),
+    /* file_mode= */ 0777,
     /* file_size= */ NUM_FILE_BYTES,
     /* map_size= */ NUM_FILE_BYTES,
     1,
@@ -612,7 +687,8 @@ struct TestParams tests[] = {
   }, {
     "PROT_EXEC Mapping Test: functional (MMAP_BYPASS_DESCRIPTOR_SAFETY_CHECK)",
     prot_exec_test,
-    (O_RDWR | O_CREAT),
+    /* open_flags= */ (O_RDWR | O_CREAT),
+    /* file_mode= */ 0777,
     /* file_size= */ NUM_FILE_BYTES,
     /* map_size= */ NUM_FILE_BYTES,
     1,
@@ -622,7 +698,8 @@ struct TestParams tests[] = {
     "PROT_EXEC Mapping Test: functional, fallback\n"
     " (MMAP_BYPASS_DESCRIPTOR_SAFETY_CHECK, MMAP_FORCE_MMAP_VALIDATION_FAIL)",
     prot_exec_test,
-    (O_RDWR | O_CREAT),
+    /* open_flags= */ (O_RDWR | O_CREAT),
+    /* file_mode= */ 0777,
     /* file_size= */ NUM_FILE_BYTES,
     /* map_size= */ NUM_FILE_BYTES,
     1,
@@ -631,7 +708,8 @@ struct TestParams tests[] = {
   }, {
     "PROT_EXEC Mapping Test: short file, short map",
     prot_exec_test,
-    (O_RDWR | O_CREAT),
+    /* open_flags= */ (O_RDWR | O_CREAT),
+    /* file_mode= */ 0777,
     /* file_size= */ 4096,
     /* map_size= */ 4960,
     1,
@@ -640,7 +718,8 @@ struct TestParams tests[] = {
   }, {
     "PROT_EXEC Mapping Test: short file, rounded map",
     prot_exec_test,
-    (O_RDWR | O_CREAT),
+    /* open_flags= */ (O_RDWR | O_CREAT),
+    /* file_mode= */ 0777,
     /* file_size= */ 4096,
     /* map_size= */ 65536,
     1,
@@ -649,7 +728,8 @@ struct TestParams tests[] = {
   }, {
     "PROT_EXEC Mapping Test: PROT_WRITE|PROT_EXEC",
     prot_exec_write_test,
-    (O_RDWR | O_CREAT),
+    /* open_flags= */ (O_RDWR | O_CREAT),
+    /* file_mode= */ 0777,
     /* file_size= */ NUM_FILE_BYTES,
     /* map_size= */ NUM_FILE_BYTES,
     1,
@@ -658,7 +738,8 @@ struct TestParams tests[] = {
   }, {
     "PROT_EXEC Mapping Test: unaligned target address",
     prot_exec_test,
-    (O_RDWR | O_CREAT),
+    /* open_flags= */ (O_RDWR | O_CREAT),
+    /* file_mode= */ 0777,
     /* file_size= */ NUM_FILE_BYTES,
     /* map_size= */ NUM_FILE_BYTES,
     1,
@@ -667,7 +748,8 @@ struct TestParams tests[] = {
   }, {
     "PROT_EXEC Mapping Test: no MAP_FIXED, hint; treat as data",
     prot_exec_test,
-    (O_RDWR | O_CREAT),
+    /* open_flags= */ (O_RDWR | O_CREAT),
+    /* file_mode= */ 0777,
     /* file_size= */ NUM_FILE_BYTES,
     /* map_size= */ NUM_FILE_BYTES,
     1,
@@ -676,7 +758,8 @@ struct TestParams tests[] = {
   }, {
     "PROT_EXEC Mapping Test: no MAP_FIXED, no hint; treat as data",
     prot_exec_test,
-    (O_RDWR | O_CREAT),
+    /* open_flags= */ (O_RDWR | O_CREAT),
+    /* file_mode= */ 0777,
     /* file_size= */ NUM_FILE_BYTES,
     /* map_size= */ NUM_FILE_BYTES,
     1,
