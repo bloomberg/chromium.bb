@@ -1337,11 +1337,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
       }
     }
 
-    @CalledByNative
-    private void onWebPreferencesUpdated() {
-        mContentSettings.syncSettings();
-    }
-
     /**
      * @see View#onCreateInputConnection(EditorInfo)
      */

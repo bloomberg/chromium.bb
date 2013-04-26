@@ -9,30 +9,10 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_client.h"
 #include "jni/ContentSettings_jni.h"
-#include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
 
-using base::android::GetFieldID;
-using base::android::ScopedJavaLocalRef;
-
 namespace content {
-
-struct ContentSettings::FieldIds {
-  FieldIds() { }
-
-  FieldIds(JNIEnv* env) {
-    // FIXME: we should be using a new GetFieldIDFromClassName() with caching.
-    ScopedJavaLocalRef<jclass> clazz(base::android::GetClass(
-        env, "org/chromium/content/browser/ContentSettings"));
-    java_script_enabled =
-        GetFieldID(env, clazz, "mJavaScriptEnabled", "Z");
-  }
-
-  // Field ids
-  jfieldID java_script_enabled;
-};
 
 ContentSettings::ContentSettings(JNIEnv* env,
                          jobject obj,
@@ -55,27 +35,11 @@ bool ContentSettings::RegisterContentSettings(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-void ContentSettings::SyncFromNativeImpl() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  CHECK(env);
-  if (!field_ids_)
-    field_ids_.reset(new FieldIds(env));
-
-  ScopedJavaLocalRef<jobject> scoped_obj = content_settings_.get(env);
-  jobject obj = scoped_obj.obj();
-  if (!obj)
-    return;
+bool ContentSettings::GetJavaScriptEnabled(JNIEnv* env, jobject obj) {
   RenderViewHost* render_view_host = web_contents()->GetRenderViewHost();
-  webkit_glue::WebPreferences prefs =
-      render_view_host->GetDelegate()->GetWebkitPrefs();
-
-  env->SetBooleanField(
-      obj, field_ids_->java_script_enabled, prefs.javascript_enabled);
-  base::android::CheckException(env);
-}
-
-void ContentSettings::SyncFromNative(JNIEnv* env, jobject obj) {
-  SyncFromNativeImpl();
+  if (!render_view_host)
+    return false;
+  return render_view_host->GetDelegate()->GetWebkitPrefs().javascript_enabled;
 }
 
 void ContentSettings::WebContentsDestroyed(WebContents* web_contents) {

@@ -311,10 +311,7 @@ ScopedJavaLocalRef<jobject> ContentViewCoreImpl::GetJavaObject() {
 }
 
 void ContentViewCoreImpl::OnWebPreferencesUpdated() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (!obj.is_null())
-    Java_ContentViewCore_onWebPreferencesUpdated(env, obj.obj());
+  // TODO(mnaganov): Remove after all usages got removed.
 }
 
 jint ContentViewCoreImpl::GetBackgroundColor(JNIEnv* env, jobject obj) {

@@ -14,6 +14,8 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
 
+import java.util.concurrent.Callable;
+
 /**
  * Manages settings state for a ContentView. A ContentSettings instance is obtained
  * from ContentView.getContentSettings(). If ContentView is used in the
@@ -35,68 +37,37 @@ public class ContentSettings {
 
     private ContentViewCore mContentViewCore;
 
-    // A flag to avoid sending superfluous synchronization messages.
-    private boolean mIsSyncMessagePending = false;
     // Custom handler that queues messages to call native code on the UI thread.
     private final EventHandler mEventHandler;
 
     // Protects access to settings fields.
     private final Object mContentSettingsLock = new Object();
 
-    private boolean mJavaScriptEnabled = false;
-
-    // Not accessed by the native side.
     private boolean mSupportZoom = true;
     private boolean mBuiltInZoomControls = false;
     private boolean mDisplayZoomControls = true;
 
     // Class to handle messages to be processed on the UI thread.
     private class EventHandler {
-        // Message id for syncing
-        private static final int SYNC = 0;
         // Message id for updating multi-touch zoom state in the view
         private static final int UPDATE_MULTI_TOUCH = 2;
         // Actual UI thread handler
         private Handler mHandler;
 
         EventHandler() {
-            mHandler = mContentViewCore.isPersonalityView() ?
-                    new Handler(Looper.getMainLooper()) {
-                        @Override
-                        public void handleMessage(Message msg) {
-                            switch (msg.what) {
-                                case UPDATE_MULTI_TOUCH:
-                                    if (mContentViewCore.isAlive()) {
-                                        mContentViewCore.updateMultiTouchZoomSupport();
-                                    }
-                                    break;
-                            }
+            if (mContentViewCore.isPersonalityView()) {
+                mHandler = new Handler(Looper.getMainLooper()) {
+                    @Override
+                    public void handleMessage(Message msg) {
+                        switch (msg.what) {
+                            case UPDATE_MULTI_TOUCH:
+                                if (mContentViewCore.isAlive()) {
+                                    mContentViewCore.updateMultiTouchZoomSupport();
+                                }
+                                break;
                         }
-                    } :
-                    new Handler(Looper.getMainLooper()) {
-                        @Override
-                        public void handleMessage(Message msg) {
-                            switch (msg.what) {
-                                case SYNC:
-                                    synchronized (mContentSettingsLock) {
-                                        syncFromNativeOnUiThread();
-                                        mIsSyncMessagePending = false;
-                                    }
-                                    break;
-                            }
-                        }
-                    };
-        }
-
-        private void syncSettingsLocked() {
-            assert Thread.holdsLock(mContentSettingsLock);
-            if (mNativeContentSettings == 0) return;
-            if (!mContentViewCore.isPersonalityView()) {
-                if (mIsSyncMessagePending) {
-                    return;
-                }
-                mIsSyncMessagePending = true;
-                mHandler.sendMessage(Message.obtain(null, SYNC));
+                    }
+                };
             }
         }
 
@@ -121,7 +92,6 @@ public class ContentSettings {
         if (!mContentViewCore.isPersonalityView()) {
             mBuiltInZoomControls = true;
             mDisplayZoomControls = false;
-            syncFromNativeOnUiThread();
         }
     }
 
@@ -228,14 +198,21 @@ public class ContentSettings {
     }
 
     /**
-     * Return true if JavaScript is enabled. <b>Note: The default is false.</b>
+     * Return true if JavaScript is enabled.
      *
      * @return True if JavaScript is enabled.
      */
     public boolean getJavaScriptEnabled() {
-        synchronized (mContentSettingsLock) {
-            return mJavaScriptEnabled;
-        }
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+                @Override
+                public Boolean call() {
+                    if (mNativeContentSettings != 0) {
+                        return nativeGetJavaScriptEnabled(mNativeContentSettings);
+                    } else {
+                        return false;
+                    }
+                }
+            });
     }
 
     /**
@@ -251,18 +228,8 @@ public class ContentSettings {
         setDisplayZoomControls(settings.getDisplayZoomControls());
     }
 
-    void syncSettings() {
-        synchronized (mContentSettingsLock) {
-            mEventHandler.syncSettingsLocked();
-        }
-    }
-
-    void syncFromNativeOnUiThread() {
-        if (mNativeContentSettings != 0) nativeSyncFromNative(mNativeContentSettings);
-    }
-
     // Initialize the ContentSettings native side.
     private native int nativeInit(int contentViewPtr);
 
-    private native void nativeSyncFromNative(int nativeContentSettings);
+    private native boolean nativeGetJavaScriptEnabled(int nativeContentSettings);
 }
