@@ -48,7 +48,17 @@ class WebMediaStreamSource {
 public:
     class ExtraData {
     public:
+        ExtraData() : m_owner(0) { }
         virtual ~ExtraData() { }
+
+        WEBKIT_EXPORT WebMediaStreamSource owner();
+
+#if WEBKIT_IMPLEMENTATION
+        void setOwner(WebCore::MediaStreamSource*);
+#endif
+
+    private:
+        WebCore::MediaStreamSource* m_owner;
     };
 
     enum Type {

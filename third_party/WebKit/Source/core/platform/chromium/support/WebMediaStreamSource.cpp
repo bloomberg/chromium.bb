@@ -60,6 +60,18 @@ private:
 
 } // namespace
 
+WebMediaStreamSource WebMediaStreamSource::ExtraData::owner()
+{
+    ASSERT(m_owner);
+    return WebMediaStreamSource(m_owner);
+}
+
+void WebMediaStreamSource::ExtraData::setOwner(WebCore::MediaStreamSource* owner)
+{
+    ASSERT(!m_owner);
+    m_owner = owner;
+}
+
 WebMediaStreamSource::WebMediaStreamSource(const PassRefPtr<MediaStreamSource>& mediaStreamSource)
     : m_private(mediaStreamSource)
 {
@@ -129,16 +141,20 @@ WebMediaStreamSource::ReadyState WebMediaStreamSource::readyState() const
 WebMediaStreamSource::ExtraData* WebMediaStreamSource::extraData() const
 {
     ASSERT(!m_private.isNull());
-    RefPtr<MediaStreamSource::ExtraData> data = m_private->extraData();
+    MediaStreamSource::ExtraData* data = m_private->extraData();
     if (!data)
         return 0;
-    return static_cast<ExtraDataContainer*>(data.get())->extraData();
+    return static_cast<ExtraDataContainer*>(data)->extraData();
 }
 
 void WebMediaStreamSource::setExtraData(ExtraData* extraData)
 {
     ASSERT(!m_private.isNull());
-    m_private->setExtraData(adoptRef(new ExtraDataContainer(extraData)));
+
+    if (extraData)
+        extraData->setOwner(m_private.get());
+
+    m_private->setExtraData(new ExtraDataContainer(extraData));
 }
 
 WebString WebMediaStreamSource::deviceId() const

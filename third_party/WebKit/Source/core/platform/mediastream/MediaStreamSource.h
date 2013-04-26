@@ -35,9 +35,11 @@
 #if ENABLE(MEDIA_STREAM)
 
 #include "core/platform/audio/AudioDestinationConsumer.h"
+#include <wtf/OwnPtr.h>
+#include <wtf/PassOwnPtr.h>
 #include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
 #include <wtf/Vector.h>
+#include <wtf/text/WTFString.h>
 
 namespace WebCore {
 
@@ -49,7 +51,7 @@ public:
         virtual void sourceChangedState() = 0;
     };
 
-    class ExtraData : public RefCounted<ExtraData> {
+    class ExtraData {
     public:
         virtual ~ExtraData() { }
     };
@@ -77,8 +79,8 @@ public:
     void addObserver(Observer*);
     void removeObserver(Observer*);
 
-    PassRefPtr<ExtraData> extraData() const { return m_extraData; }
-    void setExtraData(PassRefPtr<ExtraData> extraData) { m_extraData = extraData; }
+    ExtraData* extraData() const { return m_extraData.get(); }
+    void setExtraData(ExtraData* extraData) { m_extraData = adoptPtr(extraData); }
 
     const String& deviceId() { return m_deviceId; }
     void setDeviceId(const String& deviceId) { m_deviceId = deviceId; }
@@ -103,7 +105,7 @@ private:
     Vector<Observer*> m_observers;
     Mutex m_audioConsumersLock;
     Vector<RefPtr<AudioDestinationConsumer> > m_audioConsumers;
-    RefPtr<ExtraData> m_extraData;
+    OwnPtr<ExtraData> m_extraData;
 };
 
 typedef Vector<RefPtr<MediaStreamSource> > MediaStreamSourceVector;
