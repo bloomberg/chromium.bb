@@ -402,8 +402,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
                                   ASCIIToUTF16("onbeforeunload=null;"));
 }
 
-// Crashy on mac.  http://crbug.com/38522
-#if defined(OS_MACOSX)
+// Crashy on mac.  http://crbug.com/38522  Crashy on win too (after 3 years).
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_SingleBeforeUnloadAfterWindowClose \
         DISABLED_SingleBeforeUnloadAfterWindowClose
 #else
