@@ -1776,19 +1776,6 @@ void GLRenderer::EnsureScissorTestDisabled() {
   is_scissor_enabled_ = false;
 }
 
-void GLRenderer::CopyCurrentRenderPassToBitmap(DrawingFrame* frame,
-                                               SkBitmap* bitmap) {
-  gfx::Size render_pass_size = frame->current_render_pass->output_rect.size();
-  bitmap->setConfig(SkBitmap::kARGB_8888_Config,
-                    render_pass_size.width(),
-                    render_pass_size.height());
-  if (bitmap->allocPixels()) {
-    bitmap->lockPixels();
-    GetFramebufferPixels(bitmap->getPixels(), gfx::Rect(render_pass_size));
-    bitmap->unlockPixels();
-  }
-}
-
 void GLRenderer::ToGLMatrix(float* gl_matrix, const gfx::Transform& transform) {
   transform.matrix().asColMajorf(gl_matrix);
 }

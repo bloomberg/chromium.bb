@@ -9,8 +9,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
-#include "base/hash_tables.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/hash_pair.h"
 #include "cc/base/scoped_ptr_hash_map.h"
@@ -98,14 +96,6 @@ class CC_EXPORT RenderPass {
   // If true, then there may be pixels in the render pass' texture that are not
   // complete, since they are occluded.
   bool has_occlusion_from_outside_target_surface;
-
-  // If non-empty, the renderer should produce a copy of the render pass'
-  // contents as a bitmap, and give a copy of the bitmap to each callback in
-  // this list. This property should not be serialized between compositors, as
-  // it only makes sense in the root compositor.
-  typedef base::Callback<void(scoped_ptr<SkBitmap>)>
-      RequestCopyAsBitmapCallback;
-  std::vector<RequestCopyAsBitmapCallback> copy_callbacks;
 
   QuadList quad_list;
   SharedQuadStateList shared_quad_state_list;

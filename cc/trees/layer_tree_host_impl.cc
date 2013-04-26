@@ -577,9 +577,6 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   // due to an impl-animation, we drop the frame to avoid flashing due to the
   // texture suddenly appearing in the future.
   bool draw_frame = true;
-  // When we have a copy request for a layer, we need to draw no matter
-  // what, as the layer may disappear after this frame.
-  bool have_copy_request = false;
 
   int layers_drawn = 0;
 
@@ -598,12 +595,7 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
 
     AppendQuadsData append_quads_data(target_render_pass->id);
 
-    if (it.represents_target_render_surface()) {
-      if (it->HasRequestCopyCallback()) {
-        have_copy_request = true;
-        it->TakeRequestCopyCallbacks(&target_render_pass->copy_callbacks);
-      }
-    } else if (it.represents_contributing_render_surface()) {
+    if (it.represents_contributing_render_surface()) {
       RenderPass::Id contributing_render_pass_id =
           it->render_surface()->RenderPassId();
       RenderPass* contributing_render_pass =
@@ -679,9 +671,6 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     occlusion_tracker.LeaveLayer(it);
   }
 
-  if (have_copy_request)
-    draw_frame = true;
-
   rendering_stats_instrumentation_->AddLayersDrawn(layers_drawn);
 
 #ifndef NDEBUG
@@ -704,8 +693,6 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
 
   if (draw_frame)
     occlusion_tracker.overdraw_metrics()->RecordMetrics(this);
-  else
-    DCHECK(!have_copy_request);
 
   RemoveRenderPasses(CullRenderPassesWithNoQuads(), frame);
   renderer_->DecideRenderPassAllocationsForFrame(frame->render_passes);

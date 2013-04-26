@@ -92,13 +92,14 @@ TEST_F(GLRendererPixelTest, SimpleGreenRect) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
 
-  EXPECT_TRUE(RunPixelTest(
-      &pass_list,
+  renderer_->DrawFrame(&pass_list);
+
+  EXPECT_TRUE(PixelsMatchReference(
       base::FilePath(FILE_PATH_LITERAL("green.png")),
       ExactPixelComparator(true)));
 }
 
-TEST_F(GLRendererPixelTest, FastPassColorFilterAlpha) {
+TEST_F(GLRendererPixelTest, fastPassColorFilterAlpha) {
   gfx::Rect viewport_rect(device_viewport_size_);
 
   RenderPass::Id root_pass_id(1, 1);
@@ -167,8 +168,7 @@ TEST_F(GLRendererPixelTest, FastPassColorFilterAlpha) {
   skia::RefPtr<SkImageFilter> filter =
       skia::AdoptRef(SkColorFilterImageFilter::Create(colorFilter.get(), NULL));
 
-  scoped_ptr<RenderPassDrawQuad> render_pass_quad =
-      RenderPassDrawQuad::Create();
+  scoped_ptr<RenderPassDrawQuad> render_pass_quad = RenderPassDrawQuad::Create();
   render_pass_quad->SetNew(pass_shared_state.get(),
                            pass_rect,
                            child_pass_id,
@@ -186,13 +186,16 @@ TEST_F(GLRendererPixelTest, FastPassColorFilterAlpha) {
   pass_list.push_back(child_pass.Pass());
   pass_list.push_back(root_pass.Pass());
 
-  EXPECT_TRUE(RunPixelTest(
-      &pass_list,
+  renderer_->SetEnlargePassTextureAmountForTesting(gfx::Vector2d(50, 75));
+  renderer_->DecideRenderPassAllocationsForFrame(pass_list);
+  renderer_->DrawFrame(&pass_list);
+
+  EXPECT_TRUE(PixelsMatchReference(
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_alpha.png")),
       ExactPixelComparator(false)));
 }
 
-TEST_F(GLRendererPixelTest, FastPassColorFilterAlphaTranslation) {
+TEST_F(GLRendererPixelTest, fastPassColorFilterAlphaTranslation) {
   gfx::Rect viewport_rect(device_viewport_size_);
 
   RenderPass::Id root_pass_id(1, 1);
@@ -283,8 +286,11 @@ TEST_F(GLRendererPixelTest, FastPassColorFilterAlphaTranslation) {
   pass_list.push_back(child_pass.Pass());
   pass_list.push_back(root_pass.Pass());
 
-  EXPECT_TRUE(RunPixelTest(
-      &pass_list,
+  renderer_->SetEnlargePassTextureAmountForTesting(gfx::Vector2d(50, 75));
+  renderer_->DecideRenderPassAllocationsForFrame(pass_list);
+  renderer_->DrawFrame(&pass_list);
+
+  EXPECT_TRUE(PixelsMatchReference(
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_alpha_translate.png")),
       ExactPixelComparator(false)));
 }
@@ -336,16 +342,17 @@ TEST_F(GLRendererPixelTest, RenderPassChangesSize) {
   pass_list.push_back(root_pass.Pass());
 
   renderer_->SetEnlargePassTextureAmountForTesting(gfx::Vector2d(50, 75));
+  renderer_->DecideRenderPassAllocationsForFrame(pass_list);
+  renderer_->DrawFrame(&pass_list);
 
-  EXPECT_TRUE(RunPixelTest(
-      &pass_list,
+  EXPECT_TRUE(PixelsMatchReference(
       base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")),
       ExactPixelComparator(true)));
 }
 
 class GLRendererPixelTestWithBackgroundFilter : public GLRendererPixelTest {
  protected:
-  void SetUpRenderPassList() {
+  void DrawFrame() {
     gfx::Rect device_viewport_rect(device_viewport_size_);
 
     RenderPass::Id root_id(1, 1);
@@ -445,11 +452,14 @@ class GLRendererPixelTestWithBackgroundFilter : public GLRendererPixelTest {
     root_pass->quad_list.push_back(background_quad.PassAs<DrawQuad>());
     root_pass->shared_quad_state_list.push_back(shared_state.Pass());
 
-    pass_list_.push_back(filter_pass.Pass());
-    pass_list_.push_back(root_pass.Pass());
+    RenderPassList pass_list;
+    pass_list.push_back(filter_pass.Pass());
+    pass_list.push_back(root_pass.Pass());
+
+    renderer_->DecideRenderPassAllocationsForFrame(pass_list);
+    renderer_->DrawFrame(&pass_list);
   }
 
-  RenderPassList pass_list_;
   WebKit::WebFilterOperations background_filters_;
   gfx::Transform filter_pass_to_target_transform_;
   gfx::Rect filter_pass_content_rect_;
@@ -462,9 +472,8 @@ TEST_F(GLRendererPixelTestWithBackgroundFilter, InvertFilter) {
   filter_pass_content_rect_ = gfx::Rect(device_viewport_size_);
   filter_pass_content_rect_.Inset(12, 14, 16, 18);
 
-  SetUpRenderPassList();
-  EXPECT_TRUE(RunPixelTest(
-      &pass_list_,
+  DrawFrame();
+  EXPECT_TRUE(PixelsMatchReference(
       base::FilePath(FILE_PATH_LITERAL("background_filter.png")),
       ExactPixelComparator(true)));
 }
@@ -473,7 +482,9 @@ TEST_F(GLRendererPixelTest, AntiAliasing) {
   gfx::Rect rect(0, 0, 200, 200);
 
   RenderPass::Id id(1, 1);
-  scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+  gfx::Transform transform_to_root;
+  scoped_ptr<RenderPass> pass =
+      CreateTestRenderPass(id, rect, transform_to_root);
 
   gfx::Transform red_content_to_target_transform;
   red_content_to_target_transform.Rotate(10);
@@ -507,8 +518,9 @@ TEST_F(GLRendererPixelTest, AntiAliasing) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
 
-  EXPECT_TRUE(RunPixelTest(
-      &pass_list,
+  renderer_->DrawFrame(&pass_list);
+
+  EXPECT_TRUE(PixelsMatchReference(
       base::FilePath(FILE_PATH_LITERAL("anti_aliasing.png")),
       ExactPixelComparator(true)));
 }

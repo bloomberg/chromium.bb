@@ -296,10 +296,6 @@ static bool SubtreeShouldRenderToSeparateSurface(
   if (layer->force_render_surface())
     return true;
 
-  // If we'll make a copy of the layer's contents.
-  if (layer->HasRequestCopyCallback())
-    return true;
-
   // If the layer uses a mask.
   if (layer->mask_layer())
     return true;

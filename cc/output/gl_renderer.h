@@ -103,8 +103,6 @@ class CC_EXPORT GLRenderer
   virtual bool FlippedFramebuffer() const OVERRIDE;
   virtual void EnsureScissorTestEnabled() OVERRIDE;
   virtual void EnsureScissorTestDisabled() OVERRIDE;
-  virtual void CopyCurrentRenderPassToBitmap(DrawingFrame* frame,
-                                             SkBitmap* bitmap) OVERRIDE;
   virtual void FinishDrawingQuadList() OVERRIDE;
 
  private:
