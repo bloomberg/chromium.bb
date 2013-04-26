@@ -40,18 +40,15 @@
 #define MSVC_DISABLE_OPTIMIZE() __pragma(optimize("", off))
 #define MSVC_ENABLE_OPTIMIZE() __pragma(optimize("", on))
 
-// Allows |this| to be passed as an argument in constructor initializer lists.
-// This uses push/pop instead of the seemingly simpler suppress feature to avoid
-// having the warning be disabled for more than just |code|.
+// DEPRECATED
 //
-// Example usage:
-// Foo::Foo() : x(NULL), ALLOW_THIS_IN_INITIALIZER_LIST(y(this)), z(3) {}
-//
-// Compiler warning C4355: 'this': used in base member initializer list:
+// Prior to r83840 this was used to supress warning C4355 when using |this| as
+// an argument in constructor initializer lists:
 // http://msdn.microsoft.com/en-us/library/3c594ae3(VS.80).aspx
-#define ALLOW_THIS_IN_INITIALIZER_LIST(code) MSVC_PUSH_DISABLE_WARNING(4355) \
-                                             code \
-                                             MSVC_POP_WARNING()
+//
+// C4355 is supressed globally during compilation and existing uses of this
+// macro should be removed. Refer to http://crbug.com/234765 for details.
+#define ALLOW_THIS_IN_INITIALIZER_LIST(code) code
 
 // Allows exporting a class that inherits from a non-exported base class.
 // This uses suppress instead of push/pop because the delimiter after the
