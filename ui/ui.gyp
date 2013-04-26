@@ -870,6 +870,12 @@
             '<(DEPTH)/webkit/support/setup_third_party.gyp:third_party_headers',
           ],
         }],
+        ['use_system_icu==1', {
+          # When using the system icu, the icu targets generate shim headers
+          # which are included by public headers in the ui target, so we need
+          # ui to be a hard dependency for all its users.
+          'hard_dependency': 1,
+        }],
       ],
     },
   ],

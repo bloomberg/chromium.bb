@@ -801,6 +801,9 @@
     # Use system yasm instead of bundled one.
     'use_system_yasm%': 0,
 
+    # Use system ICU instead of bundled one.
+    'use_system_icu%' : 0,
+
     # Default to enabled PIE; this is important for ASLR but we may need to be
     # able to turn it off for various reasons.
     'linux_disable_pie%': 0,
