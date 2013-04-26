@@ -44,6 +44,11 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
         mAutofillDialog.dismissAutofillDialog();
     }
 
+    @CalledByNative
+    private void dismissDialog() {
+        mAutofillDialog.dismissAutofillDialog();
+    }
+
     /**
      * @see AutofillDialog#updateNotificationArea(AutofillDialogNotification[])
      */
@@ -234,16 +239,28 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
 
     @Override
     public String getDialogButtonText(int dialogButtonId) {
+        // TODO(aruslan): to be removed once http://crbug.com/235493 is cleared.
+        assert mNativeDialogPopup != 0;
+        if (mNativeDialogPopup == 0) return null;
+
         return nativeGetDialogButtonText(mNativeDialogPopup, dialogButtonId);
     }
 
     @Override
     public boolean isDialogButtonEnabled(int dialogButtonId) {
+        // TODO(aruslan): to be removed once http://crbug.com/235493 is cleared.
+        assert mNativeDialogPopup != 0;
+        if (mNativeDialogPopup == 0) return true;
+
         return nativeIsDialogButtonEnabled(mNativeDialogPopup, dialogButtonId);
     }
 
     @Override
     public String getSaveLocallyText() {
+        // TODO(aruslan): to be removed once http://crbug.com/235493 is cleared.
+        assert mNativeDialogPopup != 0;
+        if (mNativeDialogPopup == 0) return null;
+
         return nativeGetSaveLocallyText(mNativeDialogPopup);
     }
 

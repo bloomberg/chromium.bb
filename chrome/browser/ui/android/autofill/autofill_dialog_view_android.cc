@@ -34,7 +34,8 @@ AutofillDialogViewAndroid::AutofillDialogViewAndroid(
     : controller_(controller) {}
 
 AutofillDialogViewAndroid::~AutofillDialogViewAndroid() {
-  DestroyFromNative();
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_AutofillDialogGlue_onDestroy(env, java_object_.obj());
 }
 
 void AutofillDialogViewAndroid::Show() {
@@ -50,7 +51,10 @@ void AutofillDialogViewAndroid::Show() {
 }
 
 void AutofillDialogViewAndroid::Hide() {
-  DestroyFromNative();
+  JNIEnv* env = base::android::AttachCurrentThread();
+  // This will call DialogDismissed(), and that could cause |this| to be
+  // deleted by the |controller|.
+  Java_AutofillDialogGlue_dismissDialog(env, java_object_.obj());
 }
 
 void AutofillDialogViewAndroid::UpdateNotificationArea() {
@@ -501,14 +505,6 @@ void AutofillDialogViewAndroid::UpdateSaveLocallyCheckBox() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_AutofillDialogGlue_updateSaveLocallyCheckBox(
       env, java_object_.obj(), controller_->ShouldOfferToSaveInChrome());
-}
-
-// Lets the Java side to clean up before the C++ side cleanup.
-void AutofillDialogViewAndroid::DestroyFromNative() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  // This will call DialogDismissed(), and that could cause |this| to be
-  // deleted by the |controller|.
-  Java_AutofillDialogGlue_onDestroy(env, java_object_.obj());
 }
 
 }  // namespace autofill

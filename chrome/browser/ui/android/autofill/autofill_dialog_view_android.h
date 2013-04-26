@@ -98,9 +98,6 @@ class AutofillDialogViewAndroid : public AutofillDialogView {
   // locally.
   void UpdateSaveLocallyCheckBox();
 
-  // Lets the Java side to clean up before the C++ side cleanup.
-  void DestroyFromNative();
-
   // The controller that drives this view. Weak pointer, always non-NULL.
   AutofillDialogController* const controller_;
 
