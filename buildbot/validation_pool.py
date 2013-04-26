@@ -885,10 +885,8 @@ class ValidationPool(object):
           'cros_patch.PatchException derivative, got %r'
           % (conflicting_changes,))
 
-    build_dashboard = self.GetBuildDashboardForOverlays(overlays, pre_cq)
-
-    self.build_log = '%s/builders/%s/builds/%s' % (
-        build_dashboard, builder_name, str(build_number))
+    self.build_log = self.ConstructDashboardURL(overlays, pre_cq, builder_name,
+                                                str(build_number))
 
     self.is_master = bool(is_master)
     self.pre_cq = pre_cq
@@ -911,13 +909,34 @@ class ValidationPool(object):
     self._patch_series = PatchSeries(self.build_root, helper_pool=helper_pool)
 
   @staticmethod
-  def GetBuildDashboardForOverlays(overlays, pre_cq):
+  def GetBuildDashboardForOverlays(overlays, trybot):
     """Discern the dashboard to use based on the given overlay."""
-    if pre_cq:
+    if trybot:
       return constants.TRYBOT_DASHBOARD
     if overlays in [constants.PRIVATE_OVERLAYS, constants.BOTH_OVERLAYS]:
       return constants.BUILD_INT_DASHBOARD
     return constants.BUILD_DASHBOARD
+
+  @classmethod
+  def ConstructDashboardURL(cls, overlays, trybot, builder_name, build_number,
+                            stage=None):
+    """Return the dashboard (buildbot) URL for this run
+
+    Args:
+      overlays: One of constants.VALID_OVERLAYS.
+      trybot: Boolean: is this a remote trybot?
+      builder_name: Builder name on buildbot dashboard.
+      build_number: Build number for this validation attempt.
+      stage: Link directly to a stage log, else use the general landing page.
+    Returns:
+      The fully formed URL
+    """
+    build_dashboard = cls.GetBuildDashboardForOverlays(overlays, trybot)
+    url = '%s/builders/%s/builds/%s' % (build_dashboard, builder_name,
+                                        str(build_number))
+    if stage:
+      url += '/steps/%s/logs/stdio' % (stage,)
+    return url
 
   @staticmethod
   def GetGerritHelpersForOverlays(overlays):

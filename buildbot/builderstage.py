@@ -21,6 +21,7 @@ except ImportError:
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import portage_utilities
+from chromite.buildbot import validation_pool
 from chromite.lib import cros_build_lib
 
 
@@ -72,6 +73,20 @@ class BuilderStage(object):
     self._chrome_rev = self._build_config['chrome_rev']
     if self._options.chrome_rev:
       self._chrome_rev = self._options.chrome_rev
+
+  def ConstructDashboardURL(self, stage=None):
+    """Return the dashboard URL
+
+    This is the direct link to buildbot logs as seen in build.chromium.org
+
+    Args:
+      stage: Link to a specific |stage|, otherwise the general buildbot log
+    Returns:
+      The fully formed URL
+    """
+    return validation_pool.ValidationPool.ConstructDashboardURL(
+        self._build_config['overlays'], self._options.remote_trybot,
+        self._build_config['name'], self._options.buildnumber, stage=stage)
 
   def _ExtractOverlays(self):
     """Extracts list of overlays into class."""
