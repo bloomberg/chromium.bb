@@ -518,6 +518,8 @@ DialogType.isModal = function(type) {
     controller.attachTreeDropTarget(this.directoryTree_);
     if (!util.platform.newUI())
       controller.attachBreadcrumbsDropTarget(this.breadcrumbs_);
+    else
+      controller.attachDropTarget(this.volumeList_, true);
     controller.attachCopyPasteHandlers();
     controller.addEventListener('selection-copied',
         this.blinkSelection.bind(this));
