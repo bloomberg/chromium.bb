@@ -10,7 +10,7 @@
 
 int main(void) {
   struct nacl_irt_thread ti;
-  if (0 == nacl_interface_query(NACL_IRT_THREAD_v0_1, &ti, sizeof(ti))) {
+  if (0 == nacl_interface_query(NACL_IRT_THREAD_v0_1, &ti, sizeof ti)) {
     fprintf(stderr, "IRT hook is not available\n");
     return 1;
   }

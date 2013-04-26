@@ -5,6 +5,8 @@
  */
 
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/mman.h>
 #include <stdint.h>
 
 #include "native_client/src/untrusted/irt/irt.h"
@@ -41,6 +43,15 @@ static int nacl_irt_mmap(void **addr, size_t len,
   return 0;
 }
 
+/*
+ * mmap from nacl-irt-memory-0.1 interface should ignore PROT_EXEC bit for
+ * backward-compatibility reasons.
+ */
+static int nacl_irt_mmap_v0_1(void **addr, size_t len,
+                              int prot, int flags, int fd, off_t off) {
+  return nacl_irt_mmap(addr, len, prot & ~PROT_EXEC, flags, fd, off);
+}
+
 static int nacl_irt_munmap(void *addr, size_t len) {
   return -NACL_SYSCALL(munmap)(addr, len);
 }
@@ -49,7 +60,13 @@ static int nacl_irt_mprotect(void *addr, size_t len, int prot) {
   return -NACL_SYSCALL(mprotect)(addr, len, prot);
 }
 
-const struct nacl_irt_memory_v0_2 nacl_irt_memory = {
+const struct nacl_irt_memory_v0_1 nacl_irt_memory_v0_1 = {
+  nacl_irt_sysbrk,
+  nacl_irt_mmap_v0_1,
+  nacl_irt_munmap,
+};
+
+const struct nacl_irt_memory nacl_irt_memory = {
   nacl_irt_sysbrk,
   nacl_irt_mmap,
   nacl_irt_munmap,

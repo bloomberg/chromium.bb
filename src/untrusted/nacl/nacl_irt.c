@@ -15,7 +15,7 @@
 struct nacl_irt_basic __libnacl_irt_basic;
 struct nacl_irt_fdio __libnacl_irt_fdio;
 struct nacl_irt_filename __libnacl_irt_filename;
-struct nacl_irt_memory_v0_2 __libnacl_irt_memory;
+struct nacl_irt_memory __libnacl_irt_memory;
 struct nacl_irt_dyncode __libnacl_irt_dyncode;
 struct nacl_irt_tls __libnacl_irt_tls;
 struct nacl_irt_blockhook __libnacl_irt_blockhook;

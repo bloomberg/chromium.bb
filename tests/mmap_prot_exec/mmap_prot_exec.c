@@ -98,7 +98,7 @@ struct ProtExecSpecifics {
   int map_prot;
   int map_flags;
   int expected_errno;  /* if expected mmap to fail */
-  int maps_into_data_region;
+  enum { FALSE, TRUE, NOT_RELEVANT } maps_into_data_region;
 };
 
 uintptr_t get_target_addr(struct ProtExecSpecifics *spec) {
@@ -559,53 +559,53 @@ struct ProtExecSpecifics prot_exec_non_functional = {
   /* non-functional: no NACL_FI */
   (0 * 0x10000 + (uintptr_t) &etext), 0,
   PROT_READ | PROT_EXEC, MAP_SHARED | MAP_FIXED,
-  /* expected_errno= */ EINVAL, /* maps_into_data_region= */ 0,
+  /* expected_errno= */ EINVAL, /* maps_into_data_region= */ NOT_RELEVANT,
 };
 
 struct ProtExecSpecifics prot_exec_functional = {
   /* functional: NACL_FI bypasses descriptor blessing check */
   (0 * 0x10000 + (uintptr_t) &etext), 0,
   PROT_READ | PROT_EXEC, MAP_SHARED | MAP_FIXED,
-  /* expected_errno= */ 0, /* maps_into_data_region= */ 0,
+  /* expected_errno= */ 0, /* maps_into_data_region= */ FALSE,
 };
 
 struct ProtExecSpecifics prot_exec_fallback_functional = {
   (2 * 0x10000 + (uintptr_t) &etext), 0,
   PROT_READ | PROT_EXEC, MAP_SHARED | MAP_FIXED,
-  /* expected_errno= */ 0, /* maps_into_data_region= */ 0,
+  /* expected_errno= */ 0, /* maps_into_data_region= */ FALSE,
 };
 
 struct ProtExecSpecifics prot_exec_short_file = {
   /* short_file */
   (4 * 0x10000 + (uintptr_t) &etext), 0,
   PROT_READ | PROT_EXEC, MAP_SHARED | MAP_FIXED,
-  /* expected_errno= */ EINVAL, /* maps_into_data_region= */ 0,
+  /* expected_errno= */ EINVAL, /* maps_into_data_region= */ NOT_RELEVANT,
 };
 
 struct ProtExecSpecifics prot_exec_and_write = {
   (4 * 0x10000 + (uintptr_t) &etext), 0,
   PROT_WRITE | PROT_EXEC, MAP_SHARED | MAP_FIXED,
-  /* expected_errno= */ EINVAL, /* maps_into_data_region= */ 0,
+  /* expected_errno= */ EINVAL, /* maps_into_data_region= */ NOT_RELEVANT,
 };
 
 struct ProtExecSpecifics prot_exec_unaligned = {
   (4 * 0x10000 + (uintptr_t) &etext), 1,
   PROT_READ | PROT_EXEC, MAP_SHARED | MAP_FIXED,
-  /* expected_errno= */ EINVAL, /* maps_into_data_region= */ 0,
+  /* expected_errno= */ EINVAL, /* maps_into_data_region= */ NOT_RELEVANT,
 };
 
 struct ProtExecSpecifics prot_exec_not_fixed_with_addr_hint = {
   /* no MAP_FIXED, addr used as hint -- maps into data region */
   (4 * 0x10000 + (uintptr_t) &etext), 0,
   PROT_READ | PROT_EXEC, MAP_SHARED,
-  /* expected_errno= */ 0, /* maps_into_data_region= */ 1,
+  /* expected_errno= */ EINVAL, /* maps_into_data_region= */ NOT_RELEVANT,
 };
 
 struct ProtExecSpecifics prot_exec_not_fixed_without_addr_hint = {
   /* no MAP_FIXED, no address hint -- maps into data region */
   0, 0,
   PROT_READ | PROT_EXEC, MAP_SHARED,
-  /* expected_errno= */ 0, /* maps_into_data_region= */ 1,
+  /* expected_errno= */ EINVAL, /* maps_into_data_region= */ NOT_RELEVANT,
 };
 
 struct MapPrivateRoSpecifics g_map_private_ro_machine_code = {

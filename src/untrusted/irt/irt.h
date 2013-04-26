@@ -90,12 +90,13 @@ struct nacl_irt_filename {
 #define NACL_IRT_MEMORY_v0_1    "nacl-irt-memory-0.1"
 struct nacl_irt_memory_v0_1 {
   int (*sysbrk)(void **newbrk);
+  /* Note: this version of mmap silently ignores PROT_EXEC bit.  */
   int (*mmap)(void **addr, size_t len, int prot, int flags, int fd, off_t off);
   int (*munmap)(void *addr, size_t len);
 };
 
 #define NACL_IRT_MEMORY_v0_2    "nacl-irt-memory-0.2"
-struct nacl_irt_memory_v0_2 {
+struct nacl_irt_memory {
   int (*sysbrk)(void **newbrk);
   int (*mmap)(void **addr, size_t len, int prot, int flags, int fd, off_t off);
   int (*munmap)(void *addr, size_t len);

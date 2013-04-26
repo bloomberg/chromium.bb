@@ -1164,9 +1164,9 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
       goto cleanup;
     }
     mapping_code = 1;
-  } else {
-    /* Assume data, for compatibility, we ignore the NACL_ABI_PROT_EXEC bit */
-    prot &= ~NACL_ABI_PROT_EXEC;
+  } else if (0 != (prot & NACL_ABI_PROT_EXEC)) {
+    map_result = -NACL_ABI_EINVAL;
+    goto cleanup;
   }
 
   /*
