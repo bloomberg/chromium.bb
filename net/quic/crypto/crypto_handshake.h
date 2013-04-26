@@ -13,11 +13,13 @@
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 #include "net/quic/crypto/crypto_protocol.h"
+#include "net/quic/quic_protocol.h"
 #include "net/quic/quic_time.h"
 
 namespace net {
 
 class KeyExchange;
+class ProofVerifier;
 class QuicClock;
 class QuicDecrypter;
 class QuicEncrypter;
@@ -140,7 +142,7 @@ class NET_EXPORT_PRIVATE QuicCryptoConfig {
   enum {
     // CONFIG_VERSION is the one (and, for the moment, only) version number that
     // we implement.
-     CONFIG_VERSION = 0,
+    CONFIG_VERSION = 0,
   };
 
   // kLabel is constant that is used in key derivation to tie the resulting key
@@ -189,8 +191,20 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     // otherwise.
     bool SetServerConfig(base::StringPiece scfg);
 
+    // SetProof stores a certificate chain and signature.
+    void SetProof(const std::vector<base::StringPiece>& certs,
+                  base::StringPiece signature);
+
+    // SetProofValid records that the certificate chain and signature have been
+    // validated and that it's safe to assume that the server is legitimate.
+    // (Note: this does not check the chain or signature.)
+    void SetProofValid();
+
     const std::string& server_config() const;
     const std::string& source_address_token() const;
+    const std::vector<std::string>& certs() const;
+    const std::string& signature() const;
+    bool proof_valid() const;
 
     void set_source_address_token(base::StringPiece token);
 
@@ -198,6 +212,11 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     std::string server_config_id_;  // An opaque id from the server.
     std::string server_config_;  // A serialized handshake message.
     std::string source_address_token_;  // An opaque proof of IP ownership.
+    std::vector<std::string> certs_;  // A list of certificates in leaf-first
+                                      // order.
+    std::string server_config_sig_;  // A signature of |server_config_|.
+    bool server_config_valid_;  // true if |server_config_| is correctly signed
+                                // and |certs_| has been validated.
 
     // scfg contains the cached, parsed value of |server_config|.
     mutable scoped_ptr<CryptoHandshakeMessage> scfg_;
@@ -209,9 +228,9 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // Sets the members to reasonable, default values.
   void SetDefaults();
 
-  // Lookup returns a CachedState for the given hostname, or NULL if no
-  // information is known.
-  const CachedState* Lookup(const std::string& server_hostname) const;
+  // LookupOrCreate returns a CachedState for the given hostname. If no such
+  // CachedState currently exists, it will be created and cached.
+  CachedState* LookupOrCreate(const std::string& server_hostname);
 
   // FillInchoateClientHello sets |out| to be a CHLO message that elicits a
   // source-address token or SCFG from a server. If |cached| is non-NULL, the
@@ -242,7 +261,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // true for that server's CachedState. If the rejection message contains
   // state about a future handshake (i.e. an nonce value from the server), then
   // it will be saved in |out_params|.
-  QuicErrorCode ProcessRejection(const std::string& server_hostname,
+  QuicErrorCode ProcessRejection(CachedState* cached,
                                  const CryptoHandshakeMessage& rej,
                                  QuicCryptoNegotiatedParameters* out_params,
                                  std::string* error_details);
@@ -256,10 +275,22 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
                                    QuicCryptoNegotiatedParameters* out_params,
                                    std::string* error_details);
 
+  const ProofVerifier* proof_verifier() const;
+
+  // SetProofVerifier takes ownership of a |ProofVerifier| that clients are
+  // free to use in order to verify certificate chains from servers. Setting a
+  // |ProofVerifier| does not alter the behaviour of the
+  // QuicCryptoClientConfig, it's just a place to store it.
+  void SetProofVerifier(ProofVerifier* verifier);
+
  private:
   // cached_states_ maps from the server hostname to the cached information
   // about that server.
   std::map<std::string, CachedState*> cached_states_;
+
+  scoped_ptr<ProofVerifier> proof_verifier_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuicCryptoClientConfig);
 };
 
 }  // namespace net

@@ -85,15 +85,14 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface,
   // false from OnPacketHeader(). We never need to process body of a packet.
   virtual void OnRevivedPacket() OVERRIDE {}
   virtual void OnFecProtectedPayload(base::StringPiece payload) OVERRIDE {}
-  virtual void OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE {}
-  virtual void OnAckFrame(const QuicAckFrame& frame) OVERRIDE {}
-  virtual void OnCongestionFeedbackFrame(
-      const QuicCongestionFeedbackFrame& frame) OVERRIDE {}
-  virtual void OnRstStreamFrame(const QuicRstStreamFrame& frame) OVERRIDE {}
-  virtual void OnConnectionCloseFrame(
-      const QuicConnectionCloseFrame & frame) OVERRIDE {}
-  virtual void OnGoAwayFrame(
-      const QuicGoAwayFrame& frame) OVERRIDE {}
+  virtual bool OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE;
+  virtual bool OnAckFrame(const QuicAckFrame& frame) OVERRIDE;
+  virtual bool OnCongestionFeedbackFrame(
+      const QuicCongestionFeedbackFrame& frame) OVERRIDE;
+  virtual bool OnRstStreamFrame(const QuicRstStreamFrame& frame) OVERRIDE;
+  virtual bool OnConnectionCloseFrame(
+      const QuicConnectionCloseFrame & frame) OVERRIDE;
+  virtual bool OnGoAwayFrame(const QuicGoAwayFrame& frame) OVERRIDE;
   virtual void OnFecData(const QuicFecData& fec) OVERRIDE {}
 
  protected:

@@ -51,15 +51,15 @@ class MockFramerVisitor : public QuicFramerVisitorInterface {
   // The constructor sets this up to return true by default.
   MOCK_METHOD1(OnPacketHeader, bool(const QuicPacketHeader& header));
   MOCK_METHOD1(OnFecProtectedPayload, void(base::StringPiece payload));
-  MOCK_METHOD1(OnStreamFrame, void(const QuicStreamFrame& frame));
-  MOCK_METHOD1(OnAckFrame, void(const QuicAckFrame& frame));
+  MOCK_METHOD1(OnStreamFrame, bool(const QuicStreamFrame& frame));
+  MOCK_METHOD1(OnAckFrame, bool(const QuicAckFrame& frame));
   MOCK_METHOD1(OnCongestionFeedbackFrame,
-               void(const QuicCongestionFeedbackFrame& frame));
+               bool(const QuicCongestionFeedbackFrame& frame));
   MOCK_METHOD1(OnFecData, void(const QuicFecData& fec));
-  MOCK_METHOD1(OnRstStreamFrame, void(const QuicRstStreamFrame& frame));
+  MOCK_METHOD1(OnRstStreamFrame, bool(const QuicRstStreamFrame& frame));
   MOCK_METHOD1(OnConnectionCloseFrame,
-               void(const QuicConnectionCloseFrame& frame));
-  MOCK_METHOD1(OnGoAwayFrame, void(const QuicGoAwayFrame& frame));
+               bool(const QuicConnectionCloseFrame& frame));
+  MOCK_METHOD1(OnGoAwayFrame, bool(const QuicGoAwayFrame& frame));
   MOCK_METHOD0(OnPacketComplete, void());
 
  private:
@@ -80,15 +80,15 @@ class NoOpFramerVisitor : public QuicFramerVisitorInterface {
   virtual bool OnProtocolVersionMismatch(QuicVersionTag version) OVERRIDE;
   virtual bool OnPacketHeader(const QuicPacketHeader& header) OVERRIDE;
   virtual void OnFecProtectedPayload(base::StringPiece payload) OVERRIDE {}
-  virtual void OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE {}
-  virtual void OnAckFrame(const QuicAckFrame& frame) OVERRIDE {}
-  virtual void OnCongestionFeedbackFrame(
-      const QuicCongestionFeedbackFrame& frame) OVERRIDE {}
+  virtual bool OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE;
+  virtual bool OnAckFrame(const QuicAckFrame& frame) OVERRIDE;
+  virtual bool OnCongestionFeedbackFrame(
+      const QuicCongestionFeedbackFrame& frame) OVERRIDE;
   virtual void OnFecData(const QuicFecData& fec) OVERRIDE {}
-  virtual void OnRstStreamFrame(const QuicRstStreamFrame& frame) OVERRIDE {}
-  virtual void OnConnectionCloseFrame(
-      const QuicConnectionCloseFrame& frame) OVERRIDE {}
-  virtual void OnGoAwayFrame(const QuicGoAwayFrame& frame) OVERRIDE {}
+  virtual bool OnRstStreamFrame(const QuicRstStreamFrame& frame) OVERRIDE;
+  virtual bool OnConnectionCloseFrame(
+      const QuicConnectionCloseFrame& frame) OVERRIDE;
+  virtual bool OnGoAwayFrame(const QuicGoAwayFrame& frame) OVERRIDE;
   virtual void OnPacketComplete() OVERRIDE {}
 
  private:
@@ -120,14 +120,14 @@ class FramerVisitorCapturingFrames : public NoOpFramerVisitor {
   virtual void OnVersionNegotiationPacket(
       const QuicVersionNegotiationPacket& packet) OVERRIDE;
   virtual bool OnPacketHeader(const QuicPacketHeader& header) OVERRIDE;
-  virtual void OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE;
-  virtual void OnAckFrame(const QuicAckFrame& frame) OVERRIDE;
-  virtual void OnCongestionFeedbackFrame(
+  virtual bool OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE;
+  virtual bool OnAckFrame(const QuicAckFrame& frame) OVERRIDE;
+  virtual bool OnCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& frame) OVERRIDE;
-  virtual void OnRstStreamFrame(const QuicRstStreamFrame& frame) OVERRIDE;
-  virtual void OnConnectionCloseFrame(
+  virtual bool OnRstStreamFrame(const QuicRstStreamFrame& frame) OVERRIDE;
+  virtual bool OnConnectionCloseFrame(
       const QuicConnectionCloseFrame& frame) OVERRIDE;
-  virtual void OnGoAwayFrame(const QuicGoAwayFrame& frame) OVERRIDE;
+  virtual bool OnGoAwayFrame(const QuicGoAwayFrame& frame) OVERRIDE;
 
   size_t frame_count() const { return frame_count_; }
   QuicPacketHeader* header() { return &header_; }

@@ -127,7 +127,6 @@ bool QuicClient::Connect() {
   return session_->connection()->connected();
 }
 
-
 bool QuicClient::StartConnect() {
   DCHECK(!connected() && initialized_);
 
@@ -154,7 +153,6 @@ void QuicClient::Disconnect() {
   epoll_server_.UnregisterFD(fd_);
   close(fd_);
   fd_ = -1;
-  session_.reset();
 }
 
 void QuicClient::SendRequestsAndWaitForResponse(int argc, char *argv[]) {
@@ -192,10 +190,10 @@ void QuicClient::OnEvent(int fd, EpollEvent* event) {
   DCHECK_EQ(fd, fd_);
 
   if (event->in_events & EPOLLIN) {
-    while (ReadAndProcessPacket()) {
+    while (connected() && ReadAndProcessPacket()) {
     }
   }
-  if (event->in_events & EPOLLOUT) {
+  if (connected() && (event->in_events & EPOLLOUT)) {
     session_->connection()->OnCanWrite();
   }
   if (event->in_events & EPOLLERR) {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GFE_QUIC_QUIC_EPOLL_CLOCK_H_
-#define GFE_QUIC_QUIC_EPOLL_CLOCK_H_
+#ifndef NET_TOOLS_QUIC_QUIC_EPOLL_CLOCK_H_
+#define NET_TOOLS_QUIC_QUIC_EPOLL_CLOCK_H_
 
 #include "base/compiler_specific.h"
 #include "net/quic/quic_clock.h"
@@ -41,4 +41,4 @@ class QuicEpollClock : public QuicClock {
 }  // namespace tools
 }  // namespace net
 
-#endif  // GFE_QUIC_QUIC_EPOLL_CLOCK_H_
+#endif  // NET_TOOLS_QUIC_QUIC_EPOLL_CLOCK_H_

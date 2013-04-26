@@ -184,9 +184,10 @@ void QuicSession::CloseStream(QuicStreamId stream_id) {
     DLOG(INFO) << "Stream is already closed: " << stream_id;
     return;
   }
-  it->second->OnClose();
+  ReliableQuicStream* stream = it->second;
   closed_streams_.push_back(it->second);
   stream_map_.erase(it);
+  stream->OnClose();
 }
 
 bool QuicSession::IsCryptoHandshakeComplete() {

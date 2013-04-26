@@ -15,6 +15,7 @@
 namespace net {
 
 class ProofSource;
+class ProofVerifier;
 class QuicClock;
 class QuicConfig;
 class QuicCryptoClientStream;
@@ -58,6 +59,9 @@ class CryptoTestUtils {
 
   // Returns a |ProofSource| that serves up test certificates.
   static ProofSource* ProofSourceForTesting();
+
+  // Returns a |ProofVerifier| that uses the QUIC testing root CA.
+  static ProofVerifier* ProofVerifierForTesting();
 
  private:
   static void CompareClientAndServerKeys(QuicCryptoClientStream* client,

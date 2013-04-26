@@ -11,6 +11,7 @@
 #include "net/quic/crypto/null_encrypter.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
+#include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_creator.h"
 
 using std::max;
@@ -29,6 +30,24 @@ MockFramerVisitor::MockFramerVisitor() {
   // By default, we want to accept packets.
   ON_CALL(*this, OnPacketHeader(_))
       .WillByDefault(testing::Return(true));
+
+  ON_CALL(*this, OnStreamFrame(_))
+      .WillByDefault(testing::Return(true));
+
+  ON_CALL(*this, OnAckFrame(_))
+      .WillByDefault(testing::Return(true));
+
+  ON_CALL(*this, OnCongestionFeedbackFrame(_))
+      .WillByDefault(testing::Return(true));
+
+  ON_CALL(*this, OnRstStreamFrame(_))
+      .WillByDefault(testing::Return(true));
+
+  ON_CALL(*this, OnConnectionCloseFrame(_))
+      .WillByDefault(testing::Return(true));
+
+  ON_CALL(*this, OnGoAwayFrame(_))
+      .WillByDefault(testing::Return(true));
 }
 
 MockFramerVisitor::~MockFramerVisitor() {
@@ -39,6 +58,33 @@ bool NoOpFramerVisitor::OnProtocolVersionMismatch(QuicVersionTag version) {
 }
 
 bool NoOpFramerVisitor::OnPacketHeader(const QuicPacketHeader& header) {
+  return true;
+}
+
+bool NoOpFramerVisitor::OnStreamFrame(const QuicStreamFrame& frame) {
+  return true;
+}
+
+bool NoOpFramerVisitor::OnAckFrame(const QuicAckFrame& frame) {
+  return true;
+}
+
+bool NoOpFramerVisitor::OnCongestionFeedbackFrame(
+    const QuicCongestionFeedbackFrame& frame) {
+  return true;
+}
+
+bool NoOpFramerVisitor::OnRstStreamFrame(
+    const QuicRstStreamFrame& frame) {
+  return true;
+}
+
+bool NoOpFramerVisitor::OnConnectionCloseFrame(
+    const QuicConnectionCloseFrame& frame) {
+  return true;
+}
+
+bool NoOpFramerVisitor::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
   return true;
 }
 
@@ -55,39 +101,45 @@ bool FramerVisitorCapturingFrames::OnPacketHeader(
   return true;
 }
 
-void FramerVisitorCapturingFrames::OnStreamFrame(const QuicStreamFrame& frame) {
+bool FramerVisitorCapturingFrames::OnStreamFrame(const QuicStreamFrame& frame) {
   // TODO(ianswett): Own the underlying string, so it will not exist outside
   // this callback.
   stream_frames_.push_back(frame);
   ++frame_count_;
+  return true;
 }
 
-void FramerVisitorCapturingFrames::OnAckFrame(const QuicAckFrame& frame) {
+bool FramerVisitorCapturingFrames::OnAckFrame(const QuicAckFrame& frame) {
   ack_.reset(new QuicAckFrame(frame));
   ++frame_count_;
+  return true;
 }
 
-void FramerVisitorCapturingFrames::OnCongestionFeedbackFrame(
+bool FramerVisitorCapturingFrames::OnCongestionFeedbackFrame(
     const QuicCongestionFeedbackFrame& frame) {
   feedback_.reset(new QuicCongestionFeedbackFrame(frame));
   ++frame_count_;
+  return true;
 }
 
-void FramerVisitorCapturingFrames::OnRstStreamFrame(
+bool FramerVisitorCapturingFrames::OnRstStreamFrame(
     const QuicRstStreamFrame& frame) {
   rst_.reset(new QuicRstStreamFrame(frame));
   ++frame_count_;
+  return true;
 }
 
-void FramerVisitorCapturingFrames::OnConnectionCloseFrame(
+bool FramerVisitorCapturingFrames::OnConnectionCloseFrame(
     const QuicConnectionCloseFrame& frame) {
   close_.reset(new QuicConnectionCloseFrame(frame));
   ++frame_count_;
+  return true;
 }
 
-void FramerVisitorCapturingFrames::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
+bool FramerVisitorCapturingFrames::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
   goaway_.reset(new QuicGoAwayFrame(frame));
   ++frame_count_;
+  return true;
 }
 
 void FramerVisitorCapturingFrames::OnVersionNegotiationPacket(
@@ -311,8 +363,15 @@ QuicPacket* ConstructHandshakePacket(QuicGuid guid, CryptoTag tag) {
 
 size_t GetPacketLengthForOneStream(bool include_version, size_t payload) {
   // TODO(wtc): the hardcoded use of NullEncrypter here seems wrong.
-  return NullEncrypter().GetCiphertextSize(payload) +
+  size_t packet_length = NullEncrypter().GetCiphertextSize(payload) +
       QuicPacketCreator::StreamFramePacketOverhead(1, include_version);
+
+  size_t ack_length = NullEncrypter().GetCiphertextSize(
+      QuicFramer::GetMinAckFrameSize()) + GetPacketHeaderSize(include_version);
+  // Make sure that if we change the size of the packet length for one stream
+  // or the ack frame; that all our test are configured correctly.
+  DCHECK_GE(packet_length, ack_length);
+  return packet_length;
 }
 
 QuicPacketEntropyHash TestEntropyCalculator::ReceivedEntropyHash(

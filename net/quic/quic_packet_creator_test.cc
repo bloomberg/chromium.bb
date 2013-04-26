@@ -232,11 +232,12 @@ TEST_P(QuicPacketCreatorTest, CreateStreamFrameTooLarge) {
   }
   // A string larger than fits into a frame.
   creator_.options()->max_packet_length = GetPacketLengthForOneStream(
-      QuicPacketCreatorPeer::SendVersionInPacket(&creator_), 1);
+      QuicPacketCreatorPeer::SendVersionInPacket(&creator_), 4);
   QuicFrame frame;
-  size_t consumed = creator_.CreateStreamFrame(1u, "test", 0u, true, &frame);
-  EXPECT_EQ(1u, consumed);
-  CheckStreamFrame(frame, 1u, "t", 0u, false);
+  size_t consumed = creator_.CreateStreamFrame(1u, "testTooLong", 0u, true,
+                                               &frame);
+  EXPECT_EQ(4u, consumed);
+  CheckStreamFrame(frame, 1u, "test", 0u, false);
   delete frame.stream_frame;
 }
 

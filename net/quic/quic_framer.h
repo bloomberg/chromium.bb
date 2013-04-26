@@ -44,6 +44,9 @@ const size_t kQuicStreamPayloadLengthSize = 2;
 
 // Size in bytes of the entropy hash sent in ack frames.
 const size_t kQuicEntropyHashSize = 1;
+// Size in bytes reserved for the delta time of the largest observed
+// sequence number in ack frames.
+const size_t kQuicDeltaTimeLargestObservedSize = 4;
 // Size in bytes reserved for the number of missing packets in ack frames.
 const size_t kNumberOfMissingPacketsSize = 1;
 
@@ -90,24 +93,25 @@ class NET_EXPORT_PRIVATE QuicFramerVisitorInterface {
   virtual void OnFecProtectedPayload(base::StringPiece payload) = 0;
 
   // Called when a StreamFrame has been parsed.
-  virtual void OnStreamFrame(const QuicStreamFrame& frame) = 0;
+  virtual bool OnStreamFrame(const QuicStreamFrame& frame) = 0;
 
-  // Called when a AckFrame has been parsed.
-  virtual void OnAckFrame(const QuicAckFrame& frame) = 0;
+  // Called when a AckFrame has been parsed.  If OnAckFrame returns false,
+  // the framer will stop parsing the current packet.
+  virtual bool OnAckFrame(const QuicAckFrame& frame) = 0;
 
   // Called when a CongestionFeedbackFrame has been parsed.
-  virtual void OnCongestionFeedbackFrame(
+  virtual bool OnCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& frame) = 0;
 
   // Called when a RstStreamFrame has been parsed.
-  virtual void OnRstStreamFrame(const QuicRstStreamFrame& frame) = 0;
+  virtual bool OnRstStreamFrame(const QuicRstStreamFrame& frame) = 0;
 
   // Called when a ConnectionCloseFrame has been parsed.
-  virtual void OnConnectionCloseFrame(
+  virtual bool OnConnectionCloseFrame(
       const QuicConnectionCloseFrame& frame) = 0;
 
   // Called when a GoAwayFrame has been parsed.
-  virtual void OnGoAwayFrame(const QuicGoAwayFrame& frame) = 0;
+  virtual bool OnGoAwayFrame(const QuicGoAwayFrame& frame) = 0;
 
   // Called when FEC data has been parsed.
   virtual void OnFecData(const QuicFecData& fec) = 0;
@@ -315,15 +319,15 @@ class NET_EXPORT_PRIVATE QuicFramer {
 
   bool ProcessPacketSequenceNumber(QuicPacketSequenceNumber* sequence_number);
   bool ProcessFrameData();
-  bool ProcessStreamFrame();
+  bool ProcessStreamFrame(QuicStreamFrame* frame);
   bool ProcessAckFrame(QuicAckFrame* frame);
   bool ProcessReceivedInfo(ReceivedPacketInfo* received_info);
   bool ProcessSentInfo(SentPacketInfo* sent_info);
   bool ProcessQuicCongestionFeedbackFrame(
       QuicCongestionFeedbackFrame* congestion_feedback);
-  bool ProcessRstStreamFrame();
-  bool ProcessConnectionCloseFrame();
-  bool ProcessGoAwayFrame();
+  bool ProcessRstStreamFrame(QuicRstStreamFrame* frame);
+  bool ProcessConnectionCloseFrame(QuicConnectionCloseFrame* frame);
+  bool ProcessGoAwayFrame(QuicGoAwayFrame* frame);
 
   bool DecryptPayload(QuicPacketSequenceNumber packet_sequence_number,
                       bool version_flag,

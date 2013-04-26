@@ -172,6 +172,8 @@ int CryptoTestUtils::HandshakeWithFakeClient(
 
   config.SetDefaults();
   crypto_config.SetDefaults();
+  // TODO(rtenneti): Enable testing of ProofVerifier.
+  // crypto_config.SetProofVerifier(ProofVerifierForTesting());
   QuicCryptoClientStream client("test.example.com", config, &client_session,
                                 &crypto_config);
 

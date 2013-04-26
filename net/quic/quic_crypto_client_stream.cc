@@ -6,6 +6,7 @@
 
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/crypto_utils.h"
+#include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_session.h"
 
@@ -65,6 +66,8 @@ void QuicCryptoClientStream::DoHandshakeLoop(
   CryptoHandshakeMessage out;
   QuicErrorCode error;
   string error_details;
+  QuicCryptoClientConfig::CachedState* cached =
+      crypto_config_->LookupOrCreate(server_hostname_);
 
   if (in != NULL) {
     DLOG(INFO) << "Client received: " << in->DebugString();
@@ -81,9 +84,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         }
         num_client_hellos_++;
 
-        const QuicCryptoClientConfig::CachedState* cached =
-            crypto_config_->Lookup(server_hostname_);
-        if (!cached || !cached->is_complete()) {
+        if (!cached->is_complete()) {
           crypto_config_->FillInchoateClientHello(server_hostname_, cached,
                                                   &out);
           next_state_ = STATE_RECV_REJ;
@@ -128,16 +129,36 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         // rejected. Here we hope to have a REJ that contains the information
         // that we need.
         if (in->tag() != kREJ) {
-            CloseConnectionWithDetails(QUIC_INVALID_CRYPTO_MESSAGE_TYPE,
-                                       "Expected REJ");
-            return;
+          CloseConnectionWithDetails(QUIC_INVALID_CRYPTO_MESSAGE_TYPE,
+                                     "Expected REJ");
+          return;
         }
-        error = crypto_config_->ProcessRejection(server_hostname_, *in,
+        error = crypto_config_->ProcessRejection(cached, *in,
                                                  &crypto_negotiated_params_,
                                                  &error_details);
         if (error != QUIC_NO_ERROR) {
-            CloseConnectionWithDetails(error, error_details);
-            return;
+          CloseConnectionWithDetails(error, error_details);
+          return;
+        }
+        if (!cached->proof_valid()) {
+          const ProofVerifier* verifier = crypto_config_->proof_verifier();
+          if (!verifier) {
+            // If no verifier is set then we don't check the certificates.
+            cached->SetProofValid();
+          } else if (!cached->signature().empty()) {
+            // TODO(rtenneti): In Chromium, we will need to make VerifyProof()
+            // asynchronous.
+            if (!verifier->VerifyProof(server_hostname_,
+                                       cached->server_config(),
+                                       cached->certs(),
+                                       cached->signature(),
+                                       &error_details)) {
+              CloseConnectionWithDetails(QUIC_PROOF_INVALID,
+                                         "Proof invalid: " + error_details);
+              return;
+            }
+            cached->SetProofValid();
+          }
         }
         // Clear any new server write key that we may have set before.
         if (decrypter_pushed_) {

@@ -227,6 +227,7 @@ void TcpCubicSender::AckAccounting(QuicTime::Delta rtt) {
     }
     hybrid_slow_start_.Update(rtt, delay_min_);
     if (hybrid_slow_start_.Exit()) {
+      DLOG(INFO) << "Set slowstart threshold:" << congestion_window_;
       slowstart_threshold_ = congestion_window_;
     }
   }

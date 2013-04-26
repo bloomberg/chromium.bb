@@ -73,6 +73,7 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   // This block of functions wraps the sequencer's functions of the same
   // name.
   virtual bool IsHalfClosed() const;
+  virtual bool IsClosed() const;
   virtual bool HasBytesToRead() const;
 
   QuicStreamId id() const { return id_; }

@@ -13,6 +13,7 @@ namespace {
 TEST(QuicDataWriterTest, WriteUint8ToOffset) {
   QuicDataWriter writer(4);
 
+  writer.WriteUInt32(0xfefdfcfb);
   EXPECT_TRUE(writer.WriteUInt8ToOffset(1, 0));
   EXPECT_TRUE(writer.WriteUInt8ToOffset(2, 1));
   EXPECT_TRUE(writer.WriteUInt8ToOffset(3, 2));

@@ -32,12 +32,9 @@ struct hash<net::QuicBlockedWriterInterface*> {
 }
 #endif
 
-namespace gfe2 {
-  class EpollServer;
-}
-
 namespace net {
 
+class EpollServer;
 class QuicConfig;
 class QuicCryptoServerConfig;
 class QuicSession;

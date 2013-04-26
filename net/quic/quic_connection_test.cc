@@ -791,13 +791,13 @@ TEST_F(QuicConnectionTest, FECSending) {
   // Limit to one byte per packet.
   // All packets carry version info till version is negotiated.
   connection_.options()->max_packet_length =
-      GetPacketLengthForOneStream(kIncludeVersion, 1);
+      GetPacketLengthForOneStream(kIncludeVersion, 4);
   // And send FEC every two packets.
   connection_.options()->max_packets_per_fec_group = 2;
 
   // Send 4 data packets and 2 FEC packets.
   EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _)).Times(6);
-  connection_.SendStreamData(1, "food", 0, !kFin);
+  connection_.SendStreamData(1, "foodfoodfoodfood", 0, !kFin);
   // Expect the FEC group to be closed after SendStreamData.
   EXPECT_FALSE(creator_.ShouldSendFec(true));
 }
@@ -806,7 +806,7 @@ TEST_F(QuicConnectionTest, FECQueueing) {
   // Limit to one byte per packet.
   // All packets carry version info till version is negotiated.
   connection_.options()->max_packet_length =
-      GetPacketLengthForOneStream(kIncludeVersion, 1);
+      GetPacketLengthForOneStream(kIncludeVersion, 4);
   // And send FEC every two packets.
   connection_.options()->max_packets_per_fec_group = 2;
 
@@ -1531,7 +1531,7 @@ TEST_F(QuicConnectionTest, TestQueueLimitsOnSendStreamData) {
   // Limit to one byte per packet.
   // All packets carry version info till version is negotiated.
   connection_.options()->max_packet_length =
-      GetPacketLengthForOneStream(kIncludeVersion, 1);
+      GetPacketLengthForOneStream(kIncludeVersion, 4);
 
   // Queue the first packet.
   EXPECT_CALL(*send_algorithm_,
@@ -1543,15 +1543,15 @@ TEST_F(QuicConnectionTest, TestQueueLimitsOnSendStreamData) {
 }
 
 TEST_F(QuicConnectionTest, LoopThroughSendingPackets) {
-  // Limit to one byte per packet.
+  // Limit to 4 bytes per packet.
   // All packets carry version info till version is negotiated.
   connection_.options()->max_packet_length =
-      GetPacketLengthForOneStream(kIncludeVersion, 1);
+      GetPacketLengthForOneStream(kIncludeVersion, 4);
 
   // Queue the first packet.
-  EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _)).Times(17);
-  EXPECT_EQ(17u, connection_.SendStreamData(
-                1, "EnoughDataToQueue", 0, !kFin).bytes_consumed);
+  EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _)).Times(7);
+  EXPECT_EQ(27u, connection_.SendStreamData(
+                1, "EnoughDataToQueueStreamData", 0, !kFin).bytes_consumed);
 }
 
 TEST_F(QuicConnectionTest, NoAckForClose) {

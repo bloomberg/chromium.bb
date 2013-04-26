@@ -44,22 +44,25 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
 
   virtual void OnFecProtectedPayload(StringPiece payload) OVERRIDE {}
 
-  virtual void OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE {
+  virtual bool OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE {
     // Save a copy of the data so it is valid after the packet is processed.
     stream_data_.push_back(frame.data.as_string());
     QuicStreamFrame stream_frame(frame);
     // Make sure that the stream frame points to this data.
     stream_frame.data = stream_data_.back();
     stream_frames_.push_back(stream_frame);
+    return true;
   }
 
-  virtual void OnAckFrame(const QuicAckFrame& frame) OVERRIDE {
+  virtual bool OnAckFrame(const QuicAckFrame& frame) OVERRIDE {
     ack_frames_.push_back(frame);
+    return true;
   }
 
-  virtual void OnCongestionFeedbackFrame(
+  virtual bool OnCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& frame) OVERRIDE {
     feedback_frames_.push_back(frame);
+    return true;
   }
 
   virtual void OnFecData(const QuicFecData& fec) OVERRIDE {
@@ -68,17 +71,20 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
     fec_data_.redundancy = fec_redundancy_;
   }
 
-  virtual void OnRstStreamFrame(const QuicRstStreamFrame& frame) OVERRIDE {
+  virtual bool OnRstStreamFrame(const QuicRstStreamFrame& frame) OVERRIDE {
     rst_stream_frames_.push_back(frame);
+    return true;
   }
 
-  virtual void OnConnectionCloseFrame(
+  virtual bool OnConnectionCloseFrame(
       const QuicConnectionCloseFrame& frame) OVERRIDE {
     connection_close_frames_.push_back(frame);
+    return true;
   }
 
-  virtual void OnGoAwayFrame(const QuicGoAwayFrame& frame) OVERRIDE {
+  virtual bool OnGoAwayFrame(const QuicGoAwayFrame& frame) OVERRIDE {
     goaway_frames_.push_back(frame);
+    return true;
   }
 
   virtual void OnPacketComplete() OVERRIDE {}

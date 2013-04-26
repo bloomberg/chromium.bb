@@ -53,7 +53,7 @@ void GenerateBody(string* body, int length) {
 }
 
 
-// Simple wrapper class to run GFE in a thread.
+// Simple wrapper class to run server in a thread.
 class ServerThread : public base::SimpleThread {
  public:
   explicit ServerThread(IPEndPoint address)

@@ -53,6 +53,7 @@ class NET_EXPORT_PRIVATE QuicDataWriter {
   // offset must be within the writer's capacity.
   // Return true if there is enough space at that offset, false otherwise.
   bool WriteUInt8ToOffset(uint8 value, size_t offset);
+  bool WriteUInt32ToOffset(uint32 value, size_t offset);
   bool WriteUInt48ToOffset(uint64 value, size_t offset);
 
   size_t capacity() const {

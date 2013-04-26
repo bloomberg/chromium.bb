@@ -161,6 +161,33 @@ bool QuicTimeWaitListManager::OnProtocolVersionMismatch(
   return false;
 }
 
+bool QuicTimeWaitListManager::OnStreamFrame(const QuicStreamFrame& frame) {
+  return false;
+}
+
+bool QuicTimeWaitListManager::OnAckFrame(const QuicAckFrame& frame) {
+  return false;
+}
+
+bool QuicTimeWaitListManager::OnCongestionFeedbackFrame(
+    const QuicCongestionFeedbackFrame& frame) {
+  return false;
+}
+
+bool QuicTimeWaitListManager::OnRstStreamFrame(
+    const QuicRstStreamFrame& frame) {
+  return false;
+}
+
+bool QuicTimeWaitListManager::OnConnectionCloseFrame(
+    const QuicConnectionCloseFrame & frame) {
+  return false;
+}
+
+bool QuicTimeWaitListManager::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
+  return false;
+}
+
 bool QuicTimeWaitListManager::OnPacketHeader(const QuicPacketHeader& header) {
   // TODO(satyamshekhar): Think about handling packets from different client
   // addresses.

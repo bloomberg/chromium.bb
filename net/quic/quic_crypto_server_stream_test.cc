@@ -17,7 +17,6 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_crypto_client_stream.h"
-#include "net/quic/quic_crypto_server_stream.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_session.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
@@ -42,8 +41,9 @@ class TestQuicVisitor : public NoOpFramerVisitor {
   TestQuicVisitor() {}
 
   // NoOpFramerVisitor
-  virtual void OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE {
+  virtual bool OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE {
     frame_ = frame;
+    return true;
   }
 
   QuicStreamFrame* frame() { return &frame_; }
@@ -124,6 +124,14 @@ TEST_F(QuicCryptoServerStreamTest, ConnectedAfterCHLO) {
     return;
   }
 
+  // CompleteCryptoHandshake returns the number of client hellos sent. This
+  // test should send:
+  //   * One to get a source-address token.
+  //   * One to complete the handshake.
+  // TODO(rtenneti): Until we set the crypto_config.SetProofVerifier to enable
+  // ProofVerifier in CryptoTestUtils::HandshakeWithFakeClient, we would not
+  // have sent the following client hello.
+  //   * One to get the server's certificates
   EXPECT_EQ(2, CompleteCryptoHandshake());
   EXPECT_TRUE(stream_.handshake_complete());
 }

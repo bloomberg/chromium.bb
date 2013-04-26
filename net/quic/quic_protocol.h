@@ -222,6 +222,8 @@ enum QuicErrorCode {
   QUIC_CRYPTO_NO_SUPPORT,
   // The server rejected our client hello messages too many times.
   QUIC_CRYPTO_TOO_MANY_REJECTS,
+  // The client rejected the server's certificate chain or signature.
+  QUIC_PROOF_INVALID,
 
   // No error. Used as bound while iterating.
   QUIC_LAST_ERROR,
@@ -233,10 +235,17 @@ enum QuicErrorCode {
 // following 4 bytes: 'C' 'H' 'L' 'O'.  Since it is
 // stored in memory as a little endian uint32, we need
 // to reverse the order of the bytes.
-#define MAKE_TAG(a, b, c, d) ((d << 24) + (c << 16) + (b << 8) + a)
-
+//
+// The TAG macro is used in header files to ensure that we don't create static
+// initialisers. In normal code, the MakeQuicTag function should be used.
+#define TAG(a, b, c, d) ((d << 24) + (c << 16) + (b << 8) + a)
 const QuicVersionTag kUnsupportedVersion = -1;
-const QuicVersionTag kQuicVersion1 = MAKE_TAG('Q', '1', '.', '0');
+const QuicVersionTag kQuicVersion1 = TAG('Q', '1', '.', '0');
+#undef TAG
+
+// MakeQuicTag returns a value given the four bytes. For example:
+//   MakeQuicTag('C', 'H', 'L', 'O');
+uint32 NET_EXPORT_PRIVATE MakeQuicTag(char a, char b, char c, char d);
 
 struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {
   QuicPacketPublicHeader();

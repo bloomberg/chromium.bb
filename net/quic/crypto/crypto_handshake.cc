@@ -17,6 +17,7 @@
 #include "net/quic/crypto/curve25519_key_exchange.h"
 #include "net/quic/crypto/key_exchange.h"
 #include "net/quic/crypto/p256_key_exchange.h"
+#include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_random.h"
@@ -24,7 +25,6 @@
 #include "net/quic/quic_protocol.h"
 
 using base::StringPiece;
-using crypto::SecureHash;
 using std::map;
 using std::string;
 using std::vector;
@@ -97,8 +97,7 @@ void CryptoHandshakeMessage::SetTaglist(CryptoTag tag, ...) {
   va_end(ap);
 }
 
-void CryptoHandshakeMessage::SetStringPiece(CryptoTag tag,
-                                            StringPiece value) {
+void CryptoHandshakeMessage::SetStringPiece(CryptoTag tag, StringPiece value) {
   tag_value_map_[tag] = value.as_string();
 }
 
@@ -321,25 +320,21 @@ QuicCryptoConfig::QuicCryptoConfig()
     : version(0) {
 }
 
-QuicCryptoConfig::~QuicCryptoConfig() {
-}
+QuicCryptoConfig::~QuicCryptoConfig() {}
 
-
-QuicCryptoClientConfig::QuicCryptoClientConfig() {
-}
+QuicCryptoClientConfig::QuicCryptoClientConfig() {}
 
 QuicCryptoClientConfig::~QuicCryptoClientConfig() {
   STLDeleteValues(&cached_states_);
 }
 
-QuicCryptoClientConfig::CachedState::CachedState() {
-}
+QuicCryptoClientConfig::CachedState::CachedState()
+    : server_config_valid_(false) {}
 
-QuicCryptoClientConfig::CachedState::~CachedState() {
-}
+QuicCryptoClientConfig::CachedState::~CachedState() {}
 
 bool QuicCryptoClientConfig::CachedState::is_complete() const {
-  return !server_config_.empty();
+  return !server_config_.empty() && server_config_valid_;
 }
 
 const CryptoHandshakeMessage*
@@ -365,14 +360,60 @@ bool QuicCryptoClientConfig::CachedState::SetServerConfig(
   return true;
 }
 
-const string& QuicCryptoClientConfig::CachedState::server_config()
-    const {
+void QuicCryptoClientConfig::CachedState::SetProof(
+    const vector<StringPiece>& certs, StringPiece signature) {
+  bool has_changed = signature != server_config_sig_;
+
+  if (certs.size() != certs_.size()) {
+    has_changed = true;
+  }
+  if (!has_changed) {
+    for (size_t i = 0; i < certs_.size(); i++) {
+      if (certs[i] != certs_[i]) {
+        has_changed = true;
+        break;
+      }
+    }
+  }
+
+  if (!has_changed) {
+    return;
+  }
+
+  // If the proof has changed then it needs to be revalidated.
+  server_config_valid_ = false;
+  certs_.clear();
+  for (vector<StringPiece>::const_iterator i = certs.begin();
+       i != certs.end(); ++i) {
+    certs_.push_back(i->as_string());
+  }
+  server_config_sig_ = signature.as_string();
+}
+
+void QuicCryptoClientConfig::CachedState::SetProofValid() {
+  server_config_valid_ = true;
+}
+
+const string&
+QuicCryptoClientConfig::CachedState::server_config() const {
   return server_config_;
 }
 
-const string& QuicCryptoClientConfig::CachedState::source_address_token()
-    const {
+const string&
+QuicCryptoClientConfig::CachedState::source_address_token() const {
   return source_address_token_;
+}
+
+const vector<string>& QuicCryptoClientConfig::CachedState::certs() const {
+  return certs_;
+}
+
+const string& QuicCryptoClientConfig::CachedState::signature() const {
+  return server_config_sig_;
+}
+
+bool QuicCryptoClientConfig::CachedState::proof_valid() const {
+  return server_config_valid_;
 }
 
 void QuicCryptoClientConfig::CachedState::set_source_address_token(
@@ -394,14 +435,17 @@ void QuicCryptoClientConfig::SetDefaults() {
   aead[0] = kAESG;
 }
 
-const QuicCryptoClientConfig::CachedState* QuicCryptoClientConfig::Lookup(
-    const string& server_hostname) const {
+QuicCryptoClientConfig::CachedState* QuicCryptoClientConfig::LookupOrCreate(
+    const string& server_hostname) {
   map<string, CachedState*>::const_iterator it =
       cached_states_.find(server_hostname);
-  if (it == cached_states_.end()) {
-    return NULL;
+  if (it != cached_states_.end()) {
+    return it->second;
   }
-  return it->second;
+
+  CachedState* cached = new CachedState;
+  cached_states_.insert(make_pair(server_hostname, cached));
+  return cached;
 }
 
 void QuicCryptoClientConfig::FillInchoateClientHello(
@@ -419,7 +463,7 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
   }
   out->SetValue(kVERS, version);
 
-  if (cached && !cached->source_address_token().empty()) {
+  if (!cached->source_address_token().empty()) {
     out->SetStringPiece(kSRCT, cached->source_address_token());
   }
 
@@ -491,14 +535,13 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
 
   StringPiece public_value;
   if (scfg->GetNthValue16(kPUBS, key_exchange_index, &public_value) !=
-      QUIC_NO_ERROR) {
+          QUIC_NO_ERROR) {
     *error_details = "Missing public value";
     return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
   }
 
   StringPiece orbit;
-  if (!scfg->GetStringPiece(kORBT, &orbit) ||
-      orbit.size() != kOrbitSize) {
+  if (!scfg->GetStringPiece(kORBT, &orbit) || orbit.size() != kOrbitSize) {
     *error_details = "SCFG missing OBIT";
     return QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND;
   }
@@ -546,21 +589,11 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
 }
 
 QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
-    const string& server_hostname,
+    CachedState* cached,
     const CryptoHandshakeMessage& rej,
     QuicCryptoNegotiatedParameters* out_params,
     string* error_details) {
   DCHECK(error_details != NULL);
-
-  CachedState* cached;
-  map<string, CachedState*>::const_iterator it =
-      cached_states_.find(server_hostname);
-  if (it == cached_states_.end()) {
-    cached = new CachedState;
-    cached_states_[server_hostname] = cached;
-  } else {
-    cached = it->second;
-  }
 
   StringPiece scfg;
   if (!rej.GetStringPiece(kSCFG, &scfg)) {
@@ -584,6 +617,34 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
     out_params->server_nonce = nonce.as_string();
   }
 
+  StringPiece proof, cert_bytes;
+  if (rej.GetStringPiece(kPROF, &proof) &&
+      rej.GetStringPiece(kCERT, &cert_bytes)) {
+    vector<StringPiece> certs;
+    while (!cert_bytes.empty()) {
+      if (cert_bytes.size() < 3) {
+        *error_details = "Certificate length truncated";
+        return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+      }
+      size_t len = static_cast<size_t>(cert_bytes[0]) |
+                   static_cast<size_t>(cert_bytes[1]) << 8 |
+                   static_cast<size_t>(cert_bytes[2]) << 16;
+      if (len == 0) {
+        *error_details = "Zero length certificate";
+        return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+      }
+      cert_bytes.remove_prefix(3);
+      if (cert_bytes.size() < len) {
+        *error_details = "Certificate truncated";
+        return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+      }
+      certs.push_back(StringPiece(cert_bytes.data(), len));
+      cert_bytes.remove_prefix(len);
+    }
+
+    cached->SetProof(certs, proof);
+  }
+
   return QUIC_NO_ERROR;
 }
 
@@ -604,6 +665,14 @@ QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
   //   read ephemeral public value for forward-secret keys.
 
   return QUIC_NO_ERROR;
+}
+
+const ProofVerifier* QuicCryptoClientConfig::proof_verifier() const {
+  return proof_verifier_.get();
+}
+
+void QuicCryptoClientConfig::SetProofVerifier(ProofVerifier* verifier) {
+  proof_verifier_.reset(verifier);
 }
 
 }  // namespace net

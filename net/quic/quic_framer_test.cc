@@ -27,6 +27,8 @@ using std::map;
 using std::numeric_limits;
 using std::string;
 using std::vector;
+using testing::Return;
+using testing::_;
 
 namespace net {
 namespace test {
@@ -200,25 +202,28 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
     return accept_packet_;
   }
 
-  virtual void OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE {
+  virtual bool OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE {
     frame_count_++;
     stream_frames_.push_back(new QuicStreamFrame(frame));
+    return true;
   }
 
   virtual void OnFecProtectedPayload(StringPiece payload) OVERRIDE {
     fec_protected_payload_ = payload.as_string();
   }
 
-  virtual void OnAckFrame(const QuicAckFrame& frame) OVERRIDE {
+  virtual bool OnAckFrame(const QuicAckFrame& frame) OVERRIDE {
     frame_count_++;
     ack_frames_.push_back(new QuicAckFrame(frame));
+    return true;
   }
 
-  virtual void OnCongestionFeedbackFrame(
+  virtual bool OnCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& frame) OVERRIDE {
     frame_count_++;
     congestion_feedback_frames_.push_back(
         new QuicCongestionFeedbackFrame(frame));
+    return true;
   }
 
   virtual void OnFecData(const QuicFecData& fec) OVERRIDE {
@@ -230,17 +235,20 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
     complete_packets_++;
   }
 
-  virtual void OnRstStreamFrame(const QuicRstStreamFrame& frame) OVERRIDE {
+  virtual bool OnRstStreamFrame(const QuicRstStreamFrame& frame) OVERRIDE {
     rst_stream_frame_ = frame;
+    return true;
   }
 
-  virtual void OnConnectionCloseFrame(
+  virtual bool OnConnectionCloseFrame(
       const QuicConnectionCloseFrame& frame) OVERRIDE {
     connection_close_frame_ = frame;
+    return true;
   }
 
-  virtual void OnGoAwayFrame(const QuicGoAwayFrame& frame) OVERRIDE {
+  virtual bool OnGoAwayFrame(const QuicGoAwayFrame& frame) OVERRIDE {
     goaway_frame_ = frame;
+    return true;
   }
 
   // Counters from the visitor_ callbacks.
@@ -1058,6 +1066,8 @@ TEST_F(QuicFramerTest, AckFrame) {
     // largest observed packet sequence number
     0xBF, 0x9A, 0x78, 0x56,
     0x34, 0x12,
+    // Infinite delta time.
+    0xFF, 0xFF, 0xFF, 0xFF,
     // num missing packets
     0x01,
     // missing packet
@@ -1090,8 +1100,10 @@ TEST_F(QuicFramerTest, AckFrame) {
       kSequenceNumberSize;
   const size_t kLargestObservedOffset = kReceivedEntropyOffset +
       kQuicEntropyHashSize;
-  const size_t kNumMissingPacketOffset = kLargestObservedOffset +
+  const size_t kMissingDeltaTimeOffset = kLargestObservedOffset +
       kSequenceNumberSize;
+  const size_t kNumMissingPacketOffset = kMissingDeltaTimeOffset +
+      kQuicDeltaTimeLargestObservedSize;
   const size_t kMissingPacketsOffset = kNumMissingPacketOffset +
       kNumberOfMissingPacketsSize;
   // Now test framing boundaries
@@ -1107,8 +1119,10 @@ TEST_F(QuicFramerTest, AckFrame) {
       expected_error = "Unable to read least unacked.";
     } else if (i < kLargestObservedOffset) {
       expected_error = "Unable to read entropy hash for received packets.";
-    } else if (i < kNumMissingPacketOffset) {
+    } else if (i < kMissingDeltaTimeOffset) {
       expected_error = "Unable to read largest observed.";
+    } else if (i < kNumMissingPacketOffset) {
+      expected_error = "Unable to read delta time largest observed.";
     } else if (i < kMissingPacketsOffset) {
       expected_error = "Unable to read num missing packets.";
     } else {
@@ -1452,6 +1466,8 @@ TEST_F(QuicFramerTest, ConnectionCloseFrame) {
     // largest observed packet sequence number
     0xBF, 0x9A, 0x78, 0x56,
     0x34, 0x12,
+    // Infinite delta time.
+    0xFF, 0xFF, 0xFF, 0xFF,
     // num missing packets
     0x01,
     // missing packet
@@ -1860,7 +1876,7 @@ TEST_F(QuicFramerTest, ConstructVersionNegotiationPacket) {
     'Q', '2', '.', '0',
   };
 
-  const int kQuicVersion2 = MAKE_TAG('Q', '2', '.', '0');
+  const int kQuicVersion2 = MakeQuicTag('Q', '2', '.', '0');
   QuicVersionTagList versions;
   versions.push_back(kQuicVersion1);
   versions.push_back(kQuicVersion2);
@@ -1886,6 +1902,7 @@ TEST_F(QuicFramerTest, ConstructAckFramePacket) {
   QuicAckFrame ack_frame;
   ack_frame.received_info.entropy_hash = 0x43;
   ack_frame.received_info.largest_observed = GG_UINT64_C(0x770123456789ABF);
+  ack_frame.received_info.delta_time_largest_observed = QuicTime::Delta::Zero();
   ack_frame.received_info.missing_packets.insert(
       GG_UINT64_C(0x770123456789ABE));
   ack_frame.sent_info.entropy_hash = 0x14;
@@ -1920,6 +1937,8 @@ TEST_F(QuicFramerTest, ConstructAckFramePacket) {
     // largest observed packet sequence number
     0xBF, 0x9A, 0x78, 0x56,
     0x34, 0x12,
+    // Zero delta time.
+    0x0, 0x0, 0x0, 0x0,
     // num missing packets
     0x01,
     // missing packet
@@ -2256,6 +2275,8 @@ TEST_F(QuicFramerTest, ConstructCloseFramePacket) {
     // largest observed packet sequence number
     0xBF, 0x9A, 0x78, 0x56,
     0x34, 0x12,
+    // Infinite delta time.
+    0xFF, 0xFF, 0xFF, 0xFF,
     // num missing packets
     0x01,
     // missing packet
@@ -2711,6 +2732,69 @@ TEST_F(QuicFramerTest, FecEntropyFlagTest) {
   EXPECT_TRUE(visitor_.header_->fec_entropy_flag);
   EXPECT_EQ(1 << 4, visitor_.header_->entropy_hash);
 };
+
+TEST_F(QuicFramerTest, StopPacketProcessing) {
+  unsigned char packet[] = {
+    // guid
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // public flags
+    0x00,
+    // packet sequence number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // Entropy
+    0x02,
+    // first fec protected packet offset
+    0xFF,
+
+    // frame type (stream frame)
+    0x01,
+    // stream id
+    0x04, 0x03, 0x02, 0x01,
+    // fin
+    0x01,
+    // offset
+    0x54, 0x76, 0x10, 0x32,
+    0xDC, 0xFE, 0x98, 0xBA,
+    // data length
+    0x0c, 0x00,
+    // data
+    'h',  'e',  'l',  'l',
+    'o',  ' ',  'w',  'o',
+    'r',  'l',  'd',  '!',
+
+    // frame type (ack frame)
+    0x02,
+    // entropy hash of sent packets till least awaiting - 1.
+    0x14,
+    // least packet sequence number awaiting an ack
+    0xA0, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // entropy hash of all received packets.
+    0x43,
+    // largest observed packet sequence number
+    0xBF, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // num missing packets
+    0x01,
+    // missing packet
+    0xBE, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+  };
+
+  MockFramerVisitor visitor;
+  framer_.set_visitor(&visitor);
+  EXPECT_CALL(visitor, OnPacket());
+  EXPECT_CALL(visitor, OnPacketHeader(_));
+  EXPECT_CALL(visitor, OnStreamFrame(_)).WillOnce(Return(false));
+  EXPECT_CALL(visitor, OnAckFrame(_)).Times(0);
+  EXPECT_CALL(visitor, OnPacketComplete());
+
+  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+}
 
 }  // namespace test
 }  // namespace net

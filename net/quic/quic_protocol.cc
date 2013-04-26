@@ -33,6 +33,13 @@ size_t GetStartOfEncryptedData(bool include_version) {
       kFecGroupSize;
 }
 
+uint32 MakeQuicTag(char a, char b, char c, char d) {
+  return static_cast<uint32>(a) |
+         static_cast<uint32>(b) << 8 |
+         static_cast<uint32>(c) << 16 |
+         static_cast<uint32>(d) << 24;
+}
+
 QuicPacketPublicHeader::QuicPacketPublicHeader()
     : guid(0),
       reset_flag(false),
