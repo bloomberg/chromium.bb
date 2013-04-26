@@ -140,6 +140,20 @@ BaseHistoryWebUITest.prototype = {
   typedefCppFixture: 'HistoryUIBrowserTest',
 
   isAsync: true,
+};
+
+/**
+ * Fixture for History WebUI testing which returns some fake history results
+ * to the frontend. Other fixtures that want to stub out calls to the backend
+ * can extend this one.
+ * @extends {BaseHistoryWebUITest}
+ * @constructor
+ */
+function HistoryWebUIFakeBackendTest() {
+}
+
+HistoryWebUIFakeBackendTest.prototype = {
+  __proto__: BaseHistoryWebUITest.prototype,
 
   /**
    * Register handlers to stub out calls to the history backend.
@@ -155,7 +169,7 @@ BaseHistoryWebUITest.prototype = {
    * @param handlerName The name of the message to mock.
    * @param handler The mock message handler function.
    */
-   registerMockHandler_: function(handlerName, handler) {
+  registerMockHandler_: function(handlerName, handler) {
     // Mock4JS doesn't pass in the actual arguments to the stub, but it _will_
     // pass the original args to the matcher object. SaveMockArguments acts as
     // a proxy for another matcher, but keeps track of all the arguments it was
@@ -245,18 +259,19 @@ function queryHistoryImpl(args, beginTime, history) {
 /**
  * Fixture for History WebUI testing which returns some fake history results
  * to the frontend.
- * @extends {BaseHistoryWebUITest}
+ * @extends {HistoryWebUIFakeBackendTest}
  * @constructor
  */
 function HistoryWebUITest() {}
 
 HistoryWebUITest.prototype = {
-  __proto__: BaseHistoryWebUITest.prototype,
+  __proto__: HistoryWebUIFakeBackendTest.prototype,
 
   preLoad: function() {
-    BaseHistoryWebUITest.prototype.preLoad.call(this);
+    HistoryWebUIFakeBackendTest.prototype.preLoad.call(this);
 
-    this.registerRemoveVisitsStub_();
+    this.registerMockHandler_(
+        'removeVisits', this.removeVisitsStub_.bind(this));
 
     // Prepare a list of fake history results. The entries will begin at
     // 1:00 AM on Sept 2, 2008, and will be spaced two minutes apart.
@@ -268,15 +283,6 @@ HistoryWebUITest.prototype = {
           createHistoryEntry(timestamp, 'http://google.com/' + timestamp));
       timestamp -= 2 * 60 * 1000;  // Next visit is two minutes earlier.
     }
-  },
-
-  /**
-   * Register a mock handler for the 'removeVisits' message. This is pulled out
-   * into a separate method so subclasses can override it.
-   */
-   registerRemoveVisitsStub_: function() {
-     this.registerMockHandler_(
-         'removeVisits', this.removeVisitsStub_.bind(this));
   },
 
   /**
@@ -337,7 +343,7 @@ HistoryWebUITest.prototype = {
   }
 };
 
-TEST_F('BaseHistoryWebUITest', 'emptyHistory', function() {
+TEST_F('HistoryWebUIFakeBackendTest', 'emptyHistory', function() {
   expectTrue($('newest-button').hidden);
   expectTrue($('newer-button').hidden);
   expectTrue($('older-button').hidden);
@@ -575,7 +581,7 @@ RangeHistoryWebUITest.prototype = {
 
   /** @override */
   preLoad: function() {
-    BaseHistoryWebUITest.prototype.preLoad.call(this);
+    HistoryWebUITest.prototype.preLoad.call(this);
     // Repeat the domain visits every 4 days. The nested lists contain the
     // domain suffixes for the visits in a day.
     var domainSuffixByDay = [
@@ -734,23 +740,52 @@ TEST_F('RangeHistoryWebUITest', 'monthViewEmptyMonth', function() {
 });
 
 /**
- * Fixture for History WebUI testing when deletions are prohibited.
+ * Fixture for History WebUI tests using the real history backend.
  * @extends {BaseHistoryWebUITest}
+ * @constructor
+ */
+function HistoryWebUIRealBackendTest() {}
+
+HistoryWebUIRealBackendTest.prototype = {
+  __proto__: BaseHistoryWebUITest.prototype,
+
+  /** @override */
+  testGenPreamble: function() {
+    // Add some visits to the history database.
+    GEN('  AddPageToHistory(0, "http://google.com", "Google");');
+    GEN('  AddPageToHistory(1, "http://example.com", "Example");');
+    GEN('  AddPageToHistory(2, "http://google.com", "Google");');
+
+    // Add a visit on the next day.
+    GEN('  AddPageToHistory(24, "http://google.com", "Google");');
+  },
+};
+
+/**
+ * Simple test that verifies that the correct entries are retrieved from the
+ * history database and displayed in the UI.
+ */
+TEST_F('HistoryWebUIRealBackendTest', 'basic', function() {
+  // Check that there are two days of entries, and three entries in total.
+  assertEquals(2, document.querySelectorAll('.day').length);
+  assertEquals(3, document.querySelectorAll('.entry').length);
+
+  testDone();
+});
+
+/**
+ * Fixture for History WebUI testing when deletions are prohibited.
+ * @extends {HistoryWebUIRealBackendTest}
  * @constructor
  */
 function HistoryWebUIDeleteProhibitedTest() {}
 
 HistoryWebUIDeleteProhibitedTest.prototype = {
-  __proto__: HistoryWebUITest.prototype,
-
-  /**
-   * Don't stub out the 'removeVisits' call in this class.
-   * @override
-   */
-  registerRemoveVisitsStub_: function() {},
+  __proto__: HistoryWebUIRealBackendTest.prototype,
 
   /** @override */
   testGenPreamble: function() {
+    HistoryWebUIRealBackendTest.prototype.testGenPreamble.call(this);
     GEN('  SetDeleteAllowed(false);');
   },
 };
@@ -771,8 +806,7 @@ TEST_F('HistoryWebUIDeleteProhibitedTest', 'deleteProhibited', function() {
   expectTrue(removeVisit.disabled);
 
   // Attempting to remove items anyway should fail.
-  historyModel.removeVisitsFromHistory(this.fakeHistory_.slice(0, 2),
-                                       function () {
+  historyModel.removeVisitsFromHistory(historyModel.visits_, function () {
     // The callback is only called on success.
     testDone([false, 'Delete succeeded even though it was prohibited.']);
   });
