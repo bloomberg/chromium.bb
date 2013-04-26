@@ -270,8 +270,8 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
                                          follow_symlinks))
       return outfiles
     except OSError as e:
-      raise run_isolated.MappingError('Unable to iterate over directories.\n'
-                                      '%s' % e)
+      raise run_isolated.MappingError(
+          'Unable to iterate over directory %s.\n%s' % (infile, e))
   else:
     # Always add individual files even if they were blacklisted.
     if os.path.isdir(infile):
