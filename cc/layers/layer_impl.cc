@@ -69,6 +69,10 @@ LayerImpl::~LayerImpl() {
 #ifndef NDEBUG
   DCHECK(!between_will_draw_and_did_draw_);
 #endif
+
+  for (size_t i = 0; i < request_copy_callbacks_.size(); ++i)
+    request_copy_callbacks_[i].Run(scoped_ptr<SkBitmap>());
+
   layer_tree_impl_->UnregisterLayer(this);
   layer_animation_controller_->RemoveValueObserver(this);
 }
@@ -100,6 +104,30 @@ void LayerImpl::ClearChildList() {
 
   children_.clear();
   layer_tree_impl()->set_needs_update_draw_properties();
+}
+
+void LayerImpl::PassRequestCopyCallbacks(
+    std::vector<RenderPass::RequestCopyAsBitmapCallback>* callbacks) {
+  if (callbacks->empty())
+    return;
+
+  request_copy_callbacks_.insert(request_copy_callbacks_.end(),
+                                 callbacks->begin(),
+                                 callbacks->end());
+  callbacks->clear();
+
+  NoteLayerPropertyChangedForSubtree();
+}
+
+void LayerImpl::TakeRequestCopyCallbacks(
+    std::vector<RenderPass::RequestCopyAsBitmapCallback>* callbacks) {
+  if (request_copy_callbacks_.empty())
+    return;
+
+  callbacks->insert(callbacks->end(),
+                    request_copy_callbacks_.begin(),
+                    request_copy_callbacks_.end());
+  request_copy_callbacks_.clear();
 }
 
 void LayerImpl::CreateRenderSurface() {
@@ -350,6 +378,8 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetScrollable(scrollable_);
   layer->SetScrollOffset(scroll_offset_);
   layer->SetMaxScrollOffset(max_scroll_offset_);
+
+  layer->PassRequestCopyCallbacks(&request_copy_callbacks_);
 
   // If the main thread commits multiple times before the impl thread actually
   // draws, then damage tracking will become incorrect if we simply clobber the

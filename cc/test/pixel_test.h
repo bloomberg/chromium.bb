@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "cc/quads/render_pass.h"
 #include "cc/test/pixel_comparator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/size.h"
@@ -22,6 +23,12 @@ class PixelTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE;
 
+  bool RunPixelTest(RenderPassList* pass_list,
+                    const base::FilePath& ref_file,
+                    const PixelComparator& comparator);
+
+  void ReadbackResult(scoped_ptr<SkBitmap> bitmap);
+
   bool PixelsMatchReference(const base::FilePath& ref_file,
                             const PixelComparator& comparator);
 
@@ -31,6 +38,7 @@ class PixelTest : public testing::Test {
   class PixelTestRendererClient;
   scoped_ptr<PixelTestRendererClient> fake_client_;
   scoped_ptr<GLRenderer> renderer_;
+  scoped_ptr<SkBitmap> result_bitmap_;
 };
 
 }  // namespace cc
