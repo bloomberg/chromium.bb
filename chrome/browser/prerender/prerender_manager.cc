@@ -59,6 +59,12 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_mode_url_filter.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
+#endif
+
 using content::BrowserThread;
 using content::RenderViewHost;
 using content::SessionStorageNamespace;
@@ -1049,6 +1055,18 @@ PrerenderHandle* PrerenderManager::AddPrerender(
 
   if (!IsEnabled())
     return NULL;
+
+#if defined(ENABLE_MANAGED_USERS)
+  // Check if the url would be blocked. If yes, don't add the prerender.
+  ManagedUserService* service =
+      ManagedUserServiceFactory::GetForProfile(profile_);
+  if (service->ProfileIsManaged()) {
+    ManagedModeURLFilter* filter = service->GetURLFilterForUIThread();
+    if (filter->GetFilteringBehaviorForURL(url_arg) ==
+        ManagedModeURLFilter::BLOCK)
+      return NULL;
+  }
+#endif
 
   if ((origin == ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN ||
        origin == ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN) &&
