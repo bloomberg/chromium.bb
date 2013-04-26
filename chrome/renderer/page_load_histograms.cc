@@ -68,8 +68,17 @@ void DumpPerformanceTiming(const WebPerformance& performance,
   Time begin = (request.is_null() ? navigation_start : request_start);
 
   DCHECK(!navigation_start.is_null());
-  DCHECK(!request_start.is_null());
-  DCHECK(!response_start.is_null());
+
+  // It is possible for a document to have navigation_start time, but no
+  // request_start. An example is doing a window.open, which synchronously
+  // loads "about:blank", then using document.write add a meta http-equiv
+  // refresh tag, which causes a navigation. In such case, we will arrive at
+  // this function with no request/response timing data and identical load
+  // start/end values. Avoid logging this case, as it doesn't add any
+  // meaningful information to the histogram.
+  if (request_start.is_null())
+    return;
+
   // TODO(dominich): Investigate conditions under which |load_event_start| and
   // |load_event_end| may be NULL as in the non-PT_ case below. Examples in
   // http://crbug.com/112006.
