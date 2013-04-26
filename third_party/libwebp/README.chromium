@@ -1,7 +1,7 @@
 Name: WebP image encoder/decoder
 Short Name: libwebp
 URL: http://developers.google.com/speed/webp
-Version: v0.3.0-rc6
+Version: v0.3.0
 License: BSD
 License File: LICENSE
 Security Critical: Yes
@@ -20,3 +20,5 @@ Local changes:
  * Removed examples/, documentation and build related files, keeping only
    the contents of src/ less mux/ which is unused.
  * Merged COPYING/PATENTS to LICENSE
+ Cherry-picks:
+   94328d6 Demux: Fix a potential memleak

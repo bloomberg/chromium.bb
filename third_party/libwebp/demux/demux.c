@@ -69,6 +69,7 @@ struct WebPDemuxer {
   uint32_t bgcolor_;
   int num_frames_;
   Frame* frames_;
+  Frame** frames_tail_;
   Chunk* chunks_;  // non-image chunks
 };
 
@@ -183,15 +184,12 @@ static void AddChunk(WebPDemuxer* const dmux, Chunk* const chunk) {
 // Add a frame to the end of the list, ensuring the last frame is complete.
 // Returns true on success, false otherwise.
 static int AddFrame(WebPDemuxer* const dmux, Frame* const frame) {
-  const Frame* last_frame = NULL;
-  Frame** f = &dmux->frames_;
-  while (*f != NULL) {
-    last_frame = *f;
-    f = &(*f)->next_;
-  }
+  const Frame* const last_frame = *dmux->frames_tail_;
   if (last_frame != NULL && !last_frame->complete_) return 0;
-  *f = frame;
+
+  *dmux->frames_tail_ = frame;
   frame->next_ = NULL;
+  dmux->frames_tail_ = &frame->next_;
   return 1;
 }
 
@@ -319,6 +317,7 @@ static ParseStatus ParseAnimationFrame(
   frame->duration_       = ReadLE24s(mem);
   frame->dispose_method_ = (WebPMuxAnimDispose)(ReadByte(mem) & 1);
   if (frame->width_ * (uint64_t)frame->height_ >= MAX_IMAGE_AREA) {
+    free(frame);
     return PARSE_ERROR;
   }
 
@@ -660,6 +659,7 @@ static void InitDemux(WebPDemuxer* const dmux, const MemBuffer* const mem) {
   dmux->bgcolor_ = 0xFFFFFFFF;  // White background by default.
   dmux->canvas_width_ = -1;
   dmux->canvas_height_ = -1;
+  dmux->frames_tail_ = &dmux->frames_;
   dmux->mem_ = *mem;
 }
 
