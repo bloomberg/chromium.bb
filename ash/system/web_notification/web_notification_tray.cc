@@ -254,7 +254,7 @@ bool WebNotificationTray::ShowPopups() {
     popup_collection_.reset(new message_center::MessagePopupCollection(
         ash::Shell::GetContainer(
             GetWidget()->GetNativeView()->GetRootWindow(),
-            internal::kShellWindowId_SettingBubbleContainer),
+            internal::kShellWindowId_StatusContainer),
         message_center()));
   } else {
     message_center::MessagePopupBubble* popup_bubble =
