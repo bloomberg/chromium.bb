@@ -179,9 +179,10 @@ cr.define('cloudprint', function() {
      *     print to.
      * @param {!print_preview.PrintTicketStore} printTicketStore Contains the
      *     print ticket to print.
+     * @param {!print_preview.DocumentInfo} documentInfo Document data model.
      * @param {string} data Base64 encoded data of the document.
      */
-    submit: function(destination, printTicketStore, data) {
+    submit: function(destination, printTicketStore, documentInfo, data) {
       var result =
           CloudPrintInterface.VERSION_REGEXP_.exec(navigator.userAgent);
       var chromeVersion = 'unknown';
@@ -191,7 +192,7 @@ cr.define('cloudprint', function() {
       var params = [
         new HttpParam('printerid', destination.id),
         new HttpParam('contentType', 'dataUrl'),
-        new HttpParam('title', printTicketStore.getDocumentTitle()),
+        new HttpParam('title', documentInfo.title),
         new HttpParam('ticket',
                       this.createPrintTicket_(destination, printTicketStore)),
         new HttpParam('content', 'data:application/pdf;base64,' + data),

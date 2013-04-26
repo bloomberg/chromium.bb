@@ -35,7 +35,7 @@ cr.define('print_preview.ticket_items', function() {
     /** @override */
     isCapabilityAvailable: function() {
       return this.documentInfo_.isModifiable &&
-             this.documentInfo_.documentHasSelection;
+             this.documentInfo_.hasSelection;
     },
 
     /** @override */

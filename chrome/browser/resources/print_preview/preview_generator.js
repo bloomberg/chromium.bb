@@ -13,10 +13,12 @@ cr.define('print_preview', function() {
    *     state of the ticket and write document information.
    * @param {!print_preview.NativeLayer} nativeLayer Used to communicate to
    *     Chromium's preview rendering system.
+   * @param {!print_preview.DocumentInfo} documentInfo Document data model.
    * @constructor
    * @extends {cr.EventTarget}
    */
-  function PreviewGenerator(destinationStore, printTicketStore, nativeLayer) {
+  function PreviewGenerator(
+       destinationStore, printTicketStore, nativeLayer, documentInfo) {
     cr.EventTarget.call(this);
 
     /**
@@ -39,6 +41,13 @@ cr.define('print_preview', function() {
      * @private
      */
     this.nativeLayer_ = nativeLayer;
+
+    /**
+     * Document data model.
+     * @type {!print_preview.DocumentInfo}
+     * @private
+     */
+    this.documentInfo_ = documentInfo;
 
     /**
      * ID of current in-flight request. Requests that do not share this ID will
@@ -171,6 +180,7 @@ cr.define('print_preview', function() {
       this.nativeLayer_.startGetPreview(
           this.destinationStore_.selectedDestination,
           this.printTicketStore_,
+          this.documentInfo_,
           this.inFlightRequestId_);
       return true;
     },
@@ -240,7 +250,7 @@ cr.define('print_preview', function() {
     dispatchPreviewStartEvent_: function(previewUid, index) {
       var previewStartEvent = new cr.Event(
           PreviewGenerator.EventType.PREVIEW_START);
-      if (!this.printTicketStore_.isDocumentModifiable) {
+      if (!this.documentInfo_.isModifiable) {
         index = -1;
       }
       previewStartEvent.previewUrl = 'chrome://print/' +
@@ -268,7 +278,7 @@ cr.define('print_preview', function() {
           (ticketStore.getMarginsType() ==
               print_preview.ticket_items.MarginsType.Value.CUSTOM &&
               !ticketStore.getCustomMargins().equals(
-                  ticketStore.getDocumentMargins())) ||
+                  this.documentInfo_.margins)) ||
           (ticketStore.isCssBackgroundEnabled() !=
               this.isCssBackgroundEnabled_) ||
           (ticketStore.isSelectionOnlyEnabled() !=
@@ -307,7 +317,7 @@ cr.define('print_preview', function() {
           event.pageLayout.contentHeight +
               margins.get(o.TOP) + margins.get(o.BOTTOM));
 
-      this.printTicketStore_.updateDocumentPageInfo(
+      this.documentInfo_.updatePageInfo(
           new print_preview.PrintableArea(origin, size),
           pageSize,
           event.hasCustomPageSizeStyle,
@@ -324,7 +334,7 @@ cr.define('print_preview', function() {
       if (this.inFlightRequestId_ != event.previewResponseId) {
         return; // Ignore old response.
       }
-      this.printTicketStore_.updatePageCount(event.pageCount);
+      this.documentInfo_.updatePageCount(event.pageCount);
       this.pageRanges_ = this.printTicketStore_.getPageRanges();
     },
 
@@ -381,7 +391,7 @@ cr.define('print_preview', function() {
       }
       // Dispatch a PREVIEW_START event since non-modifiable documents don't
       // trigger PAGE_READY events.
-      if (!this.printTicketStore_.isDocumentModifiable) {
+      if (!this.documentInfo_.isModifiable) {
         this.dispatchPreviewStartEvent_(event.previewUid, 0);
       }
       cr.dispatchSimpleEvent(this, PreviewGenerator.EventType.DOCUMENT_READY);

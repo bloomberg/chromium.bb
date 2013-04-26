@@ -9,10 +9,11 @@ cr.define('print_preview', function() {
    * UI component used for setting custom print margins.
    * @param {!print_preview.PrintTicketStore} printTicketStore Used to read and
    *     write custom margin values.
+   * @param {!print_preview.DocumentInfo} documentInfo Document data model.
    * @constructor
    * @extends {print_preview.Component}
    */
-  function MarginControlContainer(printTicketStore) {
+  function MarginControlContainer(printTicketStore, documentInfo) {
     print_preview.Component.call(this);
 
     /**
@@ -21,6 +22,13 @@ cr.define('print_preview', function() {
      * @private
      */
     this.printTicketStore_ = printTicketStore;
+
+    /**
+     * Document data model.
+     * @type {!print_preview.DocumentInfo}
+     * @private
+     */
+    this.documentInfo_ = documentInfo;
 
     /**
      * Used to convert between the system's local units and points.
@@ -182,8 +190,8 @@ cr.define('print_preview', function() {
           print_preview.PrintTicketStore.EventType.TICKET_CHANGE,
           this.onTicketChange_.bind(this));
       this.tracker.add(
-          this.printTicketStore_,
-          print_preview.PrintTicketStore.EventType.DOCUMENT_CHANGE,
+          this.documentInfo_,
+          print_preview.DocumentInfo.EventType.CHANGE,
           this.onTicketChange_.bind(this));
       this.tracker.add(
           this.printTicketStore_,
@@ -391,7 +399,7 @@ cr.define('print_preview', function() {
       var margins = this.printTicketStore_.getCustomMargins();
       for (var orientation in this.controls_) {
         var control = this.controls_[orientation];
-        control.setPageSize(this.printTicketStore_.pageSize);
+        control.setPageSize(this.documentInfo_.pageSize);
         control.setTextboxValue(
             this.serializeValueFromPts_(margins.get(orientation)));
         control.setPositionInPts(margins.get(orientation));

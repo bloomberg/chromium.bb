@@ -48,6 +48,13 @@ cr.define('print_preview', function() {
     this.appState_ = new print_preview.AppState();
 
     /**
+     * Data model that holds information about the document to print.
+     * @type {!print_preview.DocumentInfo}
+     * @private
+     */
+    this.documentInfo_ = new print_preview.DocumentInfo();
+
+    /**
      * Data store which holds print destinations.
      * @type {!print_preview.DestinationStore}
      * @private
@@ -61,7 +68,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.printTicketStore_ = new print_preview.PrintTicketStore(
-        this.destinationStore_, this.appState_);
+        this.destinationStore_, this.appState_, this.documentInfo_);
 
     /**
      * Holds the print and cancel buttons and renders some document statistics.
@@ -148,8 +155,10 @@ cr.define('print_preview', function() {
      * @type {!print_preview.PreviewArea}
      * @private
      */
-    this.previewArea_ = new print_preview.PreviewArea(
-        this.destinationStore_, this.printTicketStore_, this.nativeLayer_);
+    this.previewArea_ = new print_preview.PreviewArea(this.destinationStore_,
+                                                      this.printTicketStore_,
+                                                      this.nativeLayer_,
+                                                      this.documentInfo_);
     this.addChild(this.previewArea_);
 
     /**
@@ -428,6 +437,7 @@ cr.define('print_preview', function() {
             this.destinationStore_.selectedDestination,
             this.printTicketStore_,
             this.cloudPrintInterface_,
+            this.documentInfo_,
             this.uiState_ == PrintPreview.UiState_.OPENING_PDF_PREVIEW);
         return true;
       } else {
@@ -472,17 +482,17 @@ cr.define('print_preview', function() {
 
       var settings = event.initialSettings;
       this.isInKioskAutoPrintMode_ = settings.isInKioskAutoPrintMode;
-      document.title = settings.documentTitle;
 
       // The following components must be initialized in this order.
       this.appState_.init(settings.serializedAppStateStr);
-      this.printTicketStore_.init(
+      this.documentInfo_.init(
           settings.isDocumentModifiable,
           settings.documentTitle,
+          settings.documentHasSelection);
+      this.printTicketStore_.init(
           settings.thousandsDelimeter,
           settings.decimalDelimeter,
           settings.unitType,
-          settings.documentHasSelection,
           settings.selectionOnly);
       this.destinationStore_.init(settings.systemDefaultDestinationId);
     },
@@ -542,6 +552,7 @@ cr.define('print_preview', function() {
       this.cloudPrintInterface_.submit(
           this.destinationStore_.selectedDestination,
           this.printTicketStore_,
+          this.documentInfo_,
           event.data);
     },
 

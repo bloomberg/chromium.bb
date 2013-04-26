@@ -18,10 +18,11 @@ cr.define('print_preview', function() {
    * @param {!print_preview.DestinationStore} destinationStore Used to
    *     understand which printer is selected.
    * @param {!print_preview.AppState} appState Print preview application state.
+   * @param {!print_preview.DocumentInfo} documentInfo Document data model.
    * @constructor
    * @extends {cr.EventTarget}
    */
-  function PrintTicketStore(destinationStore, appState) {
+  function PrintTicketStore(destinationStore, appState, documentInfo) {
     cr.EventTarget.call(this);
 
     /**
@@ -38,23 +39,12 @@ cr.define('print_preview', function() {
      */
     this.appState_ = appState;
 
-    // Create the document info with some initial settings. Actual
-    // page-related information won't be set until preview generation occurs,
-    // so we'll use some defaults until then. This way, the print ticket store
-    // will be valid even if no preview can be generated.
-    var initialPageSize = new print_preview.Size(612, 792); // 8.5"x11"
-
     /**
      * Information about the document to print.
      * @type {!print_preview.DocumentInfo}
      * @private
      */
-    this.documentInfo_ = new print_preview.DocumentInfo();
-    this.documentInfo_.isModifiable = true;
-    this.documentInfo_.pageCount = 0;
-    this.documentInfo_.pageSize = initialPageSize;
-    this.documentInfo_.printableArea = new print_preview.PrintableArea(
-        new print_preview.Coordinate2d(0, 0), initialPageSize);
+    this.documentInfo_ = documentInfo;
 
     /**
      * Printing capabilities of Chromium and the currently selected destination.
@@ -211,69 +201,6 @@ cr.define('print_preview', function() {
       return this.fitToPage_;
     },
 
-    /** @return {boolean} Whether the document is modifiable. */
-    get isDocumentModifiable() {
-      return this.documentInfo_.isModifiable;
-    },
-
-    /** @return {number} Number of pages in the document. */
-    get pageCount() {
-      return this.documentInfo_.pageCount;
-    },
-
-    /**
-     * @param {number} pageCount New number of pages in the document.
-     *     Dispatches a DOCUMENT_CHANGE event if the value changes.
-     */
-    updatePageCount: function(pageCount) {
-      if (this.documentInfo_.pageCount != pageCount) {
-        this.documentInfo_.pageCount = pageCount;
-        cr.dispatchSimpleEvent(
-            this, PrintTicketStore.EventType.DOCUMENT_CHANGE);
-      }
-    },
-
-    /**
-     * @return {!print_preview.PrintableArea} Printable area of the document in
-     *     points.
-     */
-    get printableArea() {
-      return this.documentInfo_.printableArea;
-    },
-
-    /** @return {!print_preview.Size} Size of the document in points. */
-    get pageSize() {
-      return this.documentInfo_.pageSize;
-    },
-
-    /**
-     * Updates a subset of fields of the print document relating to the format
-     * of the page.
-     * @param {!print_preview.PrintableArea} printableArea New printable area of
-     *     the document in points. Dispatches a DOCUMENT_CHANGE event if the
-     *     value changes.
-     * @param {!print_preview.Size} pageSize New size of the document in points.
-     *     Dispatches a DOCUMENT_CHANGE event if the value changes.
-     * @param {boolean} documentHasCssMediaStyles Whether the document is styled
-     *     with CSS media styles.
-     * @param {!print_preview.Margins} margins Document margins in points.
-     */
-    updateDocumentPageInfo: function(
-        printableArea, pageSize, documentHasCssMediaStyles, margins) {
-      if (!this.documentInfo_.printableArea.equals(printableArea) ||
-          !this.documentInfo_.pageSize.equals(pageSize) ||
-          this.documentInfo_.hasCssMediaStyles != documentHasCssMediaStyles ||
-          this.documentInfo_.margins == null ||
-          !this.documentInfo_.margins.equals(margins)) {
-        this.documentInfo_.printableArea = printableArea;
-        this.documentInfo_.pageSize = pageSize;
-        this.documentInfo_.hasCssMediaStyles = documentHasCssMediaStyles;
-        this.documentInfo_.margins = margins;
-        cr.dispatchSimpleEvent(
-            this, PrintTicketStore.EventType.DOCUMENT_CHANGE);
-      }
-    },
-
     /**
      * @return {!print_preview.MeasurementSystem} Measurement system of the
      *     local system.
@@ -283,46 +210,18 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @return {print_preview.Margins} Document margins of the currently
-     *     generated preview.
-     */
-    getDocumentMargins: function() {
-      return this.documentInfo_.margins;
-    },
-
-    /** @return {string} Title of the document. */
-    getDocumentTitle: function() {
-      return this.documentInfo_.title;
-    },
-
-    /**
      * Initializes the print ticket store. Dispatches an INITIALIZE event.
-     * @param {boolean} isDocumentModifiable Whether the document to print is
-     *     modifiable (i.e. can be re-flowed by Chromium).
-     * @param {string} documentTitle Title of the document to print.
      * @param {string} thousandsDelimeter Delimeter of the thousands place.
      * @param {string} decimalDelimeter Delimeter of the decimal point.
      * @param {!print_preview.MeasurementSystem.UnitType} unitType Type of unit
      *     of the local measurement system.
-     * @param {boolean} documentHasSelection Whether the document has selected
-     *     content.
      * @param {boolean} selectionOnly Whether only selected content should be
      *     printed.
      */
     init: function(
-        isDocumentModifiable,
-        documentTitle,
-        thousandsDelimeter,
-        decimalDelimeter,
-        unitType,
-        documentHasSelection,
-        selectionOnly) {
-
-      this.documentInfo_.isModifiable = isDocumentModifiable;
-      this.documentInfo_.title = documentTitle;
-      this.measurementSystem_.setSystem(
-          thousandsDelimeter, decimalDelimeter, unitType);
-      this.documentInfo_.documentHasSelection = documentHasSelection;
+        thousandsDelimeter, decimalDelimeter, unitType, selectionOnly) {
+      this.measurementSystem_.setSystem(thousandsDelimeter, decimalDelimeter,
+                                        unitType);
       this.selectionOnly_.updateValue(selectionOnly);
 
       // Initialize ticket with user's previous values.
@@ -630,6 +529,14 @@ cr.define('print_preview', function() {
           print_preview.DestinationStore.EventType.
               SELECTED_DESTINATION_CAPABILITIES_READY,
           this.onSelectedDestinationCapabilitiesReady_.bind(this));
+      // TODO(rltoscano): Print ticket store shouldn't be re-dispatching these
+      // events, the consumers of the print ticket store events should listen
+      // for the events from document info instead. Will move this when
+      // consumers are all migrated.
+      this.tracker_.add(
+          this.documentInfo_,
+          print_preview.DocumentInfo.EventType.CHANGE,
+          this.onDocumentInfoChange_.bind(this));
     },
 
     /**
@@ -657,6 +564,15 @@ cr.define('print_preview', function() {
         cr.dispatchSimpleEvent(
             this, PrintTicketStore.EventType.CAPABILITIES_CHANGE);
       }
+    },
+
+    /**
+     * Called when document data model has changed. Dispatches a print ticket
+     * store event.
+     * @private
+     */
+    onDocumentInfoChange_: function() {
+      cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.DOCUMENT_CHANGE);
     }
   };
 

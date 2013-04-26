@@ -112,6 +112,10 @@ cr.define('print_preview', function() {
           this.printTicketStore_.copies,
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
           this.onTicketChange_.bind(this));
+      this.tracker.add(
+          this.printTicketStore_.duplex,
+          print_preview.ticket_items.TicketItem.EventType.CHANGE,
+          this.onTicketChange_.bind(this));
     },
 
     /**

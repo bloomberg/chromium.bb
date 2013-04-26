@@ -144,9 +144,11 @@ cr.define('print_preview', function() {
      * @param {print_preview.Destination} destination Destination to print to.
      * @param {!print_preview.PrintTicketStore} printTicketStore Used to get the
      *     state of the print ticket.
+     * @param {!print_preview.DocumentInfo} documentInfo Document data model.
      * @param {number} ID of the preview request.
      */
-    startGetPreview: function(destination, printTicketStore, requestId) {
+    startGetPreview: function(
+        destination, printTicketStore, documentInfo, requestId) {
       assert(printTicketStore.isTicketValidForPreview(),
              'Trying to generate preview when ticket is not valid');
 
@@ -159,14 +161,14 @@ cr.define('print_preview', function() {
         'marginsType': printTicketStore.getMarginsType(),
         'isFirstRequest': requestId == 0,
         'requestID': requestId,
-        'previewModifiable': printTicketStore.isDocumentModifiable,
+        'previewModifiable': documentInfo.isModifiable,
         'printToPDF':
             destination != null &&
             destination.id ==
                 print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
         'printWithCloudPrint': destination != null && !destination.isLocal,
         'deviceName': destination == null ? 'foo' : destination.id,
-        'generateDraftData': printTicketStore.isDocumentModifiable,
+        'generateDraftData': documentInfo.isModifiable,
         'fitToPageEnabled': printTicketStore.fitToPage.getValue(),
 
         // NOTE: Even though the following fields don't directly relate to the
@@ -201,8 +203,8 @@ cr.define('print_preview', function() {
       chrome.send(
           'getPreview',
           [JSON.stringify(ticket),
-           requestId > 0 ? printTicketStore.pageCount : -1,
-           printTicketStore.isDocumentModifiable]);
+           requestId > 0 ? documentInfo.pageCount : -1,
+           documentInfo.isModifiable]);
     },
 
     /**
@@ -212,11 +214,12 @@ cr.define('print_preview', function() {
      *     state of the print ticket.
      * @param {print_preview.CloudPrintInterface} cloudPrintInterface Interface
      *     to Google Cloud Print.
+     * @param {!print_preview.DocumentInfo} documentInfo Document data model.
      * @param {boolean=} opt_isOpenPdfInPreview Whether to open the PDF in the
      *     system's preview application.
      */
     startPrint: function(destination, printTicketStore, cloudPrintInterface,
-                         opt_isOpenPdfInPreview) {
+                         documentInfo, opt_isOpenPdfInPreview) {
       assert(printTicketStore.isTicketValid(),
              'Trying to print when ticket is not valid');
 
@@ -235,7 +238,7 @@ cr.define('print_preview', function() {
         'collate': printTicketStore.collate.getValue(),
         'shouldPrintBackgrounds': printTicketStore.isCssBackgroundEnabled(),
         'shouldPrintSelectionOnly': printTicketStore.isSelectionOnlyEnabled(),
-        'previewModifiable': printTicketStore.isDocumentModifiable,
+        'previewModifiable': documentInfo.isModifiable,
         'printToPDF': destination.id ==
             print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
         'printWithCloudPrint': !destination.isLocal,
