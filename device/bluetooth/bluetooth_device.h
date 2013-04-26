@@ -202,6 +202,7 @@ class BluetoothDevice {
   virtual bool IsConnecting() const = 0;
 
   // Returns the services (as UUID strings) that this device provides.
+  // TODO(youngki): Rename this to GetProfiles().
   typedef std::vector<std::string> ServiceList;
   virtual ServiceList GetServices() const = 0;
 

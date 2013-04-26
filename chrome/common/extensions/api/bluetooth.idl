@@ -108,6 +108,7 @@ namespace bluetooth {
   callback DevicesCallback = void (Device[] result);
   callback NameCallback = void (DOMString result);
   callback OutOfBandPairingDataCallback = void (OutOfBandPairingData data);
+  callback ProfilesCallback = void(Profile[] result);
   callback ResultCallback = void ();
   callback ServicesCallback = void(ServiceRecord[] result);
   callback SizeCallback = void (long result);
@@ -197,11 +198,6 @@ namespace bluetooth {
     // Profile; only the uuid field of the Profile object is used.
     static void removeProfile(Profile profile, ResultCallback callback);
 
-    // Returns the set of exported profiles for the device specified in options.
-    // This function will not initiate a connection to the remote device.
-    static void getProfiles(GetProfilesOptions options,
-                            ResultCallback callback);
-
     // Get information about the Bluetooth adapter.
     // |callback| : Called with an AdapterState object describing the adapter
     //              state.
@@ -216,6 +212,11 @@ namespace bluetooth {
     //              |callback| has been called.
     static void getDevices(GetDevicesOptions options,
                            ResultCallback callback);
+
+    // Returns the set of exported profiles for the device specified in options.
+    // This function will not initiate a connection to the remote device.
+    static void getProfiles(GetProfilesOptions options,
+                            ProfilesCallback callback);
 
     // Get a list of services provided by a device.
     static void getServices(GetServicesOptions options,

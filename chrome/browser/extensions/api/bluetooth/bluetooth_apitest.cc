@@ -149,10 +149,6 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, RemoveProfile) {
   // TODO(youngki): Implement it to test BluetoothRemoveProfileFunction.
 }
 
-IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetProfiles) {
-  // TODO(youngki): Implement it to test BluetoothGetProfilesFunction.
-}
-
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, OnAdapterStateChanged) {
   EXPECT_CALL(*mock_adapter_, GetAddress())
       .WillOnce(testing::Return(kAdapterAddress));
@@ -416,6 +412,31 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Events) {
   EXPECT_CALL(*mock_adapter_, IsDiscovering())
       .WillOnce(testing::Return(true));
   event_router()->AdapterDiscoveringChanged(mock_adapter_, true);
+
+  listener.Reply("go");
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetProfiles) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+
+  BluetoothDevice::ServiceList service_list;
+  service_list.push_back("1234");
+  service_list.push_back("5678");
+
+  EXPECT_CALL(*device1_, GetServices())
+      .WillOnce(testing::Return(service_list));
+
+  EXPECT_CALL(*mock_adapter_, GetDevice(device1_->GetAddress()))
+      .WillOnce(testing::Return(device1_.get()));
+
+  // Load and wait for setup
+  ExtensionTestMessageListener listener("ready", true);
+  ASSERT_TRUE(
+      LoadExtension(test_data_dir_.AppendASCII("bluetooth/get_profiles")));
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
 
   listener.Reply("go");
 

@@ -61,6 +61,7 @@ namespace AddProfile = extensions::api::bluetooth::AddProfile;
 namespace Connect = extensions::api::bluetooth::Connect;
 namespace Disconnect = extensions::api::bluetooth::Disconnect;
 namespace GetDevices = extensions::api::bluetooth::GetDevices;
+namespace GetProfiles = extensions::api::bluetooth::GetProfiles;
 namespace GetServices = extensions::api::bluetooth::GetServices;
 namespace Read = extensions::api::bluetooth::Read;
 namespace RemoveProfile = extensions::api::bluetooth::RemoveProfile;
@@ -118,7 +119,32 @@ bool BluetoothRemoveProfileFunction::RunImpl() {
 
 bool BluetoothGetProfilesFunction::DoWork(
     scoped_refptr<device::BluetoothAdapter> adapter) {
-  return false;
+  scoped_ptr<GetProfiles::Params> params(GetProfiles::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
+  const bluetooth::GetProfilesOptions& options = params->options;
+
+  BluetoothDevice* device = adapter->GetDevice(options.device.address);
+  if (!device) {
+    SetError(kInvalidDevice);
+    SendResponse(false);
+    return false;
+  }
+
+  BluetoothDevice::ServiceList service_list = device->GetServices();
+
+  ListValue* profiles = new ListValue;
+  for (BluetoothDevice::ServiceList::const_iterator iter = service_list.begin();
+       iter != service_list.end();
+       ++iter) {
+    bluetooth::Profile api_profile;
+    api_profile.uuid = *iter;
+    profiles->Append(api_profile.ToValue().release());
+  }
+
+  SetResult(profiles);
+  SendResponse(true);
+
+  return true;
 }
 
 bool BluetoothGetAdapterStateFunction::DoWork(
