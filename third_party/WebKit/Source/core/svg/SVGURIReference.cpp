@@ -53,12 +53,9 @@ String SVGURIReference::fragmentIdentifierFromIRIString(const String& url, Docum
         return emptyString();
 
     KURL base = start ? KURL(document->baseURI(), url.substring(0, start)) : document->baseURI();
-    String fragmentIdentifier = url.substring(start);
-    KURL kurl(base, fragmentIdentifier);
-    if (equalIgnoringFragmentIdentifier(kurl, document->url()))
-        return fragmentIdentifier.substring(1);
+    if (equalIgnoringFragmentIdentifier(base, document->url()))
+        return url.substring(start + 1);
 
-    // The url doesn't have any fragment identifier.
     return emptyString();
 }
 
