@@ -32,7 +32,6 @@
 #include "config.h"
 #include "bindings/v8/ScriptController.h"
 
-#include "ScriptRunner.h"
 #include "V8DOMWindow.h"
 #include "V8Event.h"
 #include "V8HTMLEmbedElement.h"
@@ -48,6 +47,7 @@
 #include "bindings/v8/V8NPObject.h"
 #include "bindings/v8/V8PerContextData.h"
 #include "bindings/v8/V8RecursionScope.h"
+#include "bindings/v8/V8ScriptRunner.h"
 #include "bindings/v8/npruntime_impl.h"
 #include "bindings/v8/npruntime_priv.h"
 #include "core/dom/Document.h"
@@ -265,7 +265,7 @@ v8::Local<v8::Value> ScriptController::compileAndRunScript(const ScriptSourceCod
 
         // Keep Frame (and therefore ScriptController) alive.
         RefPtr<Frame> protect(m_frame);
-        result = ScriptRunner::runCompiledScript(script, m_frame->document());
+        result = V8ScriptRunner::runCompiledScript(script, m_frame->document());
         ASSERT(!tryCatch.HasCaught() || result.IsEmpty());
     }
 

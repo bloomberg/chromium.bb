@@ -32,7 +32,6 @@
 
 #include "bindings/v8/WorkerScriptController.h"
 
-#include "ScriptRunner.h"
 #include "V8DedicatedWorkerContext.h"
 #include "V8SharedWorkerContext.h"
 #include "V8WorkerContext.h"
@@ -40,6 +39,7 @@
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8GCController.h"
 #include "bindings/v8/V8Initializer.h"
+#include "bindings/v8/V8ScriptRunner.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/page/DOMTimer.h"
@@ -156,7 +156,7 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
 
     v8::Handle<v8::String> scriptString = v8String(script, isolate);
     v8::Handle<v8::Script> compiledScript = ScriptSourceCode::compileScript(scriptString, fileName, scriptStartPosition, 0, isolate);
-    v8::Local<v8::Value> result = ScriptRunner::runCompiledScript(compiledScript, m_workerContext);
+    v8::Local<v8::Value> result = V8ScriptRunner::runCompiledScript(compiledScript, m_workerContext);
 
     if (!block.CanContinue()) {
         m_workerContext->script()->forbidExecution();

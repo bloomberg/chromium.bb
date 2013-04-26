@@ -23,20 +23,43 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScriptRunner_h
-#define ScriptRunner_h
+#include "config.h"
+#include "V8ScriptRunner.h"
 
-#include <v8.h>
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8GCController.h"
+#include "bindings/v8/V8RecursionScope.h"
+#include "core/dom/ScriptExecutionContext.h"
 
 namespace WebCore {
 
-class ScriptExecutionContext;
+v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Handle<v8::Script> script, ScriptExecutionContext* context)
+{
+    if (script.IsEmpty())
+        return v8::Local<v8::Value>();
 
-class ScriptRunner {
-public:
-    static v8::Local<v8::Value> runCompiledScript(v8::Handle<v8::Script>, ScriptExecutionContext*);
-};
+    V8GCController::checkMemoryUsage();
+    if (V8RecursionScope::recursionLevel() >= kMaxRecursionDepth)
+        return handleMaxRecursionDepthExceeded();
+
+    if (handleOutOfMemory())
+        return v8::Local<v8::Value>();
+
+    // Run the script and keep track of the current recursion depth.
+    v8::Local<v8::Value> result;
+    {
+        V8RecursionScope recursionScope(context);
+        result = script->Run();
+    }
+
+    if (handleOutOfMemory())
+        ASSERT(result.IsEmpty());
+
+    if (result.IsEmpty())
+        return v8::Local<v8::Value>();
+
+    crashIfV8IsDead();
+    return result;
+}
 
 } // namespace WebCore
-
-#endif // ScriptRunner_h
