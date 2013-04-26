@@ -55,9 +55,6 @@ namespace chromeos {
 
 namespace {
 
-// Name of the experiment to run.
-const char kExperiment[] = "LowMemoryMargin";
-
 // Record a size in megabytes, over a potential interval up to 32 GB.
 #define HISTOGRAM_MEGABYTES(name, sample)                     \
     UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, 1, 32768, 50)

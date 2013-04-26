@@ -41,18 +41,6 @@ const SkColor kKillColor = SkColorSetRGB(57, 48, 88);
 
 const char kCategoryTagCrash[] = "Crash";
 
-// Name of the experiment to run.
-const char kExperiment[] = "LowMemoryMargin";
-
-#define EXPERIMENT_CUSTOM_COUNTS(name, sample, min, max, buckets)          \
-    {                                                                      \
-      UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, buckets);        \
-      if (base::FieldTrialList::TrialExists(kExperiment))                  \
-        UMA_HISTOGRAM_CUSTOM_COUNTS(                                       \
-            base::FieldTrial::MakeName(name, kExperiment),                 \
-            sample, min, max, buckets);                                    \
-    }
-
 }  // namespace
 
 SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
@@ -79,14 +67,14 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
     case chrome::SAD_TAB_KIND_CRASHED: {
       static int crashed = 0;
       crashed++;
-      EXPERIMENT_CUSTOM_COUNTS(
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
           "Tabs.SadTab.CrashCreated", crashed, 1, 1000, 50);
       break;
     }
     case chrome::SAD_TAB_KIND_KILLED: {
       static int killed = 0;
       killed++;
-      EXPERIMENT_CUSTOM_COUNTS(
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
           "Tabs.SadTab.KillCreated", killed, 1, 1000, 50);
       break;
     }
