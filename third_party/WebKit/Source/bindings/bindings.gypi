@@ -22,7 +22,6 @@
             'v8/DateExtension.h',
             'v8/Dictionary.cpp',
             'v8/Dictionary.h',
-            'v8/GenericBinding.h',
             'v8/IDBBindingUtilities.cpp',
             'v8/IDBBindingUtilities.h',
             'v8/JavaScriptCallFrame.cpp',
