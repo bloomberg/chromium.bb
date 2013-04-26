@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "cc/animation/layer_animation_controller.h"
@@ -76,18 +75,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   const LayerList& children() const { return children_; }
   Layer* child_at(size_t index) { return children_[index].get(); }
-
-  typedef base::Callback<void(scoped_ptr<SkBitmap>)>
-      RequestCopyAsBitmapCallback;
-
-  // This requests the layer and its subtree be rendered into an SkBitmap and
-  // call the given callback when the SkBitmap has been produced. If the copy
-  // is unable to be produced (the layer is destroyed first), then the callback
-  // is called with a NULL bitmap.
-  void RequestCopyAsBitmap(RequestCopyAsBitmapCallback callback);
-  bool HasRequestCopyCallback() const {
-    return !request_copy_callbacks_.empty();
-  }
 
   void SetAnchorPoint(gfx::PointF anchor_point);
   gfx::PointF anchor_point() const { return anchor_point_; }
@@ -492,8 +479,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   bool bounds_contain_page_scale_;
 
   gfx::Transform impl_transform_;
-
-  std::vector<RequestCopyAsBitmapCallback> request_copy_callbacks_;
 
   WebKit::WebLayerScrollClient* layer_scroll_client_;
 

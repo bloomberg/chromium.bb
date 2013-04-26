@@ -77,40 +77,26 @@ void PixelTest::SetUp() {
   resource_provider_->set_offscreen_context_provider(offscreen_contexts);
 }
 
-bool PixelTest::RunPixelTest(RenderPassList* pass_list,
-                             const base::FilePath& ref_file,
-                             const PixelComparator& comparator) {
-  pass_list->back()->copy_callbacks.push_back(
-      base::Bind(&PixelTest::ReadbackResult, base::Unretained(this)));
-
-  renderer_->DecideRenderPassAllocationsForFrame(*pass_list);
-  renderer_->DrawFrame(pass_list);
-
-  // TODO(danakj): When the glReadPixels is async, wait for it to finish.
-
-  return PixelsMatchReference(ref_file, comparator);
-}
-
-void PixelTest::ReadbackResult(scoped_ptr<SkBitmap> bitmap) {
-  result_bitmap_ = bitmap.Pass();
-}
-
 bool PixelTest::PixelsMatchReference(const base::FilePath& ref_file,
                                      const PixelComparator& comparator) {
+  gfx::Rect device_viewport_rect(device_viewport_size_);
+
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                   device_viewport_rect.width(),
+                   device_viewport_rect.height());
+  bitmap.allocPixels();
+  unsigned char* pixels = static_cast<unsigned char*>(bitmap.getPixels());
+  renderer_->GetFramebufferPixels(pixels, device_viewport_rect);
+
   base::FilePath test_data_dir;
   if (!PathService::Get(cc::DIR_TEST_DATA, &test_data_dir))
     return false;
 
-  // If this is false, we didn't set up a readback on a render pass.
-  if (!result_bitmap_)
-    return false;
-
   // To rebaseline:
-  // return WritePNGFile(*result_bitmap_, test_data_dir.Append(ref_file), true);
+  // return WritePNGFile(bitmap, test_data_dir.Append(ref_file));
 
-  return MatchesPNGFile(*result_bitmap_,
-                        test_data_dir.Append(ref_file),
-                        comparator);
+  return MatchesPNGFile(bitmap, test_data_dir.Append(ref_file), comparator);
 }
 
 }  // namespace cc

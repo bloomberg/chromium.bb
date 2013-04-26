@@ -10,7 +10,6 @@
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_events.h"
 #include "cc/animation/layer_animation_controller.h"
-#include "cc/base/thread.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -69,9 +68,6 @@ Layer::~Layer() {
   // Our parent should be holding a reference to us so there should be no
   // way for us to be destroyed while we still have a parent.
   DCHECK(!parent());
-
-  for (size_t i = 0; i < request_copy_callbacks_.size(); ++i)
-    request_copy_callbacks_[i].Run(scoped_ptr<SkBitmap>());
 
   layer_animation_controller_->RemoveValueObserver(this);
 
@@ -303,14 +299,6 @@ void Layer::SetChildren(const LayerList& children) {
   RemoveAllChildren();
   for (size_t i = 0; i < children.size(); ++i)
     AddChild(children[i]);
-}
-
-void Layer::RequestCopyAsBitmap(RequestCopyAsBitmapCallback callback) {
-  DCHECK(IsPropertyChangeAllowed());
-  if (callback.is_null())
-    return;
-  request_copy_callbacks_.push_back(callback);
-  SetNeedsCommit();
 }
 
 void Layer::SetAnchorPoint(gfx::PointF anchor_point) {
@@ -622,21 +610,6 @@ void Layer::SetPositionConstraint(const LayerPositionConstraint& constraint) {
   SetNeedsCommit();
 }
 
-static void RunCopyCallbackOnMainThread(
-    const Layer::RequestCopyAsBitmapCallback& callback,
-    scoped_ptr<SkBitmap> bitmap) {
-  callback.Run(bitmap.Pass());
-}
-
-static void PostCopyCallbackToMainThread(
-    Thread* main_thread,
-    const Layer::RequestCopyAsBitmapCallback& callback,
-    scoped_ptr<SkBitmap> bitmap) {
-  main_thread->PostTask(base::Bind(&RunCopyCallbackOnMainThread,
-                                   callback,
-                                   base::Passed(&bitmap)));
-}
-
 void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetAnchorPoint(anchor_point_);
   layer->SetAnchorPointZ(anchor_point_z_);
@@ -677,17 +650,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetScrollable(scrollable_);
   layer->SetScrollOffset(scroll_offset_);
   layer->SetMaxScrollOffset(max_scroll_offset_);
-
-  // Wrap the request_copy_callbacks_ in a PostTask to the main thread.
-  std::vector<RequestCopyAsBitmapCallback> main_thread_request_copy_callbacks;
-  for (size_t i = 0; i < request_copy_callbacks_.size(); ++i) {
-    main_thread_request_copy_callbacks.push_back(
-        base::Bind(&PostCopyCallbackToMainThread,
-                   layer_tree_host()->proxy()->MainThread(),
-                   request_copy_callbacks_[i]));
-  }
-  request_copy_callbacks_.clear();
-  layer->PassRequestCopyCallbacks(&main_thread_request_copy_callbacks);
 
   // If the main thread commits multiple times before the impl thread actually
   // draws, then damage tracking will become incorrect if we simply clobber the
