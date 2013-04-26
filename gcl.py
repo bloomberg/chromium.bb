@@ -389,7 +389,7 @@ class ChangeInfo(object):
   def GetApprovingReviewers(self):
     """Returns the issue reviewers list from Rietveld."""
     return git_cl.get_approving_reviewers(
-        self.RpcServer().get_issue_properties(self.issue, False))
+        self.RpcServer().get_issue_properties(self.issue, True))
 
   def AddComment(self, comment):
     """Adds a comment for an issue on Rietveld.
