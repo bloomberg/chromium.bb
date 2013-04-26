@@ -20,17 +20,18 @@
 #ifndef TouchAdjustment_h
 #define TouchAdjustment_h
 
-#include "Node.h"
-#include "NodeList.h"
 #include "core/platform/graphics/IntPoint.h"
 #include "core/platform/graphics/IntRect.h"
 #include <wtf/Vector.h>
+#include <wtf/RefPtr.h>
 
 namespace WebCore {
 
-bool findBestClickableCandidate(Node*& targetNode, IntPoint& targetPoint, const IntPoint& touchHotspot, const IntRect& touchArea, const NodeList&);
-bool findBestContextMenuCandidate(Node*& targetNode, IntPoint& targetPoint, const IntPoint& touchHotspot, const IntRect& touchArea, const NodeList&);
-bool findBestZoomableArea(Node*& targetNode, IntRect& targetArea, const IntPoint& touchHotspot, const IntRect& touchArea, const NodeList&);
+class Node;
+
+bool findBestClickableCandidate(Node*& targetNode, IntPoint& targetPoint, const IntPoint& touchHotspot, const IntRect& touchArea, const Vector<RefPtr<Node> >&);
+bool findBestContextMenuCandidate(Node*& targetNode, IntPoint& targetPoint, const IntPoint& touchHotspot, const IntRect& touchArea, const Vector<RefPtr<Node> >&);
+bool findBestZoomableArea(Node*& targetNode, IntRect& targetArea, const IntPoint& touchHotspot, const IntRect& touchArea, const Vector<RefPtr<Node> >&);
 // FIXME: Implement the similar functions for other gestures here as well.
 
 } // namespace WebCore

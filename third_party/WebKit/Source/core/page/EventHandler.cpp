@@ -42,7 +42,6 @@
 #include "MouseEvent.h"
 #include "PluginDocument.h"
 #include "ShadowRoot.h"
-#include "StaticHashSetNodeList.h"
 #include "TextEvent.h"
 #include "TouchEvent.h"
 #include "TouchList.h"
@@ -2667,13 +2666,14 @@ bool EventHandler::bestClickableNodeForTouchPoint(const IntPoint& touchCenter, c
     HitTestResult result = hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active, touchRadius);
 
     IntRect touchRect(touchCenter - touchRadius, touchRadius + touchRadius);
-    RefPtr<StaticHashSetNodeList> nodeList = StaticHashSetNodeList::adopt(result.rectBasedTestResult());
+    Vector<RefPtr<Node>, 11> nodes;
+    copyToVector(result.rectBasedTestResult(), nodes);
 
     // FIXME: Should be able to handle targetNode being a shadow DOM node to avoid performing uncessary hit tests
     // in the case where further processing on the node is required. Returning the shadow ancestor prevents a
     // regression in touchadjustment/html-label.html. Some refinement is required to testing/internals to
     // handle targetNode being a shadow DOM node. 
-    bool success = findBestClickableCandidate(targetNode, targetPoint, touchCenter, touchRect, *nodeList.get());
+    bool success = findBestClickableCandidate(targetNode, targetPoint, touchCenter, touchRect, nodes);
     if (success && targetNode)
         targetNode = targetNode->deprecatedShadowAncestorNode();
     return success;
@@ -2685,8 +2685,9 @@ bool EventHandler::bestContextMenuNodeForTouchPoint(const IntPoint& touchCenter,
     HitTestResult result = hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active, touchRadius);
 
     IntRect touchRect(touchCenter - touchRadius, touchRadius + touchRadius);
-    RefPtr<StaticHashSetNodeList> nodeList = StaticHashSetNodeList::adopt(result.rectBasedTestResult());
-    return findBestContextMenuCandidate(targetNode, targetPoint, touchCenter, touchRect, *nodeList.get());
+    Vector<RefPtr<Node>, 11> nodes;
+    copyToVector(result.rectBasedTestResult(), nodes);
+    return findBestContextMenuCandidate(targetNode, targetPoint, touchCenter, touchRect, nodes);
 }
 
 bool EventHandler::bestZoomableAreaForTouchPoint(const IntPoint& touchCenter, const IntSize& touchRadius, IntRect& targetArea, Node*& targetNode)
@@ -2695,8 +2696,9 @@ bool EventHandler::bestZoomableAreaForTouchPoint(const IntPoint& touchCenter, co
     HitTestResult result = hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent, touchRadius);
 
     IntRect touchRect(touchCenter - touchRadius, touchRadius + touchRadius);
-    RefPtr<StaticHashSetNodeList> nodeList = StaticHashSetNodeList::adopt(result.rectBasedTestResult());
-    return findBestZoomableArea(targetNode, targetArea, touchCenter, touchRect, *nodeList.get());
+    Vector<RefPtr<Node>, 11> nodes;
+    copyToVector(result.rectBasedTestResult(), nodes);
+    return findBestZoomableArea(targetNode, targetArea, touchCenter, touchRect, nodes);
 }
 
 bool EventHandler::adjustGesturePosition(const PlatformGestureEvent& gestureEvent, IntPoint& adjustedPoint)
