@@ -813,6 +813,12 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="HttpCache.OfflineStatus" enum="OfflineStatus">
+  <summary>
+    Result of a main page HttpCacheTransaction if offline mode had been enabled.
+  </summary>
+</histogram>
+
 <histogram name="Import.ImporterType.AutoImport" enum="ImporterType">
   <summary>The importer used on first run Auto Import.</summary>
 </histogram>
@@ -8461,6 +8467,14 @@ other types of suffix sets.
   <int value="12" label="INTERNAL"/>
   <int value="13" label="DNS_LOOKUP_FAILED"/>
   <int value="14" label="HTTP_GET_FAILED"/>
+</enum>
+
+<enum name="OfflineStatus" type="int">
+  <int value="0" label="Fresh data load from Cache"/>
+  <int value="1" label="Successful network request (validation or fetch)."/>
+  <int value="2" label="Failed network request (non-offline error)."/>
+  <int value="3" label="Server offline and stale data available."/>
+  <int value="4" label="Server offline and stale data not available."/>
 </enum>
 
 <enum name="OmniboxAggressiveHistoryURLProviderFieldTrialBeacon" type="int">

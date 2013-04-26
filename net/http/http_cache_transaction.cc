@@ -62,6 +62,42 @@ bool IsOfflineError(int error) {
           error == net::ERR_CONNECTION_TIMED_OUT);
 }
 
+// Enum for UMA, indicating the status (with regard to offline mode) of
+// a particular request.
+enum RequestOfflineStatus {
+  // A cache transaction hit in cache (data was present and not stale)
+  // and returned it.
+  OFFLINE_STATUS_FRESH_CACHE,
+
+  // A network request was required for a cache entry, and it succeeded.
+  OFFLINE_STATUS_NETWORK_SUCCEEDED,
+
+  // A network request was required for a cache entry, and it failed with
+  // a non-offline error.
+  OFFLINE_STATUS_NETWORK_FAILED,
+
+  // A network request was required for a cache entry, it failed with an
+  // offline error, and we could serve stale data if
+  // LOAD_FROM_CACHE_IF_OFFLINE was set.
+  OFFLINE_STATUS_DATA_AVAILABLE_OFFLINE,
+
+  // A network request was required for a cache entry, it failed with
+  // an offline error, and there was no servable data in cache (even
+  // stale data).
+  OFFLINE_STATUS_DATA_UNAVAILABLE_OFFLINE,
+
+  OFFLINE_STATUS_MAX_ENTRIES
+};
+
+void RecordOfflineStatus(int load_flags, RequestOfflineStatus status) {
+  // Restrict to main frame to keep statistics close to
+  // "would have shown them something useful if offline mode was enabled".
+  if (load_flags & net::LOAD_MAIN_FRAME) {
+    UMA_HISTOGRAM_ENUMERATION("HttpCache.OfflineStatus", status,
+                              OFFLINE_STATUS_MAX_ENTRIES);
+  }
+}
+
 }  // namespace
 
 namespace net {
@@ -806,11 +842,23 @@ int HttpCache::Transaction::DoSendRequestComplete(int result) {
   // If requested, and we have a readable cache entry, and we have
   // an error indicating that we're offline as opposed to in contact
   // with a bad server, read from cache anyway.
-  if ((effective_load_flags_ & LOAD_FROM_CACHE_IF_OFFLINE) &&
-      IsOfflineError(result) && mode_ == READ_WRITE && entry_ && !partial_) {
-    UpdateTransactionPattern(PATTERN_NOT_COVERED);
-    response_.server_data_unavailable = true;
-    return SetupEntryForRead();
+  if (IsOfflineError(result)) {
+    if (mode_ == READ_WRITE && entry_ && !partial_) {
+      RecordOfflineStatus(effective_load_flags_,
+                          OFFLINE_STATUS_DATA_AVAILABLE_OFFLINE);
+      if (effective_load_flags_ & LOAD_FROM_CACHE_IF_OFFLINE) {
+        UpdateTransactionPattern(PATTERN_NOT_COVERED);
+        response_.server_data_unavailable = true;
+        return SetupEntryForRead();
+      }
+    } else {
+      RecordOfflineStatus(effective_load_flags_,
+                          OFFLINE_STATUS_DATA_UNAVAILABLE_OFFLINE);
+    }
+  } else {
+    RecordOfflineStatus(effective_load_flags_,
+                        (result == OK ? OFFLINE_STATUS_NETWORK_SUCCEEDED :
+                                        OFFLINE_STATUS_NETWORK_FAILED));
   }
 
   // If we tried to conditionalize the request and failed, we know
@@ -1751,6 +1799,7 @@ int HttpCache::Transaction::BeginCacheValidation() {
 
   if (skip_validation) {
     UpdateTransactionPattern(PATTERN_ENTRY_USED);
+    RecordOfflineStatus(effective_load_flags_, OFFLINE_STATUS_FRESH_CACHE);
     return SetupEntryForRead();
   } else {
     // Make the network request conditional, to see if we may reuse our cached
