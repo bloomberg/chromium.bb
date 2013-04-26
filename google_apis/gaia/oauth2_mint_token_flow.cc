@@ -100,7 +100,7 @@ OAuth2MintTokenFlow::OAuth2MintTokenFlow(URLRequestContextGetter* context,
                         std::vector<std::string>()),
       delegate_(delegate),
       parameters_(parameters),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
+      weak_factory_(this) {}
 
 OAuth2MintTokenFlow::~OAuth2MintTokenFlow() { }
 

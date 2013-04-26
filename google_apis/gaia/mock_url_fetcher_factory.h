@@ -44,7 +44,7 @@ class MockURLFetcherFactory : public net::URLFetcherFactory,
                               public net::ScopedURLFetcherFactory {
  public:
   MockURLFetcherFactory()
-      : net::ScopedURLFetcherFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      : net::ScopedURLFetcherFactory(this),
         success_(true) {
   }
   ~MockURLFetcherFactory() {}

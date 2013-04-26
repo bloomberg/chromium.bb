@@ -57,7 +57,7 @@ class MockUrlFetcherFactory : public ScopedURLFetcherFactory,
                               public URLFetcherFactory {
  public:
   MockUrlFetcherFactory()
-      : ScopedURLFetcherFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      : ScopedURLFetcherFactory(this) {
   }
   virtual ~MockUrlFetcherFactory() {}
 
