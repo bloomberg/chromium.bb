@@ -25,8 +25,8 @@ class LayerTreePixelTest : public LayerTreeTest {
       OffscreenContextProviderForMainThread() OVERRIDE;
   virtual scoped_refptr<cc::ContextProvider>
       OffscreenContextProviderForCompositorThread() OVERRIDE;
-  virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
-                                   bool result) OVERRIDE;
+
+  void ReadbackResult(scoped_ptr<SkBitmap> bitmap);
 
   virtual void BeginTest() OVERRIDE;
   virtual void SetupTree() OVERRIDE;

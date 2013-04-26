@@ -456,7 +456,10 @@ const ResourceProvider::Resource* ResourceProvider::LockForRead(ResourceId id) {
   ResourceMap::iterator it = resources_.find(id);
   CHECK(it != resources_.end());
   Resource* resource = &it->second;
-  DCHECK(!resource->locked_for_write || resource->set_pixels_completion_forced);
+  DCHECK(!resource->locked_for_write ||
+         resource->set_pixels_completion_forced) <<
+      "locked for write: " << resource->locked_for_write <<
+      " pixels completion forced: " << resource->set_pixels_completion_forced;
   DCHECK(!resource->exported);
   // Uninitialized! Call SetPixels or LockForWrite first.
   DCHECK(resource->allocated);

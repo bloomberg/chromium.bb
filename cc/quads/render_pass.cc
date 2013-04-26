@@ -16,11 +16,9 @@ scoped_ptr<RenderPass> RenderPass::Create() {
 RenderPass::RenderPass()
     : id(Id(-1, -1)),
       has_transparent_background(true),
-      has_occlusion_from_outside_target_surface(false) {
-}
+      has_occlusion_from_outside_target_surface(false) {}
 
-RenderPass::~RenderPass() {
-}
+RenderPass::~RenderPass() {}
 
 scoped_ptr<RenderPass> RenderPass::Copy(Id new_id) const {
   DCHECK(new_id != id);

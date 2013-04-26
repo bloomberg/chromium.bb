@@ -29,6 +29,7 @@ struct RenderPassSize {
   gfx::RectF damage_rect;
   bool has_transparent_background;
   bool has_occlusion_from_outside_target_surface;
+  std::vector<RenderPass::RequestCopyAsBitmapCallback> copy_callbacks;
 };
 
 TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
@@ -47,6 +48,7 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
                transform_to_root,
                has_transparent_background,
                has_occlusion_from_outside_target_surface);
+  pass->copy_callbacks.push_back(RenderPass::RequestCopyAsBitmapCallback());
 
   // Stick a quad in the pass, this should not get copied.
   scoped_ptr<SharedQuadState> shared_state = SharedQuadState::Create();
@@ -71,6 +73,9 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
   EXPECT_EQ(pass->has_occlusion_from_outside_target_surface,
             copy->has_occlusion_from_outside_target_surface);
   EXPECT_EQ(0u, copy->quad_list.size());
+
+  // The copy callback should not be copied/duplicated.
+  EXPECT_EQ(0u, copy->copy_callbacks.size());
 
   EXPECT_EQ(sizeof(RenderPassSize), sizeof(RenderPass));
 }
