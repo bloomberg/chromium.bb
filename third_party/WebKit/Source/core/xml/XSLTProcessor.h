@@ -25,8 +25,8 @@
 
 #include <libxml/parserInternals.h>
 #include <libxslt/documents.h>
-#include "XSLStyleSheet.h"
 #include "core/dom/Node.h"
+#include "core/xml/XSLStyleSheet.h"
 #include <wtf/HashMap.h>
 #include <wtf/text/StringHash.h>
 

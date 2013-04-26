@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/dom/MessagePort.h"
 
-#include "WorkerContext.h"
 #include "core/dom/Document.h"
 #include "core/dom/EventException.h"
 #include "core/dom/EventNames.h"
@@ -36,6 +35,7 @@
 #include "core/page/DOMWindow.h"
 #include "core/page/SecurityOrigin.h"
 #include "core/platform/Timer.h"
+#include "core/workers/WorkerContext.h"
 #include <wtf/text/AtomicString.h>
 
 namespace WebCore {

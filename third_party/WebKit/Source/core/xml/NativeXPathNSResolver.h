@@ -26,7 +26,7 @@
 #ifndef NativeXPathNSResolver_h
 #define NativeXPathNSResolver_h
 
-#include "XPathNSResolver.h"
+#include "core/xml/XPathNSResolver.h"
 #include <wtf/RefPtr.h>
 
 namespace WebCore {

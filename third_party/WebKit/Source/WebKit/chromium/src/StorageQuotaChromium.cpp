@@ -39,12 +39,12 @@
 #include "WebStorageQuotaCallbacksImpl.h"
 #include "WebStorageQuotaType.h"
 #include "WebWorkerBase.h"
-#include "WorkerContext.h"
 #include "WorkerStorageQuotaCallbacksBridge.h"
-#include "WorkerThread.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ScriptExecutionContext.h"
+#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerThread.h"
 #include <wtf/Threading.h>
 
 using namespace WebKit;

@@ -22,7 +22,7 @@
 
 #include "config.h"
 
-#include "XSLTProcessor.h"
+#include "core/xml/XSLTProcessor.h"
 
 #include "HTMLBodyElement.h"
 #include "HTMLDocument.h"

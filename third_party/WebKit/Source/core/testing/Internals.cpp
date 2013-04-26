@@ -50,7 +50,6 @@
 #include "SelectRuleFeatureSet.h"
 #include "SerializedScriptValue.h"
 #include "TypeConversions.h"
-#include "WorkerThread.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/ClientRect.h"
 #include "core/dom/ClientRectList.h"
@@ -98,6 +97,7 @@
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderTreeAsText.h"
 #include "core/rendering/RenderView.h"
+#include "core/workers/WorkerThread.h"
 #include <wtf/dtoa.h>
 #include <wtf/text/StringBuffer.h>
 

@@ -27,13 +27,10 @@
 
 #include "config.h"
 
-#include "WorkerMessagingProxy.h"
+#include "core/workers/WorkerMessagingProxy.h"
 
-#include "DedicatedWorkerContext.h"
-#include "DedicatedWorkerThread.h"
 #include "InspectorInstrumentation.h"
 #include "ScriptCallStack.h"
-#include "Worker.h"
 #include "WorkerDebuggerAgent.h"
 #include "WorkerInspectorController.h"
 #include "core/dom/CrossThreadTask.h"
@@ -46,6 +43,9 @@
 #include "core/page/DOMWindow.h"
 #include "core/page/PageGroup.h"
 #include "core/platform/NotImplemented.h"
+#include "core/workers/DedicatedWorkerContext.h"
+#include "core/workers/DedicatedWorkerThread.h"
+#include "core/workers/Worker.h"
 #include <wtf/MainThread.h>
 
 namespace WebCore {

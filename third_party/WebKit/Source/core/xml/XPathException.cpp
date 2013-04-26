@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "XPathException.h"
+#include "core/xml/XPathException.h"
 
 namespace WebCore {
 

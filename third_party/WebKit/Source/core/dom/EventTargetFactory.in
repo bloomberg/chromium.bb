@@ -2,7 +2,7 @@ namespace="EventTarget"
 
 AudioContext conditional=WEB_AUDIO
 BatteryManager conditional=BATTERY_STATUS
-DedicatedWorkerContext
+core/workers/DedicatedWorkerContext
 core/loader/appcache/DOMApplicationCache
 DOMWindow
 EventSource
@@ -28,8 +28,8 @@ RTCDataChannel conditional=MEDIA_STREAM
 RTCDTMFSender conditional=MEDIA_STREAM
 RTCPeerConnection conditional=MEDIA_STREAM
 SVGElementInstance conditional=SVG
-SharedWorker
-SharedWorkerContext
+core/workers/SharedWorker
+core/workers/SharedWorkerContext
 SourceBufferList
 SpeechRecognition
 SpeechSynthesisUtterance conditional=SPEECH_SYNTHESIS
@@ -38,6 +38,6 @@ TextTrackCue
 TextTrackList
 WebKitNamedFlow interfaceName=NamedFlow
 WebSocket
-Worker
-XMLHttpRequest
-XMLHttpRequestUpload
+core/workers/Worker
+core/xml/XMLHttpRequest
+core/xml/XMLHttpRequestUpload

@@ -26,12 +26,12 @@
 #define XMLDocumentParser_h
 
 #include <libxml/tree.h>
-#include "XMLErrors.h"
 #include "core/dom/FragmentScriptingPermission.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/loader/cache/CachedResourceClient.h"
 #include "core/loader/cache/CachedResourceHandle.h"
 #include "core/platform/text/SegmentedString.h"
+#include "core/xml/XMLErrors.h"
 #include <wtf/HashMap.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/text/CString.h>

@@ -27,8 +27,8 @@
 #ifndef XPathPredicate_h
 #define XPathPredicate_h
 
-#include "XPathExpressionNode.h"
-#include "XPathValue.h"
+#include "core/xml/XPathExpressionNode.h"
+#include "core/xml/XPathValue.h"
 
 namespace WebCore {
 

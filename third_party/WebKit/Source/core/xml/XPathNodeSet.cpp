@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "XPathNodeSet.h"
+#include "core/xml/XPathNodeSet.h"
 
 #include "core/dom/Attr.h"
 #include "core/dom/Element.h"

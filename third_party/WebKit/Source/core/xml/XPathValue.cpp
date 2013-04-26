@@ -25,12 +25,12 @@
  */
 
 #include "config.h"
-#include "XPathValue.h"
+#include "core/xml/XPathValue.h"
 
 #include <limits>
-#include "XPathExpressionNode.h"
-#include "XPathUtil.h"
 #include "core/dom/Node.h"
+#include "core/xml/XPathExpressionNode.h"
+#include "core/xml/XPathUtil.h"
 #include <wtf/MathExtras.h>
 #include <wtf/StdLibExtras.h>
 

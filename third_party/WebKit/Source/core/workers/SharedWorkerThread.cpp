@@ -30,9 +30,9 @@
 
 #include "config.h"
 
-#include "SharedWorkerThread.h"
+#include "core/workers/SharedWorkerThread.h"
 
-#include "SharedWorkerContext.h"
+#include "core/workers/SharedWorkerContext.h"
 
 namespace WebCore {
 

@@ -25,10 +25,10 @@
  */
 
 #include "config.h"
-#include "XMLHttpRequestProgressEventThrottle.h"
+#include "core/xml/XMLHttpRequestProgressEventThrottle.h"
 
-#include "XMLHttpRequestProgressEvent.h"
 #include "core/dom/EventTarget.h"
+#include "core/xml/XMLHttpRequestProgressEvent.h"
 
 namespace WebCore {
 

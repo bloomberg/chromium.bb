@@ -30,14 +30,14 @@
 
 #include "config.h"
 
-#include "SharedWorkerContext.h"
+#include "core/workers/SharedWorkerContext.h"
 
 #include "ScriptCallStack.h"
-#include "SharedWorkerThread.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/MessageEvent.h"
 #include "core/page/DOMWindow.h"
 #include "core/platform/NotImplemented.h"
+#include "core/workers/SharedWorkerThread.h"
 
 namespace WebCore {
 

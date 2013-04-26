@@ -31,9 +31,9 @@
 #ifndef DedicatedWorkerContext_h
 #define DedicatedWorkerContext_h
 
-#include "WorkerContext.h"
 #include "core/dom/MessagePort.h"
 #include "core/page/ContentSecurityPolicy.h"
+#include "core/workers/WorkerContext.h"
 
 namespace WebCore {
 

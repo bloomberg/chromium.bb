@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "XPathExpressionNode.h"
+#include "core/xml/XPathExpressionNode.h"
 
 #include "core/dom/Node.h"
 #include <wtf/StdLibExtras.h>

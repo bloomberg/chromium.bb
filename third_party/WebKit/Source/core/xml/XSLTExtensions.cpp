@@ -26,13 +26,13 @@
 
 #include "config.h"
 
-#include "XSLTExtensions.h"
+#include "core/xml/XSLTExtensions.h"
 
 #include <libxml/xpathInternals.h>
 
-#include <libxslt/xsltutils.h>
 #include <libxslt/extensions.h>
 #include <libxslt/extra.h>
+#include <libxslt/xsltutils.h>
 
 namespace WebCore {
 

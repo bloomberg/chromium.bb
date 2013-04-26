@@ -27,7 +27,7 @@
 #ifndef XPathValue_h
 #define XPathValue_h
 
-#include "XPathNodeSet.h"
+#include "core/xml/XPathNodeSet.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

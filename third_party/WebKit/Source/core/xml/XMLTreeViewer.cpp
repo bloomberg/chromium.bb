@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "XMLTreeViewer.h"
+#include "core/xml/XMLTreeViewer.h"
 
 #include "ScriptController.h"
 #include "ScriptSourceCode.h"

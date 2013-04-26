@@ -26,14 +26,14 @@
  */
 
 #include "config.h"
-#include "XPathParser.h"
+#include "core/xml/XPathParser.h"
 
-#include "XPathEvaluator.h"
-#include "XPathException.h"
-#include "XPathNSResolver.h"
-#include "XPathPath.h"
-#include "XPathStep.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/xml/XPathEvaluator.h"
+#include "core/xml/XPathException.h"
+#include "core/xml/XPathNSResolver.h"
+#include "core/xml/XPathPath.h"
+#include "core/xml/XPathStep.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringHash.h>
 

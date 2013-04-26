@@ -31,7 +31,6 @@
 #include "HTMLStyleElement.h"
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
-#include "XMLErrors.h"
 #include "core/dom/CDATASection.h"
 #include "core/dom/Comment.h"
 #include "core/dom/Document.h"
@@ -51,6 +50,7 @@
 #include "core/platform/network/ResourceHandle.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
+#include "core/xml/XMLErrors.h"
 #include <wtf/StringExtras.h>
 #include <wtf/Threading.h>
 #include <wtf/Vector.h>

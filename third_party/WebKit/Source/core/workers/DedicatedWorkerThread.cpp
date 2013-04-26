@@ -30,10 +30,10 @@
 
 #include "config.h"
 
-#include "DedicatedWorkerThread.h"
+#include "core/workers/DedicatedWorkerThread.h"
 
-#include "DedicatedWorkerContext.h"
-#include "WorkerObjectProxy.h"
+#include "core/workers/DedicatedWorkerContext.h"
+#include "core/workers/WorkerObjectProxy.h"
 
 namespace WebCore {
 

@@ -31,14 +31,14 @@
 #include "DatabaseContext.h"
 #include "PublicURLManager.h"
 #include "ScriptCallStack.h"
-#include "WorkerContext.h"
-#include "WorkerThread.h"
 #include "core/dom/ErrorEvent.h"
 #include "core/dom/EventTarget.h"
 #include "core/dom/MessagePort.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedScript.h"
 #include "core/page/DOMTimer.h"
+#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerThread.h"
 #include <wtf/MainThread.h>
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationVector.h>

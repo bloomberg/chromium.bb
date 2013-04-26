@@ -33,13 +33,13 @@
 
 #include "WebFileWriter.h"
 #include "WebWorkerBase.h"
-#include "WorkerContext.h"
 #include "WorkerFileWriterCallbacksBridge.h"
-#include "WorkerLoaderProxy.h"
-#include "WorkerThread.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/platform/AsyncFileSystem.h"
+#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerLoaderProxy.h"
+#include "core/workers/WorkerThread.h"
 #include <public/WebFileSystem.h>
 #include <public/WebURL.h>
 #include <wtf/Assertions.h>

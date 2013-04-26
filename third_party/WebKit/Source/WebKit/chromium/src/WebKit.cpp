@@ -37,7 +37,6 @@
 #include "WebMediaPlayerClientImpl.h"
 #include "WebSocket.h"
 #include "WebWorkerClientImpl.h"
-#include "WorkerContextProxyChromium.h"
 #include "core/dom/CustomElementRegistry.h"
 #include "core/dom/MutationObserver.h"
 #include "core/page/Frame.h"
@@ -50,6 +49,7 @@
 #include "core/platform/graphics/chromium/ImageDecodingStore.h"
 #include "core/platform/graphics/chromium/MediaPlayerPrivateChromium.h"
 #include "core/platform/text/TextEncoding.h"
+#include "core/workers/chromium/WorkerContextProxyChromium.h"
 #include "v8.h"
 #include <public/Platform.h>
 #include <public/WebPrerenderingSupport.h>

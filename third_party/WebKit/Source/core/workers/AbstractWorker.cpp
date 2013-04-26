@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "AbstractWorker.h"
+#include "core/workers/AbstractWorker.h"
 
 #include "InspectorInstrumentation.h"
 #include "core/dom/ErrorEvent.h"

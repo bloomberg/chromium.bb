@@ -32,7 +32,7 @@
 #ifndef SharedWorker_h
 #define SharedWorker_h
 
-#include "AbstractWorker.h"
+#include "core/workers/AbstractWorker.h"
 
 namespace WebCore {
 

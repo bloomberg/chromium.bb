@@ -23,7 +23,6 @@
 #define XMLHttpRequest_h
 
 #include "ScriptWrappable.h"
-#include "XMLHttpRequestProgressEventThrottle.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
@@ -32,6 +31,7 @@
 #include "core/page/SecurityOrigin.h"
 #include "core/platform/network/FormData.h"
 #include "core/platform/network/ResourceResponse.h"
+#include "core/xml/XMLHttpRequestProgressEventThrottle.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/text/AtomicStringHash.h>
 #include <wtf/text/StringBuilder.h>

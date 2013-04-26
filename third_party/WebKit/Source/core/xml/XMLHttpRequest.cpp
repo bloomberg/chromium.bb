@@ -21,7 +21,7 @@
  */
 
 #include "config.h"
-#include "XMLHttpRequest.h"
+#include "core/xml/XMLHttpRequest.h"
 
 #include "DOMFormData.h"
 #include "HTMLDocument.h"
@@ -29,9 +29,6 @@
 #include "ScriptCallStack.h"
 #include "ScriptController.h"
 #include "ScriptProfile.h"
-#include "XMLHttpRequestException.h"
-#include "XMLHttpRequestProgressEvent.h"
-#include "XMLHttpRequestUpload.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/Event.h"
@@ -58,6 +55,9 @@
 #include "core/platform/network/ParsedContentType.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
+#include "core/xml/XMLHttpRequestException.h"
+#include "core/xml/XMLHttpRequestProgressEvent.h"
+#include "core/xml/XMLHttpRequestUpload.h"
 #include <wtf/ArrayBuffer.h>
 #include <wtf/ArrayBufferView.h>
 #include <wtf/RefCountedLeakCounter.h>

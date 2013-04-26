@@ -28,7 +28,7 @@
 #ifndef WorkerContextProxyChromium_h
 #define WorkerContextProxyChromium_h
 
-#include "WorkerContextProxy.h"
+#include "core/workers/WorkerContextProxy.h"
 
 namespace WebCore {
 

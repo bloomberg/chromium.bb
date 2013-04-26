@@ -67,7 +67,7 @@
 #include <wtf/Vector.h>
 
 #include <libxslt/xslt.h>
-#include "XMLTreeViewer.h"
+#include "core/xml/XMLTreeViewer.h"
 
 using namespace std;
 

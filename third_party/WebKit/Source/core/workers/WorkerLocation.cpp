@@ -26,7 +26,7 @@
 
 #include "config.h"
 
-#include "WorkerLocation.h"
+#include "core/workers/WorkerLocation.h"
 
 #include <wtf/text/WTFString.h>
 

@@ -31,12 +31,8 @@
 #include "config.h"
 #include "WebWorkerClientImpl.h"
 
-#include "DedicatedWorkerThread.h"
 #include "InspectorInstrumentation.h"
 #include "ScriptCallStack.h"
-#include "Worker.h"
-#include "WorkerContext.h"
-#include "WorkerMessagingProxy.h"
 #include "WorkerScriptController.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
@@ -50,6 +46,10 @@
 #include "core/page/GroupSettings.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
+#include "core/workers/DedicatedWorkerThread.h"
+#include "core/workers/Worker.h"
+#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerMessagingProxy.h"
 #include <wtf/Threading.h>
 
 #include "FrameLoaderClientImpl.h"

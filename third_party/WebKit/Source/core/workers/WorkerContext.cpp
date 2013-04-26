@@ -27,7 +27,7 @@
 
 #include "config.h"
 
-#include "WorkerContext.h"
+#include "core/workers/WorkerContext.h"
 
 #include "DOMURL.h"
 #include "InspectorConsoleInstrumentation.h"
@@ -36,11 +36,6 @@
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
 #include "WorkerInspectorController.h"
-#include "WorkerLocation.h"
-#include "WorkerObjectProxy.h"
-#include "WorkerScriptLoader.h"
-#include "WorkerThread.h"
-#include "XMLHttpRequestException.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ErrorEvent.h"
 #include "core/dom/Event.h"
@@ -54,6 +49,11 @@
 #include "core/page/WorkerNavigator.h"
 #include "core/platform/KURL.h"
 #include "core/platform/NotImplemented.h"
+#include "core/workers/WorkerLocation.h"
+#include "core/workers/WorkerObjectProxy.h"
+#include "core/workers/WorkerScriptLoader.h"
+#include "core/workers/WorkerThread.h"
+#include "core/xml/XMLHttpRequestException.h"
 #include <wtf/RefPtr.h>
 #include <wtf/UnusedParam.h>
 

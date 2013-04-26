@@ -34,15 +34,15 @@
 #include "WebFileSystemCallbacksImpl.h"
 #include "WebFileWriter.h"
 #include "WorkerAsyncFileWriterChromium.h"
-#include "WorkerContext.h"
 #include "WorkerFileSystemCallbacksBridge.h"
 #include "WorkerScriptController.h"
-#include "WorkerThread.h"
 #include "core/fileapi/BlobURL.h"
 #include "core/platform/AsyncFileSystemCallbacks.h"
 #include "core/platform/FileMetadata.h"
 #include "core/platform/FileSystem.h"
 #include "core/platform/NotImplemented.h"
+#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerThread.h"
 #include <public/WebFileSystem.h>
 #include <wtf/text/CString.h>
 

@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "XPathNSResolver.h"
+#include "core/xml/XPathNSResolver.h"
 
 namespace WebCore {
 

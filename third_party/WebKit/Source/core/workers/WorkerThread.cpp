@@ -26,16 +26,16 @@
 
 #include "config.h"
 
-#include "WorkerThread.h"
+#include "core/workers/WorkerThread.h"
 
 #include "DatabaseManager.h"
 #include "DatabaseTask.h"
-#include "DedicatedWorkerContext.h"
 #include "InspectorInstrumentation.h"
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
 #include "core/platform/KURL.h"
 #include "core/platform/ThreadGlobalData.h"
+#include "core/workers/DedicatedWorkerContext.h"
 
 #include <utility>
 #include <wtf/Noncopyable.h>

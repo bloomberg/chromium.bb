@@ -49,7 +49,6 @@
 #include "InspectorState.h"
 #include "InstrumentingAgents.h"
 #include "ScriptEventListener.h"
-#include "XPathResult.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSPropertySourceData.h"
 #include "core/css/CSSRule.h"
@@ -94,6 +93,7 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/RenderStyleConstants.h"
+#include "core/xml/XPathResult.h"
 
 #include "core/editing/htmlediting.h"
 #include "core/editing/markup.h"

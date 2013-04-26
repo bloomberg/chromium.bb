@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "XMLHttpRequestException.h"
+#include "core/xml/XMLHttpRequestException.h"
 
 namespace WebCore {
 

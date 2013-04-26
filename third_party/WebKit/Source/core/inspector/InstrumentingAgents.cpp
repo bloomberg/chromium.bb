@@ -32,9 +32,9 @@
 #include "InstrumentingAgents.h"
 
 #include "InspectorController.h"
-#include "WorkerContext.h"
 #include "WorkerInspectorController.h"
 #include "core/page/Page.h"
+#include "core/workers/WorkerContext.h"
 #include <wtf/MainThread.h>
 
 namespace WebCore {

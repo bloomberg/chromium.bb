@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "WorkerEventQueue.h"
+#include "core/workers/WorkerEventQueue.h"
 
 #include "core/dom/Document.h"
 #include "core/dom/Event.h"

@@ -17,7 +17,7 @@
  */
 
 #include "config.h"
-#include "DOMParser.h"
+#include "core/xml/DOMParser.h"
 
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/Document.h"

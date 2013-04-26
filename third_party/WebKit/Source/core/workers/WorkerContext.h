@@ -27,7 +27,6 @@
 #ifndef WorkerContext_h
 #define WorkerContext_h
 
-#include "WorkerEventQueue.h"
 #include "WorkerScriptController.h"
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
@@ -35,6 +34,7 @@
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/GroupSettings.h"
+#include "core/workers/WorkerEventQueue.h"
 #include <wtf/Assertions.h>
 #include <wtf/HashMap.h>
 #include <wtf/OwnPtr.h>

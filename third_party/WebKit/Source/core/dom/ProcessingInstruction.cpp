@@ -21,7 +21,6 @@
 #include "config.h"
 #include "core/dom/ProcessingInstruction.h"
 
-#include "XSLStyleSheet.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaList.h"
 #include "core/css/StyleSheetContents.h"
@@ -34,6 +33,7 @@
 #include "core/loader/cache/CachedResourceRequest.h"
 #include "core/loader/cache/CachedXSLStyleSheet.h"
 #include "core/page/Frame.h"
+#include "core/xml/XSLStyleSheet.h"
 #include "core/xml/parser/XMLDocumentParser.h" // for parseAttributes()
 
 namespace WebCore {

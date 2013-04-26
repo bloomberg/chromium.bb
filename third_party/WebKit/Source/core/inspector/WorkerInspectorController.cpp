@@ -46,11 +46,11 @@
 #include "InspectorTimelineAgent.h"
 #include "InstrumentingAgents.h"
 #include "WorkerConsoleAgent.h"
-#include "WorkerContext.h"
 #include "WorkerDebuggerAgent.h"
-#include "WorkerReportingProxy.h"
 #include "WorkerRuntimeAgent.h"
-#include "WorkerThread.h"
+#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerReportingProxy.h"
+#include "core/workers/WorkerThread.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

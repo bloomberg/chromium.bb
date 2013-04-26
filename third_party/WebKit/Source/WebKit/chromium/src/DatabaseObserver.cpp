@@ -42,14 +42,14 @@
 #include "WebSecurityOrigin.h"
 #include "WebViewImpl.h"
 #include "WebWorkerBase.h"
-#include "WorkerContext.h"
-#include "WorkerLoaderProxy.h"
 #include "WorkerScriptController.h"
-#include "WorkerThread.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/platform/CrossThreadCopier.h"
+#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerLoaderProxy.h"
+#include "core/workers/WorkerThread.h"
 
 using namespace WebKit;
 

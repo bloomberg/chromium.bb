@@ -59,11 +59,8 @@
 #include "ScriptCallStack.h"
 #include "ScriptController.h"
 #include "ScriptProfile.h"
-#include "WorkerContext.h"
 #include "WorkerInspectorController.h"
 #include "WorkerRuntimeAgent.h"
-#include "WorkerThread.h"
-#include "XMLHttpRequest.h"
 #include "core/css/CSSRule.h"
 #include "core/css/CSSStyleRule.h"
 #include "core/css/StyleResolver.h"
@@ -75,6 +72,9 @@
 #include "core/page/ConsoleTypes.h"
 #include "core/page/DOMWindow.h"
 #include "core/rendering/RenderObject.h"
+#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerThread.h"
+#include "core/xml/XMLHttpRequest.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/CString.h>
 

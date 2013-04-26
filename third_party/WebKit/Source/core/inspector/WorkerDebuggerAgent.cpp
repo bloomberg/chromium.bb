@@ -33,8 +33,8 @@
 #include "WorkerDebuggerAgent.h"
 
 #include "ScriptDebugServer.h"
-#include "WorkerContext.h"
-#include "WorkerThread.h"
+#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerThread.h"
 #include <wtf/MessageQueue.h>
 
 namespace WebCore {

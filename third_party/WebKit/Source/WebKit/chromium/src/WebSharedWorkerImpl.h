@@ -38,10 +38,10 @@
 #include "WebFrameClient.h"
 #include "WebSharedWorkerClient.h"
 #include "WebWorkerBase.h"
-#include "WorkerLoaderProxy.h"
-#include "WorkerObjectProxy.h"
-#include "WorkerThread.h"
 #include "core/dom/ScriptExecutionContext.h"
+#include "core/workers/WorkerLoaderProxy.h"
+#include "core/workers/WorkerObjectProxy.h"
+#include "core/workers/WorkerThread.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefPtr.h>
 

@@ -28,7 +28,7 @@ UIEvents interfaceName=UIEvent
 WebKitAnimationEvent interfaceName=AnimationEvent
 WebKitTransitionEvent interfaceName=TransitionEvent
 WheelEvent
-XMLHttpRequestProgressEvent
+core/xml/XMLHttpRequestProgressEvent
 AudioProcessingEvent conditional=WEB_AUDIO
 OfflineAudioCompletionEvent conditional=WEB_AUDIO
 MediaStreamEvent conditional=MEDIA_STREAM

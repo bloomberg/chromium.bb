@@ -32,8 +32,6 @@
 #include "WebSharedWorkerImpl.h"
 
 #include "DatabaseTask.h"
-#include "SharedWorkerContext.h"
-#include "SharedWorkerThread.h"
 #include "WebDataSourceImpl.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
@@ -41,11 +39,8 @@
 #include "WebSettings.h"
 #include "WebSharedWorkerClient.h"
 #include "WebView.h"
-#include "WorkerContext.h"
 #include "WorkerDebuggerAgent.h"
 #include "WorkerInspectorController.h"
-#include "WorkerLoaderProxy.h"
-#include "WorkerThread.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
 #include "core/dom/MessageEvent.h"
@@ -59,6 +54,11 @@
 #include "core/page/PageGroup.h"
 #include "core/page/SecurityOrigin.h"
 #include "core/platform/KURL.h"
+#include "core/workers/SharedWorkerContext.h"
+#include "core/workers/SharedWorkerThread.h"
+#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerLoaderProxy.h"
+#include "core/workers/WorkerThread.h"
 #include <public/WebFileError.h>
 #include <public/WebMessagePortChannel.h>
 #include <public/WebString.h>

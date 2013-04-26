@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebWorkerInfo.h"
 
-#include "WorkerThread.h"
+#include "core/workers/WorkerThread.h"
 
 namespace WebKit {
 

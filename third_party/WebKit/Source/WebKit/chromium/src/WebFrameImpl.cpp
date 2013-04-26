@@ -123,7 +123,6 @@
 #include "WebSecurityOrigin.h"
 #include "WebSerializedScriptValue.h"
 #include "WebViewImpl.h"
-#include "XPathResult.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentMarker.h"
 #include "core/dom/DocumentMarkerController.h"
@@ -178,6 +177,7 @@
 #include "core/rendering/RenderTreeAsText.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/StyleInheritedData.h"
+#include "core/xml/XPathResult.h"
 #include "painting/GraphicsContextBuilder.h"
 #include <public/Platform.h>
 #include <public/WebFileSystem.h>

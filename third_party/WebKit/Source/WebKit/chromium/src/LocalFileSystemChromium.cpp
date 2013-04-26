@@ -41,11 +41,11 @@
 #include "WebPermissionClient.h"
 #include "WebViewImpl.h"
 #include "WebWorkerBase.h"
-#include "WorkerContext.h"
 #include "WorkerFileSystemCallbacksBridge.h"
-#include "WorkerThread.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
+#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerThread.h"
 #include <public/WebFileError.h>
 #include <public/WebFileSystem.h>
 #include <public/WebFileSystemType.h>

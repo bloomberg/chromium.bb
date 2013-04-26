@@ -25,16 +25,16 @@
  */
 
 #include "config.h"
-#include "XPathExpression.h"
+#include "core/xml/XPathExpression.h"
 
-#include "XPathException.h"
-#include "XPathExpressionNode.h"
-#include "XPathNSResolver.h"
-#include "XPathParser.h"
-#include "XPathResult.h"
-#include "XPathUtil.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/xml/XPathException.h"
+#include "core/xml/XPathExpressionNode.h"
+#include "core/xml/XPathNSResolver.h"
+#include "core/xml/XPathParser.h"
+#include "core/xml/XPathResult.h"
+#include "core/xml/XPathUtil.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

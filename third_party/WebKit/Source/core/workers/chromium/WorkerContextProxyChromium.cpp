@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WorkerContextProxyChromium.h"
+#include "core/workers/chromium/WorkerContextProxyChromium.h"
 
 namespace WebCore {
 

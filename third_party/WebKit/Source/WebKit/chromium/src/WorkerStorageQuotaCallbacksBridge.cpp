@@ -35,9 +35,9 @@
 #include "WebStorageQuotaCallbacks.h"
 #include "WebStorageQuotaCallbacksImpl.h"
 #include "WebWorkerBase.h"
-#include "WorkerContext.h"
-#include "WorkerLoaderProxy.h"
 #include "core/dom/CrossThreadTask.h"
+#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerLoaderProxy.h"
 
 using namespace WebCore;
 

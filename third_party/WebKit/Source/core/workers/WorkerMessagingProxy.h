@@ -27,10 +27,10 @@
 #ifndef WorkerMessagingProxy_h
 #define WorkerMessagingProxy_h
 
-#include "WorkerContextProxy.h"
-#include "WorkerLoaderProxy.h"
-#include "WorkerObjectProxy.h"
 #include "core/dom/ScriptExecutionContext.h"
+#include "core/workers/WorkerContextProxy.h"
+#include "core/workers/WorkerLoaderProxy.h"
+#include "core/workers/WorkerObjectProxy.h"
 #include <wtf/Forward.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/PassOwnPtr.h>

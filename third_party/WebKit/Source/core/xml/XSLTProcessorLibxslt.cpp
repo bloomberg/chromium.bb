@@ -22,15 +22,12 @@
 
 #include "config.h"
 
-#include "XSLTProcessor.h"
+#include "core/xml/XSLTProcessor.h"
 
 #include <libxslt/imports.h>
 #include <libxslt/security.h>
 #include <libxslt/variables.h>
 #include <libxslt/xsltutils.h>
-#include "XSLStyleSheet.h"
-#include "XSLTExtensions.h"
-#include "XSLTUnicodeSort.h"
 #include "core/dom/Document.h"
 #include "core/dom/TransformSource.h"
 #include "core/editing/markup.h"
@@ -43,6 +40,9 @@
 #include "core/platform/network/ResourceHandle.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
+#include "core/xml/XSLStyleSheet.h"
+#include "core/xml/XSLTExtensions.h"
+#include "core/xml/XSLTUnicodeSort.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 #include <wtf/Assertions.h>
 #include <wtf/text/CString.h>

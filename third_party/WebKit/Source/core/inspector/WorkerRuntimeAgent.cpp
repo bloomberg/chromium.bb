@@ -35,10 +35,10 @@
 #include "InjectedScript.h"
 #include "InstrumentingAgents.h"
 #include "ScriptState.h"
-#include "WorkerContext.h"
 #include "WorkerDebuggerAgent.h"
-#include "WorkerRunLoop.h"
-#include "WorkerThread.h"
+#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerRunLoop.h"
+#include "core/workers/WorkerThread.h"
 
 namespace WebCore {
 

@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "XSLTUnicodeSort.h"
+#include "core/xml/XSLTUnicodeSort.h"
 
 #include <libxslt/templates.h>
 #include <libxslt/xsltutils.h>

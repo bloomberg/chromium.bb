@@ -26,12 +26,12 @@
  */
 
 #include "config.h"
-#include "XPathPath.h"
+#include "core/xml/XPathPath.h"
 
-#include "XPathPredicate.h"
-#include "XPathStep.h"
-#include "XPathValue.h"
 #include "core/dom/Document.h"
+#include "core/xml/XPathPredicate.h"
+#include "core/xml/XPathStep.h"
+#include "core/xml/XPathValue.h"
 
 namespace WebCore {
 namespace XPath {

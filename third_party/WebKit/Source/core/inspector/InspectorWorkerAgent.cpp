@@ -37,8 +37,8 @@
 #include "InspectorState.h"
 #include "InspectorValues.h"
 #include "InstrumentingAgents.h"
-#include "WorkerContextProxy.h"
 #include "core/platform/KURL.h"
+#include "core/workers/WorkerContextProxy.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefPtr.h>
 

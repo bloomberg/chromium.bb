@@ -27,12 +27,9 @@
 
 #include "config.h"
 
-#include "Worker.h"
+#include "core/workers/Worker.h"
 
 #include "InspectorInstrumentation.h"
-#include "WorkerContextProxy.h"
-#include "WorkerScriptLoader.h"
-#include "WorkerThread.h"
 #include "core/dom/Document.h"
 #include "core/dom/EventException.h"
 #include "core/dom/EventListener.h"
@@ -45,6 +42,9 @@
 #include "core/page/Frame.h"
 #include "core/page/UseCounter.h"
 #include "core/platform/text/TextEncoding.h"
+#include "core/workers/WorkerContextProxy.h"
+#include "core/workers/WorkerScriptLoader.h"
+#include "core/workers/WorkerThread.h"
 #include <wtf/MainThread.h>
 
 namespace WebCore {

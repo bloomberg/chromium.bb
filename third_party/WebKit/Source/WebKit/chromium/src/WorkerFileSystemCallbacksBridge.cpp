@@ -34,13 +34,13 @@
 #include "WebCommonWorkerClient.h"
 #include "WebFileSystemCallbacksImpl.h"
 #include "WebWorkerBase.h"
-#include "WorkerContext.h"
-#include "WorkerLoaderProxy.h"
 #include "WorkerScriptController.h"
-#include "WorkerThread.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/platform/KURL.h"
 #include "core/platform/network/BlobData.h"
+#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerLoaderProxy.h"
+#include "core/workers/WorkerThread.h"
 #include <public/WebFileInfo.h>
 #include <public/WebFileSystemEntry.h>
 #include <public/WebString.h>

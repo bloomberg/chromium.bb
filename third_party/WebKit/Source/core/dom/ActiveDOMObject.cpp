@@ -27,10 +27,10 @@
 #include "config.h"
 #include "core/dom/ActiveDOMObject.h"
 
-#include "WorkerContext.h"
-#include "WorkerThread.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerThread.h"
 
 namespace WebCore {
 

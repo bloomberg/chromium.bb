@@ -31,8 +31,8 @@
 #ifndef SharedWorkerContext_h
 #define SharedWorkerContext_h
 
-#include "WorkerContext.h"
 #include "core/page/ContentSecurityPolicy.h"
+#include "core/workers/WorkerContext.h"
 
 namespace WebCore {
 

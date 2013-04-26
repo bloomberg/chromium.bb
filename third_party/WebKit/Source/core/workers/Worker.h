@@ -27,13 +27,13 @@
 #ifndef Worker_h
 #define Worker_h
 
-#include "AbstractWorker.h"
-#include "WorkerScriptLoaderClient.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/EventTarget.h"
 #include "core/dom/MessagePort.h"
+#include "core/workers/AbstractWorker.h"
+#include "core/workers/WorkerScriptLoaderClient.h"
 #include <wtf/Forward.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>

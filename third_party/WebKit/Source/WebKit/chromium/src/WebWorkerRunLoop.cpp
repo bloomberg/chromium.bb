@@ -25,7 +25,7 @@
 #include "config.h"
 #include <public/WebWorkerRunLoop.h>
 
-#include "WorkerRunLoop.h"
+#include "core/workers/WorkerRunLoop.h"
 
 using namespace WebCore;
 

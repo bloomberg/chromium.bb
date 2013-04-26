@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "XMLSerializer.h"
+#include "core/xml/XMLSerializer.h"
 
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"

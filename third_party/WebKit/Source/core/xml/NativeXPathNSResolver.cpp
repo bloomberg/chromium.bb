@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "NativeXPathNSResolver.h"
+#include "core/xml/NativeXPathNSResolver.h"
 
 #include "XMLNames.h"
 #include "core/dom/Node.h"

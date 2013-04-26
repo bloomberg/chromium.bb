@@ -27,7 +27,7 @@
 #ifndef XPathResult_h
 #define XPathResult_h
 
-#include "XPathValue.h"
+#include "core/xml/XPathValue.h"
 #include <wtf/Forward.h>
 #include <wtf/RefCounted.h>
 

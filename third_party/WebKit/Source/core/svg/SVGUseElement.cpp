@@ -38,7 +38,6 @@
 #include "SVGSVGElement.h"
 #include "SVGSymbolElement.h"
 #include "XLinkNames.h"
-#include "XMLSerializer.h"
 #include "core/css/StyleResolver.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
@@ -54,6 +53,7 @@
 #include "core/loader/cache/CachedSVGDocument.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGTransformableContainer.h"
+#include "core/xml/XMLSerializer.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 
 // Dump SVGElementInstance object tree - useful to debug instanceRoot problems

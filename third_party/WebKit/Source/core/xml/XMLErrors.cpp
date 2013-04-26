@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "XMLErrors.h"
+#include "core/xml/XMLErrors.h"
 
 #include "HTMLNames.h"
 #include "core/dom/Document.h"

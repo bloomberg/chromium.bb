@@ -29,18 +29,15 @@
  */
 
 #include "config.h"
-#include "SharedWorkerRepository.h"
+#include "core/workers/SharedWorkerRepository.h"
 
 #include "InspectorInstrumentation.h"
-#include "SharedWorker.h"
 #include "WebContentSecurityPolicy.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
 #include "WebKit.h"
 #include "WebSharedWorker.h"
 #include "WebSharedWorkerRepository.h"
-#include "WorkerScriptLoader.h"
-#include "WorkerScriptLoaderClient.h"
 #include "core/dom/Event.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCode.h"
@@ -49,6 +46,9 @@
 #include "core/dom/default/chromium/PlatformMessagePortChannelChromium.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/platform/network/ResourceResponse.h"
+#include "core/workers/SharedWorker.h"
+#include "core/workers/WorkerScriptLoader.h"
+#include "core/workers/WorkerScriptLoaderClient.h"
 
 #include <public/Platform.h>
 #include <public/WebMessagePortChannel.h>
