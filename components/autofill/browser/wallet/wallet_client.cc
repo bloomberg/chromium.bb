@@ -236,8 +236,7 @@ WalletClient::WalletClient(net::URLRequestContextGetter* context_getter,
       delegate_(delegate),
       request_type_(NO_PENDING_REQUEST),
       one_time_pad_(kOneTimePadLength),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          encryption_escrow_client_(context_getter, this)) {
+      encryption_escrow_client_(context_getter, this) {
   DCHECK(context_getter_);
   DCHECK(delegate_);
 }

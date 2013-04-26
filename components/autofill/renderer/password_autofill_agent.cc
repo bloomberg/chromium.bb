@@ -207,7 +207,7 @@ PasswordAutofillAgent::PasswordAutofillAgent(content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
       disable_popup_(false),
       web_view_(render_view->GetWebView()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
 }
 
 PasswordAutofillAgent::~PasswordAutofillAgent() {

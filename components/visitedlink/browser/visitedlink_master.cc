@@ -184,8 +184,7 @@ VisitedLinkMaster::VisitedLinkMaster(content::BrowserContext* browser_context,
                                      bool persist_to_disk)
     : browser_context_(browser_context),
       delegate_(delegate),
-      listener_(new VisitedLinkEventListener(
-          ALLOW_THIS_IN_INITIALIZER_LIST(this), browser_context)),
+      listener_(new VisitedLinkEventListener(this, browser_context)),
       persist_to_disk_(persist_to_disk) {
   InitMembers();
 }

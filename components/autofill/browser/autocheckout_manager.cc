@@ -99,7 +99,7 @@ AutocheckoutManager::AutocheckoutManager(AutofillManager* autofill_manager)
       is_autocheckout_bubble_showing_(false),
       in_autocheckout_flow_(false),
       google_transaction_id_(kTransactionIdNotSet),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {}
+      weak_ptr_factory_(this) {}
 
 AutocheckoutManager::~AutocheckoutManager() {
 }

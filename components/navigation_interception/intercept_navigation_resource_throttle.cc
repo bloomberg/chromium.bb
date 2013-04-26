@@ -60,7 +60,7 @@ InterceptNavigationResourceThrottle::InterceptNavigationResourceThrottle(
     CheckOnUIThreadCallback should_ignore_callback)
     : request_(request),
       should_ignore_callback_(should_ignore_callback),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(this) {
 }
 
 InterceptNavigationResourceThrottle::~InterceptNavigationResourceThrottle() {

@@ -153,7 +153,7 @@ AutofillAgent::AutofillAgent(content::RenderView* render_view,
       autocheckout_click_in_progress_(false),
       try_to_show_autocheckout_bubble_(false),
       ignore_text_changes_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   render_view->GetWebView()->setAutofillClient(this);
 
   // The PageClickTracker is a RenderViewObserver, and hence will be freed when

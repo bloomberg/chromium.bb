@@ -216,7 +216,7 @@ AutofillManager::AutofillManager(content::WebContents* web_contents,
       user_did_edit_autofilled_field_(false),
       external_delegate_(NULL),
       test_delegate_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
 }
 
 AutofillManager::~AutofillManager() {}
@@ -955,7 +955,7 @@ AutofillManager::AutofillManager(content::WebContents* web_contents,
       user_did_edit_autofilled_field_(false),
       external_delegate_(NULL),
       test_delegate_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   DCHECK(web_contents);
   DCHECK(manager_delegate_);
 }
