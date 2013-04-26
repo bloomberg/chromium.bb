@@ -31,7 +31,6 @@
 #include "config.h"
 #include "WebRuntimeFeatures.h"
 
-#include "DatabaseManager.h"
 #include "WebMediaPlayerClientImpl.h"
 #include "core/page/RuntimeEnabledFeatures.h"
 #include "modules/websockets/WebSocket.h"
@@ -44,12 +43,12 @@ namespace WebKit {
 
 void WebRuntimeFeatures::enableDatabase(bool enable)
 {
-    DatabaseManager::manager().setIsAvailable(enable);
+    RuntimeEnabledFeatures::setDatabaseEnabled(enable);
 }
 
 bool WebRuntimeFeatures::isDatabaseEnabled()
 {
-    return DatabaseManager::manager().isAvailable();
+    return RuntimeEnabledFeatures::databaseEnabled();
 }
 
 // FIXME: Remove the ability to enable this feature at runtime.

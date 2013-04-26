@@ -35,7 +35,6 @@
 #include "core/platform/AsyncFileSystem.h"
 #include "core/platform/graphics/MediaPlayer.h"
 #include "core/workers/SharedWorkerRepository.h"
-#include "modules/webdatabase/DatabaseManager.h"
 
 namespace WebCore {
 
@@ -57,6 +56,7 @@ bool RuntimeEnabledFeatures::isCSSCompositingEnabled = false;
 #endif
 bool RuntimeEnabledFeatures::isFontLoadEventsEnabled = false;
 bool RuntimeEnabledFeatures::isFullscreenEnabled = true;
+bool RuntimeEnabledFeatures::isDatabaseEnabled = true;
 #if ENABLE(WEB_AUDIO)
 bool RuntimeEnabledFeatures::isAudioContextEnabled = false;
 #endif
@@ -107,42 +107,7 @@ bool RuntimeEnabledFeatures::fileSystemEnabled()
     return isFileSystemEnabled && AsyncFileSystem::isAvailable();
 }
 
-bool RuntimeEnabledFeatures::audioEnabled()
-{
-    return MediaPlayer::isAvailable();
-}
-
-bool RuntimeEnabledFeatures::htmlMediaElementEnabled()
-{
-    return MediaPlayer::isAvailable();
-}
-
-bool RuntimeEnabledFeatures::htmlAudioElementEnabled()
-{
-    return MediaPlayer::isAvailable();
-}
-
-bool RuntimeEnabledFeatures::htmlVideoElementEnabled()
-{
-    return MediaPlayer::isAvailable();
-}
-
-bool RuntimeEnabledFeatures::htmlSourceElementEnabled()
-{
-    return MediaPlayer::isAvailable();
-}
-
-bool RuntimeEnabledFeatures::mediaControllerEnabled()
-{
-    return MediaPlayer::isAvailable();
-}
-
-bool RuntimeEnabledFeatures::mediaErrorEnabled()
-{
-    return MediaPlayer::isAvailable();
-}
-
-bool RuntimeEnabledFeatures::timeRangesEnabled()
+bool RuntimeEnabledFeatures::mediaEnabled()
 {
     return MediaPlayer::isAvailable();
 }
@@ -153,15 +118,5 @@ bool RuntimeEnabledFeatures::sharedWorkerEnabled()
     return SharedWorkerRepository::isAvailable();
 }
 #endif
-
-bool RuntimeEnabledFeatures::openDatabaseEnabled()
-{
-    return DatabaseManager::manager().isAvailable();
-}
-
-bool RuntimeEnabledFeatures::openDatabaseSyncEnabled()
-{
-    return DatabaseManager::manager().isAvailable();
-}
 
 } // namespace WebCore

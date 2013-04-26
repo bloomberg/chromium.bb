@@ -21,7 +21,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "config.h"
@@ -31,6 +31,7 @@
 #include "core/dom/Document.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include "core/page/SecurityOrigin.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseCallback.h"
@@ -46,7 +47,7 @@ PassRefPtr<Database> DOMWindowWebDatabase::openDatabase(DOMWindow* window, const
     RefPtr<Database> database = 0;
     DatabaseManager& dbManager = DatabaseManager::manager();
     DatabaseError error = DatabaseError::None;
-    if (dbManager.isAvailable() && window->document()->securityOrigin()->canAccessDatabase(window->document()->topOrigin())) {
+    if (RuntimeEnabledFeatures::databaseEnabled() && window->document()->securityOrigin()->canAccessDatabase(window->document()->topOrigin())) {
         database = dbManager.openDatabase(window->document(), name, version, displayName, estimatedSize, creationCallback, error);
         ASSERT(database || error != DatabaseError::None);
         ec = DatabaseManager::exceptionCodeForDatabaseError(error);

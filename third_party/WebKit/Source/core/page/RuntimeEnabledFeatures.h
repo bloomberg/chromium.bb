@@ -90,21 +90,14 @@ public:
     static void setFullscreenEnabled(bool isEnabled) { isFullscreenEnabled = isEnabled; }
     static bool fullscreenEnabled() { return isFullscreenEnabled; }
 
-    static bool audioEnabled();
-    static bool htmlMediaElementEnabled();
-    static bool htmlAudioElementEnabled();
-    static bool htmlVideoElementEnabled();
-    static bool htmlSourceElementEnabled();
-    static bool mediaControllerEnabled();
-    static bool mediaErrorEnabled();
-    static bool timeRangesEnabled();
+    static bool mediaEnabled();
 
 #if ENABLE(SHARED_WORKERS)
     static bool sharedWorkerEnabled();
 #endif
 
-    static bool openDatabaseEnabled();
-    static bool openDatabaseSyncEnabled();
+    static void setDatabaseEnabled(bool isEnabled) { isDatabaseEnabled = isEnabled; }
+    static bool databaseEnabled() { return isDatabaseEnabled; }
 
 #if ENABLE(WEB_AUDIO)
     static void setAudioContextEnabled(bool isEnabled) { isAudioContextEnabled = isEnabled; }
@@ -255,6 +248,7 @@ private:
 #endif
     static bool isFontLoadEventsEnabled;
     static bool isFullscreenEnabled;
+    static bool isDatabaseEnabled;
 #if ENABLE(WEB_AUDIO)
     static bool isAudioContextEnabled;
 #endif

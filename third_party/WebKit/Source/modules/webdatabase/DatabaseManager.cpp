@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "config.h"
@@ -58,24 +58,13 @@ DatabaseManager& DatabaseManager::manager()
 }
 
 DatabaseManager::DatabaseManager()
-    : m_databaseIsAvailable(true)
 #if !ASSERT_DISABLED
-    , m_databaseContextRegisteredCount(0)
+    : m_databaseContextRegisteredCount(0)
     , m_databaseContextInstanceCount(0)
 #endif
 {
     m_server = new DatabaseServer;
     ASSERT(m_server); // We should always have a server to work with.
-}
-
-bool DatabaseManager::isAvailable()
-{
-    return m_databaseIsAvailable;
-}
-
-void DatabaseManager::setIsAvailable(bool available)
-{
-    m_databaseIsAvailable = available;
 }
 
 class DatabaseCreationCallbackTask : public ScriptExecutionContext::Task {

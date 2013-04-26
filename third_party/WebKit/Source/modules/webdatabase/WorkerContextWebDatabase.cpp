@@ -21,7 +21,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
 
@@ -29,6 +29,7 @@
 
 #include "modules/webdatabase/WorkerContextWebDatabase.h"
 
+#include "core/page/RuntimeEnabledFeatures.h"
 #include "core/page/SecurityOrigin.h"
 #include "core/workers/WorkerContext.h"
 #include "modules/webdatabase/Database.h"
@@ -43,7 +44,7 @@ PassRefPtr<Database> WorkerContextWebDatabase::openDatabase(WorkerContext* conte
     DatabaseManager& dbManager = DatabaseManager::manager();
     RefPtr<Database> database;
     DatabaseError error = DatabaseError::None;
-    if (dbManager.isAvailable() && context->securityOrigin()->canAccessDatabase(context->topOrigin())) {
+    if (RuntimeEnabledFeatures::databaseEnabled() && context->securityOrigin()->canAccessDatabase(context->topOrigin())) {
         database = dbManager.openDatabase(context, name, version, displayName, estimatedSize, creationCallback, error);
         ASSERT(database || error != DatabaseError::None);
         ec = DatabaseManager::exceptionCodeForDatabaseError(error);
@@ -58,7 +59,7 @@ PassRefPtr<DatabaseSync> WorkerContextWebDatabase::openDatabaseSync(WorkerContex
     DatabaseManager& dbManager = DatabaseManager::manager();
     RefPtr<DatabaseSync> database;
     DatabaseError error =  DatabaseError::None;
-    if (dbManager.isAvailable() && context->securityOrigin()->canAccessDatabase(context->topOrigin())) {
+    if (RuntimeEnabledFeatures::databaseEnabled() && context->securityOrigin()->canAccessDatabase(context->topOrigin())) {
         database = dbManager.openDatabaseSync(context, name, version, displayName, estimatedSize, creationCallback, error);
 
         ASSERT(database || error != DatabaseError::None);

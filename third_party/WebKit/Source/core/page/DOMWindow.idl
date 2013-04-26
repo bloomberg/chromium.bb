@@ -449,14 +449,14 @@
     [Conditional=WEBVTT_REGIONS, EnabledAtRuntime=webkitVideoTrack] attribute TextTrackRegionConstructor TextTrackRegion; // Usable with the new operator
     [EnabledAtRuntime=webkitVideoTrack] attribute TrackEventConstructor TrackEvent;
 
-    [EnabledAtRuntime] attribute HTMLAudioElementConstructorConstructor Audio; // Usable with the new operator
-    [EnabledAtRuntime] attribute HTMLAudioElementConstructor HTMLAudioElement;
-    [EnabledAtRuntime] attribute HTMLMediaElementConstructor HTMLMediaElement;
-    [EnabledAtRuntime] attribute HTMLVideoElementConstructor HTMLVideoElement;
-    [EnabledAtRuntime] attribute MediaErrorConstructor MediaError;
-    [EnabledAtRuntime] attribute TimeRangesConstructor TimeRanges;
-    [EnabledAtRuntime] attribute HTMLSourceElementConstructor HTMLSourceElement;
-    [EnabledAtRuntime] attribute MediaControllerConstructor MediaController;
+    [EnabledAtRuntime=media] attribute HTMLAudioElementConstructorConstructor Audio; // Usable with the new operator
+    [EnabledAtRuntime=media] attribute HTMLAudioElementConstructor HTMLAudioElement;
+    [EnabledAtRuntime=media] attribute HTMLMediaElementConstructor HTMLMediaElement;
+    [EnabledAtRuntime=media] attribute HTMLVideoElementConstructor HTMLVideoElement;
+    [EnabledAtRuntime=media] attribute MediaErrorConstructor MediaError;
+    [EnabledAtRuntime=media] attribute TimeRangesConstructor TimeRanges;
+    [EnabledAtRuntime=media] attribute HTMLSourceElementConstructor HTMLSourceElement;
+    [EnabledAtRuntime=media] attribute MediaControllerConstructor MediaController;
 
     attribute CanvasPatternConstructor CanvasPattern;
     attribute CanvasGradientConstructor CanvasGradient;

@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef DatabaseManager_h
@@ -50,9 +50,6 @@ class DatabaseManager {
     WTF_MAKE_NONCOPYABLE(DatabaseManager); WTF_MAKE_FAST_ALLOCATED;
 public:
     static DatabaseManager& manager();
-
-    bool isAvailable();
-    void setIsAvailable(bool);
 
     // This gets a DatabaseContext for the specified ScriptExecutionContext.
     // If one doesn't already exist, it will create a new one.
@@ -100,7 +97,6 @@ private:
     static void logErrorMessage(ScriptExecutionContext*, const String& message);
 
     AbstractDatabaseServer* m_server;
-    bool m_databaseIsAvailable;
 
     // Access to the following fields require locking m_contextMapLock:
     typedef HashMap<ScriptExecutionContext*, DatabaseContext*> ContextMap;
