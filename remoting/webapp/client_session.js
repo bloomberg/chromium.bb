@@ -30,6 +30,9 @@ var remoting = remoting || {};
  * @param {string} accessCode The IT2Me access code. Blank for Me2Me.
  * @param {function(function(string): void): void} fetchPin Called by Me2Me
  *     connections when a PIN needs to be obtained interactively.
+ * @param {function(string, string, function(string, string): void): void}
+ *     fetchThirdPartyToken Called by Me2Me connections when a third party
+ *     authentication token must be obtained.
  * @param {string} authenticationMethods Comma-separated list of
  *     authentication methods the client should attempt to use.
  * @param {string} hostId The host identifier for Me2Me, or empty for IT2Me.
@@ -39,7 +42,8 @@ var remoting = remoting || {};
  * @constructor
  */
 remoting.ClientSession = function(hostJid, clientJid, hostPublicKey, accessCode,
-                                  fetchPin, authenticationMethods, hostId,
+                                  fetchPin, fetchThirdPartyToken,
+                                  authenticationMethods, hostId,
                                   mode, hostDisplayName) {
   this.state = remoting.ClientSession.State.CREATED;
 
@@ -50,6 +54,8 @@ remoting.ClientSession = function(hostJid, clientJid, hostPublicKey, accessCode,
   this.accessCode_ = accessCode;
   /** @private */
   this.fetchPin_ = fetchPin;
+  /** @private */
+  this.fetchThirdPartyToken_ = fetchThirdPartyToken;
   this.authenticationMethods = authenticationMethods;
   this.hostId = hostId;
   /** @type {string} */
@@ -404,7 +410,6 @@ remoting.ClientSession.prototype.onPluginInitialized_ = function(initialized) {
       this.onDesktopSizeChanged_.bind(this);
   this.plugin.onSetCapabilitiesHandler =
       this.onSetCapabilities_.bind(this);
-
   this.connectPluginToWcs_();
 };
 
@@ -721,22 +726,29 @@ remoting.ClientSession.prototype.connectPluginToWcs_ = function() {
   };
   remoting.wcsSandbox.setOnIq(onIncomingIq);
 
+  /** @type remoting.ClientSession */
+  var that = this;
+  if (plugin.hasFeature(remoting.ClientPlugin.Feature.THIRD_PARTY_AUTH)) {
+    /** @type{function(string, string, string): void} */
+    var fetchThirdPartyToken = function(tokenUrl, hostPublicKey, scope) {
+      that.fetchThirdPartyToken_(
+          tokenUrl, hostPublicKey, scope,
+          plugin.onThirdPartyTokenFetched.bind(plugin));
+    };
+    plugin.fetchThirdPartyTokenHandler = fetchThirdPartyToken;
+  }
   if (this.accessCode_) {
     // Shared secret was already supplied before connecting (It2Me case).
     this.connectToHost_(this.accessCode_);
-
   } else if (plugin.hasFeature(
       remoting.ClientPlugin.Feature.ASYNC_PIN)) {
     // Plugin supports asynchronously asking for the PIN.
     plugin.useAsyncPinDialog();
-    /** @type remoting.ClientSession */
-    var that = this;
     var fetchPin = function() {
       that.fetchPin_(plugin.onPinFetched.bind(plugin));
     };
     plugin.fetchPinHandler = fetchPin;
     this.connectToHost_('');
-
   } else {
     // Plugin doesn't support asynchronously asking for the PIN, ask now.
     this.fetchPin_(this.connectToHost_.bind(this));
@@ -793,7 +805,7 @@ remoting.ClientSession.prototype.onConnectionReady_ = function(ready) {
   } else {
     this.plugin.element().classList.remove("session-client-inactive");
   }
-}
+};
 
 /**
  * Called when the client-host capabilities negotiation is complete.

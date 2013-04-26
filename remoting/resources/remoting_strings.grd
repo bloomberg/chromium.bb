@@ -142,6 +142,9 @@
         <message desc="Text shown when the app first starts, or if the access token is invalidated, explaining the need to authorize the Chrome Remote Desktop app before use." name="IDR_DESCRIPTION_AUTHORIZE">
           To use Chrome Remote Desktop you must grant extended access permissions to your computer. You only have to do this once.
         </message>
+        <message desc="Confirmation prompt shown when a user needs to authenticate against a third party, explaining the need to authorize the Chrome Remote Desktop app to access the authentication URL." name="IDR_DESCRIPTION_THIRD_PARTY_AUTH">
+          The remote host requires you to authenticate to a third-party website. To continue, you must grant Chrome Remote Desktop additional permissions to access this address:
+        </message>
         <message desc="Description for the home screen. This is shown when the app starts up, above buttons to share or connect." name="IDR_DESCRIPTION_HOME">
           Chrome Remote Desktop allows you to securely share your computer over the Web. Both users must be running the Chrome Remote Desktop app, which can be found at <ph name="URL">$1<ex>&lt;a href=http://chrome.google.com/remotedesktop&gt;chrome.google.com/remotedesktop&lt;/a&gt;</ex></ph>.
         </message>
@@ -204,6 +207,9 @@
         </message>
         <message desc="Text shown when the app first starts, or if the access token is invalidated, explaining the need to authorize the Chromoting app before use." name="IDR_DESCRIPTION_AUTHORIZE">
           To use Chromoting you must grant extended access permissions to your computer. You only have to do this once.
+        </message>
+        <message desc="Confirmation prompt shown when a user needs to authenticate against a third party, explaining the need to authorize the Chromoting app to access the authentication URL." name="IDR_DESCRIPTION_THIRD_PARTY_AUTH">
+          The remote host requires you to authenticate to a third-party website. To continue, you must grant Chromoting additional permissions to access this address:
         </message>
         <message desc="Description for the home screen. This is shown when the app starts up, above buttons to share or connect." name="IDR_DESCRIPTION_HOME">
           Chromoting allows you to securely share your computer over the Web. Both users must be running the Chromoting app, which can be found at <ph name="URL">$1<ex>&lt;a href=http://chrome.google.com/remotedesktop&gt;chrome.google.com/remotedesktop&lt;/a&gt;</ex></ph>.

@@ -308,22 +308,12 @@ remoting.OAuth2.prototype.refreshAccessToken_ = function(onDone) {
 };
 
 /**
- * @private
- * @return {string} A URL-Safe Base64-encoded 128-bit random value. */
-remoting.OAuth2.prototype.generateXsrfToken_ = function() {
-  var random = new Uint8Array(16);
-  window.crypto.getRandomValues(random);
-  var base64Token = window.btoa(String.fromCharCode.apply(null, random));
-  return base64Token.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-};
-
-/**
  * Redirect page to get a new OAuth2 Refresh Token.
  *
  * @return {void} Nothing.
  */
 remoting.OAuth2.prototype.doAuthRedirect = function() {
-  var xsrf_token = this.generateXsrfToken_();
+  var xsrf_token = remoting.generateXsrfToken();
   window.localStorage.setItem(this.KEY_XSRF_TOKEN_, xsrf_token);
   var GET_CODE_URL = this.getOAuth2AuthEndpoint_() + '?' +
     remoting.xhr.urlencodeParamHash({

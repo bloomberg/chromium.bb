@@ -65,6 +65,7 @@ remoting.ClientPlugin.Feature = {
   PAUSE_AUDIO: 'pauseAudio',
   REMAP_KEY: 'remapKey',
   SEND_CLIPBOARD_ITEM: 'sendClipboardItem',
+  THIRD_PARTY_AUTH: 'thirdPartyAuth',
   TRAP_KEY: 'trapKey'
 };
 
@@ -189,3 +190,12 @@ remoting.ClientPlugin.prototype.onPinFetched = function(pin) {};
  * Tells the plugin to ask for the PIN asynchronously.
  */
 remoting.ClientPlugin.prototype.useAsyncPinDialog = function() {};
+
+/**
+ * Sets the third party authentication token and shared secret.
+ *
+ * @param {string} token The token received from the token URL.
+ * @param {string} sharedSecret Shared secret received from the token URL.
+ */
+remoting.ClientPlugin.prototype.onThirdPartyTokenFetched =
+    function(token, sharedSecret) {};

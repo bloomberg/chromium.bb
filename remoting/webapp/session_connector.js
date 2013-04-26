@@ -118,11 +118,17 @@ remoting.SessionConnector.prototype.reset = function() {
   this.pendingXhr_ = null;
 
   /**
-   * Function to interactively obtain the PIN from the user.
-   * @type {function(function(string):void):void}
+   * @type {function(function(string):void): void}
    * @private
    */
   this.fetchPin_ = function(onPinFetched) {};
+
+  /**
+   * @type {function(string, string, function(string, string):void): void}
+   * @private
+   */
+  this.fetchThirdPartyToken_ = function(
+      tokenUrl, scope, onThirdPartyTokenFetched) {};
 
   /**
    * Host 'name', as displayed in the client tool-bar. For a Me2Me connection,
@@ -141,15 +147,21 @@ remoting.SessionConnector.prototype.reset = function() {
  * @param {remoting.Host} host The Me2Me host to which to connect.
  * @param {function(function(string):void):void} fetchPin Function to
  *     interactively obtain the PIN from the user.
+ * @param {function(string, string, function(string, string): void): void}
+ *     fetchThirdPartyToken Function to obtain a token from a third party
+ *     authenticaiton server.
  * @return {void} Nothing.
  */
-remoting.SessionConnector.prototype.connectMe2Me = function(host, fetchPin) {
+remoting.SessionConnector.prototype.connectMe2Me = function(
+    host, fetchPin, fetchThirdPartyToken) {
   // Cancel any existing connect operation.
   this.cancel();
 
   this.hostId_ = host.hostId;
   this.hostJid_ = host.jabberId;
+  this.hostPublicKey_ = host.publicKey;
   this.fetchPin_ = fetchPin;
+  this.fetchThirdPartyToken_ = fetchThirdPartyToken;
   this.hostDisplayName_ = host.hostName;
   this.connectionMode_ = remoting.ClientSession.Mode.ME2ME;
   this.createSessionIfReady_();
@@ -299,11 +311,11 @@ remoting.SessionConnector.prototype.createSessionIfReady_ = function() {
     return;
   }
 
-  var securityTypes = 'spake2_hmac,spake2_plain';
+  var securityTypes = 'third_party,spake2_hmac,spake2_plain';
   this.clientSession_ = new remoting.ClientSession(
       this.hostJid_, this.clientJid_, this.hostPublicKey_, this.passPhrase_,
-      this.fetchPin_, securityTypes, this.hostId_, this.connectionMode_,
-      this.hostDisplayName_);
+      this.fetchPin_, this.fetchThirdPartyToken_, securityTypes, this.hostId_,
+      this.connectionMode_, this.hostDisplayName_);
   this.clientSession_.logHostOfflineErrors(!this.refreshHostJidIfOffline_);
   this.clientSession_.setOnStateChange(this.onStateChange_.bind(this));
   this.clientSession_.createPluginAndConnect(this.pluginParent_);
@@ -393,7 +405,7 @@ remoting.SessionConnector.prototype.onHostListRefresh_ = function(success) {
   if (success) {
     var host = remoting.hostList.getHostForId(this.hostId_);
     if (host) {
-      this.connectMe2Me(host, this.fetchPin_);
+      this.connectMe2Me(host, this.fetchPin_, this.fetchThirdPartyToken_);
       return;
     }
   }

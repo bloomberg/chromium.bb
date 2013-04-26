@@ -251,6 +251,19 @@ remoting.connectMe2MeHostVersionAcknowledged_ = function(host) {
   }
   remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
 
+/**
+ * @param {string} tokenUrl Token-issue URL received from the host.
+ * @param {string} scope OAuth scope to request the token for.
+ * @param {function(string, string):void} onThirdPartyTokenFetched Callback.
+ */
+  var fetchThirdPartyToken = function(
+      tokenUrl, hostPublicKey, scope, onThirdPartyTokenFetched) {
+    var thirdPartyTokenFetcher = new remoting.ThirdPartyTokenFetcher(
+        tokenUrl, hostPublicKey, scope, host.tokenUrlPatterns,
+        onThirdPartyTokenFetched);
+    thirdPartyTokenFetcher.fetchToken();
+  };
+
   /** @param {function(string):void} onPinFetched */
   var requestPin = function(onPinFetched) {
     /** @type {Element} */
@@ -286,7 +299,7 @@ remoting.connectMe2MeHostVersionAcknowledged_ = function(host) {
     l10n.localizeElement(message, host.hostName);
     remoting.setMode(remoting.AppMode.CLIENT_PIN_PROMPT);
   };
-  remoting.connector.connectMe2Me(host, requestPin);
+  remoting.connector.connectMe2Me(host, requestPin, fetchThirdPartyToken);
 };
 
 /** @param {remoting.ClientSession} clientSession */

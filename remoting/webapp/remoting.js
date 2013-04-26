@@ -382,3 +382,14 @@ function migrateLocalToChromeStorage_() {
     }
   }
 }
+
+/**
+ * Generate a nonce, to be used as an xsrf protection token.
+ *
+ * @return {string} A URL-Safe Base64-encoded 128-bit random value. */
+remoting.generateXsrfToken = function() {
+  var random = new Uint8Array(16);
+  window.crypto.getRandomValues(random);
+  var base64Token = window.btoa(String.fromCharCode.apply(null, random));
+  return base64Token.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+};

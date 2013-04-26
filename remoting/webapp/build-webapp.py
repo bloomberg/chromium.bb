@@ -242,6 +242,8 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
   else:
     oauth2RedirectUrlJs = "'" + oauth2RedirectBaseUrlJs + "/dev'"
     oauth2RedirectUrlJson = oauth2RedirectBaseUrlJson + '/dev*'
+  thirdPartyAuthUrlJs = "'" + oauth2RedirectBaseUrlJs + "/thirdpartyauth'"
+  thirdPartyAuthUrlJson = oauth2RedirectBaseUrlJson + '/thirdpartyauth*'
   findAndReplace(os.path.join(destination, 'plugin_settings.js'),
                  "'TALK_GADGET_URL'", "'" + talkGadgetBaseUrl + "'")
   findAndReplace(os.path.join(destination, 'plugin_settings.js'),
@@ -264,6 +266,12 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
                  "Boolean('XMPP_SERVER_USE_TLS')", xmppServerUseTls)
   findAndReplace(os.path.join(destination, 'plugin_settings.js'),
                  "'DIRECTORY_BOT_JID'", "'" + directoryBotJid + "'")
+  findAndReplace(os.path.join(destination, 'plugin_settings.js'),
+                 "'THIRD_PARTY_AUTH_REDIRECT_URL'",
+                 thirdPartyAuthUrlJs)
+  findAndReplace(os.path.join(destination, 'manifest.json'),
+                 "THIRD_PARTY_AUTH_REDIRECT_URL",
+                 thirdPartyAuthUrlJson)
 
   # Set the correct API keys.
   # For overriding the client ID/secret via env vars, see google_api_keys.py.

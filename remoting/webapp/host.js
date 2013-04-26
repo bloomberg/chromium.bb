@@ -30,6 +30,8 @@ remoting.Host = function() {
   this.publicKey = '';
   /** @type {string} */
   this.hostVersion = '';
+  /** @type {Array.<string>} */
+  this.tokenUrlPatterns = [];
 };
 
 /**

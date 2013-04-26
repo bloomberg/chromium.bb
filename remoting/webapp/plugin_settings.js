@@ -46,3 +46,8 @@ remoting.Settings.prototype.XMPP_SERVER_ADDRESS = 'XMPP_SERVER_ADDRESS';
 /** @type {boolean} Whether to use TLS on connections to the XMPP server. */
 remoting.Settings.prototype.XMPP_SERVER_USE_TLS =
     Boolean('XMPP_SERVER_USE_TLS');
+
+// Third party authentication settings.
+/** @type {string} The third party auth redirect URI. */
+remoting.Settings.prototype.THIRD_PARTY_AUTH_REDIRECT_URI =
+    'THIRD_PARTY_AUTH_REDIRECT_URL';

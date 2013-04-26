@@ -40,6 +40,13 @@ remoting.ClientPluginAsync = function(plugin) {
   this.onConnectionStatusUpdateHandler = function(state, error) {};
   /** @param {boolean} ready Connection ready state. */
   this.onConnectionReadyHandler = function(ready) {};
+  /**
+   * @param {string} tokenUrl Token-request URL, received from the host.
+   * @param {string} hostPublicKey Public key for the host.
+   * @param {string} scope OAuth scope to request the token for.
+   */
+  this.fetchThirdPartyTokenHandler = function(
+    tokenUrl, hostPublicKey, scope) {};
   this.onDesktopSizeUpdateHandler = function () {};
   /** @param {!Array.<string>} capabilities The negotiated capabilities. */
   this.onSetCapabilitiesHandler = function (capabilities) {};
@@ -266,6 +273,18 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(messageStr) {
     /** @type {!Array.<string>} */
     var capabilities = tokenize(message.data['capabilities']);
     this.onSetCapabilitiesHandler(capabilities);
+  } else if (message.method == 'fetchThirdPartyToken') {
+    if (typeof message.data['tokenUrl'] != 'string' ||
+        typeof message.data['hostPublicKey'] != 'string' ||
+        typeof message.data['scope'] != 'string') {
+      console.error('Received incorrect fetchThirdPartyToken message.');
+      return;
+    }
+    var tokenUrl = /** @type {string} */ message.data['tokenUrl'];
+    var hostPublicKey =
+        /** @type {string} */ message.data['hostPublicKey'];
+    var scope = /** @type {string} */ message.data['scope'];
+    this.fetchThirdPartyTokenHandler(tokenUrl, hostPublicKey, scope);
   }
 };
 
@@ -520,6 +539,19 @@ remoting.ClientPluginAsync.prototype.useAsyncPinDialog =
   }
   this.plugin.postMessage(JSON.stringify(
       { method: 'useAsyncPinDialog', data: {} }));
+};
+
+/**
+ * Sets the third party authentication token and shared secret.
+ *
+ * @param {string} token The token received from the token URL.
+ * @param {string} sharedSecret Shared secret received from the token URL.
+ */
+remoting.ClientPluginAsync.prototype.onThirdPartyTokenFetched = function(
+    token, sharedSecret) {
+  this.plugin.postMessage(JSON.stringify(
+    { method: 'onThirdPartyTokenFetched',
+      data: { token: token, sharedSecret: sharedSecret}}));
 };
 
 /**

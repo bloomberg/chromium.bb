@@ -104,7 +104,12 @@ chrome.experimental.identity = {
    * @param {Object.<string>} parameters
    * @param {function(string):void} callback
    */
-  getAuthToken: function(parameters, callback) {}
+  getAuthToken: function(parameters, callback) {},
+  /**
+   * @param {Object.<string>} parameters
+   * @param {function(string):void} callback
+   */
+  launchWebAuthFlow: function(parameters, callback) {}
 };
 
 /** @constructor */
@@ -112,6 +117,9 @@ chrome.Event = function() {};
 
 /** @param {function():void} callback */
 chrome.Event.prototype.addListener = function(callback) {};
+
+/** @param {function():void} callback */
+chrome.Event.prototype.removeListener = function(callback) {};
 
 /** @constructor */
 chrome.extension.Port = function() {};
@@ -171,4 +179,24 @@ chrome.Window = function() {
   this.state = '';
   /** @type {string} */
   this.type = '';
+};
+
+/** @param {string} message*/
+chrome.extension.sendMessage = function(message) {}
+
+/** @type {chrome.Event} */
+chrome.extension.onMessage;
+
+/** @type {Object} */
+chrome.permissions = {
+  /**
+   * @param {Object.<string>} permissions
+   * @param {function(boolean):void} callback
+   */
+  contains: function(permissions, callback) {},
+/**
+ * @param {Object.<string>} permissions
+ * @param {function(boolean):void} callback
+ */
+  request: function(permissions, callback) {}
 };

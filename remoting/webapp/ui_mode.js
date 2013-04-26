@@ -31,6 +31,7 @@ remoting.AppMode = {
     CLIENT: 'home.client',
       CLIENT_UNCONNECTED: 'home.client.unconnected',
       CLIENT_PIN_PROMPT: 'home.client.pin-prompt',
+      CLIENT_THIRD_PARTY_AUTH: 'home.client.third-party-auth',
       CLIENT_CONNECTING: 'home.client.connecting',
       CLIENT_CONNECT_FAILED_IT2ME: 'home.client.connect-failed.it2me',
       CLIENT_CONNECT_FAILED_ME2ME: 'home.client.connect-failed.me2me',
