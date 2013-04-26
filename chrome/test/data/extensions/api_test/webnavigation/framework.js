@@ -253,7 +253,6 @@ function navigationOrder(prefix) {
 function isIFrameOf(iframe, main_frame) {
   return [ main_frame + "onCommitted",
            iframe + "onBeforeNavigate",
-           main_frame + "onDOMContentLoaded",
            iframe + "onCompleted",
            main_frame + "onCompleted" ];
 }

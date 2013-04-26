@@ -450,8 +450,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, IFrame) {
       RunExtensionSubtest("webnavigation", "test_iframe.html")) << message_;
 }
 
-// Disabled due to flakiness on all platforms: http://crbug.com/235514
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, DISABLED_SrcDoc) {
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, SrcDoc) {
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_srcdoc.html")) << message_;
 }
