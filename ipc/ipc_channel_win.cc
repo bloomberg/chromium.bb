@@ -36,8 +36,8 @@ Channel::ChannelImpl::State::~State() {
 Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle &channel_handle,
                                   Mode mode, Listener* listener)
     : ChannelReader(listener),
-      ALLOW_THIS_IN_INITIALIZER_LIST(input_state_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(output_state_(this)),
+      input_state_(this),
+      output_state_(this),
       pipe_(INVALID_HANDLE_VALUE),
       peer_pid_(base::kNullProcessId),
       waiting_connect_(mode & MODE_SERVER_FLAG),
