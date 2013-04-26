@@ -213,18 +213,12 @@ bool WebRuntimeFeatures::isFileSystemEnabled()
 
 void WebRuntimeFeatures::enableJavaScriptI18NAPI(bool enable)
 {
-#if ENABLE(JAVASCRIPT_I18N_API)
     RuntimeEnabledFeatures::setJavaScriptI18NAPIEnabled(enable);
-#endif
 }
 
 bool WebRuntimeFeatures::isJavaScriptI18NAPIEnabled()
 {
-#if ENABLE(JAVASCRIPT_I18N_API)
     return RuntimeEnabledFeatures::javaScriptI18NAPIEnabled();
-#else
-    return false;
-#endif
 }
 
 void WebRuntimeFeatures::enableQuota(bool enable)
@@ -239,38 +233,22 @@ bool WebRuntimeFeatures::isQuotaEnabled()
 
 void WebRuntimeFeatures::enableMediaStream(bool enable)
 {
-#if ENABLE(MEDIA_STREAM)
     RuntimeEnabledFeatures::setMediaStreamEnabled(enable);
-#else
-    UNUSED_PARAM(enable);
-#endif
 }
 
 bool WebRuntimeFeatures::isMediaStreamEnabled()
 {
-#if ENABLE(MEDIA_STREAM)
     return RuntimeEnabledFeatures::mediaStreamEnabled();
-#else
-    return false;
-#endif
 }
 
 void WebRuntimeFeatures::enablePeerConnection(bool enable)
 {
-#if ENABLE(MEDIA_STREAM)
     RuntimeEnabledFeatures::setPeerConnectionEnabled(enable);
-#else
-    UNUSED_PARAM(enable);
-#endif
 }
 
 bool WebRuntimeFeatures::isPeerConnectionEnabled()
 {
-#if ENABLE(MEDIA_STREAM)
     return RuntimeEnabledFeatures::peerConnectionEnabled();
-#else
-    return false;
-#endif
 }
 
 void WebRuntimeFeatures::enableFullScreenAPI(bool enable)
@@ -295,20 +273,12 @@ bool WebRuntimeFeatures::isMediaSourceEnabled()
 
 void WebRuntimeFeatures::enableEncryptedMedia(bool enable)
 {
-#if ENABLE(ENCRYPTED_MEDIA)
     RuntimeEnabledFeatures::setEncryptedMediaEnabled(enable);
-#else
-    UNUSED_PARAM(enable);
-#endif
 }
 
 bool WebRuntimeFeatures::isEncryptedMediaEnabled()
 {
-#if ENABLE(ENCRYPTED_MEDIA)
     return RuntimeEnabledFeatures::encryptedMediaEnabled();
-#else
-    return false;
-#endif
 }
 
 void WebRuntimeFeatures::enableVideoTrack(bool enable)
@@ -343,14 +313,13 @@ bool WebRuntimeFeatures::isExperimentalShadowDOMEnabled()
 
 void WebRuntimeFeatures::enableCustomDOMElements(bool enable)
 {
-    RuntimeEnabledFeatures::setCustomDOMElements(enable);
+    RuntimeEnabledFeatures::setCustomDOMElementsEnabled(enable);
 }
 
 bool WebRuntimeFeatures::isCustomDOMElementsEnabled()
 {
     return RuntimeEnabledFeatures::customDOMElementsEnabled();
 }
-
 
 void WebRuntimeFeatures::enableStyleScoped(bool enable)
 {
@@ -364,20 +333,12 @@ bool WebRuntimeFeatures::isStyleScopedEnabled()
 
 void WebRuntimeFeatures::enableInputTypeDateTime(bool enable)
 {
-#if ENABLE(INPUT_TYPE_DATETIME_INCOMPLETE)
     RuntimeEnabledFeatures::setInputTypeDateTimeEnabled(enable);
-#else
-    UNUSED_PARAM(enable);
-#endif
 }
 
 bool WebRuntimeFeatures::isInputTypeDateTimeEnabled()
 {
-#if ENABLE(INPUT_TYPE_DATETIME_INCOMPLETE)
     return RuntimeEnabledFeatures::inputTypeDateTimeEnabled();
-#else
-    return false;
-#endif
 }
 
 void WebRuntimeFeatures::enableInputTypeWeek(bool enable)

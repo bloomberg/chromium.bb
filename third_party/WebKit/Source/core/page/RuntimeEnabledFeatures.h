@@ -146,11 +146,17 @@ public:
 #if ENABLE(MEDIA_STREAM)
     static void setMediaStreamEnabled(bool isEnabled) { isMediaStreamEnabled = isEnabled; }
     static bool mediaStreamEnabled() { return isMediaStreamEnabled; }
+#else
+    static void setMediaStreamEnabled(bool) { }
+    static bool mediaStreamEnabled() { return false; }
 #endif
 
 #if ENABLE(MEDIA_STREAM)
     static void setPeerConnectionEnabled(bool isEnabled) { isPeerConnectionEnabled = isEnabled; }
     static bool peerConnectionEnabled() { return isMediaStreamEnabled && isPeerConnectionEnabled; }
+#else
+    static void setPeerConnectionEnabled(bool) { }
+    static bool peerConnectionEnabled() { return false; }
 #endif
 
     static void setWebkitGetGamepadsEnabled(bool isEnabled) { isWebkitGetGamepadsEnabled = isEnabled; }
@@ -179,7 +185,7 @@ public:
     static void setAuthorShadowDOMForAnyElementEnabled(bool isEnabled) { isAuthorShadowDOMForAnyElementEnabled = isEnabled; }
     static bool authorShadowDOMForAnyElementEnabled() { return isAuthorShadowDOMForAnyElementEnabled; }
 
-    static void setCustomDOMElements(bool isEnabled) { isCustomDOMElementsEnabled = isEnabled; }
+    static void setCustomDOMElementsEnabled(bool isEnabled) { isCustomDOMElementsEnabled = isEnabled; }
     static bool customDOMElementsEnabled() { return isCustomDOMElementsEnabled; }
 
     static void setStyleScopedEnabled(bool isEnabled) { isStyleScopedEnabled = isEnabled; }
