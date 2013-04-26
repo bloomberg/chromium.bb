@@ -45,8 +45,6 @@
 #include <public/WebExternalTextureLayer.h>
 #include <public/WebGraphicsContext3D.h>
 
-#define USES_MAILBOX 0
-
 using namespace std;
 
 namespace WebCore {
@@ -134,11 +132,11 @@ DrawingBuffer::DrawingBuffer(GraphicsContext3D* context,
 {
     // Used by browser tests to detect the use of a DrawingBuffer.
     TRACE_EVENT_INSTANT0("test_gpu", "DrawingBufferCreation");
-#if !USES_MAILBOX
+#if !ENABLE(CANVAS_USES_MAILBOX)
     // We need a separate front and back textures if ...
     m_separateFrontTexture = m_preserveDrawingBuffer == Preserve // ... we have to preserve contents after compositing, which is done with a copy or ...
                              || WebKit::Platform::current()->isThreadedCompositingEnabled(); // ... if we're in threaded mode and need to double buffer.
-#endif // USES_MAILBOX
+#endif // !ENABLE(CANVAS_USES_MAILBOX)
     initialize(size);
 }
 
@@ -302,9 +300,9 @@ void DrawingBuffer::initialize(const IntSize& size)
     m_context->framebufferTexture2D(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::COLOR_ATTACHMENT0, GraphicsContext3D::TEXTURE_2D, m_colorBuffer, 0);
     createSecondaryBuffers();
     reset(size);
-#if USES_MAILBOX
+#if ENABLE(CANVAS_USES_MAILBOX)
     m_lastColorBuffer = createNewMailbox(m_colorBuffer);
-#endif // USES_MAILBOX
+#endif // ENABLE(CANVAS_USES_MAILBOX)
 }
 
 void DrawingBuffer::prepareBackBuffer()
@@ -353,11 +351,11 @@ Platform3DObject DrawingBuffer::framebuffer() const
 PlatformLayer* DrawingBuffer::platformLayer()
 {
     if (!m_layer){
-#if USES_MAILBOX
+#if ENABLE(CANVAS_USES_MAILBOX)
         m_layer = adoptPtr(WebKit::Platform::current()->compositorSupport()->createExternalTextureLayerForMailbox(this));
 #else
         m_layer = adoptPtr(WebKit::Platform::current()->compositorSupport()->createExternalTextureLayer(this));
-#endif // USES_MAILBOX
+#endif // ENABLE(CANVAS_USES_MAILBOX)
 
         GraphicsContext3D::Attributes attributes = m_context->getContextAttributes();
         m_layer->setOpaque(!attributes.alpha);
@@ -374,7 +372,7 @@ void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
         return;
 
     Extensions3D* extensions = m_context->getExtensions();
-#if USES_MAILBOX
+#if ENABLE(CANVAS_USES_MAILBOX)
     // Since the m_frontColorBuffer was produced and sent to the compositor, it cannot be bound to an fbo.
     // We have to make a copy of it here and bind that copy instead.
     unsigned sourceTexture = createColorTexture(m_size);
@@ -383,7 +381,7 @@ void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
     // FIXME: Re-examine general correctness of this code beacause m_colorBuffer may contain a stale copy of the data
     // that was sent to the compositor at some point in the past.
     unsigned sourceTexture = frontColorBuffer();
-#endif // USES_MAILBOX
+#endif // ENABLE(CANVAS_USES_MAILBOX)
 
     // Since we're using the same context as WebGL, we have to restore any state we change (in this case, just the framebuffer binding).
     // FIXME: The WebGLRenderingContext tracks the current framebuffer binding, it would be slightly more efficient to use this value
@@ -397,9 +395,9 @@ void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
 
     extensions->paintFramebufferToCanvas(framebuffer, size().width(), size().height(), !m_context->getContextAttributes().premultipliedAlpha, imageBuffer);
     m_context->deleteFramebuffer(framebuffer);
-#if USES_MAILBOX
+#if ENABLE(CANVAS_USES_MAILBOX)
     m_context->deleteTexture(sourceTexture);
-#endif // USES_MAILBOX
+#endif // ENABLE(CANVAS_USES_MAILBOX)
 
     m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, previousFramebuffer);
 }
@@ -419,7 +417,7 @@ void DrawingBuffer::clear()
 
         clearPlatformLayer();
 
-#if !USES_MAILBOX
+#if !ENABLE(CANVAS_USES_MAILBOX)
         if (m_colorBuffer)
             m_context->deleteTexture(m_colorBuffer);
 
@@ -428,7 +426,7 @@ void DrawingBuffer::clear()
 #else
         for (size_t i = 0; i < m_textureMailboxes.size(); i++)
             m_context->deleteTexture(m_textureMailboxes[i]->textureId);
-#endif // !USES_MAILBOX
+#endif // !ENABLE(CANVAS_USES_MAILBOX)
 
         if (m_multisampleColorBuffer)
             m_context->deleteRenderbuffer(m_multisampleColorBuffer);
@@ -461,11 +459,11 @@ void DrawingBuffer::clear()
     m_fbo = 0;
     m_contextEvictionManager.clear();
 
-#if USES_MAILBOX
+#if ENABLE(CANVAS_USES_MAILBOX)
     m_lastColorBuffer.clear();
     m_recycledMailboxes.clear();
     m_textureMailboxes.clear();
-#endif  // USES_MAILBOX
+#endif  // ENABLE(CANVAS_USES_MAILBOX)
 }
 
 unsigned DrawingBuffer::createColorTexture(const IntSize& size)

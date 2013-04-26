@@ -34,6 +34,7 @@
     'feature_defines': [
       'ENABLE_3D_PLUGIN=1',
       'ENABLE_BATTERY_STATUS=0',
+      'ENABLE_CANVAS_USES_MAILBOX=0',
       'ENABLE_CANVAS_PROXY=1',
       'ENABLE_CHANNEL_MESSAGING=1',
       'ENABLE_CSS3_TEXT=0',
