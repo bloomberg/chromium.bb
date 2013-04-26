@@ -15,7 +15,6 @@
 
 #ifdef __native_client__
 #include <errno.h>
-#include <machine/_types.h>
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 #else
 #include "native_client/src/trusted/desc/nacl_desc_base.h"

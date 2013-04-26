@@ -31,11 +31,6 @@
  * TODO(mseaborn): Fix problems with these headers.
  */
 # include <errno.h>
-/**
- * Note: nacl/nacl_inttypes.h must be included last...
- * after all other types headers.
- */
-#include <machine/_types.h>
 # define NACL_ABI_EIO EIO
 # define NACL_ABI_EINVAL EINVAL
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"

@@ -20,13 +20,13 @@
 #include <stdio.h>
 
 #include "native_client/src/include/nacl_base.h"
+#include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 
 /*
  * TODO(sehr) break this file into separate files for sdk and service_runtime
  * inclusion.
  */
 #ifdef __native_client__
-#  include <machine/_types.h>
 /**
  * Contains a file descriptor for use as an IMC channel.
  */
@@ -34,7 +34,6 @@ typedef int NaClSrpcImcDescType;
 #define kNaClSrpcInvalidImcDesc -1
 #else
 #  include "native_client/src/include/portability.h"
-#  include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 /*
  * In trusted code we use a NaClDesc to describe the IMC channel.
  * It is this difference between trusted and untrusted code that motivated
