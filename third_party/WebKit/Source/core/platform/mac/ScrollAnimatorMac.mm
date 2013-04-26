@@ -38,6 +38,7 @@
 #include "core/platform/ScrollableArea.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/FloatPoint.h"
+#include <wtf/MainThread.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/UnusedParam.h>
 
@@ -275,6 +276,13 @@ static NSSize abs(NSSize size)
 
 - (void)scrollerImpPair:(id)scrollerImpPair updateScrollerStyleForNewRecommendedScrollerStyle:(NSScrollerStyle)newRecommendedScrollerStyle
 {
+    // Chrome has a single process mode which is used for testing on Mac. In that mode, WebKit runs on a thread in the
+    // browser process. This notification is called by the OS on the main thread in the browser process, and not on the
+    // the WebKit thread. Better to not update the style than crash.
+    // http://crbug.com/126514
+    if (!isMainThread())
+        return;
+
     if (!_scrollableArea)
         return;
 
