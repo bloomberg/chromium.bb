@@ -315,6 +315,10 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Sets the CVC result on |form_structure_| to the value in |cvc|.
   void SetCvcResult(const string16& cvc);
 
+  // Gets the name from SECTION_CC (if that section is active). This might
+  // come from manual user input or the active suggestion.
+  string16 GetCcName();
+
   // Gets the SuggestionsMenuModel for |section|.
   SuggestionsMenuModel* SuggestionsMenuModelForSection(DialogSection section);
   const SuggestionsMenuModel* SuggestionsMenuModelForSection(

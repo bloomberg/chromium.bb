@@ -555,6 +555,54 @@ TEST_F(AutofillDialogControllerTest, EditAutofillProfile) {
   }
 }
 
+// Tests that adding an autofill profile and then submitting works.
+TEST_F(AutofillDialogControllerTest, AddAutofillProfile) {
+  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
+
+  AutofillProfile full_profile(test::GetFullProfile());
+  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+
+  ui::MenuModel* model = controller()->MenuModelForSection(SECTION_BILLING);
+  // Activate the "Add billing address" menu item.
+  model->ActivatedAt(model->GetItemCount() - 2);
+
+  // Fill in the inputs from the profile.
+  DetailOutputMap outputs;
+  const DetailInputs& inputs =
+      controller()->RequestedFieldsForSection(SECTION_BILLING);
+  AutofillProfile full_profile2(test::GetFullProfile2());
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    const DetailInput& input = inputs[i];
+    outputs[&input] = full_profile2.GetInfo(input.type, "en-US");
+  }
+  controller()->GetView()->SetUserInput(SECTION_BILLING, outputs);
+
+  // Fill in some CC info. The name field will be used to fill in the billing
+  // address name in the newly minted AutofillProfile.
+  DetailOutputMap cc_outputs;
+  const DetailInputs& cc_inputs =
+      controller()->RequestedFieldsForSection(SECTION_CC);
+  for (size_t i = 0; i < cc_inputs.size(); ++i) {
+    cc_outputs[&cc_inputs[i]] = cc_inputs[i].type == CREDIT_CARD_NAME ?
+        ASCIIToUTF16("Bill Money") : ASCIIToUTF16("111");
+  }
+  controller()->GetView()->SetUserInput(SECTION_CC, cc_outputs);
+
+  controller()->OnAccept();
+  const AutofillProfile& added_profile =
+      controller()->GetTestingManager()->imported_profile();
+
+  const DetailInputs& shipping_inputs =
+      controller()->RequestedFieldsForSection(SECTION_SHIPPING);
+  for (size_t i = 0; i < shipping_inputs.size(); ++i) {
+    const DetailInput& input = shipping_inputs[i];
+    string16 expected = input.type == NAME_FULL ?
+        ASCIIToUTF16("Bill Money") :
+        full_profile2.GetInfo(input.type, "en-US");
+    EXPECT_EQ(expected, added_profile.GetInfo(input.type, "en-US"));
+  }
+}
+
 TEST_F(AutofillDialogControllerTest, VerifyCvv) {
   SetUpWallet();
 

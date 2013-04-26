@@ -52,6 +52,23 @@ AutofillProfile GetFullProfile() {
   return profile;
 }
 
+AutofillProfile GetFullProfile2() {
+  AutofillProfile profile(base::GenerateGUID());
+  SetProfileInfo(&profile,
+                 "Jane",
+                 "A.",
+                 "Smith",
+                 "jsmith@example.com",
+                 "ACME",
+                 "123 Main Street",
+                 "Unit 1",
+                 "Greensdale", "MI",
+                 "48838",
+                 "US",
+                 "13105557889");
+  return profile;
+}
+
 void SetProfileInfo(AutofillProfile* profile,
     const char* first_name, const char* middle_name,
     const char* last_name, const char* email, const char* company,

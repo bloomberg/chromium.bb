@@ -149,9 +149,9 @@ void FillFormGroupFromOutputs(const DetailOutputMap& detail_outputs,
   for (DetailOutputMap::const_iterator iter = detail_outputs.begin();
        iter != detail_outputs.end(); ++iter) {
     if (!iter->second.empty()) {
-      if (iter->first->type == ADDRESS_HOME_COUNTRY ||
-          iter->first->type == ADDRESS_BILLING_COUNTRY) {
-        form_group->SetInfo(iter->first->type,
+      AutofillFieldType type = iter->first->type;
+      if (type == ADDRESS_HOME_COUNTRY || type == ADDRESS_BILLING_COUNTRY) {
+        form_group->SetInfo(type,
                             iter->second,
                             g_browser_process->GetApplicationLocale());
       } else {
@@ -1894,6 +1894,10 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
       AutofillProfile profile;
       FillFormGroupFromOutputs(output, &profile);
 
+      // For billing, the profile name has to come from the CC section.
+      if (section == SECTION_BILLING)
+        profile.SetRawInfo(NAME_FULL, GetCcName());
+
       if (ShouldSaveDetailsLocally())
         GetManager()->SaveImportedProfile(profile);
 
@@ -1934,6 +1938,21 @@ void AutofillDialogControllerImpl::SetCvcResult(const string16& cvc) {
       break;
     }
   }
+}
+
+string16 AutofillDialogControllerImpl::GetCcName() {
+  DCHECK(SectionIsActive(SECTION_CC));
+
+  CreditCard card;
+  scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(SECTION_CC);
+  if (!wrapper) {
+    DetailOutputMap output;
+    view_->GetUserInput(SECTION_CC, &output);
+    FillFormGroupFromOutputs(output, &card);
+    wrapper.reset(new AutofillCreditCardWrapper(&card));
+  }
+
+  return wrapper->GetInfo(CREDIT_CARD_NAME);
 }
 
 SuggestionsMenuModel* AutofillDialogControllerImpl::
