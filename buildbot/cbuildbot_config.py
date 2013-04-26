@@ -76,11 +76,12 @@ def OverrideConfigForTrybot(build_config, options):
       if not my_config['hw_tests']:
         my_config['hw_tests'] = HWTestConfig.DefaultList(
             num=constants.HWTEST_TRYBOT_NUM, pool=constants.HWTEST_TRYBOT_POOL,
-            file_bugs=False)
+            critical=True, file_bugs=False)
       else:
         for hw_config in my_config['hw_tests']:
           hw_config.num = constants.HWTEST_TRYBOT_NUM
           hw_config.pool = constants.HWTEST_TRYBOT_POOL
+          hw_config.critical = True
           hw_config.file_bugs = False
 
     # Default to starting with a fresh chroot on remote trybot runs.
