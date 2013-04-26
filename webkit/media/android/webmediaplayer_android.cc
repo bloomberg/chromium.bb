@@ -13,9 +13,13 @@
 #include "media/base/android/media_player_bridge.h"
 #include "media/base/video_frame.h"
 #include "net/base/mime_util.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/compositor_bindings/web_layer_impl.h"
 #include "webkit/media/android/webmediaplayer_manager_android.h"
+#include "webkit/media/android/webmediaplayer_proxy_android.h"
 #include "webkit/media/media_switches.h"
 #include "webkit/media/webmediaplayer_util.h"
 
@@ -32,10 +36,13 @@ using media::VideoFrame;
 namespace webkit_media {
 
 WebMediaPlayerAndroid::WebMediaPlayerAndroid(
+    WebKit::WebFrame* frame,
     WebKit::WebMediaPlayerClient* client,
     WebMediaPlayerManagerAndroid* manager,
+    WebMediaPlayerProxyAndroid* proxy,
     StreamTextureFactory* factory)
-    : client_(client),
+    : frame_(frame),
+      client_(client),
       buffered_(1u),
       main_loop_(base::MessageLoop::current()),
       pending_seek_(0),
@@ -49,7 +56,9 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       has_size_info_(false),
       stream_texture_factory_(factory),
       needs_external_surface_(false),
-      video_frame_provider_client_(NULL) {
+      video_frame_provider_client_(NULL),
+      proxy_(proxy),
+      current_time_(0) {
   main_loop_->AddDestructionObserver(this);
   if (manager_)
     player_id_ = manager_->RegisterMediaPlayer(this);
@@ -64,6 +73,9 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
 WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
   SetVideoFrameProviderClient(NULL);
   client_->setWebLayer(NULL);
+
+  if (proxy_)
+    proxy_->DestroyPlayer(player_id_);
 
   if (stream_id_)
     stream_texture_factory_->DestroyStreamTexture(texture_id_);
@@ -80,8 +92,15 @@ void WebMediaPlayerAndroid::load(const WebURL& url, CORSMode cors_mode) {
     NOTIMPLEMENTED() << "No CORS support";
 
   url_ = url;
+  GURL first_party_url = frame_->document().firstPartyForCookies();
+  if (proxy_) {
+    proxy_->Initialize(player_id_, url_, first_party_url);
+    if (manager_->IsInFullscreen(frame_))
+      proxy_->EnterFullscreen(player_id_);
+  }
 
-  InitializeMediaPlayer(url_);
+  UpdateNetworkState(WebMediaPlayer::NetworkStateLoading);
+  UpdateReadyState(WebMediaPlayer::ReadyStateHaveNothing);
 }
 
 void WebMediaPlayerAndroid::load(const WebURL& url,
@@ -98,18 +117,21 @@ void WebMediaPlayerAndroid::play() {
 #if defined(GOOGLE_TV)
   if (hasVideo() && needs_external_surface_) {
     DCHECK(!needs_establish_peer_);
-    RequestExternalSurface();
+    if (proxy_)
+      proxy_->RequestExternalSurface(player_id_);
   }
 #endif
   if (hasVideo() && needs_establish_peer_)
     EstablishSurfaceTexturePeer();
 
-  PlayInternal();
+  if (paused() && proxy_)
+    proxy_->Start(player_id_);
   is_playing_ = true;
 }
 
 void WebMediaPlayerAndroid::pause() {
-  PauseInternal();
+  if (proxy_)
+    proxy_->Pause(player_id_);
   is_playing_ = false;
 }
 
@@ -117,7 +139,8 @@ void WebMediaPlayerAndroid::seek(double seconds) {
   pending_seek_ = seconds;
   seeking_ = true;
 
-  SeekInternal(ConvertSecondsToTimestamp(seconds));
+  if (proxy_)
+    proxy_->Seek(player_id_, ConvertSecondsToTimestamp(seconds));
 }
 
 bool WebMediaPlayerAndroid::supportsFullscreen() const {
@@ -189,7 +212,7 @@ double WebMediaPlayerAndroid::currentTime() const {
   if (seeking())
     return pending_seek_;
 
-  return GetCurrentTimeInternal();
+  return current_time_;
 }
 
 int WebMediaPlayerAndroid::dataRate() const {
@@ -407,6 +430,41 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
   ReallocateVideoFrame();
 }
 
+void WebMediaPlayerAndroid::OnTimeUpdate(base::TimeDelta current_time) {
+  current_time_ = static_cast<float>(current_time.InSecondsF());
+}
+
+void WebMediaPlayerAndroid::OnDidEnterFullscreen() {
+  if (!manager_->IsInFullscreen(frame_)) {
+    frame_->view()->willEnterFullScreen();
+    frame_->view()->didEnterFullScreen();
+    manager_->DidEnterFullscreen(frame_);
+  }
+}
+
+void WebMediaPlayerAndroid::OnDidExitFullscreen() {
+  SetNeedsEstablishPeer(true);
+  // We had the fullscreen surface connected to Android MediaPlayer,
+  // so reconnect our surface texture for embedded playback.
+  if (!paused())
+    EstablishSurfaceTexturePeer();
+
+  frame_->view()->willExitFullScreen();
+  frame_->view()->didExitFullScreen();
+  manager_->DidExitFullscreen();
+  client_->repaint();
+}
+
+void WebMediaPlayerAndroid::OnMediaPlayerPlay() {
+  UpdatePlayingState(true);
+  client_->playbackStateChanged();
+}
+
+void WebMediaPlayerAndroid::OnMediaPlayerPause() {
+  UpdatePlayingState(false);
+  client_->playbackStateChanged();
+}
+
 void WebMediaPlayerAndroid::UpdateNetworkState(
     WebMediaPlayer::NetworkState state) {
   network_state_ = state;
@@ -442,7 +500,8 @@ void WebMediaPlayerAndroid::ReleaseMediaResources() {
     case WebMediaPlayer::NetworkStateDecodeError:
       break;
   }
-  ReleaseResourcesInternal();
+  if (proxy_)
+    proxy_->ReleaseResources(player_id_);
   OnPlayerReleased();
 }
 
@@ -454,16 +513,14 @@ void WebMediaPlayerAndroid::WillDestroyCurrentMessageLoop() {
 }
 
 void WebMediaPlayerAndroid::Detach() {
-  Destroy();
-
   if (stream_id_) {
     stream_texture_factory_->DestroyStreamTexture(texture_id_);
     stream_id_ = 0;
   }
 
   current_frame_ = NULL;
-
   manager_ = NULL;
+  proxy_ = NULL;
 }
 
 void WebMediaPlayerAndroid::ReallocateVideoFrame() {
@@ -547,5 +604,21 @@ bool WebMediaPlayerAndroid::RetrieveGeometryChange(gfx::RectF* rect) {
   return true;
 }
 #endif
+
+void WebMediaPlayerAndroid::enterFullscreen() {
+  if (proxy_ && manager_->CanEnterFullscreen(frame_)) {
+    proxy_->EnterFullscreen(player_id_);
+    SetNeedsEstablishPeer(false);
+  }
+}
+
+void WebMediaPlayerAndroid::exitFullscreen() {
+  if (proxy_)
+    proxy_->ExitFullscreen(player_id_);
+}
+
+bool WebMediaPlayerAndroid::canEnterFullscreen() const {
+  return manager_->CanEnterFullscreen(frame_);
+}
 
 }  // namespace webkit_media

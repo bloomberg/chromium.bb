@@ -11,14 +11,14 @@
 #include "webkit/media/android/webmediaplayer_proxy_android.h"
 
 namespace webkit_media {
-class WebMediaPlayerImplAndroid;
+class WebMediaPlayerAndroid;
 class WebMediaPlayerManagerAndroid;
 }
 
 namespace content {
 
 // This class manages all the IPC communications between
-// WebMediaPlayerImplAndroid and the MediaPlayerManagerAndroid in the browser
+// WebMediaPlayerAndroid and the MediaPlayerManagerAndroid in the browser
 // process.
 class WebMediaPlayerProxyImplAndroid
     : public RenderViewObserver,
@@ -26,7 +26,7 @@ class WebMediaPlayerProxyImplAndroid
  public:
   // Construct a WebMediaPlayerProxyImplAndroid object for the |render_view|.
   // |manager| is passed to this class so that it can find the right
-  // WebMediaPlayerImplAndroid using player IDs.
+  // WebMediaPlayerAndroid using player IDs.
   WebMediaPlayerProxyImplAndroid(
       RenderView* render_view,
       webkit_media::WebMediaPlayerManagerAndroid* manager);
@@ -52,7 +52,7 @@ class WebMediaPlayerProxyImplAndroid
 #endif
 
  private:
-  webkit_media::WebMediaPlayerImplAndroid* GetWebMediaPlayer(int player_id);
+  webkit_media::WebMediaPlayerAndroid* GetWebMediaPlayer(int player_id);
 
   // Message handlers.
   void OnMediaMetadataChanged(int player_id, base::TimeDelta duration,

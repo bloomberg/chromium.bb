@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "content/common/media/media_player_messages.h"
-#include "webkit/media/android/webmediaplayer_impl_android.h"
+#include "webkit/media/android/webmediaplayer_android.h"
 #include "webkit/media/android/webmediaplayer_manager_android.h"
 
 namespace content {
@@ -81,94 +81,82 @@ void WebMediaPlayerProxyImplAndroid::OnMediaMetadataChanged(
     int width,
     int height,
     bool success) {
-  webkit_media::WebMediaPlayerImplAndroid* player =
-      GetWebMediaPlayer(player_id);
+  webkit_media::WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
   if (player)
     player->OnMediaMetadataChanged(duration, width, height, success);
 }
 
 void WebMediaPlayerProxyImplAndroid::OnMediaPlaybackCompleted(
     int player_id) {
-  webkit_media::WebMediaPlayerImplAndroid* player =
-      GetWebMediaPlayer(player_id);
+  webkit_media::WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
   if (player)
     player->OnPlaybackComplete();
 }
 
 void WebMediaPlayerProxyImplAndroid::OnMediaBufferingUpdate(
     int player_id, int percent) {
-  webkit_media::WebMediaPlayerImplAndroid* player =
-      GetWebMediaPlayer(player_id);
+  webkit_media::WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
   if (player)
     player->OnBufferingUpdate(percent);
 }
 
 void WebMediaPlayerProxyImplAndroid::OnMediaSeekCompleted(
     int player_id, base::TimeDelta current_time) {
-  webkit_media::WebMediaPlayerImplAndroid* player =
-      GetWebMediaPlayer(player_id);
+  webkit_media::WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
   if (player)
     player->OnSeekComplete(current_time);
 }
 
 void WebMediaPlayerProxyImplAndroid::OnMediaError(
     int player_id, int error) {
-  webkit_media::WebMediaPlayerImplAndroid* player =
-      GetWebMediaPlayer(player_id);
+  webkit_media::WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
   if (player)
     player->OnMediaError(error);
 }
 
 void WebMediaPlayerProxyImplAndroid::OnVideoSizeChanged(
     int player_id, int width, int height) {
-  webkit_media::WebMediaPlayerImplAndroid* player =
-      GetWebMediaPlayer(player_id);
+  webkit_media::WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
   if (player)
     player->OnVideoSizeChanged(width, height);
 }
 
 void WebMediaPlayerProxyImplAndroid::OnTimeUpdate(
     int player_id, base::TimeDelta current_time) {
-  webkit_media::WebMediaPlayerImplAndroid* player =
-      GetWebMediaPlayer(player_id);
+  webkit_media::WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
   if (player)
     player->OnTimeUpdate(current_time);
 }
 
 void WebMediaPlayerProxyImplAndroid::OnMediaPlayerReleased(
     int player_id) {
-  webkit_media::WebMediaPlayerImplAndroid* player =
-      GetWebMediaPlayer(player_id);
+  webkit_media::WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
   if (player)
     player->OnPlayerReleased();
 }
 
 void WebMediaPlayerProxyImplAndroid::OnDidEnterFullscreen(
     int player_id) {
-  webkit_media::WebMediaPlayerImplAndroid* player =
-      GetWebMediaPlayer(player_id);
+  webkit_media::WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
   if (player)
     player->OnDidEnterFullscreen();
 }
 
 void WebMediaPlayerProxyImplAndroid::OnDidExitFullscreen(
     int player_id) {
-  webkit_media::WebMediaPlayerImplAndroid* player =
-      GetWebMediaPlayer(player_id);
+  webkit_media::WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
   if (player)
     player->OnDidExitFullscreen();
 }
 
 void WebMediaPlayerProxyImplAndroid::OnPlayerPlay(int player_id) {
-  webkit_media::WebMediaPlayerImplAndroid* player =
-      GetWebMediaPlayer(player_id);
+  webkit_media::WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
   if (player)
     player->OnMediaPlayerPlay();
 }
 
 void WebMediaPlayerProxyImplAndroid::OnPlayerPause(int player_id) {
-  webkit_media::WebMediaPlayerImplAndroid* player =
-      GetWebMediaPlayer(player_id);
+  webkit_media::WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
   if (player)
     player->OnMediaPlayerPause();
 }
@@ -199,9 +187,9 @@ void WebMediaPlayerProxyImplAndroid::DidCommitCompositorFrame() {
 }
 #endif
 
-webkit_media::WebMediaPlayerImplAndroid*
+webkit_media::WebMediaPlayerAndroid*
     WebMediaPlayerProxyImplAndroid::GetWebMediaPlayer(int player_id) {
-  return static_cast<webkit_media::WebMediaPlayerImplAndroid*>(
+  return static_cast<webkit_media::WebMediaPlayerAndroid*>(
       manager_->GetMediaPlayer(player_id));
 }
 

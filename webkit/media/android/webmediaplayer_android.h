@@ -20,6 +20,10 @@
 #include "ui/gfx/rect_f.h"
 #include "webkit/media/android/stream_texture_factory_android.h"
 
+namespace WebKit {
+class WebFrame;
+}
+
 namespace webkit {
 class WebLayerImpl;
 }
@@ -27,14 +31,36 @@ class WebLayerImpl;
 namespace webkit_media {
 
 class WebMediaPlayerManagerAndroid;
+class WebMediaPlayerProxyAndroid;
 
-// An abstract class that serves as the common base class for implementing
-// WebKit::WebMediaPlayer on Android.
+// This class implements WebKit::WebMediaPlayer by keeping the android
+// media player in the browser process. It listens to all the status changes
+// sent from the browser process and sends playback controls to the media
+// player.
 class WebMediaPlayerAndroid
     : public WebKit::WebMediaPlayer,
       public cc::VideoFrameProvider,
       public base::MessageLoop::DestructionObserver {
  public:
+  // Construct a WebMediaPlayerAndroid object. This class communicates
+  // with the MediaPlayerBridge object in the browser process through
+  // |proxy|.
+  // TODO(qinmin): |frame| argument is used to determine whether the current
+  // player can enter fullscreen. This logic should probably be moved into
+  // blink, so that enterFullscreen() will not be called if another video is
+  // already in fullscreen.
+  WebMediaPlayerAndroid(WebKit::WebFrame* frame,
+                        WebKit::WebMediaPlayerClient* client,
+                        WebMediaPlayerManagerAndroid* manager,
+                        WebMediaPlayerProxyAndroid* proxy,
+                        StreamTextureFactory* factory);
+  virtual ~WebMediaPlayerAndroid();
+
+  // WebKit::WebMediaPlayer implementation.
+  virtual void enterFullscreen();
+  virtual void exitFullscreen();
+  virtual bool canEnterFullscreen() const;
+
   // Resource loading.
   virtual void load(const WebKit::WebURL& url, CORSMode cors_mode);
   virtual void load(const WebKit::WebURL& url,
@@ -122,7 +148,13 @@ class WebMediaPlayerAndroid
   virtual void OnVideoSizeChanged(int width, int height);
 
   // Called to update the current time.
-  virtual void OnTimeUpdate(base::TimeDelta current_time) = 0;
+  virtual void OnTimeUpdate(base::TimeDelta current_time);
+
+  // Functions called when media player status changes.
+  void OnMediaPlayerPlay();
+  void OnMediaPlayerPause();
+  void OnDidEnterFullscreen();
+  void OnDidExitFullscreen();
 
   // Called when the player is released.
   virtual void OnPlayerReleased();
@@ -131,9 +163,6 @@ class WebMediaPlayerAndroid
   // video and release the media player and surface texture when we switch tabs.
   // However, the actual GlTexture is not released to keep the video screenshot.
   virtual void ReleaseMediaResources();
-
-  // Method to set the surface for video.
-  virtual void SetVideoSurface(jobject j_surface) = 0;
 
   // Method inherited from DestructionObserver.
   virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
@@ -149,62 +178,29 @@ class WebMediaPlayerAndroid
 #endif
 
  protected:
-  // Construct a WebMediaPlayerAndroid object with reference to the
-  // client, manager and stream texture factory.
-  WebMediaPlayerAndroid(WebKit::WebMediaPlayerClient* client,
-                        WebMediaPlayerManagerAndroid* manager,
-                        StreamTextureFactory* factory);
-  virtual ~WebMediaPlayerAndroid();
-
   // Helper method to update the playing state.
-  virtual void UpdatePlayingState(bool is_playing_);
+  void UpdatePlayingState(bool is_playing_);
 
   // Helper methods for posting task for setting states and update WebKit.
-  virtual void UpdateNetworkState(WebKit::WebMediaPlayer::NetworkState state);
-  virtual void UpdateReadyState(WebKit::WebMediaPlayer::ReadyState state);
+  void UpdateNetworkState(WebKit::WebMediaPlayer::NetworkState state);
+  void UpdateReadyState(WebKit::WebMediaPlayer::ReadyState state);
 
   // Helper method to reestablish the surface texture peer for android
   // media player.
-  virtual void EstablishSurfaceTexturePeer();
+  void EstablishSurfaceTexturePeer();
 
   // Requesting whether the surface texture peer needs to be reestablished.
-  virtual void SetNeedsEstablishPeer(bool needs_establish_peer);
-
-  // Method to be implemented by child classes.
-  // Initialize the media player bridge object.
-  virtual void InitializeMediaPlayer(GURL url) = 0;
-
-  // Inform the media player to start playing.
-  virtual void PlayInternal() = 0;
-
-  // Inform the media player to pause.
-  virtual void PauseInternal() = 0;
-
-  // Inform the media player to seek to a particular position.
-  virtual void SeekInternal(base::TimeDelta time) = 0;
-
-  // Get the current time from the media player.
-  virtual double GetCurrentTimeInternal() const = 0;
-
-  // Release the Android Media player.
-  virtual void ReleaseResourcesInternal() = 0;
-
-  // Cleaning up all remaining resources as this object is about to get deleted.
-  virtual void Destroy() = 0;
-
-  WebKit::WebMediaPlayerClient* client() { return client_; }
-
-  int player_id() const { return player_id_; }
-
-  WebMediaPlayerManagerAndroid* manager() const { return manager_; }
+  void SetNeedsEstablishPeer(bool needs_establish_peer);
 
 #if defined(GOOGLE_TV)
   // Request external surface for out-of-band composition.
-  virtual void RequestExternalSurface() = 0;
+  void RequestExternalSurface();
 #endif
 
  private:
   void ReallocateVideoFrame();
+
+  WebKit::WebFrame* const frame_;
 
   WebKit::WebMediaPlayerClient* const client_;
 
@@ -281,6 +277,16 @@ class WebMediaPlayerAndroid
   // time.
   gfx::RectF last_computed_rect_;
 #endif
+
+  // Proxy object that delegates method calls on Render Thread.
+  // This object is created on the Render Thread and is only called in the
+  // destructor.
+  WebMediaPlayerProxyAndroid* proxy_;
+
+  // The current playing time. Because the media player is in the browser
+  // process, it will regularly update the |current_time_| by calling
+  // OnTimeUpdate().
+  float current_time_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerAndroid);
 };

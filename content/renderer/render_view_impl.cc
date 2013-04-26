@@ -225,7 +225,6 @@
 #include "ui/gfx/rect_f.h"
 #include "webkit/media/android/media_player_bridge_manager_impl.h"
 #include "webkit/media/android/webmediaplayer_android.h"
-#include "webkit/media/android/webmediaplayer_impl_android.h"
 #include "webkit/media/android/webmediaplayer_manager_android.h"
 #elif defined(OS_WIN)
 // TODO(port): these files are currently Windows only because they concern:
@@ -2700,7 +2699,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
     media_player_proxy_ = new WebMediaPlayerProxyImplAndroid(
         this, media_player_manager_.get());
   }
-  return new webkit_media::WebMediaPlayerImplAndroid(
+  return new webkit_media::WebMediaPlayerAndroid(
       frame,
       client,
       media_player_manager_.get(),
