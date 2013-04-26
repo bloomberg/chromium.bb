@@ -9,6 +9,7 @@
 #include <set>
 #include <string>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -22,6 +23,7 @@ class GURL;
 class Profile;
 
 namespace content {
+class DevToolsAgentHost;
 class RenderViewHost;
 class SiteInstance;
 };
@@ -200,6 +202,8 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // started to show the app launcher.
   bool DeferLoadingBackgroundHosts() const;
 
+  void OnDevToolsStateChanged(content::DevToolsAgentHost*, bool attached);
+
   // Contains all active extension-related RenderViewHost instances for all
   // extensions. We also keep a cache of the host's view type, because that
   // information is not accessible at registration/deregistration time.
@@ -216,6 +220,8 @@ class ExtensionProcessManager : public content::NotificationObserver {
   base::TimeDelta event_page_suspending_time_;
 
   base::WeakPtrFactory<ExtensionProcessManager> weak_ptr_factory_;
+
+  base::Callback<void(content::DevToolsAgentHost*, bool)> devtools_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionProcessManager);
 };

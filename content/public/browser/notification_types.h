@@ -102,16 +102,6 @@ enum NotificationType {
   // issued.  Details in the form of a ResourceRedirectDetails are provided.
   NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
 
-  // Devtools ------------------------------------------------------------------
-
-  // Indicates that a devtools agent has attached to a client. The source is
-  // the BrowserContext* and the details is the inspected RenderViewHost*.
-  NOTIFICATION_DEVTOOLS_AGENT_ATTACHED,
-
-  // Indicates that a devtools agent has detached from a client. The source is
-  // the BrowserContext* and the details is the inspected RenderViewHost*.
-  NOTIFICATION_DEVTOOLS_AGENT_DETACHED,
-
   // WebContents ---------------------------------------------------------------
 
   // This notification is sent when a render view host has connected to a

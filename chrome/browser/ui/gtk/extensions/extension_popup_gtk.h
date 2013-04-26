@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_GTK_EXTENSIONS_EXTENSION_POPUP_GTK_H_
 #define CHROME_BROWSER_UI_GTK_EXTENSIONS_EXTENSION_POPUP_GTK_H_
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -19,6 +20,10 @@ class GURL;
 
 namespace extensions {
 class ExtensionHost;
+}
+
+namespace content {
+class DevToolsAgentHost;
 }
 
 class ExtensionPopupGtk : public content::NotificationObserver,
@@ -84,6 +89,8 @@ class ExtensionPopupGtk : public content::NotificationObserver,
   // has a return value.
   void DestroyPopupWithoutResult();
 
+  void OnDevToolsStateChanged(content::DevToolsAgentHost*, bool attached);
+
   Browser* browser_;
 
   BubbleGtk* bubble_;
@@ -102,6 +109,8 @@ class ExtensionPopupGtk : public content::NotificationObserver,
   bool being_inspected_;
 
   base::WeakPtrFactory<ExtensionPopupGtk> weak_factory_;
+
+  base::Callback<void(content::DevToolsAgentHost*, bool)> devtools_callback_;
 
   // Used for testing. ---------------------------------------------------------
   gfx::Rect GetViewBounds();

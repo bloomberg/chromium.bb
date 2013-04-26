@@ -132,8 +132,8 @@ class WorkerDevToolsManager::WorkerDevToolsAgentHost
             base::Owned(message)));
   }
 
-  virtual void NotifyClientAttaching() OVERRIDE {}
-  virtual void NotifyClientDetaching() OVERRIDE {}
+  virtual void OnClientAttached() OVERRIDE {}
+  virtual void OnClientDetached() OVERRIDE {}
 
   bool has_worker_id_;
   WorkerId worker_id_;

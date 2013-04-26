@@ -43,8 +43,8 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   // IPCDevToolsAgentHost overrides.
   virtual void DispatchOnInspectorBackend(const std::string& message) OVERRIDE;
   virtual void SendMessageToAgent(IPC::Message* msg) OVERRIDE;
-  virtual void NotifyClientAttaching() OVERRIDE;
-  virtual void NotifyClientDetaching() OVERRIDE;
+  virtual void OnClientAttached() OVERRIDE;
+  virtual void OnClientDetached() OVERRIDE;
 
   // WebContentsObserver overrides.
   virtual void AboutToNavigateRenderView(RenderViewHost* dest_rvh) OVERRIDE;

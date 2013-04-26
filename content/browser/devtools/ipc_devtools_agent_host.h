@@ -27,8 +27,8 @@ class CONTENT_EXPORT IPCDevToolsAgentHost : public DevToolsAgentHostImpl {
   void Reattach(const std::string& saved_agent_state);
 
   virtual void SendMessageToAgent(IPC::Message* msg) = 0;
-  virtual void NotifyClientAttaching() = 0;
-  virtual void NotifyClientDetaching() = 0;
+  virtual void OnClientAttached() = 0;
+  virtual void OnClientDetached() = 0;
 };
 
 }  // namespace content

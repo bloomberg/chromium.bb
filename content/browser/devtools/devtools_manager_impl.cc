@@ -133,6 +133,7 @@ void DevToolsManagerImpl::BindClientHost(
   agent_to_client_host_[agent_host] = client_host;
   client_to_agent_host_[client_host] = agent_host;
   agent_host->set_close_listener(this);
+  NotifyObservers(agent_host, true);
 }
 
 void DevToolsManagerImpl::UnbindClientHost(DevToolsAgentHostImpl* agent_host,
@@ -154,6 +155,7 @@ void DevToolsManagerImpl::UnbindClientHost(DevToolsAgentHostImpl* agent_host,
         FROM_HERE,
         base::Bind(&DevToolsNetLogObserver::Detach));
   }
+  NotifyObservers(agent_host, false);
   // Lazy agent hosts can be deleted from within detach.
   // Do not access agent_host below this line.
   agent_host->Detach();
@@ -170,6 +172,24 @@ void DevToolsManagerImpl::CloseAllClientHosts() {
        it != agents.end(); ++it) {
     UnregisterDevToolsClientHostFor(*it);
   }
+}
+
+void DevToolsManagerImpl::AddAgentStateCallback(const Callback& callback) {
+  callbacks_.push_back(&callback);
+}
+
+void DevToolsManagerImpl::RemoveAgentStateCallback(const Callback& callback) {
+  CallbackContainer::iterator it =
+      std::find(callbacks_.begin(), callbacks_.end(), &callback);
+  DCHECK(it != callbacks_.end());
+  callbacks_.erase(it);
+}
+
+void DevToolsManagerImpl::NotifyObservers(DevToolsAgentHost* agent_host,
+                                          bool attached) {
+  CallbackContainer copy(callbacks_);
+  for (CallbackContainer::iterator it = copy.begin(); it != copy.end(); ++it)
+     (*it)->Run(agent_host, attached);
 }
 
 }  // namespace content

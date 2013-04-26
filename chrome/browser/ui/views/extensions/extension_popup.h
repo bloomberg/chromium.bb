@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_POPUP_H_
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_POPUP_H_
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/ui/views/extensions/extension_view_views.h"
@@ -16,6 +17,10 @@
 class Browser;
 namespace views {
 class Widget;
+}
+
+namespace content {
+class DevToolsAgentHost;
 }
 
 class ExtensionPopup : public views::BubbleDelegateView,
@@ -77,6 +82,8 @@ class ExtensionPopup : public views::BubbleDelegateView,
   // Show the bubble, focus on its content, and register listeners.
   void ShowBubble();
 
+  void OnDevToolsStateChanged(content::DevToolsAgentHost*, bool attached);
+
   // The contained host for the view.
   scoped_ptr<extensions::ExtensionHost> extension_host_;
 
@@ -85,6 +92,8 @@ class ExtensionPopup : public views::BubbleDelegateView,
   bool inspect_with_devtools_;
 
   content::NotificationRegistrar registrar_;
+
+  base::Callback<void(content::DevToolsAgentHost*, bool)> devtools_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionPopup);
 };

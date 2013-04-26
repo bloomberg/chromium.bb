@@ -203,22 +203,15 @@ void RenderViewDevToolsAgentHost::SendMessageToAgent(IPC::Message* msg) {
   render_view_host_->Send(msg);
 }
 
-void RenderViewDevToolsAgentHost::NotifyClientAttaching() {
+void RenderViewDevToolsAgentHost::OnClientAttached() {
   if (!render_view_host_)
     return;
 
   ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadRawCookies(
       render_view_host_->GetProcess()->GetID());
-
-  NotificationService::current()->Notify(
-      NOTIFICATION_DEVTOOLS_AGENT_ATTACHED,
-      Source<BrowserContext>(
-          render_view_host_->GetSiteInstance()->GetProcess()->
-              GetBrowserContext()),
-      Details<RenderViewHost>(render_view_host_));
 }
 
-void RenderViewDevToolsAgentHost::NotifyClientDetaching() {
+void RenderViewDevToolsAgentHost::OnClientDetached() {
   if (!render_view_host_)
     return;
 
@@ -238,13 +231,6 @@ void RenderViewDevToolsAgentHost::NotifyClientDetaching() {
     ChildProcessSecurityPolicyImpl::GetInstance()->RevokeReadRawCookies(
         render_process_host->GetID());
   }
-
-  NotificationService::current()->Notify(
-      NOTIFICATION_DEVTOOLS_AGENT_DETACHED,
-      Source<BrowserContext>(
-          render_view_host_->GetSiteInstance()->GetProcess()->
-              GetBrowserContext()),
-      Details<RenderViewHost>(render_view_host_));
 }
 
 RenderViewDevToolsAgentHost::~RenderViewDevToolsAgentHost() {
@@ -290,7 +276,7 @@ void RenderViewDevToolsAgentHost::ConnectRenderViewHost(RenderViewHost* rvh,
 }
 
 void RenderViewDevToolsAgentHost::DisconnectRenderViewHost() {
-  NotifyClientDetaching();
+  OnClientDetached();
   rvh_observer_.reset();
   render_view_host_ = NULL;
 }

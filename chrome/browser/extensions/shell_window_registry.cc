@@ -9,8 +9,11 @@
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/public/browser/notification_types.h"
+#include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/devtools_manager.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -41,14 +44,19 @@ std::string GetWindowKeyForRenderViewHost(
 
 namespace extensions {
 
-ShellWindowRegistry::ShellWindowRegistry(Profile* profile) {
-  registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_AGENT_ATTACHED,
-                 content::Source<content::BrowserContext>(profile));
-  registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_AGENT_DETACHED,
-                 content::Source<content::BrowserContext>(profile));
+ShellWindowRegistry::ShellWindowRegistry(Profile* profile)
+    : profile_(profile),
+      devtools_callback_(base::Bind(
+          &ShellWindowRegistry::OnDevToolsStateChanged,
+          base::Unretained(this))) {
+  content::DevToolsManager::GetInstance()->AddAgentStateCallback(
+      devtools_callback_);
 }
 
-ShellWindowRegistry::~ShellWindowRegistry() {}
+ShellWindowRegistry::~ShellWindowRegistry() {
+  content::DevToolsManager::GetInstance()->RemoveAgentStateCallback(
+      devtools_callback_);
+}
 
 // static
 ShellWindowRegistry* ShellWindowRegistry::Get(Profile* profile) {
@@ -197,25 +205,21 @@ bool ShellWindowRegistry::IsShellWindowRegisteredInAnyProfile(
   return false;
 }
 
-void ShellWindowRegistry::Observe(int type,
-                                  const content::NotificationSource& source,
-                                  const content::NotificationDetails& details) {
-  content::RenderViewHost* render_view_host =
-      content::Details<content::RenderViewHost>(details).ptr();
-  std::string key = GetWindowKeyForRenderViewHost(this, render_view_host);
+void ShellWindowRegistry::OnDevToolsStateChanged(
+    content::DevToolsAgentHost* agent_host, bool attached) {
+  content::RenderViewHost* rvh = agent_host->GetRenderViewHost();
+  // Ignore unrelated notifications.
+  if (!rvh ||
+      rvh->GetSiteInstance()->GetProcess()->GetBrowserContext() != profile_)
+    return;
+  std::string key = GetWindowKeyForRenderViewHost(this, rvh);
   if (key.empty())
     return;
 
-  switch (type) {
-    case content::NOTIFICATION_DEVTOOLS_AGENT_ATTACHED:
-      inspected_windows_.insert(key);
-      break;
-    case content::NOTIFICATION_DEVTOOLS_AGENT_DETACHED:
-      inspected_windows_.erase(key);
-      break;
-    default:
-      NOTREACHED();
-    }
+  if (attached)
+    inspected_windows_.insert(key);
+  else
+    inspected_windows_.erase(key);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

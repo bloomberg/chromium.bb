@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
@@ -55,6 +56,8 @@ class CONTENT_EXPORT DevToolsManagerImpl
       DevToolsAgentHost* agent_host,
       DevToolsClientHost* client_host) OVERRIDE;
   virtual void ClientHostClosing(DevToolsClientHost* host) OVERRIDE;
+  virtual void AddAgentStateCallback(const Callback& callback) OVERRIDE;
+  virtual void RemoveAgentStateCallback(const Callback& callback) OVERRIDE;
 
  private:
   friend class DevToolsAgentHostImpl;
@@ -73,6 +76,8 @@ class CONTENT_EXPORT DevToolsManagerImpl
 
   void UnregisterDevToolsClientHostFor(DevToolsAgentHostImpl* agent_host);
 
+  void NotifyObservers(DevToolsAgentHost* agent_host, bool attached);
+
   // These two maps are for tracking dependencies between inspected contents and
   // their DevToolsClientHosts. They are useful for routing devtools messages
   // and allow us to have at most one devtools client host per contents.
@@ -86,6 +91,9 @@ class CONTENT_EXPORT DevToolsManagerImpl
   typedef std::map<DevToolsClientHost*, scoped_refptr<DevToolsAgentHostImpl> >
       ClientToAgentHostMap;
   ClientToAgentHostMap client_to_agent_host_;
+
+  typedef std::vector<const Callback*> CallbackContainer;
+  CallbackContainer callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsManagerImpl);
 };

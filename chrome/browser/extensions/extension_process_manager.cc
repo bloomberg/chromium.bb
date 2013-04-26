@@ -31,6 +31,8 @@
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -134,7 +136,10 @@ ExtensionProcessManager* ExtensionProcessManager::Create(Profile* profile) {
 
 ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
   : site_instance_(SiteInstance::Create(profile)),
-    weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+    weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+    devtools_callback_(base::Bind(
+        &ExtensionProcessManager::OnDevToolsStateChanged,
+        base::Unretained(this))) {
   Profile* original_profile = profile->GetOriginalProfile();
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
                  content::NotificationService::AllSources());
@@ -158,10 +163,6 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
     registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                    content::Source<Profile>(original_profile));
   }
-  registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_AGENT_ATTACHED,
-                 content::Source<content::BrowserContext>(profile));
-  registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_AGENT_DETACHED,
-                 content::Source<content::BrowserContext>(profile));
 
   event_page_idle_time_ = base::TimeDelta::FromSeconds(10);
   unsigned idle_time_sec = 0;
@@ -179,11 +180,16 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
 
   (new BackgroundManifestHandler())->Register();
   (new extensions::IncognitoHandler())->Register();
+
+  content::DevToolsManager::GetInstance()->AddAgentStateCallback(
+      devtools_callback_);
 }
 
 ExtensionProcessManager::~ExtensionProcessManager() {
   CloseBackgroundHosts();
   DCHECK(background_hosts_.empty());
+  content::DevToolsManager::GetInstance()->RemoveAgentStateCallback(
+      devtools_callback_);
 }
 
 const ExtensionProcessManager::ViewSet
@@ -664,43 +670,30 @@ void ExtensionProcessManager::Observe(
       break;
     }
 
-    case content::NOTIFICATION_DEVTOOLS_AGENT_ATTACHED: {
-      RenderViewHost* render_view_host =
-          content::Details<RenderViewHost>(details).ptr();
-      WebContents* web_contents =
-          WebContents::FromRenderViewHost(render_view_host);
-      // Keep the lazy background page alive while it's being inspected.
-      // Balanced in response to the CLOSING notification.
-      if (extensions::GetViewType(web_contents) ==
-              extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
-        const Extension* extension = GetExtensionForRenderViewHost(
-            render_view_host);
-        if (extension) {
-          CancelSuspend(extension);
-          IncrementLazyKeepaliveCount(extension);
-        }
-      }
-      break;
-    }
-
-    case content::NOTIFICATION_DEVTOOLS_AGENT_DETACHED: {
-      RenderViewHost* render_view_host =
-          content::Details<RenderViewHost>(details).ptr();
-      WebContents* web_contents =
-          WebContents::FromRenderViewHost(render_view_host);
-      // Balanced in response to the OPENING notification.
-      if (extensions::GetViewType(web_contents) ==
-              extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
-        const Extension* extension = GetExtensionForRenderViewHost(
-            render_view_host);
-        if (extension)
-          DecrementLazyKeepaliveCount(extension);
-      }
-      break;
-    }
-
     default:
       NOTREACHED();
+  }
+}
+
+void ExtensionProcessManager::OnDevToolsStateChanged(
+    content::DevToolsAgentHost* agent_host, bool attached) {
+  content::RenderViewHost* rvh = agent_host->GetRenderViewHost();
+  // Ignore unrelated notifications.
+  if (!rvh ||
+      rvh->GetSiteInstance()->GetProcess()->GetBrowserContext() != GetProfile())
+    return;
+  if (extensions::GetViewType(WebContents::FromRenderViewHost(rvh)) !=
+      extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE)
+    return;
+  const Extension* extension = GetExtensionForRenderViewHost(rvh);
+  if (!extension)
+    return;
+  if (attached) {
+    // Keep the lazy background page alive while it's being inspected.
+    CancelSuspend(extension);
+    IncrementLazyKeepaliveCount(extension);
+  } else {
+    DecrementLazyKeepaliveCount(extension);
   }
 }
 

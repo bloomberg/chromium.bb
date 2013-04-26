@@ -10,12 +10,12 @@ namespace content {
 
 void IPCDevToolsAgentHost::Attach() {
   SendMessageToAgent(new DevToolsAgentMsg_Attach(MSG_ROUTING_NONE));
-  NotifyClientAttaching();
+  OnClientAttached();
 }
 
 void IPCDevToolsAgentHost::Detach() {
   SendMessageToAgent(new DevToolsAgentMsg_Detach(MSG_ROUTING_NONE));
-  NotifyClientDetaching();
+  OnClientDetached();
 }
 
 void IPCDevToolsAgentHost::DispatchOnInspectorBackend(
@@ -36,7 +36,7 @@ void IPCDevToolsAgentHost::Reattach(const std::string& saved_agent_state) {
   SendMessageToAgent(new DevToolsAgentMsg_Reattach(
       MSG_ROUTING_NONE,
       saved_agent_state));
-  NotifyClientAttaching();
+  OnClientAttached();
 }
 
 }  // namespace content

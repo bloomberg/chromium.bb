@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "content/common/content_export.h"
 
 namespace IPC {
@@ -52,6 +53,11 @@ class CONTENT_EXPORT DevToolsManager {
   // DevToolsClientHost and unregister all listeners related to the
   // DevToolsClientHost. Called by closing client.
   virtual void ClientHostClosing(DevToolsClientHost* client_host) = 0;
+
+  typedef base::Callback<void(DevToolsAgentHost*, bool attached)> Callback;
+
+  virtual void AddAgentStateCallback(const Callback& callback) = 0;
+  virtual void RemoveAgentStateCallback(const Callback& callback) = 0;
 };
 
 }  // namespace content

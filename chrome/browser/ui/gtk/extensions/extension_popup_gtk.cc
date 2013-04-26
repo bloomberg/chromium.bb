@@ -22,6 +22,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
@@ -48,7 +50,9 @@ ExtensionPopupGtk::ExtensionPopupGtk(Browser* browser,
       bubble_(NULL),
       host_(host),
       anchor_(anchor),
-      weak_factory_(this) {
+      weak_factory_(this),
+      devtools_callback_(base::Bind(
+          &ExtensionPopupGtk::OnDevToolsStateChanged, base::Unretained(this))) {
   host_->view()->SetContainer(this);
   being_inspected_ = show_action == SHOW_AND_INSPECT;
 
@@ -63,17 +67,13 @@ ExtensionPopupGtk::ExtensionPopupGtk(Browser* browser,
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  content::Source<Profile>(host->profile()));
-
-  registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_AGENT_DETACHED,
-                 content::Source<Profile>(host->profile()));
-
-  if (!being_inspected_) {
-    registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_AGENT_ATTACHED,
-                   content::Source<Profile>(host->profile()));
-  }
+  content::DevToolsManager::GetInstance()->AddAgentStateCallback(
+      devtools_callback_);
 }
 
 ExtensionPopupGtk::~ExtensionPopupGtk() {
+  content::DevToolsManager::GetInstance()->RemoveAgentStateCallback(
+      devtools_callback_);
 }
 
 // static
@@ -102,34 +102,30 @@ void ExtensionPopupGtk::Observe(int type,
       if (content::Details<extensions::ExtensionHost>(host_.get()) == details)
         DestroyPopup();
       break;
-    case content::NOTIFICATION_DEVTOOLS_AGENT_ATTACHED:
-      // Make sure it's the devtools window that is inspecting our popup.
-      if (content::Details<RenderViewHost>(host_->render_view_host()) !=
-          details)
-        break;
-
-      // Make sure that the popup won't go away when the inspector is activated.
-      if (bubble_)
-        bubble_->StopGrabbingInput();
-
-      being_inspected_ = true;
-      break;
-    case content::NOTIFICATION_DEVTOOLS_AGENT_DETACHED:
-      // Make sure it's the devtools window that is inspecting our popup.
-      if (content::Details<RenderViewHost>(host_->render_view_host()) !=
-          details)
-        break;
-
-      // If the devtools window is closing, we post a task to ourselves to
-      // close the popup. This gives the devtools window a chance to finish
-      // detaching from the inspected RenderViewHost.
-      MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&ExtensionPopupGtk::DestroyPopupWithoutResult,
-                     weak_factory_.GetWeakPtr()));
-      break;
     default:
       NOTREACHED() << "Received unexpected notification";
+  }
+}
+
+void ExtensionPopupGtk::OnDevToolsStateChanged(
+    content::DevToolsAgentHost* agent_host, bool attached) {
+  // Make sure it's the devtools window that is inspecting our popup.
+  if (host_->render_view_host() != agent_host->GetRenderViewHost())
+    return;
+  if (attached) {
+    // Make sure that the popup won't go away when the inspector is activated.
+    if (bubble_)
+      bubble_->StopGrabbingInput();
+
+    being_inspected_ = true;
+  } else {
+    // If the devtools window is closing, we post a task to ourselves to
+    // close the popup. This gives the devtools window a chance to finish
+    // detaching from the inspected RenderViewHost.
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ExtensionPopupGtk::DestroyPopupWithoutResult,
+                   weak_factory_.GetWeakPtr()));
   }
 }
 
