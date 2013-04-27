@@ -115,7 +115,6 @@
           'sources/': [
             ['exclude', 'ThreadIdentifierDataPthreads\\.(h|cpp)$'],
             ['exclude', 'ThreadingPthreads\\.cpp$'],
-            ['exclude', 'OSAllocatorPosix\\.cpp$'],
           ],
           'include_dirs!': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit',
