@@ -29,7 +29,7 @@
 #include "FormDataList.h"
 #include "HTMLFormElement.h"
 #include "HTMLNames.h"
-#include "ScriptEventListener.h"
+#include "bindings/v8/ScriptEventListener.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/KeyboardEvent.h"

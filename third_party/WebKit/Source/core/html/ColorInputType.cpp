@@ -38,7 +38,7 @@
 #include "HTMLInputElement.h"
 #include "HTMLOptionElement.h"
 #include "InputTypeNames.h"
-#include "ScriptController.h"
+#include "bindings/v8/ScriptController.h"
 #include "core/dom/ElementShadow.h"
 #include "core/dom/MouseEvent.h"
 #include "core/dom/ShadowRoot.h"

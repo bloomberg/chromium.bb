@@ -33,8 +33,8 @@
 
 #include "core/inspector/InjectedScript.h"
 
-#include "ScriptFunctionCall.h"
-#include "SerializedScriptValue.h"
+#include "bindings/v8/ScriptFunctionCall.h"
+#include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/Node.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptModule.h"

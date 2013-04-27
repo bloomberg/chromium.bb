@@ -32,11 +32,11 @@
 #include "WebKit.h"
 
 #include "IDBFactoryBackendProxy.h"
-#include "V8Binding.h"
-#include "V8RecursionScope.h"
 #include "WebMediaPlayerClientImpl.h"
 #include "WebSocket.h"
 #include "WebWorkerClientImpl.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8RecursionScope.h"
 #include "core/dom/CustomElementRegistry.h"
 #include "core/dom/MutationObserver.h"
 #include "core/page/Frame.h"

@@ -1110,7 +1110,7 @@ sub printWrapperFactoryCppFile
 
 #include "V8$parameters{namespace}Element.h"
 
-#include "CustomElementHelpers.h"
+#include "bindings/v8/CustomElementHelpers.h"
 
 #include <v8.h>
 

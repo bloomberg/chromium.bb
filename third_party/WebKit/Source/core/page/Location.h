@@ -29,7 +29,7 @@
 #ifndef Location_h
 #define Location_h
 
-#include "ScriptWrappable.h"
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/DOMStringList.h"
 #include "core/page/DOMWindowProperty.h"
 #include <wtf/PassRefPtr.h>

@@ -31,9 +31,9 @@
 #ifndef MessagePortChannel_h
 #define MessagePortChannel_h
 
-#include "SerializedScriptValue.h"
-#include <wtf/OwnPtr.h>
+#include "bindings/v8/SerializedScriptValue.h"
 #include <wtf/Forward.h>
+#include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

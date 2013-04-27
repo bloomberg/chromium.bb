@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/dom/PopStateEvent.h"
 
-#include "SerializedScriptValue.h"
+#include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/EventNames.h"
 #include "core/page/History.h"
 

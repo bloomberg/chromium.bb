@@ -31,10 +31,10 @@
 #include "config.h"
 #include "core/inspector/InspectorController.h"
 
-#include "DOMWrapperWorld.h"
 #include "InspectorBackendDispatcher.h"
 #include "InspectorFrontend.h"
-#include "ScriptObject.h"
+#include "bindings/v8/DOMWrapperWorld.h"
+#include "bindings/v8/ScriptObject.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InjectedScriptHost.h"

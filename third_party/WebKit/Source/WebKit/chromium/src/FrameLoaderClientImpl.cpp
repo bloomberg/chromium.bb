@@ -59,7 +59,6 @@
 #include "core/platform/mediastream/chromium/RTCPeerConnectionHandlerChromium.h"
 #endif
 #include <v8.h>
-#include "ScriptController.h"
 #include "WebAutofillClient.h"
 #include "WebCachedURLRequest.h"
 #include "WebDOMEvent.h"
@@ -78,6 +77,7 @@
 #include "WebSecurityOrigin.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "bindings/v8/ScriptController.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/page/Settings.h"
 #include "core/page/WindowFeatures.h"

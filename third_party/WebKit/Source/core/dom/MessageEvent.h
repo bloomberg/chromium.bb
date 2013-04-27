@@ -28,8 +28,8 @@
 #ifndef MessageEvent_h
 #define MessageEvent_h
 
-#include "ScriptValue.h"
-#include "SerializedScriptValue.h"
+#include "bindings/v8/ScriptValue.h"
+#include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/Event.h"
 #include "core/dom/MessagePort.h"
 #include "core/fileapi/Blob.h"

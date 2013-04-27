@@ -32,8 +32,8 @@
 #include "core/inspector/InspectorMemoryAgent.h"
 
 #include "InspectorFrontend.h"
-#include "ScriptGCEvent.h"
-#include "ScriptProfiler.h"
+#include "bindings/v8/ScriptGCEvent.h"
+#include "bindings/v8/ScriptProfiler.h"
 #include "core/dom/CharacterData.h"
 #include "core/dom/Document.h"
 #include "core/dom/EventListenerMap.h"

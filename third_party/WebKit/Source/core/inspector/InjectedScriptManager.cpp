@@ -32,7 +32,7 @@
 #include "core/inspector/InjectedScriptManager.h"
 
 #include "InjectedScriptSource.h"
-#include "ScriptObject.h"
+#include "bindings/v8/ScriptObject.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InspectorValues.h"

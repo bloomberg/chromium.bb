@@ -30,7 +30,7 @@
 #ifndef InjectedScriptManager_h
 #define InjectedScriptManager_h
 
-#include "ScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
 #include <wtf/text/WTFString.h>

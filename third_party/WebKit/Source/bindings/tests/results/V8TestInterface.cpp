@@ -22,13 +22,13 @@
 #if ENABLE(Condition1) || ENABLE(Condition2)
 #include "V8TestInterface.h"
 
-#include "BindingState.h"
-#include "ScriptController.h"
 #include "TestPartialInterface.h"
-#include "V8Binding.h"
-#include "V8DOMWrapper.h"
 #include "V8Node.h"
 #include "V8TestObj.h"
+#include "bindings/v8/BindingState.h"
+#include "bindings/v8/ScriptController.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8DOMWrapper.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"

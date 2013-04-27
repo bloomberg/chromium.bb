@@ -27,7 +27,7 @@
 #ifndef PopStateEvent_h
 #define PopStateEvent_h
 
-#include "ScriptValue.h"
+#include "bindings/v8/ScriptValue.h"
 #include "core/dom/Event.h"
 
 namespace WebCore {

@@ -37,7 +37,7 @@
 #include <wtf/PassRefPtr.h>
 
 
-#include "ScriptDebugServer.h"
+#include "bindings/v8/ScriptDebugServer.h"
 
 namespace WebCore {
 

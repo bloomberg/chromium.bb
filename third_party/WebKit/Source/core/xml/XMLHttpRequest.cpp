@@ -25,7 +25,7 @@
 
 #include "DOMFormData.h"
 #include "HTMLDocument.h"
-#include "ScriptController.h"
+#include "bindings/v8/ScriptController.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/Event.h"

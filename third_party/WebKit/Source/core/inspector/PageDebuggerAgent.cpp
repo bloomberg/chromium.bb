@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/inspector/PageDebuggerAgent.h"
 
-#include "PageScriptDebugServer.h"
+#include "bindings/v8/PageScriptDebugServer.h"
 #include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InstrumentingAgents.h"

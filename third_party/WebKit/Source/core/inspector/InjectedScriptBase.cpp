@@ -33,7 +33,7 @@
 
 #include "core/inspector/InjectedScriptBase.h"
 
-#include "ScriptFunctionCall.h"
+#include "bindings/v8/ScriptFunctionCall.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorValues.h"
 #include <wtf/text/WTFString.h>

@@ -20,7 +20,7 @@
 #include "config.h"
 #include "core/css/MediaQueryListListener.h"
 
-#include "ScriptFunctionCall.h"
+#include "bindings/v8/ScriptFunctionCall.h"
 #include "core/css/MediaQueryList.h"
 
 #include "V8MediaQueryList.h"

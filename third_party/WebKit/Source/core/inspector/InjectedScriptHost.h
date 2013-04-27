@@ -30,7 +30,7 @@
 #ifndef InjectedScriptHost_h
 #define InjectedScriptHost_h
 
-#include "ScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/inspector/InspectorAgent.h"
 #include "core/page/ConsoleTypes.h"
 #include <wtf/RefCounted.h>

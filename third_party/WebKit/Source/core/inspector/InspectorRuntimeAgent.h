@@ -32,7 +32,7 @@
 #define InspectorRuntimeAgent_h
 
 
-#include "ScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include <wtf/Forward.h>
 #include <wtf/Noncopyable.h>

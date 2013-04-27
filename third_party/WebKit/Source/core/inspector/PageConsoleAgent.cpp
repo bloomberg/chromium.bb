@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/inspector/PageConsoleAgent.h"
 
-#include "ScriptObject.h"
+#include "bindings/v8/ScriptObject.h"
 #include "core/dom/Node.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"

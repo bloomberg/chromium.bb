@@ -31,7 +31,7 @@
 #ifndef CustomElementRegistry_h
 #define CustomElementRegistry_h
 
-#include "ScriptValue.h"
+#include "bindings/v8/ScriptValue.h"
 #include "core/dom/ContextDestructionObserver.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/QualifiedName.h"

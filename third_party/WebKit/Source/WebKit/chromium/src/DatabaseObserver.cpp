@@ -40,7 +40,7 @@
 #include "WebSecurityOrigin.h"
 #include "WebViewImpl.h"
 #include "WebWorkerBase.h"
-#include "WorkerScriptController.h"
+#include "bindings/v8/WorkerScriptController.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptExecutionContext.h"

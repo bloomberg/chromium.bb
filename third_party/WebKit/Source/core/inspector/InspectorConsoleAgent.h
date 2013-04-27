@@ -27,7 +27,7 @@
 
 
 #include "InspectorFrontend.h"
-#include "ScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/page/ConsoleTypes.h"

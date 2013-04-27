@@ -26,8 +26,8 @@
 #include "config.h"
 #include "modules/indexeddb/IDBKeyPath.h"
 
-#include "IDBBindingUtilities.h"
-#include "SerializedScriptValue.h"
+#include "bindings/v8/IDBBindingUtilities.h"
+#include "bindings/v8/SerializedScriptValue.h"
 #include "modules/indexeddb/IDBKey.h"
 
 #include <gtest/gtest.h>

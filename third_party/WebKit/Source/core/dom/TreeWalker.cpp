@@ -25,7 +25,7 @@
 #include "config.h"
 #include "core/dom/TreeWalker.h"
 
-#include "ScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeFilter.h"

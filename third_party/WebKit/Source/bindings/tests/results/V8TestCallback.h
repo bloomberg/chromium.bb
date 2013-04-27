@@ -21,11 +21,11 @@
 #ifndef V8TestCallback_h
 #define V8TestCallback_h
 
-#include "ActiveDOMCallback.h"
-#include "DOMWrapperWorld.h"
-#include "ScopedPersistent.h"
-#include "TestCallback.h"
 #include <v8.h>
+#include "TestCallback.h"
+#include "bindings/v8/ActiveDOMCallback.h"
+#include "bindings/v8/DOMWrapperWorld.h"
+#include "bindings/v8/ScopedPersistent.h"
 #include <wtf/Forward.h>
 
 namespace WebCore {

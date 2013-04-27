@@ -38,7 +38,7 @@
 #include "HTMLNames.h"
 #include "HTMLTemplateElement.h"
 #include "InspectorFrontend.h"
-#include "ScriptEventListener.h"
+#include "bindings/v8/ScriptEventListener.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSPropertySourceData.h"
 #include "core/css/CSSRule.h"

@@ -31,7 +31,7 @@
 #ifndef Blob_h
 #define Blob_h
 
-#include "ScriptWrappable.h"
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/platform/KURL.h"
 #include "core/platform/network/BlobData.h"
 #include <wtf/PassOwnPtr.h>

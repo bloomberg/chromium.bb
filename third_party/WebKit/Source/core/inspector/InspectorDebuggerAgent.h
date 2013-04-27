@@ -31,7 +31,7 @@
 #define InspectorDebuggerAgent_h
 
 #include "InspectorFrontend.h"
-#include "ScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InspectorBaseAgent.h"

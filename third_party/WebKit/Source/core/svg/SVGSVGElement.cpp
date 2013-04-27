@@ -36,7 +36,7 @@
 #include "SVGViewElement.h"
 #include "SVGViewSpec.h"
 #include "SVGZoomEvent.h"
-#include "ScriptEventListener.h"
+#include "bindings/v8/ScriptEventListener.h"
 #include "core/css/CSSHelper.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"

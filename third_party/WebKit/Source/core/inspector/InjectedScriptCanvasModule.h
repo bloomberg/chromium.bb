@@ -31,7 +31,7 @@
 #ifndef InjectedScriptCanvasModule_h
 #define InjectedScriptCanvasModule_h
 
-#include "ScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/inspector/InjectedScriptModule.h"
 #include <wtf/text/WTFString.h>
 

@@ -33,10 +33,10 @@
 #include "modules/indexeddb/IDBTransaction.h"
 
 #include "FrameTestHelpers.h"
-#include "ScriptController.h"
 #include "WebFrame.h"
 #include "WebFrameImpl.h"
 #include "WebView.h"
+#include "bindings/v8/ScriptController.h"
 #include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBDatabaseBackendImpl.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"

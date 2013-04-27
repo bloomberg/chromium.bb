@@ -33,7 +33,7 @@
 #include "core/inspector/InspectorIndexedDBAgent.h"
 
 #include "InspectorFrontend.h"
-#include "ScriptController.h"
+#include "bindings/v8/ScriptController.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
 #include "core/dom/Event.h"

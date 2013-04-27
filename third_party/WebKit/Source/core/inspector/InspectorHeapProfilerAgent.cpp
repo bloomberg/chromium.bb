@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/inspector/InspectorHeapProfilerAgent.h"
 
-#include "ScriptProfiler.h"
+#include "bindings/v8/ScriptProfiler.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"

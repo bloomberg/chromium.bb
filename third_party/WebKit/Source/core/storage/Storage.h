@@ -26,7 +26,7 @@
 #ifndef Storage_h
 #define Storage_h
 
-#include "ScriptWrappable.h"
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/page/DOMWindowProperty.h"
 #include "core/storage/StorageArea.h"
 #include <wtf/Forward.h>

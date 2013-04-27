@@ -37,12 +37,13 @@
 #include "HTMLFrameElementBase.h"
 #include "HTMLNames.h"
 #include "HTMLTableCellElement.h"
-#include "ScriptController.h"
-#include "ScriptSourceCode.h"
-#include "ScriptValue.h"
 #include "WebKitFontFamilyNames.h"
 #include "XMLNSNames.h"
 #include "XMLNames.h"
+#include "bindings/v8/ScriptController.h"
+#include "bindings/v8/ScriptSourceCode.h"
+#include "bindings/v8/ScriptValue.h"
+#include "bindings/v8/npruntime_impl.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/MediaFeatureNames.h"
 #include "core/css/StylePropertySet.h"
@@ -93,7 +94,6 @@
 #include "core/rendering/RenderTextControl.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
-#include "npruntime_impl.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefCountedLeakCounter.h>
 #include <wtf/StdLibExtras.h>

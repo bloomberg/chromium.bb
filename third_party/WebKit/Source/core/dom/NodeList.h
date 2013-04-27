@@ -24,7 +24,7 @@
 #ifndef NodeList_h
 #define NodeList_h
 
-#include "ScriptWrappable.h"
+#include "bindings/v8/ScriptWrappable.h"
 #include <wtf/Forward.h>
 #include <wtf/RefCounted.h>
 

@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/page/History.h"
 
-#include "SerializedScriptValue.h"
+#include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/history/BackForwardController.h"

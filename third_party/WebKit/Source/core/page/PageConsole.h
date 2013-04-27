@@ -29,7 +29,7 @@
 #ifndef PageConsole_h
 #define PageConsole_h
 
-#include "ScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/page/ConsoleTypes.h"
 #include <wtf/BitVector.h>

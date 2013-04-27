@@ -32,10 +32,10 @@
 
 #include "core/dom/CustomElementRegistry.h"
 
-#include "CustomElementHelpers.h"
-#include "Dictionary.h"
 #include "HTMLNames.h"
 #include "HTMLUnknownElement.h"
+#include "bindings/v8/CustomElementHelpers.h"
+#include "bindings/v8/Dictionary.h"
 #include "core/dom/CustomElementConstructor.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"

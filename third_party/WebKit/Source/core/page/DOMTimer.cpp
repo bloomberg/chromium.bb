@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/page/DOMTimer.h"
 
-#include "ScheduledAction.h"
+#include "bindings/v8/ScheduledAction.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/inspector/InspectorInstrumentation.h"

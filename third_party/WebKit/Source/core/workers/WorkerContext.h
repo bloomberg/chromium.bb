@@ -27,7 +27,7 @@
 #ifndef WorkerContext_h
 #define WorkerContext_h
 
-#include "WorkerScriptController.h"
+#include "bindings/v8/WorkerScriptController.h"
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/EventTarget.h"

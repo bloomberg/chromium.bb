@@ -21,7 +21,7 @@
 #define DOMPlugin_h
 
 #include "DOMMimeType.h"
-#include "ScriptWrappable.h"
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/page/FrameDestructionObserver.h"
 #include <wtf/Forward.h>
 #include <wtf/RefCounted.h>

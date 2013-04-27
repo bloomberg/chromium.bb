@@ -25,7 +25,7 @@
 #ifndef TreeWalker_h
 #define TreeWalker_h
 
-#include "ScriptWrappable.h"
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/NodeFilter.h"
 #include "core/dom/Traversal.h"
 #include <wtf/PassRefPtr.h>

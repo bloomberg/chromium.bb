@@ -39,7 +39,7 @@
 #include "HTMLPlugInImageElement.h"
 #include "PluginData.h"
 #include "PluginDocument.h"
-#include "ScriptController.h"
+#include "bindings/v8/ScriptController.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Chrome.h"

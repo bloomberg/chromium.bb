@@ -221,7 +221,7 @@ END
         GetGenerateIsReachable($interface) eq  "ImplOwnerRoot" ||
         GetGenerateIsReachable($interface) eq  "ImplOwnerNodeRoot") {
 
-        $implIncludes{"V8GCController.h"} = 1;
+        $implIncludes{"bindings/v8/V8GCController.h"} = 1;
 
         my $methodName;
         $methodName = "document" if (GetGenerateIsReachable($interface) eq "ImplDocument");
@@ -325,12 +325,12 @@ sub GenerateHeader
     # - Add default header template
     AddToHeader(GenerateHeaderContentHeader($interface));
 
-    $headerIncludes{"wtf/text/StringHash.h"} = 1;
-    $headerIncludes{"WrapperTypeInfo.h"} = 1;
-    $headerIncludes{"V8Binding.h"} = 1;
-    $headerIncludes{"V8DOMWrapper.h"} = 1;
-    $headerIncludes{"wtf/HashMap.h"} = 1;
+    $headerIncludes{"bindings/v8/WrapperTypeInfo.h"} = 1;
+    $headerIncludes{"bindings/v8/V8Binding.h"} = 1;
+    $headerIncludes{"bindings/v8/V8DOMWrapper.h"} = 1;
     $headerIncludes{"v8.h"} = 1;
+    $headerIncludes{"wtf/HashMap.h"} = 1;
+    $headerIncludes{"wtf/text/StringHash.h"} = 1;
 
     my $headerClassInclude = GetHeaderClassInclude($interfaceName);
     $headerIncludes{$headerClassInclude} = 1 if $headerClassInclude ne "";
@@ -1006,8 +1006,8 @@ sub GenerateActivityLogging
 
     my $visibleInterfaceName = $codeGenerator->GetVisibleInterfaceName($interface);
 
-    AddToImplIncludes("V8Binding.h");
-    AddToImplIncludes("V8DOMActivityLogger.h");
+    AddToImplIncludes("bindings/v8/V8Binding.h");
+    AddToImplIncludes("bindings/v8/V8DOMActivityLogger.h");
     AddToImplIncludes("wtf/Vector.h");
 
     my $code = "";
@@ -1590,16 +1590,16 @@ END
     } else {
         if ($attribute->signature->type eq "EventListener") {
             my $implSetterFunctionName = $codeGenerator->WK_ucfirst($attrName);
-            AddToImplIncludes("V8AbstractEventListener.h");
+            AddToImplIncludes("bindings/v8/V8AbstractEventListener.h");
             if (!$codeGenerator->InheritsInterface($interface, "Node")) {
                 $code .= "    transferHiddenDependency(info.Holder(), imp->$attrName(), value, ${v8InterfaceName}::eventListenerCacheIndex, info.GetIsolate());\n";
             }
-            AddToImplIncludes("V8EventListenerList.h");
+            AddToImplIncludes("bindings/v8/V8EventListenerList.h");
             if ($interfaceName eq "WorkerContext" and $attribute->signature->name eq "onerror") {
-                AddToImplIncludes("V8WorkerContextErrorHandler.h");
+                AddToImplIncludes("bindings/v8/V8WorkerContextErrorHandler.h");
                 $code .= "    imp->set$implSetterFunctionName(V8EventListenerList::findOrCreateWrapper<V8WorkerContextErrorHandler>(value, true)";
             } elsif ($interfaceName eq "DOMWindow" and $attribute->signature->name eq "onerror") {
-                AddToImplIncludes("V8WindowErrorHandler.h");
+                AddToImplIncludes("bindings/v8/V8WindowErrorHandler.h");
                 $code .= "    imp->set$implSetterFunctionName(V8EventListenerList::findOrCreateWrapper<V8WindowErrorHandler>(value, true)";
             } else {
                 $code .= "    imp->set$implSetterFunctionName(V8EventListenerList::getEventListener(value, true, ListenerFindOrCreate)";
@@ -1853,7 +1853,7 @@ sub GenerateFunction
         my $passRefPtrHandling = ($name eq "addEventListener") ? "" : ".get()";
         my $hiddenDependencyAction = ($name eq "addEventListener") ? "create" : "remove";
 
-        AddToImplIncludes("V8EventListenerList.h");
+        AddToImplIncludes("bindings/v8/V8EventListenerList.h");
         $code .= <<END;
     RefPtr<EventListener> listener = V8EventListenerList::getEventListener(args[1], false, ListenerFind${lookupType});
     if (listener) {
@@ -1879,7 +1879,7 @@ END
     $code .= GenerateArgumentsCountCheck($function, $interface);
 
     if ($name eq "set" and $interface->extendedAttributes->{"TypedArray"}) {
-        AddToImplIncludes("V8ArrayBufferViewCustom.h");
+        AddToImplIncludes("bindings/v8/custom/V8ArrayBufferViewCustom.h");
         $code .= <<END;
     return setWebGLArrayHelper<$interfaceName, ${v8InterfaceName}>(args);
 }
@@ -1987,8 +1987,8 @@ sub GenerateCallWith
     if ($function and $codeGenerator->ExtendedAttributeContains($callWith, "ScriptArguments")) {
         $code .= $indent . "RefPtr<ScriptArguments> scriptArguments(createScriptArguments(args, " . @{$function->parameters} . "));\n";
         push(@callWithArgs, "scriptArguments.release()");
-        AddToImplIncludes("ScriptArguments.h");
-        AddToImplIncludes("ScriptCallStackFactory.h");
+        AddToImplIncludes("bindings/v8/ScriptCallStackFactory.h");
+        AddToImplIncludes("core/inspector/ScriptArguments.h");
     }
     return ([@callWithArgs], $code);
 }
@@ -2092,7 +2092,7 @@ sub GenerateParametersCheck
                 $parameterCheckString .= "    if (!std::isnan($nativeValue))\n";
                 $parameterCheckString .= "        $parameterName = clampTo<$paramType>($nativeValue);\n";
         } elsif ($parameter->type eq "SerializedScriptValue") {
-            AddToImplIncludes("SerializedScriptValue.h");
+            AddToImplIncludes("bindings/v8/SerializedScriptValue.h");
             my $useTransferList = 0;
             my $transferListName = "";
             my $TransferListName = "";
@@ -2395,7 +2395,7 @@ sub GenerateEventConstructor
     my $interface = shift;
     my $interfaceName = $interface->name;
 
-    AddToImplIncludes("Dictionary.h");
+    AddToImplIncludes("bindings/v8/Dictionary.h");
     AddToImplContentInternals(<<END);
 static v8::Handle<v8::Value> constructor(const v8::Arguments& args)
 {
@@ -2454,7 +2454,7 @@ sub GenerateTypedArrayConstructor
     my $interfaceName = $interface->name;
     my $viewType = GetTypeNameOfExternalTypedArray($interface);
     my $type = $interface->extendedAttributes->{"TypedArray"};
-    AddToImplIncludes("V8ArrayBufferViewCustom.h");
+    AddToImplIncludes("bindings/v8/custom/V8ArrayBufferViewCustom.h");
 
     AddToImplContentInternals(<<END);
 static v8::Handle<v8::Value> constructor(const v8::Arguments& args)
@@ -2880,7 +2880,7 @@ sub GenerateImplementationIndexedProperty
         return "";
     }
 
-    AddToImplIncludes("V8Collection.h");
+    AddToImplIncludes("bindings/v8/V8Collection.h");
 
     if (!$indexer) {
         $indexer = $codeGenerator->FindSuperMethod($interface, "item");
@@ -2965,7 +2965,7 @@ sub GenerateImplementationNamedPropertyGetter
     if ($function) {
         my $returnType = $function->signature->type;
         my $methodName = $function->signature->name;
-        AddToImplIncludes("V8Collection.h");
+        AddToImplIncludes("bindings/v8/V8Collection.h");
         AddToImplIncludes("V8$returnType.h");
         $subCode .= <<END;
     desc->InstanceTemplate()->SetNamedPropertyHandler(${v8InterfaceName}::namedPropertyGetter, 0, 0, 0, 0);
@@ -3073,10 +3073,10 @@ sub GenerateImplementation
     # - Add default header template
     push(@implContentHeader, GenerateImplementationContentHeader($interface));
 
-    AddToImplIncludes("BindingState.h");
+    AddToImplIncludes("bindings/v8/BindingState.h");
+    AddToImplIncludes("bindings/v8/V8Binding.h");
+    AddToImplIncludes("bindings/v8/V8DOMWrapper.h");
     AddToImplIncludes("core/dom/ContextFeatures.h");
-    AddToImplIncludes("V8Binding.h");
-    AddToImplIncludes("V8DOMWrapper.h");
     AddToImplIncludes("core/page/RuntimeEnabledFeatures.h");
 
     AddIncludesForType($interfaceName);
@@ -3193,7 +3193,7 @@ END
         }
 
         if ($attrType eq "SerializedScriptValue") {
-            AddToImplIncludes("SerializedScriptValue.h");
+            AddToImplIncludes("bindings/v8/SerializedScriptValue.h");
         }
 
         GenerateNormalAttrGetter($attribute, $interface, "");
@@ -3818,11 +3818,11 @@ sub GenerateCallbackHeader
     AddToHeader(GenerateHeaderContentHeader($interface));
 
     my @unsortedIncludes = ();
-    push(@unsortedIncludes, "#include \"ActiveDOMCallback.h\"");
-    push(@unsortedIncludes, "#include \"DOMWrapperWorld.h\"");
+    push(@unsortedIncludes, "#include \"bindings/v8/ActiveDOMCallback.h\"");
+    push(@unsortedIncludes, "#include \"bindings/v8/DOMWrapperWorld.h\"");
+    push(@unsortedIncludes, "#include \"bindings/v8/ScopedPersistent.h\"");
     my $interfaceHeader = $codeGenerator->HeaderFileForInterface($interfaceName);
     push(@unsortedIncludes, "#include \"$interfaceHeader\"");
-    push(@unsortedIncludes, "#include \"ScopedPersistent.h\"");
     push(@unsortedIncludes, "#include <v8.h>");
     push(@unsortedIncludes, "#include <wtf/Forward.h>");
     AddToHeader(join("\n", sort @unsortedIncludes));
@@ -3897,8 +3897,8 @@ sub GenerateCallbackImplementation
     push(@implContentHeader, GenerateImplementationContentHeader($interface));
 
     AddToImplIncludes("core/dom/ScriptExecutionContext.h");
-    AddToImplIncludes("V8Binding.h");
-    AddToImplIncludes("V8Callback.h");
+    AddToImplIncludes("bindings/v8/V8Binding.h");
+    AddToImplIncludes("bindings/v8/V8Callback.h");
 
     AddToImplContent("#include <wtf/Assertions.h>\n\n");
     AddToImplContent("namespace WebCore {\n\n");
@@ -4009,8 +4009,8 @@ sub GenerateToV8Converters
         return;
     }
 
+    AddToImplIncludes("bindings/v8/ScriptController.h");
     AddToImplIncludes("core/page/Frame.h");
-    AddToImplIncludes("ScriptController.h");
 
     my $createWrapperArgumentType = GetPassRefPtrType($nativeType);
     my $baseType = BaseInterfaceName($interface);
@@ -4482,17 +4482,17 @@ sub JSValueToNative
     }
 
     if ($type eq "SerializedScriptValue") {
-        AddToImplIncludes("SerializedScriptValue.h");
+        AddToImplIncludes("bindings/v8/SerializedScriptValue.h");
         return "SerializedScriptValue::create($value, $getIsolate)";
     }
 
     if ($type eq "Dictionary") {
-        AddToImplIncludes("Dictionary.h");
+        AddToImplIncludes("bindings/v8/Dictionary.h");
         return "Dictionary($value, $getIsolate)";
     }
 
     if ($type eq "any") {
-        AddToImplIncludes("ScriptValue.h");
+        AddToImplIncludes("bindings/v8/ScriptValue.h");
         return "ScriptValue($value)";
     }
 
@@ -4536,8 +4536,8 @@ sub GetV8HeaderName
     my $type = shift;
     return "V8Event.h" if $type eq "DOMTimeStamp";
     return "core/dom/EventListener.h" if $type eq "EventListener";
-    return "SerializedScriptValue.h" if $type eq "SerializedScriptValue";
-    return "ScriptValue.h" if $type eq "any";
+    return "bindings/v8/SerializedScriptValue.h" if $type eq "SerializedScriptValue";
+    return "bindings/v8/ScriptValue.h" if $type eq "any";
     return "V8${type}.h";
 }
 
@@ -4788,7 +4788,7 @@ sub NativeToJSValue
     }
 
     if ($type eq "EventListener") {
-        AddToImplIncludes("V8AbstractEventListener.h");
+        AddToImplIncludes("bindings/v8/V8AbstractEventListener.h");
         return "${value} ? v8::Handle<v8::Value>(static_cast<V8AbstractEventListener*>(${value})->getListenerObject(imp->scriptExecutionContext())) : v8::Handle<v8::Value>(v8Null($getIsolate))";
     }
 

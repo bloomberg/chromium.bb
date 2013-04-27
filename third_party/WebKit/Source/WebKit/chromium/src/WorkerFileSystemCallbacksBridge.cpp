@@ -34,7 +34,7 @@
 #include "WebCommonWorkerClient.h"
 #include "WebFileSystemCallbacksImpl.h"
 #include "WebWorkerBase.h"
-#include "WorkerScriptController.h"
+#include "bindings/v8/WorkerScriptController.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/platform/KURL.h"
 #include "core/platform/network/BlobData.h"

@@ -25,7 +25,7 @@
 #include "config.h"
 #include "core/dom/NodeIterator.h"
 
-#include "ScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeFilter.h"

@@ -32,8 +32,8 @@
 #include "WebHistoryItem.h"
 
 #include "FormController.h"
-#include "SerializedScriptValue.h"
 #include "WebSerializedScriptValue.h"
+#include "bindings/v8/SerializedScriptValue.h"
 #include "core/history/HistoryItem.h"
 #include "core/platform/KURL.h"
 #include "core/platform/network/FormData.h"

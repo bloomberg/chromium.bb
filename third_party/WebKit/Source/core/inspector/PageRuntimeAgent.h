@@ -33,7 +33,7 @@
 
 
 #include "InspectorFrontend.h"
-#include "ScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/inspector/InspectorRuntimeAgent.h"
 #include <wtf/PassOwnPtr.h>
 

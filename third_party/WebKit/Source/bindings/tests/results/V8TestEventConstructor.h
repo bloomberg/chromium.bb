@@ -21,11 +21,11 @@
 #ifndef V8TestEventConstructor_h
 #define V8TestEventConstructor_h
 
-#include "TestEventConstructor.h"
-#include "V8Binding.h"
-#include "V8DOMWrapper.h"
-#include "WrapperTypeInfo.h"
 #include <v8.h>
+#include "TestEventConstructor.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8DOMWrapper.h"
+#include "bindings/v8/WrapperTypeInfo.h"
 #include <wtf/HashMap.h>
 #include <wtf/text/StringHash.h>
 

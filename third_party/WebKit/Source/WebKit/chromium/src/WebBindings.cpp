@@ -31,24 +31,24 @@
 #include "config.h"
 #include "WebBindings.h"
 
-#include "BindingState.h"
-#include "NPV8Object.h"  // for PrivateIdentifier
-#include "ScriptController.h"
 #include "V8ArrayBuffer.h"
 #include "V8ArrayBufferView.h"
-#include "V8DOMWrapper.h"
 #include "V8Element.h"
-#include "V8NPUtils.h"
 #include "V8Range.h"
 #include "WebArrayBuffer.h"
 #include "WebArrayBufferView.h"
 #include "WebElement.h"
 #include "WebRange.h"
+#include "bindings/v8/BindingState.h"
+#include "bindings/v8/NPV8Object.h"  // for PrivateIdentifier
+#include "bindings/v8/ScriptController.h"
+#include "bindings/v8/V8DOMWrapper.h"
+#include "bindings/v8/V8NPUtils.h"
+#include "bindings/v8/npruntime_impl.h"
+#include "bindings/v8/npruntime_priv.h"
 #include "core/dom/Range.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
-#include "npruntime_impl.h"
-#include "npruntime_priv.h"
 #include <wtf/ArrayBufferView.h>
 
 using namespace WebCore;

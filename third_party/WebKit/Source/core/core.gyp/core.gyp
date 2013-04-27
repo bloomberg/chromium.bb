@@ -49,9 +49,6 @@
       '../',
       '../..',
       '../../modules/websockets',
-      '<(bindings_dir)',
-      '<(bindings_dir)/v8',
-      '<(bindings_dir)/v8/custom',
       '../html',
       '../platform/graphics/skia',
       '../plugins',
@@ -326,10 +323,11 @@
 
         # FIXME: Remove these once the bindings script generates qualified
         # includes for these correctly. (Sequences don't work yet.)
+        '<(bindings_dir)/v8/custom',
+        '../../modules/mediastream',
         '../dom',
         '../html/shadow',
         '../inspector',
-        '../../modules/mediastream',
         '../page',
       ],
       'sources': [
@@ -1214,6 +1212,7 @@
         'webcore',
       ],
       'include_dirs': [
+        '<(bindings_dir)/v8',  # FIXME: Remove once http://crbug.com/236119 is fixed.
         '../page',
         '../testing',
         '../testing/v8',

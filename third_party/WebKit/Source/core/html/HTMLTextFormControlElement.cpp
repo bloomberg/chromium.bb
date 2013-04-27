@@ -29,7 +29,7 @@
 #include "HTMLFormElement.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "ScriptEventListener.h"
+#include "bindings/v8/ScriptEventListener.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"

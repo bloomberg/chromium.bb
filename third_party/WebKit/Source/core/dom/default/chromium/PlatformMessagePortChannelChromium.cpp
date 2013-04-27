@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/dom/default/chromium/PlatformMessagePortChannelChromium.h"
 
-#include "SerializedScriptValue.h"
+#include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/MessagePort.h"
 #include "core/dom/ScriptExecutionContext.h"
 

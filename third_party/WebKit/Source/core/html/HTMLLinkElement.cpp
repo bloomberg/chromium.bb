@@ -26,7 +26,7 @@
 #include "HTMLLinkElement.h"
 
 #include "HTMLNames.h"
-#include "ScriptEventListener.h"
+#include "bindings/v8/ScriptEventListener.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/StyleResolver.h"

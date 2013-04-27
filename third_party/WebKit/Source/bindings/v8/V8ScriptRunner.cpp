@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "V8ScriptRunner.h"
+#include "bindings/v8/V8ScriptRunner.h"
 
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8GCController.h"

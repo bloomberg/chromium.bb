@@ -26,10 +26,10 @@
 #ifndef DOMStringMap_h
 #define DOMStringMap_h
 
-#include "ScriptWrappable.h"
+#include "bindings/v8/ScriptWrappable.h"
 #include <wtf/Noncopyable.h>
-#include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

@@ -27,7 +27,7 @@
 #include "CSSValueKeywords.h"
 #include "HTMLFrameElementBase.h"
 #include "HTMLNames.h"
-#include "ScriptEventListener.h"
+#include "bindings/v8/ScriptEventListener.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSParser.h"
 #include "core/css/StylePropertySet.h"

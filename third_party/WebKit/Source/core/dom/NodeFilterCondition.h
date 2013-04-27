@@ -25,7 +25,7 @@
 #ifndef NodeFilterCondition_h
 #define NodeFilterCondition_h
 
-#include "ScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include <wtf/RefCounted.h>
 
 namespace WebCore {

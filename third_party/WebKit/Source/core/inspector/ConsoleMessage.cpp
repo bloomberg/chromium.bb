@@ -34,8 +34,8 @@
 #include "core/inspector/ConsoleMessage.h"
 
 #include "InspectorFrontend.h"
-#include "ScriptCallStackFactory.h"
-#include "ScriptValue.h"
+#include "bindings/v8/ScriptCallStackFactory.h"
+#include "bindings/v8/ScriptValue.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"

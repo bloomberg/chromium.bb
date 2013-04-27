@@ -33,7 +33,7 @@
 
 
 #include "InspectorFrontend.h"
-#include "ScriptGCEvent.h"
+#include "bindings/v8/ScriptGCEvent.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorValues.h"
 #include "core/inspector/ScriptGCEventListener.h"

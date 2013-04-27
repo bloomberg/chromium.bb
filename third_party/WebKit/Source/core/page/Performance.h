@@ -32,7 +32,7 @@
 #ifndef Performance_h
 #define Performance_h
 
-#include "ScriptWrappable.h"
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/EventTarget.h"
 #include "core/page/DOMWindowProperty.h"
 #include "core/page/MemoryInfo.h"

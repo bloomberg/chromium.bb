@@ -27,7 +27,7 @@
 #include "core/history/HistoryItem.h"
 
 #include <stdio.h>
-#include "SerializedScriptValue.h"
+#include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/Document.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/network/ResourceRequest.h"

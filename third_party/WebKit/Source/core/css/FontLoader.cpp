@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/css/FontLoader.h"
 
-#include "Dictionary.h"
+#include "bindings/v8/Dictionary.h"
 #include "core/css/CSSFontFaceLoadEvent.h"
 #include "core/css/CSSFontFaceSource.h"
 #include "core/css/CSSFontSelector.h"

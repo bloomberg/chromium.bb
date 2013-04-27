@@ -26,7 +26,7 @@
 #ifndef ContentSecurityPolicy_h
 #define ContentSecurityPolicy_h
 
-#include "ScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/platform/KURL.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefCounted.h>

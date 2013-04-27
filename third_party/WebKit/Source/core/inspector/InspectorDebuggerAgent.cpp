@@ -31,8 +31,8 @@
 #include "core/inspector/InspectorDebuggerAgent.h"
 
 #include "InspectorFrontend.h"
-#include "ScriptDebugServer.h"
-#include "ScriptObject.h"
+#include "bindings/v8/ScriptDebugServer.h"
+#include "bindings/v8/ScriptObject.h"
 #include "core/inspector/ContentSearchUtils.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"

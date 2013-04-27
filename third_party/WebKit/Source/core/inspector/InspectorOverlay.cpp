@@ -30,9 +30,9 @@
 #include "core/inspector/InspectorOverlay.h"
 
 #include "InspectorOverlayPage.h"
-#include "ScriptController.h"
-#include "ScriptSourceCode.h"
-#include "ScriptValue.h"
+#include "bindings/v8/ScriptController.h"
+#include "bindings/v8/ScriptSourceCode.h"
+#include "bindings/v8/ScriptValue.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/dom/StyledElement.h"

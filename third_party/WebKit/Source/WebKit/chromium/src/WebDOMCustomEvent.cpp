@@ -31,8 +31,8 @@
 #include "config.h"
 #include "WebDOMCustomEvent.h"
 
-#include "SerializedScriptValue.h"
 #include "WebSerializedScriptValue.h"
+#include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/CustomEvent.h"
 #include <public/WebString.h>
 

@@ -32,9 +32,9 @@
 #include "core/inspector/InspectorAgent.h"
 
 #include "InspectorFrontend.h"
-#include "ScriptController.h"
-#include "ScriptFunctionCall.h"
-#include "ScriptObject.h"
+#include "bindings/v8/ScriptController.h"
+#include "bindings/v8/ScriptFunctionCall.h"
+#include "bindings/v8/ScriptObject.h"
 #include "core/dom/Document.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"

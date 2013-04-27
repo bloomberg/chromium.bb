@@ -27,8 +27,8 @@
 #include "core/page/ContentSecurityPolicy.h"
 
 #include "FormDataList.h"
-#include "ScriptCallStackFactory.h"
-#include "ScriptState.h"
+#include "bindings/v8/ScriptCallStackFactory.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
 #include "core/dom/SecurityPolicyViolationEvent.h"

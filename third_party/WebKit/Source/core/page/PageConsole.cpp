@@ -31,8 +31,8 @@
 
 #include <stdio.h>
 #include "DOMWindow.h"
-#include "ScriptCallStackFactory.h"
-#include "ScriptValue.h"
+#include "bindings/v8/ScriptCallStackFactory.h"
+#include "bindings/v8/ScriptValue.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/inspector/ConsoleAPITypes.h"

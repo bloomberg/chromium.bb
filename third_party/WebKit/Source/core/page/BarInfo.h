@@ -29,7 +29,7 @@
 #ifndef BarInfo_h
 #define BarInfo_h
 
-#include "ScriptWrappable.h"
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/page/DOMWindowProperty.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

@@ -30,7 +30,7 @@
 #include "core/loader/DocumentWriter.h"
 
 #include "PluginDocument.h"
-#include "ScriptController.h"
+#include "bindings/v8/ScriptController.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/RawDataDocumentParser.h"
 #include "core/dom/ScriptableDocumentParser.h"

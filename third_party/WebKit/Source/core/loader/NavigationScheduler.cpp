@@ -34,7 +34,7 @@
 
 #include "HTMLFormElement.h"
 #include "HTMLFrameOwnerElement.h"
-#include "ScriptController.h"
+#include "bindings/v8/ScriptController.h"
 #include "core/dom/Event.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/history/BackForwardController.h"

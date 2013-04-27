@@ -32,7 +32,6 @@
 #include "V8DOMWindow.h"
 
 #include "V8HTMLCollection.h"
-#include "V8HiddenPropertyName.h"
 #include "V8Node.h"
 #include "bindings/v8/BindingState.h"
 #include "bindings/v8/ScheduledAction.h"

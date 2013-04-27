@@ -31,9 +31,9 @@
 #include "config.h"
 #include "core/inspector/InspectorClient.h"
 
-#include "ScriptController.h"
-#include "ScriptSourceCode.h"
-#include "ScriptValue.h"
+#include "bindings/v8/ScriptController.h"
+#include "bindings/v8/ScriptSourceCode.h"
+#include "bindings/v8/ScriptValue.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 

@@ -28,10 +28,10 @@
 #include "modules/indexeddb/IDBRequest.h"
 
 #include "FrameTestHelpers.h"
-#include "ScriptController.h"
 #include "WebFrame.h"
 #include "WebFrameImpl.h"
 #include "WebView.h"
+#include "bindings/v8/ScriptController.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
 #include "core/page/Frame.h"

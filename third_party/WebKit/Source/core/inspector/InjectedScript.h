@@ -32,7 +32,7 @@
 #define InjectedScript_h
 
 #include "InspectorTypeBuilder.h"
-#include "ScriptObject.h"
+#include "bindings/v8/ScriptObject.h"
 #include "core/inspector/InjectedScriptBase.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/ScriptArguments.h"

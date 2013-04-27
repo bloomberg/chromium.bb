@@ -35,7 +35,7 @@
 #include "WebFileWriter.h"
 #include "WorkerAsyncFileWriterChromium.h"
 #include "WorkerFileSystemCallbacksBridge.h"
-#include "WorkerScriptController.h"
+#include "bindings/v8/WorkerScriptController.h"
 #include "core/fileapi/BlobURL.h"
 #include "core/platform/AsyncFileSystemCallbacks.h"
 #include "core/platform/FileMetadata.h"

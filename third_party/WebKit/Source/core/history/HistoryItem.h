@@ -27,7 +27,7 @@
 #ifndef HistoryItem_h
 #define HistoryItem_h
 
-#include "SerializedScriptValue.h"
+#include "bindings/v8/SerializedScriptValue.h"
 #include "core/platform/graphics/IntPoint.h"
 #include <wtf/HashMap.h>
 #include <wtf/OwnPtr.h>

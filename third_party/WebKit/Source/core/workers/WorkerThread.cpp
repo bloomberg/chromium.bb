@@ -28,8 +28,8 @@
 
 #include "core/workers/WorkerThread.h"
 
-#include "ScriptSourceCode.h"
-#include "ScriptValue.h"
+#include "bindings/v8/ScriptSourceCode.h"
+#include "bindings/v8/ScriptValue.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/platform/KURL.h"
 #include "core/platform/ThreadGlobalData.h"

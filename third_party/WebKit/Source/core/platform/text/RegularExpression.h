@@ -27,10 +27,10 @@
 #ifndef RegularExpression_h
 #define RegularExpression_h
 
-#include "ScopedPersistent.h"
+#include <v8.h>
+#include "bindings/v8/ScopedPersistent.h"
 #include <wtf/Noncopyable.h>
 #include <wtf/text/WTFString.h>
-#include <v8.h>
 
 namespace WebCore {
 

@@ -34,7 +34,7 @@
 
 #include "InspectorFrontend.h"
 #include "InspectorTypeBuilder.h"
-#include "ScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include <wtf/HashMap.h>
 #include <wtf/PassOwnPtr.h>

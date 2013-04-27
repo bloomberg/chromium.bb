@@ -32,7 +32,7 @@
 #define InjectedScriptBase_h
 
 #include "InspectorTypeBuilder.h"
-#include "ScriptObject.h"
+#include "bindings/v8/ScriptObject.h"
 #include <wtf/Forward.h>
 #include <wtf/RefPtr.h>
 

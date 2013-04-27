@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/inspector/TimelineRecordFactory.h"
 
-#include "ScriptCallStackFactory.h"
+#include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/dom/Event.h"
 #include "core/inspector/InspectorValues.h"
 #include "core/inspector/ScriptCallStack.h"

@@ -31,10 +31,10 @@
 #include "config.h"
 #include "InspectorFrontendClientImpl.h"
 
-#include "ScriptController.h"
 #include "V8InspectorFrontendHost.h"
 #include "WebDevToolsFrontendClient.h"
 #include "WebDevToolsFrontendImpl.h"
+#include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "core/inspector/InspectorFrontendHost.h"
 #include "core/page/Frame.h"

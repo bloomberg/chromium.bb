@@ -24,7 +24,7 @@
 #include "HTMLDivElement.h"
 #include "HTMLImageLoader.h"
 #include "PluginViewBase.h"
-#include "ScriptController.h"
+#include "bindings/v8/ScriptController.h"
 #include "core/css/StyleResolver.h"
 #include "core/dom/MouseEvent.h"
 #include "core/dom/NodeList.h"

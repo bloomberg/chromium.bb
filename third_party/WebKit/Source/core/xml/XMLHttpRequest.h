@@ -22,7 +22,7 @@
 #ifndef XMLHttpRequest_h
 #define XMLHttpRequest_h
 
-#include "ScriptWrappable.h"
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"

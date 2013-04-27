@@ -33,7 +33,7 @@
 #include "core/dom/MutationObserver.h"
 
 #include <algorithm>
-#include "Dictionary.h"
+#include "bindings/v8/Dictionary.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/MutationCallback.h"

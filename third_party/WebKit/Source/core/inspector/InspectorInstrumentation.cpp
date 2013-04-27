@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/inspector/InspectorInstrumentation.h"
 
-#include "DOMWrapperWorld.h"
-#include "ScriptController.h"
+#include "bindings/v8/DOMWrapperWorld.h"
+#include "bindings/v8/ScriptController.h"
 #include "core/css/CSSRule.h"
 #include "core/css/CSSStyleRule.h"
 #include "core/css/StyleResolver.h"

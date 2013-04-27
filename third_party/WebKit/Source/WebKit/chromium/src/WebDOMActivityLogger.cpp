@@ -31,8 +31,8 @@
 #include "config.h"
 #include "WebDOMActivityLogger.h"
 
-#include "DOMWrapperWorld.h"
-#include "V8DOMActivityLogger.h"
+#include "bindings/v8/DOMWrapperWorld.h"
+#include "bindings/v8/V8DOMActivityLogger.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/text/WTFString.h>
 

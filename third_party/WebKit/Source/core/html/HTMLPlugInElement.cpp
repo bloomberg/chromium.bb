@@ -26,7 +26,8 @@
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
 #include "PluginViewBase.h"
-#include "ScriptController.h"
+#include "bindings/v8/ScriptController.h"
+#include "bindings/v8/npruntime_impl.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/dom/Event.h"
@@ -41,7 +42,6 @@
 #include "core/platform/Widget.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderWidget.h"
-#include "npruntime_impl.h"
 #include <wtf/UnusedParam.h>
 
 

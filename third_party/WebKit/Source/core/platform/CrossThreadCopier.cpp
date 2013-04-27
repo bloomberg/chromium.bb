@@ -32,7 +32,7 @@
 
 #include "core/platform/CrossThreadCopier.h"
 
-#include "SerializedScriptValue.h"
+#include "bindings/v8/SerializedScriptValue.h"
 #include "core/platform/KURL.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"

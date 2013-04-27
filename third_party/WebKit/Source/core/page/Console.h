@@ -29,8 +29,8 @@
 #ifndef Console_h
 #define Console_h
 
-#include "ScriptState.h"
-#include "ScriptWrappable.h"
+#include "bindings/v8/ScriptState.h"
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/inspector/ScriptProfile.h"
 #include "core/page/DOMWindowProperty.h"
 #include <wtf/Forward.h>

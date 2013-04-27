@@ -30,9 +30,9 @@
 #include "config.h"
 #include "core/inspector/InspectorFrontendHost.h"
 
-#include "DOMWrapperWorld.h"
 #include "HTMLFrameOwnerElement.h"
-#include "ScriptFunctionCall.h"
+#include "bindings/v8/DOMWrapperWorld.h"
+#include "bindings/v8/ScriptFunctionCall.h"
 #include "core/dom/Element.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/inspector/InspectorAgent.h"

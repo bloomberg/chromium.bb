@@ -31,7 +31,7 @@
 #ifndef InspectorCanvasInstrumentation_h
 #define InspectorCanvasInstrumentation_h
 
-#include "ScriptObject.h"
+#include "bindings/v8/ScriptObject.h"
 #include "core/inspector/InspectorCanvasAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InstrumentingAgents.h"

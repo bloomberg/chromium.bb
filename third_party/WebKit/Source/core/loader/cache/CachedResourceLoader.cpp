@@ -29,7 +29,7 @@
 
 #include "HTMLElement.h"
 #include "HTMLFrameOwnerElement.h"
-#include "ScriptController.h"
+#include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"

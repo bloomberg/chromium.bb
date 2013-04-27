@@ -35,7 +35,7 @@
 #include "HTMLOptGroupElement.h"
 #include "HTMLOptionElement.h"
 #include "HTMLOptionsCollection.h"
-#include "ScriptEventListener.h"
+#include "bindings/v8/ScriptEventListener.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/EventNames.h"

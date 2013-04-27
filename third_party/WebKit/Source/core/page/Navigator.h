@@ -20,7 +20,7 @@
 #ifndef Navigator_h
 #define Navigator_h
 
-#include "ScriptWrappable.h"
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/page/DOMWindowProperty.h"
 #include "core/page/NavigatorBase.h"
 #include "core/platform/Supplementable.h"

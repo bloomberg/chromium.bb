@@ -32,7 +32,7 @@
 
 #include "core/inspector/WorkerRuntimeAgent.h"
 
-#include "ScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/WorkerDebuggerAgent.h"

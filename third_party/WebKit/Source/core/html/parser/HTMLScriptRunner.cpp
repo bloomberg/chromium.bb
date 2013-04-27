@@ -27,7 +27,7 @@
 #include "core/html/parser/HTMLScriptRunner.h"
 
 #include "HTMLNames.h"
-#include "ScriptSourceCode.h"
+#include "bindings/v8/ScriptSourceCode.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/CustomElementRegistry.h"
 #include "core/dom/Element.h"

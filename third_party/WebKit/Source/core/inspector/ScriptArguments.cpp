@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/inspector/ScriptArguments.h"
 
-#include "ScriptValue.h"
+#include "bindings/v8/ScriptValue.h"
 
 namespace WebCore {
 

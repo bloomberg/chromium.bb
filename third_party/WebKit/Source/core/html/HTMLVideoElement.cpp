@@ -29,7 +29,7 @@
 #include "CSSPropertyNames.h"
 #include "HTMLImageLoader.h"
 #include "HTMLNames.h"
-#include "ScriptController.h"
+#include "bindings/v8/ScriptController.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"

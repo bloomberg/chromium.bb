@@ -25,8 +25,8 @@
 #include "HTMLFrameElementBase.h"
 
 #include "HTMLNames.h"
-#include "ScriptController.h"
-#include "ScriptEventListener.h"
+#include "bindings/v8/ScriptController.h"
+#include "bindings/v8/ScriptEventListener.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/dom/EventNames.h"

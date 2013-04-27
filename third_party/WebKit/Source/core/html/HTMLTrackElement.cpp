@@ -28,7 +28,7 @@
 
 #include "HTMLMediaElement.h"
 #include "HTMLNames.h"
-#include "ScriptEventListener.h"
+#include "bindings/v8/ScriptEventListener.h"
 #include "core/dom/Event.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/page/ContentSecurityPolicy.h"

@@ -24,7 +24,7 @@
 #ifndef Event_h
 #define Event_h
 
-#include "ScriptWrappable.h"
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/DOMTimeStamp.h"
 #include "core/dom/EventContext.h"
 #include "core/dom/EventNames.h"

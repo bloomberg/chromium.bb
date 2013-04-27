@@ -30,9 +30,9 @@
 #include "core/page/Console.h"
 
 #include <stdio.h>
-#include "ScriptCallStackFactory.h"
-#include "ScriptProfiler.h"
-#include "ScriptValue.h"
+#include "bindings/v8/ScriptCallStackFactory.h"
+#include "bindings/v8/ScriptProfiler.h"
+#include "bindings/v8/ScriptValue.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/inspector/ConsoleAPITypes.h"

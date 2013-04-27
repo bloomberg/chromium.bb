@@ -33,7 +33,7 @@
 #include "HTMLNames.h"
 #include "HTMLParamElement.h"
 #include "PluginViewBase.h"
-#include "ScriptEventListener.h"
+#include "bindings/v8/ScriptEventListener.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCode.h"

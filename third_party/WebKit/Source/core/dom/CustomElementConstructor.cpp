@@ -32,11 +32,11 @@
 
 #include "core/dom/CustomElementConstructor.h"
 
-#include "CustomElementHelpers.h"
 #include "HTMLElement.h"
 #include "HTMLNames.h"
 #include "SVGElement.h"
 #include "SVGNames.h"
+#include "bindings/v8/CustomElementHelpers.h"
 #include "core/dom/Document.h"
 #include <wtf/Assertions.h>
 

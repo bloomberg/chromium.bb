@@ -31,7 +31,7 @@
 #ifndef MemoryInfo_h
 #define MemoryInfo_h
 
-#include "ScriptGCEvent.h"
+#include "bindings/v8/ScriptGCEvent.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 

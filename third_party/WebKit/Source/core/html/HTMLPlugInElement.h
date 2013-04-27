@@ -26,7 +26,7 @@
 #include "HTMLFrameOwnerElement.h"
 #include "core/platform/graphics/Image.h"
 
-#include "ScriptInstance.h"
+#include "bindings/v8/ScriptInstance.h"
 
 struct NPObject;
 

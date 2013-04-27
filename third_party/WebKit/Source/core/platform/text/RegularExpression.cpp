@@ -33,9 +33,9 @@
 // without v8String is difficult, and calling into v8 without V8RecursionScope will
 // assert. Perhaps v8 basic utilities shouldn't be in bindings, or we should put
 // RegularExpression as some kind of abstract interface that's implemented in bindings.
-#include "V8Binding.h"
-#include "V8PerIsolateData.h"
-#include "V8RecursionScope.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8PerIsolateData.h"
+#include "bindings/v8/V8RecursionScope.h"
 
 namespace WebCore {
 

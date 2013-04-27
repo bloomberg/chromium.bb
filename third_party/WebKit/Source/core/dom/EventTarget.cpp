@@ -32,7 +32,7 @@
 #include "config.h"
 #include "core/dom/EventTarget.h"
 
-#include "ScriptController.h"
+#include "bindings/v8/ScriptController.h"
 #include "core/dom/Event.h"
 #include "core/dom/EventException.h"
 #include "core/dom/TransitionEvent.h"

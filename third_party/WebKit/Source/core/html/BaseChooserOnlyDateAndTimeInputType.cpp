@@ -29,7 +29,7 @@
 
 #include "HTMLDivElement.h"
 #include "HTMLInputElement.h"
-#include "ScriptController.h"
+#include "bindings/v8/ScriptController.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/page/Chrome.h"
 #include "core/page/Page.h"

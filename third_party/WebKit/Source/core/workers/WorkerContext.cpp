@@ -30,9 +30,9 @@
 #include "core/workers/WorkerContext.h"
 
 #include "DOMURL.h"
-#include "ScheduledAction.h"
-#include "ScriptSourceCode.h"
-#include "ScriptValue.h"
+#include "bindings/v8/ScheduledAction.h"
+#include "bindings/v8/ScriptSourceCode.h"
+#include "bindings/v8/ScriptValue.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ErrorEvent.h"
 #include "core/dom/Event.h"

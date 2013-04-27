@@ -58,7 +58,7 @@
 #include "HTMLElementFactory.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLNames.h"
-#include "ScriptController.h"
+#include "bindings/v8/ScriptController.h"
 #include "core/css/StyleResolver.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/ExceptionCode.h"

@@ -31,7 +31,7 @@
 #define ScriptDebugListener_h
 
 
-#include "ScriptState.h"
+#include "bindings/v8/ScriptState.h"
 #include <wtf/Forward.h>
 #include <wtf/text/WTFString.h>
 

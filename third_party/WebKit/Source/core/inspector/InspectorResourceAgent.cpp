@@ -32,10 +32,10 @@
 #include "core/inspector/InspectorResourceAgent.h"
 
 #include "InspectorFrontend.h"
-#include "ScriptCallStackFactory.h"
 #include "WebSocketFrame.h"
 #include "WebSocketHandshakeRequest.h"
 #include "WebSocketHandshakeResponse.h"
+#include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/ScriptableDocumentParser.h"

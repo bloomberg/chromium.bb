@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebSerializedScriptValue.h"
 
-#include "SerializedScriptValue.h"
+#include "bindings/v8/SerializedScriptValue.h"
 #include <public/WebString.h>
 
 using namespace WebCore;

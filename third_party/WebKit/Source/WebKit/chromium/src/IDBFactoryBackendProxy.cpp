@@ -41,7 +41,7 @@
 #include "WebViewImpl.h"
 #include "WebWorkerBase.h"
 #include "WebWorkerClientImpl.h"
-#include "WorkerScriptController.h"
+#include "bindings/v8/WorkerScriptController.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/page/SecurityOrigin.h"

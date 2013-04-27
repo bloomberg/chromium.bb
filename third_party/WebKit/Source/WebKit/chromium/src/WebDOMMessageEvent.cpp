@@ -31,10 +31,10 @@
 #include "config.h"
 #include "WebDOMMessageEvent.h"
 
-#include "SerializedScriptValue.h"
 #include "WebFrame.h"
 #include "WebFrameImpl.h"
 #include "WebSerializedScriptValue.h"
+#include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/Document.h"
 #include "core/dom/MessageEvent.h"
 #include "core/dom/MessagePort.h"
