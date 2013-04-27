@@ -29,22 +29,16 @@ class LocalizedError {
   // Fills |error_strings| with values to be used to build an error page used
   // on HTTP errors, like 404 or connection reset.
   static void GetStrings(const WebKit::WebURLError& error,
-                         base::DictionaryValue* strings,
-                         const std::string& locale);
+                         bool is_post,
+                         const std::string& locale,
+                         base::DictionaryValue* strings);
 
   // Returns a description of the encountered error.
-  static string16 GetErrorDetails(const WebKit::WebURLError& error);
+  static string16 GetErrorDetails(const WebKit::WebURLError& error,
+                                  bool is_post);
 
   // Returns true if an error page exists for the specified parameters.
   static bool HasStrings(const std::string& error_domain, int error_code);
-
-  // Fills |error_strings| with values to be used to build an error page which
-  // warns against reposting form data. This is special cased because the form
-  // repost "error page" has no real error associated with it, and doesn't have
-  // enough strings localized to meaningfully fill the net error template.
-  // TODO(mmenke):  Get rid of this and merge with GetStrings.
-  static void GetFormRepostStrings(const GURL& display_url,
-                                   base::DictionaryValue* error_strings);
 
   // Fills |error_strings| with values to be used to build an error page used
   // on HTTP errors, like 404 or connection reset, but using information from

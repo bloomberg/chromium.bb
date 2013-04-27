@@ -39,6 +39,7 @@ class NetErrorHelper : public content::RenderViewObserver {
   NetErrorTracker tracker_;
   NetErrorTracker::DnsErrorPageState dns_error_page_state_;
   bool updated_error_page_;
+  bool is_failed_post_;
 };
 
 #endif  // CHROME_RENDERER_NET_NET_ERROR_HELPER_H_

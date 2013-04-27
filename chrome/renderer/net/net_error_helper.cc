@@ -101,7 +101,8 @@ NetErrorHelper::NetErrorHelper(RenderView* render_view)
           &NetErrorHelper::TrackerCallback,
           base::Unretained(this)))),
       dns_error_page_state_(NetErrorTracker::DNS_ERROR_PAGE_NONE),
-      updated_error_page_(false) {
+      updated_error_page_(false),
+      is_failed_post_(false) {
 }
 
 NetErrorHelper::~NetErrorHelper() {
@@ -113,6 +114,9 @@ void NetErrorHelper::DidStartProvisionalLoad(WebKit::WebFrame* frame) {
 
 void NetErrorHelper::DidFailProvisionalLoad(WebKit::WebFrame* frame,
                                             const WebKit::WebURLError& error) {
+  WebKit::WebDataSource* data_source = frame->provisionalDataSource();
+  const WebKit::WebURLRequest& failed_request = data_source->request();
+  is_failed_post_ = EqualsASCII(failed_request.httpMethod(), "POST");
   tracker_.OnFailProvisionalLoad(GetFrameType(frame), GetErrorType(error));
 }
 
@@ -180,8 +184,9 @@ void NetErrorHelper::UpdateErrorPage(DnsProbeResult dns_probe_result) {
 
   DictionaryValue error_strings;
   LocalizedError::GetStrings(NetErrorToWebURLError(net_error),
-                             &error_strings,
-                             RenderThread::Get()->GetLocale());
+                             is_failed_post_,
+                             RenderThread::Get()->GetLocale(),
+                             &error_strings);
 
   // TODO(ttuttle): Update error page with error_strings.
 }
