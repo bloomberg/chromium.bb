@@ -808,9 +808,8 @@ void LayerTreeHost::UpdateLayers(Layer* root_layer,
                                         base::Unretained(this)));
     static base::TimeDelta prepaint_delay =
         base::TimeDelta::FromMilliseconds(100);
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                            prepaint_callback_.callback(),
-                                            prepaint_delay);
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, prepaint_callback_.callback(), prepaint_delay);
   }
 
   for (size_t i = 0; i < update_list.size(); ++i)

@@ -454,7 +454,7 @@ void LayerTreeTest::RealEndTest() {
     return;
   }
 
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 void LayerTreeTest::DispatchAddInstantAnimation(
@@ -565,7 +565,7 @@ void LayerTreeTest::RunTest(bool threaded) {
         base::TimeDelta::FromSeconds(timeout_seconds_));
   }
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   if (layer_tree_host_ && layer_tree_host_->root_layer())
     layer_tree_host_->root_layer()->SetLayerTreeHost(NULL);
   layer_tree_host_.reset();

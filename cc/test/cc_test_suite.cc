@@ -17,7 +17,7 @@ CCTestSuite::~CCTestSuite() {}
 void CCTestSuite::Initialize() {
   base::TestSuite::Initialize();
   RegisterPathProvider();
-  message_loop_.reset(new MessageLoop);
+  message_loop_.reset(new base::MessageLoop);
 }
 
 void CCTestSuite::Shutdown() {
