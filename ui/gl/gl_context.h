@@ -65,9 +65,9 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   // transitioning can cause corruption and hangs (OS X only).
   virtual void SetSafeToForceGpuSwitch();
 
-  // Indicate that the real context switches should recreate the surface
+  // Indicate that the real context switches should unbind the FBO first
   // (For an Android work-around only).
-  virtual void SetRecreateSurfaceOnMakeCurrent();
+  virtual void SetUnbindFboOnMakeCurrent();
 
   // Returns whether the current context supports the named extension. The
   // context must be current.

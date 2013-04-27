@@ -45,7 +45,7 @@ bool GLContext::GetTotalGpuMemory(size_t* bytes) {
 void GLContext::SetSafeToForceGpuSwitch() {
 }
 
-void GLContext::SetRecreateSurfaceOnMakeCurrent() {
+void GLContext::SetUnbindFboOnMakeCurrent() {
   NOTIMPLEMENTED();
 }
 

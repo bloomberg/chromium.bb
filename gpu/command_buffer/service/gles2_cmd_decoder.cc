@@ -2532,11 +2532,9 @@ bool GLES2DecoderImpl::Initialize(
     glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT);
   }
 
-#if defined(OS_ANDROID)
-  if (feature_info_->workarounds().makecurrent_recreates_surfaces) {
-    context_->SetRecreateSurfaceOnMakeCurrent();
+  if (feature_info_->workarounds().unbind_fbo_on_context_switch) {
+    context_->SetUnbindFboOnMakeCurrent();
   }
-#endif
 
   // Only compositor contexts are known to use only the subset of GL
   // that can be safely migrated between the iGPU and the dGPU. Mark
@@ -2840,6 +2838,10 @@ bool GLES2DecoderImpl::MakeCurrent() {
   ProcessFinishedAsyncTransfers();
   if (workarounds().flush_on_context_switch)
     glFlush();
+
+  // Rebind the FBO if it was unbound by the context.
+  if (workarounds().unbind_fbo_on_context_switch)
+    RestoreFramebufferBindings();
 
   return true;
 }

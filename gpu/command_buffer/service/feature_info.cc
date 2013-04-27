@@ -191,7 +191,7 @@ void FeatureInfo::AddFeatures(const CommandLine& command_line) {
   bool is_qualcomm = false;
   bool is_imagination = false;
   bool is_arm = false;
-  bool is_hisilicon = false;
+  bool is_vivante = false;
   const char* gl_strings[2];
   gl_strings[0] = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
   gl_strings[1] = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
@@ -209,9 +209,13 @@ void FeatureInfo::AddFeatures(const CommandLine& command_line) {
         is_qualcomm |= string_set.Contains("qualcomm");
         is_imagination |= string_set.Contains("imagination");
         is_arm |= string_set.Contains("arm");
-        is_hisilicon |= string_set.Contains("hisilicon");
+        is_vivante |= string_set.Contains("vivante");
+        is_vivante |= string_set.Contains("hisilicon");
       }
     }
+
+    if (extensions.Contains("GL_VIV_shader_binary"))
+      is_vivante = true;
 
     workarounds_.set_texture_filter_before_generating_mipmap = true;
     workarounds_.clear_alpha_in_readpixels = true;
@@ -223,8 +227,8 @@ void FeatureInfo::AddFeatures(const CommandLine& command_line) {
       workarounds_.flush_on_context_switch = true;
       workarounds_.delete_instead_of_resize_fbo = true;
     }
-    if (is_hisilicon) {
-      workarounds_.makecurrent_recreates_surfaces = true;
+    if (is_vivante) {
+      workarounds_.unbind_fbo_on_context_switch = true;
     }
 #if defined(OS_MACOSX)
     workarounds_.needs_offscreen_buffer_workaround = is_nvidia;
