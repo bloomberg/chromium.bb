@@ -2871,7 +2871,7 @@
                 ['include', '^browser/printing/print_dialog_gtk.h'],
               ],
             }],
-            ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android" and gcc_version == 45', {
+            ['gcc_version == 45', {
               # Avoid gcc 4.5 miscompilation of template_url.cc
               # as per http://crbug.com/41887
               'cflags': [

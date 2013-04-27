@@ -1060,6 +1060,16 @@
     'enable_mdns%' : 0,
 
     'conditions': [
+      # The version of GCC in use, set later in platforms that use GCC and have
+      # not explicitly chosen to build with clang. Currently, this means all
+      # platforms except Windows, Mac and iOS.
+      # TODO(glider): set clang to 1 earlier for ASan and TSan builds so that
+      # it takes effect here.
+      ['os_posix==1 and OS!="mac" and OS!="ios" and clang==0 and asan==0 and tsan==0 and msan==0', {
+        'gcc_version%': '<!(python <(DEPTH)/build/compiler_version.py)',
+      }, {
+        'gcc_version%': 0,
+      }],
       ['OS=="win" and "<!(python <(DEPTH)/build/dir_exists.py <(windows_sdk_default_path))"=="True"', {
         'windows_sdk_path%': '<(windows_sdk_default_path)',
       }, {
@@ -1089,15 +1099,6 @@
         # Figure out the python architecture to decide if we build pyauto.
         'python_arch%': '<!(<(DEPTH)/build/linux/python_arch.sh <(sysroot)/usr/<(system_libdir)/libpython<(python_ver).so.1.0)',
         'conditions': [
-          # TODO(glider): set clang to 1 earlier for ASan and TSan builds so
-          # that it takes effect here.
-          ['clang==0 and asan==0 and tsan==0 and msan==0', {
-            # This will set gcc_version to XY if you are running gcc X.Y.*.
-            # This is used to tweak build flags for gcc 4.5.
-            'gcc_version%': '<!(python <(DEPTH)/build/compiler_version.py)',
-          }, {
-            'gcc_version%': 0,
-          }],
           ['target_arch=="mipsel"', {
             'werror%': '',
             'disable_nacl%': 1,
@@ -2764,14 +2765,6 @@
           },
         },
         'conditions': [
-          # Don't warn about the "typedef 'foo' locally defined but not used"
-          # for gcc 4.8.
-          # TODO: remove this flag once all builds work. See crbug.com/227506
-          [ 'gcc_version>=48', {
-            'cflags': [
-              '-Wno-unused-local-typedefs',
-            ],
-          }],
           ['target_arch=="ia32"', {
             'target_conditions': [
               ['_toolset=="target"', {
@@ -4223,6 +4216,16 @@
       'target_defaults': {
         'defines': [
           'ENABLE_NEW_NPDEVICE_API',
+        ],
+      },
+    }],
+    # Don't warn about the "typedef 'foo' locally defined but not used"
+    # for gcc 4.8.
+    # TODO: remove this flag once all builds work. See crbug.com/227506
+    ['gcc_version>=48', {
+      'target_defaults': {
+        'cflags': [
+          '-Wno-unused-local-typedefs',
         ],
       },
     }],
