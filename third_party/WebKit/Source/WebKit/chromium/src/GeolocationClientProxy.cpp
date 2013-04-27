@@ -26,12 +26,12 @@
 #include "config.h"
 #include "GeolocationClientProxy.h"
 
-#include "Geolocation.h"
-#include "GeolocationPosition.h"
 #include "WebGeolocationClient.h"
 #include "WebGeolocationController.h"
 #include "WebGeolocationPermissionRequest.h"
 #include "WebGeolocationPosition.h"
+#include "modules/geolocation/Geolocation.h"
+#include "modules/geolocation/GeolocationPosition.h"
 
 namespace WebKit {
 

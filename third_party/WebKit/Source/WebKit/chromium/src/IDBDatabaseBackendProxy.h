@@ -26,7 +26,7 @@
 #ifndef IDBDatabaseBackendProxy_h
 #define IDBDatabaseBackendProxy_h
 
-#include "IDBDatabaseBackendInterface.h"
+#include "modules/indexeddb/IDBDatabaseBackendInterface.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>

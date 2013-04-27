@@ -26,7 +26,7 @@
 #ifndef IDBDatabaseCallbacksProxy_h
 #define IDBDatabaseCallbacksProxy_h
 
-#include "IDBDatabaseCallbacks.h"
+#include "modules/indexeddb/IDBDatabaseCallbacks.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebKit {

@@ -25,19 +25,19 @@
 
 #include "config.h"
 
-#include "IDBDatabase.h"
+#include "modules/indexeddb/IDBDatabase.h"
 
-#include "IDBBackingStore.h"
-#include "IDBCursorBackendInterface.h"
-#include "IDBDatabaseBackendImpl.h"
 #include "IDBDatabaseCallbacksProxy.h"
-#include "IDBFactoryBackendImpl.h"
 #include "IDBFakeBackingStore.h"
-#include "IDBTransactionBackendImpl.h"
-#include "IndexedDB.h"
 #include "WebIDBDatabaseCallbacksImpl.h"
 #include "WebIDBDatabaseImpl.h"
 #include "core/platform/SharedBuffer.h"
+#include "modules/indexeddb/IDBBackingStore.h"
+#include "modules/indexeddb/IDBCursorBackendInterface.h"
+#include "modules/indexeddb/IDBDatabaseBackendImpl.h"
+#include "modules/indexeddb/IDBFactoryBackendImpl.h"
+#include "modules/indexeddb/IDBTransactionBackendImpl.h"
+#include "modules/indexeddb/IndexedDB.h"
 
 #include <gtest/gtest.h>
 

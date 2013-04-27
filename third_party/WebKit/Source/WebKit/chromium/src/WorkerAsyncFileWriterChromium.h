@@ -31,7 +31,7 @@
 #ifndef WorkerAsyncFileWriterChromium_h
 #define WorkerAsyncFileWriterChromium_h
 
-#include "AsyncFileWriter.h"
+#include "modules/filesystem/AsyncFileWriter.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebKit {

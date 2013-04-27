@@ -29,8 +29,8 @@
 #ifndef IDBFactoryBackendProxy_h
 #define IDBFactoryBackendProxy_h
 
-#include "IDBCallbacks.h"
-#include "IDBFactoryBackendInterfaceChromium.h"
+#include "modules/indexeddb/chromium/IDBFactoryBackendInterfaceChromium.h"
+#include "modules/indexeddb/IDBCallbacks.h"
 
 namespace WebCore {
 class ScriptExecutionContext;

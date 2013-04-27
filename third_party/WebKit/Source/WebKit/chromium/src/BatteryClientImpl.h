@@ -33,8 +33,8 @@
 
 #if ENABLE(BATTERY_STATUS)
 
-#include "BatteryClient.h"
 #include "WebBatteryStatus.h"
+#include "modules/battery/BatteryClient.h"
 
 namespace WebCore { class BatteryController; }
 

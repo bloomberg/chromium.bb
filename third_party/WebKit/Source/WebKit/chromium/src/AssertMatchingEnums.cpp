@@ -33,18 +33,8 @@
 
 #include "config.h"
 
-#include "FileSystemType.h"
-#include "GeolocationError.h"
-#include "GeolocationPosition.h"
 #include "HTMLFormElement.h"
 #include "HTMLInputElement.h"
-#include "IDBCursor.h"
-#include "IDBDatabaseBackendInterface.h"
-#include "IDBDatabaseException.h"
-#include "IDBFactoryBackendInterfaceChromium.h"
-#include "IDBKey.h"
-#include "IDBKeyPath.h"
-#include "IDBMetadata.h"
 #include "NotificationClient.h"
 #include "SpeechRecognitionError.h"
 #include "StorageQuota.h"
@@ -110,6 +100,16 @@
 #include "core/platform/network/ResourceLoadPriority.h"
 #include "core/platform/network/ResourceResponse.h"
 #include "core/platform/text/TextChecking.h"
+#include "modules/filesystem/FileSystemType.h"
+#include "modules/geolocation/GeolocationError.h"
+#include "modules/geolocation/GeolocationPosition.h"
+#include "modules/indexeddb/IDBCursor.h"
+#include "modules/indexeddb/IDBDatabaseBackendInterface.h"
+#include "modules/indexeddb/IDBDatabaseException.h"
+#include "modules/indexeddb/IDBKey.h"
+#include "modules/indexeddb/IDBKeyPath.h"
+#include "modules/indexeddb/IDBMetadata.h"
+#include "modules/indexeddb/chromium/IDBFactoryBackendInterfaceChromium.h"
 #include <public/WebClipboard.h>
 #include <public/WebFileError.h>
 #include <public/WebFileInfo.h>

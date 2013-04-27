@@ -25,15 +25,9 @@
 
 #include "config.h"
 
-#include "IDBRequest.h"
+#include "modules/indexeddb/IDBRequest.h"
 
 #include "FrameTestHelpers.h"
-#include "IDBCursorBackendInterface.h"
-#include "IDBDatabaseBackendInterface.h"
-#include "IDBDatabaseCallbacksImpl.h"
-#include "IDBKeyRange.h"
-#include "IDBOpenDBRequest.h"
-#include "IDBTransactionCoordinator.h"
 #include "ScriptController.h"
 #include "WebFrame.h"
 #include "WebFrameImpl.h"
@@ -41,6 +35,12 @@
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
 #include "core/page/Frame.h"
+#include "modules/indexeddb/IDBCursorBackendInterface.h"
+#include "modules/indexeddb/IDBDatabaseBackendInterface.h"
+#include "modules/indexeddb/IDBDatabaseCallbacksImpl.h"
+#include "modules/indexeddb/IDBKeyRange.h"
+#include "modules/indexeddb/IDBOpenDBRequest.h"
+#include "modules/indexeddb/IDBTransactionCoordinator.h"
 
 #include <gtest/gtest.h>
 

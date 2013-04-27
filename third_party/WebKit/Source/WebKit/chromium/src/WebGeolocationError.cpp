@@ -26,7 +26,7 @@
 #include "config.h"
 #include "WebGeolocationError.h"
 
-#include "GeolocationError.h"
+#include "modules/geolocation/GeolocationError.h"
 #include <public/WebString.h>
 
 using namespace WebCore;

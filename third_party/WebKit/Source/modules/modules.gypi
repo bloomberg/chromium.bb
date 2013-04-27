@@ -1,13 +1,6 @@
 {
   'variables': {
     'modules_include_dirs': [
-      'battery',
-      'donottrack',
-      'filesystem',
-      'gamepad',
-      'geolocation',
-      'indexeddb',
-      'indexeddb/chromium',
       'inputmethod',
       'mediasource',
       'mediastream',
@@ -18,7 +11,6 @@
       'webaudio',
       'webdatabase',
       'webdatabase/chromium',
-      'webmidi',
       'websockets',
     ],
     'modules_idl_files': [

@@ -26,8 +26,8 @@
 #include "config.h"
 #include "WebIDBMetadata.h"
 
-#include "IDBMetadata.h"
 #include "WebIDBKeyPath.h"
+#include "modules/indexeddb/IDBMetadata.h"
 #include <public/WebString.h>
 #include <public/WebVector.h>
 

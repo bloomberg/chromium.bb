@@ -31,7 +31,6 @@
 #include "CSSValueKeywords.h"
 #include "Dictionary.h"
 #include "FormController.h"
-#include "GeolocationController.h"
 #include "HTMLAllCollection.h"
 #include "HTMLAnchorElement.h"
 #include "HTMLBodyElement.h"
@@ -187,6 +186,7 @@
 #include "core/xml/XPathResult.h"
 #include "core/xml/XSLTProcessor.h"
 #include "core/xml/parser/XMLDocumentParser.h"
+#include "modules/geolocation/GeolocationController.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/HashFunctions.h>
 #include <wtf/MainThread.h>

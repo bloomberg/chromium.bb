@@ -32,11 +32,11 @@
 #define InspectorPageAgent_h
 
 
-#include "GeolocationPosition.h"
 #include "InspectorFrontend.h"
 #include "core/dom/DeviceOrientationData.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/page/Frame.h"
+#include "modules/geolocation/GeolocationPosition.h"
 #include <wtf/HashMap.h>
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>

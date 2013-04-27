@@ -32,8 +32,6 @@
 #include "core/inspector/InspectorPageAgent.h"
 
 #include "DOMWrapperWorld.h"
-#include "GeolocationController.h"
-#include "GeolocationError.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLNames.h"
 #include "InspectorFrontend.h"
@@ -73,6 +71,8 @@
 #include "core/platform/Cookie.h"
 #include "core/platform/text/RegularExpression.h"
 #include "core/platform/text/TextEncoding.h"
+#include "modules/geolocation/GeolocationController.h"
+#include "modules/geolocation/GeolocationError.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/ListHashSet.h>
 #include <wtf/text/Base64.h>

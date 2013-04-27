@@ -31,13 +31,13 @@
 #include "config.h"
 #include "WorkerFileWriterCallbacksBridge.h"
 
-#include "AsyncFileWriterClient.h"
 #include "WebFileWriter.h"
 #include "WebWorkerBase.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/workers/WorkerContext.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
+#include "modules/filesystem/AsyncFileWriterClient.h"
 #include <public/Platform.h>
 #include <public/WebCString.h>
 #include <public/WebFileSystem.h>

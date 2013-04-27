@@ -31,15 +31,15 @@
 #include "config.h"
 #include "WebGeolocationClientMock.h"
 
-#include "Geolocation.h"
-#include "GeolocationError.h"
-#include "GeolocationPosition.h"
-#include "PositionError.h"
 #include "WebGeolocationController.h"
 #include "WebGeolocationError.h"
 #include "WebGeolocationPermissionRequest.h"
 #include "WebGeolocationPosition.h"
 #include "core/platform/mock/GeolocationClientMock.h"
+#include "modules/geolocation/Geolocation.h"
+#include "modules/geolocation/GeolocationError.h"
+#include "modules/geolocation/GeolocationPosition.h"
+#include "modules/geolocation/PositionError.h"
 #include <public/WebString.h>
 #include <wtf/CurrentTime.h>
 

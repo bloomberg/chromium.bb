@@ -26,10 +26,6 @@
 #include "config.h"
 #include "IDBDatabaseBackendProxy.h"
 
-#include "IDBCallbacks.h"
-#include "IDBDatabaseCallbacks.h"
-#include "IDBKeyRange.h"
-#include "IDBMetadata.h"
 #include "WebFrameImpl.h"
 #include "WebIDBCallbacksImpl.h"
 #include "WebIDBCursor.h"
@@ -37,6 +33,10 @@
 #include "WebIDBDatabaseCallbacksImpl.h"
 #include "WebIDBDatabaseError.h"
 #include "WebIDBKeyRange.h"
+#include "modules/indexeddb/IDBCallbacks.h"
+#include "modules/indexeddb/IDBDatabaseCallbacks.h"
+#include "modules/indexeddb/IDBKeyRange.h"
+#include "modules/indexeddb/IDBMetadata.h"
 #include "public/WebData.h"
 
 using namespace WebCore;

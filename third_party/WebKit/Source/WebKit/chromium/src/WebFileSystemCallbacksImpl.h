@@ -31,7 +31,7 @@
 #ifndef WebFileSystemCallbacksImpl_h
 #define WebFileSystemCallbacksImpl_h
 
-#include "FileSystemType.h"
+#include "modules/filesystem/FileSystemType.h"
 #include <public/WebFileSystem.h>
 #include <public/WebFileSystemCallbacks.h>
 #include <public/WebVector.h>

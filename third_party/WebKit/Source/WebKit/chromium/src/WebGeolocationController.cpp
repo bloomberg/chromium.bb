@@ -26,11 +26,11 @@
 #include "config.h"
 #include "WebGeolocationController.h"
 
-#include "GeolocationController.h"
-#include "GeolocationError.h"
-#include "GeolocationPosition.h"
 #include "WebGeolocationError.h"
 #include "WebGeolocationPosition.h"
+#include "modules/geolocation/GeolocationController.h"
+#include "modules/geolocation/GeolocationError.h"
+#include "modules/geolocation/GeolocationPosition.h"
 
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>

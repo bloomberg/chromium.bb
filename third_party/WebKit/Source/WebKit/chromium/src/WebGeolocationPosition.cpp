@@ -26,7 +26,7 @@
 #include "config.h"
 #include "WebGeolocationPosition.h"
 
-#include "GeolocationPosition.h"
+#include "modules/geolocation/GeolocationPosition.h"
 
 using namespace WebCore;
 

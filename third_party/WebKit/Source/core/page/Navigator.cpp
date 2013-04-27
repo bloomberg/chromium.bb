@@ -25,7 +25,6 @@
 
 #include "DOMMimeTypeArray.h"
 #include "DOMPluginArray.h"
-#include "Geolocation.h"
 #include "PluginData.h"
 #include "ScriptController.h"
 #include "core/dom/Document.h"
@@ -38,6 +37,7 @@
 #include "core/page/Settings.h"
 #include "core/platform/Language.h"
 #include "core/storage/StorageNamespace.h"
+#include "modules/geolocation/Geolocation.h"
 #include <wtf/HashSet.h>
 #include <wtf/StdLibExtras.h>
 

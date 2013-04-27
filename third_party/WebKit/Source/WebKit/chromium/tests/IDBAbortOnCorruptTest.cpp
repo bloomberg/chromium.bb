@@ -25,16 +25,16 @@
 
 #include "config.h"
 #include <gtest/gtest.h>
-#include "IDBCallbacks.h"
-#include "IDBCursorBackendInterface.h"
-#include "IDBDatabaseBackendInterface.h"
-#include "IDBDatabaseCallbacks.h"
-#include "IDBFactoryBackendImpl.h"
 #include "IDBFakeBackingStore.h"
-#include "IDBKey.h"
-#include "IndexedDB.h"
 #include "core/dom/DOMStringList.h"
 #include "core/page/SecurityOrigin.h"
+#include "modules/indexeddb/IDBCallbacks.h"
+#include "modules/indexeddb/IDBCursorBackendInterface.h"
+#include "modules/indexeddb/IDBDatabaseBackendInterface.h"
+#include "modules/indexeddb/IDBDatabaseCallbacks.h"
+#include "modules/indexeddb/IDBFactoryBackendImpl.h"
+#include "modules/indexeddb/IDBKey.h"
+#include "modules/indexeddb/IndexedDB.h"
 #include <wtf/Vector.h>
 
 using namespace WebCore;

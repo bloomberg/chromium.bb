@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-#include "IDBLevelDBCoding.h"
+#include "modules/indexeddb/IDBLevelDBCoding.h"
 
 #include <gtest/gtest.h>
-#include "IDBKey.h"
-#include "IDBKeyPath.h"
 #include "core/platform/leveldb/LevelDBSlice.h"
+#include "modules/indexeddb/IDBKey.h"
+#include "modules/indexeddb/IDBKeyPath.h"
 #include <wtf/Vector.h>
 
 using namespace WebCore;

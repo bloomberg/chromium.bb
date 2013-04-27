@@ -27,11 +27,7 @@
 #include "WebIDBDatabaseImpl.h"
 
 #include "IDBCallbacksProxy.h"
-#include "IDBCursor.h"
-#include "IDBDatabaseBackendInterface.h"
 #include "IDBDatabaseCallbacksProxy.h"
-#include "IDBKeyRange.h"
-#include "IDBMetadata.h"
 #include "WebIDBCallbacks.h"
 #include "WebIDBDatabaseCallbacks.h"
 #include "WebIDBDatabaseError.h"
@@ -39,6 +35,10 @@
 #include "WebIDBKeyRange.h"
 #include "WebIDBMetadata.h"
 #include "core/platform/SharedBuffer.h"
+#include "modules/indexeddb/IDBCursor.h"
+#include "modules/indexeddb/IDBDatabaseBackendInterface.h"
+#include "modules/indexeddb/IDBKeyRange.h"
+#include "modules/indexeddb/IDBMetadata.h"
 #include "public/WebData.h"
 
 using namespace WebCore;

@@ -7,14 +7,14 @@ core/loader/appcache/DOMApplicationCache
 DOMWindow
 EventSource
 core/fileapi/FileReader
-FileWriter
+modules/filesystem/FileWriter
 core/css/FontLoader
-IDBDatabase
-IDBOpenDBRequest
-IDBRequest
-IDBTransaction
+modules/indexeddb/IDBDatabase
+modules/indexeddb/IDBOpenDBRequest
+modules/indexeddb/IDBRequest
+modules/indexeddb/IDBTransaction
 ScriptProcessorNode conditional=WEB_AUDIO
-MIDIPort
+modules/webmidi/MIDIPort
 MediaKeySession conditional=ENCRYPTED_MEDIA_V2
 MediaController
 MediaSource

@@ -32,9 +32,9 @@
 #include "config.h"
 #include "core/platform/mock/GeolocationClientMock.h"
 
-#include "GeolocationController.h"
-#include "GeolocationError.h"
-#include "GeolocationPosition.h"
+#include "modules/geolocation/GeolocationController.h"
+#include "modules/geolocation/GeolocationError.h"
+#include "modules/geolocation/GeolocationPosition.h"
 
 namespace WebCore {
 

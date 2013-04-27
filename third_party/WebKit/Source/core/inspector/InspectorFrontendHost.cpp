@@ -30,7 +30,6 @@
 #include "config.h"
 #include "core/inspector/InspectorFrontendHost.h"
 
-#include "DOMFileSystem.h"
 #include "DOMWrapperWorld.h"
 #include "HTMLFrameOwnerElement.h"
 #include "ScriptFunctionCall.h"
@@ -52,6 +51,7 @@
 #include "core/platform/network/ResourceResponse.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderTheme.h"
+#include "modules/filesystem/DOMFileSystem.h"
 #include <wtf/StdLibExtras.h>
 
 using namespace std;

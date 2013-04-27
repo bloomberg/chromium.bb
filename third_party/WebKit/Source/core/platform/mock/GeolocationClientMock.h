@@ -32,8 +32,8 @@
 #ifndef GeolocationClientMock_h
 #define GeolocationClientMock_h
 
-#include "GeolocationClient.h"
 #include "core/platform/Timer.h"
+#include "modules/geolocation/GeolocationClient.h"
 #include <wtf/HashSet.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>

@@ -31,8 +31,8 @@
 #ifndef AsyncFileWriterChromium_h
 #define AsyncFileWriterChromium_h
 
-#include "AsyncFileWriter.h"
 #include "WebFileWriterClient.h"
+#include "modules/filesystem/AsyncFileWriter.h"
 #include <public/WebFileError.h>
 #include <wtf/PassOwnPtr.h>
 

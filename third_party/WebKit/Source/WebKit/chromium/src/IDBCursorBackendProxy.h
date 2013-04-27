@@ -26,8 +26,8 @@
 #ifndef IDBCursorBackendProxy_h
 #define IDBCursorBackendProxy_h
 
-#include "IDBCursorBackendInterface.h"
 #include "WebIDBCursor.h"
+#include "modules/indexeddb/IDBCursorBackendInterface.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>

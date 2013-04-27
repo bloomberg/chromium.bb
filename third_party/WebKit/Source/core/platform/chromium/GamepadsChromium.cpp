@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/platform/Gamepads.h"
 
-#include "GamepadList.h"
+#include "modules/gamepad/GamepadList.h"
 #include <public/Platform.h>
 
 namespace WebCore {

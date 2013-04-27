@@ -156,7 +156,7 @@ sub generateImplementation()
         print F "#endif\n" if $conditional;
     }
 
-    print F "#include \"IDBDatabaseException.h\"\n";
+    print F "#include \"modules/indexeddb/IDBDatabaseException.h\"\n";
 
     print F "\n";
     print F "namespace WebCore {\n";

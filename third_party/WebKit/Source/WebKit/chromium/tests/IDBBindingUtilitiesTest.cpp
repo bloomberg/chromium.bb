@@ -26,8 +26,6 @@
 #include "config.h"
 #include "FrameTestHelpers.h"
 #include "IDBBindingUtilities.h"
-#include "IDBKey.h"
-#include "IDBKeyPath.h"
 #include "ScriptController.h"
 #include "V8Binding.h"
 #include "V8PerIsolateData.h"
@@ -37,6 +35,8 @@
 #include "WebView.h"
 #include "core/dom/Document.h"
 #include "core/page/Frame.h"
+#include "modules/indexeddb/IDBKey.h"
+#include "modules/indexeddb/IDBKeyPath.h"
 
 #include <gtest/gtest.h>
 #include <wtf/Vector.h>

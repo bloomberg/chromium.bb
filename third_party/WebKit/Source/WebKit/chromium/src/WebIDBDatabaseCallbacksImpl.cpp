@@ -26,7 +26,7 @@
 #include "config.h"
 #include "WebIDBDatabaseCallbacksImpl.h"
 
-#include "IDBDatabaseCallbacks.h"
+#include "modules/indexeddb/IDBDatabaseCallbacks.h"
 #include <public/WebString.h>
 
 using namespace WebCore;

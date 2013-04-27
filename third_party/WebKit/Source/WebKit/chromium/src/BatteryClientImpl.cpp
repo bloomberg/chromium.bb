@@ -33,10 +33,10 @@
 
 #if ENABLE(BATTERY_STATUS)
 
-#include "BatteryController.h"
-#include "BatteryStatus.h"
 #include "WebBatteryStatusClient.h"
 #include "core/dom/EventNames.h"
+#include "modules/battery/BatteryController.h"
+#include "modules/battery/BatteryStatus.h"
 #include <wtf/RefPtr.h>
 
 namespace WebKit {

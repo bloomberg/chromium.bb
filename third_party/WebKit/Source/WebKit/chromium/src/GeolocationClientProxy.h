@@ -26,8 +26,8 @@
 #ifndef GeolocationClientProxy_h
 #define GeolocationClientProxy_h
 
-#include "GeolocationClient.h"
 #include "WebGeolocationController.h"
+#include "modules/geolocation/GeolocationClient.h"
 #include <wtf/RefPtr.h>
 
 namespace WebCore {

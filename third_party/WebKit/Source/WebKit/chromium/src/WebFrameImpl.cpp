@@ -74,13 +74,9 @@
 #include <algorithm>
 #include "AssociatedURLLoader.h"
 #include "AsyncFileSystemChromium.h"
-#include "DOMFileSystem.h"
 #include "DOMUtilitiesPrivate.h"
 #include "DOMWrapperWorld.h"
-#include "DirectoryEntry.h"
 #include "EventListenerWrapper.h"
-#include "FileEntry.h"
-#include "FileSystemType.h"
 #include "FindInPageCoordinates.h"
 #include "HTMLCollection.h"
 #include "HTMLFormElement.h"
@@ -178,6 +174,10 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/StyleInheritedData.h"
 #include "core/xml/XPathResult.h"
+#include "modules/filesystem/DOMFileSystem.h"
+#include "modules/filesystem/DirectoryEntry.h"
+#include "modules/filesystem/FileEntry.h"
+#include "modules/filesystem/FileSystemType.h"
 #include "painting/GraphicsContextBuilder.h"
 #include <public/Platform.h>
 #include <public/WebFileSystem.h>

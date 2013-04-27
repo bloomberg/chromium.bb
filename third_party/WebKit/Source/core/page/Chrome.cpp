@@ -22,7 +22,6 @@
 #include "config.h"
 #include "core/page/Chrome.h"
 
-#include "Geolocation.h"
 #include "HTMLFormElement.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
@@ -48,6 +47,7 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderObject.h"
 #include "core/storage/StorageNamespace.h"
+#include "modules/geolocation/Geolocation.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 #include <wtf/text/StringBuilder.h>

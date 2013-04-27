@@ -29,12 +29,8 @@
  */
 
 #include "config.h"
-#include "LocalFileSystem.h"
+#include "modules/filesystem/LocalFileSystem.h"
 
-#include "ErrorCallback.h"
-#include "FileSystemCallback.h"
-#include "FileSystemCallbacks.h"
-#include "FileSystemType.h"
 #include "WebFileSystemCallbacksImpl.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
@@ -46,6 +42,10 @@
 #include "core/dom/Document.h"
 #include "core/workers/WorkerContext.h"
 #include "core/workers/WorkerThread.h"
+#include "modules/filesystem/ErrorCallback.h"
+#include "modules/filesystem/FileSystemCallback.h"
+#include "modules/filesystem/FileSystemCallbacks.h"
+#include "modules/filesystem/FileSystemType.h"
 #include <public/WebFileError.h>
 #include <public/WebFileSystem.h>
 #include <public/WebFileSystemType.h>

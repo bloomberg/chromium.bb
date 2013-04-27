@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include "IDBKeyPath.h"
+#include "modules/indexeddb/IDBKeyPath.h"
 
 #include "IDBBindingUtilities.h"
-#include "IDBKey.h"
 #include "SerializedScriptValue.h"
+#include "modules/indexeddb/IDBKey.h"
 
 #include <gtest/gtest.h>
 #include <wtf/Vector.h>

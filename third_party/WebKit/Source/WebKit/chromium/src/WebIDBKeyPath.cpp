@@ -26,7 +26,7 @@
 #include "config.h"
 #include "WebIDBKeyPath.h"
 
-#include "IDBKeyPath.h"
+#include "modules/indexeddb/IDBKeyPath.h"
 #include <public/WebString.h>
 #include <public/WebVector.h>
 #include <wtf/Vector.h>

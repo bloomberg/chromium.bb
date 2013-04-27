@@ -26,11 +26,11 @@
 #include "config.h"
 #include "WebIDBCursorImpl.h"
 
-#include "IDBAny.h"
 #include "IDBCallbacksProxy.h"
-#include "IDBCursorBackendInterface.h"
-#include "IDBKey.h"
 #include "WebIDBKey.h"
+#include "modules/indexeddb/IDBAny.h"
+#include "modules/indexeddb/IDBCursorBackendInterface.h"
+#include "modules/indexeddb/IDBKey.h"
 
 using namespace WebCore;
 

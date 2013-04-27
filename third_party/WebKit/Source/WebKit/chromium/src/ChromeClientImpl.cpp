@@ -46,7 +46,6 @@
 #include "DateTimeChooserImpl.h"
 #include "ExternalDateTimeChooser.h"
 #include "ExternalPopupMenu.h"
-#include "Geolocation.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "ScriptController.h"
@@ -79,6 +78,7 @@
 #include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderWidget.h"
+#include "modules/geolocation/Geolocation.h"
 #if ENABLE(INPUT_TYPE_COLOR)
 #include "WebColorChooser.h"
 #endif

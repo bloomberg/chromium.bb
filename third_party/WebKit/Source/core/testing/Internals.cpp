@@ -106,7 +106,7 @@
 #endif
 
 #if ENABLE(BATTERY_STATUS)
-#include "BatteryController.h"
+#include "modules/battery/BatteryController.h"
 #endif
 
 #if ENABLE(PAGE_POPUP)

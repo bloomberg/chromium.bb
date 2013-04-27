@@ -32,7 +32,7 @@
 #define WorkerAsyncFileSystemChromium_h
 
 #include "AsyncFileSystemChromium.h"
-#include "FileSystemType.h"
+#include "modules/filesystem/FileSystemType.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefPtr.h>
 

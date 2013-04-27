@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebIDBDatabaseError.h"
 
-#include "IDBDatabaseError.h"
+#include "modules/indexeddb/IDBDatabaseError.h"
 #include <public/WebString.h>
 
 using namespace WebCore;

@@ -30,8 +30,6 @@
 #include "IDBFactoryBackendProxy.h"
 
 #include "IDBDatabaseBackendProxy.h"
-#include "IDBDatabaseCallbacks.h"
-#include "IDBDatabaseError.h"
 #include "WebFrameImpl.h"
 #include "WebIDBCallbacksImpl.h"
 #include "WebIDBDatabase.h"
@@ -50,6 +48,8 @@
 #include "core/workers/WorkerContext.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
+#include "modules/indexeddb/IDBDatabaseCallbacks.h"
+#include "modules/indexeddb/IDBDatabaseError.h"
 #include <public/WebVector.h>
 
 

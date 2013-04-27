@@ -28,7 +28,7 @@
 #include "config.h"
 #include "WebIDBKey.h"
 
-#include "IDBKey.h"
+#include "modules/indexeddb/IDBKey.h"
 
 using namespace WebCore;
 

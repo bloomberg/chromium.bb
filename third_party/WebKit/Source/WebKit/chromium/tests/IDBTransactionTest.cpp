@@ -30,18 +30,18 @@
 
 #include "config.h"
 
-#include "IDBTransaction.h"
+#include "modules/indexeddb/IDBTransaction.h"
 
 #include "FrameTestHelpers.h"
-#include "IDBDatabase.h"
-#include "IDBDatabaseBackendImpl.h"
-#include "IDBDatabaseCallbacks.h"
-#include "IDBPendingTransactionMonitor.h"
-#include "IDBTransaction.h"
 #include "ScriptController.h"
 #include "WebFrame.h"
 #include "WebFrameImpl.h"
 #include "WebView.h"
+#include "modules/indexeddb/IDBDatabase.h"
+#include "modules/indexeddb/IDBDatabaseBackendImpl.h"
+#include "modules/indexeddb/IDBDatabaseCallbacks.h"
+#include "modules/indexeddb/IDBPendingTransactionMonitor.h"
+#include "modules/indexeddb/IDBTransaction.h"
 
 #include <gtest/gtest.h>
 

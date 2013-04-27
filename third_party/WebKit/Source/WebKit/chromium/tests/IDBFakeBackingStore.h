@@ -26,7 +26,7 @@
 #ifndef IDBFakeBackingStore_h
 #define IDBFakeBackingStore_h
 
-#include "IDBBackingStore.h"
+#include "modules/indexeddb/IDBBackingStore.h"
 
 namespace WebCore {
 
