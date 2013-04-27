@@ -76,13 +76,11 @@ void VpxVideoDecoder::Initialize(
     const PipelineStatusCB& status_cb,
     const StatisticsCB& statistics_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  DCHECK(!demuxer_stream_) << "Already initialized.";
-  weak_this_ = weak_factory_.GetWeakPtr();
+  DCHECK(stream);
+  DCHECK(read_cb_.is_null());
+  DCHECK(reset_cb_.is_null());
 
-  if (!stream) {
-    status_cb.Run(PIPELINE_ERROR_DECODE);
-    return;
-  }
+  weak_this_ = weak_factory_.GetWeakPtr();
 
   demuxer_stream_ = stream;
   statistics_cb_ = statistics_cb;
@@ -121,11 +119,7 @@ static vpx_codec_ctx* InitializeVpxContext(vpx_codec_ctx* context,
 
 bool VpxVideoDecoder::ConfigureDecoder() {
   const VideoDecoderConfig& config = demuxer_stream_->video_decoder_config();
-  if (!config.IsValidConfig()) {
-    DLOG(ERROR) << "Invalid video stream config: "
-                << config.AsHumanReadableString();
-    return false;
-  }
+  DCHECK(config.IsValidConfig());
 
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   bool can_handle = false;

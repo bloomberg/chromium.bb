@@ -39,32 +39,34 @@ void DecryptingVideoDecoder::Initialize(
     const StatisticsCB& statistics_cb) {
   DVLOG(2) << "Initialize()";
   DCHECK(message_loop_->BelongsToCurrentThread());
-  DCHECK_EQ(state_, kUninitialized) << state_;
+  DCHECK(state_ == kUninitialized ||
+         state_ == kIdle ||
+         state_ == kDecodeFinished) << state_;
+  DCHECK(read_cb_.is_null());
+  DCHECK(reset_cb_.is_null());
   DCHECK(stream);
+
   init_cb_ = BindToCurrentLoop(status_cb);
   weak_this_ = weak_factory_.GetWeakPtr();
-
-  const VideoDecoderConfig& config = stream->video_decoder_config();
-  if (!config.IsValidConfig()) {
-    DLOG(ERROR) << "Invalid video stream config: "
-                << config.AsHumanReadableString();
-    base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_DECODE);
-    return;
-  }
-
-  // DecryptingVideoDecoder only accepts potentially encrypted stream.
-  if (!config.is_encrypted()) {
-    base::ResetAndReturn(&init_cb_).Run(DECODER_ERROR_NOT_SUPPORTED);
-    return;
-  }
-
-  DCHECK(!demuxer_stream_);
   demuxer_stream_ = stream;
   statistics_cb_ = statistics_cb;
 
-  state_ = kDecryptorRequested;
-  set_decryptor_ready_cb_.Run(BindToCurrentLoop(base::Bind(
-      &DecryptingVideoDecoder::SetDecryptor, weak_this_)));
+  const VideoDecoderConfig& config = demuxer_stream_->video_decoder_config();
+  DCHECK(config.IsValidConfig());
+  DCHECK(config.is_encrypted());
+
+  if (state_ == kUninitialized) {
+    state_ = kDecryptorRequested;
+    set_decryptor_ready_cb_.Run(BindToCurrentLoop(base::Bind(
+        &DecryptingVideoDecoder::SetDecryptor, weak_this_)));
+    return;
+  }
+
+  // Reinitialization.
+  decryptor_->DeinitializeDecoder(Decryptor::kVideo);
+  state_ = kPendingDecoderInit;
+  decryptor_->InitializeVideoDecoder(config, BindToCurrentLoop(base::Bind(
+      &DecryptingVideoDecoder::FinishInitialization, weak_this_)));
 }
 
 void DecryptingVideoDecoder::Read(const ReadCB& read_cb) {

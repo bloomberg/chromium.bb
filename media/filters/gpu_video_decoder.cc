@@ -217,47 +217,49 @@ void GpuVideoDecoder::Stop(const base::Closure& closure) {
   BindToCurrentLoop(closure).Run();
 }
 
+static bool IsCodedSizeSupported(const gfx::Size& coded_size) {
+  // Only non-Windows, Ivy Bridge+ platforms can support more than 1920x1080.
+  // We test against 1088 to account for 16x16 macroblocks.
+  if (coded_size.width() <= 1920 && coded_size.height() <= 1088)
+    return true;
+
+  base::CPU cpu;
+  bool hw_large_video_support =
+      (cpu.vendor_name() == "GenuineIntel") && cpu.model() >= 58;
+  bool os_large_video_support = true;
+#if defined(OS_WIN)
+  os_large_video_support = false;
+#endif
+  return os_large_video_support && hw_large_video_support;
+}
+
 void GpuVideoDecoder::Initialize(DemuxerStream* stream,
                                  const PipelineStatusCB& orig_status_cb,
                                  const StatisticsCB& statistics_cb) {
   DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(stream);
+
   weak_this_ = weak_factory_.GetWeakPtr();
 
   PipelineStatusCB status_cb = CreateUMAReportingPipelineCB(
       "Media.GpuVideoDecoderInitializeStatus",
       BindToCurrentLoop(orig_status_cb));
-  DCHECK(!demuxer_stream_);
 
-  if (!stream) {
-    status_cb.Run(PIPELINE_ERROR_DECODE);
+  if (demuxer_stream_) {
+    // TODO(xhwang): Make GpuVideoDecoder reinitializable.
+    // See http://crbug.com/233608
+    DVLOG(1) << "GpuVideoDecoder reinitialization not supported.";
+    status_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
     return;
   }
 
-  // TODO(scherkus): this check should go in Pipeline prior to creating
-  // decoder objects.
   const VideoDecoderConfig& config = stream->video_decoder_config();
-  if (!config.IsValidConfig() || config.is_encrypted()) {
-    DLOG(ERROR) << "Unsupported video stream - "
-                << config.AsHumanReadableString();
-    status_cb.Run(PIPELINE_ERROR_DECODE);
-    return;
-  }
+  DCHECK(config.IsValidConfig());
+  DCHECK(!config.is_encrypted());
 
-  // Only non-Windows, Ivy Bridge+ platforms can support more than 1920x1080.
-  // We test against 1088 to account for 16x16 macroblocks.
-  if (config.coded_size().width() > 1920 ||
-      config.coded_size().height() > 1088) {
-    base::CPU cpu;
-    bool hw_large_video_support =
-        cpu.vendor_name() == "GenuineIntel" && cpu.model() >= 58;
-    bool os_large_video_support = true;
-#if defined(OS_WIN)
-    os_large_video_support = false;
-#endif
-    if (!(os_large_video_support && hw_large_video_support)) {
-      status_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
-      return;
-    }
+  if (!IsCodedSizeSupported(config.coded_size())) {
+    status_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
+    return;
   }
 
   client_proxy_ = new VDAClientProxy(this);
