@@ -3916,7 +3916,8 @@ void RenderViewImpl::didFinishResourceLoad(
 
       internal_data->set_alt_error_page_fetcher(
           new AltErrorPageResourceFetcher(
-              error_page_url, frame, original_error,
+              error_page_url, frame, frame->dataSource()->request(),
+              original_error,
               base::Bind(&RenderViewImpl::AltErrorPageFinished,
                          base::Unretained(this))));
       return;
@@ -5516,6 +5517,9 @@ bool RenderViewImpl::MaybeLoadAlternateErrorPage(WebFrame* frame,
   if (!error_page_url.is_valid())
     return false;
 
+  WebDataSource* ds = frame->provisionalDataSource();
+  const WebURLRequest& failed_request = ds->request();
+
   // Load an empty page first so there is an immediate response to the error,
   // and then kick off a request for the alternate error page.
   frame->loadHTMLString(std::string(),
@@ -5530,19 +5534,20 @@ bool RenderViewImpl::MaybeLoadAlternateErrorPage(WebFrame* frame,
       InternalDocumentStateData::FromDataSource(frame->provisionalDataSource());
   internal_data->set_alt_error_page_fetcher(
       new AltErrorPageResourceFetcher(
-          error_page_url, frame, error,
+          error_page_url, frame, failed_request, error,
           base::Bind(&RenderViewImpl::AltErrorPageFinished,
                      base::Unretained(this))));
   return true;
 }
 
 void RenderViewImpl::AltErrorPageFinished(WebFrame* frame,
+                                          const WebURLRequest& original_request,
                                           const WebURLError& original_error,
                                           const std::string& html) {
   // Here, we replace the blank page we loaded previously.
   // If we failed to download the alternate error page, LoadNavigationErrorPage
   // will simply display a default error page.
-  LoadNavigationErrorPage(frame, WebURLRequest(), original_error, html, true);
+  LoadNavigationErrorPage(frame, original_request, original_error, html, true);
 }
 
 void RenderViewImpl::OnMoveOrResizeStarted() {

@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLError.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
 #include "webkit/glue/webkit_glue_export.h"
 
 namespace WebKit {
@@ -26,12 +27,15 @@ class AltErrorPageResourceFetcher {
   // This will be called when the alternative error page has been fetched,
   // successfully or not.  If there is a failure, the third parameter (the
   // data) will be empty.
-  typedef base::Callback<void(WebKit::WebFrame*, const WebKit::WebURLError&,
-                    const std::string&)> Callback;
+  typedef base::Callback<void(WebKit::WebFrame*,
+                              const WebKit::WebURLRequest&,
+                              const WebKit::WebURLError&,
+                              const std::string&)> Callback;
 
   WEBKIT_GLUE_EXPORT AltErrorPageResourceFetcher(
       const GURL& url,
       WebKit::WebFrame* frame,
+      const WebKit::WebURLRequest& original_request,
       const WebKit::WebURLError& original_error,
       const Callback& callback);
   WEBKIT_GLUE_EXPORT ~AltErrorPageResourceFetcher();
@@ -48,6 +52,10 @@ class AltErrorPageResourceFetcher {
 
   WebKit::WebFrame* frame_;
   Callback callback_;
+
+  // The original request.  If loading the alternate error page fails, it's
+  // needed to generate the error page.
+  WebKit::WebURLRequest original_request_;
 
   // The error associated with this load.  If there's an error talking with the
   // alt error page server, we need this to complete the original load.

@@ -1063,6 +1063,7 @@ class CONTENT_EXPORT RenderViewImpl
                         float scaling_increment);
 
   void AltErrorPageFinished(WebKit::WebFrame* frame,
+                            const WebKit::WebURLRequest& original_request,
                             const WebKit::WebURLError& original_error,
                             const std::string& html);
 
