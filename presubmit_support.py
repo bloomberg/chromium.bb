@@ -1299,7 +1299,7 @@ def CallCommand(cmd_data):
       return cmd_data.message('%s failed\n%s' % (cmd_data.name, out))
   except OSError as e:
     return cmd_data.message(
-        '%s exec failure\n   %s\n%s' % (cmd_data.name, e, out))
+        '%s exec failure\n   %s' % (cmd_data.name, e))
 
 
 def Main(argv):
