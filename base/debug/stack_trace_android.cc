@@ -10,6 +10,11 @@
 
 #include "base/logging.h"
 
+#ifdef __MIPSEL__
+// SIGSTKFLT is not defined for MIPS.
+#define SIGSTKFLT SIGSEGV
+#endif
+
 namespace base {
 namespace debug {
 

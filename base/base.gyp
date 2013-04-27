@@ -134,6 +134,11 @@
                 ['include', '^atomicops_internals_x86_gcc\\.cc$'],
               ],
             }],
+            ['target_arch == "mipsel"', {
+              'sources/': [
+                ['include', '^atomicops_internals_mips_gcc\\.cc$'],
+              ],
+            }],
           ],
           'dependencies': [
             'base_jni_headers',

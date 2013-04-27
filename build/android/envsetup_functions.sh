@@ -33,6 +33,10 @@ common_vars_defines() {
     "x86")
       toolchain_arch="x86"
       ;;
+    "mips")
+      toolchain_arch="mipsel-linux-android"
+      toolchain_dir="linux-x86"
+      ;;
     *)
       echo "TARGET_ARCH: ${TARGET_ARCH} is not supported." >& 2
       print_usage
@@ -117,6 +121,9 @@ common_vars_defines() {
         's/i.86/ia32/;s/x86_64/x64/;s/amd64/x64/;s/arm.*/arm/;s/i86pc/ia32/')
       DEFINES+=" host_arch=${host_arch}"
       DEFINES+=" target_arch=ia32"
+      ;;
+    "mips")
+      DEFINES+=" target_arch=mipsel"
       ;;
     *)
       echo "TARGET_ARCH: ${TARGET_ARCH} is not supported." >& 2

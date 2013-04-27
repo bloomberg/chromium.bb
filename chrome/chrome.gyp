@@ -127,6 +127,10 @@
           'NACL_TARGET_SUBARCH=32',
         ],
       }],
+      ['target_arch=="mipsel"', {
+        'nacl_defines': [
+        ],
+      }],
     ],  # conditions
   },  # variables
   'includes': [
