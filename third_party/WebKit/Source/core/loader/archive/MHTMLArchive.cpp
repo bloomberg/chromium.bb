@@ -49,12 +49,6 @@
 #include <wtf/text/Base64.h>
 #include <wtf/text/StringBuilder.h>
 
-#if HAVE(SYS_TIME_H)
-#include <sys/time.h>
-#endif
-#include <time.h>
-
-
 namespace WebCore {
 
 const char* const quotedPrintable = "quoted-printable";
