@@ -374,7 +374,7 @@ def RunSignerTests(buildroot, board):
   _RunBuildScript(buildroot, cmd, enter_chroot=True)
 
 
-def RunUnitTests(buildroot, board, full, nowithdebug):
+def RunUnitTests(buildroot, board, full, nowithdebug, blacklist=None):
   cmd = ['cros_run_unit_tests', '--board=%s' % board]
 
   if nowithdebug:
@@ -385,6 +385,9 @@ def RunUnitTests(buildroot, board, full, nowithdebug):
   if not full:
     package_file = _PACKAGE_FILE % {'buildroot': buildroot}
     cmd += ['--package_file=%s' % git.ReinterpretPathForChroot(package_file)]
+
+  if blacklist:
+    cmd += ['--blacklist_packages=%s' % ' '.join(blacklist)]
 
   _RunBuildScript(buildroot, cmd, enter_chroot=True)
 

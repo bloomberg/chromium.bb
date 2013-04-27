@@ -637,7 +637,7 @@ class UnitTestStageTest(AbstractStageTest):
   def testQuickTests(self):
     self.build_config['quick_unit'] = True
     commands.RunUnitTests(self.build_root, self._current_board, full=False,
-                          nowithdebug=mox.IgnoreArg())
+                          nowithdebug=mox.IgnoreArg(), blacklist=[])
     self.mox.ReplayAll()
     self.RunStage()
     self.mox.VerifyAll()
@@ -646,7 +646,7 @@ class UnitTestStageTest(AbstractStageTest):
     """Tests if full unit and cros_au_test_harness tests are run correctly."""
     self.build_config['quick_unit'] = False
     commands.RunUnitTests(self.build_root, self._current_board, full=True,
-                          nowithdebug=mox.IgnoreArg())
+                          nowithdebug=mox.IgnoreArg(), blacklist=[])
     self.mox.ReplayAll()
     self.RunStage()
     self.mox.VerifyAll()

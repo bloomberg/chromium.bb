@@ -318,6 +318,9 @@ _settings = dict(
 #               have changed since the previous build.
   quick_unit=True,
 
+# unittest_blacklist -- A list of the packages to blacklist from unittests.
+  unittest_blacklist=[],
+
 # build_tests -- Builds autotest tests.  Must be True if vm_tests is set.
   build_tests=True,
 
@@ -1008,8 +1011,13 @@ internal_pre_cq = internal_paladin.derive(
 )
 
 internal_pre_cq.add_group(constants.PRE_CQ_BUILDER_NAME,
-  internal_pre_cq.add_config('parrot-pre-cq',
-                             boards=['parrot']),
+  internal_pre_cq.add_config(
+    'parrot-pre-cq',
+    boards=['parrot'],
+    # update_engine tests are disabled temporarily since they don't pass when
+    # run in parallel. TODO(sosa): Re-enable when crbug.com/236465 is fixed.
+    unittest_blacklist=['chromeos-base/update_engine'],
+  ),
   internal_pre_cq.add_config('stout-pre-cq', boards=['stout']),
   internal_pre_cq.add_config('daisy_spring-pre-cq',
                              arm, boards=['daisy_spring']),

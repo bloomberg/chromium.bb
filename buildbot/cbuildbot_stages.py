@@ -1574,7 +1574,8 @@ class UnitTestStage(BoardSpecificBuilderStage):
       commands.RunUnitTests(self._build_root,
                             self._current_board,
                             full=(not self._build_config['quick_unit']),
-                            nowithdebug=self._build_config['nowithdebug'])
+                            nowithdebug=self._build_config['nowithdebug'],
+                            blacklist=self._build_config['unittest_blacklist'])
 
 
 class VMTestStage(ArchivingStage):
