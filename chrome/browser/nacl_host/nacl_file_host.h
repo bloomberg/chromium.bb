@@ -26,9 +26,10 @@ class Message;
 namespace nacl_file_host {
 
 // Open a Pnacl file (readonly) on behalf of the NaCl plugin.
-void GetReadonlyPnaclFd(ChromeRenderMessageFilter* chrome_render_message_filter,
-                        const std::string& filename,
-                        IPC::Message* reply_msg);
+void GetReadonlyPnaclFd(
+    scoped_refptr<ChromeRenderMessageFilter> chrome_render_message_filter,
+    const std::string& filename,
+    IPC::Message* reply_msg);
 
 // Return true if the filename requested is valid for opening.
 // Sets file_to_open to the base::FilePath which we will attempt to open.
@@ -38,7 +39,7 @@ bool PnaclCanOpenFile(const std::string& filename,
 // Creates a temporary file that will be deleted when the last handle
 // is closed, or earlier.
 void CreateTemporaryFile(
-    ChromeRenderMessageFilter* chrome_render_message_filter,
+    scoped_refptr<ChromeRenderMessageFilter> chrome_render_message_filter,
     IPC::Message* reply_msg);
 
 // Opens a NaCl executable file for reading and executing.

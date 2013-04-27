@@ -55,10 +55,10 @@ bool PnaclDoOpenFile(const base::FilePath& file_to_open,
 }
 
 void DoOpenPnaclFile(
-    ChromeRenderMessageFilter* chrome_render_message_filter,
+    scoped_refptr<ChromeRenderMessageFilter> chrome_render_message_filter,
     const std::string& filename,
     IPC::Message* reply_msg) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   base::FilePath full_filepath;
 
   // Do some validation.
@@ -89,9 +89,9 @@ void DoOpenPnaclFile(
 }
 
 void DoCreateTemporaryFile(
-    ChromeRenderMessageFilter* chrome_render_message_filter,
+    scoped_refptr<ChromeRenderMessageFilter> chrome_render_message_filter,
     IPC::Message* reply_msg) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   base::FilePath file_path;
   if (!file_util::CreateTemporaryFile(&file_path)) {
@@ -212,13 +212,13 @@ void DoOpenNaClExecutableOnThreadPool(
 namespace nacl_file_host {
 
 void GetReadonlyPnaclFd(
-    ChromeRenderMessageFilter* chrome_render_message_filter,
+    scoped_refptr<ChromeRenderMessageFilter> chrome_render_message_filter,
     const std::string& filename,
     IPC::Message* reply_msg) {
-  if (!BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
+  if (!BrowserThread::PostBlockingPoolTask(
+          FROM_HERE,
           base::Bind(&DoOpenPnaclFile,
-                     make_scoped_refptr(chrome_render_message_filter),
+                     chrome_render_message_filter,
                      filename,
                      reply_msg))) {
     NotifyRendererOfError(chrome_render_message_filter, reply_msg);
@@ -259,13 +259,13 @@ bool PnaclCanOpenFile(const std::string& filename,
 }
 
 void CreateTemporaryFile(
-    ChromeRenderMessageFilter* chrome_render_message_filter,
+    scoped_refptr<ChromeRenderMessageFilter> chrome_render_message_filter,
     IPC::Message* reply_msg) {
-  if (!BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          base::Bind(&DoCreateTemporaryFile,
-                     make_scoped_refptr(chrome_render_message_filter),
-                     reply_msg))) {
+  if (!BrowserThread::PostBlockingPoolTask(
+      FROM_HERE,
+      base::Bind(&DoCreateTemporaryFile,
+                 chrome_render_message_filter,
+                 reply_msg))) {
     NotifyRendererOfError(chrome_render_message_filter, reply_msg);
   }
 }
