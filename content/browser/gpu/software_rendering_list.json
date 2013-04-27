@@ -75,7 +75,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "5.2",
+  "version": "5.3",
   "entries": [
     {
       "id": 1,
@@ -1073,6 +1073,23 @@
       },
       "vendor_id": "0x10de",
       "device_id": ["0x0163"],
+      "features": [
+        "webgl"
+      ]
+    },
+    {
+      "id": 73,
+      "description": "WebGL is buggy with the NVIDIA GeForce GT 330M, 9400, and 9400M on MacOSX earlier than 10.8",
+      "cr_bugs": [233523],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": "<",
+          "number": "10.8"
+        }
+      },
+      "vendor_id": "0x10de",
+      "device_id": ["0x0a29", "0x0861", "0x0863"],
       "features": [
         "webgl"
       ]
