@@ -226,13 +226,8 @@ int32_t WebRtcAudioDeviceImpl::Init() {
 
   DCHECK(!capturer_);
   capturer_ = WebRtcAudioCapturer::CreateCapturer();
-  // Add itself as an audio track to the |capturer_|. This is because WebRTC
-  // supports only one ADM but multiple audio tracks, so the ADM can't be the
-  // sink of certain audio track now.
-  // TODO(xians): Register the ADM as the sink of the audio track if WebRTC
-  // supports one ADM for each audio track.
   if (capturer_)
-    capturer_->AddSink(this);
+    capturer_->AddCapturerSink(this);
 
   // We need to return a success to continue the initialization of WebRtc VoE
   // because failure on the capturer_ initialization should not prevent WebRTC
@@ -262,7 +257,7 @@ int32_t WebRtcAudioDeviceImpl::Terminate() {
   if (capturer_) {
     // |capturer_| is stopped by the media stream, so do not need to
     // call Stop() here.
-    capturer_->RemoveSink(this);
+    capturer_->RemoveCapturerSink(this);
     capturer_ = NULL;
   }
 
