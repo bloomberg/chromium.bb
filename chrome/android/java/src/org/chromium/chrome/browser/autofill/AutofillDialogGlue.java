@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.autofill;
 
 import android.graphics.Bitmap;
+import android.os.Handler;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
@@ -214,7 +215,17 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
 
     @Override
     public void dialogDismissed() {
-        if (mNativeDialogPopup != 0) nativeDialogDismissed(mNativeDialogPopup);
+        if (mNativeDialogPopup == 0) return;
+
+        // The controller doesn't expect to get deleted synchronously, so
+        // we postpone the call.  onDestroy might be called before, so we
+        // need to check if the native side is still alive.
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                if (mNativeDialogPopup != 0) nativeDialogDismissed(mNativeDialogPopup);
+            }
+        });
     }
 
     @Override

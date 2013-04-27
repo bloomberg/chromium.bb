@@ -286,8 +286,8 @@ public class AutofillDialog extends AlertDialog
      * Dismisses the dialog.
      **/
     private void internalDismiss() {
-        mDelegate.dialogDismissed();
         super.dismiss();
+        mDelegate.dialogDismissed();
     }
 
     /**
@@ -301,6 +301,9 @@ public class AutofillDialog extends AlertDialog
 
     @Override
     public void onClick(DialogInterface dialog, int which) {
+        // The buttons will be updated as the result of a controller callback or a layout change.
+        disableButtons();
+
         // Note that the dialog will NOT be dismissed automatically.
         if (!mContentView.isInEditingMode()) {
             if (which == AlertDialog.BUTTON_POSITIVE) {
@@ -364,6 +367,15 @@ public class AutofillDialog extends AlertDialog
         int numDefaultItems = mDefaultMenuItems[section] != null ?
                 mDefaultMenuItems[section].length : 0;
         return position >= spinner.getCount() - numDefaultItems;
+    }
+
+    /**
+     * Disables the dialog buttons.
+     */
+    private void disableButtons() {
+        getButton(BUTTON_NEGATIVE).setEnabled(false);
+        getButton(BUTTON_POSITIVE).setEnabled(false);
+        mTitleView.setAccountChooserEnabled(false);
     }
 
     /**
