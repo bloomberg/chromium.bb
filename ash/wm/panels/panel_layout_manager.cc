@@ -47,6 +47,7 @@ const float kMaxWidthFactor = .50f;
 
 // Duration for panel animations.
 const int kPanelSlideDurationMilliseconds = 50;
+const int kCalloutFadeDurationMilliseconds = 50;
 
 // Offset used when sliding panel in/out of the launcher. Used for minimizing,
 // restoring and the initial showing of a panel.
@@ -235,6 +236,7 @@ class PanelCalloutWidget : public views::Widget {
     background_ = new CalloutWidgetBackground;
     content_view->set_background(background_);
     SetContentsView(content_view);
+    GetNativeWindow()->layer()->SetOpacity(0);
   }
 
   // Weak pointer owned by this widget's content view.
@@ -683,6 +685,7 @@ void PanelLayoutManager::UpdateCallouts() {
     aura::Window* panel = iter->window;
     views::Widget* callout_widget = iter->callout_widget;
 
+    gfx::Rect current_bounds = panel->GetBoundsInScreen();
     gfx::Rect bounds = ScreenAsh::ConvertRectToScreen(panel->parent(),
                                                       panel->GetTargetBounds());
     gfx::Rect icon_bounds =
@@ -690,17 +693,27 @@ void PanelLayoutManager::UpdateCallouts() {
     if (icon_bounds.IsEmpty() || !panel->layer()->GetTargetVisibility() ||
         panel == dragged_panel_) {
       callout_widget->Hide();
+      callout_widget->GetNativeWindow()->layer()->SetOpacity(0);
       continue;
     }
 
     gfx::Rect callout_bounds = callout_widget->GetWindowBoundsInScreen();
+    gfx::Vector2d slide_vector = bounds.origin() - current_bounds.origin();
+    int slide_distance = horizontal ? slide_vector.x() : slide_vector.y();
+    int distance_until_over_panel = 0;
     if (horizontal) {
       callout_bounds.set_x(
           icon_bounds.x() + (icon_bounds.width() - callout_bounds.width()) / 2);
+      distance_until_over_panel = std::max(
+          current_bounds.x() - callout_bounds.x(),
+          callout_bounds.right() - current_bounds.right());
     } else {
       callout_bounds.set_y(
           icon_bounds.y() + (icon_bounds.height() -
                              callout_bounds.height()) / 2);
+      distance_until_over_panel = std::max(
+          current_bounds.y() - callout_bounds.y(),
+          callout_bounds.bottom() - current_bounds.bottom());
     }
     switch (alignment) {
       case SHELF_ALIGNMENT_BOTTOM:
@@ -724,6 +737,34 @@ void PanelLayoutManager::UpdateCallouts() {
     panel_container_->StackChildAbove(callout_widget->GetNativeWindow(),
                                       panel);
     callout_widget->Show();
+
+    ui::Layer* layer = callout_widget->GetNativeWindow()->layer();
+    // If the panel is not over the callout position or has just become visible
+    // then fade in the callout.
+    if (distance_until_over_panel > 0 || layer->GetTargetOpacity() < 1) {
+      if (distance_until_over_panel > 0 &&
+          slide_distance >= distance_until_over_panel) {
+        layer->SetOpacity(0);
+        // If the panel is not yet over the callout, then delay fading in
+        // the callout until after the panel should be over it.
+        int delay = kPanelSlideDurationMilliseconds *
+            distance_until_over_panel / slide_distance;
+        layer->SetOpacity(0);
+        layer->GetAnimator()->StopAnimating();
+        layer->GetAnimator()->SchedulePauseForProperties(
+            base::TimeDelta::FromMilliseconds(delay),
+            ui::LayerAnimationElement::OPACITY);
+      }
+      {
+        ui::ScopedLayerAnimationSettings callout_settings(layer->GetAnimator());
+        callout_settings.SetPreemptionStrategy(
+            ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
+        callout_settings.SetTransitionDuration(
+            base::TimeDelta::FromMilliseconds(
+                kCalloutFadeDurationMilliseconds));
+        layer->SetOpacity(1);
+      }
+    }
   }
 }
 
