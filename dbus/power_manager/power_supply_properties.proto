@@ -23,7 +23,12 @@ message PowerSupplyProperties {
     // line power.
     NEITHER_CHARGING_NOR_DISCHARGING = 2;
 
-    // Next value to use: 3
+    // A USB power source (SDP, DCP, CDP, or ACA) is connected.  The
+    // battery may be charging or discharging depending on the negotiated
+    // current.
+    CONNECTED_TO_USB = 3;
+
+    // Next value to use: 4
   }
 
   // Does the system have a battery?
