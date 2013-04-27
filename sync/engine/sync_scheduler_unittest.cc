@@ -93,7 +93,7 @@ static const size_t kMinNumSamples = 5;
 class SyncSchedulerTest : public testing::Test {
  public:
   SyncSchedulerTest()
-      : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      : weak_ptr_factory_(this),
         context_(NULL),
         syncer_(NULL),
         delay_(NULL) {}

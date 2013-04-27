@@ -14,7 +14,7 @@ DebugInfoEventListener::DebugInfoEventListener()
     : events_dropped_(false),
       cryptographer_has_pending_keys_(false),
       cryptographer_ready_(false),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(this) {
 }
 
 DebugInfoEventListener::~DebugInfoEventListener() {

@@ -152,8 +152,8 @@ SyncSchedulerImpl::SyncSchedulerImpl(const std::string& name,
                                      BackoffDelayProvider* delay_provider,
                                      sessions::SyncSessionContext* context,
                                      Syncer* syncer)
-    : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      weak_ptr_factory_for_weak_handle_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+    : weak_ptr_factory_(this),
+      weak_ptr_factory_for_weak_handle_(this),
       weak_handle_this_(MakeWeakHandle(
           weak_ptr_factory_for_weak_handle_.GetWeakPtr())),
       name_(name),

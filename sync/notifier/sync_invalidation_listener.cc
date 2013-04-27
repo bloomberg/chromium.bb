@@ -31,11 +31,10 @@ SyncInvalidationListener::Delegate::~Delegate() {}
 SyncInvalidationListener::SyncInvalidationListener(
     base::TickClock* tick_clock,
     scoped_ptr<notifier::PushClient> push_client)
-    : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      ack_tracker_(tick_clock, ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+    : weak_ptr_factory_(this),
+      ack_tracker_(tick_clock, this),
       push_client_(push_client.get()),
-      sync_system_resources_(push_client.Pass(),
-                             ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      sync_system_resources_(push_client.Pass(), this),
       delegate_(NULL),
       ticl_state_(DEFAULT_INVALIDATION_ERROR),
       push_client_state_(DEFAULT_INVALIDATION_ERROR) {

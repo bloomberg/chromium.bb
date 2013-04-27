@@ -168,7 +168,7 @@ class NudgeStrategy {
 
 SyncManagerImpl::SyncManagerImpl(const std::string& name)
     : name_(name),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      weak_ptr_factory_(this),
       change_delegate_(NULL),
       initialized_(false),
       observing_network_connectivity_changes_(false),

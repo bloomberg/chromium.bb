@@ -21,7 +21,7 @@ using ::testing::StrictMock;
 
 class Base {
  public:
-  Base() : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+  Base() : weak_ptr_factory_(this) {}
 
   WeakHandle<Base> AsWeakHandle() {
     return MakeWeakHandle(weak_ptr_factory_.GetWeakPtr());

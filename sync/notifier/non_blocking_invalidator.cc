@@ -141,7 +141,7 @@ NonBlockingInvalidator::NonBlockingInvalidator(
     const WeakHandle<InvalidationStateTracker>&
         invalidation_state_tracker,
     const std::string& client_info)
-        : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+        : weak_ptr_factory_(this),
           core_(
               new Core(MakeWeakHandle(weak_ptr_factory_.GetWeakPtr()))),
           parent_task_runner_(

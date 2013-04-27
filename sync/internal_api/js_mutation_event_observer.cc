@@ -16,7 +16,7 @@
 namespace syncer {
 
 JsMutationEventObserver::JsMutationEventObserver()
-    : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+    : weak_ptr_factory_(this) {}
 
 JsMutationEventObserver::~JsMutationEventObserver() {
   DCHECK(CalledOnValidThread());
