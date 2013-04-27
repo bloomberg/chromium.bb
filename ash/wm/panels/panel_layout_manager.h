@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/launcher/launcher_icon_observer.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -50,7 +51,8 @@ class ASH_EXPORT PanelLayoutManager
       public ash::LauncherIconObserver,
       public ash::ShellObserver,
       public aura::WindowObserver,
-      public aura::client::ActivationChangeObserver {
+      public aura::client::ActivationChangeObserver,
+      public ShelfLayoutManager::Observer {
  public:
   explicit PanelLayoutManager(aura::Window* panel_container);
   virtual ~PanelLayoutManager();
@@ -92,6 +94,10 @@ class ASH_EXPORT PanelLayoutManager
   // Overridden from aura::client::ActivationChangeObserver
   virtual void OnWindowActivated(aura::Window* gained_active,
                                  aura::Window* lost_active) OVERRIDE;
+
+  // Overridden from ShelfLayoutManager::Observer
+  virtual void WillChangeVisibilityState(
+      ShelfVisibilityState new_state) OVERRIDE;
 
  private:
   friend class PanelLayoutManagerTest;
@@ -144,6 +150,11 @@ class ASH_EXPORT PanelLayoutManager
   aura::Window* dragged_panel_;
   // The launcher we are observing for launcher icon changes.
   Launcher* launcher_;
+  // The shelf layout manager being observed for visibility changes.
+  ShelfLayoutManager* shelf_layout_manager_;
+  // Tracks the visibility of the shelf. Defaults to false when there is no
+  // shelf.
+  bool shelf_hidden_;
   // The last active panel. Used to maintain stacking even if no panels are
   // currently focused.
   aura::Window* last_active_panel_;

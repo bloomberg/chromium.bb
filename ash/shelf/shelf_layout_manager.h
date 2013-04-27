@@ -34,6 +34,7 @@ class ScreenAsh;
 class ShelfWidget;
 namespace internal {
 
+class PanelLayoutManagerTest;
 class ShelfLayoutManagerTest;
 class StatusAreaWidget;
 class WorkspaceController;
@@ -201,6 +202,7 @@ class ASH_EXPORT ShelfLayoutManager :
   class AutoHideEventFilter;
   class UpdateShelfObserver;
   friend class ash::ScreenAsh;
+  friend class PanelLayoutManagerTest;
   friend class ShelfLayoutManagerTest;
 
   struct TargetBounds {

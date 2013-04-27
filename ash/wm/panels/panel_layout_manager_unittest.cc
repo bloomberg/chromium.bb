@@ -249,6 +249,14 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     shelf->UpdateAutoHideState();
   }
 
+  void SetShelfVisibilityState(aura::Window* window,
+                               ShelfVisibilityState visibility_state) {
+    internal::ShelfLayoutManager* shelf =
+        RootWindowController::ForWindow(window)->shelf()->
+        shelf_layout_manager();
+    shelf->SetState(visibility_state);
+  }
+
  private:
   scoped_ptr<test::LauncherViewTestAPI> launcher_view_test_;
 
@@ -274,7 +282,8 @@ TEST_F(PanelLayoutManagerTest, AddOnePanel) {
 TEST_F(PanelLayoutManagerTest, PanelAlignsToHiddenLauncherIcon) {
   gfx::Rect bounds(0, 0, 201, 201);
   SetShelfAutoHideBehavior(Shell::GetPrimaryRootWindow(),
-                           SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
+                           SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  RunAllPendingInMessageLoop();
   scoped_ptr<aura::Window> window(CreatePanelWindow(bounds));
   EXPECT_EQ(GetPanelContainer(window.get()), window->parent());
   EXPECT_NO_FATAL_FAILURE(IsPanelAboveLauncherIcon(window.get()));
@@ -636,6 +645,41 @@ TEST_F(PanelLayoutManagerTest, AlignmentTop) {
   SetAlignment(Shell::GetPrimaryRootWindow(), SHELF_ALIGNMENT_TOP);
   IsPanelAboveLauncherIcon(w.get());
   IsCalloutAboveLauncherIcon(w.get());
+}
+
+// Tests that panels will hide and restore their state with the shelf visibility
+// state. This ensures that entering full-screen mode will hide your panels
+// until you leave it.
+TEST_F(PanelLayoutManagerTest, PanelsHideAndRestoreWithShelf) {
+  gfx::Rect bounds(0, 0, 201, 201);
+
+  scoped_ptr<aura::Window> w1(CreatePanelWindow(bounds));
+  scoped_ptr<aura::Window> w2(CreatePanelWindow(bounds));
+  scoped_ptr<aura::Window> w3;
+  // Minimize w2.
+  w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(w1->IsVisible());
+  EXPECT_FALSE(w2->IsVisible());
+
+  SetShelfVisibilityState(Shell::GetPrimaryRootWindow(), SHELF_HIDDEN);
+  RunAllPendingInMessageLoop();
+
+  // w3 is created while in full-screen mode, should only become visible when
+  // we exit fullscreen mode.
+  w3.reset(CreatePanelWindow(bounds));
+
+  EXPECT_FALSE(w1->IsVisible());
+  EXPECT_FALSE(w2->IsVisible());
+  EXPECT_FALSE(w3->IsVisible());
+
+  SetShelfVisibilityState(Shell::GetPrimaryRootWindow(), SHELF_VISIBLE);
+  RunAllPendingInMessageLoop();
+
+  // Windows should be restored to their prior state.
+  EXPECT_TRUE(w1->IsVisible());
+  EXPECT_FALSE(w2->IsVisible());
+  EXPECT_TRUE(w3->IsVisible());
 }
 
 }  // namespace internal

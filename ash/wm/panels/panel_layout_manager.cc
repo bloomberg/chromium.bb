@@ -252,6 +252,8 @@ PanelLayoutManager::PanelLayoutManager(aura::Window* panel_container)
       in_layout_(false),
       dragged_panel_(NULL),
       launcher_(NULL),
+      shelf_layout_manager_(NULL),
+      shelf_hidden_(false),
       last_active_panel_(NULL),
       weak_factory_(this) {
   DCHECK(panel_container);
@@ -261,6 +263,10 @@ PanelLayoutManager::PanelLayoutManager(aura::Window* panel_container)
 }
 
 PanelLayoutManager::~PanelLayoutManager() {
+  if (launcher_)
+    launcher_->RemoveIconObserver(this);
+  if (shelf_layout_manager_)
+    shelf_layout_manager_->RemoveObserver(this);
   Shutdown();
   aura::client::GetActivationClient(Shell::GetPrimaryRootWindow())->
       RemoveObserver(this);
@@ -290,8 +296,16 @@ void PanelLayoutManager::FinishDragging() {
 }
 
 void PanelLayoutManager::SetLauncher(ash::Launcher* launcher) {
+  DCHECK(!launcher_);
+  DCHECK(!shelf_layout_manager_);
   launcher_ = launcher;
   launcher_->AddIconObserver(this);
+  if (launcher_->shelf_widget()) {
+    shelf_layout_manager_ = ash::internal::ShelfLayoutManager::ForLauncher(
+        launcher_->shelf_widget()->GetNativeWindow());
+    WillChangeVisibilityState(shelf_layout_manager_->visibility_state());
+    shelf_layout_manager_->AddObserver(this);
+  }
 }
 
 void PanelLayoutManager::ToggleMinimize(aura::Window* panel) {
@@ -416,6 +430,10 @@ void PanelLayoutManager::OnWindowPropertyChanged(aura::Window* window,
                                                  intptr_t old) {
   if (key != aura::client::kShowStateKey)
     return;
+  // The window property will still be set, but no actual change will occur
+  // until WillChangeVisibilityState is called when the shelf is visible again.
+  if (shelf_hidden_)
+    return;
   ui::WindowShowState new_state =
       window->GetProperty(aura::client::kShowStateKey);
   if (new_state == ui::SHOW_STATE_MINIMIZED)
@@ -441,6 +459,29 @@ void PanelLayoutManager::OnWindowActivated(aura::Window* gained_active,
       gained_active->parent() == panel_container_) {
     UpdateStacking(gained_active);
     UpdateCallouts();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// PanelLayoutManager, ShelfLayoutManager::Observer implementation:
+
+void PanelLayoutManager::WillChangeVisibilityState(
+    ShelfVisibilityState new_state) {
+  // On entering / leaving full screen mode the shelf visibility state is
+  // changed to / from SHELF_HIDDEN. In this state, panel windows should hide
+  // to allow the full-screen application to use the full screen.
+  shelf_hidden_ = new_state == ash::SHELF_HIDDEN;
+  for (PanelList::iterator iter = panel_windows_.begin();
+       iter != panel_windows_.end(); ++iter) {
+    if (shelf_hidden_) {
+      if (iter->window->IsVisible())
+        MinimizePanel(iter->window);
+    } else {
+      if (iter->window->GetProperty(aura::client::kShowStateKey) !=
+              ui::SHOW_STATE_MINIMIZED) {
+        RestorePanel(iter->window);
+      }
+    }
   }
 }
 
@@ -507,6 +548,15 @@ void PanelLayoutManager::Relayout() {
     if (!panel->IsVisible() ||
         (panel == dragged_panel_ &&
          !BoundsAdjacent(panel->bounds(), launcher_bounds))) {
+      continue;
+    }
+
+    // If the shelf is currently hidden (full-screen mode), hide panel until
+    // full-screen mode is exited.
+    if (shelf_hidden_) {
+      // The call to Hide does not set the minimize property, so the window will
+      // be restored when the shelf becomes visible again.
+      panel->Hide();
       continue;
     }
 
