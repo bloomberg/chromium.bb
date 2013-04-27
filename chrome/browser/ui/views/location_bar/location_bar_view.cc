@@ -832,11 +832,6 @@ void LocationBarView::Layout() {
       suggested_text_view_->SetBounds(0, 0, 0, 0);
     } else {
       int location_needed_width = location_entry_->TextWidth();
-#if defined(USE_AURA)
-      // TODO(sky): fix this. The +1 comes from the width of the cursor, without
-      // the text ends up shifting to the left.
-      location_needed_width++;
-#endif
       location_bounds.set_width(
           std::min(location_needed_width,
                    location_bounds.width() - suggested_text_width));

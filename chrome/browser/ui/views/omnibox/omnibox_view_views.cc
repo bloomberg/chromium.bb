@@ -603,8 +603,9 @@ string16 OmniboxViewViews::GetInstantSuggestion() const {
 }
 
 int OmniboxViewViews::TextWidth() const {
-  // TODO(oshima): add horizontal margin.
-  return font().GetStringWidth(text());
+  // TODO(pkasting): Return correct value here, taking into account insets,
+  // space reserved for cursor, etc.
+  return font().GetStringWidth(text()) + 1;
 }
 
 bool OmniboxViewViews::IsImeComposing() const {
