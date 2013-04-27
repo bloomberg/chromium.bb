@@ -81,7 +81,7 @@ ChromotingHost::ChromotingHost(
       login_backoff_(&kDefaultBackoffPolicy),
       authenticating_client_(false),
       reject_authenticating_client_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   DCHECK(signal_strategy);
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 

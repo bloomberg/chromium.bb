@@ -50,7 +50,7 @@ class PolicyWatcherLinux : public PolicyWatcher {
                      const base::FilePath& config_dir)
       : PolicyWatcher(task_runner),
         config_dir_(config_dir),
-        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+        weak_factory_(this) {
     // Detach the factory because we ensure that only the policy thread ever
     // calls methods on this. Also, the API contract of having to call
     // StopWatching() (which signals completion) after StartWatching()

@@ -113,13 +113,12 @@ DaemonComInstallerWin::DaemonComInstallerWin(
     const CompletionCallback& done)
     : DaemonInstallerWin(done),
       update3_(update3),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          polling_timer_(
-              FROM_HERE,
-              base::TimeDelta::FromMilliseconds(kOmahaPollIntervalMs),
-              base::Bind(&DaemonComInstallerWin::PollInstallationStatus,
-                         base::Unretained(this)),
-              false)) {
+      polling_timer_(
+          FROM_HERE,
+          base::TimeDelta::FromMilliseconds(kOmahaPollIntervalMs),
+          base::Bind(&DaemonComInstallerWin::PollInstallationStatus,
+                     base::Unretained(this)),
+          false) {
 }
 
 void DaemonComInstallerWin::Install() {

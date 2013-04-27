@@ -80,7 +80,7 @@ net::ProxyConfigService* CreateSystemProxyConfigService(
 // which is in turn copied from some test code. Move it somewhere reusable.
 URLRequestContext::URLRequestContext(
     scoped_ptr<net::ProxyConfigService> proxy_config_service)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(storage_(this)) {
+    : storage_(this) {
   scoped_ptr<VlogNetLog> net_log(new VlogNetLog());
   storage_.set_host_resolver(
       net::HostResolver::CreateDefaultResolver(net_log.get()));

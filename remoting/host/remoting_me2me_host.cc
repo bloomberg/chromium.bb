@@ -303,7 +303,7 @@ HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
 #if defined(REMOTING_MULTI_PROCESS)
       desktop_session_connector_(NULL),
 #endif  // defined(REMOTING_MULTI_PROCESS)
-      ALLOW_THIS_IN_INITIALIZER_LIST(self_(this)),
+      self_(this),
       exit_code_out_(exit_code_out) {
   // Create the platform-specific curtain-mode implementation.
   // TODO(wez): Create this on the network thread?

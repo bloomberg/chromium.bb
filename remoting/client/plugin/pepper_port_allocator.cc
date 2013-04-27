@@ -95,7 +95,7 @@ PepperPortAllocatorSession::PepperPortAllocatorSession(
       stun_address_resolver_(instance_),
       stun_port_(0),
       relay_response_received_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   if (stun_hosts.size() > 0) {
     stun_address_ = stun_hosts[0];
   }

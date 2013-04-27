@@ -655,7 +655,7 @@ HostNPScriptObject::HostNPScriptObject(
       am_currently_logging_(false),
       state_(kDisconnected),
       daemon_controller_(DaemonController::Create()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       weak_ptr_(weak_factory_.GetWeakPtr()) {
   DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 

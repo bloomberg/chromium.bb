@@ -12,7 +12,7 @@ namespace remoting {
 IpcAudioCapturer::IpcAudioCapturer(
     scoped_refptr<DesktopSessionProxy> desktop_session_proxy)
     : desktop_session_proxy_(desktop_session_proxy),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
 }
 
 IpcAudioCapturer::~IpcAudioCapturer() {

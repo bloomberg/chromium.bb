@@ -19,7 +19,7 @@ PepperNetworkManager::PepperNetworkManager(const pp::InstanceHandle& instance)
                this),
       start_count_(0),
       network_list_received_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 PepperNetworkManager::~PepperNetworkManager() {

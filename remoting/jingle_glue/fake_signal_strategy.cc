@@ -27,7 +27,7 @@ FakeSignalStrategy::FakeSignalStrategy(const std::string& jid)
     : jid_(jid),
       peer_(NULL),
       last_id_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 
 }
 

@@ -95,7 +95,7 @@ HostWindowProxy::Core::Core(
     : caller_task_runner_(caller_task_runner),
       ui_task_runner_(ui_task_runner),
       host_window_(host_window.Pass()),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
 }
 

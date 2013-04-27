@@ -25,7 +25,7 @@ HostStarter::HostStarter(
       service_client_(service_client.Pass()),
       daemon_controller_(daemon_controller.Pass()),
       consent_to_data_collection_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      weak_ptr_factory_(this),
       weak_ptr_(weak_ptr_factory_.GetWeakPtr()) {
   main_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }

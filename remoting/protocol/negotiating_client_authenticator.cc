@@ -28,7 +28,7 @@ NegotiatingClientAuthenticator::NegotiatingClientAuthenticator(
       fetch_secret_callback_(fetch_secret_callback),
       token_fetcher_(token_fetcher.Pass()),
       method_set_by_host_(false),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
   DCHECK(!methods.empty());
   for (std::vector<AuthenticationMethod>::const_iterator it = methods.begin();
        it != methods.end(); ++it) {

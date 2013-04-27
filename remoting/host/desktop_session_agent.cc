@@ -490,7 +490,7 @@ DesktopSessionAgent::DesktopSessionAgent(
       input_task_runner_(input_task_runner),
       io_task_runner_(io_task_runner),
       video_capture_task_runner_(video_capture_task_runner),
-      control_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      control_factory_(this),
       desktop_pipe_(IPC::InvalidPlatformFileForTransit()),
       current_size_(SkISize::Make(0, 0)),
       next_shared_buffer_id_(1),

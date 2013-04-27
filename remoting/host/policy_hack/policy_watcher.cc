@@ -106,7 +106,7 @@ PolicyWatcher::PolicyWatcher(
     : task_runner_(task_runner),
       old_policies_(new base::DictionaryValue()),
       default_values_(new base::DictionaryValue()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   // Initialize the default values for each policy.
   default_values_->SetBoolean(kNatPolicyName, true);
   default_values_->SetBoolean(kHostRequireTwoFactorPolicyName, false);

@@ -80,7 +80,7 @@ IpcDesktopEnvironmentFactory::IpcDesktopEnvironmentFactory(
       io_task_runner_(io_task_runner),
       curtain_activated_(false),
       daemon_channel_(daemon_channel),
-      connector_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      connector_factory_(this),
       next_id_(0) {
 }
 

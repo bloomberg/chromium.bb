@@ -12,7 +12,7 @@ PepperTokenFetcher::PepperTokenFetcher(base::WeakPtr<ChromotingInstance> plugin,
                                        const std::string& host_public_key)
     : plugin_(plugin),
       host_public_key_(host_public_key),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 PepperTokenFetcher::~PepperTokenFetcher() {

@@ -28,7 +28,7 @@ StartHostWindow::StartHostWindow(
       consent_to_collect_data_(true),
       mem_mgr_(GetProcessHeap()),
       string_mgr_(&mem_mgr_),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      weak_ptr_factory_(this),
       weak_ptr_(weak_ptr_factory_.GetWeakPtr()) {
 }
 

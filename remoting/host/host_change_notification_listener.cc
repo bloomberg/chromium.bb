@@ -29,7 +29,7 @@ HostChangeNotificationListener::HostChangeNotificationListener(
       host_id_(host_id),
       signal_strategy_(signal_strategy),
       directory_bot_jid_(directory_bot_jid),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   DCHECK(signal_strategy_);
 
   signal_strategy_->AddListener(this);

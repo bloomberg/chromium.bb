@@ -110,7 +110,7 @@ UdpPacketSocket::UdpPacketSocket(const pp::InstanceHandle& instance)
       max_port_(0),
       send_pending_(false),
       send_queue_size_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 UdpPacketSocket::~UdpPacketSocket() {

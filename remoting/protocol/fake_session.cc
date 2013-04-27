@@ -27,7 +27,7 @@ FakeSocket::FakeSocket()
       read_buffer_size_(0),
       input_pos_(0),
       message_loop_(MessageLoop::current()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 FakeSocket::~FakeSocket() {
@@ -279,7 +279,7 @@ FakeSession::FakeSession()
       jid_(kTestJid),
       error_(OK),
       closed_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 FakeSession::~FakeSession() { }

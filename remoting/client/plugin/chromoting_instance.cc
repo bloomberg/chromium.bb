@@ -182,7 +182,7 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
 #endif
       input_handler_(&key_mapper_),
       use_async_pin_dialog_(false),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
   RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE | PP_INPUTEVENT_CLASS_WHEEL);
   RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_KEYBOARD);
 

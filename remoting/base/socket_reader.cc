@@ -20,7 +20,7 @@ int kReadBufferSize = 4096;
 
 SocketReader::SocketReader()
     : socket_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 SocketReader::~SocketReader() {

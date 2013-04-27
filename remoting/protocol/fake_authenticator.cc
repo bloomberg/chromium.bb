@@ -20,7 +20,7 @@ FakeChannelAuthenticator::FakeChannelAuthenticator(bool accept, bool async)
       async_(async),
       did_read_bytes_(false),
       did_write_bytes_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 FakeChannelAuthenticator::~FakeChannelAuthenticator() {

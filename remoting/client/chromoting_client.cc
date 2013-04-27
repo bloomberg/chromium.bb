@@ -36,7 +36,7 @@ ChromotingClient::ChromotingClient(
       connection_(connection),
       user_interface_(user_interface),
       host_capabilities_received_(false),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
   rectangle_decoder_ =
       new RectangleUpdateDecoder(client_context->main_task_runner(),
                                  client_context->decode_task_runner(),

@@ -207,7 +207,7 @@ RdpSession::RdpSession(
     WtsTerminalMonitor* monitor)
     : DesktopSessionWin(caller_task_runner, io_task_runner, daemon_process, id,
                         monitor),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 RdpSession::~RdpSession() {

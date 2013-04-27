@@ -26,7 +26,7 @@ MessageReader::MessageReader()
       read_pending_(false),
       pending_messages_(0),
       closed_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 void MessageReader::Init(net::Socket* socket,

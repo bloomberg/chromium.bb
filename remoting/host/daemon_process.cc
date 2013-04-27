@@ -167,7 +167,7 @@ DaemonProcess::DaemonProcess(
       caller_task_runner_(caller_task_runner),
       io_task_runner_(io_task_runner),
       next_terminal_id_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
 }
 
