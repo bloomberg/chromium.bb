@@ -29,6 +29,11 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     isAutoEnrollment_: false,
 
     /**
+     * True if enrollment cancellation should be prevented.
+     */
+    preventCancellation_: false,
+
+    /**
      * Enrollment steps with names and buttons to show.
      */
     steps_: null,
@@ -77,8 +82,11 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       cancelButton.textContent =
           loadTimeData.getString('oauthEnrollCancel');
       cancelButton.addEventListener('click', function(e) {
+        if (this.preventCancellation_)
+          return;
+
         chrome.send('oauthEnrollClose', ['cancel']);
-      });
+      }.bind(this));
       buttons.push(cancelButton);
 
       var tryAgainButton = this.ownerDocument.createElement('button');
@@ -169,7 +177,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       }
       this.signInUrl_ = url;
       this.setIsAutoEnrollment(data.is_auto_enrollment);
-
+      this.preventCancellation_ = data.prevent_cancellation;
       $('oauth-enroll-signin-frame').contentWindow.location.href =
           this.signInUrl_;
 
@@ -199,7 +207,8 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
         var theStep = this.steps_[i];
         var active = (theStep.name == step);
         $('oauth-enroll-step-' + theStep.name).hidden = !active;
-        if (active && theStep.button) {
+        if (active && theStep.button &&
+            !(theStep.button == 'cancel' && this.preventCancellation_)) {
           var button = $('oauth-enroll-' + theStep.button + '-button');
           button.hidden = false;
           if (theStep.focusButton)
@@ -232,6 +241,10 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * Handler for cancellations of an enforced auto-enrollment.
      */
     cancelAutoEnrollment: function() {
+      // Check if this is forced enrollment flow for a kiosk app.
+      if (this.preventCancellation_)
+        return;
+
       // The dialog to confirm cancellation of auto-enrollment is only shown
       // if this is an auto-enrollment, and if the user is currently in the
       // 'explain' step.

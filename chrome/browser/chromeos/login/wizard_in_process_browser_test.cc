@@ -45,7 +45,7 @@ void WizardInProcessBrowserTest::CleanUpOnMainThread() {
   // LoginDisplayHost owns controllers and all windows.
   MessageLoopForUI::current()->DeleteSoon(FROM_HERE, host_);
 
-  content::RunMessageLoop();
+  MessageLoopForUI::current()->RunUntilIdle();
 }
 
 }  // namespace chromeos

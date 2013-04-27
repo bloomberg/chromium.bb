@@ -25,6 +25,13 @@ class StatisticsProvider {
   virtual bool GetMachineStatistic(const std::string& name,
                                    std::string* result) = 0;
 
+  // Retrieve boolean value for named machine flag.
+  virtual bool GetMachineFlag(const std::string& name,
+                              bool* result) = 0;
+
+  // Loads kiosk oem manifest file.
+  virtual void LoadOemManifest() = 0;
+
   static StatisticsProvider* GetInstance();
 
  protected:

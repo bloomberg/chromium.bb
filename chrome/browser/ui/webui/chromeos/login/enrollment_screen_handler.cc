@@ -85,6 +85,7 @@ EnrollmentScreenHandler::EnrollmentScreenHandler()
     : controller_(NULL),
       show_on_init_(false),
       is_auto_enrollment_(false),
+      can_exit_enrollment_(true),
       browsing_data_remover_(NULL) {
 }
 
@@ -111,9 +112,11 @@ void EnrollmentScreenHandler::RegisterMessages() {
 void EnrollmentScreenHandler::SetParameters(
     Controller* controller,
     bool is_auto_enrollment,
+    bool can_exit_enrollment,
     const std::string& user) {
   controller_ = controller;
   is_auto_enrollment_ = is_auto_enrollment;
+  can_exit_enrollment_ = can_exit_enrollment;
   if (is_auto_enrollment_)
     user_ = user;
 }
@@ -394,8 +397,7 @@ void EnrollmentScreenHandler::HandleClose(
   RevokeTokens();
 }
 
-void EnrollmentScreenHandler::HandleCompleteLogin(
-    const std::string& user) {
+void EnrollmentScreenHandler::HandleCompleteLogin(const std::string& user) {
   if (!controller_) {
     NOTREACHED();
     return;
@@ -469,6 +471,7 @@ void EnrollmentScreenHandler::DoShow() {
             switches::kGaiaUrlPath));
   }
   screen_data.SetBoolean("is_auto_enrollment", is_auto_enrollment_);
+  screen_data.SetBoolean("prevent_cancellation", !can_exit_enrollment_);
   if (!test_email_.empty()) {
     screen_data.SetString("test_email", test_email_);
     screen_data.SetString("test_password", test_password_);

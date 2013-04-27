@@ -19,8 +19,11 @@ class MockStatisticsProvider : public system::StatisticsProvider {
 
   MOCK_METHOD0(Init, void());
   MOCK_METHOD0(StartLoadingMachineStatistics, void());
+  MOCK_METHOD0(LoadOemManifest, void());
   MOCK_METHOD2(GetMachineStatistic, bool(const std::string& name,
                                          std::string* result));
+  MOCK_METHOD2(GetMachineFlag, bool(const std::string& name,
+                                    bool* result));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockStatisticsProvider);

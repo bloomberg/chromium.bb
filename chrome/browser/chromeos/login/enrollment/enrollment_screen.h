@@ -39,6 +39,7 @@ class EnrollmentScreen
   virtual ~EnrollmentScreen();
 
   void SetParameters(bool is_auto_enrollment,
+                     bool can_exit_enrollment,
                      const std::string& enrollment_user);
 
   // WizardScreen implementation:
@@ -88,6 +89,7 @@ class EnrollmentScreen
 
   EnrollmentScreenActor* actor_;
   bool is_auto_enrollment_;
+  bool can_exit_enrollment_;
   bool enrollment_failed_once_;
   std::string user_;
   int lockbox_init_duration_;

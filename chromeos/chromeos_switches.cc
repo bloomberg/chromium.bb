@@ -7,6 +7,9 @@
 namespace chromeos {
 namespace switches {
 
+// Path for app's OEM manifest file.
+const char kAppOemManifestFile[]            = "app-mode-oem-manifest";
+
 // Enables overriding the Chrome OS board type when running on Linux.
 const char kChromeOSReleaseBoard[] = "chromeos-release-board";
 

@@ -1,0 +1,5 @@
+{
+  "enterprise_managed": true,
+  "can_exit_enrollment": false,
+  "device_requisition": "test"
+}

@@ -20,6 +20,7 @@ namespace switches {
 // see chromeos::LoginUtil::GetOffTheRecordCommandLine().)
 
 // Please keep alphabetized.
+CHROMEOS_EXPORT extern const char kAppOemManifestFile[];
 CHROMEOS_EXPORT extern const char kChromeOSReleaseBoard[];
 CHROMEOS_EXPORT extern const char kDbusStub[];
 CHROMEOS_EXPORT extern const char kDisableQuickofficeComponentApp[];

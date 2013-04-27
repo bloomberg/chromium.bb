@@ -481,6 +481,9 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
        AudioPrefHandler::Create(g_browser_process->local_state()));
   }
 
+  if (!StartupUtils::IsOobeCompleted())
+    system::StatisticsProvider::GetInstance()->LoadOemManifest();
+
   base::FilePath downloads_directory;
   CHECK(PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &downloads_directory));
   imageburner::BurnManager::Initialize(

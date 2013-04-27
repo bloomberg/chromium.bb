@@ -286,6 +286,12 @@ class WizardController : public ScreenObserver {
   // a previous screen instead of proceeding with usual flow.
   bool user_image_screen_return_to_previous_hack_;
 
+  // True if OOBE should force enterprise enrollment flow.
+  bool force_enrollment_;
+
+  // True if OOBE should prevent exiting enterprise enrollment.
+  bool can_exit_enrollment_;
+
   FRIEND_TEST_ALL_PREFIXES(EnrollmentScreenTest, TestCancel);
   FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, Accelerators);
   friend class WizardControllerFlowTest;

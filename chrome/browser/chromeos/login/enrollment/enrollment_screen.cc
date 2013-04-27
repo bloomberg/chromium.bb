@@ -45,6 +45,7 @@ EnrollmentScreen::EnrollmentScreen(
     : WizardScreen(observer),
       actor_(actor),
       is_auto_enrollment_(false),
+      can_exit_enrollment_(true),
       enrollment_failed_once_(false),
       lockbox_init_duration_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
@@ -57,10 +58,12 @@ EnrollmentScreen::EnrollmentScreen(
 EnrollmentScreen::~EnrollmentScreen() {}
 
 void EnrollmentScreen::SetParameters(bool is_auto_enrollment,
-                                               const std::string& user) {
+                                     bool can_exit_enrollment,
+                                     const std::string& user) {
   is_auto_enrollment_ = is_auto_enrollment;
+  can_exit_enrollment_ = can_exit_enrollment;
   user_ = user.empty() ? user : gaia::CanonicalizeEmail(user);
-  actor_->SetParameters(this, is_auto_enrollment_, user_);
+  actor_->SetParameters(this, is_auto_enrollment_, can_exit_enrollment, user_);
 }
 
 void EnrollmentScreen::PrepareToShow() {
@@ -144,6 +147,11 @@ void EnrollmentScreen::OnRetry() {
 }
 
 void EnrollmentScreen::OnCancel() {
+  if (!can_exit_enrollment_) {
+    NOTREACHED() << "Cancellation should not be permitted";
+    return;
+  }
+
   if (is_auto_enrollment_)
     policy::AutoEnrollmentClient::CancelAutoEnrollment();
   UMA(is_auto_enrollment_ ? policy::kMetricEnrollmentAutoCancelled

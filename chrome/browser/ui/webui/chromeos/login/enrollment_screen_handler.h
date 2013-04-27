@@ -38,6 +38,7 @@ class EnrollmentScreenHandler
   // Implements EnrollmentScreenActor:
   virtual void SetParameters(Controller* controller,
                              bool is_auto_enrollment,
+                             bool can_exit_enrollment,
                              const std::string& user) OVERRIDE;
   virtual void PrepareToShow() OVERRIDE;
   virtual void Show() OVERRIDE;
@@ -112,6 +113,9 @@ class EnrollmentScreenHandler
 
   // Whether this is an auto-enrollment screen.
   bool is_auto_enrollment_;
+
+  // True of we can exit enrollment and return back to the regular login flow.
+  bool can_exit_enrollment_;
 
   // Whether an enrollment attempt has failed.
   bool enrollment_failed_once_;

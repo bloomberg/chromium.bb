@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 
+#include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -98,8 +99,7 @@ class AppDataLoadWaiter : public KioskAppManagerObserver {
 
 class KioskAppManagerTest : public InProcessBrowserTest {
  public:
-  KioskAppManagerTest()
-      : manager_(NULL) {}
+  KioskAppManagerTest() {}
   virtual ~KioskAppManagerTest() {}
 
   // InProcessBrowserTest overrides:
@@ -119,18 +119,10 @@ class KioskAppManagerTest : public InProcessBrowserTest {
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     host_resolver()->AddRule(kWebstoreDomain, "127.0.0.1");
   }
-  virtual void SetUpOnMainThread() OVERRIDE {
-    manager_.reset(new KioskAppManager);
-  }
-  virtual void CleanUpOnMainThread() OVERRIDE {
-    // Clean up while main thread still runs.
-    // See http://crbug.com/176659.
-    manager_->CleanUp();
-  }
 
   std::string GetAppIds() const {
     KioskAppManager::Apps apps;
-    manager_->GetApps(&apps);
+    manager()->GetApps(&apps);
 
     std::string str;
     for (size_t i = 0; i < apps.size(); ++i) {
@@ -142,11 +134,11 @@ class KioskAppManagerTest : public InProcessBrowserTest {
     return str;
   }
 
-  KioskAppManager* manager() { return manager_.get(); }
+  KioskAppManager* manager() const { return KioskAppManager::Get(); }
 
  private:
-  scoped_ptr<KioskAppManager> manager_;
   std::string test_gallery_url_;
+  base::ShadowingAtExitManager exit_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskAppManagerTest);
 };

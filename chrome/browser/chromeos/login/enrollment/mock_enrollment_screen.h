@@ -25,7 +25,8 @@ class MockEnrollmentScreenActor
   MockEnrollmentScreenActor();
   virtual ~MockEnrollmentScreenActor();
 
-  MOCK_METHOD3(SetParameters, void(Controller*, bool, const std::string&));
+  MOCK_METHOD4(SetParameters, void(Controller*, bool, bool,
+                                   const std::string&));
   MOCK_METHOD0(PrepareToShow, void());
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());

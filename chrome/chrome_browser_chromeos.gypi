@@ -125,6 +125,8 @@
         'browser/chromeos/app_mode/kiosk_app_manager_observer.h',
         'browser/chromeos/app_mode/kiosk_app_update_service.cc',
         'browser/chromeos/app_mode/kiosk_app_update_service.h',
+        'browser/chromeos/app_mode/kiosk_oem_manifest_parser.cc',
+        'browser/chromeos/app_mode/kiosk_oem_manifest_parser.h',
         'browser/chromeos/app_mode/startup_app_launcher.cc',
         'browser/chromeos/app_mode/startup_app_launcher.h',
         'browser/chromeos/attestation/attestation_ca_client.cc',

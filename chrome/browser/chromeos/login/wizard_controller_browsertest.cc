@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
+#include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
@@ -21,10 +23,13 @@
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
 #include "chrome/browser/chromeos/login/screens/user_image_screen.h"
 #include "chrome/browser/chromeos/login/screens/wrong_hwid_screen.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test_login_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_in_process_browser_test.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chromeos/chromeos_switches.h"
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -221,7 +226,10 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowSkipUpdateEnroll) {
   EXPECT_CALL(*mock_update_screen_, Show()).Times(0);
   WizardController::default_controller()->SkipUpdateEnrollAfterEula();
   EXPECT_CALL(*mock_enrollment_screen_->actor(),
-              SetParameters(mock_enrollment_screen_, false, ""))
+              SetParameters(mock_enrollment_screen_,
+                            false,  // is_auto_enrollment
+                            true,   // can_exit_enrollment
+                            ""))
       .Times(1);
   EXPECT_CALL(*mock_enrollment_screen_, Show()).Times(1);
   EXPECT_CALL(*mock_enrollment_screen_, Hide()).Times(0);
@@ -259,7 +267,10 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
             WizardController::default_controller()->current_screen());
   EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(0);
   EXPECT_CALL(*mock_enrollment_screen_->actor(),
-              SetParameters(mock_enrollment_screen_, false, ""))
+              SetParameters(mock_enrollment_screen_,
+                            false,  // is_auto_enrollment
+                            true,   // can_exit_enrollment
+                            ""))
       .Times(1);
   EXPECT_CALL(*mock_enrollment_screen_, Show()).Times(1);
   EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
@@ -344,6 +355,66 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   // And this destroys WizardController.
   OnExit(ScreenObserver::WRONG_HWID_WARNING_SKIPPED);
   EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
+}
+
+class WizardControllerKioskFlowTest : public WizardControllerFlowTest {
+ protected:
+  WizardControllerKioskFlowTest() {}
+
+  // Overridden from InProcessBrowserTest:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    base::FilePath test_data_dir;
+    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+    command_line->AppendSwitchPath(
+        switches::kAppOemManifestFile,
+         test_data_dir.Append(FILE_PATH_LITERAL(
+             "chromeos/app_mode/kiosk_manifest/kiosk_manifest.json")));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WizardControllerKioskFlowTest);
+};
+
+IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
+                       ControlFlowKioskForcedEnrollment) {
+  EXPECT_CALL(*mock_enrollment_screen_->actor(),
+              SetParameters(mock_enrollment_screen_,
+                            false,  // is_auto_enrollment
+                            false,  // can_exit_enrollment
+                            ""))
+      .Times(1);
+
+  EXPECT_TRUE(ExistingUserController::current_controller() == NULL);
+  EXPECT_EQ(WizardController::default_controller()->GetNetworkScreen(),
+            WizardController::default_controller()->current_screen());
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
+  OnExit(ScreenObserver::NETWORK_CONNECTED);
+
+  EXPECT_EQ(WizardController::default_controller()->GetEulaScreen(),
+            WizardController::default_controller()->current_screen());
+  EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
+  OnExit(ScreenObserver::EULA_ACCEPTED);
+  // Let update screen smooth time process (time = 0ms).
+  content::RunAllPendingInMessageLoop();
+
+  EXPECT_EQ(WizardController::default_controller()->GetUpdateScreen(),
+            WizardController::default_controller()->current_screen());
+  EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_enrollment_screen_, Show()).Times(1);
+  OnExit(ScreenObserver::UPDATE_INSTALLED);
+
+  EXPECT_FALSE(StartupUtils::IsOobeCompleted());
+
+  // Make sure enterprise enrollment page shows up right after update screen.
+  EnrollmentScreen* screen =
+      WizardController::default_controller()->GetEnrollmentScreen();
+  EXPECT_EQ(screen, WizardController::default_controller()->current_screen());
+  OnExit(ScreenObserver::ENTERPRISE_ENROLLMENT_COMPLETED);
+
+  EXPECT_TRUE(StartupUtils::IsOobeCompleted());
 }
 
 // TODO(dzhioev): Add test emaulating device with wrong HWID.

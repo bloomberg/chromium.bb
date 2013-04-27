@@ -46,9 +46,11 @@
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
+#include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/options/options_util.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -157,9 +159,18 @@ WizardController::WizardController(chromeos::LoginDisplayHost* host,
       usage_statistics_reporting_(true),
       skip_update_enroll_after_eula_(false),
       login_screen_started_(false),
-      user_image_screen_return_to_previous_hack_(false) {
+      user_image_screen_return_to_previous_hack_(false),
+      force_enrollment_(false),
+      can_exit_enrollment_(true) {
   DCHECK(default_controller_ == NULL);
   default_controller_ = this;
+
+  chromeos::system::StatisticsProvider* provider =
+      chromeos::system::StatisticsProvider::GetInstance();
+  provider->GetMachineFlag(chrome::kOemIsEnterpriseManagedKey,
+                           &force_enrollment_);
+  provider->GetMachineFlag(chrome::kOemCanExitEnterpriseEnrollmentKey,
+                           &can_exit_enrollment_);
 }
 
 WizardController::~WizardController() {
@@ -351,7 +362,9 @@ void WizardController::ShowEnrollmentScreen() {
   }
 
   EnrollmentScreen* screen = GetEnrollmentScreen();
-  screen->SetParameters(is_auto_enrollment, user);
+  screen->SetParameters(is_auto_enrollment,
+                        !force_enrollment_ || can_exit_enrollment_,
+                        user);
   SetCurrentScreen(screen);
 }
 
@@ -527,6 +540,16 @@ void WizardController::OnUserImageSkipped() {
 }
 
 void WizardController::OnEnrollmentDone() {
+  // Mark OOBE as completed only if enterprise enrollment was part of the
+  // forced flow (i.e. app kiosk).
+  if (force_enrollment_) {
+    PerformPostUpdateActions();
+
+    // TODO(zelidrag): Check fetched policy, launch the app here.
+    if (!can_exit_enrollment_)
+      return;
+  }
+
   ShowLoginScreen();
 }
 
@@ -550,8 +573,12 @@ void WizardController::OnAutoEnrollmentDone() {
 }
 
 void WizardController::OnOOBECompleted() {
-  PerformPostUpdateActions();
-  ShowLoginScreen();
+  if (force_enrollment_) {
+    ShowEnrollmentScreen();
+  } else {
+    PerformPostUpdateActions();
+    ShowLoginScreen();
+  }
 }
 
 void WizardController::OnTermsOfServiceDeclined() {

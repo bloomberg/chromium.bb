@@ -48,6 +48,7 @@ class EnrollmentScreenActor {
   // Initializes the actor with parameters.
   virtual void SetParameters(Controller* controller,
                              bool is_auto_enrollment,
+                             bool can_exit_enrollment,
                              const std::string& user) = 0;
 
   // Prepare the contents to showing.
