@@ -2841,8 +2841,6 @@ crbug.com/234555 [ Debug ] fast/ruby/ruby-svg-crash.html [ Failure ]
 
 crbug.com/234891 fast/dom/timer-throttling-hidden-page.html [ Pass Failure ]
 
-crbug.com/235529 inspector-protocol/heap-profiler/heap-objects-tracking.html [ Pass Failure ]
-
 crbug.com/234758 [ Debug ] fast/js/dfg-inline-many-blocks.html [ Timeout Pass ]
 crbug.com/234758 [ Debug ] inspector-protocol/nmi-webaudio-leak-test.html [ Timeout Crash Pass ]
 crbug.com/234758 [ Win Debug ] tables/mozilla/other/test3.html [ Pass Crash ]
