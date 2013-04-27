@@ -5835,6 +5835,24 @@ other types of suffix sets.
   <summary>Tracks touchpad ThreeFingerSwipe setting on startup.</summary>
 </histogram>
 
+<histogram name="Translate.TimeToBeReady" units="milliseconds">
+  <summary>
+    The time from injecting scripts for Chrome Translate to being ready to
+    perform translation.
+  </summary>
+</histogram>
+
+<histogram name="Translate.TimeToLoad" units="milliseconds">
+  <summary>
+    The time from injecting scripts for Chrome Translate to the finishing loads
+    of all depending libraries.
+  </summary>
+</histogram>
+
+<histogram name="Translate.TimeToTranslate" units="milliseconds">
+  <summary>The time from starting translation to the completion.</summary>
+</histogram>
+
 <histogram name="Variations.DisabledNoEntropyProvider" enum="BooleanHit">
   <summary>
     A count of the number of times we hit the code where a field trial is
