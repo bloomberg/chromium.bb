@@ -25,7 +25,7 @@ extern "C" {
 int main(int argc, char *argv[]) {
   base::AtExitManager at_exit;
   CommandLine::Init(argc, argv);
-  MessageLoopForUI message_loop;
+  base::MessageLoopForUI message_loop;
 
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool pool;

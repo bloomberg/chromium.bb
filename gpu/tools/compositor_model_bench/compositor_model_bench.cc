@@ -113,7 +113,7 @@ class Simulator {
     }
 
     base::AtExitManager at_exit;
-    MessageLoop loop;
+    base::MessageLoop loop;
     if (!InitX11() || !InitGLContext()) {
       LOG(FATAL) << "Failed to set up GUI.";
     }
@@ -267,7 +267,7 @@ class Simulator {
       ExposureMask,
       reinterpret_cast<XEvent*>(&ev));
 
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&Simulator::UpdateLoop, weak_factory_.GetWeakPtr()));
   }
@@ -325,7 +325,7 @@ class Simulator {
 
     if (!sims_remaining_.size()) {
       DumpOutput();
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
       return false;
     }
 

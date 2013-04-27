@@ -60,7 +60,7 @@ class GpuSchedulerTest : public testing::Test {
   virtual void TearDown() {
     // Ensure that any unexpected tasks posted by the GPU scheduler are executed
     // in order to fail the test.
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   error::Error GetError() {
@@ -70,7 +70,7 @@ class GpuSchedulerTest : public testing::Test {
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool autorelease_pool_;
 #endif
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   scoped_ptr<MockCommandBuffer> command_buffer_;
   scoped_ptr<base::SharedMemory> shared_memory_;
   Buffer shared_memory_buffer_;

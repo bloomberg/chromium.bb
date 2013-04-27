@@ -36,8 +36,8 @@ int main(int argc, char** argv) {
 #endif
   gfx::GLSurface::InitializeOneOff();
   ::gles2::Initialize();
-  MessageLoop::Type message_loop_type = MessageLoop::TYPE_UI;
-  MessageLoop main_message_loop(message_loop_type);
+  base::MessageLoop::Type message_loop_type = base::MessageLoop::TYPE_UI;
+  base::MessageLoop main_message_loop(message_loop_type);
   return GLTestHelper::RunTests(argc, argv);
 }
 

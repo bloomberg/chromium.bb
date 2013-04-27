@@ -284,7 +284,8 @@ void GPUTracerImpl::IssueProcessTask() {
     return;
 
   process_posted_ = true;
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
       base::Bind(&GPUTracerImpl::Process, base::AsWeakPtr(this)),
       base::TimeDelta::FromMilliseconds(kProcessInterval));
 }
