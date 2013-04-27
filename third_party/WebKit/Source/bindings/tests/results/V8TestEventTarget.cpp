@@ -208,9 +208,6 @@ v8::Handle<v8::Value> V8TestEventTarget::namedPropertyGetter(v8::Local<v8::Strin
         return v8Undefined();
 
     v8::Local<v8::Object> object = info.Holder();
-    v8::Handle<v8::Object> creationContext = info.Holder();
-    v8::Isolate* isolate = info.GetIsolate();
-
     ASSERT(V8DOMWrapper::maybeDOMWrapper(object));
     ASSERT(toWrapperTypeInfo(object) != &V8Node::info);
     TestEventTarget* collection = toNative(object);
@@ -221,7 +218,7 @@ v8::Handle<v8::Value> V8TestEventTarget::namedPropertyGetter(v8::Local<v8::Strin
     if (!element)
         return v8Undefined();
 
-    return toV8(element.release(), creationContext, isolate);
+    return toV8Fast(element.release(), info, collection);
 }
 
 static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestEventTargetTemplate(v8::Persistent<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)

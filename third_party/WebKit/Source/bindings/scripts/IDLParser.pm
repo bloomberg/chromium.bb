@@ -75,6 +75,7 @@ struct( domAttribute => {
 struct( domSignature => {
     name => '$',      # Variable name
     type => '$',      # Variable type
+    specials => '@',  # Specials
     extendedAttributes => '$', # Extended attributes
     isOptional => '$', # Is variable optional (optional T)
     isNullable => '$', # Is variable type Nullable (T?)
@@ -1205,12 +1206,13 @@ sub parseSpecialOperation
 
     my $next = $self->nextToken();
     if ($next->value() =~ /$nextSpecials_1/) {
-        $self->parseSpecial();
-        $self->parseSpecials();
+        my @specials = ();
+        push(@specials, @{$self->parseSpecials()});
         my $returnType = $self->parseReturnType();
         my $interface = $self->parseOperationRest($extendedAttributeList);
         if (defined ($interface)) {
             $interface->signature->type($returnType);
+            $interface->signature->specials(\@specials);
         }
         return $interface;
     }
@@ -1220,16 +1222,17 @@ sub parseSpecialOperation
 sub parseSpecials
 {
     my $self = shift;
+    my @specials = ();
 
     while (1) {
         my $next = $self->nextToken();
         if ($next->value() =~ /$nextSpecials_1/) {
-            $self->parseSpecial();
+            push(@specials, $self->parseSpecial());
         } else {
             last;
         }
     }
-    return [];
+    return \@specials;
 }
 
 sub parseSpecial

@@ -20,7 +20,6 @@
 
 [
     IndexedGetter,
-    NamedGetter,
     CustomToJSObject,
     GenerateIsReachable=ImplOwnerNodeRoot,
     DependentLifetime,
@@ -29,6 +28,6 @@
 ] interface HTMLCollection {
     readonly attribute unsigned long length;
     Node item([Default=Undefined] optional unsigned long index);
-    Node namedItem([Default=Undefined] optional DOMString name);
+    getter Node namedItem([Default=Undefined] optional DOMString name);
 };
 

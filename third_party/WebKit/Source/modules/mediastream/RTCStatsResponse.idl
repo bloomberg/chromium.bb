@@ -23,9 +23,8 @@
  */
 
 [
-    Conditional=MEDIA_STREAM,
-    NamedGetter
+    Conditional=MEDIA_STREAM
 ] interface RTCStatsResponse {
     sequence<RTCStatsReport> result();
-    RTCStatsReport namedItem([Default=Undefined] optional DOMString name);
+    getter RTCStatsReport namedItem([Default=Undefined] optional DOMString name);
 };

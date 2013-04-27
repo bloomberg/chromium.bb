@@ -32,10 +32,9 @@
     EnabledAtRuntime=cssRegions,
     InterfaceName=WebKitNamedFlowCollection,
     IndexedGetter,
-    NamedGetter,
     ImplementationLacksVTable
 ] interface DOMNamedFlowCollection {
     readonly attribute unsigned long length;
     NamedFlow item(unsigned long index);
-    NamedFlow namedItem(DOMString name);
+    getter NamedFlow namedItem(DOMString name);
 };

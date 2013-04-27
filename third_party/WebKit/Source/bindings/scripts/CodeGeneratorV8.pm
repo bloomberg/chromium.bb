@@ -283,6 +283,21 @@ sub GetSVGPropertyTypes
     return ($svgPropertyType, $svgListPropertyType, $svgNativeType);
 }
 
+sub GetNamedGetterFunction
+{
+    my $interface = shift;
+
+    foreach my $function (@{$interface->functions}) {
+        my $specials = $function->signature->specials;
+        my $getterExists = grep { $_ eq "getter" } @$specials;
+        my $parameters = $function->parameters;
+        if ($getterExists and scalar(@$parameters) == 1 and $parameters->[0]->type eq "DOMString" ) {
+            return $function;
+        }
+    }
+    return 0;
+}
+
 sub GenerateHeader
 {
     my $object = shift;
@@ -728,7 +743,7 @@ sub GenerateHeaderNamedAndIndexedPropertyAccessors
     my $interfaceName = $interface->name;
     my $hasIndexedGetter = $interface->extendedAttributes->{"IndexedGetter"} || $interface->extendedAttributes->{"CustomIndexedGetter"};
     my $hasCustomIndexedSetter = $interface->extendedAttributes->{"CustomIndexedSetter"};
-    my $hasCustomNamedGetter = $interface->extendedAttributes->{"NamedGetter"} || $interface->extendedAttributes->{"CustomNamedGetter"} || $interface->extendedAttributes->{"CustomGetOwnPropertySlot"};
+    my $hasCustomNamedGetter = GetNamedGetterFunction($interface) || $interface->extendedAttributes->{"CustomNamedGetter"} || $interface->extendedAttributes->{"CustomGetOwnPropertySlot"};
     my $hasCustomNamedSetter = $interface->extendedAttributes->{"CustomNamedSetter"};
     my $hasCustomDeleters = $interface->extendedAttributes->{"CustomDeleteProperty"};
     my $hasCustomEnumerator = $interface->extendedAttributes->{"CustomEnumerateProperty"};
@@ -2941,20 +2956,17 @@ END
 sub GenerateImplementationNamedPropertyGetter
 {
     my $interface = shift;
-    my $namedPropertyGetter = shift;
-    my $subCode = "";
 
+    my $subCode = "";
     my $interfaceName = $interface->name;
     my $v8InterfaceName = "V8$interfaceName";
 
-    if (!$namedPropertyGetter) {
-        $namedPropertyGetter = $codeGenerator->FindSuperMethod($interface, "namedItem");
-    }
-
-    if ($interface->extendedAttributes->{"NamedGetter"}) {
-        die "$interfaceName: [NamedGetter] but no namedItem() method." if (!$namedPropertyGetter);
+    my $function = GetNamedGetterFunction($interface);
+    if ($function) {
+        my $returnType = $function->signature->type;
+        my $methodName = $function->signature->name;
         AddToImplIncludes("V8Collection.h");
-        my $type = $namedPropertyGetter->type;
+        AddToImplIncludes("V8$returnType.h");
         $subCode .= <<END;
     desc->InstanceTemplate()->SetNamedPropertyHandler(${v8InterfaceName}::namedPropertyGetter, 0, 0, 0, 0);
 END
@@ -2968,20 +2980,17 @@ v8::Handle<v8::Value> ${v8InterfaceName}::namedPropertyGetter(v8::Local<v8::Stri
         return v8Undefined();
 
     v8::Local<v8::Object> object = info.Holder();
-    v8::Handle<v8::Object> creationContext = info.Holder();
-    v8::Isolate* isolate = info.GetIsolate();
-
     ASSERT(V8DOMWrapper::maybeDOMWrapper(object));
     ASSERT(toWrapperTypeInfo(object) != &V8Node::info);
     $interfaceName* collection = toNative(object);
 
     AtomicString propertyName = toWebCoreAtomicStringWithNullCheck(name);
-    RefPtr<$type> element = collection->namedItem(propertyName);
+    RefPtr<$returnType> element = collection->$methodName(propertyName);
 
     if (!element)
         return v8Undefined();
 
-    return toV8(element.release(), creationContext, isolate);
+    return toV8Fast(element.release(), info, collection);
 }
 
 END
@@ -3238,7 +3247,6 @@ END
     }
 
     my $indexer;
-    my $namedPropertyGetter;
     my @enabledPerContextFunctions;
     my @normalFunctions;
     my $needsDomainSafeFunctionSetter = 0;
@@ -3263,8 +3271,6 @@ END
 
         if ($function->signature->name eq "item") {
             $indexer = $function->signature;
-        } elsif ($function->signature->name eq "namedItem") {
-            $namedPropertyGetter = $function->signature;
         }
 
         # If the function does not need domain security check, we need to
@@ -3540,7 +3546,7 @@ END
     }
 
     $code .= GenerateImplementationIndexedProperty($interface, $indexer);
-    $code .= GenerateImplementationNamedPropertyGetter($interface, $namedPropertyGetter);
+    $code .= GenerateImplementationNamedPropertyGetter($interface);
     $code .= GenerateImplementationCustomCall($interface);
     $code .= GenerateImplementationMasqueradesAsUndefined($interface);
 

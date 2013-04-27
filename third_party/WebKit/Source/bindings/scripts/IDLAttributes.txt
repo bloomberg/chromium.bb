@@ -72,7 +72,6 @@ IsWorkerContext
 MasqueradesAsUndefined
 MeasureAs=*
 NamedConstructor=*
-NamedGetter
 NoWrapperCache
 NotEnumerable
 PerWorldBindings
