@@ -36,6 +36,7 @@ class WebMediaPlayerProxyImplAndroid
 
   // Methods inherited from WebMediaPlayerProxyAndroid.
   virtual void Initialize(int player_id, const GURL& url,
+                          bool is_media_source,
                           const GURL& first_party_for_cookies) OVERRIDE;
   virtual void Start(int player_id) OVERRIDE;
   virtual void Pause(int player_id) OVERRIDE;
@@ -46,6 +47,12 @@ class WebMediaPlayerProxyImplAndroid
   virtual void ExitFullscreen(int player_id) OVERRIDE;
 #if defined(GOOGLE_TV)
   virtual void RequestExternalSurface(int player_id) OVERRIDE;
+  virtual void DemuxerReady(
+      int player_id,
+      const media::MediaPlayerHostMsg_DemuxerReady_Params& params) OVERRIDE;
+  virtual void ReadFromDemuxerAck(
+      int player_id,
+      const media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params&) OVERRIDE;
 
   // Methods inherited from RenderViewObserver.
   virtual void DidCommitCompositorFrame() OVERRIDE;
@@ -68,6 +75,10 @@ class WebMediaPlayerProxyImplAndroid
   void OnDidEnterFullscreen(int player_id);
   void OnPlayerPlay(int player_id);
   void OnPlayerPause(int player_id);
+#if defined(GOOGLE_TV)
+  void OnReadFromDemuxer(
+      int player_id, media::DemuxerStream::Type type, bool seek_done);
+#endif
 
   webkit_media::WebMediaPlayerManagerAndroid* manager_;
 

@@ -62,11 +62,7 @@ static const CodecInfo* kAudioWebMCodecs[] = {
 static media::StreamParser* BuildWebMParser(
     const std::vector<std::string>& codecs,
     const media::LogCB& log_cb) {
-#if defined(OS_ANDROID)
-  return NULL;
-#else
   return new media::WebMStreamParser();
-#endif
 }
 
 #if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
@@ -127,9 +123,6 @@ static const CodecInfo* kAudioMP4Codecs[] = {
 
 static media::StreamParser* BuildMP4Parser(
     const std::vector<std::string>& codecs, const media::LogCB& log_cb) {
-#if defined(OS_ANDROID)
-  return NULL;
-#else
   std::set<int> audio_object_types;
   bool has_sbr = false;
   for (size_t i = 0; i < codecs.size(); ++i) {
@@ -150,7 +143,6 @@ static media::StreamParser* BuildMP4Parser(
   }
 
   return new media::mp4::MP4StreamParser(audio_object_types, has_sbr);
-#endif
 }
 #endif
 

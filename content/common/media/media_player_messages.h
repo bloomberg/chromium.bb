@@ -17,6 +17,50 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START MediaPlayerMsgStart
 
+#if defined(GOOGLE_TV)
+#include "media/base/android/demuxer_stream_player_params.h"
+
+IPC_ENUM_TRAITS(media::AudioCodec)
+IPC_ENUM_TRAITS(media::DemuxerStream::Status)
+IPC_ENUM_TRAITS(media::DemuxerStream::Type)
+IPC_ENUM_TRAITS(media::VideoCodec)
+
+IPC_STRUCT_TRAITS_BEGIN(media::MediaPlayerHostMsg_DemuxerReady_Params)
+  IPC_STRUCT_TRAITS_MEMBER(audio_codec)
+  IPC_STRUCT_TRAITS_MEMBER(audio_channels)
+  IPC_STRUCT_TRAITS_MEMBER(audio_sampling_rate)
+  IPC_STRUCT_TRAITS_MEMBER(is_audio_encrypted)
+
+  IPC_STRUCT_TRAITS_MEMBER(video_codec)
+  IPC_STRUCT_TRAITS_MEMBER(video_size)
+  IPC_STRUCT_TRAITS_MEMBER(is_video_encrypted)
+
+  IPC_STRUCT_TRAITS_MEMBER(duration_ms)
+  IPC_STRUCT_TRAITS_MEMBER(key_system)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params)
+  IPC_STRUCT_TRAITS_MEMBER(type)
+  IPC_STRUCT_TRAITS_MEMBER(access_units)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(
+    media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params::AccessUnit)
+  IPC_STRUCT_TRAITS_MEMBER(status)
+  IPC_STRUCT_TRAITS_MEMBER(end_of_stream)
+  IPC_STRUCT_TRAITS_MEMBER(data)
+  IPC_STRUCT_TRAITS_MEMBER(timestamp)
+  IPC_STRUCT_TRAITS_MEMBER(key_id)
+  IPC_STRUCT_TRAITS_MEMBER(iv)
+  IPC_STRUCT_TRAITS_MEMBER(subsamples)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(media::SubsampleEntry)
+  IPC_STRUCT_TRAITS_MEMBER(clear_bytes)
+  IPC_STRUCT_TRAITS_MEMBER(cypher_bytes)
+IPC_STRUCT_TRAITS_END()
+#endif
+
 // Messages for notifying the render process of media playback status -------
 
 // Media buffering has updated.
@@ -77,6 +121,14 @@ IPC_MESSAGE_ROUTED1(MediaPlayerMsg_DidMediaPlayerPlay,
 IPC_MESSAGE_ROUTED1(MediaPlayerMsg_DidMediaPlayerPause,
                     int /* player_id */)
 
+#if defined(GOOGLE_TV)
+// The media source player reads data from demuxer
+IPC_MESSAGE_ROUTED3(MediaPlayerMsg_ReadFromDemuxer,
+                    int /* player_id */,
+                    media::DemuxerStream::Type /* type */,
+                    bool /* seek_done */)
+#endif
+
 // Messages for controllering the media playback in browser process ----------
 
 // Destroy the media player object.
@@ -87,9 +139,10 @@ IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_DestroyMediaPlayer,
 IPC_MESSAGE_ROUTED0(MediaPlayerHostMsg_DestroyAllMediaPlayers)
 
 // Initialize a media player object with the given player_id.
-IPC_MESSAGE_ROUTED3(MediaPlayerHostMsg_MediaPlayerInitialize,
+IPC_MESSAGE_ROUTED4(MediaPlayerHostMsg_MediaPlayerInitialize,
                     int /* player_id */,
                     GURL /* url */,
+                    bool /* is_media_source */,
                     GURL /* first_party_for_cookies */)
 
 // Pause the player.
@@ -126,4 +179,14 @@ IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_RequestExternalSurface,
 IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_NotifyGeometryChange,
                     int /* player_id */,
                     gfx::RectF /* rect */)
+
+// Inform the media source player that the demuxer is ready.
+IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_DemuxerReady,
+                    int /* player_id */,
+                    media::MediaPlayerHostMsg_DemuxerReady_Params)
+
+// Sent when the data was read from the ChunkDemuxer.
+IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_ReadFromDemuxerAck,
+                    int /* player_id */,
+                    media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params)
 #endif

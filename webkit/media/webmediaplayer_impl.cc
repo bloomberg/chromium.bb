@@ -114,16 +114,6 @@ COMPILE_ASSERT_MATCHING_ENUM(UseCredentials);
 #define BIND_TO_RENDER_LOOP_2(function, arg1, arg2) \
   media::BindToLoop(main_loop_, base::Bind(function, AsWeakPtr(), arg1, arg2))
 
-static WebKit::WebTimeRanges ConvertToWebTimeRanges(
-    const media::Ranges<base::TimeDelta>& ranges) {
-  WebKit::WebTimeRanges result(ranges.size());
-  for (size_t i = 0; i < ranges.size(); i++) {
-    result[i].start = ranges.start(i).InSecondsF();
-    result[i].end = ranges.end(i).InSecondsF();
-  }
-  return result;
-}
-
 static void LogMediaSourceError(const scoped_refptr<media::MediaLog>& media_log,
                                 const std::string& error) {
   media_log->AddEvent(media_log->CreateMediaSourceErrorEvent(error));

@@ -124,6 +124,10 @@
           ],
         }],
         ['google_tv == 1', {
+          'sources': [
+            'android/media_source_delegate.cc',
+            'android/media_source_delegate.h',
+          ],
           'sources!': [
             'crypto/key_systems_info.cc',
           ],

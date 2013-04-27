@@ -1546,6 +1546,14 @@
             'base/android/webaudio_media_codec_bridge.cc',
             'base/android/webaudio_media_codec_bridge.h',
           ],
+          'conditions': [
+            ['google_tv == 1', {
+              'sources': [
+                'base/android/demuxer_stream_player_params.cc',
+                'base/android/demuxer_stream_player_params.h',
+              ],
+            }],
+          ],
           'dependencies': [
             '../base/base.gyp:base',
             'media_android_jni_headers',

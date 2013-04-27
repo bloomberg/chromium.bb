@@ -44,15 +44,20 @@ bool WebMediaPlayerProxyImplAndroid::OnMessageReceived(
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidExitFullscreen, OnDidExitFullscreen)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidMediaPlayerPlay, OnPlayerPlay)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidMediaPlayerPause, OnPlayerPause)
+#if defined(GOOGLE_TV)
+    IPC_MESSAGE_HANDLER(MediaPlayerMsg_ReadFromDemuxer, OnReadFromDemuxer)
+#endif
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
 void WebMediaPlayerProxyImplAndroid::Initialize(
-    int player_id, const GURL& url, const GURL& first_party_for_cookies) {
+    int player_id, const GURL& url,
+    bool is_media_source,
+    const GURL& first_party_for_cookies) {
   Send(new MediaPlayerHostMsg_MediaPlayerInitialize(
-      routing_id(), player_id, url, first_party_for_cookies));
+      routing_id(), player_id, url, is_media_source, first_party_for_cookies));
 }
 
 void WebMediaPlayerProxyImplAndroid::Start(int player_id) {
@@ -184,6 +189,26 @@ void WebMediaPlayerProxyImplAndroid::DidCommitCompositorFrame() {
                                                      it->first,
                                                      it->second));
   }
+}
+
+void WebMediaPlayerProxyImplAndroid::DemuxerReady(
+    int player_id,
+    const media::MediaPlayerHostMsg_DemuxerReady_Params& params) {
+  Send(new MediaPlayerHostMsg_DemuxerReady(routing_id(), player_id, params));
+}
+
+void WebMediaPlayerProxyImplAndroid::ReadFromDemuxerAck(
+    int player_id,
+    const media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params) {
+  Send(new MediaPlayerHostMsg_ReadFromDemuxerAck(
+      routing_id(), player_id, params));
+
+}
+void WebMediaPlayerProxyImplAndroid::OnReadFromDemuxer(
+    int player_id, media::DemuxerStream::Type type, bool seek_done) {
+  webkit_media::WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
+  if (player)
+    player->OnReadFromDemuxer(type, seek_done);
 }
 #endif
 

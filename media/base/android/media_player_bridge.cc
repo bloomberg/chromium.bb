@@ -29,6 +29,43 @@ static const int kTemporaryDuration = 100;
 
 namespace media {
 
+#if !defined(GOOGLE_TV)
+// static
+MediaPlayerBridge* MediaPlayerBridge::Create(
+    int player_id,
+    const GURL& url,
+    bool is_media_source,
+    const GURL& first_party_for_cookies,
+    MediaResourceGetter* resource_getter,
+    bool hide_url_log,
+    MediaPlayerBridgeManager* manager,
+    const MediaErrorCB& media_error_cb,
+    const VideoSizeChangedCB& video_size_changed_cb,
+    const BufferingUpdateCB& buffering_update_cb,
+    const MediaMetadataChangedCB& media_prepared_cb,
+    const PlaybackCompleteCB& playback_complete_cb,
+    const SeekCompleteCB& seek_complete_cb,
+    const TimeUpdateCB& time_update_cb,
+    const MediaInterruptedCB& media_interrupted_cb) {
+  LOG_IF(WARNING, is_media_source) << "MSE is not supported";
+  return new MediaPlayerBridge(
+      player_id,
+      url,
+      first_party_for_cookies,
+      resource_getter,
+      hide_url_log,
+      manager,
+      media_error_cb,
+      video_size_changed_cb,
+      buffering_update_cb,
+      media_prepared_cb,
+      playback_complete_cb,
+      seek_complete_cb,
+      time_update_cb,
+      media_interrupted_cb);
+}
+#endif
+
 MediaPlayerBridge::MediaPlayerBridge(
     int player_id,
     const GURL& url,
@@ -100,6 +137,17 @@ void MediaPlayerBridge::CreateMediaPlayer() {
 
   j_media_player_.Reset(JNI_MediaPlayer::Java_MediaPlayer_Constructor(env));
 
+  SetMediaPlayerListener();
+}
+
+void MediaPlayerBridge::SetMediaPlayer(jobject j_media_player) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  CHECK(env);
+
+  j_media_player_.Reset(env, j_media_player);
+}
+
+void MediaPlayerBridge::SetMediaPlayerListener() {
   jobject j_context = base::android::GetApplicationContext();
   DCHECK(j_context);
 
@@ -149,8 +197,7 @@ void MediaPlayerBridge::SetDataSource(const std::string& url) {
   if (Java_MediaPlayerBridge_setDataSource(
       env, j_media_player_.obj(), j_context, j_url_string.obj(),
       j_cookies.obj(), hide_url_log_)) {
-    if (manager_)
-      manager_->RequestMediaResources(this);
+    RequestMediaResourcesFromManager();
     JNI_MediaPlayer::Java_MediaPlayer_prepareAsync(
         env, j_media_player_.obj());
   } else {
@@ -178,6 +225,11 @@ void MediaPlayerBridge::OnMediaMetadataExtracted(
   }
   media_metadata_changed_cb_.Run(player_id_, duration_, width_, height_,
                                  success);
+}
+
+void MediaPlayerBridge::RequestMediaResourcesFromManager() {
+  if (manager_)
+    manager_->RequestMediaResources(this);
 }
 
 void MediaPlayerBridge::Start() {
@@ -339,7 +391,7 @@ void MediaPlayerBridge::OnMediaPrepared() {
 
   // If media player was recovered from a saved state, consume all the pending
   // events.
-  SeekInternal(pending_seek_);
+  PendingSeekInternal(pending_seek_);
 
   if (pending_play_) {
     StartInternal();
@@ -380,6 +432,10 @@ void MediaPlayerBridge::PauseInternal() {
   time_update_timer_.Stop();
 }
 
+void MediaPlayerBridge::PendingSeekInternal(base::TimeDelta time) {
+  SeekInternal(time);
+}
+
 void MediaPlayerBridge::SeekInternal(base::TimeDelta time) {
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
@@ -396,5 +452,17 @@ bool MediaPlayerBridge::RegisterMediaPlayerBridge(JNIEnv* env) {
     ret = JNI_MediaPlayer::RegisterNativesImpl(env);
   return ret;
 }
+
+#if defined(GOOGLE_TV)
+void MediaPlayerBridge::DemuxerReady(
+    const MediaPlayerHostMsg_DemuxerReady_Params& params) {
+  NOTREACHED() << "Unexpected ipc received";
+}
+
+void MediaPlayerBridge::ReadFromDemuxerAck(
+    const MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params) {
+  NOTREACHED() << "Unexpected ipc received";
+}
+#endif
 
 }  // namespace media

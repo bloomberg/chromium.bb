@@ -50,6 +50,10 @@ bool MediaPlayerManagerAndroid::OnMessageReceived(const IPC::Message& msg) {
                         OnRequestExternalSurface)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_NotifyGeometryChange,
                         OnNotifyGeometryChange)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DemuxerReady,
+                        OnDemuxerReady)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_ReadFromDemuxerAck,
+                        OnReadFromDemuxerAck)
 #endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -103,7 +107,9 @@ void MediaPlayerManagerAndroid::SetVideoSurface(jobject surface) {
 }
 
 void MediaPlayerManagerAndroid::OnInitialize(
-    int player_id, const GURL& url, const GURL& first_party_for_cookies) {
+    int player_id, const GURL& url,
+    bool is_media_source,
+    const GURL& first_party_for_cookies) {
   for (ScopedVector<MediaPlayerBridge>::iterator it = players_.begin();
       it != players_.end(); ++it) {
     if ((*it)->player_id() == player_id) {
@@ -117,11 +123,15 @@ void MediaPlayerManagerAndroid::OnInitialize(
   StoragePartition* partition = host->GetStoragePartition();
   fileapi::FileSystemContext* file_system_context =
       partition ? partition->GetFileSystemContext() : NULL;
-  players_.push_back(new MediaPlayerBridge(
-      player_id, url, first_party_for_cookies,
+  players_.push_back(media::MediaPlayerBridge::Create(
+      player_id, url, is_media_source, first_party_for_cookies,
       new MediaResourceGetterImpl(context, file_system_context, host->GetID(),
                                   routing_id()),
       context->IsOffTheRecord(), this,
+#if defined(GOOGLE_TV)
+      base::Bind(&MediaPlayerManagerAndroid::OnReadFromDemuxer,
+                 base::Unretained(this)),
+#endif
       base::Bind(&MediaPlayerManagerAndroid::OnError, base::Unretained(this)),
       base::Bind(&MediaPlayerManagerAndroid::OnVideoSizeChanged,
                  base::Unretained(this)),
@@ -237,6 +247,22 @@ void MediaPlayerManagerAndroid::OnNotifyGeometryChange(int player_id,
   if (view)
     view->NotifyGeometryChange(player_id, rect);
 }
+
+void MediaPlayerManagerAndroid::OnDemuxerReady(
+    int player_id,
+    const media::MediaPlayerHostMsg_DemuxerReady_Params& params) {
+  MediaPlayerBridge* player = GetPlayer(player_id);
+  if (player)
+    player->DemuxerReady(params);
+}
+
+void MediaPlayerManagerAndroid::OnReadFromDemuxerAck(
+    int player_id,
+    const media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params) {
+  MediaPlayerBridge* player = GetPlayer(player_id);
+  if (player)
+    player->ReadFromDemuxerAck(params);
+}
 #endif
 
 MediaPlayerBridge* MediaPlayerManagerAndroid::GetPlayer(int player_id) {
@@ -306,6 +332,14 @@ void MediaPlayerManagerAndroid::OnTimeUpdate(int player_id,
   Send(new MediaPlayerMsg_MediaTimeUpdate(
       routing_id(), player_id, current_time));
 }
+
+#if defined(GOOGLE_TV)
+void MediaPlayerManagerAndroid::OnReadFromDemuxer(
+    int player_id, media::DemuxerStream::Type type, bool seek_done) {
+  Send(new MediaPlayerMsg_ReadFromDemuxer(
+      routing_id(), player_id, type, seek_done));
+}
+#endif
 
 void MediaPlayerManagerAndroid::RequestMediaResources(
     MediaPlayerBridge* player) {

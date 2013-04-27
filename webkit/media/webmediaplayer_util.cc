@@ -14,4 +14,14 @@ base::TimeDelta ConvertSecondsToTimestamp(double seconds) {
       microseconds > 0 ? microseconds + 0.5 : ceil(microseconds - 0.5));
 }
 
+WebKit::WebTimeRanges ConvertToWebTimeRanges(
+    const media::Ranges<base::TimeDelta>& ranges) {
+  WebKit::WebTimeRanges result(ranges.size());
+  for (size_t i = 0; i < ranges.size(); i++) {
+    result[i].start = ranges.start(i).InSecondsF();
+    result[i].end = ranges.end(i).InSecondsF();
+  }
+  return result;
+}
+
 }  // namespace webkit_media

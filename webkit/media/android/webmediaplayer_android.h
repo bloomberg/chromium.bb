@@ -12,6 +12,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/time.h"
+#if defined(GOOGLE_TV)
+#include "media/base/demuxer_stream.h"
+#endif
 #include "cc/layers/video_frame_provider.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
@@ -19,6 +22,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
 #include "ui/gfx/rect_f.h"
 #include "webkit/media/android/stream_texture_factory_android.h"
+
+namespace media {
+class MediaLog;
+}
 
 namespace WebKit {
 class WebFrame;
@@ -30,6 +37,9 @@ class WebLayerImpl;
 
 namespace webkit_media {
 
+#if defined(GOOGLE_TV)
+class MediaSourceDelegate;
+#endif
 class WebMediaPlayerManagerAndroid;
 class WebMediaPlayerProxyAndroid;
 
@@ -53,7 +63,8 @@ class WebMediaPlayerAndroid
                         WebKit::WebMediaPlayerClient* client,
                         WebMediaPlayerManagerAndroid* manager,
                         WebMediaPlayerProxyAndroid* proxy,
-                        StreamTextureFactory* factory);
+                        StreamTextureFactory* factory,
+                        media::MediaLog* media_log);
   virtual ~WebMediaPlayerAndroid();
 
   // WebKit::WebMediaPlayer implementation.
@@ -175,6 +186,24 @@ class WebMediaPlayerAndroid
   // frame) if changed. Returns true only if the geometry has been changed since
   // the last call.
   bool RetrieveGeometryChange(gfx::RectF* rect);
+
+  virtual MediaKeyException generateKeyRequest(
+      const WebKit::WebString& key_system,
+      const unsigned char* init_data,
+      unsigned init_data_length) OVERRIDE;
+  virtual MediaKeyException addKey(
+      const WebKit::WebString& key_system,
+      const unsigned char* key,
+      unsigned key_length,
+      const unsigned char* init_data,
+      unsigned init_data_length,
+      const WebKit::WebString& session_id) OVERRIDE;
+  virtual MediaKeyException cancelKeyRequest(
+      const WebKit::WebString& key_system,
+      const WebKit::WebString& session_id) OVERRIDE;
+
+  // Called when DemuxerStreamPlayer needs to read data from ChunkDemuxer.
+  void OnReadFromDemuxer(media::DemuxerStream::Type type, bool seek_done);
 #endif
 
  protected:
@@ -276,6 +305,8 @@ class WebMediaPlayerAndroid
   // A rectangle represents the geometry of video frame, when computed last
   // time.
   gfx::RectF last_computed_rect_;
+
+  scoped_ptr<MediaSourceDelegate> media_source_delegate_;
 #endif
 
   // Proxy object that delegates method calls on Render Thread.
@@ -287,6 +318,8 @@ class WebMediaPlayerAndroid
   // process, it will regularly update the |current_time_| by calling
   // OnTimeUpdate().
   float current_time_;
+
+  media::MediaLog* media_log_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerAndroid);
 };

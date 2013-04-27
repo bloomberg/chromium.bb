@@ -2711,7 +2711,8 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
       media_player_manager_.get(),
       media_player_proxy_,
       new StreamTextureFactoryImpl(
-          context_provider->Context3d(), gpu_channel_host, routing_id_));
+          context_provider->Context3d(), gpu_channel_host, routing_id_),
+      new RenderMediaLog());
 #endif
 
   scoped_refptr<media::AudioRendererSink> sink;
