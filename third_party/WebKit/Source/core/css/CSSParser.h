@@ -369,6 +369,7 @@ public:
     bool m_hasFontFaceOnlyValues;
     bool m_hadSyntacticallyValidCSSRule;
     bool m_logErrors;
+    bool m_ignoreErrorsInDeclaration;
 
     bool m_inFilterRule;
 

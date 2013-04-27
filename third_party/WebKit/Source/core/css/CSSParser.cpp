@@ -299,6 +299,7 @@ CSSParser::CSSParser(const CSSParserContext& context)
     , m_hasFontFaceOnlyValues(false)
     , m_hadSyntacticallyValidCSSRule(false)
     , m_logErrors(false)
+    , m_ignoreErrorsInDeclaration(false)
     , m_inFilterRule(false)
     , m_defaultNamespace(starAtom)
     , m_parsedTextPrefixLength(0)
@@ -440,12 +441,14 @@ void CSSParser::parseSheet(StyleSheetContents* sheet, const String& string, int 
     m_defaultNamespace = starAtom; // Reset the default namespace.
     m_sourceDataHandler = sourceDataHandler;
     m_logErrors = logErrors && sheet->singleOwnerDocument() && !sheet->baseURL().isEmpty() && sheet->singleOwnerDocument()->page();
+    m_ignoreErrorsInDeclaration = false;
     m_lineNumber = startLineNumber;
     setupParser("", string, "");
     cssyyparse(this);
     sheet->shrinkToFit();
     m_sourceDataHandler = 0;
     m_rule = 0;
+    m_ignoreErrorsInDeclaration = false;
     m_logErrors = false;
 }
 
@@ -11002,12 +11005,13 @@ void CSSParser::syntaxError(const Location& location, SyntaxErrorType error)
         builder.append(location.token.characters16(), location.token.length());
 
     logError(builder.toString(), location.lineNumber);
+
+    m_ignoreErrorsInDeclaration = true;
 }
 
 bool CSSParser::isLoggingErrors()
 {
-    // FIXME: return logging back (https://bugs.webkit.org/show_bug.cgi?id=113401).
-    return false;
+    return m_logErrors && !m_ignoreErrorsInDeclaration;
 }
 
 void CSSParser::logError(const String& message, int lineNumber)
@@ -11367,6 +11371,7 @@ void CSSParser::endRuleBody(bool discard)
 
 void CSSParser::startProperty()
 {
+    m_ignoreErrorsInDeclaration = false;
     if (m_sourceDataHandler)
         m_sourceDataHandler->startProperty(safeUserStringTokenOffset());
 }
