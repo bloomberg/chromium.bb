@@ -45,7 +45,7 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
-#include "chrome/common/omaha_query_params.h"
+#include "chrome/common/omaha_query_params/omaha_query_params.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_details.h"

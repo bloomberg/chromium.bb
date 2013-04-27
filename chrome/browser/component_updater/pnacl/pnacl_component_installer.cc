@@ -24,7 +24,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/omaha_query_params.h"
+#include "chrome/common/omaha_query_params/omaha_query_params.h"
 #include "content/public/browser/browser_thread.h"
 
 using chrome::OmahaQueryParams;

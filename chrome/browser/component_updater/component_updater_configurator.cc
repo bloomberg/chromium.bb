@@ -15,7 +15,7 @@
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/omaha_query_params.h"
+#include "chrome/common/omaha_query_params/omaha_query_params.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace {

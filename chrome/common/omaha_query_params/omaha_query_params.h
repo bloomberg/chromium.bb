@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_OMAHA_QUERY_PARAMS_H_
-#define CHROME_COMMON_OMAHA_QUERY_PARAMS_H_
+#ifndef CHROME_COMMON_OMAHA_QUERY_PARAMS_OMAHA_QUERY_PARAMS_H_
+#define CHROME_COMMON_OMAHA_QUERY_PARAMS_OMAHA_QUERY_PARAMS_H_
 
 #include <string>
 
@@ -44,4 +44,4 @@ class OmahaQueryParams {
 
 }  // namespace chrome
 
-#endif  // CHROME_COMMON_OMAHA_QUERY_PARAMS_H_
+#endif  // CHROME_COMMON_OMAHA_QUERY_PARAMS_OMAHA_QUERY_PARAMS_H_
