@@ -43,6 +43,7 @@ public:
     // It is here to support inspector. Don't use for any regular engine functions.
     CSSStyleRule* getWrapperForRuleInSheets(StyleRule*, DocumentStyleSheetCollection*);
     void collectFromStyleSheetIfNeeded(CSSStyleSheet*);
+    void reset();
 
     void reportMemoryUsage(MemoryObjectInfo*) const;
 

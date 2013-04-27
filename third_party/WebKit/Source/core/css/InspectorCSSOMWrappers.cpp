@@ -52,6 +52,12 @@ void InspectorCSSOMWrappers::collectFromStyleSheetIfNeeded(CSSStyleSheet* styleS
         collect(styleSheet);
 }
 
+void InspectorCSSOMWrappers::reset()
+{
+    m_styleRuleToCSSOMWrapperMap.clear();
+    m_styleSheetCSSOMWrapperSet.clear();
+}
+
 template <class ListType>
 void InspectorCSSOMWrappers::collect(ListType* listType)
 {
