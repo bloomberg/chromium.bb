@@ -40,9 +40,9 @@ AuraTestHelper::AuraTestHelper(base::MessageLoopForUI* message_loop)
 
 AuraTestHelper::~AuraTestHelper() {
   CHECK(setup_called_)
-      << "You have overridden SetUp but never called super class's SetUp";
+      << "AuraTestHelper::SetUp() never called.";
   CHECK(teardown_called_)
-      << "You have overridden TearDown but never called super class's TearDown";
+      << "AuraTestHelper::TearDown() never called.";
 }
 
 void AuraTestHelper::SetUp() {
