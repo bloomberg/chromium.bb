@@ -35,10 +35,6 @@
 #include <wtf/HashSet.h>
 #include <wtf/StaticConstructors.h>
 
-#if ENABLE(MATHML)
-#include "MathMLNames.h"
-#endif
-
 #if ENABLE(SVG)
 #include "SVGNames.h"
 #endif
@@ -46,9 +42,6 @@
 namespace WebCore {
 
 static const int staticQualifiedNamesCount = HTMLNames::HTMLTagsCount + HTMLNames::HTMLAttrsCount
-#if ENABLE(MATHML)
-    + MathMLNames::MathMLTagsCount + MathMLNames::MathMLAttrsCount
-#endif
 #if ENABLE(SVG)
     + SVGNames::SVGTagsCount + SVGNames::SVGAttrsCount
 #endif

@@ -169,16 +169,6 @@ void CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(Element* element,
     }
 #endif
 
-#if ENABLE(MATHML)
-    if (element->isMathMLElement() && !mathMLStyleSheet) {
-        // MathML rules.
-        mathMLStyleSheet = parseUASheet(mathmlUserAgentStyleSheet, sizeof(mathmlUserAgentStyleSheet));
-        defaultStyle->addRulesFromSheet(mathMLStyleSheet, screenEval());
-        defaultPrintStyle->addRulesFromSheet(mathMLStyleSheet, printEval());
-        changedDefaultStyle = true;
-    }
-#endif
-
     if (!mediaControlsStyleSheet && (element->hasTagName(videoTag) || element->hasTagName(audioTag))) {
         String mediaRules = String(mediaControlsUserAgentStyleSheet, sizeof(mediaControlsUserAgentStyleSheet)) + RenderTheme::themeForPage(element->document()->page())->extraMediaControlsStyleSheet();
         mediaControlsStyleSheet = parseUASheet(mediaRules);

@@ -36,11 +36,6 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/CollapsedBorderValue.h"
 
-#if ENABLE(MATHML)
-#include "MathMLNames.h"
-#include "core/mathml/MathMLElement.h"
-#endif
-
 using namespace std;
 
 namespace WebCore {
@@ -80,10 +75,6 @@ unsigned RenderTableCell::parseColSpanFromDOM() const
     ASSERT(node());
     if (node()->hasTagName(tdTag) || node()->hasTagName(thTag))
         return min<unsigned>(toHTMLTableCellElement(node())->colSpan(), maxColumnIndex);
-#if ENABLE(MATHML)
-    if (node()->hasTagName(MathMLNames::mtdTag))
-        return min<unsigned>(toMathMLElement(node())->colSpan(), maxColumnIndex);
-#endif
     return 1;
 }
 
@@ -92,10 +83,6 @@ unsigned RenderTableCell::parseRowSpanFromDOM() const
     ASSERT(node());
     if (node()->hasTagName(tdTag) || node()->hasTagName(thTag))
         return min<unsigned>(toHTMLTableCellElement(node())->rowSpan(), maxRowIndex);
-#if ENABLE(MATHML)
-    if (node()->hasTagName(MathMLNames::mtdTag))
-        return min<unsigned>(toMathMLElement(node())->rowSpan(), maxRowIndex);
-#endif
     return 1;
 }
 
@@ -110,11 +97,7 @@ void RenderTableCell::updateColAndRowSpanFlags()
 void RenderTableCell::colSpanOrRowSpanChanged()
 {
     ASSERT(node());
-#if ENABLE(MATHML)
-    ASSERT(node()->hasTagName(tdTag) || node()->hasTagName(thTag) || node()->hasTagName(MathMLNames::mtdTag));
-#else
     ASSERT(node()->hasTagName(tdTag) || node()->hasTagName(thTag));
-#endif
 
     updateColAndRowSpanFlags();
 

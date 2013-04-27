@@ -206,12 +206,6 @@
 #include "SVGStyleElement.h"
 #endif
 
-#if ENABLE(MATHML)
-#include "MathMLElementFactory.h"
-#include "MathMLNames.h"
-#include "core/mathml/MathMLElement.h"
-#endif
-
 #include "core/page/CaptionUserPreferences.h"
 
 using namespace std;
@@ -1069,10 +1063,6 @@ PassRefPtr<Element> Document::createElement(const QualifiedName& qName, bool cre
 #if ENABLE(SVG)
     else if (qName.namespaceURI() == SVGNames::svgNamespaceURI)
         e = SVGElementFactory::createSVGElement(qName, this, createdByParser);
-#endif
-#if ENABLE(MATHML)
-    else if (qName.namespaceURI() == MathMLNames::mathmlNamespaceURI)
-        e = MathMLElementFactory::createMathMLElement(qName, this, createdByParser);
 #endif
 
     if (e)

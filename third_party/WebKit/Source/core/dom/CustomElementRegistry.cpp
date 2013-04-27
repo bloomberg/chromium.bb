@@ -47,10 +47,6 @@
 #include "SVGNames.h"
 #endif
 
-#if ENABLE(MATHML)
-#include "MathMLNames.h"
-#endif
-
 namespace WebCore {
 
 CustomElementInvocation::CustomElementInvocation(PassRefPtr<Element> element)
@@ -85,10 +81,6 @@ bool CustomElementRegistry::isValidName(const AtomicString& name)
 
     DEFINE_STATIC_LOCAL(Vector<AtomicString>, reservedNames, ());
     if (reservedNames.isEmpty()) {
-#if ENABLE(MATHML)
-        reservedNames.append(MathMLNames::annotation_xmlTag.localName());
-#endif
-
 #if ENABLE(SVG)
         reservedNames.append(SVGNames::color_profileTag.localName());
         reservedNames.append(SVGNames::font_faceTag.localName());

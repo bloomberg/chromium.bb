@@ -442,10 +442,6 @@ public:
 
     virtual bool requiresForcedStyleRecalcPropagation() const { return false; }
 
-#if ENABLE(MATHML)
-    virtual bool isRenderMathMLBlock() const { return false; }
-#endif // ENABLE(MATHML)
-
 #if ENABLE(SVG)
     // FIXME: Until all SVG renders can be subclasses of RenderSVGModelObject we have
     // to add SVG renderer methods to RenderObject with an ASSERT_NOT_REACHED() default implementation.
@@ -512,11 +508,7 @@ public:
         // are not RenderBlocks and will return false. See https://bugs.webkit.org/show_bug.cgi?id=56709. 
         return isAnonymous() && (style()->display() == BLOCK || style()->display() == BOX) && style()->styleType() == NOPSEUDO && isRenderBlock() && !isListMarker() && !isRenderFlowThread()
             && !isRenderFullScreen()
-            && !isRenderFullScreenPlaceholder()
-#if ENABLE(MATHML)
-            && !isRenderMathMLBlock()
-#endif
-            ;
+            && !isRenderFullScreenPlaceholder();
     }
     bool isAnonymousColumnsBlock() const { return style()->specifiesColumns() && isAnonymousBlock(); }
     bool isAnonymousColumnSpanBlock() const { return style()->columnSpan() && isAnonymousBlock(); }

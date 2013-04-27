@@ -1189,12 +1189,6 @@ String AccessibilityNodeObject::accessibilityDescription() const
             return alt;
     }
 
-#if ENABLE(MATHML)
-    Node* node = this->node();
-    if (node && node->isElementNode() && toElement(node)->isMathMLElement())
-        return getAttribute(MathMLNames::alttextAttr);
-#endif
-
     // An element's descriptive text is comprised of title() (what's visible on the screen) and accessibilityDescription() (other descriptive text).
     // Both are used to generate what a screen reader speaks.
     // If this point is reached (i.e. there's no accessibilityDescription) and there's no title(), we should fallback to using the title attribute.
@@ -1653,12 +1647,6 @@ void AccessibilityNodeObject::alternativeText(Vector<AccessibilityText>& textOrd
         if (!alt.isNull())
             textOrder.append(AccessibilityText(alt, AlternativeText));
     }
-
-#if ENABLE(MATHML)
-    Node* node = this->node();
-    if (node && node->isElementNode() && toElement(node)->isMathMLElement())
-        textOrder.append(AccessibilityText(getAttribute(MathMLNames::alttextAttr), AlternativeText));
-#endif
 }
 
 void AccessibilityNodeObject::ariaLabeledByText(Vector<AccessibilityText>& textOrder) const

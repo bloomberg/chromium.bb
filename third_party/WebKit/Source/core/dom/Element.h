@@ -518,12 +518,7 @@ public:
 
     DOMStringMap* dataset();
 
-#if ENABLE(MATHML)
-    virtual bool isMathMLElement() const { return false; }
-#else
     static bool isMathMLElement() { return false; }
-#endif
-
     virtual bool isMediaElement() const { return false; }
 
 #if ENABLE(INPUT_SPEECH)
