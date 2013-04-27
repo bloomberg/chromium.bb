@@ -78,12 +78,6 @@
       ],
       'conditions': [
         ['OS=="win"', {
-          # This is needed because Event.h in this directory is blocked
-          # by a system header on windows.
-          'include_dirs++': ['../core/dom'],
-          'direct_dependent_settings': {
-            'include_dirs+++': ['../core/dom'],
-          },
           # In generated bindings code: 'switch contains default but no case'.
           # Disable c4267 warnings until we fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4065, 4267 ],
