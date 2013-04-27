@@ -35,7 +35,9 @@ static const char kTetheringUnbind[] = "Tethering.unbind";
 class SocketTunnel {
  public:
   explicit SocketTunnel(const std::string& location)
-      : location_(location) {
+      : location_(location),
+        pending_writes_(0),
+        pending_destruction_(false) {
   }
 
   void Start(int result, net::StreamSocket* socket) {
@@ -80,6 +82,10 @@ class SocketTunnel {
   }
 
   ~SocketTunnel() {
+    if (host_socket_)
+      host_socket_->Disconnect();
+    if (remote_socket_)
+      remote_socket_->Disconnect();
   }
 
   void OnConnected(int result) {
@@ -94,7 +100,6 @@ class SocketTunnel {
 
   void Pump(net::StreamSocket* from, net::StreamSocket* to) {
     scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(kBufferSize);
-
     int result = from->Read(buffer, kBufferSize,
           base::Bind(&SocketTunnel::OnRead, base::Unretained(this), from, to,
                      buffer));
@@ -110,21 +115,53 @@ class SocketTunnel {
       SelfDestruct();
       return;
     }
-    to->Write(buffer, result, base::Bind(&SocketTunnel::OnWritten,
-                                         base::Unretained(this)));
+
+    int total = result;
+    scoped_refptr<net::DrainableIOBuffer> drainable =
+        new net::DrainableIOBuffer(buffer, total);
+
+    ++pending_writes_;
+    result = to->Write(drainable, total,
+                       base::Bind(&SocketTunnel::OnWritten,
+                                  base::Unretained(this), drainable, from, to));
+    if (result != net::ERR_IO_PENDING)
+      OnWritten(drainable, from, to, result);
+  }
+
+  void OnWritten(scoped_refptr<net::DrainableIOBuffer> drainable,
+                 net::StreamSocket* from,
+                 net::StreamSocket* to,
+                 int result) {
+    --pending_writes_;
+    if (result < 0) {
+      SelfDestruct();
+      return;
+    }
+
+    drainable->DidConsume(result);
+    if (drainable->BytesRemaining() > 0) {
+      ++pending_writes_;
+      result = to->Write(drainable, drainable->BytesRemaining(),
+                         base::Bind(&SocketTunnel::OnWritten,
+                                    base::Unretained(this), drainable, from,
+                                    to));
+      if (result != net::ERR_IO_PENDING)
+        OnWritten(drainable, from, to, result);
+      return;
+    }
+
+    if (pending_destruction_) {
+      SelfDestruct();
+      return;
+    }
     Pump(from, to);
   }
 
-  void OnWritten(int result) {
-    if (result < 0)
-      SelfDestruct();
-  }
-
   void SelfDestruct() {
-    if (host_socket_)
-      host_socket_->Disconnect();
-    if (remote_socket_)
-      remote_socket_->Disconnect();
+    if (pending_writes_ > 0) {
+      pending_destruction_ = true;
+      return;
+    }
     delete this;
   }
 
@@ -133,6 +170,8 @@ class SocketTunnel {
   scoped_ptr<net::StreamSocket> host_socket_;
   scoped_ptr<net::HostResolver> host_resolver_;
   net::AddressList address_list_;
+  int pending_writes_;
+  bool pending_destruction_;
 };
 
 }  // namespace
@@ -147,7 +186,7 @@ TetheringAdbFilter::~TetheringAdbFilter() {
 
 bool TetheringAdbFilter::ProcessIncomingMessage(const std::string& message) {
   // Only parse messages that might be Tethering.accepted event.
-  if (message.length() > 100 ||
+  if (message.length() > 200 ||
       message.find(kTetheringAccepted) == std::string::npos)
     return false;
 
@@ -177,12 +216,13 @@ bool TetheringAdbFilter::ProcessIncomingMessage(const std::string& message) {
   std::map<int, std::string>::iterator it = requested_ports_.find(port);
   if (it == requested_ports_.end())
     return false;
+
   std::string location = it->second;
 
   SocketTunnel* tunnel = new SocketTunnel(location);
   AdbClientSocket::TransportQuery(
-    adb_port_, serial_, connection_id,
-    base::Bind(&SocketTunnel::Start, base::Unretained(tunnel)));
+      adb_port_, serial_, connection_id,
+      base::Bind(&SocketTunnel::Start, base::Unretained(tunnel)));
   return true;
 }
 

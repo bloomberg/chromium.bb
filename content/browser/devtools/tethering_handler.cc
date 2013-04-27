@@ -44,13 +44,14 @@ class SocketPump : public net::StreamListenSocket::Delegate {
   SocketPump(DevToolsHttpHandlerDelegate* delegate,
              net::StreamSocket* client_socket)
       : client_socket_(client_socket),
-        delegate_(delegate) {
+        delegate_(delegate),
+        wire_buffer_size_(0),
+        pending_destruction_(false) {
   }
 
   std::string Init() {
     std::string channel_name;
     server_socket_ = delegate_->CreateSocketForTethering(this, &channel_name);
-    buffer_ = new net::IOBuffer(kBufferSize);
     if (!server_socket_ || channel_name.empty())
       SelfDestruct();
     return channel_name;
@@ -64,6 +65,10 @@ class SocketPump : public net::StreamListenSocket::Delegate {
     if (accepted_socket_)
       return;
 
+    buffer_ = new net::IOBuffer(kBufferSize);
+    wire_buffer_ = new net::GrowableIOBuffer();
+    wire_buffer_->SetCapacity(kBufferSize);
+
     accepted_socket_ = socket;
     int result = client_socket_->Read(buffer_, kBufferSize,
                                       base::Bind(&SocketPump::OnClientRead,
@@ -75,12 +80,14 @@ class SocketPump : public net::StreamListenSocket::Delegate {
   virtual void DidRead(net::StreamListenSocket* socket,
                        const char* data,
                        int len) OVERRIDE {
-    std::string payload = std::string(data, len);
-    int result = client_socket_->Write(new net::StringIOBuffer(payload), len,
-                                       base::Bind(&SocketPump::OnClientWrite,
-                                                  base::Unretained(this)));
-    if (result < 0 && result != net::ERR_IO_PENDING)
-      SelfDestruct();
+    int old_size = wire_buffer_size_;
+    wire_buffer_size_ += len;
+    while (wire_buffer_->capacity() < wire_buffer_size_)
+      wire_buffer_->SetCapacity(wire_buffer_->capacity() * 2);
+    memcpy(wire_buffer_->StartOfBuffer() + old_size, data, len);
+    if (old_size != wire_buffer_->offset())
+      return;
+    OnClientWrite(0);
   }
 
   virtual void DidClose(net::StreamListenSocket* socket) OVERRIDE {
@@ -94,10 +101,9 @@ class SocketPump : public net::StreamListenSocket::Delegate {
     }
 
     accepted_socket_->Send(buffer_->data(), result);
-
     result = client_socket_->Read(buffer_, kBufferSize,
-                                 base::Bind(&SocketPump::OnClientRead,
-                                            base::Unretained(this)));
+                                  base::Bind(&SocketPump::OnClientRead,
+                                             base::Unretained(this)));
     if (result != net::ERR_IO_PENDING)
       OnClientRead(result);
   }
@@ -105,9 +111,45 @@ class SocketPump : public net::StreamListenSocket::Delegate {
   void OnClientWrite(int result) {
     if (result < 0)
       SelfDestruct();
+
+    wire_buffer_->set_offset(wire_buffer_->offset() + result);
+
+    int remaining = wire_buffer_size_ - wire_buffer_->offset();
+    if (remaining == 0) {
+      if (pending_destruction_)
+        SelfDestruct();
+      return;
+    }
+
+
+    if (remaining > kBufferSize)
+      remaining = kBufferSize;
+
+    scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(remaining);
+    memcpy(buffer->data(), wire_buffer_->data(), remaining);
+    result = client_socket_->Write(
+        buffer, remaining, base::Bind(&SocketPump::OnClientWrite,
+                                      base::Unretained(this)));
+
+    // Shrink buffer
+    int offset = wire_buffer_->offset();
+    if (offset > kBufferSize) {
+      memcpy(wire_buffer_->StartOfBuffer(), wire_buffer_->data(),
+          wire_buffer_size_ - offset);
+      wire_buffer_size_ -= offset;
+      wire_buffer_->set_offset(0);
+    }
+
+    if (result != net::ERR_IO_PENDING)
+      OnClientWrite(result);
+    return;
   }
 
   void SelfDestruct() {
+    if (wire_buffer_->offset() != wire_buffer_size_) {
+      pending_destruction_ = true;
+      return;
+    }
     delete this;
   }
 
@@ -116,7 +158,10 @@ class SocketPump : public net::StreamListenSocket::Delegate {
   scoped_refptr<net::StreamListenSocket> server_socket_;
   scoped_refptr<net::StreamListenSocket> accepted_socket_;
   scoped_refptr<net::IOBuffer> buffer_;
+  scoped_refptr<net::GrowableIOBuffer> wire_buffer_;
   DevToolsHttpHandlerDelegate* delegate_;
+  int wire_buffer_size_;
+  bool pending_destruction_;
 };
 
 }  // namespace
@@ -231,6 +276,9 @@ TetheringHandler::OnBind(DevToolsProtocol::Command* command) {
   int port = GetPort(command);
   if (port == 0)
     return command->InvalidParamResponse(kPortParam);
+
+  if (bound_sockets_.find(port) != bound_sockets_.end())
+    return command->InternalErrorResponse("Port already bound");
 
   scoped_ptr<BoundSocket> bound_socket(new BoundSocket(this, delegate_));
   if (!bound_socket->Listen(port))
