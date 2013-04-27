@@ -3978,9 +3978,7 @@ void WebViewImpl::paintRootLayer(GraphicsContext& context, const IntRect& conten
     // The background color should have been set already in order to show up with the correct color in the compositor
     // frame being painted currently. This verifies the view's background color was not changed without calling
     // setBackgroundColor() before this paint phase happened.
-    // TODO(ccameron): Un-comment out this assert.
-    // http://crbug.com/236118
-    // ASSERT(m_nonCompositedContentHost->backgroundColor() == view->documentBackgroundColor());
+    ASSERT(m_nonCompositedContentHost->backgroundColor() == view->documentBackgroundColor());
 }
 
 void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
