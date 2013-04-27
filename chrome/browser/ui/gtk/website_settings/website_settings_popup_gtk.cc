@@ -75,10 +75,10 @@ GtkWidget* CreateTextLabel(const std::string& text,
 
 void ClearContainer(GtkWidget* container) {
   GList* child = gtk_container_get_children(GTK_CONTAINER(container));
-  while (child) {
-    gtk_container_remove(GTK_CONTAINER(container), GTK_WIDGET(child->data));
-    child = child->next;
-  }
+  for (GList* item = child; item; item = g_list_next(item))
+    gtk_container_remove(GTK_CONTAINER(container), GTK_WIDGET(item->data));
+
+  g_list_free(child);
 }
 
 void SetConnectionSection(GtkWidget* section_box,
