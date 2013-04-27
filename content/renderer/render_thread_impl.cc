@@ -703,8 +703,12 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableGeolocation(
       !command_line.HasSwitch(switches::kDisableGeolocation));
 
+#if defined(OS_ANDROID) && !defined(GOOGLE_TV)
+  WebKit::WebRuntimeFeatures::enableMediaSource(false);
+#else
   WebKit::WebRuntimeFeatures::enableMediaSource(
       !command_line.HasSwitch(switches::kDisableMediaSource));
+#endif
 
   WebRuntimeFeatures::enableMediaPlayer(
       media::IsMediaLibraryInitialized());
