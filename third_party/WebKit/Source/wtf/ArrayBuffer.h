@@ -116,6 +116,7 @@ public:
     WTF_EXPORT_PRIVATE bool transfer(ArrayBufferContents&, Vector<RefPtr<ArrayBufferView> >& neuteredViews);
     bool isNeutered() { return !m_contents.m_data; }
 
+    bool hasDeallocationObserver() { return m_contents.m_deallocationObserver; }
     void setDeallocationObserver(ArrayBufferDeallocationObserver* deallocationObserver)
     {
         m_contents.m_deallocationObserver = deallocationObserver;
