@@ -10,9 +10,9 @@
  * them as Chrome notifications.
  * The service performs periodic updating of Google Now cards.
  * Each updating of the cards includes 4 steps:
- * 1. Processing requests for cards dismissals that are not yet sent to the
+ * 1. Obtaining the location of the machine;
+ * 2. Processing requests for cards dismissals that are not yet sent to the
  *    server;
- * 2. Obtaining the location of the machine;
  * 3. Making a server request based on that location;
  * 4. Showing the received cards as notifications.
  */
@@ -20,7 +20,6 @@
 // TODO(vadimt): Use background permission to show notifications even when all
 // browser windows are closed.
 // TODO(vadimt): Decide what to do in incognito mode.
-// TODO(vadimt): Gather UMAs.
 // TODO(vadimt): Honor the flag the enables Google Now integration.
 // TODO(vadimt): Figure out the final values of the constants.
 // TODO(vadimt): Remove 'console' calls.
@@ -77,6 +76,8 @@ var UPDATE_CARDS_TASK_NAME = 'update-cards';
 var DISMISS_CARD_TASK_NAME = 'dismiss-card';
 var CARD_CLICKED_TASK_NAME = 'card-clicked';
 var RETRY_DISMISS_TASK_NAME = 'retry-dismiss';
+
+var LOCATION_WATCH_NAME = 'location-watch';
 
 /**
  * Checks if a new task can't be scheduled when another task is already
@@ -295,13 +296,20 @@ function parseAndShowNotificationCards(response, callback) {
 
 /**
  * Requests notification cards from the server.
- * @param {string} requestParameters Query string for the request.
+ * @param {Location} position Location of this computer.
  * @param {function()} callback Completion callback.
  */
-function requestNotificationCards(requestParameters, callback) {
-  console.log('requestNotificationCards ' + requestParameters + ' from ' +
-     NOTIFICATION_CARDS_URL);
+function requestNotificationCards(position, callback) {
+  console.log('requestNotificationCards ' + JSON.stringify(position) +
+      ' from ' + NOTIFICATION_CARDS_URL);
   recordEvent(DiagnosticEvent.REQUEST_FOR_CARDS_TOTAL);
+
+  // TODO(vadimt): Should we use 'q' as the parameter name?
+  var requestParameters =
+      'q=' + position.coords.latitude +
+      ',' + position.coords.longitude +
+      ',' + position.coords.accuracy;
+
   // TODO(vadimt): Figure out how to send user's identity to the server.
   var request = new XMLHttpRequest();
 
@@ -326,26 +334,23 @@ function requestNotificationCards(requestParameters, callback) {
 }
 
 /**
- * Requests notification cards from the server when we have geolocation.
- * @param {Geoposition} position Location of this computer.
- * @param {function()} callback Completion callback.
+ * Starts getting location for a cards update.
  */
-function requestNotificationCardsWithLocation(position, callback) {
-  // TODO(vadimt): Should we use 'q' as the parameter name?
-  var requestParameters =
-      'q=' + position.coords.latitude +
-      ',' + position.coords.longitude +
-      ',' + position.coords.accuracy;
-
-  requestNotificationCards(requestParameters, callback);
+function requestLocation() {
+  console.log('requestLocation');
+  // TODO(vadimt): Figure out location request options.
+  chrome.location.watchLocation(LOCATION_WATCH_NAME, {});
 }
+
 
 /**
  * Obtains new location; requests and shows notification cards based on this
  * location.
+ * @param {Location} position Location of this computer.
  */
-function updateNotificationsCards() {
-  console.log('updateNotificationsCards @' + new Date());
+function updateNotificationsCards(position) {
+  console.log('updateNotificationsCards ' + JSON.stringify(position) +
+      ' @' + new Date());
   tasks.add(UPDATE_CARDS_TASK_NAME, function(callback) {
     console.log('updateNotificationsCards-task-begin');
     tasks.debugSetStepName('updateNotificationsCards-get-retryDelaySeconds');
@@ -368,14 +373,7 @@ function updateNotificationsCards() {
       processPendingDismissals(function(success) {
         if (success) {
           // The cards are requested only if there are no unsent dismissals.
-          tasks.debugSetStepName('updateNotificationsCards-get-location');
-          navigator.geolocation.getCurrentPosition(
-            function(position) {
-              requestNotificationCardsWithLocation(position, callback);
-            },
-            function() {
-              requestNotificationCards('', callback);
-            });
+          requestNotificationCards(position, callback);
         } else {
           callback();
         }
@@ -568,7 +566,12 @@ function initialize() {
     retryDelaySeconds: INITIAL_POLLING_PERIOD_SECONDS
   };
   storage.set(initialStorage);
-  updateNotificationsCards();
+
+  // Create an update timer for a case when for some reason location request
+  // gets stuck.
+  scheduleNextUpdate(MAXIMUM_POLLING_PERIOD_SECONDS);
+
+  requestLocation();
 }
 
 chrome.runtime.onInstalled.addListener(function(details) {
@@ -586,7 +589,7 @@ chrome.runtime.onStartup.addListener(function() {
 
 chrome.alarms.onAlarm.addListener(function(alarm) {
   if (alarm.name == UPDATE_NOTIFICATIONS_ALARM_NAME)
-    updateNotificationsCards();
+    requestLocation();
   else if (alarm.name == RETRY_DISMISS_ALARM_NAME)
     retryPendingDismissals();
 });
@@ -612,3 +615,5 @@ chrome.notifications.onButtonClicked.addListener(
     });
 
 chrome.notifications.onClosed.addListener(onNotificationClosed);
+
+chrome.location.onLocationUpdate.addListener(updateNotificationsCards);
