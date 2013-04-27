@@ -11,6 +11,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 
 using WebKit::WebDragOperationNone;
 
@@ -36,7 +37,8 @@ WebDragSource::WebDragSource(gfx::NativeWindow source_wnd,
     : ui::DragSourceWin(),
       source_wnd_(source_wnd),
       render_view_host_(web_contents->GetRenderViewHost()),
-      effect_(DROPEFFECT_NONE) {
+      effect_(DROPEFFECT_NONE),
+      data_(NULL) {
   registrar_.Add(this, NOTIFICATION_WEB_CONTENTS_SWAPPED,
                  Source<WebContents>(web_contents));
   registrar_.Add(this, NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
@@ -67,6 +69,8 @@ void WebDragSource::OnDragSourceCancel() {
 }
 
 void WebDragSource::OnDragSourceDrop() {
+  DCHECK(data_);
+  data_->SetInDragLoop(false);
   // On Windows, we check for drag end in IDropSource::QueryContinueDrag which
   // happens before IDropTarget::Drop is called. HTML5 requires the "dragend"
   // event to happen after the "drop" event. Since  Windows calls these two

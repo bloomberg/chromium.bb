@@ -12,6 +12,10 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 
+namespace ui {
+class OSExchangeData;
+}  // namespace ui
+
 namespace content {
 class RenderViewHost;
 class WebContents;
@@ -33,6 +37,10 @@ class WebDragSource : public ui::DragSourceWin,
                        const NotificationDetails& details);
 
   void set_effect(DWORD effect) { effect_ = effect; }
+  // Used to set the active data object for the current drag operation. The
+  // caller must ensure that |data| is not destroyed before the nested drag loop
+  // terminates.
+  void set_data(ui::OSExchangeData* data) { data_ = data; }
 
  protected:
   // ui::DragSourceWin
@@ -59,6 +67,8 @@ class WebDragSource : public ui::DragSourceWin,
   NotificationRegistrar registrar_;
 
   DWORD effect_;
+
+  ui::OSExchangeData* data_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDragSource);
 };

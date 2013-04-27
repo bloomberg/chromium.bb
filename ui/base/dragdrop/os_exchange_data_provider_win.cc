@@ -490,8 +490,10 @@ bool OSExchangeDataProviderWin::HasCustomFormat(CLIPFORMAT format) const {
 
 void OSExchangeDataProviderWin::SetDownloadFileInfo(
     const OSExchangeData::DownloadFileInfo& download) {
-  // If the filename is not provided, set stoarge to NULL to indicate that
+  // If the filename is not provided, set storage to NULL to indicate that
   // the delay rendering will be used.
+  // TODO(dcheng): Is it actually possible for filename to be empty here? I
+  // think we always synthesize one in WebContentsDragWin.
   STGMEDIUM* storage = NULL;
   if (!download.filename.empty())
     storage = GetStorageForFileName(download.filename);
@@ -501,6 +503,10 @@ void OSExchangeDataProviderWin::SetDownloadFileInfo(
       ClipboardUtil::GetCFHDropFormat()->cfFormat, storage);
   info->downloader = download.downloader;
   data_->contents_.push_back(info);
+}
+
+void OSExchangeDataProviderWin::SetInDragLoop(bool in_drag_loop) {
+  data_->set_in_drag_loop(in_drag_loop);
 }
 
 #if defined(USE_AURA)
@@ -598,6 +604,7 @@ static void DuplicateMedium(CLIPFORMAT source_clipformat,
 
 DataObjectImpl::DataObjectImpl()
     : is_aborting_(false),
+      in_drag_loop_(false),
       in_async_mode_(false),
       async_operation_started_(false),
       observer_(NULL) {
@@ -674,34 +681,19 @@ HRESULT DataObjectImpl::GetData(FORMATETC* format_etc, STGMEDIUM* medium) {
       if ((*iter)->medium) {
         DuplicateMedium((*iter)->format_etc.cfFormat, (*iter)->medium, medium);
       } else {
-        // Check if the left button is down.
-        bool is_left_button_down = (GetKeyState(VK_LBUTTON) & 0x8000) != 0;
+        // Fail all GetData() attempts for DownloadURL data if the drag and drop
+        // operation is still in progress.
+        if (in_drag_loop_)
+          return DV_E_FORMATETC;
 
         bool wait_for_data = false;
-        if ((*iter)->in_delay_rendering) {
-          // Make sure the left button is up. Sometimes the drop target, like
-          // Shell, might be too aggresive in calling GetData when the left
-          // button is not released.
-          if (is_left_button_down)
-            return DV_E_FORMATETC;
 
-          // In async mode, we do not want to start waiting for the data before
-          // the async operation is started. This is because we want to postpone
-          // until Shell kicks off a background thread to do the work so that
-          // we do not block the UI thread.
-          if (!in_async_mode_ || async_operation_started_)
-            wait_for_data = true;
-        } else {
-          // If the left button is up and the target has not requested the data
-          // yet, it probably means that the target does not support delay-
-          // rendering. So instead, we wait for the data.
-          if (is_left_button_down) {
-            (*iter)->in_delay_rendering = true;
-            memset(medium, 0, sizeof(STGMEDIUM));
-          } else {
-            wait_for_data = true;
-          }
-        }
+        // In async mode, we do not want to start waiting for the data before
+        // the async operation is started. This is because we want to postpone
+        // until Shell kicks off a background thread to do the work so that
+        // we do not block the UI thread.
+        if (!in_async_mode_ || async_operation_started_)
+          wait_for_data = true;
 
         if (!wait_for_data)
           return DV_E_FORMATETC;
@@ -769,6 +761,8 @@ HRESULT DataObjectImpl::SetData(
   info->medium->tymed = format_etc->tymed;
   info->owns_medium = !!should_release;
   // Make newly added data appear first.
+  // TODO(dcheng): Make various setters agree whether elements should be
+  // prioritized from front to back or back to front.
   contents_.insert(contents_.begin(), info);
 
   return S_OK;

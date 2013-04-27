@@ -360,13 +360,16 @@ bool WebContentsDragWin::DoDragging(const WebDropData& drop_data,
     // Keep a reference count such that |drag_source_| will not get deleted
     // if the contents view window is gone in the nested message loop invoked
     // from DoDragDrop.
-    scoped_refptr<WebDragSource> retain_this(drag_source_);
+    scoped_refptr<WebDragSource> retain_source(drag_source_);
+    retain_source->set_data(&data);
+    data.SetInDragLoop(true);
 
     MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
     DoDragDrop(ui::OSExchangeDataProviderWin::GetIDataObject(data),
                drag_source_,
                WebDragOpMaskToWinDragOpMask(ops),
                &effect);
+    retain_source->set_data(NULL);
   }
 
   // Bail out immediately if the contents view window is gone.

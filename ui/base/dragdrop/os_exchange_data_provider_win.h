@@ -41,6 +41,7 @@ class DataObjectImpl : public DownloadFileObserver,
 
   // Accessors.
   void set_observer(Observer* observer) { observer_ = observer; }
+  void set_in_drag_loop(bool in_drag_loop) { in_drag_loop_ = in_drag_loop; }
 
   // Number of known formats.
   size_t size() const { return contents_.size(); }
@@ -94,13 +95,11 @@ class DataObjectImpl : public DownloadFileObserver,
     FORMATETC format_etc;
     STGMEDIUM* medium;
     bool owns_medium;
-    bool in_delay_rendering;
     scoped_refptr<DownloadFileProvider> downloader;
 
     StoredDataInfo(CLIPFORMAT cf, STGMEDIUM* medium)
         : medium(medium),
-          owns_medium(true),
-          in_delay_rendering(false) {
+          owns_medium(true) {
       format_etc.cfFormat = cf;
       format_etc.dwAspect = DVASPECT_CONTENT;
       format_etc.lindex = -1;
@@ -111,8 +110,7 @@ class DataObjectImpl : public DownloadFileObserver,
     StoredDataInfo(FORMATETC* format_etc, STGMEDIUM* medium)
         : format_etc(*format_etc),
           medium(medium),
-          owns_medium(true),
-          in_delay_rendering(false) {
+          owns_medium(true) {
     }
 
     ~StoredDataInfo() {
@@ -131,6 +129,7 @@ class DataObjectImpl : public DownloadFileObserver,
   base::win::ScopedComPtr<IDataObject> source_object_;
 
   bool is_aborting_;
+  bool in_drag_loop_;
   bool in_async_mode_;
   bool async_operation_started_;
   Observer* observer_;
@@ -188,6 +187,7 @@ class UI_EXPORT OSExchangeDataProviderWin : public OSExchangeData::Provider {
   virtual bool HasCustomFormat(OSExchangeData::CustomFormat format) const;
   virtual void SetDownloadFileInfo(
       const OSExchangeData::DownloadFileInfo& download_info);
+  virtual void SetInDragLoop(bool in_drag_loop) OVERRIDE;
 #if defined(USE_AURA)
   virtual void SetDragImage(const gfx::ImageSkia& image,
                             const gfx::Vector2d& cursor_offset) OVERRIDE;
