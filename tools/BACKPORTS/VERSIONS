@@ -91,3 +91,6 @@ ppapi22	9338
 ppapi23	9624
   gcc		0622fce75c30b1cdce32dfa1a6fe96cb34e526ea	Fix potential out of bounds access.
   glibc		51fe1ff9a701891460bc51b21ff723802fda33ee	Remove aliases to stat64, fstat64, fstatat64 and lstat64.
+  glibc		b7d4c72d2e3f97e00465df9aff09184b32ebac8b	Disable ld.so.cache support
+  glibc		a30570615f75ed3058827c0600cfed5b7a768e90	Fill tz in gettimeofday function
+  glibc		a0e12298059896274848548713dd426d7b751cbd	Make non-executable stack default for NaCl.
