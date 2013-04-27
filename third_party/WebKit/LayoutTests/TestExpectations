@@ -265,9 +265,6 @@ crbug.com/233066 http/tests/security/MessagePort/event-listener-context.html [ S
 crbug.com/233066 canvas/philip/tests/2d.drawImage.outsidesource.html [ Skip ]
 crbug.com/233066 virtual/gpu/canvas/philip/tests/2d.drawImage.outsidesource.html [ Skip ]
 
-# Chromium disabled MATHML
-crbug.com/22554 mathml [ Skip ]
-
 # INPUT_TYPE_DATETIME_INCOMPLETE is disabled across Chromium until a better Android UI is worked out.  See crbug.com/164561.
 webkit.org/b/109272 fast/forms/datetime [ Skip ]
 webkit.org/b/109272 fast/forms/datetime-multiple-fields [ Skip ]
