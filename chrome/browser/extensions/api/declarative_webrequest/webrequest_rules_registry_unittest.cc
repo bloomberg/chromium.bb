@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
+#include "chrome/common/extensions/extension_test_util.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/common/matcher/url_matcher_constants.h"
 #include "net/url_request/url_request_test_util.h"
@@ -34,6 +35,9 @@ const char kRuleId4[] = "rule4";
 
 namespace extensions {
 
+using base::Value;
+using extension_test_util::LoadManifest;
+using extension_test_util::LoadManifestUnchecked;
 using testing::HasSubstr;
 
 namespace helpers = extension_web_request_api_helpers;
@@ -42,9 +46,11 @@ namespace keys2 = url_matcher_constants;
 
 class TestWebRequestRulesRegistry : public WebRequestRulesRegistry {
  public:
-  TestWebRequestRulesRegistry()
-      : WebRequestRulesRegistry(NULL, NULL),
-        num_clear_cache_calls_(0) {}
+  explicit TestWebRequestRulesRegistry(
+      scoped_refptr<ExtensionInfoMap> extension_info_map)
+      : WebRequestRulesRegistry(NULL, NULL), num_clear_cache_calls_(0) {
+    SetExtensionInfoMapForTesting(extension_info_map);
+  }
 
   // Returns how often the in-memory caches of the renderers were instructed
   // to be cleared.
@@ -58,16 +64,6 @@ class TestWebRequestRulesRegistry : public WebRequestRulesRegistry {
 
  protected:
   virtual ~TestWebRequestRulesRegistry() {}
-
-  virtual base::Time GetExtensionInstallationTime(
-      const std::string& extension_id) const OVERRIDE {
-    if (extension_id == kExtensionId)
-      return base::Time() + base::TimeDelta::FromDays(1);
-    else if (extension_id == kExtensionId2)
-      return base::Time() + base::TimeDelta::FromDays(2);
-    else
-      return base::Time();
-  }
 
   virtual void ClearCacheOnNavigation() OVERRIDE {
     ++num_clear_cache_calls_;
@@ -85,6 +81,8 @@ class WebRequestRulesRegistryTest : public testing::Test {
         io(content::BrowserThread::IO, &message_loop) {}
 
   virtual ~WebRequestRulesRegistryTest() {}
+
+  virtual void SetUp() OVERRIDE;
 
   virtual void TearDown() OVERRIDE {
     // Make sure that deletion traits of all registries are executed.
@@ -223,11 +221,47 @@ class WebRequestRulesRegistryTest : public testing::Test {
   MessageLoop message_loop;
   content::TestBrowserThread ui;
   content::TestBrowserThread io;
+  // Two extensions with host permissions for all URLs and the DWR permission.
+  // Installation times will be so that |extension_| is older than
+  // |extension2_|.
+  scoped_refptr<Extension> extension_;
+  scoped_refptr<Extension> extension2_;
+  scoped_refptr<ExtensionInfoMap> extension_info_map_;
 };
+
+void WebRequestRulesRegistryTest::SetUp() {
+  testing::Test::SetUp();
+
+  std::string error;
+  extension_ = LoadManifestUnchecked("permissions",
+                                     "web_request_all_host_permissions.json",
+                                     Manifest::INVALID_LOCATION,
+                                     Extension::NO_FLAGS,
+                                     kExtensionId,
+                                     &error);
+  ASSERT_TRUE(extension_) << error;
+  extension2_ =
+      LoadManifestUnchecked("permissions",
+                            "web_request_all_host_permissions.json",
+                            Manifest::INVALID_LOCATION,
+                            Extension::NO_FLAGS,
+                            kExtensionId2,
+                            &error);
+  ASSERT_TRUE(extension2_) << error;
+  extension_info_map_ = new ExtensionInfoMap;
+  ASSERT_TRUE(extension_info_map_);
+  extension_info_map_->AddExtension(extension_.get(),
+                                    base::Time() + base::TimeDelta::FromDays(1),
+                                    false /*incognito_enabled*/);
+  extension_info_map_->AddExtension(extension2_.get(),
+                                    base::Time() + base::TimeDelta::FromDays(2),
+                                    false /*incognito_enabled*/);
+}
+
 
 TEST_F(WebRequestRulesRegistryTest, AddRulesImpl) {
   scoped_refptr<TestWebRequestRulesRegistry> registry(
-      new TestWebRequestRulesRegistry());
+      new TestWebRequestRulesRegistry(extension_info_map_));
   std::string error;
 
   std::vector<linked_ptr<RulesRegistry::Rule> > rules;
@@ -266,7 +300,7 @@ TEST_F(WebRequestRulesRegistryTest, AddRulesImpl) {
 
 TEST_F(WebRequestRulesRegistryTest, RemoveRulesImpl) {
   scoped_refptr<TestWebRequestRulesRegistry> registry(
-      new TestWebRequestRulesRegistry());
+      new TestWebRequestRulesRegistry(extension_info_map_));
   std::string error;
 
   // Setup RulesRegistry to contain two rules.
@@ -314,7 +348,7 @@ TEST_F(WebRequestRulesRegistryTest, RemoveRulesImpl) {
 
 TEST_F(WebRequestRulesRegistryTest, RemoveAllRulesImpl) {
   scoped_refptr<TestWebRequestRulesRegistry> registry(
-      new TestWebRequestRulesRegistry());
+      new TestWebRequestRulesRegistry(extension_info_map_));
   std::string error;
 
   // Setup RulesRegistry to contain two rules, one for each extension.
@@ -366,7 +400,7 @@ TEST_F(WebRequestRulesRegistryTest, RemoveAllRulesImpl) {
 // Test precedences between extensions.
 TEST_F(WebRequestRulesRegistryTest, Precedences) {
   scoped_refptr<WebRequestRulesRegistry> registry(
-      new TestWebRequestRulesRegistry());
+      new TestWebRequestRulesRegistry(extension_info_map_));
   std::string error;
 
   std::vector<linked_ptr<RulesRegistry::Rule> > rules_to_add_1(1);
@@ -409,7 +443,7 @@ TEST_F(WebRequestRulesRegistryTest, Precedences) {
 // Test priorities of rules within one extension.
 TEST_F(WebRequestRulesRegistryTest, Priorities) {
   scoped_refptr<WebRequestRulesRegistry> registry(
-      new TestWebRequestRulesRegistry());
+      new TestWebRequestRulesRegistry(extension_info_map_));
   std::string error;
 
   std::vector<linked_ptr<RulesRegistry::Rule> > rules_to_add_1(1);
@@ -495,7 +529,7 @@ TEST_F(WebRequestRulesRegistryTest, IgnoreRulesByTag) {
   ASSERT_TRUE(RulesRegistry::Rule::Populate(*value2, rules[1].get()));
 
   scoped_refptr<WebRequestRulesRegistry> registry(
-      new TestWebRequestRulesRegistry());
+      new TestWebRequestRulesRegistry(extension_info_map_));
   std::string error = registry->AddRulesImpl(kExtensionId, rules);
   EXPECT_EQ("", error);
   EXPECT_FALSE(registry->IsEmpty());
@@ -517,7 +551,7 @@ TEST_F(WebRequestRulesRegistryTest, IgnoreRulesByTag) {
 // GetMatches.
 TEST_F(WebRequestRulesRegistryTest, GetMatchesCheckFulfilled) {
   scoped_refptr<TestWebRequestRulesRegistry> registry(
-      new TestWebRequestRulesRegistry());
+      new TestWebRequestRulesRegistry(extension_info_map_));
   const std::string kMatchingUrlAttribute(
       "\"url\": { \"pathContains\": \"\" }, \n");
   const std::string kNonMatchingNonUrlAttribute(
@@ -565,7 +599,7 @@ TEST_F(WebRequestRulesRegistryTest, GetMatchesCheckFulfilled) {
 // differ.
 TEST_F(WebRequestRulesRegistryTest, GetMatchesDifferentUrls) {
   scoped_refptr<TestWebRequestRulesRegistry> registry(
-      new TestWebRequestRulesRegistry());
+      new TestWebRequestRulesRegistry(extension_info_map_));
   const std::string kUrlAttribute(
       "\"url\": { \"hostContains\": \"url\" }, \n");
   const std::string kFirstPartyUrlAttribute(
@@ -622,7 +656,7 @@ TEST_F(WebRequestRulesRegistryTest, GetMatchesDifferentUrls) {
   }
 }
 
-TEST_F(WebRequestRulesRegistryTest, CheckConsistency) {
+TEST(WebRequestRulesRegistrySimpleTest, StageChecker) {
   // The contentType condition can only be evaluated during ON_HEADERS_RECEIVED
   // but the redirect action can only be executed during ON_BEFORE_REQUEST.
   // Therefore, this is an inconsistent rule that needs to be flagged.
@@ -646,19 +680,73 @@ TEST_F(WebRequestRulesRegistryTest, CheckConsistency) {
       "}                                                                 ";
 
   scoped_ptr<Value> value(base::JSONReader::Read(kRule));
-  ASSERT_TRUE(value.get());
+  ASSERT_TRUE(value);
 
-  std::vector<linked_ptr<RulesRegistry::Rule> > rules;
-  rules.push_back(make_linked_ptr(new RulesRegistry::Rule));
-  ASSERT_TRUE(RulesRegistry::Rule::Populate(*value, rules.back().get()));
+  RulesRegistry::Rule rule;
+  ASSERT_TRUE(RulesRegistry::Rule::Populate(*value, &rule));
 
-  scoped_refptr<WebRequestRulesRegistry> registry(
-      new TestWebRequestRulesRegistry());
-
+  std::string error;
   URLMatcher matcher;
-  std::string error = registry->AddRulesImpl(kExtensionId, rules);
+  scoped_ptr<WebRequestConditionSet> conditions =
+      WebRequestConditionSet::Create(
+          matcher.condition_factory(), rule.conditions, &error);
+  ASSERT_TRUE(error.empty()) << error;
+  ASSERT_TRUE(conditions);
+
+  bool bad_message = false;
+  scoped_ptr<WebRequestActionSet> actions =
+      WebRequestActionSet::Create(rule.actions, &error, &bad_message);
+  ASSERT_TRUE(error.empty()) << error;
+  ASSERT_FALSE(bad_message);
+  ASSERT_TRUE(actions);
+
+  EXPECT_FALSE(WebRequestRulesRegistry::StageChecker(
+      conditions.get(), actions.get(), &error));
   EXPECT_THAT(error, HasSubstr("no time in the request life-cycle"));
-  EXPECT_TRUE(registry->IsEmpty());
+  EXPECT_THAT(error, HasSubstr(actions->actions().back()->GetName()));
+}
+
+TEST(WebRequestRulesRegistrySimpleTest, HostPermissionsChecker) {
+  const char kAction[] =  // This action requires all URLs host permission.
+      "{                                                             \n"
+      "  \"instanceType\": \"declarativeWebRequest.RedirectRequest\",\n"
+      "  \"redirectUrl\": \"http://bar.com\"                         \n"
+      "}                                                             ";
+  scoped_ptr<Value> action_value(base::JSONReader::Read(kAction));
+  ASSERT_TRUE(action_value);
+
+  WebRequestActionSet::AnyVector actions;
+  actions.push_back(linked_ptr<base::Value>(action_value.release()));
+  ASSERT_TRUE(actions.back().get());
+
+  std::string error;
+  bool bad_message = false;
+  scoped_ptr<WebRequestActionSet> action_set(
+      WebRequestActionSet::Create(actions, &error, &bad_message));
+  ASSERT_TRUE(error.empty()) << error;
+  ASSERT_FALSE(bad_message);
+  ASSERT_TRUE(action_set);
+
+  scoped_refptr<Extension> extension_no_url(
+      LoadManifest("permissions", "web_request_no_host.json"));
+  scoped_refptr<Extension> extension_some_urls(
+      LoadManifest("permissions", "web_request_com_host_permissions.json"));
+  scoped_refptr<Extension> extension_all_urls(
+      LoadManifest("permissions", "web_request_all_host_permissions.json"));
+
+  EXPECT_TRUE(WebRequestRulesRegistry::HostPermissionsChecker(
+      extension_all_urls.get(), action_set.get(), &error));
+  EXPECT_TRUE(error.empty()) << error;
+
+  EXPECT_FALSE(WebRequestRulesRegistry::HostPermissionsChecker(
+      extension_some_urls.get(), action_set.get(), &error));
+  EXPECT_THAT(error, HasSubstr("permission for all"));
+  EXPECT_THAT(error, HasSubstr(action_set->actions().back()->GetName()));
+
+  EXPECT_FALSE(WebRequestRulesRegistry::HostPermissionsChecker(
+      extension_no_url.get(), action_set.get(), &error));
+  EXPECT_THAT(error, HasSubstr("permission for all"));
+  EXPECT_THAT(error, HasSubstr(action_set->actions().back()->GetName()));
 }
 
 TEST_F(WebRequestRulesRegistryTest, CheckOriginAndPathRegEx) {
@@ -688,7 +776,7 @@ TEST_F(WebRequestRulesRegistryTest, CheckOriginAndPathRegEx) {
   ASSERT_TRUE(RulesRegistry::Rule::Populate(*value, rules.back().get()));
 
   scoped_refptr<WebRequestRulesRegistry> registry(
-      new TestWebRequestRulesRegistry());
+      new TestWebRequestRulesRegistry(extension_info_map_));
 
   URLMatcher matcher;
   std::string error = registry->AddRulesImpl(kExtensionId, rules);

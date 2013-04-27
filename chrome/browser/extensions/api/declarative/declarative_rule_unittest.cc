@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/declarative/declarative_rule.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
@@ -305,8 +306,12 @@ TEST(DeclarativeRuleTest, Create) {
 
   URLMatcher matcher;
   std::string error;
-  scoped_ptr<Rule> rule(Rule::Create(matcher.condition_factory(), kExtensionId,
-                                     install_time, json_rule, NULL, &error));
+  scoped_ptr<Rule> rule(Rule::Create(matcher.condition_factory(),
+                                     kExtensionId,
+                                     install_time,
+                                     json_rule,
+                                     Rule::ConsistencyChecker(),
+                                     &error));
   EXPECT_EQ("", error);
   ASSERT_TRUE(rule.get());
 
@@ -367,7 +372,7 @@ TEST(DeclarativeRuleTest, CheckConsistency) {
       json_rule.get()));
   scoped_ptr<Rule> rule(
       Rule::Create(matcher.condition_factory(), kExtensionId, base::Time(),
-                   json_rule, &AtLeastOneCondition, &error));
+                   json_rule, base::Bind(AtLeastOneCondition), &error));
   EXPECT_TRUE(rule);
   EXPECT_EQ("", error);
 
@@ -385,7 +390,7 @@ TEST(DeclarativeRuleTest, CheckConsistency) {
                  "}"),
       json_rule.get()));
   rule = Rule::Create(matcher.condition_factory(), kExtensionId, base::Time(),
-                      json_rule, &AtLeastOneCondition, &error);
+                      json_rule, base::Bind(AtLeastOneCondition), &error);
   EXPECT_FALSE(rule);
   EXPECT_EQ("No conditions", error);
 }

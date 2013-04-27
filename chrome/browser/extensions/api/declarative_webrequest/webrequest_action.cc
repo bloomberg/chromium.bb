@@ -329,9 +329,15 @@ struct WebRequestActionFactory {
       (* FactoryMethod)(const base::DictionaryValue* /* dict */ ,
                         std::string* /* error */,
                         bool* /* bad_message */);
+
+  typedef std::map<WebRequestAction::Type, const std::string> ActionNames;
+
   // Maps the name of a declarativeWebRequest action type to the factory
   // function creating it.
   std::map<std::string, FactoryMethod> factory_methods;
+
+  // Translates action types into the corresponding JavaScript names.
+  ActionNames action_names;
 
   WebRequestActionFactory() {
     factory_methods[keys::kAddRequestCookieType] =
@@ -369,6 +375,44 @@ struct WebRequestActionFactory {
         &CreateIgnoreRulesAction;
     factory_methods[keys::kSendMessageToExtensionType] =
         &CreateSendMessageToExtensionAction;
+
+#define INSERT_ACTION_NAME(type, name) \
+    action_names.insert(ActionNames::value_type(type, name));
+    std::vector<std::string> names_buffer;
+    names_buffer.push_back(keys::kAddRequestCookieType);
+    names_buffer.push_back(keys::kEditRequestCookieType);
+    names_buffer.push_back(keys::kRemoveRequestCookieType);
+    INSERT_ACTION_NAME(WebRequestAction::ACTION_MODIFY_REQUEST_COOKIE,
+                       JoinString(names_buffer, ", "));
+    names_buffer.clear();
+    names_buffer.push_back(keys::kAddResponseCookieType);
+    names_buffer.push_back(keys::kEditResponseCookieType);
+    names_buffer.push_back(keys::kRemoveResponseCookieType);
+    INSERT_ACTION_NAME(WebRequestAction::ACTION_MODIFY_RESPONSE_COOKIE,
+                       JoinString(names_buffer, ", "));
+    INSERT_ACTION_NAME(WebRequestAction::ACTION_ADD_RESPONSE_HEADER,
+                       keys::kAddResponseHeaderType);
+    INSERT_ACTION_NAME(WebRequestAction::ACTION_CANCEL_REQUEST,
+                       keys::kCancelRequestType);
+    INSERT_ACTION_NAME(WebRequestAction::ACTION_REDIRECT_BY_REGEX_DOCUMENT,
+                       keys::kRedirectByRegExType);
+    INSERT_ACTION_NAME(WebRequestAction::ACTION_REDIRECT_REQUEST,
+                       keys::kRedirectRequestType);
+    INSERT_ACTION_NAME(WebRequestAction::ACTION_REDIRECT_TO_TRANSPARENT_IMAGE,
+                       keys::kRedirectToTransparentImageType);
+    INSERT_ACTION_NAME(WebRequestAction::ACTION_REDIRECT_TO_EMPTY_DOCUMENT,
+                       keys::kRedirectToEmptyDocumentType);
+    INSERT_ACTION_NAME(WebRequestAction::ACTION_SET_REQUEST_HEADER,
+                       keys::kSetRequestHeaderType);
+    INSERT_ACTION_NAME(WebRequestAction::ACTION_REMOVE_REQUEST_HEADER,
+                       keys::kRemoveRequestHeaderType);
+    INSERT_ACTION_NAME(WebRequestAction::ACTION_REMOVE_RESPONSE_HEADER,
+                       keys::kRemoveResponseHeaderType);
+    INSERT_ACTION_NAME(WebRequestAction::ACTION_IGNORE_RULES,
+                       keys::kIgnoreRulesType);
+    INSERT_ACTION_NAME(WebRequestAction::ACTION_SEND_MESSAGE_TO_EXTENSION,
+                       keys::kSendMessageToExtensionType);
+#undef INSERT_ACTION_NAME
   }
 };
 
@@ -381,17 +425,19 @@ base::LazyInstance<WebRequestActionFactory>::Leaky
 // WebRequestAction
 //
 
-WebRequestAction::WebRequestAction() {}
-
 WebRequestAction::~WebRequestAction() {}
+
+const std::string& WebRequestAction::GetName() const {
+  const WebRequestActionFactory::ActionNames& names =
+      g_web_request_action_factory.Get().action_names;
+  std::map<WebRequestAction::Type, const std::string>::const_iterator it =
+      names.find(GetType());
+  CHECK(it != names.end());
+  return it->second;
+}
 
 int WebRequestAction::GetMinimumPriority() const {
   return std::numeric_limits<int>::min();
-}
-
-WebRequestAction::HostPermissionsStrategy
-WebRequestAction::GetHostPermissionsStrategy() const {
-  return STRATEGY_DEFAULT;
 }
 
 bool WebRequestAction::HasPermission(const ExtensionInfoMap* extension_info_map,
@@ -406,31 +452,21 @@ bool WebRequestAction::HasPermission(const ExtensionInfoMap* extension_info_map,
   if (!extension_info_map)
     return true;
 
-  HostPermissionsStrategy strategy = GetHostPermissionsStrategy();
-  if (strategy == STRATEGY_NONE || strategy == STRATEGY_DEFAULT) {
-    bool check_host_permissions = strategy != STRATEGY_NONE;
-    return WebRequestPermissions::CanExtensionAccessURL(
-        extension_info_map, extension_id, request->url(), crosses_incognito,
-        check_host_permissions);
+  WebRequestPermissions::HostPermissionsCheck permission_check =
+      WebRequestPermissions::REQUIRE_ALL_URLS;
+  switch (host_permissions_strategy()) {
+    case STRATEGY_DEFAULT:  // Default value is already set.
+      break;
+    case STRATEGY_NONE:
+      permission_check = WebRequestPermissions::DO_NOT_CHECK_HOST;
+      break;
+    case STRATEGY_HOST:
+      permission_check = WebRequestPermissions::REQUIRE_HOST_PERMISSION;
+      break;
   }
-  return true;
-}
-
-bool WebRequestAction::DeltaHasPermission(
-    const ExtensionInfoMap* extension_info_map,
-    const std::string& extension_id,
-    const net::URLRequest* request,
-    bool crosses_incognito,
-    const LinkedPtrEventResponseDelta& delta) const {
-  if (GetHostPermissionsStrategy() == STRATEGY_ALLOW_SAME_DOMAIN) {
-    return
-        net::RegistryControlledDomainService::SameDomainOrHost(
-            request->url(), delta->new_url) ||
-        WebRequestPermissions::CanExtensionAccessURL(
-            extension_info_map, extension_id, request->url(), crosses_incognito,
-            true);
-  }
-  return true;
+  return WebRequestPermissions::CanExtensionAccessURL(
+      extension_info_map, extension_id, request->url(), crosses_incognito,
+      permission_check);
 }
 
 // static
@@ -468,13 +504,8 @@ void WebRequestAction::Apply(const std::string& extension_id,
   if (GetStages() & apply_info->request_data.stage) {
     LinkedPtrEventResponseDelta delta = CreateDelta(
         apply_info->request_data, extension_id, extension_install_time);
-    if (delta.get()) {
-      if (DeltaHasPermission(apply_info->extension_info_map, extension_id,
-                             apply_info->request_data.request,
-                             apply_info->crosses_incognito,
-                             delta))
-        apply_info->deltas->push_back(delta);
-    }
+    if (delta.get())
+      apply_info->deltas->push_back(delta);
     if (GetType() == WebRequestAction::ACTION_IGNORE_RULES) {
       const WebRequestIgnoreRulesAction* ignore_action =
           static_cast<const WebRequestIgnoreRulesAction*>(this);
@@ -484,12 +515,15 @@ void WebRequestAction::Apply(const std::string& extension_id,
   }
 }
 
+WebRequestAction::WebRequestAction(HostPermissionsStrategy strategy)
+    : host_permissions_strategy_(strategy) {}
 
 //
 // WebRequestCancelAction
 //
 
-WebRequestCancelAction::WebRequestCancelAction() {}
+WebRequestCancelAction::WebRequestCancelAction()
+    : WebRequestAction(STRATEGY_NONE) {}
 
 WebRequestCancelAction::~WebRequestCancelAction() {}
 
@@ -500,11 +534,6 @@ int WebRequestCancelAction::GetStages() const {
 
 WebRequestAction::Type WebRequestCancelAction::GetType() const {
   return WebRequestAction::ACTION_CANCEL_REQUEST;
-}
-
-WebRequestAction::HostPermissionsStrategy
-WebRequestCancelAction::GetHostPermissionsStrategy() const {
-  return WebRequestAction::STRATEGY_NONE;
 }
 
 LinkedPtrEventResponseDelta WebRequestCancelAction::CreateDelta(
@@ -523,7 +552,7 @@ LinkedPtrEventResponseDelta WebRequestCancelAction::CreateDelta(
 //
 
 WebRequestRedirectAction::WebRequestRedirectAction(const GURL& redirect_url)
-    : redirect_url_(redirect_url) {}
+    : WebRequestAction(STRATEGY_DEFAULT), redirect_url_(redirect_url) {}
 
 WebRequestRedirectAction::~WebRequestRedirectAction() {}
 
@@ -533,11 +562,6 @@ int WebRequestRedirectAction::GetStages() const {
 
 WebRequestAction::Type WebRequestRedirectAction::GetType() const {
   return WebRequestAction::ACTION_REDIRECT_REQUEST;
-}
-
-WebRequestAction::HostPermissionsStrategy
-WebRequestRedirectAction::GetHostPermissionsStrategy() const {
-  return WebRequestAction::STRATEGY_ALLOW_SAME_DOMAIN;
 }
 
 LinkedPtrEventResponseDelta WebRequestRedirectAction::CreateDelta(
@@ -558,7 +582,8 @@ LinkedPtrEventResponseDelta WebRequestRedirectAction::CreateDelta(
 //
 
 WebRequestRedirectToTransparentImageAction::
-WebRequestRedirectToTransparentImageAction() {}
+    WebRequestRedirectToTransparentImageAction()
+    : WebRequestAction(STRATEGY_NONE) {}
 
 WebRequestRedirectToTransparentImageAction::
 ~WebRequestRedirectToTransparentImageAction() {}
@@ -570,11 +595,6 @@ int WebRequestRedirectToTransparentImageAction::GetStages() const {
 WebRequestAction::Type
 WebRequestRedirectToTransparentImageAction::GetType() const {
   return WebRequestAction::ACTION_REDIRECT_TO_TRANSPARENT_IMAGE;
-}
-
-WebRequestAction::HostPermissionsStrategy
-WebRequestRedirectToTransparentImageAction::GetHostPermissionsStrategy() const {
-  return WebRequestAction::STRATEGY_NONE;
 }
 
 LinkedPtrEventResponseDelta
@@ -594,7 +614,8 @@ WebRequestRedirectToTransparentImageAction::CreateDelta(
 //
 
 WebRequestRedirectToEmptyDocumentAction::
-WebRequestRedirectToEmptyDocumentAction() {}
+    WebRequestRedirectToEmptyDocumentAction()
+    : WebRequestAction(STRATEGY_NONE) {}
 
 WebRequestRedirectToEmptyDocumentAction::
 ~WebRequestRedirectToEmptyDocumentAction() {}
@@ -606,11 +627,6 @@ int WebRequestRedirectToEmptyDocumentAction::GetStages() const {
 WebRequestAction::Type
 WebRequestRedirectToEmptyDocumentAction::GetType() const {
   return WebRequestAction::ACTION_REDIRECT_TO_EMPTY_DOCUMENT;
-}
-
-WebRequestAction::HostPermissionsStrategy
-WebRequestRedirectToEmptyDocumentAction::GetHostPermissionsStrategy() const {
-  return WebRequestAction::STRATEGY_NONE;
 }
 
 LinkedPtrEventResponseDelta
@@ -632,7 +648,8 @@ WebRequestRedirectToEmptyDocumentAction::CreateDelta(
 WebRequestRedirectByRegExAction::WebRequestRedirectByRegExAction(
     scoped_ptr<RE2> from_pattern,
     const std::string& to_pattern)
-    : from_pattern_(from_pattern.Pass()),
+    : WebRequestAction(STRATEGY_DEFAULT),
+      from_pattern_(from_pattern.Pass()),
       to_pattern_(to_pattern.data(), to_pattern.size()) {}
 
 WebRequestRedirectByRegExAction::~WebRequestRedirectByRegExAction() {}
@@ -698,11 +715,6 @@ WebRequestAction::Type WebRequestRedirectByRegExAction::GetType() const {
   return WebRequestAction::ACTION_REDIRECT_BY_REGEX_DOCUMENT;
 }
 
-WebRequestAction::HostPermissionsStrategy
-WebRequestRedirectByRegExAction::GetHostPermissionsStrategy() const {
-  return WebRequestAction::STRATEGY_ALLOW_SAME_DOMAIN;
-}
-
 LinkedPtrEventResponseDelta WebRequestRedirectByRegExAction::CreateDelta(
     const WebRequestData& request_data,
     const std::string& extension_id,
@@ -731,9 +743,7 @@ LinkedPtrEventResponseDelta WebRequestRedirectByRegExAction::CreateDelta(
 WebRequestSetRequestHeaderAction::WebRequestSetRequestHeaderAction(
     const std::string& name,
     const std::string& value)
-    : name_(name),
-      value_(value) {
-}
+    : WebRequestAction(STRATEGY_DEFAULT), name_(name), value_(value) {}
 
 WebRequestSetRequestHeaderAction::~WebRequestSetRequestHeaderAction() {}
 
@@ -764,8 +774,7 @@ WebRequestSetRequestHeaderAction::CreateDelta(
 
 WebRequestRemoveRequestHeaderAction::WebRequestRemoveRequestHeaderAction(
     const std::string& name)
-    : name_(name) {
-}
+    : WebRequestAction(STRATEGY_DEFAULT), name_(name) {}
 
 WebRequestRemoveRequestHeaderAction::~WebRequestRemoveRequestHeaderAction() {}
 
@@ -797,9 +806,7 @@ WebRequestRemoveRequestHeaderAction::CreateDelta(
 WebRequestAddResponseHeaderAction::WebRequestAddResponseHeaderAction(
     const std::string& name,
     const std::string& value)
-    : name_(name),
-      value_(value) {
-}
+    : WebRequestAction(STRATEGY_DEFAULT), name_(name), value_(value) {}
 
 WebRequestAddResponseHeaderAction::~WebRequestAddResponseHeaderAction() {}
 
@@ -841,10 +848,10 @@ WebRequestRemoveResponseHeaderAction::WebRequestRemoveResponseHeaderAction(
     const std::string& name,
     const std::string& value,
     bool has_value)
-    : name_(name),
+    : WebRequestAction(STRATEGY_DEFAULT),
+      name_(name),
       value_(value),
-      has_value_(has_value) {
-}
+      has_value_(has_value) {}
 
 WebRequestRemoveResponseHeaderAction::~WebRequestRemoveResponseHeaderAction() {}
 
@@ -892,9 +899,9 @@ WebRequestRemoveResponseHeaderAction::CreateDelta(
 WebRequestIgnoreRulesAction::WebRequestIgnoreRulesAction(
     int minimum_priority,
     const std::string& ignore_tag)
-    : minimum_priority_(minimum_priority),
-      ignore_tag_(ignore_tag) {
-}
+    : WebRequestAction(STRATEGY_NONE),
+      minimum_priority_(minimum_priority),
+      ignore_tag_(ignore_tag) {}
 
 WebRequestIgnoreRulesAction::~WebRequestIgnoreRulesAction() {}
 
@@ -911,11 +918,6 @@ int WebRequestIgnoreRulesAction::GetMinimumPriority() const {
   return minimum_priority_;
 }
 
-WebRequestAction::HostPermissionsStrategy
-WebRequestIgnoreRulesAction::GetHostPermissionsStrategy() const {
-  return WebRequestAction::STRATEGY_NONE;
-}
-
 LinkedPtrEventResponseDelta WebRequestIgnoreRulesAction::CreateDelta(
     const WebRequestData& request_data,
     const std::string& extension_id,
@@ -930,7 +932,8 @@ LinkedPtrEventResponseDelta WebRequestIgnoreRulesAction::CreateDelta(
 
 WebRequestRequestCookieAction::WebRequestRequestCookieAction(
     linked_ptr<RequestCookieModification> request_cookie_modification)
-    : request_cookie_modification_(request_cookie_modification) {
+    : WebRequestAction(STRATEGY_DEFAULT),
+      request_cookie_modification_(request_cookie_modification) {
   CHECK(request_cookie_modification_.get());
 }
 
@@ -963,7 +966,8 @@ LinkedPtrEventResponseDelta WebRequestRequestCookieAction::CreateDelta(
 
 WebRequestResponseCookieAction::WebRequestResponseCookieAction(
     linked_ptr<ResponseCookieModification> response_cookie_modification)
-    : response_cookie_modification_(response_cookie_modification) {
+    : WebRequestAction(STRATEGY_DEFAULT),
+      response_cookie_modification_(response_cookie_modification) {
   CHECK(response_cookie_modification_.get());
 }
 
@@ -996,8 +1000,7 @@ LinkedPtrEventResponseDelta WebRequestResponseCookieAction::CreateDelta(
 
 WebRequestSendMessageToExtensionAction::WebRequestSendMessageToExtensionAction(
     const std::string& message)
-    : message_(message) {
-}
+    : WebRequestAction(STRATEGY_HOST), message_(message) {}
 
 WebRequestSendMessageToExtensionAction::
 ~WebRequestSendMessageToExtensionAction() {}

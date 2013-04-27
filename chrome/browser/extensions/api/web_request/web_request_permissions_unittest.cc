@@ -7,12 +7,67 @@
 #include "base/message_loop.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/test/test_browser_thread.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::ResourceRequestInfo;
+using extensions::Extension;
+using extensions::Manifest;
+using extension_test_util::LoadManifestUnchecked;
+
+class ExtensionWebRequestHelpersTestWithThreadsTest : public testing::Test {
+ public:
+  ExtensionWebRequestHelpersTestWithThreadsTest()
+      : io_thread_(content::BrowserThread::IO, &message_loop_) {}
+
+ protected:
+  virtual void SetUp() OVERRIDE;
+
+ protected:
+  net::TestURLRequestContext context;
+
+  // This extension has Web Request permissions, but no host permission.
+  scoped_refptr<Extension> permissionless_extension_;
+  // This extension has Web Request permissions, and *.com a host permission.
+  scoped_refptr<Extension> com_extension_;
+  scoped_refptr<ExtensionInfoMap> extension_info_map_;
+
+ private:
+  MessageLoopForIO message_loop_;
+  content::TestBrowserThread io_thread_;
+};
+
+void ExtensionWebRequestHelpersTestWithThreadsTest::SetUp() {
+  testing::Test::SetUp();
+
+  std::string error;
+  permissionless_extension_ = LoadManifestUnchecked("permissions",
+                                                    "web_request_no_host.json",
+                                                    Manifest::INVALID_LOCATION,
+                                                    Extension::NO_FLAGS,
+                                                    "ext_id_1",
+                                                    &error);
+  ASSERT_TRUE(permissionless_extension_) << error;
+  com_extension_ =
+      LoadManifestUnchecked("permissions",
+                            "web_request_com_host_permissions.json",
+                            Manifest::INVALID_LOCATION,
+                            Extension::NO_FLAGS,
+                            "ext_id_2",
+                            &error);
+  ASSERT_TRUE(com_extension_) << error;
+  extension_info_map_ = new ExtensionInfoMap;
+  extension_info_map_->AddExtension(permissionless_extension_.get(),
+                                    base::Time::Now(),
+                                    false /*incognito_enabled*/);
+  extension_info_map_->AddExtension(
+      com_extension_.get(), base::Time::Now(), false /*incognito_enabled*/);
+}
 
 TEST(ExtensionWebRequestHelpersTest, TestHideRequestForURL) {
   MessageLoopForIO message_loop;
@@ -70,4 +125,35 @@ TEST(ExtensionWebRequestHelpersTest, TestHideRequestForURL) {
       process_id, site_instance_id);
   EXPECT_TRUE(WebRequestPermissions::HideRequest(extension_info_map.get(),
                                                  &sensitive_request));
+}
+
+TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,
+       TestCanExtensionAccessURL_HostPermissions) {
+  net::TestURLRequest request(
+      GURL("http://example.com"), NULL, &context, NULL);
+
+  EXPECT_TRUE(WebRequestPermissions::CanExtensionAccessURL(
+      extension_info_map_,
+      permissionless_extension_->id(),
+      request.url(),
+      false /*crosses_incognito*/,
+      WebRequestPermissions::DO_NOT_CHECK_HOST));
+  EXPECT_FALSE(WebRequestPermissions::CanExtensionAccessURL(
+      extension_info_map_,
+      permissionless_extension_->id(),
+      request.url(),
+      false /*crosses_incognito*/,
+      WebRequestPermissions::REQUIRE_HOST_PERMISSION));
+  EXPECT_TRUE(WebRequestPermissions::CanExtensionAccessURL(
+      extension_info_map_,
+      com_extension_->id(),
+      request.url(),
+      false /*crosses_incognito*/,
+      WebRequestPermissions::REQUIRE_HOST_PERMISSION));
+  EXPECT_FALSE(WebRequestPermissions::CanExtensionAccessURL(
+      extension_info_map_,
+      com_extension_->id(),
+      request.url(),
+      false /*crosses_incognito*/,
+      WebRequestPermissions::REQUIRE_ALL_URLS));
 }

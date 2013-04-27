@@ -1288,7 +1288,8 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
       continue;
 
     if (!WebRequestPermissions::CanExtensionAccessURL(
-            extension_info_map, it->extension_id, url, crosses_incognito, true))
+            extension_info_map, it->extension_id, url, crosses_incognito,
+            WebRequestPermissions::REQUIRE_HOST_PERMISSION))
       continue;
 
     bool blocking_listener =

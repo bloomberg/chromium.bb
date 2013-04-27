@@ -8,17 +8,26 @@
 #include <limits>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/browser/extensions/api/web_request/web_request_permissions.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/common/extensions/extension.h"
+#include "extensions/common/error_utils.h"
 #include "net/url_request/url_request.h"
 
 namespace {
-const char kActionCannotBeExecuted[] = "An action can never be executed "
+
+const char kActionCannotBeExecuted[] = "The action '*' can never be executed "
     "because there are is no time in the request life-cycle during which the "
     "conditions can be checked and the action can possibly be executed.";
+
+const char kAllURLsPermissionNeeded[] =
+    "To execute the action '*', you need to request host permission for all "
+    "hosts.";
+
 }  // namespace
 
 namespace extensions {
@@ -145,16 +154,19 @@ std::string WebRequestRulesRegistry::AddRulesImpl(
 
   std::string error;
   RulesMap new_webrequest_rules;
+  const Extension* extension =
+      extension_info_map_->extensions().GetByID(extension_id);
 
   for (std::vector<linked_ptr<RulesRegistry::Rule> >::const_iterator rule =
        rules.begin(); rule != rules.end(); ++rule) {
     WebRequestRule::GlobalRuleId rule_id(extension_id, *(*rule)->id);
     DCHECK(webrequest_rules_.find(rule_id) == webrequest_rules_.end());
 
-    scoped_ptr<WebRequestRule> webrequest_rule(
-        WebRequestRule::Create(url_matcher_.condition_factory(), extension_id,
-                               extension_installation_time, *rule,
-                               &CheckConsistency, &error));
+    scoped_ptr<WebRequestRule> webrequest_rule(WebRequestRule::Create(
+        url_matcher_.condition_factory(),
+        extension_id, extension_installation_time, *rule,
+        base::Bind(&Checker, base::Unretained(extension)),
+        &error));
     if (!error.empty()) {
       // We don't return here, because we want to clear temporary
       // condition sets in the url_matcher_.
@@ -200,9 +212,6 @@ std::string WebRequestRulesRegistry::AddRulesImpl(
   ClearCacheOnNavigation();
 
   if (profile_id_ && !webrequest_rules_.empty()) {
-    const Extension* extension =
-        extension_info_map_->extensions().GetByID(extension_id);
-
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&extension_web_request_api_helpers::NotifyWebRequestAPIUsed,
@@ -280,9 +289,6 @@ WebRequestRulesRegistry::~WebRequestRulesRegistry() {}
 
 base::Time WebRequestRulesRegistry::GetExtensionInstallationTime(
     const std::string& extension_id) const {
-  if (!extension_info_map_.get())  // May be NULL during testing.
-    return base::Time();
-
   return extension_info_map_->GetInstallTime(extension_id);
 }
 
@@ -291,35 +297,70 @@ void WebRequestRulesRegistry::ClearCacheOnNavigation() {
 }
 
 // static
-bool WebRequestRulesRegistry::CheckConsistency(
-    const WebRequestConditionSet* conditions,
+bool WebRequestRulesRegistry::Checker(const Extension* extension,
+                                      const WebRequestConditionSet* conditions,
+                                      const WebRequestActionSet* actions,
+                                      std::string* error) {
+  return (StageChecker(conditions, actions, error) &&
+          HostPermissionsChecker(extension, actions, error));
+}
+
+// static
+bool WebRequestRulesRegistry::HostPermissionsChecker(
+    const Extension* extension,
     const WebRequestActionSet* actions,
     std::string* error) {
-  // Actions and conditions can be checked and executed in specific phases
-  // of each web request. We consider a rule inconsistent if there is an action
-  // that cannot be triggered by any condition.
+  if (extension->HasEffectiveAccessToAllHosts())
+    return true;
+
+  // Without the permission for all URLs, actions with the STRATEGY_DEFAULT
+  // should not be registered, they would never be able to execute.
   for (WebRequestActionSet::Actions::const_iterator action_iter =
            actions->actions().begin();
        action_iter != actions->actions().end();
        ++action_iter) {
-    bool found_matching_condition = false;
-    for (WebRequestConditionSet::Conditions::const_iterator condition_iter =
-             conditions->conditions().begin();
-         condition_iter != conditions->conditions().end() &&
-             !found_matching_condition;
-         ++condition_iter) {
-      // Test the intersection of bit masks, this is intentionally & and not &&.
-      if ((*action_iter)->GetStages() & (*condition_iter)->stages())
-        found_matching_condition = true;
-    }
-    if (!found_matching_condition) {
-      *error = kActionCannotBeExecuted;
+    if ((*action_iter)->host_permissions_strategy() ==
+        WebRequestAction::STRATEGY_DEFAULT) {
+      *error = ErrorUtils::FormatErrorMessage(kAllURLsPermissionNeeded,
+                                              (*action_iter)->GetName());
       return false;
     }
   }
   return true;
 }
 
+// static
+bool WebRequestRulesRegistry::StageChecker(
+    const WebRequestConditionSet* conditions,
+    const WebRequestActionSet* actions,
+    std::string* error) {
+  // Actions and conditions can be checked and executed in specific stages
+  // of each web request. A rule is inconsistent if there is an action that
+  // can only be triggered in stages in which no condition can be evaluated.
+
+  // In which stages there are conditions to evaluate.
+  int condition_stages = 0;
+  for (WebRequestConditionSet::Conditions::const_iterator condition_iter =
+           conditions->conditions().begin();
+       condition_iter != conditions->conditions().end();
+       ++condition_iter) {
+    condition_stages |= (*condition_iter)->stages();
+  }
+
+  for (WebRequestActionSet::Actions::const_iterator action_iter =
+           actions->actions().begin();
+       action_iter != actions->actions().end();
+       ++action_iter) {
+    // Test the intersection of bit masks, this is intentionally & and not &&.
+    if ((*action_iter)->GetStages() & condition_stages)
+      continue;
+    // We only get here if no matching condition was found.
+    *error = ErrorUtils::FormatErrorMessage(kActionCannotBeExecuted,
+                                            (*action_iter)->GetName());
+    return false;
+  }
+  return true;
+}
 void WebRequestRulesRegistry::AddTriggeredRules(
     const URLMatches& url_matches,
     const WebRequestCondition::MatchData& request_data,

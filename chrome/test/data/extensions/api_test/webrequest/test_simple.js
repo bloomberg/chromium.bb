@@ -11,12 +11,6 @@ function getURLHttpSimpleLoadRedirect() {
   return getServerURL('server-redirect?'+getURLHttpSimpleLoad());
 }
 
-// A URL from b.com, which we don't have permission to access.
-function getURLNotVisible() {
-  return getServerURL('files/extensions/api_test/webrequest/simpleLoad/b.html',
-                      'b.com');
-}
-
 runTests([
   // Navigates to a blank page.
   function simpleLoad() {
@@ -187,45 +181,5 @@ runTests([
       [  // event order
         ["onBeforeRequest", "onErrorOccurred"] ]);
     navigateAndWait(getURL("does_not_exist.html"));
-  },
-
-  // Navigates to a page that we don't have access to, then a blank page.
-  // We should not see the first navigation.
-  function simpleLoadNonVisible() {
-    expect(
-      [  // events
-        { label: "a-onBeforeRequest",
-          event: "onBeforeRequest",
-          details: {
-            url: getURL("simpleLoad/a.html"),
-            frameUrl: getURL("simpleLoad/a.html")
-          }
-        },
-        { label: "a-onResponseStarted",
-          event: "onResponseStarted",
-          details: {
-            url: getURL("simpleLoad/a.html"),
-            statusCode: 200,
-            fromCache: false,
-            statusLine: "HTTP/1.1 200 OK",
-            // Request to chrome-extension:// url has no IP.
-          }
-        },
-        { label: "a-onCompleted",
-          event: "onCompleted",
-          details: {
-            url: getURL("simpleLoad/a.html"),
-            statusCode: 200,
-            fromCache: false,
-            statusLine: "HTTP/1.1 200 OK",
-            // Request to chrome-extension:// url has no IP.
-          }
-        },
-      ],
-      [  // event order
-      ["a-onBeforeRequest", "a-onResponseStarted", "a-onCompleted"] ]);
-    navigateAndWait(getURLNotVisible(), function() {
-      navigateAndWait(getURL("simpleLoad/a.html"));
-    });
   },
 ]);

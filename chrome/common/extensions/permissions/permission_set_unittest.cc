@@ -11,6 +11,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/common/extensions/extension_unittest.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
@@ -20,38 +21,11 @@
 #include "extensions/common/error_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using extension_test_util::LoadManifest;
+
 namespace extensions {
 
 namespace {
-
-scoped_refptr<Extension> LoadManifest(const std::string& dir,
-                                      const std::string& test_file,
-                                      int extra_flags) {
-  base::FilePath path;
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
-  path = path.AppendASCII("extensions")
-             .AppendASCII(dir)
-             .AppendASCII(test_file);
-
-  JSONFileValueSerializer serializer(path);
-  std::string error;
-  scoped_ptr<Value> result(serializer.Deserialize(NULL, &error));
-  if (!result.get()) {
-    EXPECT_EQ("", error);
-    return NULL;
-  }
-
-  scoped_refptr<Extension> extension = Extension::Create(
-      path.DirName(), Manifest::INVALID_LOCATION,
-      *static_cast<DictionaryValue*>(result.get()), extra_flags, &error);
-  EXPECT_TRUE(extension) << error;
-  return extension;
-}
-
-scoped_refptr<Extension> LoadManifest(const std::string& dir,
-                                      const std::string& test_file) {
-  return LoadManifest(dir, test_file, Extension::NO_FLAGS);
-}
 
 static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
   int schemes = URLPattern::SCHEME_ALL;

@@ -14,8 +14,7 @@ efficiency.
 <p>
 You must declare the "declarativeWebRequest" permission in the
 <a href="manifest.html">extension manifest</a> to use this API,
-along with <a href="declare_permissions.html">host permissions</a> for any
-hosts whose network requests you want to access.
+along with <a href="declare_permissions.html">host permissions</a>.
 </p>
 
 <pre>{
@@ -29,18 +28,33 @@ hosts whose network requests you want to access.
 }</pre>
 
 <p>
-Note that certain types of non-sensitive requests do not require host
+Note that certain types of non-sensitive actions do not require host
 permissions:
 <ul>
   <li><code>CancelRequest</code>
   <li><code>IgnoreRules</code>
   <li><code>RedirectToEmptyDocument</code>
   <li><code>RedirectToTransparentImage</code>
-  <li><code>RedirectByRegEx</code> when the redirect destination has
-    the same domain as the original request
-  <li><code>RedirectRequest</code> when the redirect destination has
-    the same domain as the original request
 </ul>
+</p>
+<p>
+The <code>SendMessageToExtension</code> action requires host permissions
+for any hosts whose network requests you want to trigger a message.
+</p>
+<p>
+All other actions require host permissions to all URLs.
+</p>
+<p>
+As an example, if <code>"*://*.google.com"</code> is the only host permission an
+extension has, than such an extension may set up a rule to
+<ul>
+  <li> cancel a request to "http://www.google.com" or "http://anything.else.com"
+  <li> send a message when navigating to "http://www.google.com" but not to
+"http://something.else.com"
+</ul>
+The extension cannot set up a rule to redirect "http://www.google.com" to
+"http://mail.google.com".
+</p>
 
 <h2 id="rules">Rules</h2>
 

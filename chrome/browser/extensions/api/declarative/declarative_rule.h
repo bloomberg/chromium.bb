@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
@@ -190,9 +191,9 @@ class DeclarativeRule {
 
   // Checks whether the set of |conditions| and |actions| are consistent.
   // Returns true in case of consistency and MUST set |error| otherwise.
-  typedef bool (*ConsistencyChecker)(const ConditionSet* conditions,
-                                     const ActionSet* actions,
-                                     std::string* error);
+  typedef base::Callback<bool(const ConditionSet* conditions,
+                              const ActionSet* actions,
+                              std::string* error)> ConsistencyChecker;
 
   DeclarativeRule(const GlobalRuleId& id,
                   const Tags& tags,
@@ -448,8 +449,8 @@ DeclarativeRule<ConditionT, ActionT>::Create(
     return error_result.Pass();
   CHECK(actions.get());
 
-  if (check_consistency &&
-      !check_consistency(conditions.get(), actions.get(), error)) {
+  if (!check_consistency.is_null() &&
+      !check_consistency.Run(conditions.get(), actions.get(), error)) {
     DCHECK(!error->empty());
     return error_result.Pass();
   }

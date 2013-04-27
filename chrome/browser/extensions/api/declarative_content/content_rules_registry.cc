@@ -139,8 +139,12 @@ std::string ContentRulesRegistry::AddRulesImpl(
     DCHECK(content_rules_.find(rule_id) == content_rules_.end());
 
     scoped_ptr<ContentRule> content_rule(
-        ContentRule::Create(url_matcher_.condition_factory(), extension_id,
-                            extension_installation_time, *rule, NULL, &error));
+        ContentRule::Create(url_matcher_.condition_factory(),
+                            extension_id,
+                            extension_installation_time,
+                            *rule,
+                            ContentRule::ConsistencyChecker(),
+                            &error));
     if (!error.empty()) {
       // Clean up temporary condition sets created during rule creation.
       url_matcher_.ClearUnusedConditionSets();

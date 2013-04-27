@@ -97,7 +97,7 @@ bool WebRequestPermissions::CanExtensionAccessURL(
     const std::string& extension_id,
     const GURL& url,
     bool crosses_incognito,
-    bool enforce_host_permissions) {
+    HostPermissionsCheck host_permissions_check) {
   // extension_info_map can be NULL in testing.
   if (!extension_info_map)
     return true;
@@ -111,13 +111,21 @@ bool WebRequestPermissions::CanExtensionAccessURL(
   if (crosses_incognito && !extension_info_map->CanCrossIncognito(extension))
     return false;
 
-  if (enforce_host_permissions) {
-    // about: URLs are not covered in host permissions, but are allowed anyway.
-    bool host_permissions_ok = (url.SchemeIs(chrome::kAboutScheme) ||
-                                extension->HasHostPermission(url) ||
-                                url.GetOrigin() == extension->url());
-    if (!host_permissions_ok)
-      return false;
+  switch (host_permissions_check) {
+    case DO_NOT_CHECK_HOST:
+      break;
+    case REQUIRE_HOST_PERMISSION:
+      // about: URLs are not covered in host permissions, but are allowed
+      // anyway.
+      if (!((url.SchemeIs(chrome::kAboutScheme) ||
+             extension->HasHostPermission(url) ||
+             url.GetOrigin() == extension->url())))
+        return false;
+      break;
+    case REQUIRE_ALL_URLS:
+      if (!extension->HasEffectiveAccessToAllHosts())
+        return false;
+      break;
   }
 
   return true;

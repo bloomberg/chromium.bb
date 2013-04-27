@@ -14,12 +14,15 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using extension_test_util::LoadManifest;
 
 namespace extensions {
 
@@ -87,24 +90,15 @@ class PermissionsUpdaterListener : public content::NotificationObserver {
 class PermissionsUpdaterTest : public ExtensionServiceTestBase {
 };
 
-scoped_refptr<Extension> LoadManifest(std::string* error) {
+scoped_refptr<Extension> LoadOurManifest() {
   base::FilePath path;
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
-  path = path.AppendASCII("extensions")
-      .AppendASCII("api_test")
+  path = path.AppendASCII("api_test")
       .AppendASCII("permissions")
-      .AppendASCII("optional")
-      .AppendASCII("manifest.json");
-
-  JSONFileValueSerializer serializer(path);
-  scoped_ptr<Value> result(serializer.Deserialize(NULL, error));
-  if (!result)
-    return NULL;
-
-  scoped_refptr<Extension> extension = Extension::Create(
-      path.DirName(), Manifest::INTERNAL,
-      *static_cast<DictionaryValue*>(result.get()), Extension::NO_FLAGS, error);
-  return extension;
+      .AppendASCII("optional");
+  return LoadManifest(path.AsUTF8Unsafe(),
+                      "manifest.json",
+                      Manifest::INTERNAL,
+                      Extension::NO_FLAGS);
 }
 
 void AddPattern(URLPatternSet* extent, const std::string& pattern) {
@@ -122,9 +116,8 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
   InitializeEmptyExtensionService();
 
   // Load the test extension.
-  std::string error;
-  scoped_refptr<Extension> extension = LoadManifest(&error);
-  ASSERT_TRUE(error.empty()) << error;
+  scoped_refptr<Extension> extension = LoadOurManifest();
+  ASSERT_TRUE(extension.get());
 
   APIPermissionSet default_apis;
   default_apis.insert(APIPermission::kManagement);

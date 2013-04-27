@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/time.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -107,25 +108,45 @@ class WebRequestRulesRegistry : public RulesRegistryWithCache {
       const std::string& extension_id) const;
   virtual void ClearCacheOnNavigation();
 
+  void SetExtensionInfoMapForTesting(
+      scoped_refptr<ExtensionInfoMap> extension_info_map) {
+    extension_info_map_ = extension_info_map;
+  }
+
   const std::set<const WebRequestRule*>&
   rules_with_untriggered_conditions_for_test() const {
     return rules_with_untriggered_conditions_;
   }
 
  private:
-  // Checks whether the set of |conditions| and |actions| are consistent,
-  // meaning for example that we do not allow combining an |action| that needs
-  // to be executed before the |condition| can be fulfilled.
-  // Returns true in case of consistency and MUST set |error| otherwise.
-  static bool CheckConsistency(const WebRequestConditionSet* conditions,
-                               const WebRequestActionSet* actions,
-                               std::string* error);
+  FRIEND_TEST_ALL_PREFIXES(WebRequestRulesRegistrySimpleTest, StageChecker);
+  FRIEND_TEST_ALL_PREFIXES(WebRequestRulesRegistrySimpleTest,
+                           HostPermissionsChecker);
 
   typedef std::map<URLMatcherConditionSet::ID, WebRequestRule*> RuleTriggers;
   typedef std::map<WebRequestRule::GlobalRuleId, linked_ptr<WebRequestRule> >
       RulesMap;
   typedef std::set<URLMatcherConditionSet::ID> URLMatches;
   typedef std::set<const WebRequestRule*> RuleSet;
+
+  // This bundles all consistency checkers. Returns true in case of consistency
+  // and MUST set |error| otherwise.
+  static bool Checker(const Extension* extension,
+                      const WebRequestConditionSet* conditions,
+                      const WebRequestActionSet* actions,
+                      std::string* error);
+
+  // Check that the |extension| has host permissions for all URLs if actions
+  // requiring them are present.
+  static bool HostPermissionsChecker(const Extension* extension,
+                                     const WebRequestActionSet* actions,
+                                     std::string* error);
+
+  // Check that every action is applicable in the same request stage as at
+  // least one condition.
+  static bool StageChecker(const WebRequestConditionSet* conditions,
+                           const WebRequestActionSet* actions,
+                           std::string* error);
 
   // This is a helper function to GetMatches. Rules triggered by |url_matches|
   // get added to |result| if one of their conditions is fulfilled.

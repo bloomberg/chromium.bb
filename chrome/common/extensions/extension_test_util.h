@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "chrome/common/extensions/manifest.h"
 
 namespace extensions {
 class Extension;
@@ -20,6 +21,40 @@ std::string MakeId(std::string seed);
 
 // Return a very simple extension with id |id|.
 scoped_refptr<extensions::Extension> CreateExtensionWithID(std::string id);
+
+// Helpers for loading manifests, |dir| is relative to chrome::DIR_TEST_DATA
+// followed by "extensions".
+scoped_refptr<extensions::Extension> LoadManifestUnchecked(
+    const std::string& dir,
+    const std::string& test_file,
+    extensions::Manifest::Location location,
+    int extra_flags,
+    const std::string& id,
+    std::string* error);
+
+scoped_refptr<extensions::Extension> LoadManifestUnchecked(
+    const std::string& dir,
+    const std::string& test_file,
+    extensions::Manifest::Location location,
+    int extra_flags,
+    std::string* error);
+
+scoped_refptr<extensions::Extension> LoadManifest(
+    const std::string& dir,
+    const std::string& test_file,
+    extensions::Manifest::Location location,
+    int extra_flags);
+
+scoped_refptr<extensions::Extension> LoadManifest(const std::string& dir,
+                                                  const std::string& test_file,
+                                                  int extra_flags);
+
+scoped_refptr<extensions::Extension> LoadManifestStrict(
+    const std::string& dir,
+    const std::string& test_file);
+
+scoped_refptr<extensions::Extension> LoadManifest(const std::string& dir,
+                                                  const std::string& test_file);
 
 }  // namespace extension_test_util
 

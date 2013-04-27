@@ -1,0 +1,5 @@
+{
+  "name": "Extension without full host permissions",
+  "version": "1.0",
+  "permissions": ["declarativeWebRequest", "webRequest", "webRequestBlocking", "*://*/*" ]
+}

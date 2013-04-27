@@ -51,7 +51,10 @@ typedef linked_ptr<extension_web_request_api_helpers::EventResponseDelta>
 // Base class for all WebRequestActions of the declarative Web Request API.
 class WebRequestAction {
  public:
-  // Type identifiers for concrete WebRequestActions.
+  // Type identifiers for concrete WebRequestActions. If you add a new type,
+  // also update |action_names| in WebRequestActionFactory, update the
+  // unittest WebRequestActionTest.GetName, and add a
+  // WebRequestActionWithThreadsTest.Permission* unittest.
   enum Type {
     ACTION_CANCEL_REQUEST,
     ACTION_REDIRECT_REQUEST,
@@ -70,13 +73,11 @@ class WebRequestAction {
 
   // Strategies for checking host permissions.
   enum HostPermissionsStrategy {
-    STRATEGY_NONE,  // Do not check host permissions.
-    STRATEGY_DEFAULT,  // Check host permissions in HasPermission,
+    STRATEGY_NONE,     // Do not check host permissions.
+    STRATEGY_DEFAULT,  // Check for host permissions for all URLs
                        // before creating the delta.
-    STRATEGY_ALLOW_SAME_DOMAIN,  // Skip host permission checks if the request
-                                 // URL and new URL have the same domain.
-                                 // Do these checks in DeltaHasPermission,
-                                 // after creating the delta.
+    STRATEGY_HOST,     // Check that host permissions match the URL
+                       // of the request.
   };
 
   // Information necessary to decide how to apply a WebRequestAction
@@ -90,7 +91,6 @@ class WebRequestAction {
     std::set<std::string>* ignored_tags;
   };
 
-  WebRequestAction();
   virtual ~WebRequestAction();
 
   // Returns a bit vector representing extensions::RequestStage. The bit vector
@@ -100,15 +100,17 @@ class WebRequestAction {
 
   virtual Type GetType() const = 0;
 
+  // Return the JavaScript type name corresponding to GetType(). If there are
+  // more names, they are returned separated by a colon.
+  const std::string& GetName() const;
+
   // Returns the minimum priority of rules that may be evaluated after
   // this rule. Defaults to MIN_INT.
   virtual int GetMinimumPriority() const;
 
-  // Returns whether host permissions checks depend on the resulting delta
-  // and therefore must be checked in DeltaHasPermission, after the delta
-  // is created, rather than in HasPermission, before it is created.
-  // Defaults to STRATEGY_DEFAULT.
-  virtual HostPermissionsStrategy GetHostPermissionsStrategy() const;
+  HostPermissionsStrategy host_permissions_strategy() const {
+    return host_permissions_strategy_;
+  }
 
   // Returns whether the specified extension has permission to execute this
   // action on |request|. Checks the host permission if the host permissions
@@ -121,19 +123,6 @@ class WebRequestAction {
                              const std::string& extension_id,
                              const net::URLRequest* request,
                              bool crosses_incognito) const;
-
-  // Returns whether the specified extension has permission to modify the
-  // |request| with this |delta|. This check is in addition to HasPermission;
-  // if either fails, the request will not be modified. Unlike HasPermission,
-  // it runs after the change is created, so it can use the full information
-  // about what the change would be. Checks the host permission if the strategy
-  // is STRATEGY_ALLOW_SAME_DOMAIN.
-  virtual bool DeltaHasPermission(
-      const ExtensionInfoMap* extension_info_map,
-      const std::string& extension_id,
-      const net::URLRequest* request,
-      bool crosses_incognito,
-      const LinkedPtrEventResponseDelta& delta) const;
 
   // Factory method that instantiates a concrete WebRequestAction
   // implementation according to |json_action|, the representation of the
@@ -157,6 +146,13 @@ class WebRequestAction {
   void Apply(const std::string& extension_id,
              base::Time extension_install_time,
              ApplyInfo* apply_info) const;
+
+ protected:
+  explicit WebRequestAction(HostPermissionsStrategy strategy);
+
+ private:
+  // Defaults to STRATEGY_DEFAULT.
+  const HostPermissionsStrategy host_permissions_strategy_;
 };
 
 typedef DeclarativeActionSet<WebRequestAction> WebRequestActionSet;
@@ -174,7 +170,6 @@ class WebRequestCancelAction : public WebRequestAction {
   // Implementation of WebRequestAction:
   virtual int GetStages() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
-  virtual HostPermissionsStrategy GetHostPermissionsStrategy() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -193,7 +188,6 @@ class WebRequestRedirectAction : public WebRequestAction {
   // Implementation of WebRequestAction:
   virtual int GetStages() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
-  virtual HostPermissionsStrategy GetHostPermissionsStrategy() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -214,7 +208,6 @@ class WebRequestRedirectToTransparentImageAction : public WebRequestAction {
   // Implementation of WebRequestAction:
   virtual int GetStages() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
-  virtual HostPermissionsStrategy GetHostPermissionsStrategy() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -234,7 +227,6 @@ class WebRequestRedirectToEmptyDocumentAction : public WebRequestAction {
   // Implementation of WebRequestAction:
   virtual int GetStages() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
-  virtual HostPermissionsStrategy GetHostPermissionsStrategy() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -260,7 +252,6 @@ class WebRequestRedirectByRegExAction : public WebRequestAction {
   // Implementation of WebRequestAction:
   virtual int GetStages() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
-  virtual HostPermissionsStrategy GetHostPermissionsStrategy() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -368,7 +359,6 @@ class WebRequestIgnoreRulesAction : public WebRequestAction {
   virtual int GetStages() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
   virtual int GetMinimumPriority() const OVERRIDE;
-  virtual HostPermissionsStrategy GetHostPermissionsStrategy() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,

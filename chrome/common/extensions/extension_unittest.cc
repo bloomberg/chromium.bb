@@ -6,9 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/files/file_path.h"
 #include "base/format_macros.h"
-#include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
@@ -21,6 +19,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest.h"
@@ -45,67 +44,15 @@
 #include "ui/gfx/codec/png_codec.h"
 
 using content::SocketPermissionRequest;
+using extension_test_util::LoadManifest;
+using extension_test_util::LoadManifestUnchecked;
+using extension_test_util::LoadManifestStrict;
 
 namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;
 namespace errors = extension_manifest_errors;
 
 namespace extensions {
-namespace {
-
-scoped_refptr<Extension> LoadManifestUnchecked(
-    const std::string& dir,
-    const std::string& test_file,
-    Manifest::Location location,
-    int extra_flags,
-    std::string* error) {
-  base::FilePath path;
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
-  path = path.AppendASCII("extensions")
-             .AppendASCII(dir)
-             .AppendASCII(test_file);
-
-  JSONFileValueSerializer serializer(path);
-  scoped_ptr<Value> result(serializer.Deserialize(NULL, error));
-  if (!result.get())
-    return NULL;
-
-  scoped_refptr<Extension> extension = Extension::Create(
-      path.DirName(), location, *static_cast<DictionaryValue*>(result.get()),
-      extra_flags, error);
-  return extension;
-}
-
-static scoped_refptr<Extension> LoadManifest(const std::string& dir,
-                                             const std::string& test_file,
-                                             Manifest::Location location,
-                                             int extra_flags) {
-  std::string error;
-  scoped_refptr<Extension> extension = LoadManifestUnchecked(dir, test_file,
-    location, extra_flags, &error);
-
-  EXPECT_TRUE(extension) << test_file << ":" << error;
-  return extension;
-}
-
-static scoped_refptr<Extension> LoadManifest(const std::string& dir,
-                                             const std::string& test_file,
-                                             int extra_flags) {
-  return LoadManifest(dir, test_file, Manifest::INVALID_LOCATION, extra_flags);
-}
-
-static scoped_refptr<Extension> LoadManifest(const std::string& dir,
-                                             const std::string& test_file) {
-  return LoadManifest(dir, test_file, Extension::NO_FLAGS);
-}
-
-static scoped_refptr<Extension> LoadManifestStrict(
-    const std::string& dir,
-    const std::string& test_file) {
-  return LoadManifest(dir, test_file, Extension::NO_FLAGS);
-}
-
-}  // namespace
 
 ExtensionTest::ExtensionTest() : permissions_info_(ChromeAPIPermissions()) {}
 
