@@ -147,6 +147,11 @@ std::string BubbleFrameView::GetClassName() const {
   return "ui/views/bubble/BubbleFrameView";
 }
 
+void BubbleFrameView::ChildPreferredSizeChanged(View* child) {
+  if (child == titlebar_extra_view_ || child == title_)
+    Layout();
+}
+
 void BubbleFrameView::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == close_)
     GetWidget()->Close();

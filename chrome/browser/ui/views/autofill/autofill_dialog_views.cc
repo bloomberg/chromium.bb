@@ -283,7 +283,7 @@ void AutofillDialogViews::AccountChooser::Update() {
 
   menu_runner_.reset();
 
-  InvalidateLayout();
+  PreferredSizeChanged();
 }
 
 void AutofillDialogViews::AccountChooser::SetSignInLinkEnabled(bool enabled) {
