@@ -69,6 +69,7 @@ public:
     virtual void willBeDestroyed() OVERRIDE;
 
     virtual void setName(const String&);
+    virtual int debugID() const;
 
     virtual bool setChildren(const Vector<GraphicsLayer*>&);
     virtual void addChild(GraphicsLayer*);

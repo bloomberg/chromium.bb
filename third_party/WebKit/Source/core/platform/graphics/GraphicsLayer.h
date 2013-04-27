@@ -49,6 +49,11 @@ enum LayerTreeAsTextBehaviorFlags {
 };
 typedef unsigned LayerTreeAsTextBehavior;
 
+enum DebugIDSpecialValues {
+    DebugIDNoPlatformLayer = -1,
+    DebugIDNoCompositedLayer = -2
+};
+
 namespace WebCore {
 
 class FloatPoint3D;
@@ -201,6 +206,9 @@ public:
     // Layer name. Only used to identify layers in debug output
     const String& name() const { return m_name; }
     virtual void setName(const String& name) { m_name = name; }
+
+    // Layer ID from platform-specific layer. Only used to identify layers in the compositor for debugging purposes.
+    virtual int debugID() const { return DebugIDNoPlatformLayer; }
 
     GraphicsLayer* parent() const { return m_parent; };
     void setParent(GraphicsLayer*); // Internal use only.

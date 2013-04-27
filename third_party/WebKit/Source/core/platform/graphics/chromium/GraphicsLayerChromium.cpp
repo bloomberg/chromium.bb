@@ -131,6 +131,11 @@ void GraphicsLayerChromium::setName(const String& inName)
     updateNames();
 }
 
+int GraphicsLayerChromium::debugID() const
+{
+    return m_layer ? m_layer->layer()->id() : DebugIDNoCompositedLayer;
+}
+
 void GraphicsLayerChromium::updateNames()
 {
     String debugName = "Layer for " + m_nameBase;
