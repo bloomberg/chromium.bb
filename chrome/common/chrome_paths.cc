@@ -13,6 +13,7 @@
 #include "base/version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
+#include "chrome/common/widevine_cdm_constants.h"
 #include "ui/base/ui_base_paths.h"
 
 #if defined(OS_ANDROID)
@@ -354,6 +355,13 @@ bool PathProvider(int key, base::FilePath* result) {
       break;
 #endif
 #if defined(WIDEVINE_CDM_AVAILABLE)
+    // TODO(xhwang): DIR_WIDEVINE_CDM is used for Win/Mac/Linux and
+    // FILE_WIDEVINE_CDM_PLUGIN is used for ChromeOS. Unify them!
+    case chrome::DIR_WIDEVINE_CDM:
+      if (!GetInternalPluginsDirectory(&cur))
+        return false;
+      cur = cur.Append(kWidevineCdmBaseDirectory);
+      break;
     case chrome::FILE_WIDEVINE_CDM_PLUGIN:
       if (!GetInternalPluginsDirectory(&cur))
         return false;

@@ -411,6 +411,8 @@
         'common/web_apps.h',
         'common/web_resource/web_resource_unpacker.cc',
         'common/web_resource/web_resource_unpacker.h',
+        'common/widevine_cdm_constants.cc',
+        'common/widevine_cdm_constants.h',
         'common/worker_thread_ticker.cc',
         'common/worker_thread_ticker.h',
       ],

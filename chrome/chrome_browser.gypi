@@ -386,6 +386,8 @@
         'browser/component_updater/recovery_component_installer.h',
         'browser/component_updater/swiftshader_component_installer.cc',
         'browser/component_updater/swiftshader_component_installer.h',
+        'browser/component_updater/widevine_cdm_component_installer.cc',
+        'browser/component_updater/widevine_cdm_component_installer.h',
         'browser/content_settings/content_settings_default_provider.cc',
         'browser/content_settings/content_settings_default_provider.h',
         'browser/content_settings/content_settings_details.cc',
