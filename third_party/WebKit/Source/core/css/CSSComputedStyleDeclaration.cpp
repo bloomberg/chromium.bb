@@ -1925,13 +1925,13 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return valueForGridTrackList(style->gridRows(), style.get(), m_node->document()->renderView());
 
         case CSSPropertyWebkitGridStart:
-            return valueForGridPosition(style->gridItemStart());
+            return valueForGridPosition(style->gridStart());
         case CSSPropertyWebkitGridEnd:
-            return valueForGridPosition(style->gridItemEnd());
+            return valueForGridPosition(style->gridEnd());
         case CSSPropertyWebkitGridBefore:
-            return valueForGridPosition(style->gridItemBefore());
+            return valueForGridPosition(style->gridBefore());
         case CSSPropertyWebkitGridAfter:
-            return valueForGridPosition(style->gridItemAfter());
+            return valueForGridPosition(style->gridAfter());
         case CSSPropertyWebkitGridColumn:
             return getCSSPropertyValuesForGridShorthand(webkitGridColumnShorthand());
         case CSSPropertyWebkitGridRow:

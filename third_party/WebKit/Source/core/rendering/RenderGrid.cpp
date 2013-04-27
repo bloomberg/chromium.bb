@@ -723,9 +723,9 @@ RenderGrid::GridSpan RenderGrid::resolveGridPositionsFromAutoPlacementPosition(c
 
 PassOwnPtr<RenderGrid::GridSpan> RenderGrid::resolveGridPositionsFromStyle(const RenderBox* gridItem, TrackSizingDirection direction) const
 {
-    const GridPosition& initialPosition = (direction == ForColumns) ? gridItem->style()->gridItemStart() : gridItem->style()->gridItemBefore();
+    const GridPosition& initialPosition = (direction == ForColumns) ? gridItem->style()->gridStart() : gridItem->style()->gridBefore();
     const GridPositionSide initialPositionSide = (direction == ForColumns) ? StartSide : BeforeSide;
-    const GridPosition& finalPosition = (direction == ForColumns) ? gridItem->style()->gridItemEnd() : gridItem->style()->gridItemAfter();
+    const GridPosition& finalPosition = (direction == ForColumns) ? gridItem->style()->gridEnd() : gridItem->style()->gridAfter();
     const GridPositionSide finalPositionSide = (direction == ForColumns) ? EndSide : AfterSide;
 
     // We should NEVER see both spans as they should have been handled during style resolve.

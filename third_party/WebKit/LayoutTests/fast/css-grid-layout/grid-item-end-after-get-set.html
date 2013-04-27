@@ -72,6 +72,16 @@ if (window.testRunner)
     testEndAfterJSParsing("auto", "auto");
 
     debug("");
+    debug("Test setting grid-start and grid-before to 'inherit' through JS");
+    testEndAfterInheritJSParsing("inherit", "18");
+    testEndAfterInheritJSParsing("2", "inherit");
+    testEndAfterInheritJSParsing("inherit", "inherit");
+
+    debug("");
+    debug("Test setting grid-start and grid-before to 'initial' through JS");
+    testEndAfterInitialJSParsing();
+
+    debug("");
     debug("Test setting grid-end and grid-after back to 'auto' through JS");
     element.style.webkitGridEnd = "18";
     element.style.webkitGridAfter = "66";

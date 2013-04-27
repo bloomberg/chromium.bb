@@ -1769,14 +1769,14 @@ void StyleResolver::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
 void StyleResolver::adjustGridItemPosition(RenderStyle* style) const
 {
     // If opposing grid-placement properties both specify a grid span, they both compute to ‘auto’.
-    if (style->gridItemStart().isSpan() && style->gridItemEnd().isSpan()) {
-        style->setGridItemStart(GridPosition());
-        style->setGridItemEnd(GridPosition());
+    if (style->gridStart().isSpan() && style->gridEnd().isSpan()) {
+        style->setGridStart(GridPosition());
+        style->setGridEnd(GridPosition());
     }
 
-    if (style->gridItemBefore().isSpan() && style->gridItemAfter().isSpan()) {
-        style->setGridItemBefore(GridPosition());
-        style->setGridItemAfter(GridPosition());
+    if (style->gridBefore().isSpan() && style->gridAfter().isSpan()) {
+        style->setGridBefore(GridPosition());
+        style->setGridAfter(GridPosition());
     }
 }
 
@@ -2998,32 +2998,36 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     }
 
     case CSSPropertyWebkitGridStart: {
+        HANDLE_INHERIT_AND_INITIAL(gridStart, GridStart);
         GridPosition startPosition;
         if (!createGridPosition(value, startPosition))
             return;
-        state.style()->setGridItemStart(startPosition);
+        state.style()->setGridStart(startPosition);
         return;
     }
     case CSSPropertyWebkitGridEnd: {
+        HANDLE_INHERIT_AND_INITIAL(gridEnd, GridEnd);
         GridPosition endPosition;
         if (!createGridPosition(value, endPosition))
             return;
-        state.style()->setGridItemEnd(endPosition);
+        state.style()->setGridEnd(endPosition);
         return;
     }
 
     case CSSPropertyWebkitGridBefore: {
+        HANDLE_INHERIT_AND_INITIAL(gridBefore, GridBefore);
         GridPosition beforePosition;
         if (!createGridPosition(value, beforePosition))
             return;
-        state.style()->setGridItemBefore(beforePosition);
+        state.style()->setGridBefore(beforePosition);
         return;
     }
     case CSSPropertyWebkitGridAfter: {
+        HANDLE_INHERIT_AND_INITIAL(gridAfter, GridAfter);
         GridPosition afterPosition;
         if (!createGridPosition(value, afterPosition))
             return;
-        state.style()->setGridItemAfter(afterPosition);
+        state.style()->setGridAfter(afterPosition);
         return;
     }
 

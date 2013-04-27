@@ -35,10 +35,10 @@
 namespace WebCore {
 
 StyleGridItemData::StyleGridItemData()
-    : m_gridStart(RenderStyle::initialGridPosition())
-    , m_gridEnd(RenderStyle::initialGridPosition())
-    , m_gridBefore(RenderStyle::initialGridPosition())
-    , m_gridAfter(RenderStyle::initialGridPosition())
+    : m_gridStart(RenderStyle::initialGridStart())
+    , m_gridEnd(RenderStyle::initialGridEnd())
+    , m_gridBefore(RenderStyle::initialGridBefore())
+    , m_gridAfter(RenderStyle::initialGridAfter())
 {
 }
 
