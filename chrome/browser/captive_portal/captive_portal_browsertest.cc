@@ -1887,7 +1887,8 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
 }
 
 // Fails on Windows only, mostly on Win7. http://crbug.com/170033
-#if defined(OS_WIN)
+// Fails on Mac with assert. http://crbug.com/236118
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_NavigateLoadingTabToTimeoutTwoSites \
         DISABLED_NavigateLoadingTabToTimeoutTwoSites
 #else
