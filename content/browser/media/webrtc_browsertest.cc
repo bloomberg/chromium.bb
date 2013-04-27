@@ -99,8 +99,9 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MANUAL_CanSetupCallAndSendDtmf) {
       ExecuteJavascript("callAndSendDtmf('123,abc');"));
 }
 
+// TODO(miu): Test is flaky.  http://crbug.com/236102
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
-                       CanMakeEmptyCallThenAddStreamsAndRenegotiate) {
+                       DISABLED_CanMakeEmptyCallThenAddStreamsAndRenegotiate) {
   GURL url(test_server()->GetURL("files/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
@@ -191,4 +192,3 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MANUAL_CallAndModifyStream) {
 }
 
 }  // namespace content
-
