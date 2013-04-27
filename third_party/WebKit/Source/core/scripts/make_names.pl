@@ -843,7 +843,7 @@ print F <<END
 #include "RuntimeEnabledFeatures.h"
 #include "Settings.h"
 
-#include "CustomElementConstructor.h"
+#include "CustomElementDefinition.h"
 #include "CustomElementRegistry.h"
 
 namespace WebCore {
@@ -899,8 +899,8 @@ print F <<END
         return 0;
 
     if (document->registry()) {
-        if (RefPtr<CustomElementConstructor> constructor = document->registry()->find(nullQName(), qName)) {
-            RefPtr<Element> element = constructor->createElement();
+        if (RefPtr<CustomElementDefinition> definition = document->registry()->find(nullQName(), qName)) {
+            RefPtr<Element> element = definition->createElement();
             ASSERT(element->is$parameters{namespace}Element());
             return static_pointer_cast<$parameters{namespace}Element>(element.release());
         }
@@ -1155,8 +1155,8 @@ END
     print F <<END
     }
 
-    if (PassRefPtr<CustomElementConstructor> constructor = CustomElementHelpers::constructorOf(element))
-        return CustomElementHelpers::wrap(element, creationContext, constructor, isolate);
+    if (CustomElementHelpers::hasDefinition(element))
+        return CustomElementHelpers::wrap(element, creationContext, isolate);
     Create$parameters{namespace}ElementWrapperFunction createWrapperFunction = map.get(element->localName().impl());
     if (createWrapperFunction)
     {

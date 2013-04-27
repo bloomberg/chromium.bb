@@ -33,14 +33,13 @@
 #include "core/dom/CustomElementRegistry.h"
 
 #include "HTMLNames.h"
-#include "HTMLUnknownElement.h"
 #include "bindings/v8/CustomElementHelpers.h"
 #include "bindings/v8/Dictionary.h"
-#include "core/dom/CustomElementConstructor.h"
+#include "core/dom/CustomElementDefinition.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/html/HTMLUnknownElement.h"
 #include "core/page/RuntimeEnabledFeatures.h"
-#include <wtf/ASCIICType.h>
 #include <wtf/HashSet.h>
 
 #if ENABLE(SVG)
@@ -147,19 +146,21 @@ PassRefPtr<CustomElementConstructor> CustomElementRegistry::registerElement(Scri
         return 0;
     }
 
-    RefPtr<CustomElementConstructor> constructor = CustomElementConstructor::create(state, document(), typeName, localNameToUse, prototypeValue);
-    if (!constructor) {
+    RefPtr<CustomElementDefinition> definition = CustomElementDefinition::create(state, document(), typeName, localNameToUse, prototypeValue);
+
+    RefPtr<CustomElementConstructor> constructor = CustomElementConstructor::create(document(), definition->typeName(), definition->localName());
+    if (!CustomElementHelpers::initializeConstructorWrapper(constructor.get(), prototypeValue, state)) {
         ec = INVALID_STATE_ERR;
         return 0;
     }
-        
-    m_constructors.add(std::make_pair(constructor->typeName(), constructor->localName()), constructor);
+
+    m_definitions.add(std::make_pair(definition->typeName(), definition->localName()), definition);
     m_names.add(lowerName);
 
-    return constructor;
+    return constructor.release();
 }
 
-PassRefPtr<CustomElementConstructor> CustomElementRegistry::findFor(Element* element) const
+PassRefPtr<CustomElementDefinition> CustomElementRegistry::findFor(Element* element) const
 {
     ASSERT(element->document()->registry() == this);
 
@@ -171,23 +172,23 @@ PassRefPtr<CustomElementConstructor> CustomElementRegistry::findFor(Element* ele
     return find(idValue, element->tagQName());
 }
 
-PassRefPtr<CustomElementConstructor> CustomElementRegistry::find(const QualifiedName& typeName, const QualifiedName& localName) const
+PassRefPtr<CustomElementDefinition> CustomElementRegistry::find(const QualifiedName& typeName, const QualifiedName& localName) const
 {
-    ConstructorMap::const_iterator found = m_constructors.end();
+    DefinitionMap::const_iterator it = m_definitions.end();
     if (!typeName.localName().isEmpty())
-        found = m_constructors.find(std::make_pair(typeName, localName));
-    if (found == m_constructors.end())
-        found = m_constructors.find(std::make_pair(localName, localName));
-    if (found == m_constructors.end())
+        it = m_definitions.find(std::make_pair(typeName, localName));
+    if (it == m_definitions.end())
+        it = m_definitions.find(std::make_pair(localName, localName));
+    if (it == m_definitions.end())
         return 0;
-    return found->value;
+    return it->value;
 }
 
 PassRefPtr<Element> CustomElementRegistry::createElement(const QualifiedName& localName, const AtomicString& typeExtension) const
 {
     const QualifiedName& typeName = QualifiedName(nullAtom, typeExtension, localName.namespaceURI());
-    if (RefPtr<CustomElementConstructor> found = find(typeName, localName)) {
-        RefPtr<Element> created = found->createElement();
+    if (RefPtr<CustomElementDefinition> definition = find(typeName, localName)) {
+        RefPtr<Element> created = definition->createElement();
         if (!typeName.localName().isEmpty() && localName != typeName)
             return setTypeExtension(created, typeExtension);
         return created.release();
@@ -198,8 +199,8 @@ PassRefPtr<Element> CustomElementRegistry::createElement(const QualifiedName& lo
 
 void CustomElementRegistry::didGiveTypeExtension(Element* element)
 {
-    RefPtr<CustomElementConstructor> constructor = findFor(element);
-    if (!constructor || !constructor->isExtended())
+    RefPtr<CustomElementDefinition> definition = findFor(element);
+    if (!definition || !definition->isExtended())
         return;
     activate(CustomElementInvocation(element));
 }

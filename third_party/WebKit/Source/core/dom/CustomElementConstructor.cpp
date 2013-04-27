@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -32,65 +32,32 @@
 
 #include "core/dom/CustomElementConstructor.h"
 
-#include "HTMLElement.h"
-#include "HTMLNames.h"
-#include "SVGElement.h"
-#include "SVGNames.h"
-#include "bindings/v8/CustomElementHelpers.h"
 #include "core/dom/Document.h"
-#include <wtf/Assertions.h>
+#include "core/dom/Element.h"
 
 namespace WebCore {
 
-PassRefPtr<CustomElementConstructor> CustomElementConstructor::create(ScriptState* state, Document* document, const QualifiedName& typeName, const QualifiedName& localName, const ScriptValue& prototype)
-{
-    ASSERT(CustomElementHelpers::isValidPrototypeParameter(prototype, state));
-    ASSERT(localName == typeName || localName == *CustomElementHelpers::findLocalName(prototype));
-    RefPtr<CustomElementConstructor> created = adoptRef(new CustomElementConstructor(document, typeName, localName));
-    if (!CustomElementHelpers::initializeConstructorWrapper(created.get(), prototype, state))
-        return 0;
-    return created.release();
+PassRefPtr<CustomElementConstructor> CustomElementConstructor::create(Document* document, const QualifiedName& typeName, const QualifiedName& localName) {
+    return adoptRef(new CustomElementConstructor(document, typeName, localName));
 }
 
-CustomElementConstructor::CustomElementConstructor(Document* document, const QualifiedName& typeName, const QualifiedName& localName)
+CustomElementConstructor::CustomElementConstructor(Document* document, const QualifiedName& type, const QualifiedName& name)
     : ContextDestructionObserver(document)
-    , m_typeName(typeName)
-    , m_localName(localName)
+    , m_type(type)
+    , m_name(name)
 {
 }
 
-CustomElementConstructor::~CustomElementConstructor()
-{
+Document* CustomElementConstructor::document() const {
+    return toDocument(m_scriptExecutionContext);
 }
 
-PassRefPtr<Element> CustomElementConstructor::createElement()
-{
-    RefPtr<Element> element = createElementInternal();
-    if (element)
-        document()->didCreateCustomElement(element.get(), this);
-    return element.release();
-}
-
-PassRefPtr<Element> CustomElementConstructor::createElementInternal()
-{
+PassRefPtr<Element> CustomElementConstructor::createElement(ExceptionCode& ec) {
     if (!document())
         return 0;
-    if (m_localName != m_typeName)
-        return setTypeExtension(document()->createElement(m_localName, document()), m_typeName.localName());
-    if (HTMLNames::xhtmlNamespaceURI == m_typeName.namespaceURI())
-        return HTMLElement::create(m_typeName, document());
-#if ENABLE(SVG)
-    if (SVGNames::svgNamespaceURI == m_typeName.namespaceURI())
-        return SVGElement::create(m_typeName, document());
-#endif
-    return Element::create(m_typeName, document());
-}
-
-PassRefPtr<Element> setTypeExtension(PassRefPtr<Element> element, const AtomicString& typeExtension)
-{
-    if (!typeExtension.isEmpty())
-        element->setAttribute(HTMLNames::isAttr, typeExtension);
-    return element;
+    if (isForTypeExtension())
+        return document()->createElementNS(m_name.namespaceURI(), m_name.localName(), m_type.localName(), ec);
+    return document()->createElementNS(m_name.namespaceURI(), m_name.localName(), ec);
 }
 
 }

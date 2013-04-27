@@ -69,6 +69,7 @@
 #include "core/dom/Comment.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/CustomElementConstructor.h"
+#include "core/dom/CustomElementDefinition.h"
 #include "core/dom/CustomElementRegistry.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/DOMNamedFlowCollection.h"
@@ -819,7 +820,7 @@ PassRefPtr<CustomElementConstructor> Document::registerElement(WebCore::ScriptSt
     return m_registry->registerElement(state, name, options, ec);
 }
 
-void Document::didCreateCustomElement(Element* element, CustomElementConstructor* constructor)
+void Document::didCreateCustomElement(Element* element)
 {
     // m_registry is cleared Document::dispose() and can be null here.
     if (m_registry)

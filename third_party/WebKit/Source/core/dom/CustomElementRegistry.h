@@ -41,12 +41,13 @@
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
-#include <wtf/text/AtomicStringHash.h>
 #include <wtf/Vector.h>
+#include <wtf/text/AtomicStringHash.h>
 
 namespace WebCore {
 
 class CustomElementConstructor;
+class CustomElementDefinition;
 class Dictionary;
 class Document;
 class Element;
@@ -77,8 +78,8 @@ public:
     ~CustomElementRegistry();
 
     PassRefPtr<CustomElementConstructor> registerElement(WebCore::ScriptState*, const AtomicString& name, const Dictionary& options, ExceptionCode&);
-    PassRefPtr<CustomElementConstructor> findFor(Element*) const;
-    PassRefPtr<CustomElementConstructor> find(const QualifiedName& elementName, const QualifiedName& localName) const;
+    PassRefPtr<CustomElementDefinition> findFor(Element*) const;
+    PassRefPtr<CustomElementDefinition> find(const QualifiedName& elementName, const QualifiedName& localName) const;
     PassRefPtr<Element> createElement(const QualifiedName& localName, const AtomicString& typeExtension) const;
 
     Document* document() const;
@@ -90,7 +91,7 @@ public:
     static void deliverAllLifecycleCallbacksIfNeeded();
 
 private:
-    typedef HashMap<std::pair<QualifiedName, QualifiedName>, RefPtr<CustomElementConstructor> > ConstructorMap;
+    typedef HashMap<std::pair<QualifiedName, QualifiedName>, RefPtr<CustomElementDefinition> > DefinitionMap;
     typedef HashSet<AtomicString> NameSet;
     typedef ListHashSet<CustomElementRegistry*> InstanceSet;
 
@@ -101,7 +102,7 @@ private:
     void deactivate();
     void deliverLifecycleCallbacks();
 
-    ConstructorMap m_constructors;
+    DefinitionMap m_definitions;
     NameSet m_names;
     Vector<CustomElementInvocation> m_invocations;
 };

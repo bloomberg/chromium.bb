@@ -29,6 +29,7 @@
 */
 
 #include "config.h"
+
 #include "V8CustomElementConstructor.h"
 
 #include "bindings/v8/CustomElementHelpers.h"
@@ -45,10 +46,14 @@ v8::Handle<v8::Value> V8CustomElementConstructor::callAsFunctionCallback(const v
         return args.Holder();
 
     CustomElementConstructor* impl = toNative(args.Holder());
-    RefPtr<Element> element = impl->createElement();
-    if (!element)
+    ExceptionCode ec = 0;
+    RefPtr<Element> element = impl->createElement(ec);
+    if (ec) {
+        setDOMException(ec, args.GetIsolate());
         return v8Undefined();
-    return CustomElementHelpers::wrap(element.get(), args.Holder(), impl, args.GetIsolate());
+    }
+    // FIXME: is args.Holder() the right creation context?
+    return CustomElementHelpers::wrap(element.get(), args.Holder(), args.GetIsolate());
 }
 
 } // namespace WebCore

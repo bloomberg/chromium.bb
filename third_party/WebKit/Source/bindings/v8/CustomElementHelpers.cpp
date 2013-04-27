@@ -29,20 +29,24 @@
  */
 
 #include "config.h"
+
 #include "bindings/v8/CustomElementHelpers.h"
 
-#include "SVGNames.h"
 #include "V8CustomElementConstructor.h"
+#include "V8Document.h"
 #include "V8HTMLElementWrapperFactory.h"
-#include "V8SVGElementWrapperFactory.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/CustomElementRegistry.h"
 
+#if ENABLE(SVG)
+#include "V8SVGElementWrapperFactory.h"
+#include "SVGNames.h"
+#endif
 
 namespace WebCore {
 
-v8::Handle<v8::Object> CustomElementHelpers::createWrapper(PassRefPtr<Element> impl, v8::Handle<v8::Object> creationContext, PassRefPtr<CustomElementConstructor> constructor, v8::Isolate* isolate)
+v8::Handle<v8::Object> CustomElementHelpers::createWrapper(PassRefPtr<Element> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
 
@@ -56,14 +60,19 @@ v8::Handle<v8::Object> CustomElementHelpers::createWrapper(PassRefPtr<Element> i
         return wrapper;
     }
 
-    v8::Handle<v8::Value> constructorValue = WebCore::toV8(constructor.get(), creationContext, isolate);
-    if (constructorValue.IsEmpty() || !constructorValue->IsObject())
+    CustomElementRegistry* registry = impl->document()->registry();
+    RefPtr<CustomElementDefinition> definition = registry->findFor(impl.get());
+    if (!definition) {
+        // FIXME: When can this happen?
         return v8::Handle<v8::Object>();
-    v8::Handle<v8::Object> constructorWapper = v8::Handle<v8::Object>::Cast(constructorValue);
-    v8::Handle<v8::Object> prototype = v8::Handle<v8::Object>::Cast(constructorWapper->Get(v8::String::NewSymbol("prototype")));
+    }
+    v8::Handle<v8::Object> prototype = v8::Handle<v8::Object>::Cast(definition->prototype().v8Value());
+
     WrapperTypeInfo* typeInfo = CustomElementHelpers::findWrapperType(prototype);
-    if (!typeInfo)
+    if (!typeInfo) {
+        // FIXME: When can this happen?
         return v8::Handle<v8::Object>();
+    }
 
     v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, typeInfo, impl.get(), isolate);
     if (wrapper.IsEmpty())

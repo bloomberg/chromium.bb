@@ -37,6 +37,7 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "core/dom/CustomElementConstructor.h"
+#include "core/dom/CustomElementDefinition.h"
 #include "core/dom/CustomElementRegistry.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -45,7 +46,6 @@
 
 namespace WebCore {
 
-class CustomElementConstructor;
 class CustomElementInvocation;
 class Element;
 class QualifiedName;
@@ -65,30 +65,31 @@ public:
 
     static void invokeReadyCallbacksIfNeeded(ScriptExecutionContext*, const Vector<CustomElementInvocation>&);
 
-    //
-    // You can just use toV8(Node*) to get correct wrapper objects, even for custom elements.
-    // Then generated ElementWrapperFactories call V8CustomElement::wrap() with proper CustomElementConstructor instances
-    // accordingly.
-    //
-    static v8::Handle<v8::Object> wrap(Element*, v8::Handle<v8::Object> creationContext, PassRefPtr<CustomElementConstructor>, v8::Isolate*);
-    static PassRefPtr<CustomElementConstructor> constructorOf(Element*);
+    // You can just use toV8(Node*) to get correct wrapper objects,
+    // even for custom elements.  Then generated
+    // ElementWrapperFactories call V8CustomElement::wrap() with
+    // proper prototype instances accordingly.
+    static v8::Handle<v8::Object> wrap(Element*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+
+    static bool hasDefinition(Element*);
 
 private:
     static void invokeReadyCallbackIfNeeded(Element*, v8::Handle<v8::Context>);
-    static v8::Handle<v8::Object> createWrapper(PassRefPtr<Element>, v8::Handle<v8::Object>, PassRefPtr<CustomElementConstructor>, v8::Isolate*);
+    static v8::Handle<v8::Object> createWrapper(PassRefPtr<Element>, v8::Handle<v8::Object>, v8::Isolate*);
 };
 
-inline v8::Handle<v8::Object> CustomElementHelpers::wrap(Element* impl, v8::Handle<v8::Object> creationContext, PassRefPtr<CustomElementConstructor> constructor, v8::Isolate* isolate)
+inline v8::Handle<v8::Object> CustomElementHelpers::wrap(Element* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
     ASSERT(DOMDataStore::getWrapper(impl, isolate).IsEmpty());
-    return CustomElementHelpers::createWrapper(impl, creationContext, constructor, isolate);
+    return CustomElementHelpers::createWrapper(impl, creationContext, isolate);
 }
 
-inline PassRefPtr<CustomElementConstructor> CustomElementHelpers::constructorOf(Element* element)
+inline bool CustomElementHelpers::hasDefinition(Element* element)
 {
-    if (CustomElementRegistry* registry = element->document()->registry())
-        return registry->findFor(element);
+    CustomElementRegistry* registry = element->document()->registry();
+    if (registry && registry->findFor(element))
+        return 1;
     return 0;
 }
 

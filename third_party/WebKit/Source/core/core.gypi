@@ -1713,6 +1713,8 @@
             'dom/CrossThreadTask.h',
             'dom/CustomElementConstructor.cpp',
             'dom/CustomElementConstructor.h',
+            'dom/CustomElementDefinition.cpp',
+            'dom/CustomElementDefinition.h',
             'dom/CustomElementRegistry.cpp',
             'dom/CustomElementRegistry.h',
             'dom/CustomEvent.cpp',
