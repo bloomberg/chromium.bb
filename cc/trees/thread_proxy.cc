@@ -510,6 +510,14 @@ void ThreadProxy::DidInitializeVisibleTileOnImplThread() {
 }
 
 void ThreadProxy::MainThreadHasStoppedFlinging() {
+  DCHECK(IsMainThread());
+  Proxy::ImplThread()->PostTask(
+      base::Bind(&ThreadProxy::MainThreadHasStoppedFlingingOnImplThread,
+                 impl_thread_weak_ptr_));
+}
+
+void ThreadProxy::MainThreadHasStoppedFlingingOnImplThread() {
+  DCHECK(IsImplThread());
   if (input_handler_on_impl_thread_)
     input_handler_on_impl_thread_->MainThreadHasStoppedFlinging();
 }

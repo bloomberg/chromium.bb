@@ -4,10 +4,12 @@
 
 #include "cc/trees/layer_tree_host.h"
 
+#include "cc/base/thread_impl.h"
 #include "cc/layers/content_layer.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/test/fake_content_layer_client.h"
+#include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -660,6 +662,75 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostScrollTestScrollZeroMaxScrollOffset);
+
+class ThreadCheckingInputHandler : public InputHandler {
+ public:
+  ThreadCheckingInputHandler(base::SingleThreadTaskRunner* runner,
+                             bool* received_stop_flinging)
+      : task_runner_(runner) ,
+        received_stop_flinging_(received_stop_flinging) {}
+
+  virtual void BindToClient(InputHandlerClient* client) OVERRIDE {
+    if (!task_runner_->BelongsToCurrentThread())
+      ADD_FAILURE() << "BindToClient called on wrong thread";
+  }
+
+  virtual void Animate(base::TimeTicks time) OVERRIDE {
+    if (!task_runner_->BelongsToCurrentThread())
+      ADD_FAILURE() << "Animate called on wrong thread";
+  }
+
+  virtual void MainThreadHasStoppedFlinging() OVERRIDE {
+    if (!task_runner_->BelongsToCurrentThread())
+      ADD_FAILURE() << "MainThreadHasStoppedFlinging called on wrong thread";
+    *received_stop_flinging_ = true;
+  }
+
+ private:
+  base::SingleThreadTaskRunner* task_runner_;
+  bool* received_stop_flinging_;
+};
+
+class ThreadCheckingFakeLayerTreeHostClient : public FakeLayerTreeHostClient {
+ public:
+  ThreadCheckingFakeLayerTreeHostClient(
+      base::SingleThreadTaskRunner* task_runner,
+      bool* received_stop_flinging)
+      : FakeLayerTreeHostClient(DIRECT_3D) ,
+        task_runner_(task_runner),
+        received_stop_flinging_(received_stop_flinging) {}
+
+  virtual scoped_ptr<InputHandler> CreateInputHandler() OVERRIDE {
+    return scoped_ptr<InputHandler>(new ThreadCheckingInputHandler(
+          task_runner_, received_stop_flinging_)).Pass();
+  }
+
+ private:
+  base::SingleThreadTaskRunner* task_runner_;
+  bool* received_stop_flinging_;
+};
+
+TEST(LayerTreeHostFlingTest, DidStopFlingingThread) {
+  base::Thread impl_thread("cc");
+  impl_thread.Start();
+  scoped_ptr<cc::Thread> impl_ccthread =
+      cc::ThreadImpl::CreateForDifferentThread(
+          impl_thread.message_loop_proxy());
+
+  bool received_stop_flinging = false;
+  ThreadCheckingFakeLayerTreeHostClient client(
+      impl_thread.message_loop_proxy().get(),
+      &received_stop_flinging);
+  LayerTreeSettings settings;
+
+  scoped_ptr<LayerTreeHost> layer_tree_host =
+      LayerTreeHost::Create(&client, settings, impl_ccthread.Pass());
+
+  layer_tree_host->DidStopFlinging();
+  layer_tree_host.reset();
+  impl_thread.Stop();
+  EXPECT_TRUE(received_stop_flinging);
+}
 
 }  // namespace
 }  // namespace cc

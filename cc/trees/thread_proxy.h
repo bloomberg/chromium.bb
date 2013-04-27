@@ -185,6 +185,7 @@ class ThreadProxy : public Proxy,
   void RenewTreePriorityOnImplThread();
   void DidSwapUseIncompleteTileOnImplThread();
   void StartScrollbarAnimationOnImplThread();
+  void MainThreadHasStoppedFlingingOnImplThread();
 
   // Accessed on main thread only.
 
