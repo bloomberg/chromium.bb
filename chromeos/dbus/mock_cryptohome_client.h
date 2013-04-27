@@ -88,44 +88,44 @@ class MockCryptohomeClient : public CryptohomeClient {
                     const AsyncMethodCallback& callback));
   MOCK_METHOD4(AsyncTpmAttestationFinishCertRequest,
                void(const std::string& pca_response,
-                    AttestationKeyType key_type,
+                    attestation::AttestationKeyType key_type,
                     const std::string& key_name,
                     const AsyncMethodCallback& callback));
   MOCK_METHOD3(TpmAttestationDoesKeyExist,
-               void(AttestationKeyType key_type,
+               void(attestation::AttestationKeyType key_type,
                     const std::string& key_name,
                     const BoolDBusMethodCallback& callback));
   MOCK_METHOD3(TpmAttestationGetCertificate,
-               void(AttestationKeyType key_type,
+               void(attestation::AttestationKeyType key_type,
                     const std::string& key_name,
                     const DataMethodCallback& callback));
   MOCK_METHOD3(TpmAttestationGetPublicKey,
-               void(AttestationKeyType key_type,
+               void(attestation::AttestationKeyType key_type,
                     const std::string& key_name,
                     const DataMethodCallback& callback));
   MOCK_METHOD3(TpmAttestationRegisterKey,
-               void(AttestationKeyType key_type,
+               void(attestation::AttestationKeyType key_type,
                     const std::string& key_name,
                     const AsyncMethodCallback& callback));
   MOCK_METHOD7(TpmAttestationSignEnterpriseChallenge,
-               void(AttestationKeyType key_type,
+               void(attestation::AttestationKeyType key_type,
                     const std::string& key_name,
                     const std::string& domain,
                     const std::string& device_id,
-                    AttestationChallengeOptions options,
+                    attestation::AttestationChallengeOptions options,
                     const std::string& challenge,
                     const AsyncMethodCallback& callback));
   MOCK_METHOD4(TpmAttestationSignSimpleChallenge,
-               void(AttestationKeyType key_type,
+               void(attestation::AttestationKeyType key_type,
                     const std::string& key_name,
                     const std::string& challenge,
                     const AsyncMethodCallback& callback));
   MOCK_METHOD3(TpmAttestationGetKeyPayload,
-               void(AttestationKeyType key_type,
+               void(attestation::AttestationKeyType key_type,
                     const std::string& key_name,
                     const DataMethodCallback& callback));
   MOCK_METHOD4(TpmAttestationSetKeyPayload,
-               void(AttestationKeyType key_type,
+               void(attestation::AttestationKeyType key_type,
                     const std::string& key_name,
                     const std::string& payload,
                     const BoolDBusMethodCallback& callback));

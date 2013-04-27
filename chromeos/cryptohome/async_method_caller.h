@@ -98,8 +98,8 @@ class CHROMEOS_EXPORT AsyncMethodCaller {
 
   // Asks cryptohomed to asynchronously create an attestation certificate
   // request according to |options|, which is a combination of
-  // CryptohomeClient::AttestationCertificateOptions.  On success the data sent
-  // to |callback| is a request to be sent to the Privacy CA.
+  // attestation::AttestationCertificateOptions.  On success the data sent to
+  // |callback| is a request to be sent to the Privacy CA.
   virtual void AsyncTpmAttestationCreateCertRequest(
       int options,
       const DataCallback& callback) = 0;
@@ -112,14 +112,14 @@ class CHROMEOS_EXPORT AsyncMethodCaller {
   // key.
   virtual void AsyncTpmAttestationFinishCertRequest(
       const std::string& pca_response,
-      chromeos::CryptohomeClient::AttestationKeyType key_type,
+      chromeos::attestation::AttestationKeyType key_type,
       const std::string& key_name,
       const DataCallback& callback) = 0;
 
   // Asks cryptohomed to asynchronously register the attestation key specified
   // by |key_type| and |key_name|.
   virtual void TpmAttestationRegisterKey(
-      chromeos::CryptohomeClient::AttestationKeyType key_type,
+      chromeos::attestation::AttestationKeyType key_type,
       const std::string& key_name,
       const Callback& callback) = 0;
 
@@ -129,11 +129,11 @@ class CHROMEOS_EXPORT AsyncMethodCaller {
   // a valid enterprise challenge.  On success, the data sent to |callback| is
   // the challenge response.
   virtual void TpmAttestationSignEnterpriseChallenge(
-      chromeos::CryptohomeClient::AttestationKeyType key_type,
+      chromeos::attestation::AttestationKeyType key_type,
       const std::string& key_name,
       const std::string& domain,
       const std::string& device_id,
-      chromeos::CryptohomeClient::AttestationChallengeOptions options,
+      chromeos::attestation::AttestationChallengeOptions options,
       const std::string& challenge,
       const DataCallback& callback) = 0;
 
@@ -142,7 +142,7 @@ class CHROMEOS_EXPORT AsyncMethodCaller {
   // set of bytes.  On success, the data sent to |callback| is the challenge
   // response.
   virtual void TpmAttestationSignSimpleChallenge(
-      chromeos::CryptohomeClient::AttestationKeyType key_type,
+      chromeos::attestation::AttestationKeyType key_type,
       const std::string& key_name,
       const std::string& challenge,
       const DataCallback& callback) = 0;

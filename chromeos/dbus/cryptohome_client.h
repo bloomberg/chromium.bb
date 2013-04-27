@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "chromeos/attestation/attestation_constants.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -46,25 +47,6 @@ class CHROMEOS_EXPORT CryptohomeClient {
   typedef base::Callback<void(DBusMethodCallStatus call_status,
                               bool result,
                               const std::string& data)> DataMethodCallback;
-
-  // Options available for customizing an attestation certificate.
-  enum AttestationCertificateOptions {
-    CERTIFICATE_OPTION_NONE = 0,
-    INCLUDE_STABLE_ID = 1,
-    INCLUDE_DEVICE_STATE = 1 << 1
-  };
-
-  // Key types supported by the Chrome OS attestation subsystem.
-  enum AttestationKeyType {
-    DEVICE_KEY,
-    USER_KEY
-  };
-
-  // Options available for customizing an attestation challenge response.
-  enum AttestationChallengeOptions {
-    CHALLENGE_RESPONSE_OPTION_NONE = 0,
-    INCLUDE_SIGNED_PUBLIC_KEY = 1
-  };
 
   virtual ~CryptohomeClient();
 
@@ -259,7 +241,7 @@ class CHROMEOS_EXPORT CryptohomeClient {
   // the current user.  |key_name| is a name for the key.
   virtual void AsyncTpmAttestationFinishCertRequest(
       const std::string& pca_response,
-      AttestationKeyType key_type,
+      attestation::AttestationKeyType key_type,
       const std::string& key_name,
       const AsyncMethodCallback& callback) = 0;
 
@@ -267,7 +249,7 @@ class CHROMEOS_EXPORT CryptohomeClient {
   // |key_type| and |key_name| exists, then the result sent to the callback will
   // be true.
   virtual void TpmAttestationDoesKeyExist(
-      AttestationKeyType key_type,
+      attestation::AttestationKeyType key_type,
       const std::string& key_name,
       const BoolDBusMethodCallback& callback) = 0;
 
@@ -275,7 +257,7 @@ class CHROMEOS_EXPORT CryptohomeClient {
   // |key_name|.  |callback| will be called when the operation completes.  If
   // the key does not exist the callback |result| parameter will be false.
   virtual void TpmAttestationGetCertificate(
-      AttestationKeyType key_type,
+      attestation::AttestationKeyType key_type,
       const std::string& key_name,
       const DataMethodCallback& callback) = 0;
 
@@ -283,7 +265,7 @@ class CHROMEOS_EXPORT CryptohomeClient {
   // |callback| will be called when the operation completes.  If the key does
   // not exist the callback |result| parameter will be false.
   virtual void TpmAttestationGetPublicKey(
-      AttestationKeyType key_type,
+      attestation::AttestationKeyType key_type,
       const std::string& key_name,
       const DataMethodCallback& callback) = 0;
 
@@ -292,7 +274,7 @@ class CHROMEOS_EXPORT CryptohomeClient {
   // completes.  When the operation completes, the AsyncCallStatusHandler signal
   // handler is called.  |key_type| and |key_name| specify the key to register.
   virtual void TpmAttestationRegisterKey(
-      AttestationKeyType key_type,
+      attestation::AttestationKeyType key_type,
       const std::string& key_name,
       const AsyncMethodCallback& callback) = 0;
 
@@ -304,11 +286,11 @@ class CHROMEOS_EXPORT CryptohomeClient {
   // operation completes, the AsyncCallStatusWithDataHandler signal handler is
   // called.
   virtual void TpmAttestationSignEnterpriseChallenge(
-      AttestationKeyType key_type,
+      attestation::AttestationKeyType key_type,
       const std::string& key_name,
       const std::string& domain,
       const std::string& device_id,
-      AttestationChallengeOptions options,
+      attestation::AttestationChallengeOptions options,
       const std::string& challenge,
       const AsyncMethodCallback& callback) = 0;
 
@@ -319,7 +301,7 @@ class CHROMEOS_EXPORT CryptohomeClient {
   // the dbus call completes.  When the operation completes, the
   // AsyncCallStatusWithDataHandler signal handler is called.
   virtual void TpmAttestationSignSimpleChallenge(
-      AttestationKeyType key_type,
+      attestation::AttestationKeyType key_type,
       const std::string& key_name,
       const std::string& challenge,
       const AsyncMethodCallback& callback) = 0;
@@ -330,7 +312,7 @@ class CHROMEOS_EXPORT CryptohomeClient {
   // If no payload has been set for the key the callback |result| parameter will
   // be true and the |data| parameter will be empty.
   virtual void TpmAttestationGetKeyPayload(
-      AttestationKeyType key_type,
+      attestation::AttestationKeyType key_type,
       const std::string& key_name,
       const DataMethodCallback& callback) = 0;
 
@@ -338,7 +320,7 @@ class CHROMEOS_EXPORT CryptohomeClient {
   // |key_name|.  The |callback| will be called when the operation completes.
   // If the operation succeeds, the callback |result| parameter will be true.
   virtual void TpmAttestationSetKeyPayload(
-      AttestationKeyType key_type,
+      attestation::AttestationKeyType key_type,
       const std::string& key_name,
       const std::string& payload,
       const BoolDBusMethodCallback& callback) = 0;

@@ -103,8 +103,8 @@ TEST_F(AttestationPolicyObserverTest, UnregisteredPolicyClient) {
 TEST_F(AttestationPolicyObserverTest, NewCertificate) {
   EXPECT_CALL(cryptohome_client_, TpmAttestationDoesKeyExist(_, _, _))
       .WillOnce(WithArgs<2>(Invoke(DBusCallbackFalse)));
-  EXPECT_CALL(attestation_flow_, GetCertificate(_, _))
-      .WillOnce(WithArgs<1>(Invoke(CertCallbackSuccess)));
+  EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _))
+      .WillOnce(WithArgs<2>(Invoke(CertCallbackSuccess)));
   Run();
 }
 

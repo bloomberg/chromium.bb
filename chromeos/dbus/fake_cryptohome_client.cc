@@ -40,14 +40,14 @@ bool FakeCryptohomeClient::InstallAttributesIsInvalid(bool* is_invalid) {
 }
 
 void FakeCryptohomeClient::TpmAttestationGetKeyPayload(
-    AttestationKeyType key_type,
+    attestation::AttestationKeyType key_type,
     const std::string& key_name,
     const DataMethodCallback& callback) {
 }
 
 void FakeCryptohomeClient::AsyncTpmAttestationFinishCertRequest(
     const std::string& pca_response,
-    AttestationKeyType key_type,
+    attestation::AttestationKeyType key_type,
     const std::string& key_name,
     const AsyncMethodCallback& callback) {
 }
@@ -141,7 +141,7 @@ bool FakeCryptohomeClient::InstallAttributesIsFirstInstall(
 }
 
 void FakeCryptohomeClient::TpmAttestationGetCertificate(
-    AttestationKeyType key_type,
+    attestation::AttestationKeyType key_type,
     const std::string& key_name,
     const DataMethodCallback& callback) {
 }
@@ -154,13 +154,13 @@ void FakeCryptohomeClient::InstallAttributesIsReady(
 }
 
 void FakeCryptohomeClient::TpmAttestationGetPublicKey(
-    AttestationKeyType key_type,
+    attestation::AttestationKeyType key_type,
     const std::string& key_name,
     const DataMethodCallback& callback) {
 }
 
 void FakeCryptohomeClient::TpmAttestationSignSimpleChallenge(
-    AttestationKeyType key_type,
+    attestation::AttestationKeyType key_type,
     const std::string& key_name,
     const std::string& challenge,
     const AsyncMethodCallback& callback) {
@@ -188,7 +188,7 @@ void FakeCryptohomeClient::ResetAsyncCallStatusHandlers() {
 }
 
 void FakeCryptohomeClient::TpmAttestationDoesKeyExist(
-    AttestationKeyType key_type,
+    attestation::AttestationKeyType key_type,
     const std::string& key_name,
     const BoolDBusMethodCallback& callback) {
 }
@@ -202,7 +202,7 @@ void FakeCryptohomeClient::AsyncRemove(const std::string& username,
 }
 
 void FakeCryptohomeClient::TpmAttestationSetKeyPayload(
-    AttestationKeyType key_type,
+    attestation::AttestationKeyType key_type,
     const std::string& key_name,
     const std::string& payload,
     const BoolDBusMethodCallback& callback) {
@@ -214,11 +214,11 @@ void FakeCryptohomeClient::GetSanitizedUsername(
 }
 
 void FakeCryptohomeClient::TpmAttestationSignEnterpriseChallenge(
-    AttestationKeyType key_type,
+    attestation::AttestationKeyType key_type,
     const std::string& key_name,
     const std::string& domain,
     const std::string& device_id,
-    AttestationChallengeOptions options,
+    attestation::AttestationChallengeOptions options,
     const std::string& challenge,
     const AsyncMethodCallback& callback) {
 }
@@ -228,7 +228,7 @@ void FakeCryptohomeClient::TpmAttestationIsEnrolled(
 }
 
 void FakeCryptohomeClient::TpmAttestationRegisterKey(
-    AttestationKeyType key_type,
+    attestation::AttestationKeyType key_type,
     const std::string& key_name,
     const AsyncMethodCallback& callback) {
 }

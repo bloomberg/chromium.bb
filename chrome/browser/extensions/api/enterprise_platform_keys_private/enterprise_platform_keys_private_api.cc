@@ -129,11 +129,11 @@ void EPKPChallengeMachineKey::GetDeviceAttestationEnabledCallback(
 
   // Everything is checked. Sign the challenge.
   async_caller_->TpmAttestationSignEnterpriseChallenge(
-      chromeos::CryptohomeClient::DEVICE_KEY,
+      chromeos::attestation::KEY_DEVICE,
       kKeyName,
       GetEnterpriseDomain(),
       GetDeviceId(),
-      chromeos::CryptohomeClient::CHALLENGE_RESPONSE_OPTION_NONE,
+      chromeos::attestation::CHALLENGE_OPTION_NONE,
       challenge,
       base::Bind(&EPKPChallengeMachineKey::SignChallengeCallback, this));
 }
@@ -255,12 +255,13 @@ void EPKPChallengeUserKey::UserConsentCallback(const std::string& challenge,
 
   // Everything is checked. Sign the challenge.
   async_caller_->TpmAttestationSignEnterpriseChallenge(
-      chromeos::CryptohomeClient::USER_KEY,
+      chromeos::attestation::KEY_USER,
       kKeyName,
       domain,
       GetDeviceId(),
-      register_key ? chromeos::CryptohomeClient::INCLUDE_SIGNED_PUBLIC_KEY :
-          chromeos::CryptohomeClient::CHALLENGE_RESPONSE_OPTION_NONE,
+      register_key ?
+          chromeos::attestation::CHALLENGE_INCLUDE_SIGNED_PUBLIC_KEY :
+          chromeos::attestation::CHALLENGE_OPTION_NONE,
       challenge,
       base::Bind(&EPKPChallengeUserKey::SignChallengeCallback, this,
                  register_key));
@@ -277,7 +278,7 @@ void EPKPChallengeUserKey::SignChallengeCallback(bool register_key,
 
   if (register_key) {
     async_caller_->TpmAttestationRegisterKey(
-        chromeos::CryptohomeClient::USER_KEY,
+        chromeos::attestation::KEY_USER,
         kKeyName,
         base::Bind(&EPKPChallengeUserKey::RegisterKeyCallback, this, response));
   } else {

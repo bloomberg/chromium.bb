@@ -327,44 +327,44 @@ class FakeCryptohomeClient : public chromeos::CryptohomeClient {
       const AsyncMethodCallback& callback) OVERRIDE {}
   virtual void AsyncTpmAttestationFinishCertRequest(
       const std::string& pca_response,
-      AttestationKeyType key_type,
+      chromeos::attestation::AttestationKeyType key_type,
       const std::string& key_name,
       const AsyncMethodCallback& callback) OVERRIDE {}
   virtual void TpmAttestationDoesKeyExist(
-      AttestationKeyType key_type,
+      chromeos::attestation::AttestationKeyType key_type,
       const std::string& key_name,
       const chromeos::BoolDBusMethodCallback& callback) OVERRIDE {}
   virtual void TpmAttestationGetCertificate(
-      AttestationKeyType key_type,
+      chromeos::attestation::AttestationKeyType key_type,
       const std::string& key_name,
       const DataMethodCallback& callback) OVERRIDE {}
   virtual void TpmAttestationGetPublicKey(
-      AttestationKeyType key_type,
+      chromeos::attestation::AttestationKeyType key_type,
       const std::string& key_name,
       const DataMethodCallback& callback) OVERRIDE {}
   virtual void TpmAttestationRegisterKey(
-      AttestationKeyType key_type,
+      chromeos::attestation::AttestationKeyType key_type,
       const std::string& key_name,
       const AsyncMethodCallback& callback) OVERRIDE {}
   virtual void TpmAttestationSignEnterpriseChallenge(
-      AttestationKeyType key_type,
+      chromeos::attestation::AttestationKeyType key_type,
       const std::string& key_name,
       const std::string& domain,
       const std::string& device_id,
-      AttestationChallengeOptions options,
+      chromeos::attestation::AttestationChallengeOptions options,
       const std::string& challenge,
       const AsyncMethodCallback& callback) OVERRIDE {}
   virtual void TpmAttestationSignSimpleChallenge(
-      AttestationKeyType key_type,
+      chromeos::attestation::AttestationKeyType key_type,
       const std::string& key_name,
       const std::string& challenge,
       const AsyncMethodCallback& callback) OVERRIDE {}
   virtual void TpmAttestationGetKeyPayload(
-      AttestationKeyType key_type,
+      chromeos::attestation::AttestationKeyType key_type,
       const std::string& key_name,
       const DataMethodCallback& callback) OVERRIDE {}
   virtual void TpmAttestationSetKeyPayload(
-      AttestationKeyType key_type,
+      chromeos::attestation::AttestationKeyType key_type,
       const std::string& key_name,
       const std::string& payload,
       const chromeos::BoolDBusMethodCallback& callback) OVERRIDE {}

@@ -65,7 +65,8 @@ class MockAttestationFlow : public AttestationFlow {
   MockAttestationFlow();
   virtual ~MockAttestationFlow();
 
-  MOCK_METHOD2(GetCertificate, void(const std::string&,
+  MOCK_METHOD3(GetCertificate, void(AttestationCertificateProfile,
+                                    bool,
                                     const CertificateCallback&));
 };
 

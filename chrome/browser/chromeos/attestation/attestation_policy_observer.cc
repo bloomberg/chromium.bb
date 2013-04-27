@@ -143,7 +143,7 @@ void AttestationPolicyObserver::Start() {
       base::Bind(&AttestationPolicyObserver::GetNewCertificate,
                  weak_factory_.GetWeakPtr());
   cryptohome_client_->TpmAttestationDoesKeyExist(
-      CryptohomeClient::DEVICE_KEY,
+      KEY_DEVICE,
       kEnterpriseMachineKey,
       base::Bind(DBusBoolRedirectCallback, on_does_exist, on_does_not_exist));
 }
@@ -151,7 +151,8 @@ void AttestationPolicyObserver::Start() {
 void AttestationPolicyObserver::GetNewCertificate() {
   // We can reuse the dbus callback handler logic.
   attestation_flow_->GetCertificate(
-      kEnterpriseMachineKey,
+      PROFILE_ENTERPRISE_MACHINE_CERTIFICATE,
+      true,  // Force a new key to be generated.
       base::Bind(DBusStringCallback,
                  base::Bind(&AttestationPolicyObserver::UploadCertificate,
                             weak_factory_.GetWeakPtr()),
@@ -160,7 +161,7 @@ void AttestationPolicyObserver::GetNewCertificate() {
 
 void AttestationPolicyObserver::GetExistingCertificate() {
   cryptohome_client_->TpmAttestationGetCertificate(
-      CryptohomeClient::DEVICE_KEY,
+      KEY_DEVICE,
       kEnterpriseMachineKey,
       base::Bind(DBusStringCallback,
                  base::Bind(&AttestationPolicyObserver::CheckCertificateExpiry,
