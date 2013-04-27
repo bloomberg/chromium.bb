@@ -70,7 +70,6 @@ class PageConsole;
 class PageGroup;
 class PlugInClient;
 class PluginData;
-class PluginViewBase;
 class PointerLockController;
 class ProgressTracker;
 class Range;
@@ -342,8 +341,6 @@ private:
     MediaCanStartListener* takeAnyMediaCanStartListener();
 
     void setTimerAlignmentInterval(double);
-
-    void collectPluginViews(Vector<RefPtr<PluginViewBase>, 32>& pluginViewBases);
 
     OwnPtr<Chrome> m_chrome;
     OwnPtr<DragCaretController> m_dragCaretController;

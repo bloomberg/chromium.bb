@@ -26,7 +26,7 @@
 #include "core/rendering/RenderPart.h"
 
 #include "HTMLFrameElementBase.h"
-#include "PluginViewBase.h"
+#include "PluginView.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/rendering/HitTestResult.h"
@@ -79,7 +79,7 @@ bool RenderPart::requiresAcceleratedCompositing() const
     // renderer and the plugin has a layer, then we need a layer. Second, if this is 
     // a renderer with a contentDocument and that document needs a layer, then we need
     // a layer.
-    if (widget() && widget()->isPluginViewBase() && toPluginViewBase(widget())->platformLayer())
+    if (widget() && widget()->isPluginView() && toPluginView(widget())->platformLayer())
         return true;
 
     if (!node() || !node()->isFrameOwnerElement())

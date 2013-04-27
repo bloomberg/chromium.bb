@@ -73,7 +73,7 @@
 #include "core/platform/NotImplemented.h"
 #include "core/platform/Widget.h"
 #include "core/platform/chromium/TraceEvent.h"
-#include "core/plugins/PluginViewBase.h"
+#include "core/plugins/PluginView.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/StringExtras.h"
@@ -477,11 +477,10 @@ PassScriptInstance ScriptController::createScriptInstanceForWidget(Widget* widge
 {
     ASSERT(widget);
 
-    if (!widget->isPluginViewBase())
+    if (!widget->isPluginView())
         return 0;
 
-    NPObject* npObject = toPluginViewBase(widget)->scriptableObject();
-
+    NPObject* npObject = toPluginView(widget)->scriptableObject();
     if (!npObject)
         return 0;
 

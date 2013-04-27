@@ -527,6 +527,11 @@ void WebPluginContainerImpl::didFailLoading(const ResourceError& error)
     m_webPlugin->didFailLoading(error);
 }
 
+WebLayer* WebPluginContainerImpl::platformLayer() const
+{
+    return m_webLayer;
+}
+
 NPObject* WebPluginContainerImpl::scriptableObject()
 {
     return m_webPlugin->scriptableObject();
@@ -565,11 +570,6 @@ void WebPluginContainerImpl::willDestroyPluginLoadObserver(WebPluginLoadObserver
     m_pluginLoadObservers.remove(pos);
 }
 
-WebLayer* WebPluginContainerImpl::platformLayer() const
-{
-    return m_webLayer;
-}
-
 ScrollbarGroup* WebPluginContainerImpl::scrollbarGroup()
 {
     if (!m_scrollbarGroup)
@@ -602,8 +602,7 @@ bool WebPluginContainerImpl::paintCustomOverhangArea(GraphicsContext* context, c
 // Private methods -------------------------------------------------------------
 
 WebPluginContainerImpl::WebPluginContainerImpl(WebCore::HTMLPlugInElement* element, WebPlugin* webPlugin)
-    : WebCore::PluginViewBase()
-    , m_element(element)
+    : m_element(element)
     , m_webPlugin(webPlugin)
     , m_webLayer(0)
     , m_touchEventRequestType(TouchEventRequestTypeNone)

@@ -349,7 +349,6 @@ bool SubframeLoader::loadPlugin(HTMLPlugInImageElement* pluginElement, const KUR
         return false;
     }
 
-    pluginElement->subframeLoaderDidCreatePlugIn(widget.get());
     renderer->setWidget(widget);
     m_containsPlugins = true;
  

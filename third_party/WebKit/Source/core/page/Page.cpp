@@ -22,7 +22,6 @@
 
 #include "HTMLElement.h"
 #include "PluginData.h"
-#include "PluginViewBase.h"
 #include "VoidCallback.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/ClientRectList.h"
@@ -904,25 +903,6 @@ void Page::dnsPrefetchingStateChanged()
 {
     for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext())
         frame->document()->initDNSPrefetch();
-}
-
-void Page::collectPluginViews(Vector<RefPtr<PluginViewBase>, 32>& pluginViewBases)
-{
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext()) {
-        FrameView* view = frame->view();
-        if (!view)
-            return;
-
-        const HashSet<RefPtr<Widget> >* children = view->children();
-        ASSERT(children);
-
-        HashSet<RefPtr<Widget> >::const_iterator end = children->end();
-        for (HashSet<RefPtr<Widget> >::const_iterator it = children->begin(); it != end; ++it) {
-            Widget* widget = (*it).get();
-            if (widget->isPluginViewBase())
-                pluginViewBases.append(toPluginViewBase(widget));
-        }
-    }
 }
 
 #if !ASSERT_DISABLED

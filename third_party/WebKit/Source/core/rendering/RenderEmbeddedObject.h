@@ -78,8 +78,6 @@ private:
 
     virtual void viewCleared() OVERRIDE FINAL;
 
-    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE FINAL;
-
     virtual bool scroll(ScrollDirection, ScrollGranularity, float multiplier, Node** stopNode) OVERRIDE FINAL;
     virtual bool logicalScroll(ScrollLogicalDirection, ScrollGranularity, float multiplier, Node** stopNode) OVERRIDE FINAL;
 

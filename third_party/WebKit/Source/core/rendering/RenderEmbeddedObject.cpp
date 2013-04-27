@@ -31,7 +31,7 @@
 #include "HTMLObjectElement.h"
 #include "HTMLParamElement.h"
 #include "HTMLPlugInElement.h"
-#include "PluginViewBase.h"
+#include "PluginView.h"
 #include "core/dom/MouseEvent.h"
 #include "core/dom/Text.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -100,7 +100,7 @@ bool RenderEmbeddedObject::requiresLayer() const
 
 bool RenderEmbeddedObject::allowsAcceleratedCompositing() const
 {
-    return widget() && widget()->isPluginViewBase() && toPluginViewBase(widget())->platformLayer();
+    return widget() && widget()->isPluginView() && toPluginView(widget())->platformLayer();
 }
 
 static String unavailablePluginReplacementText(RenderEmbeddedObject::PluginUnavailabilityReason pluginUnavailabilityReason)
@@ -312,48 +312,15 @@ void RenderEmbeddedObject::viewCleared()
     }
 }
 
-bool RenderEmbeddedObject::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
-{
-    if (!RenderPart::nodeAtPoint(request, result, locationInContainer, accumulatedOffset, hitTestAction))
-        return false;
-
-    if (!widget() || !widget()->isPluginViewBase())
-        return true;
-
-    PluginViewBase* view = toPluginViewBase(widget());
-    IntPoint roundedPoint = locationInContainer.roundedPoint();
-
-    if (Scrollbar* horizontalScrollbar = view->horizontalScrollbar()) {
-        if (horizontalScrollbar->shouldParticipateInHitTesting() && horizontalScrollbar->frameRect().contains(roundedPoint)) {
-            result.setScrollbar(horizontalScrollbar);
-            return true;
-        }
-    }
-
-    if (Scrollbar* verticalScrollbar = view->verticalScrollbar()) {
-        if (verticalScrollbar->shouldParticipateInHitTesting() && verticalScrollbar->frameRect().contains(roundedPoint)) {
-            result.setScrollbar(verticalScrollbar);
-            return true;
-        }
-    }
-
-    return true;
-}
-
 bool RenderEmbeddedObject::scroll(ScrollDirection direction, ScrollGranularity granularity, float, Node**)
 {
-    if (!widget() || !widget()->isPluginViewBase())
-        return false;
-
-    return toPluginViewBase(widget())->scroll(direction, granularity);
+    return false;
 }
 
 bool RenderEmbeddedObject::logicalScroll(ScrollLogicalDirection direction, ScrollGranularity granularity, float multiplier, Node** stopNode)
 {
-    // Plugins don't expose a writing direction, so assuming horizontal LTR.
-    return scroll(logicalToPhysical(direction, true, false), granularity, multiplier, stopNode);
+    return false;
 }
-
 
 bool RenderEmbeddedObject::isInUnavailablePluginIndicator(const LayoutPoint& point) const
 {

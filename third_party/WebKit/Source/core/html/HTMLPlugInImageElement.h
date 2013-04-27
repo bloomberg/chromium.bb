@@ -76,7 +76,6 @@ public:
 
     // Plug-in URL might not be the same as url() with overriding parameters.
     void subframeLoaderWillCreatePlugIn(const KURL& plugInURL);
-    void subframeLoaderDidCreatePlugIn(const Widget*);
     
 protected:
     HTMLPlugInImageElement(const QualifiedName& tagName, Document*, bool createdByParser, PreferPlugInsForImagesOption);

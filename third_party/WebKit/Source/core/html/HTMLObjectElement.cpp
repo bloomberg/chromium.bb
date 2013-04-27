@@ -32,7 +32,7 @@
 #include "HTMLMetaElement.h"
 #include "HTMLNames.h"
 #include "HTMLParamElement.h"
-#include "PluginViewBase.h"
+#include "PluginView.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/EventNames.h"
@@ -493,10 +493,10 @@ bool HTMLObjectElement::appendFormData(FormDataList& encoding, bool)
         return false;
 
     Widget* widget = pluginWidget();
-    if (!widget || !widget->isPluginViewBase())
+    if (!widget || !widget->isPluginView())
         return false;
     String value;
-    if (!toPluginViewBase(widget)->getFormValue(value))
+    if (!toPluginView(widget)->getFormValue(value))
         return false;
     encoding.appendData(name(), value);
     return true;

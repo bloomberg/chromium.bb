@@ -1240,7 +1240,7 @@
             'plugins/PluginData.h',
             'plugins/PluginListBuilder.cpp',
             'plugins/PluginListBuilder.h',
-            'plugins/PluginQuirkSet.h',
+            'plugins/PluginView.h',
             'rendering/AutoTableLayout.cpp',
             'rendering/AutoTableLayout.h',
             'rendering/BidiRun.cpp',

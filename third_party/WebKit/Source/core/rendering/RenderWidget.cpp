@@ -394,7 +394,7 @@ bool RenderWidget::nodeAtPoint(const HitTestRequest& request, HitTestResult& res
 
 CursorDirective RenderWidget::getCursor(const LayoutPoint& point, Cursor& cursor) const
 {
-    if (widget() && widget()->isPluginViewBase()) {
+    if (widget() && widget()->isPluginView()) {
         // A plug-in is responsible for setting the cursor when the pointer is over it.
         return DoNotSetCursor;
     }

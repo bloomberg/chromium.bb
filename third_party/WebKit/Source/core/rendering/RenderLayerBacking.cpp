@@ -32,7 +32,7 @@
 #include "HTMLIFrameElement.h"
 #include "HTMLMediaElement.h"
 #include "HTMLNames.h"
-#include "PluginViewBase.h"
+#include "PluginView.h"
 #include "core/css/StyleResolver.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
@@ -432,8 +432,8 @@ bool RenderLayerBacking::updateGraphicsLayerConfiguration()
         updateImageContents();
 
     if (renderer->isEmbeddedObject() && toRenderEmbeddedObject(renderer)->allowsAcceleratedCompositing()) {
-        PluginViewBase* pluginViewBase = toPluginViewBase(toRenderWidget(renderer)->widget());
-        m_graphicsLayer->setContentsToMedia(pluginViewBase->platformLayer());
+        PluginView* pluginView = toPluginView(toRenderWidget(renderer)->widget());
+        m_graphicsLayer->setContentsToMedia(pluginView->platformLayer());
     } else if (renderer->isVideo()) {
         HTMLMediaElement* mediaElement = toMediaElement(renderer->node());
         m_graphicsLayer->setContentsToMedia(mediaElement->platformLayer());

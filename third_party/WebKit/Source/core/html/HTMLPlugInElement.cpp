@@ -25,7 +25,7 @@
 
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
-#include "PluginViewBase.h"
+#include "PluginView.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/npruntime_impl.h"
 #include "core/dom/Attribute.h"
@@ -70,7 +70,7 @@ HTMLPlugInElement::~HTMLPlugInElement()
 
 bool HTMLPlugInElement::canProcessDrag() const
 {
-    const PluginViewBase* plugin = pluginWidget() && pluginWidget()->isPluginViewBase() ? static_cast<const PluginViewBase*>(pluginWidget()) : 0;
+    const PluginView* plugin = pluginWidget() && pluginWidget()->isPluginView() ? static_cast<const PluginView*>(pluginWidget()) : 0;
     return plugin ? plugin->canProcessDrag() : false;
 }
 
@@ -215,7 +215,7 @@ bool HTMLPlugInElement::isKeyboardFocusable(KeyboardEvent* event) const
     if (!document()->page())
         return false;
 
-    const PluginViewBase* plugin = pluginWidget() && pluginWidget()->isPluginViewBase() ? static_cast<const PluginViewBase*>(pluginWidget()) : 0;
+    const PluginView* plugin = pluginWidget() && pluginWidget()->isPluginView() ? static_cast<const PluginView*>(pluginWidget()) : 0;
     if (plugin)
         return plugin->supportsKeyboardFocus();
 

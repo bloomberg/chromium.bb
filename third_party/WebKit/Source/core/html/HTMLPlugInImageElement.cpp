@@ -23,7 +23,6 @@
 
 #include "HTMLDivElement.h"
 #include "HTMLImageLoader.h"
-#include "PluginViewBase.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/css/StyleResolver.h"
 #include "core/dom/MouseEvent.h"
@@ -233,16 +232,6 @@ void HTMLPlugInImageElement::subframeLoaderWillCreatePlugIn(const KURL& url)
     LOG(Plugins, "   Loaded URL: %s", url.string().utf8().data());
 
     m_loadedUrl = url;
-}
-
-void HTMLPlugInImageElement::subframeLoaderDidCreatePlugIn(const Widget* widget)
-{
-    if (!widget->isPluginViewBase()
-        || !static_cast<const PluginViewBase*>(widget)->shouldAlwaysAutoStart())
-        return;
-
-    LOG(Plugins, "%p Plug-in should auto-start, set to play", this);
-    setDisplayState(Playing);
 }
 
 } // namespace WebCore

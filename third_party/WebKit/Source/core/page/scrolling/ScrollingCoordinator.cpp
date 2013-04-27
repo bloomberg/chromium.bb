@@ -27,7 +27,7 @@
 
 #include "core/page/scrolling/ScrollingCoordinator.h"
 
-#include "PluginViewBase.h"
+#include "PluginView.h"
 #include "core/dom/Document.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
@@ -373,12 +373,12 @@ Region ScrollingCoordinator::computeNonFastScrollableRegion(const Frame* frame, 
 
     if (const HashSet<RefPtr<Widget> >* children = frameView->children()) {
         for (HashSet<RefPtr<Widget> >::const_iterator it = children->begin(), end = children->end(); it != end; ++it) {
-            if (!(*it)->isPluginViewBase())
+            if (!(*it)->isPluginView())
                 continue;
 
-            PluginViewBase* pluginViewBase = toPluginViewBase((*it).get());
-            if (pluginViewBase->wantsWheelEvents())
-                nonFastScrollableRegion.unite(pluginViewBase->frameRect());
+            PluginView* pluginView = toPluginView((*it).get());
+            if (pluginView->wantsWheelEvents())
+                nonFastScrollableRegion.unite(pluginView->frameRect());
         }
     }
 

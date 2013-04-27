@@ -31,8 +31,6 @@
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "HTMLPlugInElement.h"
-#include "PluginDocument.h"
-#include "PluginViewBase.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Clipboard.h"
 #include "core/dom/ClipboardAccessPolicy.h"
@@ -421,17 +419,7 @@ DragOperation DragController::operationForLoad(DragData* dragData)
     ASSERT(dragData);
     Document* doc = m_page->mainFrame()->documentAtPoint(dragData->clientPosition());
 
-    bool pluginDocumentAcceptsDrags = false;
-
-    if (doc && doc->isPluginDocument()) {
-        const Widget* widget = toPluginDocument(doc)->pluginWidget();
-        const PluginViewBase* pluginView = (widget && widget->isPluginViewBase()) ? static_cast<const PluginViewBase*>(widget) : 0;
-
-        if (pluginView)
-            pluginDocumentAcceptsDrags = pluginView->shouldAllowNavigationFromDrags();
-    }
-
-    if (doc && (m_didInitiateDrag || (doc->isPluginDocument() && !pluginDocumentAcceptsDrags) || doc->rendererIsEditable()))
+    if (doc && (m_didInitiateDrag || doc->isPluginDocument() || doc->rendererIsEditable()))
         return DragOperationNone;
     return dragOperation(dragData);
 }
