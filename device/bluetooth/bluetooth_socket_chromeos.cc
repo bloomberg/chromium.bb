@@ -70,7 +70,7 @@ bool BluetoothSocketChromeOS::Receive(net::GrowableIOBuffer* buffer) {
   do {
     if (buffer->RemainingCapacity() == 0)
       buffer->SetCapacity(buffer->capacity() * 2);
-    bytes_read = read(fd_, buffer, buffer->RemainingCapacity());
+    bytes_read = read(fd_, buffer->data(), buffer->RemainingCapacity());
     if (bytes_read > 0)
       buffer->set_offset(buffer->offset() + bytes_read);
   } while (bytes_read > 0);
@@ -85,7 +85,7 @@ bool BluetoothSocketChromeOS::Receive(net::GrowableIOBuffer* buffer) {
 bool BluetoothSocketChromeOS::Send(net::DrainableIOBuffer* buffer) {
   ssize_t bytes_written;
   do {
-    bytes_written = write(fd_, buffer, buffer->BytesRemaining());
+    bytes_written = write(fd_, buffer->data(), buffer->BytesRemaining());
     if (bytes_written > 0)
       buffer->DidConsume(bytes_written);
   } while (buffer->BytesRemaining() > 0 && bytes_written > 0);
