@@ -29,21 +29,10 @@
  */
 
 #include "config.h"
-#include "core/workers/chromium/WorkerContextProxyChromium.h"
+#include "core/workers/WorkerContextProxy.h"
 
 namespace WebCore {
 
-static WorkerContextProxyCreate* s_workerContextProxyCreateFunction = 0;
-
-void setWorkerContextProxyCreateFunction(WorkerContextProxyCreate workerContextProxyCreateFunction)
-{
-    s_workerContextProxyCreateFunction = workerContextProxyCreateFunction;
-}
-
-WorkerContextProxy* WorkerContextProxy::create(Worker* worker)
-{
-    ASSERT(s_workerContextProxyCreateFunction);
-    return s_workerContextProxyCreateFunction(worker);
-}
+WorkerContextProxy::CreateDelegate* WorkerContextProxy::s_createDelegate = 0;
 
 } // namespace WebCore

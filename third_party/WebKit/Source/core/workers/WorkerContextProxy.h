@@ -44,7 +44,12 @@ namespace WebCore {
     // A proxy to talk to the worker context.
     class WorkerContextProxy {
     public:
-        static WorkerContextProxy* create(Worker*);
+        typedef WorkerContextProxy* CreateDelegate(Worker*);
+
+        // FIXME: Instead of delegating through a static factory function we
+        // should probably go through some client interface like ChromeClient.
+        static WorkerContextProxy* create(Worker* worker) { return s_createDelegate(worker); }
+        static void setCreateDelegate(CreateDelegate* delegate) { s_createDelegate = delegate; }
 
         virtual ~WorkerContextProxy() {}
 
@@ -66,6 +71,9 @@ namespace WebCore {
         virtual void connectToInspector(PageInspector*) { }
         virtual void disconnectFromInspector() { }
         virtual void sendMessageToInspector(const String&) { }
+
+    private:
+        static CreateDelegate* s_createDelegate;
     };
 
 } // namespace WebCore

@@ -49,7 +49,7 @@
 #include "core/platform/graphics/chromium/ImageDecodingStore.h"
 #include "core/platform/graphics/chromium/MediaPlayerPrivateChromium.h"
 #include "core/platform/text/TextEncoding.h"
-#include "core/workers/chromium/WorkerContextProxyChromium.h"
+#include "core/workers/WorkerContextProxy.h"
 #include "v8.h"
 #include <public/Platform.h>
 #include <public/WebPrerenderingSupport.h>
@@ -149,7 +149,7 @@ void initializeWithoutV8(Platform* webKitPlatformSupport)
 
     WebCore::MediaPlayerPrivate::setMediaEngineRegisterSelfFunction(WebKit::WebMediaPlayerClientImpl::registerSelf);
 
-    WebCore::setWorkerContextProxyCreateFunction(WebWorkerClientImpl::createWorkerContextProxy);
+    WebCore::WorkerContextProxy::setCreateDelegate(WebWorkerClientImpl::createWorkerContextProxy);
 }
 
 
