@@ -229,11 +229,22 @@ public class ChromeBrowserProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        SharedPreferences sharedPreferences =
-                PreferenceManager.getDefaultSharedPreferences(getContext());
-        mLastModifiedBookmarkFolderId = sharedPreferences.getLong(
-                LAST_MODIFIED_BOOKMARK_FOLDER_ID_KEY, INVALID_BOOKMARK_ID);
+        // Pre-load shared preferences object, this happens on a separate thread
+        PreferenceManager.getDefaultSharedPreferences(getContext());
         return true;
+    }
+
+    /**
+     * Lazily fetches the last modified bookmark folder id.
+     */
+    private long getLastModifiedBookmarkFolderId() {
+        if (mLastModifiedBookmarkFolderId == INVALID_BOOKMARK_ID) {
+            SharedPreferences sharedPreferences =
+                    PreferenceManager.getDefaultSharedPreferences(getContext());
+            mLastModifiedBookmarkFolderId = sharedPreferences.getLong(
+                    LAST_MODIFIED_BOOKMARK_FOLDER_ID_KEY, INVALID_BOOKMARK_ID);
+        }
+        return mLastModifiedBookmarkFolderId;
     }
 
     private String buildSuggestWhere(String selection, int argc) {
@@ -565,7 +576,7 @@ public class ChromeBrowserProvider extends ContentProvider {
     }
 
     private void updateLastModifiedBookmarkFolder(long id) {
-        if (mLastModifiedBookmarkFolderId == id) return;
+        if (getLastModifiedBookmarkFolderId() == id) return;
 
         mLastModifiedBookmarkFolderId = id;
         SharedPreferences sharedPreferences =
@@ -638,7 +649,7 @@ public class ChromeBrowserProvider extends ContentProvider {
     private BookmarkNode getDefaultBookmarkFolder() {
         // Try to access the bookmark folder last modified by us. If it doesn't exist anymore
         // then use the synced node (Mobile Bookmarks).
-        BookmarkNode lastModified = getBookmarkNode(mLastModifiedBookmarkFolderId, false, false,
+        BookmarkNode lastModified = getBookmarkNode(getLastModifiedBookmarkFolderId(), false, false,
                 false, false);
         if (lastModified == null) {
             lastModified = getMobileBookmarksFolder();
