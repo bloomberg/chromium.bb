@@ -60,7 +60,7 @@ class WeakXmppClientTest : public testing::Test {
   }
 
   // Needed by TaskPump.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   scoped_ptr<jingle_glue::TaskPump> task_pump_;
   MockXmppDelegate mock_xmpp_delegate_;

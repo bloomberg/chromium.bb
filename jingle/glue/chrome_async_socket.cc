@@ -117,7 +117,7 @@ bool ChromeAsyncSocket::Connect(const talk_base::SocketAddress& address) {
     // directly here as the caller may not expect an error/close to
     // happen here.  This is okay, as from the caller's point of view,
     // the connect always happens asynchronously.
-    MessageLoop* message_loop = MessageLoop::current();
+    base::MessageLoop* message_loop = base::MessageLoop::current();
     CHECK(message_loop);
     message_loop->PostTask(
         FROM_HERE,
@@ -154,7 +154,7 @@ void ChromeAsyncSocket::PostDoRead() {
   DCHECK_EQ(read_state_, IDLE);
   DCHECK_EQ(read_start_, 0U);
   DCHECK_EQ(read_end_, 0U);
-  MessageLoop* message_loop = MessageLoop::current();
+  base::MessageLoop* message_loop = base::MessageLoop::current();
   CHECK(message_loop);
   message_loop->PostTask(
       FROM_HERE,
@@ -288,7 +288,7 @@ void ChromeAsyncSocket::PostDoWrite() {
   DCHECK(IsOpen());
   DCHECK_EQ(write_state_, IDLE);
   DCHECK_GT(write_end_, 0U);
-  MessageLoop* message_loop = MessageLoop::current();
+  base::MessageLoop* message_loop = base::MessageLoop::current();
   CHECK(message_loop);
   message_loop->PostTask(
       FROM_HERE,
@@ -412,7 +412,7 @@ bool ChromeAsyncSocket::StartTls(const std::string& domain_name) {
       base::Bind(&ChromeAsyncSocket::ProcessSSLConnectDone,
                  weak_ptr_factory_.GetWeakPtr()));
   if (status != net::ERR_IO_PENDING) {
-    MessageLoop* message_loop = MessageLoop::current();
+    base::MessageLoop* message_loop = base::MessageLoop::current();
     CHECK(message_loop);
     message_loop->PostTask(
         FROM_HERE,

@@ -20,7 +20,7 @@ TaskPump::~TaskPump() {
 void TaskPump::WakeTasks() {
   DCHECK(CalledOnValidThread());
   if (!stopped_ && !posted_wake_) {
-    MessageLoop* current_message_loop = MessageLoop::current();
+    base::MessageLoop* current_message_loop = base::MessageLoop::current();
     CHECK(current_message_loop);
     // Do the requested wake up.
     current_message_loop->PostTask(

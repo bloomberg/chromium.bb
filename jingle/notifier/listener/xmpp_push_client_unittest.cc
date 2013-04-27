@@ -53,7 +53,7 @@ class XmppPushClientTest : public testing::Test {
   }
 
   // The sockets created by the XMPP code expect an IO loop.
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   NotifierOptions notifier_options_;
   StrictMock<MockObserver> mock_observer_;
   scoped_ptr<XmppPushClient> xmpp_push_client_;

@@ -106,7 +106,7 @@ class SingleLoginAttemptTest : public ::testing::Test {
   }
 
  private:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   const LoginSettings login_settings_;
 
  protected:

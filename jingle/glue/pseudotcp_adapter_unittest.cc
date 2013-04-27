@@ -136,7 +136,7 @@ class FakeSocket : public net::Socket {
                     const net::CompletionCallback& callback) OVERRIDE {
     DCHECK(buf);
     if (peer_socket_) {
-      MessageLoop::current()->PostDelayedTask(
+      base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&FakeSocket::AppendInputPacket,
                      base::Unretained(peer_socket_),
@@ -170,7 +170,7 @@ class FakeSocket : public net::Socket {
 
 class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
  public:
-  TCPChannelTester(MessageLoop* message_loop,
+  TCPChannelTester(base::MessageLoop* message_loop,
                    net::Socket* client_socket,
                    net::Socket* host_socket)
       : message_loop_(message_loop),
@@ -178,8 +178,7 @@ class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
         client_socket_(client_socket),
         done_(false),
         write_errors_(0),
-        read_errors_(0) {
-  }
+        read_errors_(0) {}
 
   void Start() {
     message_loop_->PostTask(
@@ -204,7 +203,7 @@ class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
 
   void Done() {
     done_ = true;
-    message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    message_loop_->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
   }
 
   void DoStart() {
@@ -288,7 +287,7 @@ class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
  private:
   friend class base::RefCountedThreadSafe<TCPChannelTester>;
 
-  MessageLoop* message_loop_;
+  base::MessageLoop* message_loop_;
   net::Socket* host_socket_;
   net::Socket* client_socket_;
   bool done_;
@@ -320,7 +319,7 @@ class PseudoTcpAdapterTest : public testing::Test {
 
   scoped_ptr<PseudoTcpAdapter> host_pseudotcp_;
   scoped_ptr<PseudoTcpAdapter> client_pseudotcp_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 };
 
 TEST_F(PseudoTcpAdapterTest, DataTransfer) {
@@ -383,14 +382,14 @@ TEST_F(PseudoTcpAdapterTest, LimitedChannel) {
 
 class DeleteOnConnected {
  public:
-  DeleteOnConnected(MessageLoop* message_loop,
+  DeleteOnConnected(base::MessageLoop* message_loop,
                     scoped_ptr<PseudoTcpAdapter>* adapter)
       : message_loop_(message_loop), adapter_(adapter) {}
   void OnConnected(int error) {
     adapter_->reset();
-    message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    message_loop_->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
   }
-  MessageLoop* message_loop_;
+  base::MessageLoop* message_loop_;
   scoped_ptr<PseudoTcpAdapter>* adapter_;
 };
 

@@ -261,7 +261,7 @@ class FakeSSLClientSocketTest : public testing::Test {
   }
 
   // MockTCPClientSocket needs a message loop.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   net::MockClientSocketFactory mock_client_socket_factory_;
   scoped_ptr<net::StaticSocketDataProvider> static_socket_data_provider_;

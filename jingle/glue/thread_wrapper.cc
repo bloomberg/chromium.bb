@@ -31,9 +31,9 @@ base::LazyInstance<base::ThreadLocalPointer<JingleThreadWrapper> >
 // static
 void JingleThreadWrapper::EnsureForCurrentMessageLoop() {
   if (JingleThreadWrapper::current() == NULL) {
-    MessageLoop* message_loop = MessageLoop::current();
-    g_jingle_thread_wrapper.Get().Set(new JingleThreadWrapper(
-        message_loop->message_loop_proxy()));
+    base::MessageLoop* message_loop = base::MessageLoop::current();
+    g_jingle_thread_wrapper.Get()
+        .Set(new JingleThreadWrapper(message_loop->message_loop_proxy()));
     message_loop->AddDestructionObserver(current());
   }
 

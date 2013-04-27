@@ -61,7 +61,7 @@ class TransportChannelSocketAdapterTest : public testing::Test {
   scoped_ptr<TransportChannelSocketAdapter> target_;
   net::CompletionCallback callback_;
   int callback_result_;
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
 };
 
 // Verify that Read() returns net::ERR_IO_PENDING.

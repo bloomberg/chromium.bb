@@ -48,7 +48,7 @@ class ProxyResolvingClientSocketTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
 };
 

@@ -115,15 +115,14 @@ void FakeUDPPacketSocket::DeliverPacket(const net::IPEndPoint& from,
 }
 
 FakeSocketManager::FakeSocketManager()
-    : message_loop_(MessageLoop::current()) {
-}
+    : message_loop_(base::MessageLoop::current()) {}
 
 FakeSocketManager::~FakeSocketManager() { }
 
 void FakeSocketManager::SendPacket(const net::IPEndPoint& from,
                                    const net::IPEndPoint& to,
                                    const std::vector<char>& data) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
 
   message_loop_->PostTask(
       FROM_HERE,
@@ -133,7 +132,7 @@ void FakeSocketManager::SendPacket(const net::IPEndPoint& from,
 void FakeSocketManager::DeliverPacket(const net::IPEndPoint& from,
                                       const net::IPEndPoint& to,
                                       const std::vector<char>& data) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
 
   std::map<net::IPEndPoint, FakeUDPPacketSocket*>::iterator it =
       endpoints_.find(to);
@@ -146,13 +145,13 @@ void FakeSocketManager::DeliverPacket(const net::IPEndPoint& from,
 }
 
 void FakeSocketManager::AddSocket(FakeUDPPacketSocket* socket_factory) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
 
   endpoints_[socket_factory->endpoint()] = socket_factory;
 }
 
 void FakeSocketManager::RemoveSocket(FakeUDPPacketSocket* socket_factory) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
 
   endpoints_.erase(socket_factory->endpoint());
 }

@@ -29,7 +29,7 @@ class PushClientTest : public testing::Test {
   virtual ~PushClientTest() {}
 
   // The sockets created by the XMPP code expect an IO loop.
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   NotifierOptions notifier_options_;
 };
 

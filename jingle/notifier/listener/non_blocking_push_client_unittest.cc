@@ -56,7 +56,7 @@ class NonBlockingPushClientTest : public testing::Test {
     return scoped_ptr<PushClient>(fake_push_client_);
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   FakePushClientObserver fake_observer_;
   scoped_ptr<NonBlockingPushClient> push_client_;
   // Owned by |push_client_|.
