@@ -76,7 +76,6 @@ class TestingOmniboxView : public OmniboxView {
     return 0;
   }
   virtual gfx::Font GetFont() OVERRIDE { return gfx::Font(); }
-  virtual int WidthOfTextAfterCursor() OVERRIDE { return 0; }
 #endif
 
   virtual int GetOmniboxTextLength() const OVERRIDE { return 0; }

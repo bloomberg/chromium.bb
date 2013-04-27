@@ -269,6 +269,10 @@ class UI_EXPORT RenderText {
   // the margin area of text shadows.
   virtual Size GetStringSize() = 0;
 
+  // Returns the width of content, which reserves room for the cursor if
+  // |cursor_enabled_| is true.
+  int GetContentWidth();
+
   // Returns the common baseline of the text. The returned value is the vertical
   // offset from the top of |display_rect| to the text baseline, in pixels.
   virtual int GetBaseline() = 0;
@@ -404,10 +408,6 @@ class UI_EXPORT RenderText {
   // Handles the display area, display offset, and the application LTR/RTL mode.
   Point ToTextPoint(const Point& point);
   Point ToViewPoint(const Point& point);
-
-  // Returns the width of content, which reserves room for the cursor if
-  // |cursor_enabled_| is true.
-  int GetContentWidth();
 
   // Returns display offset based on current text alignment.
   Vector2d GetAlignmentOffset();

@@ -67,10 +67,6 @@ class OmniboxViewGtk : public OmniboxView,
 
   // Initialize, create the underlying widgets, etc.
   void Init();
-  // Returns the width in pixels needed to display the text from one character
-  // before the caret to the end of the string. See comments in
-  // LocationBarView::Layout as to why this uses -1.
-  int WidthOfTextAfterCursor();
 
   // OmniboxView:
   virtual void SaveStateToTab(content::WebContents* tab) OVERRIDE;

@@ -1088,14 +1088,6 @@ gfx::Font OmniboxViewWin::GetFont() {
   return font_;
 }
 
-int OmniboxViewWin::WidthOfTextAfterCursor() {
-  CHARRANGE selection;
-  GetSelection(selection);
-  // See comments in LocationBarView::Layout as to why this uses -1.
-  const int start = std::max(0, static_cast<int>(selection.cpMax - 1));
-  return WidthNeededToDisplay(GetText().substr(start));
-}
-
 int OmniboxViewWin::OnPerformDropImpl(const ui::DropTargetEvent& event,
                                       bool in_drag) {
   const ui::OSExchangeData& data = event.data();
@@ -2857,9 +2849,9 @@ int OmniboxViewWin::GetHorizontalMargin() const {
 }
 
 int OmniboxViewWin::WidthNeededToDisplay(const string16& text) const {
-  // Use font_.GetStringWidth() instead of
-  // PosFromChar(location_entry_->GetTextLength()) because PosFromChar() is
-  // apparently buggy. In both LTR UI and RTL UI with left-to-right layout,
-  // PosFromChar(i) might return 0 when i is greater than 1.
+  // Use font_.GetStringWidth() instead of PosFromChar(GetTextLength()) because
+  // PosFromChar() is apparently buggy. In both LTR UI and RTL UI with
+  // left-to-right layout, PosFromChar(i) might return 0 when i is greater than
+  // 1.
   return font_.GetStringWidth(text) + GetHorizontalMargin();
 }

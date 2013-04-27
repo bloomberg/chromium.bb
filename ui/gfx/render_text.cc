@@ -600,6 +600,10 @@ VisualCursorDirection RenderText::GetVisualDirectionOfLogicalEnd() {
       CURSOR_RIGHT : CURSOR_LEFT;
 }
 
+int RenderText::GetContentWidth() {
+  return GetStringSize().width() + (cursor_enabled_ ? 1 : 0);
+}
+
 void RenderText::Draw(Canvas* canvas) {
   EnsureLayout();
 
@@ -816,10 +820,6 @@ Point RenderText::ToTextPoint(const Point& point) {
 
 Point RenderText::ToViewPoint(const Point& point) {
   return point + GetTextOffset();
-}
-
-int RenderText::GetContentWidth() {
-  return GetStringSize().width() + (cursor_enabled_ ? 1 : 0);
 }
 
 Vector2d RenderText::GetAlignmentOffset() {

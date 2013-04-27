@@ -117,7 +117,6 @@ class OmniboxViewWin
   virtual views::View* AddToView(views::View* parent) OVERRIDE;
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
   virtual gfx::Font GetFont() OVERRIDE;
-  virtual int WidthOfTextAfterCursor() OVERRIDE;
 
   int GetPopupMaxYCoordinate();
 

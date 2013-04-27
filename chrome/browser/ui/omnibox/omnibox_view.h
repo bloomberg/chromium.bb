@@ -221,10 +221,6 @@ class OmniboxView {
 
   // Returns the font.
   virtual gfx::Font GetFont() = 0;
-
-  // Returns the width in pixels needed to display the text from one character
-  // before the caret to the end of the string.
-  virtual int WidthOfTextAfterCursor() = 0;
 #endif
 
   // Returns a string with any leading javascript schemas stripped from the

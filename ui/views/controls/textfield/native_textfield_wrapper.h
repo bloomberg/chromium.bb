@@ -168,6 +168,10 @@ class VIEWS_EXPORT NativeTextfieldWrapper {
   // any insets.
   virtual int GetTextfieldBaseline() const = 0;
 
+  // Returns the width necessary to display the current text, including any
+  // necessary space for the cursor or border/margin.
+  virtual int GetWidthNeededForText() const = 0;
+
   // Performs the action associated with the specified command id. Not called
   // ExecuteCommand to avoid name clash.
   virtual void ExecuteTextCommand(int command_id) = 0;

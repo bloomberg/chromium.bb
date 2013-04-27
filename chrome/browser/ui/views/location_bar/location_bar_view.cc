@@ -793,7 +793,8 @@ void LocationBarView::Layout() {
   left_decorations.LayoutPass2(&entry_width);
   right_decorations.LayoutPass2(&entry_width);
 
-  int available_width = entry_width - location_entry_->TextWidth();
+  int location_needed_width = location_entry_->TextWidth();
+  int available_width = entry_width - location_needed_width;
   // The bounds must be wide enough for all the decorations to fit.
   gfx::Rect location_bounds(kEdgeThickness, kVerticalEdgeThickness,
                             std::max(full_width, full_width - entry_width),
@@ -831,7 +832,6 @@ void LocationBarView::Layout() {
       // the suggested text, or we have a mix of RTL and LTR characters.
       suggested_text_view_->SetBounds(0, 0, 0, 0);
     } else {
-      int location_needed_width = location_entry_->TextWidth();
       location_bounds.set_width(
           std::min(location_needed_width,
                    location_bounds.width() - suggested_text_width));

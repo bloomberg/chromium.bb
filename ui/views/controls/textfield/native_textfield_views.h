@@ -149,6 +149,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
   virtual void ClearEditHistory() OVERRIDE;
   virtual int GetFontHeight() OVERRIDE;
   virtual int GetTextfieldBaseline() const OVERRIDE;
+  virtual int GetWidthNeededForText() const OVERRIDE;
   virtual void ExecuteTextCommand(int command_id) OVERRIDE;
   virtual bool HasTextBeingDragged() OVERRIDE;
 

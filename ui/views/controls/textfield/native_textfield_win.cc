@@ -424,6 +424,11 @@ int NativeTextfieldWin::GetTextfieldBaseline() const {
   return textfield_->font().GetBaseline();
 }
 
+int NativeTextfieldWin::GetWidthNeededForText() const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 void NativeTextfieldWin::ExecuteTextCommand(int command_id) {
   ExecuteCommand(command_id, 0);
 }

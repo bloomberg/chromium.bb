@@ -715,6 +715,10 @@ int NativeTextfieldViews::GetTextfieldBaseline() const {
   return GetRenderText()->GetFont().GetBaseline();
 }
 
+int NativeTextfieldViews::GetWidthNeededForText() const {
+  return GetRenderText()->GetContentWidth() + GetInsets().width();
+}
+
 void NativeTextfieldViews::ExecuteTextCommand(int command_id) {
   ExecuteCommand(command_id, 0);
 }

@@ -182,13 +182,6 @@ gfx::Font OmniboxViewViews::GetFont() {
   return font();
 }
 
-int OmniboxViewViews::WidthOfTextAfterCursor() {
-  // See comments in LocationBarView::Layout as to why this uses -1.
-  const int start = std::max(0, static_cast<int>(GetSelectedRange().end()) - 1);
-  // TODO: add horizontal margin.
-  return font().GetStringWidth(text().substr(start));
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxViewViews, views::Textfield implementation:
 
@@ -603,9 +596,7 @@ string16 OmniboxViewViews::GetInstantSuggestion() const {
 }
 
 int OmniboxViewViews::TextWidth() const {
-  // TODO(pkasting): Return correct value here, taking into account insets,
-  // space reserved for cursor, etc.
-  return font().GetStringWidth(text()) + 1;
+  return native_wrapper_->GetWidthNeededForText();
 }
 
 bool OmniboxViewViews::IsImeComposing() const {

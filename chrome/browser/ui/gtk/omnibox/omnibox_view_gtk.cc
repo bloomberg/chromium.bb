@@ -435,11 +435,6 @@ void OmniboxViewGtk::ApplyCaretVisibility() {
   // TODO(mathp): implement for Linux.
 }
 
-int OmniboxViewGtk::WidthOfTextAfterCursor() {
-  // Not used.
-  return -1;
-}
-
 void OmniboxViewGtk::SaveStateToTab(WebContents* tab) {
   DCHECK(tab);
   // If any text has been selected, register it as the PRIMARY selection so it
