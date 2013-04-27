@@ -1,18 +1,5 @@
 {
   'variables': {
-    'modules_include_dirs': [
-      'inputmethod',
-      'mediasource',
-      'mediastream',
-      'navigatorcontentutils',
-      'notifications',
-      'quota',
-      'speech',
-      'webaudio',
-      'webdatabase',
-      'webdatabase/chromium',
-      'websockets',
-    ],
     'modules_idl_files': [
       'battery/BatteryManager.idl',
       'battery/NavigatorBattery.idl',

@@ -31,7 +31,6 @@
 #include "config.h"
 #include "WebSocketImpl.h"
 
-#include "MainThreadWebSocketChannel.h"
 #include "WebArrayBuffer.h"
 #include "WebDocument.h"
 #include "WebSocketChannel.h"
@@ -40,6 +39,7 @@
 #include "core/dom/Document.h"
 #include "core/page/RuntimeEnabledFeatures.h"
 #include "core/platform/KURL.h"
+#include "modules/websockets/MainThreadWebSocketChannel.h"
 
 #include <public/WebString.h>
 #include <public/WebURL.h>

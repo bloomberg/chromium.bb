@@ -29,11 +29,8 @@
  */
 
 #include "config.h"
-#include "StorageQuota.h"
+#include "modules/quota/StorageQuota.h"
 
-#include "StorageErrorCallback.h"
-#include "StorageQuotaCallback.h"
-#include "StorageUsageCallback.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
 #include "WebStorageQuotaCallbacksImpl.h"
@@ -45,6 +42,9 @@
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/workers/WorkerContext.h"
 #include "core/workers/WorkerThread.h"
+#include "modules/quota/StorageErrorCallback.h"
+#include "modules/quota/StorageQuotaCallback.h"
+#include "modules/quota/StorageUsageCallback.h"
 #include <wtf/Threading.h>
 
 using namespace WebKit;

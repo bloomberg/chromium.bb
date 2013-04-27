@@ -30,7 +30,6 @@
 #include "config.h"
 #include "core/inspector/InspectorDOMStorageAgent.h"
 
-#include "Database.h"
 #include "ExceptionCodeDescription.h"
 #include "InspectorFrontend.h"
 #include "VoidCallback.h"
@@ -49,6 +48,7 @@
 #include "core/storage/Storage.h"
 #include "core/storage/StorageArea.h"
 #include "core/storage/StorageNamespace.h"
+#include "modules/webdatabase/Database.h"
 
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/Vector.h>

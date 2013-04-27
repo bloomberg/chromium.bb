@@ -26,7 +26,7 @@
 #include "config.h"
 #include "WebSpeechRecognitionHandle.h"
 
-#include "SpeechRecognition.h"
+#include "modules/speech/SpeechRecognition.h"
 
 using namespace WebCore;
 

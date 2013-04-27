@@ -31,7 +31,6 @@
 #include "config.h"
 #include "WebSharedWorkerImpl.h"
 
-#include "DatabaseTask.h"
 #include "WebDataSourceImpl.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
@@ -59,6 +58,7 @@
 #include "core/workers/WorkerContext.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
+#include "modules/webdatabase/DatabaseTask.h"
 #include <public/WebFileError.h>
 #include <public/WebMessagePortChannel.h>
 #include <public/WebString.h>

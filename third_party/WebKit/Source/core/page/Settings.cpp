@@ -27,7 +27,6 @@
 #include "core/page/Settings.h"
 
 #include <limits>
-#include "Database.h"
 #include "HTMLMediaElement.h"
 #include "core/dom/Document.h"
 #include "core/history/BackForwardController.h"
@@ -40,6 +39,7 @@
 #include "core/page/Page.h"
 #include "core/platform/network/ResourceHandle.h"
 #include "core/rendering/TextAutosizer.h"
+#include "modules/webdatabase/Database.h"
 
 using namespace std;
 

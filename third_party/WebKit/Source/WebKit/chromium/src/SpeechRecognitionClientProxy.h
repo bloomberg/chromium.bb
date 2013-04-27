@@ -26,8 +26,8 @@
 #ifndef SpeechRecognitionClientProxy_h
 #define SpeechRecognitionClientProxy_h
 
-#include "SpeechRecognitionClient.h"
 #include "WebSpeechRecognizerClient.h"
+#include "modules/speech/SpeechRecognitionClient.h"
 #include <wtf/Compiler.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/WTFString.h>

@@ -32,12 +32,12 @@
 #include <wtf/text/WTFString.h>
 
 #if ENABLE(MEDIA_STREAM)
-#include "MediaStream.h"
-#include "MediaStreamRegistry.h"
+#include "modules/mediastream/MediaStream.h"
+#include "modules/mediastream/MediaStreamRegistry.h"
 #endif
 
-#include "MediaSource.h"
-#include "MediaSourceRegistry.h"
+#include "modules/mediasource/MediaSource.h"
+#include "modules/mediasource/MediaSourceRegistry.h"
 
 namespace WebCore {
 

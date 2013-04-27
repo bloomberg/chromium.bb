@@ -36,7 +36,6 @@
 #include "core/loader/FrameLoader.h"
 
 #include "DOMWrapperWorld.h"
-#include "DatabaseManager.h"
 #include "HTMLAnchorElement.h"
 #include "HTMLFormElement.h"
 #include "HTMLInputElement.h"
@@ -102,6 +101,7 @@
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/text/SegmentedString.h"
 #include "core/xml/parser/XMLDocumentParser.h"
+#include "modules/webdatabase/DatabaseManager.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MemoryInstrumentationHashSet.h>
 #include <wtf/StdLibExtras.h>

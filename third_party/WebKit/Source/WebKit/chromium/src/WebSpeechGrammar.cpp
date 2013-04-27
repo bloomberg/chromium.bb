@@ -26,7 +26,7 @@
 #include "config.h"
 #include "WebSpeechGrammar.h"
 
-#include "SpeechGrammar.h"
+#include "modules/speech/SpeechGrammar.h"
 #include <wtf/PassRefPtr.h>
 
 namespace WebKit {

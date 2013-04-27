@@ -1,7 +1,7 @@
 namespace="EventTarget"
 
-AudioContext conditional=WEB_AUDIO
-BatteryManager conditional=BATTERY_STATUS
+modules/webaudio/AudioContext conditional=WEB_AUDIO
+modules/battery/BatteryManager conditional=BATTERY_STATUS
 core/workers/DedicatedWorkerContext
 core/loader/appcache/DOMApplicationCache
 DOMWindow
@@ -13,26 +13,26 @@ modules/indexeddb/IDBDatabase
 modules/indexeddb/IDBOpenDBRequest
 modules/indexeddb/IDBRequest
 modules/indexeddb/IDBTransaction
-ScriptProcessorNode conditional=WEB_AUDIO
+modules/webaudio/ScriptProcessorNode conditional=WEB_AUDIO
 modules/webmidi/MIDIPort
 MediaKeySession conditional=ENCRYPTED_MEDIA_V2
 MediaController
-MediaSource
-MediaStream conditional=MEDIA_STREAM
-MediaStreamTrack conditional=MEDIA_STREAM
+modules/mediasource/MediaSource
+modules/mediastream/MediaStream conditional=MEDIA_STREAM
+modules/mediastream/MediaStreamTrack conditional=MEDIA_STREAM
 core/dom/MessagePort
 Node
-Notification conditional=NOTIFICATIONS|LEGACY_NOTIFICATIONS
+modules/notifications/Notification conditional=NOTIFICATIONS|LEGACY_NOTIFICATIONS
 Performance
-RTCDataChannel conditional=MEDIA_STREAM
-RTCDTMFSender conditional=MEDIA_STREAM
-RTCPeerConnection conditional=MEDIA_STREAM
+modules/mediastream/RTCDataChannel conditional=MEDIA_STREAM
+modules/mediastream/RTCDTMFSender conditional=MEDIA_STREAM
+modules/mediastream/RTCPeerConnection conditional=MEDIA_STREAM
 SVGElementInstance conditional=SVG
 core/workers/SharedWorker
 core/workers/SharedWorkerContext
-SourceBufferList
-SpeechRecognition
-SpeechSynthesisUtterance conditional=SPEECH_SYNTHESIS
+modules/mediasource/SourceBufferList
+modules/speech/SpeechRecognition
+modules/speech/SpeechSynthesisUtterance conditional=SPEECH_SYNTHESIS
 core/html/track/TextTrack
 core/html/track/TextTrackCue
 core/html/track/TextTrackList

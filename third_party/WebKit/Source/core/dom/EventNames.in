@@ -29,17 +29,17 @@ WebKitAnimationEvent interfaceName=AnimationEvent
 WebKitTransitionEvent interfaceName=TransitionEvent
 WheelEvent
 core/xml/XMLHttpRequestProgressEvent
-AudioProcessingEvent conditional=WEB_AUDIO
-OfflineAudioCompletionEvent conditional=WEB_AUDIO
-MediaStreamEvent conditional=MEDIA_STREAM
-MediaStreamTrackEvent conditional=MEDIA_STREAM
-RTCIceCandidateEvent conditional=MEDIA_STREAM
-RTCDataChannelEvent conditional=MEDIA_STREAM
-RTCDTMFToneChangeEvent conditional=MEDIA_STREAM
-SpeechInputEvent conditional=INPUT_SPEECH
-SpeechRecognitionError
-SpeechRecognitionEvent
-SpeechSynthesisEvent conditional=SPEECH_SYNTHESIS
+modules/webaudio/AudioProcessingEvent conditional=WEB_AUDIO
+modules/webaudio/OfflineAudioCompletionEvent conditional=WEB_AUDIO
+modules/mediastream/MediaStreamEvent conditional=MEDIA_STREAM
+modules/mediastream/MediaStreamTrackEvent conditional=MEDIA_STREAM
+modules/mediastream/RTCIceCandidateEvent conditional=MEDIA_STREAM
+modules/mediastream/RTCDataChannelEvent conditional=MEDIA_STREAM
+modules/mediastream/RTCDTMFToneChangeEvent conditional=MEDIA_STREAM
+core/page/SpeechInputEvent conditional=INPUT_SPEECH
+modules/speech/SpeechRecognitionError
+modules/speech/SpeechRecognitionEvent
+modules/speech/SpeechSynthesisEvent conditional=SPEECH_SYNTHESIS
 core/html/canvas/WebGLContextEvent conditional=WEBGL
 core/storage/StorageEvent
 SVGEvents interfaceName=Event, conditional=SVG

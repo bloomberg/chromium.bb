@@ -30,16 +30,7 @@
 
 #include "core/inspector/InspectorDatabaseAgent.h"
 
-#include "Database.h"
 #include "InspectorFrontend.h"
-#include "SQLError.h"
-#include "SQLResultSet.h"
-#include "SQLResultSetRowList.h"
-#include "SQLStatementCallback.h"
-#include "SQLStatementErrorCallback.h"
-#include "SQLTransaction.h"
-#include "SQLTransactionCallback.h"
-#include "SQLTransactionErrorCallback.h"
 #include "VoidCallback.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
@@ -48,6 +39,15 @@
 #include "core/inspector/InspectorValues.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/platform/sql/SQLValue.h"
+#include "modules/webdatabase/Database.h"
+#include "modules/webdatabase/SQLError.h"
+#include "modules/webdatabase/SQLResultSet.h"
+#include "modules/webdatabase/SQLResultSetRowList.h"
+#include "modules/webdatabase/SQLStatementCallback.h"
+#include "modules/webdatabase/SQLStatementErrorCallback.h"
+#include "modules/webdatabase/SQLTransaction.h"
+#include "modules/webdatabase/SQLTransactionCallback.h"
+#include "modules/webdatabase/SQLTransactionErrorCallback.h"
 
 #include <wtf/Vector.h>
 

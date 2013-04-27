@@ -31,11 +31,11 @@
 #include "config.h"
 #include "WebDatabase.h"
 
-#include "DatabaseBackendBase.h"
-#include "DatabaseManager.h"
-#include "QuotaTracker.h"
 #include "WebDatabaseObserver.h"
 #include "core/page/SecurityOrigin.h"
+#include "modules/webdatabase/DatabaseBackendBase.h"
+#include "modules/webdatabase/DatabaseManager.h"
+#include "modules/webdatabase/chromium/QuotaTracker.h"
 #include <public/WebString.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>

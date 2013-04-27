@@ -34,7 +34,6 @@
 
 #include "WebUserMediaRequest.h"
 
-#include "UserMediaRequest.h"
 #include "WebDocument.h"
 #include "WebSecurityOrigin.h"
 #include "core/dom/Document.h"
@@ -42,6 +41,7 @@
 #include "core/platform/mediastream/MediaConstraints.h"
 #include "core/platform/mediastream/MediaStreamDescriptor.h"
 #include "core/platform/mediastream/MediaStreamSource.h"
+#include "modules/mediastream/UserMediaRequest.h"
 #include <public/WebMediaConstraints.h>
 #include <public/WebMediaStream.h>
 #include <public/WebMediaStreamSource.h>

@@ -28,8 +28,6 @@
 
 #include "DOMURL.h"
 
-#include "MediaSource.h"
-#include "MediaSourceRegistry.h"
 #include "PublicURLManager.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ScriptExecutionContext.h"
@@ -40,12 +38,14 @@
 #include "core/page/SecurityOrigin.h"
 #include "core/platform/KURL.h"
 #include "core/platform/network/ResourceRequest.h"
+#include "modules/mediasource/MediaSource.h"
+#include "modules/mediasource/MediaSourceRegistry.h"
 #include <wtf/MainThread.h>
 #include <wtf/PassOwnPtr.h>
 
 #if ENABLE(MEDIA_STREAM)
-#include "MediaStream.h"
-#include "MediaStreamRegistry.h"
+#include "modules/mediastream/MediaStream.h"
+#include "modules/mediastream/MediaStreamRegistry.h"
 #endif
 
 namespace WebCore {

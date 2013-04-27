@@ -31,8 +31,8 @@
 #ifndef WebMediaSourceImpl_h
 #define WebMediaSourceImpl_h
 
-#include "MediaSource.h"
 #include "WebMediaSource.h"
+#include "modules/mediasource/MediaSource.h"
 
 namespace WebKit {
 

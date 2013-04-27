@@ -28,14 +28,14 @@
 
 #include "core/workers/WorkerThread.h"
 
-#include "DatabaseManager.h"
-#include "DatabaseTask.h"
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/platform/KURL.h"
 #include "core/platform/ThreadGlobalData.h"
 #include "core/workers/DedicatedWorkerContext.h"
+#include "modules/webdatabase/DatabaseManager.h"
+#include "modules/webdatabase/DatabaseTask.h"
 
 #include <utility>
 #include <wtf/Noncopyable.h>

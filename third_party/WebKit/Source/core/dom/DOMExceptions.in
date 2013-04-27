@@ -4,7 +4,7 @@ core/dom/DOMCoreException
 core/dom/EventException
 core/fileapi/FileException
 core/dom/RangeException
-SQLException
+modules/webdatabase/SQLException
 SVGException conditional=SVG
 core/xml/XMLHttpRequestException
 core/xml/XPathException

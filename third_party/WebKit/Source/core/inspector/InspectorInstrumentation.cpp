@@ -32,7 +32,6 @@
 #include "core/inspector/InspectorInstrumentation.h"
 
 #include "DOMWrapperWorld.h"
-#include "Database.h"
 #include "ScriptController.h"
 #include "core/css/CSSRule.h"
 #include "core/css/CSSStyleRule.h"
@@ -75,6 +74,7 @@
 #include "core/workers/WorkerContext.h"
 #include "core/workers/WorkerThread.h"
 #include "core/xml/XMLHttpRequest.h"
+#include "modules/webdatabase/Database.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/CString.h>
 

@@ -22,7 +22,6 @@
 #ifndef ChromeClient_h
 #define ChromeClient_h
 
-#include "DatabaseDetails.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/loader/FrameLoader.h"
@@ -37,6 +36,7 @@
 #include "core/platform/SearchPopupMenu.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/RenderEmbeddedObject.h"
+#include "modules/webdatabase/DatabaseDetails.h"
 #include <wtf/Forward.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/UnusedParam.h>

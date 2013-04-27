@@ -39,8 +39,6 @@
 #include "MediaFragmentURIParser.h"
 #include "MediaKeyError.h"
 #include "MediaKeyEvent.h"
-#include "MediaSource.h"
-#include "MediaSourceRegistry.h"
 #include "ScriptController.h"
 #include "ScriptEventListener.h"
 #include "TimeRanges.h"
@@ -82,6 +80,8 @@
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
+#include "modules/mediasource/MediaSource.h"
+#include "modules/mediasource/MediaSourceRegistry.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MathExtras.h>
 #include <wtf/MemoryInstrumentationVector.h>
@@ -98,12 +98,12 @@
 #include "core/platform/graphics/InbandTextTrackPrivate.h"
 
 #if ENABLE(WEB_AUDIO)
-#include "MediaElementAudioSourceNode.h"
 #include "core/platform/audio/AudioSourceProvider.h"
+#include "modules/webaudio/MediaElementAudioSourceNode.h"
 #endif
 
 #if ENABLE(MEDIA_STREAM)
-#include "MediaStreamRegistry.h"
+#include "modules/mediastream/MediaStreamRegistry.h"
 #endif
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)

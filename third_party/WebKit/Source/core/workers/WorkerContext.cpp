@@ -58,7 +58,7 @@
 #include <wtf/UnusedParam.h>
 
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
-#include "NotificationCenter.h"
+#include "modules/notifications/NotificationCenter.h"
 #endif
 
 #include "core/dom/ExceptionCode.h"

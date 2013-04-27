@@ -32,11 +32,11 @@
 #ifndef ChromeClientImpl_h
 #define ChromeClientImpl_h
 
-#include "NavigatorContentUtilsClient.h"
 #include "WebNavigationPolicy.h"
 #include "core/page/ChromeClient.h"
 #include "core/platform/PopupMenu.h"
 #include "core/platform/SearchPopupMenu.h"
+#include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
 #include <public/WebColor.h>
 #include <wtf/PassOwnPtr.h>
 

@@ -35,9 +35,6 @@
 
 #include "HTMLFormElement.h"
 #include "HTMLInputElement.h"
-#include "NotificationClient.h"
-#include "SpeechRecognitionError.h"
-#include "StorageQuota.h"
 #include "WebAccessibilityNotification.h"
 #include "WebAccessibilityObject.h"
 #include "WebApplicationCacheHost.h"
@@ -110,6 +107,9 @@
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "modules/indexeddb/IDBMetadata.h"
 #include "modules/indexeddb/chromium/IDBFactoryBackendInterfaceChromium.h"
+#include "modules/notifications/NotificationClient.h"
+#include "modules/quota/StorageQuota.h"
+#include "modules/speech/SpeechRecognitionError.h"
 #include <public/WebClipboard.h>
 #include <public/WebFileError.h>
 #include <public/WebFileInfo.h>

@@ -31,8 +31,8 @@
 #ifndef NotificationPresenterImpl_h
 #define NotificationPresenterImpl_h
 
-#include "NotificationClient.h"
 #include "VoidCallback.h"
+#include "modules/notifications/NotificationClient.h"
 
 #include <wtf/HashMap.h>
 #include <wtf/PassRefPtr.h>

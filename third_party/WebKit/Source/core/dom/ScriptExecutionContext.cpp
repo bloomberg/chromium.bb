@@ -28,7 +28,6 @@
 #include "config.h"
 #include "core/dom/ScriptExecutionContext.h"
 
-#include "DatabaseContext.h"
 #include "PublicURLManager.h"
 #include "core/dom/ErrorEvent.h"
 #include "core/dom/EventTarget.h"
@@ -39,6 +38,7 @@
 #include "core/page/DOMTimer.h"
 #include "core/workers/WorkerContext.h"
 #include "core/workers/WorkerThread.h"
+#include "modules/webdatabase/DatabaseContext.h"
 #include <wtf/MainThread.h>
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationVector.h>

@@ -28,10 +28,10 @@
 #include "core/platform/sql/SQLiteDatabase.h"
 
 #include <sqlite3.h>
-#include "DatabaseAuthorizer.h"
 #include "core/platform/Logging.h"
 #include "core/platform/sql/SQLiteFileSystem.h"
 #include "core/platform/sql/SQLiteStatement.h"
+#include "modules/webdatabase/DatabaseAuthorizer.h"
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
 #include <wtf/Threading.h>

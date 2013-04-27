@@ -128,9 +128,9 @@
 #include "core/page/PageGroup.h"
 
 #if ENABLE(SPEECH_SYNTHESIS)
-#include "DOMWindowSpeechSynthesis.h"
-#include "SpeechSynthesis.h"
 #include "core/platform/mock/PlatformSpeechSynthesizerMock.h"
+#include "modules/speech/DOMWindowSpeechSynthesis.h"
+#include "modules/speech/SpeechSynthesis.h"
 #endif
 
 namespace WebCore {

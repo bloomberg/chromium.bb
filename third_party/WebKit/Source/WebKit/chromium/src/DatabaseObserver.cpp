@@ -29,10 +29,8 @@
  */
 
 #include "config.h"
-#include "DatabaseObserver.h"
+#include "modules/webdatabase/chromium/DatabaseObserver.h"
 
-#include "DatabaseBackendBase.h"
-#include "DatabaseBackendContext.h"
 #include "WebCommonWorkerClient.h"
 #include "WebDatabase.h"
 #include "WebDatabaseObserver.h"
@@ -50,6 +48,8 @@
 #include "core/workers/WorkerContext.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
+#include "modules/webdatabase/DatabaseBackendBase.h"
+#include "modules/webdatabase/DatabaseBackendContext.h"
 
 using namespace WebKit;
 

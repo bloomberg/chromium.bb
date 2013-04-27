@@ -26,8 +26,8 @@
 #include "config.h"
 #include "WebSpeechRecognitionResult.h"
 
-#include "SpeechRecognitionAlternative.h"
-#include "SpeechRecognitionResult.h"
+#include "modules/speech/SpeechRecognitionAlternative.h"
+#include "modules/speech/SpeechRecognitionResult.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/Vector.h>
 

@@ -31,7 +31,6 @@
 #include "DOMSettableTokenList.h"
 #include "DOMTokenList.h"
 #include "DOMURL.h"
-#include "DOMWindowNotifications.h"
 #include "HTMLFrameOwnerElement.h"
 #include "ScheduledAction.h"
 #include "ScriptCallStackFactory.h"
@@ -101,6 +100,7 @@
 #include "core/storage/StorageArea.h"
 #include "core/storage/StorageNamespace.h"
 #include "modules/device_orientation/DeviceMotionController.h"
+#include "modules/notifications/DOMWindowNotifications.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MainThread.h>
 #include <wtf/MathExtras.h>

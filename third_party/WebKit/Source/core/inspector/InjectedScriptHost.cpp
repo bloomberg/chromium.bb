@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/inspector/InjectedScriptHost.h"
 
-#include "Database.h"
 #include "HTMLFrameOwnerElement.h"
 #include "InspectorFrontend.h"
 #include "core/dom/Element.h"
@@ -48,6 +47,7 @@
 #include "core/page/Frame.h"
 #include "core/platform/Pasteboard.h"
 #include "core/storage/Storage.h"
+#include "modules/webdatabase/Database.h"
 
 
 #include "core/editing/markup.h"

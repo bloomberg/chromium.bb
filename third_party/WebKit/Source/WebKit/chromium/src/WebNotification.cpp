@@ -33,11 +33,11 @@
 
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
 
-#include "Notification.h"
 #include "WebTextDirection.h"
 #include "core/dom/Event.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/page/WindowFocusAllowedIndicator.h"
+#include "modules/notifications/Notification.h"
 #include <public/WebString.h>
 #include <public/WebURL.h>
 #include <wtf/PassRefPtr.h>

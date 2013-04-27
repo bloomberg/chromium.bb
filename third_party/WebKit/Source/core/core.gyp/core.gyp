@@ -45,9 +45,10 @@
     'enable_wexit_time_destructors': 1,
 
     'webcore_include_dirs': [
+      # FIXME: Remove most entries in this list.
       '../',
       '../..',
-      '<@(modules_include_dirs)',
+      '../../modules/websockets',
       '<(bindings_dir)',
       '<(bindings_dir)/v8',
       '<(bindings_dir)/v8/custom',
@@ -328,6 +329,7 @@
         '../dom',
         '../html/shadow',
         '../inspector',
+        '../../modules/mediastream',
         '../page',
       ],
       'sources': [

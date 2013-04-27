@@ -27,7 +27,6 @@
 
 #include "core/platform/graphics/MediaPlayer.h"
 
-#include "MediaSource.h"
 #include "TimeRanges.h"
 #include "core/dom/Document.h"
 #include "core/page/Frame.h"
@@ -38,12 +37,13 @@
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/MediaPlayerPrivate.h"
+#include "modules/mediasource/MediaSource.h"
 #include <wtf/text/CString.h>
 
 #include "core/platform/graphics/InbandTextTrackPrivate.h"
 
 #if ENABLE(MEDIA_SOURCE)
-#include "MediaSource.h"
+#include "modules/mediasource/MediaSource.h"
 #endif
 
 #include "core/platform/graphics/chromium/MediaPlayerPrivateChromium.h"
