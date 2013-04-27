@@ -43,7 +43,7 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
       raster_contents_scale_(0.f),
       low_res_raster_contents_scale_(0.f),
       raster_source_scale_was_animating_(false),
-      is_using_lcd_text_(true) {
+      is_using_lcd_text_(tree_impl->settings().can_use_lcd_text) {
 }
 
 PictureLayerImpl::~PictureLayerImpl() {
