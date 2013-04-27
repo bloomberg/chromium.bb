@@ -20,6 +20,7 @@ namespace message_center {
 class MessageCenter;
 class MessageCenterBubble;
 class MessageView;
+class MessageListView;
 
 // MessageCenterButtonBar //////////////////////////////////////////////////////
 
@@ -62,6 +63,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
   virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
 
   // Overridden from MessageCenterObserver:
   virtual void OnNotificationAdded(const std::string& id) OVERRIDE;
@@ -74,11 +76,12 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
 
   void AddNotificationAt(const Notification& notification, int index);
   void NotificationsChanged();
+  void SetNotificationViewForTest(views::View* view);
 
   MessageCenter* message_center_;  // Weak reference.
   std::vector<MessageView*> message_views_;
   views::ScrollView* scroller_;
-  views::View* message_list_view_;
+  MessageListView* message_list_view_;
   MessageCenterButtonBar* button_bar_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterView);

@@ -150,8 +150,7 @@ void MessageCenterViewTest::SetUp() {
   MockNotificationView* mock;
   mock = new MockNotificationView(notification, &message_center_, this, 42);
   message_center_view_->message_views_.push_back(mock);
-  message_center_view_->message_list_view_->RemoveAllChildViews(true);
-  message_center_view_->message_list_view_->AddChildView(mock);
+  message_center_view_->SetNotificationViewForTest(mock);
 }
 
 void MessageCenterViewTest::TearDown() {

@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/stl_util.h"
 #include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -20,6 +21,8 @@
 #include "ui/message_center/message_center_util.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/message_center/views/notification_view.h"
+#include "ui/views/animation/bounds_animator.h"
+#include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
@@ -291,10 +294,12 @@ void BoundedScrollView::Layout() {
     content_width = std::max(content_width - GetScrollBarWidth(), 0);
     content_height = contents()->GetHeightForWidth(content_width);
   }
-  contents()->SetBounds(0, 0, content_width, content_height);
-
+  if (contents()->bounds().size() != gfx::Size(content_width, content_height))
+    contents()->SetBounds(0, 0, content_width, content_height);
   views::ScrollView::Layout();
 }
+
+}  // namespace
 
 // MessageListView /////////////////////////////////////////////////////////////
 
@@ -303,38 +308,313 @@ class MessageListView : public views::View {
  public:
   MessageListView();
 
+  // The interface for repositioning.
+  virtual void AddNotificationAt(views::View* view, int i);
+  virtual void RemoveNotificationAt(int i);
+  virtual void UpdateNotificationAt(views::View* view, int i);
+  virtual void SetRepositionTarget(const gfx::Rect& target_rect) {}
+  virtual void ResetRepositionSession() {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MessageListView);
 };
 
 MessageListView::MessageListView() {
-  if (IsRichNotificationEnabled()) {
-    // Set the margin to 0 for the layout. BoxLayout assumes the same margin
-    // for top and bottom, but the bottom margin here should be smaller
-    // because of the shadow of message view. Use an empty border instead
-    // to provide this margin.
-    gfx::Insets shadow_insets = MessageView::GetShadowInsets();
-    SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kVertical,
-                             0,
-                             0,
-                             kMarginBetweenItems - shadow_insets.bottom()));
-    set_background(views::Background::CreateSolidBackground(
-        kMessageCenterBackgroundColor));
-    set_border(views::Border::CreateEmptyBorder(
-        kMarginBetweenItems - shadow_insets.top(), /* top */
-        kMarginBetweenItems - shadow_insets.left(), /* left */
-        kMarginBetweenItems - shadow_insets.bottom(),  /* bottom */
-        kMarginBetweenItems - shadow_insets.right() /* right */ ));
-  } else {
-    views::BoxLayout* layout =
-        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1);
-    layout->set_spread_blank_space(true);
-    SetLayoutManager(layout);
+  views::BoxLayout* layout =
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1);
+  layout->set_spread_blank_space(true);
+  SetLayoutManager(layout);
+}
+
+void MessageListView::AddNotificationAt(views::View* view, int i) {
+  AddChildViewAt(view, i);
+}
+
+void MessageListView::RemoveNotificationAt(int i) {
+  delete child_at(i);
+}
+
+void MessageListView::UpdateNotificationAt(views::View* view, int i) {
+  delete child_at(i);
+  AddChildViewAt(view, i);
+}
+
+// Displays a list of messages for rich notifications. It also supports
+// repositioning.
+class RichMessageListView : public MessageListView,
+                            public views::BoundsAnimatorObserver {
+ public:
+  RichMessageListView();
+  virtual ~RichMessageListView();
+
+ protected:
+  // Overridden from views::View.
+  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual int GetHeightForWidth(int width) OVERRIDE;
+
+  // Overridden from MessageListView.
+  virtual void AddNotificationAt(views::View* view, int i) OVERRIDE;
+  virtual void RemoveNotificationAt(int i) OVERRIDE;
+  virtual void UpdateNotificationAt(views::View* view, int i) OVERRIDE;
+  virtual void SetRepositionTarget(const gfx::Rect& target_rect) OVERRIDE;
+  virtual void ResetRepositionSession() OVERRIDE;
+
+  // Overridden from views::BoundsAnimatorObserver.
+  virtual void OnBoundsAnimatorProgressed(
+      views::BoundsAnimator* animator) OVERRIDE;
+  virtual void OnBoundsAnimatorDone(views::BoundsAnimator* animator) OVERRIDE;
+
+ private:
+  int GetActualIndex(int index);
+  bool IsValidChild(views::View* child);
+  void DoUpdateIfPossible();
+
+  // Schedules animation for a child to the specified position.
+  void AnimateChild(views::View* child, int top, int height);
+
+  // The top position of the reposition target rectangle.
+  int reposition_top_;
+
+  int fixed_height_;
+
+  bool has_deferred_task_;
+  std::set<views::View*> adding_views_;
+  std::set<views::View*> deleting_views_;
+  std::set<views::View*> deleted_when_done_;
+  scoped_ptr<views::BoundsAnimator> animator_;
+
+  DISALLOW_COPY_AND_ASSIGN(RichMessageListView);
+};
+
+RichMessageListView::RichMessageListView()
+    : reposition_top_(-1),
+      fixed_height_(0),
+      has_deferred_task_(false) {
+  // Set the margin to 0 for the layout. BoxLayout assumes the same margin
+  // for top and bottom, but the bottom margin here should be smaller
+  // because of the shadow of message view. Use an empty border instead
+  // to provide this margin.
+  gfx::Insets shadow_insets = MessageView::GetShadowInsets();
+  set_background(views::Background::CreateSolidBackground(
+      kMessageCenterBackgroundColor));
+  set_border(views::Border::CreateEmptyBorder(
+      kMarginBetweenItems - shadow_insets.top(), /* top */
+      kMarginBetweenItems - shadow_insets.left(), /* left */
+      kMarginBetweenItems - shadow_insets.bottom(),  /* bottom */
+      kMarginBetweenItems - shadow_insets.right() /* right */ ));
+}
+
+RichMessageListView::~RichMessageListView() {
+  if (animator_.get())
+    animator_->RemoveObserver(this);
+}
+
+void RichMessageListView::Layout() {
+  if (animator_.get())
+    return;
+
+  gfx::Rect child_area = GetContentsBounds();
+  int top = child_area.y();
+  int between_items =
+      kMarginBetweenItems - MessageView::GetShadowInsets().bottom();
+
+  for (int i = 0; i < child_count(); ++i) {
+    views::View* child = child_at(i);
+    if (!child->visible())
+      continue;
+    int height = child->GetHeightForWidth(child_area.width());
+    child->SetBounds(child_area.x(), top, child_area.width(), height);
+    top += height + between_items;
   }
 }
 
-}  // namespace
+void RichMessageListView::AddNotificationAt(views::View* view, int i) {
+  AddChildViewAt(view, GetActualIndex(i));
+  if (GetContentsBounds().IsEmpty())
+    return;
+
+  adding_views_.insert(view);
+  DoUpdateIfPossible();
+}
+
+void RichMessageListView::RemoveNotificationAt(int i) {
+  views::View* child = child_at(GetActualIndex(i));
+  if (GetContentsBounds().IsEmpty()) {
+    delete child;
+  } else {
+    deleting_views_.insert(child);
+    DoUpdateIfPossible();
+  }
+}
+
+void RichMessageListView::UpdateNotificationAt(views::View* view, int i) {
+  views::View* child = child_at(GetActualIndex(i));
+  if (animator_.get())
+    animator_->StopAnimatingView(child);
+  gfx::Rect old_bounds = child->bounds();
+  if (deleting_views_.find(child) != deleting_views_.end())
+    deleting_views_.erase(child);
+  if (deleted_when_done_.find(child) != deleted_when_done_.end())
+    deleted_when_done_.erase(child);
+  delete child;
+  AddChildViewAt(view, i);
+  view->SetBounds(old_bounds.x(), old_bounds.y(), old_bounds.width(),
+                  view->GetHeightForWidth(old_bounds.width()));
+  DoUpdateIfPossible();
+}
+
+gfx::Size RichMessageListView::GetPreferredSize() {
+  int width = 0;
+  for (int i = 0; i < child_count(); i++) {
+    views::View* child = child_at(i);
+    if (IsValidChild(child))
+      width = std::max(width, child->GetPreferredSize().width());
+  }
+
+  return gfx::Size(width + GetInsets().width(),
+                   GetHeightForWidth(width + GetInsets().width()));
+}
+
+int RichMessageListView::GetHeightForWidth(int width) {
+  if (fixed_height_ > 0)
+    return fixed_height_;
+
+  width -= GetInsets().width();
+  int height = 0;
+  int padding = 0;
+  for (int i = 0; i < child_count(); ++i) {
+    views::View* child = child_at(i);
+    if (!IsValidChild(child))
+      continue;
+    height += child->GetHeightForWidth(width) + padding;
+    padding = kMarginBetweenItems - MessageView::GetShadowInsets().bottom();
+  }
+
+  return height + GetInsets().height();
+}
+
+void RichMessageListView::SetRepositionTarget(const gfx::Rect& target) {
+  reposition_top_ = target.y();
+  fixed_height_ = GetHeightForWidth(width());
+}
+
+void RichMessageListView::ResetRepositionSession() {
+  // Don't call DoUpdateIfPossible(), but let Layout() do the task without
+  // animation. Reset will cause the change of the bubble size itself, and
+  // animation from the old location will look weird.
+  if (reposition_top_ >= 0 && animator_.get()) {
+    has_deferred_task_ = false;
+    // cancel cause OnBoundsAnimatorDone which deletes |deleted_when_done_|.
+    animator_->Cancel();
+    STLDeleteContainerPointers(deleting_views_.begin(), deleting_views_.end());
+    deleting_views_.clear();
+    adding_views_.clear();
+    animator_.reset();
+  }
+
+  reposition_top_ = -1;
+  fixed_height_ = 0;
+}
+
+void RichMessageListView::OnBoundsAnimatorProgressed(
+    views::BoundsAnimator* animator) {
+}
+
+void RichMessageListView::OnBoundsAnimatorDone(
+    views::BoundsAnimator* animator) {
+  STLDeleteContainerPointers(
+      deleted_when_done_.begin(), deleted_when_done_.end());
+  deleted_when_done_.clear();
+
+  if (has_deferred_task_) {
+    has_deferred_task_ = false;
+    DoUpdateIfPossible();
+  }
+}
+
+int RichMessageListView::GetActualIndex(int index) {
+  for (int i = 0; i < child_count() && i <= index; ++i)
+    index += IsValidChild(child_at(i)) ? 0 : 1;
+  return std::min(index, child_count());
+}
+
+bool RichMessageListView::IsValidChild(views::View* child) {
+  return deleting_views_.find(child) == deleting_views_.end() &&
+      deleted_when_done_.find(child) == deleted_when_done_.end();
+}
+
+void RichMessageListView::DoUpdateIfPossible() {
+  gfx::Rect child_area = GetContentsBounds();
+  if (child_area.IsEmpty())
+    return;
+
+  if (animator_.get() && animator_->IsAnimating()) {
+    has_deferred_task_ = true;
+    return;
+  }
+
+  if (!animator_.get()) {
+    animator_.reset(new views::BoundsAnimator(this));
+    animator_->AddObserver(this);
+  }
+
+  int between_items =
+      kMarginBetweenItems - MessageView::GetShadowInsets().bottom();
+  int width = child_area.width();
+  views::View* last_child = NULL;
+  for (int i = child_count() - 1; i >= 0; --i) {
+    views::View* child = child_at(i);
+    if (IsValidChild(child)) {
+      last_child = child;
+      break;
+    }
+  }
+
+  if (!last_child || reposition_top_ < last_child->bounds().y()) {
+    int top = child_area.y();
+    for (int i = 0; i < child_count(); ++i) {
+      views::View* child = child_at(i);
+      int height = child->GetHeightForWidth(width);
+      AnimateChild(child, top, height);
+      if (IsValidChild(child))
+        top += height + between_items;
+    }
+  } else {
+    int bottom = reposition_top_ + last_child->GetHeightForWidth(width);
+    for (int i = child_count() - 1; i >= 0; --i) {
+      views::View* child = child_at(i);
+      int height = child->GetHeightForWidth(child_area.width());
+      AnimateChild(child, bottom - height, height);
+      if (IsValidChild(child))
+        bottom -= height + between_items;
+    }
+  }
+  adding_views_.clear();
+  deleting_views_.clear();
+}
+
+void RichMessageListView::AnimateChild(views::View* child,
+                                       int top,
+                                       int height) {
+  gfx::Rect child_area = GetContentsBounds();
+  if (adding_views_.find(child) != adding_views_.end()) {
+    child->SetBounds(child_area.right(), top, child_area.width(), height);
+    animator_->AnimateViewTo(
+        child, gfx::Rect(child_area.x(), top, child_area.width(), height));
+  } else if (deleting_views_.find(child) != deleting_views_.end()) {
+    gfx::Rect target = child->bounds();
+    target.set_x(child_area.right());
+    animator_->AnimateViewTo(child, target);
+    deleted_when_done_.insert(child);
+  } else {
+    gfx::Rect target(child_area.x(), top, child_area.width(), height);
+    if (child->bounds().origin() != target.origin())
+      animator_->AnimateViewTo(child, target);
+    else
+      child->SetBoundsRect(target);
+  }
+}
 
 // MessageCenterButtonBar //////////////////////////////////////////////////////
 
@@ -357,6 +637,7 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
                                      int max_height)
     : message_center_(message_center) {
   message_center_->AddObserver(this);
+  set_notify_enter_exit_on_child(true);
   int between_child = IsRichNotificationEnabled() ? 0 : 1;
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, between_child));
@@ -377,7 +658,8 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
     scroller_->layer()->SetMasksToBounds(true);
   }
 
-  message_list_view_ = new MessageListView();
+  message_list_view_ = IsRichNotificationEnabled() ?
+      new RichMessageListView() : new MessageListView();
   scroller_->SetContents(message_list_view_);
 
   AddChildView(scroller_);
@@ -424,6 +706,11 @@ bool MessageCenterView::OnMouseWheel(const ui::MouseWheelEvent& event) {
   return views::View::OnMouseWheel(event);
 }
 
+void MessageCenterView::OnMouseExited(const ui::MouseEvent& event) {
+  message_list_view_->ResetRepositionSession();
+  NotificationsChanged();
+}
+
 void MessageCenterView::OnNotificationAdded(const std::string& id) {
   if (message_views_.empty())
     message_list_view_->RemoveAllChildViews(true);
@@ -448,8 +735,9 @@ void MessageCenterView::OnNotificationRemoved(const std::string& id,
                                               bool by_user) {
   for (size_t i = 0; i < message_views_.size(); ++i) {
     if (message_views_[i]->notification_id() == id) {
-      // TODO(mukai): introduce reposition handling here.
-      delete message_views_[i];
+      if (by_user)
+        message_list_view_->SetRepositionTarget(message_views_[i]->bounds());
+      message_list_view_->RemoveNotificationAt(i);
       message_views_.erase(message_views_.begin() + i);
       NotificationsChanged();
       break;
@@ -467,9 +755,11 @@ void MessageCenterView::OnNotificationUpdated(const std::string& id) {
        ++iter, ++index) {
     DCHECK((*iter)->id() == message_views_[index]->notification_id());
     if ((*iter)->id() == id) {
-      delete message_views_[index];
-      message_views_.erase(message_views_.begin() + index);
-      AddNotificationAt(*(*iter), index);
+      MessageView* view = NotificationView::Create(
+          *(*iter), message_center_, true);
+      view->set_scroller(scroller_);
+      message_list_view_->UpdateNotificationAt(view, index);
+      message_views_[index] = view;
       NotificationsChanged();
       break;
     }
@@ -484,7 +774,7 @@ void MessageCenterView::AddNotificationAt(const Notification& notification,
       notification, message_center_, true);
   view->set_scroller(scroller_);
   message_views_.insert(message_views_.begin() + index, view);
-  message_list_view_->AddChildViewAt(view, index);
+  message_list_view_->AddNotificationAt(view, index);
   message_center_->DisplayedNotification(notification.id());
 }
 
@@ -508,6 +798,11 @@ void MessageCenterView::NotificationsChanged() {
   scroller_->InvalidateLayout();
   PreferredSizeChanged();
   Layout();
+}
+
+void MessageCenterView::SetNotificationViewForTest(views::View* view) {
+  message_list_view_->RemoveAllChildViews(true);
+  message_list_view_->AddNotificationAt(view, 0);
 }
 
 }  // namespace message_center
