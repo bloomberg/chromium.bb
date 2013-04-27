@@ -186,6 +186,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, ManifestBackgroundPage) {
   ASSERT_TRUE(
       BackgroundContentsServiceFactory::GetForProfile(browser()->profile())->
           GetAppBackgroundContents(ASCIIToUTF16(extension->id())));
+  UnloadExtension(extension->id());
 }
 
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsBackgroundPage) {
@@ -236,6 +237,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsBackgroundPage) {
           GetAppBackgroundContents(ASCIIToUTF16(extension->id())));
 
   EXPECT_EQ(0u, background_deleted_tracker.size());
+  UnloadExtension(extension->id());
 }
 
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsManifestBackgroundPage) {
@@ -275,6 +277,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsManifestBackgroundPage) {
           GetAppBackgroundContents(ASCIIToUTF16(extension->id())));
   ASSERT_TRUE(RunExtensionTest("app_background_page/no_js_manifest")) <<
       message_;
+  UnloadExtension(extension->id());
 }
 
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenTwoBackgroundPages) {
@@ -301,7 +304,9 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenTwoBackgroundPages) {
   base::FilePath app_dir;
   ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
   ASSERT_TRUE(LoadExtension(app_dir));
+  const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(RunExtensionTest("app_background_page/two_pages")) << message_;
+  UnloadExtension(extension->id());
 }
 
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenTwoPagesWithManifest) {
@@ -332,8 +337,10 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenTwoPagesWithManifest) {
   base::FilePath app_dir;
   ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
   ASSERT_TRUE(LoadExtension(app_dir));
+  const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(RunExtensionTest("app_background_page/two_with_manifest")) <<
       message_;
+  UnloadExtension(extension->id());
 }
 
 // Times out occasionally -- see crbug.com/108493

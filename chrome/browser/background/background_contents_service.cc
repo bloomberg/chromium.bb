@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -38,8 +39,11 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "ipc/ipc_message.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
 
 using content::SiteInstance;
 using content::WebContents;
@@ -119,20 +123,59 @@ class CrashNotificationDelegate : public NotificationDelegate {
   DISALLOW_COPY_AND_ASSIGN(CrashNotificationDelegate);
 };
 
+#if defined(ENABLE_NOTIFICATIONS)
+void NotificationImageReady(
+    const std::string extension_name,
+    const string16 message,
+    const GURL extension_url,
+    scoped_refptr<CrashNotificationDelegate> delegate,
+    Profile* profile,
+    const gfx::Image& icon) {
+  gfx::Image notification_icon(icon);
+  if (icon.IsEmpty()) {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    notification_icon = rb.GetImageNamed(IDR_EXTENSION_DEFAULT_ICON);
+  }
+  string16 title;  // no notification title
+  DesktopNotificationService::AddIconNotification(
+      extension_url,
+      title,
+      message,
+      notification_icon,
+      string16(),
+      delegate,
+      profile);
+}
+#endif
+
 void ShowBalloon(const Extension* extension, Profile* profile) {
 #if defined(ENABLE_NOTIFICATIONS)
-  string16 title;  // no notifiaction title
   string16 message = l10n_util::GetStringFUTF16(
-      extension->is_app() ?  IDS_BACKGROUND_CRASHED_APP_BALLOON_MESSAGE :
-      IDS_BACKGROUND_CRASHED_EXTENSION_BALLOON_MESSAGE,
+      extension->is_app() ? IDS_BACKGROUND_CRASHED_APP_BALLOON_MESSAGE :
+                            IDS_BACKGROUND_CRASHED_EXTENSION_BALLOON_MESSAGE,
       UTF8ToUTF16(extension->name()));
-  GURL icon_url(extensions::IconsInfo::GetIconURL(
+
+  extension_misc::ExtensionIcons size(extension_misc::EXTENSION_ICON_MEDIUM);
+  extensions::ExtensionResource resource =
+      extensions::IconsInfo::GetIconResource(
+          extension, size, ExtensionIconSet::MATCH_SMALLER);
+  scoped_refptr<CrashNotificationDelegate> delegate =
+    new CrashNotificationDelegate(profile, extension);
+  // We can't just load the image in the Observe method below because, despite
+  // what this method is called, it may call the callback synchronously.
+  // However, it's possible that the extension went away during the interim,
+  // so we'll bind all the pertinent data here.
+  extensions::ImageLoader::Get(profile)->LoadImageAsync(
       extension,
-      extension_misc::EXTENSION_ICON_SMALLISH,
-      ExtensionIconSet::MATCH_BIGGER));
-  DesktopNotificationService::AddNotification(
-      extension->url(), title, message, icon_url, string16(),
-      new CrashNotificationDelegate(profile, extension), profile);
+      resource,
+      gfx::Size(size, size),
+      base::Bind(
+          &NotificationImageReady,
+          extension->name(),
+          message,
+          extension->url(),
+          delegate,
+          profile));
 #endif
 }
 

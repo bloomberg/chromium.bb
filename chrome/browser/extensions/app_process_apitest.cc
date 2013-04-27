@@ -71,6 +71,7 @@ class AppApiTest : public ExtensionApiTest {
 
     ASSERT_TRUE(LoadExtension(
         test_data_dir_.AppendASCII(app_name)));
+    const Extension* extension = GetSingleLoadedExtension();
 
     // Open two tabs in the app, one outside it.
     GURL base_url = GetTestBaseURL(app_name);
@@ -119,6 +120,7 @@ class AppApiTest : public ExtensionApiTest {
     LOG(INFO) << "WindowOpenHelper 1.";
     OpenWindow(tab2, base_url.Resolve("path2/empty.html"), true, NULL);
     LOG(INFO) << "End of test.";
+    UnloadExtension(extension->id());
   }
 };
 
