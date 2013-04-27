@@ -33,7 +33,8 @@ class ScreenshotTracker : public WebContentsScreenshotManager {
  public:
   explicit ScreenshotTracker(NavigationControllerImpl* controller)
       : WebContentsScreenshotManager(controller),
-        screenshot_taken_for_(NULL) {
+        screenshot_taken_for_(NULL),
+        waiting_for_screenshots_(0) {
   }
 
   virtual ~ScreenshotTracker() {
@@ -49,15 +50,32 @@ class ScreenshotTracker : public WebContentsScreenshotManager {
     SetMinScreenshotIntervalMS(interval_ms);
   }
 
+  void WaitUntilScreenshotIsReady() {
+    if (!waiting_for_screenshots_)
+      return;
+    message_loop_runner_ = new content::MessageLoopRunner;
+    message_loop_runner_->Run();
+  }
+
  private:
   // Overridden from WebContentsScreenshotManager:
   virtual void TakeScreenshotImpl(RenderViewHost* host,
                                   NavigationEntryImpl* entry) OVERRIDE {
+    ++waiting_for_screenshots_;
     screenshot_taken_for_ = host;
     WebContentsScreenshotManager::TakeScreenshotImpl(host, entry);
   }
 
+  virtual void OnScreenshotSet(NavigationEntryImpl* entry) OVERRIDE {
+    --waiting_for_screenshots_;
+    WebContentsScreenshotManager::OnScreenshotSet(entry);
+    if (waiting_for_screenshots_ == 0 && message_loop_runner_)
+      message_loop_runner_->Quit();
+  }
+
   RenderViewHost* screenshot_taken_for_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  int waiting_for_screenshots_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenshotTracker);
 };
@@ -321,6 +339,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   EXPECT_EQ(1, GetCurrentIndex());
   ExecuteSyncJSFunction(view_host, "navigate_next()");
   EXPECT_EQ(2, GetCurrentIndex());
+  screenshot_manager()->WaitUntilScreenshotIsReady();
 
   // The current entry won't have any screenshots. But the entries in the
   // history should now have screenshots.
@@ -339,6 +358,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   // Navigate again. Index 2 should now have a screenshot.
   ExecuteSyncJSFunction(view_host, "navigate_next()");
   EXPECT_EQ(3, GetCurrentIndex());
+  screenshot_manager()->WaitUntilScreenshotIsReady();
 
   entry = NavigationEntryImpl::FromNavigationEntry(
       web_contents->GetController().GetEntryAtIndex(2));
@@ -364,6 +384,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
     EXPECT_EQ(2, GetCurrentIndex());
+    screenshot_manager()->WaitUntilScreenshotIsReady();
     entry = NavigationEntryImpl::FromNavigationEntry(
         web_contents->GetController().GetEntryAtIndex(3));
     EXPECT_TRUE(entry->screenshot().get());
@@ -374,6 +395,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   EXPECT_EQ(3, GetCurrentIndex());
   ExecuteSyncJSFunction(view_host, "navigate_next()");
   EXPECT_EQ(4, GetCurrentIndex());
+  screenshot_manager()->WaitUntilScreenshotIsReady();
   entry = NavigationEntryImpl::FromNavigationEntry(
       web_contents->GetController().GetEntryAtIndex(4));
   EXPECT_FALSE(entry->screenshot().get());
@@ -386,6 +408,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
     EXPECT_EQ(3, GetCurrentIndex());
+    screenshot_manager()->WaitUntilScreenshotIsReady();
     entry = NavigationEntryImpl::FromNavigationEntry(
         web_contents->GetController().GetEntryAtIndex(4));
     EXPECT_TRUE(entry->screenshot().get());
@@ -431,6 +454,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
     RenderViewHost* old_host = web_contents->GetRenderViewHost();
     web_contents->GetController().LoadURLWithParams(params);
     WaitForLoadStop(web_contents);
+    screenshot_manager()->WaitUntilScreenshotIsReady();
 
     EXPECT_NE(old_host, web_contents->GetRenderViewHost())
         << navigations[i].url.spec();
@@ -455,6 +479,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   params.transition_type = PageTransitionFromInt(navigations[0].transition);
   web_contents->GetController().LoadURLWithParams(params);
   WaitForLoadStop(web_contents);
+  screenshot_manager()->WaitUntilScreenshotIsReady();
 
   EXPECT_EQ(NULL, screenshot_manager()->screenshot_taken_for());
 }

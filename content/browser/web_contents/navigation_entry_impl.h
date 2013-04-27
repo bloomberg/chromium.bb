@@ -185,7 +185,7 @@ class CONTENT_EXPORT NavigationEntryImpl
     should_replace_entry_ = should_replace_entry;
   }
 
-  void SetScreenshotPNGData(const std::vector<unsigned char>& png_data);
+  void SetScreenshotPNGData(scoped_refptr<base::RefCountedBytes> png_data);
   const scoped_refptr<base::RefCountedBytes> screenshot() const {
     return screenshot_;
   }

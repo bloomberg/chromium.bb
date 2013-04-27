@@ -34,6 +34,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_notification_tracker.h"
+#include "content/public/test/test_utils.h"
 #include "content/test/test_web_contents.h"
 #include "net/base/net_util.h"
 #include "skia/ext/platform_canvas.h"
@@ -73,7 +74,8 @@ bool DoImagesMatch(const gfx::Image& a, const gfx::Image& b) {
 class MockScreenshotManager : public content::WebContentsScreenshotManager {
  public:
   explicit MockScreenshotManager(content::NavigationControllerImpl* owner)
-      : content::WebContentsScreenshotManager(owner) {
+      : content::WebContentsScreenshotManager(owner),
+        encoding_screenshot_in_progress_(false) {
   }
 
   virtual ~MockScreenshotManager() {
@@ -84,11 +86,20 @@ class MockScreenshotManager : public content::WebContentsScreenshotManager {
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
     bitmap.allocPixels();
     bitmap.eraseRGB(0, 0, 0);
+    encoding_screenshot_in_progress_ = true;
     OnScreenshotTaken(entry->GetUniqueID(), true, bitmap);
+    WaitUntilScreenshotIsReady();
   }
 
   int GetScreenshotCount() {
     return content::WebContentsScreenshotManager::GetScreenshotCount();
+  }
+
+  void WaitUntilScreenshotIsReady() {
+    if (!encoding_screenshot_in_progress_)
+      return;
+    message_loop_runner_ = new content::MessageLoopRunner;
+    message_loop_runner_->Run();
   }
 
  private:
@@ -97,6 +108,16 @@ class MockScreenshotManager : public content::WebContentsScreenshotManager {
       content::RenderViewHost* host,
       content::NavigationEntryImpl* entry) OVERRIDE {
   }
+
+  virtual void OnScreenshotSet(content::NavigationEntryImpl* entry) OVERRIDE {
+    encoding_screenshot_in_progress_ = false;
+    WebContentsScreenshotManager::OnScreenshotSet(entry);
+    if (message_loop_runner_)
+      message_loop_runner_->Quit();
+  }
+
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  bool encoding_screenshot_in_progress_;
 
   DISALLOW_COPY_AND_ASSIGN(MockScreenshotManager);
 };

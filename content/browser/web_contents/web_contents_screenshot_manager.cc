@@ -5,6 +5,7 @@
 #include "content/browser/web_contents/web_contents_screenshot_manager.h"
 
 #include "base/command_line.h"
+#include "base/threading/worker_pool.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/browser/web_contents/navigation_entry_impl.h"
@@ -23,10 +24,45 @@ const int kMinScreenshotIntervalMS = 1000;
 
 namespace content {
 
+// Encodes an SkBitmap to PNG data in a worker thread.
+class ScreenshotData : public base::RefCountedThreadSafe<ScreenshotData> {
+ public:
+  ScreenshotData() {
+  }
+
+  void EncodeScreenshot(const SkBitmap& bitmap, base::Closure callback) {
+    if (!base::WorkerPool::PostTaskAndReply(FROM_HERE,
+            base::Bind(&ScreenshotData::EncodeOnWorker,
+                       this,
+                       bitmap),
+            callback,
+            true)) {
+      callback.Run();
+    }
+  }
+
+  scoped_refptr<base::RefCountedBytes> data() const { return data_; }
+
+ private:
+  friend class base::RefCountedThreadSafe<ScreenshotData>;
+  virtual ~ScreenshotData() {
+  }
+
+  void EncodeOnWorker(const SkBitmap& bitmap) {
+    std::vector<unsigned char> data;
+    if (gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, true, &data))
+      data_ = new base::RefCountedBytes(data);
+  }
+
+  scoped_refptr<base::RefCountedBytes> data_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScreenshotData);
+};
+
 WebContentsScreenshotManager::WebContentsScreenshotManager(
     NavigationControllerImpl* owner)
     : owner_(owner),
-      ALLOW_THIS_IN_INITIALIZER_LIST(take_screenshot_factory_(this)),
+      screenshot_factory_(this),
       min_screenshot_interval_ms_(kMinScreenshotIntervalMS) {
 }
 
@@ -85,7 +121,7 @@ void WebContentsScreenshotManager::TakeScreenshotImpl(
   host->CopyFromBackingStore(gfx::Rect(),
       host->GetView()->GetViewBounds().size(),
       base::Bind(&WebContentsScreenshotManager::OnScreenshotTaken,
-                 take_screenshot_factory_.GetWeakPtr(),
+                 screenshot_factory_.GetWeakPtr(),
                  entry->GetUniqueID()));
 }
 
@@ -117,13 +153,13 @@ void WebContentsScreenshotManager::OnScreenshotTaken(int unique_id,
     return;
   }
 
-  std::vector<unsigned char> data;
-  if (gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, true, &data)) {
-    entry->SetScreenshotPNGData(data);
-    PurgeScreenshotsIfNecessary();
-  } else {
-    ClearScreenshot(entry);
-  }
+  scoped_refptr<ScreenshotData> screenshot = new ScreenshotData();
+  screenshot->EncodeScreenshot(
+      bitmap,
+      base::Bind(&WebContentsScreenshotManager::OnScreenshotEncodeComplete,
+                 screenshot_factory_.GetWeakPtr(),
+                 unique_id,
+                 screenshot));
 }
 
 int WebContentsScreenshotManager::GetScreenshotCount() const {
@@ -138,11 +174,33 @@ int WebContentsScreenshotManager::GetScreenshotCount() const {
   return screenshot_count;
 }
 
+void WebContentsScreenshotManager::OnScreenshotEncodeComplete(
+    int unique_id,
+    scoped_refptr<ScreenshotData> screenshot) {
+  NavigationEntryImpl* entry = NULL;
+  int entry_count = owner_->GetEntryCount();
+  for (int i = 0; i < entry_count; ++i) {
+    NavigationEntry* iter = owner_->GetEntryAtIndex(i);
+    if (iter->GetUniqueID() == unique_id) {
+      entry = NavigationEntryImpl::FromNavigationEntry(iter);
+      break;
+    }
+  }
+  if (!entry)
+    return;
+  entry->SetScreenshotPNGData(screenshot->data());
+  OnScreenshotSet(entry);
+}
+
+void WebContentsScreenshotManager::OnScreenshotSet(NavigationEntryImpl* entry) {
+  PurgeScreenshotsIfNecessary();
+}
+
 bool WebContentsScreenshotManager::ClearScreenshot(NavigationEntryImpl* entry) {
   if (!entry->screenshot())
     return false;
 
-  entry->SetScreenshotPNGData(std::vector<unsigned char>());
+  entry->SetScreenshotPNGData(NULL);
   return true;
 }
 
