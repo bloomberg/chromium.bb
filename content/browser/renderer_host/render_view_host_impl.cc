@@ -33,6 +33,7 @@
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/drag_messages.h"
+#include "content/common/input_messages.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/speech_recognition_messages.h"
 #include "content/common/swapped_out_messages.h"
@@ -561,7 +562,8 @@ int RenderViewHostImpl::GetPendingRequestId() {
 void RenderViewHostImpl::ActivateNearestFindResult(int request_id,
                                                    float x,
                                                    float y) {
-  Send(new ViewMsg_ActivateNearestFindResult(GetRoutingID(), request_id, x, y));
+  Send(new InputMsg_ActivateNearestFindResult(GetRoutingID(),
+                                              request_id, x, y));
 }
 
 void RenderViewHostImpl::RequestFindMatchRects(int current_version) {

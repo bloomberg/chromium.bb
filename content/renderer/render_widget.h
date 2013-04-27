@@ -279,6 +279,10 @@ class CONTENT_EXPORT RenderWidget
               ResizeAck resize_ack);
 
   // RenderWidget IPC message handlers
+  void OnHandleInputEvent(const WebKit::WebInputEvent* event,
+                          bool keyboard_shortcut);
+  void OnMouseCaptureLost();
+  virtual void OnSetFocus(bool enable);
   void OnClose();
   void OnCreatingNewAck();
   virtual void OnResize(const gfx::Size& new_size,
@@ -294,10 +298,6 @@ class CONTENT_EXPORT RenderWidget
   void OnCreateVideoAck(int32 video_id);
   void OnUpdateVideoAck(int32 video_id);
   void OnRequestMoveAck();
-  void OnHandleInputEvent(const WebKit::WebInputEvent* event,
-                          bool keyboard_shortcut);
-  void OnMouseCaptureLost();
-  virtual void OnSetFocus(bool enable);
   void OnSetInputMethodActive(bool is_active);
   virtual void OnImeSetComposition(
       const string16& text,

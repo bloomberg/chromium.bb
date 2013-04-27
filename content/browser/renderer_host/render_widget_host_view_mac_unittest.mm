@@ -11,6 +11,7 @@
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -685,9 +686,8 @@ TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
   ASSERT_EQ(1U, process_host->sink().message_count());
 
   // Send an ACK for the first wheel event, so that the queue will be flushed.
-  scoped_ptr<IPC::Message> response(
-      new ViewHostMsg_HandleInputEvent_ACK(0, WebKit::WebInputEvent::MouseWheel,
-                                           INPUT_EVENT_ACK_STATE_CONSUMED));
+  scoped_ptr<IPC::Message> response(new InputHostMsg_HandleInputEvent_ACK(
+      0, WebKit::WebInputEvent::MouseWheel, INPUT_EVENT_ACK_STATE_CONSUMED));
   host->OnMessageReceived(*response);
 
   // Post the NSEventPhaseEnded wheel event to NSApp and check whether the

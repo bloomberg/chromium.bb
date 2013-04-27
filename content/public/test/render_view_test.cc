@@ -5,6 +5,7 @@
 #include "content/public/test/render_view_test.h"
 
 #include "base/run_loop.h"
+#include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/renderer_preferences.h"
@@ -215,13 +216,14 @@ void RenderViewTest::SendNativeKeyEvent(
 void RenderViewTest::SendWebKeyboardEvent(
     const WebKit::WebKeyboardEvent& key_event) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  impl->OnMessageReceived(ViewMsg_HandleInputEvent(0, &key_event, false));
+  impl->OnMessageReceived(InputMsg_HandleInputEvent(0, &key_event, false));
 }
 
 void RenderViewTest::SendWebMouseEvent(
     const WebKit::WebMouseEvent& mouse_event) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  impl->OnMessageReceived(ViewMsg_HandleInputEvent(0, &mouse_event, false));
+  impl->OnMessageReceived(
+      InputMsg_HandleInputEvent(0, &mouse_event, false));
 }
 
 const char* const kGetCoordinatesScript =
@@ -280,7 +282,7 @@ bool RenderViewTest::SimulateElementClick(const std::string& element_id) {
   mouse_event.y = bounds.CenterPoint().y();
   mouse_event.clickCount = 1;
   scoped_ptr<IPC::Message> input_message(
-      new ViewMsg_HandleInputEvent(0, &mouse_event, false));
+      new InputMsg_HandleInputEvent(0, &mouse_event, false));
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   impl->OnMessageReceived(*input_message);
   return true;

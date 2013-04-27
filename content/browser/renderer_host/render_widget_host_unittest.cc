@@ -8,14 +8,15 @@
 #include "base/timer.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/backing_store.h"
-#include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/gesture_event_filter.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
+#include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/tap_suppression_controller.h"
 #include "content/browser/renderer_host/tap_suppression_controller_client.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/renderer_host/touch_event_queue.h"
+#include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/notification_details.h"
@@ -663,7 +664,7 @@ class RenderWidgetHostTest : public testing::Test {
   void SendInputEventACK(WebInputEvent::Type type,
                          InputEventAckState ack_result) {
     scoped_ptr<IPC::Message> response(
-        new ViewHostMsg_HandleInputEvent_ACK(0, type, ack_result));
+        new InputHostMsg_HandleInputEvent_ACK(0, type, ack_result));
     host_->OnMessageReceived(*response);
   }
 
@@ -1160,7 +1161,7 @@ TEST_F(RenderWidgetHostTest, MAYBE_HandleKeyEventsWeSent) {
 
   // Make sure we sent the input event to the renderer.
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-                  ViewMsg_HandleInputEvent::ID));
+                  InputMsg_HandleInputEvent::ID));
   process_->sink().ClearMessages();
 
   // Send the simulated response from the renderer back.
@@ -1186,7 +1187,7 @@ TEST_F(RenderWidgetHostTest, IgnoreKeyEventsHandledByRenderer) {
 
   // Make sure we sent the input event to the renderer.
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-                  ViewMsg_HandleInputEvent::ID));
+                  InputMsg_HandleInputEvent::ID));
   process_->sink().ClearMessages();
 
   // Send the simulated response from the renderer back.
@@ -1225,7 +1226,7 @@ TEST_F(RenderWidgetHostTest, PreHandleRawKeyDownEvent) {
 
   // Make sure only KeyUp was sent to the renderer.
   EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_EQ(ViewMsg_HandleInputEvent::ID,
+  EXPECT_EQ(InputMsg_HandleInputEvent::ID,
             process_->sink().GetMessageAt(0)->type());
   process_->sink().ClearMessages();
 
@@ -1249,7 +1250,7 @@ TEST_F(RenderWidgetHostTest, CoalescesWheelEvents) {
   // Check that only the first event was sent.
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-                  ViewMsg_HandleInputEvent::ID));
+                  InputMsg_HandleInputEvent::ID));
   process_->sink().ClearMessages();
 
   // Check that the ACK sends the second message.
@@ -1261,7 +1262,7 @@ TEST_F(RenderWidgetHostTest, CoalescesWheelEvents) {
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-                  ViewMsg_HandleInputEvent::ID));
+                  InputMsg_HandleInputEvent::ID));
   process_->sink().ClearMessages();
 
   // One more time.
@@ -1270,7 +1271,7 @@ TEST_F(RenderWidgetHostTest, CoalescesWheelEvents) {
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-                  ViewMsg_HandleInputEvent::ID));
+                  InputMsg_HandleInputEvent::ID));
   process_->sink().ClearMessages();
 
   // After the final ack, the queue should be empty.
@@ -1365,7 +1366,7 @@ TEST_F(RenderWidgetHostTest, CoalescesScrollGestureEvents) {
   // Check that only the first event was sent.
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-              ViewMsg_HandleInputEvent::ID));
+              InputMsg_HandleInputEvent::ID));
   process_->sink().ClearMessages();
 
   // Check that the ACK sends the second message.
@@ -1374,7 +1375,7 @@ TEST_F(RenderWidgetHostTest, CoalescesScrollGestureEvents) {
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-              ViewMsg_HandleInputEvent::ID));
+              InputMsg_HandleInputEvent::ID));
   process_->sink().ClearMessages();
 
   // Ack for queued coalesced event.
@@ -1383,7 +1384,7 @@ TEST_F(RenderWidgetHostTest, CoalescesScrollGestureEvents) {
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-              ViewMsg_HandleInputEvent::ID));
+              InputMsg_HandleInputEvent::ID));
   process_->sink().ClearMessages();
 
   // Ack for queued uncoalesced event.
@@ -1392,7 +1393,7 @@ TEST_F(RenderWidgetHostTest, CoalescesScrollGestureEvents) {
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-              ViewMsg_HandleInputEvent::ID));
+              InputMsg_HandleInputEvent::ID));
   process_->sink().ClearMessages();
 
   // After the final ack, the queue should be empty.
@@ -1487,7 +1488,7 @@ TEST_F(RenderWidgetHostTest, CoalescesScrollAndPinchEvents) {
   // Check that only the first event was sent.
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-              ViewMsg_HandleInputEvent::ID));
+              InputMsg_HandleInputEvent::ID));
   process_->sink().ClearMessages();
 
   // Check that the ACK sends the second message.
@@ -1496,7 +1497,7 @@ TEST_F(RenderWidgetHostTest, CoalescesScrollAndPinchEvents) {
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-              ViewMsg_HandleInputEvent::ID));
+              InputMsg_HandleInputEvent::ID));
   process_->sink().ClearMessages();
 
   // Enqueued.
@@ -1523,9 +1524,9 @@ TEST_F(RenderWidgetHostTest, CoalescesScrollAndPinchEvents) {
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetFirstMessageMatching(
-              ViewMsg_HandleInputEvent::ID));
+              InputMsg_HandleInputEvent::ID));
   EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
-              ViewMsg_HandleInputEvent::ID));
+              InputMsg_HandleInputEvent::ID));
   process_->sink().ClearMessages();
 
   // The next ACK should be getting ignored.
@@ -1605,9 +1606,9 @@ TEST_F(RenderWidgetHostTest, CoalescesScrollAndPinchEvents) {
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetFirstMessageMatching(
-              ViewMsg_HandleInputEvent::ID));
+              InputMsg_HandleInputEvent::ID));
   EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
-              ViewMsg_HandleInputEvent::ID));
+              InputMsg_HandleInputEvent::ID));
   process_->sink().ClearMessages();
 
   // Check that the ACK sends the second message.
@@ -1622,7 +1623,7 @@ TEST_F(RenderWidgetHostTest, CoalescesScrollAndPinchEvents) {
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-              ViewMsg_HandleInputEvent::ID));
+              InputMsg_HandleInputEvent::ID));
   process_->sink().ClearMessages();
 
   // Check that the queue is empty after ACK and no messages get sent.

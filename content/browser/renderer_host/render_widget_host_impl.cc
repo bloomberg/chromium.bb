@@ -37,6 +37,7 @@
 #include "content/common/accessibility_messages.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/port/browser/smooth_scroll_gesture.h"
@@ -370,7 +371,7 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                                 msg_is_ok = OnSwapCompositorFrame(msg))
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnUpdateRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateIsDelayed, OnUpdateIsDelayed)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_HandleInputEvent_ACK, OnInputEventAck)
+    IPC_MESSAGE_HANDLER(InputHostMsg_HandleInputEvent_ACK, OnInputEventAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_BeginSmoothScroll, OnBeginSmoothScroll)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectRange_ACK, OnSelectRangeAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_MoveCaret_ACK, OnMsgMoveCaretAck)
@@ -537,7 +538,7 @@ void RenderWidgetHostImpl::GotFocus() {
 }
 
 void RenderWidgetHostImpl::Focus() {
-  Send(new ViewMsg_SetFocus(routing_id_, true));
+  Send(new InputMsg_SetFocus(routing_id_, true));
 }
 
 void RenderWidgetHostImpl::Blur() {
@@ -547,11 +548,11 @@ void RenderWidgetHostImpl::Blur() {
   if (IsMouseLocked())
     view_->UnlockMouse();
 
-  Send(new ViewMsg_SetFocus(routing_id_, false));
+  Send(new InputMsg_SetFocus(routing_id_, false));
 }
 
 void RenderWidgetHostImpl::LostCapture() {
-  Send(new ViewMsg_MouseCaptureLost(routing_id_));
+  Send(new InputMsg_MouseCaptureLost(routing_id_));
 }
 
 void RenderWidgetHostImpl::SetActive(bool active) {
@@ -1150,7 +1151,7 @@ void RenderWidgetHostImpl::SendInputEvent(const WebInputEvent& input_event,
                                           int event_size,
                                           bool is_keyboard_shortcut) {
   input_event_start_time_ = TimeTicks::Now();
-  Send(new ViewMsg_HandleInputEvent(
+  Send(new InputMsg_HandleInputEvent(
       routing_id_, &input_event, is_keyboard_shortcut));
   increment_in_flight_event_count();
 }
@@ -2191,11 +2192,11 @@ void RenderWidgetHostImpl::ScrollBackingStoreRect(const gfx::Vector2d& delta,
 }
 
 void RenderWidgetHostImpl::Replace(const string16& word) {
-  Send(new ViewMsg_Replace(routing_id_, word));
+  Send(new InputMsg_Replace(routing_id_, word));
 }
 
 void RenderWidgetHostImpl::ReplaceMisspelling(const string16& word) {
-  Send(new ViewMsg_ReplaceMisspelling(routing_id_, word));
+  Send(new InputMsg_ReplaceMisspelling(routing_id_, word));
 }
 
 void RenderWidgetHostImpl::SetIgnoreInputEvents(bool ignore_input_events) {
@@ -2278,7 +2279,7 @@ void RenderWidgetHostImpl::SetBackground(const SkBitmap& background) {
 
 void RenderWidgetHostImpl::SetEditCommandsForNextKeyEvent(
     const std::vector<EditCommand>& commands) {
-  Send(new ViewMsg_SetEditCommandsForNextKeyEvent(GetRoutingID(), commands));
+  Send(new InputMsg_SetEditCommandsForNextKeyEvent(GetRoutingID(), commands));
 }
 
 void RenderWidgetHostImpl::SetAccessibilityMode(AccessibilityMode mode) {
@@ -2318,12 +2319,12 @@ void RenderWidgetHostImpl::FatalAccessibilityTreeError() {
 
 void RenderWidgetHostImpl::ExecuteEditCommand(const std::string& command,
                                               const std::string& value) {
-  Send(new ViewMsg_ExecuteEditCommand(GetRoutingID(), command, value));
+  Send(new InputMsg_ExecuteEditCommand(GetRoutingID(), command, value));
 }
 
 void RenderWidgetHostImpl::ScrollFocusedEditableNodeIntoRect(
     const gfx::Rect& rect) {
-  Send(new ViewMsg_ScrollFocusedEditableNodeIntoRect(GetRoutingID(), rect));
+  Send(new InputMsg_ScrollFocusedEditableNodeIntoRect(GetRoutingID(), rect));
 }
 
 void RenderWidgetHostImpl::SelectRange(const gfx::Point& start,
@@ -2338,7 +2339,7 @@ void RenderWidgetHostImpl::SelectRange(const gfx::Point& start,
   }
 
   select_range_pending_ = true;
-  Send(new ViewMsg_SelectRange(GetRoutingID(), start, end));
+  Send(new InputMsg_SelectRange(GetRoutingID(), start, end));
 }
 
 void RenderWidgetHostImpl::MoveCaret(const gfx::Point& point) {
@@ -2348,54 +2349,54 @@ void RenderWidgetHostImpl::MoveCaret(const gfx::Point& point) {
   }
 
   move_caret_pending_ = true;
-  Send(new ViewMsg_MoveCaret(GetRoutingID(), point));
+  Send(new InputMsg_MoveCaret(GetRoutingID(), point));
 }
 
 void RenderWidgetHostImpl::Undo() {
-  Send(new ViewMsg_Undo(GetRoutingID()));
+  Send(new InputMsg_Undo(GetRoutingID()));
   RecordAction(UserMetricsAction("Undo"));
 }
 
 void RenderWidgetHostImpl::Redo() {
-  Send(new ViewMsg_Redo(GetRoutingID()));
+  Send(new InputMsg_Redo(GetRoutingID()));
   RecordAction(UserMetricsAction("Redo"));
 }
 
 void RenderWidgetHostImpl::Cut() {
-  Send(new ViewMsg_Cut(GetRoutingID()));
+  Send(new InputMsg_Cut(GetRoutingID()));
   RecordAction(UserMetricsAction("Cut"));
 }
 
 void RenderWidgetHostImpl::Copy() {
-  Send(new ViewMsg_Copy(GetRoutingID()));
+  Send(new InputMsg_Copy(GetRoutingID()));
   RecordAction(UserMetricsAction("Copy"));
 }
 
 void RenderWidgetHostImpl::CopyToFindPboard() {
 #if defined(OS_MACOSX)
   // Windows/Linux don't have the concept of a find pasteboard.
-  Send(new ViewMsg_CopyToFindPboard(GetRoutingID()));
+  Send(new InputMsg_CopyToFindPboard(GetRoutingID()));
   RecordAction(UserMetricsAction("CopyToFindPboard"));
 #endif
 }
 
 void RenderWidgetHostImpl::Paste() {
-  Send(new ViewMsg_Paste(GetRoutingID()));
+  Send(new InputMsg_Paste(GetRoutingID()));
   RecordAction(UserMetricsAction("Paste"));
 }
 
 void RenderWidgetHostImpl::PasteAndMatchStyle() {
-  Send(new ViewMsg_PasteAndMatchStyle(GetRoutingID()));
+  Send(new InputMsg_PasteAndMatchStyle(GetRoutingID()));
   RecordAction(UserMetricsAction("PasteAndMatchStyle"));
 }
 
 void RenderWidgetHostImpl::Delete() {
-  Send(new ViewMsg_Delete(GetRoutingID()));
+  Send(new InputMsg_Delete(GetRoutingID()));
   RecordAction(UserMetricsAction("DeleteSelection"));
 }
 
 void RenderWidgetHostImpl::SelectAll() {
-  Send(new ViewMsg_SelectAll(GetRoutingID()));
+  Send(new InputMsg_SelectAll(GetRoutingID()));
   RecordAction(UserMetricsAction("SelectAll"));
 }
 bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(bool allowed) {

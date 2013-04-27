@@ -24,6 +24,7 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/drag_messages.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
 #include "content/public/browser/browser_context.h"
@@ -619,7 +620,7 @@ void BrowserPluginGuest::DidStopLoading(RenderViewHost* render_view_host) {
 void BrowserPluginGuest::RenderViewReady() {
   // TODO(fsamuel): Investigate whether it's possible to update state earlier
   // here (see http://crbug.com/158151).
-  Send(new ViewMsg_SetFocus(routing_id(), focused_));
+  Send(new InputMsg_SetFocus(routing_id(), focused_));
   UpdateVisibility();
   RenderViewHost* rvh = GetWebContents()->GetRenderViewHost();
   if (auto_size_enabled_)
@@ -951,7 +952,7 @@ void BrowserPluginGuest::OnSetFocus(int instance_id, bool focused) {
   if (focused_ == focused)
       return;
   focused_ = focused;
-  Send(new ViewMsg_SetFocus(routing_id(), focused));
+  Send(new InputMsg_SetFocus(routing_id(), focused));
 }
 
 void BrowserPluginGuest::OnSetName(int instance_id, const std::string& name) {

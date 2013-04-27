@@ -32,6 +32,7 @@
 #include "content/common/accessibility_messages.h"
 #include "content/common/edit_command.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/input_messages.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_frame_subscriber.h"
@@ -50,8 +51,8 @@
 #include "ui/base/layout.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect_conversions.h"
-#include "ui/gfx/size_conversions.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
+#include "ui/gfx/size_conversions.h"
 #include "ui/surface/io_surface_support_mac.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
@@ -1951,7 +1952,7 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
       delayEventUntilAfterImeCompostion = YES;
   } else {
     if (!editCommands_.empty()) {
-      widgetHost->Send(new ViewMsg_SetEditCommandsForNextKeyEvent(
+      widgetHost->Send(new InputMsg_SetEditCommandsForNextKeyEvent(
           widgetHost->GetRoutingID(), editCommands_));
     }
     widgetHost->ForwardKeyboardEvent(event);
@@ -2017,7 +2018,7 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
     // thus it won't destroy the widget.
 
     if (!editCommands_.empty()) {
-      widgetHost->Send(new ViewMsg_SetEditCommandsForNextKeyEvent(
+      widgetHost->Send(new InputMsg_SetEditCommandsForNextKeyEvent(
           widgetHost->GetRoutingID(), editCommands_));
     }
     widgetHost->ForwardKeyboardEvent(event);
@@ -3079,7 +3080,8 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
       editCommands_.push_back(EditCommand(command, ""));
   } else {
     RenderWidgetHostImpl* rwh = renderWidgetHostView_->render_widget_host_;
-    rwh->Send(new ViewMsg_ExecuteEditCommand(rwh->GetRoutingID(), command, ""));
+    rwh->Send(new InputMsg_ExecuteEditCommand(rwh->GetRoutingID(),
+                                              command, ""));
   }
 }
 

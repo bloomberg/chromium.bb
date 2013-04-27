@@ -275,6 +275,7 @@
     'common/indexed_db/proxy_webidbdatabase_impl.h',
     'common/indexed_db/proxy_webidbfactory_impl.cc',
     'common/indexed_db/proxy_webidbfactory_impl.h',
+    'common/input_messages.h',
     'common/inter_process_time_ticks_converter.cc',
     'common/inter_process_time_ticks_converter.h',
     'common/java_bridge_messages.h',

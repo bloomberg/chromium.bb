@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
+#include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "jni/ImeAdapter_jni.h"
@@ -227,7 +228,7 @@ void ImeAdapterAndroid::Unselect(JNIEnv* env, jobject) {
   if (!rwhi)
     return;
 
-  rwhi->Send(new ViewMsg_Unselect(rwhi->GetRoutingID()));
+  rwhi->Send(new InputMsg_Unselect(rwhi->GetRoutingID()));
 }
 
 void ImeAdapterAndroid::SelectAll(JNIEnv* env, jobject) {
@@ -236,7 +237,7 @@ void ImeAdapterAndroid::SelectAll(JNIEnv* env, jobject) {
   if (!rwhi)
     return;
 
-  rwhi->Send(new ViewMsg_SelectAll(rwhi->GetRoutingID()));
+  rwhi->Send(new InputMsg_SelectAll(rwhi->GetRoutingID()));
 }
 
 void ImeAdapterAndroid::Cut(JNIEnv* env, jobject) {
@@ -245,7 +246,7 @@ void ImeAdapterAndroid::Cut(JNIEnv* env, jobject) {
   if (!rwhi)
     return;
 
-  rwhi->Send(new ViewMsg_Cut(rwhi->GetRoutingID()));
+  rwhi->Send(new InputMsg_Cut(rwhi->GetRoutingID()));
 }
 
 void ImeAdapterAndroid::Copy(JNIEnv* env, jobject) {
@@ -254,7 +255,7 @@ void ImeAdapterAndroid::Copy(JNIEnv* env, jobject) {
   if (!rwhi)
     return;
 
-  rwhi->Send(new ViewMsg_Copy(rwhi->GetRoutingID()));
+  rwhi->Send(new InputMsg_Copy(rwhi->GetRoutingID()));
 }
 
 void ImeAdapterAndroid::Paste(JNIEnv* env, jobject) {
@@ -263,7 +264,7 @@ void ImeAdapterAndroid::Paste(JNIEnv* env, jobject) {
   if (!rwhi)
     return;
 
-  rwhi->Send(new ViewMsg_Paste(rwhi->GetRoutingID()));
+  rwhi->Send(new InputMsg_Paste(rwhi->GetRoutingID()));
 }
 
 void ImeAdapterAndroid::ResetImeAdapter(JNIEnv* env, jobject) {

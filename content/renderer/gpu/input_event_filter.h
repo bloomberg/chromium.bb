@@ -15,7 +15,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
-// This class can be used to intercept ViewMsg_HandleInputEvent messages
+// This class can be used to intercept InputMsg_HandleInputEvent messages
 // and have them be delivered to a target thread.  Input events are filtered
 // based on routing_id (see AddRoute and RemoveRoute).
 //
@@ -38,11 +38,12 @@ class CONTENT_EXPORT InputEventFilter
   // must be called on the target thread.
   //
   // If DidNotHandleInputEvent is called with send_to_widget set to true, then
-  // the original ViewMsg_HandleInputEvent message will be delivered to
+  // the original InputMsg_HandleInputEvent message will be delivered to
   // |main_listener| on the main thread.  (The "main thread" in this context is
   // the thread where the InputEventFilter was constructed.)  If send_to_widget
-  // is true, then a ViewHostMsg_HandleInputEvent_ACK will not be generated,
-  // leaving that responsibility up to the eventual handler on the main thread.
+  // is true, then a InputHostMsg_HandleInputEvent_ACK will not be
+  // generated, leaving that responsibility up to the eventual handler on the
+  // main thread.
   //
   InputEventFilter(IPC::Listener* main_listener,
                    const scoped_refptr<base::MessageLoopProxy>& target_loop,
@@ -62,7 +63,7 @@ class CONTENT_EXPORT InputEventFilter
   virtual void OnChannelClosing() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // Expects a ViewMsg_HandleInputEvent message.
+  // Expects a InputMsg_HandleInputEvent message.
   static const WebKit::WebInputEvent* CrackMessage(const IPC::Message& message);
 
  private:

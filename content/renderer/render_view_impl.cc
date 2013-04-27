@@ -35,6 +35,7 @@
 #include "content/common/fileapi/file_system_dispatcher.h"
 #include "content/common/fileapi/webfilesystem_callback_dispatcher.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
+#include "content/common/input_messages.h"
 #include "content/common/java_bridge_messages.h"
 #include "content/common/pepper_messages.h"
 #include "content/common/pepper_plugin_registry.h"
@@ -999,31 +1000,35 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   bool msg_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(RenderViewImpl, message, msg_is_ok)
+    IPC_MESSAGE_HANDLER(InputMsg_Copy, OnCopy)
+    IPC_MESSAGE_HANDLER(InputMsg_Cut, OnCut)
+    IPC_MESSAGE_HANDLER(InputMsg_Delete, OnDelete)
+    IPC_MESSAGE_HANDLER(InputMsg_ExecuteEditCommand, OnExecuteEditCommand)
+    IPC_MESSAGE_HANDLER(InputMsg_MoveCaret, OnMoveCaret)
+    IPC_MESSAGE_HANDLER(InputMsg_Paste, OnPaste)
+    IPC_MESSAGE_HANDLER(InputMsg_PasteAndMatchStyle, OnPasteAndMatchStyle)
+    IPC_MESSAGE_HANDLER(InputMsg_Redo, OnRedo)
+    IPC_MESSAGE_HANDLER(InputMsg_Replace, OnReplace)
+    IPC_MESSAGE_HANDLER(InputMsg_ReplaceMisspelling, OnReplaceMisspelling)
+    IPC_MESSAGE_HANDLER(InputMsg_ScrollFocusedEditableNodeIntoRect,
+                        OnScrollFocusedEditableNodeIntoRect)
+    IPC_MESSAGE_HANDLER(InputMsg_SelectAll, OnSelectAll)
+    IPC_MESSAGE_HANDLER(InputMsg_SelectRange, OnSelectRange)
+    IPC_MESSAGE_HANDLER(InputMsg_SetEditCommandsForNextKeyEvent,
+                        OnSetEditCommandsForNextKeyEvent)
+    IPC_MESSAGE_HANDLER(InputMsg_Undo, OnUndo)
+    IPC_MESSAGE_HANDLER(InputMsg_Unselect, OnUnselect)
     IPC_MESSAGE_HANDLER(ViewMsg_Navigate, OnNavigate)
     IPC_MESSAGE_HANDLER(ViewMsg_Stop, OnStop)
     IPC_MESSAGE_HANDLER(ViewMsg_ReloadFrame, OnReloadFrame)
-    IPC_MESSAGE_HANDLER(ViewMsg_Undo, OnUndo)
-    IPC_MESSAGE_HANDLER(ViewMsg_Redo, OnRedo)
-    IPC_MESSAGE_HANDLER(ViewMsg_Cut, OnCut)
-    IPC_MESSAGE_HANDLER(ViewMsg_Copy, OnCopy)
-    IPC_MESSAGE_HANDLER(ViewMsg_Paste, OnPaste)
-    IPC_MESSAGE_HANDLER(ViewMsg_PasteAndMatchStyle, OnPasteAndMatchStyle)
-    IPC_MESSAGE_HANDLER(ViewMsg_Replace, OnReplace)
-    IPC_MESSAGE_HANDLER(ViewMsg_ReplaceMisspelling, OnReplaceMisspelling)
-    IPC_MESSAGE_HANDLER(ViewMsg_Delete, OnDelete)
     IPC_MESSAGE_HANDLER(ViewMsg_SetName, OnSetName)
-    IPC_MESSAGE_HANDLER(ViewMsg_SelectAll, OnSelectAll)
-    IPC_MESSAGE_HANDLER(ViewMsg_Unselect, OnUnselect)
     IPC_MESSAGE_HANDLER(ViewMsg_SetEditableSelectionOffsets,
                         OnSetEditableSelectionOffsets)
     IPC_MESSAGE_HANDLER(ViewMsg_SetCompositionFromExistingText,
                         OnSetCompositionFromExistingText)
     IPC_MESSAGE_HANDLER(ViewMsg_ExtendSelectionAndDelete,
                         OnExtendSelectionAndDelete)
-    IPC_MESSAGE_HANDLER(ViewMsg_SelectRange, OnSelectRange)
-    IPC_MESSAGE_HANDLER(ViewMsg_MoveCaret, OnMoveCaret)
     IPC_MESSAGE_HANDLER(ViewMsg_CopyImageAt, OnCopyImageAt)
-    IPC_MESSAGE_HANDLER(ViewMsg_ExecuteEditCommand, OnExecuteEditCommand)
     IPC_MESSAGE_HANDLER(ViewMsg_Find, OnFind)
     IPC_MESSAGE_HANDLER(ViewMsg_StopFinding, OnStopFinding)
     IPC_MESSAGE_HANDLER(ViewMsg_Zoom, OnZoom)
@@ -1046,8 +1051,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnDragSourceSystemDragEnded)
     IPC_MESSAGE_HANDLER(ViewMsg_AllowBindings, OnAllowBindings)
     IPC_MESSAGE_HANDLER(ViewMsg_SetInitialFocus, OnSetInitialFocus)
-    IPC_MESSAGE_HANDLER(ViewMsg_ScrollFocusedEditableNodeIntoRect,
-                        OnScrollFocusedEditableNodeIntoRect)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateTargetURL_ACK, OnUpdateTargetURLAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateWebPreferences, OnUpdateWebPreferences)
     IPC_MESSAGE_HANDLER(ViewMsg_TimezoneChange, OnUpdateTimezone)
@@ -1076,8 +1079,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnOrientationChangeEvent)
     IPC_MESSAGE_HANDLER(ViewMsg_PluginActionAt, OnPluginActionAt)
     IPC_MESSAGE_HANDLER(ViewMsg_SetActive, OnSetActive)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetEditCommandsForNextKeyEvent,
-                        OnSetEditCommandsForNextKeyEvent)
     IPC_MESSAGE_HANDLER(ViewMsg_CustomContextMenuAction,
                         OnCustomContextMenuAction)
     IPC_MESSAGE_HANDLER(ViewMsg_AsyncOpenFile_ACK, OnAsyncFileOpened)
@@ -1100,7 +1101,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetAccessibilityMode, OnSetAccessibilityMode)
     IPC_MESSAGE_HANDLER(ViewMsg_DisownOpener, OnDisownOpener)
 #if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(ViewMsg_ActivateNearestFindResult,
+    IPC_MESSAGE_HANDLER(InputMsg_ActivateNearestFindResult,
                         OnActivateNearestFindResult)
     IPC_MESSAGE_HANDLER(ViewMsg_FindMatchRects, OnFindMatchRects)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectPopupMenuItems, OnSelectPopupMenuItems)
@@ -1109,7 +1110,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateTopControlsState,
                         OnUpdateTopControlsState)
 #elif defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(ViewMsg_CopyToFindPboard, OnCopyToFindPboard)
+    IPC_MESSAGE_HANDLER(InputMsg_CopyToFindPboard, OnCopyToFindPboard)
     IPC_MESSAGE_HANDLER(ViewMsg_PluginImeCompositionCompleted,
                         OnPluginImeCompositionCompleted)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectPopupMenuItem, OnSelectPopupMenuItem)
@@ -1359,15 +1360,6 @@ void RenderViewImpl::OnCopyImageAt(int x, int y) {
   webview()->copyImageAt(WebPoint(x, y));
 }
 
-void RenderViewImpl::OnExecuteEditCommand(const std::string& name,
-    const std::string& value) {
-  if (!webview() || !webview()->focusedFrame())
-    return;
-
-  webview()->focusedFrame()->executeCommand(
-      WebString::fromUTF8(name), WebString::fromUTF8(value));
-}
-
 void RenderViewImpl::OnUpdateTargetURLAck() {
   // Check if there is a targeturl waiting to be sent.
   if (target_url_status_ == TARGET_PENDING) {
@@ -1376,28 +1368,6 @@ void RenderViewImpl::OnUpdateTargetURLAck() {
   }
 
   target_url_status_ = TARGET_NONE;
-}
-
-void RenderViewImpl::OnUndo() {
-  if (!webview())
-    return;
-
-  webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Undo"));
-}
-
-void RenderViewImpl::OnRedo() {
-  if (!webview())
-    return;
-
-  webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Redo"));
-}
-
-void RenderViewImpl::OnCut() {
-  if (!webview())
-    return;
-
-  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
-  webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Cut"));
 }
 
 void RenderViewImpl::OnCopy() {
@@ -1409,21 +1379,38 @@ void RenderViewImpl::OnCopy() {
                                             context_menu_node_);
 }
 
-#if defined(OS_MACOSX)
-void RenderViewImpl::OnCopyToFindPboard() {
+void RenderViewImpl::OnCut() {
   if (!webview())
     return;
 
-  // Since the find pasteboard supports only plain text, this can be simpler
-  // than the |OnCopy()| case.
-  WebFrame* frame = webview()->focusedFrame();
-  if (frame->hasSelection()) {
-    string16 selection = frame->selectionAsText();
-    RenderThread::Get()->Send(
-        new ClipboardHostMsg_FindPboardWriteStringAsync(selection));
-  }
+  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
+  webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Cut"));
 }
-#endif
+
+void RenderViewImpl::OnDelete() {
+  if (!webview())
+    return;
+
+  webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Delete"));
+}
+
+void RenderViewImpl::OnExecuteEditCommand(const std::string& name,
+    const std::string& value) {
+  if (!webview() || !webview()->focusedFrame())
+    return;
+
+  webview()->focusedFrame()->executeCommand(
+      WebString::fromUTF8(name), WebString::fromUTF8(value));
+}
+
+void RenderViewImpl::OnMoveCaret(const gfx::Point& point) {
+  if (!webview())
+    return;
+
+  Send(new ViewHostMsg_MoveCaret_ACK(routing_id_));
+
+  webview()->focusedFrame()->moveCaretSelectionTowardsWindowPoint(point);
+}
 
 void RenderViewImpl::OnPaste() {
   if (!webview())
@@ -1440,6 +1427,13 @@ void RenderViewImpl::OnPasteAndMatchStyle() {
   base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
   webview()->focusedFrame()->executeCommand(
       WebString::fromUTF8("PasteAndMatchStyle"));
+}
+
+void RenderViewImpl::OnRedo() {
+  if (!webview())
+    return;
+
+  webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Redo"));
 }
 
 void RenderViewImpl::OnReplace(const string16& text) {
@@ -1464,18 +1458,15 @@ void RenderViewImpl::OnReplaceMisspelling(const string16& text) {
   frame->replaceMisspelledRange(text);
 }
 
-void RenderViewImpl::OnDelete() {
-  if (!webview())
-    return;
-
-  webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Delete"));
-}
-
-void RenderViewImpl::OnSetName(const std::string& name) {
-  if (!webview())
-    return;
-
-  webview()->mainFrame()->setName(WebString::fromUTF8(name));
+void RenderViewImpl::OnScrollFocusedEditableNodeIntoRect(
+    const gfx::Rect& rect) {
+  WebKit::WebNode node = GetFocusedNode();
+  if (!node.isNull()) {
+    if (IsEditableNode(node)) {
+      webview()->saveScrollAndScaleState();
+      webview()->scrollFocusedNodeIntoRect(rect);
+    }
+  }
 }
 
 void RenderViewImpl::OnSelectAll() {
@@ -1487,12 +1478,58 @@ void RenderViewImpl::OnSelectAll() {
       WebString::fromUTF8("SelectAll"));
 }
 
+void RenderViewImpl::OnSelectRange(const gfx::Point& start,
+                                   const gfx::Point& end) {
+  if (!webview())
+    return;
+
+  Send(new ViewHostMsg_SelectRange_ACK(routing_id_));
+
+  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
+  webview()->focusedFrame()->selectRange(start, end);
+}
+
+void RenderViewImpl::OnSetEditCommandsForNextKeyEvent(
+    const EditCommands& edit_commands) {
+  edit_commands_ = edit_commands;
+}
+
+void RenderViewImpl::OnUndo() {
+  if (!webview())
+    return;
+
+  webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Undo"));
+}
+
 void RenderViewImpl::OnUnselect() {
   if (!webview())
     return;
 
   base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Unselect"));
+}
+
+#if defined(OS_MACOSX)
+void RenderViewImpl::OnCopyToFindPboard() {
+  if (!webview())
+    return;
+
+  // Since the find pasteboard supports only plain text, this can be simpler
+  // than the |OnCopy()| case.
+  WebFrame* frame = webview()->focusedFrame();
+  if (frame->hasSelection()) {
+    string16 selection = frame->selectionAsText();
+    RenderThread::Get()->Send(
+        new ClipboardHostMsg_FindPboardWriteStringAsync(selection));
+  }
+}
+#endif
+
+void RenderViewImpl::OnSetName(const std::string& name) {
+  if (!webview())
+    return;
+
+  webview()->mainFrame()->setName(WebString::fromUTF8(name));
 }
 
 void RenderViewImpl::OnSetEditableSelectionOffsets(int start, int end) {
@@ -1524,26 +1561,6 @@ void RenderViewImpl::OnExtendSelectionAndDelete(int before, int after) {
   webview()->extendSelectionAndDelete(before, after);
   handling_ime_event_ = false;
   UpdateTextInputState(DO_NOT_SHOW_IME);
-}
-
-void RenderViewImpl::OnSelectRange(const gfx::Point& start,
-                                   const gfx::Point& end) {
-  if (!webview())
-    return;
-
-  Send(new ViewHostMsg_SelectRange_ACK(routing_id_));
-
-  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
-  webview()->focusedFrame()->selectRange(start, end);
-}
-
-void RenderViewImpl::OnMoveCaret(const gfx::Point& point) {
-  if (!webview())
-    return;
-
-  Send(new ViewHostMsg_MoveCaret_ACK(routing_id_));
-
-  webview()->focusedFrame()->moveCaretSelectionTowardsWindowPoint(point);
 }
 
 void RenderViewImpl::OnSetHistoryLengthAndPrune(int history_length,
@@ -1583,17 +1600,6 @@ void RenderViewImpl::OnSetInLiveResize(bool in_live_resize) {
     webview()->willEndLiveResize();
 }
 #endif
-
-void RenderViewImpl::OnScrollFocusedEditableNodeIntoRect(
-    const gfx::Rect& rect) {
-  WebKit::WebNode node = GetFocusedNode();
-  if (!node.isNull()) {
-    if (IsEditableNode(node)) {
-      webview()->saveScrollAndScaleState();
-      webview()->scrollFocusedNodeIntoRect(rect);
-    }
-  }
-}
 
 #if defined(OS_ANDROID)
 void RenderViewImpl::OnUndoScrollFocusedEditableNodeIntoRect() {
@@ -5711,11 +5717,6 @@ void RenderViewImpl::OnPluginImeCompositionCompleted(const string16& text,
   }
 }
 #endif  // OS_MACOSX
-
-void RenderViewImpl::OnSetEditCommandsForNextKeyEvent(
-    const EditCommands& edit_commands) {
-  edit_commands_ = edit_commands;
-}
 
 void RenderViewImpl::Close() {
   // We need to grab a pointer to the doomed WebView before we destroy it.

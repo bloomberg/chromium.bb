@@ -906,7 +906,24 @@ class CONTENT_EXPORT RenderViewImpl
   // IPC message handlers ------------------------------------------------------
   //
   // The documentation for these functions should be in
-  // render_messages_internal.h for the message that the function is handling.
+  // content/common/*_messages.h for the message that the function is handling.
+
+  void OnCopy();
+  void OnCut();
+  void OnDelete();
+  void OnExecuteEditCommand(const std::string& name, const std::string& value);
+  void OnMoveCaret(const gfx::Point& point);
+  void OnPaste();
+  void OnPasteAndMatchStyle();
+  void OnRedo();
+  void OnReplace(const string16& text);
+  void OnReplaceMisspelling(const string16& text);
+  void OnScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect);
+  void OnSelectAll();
+  void OnSelectRange(const gfx::Point& start, const gfx::Point& end);
+  void OnSetEditCommandsForNextKeyEvent(const EditCommands& edit_commands);
+  void OnUndo();
+  void OnUnselect();
 
   void OnAllowBindings(int enabled_bindings_flags);
   void OnAllowScriptToClose(bool script_can_close);
@@ -922,14 +939,11 @@ class CONTENT_EXPORT RenderViewImpl
   void OnClosePage();
   void OnContextMenuClosed(const CustomContextMenuContext& custom_context);
   void OnShowContextMenu();
-  void OnCopy();
   void OnCopyImageAt(int x, int y);
-  void OnCut();
   void OnCSSInsertRequest(const string16& frame_xpath,
                           const std::string& css);
   void OnCustomContextMenuAction(const CustomContextMenuContext& custom_context,
       unsigned action);
-  void OnDelete();
   void OnSetName(const std::string& name);
   void OnDeterminePageLanguage();
   void OnDisableScrollbarsForSmallWindows(
@@ -958,7 +972,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnDisableAutoResize(const gfx::Size& new_size);
   void OnEnumerateDirectoryResponse(int id,
                                     const std::vector<base::FilePath>& paths);
-  void OnExecuteEditCommand(const std::string& name, const std::string& value);
   void OnExtendSelectionAndDelete(int before, int after);
   void OnFileChooserResponse(
       const std::vector<ui::SelectedFileInfo>& files);
@@ -978,22 +991,14 @@ class CONTENT_EXPORT RenderViewImpl
                         const WebKit::WebPluginAction& action);
   void OnMoveOrResizeStarted();
   void OnNavigate(const ViewMsg_Navigate_Params& params);
-  void OnPaste();
-  void OnPasteAndMatchStyle();
   void OnPostMessageEvent(const ViewMsg_PostMessage_Params& params);
-  void OnRedo();
   void OnReleaseDisambiguationPopupDIB(TransportDIB::Handle dib_handle);
   void OnReloadFrame();
-  void OnReplace(const string16& text);
-  void OnReplaceMisspelling(const string16& text);
   void OnResetPageEncodingToDefault();
   void OnScriptEvalRequest(const string16& frame_xpath,
                            const string16& jscript,
                            int id,
                            bool notify_result);
-  void OnSelectAll();
-  void OnSelectRange(const gfx::Point& start, const gfx::Point& end);
-  void OnMoveCaret(const gfx::Point& point);
   void OnSetAccessibilityMode(AccessibilityMode new_mode);
   void OnSetActive(bool active);
   void OnSetAltErrorPageURL(const GURL& gurl);
@@ -1001,27 +1006,23 @@ class CONTENT_EXPORT RenderViewImpl
   void OnSetCompositionFromExistingText(
       int start, int end,
       const std::vector<WebKit::WebCompositionUnderline>& underlines);
+  void OnExitFullscreen();
   void OnSetEditableSelectionOffsets(int start, int end);
-  void OnSetWebUIProperty(const std::string& name, const std::string& value);
-  void OnSetEditCommandsForNextKeyEvent(const EditCommands& edit_commands);
   void OnSetHistoryLengthAndPrune(int history_length, int32 minimum_page_id);
   void OnSetInitialFocus(bool reverse);
-  void OnScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect);
   void OnSetPageEncoding(const std::string& encoding_name);
   void OnSetRendererPrefs(const RendererPreferences& renderer_prefs);
+  void OnSetWebUIProperty(const std::string& name, const std::string& value);
   void OnSetZoomLevel(double zoom_level);
   void OnSetZoomLevelForLoadingURL(const GURL& url, double zoom_level);
-  void OnExitFullscreen();
   void OnShouldClose();
   void OnStop();
   void OnStopFinding(StopFindAction action);
   void OnSwapOut(const ViewMsg_SwapOut_Params& params);
   void OnThemeChanged();
-  void OnUndo();
   void OnUpdateTargetURLAck();
   void OnUpdateTimezone();
   void OnUpdateWebPreferences(const webkit_glue::WebPreferences& prefs);
-  void OnUnselect();
 
   void OnZoom(PageZoom zoom);
   void OnZoomFactor(PageZoom zoom, int zoom_center_x, int zoom_center_y);
@@ -1490,7 +1491,7 @@ class CONTENT_EXPORT RenderViewImpl
   ObserverList<RenderViewObserver> observers_;
 
   // Used to inform didChangeSelection() when it is called in the context
-  // of handling a ViewMsg_SelectRange IPC.
+  // of handling a InputMsg_SelectRange IPC.
   bool handling_select_range_;
 
   // Wraps the |webwidget_| as a MouseLockDispatcher::LockTarget interface.

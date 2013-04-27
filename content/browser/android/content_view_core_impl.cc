@@ -30,6 +30,7 @@
 #include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/browser/web_contents/navigation_entry_impl.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
+#include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/favicon_status.h"
@@ -1306,8 +1307,8 @@ void ContentViewCoreImpl::ShowImeIfNeeded(JNIEnv* env, jobject obj) {
 void ContentViewCoreImpl::ScrollFocusedEditableNodeIntoView(JNIEnv* env,
                                                             jobject obj) {
   RenderViewHost* host = web_contents_->GetRenderViewHost();
-  host->Send(new ViewMsg_ScrollFocusedEditableNodeIntoRect(host->GetRoutingID(),
-                                                           gfx::Rect()));
+  host->Send(new InputMsg_ScrollFocusedEditableNodeIntoRect(
+      host->GetRoutingID(), gfx::Rect()));
 }
 
 namespace {

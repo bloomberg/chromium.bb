@@ -734,7 +734,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   gfx::Rect last_window_screen_rect_;
 
   // True if a mouse move event was sent to the render view and we are waiting
-  // for a corresponding ViewHostMsg_HandleInputEvent_ACK message.
+  // for a corresponding InputHostMsg_HandleInputEvent_ACK message.
   bool mouse_move_pending_;
 
   // The next mouse move event to send (only non-null while mouse_move_pending_

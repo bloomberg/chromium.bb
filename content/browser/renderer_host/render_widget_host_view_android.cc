@@ -22,6 +22,7 @@
 #include "content/browser/renderer_host/surface_texture_transport_client_android.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureLayer.h"
@@ -278,7 +279,7 @@ void RenderWidgetHostViewAndroid::Focus() {
 }
 
 void RenderWidgetHostViewAndroid::Blur() {
-  host_->Send(new ViewMsg_ExecuteEditCommand(
+  host_->Send(new InputMsg_ExecuteEditCommand(
       host_->GetRoutingID(), "Unselect", ""));
   host_->SetInputMethodActive(false);
   host_->Blur();

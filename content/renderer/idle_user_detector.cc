@@ -5,7 +5,7 @@
 #include "content/renderer/idle_user_detector.h"
 
 #include "base/logging.h"
-#include "content/common/view_messages.h"
+#include "content/common/input_messages.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/render_thread_impl.h"
 
@@ -20,7 +20,7 @@ IdleUserDetector::~IdleUserDetector() {
 
 bool IdleUserDetector::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(IdleUserDetector, message)
-    IPC_MESSAGE_HANDLER(ViewMsg_HandleInputEvent, OnHandleInputEvent)
+    IPC_MESSAGE_HANDLER(InputMsg_HandleInputEvent, OnHandleInputEvent)
   IPC_END_MESSAGE_MAP()
   return false;
 }

@@ -4,11 +4,6 @@
 
 #include "content/browser/renderer_host/render_widget_host_view_gtk.h"
 
-// If this gets included after the gtk headers, then a bunch of compiler
-// errors happen because of a "#define Status int" in Xlib.h, which interacts
-// badly with net::URLRequestStatus::Status.
-#include "content/common/view_messages.h"
-
 #include <cairo/cairo.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
@@ -37,6 +32,8 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/input_messages.h"
+#include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/content_switches.h"
@@ -1371,7 +1368,7 @@ void RenderWidgetHostViewGtk::ForwardKeyboardEvent(
   EditCommands edit_commands;
   if (!event.skip_in_browser &&
       key_bindings_handler_->Match(event, &edit_commands)) {
-    Send(new ViewMsg_SetEditCommandsForNextKeyEvent(
+    Send(new InputMsg_SetEditCommandsForNextKeyEvent(
         host_->GetRoutingID(), edit_commands));
     NativeWebKeyboardEvent copy_event(event);
     copy_event.match_edit_command = true;

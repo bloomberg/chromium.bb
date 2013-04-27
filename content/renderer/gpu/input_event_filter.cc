@@ -6,7 +6,7 @@
 #include "base/debug/trace_event.h"
 #include "base/location.h"
 #include "base/message_loop_proxy.h"
-#include "content/common/view_messages.h"
+#include "content/common/input_messages.h"
 #include "content/renderer/gpu/input_event_filter.h"
 
 using WebKit::WebInputEvent;
@@ -80,25 +80,7 @@ void InputEventFilter::OnChannelClosing() {
 // type means that the message will go through an extra copy and thread hop, so
 // use with care.
 static bool RequiresThreadBounce(const IPC::Message& message) {
-  return message.type() == ViewMsg_HandleInputEvent::ID ||
-         message.type() == ViewMsg_MouseCaptureLost::ID ||
-         message.type() == ViewMsg_SetFocus::ID ||
-         message.type() == ViewMsg_SetInputMethodActive::ID ||
-         message.type() == ViewMsg_Undo::ID ||
-         message.type() == ViewMsg_Redo::ID ||
-         message.type() == ViewMsg_Cut::ID ||
-         message.type() == ViewMsg_Copy::ID ||
-         message.type() == ViewMsg_Paste::ID ||
-         message.type() == ViewMsg_PasteAndMatchStyle::ID ||
-         message.type() == ViewMsg_Delete::ID ||
-         message.type() == ViewMsg_Replace::ID ||
-         message.type() == ViewMsg_ReplaceMisspelling::ID ||
-         message.type() == ViewMsg_Delete::ID ||
-         message.type() == ViewMsg_SelectAll::ID ||
-         message.type() == ViewMsg_Unselect::ID ||
-         message.type() == ViewMsg_SelectRange::ID ||
-         message.type() == ViewMsg_MoveCaret::ID ||
-         message.type() == ViewMsg_SmoothScrollCompleted::ID;
+  return IPC_MESSAGE_ID_CLASS(message.type()) == InputMsgStart;
 }
 
 bool InputEventFilter::OnMessageReceived(const IPC::Message& message) {
@@ -120,7 +102,7 @@ bool InputEventFilter::OnMessageReceived(const IPC::Message& message) {
 // static
 const WebInputEvent* InputEventFilter::CrackMessage(
     const IPC::Message& message) {
-  DCHECK(message.type() == ViewMsg_HandleInputEvent::ID);
+  DCHECK(message.type() == InputMsg_HandleInputEvent::ID);
 
   PickleIterator iter(message);
   const WebInputEvent* event = NULL;
@@ -138,7 +120,7 @@ void InputEventFilter::ForwardToMainListener(const IPC::Message& message) {
 void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
   DCHECK(target_loop_->BelongsToCurrentThread());
 
-  if (message.type() != ViewMsg_HandleInputEvent::ID) {
+  if (message.type() != InputMsg_HandleInputEvent::ID) {
     main_loop_->PostTask(
         FROM_HERE,
         base::Bind(&InputEventFilter::ForwardToMainListener,
@@ -178,7 +160,8 @@ void InputEventFilter::SendACKOnIOThread(
     return;  // Filter was removed.
 
   sender_->Send(
-      new ViewHostMsg_HandleInputEvent_ACK(routing_id, event_type, ack_result));
+      new InputHostMsg_HandleInputEvent_ACK(
+          routing_id, event_type, ack_result));
 }
 
 }  // namespace content

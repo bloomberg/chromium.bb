@@ -12,7 +12,6 @@
 #include "cc/output/compositor_frame_ack.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
-#include "content/common/edit_command.h"
 #include "content/common/navigation_gesture.h"
 #include "content/common/pepper_renderer_instance_data.h"
 #include "content/common/view_message_enums.h"
@@ -39,7 +38,6 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginAction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
@@ -77,7 +75,6 @@ IPC_ENUM_TRAITS(WebMenuItem::Type)
 IPC_ENUM_TRAITS(WindowContainerType)
 IPC_ENUM_TRAITS(content::FaviconURL::IconType)
 IPC_ENUM_TRAITS(content::FileChooserParams::Mode)
-IPC_ENUM_TRAITS(content::InputEventAckState)
 IPC_ENUM_TRAITS(content::JavaScriptMessageType)
 IPC_ENUM_TRAITS(content::NavigationGesture)
 IPC_ENUM_TRAITS(content::PageZoom)
@@ -193,11 +190,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::CustomContextMenuContext)
   IPC_STRUCT_TRAITS_MEMBER(is_pepper_menu)
   IPC_STRUCT_TRAITS_MEMBER(request_id)
   IPC_STRUCT_TRAITS_MEMBER(render_widget_id)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::EditCommand)
-  IPC_STRUCT_TRAITS_MEMBER(name)
-  IPC_STRUCT_TRAITS_MEMBER(value)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::FaviconURL)
@@ -858,49 +850,14 @@ IPC_MESSAGE_ROUTED0(ViewMsg_UpdateRect_ACK)
 // compositor path.
 IPC_MESSAGE_ROUTED0(ViewMsg_SwapBuffers_ACK)
 
-// Sends an input event to the render widget.
-IPC_MESSAGE_ROUTED2(ViewMsg_HandleInputEvent,
-                    IPC::WebInputEventPointer /* event */,
-                    bool /* is_keyboard_shortcut */)
-
 // Tells the render widget that a smooth scroll completed.
 IPC_MESSAGE_ROUTED1(ViewMsg_SmoothScrollCompleted,
                     int /* gesture_id */)
-
-// This message notifies the renderer that the next key event is bound to one
-// or more pre-defined edit commands. If the next key event is not handled
-// by webkit, the specified edit commands shall be executed against current
-// focused frame.
-// Parameters
-// * edit_commands (see chrome/common/edit_command_types.h)
-//   Contains one or more edit commands.
-// See third_party/WebKit/Source/WebCore/editing/EditorCommand.cpp for detailed
-// definition of webkit edit commands.
-//
-// This message must be sent just before sending a key event.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetEditCommandsForNextKeyEvent,
-                    std::vector<content::EditCommand> /* edit_commands */)
-
-// Message payload is the name/value of a WebCore edit command to execute.
-IPC_MESSAGE_ROUTED2(ViewMsg_ExecuteEditCommand,
-                    std::string, /* name */
-                    std::string /* value */)
-
-IPC_MESSAGE_ROUTED0(ViewMsg_MouseCaptureLost)
-
-// TODO(darin): figure out how this meshes with RestoreFocus
-IPC_MESSAGE_ROUTED1(ViewMsg_SetFocus,
-                    bool /* enable */)
 
 // Tells the renderer to focus the first (last if reverse is true) focusable
 // node.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetInitialFocus,
                     bool /* reverse */)
-
-// Tells the renderer to scroll the currently focused node into rect only if
-// the currently focused node is a Text node (textfield, text area or content
-// editable divs).
-IPC_MESSAGE_ROUTED1(ViewMsg_ScrollFocusedEditableNodeIntoRect, gfx::Rect)
 
 // Executes custom context menu action that was provided from WebKit.
 IPC_MESSAGE_ROUTED2(ViewMsg_CustomContextMenuAction,
@@ -935,43 +892,9 @@ IPC_MESSAGE_ROUTED3(ViewMsg_Find,
 IPC_MESSAGE_ROUTED1(ViewMsg_StopFinding,
                     content::StopFindAction /* action */)
 
-// These messages are typically generated from context menus and request the
-// renderer to apply the specified operation to the current selection.
-IPC_MESSAGE_ROUTED0(ViewMsg_Undo)
-IPC_MESSAGE_ROUTED0(ViewMsg_Redo)
-IPC_MESSAGE_ROUTED0(ViewMsg_Cut)
-IPC_MESSAGE_ROUTED0(ViewMsg_Copy)
-#if defined(OS_MACOSX)
-IPC_MESSAGE_ROUTED0(ViewMsg_CopyToFindPboard)
-#endif
-IPC_MESSAGE_ROUTED0(ViewMsg_Paste)
-IPC_MESSAGE_ROUTED0(ViewMsg_PasteAndMatchStyle)
-// Replaces the selected region or a word around the cursor with the
-// specified string.
-IPC_MESSAGE_ROUTED1(ViewMsg_Replace,
-                    string16)
-// Replaces the misspelling in the selected region with the specified string.
-IPC_MESSAGE_ROUTED1(ViewMsg_ReplaceMisspelling,
-                    string16)
-IPC_MESSAGE_ROUTED0(ViewMsg_Delete)
-IPC_MESSAGE_ROUTED0(ViewMsg_SelectAll)
-
 // Replaces a date time input field.
 IPC_MESSAGE_ROUTED1(ViewMsg_ReplaceDateTime,
                     ViewHostMsg_DateTimeDialogValue_Params /* value */)
-
-IPC_MESSAGE_ROUTED0(ViewMsg_Unselect)
-
-// Requests the renderer to select the region between two points.
-// Expects a SelectRange_ACK message when finished.
-IPC_MESSAGE_ROUTED2(ViewMsg_SelectRange,
-                    gfx::Point /* start */,
-                    gfx::Point /* end */)
-
-// Requests the renderer to move the caret selection toward the point.
-// Expects a MoveCaret_ACK message when finished.
-IPC_MESSAGE_ROUTED1(ViewMsg_MoveCaret,
-                    gfx::Point /* location */)
 
 // Copies the image at location x, y to the clipboard (if there indeed is an
 // image at that location).
@@ -1311,13 +1234,6 @@ IPC_MESSAGE_CONTROL1(ViewMsg_SetWebKitSharedTimersSuspended,
                      bool /* suspend */)
 
 #if defined(OS_ANDROID)
-// Sent when the user clicks on the find result bar to activate a find result.
-// The point (x,y) is in fractions of the content document's width and height.
-IPC_MESSAGE_ROUTED3(ViewMsg_ActivateNearestFindResult,
-                    int /* request_id */,
-                    float /* x */,
-                    float /* y */)
-
 // Sent when the browser wants the bounding boxes of the current find matches.
 //
 // If match rects are already cached on the browser side, |current_version|
@@ -1674,11 +1590,6 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_UpdateIsDelayed)
 // notify the browser whether or not is should do painting.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DidActivateAcceleratedCompositing,
                     bool /* true if the accelerated compositor is actve */)
-
-// Acknowledges receipt of a ViewMsg_HandleInputEvent message.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_HandleInputEvent_ACK,
-                    WebKit::WebInputEvent::Type,
-                    content::InputEventAckState /* ack_result */)
 
 IPC_STRUCT_BEGIN(ViewHostMsg_BeginSmoothScroll_Params)
   IPC_STRUCT_MEMBER(bool, scroll_down)

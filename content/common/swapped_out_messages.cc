@@ -5,6 +5,7 @@
 #include "content/common/swapped_out_messages.h"
 
 #include "content/common/accessibility_messages.h"
+#include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_client.h"
 
@@ -16,7 +17,7 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
   // consistent in case we later return to the same renderer.
   switch (msg->type()) {
     // Handled by RenderWidget.
-    case ViewHostMsg_HandleInputEvent_ACK::ID:
+    case InputHostMsg_HandleInputEvent_ACK::ID:
     case ViewHostMsg_PaintAtSize_ACK::ID:
     case ViewHostMsg_UpdateRect::ID:
     // Allow targeted navigations while swapped out.
