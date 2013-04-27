@@ -131,10 +131,6 @@ crbug.com/229435 [ Debug Win7 SnowLeopard Linux ] editing/selection/caret-at-bid
 # Context menu behavior differs on Mac. This test needs to be adjusted for Mac.
 webkit.org/b/102987 [ Mac ] fast/events/context-nodrag.html [ Skip ]
 
-# Fails due to different window.close() rules.  We need to decide whether we
-# ever expect to pass this.
-crbug.com/24189 fast/dom/open-and-close-by-DOM.html [ Skip ]
-
 # Fails because Blend Mode is not enabled on Chromium yet 
 webkit.org/b/98950 transitions/blendmode-transitions.html [ Skip ]
 webkit.org/b/100071 fast/canvas/canvas-blend-image.html [ Skip ]
