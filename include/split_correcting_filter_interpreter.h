@@ -58,8 +58,6 @@ class SplitCorrectingFilterInterpreter : public FilterInterpreter {
  protected:
   virtual void SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);
 
-  virtual void SetHardwarePropertiesImpl(const HardwareProperties& hwprops);
-
  private:
   void RemoveMissingUnmergedContacts(const HardwareState& hwstate);
   void MergeFingers(const HardwareState& hwstate);

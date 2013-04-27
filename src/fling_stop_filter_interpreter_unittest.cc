@@ -7,6 +7,7 @@
 
 #include "gestures/include/fling_stop_filter_interpreter.h"
 #include "gestures/include/gestures.h"
+#include "gestures/include/unittest_util.h"
 #include "gestures/include/util.h"
 
 namespace gestures {
@@ -31,8 +32,6 @@ class FlingStopFilterInterpreterTestInterpreter : public Interpreter {
     handle_timer_called_ = true;
     *timeout = next_timeout_;
   }
-
-  virtual void SetHardwareProperties(const HardwareProperties& hw_props) {};
 
   bool sync_interpret_called_;
   bool handle_timer_called_;

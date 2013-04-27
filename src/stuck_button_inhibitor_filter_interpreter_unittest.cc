@@ -12,6 +12,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/stuck_button_inhibitor_filter_interpreter.h"
+#include "gestures/include/unittest_util.h"
 #include "gestures/include/util.h"
 
 using std::deque;
@@ -28,8 +29,7 @@ class StuckButtonInhibitorFilterInterpreterTestInterpreter :
  public:
   StuckButtonInhibitorFilterInterpreterTestInterpreter()
       : Interpreter(NULL, NULL, false),
-        called_(false),
-        set_hwprops_called_(false) {}
+        called_(false) {}
 
   virtual void SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     HandleTimer(0.0, timeout);
@@ -49,14 +49,9 @@ class StuckButtonInhibitorFilterInterpreterTestInterpreter :
     ProduceGesture(return_value_);
   }
 
-  virtual void SetHardwareProperties(const HardwareProperties& hw_props) {
-    set_hwprops_called_ = true;
-  };
-
   bool called_;
   Gesture return_value_;
   deque<pair<Gesture, stime_t> > return_values_;
-  bool set_hwprops_called_;
 };
 
 namespace {
@@ -83,9 +78,8 @@ TEST(StuckButtonInhibitorFilterInterpreterTest, SimpleTest) {
   StuckButtonInhibitorFilterInterpreterTestInterpreter* base_interpreter =
       new StuckButtonInhibitorFilterInterpreterTestInterpreter;
   StuckButtonInhibitorFilterInterpreter interpreter(base_interpreter, NULL);
-  TestInterpreterWrapper wrapper(&interpreter);
 
-  HardwareProperties initial_hwprops = {
+  HardwareProperties hwprops = {
     0, 0, 100, 100,  // left, top, right, bottom
     10,  // x res (pixels/mm)
     10,  // y res (pixels/mm)
@@ -95,9 +89,7 @@ TEST(StuckButtonInhibitorFilterInterpreterTest, SimpleTest) {
     2, 5,  // max fingers, max_touch
     0, 0, 0  //t5r2, semi, button pad
   };
-
-  interpreter.SetHardwareProperties(initial_hwprops);
-  EXPECT_TRUE(base_interpreter->set_hwprops_called_);
+  TestInterpreterWrapper wrapper(&interpreter, &hwprops);
 
   Gesture null;
   Gesture move = Gesture(kGestureMove,

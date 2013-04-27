@@ -68,6 +68,7 @@ TEST_OBJECTS=\
 	$(OBJDIR)/t5r2_correcting_filter_interpreter_unittest.o \
 	$(OBJDIR)/trace_marker_unittest.o \
 	$(OBJDIR)/tracer_unittest.o \
+	$(OBJDIR)/unittest_util.o \
 	$(OBJDIR)/util_unittest.o \
 	$(OBJDIR)/vector_unittest.o
 

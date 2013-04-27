@@ -7,6 +7,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/iir_filter_interpreter.h"
+#include "gestures/include/unittest_util.h"
 
 namespace gestures {
 
@@ -41,6 +42,7 @@ TEST(IirFilterInterpreterTest, SimpleTest) {
   IirFilterInterpreterTestInterpreter* base_interpreter =
       new IirFilterInterpreterTestInterpreter;
   IirFilterInterpreter interpreter(NULL, base_interpreter, NULL);
+  TestInterpreterWrapper wrapper(&interpreter);
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
@@ -58,7 +60,7 @@ TEST(IirFilterInterpreterTest, SimpleTest) {
 
   for (size_t i = 0; i < arraysize(hs); i++) {
     unsigned expected_flags = hs[i].fingers[0].flags;
-    interpreter.SyncInterpret(&hs[i], NULL);
+    wrapper.SyncInterpret(&hs[i], NULL);
     EXPECT_EQ(base_interpreter->prev_.flags, expected_flags);
   }
   EXPECT_EQ(arraysize(hs), base_interpreter->sync_interpret_cnt_);
@@ -68,6 +70,7 @@ TEST(IirFilterInterpreterTest, DisableIIRTest) {
   IirFilterInterpreterTestInterpreter* base_interpreter =
       new IirFilterInterpreterTestInterpreter;
   IirFilterInterpreter interpreter(NULL, base_interpreter, NULL);
+  TestInterpreterWrapper wrapper(&interpreter);
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
@@ -88,7 +91,7 @@ TEST(IirFilterInterpreterTest, DisableIIRTest) {
   };
 
   for (size_t i = 0; i < arraysize(hs); i++) {
-    interpreter.SyncInterpret(&hs[i], NULL);
+    wrapper.SyncInterpret(&hs[i], NULL);
     // A quick move at hs[2] and IIR will be disabled. Even though
     // hs[2] and hs[3] are close enough, the rolling average output
     // of hs[2] is smoothed that IIR is still disabled for hs[3].
@@ -113,6 +116,7 @@ TEST(IirFilterInterpreterTest, SemiMTIIRTest) {
     2,   // orientation maximum
     2, 3, 0, 0, 0  // max_fingers, max_touch, t5r2, semi_mt,
   };
+  TestInterpreterWrapper wrapper(&interpreter, &hwprops);
 
   float kTestPressure = 100;
   FingerState fs_normal[] = {
@@ -128,9 +132,8 @@ TEST(IirFilterInterpreterTest, SemiMTIIRTest) {
 
   // For Non-SemiMT, the pressure of the finger will be different from the
   // original one after the IIR filter.
-  interpreter.SetHardwareProperties(hwprops);
   for (size_t i = 0; i < arraysize(hs_normal); i++)
-    interpreter.SyncInterpret(&hs_normal[i], NULL);
+    wrapper.SyncInterpret(&hs_normal[i], NULL);
   int n = arraysize(fs_normal);
   EXPECT_NE(fs_normal[n - 1].pressure, kTestPressure);
 
@@ -146,9 +149,9 @@ TEST(IirFilterInterpreterTest, SemiMTIIRTest) {
     { 0.010, 0, 1, 1, &fs_semi_mt[1], 0, 0, 0, 0 },
   };
   hwprops.support_semi_mt = true;
-  interpreter.SetHardwareProperties(hwprops);
+  wrapper.Reset(&interpreter, &hwprops);
   for (size_t i = 0; i < arraysize(hs_semi_mt); i++)
-    interpreter.SyncInterpret(&hs_semi_mt[i], NULL);
+    wrapper.SyncInterpret(&hs_semi_mt[i], NULL);
   n = arraysize(fs_semi_mt);
   EXPECT_EQ(fs_semi_mt[n - 1].pressure, kTestPressure);
 }

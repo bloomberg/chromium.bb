@@ -12,6 +12,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/palm_classifying_filter_interpreter.h"
+#include "gestures/include/unittest_util.h"
 
 using std::deque;
 using std::make_pair;
@@ -38,8 +39,6 @@ class PalmClassifyingFilterInterpreterTestInterpreter : public Interpreter {
     EXPECT_TRUE(false);
   }
 
-  virtual void SetHardwareProperties(const HardwareProperties& hw_props) {};
-
   unsigned expected_flags_;
 };
 
@@ -62,7 +61,7 @@ TEST(PalmClassifyingFilterInterpreterTest, PalmTest) {
     0,  // semi-mt
     1  // is button pad
   };
-  pci.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&pci, &hwprops);
 
   const float kBig = pci.palm_pressure_.val_ + 1;  // big (palm) pressure
   const float kSml = pci.palm_pressure_.val_ - 1;  // low pressure
@@ -94,7 +93,7 @@ TEST(PalmClassifyingFilterInterpreterTest, PalmTest) {
   };
 
   for (size_t i = 0; i < 5; ++i) {
-    pci.SyncInterpret(&hardware_state[i], NULL);
+    wrapper.SyncInterpret(&hardware_state[i], NULL);
     switch (i) {
       case 0:
         EXPECT_TRUE(SetContainsValue(pci.pointing_, 1));
@@ -139,7 +138,7 @@ TEST(PalmClassifyingFilterInterpreterTest, StationaryPalmTest) {
     0,  // semi-mt
     1  // is button pad
   };
-  pci.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&pci, &hwprops);
 
   const float kPr = pci.palm_pressure_.val_ / 2;
 
@@ -164,7 +163,7 @@ TEST(PalmClassifyingFilterInterpreterTest, StationaryPalmTest) {
   };
 
   for (size_t i = 0; i < arraysize(hardware_state); ++i) {
-    pci.SyncInterpret(&hardware_state[i], NULL);
+    wrapper.SyncInterpret(&hardware_state[i], NULL);
     if (i > 0) {
       // We expect after the second input frame is processed that the palm
       // is classified
@@ -197,6 +196,7 @@ TEST(PalmClassifyingFilterInterpreterTest, PalmAtEdgeTest) {
     0,  // semi-mt
     1  // is button pad
   };
+  TestInterpreterWrapper wrapper(pci.get(), &hwprops);
 
   const float kBig = pci->palm_pressure_.val_ + 1.0;  // palm pressure
   const float kSml = pci->palm_pressure_.val_ - 1.0;  // small, low pressure
@@ -261,7 +261,7 @@ TEST(PalmClassifyingFilterInterpreterTest, PalmAtEdgeTest) {
       base_interpreter = new PalmClassifyingFilterInterpreterTestInterpreter;
       pci.reset(new PalmClassifyingFilterInterpreter(NULL, base_interpreter,
                                                      NULL, NULL));
-      pci->SetHardwareProperties(hwprops);
+      wrapper.Reset(pci.get());
     }
     switch (i) {
       case 2:  // fallthough
@@ -289,7 +289,7 @@ TEST(PalmClassifyingFilterInterpreterTest, PalmAtEdgeTest) {
         break;
     }
     LOG(INFO) << "iteration i = " << i;
-    pci->SyncInterpret(&hardware_state[i], NULL);
+    wrapper.SyncInterpret(&hardware_state[i], NULL);
   }
 }
 
@@ -319,8 +319,7 @@ TEST(PalmClassifyingFilterInterpreterTest, PalmReevaluateTest) {
     0,  // semi-mt
     true  // is button pad
   };
-
-  pci.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&pci, &hwprops);
 
   PalmReevaluateTestInputs inputs[] = {
     { 5.8174, 10.25, 46.10,  15.36 },
@@ -371,7 +370,7 @@ TEST(PalmClassifyingFilterInterpreterTest, PalmReevaluateTest) {
     HardwareState hs = { inputs[i].now_, 0, 1, 1, &fs, 0, 0, 0, 0 };
 
     stime_t timeout = -1.0;
-    pci.SyncInterpret(&hs, &timeout);
+    wrapper.SyncInterpret(&hs, &timeout);
     // Allow movement at first:
     stime_t age = inputs[i].now_ - inputs[0].now_;
     if (age < pci.palm_eval_timeout_.val_)
@@ -408,7 +407,7 @@ TEST(PalmClassifyingFilterInterpreterTest, LargeTouchMajorTest) {
     0,  // semi-mt
     1  // is button pad
   };
-
+  TestInterpreterWrapper wrapper(&pci, &hwprops);
 
   LargeTouchMajorTestInputs inputs[] = {
     { 658.0355, 22.73, 29.1, 29.1, 140.6 },
@@ -637,7 +636,6 @@ TEST(PalmClassifyingFilterInterpreterTest, LargeTouchMajorTest) {
     { 661.9044, 18.35, 28.3, 29.6, 141.9 },
     { 661.9111, 18.35, 28.3, 29.6, 141.9 }
   };
-  pci.SetHardwareProperties(hwprops);
 
   for (size_t i = 0; i < arraysize(inputs); i++) {
     const LargeTouchMajorTestInputs& input = inputs[i];
@@ -646,7 +644,7 @@ TEST(PalmClassifyingFilterInterpreterTest, LargeTouchMajorTest) {
     };
     HardwareState hs = { input.now_, 0, 1, 1, &fs, 0, 0, 0, 0 };
     base_interpreter->expected_flags_ = GESTURES_FINGER_PALM;
-    pci.SyncInterpret(&hs, NULL);
+    wrapper.SyncInterpret(&hs, NULL);
   }
 }
 

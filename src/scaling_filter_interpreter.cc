@@ -208,21 +208,20 @@ void ScalingFilterInterpreter::ConsumeGesture(const Gesture& gs) {
   ProduceGesture(copy);
 }
 
-void ScalingFilterInterpreter::SetHardwarePropertiesImpl(
-    const HardwareProperties& hw_props) {
+void ScalingFilterInterpreter::Initialize(const HardwareProperties* hwprops,
+                                          GestureConsumer* consumer) {
+  tp_x_scale_ = 1.0 / hwprops->res_x;
+  tp_y_scale_ = 1.0 / hwprops->res_y;
+  tp_x_translate_ = -1.0 * (hwprops->left * tp_x_scale_);
+  tp_y_translate_ = -1.0 * (hwprops->top * tp_y_scale_);
 
-  tp_x_scale_ = 1.0 / hw_props.res_x;
-  tp_y_scale_ = 1.0 / hw_props.res_y;
-  tp_x_translate_ = -1.0 * (hw_props.left * tp_x_scale_);
-  tp_y_translate_ = -1.0 * (hw_props.top * tp_y_scale_);
+  screen_x_scale_ = hwprops->screen_x_dpi / 25.4;
+  screen_y_scale_ = hwprops->screen_y_dpi / 25.4;
 
-  screen_x_scale_ = hw_props.screen_x_dpi / 25.4;
-  screen_y_scale_ = hw_props.screen_y_dpi / 25.4;
-
-  if (hw_props.orientation_maximum)
+  if (hwprops->orientation_maximum)
     orientation_scale_ =
-        M_PI / (hw_props.orientation_maximum -
-                hw_props.orientation_minimum + 1);
+        M_PI / (hwprops->orientation_maximum -
+                hwprops->orientation_minimum + 1);
   else
     orientation_scale_ = 0.0;  // no orientation is provided
 
@@ -230,34 +229,34 @@ void ScalingFilterInterpreter::SetHardwarePropertiesImpl(
   float friendly_orientation_maximum;
   if (orientation_scale_) {
     friendly_orientation_minimum =
-        orientation_scale_ * hw_props.orientation_minimum;
+        orientation_scale_ * hwprops->orientation_minimum;
     friendly_orientation_maximum =
-        orientation_scale_ * hw_props.orientation_maximum;
+        orientation_scale_ * hwprops->orientation_maximum;
   } else {
     friendly_orientation_minimum = 0.0;
     friendly_orientation_maximum = 0.0;
   }
 
   // Make fake idealized hardware properties to report to next_.
-  HardwareProperties friendly_props = {
+  friendly_props_ = {
     0.0,  // left
     0.0,  // top
-    (hw_props.right - hw_props.left) * tp_x_scale_,  // right
-    (hw_props.bottom - hw_props.top) * tp_y_scale_,  // bottom
+    (hwprops->right - hwprops->left) * tp_x_scale_,  // right
+    (hwprops->bottom - hwprops->top) * tp_y_scale_,  // bottom
     1.0,  // X pixels/mm
     1.0,  // Y pixels/mm
     25.4,  // screen dpi x
     25.4,  // screen dpi y
     friendly_orientation_minimum,  // radians
     friendly_orientation_maximum,  // radians
-    hw_props.max_finger_cnt,
-    hw_props.max_touch_cnt,
-    hw_props.supports_t5r2,
-    hw_props.support_semi_mt,
-    hw_props.is_button_pad
+    hwprops->max_finger_cnt,
+    hwprops->max_touch_cnt,
+    hwprops->supports_t5r2,
+    hwprops->support_semi_mt,
+    hwprops->is_button_pad
   };
 
-  next_->SetHardwareProperties(friendly_props);
+  FilterInterpreter::Initialize(&friendly_props_, consumer);
 }
 
 }  // namespace gestures

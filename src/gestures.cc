@@ -426,7 +426,9 @@ void GestureInterpreter::SetHardwareProperties(
     Err("Filters are not composed yet!");
     return;
   }
-  interpreter_->SetHardwareProperties(hwprops);
+  hwprops_ = hwprops;
+  if (consumer_)
+    interpreter_->Initialize(&hwprops, consumer_.get());
 }
 
 void GestureInterpreter::TimerCallback(stime_t now, stime_t* timeout) {
@@ -544,11 +546,8 @@ void GestureInterpreter::Initialize(GestureInterpreterDeviceClass cls) {
   else
     Err("Couldn't recognize device class: %d", cls);
 
-  if (interpreter_) {
-    consumer_.reset(new GestureInterpreterConsumer(callback_,
+  consumer_.reset(new GestureInterpreterConsumer(callback_,
                                                    callback_data_));
-    interpreter_->SetGestureConsumer(consumer_.get());
-  }
 }
 
 std::string GestureInterpreter::EncodeActivityLog() {

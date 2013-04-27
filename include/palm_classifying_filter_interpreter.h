@@ -38,8 +38,6 @@ class PalmClassifyingFilterInterpreter : public FilterInterpreter {
  protected:
   virtual void SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);
 
-  virtual void SetHardwarePropertiesImpl(const HardwareProperties& hwprops);
-
  private:
   void FillOriginInfo(const HardwareState& hwstate);
   void FillPrevInfo(const HardwareState& hwstate);
@@ -121,8 +119,6 @@ class PalmClassifyingFilterInterpreter : public FilterInterpreter {
 
   // Previously input timestamp
   stime_t prev_time_;
-
-  HardwareProperties hw_props_;
 
   // Maximum pressure above which a finger is considered a palm
   DoubleProperty palm_pressure_;

@@ -44,7 +44,8 @@ class LookaheadFilterInterpreter : public FilterInterpreter {
 
   virtual void HandleTimerImpl(stime_t now, stime_t* timeout);
 
-  virtual void SetHardwarePropertiesImpl(const HardwareProperties& hwprops);
+  virtual void Initialize(const HardwareProperties* hwprops,
+                          GestureConsumer* consumer);
 
  private:
   struct QState {
@@ -119,8 +120,6 @@ class LookaheadFilterInterpreter : public FilterInterpreter {
   // We want to present time to next_ in a monotonically increasing manner,
   // so this keeps track of the most recent timestamp we've given next_.
   stime_t last_interpreted_time_;
-
-  HardwareProperties hwprops_;
 
   Gesture result_;
 

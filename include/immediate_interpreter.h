@@ -284,7 +284,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
 
   virtual void HandleTimerImpl(stime_t now, stime_t* timeout);
 
-  void SetHardwarePropertiesImpl(const HardwareProperties& hw_props);
+  virtual void Initialize(const HardwareProperties* hwprops,
+                          GestureConsumer* consumer);
 
  public:
   TapToClickState tap_to_click_state() const { return tap_to_click_state_; }

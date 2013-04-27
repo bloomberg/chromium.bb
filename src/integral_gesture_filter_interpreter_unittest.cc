@@ -12,6 +12,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/integral_gesture_filter_interpreter.h"
+#include "gestures/include/unittest_util.h"
 #include "gestures/include/util.h"
 
 using std::deque;
@@ -26,7 +27,7 @@ class IntegralGestureFilterInterpreterTest : public ::testing::Test {};
 class IntegralGestureFilterInterpreterTestInterpreter : public Interpreter {
  public:
   IntegralGestureFilterInterpreterTestInterpreter()
-      : Interpreter(NULL, NULL, false), set_hwprops_called_(false) {}
+      : Interpreter(NULL, NULL, false) {}
 
   virtual void SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     if (return_values_.empty())
@@ -42,15 +43,9 @@ class IntegralGestureFilterInterpreterTestInterpreter : public Interpreter {
     EXPECT_TRUE(false);
   }
 
-  virtual void SetHardwareProperties(const HardwareProperties& hwprops) {
-    set_hwprops_called_ = true;
-  }
-
   Gesture return_value_;
   deque<Gesture> return_values_;
   deque<vector<pair<float, float> > > expected_coordinates_;
-  HardwareProperties expected_hwprops_;
-  bool set_hwprops_called_;
 };
 
 TEST(IntegralGestureFilterInterpreterTestInterpreter, OverflowTest) {
@@ -170,25 +165,6 @@ TEST(IntegralGestureFilterInterpreterTest, ZeroGestureTest) {
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), out);
   out = wrapper.SyncInterpret(&hs[iter++], NULL);
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), out);
-}
-
-TEST(IntegralGestureFilterInterpreterTest, SetHwpropsTest) {
-  HardwareProperties hwprops = {
-    0, 0, 1, 1,  // left, top, right, bottom
-    1,  // x res (pixels/mm)
-    1,  // y res (pixels/mm)
-    133, 133,  // scrn DPI X, Y
-    -1,  // orientation minimum
-    2,   // orientation maximum
-    2, 5,  // max fingers, max_touch
-    0, 0, 0  // t5r2, semi_mt, button pad
-  };
-  IntegralGestureFilterInterpreterTestInterpreter* base_interpreter =
-      new IntegralGestureFilterInterpreterTestInterpreter;
-  IntegralGestureFilterInterpreter interpreter(base_interpreter, NULL);
-  TestInterpreterWrapper wrapper(&interpreter);
-  interpreter.SetHardwareProperties(hwprops);
-  EXPECT_TRUE(base_interpreter->set_hwprops_called_);
 }
 
 }  // namespace gestures

@@ -21,6 +21,7 @@ Interpreter::Interpreter(PropRegistry* prop_reg,
                          Tracer* tracer,
                          bool force_logging)
     : log_(NULL),
+      initialized_(false),
       name_(NULL),
       tracer_(tracer) {
 #ifdef DEEP_LOGS
@@ -44,6 +45,7 @@ void Interpreter::Trace(const char* message, const char* name) {
 
 void Interpreter::SyncInterpret(HardwareState* hwstate,
                                     stime_t* timeout) {
+  AssertWithReturn(initialized_);
   if (log_.get() && hwstate) {
     Trace("log: start: ", "LogHardwareState");
     log_->LogHardwareState(*hwstate);
@@ -56,6 +58,7 @@ void Interpreter::SyncInterpret(HardwareState* hwstate,
 }
 
 void Interpreter::HandleTimer(stime_t now, stime_t* timeout) {
+  AssertWithReturn(initialized_);
   if (log_.get()) {
     Trace("log: start: ", "LogTimerCallback");
     log_->LogTimerCallback(now);
@@ -68,17 +71,21 @@ void Interpreter::HandleTimer(stime_t now, stime_t* timeout) {
 }
 
 void Interpreter::ProduceGesture(const Gesture& gesture) {
+  AssertWithReturn(initialized_);
   LogOutputs(&gesture, NULL, "ProduceGesture");
   consumer_->ConsumeGesture(gesture);
 }
 
-void Interpreter::SetHardwareProperties(const HardwareProperties& hwprops) {
-  if (log_.get()) {
+void Interpreter::Initialize(const HardwareProperties* hwprops,
+                             GestureConsumer* consumer) {
+  if (log_.get() && hwprops) {
     Trace("log: start: ", "SetHardwareProperties");
-    log_->SetHardwareProperties(hwprops);
+    log_->SetHardwareProperties(*hwprops);
     Trace("log: end: ", "SetHardwareProperties");
   }
-  SetHardwarePropertiesImpl(hwprops);
+  hwprops_ = hwprops;
+  consumer_ = consumer;
+  initialized_ = true;
 }
 
 DictionaryValue* Interpreter::EncodeCommonInfo() {
@@ -101,10 +108,6 @@ std::string Interpreter::Encode() {
                                      &out);
   delete root;
   return out;
-}
-
-void Interpreter::SetGestureConsumer(GestureConsumer* consumer) {
-  consumer_ = consumer;
 }
 
 void Interpreter::InitName() {

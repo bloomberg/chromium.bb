@@ -7,6 +7,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/non_linearity_filter_interpreter.h"
+#include "gestures/include/unittest_util.h"
 #include "gestures/include/util.h"
 
 const char kTestNonlinearData[] =

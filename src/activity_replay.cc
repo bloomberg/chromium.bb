@@ -13,6 +13,7 @@
 #include "gestures/include/logging.h"
 #include "gestures/include/prop_registry.h"
 #include "gestures/include/set.h"
+#include "gestures/include/unittest_util.h"
 #include "gestures/include/util.h"
 
 using std::endl;
@@ -532,10 +533,9 @@ bool ActivityReplay::ParsePropChange(DictionaryValue* entry) {
 
 // Replay the log and verify the output in a strict way.
 void ActivityReplay::Replay(Interpreter* interpreter) {
-  TestInterpreterWrapper wrapper(interpreter);
+  TestInterpreterWrapper wrapper(interpreter, &hwprops_);
 
   bool pending_gs_flag = false;
-  interpreter->SetHardwareProperties(hwprops_);
   stime_t last_timeout_req = -1.0;
   // Use last_gs to save a copy of last gesture.
   Gesture last_gs;

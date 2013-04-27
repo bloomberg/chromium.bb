@@ -39,11 +39,6 @@ void SplitCorrectingFilterInterpreter::SyncInterpretImpl(
   next_->SyncInterpret(hwstate, timeout);
 }
 
-void SplitCorrectingFilterInterpreter::SetHardwarePropertiesImpl(
-    const HardwareProperties& hwprops) {
-  next_->SetHardwareProperties(hwprops);
-}
-
 void SplitCorrectingFilterInterpreter::RemoveMissingUnmergedContacts(
     const HardwareState& hwstate) {
   for (UnmergedContact* it = unmerged_;

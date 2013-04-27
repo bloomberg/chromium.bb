@@ -10,6 +10,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/cr48_profile_sensor_filter_interpreter.h"
+#include "gestures/include/unittest_util.h"
 
 using std::deque;
 using std::make_pair;
@@ -106,25 +107,25 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, LowPressureTest) {
   };
 
   hwprops.support_semi_mt = true;
-  interpreter.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&interpreter, &hwprops);
   interpreter.interpreter_enabled_.val_ = true;
 
   base_interpreter->expected_finger_cnt_.push_back(1);
-  interpreter.SyncInterpret(&hs[0], NULL);
+  wrapper.SyncInterpret(&hs[0], NULL);
   int current_tracking_id = fs[0].tracking_id;
 
   base_interpreter->expected_finger_cnt_.push_back(1);
-  interpreter.SyncInterpret(&hs[1], NULL);
+  wrapper.SyncInterpret(&hs[1], NULL);
 
   base_interpreter->expected_finger_cnt_.push_back(0);
-  interpreter.SyncInterpret(&hs[2], NULL);
+  wrapper.SyncInterpret(&hs[2], NULL);
 
   base_interpreter->expected_finger_cnt_.push_back(1);
   base_interpreter->unexpected_tracking_id_.push_back(current_tracking_id);
-  interpreter.SyncInterpret(&hs[3], NULL);
+  wrapper.SyncInterpret(&hs[3], NULL);
 
   base_interpreter->expected_finger_cnt_.push_back(0);
-  interpreter.SyncInterpret(&hs[4], NULL);
+  wrapper.SyncInterpret(&hs[4], NULL);
 }
 
 TEST(Cr48ProfileSensorFilterInterpreterTest, TrackingIdMappingTest) {
@@ -161,26 +162,26 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, TrackingIdMappingTest) {
   };
 
   hwprops.support_semi_mt = true;
-  interpreter.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&interpreter, &hwprops);
   interpreter.interpreter_enabled_.val_ = true;
 
-  interpreter.SyncInterpret(&hs[0], NULL);
-  interpreter.SyncInterpret(&hs[1], NULL);
+  wrapper.SyncInterpret(&hs[0], NULL);
+  wrapper.SyncInterpret(&hs[1], NULL);
 
   vector<short>  result;
   result.push_back(hs[1].fingers[0].tracking_id);
   base_interpreter->expected_tracking_id_.push_back(result);
   short original_id = hs[2].fingers[0].tracking_id;
   base_interpreter->unexpected_tracking_id_.push_back(original_id);
-  interpreter.SyncInterpret(&hs[2], NULL);
+  wrapper.SyncInterpret(&hs[2], NULL);
 
-  interpreter.SyncInterpret(&hs[3], NULL);
-  interpreter.SyncInterpret(&hs[4], NULL);
+  wrapper.SyncInterpret(&hs[3], NULL);
+  wrapper.SyncInterpret(&hs[4], NULL);
   result.clear();
   result.push_back(hs[4].fingers[0].tracking_id);
   result.push_back(hs[4].fingers[1].tracking_id);
   base_interpreter->expected_tracking_id_.push_back(result);
-  interpreter.SyncInterpret(&hs[5], NULL);
+  wrapper.SyncInterpret(&hs[5], NULL);
 }
 
 TEST(Cr48ProfileSensorFilterInterpreterTest, CorrectFingerPositionTest) {
@@ -210,11 +211,11 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, CorrectFingerPositionTest) {
   };
 
   hwprops.support_semi_mt = true;
-  interpreter.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&interpreter, &hwprops);
   interpreter.interpreter_enabled_.val_ = true;
   interpreter.bounding_box_.val_ = 1;
 
-  interpreter.SyncInterpret(&hs[0], NULL);
+  wrapper.SyncInterpret(&hs[0], NULL);
 
   // Test if both finger positions are corrected.
   vector<FingerPosition>  result;
@@ -223,7 +224,7 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, CorrectFingerPositionTest) {
   FingerPosition second_finger_position1 = { 2900, 2700 };
   result.push_back(second_finger_position1);  // second finger
   base_interpreter->expected_coordinates_.push_back(result);
-  interpreter.SyncInterpret(&hs[1], NULL);
+  wrapper.SyncInterpret(&hs[1], NULL);
 
   result.clear();
   FingerPosition first_finger_position2 = { 4050, 3200 };
@@ -231,7 +232,7 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, CorrectFingerPositionTest) {
   FingerPosition second_finger_position2 = { 2950, 2750 };
   result.push_back(second_finger_position2);  // second finger
   base_interpreter->expected_coordinates_.push_back(result);
-  interpreter.SyncInterpret(&hs[2], NULL);
+  wrapper.SyncInterpret(&hs[2], NULL);
 }
 
 TEST(Cr48ProfileSensorFilterInterpreterTest, FingerCrossOverTest) {
@@ -305,12 +306,12 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, FingerCrossOverTest) {
   size_t hwstate_index_finger_crossed = 6;
 
   hwprops.support_semi_mt = true;
-  interpreter.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&interpreter, &hwprops);
   interpreter.interpreter_enabled_.val_ = true;
   interpreter.bounding_box_.val_ = 1;
 
   for (size_t i = 0; i < hwstate_index_finger_crossed; i++)
-    interpreter.SyncInterpret(&hs[i], NULL);
+    wrapper.SyncInterpret(&hs[i], NULL);
 
   // Test if both finger positions are corrected with the new pattern
   // by examining the swapped position_y values.
@@ -320,7 +321,7 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, FingerCrossOverTest) {
   FingerPosition second_finger_position1 = { 4118, 3117 };
   result.push_back(second_finger_position1);  // second finger
   base_interpreter->expected_coordinates_.push_back(result);
-  interpreter.SyncInterpret(&hs[hwstate_index_finger_crossed], NULL);
+  wrapper.SyncInterpret(&hs[hwstate_index_finger_crossed], NULL);
 
   result.clear();
   FingerPosition first_finger_position2 = { 2969, 3114 };
@@ -328,7 +329,7 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, FingerCrossOverTest) {
   FingerPosition second_finger_position2 = { 4118, 3153 };
   result.push_back(second_finger_position2);  // second finger
   base_interpreter->expected_coordinates_.push_back(result);
-  interpreter.SyncInterpret(&hs[hwstate_index_finger_crossed + 1], NULL);
+  wrapper.SyncInterpret(&hs[hwstate_index_finger_crossed + 1], NULL);
 
   result.clear();
   FingerPosition first_finger_position3 = { 2969, 3130 };
@@ -336,7 +337,7 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, FingerCrossOverTest) {
   FingerPosition second_finger_position3 =  { 4118, 3198 };
   result.push_back(second_finger_position3);  // second finger
   base_interpreter->expected_coordinates_.push_back(result);
-  interpreter.SyncInterpret(&hs[hwstate_index_finger_crossed + 2], NULL);
+  wrapper.SyncInterpret(&hs[hwstate_index_finger_crossed + 2], NULL);
 }
 
 TEST(Cr48ProfileSensorFilterInterpreterTest, ClipNonLinearAreaTest) {
@@ -497,25 +498,25 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, MovingFingerTest) {
     2, 3, 0, 1, 1  // max_fingers, max_touch, t5r2, semi_mt, is_button_pad
   };
 
-  interpreter.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&interpreter, &hwprops);
   interpreter.interpreter_enabled_.val_ = true;
   interpreter.bounding_box_.val_ = 1;
 
   // Test one, the moving finger should be the first finger.
-  interpreter.SyncInterpret(&hs[0], NULL);
+  wrapper.SyncInterpret(&hs[0], NULL);
   for (size_t i = 0; i < (arraysize(fs) - 1) / 2; i++) {
     hs[1].fingers = &fs[2 * i + 1];  // update the finger array
     hs[1].timestamp += 0.02;
-    interpreter.SyncInterpret(&hs[1], NULL);
+    wrapper.SyncInterpret(&hs[1], NULL);
     EXPECT_EQ(interpreter.moving_finger_, 0);
   }
 
   // Test two, the moving finger should be the second finger.
-  interpreter.SyncInterpret(&hs2[0], NULL);
+  wrapper.SyncInterpret(&hs2[0], NULL);
   for (size_t i = 0; i < (arraysize(fs2) - 1) / 2; i++) {
     hs2[1].fingers = &fs2[2 * i + 1];  // update the finger array
     hs2[1].timestamp += 0.02;
-    interpreter.SyncInterpret(&hs2[1], NULL);
+    wrapper.SyncInterpret(&hs2[1], NULL);
     EXPECT_EQ(interpreter.moving_finger_, 1);
   }
 }
@@ -548,7 +549,7 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, HistoryTest) {
     2, 3, 0, 1, 1  // max_fingers, max_touch, t5r2, semi_mt, is_button_pad
   };
 
-  interpreter.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&interpreter, &hwprops);
 
   // HardwareState history should be initially cleared
   EXPECT_EQ(interpreter.prev_hwstate_.fingers, kNullFingers);
@@ -556,17 +557,17 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, HistoryTest) {
 
   // HardwareState history should not be cleared if interpreter enabled
   interpreter.interpreter_enabled_.val_ = 1;
-  interpreter.SyncInterpret(&hs[0], NULL);
+  wrapper.SyncInterpret(&hs[0], NULL);
   EXPECT_TRUE(interpreter.prev_hwstate_.SameFingersAs(hs[0]));
   EXPECT_EQ(interpreter.prev2_hwstate_.fingers, kNullFingers);
 
-  interpreter.SyncInterpret(&hs[1], NULL);
+  wrapper.SyncInterpret(&hs[1], NULL);
   EXPECT_TRUE(interpreter.prev_hwstate_.SameFingersAs(hs[1]));
   EXPECT_TRUE(interpreter.prev2_hwstate_.SameFingersAs(hs[0]));
 
   // HardwareState history should be cleared if interpreter disabled
   interpreter.interpreter_enabled_.val_ = 0;
-  interpreter.SyncInterpret(&hs[0], NULL);
+  wrapper.SyncInterpret(&hs[0], NULL);
   EXPECT_EQ(interpreter.prev_hwstate_.fingers, kNullFingers);
   EXPECT_EQ(interpreter.prev2_hwstate_.fingers, kNullFingers);
 }
@@ -605,12 +606,12 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, TwoToOneJumpTest) {
     2, 3, 0, 1, 1  // max_fingers, max_touch, t5r2, semi_mt, is_button_pad
   };
 
-  interpreter.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&interpreter, &hwprops);
   interpreter.interpreter_enabled_.val_ = 1;
 
   for (size_t i = 0; i < arraysize(hs); i++) {
     // No Warp at first
-    interpreter.SyncInterpret(&hs[i], NULL);
+    wrapper.SyncInterpret(&hs[i], NULL);
     FingerState *fs = &hs[i].fingers[0];
     switch (i) {
     case 0:  // No warp 2-finger sample, and 3rd sample after 2->1
@@ -666,11 +667,11 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, OneToTwoJumpTest) {
     false, true, true  // t5r2, semi_mt, is_button_pad
   };
 
-  interpreter.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&interpreter, &hwprops);
   interpreter.interpreter_enabled_.val_ = 1;
 
   for (size_t i = 0; i < arraysize(hs); i++) {
-    interpreter.SyncInterpret(&hs[i], NULL);
+    wrapper.SyncInterpret(&hs[i], NULL);
     switch (i) {
     case 2:  // warp x & y for 2 hwstates after 1->2 on all fingers
     case 3:
@@ -725,12 +726,12 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, WarpOnSwapTest) {
     false, true, true,  // t5r2, semi_mt, is_button_pad
   };
 
-  interpreter.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&interpreter, &hwprops);
   interpreter.interpreter_enabled_.val_ = 1;
   interpreter.bounding_box_.val_ = 1;
 
   for (size_t i = 0; i < arraysize(hs); i++) {
-    interpreter.SyncInterpret(&hs[i], NULL);
+    wrapper.SyncInterpret(&hs[i], NULL);
     // fs[0] crosses fs[1] in hs[5], so WARP_X must be set
     if (i == 5) {
       EXPECT_EQ(hs[i].finger_cnt, 2);
@@ -778,13 +779,13 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, SensorJumpTest) {
     false, true, true  // t5r2, semi_mt, is_button_pad
   };
 
-  interpreter.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&interpreter, &hwprops);
   interpreter.interpreter_enabled_.val_ = 1;
   interpreter.min_jump_distance_.val_ = 150.0;
   interpreter.max_jump_distance_.val_ = 910.0;
 
   for (size_t i = 0; i < arraysize(hs); i++) {
-    interpreter.SyncInterpret(&hs[i], NULL);
+    wrapper.SyncInterpret(&hs[i], NULL);
     if (i == 3)
       EXPECT_TRUE(interpreter.sensor_jump_[1][1]);
     else
@@ -845,7 +846,7 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, BigJumpTest) {
     false, true, true  // t5r2, semi_mt, is_button_pad
   };
 
-  interpreter.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&interpreter, &hwprops);
   interpreter.interpreter_enabled_.val_ = 1;
   interpreter.move_threshold_.val_ = 130.0;
   interpreter.jump_threshold_.val_ = 260.0;
@@ -857,7 +858,7 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, BigJumpTest) {
     if (i > 0 && hs[i].finger_cnt != 0 && hs[i - 1].finger_cnt != 0)
       prev = &hs[i - 1].fingers[0];
 
-    interpreter.SyncInterpret(&hs[i], NULL);
+    wrapper.SyncInterpret(&hs[i], NULL);
 
     // Check if we squash the jump
     if (i == 1 || i == 11)
@@ -903,13 +904,13 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, FastMoveTest) {
     false, true, true  // t5r2, semi_mt, is_button_pad
   };
 
-  interpreter.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&interpreter, &hwprops);
   interpreter.interpreter_enabled_.val_ = 1;
   interpreter.move_threshold_.val_ = 130.0;
   interpreter.jump_threshold_.val_ = 260.0;
 
   for (size_t i = 0; i < arraysize(hs); i++) {
-    interpreter.SyncInterpret(&hs[i], NULL);
+    wrapper.SyncInterpret(&hs[i], NULL);
     struct FingerState *current = &fs[i];
     // Make sure the tracking ids are all the same.
     if (i > 0)

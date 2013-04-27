@@ -6,6 +6,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/multitouch_mouse_interpreter.h"
+#include "gestures/include/unittest_util.h"
 #include "gestures/include/util.h"
 
 namespace gestures {
@@ -14,7 +15,6 @@ class MultitouchMouseInterpreterTest : public ::testing::Test {};
 
 TEST(MultitouchMouseInterpreterTest, SimpleTest) {
   MultitouchMouseInterpreter mi(NULL, NULL);
-  TestInterpreterWrapper wrapper(&mi);
   Gesture* gs;
 
   HardwareProperties hwprops = {
@@ -27,7 +27,7 @@ TEST(MultitouchMouseInterpreterTest, SimpleTest) {
     2, 5,  // max fingers, max_touch
     0, 0, 0  //t5r2, semi, button pad
   };
-  mi.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&mi, &hwprops);
 
   FingerState fs_0[] = {
     { 1, 1, 0, 0, 0, 0, 0, 0, 1, 0 },

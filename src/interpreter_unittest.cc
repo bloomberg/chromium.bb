@@ -11,6 +11,7 @@
 #include "gestures/include/gestures.h"
 #include "gestures/include/interpreter.h"
 #include "gestures/include/prop_registry.h"
+#include "gestures/include/unittest_util.h"
 #include "gestures/include/util.h"
 
 using std::string;
@@ -24,7 +25,6 @@ class InterpreterTestInterpreter : public Interpreter {
   explicit InterpreterTestInterpreter(PropRegistry* prop_reg)
       : Interpreter(prop_reg, NULL, true),
         expected_hwstate_(NULL),
-        set_hwprops_call_count_(0),
         interpret_call_count_(0),
         handle_timer_call_count_(0),
         bool_prop_(prop_reg, "BoolProp", 0),
@@ -38,8 +38,6 @@ class InterpreterTestInterpreter : public Interpreter {
 
   Gesture return_value_;
   HardwareState* expected_hwstate_;
-  HardwareProperties expected_hwprops_;
-  int set_hwprops_call_count_;
   int interpret_call_count_;
   int handle_timer_call_count_;
   BoolProperty bool_prop_;
@@ -74,27 +72,6 @@ class InterpreterTestInterpreter : public Interpreter {
     handle_timer_call_count_++;
     ProduceGesture(return_value_);
   }
-
-  virtual void SetHardwarePropertiesImpl(const HardwareProperties& hw_props) {
-    set_hwprops_call_count_++;
-    EXPECT_FLOAT_EQ(expected_hwprops_.left, hw_props.left);
-    EXPECT_FLOAT_EQ(expected_hwprops_.top, hw_props.top);
-    EXPECT_FLOAT_EQ(expected_hwprops_.right, hw_props.right);
-    EXPECT_FLOAT_EQ(expected_hwprops_.bottom, hw_props.bottom);
-    EXPECT_FLOAT_EQ(expected_hwprops_.res_x, hw_props.res_x);
-    EXPECT_FLOAT_EQ(expected_hwprops_.res_y, hw_props.res_y);
-    EXPECT_FLOAT_EQ(expected_hwprops_.screen_x_dpi, hw_props.screen_x_dpi);
-    EXPECT_FLOAT_EQ(expected_hwprops_.screen_y_dpi, hw_props.screen_y_dpi);
-    EXPECT_FLOAT_EQ(expected_hwprops_.orientation_minimum,
-                    hw_props.orientation_minimum);
-    EXPECT_FLOAT_EQ(expected_hwprops_.orientation_maximum,
-                    hw_props.orientation_maximum);
-    EXPECT_EQ(expected_hwprops_.max_finger_cnt, hw_props.max_finger_cnt);
-    EXPECT_EQ(expected_hwprops_.max_touch_cnt, hw_props.max_touch_cnt);
-    EXPECT_EQ(expected_hwprops_.supports_t5r2, hw_props.supports_t5r2);
-    EXPECT_EQ(expected_hwprops_.support_semi_mt, hw_props.support_semi_mt);
-    EXPECT_EQ(expected_hwprops_.is_button_pad, hw_props.is_button_pad);
-  };
 };
 
 
@@ -102,7 +79,19 @@ TEST(InterpreterTest, SimpleTest) {
   PropRegistry prop_reg;
   InterpreterTestInterpreter* base_interpreter =
       new InterpreterTestInterpreter(&prop_reg);
-  TestInterpreterWrapper wrapper(base_interpreter);
+
+  HardwareProperties hwprops = {
+    0, 0, 100, 100,  // left, top, right, bottom
+    10,  // x res (pixels/mm)
+    10,  // y res (pixels/mm)
+    133, 133,  // scrn DPI X, Y
+    1,  // orientation minimum
+    2,   // orientation maximum
+    2, 5,  // max fingers, max_touch
+    1, 0, 0  //t5r2, semi, button pad
+  };
+
+  TestInterpreterWrapper wrapper(base_interpreter, &hwprops);
 
   base_interpreter->bool_prop_.val_ = 1;
   base_interpreter->double_prop_.val_ = 1;
@@ -113,21 +102,8 @@ TEST(InterpreterTest, SimpleTest) {
   //if (prop_reg)
   //  prop_reg->set_activity_log(&(base_interpreter->log_));
 
-  HardwareProperties hwprops = {
-    0, 0, 100, 100,  // left, top, right, bottom
-    10,  // x res (pixels/mm)
-    10,  // y res (pixels/mm)
-    133, 133,  // scrn DPI X, Y
-    -1,  // orientation minimum
-    2,   // orientation maximum
-    2, 5,  // max fingers, max_touch
-    1, 0, 0  //t5r2, semi, button pad
-  };
   char interpreter_name[] = "InterpreterTestInterpreter";
   base_interpreter->expected_interpreter_name_ = interpreter_name;
-  base_interpreter->expected_hwprops_ = hwprops;
-  base_interpreter->SetHardwareProperties(hwprops);
-  EXPECT_EQ(1, base_interpreter->set_hwprops_call_count_);
   base_interpreter->return_value_ = Gesture(kGestureMove,
                                             0,  // start time
                                             1,  // end time
@@ -169,7 +145,6 @@ TEST(InterpreterTest, SimpleTest) {
   replay.Parse(initial_log);
 
   base_interpreter2->expected_hwstate_ = &hardware_state;
-  base_interpreter2->expected_hwprops_ = hwprops;
 
   replay.Replay(base_interpreter2);
   string final_log = base_interpreter2->Encode();
@@ -186,8 +161,7 @@ class InterpreterResetLogTestInterpreter : public Interpreter {
  protected:
   virtual void SyncInterpretImpl(HardwareState* hwstate,
                                      stime_t* timeout) {}
-  virtual void SetHardwarePropertiesImpl(const HardwareProperties& hw_props) {
-  }
+
   virtual void HandleTimerImpl(stime_t now, stime_t* timeout) {}
 };
 
@@ -195,19 +169,8 @@ TEST(InterpreterTest, ResetLogTest) {
   PropRegistry prop_reg;
   InterpreterResetLogTestInterpreter* base_interpreter =
       new InterpreterResetLogTestInterpreter();
+  TestInterpreterWrapper wrapper(base_interpreter);
 
-  HardwareProperties hwprops = {
-    0, 0, 100, 100,  // left, top, right, bottom
-    10,  // x res (pixels/mm)
-    10,  // y res (pixels/mm)
-    133, 133,  // scrn DPI X, Y
-    -1,  // orientation minimum
-    2,   // orientation maximum
-    2, 5,  // max fingers, max_touch
-    1, 0, 0  //t5r2, semi, button pad
-  };
-
-  base_interpreter->SetHardwareProperties(hwprops);
   FingerState finger_state = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
     0, 0, 0, 0, 10, 0, 50, 50, 1, 0
@@ -217,17 +180,17 @@ TEST(InterpreterTest, ResetLogTest) {
     200000, 0, 1, 1, &finger_state, 0, 0, 0, 0
   };
   stime_t timeout = -1.0;
-  base_interpreter->SyncInterpret(&hardware_state, &timeout);
+  wrapper.SyncInterpret(&hardware_state, &timeout);
   EXPECT_EQ(base_interpreter->log_->size(), 1);
 
-  base_interpreter->SyncInterpret(&hardware_state, &timeout);
+  wrapper.SyncInterpret(&hardware_state, &timeout);
   EXPECT_EQ(base_interpreter->log_->size(), 2);
 
   // Assume the ResetLog property is set.
   base_interpreter->Clear();
   EXPECT_EQ(base_interpreter->log_->size(), 0);
 
-  base_interpreter->SyncInterpret(&hardware_state, &timeout);
+  wrapper.SyncInterpret(&hardware_state, &timeout);
   EXPECT_EQ(base_interpreter->log_->size(), 1);
 }
 }  // namespace gestures

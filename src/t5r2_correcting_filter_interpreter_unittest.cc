@@ -12,6 +12,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/t5r2_correcting_filter_interpreter.h"
+#include "gestures/include/unittest_util.h"
 #include "gestures/include/util.h"
 
 using std::deque;
@@ -26,7 +27,7 @@ class T5R2CorrectingFilterInterpreterTest : public ::testing::Test {};
 class T5R2CorrectingFilterInterpreterTestInterpreter : public Interpreter {
  public:
   T5R2CorrectingFilterInterpreterTestInterpreter()
-      : Interpreter(NULL, NULL, false), set_hwprops_called_(false) {}
+      : Interpreter(NULL, NULL, false) {}
 
   virtual void SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     if (expected_hardware_state_) {
@@ -49,32 +50,9 @@ class T5R2CorrectingFilterInterpreterTestInterpreter : public Interpreter {
     EXPECT_TRUE(false);
   }
 
-  virtual void SetHardwareProperties(const HardwareProperties& hw_props) {
-    EXPECT_FLOAT_EQ(expected_hwprops_.left, hw_props.left);
-    EXPECT_FLOAT_EQ(expected_hwprops_.top, hw_props.top);
-    EXPECT_FLOAT_EQ(expected_hwprops_.right, hw_props.right);
-    EXPECT_FLOAT_EQ(expected_hwprops_.bottom, hw_props.bottom);
-    EXPECT_FLOAT_EQ(expected_hwprops_.res_x, hw_props.res_x);
-    EXPECT_FLOAT_EQ(expected_hwprops_.res_y, hw_props.res_y);
-    EXPECT_FLOAT_EQ(expected_hwprops_.screen_x_dpi, hw_props.screen_x_dpi);
-    EXPECT_FLOAT_EQ(expected_hwprops_.screen_y_dpi, hw_props.screen_y_dpi);
-    EXPECT_FLOAT_EQ(expected_hwprops_.orientation_minimum,
-                    hw_props.orientation_minimum);
-    EXPECT_FLOAT_EQ(expected_hwprops_.orientation_maximum,
-                    hw_props.orientation_maximum);
-    EXPECT_EQ(expected_hwprops_.max_finger_cnt, hw_props.max_finger_cnt);
-    EXPECT_EQ(expected_hwprops_.max_touch_cnt, hw_props.max_touch_cnt);
-    EXPECT_EQ(expected_hwprops_.supports_t5r2, hw_props.supports_t5r2);
-    EXPECT_EQ(expected_hwprops_.support_semi_mt, hw_props.support_semi_mt);
-    EXPECT_EQ(expected_hwprops_.is_button_pad, hw_props.is_button_pad);
-    set_hwprops_called_ = true;
-  };
-
   Gesture return_value_;
   deque<Gesture> return_values_;
   HardwareState* expected_hardware_state_;
-  HardwareProperties expected_hwprops_;
-  bool set_hwprops_called_;
 };
 
 struct HardwareStateAndExpectations {
@@ -89,7 +67,6 @@ struct HardwareStateAndExpectations {
 TEST(T5R2CorrectingFilterInterpreterTest, SimpleTest) {
   T5R2CorrectingFilterInterpreterTestInterpreter* base_interpreter = NULL;
   scoped_ptr<T5R2CorrectingFilterInterpreter> interpreter;
-  TestInterpreterWrapper wrapper(interpreter.get());
 
   HardwareProperties hwprops = {
     0, 0, 10, 10,  // left, top, right, bottom
@@ -101,6 +78,7 @@ TEST(T5R2CorrectingFilterInterpreterTest, SimpleTest) {
     2, 5,  // max fingers, max_touch
     0, 0, 0  //t5r2, semi, button pad
   };
+  TestInterpreterWrapper wrapper(interpreter.get(), &hwprops);
 
   FingerState fs[] = {
     { 0, 0, 0, 0, 1, 0, 150, 4000, 1, 0 },
@@ -132,10 +110,7 @@ TEST(T5R2CorrectingFilterInterpreterTest, SimpleTest) {
           new T5R2CorrectingFilterInterpreterTestInterpreter;
       interpreter.reset(
           new T5R2CorrectingFilterInterpreter(NULL, base_interpreter, NULL));
-      wrapper = TestInterpreterWrapper(interpreter.get());
-      base_interpreter->expected_hwprops_ = hwprops;
-      interpreter->SetHardwareProperties(hwprops);
-      EXPECT_TRUE(base_interpreter->set_hwprops_called_);
+      wrapper.Reset(interpreter.get());
     }
     HardwareState expected_hs = hse[i].hs;
     if (hse[i].modified)

@@ -56,13 +56,6 @@ void PalmClassifyingFilterInterpreter::SyncInterpretImpl(
     next_->SyncInterpret(hwstate, timeout);
 }
 
-void PalmClassifyingFilterInterpreter::SetHardwarePropertiesImpl(
-    const HardwareProperties& hwprops) {
-  hw_props_ = hwprops;
-  if (next_.get())
-    next_->SetHardwareProperties(hwprops);
-}
-
 void PalmClassifyingFilterInterpreter::FillOriginInfo(
     const HardwareState& hwstate) {
   RemoveMissingIdsFromMap(&origin_timestamps_, hwstate);
@@ -158,12 +151,12 @@ bool PalmClassifyingFilterInterpreter::FingerInPalmEnvelope(
       (fs.pressure / palm_pressure_.val_) *
       (palm_edge_width_.val_ - palm_edge_min_width_.val_);
   return fs.position_x < limit ||
-      fs.position_x > (hw_props_.right - limit);
+      fs.position_x > (hwprops_->right - limit);
 }
 
 bool PalmClassifyingFilterInterpreter::FingerInBottomArea(
     const FingerState& fs) {
-  return fs.position_y > (hw_props_.bottom - palm_edge_min_width_.val_);
+  return fs.position_y > (hwprops_->bottom - palm_edge_min_width_.val_);
 }
 
 void PalmClassifyingFilterInterpreter::UpdatePalmState(

@@ -49,11 +49,6 @@ void FingerMergeFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
   next_->SyncInterpret(hwstate, timeout);
 }
 
-void FingerMergeFilterInterpreter::SetHardwarePropertiesImpl(
-    const HardwareProperties& hw_props) {
-  next_->SetHardwareProperties(hw_props);
-}
-
 // Suspicious angle is between the 45 degree angle of going down and to the
 // left and going straight to the left
 bool FingerMergeFilterInterpreter::IsSuspiciousAngle(

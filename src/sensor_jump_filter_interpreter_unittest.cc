@@ -12,6 +12,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/sensor_jump_filter_interpreter.h"
+#include "gestures/include/unittest_util.h"
 
 using std::deque;
 using std::make_pair;
@@ -27,7 +28,6 @@ class SensorJumpFilterInterpreterTestInterpreter : public Interpreter {
   SensorJumpFilterInterpreterTestInterpreter()
       : Interpreter(NULL, NULL, false),
         handle_timer_called_(false),
-        set_hwprops_called_(false),
         expected_finger_cnt_(-1) {}
 
   virtual void SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
@@ -42,13 +42,8 @@ class SensorJumpFilterInterpreterTestInterpreter : public Interpreter {
     handle_timer_called_ = true;
   }
 
-  virtual void SetHardwareProperties(const HardwareProperties& hw_props) {
-    set_hwprops_called_ = true;
-  }
-
   FingerState prev_;
   bool handle_timer_called_;
-  bool set_hwprops_called_;
   short expected_finger_cnt_;
 };
 
@@ -74,12 +69,10 @@ TEST(SensorJumpFilterInterpreterTest, SimpleTest) {
     5, 5,  // max fingers, max_touch
     0, 0, 1  // t5r2, semi, button pad
   };
-  EXPECT_FALSE(base_interpreter->set_hwprops_called_);
-  interpreter.SetHardwareProperties(hwprops);
-  EXPECT_TRUE(base_interpreter->set_hwprops_called_);
+  TestInterpreterWrapper wrapper(&interpreter, &hwprops);
 
   EXPECT_FALSE(base_interpreter->handle_timer_called_);
-  interpreter.HandleTimer(0.0, NULL);
+  wrapper.HandleTimer(0.0, NULL);
   EXPECT_TRUE(base_interpreter->handle_timer_called_);
 
   FingerState fs = { 0, 0, 0, 0, 1, 0, 3.0, 0.0, 1, 0 };
@@ -104,7 +97,7 @@ TEST(SensorJumpFilterInterpreterTest, SimpleTest) {
     hs.timestamp = now;
     fs.flags = 0;
     fs.position_y = data[i].val;
-    interpreter.SyncInterpret(&hs, NULL);
+    wrapper.SyncInterpret(&hs, NULL);
     const unsigned kFlags = GESTURES_FINGER_WARP_Y |
         GESTURES_FINGER_WARP_Y_TAP_MOVE;
     EXPECT_EQ(data[i].warp ? kFlags : 0, fs.flags) << "i=" << i;
@@ -136,7 +129,7 @@ TEST(SensorJumpFilterInterpreterTest, ActualLogTest) {
     15, 5,  // max fingers, max_touch,
     0, 0, 1  // t5r2, semi, button pad
   };
-  interpreter.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&interpreter, &hwprops);
 
   ActualLogInputs inputs[] = {
     { 19.554, 56.666, 59.400, 118.201, 6, 35.083, 58.200, 118.201, 7 },
@@ -251,7 +244,7 @@ TEST(SensorJumpFilterInterpreterTest, ActualLogTest) {
     fs[1].position_y = input.y1;
     fs[1].pressure = input.p1;
     fs[1].tracking_id = input.id1;
-    interpreter.SyncInterpret(&hs, NULL);
+    wrapper.SyncInterpret(&hs, NULL);
     if (i != 0) {  // can't do deltas with the first input
       float dy[] = { fs[0].position_y - prev_y_out[0],
                      fs[1].position_y - prev_y_out[1] };

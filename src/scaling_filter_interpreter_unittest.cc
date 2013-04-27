@@ -13,6 +13,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/scaling_filter_interpreter.h"
+#include "gestures/include/unittest_util.h"
 #include "gestures/include/util.h"
 
 using std::deque;
@@ -27,7 +28,7 @@ class ScalingFilterInterpreterTest : public ::testing::Test {};
 class ScalingFilterInterpreterTestInterpreter : public Interpreter {
  public:
   ScalingFilterInterpreterTestInterpreter()
-      : Interpreter(NULL, NULL, false), set_hwprops_called_(false) {}
+      : Interpreter(NULL, NULL, false), initialize_called_(false) {}
 
   virtual void SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     if (!expected_coordinates_.empty()) {
@@ -88,25 +89,27 @@ class ScalingFilterInterpreterTestInterpreter : public Interpreter {
     EXPECT_TRUE(false);
   }
 
-  virtual void SetHardwareProperties(const HardwareProperties& hw_props) {
-    EXPECT_FLOAT_EQ(expected_hwprops_.left, hw_props.left);
-    EXPECT_FLOAT_EQ(expected_hwprops_.top, hw_props.top);
-    EXPECT_FLOAT_EQ(expected_hwprops_.right, hw_props.right);
-    EXPECT_FLOAT_EQ(expected_hwprops_.bottom, hw_props.bottom);
-    EXPECT_FLOAT_EQ(expected_hwprops_.res_x, hw_props.res_x);
-    EXPECT_FLOAT_EQ(expected_hwprops_.res_y, hw_props.res_y);
-    EXPECT_FLOAT_EQ(expected_hwprops_.screen_x_dpi, hw_props.screen_x_dpi);
-    EXPECT_FLOAT_EQ(expected_hwprops_.screen_y_dpi, hw_props.screen_y_dpi);
+  virtual void Initialize(const HardwareProperties* hw_props,
+                          GestureConsumer* consumer) {
+    EXPECT_FLOAT_EQ(expected_hwprops_.left, hw_props->left);
+    EXPECT_FLOAT_EQ(expected_hwprops_.top, hw_props->top);
+    EXPECT_FLOAT_EQ(expected_hwprops_.right, hw_props->right);
+    EXPECT_FLOAT_EQ(expected_hwprops_.bottom, hw_props->bottom);
+    EXPECT_FLOAT_EQ(expected_hwprops_.res_x, hw_props->res_x);
+    EXPECT_FLOAT_EQ(expected_hwprops_.res_y, hw_props->res_y);
+    EXPECT_FLOAT_EQ(expected_hwprops_.screen_x_dpi, hw_props->screen_x_dpi);
+    EXPECT_FLOAT_EQ(expected_hwprops_.screen_y_dpi, hw_props->screen_y_dpi);
     EXPECT_FLOAT_EQ(expected_hwprops_.orientation_minimum,
-                    hw_props.orientation_minimum);
+                    hw_props->orientation_minimum);
     EXPECT_FLOAT_EQ(expected_hwprops_.orientation_maximum,
-                    hw_props.orientation_maximum);
-    EXPECT_EQ(expected_hwprops_.max_finger_cnt, hw_props.max_finger_cnt);
-    EXPECT_EQ(expected_hwprops_.max_touch_cnt, hw_props.max_touch_cnt);
-    EXPECT_EQ(expected_hwprops_.supports_t5r2, hw_props.supports_t5r2);
-    EXPECT_EQ(expected_hwprops_.support_semi_mt, hw_props.support_semi_mt);
-    EXPECT_EQ(expected_hwprops_.is_button_pad, hw_props.is_button_pad);
-    set_hwprops_called_ = true;
+                    hw_props->orientation_maximum);
+    EXPECT_EQ(expected_hwprops_.max_finger_cnt, hw_props->max_finger_cnt);
+    EXPECT_EQ(expected_hwprops_.max_touch_cnt, hw_props->max_touch_cnt);
+    EXPECT_EQ(expected_hwprops_.supports_t5r2, hw_props->supports_t5r2);
+    EXPECT_EQ(expected_hwprops_.support_semi_mt, hw_props->support_semi_mt);
+    EXPECT_EQ(expected_hwprops_.is_button_pad, hw_props->is_button_pad);
+    initialize_called_ = true;
+    Interpreter::Initialize(hw_props, consumer);
   };
 
   Gesture return_value_;
@@ -119,7 +122,7 @@ class ScalingFilterInterpreterTestInterpreter : public Interpreter {
   deque<int> expected_finger_cnt_;
   deque<int> expected_touch_cnt_;
   HardwareProperties expected_hwprops_;
-  bool set_hwprops_called_;
+  bool initialize_called_;
 };
 
 TEST(ScalingFilterInterpreterTest, SimpleTest) {
@@ -127,8 +130,6 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
       new ScalingFilterInterpreterTestInterpreter;
   ScalingFilterInterpreter interpreter(NULL, base_interpreter, NULL,
                                        GESTURES_DEVCLASS_TOUCHPAD);
-  TestInterpreterWrapper wrapper(&interpreter);
-
   HardwareProperties initial_hwprops = {
     133, 728, 10279, 5822,  // left, top, right, bottom
     (10279.0 - 133.0) / 100.0,  // x res (pixels/mm)
@@ -148,8 +149,8 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
   };
   base_interpreter->expected_hwprops_ = expected_hwprops;
 
-  interpreter.SetHardwareProperties(initial_hwprops);
-  EXPECT_TRUE(base_interpreter->set_hwprops_called_);
+  TestInterpreterWrapper wrapper(&interpreter, &initial_hwprops);
+  EXPECT_TRUE(base_interpreter->initialize_called_);
   const float kPressureScale = 2.0;
   const float kPressureTranslate = 3.0;
   const float kPressureThreshold = 10.0;
@@ -342,8 +343,8 @@ static void RunTouchMajorAndMinorTest(
   }
 
   base_interpreter->expected_hwprops_ = *expected_hwprops;
-  interpreter->SetHardwareProperties(*hwprops);
-  EXPECT_TRUE(base_interpreter->set_hwprops_called_);
+  interpreter->Initialize(hwprops, NULL);
+  EXPECT_TRUE(base_interpreter->initialize_called_);
 
   for (size_t i = 0; i < n_fs; i++) {
     HardwareState hs;
@@ -361,7 +362,7 @@ static void RunTouchMajorAndMinorTest(
   }
 
   // Tear down state
-  base_interpreter->set_hwprops_called_ = false;
+  base_interpreter->initialize_called_ = false;
 }
 
 TEST(ScalingFilterInterpreterTest, TouchMajorAndMinorTest) {

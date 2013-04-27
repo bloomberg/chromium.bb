@@ -28,7 +28,9 @@ class FilterInterpreter : public Interpreter, public GestureConsumer {
   DictionaryValue* EncodeCommonInfo();
   void Clear();
 
-  virtual void SetGestureConsumer(GestureConsumer* consumer);
+  virtual void Initialize(const HardwareProperties* hwprops,
+                          GestureConsumer* consumer);
+
   virtual void ConsumeGesture(const Gesture& gesture);
 
   // Temporary method for transitioning the old gesture list to
@@ -38,7 +40,6 @@ class FilterInterpreter : public Interpreter, public GestureConsumer {
  protected:
   virtual void SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);
   virtual void HandleTimerImpl(stime_t now, stime_t* timeout);
-  virtual void SetHardwarePropertiesImpl(const HardwareProperties& hwprops);
 
   scoped_ptr<Interpreter> next_;
 

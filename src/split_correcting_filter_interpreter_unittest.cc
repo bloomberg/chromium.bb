@@ -10,6 +10,7 @@
 #include <gtest/gtest.h>
 
 #include "gestures/include/split_correcting_filter_interpreter.h"
+#include "gestures/include/unittest_util.h"
 
 using std::string;
 
@@ -49,8 +50,6 @@ class SplitCorrectingFilterInterpreterTestInterpreter :
 
   virtual void HandleTimer(stime_t now, stime_t* timeout) {}
 
-  virtual void SetHardwareProperties(const HardwareProperties& hw_props) {};
-
   set<short, kMaxFingers> expected_ids_;
   bool expect_finger_ids_;
   size_t iteration_;
@@ -84,7 +83,7 @@ void DoTest(InputEventWithExpectations* events, size_t events_len, bool t5r2) {
     0,   // support_semi_mt
     1  // is_button_pad
   };
-  interpreter.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&interpreter, &hwprops);
 
   for (size_t i = 0; i < events_len; i++) {
     InputEventWithExpectations* event = &events[i];
@@ -105,7 +104,7 @@ void DoTest(InputEventWithExpectations* events, size_t events_len, bool t5r2) {
          outidx++)
       base_interpreter->expected_ids_.insert(event->out_ids[outidx]);
     stime_t timestamp = -1.0;
-    interpreter.SyncInterpret(&hs, &timestamp);
+    wrapper.SyncInterpret(&hs, &timestamp);
   }
 }
 
@@ -179,7 +178,7 @@ TEST(SplitCorrectingFilterInterpreterTest, FalseMergeTest) {
     0,   // support_semi_mt
     1  // is_button_pad
   };
-  interpreter.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&interpreter, &hwprops);
 
   for (size_t i = 0; i < arraysize(inputs); i++) {
     const FalseMergeInputs& input = inputs[i];
@@ -218,7 +217,7 @@ TEST(SplitCorrectingFilterInterpreterTest, FalseMergeTest) {
     // if the last iteration
     stime_t timestamp = -1.0;
 
-    interpreter.SyncInterpret(&hs, &timestamp);
+    wrapper.SyncInterpret(&hs, &timestamp);
     base_interpreter->expect_warp_on_one_finger_only_ = true;
   }
 }
@@ -334,7 +333,7 @@ TEST(SplitCorrectingFilterInterpreterTest, LumpyThumbSplitTest) {
     0,  // semi-mt
     1  // is button pad
   };
-  interpreter.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&interpreter, &hwprops);
 
   LumpyThumbSplitTestInputs inputs[] = {
     { 8.5812, 0, 52.66, 66.09,  79.39, 2,  0.00,  0.00,  0.00, 0 },
@@ -372,7 +371,7 @@ TEST(SplitCorrectingFilterInterpreterTest, LumpyThumbSplitTest) {
       input.now, input.buttons_down, finger_cnt, finger_cnt, fs, 0, 0, 0, 0
     };
     stime_t timeout = -1;
-    interpreter.SyncInterpret(&hs, &timeout);
+    wrapper.SyncInterpret(&hs, &timeout);
   }
   EXPECT_EQ(arraysize(inputs), base_interpreter->iteration_);
 }

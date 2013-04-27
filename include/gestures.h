@@ -447,6 +447,7 @@ struct GestureInterpreter {
 
   LoggingFilterInterpreter* loggingFilter_;
   scoped_ptr<GestureInterpreterConsumer> consumer_;
+  HardwareProperties hwprops_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureInterpreter);
 };

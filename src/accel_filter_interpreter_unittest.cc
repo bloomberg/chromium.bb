@@ -12,6 +12,7 @@
 
 #include "gestures/include/accel_filter_interpreter.h"
 #include "gestures/include/gestures.h"
+#include "gestures/include/unittest_util.h"
 #include "gestures/include/util.h"
 
 using std::deque;
@@ -40,8 +41,6 @@ class AccelFilterInterpreterTestInterpreter : public Interpreter {
   virtual void HandleTimer(stime_t now, stime_t* timeout) {
     return SyncInterpret(NULL, NULL);
   }
-
-  virtual void SetHardwareProperties(const HardwareProperties& hw_props) {};
 
   Gesture return_value_;
   deque<Gesture> return_values_;

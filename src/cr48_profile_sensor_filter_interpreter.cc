@@ -37,7 +37,7 @@ Cr48ProfileSensorFilterInterpreter::Cr48ProfileSensorFilterInterpreter(
 void Cr48ProfileSensorFilterInterpreter::SyncInterpretImpl(
     HardwareState* hwstate, stime_t* timeout) {
 
-  if (is_semi_mt_device_) {
+  if (hwprops_->support_semi_mt) {
     if (interpreter_enabled_.val_) {
       if (bounding_box_.val_)
         EnforceBoundingBoxFormat(hwstate);
@@ -57,12 +57,6 @@ void Cr48ProfileSensorFilterInterpreter::SyncInterpretImpl(
     }
   }
   next_->SyncInterpret(hwstate, timeout);
-}
-
-void Cr48ProfileSensorFilterInterpreter::SetHardwarePropertiesImpl(
-    const HardwareProperties& hw_props) {
-  is_semi_mt_device_ = hw_props.support_semi_mt;
-  next_->SetHardwareProperties(hw_props);
 }
 
 void Cr48ProfileSensorFilterInterpreter::UpdateHistory(HardwareState* hwstate) {

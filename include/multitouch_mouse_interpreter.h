@@ -37,15 +37,13 @@ class MultitouchMouseInterpreter : public Interpreter, public PropertyDelegate {
 
  protected:
   virtual void SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);
-  void SetHardwarePropertiesImpl(const HardwareProperties& hw_props);
-
+  virtual void Initialize(const HardwareProperties* hw_props,
+                          GestureConsumer* consumer);
  private:
   void InterpretMultitouchEvent(Gesture* result);
 
   HardwareStateBuffer state_buffer_;
   ScrollEventBuffer scroll_buffer_;
-
-  HardwareProperties hw_props_;
 
   FingerMap prev_gs_fingers_;
   FingerMap gs_fingers_;

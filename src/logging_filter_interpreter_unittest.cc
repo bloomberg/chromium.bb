@@ -12,7 +12,7 @@
 #include "gestures/include/interpreter.h"
 #include "gestures/include/logging_filter_interpreter.h"
 #include "gestures/include/prop_registry.h"
-
+#include "gestures/include/unittest_util.h"
 using std::string;
 
 namespace gestures {
@@ -48,7 +48,7 @@ TEST(LoggingFilterInterpreterTest, LogResetHandlerTest) {
     1, 0, 0  //t5r2, semi, button pad
   };
 
-  interpreter.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&interpreter, &hwprops);
   FingerState finger_state = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
     0, 0, 0, 0, 10, 0, 50, 50, 1, 0
@@ -58,17 +58,17 @@ TEST(LoggingFilterInterpreterTest, LogResetHandlerTest) {
     200000, 0, 1, 1, &finger_state, 0, 0, 0, 0
   };
   stime_t timeout = -1.0;
-  interpreter.SyncInterpret(&hardware_state, &timeout);
+  wrapper.SyncInterpret(&hardware_state, &timeout);
   EXPECT_EQ(interpreter.log_->size(), 1);
 
-  interpreter.SyncInterpret(&hardware_state, &timeout);
+  wrapper.SyncInterpret(&hardware_state, &timeout);
   EXPECT_EQ(interpreter.log_->size(), 2);
 
   // Assume the ResetLog property is set.
   interpreter.logging_reset_.HandleGesturesPropWritten();
   EXPECT_EQ(interpreter.log_->size(), 0);
 
-  interpreter.SyncInterpret(&hardware_state, &timeout);
+  wrapper.SyncInterpret(&hardware_state, &timeout);
   EXPECT_EQ(interpreter.log_->size(), 1);
 }
 }  // namespace gestures

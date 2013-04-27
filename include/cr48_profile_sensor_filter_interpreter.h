@@ -82,7 +82,6 @@ class Cr48ProfileSensorFilterInterpreter : public FilterInterpreter {
 
  protected:
   virtual void SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);
-  virtual void SetHardwarePropertiesImpl(const HardwareProperties& hwprops);
 
  private:
   // Helper function to append current HardwareState to history buffer

@@ -55,7 +55,8 @@ class Interpreter {
   // and reused for this timeout.
   virtual void HandleTimer(stime_t now, stime_t* timeout);
 
-  virtual void SetHardwareProperties(const HardwareProperties& hwprops);
+  virtual void Initialize(const HardwareProperties* hwprops,
+                          GestureConsumer* consumer);
 
   virtual DictionaryValue* EncodeCommonInfo();
   std::string Encode();
@@ -65,20 +66,21 @@ class Interpreter {
       log_->Clear();
   }
 
-  virtual void SetGestureConsumer(GestureConsumer* consumer);
   virtual void ProduceGesture(const Gesture& gesture);
   const char* name() const { return name_; }
 
  protected:
   scoped_ptr<ActivityLog> log_;
   GestureConsumer* consumer_;
+  const HardwareProperties* hwprops_;
+  bool initialized_;
+
   void InitName();
   void Trace(const char* message, const char* name);
 
   virtual void SyncInterpretImpl(HardwareState* hwstate,
                                  stime_t* timeout) {}
   virtual void HandleTimerImpl(stime_t now, stime_t* timeout) {}
-  virtual void SetHardwarePropertiesImpl(const HardwareProperties& hwprops) {}
 
  private:
   const char* name_;

@@ -12,6 +12,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/box_filter_interpreter.h"
+#include "gestures/include/unittest_util.h"
 
 using std::deque;
 using std::make_pair;
@@ -26,7 +27,7 @@ class BoxFilterInterpreterTestInterpreter : public Interpreter {
  public:
   BoxFilterInterpreterTestInterpreter()
       : Interpreter(NULL, NULL, false),
-        handle_timer_called_(false), set_hwprops_called_(false) {}
+        handle_timer_called_(false) {}
 
   virtual void SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     EXPECT_NE(static_cast<HardwareState*>(NULL), hwstate);
@@ -38,13 +39,8 @@ class BoxFilterInterpreterTestInterpreter : public Interpreter {
     handle_timer_called_ = true;
   }
 
-  virtual void SetHardwareProperties(const HardwareProperties& hw_props) {
-    set_hwprops_called_ = true;
-  };
-
   FingerState prev_;
   bool handle_timer_called_;
-  bool set_hwprops_called_;
 };
 
 struct InputAndExpectedOutput {
@@ -68,12 +64,10 @@ TEST(BoxFilterInterpreterTest, SimpleTest) {
     5, 5,  // max fingers, max_touch,
     0, 0, 1  // t5r2, semi, button pad
   };
-  EXPECT_FALSE(base_interpreter->set_hwprops_called_);
-  interpreter.SetHardwareProperties(hwprops);
-  EXPECT_TRUE(base_interpreter->set_hwprops_called_);
+  TestInterpreterWrapper wrapper(&interpreter, &hwprops);
 
   EXPECT_FALSE(base_interpreter->handle_timer_called_);
-  interpreter.HandleTimer(0.0, NULL);
+  wrapper.HandleTimer(0.0, NULL);
   EXPECT_TRUE(base_interpreter->handle_timer_called_);
 
   FingerState fs = { 0, 0, 0, 0, 1, 0, 3.0, 0.0, 1, 0 };
@@ -96,7 +90,7 @@ TEST(BoxFilterInterpreterTest, SimpleTest) {
     now += kTimeDelta;
     hs.timestamp = now;
     fs.position_y = data[i].in;
-    interpreter.SyncInterpret(&hs, NULL);
+    wrapper.SyncInterpret(&hs, NULL);
     EXPECT_FLOAT_EQ(data[i].out, fs.position_y) << "i=" << i;
   }
 }

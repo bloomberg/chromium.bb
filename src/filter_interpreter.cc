@@ -17,14 +17,11 @@ void FilterInterpreter::HandleTimerImpl(stime_t now, stime_t* timeout) {
   next_->HandleTimer(now, timeout);
 }
 
-void FilterInterpreter::SetHardwarePropertiesImpl(
-    const HardwareProperties& hwprops) {
-  next_->SetHardwareProperties(hwprops);
-}
-
-void FilterInterpreter::SetGestureConsumer(GestureConsumer* consumer) {
-  Interpreter::SetGestureConsumer(consumer);
-  next_->SetGestureConsumer(this);
+void FilterInterpreter::Initialize(const HardwareProperties* hwprops,
+                                   GestureConsumer* consumer) {
+  Interpreter::Initialize(hwprops, consumer);
+  if (next_)
+    next_->Initialize(hwprops, this);
 }
 
 void FilterInterpreter::ConsumeGesture(const Gesture& gesture) {

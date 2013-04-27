@@ -9,6 +9,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/click_wiggle_filter_interpreter.h"
+#include "gestures/include/unittest_util.h"
 
 using std::deque;
 
@@ -20,7 +21,7 @@ class ClickWiggleFilterInterpreterTestInterpreter : public Interpreter {
  public:
   ClickWiggleFilterInterpreterTestInterpreter()
       : Interpreter(NULL, NULL, false),
-        set_hwprops_called_(false), expect_warp_(true),
+        expect_warp_(true),
         expected_fingers_(-1) {}
 
   virtual void SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
@@ -36,11 +37,6 @@ class ClickWiggleFilterInterpreterTestInterpreter : public Interpreter {
     EXPECT_TRUE(false);
   }
 
-  virtual void SetHardwareProperties(const HardwareProperties& hw_props) {
-    set_hwprops_called_ = true;
-  };
-
-  bool set_hwprops_called_;
   bool expect_warp_;
   short expected_fingers_;
 };
@@ -66,9 +62,7 @@ TEST(ClickWiggleFilterInterpreterTest, WiggleSuppressTest) {
     0,  // semi-mt
     0  // is button pad
   };
-  EXPECT_FALSE(base_interpreter->set_hwprops_called_);
-  interpreter.SetHardwareProperties(hwprops);
-  EXPECT_TRUE(base_interpreter->set_hwprops_called_);
+  TestInterpreterWrapper wrapper(&interpreter, &hwprops);
 
   // These values come from a recording of my finger
   FingerState finger_states[] = {
@@ -117,7 +111,7 @@ TEST(ClickWiggleFilterInterpreterTest, WiggleSuppressTest) {
 
   for (size_t i = 0; i < arraysize(hardware_state); ++i)
     // Assertions happen in the base interpreter
-    interpreter.SyncInterpret(&hardware_state[i], NULL);
+    wrapper.SyncInterpret(&hardware_state[i], NULL);
 }
 
 TEST(ClickWiggleFilterInterpreterTest, OneFingerClickSuppressTest) {
@@ -141,9 +135,7 @@ TEST(ClickWiggleFilterInterpreterTest, OneFingerClickSuppressTest) {
     0,  // semi-mt
     0  // is button pad
   };
-  EXPECT_FALSE(base_interpreter->set_hwprops_called_);
-  interpreter.SetHardwareProperties(hwprops);
-  EXPECT_TRUE(base_interpreter->set_hwprops_called_);
+  TestInterpreterWrapper wrapper(&interpreter, &hwprops);
 
   // These values come from a recording of my finger
   FingerState finger_states[] = {
@@ -176,7 +168,7 @@ TEST(ClickWiggleFilterInterpreterTest, OneFingerClickSuppressTest) {
   for (size_t i = 0; i < arraysize(hardware_state); ++i) {
     // Assertions happen in the base interpreter
     base_interpreter->expect_warp_ = (i != 3 && i != 7);
-    interpreter.SyncInterpret(&hardware_state[i], NULL);
+    wrapper.SyncInterpret(&hardware_state[i], NULL);
   }
 }
 
@@ -212,7 +204,7 @@ TEST(ClickWiggleFilterInterpreter, ThumbClickTest) {
     0  // is button pad
   };
 
-  interpreter.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&interpreter, &hwprops);
 
   ThumbClickTestInput inputs[] = {
     { 1.089467, 27.83, 21.20, 11.48, 0 },
@@ -236,7 +228,7 @@ TEST(ClickWiggleFilterInterpreter, ThumbClickTest) {
     };
     HardwareState hs = {
         input.timestamp_, input.buttons_down_, 1, 1, &fs, 0, 0, 0, 0 };
-    interpreter.SyncInterpret(&hs, NULL);
+    wrapper.SyncInterpret(&hs, NULL);
     // Assertions tested in base interpreter
   }
 }
@@ -265,7 +257,7 @@ TEST(ClickWiggleFilterInterpreter, TimeBackwardsTest) {
     0  // is button pad
   };
 
-  interpreter.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&interpreter, &hwprops);
 
   const short kInitialId = 1;
   FingerState fs = { 0, 0, 0, 0, 50, 0, 20, 20, kInitialId, 0 };
@@ -287,7 +279,7 @@ TEST(ClickWiggleFilterInterpreter, TimeBackwardsTest) {
     }
     if (i == arraysize(hs) - 1)
       base_interpreter->expect_warp_ = false;
-    interpreter.SyncInterpret(&hs[i], NULL);
+    wrapper.SyncInterpret(&hs[i], NULL);
     if (i == arraysize(hs) - 1)
       EXPECT_EQ(0, fs.flags);
   }
@@ -330,7 +322,7 @@ TEST(ClickWiggleFilterInterpreter, ThumbClickWiggleWithPalmTest) {
     1  // is button pad
   };
 
-  interpreter.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&interpreter, &hwprops);
 
   // Ideally flags will not get renumbered, but just in case.
   const unsigned k8 = GESTURES_FINGER_POSSIBLE_PALM;
@@ -391,7 +383,7 @@ TEST(ClickWiggleFilterInterpreter, ThumbClickWiggleWithPalmTest) {
     };
     base_interpreter->expect_warp_ = !!input.buttons_down;
     base_interpreter->expected_fingers_ = finger_count;
-    interpreter.SyncInterpret(&hs, NULL);
+    wrapper.SyncInterpret(&hs, NULL);
   }
 }
 

@@ -10,6 +10,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/immediate_interpreter.h"
+#include "gestures/include/unittest_util.h"
 #include "gestures/include/util.h"
 
 namespace gestures {
@@ -20,7 +21,7 @@ class ImmediateInterpreterTest : public ::testing::Test {};
 
 TEST(ImmediateInterpreterTest, MoveDownTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
-  TestInterpreterWrapper wrapper(&ii);
+
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -38,6 +39,7 @@ TEST(ImmediateInterpreterTest, MoveDownTest) {
     0,  // semi-mt
     1  // is button pad
   };
+  TestInterpreterWrapper wrapper(&ii, &hwprops);
 
   FingerState finger_states[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
@@ -53,11 +55,6 @@ TEST(ImmediateInterpreterTest, MoveDownTest) {
     { 230000, 0, 0, 0, NULL, 0, 0, 0, 0 },
     { 240000, 0, 0, 0, NULL, 0, 0, 0, 0 }
   };
-
-  // Should fail w/o hardware props set
-  EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[0], NULL));
-
-  ii.SetHardwareProperties(hwprops);
 
   EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[0], NULL));
 
@@ -85,7 +82,7 @@ TEST(ImmediateInterpreterTest, MoveDownTest) {
 
 TEST(ImmediateInterpreterTest, MoveUpWithRestingThumbTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
-  TestInterpreterWrapper wrapper(&ii);
+
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -103,6 +100,7 @@ TEST(ImmediateInterpreterTest, MoveUpWithRestingThumbTest) {
     0,  // semi-mt
     1  // is button pad
   };
+  TestInterpreterWrapper wrapper(&ii, &hwprops);
 
   FingerState finger_states[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
@@ -121,11 +119,6 @@ TEST(ImmediateInterpreterTest, MoveUpWithRestingThumbTest) {
     { 230000, 0, 0, 0, NULL, 0, 0, 0, 0 },
     { 240000, 0, 0, 0, NULL, 0, 0, 0, 0 }
   };
-
-  // Should fail w/o hardware props set
-  EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[0], NULL));
-
-  ii.SetHardwareProperties(hwprops);
 
   EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[0], NULL));
 
@@ -153,7 +146,6 @@ TEST(ImmediateInterpreterTest, MoveUpWithRestingThumbTest) {
 
 TEST(ImmediateInterpreterTest, SemiMtScrollUpWithRestingThumbTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
-  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -171,6 +163,7 @@ TEST(ImmediateInterpreterTest, SemiMtScrollUpWithRestingThumbTest) {
     1,  // semi-mt
     1  // is button pad
   };
+  TestInterpreterWrapper wrapper(&ii, &hwprops);
 
   FingerState finger_states[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
@@ -189,8 +182,6 @@ TEST(ImmediateInterpreterTest, SemiMtScrollUpWithRestingThumbTest) {
     { 0.250000, 0, 2, 3, &finger_states[2], 0, 0, 0, 0 },
     { 0.300000, 0, 2, 3, &finger_states[4], 0, 0, 0, 0 }
   };
-
-  ii.SetHardwareProperties(hwprops);
 
   EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[0], NULL));
 
@@ -213,7 +204,6 @@ TEST(ImmediateInterpreterTest, SemiMtScrollUpWithRestingThumbTest) {
 
 void ScrollUpTest(float pressure_a, float pressure_b) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
-  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -231,6 +221,7 @@ void ScrollUpTest(float pressure_a, float pressure_b) {
     0,  // semi-mt
     1  // is button pad
   };
+  TestInterpreterWrapper wrapper(&ii, &hwprops);
 
   float p_a = pressure_a;
   float p_b = pressure_b;
@@ -252,8 +243,6 @@ void ScrollUpTest(float pressure_a, float pressure_b) {
     { 0.250000, 0, 2, 2, &finger_states[2], 0, 0, 0, 0 },
     { 0.300000, 0, 2, 2, &finger_states[4], 0, 0, 0, 0 }
   };
-
-  ii.SetHardwareProperties(hwprops);
 
   EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[0], NULL));
 
@@ -286,7 +275,6 @@ TEST(ImmediateInterpreterTest, FatFingerScrollUpTest) {
 // Such a tap would be unrealistic to come from a human.
 TEST(ImmediateInterpreterTest, ScrollThenFalseTapTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
-  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -304,6 +292,7 @@ TEST(ImmediateInterpreterTest, ScrollThenFalseTapTest) {
     0,  // semi-mt
     1  // is button pad
   };
+  TestInterpreterWrapper wrapper(&ii, &hwprops);
 
   FingerState finger_states[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
@@ -329,8 +318,6 @@ TEST(ImmediateInterpreterTest, ScrollThenFalseTapTest) {
   };
 
   ii.tap_enable_.val_ = 1;
-  ii.SetHardwareProperties(hwprops);
-
   EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[0], NULL));
 
   Gesture* gs = wrapper.SyncInterpret(&hardware_states[1], NULL);
@@ -356,7 +343,6 @@ TEST(ImmediateInterpreterTest, ScrollThenFalseTapTest) {
 // scrolls have a fling as least as fast the second to last scroll.
 TEST(ImmediateInterpreterTest, FlingTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
-  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -374,6 +360,7 @@ TEST(ImmediateInterpreterTest, FlingTest) {
     0,  // semi-mt
     1  // is button pad
   };
+  TestInterpreterWrapper wrapper(&ii, &hwprops);
 
   FingerState finger_states[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
@@ -419,8 +406,6 @@ TEST(ImmediateInterpreterTest, FlingTest) {
     { 4.03, 0, 2, 2, &finger_states[14], 0, 0, 0, 0 },
     { 4.04, 0, 0, 0, NULL, 0, 0, 0, 0 },
   };
-
-  ii.SetHardwareProperties(hwprops);
 
   size_t idx = 0;
 
@@ -469,7 +454,6 @@ TEST(ImmediateInterpreterTest, FlingTest) {
 // can be evaluated multiple times when they start moving.
 TEST(ImmediateInterpreterTest, DelayedStartScrollTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
-  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -487,6 +471,7 @@ TEST(ImmediateInterpreterTest, DelayedStartScrollTest) {
     0,  // semi-mt
     1  // is button pad
   };
+  TestInterpreterWrapper wrapper(&ii, &hwprops);
 
   FingerState finger_states[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
@@ -509,8 +494,6 @@ TEST(ImmediateInterpreterTest, DelayedStartScrollTest) {
     { 2.03, 0, 0, 0, NULL, 0, 0, 0, 0 },
   };
 
-  ii.SetHardwareProperties(hwprops);
-
   size_t idx = 0;
 
   // Consistent movement
@@ -529,7 +512,6 @@ TEST(ImmediateInterpreterTest, DelayedStartScrollTest) {
 // Tests that after a scroll is happening, if a finger lets go, scrolling stops.
 TEST(ImmediateInterpreterTest, ScrollReevaluateTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
-  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -573,7 +555,7 @@ TEST(ImmediateInterpreterTest, ScrollReevaluateTest) {
     { 2.03, 0, 2, 2, &finger_states[6], 0, 0, 0, 0 },
   };
 
-  ii.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&ii, &hwprops);
 
   size_t idx = 0;
 
@@ -602,7 +584,6 @@ TEST(ImmediateInterpreterTest, ScrollReevaluateTest) {
 // stuck in move mode. This tests that it does switch to scroll mode.
 TEST(ImmediateInterpreterTest, OneFingerThenTwoDelayedStartScrollTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
-  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -642,7 +623,7 @@ TEST(ImmediateInterpreterTest, OneFingerThenTwoDelayedStartScrollTest) {
     { 2.03, 0, 0, 0, NULL, 0, 0, 0, 0 },
   };
 
-  ii.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&ii, &hwprops);
 
   size_t idx = 0;
 
@@ -699,7 +680,7 @@ TEST(ImmediateInterpreterTest, OneFatFingerScrollTest) {
     0,  // semi-mt
     true  // is button pad
   };
-
+  TestInterpreterWrapper wrapper(ii.get(), &hwprops);
   // 4 runs that were failing, but now pass:
   OneFatFingerScrollTestInputs inputs[] = {
     { kS, 54.6787, 49.83, 33.20,  3.71, 73.25, 22.80, 32.82, kAnything },
@@ -812,7 +793,7 @@ TEST(ImmediateInterpreterTest, OneFatFingerScrollTest) {
   for (size_t i = 0; i < arraysize(inputs); i++) {
     if (inputs[i].start == kS) {
       ii.reset(new ImmediateInterpreter(NULL, NULL, NULL));
-      ii->SetHardwareProperties(hwprops);
+      wrapper.Reset(ii.get());
     }
 
     FingerState fs[] = {
@@ -823,7 +804,6 @@ TEST(ImmediateInterpreterTest, OneFatFingerScrollTest) {
     HardwareState hs = { inputs[i].now,0,finger_cnt,finger_cnt,fs,0,0,0,0 };
 
     stime_t timeout = -1.0;
-    TestInterpreterWrapper wrapper(ii.get());
     Gesture* gs = wrapper.SyncInterpret(&hs, &timeout);
     switch (inputs[i].expectation) {
       case kAnything:
@@ -866,6 +846,7 @@ TEST(ImmediateInterpreterTest, NoLiftoffScrollTest) {
     0,  // semi-mt
     true  // is button pad
   };
+  TestInterpreterWrapper wrapper(ii.get(), &hwprops);
 
   NoLiftoffScrollTestInputs inputs[] = {
     // These logs are examples of scrolling up that may have some accidental
@@ -958,7 +939,7 @@ TEST(ImmediateInterpreterTest, NoLiftoffScrollTest) {
   for (size_t i = 0; i < arraysize(inputs); i++) {
     if (inputs[i].reset) {
       ii.reset(new ImmediateInterpreter(NULL, NULL, NULL));
-      ii->SetHardwareProperties(hwprops);
+      wrapper.Reset(ii.get());
     }
     FingerState fs[] = {
       { 0, 0, 0, 0, inputs[i].p0, 0.0, inputs[i].x0, inputs[i].y0, 1, 0 },
@@ -967,7 +948,6 @@ TEST(ImmediateInterpreterTest, NoLiftoffScrollTest) {
     HardwareState hs = { inputs[i].now, 0, 2, 2, fs, 0, 0, 0, 0 };
 
     stime_t timeout = -1.0;
-    TestInterpreterWrapper wrapper(ii.get());
     Gesture* gs = wrapper.SyncInterpret(&hs, &timeout);
     if (gs) {
       EXPECT_EQ(kGestureTypeScroll, gs->type);
@@ -1001,6 +981,7 @@ TEST(ImmediateInterpreterTest, DiagonalSnapTest) {
     0,  // semi-mt
     1  // is button pad
   };
+  TestInterpreterWrapper wrapper(ii.get(), &hwprops);
 
   const float kBig = 5;  // mm
   const float kSml = 1;  // mm
@@ -1066,9 +1047,8 @@ TEST(ImmediateInterpreterTest, DiagonalSnapTest) {
     HardwareStateAnScrollExpectations& hse = hardware_states[i];
     if (hse.hs.timestamp == 0.0) {
       ii.reset(new ImmediateInterpreter(NULL, NULL, NULL));
-      ii->SetHardwareProperties(hwprops);
+      wrapper.Reset(ii.get());
     }
-    TestInterpreterWrapper wrapper(ii.get());
     Gesture* gs = wrapper.SyncInterpret(&hse.hs, NULL);
     if (hse.dx == 0.0 && hse.dy == 0.0) {
       EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), gs);
@@ -1100,6 +1080,7 @@ TEST(ImmediateInterpreterTest, RestingFingerTest) {
     0,  // semi-mt
     1  // is button pad
   };
+  TestInterpreterWrapper wrapper(ii.get(), &hwprops);
 
   const float kX = 7;
   float dx = 5;
@@ -1122,10 +1103,9 @@ TEST(ImmediateInterpreterTest, RestingFingerTest) {
     if (direction == 1)
       dx *= -1.0;
     ii.reset(new ImmediateInterpreter(NULL, NULL, NULL));
-    ii->SetHardwareProperties(hwprops);
+    wrapper.Reset(ii.get());
     for (size_t i = 0; i < 4; i++) {
       HardwareState hs = { kTO + 0.01 * i, 0, 2, 2, finger_states, 0, 0, 0, 0 };
-      TestInterpreterWrapper wrapper(ii.get());
       if (i == 0) {
         hs.timestamp -= kTO;
         Gesture* gs = wrapper.SyncInterpret(&hs, NULL);
@@ -1150,7 +1130,6 @@ TEST(ImmediateInterpreterTest, RestingFingerTest) {
 
 TEST(ImmediateInterpreterTest, ThumbRetainTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
-  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -1187,7 +1166,7 @@ TEST(ImmediateInterpreterTest, ThumbRetainTest) {
     { 0.220, 0, 1, 1, &finger_states[2], 0, 0, 0, 0 },  // thumb moves
   };
 
-  ii.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&ii, &hwprops);
   ii.tap_enable_.val_ = 0;
 
   for (size_t i = 0; i < arraysize(hardware_states); i++) {
@@ -1202,7 +1181,6 @@ TEST(ImmediateInterpreterTest, ThumbRetainTest) {
 
 TEST(ImmediateInterpreterTest, ThumbRetainReevaluateTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
-  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -1240,7 +1218,7 @@ TEST(ImmediateInterpreterTest, ThumbRetainReevaluateTest) {
     { 1.100, 0, 2, 2, &finger_states[4], 0, 0, 0, 0 },  // they move
   };
 
-  ii.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&ii, &hwprops);
   ii.tap_enable_.val_ = 0;
 
   for (size_t i = 0; i < arraysize(hardware_states); i++) {
@@ -1251,7 +1229,6 @@ TEST(ImmediateInterpreterTest, ThumbRetainReevaluateTest) {
 
 TEST(ImmediateInterpreterTest, SetHardwarePropertiesTwiceTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
-  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -1269,9 +1246,8 @@ TEST(ImmediateInterpreterTest, SetHardwarePropertiesTwiceTest) {
     0,  // semi-mt
     1  // is button pad
   };
-  ii.SetHardwareProperties(hwprops);
   hwprops.max_finger_cnt = 3;
-  ii.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&ii, &hwprops);
 
   FingerState finger_states[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
@@ -1292,7 +1268,6 @@ TEST(ImmediateInterpreterTest, SetHardwarePropertiesTwiceTest) {
 
 TEST(ImmediateInterpreterTest, AmbiguousPalmCoScrollTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
-  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -1310,7 +1285,7 @@ TEST(ImmediateInterpreterTest, AmbiguousPalmCoScrollTest) {
     0,  // semi-mt
     1  // is button pad
   };
-  ii.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&ii, &hwprops);
 
   const int kPr = 20;
 
@@ -1372,7 +1347,6 @@ TEST(ImmediateInterpreterTest, AmbiguousPalmCoScrollTest) {
 
 TEST(ImmediateInterpreterTest, PressureChangeMoveTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
-  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -1390,7 +1364,7 @@ TEST(ImmediateInterpreterTest, PressureChangeMoveTest) {
     0,  // semi-mt
     1  // is button pad
   };
-  ii.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&ii, &hwprops);
 
   const int kBig = 81;  // large pressure
   const int kSml = 50;  // small pressure
@@ -1428,7 +1402,6 @@ TEST(ImmediateInterpreterTest, PressureChangeMoveTest) {
 
 TEST(ImmediateInterpreterTest, GetGesturingFingersTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
-  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -1446,7 +1419,7 @@ TEST(ImmediateInterpreterTest, GetGesturingFingersTest) {
     0,  // semi-mt
     1  // is button pad
   };
-  ii.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&ii, &hwprops);
 
   FingerState finger_states[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
@@ -1500,7 +1473,7 @@ TEST(ImmediateInterpreterTest, GetGesturingFingersTest) {
 
   // T5R2 test
   hwprops.supports_t5r2 = 1;
-  ii.SetHardwareProperties(hwprops);
+  wrapper.Reset(&ii, &hwprops);
   ii.ResetSameFingersState(hardware_state[0]);
   ii.UpdatePointingFingers(hardware_state[2]);
   ids = ii.GetGesturingFingers(hardware_state[2]);
@@ -1535,7 +1508,6 @@ set<short, kMaxGesturingFingers> MkSet(short id1, short id2, short id3) {
 
 TEST(ImmediateInterpreterTest, TapRecordTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
-  TestInterpreterWrapper wrapper(&ii);
   TapRecord tr(&ii);
   EXPECT_FALSE(tr.TapComplete());
   // two finger IDs:
@@ -1659,7 +1631,6 @@ const unsigned kBR = GESTURES_BUTTON_RIGHT;
 
 TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
   scoped_ptr<ImmediateInterpreter> ii;
-  TestInterpreterWrapper wrapper(ii.get());
 
   HardwareProperties hwprops = {
     0,  // left edge
@@ -1678,6 +1649,7 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     0,  // semi-mt
     1  // is button pad
   };
+  TestInterpreterWrapper wrapper(ii.get(), &hwprops);
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
@@ -2053,8 +2025,7 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
       // Reset imm interpreter
       LOG(INFO) << "Resetting imm interpreter, i = " << i;
       ii.reset(new ImmediateInterpreter(NULL, NULL, NULL));
-      wrapper = TestInterpreterWrapper(ii.get());
-      ii->SetHardwareProperties(hwprops);
+      wrapper.Reset(ii.get());
       ii->drag_lock_enable_.val_ = 1;
       ii->motion_tap_prevent_timeout_.val_ = 0;
       ii->tapping_finger_min_separation_.val_ = 1.0;
@@ -2125,6 +2096,7 @@ TEST(ImmediateInterpreterTest, TapToClickLowPressureBeginOrEndTest) {
     0,  // semi-mt
     true  // is button pad
   };
+  TestInterpreterWrapper wrapper(ii.get(), &hwprops);
 
   TapToClickLowPressureBeginOrEndInputs inputs[] = {
     // Two runs
@@ -2162,7 +2134,7 @@ TEST(ImmediateInterpreterTest, TapToClickLowPressureBeginOrEndTest) {
     const TapToClickLowPressureBeginOrEndInputs& input = inputs[i];
     if (reset_next_time) {
       ii.reset(new ImmediateInterpreter(NULL, NULL, NULL));
-      ii->SetHardwareProperties(hwprops);
+      wrapper.Reset(ii.get());
       ii->tap_enable_.val_ = 1;
       reset_next_time = false;
     }
@@ -2175,7 +2147,6 @@ TEST(ImmediateInterpreterTest, TapToClickLowPressureBeginOrEndTest) {
         (fs[1].tracking_id == -1 ? 1 : 2);
     HardwareState hs = { input.now, 0, finger_cnt, finger_cnt, fs, 0, 0, 0, 0 };
     stime_t timeout = -1;
-    TestInterpreterWrapper wrapper(ii.get());
     Gesture* gs = wrapper.SyncInterpret(&hs, &timeout);
     if (finger_cnt > 0) {
       // Expect no timeout
@@ -2194,7 +2165,6 @@ TEST(ImmediateInterpreterTest, TapToClickLowPressureBeginOrEndTest) {
 // Does two tap gestures, one with keyboard interference.
 TEST(ImmediateInterpreterTest, TapToClickKeyboardTest) {
   scoped_ptr<ImmediateInterpreter> ii;
-  TestInterpreterWrapper wrapper(ii.get());
 
   HardwareProperties hwprops = {
     0,  // left edge
@@ -2213,6 +2183,7 @@ TEST(ImmediateInterpreterTest, TapToClickKeyboardTest) {
     0,  // semi-mt
     1  // is button pad
   };
+  TestInterpreterWrapper wrapper(ii.get(), &hwprops);
 
   FingerState fs = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
@@ -2232,8 +2203,7 @@ TEST(ImmediateInterpreterTest, TapToClickKeyboardTest) {
   };
   for (size_t test = 0; test != kMaxTests; test++) {
     ii.reset(new ImmediateInterpreter(NULL, NULL, NULL));
-    wrapper = TestInterpreterWrapper(ii.get());
-    ii->SetHardwareProperties(hwprops);
+    wrapper.Reset(ii.get());
     ii->motion_tap_prevent_timeout_.val_ = 0;
     ii->tap_enable_.val_ = 1;
     ii->tap_drag_enable_.val_ = 1;
@@ -2268,7 +2238,6 @@ TEST(ImmediateInterpreterTest, TapToClickKeyboardTest) {
 
 TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
   scoped_ptr<ImmediateInterpreter> ii;
-  TestInterpreterWrapper wrapper(ii.get());
 
   HardwareProperties hwprops = {
     0,  // left edge
@@ -2287,6 +2256,7 @@ TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
     0,  // semi-mt
     1  // is button pad
   };
+  TestInterpreterWrapper wrapper(ii.get(), &hwprops);
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
@@ -2360,8 +2330,7 @@ TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
         // Reset imm interpreter
         LOG(INFO) << "Resetting imm interpreter, i = " << i;
         ii.reset(new ImmediateInterpreter(NULL, NULL, NULL));
-        wrapper = TestInterpreterWrapper(ii.get());
-        ii->SetHardwareProperties(hwprops);
+        wrapper.Reset(ii.get());
         ii->drag_lock_enable_.val_ = 1;
         ii->motion_tap_prevent_timeout_.val_ = 0;
         ii->tap_drag_timeout_.val_ = 0.05;
@@ -2425,7 +2394,6 @@ struct ClickTestHardwareStateAndExpectations {
 
 TEST(ImmediateInterpreterTest, ClickTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
-  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -2443,7 +2411,7 @@ TEST(ImmediateInterpreterTest, ClickTest) {
     0,  // semi-mt
     1  // is button pad
   };
-  ii.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&ii, &hwprops);
   EXPECT_FLOAT_EQ(10.0, ii.tapping_finger_min_separation_.val_);
 
   FingerState finger_states[] = {
@@ -2645,8 +2613,7 @@ TEST(ImmediateInterpreterTest, BigHandsRightClickTest) {
         { 0, 0, 0, 0, 41.444939, 0, 57.525326, 43.700001, 131, 0 } } }
   };
   ImmediateInterpreter ii(NULL, NULL, NULL);
-  TestInterpreterWrapper wrapper(&ii);
-  ii.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&ii, &hwprops);
   for (size_t i = 0; i < arraysize(records); i++) {
     // Make the hwstate point to the fingers
     HardwareState* hs = &records[i].hs;
@@ -2668,7 +2635,6 @@ TEST(ImmediateInterpreterTest, BigHandsRightClickTest) {
 
 TEST(ImmediateInterpreterTest, ChangeTimeoutTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
-  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -2709,7 +2675,7 @@ TEST(ImmediateInterpreterTest, ChangeTimeoutTest) {
     { 1.5,  0, 0, 0, NULL, 0, 0, 0, 0 },
   };
 
-  ii.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&ii, &hwprops);
 
   EXPECT_EQ(NULL, wrapper.SyncInterpret(&hardware_states[0], NULL));
 
@@ -2771,7 +2737,6 @@ struct PinchTestInput {
 
 TEST(ImmediateInterpreterTest, DISABLED_PinchTests) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
-  TestInterpreterWrapper wrapper(&ii);
   ii.pinch_enable_.val_ = 1;
   HardwareProperties hwprops = {
     0,  // left edge
@@ -2884,7 +2849,7 @@ TEST(ImmediateInterpreterTest, DISABLED_PinchTests) {
     {{ 4.05, 0, 0, 0, NULL, 0, 0, 0, 0 }, kAny},
   };
 
-  ii.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&ii, &hwprops);
 
   for (size_t idx = 0; idx < arraysize(input_states); ++idx) {
     Gesture* gs = wrapper.SyncInterpret(&input_states[idx].hs, NULL);
@@ -2930,6 +2895,7 @@ TEST(ImmediateInterpreterTest, AvoidAccidentalPinchTest) {
     0,  // semi-mt
     true  // is button pad
   };
+  TestInterpreterWrapper wrapper(ii.get(), &hwprops);
 
   const GestureType kMov = kGestureTypeMove;
   const GestureType kAny = kGestureTypeNull;
@@ -3043,7 +3009,7 @@ TEST(ImmediateInterpreterTest, AvoidAccidentalPinchTest) {
     if (input.flag == kS) {
       ii.reset(new ImmediateInterpreter(NULL, NULL, NULL));
       ii->pinch_enable_.val_ = true;
-      ii->SetHardwareProperties(hwprops);
+      wrapper.Reset(ii.get());
     }
     // Prep inputs
     FingerState fs[] = {
@@ -3052,7 +3018,6 @@ TEST(ImmediateInterpreterTest, AvoidAccidentalPinchTest) {
     };
     HardwareState hs = { input.now, 0, 2, 2, fs, 0, 0, 0, 0 };
     stime_t timeout = -1;
-    TestInterpreterWrapper wrapper(ii.get());
     Gesture* gs = wrapper.SyncInterpret(&hs, &timeout);
     if (input.expected_gesture != kAny) {
       EXPECT_NE(static_cast<Gesture*>(NULL), gs) << "i=" << i;
@@ -3064,7 +3029,6 @@ TEST(ImmediateInterpreterTest, AvoidAccidentalPinchTest) {
 
 TEST(ImmediateInterpreterTest, SemiMtActiveAreaTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
-  TestInterpreterWrapper wrapper(&ii);
 
   HardwareProperties old_hwprops = {
     0,  // left edge
@@ -3104,7 +3068,7 @@ TEST(ImmediateInterpreterTest, SemiMtActiveAreaTest) {
     { 0.20, 0, 1, 1, &old_finger_states[3], 0, 0, 0, 0 },
   };
 
-  ii.SetHardwareProperties(old_hwprops);
+  TestInterpreterWrapper wrapper(&ii, &old_hwprops);
   ii.tap_enable_.val_ = 1;
 
   // The finger will not change the tap_to_click_state_ at all.
@@ -3147,7 +3111,7 @@ TEST(ImmediateInterpreterTest, SemiMtActiveAreaTest) {
     { 0.20, 0, 1, 1, &new_finger_states[3], 0, 0, 0, 0 },
   };
 
-  ii.SetHardwareProperties(new_hwprops);
+  wrapper.Reset(&ii, &new_hwprops);
   ii.tap_enable_.val_ = true;
 
   // With new active area, the finger changes the tap_to_click_state_ to
@@ -3161,7 +3125,6 @@ TEST(ImmediateInterpreterTest, SemiMtActiveAreaTest) {
 TEST(ImmediateInterpreterTest, SemiMtNoPinchTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
   ii.pinch_enable_.val_ = 1;
-  TestInterpreterWrapper wrapper(&ii);
 
   HardwareProperties hwprops = {
     0,  // left edge
@@ -3209,7 +3172,7 @@ TEST(ImmediateInterpreterTest, SemiMtNoPinchTest) {
     // pinch if not semi_mt device
   };
 
-  ii.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&ii, &hwprops);
 
   Gesture *gesture;
   for (size_t idx = 0; idx < arraysize(hardware_states); ++idx)
@@ -3219,7 +3182,7 @@ TEST(ImmediateInterpreterTest, SemiMtNoPinchTest) {
   // For a semi_mt device, replay the same inputs should not generate
   // a pinch gesture.
   hwprops.support_semi_mt = 1;
-  ii.SetHardwareProperties(hwprops);
+  wrapper.Reset(&ii, &hwprops);
   for (size_t idx = 0; idx < arraysize(hardware_states); ++idx)
     gesture = wrapper.SyncInterpret(&hardware_states[idx], NULL);
   if (gesture)
@@ -3228,7 +3191,6 @@ TEST(ImmediateInterpreterTest, SemiMtNoPinchTest) {
 
 TEST(ImmediateInterpreterTest, WarpedFingersTappingTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
-  TestInterpreterWrapper wrapper(&ii);
 
   HardwareProperties hwprops = {
     0,  // left edge
@@ -3275,7 +3237,7 @@ TEST(ImmediateInterpreterTest, WarpedFingersTappingTest) {
   };
 
   ii.tap_enable_.val_ = 1;
-  ii.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&ii, &hwprops);
 
   Gesture *gesture;
   for (size_t idx = 0; idx < arraysize(hardware_states); ++idx)
@@ -3289,7 +3251,6 @@ TEST(ImmediateInterpreterTest, WarpedFingersTappingTest) {
 // to compute fling.
 TEST(ImmediateInterpreterTest, FlingDepthTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
-  TestInterpreterWrapper wrapper(&ii);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -3347,7 +3308,7 @@ TEST(ImmediateInterpreterTest, FlingDepthTest) {
     { 1.07, 0, 2, 2, &finger_states[14], 0, 0, 0, 0 },
   };
 
-  ii.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&ii, &hwprops);
 
   ii.scroll_manager_.fling_buffer_depth_.val_ = 6;
   size_t fling_buffer_depth =
@@ -3385,7 +3346,6 @@ TEST(ImmediateInterpreterTest, FlingDepthTest) {
 
 TEST(ImmediateInterpreterTest, ScrollResetTapTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
-  TestInterpreterWrapper wrapper(&ii);
 
   HardwareProperties hwprops = {
     0,  // left edge
@@ -3438,7 +3398,7 @@ TEST(ImmediateInterpreterTest, ScrollResetTapTest) {
   ii.scroll_stationary_finger_max_distance_.val_ = 20.0;
 
   ii.tap_enable_.val_ = 1;
-  ii.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&ii, &hwprops);
 
   for (size_t idx = 0; idx < arraysize(hardware_states); ++idx) {
     Gesture* gs = wrapper.SyncInterpret(&hardware_states[idx], NULL);
@@ -3455,7 +3415,6 @@ TEST(ImmediateInterpreterTest, ScrollResetTapTest) {
 
 TEST(ImmediateInterpreterTest, BasicButtonTest) {
   ImmediateInterpreter ii(NULL, NULL, NULL);
-  TestInterpreterWrapper wrapper(&ii);
 
   HardwareProperties hwprops = {
     0,  // left edge
@@ -3490,7 +3449,7 @@ TEST(ImmediateInterpreterTest, BasicButtonTest) {
     { 1.7, 0, 0, 0, NULL, 0, 0, 0, 0 },  // short left button up (<.3s)
   };
 
-  ii.SetHardwareProperties(hwprops);
+  TestInterpreterWrapper wrapper(&ii, &hwprops);
 
   for (size_t idx = 0; idx < arraysize(hardware_states); ++idx) {
     Gesture* gs = wrapper.SyncInterpret(&hardware_states[idx], NULL);

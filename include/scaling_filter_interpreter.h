@@ -55,10 +55,10 @@ class ScalingFilterInterpreter : public FilterInterpreter {
                            GestureInterpreterDeviceClass devclass);
   virtual ~ScalingFilterInterpreter() {}
 
+  virtual void Initialize(const HardwareProperties* hwprops,
+                          GestureConsumer* consumer);
  protected:
   virtual void SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);
-
-  virtual void SetHardwarePropertiesImpl(const HardwareProperties& hwprops);
 
  private:
   void ScaleHardwareState(HardwareState* hwstate);
@@ -99,6 +99,8 @@ class ScalingFilterInterpreter : public FilterInterpreter {
   DoubleProperty pressure_threshold_;
 
   DoubleProperty mouse_cpi_;
+
+  HardwareProperties friendly_props_;
 };
 
 }  // namespace gestures

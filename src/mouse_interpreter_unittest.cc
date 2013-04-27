@@ -6,6 +6,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/mouse_interpreter.h"
+#include "gestures/include/unittest_util.h"
 #include "gestures/include/util.h"
 
 namespace gestures {
