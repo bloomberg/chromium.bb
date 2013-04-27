@@ -1,24 +1,38 @@
 <div id=quic-view-tab-content class=content-box>
   <ul style='margin-top:0'>
-    <li>QUIC Enabled: <span id=quic-view-enabled-span>????</span></li>
-    <li>Use SPDY over QUIC: <span id=quic-view-use-spdy-over-quic-span>????</span></li>
-    <li>Origin Port To Force QUIC On: <span id=quic-view-force-port-span>????</span></li>
+    <li>QUIC Enabled: <span jscontent="!!quic_enabled"></span></li>
+    <li>Use SPDY over QUIC: <span jscontent="!!$this.use_spdy_over_quic"></span></li>
+    <li>Origin Port To Force QUIC On: <span jscontent="origin_port_to_force_quic_on"></span></li>
   </ul>
 
   <h4>QUIC sessions</h4>
     <!-- Only one of these two are shown -->
-    <span id=quic-view-session-none-span>None</span>
-    <span id=quic-view-session-link-span style="display: none;">
+    <div jsdisplay="!($this.sessions && sessions.length > 0)">None</div>
+    <div jsdisplay="$this.sessions && sessions.length > 0">
       <a href="#events&q=type:QUIC_SESSION%20is:active">View live QUIC sessions</a>
-    </span>
-  <p>
-    <div id=quic-view-session-div>
+      <p>
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Host</th>
+              <th>Peer address</th>
+              <th>GUID</th>
+              <th>Active streams</th>
+              <th>Total streams</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr jsselect="sessions">
+              <td><span jscontent="host_port_pair"></span>
+                  <span jscontent="$this.aliases ? $this.aliases.join(' ') : ''">
+              </td>
+              <td jscontent="peer_address"></td>
+              <td jscontent="guid"></td>
+              <td jscontent="open_streams"></td>
+              <td jscontent="total_streams"></td>
+            </tr>
+          </tbody>
+        </table>
+      </p>
     </div>
-  </p>
-
-  <h4>Alternate Protocol Mappings</h4>
-  <p>
-    <div id=quic-view-alternate-protocol-mappings-div>
-    </div>
-  </p>
 </div>
