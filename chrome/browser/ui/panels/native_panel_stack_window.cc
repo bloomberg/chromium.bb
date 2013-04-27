@@ -8,7 +8,8 @@
 
 // static
 #if !defined(TOOLKIT_VIEWS)
-NativePanelStackWindow* NativePanelStackWindow::Create() {
+NativePanelStackWindow* NativePanelStackWindow::Create(
+    NativePanelStackWindowDelegate* delegate) {
   NOTIMPLEMENTED();
   return NULL;
 }

@@ -1024,7 +1024,12 @@ PanelFrameView* PanelView::GetFrameView() const {
 }
 
 bool PanelView::IsAnimatingBounds() const {
-  return bounds_animator_.get() && bounds_animator_->is_animating();
+  if (bounds_animator_.get() && bounds_animator_->is_animating())
+    return true;
+  StackedPanelCollection* stack = panel_->stack();
+  if (!stack)
+    return false;
+  return stack->IsAnimatingPanelBounds(panel_.get());
 }
 
 bool PanelView::IsWithinResizingArea(const gfx::Point& mouse_location) const {

@@ -6,11 +6,22 @@
 #define CHROME_BROWSER_UI_PANELS_NATIVE_PANEL_STACK_WINDOW_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/string16.h"
 
 class Panel;
 namespace gfx {
 class Rect;
+class Vector2d;
 }
+
+class NativePanelStackWindowDelegate {
+ public:
+  // Returns the title representing the whole stack.
+  virtual string16 GetTitle() const = 0;
+
+  // Called when the batch bounds update is completed, i.e. animation ends.
+  virtual void PanelBoundsBatchUpdateCompleted() = 0;
+};
 
 // An interface that encapsulates the platform-specific behaviors that are
 // needed to support multiple panels that are stacked together. A native
@@ -20,7 +31,8 @@ class NativePanelStackWindow {
  public:
   // Creates and returns a NativePanelStackWindow instance. Calling Close() will
   // destruct the instance.
-  static NativePanelStackWindow* Create();
+  static NativePanelStackWindow* Create(
+      NativePanelStackWindowDelegate* delegate);
 
   virtual ~NativePanelStackWindow() {}
 
@@ -43,11 +55,29 @@ class NativePanelStackWindow {
   // window.
   virtual void RemovePanel(Panel* panel) = 0;
 
+  // Merges those panels grouped and shown inside |another| stack window into
+  // the set of panels grouped and shown inside this stack window.
+  virtual void MergeWith(NativePanelStackWindow* another) = 0;
+
   // Returns true if no panel is being shown inside this stack window.
   virtual bool IsEmpty() const = 0;
 
-  // Sets the bounds that is big enough to enclose all panels in the stack.
-  virtual void SetBounds(const gfx::Rect& bounds) = 0;
+  // Returns true if |panel| is being enclosed by this stack window.
+  virtual bool HasPanel(Panel* panel) const = 0;
+
+  // Moves all panels instantly by |delta|. All the moves should be done
+  // simulatenously.
+  virtual void MovePanelsBy(const gfx::Vector2d& delta) = 0;
+
+  // Changes the bounds of a set of panels synchronously.
+  virtual void BeginBatchUpdatePanelBounds(bool animate) = 0;
+  virtual void AddPanelBoundsForBatchUpdate(Panel* panel,
+                                            const gfx::Rect& new_bounds) = 0;
+  virtual void EndBatchUpdatePanelBounds() = 0;
+
+  // Returns true if some panels within this stack window are still in the
+  // process of bounds animation.
+  virtual bool IsAnimatingPanelBounds() const = 0;
 
   // Minimizes all the panels in the stack as a whole via system.
   virtual void Minimize() = 0;

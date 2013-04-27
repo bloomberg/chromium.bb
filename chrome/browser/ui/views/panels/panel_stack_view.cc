@@ -8,9 +8,10 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/panels/panel.h"
+#include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/stacked_panel_collection.h"
 #include "chrome/browser/ui/views/panels/panel_view.h"
-#include "chrome/common/extensions/extension.h"
+#include "ui/base/animation/linear_animation.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/widget/widget.h"
@@ -23,25 +24,39 @@
 #include "ui/views/win/hwnd_util.h"
 #endif
 
+namespace {
+// These values are experimental and subjective.
+const int kDefaultFramerateHz = 50;
+const int kSetBoundsAnimationMs = 180;
+}
+
 // static
-NativePanelStackWindow* NativePanelStackWindow::Create() {
+NativePanelStackWindow* NativePanelStackWindow::Create(
+    NativePanelStackWindowDelegate* delegate) {
 #if defined(OS_WIN)
-  return new PanelStackView();
+  return new PanelStackView(delegate);
 #else
   NOTIMPLEMENTED();
   return NULL;
 #endif
 }
 
-PanelStackView::PanelStackView()
-    : is_drawing_attention_(false),
-      window_(NULL) {
+PanelStackView::PanelStackView(NativePanelStackWindowDelegate* delegate)
+    : delegate_(delegate),
+      window_(NULL),
+      is_drawing_attention_(false),
+      animate_bounds_updates_(false),
+      bounds_updates_started_(false) {
+  DCHECK(delegate);
 }
 
 PanelStackView::~PanelStackView() {
 }
 
 void PanelStackView::Close() {
+  delegate_ = NULL;
+  if (bounds_animator_)
+    bounds_animator_.reset();
   if (window_)
     window_->Close();
   views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
@@ -51,8 +66,8 @@ void PanelStackView::AddPanel(Panel* panel) {
   panels_.push_back(panel);
 
   EnsureWindowCreated();
-
-  UpdateWindowOwnerForTaskbarIconAppearance(panel);
+  MakeStackWindowOwnPanelWindow(panel, this);
+  UpdateStackWindowBounds();
 
   window_->UpdateWindowTitle();
   window_->UpdateWindowIcon();
@@ -61,23 +76,101 @@ void PanelStackView::AddPanel(Panel* panel) {
 void PanelStackView::RemovePanel(Panel* panel) {
   panels_.remove(panel);
 
-  UpdateWindowOwnerForTaskbarIconAppearance(panel);
+  MakeStackWindowOwnPanelWindow(panel, NULL);
+  UpdateStackWindowBounds();
+}
+
+void PanelStackView::MergeWith(NativePanelStackWindow* another) {
+  PanelStackView* another_stack = static_cast<PanelStackView*>(another);
+
+  for (Panels::const_iterator iter = another_stack->panels_.begin();
+       iter != another_stack->panels_.end(); ++iter) {
+    Panel* panel = *iter;
+    panels_.push_back(panel);
+    MakeStackWindowOwnPanelWindow(panel, this);
+  }
+  another_stack->panels_.clear();
+
+  UpdateStackWindowBounds();
 }
 
 bool PanelStackView::IsEmpty() const {
   return panels_.empty();
 }
 
-void PanelStackView::SetBounds(const gfx::Rect& bounds) {
-  if (window_)
-    window_->SetBounds(bounds);
+bool PanelStackView::HasPanel(Panel* panel) const {
+  return std::find(panels_.begin(), panels_.end(), panel) != panels_.end();
+}
+
+void PanelStackView::MovePanelsBy(const gfx::Vector2d& delta) {
+  BeginBatchUpdatePanelBounds(false);
+  for (Panels::const_iterator iter = panels_.begin();
+       iter != panels_.end(); ++iter) {
+    Panel* panel = *iter;
+    AddPanelBoundsForBatchUpdate(panel, panel->GetBounds() + delta);
+  }
+  EndBatchUpdatePanelBounds();
+}
+
+void PanelStackView::BeginBatchUpdatePanelBounds(bool animate) {
+  // If the batch animation is still in progress, continue the animation
+  // with the new target bounds even we want to update the bounds instantly
+  // this time.
+  if (!bounds_updates_started_) {
+    animate_bounds_updates_ = animate;
+    bounds_updates_started_ = true;
+  }
+}
+
+void PanelStackView::AddPanelBoundsForBatchUpdate(Panel* panel,
+                                                  const gfx::Rect& new_bounds) {
+  DCHECK(bounds_updates_started_);
+
+  // No need to track it if no change is needed.
+  if (panel->GetBounds() == new_bounds)
+    return;
+
+  // Old bounds are stored as the map value.
+  bounds_updates_[panel] = panel->GetBounds();
+
+  // New bounds are directly applied to the valued stored in native panel
+  // window.
+  static_cast<PanelView*>(panel->native_panel())->set_cached_bounds_directly(
+      new_bounds);
+}
+
+void PanelStackView::EndBatchUpdatePanelBounds() {
+  DCHECK(bounds_updates_started_);
+
+  if (bounds_updates_.empty() || !animate_bounds_updates_) {
+    if (!bounds_updates_.empty()) {
+      UpdatePanelsBounds();
+      bounds_updates_.clear();
+    }
+
+    bounds_updates_started_ = false;
+    delegate_->PanelBoundsBatchUpdateCompleted();
+    return;
+  }
+
+  bounds_animator_.reset(new ui::LinearAnimation(
+      PanelManager::AdjustTimeInterval(kSetBoundsAnimationMs),
+      kDefaultFramerateHz,
+      this));
+  bounds_animator_->Start();
+}
+
+bool PanelStackView::IsAnimatingPanelBounds() const {
+  return bounds_updates_started_ && animate_bounds_updates_;
 }
 
 void PanelStackView::Minimize() {
+#if defined(OS_WIN)
   // When the owner stack window is minimized by the system, its live preview
   // is lost. We need to set it explicitly. This has to be done before the
   // minimization.
   CaptureThumbnailForLivePreview();
+#endif
 
   window_->Minimize();
 }
@@ -97,13 +190,7 @@ void PanelStackView::DrawSystemAttention(bool draw_attention) {
 }
 
 string16 PanelStackView::GetWindowTitle() const {
-  if (panels_.empty())
-    return string16();
-
-  Panel* panel = panels_.front();
-  const extensions::Extension* extension = panel->GetExtension();
-  return UTF8ToUTF16(extension && !extension->name().empty() ?
-      extension->name() : panel->app_name());
+  return delegate_->GetTitle();
 }
 
 gfx::ImageSkia PanelStackView::GetWindowAppIcon() {
@@ -162,30 +249,121 @@ void PanelStackView::OnNativeFocusChange(gfx::NativeView focused_before,
 #endif
 }
 
-void PanelStackView::UpdateWindowOwnerForTaskbarIconAppearance(Panel* panel) {
-#if defined(OS_WIN)
-  HWND panel_window = views::HWNDForWidget(
-      static_cast<PanelView*>(panel->native_panel())->window());
+void PanelStackView::AnimationEnded(const ui::Animation* animation) {
+  bounds_updates_started_ = false;
 
-  HWND stack_window = NULL;
-  StackedPanelCollection* stack = panel->stack();
-  if (stack)
-    stack_window = views::HWNDForWidget(window_);
+  PanelManager* panel_manager = PanelManager::GetInstance();
+  for (BoundsUpdates::const_iterator iter = bounds_updates_.begin();
+       iter != bounds_updates_.end(); ++iter) {
+    panel_manager->OnPanelAnimationEnded(iter->first);
+  }
+  bounds_updates_.clear();
+
+  delegate_->PanelBoundsBatchUpdateCompleted();
+}
+
+void PanelStackView::AnimationProgressed(const ui::Animation* animation) {
+  UpdatePanelsBounds();
+}
+
+void PanelStackView::UpdatePanelsBounds() {
+#if defined(OS_WIN)
+  // Add an extra count for the background stack window.
+  HDWP defer_update = ::BeginDeferWindowPos(bounds_updates_.size() + 1);
+#endif
+
+  // Update the bounds for each panel in the update list.
+  gfx::Rect enclosing_bounds;
+  for (BoundsUpdates::const_iterator iter = bounds_updates_.begin();
+       iter != bounds_updates_.end(); ++iter) {
+    Panel* panel = iter->first;
+    gfx::Rect target_bounds = panel->GetBounds();
+    gfx::Rect current_bounds;
+    if (bounds_animator_ && bounds_animator_->is_animating()) {
+      current_bounds = bounds_animator_->CurrentValueBetween(
+          iter->second, target_bounds);
+    } else {
+      current_bounds = target_bounds;
+    }
+
+    PanelView* panel_view = static_cast<PanelView*>(panel->native_panel());
+#if defined(OS_WIN)
+    DeferUpdateNativeWindowBounds(defer_update,
+                                  panel_view->window(),
+                                  current_bounds);
+#else
+    panel_view->SetPanelBoundsInstantly(current_bounds);
+#endif
+
+    enclosing_bounds = UnionRects(enclosing_bounds, current_bounds);
+  }
+
+  // Compute the stack window bounds that enclose those panels that are not
+  // in the batch update list.
+  for (Panels::const_iterator iter = panels_.begin();
+       iter != panels_.end(); ++iter) {
+    Panel* panel = *iter;
+    if (bounds_updates_.find(panel) == bounds_updates_.end())
+      enclosing_bounds = UnionRects(enclosing_bounds, panel->GetBounds());
+  }
+
+  // Update the bounds of the background stack window.
+#if defined(OS_WIN)
+  DeferUpdateNativeWindowBounds(defer_update, window_, enclosing_bounds);
+#else
+  window_->SetBounds(enclosing_bounds);
+#endif
+
+#if defined(OS_WIN)
+  ::EndDeferWindowPos(defer_update);
+#endif
+}
+
+void PanelStackView::UpdateStackWindowBounds() {
+  gfx::Rect enclosing_bounds;
+  for (Panels::const_iterator iter = panels_.begin();
+       iter != panels_.end(); ++iter) {
+    Panel* panel = *iter;
+    enclosing_bounds = UnionRects(enclosing_bounds, panel->GetBounds());
+  }
+  window_->SetBounds(enclosing_bounds);
+}
+
+// static
+void PanelStackView::MakeStackWindowOwnPanelWindow(
+    Panel* panel, PanelStackView* stack_window) {
+#if defined(OS_WIN)
+  // The panel widget window might already be gone when a panel is closed.
+  views::Widget* panel_window =
+      static_cast<PanelView*>(panel->native_panel())->window();
+  if (!panel_window)
+    return;
+
+  HWND native_panel_window = views::HWNDForWidget(panel_window);
+  HWND native_stack_window =
+      stack_window ? views::HWNDForWidget(stack_window->window_) : NULL;
 
   // The extended style WS_EX_APPWINDOW is used to force a top-level window onto
   // the taskbar. In order for multiple stacked panels to appear as one, this
   // bit needs to be cleared.
-  int value = ::GetWindowLong(panel_window, GWL_EXSTYLE);
+  int value = ::GetWindowLong(native_panel_window, GWL_EXSTYLE);
   ::SetWindowLong(
-      panel_window,
+      native_panel_window,
       GWL_EXSTYLE,
-      stack_window ? (value & ~WS_EX_APPWINDOW) : (value | WS_EX_APPWINDOW));
+      native_stack_window ? (value & ~WS_EX_APPWINDOW)
+                          : (value | WS_EX_APPWINDOW));
 
   // All the windows that share the same owner window will appear as a single
   // window on the taskbar.
-  ::SetWindowLongPtr(panel_window,
+  ::SetWindowLongPtr(native_panel_window,
                      GWLP_HWNDPARENT,
-                     reinterpret_cast<LONG>(stack_window));
+                     reinterpret_cast<LONG>(native_stack_window));
+
+  // Make sure the background stack window always stays behind the panel window.
+  if (native_stack_window) {
+    ::SetWindowPos(native_stack_window, native_panel_window, 0, 0, 0, 0,
+        SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+  }
 
 #else
   NOTIMPLEMENTED();
@@ -200,14 +378,12 @@ void PanelStackView::EnsureWindowCreated() {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.delegate = this;
   params.remove_standard_frame = true;
-  params.transparent = true;
   // Empty size is not allowed so a temporary small size is passed. SetBounds
   // will be called later to update the bounds.
   params.bounds = gfx::Rect(0, 0, 1, 1);
   window_->Init(params);
   window_->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
   window_->set_focus_on_creation(false);
-  window_->SetOpacity(0x00);
   window_->AddObserver(this);
   window_->ShowInactive();
 
@@ -223,8 +399,8 @@ void PanelStackView::EnsureWindowCreated() {
   views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);
 }
 
-void PanelStackView::CaptureThumbnailForLivePreview() {
 #if defined(OS_WIN)
+void PanelStackView::CaptureThumbnailForLivePreview() {
   // Live preview is only available since Windows 7.
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;
@@ -246,5 +422,18 @@ void PanelStackView::CaptureThumbnailForLivePreview() {
             static_cast<PanelView*>(panel->native_panel())->window()));
   }
   thumbnailer_->Start(native_panel_windows);
-#endif
 }
+
+void PanelStackView::DeferUpdateNativeWindowBounds(HDWP defer_window_pos_info,
+                                                   views::Widget* window,
+                                                   const gfx::Rect& bounds) {
+  ::DeferWindowPos(defer_window_pos_info,
+                    views::HWNDForWidget(window),
+                    NULL,
+                    bounds.x(),
+                    bounds.y(),
+                    bounds.width(),
+                    bounds.height(),
+                    SWP_NOACTIVATE | SWP_NOZORDER);
+}
+#endif

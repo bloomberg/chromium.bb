@@ -1325,6 +1325,11 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   gfx::Rect primary_work_area(0, 0, new_primary_area_width, 280);
   mock_display_settings_provider()->SetPrimaryDisplay(
       primary_display_area, primary_work_area);
+  WaitForBoundsAnimationFinished(panel1);
+  WaitForBoundsAnimationFinished(panel2);
+  WaitForBoundsAnimationFinished(panel3);
+  WaitForBoundsAnimationFinished(panel4);
+  WaitForBoundsAnimationFinished(panel5);
 
   EXPECT_TRUE(panel1->IsMinimized());
   EXPECT_TRUE(panel2->IsMinimized());

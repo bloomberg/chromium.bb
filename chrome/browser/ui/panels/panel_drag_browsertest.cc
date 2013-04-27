@@ -1671,6 +1671,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, GroupPanelAndPanelFromBottom) {
   // 2) P2 moves horizontally to align with P1.
   // 3) The width of P2 is adjusted to be same as the one of P1.
   panel2_testing->FinishDragTitlebar();
+  WaitForBoundsAnimationFinished(panel2);
   ASSERT_EQ(0, detached_collection->num_panels());
   ASSERT_EQ(1, panel_manager->num_stacks());
   EXPECT_EQ(PanelCollection::STACKED, panel1->collection()->type());
@@ -1777,6 +1778,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, GroupPanelAndPanelFromTop) {
   // 2) P2 moves horizontally to align with P1.
   // 3) The width of P1 is adjusted to be same as the one of P2.
   panel2_testing->FinishDragTitlebar();
+  WaitForBoundsAnimationFinished(panel1);
   ASSERT_EQ(0, detached_collection->num_panels());
   ASSERT_EQ(1, panel_manager->num_stacks());
   EXPECT_EQ(PanelCollection::STACKED, panel1->collection()->type());
@@ -1886,6 +1888,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, GroupPanelAndStackFromBottom) {
   // Expect that P3 becomes the bottom panel of the stack.
   drag_delta_to_stack = GetDragDeltaToStackToBottom(panel3, panel2);
   DragPanelByDelta(panel3, drag_delta_to_stack);
+  WaitForBoundsAnimationFinished(panel3);
   ASSERT_EQ(0, detached_collection->num_panels());
   ASSERT_EQ(3, stack->num_panels());
   ASSERT_EQ(1, panel_manager->num_stacks());
@@ -1945,6 +1948,8 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, GroupPanelAndStackFromTop) {
   // Expect that P3 becomes the top panel of the stack.
   drag_delta_to_stack = GetDragDeltaToStackToTop(panel3, panel1);
   DragPanelByDelta(panel3, drag_delta_to_stack);
+  WaitForBoundsAnimationFinished(panel1);
+  WaitForBoundsAnimationFinished(panel2);
   ASSERT_EQ(0, detached_collection->num_panels());
   ASSERT_EQ(3, stack->num_panels());
   ASSERT_EQ(1, panel_manager->num_stacks());
@@ -2000,6 +2005,8 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, GroupStackAndPanelFromBottom) {
   gfx::Vector2d drag_delta_to_stack =
       GetDragDeltaToStackToBottom(panel1, panel3);
   DragPanelByDelta(panel1, drag_delta_to_stack);
+  WaitForBoundsAnimationFinished(panel1);
+  WaitForBoundsAnimationFinished(panel2);
   ASSERT_EQ(0, detached_collection->num_panels());
   ASSERT_EQ(1, panel_manager->num_stacks());
   StackedPanelCollection* final_stack = panel_manager->stacks().front();
@@ -2055,6 +2062,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, GroupStackAndPanelFromTop) {
   // width to be same as the width of P1 and P2.
   gfx::Vector2d drag_delta_to_stack = GetDragDeltaToStackToTop(panel1, panel3);
   DragPanelByDelta(panel1, drag_delta_to_stack);
+  WaitForBoundsAnimationFinished(panel3);
   ASSERT_EQ(0, detached_collection->num_panels());
   ASSERT_EQ(1, panel_manager->num_stacks());
   StackedPanelCollection* final_stack = panel_manager->stacks().front();
@@ -2123,6 +2131,8 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, GroupStackAndStackFromBottom) {
   gfx::Vector2d drag_delta_to_stack =
       GetDragDeltaToStackToBottom(panel3, panel2);
   DragPanelByDelta(panel3, drag_delta_to_stack);
+  WaitForBoundsAnimationFinished(panel3);
+  WaitForBoundsAnimationFinished(panel4);
   ASSERT_EQ(0, detached_collection->num_panels());
   ASSERT_EQ(1, panel_manager->num_stacks());
   StackedPanelCollection* final_stack = panel_manager->stacks().front();
@@ -2192,6 +2202,8 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, GroupStackAndStackFromTop) {
   // update their width to be same as the width of P1 and P2.
   gfx::Vector2d drag_delta_to_stack = GetDragDeltaToStackToTop(panel1, panel3);
   DragPanelByDelta(panel1, drag_delta_to_stack);
+  WaitForBoundsAnimationFinished(panel3);
+  WaitForBoundsAnimationFinished(panel4);
   ASSERT_EQ(0, detached_collection->num_panels());
   ASSERT_EQ(1, panel_manager->num_stacks());
   StackedPanelCollection* final_stack = panel_manager->stacks().front();
@@ -2352,6 +2364,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, UngroupAndCancel) {
   // Cancel the drag.
   // Expect that the P1 and P2 put back to the same stack.
   panel2_testing->CancelDragTitlebar();
+  WaitForBoundsAnimationFinished(panel2);
   ASSERT_EQ(0, detached_collection->num_panels());
   ASSERT_EQ(1, panel_manager->num_stacks());
   EXPECT_EQ(PanelCollection::STACKED, panel1->collection()->type());
@@ -2562,6 +2575,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, UngroupAndGroup) {
   gfx::Vector2d drag_delta_to_unstack_and_stack =
       GetDragDeltaToStackToBottom(panel2, panel3);
   DragPanelByDelta(panel2, drag_delta_to_unstack_and_stack);
+  WaitForBoundsAnimationFinished(panel2);
   ASSERT_EQ(1, detached_collection->num_panels());
   ASSERT_EQ(1, panel_manager->num_stacks());
   StackedPanelCollection* final_stack = panel_manager->stacks().front();
