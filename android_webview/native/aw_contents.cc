@@ -611,7 +611,7 @@ void AwContents::SetPendingWebContentsForPopup(
     // TODO(benm): Support holding multiple pop up window requests.
     LOG(WARNING) << "Blocking popup window creation as an outstanding "
                  << "popup window is still pending.";
-    MessageLoop::current()->DeleteSoon(FROM_HERE, pending.release());
+    base::MessageLoop::current()->DeleteSoon(FROM_HERE, pending.release());
     return;
   }
   pending_contents_ = pending.Pass();

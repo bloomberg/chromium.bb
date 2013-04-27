@@ -147,9 +147,8 @@ class TestStreamReaderJob : public AndroidStreamReaderURLRequestJob {
 
 class AndroidStreamReaderURLRequestJobTest : public Test {
  public:
-  AndroidStreamReaderURLRequestJobTest()
-      : loop_(MessageLoop::TYPE_IO) {
-  }
+  AndroidStreamReaderURLRequestJobTest() : loop_(base::MessageLoop::TYPE_IO) {}
+
  protected:
   virtual void SetUp() {
     context_.set_job_factory(&factory_);
@@ -198,7 +197,7 @@ class AndroidStreamReaderURLRequestJobTest : public Test {
     DCHECK(set_protocol);
   }
 
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   TestURLRequestContext context_;
   android_webview::AwURLRequestJobFactory factory_;
   TestDelegate url_request_delegate_;
@@ -222,7 +221,7 @@ TEST_F(AndroidStreamReaderURLRequestJobTest, ReadEmptyStream) {
   req_->Start();
 
   // The TestDelegate will quit the message loop on request completion.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_FALSE(url_request_delegate_.request_failed());
   EXPECT_EQ(1, network_delegate_.completed_requests());
@@ -237,7 +236,7 @@ TEST_F(AndroidStreamReaderURLRequestJobTest, ReadWithNullStream) {
   req_->Start();
 
   // The TestDelegate will quit the message loop on request completion.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // The request_failed() method is named confusingly but all it checks is
   // whether the request got as far as calling NotifyHeadersComplete.
@@ -271,7 +270,7 @@ TEST_F(AndroidStreamReaderURLRequestJobTest, ReadPartOfStream) {
   SetRange(req_.get(), offset, bytes_available);
   req_->Start();
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_FALSE(url_request_delegate_.request_failed());
   EXPECT_EQ(bytes_to_read, url_request_delegate_.bytes_received());
@@ -302,7 +301,7 @@ TEST_F(AndroidStreamReaderURLRequestJobTest,
   SetRange(req_.get(), offset, bytes_available_reported);
   req_->Start();
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_FALSE(url_request_delegate_.request_failed());
   EXPECT_EQ(bytes_to_read, url_request_delegate_.bytes_received());

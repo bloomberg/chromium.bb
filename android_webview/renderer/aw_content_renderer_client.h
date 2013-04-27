@@ -18,7 +18,7 @@ namespace android_webview {
 
 class AwContentRendererClient : public content::ContentRendererClient {
  public:
-  typedef MessageLoop* CompositorMessageLoopGetter();
+  typedef base::MessageLoop* CompositorMessageLoopGetter();
 
   explicit AwContentRendererClient(
       CompositorMessageLoopGetter* compositor_message_loop_getter,
@@ -41,7 +41,7 @@ class AwContentRendererClient : public content::ContentRendererClient {
                                              size_t length) OVERRIDE;
   virtual bool IsLinkVisited(unsigned long long link_hash) OVERRIDE;
   virtual void PrefetchHostName(const char* hostname, size_t length) OVERRIDE;
-  virtual MessageLoop* OverrideCompositorMessageLoop() const OVERRIDE;
+  virtual base::MessageLoop* OverrideCompositorMessageLoop() const OVERRIDE;
   virtual bool ShouldCreateCompositorInputHandler() const OVERRIDE;
 
  private:

@@ -43,8 +43,8 @@ void AwBrowserMainParts::PreEarlyInitialization() {
   // Android WebView does not use default MessageLoop. It has its own
   // Android specific MessageLoop. Also see MainMessageLoopRun.
   DCHECK(!main_message_loop_.get());
-  main_message_loop_.reset(new MessageLoop(MessageLoop::TYPE_UI));
-  MessageLoopForUI::current()->Start();
+  main_message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
+  base::MessageLoopForUI::current()->Start();
 }
 
 int AwBrowserMainParts::PreCreateThreads() {

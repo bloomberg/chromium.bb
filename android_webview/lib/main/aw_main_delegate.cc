@@ -85,7 +85,7 @@ MessageLoop* GetRendererCompositorThreadOverrideLoop() {
   if (!UIAndRendererCompositorThreadsMerged())
     return NULL;
 
-  MessageLoop* rv = content::BrowserThread::UnsafeGetMessageLoopForThread(
+  base::MessageLoop* rv = content::BrowserThread::UnsafeGetMessageLoopForThread(
       content::BrowserThread::UI);
   DCHECK(rv);
   return rv;

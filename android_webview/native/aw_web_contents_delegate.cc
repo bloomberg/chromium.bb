@@ -96,7 +96,7 @@ void AwWebContentsDelegate::AddNewContents(content::WebContents* source,
     // window, so we're done with the WebContents now. We use
     // DeleteSoon as WebContentsImpl may call methods on |new_contents|
     // after this method returns.
-    MessageLoop::current()->DeleteSoon(FROM_HERE, new_contents);
+    base::MessageLoop::current()->DeleteSoon(FROM_HERE, new_contents);
   }
 
   if (was_blocked) {
