@@ -265,10 +265,7 @@ int NativeTextfieldViews::OnDragUpdated(const ui::DropTargetEvent& event) {
   const ui::Range& selection = GetRenderText()->selection();
   drop_cursor_position_ = GetRenderText()->FindCursorPosition(event.location());
   bool in_selection = !selection.is_empty() &&
-      GetRenderText()->RangeContainsCaret(
-          selection,
-          drop_cursor_position_.caret_pos(),
-          drop_cursor_position_.caret_affinity());
+      selection.Contains(ui::Range(drop_cursor_position_.caret_pos()));
   is_drop_cursor_visible_ = !in_selection;
   // TODO(msw): Pan over text when the user drags to the visible text edge.
   OnCaretBoundsChanged();

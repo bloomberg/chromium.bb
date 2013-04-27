@@ -319,12 +319,6 @@ class UI_EXPORT RenderText {
   // chosen.
   virtual std::vector<FontSpan> GetFontSpansForTesting() = 0;
 
-  // A convenience function to check whether the glyph attached to the caret
-  // is within the given range.
-  static bool RangeContainsCaret(const ui::Range& range,
-                                 size_t caret_pos,
-                                 LogicalCursorDirection caret_affinity);
-
  protected:
   RenderText();
 
@@ -427,6 +421,12 @@ class UI_EXPORT RenderText {
 
   // Applies text shadows to |renderer|.
   void ApplyTextShadows(internal::SkiaTextRenderer* renderer);
+
+  // A convenience function to check whether the glyph attached to the caret
+  // is within the given range.
+  static bool RangeContainsCaret(const ui::Range& range,
+                                 size_t caret_pos,
+                                 LogicalCursorDirection caret_affinity);
 
  private:
   friend class RenderTextTest;

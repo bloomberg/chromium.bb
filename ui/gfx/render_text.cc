@@ -717,16 +717,6 @@ void RenderText::SetTextShadows(const ShadowValues& shadows) {
   text_shadows_ = shadows;
 }
 
-// static
-bool RenderText::RangeContainsCaret(const ui::Range& range,
-                                    size_t caret_pos,
-                                    LogicalCursorDirection caret_affinity) {
-  // NB: exploits unsigned wraparound (WG14/N1124 section 6.2.5 paragraph 9).
-  size_t adjacent = (caret_affinity == CURSOR_BACKWARD) ?
-      caret_pos - 1 : caret_pos + 1;
-  return range.Contains(ui::Range(caret_pos, adjacent));
-}
-
 RenderText::RenderText()
     : horizontal_alignment_(base::i18n::IsRTL() ? ALIGN_RIGHT : ALIGN_LEFT),
       directionality_mode_(DIRECTIONALITY_FROM_TEXT),
@@ -899,6 +889,16 @@ void RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
 void RenderText::ApplyTextShadows(internal::SkiaTextRenderer* renderer) {
   skia::RefPtr<SkDrawLooper> looper = CreateShadowDrawLooper(text_shadows_);
   renderer->SetDrawLooper(looper.get());
+}
+
+// static
+bool RenderText::RangeContainsCaret(const ui::Range& range,
+                                    size_t caret_pos,
+                                    LogicalCursorDirection caret_affinity) {
+  // NB: exploits unsigned wraparound (WG14/N1124 section 6.2.5 paragraph 9).
+  size_t adjacent = (caret_affinity == CURSOR_BACKWARD) ?
+      caret_pos - 1 : caret_pos + 1;
+  return range.Contains(ui::Range(caret_pos, adjacent));
 }
 
 void RenderText::MoveCursorTo(size_t position, bool select) {
