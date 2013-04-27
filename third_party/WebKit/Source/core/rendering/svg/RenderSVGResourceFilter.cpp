@@ -28,7 +28,6 @@
 
 #include "ImageData.h"
 #include "SVGElement.h"
-#include "SVGFilter.h"
 #include "SVGFilterElement.h"
 #include "SVGFilterPrimitiveStandardAttributes.h"
 #include "SVGNames.h"
@@ -49,6 +48,7 @@
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGResourceFilterPrimitive.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
+#include "core/svg/graphics/filters/SVGFilter.h"
 
 #include <wtf/UnusedParam.h>
 #include <wtf/Vector.h>

@@ -19,17 +19,17 @@
  */
 
 #include "config.h"
-#include "SVGImageCache.h"
+#include "core/svg/graphics/SVGImageCache.h"
 
 #if ENABLE(SVG)
-#include "SVGImage.h"
-#include "SVGImageForContainer.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
+#include "core/svg/graphics/SVGImage.h"
+#include "core/svg/graphics/SVGImageForContainer.h"
 
 namespace WebCore {
 

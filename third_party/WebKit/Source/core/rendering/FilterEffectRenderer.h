@@ -26,7 +26,6 @@
 #ifndef FilterEffectRenderer_h
 #define FilterEffectRenderer_h
 
-#include "SVGFilterBuilder.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageBuffer.h"
@@ -36,6 +35,7 @@
 #include "core/platform/graphics/filters/FilterEffect.h"
 #include "core/platform/graphics/filters/FilterOperations.h"
 #include "core/platform/graphics/filters/SourceGraphic.h"
+#include "core/svg/graphics/filters/SVGFilterBuilder.h"
 
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

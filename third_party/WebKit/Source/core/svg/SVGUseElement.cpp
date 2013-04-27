@@ -34,7 +34,6 @@
 #include "SVGGElement.h"
 #include "SVGLengthContext.h"
 #include "SVGNames.h"
-#include "SVGSMILElement.h"
 #include "SVGSVGElement.h"
 #include "SVGSymbolElement.h"
 #include "XLinkNames.h"
@@ -53,6 +52,7 @@
 #include "core/loader/cache/CachedSVGDocument.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGTransformableContainer.h"
+#include "core/svg/animation/SVGSMILElement.h"
 #include "core/xml/XMLSerializer.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 

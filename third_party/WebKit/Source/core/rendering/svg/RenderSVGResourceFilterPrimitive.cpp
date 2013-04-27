@@ -30,10 +30,10 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGResourceFilterPrimitive.h"
 
-#include "SVGFEImage.h"
-#include "SVGFilter.h"
 #include "SVGNames.h"
 #include "core/rendering/svg/RenderSVGResource.h"
+#include "core/svg/graphics/filters/SVGFEImage.h"
+#include "core/svg/graphics/filters/SVGFilter.h"
 
 namespace WebCore {
 

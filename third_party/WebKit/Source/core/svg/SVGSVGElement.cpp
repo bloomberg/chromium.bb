@@ -25,7 +25,6 @@
 #include "SVGSVGElement.h"
 
 #include "HTMLNames.h"
-#include "SMILTimeContainer.h"
 #include "SVGAngle.h"
 #include "SVGElementInstance.h"
 #include "SVGFitToViewBox.h"
@@ -57,6 +56,7 @@
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/RenderSVGViewportContainer.h"
+#include "core/svg/animation/SMILTimeContainer.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {

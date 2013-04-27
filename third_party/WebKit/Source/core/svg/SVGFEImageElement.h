@@ -25,13 +25,13 @@
 #include "SVGAnimatedBoolean.h"
 #include "SVGAnimatedPreserveAspectRatio.h"
 #include "SVGExternalResourcesRequired.h"
-#include "SVGFEImage.h"
 #include "SVGFilterPrimitiveStandardAttributes.h"
 #include "SVGLangSpace.h"
 #include "SVGURIReference.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedResourceHandle.h"
 #include "core/platform/graphics/ImageBuffer.h"
+#include "core/svg/graphics/filters/SVGFEImage.h"
 
 namespace WebCore {
 

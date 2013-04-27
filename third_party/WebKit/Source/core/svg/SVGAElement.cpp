@@ -28,7 +28,6 @@
 #include "HTMLAnchorElement.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
-#include "SVGSMILElement.h"
 #include "XLinkNames.h"
 #include "core/dom/Attr.h"
 #include "core/dom/Attribute.h"
@@ -47,6 +46,7 @@
 #include "core/rendering/svg/RenderSVGInline.h"
 #include "core/rendering/svg/RenderSVGText.h"
 #include "core/rendering/svg/RenderSVGTransformableContainer.h"
+#include "core/svg/animation/SVGSMILElement.h"
 
 namespace WebCore {
 

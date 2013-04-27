@@ -23,12 +23,12 @@
 #ifndef CachedImage_h
 #define CachedImage_h
 
-#include "SVGImageCache.h"
 #include "core/loader/cache/CachedResource.h"
 #include "core/platform/graphics/ImageObserver.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/IntSizeHash.h"
 #include "core/platform/graphics/LayoutSize.h"
+#include "core/svg/graphics/SVGImageCache.h"
 #include <wtf/HashMap.h>
 #include <wtf/Vector.h>
 

@@ -27,13 +27,13 @@
 #include "SVGFilterElement.h"
 
 #include "SVGElementInstance.h"
-#include "SVGFilterBuilder.h"
 #include "SVGFilterPrimitiveStandardAttributes.h"
 #include "SVGNames.h"
 #include "SVGParserUtilities.h"
 #include "core/dom/Attr.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
+#include "core/svg/graphics/filters/SVGFilterBuilder.h"
 
 namespace WebCore {
 

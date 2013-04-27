@@ -33,7 +33,6 @@
 #include "HTMLInputElement.h"
 #include "HTMLMapElement.h"
 #include "HTMLNames.h"
-#include "SVGImage.h"
 #include "core/editing/FrameSelection.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/page/Frame.h"
@@ -45,6 +44,7 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderView.h"
+#include "core/svg/graphics/SVGImage.h"
 #include <wtf/UnusedParam.h>
 
 using namespace std;

@@ -20,7 +20,7 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGFilterBuilder.h"
+#include "core/svg/graphics/filters/SVGFilterBuilder.h"
 
 #include "core/platform/graphics/filters/FilterEffect.h"
 #include "core/platform/graphics/filters/SourceAlpha.h"

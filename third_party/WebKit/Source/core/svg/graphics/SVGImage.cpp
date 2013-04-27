@@ -28,10 +28,9 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGImage.h"
+#include "core/svg/graphics/SVGImage.h"
 
 #include "SVGDocument.h"
-#include "SVGImageChromeClient.h"
 #include "SVGSVGElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/FrameView.h"
@@ -41,6 +40,7 @@
 #include "core/platform/graphics/IntRect.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
+#include "core/svg/graphics/SVGImageChromeClient.h"
 
 namespace WebCore {
 

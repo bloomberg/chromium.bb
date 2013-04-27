@@ -45,7 +45,7 @@
 #include <wtf/Vector.h>
 
 #if ENABLE(SVG)
-#include "SVGImage.h"
+#include "core/svg/graphics/SVGImage.h"
 #endif
 
 using std::max;

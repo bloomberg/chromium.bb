@@ -24,9 +24,9 @@
 #include "SVGFEMergeElement.h"
 
 #include "SVGFEMergeNodeElement.h"
-#include "SVGFilterBuilder.h"
 #include "SVGNames.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
+#include "core/svg/graphics/filters/SVGFilterBuilder.h"
 
 namespace WebCore {
 

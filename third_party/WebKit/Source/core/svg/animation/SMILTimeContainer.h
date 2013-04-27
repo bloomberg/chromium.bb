@@ -28,9 +28,9 @@
 
 #if ENABLE(SVG)
 
-#include "SMILTime.h"
 #include "core/dom/QualifiedName.h"
 #include "core/platform/Timer.h"
+#include "core/svg/animation/SMILTime.h"
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
 #include <wtf/PassRefPtr.h>

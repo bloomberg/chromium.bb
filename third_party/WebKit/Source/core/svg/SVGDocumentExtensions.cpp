@@ -24,9 +24,7 @@
 #if ENABLE(SVG)
 #include "SVGDocumentExtensions.h"
 
-#include "SMILTimeContainer.h"
 #include "SVGElement.h"
-#include "SVGSMILElement.h"
 #include "SVGSVGElement.h"
 #include "XLinkNames.h"
 #include "core/dom/Document.h"
@@ -38,6 +36,8 @@
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
+#include "core/svg/animation/SMILTimeContainer.h"
+#include "core/svg/animation/SVGSMILElement.h"
 #include <wtf/text/AtomicString.h>
 
 namespace WebCore {

@@ -26,11 +26,10 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGSMILElement.h"
+#include "core/svg/animation/SVGSMILElement.h"
 
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
-#include "SMILTimeContainer.h"
 #include "SVGDocumentExtensions.h"
 #include "SVGNames.h"
 #include "SVGParserUtilities.h"
@@ -43,6 +42,7 @@
 #include "core/dom/EventListener.h"
 #include "core/page/FrameView.h"
 #include "core/platform/FloatConversion.h"
+#include "core/svg/animation/SMILTimeContainer.h"
 #include <wtf/MathExtras.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/Vector.h>

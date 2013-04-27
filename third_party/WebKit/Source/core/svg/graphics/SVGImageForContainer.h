@@ -28,11 +28,11 @@
 
 #if ENABLE(SVG)
 
-#include "SVGImage.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
+#include "core/svg/graphics/SVGImage.h"
 
 namespace WebCore {
 
