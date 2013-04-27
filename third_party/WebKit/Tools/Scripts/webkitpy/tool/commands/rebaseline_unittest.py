@@ -147,6 +147,11 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
         self.command._rebaseline_test_and_update_expectations(self.options)
         self.assertItemsEqual(self.tool.web.urls_fetched, ['file:///tmp/userscripts/another-test-actual.txt'])
 
+    def test_rebaseline_reftest(self):
+        self._write("userscripts/another-test-expected.html", "generic result")
+        OutputCapture().assert_outputs(self, self.command._rebaseline_test_and_update_expectations, args=[self.options],
+            expected_logs="Cannot rebaseline reftest: userscripts/another-test.html\n")
+
     def test_rebaseline_test_and_print_scm_changes(self):
         self.command._print_scm_changes = True
         self.command._scm_changes = {'add': [], 'delete': []}
@@ -317,6 +322,15 @@ class TestRebaselineExpectations(_BaseTestCase):
         super(TestRebaselineExpectations, self).setUp()
         self.options = MockOptions(optimize=False, builders=None, suffixes=['txt'], verbose=False, platform=None,
                                    move_overwritten_baselines=False, results_directory=None)
+
+    def test_reftests_not_rebaselined(self):
+        self._write(self.lion_expectations_path, 'Bug(x) userscripts/another-test.html [ Failure Rebaseline ]\n')
+        self._write('userscripts/another-test.html', 'test content')
+        self._write("userscripts/another-test-expected.html", "expected result")
+
+        self.assertDictEqual(self.command._tests_to_rebaseline(self.lion_port), {'userscripts/another-test.html': set(['png', 'txt', 'wav'])})
+        self.command._update_expectations_files(self.lion_port.port_name)
+        self.assertEqual(self._read(self.lion_expectations_path), 'Bug(x) userscripts/another-test.html [ Failure Rebaseline ]\n')
 
     def test_rebaseline_expectations(self):
         self._zero_out_test_expectations()

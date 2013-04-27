@@ -183,6 +183,11 @@ class RebaselineTest(AbstractRebaseliningCommand):
         self._save_baseline(self._tool.web.get_binary(source_baseline, convert_404_to_None=True), target_baseline)
 
     def _rebaseline_test_and_update_expectations(self, options):
+        port = self._tool.port_factory.get_from_builder_name(options.builder)
+        if (port.reference_files(options.test)):
+            _log.warning("Cannot rebaseline reftest: %s", options.test)
+            return
+
         if options.results_directory:
             results_url = 'file://' + options.results_directory
         else:
@@ -397,9 +402,13 @@ class RebaselineExpectations(AbstractParallelRebaselineCommand):
         port = self._tool.port_factory.get(port_name)
 
         expectations = TestExpectations(port)
+
+        rebaseline_tests = expectations.get_rebaselining_failures()
+        filtered_rebaseline_tests = [test for test in rebaseline_tests if not port.reference_files(test)]
+
         for path in port.expectations_dict():
             if self._tool.filesystem.exists(path):
-                self._tool.filesystem.write_text_file(path, expectations.remove_rebaselined_tests(expectations.get_rebaselining_failures(), path))
+                self._tool.filesystem.write_text_file(path, expectations.remove_rebaselined_tests(filtered_rebaseline_tests, path))
 
     def _tests_to_rebaseline(self, port):
         tests_to_rebaseline = {}
