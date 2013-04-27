@@ -15,8 +15,11 @@
 #include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkXfermode.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/base/animation/animation_delegate.h"
+#include "ui/base/animation/linear_animation.h"
 #include "ui/base/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/display.h"
@@ -40,20 +43,28 @@ namespace ash {
 namespace internal {
 
 const int kPointRadius = 20;
-const int kColors[] = {
-  static_cast<int>(SK_ColorYELLOW),
-  static_cast<int>(SK_ColorGREEN),
-  static_cast<int>(SK_ColorRED),
-  static_cast<int>(SK_ColorBLUE),
-  static_cast<int>(SK_ColorGRAY),
-  static_cast<int>(SK_ColorMAGENTA),
-  static_cast<int>(SK_ColorCYAN),
-  static_cast<int>(SK_ColorWHITE),
-  static_cast<int>(SK_ColorBLACK)
+const SkColor kColors[] = {
+  SK_ColorYELLOW,
+  SK_ColorGREEN,
+  SK_ColorRED,
+  SK_ColorBLUE,
+  SK_ColorGRAY,
+  SK_ColorMAGENTA,
+  SK_ColorCYAN,
+  SK_ColorWHITE,
+  SK_ColorBLACK,
+  SkColorSetRGB(0xFF, 0x8C, 0x00),
+  SkColorSetRGB(0x8B, 0x45, 0x13),
+  SkColorSetRGB(0xFF, 0xDE, 0xAD),
 };
 const int kAlpha = 0x60;
+const SkColor kProjectionFillColor = SkColorSetRGB(0xF5, 0xF5, 0xDC);
+const SkColor kProjectionStrokeColor = SK_ColorGRAY;
+const int kProjectionAlpha = 0xB0;
 const int kMaxPaths = arraysize(kColors);
 const int kReducedScale = 10;
+const int kFadeoutDurationInMs = 250;
+const int kFadeoutFrameRate = 60;
 
 const char* GetTouchEventLabel(ui::EventType type) {
   switch (type) {
@@ -146,6 +157,12 @@ struct TouchPointLog {
 // (starting from a touch-press and ending at touch-release).
 class TouchTrace {
  public:
+  typedef std::vector<TouchPointLog>::iterator iterator;
+  typedef std::vector<TouchPointLog>::const_iterator const_iterator;
+  typedef std::vector<TouchPointLog>::reverse_iterator reverse_iterator;
+  typedef std::vector<TouchPointLog>::const_reverse_iterator
+      const_reverse_iterator;
+
   TouchTrace() {
   }
 
@@ -153,16 +170,18 @@ class TouchTrace {
     log_.push_back(TouchPointLog(touch));
   }
 
-  bool empty() const { return log_.empty(); }
+  const std::vector<TouchPointLog>& log() const { return log_; }
+
+  bool active() const {
+    return !log_.empty() && log_.back().type != ui::ET_TOUCH_RELEASED &&
+        log_.back().type != ui::ET_TOUCH_CANCELLED;
+  }
 
   // Returns a list containing data from all events for the touch point.
   scoped_ptr<ListValue> GetAsList() const {
     scoped_ptr<ListValue> list(new ListValue());
-    for (std::vector<TouchPointLog>::const_iterator i = log_.begin();
-        i != log_.end(); ++i) {
+    for (const_iterator i = log_.begin(); i != log_.end(); ++i)
       list->Append((*i).GetAsDictionary().release());
-    }
-
     return list.Pass();
   }
 
@@ -176,15 +195,90 @@ class TouchTrace {
   DISALLOW_COPY_AND_ASSIGN(TouchTrace);
 };
 
-class TouchHudCanvas : public views::View {
+// A TouchLog keeps track of all touch events of all touch points.
+class TouchLog {
  public:
-  explicit TouchHudCanvas(TouchObserverHUD* owner)
+  TouchLog() : next_trace_index_(0) {
+  }
+
+  void AddTouchPoint(const ui::TouchEvent& touch) {
+    if (touch.type() == ui::ET_TOUCH_PRESSED)
+      StartTrace(touch);
+    AddToTrace(touch);
+  }
+
+  void Reset() {
+    next_trace_index_ = 0;
+    for (int i = 0; i < kMaxPaths; ++i)
+      traces_[i].Reset();
+  }
+
+  scoped_ptr<ListValue> GetAsList() const {
+    scoped_ptr<ListValue> list(new ListValue());
+    for (int i = 0; i < kMaxPaths; ++i) {
+      if (!traces_[i].log().empty())
+        list->Append(traces_[i].GetAsList().release());
+    }
+    return list.Pass();
+  }
+
+  int GetTraceIndex(int touch_id) const {
+    return touch_id_to_trace_index_.at(touch_id);
+  }
+
+  const TouchTrace* traces() const {
+    return traces_;
+  }
+
+ private:
+  void StartTrace(const ui::TouchEvent& touch) {
+    // Find the first inactive spot; otherwise, overwrite the one
+    // |next_trace_index_| is pointing to.
+    int old_trace_index = next_trace_index_;
+    do {
+      if (!traces_[next_trace_index_].active())
+        break;
+      next_trace_index_ = (next_trace_index_ + 1) % kMaxPaths;
+    } while (next_trace_index_ != old_trace_index);
+    int touch_id = touch.touch_id();
+    traces_[next_trace_index_].Reset();
+    touch_id_to_trace_index_[touch_id] = next_trace_index_;
+    next_trace_index_ = (next_trace_index_ + 1) % kMaxPaths;
+  }
+
+  void AddToTrace(const ui::TouchEvent& touch) {
+    int touch_id = touch.touch_id();
+    int trace_index = touch_id_to_trace_index_[touch_id];
+    traces_[trace_index].AddTouchPoint(touch);
+  }
+
+  TouchTrace traces_[kMaxPaths];
+  int next_trace_index_;
+
+  std::map<int, int> touch_id_to_trace_index_;
+
+  DISALLOW_COPY_AND_ASSIGN(TouchLog);
+};
+
+class TouchHudCanvas : public views::View, public ui::AnimationDelegate {
+ public:
+  TouchHudCanvas(TouchObserverHUD* owner, const TouchLog& touch_log)
       : owner_(owner),
-        path_index_(0),
-        color_index_(0),
+        touch_log_(touch_log),
         scale_(1) {
     SetPaintToLayer(true);
     SetFillsBoundsOpaquely(false);
+
+    paint_.setStyle(SkPaint::kFill_Style);
+
+    projection_stroke_paint_.setStyle(SkPaint::kStroke_Style);
+    projection_stroke_paint_.setColor(kProjectionStrokeColor);
+
+    projection_gradient_colors_[0] = kProjectionFillColor;
+    projection_gradient_colors_[1] = kProjectionStrokeColor;
+
+    projection_gradient_pos_[0] = SkFloatToScalar(0.9f);
+    projection_gradient_pos_[1] = SkFloatToScalar(1.0f);
   }
 
   virtual ~TouchHudCanvas() {}
@@ -200,91 +294,151 @@ class TouchHudCanvas : public views::View {
 
   int scale() const { return scale_; }
 
-  void Start(const ui::TouchEvent& touch) {
-    int id = touch.touch_id();
-    paths_[path_index_].reset();
-    traces_[path_index_].Reset();
-    colors_[path_index_] = SkColorSetA(kColors[color_index_], kAlpha);
-    color_index_ = (color_index_ + 1) % arraysize(kColors);
-    touch_id_to_path_[id] = path_index_;
-    path_index_ = (path_index_ + 1) % kMaxPaths;
-    AddPoint(touch);
-    SchedulePaint();
+  void TouchPointAdded(int touch_id) {
+    int trace_index = touch_log_.GetTraceIndex(touch_id);
+    const TouchTrace& trace = touch_log_.traces()[trace_index];
+    const TouchPointLog& point = trace.log().back();
+    if (point.type == ui::ET_TOUCH_PRESSED)
+      StartedTrace(trace_index);
+    if (point.type != ui::ET_TOUCH_CANCELLED)
+      AddedPointToTrace(trace_index);
+    if (owner_->mode() == TouchObserverHUD::PROJECTION && !trace.active())
+      StartAnimation(trace_index);
   }
 
-  void AddPoint(const ui::TouchEvent& touch) {
-    int id = touch.touch_id();
-    const gfx::Point& point = touch.root_location();
-    int path_id = touch_id_to_path_[id];
-    SkScalar x = SkIntToScalar(point.x());
-    SkScalar y = SkIntToScalar(point.y());
-    SkPoint last;
-    if (!paths_[path_id].getLastPt(&last) || x != last.x() || y != last.y()) {
-      paths_[path_id].addCircle(x, y, SkIntToScalar(kPointRadius));
-      traces_[path_id].AddTouchPoint(touch);
-    }
-    SchedulePaint();
+  void StopAnimations() {
+    for (int i = 0; i < kMaxPaths; ++i)
+      fadeouts_[i].reset(NULL);
   }
 
   void Clear() {
-    path_index_ = 0;
-    color_index_ = 0;
-    for (size_t i = 0; i < arraysize(paths_); ++i) {
+    for (int i = 0; i < kMaxPaths; ++i)
       paths_[i].reset();
-      traces_[i].Reset();
-    }
+    if (owner_->mode() == TouchObserverHUD::PROJECTION)
+      StopAnimations();
 
     SchedulePaint();
   }
 
-  scoped_ptr<ListValue> GetAsList() const {
-    scoped_ptr<ListValue> list(new ListValue());
-    for (size_t i = 0; i < arraysize(traces_); ++i) {
-      if (!traces_[i].empty())
-        list->Append(traces_[i].GetAsList().release());
-    }
-    return list.Pass();
+ private:
+  void StartedTrace(int trace_index) {
+    paths_[trace_index].reset();
+    colors_[trace_index] = SkColorSetA(kColors[trace_index], kAlpha);
   }
 
- private:
+  void AddedPointToTrace(int trace_index) {
+    const TouchTrace& trace = touch_log_.traces()[trace_index];
+    const TouchPointLog& point = trace.log().back();
+    const gfx::Point& location = point.location;
+    SkScalar x = SkIntToScalar(location.x());
+    SkScalar y = SkIntToScalar(location.y());
+    SkPoint last;
+    if (!paths_[trace_index].getLastPt(&last) || x != last.x() ||
+        y != last.y()) {
+      paths_[trace_index].addCircle(x, y, SkIntToScalar(kPointRadius));
+      SchedulePaint();
+    }
+  }
+
+  void StartAnimation(int path_index) {
+    DCHECK(!fadeouts_[path_index].get());
+    fadeouts_[path_index].reset(new ui::LinearAnimation(kFadeoutDurationInMs,
+                                                        kFadeoutFrameRate,
+                                                        this));
+    fadeouts_[path_index]->Start();
+  }
+
   // Overridden from views::View.
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    canvas->DrawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
-    canvas->DrawColor(SkColorSetARGB(0, 0, 0, 0));
-
-    SkPaint paint;
-    paint.setStyle(SkPaint::kFill_Style);
-    for (size_t i = 0; i < arraysize(paths_); ++i) {
-      if (paths_[i].countPoints() == 0)
-        continue;
-      paint.setColor(colors_[i]);
-      canvas->DrawPath(paths_[i], paint);
+    if (owner_->mode() == TouchObserverHUD::PROJECTION) {
+      for (int i = 0; i < kMaxPaths; ++i) {
+        const TouchTrace& trace = touch_log_.traces()[i];
+        if (!trace.active() && !fadeouts_[i].get())
+          continue;
+        TouchTrace::const_reverse_iterator point = trace.log().rbegin();
+        while (point != trace.log().rend() &&
+            point->type == ui::ET_TOUCH_CANCELLED)
+          point++;
+        DCHECK(point != trace.log().rend());
+        int alpha = kProjectionAlpha;
+        if (fadeouts_[i].get())
+          alpha = static_cast<int>(fadeouts_[i]->CurrentValueBetween(alpha, 0));
+        projection_fill_paint_.setAlpha(alpha);
+        projection_stroke_paint_.setAlpha(alpha);
+        SkShader* shader = SkGradientShader::CreateRadial(
+            SkPoint::Make(SkIntToScalar(point->location.x()),
+                          SkIntToScalar(point->location.y())),
+            SkIntToScalar(kPointRadius),
+            projection_gradient_colors_,
+            projection_gradient_pos_,
+            arraysize(projection_gradient_colors_),
+            SkShader::kMirror_TileMode,
+            NULL);
+        projection_fill_paint_.setShader(shader);
+        shader->unref();
+        canvas->DrawCircle(point->location, SkIntToScalar(kPointRadius),
+                           projection_fill_paint_);
+        canvas->DrawCircle(point->location, SkIntToScalar(kPointRadius),
+                           projection_stroke_paint_);
+      }
+    } else {
+      for (int i = 0; i < kMaxPaths; ++i) {
+        if (paths_[i].countPoints() == 0)
+          continue;
+        paint_.setColor(colors_[i]);
+        canvas->DrawPath(paths_[i], paint_);
+      }
     }
   }
 
-  TouchObserverHUD* owner_;
+  // Overridden from ui::AnimationDelegate.
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE {
+    for (int i = 0; i < kMaxPaths; ++i)
+      if (fadeouts_[i].get() == animation) {
+        fadeouts_[i].reset(NULL);
+        break;
+      }
+  }
+
+  // Overridden from ui::AnimationDelegate.
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
+    SchedulePaint();
+  }
+
+  // Overridden from ui::AnimationDelegate.
+  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE {
+    AnimationEnded(animation);
+  }
+
+  const TouchObserverHUD* const owner_;
+  const TouchLog& touch_log_;
+
+  SkPaint paint_;
+  SkPaint projection_fill_paint_;
+  SkPaint projection_stroke_paint_;
+  SkColor projection_gradient_colors_[2];
+  SkScalar projection_gradient_pos_[2];
+
   SkPath paths_[kMaxPaths];
+  scoped_ptr<ui::Animation> fadeouts_[kMaxPaths];
   SkColor colors_[kMaxPaths];
-  TouchTrace traces_[kMaxPaths];
 
-  int path_index_;
-  int color_index_;
   int scale_;
-
-  std::map<int, int> touch_id_to_path_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchHudCanvas);
 };
 
 TouchObserverHUD::TouchObserverHUD(aura::RootWindow* initial_root)
     : display_id_(initial_root->GetProperty(kDisplayIdKey)),
-      root_window_(initial_root) {
+      root_window_(initial_root),
+      mode_(FULLSCREEN),
+      touch_log_(new TouchLog()) {
   const gfx::Display& display =
       Shell::GetInstance()->display_manager()->GetDisplayForId(display_id_);
 
   views::View* content = new views::View;
 
-  canvas_ = new TouchHudCanvas(this);
+  canvas_ = new TouchHudCanvas(this, *touch_log_);
   content->AddChildView(canvas_);
 
   const gfx::Size& display_size = display.size();
@@ -296,7 +450,6 @@ TouchObserverHUD::TouchObserverHUD(aura::RootWindow* initial_root)
       views::BoxLayout::kVertical, 0, 0, 0));
 
   for (int i = 0; i < kMaxTouchPoints; ++i) {
-    touch_status_[i] = ui::ET_UNKNOWN;
     touch_labels_[i] = new views::Label;
     touch_labels_[i]->SetBackgroundColor(SkColorSetARGB(0, 255, 255, 255));
     touch_labels_[i]->SetShadowColors(SK_ColorWHITE,
@@ -367,34 +520,75 @@ scoped_ptr<DictionaryValue> TouchObserverHUD::GetAllAsDictionary() {
 }
 
 void TouchObserverHUD::ChangeToNextMode() {
-  if (widget_->IsVisible()) {
-    if (canvas_->scale() == kReducedScale) {
-      widget_->Hide();
-    } else {
-      label_container_->SetVisible(true);
-      canvas_->SetScale(kReducedScale);
-    }
-  } else {
-    canvas_->SetScale(1);
-    label_container_->SetVisible(false);
-    widget_->Show();
+  switch (mode_) {
+    case FULLSCREEN:
+      SetMode(REDUCED_SCALE);
+      break;
+    case REDUCED_SCALE:
+      SetMode(PROJECTION);
+      break;
+    case PROJECTION:
+      SetMode(INVISIBLE);
+      break;
+    case INVISIBLE:
+      SetMode(FULLSCREEN);
+      break;
   }
 }
 
 void TouchObserverHUD::Clear() {
   if (widget_->IsVisible())
     canvas_->Clear();
+  for (int i = 0; i < kMaxTouchPoints; ++i)
+    touch_labels_[i]->SetText(string16());
+  label_container_->SetSize(label_container_->GetPreferredSize());
 }
 
 scoped_ptr<ListValue> TouchObserverHUD::GetLogAsList() const {
-  return canvas_->GetAsList();
+  return touch_log_->GetAsList();
+}
+
+void TouchObserverHUD::SetMode(Mode mode) {
+  if (mode_ == mode)
+    return;
+  mode_ = mode;
+  canvas_->StopAnimations();
+  switch (mode) {
+    case FULLSCREEN:
+    case PROJECTION:
+      label_container_->SetVisible(false);
+      canvas_->SetScale(1);
+      canvas_->SchedulePaint();
+      widget_->Show();
+      break;
+    case REDUCED_SCALE:
+      label_container_->SetVisible(true);
+      canvas_->SetScale(kReducedScale);
+      canvas_->SchedulePaint();
+      widget_->Show();
+      break;
+    case INVISIBLE:
+      widget_->Hide();
+      break;
+  }
 }
 
 void TouchObserverHUD::UpdateTouchPointLabel(int index) {
+  int trace_index = touch_log_->GetTraceIndex(index);
+  const TouchTrace& trace = touch_log_->traces()[trace_index];
+  TouchTrace::const_reverse_iterator point = trace.log().rbegin();
+  ui::EventType touch_status = point->type;
+  float touch_radius = std::max(point->radius_x, point->radius_y);
+  while (point != trace.log().rend() && point->type == ui::ET_TOUCH_CANCELLED)
+    point++;
+  DCHECK(point != trace.log().rend());
+  gfx::Point touch_position = point->location;
+
   std::string string = base::StringPrintf("%2d: %s %s (%.4f)",
-      index, GetTouchEventLabel(touch_status_[index]),
-      touch_positions_[index].ToString().c_str(),
-      touch_radius_[index]);
+                                          index,
+                                          GetTouchEventLabel(touch_status),
+                                          touch_position.ToString().c_str(),
+                                          touch_radius);
   touch_labels_[index]->SetText(UTF8ToUTF16(string));
 }
 
@@ -402,17 +596,8 @@ void TouchObserverHUD::OnTouchEvent(ui::TouchEvent* event) {
   if (event->touch_id() >= kMaxTouchPoints)
     return;
 
-  if (event->type() != ui::ET_TOUCH_CANCELLED)
-    touch_positions_[event->touch_id()] = event->root_location();
-
-  touch_radius_[event->touch_id()] = std::max(event->radius_x(),
-                                              event->radius_y());
-
-  if (event->type() == ui::ET_TOUCH_PRESSED)
-    canvas_->Start(*event);
-  else if (event->type() != ui::ET_TOUCH_CANCELLED)
-    canvas_->AddPoint(*event);
-  touch_status_[event->touch_id()] = event->type();
+  touch_log_->AddTouchPoint(*event);
+  canvas_->TouchPointAdded(event->touch_id());
 
   UpdateTouchPointLabel(event->touch_id());
   label_container_->SetSize(label_container_->GetPreferredSize());

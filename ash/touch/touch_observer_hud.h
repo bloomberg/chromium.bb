@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/display/display_controller.h"
 #include "ash/shell.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "ui/base/events/event_handler.h"
 #include "ui/gfx/display_observer.h"
@@ -36,6 +37,7 @@ namespace ash {
 namespace internal {
 
 class TouchHudCanvas;
+class TouchLog;
 
 // An event filter which handles system level gesture events. Objects of this
 // class manage their own lifetime.
@@ -48,6 +50,13 @@ class ASH_EXPORT TouchObserverHUD
 #endif  // defined(OS_CHROMEOS)
       public DisplayController::Observer {
  public:
+  enum Mode {
+    FULLSCREEN,
+    REDUCED_SCALE,
+    PROJECTION,
+    INVISIBLE,
+  };
+
   explicit TouchObserverHUD(aura::RootWindow* initial_root);
 
   // Returns the log of touch events as a dictionary mapping id of each display
@@ -66,10 +75,14 @@ class ASH_EXPORT TouchObserverHUD
   // trace of one touch point.
   scoped_ptr<ListValue> GetLogAsList() const;
 
+  Mode mode() const { return mode_; }
+
  private:
   friend class TouchHudTest;
 
   virtual ~TouchObserverHUD();
+
+  void SetMode(Mode mode);
 
   void UpdateTouchPointLabel(int index);
 
@@ -98,13 +111,14 @@ class ASH_EXPORT TouchObserverHUD
   const int64 display_id_;
   aura::RootWindow* root_window_;
 
+  Mode mode_;
+
+  scoped_ptr<TouchLog> touch_log_;
+
   views::Widget* widget_;
   TouchHudCanvas* canvas_;
   views::View* label_container_;
   views::Label* touch_labels_[kMaxTouchPoints];
-  gfx::Point touch_positions_[kMaxTouchPoints];
-  float touch_radius_[kMaxTouchPoints];
-  ui::EventType touch_status_[kMaxTouchPoints];
 
   DISALLOW_COPY_AND_ASSIGN(TouchObserverHUD);
 };
