@@ -4,8 +4,6 @@
 
 #include "media/base/audio_bus.h"
 
-#include <limits>
-
 #include "base/logging.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/limits.h"
@@ -14,8 +12,6 @@
 namespace media {
 
 static const uint8 kUint8Bias = 128;
-static const int16 kUint8Min = -kUint8Bias;
-static const int16 kUint8Max = kUint8Bias - 1;
 
 static bool IsAligned(void* ptr) {
   return (reinterpret_cast<uintptr_t>(ptr) &
@@ -38,30 +34,35 @@ static int CalculateMemorySizeInternal(int channels, int frames,
   return sizeof(float) * channels * aligned_frames;
 }
 
-// |Format| is the destination type, |Fixed| is a type larger than |Format|
-// such that operations can be made without overflowing.
-template<class Format, class Fixed>
+// |Format| is the destination type.  If a bias is present, |Fixed| must be a
+// type larger than |Format| such that operations can be made without
+// overflowing.  Without a bias |Fixed| must be the same as |Format|.
+template<class Format, class Fixed, Format Bias>
 static void FromInterleavedInternal(const void* src, int start_frame,
                                     int frames, AudioBus* dest,
-                                    Format bias, float min, float max) {
+                                    float min, float max) {
+  COMPILE_ASSERT((Bias == 0 && sizeof(Fixed) == sizeof(Format)) ||
+                 sizeof(Fixed) > sizeof(Format), invalid_deinterleave_types);
   const Format* source = static_cast<const Format*>(src);
   const int channels = dest->channels();
   for (int ch = 0; ch < channels; ++ch) {
     float* channel_data = dest->channel(ch);
     for (int i = start_frame, offset = ch; i < start_frame + frames;
          ++i, offset += channels) {
-      const Fixed v = static_cast<Fixed>(source[offset]) - bias;
+      const Fixed v = static_cast<Fixed>(source[offset]) - Bias;
       channel_data[i] = v * (v < 0 ? -min : max);
     }
   }
 }
 
-// |Format| is the destination type, |Fixed| is a type larger than |Format|
-// such that operations can be made without overflowing.
-template<class Format, class Fixed>
+// |Format| is the destination type.  If a bias is present, |Fixed| must be a
+// type larger than |Format| such that operations can be made without
+// overflowing.  Without a bias |Fixed| must be the same as |Format|.
+template<class Format, class Fixed, Format Bias>
 static void ToInterleavedInternal(const AudioBus* source, int start_frame,
-                                  int frames, void* dst,
-                                  Format bias, Fixed min, Fixed max) {
+                                  int frames, void* dst, Fixed min, Fixed max) {
+  COMPILE_ASSERT((Bias == 0 && sizeof(Fixed) == sizeof(Format)) ||
+                 sizeof(Fixed) > sizeof(Format), invalid_interleave_types);
   Format* dest = static_cast<Format*>(dst);
   const int channels = source->channels();
   for (int ch = 0; ch < channels; ++ch) {
@@ -72,11 +73,11 @@ static void ToInterleavedInternal(const AudioBus* source, int start_frame,
 
       Fixed sample;
       if (v < 0)
-        sample = v <= -1 ? -min : static_cast<Fixed>(v * -min);
+        sample = v <= -1 ? min : static_cast<Fixed>(-v * min);
       else
         sample = v >= 1 ? max : static_cast<Fixed>(v * max);
 
-      dest[offset] = static_cast<Format>(sample) + bias;
+      dest[offset] = static_cast<Format>(sample) + Bias;
     }
   }
 }
@@ -236,19 +237,19 @@ void AudioBus::FromInterleavedPartial(const void* source, int start_frame,
   CheckOverflow(start_frame, frames, frames_);
   switch (bytes_per_sample) {
     case 1:
-      FromInterleavedInternal<uint8, int16>(
+      FromInterleavedInternal<uint8, int16, kUint8Bias>(
           source, start_frame, frames, this,
-          kUint8Bias, 1.0f / kUint8Min, 1.0f / kUint8Max);
+          1.0f / kint8min, 1.0f / kint8max);
       break;
     case 2:
-      FromInterleavedInternal<int16, int32>(
+      FromInterleavedInternal<int16, int16, 0>(
           source, start_frame, frames, this,
-          0, 1.0f / kint16min, 1.0f / kint16max);
+          1.0f / kint16min, 1.0f / kint16max);
       break;
     case 4:
-      FromInterleavedInternal<int32, int64>(
+      FromInterleavedInternal<int32, int32, 0>(
           source, start_frame, frames, this,
-          0, 1.0f / kint32min, 1.0f / kint32max);
+          1.0f / kint32min, 1.0f / kint32max);
       break;
     default:
       NOTREACHED() << "Unsupported bytes per sample encountered.";
@@ -279,17 +280,16 @@ void AudioBus::ToInterleavedPartial(int start_frame, int frames,
   CheckOverflow(start_frame, frames, frames_);
   switch (bytes_per_sample) {
     case 1:
-      ToInterleavedInternal<uint8, int16>(
-          this, start_frame, frames, dest,
-          kUint8Bias, kUint8Min, kUint8Max);
+      ToInterleavedInternal<uint8, int16, kUint8Bias>(
+          this, start_frame, frames, dest, kint8min, kint8max);
       break;
     case 2:
-      ToInterleavedInternal<int16, int32>(
-          this, start_frame, frames, dest, 0, kint16min, kint16max);
+      ToInterleavedInternal<int16, int16, 0>(
+          this, start_frame, frames, dest, kint16min, kint16max);
       break;
     case 4:
-      ToInterleavedInternal<int32, int64>(
-          this, start_frame, frames, dest, 0, kint32min, kint32max);
+      ToInterleavedInternal<int32, int32, 0>(
+          this, start_frame, frames, dest, kint32min, kint32max);
       break;
     default:
       NOTREACHED() << "Unsupported bytes per sample encountered.";
