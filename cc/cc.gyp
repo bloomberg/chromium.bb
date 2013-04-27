@@ -291,6 +291,8 @@
       'resources/scoped_resource.h',
       'resources/skpicture_content_layer_updater.cc',
       'resources/skpicture_content_layer_updater.h',
+      'resources/sync_point_helper.cc',
+      'resources/sync_point_helper.h',
       'resources/texture_mailbox.cc',
       'resources/texture_mailbox.h',
       'resources/tile.cc',

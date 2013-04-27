@@ -139,6 +139,12 @@ class GLInProcessContext {
   // problem communicating with the GPU process.
   bool IsCommandBufferContextLost();
 
+  void LoseContext(uint32 current, uint32 other);
+
+  void SetSignalSyncPointCallback(
+      scoped_ptr<
+        WebKit::WebGraphicsContext3D::WebGraphicsSyncPointCallback> callback);
+
   CommandBufferService* GetCommandBufferService();
 
   ::gpu::gles2::GLES2Decoder* GetDecoder();
@@ -166,6 +172,8 @@ class GLInProcessContext {
   scoped_ptr<GLES2CmdHelper> gles2_helper_;
   scoped_ptr<TransferBuffer> transfer_buffer_;
   scoped_ptr<GLES2Implementation> gles2_implementation_;
+  scoped_ptr<WebKit::WebGraphicsContext3D::WebGraphicsSyncPointCallback>
+      signal_sync_point_callback_;
   Error last_error_;
   bool share_resources_;
   bool context_lost_;
@@ -281,6 +289,12 @@ AutoLockAndDecoderDetachThread::~AutoLockAndDecoderDetachThread() {
 
 }  // namespace
 
+static void CallAndDestroy(
+    scoped_ptr<
+      WebKit::WebGraphicsContext3D::WebGraphicsSyncPointCallback> callback) {
+  callback->onSyncPointReached();
+}
+
 void GLInProcessContext::PumpCommands() {
   if (!context_lost_) {
     AutoLockAndDecoderDetachThread lock(g_decoder_lock.Get(),
@@ -288,9 +302,15 @@ void GLInProcessContext::PumpCommands() {
     decoder_->MakeCurrent();
     gpu_scheduler_->PutChanged();
     ::gpu::CommandBuffer::State state = command_buffer_->GetState();
-    if (::gpu::error::IsError(state.error)) {
+    if (::gpu::error::IsError(state.error))
       context_lost_ = true;
-    }
+  }
+
+  if (!context_lost_ && signal_sync_point_callback_) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&CallAndDestroy,
+                   base::Passed(&signal_sync_point_callback_)));
   }
 }
 
@@ -366,6 +386,18 @@ bool GLInProcessContext::IsCommandBufferContextLost() {
   }
   CommandBuffer::State state = command_buffer_->GetState();
   return ::gpu::error::IsError(state.error);
+}
+
+void GLInProcessContext::LoseContext(uint32 current, uint32 other) {
+  gles2_implementation_->LoseContextCHROMIUM(current, other);
+  gles2_implementation_->Finish();
+  DCHECK(IsCommandBufferContextLost());
+}
+
+void GLInProcessContext::SetSignalSyncPointCallback(
+    scoped_ptr<
+      WebKit::WebGraphicsContext3D::WebGraphicsSyncPointCallback> callback) {
+  signal_sync_point_callback_ = callback.Pass();
 }
 
 CommandBufferService* GLInProcessContext::GetCommandBufferService() {
@@ -454,8 +486,19 @@ bool GLInProcessContext::Initialize(
   {
     AutoLockAndDecoderDetachThread lock(g_decoder_lock.Get(),
                                         g_all_shared_contexts.Get());
-    if (share_resources_ && !g_all_shared_contexts.Get().empty())
-      context_group = *g_all_shared_contexts.Get().begin();
+    if (share_resources_ && !g_all_shared_contexts.Get().empty()) {
+      for (std::set<GLInProcessContext*>::iterator it =
+               g_all_shared_contexts.Get().begin();
+           it != g_all_shared_contexts.Get().end();
+           ++it) {
+        if (!(*it)->IsCommandBufferContextLost()) {
+          context_group = *it;
+          break;
+        }
+      }
+      if (!context_group)
+        share_group = new gfx::GLShareGroup;
+    }
 
     // TODO(gman): This needs to be true if this is Pepper.
     bool bind_generates_resource = false;
@@ -604,6 +647,15 @@ void GLInProcessContext::Destroy() {
 void GLInProcessContext::OnContextLost() {
   if (!context_lost_callback_.is_null())
     context_lost_callback_.Run();
+
+  context_lost_ = true;
+  if (share_resources_) {
+      for (std::set<GLInProcessContext*>::iterator it =
+               g_all_shared_contexts.Get().begin();
+           it != g_all_shared_contexts.Get().end();
+           ++it)
+        (*it)->context_lost_ = true;
+  }
 }
 
 // static
@@ -1790,6 +1842,25 @@ DELEGATE_TO_GL_2(consumeTextureCHROMIUM, ConsumeTextureCHROMIUM,
 
 DELEGATE_TO_GL_2(drawBuffersEXT, DrawBuffersEXT,
                  WGC3Dsizei, const WGC3Denum*)
+
+unsigned WebGraphicsContext3DInProcessCommandBufferImpl::insertSyncPoint() {
+  shallowFlushCHROMIUM();
+  return 0;
+}
+
+void WebGraphicsContext3DInProcessCommandBufferImpl::signalSyncPoint(
+    unsigned sync_point,
+    WebGraphicsSyncPointCallback* callback) {
+  // Take ownership of the callback.
+  context_->SetSignalSyncPointCallback(make_scoped_ptr(callback));
+  // Stick something in the command buffer.
+  shallowFlushCHROMIUM();
+}
+
+void WebGraphicsContext3DInProcessCommandBufferImpl::loseContextCHROMIUM(
+    WGC3Denum current, WGC3Denum other) {
+  context_->LoseContext(current, other);
+}
 
 DELEGATE_TO_GL_9(asyncTexImage2DCHROMIUM, AsyncTexImage2DCHROMIUM,
     WGC3Denum, WGC3Dint, WGC3Denum, WGC3Dsizei, WGC3Dsizei, WGC3Dint,

@@ -1625,6 +1625,22 @@ DELEGATE_TO_GL(shallowFlushCHROMIUM,ShallowFlushCHROMIUM);
 
 DELEGATE_TO_GL_1(waitSyncPoint, WaitSyncPointCHROMIUM, GLuint)
 
+static void SignalSyncPointCallback(
+    scoped_ptr<
+      WebKit::WebGraphicsContext3D::WebGraphicsSyncPointCallback> callback) {
+  callback->onSyncPointReached();
+}
+
+void WebGraphicsContext3DCommandBufferImpl::signalSyncPoint(
+    unsigned sync_point,
+    WebGraphicsSyncPointCallback* callback) {
+  // Take ownership of the callback.
+  scoped_ptr<WebGraphicsSyncPointCallback> own_callback(callback);
+  command_buffer_->SignalSyncPoint(
+      sync_point,
+      base::Bind(&SignalSyncPointCallback, base::Passed(&own_callback)));
+}
+
 void WebGraphicsContext3DCommandBufferImpl::genMailboxCHROMIUM(
     WGC3Dbyte* name) {
   std::vector<gpu::Mailbox> names(1);

@@ -151,7 +151,9 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual bool setParentContext(WebGraphicsContext3D* parent_context);
 
   virtual unsigned int insertSyncPoint();
-  virtual void waitSyncPoint(unsigned int);
+  virtual void waitSyncPoint(unsigned int sync_point);
+  virtual void signalSyncPoint(unsigned sync_point,
+                               WebGraphicsSyncPointCallback* callback);
 
   virtual void reshape(int width, int height);
 

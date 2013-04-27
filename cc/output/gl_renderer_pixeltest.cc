@@ -4,9 +4,12 @@
 
 #include "cc/output/gl_renderer.h"
 
+#include "base/message_loop.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/quads/draw_quad.h"
+#include "cc/resources/sync_point_helper.h"
 #include "cc/test/pixel_test.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
@@ -563,6 +566,70 @@ TEST_F(GLRendererPixelTest, AxisAligned) {
       ExactPixelComparator(true)));
 }
 
+static void SyncPointCallback(int* callback_count) {
+  ++(*callback_count);
+  base::MessageLoop::current()->QuitWhenIdle();
+}
+
+static void OtherCallback(int* callback_count) {
+  ++(*callback_count);
+  base::MessageLoop::current()->QuitWhenIdle();
+}
+
+TEST_F(GLRendererPixelTest, SignalSyncPointOnLostContext) {
+  int sync_point_callback_count = 0;
+  int other_callback_count = 0;
+  unsigned sync_point = output_surface_->context3d()->insertSyncPoint();
+
+  output_surface_->context3d()->loseContextCHROMIUM(
+      GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB);
+
+  SyncPointHelper::SignalSyncPoint(
+      output_surface_->context3d(),
+      sync_point,
+      base::Bind(&SyncPointCallback, &sync_point_callback_count));
+  EXPECT_EQ(0, sync_point_callback_count);
+  EXPECT_EQ(0, other_callback_count);
+
+  // Make the sync point happen.
+  output_surface_->context3d()->finish();
+  // Post a task after the sync point.
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&OtherCallback, &other_callback_count));
+
+  base::MessageLoop::current()->Run();
+
+  // The sync point shouldn't have happened since the context was lost.
+  EXPECT_EQ(0, sync_point_callback_count);
+  EXPECT_EQ(1, other_callback_count);
+}
+
+TEST_F(GLRendererPixelTest, SignalSyncPoint) {
+  int sync_point_callback_count = 0;
+  int other_callback_count = 0;
+  unsigned sync_point = output_surface_->context3d()->insertSyncPoint();
+
+  SyncPointHelper::SignalSyncPoint(
+      output_surface_->context3d(),
+      sync_point,
+      base::Bind(&SyncPointCallback, &sync_point_callback_count));
+  EXPECT_EQ(0, sync_point_callback_count);
+  EXPECT_EQ(0, other_callback_count);
+
+  // Make the sync point happen.
+  output_surface_->context3d()->finish();
+  // Post a task after the sync point.
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&OtherCallback, &other_callback_count));
+
+  base::MessageLoop::current()->Run();
+
+  // The sync point should have happened.
+  EXPECT_EQ(1, sync_point_callback_count);
+  EXPECT_EQ(1, other_callback_count);
+}
 #endif
 
 }  // namespace
