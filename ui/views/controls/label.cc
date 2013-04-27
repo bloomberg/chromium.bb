@@ -246,6 +246,22 @@ std::string Label::GetClassName() const {
   return kViewClassName;
 }
 
+View* Label::GetTooltipHandlerForPoint(const gfx::Point& point) {
+  // Bail out if the label does not contain the point.
+  // Note that HitTestPoint() cannot be used here as it uses
+  // Label::HitTestRect() to determine if the point hits the label; and
+  // Label::HitTestRect() always fails. Instead, default HitTestRect()
+  // implementation should be used.
+  if (!View::HitTestRect(gfx::Rect(point, gfx::Size(1, 1))))
+    return NULL;
+
+  // If the label does not have a tooltip text, return NULL.
+  if (tooltip_text_.empty())
+    return NULL;
+
+  return this;
+}
+
 bool Label::HitTestRect(const gfx::Rect& rect) const {
   return false;
 }

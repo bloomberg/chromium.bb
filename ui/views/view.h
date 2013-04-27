@@ -518,8 +518,14 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // The points (and mouse locations) in the following functions are in the
   // view's coordinates, except for a RootView.
 
-  // Returns the deepest visible descendant that contains the specified point.
+  // Returns the deepest visible descendant that contains the specified point
+  // and supports event handling.
   virtual View* GetEventHandlerForPoint(const gfx::Point& point);
+
+  // Returns the deepest visible descendant that contains the specified point
+  // and supports tooltips. If the view does not contain the point, returns
+  // NULL.
+  virtual View* GetTooltipHandlerForPoint(const gfx::Point& point);
 
   // Return the cursor that should be used for this view or the default cursor.
   // The event location is in the receiver's coordinate system. The caller is

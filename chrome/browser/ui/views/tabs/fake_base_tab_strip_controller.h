@@ -16,7 +16,7 @@ class FakeBaseTabStripController : public TabStripController {
   FakeBaseTabStripController();
   virtual ~FakeBaseTabStripController();
 
-  void AddTab(int index);
+  void AddTab(int index, bool is_active);
   void RemoveTab(int index);
 
   void set_tab_strip(TabStrip* tab_strip) { tab_strip_ = tab_strip; }
@@ -52,6 +52,7 @@ class FakeBaseTabStripController : public TabStripController {
   TabStrip* tab_strip_;
 
   int num_tabs_;
+  int active_index_;
 
   ui::ListSelectionModel selection_model_;
 

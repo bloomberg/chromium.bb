@@ -1040,6 +1040,15 @@ TEST_F(ViewTest, HitTestMasks) {
   EXPECT_EQ(v1, root_view->GetEventHandlerForPoint(v1_origin));
   EXPECT_EQ(root_view, root_view->GetEventHandlerForPoint(v2_origin));
 
+  // Test GetTooltipHandlerForPoint
+  EXPECT_EQ(v1, root_view->GetTooltipHandlerForPoint(v1_centerpoint));
+  EXPECT_EQ(v2, root_view->GetTooltipHandlerForPoint(v2_centerpoint));
+
+  EXPECT_EQ(v1, root_view->GetTooltipHandlerForPoint(v1_origin));
+  EXPECT_EQ(root_view, root_view->GetTooltipHandlerForPoint(v2_origin));
+
+  EXPECT_FALSE(v1->GetTooltipHandlerForPoint(v2_origin));
+
   widget->CloseNow();
 }
 

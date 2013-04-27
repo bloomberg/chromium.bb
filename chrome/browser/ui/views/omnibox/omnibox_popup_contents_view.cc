@@ -302,6 +302,11 @@ views::View* OmniboxPopupContentsView::GetEventHandlerForPoint(
   return this;
 }
 
+views::View* OmniboxPopupContentsView::GetTooltipHandlerForPoint(
+    const gfx::Point& point) {
+  return NULL;
+}
+
 bool OmniboxPopupContentsView::OnMousePressed(
     const ui::MouseEvent& event) {
   ignore_mouse_drag_ = false;  // See comment on |ignore_mouse_drag_| in header.

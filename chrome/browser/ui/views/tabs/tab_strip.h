@@ -222,6 +222,8 @@ class TabStrip : public views::View,
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual views::View* GetEventHandlerForPoint(
       const gfx::Point& point) OVERRIDE;
+  virtual views::View* GetTooltipHandlerForPoint(
+      const gfx::Point& point) OVERRIDE;
 
   // Returns preferred height in immersive style.
   static int GetImmersiveHeight();
@@ -495,6 +497,13 @@ class TabStrip : public views::View,
   // Returns the tab to use for event handling starting at index |start| and
   // iterating by |delta|.
   Tab* FindTabForEventFrom(const gfx::Point& point, int start, int delta);
+
+  // For a given point, finds a tab that is hit by the point. If the point hits
+  // an area on which two tabs are overlapping, the tab is selected as follows:
+  // - If one of the tabs is active, select it.
+  // - Select the left one.
+  // If no tabs are hit, returns NULL.
+  views::View* FindTabHitByPoint(const gfx::Point& point);
 
   // Returns the x-coordinates of the tabs.
   std::vector<int> GetTabXCoordinates();

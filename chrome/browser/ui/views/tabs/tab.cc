@@ -372,6 +372,17 @@ class Tab::TabCloseButton : public views::ImageButton {
     return rect.Contains(point) ? this : parent();
   }
 
+  // Overridden from views::View.
+  virtual View* GetTooltipHandlerForPoint(const gfx::Point& point) OVERRIDE {
+    // Tab close button has no children, so tooltip handler should be the same
+    // as the event handler.
+    // In addition, a hit test has to be performed for the point (as
+    // GetTooltipHandlerForPoint() is responsible for it).
+    if (!HitTestPoint(point))
+      return NULL;
+    return GetEventHandlerForPoint(point);
+  }
+
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
     if (tab_->controller())
       tab_->controller()->OnMouseEventInTab(this, event);

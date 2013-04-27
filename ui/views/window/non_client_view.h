@@ -214,6 +214,8 @@ class VIEWS_EXPORT NonClientView : public View {
 
   virtual views::View* GetEventHandlerForPoint(const gfx::Point& point)
       OVERRIDE;
+  virtual views::View* GetTooltipHandlerForPoint(const gfx::Point& point)
+      OVERRIDE;
 
  protected:
   // NonClientView, View overrides:

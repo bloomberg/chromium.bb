@@ -153,7 +153,7 @@ LRESULT TooltipManagerWin::OnNotify(int w_param,
           // View under the mouse is out of sync, determine it now.
           View* root_view = widget_->GetRootView();
           last_tooltip_view_ =
-              root_view->GetEventHandlerForPoint(last_mouse_pos_);
+              root_view->GetTooltipHandlerForPoint(last_mouse_pos_);
           last_view_out_of_sync_ = false;
         }
         // Tooltip control is asking for the tooltip to display.
@@ -272,7 +272,7 @@ int TooltipManagerWin::CalcTooltipHeight() {
 
 void TooltipManagerWin::UpdateTooltip(const gfx::Point& mouse_pos) {
   View* root_view = widget_->GetRootView();
-  View* view = root_view->GetEventHandlerForPoint(mouse_pos);
+  View* view = root_view->GetTooltipHandlerForPoint(mouse_pos);
   if (view != last_tooltip_view_) {
     // NOTE: This *must* be sent regardless of the visibility of the tooltip.
     // It triggers Windows to ask for the tooltip again.
