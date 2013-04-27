@@ -720,8 +720,16 @@ void BrowserView::UpdateTitleBar() {
 void BrowserView::BookmarkBarStateChanged(
     BookmarkBar::AnimateChangeType change_type) {
   if (bookmark_bar_view_.get()) {
-    bookmark_bar_view_->SetBookmarkBarState(
-        browser_->bookmark_bar_state(), change_type);
+    BookmarkBar::State new_state = browser_->bookmark_bar_state();
+
+    // We don't properly support animating the bookmark bar to and from the
+    // detached state in immersive fullscreen.
+    bool detached_changed = (new_state == BookmarkBar::DETACHED) ||
+        bookmark_bar_view_->IsDetached();
+    if (detached_changed && immersive_mode_controller_->IsEnabled())
+      change_type = BookmarkBar::DONT_ANIMATE_STATE_CHANGE;
+
+    bookmark_bar_view_->SetBookmarkBarState(new_state, change_type);
   }
   if (MaybeShowBookmarkBar(GetActiveWebContents()))
     Layout();
@@ -2131,7 +2139,7 @@ bool BrowserView::MaybeShowBookmarkBar(WebContents* contents) {
   bool needs_layout = false;
   views::View* new_parent = NULL;
   if (show_bookmark_bar) {
-    if (browser_->bookmark_bar_state() == BookmarkBar::DETACHED)
+    if (bookmark_bar_view_->IsDetached())
       new_parent = this;
     else
       new_parent = top_container_;

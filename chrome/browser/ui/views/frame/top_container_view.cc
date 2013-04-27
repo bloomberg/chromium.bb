@@ -35,10 +35,15 @@ gfx::Rect TopContainerView::GetTargetBoundsInScreen() const {
 
 gfx::Size TopContainerView::GetPreferredSize() {
   // The view wants to be as wide as its parent and tall enough to fully show
-  // its last child view.
-  int last_child_bottom =
-      child_count() > 0 ? child_at(child_count() - 1)->bounds().bottom() : 0;
-  return gfx::Size(browser_view_->width(), last_child_bottom);
+  // all its children. In particular, the bottom of the bookmark bar can be
+  // be above the bottom of the toolbar while the bookmark bar is animating.
+  int height = 0;
+  for (int i = 0; i < child_count(); ++i) {
+    int child_bottom = child_at(i)->bounds().bottom();
+    if (child_bottom > height)
+      height = child_bottom;
+  }
+  return gfx::Size(browser_view_->width(), height);
 }
 
 std::string TopContainerView::GetClassName() const {
