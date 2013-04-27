@@ -9,7 +9,7 @@
 namespace jingle_glue {
 
 TaskPump::TaskPump()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+    : weak_factory_(this),
       posted_wake_(false),
       stopped_(false) {}
 

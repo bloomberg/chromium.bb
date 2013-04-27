@@ -43,9 +43,8 @@ class MockTransportChannel : public cricket::TransportChannel {
 class TransportChannelSocketAdapterTest : public testing::Test {
  public:
   TransportChannelSocketAdapterTest()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(
-          callback_(base::Bind(&TransportChannelSocketAdapterTest::Callback,
-                               base::Unretained(this)))),
+      : callback_(base::Bind(&TransportChannelSocketAdapterTest::Callback,
+                             base::Unretained(this))),
         callback_result_(0) {
   }
 

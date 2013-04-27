@@ -24,12 +24,12 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
     const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
     const net::SSLConfig& ssl_config,
     const net::HostPortPair& dest_host_port_pair)
-        : ALLOW_THIS_IN_INITIALIZER_LIST(proxy_resolve_callback_(
+        : proxy_resolve_callback_(
               base::Bind(&ProxyResolvingClientSocket::ProcessProxyResolveDone,
-                         base::Unretained(this)))),
-          ALLOW_THIS_IN_INITIALIZER_LIST(connect_callback_(
+                         base::Unretained(this))),
+          connect_callback_(
               base::Bind(&ProxyResolvingClientSocket::ProcessConnectDone,
-                         base::Unretained(this)))),
+                         base::Unretained(this))),
           ssl_config_(ssl_config),
           pac_request_(NULL),
           dest_host_port_pair_(dest_host_port_pair),
@@ -41,7 +41,7 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
               net::BoundNetLog::Make(
                   request_context_getter->GetURLRequestContext()->net_log(),
                   net::NetLog::SOURCE_SOCKET)),
-          ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+          weak_factory_(this) {
   DCHECK(request_context_getter);
   net::URLRequestContext* request_context =
       request_context_getter->GetURLRequestContext();

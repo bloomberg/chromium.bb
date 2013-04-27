@@ -10,7 +10,7 @@ namespace notifier {
 
 WeakXmppClient::WeakXmppClient(talk_base::TaskParent* parent)
     : buzz::XmppClient(parent),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+      weak_ptr_factory_(this) {}
 
 WeakXmppClient::~WeakXmppClient() {
   DCHECK(CalledOnValidThread());

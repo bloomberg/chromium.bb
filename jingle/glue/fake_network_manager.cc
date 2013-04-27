@@ -15,7 +15,7 @@ namespace jingle_glue {
 
 FakeNetworkManager::FakeNetworkManager(const net::IPAddressNumber& address)
     : started_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   net::IPEndPoint endpoint(address, 0);
   talk_base::SocketAddress socket_address;
   CHECK(IPEndPointToSocketAddress(endpoint, &socket_address));

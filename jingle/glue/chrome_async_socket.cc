@@ -30,7 +30,7 @@ ChromeAsyncSocket::ChromeAsyncSocket(
     ResolvingClientSocketFactory* resolving_client_socket_factory,
     size_t read_buf_size,
     size_t write_buf_size)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+    : weak_ptr_factory_(this),
       resolving_client_socket_factory_(resolving_client_socket_factory),
       state_(STATE_CLOSED),
       error_(ERROR_NONE),

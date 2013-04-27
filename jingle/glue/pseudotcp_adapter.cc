@@ -111,7 +111,7 @@ class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
 
 
 PseudoTcpAdapter::Core::Core(net::Socket* socket)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(pseudo_tcp_(this, 0)),
+    : pseudo_tcp_(this, 0),
       socket_(socket),
       write_waits_for_send_(false),
       waiting_write_position_(false),
