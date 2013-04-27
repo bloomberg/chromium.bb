@@ -53,7 +53,7 @@ class GpuCommandBufferStub
   class DestructionObserver {
    public:
     // Called in Destroy(), before the context/surface are released.
-    virtual void OnWillDestroyStub(GpuCommandBufferStub* stub) = 0;
+    virtual void OnWillDestroyStub() = 0;
 
    protected:
     virtual ~DestructionObserver() {}
@@ -235,10 +235,6 @@ class GpuCommandBufferStub
   uint32 parent_texture_for_initialization_;
 
   GpuWatchdog* watchdog_;
-
-  // Zero or more video decoders owned by this stub.  Only used for lifecycle
-  // management (so the order within the vector is irrelevant).
-  ScopedVector<GpuVideoDecodeAccelerator> video_decoders_;
 
   ObserverList<DestructionObserver> destruction_observers_;
 

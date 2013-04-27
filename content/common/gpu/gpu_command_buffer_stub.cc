@@ -358,7 +358,7 @@ void GpuCommandBufferStub::Destroy() {
     have_context = decoder_->MakeCurrent();
   FOR_EACH_OBSERVER(DestructionObserver,
                     destruction_observers_,
-                    OnWillDestroyStub(this));
+                    OnWillDestroyStub());
 
   scoped_refptr<gfx::GLContext> context;
   if (decoder_) {
@@ -759,8 +759,9 @@ void GpuCommandBufferStub::OnCreateVideoDecoder(
   int decoder_route_id = channel_->GenerateRouteID();
   GpuVideoDecodeAccelerator* decoder =
       new GpuVideoDecodeAccelerator(decoder_route_id, this);
-  video_decoders_.push_back(decoder);
   decoder->Initialize(profile, reply_message);
+  // decoder is registered as a DestructionObserver of this stub and will
+  // self-delete during destruction of this stub.
 }
 
 void GpuCommandBufferStub::OnSetSurfaceVisible(bool visible) {

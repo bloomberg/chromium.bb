@@ -45,7 +45,7 @@ class GpuVideoDecodeAccelerator
   virtual void NotifyResetDone() OVERRIDE;
 
   // GpuCommandBufferStub::DestructionObserver implementation.
-  virtual void OnWillDestroyStub(GpuCommandBufferStub* stub) OVERRIDE;
+  virtual void OnWillDestroyStub() OVERRIDE;
 
   // Function to delegate sending to actual sender.
   virtual bool Send(IPC::Message* message) OVERRIDE;
@@ -79,7 +79,7 @@ class GpuVideoDecodeAccelerator
   int32 host_route_id_;
 
   // Unowned pointer to the underlying GpuCommandBufferStub.
-  base::WeakPtr<GpuCommandBufferStub> stub_;
+  GpuCommandBufferStub* stub_;
 
   // The underlying VideoDecodeAccelerator.
   scoped_ptr<media::VideoDecodeAccelerator> video_decode_accelerator_;

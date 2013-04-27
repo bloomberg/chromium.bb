@@ -60,28 +60,28 @@ GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
     GpuCommandBufferStub* stub)
     : init_done_msg_(NULL),
       host_route_id_(host_route_id),
-      stub_(stub->AsWeakPtr()),
+      stub_(stub),
       video_decode_accelerator_(NULL),
       texture_target_(0) {
-  if (!stub_)
-    return;
+  DCHECK(stub_);
   stub_->AddDestructionObserver(this);
+  stub_->channel()->AddRoute(host_route_id_, this);
   make_context_current_ =
       base::Bind(&MakeDecoderContextCurrent, stub_->AsWeakPtr());
 }
 
 GpuVideoDecodeAccelerator::~GpuVideoDecodeAccelerator() {
-  if (stub_) {
-    stub_->channel()->RemoveRoute(host_route_id_);
-    stub_->RemoveDestructionObserver(this);
-  }
-
+  DCHECK(stub_);
   if (video_decode_accelerator_)
     video_decode_accelerator_.release()->Destroy();
+
+  stub_->channel()->RemoveRoute(host_route_id_);
+  stub_->RemoveDestructionObserver(this);
 }
 
 bool GpuVideoDecodeAccelerator::OnMessageReceived(const IPC::Message& msg) {
-  if (!stub_ || !video_decode_accelerator_)
+  DCHECK(stub_);
+  if (!video_decode_accelerator_)
     return false;
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuVideoDecodeAccelerator, msg)
@@ -153,14 +153,11 @@ void GpuVideoDecodeAccelerator::NotifyError(
 void GpuVideoDecodeAccelerator::Initialize(
     const media::VideoCodecProfile profile,
     IPC::Message* init_done_msg) {
+  DCHECK(stub_);
   DCHECK(!video_decode_accelerator_.get());
   DCHECK(!init_done_msg_);
   DCHECK(init_done_msg);
   init_done_msg_ = init_done_msg;
-  if (!stub_)
-    return;
-
-  stub_->channel()->AddRoute(host_route_id_, this);
 
 #if !defined(OS_WIN)
   // Ensure we will be able to get a GL context at all before initializing
@@ -232,6 +229,7 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
       const std::vector<int32>& buffer_ids,
       const std::vector<uint32>& texture_ids,
       const std::vector<gfx::Size>& sizes) {
+  DCHECK(stub_);
   if (buffer_ids.size() != texture_ids.size() ||
       buffer_ids.size() != sizes.size()) {
     NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
@@ -308,7 +306,7 @@ void GpuVideoDecodeAccelerator::OnReset() {
 
 void GpuVideoDecodeAccelerator::OnDestroy() {
   DCHECK(video_decode_accelerator_.get());
-  video_decode_accelerator_.release()->Destroy();
+  delete this;
 }
 
 void GpuVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer(
@@ -339,14 +337,8 @@ void GpuVideoDecodeAccelerator::NotifyResetDone() {
     DLOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_ResetDone) failed";
 }
 
-void GpuVideoDecodeAccelerator::OnWillDestroyStub(GpuCommandBufferStub* stub) {
-  DCHECK_EQ(stub, stub_.get());
-  if (video_decode_accelerator_)
-    video_decode_accelerator_.release()->Destroy();
-  if (stub_) {
-    stub_->RemoveDestructionObserver(this);
-    stub_.reset();
-  }
+void GpuVideoDecodeAccelerator::OnWillDestroyStub() {
+  delete this;
 }
 
 bool GpuVideoDecodeAccelerator::Send(IPC::Message* message) {

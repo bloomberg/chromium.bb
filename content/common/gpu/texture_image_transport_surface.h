@@ -59,7 +59,7 @@ class TextureImageTransportSurface
       const cc::LatencyInfo& latency_info) OVERRIDE;
 
   // GpuCommandBufferStub::DestructionObserver implementation.
-  virtual void OnWillDestroyStub(GpuCommandBufferStub* stub) OVERRIDE;
+  virtual void OnWillDestroyStub() OVERRIDE;
 
  private:
 

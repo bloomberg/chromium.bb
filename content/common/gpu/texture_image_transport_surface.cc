@@ -173,10 +173,8 @@ void TextureImageTransportSurface::OnResize(gfx::Size size) {
   CreateBackTexture();
 }
 
-void TextureImageTransportSurface::OnWillDestroyStub(
-    GpuCommandBufferStub* stub) {
-  DCHECK(stub == helper_->stub());
-  stub->RemoveDestructionObserver(this);
+void TextureImageTransportSurface::OnWillDestroyStub() {
+  helper_->stub()->RemoveDestructionObserver(this);
 
   GpuHostMsg_AcceleratedSurfaceRelease_Params params;
   helper_->SendAcceleratedSurfaceRelease(params);
