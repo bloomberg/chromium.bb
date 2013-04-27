@@ -1326,6 +1326,14 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
                                    int accepted_suggestion,
                                    bool is_keyword,
                                    MatchMap* map) {
+  // With Instant Extended, we never want to inline autocomplete search queries
+  // -- they should always use grey text if they are to autocomplete at all. So
+  // we clamp non-verbatim results to just below the verbatim score to ensure
+  // that none of them are inline autocompleted.
+  if ((type != AutocompleteMatch::SEARCH_WHAT_YOU_TYPED) &&
+      chrome::IsInstantExtendedAPIEnabled()) {
+    relevance = std::min(kNonURLVerbatimRelevance - 1, relevance);
+  }
   AutocompleteMatch match(this, relevance, false, type);
   std::vector<size_t> content_param_offsets;
   // Bail out now if we don't actually have a valid provider.
