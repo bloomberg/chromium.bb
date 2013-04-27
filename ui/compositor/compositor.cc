@@ -759,6 +759,16 @@ Compositor::OffscreenContextProviderForCompositorThread() {
       OffscreenContextProviderForCompositorThread();
 }
 
+bool Compositor::IsShowPaintRectsEnabled() const {
+  return host_->debug_state().show_paint_rects;
+}
+
+void Compositor::SetShowPaintRectsEnabled(bool enabled) {
+  cc::LayerTreeDebugState debug_state = host_->debug_state();
+  debug_state.show_paint_rects = enabled;
+  host_->SetDebugState(debug_state);
+}
+
 scoped_refptr<CompositorLock> Compositor::GetCompositorLock() {
   if (!compositor_lock_) {
     compositor_lock_ = new CompositorLock(this);

@@ -363,6 +363,9 @@ class COMPOSITOR_EXPORT Compositor
 
   bool IsLocked() { return compositor_lock_ != NULL; }
 
+  bool IsShowPaintRectsEnabled() const;
+  void SetShowPaintRectsEnabled(bool enabled);
+
  private:
   friend class base::RefCounted<Compositor>;
   friend class CompositorLock;

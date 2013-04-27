@@ -70,6 +70,8 @@
         'caps_lock_delegate.h',
         'caps_lock_delegate_stub.cc',
         'caps_lock_delegate_stub.h',
+        'debug.cc',
+        'debug.h',
         'desktop_background/desktop_background_controller.cc',
         'desktop_background/desktop_background_controller.h',
         'desktop_background/desktop_background_controller_observer.h',
