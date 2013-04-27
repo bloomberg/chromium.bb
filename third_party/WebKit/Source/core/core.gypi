@@ -1606,7 +1606,6 @@
             'xml/parser/MarkupTokenizerInlines.h',
             'xml/parser/XMLDocumentParser.cpp',
             'xml/parser/XMLDocumentParser.h',
-            'xml/parser/XMLDocumentParserLibxml2.cpp',
             'xml/parser/XMLDocumentParserScope.cpp',
             'xml/parser/XMLDocumentParserScope.h',
             'xml/DOMParser.cpp',
