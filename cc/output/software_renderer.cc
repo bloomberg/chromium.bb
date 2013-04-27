@@ -71,8 +71,6 @@ SoftwareRenderer::SoftwareRenderer(RendererClient* client,
     output_surface_(output_surface),
     output_device_(output_surface->software_device()),
     current_canvas_(NULL) {
-  resource_provider_->set_default_resource_type(ResourceProvider::Bitmap);
-
   capabilities_.max_texture_size = resource_provider_->max_texture_size();
   capabilities_.best_texture_format = resource_provider_->best_texture_format();
   capabilities_.using_set_visibility = true;

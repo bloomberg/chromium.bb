@@ -26,7 +26,9 @@ using WebKit::WebGraphicsContext3D;
 
 namespace cc {
 
-static GLenum TextureToStorageFormat(GLenum texture_format) {
+namespace {
+
+GLenum TextureToStorageFormat(GLenum texture_format) {
   GLenum storage_format = GL_RGBA8_OES;
   switch (texture_format) {
     case GL_RGBA:
@@ -42,11 +44,11 @@ static GLenum TextureToStorageFormat(GLenum texture_format) {
   return storage_format;
 }
 
-static bool IsTextureFormatSupportedForStorage(GLenum format) {
+bool IsTextureFormatSupportedForStorage(GLenum format) {
   return (format == GL_RGBA || format == GL_BGRA_EXT);
 }
 
-static unsigned CreateTextureId(WebGraphicsContext3D* context3d) {
+unsigned CreateTextureId(WebGraphicsContext3D* context3d) {
   unsigned texture_id = 0;
   GLC(context3d, texture_id = context3d->createTexture());
   GLC(context3d, context3d->bindTexture(GL_TEXTURE_2D, texture_id));
@@ -60,6 +62,8 @@ static unsigned CreateTextureId(WebGraphicsContext3D* context3d) {
       GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
   return texture_id;
 }
+
+}  // namespace
 
 ResourceProvider::Resource::Resource()
     : gl_id(0),
@@ -612,7 +616,7 @@ ResourceProvider::ResourceProvider(OutputSurface* output_surface)
       lost_output_surface_(false),
       next_id_(1),
       next_child_(1),
-      default_resource_type_(GLTexture),
+      default_resource_type_(output_surface->context3d() ? GLTexture : Bitmap),
       use_texture_storage_ext_(false),
       use_texture_usage_hint_(false),
       use_shallow_flush_(false),
