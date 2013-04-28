@@ -21,7 +21,7 @@
 #define SVGStaticPropertyWithParentTearOff_h
 
 #if ENABLE(SVG)
-#include "SVGPropertyTearOff.h"
+#include "core/svg/properties/SVGPropertyTearOff.h"
 
 namespace WebCore {
 

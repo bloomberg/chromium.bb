@@ -22,8 +22,8 @@
 #define SVGTransformList_h
 
 #if ENABLE(SVG)
-#include "SVGPropertyTraits.h"
 #include "SVGTransform.h"
+#include "core/svg/properties/SVGPropertyTraits.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

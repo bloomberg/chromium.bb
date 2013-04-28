@@ -21,9 +21,9 @@
 #define SVGAnimatedLength_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedPropertyTearOff.h"
 #include "SVGAnimatedTypeAnimator.h"
 #include "SVGLength.h"
+#include "core/svg/properties/SVGAnimatedPropertyTearOff.h"
 
 namespace WebCore {
 

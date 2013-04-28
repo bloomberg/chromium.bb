@@ -51,7 +51,6 @@
       '../html',
       '../platform/graphics/skia',
       '../svg',
-      '../svg/properties',
       '<(INTERMEDIATE_DIR)',
       '<(SHARED_INTERMEDIATE_DIR)/webkit',
       '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',

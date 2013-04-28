@@ -262,18 +262,18 @@ sub GetSVGPropertyTypes
     my $svgWrappedNativeType = $codeGenerator->GetSVGWrappedTypeNeedingTearOff($implType);
     if ($svgNativeType =~ /SVGPropertyTearOff/) {
         $svgPropertyType = $svgWrappedNativeType;
-        AddToImplIncludes("SVGAnimatedPropertyTearOff.h");
+        AddToImplIncludes("core/svg/properties/SVGAnimatedPropertyTearOff.h");
     } elsif ($svgNativeType =~ /SVGListPropertyTearOff/ or $svgNativeType =~ /SVGStaticListPropertyTearOff/) {
         $svgListPropertyType = $svgWrappedNativeType;
-        $headerIncludes{"SVGAnimatedListPropertyTearOff.h"} = 1;
-        $headerIncludes{"SVGStaticListPropertyTearOff.h"} = 1;
+        $headerIncludes{"core/svg/properties/SVGAnimatedListPropertyTearOff.h"} = 1;
+        $headerIncludes{"core/svg/properties/SVGStaticListPropertyTearOff.h"} = 1;
     } elsif ($svgNativeType =~ /SVGTransformListPropertyTearOff/) {
         $svgListPropertyType = $svgWrappedNativeType;
-        $headerIncludes{"SVGAnimatedListPropertyTearOff.h"} = 1;
-        $headerIncludes{"SVGTransformListPropertyTearOff.h"} = 1;
+        $headerIncludes{"core/svg/properties/SVGAnimatedListPropertyTearOff.h"} = 1;
+        $headerIncludes{"core/svg/properties/SVGTransformListPropertyTearOff.h"} = 1;
     } elsif ($svgNativeType =~ /SVGPathSegListPropertyTearOff/) {
         $svgListPropertyType = $svgWrappedNativeType;
-        $headerIncludes{"SVGPathSegListPropertyTearOff.h"} = 1;
+        $headerIncludes{"core/svg/properties/SVGPathSegListPropertyTearOff.h"} = 1;
     }
 
     if ($svgPropertyType) {
@@ -1290,7 +1290,7 @@ END
         $code .= "    return toV8Fast$forMainWorldSuffix(static_cast<$svgNativeType*>($expression), info, imp);\n";
     } elsif ($codeGenerator->IsSVGTypeNeedingTearOff($attrType) and not $interfaceName =~ /List$/) {
         AddToImplIncludes("V8$attrType.h");
-        AddToImplIncludes("SVGPropertyTearOff.h");
+        AddToImplIncludes("core/svg/properties/SVGPropertyTearOff.h");
         my $tearOffType = $codeGenerator->GetSVGTypeNeedingTearOff($attrType);
         my $wrappedValue;
         if ($codeGenerator->IsSVGTypeWithWritablePropertiesNeedingTearOff($attrType) and not defined $attribute->signature->extendedAttributes->{"Immutable"}) {
@@ -1302,7 +1302,7 @@ END
 
             my $selfIsTearOffType = $codeGenerator->IsSVGTypeNeedingTearOff($interfaceName);
             if ($selfIsTearOffType) {
-                AddToImplIncludes("SVGStaticPropertyWithParentTearOff.h");
+                AddToImplIncludes("core/svg/properties/SVGStaticPropertyWithParentTearOff.h");
                 $tearOffType =~ s/SVGPropertyTearOff</SVGStaticPropertyWithParentTearOff<$interfaceName, /;
 
                 if ($expression =~ /matrix/ and $interfaceName eq "SVGTransform") {
@@ -1313,7 +1313,7 @@ END
 
                 $wrappedValue = "WTF::getPtr(${tearOffType}::create(wrapper, $expression, $updateMethod))";
             } else {
-                AddToImplIncludes("SVGStaticPropertyTearOff.h");
+                AddToImplIncludes("core/svg/properties/SVGStaticPropertyTearOff.h");
                 $tearOffType =~ s/SVGPropertyTearOff</SVGStaticPropertyTearOff<$interfaceName, /;
 
                 $wrappedValue = "WTF::getPtr(${tearOffType}::create(imp, $expression, $updateMethod))";
@@ -4312,7 +4312,7 @@ sub GenerateFunctionCallString
 
     if ($isSVGTearOffType) {
         AddToImplIncludes("V8$returnType.h");
-        AddToImplIncludes("SVGPropertyTearOff.h");
+        AddToImplIncludes("core/svg/properties/SVGPropertyTearOff.h");
         my $svgNativeType = $codeGenerator->GetSVGTypeNeedingTearOff($returnType);
         # FIXME: Update for all ScriptWrappables.
         if (IsDOMNodeType($interfaceName)) {

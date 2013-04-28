@@ -25,9 +25,9 @@
 #if ENABLE(SVG)
 #include "SVGLocatable.h"
 #include "SVGParsingError.h"
-#include "SVGPropertyInfo.h"
 #include "core/dom/StyledElement.h"
 #include "core/platform/Timer.h"
+#include "core/svg/properties/SVGPropertyInfo.h"
 #include <wtf/HashMap.h>
 
 namespace WebCore {

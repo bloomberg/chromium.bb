@@ -21,9 +21,9 @@
 #define SVGAnimatedListPropertyTearOff_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedProperty.h"
-#include "SVGListPropertyTearOff.h"
-#include "SVGStaticListPropertyTearOff.h"
+#include "core/svg/properties/SVGAnimatedProperty.h"
+#include "core/svg/properties/SVGListPropertyTearOff.h"
+#include "core/svg/properties/SVGStaticListPropertyTearOff.h"
 
 namespace WebCore {
 

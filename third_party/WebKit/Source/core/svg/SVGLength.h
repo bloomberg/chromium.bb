@@ -24,8 +24,8 @@
 #if ENABLE(SVG)
 #include "SVGLengthContext.h"
 #include "SVGParsingError.h"
-#include "SVGPropertyTraits.h"
 #include "core/platform/animation/AnimationUtilities.h"
+#include "core/svg/properties/SVGPropertyTraits.h"
 
 namespace WebCore {
 

@@ -21,9 +21,9 @@
 #define SVGAnimatedEnumeration_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedEnumerationPropertyTearOff.h"
-#include "SVGAnimatedPropertyMacros.h"
 #include "SVGAnimatedTypeAnimator.h"
+#include "core/svg/properties/SVGAnimatedEnumerationPropertyTearOff.h"
+#include "core/svg/properties/SVGAnimatedPropertyMacros.h"
 
 namespace WebCore {
 

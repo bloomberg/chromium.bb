@@ -28,9 +28,9 @@
 #include "SVGNumberList.h"
 #include "SVGPointList.h"
 #include "SVGPreserveAspectRatio.h"
-#include "SVGPropertyInfo.h"
 #include "SVGTransformList.h"
 #include "core/platform/graphics/FloatRect.h"
+#include "core/svg/properties/SVGPropertyInfo.h"
 
 namespace WebCore {
 

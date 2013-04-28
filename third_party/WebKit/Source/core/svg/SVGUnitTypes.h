@@ -21,7 +21,7 @@
 #define SVGUnitTypes_h
 
 #if ENABLE(SVG)
-#include "SVGPropertyTraits.h"
+#include "core/svg/properties/SVGPropertyTraits.h"
 #include <wtf/RefCounted.h>
 
 namespace WebCore {

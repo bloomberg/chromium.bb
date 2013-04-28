@@ -21,9 +21,9 @@
 #define SVGAnimatedProperty_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedPropertyDescription.h"
 #include "SVGElement.h"
-#include "SVGPropertyInfo.h"
+#include "core/svg/properties/SVGAnimatedPropertyDescription.h"
+#include "core/svg/properties/SVGPropertyInfo.h"
 #include <wtf/RefCounted.h>
 
 namespace WebCore {

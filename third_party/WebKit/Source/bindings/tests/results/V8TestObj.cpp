@@ -23,8 +23,6 @@
 
 #include "HTMLNames.h"
 #include "PageConsole.h"
-#include "SVGPropertyTearOff.h"
-#include "SVGStaticPropertyTearOff.h"
 #include "V8DOMStringList.h"
 #include "V8Document.h"
 #include "V8Float32Array.h"
@@ -55,6 +53,8 @@
 #include "core/page/Frame.h"
 #include "core/page/RuntimeEnabledFeatures.h"
 #include "core/page/UseCounter.h"
+#include "core/svg/properties/SVGPropertyTearOff.h"
+#include "core/svg/properties/SVGStaticPropertyTearOff.h"
 #include <wtf/Float32Array.h>
 #include <wtf/GetPtr.h>
 #include <wtf/RefCounted.h>

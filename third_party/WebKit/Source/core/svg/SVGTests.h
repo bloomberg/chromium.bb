@@ -22,9 +22,9 @@
 #define SVGTests_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedProperty.h"
-#include "SVGAnimatedPropertyMacros.h"
 #include "SVGStringList.h"
+#include "core/svg/properties/SVGAnimatedProperty.h"
+#include "core/svg/properties/SVGAnimatedPropertyMacros.h"
 
 namespace WebCore {
 

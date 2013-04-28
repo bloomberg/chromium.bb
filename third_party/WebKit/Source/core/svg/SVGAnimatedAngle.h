@@ -22,8 +22,8 @@
 
 #if ENABLE(SVG)
 #include "SVGAngle.h"
-#include "SVGAnimatedPropertyTearOff.h"
 #include "SVGAnimatedTypeAnimator.h"
+#include "core/svg/properties/SVGAnimatedPropertyTearOff.h"
 
 namespace WebCore {
 

@@ -37,13 +37,13 @@
 #include "SVGPathSegLinetoVertical.h"
 #include "SVGPathSegList.h"
 #include "SVGPathSegListBuilder.h"
-#include "SVGPathSegListPropertyTearOff.h"
 #include "SVGPathSegMoveto.h"
 #include "SVGPathUtilities.h"
 #include "SVGSVGElement.h"
 #include "core/dom/Attribute.h"
 #include "core/rendering/svg/RenderSVGPath.h"
 #include "core/rendering/svg/RenderSVGResource.h"
+#include "core/svg/properties/SVGPathSegListPropertyTearOff.h"
 
 namespace WebCore {
 

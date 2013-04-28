@@ -21,8 +21,8 @@
 #define SVGRect_h
 
 #if ENABLE(SVG)
-#include "SVGPropertyTraits.h"
 #include "core/platform/graphics/FloatRect.h"
+#include "core/svg/properties/SVGPropertyTraits.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

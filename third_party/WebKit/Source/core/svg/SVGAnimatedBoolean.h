@@ -21,8 +21,8 @@
 #define SVGAnimatedBoolean_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedStaticPropertyTearOff.h"
 #include "SVGAnimatedTypeAnimator.h"
+#include "core/svg/properties/SVGAnimatedStaticPropertyTearOff.h"
 
 namespace WebCore {
 

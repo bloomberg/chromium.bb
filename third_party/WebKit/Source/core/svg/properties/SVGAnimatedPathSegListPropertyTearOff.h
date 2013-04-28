@@ -21,12 +21,12 @@
 #define SVGAnimatedPathSegListPropertyTearOff_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedListPropertyTearOff.h"
 #include "SVGPathByteStream.h"
 #include "SVGPathElement.h"
 #include "SVGPathSegList.h"
-#include "SVGPathSegListPropertyTearOff.h"
 #include "SVGPathUtilities.h"
+#include "core/svg/properties/SVGAnimatedListPropertyTearOff.h"
+#include "core/svg/properties/SVGPathSegListPropertyTearOff.h"
 
 namespace WebCore {
 

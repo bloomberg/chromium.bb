@@ -23,7 +23,7 @@
 #define SVGAngle_h
 
 #if ENABLE(SVG)
-#include "SVGPropertyTraits.h"
+#include "core/svg/properties/SVGPropertyTraits.h"
 
 namespace WebCore {
 

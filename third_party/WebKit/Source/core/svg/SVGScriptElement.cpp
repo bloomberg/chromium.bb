@@ -24,7 +24,6 @@
 #include "SVGScriptElement.h"
 
 #include "HTMLNames.h"
-#include "SVGAnimatedStaticPropertyTearOff.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
 #include "bindings/v8/ScriptEventListener.h"
@@ -32,6 +31,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Event.h"
 #include "core/dom/EventNames.h"
+#include "core/svg/properties/SVGAnimatedStaticPropertyTearOff.h"
 
 namespace WebCore {
 
