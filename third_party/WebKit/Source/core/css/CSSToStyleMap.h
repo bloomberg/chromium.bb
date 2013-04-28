@@ -30,7 +30,7 @@ namespace WebCore {
 
 class FillLayer;
 class CSSValue;
-class Animation;
+class CSSAnimationData;
 class RenderStyle;
 class StyleImage;
 class StyleResolver;
@@ -55,15 +55,15 @@ public:
     void mapFillXPosition(CSSPropertyID, FillLayer*, CSSValue*);
     void mapFillYPosition(CSSPropertyID, FillLayer*, CSSValue*);
 
-    void mapAnimationDelay(Animation*, CSSValue*);
-    void mapAnimationDirection(Animation*, CSSValue*);
-    void mapAnimationDuration(Animation*, CSSValue*);
-    void mapAnimationFillMode(Animation*, CSSValue*);
-    void mapAnimationIterationCount(Animation*, CSSValue*);
-    void mapAnimationName(Animation*, CSSValue*);
-    void mapAnimationPlayState(Animation*, CSSValue*);
-    void mapAnimationProperty(Animation*, CSSValue*);
-    void mapAnimationTimingFunction(Animation*, CSSValue*);
+    void mapAnimationDelay(CSSAnimationData*, CSSValue*);
+    void mapAnimationDirection(CSSAnimationData*, CSSValue*);
+    void mapAnimationDuration(CSSAnimationData*, CSSValue*);
+    void mapAnimationFillMode(CSSAnimationData*, CSSValue*);
+    void mapAnimationIterationCount(CSSAnimationData*, CSSValue*);
+    void mapAnimationName(CSSAnimationData*, CSSValue*);
+    void mapAnimationPlayState(CSSAnimationData*, CSSValue*);
+    void mapAnimationProperty(CSSAnimationData*, CSSValue*);
+    void mapAnimationTimingFunction(CSSAnimationData*, CSSValue*);
 
     void mapNinePieceImage(CSSPropertyID, CSSValue*, NinePieceImage&);
     void mapNinePieceImageSlice(CSSValue*, NinePieceImage&);

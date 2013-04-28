@@ -122,7 +122,7 @@ public:
     virtual void setContentsToSolidColor(const Color&) OVERRIDE;
     virtual bool hasContentsLayer() const { return m_contentsLayer; }
 
-    virtual bool addAnimation(const KeyframeValueList&, const IntSize& boxSize, const Animation*, const String&, double timeOffset);
+    virtual bool addAnimation(const KeyframeValueList&, const IntSize& boxSize, const CSSAnimationData*, const String&, double timeOffset);
     virtual void pauseAnimation(const String& animationName, double timeOffset);
     virtual void removeAnimation(const String& animationName);
     virtual void suspendAnimations(double wallClockTime);

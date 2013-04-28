@@ -34,7 +34,7 @@ if (i < size() && i != 0) { \
 AnimationList::AnimationList(const AnimationList& o)
 {
     for (size_t i = 0; i < o.size(); ++i)
-        m_animations.append(Animation::create(o.animation(i)));
+        m_animations.append(CSSAnimationData::create(o.animation(i)));
 }
 
 void AnimationList::fillUnsetProperties()

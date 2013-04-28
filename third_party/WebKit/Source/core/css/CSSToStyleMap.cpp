@@ -36,7 +36,7 @@
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
 #include "core/css/StyleResolver.h"
-#include "core/platform/animation/Animation.h"
+#include "core/platform/animation/CSSAnimationData.h"
 #include "core/rendering/style/FillLayer.h"
 
 namespace WebCore {
@@ -299,10 +299,10 @@ void CSSToStyleMap::mapFillYPosition(CSSPropertyID propertyID, FillLayer* layer,
         layer->setBackgroundYOrigin(*(pair->first()));
 }
 
-void CSSToStyleMap::mapAnimationDelay(Animation* animation, CSSValue* value)
+void CSSToStyleMap::mapAnimationDelay(CSSAnimationData* animation, CSSValue* value)
 {
     if (value->isInitialValue()) {
-        animation->setDelay(Animation::initialAnimationDelay());
+        animation->setDelay(CSSAnimationData::initialAnimationDelay());
         return;
     }
 
@@ -313,10 +313,10 @@ void CSSToStyleMap::mapAnimationDelay(Animation* animation, CSSValue* value)
     animation->setDelay(primitiveValue->computeTime<double, CSSPrimitiveValue::Seconds>());
 }
 
-void CSSToStyleMap::mapAnimationDirection(Animation* layer, CSSValue* value)
+void CSSToStyleMap::mapAnimationDirection(CSSAnimationData* layer, CSSValue* value)
 {
     if (value->isInitialValue()) {
-        layer->setDirection(Animation::initialAnimationDirection());
+        layer->setDirection(CSSAnimationData::initialAnimationDirection());
         return;
     }
 
@@ -326,24 +326,24 @@ void CSSToStyleMap::mapAnimationDirection(Animation* layer, CSSValue* value)
     CSSPrimitiveValue* primitiveValue = static_cast<CSSPrimitiveValue*>(value);
     switch (primitiveValue->getIdent()) {
     case CSSValueNormal:
-        layer->setDirection(Animation::AnimationDirectionNormal);
+        layer->setDirection(CSSAnimationData::AnimationDirectionNormal);
         break;
     case CSSValueAlternate:
-        layer->setDirection(Animation::AnimationDirectionAlternate);
+        layer->setDirection(CSSAnimationData::AnimationDirectionAlternate);
         break;
     case CSSValueReverse:
-        layer->setDirection(Animation::AnimationDirectionReverse);
+        layer->setDirection(CSSAnimationData::AnimationDirectionReverse);
         break;
     case CSSValueAlternateReverse:
-        layer->setDirection(Animation::AnimationDirectionAlternateReverse);
+        layer->setDirection(CSSAnimationData::AnimationDirectionAlternateReverse);
         break;
     }
 }
 
-void CSSToStyleMap::mapAnimationDuration(Animation* animation, CSSValue* value)
+void CSSToStyleMap::mapAnimationDuration(CSSAnimationData* animation, CSSValue* value)
 {
     if (value->isInitialValue()) {
-        animation->setDuration(Animation::initialAnimationDuration());
+        animation->setDuration(CSSAnimationData::initialAnimationDuration());
         return;
     }
 
@@ -354,10 +354,10 @@ void CSSToStyleMap::mapAnimationDuration(Animation* animation, CSSValue* value)
     animation->setDuration(primitiveValue->computeTime<double, CSSPrimitiveValue::Seconds>());
 }
 
-void CSSToStyleMap::mapAnimationFillMode(Animation* layer, CSSValue* value)
+void CSSToStyleMap::mapAnimationFillMode(CSSAnimationData* layer, CSSValue* value)
 {
     if (value->isInitialValue()) {
-        layer->setFillMode(Animation::initialAnimationFillMode());
+        layer->setFillMode(CSSAnimationData::initialAnimationFillMode());
         return;
     }
 
@@ -381,10 +381,10 @@ void CSSToStyleMap::mapAnimationFillMode(Animation* layer, CSSValue* value)
     }
 }
 
-void CSSToStyleMap::mapAnimationIterationCount(Animation* animation, CSSValue* value)
+void CSSToStyleMap::mapAnimationIterationCount(CSSAnimationData* animation, CSSValue* value)
 {
     if (value->isInitialValue()) {
-        animation->setIterationCount(Animation::initialAnimationIterationCount());
+        animation->setIterationCount(CSSAnimationData::initialAnimationIterationCount());
         return;
     }
 
@@ -393,15 +393,15 @@ void CSSToStyleMap::mapAnimationIterationCount(Animation* animation, CSSValue* v
 
     CSSPrimitiveValue* primitiveValue = static_cast<CSSPrimitiveValue*>(value);
     if (primitiveValue->getIdent() == CSSValueInfinite)
-        animation->setIterationCount(Animation::IterationCountInfinite);
+        animation->setIterationCount(CSSAnimationData::IterationCountInfinite);
     else
         animation->setIterationCount(primitiveValue->getFloatValue());
 }
 
-void CSSToStyleMap::mapAnimationName(Animation* layer, CSSValue* value)
+void CSSToStyleMap::mapAnimationName(CSSAnimationData* layer, CSSValue* value)
 {
     if (value->isInitialValue()) {
-        layer->setName(Animation::initialAnimationName());
+        layer->setName(CSSAnimationData::initialAnimationName());
         return;
     }
 
@@ -415,10 +415,10 @@ void CSSToStyleMap::mapAnimationName(Animation* layer, CSSValue* value)
         layer->setName(primitiveValue->getStringValue());
 }
 
-void CSSToStyleMap::mapAnimationPlayState(Animation* layer, CSSValue* value)
+void CSSToStyleMap::mapAnimationPlayState(CSSAnimationData* layer, CSSValue* value)
 {
     if (value->isInitialValue()) {
-        layer->setPlayState(Animation::initialAnimationPlayState());
+        layer->setPlayState(CSSAnimationData::initialAnimationPlayState());
         return;
     }
 
@@ -430,10 +430,10 @@ void CSSToStyleMap::mapAnimationPlayState(Animation* layer, CSSValue* value)
     layer->setPlayState(playState);
 }
 
-void CSSToStyleMap::mapAnimationProperty(Animation* animation, CSSValue* value)
+void CSSToStyleMap::mapAnimationProperty(CSSAnimationData* animation, CSSValue* value)
 {
     if (value->isInitialValue()) {
-        animation->setAnimationMode(Animation::AnimateAll);
+        animation->setAnimationMode(CSSAnimationData::AnimateAll);
         animation->setProperty(CSSPropertyInvalid);
         return;
     }
@@ -443,21 +443,21 @@ void CSSToStyleMap::mapAnimationProperty(Animation* animation, CSSValue* value)
 
     CSSPrimitiveValue* primitiveValue = static_cast<CSSPrimitiveValue*>(value);
     if (primitiveValue->getIdent() == CSSValueAll) {
-        animation->setAnimationMode(Animation::AnimateAll);
+        animation->setAnimationMode(CSSAnimationData::AnimateAll);
         animation->setProperty(CSSPropertyInvalid);
     } else if (primitiveValue->getIdent() == CSSValueNone) {
-        animation->setAnimationMode(Animation::AnimateNone);
+        animation->setAnimationMode(CSSAnimationData::AnimateNone);
         animation->setProperty(CSSPropertyInvalid);
     } else {
-        animation->setAnimationMode(Animation::AnimateSingleProperty);
+        animation->setAnimationMode(CSSAnimationData::AnimateSingleProperty);
         animation->setProperty(static_cast<CSSPropertyID>(primitiveValue->getIdent()));
     }
 }
 
-void CSSToStyleMap::mapAnimationTimingFunction(Animation* animation, CSSValue* value)
+void CSSToStyleMap::mapAnimationTimingFunction(CSSAnimationData* animation, CSSValue* value)
 {
     if (value->isInitialValue()) {
-        animation->setTimingFunction(Animation::initialAnimationTimingFunction());
+        animation->setTimingFunction(CSSAnimationData::initialAnimationTimingFunction());
         return;
     }
 

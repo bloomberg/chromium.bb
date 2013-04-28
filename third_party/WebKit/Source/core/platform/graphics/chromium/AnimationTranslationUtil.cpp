@@ -193,15 +193,15 @@ bool appendKeyframeWithCustomBezierTimingFunction<TransformAnimationValue, WebTr
 }
 
 template <class Value, class Keyframe, class Curve>
-PassOwnPtr<WebKit::WebAnimation> createWebAnimation(const KeyframeValueList& valueList, const Animation* animation, int animationId, double timeOffset, Curve* curve, WebKit::WebAnimation::TargetProperty targetProperty, const FloatSize& boxSize)
+PassOwnPtr<WebKit::WebAnimation> createWebAnimation(const KeyframeValueList& valueList, const CSSAnimationData* animation, int animationId, double timeOffset, Curve* curve, WebKit::WebAnimation::TargetProperty targetProperty, const FloatSize& boxSize)
 {
     bool alternate = false;
     bool reverse = false;
     if (animation && animation->isDirectionSet()) {
-        Animation::AnimationDirection direction = animation->direction();
-        if (direction == Animation::AnimationDirectionAlternate || direction == Animation::AnimationDirectionAlternateReverse)
+        CSSAnimationData::AnimationDirection direction = animation->direction();
+        if (direction == CSSAnimationData::AnimationDirectionAlternate || direction == CSSAnimationData::AnimationDirectionAlternateReverse)
             alternate = true;
-        if (direction == Animation::AnimationDirectionReverse || direction == Animation::AnimationDirectionAlternateReverse)
+        if (direction == CSSAnimationData::AnimationDirectionReverse || direction == CSSAnimationData::AnimationDirectionAlternateReverse)
             reverse = true;
     }
 
@@ -274,7 +274,7 @@ PassOwnPtr<WebKit::WebAnimation> createWebAnimation(const KeyframeValueList& val
     return webAnimation.release();
 }
 
-PassOwnPtr<WebKit::WebAnimation> createWebAnimation(const KeyframeValueList& values, const Animation* animation, int animationId, double timeOffset, const FloatSize& boxSize)
+PassOwnPtr<WebKit::WebAnimation> createWebAnimation(const KeyframeValueList& values, const CSSAnimationData* animation, int animationId, double timeOffset, const FloatSize& boxSize)
 {
 
 

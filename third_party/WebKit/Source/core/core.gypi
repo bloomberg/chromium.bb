@@ -2526,7 +2526,7 @@
             'platform/UUID.h',
             'platform/Widget.cpp',
             'platform/Widget.h',
-            'platform/animation/Animation.cpp',
+            'platform/animation/CSSAnimationData.cpp',
             'platform/animation/AnimationList.cpp',
             'platform/audio/AudioArray.h',
             'platform/audio/AudioBus.cpp',

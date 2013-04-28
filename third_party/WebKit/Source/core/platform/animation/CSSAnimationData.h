@@ -22,8 +22,8 @@
  *
  */
 
-#ifndef Animation_h
-#define Animation_h
+#ifndef CSSAnimationData_h
+#define CSSAnimationData_h
 
 #include "CSSPropertyNames.h"
 #include "core/platform/animation/TimingFunction.h"
@@ -34,12 +34,12 @@
 
 namespace WebCore {
 
-class Animation : public RefCounted<Animation> {
+class CSSAnimationData : public RefCounted<CSSAnimationData> {
 public:
-    ~Animation();
+    ~CSSAnimationData();
 
-    static PassRefPtr<Animation> create() { return adoptRef(new Animation); }
-    static PassRefPtr<Animation> create(const Animation* o) { return adoptRef(new Animation(*o)); }
+    static PassRefPtr<CSSAnimationData> create() { return adoptRef(new CSSAnimationData); }
+    static PassRefPtr<CSSAnimationData> create(const CSSAnimationData* o) { return adoptRef(new CSSAnimationData(*o)); }
 
     bool isDelaySet() const { return m_delaySet; }
     bool isDirectionSet() const { return m_directionSet; }
@@ -53,7 +53,7 @@ public:
 
     // Flags this to be the special "none" animation (animation-name: none)
     bool isNoneAnimation() const { return m_isNone; }
-    // We can make placeholder Animation objects to keep the comma-separated lists
+    // We can make placeholder CSSAnimationData objects to keep the comma-separated lists
     // of properties in sync. isValidAnimation means this is not a placeholder.
     bool isValidAnimation() const { return !m_isNone && !m_name.isEmpty(); }
 
@@ -134,22 +134,22 @@ public:
 
     void setIsNoneAnimation(bool n) { m_isNone = n; }
 
-    Animation& operator=(const Animation& o);
+    CSSAnimationData& operator=(const CSSAnimationData& o);
 
     // return true if all members of this class match (excluding m_next)
-    bool animationsMatch(const Animation*, bool matchPlayStates = true) const;
+    bool animationsMatch(const CSSAnimationData*, bool matchPlayStates = true) const;
 
-    // return true every Animation in the chain (defined by m_next) match 
-    bool operator==(const Animation& o) const { return animationsMatch(&o); }
-    bool operator!=(const Animation& o) const { return !(*this == o); }
+    // return true every CSSAnimationData in the chain (defined by m_next) match
+    bool operator==(const CSSAnimationData& o) const { return animationsMatch(&o); }
+    bool operator!=(const CSSAnimationData& o) const { return !(*this == o); }
 
     bool fillsBackwards() const { return m_fillModeSet && (m_fillMode == AnimationFillModeBackwards || m_fillMode == AnimationFillModeBoth); }
     bool fillsForwards() const { return m_fillModeSet && (m_fillMode == AnimationFillModeForwards || m_fillMode == AnimationFillModeBoth); }
 
 private:
-    Animation();
-    Animation(const Animation& o);
-    
+    CSSAnimationData();
+    CSSAnimationData(const CSSAnimationData& o);
+
     String m_name;
     CSSPropertyID m_property;
     AnimationMode m_mode;
@@ -171,7 +171,7 @@ private:
     bool m_playStateSet      : 1;
     bool m_propertySet       : 1;
     bool m_timingFunctionSet : 1;
-    
+
     bool m_isNone            : 1;
 
 public:
@@ -188,4 +188,4 @@ public:
 
 } // namespace WebCore
 
-#endif // Animation_h
+#endif // CSSAnimationData_h

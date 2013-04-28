@@ -589,7 +589,7 @@ void GraphicsLayerChromium::setContentsTo(ContentsLayerPurpose purpose, WebLayer
         updateChildList();
 }
 
-bool GraphicsLayerChromium::addAnimation(const KeyframeValueList& values, const IntSize& boxSize, const Animation* animation, const String& animationName, double timeOffset)
+bool GraphicsLayerChromium::addAnimation(const KeyframeValueList& values, const IntSize& boxSize, const CSSAnimationData* animation, const String& animationName, double timeOffset)
 {
     platformLayer()->setAnimationDelegate(this);
 

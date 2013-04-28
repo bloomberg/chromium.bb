@@ -181,7 +181,7 @@ public:
     void transitionPaused(double timeOffset, CSSPropertyID);
     void transitionFinished(CSSPropertyID);
 
-    bool startAnimation(double timeOffset, const Animation*, const KeyframeList& keyframes);
+    bool startAnimation(double timeOffset, const CSSAnimationData*, const KeyframeList& keyframes);
     void animationPaused(double timeOffset, const String& name);
     void animationFinished(const String& name);
 

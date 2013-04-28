@@ -1734,7 +1734,7 @@ void RenderLayerBacking::verifyNotPainting()
 }
 #endif
 
-bool RenderLayerBacking::startAnimation(double timeOffset, const Animation* anim, const KeyframeList& keyframes)
+bool RenderLayerBacking::startAnimation(double timeOffset, const CSSAnimationData* anim, const KeyframeList& keyframes)
 {
     bool hasOpacity = keyframes.containsProperty(CSSPropertyOpacity);
     bool hasTransform = renderer()->isBox() && keyframes.containsProperty(CSSPropertyWebkitTransform);
@@ -1805,7 +1805,7 @@ bool RenderLayerBacking::startTransition(double timeOffset, CSSPropertyID proper
     ASSERT(property != CSSPropertyInvalid);
 
     if (property == CSSPropertyOpacity) {
-        const Animation* opacityAnim = toStyle->transitionForProperty(CSSPropertyOpacity);
+        const CSSAnimationData* opacityAnim = toStyle->transitionForProperty(CSSPropertyOpacity);
         if (opacityAnim && !opacityAnim->isEmptyOrZeroDuration()) {
             KeyframeValueList opacityVector(AnimatedPropertyOpacity);
             opacityVector.insert(new FloatAnimationValue(0, compositingOpacity(fromStyle->opacity())));
@@ -1820,7 +1820,7 @@ bool RenderLayerBacking::startTransition(double timeOffset, CSSPropertyID proper
     }
 
     if (property == CSSPropertyWebkitTransform && m_owningLayer->hasTransform()) {
-        const Animation* transformAnim = toStyle->transitionForProperty(CSSPropertyWebkitTransform);
+        const CSSAnimationData* transformAnim = toStyle->transitionForProperty(CSSPropertyWebkitTransform);
         if (transformAnim && !transformAnim->isEmptyOrZeroDuration()) {
             KeyframeValueList transformVector(AnimatedPropertyWebkitTransform);
             transformVector.insert(new TransformAnimationValue(0, &fromStyle->transform()));
@@ -1834,7 +1834,7 @@ bool RenderLayerBacking::startTransition(double timeOffset, CSSPropertyID proper
     }
 
     if (property == CSSPropertyWebkitFilter && m_owningLayer->hasFilter()) {
-        const Animation* filterAnim = toStyle->transitionForProperty(CSSPropertyWebkitFilter);
+        const CSSAnimationData* filterAnim = toStyle->transitionForProperty(CSSPropertyWebkitFilter);
         if (filterAnim && !filterAnim->isEmptyOrZeroDuration()) {
             KeyframeValueList filterVector(AnimatedPropertyWebkitFilter);
             filterVector.insert(new FilterAnimationValue(0, &fromStyle->filter()));

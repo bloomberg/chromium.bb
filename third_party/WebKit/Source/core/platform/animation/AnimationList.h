@@ -25,7 +25,7 @@
 #ifndef AnimationList_h
 #define AnimationList_h
 
-#include "core/platform/animation/Animation.h"
+#include "core/platform/animation/CSSAnimationData.h"
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>
 
@@ -49,15 +49,15 @@ public:
     
     void resize(size_t n) { m_animations.resize(n); }
     void remove(size_t i) { m_animations.remove(i); }
-    void append(PassRefPtr<Animation> anim) { m_animations.append(anim); }
+    void append(PassRefPtr<CSSAnimationData> anim) { m_animations.append(anim); }
     
-    Animation* animation(size_t i) { return m_animations[i].get(); }
-    const Animation* animation(size_t i) const { return m_animations[i].get(); }
+    CSSAnimationData* animation(size_t i) { return m_animations[i].get(); }
+    const CSSAnimationData* animation(size_t i) const { return m_animations[i].get(); }
     
 private:
     AnimationList& operator=(const AnimationList&);
 
-    Vector<RefPtr<Animation> > m_animations;
+    Vector<RefPtr<CSSAnimationData> > m_animations;
 };    
 
 

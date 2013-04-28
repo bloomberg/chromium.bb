@@ -68,7 +68,7 @@ static inline double solveStepsFunction(int numSteps, bool stepAtStart, double t
     return floor(numSteps * t) / numSteps;
 }
 
-AnimationBase::AnimationBase(const Animation* transition, RenderObject* renderer, CompositeAnimation* compAnim)
+AnimationBase::AnimationBase(const CSSAnimationData* transition, RenderObject* renderer, CompositeAnimation* compAnim)
     : m_animState(AnimationStateNew)
     , m_isAccelerated(false)
     , m_transformFunctionListValid(false)
@@ -79,7 +79,7 @@ AnimationBase::AnimationBase(const Animation* transition, RenderObject* renderer
     , m_totalDuration(-1)
     , m_nextIterationDuration(-1)
     , m_object(renderer)
-    , m_animation(const_cast<Animation*>(transition))
+    , m_animation(const_cast<CSSAnimationData*>(transition))
     , m_compAnim(compAnim)
 {
     // Compute the total duration
@@ -103,7 +103,7 @@ bool AnimationBase::playStatePlaying() const
     return m_animation->playState() == AnimPlayStatePlaying;
 }
 
-bool AnimationBase::animationsMatch(const Animation* anim) const
+bool AnimationBase::animationsMatch(const CSSAnimationData* anim) const
 {
     return m_animation->animationsMatch(anim);
 }
@@ -490,14 +490,14 @@ double AnimationBase::fractionalTime(double scale, double elapsedTime, double of
     int integralTime = static_cast<int>(fractionalTime);
     const int integralIterationCount = static_cast<int>(m_animation->iterationCount());
     const bool iterationCountHasFractional = m_animation->iterationCount() - integralIterationCount;
-    if (m_animation->iterationCount() != Animation::IterationCountInfinite && !iterationCountHasFractional)
+    if (m_animation->iterationCount() != CSSAnimationData::IterationCountInfinite && !iterationCountHasFractional)
         integralTime = min(integralTime, integralIterationCount - 1);
 
     fractionalTime -= integralTime;
 
-    if (((m_animation->direction() == Animation::AnimationDirectionAlternate) && (integralTime & 1))
-        || ((m_animation->direction() == Animation::AnimationDirectionAlternateReverse) && !(integralTime & 1))
-        || m_animation->direction() == Animation::AnimationDirectionReverse)
+    if (((m_animation->direction() == CSSAnimationData::AnimationDirectionAlternate) && (integralTime & 1))
+        || ((m_animation->direction() == CSSAnimationData::AnimationDirectionAlternateReverse) && !(integralTime & 1))
+        || m_animation->direction() == CSSAnimationData::AnimationDirectionReverse)
         fractionalTime = 1 - fractionalTime;
 
     if (scale != 1 || offset)

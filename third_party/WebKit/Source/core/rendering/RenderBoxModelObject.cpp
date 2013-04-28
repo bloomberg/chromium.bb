@@ -118,7 +118,7 @@ void RenderBoxModelObject::transitionFinished(CSSPropertyID propertyId)
     layer()->backing()->transitionFinished(propertyId);
 }
 
-bool RenderBoxModelObject::startAnimation(double timeOffset, const Animation* animation, const KeyframeList& keyframes)
+bool RenderBoxModelObject::startAnimation(double timeOffset, const CSSAnimationData* animation, const KeyframeList& keyframes)
 {
     ASSERT(hasLayer());
     ASSERT(isComposited());

@@ -20,11 +20,11 @@
  */
 
 #include "config.h"
-#include "core/platform/animation/Animation.h"
+#include "core/platform/animation/CSSAnimationData.h"
 
 namespace WebCore {
 
-Animation::Animation()
+CSSAnimationData::CSSAnimationData()
     : m_name(initialAnimationName())
     , m_property(CSSPropertyInvalid)
     , m_mode(AnimateAll)
@@ -48,8 +48,8 @@ Animation::Animation()
 {
 }
 
-Animation::Animation(const Animation& o)
-    : RefCounted<Animation>()
+CSSAnimationData::CSSAnimationData(const CSSAnimationData& o)
+    : RefCounted<CSSAnimationData>()
     , m_name(o.m_name)
     , m_property(o.m_property)
     , m_mode(o.m_mode)
@@ -73,7 +73,7 @@ Animation::Animation(const Animation& o)
 {
 }
 
-Animation& Animation::operator=(const Animation& o)
+CSSAnimationData& CSSAnimationData::operator=(const CSSAnimationData& o)
 {
     m_name = o.m_name;
     m_property = o.m_property;
@@ -100,17 +100,17 @@ Animation& Animation::operator=(const Animation& o)
     return *this;
 }
 
-Animation::~Animation()
+CSSAnimationData::~CSSAnimationData()
 {
 }
 
-bool Animation::animationsMatch(const Animation* o, bool matchPlayStates) const
+bool CSSAnimationData::animationsMatch(const CSSAnimationData* o, bool matchPlayStates) const
 {
     if (!o)
         return false;
-    
+
     bool result = m_name == o->m_name
-                  && m_property == o->m_property 
+                  && m_property == o->m_property
                   && m_mode == o->m_mode
                   && m_iterationCount == o->m_iterationCount
                   && m_delay == o->m_delay
@@ -134,7 +134,7 @@ bool Animation::animationsMatch(const Animation* o, bool matchPlayStates) const
     return !matchPlayStates || (m_playState == o->m_playState && m_playStateSet == o->m_playStateSet);
 }
 
-const String& Animation::initialAnimationName()
+const String& CSSAnimationData::initialAnimationName()
 {
     DEFINE_STATIC_LOCAL(String, initialValue, (ASCIILiteral("none")));
     return initialValue;

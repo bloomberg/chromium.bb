@@ -43,7 +43,7 @@ using namespace std;
 
 namespace WebCore {
 
-KeyframeAnimation::KeyframeAnimation(const Animation* animation, RenderObject* renderer, int index, CompositeAnimation* compAnim, RenderStyle* unanimatedStyle)
+KeyframeAnimation::KeyframeAnimation(const CSSAnimationData* animation, RenderObject* renderer, int index, CompositeAnimation* compAnim, RenderStyle* unanimatedStyle)
     : AnimationBase(animation, renderer, compAnim)
     , m_keyframes(renderer, animation->name())
     , m_index(index)
@@ -66,7 +66,7 @@ KeyframeAnimation::~KeyframeAnimation()
         endAnimation();
 }
 
-static const Animation* getAnimationFromStyleByName(const RenderStyle* style, const AtomicString& name)
+static const CSSAnimationData* getAnimationFromStyleByName(const RenderStyle* style, const AtomicString& name)
 {
     if (!style->animations())
         return 0;
@@ -83,7 +83,7 @@ void KeyframeAnimation::fetchIntervalEndpointsForProperty(CSSPropertyID property
 {
     // Find the first key
     double elapsedTime = getElapsedTime();
-    if (m_animation->duration() && m_animation->iterationCount() != Animation::IterationCountInfinite)
+    if (m_animation->duration() && m_animation->iterationCount() != CSSAnimationData::IterationCountInfinite)
         elapsedTime = min(elapsedTime, m_animation->duration() * m_animation->iterationCount());
 
     const double fractionalTime = this->fractionalTime(1, elapsedTime, 0);
@@ -132,7 +132,7 @@ void KeyframeAnimation::fetchIntervalEndpointsForProperty(CSSPropertyID property
     scale = 1.0 / (nextKeyframe.key() - prevKeyframe.key());
 
     const TimingFunction* timingFunction = 0;
-    if (const Animation* matchedAnimation = getAnimationFromStyleByName(fromStyle, name()))
+    if (const CSSAnimationData* matchedAnimation = getAnimationFromStyleByName(fromStyle, name()))
         timingFunction = matchedAnimation->timingFunction().get();
 
     prog = progress(scale, offset, timingFunction);

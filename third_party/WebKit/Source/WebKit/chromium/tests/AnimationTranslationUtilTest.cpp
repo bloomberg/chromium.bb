@@ -27,7 +27,7 @@
 #include "core/platform/graphics/chromium/AnimationTranslationUtil.h"
 
 #include <gtest/gtest.h>
-#include "core/platform/animation/Animation.h"
+#include "core/platform/animation/CSSAnimationData.h"
 #include "core/platform/graphics/GraphicsLayer.h" // For KeyframeValueList
 #include "core/platform/graphics/IntSize.h"
 #include "core/platform/graphics/transforms/Matrix3DTransformOperation.h"
@@ -43,7 +43,7 @@ using namespace WebKit;
 
 namespace {
 
-bool animationCanBeTranslated(const KeyframeValueList& values, Animation* animation)
+bool animationCanBeTranslated(const KeyframeValueList& values, CSSAnimationData* animation)
 {
     IntSize boxSize;
     return createWebAnimation(values, animation, 0, 0, boxSize);
@@ -56,7 +56,7 @@ TEST(AnimationTranslationUtilTest, createOpacityAnimation)
     values.insert(new FloatAnimationValue(0, 0));
     values.insert(new FloatAnimationValue(duration, 1));
 
-    RefPtr<Animation> animation = Animation::create();
+    RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
     animation->setDuration(duration);
 
     EXPECT_TRUE(animationCanBeTranslated(values, animation.get()));
@@ -75,7 +75,7 @@ TEST(AnimationTranslationUtilTest, createTransformAnimation)
     operations2.operations().append(TranslateTransformOperation::create(Length(4, WebCore::Fixed), Length(0, WebCore::Fixed), TransformOperation::TRANSLATE_X));
     values.insert(new TransformAnimationValue(duration, &operations2));
 
-    RefPtr<Animation> animation = Animation::create();
+    RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
     animation->setDuration(duration);
 
     EXPECT_TRUE(animationCanBeTranslated(values, animation.get()));
@@ -94,7 +94,7 @@ TEST(AnimationTranslationUtilTest, createTransformAnimationWithBigRotation)
     operations2.operations().append(RotateTransformOperation::create(270, TransformOperation::ROTATE));
     values.insert(new TransformAnimationValue(duration, &operations2));
 
-    RefPtr<Animation> animation = Animation::create();
+    RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
     animation->setDuration(duration);
 
     EXPECT_TRUE(animationCanBeTranslated(values, animation.get()));
@@ -112,7 +112,7 @@ TEST(AnimationTranslationUtilTest, createTransformAnimationWithBigRotationAndEmp
     operations2.operations().append(RotateTransformOperation::create(270, TransformOperation::ROTATE));
     values.insert(new TransformAnimationValue(duration, &operations2));
 
-    RefPtr<Animation> animation = Animation::create();
+    RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
     animation->setDuration(duration);
 
     EXPECT_TRUE(animationCanBeTranslated(values, animation.get()));
@@ -131,7 +131,7 @@ TEST(AnimationTranslationUtilTest, createTransformAnimationWithRotationInvolving
     operations2.operations().append(RotateTransformOperation::create(-320, TransformOperation::ROTATE));
     values.insert(new TransformAnimationValue(duration, &operations2));
 
-    RefPtr<Animation> animation = Animation::create();
+    RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
     animation->setDuration(duration);
 
     EXPECT_TRUE(animationCanBeTranslated(values, animation.get()));
@@ -150,7 +150,7 @@ TEST(AnimationTranslationUtilTest, createTransformAnimationWithSmallRotationInvo
     operations2.operations().append(RotateTransformOperation::create(360, TransformOperation::ROTATE));
     values.insert(new TransformAnimationValue(duration, &operations2));
 
-    RefPtr<Animation> animation = Animation::create();
+    RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
     animation->setDuration(duration);
 
     EXPECT_TRUE(animationCanBeTranslated(values, animation.get()));
@@ -172,7 +172,7 @@ TEST(AnimationTranslationUtilTest, createTransformAnimationWithNonDecomposableMa
     operations2.operations().append(Matrix3DTransformOperation::create(matrix2));
     values.insert(new TransformAnimationValue(duration, &operations2));
 
-    RefPtr<Animation> animation = Animation::create();
+    RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
     animation->setDuration(duration);
 
     EXPECT_FALSE(animationCanBeTranslated(values, animation.get()));
@@ -191,7 +191,7 @@ TEST(AnimationTranslationUtilTest, createTransformAnimationWithNonInvertibleTran
     operations2.operations().append(ScaleTransformOperation::create(1, 0, 1, TransformOperation::SCALE_3D));
     values.insert(new TransformAnimationValue(duration, &operations2));
 
-    RefPtr<Animation> animation = Animation::create();
+    RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
     animation->setDuration(duration);
 
     EXPECT_TRUE(animationCanBeTranslated(values, animation.get()));
@@ -210,9 +210,9 @@ TEST(AnimationTranslationUtilTest, createReversedAnimation)
     operations2.operations().append(TranslateTransformOperation::create(Length(4, WebCore::Fixed), Length(0, WebCore::Fixed), TransformOperation::TRANSLATE_X));
     values.insert(new TransformAnimationValue(duration, &operations2));
 
-    RefPtr<Animation> animation = Animation::create();
+    RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
     animation->setDuration(duration);
-    animation->setDirection(Animation::AnimationDirectionReverse);
+    animation->setDirection(CSSAnimationData::AnimationDirectionReverse);
 
     EXPECT_TRUE(animationCanBeTranslated(values, animation.get()));
 }
@@ -230,9 +230,9 @@ TEST(AnimationTranslationUtilTest, createAlternatingAnimation)
     operations2.operations().append(TranslateTransformOperation::create(Length(4, WebCore::Fixed), Length(0, WebCore::Fixed), TransformOperation::TRANSLATE_X));
     values.insert(new TransformAnimationValue(duration, &operations2));
 
-    RefPtr<Animation> animation = Animation::create();
+    RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
     animation->setDuration(duration);
-    animation->setDirection(Animation::AnimationDirectionAlternate);
+    animation->setDirection(CSSAnimationData::AnimationDirectionAlternate);
     animation->setIterationCount(2);
 
     EXPECT_TRUE(animationCanBeTranslated(values, animation.get()));
@@ -251,9 +251,9 @@ TEST(AnimationTranslationUtilTest, createReversedAlternatingAnimation)
     operations2.operations().append(TranslateTransformOperation::create(Length(4, WebCore::Fixed), Length(0, WebCore::Fixed), TransformOperation::TRANSLATE_X));
     values.insert(new TransformAnimationValue(duration, &operations2));
 
-    RefPtr<Animation> animation = Animation::create();
+    RefPtr<CSSAnimationData> animation = CSSAnimationData::create();
     animation->setDuration(duration);
-    animation->setDirection(Animation::AnimationDirectionAlternateReverse);
+    animation->setDirection(CSSAnimationData::AnimationDirectionAlternateReverse);
     animation->setIterationCount(2);
 
     EXPECT_TRUE(animationCanBeTranslated(values, animation.get()));

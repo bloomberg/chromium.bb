@@ -73,16 +73,16 @@ static FilterOperations applyFilterAnimation(const FilterOperations* from, const
     return result;
 }
 
-static bool shouldReverseAnimationValue(Animation::AnimationDirection direction, int loopCount)
+static bool shouldReverseAnimationValue(CSSAnimationData::AnimationDirection direction, int loopCount)
 {
-    if (((direction == Animation::AnimationDirectionAlternate) && (loopCount & 1))
-        || ((direction == Animation::AnimationDirectionAlternateReverse) && !(loopCount & 1))
-        || direction == Animation::AnimationDirectionReverse)
+    if (((direction == CSSAnimationData::AnimationDirectionAlternate) && (loopCount & 1))
+        || ((direction == CSSAnimationData::AnimationDirectionAlternateReverse) && !(loopCount & 1))
+        || direction == CSSAnimationData::AnimationDirectionReverse)
         return true;
     return false;
 }
 
-static double normalizedAnimationValue(double runningTime, double duration, Animation::AnimationDirection direction, double iterationCount)
+static double normalizedAnimationValue(double runningTime, double duration, CSSAnimationData::AnimationDirection direction, double iterationCount)
 {
     if (!duration)
         return 0;
@@ -96,11 +96,11 @@ static double normalizedAnimationValue(double runningTime, double duration, Anim
     return shouldReverseAnimationValue(direction, loopCount) ? 1 - normalized : normalized;
 }
 
-static double normalizedAnimationValueForFillsForwards(double iterationCount, Animation::AnimationDirection direction)
+static double normalizedAnimationValueForFillsForwards(double iterationCount, CSSAnimationData::AnimationDirection direction)
 {
-    if (direction == Animation::AnimationDirectionNormal)
+    if (direction == CSSAnimationData::AnimationDirectionNormal)
         return 1;
-    if (direction == Animation::AnimationDirectionReverse)
+    if (direction == CSSAnimationData::AnimationDirectionReverse)
         return 0;
     return shouldReverseAnimationValue(direction, iterationCount) ? 1 : 0;
 }
@@ -200,7 +200,7 @@ static TransformationMatrix applyTransformAnimation(const TransformOperations* f
     return matrix;
 }
 
-static const TimingFunction* timingFunctionForAnimationValue(const AnimationValue* animValue, const Animation* anim)
+static const TimingFunction* timingFunctionForAnimationValue(const AnimationValue* animValue, const CSSAnimationData* anim)
 {
     if (animValue->timingFunction())
         return animValue->timingFunction();
@@ -210,10 +210,10 @@ static const TimingFunction* timingFunctionForAnimationValue(const AnimationValu
     return CubicBezierTimingFunction::defaultTimingFunction();
 }
 
-GraphicsLayerAnimation::GraphicsLayerAnimation(const String& name, const KeyframeValueList& keyframes, const IntSize& boxSize, const Animation* animation, double startTime, bool listsMatch)
+GraphicsLayerAnimation::GraphicsLayerAnimation(const String& name, const KeyframeValueList& keyframes, const IntSize& boxSize, const CSSAnimationData* animation, double startTime, bool listsMatch)
     : m_keyframes(keyframes)
     , m_boxSize(boxSize)
-    , m_animation(Animation::create(animation))
+    , m_animation(CSSAnimationData::create(animation))
     , m_name(name)
     , m_listsMatch(listsMatch)
     , m_startTime(startTime)
@@ -276,7 +276,7 @@ void GraphicsLayerAnimation::apply(Client* client)
     double totalRunningTime = computeTotalRunningTime();
     double normalizedValue = normalizedAnimationValue(totalRunningTime, m_animation->duration(), m_animation->direction(), m_animation->iterationCount());
 
-    if (m_animation->iterationCount() != Animation::IterationCountInfinite && totalRunningTime >= m_animation->duration() * m_animation->iterationCount()) {
+    if (m_animation->iterationCount() != CSSAnimationData::IterationCountInfinite && totalRunningTime >= m_animation->duration() * m_animation->iterationCount()) {
         setState(StoppedState);
         if (m_animation->fillsForwards())
             normalizedValue = normalizedAnimationValueForFillsForwards(m_animation->iterationCount(), m_animation->direction());

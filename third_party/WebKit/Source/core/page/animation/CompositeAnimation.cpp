@@ -89,16 +89,16 @@ void CompositeAnimation::updateTransitions(RenderObject* renderer, RenderStyle* 
     // Check to see if we need to update the active transitions
     if (targetStyle->transitions()) {
         for (size_t i = 0; i < targetStyle->transitions()->size(); ++i) {
-            const Animation* anim = targetStyle->transitions()->animation(i);
+            const CSSAnimationData* anim = targetStyle->transitions()->animation(i);
             bool isActiveTransition = anim->duration() || anim->delay() > 0;
 
-            Animation::AnimationMode mode = anim->animationMode();
-            if (mode == Animation::AnimateNone)
+            CSSAnimationData::AnimationMode mode = anim->animationMode();
+            if (mode == CSSAnimationData::AnimateNone)
                 continue;
 
             CSSPropertyID prop = anim->property();
 
-            bool all = mode == Animation::AnimateAll;
+            bool all = mode == CSSAnimationData::AnimateAll;
 
             // Handle both the 'all' and single property cases. For the single prop case, we make only one pass
             // through the loop.
@@ -163,7 +163,7 @@ void CompositeAnimation::updateTransitions(RenderObject* renderer, RenderStyle* 
                 // <https://bugs.webkit.org/show_bug.cgi?id=24787>
                 if (!equal && isActiveTransition) {
                     // Add the new transition
-                    m_transitions.set(prop, ImplicitAnimation::create(const_cast<Animation*>(anim), prop, renderer, this, modifiedCurrentStyle ? modifiedCurrentStyle.get() : fromStyle));
+                    m_transitions.set(prop, ImplicitAnimation::create(const_cast<CSSAnimationData*>(anim), prop, renderer, this, modifiedCurrentStyle ? modifiedCurrentStyle.get() : fromStyle));
                 }
                 
                 // We only need one pass for the single prop case
@@ -220,7 +220,7 @@ void CompositeAnimation::updateKeyframeAnimations(RenderObject* renderer, Render
         if (targetStyle->animations()) {
             int numAnims = targetStyle->animations()->size();
             for (int i = 0; i < numAnims; ++i) {
-                const Animation* anim = targetStyle->animations()->animation(i);
+                const CSSAnimationData* anim = targetStyle->animations()->animation(i);
                 AtomicString animationName(anim->name());
 
                 if (!anim->isValidAnimation())
@@ -243,7 +243,7 @@ void CompositeAnimation::updateKeyframeAnimations(RenderObject* renderer, Render
                     keyframeAnim->setAnimation(anim);
                     keyframeAnim->setIndex(i);
                 } else if ((anim->duration() || anim->delay()) && anim->iterationCount() && animationName != none) {
-                    keyframeAnim = KeyframeAnimation::create(const_cast<Animation*>(anim), renderer, i, this, targetStyle);
+                    keyframeAnim = KeyframeAnimation::create(const_cast<CSSAnimationData*>(anim), renderer, i, this, targetStyle);
                     m_keyframeAnimations.set(keyframeAnim->name().impl(), keyframeAnim);
                 }
                 
@@ -483,7 +483,7 @@ bool CompositeAnimation::pauseAnimationAtTime(const AtomicString& name, double t
         return false;
 
     double count = keyframeAnim->m_animation->iterationCount();
-    if ((t >= 0.0) && ((count == Animation::IterationCountInfinite) || (t <= count * keyframeAnim->duration()))) {
+    if ((t >= 0.0) && ((count == CSSAnimationData::IterationCountInfinite) || (t <= count * keyframeAnim->duration()))) {
         keyframeAnim->freezeAtTime(t);
         return true;
     }

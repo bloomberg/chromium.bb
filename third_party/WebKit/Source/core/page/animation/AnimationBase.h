@@ -30,7 +30,7 @@
 #define AnimationBase_h
 
 #include "CSSPropertyNames.h"
-#include "core/platform/animation/Animation.h"
+#include "core/platform/animation/CSSAnimationData.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
@@ -53,7 +53,7 @@ class AnimationBase : public RefCounted<AnimationBase> {
     friend class CSSPropertyAnimation;
 
 public:
-    AnimationBase(const Animation* transition, RenderObject* renderer, CompositeAnimation* compAnim);
+    AnimationBase(const CSSAnimationData* transition, RenderObject* renderer, CompositeAnimation* compAnim);
     virtual ~AnimationBase() { }
 
     RenderObject* renderer() const { return m_object; }
@@ -140,9 +140,9 @@ public:
 
     void fireAnimationEventsIfNeeded();
 
-    bool animationsMatch(const Animation*) const;
+    bool animationsMatch(const CSSAnimationData*) const;
 
-    void setAnimation(const Animation* anim) { m_animation = const_cast<Animation*>(anim); }
+    void setAnimation(const CSSAnimationData* anim) { m_animation = const_cast<CSSAnimationData*>(anim); }
 
     // Return true if this animation is overridden. This will only be the case for
     // ImplicitAnimations and is used to determine whether or not we should force
@@ -181,7 +181,7 @@ public:
         updateStateMachine(AnimationBase::AnimationStateInputStyleAvailable, -1);
     }
 
-    const Animation* animation() const { return m_animation.get(); }
+    const CSSAnimationData* animation() const { return m_animation.get(); }
 
 protected:
     virtual void overrideAnimations() { }
@@ -225,7 +225,7 @@ protected:
 
     RenderObject* m_object;
 
-    RefPtr<Animation> m_animation;
+    RefPtr<CSSAnimationData> m_animation;
     CompositeAnimation* m_compAnim;
 };
 

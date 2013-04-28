@@ -26,7 +26,7 @@
 #ifndef GraphicsLayer_h
 #define GraphicsLayer_h
 
-#include "core/platform/animation/Animation.h"
+#include "core/platform/animation/CSSAnimationData.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatPoint3D.h"
@@ -37,6 +37,7 @@
 #include "core/platform/graphics/filters/FilterOperations.h"
 #include "core/platform/graphics/transforms/TransformOperations.h"
 #include "core/platform/graphics/transforms/TransformationMatrix.h"
+
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 
@@ -328,7 +329,7 @@ public:
     // Return true if the animation is handled by the compositing system. If this returns
     // false, the animation will be run by AnimationController.
     // These methods handle both transitions and keyframe animations.
-    virtual bool addAnimation(const KeyframeValueList&, const IntSize& /*boxSize*/, const Animation*, const String& /*animationName*/, double /*timeOffset*/)  { return false; }
+    virtual bool addAnimation(const KeyframeValueList&, const IntSize& /*boxSize*/, const CSSAnimationData*, const String& /*animationName*/, double /*timeOffset*/)  { return false; }
     virtual void pauseAnimation(const String& /*animationName*/, double /*timeOffset*/) { }
     virtual void removeAnimation(const String& /*animationName*/) { }
 
