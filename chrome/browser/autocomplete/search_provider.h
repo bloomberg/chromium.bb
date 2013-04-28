@@ -59,6 +59,24 @@ class SearchProvider : public AutocompleteProvider,
   // ID used in creating URLFetcher for keyword provider's suggest results.
   static const int kKeywordProviderURLFetcherID;
 
+  // Returns an AutocompleteMatch representing a search for |query_string|
+  // using the provider identified by |keyword|. |is_keyword| should be true if
+  // |input| represents a keyword search (even if it's for the default search
+  // provider). |input_text| (the original input text) and |accepted_suggestion|
+  // are used to generate Assisted Query Stats.
+  // Returns a match with an invalid destination_url in case of any errors.
+  static AutocompleteMatch CreateSearchSuggestion(
+      Profile* profile,
+      AutocompleteProvider* autocomplete_provider,
+      const AutocompleteInput& input,
+      const string16& query_string,
+      const string16& input_text,
+      int relevance,
+      AutocompleteMatch::Type type,
+      int accepted_suggestion,
+      bool is_keyword,
+      const string16& keyword);
+
   SearchProvider(AutocompleteProviderListener* listener, Profile* profile);
 
   // Marks the instant query as done. If |input_text| is non-empty this changes

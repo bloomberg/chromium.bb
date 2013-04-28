@@ -124,6 +124,99 @@ const int SearchProvider::kKeywordProviderURLFetcherID = 2;
 // static
 int SearchProvider::kMinimumTimeBetweenSuggestQueriesMs = 100;
 
+// static
+AutocompleteMatch SearchProvider::CreateSearchSuggestion(
+    Profile* profile,
+    AutocompleteProvider* autocomplete_provider,
+    const AutocompleteInput& input,
+    const string16& query_string,
+    const string16& input_text,
+    int relevance,
+    AutocompleteMatch::Type type,
+    int accepted_suggestion,
+    bool is_keyword,
+    const string16& keyword) {
+  AutocompleteMatch match(autocomplete_provider, relevance, false, type);
+
+  // Bail out now if we don't actually have a valid provider.
+  match.keyword = keyword;
+  const TemplateURL* provider_url = match.GetTemplateURL(profile, false);
+  if (provider_url == NULL)
+    return match;
+
+  match.contents.assign(query_string);
+  // We do intra-string highlighting for suggestions - the suggested segment
+  // will be highlighted, e.g. for input_text = "you" the suggestion may be
+  // "youtube", so we'll bold the "tube" section: you*tube*.
+  if (input_text != query_string) {
+    size_t input_position = match.contents.find(input_text);
+    if (input_position == string16::npos) {
+      // The input text is not a substring of the query string, e.g. input
+      // text is "slasdot" and the query string is "slashdot", so we bold the
+      // whole thing.
+      match.contents_class.push_back(
+          ACMatchClassification(0, ACMatchClassification::MATCH));
+    } else {
+      // TODO(beng): ACMatchClassification::MATCH now seems to just mean
+      //             "bold" this. Consider modifying the terminology.
+      // We don't iterate over the string here annotating all matches because
+      // it looks odd to have every occurrence of a substring that may be as
+      // short as a single character highlighted in a query suggestion result,
+      // e.g. for input text "s" and query string "southwest airlines", it
+      // looks odd if both the first and last s are highlighted.
+      if (input_position != 0) {
+        match.contents_class.push_back(
+            ACMatchClassification(0, ACMatchClassification::NONE));
+      }
+      match.contents_class.push_back(
+          ACMatchClassification(input_position, ACMatchClassification::DIM));
+      size_t next_fragment_position = input_position + input_text.length();
+      if (next_fragment_position < query_string.length()) {
+        match.contents_class.push_back(
+            ACMatchClassification(next_fragment_position,
+                                  ACMatchClassification::NONE));
+      }
+    }
+  } else {
+    // Otherwise, we're dealing with the "default search" result which has no
+    // completion.
+    match.contents_class.push_back(
+        ACMatchClassification(0, ACMatchClassification::NONE));
+  }
+
+  // When the user forced a query, we need to make sure all the fill_into_edit
+  // values preserve that property.  Otherwise, if the user starts editing a
+  // suggestion, non-Search results will suddenly appear.
+  if (input.type() == AutocompleteInput::FORCED_QUERY)
+    match.fill_into_edit.assign(ASCIIToUTF16("?"));
+  if (is_keyword)
+    match.fill_into_edit.append(match.keyword + char16(' '));
+  if (!input.prevent_inline_autocomplete() &&
+      StartsWith(query_string, input_text, false)) {
+    match.inline_autocomplete_offset =
+        match.fill_into_edit.length() + input_text.length();
+  }
+  match.fill_into_edit.append(query_string);
+
+  const TemplateURLRef& search_url = provider_url->url_ref();
+  DCHECK(search_url.SupportsReplacement());
+  match.search_terms_args.reset(
+      new TemplateURLRef::SearchTermsArgs(query_string));
+  match.search_terms_args->original_query = input_text;
+  match.search_terms_args->accepted_suggestion = accepted_suggestion;
+  // This is the destination URL sans assisted query stats.  This must be set
+  // so the AutocompleteController can properly de-dupe; the controller will
+  // eventually overwrite it before it reaches the user.
+  match.destination_url =
+      GURL(search_url.ReplaceSearchTerms(*match.search_terms_args.get()));
+
+  // Search results don't look like URLs.
+  match.transition = is_keyword ?
+      content::PAGE_TRANSITION_KEYWORD : content::PAGE_TRANSITION_GENERATED;
+
+  return match;
+}
+
 SearchProvider::SearchProvider(AutocompleteProviderListener* listener,
                                Profile* profile)
     : AutocompleteProvider(listener, profile,
@@ -1334,84 +1427,14 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
       chrome::IsInstantExtendedAPIEnabled()) {
     relevance = std::min(kNonURLVerbatimRelevance - 1, relevance);
   }
-  AutocompleteMatch match(this, relevance, false, type);
-  std::vector<size_t> content_param_offsets;
-  // Bail out now if we don't actually have a valid provider.
-  match.keyword = is_keyword ?
+
+  const string16& keyword = is_keyword ?
       providers_.keyword_provider() : providers_.default_provider();
-  const TemplateURL* provider_url = match.GetTemplateURL(profile_, false);
-  if (provider_url == NULL)
+  AutocompleteMatch match = CreateSearchSuggestion(profile_, this, input_,
+      query_string, input_text, relevance, type, accepted_suggestion,
+      is_keyword, keyword);
+  if (!match.destination_url.is_valid())
     return;
-
-  match.contents.assign(query_string);
-  // We do intra-string highlighting for suggestions - the suggested segment
-  // will be highlighted, e.g. for input_text = "you" the suggestion may be
-  // "youtube", so we'll bold the "tube" section: you*tube*.
-  if (input_text != query_string) {
-    size_t input_position = match.contents.find(input_text);
-    if (input_position == string16::npos) {
-      // The input text is not a substring of the query string, e.g. input
-      // text is "slasdot" and the query string is "slashdot", so we bold the
-      // whole thing.
-      match.contents_class.push_back(
-          ACMatchClassification(0, ACMatchClassification::MATCH));
-    } else {
-      // TODO(beng): ACMatchClassification::MATCH now seems to just mean
-      //             "bold" this. Consider modifying the terminology.
-      // We don't iterate over the string here annotating all matches because
-      // it looks odd to have every occurrence of a substring that may be as
-      // short as a single character highlighted in a query suggestion result,
-      // e.g. for input text "s" and query string "southwest airlines", it
-      // looks odd if both the first and last s are highlighted.
-      if (input_position != 0) {
-        match.contents_class.push_back(
-            ACMatchClassification(0, ACMatchClassification::NONE));
-      }
-      match.contents_class.push_back(
-          ACMatchClassification(input_position, ACMatchClassification::DIM));
-      size_t next_fragment_position = input_position + input_text.length();
-      if (next_fragment_position < query_string.length()) {
-        match.contents_class.push_back(
-            ACMatchClassification(next_fragment_position,
-                                  ACMatchClassification::NONE));
-      }
-    }
-  } else {
-    // Otherwise, we're dealing with the "default search" result which has no
-    // completion.
-    match.contents_class.push_back(
-        ACMatchClassification(0, ACMatchClassification::NONE));
-  }
-
-  // When the user forced a query, we need to make sure all the fill_into_edit
-  // values preserve that property.  Otherwise, if the user starts editing a
-  // suggestion, non-Search results will suddenly appear.
-  if (input_.type() == AutocompleteInput::FORCED_QUERY)
-    match.fill_into_edit.assign(ASCIIToUTF16("?"));
-  if (is_keyword)
-    match.fill_into_edit.append(match.keyword + char16(' '));
-  if (!input_.prevent_inline_autocomplete() &&
-      StartsWith(query_string, input_text, false)) {
-    match.inline_autocomplete_offset =
-        match.fill_into_edit.length() + input_text.length();
-  }
-  match.fill_into_edit.append(query_string);
-
-  const TemplateURLRef& search_url = provider_url->url_ref();
-  DCHECK(search_url.SupportsReplacement());
-  match.search_terms_args.reset(
-      new TemplateURLRef::SearchTermsArgs(query_string));
-  match.search_terms_args->original_query = input_text;
-  match.search_terms_args->accepted_suggestion = accepted_suggestion;
-  // This is the destination URL sans assisted query stats.  This must be set
-  // so the AutocompleteController can properly de-dupe; the controller will
-  // eventually overwrite it before it reaches the user.
-  match.destination_url =
-      GURL(search_url.ReplaceSearchTerms(*match.search_terms_args.get()));
-
-  // Search results don't look like URLs.
-  match.transition = is_keyword ?
-      content::PAGE_TRANSITION_KEYWORD : content::PAGE_TRANSITION_GENERATED;
 
   // Try to add |match| to |map|.  If a match for |query_string| is already in
   // |map|, replace it if |match| is more relevant.

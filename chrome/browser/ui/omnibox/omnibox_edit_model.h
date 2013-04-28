@@ -512,10 +512,18 @@ class OmniboxEditModel {
   GURL original_url_;
 
   // True if Instant set the current temporary text, as opposed to it being set
-  // due to the user arrowing up/down through the popup.
+  // due to the user arrowing up/down through the popup. This can only be true
+  // if |has_temporary_text_| is true.
   // TODO(sreeram): This is a temporary hack. Remove it once the omnibox edit
   // model/view code is decoupled from Instant (among other things).
   bool is_temporary_text_set_by_instant_;
+
+  // True if the current temporary text set by Instant is a search query; false
+  // if it is a URL that can be directly navigated to. This is only valid if
+  // |is_temporary_text_set_by_instant_| is true. This field is needed because
+  // Instant's temporary text doesn't come from the popup model, so we can't
+  // lookup its type from the current match.
+  bool is_instant_temporary_text_a_search_query_;
 
   // When the user's last action was to paste, we disallow inline autocomplete
   // (on the theory that the user is trying to paste in a new URL or part of

@@ -8,7 +8,8 @@ var savedUserText = null;
 var suggestionIndex = -1;
 var suggestions = ["result 1", "result 2", "http://www.google.com"];
 var suggestion;
-var behavior = 2;
+var suggestionType = 0;  // INSTANT_SUGGESTION_SEARCH
+var behavior = 2;  // INSTANT_COMPLETE_NEVER
 var onMostVisitedChangedCalls = 0;
 var mostVisitedItemsCount = 0;
 var firstMostVisitedItemId = 0;
@@ -56,7 +57,7 @@ function handleOnChange() {
 function nextSuggestion() {
   if (suggestionIndex < suggestions.length - 1) {
     suggestionIndex++;
-    apiHandle.setValue(suggestions[suggestionIndex]);
+    apiHandle.setValue(suggestions[suggestionIndex], suggestionType);
   }
 }
 
@@ -64,9 +65,9 @@ function previousSuggestion() {
   if (suggestionIndex != -1) {
     suggestionIndex--;
     if (suggestionIndex == -1) {
-      apiHandle.setValue(savedUserText);
+      apiHandle.setValue(savedUserText, suggestionType);
     } else {
-      apiHandle.setValue(suggestions[suggestionIndex]);
+      apiHandle.setValue(suggestions[suggestionIndex], suggestionType);
     }
   }
 }

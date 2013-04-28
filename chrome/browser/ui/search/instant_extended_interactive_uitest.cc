@@ -486,6 +486,10 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   EXPECT_EQ("result 1", GetOmniboxText());
   SendDownArrow();
   EXPECT_EQ("result 2", GetOmniboxText());
+
+  // Set the next suggestion to be of type INSTANT_SUGGESTION_URL.
+  EXPECT_TRUE(content::ExecuteScript(instant()->instant_tab()->contents(),
+                                     "suggestionType = 1;"));
   SendDownArrow();
   EXPECT_EQ("http://www.google.com", GetOmniboxText());
 
@@ -1810,4 +1814,46 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OnDefaultSearchProviderChanged) {
   // at the end of this test. Remove the folllowing code after committing
   // codereview.chromium.org/13873010.
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+}
+
+// Test that if Instant alters the input from URL to search, it's respected.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, InputChangedFromURLToSearch) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantExtendedSupport();
+
+  content::WebContents* overlay = instant()->GetOverlayContents();
+  EXPECT_TRUE(ExecuteScript("suggestions = ['mcqueen.com'];"));
+
+  SetOmniboxTextAndWaitForOverlayToShow("lightning");
+  EXPECT_EQ("lightning", GetOmniboxText());
+
+  SendDownArrow();
+  EXPECT_EQ("mcqueen.com", GetOmniboxText());
+
+  // Press Enter.
+  browser()->window()->GetLocationBar()->AcceptInput();
+
+  // Confirm that the Instant overlay was committed.
+  EXPECT_EQ(overlay, browser()->tab_strip_model()->GetActiveWebContents());
+}
+
+// Test that if Instant alters the input from search to URL, it's respected.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, InputChangedFromSearchToURL) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantExtendedSupport();
+
+  content::WebContents* overlay = instant()->GetOverlayContents();
+  EXPECT_TRUE(ExecuteScript("suggestionType = 1;"));  // INSTANT_SUGGESTION_URL
+
+  SetOmniboxTextAndWaitForOverlayToShow("mack.com");
+  EXPECT_EQ("mack.com", GetOmniboxText());
+
+  SendDownArrow();
+  EXPECT_EQ("result 1", GetOmniboxText());
+
+  // Press Enter.
+  browser()->window()->GetLocationBar()->AcceptInput();
+
+  // Confirm that the Instant overlay was NOT committed.
+  EXPECT_NE(overlay, browser()->tab_strip_model()->GetActiveWebContents());
 }
