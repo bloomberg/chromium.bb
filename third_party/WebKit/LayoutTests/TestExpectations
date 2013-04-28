@@ -711,6 +711,10 @@ webkit.org/b/111141 fast/regions/seamless-iframe-flowed-into-regions.html [ Imag
 # MAC PORT TESTS
 # -----------------------------------------------------------------
 
+webkit.org/b/91666 [ Mac ] editing/input/emacs-ctrl-o.html [ Failure ]
+webkit.org/b/91666 [ Mac ] editing/pasteboard/emacs-ctrl-k-y-001.html [ Failure ]
+webkit.org/b/91666 [ Mac ] editing/pasteboard/emacs-ctrl-a-k-y.html [ Failure ]
+
 # We ignore tab/option-tab distinctions (may be other problems too).
 crbug.com/94274 [ Mac ] fast/events/option-tab.html [ Failure ]
 
