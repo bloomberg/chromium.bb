@@ -25,9 +25,9 @@
 
 #include "config.h"
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-#include "DateTimeFieldsState.h"
+#include "core/html/DateTimeFieldsState.h"
 
-#include "FormController.h"
+#include "core/html/FormController.h"
 
 namespace WebCore {
 

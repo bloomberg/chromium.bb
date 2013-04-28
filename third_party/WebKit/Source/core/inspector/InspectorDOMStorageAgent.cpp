@@ -32,10 +32,10 @@
 
 #include "ExceptionCodeDescription.h"
 #include "InspectorFrontend.h"
-#include "VoidCallback.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/html/VoidCallback.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorValues.h"

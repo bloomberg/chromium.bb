@@ -27,8 +27,8 @@
 #define DateTimeFieldElement_h
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-#include "HTMLDivElement.h"
-#include "HTMLSpanElement.h"
+#include "core/html/HTMLDivElement.h"
+#include "core/html/HTMLSpanElement.h"
 
 namespace WebCore {
 

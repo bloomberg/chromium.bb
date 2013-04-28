@@ -27,9 +27,7 @@
 #include "config.h"
 #include "core/editing/TextIterator.h"
 
-#include "HTMLElement.h"
 #include "HTMLNames.h"
-#include "HTMLTextFormControlElement.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/NodeTraversal.h"
@@ -38,6 +36,8 @@
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
+#include "core/html/HTMLElement.h"
+#include "core/html/HTMLTextFormControlElement.h"
 #include "core/page/Frame.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/text/TextBoundaries.h"

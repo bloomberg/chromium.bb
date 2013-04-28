@@ -33,7 +33,7 @@
 #include "core/html/shadow/ProgressShadowElement.h"
 
 #include "HTMLNames.h"
-#include "HTMLProgressElement.h"
+#include "core/html/HTMLProgressElement.h"
 #include "core/rendering/RenderProgress.h"
 
 namespace WebCore {

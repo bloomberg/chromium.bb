@@ -24,8 +24,8 @@
 #ifndef HTMLFormControlElement_h
 #define HTMLFormControlElement_h
 
-#include "FormAssociatedElement.h"
-#include "LabelableElement.h"
+#include "core/html/FormAssociatedElement.h"
+#include "core/html/LabelableElement.h"
 
 namespace WebCore {
 

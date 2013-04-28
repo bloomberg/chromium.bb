@@ -23,7 +23,7 @@
 #ifndef HTMLEmbedElement_h
 #define HTMLEmbedElement_h
 
-#include "HTMLPlugInImageElement.h"
+#include "core/html/HTMLPlugInImageElement.h"
 
 namespace WebCore {
 

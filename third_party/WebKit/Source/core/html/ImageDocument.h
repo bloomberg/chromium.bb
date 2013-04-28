@@ -25,7 +25,7 @@
 #ifndef ImageDocument_h
 #define ImageDocument_h
 
-#include "HTMLDocument.h"
+#include "core/html/HTMLDocument.h"
 
 namespace WebCore {
 

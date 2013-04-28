@@ -25,11 +25,11 @@
 #include "core/rendering/RenderSearchField.h"
 
 #include "CSSValueKeywords.h"
-#include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/StyleResolver.h"
 #include "core/editing/FrameSelection.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/page/Chrome.h"
 #include "core/page/Frame.h"

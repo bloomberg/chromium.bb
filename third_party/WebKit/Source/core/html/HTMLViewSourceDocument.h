@@ -25,7 +25,7 @@
 #ifndef HTMLViewSourceDocument_h
 #define HTMLViewSourceDocument_h
 
-#include "HTMLDocument.h"
+#include "core/html/HTMLDocument.h"
 
 namespace WebCore {
 

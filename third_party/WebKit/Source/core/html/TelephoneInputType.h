@@ -31,7 +31,7 @@
 #ifndef TelephoneInputType_h
 #define TelephoneInputType_h
 
-#include "BaseTextInputType.h"
+#include "core/html/BaseTextInputType.h"
 
 namespace WebCore {
 

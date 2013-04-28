@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 
-#include "HTMLCanvasElement.h"
-#include "HTMLImageElement.h"
-#include "HTMLVideoElement.h"
+#include "core/html/HTMLCanvasElement.h"
+#include "core/html/HTMLImageElement.h"
+#include "core/html/HTMLVideoElement.h"
 #include "core/html/canvas/CanvasPattern.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/page/SecurityOrigin.h"

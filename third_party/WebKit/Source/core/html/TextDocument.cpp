@@ -23,7 +23,7 @@
  */
 
 #include "config.h"
-#include "TextDocument.h"
+#include "core/html/TextDocument.h"
 
 #include "core/html/parser/TextDocumentParser.h"
 

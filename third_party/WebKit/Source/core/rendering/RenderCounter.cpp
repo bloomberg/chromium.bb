@@ -23,10 +23,10 @@
 #include "core/rendering/RenderCounter.h"
 
 #include "HTMLNames.h"
-#include "HTMLOListElement.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/html/HTMLOListElement.h"
 #include "core/rendering/CounterNode.h"
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderListMarker.h"

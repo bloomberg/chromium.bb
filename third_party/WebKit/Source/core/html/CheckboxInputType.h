@@ -31,7 +31,7 @@
 #ifndef CheckboxInputType_h
 #define CheckboxInputType_h
 
-#include "BaseCheckableInputType.h"
+#include "core/html/BaseCheckableInputType.h"
 
 namespace WebCore {
 

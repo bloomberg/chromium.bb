@@ -22,7 +22,7 @@
  */
 
 #include "config.h"
-#include "HTMLStyleElement.h"
+#include "core/html/HTMLStyleElement.h"
 
 #include "HTMLNames.h"
 #include "bindings/v8/ScriptEventListener.h"

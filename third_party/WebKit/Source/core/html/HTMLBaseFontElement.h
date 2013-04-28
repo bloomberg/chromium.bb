@@ -23,7 +23,7 @@
 #ifndef HTMLBaseFontElement_h
 #define HTMLBaseFontElement_h
 
-#include "HTMLElement.h"
+#include "core/html/HTMLElement.h"
 
 namespace WebCore {
 

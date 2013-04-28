@@ -26,7 +26,7 @@
 #ifndef MediaDocument_h
 #define MediaDocument_h
 
-#include "HTMLDocument.h"
+#include "core/html/HTMLDocument.h"
 
 namespace WebCore {
 

@@ -31,9 +31,9 @@
 #include "config.h"
 #include "core/inspector/InjectedScriptHost.h"
 
-#include "HTMLFrameOwnerElement.h"
 #include "InspectorFrontend.h"
 #include "core/dom/Element.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InspectorAgent.h"
 #include "core/inspector/InspectorClient.h"

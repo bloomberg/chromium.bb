@@ -25,7 +25,7 @@
 #ifndef PluginDocument_h
 #define PluginDocument_h
 
-#include "HTMLDocument.h"
+#include "core/html/HTMLDocument.h"
 
 namespace WebCore {
 

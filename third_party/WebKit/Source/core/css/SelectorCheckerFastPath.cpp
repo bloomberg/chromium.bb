@@ -29,9 +29,9 @@
 #include "config.h"
 #include "core/css/SelectorCheckerFastPath.h"
 
-#include "HTMLDocument.h"
 #include "HTMLNames.h"
 #include "core/dom/StyledElement.h"
+#include "core/html/HTMLDocument.h"
 
 namespace WebCore {
 

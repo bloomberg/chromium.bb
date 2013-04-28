@@ -24,13 +24,13 @@
  */
 
 #include "config.h"
-#include "HTMLSourceElement.h"
+#include "core/html/HTMLSourceElement.h"
 
-#include "HTMLDocument.h"
-#include "HTMLMediaElement.h"
 #include "HTMLNames.h"
 #include "core/dom/Event.h"
 #include "core/dom/EventNames.h"
+#include "core/html/HTMLDocument.h"
+#include "core/html/HTMLMediaElement.h"
 #include "core/platform/Logging.h"
 
 using namespace std;

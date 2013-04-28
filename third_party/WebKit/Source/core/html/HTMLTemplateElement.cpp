@@ -30,13 +30,13 @@
 
 #include "config.h"
 
-#include "HTMLTemplateElement.h"
+#include "core/html/HTMLTemplateElement.h"
 
-#include "HTMLDocument.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/TemplateContentDocumentFragment.h"
 #include "core/editing/markup.h"
+#include "core/html/HTMLDocument.h"
 
 namespace WebCore {
 

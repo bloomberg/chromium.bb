@@ -26,11 +26,11 @@
 #include "config.h"
 #include "core/rendering/RenderTreeAsText.h"
 
-#include "HTMLElement.h"
 #include "HTMLNames.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
 #include "core/editing/FrameSelection.h"
+#include "core/html/HTMLElement.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/PrintContext.h"

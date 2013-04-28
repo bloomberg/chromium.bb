@@ -21,7 +21,7 @@
  */
 
 #include "config.h"
-#include "HTMLModElement.h"
+#include "core/html/HTMLModElement.h"
 
 #include "HTMLNames.h"
 

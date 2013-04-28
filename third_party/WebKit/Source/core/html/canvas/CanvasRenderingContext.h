@@ -26,8 +26,8 @@
 #ifndef CanvasRenderingContext_h
 #define CanvasRenderingContext_h
 
-#include "HTMLCanvasElement.h"
 #include "bindings/v8/ScriptWrappable.h"
+#include "core/html/HTMLCanvasElement.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include <wtf/HashSet.h>
 #include <wtf/Noncopyable.h>

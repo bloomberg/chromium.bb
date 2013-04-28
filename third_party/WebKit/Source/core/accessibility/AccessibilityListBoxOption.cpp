@@ -29,10 +29,10 @@
 #include "config.h"
 #include "core/accessibility/AccessibilityListBoxOption.h"
 
-#include "HTMLOptGroupElement.h"
-#include "HTMLOptionElement.h"
-#include "HTMLSelectElement.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/html/HTMLOptGroupElement.h"
+#include "core/html/HTMLOptionElement.h"
+#include "core/html/HTMLSelectElement.h"
 #include "core/rendering/RenderListBox.h"
 
 using namespace std;

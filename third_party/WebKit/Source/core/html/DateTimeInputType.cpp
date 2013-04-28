@@ -30,17 +30,17 @@
 
 #include "config.h"
 #if ENABLE(INPUT_TYPE_DATETIME_INCOMPLETE)
-#include "DateTimeInputType.h"
+#include "core/html/DateTimeInputType.h"
 
-#include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "InputTypeNames.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/InputTypeNames.h"
 #include "core/platform/DateComponents.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/PassOwnPtr.h>
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-#include "DateTimeFieldsState.h"
+#include "core/html/DateTimeFieldsState.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/PlatformLocale.h"
 #include <wtf/text/StringBuilder.h>

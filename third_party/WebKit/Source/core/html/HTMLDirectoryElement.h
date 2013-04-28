@@ -23,7 +23,7 @@
 #ifndef HTMLDirectoryElement_h
 #define HTMLDirectoryElement_h
 
-#include "HTMLElement.h"
+#include "core/html/HTMLElement.h"
 
 namespace WebCore {
 

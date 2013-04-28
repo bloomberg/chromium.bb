@@ -23,10 +23,10 @@
 
 #include "core/platform/network/FormData.h"
 
-#include "FormDataList.h"
 #include "core/dom/Document.h"
 #include "core/fileapi/BlobURL.h"
 #include "core/fileapi/File.h"
+#include "core/html/FormDataList.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"

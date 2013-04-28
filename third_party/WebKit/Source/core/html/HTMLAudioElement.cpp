@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "HTMLAudioElement.h"
+#include "core/html/HTMLAudioElement.h"
 
 #include "HTMLNames.h"
 

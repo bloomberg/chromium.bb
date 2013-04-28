@@ -27,7 +27,7 @@
 #ifndef SpinButtonElement_h
 #define SpinButtonElement_h
 
-#include "HTMLDivElement.h"
+#include "core/html/HTMLDivElement.h"
 #include "core/page/PopupOpeningObserver.h"
 #include "core/platform/Timer.h"
 

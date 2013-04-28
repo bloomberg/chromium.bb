@@ -23,13 +23,13 @@
  */
 
 #include "config.h"
-#include "HTMLFieldSetElement.h"
+#include "core/html/HTMLFieldSetElement.h"
 
-#include "HTMLCollection.h"
-#include "HTMLLegendElement.h"
 #include "HTMLNames.h"
-#include "HTMLObjectElement.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/html/HTMLCollection.h"
+#include "core/html/HTMLLegendElement.h"
+#include "core/html/HTMLObjectElement.h"
 #include "core/rendering/RenderFieldset.h"
 #include <wtf/StdLibExtras.h>
 

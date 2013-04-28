@@ -23,7 +23,7 @@
 #ifndef HTMLFormControlsCollection_h
 #define HTMLFormControlsCollection_h
 
-#include "HTMLCollection.h"
+#include "core/html/HTMLCollection.h"
 
 namespace WebCore {
 

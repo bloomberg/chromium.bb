@@ -23,7 +23,7 @@
 #ifndef HTMLPlugInElement_h
 #define HTMLPlugInElement_h
 
-#include "HTMLFrameOwnerElement.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/platform/graphics/Image.h"
 
 #include "bindings/v8/ScriptInstance.h"

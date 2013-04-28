@@ -21,7 +21,7 @@
  */
 
 #include "config.h"
-#include "HTMLScriptElement.h"
+#include "core/html/HTMLScriptElement.h"
 
 #include "HTMLNames.h"
 #include "bindings/v8/ScriptEventListener.h"

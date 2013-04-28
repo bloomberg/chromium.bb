@@ -23,7 +23,7 @@
 #ifndef HTMLAppletElement_h
 #define HTMLAppletElement_h
 
-#include "HTMLPlugInImageElement.h"
+#include "core/html/HTMLPlugInImageElement.h"
 
 namespace WebCore {
 

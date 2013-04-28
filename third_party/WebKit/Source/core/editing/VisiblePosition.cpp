@@ -28,13 +28,13 @@
 #include "core/editing/VisiblePosition.h"
 
 #include <stdio.h>
-#include "HTMLElement.h"
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Range.h"
 #include "core/dom/Text.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
+#include "core/html/HTMLElement.h"
 #include "core/platform/Logging.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/rendering/InlineTextBox.h"

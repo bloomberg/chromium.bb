@@ -28,11 +28,11 @@
 #include "config.h"
 #include "core/dom/ScriptExecutionContext.h"
 
-#include "PublicURLManager.h"
 #include "core/dom/ErrorEvent.h"
 #include "core/dom/EventTarget.h"
 #include "core/dom/MessagePort.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/html/PublicURLManager.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/cache/CachedScript.h"
 #include "core/page/DOMTimer.h"

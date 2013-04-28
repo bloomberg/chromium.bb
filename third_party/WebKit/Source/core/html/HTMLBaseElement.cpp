@@ -21,7 +21,7 @@
  */
 
 #include "config.h"
-#include "HTMLBaseElement.h"
+#include "core/html/HTMLBaseElement.h"
 
 #include "HTMLNames.h"
 #include "core/dom/Attribute.h"

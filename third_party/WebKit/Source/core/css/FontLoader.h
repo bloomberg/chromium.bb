@@ -26,11 +26,11 @@
 #ifndef FontLoader_h
 #define FontLoader_h
 
-#include "VoidCallback.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/EventTarget.h"
+#include "core/html/VoidCallback.h"
 #include "core/platform/Timer.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

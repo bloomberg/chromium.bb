@@ -30,10 +30,10 @@
 #ifndef MediaControlElementTypes_h
 #define MediaControlElementTypes_h
 
-#include "HTMLDivElement.h"
-#include "HTMLInputElement.h"
-#include "HTMLMediaElement.h"
-#include "MediaControllerInterface.h"
+#include "core/html/HTMLDivElement.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/HTMLMediaElement.h"
+#include "core/html/MediaControllerInterface.h"
 #include "core/rendering/RenderBlock.h"
 
 namespace WebCore {

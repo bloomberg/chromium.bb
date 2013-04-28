@@ -23,17 +23,17 @@
  */
 
 #include "config.h"
-#include "HTMLKeygenElement.h"
+#include "core/html/HTMLKeygenElement.h"
 
-#include "FormDataList.h"
 #include "HTMLNames.h"
-#include "HTMLOptionElement.h"
-#include "HTMLSelectElement.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementShadow.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/Text.h"
+#include "core/html/FormDataList.h"
+#include "core/html/HTMLOptionElement.h"
+#include "core/html/HTMLSelectElement.h"
 #include "core/platform/SSLKeyGenerator.h"
 #include <wtf/StdLibExtras.h>
 

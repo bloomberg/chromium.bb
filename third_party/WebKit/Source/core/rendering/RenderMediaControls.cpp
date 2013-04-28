@@ -27,8 +27,8 @@
 
 #include "core/rendering/RenderMediaControls.h"
 
-#include "HTMLMediaElement.h"
 #include "HTMLNames.h"
+#include "core/html/HTMLMediaElement.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderTheme.h"

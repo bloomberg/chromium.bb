@@ -26,8 +26,6 @@
 #include "core/inspector/InspectorCSSAgent.h"
 
 #include "CSSPropertyNames.h"
-#include "HTMLHeadElement.h"
-#include "HTMLStyleElement.h"
 #include "InspectorTypeBuilder.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSImportRule.h"
@@ -47,6 +45,8 @@
 #include "core/dom/NamedFlowCollection.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeList.h"
+#include "core/html/HTMLHeadElement.h"
+#include "core/html/HTMLStyleElement.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorHistory.h"
 #include "core/inspector/InspectorState.h"

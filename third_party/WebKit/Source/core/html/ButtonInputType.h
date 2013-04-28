@@ -31,7 +31,7 @@
 #ifndef ButtonInputType_h
 #define ButtonInputType_h
 
-#include "BaseButtonInputType.h"
+#include "core/html/BaseButtonInputType.h"
 
 namespace WebCore {
 

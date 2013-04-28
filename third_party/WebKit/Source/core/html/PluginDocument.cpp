@@ -23,14 +23,14 @@
  */
 
 #include "config.h"
-#include "PluginDocument.h"
+#include "core/html/PluginDocument.h"
 
-#include "HTMLEmbedElement.h"
-#include "HTMLHtmlElement.h"
 #include "HTMLNames.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/NodeList.h"
 #include "core/dom/RawDataDocumentParser.h"
+#include "core/html/HTMLEmbedElement.h"
+#include "core/html/HTMLHtmlElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"

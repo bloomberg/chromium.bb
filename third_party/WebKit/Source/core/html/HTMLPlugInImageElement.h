@@ -21,7 +21,7 @@
 #ifndef HTMLPlugInImageElement_h
 #define HTMLPlugInImageElement_h
 
-#include "HTMLPlugInElement.h"
+#include "core/html/HTMLPlugInElement.h"
 
 #include "core/rendering/style/RenderStyle.h"
 #include <wtf/OwnPtr.h>

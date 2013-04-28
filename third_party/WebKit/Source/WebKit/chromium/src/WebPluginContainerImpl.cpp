@@ -45,9 +45,7 @@
 #include "core/platform/chromium/ClipboardChromium.h"
 #include "core/platform/chromium/support/WrappedResourceResponse.h"
 
-#include "HTMLFormElement.h"
 #include "HTMLNames.h"
-#include "HTMLPlugInElement.h"
 #include "WebPrintParams.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/EventNames.h"
@@ -57,6 +55,8 @@
 #include "core/dom/TouchEvent.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/dom/WheelEvent.h"
+#include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLPlugInElement.h"
 #include "core/loader/FormState.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/FocusController.h"

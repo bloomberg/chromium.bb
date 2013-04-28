@@ -29,13 +29,13 @@
 #include "config.h"
 #include "core/accessibility/AccessibilityTable.h"
 
-#include "HTMLTableCaptionElement.h"
-#include "HTMLTableCellElement.h"
-#include "HTMLTableElement.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/accessibility/AccessibilityTableCell.h"
 #include "core/accessibility/AccessibilityTableColumn.h"
 #include "core/accessibility/AccessibilityTableRow.h"
+#include "core/html/HTMLTableCaptionElement.h"
+#include "core/html/HTMLTableCellElement.h"
+#include "core/html/HTMLTableElement.h"
 #include "core/rendering/RenderTableCell.h"
 
 namespace WebCore {

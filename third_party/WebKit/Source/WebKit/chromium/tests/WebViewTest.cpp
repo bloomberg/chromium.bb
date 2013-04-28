@@ -33,7 +33,6 @@
 
 #include <gtest/gtest.h>
 #include "FrameTestHelpers.h"
-#include "HTMLDocument.h"
 #include "URLTestHelpers.h"
 #include "WebAutofillClient.h"
 #include "WebContentDetectionResult.h"
@@ -48,6 +47,7 @@
 #include "WebViewImpl.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/html/HTMLDocument.h"
 #include "core/page/FrameView.h"
 #include <public/Platform.h>
 #include <public/WebSize.h>

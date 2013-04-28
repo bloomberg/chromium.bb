@@ -51,17 +51,17 @@
  */
 
 #include "config.h"
-#include "HTMLDocument.h"
+#include "core/html/HTMLDocument.h"
 
 #include "CSSPropertyNames.h"
-#include "HTMLBodyElement.h"
 #include "HTMLElementFactory.h"
-#include "HTMLFrameOwnerElement.h"
 #include "HTMLNames.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/css/StyleResolver.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/html/HTMLBodyElement.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/CookieJar.h"

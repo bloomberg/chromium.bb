@@ -23,8 +23,8 @@
 #ifndef HTMLObjectElement_h
 #define HTMLObjectElement_h
 
-#include "FormAssociatedElement.h"
-#include "HTMLPlugInImageElement.h"
+#include "core/html/FormAssociatedElement.h"
+#include "core/html/HTMLPlugInImageElement.h"
 
 namespace WebCore {
 

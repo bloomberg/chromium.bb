@@ -28,11 +28,7 @@
 
 #include <limits.h>
 #include <stdio.h>
-#include "HTMLFormElement.h"
-#include "HTMLFrameElementBase.h"
-#include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "HTMLSelectElement.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/CharacterData.h"
 #include "core/dom/Document.h"
@@ -47,6 +43,10 @@
 #include "core/editing/TypingCommand.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
+#include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLFrameElementBase.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/HTMLSelectElement.h"
 #include "core/page/EditorClient.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"

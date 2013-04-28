@@ -25,11 +25,11 @@
 
 #include "config.h"
 
-#include "MediaController.h"
+#include "core/html/MediaController.h"
 
-#include "HTMLMediaElement.h"
-#include "TimeRanges.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/html/HTMLMediaElement.h"
+#include "core/html/TimeRanges.h"
 #include "core/platform/Clock.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/StdLibExtras.h>

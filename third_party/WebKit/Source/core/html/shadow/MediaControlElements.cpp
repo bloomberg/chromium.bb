@@ -31,12 +31,12 @@
 
 #include "core/html/shadow/MediaControlElements.h"
 
-#include "DOMTokenList.h"
-#include "HTMLVideoElement.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/EventTarget.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/MouseEvent.h"
+#include "core/html/DOMTokenList.h"
+#include "core/html/HTMLVideoElement.h"
 #include "core/html/shadow/MediaControls.h"
 #include "core/html/track/TextTrack.h"
 #include "core/html/track/TextTrackList.h"

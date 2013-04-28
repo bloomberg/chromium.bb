@@ -31,7 +31,7 @@
 #ifndef TextInputType_h
 #define TextInputType_h
 
-#include "BaseTextInputType.h"
+#include "core/html/BaseTextInputType.h"
 
 namespace WebCore {
 

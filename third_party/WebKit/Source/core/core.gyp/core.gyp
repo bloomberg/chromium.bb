@@ -47,7 +47,6 @@
     'webcore_include_dirs': [
       # FIXME: Remove most entries in this list.
       '../..',
-      '../html',
       '../platform/graphics/skia',
       '<(INTERMEDIATE_DIR)',
       '<(SHARED_INTERMEDIATE_DIR)/webkit',
@@ -318,6 +317,7 @@
         '<(bindings_dir)/v8/custom',
         '../../modules/mediastream',
         '../dom',
+        '../html',
         '../html/shadow',
         '../inspector',
         '../page',

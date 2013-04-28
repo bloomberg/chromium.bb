@@ -24,7 +24,7 @@
 #ifndef HTMLLegendElement_h
 #define HTMLLegendElement_h
 
-#include "HTMLElement.h"
+#include "core/html/HTMLElement.h"
 
 namespace WebCore {
 

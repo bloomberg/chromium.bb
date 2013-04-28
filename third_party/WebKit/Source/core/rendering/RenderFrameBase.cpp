@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/rendering/RenderFrameBase.h"
 
-#include "HTMLFrameElementBase.h"
+#include "core/html/HTMLFrameElementBase.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/rendering/RenderView.h"

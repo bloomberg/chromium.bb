@@ -26,8 +26,6 @@
 #include "config.h"
 #include "core/editing/SpellChecker.h"
 
-#include "HTMLInputElement.h"
-#include "HTMLTextAreaElement.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/Node.h"
@@ -37,6 +35,8 @@
 #include "core/editing/TextCheckingHelper.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/htmlediting.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/HTMLTextAreaElement.h"
 #include "core/page/EditorClient.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"

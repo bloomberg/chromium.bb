@@ -22,15 +22,15 @@
  */
 
 #include "config.h"
-#include "HTMLEmbedElement.h"
+#include "core/html/HTMLEmbedElement.h"
 
 #include "CSSPropertyNames.h"
-#include "HTMLDocument.h"
-#include "HTMLImageLoader.h"
 #include "HTMLNames.h"
-#include "HTMLObjectElement.h"
-#include "PluginDocument.h"
 #include "core/dom/Attribute.h"
+#include "core/html/HTMLDocument.h"
+#include "core/html/HTMLImageLoader.h"
+#include "core/html/HTMLObjectElement.h"
+#include "core/html/PluginDocument.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"

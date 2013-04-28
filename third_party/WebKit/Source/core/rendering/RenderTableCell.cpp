@@ -26,8 +26,8 @@
 #include "core/rendering/RenderTableCell.h"
 
 #include "HTMLNames.h"
-#include "HTMLTableCellElement.h"
 #include "core/css/StylePropertySet.h"
+#include "core/html/HTMLTableCellElement.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/transforms/TransformState.h"

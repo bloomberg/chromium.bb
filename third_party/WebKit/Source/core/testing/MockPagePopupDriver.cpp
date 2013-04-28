@@ -29,8 +29,8 @@
 #if ENABLE(PAGE_POPUP)
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-#include "HTMLIFrameElement.h"
 #include "WebCoreTestSupport.h"
+#include "core/html/HTMLIFrameElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/DocumentWriter.h"
 #include "core/loader/FrameLoader.h"

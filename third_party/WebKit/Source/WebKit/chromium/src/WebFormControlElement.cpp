@@ -31,8 +31,8 @@
 #include "config.h"
 #include "WebFormControlElement.h"
 
-#include "HTMLFormControlElement.h"
-#include "HTMLFormElement.h"
+#include "core/html/HTMLFormControlElement.h"
+#include "core/html/HTMLFormElement.h"
 #include <wtf/PassRefPtr.h>
 
 using namespace WebCore;

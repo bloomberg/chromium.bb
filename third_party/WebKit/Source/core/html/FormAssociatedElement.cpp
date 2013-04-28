@@ -23,15 +23,15 @@
  */
 
 #include "config.h"
-#include "FormAssociatedElement.h"
+#include "core/html/FormAssociatedElement.h"
 
-#include "FormController.h"
-#include "HTMLFormControlElement.h"
-#include "HTMLFormElement.h"
 #include "HTMLNames.h"
-#include "HTMLObjectElement.h"
-#include "ValidityState.h"
 #include "core/dom/IdTargetObserver.h"
+#include "core/html/FormController.h"
+#include "core/html/HTMLFormControlElement.h"
+#include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLObjectElement.h"
+#include "core/html/ValidityState.h"
 #include "core/page/EditorClient.h"
 #include "core/page/Frame.h"
 

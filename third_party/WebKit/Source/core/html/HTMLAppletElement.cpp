@@ -22,12 +22,12 @@
  */
 
 #include "config.h"
-#include "HTMLAppletElement.h"
+#include "core/html/HTMLAppletElement.h"
 
-#include "HTMLDocument.h"
 #include "HTMLNames.h"
-#include "HTMLParamElement.h"
 #include "core/dom/Attribute.h"
+#include "core/html/HTMLDocument.h"
+#include "core/html/HTMLParamElement.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Frame.h"
 #include "core/page/SecurityOrigin.h"

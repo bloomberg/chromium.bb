@@ -23,7 +23,7 @@
 #include "core/rendering/RenderProgress.h"
 
 #include "HTMLNames.h"
-#include "HTMLProgressElement.h"
+#include "core/html/HTMLProgressElement.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderTheme.h"
 #include <wtf/CurrentTime.h>

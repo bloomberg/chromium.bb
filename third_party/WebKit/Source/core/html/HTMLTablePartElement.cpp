@@ -23,16 +23,16 @@
  */
 
 #include "config.h"
-#include "HTMLTablePartElement.h"
+#include "core/html/HTMLTablePartElement.h"
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
-#include "HTMLTableElement.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
+#include "core/html/HTMLTableElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 
 namespace WebCore {

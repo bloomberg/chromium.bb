@@ -31,7 +31,7 @@
 #ifndef BaseDateAndTimeInputType_h
 #define BaseDateAndTimeInputType_h
 
-#include "InputType.h"
+#include "core/html/InputType.h"
 #include "core/platform/DateComponents.h"
 #include <wtf/unicode/Unicode.h>
 

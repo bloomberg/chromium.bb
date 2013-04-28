@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/inspector/InspectorPageAgent.h"
 
-#include "HTMLFrameOwnerElement.h"
 #include "HTMLNames.h"
 #include "InspectorFrontend.h"
 #include "bindings/v8/DOMWrapperWorld.h"
@@ -41,6 +40,7 @@
 #include "core/dom/DeviceOrientationController.h"
 #include "core/dom/Document.h"
 #include "core/dom/UserGestureIndicator.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/ContentSearchUtils.h"
 #include "core/inspector/DOMPatchSupport.h"
 #include "core/inspector/IdentifiersFactory.h"

@@ -21,17 +21,17 @@
  */
 
 #include "config.h"
-#include "HTMLCollection.h"
+#include "core/html/HTMLCollection.h"
 
-#include "HTMLDocument.h"
-#include "HTMLElement.h"
 #include "HTMLNames.h"
-#include "HTMLObjectElement.h"
-#include "HTMLOptionElement.h"
 #include "core/dom/ClassNodeList.h"
 #include "core/dom/NodeList.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/html/HTMLDocument.h"
+#include "core/html/HTMLElement.h"
+#include "core/html/HTMLObjectElement.h"
+#include "core/html/HTMLOptionElement.h"
 
 #include <utility>
 

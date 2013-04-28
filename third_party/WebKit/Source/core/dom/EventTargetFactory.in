@@ -15,13 +15,13 @@ modules/indexeddb/IDBRequest
 modules/indexeddb/IDBTransaction
 modules/webaudio/ScriptProcessorNode conditional=WEB_AUDIO
 modules/webmidi/MIDIPort
-MediaKeySession conditional=ENCRYPTED_MEDIA_V2
-MediaController
+modules/encryptedmedia/MediaKeySession conditional=ENCRYPTED_MEDIA_V2
+core/html/MediaController
 modules/mediasource/MediaSource
 modules/mediastream/MediaStream conditional=MEDIA_STREAM
 modules/mediastream/MediaStreamTrack conditional=MEDIA_STREAM
 core/dom/MessagePort
-Node
+core/dom/Node
 modules/notifications/Notification conditional=NOTIFICATIONS|LEGACY_NOTIFICATIONS
 core/page/Performance
 modules/mediastream/RTCDataChannel conditional=MEDIA_STREAM

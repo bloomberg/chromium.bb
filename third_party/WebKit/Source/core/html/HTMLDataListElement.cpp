@@ -31,7 +31,7 @@
 
 #include "config.h"
 #if ENABLE(DATALIST_ELEMENT)
-#include "HTMLDataListElement.h"
+#include "core/html/HTMLDataListElement.h"
 
 #include "HTMLNames.h"
 #include "core/dom/IdTargetObserverRegistry.h"

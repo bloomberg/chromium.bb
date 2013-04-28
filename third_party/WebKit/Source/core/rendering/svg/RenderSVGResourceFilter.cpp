@@ -26,8 +26,8 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 
-#include "ImageData.h"
 #include "SVGNames.h"
+#include "core/html/ImageData.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/graphics/FloatPoint.h"

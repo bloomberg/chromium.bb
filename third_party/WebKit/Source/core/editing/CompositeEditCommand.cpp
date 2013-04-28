@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/editing/CompositeEditCommand.h"
 
-#include "HTMLElement.h"
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
@@ -62,6 +61,7 @@
 #include "core/editing/WrapContentsInDummySpanCommand.h"
 #include "core/editing/htmlediting.h"
 #include "core/editing/markup.h"
+#include "core/html/HTMLElement.h"
 #include "core/page/Frame.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderBlock.h"

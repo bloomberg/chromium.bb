@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/rendering/RenderIFrame.h"
 
-#include "HTMLIFrameElement.h"
 #include "HTMLNames.h"
+#include "core/html/HTMLIFrameElement.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"

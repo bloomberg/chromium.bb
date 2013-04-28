@@ -31,9 +31,9 @@
 #include "config.h"
 #include "TextFieldDecoratorImpl.h"
 
-#include "HTMLInputElement.h"
 #include "WebInputElement.h"
 #include "WebTextFieldDecoratorClient.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/platform/graphics/Image.h"
 

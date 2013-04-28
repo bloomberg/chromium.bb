@@ -27,11 +27,11 @@
 
 #include "core/html/canvas/WebGLRenderingContext.h"
 
-#include "HTMLCanvasElement.h"
-#include "HTMLImageElement.h"
-#include "HTMLVideoElement.h"
-#include "ImageData.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/html/HTMLCanvasElement.h"
+#include "core/html/HTMLImageElement.h"
+#include "core/html/HTMLVideoElement.h"
+#include "core/html/ImageData.h"
 #include "core/html/canvas/CheckedInt.h"
 #include "core/html/canvas/EXTDrawBuffers.h"
 #include "core/html/canvas/EXTTextureFilterAnisotropic.h"

@@ -25,11 +25,11 @@
 
 #include "config.h"
 
-#include "MediaFragmentURIParser.h"
+#include "core/html/MediaFragmentURIParser.h"
 
-#include "HTMLElement.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/Text.h"
+#include "core/html/HTMLElement.h"
 #include "core/platform/graphics/MediaPlayer.h"
 #include "core/platform/text/SegmentedString.h"
 #include <wtf/text/CString.h>

@@ -31,7 +31,7 @@
 #ifndef NotificationPresenterImpl_h
 #define NotificationPresenterImpl_h
 
-#include "VoidCallback.h"
+#include "core/html/VoidCallback.h"
 #include "modules/notifications/NotificationClient.h"
 
 #include <wtf/HashMap.h>

@@ -22,12 +22,12 @@
 #ifndef ElementRareData_h
 #define ElementRareData_h
 
-#include "ClassList.h"
 #include "core/dom/DatasetDOMStringMap.h"
 #include "core/dom/ElementShadow.h"
 #include "core/dom/NamedNodeMap.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/PseudoElement.h"
+#include "core/html/ClassList.h"
 #include "core/rendering/style/StyleInheritedData.h"
 #include <wtf/OwnPtr.h>
 

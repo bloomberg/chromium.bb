@@ -28,10 +28,6 @@
 #include "core/page/DOMWindow.h"
 
 #include <algorithm>
-#include "DOMSettableTokenList.h"
-#include "DOMTokenList.h"
-#include "DOMURL.h"
-#include "HTMLFrameOwnerElement.h"
 #include "bindings/v8/ScheduledAction.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "bindings/v8/ScriptController.h"
@@ -58,6 +54,10 @@
 #include "core/dom/RequestAnimationFrameCallback.h"
 #include "core/editing/Editor.h"
 #include "core/history/BackForwardController.h"
+#include "core/html/DOMSettableTokenList.h"
+#include "core/html/DOMTokenList.h"
+#include "core/html/DOMURL.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/DocumentLoader.h"

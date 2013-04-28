@@ -29,7 +29,6 @@
 
 #include "core/workers/WorkerContext.h"
 
-#include "DOMURL.h"
 #include "bindings/v8/ScheduledAction.h"
 #include "bindings/v8/ScriptSourceCode.h"
 #include "bindings/v8/ScriptValue.h"
@@ -38,6 +37,7 @@
 #include "core/dom/Event.h"
 #include "core/dom/EventException.h"
 #include "core/dom/MessagePort.h"
+#include "core/html/DOMURL.h"
 #include "core/inspector/InspectorConsoleInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/WorkerInspectorController.h"

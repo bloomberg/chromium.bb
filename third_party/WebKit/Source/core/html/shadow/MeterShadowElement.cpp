@@ -33,10 +33,10 @@
 #include "core/html/shadow/MeterShadowElement.h"
 
 #include "CSSPropertyNames.h"
-#include "HTMLMeterElement.h"
 #include "HTMLNames.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/html/HTMLMeterElement.h"
 #include "core/rendering/RenderMeter.h"
 #include "core/rendering/RenderTheme.h"
 

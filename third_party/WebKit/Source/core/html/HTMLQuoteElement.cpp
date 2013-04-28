@@ -21,7 +21,7 @@
  */
 
 #include "config.h"
-#include "HTMLQuoteElement.h"
+#include "core/html/HTMLQuoteElement.h"
 
 #include "HTMLNames.h"
 #include "core/dom/Document.h"

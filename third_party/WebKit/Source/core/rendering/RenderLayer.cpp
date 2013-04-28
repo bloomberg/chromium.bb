@@ -45,8 +45,6 @@
 #include "core/rendering/RenderLayer.h"
 
 #include "CSSPropertyNames.h"
-#include "HTMLFrameElement.h"
-#include "HTMLFrameOwnerElement.h"
 #include "HTMLNames.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleResolver.h"
@@ -57,6 +55,8 @@
 #include "core/dom/StaticHashSetNodeList.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/editing/FrameSelection.h"
+#include "core/html/HTMLFrameElement.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Chrome.h"

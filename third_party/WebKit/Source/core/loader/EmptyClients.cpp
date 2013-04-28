@@ -28,7 +28,7 @@
 #include "config.h"
 #include "core/loader/EmptyClients.h"
 
-#include "HTMLFormElement.h"
+#include "core/html/HTMLFormElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FormState.h"
 #include "core/loader/FrameNetworkingContext.h"

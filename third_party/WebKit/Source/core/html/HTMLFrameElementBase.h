@@ -24,7 +24,7 @@
 #ifndef HTMLFrameElementBase_h
 #define HTMLFrameElementBase_h
 
-#include "HTMLFrameOwnerElement.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/platform/ScrollTypes.h"
 
 namespace WebCore {

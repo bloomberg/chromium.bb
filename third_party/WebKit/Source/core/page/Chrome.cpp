@@ -22,11 +22,11 @@
 #include "config.h"
 #include "core/page/Chrome.h"
 
-#include "HTMLFormElement.h"
-#include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/fileapi/FileList.h"
+#include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Frame.h"

@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "TimeRanges.h"
+#include "core/html/TimeRanges.h"
 
 #include <math.h>
 #include "core/dom/ExceptionCode.h"

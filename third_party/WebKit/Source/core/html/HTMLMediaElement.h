@@ -26,10 +26,10 @@
 #ifndef HTMLMediaElement_h
 #define HTMLMediaElement_h
 
-#include "HTMLElement.h"
-#include "MediaControllerInterface.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/GenericEventQueue.h"
+#include "core/html/HTMLElement.h"
+#include "core/html/MediaControllerInterface.h"
 #include "core/page/MediaCanStartListener.h"
 #include "core/platform/graphics/MediaPlayer.h"
 

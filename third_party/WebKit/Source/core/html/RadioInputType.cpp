@@ -20,14 +20,14 @@
  */
 
 #include "config.h"
-#include "RadioInputType.h"
+#include "core/html/RadioInputType.h"
 
-#include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "InputTypeNames.h"
 #include "core/dom/KeyboardEvent.h"
 #include "core/dom/MouseEvent.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/InputTypeNames.h"
 #include "core/page/Frame.h"
 #include "core/page/Settings.h"
 #include "core/page/SpatialNavigation.h"

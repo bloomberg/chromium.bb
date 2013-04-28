@@ -23,7 +23,7 @@
  */
 
 #include "config.h"
-#include "HTMLTableCaptionElement.h"
+#include "core/html/HTMLTableCaptionElement.h"
 
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"

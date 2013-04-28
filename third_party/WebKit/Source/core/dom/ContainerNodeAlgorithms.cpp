@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/dom/ContainerNodeAlgorithms.h"
 
-#include "HTMLFrameOwnerElement.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementShadow.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 
 namespace WebCore {
 

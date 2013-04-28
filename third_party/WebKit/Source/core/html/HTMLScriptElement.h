@@ -24,8 +24,8 @@
 #ifndef HTMLScriptElement_h
 #define HTMLScriptElement_h
 
-#include "HTMLElement.h"
 #include "core/dom/ScriptElement.h"
+#include "core/html/HTMLElement.h"
 
 namespace WebCore {
 

@@ -29,9 +29,9 @@
 #include "config.h"
 #include "core/dom/VisitedLinkState.h"
 
-#include "HTMLAnchorElement.h"
 #include "HTMLNames.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/html/HTMLAnchorElement.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/platform/VisitedLinks.h"

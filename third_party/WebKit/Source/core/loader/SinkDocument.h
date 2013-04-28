@@ -26,7 +26,7 @@
 #ifndef SinkDocument_h
 #define SinkDocument_h
 
-#include "HTMLDocument.h"
+#include "core/html/HTMLDocument.h"
 
 namespace WebCore {
 

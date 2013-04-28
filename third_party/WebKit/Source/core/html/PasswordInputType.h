@@ -31,7 +31,7 @@
 #ifndef PasswordInputType_h
 #define PasswordInputType_h
 
-#include "BaseTextInputType.h"
+#include "core/html/BaseTextInputType.h"
 
 namespace WebCore {
 

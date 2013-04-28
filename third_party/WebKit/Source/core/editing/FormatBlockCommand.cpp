@@ -24,7 +24,6 @@
  */
 
 #include "config.h"
-#include "HTMLElement.h"
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -33,6 +32,7 @@
 #include "core/editing/FormatBlockCommand.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
+#include "core/html/HTMLElement.h"
 
 namespace WebCore {
 

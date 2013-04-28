@@ -30,9 +30,9 @@
 #include "core/html/canvas/CanvasStyle.h"
 
 #include "CSSPropertyNames.h"
-#include "HTMLCanvasElement.h"
 #include "core/css/CSSParser.h"
 #include "core/css/StylePropertySet.h"
+#include "core/html/HTMLCanvasElement.h"
 #include "core/html/canvas/CanvasGradient.h"
 #include "core/html/canvas/CanvasPattern.h"
 #include "core/platform/graphics/GraphicsContext.h"

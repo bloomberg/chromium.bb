@@ -31,8 +31,8 @@
 #include "config.h"
 #include "WebNodeCollection.h"
 
-#include "HTMLCollection.h"
 #include "core/dom/Node.h"
+#include "core/html/HTMLCollection.h"
 #include <wtf/PassRefPtr.h>
 
 #include "WebNode.h"

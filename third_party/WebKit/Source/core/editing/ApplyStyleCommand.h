@@ -26,9 +26,9 @@
 #ifndef ApplyStyleCommand_h
 #define ApplyStyleCommand_h
 
-#include "HTMLElement.h"
 #include "core/editing/CompositeEditCommand.h"
 #include "core/editing/WritingDirection.h"
+#include "core/html/HTMLElement.h"
 
 namespace WebCore {
 

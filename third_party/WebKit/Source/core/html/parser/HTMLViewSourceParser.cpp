@@ -27,7 +27,7 @@
 #include "core/html/parser/HTMLViewSourceParser.h"
 
 #include "HTMLNames.h"
-#include "HTMLViewSourceDocument.h"
+#include "core/html/HTMLViewSourceDocument.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/HTMLParserOptions.h"
 

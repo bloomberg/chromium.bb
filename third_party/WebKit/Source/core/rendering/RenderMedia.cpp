@@ -27,7 +27,7 @@
 
 #include "core/rendering/RenderMedia.h"
 
-#include "HTMLMediaElement.h"
+#include "core/html/HTMLMediaElement.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderView.h"
 

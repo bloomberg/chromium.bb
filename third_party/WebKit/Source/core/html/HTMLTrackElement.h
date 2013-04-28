@@ -26,7 +26,7 @@
 #ifndef HTMLTrackElement_h
 #define HTMLTrackElement_h
 
-#include "HTMLElement.h"
+#include "core/html/HTMLElement.h"
 #include "core/html/track/LoadableTextTrack.h"
 #include "core/html/track/TextTrack.h"
 

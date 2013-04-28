@@ -20,8 +20,6 @@
 #include "config.h"
 #include "core/page/Page.h"
 
-#include "HTMLElement.h"
-#include "VoidCallback.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/ClientRectList.h"
 #include "core/dom/DocumentMarkerController.h"
@@ -36,6 +34,8 @@
 #include "core/editing/FrameSelection.h"
 #include "core/history/BackForwardController.h"
 #include "core/history/HistoryItem.h"
+#include "core/html/HTMLElement.h"
+#include "core/html/VoidCallback.h"
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoader.h"

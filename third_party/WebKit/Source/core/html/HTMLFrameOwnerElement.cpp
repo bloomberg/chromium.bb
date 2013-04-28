@@ -19,7 +19,7 @@
  */
 
 #include "config.h"
-#include "HTMLFrameOwnerElement.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 
 #include "core/loader/FrameLoader.h"
 #include "core/page/DOMWindow.h"

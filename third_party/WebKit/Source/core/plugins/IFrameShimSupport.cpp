@@ -31,10 +31,10 @@
 #include "config.h"
 #include "core/plugins/IFrameShimSupport.h"
 
-#include "HTMLElement.h"
-#include "HTMLFrameOwnerElement.h"
 #include "HTMLNames.h"
 #include "core/dom/Element.h"
+#include "core/html/HTMLElement.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/platform/Widget.h"

@@ -26,7 +26,7 @@
 #ifndef ClearButtonElement_h
 #define ClearButtonElement_h
 
-#include "HTMLDivElement.h"
+#include "core/html/HTMLDivElement.h"
 #include <wtf/Forward.h>
 
 namespace WebCore {

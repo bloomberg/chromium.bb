@@ -22,8 +22,8 @@
 
 #include "core/rendering/TextAutosizer.h"
 
-#include "HTMLElement.h"
 #include "core/dom/Document.h"
+#include "core/html/HTMLElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Settings.h"
 #include "core/platform/graphics/IntSize.h"

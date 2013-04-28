@@ -27,9 +27,7 @@
 #include "config.h"
 #include "core/editing/MarkupAccumulator.h"
 
-#include "HTMLElement.h"
 #include "HTMLNames.h"
-#include "HTMLTemplateElement.h"
 #include "XLinkNames.h"
 #include "XMLNSNames.h"
 #include "XMLNames.h"
@@ -39,6 +37,8 @@
 #include "core/dom/DocumentType.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/editing/Editor.h"
+#include "core/html/HTMLElement.h"
+#include "core/html/HTMLTemplateElement.h"
 #include "core/platform/KURL.h"
 #include <wtf/unicode/CharacterNames.h>
 

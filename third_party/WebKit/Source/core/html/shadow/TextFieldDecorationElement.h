@@ -31,7 +31,7 @@
 #ifndef TextFieldDecorationElement_h
 #define TextFieldDecorationElement_h
 
-#include "HTMLDivElement.h"
+#include "core/html/HTMLDivElement.h"
 
 namespace WebCore {
 

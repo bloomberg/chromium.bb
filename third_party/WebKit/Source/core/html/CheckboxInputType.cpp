@@ -30,11 +30,11 @@
  */
 
 #include "config.h"
-#include "CheckboxInputType.h"
+#include "core/html/CheckboxInputType.h"
 
-#include "HTMLInputElement.h"
-#include "InputTypeNames.h"
 #include "core/dom/KeyboardEvent.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/InputTypeNames.h"
 #include "core/platform/LocalizedStrings.h"
 #include <wtf/PassOwnPtr.h>
 

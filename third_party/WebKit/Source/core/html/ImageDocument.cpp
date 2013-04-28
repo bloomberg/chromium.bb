@@ -23,16 +23,16 @@
  */
 
 #include "config.h"
-#include "ImageDocument.h"
+#include "core/html/ImageDocument.h"
 
-#include "HTMLHtmlElement.h"
-#include "HTMLImageElement.h"
 #include "HTMLNames.h"
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/MouseEvent.h"
 #include "core/dom/RawDataDocumentParser.h"
+#include "core/html/HTMLHtmlElement.h"
+#include "core/html/HTMLImageElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"

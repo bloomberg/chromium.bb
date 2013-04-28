@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include "InputTypeNames.h"
+#include "core/html/InputTypeNames.h"
 
 namespace WebCore {
 

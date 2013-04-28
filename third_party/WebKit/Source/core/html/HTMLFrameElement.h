@@ -24,7 +24,7 @@
 #ifndef HTMLFrameElement_h
 #define HTMLFrameElement_h
 
-#include "HTMLFrameElementBase.h"
+#include "core/html/HTMLFrameElementBase.h"
 
 namespace WebCore {
 

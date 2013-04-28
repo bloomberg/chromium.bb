@@ -33,8 +33,8 @@
 #define HTMLDataListElement_h
 
 #if ENABLE(DATALIST_ELEMENT)
-#include "HTMLCollection.h"
-#include "HTMLElement.h"
+#include "core/html/HTMLCollection.h"
+#include "core/html/HTMLElement.h"
 
 namespace WebCore {
 

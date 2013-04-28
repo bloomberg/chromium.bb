@@ -22,7 +22,7 @@
  */
 
 #include "config.h"
-#include "HTMLFrameElementBase.h"
+#include "core/html/HTMLFrameElementBase.h"
 
 #include "HTMLNames.h"
 #include "bindings/v8/ScriptController.h"

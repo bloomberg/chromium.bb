@@ -29,11 +29,7 @@
 #include <libxml/parser.h>
 #include <libxml/parserInternals.h>
 #include <libxslt/xslt.h>
-#include "HTMLHtmlElement.h"
-#include "HTMLLinkElement.h"
 #include "HTMLNames.h"
-#include "HTMLStyleElement.h"
-#include "HTMLTemplateElement.h"
 #include "XMLNSNames.h"
 #include "bindings/v8/ScriptSourceCode.h"
 #include "bindings/v8/ScriptValue.h"
@@ -47,6 +43,10 @@
 #include "core/dom/ScriptElement.h"
 #include "core/dom/TransformSource.h"
 #include "core/dom/TreeDepthLimit.h"
+#include "core/html/HTMLHtmlElement.h"
+#include "core/html/HTMLLinkElement.h"
+#include "core/html/HTMLStyleElement.h"
+#include "core/html/HTMLTemplateElement.h"
 #include "core/html/parser/HTMLEntityParser.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/ImageLoader.h"

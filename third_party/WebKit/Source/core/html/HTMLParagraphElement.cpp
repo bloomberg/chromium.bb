@@ -21,7 +21,7 @@
  */
 
 #include "config.h"
-#include "HTMLParagraphElement.h"
+#include "core/html/HTMLParagraphElement.h"
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"

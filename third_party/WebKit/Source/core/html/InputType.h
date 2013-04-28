@@ -33,8 +33,8 @@
 #ifndef InputType_h
 #define InputType_h
 
-#include "HTMLTextFormControlElement.h"
-#include "StepRange.h"
+#include "core/html/HTMLTextFormControlElement.h"
+#include "core/html/StepRange.h"
 #include "core/page/UseCounter.h"
 #include <wtf/FastAllocBase.h>
 #include <wtf/Forward.h>

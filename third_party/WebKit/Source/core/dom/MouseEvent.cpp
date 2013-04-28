@@ -23,11 +23,11 @@
 #include "config.h"
 #include "core/dom/MouseEvent.h"
 
-#include "HTMLIFrameElement.h"
 #include "core/dom/Clipboard.h"
 #include "core/dom/EventDispatcher.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/EventRetargeter.h"
+#include "core/html/HTMLIFrameElement.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/platform/PlatformMouseEvent.h"

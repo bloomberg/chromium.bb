@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/accessibility/AccessibilityProgressIndicator.h"
 
-#include "HTMLProgressElement.h"
+#include "core/html/HTMLProgressElement.h"
 #include "core/platform/FloatConversion.h"
 #include "core/rendering/RenderProgress.h"
 

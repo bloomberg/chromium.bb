@@ -31,7 +31,7 @@
 #ifndef MeterShadowElement_h
 #define MeterShadowElement_h
 
-#include "HTMLDivElement.h"
+#include "core/html/HTMLDivElement.h"
 #include <wtf/Forward.h>
 
 namespace WebCore {

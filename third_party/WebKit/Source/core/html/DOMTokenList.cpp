@@ -23,7 +23,7 @@
  */
 
 #include "config.h"
-#include "DOMTokenList.h"
+#include "core/html/DOMTokenList.h"
 
 #include "core/dom/ExceptionCode.h"
 #include "core/html/parser/HTMLParserIdioms.h"

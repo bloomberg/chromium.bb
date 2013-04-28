@@ -20,16 +20,16 @@
 
 #include "config.h"
 
-#include "HTMLMeterElement.h"
+#include "core/html/HTMLMeterElement.h"
 
-#include "FormDataList.h"
-#include "HTMLFormElement.h"
 #include "HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/html/FormDataList.h"
+#include "core/html/HTMLFormElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/MeterShadowElement.h"
 #include "core/page/Page.h"

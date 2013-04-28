@@ -33,13 +33,13 @@
 #include "FrameLoaderClientImpl.h"
 
 #include "FrameNetworkingContextImpl.h"
-#include "HTMLAppletElement.h"
-#include "HTMLFormElement.h"  // needed by core/loader/FormState.h
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/MessageEvent.h"
 #include "core/dom/MouseEvent.h"
 #include "core/history/HistoryItem.h"
+#include "core/html/HTMLAppletElement.h"
+#include "core/html/HTMLFormElement.h"  // needed by core/loader/FormState.h
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FormState.h"
 #include "core/loader/FrameLoadRequest.h"

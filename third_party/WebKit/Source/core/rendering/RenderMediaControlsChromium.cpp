@@ -28,9 +28,9 @@
 #include "config.h"
 #include "core/rendering/RenderMediaControlsChromium.h"
 
-#include "HTMLMediaElement.h"
 #include "HTMLNames.h"
-#include "TimeRanges.h"
+#include "core/html/HTMLMediaElement.h"
+#include "core/html/TimeRanges.h"
 #include "core/platform/graphics/Gradient.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/PaintInfo.h"

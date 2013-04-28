@@ -21,7 +21,7 @@
  */
 
 #include "config.h"
-#include "HTMLMenuElement.h"
+#include "core/html/HTMLMenuElement.h"
 
 #include "HTMLNames.h"
 

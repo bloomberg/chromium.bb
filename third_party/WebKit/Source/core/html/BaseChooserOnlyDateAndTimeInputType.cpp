@@ -25,12 +25,12 @@
 
 #include "config.h"
 #if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-#include "BaseChooserOnlyDateAndTimeInputType.h"
+#include "core/html/BaseChooserOnlyDateAndTimeInputType.h"
 
-#include "HTMLDivElement.h"
-#include "HTMLInputElement.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/html/HTMLDivElement.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/page/Chrome.h"
 #include "core/page/Page.h"
 

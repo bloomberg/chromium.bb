@@ -24,12 +24,12 @@
 
 #include "core/xml/XSLTProcessor.h"
 
-#include "HTMLBodyElement.h"
-#include "HTMLDocument.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Text.h"
 #include "core/editing/markup.h"
+#include "core/html/HTMLBodyElement.h"
+#include "core/html/HTMLDocument.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/cache/CachedResourceLoader.h"

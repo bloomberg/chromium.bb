@@ -23,8 +23,6 @@
 #include "config.h"
 #include "core/xml/XMLHttpRequest.h"
 
-#include "DOMFormData.h"
-#include "HTMLDocument.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DOMImplementation.h"
@@ -37,6 +35,8 @@
 #include "core/editing/markup.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/File.h"
+#include "core/html/DOMFormData.h"
+#include "core/html/HTMLDocument.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/ScriptProfile.h"

@@ -31,9 +31,9 @@
 #include "config.h"
 #include "DOMUtilitiesPrivate.h"
 
-#include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "core/dom/Element.h"
+#include "core/html/HTMLInputElement.h"
 
 using namespace WebCore;
 using namespace WebCore::HTMLNames;

@@ -26,7 +26,6 @@
 #include "core/inspector/InspectorStyleSheet.h"
 
 #include "CSSPropertyNames.h"
-#include "HTMLHeadElement.h"
 #include "HTMLNames.h"
 #include "SVGNames.h"
 #include "core/css/CSSHostRule.h"
@@ -49,6 +48,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
+#include "core/html/HTMLHeadElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/ContentSearchUtils.h"
 #include "core/inspector/InspectorCSSAgent.h"

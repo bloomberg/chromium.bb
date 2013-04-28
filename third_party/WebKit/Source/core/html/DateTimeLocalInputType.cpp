@@ -29,16 +29,16 @@
  */
 
 #include "config.h"
-#include "DateTimeLocalInputType.h"
+#include "core/html/DateTimeLocalInputType.h"
 
-#include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "InputTypeNames.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/InputTypeNames.h"
 #include "core/platform/DateComponents.h"
 #include <wtf/PassOwnPtr.h>
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-#include "DateTimeFieldsState.h"
+#include "core/html/DateTimeFieldsState.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/PlatformLocale.h"
 #include <wtf/text/StringBuilder.h>

@@ -26,8 +26,8 @@
 #ifndef CSSCanvasValue_h
 #define CSSCanvasValue_h
 
-#include "HTMLCanvasElement.h"
 #include "core/css/CSSImageGeneratorValue.h"
+#include "core/html/HTMLCanvasElement.h"
 
 namespace WebCore {
 

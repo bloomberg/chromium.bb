@@ -26,17 +26,17 @@
  */
 
 #include "config.h"
-#include "HTMLCanvasElement.h"
+#include "core/html/HTMLCanvasElement.h"
 
 #include <math.h>
 #include <stdio.h>
 #include "HTMLNames.h"
-#include "ImageData.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/html/ImageData.h"
 #include "core/html/canvas/CanvasContextAttributes.h"
 #include "core/html/canvas/CanvasGradient.h"
 #include "core/html/canvas/CanvasPattern.h"

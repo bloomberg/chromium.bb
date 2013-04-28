@@ -22,10 +22,9 @@
  */
 
 #include "config.h"
-#include "HTMLBodyElement.h"
+#include "core/html/HTMLBodyElement.h"
 
 #include "CSSValueKeywords.h"
-#include "HTMLFrameElementBase.h"
 #include "HTMLNames.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/css/CSSImageValue.h"
@@ -33,6 +32,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/EventNames.h"
+#include "core/html/HTMLFrameElementBase.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"

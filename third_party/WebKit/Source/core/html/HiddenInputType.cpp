@@ -30,13 +30,13 @@
  */
 
 #include "config.h"
-#include "HiddenInputType.h"
+#include "core/html/HiddenInputType.h"
 
-#include "FormController.h"
-#include "FormDataList.h"
-#include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "InputTypeNames.h"
+#include "core/html/FormController.h"
+#include "core/html/FormDataList.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/InputTypeNames.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

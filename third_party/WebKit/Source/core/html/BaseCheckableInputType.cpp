@@ -30,13 +30,13 @@
  */
 
 #include "config.h"
-#include "BaseCheckableInputType.h"
+#include "core/html/BaseCheckableInputType.h"
 
-#include "FormController.h"
-#include "FormDataList.h"
-#include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "core/dom/KeyboardEvent.h"
+#include "core/html/FormController.h"
+#include "core/html/FormDataList.h"
+#include "core/html/HTMLInputElement.h"
 
 namespace WebCore {
 

@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "HTMLAllCollection.h"
+#include "core/html/HTMLAllCollection.h"
 
 #include "core/dom/Element.h"
 

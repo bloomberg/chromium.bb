@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "HTMLSelectElement.h"
+#include "core/html/HTMLSelectElement.h"
 
 #if OS(WINDOWS)
 

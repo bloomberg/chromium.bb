@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/accessibility/AccessibilityScrollView.h"
 
-#include "HTMLFrameOwnerElement.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/accessibility/AccessibilityScrollbar.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/FrameView.h"
 
 namespace WebCore {

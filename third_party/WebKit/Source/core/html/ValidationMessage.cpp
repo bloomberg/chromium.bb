@@ -29,19 +29,19 @@
  */
 
 #include "config.h"
-#include "ValidationMessage.h"
+#include "core/html/ValidationMessage.h"
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-#include "HTMLBRElement.h"
-#include "HTMLDivElement.h"
-#include "HTMLFormControlElement.h"
 #include "HTMLNames.h"
 #include "core/css/StyleResolver.h"
 #include "core/dom/ElementShadow.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/Text.h"
+#include "core/html/HTMLBRElement.h"
+#include "core/html/HTMLDivElement.h"
+#include "core/html/HTMLFormControlElement.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/page/ValidationMessageClient.h"

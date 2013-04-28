@@ -22,7 +22,6 @@
 #ifndef NodeRareData_h
 #define NodeRareData_h
 
-#include "DOMSettableTokenList.h"
 #include "HTMLNames.h"
 #include "core/dom/ChildNodeList.h"
 #include "core/dom/LiveNodeList.h"
@@ -30,6 +29,7 @@
 #include "core/dom/MutationObserverRegistration.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/TagNodeList.h"
+#include "core/html/DOMSettableTokenList.h"
 #include "core/html/track/TextTrack.h"
 #include "core/page/Page.h"
 #include <wtf/HashSet.h>

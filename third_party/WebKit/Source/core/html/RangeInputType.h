@@ -31,7 +31,7 @@
 #ifndef RangeInputType_h
 #define RangeInputType_h
 
-#include "InputType.h"
+#include "core/html/InputType.h"
 
 namespace WebCore {
 

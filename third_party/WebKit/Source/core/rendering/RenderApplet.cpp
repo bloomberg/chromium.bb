@@ -22,7 +22,7 @@
 #include "config.h"
 #include "core/rendering/RenderApplet.h"
 
-#include "HTMLAppletElement.h"
+#include "core/html/HTMLAppletElement.h"
 
 namespace WebCore {
 

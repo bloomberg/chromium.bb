@@ -26,7 +26,7 @@
 #ifndef HTMLDialogElement_h
 #define HTMLDialogElement_h
 
-#include "HTMLElement.h"
+#include "core/html/HTMLElement.h"
 
 namespace WebCore {
 

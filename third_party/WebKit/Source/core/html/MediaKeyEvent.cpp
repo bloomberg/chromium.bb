@@ -27,7 +27,7 @@
 
 #if ENABLE(ENCRYPTED_MEDIA)
 
-#include "MediaKeyEvent.h"
+#include "core/html/MediaKeyEvent.h"
 
 #include "core/dom/EventNames.h"
 #include <wtf/Uint8Array.h>

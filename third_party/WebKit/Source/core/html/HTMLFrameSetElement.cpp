@@ -22,7 +22,7 @@
  */
 
 #include "config.h"
-#include "HTMLFrameSetElement.h"
+#include "core/html/HTMLFrameSetElement.h"
 
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"

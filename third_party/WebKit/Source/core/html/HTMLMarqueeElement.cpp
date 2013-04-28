@@ -21,7 +21,7 @@
  */
 
 #include "config.h"
-#include "HTMLMarqueeElement.h"
+#include "core/html/HTMLMarqueeElement.h"
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"

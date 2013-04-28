@@ -23,12 +23,12 @@
 #include "core/loader/ImageLoader.h"
 
 #include "HTMLNames.h"
-#include "HTMLObjectElement.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Event.h"
 #include "core/dom/EventSender.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/html/HTMLObjectElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/CrossOriginAccessControl.h"

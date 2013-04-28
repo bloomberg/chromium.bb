@@ -31,7 +31,7 @@
 #ifndef URLInputType_h
 #define URLInputType_h
 
-#include "BaseTextInputType.h"
+#include "core/html/BaseTextInputType.h"
 
 namespace WebCore {
 

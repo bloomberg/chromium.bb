@@ -23,11 +23,8 @@
  */
 
 #include "config.h"
-#include "HTMLTextFormControlElement.h"
+#include "core/html/HTMLTextFormControlElement.h"
 
-#include "HTMLBRElement.h"
-#include "HTMLFormElement.h"
-#include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/accessibility/AXObjectCache.h"
@@ -40,6 +37,9 @@
 #include "core/dom/Text.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/TextIterator.h"
+#include "core/html/HTMLBRElement.h"
+#include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Frame.h"
 #include "core/page/UseCounter.h"

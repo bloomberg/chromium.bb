@@ -30,13 +30,13 @@
  */
 
 #include "config.h"
-#include "SubmitInputType.h"
+#include "core/html/SubmitInputType.h"
 
-#include "FormDataList.h"
-#include "HTMLFormElement.h"
-#include "HTMLInputElement.h"
-#include "InputTypeNames.h"
 #include "core/dom/Event.h"
+#include "core/html/FormDataList.h"
+#include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/InputTypeNames.h"
 #include "core/platform/LocalizedStrings.h"
 #include <wtf/PassOwnPtr.h>
 

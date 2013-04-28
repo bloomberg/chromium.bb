@@ -27,7 +27,6 @@
 #include "config.h"
 #include "EditorClientImpl.h"
 
-#include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "WebAutofillClient.h"
 #include "WebEditingAction.h"
@@ -52,6 +51,7 @@
 #include "core/editing/Editor.h"
 #include "core/editing/SpellChecker.h"
 #include "core/editing/UndoStep.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"

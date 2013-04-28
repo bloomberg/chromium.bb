@@ -21,7 +21,7 @@
 #ifndef HTMLMeterElement_h
 #define HTMLMeterElement_h
 
-#include "LabelableElement.h"
+#include "core/html/LabelableElement.h"
 
 namespace WebCore {
 

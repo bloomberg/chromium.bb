@@ -29,9 +29,9 @@
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-#include "HTMLDivElement.h"
 #include "HTMLNames.h"
 #include "core/dom/ScriptExecutionContext.h"
+#include "core/html/HTMLDivElement.h"
 #include "core/html/track/TextTrackCue.h"
 #include "core/platform/graphics/InbandTextTrackPrivateClient.h"
 #include "core/rendering/RenderObject.h"

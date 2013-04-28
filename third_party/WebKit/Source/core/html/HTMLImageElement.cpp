@@ -21,16 +21,16 @@
  */
 
 #include "config.h"
-#include "HTMLImageElement.h"
+#include "core/html/HTMLImageElement.h"
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-#include "HTMLDocument.h"
-#include "HTMLFormElement.h"
 #include "HTMLNames.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/EventNames.h"
+#include "core/html/HTMLDocument.h"
+#include "core/html/HTMLFormElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/page/FrameView.h"

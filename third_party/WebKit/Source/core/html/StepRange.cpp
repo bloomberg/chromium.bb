@@ -19,7 +19,7 @@
  */
 
 #include "config.h"
-#include "StepRange.h"
+#include "core/html/StepRange.h"
 
 #include "HTMLNames.h"
 #include "core/html/parser/HTMLParserIdioms.h"

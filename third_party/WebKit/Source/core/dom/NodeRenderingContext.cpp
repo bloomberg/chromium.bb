@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/dom/NodeRenderingContext.h"
 
-#include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "core/css/StyleResolver.h"
 #include "core/dom/ContainerNode.h"
@@ -35,6 +34,7 @@
 #include "core/dom/PseudoElement.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/Text.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/ContentDistributor.h"
 #include "core/html/shadow/HTMLContentElement.h"
 #include "core/html/shadow/HTMLShadowElement.h"

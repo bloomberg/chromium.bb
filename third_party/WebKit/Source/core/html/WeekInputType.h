@@ -31,8 +31,8 @@
 #ifndef WeekInputType_h
 #define WeekInputType_h
 
-#include "BaseChooserOnlyDateAndTimeInputType.h"
-#include "BaseMultipleFieldsDateAndTimeInputType.h"
+#include "core/html/BaseChooserOnlyDateAndTimeInputType.h"
+#include "core/html/BaseMultipleFieldsDateAndTimeInputType.h"
 
 namespace WebCore {
 

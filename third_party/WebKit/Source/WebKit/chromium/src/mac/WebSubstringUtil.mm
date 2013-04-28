@@ -35,7 +35,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "ColorMac.h"
-#include "HTMLElement.h"
 #include "WebFrameImpl.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -43,6 +42,7 @@
 #include "core/dom/Range.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/TextIterator.h"
+#include "core/html/HTMLElement.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/platform/graphics/Font.h"

@@ -29,8 +29,8 @@
 #include "config.h"
 #include "core/accessibility/AccessibilitySlider.h"
 
-#include "HTMLInputElement.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/SliderThumbElement.h"
 
 namespace WebCore {

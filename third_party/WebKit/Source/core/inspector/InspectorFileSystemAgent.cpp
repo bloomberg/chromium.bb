@@ -32,7 +32,6 @@
 
 #include "core/inspector/InspectorFileSystemAgent.h"
 
-#include "VoidCallback.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/Document.h"
 #include "core/dom/Event.h"
@@ -40,6 +39,7 @@
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileError.h"
 #include "core/fileapi/FileReader.h"
+#include "core/html/VoidCallback.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"

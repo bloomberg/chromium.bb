@@ -26,9 +26,7 @@
 #include "config.h"
 #include "core/editing/DeleteSelectionCommand.h"
 
-#include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "HTMLTextAreaElement.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/DocumentMarkerController.h"
@@ -39,6 +37,8 @@
 #include "core/editing/Editor.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/HTMLTextAreaElement.h"
 #include "core/page/EditorClient.h"
 #include "core/page/Frame.h"
 #include "core/rendering/RenderTableCell.h"

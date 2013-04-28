@@ -24,8 +24,8 @@
 #ifndef HTMLFormElement_h
 #define HTMLFormElement_h
 
-#include "HTMLElement.h"
 #include "core/dom/CheckedRadioButtons.h"
+#include "core/html/HTMLElement.h"
 #include "core/loader/FormState.h"
 #include "core/loader/FormSubmission.h"
 #include <wtf/OwnPtr.h>

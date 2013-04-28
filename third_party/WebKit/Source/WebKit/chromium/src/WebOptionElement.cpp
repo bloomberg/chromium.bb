@@ -32,8 +32,8 @@
 #include "WebOptionElement.h"
 
 #include "HTMLNames.h"
-#include "HTMLOptionElement.h"
-#include "HTMLSelectElement.h"
+#include "core/html/HTMLOptionElement.h"
+#include "core/html/HTMLSelectElement.h"
 #include <public/WebString.h>
 #include <wtf/PassRefPtr.h>
 

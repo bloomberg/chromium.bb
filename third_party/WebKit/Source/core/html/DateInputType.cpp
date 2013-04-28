@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "DateInputType.h"
+#include "core/html/DateInputType.h"
 
-#include "DateTimeFieldsState.h"
-#include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "InputTypeNames.h"
 #include "core/dom/KeyboardEvent.h"
+#include "core/html/DateTimeFieldsState.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/InputTypeNames.h"
 #include "core/html/shadow/PickerIndicatorElement.h"
 #include "core/platform/DateComponents.h"
 #include "core/platform/LocalizedStrings.h"

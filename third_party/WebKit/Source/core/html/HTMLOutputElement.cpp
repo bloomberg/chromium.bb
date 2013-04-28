@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "HTMLOutputElement.h"
+#include "core/html/HTMLOutputElement.h"
 
-#include "HTMLFormElement.h"
 #include "HTMLNames.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
+#include "core/html/HTMLFormElement.h"
 
 namespace WebCore {
 

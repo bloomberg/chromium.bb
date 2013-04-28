@@ -34,9 +34,9 @@
 
 #include "CalendarPicker.h"
 #include "ChromeClientImpl.h"
-#include "InputTypeNames.h"
 #include "PickerCommon.h"
 #include "WebViewImpl.h"
+#include "core/html/InputTypeNames.h"
 #include "core/page/FrameView.h"
 #include "core/platform/DateComponents.h"
 #include "core/platform/DateTimeChooserClient.h"

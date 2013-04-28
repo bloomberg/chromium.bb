@@ -24,10 +24,10 @@
 #ifndef LiveNodeList_h
 #define LiveNodeList_h
 
-#include "CollectionType.h"
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeList.h"
+#include "core/html/CollectionType.h"
 #include <wtf/Forward.h>
 #include <wtf/RefPtr.h>
 

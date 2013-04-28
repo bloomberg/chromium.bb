@@ -24,11 +24,9 @@
  */
 
 #include "config.h"
-#include "HTMLTextAreaElement.h"
+#include "core/html/HTMLTextAreaElement.h"
 
 #include "CSSValueKeywords.h"
-#include "FormController.h"
-#include "FormDataList.h"
 #include "HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/BeforeTextInsertedEvent.h"
@@ -43,6 +41,8 @@
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/TextIterator.h"
+#include "core/html/FormController.h"
+#include "core/html/FormDataList.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"

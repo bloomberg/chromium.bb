@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/page/ContextMenuController.h"
 
-#include "HTMLFormElement.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Event.h"
@@ -43,6 +42,7 @@
 #include "core/editing/TypingCommand.h"
 #include "core/editing/markup.h"
 #include "core/history/BackForwardController.h"
+#include "core/html/HTMLFormElement.h"
 #include "core/inspector/InspectorController.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FormState.h"

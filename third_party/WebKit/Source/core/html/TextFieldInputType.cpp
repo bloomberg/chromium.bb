@@ -30,10 +30,8 @@
  */
 
 #include "config.h"
-#include "TextFieldInputType.h"
+#include "core/html/TextFieldInputType.h"
 
-#include "FormDataList.h"
-#include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "core/dom/BeforeTextInsertedEvent.h"
 #include "core/dom/ElementShadow.h"
@@ -45,6 +43,8 @@
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/TextIterator.h"
+#include "core/html/FormDataList.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"

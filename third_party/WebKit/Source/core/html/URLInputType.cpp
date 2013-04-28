@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "URLInputType.h"
+#include "core/html/URLInputType.h"
 
-#include "HTMLInputElement.h"
-#include "InputTypeNames.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/InputTypeNames.h"
 #include "core/platform/KURL.h"
 #include "core/platform/LocalizedStrings.h"
 #include <wtf/PassOwnPtr.h>

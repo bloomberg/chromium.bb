@@ -29,8 +29,8 @@
 #include "config.h"
 #include "core/loader/FormState.h"
 
-#include "HTMLFormElement.h"
 #include "core/dom/Document.h"
+#include "core/html/HTMLFormElement.h"
 
 namespace WebCore {
 

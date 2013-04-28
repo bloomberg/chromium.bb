@@ -22,15 +22,15 @@
  */
 
 #include "config.h"
-#include "HTMLAnchorElement.h"
+#include "core/html/HTMLAnchorElement.h"
 
-#include "HTMLImageElement.h"
 #include "HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/KeyboardEvent.h"
 #include "core/dom/MouseEvent.h"
 #include "core/editing/FrameSelection.h"
+#include "core/html/HTMLImageElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"

@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "TextInputType.h"
+#include "core/html/TextInputType.h"
 
-#include "HTMLInputElement.h"
-#include "InputTypeNames.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/InputTypeNames.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

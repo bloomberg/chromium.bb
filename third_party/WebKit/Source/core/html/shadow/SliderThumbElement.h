@@ -32,8 +32,8 @@
 #ifndef SliderThumbElement_h
 #define SliderThumbElement_h
 
-#include "HTMLDivElement.h"
 #include "HTMLNames.h"
+#include "core/html/HTMLDivElement.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/style/RenderStyleConstants.h"

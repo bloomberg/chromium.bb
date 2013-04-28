@@ -23,12 +23,12 @@
 #include "core/rendering/RenderTheme.h"
 
 #include "CSSValueKeywords.h"
-#include "HTMLInputElement.h"
-#include "HTMLMeterElement.h"
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/editing/FrameSelection.h"
 #include "core/fileapi/FileList.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/HTMLMeterElement.h"
 #include "core/html/shadow/MediaControlElements.h"
 #include "core/html/shadow/SpinButtonElement.h"
 #include "core/html/shadow/TextControlInnerElements.h"
@@ -52,10 +52,10 @@
 #endif
 
 #if ENABLE(DATALIST_ELEMENT)
-#include "HTMLCollection.h"
-#include "HTMLDataListElement.h"
-#include "HTMLOptionElement.h"
 #include "core/dom/ElementShadow.h"
+#include "core/html/HTMLCollection.h"
+#include "core/html/HTMLDataListElement.h"
+#include "core/html/HTMLOptionElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #endif
 

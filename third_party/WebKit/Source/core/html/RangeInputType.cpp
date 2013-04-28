@@ -30,14 +30,10 @@
  */
 
 #include "config.h"
-#include "RangeInputType.h"
+#include "core/html/RangeInputType.h"
 
 #include <limits>
-#include "HTMLDivElement.h"
-#include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "InputTypeNames.h"
-#include "StepRange.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/ElementShadow.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
@@ -48,6 +44,10 @@
 #include "core/dom/Touch.h"
 #include "core/dom/TouchEvent.h"
 #include "core/dom/TouchList.h"
+#include "core/html/HTMLDivElement.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/InputTypeNames.h"
+#include "core/html/StepRange.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/SliderThumbElement.h"
 #include "core/platform/PlatformMouseEvent.h"
@@ -56,8 +56,8 @@
 #include <wtf/PassOwnPtr.h>
 
 #if ENABLE(DATALIST_ELEMENT)
-#include "HTMLDataListElement.h"
-#include "HTMLOptionElement.h"
+#include "core/html/HTMLDataListElement.h"
+#include "core/html/HTMLOptionElement.h"
 #include <wtf/NonCopyingSort.h>
 #endif
 

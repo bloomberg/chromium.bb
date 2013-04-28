@@ -32,9 +32,9 @@
 #define DateTimeInputType_h
 
 #if ENABLE(INPUT_TYPE_DATETIME_INCOMPLETE)
-#include "BaseChooserOnlyDateAndTimeInputType.h"
-#include "BaseDateAndTimeInputType.h"
-#include "BaseMultipleFieldsDateAndTimeInputType.h"
+#include "core/html/BaseChooserOnlyDateAndTimeInputType.h"
+#include "core/html/BaseDateAndTimeInputType.h"
+#include "core/html/BaseMultipleFieldsDateAndTimeInputType.h"
 
 namespace WebCore {
 

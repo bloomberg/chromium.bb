@@ -32,7 +32,7 @@
 #include "core/html/shadow/DetailsMarkerControl.h"
 
 #include "HTMLNames.h"
-#include "HTMLSummaryElement.h"
+#include "core/html/HTMLSummaryElement.h"
 #include "core/rendering/RenderDetailsMarker.h"
 
 namespace WebCore {

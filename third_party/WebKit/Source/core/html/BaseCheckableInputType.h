@@ -31,7 +31,7 @@
 #ifndef BaseCheckableInputType_h
 #define BaseCheckableInputType_h
 
-#include "InputType.h"
+#include "core/html/InputType.h"
 
 namespace WebCore {
 

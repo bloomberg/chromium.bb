@@ -29,8 +29,6 @@
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-#include "HTMLElement.h"
-#include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/StylePropertySet.h"
@@ -54,6 +52,8 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/editing/markup.h"
+#include "core/html/HTMLElement.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/page/Frame.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderObject.h"

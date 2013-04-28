@@ -20,15 +20,15 @@
  */
 
 #include "config.h"
-#include "HTMLMapElement.h"
+#include "core/html/HTMLMapElement.h"
 
-#include "HTMLAreaElement.h"
-#include "HTMLCollection.h"
-#include "HTMLImageElement.h"
 #include "HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/html/HTMLAreaElement.h"
+#include "core/html/HTMLCollection.h"
+#include "core/html/HTMLImageElement.h"
 #include "core/platform/graphics/IntSize.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderObject.h"

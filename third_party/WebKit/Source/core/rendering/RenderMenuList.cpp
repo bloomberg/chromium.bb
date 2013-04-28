@@ -27,14 +27,14 @@
 
 #include <math.h>
 #include "HTMLNames.h"
-#include "HTMLOptGroupElement.h"
-#include "HTMLOptionElement.h"
-#include "HTMLSelectElement.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/accessibility/AccessibilityMenuList.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/StyleResolver.h"
 #include "core/dom/NodeRenderStyle.h"
+#include "core/html/HTMLOptGroupElement.h"
+#include "core/html/HTMLOptionElement.h"
+#include "core/html/HTMLSelectElement.h"
 #include "core/page/Chrome.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"

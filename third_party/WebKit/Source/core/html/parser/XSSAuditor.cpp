@@ -27,11 +27,11 @@
 #include "config.h"
 #include "core/html/parser/XSSAuditor.h"
 
-#include "FormDataList.h"
 #include "HTMLNames.h"
-#include "HTMLParamElement.h"
 #include "XLinkNames.h"
 #include "core/dom/Document.h"
+#include "core/html/FormDataList.h"
+#include "core/html/HTMLParamElement.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLTokenizer.h"

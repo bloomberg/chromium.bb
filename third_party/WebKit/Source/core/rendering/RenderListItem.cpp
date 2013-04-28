@@ -25,7 +25,7 @@
 #include "core/rendering/RenderListItem.h"
 
 #include "HTMLNames.h"
-#include "HTMLOListElement.h"
+#include "core/html/HTMLOListElement.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderView.h"

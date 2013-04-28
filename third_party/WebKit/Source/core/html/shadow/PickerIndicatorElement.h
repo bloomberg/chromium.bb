@@ -32,7 +32,7 @@
 #define PickerIndicatorElement_h
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-#include "HTMLDivElement.h"
+#include "core/html/HTMLDivElement.h"
 #include "core/platform/DateTimeChooser.h"
 #include "core/platform/DateTimeChooserClient.h"
 #include <wtf/OwnPtr.h>

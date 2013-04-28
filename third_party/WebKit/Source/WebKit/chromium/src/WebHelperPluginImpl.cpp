@@ -31,7 +31,6 @@
 #include "config.h"
 #include "WebHelperPluginImpl.h"
 
-#include "HTMLPlugInElement.h"
 #include "PageWidgetDelegate.h"
 #include "WebDocument.h"
 #include "WebFrameImpl.h"
@@ -41,6 +40,7 @@
 #include "WebViewImpl.h"
 #include "WebWidgetClient.h"
 #include "core/dom/NodeList.h"
+#include "core/html/HTMLPlugInElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/EmptyClients.h"
 #include "core/page/FocusController.h"

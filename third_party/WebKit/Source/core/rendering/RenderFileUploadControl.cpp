@@ -22,12 +22,12 @@
 #include "core/rendering/RenderFileUploadControl.h"
 
 #include <math.h>
-#include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "core/dom/ElementShadow.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/fileapi/FileList.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GraphicsContext.h"

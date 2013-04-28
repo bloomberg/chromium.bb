@@ -28,11 +28,11 @@
 #include "core/rendering/RenderLayerCompositor.h"
 
 #include "CSSPropertyNames.h"
-#include "HTMLCanvasElement.h"
-#include "HTMLIFrameElement.h"
 #include "HTMLNames.h"
 #include "core/dom/NodeList.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/html/HTMLCanvasElement.h"
+#include "core/html/HTMLIFrameElement.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Chrome.h"

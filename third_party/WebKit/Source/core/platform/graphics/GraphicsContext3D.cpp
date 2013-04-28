@@ -30,8 +30,8 @@
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/cpu/arm/GraphicsContext3DNEON.h"
 
-#include "ImageData.h"
 #include "SkTypes.h"
+#include "core/html/ImageData.h"
 #include "core/html/canvas/CheckedInt.h"
 #include "core/platform/chromium/support/GraphicsContext3DPrivate.h"
 #include "core/platform/graphics/Extensions3D.h"

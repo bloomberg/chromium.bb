@@ -27,11 +27,11 @@
  */
 
 #include "config.h"
-#include "HTMLTableRowsCollection.h"
+#include "core/html/HTMLTableRowsCollection.h"
 
 #include "HTMLNames.h"
-#include "HTMLTableElement.h"
-#include "HTMLTableRowElement.h"
+#include "core/html/HTMLTableElement.h"
+#include "core/html/HTMLTableRowElement.h"
 
 namespace WebCore {
 

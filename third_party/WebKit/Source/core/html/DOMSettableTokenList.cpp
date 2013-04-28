@@ -23,7 +23,7 @@
  */
 
 #include "config.h"
-#include "DOMSettableTokenList.h"
+#include "core/html/DOMSettableTokenList.h"
 
 namespace WebCore {
 

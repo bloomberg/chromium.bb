@@ -22,11 +22,11 @@
  */
 
 #include "config.h"
-#include "HTMLFrameElement.h"
+#include "core/html/HTMLFrameElement.h"
 
-#include "HTMLFrameSetElement.h"
 #include "HTMLNames.h"
 #include "core/dom/Attribute.h"
+#include "core/html/HTMLFrameSetElement.h"
 #include "core/page/Frame.h"
 #include "core/rendering/RenderFrame.h"
 

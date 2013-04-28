@@ -19,11 +19,11 @@
  */
 
 #include "config.h"
-#include "FormController.h"
+#include "core/html/FormController.h"
 
-#include "HTMLFormControlElementWithState.h"
-#include "HTMLFormElement.h"
-#include "HTMLInputElement.h"
+#include "core/html/HTMLFormControlElementWithState.h"
+#include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/platform/FileChooser.h"
 #include <wtf/text/StringBuilder.h>
 

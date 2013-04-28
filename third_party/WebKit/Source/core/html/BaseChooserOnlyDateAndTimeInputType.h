@@ -27,8 +27,8 @@
 #define BaseChooserOnlyDateAndTimeInputType_h
 
 #if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-#include "BaseClickableWithKeyInputType.h"
-#include "BaseDateAndTimeInputType.h"
+#include "core/html/BaseClickableWithKeyInputType.h"
+#include "core/html/BaseDateAndTimeInputType.h"
 #include "core/platform/DateTimeChooser.h"
 #include "core/platform/DateTimeChooserClient.h"
 

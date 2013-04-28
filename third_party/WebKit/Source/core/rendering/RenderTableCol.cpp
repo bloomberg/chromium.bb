@@ -27,8 +27,8 @@
 #include "core/rendering/RenderTableCol.h"
 
 #include "HTMLNames.h"
-#include "HTMLTableColElement.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/html/HTMLTableColElement.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/rendering/RenderTable.h"
 #include "core/rendering/RenderTableCell.h"

@@ -31,8 +31,8 @@
 #ifndef HTMLTemplateElement_h
 #define HTMLTemplateElement_h
 
-#include "HTMLElement.h"
 #include "core/dom/DocumentFragment.h"
+#include "core/html/HTMLElement.h"
 
 namespace WebCore {
 

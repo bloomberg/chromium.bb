@@ -25,8 +25,8 @@
 #include "config.h"
 #include "core/html/parser/TextDocumentParser.h"
 
-#include "HTMLDocument.h"
 #include "HTMLNames.h"
+#include "core/html/HTMLDocument.h"
 #include "core/html/parser/HTMLTokenizer.h"
 #include "core/html/parser/HTMLTreeBuilder.h"
 

@@ -31,8 +31,8 @@
 #include "config.h"
 #include "WebLabelElement.h"
 
-#include "HTMLLabelElement.h"
 #include "HTMLNames.h"
+#include "core/html/HTMLLabelElement.h"
 #include <public/WebString.h>
 #include <wtf/PassRefPtr.h>
 

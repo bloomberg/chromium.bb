@@ -30,11 +30,11 @@
 #include "config.h"
 #include "core/inspector/InspectorFrontendHost.h"
 
-#include "HTMLFrameOwnerElement.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptFunctionCall.h"
 #include "core/dom/Element.h"
 #include "core/dom/UserGestureIndicator.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/InspectorAgent.h"
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorFrontendClient.h"

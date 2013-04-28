@@ -31,12 +31,12 @@
 #include "config.h"
 #include "WebFormElement.h"
 
-#include "HTMLFormControlElement.h"
-#include "HTMLFormElement.h"
-#include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "WebFormControlElement.h"
 #include "WebInputElement.h"
+#include "core/html/HTMLFormControlElement.h"
+#include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/loader/FormState.h"
 #include <public/WebString.h>
 #include <public/WebURL.h>

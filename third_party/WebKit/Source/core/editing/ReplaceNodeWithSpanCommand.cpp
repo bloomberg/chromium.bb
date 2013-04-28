@@ -31,9 +31,9 @@
 #include "config.h"
 #include "core/editing/ReplaceNodeWithSpanCommand.h"
 
-#include "HTMLElement.h"
 #include "HTMLNames.h"
 #include "core/editing/htmlediting.h"
+#include "core/html/HTMLElement.h"
 
 #include <wtf/Assertions.h>
 

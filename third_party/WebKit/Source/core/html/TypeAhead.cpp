@@ -26,7 +26,7 @@
  */
 
 #include "config.h"
-#include "TypeAhead.h"
+#include "core/html/TypeAhead.h"
 
 #include "core/dom/KeyboardEvent.h"
 #include <wtf/unicode/CharacterNames.h>

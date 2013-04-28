@@ -25,7 +25,7 @@
 #ifndef TextDocument_h
 #define TextDocument_h
 
-#include "HTMLDocument.h"
+#include "core/html/HTMLDocument.h"
 
 namespace WebCore {
 

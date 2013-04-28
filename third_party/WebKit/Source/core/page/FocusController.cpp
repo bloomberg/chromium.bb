@@ -28,8 +28,6 @@
 #include "core/page/FocusController.h"
 
 #include <limits>
-#include "HTMLAreaElement.h"
-#include "HTMLImageElement.h"
 #include "HTMLNames.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Document.h"
@@ -46,6 +44,8 @@
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/htmlediting.h" // For firstPositionInOrBeforeNode
+#include "core/html/HTMLAreaElement.h"
+#include "core/html/HTMLImageElement.h"
 #include "core/page/Chrome.h"
 #include "core/page/EditorClient.h"
 #include "core/page/EventHandler.h"

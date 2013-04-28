@@ -25,7 +25,6 @@
 #include "core/css/CSSComputedStyleDeclaration.h"
 
 #include "CSSPropertyNames.h"
-#include "HTMLFrameOwnerElement.h"
 #include "WebKitFontFamilyNames.h"
 #include "core/css/BasicShapeFunctions.h"
 #include "core/css/CSSAspectRatioValue.h"
@@ -54,6 +53,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/RuntimeCSSEnabled.h"
 #include "core/page/animation/AnimationController.h"
 #include "core/platform/graphics/FontFeatureSettings.h"

@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
 
-#include "HTMLElement.h"
 #include "InspectorFrontend.h"
+#include "core/html/HTMLElement.h"
 #include "core/inspector/InspectorAgent.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorDebuggerAgent.h"

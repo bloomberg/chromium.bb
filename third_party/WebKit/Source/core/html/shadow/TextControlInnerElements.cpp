@@ -27,9 +27,7 @@
 #include "config.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 
-#include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "HTMLTextAreaElement.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/BeforeTextInsertedEvent.h"
 #include "core/dom/Document.h"
@@ -37,6 +35,8 @@
 #include "core/dom/MouseEvent.h"
 #include "core/dom/TextEvent.h"
 #include "core/dom/TextEventInputType.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/HTMLTextAreaElement.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"

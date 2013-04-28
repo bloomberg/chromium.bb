@@ -27,10 +27,10 @@
 #include "core/page/Settings.h"
 
 #include <limits>
-#include "HTMLMediaElement.h"
 #include "core/dom/Document.h"
 #include "core/history/BackForwardController.h"
 #include "core/history/HistoryItem.h"
+#include "core/html/HTMLMediaElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/page/Frame.h"

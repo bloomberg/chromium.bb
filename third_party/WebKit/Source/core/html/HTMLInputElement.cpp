@@ -27,20 +27,11 @@
  */
 
 #include "config.h"
-#include "HTMLInputElement.h"
+#include "core/html/HTMLInputElement.h"
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-#include "FileInputType.h"
-#include "FormController.h"
-#include "HTMLCollection.h"
-#include "HTMLDataListElement.h"
-#include "HTMLFormElement.h"
-#include "HTMLImageLoader.h"
 #include "HTMLNames.h"
-#include "HTMLOptionElement.h"
-#include "InputType.h"
-#include "SearchInputType.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/css/StyleResolver.h"
@@ -58,6 +49,15 @@
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/fileapi/FileList.h"
+#include "core/html/FileInputType.h"
+#include "core/html/FormController.h"
+#include "core/html/HTMLCollection.h"
+#include "core/html/HTMLDataListElement.h"
+#include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLImageLoader.h"
+#include "core/html/HTMLOptionElement.h"
+#include "core/html/InputType.h"
+#include "core/html/SearchInputType.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/InsertionPoint.h"
 #include "core/page/Frame.h"
@@ -75,7 +75,7 @@
 #include <wtf/StdLibExtras.h>
 
 #if ENABLE(INPUT_TYPE_COLOR)
-#include "ColorInputType.h"
+#include "core/html/ColorInputType.h"
 #endif
 
 #if ENABLE(INPUT_SPEECH)

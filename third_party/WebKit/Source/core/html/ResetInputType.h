@@ -31,7 +31,7 @@
 #ifndef ResetInputType_h
 #define ResetInputType_h
 
-#include "BaseButtonInputType.h"
+#include "core/html/BaseButtonInputType.h"
 
 namespace WebCore {
 

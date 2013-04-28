@@ -19,10 +19,8 @@
  */
 
 #include "config.h"
-#include "HTMLPlugInImageElement.h"
+#include "core/html/HTMLPlugInImageElement.h"
 
-#include "HTMLDivElement.h"
-#include "HTMLImageLoader.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/css/StyleResolver.h"
 #include "core/dom/MouseEvent.h"
@@ -31,6 +29,8 @@
 #include "core/dom/NodeRenderingContext.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/Text.h"
+#include "core/html/HTMLDivElement.h"
+#include "core/html/HTMLImageLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Chrome.h"

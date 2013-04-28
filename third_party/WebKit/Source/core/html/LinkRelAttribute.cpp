@@ -30,7 +30,7 @@
  */
 
 #include "config.h"
-#include "LinkRelAttribute.h"
+#include "core/html/LinkRelAttribute.h"
 
 namespace WebCore {
 

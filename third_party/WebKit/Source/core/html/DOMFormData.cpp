@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "DOMFormData.h"
+#include "core/html/DOMFormData.h"
 
-#include "HTMLFormControlElement.h"
-#include "HTMLFormElement.h"
 #include "core/fileapi/Blob.h"
+#include "core/html/HTMLFormControlElement.h"
+#include "core/html/HTMLFormElement.h"
 #include "core/platform/text/TextEncoding.h"
 #include <wtf/text/WTFString.h>
 

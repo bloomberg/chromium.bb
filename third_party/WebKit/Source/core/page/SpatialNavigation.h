@@ -21,8 +21,8 @@
 #ifndef SpatialNavigation_h
 #define SpatialNavigation_h
 
-#include "HTMLFrameOwnerElement.h"
 #include "core/dom/Node.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/FocusDirection.h"
 #include "core/platform/graphics/LayoutRect.h"
 

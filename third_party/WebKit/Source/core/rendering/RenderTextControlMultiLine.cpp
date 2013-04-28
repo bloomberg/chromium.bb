@@ -23,8 +23,8 @@
 #include "core/rendering/RenderTextControlMultiLine.h"
 
 #include "HTMLNames.h"
-#include "HTMLTextAreaElement.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/html/HTMLTextAreaElement.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/page/Frame.h"
 #include "core/rendering/HitTestResult.h"

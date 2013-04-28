@@ -21,7 +21,7 @@
  */
 
 #include "config.h"
-#include "HTMLLIElement.h"
+#include "core/html/HTMLLIElement.h"
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"

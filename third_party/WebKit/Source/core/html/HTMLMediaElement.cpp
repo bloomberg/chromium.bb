@@ -24,22 +24,12 @@
  */
 
 #include "config.h"
-#include "HTMLMediaElement.h"
+#include "core/html/HTMLMediaElement.h"
 
 #include <limits>
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-#include "HTMLDocument.h"
 #include "HTMLNames.h"
-#include "HTMLSourceElement.h"
-#include "HTMLVideoElement.h"
-#include "MediaController.h"
-#include "MediaDocument.h"
-#include "MediaError.h"
-#include "MediaFragmentURIParser.h"
-#include "MediaKeyError.h"
-#include "MediaKeyEvent.h"
-#include "TimeRanges.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/css/MediaList.h"
@@ -56,6 +46,16 @@
 #include "core/dom/NodeRenderingContext.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/html/HTMLDocument.h"
+#include "core/html/HTMLSourceElement.h"
+#include "core/html/HTMLVideoElement.h"
+#include "core/html/MediaController.h"
+#include "core/html/MediaDocument.h"
+#include "core/html/MediaError.h"
+#include "core/html/MediaFragmentURIParser.h"
+#include "core/html/MediaKeyError.h"
+#include "core/html/MediaKeyEvent.h"
+#include "core/html/TimeRanges.h"
 #include "core/html/shadow/MediaControls.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
@@ -89,7 +89,7 @@
 #include <wtf/text/CString.h>
 #include <wtf/Uint8Array.h>
 
-#include "HTMLTrackElement.h"
+#include "core/html/HTMLTrackElement.h"
 #include "core/html/track/InbandTextTrack.h"
 #include "core/html/track/TextTrackCueList.h"
 #include "core/html/track/TextTrackList.h"

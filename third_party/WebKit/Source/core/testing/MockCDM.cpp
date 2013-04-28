@@ -29,7 +29,7 @@
 #if ENABLE(ENCRYPTED_MEDIA_V2)
 
 #include "CDM.h"
-#include "MediaKeyError.h"
+#include "core/html/MediaKeyError.h"
 #include <wtf/Uint8Array.h>
 
 namespace WebCore {

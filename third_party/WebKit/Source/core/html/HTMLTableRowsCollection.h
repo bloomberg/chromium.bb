@@ -29,7 +29,7 @@
 #ifndef HTMLTableRowsCollection_h
 #define HTMLTableRowsCollection_h
 
-#include "HTMLCollection.h"
+#include "core/html/HTMLCollection.h"
 
 namespace WebCore {
 

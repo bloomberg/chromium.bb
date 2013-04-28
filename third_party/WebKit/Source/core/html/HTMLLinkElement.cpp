@@ -23,7 +23,7 @@
  */
 
 #include "config.h"
-#include "HTMLLinkElement.h"
+#include "core/html/HTMLLinkElement.h"
 
 #include "HTMLNames.h"
 #include "bindings/v8/ScriptEventListener.h"

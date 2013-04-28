@@ -33,7 +33,7 @@
 #ifndef ImageInputType_h
 #define ImageInputType_h
 
-#include "BaseButtonInputType.h"
+#include "core/html/BaseButtonInputType.h"
 #include "core/platform/graphics/IntPoint.h"
 #include <wtf/OwnPtr.h>
 

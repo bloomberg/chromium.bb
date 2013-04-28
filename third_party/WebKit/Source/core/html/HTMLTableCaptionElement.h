@@ -26,7 +26,7 @@
 #ifndef HTMLTableCaptionElement_h
 #define HTMLTableCaptionElement_h
 
-#include "HTMLElement.h"
+#include "core/html/HTMLElement.h"
 
 namespace WebCore {
 

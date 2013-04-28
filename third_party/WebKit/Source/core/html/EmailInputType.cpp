@@ -22,10 +22,10 @@
  */
 
 #include "config.h"
-#include "EmailInputType.h"
+#include "core/html/EmailInputType.h"
 
-#include "HTMLInputElement.h"
-#include "InputTypeNames.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/InputTypeNames.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/RegularExpression.h"

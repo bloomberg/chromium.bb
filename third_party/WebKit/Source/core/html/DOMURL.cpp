@@ -26,14 +26,14 @@
 
 #include "config.h"
 
-#include "DOMURL.h"
+#include "core/html/DOMURL.h"
 
-#include "PublicURLManager.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/BlobURL.h"
 #include "core/fileapi/ThreadableBlobRegistry.h"
+#include "core/html/PublicURLManager.h"
 #include "core/loader/cache/MemoryCache.h"
 #include "core/page/SecurityOrigin.h"
 #include "core/platform/KURL.h"

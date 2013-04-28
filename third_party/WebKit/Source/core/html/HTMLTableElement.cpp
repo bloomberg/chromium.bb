@@ -23,15 +23,11 @@
  */
 
 #include "config.h"
-#include "HTMLTableElement.h"
+#include "core/html/HTMLTableElement.h"
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
-#include "HTMLTableCaptionElement.h"
-#include "HTMLTableRowElement.h"
-#include "HTMLTableRowsCollection.h"
-#include "HTMLTableSectionElement.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSValuePool.h"
@@ -40,6 +36,10 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/Text.h"
+#include "core/html/HTMLTableCaptionElement.h"
+#include "core/html/HTMLTableRowElement.h"
+#include "core/html/HTMLTableRowsCollection.h"
+#include "core/html/HTMLTableSectionElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/rendering/RenderTable.h"
 

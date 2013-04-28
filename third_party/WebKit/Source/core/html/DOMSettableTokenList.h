@@ -25,8 +25,8 @@
 #ifndef DOMSettableTokenList_h
 #define DOMSettableTokenList_h
 
-#include "DOMTokenList.h"
 #include "core/dom/SpaceSplitString.h"
+#include "core/html/DOMTokenList.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/text/AtomicString.h>

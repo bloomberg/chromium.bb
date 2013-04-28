@@ -22,12 +22,12 @@
  */
 
 #include "config.h"
-#include "ValidityState.h"
+#include "core/html/ValidityState.h"
 
-#include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "HTMLSelectElement.h"
-#include "HTMLTextAreaElement.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/HTMLSelectElement.h"
+#include "core/html/HTMLTextAreaElement.h"
 #include "core/html/parser/HTMLTreeBuilder.h"
 #include "core/platform/LocalizedStrings.h"
 #include <wtf/StdLibExtras.h>

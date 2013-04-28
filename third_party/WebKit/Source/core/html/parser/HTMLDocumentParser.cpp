@@ -26,10 +26,10 @@
 #include "config.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 
-#include "HTMLDocument.h"
 #include "HTMLNames.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Element.h"
+#include "core/html/HTMLDocument.h"
 #include "core/html/parser/AtomicHTMLToken.h"
 #include "core/html/parser/BackgroundHTMLParser.h"
 #include "core/html/parser/CompactHTMLToken.h"

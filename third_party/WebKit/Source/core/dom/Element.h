@@ -25,12 +25,12 @@
 #ifndef Element_h
 #define Element_h
 
-#include "CollectionType.h"
 #include "HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/dom/FragmentScriptingPermission.h"
 #include "core/dom/SpaceSplitString.h"
+#include "core/html/CollectionType.h"
 #include "core/platform/ScrollTypes.h"
 
 namespace WebCore {

@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "SearchInputType.h"
+#include "core/html/SearchInputType.h"
 
-#include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "InputTypeNames.h"
 #include "core/dom/KeyboardEvent.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/InputTypeNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/rendering/RenderSearchField.h"
 #include <wtf/PassOwnPtr.h>

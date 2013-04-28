@@ -20,13 +20,13 @@
  */
 
 #include "config.h"
-#include "HTMLImageLoader.h"
+#include "core/html/HTMLImageLoader.h"
 
 #include "HTMLNames.h"
-#include "HTMLObjectElement.h"
 #include "core/dom/Element.h"
 #include "core/dom/Event.h"
 #include "core/dom/EventNames.h"
+#include "core/html/HTMLObjectElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/page/Settings.h"

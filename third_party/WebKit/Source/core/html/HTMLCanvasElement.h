@@ -28,7 +28,7 @@
 #ifndef HTMLCanvasElement_h
 #define HTMLCanvasElement_h
 
-#include "HTMLElement.h"
+#include "core/html/HTMLElement.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/IntSize.h"
 #include <wtf/Forward.h>

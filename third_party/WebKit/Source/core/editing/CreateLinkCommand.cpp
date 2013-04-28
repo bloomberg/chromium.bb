@@ -28,7 +28,7 @@
 #include "core/editing/CreateLinkCommand.h"
 #include "core/editing/htmlediting.h"
 
-#include "HTMLAnchorElement.h"
+#include "core/html/HTMLAnchorElement.h"
 
 namespace WebCore {
 

@@ -22,7 +22,7 @@
  */
 
 #include "config.h"
-#include "HTMLHtmlElement.h"
+#include "core/html/HTMLHtmlElement.h"
 
 #include "HTMLNames.h"
 #include "core/dom/Document.h"

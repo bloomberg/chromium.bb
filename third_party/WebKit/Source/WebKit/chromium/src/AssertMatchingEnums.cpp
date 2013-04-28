@@ -33,8 +33,6 @@
 
 #include "config.h"
 
-#include "HTMLFormElement.h"
-#include "HTMLInputElement.h"
 #include "WebAccessibilityNotification.h"
 #include "WebAccessibilityObject.h"
 #include "WebApplicationCacheHost.h"
@@ -76,6 +74,8 @@
 #include "core/editing/EditorInsertAction.h"
 #include "core/editing/TextAffinity.h"
 #include "core/fileapi/FileError.h"
+#include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/page/ContentSecurityPolicy.h"

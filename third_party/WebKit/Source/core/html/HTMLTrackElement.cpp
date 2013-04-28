@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-#include "HTMLTrackElement.h"
+#include "core/html/HTMLTrackElement.h"
 
-#include "HTMLMediaElement.h"
 #include "HTMLNames.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/dom/Event.h"
+#include "core/html/HTMLMediaElement.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/RuntimeEnabledFeatures.h"

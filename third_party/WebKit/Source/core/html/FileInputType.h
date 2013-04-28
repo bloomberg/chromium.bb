@@ -32,7 +32,7 @@
 #ifndef FileInputType_h
 #define FileInputType_h
 
-#include "BaseClickableWithKeyInputType.h"
+#include "core/html/BaseClickableWithKeyInputType.h"
 #include "core/platform/FileChooser.h"
 #include "core/platform/FileIconLoader.h"
 #include <wtf/RefPtr.h>

@@ -26,8 +26,8 @@
 #ifndef HTMLViewSourceParser_h
 #define HTMLViewSourceParser_h
 
-#include "HTMLViewSourceDocument.h"
 #include "core/dom/DecodedDataDocumentParser.h"
+#include "core/html/HTMLViewSourceDocument.h"
 #include "core/html/parser/HTMLInputStream.h"
 #include "core/html/parser/HTMLSourceTracker.h"
 #include "core/html/parser/HTMLToken.h"

@@ -27,7 +27,7 @@
 #ifndef HTMLAudioElement_h
 #define HTMLAudioElement_h
 
-#include "HTMLMediaElement.h"
+#include "core/html/HTMLMediaElement.h"
 
 namespace WebCore {
 

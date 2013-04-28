@@ -31,12 +31,12 @@
 #include "config.h"
 #include "core/dom/DocumentOrderedMap.h"
 
-#include "HTMLMapElement.h"
 #include "HTMLNames.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/TreeScope.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/html/HTMLMapElement.h"
 #include <wtf/MemoryInstrumentationHashCountedSet.h>
 #include <wtf/MemoryInstrumentationHashMap.h>
 

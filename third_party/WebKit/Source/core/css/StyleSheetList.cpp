@@ -22,10 +22,10 @@
 #include "core/css/StyleSheetList.h"
 
 #include "HTMLNames.h"
-#include "HTMLStyleElement.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
+#include "core/html/HTMLStyleElement.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

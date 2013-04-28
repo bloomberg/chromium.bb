@@ -21,7 +21,7 @@
  */
 
 #include "config.h"
-#include "HTMLPlugInElement.h"
+#include "core/html/HTMLPlugInElement.h"
 
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"

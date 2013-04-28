@@ -28,7 +28,6 @@
 #ifndef Document_h
 #define Document_h
 
-#include "CollectionType.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/DOMTimeStamp.h"
 #include "core/dom/DocumentEventQueue.h"
@@ -40,6 +39,7 @@
 #include "core/dom/TreeScope.h"
 #include "core/dom/UserActionElementSet.h"
 #include "core/dom/ViewportArguments.h"
+#include "core/html/CollectionType.h"
 #include "core/inspector/InspectorCounters.h"
 #include "core/page/FocusDirection.h"
 #include "core/page/PageVisibilityState.h"

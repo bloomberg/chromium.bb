@@ -22,9 +22,9 @@
 #include "config.h"
 #include "core/rendering/RenderTextControl.h"
 
-#include "HTMLTextFormControlElement.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisiblePosition.h"
+#include "core/html/HTMLTextFormControlElement.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderText.h"

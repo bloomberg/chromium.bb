@@ -30,7 +30,6 @@
 #include "core/css/ElementRuleCollector.h"
 
 #include "CSSValueKeywords.h"
-#include "HTMLElement.h"
 #include "core/css/CSSDefaultStyleSheets.h"
 #include "core/css/CSSRule.h"
 #include "core/css/CSSRuleList.h"
@@ -40,6 +39,7 @@
 #include "core/css/SiblingTraversalStrategies.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/StyledElement.h"
+#include "core/html/HTMLElement.h"
 #include "core/rendering/RenderRegion.h"
 #include "core/svg/SVGElement.h"
 

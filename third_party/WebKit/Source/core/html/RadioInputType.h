@@ -31,7 +31,7 @@
 #ifndef RadioInputType_h
 #define RadioInputType_h
 
-#include "BaseCheckableInputType.h"
+#include "core/html/BaseCheckableInputType.h"
 
 namespace WebCore {
 

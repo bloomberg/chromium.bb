@@ -21,7 +21,7 @@
  */
 
 #include "config.h"
-#include "HTMLFontElement.h"
+#include "core/html/HTMLFontElement.h"
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"

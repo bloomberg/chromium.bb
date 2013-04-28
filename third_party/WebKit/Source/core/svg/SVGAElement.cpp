@@ -25,7 +25,6 @@
 #if ENABLE(SVG)
 #include "core/svg/SVGAElement.h"
 
-#include "HTMLAnchorElement.h"
 #include "SVGNames.h"
 #include "XLinkNames.h"
 #include "core/dom/Attr.h"
@@ -35,6 +34,7 @@
 #include "core/dom/KeyboardEvent.h"
 #include "core/dom/MouseEvent.h"
 #include "core/dom/NodeRenderingContext.h"
+#include "core/html/HTMLAnchorElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderTypes.h"

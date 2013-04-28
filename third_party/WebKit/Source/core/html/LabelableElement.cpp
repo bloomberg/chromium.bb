@@ -23,10 +23,10 @@
  */
 
 #include "config.h"
-#include "LabelableElement.h"
+#include "core/html/LabelableElement.h"
 
-#include "LabelsNodeList.h"
 #include "core/dom/NodeRareData.h"
+#include "core/html/LabelsNodeList.h"
 #include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {

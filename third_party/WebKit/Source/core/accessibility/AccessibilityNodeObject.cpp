@@ -29,16 +29,16 @@
 #include "config.h"
 #include "core/accessibility/AccessibilityNodeObject.h"
 
-#include "HTMLFormElement.h"
-#include "HTMLFrameElementBase.h"
-#include "HTMLInputElement.h"
-#include "HTMLLabelElement.h"
-#include "HTMLSelectElement.h"
-#include "HTMLTextAreaElement.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Text.h"
 #include "core/dom/UserGestureIndicator.h"
+#include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLFrameElementBase.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/HTMLLabelElement.h"
+#include "core/html/HTMLSelectElement.h"
+#include "core/html/HTMLTextAreaElement.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/unicode/CharacterNames.h>

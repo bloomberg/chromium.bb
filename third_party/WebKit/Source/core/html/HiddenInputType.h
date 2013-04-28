@@ -31,7 +31,7 @@
 #ifndef HiddenInputType_h
 #define HiddenInputType_h
 
-#include "InputType.h"
+#include "core/html/InputType.h"
 
 namespace WebCore {
 

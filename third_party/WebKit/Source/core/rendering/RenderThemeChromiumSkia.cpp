@@ -25,11 +25,11 @@
 #include "core/rendering/RenderThemeChromiumSkia.h"
 
 #include "CSSValueKeywords.h"
-#include "HTMLMediaElement.h"
 #include "HTMLNames.h"
 #include "PlatformContextSkia.h"
-#include "TimeRanges.h"
 #include "UserAgentStyleSheets.h"
+#include "core/html/HTMLMediaElement.h"
+#include "core/html/TimeRanges.h"
 #include "core/html/shadow/MediaControlElements.h"
 #include "core/platform/LayoutTestSupport.h"
 #include "core/platform/ScrollbarTheme.h"

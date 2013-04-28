@@ -24,7 +24,7 @@
 #ifndef HTMLOptionsCollection_h
 #define HTMLOptionsCollection_h
 
-#include "HTMLCollection.h"
+#include "core/html/HTMLCollection.h"
 
 namespace WebCore {
 

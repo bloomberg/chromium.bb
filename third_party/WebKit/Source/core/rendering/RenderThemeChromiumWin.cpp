@@ -30,10 +30,10 @@
 #include <vssym32.h>
 
 #include "CSSValueKeywords.h"
-#include "HTMLMediaElement.h"
 #include "HTMLNames.h"
 #include "PlatformContextSkia.h"
 #include "SystemInfo.h"
+#include "core/html/HTMLMediaElement.h"
 #include "core/html/shadow/MediaControlElements.h"
 #include "core/platform/LayoutTestSupport.h"
 #include "core/platform/ScrollbarTheme.h"

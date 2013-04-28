@@ -24,7 +24,6 @@
 #include "config.h"
 #include "core/rendering/RenderBlock.h"
 
-#include "HTMLFormElement.h"
 #include "HTMLNames.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Document.h"
@@ -34,6 +33,7 @@
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
+#include "core/html/HTMLFormElement.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"

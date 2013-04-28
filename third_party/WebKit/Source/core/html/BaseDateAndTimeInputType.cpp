@@ -29,12 +29,12 @@
  */
 
 #include "config.h"
-#include "BaseDateAndTimeInputType.h"
+#include "core/html/BaseDateAndTimeInputType.h"
 
 #include <limits>
-#include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "core/dom/KeyboardEvent.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/platform/text/PlatformLocale.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/DateMath.h>

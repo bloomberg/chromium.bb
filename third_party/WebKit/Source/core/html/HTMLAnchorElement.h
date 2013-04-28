@@ -24,8 +24,8 @@
 #ifndef HTMLAnchorElement_h
 #define HTMLAnchorElement_h
 
-#include "HTMLElement.h"
 #include "HTMLNames.h"
+#include "core/html/HTMLElement.h"
 #include "core/platform/LinkHash.h"
 
 namespace WebCore {

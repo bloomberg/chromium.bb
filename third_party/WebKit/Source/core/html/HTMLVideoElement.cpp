@@ -24,15 +24,15 @@
  */
 
 #include "config.h"
-#include "HTMLVideoElement.h"
+#include "core/html/HTMLVideoElement.h"
 
 #include "CSSPropertyNames.h"
-#include "HTMLImageLoader.h"
 #include "HTMLNames.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/html/HTMLImageLoader.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"

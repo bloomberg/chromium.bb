@@ -23,7 +23,7 @@
  */
 
 #include "config.h"
-#include "ClassList.h"
+#include "core/html/ClassList.h"
 
 #include "core/dom/SpaceSplitString.h"
 #include "core/html/parser/HTMLParserIdioms.h"

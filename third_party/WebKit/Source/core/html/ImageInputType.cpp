@@ -21,15 +21,15 @@
  */
 
 #include "config.h"
-#include "ImageInputType.h"
+#include "core/html/ImageInputType.h"
 
-#include "FormDataList.h"
-#include "HTMLFormElement.h"
-#include "HTMLImageLoader.h"
-#include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "InputTypeNames.h"
 #include "core/dom/MouseEvent.h"
+#include "core/html/FormDataList.h"
+#include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLImageLoader.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/InputTypeNames.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/rendering/RenderImage.h"

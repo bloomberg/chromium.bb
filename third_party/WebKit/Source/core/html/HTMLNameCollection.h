@@ -23,7 +23,7 @@
 #ifndef HTMLNameCollection_h
 #define HTMLNameCollection_h
 
-#include "HTMLCollection.h"
+#include "core/html/HTMLCollection.h"
 
 #include <wtf/text/AtomicString.h>
 

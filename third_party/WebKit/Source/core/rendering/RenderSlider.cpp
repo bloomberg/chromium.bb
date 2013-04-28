@@ -22,9 +22,7 @@
 #include "core/rendering/RenderSlider.h"
 
 #include "CSSPropertyNames.h"
-#include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "StepRange.h"
 #include "core/css/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/Event.h"
@@ -32,6 +30,8 @@
 #include "core/dom/MouseEvent.h"
 #include "core/dom/Node.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/StepRange.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/MediaControlElements.h"
 #include "core/html/shadow/SliderThumbElement.h"

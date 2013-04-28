@@ -31,8 +31,8 @@
 #ifndef DateInputType_h
 #define DateInputType_h
 
-#include "BaseChooserOnlyDateAndTimeInputType.h"
-#include "BaseMultipleFieldsDateAndTimeInputType.h"
+#include "core/html/BaseChooserOnlyDateAndTimeInputType.h"
+#include "core/html/BaseMultipleFieldsDateAndTimeInputType.h"
 #include <wtf/RefPtr.h>
 
 namespace WebCore {

@@ -24,7 +24,7 @@
 #ifndef HTMLHtmlElement_h
 #define HTMLHtmlElement_h
 
-#include "HTMLElement.h"
+#include "core/html/HTMLElement.h"
 
 namespace WebCore {
 

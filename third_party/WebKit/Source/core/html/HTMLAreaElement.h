@@ -23,7 +23,7 @@
 #ifndef HTMLAreaElement_h
 #define HTMLAreaElement_h
 
-#include "HTMLAnchorElement.h"
+#include "core/html/HTMLAnchorElement.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include <wtf/OwnArrayPtr.h>
 

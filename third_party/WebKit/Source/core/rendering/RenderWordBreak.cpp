@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/rendering/RenderWordBreak.h"
 
-#include "HTMLElement.h"
+#include "core/html/HTMLElement.h"
 
 namespace WebCore {
 

@@ -30,11 +30,11 @@
  */
 
 #include "config.h"
-#include "PasswordInputType.h"
+#include "core/html/PasswordInputType.h"
 
-#include "FormController.h"
-#include "HTMLInputElement.h"
-#include "InputTypeNames.h"
+#include "core/html/FormController.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/InputTypeNames.h"
 #include <wtf/Assertions.h>
 #include <wtf/PassOwnPtr.h>
 

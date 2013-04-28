@@ -26,7 +26,7 @@
 #ifndef MediaPlayerPrivate_h
 #define MediaPlayerPrivate_h
 
-#include "TimeRanges.h"
+#include "core/html/TimeRanges.h"
 #include "core/platform/graphics/MediaPlayer.h"
 #include <wtf/Forward.h>
 

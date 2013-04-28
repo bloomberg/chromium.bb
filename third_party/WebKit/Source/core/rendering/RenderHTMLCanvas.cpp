@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/rendering/RenderHTMLCanvas.h"
 
-#include "HTMLCanvasElement.h"
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
+#include "core/html/HTMLCanvasElement.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"

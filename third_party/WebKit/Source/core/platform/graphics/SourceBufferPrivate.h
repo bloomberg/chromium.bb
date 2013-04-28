@@ -30,7 +30,7 @@
 #ifndef SourceBufferPrivate_h
 #define SourceBufferPrivate_h
 
-#include "TimeRanges.h"
+#include "core/html/TimeRanges.h"
 
 namespace WebCore {
 

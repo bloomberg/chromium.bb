@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/editing/IndentOutdentCommand.h"
 
-#include "HTMLElement.h"
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Range.h"
@@ -37,6 +36,7 @@
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
+#include "core/html/HTMLElement.h"
 #include "core/rendering/RenderObject.h"
 #include <wtf/StdLibExtras.h>
 

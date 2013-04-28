@@ -27,10 +27,10 @@
 #include "config.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 
-#include "HTMLElement.h"
-#include "HTMLFrameOwnerElement.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
+#include "core/html/HTMLElement.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"

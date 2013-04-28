@@ -33,12 +33,12 @@
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-#include "HTMLInputElement.h"
 #include "core/css/StyleResolver.h"
 #include "core/dom/ElementShadow.h"
 #include "core/dom/Event.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/HTMLShadowElement.h"
 #include "core/rendering/RenderImage.h"
 

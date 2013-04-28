@@ -29,7 +29,6 @@
 
 #include <stdio.h>
 #include <algorithm>
-#include "HTMLElement.h"
 #include "HTMLNames.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/css/StyleResolver.h"
@@ -37,6 +36,7 @@
 #include "core/editing/EditingBoundary.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/htmlediting.h"
+#include "core/html/HTMLElement.h"
 #include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"

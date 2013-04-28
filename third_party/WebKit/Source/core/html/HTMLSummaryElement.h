@@ -21,7 +21,7 @@
 #ifndef HTMLSummaryElement_h
 #define HTMLSummaryElement_h
 
-#include "HTMLElement.h"
+#include "core/html/HTMLElement.h"
 
 namespace WebCore {
 

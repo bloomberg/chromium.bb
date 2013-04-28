@@ -22,8 +22,8 @@
 
 #include "core/rendering/RenderMeter.h"
 
-#include "HTMLMeterElement.h"
 #include "HTMLNames.h"
+#include "core/html/HTMLMeterElement.h"
 #include "core/rendering/RenderTheme.h"
 
 using namespace std;

@@ -24,14 +24,14 @@
  */
 
 #include "config.h"
-#include "RadioNodeList.h"
+#include "core/html/RadioNodeList.h"
 
-#include "HTMLFormElement.h"
-#include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "HTMLObjectElement.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeRareData.h"
+#include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLInputElement.h"
+#include "core/html/HTMLObjectElement.h"
 
 namespace WebCore {
 

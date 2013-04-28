@@ -25,7 +25,6 @@
 #include "core/dom/ScriptElement.h"
 
 #include "HTMLNames.h"
-#include "HTMLScriptElement.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptSourceCode.h"
 #include "bindings/v8/ScriptValue.h"
@@ -36,6 +35,7 @@
 #include "core/dom/ScriptRunner.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/dom/Text.h"
+#include "core/html/HTMLScriptElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/CrossOriginAccessControl.h"

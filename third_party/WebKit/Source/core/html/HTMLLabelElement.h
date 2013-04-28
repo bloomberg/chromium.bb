@@ -24,8 +24,8 @@
 #ifndef HTMLLabelElement_h
 #define HTMLLabelElement_h
 
-#include "HTMLElement.h"
-#include "LabelableElement.h"
+#include "core/html/HTMLElement.h"
+#include "core/html/LabelableElement.h"
 
 namespace WebCore {
 

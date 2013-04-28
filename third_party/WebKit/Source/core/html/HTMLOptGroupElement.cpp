@@ -23,14 +23,14 @@
  */
 
 #include "config.h"
-#include "HTMLOptGroupElement.h"
+#include "core/html/HTMLOptGroupElement.h"
 
 #include "HTMLNames.h"
-#include "HTMLSelectElement.h"
 #include "core/css/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/NodeRenderingContext.h"
+#include "core/html/HTMLSelectElement.h"
 #include "core/rendering/RenderMenuList.h"
 #include <wtf/StdLibExtras.h>
 

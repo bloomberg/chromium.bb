@@ -31,9 +31,9 @@
 #include "config.h"
 #include "core/platform/image-encoders/skia/WEBPImageEncoder.h"
 
-#include "ImageData.h"
 #include "SkBitmap.h"
 #include "SkColorPriv.h"
+#include "core/html/ImageData.h"
 #include "core/platform/graphics/IntSize.h"
 #include "webp/encode.h"
 
