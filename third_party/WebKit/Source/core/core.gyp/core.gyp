@@ -46,7 +46,6 @@
 
     'webcore_include_dirs': [
       '../..',
-      '<(INTERMEDIATE_DIR)',
       '<(SHARED_INTERMEDIATE_DIR)/webkit',
       '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
     ],
@@ -274,7 +273,6 @@
         '<(libjpeg_gyp_path):libjpeg',
       ],
       'include_dirs': [
-        '<(INTERMEDIATE_DIR)',
         # FIXME:  Remove <(SHARED_INTERMEDIATE_DIR)/webcore when we
         # can entice gyp into letting us put both the .cpp and .h
         # files in the same output directory.
