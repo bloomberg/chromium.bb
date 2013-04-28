@@ -35,11 +35,11 @@
 #include <windows.h>
 #include <mlang.h>
 #include <objidl.h>
-#include "HWndDC.h"
 #include "SkTypeface_win.h"
 #include "SkiaFontWin.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/FontCache.h"
+#include "core/platform/win/HWndDC.h"
 #include <public/Platform.h>
 #include <public/win/WebSandboxSupport.h>
 #include <wtf/StdLibExtras.h>

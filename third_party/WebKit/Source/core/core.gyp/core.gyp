@@ -61,17 +61,8 @@
           # FIXME: Eliminate dependency on platform/graphics/mac and
           # related directories.
           # platform/graphics/cg may need to stick around, though.
-          '../platform/audio/mac',
-          '../platform/graphics/cocoa',
           '../platform/graphics/mac',
           '../platform/mac',
-          '../platform/text/mac',
-        ],
-      }],
-      ['OS=="win"', {
-        'webcore_include_dirs': [
-          '../platform/text/win',
-          '../platform/win',
         ],
       }],
       ['OS=="android" and use_openmax_dl_fft!=0', {

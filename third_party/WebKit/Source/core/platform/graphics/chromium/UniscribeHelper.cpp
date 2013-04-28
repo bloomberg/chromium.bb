@@ -32,12 +32,12 @@
 #include "core/platform/graphics/chromium/UniscribeHelper.h"
 
 #include <windows.h>
-#include "HWndDC.h"
 #include "PlatformContextSkia.h"
 #include "SkPoint.h"
 #include "SkiaFontWin.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/chromium/FontUtilsChromiumWin.h"
+#include "core/platform/win/HWndDC.h"
 #include <wtf/Assertions.h>
 
 namespace WebCore {

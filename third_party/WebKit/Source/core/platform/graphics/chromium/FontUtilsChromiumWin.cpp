@@ -35,8 +35,8 @@
 
 #include <unicode/locid.h>
 #include <unicode/uchar.h>
-#include "HWndDC.h"
 #include "core/platform/graphics/chromium/UniscribeHelper.h"
+#include "core/platform/win/HWndDC.h"
 #include <wtf/HashMap.h>
 #include <wtf/text/StringHash.h>
 #include <wtf/text/WTFString.h>

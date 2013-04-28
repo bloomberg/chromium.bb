@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "LocaleWin.h"
+#include "core/platform/text/win/LocaleWin.h"
 
 #include <windows.h>
 #include <limits>

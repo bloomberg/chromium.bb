@@ -31,8 +31,8 @@
 #include "config.h"
 #include "WebScreenInfoFactory.h"
 
-#include "HWndDC.h"
 #include "WebScreenInfo.h"
+#include "core/platform/win/HWndDC.h"
 
 #include <windows.h>
 

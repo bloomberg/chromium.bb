@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "LocaleMac.h"
+#include "core/platform/text/mac/LocaleMac.h"
 
 #import <Foundation/NSDateFormatter.h>
 #import <Foundation/NSLocale.h>
