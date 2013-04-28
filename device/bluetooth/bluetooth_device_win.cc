@@ -71,18 +71,6 @@ std::string BluetoothDeviceWin::GetAddress() const {
   return address_;
 }
 
-uint16 BluetoothDeviceWin::GetVendorID() const {
-  return 0;
-}
-
-uint16 BluetoothDeviceWin::GetProductID() const {
-  return 0;
-}
-
-uint16 BluetoothDeviceWin::GetDeviceID() const {
-  return 0;
-}
-
 bool BluetoothDeviceWin::IsPaired() const {
   return paired_;
 }

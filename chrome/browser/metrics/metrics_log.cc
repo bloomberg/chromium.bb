@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
@@ -45,9 +44,6 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/gpu_info.h"
-#include "device/bluetooth/bluetooth_adapter.h"
-#include "device/bluetooth/bluetooth_adapter_factory.h"
-#include "device/bluetooth/bluetooth_device.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/screen.h"
 #include "webkit/plugins/webplugininfo.h"
@@ -73,7 +69,6 @@ using metrics::SystemProfileProto;
 using tracked_objects::ProcessDataSnapshot;
 typedef chrome_variations::ActiveGroupId ActiveGroupId;
 typedef SystemProfileProto::GoogleUpdate::ProductInfo ProductInfo;
-typedef SystemProfileProto::Hardware::Bluetooth::PairedDevice PairedDevice;
 
 namespace {
 
@@ -307,45 +302,6 @@ void WriteScreenDPIInformationProto(SystemProfileProto::Hardware* hardware) {
 }
 
 #endif  // defined(OS_WIN)
-
-#if defined(OS_CHROMEOS)
-PairedDevice::Type AsBluetoothDeviceType(
-    enum device::BluetoothDevice::DeviceType device_type) {
-  switch (device_type) {
-    case device::BluetoothDevice::DEVICE_UNKNOWN:
-      return PairedDevice::DEVICE_UNKNOWN;
-    case device::BluetoothDevice::DEVICE_COMPUTER:
-      return PairedDevice::DEVICE_COMPUTER;
-    case device::BluetoothDevice::DEVICE_PHONE:
-      return PairedDevice::DEVICE_PHONE;
-    case device::BluetoothDevice::DEVICE_MODEM:
-      return PairedDevice::DEVICE_MODEM;
-    case device::BluetoothDevice::DEVICE_AUDIO:
-      return PairedDevice::DEVICE_AUDIO;
-    case device::BluetoothDevice::DEVICE_CAR_AUDIO:
-      return PairedDevice::DEVICE_CAR_AUDIO;
-    case device::BluetoothDevice::DEVICE_VIDEO:
-      return PairedDevice::DEVICE_VIDEO;
-    case device::BluetoothDevice::DEVICE_PERIPHERAL:
-      return PairedDevice::DEVICE_PERIPHERAL;
-    case device::BluetoothDevice::DEVICE_JOYSTICK:
-      return PairedDevice::DEVICE_JOYSTICK;
-    case device::BluetoothDevice::DEVICE_GAMEPAD:
-      return PairedDevice::DEVICE_GAMEPAD;
-    case device::BluetoothDevice::DEVICE_KEYBOARD:
-      return PairedDevice::DEVICE_KEYBOARD;
-    case device::BluetoothDevice::DEVICE_MOUSE:
-      return PairedDevice::DEVICE_MOUSE;
-    case device::BluetoothDevice::DEVICE_TABLET:
-      return PairedDevice::DEVICE_TABLET;
-    case device::BluetoothDevice::DEVICE_KEYBOARD_MOUSE_COMBO:
-      return PairedDevice::DEVICE_KEYBOARD_MOUSE_COMBO;
-  }
-
-  NOTREACHED();
-  return PairedDevice::DEVICE_UNKNOWN;
-}
-#endif  // defined(OS_CHROMEOS)
 
 }  // namespace
 
@@ -921,14 +877,6 @@ void MetricsLog::RecordEnvironmentProto(
   PerfDataProto perf_data_proto;
   if (perf_provider_.GetPerfData(&perf_data_proto))
     uma_proto()->add_perf_data()->Swap(&perf_data_proto);
-
-  // BluetoothAdapterFactory::GetAdapter is synchronous on Chrome OS; if that
-  // changes this will fail at the DCHECK().
-  device::BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&MetricsLog::SetBluetoothAdapter,
-                 base::Unretained(this)));
-  DCHECK(adapter_.get());
-  WriteBluetoothProto(hardware);
 #endif
 }
 
@@ -1138,49 +1086,4 @@ void MetricsLog::WriteGoogleUpdateProto(
                        google_update->mutable_client_status());
   }
 #endif  // defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
-}
-
-void MetricsLog::SetBluetoothAdapter(
-    scoped_refptr<device::BluetoothAdapter> adapter) {
-  adapter_ = adapter;
-}
-
-void MetricsLog::WriteBluetoothProto(
-    SystemProfileProto::Hardware* hardware) {
-#if defined(OS_CHROMEOS)
-  SystemProfileProto::Hardware::Bluetooth* bluetooth =
-      hardware->mutable_bluetooth();
-
-  bluetooth->set_is_present(adapter_->IsPresent());
-  bluetooth->set_is_enabled(adapter_->IsPowered());
-
-  device::BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
-  for (device::BluetoothAdapter::DeviceList::iterator iter =
-           devices.begin(); iter != devices.end(); ++iter) {
-    PairedDevice* paired_device = bluetooth->add_paired_device();
-
-    device::BluetoothDevice* device = *iter;
-    paired_device->set_bluetooth_class(device->GetBluetoothClass());
-    paired_device->set_type(AsBluetoothDeviceType(device->GetDeviceType()));
-
-    // address is xx:xx:xx:xx:xx:xx, extract the first three components and
-    // pack into a uint32
-    std::string address = device->GetAddress();
-    if (address.size() > 9 &&
-        address[2] == ':' && address[5] == ':' && address[8] == ':') {
-      std::string vendor_prefix_str;
-      uint64 vendor_prefix;
-
-      RemoveChars(address.substr(0, 9), ":", &vendor_prefix_str);
-      DCHECK_EQ(6U, vendor_prefix_str.size());
-      base::HexStringToUInt64(vendor_prefix_str, &vendor_prefix);
-
-      paired_device->set_vendor_prefix(vendor_prefix);
-    }
-
-    paired_device->set_vendor_id(device->GetVendorID());
-    paired_device->set_product_id(device->GetProductID());
-    paired_device->set_device_id(device->GetDeviceID());
-  }
-#endif  // defined(OS_CHROMEOS)
 }

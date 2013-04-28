@@ -167,23 +167,9 @@ class BluetoothDevice {
 
   virtual ~BluetoothDevice();
 
-  // Returns the Bluetooth class of the device, used by GetDeviceType()
-  // and metrics logging,
-  virtual uint32 GetBluetoothClass() const = 0;
-
   // Returns the Bluetooth of address the device. This should be used as
   // a unique key to identify the device and copied where needed.
   virtual std::string GetAddress() const = 0;
-
-  // Returns the Vendor ID of the device, where available.
-  virtual uint16 GetVendorID() const = 0;
-
-  // Returns the Product ID of the device, where available.
-  virtual uint16 GetProductID() const = 0;
-
-  // Returns the Device ID of the device, typically the release or version
-  // number in BCD format, where available.
-  virtual uint16 GetDeviceID() const = 0;
 
   // Returns the name of the device suitable for displaying, this may
   // be a synthesied string containing the address and localized type name
@@ -357,6 +343,9 @@ class BluetoothDevice {
 
  protected:
   BluetoothDevice();
+
+  // Returns the Bluetooth class of the device, used by GetDeviceType().
+  virtual uint32 GetBluetoothClass() const = 0;
 
   // Returns the internal name of the Bluetooth device, used by GetName().
   virtual std::string GetDeviceName() const = 0;

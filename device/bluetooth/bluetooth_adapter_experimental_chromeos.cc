@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/experimental_bluetooth_adapter_client.h"
 #include "chromeos/dbus/experimental_bluetooth_device_client.h"
@@ -254,19 +253,6 @@ void BluetoothAdapterExperimentalChromeOS::DevicePropertyChanged(
       property_name == properties->connected.name() ||
       property_name == properties->uuids.name())
     NotifyDeviceChanged(device_chromeos);
-
-  // UMA connection counting
-  if (property_name == properties->connected.name()) {
-    int count = 0;
-
-    for (DevicesMap::iterator iter = devices_.begin();
-         iter != devices_.end(); ++iter) {
-      if (iter->second->IsConnected())
-        ++count;
-    }
-
-    UMA_HISTOGRAM_COUNTS_100("Bluetooth.ConnectedDeviceCount", count);
-  }
 }
 
 void BluetoothAdapterExperimentalChromeOS::InputPropertyChanged(

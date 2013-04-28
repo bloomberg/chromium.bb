@@ -27,11 +27,7 @@ class BluetoothDeviceExperimentalChromeOS
       private chromeos::ExperimentalBluetoothAgentServiceProvider::Delegate {
  public:
   // BluetoothDevice override
-  virtual uint32 GetBluetoothClass() const OVERRIDE;
   virtual std::string GetAddress() const OVERRIDE;
-  virtual uint16 GetVendorID() const OVERRIDE;
-  virtual uint16 GetProductID() const OVERRIDE;
-  virtual uint16 GetDeviceID() const OVERRIDE;
   virtual bool IsPaired() const OVERRIDE;
   virtual bool IsConnected() const OVERRIDE;
   virtual bool IsConnectable() const OVERRIDE;
@@ -76,6 +72,7 @@ class BluetoothDeviceExperimentalChromeOS
 
  protected:
    // BluetoothDevice override
+  virtual uint32 GetBluetoothClass() const OVERRIDE;
   virtual std::string GetDeviceName() const OVERRIDE;
 
  private:
@@ -170,11 +167,6 @@ class BluetoothDeviceExperimentalChromeOS
   // pairing. Returns true if any callbacks were run, false if not.
   bool RunPairingCallbacks(Status status);
 
-  // Record the result of pairing as a UMA histogram metric; |success| should
-  // be true if pairing succeeded, and |false| if not - in which case
-  // |error_code| specifies the reason for failure.
-  void RecordPairingResult(bool success, ConnectErrorCode error_code);
-
   // Return the object path of the device; used by
   // BluetoothAdapterExperimentalChromeOS
   const dbus::ObjectPath& object_path() const { return object_path_; }
@@ -192,10 +184,6 @@ class BluetoothDeviceExperimentalChromeOS
   // we can make method calls to request, display or confirm PIN Codes and
   // Passkeys. Generally it is the object that owns this one.
   PairingDelegate* pairing_delegate_;
-
-  // Flag to indicate whether a pairing delegate method has been called during
-  // pairing.
-  bool pairing_delegate_used_;
 
   // During pairing this is set to an instance of a D-Bus agent object
   // intialized with our own class as its delegate.

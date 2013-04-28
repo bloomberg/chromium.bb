@@ -40,11 +40,7 @@ class BluetoothDeviceChromeOS
   virtual ~BluetoothDeviceChromeOS();
 
   // BluetoothDevice override
-  virtual uint32 GetBluetoothClass() const OVERRIDE;
   virtual std::string GetAddress() const OVERRIDE;
-  virtual uint16 GetVendorID() const OVERRIDE;
-  virtual uint16 GetProductID() const OVERRIDE;
-  virtual uint16 GetDeviceID() const OVERRIDE;
   virtual bool IsPaired() const OVERRIDE;
   virtual bool IsConnected() const OVERRIDE;
   virtual bool IsConnectable() const OVERRIDE;
@@ -89,6 +85,7 @@ class BluetoothDeviceChromeOS
 
  protected:
   // BluetoothDevice override
+  virtual uint32 GetBluetoothClass() const OVERRIDE;
   virtual std::string GetDeviceName() const OVERRIDE;
 
  private:

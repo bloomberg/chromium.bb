@@ -161,8 +161,6 @@ FakeBluetoothDeviceClient::FakeBluetoothDeviceClient()
   uuids.push_back("00001801-0000-1000-8000-00805f9b34fb");
   properties->uuids.ReplaceValue(uuids);
 
-  properties->modalias.ReplaceValue("usb:v05ACp030Dd0306");
-
   properties_map_[dbus::ObjectPath(kPairedDevicePath)] = properties;
   device_list_.push_back(dbus::ObjectPath(kPairedDevicePath));
 }
