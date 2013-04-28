@@ -52,7 +52,7 @@ protected:
 
     virtual LayoutUnit minimumReplacedHeight() const { return LayoutUnit(); }
 
-    virtual void setSelectionState(SelectionState);
+    virtual void setSelectionState(SelectionState) OVERRIDE FINAL;
 
     bool isSelected() const;
 

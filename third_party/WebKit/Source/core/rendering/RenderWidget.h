@@ -67,8 +67,6 @@ public:
     void widgetPositionsUpdated();
     IntRect windowClipRect() const;
 
-    void notifyWidget(WidgetNotification);
-
     RenderArena* ref() { ++m_refCount; return renderArena(); }
     void deref(RenderArena*);
 
@@ -92,7 +90,6 @@ private:
 
     virtual void willBeDestroyed() OVERRIDE FINAL;
     virtual void destroy() OVERRIDE FINAL;
-    virtual void setSelectionState(SelectionState) OVERRIDE FINAL;
     virtual void setOverlapTestResult(bool) OVERRIDE FINAL;
 
     bool setWidgetGeometry(const LayoutRect&);

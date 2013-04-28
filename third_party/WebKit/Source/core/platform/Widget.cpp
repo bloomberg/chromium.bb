@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2004, 2005, 2006, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +27,7 @@
 #include "config.h"
 #include "core/platform/Widget.h"
 
+#include "core/platform/HostWindow.h"
 #include "core/platform/ScrollView.h"
 #include "core/platform/graphics/IntRect.h"
 
@@ -33,11 +35,28 @@
 
 namespace WebCore {
 
-void Widget::init()
+Widget::Widget()
+    : m_parent(0)
+    , m_selfVisible(false)
+    , m_parentVisible(false)
 {
-    m_parent = 0;
-    m_selfVisible = false;
-    m_parentVisible = false;
+}
+
+Widget::~Widget()
+{
+    ASSERT(!parent());
+}
+
+void Widget::setCursor(const Cursor& cursor)
+{
+    if (ScrollView* view = root())
+        view->hostWindow()->setCursor(cursor);
+}
+
+void Widget::removeFromParent()
+{
+    if (parent())
+        parent()->removeChild(this);
 }
 
 void Widget::setParent(ScrollView* view)
@@ -58,12 +77,6 @@ ScrollView* Widget::root() const
     if (top->isFrameView())
         return const_cast<ScrollView*>(static_cast<const ScrollView*>(top));
     return 0;
-}
-    
-void Widget::removeFromParent()
-{
-    if (parent())
-        parent()->removeChild(this);
 }
 
 IntRect Widget::convertFromRootView(const IntRect& rootRect) const
@@ -108,7 +121,7 @@ IntRect Widget::convertFromContainingWindow(const IntRect& windowRect) const
         IntRect parentRect = parentScrollView->convertFromContainingWindow(windowRect);
         return convertFromContainingView(parentRect);
     }
-    return convertFromContainingWindowToRoot(this, windowRect);
+    return windowRect;
 }
 
 IntRect Widget::convertToContainingWindow(const IntRect& localRect) const
@@ -117,7 +130,7 @@ IntRect Widget::convertToContainingWindow(const IntRect& localRect) const
         IntRect parentRect = convertToContainingView(localRect);
         return parentScrollView->convertToContainingWindow(parentRect);
     }
-    return convertFromRootToContainingWindow(this, localRect);
+    return localRect;
 }
 
 IntPoint Widget::convertFromContainingWindow(const IntPoint& windowPoint) const
@@ -126,7 +139,7 @@ IntPoint Widget::convertFromContainingWindow(const IntPoint& windowPoint) const
         IntPoint parentPoint = parentScrollView->convertFromContainingWindow(windowPoint);
         return convertFromContainingView(parentPoint);
     }
-    return convertFromContainingWindowToRoot(this, windowPoint);
+    return windowPoint;
 }
 
 IntPoint Widget::convertToContainingWindow(const IntPoint& localPoint) const
@@ -135,27 +148,7 @@ IntPoint Widget::convertToContainingWindow(const IntPoint& localPoint) const
         IntPoint parentPoint = convertToContainingView(localPoint);
         return parentScrollView->convertToContainingWindow(parentPoint);
     }
-    return convertFromRootToContainingWindow(this, localPoint);
-}
-
-IntRect Widget::convertFromRootToContainingWindow(const Widget*, const IntRect& rect)
-{
-    return rect;
-}
-
-IntRect Widget::convertFromContainingWindowToRoot(const Widget*, const IntRect& rect)
-{
-    return rect;
-}
-
-IntPoint Widget::convertFromRootToContainingWindow(const Widget*, const IntPoint& point)
-{
-    return point;
-}
-
-IntPoint Widget::convertFromContainingWindowToRoot(const Widget*, const IntPoint& point)
-{
-    return point;
+    return localPoint;
 }
 
 IntRect Widget::convertToContainingView(const IntRect& localRect) const
@@ -193,10 +186,6 @@ IntPoint Widget::convertFromContainingView(const IntPoint& parentPoint) const
         return parentScrollView->convertSelfToChild(this, parentPoint);
 
     return parentPoint;
-}
-
-void Widget::frameRectsChanged()
-{
 }
 
 } // namespace WebCore

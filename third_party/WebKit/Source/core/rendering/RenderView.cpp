@@ -903,17 +903,6 @@ void RenderView::removeWidget(RenderWidget* o)
     m_widgets.remove(o);
 }
 
-void RenderView::notifyWidgets(WidgetNotification notification)
-{
-    Vector<RenderWidget*> renderWidgets;
-    size_t size = getRetainedWidgets(renderWidgets);
-
-    for (size_t i = 0; i < size; ++i)
-        renderWidgets[i]->notifyWidget(notification);
-
-    releaseWidgets(renderWidgets);
-}
-
 LayoutRect RenderView::viewRect() const
 {
     if (shouldUsePrintingLayout())
@@ -922,7 +911,6 @@ LayoutRect RenderView::viewRect() const
         return m_frameView->visibleContentRect();
     return LayoutRect();
 }
-
 
 IntRect RenderView::unscaledDocumentRect() const
 {

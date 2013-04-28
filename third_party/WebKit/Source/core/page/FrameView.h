@@ -431,7 +431,6 @@ private:
     bool doLayoutWithFrameFlattening(bool allowSubtree);
 
     virtual AXObjectCache* axObjectCache() const;
-    void notifyWidgetsInAllFrames(WidgetNotification);
     void removeFromAXObjectCache();
     
     static double sCurrentPaintTimeStamp; // used for detecting decoded resource thrash in the cache

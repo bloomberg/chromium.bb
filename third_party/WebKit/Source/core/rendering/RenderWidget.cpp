@@ -2,6 +2,7 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  * Copyright (C) 2000 Dirk Mueller (mueller@kde.org)
  * Copyright (C) 2004, 2006, 2009, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -33,7 +34,6 @@
 #include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidgetProtector.h"
-
 
 using namespace std;
 
@@ -166,9 +166,6 @@ bool RenderWidget::setWidgetGeometry(const LayoutRect& frame)
 bool RenderWidget::updateWidgetGeometry()
 {
     LayoutRect contentBox = contentBoxRect();
-    if (!m_widget->transformsAffectFrameRect())
-        return setWidgetGeometry(absoluteContentBox());
-
     LayoutRect absoluteContentBox(localToAbsoluteQuad(FloatQuad(contentBox)).boundingBox());
     if (m_widget->isFrameView()) {
         contentBox.setLocation(absoluteContentBox.location());
@@ -226,12 +223,6 @@ void RenderWidget::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
         else
             m_widget->show();
     }
-}
-
-void RenderWidget::notifyWidget(WidgetNotification notification)
-{
-    if (m_widget)
-        m_widget->notifyWidget(notification);
 }
 
 void RenderWidget::paintContents(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
@@ -360,15 +351,6 @@ IntRect RenderWidget::windowClipRect() const
         return IntRect();
 
     return intersection(m_frameView->contentsToWindow(m_clipRect), m_frameView->windowClipRect());
-}
-
-void RenderWidget::setSelectionState(SelectionState state)
-{
-    // The selection state for our containing block hierarchy is updated by the base class call.
-    RenderReplaced::setSelectionState(state);
-
-    if (m_widget)
-        m_widget->setIsSelected(isSelected());
 }
 
 void RenderWidget::clearWidget()

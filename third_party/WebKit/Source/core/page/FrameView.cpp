@@ -3073,11 +3073,6 @@ void FrameView::paintContents(GraphicsContext* p, const IntRect& rect)
     if (document->printing())
         m_paintBehavior |= PaintBehaviorFlattenCompositingLayers;
 
-    bool flatteningPaint = m_paintBehavior & PaintBehaviorFlattenCompositingLayers;
-    bool isRootFrame = !m_frame->ownerElement();
-    if (flatteningPaint && isRootFrame)
-        notifyWidgetsInAllFrames(WillPaintFlattened);
-
     ASSERT(!m_isPainting);
     m_isPainting = true;
 
@@ -3095,9 +3090,6 @@ void FrameView::paintContents(GraphicsContext* p, const IntRect& rect)
         rootLayer->paintOverlayScrollbars(p, rect, m_paintBehavior, eltRenderer);
 
     m_isPainting = false;
-
-    if (flatteningPaint && isRootFrame)
-        notifyWidgetsInAllFrames(DidPaintFlattened);
 
     m_paintBehavior = oldPaintBehavior;
     m_lastPaintTime = currentTime();
@@ -3545,14 +3537,6 @@ bool FrameView::isFlippedDocument() const
     return renderView->style()->isFlippedBlocksWritingMode();
 }
 
-void FrameView::notifyWidgetsInAllFrames(WidgetNotification notification)
-{
-    for (Frame* frame = m_frame.get(); frame; frame = frame->tree()->traverseNext(m_frame.get())) {
-        if (RenderView* root = frame->contentRenderer())
-            root->notifyWidgets(notification);
-    }
-}
-    
 AXObjectCache* FrameView::axObjectCache() const
 {
     if (frame() && frame()->document())
