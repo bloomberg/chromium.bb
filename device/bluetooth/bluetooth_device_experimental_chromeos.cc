@@ -5,6 +5,9 @@
 #include "device/bluetooth/bluetooth_device_experimental_chromeos.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram.h"
+#include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/experimental_bluetooth_adapter_client.h"
 #include "chromeos/dbus/experimental_bluetooth_agent_manager_client.h"
@@ -25,6 +28,67 @@ namespace {
 // (which we fail in OnRegisterAgentError with ERROR_INPROGRESS).
 const char kAgentPath[] = "/org/chromium/bluetooth_agent";
 
+// Histogram enumerations for pairing methods.
+enum UMAPairingMethod {
+  UMA_PAIRING_METHOD_NONE,
+  UMA_PAIRING_METHOD_REQUEST_PINCODE,
+  UMA_PAIRING_METHOD_REQUEST_PASSKEY,
+  UMA_PAIRING_METHOD_DISPLAY_PINCODE,
+  UMA_PAIRING_METHOD_DISPLAY_PASSKEY,
+  UMA_PAIRING_METHOD_CONFIRM_PASSKEY,
+  // NOTE: Add new pairing methods immediately above this line. Make sure to
+  // update the enum list in tools/histogram/histograms.xml accordinly.
+  UMA_PAIRING_METHOD_COUNT
+};
+
+// Histogram enumerations for pairing results.
+enum UMAPairingResult {
+  UMA_PAIRING_RESULT_SUCCESS,
+  UMA_PAIRING_RESULT_INPROGRESS,
+  UMA_PAIRING_RESULT_FAILED,
+  UMA_PAIRING_RESULT_AUTH_FAILED,
+  UMA_PAIRING_RESULT_AUTH_CANCELED,
+  UMA_PAIRING_RESULT_AUTH_REJECTED,
+  UMA_PAIRING_RESULT_AUTH_TIMEOUT,
+  UMA_PAIRING_RESULT_UNSUPPORTED_DEVICE,
+  UMA_PAIRING_RESULT_UNKNOWN_ERROR,
+  // NOTE: Add new pairing results immediately above this line. Make sure to
+  // update the enum list in tools/histogram/histograms.xml accordinly.
+  UMA_PAIRING_RESULT_COUNT
+};
+
+void ParseModalias(const dbus::ObjectPath& object_path,
+                   uint16 *vendor_id,
+                   uint16 *product_id,
+                   uint16 *device_id) {
+  chromeos::ExperimentalBluetoothDeviceClient::Properties* properties =
+      chromeos::DBusThreadManager::Get()->
+          GetExperimentalBluetoothDeviceClient()->GetProperties(object_path);
+  DCHECK(properties);
+
+  std::string modalias = properties->modalias.value();
+  if (StartsWithASCII(modalias, "usb:", false) && modalias.length() == 19) {
+    // usb:vXXXXpXXXXdXXXX
+    if (modalias[4] == 'v' && vendor_id != NULL) {
+      uint64 component = 0;
+      base::HexStringToUInt64(modalias.substr(5, 4), &component);
+      *vendor_id = component;
+    }
+
+    if (modalias[9] == 'p' && product_id != NULL) {
+      uint64 component = 0;
+      base::HexStringToUInt64(modalias.substr(10, 4), &component);
+      *product_id = component;
+    }
+
+    if (modalias[14] == 'd' && device_id != NULL) {
+      uint64 component = 0;
+      base::HexStringToUInt64(modalias.substr(15, 4), &component);
+      *device_id = component;
+    }
+  }
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -36,6 +100,7 @@ BluetoothDeviceExperimentalChromeOS::BluetoothDeviceExperimentalChromeOS(
       object_path_(object_path),
       num_connecting_calls_(0),
       pairing_delegate_(NULL),
+      pairing_delegate_used_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -67,6 +132,24 @@ std::string BluetoothDeviceExperimentalChromeOS::GetAddress() const {
   DCHECK(properties);
 
   return properties->address.value();
+}
+
+uint16 BluetoothDeviceExperimentalChromeOS::GetVendorID() const {
+  uint16 vendor_id  = 0;
+  ParseModalias(object_path_, &vendor_id, NULL, NULL);
+  return vendor_id;
+}
+
+uint16 BluetoothDeviceExperimentalChromeOS::GetProductID() const {
+  uint16 product_id  = 0;
+  ParseModalias(object_path_, NULL, &product_id, NULL);
+  return product_id;
+}
+
+uint16 BluetoothDeviceExperimentalChromeOS::GetDeviceID() const {
+  uint16 device_id  = 0;
+  ParseModalias(object_path_, NULL, NULL, &device_id);
+  return device_id;
 }
 
 bool BluetoothDeviceExperimentalChromeOS::IsPaired() const {
@@ -161,6 +244,7 @@ void BluetoothDeviceExperimentalChromeOS::Connect(
     DCHECK(agent_.get() == NULL);
 
     pairing_delegate_ = pairing_delegate;
+    pairing_delegate_used_ = false;
 
     // The agent path is relatively meaningless since BlueZ only supports
     // one per application at a time.
@@ -310,6 +394,10 @@ void BluetoothDeviceExperimentalChromeOS::RequestPinCode(
   DCHECK(device_path == object_path_);
   VLOG(1) << object_path_.value() << ": RequestPinCode";
 
+  UMA_HISTOGRAM_ENUMERATION("Bluetooth.PairingMethod",
+                            UMA_PAIRING_METHOD_REQUEST_PINCODE,
+                            UMA_PAIRING_METHOD_COUNT);
+
   DCHECK(pairing_delegate_);
   DCHECK(pincode_callback_.is_null());
   pincode_callback_ = callback;
@@ -323,6 +411,10 @@ void BluetoothDeviceExperimentalChromeOS::DisplayPinCode(
   DCHECK(device_path == object_path_);
   VLOG(1) << object_path_.value() << ": DisplayPinCode: " << pincode;
 
+  UMA_HISTOGRAM_ENUMERATION("Bluetooth.PairingMethod",
+                            UMA_PAIRING_METHOD_DISPLAY_PINCODE,
+                            UMA_PAIRING_METHOD_COUNT);
+
   DCHECK(pairing_delegate_);
   pairing_delegate_->DisplayPinCode(this, pincode);
 }
@@ -333,6 +425,10 @@ void BluetoothDeviceExperimentalChromeOS::RequestPasskey(
   DCHECK(agent_.get());
   DCHECK(device_path == object_path_);
   VLOG(1) << object_path_.value() << ": RequestPasskey";
+
+  UMA_HISTOGRAM_ENUMERATION("Bluetooth.PairingMethod",
+                            UMA_PAIRING_METHOD_REQUEST_PASSKEY,
+                            UMA_PAIRING_METHOD_COUNT);
 
   DCHECK(pairing_delegate_);
   DCHECK(passkey_callback_.is_null());
@@ -349,6 +445,11 @@ void BluetoothDeviceExperimentalChromeOS::DisplayPasskey(
   VLOG(1) << object_path_.value() << ": DisplayPasskey: " << passkey
           << " (" << entered << " entered)";
 
+  if (entered == 0)
+    UMA_HISTOGRAM_ENUMERATION("Bluetooth.PairingMethod",
+                              UMA_PAIRING_METHOD_DISPLAY_PASSKEY,
+                              UMA_PAIRING_METHOD_COUNT);
+
   DCHECK(pairing_delegate_);
   if (entered == 0)
     pairing_delegate_->DisplayPasskey(this, passkey);
@@ -362,6 +463,10 @@ void BluetoothDeviceExperimentalChromeOS::RequestConfirmation(
   DCHECK(agent_.get());
   DCHECK(device_path == object_path_);
   VLOG(1) << object_path_.value() << ": RequestConfirmation: " << passkey;
+
+  UMA_HISTOGRAM_ENUMERATION("Bluetooth.PairingMethod",
+                            UMA_PAIRING_METHOD_CONFIRM_PASSKEY,
+                            UMA_PAIRING_METHOD_COUNT);
 
   DCHECK(pairing_delegate_);
   DCHECK(confirmation_callback_.is_null());
@@ -446,6 +551,7 @@ void BluetoothDeviceExperimentalChromeOS::OnConnectError(
     error_code = ERROR_UNSUPPORTED_DEVICE;
   }
 
+  RecordPairingResult(false, error_code);
   error_callback.Run(error_code);
 }
 
@@ -486,6 +592,7 @@ void BluetoothDeviceExperimentalChromeOS::OnRegisterAgentError(
   if (error_name == bluetooth_adapter::kErrorAlreadyExists)
     error_code = ERROR_INPROGRESS;
 
+  RecordPairingResult(false, error_code);
   error_callback.Run(error_code);
 }
 
@@ -493,6 +600,11 @@ void BluetoothDeviceExperimentalChromeOS::OnPair(
     const base::Closure& callback,
     const ConnectErrorCallback& error_callback) {
   VLOG(1) << object_path_.value() << ": Paired";
+
+  if (!pairing_delegate_used_)
+    UMA_HISTOGRAM_ENUMERATION("Bluetooth.PairingMethod",
+                              UMA_PAIRING_METHOD_NONE,
+                              UMA_PAIRING_METHOD_COUNT);
   UnregisterAgent();
   SetTrusted();
   ConnectInternal(callback, error_callback);
@@ -527,6 +639,7 @@ void BluetoothDeviceExperimentalChromeOS::OnPairError(
     error_code = ERROR_AUTH_TIMEOUT;
   }
 
+  RecordPairingResult(false, error_code);
   error_callback.Run(error_code);
 }
 
@@ -634,6 +747,45 @@ bool BluetoothDeviceExperimentalChromeOS::RunPairingCallbacks(Status status) {
   }
 
   return callback_run;
+}
+
+void BluetoothDeviceExperimentalChromeOS::RecordPairingResult(
+    bool success,
+    ConnectErrorCode error_code) {
+  UMAPairingResult pairing_result;
+  if (success) {
+    pairing_result = UMA_PAIRING_RESULT_SUCCESS;
+  } else {
+    switch (error_code) {
+      case ERROR_INPROGRESS:
+        pairing_result = UMA_PAIRING_RESULT_INPROGRESS;
+        break;
+      case ERROR_FAILED:
+        pairing_result = UMA_PAIRING_RESULT_FAILED;
+        break;
+      case ERROR_AUTH_FAILED:
+        pairing_result = UMA_PAIRING_RESULT_AUTH_FAILED;
+        break;
+      case ERROR_AUTH_CANCELED:
+        pairing_result = UMA_PAIRING_RESULT_AUTH_CANCELED;
+        break;
+      case ERROR_AUTH_REJECTED:
+        pairing_result = UMA_PAIRING_RESULT_AUTH_REJECTED;
+        break;
+      case ERROR_AUTH_TIMEOUT:
+        pairing_result = UMA_PAIRING_RESULT_AUTH_TIMEOUT;
+        break;
+      case ERROR_UNSUPPORTED_DEVICE:
+        pairing_result = UMA_PAIRING_RESULT_UNSUPPORTED_DEVICE;
+        break;
+      default:
+        pairing_result = UMA_PAIRING_RESULT_UNKNOWN_ERROR;
+    }
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("Bluetooth.PairingResult",
+                            pairing_result,
+                            UMA_PAIRING_RESULT_COUNT);
 }
 
 }  // namespace chromeos

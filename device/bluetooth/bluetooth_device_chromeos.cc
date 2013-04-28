@@ -78,6 +78,18 @@ std::string BluetoothDeviceChromeOS::GetAddress() const {
   return address_;
 }
 
+uint16 BluetoothDeviceChromeOS::GetVendorID() const {
+  return 0;
+}
+
+uint16 BluetoothDeviceChromeOS::GetProductID() const {
+  return 0;
+}
+
+uint16 BluetoothDeviceChromeOS::GetDeviceID() const {
+  return 0;
+}
+
 bool BluetoothDeviceChromeOS::IsPaired() const {
   return paired_ || trusted_;
 }

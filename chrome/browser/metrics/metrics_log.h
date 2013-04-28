@@ -30,6 +30,10 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace device {
+class BluetoothAdapter;
+}
+
 namespace tracked_objects {
 struct ProcessDataSnapshot;
 }
@@ -189,12 +193,23 @@ class MetricsLog : public MetricsLogBase {
   // This is a no-op if called on a non-Windows platform.
   void WriteGoogleUpdateProto(const GoogleUpdateMetrics& google_update_metrics);
 
+  // Sets the Bluetooth Adapter instance used for the WriteBluetoothProto()
+  // call.
+  void SetBluetoothAdapter(scoped_refptr<device::BluetoothAdapter> adapter);
+
+  // Writes info about paired Bluetooth devices on this system.
+  // This is a no-op if called on a non-Chrome OS platform.
+  void WriteBluetoothProto(metrics::SystemProfileProto::Hardware* hardware);
+
   // Observes network state to provide values for SystemProfile::Network.
   MetricsNetworkObserver network_observer_;
 
 #if defined(OS_CHROMEOS)
   metrics::PerfProvider perf_provider_;
 #endif
+
+  // Bluetooth Adapter instance for collecting information about paired devices.
+  scoped_refptr<device::BluetoothAdapter> adapter_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsLog);
 };

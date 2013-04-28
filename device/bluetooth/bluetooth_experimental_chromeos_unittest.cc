@@ -764,6 +764,10 @@ TEST_F(BluetoothExperimentalChromeOSTest, DeviceProperties) {
   ASSERT_EQ(2U, uuids.size());
   EXPECT_EQ(uuids[0], "00001800-0000-1000-8000-00805f9b34fb");
   EXPECT_EQ(uuids[1], "00001801-0000-1000-8000-00805f9b34fb");
+
+  EXPECT_EQ(0x05ac, devices[0]->GetVendorID());
+  EXPECT_EQ(0x030d, devices[0]->GetProductID());
+  EXPECT_EQ(0x0306, devices[0]->GetDeviceID());
 }
 
 TEST_F(BluetoothExperimentalChromeOSTest, DeviceClassChanged) {
