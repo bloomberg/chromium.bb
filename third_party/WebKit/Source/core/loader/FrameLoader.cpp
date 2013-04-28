@@ -40,7 +40,6 @@
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "HTMLObjectElement.h"
-#include "PluginData.h"
 #include "PluginDocument.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
@@ -100,6 +99,7 @@
 #include "core/platform/network/ResourceHandle.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/text/SegmentedString.h"
+#include "core/plugins/PluginData.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include <wtf/CurrentTime.h>

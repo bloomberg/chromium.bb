@@ -17,10 +17,10 @@
  */
 
 #include "config.h"
-#include "DOMPlugin.h"
+#include "core/plugins/DOMPlugin.h"
 
-#include "PluginData.h"
 #include "core/page/Frame.h"
+#include "core/plugins/PluginData.h"
 #include <wtf/text/AtomicString.h>
 
 namespace WebCore {

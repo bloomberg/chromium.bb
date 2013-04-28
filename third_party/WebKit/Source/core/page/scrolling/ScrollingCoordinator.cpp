@@ -27,7 +27,6 @@
 
 #include "core/page/scrolling/ScrollingCoordinator.h"
 
-#include "PluginView.h"
 #include "core/dom/Document.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
@@ -41,6 +40,7 @@
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/Region.h"
 #include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
+#include "core/plugins/PluginView.h"
 #include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"

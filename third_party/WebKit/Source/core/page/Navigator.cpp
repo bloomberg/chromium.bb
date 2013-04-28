@@ -23,9 +23,6 @@
 #include "config.h"
 #include "core/page/Navigator.h"
 
-#include "DOMMimeTypeArray.h"
-#include "DOMPluginArray.h"
-#include "PluginData.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "core/loader/CookieJar.h"
@@ -36,6 +33,9 @@
 #include "core/page/SecurityOrigin.h"
 #include "core/page/Settings.h"
 #include "core/platform/Language.h"
+#include "core/plugins/DOMMimeTypeArray.h"
+#include "core/plugins/DOMPluginArray.h"
+#include "core/plugins/PluginData.h"
 #include "core/storage/StorageNamespace.h"
 #include "modules/geolocation/Geolocation.h"
 #include <wtf/HashSet.h>

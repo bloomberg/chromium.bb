@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "PluginListBuilder.h"
+#include "core/plugins/PluginListBuilder.h"
 
-#include "PluginData.h"
+#include "core/plugins/PluginData.h"
 #include <public/WebString.h>
 #include <wtf/Vector.h>
 

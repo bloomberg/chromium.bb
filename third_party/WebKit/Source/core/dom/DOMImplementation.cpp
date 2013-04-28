@@ -30,7 +30,6 @@
 #include "HTMLViewSourceDocument.h"
 #include "ImageDocument.h"
 #include "MediaDocument.h"
-#include "PluginData.h"
 #include "PluginDocument.h"
 #include "TextDocument.h"
 #include "XMLNames.h"
@@ -51,6 +50,7 @@
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/MediaPlayer.h"
+#include "core/plugins/PluginData.h"
 #include <wtf/StdLibExtras.h>
 
 #if ENABLE(SVG)

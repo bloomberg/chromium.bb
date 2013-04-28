@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "IFrameShimSupport.h"
+#include "core/plugins/IFrameShimSupport.h"
 
 #include "HTMLElement.h"
 #include "HTMLFrameOwnerElement.h"

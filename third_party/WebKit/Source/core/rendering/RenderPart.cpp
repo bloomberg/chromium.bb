@@ -26,9 +26,9 @@
 #include "core/rendering/RenderPart.h"
 
 #include "HTMLFrameElementBase.h"
-#include "PluginView.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
+#include "core/plugins/PluginView.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"

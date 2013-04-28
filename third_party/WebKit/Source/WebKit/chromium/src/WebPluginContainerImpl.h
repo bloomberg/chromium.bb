@@ -31,9 +31,9 @@
 #ifndef WebPluginContainerImpl_h
 #define WebPluginContainerImpl_h
 
-#include "PluginView.h"
 #include "WebPluginContainer.h"
 #include "core/platform/Widget.h"
+#include "core/plugins/PluginView.h"
 
 #include <wtf/OwnPtr.h>
 #include <wtf/PassRefPtr.h>

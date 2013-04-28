@@ -31,7 +31,7 @@
 #ifndef PluginListBuilder_h
 #define PluginListBuilder_h
 
-#include "PluginData.h"
+#include "core/plugins/PluginData.h"
 #include <public/WebPluginListBuilder.h>
 #include <wtf/Vector.h>
 

@@ -20,9 +20,9 @@
 #ifndef DOMMimeType_h
 #define DOMMimeType_h
 
-#include "PluginData.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameDestructionObserver.h"
+#include "core/plugins/PluginData.h"
 
 #include <wtf/Forward.h>
 #include <wtf/PassRefPtr.h>

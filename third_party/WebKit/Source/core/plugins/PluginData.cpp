@@ -22,9 +22,9 @@
 */
 
 #include "config.h"
-#include "PluginData.h"
+#include "core/plugins/PluginData.h"
 
-#include "PluginListBuilder.h"
+#include "core/plugins/PluginListBuilder.h"
 #include <public/Platform.h>
 
 namespace WebCore {

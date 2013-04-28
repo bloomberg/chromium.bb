@@ -50,7 +50,6 @@
       '../..',
       '../html',
       '../platform/graphics/skia',
-      '../plugins',
       '../svg',
       '../svg/properties',
       '<(INTERMEDIATE_DIR)',

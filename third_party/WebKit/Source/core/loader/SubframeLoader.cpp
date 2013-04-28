@@ -37,7 +37,6 @@
 #include "HTMLFrameElementBase.h"
 #include "HTMLNames.h"
 #include "HTMLPlugInImageElement.h"
-#include "PluginData.h"
 #include "PluginDocument.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/loader/FrameLoader.h"
@@ -52,6 +51,7 @@
 #include "core/page/SecurityPolicy.h"
 #include "core/page/Settings.h"
 #include "core/platform/MIMETypeRegistry.h"
+#include "core/plugins/PluginData.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderView.h"
 

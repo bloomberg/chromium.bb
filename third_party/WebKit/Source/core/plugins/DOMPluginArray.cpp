@@ -18,12 +18,12 @@
  */
 
 #include "config.h"
-#include "DOMPluginArray.h"
+#include "core/plugins/DOMPluginArray.h"
 
-#include "DOMPlugin.h"
-#include "PluginData.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
+#include "core/plugins/DOMPlugin.h"
+#include "core/plugins/PluginData.h"
 #include <wtf/text/AtomicString.h>
 
 namespace WebCore {

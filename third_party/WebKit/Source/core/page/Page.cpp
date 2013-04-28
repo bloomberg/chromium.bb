@@ -21,7 +21,6 @@
 #include "core/page/Page.h"
 
 #include "HTMLElement.h"
-#include "PluginData.h"
 #include "VoidCallback.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/ClientRectList.h"
@@ -72,6 +71,7 @@
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/Widget.h"
 #include "core/platform/network/NetworkStateNotifier.h"
+#include "core/plugins/PluginData.h"
 #include "core/rendering/RenderArena.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"

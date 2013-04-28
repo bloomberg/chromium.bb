@@ -21,9 +21,9 @@
 #ifndef DOMPluginArray_h
 #define DOMPluginArray_h
 
-#include "DOMPlugin.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/page/DOMWindowProperty.h"
+#include "core/plugins/DOMPlugin.h"
 #include <wtf/Forward.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

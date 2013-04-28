@@ -36,7 +36,6 @@
 #include "HTMLAppletElement.h"
 #include "HTMLFormElement.h"  // needed by core/loader/FormState.h
 #include "HTMLNames.h"
-#include "PluginData.h"
 #include "core/dom/Document.h"
 #include "core/dom/MessageEvent.h"
 #include "core/dom/MouseEvent.h"
@@ -54,6 +53,7 @@
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/network/HTTPParsers.h"
 #include "core/platform/network/ResourceHandleInternal.h"
+#include "core/plugins/PluginData.h"
 #include "core/rendering/HitTestResult.h"
 #if ENABLE(MEDIA_STREAM)
 #include "core/platform/mediastream/chromium/RTCPeerConnectionHandlerChromium.h"

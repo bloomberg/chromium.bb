@@ -48,7 +48,6 @@
 #include "HTMLFormElement.h"
 #include "HTMLNames.h"
 #include "HTMLPlugInElement.h"
-#include "IFrameShimSupport.h"
 #include "WebPrintParams.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/EventNames.h"
@@ -73,6 +72,7 @@
 #include "core/platform/chromium/KeyboardCodes.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
+#include "core/plugins/IFrameShimSupport.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderBox.h"
 #include <public/Platform.h>

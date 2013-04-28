@@ -25,7 +25,6 @@
 
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
-#include "PluginView.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/npruntime_impl.h"
 #include "core/dom/Attribute.h"
@@ -40,6 +39,7 @@
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/Widget.h"
+#include "core/plugins/PluginView.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderWidget.h"
 #include <wtf/UnusedParam.h>
