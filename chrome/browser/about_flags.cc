@@ -1297,6 +1297,14 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
+    "enable-sync-synced-notifications",
+    IDS_FLAGS_ENABLE_SYNCED_NOTIFICATIONS_NAME,
+    IDS_FLAGS_ENABLE_SYNCED_NOTIFICATIONS_DESCRIPTION,
+    kOsWin | kOsCrOS,
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSyncSyncedNotifications,
+                              switches::kDisableSyncSyncedNotifications)
+  },
+  {
     "disable-full-history-sync",
     IDS_FLAGS_FULL_HISTORY_SYNC_NAME,
     IDS_FLAGS_FULL_HISTORY_SYNC_DESCRIPTION,

@@ -183,6 +183,7 @@ extern const char kEnableSpellingAutoCorrect[];
 extern const char kEnableStackedTabStrip[];
 extern const char kEnableSuggestionsTabPage[];
 extern const char kEnableSyncFavicons[];
+extern const char kEnableSyncSyncedNotifications[];
 extern const char kEnableTabGroupsContextMenu[];
 extern const char kEnableTranslateAlphaLanguages[];
 extern const char kEnableUnrestrictedSSL3Fallback[];

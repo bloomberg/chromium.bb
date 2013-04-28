@@ -648,6 +648,10 @@ const char kEnableSuggestionsTabPage[]      = "enable-suggestions-ntp";
 // Enables synced favicons
 const char kEnableSyncFavicons[]            = "enable-sync-favicons";
 
+// Enables synced notifications.
+const char kEnableSyncSyncedNotifications[] =
+    "enable-sync-synced-notifications";
+
 // Enables context menu for selecting groups of tabs.
 const char kEnableTabGroupsContextMenu[]    = "enable-tab-groups-context-menu";
 

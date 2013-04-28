@@ -7105,6 +7105,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_RICH_NOTIFICATIONS_DESCRIPTION" desc="Description for the flag to enable rich notifications.">
         Enable rich templated notifications. Both HTML5 notifications and app notifications will be shown through new Notification Center.
       </message>
+      <message name="IDS_FLAGS_ENABLE_SYNCED_NOTIFICATIONS_NAME" desc="Name of the flag to enable synced notifications.">
+        Enable Synced Notifications
+      </message>
+      <message name="IDS_FLAGS_ENABLE_SYNCED_NOTIFICATIONS_DESCRIPTION" desc="Description for the flag to enable synced notifications.">
+        Enable experimental Synchronized Notifications.
+      </message>
       <message name="IDS_FLAGS_ENABLE_SCREEN_CAPTURE_NAME" desc="Name of the flag to enable screen capture support.">
         Enable screen capture support in getUserMedia().
       </message>
