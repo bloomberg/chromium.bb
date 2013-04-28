@@ -28,11 +28,11 @@
 #include "config.h"
 #include "core/platform/graphics/transforms/TransformationMatrix.h"
 
-#include "SkiaUtils.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/LayoutRect.h"
+#include "core/platform/graphics/skia/SkiaUtils.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 
 #include <wtf/Assertions.h>

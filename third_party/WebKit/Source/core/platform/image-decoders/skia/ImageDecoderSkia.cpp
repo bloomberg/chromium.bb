@@ -27,8 +27,8 @@
 #include "config.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
 
-#include "NativeImageSkia.h"
 #include "core/platform/PlatformMemoryInstrumentation.h"
+#include "core/platform/graphics/skia/NativeImageSkia.h"
 
 namespace WebCore {
 

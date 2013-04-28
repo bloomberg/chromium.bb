@@ -32,7 +32,7 @@
 #include "core/platform/graphics/FloatPoint.h"
 
 #include "SkPoint.h"
-#include "SkiaUtils.h"
+#include "core/platform/graphics/skia/SkiaUtils.h"
 
 namespace WebCore {
 

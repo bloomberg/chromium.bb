@@ -31,10 +31,10 @@
 #ifndef PlatformThemeChromiumDefault_h
 #define PlatformThemeChromiumDefault_h
 
-#include "PlatformContextSkia.h"
 #include "SkColor.h"
 #include "SkScalar.h"
 #include "core/platform/ThemeTypes.h"
+#include "core/platform/graphics/skia/PlatformContextSkia.h"
 
 namespace WebCore {
 

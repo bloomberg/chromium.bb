@@ -36,9 +36,9 @@
 #include <mlang.h>
 #include <objidl.h>
 #include "SkTypeface_win.h"
-#include "SkiaFontWin.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/FontCache.h"
+#include "core/platform/graphics/skia/SkiaFontWin.h"
 #include "core/platform/win/HWndDC.h"
 #include <public/Platform.h>
 #include <public/win/WebSandboxSupport.h>

@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "SkiaUtils.h"
+#include "core/platform/graphics/skia/SkiaUtils.h"
 
 #include "SkCanvas.h"
 #include "SkColorPriv.h"

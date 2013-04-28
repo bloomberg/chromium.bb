@@ -35,10 +35,10 @@
 
 #include <wtf/Uint8ClampedArray.h>
 
-#include "NativeImageSkia.h"
 #include "SkBitmapSource.h"
 #include "SkBlendImageFilter.h"
 #include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "core/platform/graphics/skia/NativeImageSkia.h"
 
 typedef unsigned char (*BlendType)(unsigned char colorA, unsigned char colorB, unsigned char alphaA, unsigned char alphaB);
 

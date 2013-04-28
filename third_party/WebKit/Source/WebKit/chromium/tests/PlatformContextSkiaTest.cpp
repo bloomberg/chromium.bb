@@ -24,14 +24,14 @@
 
 #include "config.h"
 
-#include "PlatformContextSkia.h"
+#include "core/platform/graphics/skia/PlatformContextSkia.h"
 
 #include <gtest/gtest.h>
-#include "NativeImageSkia.h"
 #include "SkCanvas.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageBuffer.h"
+#include "core/platform/graphics/skia/NativeImageSkia.h"
 
 using namespace WebCore;
 

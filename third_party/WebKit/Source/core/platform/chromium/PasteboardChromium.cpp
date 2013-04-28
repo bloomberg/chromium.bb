@@ -32,7 +32,6 @@
 #include "core/platform/Pasteboard.h"
 
 #include "HTMLNames.h"
-#include "NativeImageSkia.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Element.h"
@@ -46,6 +45,7 @@
 #include "core/platform/chromium/ClipboardChromium.h"
 #include "core/platform/chromium/ClipboardUtilitiesChromium.h"
 #include "core/platform/graphics/Image.h"
+#include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "core/rendering/RenderImage.h"
 
 #if ENABLE(SVG)

@@ -87,7 +87,7 @@
 #include <public/WebURLRequest.h>
 #include <public/WebVector.h>
 
-#include "PlatformContextSkia.h"
+#include "core/platform/graphics/skia/PlatformContextSkia.h"
 
 using namespace WebCore;
 

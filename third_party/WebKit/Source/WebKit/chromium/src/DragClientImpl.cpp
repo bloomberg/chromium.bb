@@ -30,13 +30,13 @@
 
 #include "config.h"
 #include "DragClientImpl.h"
-#include "NativeImageSkia.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "core/page/Frame.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
 #include "core/platform/chromium/ClipboardChromium.h"
 #include "core/platform/chromium/DragImageRef.h"
+#include "core/platform/graphics/skia/NativeImageSkia.h"
 #include <public/WebCommon.h>
 #include <public/WebDragData.h>
 #include <public/WebImage.h>

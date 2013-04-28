@@ -21,7 +21,7 @@
 #include "core/platform/mac/LocalCurrentGraphicsContext.h"
 
 #include <AppKit/NSGraphicsContext.h>
-#include "PlatformContextSkia.h"
+#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include "platform_canvas.h"
 
 namespace WebCore {

@@ -31,8 +31,8 @@
 #ifndef PlatformContextSkia_h
 #define PlatformContextSkia_h
 
-#include "OpaqueRegionSkia.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/skia/OpaqueRegionSkia.h"
 
 #include "SkCanvas.h"
 #include "SkDashPathEffect.h"

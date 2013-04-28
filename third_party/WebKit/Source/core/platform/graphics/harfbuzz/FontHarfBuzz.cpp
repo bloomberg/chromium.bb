@@ -31,13 +31,13 @@
 #include "config.h"
 #include "core/platform/graphics/Font.h"
 
-#include "PlatformContextSkia.h"
 #include "core/platform/NotImplemented.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GlyphBuffer.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/harfbuzz/HarfBuzzShaper.h"
+#include "core/platform/graphics/skia/PlatformContextSkia.h"
 
 #include "SkCanvas.h"
 #include "SkPaint.h"

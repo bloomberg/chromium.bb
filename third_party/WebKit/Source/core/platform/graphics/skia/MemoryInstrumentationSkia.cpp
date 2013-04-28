@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "MemoryInstrumentationSkia.h"
+#include "core/platform/graphics/skia/MemoryInstrumentationSkia.h"
 
 #include "SkBitmap.h"
 #include "SkCanvas.h"

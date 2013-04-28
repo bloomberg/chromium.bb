@@ -33,10 +33,10 @@
 
 #include <wtf/Uint8ClampedArray.h>
 
-#include "NativeImageSkia.h"
 #include "SkBitmapSource.h"
 #include "SkDisplacementMapEffect.h"
 #include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "core/platform/graphics/skia/NativeImageSkia.h"
 
 namespace WebCore {
 

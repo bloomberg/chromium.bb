@@ -34,7 +34,6 @@
 
 #include <gtest/gtest.h>
 #include "FrameTestHelpers.h"
-#include "PlatformContextSkia.h"
 #include "SkBitmap.h"
 #include "SkCanvas.h"
 #include "URLTestHelpers.h"
@@ -65,6 +64,7 @@
 #include "core/page/Settings.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderView.h"

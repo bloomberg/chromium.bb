@@ -30,11 +30,11 @@
 #include <windows.h>
 #include <vsstyle.h>
 
-#include "PlatformContextSkia.h"
 #include "core/platform/LayoutTestSupport.h"
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/Scrollbar.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include "core/platform/win/SystemInfo.h"
 #include <public/Platform.h>
 #include <public/WebRect.h>

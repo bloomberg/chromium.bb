@@ -27,9 +27,9 @@
 
 #include <public/WebScrollbarThemePainter.h>
 
-#include "PlatformContextSkia.h"
 #include "core/platform/Scrollbar.h"
 #include "core/platform/ScrollbarThemeComposite.h"
+#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include <public/WebRect.h>
 
 using namespace WebCore;

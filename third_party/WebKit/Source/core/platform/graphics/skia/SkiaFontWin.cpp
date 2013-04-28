@@ -29,9 +29,8 @@
  */
 
 #include "config.h"
-#include "SkiaFontWin.h"
+#include "core/platform/graphics/skia/SkiaFontWin.h"
 
-#include "PlatformContextSkia.h"
 #include "SkCanvas.h"
 #include "SkDevice.h"
 #include "SkPaint.h"
@@ -41,6 +40,7 @@
 #include "core/platform/graphics/Pattern.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/chromium/FontPlatformDataChromiumWin.h"
+#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 
 namespace WebCore {

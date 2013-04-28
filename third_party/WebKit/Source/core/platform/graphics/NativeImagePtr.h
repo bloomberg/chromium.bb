@@ -28,7 +28,7 @@
 #ifndef NativeImagePtr_h
 #define NativeImagePtr_h
 
-#include "NativeImageSkia.h"
+#include "core/platform/graphics/skia/NativeImageSkia.h"
 namespace WebCore {
 class NativeImageSkia;
 }

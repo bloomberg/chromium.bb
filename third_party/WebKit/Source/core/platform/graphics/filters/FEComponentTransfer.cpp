@@ -35,10 +35,10 @@
 #include <wtf/StdLibExtras.h>
 #include <wtf/Uint8ClampedArray.h>
 
-#include "NativeImageSkia.h"
 #include "SkColorFilterImageFilter.h"
 #include "SkTableColorFilter.h"
 #include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "core/platform/graphics/skia/NativeImageSkia.h"
 
 namespace WebCore {
 

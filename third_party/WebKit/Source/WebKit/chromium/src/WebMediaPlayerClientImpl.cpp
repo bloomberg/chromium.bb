@@ -5,7 +5,6 @@
 #include "config.h"
 #include "WebMediaPlayerClientImpl.h"
 
-#include "PlatformContextSkia.h"
 #include "WebAudioSourceProvider.h"
 #include "WebDocument.h"
 #include "WebFrameClient.h"
@@ -27,6 +26,7 @@
 #include "core/platform/graphics/IntSize.h"
 #include "core/platform/graphics/MediaPlayer.h"
 #include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
+#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
 #include <public/Platform.h>

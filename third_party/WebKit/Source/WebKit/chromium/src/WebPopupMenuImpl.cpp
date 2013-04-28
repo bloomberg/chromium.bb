@@ -32,7 +32,6 @@
 #include "WebPopupMenuImpl.h"
 
 #include <skia/ext/platform_canvas.h>
-#include "SkiaUtils.h"
 #include "WebInputEvent.h"
 #include "WebInputEventConversion.h"
 #include "WebRange.h"
@@ -49,6 +48,7 @@
 #include "core/platform/chromium/PopupContainer.h"
 #include "core/platform/chromium/PopupMenuChromium.h"
 #include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/skia/SkiaUtils.h"
 #include "painting/GraphicsContextBuilder.h"
 #include <public/WebRect.h>
 

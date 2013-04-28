@@ -33,7 +33,7 @@
 
 #include "core/platform/graphics/GraphicsContext.h"
 
-#include "PlatformContextSkia.h"
+#include "core/platform/graphics/skia/PlatformContextSkia.h"
 
 namespace WebKit {
 

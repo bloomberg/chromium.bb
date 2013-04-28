@@ -26,10 +26,10 @@
 #include "core/rendering/RenderThemeChromiumDefault.h"
 
 #include "CSSValueKeywords.h"
-#include "PlatformContextSkia.h"
 #include "UserAgentStyleSheets.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/Color.h"
+#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderProgress.h"

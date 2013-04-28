@@ -31,7 +31,6 @@
 
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
-#include "PlatformContextSkia.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/shadow/MediaControlElements.h"
 #include "core/platform/LayoutTestSupport.h"
@@ -40,6 +39,7 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/chromium/FontUtilsChromiumWin.h"
 #include "core/platform/graphics/chromium/TransparencyWin.h"
+#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include "core/platform/win/SystemInfo.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"

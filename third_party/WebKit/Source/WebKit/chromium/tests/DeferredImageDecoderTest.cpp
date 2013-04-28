@@ -29,12 +29,12 @@
 
 #include <gtest/gtest.h>
 #include "MockImageDecoder.h"
-#include "NativeImageSkia.h"
 #include "SkCanvas.h"
 #include "SkDevice.h"
 #include "SkPicture.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/chromium/ImageDecodingStore.h"
+#include "core/platform/graphics/skia/NativeImageSkia.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 #include <wtf/Threading.h>

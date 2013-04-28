@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "PlatformContextSkia.h"
+#include "core/platform/graphics/skia/PlatformContextSkia.h"
 
 #include "skia/ext/platform_canvas.h"
 

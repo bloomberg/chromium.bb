@@ -31,12 +31,12 @@
 
 #include <math.h>
 #include "SkPath.h"
-#include "SkiaUtils.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/PathTraversalState.h"
 #include "core/platform/graphics/StrokeStyleApplier.h"
+#include "core/platform/graphics/skia/SkiaUtils.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include <wtf/MathExtras.h>
 

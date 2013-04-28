@@ -28,11 +28,11 @@
 #include "config.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 
-#include "SkiaUtils.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/skia/SkiaUtils.h"
 
 #include <wtf/MathExtras.h>
 

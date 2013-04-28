@@ -29,12 +29,12 @@
 #ifndef ImageDecoder_h
 #define ImageDecoder_h
 
-#include "NativeImageSkia.h"
 #include "SkColorPriv.h"
 #include "core/platform/PlatformScreen.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/ImageSource.h"
 #include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/skia/NativeImageSkia.h"
 #include <wtf/Assertions.h>
 #include <wtf/RefPtr.h>
 #include <wtf/text/WTFString.h>

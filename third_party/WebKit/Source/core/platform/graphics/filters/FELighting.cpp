@@ -32,12 +32,12 @@
 #include "core/platform/graphics/cpu/arm/filters/FELightingNEON.h"
 #include <wtf/ParallelJobs.h>
 
-#include "NativeImageSkia.h"
 #include "SkLightingImageFilter.h"
 #include "core/platform/graphics/filters/DistantLightSource.h"
 #include "core/platform/graphics/filters/PointLightSource.h"
 #include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "core/platform/graphics/filters/SpotLightSource.h"
+#include "core/platform/graphics/skia/NativeImageSkia.h"
 
 namespace WebCore {
 

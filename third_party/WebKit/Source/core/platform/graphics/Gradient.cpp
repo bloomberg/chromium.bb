@@ -30,11 +30,11 @@
 
 #include "SkColorShader.h"
 #include "SkGradientShader.h"
-#include "SkiaUtils.h"
 #include "core/css/CSSParser.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/skia/SkiaUtils.h"
 #include <wtf/HashFunctions.h>
 #include <wtf/StringHasher.h>
 #include <wtf/UnusedParam.h>

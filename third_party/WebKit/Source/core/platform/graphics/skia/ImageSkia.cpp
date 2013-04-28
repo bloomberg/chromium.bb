@@ -30,19 +30,19 @@
 
 #include "config.h"
 
-#include "NativeImageSkia.h"
-#include "PlatformContextSkia.h"
 #include "SkBitmap.h"
 #include "SkPixelRef.h"
 #include "SkRect.h"
 #include "SkShader.h"
-#include "SkiaUtils.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/Logging.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageObserver.h"
+#include "core/platform/graphics/skia/NativeImageSkia.h"
+#include "core/platform/graphics/skia/PlatformContextSkia.h"
+#include "core/platform/graphics/skia/SkiaUtils.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include <wtf/text/WTFString.h>
 

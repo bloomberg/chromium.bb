@@ -26,7 +26,6 @@
 
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
-#include "PlatformContextSkia.h"
 #include "UserAgentStyleSheets.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/TimeRanges.h"
@@ -36,6 +35,7 @@
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/Image.h"
+#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include "core/platform/graphics/transforms/TransformationMatrix.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"

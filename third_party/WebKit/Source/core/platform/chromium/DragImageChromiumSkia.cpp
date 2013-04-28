@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/platform/DragImage.h"
 
-#include "NativeImageSkia.h"
 #include "SkBitmap.h"
 #include "SkCanvas.h"
 #include "SkMatrix.h"
@@ -39,6 +38,7 @@
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/Image.h"
+#include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 
 #include "skia/ext/image_operations.h"

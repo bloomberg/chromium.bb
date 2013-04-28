@@ -28,7 +28,6 @@
 #include "LinkHighlight.h"
 
 #include "NonCompositedContentHost.h"
-#include "PlatformContextSkia.h"
 #include "SkMatrix44.h"
 #include "WebFrameImpl.h"
 #include "WebKit.h"
@@ -37,6 +36,7 @@
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/platform/graphics/Color.h"
+#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderLayerModelObject.h"

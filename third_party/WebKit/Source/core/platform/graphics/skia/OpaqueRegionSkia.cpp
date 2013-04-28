@@ -30,9 +30,9 @@
 
 #include "config.h"
 
-#include "OpaqueRegionSkia.h"
+#include "core/platform/graphics/skia/OpaqueRegionSkia.h"
 
-#include "PlatformContextSkia.h"
+#include "core/platform/graphics/skia/PlatformContextSkia.h"
 
 #include "SkCanvas.h"
 #include "SkColorFilter.h"

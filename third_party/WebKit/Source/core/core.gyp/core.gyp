@@ -45,9 +45,7 @@
     'enable_wexit_time_destructors': 1,
 
     'webcore_include_dirs': [
-      # FIXME: Remove most entries in this list.
       '../..',
-      '../platform/graphics/skia',
       '<(INTERMEDIATE_DIR)',
       '<(SHARED_INTERMEDIATE_DIR)/webkit',
       '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',

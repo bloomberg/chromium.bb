@@ -33,8 +33,8 @@
 #include "core/platform/DragImage.h"
 
 #include <gtest/gtest.h>
-#include "NativeImageSkia.h"
 #include "core/platform/graphics/Image.h"
+#include "core/platform/graphics/skia/NativeImageSkia.h"
 #include <wtf/PassOwnPtr.h>
 
 using namespace WebCore;
