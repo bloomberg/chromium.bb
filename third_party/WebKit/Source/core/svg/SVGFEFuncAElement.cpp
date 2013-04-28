@@ -21,8 +21,8 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGFEFuncAElement.h"
 #include "SVGNames.h"
+#include "core/svg/SVGFEFuncAElement.h"
 
 namespace WebCore {
 

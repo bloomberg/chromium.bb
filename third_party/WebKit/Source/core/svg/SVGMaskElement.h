@@ -21,14 +21,14 @@
 #define SVGMaskElement_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedBoolean.h"
-#include "SVGAnimatedEnumeration.h"
-#include "SVGAnimatedLength.h"
-#include "SVGExternalResourcesRequired.h"
-#include "SVGLangSpace.h"
-#include "SVGStyledElement.h"
-#include "SVGTests.h"
-#include "SVGUnitTypes.h"
+#include "core/svg/SVGAnimatedBoolean.h"
+#include "core/svg/SVGAnimatedEnumeration.h"
+#include "core/svg/SVGAnimatedLength.h"
+#include "core/svg/SVGExternalResourcesRequired.h"
+#include "core/svg/SVGLangSpace.h"
+#include "core/svg/SVGStyledElement.h"
+#include "core/svg/SVGTests.h"
+#include "core/svg/SVGUnitTypes.h"
 
 namespace WebCore {
 

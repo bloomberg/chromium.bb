@@ -21,16 +21,16 @@
 #include "core/rendering/svg/SVGPathData.h"
 
 #if ENABLE(SVG)
-#include "SVGCircleElement.h"
-#include "SVGEllipseElement.h"
-#include "SVGLineElement.h"
 #include "SVGNames.h"
-#include "SVGPathElement.h"
-#include "SVGPathUtilities.h"
-#include "SVGPolygonElement.h"
-#include "SVGPolylineElement.h"
-#include "SVGRectElement.h"
 #include "core/platform/graphics/Path.h"
+#include "core/svg/SVGCircleElement.h"
+#include "core/svg/SVGEllipseElement.h"
+#include "core/svg/SVGLineElement.h"
+#include "core/svg/SVGPathElement.h"
+#include "core/svg/SVGPathUtilities.h"
+#include "core/svg/SVGPolygonElement.h"
+#include "core/svg/SVGPolylineElement.h"
+#include "core/svg/SVGRectElement.h"
 #include <wtf/HashMap.h>
 
 namespace WebCore {

@@ -21,8 +21,8 @@
 #define SVGLengthContext_h
 
 #if ENABLE(SVG)
-#include "SVGUnitTypes.h"
 #include "core/platform/graphics/FloatRect.h"
+#include "core/svg/SVGUnitTypes.h"
 
 namespace WebCore {
 

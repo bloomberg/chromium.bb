@@ -25,9 +25,9 @@
 #include "core/rendering/svg/RenderSVGTransformableContainer.h"
 
 #include "SVGNames.h"
-#include "SVGStyledTransformableElement.h"
-#include "SVGUseElement.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
+#include "core/svg/SVGStyledTransformableElement.h"
+#include "core/svg/SVGUseElement.h"
 
 namespace WebCore {
     

@@ -21,7 +21,7 @@
 #define SVGAnimatedEnumerationPropertyTearOff_h
 
 #if ENABLE(SVG)
-#include "SVGException.h"
+#include "core/svg/SVGException.h"
 #include "core/svg/properties/SVGAnimatedStaticPropertyTearOff.h"
 #include "core/svg/properties/SVGPropertyTraits.h"
 

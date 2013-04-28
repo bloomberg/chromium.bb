@@ -22,10 +22,10 @@
 #define SVGFEColorMatrixElement_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedEnumeration.h"
-#include "SVGAnimatedNumberList.h"
-#include "SVGFilterPrimitiveStandardAttributes.h"
 #include "core/platform/graphics/filters/FEColorMatrix.h"
+#include "core/svg/SVGAnimatedEnumeration.h"
+#include "core/svg/SVGAnimatedNumberList.h"
+#include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 
 namespace WebCore {
 

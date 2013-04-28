@@ -28,9 +28,9 @@
 
 #if ENABLE(SVG)
 #include "SVGNames.h"
-#include "SVGSVGElement.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/svg/SVGSVGElement.h"
 #include "core/svg/animation/SVGSMILElement.h"
 #include <wtf/CurrentTime.h>
 

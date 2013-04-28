@@ -21,8 +21,8 @@
 #define GradientAttributes_h
 
 #if ENABLE(SVG)
-#include "SVGGradientElement.h"
-#include "SVGLength.h"
+#include "core/svg/SVGGradientElement.h"
+#include "core/svg/SVGLength.h"
 
 namespace WebCore {
 

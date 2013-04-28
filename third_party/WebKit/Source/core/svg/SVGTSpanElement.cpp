@@ -21,7 +21,7 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGTSpanElement.h"
+#include "core/svg/SVGTSpanElement.h"
 
 #include "SVGNames.h"
 #include "core/dom/NodeRenderingContext.h"

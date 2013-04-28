@@ -21,12 +21,12 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGFEColorMatrixElement.h"
+#include "core/svg/SVGFEColorMatrixElement.h"
 
-#include "SVGElementInstance.h"
 #include "SVGNames.h"
 #include "core/dom/Attribute.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
+#include "core/svg/SVGElementInstance.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 
 namespace WebCore {

@@ -24,10 +24,10 @@
 #include "core/css/CSSComputedStyleDeclaration.h"
 
 #include "CSSPropertyNames.h"
-#include "SVGPaint.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/dom/Document.h"
 #include "core/rendering/style/RenderStyle.h"
+#include "core/svg/SVGPaint.h"
 
 namespace WebCore {
 

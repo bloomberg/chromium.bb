@@ -26,9 +26,6 @@
 #if ENABLE(SVG)
 #include "core/svg/graphics/filters/SVGFEImage.h"
 
-#include "SVGPreserveAspectRatio.h"
-#include "SVGStyledElement.h"
-#include "SVGURIReference.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
@@ -36,6 +33,9 @@
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderTreeAsText.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
+#include "core/svg/SVGPreserveAspectRatio.h"
+#include "core/svg/SVGStyledElement.h"
+#include "core/svg/SVGURIReference.h"
 #include "core/svg/graphics/filters/SVGFilter.h"
 
 namespace WebCore {

@@ -20,8 +20,8 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGFEDistantLightElement.h"
 #include "SVGNames.h"
+#include "core/svg/SVGFEDistantLightElement.h"
 
 #include "core/platform/graphics/filters/DistantLightSource.h"
 

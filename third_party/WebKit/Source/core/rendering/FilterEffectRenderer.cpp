@@ -51,11 +51,11 @@
 #endif
 
 #if ENABLE(SVG)
-#include "SVGElement.h"
-#include "SVGFilterPrimitiveStandardAttributes.h"
 #include "core/loader/cache/CachedSVGDocument.h"
 #include "core/loader/cache/CachedSVGDocumentReference.h"
 #include "core/platform/graphics/filters/SourceAlpha.h"
+#include "core/svg/SVGElement.h"
+#include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #endif
 
 namespace WebCore {

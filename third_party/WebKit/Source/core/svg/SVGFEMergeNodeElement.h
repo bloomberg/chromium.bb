@@ -22,8 +22,8 @@
 #define SVGFEMergeNodeElement_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedString.h"
-#include "SVGElement.h"
+#include "core/svg/SVGAnimatedString.h"
+#include "core/svg/SVGElement.h"
 
 namespace WebCore {
 

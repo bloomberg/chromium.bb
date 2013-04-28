@@ -27,8 +27,6 @@
 #include "config.h"
 #include "core/css/CSSValue.h"
 
-#include "SVGColor.h"
-#include "SVGPaint.h"
 #include "core/css/CSSAspectRatioValue.h"
 #include "core/css/CSSBorderImageSliceValue.h"
 #include "core/css/CSSCalculationValue.h"
@@ -59,6 +57,8 @@
 #include "core/css/WebKitCSSShaderValue.h"
 #include "core/css/WebKitCSSTransformValue.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/svg/SVGColor.h"
+#include "core/svg/SVGPaint.h"
 
 #if ENABLE(SVG)
 #include "core/css/WebKitCSSSVGDocumentValue.h"

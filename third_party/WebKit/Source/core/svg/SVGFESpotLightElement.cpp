@@ -20,8 +20,8 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGFESpotLightElement.h"
 #include "SVGNames.h"
+#include "core/svg/SVGFESpotLightElement.h"
 
 #include "core/platform/graphics/filters/SpotLightSource.h"
 

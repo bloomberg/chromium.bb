@@ -22,7 +22,7 @@
 #define SVGPathSegCurvetoQuadraticSmooth_h
 
 #if ENABLE(SVG)
-#include "SVGPathSegWithContext.h"
+#include "core/svg/SVGPathSegWithContext.h"
 
 namespace WebCore {
 

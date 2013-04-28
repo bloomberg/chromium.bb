@@ -76,8 +76,8 @@
 #include "core/rendering/style/StyleFilterData.h"
 
 #if ENABLE(SVG)
-#include "SVGPaint.h"
 #include "core/rendering/style/SVGRenderStyle.h"
+#include "core/svg/SVGPaint.h"
 #endif
 
 template<typename T, typename U> inline bool compareEqual(const T& t, const U& u) { return t == static_cast<T>(u); }

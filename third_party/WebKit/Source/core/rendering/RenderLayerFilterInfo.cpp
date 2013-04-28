@@ -35,10 +35,10 @@
 #include "core/rendering/RenderLayer.h"
 
 #if ENABLE(SVG)
-#include "SVGElement.h"
-#include "SVGFilterPrimitiveStandardAttributes.h"
 #include "core/loader/cache/CachedSVGDocument.h"
 #include "core/loader/cache/CachedSVGDocumentReference.h"
+#include "core/svg/SVGElement.h"
+#include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "core/svg/graphics/filters/SVGFilter.h"
 #endif
 

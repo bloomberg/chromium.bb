@@ -99,10 +99,10 @@
 #include <wtf/TemporaryChange.h>
 
 #if ENABLE(SVG)
-#include "SVGDocument.h"
-#include "SVGElementInstance.h"
 #include "SVGNames.h"
-#include "SVGUseElement.h"
+#include "core/svg/SVGDocument.h"
+#include "core/svg/SVGElementInstance.h"
+#include "core/svg/SVGUseElement.h"
 #endif
 
 #if ENABLE(CSS_IMAGE_SET)

@@ -21,7 +21,7 @@
 #define SVGTransformDistance_h
 #if ENABLE(SVG)
 
-#include "SVGTransform.h"
+#include "core/svg/SVGTransform.h"
 
 namespace WebCore {
     

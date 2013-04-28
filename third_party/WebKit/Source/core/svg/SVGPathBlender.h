@@ -21,8 +21,8 @@
 #define SVGPathBlender_h
 
 #if ENABLE(SVG)
-#include "SVGPathConsumer.h"
-#include "SVGPathSource.h"
+#include "core/svg/SVGPathConsumer.h"
+#include "core/svg/SVGPathSource.h"
 
 namespace WebCore {
 

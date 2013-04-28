@@ -21,8 +21,8 @@
 #define SVGFontData_h
 
 #if ENABLE(SVG_FONTS)
-#include "SVGFontFaceElement.h"
 #include "core/platform/graphics/SimpleFontData.h"
+#include "core/svg/SVGFontFaceElement.h"
 
 namespace WebCore {
 

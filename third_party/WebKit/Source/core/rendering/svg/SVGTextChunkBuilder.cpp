@@ -22,10 +22,10 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/SVGTextChunkBuilder.h"
 
-#include "SVGElement.h"
-#include "SVGLengthContext.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/SVGInlineTextBox.h"
+#include "core/svg/SVGElement.h"
+#include "core/svg/SVGLengthContext.h"
 
 namespace WebCore {
 

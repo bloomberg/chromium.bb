@@ -30,9 +30,9 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGPath.h"
 
-#include "SVGPathElement.h"
-#include "SVGStyledTransformableElement.h"
 #include "core/rendering/svg/SVGSubpathData.h"
+#include "core/svg/SVGPathElement.h"
+#include "core/svg/SVGStyledTransformableElement.h"
 
 namespace WebCore {
 

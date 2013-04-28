@@ -23,8 +23,8 @@
 
 #if ENABLE(SVG)
 
-#include "SVGZoomEvent.h"
 #include "core/dom/EventNames.h"
+#include "core/svg/SVGZoomEvent.h"
 
 namespace WebCore {
 

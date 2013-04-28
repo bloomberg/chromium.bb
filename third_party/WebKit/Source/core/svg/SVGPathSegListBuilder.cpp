@@ -24,21 +24,21 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGPathSegListBuilder.h"
+#include "core/svg/SVGPathSegListBuilder.h"
 
-#include "SVGPathElement.h"
-#include "SVGPathSegArc.h"
-#include "SVGPathSegClosePath.h"
-#include "SVGPathSegCurvetoCubic.h"
-#include "SVGPathSegCurvetoCubicSmooth.h"
-#include "SVGPathSegCurvetoQuadratic.h"
-#include "SVGPathSegCurvetoQuadraticSmooth.h"
-#include "SVGPathSegLineto.h"
-#include "SVGPathSegLinetoHorizontal.h"
-#include "SVGPathSegLinetoVertical.h"
-#include "SVGPathSegList.h"
-#include "SVGPathSegMoveto.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/svg/SVGPathElement.h"
+#include "core/svg/SVGPathSegArc.h"
+#include "core/svg/SVGPathSegClosePath.h"
+#include "core/svg/SVGPathSegCurvetoCubic.h"
+#include "core/svg/SVGPathSegCurvetoCubicSmooth.h"
+#include "core/svg/SVGPathSegCurvetoQuadratic.h"
+#include "core/svg/SVGPathSegCurvetoQuadraticSmooth.h"
+#include "core/svg/SVGPathSegLineto.h"
+#include "core/svg/SVGPathSegLinetoHorizontal.h"
+#include "core/svg/SVGPathSegLinetoVertical.h"
+#include "core/svg/SVGPathSegList.h"
+#include "core/svg/SVGPathSegMoveto.h"
 
 namespace WebCore {
 

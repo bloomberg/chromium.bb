@@ -21,7 +21,7 @@
 #define SVGAnimatedEnumeration_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedTypeAnimator.h"
+#include "core/svg/SVGAnimatedTypeAnimator.h"
 #include "core/svg/properties/SVGAnimatedEnumerationPropertyTearOff.h"
 #include "core/svg/properties/SVGAnimatedPropertyMacros.h"
 

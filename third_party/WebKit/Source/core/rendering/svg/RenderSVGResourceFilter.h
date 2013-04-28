@@ -25,11 +25,11 @@
 #define RenderSVGResourceFilter_h
 
 #if ENABLE(SVG)
-#include "SVGFilterElement.h"
-#include "SVGUnitTypes.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
+#include "core/svg/SVGFilterElement.h"
+#include "core/svg/SVGUnitTypes.h"
 #include "core/svg/graphics/filters/SVGFilter.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 

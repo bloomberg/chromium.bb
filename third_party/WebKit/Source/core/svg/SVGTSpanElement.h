@@ -22,7 +22,7 @@
 #define SVGTSpanElement_h
 
 #if ENABLE(SVG)
-#include "SVGTextPositioningElement.h"
+#include "core/svg/SVGTextPositioningElement.h"
 
 namespace WebCore {
 

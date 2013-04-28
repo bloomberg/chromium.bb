@@ -20,8 +20,8 @@
 
 #include "config.h"
 #if ENABLE(SVG)
-#include "SVGSetElement.h"
 #include "SVGNames.h"
+#include "core/svg/SVGSetElement.h"
 
 namespace WebCore {
     

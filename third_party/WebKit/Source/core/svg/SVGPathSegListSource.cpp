@@ -20,14 +20,14 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGPathSegListSource.h"
+#include "core/svg/SVGPathSegListSource.h"
 
-#include "SVGPathSegArc.h"
-#include "SVGPathSegCurvetoCubic.h"
-#include "SVGPathSegCurvetoCubicSmooth.h"
-#include "SVGPathSegCurvetoQuadratic.h"
-#include "SVGPathSegLinetoHorizontal.h"
-#include "SVGPathSegLinetoVertical.h"
+#include "core/svg/SVGPathSegArc.h"
+#include "core/svg/SVGPathSegCurvetoCubic.h"
+#include "core/svg/SVGPathSegCurvetoCubicSmooth.h"
+#include "core/svg/SVGPathSegCurvetoQuadratic.h"
+#include "core/svg/SVGPathSegLinetoHorizontal.h"
+#include "core/svg/SVGPathSegLinetoVertical.h"
 
 namespace WebCore {
 

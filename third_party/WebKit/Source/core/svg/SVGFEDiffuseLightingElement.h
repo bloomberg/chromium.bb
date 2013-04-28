@@ -23,8 +23,8 @@
 #define SVGFEDiffuseLightingElement_h
 
 #if ENABLE(SVG)
-#include "SVGFELightElement.h"
-#include "SVGFilterPrimitiveStandardAttributes.h"
+#include "core/svg/SVGFELightElement.h"
+#include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 
 namespace WebCore {
 

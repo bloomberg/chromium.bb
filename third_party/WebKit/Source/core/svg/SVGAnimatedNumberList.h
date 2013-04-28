@@ -21,8 +21,8 @@
 #define SVGAnimatedNumberList_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedTypeAnimator.h"
-#include "SVGNumberList.h"
+#include "core/svg/SVGAnimatedTypeAnimator.h"
+#include "core/svg/SVGNumberList.h"
 #include "core/svg/properties/SVGAnimatedListPropertyTearOff.h"
 
 namespace WebCore {

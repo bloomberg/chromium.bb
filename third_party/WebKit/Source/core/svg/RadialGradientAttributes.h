@@ -21,7 +21,7 @@
 #define RadialGradientAttributes_h
 
 #if ENABLE(SVG)
-#include "GradientAttributes.h"
+#include "core/svg/GradientAttributes.h"
 
 namespace WebCore {
 struct RadialGradientAttributes : GradientAttributes {

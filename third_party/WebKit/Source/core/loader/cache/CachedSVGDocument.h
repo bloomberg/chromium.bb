@@ -24,11 +24,11 @@
 #define CachedSVGDocument_h
 
 #if ENABLE(SVG)
-#include "SVGDocument.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/cache/CachedResource.h"
 #include "core/loader/cache/CachedResourceClient.h"
 #include "core/loader/cache/CachedResourceHandle.h"
+#include "core/svg/SVGDocument.h"
 
 namespace WebCore {
 

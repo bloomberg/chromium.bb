@@ -104,8 +104,8 @@
 #include "XLinkNames.h"
 
 #if ENABLE(SVG)
-#include "SVGDocument.h"
-#include "SVGDocumentExtensions.h"
+#include "core/svg/SVGDocument.h"
+#include "core/svg/SVGDocumentExtensions.h"
 #endif
 
 using namespace std;

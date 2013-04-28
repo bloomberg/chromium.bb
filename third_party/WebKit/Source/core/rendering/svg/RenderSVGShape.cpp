@@ -30,9 +30,6 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGShape.h"
 
-#include "SVGStyledTransformableElement.h"
-#include "SVGTransformList.h"
-#include "SVGURIReference.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContext.h"
@@ -47,6 +44,9 @@
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
+#include "core/svg/SVGStyledTransformableElement.h"
+#include "core/svg/SVGTransformList.h"
+#include "core/svg/SVGURIReference.h"
 #include <wtf/MathExtras.h>
 
 namespace WebCore {

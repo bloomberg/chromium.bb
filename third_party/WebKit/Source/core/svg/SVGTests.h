@@ -22,7 +22,7 @@
 #define SVGTests_h
 
 #if ENABLE(SVG)
-#include "SVGStringList.h"
+#include "core/svg/SVGStringList.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
 #include "core/svg/properties/SVGAnimatedPropertyMacros.h"
 

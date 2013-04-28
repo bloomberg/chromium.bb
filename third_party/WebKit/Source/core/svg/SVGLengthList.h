@@ -22,7 +22,7 @@
 #define SVGLengthList_h
 
 #if ENABLE(SVG)
-#include "SVGLength.h"
+#include "core/svg/SVGLength.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

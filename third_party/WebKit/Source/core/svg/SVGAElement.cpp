@@ -23,10 +23,9 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGAElement.h"
+#include "core/svg/SVGAElement.h"
 
 #include "HTMLAnchorElement.h"
-#include "SVGElementInstance.h"
 #include "SVGNames.h"
 #include "XLinkNames.h"
 #include "core/dom/Attr.h"
@@ -46,6 +45,7 @@
 #include "core/rendering/svg/RenderSVGInline.h"
 #include "core/rendering/svg/RenderSVGText.h"
 #include "core/rendering/svg/RenderSVGTransformableContainer.h"
+#include "core/svg/SVGElementInstance.h"
 #include "core/svg/animation/SVGSMILElement.h"
 
 namespace WebCore {

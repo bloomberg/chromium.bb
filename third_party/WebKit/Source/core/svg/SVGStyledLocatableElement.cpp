@@ -21,11 +21,11 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGStyledLocatableElement.h"
+#include "core/svg/SVGStyledLocatableElement.h"
 
-#include "SVGElement.h"
-#include "SVGSVGElement.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
+#include "core/svg/SVGElement.h"
+#include "core/svg/SVGSVGElement.h"
 
 namespace WebCore {
 

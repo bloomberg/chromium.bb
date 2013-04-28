@@ -25,7 +25,6 @@
 
 #include "config.h"
 #include "FontCustomPlatformData.h"
-#include "SVGFontFaceElement.h"
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Document.h"
@@ -35,6 +34,7 @@
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"
 #include "core/loader/cache/CachedResourceRequestInitiators.h"
+#include "core/svg/SVGFontFaceElement.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

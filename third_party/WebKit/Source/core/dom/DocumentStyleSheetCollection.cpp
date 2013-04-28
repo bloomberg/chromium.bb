@@ -33,7 +33,6 @@
 #include "HTMLNames.h"
 #include "HTMLStyleElement.h"
 #include "SVGNames.h"
-#include "SVGStyleElement.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/SelectorChecker.h"
@@ -49,6 +48,7 @@
 #include "core/page/PageGroup.h"
 #include "core/page/Settings.h"
 #include "core/page/UserContentURLPattern.h"
+#include "core/svg/SVGStyleElement.h"
 #include <wtf/MemoryInstrumentationListHashSet.h>
 #include <wtf/MemoryInstrumentationVector.h>
 

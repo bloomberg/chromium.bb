@@ -20,7 +20,7 @@
 #include "config.h"
 
 #if ENABLE(SVG_FONTS)
-#include "SVGFontFaceNameElement.h"
+#include "core/svg/SVGFontFaceNameElement.h"
 
 #include "SVGNames.h"
 #include "core/css/CSSFontFaceSrcValue.h"

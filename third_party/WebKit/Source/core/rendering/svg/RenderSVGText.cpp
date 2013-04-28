@@ -29,10 +29,6 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGText.h"
 
-#include "SVGLengthList.h"
-#include "SVGTextElement.h"
-#include "SVGTransformList.h"
-#include "SVGURIReference.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/FloatQuad.h"
@@ -52,6 +48,10 @@
 #include "core/rendering/svg/SVGRootInlineBox.h"
 #include "core/rendering/svg/SVGTextLayoutAttributesBuilder.h"
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
+#include "core/svg/SVGLengthList.h"
+#include "core/svg/SVGTextElement.h"
+#include "core/svg/SVGTransformList.h"
+#include "core/svg/SVGURIReference.h"
 
 namespace WebCore {
 

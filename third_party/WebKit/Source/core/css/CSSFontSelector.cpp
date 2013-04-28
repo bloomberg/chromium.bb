@@ -53,8 +53,8 @@
 #include <wtf/text/AtomicString.h>
 
 #if ENABLE(SVG)
-#include "SVGFontFaceElement.h"
 #include "SVGNames.h"
+#include "core/svg/SVGFontFaceElement.h"
 #endif
 
 using namespace std;

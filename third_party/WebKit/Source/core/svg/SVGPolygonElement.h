@@ -22,7 +22,7 @@
 #define SVGPolygonElement_h
 
 #if ENABLE(SVG)
-#include "SVGPolyElement.h"
+#include "core/svg/SVGPolyElement.h"
 
 namespace WebCore {
 

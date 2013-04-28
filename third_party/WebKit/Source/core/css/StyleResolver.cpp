@@ -39,8 +39,6 @@
 #include "HTMLStyleElement.h"
 #include "HTMLTextAreaElement.h"
 #include "MathMLNames.h"
-#include "SVGDocumentExtensions.h"
-#include "SVGFontFaceElement.h"
 #include "UserAgentStyleSheets.h"
 #include "WebKitFontFamilyNames.h"
 #include "XMLNames.h"
@@ -131,6 +129,8 @@
 #include "core/rendering/style/StyleCachedImage.h"
 #include "core/rendering/style/StyleGeneratedImage.h"
 #include "core/rendering/style/StylePendingImage.h"
+#include "core/svg/SVGDocumentExtensions.h"
+#include "core/svg/SVGFontFaceElement.h"
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationHashSet.h>
 #include <wtf/MemoryInstrumentationVector.h>
@@ -141,13 +141,13 @@
 #include "core/platform/graphics/filters/FilterOperation.h"
 
 #if ENABLE(SVG)
-#include "SVGDocument.h"
-#include "SVGElement.h"
 #include "SVGNames.h"
-#include "SVGURIReference.h"
 #include "core/css/WebKitCSSSVGDocumentValue.h"
 #include "core/loader/cache/CachedSVGDocument.h"
 #include "core/loader/cache/CachedSVGDocumentReference.h"
+#include "core/svg/SVGDocument.h"
+#include "core/svg/SVGElement.h"
+#include "core/svg/SVGURIReference.h"
 #endif
 
 #include "core/css/WebKitCSSMixFunctionValue.h"

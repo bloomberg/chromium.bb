@@ -22,13 +22,13 @@
 #define SVGCursorElement_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedBoolean.h"
-#include "SVGAnimatedLength.h"
-#include "SVGAnimatedString.h"
-#include "SVGElement.h"
-#include "SVGExternalResourcesRequired.h"
-#include "SVGTests.h"
-#include "SVGURIReference.h"
+#include "core/svg/SVGAnimatedBoolean.h"
+#include "core/svg/SVGAnimatedLength.h"
+#include "core/svg/SVGAnimatedString.h"
+#include "core/svg/SVGElement.h"
+#include "core/svg/SVGExternalResourcesRequired.h"
+#include "core/svg/SVGTests.h"
+#include "core/svg/SVGURIReference.h"
 
 namespace WebCore {
 

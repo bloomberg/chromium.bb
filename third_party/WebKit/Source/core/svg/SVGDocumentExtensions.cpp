@@ -22,10 +22,8 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGDocumentExtensions.h"
+#include "core/svg/SVGDocumentExtensions.h"
 
-#include "SVGElement.h"
-#include "SVGSVGElement.h"
 #include "XLinkNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/EventListener.h"
@@ -36,6 +34,8 @@
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
+#include "core/svg/SVGElement.h"
+#include "core/svg/SVGSVGElement.h"
 #include "core/svg/animation/SMILTimeContainer.h"
 #include "core/svg/animation/SVGSMILElement.h"
 #include <wtf/text/AtomicString.h>

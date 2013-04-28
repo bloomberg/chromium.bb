@@ -23,7 +23,7 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGStyleElement.h"
+#include "core/svg/SVGStyleElement.h"
 
 #include "SVGNames.h"
 #include "core/css/CSSStyleSheet.h"

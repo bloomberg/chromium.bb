@@ -30,11 +30,7 @@
 
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
-#include "SVGDocumentExtensions.h"
 #include "SVGNames.h"
-#include "SVGParserUtilities.h"
-#include "SVGSVGElement.h"
-#include "SVGURIReference.h"
 #include "XLinkNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
@@ -42,6 +38,10 @@
 #include "core/dom/EventListener.h"
 #include "core/page/FrameView.h"
 #include "core/platform/FloatConversion.h"
+#include "core/svg/SVGDocumentExtensions.h"
+#include "core/svg/SVGParserUtilities.h"
+#include "core/svg/SVGSVGElement.h"
+#include "core/svg/SVGURIReference.h"
 #include "core/svg/animation/SMILTimeContainer.h"
 #include <wtf/MathExtras.h>
 #include <wtf/StdLibExtras.h>

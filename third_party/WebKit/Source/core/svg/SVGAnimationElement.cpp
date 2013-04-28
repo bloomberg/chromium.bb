@@ -25,20 +25,20 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGAnimationElement.h"
+#include "core/svg/SVGAnimationElement.h"
 
 #include "CSSPropertyNames.h"
-#include "SVGAnimateElement.h"
-#include "SVGElementInstance.h"
 #include "SVGNames.h"
-#include "SVGParserUtilities.h"
-#include "SVGStyledElement.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSParser.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/platform/FloatConversion.h"
 #include "core/rendering/RenderObject.h"
+#include "core/svg/SVGAnimateElement.h"
+#include "core/svg/SVGElementInstance.h"
+#include "core/svg/SVGParserUtilities.h"
+#include "core/svg/SVGStyledElement.h"
 #include <wtf/MathExtras.h>
 
 namespace WebCore {

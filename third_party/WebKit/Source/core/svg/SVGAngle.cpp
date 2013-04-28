@@ -22,10 +22,10 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGAngle.h"
+#include "core/svg/SVGAngle.h"
 
-#include "SVGParserUtilities.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/svg/SVGParserUtilities.h"
 #include <wtf/MathExtras.h>
 #include <wtf/text/WTFString.h>
 

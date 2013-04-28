@@ -21,17 +21,17 @@
 #include "core/rendering/svg/SVGResources.h"
 
 #if ENABLE(SVG)
-#include "SVGFilterElement.h"
-#include "SVGGradientElement.h"
 #include "SVGNames.h"
-#include "SVGPaint.h"
-#include "SVGPatternElement.h"
-#include "SVGURIReference.h"
 #include "core/rendering/style/SVGRenderStyle.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 #include "core/rendering/svg/RenderSVGResourceMarker.h"
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
+#include "core/svg/SVGFilterElement.h"
+#include "core/svg/SVGGradientElement.h"
+#include "core/svg/SVGPaint.h"
+#include "core/svg/SVGPatternElement.h"
+#include "core/svg/SVGURIReference.h"
 
 #ifndef NDEBUG
 #include <stdio.h>

@@ -20,17 +20,17 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGFEDiffuseLightingElement.h"
+#include "core/svg/SVGFEDiffuseLightingElement.h"
 
-#include "SVGColor.h"
-#include "SVGElementInstance.h"
-#include "SVGFELightElement.h"
 #include "SVGNames.h"
-#include "SVGParserUtilities.h"
 #include "core/dom/Attr.h"
 #include "core/platform/graphics/filters/FEDiffuseLighting.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
 #include "core/rendering/style/RenderStyle.h"
+#include "core/svg/SVGColor.h"
+#include "core/svg/SVGElementInstance.h"
+#include "core/svg/SVGFELightElement.h"
+#include "core/svg/SVGParserUtilities.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 
 namespace WebCore {

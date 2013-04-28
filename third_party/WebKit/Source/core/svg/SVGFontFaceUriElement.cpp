@@ -21,9 +21,8 @@
 #include "config.h"
 
 #if ENABLE(SVG_FONTS)
-#include "SVGFontFaceUriElement.h"
+#include "core/svg/SVGFontFaceUriElement.h"
 
-#include "SVGFontFaceElement.h"
 #include "SVGNames.h"
 #include "XLinkNames.h"
 #include "core/css/CSSFontFaceSrcValue.h"
@@ -32,6 +31,7 @@
 #include "core/loader/cache/CachedFont.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"
+#include "core/svg/SVGFontFaceElement.h"
 
 namespace WebCore {
     

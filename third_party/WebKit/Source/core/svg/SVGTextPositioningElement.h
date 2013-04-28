@@ -22,9 +22,9 @@
 #define SVGTextPositioningElement_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedLengthList.h"
-#include "SVGAnimatedNumberList.h"
-#include "SVGTextContentElement.h"
+#include "core/svg/SVGAnimatedLengthList.h"
+#include "core/svg/SVGAnimatedNumberList.h"
+#include "core/svg/SVGTextContentElement.h"
 
 namespace WebCore {
 

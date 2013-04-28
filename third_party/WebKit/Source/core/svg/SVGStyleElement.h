@@ -22,9 +22,9 @@
 #define SVGStyleElement_h
 
 #if ENABLE(SVG)
-#include "SVGElement.h"
-#include "SVGLangSpace.h"
 #include "core/dom/StyleElement.h"
+#include "core/svg/SVGElement.h"
+#include "core/svg/SVGLangSpace.h"
 
 namespace WebCore {
 

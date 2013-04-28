@@ -22,13 +22,13 @@
 #define SVGSymbolElement_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedBoolean.h"
-#include "SVGAnimatedPreserveAspectRatio.h"
-#include "SVGAnimatedRect.h"
-#include "SVGExternalResourcesRequired.h"
-#include "SVGFitToViewBox.h"
-#include "SVGLangSpace.h"
-#include "SVGStyledElement.h"
+#include "core/svg/SVGAnimatedBoolean.h"
+#include "core/svg/SVGAnimatedPreserveAspectRatio.h"
+#include "core/svg/SVGAnimatedRect.h"
+#include "core/svg/SVGExternalResourcesRequired.h"
+#include "core/svg/SVGFitToViewBox.h"
+#include "core/svg/SVGLangSpace.h"
+#include "core/svg/SVGStyledElement.h"
 
 namespace WebCore {
 

@@ -21,7 +21,7 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGDefsElement.h"
+#include "core/svg/SVGDefsElement.h"
 
 #include "SVGNames.h"
 #include "core/rendering/svg/RenderSVGHiddenContainer.h"

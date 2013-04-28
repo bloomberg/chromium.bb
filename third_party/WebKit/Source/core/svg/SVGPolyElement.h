@@ -22,13 +22,13 @@
 #define SVGPolyElement_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedBoolean.h"
-#include "SVGExternalResourcesRequired.h"
-#include "SVGLangSpace.h"
 #include "SVGNames.h"
-#include "SVGPointList.h"
-#include "SVGStyledTransformableElement.h"
-#include "SVGTests.h"
+#include "core/svg/SVGAnimatedBoolean.h"
+#include "core/svg/SVGExternalResourcesRequired.h"
+#include "core/svg/SVGLangSpace.h"
+#include "core/svg/SVGPointList.h"
+#include "core/svg/SVGStyledTransformableElement.h"
+#include "core/svg/SVGTests.h"
 
 namespace WebCore {
 

@@ -26,10 +26,6 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGRoot.h"
 
-#include "SVGLength.h"
-#include "SVGSVGElement.h"
-#include "SVGStyledElement.h"
-#include "SVGViewSpec.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Frame.h"
@@ -47,6 +43,10 @@
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
+#include "core/svg/SVGLength.h"
+#include "core/svg/SVGSVGElement.h"
+#include "core/svg/SVGStyledElement.h"
+#include "core/svg/SVGViewSpec.h"
 
 using namespace std;
 

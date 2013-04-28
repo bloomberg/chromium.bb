@@ -21,7 +21,7 @@
 #define SVGAnimatedPath_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedTypeAnimator.h"
+#include "core/svg/SVGAnimatedTypeAnimator.h"
 
 namespace WebCore {
 

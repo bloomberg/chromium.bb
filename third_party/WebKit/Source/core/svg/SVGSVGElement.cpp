@@ -22,19 +22,10 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGSVGElement.h"
+#include "core/svg/SVGSVGElement.h"
 
 #include "HTMLNames.h"
-#include "SVGAngle.h"
-#include "SVGElementInstance.h"
-#include "SVGFitToViewBox.h"
 #include "SVGNames.h"
-#include "SVGPreserveAspectRatio.h"
-#include "SVGTransform.h"
-#include "SVGTransformList.h"
-#include "SVGViewElement.h"
-#include "SVGViewSpec.h"
-#include "SVGZoomEvent.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/css/CSSHelper.h"
 #include "core/dom/Attribute.h"
@@ -56,6 +47,15 @@
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/RenderSVGViewportContainer.h"
+#include "core/svg/SVGAngle.h"
+#include "core/svg/SVGElementInstance.h"
+#include "core/svg/SVGFitToViewBox.h"
+#include "core/svg/SVGPreserveAspectRatio.h"
+#include "core/svg/SVGTransform.h"
+#include "core/svg/SVGTransformList.h"
+#include "core/svg/SVGViewElement.h"
+#include "core/svg/SVGViewSpec.h"
+#include "core/svg/SVGZoomEvent.h"
 #include "core/svg/animation/SMILTimeContainer.h"
 #include <wtf/StdLibExtras.h>
 

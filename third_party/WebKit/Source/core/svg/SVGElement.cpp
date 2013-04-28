@@ -24,17 +24,10 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGElement.h"
+#include "core/svg/SVGElement.h"
 
 #include "HTMLNames.h"
-#include "SVGCursorElement.h"
-#include "SVGDocumentExtensions.h"
-#include "SVGElementInstance.h"
-#include "SVGElementRareData.h"
 #include "SVGNames.h"
-#include "SVGSVGElement.h"
-#include "SVGStyledLocatableElement.h"
-#include "SVGTextElement.h"
 #include "XMLNames.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/css/CSSCursorImageValue.h"
@@ -43,6 +36,13 @@
 #include "core/dom/Event.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/rendering/RenderObject.h"
+#include "core/svg/SVGCursorElement.h"
+#include "core/svg/SVGDocumentExtensions.h"
+#include "core/svg/SVGElementInstance.h"
+#include "core/svg/SVGElementRareData.h"
+#include "core/svg/SVGSVGElement.h"
+#include "core/svg/SVGStyledLocatableElement.h"
+#include "core/svg/SVGTextElement.h"
 
 namespace WebCore {
 

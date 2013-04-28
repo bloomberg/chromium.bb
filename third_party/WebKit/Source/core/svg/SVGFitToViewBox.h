@@ -23,10 +23,10 @@
 
 #if ENABLE(SVG)
 #include "SVGNames.h"
-#include "SVGPreserveAspectRatio.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/QualifiedName.h"
 #include "core/platform/graphics/FloatRect.h"
+#include "core/svg/SVGPreserveAspectRatio.h"
 #include <wtf/HashSet.h>
 
 namespace WebCore {

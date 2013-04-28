@@ -22,15 +22,15 @@
 #define SVGPathElement_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedBoolean.h"
-#include "SVGAnimatedNumber.h"
-#include "SVGExternalResourcesRequired.h"
-#include "SVGLangSpace.h"
 #include "SVGNames.h"
-#include "SVGPathByteStream.h"
-#include "SVGPathSegList.h"
-#include "SVGStyledTransformableElement.h"
-#include "SVGTests.h"
+#include "core/svg/SVGAnimatedBoolean.h"
+#include "core/svg/SVGAnimatedNumber.h"
+#include "core/svg/SVGExternalResourcesRequired.h"
+#include "core/svg/SVGLangSpace.h"
+#include "core/svg/SVGPathByteStream.h"
+#include "core/svg/SVGPathSegList.h"
+#include "core/svg/SVGStyledTransformableElement.h"
+#include "core/svg/SVGTests.h"
 
 namespace WebCore {
 

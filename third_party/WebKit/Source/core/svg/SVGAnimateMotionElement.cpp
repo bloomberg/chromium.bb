@@ -22,19 +22,19 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGAnimateMotionElement.h"
+#include "core/svg/SVGAnimateMotionElement.h"
 
-#include "SVGElementInstance.h"
-#include "SVGMPathElement.h"
 #include "SVGNames.h"
-#include "SVGParserUtilities.h"
-#include "SVGPathElement.h"
-#include "SVGPathUtilities.h"
-#include "SVGTransformList.h"
 #include "core/dom/Attribute.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/SVGPathData.h"
+#include "core/svg/SVGElementInstance.h"
+#include "core/svg/SVGMPathElement.h"
+#include "core/svg/SVGParserUtilities.h"
+#include "core/svg/SVGPathElement.h"
+#include "core/svg/SVGPathUtilities.h"
+#include "core/svg/SVGTransformList.h"
 #include <wtf/MathExtras.h>
 #include <wtf/StdLibExtras.h>
 

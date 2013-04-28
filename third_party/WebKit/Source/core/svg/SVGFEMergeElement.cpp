@@ -21,11 +21,11 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGFEMergeElement.h"
+#include "core/svg/SVGFEMergeElement.h"
 
-#include "SVGFEMergeNodeElement.h"
 #include "SVGNames.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
+#include "core/svg/SVGFEMergeNodeElement.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 
 namespace WebCore {

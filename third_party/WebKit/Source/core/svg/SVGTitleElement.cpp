@@ -20,7 +20,7 @@
 
 #include "config.h"
 #if ENABLE(SVG)
-#include "SVGTitleElement.h"
+#include "core/svg/SVGTitleElement.h"
 
 #include "SVGNames.h"
 #include "core/dom/Document.h"

@@ -27,7 +27,7 @@ core/page/Performance
 modules/mediastream/RTCDataChannel conditional=MEDIA_STREAM
 modules/mediastream/RTCDTMFSender conditional=MEDIA_STREAM
 modules/mediastream/RTCPeerConnection conditional=MEDIA_STREAM
-SVGElementInstance conditional=SVG
+core/svg/SVGElementInstance conditional=SVG
 core/workers/SharedWorker
 core/workers/SharedWorkerContext
 modules/mediasource/SourceBufferList

@@ -21,7 +21,7 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGSwitchElement.h"
+#include "core/svg/SVGSwitchElement.h"
 
 #include "SVGNames.h"
 #include "core/dom/NodeRenderingContext.h"

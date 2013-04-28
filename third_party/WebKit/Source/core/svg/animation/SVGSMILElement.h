@@ -26,7 +26,7 @@
 #ifndef SVGSMILElement_h
 #define SVGSMILElement_h
 #if ENABLE(SVG)
-#include "SVGElement.h"
+#include "core/svg/SVGElement.h"
 #include "core/svg/animation/SMILTime.h"
 
 #include <wtf/HashMap.h>

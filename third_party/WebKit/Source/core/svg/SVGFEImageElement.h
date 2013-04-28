@@ -22,15 +22,15 @@
 #define SVGFEImageElement_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedBoolean.h"
-#include "SVGAnimatedPreserveAspectRatio.h"
-#include "SVGExternalResourcesRequired.h"
-#include "SVGFilterPrimitiveStandardAttributes.h"
-#include "SVGLangSpace.h"
-#include "SVGURIReference.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedResourceHandle.h"
 #include "core/platform/graphics/ImageBuffer.h"
+#include "core/svg/SVGAnimatedBoolean.h"
+#include "core/svg/SVGAnimatedPreserveAspectRatio.h"
+#include "core/svg/SVGExternalResourcesRequired.h"
+#include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
+#include "core/svg/SVGLangSpace.h"
+#include "core/svg/SVGURIReference.h"
 #include "core/svg/graphics/filters/SVGFEImage.h"
 
 namespace WebCore {

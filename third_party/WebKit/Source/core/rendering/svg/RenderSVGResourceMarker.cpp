@@ -24,14 +24,14 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGResourceMarker.h"
 
-#include "SVGElement.h"
-#include "SVGMarkerElement.h"
-#include "SVGStyledElement.h"
-#include "SVGStyledTransformableElement.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/svg/RenderSVGContainer.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
+#include "core/svg/SVGElement.h"
+#include "core/svg/SVGMarkerElement.h"
+#include "core/svg/SVGStyledElement.h"
+#include "core/svg/SVGStyledTransformableElement.h"
 
 namespace WebCore {
 

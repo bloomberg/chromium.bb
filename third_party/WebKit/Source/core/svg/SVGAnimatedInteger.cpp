@@ -20,10 +20,10 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGAnimatedInteger.h"
+#include "core/svg/SVGAnimatedInteger.h"
 
-#include "SVGAnimateElement.h"
-#include "SVGAnimatedNumber.h"
+#include "core/svg/SVGAnimateElement.h"
+#include "core/svg/SVGAnimatedNumber.h"
 #include <wtf/MathExtras.h>
 
 namespace WebCore {

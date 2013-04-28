@@ -22,9 +22,9 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/SVGTextLayoutAttributesBuilder.h"
 
-#include "SVGTextPositioningElement.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGText.h"
+#include "core/svg/SVGTextPositioningElement.h"
 
 namespace WebCore {
 

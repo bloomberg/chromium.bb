@@ -23,10 +23,6 @@
 #if ENABLE(SVG_FONTS)
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
 
-#include "SVGFontData.h"
-#include "SVGFontElement.h"
-#include "SVGFontFaceElement.h"
-#include "SVGGlyphElement.h"
 #include "SVGNames.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GlyphBuffer.h"
@@ -35,6 +31,10 @@
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGResourceSolidColor.h"
+#include "core/svg/SVGFontData.h"
+#include "core/svg/SVGFontElement.h"
+#include "core/svg/SVGFontFaceElement.h"
+#include "core/svg/SVGGlyphElement.h"
 
 namespace WebCore {
 

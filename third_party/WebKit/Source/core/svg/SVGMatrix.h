@@ -21,8 +21,8 @@
 #define SVGMatrix_h
 
 #if ENABLE(SVG)
-#include "SVGException.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
+#include "core/svg/SVGException.h"
 
 namespace WebCore {
 

@@ -36,10 +36,10 @@
 #include <wtf/UnusedParam.h>
 
 #if ENABLE(SVG)
-#include "SVGCursorElement.h"
-#include "SVGLengthContext.h"
 #include "SVGNames.h"
-#include "SVGURIReference.h"
+#include "core/svg/SVGCursorElement.h"
+#include "core/svg/SVGLengthContext.h"
+#include "core/svg/SVGURIReference.h"
 #endif
 
 #if ENABLE(CSS_IMAGE_SET)

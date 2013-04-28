@@ -23,7 +23,7 @@
 #define SVGAnimateColorElement_h
 
 #if ENABLE(SVG)
-#include "SVGAnimateElement.h"
+#include "core/svg/SVGAnimateElement.h"
 
 namespace WebCore {
 

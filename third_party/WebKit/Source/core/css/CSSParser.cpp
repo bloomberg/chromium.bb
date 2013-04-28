@@ -29,7 +29,6 @@
 
 #include <limits.h>
 #include "CSSValueKeywords.h"
-#include "SVGParserUtilities.h"
 #include "core/css/CSSAspectRatioValue.h"
 #include "core/css/CSSBasicShapes.h"
 #include "core/css/CSSBorderImage.h"
@@ -84,6 +83,7 @@
 #include "core/platform/HistogramSupport.h"
 #include "core/platform/text/TextEncoding.h"
 #include "core/rendering/RenderTheme.h"
+#include "core/svg/SVGParserUtilities.h"
 #include <wtf/BitArray.h>
 #include <wtf/dtoa.h>
 #include <wtf/HexNumber.h>

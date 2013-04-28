@@ -21,7 +21,7 @@
 #define SVGAnimatedString_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedTypeAnimator.h"
+#include "core/svg/SVGAnimatedTypeAnimator.h"
 #include "core/svg/properties/SVGAnimatedPropertyMacros.h"
 #include "core/svg/properties/SVGAnimatedStaticPropertyTearOff.h"
 

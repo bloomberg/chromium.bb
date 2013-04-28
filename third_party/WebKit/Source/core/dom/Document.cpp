@@ -200,11 +200,11 @@
 #include <wtf/text/StringBuffer.h>
 
 #if ENABLE(SVG)
-#include "SVGDocumentExtensions.h"
 #include "SVGElementFactory.h"
 #include "SVGNames.h"
-#include "SVGSVGElement.h"
-#include "SVGStyleElement.h"
+#include "core/svg/SVGDocumentExtensions.h"
+#include "core/svg/SVGSVGElement.h"
+#include "core/svg/SVGStyleElement.h"
 #endif
 
 #include "core/page/CaptionUserPreferences.h"

@@ -153,7 +153,7 @@ sub AddIncludesForType
         if ($type =~ /SVGPathSeg/) {
             my $joinedName = $type;
             $joinedName =~ s/Abs|Rel//;
-            AddToImplIncludes("${joinedName}.h");
+            AddToImplIncludes("core/svg/${joinedName}.h");
         }
     }
 
@@ -707,7 +707,7 @@ sub GetHeaderClassInclude
     my $v8InterfaceName = shift;
     if ($v8InterfaceName =~ /SVGPathSeg/) {
         $v8InterfaceName =~ s/Abs|Rel//;
-        return "${v8InterfaceName}.h";
+        return "core/svg/${v8InterfaceName}.h";
     }
     return "wtf/${v8InterfaceName}.h" if $codeGenerator->IsTypedArrayType($v8InterfaceName);
     return "" if ($codeGenerator->SkipIncludeHeader($v8InterfaceName));

@@ -21,11 +21,11 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGExternalResourcesRequired.h"
+#include "core/svg/SVGExternalResourcesRequired.h"
 
-#include "SVGElement.h"
 #include "SVGNames.h"
 #include "core/dom/Attr.h"
+#include "core/svg/SVGElement.h"
 
 namespace WebCore {
 

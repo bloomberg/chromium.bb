@@ -56,7 +56,7 @@
 
 #if ENABLE(SVG)
 #include "SVGNames.h"
-#include "SVGScriptElement.h"
+#include "core/svg/SVGScriptElement.h"
 #endif
 
 namespace WebCore {

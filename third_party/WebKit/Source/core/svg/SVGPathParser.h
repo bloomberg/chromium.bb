@@ -25,9 +25,9 @@
 #define SVGPathParser_h
 
 #if ENABLE(SVG)
-#include "SVGPathConsumer.h"
-#include "SVGPathSeg.h"
-#include "SVGPathSource.h"
+#include "core/svg/SVGPathConsumer.h"
+#include "core/svg/SVGPathSeg.h"
+#include "core/svg/SVGPathSource.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/WTFString.h>
 

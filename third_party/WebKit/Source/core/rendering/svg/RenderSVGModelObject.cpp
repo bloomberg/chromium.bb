@@ -34,10 +34,10 @@
 #include "core/rendering/svg/RenderSVGModelObject.h"
 
 #include "SVGNames.h"
-#include "SVGStyledElement.h"
 #include "core/rendering/RenderLayerModelObject.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
+#include "core/svg/SVGStyledElement.h"
 
 namespace WebCore {
 

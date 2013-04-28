@@ -22,9 +22,9 @@
 #define SVGLength_h
 
 #if ENABLE(SVG)
-#include "SVGLengthContext.h"
-#include "SVGParsingError.h"
 #include "core/platform/animation/AnimationUtilities.h"
+#include "core/svg/SVGLengthContext.h"
+#include "core/svg/SVGParsingError.h"
 #include "core/svg/properties/SVGPropertyTraits.h"
 
 namespace WebCore {

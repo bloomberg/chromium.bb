@@ -21,13 +21,13 @@
 #define SVGFEConvolveMatrixElement_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedBoolean.h"
-#include "SVGAnimatedEnumeration.h"
-#include "SVGAnimatedInteger.h"
-#include "SVGAnimatedNumber.h"
-#include "SVGAnimatedNumberList.h"
-#include "SVGFilterPrimitiveStandardAttributes.h"
 #include "core/platform/graphics/filters/FEConvolveMatrix.h"
+#include "core/svg/SVGAnimatedBoolean.h"
+#include "core/svg/SVGAnimatedEnumeration.h"
+#include "core/svg/SVGAnimatedInteger.h"
+#include "core/svg/SVGAnimatedNumber.h"
+#include "core/svg/SVGAnimatedNumberList.h"
+#include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 
 namespace WebCore {
 

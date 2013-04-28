@@ -20,10 +20,10 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGAnimatedPath.h"
+#include "core/svg/SVGAnimatedPath.h"
 
-#include "SVGAnimateElement.h"
-#include "SVGPathUtilities.h"
+#include "core/svg/SVGAnimateElement.h"
+#include "core/svg/SVGPathUtilities.h"
 #include "core/svg/properties/SVGAnimatedPathSegListPropertyTearOff.h"
 
 namespace WebCore {

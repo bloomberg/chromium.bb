@@ -26,13 +26,13 @@
 
 #if ENABLE(SVG)
 #include "SVGNames.h"
-#include "SVGTextPositioningElement.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGText.h"
 #include "core/rendering/svg/SVGInlineFlowBox.h"
 #include "core/rendering/svg/SVGInlineTextBox.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
+#include "core/svg/SVGTextPositioningElement.h"
 
 namespace WebCore {
 

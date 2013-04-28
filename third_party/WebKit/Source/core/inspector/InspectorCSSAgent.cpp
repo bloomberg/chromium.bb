@@ -29,7 +29,6 @@
 #include "HTMLHeadElement.h"
 #include "HTMLStyleElement.h"
 #include "InspectorTypeBuilder.h"
-#include "SVGStyleElement.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSImportRule.h"
 #include "core/css/CSSPropertySourceData.h"
@@ -56,6 +55,7 @@
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/DOMWindow.h"
 #include "core/rendering/RenderRegion.h"
+#include "core/svg/SVGStyleElement.h"
 
 #include <wtf/CurrentTime.h>
 #include <wtf/HashSet.h>

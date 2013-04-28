@@ -20,23 +20,23 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGAnimatedEnumeration.h"
+#include "core/svg/SVGAnimatedEnumeration.h"
 
-#include "SVGAnimationElement.h"
-#include "SVGComponentTransferFunctionElement.h"
-#include "SVGFEBlendElement.h"
-#include "SVGFEColorMatrixElement.h"
-#include "SVGFECompositeElement.h"
-#include "SVGFEConvolveMatrixElement.h"
-#include "SVGFEDisplacementMapElement.h"
-#include "SVGFEMorphologyElement.h"
-#include "SVGFETurbulenceElement.h"
-#include "SVGGradientElement.h"
-#include "SVGMarkerElement.h"
 #include "SVGNames.h"
-#include "SVGTextContentElement.h"
-#include "SVGTextPathElement.h"
-#include "SVGUnitTypes.h"
+#include "core/svg/SVGAnimationElement.h"
+#include "core/svg/SVGComponentTransferFunctionElement.h"
+#include "core/svg/SVGFEBlendElement.h"
+#include "core/svg/SVGFEColorMatrixElement.h"
+#include "core/svg/SVGFECompositeElement.h"
+#include "core/svg/SVGFEConvolveMatrixElement.h"
+#include "core/svg/SVGFEDisplacementMapElement.h"
+#include "core/svg/SVGFEMorphologyElement.h"
+#include "core/svg/SVGFETurbulenceElement.h"
+#include "core/svg/SVGGradientElement.h"
+#include "core/svg/SVGMarkerElement.h"
+#include "core/svg/SVGTextContentElement.h"
+#include "core/svg/SVGTextPathElement.h"
+#include "core/svg/SVGUnitTypes.h"
 
 namespace WebCore {
 

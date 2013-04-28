@@ -23,16 +23,16 @@
 #include "config.h"
 
 #if ENABLE(SVG_FONTS)
-#include "SVGAltGlyphElement.h"
+#include "core/svg/SVGAltGlyphElement.h"
 
-#include "SVGAltGlyphDefElement.h"
-#include "SVGGlyphElement.h"
 #include "SVGNames.h"
 #include "XLinkNames.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/svg/RenderSVGTSpan.h"
+#include "core/svg/SVGAltGlyphDefElement.h"
+#include "core/svg/SVGGlyphElement.h"
 
 namespace WebCore {
 

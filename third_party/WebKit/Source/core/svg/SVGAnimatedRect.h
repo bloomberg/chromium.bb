@@ -21,8 +21,8 @@
 #define SVGAnimatedRect_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedTypeAnimator.h"
-#include "SVGRect.h"
+#include "core/svg/SVGAnimatedTypeAnimator.h"
+#include "core/svg/SVGRect.h"
 #include "core/svg/properties/SVGAnimatedPropertyMacros.h"
 #include "core/svg/properties/SVGAnimatedPropertyTearOff.h"
 

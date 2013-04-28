@@ -22,15 +22,15 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGClipPathElement.h"
+#include "core/svg/SVGClipPathElement.h"
 
-#include "SVGElementInstance.h"
 #include "SVGNames.h"
-#include "SVGTransformList.h"
 #include "core/css/StyleResolver.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
+#include "core/svg/SVGElementInstance.h"
+#include "core/svg/SVGTransformList.h"
 
 namespace WebCore {
 

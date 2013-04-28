@@ -23,12 +23,12 @@
 #define SVGFontElement_h
 
 #if ENABLE(SVG_FONTS)
-#include "SVGAnimatedBoolean.h"
-#include "SVGExternalResourcesRequired.h"
-#include "SVGGlyphElement.h"
-#include "SVGGlyphMap.h"
-#include "SVGParserUtilities.h"
-#include "SVGStyledElement.h"
+#include "core/svg/SVGAnimatedBoolean.h"
+#include "core/svg/SVGExternalResourcesRequired.h"
+#include "core/svg/SVGGlyphElement.h"
+#include "core/svg/SVGGlyphMap.h"
+#include "core/svg/SVGParserUtilities.h"
+#include "core/svg/SVGStyledElement.h"
 
 namespace WebCore {
 

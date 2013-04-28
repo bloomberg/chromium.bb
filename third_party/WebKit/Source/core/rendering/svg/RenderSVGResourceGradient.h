@@ -23,12 +23,12 @@
 #define RenderSVGResourceGradient_h
 
 #if ENABLE(SVG)
-#include "SVGGradientElement.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/Gradient.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
+#include "core/svg/SVGGradientElement.h"
 
 #include <wtf/HashMap.h>
 

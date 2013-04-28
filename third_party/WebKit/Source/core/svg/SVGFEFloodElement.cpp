@@ -21,7 +21,7 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGFEFloodElement.h"
+#include "core/svg/SVGFEFloodElement.h"
 
 #include "SVGNames.h"
 #include "core/dom/Attribute.h"

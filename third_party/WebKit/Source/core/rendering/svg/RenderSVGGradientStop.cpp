@@ -22,11 +22,11 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGGradientStop.h"
 
-#include "SVGGradientElement.h"
 #include "SVGNames.h"
-#include "SVGStopElement.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
+#include "core/svg/SVGGradientElement.h"
+#include "core/svg/SVGStopElement.h"
 
 namespace WebCore {
     

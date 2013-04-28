@@ -21,7 +21,7 @@
 #define SVGAnimatedTransformListPropertyTearOff_h
 
 #if ENABLE(SVG)
-#include "SVGTransformList.h"
+#include "core/svg/SVGTransformList.h"
 #include "core/svg/properties/SVGAnimatedListPropertyTearOff.h"
 #include "core/svg/properties/SVGTransformListPropertyTearOff.h"
 

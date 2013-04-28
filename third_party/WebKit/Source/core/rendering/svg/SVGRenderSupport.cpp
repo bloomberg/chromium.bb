@@ -27,7 +27,6 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/SVGRenderSupport.h"
 
-#include "SVGStyledElement.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/RenderGeometryMap.h"
@@ -42,6 +41,7 @@
 #include "core/rendering/svg/RenderSVGViewportContainer.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
+#include "core/svg/SVGStyledElement.h"
 #include <wtf/UnusedParam.h>
 
 namespace WebCore {

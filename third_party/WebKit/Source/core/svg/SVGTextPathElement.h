@@ -21,9 +21,9 @@
 #define SVGTextPathElement_h
 
 #if ENABLE(SVG)
-#include "SVGTextContentElement.h"
+#include "core/svg/SVGTextContentElement.h"
 
-#include "SVGURIReference.h"
+#include "core/svg/SVGURIReference.h"
 
 namespace WebCore {
 

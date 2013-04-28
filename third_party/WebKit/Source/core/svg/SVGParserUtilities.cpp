@@ -23,11 +23,11 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGParserUtilities.h"
+#include "core/svg/SVGParserUtilities.h"
 
-#include "SVGPointList.h"
 #include "core/dom/Document.h"
 #include "core/platform/graphics/FloatRect.h"
+#include "core/svg/SVGPointList.h"
 
 #include <limits>
 #include <wtf/ASCIICType.h>

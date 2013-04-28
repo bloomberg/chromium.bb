@@ -21,15 +21,15 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGStyledTransformableElement.h"
+#include "core/svg/SVGStyledTransformableElement.h"
 
-#include "SVGElementInstance.h"
 #include "SVGNames.h"
 #include "core/dom/Attribute.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/rendering/svg/RenderSVGPath.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/SVGPathData.h"
+#include "core/svg/SVGElementInstance.h"
 
 namespace WebCore {
 

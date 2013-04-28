@@ -26,6 +26,9 @@
 #include "config.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 
+#include <libxml/parser.h>
+#include <libxml/parserInternals.h>
+#include <libxslt/xslt.h>
 #include "HTMLHtmlElement.h"
 #include "HTMLLinkElement.h"
 #include "HTMLNames.h"
@@ -60,19 +63,16 @@
 #include "core/xml/XMLErrors.h"
 #include "core/xml/XMLTreeViewer.h"
 #include "core/xml/parser/XMLDocumentParserScope.h"
-#include <libxml/parser.h>
-#include <libxml/parserInternals.h>
-#include <libxslt/xslt.h>
 #include <wtf/StringExtras.h>
+#include <wtf/text/CString.h>
 #include <wtf/Threading.h>
+#include <wtf/unicode/UTF8.h>
 #include <wtf/UnusedParam.h>
 #include <wtf/Vector.h>
-#include <wtf/text/CString.h>
-#include <wtf/unicode/UTF8.h>
 
 #if ENABLE(SVG)
 #include "SVGNames.h"
-#include "SVGStyleElement.h"
+#include "core/svg/SVGStyleElement.h"
 #endif
 
 using namespace std;

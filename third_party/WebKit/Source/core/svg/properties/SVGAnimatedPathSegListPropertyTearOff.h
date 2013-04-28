@@ -21,10 +21,10 @@
 #define SVGAnimatedPathSegListPropertyTearOff_h
 
 #if ENABLE(SVG)
-#include "SVGPathByteStream.h"
-#include "SVGPathElement.h"
-#include "SVGPathSegList.h"
-#include "SVGPathUtilities.h"
+#include "core/svg/SVGPathByteStream.h"
+#include "core/svg/SVGPathElement.h"
+#include "core/svg/SVGPathSegList.h"
+#include "core/svg/SVGPathUtilities.h"
 #include "core/svg/properties/SVGAnimatedListPropertyTearOff.h"
 #include "core/svg/properties/SVGPathSegListPropertyTearOff.h"
 

@@ -21,13 +21,13 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGFEGaussianBlurElement.h"
+#include "core/svg/SVGFEGaussianBlurElement.h"
 
-#include "SVGElementInstance.h"
 #include "SVGNames.h"
-#include "SVGParserUtilities.h"
 #include "core/dom/Attribute.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
+#include "core/svg/SVGElementInstance.h"
+#include "core/svg/SVGParserUtilities.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 
 namespace WebCore {

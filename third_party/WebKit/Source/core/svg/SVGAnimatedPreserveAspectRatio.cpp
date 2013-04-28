@@ -20,9 +20,9 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGAnimatedPreserveAspectRatio.h"
+#include "core/svg/SVGAnimatedPreserveAspectRatio.h"
 
-#include "SVGAnimateElement.h"
+#include "core/svg/SVGAnimateElement.h"
 
 namespace WebCore {
     

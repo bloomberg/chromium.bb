@@ -27,12 +27,7 @@
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 
 #include "ImageData.h"
-#include "SVGElement.h"
-#include "SVGFilterElement.h"
-#include "SVGFilterPrimitiveStandardAttributes.h"
 #include "SVGNames.h"
-#include "SVGStyledElement.h"
-#include "SVGUnitTypes.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/graphics/FloatPoint.h"
@@ -48,6 +43,11 @@
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGResourceFilterPrimitive.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
+#include "core/svg/SVGElement.h"
+#include "core/svg/SVGFilterElement.h"
+#include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
+#include "core/svg/SVGStyledElement.h"
+#include "core/svg/SVGUnitTypes.h"
 #include "core/svg/graphics/filters/SVGFilter.h"
 
 #include <wtf/UnusedParam.h>

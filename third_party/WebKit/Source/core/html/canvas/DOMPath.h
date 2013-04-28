@@ -30,7 +30,7 @@
 
 #include "core/html/canvas/CanvasPathMethods.h"
 #if ENABLE(SVG)
-#include "SVGPathUtilities.h"
+#include "core/svg/SVGPathUtilities.h"
 #endif
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

@@ -50,7 +50,6 @@
       '../..',
       '../html',
       '../platform/graphics/skia',
-      '../svg',
       '<(INTERMEDIATE_DIR)',
       '<(SHARED_INTERMEDIATE_DIR)/webkit',
       '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
@@ -323,6 +322,7 @@
         '../html/shadow',
         '../inspector',
         '../page',
+        '../svg', # FIXME: make_names.pl doesn't qualify conditional includes yet.
       ],
       'sources': [
         # These files include all the .cpp files generated from the .idl files

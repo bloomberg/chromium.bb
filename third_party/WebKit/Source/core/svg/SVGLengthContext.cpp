@@ -23,10 +23,9 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGLengthContext.h"
+#include "core/svg/SVGLengthContext.h"
 
 #include "SVGNames.h"
-#include "SVGSVGElement.h"
 #include "core/css/CSSHelper.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
@@ -35,6 +34,7 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/RenderSVGViewportContainer.h"
+#include "core/svg/SVGSVGElement.h"
 
 namespace WebCore {
 

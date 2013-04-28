@@ -22,12 +22,12 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGPreserveAspectRatio.h"
+#include "core/svg/SVGPreserveAspectRatio.h"
 
-#include "SVGParserUtilities.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
+#include "core/svg/SVGParserUtilities.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

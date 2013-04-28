@@ -22,14 +22,14 @@
 #define SVGGradientElement_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedBoolean.h"
-#include "SVGAnimatedEnumeration.h"
-#include "SVGAnimatedTransformList.h"
-#include "SVGExternalResourcesRequired.h"
-#include "SVGStyledElement.h"
-#include "SVGURIReference.h"
-#include "SVGUnitTypes.h"
 #include "core/platform/graphics/Gradient.h"
+#include "core/svg/SVGAnimatedBoolean.h"
+#include "core/svg/SVGAnimatedEnumeration.h"
+#include "core/svg/SVGAnimatedTransformList.h"
+#include "core/svg/SVGExternalResourcesRequired.h"
+#include "core/svg/SVGStyledElement.h"
+#include "core/svg/SVGURIReference.h"
+#include "core/svg/SVGUnitTypes.h"
 
 namespace WebCore {
 

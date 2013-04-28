@@ -22,9 +22,9 @@
 #define SVGStyledTransformableElement_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedTransformList.h"
-#include "SVGStyledLocatableElement.h"
-#include "SVGTransformable.h"
+#include "core/svg/SVGAnimatedTransformList.h"
+#include "core/svg/SVGStyledLocatableElement.h"
+#include "core/svg/SVGTransformable.h"
 
 namespace WebCore {
 

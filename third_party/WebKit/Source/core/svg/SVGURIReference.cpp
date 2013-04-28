@@ -21,7 +21,7 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGURIReference.h"
+#include "core/svg/SVGURIReference.h"
 
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"

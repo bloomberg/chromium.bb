@@ -22,8 +22,8 @@
 #define SVGTitleElement_h
 #if ENABLE(SVG)
 
-#include "SVGLangSpace.h"
-#include "SVGStyledElement.h"
+#include "core/svg/SVGLangSpace.h"
+#include "core/svg/SVGStyledElement.h"
 
 namespace WebCore {
 

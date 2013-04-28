@@ -24,7 +24,7 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGPathParser.h"
+#include "core/svg/SVGPathParser.h"
 
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include <wtf/MathExtras.h>

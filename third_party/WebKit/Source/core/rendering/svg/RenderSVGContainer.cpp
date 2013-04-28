@@ -26,7 +26,6 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGContainer.h"
 
-#include "SVGStyledElement.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderView.h"
@@ -35,6 +34,7 @@
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
+#include "core/svg/SVGStyledElement.h"
 
 namespace WebCore {
 

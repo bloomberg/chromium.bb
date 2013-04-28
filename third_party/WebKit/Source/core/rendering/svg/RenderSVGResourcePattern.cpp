@@ -23,13 +23,13 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGResourcePattern.h"
 
-#include "PatternAttributes.h"
-#include "SVGFitToViewBox.h"
 #include "core/page/FrameView.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
+#include "core/svg/PatternAttributes.h"
+#include "core/svg/SVGFitToViewBox.h"
 
 namespace WebCore {
 

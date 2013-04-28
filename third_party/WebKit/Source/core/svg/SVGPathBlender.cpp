@@ -20,10 +20,10 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGPathBlender.h"
+#include "core/svg/SVGPathBlender.h"
 
-#include "SVGPathSeg.h"
 #include "core/platform/animation/AnimationUtilities.h"
+#include "core/svg/SVGPathSeg.h"
 #include <wtf/TemporaryChange.h>
 
 namespace WebCore {

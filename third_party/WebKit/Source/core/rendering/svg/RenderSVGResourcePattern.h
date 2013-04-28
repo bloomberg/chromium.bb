@@ -22,14 +22,14 @@
 #define RenderSVGResourcePattern_h
 
 #if ENABLE(SVG)
-#include "PatternAttributes.h"
-#include "SVGPatternElement.h"
-#include "SVGUnitTypes.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/Pattern.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
+#include "core/svg/PatternAttributes.h"
+#include "core/svg/SVGPatternElement.h"
+#include "core/svg/SVGUnitTypes.h"
 
 #include <wtf/HashMap.h>
 #include <wtf/OwnPtr.h>

@@ -22,16 +22,16 @@
 #define SVGMarkerElement_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedAngle.h"
-#include "SVGAnimatedBoolean.h"
-#include "SVGAnimatedEnumeration.h"
-#include "SVGAnimatedLength.h"
-#include "SVGAnimatedPreserveAspectRatio.h"
-#include "SVGAnimatedRect.h"
-#include "SVGExternalResourcesRequired.h"
-#include "SVGFitToViewBox.h"
-#include "SVGLangSpace.h"
-#include "SVGStyledElement.h"
+#include "core/svg/SVGAnimatedAngle.h"
+#include "core/svg/SVGAnimatedBoolean.h"
+#include "core/svg/SVGAnimatedEnumeration.h"
+#include "core/svg/SVGAnimatedLength.h"
+#include "core/svg/SVGAnimatedPreserveAspectRatio.h"
+#include "core/svg/SVGAnimatedRect.h"
+#include "core/svg/SVGExternalResourcesRequired.h"
+#include "core/svg/SVGFitToViewBox.h"
+#include "core/svg/SVGLangSpace.h"
+#include "core/svg/SVGStyledElement.h"
 
 namespace WebCore {
 

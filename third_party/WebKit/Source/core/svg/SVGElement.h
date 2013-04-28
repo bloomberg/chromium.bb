@@ -23,10 +23,10 @@
 #define SVGElement_h
 
 #if ENABLE(SVG)
-#include "SVGLocatable.h"
-#include "SVGParsingError.h"
 #include "core/dom/StyledElement.h"
 #include "core/platform/Timer.h"
+#include "core/svg/SVGLocatable.h"
+#include "core/svg/SVGParsingError.h"
 #include "core/svg/properties/SVGPropertyInfo.h"
 #include <wtf/HashMap.h>
 

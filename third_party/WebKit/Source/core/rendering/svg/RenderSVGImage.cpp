@@ -28,9 +28,6 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGImage.h"
 
-#include "SVGImageElement.h"
-#include "SVGLength.h"
-#include "SVGPreserveAspectRatio.h"
 #include "core/dom/Attr.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/FloatQuad.h"
@@ -44,6 +41,9 @@
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
+#include "core/svg/SVGImageElement.h"
+#include "core/svg/SVGLength.h"
+#include "core/svg/SVGPreserveAspectRatio.h"
 
 namespace WebCore {
 

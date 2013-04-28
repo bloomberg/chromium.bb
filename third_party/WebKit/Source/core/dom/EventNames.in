@@ -42,9 +42,9 @@ modules/speech/SpeechRecognitionEvent
 modules/speech/SpeechSynthesisEvent conditional=SPEECH_SYNTHESIS
 core/html/canvas/WebGLContextEvent conditional=WEBGL
 core/storage/StorageEvent
-SVGEvents interfaceName=Event, conditional=SVG
-SVGZoomEvent conditional=SVG
-SVGZoomEvents interfaceName=SVGZoomEvent, conditional=SVG
+core/svg/SVGEvents interfaceName=Event, conditional=SVG
+core/svg/SVGZoomEvent conditional=SVG
+core/svg/SVGZoomEvents interfaceName=SVGZoomEvent, conditional=SVG
 modules/indexeddb/IDBVersionChangeEvent
 TouchEvent runtimeConditional=touchEnabled
 modules/device_orientation/DeviceMotionEvent

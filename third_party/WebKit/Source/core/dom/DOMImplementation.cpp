@@ -54,8 +54,8 @@
 #include <wtf/StdLibExtras.h>
 
 #if ENABLE(SVG)
-#include "SVGDocument.h"
 #include "SVGNames.h"
+#include "core/svg/SVGDocument.h"
 #endif
 
 namespace WebCore {

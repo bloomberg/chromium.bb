@@ -21,7 +21,7 @@
 #define SVGPathSegList_h
 
 #if ENABLE(SVG)
-#include "SVGPathSeg.h"
+#include "core/svg/SVGPathSeg.h"
 #include "core/svg/properties/SVGListProperty.h"
 #include "core/svg/properties/SVGPropertyTraits.h"
 

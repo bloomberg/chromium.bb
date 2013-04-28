@@ -21,7 +21,7 @@
 #define LinearGradientAttributes_h
 
 #if ENABLE(SVG)
-#include "GradientAttributes.h"
+#include "core/svg/GradientAttributes.h"
 
 namespace WebCore {
 struct LinearGradientAttributes : GradientAttributes {

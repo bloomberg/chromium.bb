@@ -29,10 +29,10 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGEllipse.h"
 
-#include "SVGCircleElement.h"
-#include "SVGEllipseElement.h"
 #include "SVGNames.h"
-#include "SVGStyledTransformableElement.h"
+#include "core/svg/SVGCircleElement.h"
+#include "core/svg/SVGEllipseElement.h"
+#include "core/svg/SVGStyledTransformableElement.h"
 
 namespace WebCore {
 

@@ -22,7 +22,7 @@
 #define SVGFEFuncGElement_h
 
 #if ENABLE(SVG)
-#include "SVGComponentTransferFunctionElement.h"
+#include "core/svg/SVGComponentTransferFunctionElement.h"
 
 namespace WebCore {
 

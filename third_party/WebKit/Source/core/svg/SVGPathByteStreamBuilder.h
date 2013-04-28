@@ -21,9 +21,9 @@
 #define SVGPathByteStreamBuilder_h
 
 #if ENABLE(SVG)
-#include "SVGPathByteStream.h"
-#include "SVGPathConsumer.h"
 #include "core/platform/graphics/FloatPoint.h"
+#include "core/svg/SVGPathByteStream.h"
+#include "core/svg/SVGPathConsumer.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/WTFString.h>
 

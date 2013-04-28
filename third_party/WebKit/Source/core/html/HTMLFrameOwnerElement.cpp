@@ -27,8 +27,8 @@
 #include "core/rendering/RenderPart.h"
 
 #if ENABLE(SVG)
-#include "SVGDocument.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/svg/SVGDocument.h"
 #endif
 
 namespace WebCore {

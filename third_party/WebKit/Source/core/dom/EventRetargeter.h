@@ -28,9 +28,9 @@
 #include <wtf/RefPtr.h>
 
 #if ENABLE(SVG)
-#include "SVGElementInstance.h"
 #include "SVGNames.h"
-#include "SVGUseElement.h"
+#include "core/svg/SVGElementInstance.h"
+#include "core/svg/SVGUseElement.h"
 #endif
 
 namespace WebCore {

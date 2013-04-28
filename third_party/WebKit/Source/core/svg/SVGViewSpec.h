@@ -21,11 +21,11 @@
 #define SVGViewSpec_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedPreserveAspectRatio.h"
-#include "SVGAnimatedRect.h"
-#include "SVGFitToViewBox.h"
-#include "SVGTransformList.h"
-#include "SVGZoomAndPan.h"
+#include "core/svg/SVGAnimatedPreserveAspectRatio.h"
+#include "core/svg/SVGAnimatedRect.h"
+#include "core/svg/SVGFitToViewBox.h"
+#include "core/svg/SVGTransformList.h"
+#include "core/svg/SVGZoomAndPan.h"
 
 namespace WebCore {
 

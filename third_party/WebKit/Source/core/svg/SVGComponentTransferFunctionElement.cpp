@@ -21,13 +21,13 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGComponentTransferFunctionElement.h"
+#include "core/svg/SVGComponentTransferFunctionElement.h"
 
-#include "SVGElementInstance.h"
-#include "SVGFEComponentTransferElement.h"
 #include "SVGNames.h"
-#include "SVGNumberList.h"
 #include "core/dom/Attribute.h"
+#include "core/svg/SVGElementInstance.h"
+#include "core/svg/SVGFEComponentTransferElement.h"
+#include "core/svg/SVGNumberList.h"
 
 namespace WebCore {
 

@@ -22,11 +22,9 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGFEImageElement.h"
+#include "core/svg/SVGFEImageElement.h"
 
-#include "SVGElementInstance.h"
 #include "SVGNames.h"
-#include "SVGPreserveAspectRatio.h"
 #include "core/dom/Attr.h"
 #include "core/dom/Document.h"
 #include "core/loader/cache/CachedImage.h"
@@ -36,6 +34,8 @@
 #include "core/platform/graphics/Image.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/RenderSVGResource.h"
+#include "core/svg/SVGElementInstance.h"
+#include "core/svg/SVGPreserveAspectRatio.h"
 
 namespace WebCore {
 

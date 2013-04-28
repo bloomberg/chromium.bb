@@ -22,12 +22,12 @@
 #define SVGScriptElement_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedBoolean.h"
-#include "SVGAnimatedString.h"
-#include "SVGElement.h"
-#include "SVGExternalResourcesRequired.h"
-#include "SVGURIReference.h"
 #include "core/dom/ScriptElement.h"
+#include "core/svg/SVGAnimatedBoolean.h"
+#include "core/svg/SVGAnimatedString.h"
+#include "core/svg/SVGElement.h"
+#include "core/svg/SVGExternalResourcesRequired.h"
+#include "core/svg/SVGURIReference.h"
 
 namespace WebCore {
 

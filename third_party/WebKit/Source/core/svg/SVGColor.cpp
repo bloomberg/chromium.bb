@@ -22,12 +22,12 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGColor.h"
+#include "core/svg/SVGColor.h"
 
-#include "SVGException.h"
 #include "core/css/CSSParser.h"
 #include "core/css/RGBColor.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/svg/SVGException.h"
 
 namespace WebCore {
 

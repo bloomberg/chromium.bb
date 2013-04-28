@@ -21,16 +21,16 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGForeignObjectElement.h"
+#include "core/svg/SVGForeignObjectElement.h"
 
 #include "CSSPropertyNames.h"
-#include "SVGElementInstance.h"
-#include "SVGLength.h"
 #include "SVGNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/rendering/svg/RenderSVGForeignObject.h"
 #include "core/rendering/svg/RenderSVGResource.h"
+#include "core/svg/SVGElementInstance.h"
+#include "core/svg/SVGLength.h"
 #include <wtf/Assertions.h>
 
 namespace WebCore {

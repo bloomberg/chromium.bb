@@ -35,7 +35,6 @@
 #include "HTMLOptionElement.h"
 #include "HTMLSelectElement.h"
 #include "HTMLTextAreaElement.h"
-#include "SVGSVGElement.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/accessibility/AccessibilityImageMapLink.h"
 #include "core/accessibility/AccessibilitySVGRoot.h"
@@ -61,6 +60,7 @@
 #include "core/rendering/RenderTextControlSingleLine.h"
 #include "core/rendering/RenderTextFragment.h"
 #include "core/rendering/RenderWidget.h"
+#include "core/svg/SVGSVGElement.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "core/svg/graphics/SVGImageChromeClient.h"
 #include <wtf/StdLibExtras.h>

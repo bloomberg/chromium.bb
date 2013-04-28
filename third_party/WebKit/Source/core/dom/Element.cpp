@@ -88,9 +88,9 @@
 #include <wtf/text/CString.h>
 
 #if ENABLE(SVG)
-#include "SVGDocumentExtensions.h"
-#include "SVGElement.h"
 #include "SVGNames.h"
+#include "core/svg/SVGDocumentExtensions.h"
+#include "core/svg/SVGElement.h"
 #endif
 
 namespace WebCore {

@@ -22,8 +22,8 @@
 #define SVGStopElement_h
 
 #if ENABLE(SVG)
-#include "SVGAnimatedNumber.h"
-#include "SVGStyledElement.h"
+#include "core/svg/SVGAnimatedNumber.h"
+#include "core/svg/SVGStyledElement.h"
 
 namespace WebCore {
 

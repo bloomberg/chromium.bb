@@ -21,8 +21,8 @@
 #define SVGTextChunk_h
 
 #if ENABLE(SVG)
-#include "SVGTextContentElement.h"
 #include "core/rendering/style/SVGRenderStyleDefs.h"
+#include "core/svg/SVGTextContentElement.h"
 
 namespace WebCore {
 

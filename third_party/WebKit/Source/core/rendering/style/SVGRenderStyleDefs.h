@@ -29,9 +29,9 @@
 #define SVGRenderStyleDefs_h
 
 #if ENABLE(SVG)
-#include "SVGLength.h"
-#include "SVGPaint.h"
 #include "core/rendering/style/ShadowData.h"
+#include "core/svg/SVGLength.h"
+#include "core/svg/SVGPaint.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefCounted.h>

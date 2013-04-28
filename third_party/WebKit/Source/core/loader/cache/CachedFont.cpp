@@ -39,12 +39,12 @@
 #include <wtf/Vector.h>
 
 #if ENABLE(SVG_FONTS)
-#include "SVGDocument.h"
-#include "SVGElement.h"
-#include "SVGFontElement.h"
-#include "SVGGElement.h"
 #include "SVGNames.h"
 #include "core/dom/NodeList.h"
+#include "core/svg/SVGDocument.h"
+#include "core/svg/SVGElement.h"
+#include "core/svg/SVGFontElement.h"
+#include "core/svg/SVGGElement.h"
 #endif
 
 namespace WebCore {

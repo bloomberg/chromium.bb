@@ -21,11 +21,9 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGTextElement.h"
+#include "core/svg/SVGTextElement.h"
 
-#include "SVGElementInstance.h"
 #include "SVGNames.h"
-#include "SVGTSpanElement.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/platform/graphics/FloatRect.h"
@@ -33,6 +31,8 @@
 #include "core/rendering/style/SVGRenderStyle.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGText.h"
+#include "core/svg/SVGElementInstance.h"
+#include "core/svg/SVGTSpanElement.h"
 
 namespace WebCore {
 

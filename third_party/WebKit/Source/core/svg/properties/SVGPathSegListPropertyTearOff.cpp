@@ -23,8 +23,8 @@
 #include "core/svg/properties/SVGPathSegListPropertyTearOff.h"
 
 #include "SVGNames.h"
-#include "SVGPathElement.h"
-#include "SVGPathSegWithContext.h"
+#include "core/svg/SVGPathElement.h"
+#include "core/svg/SVGPathSegWithContext.h"
 #include "core/svg/properties/SVGAnimatedPathSegListPropertyTearOff.h"
 
 namespace WebCore {

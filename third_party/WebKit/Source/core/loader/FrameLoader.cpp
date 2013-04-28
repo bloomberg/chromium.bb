@@ -109,13 +109,13 @@
 #include <wtf/text/WTFString.h>
 
 #if ENABLE(SVG)
-#include "SVGDocument.h"
-#include "SVGLocatable.h"
 #include "SVGNames.h"
-#include "SVGPreserveAspectRatio.h"
-#include "SVGSVGElement.h"
-#include "SVGViewElement.h"
-#include "SVGViewSpec.h"
+#include "core/svg/SVGDocument.h"
+#include "core/svg/SVGLocatable.h"
+#include "core/svg/SVGPreserveAspectRatio.h"
+#include "core/svg/SVGSVGElement.h"
+#include "core/svg/SVGViewElement.h"
+#include "core/svg/SVGViewSpec.h"
 #endif
 
 

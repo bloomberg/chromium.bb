@@ -22,14 +22,14 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/SVGTextLayoutEngineSpacing.h"
 
-#include "SVGLengthContext.h"
 #include "core/platform/graphics/Font.h"
 #include "core/rendering/style/SVGRenderStyle.h"
+#include "core/svg/SVGLengthContext.h"
 
 #if ENABLE(SVG_FONTS)
-#include "SVGFontData.h"
-#include "SVGFontElement.h"
-#include "SVGFontFaceElement.h"
+#include "core/svg/SVGFontData.h"
+#include "core/svg/SVGFontElement.h"
+#include "core/svg/SVGFontFaceElement.h"
 #else
 #include <wtf/UnusedParam.h>
 #endif

@@ -21,17 +21,17 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGPolyElement.h"
+#include "core/svg/SVGPolyElement.h"
 
-#include "SVGAnimatedPointList.h"
-#include "SVGElementInstance.h"
 #include "SVGNames.h"
-#include "SVGParserUtilities.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/rendering/svg/RenderSVGPath.h"
 #include "core/rendering/svg/RenderSVGResource.h"
+#include "core/svg/SVGAnimatedPointList.h"
+#include "core/svg/SVGElementInstance.h"
+#include "core/svg/SVGParserUtilities.h"
 
 namespace WebCore {
 

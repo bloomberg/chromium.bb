@@ -20,14 +20,14 @@
 #include "config.h"
 
 #if ENABLE(SVG_FONTS)
-#include "SVGFontFaceSrcElement.h"
+#include "core/svg/SVGFontFaceSrcElement.h"
 
-#include "SVGFontFaceElement.h"
-#include "SVGFontFaceNameElement.h"
-#include "SVGFontFaceUriElement.h"
 #include "SVGNames.h"
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSValueList.h"
+#include "core/svg/SVGFontFaceElement.h"
+#include "core/svg/SVGFontFaceNameElement.h"
+#include "core/svg/SVGFontFaceUriElement.h"
 
 namespace WebCore {
     

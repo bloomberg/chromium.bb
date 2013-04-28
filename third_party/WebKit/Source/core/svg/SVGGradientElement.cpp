@@ -22,19 +22,19 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGGradientElement.h"
+#include "core/svg/SVGGradientElement.h"
 
-#include "SVGElementInstance.h"
 #include "SVGNames.h"
-#include "SVGStopElement.h"
-#include "SVGTransformList.h"
-#include "SVGTransformable.h"
 #include "core/css/StyleResolver.h"
 #include "core/dom/Attribute.h"
 #include "core/rendering/svg/RenderSVGHiddenContainer.h"
 #include "core/rendering/svg/RenderSVGPath.h"
 #include "core/rendering/svg/RenderSVGResourceLinearGradient.h"
 #include "core/rendering/svg/RenderSVGResourceRadialGradient.h"
+#include "core/svg/SVGElementInstance.h"
+#include "core/svg/SVGStopElement.h"
+#include "core/svg/SVGTransformList.h"
+#include "core/svg/SVGTransformable.h"
 
 namespace WebCore {
 

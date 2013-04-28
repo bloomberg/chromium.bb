@@ -24,8 +24,6 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGForeignObject.h"
 
-#include "SVGForeignObjectElement.h"
-#include "SVGSVGElement.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/HitTestResult.h"
@@ -35,6 +33,8 @@
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
+#include "core/svg/SVGForeignObjectElement.h"
+#include "core/svg/SVGSVGElement.h"
 
 namespace WebCore {
 

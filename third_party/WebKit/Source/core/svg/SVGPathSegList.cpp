@@ -23,11 +23,11 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGPathSegList.h"
+#include "core/svg/SVGPathSegList.h"
 
 #include "SVGNames.h"
-#include "SVGPathElement.h"
-#include "SVGPathUtilities.h"
+#include "core/svg/SVGPathElement.h"
+#include "core/svg/SVGPathUtilities.h"
 
 namespace WebCore {
 

@@ -22,8 +22,8 @@
 #define SVGStyledLocatableElement_h
 
 #if ENABLE(SVG)
-#include "SVGLocatable.h"
-#include "SVGStyledElement.h"
+#include "core/svg/SVGLocatable.h"
+#include "core/svg/SVGStyledElement.h"
 
 namespace WebCore {
 

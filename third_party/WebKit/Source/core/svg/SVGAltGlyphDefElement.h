@@ -21,7 +21,7 @@
 #define SVGAltGlyphDefElement_h
 
 #if ENABLE(SVG) && ENABLE(SVG_FONTS)
-#include "SVGElement.h"
+#include "core/svg/SVGElement.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

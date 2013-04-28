@@ -21,15 +21,10 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGStyledElement.h"
+#include "core/svg/SVGStyledElement.h"
 
 #include "HTMLNames.h"
-#include "SVGElement.h"
-#include "SVGElementInstance.h"
-#include "SVGElementRareData.h"
 #include "SVGNames.h"
-#include "SVGSVGElement.h"
-#include "SVGUseElement.h"
 #include "core/css/CSSParser.h"
 #include "core/dom/Attr.h"
 #include "core/dom/Document.h"
@@ -43,6 +38,11 @@
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
+#include "core/svg/SVGElement.h"
+#include "core/svg/SVGElementInstance.h"
+#include "core/svg/SVGElementRareData.h"
+#include "core/svg/SVGSVGElement.h"
+#include "core/svg/SVGUseElement.h"
 #include <wtf/Assertions.h>
 #include <wtf/HashMap.h>
 #include <wtf/StdLibExtras.h>

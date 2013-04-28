@@ -21,10 +21,10 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGPathStringSource.h"
+#include "core/svg/SVGPathStringSource.h"
 
-#include "SVGParserUtilities.h"
 #include "core/platform/graphics/FloatPoint.h"
+#include "core/svg/SVGParserUtilities.h"
 
 namespace WebCore {
 

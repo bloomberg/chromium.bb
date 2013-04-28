@@ -37,11 +37,11 @@
 
 #if ENABLE(SVG_FONTS)
 #include "FontCustomPlatformData.h"
-#include "SVGFontData.h"
-#include "SVGFontElement.h"
-#include "SVGFontFaceElement.h"
 #include "SVGNames.h"
-#include "SVGURIReference.h"
+#include "core/svg/SVGFontData.h"
+#include "core/svg/SVGFontElement.h"
+#include "core/svg/SVGFontFaceElement.h"
+#include "core/svg/SVGURIReference.h"
 #endif
 
 namespace WebCore {

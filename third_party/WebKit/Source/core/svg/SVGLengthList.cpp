@@ -21,9 +21,9 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGLengthList.h"
+#include "core/svg/SVGLengthList.h"
 
-#include "SVGParserUtilities.h"
+#include "core/svg/SVGParserUtilities.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {
