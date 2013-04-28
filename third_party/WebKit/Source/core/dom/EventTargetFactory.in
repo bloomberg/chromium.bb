@@ -4,8 +4,8 @@ modules/webaudio/AudioContext conditional=WEB_AUDIO
 modules/battery/BatteryManager conditional=BATTERY_STATUS
 core/workers/DedicatedWorkerContext
 core/loader/appcache/DOMApplicationCache
-DOMWindow
-EventSource
+core/page/DOMWindow
+core/page/EventSource
 core/fileapi/FileReader
 modules/filesystem/FileWriter
 core/css/FontLoader
@@ -23,7 +23,7 @@ modules/mediastream/MediaStreamTrack conditional=MEDIA_STREAM
 core/dom/MessagePort
 Node
 modules/notifications/Notification conditional=NOTIFICATIONS|LEGACY_NOTIFICATIONS
-Performance
+core/page/Performance
 modules/mediastream/RTCDataChannel conditional=MEDIA_STREAM
 modules/mediastream/RTCDTMFSender conditional=MEDIA_STREAM
 modules/mediastream/RTCPeerConnection conditional=MEDIA_STREAM

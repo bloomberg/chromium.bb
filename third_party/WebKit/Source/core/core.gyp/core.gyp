@@ -1210,7 +1210,6 @@
       ],
       'include_dirs': [
         '<(bindings_dir)/v8',  # FIXME: Remove once http://crbug.com/236119 is fixed.
-        '../page',
         '../testing',
         '../testing/v8',
       ],
