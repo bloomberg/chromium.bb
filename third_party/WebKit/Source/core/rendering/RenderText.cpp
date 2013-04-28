@@ -1733,7 +1733,7 @@ int RenderText::previousOffset(int current) const
     return result;
 }
 
-#if OS(MAC_OS_X)
+#if OS(DARWIN)
 
 #define HANGUL_CHOSEONG_START (0x1100)
 #define HANGUL_CHOSEONG_END (0x115F)
@@ -1775,7 +1775,7 @@ inline bool isRegionalIndicator(UChar32 c)
 
 int RenderText::previousOffsetForBackwardDeletion(int current) const
 {
-#if OS(MAC_OS_X)
+#if OS(DARWIN)
     ASSERT(m_text);
     StringImpl& text = *m_text.impl();
     UChar32 character;

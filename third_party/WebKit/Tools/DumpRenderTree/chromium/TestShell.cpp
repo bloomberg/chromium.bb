@@ -135,7 +135,7 @@ void TestShell::initialize(MockPlatform* platformSupport)
     platformSupport->setInterfaces(m_testInterfaces.get());
     m_devToolsTestInterfaces = adoptPtr(new WebTestInterfaces());
     m_prerenderingSupport = adoptPtr(new MockWebPrerenderingSupport());
-#if !defined(USE_DEFAULT_RENDER_THEME) && (OS(WINDOWS) || OS(MAC_OS_X))
+#if !defined(USE_DEFAULT_RENDER_THEME) && (OS(WINDOWS) || OS(DARWIN))
     // Set theme engine.
     webkit_support::SetThemeEngine(m_testInterfaces->themeEngine());
 #endif
@@ -401,7 +401,7 @@ void TestShell::dumpImage(SkCanvas* canvas) const
     // drawing may have erased it in a few places. So on Windows we force it to
     // opaque and also don't write the alpha channel for the reference. Linux
     // doesn't have the wrong alpha like Windows, but we match Windows.
-#if OS(MAC_OS_X)
+#if OS(DARWIN)
     bool discardTransparency = false;
 #else
     bool discardTransparency = true;

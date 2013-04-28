@@ -462,7 +462,7 @@ Page* InspectorOverlay::overlayPage()
 
 #if OS(WINDOWS)
     evaluateInOverlay("setPlatform", "windows");
-#elif OS(MAC_OS_X)
+#elif OS(DARWIN)
     evaluateInOverlay("setPlatform", "mac");
 #elif OS(UNIX)
     evaluateInOverlay("setPlatform", "linux");

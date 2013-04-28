@@ -209,7 +209,7 @@ void WebViewHost::showContextMenu(WebFrame*, const WebContextMenuData& contextMe
 
 void WebViewHost::didUpdateLayout()
 {
-#if OS(MAC_OS_X)
+#if OS(DARWIN)
     static bool queryingPreferredSize = false;
     if (queryingPreferredSize)
         return;

@@ -84,8 +84,8 @@ bool Settings::gMockScrollbarsEnabled = false;
 bool Settings::gUsesOverlayScrollbars = false;
 
 // NOTEs
-//  1) EditingMacBehavior comprises Tiger, Leopard, SnowLeopard and iOS builds, as well QtWebKit and Chromium when built on Mac;
-//  2) EditingWindowsBehavior comprises Win32 and WinCE builds, as well as QtWebKit and Chromium when built on Windows;
+//  1) EditingMacBehavior comprises builds on Mac;
+//  2) EditingWindowsBehavior comprises builds on Windows;
 //  3) EditingUnixBehavior comprises all unix-based systems, but Darwin/MacOS/Android (and then abusing the terminology);
 //  4) EditingAndroidBehavior comprises Android builds.
 // 99) MacEditingBehavior is used a fallback.
@@ -112,7 +112,7 @@ static const bool defaultUnifiedTextCheckerEnabled = true;
 #else
 static const bool defaultUnifiedTextCheckerEnabled = false;
 #endif
-#if OS(MAC_OS_X)
+#if OS(DARWIN)
 static const bool defaultSmartInsertDeleteEnabled = true;
 #else
 static const bool defaultSmartInsertDeleteEnabled = false;

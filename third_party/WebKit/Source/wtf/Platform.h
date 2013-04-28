@@ -289,16 +289,6 @@
 #include <TargetConditionals.h>
 #endif
 
-/* OS(IOS) - iOS */
-/* OS(MAC_OS_X) - Mac OS X (not including iOS) */
-#if OS(DARWIN) && ((defined(TARGET_OS_EMBEDDED) && TARGET_OS_EMBEDDED) \
-    || (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)                 \
-    || (defined(TARGET_IPHONE_SIMULATOR) && TARGET_IPHONE_SIMULATOR))
-#define WTF_OS_IOS 1
-#elif OS(DARWIN) && defined(TARGET_OS_MAC) && TARGET_OS_MAC
-#define WTF_OS_MAC_OS_X 1
-#endif
-
 /* OS(FREEBSD) - FreeBSD */
 #if defined(__FreeBSD__) || defined(__DragonFly__) || defined(__FreeBSD_kernel__)
 #define WTF_OS_FREEBSD 1
