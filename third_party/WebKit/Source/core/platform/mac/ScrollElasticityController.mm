@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-#include "ScrollElasticityController.h"
+#include "core/platform/mac/ScrollElasticityController.h"
 
 #include <sys/sysctl.h>
 #include <sys/time.h>
-#include "WebCoreSystemInterface.h"
 #include "core/platform/PlatformWheelEvent.h"
+#include "core/platform/mac/WebCoreSystemInterface.h"
 
 #if ENABLE(RUBBER_BANDING)
 

@@ -31,11 +31,11 @@
 #import "core/platform/graphics/FontCache.h"
 
 #import <AppKit/AppKit.h>
-#import "WebCoreSystemInterface.h"
-#import "WebFontCache.h"
 #import "core/platform/graphics/Font.h"
 #import "core/platform/graphics/FontPlatformData.h"
 #import "core/platform/graphics/SimpleFontData.h"
+#import "core/platform/mac/WebCoreSystemInterface.h"
+#import "core/platform/mac/WebFontCache.h"
 #import <wtf/MainThread.h>
 #import <wtf/StdLibExtras.h>
 

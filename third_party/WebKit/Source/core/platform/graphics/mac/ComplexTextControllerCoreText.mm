@@ -26,10 +26,10 @@
 
 #include "ComplexTextController.h"
 
-#include "WebCoreSystemInterface.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/TextRun.h"
+#include "core/platform/mac/WebCoreSystemInterface.h"
 
 #include <ApplicationServices/ApplicationServices.h>
 

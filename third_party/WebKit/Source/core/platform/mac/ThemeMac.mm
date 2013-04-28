@@ -24,14 +24,14 @@
  */
 
 #import "config.h"
-#import "ThemeMac.h"
+#import "core/platform/mac/ThemeMac.h"
 
 #import <Carbon/Carbon.h>
-#import "BlockExceptions.h"
-#import "LocalCurrentGraphicsContext.h"
-#import "WebCoreNSCellExtras.h"
 #import "core/platform/ScrollView.h"
 #import "core/platform/graphics/GraphicsContext.h"
+#import "core/platform/mac/BlockExceptions.h"
+#import "core/platform/mac/LocalCurrentGraphicsContext.h"
+#import "core/platform/mac/WebCoreNSCellExtras.h"
 #include <wtf/StdLibExtras.h>
 
 using namespace std;

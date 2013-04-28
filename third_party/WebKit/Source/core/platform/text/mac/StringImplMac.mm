@@ -21,7 +21,7 @@
 #include "config.h"
 #include <wtf/text/StringImpl.h>
 
-#include "FoundationExtras.h"
+#include "core/platform/mac/FoundationExtras.h"
 #include <wtf/RetainPtr.h>
 
 namespace WTF {

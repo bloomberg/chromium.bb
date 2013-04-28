@@ -62,7 +62,6 @@
           # related directories.
           # platform/graphics/cg may need to stick around, though.
           '../platform/graphics/mac',
-          '../platform/mac',
         ],
       }],
       ['OS=="android" and use_openmax_dl_fft!=0', {

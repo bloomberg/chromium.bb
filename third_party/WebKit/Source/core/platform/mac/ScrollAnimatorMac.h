@@ -26,12 +26,12 @@
 #ifndef ScrollAnimatorMac_h
 #define ScrollAnimatorMac_h
 
-#include "ScrollElasticityController.h"
 #include "core/platform/ScrollAnimator.h"
 #include "core/platform/Timer.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/IntRect.h"
+#include "core/platform/mac/ScrollElasticityController.h"
 #include <wtf/RetainPtr.h>
 
 OBJC_CLASS WebScrollAnimationHelperDelegate;

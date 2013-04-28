@@ -30,7 +30,7 @@
 #import "core/platform/graphics/chromium/CrossProcessFontLoading.h"
 
 #import <AppKit/NSFont.h>
-#import "../graphics/FontPlatformData.h"
+#import "core/platform/graphics/FontPlatformData.h"
 #include "core/platform/LinkHash.h"
 #import <public/mac/WebSandboxSupport.h>
 #import <public/Platform.h>

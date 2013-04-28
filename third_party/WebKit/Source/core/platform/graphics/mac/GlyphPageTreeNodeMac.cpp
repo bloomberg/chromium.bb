@@ -30,9 +30,9 @@
 #include "core/platform/graphics/GlyphPageTreeNode.h"
 
 #include <ApplicationServices/ApplicationServices.h>
-#include "WebCoreSystemInterface.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/SimpleFontData.h"
+#include "core/platform/mac/WebCoreSystemInterface.h"
 
 namespace WebCore {
 

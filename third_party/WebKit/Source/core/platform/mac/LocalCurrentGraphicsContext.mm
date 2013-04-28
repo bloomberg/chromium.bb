@@ -18,11 +18,11 @@
  */
 
 #include "config.h"
-#include "LocalCurrentGraphicsContext.h"
+#include "core/platform/mac/LocalCurrentGraphicsContext.h"
 
 #include <AppKit/NSGraphicsContext.h>
-#include "platform_canvas.h"
 #include "PlatformContextSkia.h"
+#include "platform_canvas.h"
 
 namespace WebCore {
 

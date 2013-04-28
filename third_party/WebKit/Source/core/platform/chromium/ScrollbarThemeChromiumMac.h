@@ -27,7 +27,7 @@
 #ifndef ScrollbarThemeChromiumMac_h
 #define ScrollbarThemeChromiumMac_h
 
-#include "ScrollbarThemeMac.h"
+#include "core/platform/mac/ScrollbarThemeMac.h"
 
 namespace WebCore {
 

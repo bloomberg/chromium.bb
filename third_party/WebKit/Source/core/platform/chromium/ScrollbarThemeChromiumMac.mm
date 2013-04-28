@@ -28,14 +28,14 @@
 #include "core/platform/chromium/ScrollbarThemeChromiumMac.h"
 
 #include <Carbon/Carbon.h>
-#include "LocalCurrentGraphicsContext.h"
-#include "NSScrollerImpDetails.h"
 #include "PlatformContextSkia.h"
-#include "ScrollAnimatorMac.h"
 #include "core/page/FrameView.h"
 #include "core/platform/ScrollView.h"
 #include "core/platform/graphics/Gradient.h"
 #include "core/platform/graphics/ImageBuffer.h"
+#include "core/platform/mac/LocalCurrentGraphicsContext.h"
+#include "core/platform/mac/NSScrollerImpDetails.h"
+#include "core/platform/mac/ScrollAnimatorMac.h"
 #include "skia/ext/skia_utils_mac.h"
 #include <public/mac/WebThemeEngine.h>
 #include <public/Platform.h>

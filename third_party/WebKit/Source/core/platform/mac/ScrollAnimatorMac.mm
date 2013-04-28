@@ -25,19 +25,19 @@
 
 #include "config.h"
 
-#include "ScrollAnimatorMac.h"
+#include "core/platform/mac/ScrollAnimatorMac.h"
 
-#include "BlockExceptions.h"
-#include "EmptyProtocolDefinitions.h"
-#include "NSScrollerImpDetails.h"
-#include "ScrollbarThemeMac.h"
-#include "WebCoreSystemInterface.h"
 #include "core/platform/PlatformGestureEvent.h"
 #include "core/platform/PlatformWheelEvent.h"
 #include "core/platform/ScrollView.h"
 #include "core/platform/ScrollableArea.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/FloatPoint.h"
+#include "core/platform/mac/BlockExceptions.h"
+#include "core/platform/mac/EmptyProtocolDefinitions.h"
+#include "core/platform/mac/NSScrollerImpDetails.h"
+#include "core/platform/mac/ScrollbarThemeMac.h"
+#include "core/platform/mac/WebCoreSystemInterface.h"
 #include <wtf/MainThread.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/UnusedParam.h>

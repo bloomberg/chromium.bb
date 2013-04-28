@@ -24,18 +24,18 @@
  */
 
 #include "config.h"
-#include "ScrollbarThemeMac.h"
+#include "core/platform/mac/ScrollbarThemeMac.h"
 
 #include <Carbon/Carbon.h>
 #include "ColorMac.h"
-#include "LocalCurrentGraphicsContext.h"
-#include "NSScrollerImpDetails.h"
-#include "ScrollAnimatorMac.h"
-#include "WebCoreSystemInterface.h"
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/ScrollView.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/ImageBuffer.h"
+#include "core/platform/mac/LocalCurrentGraphicsContext.h"
+#include "core/platform/mac/NSScrollerImpDetails.h"
+#include "core/platform/mac/ScrollAnimatorMac.h"
+#include "core/platform/mac/WebCoreSystemInterface.h"
 #include <wtf/HashMap.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/TemporaryChange.h>
