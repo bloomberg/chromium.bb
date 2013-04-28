@@ -31,7 +31,6 @@
 
 #include "config.h"
 
-#if USE(3D_GRAPHICS)
 #include "core/platform/graphics/filters/custom/CustomFilterRenderer.h"
 
 #include "core/platform/graphics/GraphicsContext3D.h"
@@ -293,5 +292,3 @@ void CustomFilterRenderer::unbindVertexAttributes()
 }
 
 } // namespace WebCore
-
-#endif // USE(3D_GRAPHICS)

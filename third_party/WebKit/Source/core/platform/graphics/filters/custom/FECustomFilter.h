@@ -31,8 +31,6 @@
 #ifndef FECustomFilter_h
 #define FECustomFilter_h
 
-#if USE(3D_GRAPHICS)
-
 #include "core/platform/graphics/GraphicsTypes3D.h"
 #include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
@@ -99,7 +97,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // USE(3D_GRAPHICS)
 
 #endif // FECustomFilter_h

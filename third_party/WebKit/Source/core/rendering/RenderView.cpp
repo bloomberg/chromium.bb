@@ -29,6 +29,7 @@
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
+#include "core/platform/graphics/filters/custom/CustomFilterGlobalContext.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/transforms/TransformState.h"
@@ -45,10 +46,6 @@
 #include "core/rendering/RenderWidget.h"
 #include "core/rendering/RenderWidgetProtector.h"
 #include "core/rendering/style/StyleInheritedData.h"
-
-#if USE(3D_GRAPHICS)
-#include "core/platform/graphics/filters/custom/CustomFilterGlobalContext.h"
-#endif
 
 namespace WebCore {
 
@@ -1070,14 +1067,12 @@ void RenderView::setIsInWindow(bool isInWindow)
         m_compositor->setIsInWindow(isInWindow);
 }
 
-#if USE(3D_GRAPHICS)
 CustomFilterGlobalContext* RenderView::customFilterGlobalContext()
 {
     if (!m_customFilterGlobalContext)
         m_customFilterGlobalContext = adoptPtr(new CustomFilterGlobalContext());
     return m_customFilterGlobalContext.get();
 }
-#endif
 
 void RenderView::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
@@ -1121,9 +1116,7 @@ void RenderView::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_widgets, "widgets");
     info.addMember(m_layoutState, "layoutState");
     info.addMember(m_compositor, "compositor");
-#if USE(3D_GRAPHICS)
     info.addMember(m_customFilterGlobalContext, "customFilterGlobalContext");
-#endif
     info.addMember(m_flowThreadController, "flowThreadController");
     info.addMember(m_intervalArena, "intervalArena");
     info.addWeakPointer(m_renderQuoteHead);

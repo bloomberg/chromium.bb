@@ -29,7 +29,6 @@
 
 #include "config.h"
 
-#if USE(3D_GRAPHICS)
 #include "core/platform/graphics/filters/custom/CustomFilterMeshGenerator.h"
 
 #ifndef NDEBUG
@@ -172,5 +171,3 @@ void CustomFilterMeshGenerator::dumpBuffers() const
 #endif
 
 } // namespace WebCore
-
-#endif // USE(3D_GRAPHICS)

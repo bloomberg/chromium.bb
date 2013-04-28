@@ -32,8 +32,6 @@
 #ifndef CustomFilterRenderer_h
 #define CustomFilterRenderer_h
 
-#if USE(3D_GRAPHICS)
-
 #include "core/platform/graphics/GraphicsTypes3D.h"
 #include "core/platform/graphics/IntSize.h"
 #include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
@@ -96,7 +94,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // USE(3D_GRAPHICS)
 
 #endif // CustomFilterRenderer_h

@@ -29,7 +29,6 @@
 
 #include "config.h"
 
-#if USE(3D_GRAPHICS)
 #include "core/platform/graphics/filters/custom/CustomFilterCompiledProgram.h"
 
 #include "core/platform/graphics/filters/custom/CustomFilterGlobalContext.h"
@@ -151,4 +150,3 @@ CustomFilterCompiledProgram::~CustomFilterCompiledProgram()
 }
 
 } // namespace WebCore
-#endif // USE(3D_GRAPHICS)

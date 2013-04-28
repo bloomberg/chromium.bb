@@ -30,8 +30,6 @@
 #ifndef CustomFilterMeshGenerator_h
 #define CustomFilterMeshGenerator_h
 
-#if USE(3D_GRAPHICS)
-
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
 #include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
@@ -119,7 +117,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // USE(3D_GRAPHICS)
 
 #endif // CustomFilterMeshGenerator_h

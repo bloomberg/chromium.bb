@@ -30,7 +30,6 @@
 #ifndef CustomFilterGlobalContext_h
 #define CustomFilterGlobalContext_h
 
-#if USE(3D_GRAPHICS)
 #include "core/platform/graphics/ANGLEWebKitBridge.h"
 #include "core/platform/graphics/filters/custom/CustomFilterProgramInfo.h"
 #include <wtf/HashMap.h>
@@ -79,7 +78,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // USE(3D_GRAPHICS)
 
 #endif // CustomFilterGlobalContext_h

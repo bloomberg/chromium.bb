@@ -30,8 +30,6 @@
 #ifndef CustomFilterMesh_h
 #define CustomFilterMesh_h
 
-#if USE(3D_GRAPHICS)
-
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsTypes3D.h"
 #include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
@@ -74,7 +72,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // USE(3D_GRAPHICS)
 
 #endif // CustomFilterMesh_h

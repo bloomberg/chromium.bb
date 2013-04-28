@@ -27,8 +27,6 @@
 
 #include "config.h"
 
-#if USE(3D_GRAPHICS)
-
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/cpu/arm/GraphicsContext3DNEON.h"
 
@@ -2346,5 +2344,3 @@ unsigned GraphicsContext3D::getChannelBitsByFormat(GC3Denum format)
 }
 
 } // namespace WebCore
-
-#endif // USE(3D_GRAPHICS)

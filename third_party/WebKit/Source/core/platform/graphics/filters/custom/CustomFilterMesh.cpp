@@ -29,7 +29,6 @@
 
 #include "config.h"
 
-#if USE(3D_GRAPHICS)
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/filters/custom/CustomFilterMesh.h"
 #include "core/platform/graphics/filters/custom/CustomFilterMeshGenerator.h"
@@ -67,6 +66,3 @@ CustomFilterMesh::~CustomFilterMesh()
 }
 
 } // namespace WebCore
-
-#endif // USE(3D_GRAPHICS)
-

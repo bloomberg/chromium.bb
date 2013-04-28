@@ -40,7 +40,6 @@
 #include <algorithm>
 #include <wtf/MathExtras.h>
 
-#if USE(3D_GRAPHICS)
 #include "core/platform/graphics/filters/custom/CustomFilterGlobalContext.h"
 #include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
 #include "core/platform/graphics/filters/custom/CustomFilterProgram.h"
@@ -48,7 +47,6 @@
 #include "core/platform/graphics/filters/custom/FECustomFilter.h"
 #include "core/platform/graphics/filters/custom/ValidatedCustomFilterOperation.h"
 #include "core/rendering/RenderView.h"
-#endif
 
 #if ENABLE(SVG)
 #include "core/loader/cache/CachedSVGDocument.h"
@@ -83,7 +81,6 @@ inline bool isFilterSizeValid(FloatRect rect)
     return true;
 }
 
-#if USE(3D_GRAPHICS)
 static PassRefPtr<FECustomFilter> createCustomFilterEffect(Filter* filter, Document* document, ValidatedCustomFilterOperation* operation)
 {
     if (!document)
@@ -97,7 +94,6 @@ static PassRefPtr<FECustomFilter> createCustomFilterEffect(Filter* filter, Docum
     return FECustomFilter::create(filter, globalContext->context(), operation->validatedProgram(), operation->parameters(),
         operation->meshRows(), operation->meshColumns(),  operation->meshType());
 }
-#endif
 
 FilterEffectRenderer::FilterEffectRenderer()
     : m_graphicsBufferAttached(false)
@@ -335,7 +331,6 @@ bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations&
                                                 dropShadowOperation->x(), dropShadowOperation->y(), dropShadowOperation->color(), 1);
             break;
         }
-#if USE(3D_GRAPHICS)
         case FilterOperation::CUSTOM:
             // CUSTOM operations are always converted to VALIDATED_CUSTOM before getting here.
             // The conversion happens in RenderLayer::computeFilterOperations.
@@ -349,7 +344,6 @@ bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations&
                 m_hasCustomShaderFilter = true;
             break;
         }
-#endif
         default:
             break;
         }

@@ -30,15 +30,12 @@
 
 namespace WebCore {
 
+class CustomFilterGlobalContext;
 class FlowThreadController;
 class RenderLayerCompositor;
 class RenderLazyBlock;
 class RenderQuote;
 class RenderWidget;
-
-#if USE(3D_GRAPHICS)
-class CustomFilterGlobalContext;
-#endif
 
 class RenderView FINAL : public RenderBlock {
 public:
@@ -177,9 +174,7 @@ public:
     RenderLayerCompositor* compositor();
     bool usesCompositing() const;
 
-#if USE(3D_GRAPHICS)
     CustomFilterGlobalContext* customFilterGlobalContext();
-#endif
 
     IntRect unscaledDocumentRect() const;
     LayoutRect backgroundRect(RenderBox* backgroundRenderer) const;
@@ -315,9 +310,7 @@ private:
     LayoutState* m_layoutState;
     unsigned m_layoutStateDisableCount;
     OwnPtr<RenderLayerCompositor> m_compositor;
-#if USE(3D_GRAPHICS)
     OwnPtr<CustomFilterGlobalContext> m_customFilterGlobalContext;
-#endif
     OwnPtr<FlowThreadController> m_flowThreadController;
     RefPtr<IntervalArena> m_intervalArena;
 

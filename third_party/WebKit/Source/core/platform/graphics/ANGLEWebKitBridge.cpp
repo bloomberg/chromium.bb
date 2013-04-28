@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if USE(3D_GRAPHICS)
-
 #include "core/platform/graphics/ANGLEWebKitBridge.h"
 #include <wtf/OwnArrayPtr.h>
 
@@ -220,5 +218,3 @@ bool ANGLEWebKitBridge::compileShaderSource(const char* shaderSource, ANGLEShade
 }
 
 }
-
-#endif // USE(3D_GRAPHICS)

@@ -31,7 +31,6 @@
 
 #include "config.h"
 
-#if USE(3D_GRAPHICS)
 #include "core/platform/graphics/filters/custom/FECustomFilter.h"
 
 #include "core/platform/graphics/Extensions3D.h"
@@ -370,5 +369,3 @@ TextStream& FECustomFilter::externalRepresentation(TextStream& ts, int indent) c
 }
 
 } // namespace WebCore
-
-#endif // USE(3D_GRAPHICS)

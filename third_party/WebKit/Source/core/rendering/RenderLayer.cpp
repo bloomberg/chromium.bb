@@ -80,6 +80,10 @@
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/Gradient.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/filters/custom/CustomFilterGlobalContext.h"
+#include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
+#include "core/platform/graphics/filters/custom/CustomFilterValidatedProgram.h"
+#include "core/platform/graphics/filters/custom/ValidatedCustomFilterOperation.h"
 #include "core/platform/graphics/filters/FEColorMatrix.h"
 #include "core/platform/graphics/filters/FEMerge.h"
 #include "core/platform/graphics/filters/SourceGraphic.h"
@@ -115,13 +119,6 @@
 
 #if ENABLE(SVG)
 #include "SVGNames.h"
-#endif
-
-#if USE(3D_GRAPHICS)
-#include "core/platform/graphics/filters/custom/CustomFilterGlobalContext.h"
-#include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
-#include "core/platform/graphics/filters/custom/CustomFilterValidatedProgram.h"
-#include "core/platform/graphics/filters/custom/ValidatedCustomFilterOperation.h"
 #endif
 
 #define MIN_INTERSECT_FOR_REVEAL 32

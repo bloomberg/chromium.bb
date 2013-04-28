@@ -30,8 +30,6 @@
 #ifndef CustomFilterCompiledProgram_h
 #define CustomFilterCompiledProgram_h
 
-#if USE(3D_GRAPHICS)
-
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/filters/custom/CustomFilterProgramInfo.h"
 #include <wtf/RefCounted.h>
@@ -93,7 +91,5 @@ private:
 };
 
 }
-
-#endif // USE(3D_GRAPHICS)
 
 #endif
