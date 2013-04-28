@@ -65,7 +65,6 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   TileManager(TileManagerClient* client,
               ResourceProvider *resource_provider,
               size_t num_raster_threads,
-              bool use_cheapess_estimator,
               bool use_color_estimator,
               bool prediction_benchmarking,
               RenderingStatsInstrumentation* rendering_stats_instrumentation);
@@ -80,7 +79,6 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   void CheckForCompletedTileUploads();
   void AbortPendingTileUploads();
   void ForceTileUploadToComplete(Tile* tile);
-  void SetAnticipatedDrawTime(base::TimeTicks time);
 
   scoped_ptr<base::Value> BasicStateAsValue() const;
   scoped_ptr<base::Value> AllTilesAsValue() const;
@@ -131,7 +129,6 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
     client_->ScheduleManageTiles();
     manage_tiles_pending_ = true;
   }
-  void UpdateCheapTasksTimeLimit();
   void AnalyzeTile(Tile* tile);
   void GatherPixelRefsForTile(Tile* tile);
   void DispatchImageDecodeTasksForTile(Tile* tile);
@@ -164,8 +161,6 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
       skia::LazyPixelRef* pixel_ref,
       RenderingStatsInstrumentation* stats_instrumentation);
 
-  static void RecordCheapnessPredictorResults(bool is_predicted_cheap,
-                                              bool is_actually_cheap);
   static void RecordSolidColorPredictorResults(const SkColor* actual_colors,
                                                size_t color_count,
                                                bool is_predicted_solid,
@@ -198,15 +193,12 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
 
-  bool use_cheapness_estimator_;
   bool use_color_estimator_;
   bool prediction_benchmarking_;
   bool did_initialize_visible_tile_;
 
   size_t pending_tasks_;
   size_t max_pending_tasks_;
-
-  base::TimeTicks anticipated_draw_time_;
 
   DISALLOW_COPY_AND_ASSIGN(TileManager);
 };

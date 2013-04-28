@@ -32,7 +32,6 @@ LayerTreeSettings::LayerTreeSettings()
       solid_color_scrollbar_color(SK_ColorWHITE),
       solid_color_scrollbar_thickness_dip(-1),
       calculate_top_controls_position(false),
-      use_cheapness_estimator(false),
       use_color_estimator(false),
       use_memory_management(true),
       prediction_benchmarking(false),

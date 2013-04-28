@@ -15,8 +15,7 @@ class PicturePileImpl;
 // A worker thread pool that runs raster tasks.
 class RasterWorkerPool : public WorkerPool {
  public:
-  typedef base::Callback<void(PicturePileImpl*)>
-      RasterCallback;
+  typedef base::Callback<void(PicturePileImpl* picture_pile)> RasterCallback;
 
   virtual ~RasterWorkerPool();
 
@@ -26,7 +25,6 @@ class RasterWorkerPool : public WorkerPool {
   }
 
   void PostRasterTaskAndReply(PicturePileImpl* picture_pile,
-                              bool is_cheap,
                               const RasterCallback& task,
                               const base::Closure& reply);
 

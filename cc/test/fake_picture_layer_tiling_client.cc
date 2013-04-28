@@ -28,7 +28,6 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient()
                     1,
                     false,
                     false,
-                    false,
                     &stats_instrumentation_),
       pile_(new FakeInfinitePicturePileImpl()) {
 }

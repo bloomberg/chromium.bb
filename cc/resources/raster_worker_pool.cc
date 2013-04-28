@@ -13,20 +13,12 @@ namespace {
 class RasterWorkerPoolTaskImpl : public internal::WorkerPoolTask {
  public:
   RasterWorkerPoolTaskImpl(PicturePileImpl* picture_pile,
-                           bool is_cheap,
                            const RasterWorkerPool::RasterCallback& task,
                            const base::Closure& reply)
       : internal::WorkerPoolTask(reply),
         picture_pile_(picture_pile),
-        is_cheap_(is_cheap),
         task_(task) {
     DCHECK(picture_pile_);
-  }
-
-  virtual bool IsCheap() OVERRIDE { return is_cheap_; }
-
-  virtual void Run() OVERRIDE {
-    task_.Run(picture_pile_.get());
   }
 
   virtual void RunOnThread(unsigned thread_index) OVERRIDE {
@@ -35,7 +27,6 @@ class RasterWorkerPoolTaskImpl : public internal::WorkerPoolTask {
 
  private:
   scoped_refptr<PicturePileImpl> picture_pile_;
-  bool is_cheap_;
   RasterWorkerPool::RasterCallback task_;
 };
 
@@ -57,12 +48,10 @@ RasterWorkerPool::~RasterWorkerPool() {
 }
 
 void RasterWorkerPool::PostRasterTaskAndReply(PicturePileImpl* picture_pile,
-                                              bool is_cheap,
                                               const RasterCallback& task,
                                               const base::Closure& reply) {
   PostTask(make_scoped_ptr(new RasterWorkerPoolTaskImpl(
                                picture_pile,
-                               is_cheap,
                                task,
                                reply)).PassAs<internal::WorkerPoolTask>());
 }

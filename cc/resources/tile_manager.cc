@@ -44,10 +44,6 @@ const int kMaxNumPendingTasksPerThread = 8;
 const int kMaxNumPendingTasksPerThread = 40;
 #endif
 
-// Limit for time spent running cheap tasks during a single frame.
-// TODO(skyostil): Determine this limit more dynamically.
-const int kRunCheapTasksTimeMs = 6;
-
 // Determine bin based on three categories of tiles: things we need now,
 // things we need soon, and eventually.
 inline TileManagerBin BinFromTilePriority(const TilePriority& prio) {
@@ -120,7 +116,6 @@ TileManager::TileManager(
     TileManagerClient* client,
     ResourceProvider* resource_provider,
     size_t num_raster_threads,
-    bool use_cheapness_estimator,
     bool use_color_estimator,
     bool prediction_benchmarking,
     RenderingStatsInstrumentation* rendering_stats_instrumentation)
@@ -133,7 +128,6 @@ TileManager::TileManager(
       has_performed_uploads_since_last_flush_(false),
       ever_exceeded_memory_budget_(false),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
-      use_cheapness_estimator_(use_cheapness_estimator),
       use_color_estimator_(use_color_estimator),
       prediction_benchmarking_(prediction_benchmarking),
       did_initialize_visible_tile_(false),
@@ -162,7 +156,6 @@ void TileManager::SetGlobalState(
       global_state_.memory_limit_in_bytes,
       global_state_.unused_memory_limit_in_bytes);
   ScheduleManageTiles();
-  UpdateCheapTasksTimeLimit();
 }
 
 void TileManager::RegisterTile(Tile* tile) {
@@ -657,14 +650,11 @@ void TileManager::DispatchMoreTasks() {
 
 void TileManager::AnalyzeTile(Tile* tile) {
   ManagedTileState& managed_tile_state = tile->managed_state();
-  if ((use_cheapness_estimator_ || use_color_estimator_) &&
-      !managed_tile_state.picture_pile_analyzed) {
+  if (use_color_estimator_ && !managed_tile_state.picture_pile_analyzed) {
     tile->picture_pile()->AnalyzeInRect(
         tile->content_rect(),
         tile->contents_scale(),
         &managed_tile_state.picture_pile_analysis);
-    managed_tile_state.picture_pile_analysis.is_cheap_to_raster &=
-        use_cheapness_estimator_;
     managed_tile_state.picture_pile_analysis.is_solid_color &=
         use_color_estimator_;
     managed_tile_state.picture_pile_analysis.is_transparent &=
@@ -786,23 +776,6 @@ scoped_ptr<ResourcePool::Resource> TileManager::PrepareTileForRaster(
   return resource.Pass();
 }
 
-void TileManager::SetAnticipatedDrawTime(base::TimeTicks time) {
-  anticipated_draw_time_ = time;
-  UpdateCheapTasksTimeLimit();
-}
-
-void TileManager::UpdateCheapTasksTimeLimit() {
-  base::TimeTicks limit;
-  if (use_cheapness_estimator_ &&
-      global_state_.tree_priority != SMOOTHNESS_TAKES_PRIORITY) {
-    limit = std::min(
-        base::TimeTicks::Now() +
-            base::TimeDelta::FromMilliseconds(kRunCheapTasksTimeMs),
-        anticipated_draw_time_);
-  }
-  raster_worker_pool_->SetRunCheapTasksTimeLimit(limit);
-}
-
 void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
   TRACE_EVENT0("cc", "TileManager::DispatchOneRasterTask");
   scoped_ptr<ResourcePool::Resource> resource = PrepareTileForRaster(tile);
@@ -814,10 +787,8 @@ void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
   // skia requires that our buffer be 4-byte aligned
   CHECK(!(reinterpret_cast<intptr_t>(buffer) & 3));
 
-  ManagedTileState& managed_tile_state = tile->managed_state();
   raster_worker_pool_->PostRasterTaskAndReply(
       tile->picture_pile(),
-      managed_tile_state.picture_pile_analysis.is_cheap_to_raster,
       base::Bind(&TileManager::RunRasterTask,
                  buffer,
                  tile->content_rect(),
@@ -942,10 +913,6 @@ void TileManager::RunRasterTask(
     if (metadata.prediction_benchmarking) {
       PicturePileImpl::Analysis analysis;
       picture_pile->AnalyzeInRect(rect, contents_scale, &analysis);
-      bool is_predicted_cheap = analysis.is_cheap_to_raster;
-      bool is_actually_cheap =
-          raster_stats.best_rasterize_time.InMillisecondsF() <= 1.0f;
-      RecordCheapnessPredictorResults(is_predicted_cheap, is_actually_cheap);
 
       DCHECK_EQ(bitmap.rowBytes(),
                 static_cast<size_t>(bitmap.width() * bitmap.bytesPerPixel()));
@@ -960,18 +927,6 @@ void TileManager::RunRasterTask(
   } else {
     picture_pile->Raster(&canvas, rect, contents_scale, NULL);
   }
-}
-
-// static
-void TileManager::RecordCheapnessPredictorResults(bool is_predicted_cheap,
-                                                  bool is_actually_cheap) {
-  if (is_predicted_cheap && !is_actually_cheap)
-    HISTOGRAM_BOOLEAN("Renderer4.CheapPredictorBadlyWrong", true);
-  else if (!is_predicted_cheap && is_actually_cheap)
-    HISTOGRAM_BOOLEAN("Renderer4.CheapPredictorSafelyWrong", true);
-
-  HISTOGRAM_BOOLEAN("Renderer4.CheapPredictorAccuracy",
-                    is_predicted_cheap == is_actually_cheap);
 }
 
 // static

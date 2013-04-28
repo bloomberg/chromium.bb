@@ -152,7 +152,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   void SetViewportDamage(gfx::Rect damage_rect);
 
   void ManageTiles();
-  void SetAnticipatedDrawTime(base::TimeTicks time);
 
   // Returns false if problems occured preparing the frame, and we should try
   // to avoid displaying the frame. If PrepareToDraw is called, DidDrawAllLayers

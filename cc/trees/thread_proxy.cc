@@ -1025,9 +1025,6 @@ ThreadProxy::ScheduledActionDrawAndSwapForced() {
 }
 
 void ThreadProxy::DidAnticipatedDrawTimeChange(base::TimeTicks time) {
-  if (layer_tree_host_impl_)
-    layer_tree_host_impl_->SetAnticipatedDrawTime(time);
-
   if (current_resource_update_controller_on_impl_thread_)
     current_resource_update_controller_on_impl_thread_
         ->PerformMoreUpdates(time);

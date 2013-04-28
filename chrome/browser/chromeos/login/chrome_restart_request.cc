@@ -136,7 +136,6 @@ std::string DeriveCommandLine(const GURL& start_url,
       // content/browser/renderer_host/render_process_host_impl.cc.
       cc::switches::kBackgroundColorInsteadOfCheckerboard,
       cc::switches::kCompositeToMailbox,
-      cc::switches::kDisableCheapnessEstimator,
       cc::switches::kDisableColorEstimator,
       cc::switches::kDisableImplSidePainting,
       cc::switches::kDisablePinchZoomScrollbars,

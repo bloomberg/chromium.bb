@@ -128,8 +128,6 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.right_aligned_scheduling_enabled =
       cmd->HasSwitch(cc::switches::kEnableRightAlignedScheduling);
   settings.impl_side_painting = cc::switches::IsImplSidePaintingEnabled();
-  settings.use_cheapness_estimator =
-      !cmd->HasSwitch(cc::switches::kDisableCheapnessEstimator);
   settings.use_color_estimator =
       !cmd->HasSwitch(cc::switches::kDisableColorEstimator);
   settings.prediction_benchmarking =

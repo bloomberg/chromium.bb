@@ -72,8 +72,6 @@ scoped_ptr<base::Value> ManagedTileState::AsValue() const {
   state->Set("distance_to_visible_in_pixels",
       MathUtil::AsValueSafely(distance_to_visible_in_pixels).release());
   state->SetBoolean("is_picture_pile_analyzed", picture_pile_analyzed);
-  state->SetBoolean("is_cheap_to_raster",
-      picture_pile_analysis.is_cheap_to_raster);
   state->SetBoolean("is_transparent", picture_pile_analysis.is_transparent);
   state->SetBoolean("is_solid_color", picture_pile_analysis.is_solid_color);
   return state.PassAs<base::Value>();

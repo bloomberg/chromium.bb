@@ -22,10 +22,6 @@ class WorkerPoolTask {
  public:
   virtual ~WorkerPoolTask();
 
-  virtual bool IsCheap() = 0;
-
-  virtual void Run() = 0;
-
   virtual void RunOnThread(unsigned thread_index) = 0;
 
   void DidComplete();
@@ -73,9 +69,6 @@ class WorkerPool {
   // is posted to the thread that called PostTaskAndReply().
   void PostTaskAndReply(const Callback& task, const base::Closure& reply);
 
-  // Set time limit for running cheap tasks.
-  void SetRunCheapTasksTimeLimit(base::TimeTicks run_cheap_tasks_time_limit);
-
  protected:
   WorkerPool(WorkerPoolClient* client,
              size_t num_threads,
@@ -92,21 +85,13 @@ class WorkerPool {
   void OnIdle();
   void ScheduleCheckForCompletedTasks();
   void CheckForCompletedTasks();
-  void CancelCheckForCompletedTasks();
   void DispatchCompletionCallbacks();
-  void ScheduleRunCheapTasks();
-  void RunCheapTasks();
 
   WorkerPoolClient* client_;
   scoped_refptr<base::MessageLoopProxy> origin_loop_;
   base::WeakPtrFactory<WorkerPool> weak_ptr_factory_;
-  base::TimeTicks check_for_completed_tasks_time_;
   base::TimeDelta check_for_completed_tasks_delay_;
-  base::CancelableClosure check_for_completed_tasks_callback_;
   bool check_for_completed_tasks_pending_;
-  const base::Closure run_cheap_tasks_callback_;
-  base::TimeTicks run_cheap_tasks_time_limit_;
-  bool run_cheap_tasks_pending_;
 
   // Holds all completed tasks for which we have not yet dispatched
   // reply callbacks.
