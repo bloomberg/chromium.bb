@@ -32,9 +32,6 @@
 #include "core/inspector/InspectorResourceAgent.h"
 
 #include "InspectorFrontend.h"
-#include "WebSocketFrame.h"
-#include "WebSocketHandshakeRequest.h"
-#include "WebSocketHandshakeResponse.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
@@ -63,6 +60,9 @@
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
 #include "core/xml/XMLHttpRequest.h"
+#include "modules/websockets/WebSocketFrame.h"
+#include "modules/websockets/WebSocketHandshakeRequest.h"
+#include "modules/websockets/WebSocketHandshakeResponse.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/HexNumber.h>
 #include <wtf/ListHashSet.h>

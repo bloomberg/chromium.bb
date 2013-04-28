@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "WebSocket.h"
+#include "modules/websockets/WebSocket.h"
 
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"

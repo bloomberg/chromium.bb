@@ -4,7 +4,7 @@ Event
 Events interfaceName=Event
 HTMLEvents interfaceName=Event
 core/dom/BeforeLoadEvent
-CloseEvent
+modules/websockets/CloseEvent
 CompositionEvent
 CustomEvent
 ErrorEvent

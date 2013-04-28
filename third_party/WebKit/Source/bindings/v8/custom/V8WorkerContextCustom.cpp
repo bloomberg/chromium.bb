@@ -32,7 +32,6 @@
 
 #include "V8WorkerContext.h"
 
-#include "WebSocket.h"
 #include "bindings/v8/ScheduledAction.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Utilities.h"
@@ -43,6 +42,7 @@
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/DOMTimer.h"
 #include "core/workers/WorkerContext.h"
+#include "modules/websockets/WebSocket.h"
 
 namespace WebCore {
 

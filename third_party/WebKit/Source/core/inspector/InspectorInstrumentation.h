@@ -31,9 +31,6 @@
 #ifndef InspectorInstrumentation_h
 #define InspectorInstrumentation_h
 
-#include "WebSocketFrame.h"
-#include "WebSocketHandshakeRequest.h"
-#include "WebSocketHandshakeResponse.h"
 #include "bindings/v8/ScriptState.h"
 #include "core/css/CSSImportRule.h"
 #include "core/css/CSSRule.h"
@@ -49,6 +46,9 @@
 #include "core/platform/network/FormData.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/storage/StorageArea.h"
+#include "modules/websockets/WebSocketFrame.h"
+#include "modules/websockets/WebSocketHandshakeRequest.h"
+#include "modules/websockets/WebSocketHandshakeResponse.h"
 #include <wtf/RefPtr.h>
 #include <wtf/UnusedParam.h>
 #include <wtf/Vector.h>

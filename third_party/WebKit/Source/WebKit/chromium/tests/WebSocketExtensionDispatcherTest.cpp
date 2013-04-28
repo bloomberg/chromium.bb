@@ -25,10 +25,10 @@
 
 #include "config.h"
 
-#include "WebSocketExtensionDispatcher.h"
+#include "modules/websockets/WebSocketExtensionDispatcher.h"
 
-#include "WebSocketExtensionParser.h"
-#include "WebSocketExtensionProcessor.h"
+#include "modules/websockets/WebSocketExtensionParser.h"
+#include "modules/websockets/WebSocketExtensionProcessor.h"
 
 #include <gtest/gtest.h>
 #include <wtf/text/CString.h>

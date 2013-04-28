@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "WebSocketDeflater.h"
+#include "modules/websockets/WebSocketDeflater.h"
 
 #include <gtest/gtest.h>
 #include <wtf/Vector.h>

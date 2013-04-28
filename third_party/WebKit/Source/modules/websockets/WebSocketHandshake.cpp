@@ -31,7 +31,7 @@
 
 #include "config.h"
 
-#include "WebSocket.h"
+#include "modules/websockets/WebSocket.h"
 #include "modules/websockets/WebSocketHandshake.h"
 
 #include "core/dom/Document.h"

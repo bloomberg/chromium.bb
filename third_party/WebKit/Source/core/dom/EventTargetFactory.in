@@ -37,7 +37,7 @@ core/html/track/TextTrack
 core/html/track/TextTrackCue
 core/html/track/TextTrackList
 WebKitNamedFlow interfaceName=NamedFlow
-WebSocket
+modules/websockets/WebSocket
 core/workers/Worker
 core/xml/XMLHttpRequest
 core/xml/XMLHttpRequestUpload

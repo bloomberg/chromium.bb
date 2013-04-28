@@ -33,7 +33,6 @@
 
 #include "IDBFactoryBackendProxy.h"
 #include "WebMediaPlayerClientImpl.h"
-#include "WebSocket.h"
 #include "WebWorkerClientImpl.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8RecursionScope.h"

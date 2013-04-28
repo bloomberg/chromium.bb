@@ -33,13 +33,13 @@
 
 #include "WebArrayBuffer.h"
 #include "WebDocument.h"
-#include "WebSocketChannel.h"
-#include "WebSocketChannelClient.h"
 #include "WebSocketClient.h"
 #include "core/dom/Document.h"
 #include "core/page/RuntimeEnabledFeatures.h"
 #include "core/platform/KURL.h"
 #include "modules/websockets/MainThreadWebSocketChannel.h"
+#include "modules/websockets/WebSocketChannel.h"
+#include "modules/websockets/WebSocketChannelClient.h"
 
 #include <public/WebString.h>
 #include <public/WebURL.h>

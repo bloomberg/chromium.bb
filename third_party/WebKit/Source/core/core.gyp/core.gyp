@@ -48,7 +48,6 @@
       # FIXME: Remove most entries in this list.
       '../',
       '../..',
-      '../../modules/websockets',
       '../html',
       '../platform/graphics/skia',
       '../plugins',
