@@ -442,15 +442,16 @@ function shouldUseTracLinks()
 
 function testLink(test)
 {
-    var basePath;
+    var target;
     if (shouldUseTracLinks()) {
         var revision = globalState().results.revision;
-        basePath = 'http://trac.webkit.org';
-        basePath += revision ? ('/export/' + revision) : '/browser';
-        basePath += '/trunk/LayoutTests/';
+        target = 'http://src.chromium.org/viewvc/blink/trunk/LayoutTests/' + test;
+        if (revision)
+            target += '?pathrev=' + revision;
+        target += '#l1';
     } else
-        basePath = globalState().results.layout_tests_dir + '/';
-    return '<a class=test-link href="' + basePath + test + '">' + test + '</a><span class=flag onclick="unflag(this)"> \u2691</span>';
+        target = globalState().results.layout_tests_dir + '/' + test;
+    return '<a class=test-link href="' + target + '">' + test + '</a><span class=flag onclick="unflag(this)"> \u2691</span>';
 }
 
 function unflag(flag)

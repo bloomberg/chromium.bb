@@ -428,7 +428,7 @@ function runTests()
     var subtree = results.tests['fullscreen'] = {}
     subtree['full-screen-api.html'] = mockExpectation('TEXT', 'IMAGE+TEXT');
     runTest(results, function() {
-        var expectedHref = 'http://trac.webkit.org/export/' + results.revision + '/trunk/LayoutTests/fullscreen/full-screen-api.html';
+        var expectedHref = 'http://src.chromium.org/viewvc/blink/trunk/LayoutTests/fullscreen/full-screen-api.html?pathrev=' + results.revision +'#l1';
         assertTrue(document.querySelector('tbody td:first-child a').href == expectedHref);
     });
 
@@ -437,7 +437,7 @@ function runTests()
     subtree['full-screen-api.html'] = mockExpectation('TEXT', 'IMAGE+TEXT');
     results.revision = '';
     runTest(results, function() {
-        var expectedHref = 'http://trac.webkit.org/browser/trunk/LayoutTests/fullscreen/full-screen-api.html';
+        var expectedHref = 'http://src.chromium.org/viewvc/blink/trunk/LayoutTests/fullscreen/full-screen-api.html#l1';
         assertTrue(document.querySelector('tbody td:first-child a').href == expectedHref);
     });
 
