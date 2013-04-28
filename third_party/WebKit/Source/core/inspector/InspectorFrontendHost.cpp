@@ -272,12 +272,14 @@ String InspectorFrontendHost::loadResourceSynchronously(const String& url)
 
 String InspectorFrontendHost::getSelectionBackgroundColor()
 {
-    return m_frontendPage->theme()->activeSelectionBackgroundColor().serialized();
+    Color color = m_frontendPage->theme()->activeSelectionBackgroundColor();
+    return color.isValid() ? color.serialized() : "";
 }
 
 String InspectorFrontendHost::getSelectionForegroundColor()
 {
-    return m_frontendPage->theme()->activeSelectionForegroundColor().serialized();
+    Color color = m_frontendPage->theme()->activeSelectionForegroundColor();
+    return color.isValid() ? color.serialized() : "";
 }
 
 bool InspectorFrontendHost::supportsFileSystems()
