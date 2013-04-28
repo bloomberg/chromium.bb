@@ -1,0 +1,6 @@
+Test how many resize events are emitted during page load and dynamic content generation. Do not resize the page. It invalidates the test.
+Resize events (should be 0): 0
+PASS
+
+
+
