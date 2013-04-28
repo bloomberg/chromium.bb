@@ -108,6 +108,7 @@ python buildbot/buildbot_standard.py opt 32 glibc || fail
 
 if [[ "${BUILD_COMPATIBLE_TOOLCHAINS:-yes}" != "no" ]]; then
   echo @@@BUILD_STEP sync backports@@@
+  rm -rf tools/BACKPORTS/ppapi*
   tools/BACKPORTS/build_backports.sh VERSIONS mac glibc
 fi
 

@@ -17,7 +17,7 @@ if [[ $# -ne 3 ]]; then
   exit 2
 fi
 
-if [[ "${0:0:1}" == "/" ]]; then
+if [[ "${0:0:1}" = "/" ]]; then
   declare -r scriptname="$0"
 else
   declare -r scriptname="$PWD/$0"
@@ -25,7 +25,7 @@ fi
 
 cd tools/BACKPORTS
 
-if [[ "$((sha1sum "$scriptname" "$1" || shasum "$scriptname" "$1") 2>/dev/null)" == "$(cat "$1.lastver")" ]]; then
+if [[ "$((sha1sum "$scriptname" "$1" || shasum "$scriptname" "$1") 2>/dev/null)" = "$(cat "$1.lastver")" ]]; then
   # Everything is already done
   exit 0
 fi
@@ -73,25 +73,29 @@ while read name id comment ; do
       # Skip this line
       ;;
     *)
-    ( # First step is to use glient to sync sources.
+      if [[ "$((sha1sum "$scriptname" "$1" || shasum "$scriptname" "$1") 2>/dev/null)" = "$(cat "$1.$name.lastver")" ]]; then
+	# Everything is already done
+	continue
+      fi
+      # First step is to use glient to sync sources.
       if [[ -d "$name" ]]; then
-        cd "$name"
-        if [[ "$2" == "win" ]]; then
-          # "gclient.bat revert" automatically calls "runhooks"… ⇒ it fails…
-          # "gclient runhooks" downloads toolchain then calls gyp… ⇒ it fails…
-          # "glient.bat runhooks" sees toolchain and simply calls gyp ⇒ success!
-          # Additional fun: error codes are lost somewhere in gclient.bat…
-          ( gclient.bat revert || true
-            gclient runhooks --force || true
-            gclient.bat runhooks --force || true
-          ) < /dev/null
-        else
-          gclient revert < /dev/null
-        fi
+	cd "$name"
+	if [[ "$2" = "win" ]]; then
+	  # "gclient.bat revert" automatically calls "runhooks"… ⇒ it fails…
+	  # "gclient runhooks" downloads toolchain then calls gyp… ⇒ it fails…
+	  # "glient.bat runhooks" sees toolchain and simply calls gyp ⇒ success!
+	  # Additional fun: error codes are lost somewhere in gclient.bat…
+	  ( gclient.bat revert || true
+	    gclient runhooks --force || true
+	    gclient.bat runhooks --force || true
+	  ) < /dev/null
+	else
+	  gclient revert < /dev/null
+	fi
       else
-        mkdir "$name"
-        cd "$name"
-        cat >.gclient <<-END
+	mkdir "$name"
+	cd "$name"
+	cat >.gclient <<-END
 	solutions = [
 	  { "name"        : "native_client",
 	    "url"         : "http://src.chromium.org/native_client/trunk/src/native_client@$id",
@@ -103,18 +107,18 @@ while read name id comment ; do
 	  },
 	]
 	END
-        if [[ "$2" == "win" ]]; then
-          # "gclient.bat revert" automatically calls "runhooks"… ⇒ it fails…
-          # "gclient runhooks" downloads toolchain then calls gyp… ⇒ it fails…
-          # "glient.bat runhooks" sees toolchain and simply calls gyp ⇒ success!
-          # Additional fun: error codes are lost somewhere in gclient.bat…
-          ( gclient.bat sync || true
-            gclient runhooks --force || true
-            gclient.bat runhooks --force || true
-          ) < /dev/null
-        else
-          gclient sync < /dev/null
-        fi
+	if [[ "$2" = "win" ]]; then
+	  # "gclient.bat revert" automatically calls "runhooks"… ⇒ it fails…
+	  # "gclient runhooks" downloads toolchain then calls gyp… ⇒ it fails…
+	  # "glient.bat runhooks" sees toolchain and simply calls gyp ⇒ success!
+	  # Additional fun: error codes are lost somewhere in gclient.bat…
+	  ( gclient.bat sync || true
+	    gclient runhooks --force || true
+	    gclient.bat runhooks --force || true
+	  ) < /dev/null
+	else
+	  gclient sync < /dev/null
+	fi
       fi
       # Now we need to change versions to officialy mark binaries.  We don't
       # show git revision because we combine different branches here.
@@ -139,48 +143,46 @@ while read name id comment ; do
 	-echo "\$REVISION"
 	+echo "\$REVISION~$name"
 	END
-      declare -r rev="$(native_client/tools/glibc_revision.sh)"
-      patch -p0 <<-END
-	--- native_client/tools/Makefile
-	+++ native_client/tools/Makefile
-	@@ -850 +850,2 @@
-	-	echo "Native Client r\`LC_ALL=C svnversion\`, Git Commit \`cd SRC/gcc ; LC_ALL=C git rev-parse HEAD\`" > SRC/gcc/gcc/DEV-PHASE
-	+	echo "Native Client r$rev" > SRC/gcc/gcc/DEV-PHASE
-	+	cp -aiv SRC/gdb/gdb/version.in SRC/gdb/gdb/version.inT
-	END
-      if [[ "$name" == ppapi14 ]]; then
+      declare rev="$(native_client/tools/glibc_revision.sh)"
+      if [[ "$name" = ppapi14 ]]; then
 	patch -p0 <<-END
 	--- native_client/tools/Makefile
 	+++ native_client/tools/Makefile
 	@@ -847 +847 @@
 	-	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \\" \`LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1-\\2-\\3+'\` (Native Client r\`LC_ALL=C svnversion\`, Git Commit \`cd SRC/binutils ; LC_ALL=C git rev-parse HEAD\`)\\"\\n" |\\
 	+	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \\" \`cd ../../.. ; LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1-\\2-\\3+'\` (Native Client r$rev)\\"\\n" |\\
-	@@ -849 +849 @@
+	@@ -849,2 +849,3 @@
 	-	LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1-\\2-\\3+' > SRC/gcc/gcc/DATESTAMP
+	-	echo "Native Client r\`LC_ALL=C svnversion\`, Git Commit \`cd SRC/gcc ; LC_ALL=C git rev-parse HEAD\`" > SRC/gcc/gcc/DEV-PHASE
 	+	( cd ../../.. ; LC_ALL=C svn info ) | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1-\\2-\\3+' > SRC/gcc/gcc/DATESTAMP
-	@@ -855 +855 @@
+	+	echo "Native Client r$rev" > SRC/gcc/gcc/DEV-PHASE
+	+	cp -aiv SRC/gdb/gdb/version.in SRC/gdb/gdb/version.inT
+	@@ -854 +855 @@
 	-	+\`cat SRC/gdb/gdb/version.in\` \`LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1-\\2-\\3+'\` (Native Client r\`LC_ALL=C svnversion\`, Git Commit \`cd SRC/gdb ; LC_ALL=C git rev-parse HEAD\`)\\n" |\\
 	+	+\`cat SRC/gdb/gdb/version.in\` \`cd ../../.. ; LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1-\\2-\\3+'\` (Native Client r$rev)\\n" |\\
 	END
-      else
+      elif [[ "$name" = ppapi15 ]]; then
 	patch -p0 <<-END
 	--- native_client/tools/Makefile
 	+++ native_client/tools/Makefile
 	@@ -847 +847 @@
 	-	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \\" \`LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+'\` (Native Client r\`LC_ALL=C svnversion\`, Git Commit \`cd SRC/binutils ; LC_ALL=C git rev-parse HEAD\`)\\"\\n" |\\
 	+	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \\" \`cd ../../.. ; LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+'\` (Native Client r$rev)\\"\\n" |\\
-	@@ -849 +849 @@
+	@@ -849,2 +849,3 @@
 	-	LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+' > SRC/gcc/gcc/DATESTAMP
+	-	echo "Native Client r\`LC_ALL=C svnversion\`, Git Commit \`cd SRC/gcc ; LC_ALL=C git rev-parse HEAD\`" > SRC/gcc/gcc/DEV-PHASE
 	+	( cd ../../.. ; LC_ALL=C svn info ) | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+' > SRC/gcc/gcc/DATESTAMP
-	@@ -855 +855 @@
+	+	echo "Native Client r$rev" > SRC/gcc/gcc/DEV-PHASE
+	+	cp -aiv SRC/gdb/gdb/version.in SRC/gdb/gdb/version.inT
+	@@ -854 +855 @@
 	-	+\`cat SRC/gdb/gdb/version.in\` \`LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+'\` (Native Client r\`LC_ALL=C svnversion\`, Git Commit \`cd SRC/gdb ; LC_ALL=C git rev-parse HEAD\`)\\n" |\\
 	+	+\`cat SRC/gdb/gdb/version.in\` \`cd ../../.. LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+'\` (Native Client r$rev)\\n" |\\
 	END
-	if [[ "$name" != ppapi15 ]]; then
-	  patch -p0 <<-END
+      elif [[ "$name" = ppapi1? ]] || [[ "$name" = ppapi2[01] ]]; then
+	patch -p0 <<-END
 	--- native_client/tools/Makefile
 	+++ native_client/tools/Makefile
-	@@ -950,5 +950,5 @@
+	@@ -700,5 +700,5 @@
 	-BINUTILS_PATCHNAME := naclbinutils-\$(BINUTILS_VERSION)-r\$(shell svnversion | tr : _)
 	-GCC_PATCHNAME := naclgcc-\$(GCC_VERSION)-r\$(shell svnversion | tr : _)
 	-#GDB_PATCHNAME := naclgdb-\$(GDB_VERSION)-r\$(shell svnversion | tr : _)
@@ -191,10 +193,49 @@ while read name id comment ; do
 	+#GDB_PATCHNAME := naclgdb-\$(GDB_VERSION)-r\$(shell ./glibc_revision.sh)
 	+GLIBC_PATCHNAME := naclglibc-\$(GLIBC_VERSION)-r\$(shell ./glibc_revision.sh)
 	+NEWLIB_PATCHNAME := naclnewlib-\$(NEWLIB_VERSION)-r\$(shell ./glibc_revision.sh)
+	@@ -847 +847 @@
+	-	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \\" \`LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+'\` (Native Client r\`LC_ALL=C svnversion\`, Git Commit \`cd SRC/binutils ; LC_ALL=C git rev-parse HEAD\`)\\"\\n" |\\
+	+	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \\" \`cd ../../.. ; LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+'\` (Native Client r$rev)\\"\\n" |\\
+	@@ -849,2 +849,3 @@
+	-	LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+' > SRC/gcc/gcc/DATESTAMP
+	-	echo "Native Client r\`LC_ALL=C svnversion\`, Git Commit \`cd SRC/gcc ; LC_ALL=C git rev-parse HEAD\`" > SRC/gcc/gcc/DEV-PHASE
+	+	( cd ../../.. ; LC_ALL=C svn info ) | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+' > SRC/gcc/gcc/DATESTAMP
+	+	echo "Native Client r$rev" > SRC/gcc/gcc/DEV-PHASE
+	+	cp -aiv SRC/gdb/gdb/version.in SRC/gdb/gdb/version.inT
+	@@ -854 +855 @@
+	-	+\`cat SRC/gdb/gdb/version.in\` \`LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+'\` (Native Client r\`LC_ALL=C svnversion\`, Git Commit \`cd SRC/gdb ; LC_ALL=C git rev-parse HEAD\`)\\n" |\\
+	+	+\`cat SRC/gdb/gdb/version.in\` \`cd ../../.. LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+'\` (Native Client r$rev)\\n" |\\
 	END
-	fi
+      else
+	patch -p0 <<-END
+	--- native_client/tools/Makefile
+	+++ native_client/tools/Makefile
+	@@ -700,5 +700,5 @@
+	-BINUTILS_PATCHNAME := naclbinutils-\$(BINUTILS_VERSION)-r\$(shell \$(SVNVERSION) | tr : _)
+	-GCC_PATCHNAME := naclgcc-\$(GCC_VERSION)-r\$(shell \$(SVNVERSION) | tr : _)
+	-#GDB_PATCHNAME := naclgdb-\$(GDB_VERSION)-r\$(shell \$(SVNVERSION) | tr : _)
+	-GLIBC_PATCHNAME := naclglibc-\$(GLIBC_VERSION)-r\$(shell \$(SVNVERSION) | tr : _)
+	-NEWLIB_PATCHNAME := naclnewlib-\$(NEWLIB_VERSION)-r\$(shell \$(SVNVERSION) | tr : _)
+	+BINUTILS_PATCHNAME := naclbinutils-\$(BINUTILS_VERSION)-r\$(shell ./glibc_revision.sh)
+	+GCC_PATCHNAME := naclgcc-\$(GCC_VERSION)-r\$(shell ./glibc_revision.sh)
+	+#GDB_PATCHNAME := naclgdb-\$(GDB_VERSION)-r\$(shell ./glibc_revision.sh)
+	+GLIBC_PATCHNAME := naclglibc-\$(GLIBC_VERSION)-r\$(shell ./glibc_revision.sh)
+	+NEWLIB_PATCHNAME := naclnewlib-\$(NEWLIB_VERSION)-r\$(shell ./glibc_revision.sh)
+	@@ -847 +847 @@
+	-	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \\" \`LC_ALL=C \$(SVN) info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+'\` (Native Client r\`LC_ALL=C \$(SVNVERSION)\`, Git Commit \`cd SRC/binutils ; LC_ALL=C git rev-parse HEAD\`)\\"\\n" |\\
+	+	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \\" \`cd ../../.. ; LC_ALL=C \$(SVN) info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+'\` (Native Client r$rev)\\"\\n" |\\
+	@@ -849,2 +849,3 @@
+	-	LC_ALL=C \$(SVN) info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+' > SRC/gcc/gcc/DATESTAMP
+	-	echo "Native Client r\`LC_ALL=C \$(SVNVERSION)\`, Git Commit \`cd SRC/gcc ; LC_ALL=C git rev-parse HEAD\`" > SRC/gcc/gcc/DEV-PHASE
+	+	( cd ../../.. ; LC_ALL=C \$(SVN) info ) | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+' > SRC/gcc/gcc/DATESTAMP
+	+	echo "Native Client r$rev" > SRC/gcc/gcc/DEV-PHASE
+	+	cp -aiv SRC/gdb/gdb/version.in SRC/gdb/gdb/version.inT
+	@@ -854 +855 @@
+	-	+\`cat SRC/gdb/gdb/version.in\` \`LC_ALL=C \$(SVN) info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+'\` (Native Client r\`LC_ALL=C \$(SVNVERSION)\`, Git Commit \`cd SRC/gdb ; LC_ALL=C git rev-parse HEAD\`)\\n" |\\
+	+	+\`cat SRC/gdb/gdb/version.in\` \`cd ../../.. LC_ALL=C \$(SVN) info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+'\` (Native Client r$rev)\\n" |\\
+	END
       fi
-      if [[ "$name" == ppapi19 ]] || [[ "$name" == ppapi20 ]]; then
+      if [[ "$name" = ppapi19 ]] || [[ "$name" = ppapi20 ]]; then
 	  patch -p0 <<-END
 	--- native_client/tools/Makefile
 	+++ native_client/tools/Makefile
@@ -206,43 +247,36 @@ while read name id comment ; do
 	END
       fi
       patch -p0 <<-END
-	--- native_client/buildbot/buildbot_lib.py
-	+++ native_client/buildbot/buildbot_lib.py
-	@@ -75 +75 @@
-	-  context['max_jobs'] = 8
-	+  context['max_jobs'] = 1
 	--- native_client/buildbot/buildbot_lucid64-glibc-makefile.sh
 	+++ native_client/buildbot/buildbot_lucid64-glibc-makefile.sh
 	@@ -27 +27 @@
 	-rm -rf scons-out tools/SRC/* tools/BUILD/* tools/out tools/toolchain \\
 	+rm -rf scons-out tools/BUILD/* tools/out tools/toolchain \\
-	@@ -35 +35 @@
-	-  make -j8 buildbot-build-with-glibc
-	+  make buildbot-build-with-glibc
-	@@ -107 +107 @@
+	--- native_client/buildbot/buildbot_lucid64-glibc-makefile.sh
+	+++ native_client/buildbot/buildbot_lucid64-glibc-makefile.sh
+	@@ -90 +90 @@
+	-    make glibc-check
+	+    true make glibc-check
+	--- native_client/buildbot/buildbot_lucid64-glibc-makefile.sh
+	+++ native_client/buildbot/buildbot_lucid64-glibc-makefile.sh
+	@@ -109 +109 @@
 	-  rev="\$(tools/glibc_revision.sh)"
 	+  rev="$rev"
+	--- native_client/buildbot/buildbot_lucid64-glibc-makefile.sh
+	+++ native_client/buildbot/buildbot_lucid64-glibc-makefile.sh
+	@@ -164 +164 @@
+	-    make glibc-check
+	+    true make glibc-check
 	--- native_client/buildbot/buildbot_mac-glibc-makefile.sh
 	+++ native_client/buildbot/buildbot_mac-glibc-makefile.sh
 	@@ -28 +28 @@
 	-rm -rf scons-out tools/SRC/* tools/BUILD/* tools/out/* tools/toolchain \\
 	+rm -rf scons-out tools/BUILD/* tools/out/* tools/toolchain \\
-	@@ -52 +52 @@
-	-  make -j8 buildbot-build-with-glibc
-	+  make buildbot-build-with-glibc
-	--- native_client/buildbot/buildbot_toolchain.sh
-	+++ native_client/buildbot/buildbot_toolchain.sh
-	@@ -40 +40 @@
-	-make -j8 clean buildbot-build-with-newlib
-	+make clean buildbot-build-with-newlib
 	--- native_client/buildbot/buildbot_windows-glibc-makefile.sh
 	+++ native_client/buildbot/buildbot_windows-glibc-makefile.sh
 	@@ -40 +40 @@
 	-rm -rf scons-out tools/SRC/* tools/BUILD/* tools/out tools/toolchain \\
 	+rm -rf scons-out tools/BUILD/* tools/out tools/toolchain \\
-	@@ -65 +65 @@
-	-  make -j8 buildbot-build-with-glibc
-	+  make buildbot-build-with-glibc
 	--- native_client/buildbot/gsutil.sh
 	+++ native_client/buildbot/gsutil.sh
 	@@ -29 +29 @@
@@ -255,7 +289,7 @@ while read name id comment ; do
 	< native_client/buildbot/buildbot_windows-glibc-makefile.bat.orig \
 	> native_client/buildbot/buildbot_windows-glibc-makefile.bat
       rm native_client/buildbot/buildbot_windows-glibc-makefile.bat.orig
-      if [[ "$name" == ppapi14 ]]; then
+      if [[ "$name" = ppapi14 ]]; then
 	patch -p0 <<-END
 	--- native_client/buildbot/buildbot_toolchain.sh
 	+++ native_client/buildbot/buildbot_toolchain.sh
@@ -266,7 +300,7 @@ while read name id comment ; do
 	-      \${GS_BASE}/latest/naclsdk_\${PLATFORM}_x86.tgz
 	+      \${GS_BASE}/latest~"$name"/naclsdk_\${PLATFORM}_x86.tgz
 	END
-      elif [[ "$name" == ppapi1[567] ]]; then
+      elif [[ "$name" = ppapi1[567] ]]; then
 	patch -p0 <<-END
 	--- native_client/buildbot/buildbot_toolchain.sh
 	+++ native_client/buildbot/buildbot_toolchain.sh
@@ -295,19 +329,18 @@ while read name id comment ; do
 	+          \${GS_BASE}/"\${destrevision}"/naclsdk_\${PLATFORM}_x86.\${suffix}
 	END
       fi
-      cp -vf ../../glibc-tests/xfail_list.txt native_client/tools/glibc-tests/xfail_list.txt
       # Patch sources and build the toolchains.
       if [[ "$name" != "ppapi14" || "$3" != glibc ]]; then
 	make -C native_client/tools clean
-	rm -f native_client/tools/SRC/*
+	rm -rf native_client/tools/SRC/*
 	for i in binutils gcc gdb glibc linux-headers-for-nacl newlib ; do (
 	  if [[ "$name" != "ppapi14" || "$i" != glibc ]]; then
 	    rm -rf native_client/tools/SRC/"$i"
 	    git clone ../"$i" native_client/tools/SRC/"$i"
 	    cd native_client/tools/SRC/"$i"
 	    . ../../REVISIONS
-	    declare -r varname="NACL_$(echo "$i" | LC_ALL=C tr a-z A-Z)_COMMIT"
-	    if [[ "$varname" == "NACL_LINUX-HEADERS-FOR-NACL_COMMIT" ]]; then
+	    declare varname="NACL_$(echo "$i" | LC_ALL=C tr a-z A-Z)_COMMIT"
+	    if [[ "$varname" = "NACL_LINUX-HEADERS-FOR-NACL_COMMIT" ]]; then
 	      . ../../../../../../REVISIONS
 	      git checkout "$LINUX_HEADERS_FOR_NACL_COMMIT"
 	    else
@@ -319,16 +352,16 @@ while read name id comment ; do
 	      done
 	      cd "$name/native_client/tools/SRC/$i"
 	      while read tag id comment ; do
-		if [[ "$i" == "$tag" ]]; then
-		  if [[ "$name" == ppapi1[45678] ]] && [[ "$i" == "newlib" ]] &&
-		     [[ "$id" == "4353bc00936874bb78aa3ba21c648b4f4c3f946b" ]]; then
+		if [[ "$i" = "$tag" ]]; then
+		  if [[ "$name" = ppapi1[45678] ]] && [[ "$i" = "newlib" ]] &&
+		     [[ "$id" = "4353bc00936874bb78aa3ba21c648b4f4c3f946b" ]]; then
 		    # Ignore error
 		    git diff "$id"{^..,} | patch -p1 ||
 		    ( rejfiles="$(find -name '*.rej')"
 		      if [[ "$rejfiles" != "./newlib/libc/include/machine/setjmp.h.rej" ]]; then
-		        touch "../../../../../$$.error" "../../../../../$$.error.$name"
+			touch "../../../../../$$.error" "../../../../../$$.error.$name"
 		      else
-		        rm ./newlib/libc/include/machine/setjmp.h.rej
+			rm ./newlib/libc/include/machine/setjmp.h.rej
 		      fi
 		    )
 		  else
@@ -349,19 +382,22 @@ while read name id comment ; do
 	+	echo "@set GDBVN \`sed q \$(srcdir)/../version.inT\`" > ./GDBvn.new
 	END
 	fi
-	declare -r url_prefix=http://commondatastorage.googleapis.com/nativeclient-archive2
-	if [[ "$3" == "glibc" ]]; then
-	  declare -r url=$url_prefix/x86_toolchain/r"$rev"/toolchain_"$2"_x86.tar.gz
+	declare url_prefix=http://commondatastorage.googleapis.com/nativeclient-archive2
+	if [[ "$3" = "glibc" ]]; then
+	  declare url=$url_prefix/x86_toolchain/r"$rev"/toolchain_"$2"_x86.tar.gz
 	else
-	  declare -r url=$url_prefix/toolchain/"$rev"/naclsdk_"$2"_x86.tgz
+	  declare url=$url_prefix/toolchain/"$rev"/naclsdk_"$2"_x86.tgz
 	fi
 	if [[ ! -e "../$$.error.$name" ]]; then
 	  # If toolchain is already available then another try will not change anything
-	  curl --fail --location --url "$url" -o /dev/null || (
+	  curl --fail --location --url "$url" -o /dev/null &&
+	  (cd .. ; sha1sum "$scriptname" "$1" || shasum "$scriptname" "$1") >"../$1.$name.lastver" 2>/dev/null &&
+	  rm -rf "../$name" ||
+	  (
 	    cd native_client
 	    export BUILD_COMPATIBLE_TOOLCHAINS=no
 	    export BUILDBOT_GOT_REVISION="$rev"
-	    if [[ "$2" == "win" ]]; then (
+	    if [[ "$2" = "win" ]]; then (
 	      # Use extended globbing (cygwin should always have it).
 	      shopt -s extglob
 	      # Filter out cygwin python (everything under /usr or /bin, or *cygwin*).
@@ -372,31 +408,23 @@ while read name id comment ; do
 	      export PATH=${PATH/#*([^:])cygwin*([^:])/}
 	      export PATH=${PATH//:*([^:])cygwin*([^:])/}
 	      python_slave buildbot/buildbot_selector.py
+	      (cd ../.. ; sha1sum "$scriptname" "$1" || shasum "$scriptname" "$1") >"../../$1.$name.lastver" 2>/dev/null
+	      rm -rf "../../$name"
 	    ) else
 	      python buildbot/buildbot_selector.py
+	      (cd ../.. ; sha1sum "$scriptname" "$1" || shasum "$scriptname" "$1") >"../../$1.$name.lastver" 2>/dev/null
+	      rm -rf "../../$name"
 	    fi
 	  )
+	  cd ..
 	fi
+      else
+	(cd .. ; sha1sum "$scriptname" "$1" || shasum "$scriptname" "$1") >"../$1.$name.lastver" 2>/dev/null &&
+	rm -rf "../$name"
+	cd ..
       fi
-    ) ;;
-  esac || touch "$$.error" "$$.error.$name" &
+    ;;
+  esac
 done < "$1"
-
-wait
-
-# If we were unable to checkout some sources then it's time to stop.
-if [[ -e "$$.error" ]]; then
-  rm -f "$$.error"
-  set +x
-  echo '@@@BUILD_STEP report_backport_build_errors@@@'
-  while read name id comment; do
-    if [[ -e "$$.error.$name" ]]; then
-      echo "Error found while building toolchain for $name" 1>&2
-      rm -f "$$.error.$name"
-    fi
-  done < "$1"
-  echo '@@@STEP_FAILURE@@@'
-  exit 2
-fi
 
 (sha1sum "$scriptname" "$1" || shasum "$scriptname" "$1") > "$1.lastver" 2>/dev/null

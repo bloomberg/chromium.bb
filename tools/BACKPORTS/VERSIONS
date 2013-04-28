@@ -89,8 +89,26 @@ ppapi21	8715
   # newlib	d3186f98e4957d4c97981668e3832b70485f88b6	Provide sanity check that compiler defines __*_ENDIAN__
 ppapi22	9338
 ppapi23	9624
-  gcc		0622fce75c30b1cdce32dfa1a6fe96cb34e526ea	Fix potential out of bounds access.
   glibc		51fe1ff9a701891460bc51b21ff723802fda33ee	Remove aliases to stat64, fstat64, fstatat64 and lstat64.
+ppapi24	9900
+ppapi25	9900
+  gcc		0622fce75c30b1cdce32dfa1a6fe96cb34e526ea	Fix potential out of bounds access.
+  # Skipped (potentially disruptive changes to artificats layout)
+  # glibc	1262975b707b91c56fc71d7f3ebd836ff0b5d6f3	Remove unnecessary alignment between .got.plt and .data sections.
+  # glibc	2197a8b6c73b1e4ef59fd777e50a9d3016b9c694	Remove alignment between read-only and read-write data segments.
+  # glibc	7690fd5bb6300f9111715446f410d87799ba9cab	Remove alignment of code and data segments for shared libraries.
+  # Skipped (only affects ARM which is not yet released at this stage)
+  # newlib	086df3789d8e7b823cc5044e92edd66296712452	Use SFI_BREG prefix on PLD instruction
+  # newlib	6a104f495cf91387ecec5f5f87c6e12d345b204c	Add __aeabi_atexit to newlib
+ppapi26	10650
+  binutils	bd554084ade59fdb9ff90b502d4e9fdaa4a19db6	Use enums rather than #define's for some constants in i386-dis.c
   glibc		b7d4c72d2e3f97e00465df9aff09184b32ebac8b	Disable ld.so.cache support
-  glibc		a30570615f75ed3058827c0600cfed5b7a768e90	Fill tz in gettimeofday function
+  newlib	5feee65e182c08a7e89fbffc3223c57e4335420f	newlib: Don't use -fshort-enums
+ppapi27	10934
+  glibc		a30570615f75ed3058827c0600cfed5b7a768e90	Fill tz in gettimeofday function.
   glibc		a0e12298059896274848548713dd426d7b751cbd	Make non-executable stack default for NaCl.
+  # Skipped (new functionality and possible disruptions)
+  # glibc	eb3343e404e39008c94f37f58e2ec9c4d6ffb8da	Provide mprotect syscall
+  # glibc	cd98ee38fe55370fd5bc769ef6ecc43605d35595	Align and pad code segments to 64k
+  # glibc	d7687c6a2f9ddd20f6fbc2ebaa4bb7022cf0a55a	Linker scripts: Fold .fini into .text
+  # glibc	a589e0a8bf423917fb62707ef6285119a967a668	Prepare for fast loading through mmap'ing text.

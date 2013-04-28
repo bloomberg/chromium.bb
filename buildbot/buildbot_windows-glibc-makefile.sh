@@ -104,5 +104,6 @@ fi
 
 if [[ "${BUILD_COMPATIBLE_TOOLCHAINS:-yes}" != "no" ]]; then
   echo @@@BUILD_STEP sync backports@@@
+  rm -rf tools/BACKPORTS/ppapi*
   tools/BACKPORTS/build_backports.sh VERSIONS win glibc
 fi
