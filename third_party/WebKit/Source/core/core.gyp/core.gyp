@@ -46,7 +46,6 @@
 
     'webcore_include_dirs': [
       # FIXME: Remove most entries in this list.
-      '../',
       '../..',
       '../html',
       '../platform/graphics/skia',

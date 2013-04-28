@@ -78,7 +78,7 @@
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/CString.h>
 
-#include "platform/chromium/TraceEvent.h"
+#include "core/platform/chromium/TraceEvent.h"
 
 namespace WebCore {
 
