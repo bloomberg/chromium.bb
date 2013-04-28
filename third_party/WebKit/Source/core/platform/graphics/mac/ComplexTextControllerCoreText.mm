@@ -24,7 +24,7 @@
 
 #include "config.h"
 
-#include "ComplexTextController.h"
+#include "core/platform/graphics/mac/ComplexTextController.h"
 
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontCache.h"

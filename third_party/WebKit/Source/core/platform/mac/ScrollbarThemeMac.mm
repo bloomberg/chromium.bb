@@ -27,11 +27,11 @@
 #include "core/platform/mac/ScrollbarThemeMac.h"
 
 #include <Carbon/Carbon.h>
-#include "ColorMac.h"
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/ScrollView.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/ImageBuffer.h"
+#include "core/platform/graphics/mac/ColorMac.h"
 #include "core/platform/mac/LocalCurrentGraphicsContext.h"
 #include "core/platform/mac/NSScrollerImpDetails.h"
 #include "core/platform/mac/ScrollAnimatorMac.h"

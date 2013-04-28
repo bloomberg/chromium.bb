@@ -54,16 +54,6 @@
     ],
 
     'conditions': [
-      ['OS=="mac"', {
-        'webcore_include_dirs': [
-          # FIXME: Eliminate dependency on platform/mac and related
-          # directories.
-          # FIXME: Eliminate dependency on platform/graphics/mac and
-          # related directories.
-          # platform/graphics/cg may need to stick around, though.
-          '../platform/graphics/mac',
-        ],
-      }],
       ['OS=="android" and use_openmax_dl_fft!=0', {
         'webcore_include_dirs': [
           '<(DEPTH)/third_party/openmax_dl'

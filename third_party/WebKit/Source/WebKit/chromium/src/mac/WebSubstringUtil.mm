@@ -34,7 +34,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "ColorMac.h"
 #include "WebFrameImpl.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -46,6 +45,7 @@
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/mac/ColorMac.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"
 #include <public/WebRect.h>

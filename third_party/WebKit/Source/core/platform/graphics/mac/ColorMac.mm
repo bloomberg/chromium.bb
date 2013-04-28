@@ -24,7 +24,7 @@
  */
 
 #import "config.h"
-#import "ColorMac.h"
+#import "core/platform/graphics/mac/ColorMac.h"
 
 #import <wtf/RetainPtr.h>
 #import <wtf/StdLibExtras.h>

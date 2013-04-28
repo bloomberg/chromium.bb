@@ -23,7 +23,7 @@
  */
 
 #include "config.h"
-#include "ComplexTextController.h"
+#include "core/platform/graphics/mac/ComplexTextController.h"
 
 #include <ApplicationServices/ApplicationServices.h>
 #include "core/platform/graphics/FloatSize.h"

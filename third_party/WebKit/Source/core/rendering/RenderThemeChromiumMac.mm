@@ -22,7 +22,6 @@
 #import "core/rendering/RenderThemeChromiumMac.h"
 
 #import "CSSValueKeywords.h"
-#import "ColorMac.h"
 #import "HTMLNames.h"
 #import "UserAgentStyleSheets.h"
 #import "core/css/CSSValueList.h"
@@ -45,6 +44,7 @@
 #import "core/platform/graphics/ImageBuffer.h"
 #import "core/platform/graphics/StringTruncator.h"
 #import "core/platform/graphics/cg/GraphicsContextCG.h"
+#import "core/platform/graphics/mac/ColorMac.h"
 #import "core/platform/mac/LocalCurrentGraphicsContext.h"
 #import "core/platform/mac/ThemeMac.h"
 #import "core/platform/mac/WebCoreNSCellExtras.h"
