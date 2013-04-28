@@ -62,10 +62,6 @@
 /* CPU(IA64) - Itanium / IA-64 */
 #if defined(__ia64__)
 #define WTF_CPU_IA64 1
-/* 32-bit mode on Itanium */
-#if !defined(__LP64__)
-#define WTF_CPU_IA64_32 1
-#endif
 #endif
 
 /* CPU(MIPS) - MIPS 32-bit */
@@ -76,14 +72,6 @@
 #if defined(__MIPSEB__)
 #define WTF_CPU_BIG_ENDIAN 1
 #endif
-#define WTF_MIPS_PIC (defined __PIC__)
-#define WTF_MIPS_ARCH __mips
-#define WTF_MIPS_ISA(v) (defined WTF_MIPS_ARCH && WTF_MIPS_ARCH == v)
-#define WTF_MIPS_ISA_AT_LEAST(v) (defined WTF_MIPS_ARCH && WTF_MIPS_ARCH >= v)
-#define WTF_MIPS_ARCH_REV __mips_isa_rev
-#define WTF_MIPS_ISA_REV(v) (defined WTF_MIPS_ARCH_REV && WTF_MIPS_ARCH_REV == v)
-#define WTF_MIPS_DOUBLE_FLOAT (defined __mips_hard_float && !defined __mips_single_float)
-#define WTF_MIPS_FP64 (defined __mips_fpr && __mips_fpr == 64)
 /* MIPS requires allocators to use aligned memory */
 #define WTF_USE_ARENA_ALLOC_ALIGNMENT_INTEGER 1
 #endif /* MIPS */
@@ -164,10 +152,6 @@
     || defined(ARM) \
     || defined(_ARM_)
 #define WTF_CPU_ARM 1
-
-#if defined(__ARM_PCS_VFP)
-#define WTF_CPU_ARM_HARDFP 1
-#endif
 
 #if defined(__ARMEB__)
 #define WTF_CPU_BIG_ENDIAN 1
@@ -250,14 +234,6 @@
 #endif
 
 
-/* CPU(ARMV5_OR_LOWER) - ARM instruction set v5 or earlier */
-/* On ARMv5 and below the natural alignment is required. 
-   And there are some other differences for v5 or earlier. */
-#if !defined(ARMV5_OR_LOWER) && !WTF_ARM_ARCH_AT_LEAST(6)
-#define WTF_CPU_ARMV5_OR_LOWER 1
-#endif
-
-
 /* CPU(ARM_TRADITIONAL) - Thumb2 is not available, only traditional ARM (v4 or greater) */
 /* CPU(ARM_THUMB2) - Thumb2 instruction set is available */
 /* Only one of these will be defined. */
@@ -285,19 +261,11 @@
 #define HAVE_ARM_NEON_INTRINSICS 1
 #endif
 
-#if (defined(__VFP_FP__) && !defined(__SOFTFP__))
-#define WTF_CPU_ARM_VFP 1
-#endif
-
 #if defined(__ARM_ARCH_7S__)
 #define WTF_CPU_APPLE_ARMV7S 1
 #endif
 
 #endif /* ARM */
-
-#if CPU(ARM) || CPU(MIPS) || CPU(SH4) || CPU(SPARC)
-#define WTF_CPU_NEEDS_ALIGNED_ACCESS 1
-#endif
 
 /* ==== OS() - underlying operating system; only to be used for mandated low-level services like 
    virtual memory, not to choose a GUI toolkit ==== */
