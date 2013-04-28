@@ -6237,6 +6237,8 @@ void RenderLayer::updateFilters(const RenderStyle* oldStyle, const RenderStyle* 
 
 void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
 {
+    updateIsNormalFlowOnly();
+
     if (renderer()->style()->overflowX() == OMARQUEE && renderer()->style()->marqueeBehavior() != MNONE && renderer()->isBox()) {
         if (!m_marquee)
             m_marquee = adoptPtr(new RenderMarquee(this));
