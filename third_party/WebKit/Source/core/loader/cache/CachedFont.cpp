@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/loader/cache/CachedFont.h"
 
-#include "FontCustomPlatformData.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/cache/CachedResourceClient.h"
@@ -35,6 +34,7 @@
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/MemoryCache.h"
 #include "core/platform/SharedBuffer.h"
+#include "core/platform/graphics/FontCustomPlatformData.h"
 #include "core/platform/graphics/FontPlatformData.h"
 #include <wtf/Vector.h>
 
