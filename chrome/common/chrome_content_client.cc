@@ -49,10 +49,6 @@
 #include "chrome/common/chrome_sandbox_type_mac.h"
 #endif
 
-#if defined(WIDEVINE_CDM_AVAILABLE)
-#include "chrome/common/widevine_cdm_constants.h"
-#endif  // WIDEVINE_CDM_AVAILABLE
-
 namespace {
 
 const char kPDFPluginName[] = "Chrome PDF Viewer";
@@ -93,6 +89,17 @@ const char kGTalkPluginExtension[] = ".googletalk";
 const char kGTalkPluginDescription[] = "Google Talk Plugin";
 const uint32 kGTalkPluginPermissions = ppapi::PERMISSION_PRIVATE |
                                        ppapi::PERMISSION_DEV;
+
+#if defined(WIDEVINE_CDM_AVAILABLE)
+const char kWidevineCdmPluginExtension[] = "";
+const uint32 kWidevineCdmPluginPermissions = ppapi::PERMISSION_PRIVATE |
+#if defined(OS_CHROMEOS)
+// TODO(xhwang): Make permission requirements the same on all OS.
+// See http://crbug.com/222252
+                                             ppapi::PERMISSION_FLASH |
+#endif  // !defined(OS_CHROMEOS)
+                                             ppapi::PERMISSION_DEV;
+#endif  // WIDEVINE_CDM_AVAILABLE
 
 #if defined(ENABLE_REMOTING)
 #if defined(GOOGLE_CHROME_BUILD)
@@ -234,7 +241,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
     }
   }
 
-#if defined(WIDEVINE_CDM_AVAILABLE) && defined(OS_LINUX)
+#if defined(WIDEVINE_CDM_AVAILABLE)
   static bool skip_widevine_cdm_file_check = false;
   if (PathService::Get(chrome::FILE_WIDEVINE_CDM_PLUGIN, &path)) {
     if (skip_widevine_cdm_file_check || file_util::PathExists(path)) {
@@ -255,7 +262,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
       skip_widevine_cdm_file_check = true;
     }
   }
-#endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(OS_LINUX)
+#endif  // WIDEVINE_CDM_AVAILABLE
 
   // The Remoting Viewer plugin is built-in.
 #if defined(ENABLE_REMOTING)
@@ -465,7 +472,7 @@ gfx::Image& ChromeContentClient::GetNativeImageNamed(int resource_id) const {
 }
 
 std::string ChromeContentClient::GetProcessTypeNameInEnglish(int type) {
-  switch (type) {
+  switch(type) {
     case PROCESS_TYPE_PROFILE_IMPORT:
       return "Profile Import helper";
     case PROCESS_TYPE_NACL_LOADER:
@@ -475,7 +482,7 @@ std::string ChromeContentClient::GetProcessTypeNameInEnglish(int type) {
   }
 
   DCHECK(false) << "Unknown child process type!";
-  return "Unknown";
+  return "Unknown"; 
 }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)

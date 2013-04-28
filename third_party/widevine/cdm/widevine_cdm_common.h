@@ -9,9 +9,6 @@
 
 // This file defines constants common to all Widevine CDM versions.
 
-// Widevine CDM version contains 4 components, e.g. 1.4.0.195.
-const int kWidevineCdmVersionNumComponents = 4;
-
 // "alpha" is a temporary name until a convention is defined.
 const char kWidevineKeySystem[] = "com.widevine.alpha";
 
