@@ -26,6 +26,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import copy
+
 
 class TestConfiguration(object):
     def __init__(self, version, architecture, build_type):
@@ -146,7 +148,7 @@ class TestConfigurationConverter(object):
     def to_config_set(self, specifier_set, error_list=None):
         """Convert a list of specifiers into a set of TestConfiguration instances."""
         if len(specifier_set) == 0:
-            return self._all_test_configurations
+            return copy.copy(self._all_test_configurations)
 
         matching_sets = {}
 

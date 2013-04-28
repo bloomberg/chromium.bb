@@ -121,6 +121,20 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
         new_expectations = self._read(self.lion_expectations_path)
         self.assertMultiLineEqual(new_expectations, "Bug(x) [ MountainLion SnowLeopard ] userscripts/another-test.html [ ImageOnlyFailure ]\nbug(z) [ Linux ] userscripts/another-test.html [ ImageOnlyFailure ]\n")
 
+    def test_rebaseline_updates_expectations_file_all_platforms(self):
+        self._write(self.lion_expectations_path, "Bug(x) userscripts/another-test.html [ ImageOnlyFailure ]\n")
+        self._write("userscripts/another-test.html", "Dummy test contents")
+
+        self.options.suffixes = 'png,wav,txt'
+        self.command._rebaseline_test_and_update_expectations(self.options)
+
+        self.assertItemsEqual(self.tool.web.urls_fetched,
+            [self.WEB_PREFIX + '/userscripts/another-test-actual.png',
+             self.WEB_PREFIX + '/userscripts/another-test-actual.wav',
+             self.WEB_PREFIX + '/userscripts/another-test-actual.txt'])
+        new_expectations = self._read(self.lion_expectations_path)
+        self.assertMultiLineEqual(new_expectations, "Bug(x) [ Android Linux MountainLion SnowLeopard Win ] userscripts/another-test.html [ ImageOnlyFailure ]\n")
+
     def test_rebaseline_does_not_include_overrides(self):
         self._write(self.lion_expectations_path, "Bug(x) [ Mac ] userscripts/another-test.html [ ImageOnlyFailure ]\nBug(z) [ Linux ] userscripts/another-test.html [ ImageOnlyFailure ]\n")
         self._write(self.lion_port.path_from_chromium_base('skia', 'skia_test_expectations.txt'), "Bug(y) [ Mac ] other-test.html [ Failure ]\n")
