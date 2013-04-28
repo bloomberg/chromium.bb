@@ -887,6 +887,11 @@
             ['exclude', 'Android\\.cpp$'],
           ],
         }],
+        ['OS=="android" and use_openmax_dl_fft!=0', {
+          'include_dirs': [
+            '<(DEPTH)/third_party/openmax_dl',
+          ],
+        }],
       ],
     },
     {
