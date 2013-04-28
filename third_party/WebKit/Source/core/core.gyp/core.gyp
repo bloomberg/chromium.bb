@@ -66,19 +66,12 @@
           '../platform/graphics/mac',
           '../platform/mac',
           '../platform/text/mac',
-          '../platform/graphics/harfbuzz/ng',
         ],
       }],
       ['OS=="win"', {
         'webcore_include_dirs': [
-          '../page/win',
           '../platform/text/win',
           '../platform/win',
-        ],
-      }],
-      ['OS=="linux" or OS=="android"', {
-        'webcore_include_dirs': [
-          '../platform/graphics/harfbuzz/ng',
         ],
       }],
       ['OS=="android" and use_openmax_dl_fft!=0', {
