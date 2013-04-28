@@ -48,8 +48,8 @@
 #endif // USE(WEBAUDIO_MKL)
 
 #if USE(WEBAUDIO_OPENMAX_DL_FFT)
-#include "dl/sp/api/armSP.h"
-#include "dl/sp/api/omxSP.h"
+#include "third_party/openmax_dl/dl/sp/api/armSP.h"
+#include "third_party/openmax_dl/dl/sp/api/omxSP.h"
 #elif USE(WEBAUDIO_FFMPEG)
 struct RDFTContext;
 #endif
