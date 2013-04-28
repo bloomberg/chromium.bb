@@ -36,7 +36,6 @@
 #include "core/platform/graphics/SimpleFontData.h"
 
 #if ENABLE(SVG_FONTS)
-#include "FontCustomPlatformData.h"
 #include "SVGNames.h"
 #include "core/svg/SVGFontData.h"
 #include "core/svg/SVGFontElement.h"
