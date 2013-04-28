@@ -17,7 +17,7 @@ if ((${#@}<1)); then
 END
   exit 10
 fi
-declare -r glibc_url_prefix=http://gsdview.appspot.com/nativeclient-archive2/between_builders/x86_glibc/r
+declare -r glibc_url_prefix=http://commondatastorage.googleapis.com/nativeclient-archive2/between_builders/x86_glibc/r
 declare -r glibc_revision="$("$(dirname "$0")/glibc_revision.sh")"
 if [[ "$(uname -s)" == "Darwin" ]]; then
   declare -r tar=gnutar

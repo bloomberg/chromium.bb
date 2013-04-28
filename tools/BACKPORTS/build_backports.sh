@@ -143,11 +143,43 @@ while read name id comment ; do
 	-echo "\$REVISION"
 	+echo "\$REVISION~$name"
 	END
+      if [[ "$name" = ppapi1? ]] || [[ "$name" = ppapi2[0123456] ]]; then
+	patch -p0 <<-END
+	--- native_client/tools/Makefile
+	+++ native_client/tools/Makefile
+	@@ -202,2 +202,4 @@
+	-  CFLAGS="-m\$(HOST_TOOLCHAIN_BITS) \$(CFLAGS)" \\
+	-  CXXFLAGS="-m\$(HOST_TOOLCHAIN_BITS) \$(CXXFLAGS)" \\
+	+  CC="\$(GCC_CC)" \\
+	+  CXX="\$(GCC_CXX)" \\
+	+  CFLAGS="\$(CFLAGS)" \\
+	+  CXXFLAGS="\$(CXXFLAGS)" \\
+	@@ -363 +365,7 @@
+	+ifeq (\$(PLATFORM), mac)
+	+GCC_CC = clang -m\$(HOST_TOOLCHAIN_BITS) -fgnu89-inline
+	+GCC_CXX = clang++ -m\$(HOST_TOOLCHAIN_BITS)
+	+else
+	 GCC_CC = gcc -m\$(HOST_TOOLCHAIN_BITS)
+	+GCC_CXX = g++ -m\$(HOST_TOOLCHAIN_BITS)
+	+endif
+	END
+      fi
+      if [[ "$name" = ppapi1? ]] || [[ "$name" = ppapi2[01234567] ]]; then
+	--- native_client/tools/glibc_download.sh
+	+++ native_client/tools/glibc_download.sh
+	@@ -20 +20 @@
+	-declare -r glibc_url_prefix=http://gsdview.appspot.com/nativeclient-archive2/between_builders/x86_glibc/r
+	+declare -r glibc_url_prefix=http://commondatastorage.googleapis.com/nativeclient-archive2/between_builders/x86_glibc/r
+	END
+      fi
       declare rev="$(native_client/tools/glibc_revision.sh)"
       if [[ "$name" = ppapi14 ]]; then
 	patch -p0 <<-END
 	--- native_client/tools/Makefile
 	+++ native_client/tools/Makefile
+	@@ -237 +237 @@
+	-	sed -e s'|cloog_LDADD = \$(LDADD)|cloog_LDADD = \$(LDADD) -lstdc++ -lm |' \\
+	+	sed -e s'|LIBS = @LIBS@|LIBS = @LIBS@ -lstdc++ -lm |' \\
 	@@ -847 +847 @@
 	-	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \\" \`LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1-\\2-\\3+'\` (Native Client r\`LC_ALL=C svnversion\`, Git Commit \`cd SRC/binutils ; LC_ALL=C git rev-parse HEAD\`)\\"\\n" |\\
 	+	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \\" \`cd ../../.. ; LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1-\\2-\\3+'\` (Native Client r$rev)\\"\\n" |\\
@@ -165,6 +197,9 @@ while read name id comment ; do
 	patch -p0 <<-END
 	--- native_client/tools/Makefile
 	+++ native_client/tools/Makefile
+	@@ -237 +237 @@
+	-	sed -e s'|cloog_LDADD = \$(LDADD)|cloog_LDADD = \$(LDADD) -lstdc++ -lm |' \\
+	+	sed -e s'|LIBS = @LIBS@|LIBS = @LIBS@ -lstdc++ -lm |' \\
 	@@ -847 +847 @@
 	-	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \\" \`LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+'\` (Native Client r\`LC_ALL=C svnversion\`, Git Commit \`cd SRC/binutils ; LC_ALL=C git rev-parse HEAD\`)\\"\\n" |\\
 	+	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \\" \`cd ../../.. ; LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+'\` (Native Client r$rev)\\"\\n" |\\
