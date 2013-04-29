@@ -2227,6 +2227,13 @@ void RenderWidgetHostImpl::FatalAccessibilityTreeError() {
   Send(new AccessibilityMsg_FatalError(GetRoutingID()));
 }
 
+#if defined(OS_WIN) && defined(USE_AURA)
+gfx::NativeViewAccessible
+RenderWidgetHostImpl::GetParentNativeViewAccessible() const {
+  return delegate_->GetParentNativeViewAccessible();
+}
+#endif
+
 void RenderWidgetHostImpl::ExecuteEditCommand(const std::string& command,
                                               const std::string& value) {
   Send(new InputMsg_ExecuteEditCommand(GetRoutingID(), command, value));

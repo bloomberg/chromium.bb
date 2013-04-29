@@ -194,6 +194,10 @@ class CONTENT_EXPORT WebContentsImpl
   virtual WebUI* GetCommittedWebUI() const OVERRIDE;
   virtual void SetUserAgentOverride(const std::string& override) OVERRIDE;
   virtual const std::string& GetUserAgentOverride() const OVERRIDE;
+#if defined(OS_WIN) && defined(USE_AURA)
+  virtual void SetParentNativeViewAccessible(
+      gfx::NativeViewAccessible accessible_parent) OVERRIDE;
+#endif
   virtual const string16& GetTitle() const OVERRIDE;
   virtual int32 GetMaxPageID() OVERRIDE;
   virtual int32 GetMaxPageIDForSiteInstance(
@@ -427,6 +431,9 @@ class CONTENT_EXPORT WebContentsImpl
       const NativeWebKeyboardEvent& event) OVERRIDE;
   virtual bool PreHandleWheelEvent(
       const WebKit::WebMouseWheelEvent& event) OVERRIDE;
+#if defined(OS_WIN) && defined(USE_AURA)
+  virtual gfx::NativeViewAccessible GetParentNativeViewAccessible() OVERRIDE;
+#endif
 
   // RenderViewHostManager::Delegate -------------------------------------------
 
@@ -716,6 +723,10 @@ class CONTENT_EXPORT WebContentsImpl
   // The tab that opened this tab, if any.  Will be set to null if the opener
   // is closed.
   WebContentsImpl* opener_;
+
+#if defined(OS_WIN) && defined(USE_AURA)
+  gfx::NativeViewAccessible accessible_parent_;
+#endif
 
   // Helper classes ------------------------------------------------------------
 

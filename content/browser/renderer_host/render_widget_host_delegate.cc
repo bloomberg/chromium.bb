@@ -17,4 +17,11 @@ bool RenderWidgetHostDelegate::PreHandleWheelEvent(
   return false;
 }
 
+#if defined(OS_WIN) && defined(USE_AURA)
+gfx::NativeViewAccessible
+RenderWidgetHostDelegate::GetParentNativeViewAccessible() {
+  return NULL;
+}
+#endif
+
 }  // namespace content

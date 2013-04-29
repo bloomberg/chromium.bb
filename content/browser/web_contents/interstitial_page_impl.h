@@ -132,6 +132,9 @@ class CONTENT_EXPORT InterstitialPageImpl
       bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) OVERRIDE;
+#if defined(OS_WIN) && defined(USE_AURA)
+  virtual gfx::NativeViewAccessible GetParentNativeViewAccessible() OVERRIDE;
+#endif
 
   bool enabled() const { return enabled_; }
   WebContents* web_contents() const;

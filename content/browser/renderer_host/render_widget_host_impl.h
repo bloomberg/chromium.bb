@@ -373,6 +373,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Kill the renderer because we got a fatal accessibility error.
   void FatalAccessibilityTreeError();
 
+#if defined(OS_WIN) && defined(USE_AURA)
+  gfx::NativeViewAccessible GetParentNativeViewAccessible() const;
+#endif
+
   // Executes the edit command on the RenderView.
   void ExecuteEditCommand(const std::string& command,
                           const std::string& value);

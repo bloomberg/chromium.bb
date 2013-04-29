@@ -212,11 +212,6 @@ void TestRenderWidgetHostView::SetClickthroughRegion(SkRegion* region) {
 #endif
 
 #if defined(OS_WIN) && defined(USE_AURA)
-void TestRenderWidgetHostView::SetParentNativeViewAccessible(
-    gfx::NativeViewAccessible accessible_parent) {
-  NOTIMPLEMENTED();
-}
-
 gfx::NativeViewAccessible
 TestRenderWidgetHostView::AccessibleObjectFromChildId(long child_id) {
   NOTIMPLEMENTED();

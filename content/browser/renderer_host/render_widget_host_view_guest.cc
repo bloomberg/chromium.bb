@@ -320,10 +320,6 @@ void RenderWidgetHostViewGuest::SetClickthroughRegion(SkRegion* region) {
 #endif
 
 #if defined(OS_WIN) && defined(USE_AURA)
-void RenderWidgetHostViewGuest::SetParentNativeViewAccessible(
-    gfx::NativeViewAccessible accessible_parent) {
-}
-
 gfx::NativeViewAccessible
 RenderWidgetHostViewGuest::AccessibleObjectFromChildId(long child_id) {
   NOTIMPLEMENTED();

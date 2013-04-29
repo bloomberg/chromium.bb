@@ -150,8 +150,6 @@ class RenderWidgetHostViewAura
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
 #if defined(OS_WIN)
-  virtual void SetParentNativeViewAccessible(
-      gfx::NativeViewAccessible accessible_parent) OVERRIDE;
   virtual gfx::NativeViewAccessible AccessibleObjectFromChildId(long child_id)
       OVERRIDE;
 #endif
@@ -633,8 +631,6 @@ class RenderWidgetHostViewAura
 #endif
 
   base::TimeTicks last_draw_ended_;
-
-  gfx::NativeViewAccessible accessible_parent_;
 
   // Subscriber that listens to frame presentation events.
   scoped_ptr<RenderWidgetHostViewFrameSubscriber> frame_subscriber_;

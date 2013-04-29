@@ -159,8 +159,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual void SetClickthroughRegion(SkRegion* region) OVERRIDE;
 #endif
 #if defined(OS_WIN) && defined(USE_AURA)
-  virtual void SetParentNativeViewAccessible(
-      gfx::NativeViewAccessible accessible_parent) OVERRIDE;
   virtual gfx::NativeViewAccessible AccessibleObjectFromChildId(long child_id)
       OVERRIDE;
 #endif

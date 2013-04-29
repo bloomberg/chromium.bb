@@ -478,6 +478,13 @@ void InterstitialPageImpl::HandleKeyboardEvent(
     web_contents_->HandleKeyboardEvent(event);
 }
 
+#if defined(OS_WIN) && defined(USE_AURA)
+gfx::NativeViewAccessible
+InterstitialPageImpl::GetParentNativeViewAccessible() {
+  return web_contents_->GetParentNativeViewAccessible();
+}
+#endif
+
 WebContents* InterstitialPageImpl::web_contents() const {
   return web_contents_;
 }

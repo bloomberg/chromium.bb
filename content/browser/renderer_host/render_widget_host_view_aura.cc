@@ -635,7 +635,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       accelerated_compositing_state_changed_(false),
       can_lock_compositor_(YES),
       paint_observer_(NULL),
-      accessible_parent_(NULL),
       touch_editing_client_(NULL) {
   host_->SetView(this);
   window_observer_.reset(new WindowObserver(this));
@@ -854,8 +853,12 @@ RenderWidgetHostViewAura::GetOrCreateBrowserAccessibilityManager() {
     return NULL;
   HWND hwnd = root_window->GetAcceleratedWidget();
 
+  gfx::NativeViewAccessible accessible_parent =
+      host_->GetParentNativeViewAccessible();
+  DCHECK(accessible_parent);
+
   manager = new BrowserAccessibilityManagerWin(
-      hwnd, accessible_parent_,
+      hwnd, accessible_parent,
       BrowserAccessibilityManagerWin::GetEmptyDocument(), this);
 #else
   manager = BrowserAccessibilityManager::Create(AccessibilityNodeData(), this);
@@ -975,17 +978,6 @@ void RenderWidgetHostViewAura::SetBackground(const SkBitmap& background) {
 }
 
 #if defined(OS_WIN)
-void RenderWidgetHostViewAura::SetParentNativeViewAccessible(
-    gfx::NativeViewAccessible accessible_parent) {
-  accessible_parent_ = accessible_parent;
-
-  BrowserAccessibilityManager* manager = GetBrowserAccessibilityManager();
-  if (manager) {
-    static_cast<BrowserAccessibilityManagerWin*>(manager)->
-        set_parent_iaccessible(accessible_parent);
-  }
-}
-
 gfx::NativeViewAccessible
 RenderWidgetHostViewAura::AccessibleObjectFromChildId(long child_id) {
   BrowserAccessibilityManager* manager = GetBrowserAccessibilityManager();

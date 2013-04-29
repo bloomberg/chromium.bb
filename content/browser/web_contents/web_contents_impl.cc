@@ -284,6 +284,9 @@ WebContentsImpl::WebContentsImpl(
       ALLOW_THIS_IN_INITIALIZER_LIST(controller_(this, browser_context)),
       render_view_host_delegate_view_(NULL),
       opener_(opener),
+#if defined(OS_WIN) && defined(USE_AURA)
+      accessible_parent_(NULL),
+#endif
       ALLOW_THIS_IN_INITIALIZER_LIST(render_manager_(this, this, this)),
       is_loading_(false),
       crashed_status_(base::TERMINATION_STATUS_STILL_RUNNING),
@@ -844,6 +847,13 @@ const std::string& WebContentsImpl::GetUserAgentOverride() const {
   return renderer_preferences_.user_agent_override;
 }
 
+#if defined(OS_WIN) && defined(USE_AURA)
+void WebContentsImpl::SetParentNativeViewAccessible(
+gfx::NativeViewAccessible accessible_parent) {
+  accessible_parent_ = accessible_parent;
+}
+#endif
+
 const string16& WebContentsImpl::GetTitle() const {
   // Transient entries take precedence. They are used for interstitial pages
   // that are shown on top of existing pages.
@@ -1259,6 +1269,12 @@ bool WebContentsImpl::PreHandleWheelEvent(
 
   return false;
 }
+
+#if defined(OS_WIN) && defined(USE_AURA)
+gfx::NativeViewAccessible WebContentsImpl::GetParentNativeViewAccessible() {
+  return accessible_parent_;
+}
+#endif
 
 void WebContentsImpl::HandleMouseDown() {
   if (delegate_)

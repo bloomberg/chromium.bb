@@ -240,12 +240,8 @@ void WebView::AttachWebContents() {
   }
 
 #if defined(OS_WIN) && defined(USE_AURA)
-  content::RenderWidgetHostView* host_view =
-      web_contents_->GetRenderWidgetHostView();
-  if (host_view) {
-    host_view->SetParentNativeViewAccessible(
-        parent()->GetNativeViewAccessible());
-  }
+  web_contents_->SetParentNativeViewAccessible(
+      parent()->GetNativeViewAccessible());
 #endif
 }
 
@@ -262,10 +258,7 @@ void WebView::DetachWebContents() {
     // calling member functions on a half-destroyed WebContents.
     ShowWindow(web_contents_->GetView()->GetNativeView(), SW_HIDE);
 #elif defined(OS_WIN) && defined(USE_AURA)
-  content::RenderWidgetHostView* host_view =
-      web_contents_->GetRenderWidgetHostView();
-  if (host_view)
-    host_view->SetParentNativeViewAccessible(NULL);
+    web_contents_->SetParentNativeViewAccessible(NULL);
 #endif
   }
   registrar_.RemoveAll();

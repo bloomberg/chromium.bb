@@ -180,6 +180,11 @@ class WebContents : public PageNavigator,
   virtual void SetUserAgentOverride(const std::string& override) = 0;
   virtual const std::string& GetUserAgentOverride() const = 0;
 
+#if defined(OS_WIN) && defined(USE_AURA)
+  virtual void SetParentNativeViewAccessible(
+      gfx::NativeViewAccessible accessible_parent) = 0;
+#endif
+
   // Tab navigation state ------------------------------------------------------
 
   // Returns the current navigation properties, which if a navigation is

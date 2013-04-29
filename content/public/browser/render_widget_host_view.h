@@ -165,10 +165,6 @@ class CONTENT_EXPORT RenderWidgetHostView {
 #endif
 
 #if defined(OS_WIN) && defined(USE_AURA)
-  // Set the parent native accessible view for this View.
-  virtual void SetParentNativeViewAccessible(
-      gfx::NativeViewAccessible accessible_parent) = 0;
-
   virtual gfx::NativeViewAccessible AccessibleObjectFromChildId(long child_id)
       = 0;
 #endif
