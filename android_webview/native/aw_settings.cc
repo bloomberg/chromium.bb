@@ -189,13 +189,17 @@ void AwSettings::UpdateUserAgent(JNIEnv* env, jobject obj) {
 
   ScopedJavaLocalRef<jstring> str(env, static_cast<jstring>(
       env->GetObjectField(obj, field_ids_->user_agent)));
-  std::string override = base::android::ConvertJavaStringToUTF8(str);
-  web_contents()->SetUserAgentOverride(override);
+  bool ua_overidden = str.obj() != NULL;
+
+  if (ua_overidden) {
+    std::string override = base::android::ConvertJavaStringToUTF8(str);
+    web_contents()->SetUserAgentOverride(override);
+  }
 
   const content::NavigationController& controller =
       web_contents()->GetController();
   for (int i = 0; i < controller.GetEntryCount(); ++i)
-    controller.GetEntryAtIndex(i)->SetIsOverridingUserAgent(true);
+    controller.GetEntryAtIndex(i)->SetIsOverridingUserAgent(ua_overidden);
 }
 
 void AwSettings::UpdateWebkitPreferences(JNIEnv* env, jobject obj) {
