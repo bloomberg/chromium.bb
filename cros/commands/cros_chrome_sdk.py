@@ -73,13 +73,10 @@ class SDKFetcher(object):
     self.misc_cache = cache.DiskCache(
         os.path.join(self.cache_base, self.MISC_CACHE))
     self.board = board
-    self.gs_base = self._GetGSBaseForBoard(board)
+    self.config = cbuildbot_config.FindCanonicalConfigForBoard(board)
+    self.gs_base = '%s/%s' % (constants.DEFAULT_ARCHIVE_BUCKET,
+                              self.config['name'])
     self.silent = silent
-
-  @staticmethod
-  def _GetGSBaseForBoard(board):
-    config = cbuildbot_config.FindCanonicalConfigForBoard(board)
-    return '%s/%s' % (constants.DEFAULT_ARCHIVE_BUCKET, config['name'])
 
   def _UpdateTarball(self, url, ref):
     """Worker function to fetch tarballs"""
@@ -749,6 +746,10 @@ class ChromeSDKCommand(cros.CrosCommand):
     # constructor, which may block on user input.
     self.sdk = SDKFetcher(self.options.cache_dir, self.options.board,
                           silent=self.silent)
+
+    if not self.sdk.config['internal']:
+      cros_build_lib.Die('External boards are not supported due to '
+                         'http://crbug.com/236500')
 
     prepare_version = self.options.version
     if not prepare_version:
