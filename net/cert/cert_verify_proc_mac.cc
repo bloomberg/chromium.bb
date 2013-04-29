@@ -113,6 +113,10 @@ CertStatus CertStatusFromOSStatus(OSStatus status) {
       // We asked for a revocation check, but didn't get it.
       return CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
 
+    case CSSMERR_APPLETP_SSL_BAD_EXT_KEY_USE:
+      // TODO(wtc): Should we add CERT_STATUS_WRONG_USAGE?
+      return CERT_STATUS_INVALID;
+
     case CSSMERR_APPLETP_CRL_BAD_URI:
     case CSSMERR_APPLETP_IDP_FAIL:
       return CERT_STATUS_INVALID;
