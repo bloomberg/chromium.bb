@@ -481,7 +481,11 @@ public class ContentView extends FrameLayout
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        return mContentViewCore.dispatchKeyEvent(event);
+        if (isFocused()) {
+            return mContentViewCore.dispatchKeyEvent(event);
+        } else {
+            return super.dispatchKeyEvent(event);
+        }
     }
 
     @Override
@@ -793,6 +797,24 @@ public class ContentView extends FrameLayout
      */
     public void exitFullscreen() {
         mContentViewCore.exitFullscreen();
+    }
+
+    /**
+     * Return content scroll y.
+     *
+     * @return The vertical scroll position in pixels.
+     */
+    public int getContentScrollY() {
+        return mContentViewCore.computeVerticalScrollOffset();
+    }
+
+    /**
+     * Return content height.
+     *
+     * @return The height of the content in pixels.
+     */
+    public int getContentHeight() {
+        return mContentViewCore.computeVerticalScrollRange();
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
