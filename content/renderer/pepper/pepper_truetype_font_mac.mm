@@ -9,6 +9,7 @@
 #include <stdio.h>
 
 #include "base/compiler_specific.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/safe_numerics.h"
@@ -72,6 +73,7 @@ struct FontHeader {
   uint16_t entry_selector;
   uint16_t range_shift;
 };
+static_assert(sizeof(FontHeader) == 12, "FontHeader wrong size");
 
 struct FontDirectoryEntry {
   uint32_t tag;
@@ -79,15 +81,17 @@ struct FontDirectoryEntry {
   uint32_t offset;
   uint32_t logical_length;
 };
+static_assert(sizeof(FontDirectoryEntry) == 16,
+              "FontDirectoryEntry wrong size");
 
 uint32_t CalculateChecksum(char* table, int32_t table_length) {
-    uint32_t sum = 0;
-    uint32_t* current = reinterpret_cast<uint32_t*>(table);
-    uint32_t length = (table_length + 3) / 4;
-    // Raw font data is big-endian.
-    while (length-- > 0)
-      sum += base::NetToHost32(*current++);
-    return sum;
+  uint32_t sum = 0;
+  uint32_t* current = reinterpret_cast<uint32_t*>(table);
+  uint32_t length = (table_length + 3) / 4;
+  // Raw font data is big-endian.
+  while (length-- > 0)
+    sum += base::NetToHost32(*current++);
+  return sum;
 }
 
 class PepperTrueTypeFontMac : public PepperTrueTypeFont {
@@ -175,9 +179,7 @@ PepperTrueTypeFontMac::PepperTrueTypeFontMac(
   }
 
   base::mac::ScopedCFTypeRef<CFStringRef> name_ref(
-      CFStringCreateWithCString(NULL,
-                                family.c_str(),
-                                kCFStringEncodingUTF8));
+      base::SysUTF8ToCFStringRef(family));
   if (name_ref)
     CFDictionaryAddValue(attributes_ref, kCTFontFamilyNameAttribute, name_ref);
 
@@ -227,12 +229,12 @@ int32_t PepperTrueTypeFontMac::Describe(
       CTFontCopyFontDescriptor(font_ref_));
 
   base::mac::ScopedCFTypeRef<CFStringRef> family_name_ref(
-      static_cast<CFStringRef>(CTFontDescriptorCopyAttribute(
+      base::mac::CFCast<CFStringRef>(CTFontDescriptorCopyAttribute(
           desc_ref, kCTFontFamilyNameAttribute)));
   desc->family = base::SysCFStringRefToUTF8(family_name_ref);
 
   base::mac::ScopedCFTypeRef<CFDictionaryRef> traits_ref(
-      static_cast<CFDictionaryRef>(
+      base::mac::CFCast<CFDictionaryRef>(
           CTFontDescriptorCopyAttribute(desc_ref, kCTFontTraitsAttribute)));
 
   desc->style = PP_TRUETYPEFONTSTYLE_NORMAL;
@@ -267,10 +269,15 @@ int32_t PepperTrueTypeFontMac::GetTableTags(std::vector<uint32_t>* tags) {
       CTFontCopyAvailableTables(font_ref_, kCTFontTableOptionNoOptions));
   if (!tag_array)
     return PP_ERROR_FAILED;
+
+  // Items returned by CTFontCopyAvailableTables are not boxed. Whose bright
+  // idea was this?
   CFIndex length = CFArrayGetCount(tag_array);
   tags->resize(length);
-  CFArrayGetValues(tag_array, CFRangeMake(0, length),
-                   reinterpret_cast<const void**>(&(*tags)[0]));
+  for (CFIndex i = 0; i < length; ++i) {
+    (*tags)[i] =
+        reinterpret_cast<uintptr_t>(CFArrayGetValueAtIndex(tag_array, i));
+  }
   return length;
 }
 
@@ -312,9 +319,9 @@ int32_t PepperTrueTypeFontMac::GetEntireFont(int32_t offset,
   // Allocate enough room for the header and the table directory entries.
   std::string font(sizeof(FontHeader) +
                    sizeof(FontDirectoryEntry) * table_count, 0);
-  // Map the OS X font type value to a TrueType scaler type.
+  // Map the OS X font type value to a TrueType scalar type.
   base::mac::ScopedCFTypeRef<CFNumberRef> font_type_ref(
-      static_cast<CFNumberRef>(
+      base::mac::CFCast<CFNumberRef>(
           CTFontCopyAttribute(font_ref_, kCTFontFormatAttribute)));
   int32_t font_type;
   CFNumberGetValue(font_type_ref, kCFNumberSInt32Type, &font_type);
