@@ -166,7 +166,7 @@ class GaiaAuthFetcherTest : public testing::Test {
   GURL oauth_login_gurl_;
   TestingProfile profile_;
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 };
 
 class MockGaiaConsumer : public GaiaAuthConsumer {

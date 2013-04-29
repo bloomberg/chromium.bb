@@ -85,7 +85,7 @@ bool GaiaAuthenticator::Authenticate(const string& user_name,
                                      const string& password,
                                      const string& captcha_token,
                                      const string& captcha_value) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
 
   AuthParams const params =
       MakeParams(user_name, password, captcha_token, captcha_value);
@@ -104,7 +104,7 @@ bool GaiaAuthenticator::AuthenticateWithLsid(const string& lsid) {
 }
 
 bool GaiaAuthenticator::AuthenticateImpl(const AuthParams& params) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   AuthResults results;
   const bool succeeded = AuthenticateImpl(params, &results);
   return succeeded;
@@ -120,7 +120,7 @@ bool GaiaAuthenticator::AuthenticateImpl(const AuthParams& params) {
 // method preserves the saved credentials.
 bool GaiaAuthenticator::AuthenticateImpl(const AuthParams& params,
                                          AuthResults* results) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   results->auth_error = ConnectionUnavailable;
   results->email = params.email.data();
   results->password = params.password;
@@ -156,7 +156,7 @@ bool GaiaAuthenticator::AuthenticateImpl(const AuthParams& params,
 
 bool GaiaAuthenticator::PerformGaiaRequest(const AuthParams& params,
                                            AuthResults* results) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   GURL gaia_auth_url(gaia_url_);
 
   string post_body;
@@ -208,7 +208,7 @@ bool GaiaAuthenticator::Post(const GURL& url,
 }
 
 bool GaiaAuthenticator::LookupEmail(AuthResults* results) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   // Use the provided Gaia server, but change the path to what V1 expects.
   GURL url(gaia_url_);  // Gaia server.
   GURL::Replacements repl;
@@ -258,7 +258,7 @@ int GaiaAuthenticator::GetBackoffDelaySeconds(int current_backoff_delay) {
 // token.
 bool GaiaAuthenticator::IssueAuthToken(AuthResults* results,
                                        const string& service_id) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   // Use the provided Gaia server, but change the path to what V1 expects.
   GURL url(gaia_url_);  // Gaia server.
   GURL::Replacements repl;
@@ -362,36 +362,36 @@ void GaiaAuthenticator::ExtractAuthErrorFrom(const string& response,
 // Reset all stored credentials, perhaps in preparation for letting a different
 // user sign in.
 void GaiaAuthenticator::ResetCredentials() {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   AuthResults blank;
   auth_results_ = blank;
 }
 
 void GaiaAuthenticator::SetUsernamePassword(const string& username,
                                             const string& password) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   auth_results_.password = password;
   auth_results_.email = username;
 }
 
 void GaiaAuthenticator::SetUsername(const string& username) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   auth_results_.email = username;
 }
 
 void GaiaAuthenticator::RenewAuthToken(const string& auth_token) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   DCHECK(!this->auth_token().empty());
   auth_results_.auth_token = auth_token;
 }
 void GaiaAuthenticator::SetAuthToken(const string& auth_token) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   auth_results_.auth_token = auth_token;
 }
 
 bool GaiaAuthenticator::Authenticate(const string& user_name,
                                      const string& password) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
   const string empty;
   return Authenticate(user_name, password, empty,
                       empty);

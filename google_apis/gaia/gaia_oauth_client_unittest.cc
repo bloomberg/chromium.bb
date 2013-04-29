@@ -128,7 +128,7 @@ class GaiaOAuthClientTest : public testing::Test {
 
   TestingProfile profile_;
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 };
 
 class MockGaiaOAuthClientDelegate : public gaia::GaiaOAuthClient::Delegate {

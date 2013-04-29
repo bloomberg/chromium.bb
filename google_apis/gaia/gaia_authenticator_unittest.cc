@@ -41,7 +41,7 @@ class GaiaAuthMockForGaiaAuthenticator : public GaiaAuthenticator {
 
 TEST(GaiaAuthenticatorTest, TestNewlineAtEndOfAuthTokenRemoved) {
   GaiaAuthMockForGaiaAuthenticator mock_auth;
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   mock_auth.set_message_loop(&message_loop);
   GaiaAuthenticator::AuthResults results;
   EXPECT_TRUE(mock_auth.IssueAuthToken(&results, "sid"));

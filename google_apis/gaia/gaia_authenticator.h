@@ -76,9 +76,7 @@ class GaiaAuthenticator {
 
   // This object should only be invoked from the AuthWatcherThread message
   // loop, which is injected here.
-  void set_message_loop(const MessageLoop* loop) {
-    message_loop_ = loop;
-  }
+  void set_message_loop(const base::MessageLoop* loop) { message_loop_ = loop; }
 
   // Pass credentials to authenticate with, or use saved credentials via an
   // overload. If authentication succeeds, you can retrieve the authentication
@@ -175,57 +173,57 @@ class GaiaAuthenticator {
  public:
   // Retrieve email.
   inline std::string email() const {
-    DCHECK_EQ(MessageLoop::current(), message_loop_);
+    DCHECK_EQ(base::MessageLoop::current(), message_loop_);
     return auth_results_.email;
   }
 
   // Retrieve password.
   inline std::string password() const {
-    DCHECK_EQ(MessageLoop::current(), message_loop_);
+    DCHECK_EQ(base::MessageLoop::current(), message_loop_);
     return auth_results_.password;
   }
 
   // Retrieve AuthToken, if previously authenticated; otherwise returns "".
   inline std::string auth_token() const {
-    DCHECK_EQ(MessageLoop::current(), message_loop_);
+    DCHECK_EQ(base::MessageLoop::current(), message_loop_);
     return auth_results_.auth_token;
   }
 
   // Retrieve SID cookie. For details, see the Google Accounts documentation.
   inline std::string sid() const {
-    DCHECK_EQ(MessageLoop::current(), message_loop_);
+    DCHECK_EQ(base::MessageLoop::current(), message_loop_);
     return auth_results_.sid;
   }
 
   // Retrieve LSID cookie. For details, see the Google Accounts documentation.
   inline std::string lsid() const {
-    DCHECK_EQ(MessageLoop::current(), message_loop_);
+    DCHECK_EQ(base::MessageLoop::current(), message_loop_);
     return auth_results_.lsid;
   }
 
   // Get last authentication error.
   inline enum AuthenticationError auth_error() const {
-    DCHECK_EQ(MessageLoop::current(), message_loop_);
+    DCHECK_EQ(base::MessageLoop::current(), message_loop_);
     return auth_results_.auth_error;
   }
 
   inline std::string auth_error_url() const {
-    DCHECK_EQ(MessageLoop::current(), message_loop_);
+    DCHECK_EQ(base::MessageLoop::current(), message_loop_);
     return auth_results_.auth_error_url;
   }
 
   inline std::string captcha_token() const {
-    DCHECK_EQ(MessageLoop::current(), message_loop_);
+    DCHECK_EQ(base::MessageLoop::current(), message_loop_);
     return auth_results_.captcha_token;
   }
 
   inline std::string captcha_url() const {
-    DCHECK_EQ(MessageLoop::current(), message_loop_);
+    DCHECK_EQ(base::MessageLoop::current(), message_loop_);
     return auth_results_.captcha_url;
   }
 
   inline AuthResults results() const {
-    DCHECK_EQ(MessageLoop::current(), message_loop_);
+    DCHECK_EQ(base::MessageLoop::current(), message_loop_);
     return auth_results_;
   }
 
@@ -266,7 +264,7 @@ class GaiaAuthenticator {
   int early_auth_attempt_count_;
 
   // The message loop all our methods are invoked on.
-  const MessageLoop* message_loop_;
+  const base::MessageLoop* message_loop_;
 };
 
 }  // namespace gaia
