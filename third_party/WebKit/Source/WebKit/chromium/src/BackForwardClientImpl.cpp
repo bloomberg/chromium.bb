@@ -92,7 +92,7 @@ HistoryItem* BackForwardClientImpl::itemAtIndex(int index)
     // perform those navigations.
 
     String urlString = makeString(backForwardNavigationScheme, "://go/", String::number(index));
-    m_pendingHistoryItem = HistoryItem::create(urlString, String(), 0);
+    m_pendingHistoryItem = HistoryItem::create(urlString);
     return m_pendingHistoryItem.get();
 }
 

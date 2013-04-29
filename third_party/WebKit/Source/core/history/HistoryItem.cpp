@@ -55,46 +55,16 @@ HistoryItem::HistoryItem()
 {
 }
 
-HistoryItem::HistoryItem(const String& urlString, const String& title, double time)
+HistoryItem::HistoryItem(const String& urlString)
     : m_urlString(urlString)
     , m_originalURLString(urlString)
-    , m_title(title)
-    , m_lastVisitedTime(time)
-    , m_pageScaleFactor(0)
-    , m_isTargetItem(false)
-    , m_visitCount(0)
-    , m_itemSequenceNumber(generateSequenceNumber())
-    , m_documentSequenceNumber(generateSequenceNumber())
-{    
-}
-
-HistoryItem::HistoryItem(const String& urlString, const String& title, const String& alternateTitle, double time)
-    : m_urlString(urlString)
-    , m_originalURLString(urlString)
-    , m_title(title)
-    , m_displayTitle(alternateTitle)
-    , m_lastVisitedTime(time)
-    , m_pageScaleFactor(0)
-    , m_isTargetItem(false)
-    , m_visitCount(0)
-    , m_itemSequenceNumber(generateSequenceNumber())
-    , m_documentSequenceNumber(generateSequenceNumber())
-{
-}
-
-HistoryItem::HistoryItem(const KURL& url, const String& target, const String& parent, const String& title)
-    : m_urlString(url.string())
-    , m_originalURLString(url.string())
-    , m_target(target)
-    , m_parent(parent)
-    , m_title(title)
     , m_lastVisitedTime(0)
     , m_pageScaleFactor(0)
     , m_isTargetItem(false)
     , m_visitCount(0)
     , m_itemSequenceNumber(generateSequenceNumber())
     , m_documentSequenceNumber(generateSequenceNumber())
-{    
+{
 }
 
 HistoryItem::~HistoryItem()
@@ -253,12 +223,10 @@ void HistoryItem::setParent(const String& parent)
     m_parent = parent;
 }
 
-void HistoryItem::recordVisitAtTime(double time, VisitCountBehavior visitCountBehavior)
+void HistoryItem::recordVisitAtTime(double time)
 {
     m_lastVisitedTime = time;
-
-    if (visitCountBehavior == IncreaseVisitCount)
-        ++m_visitCount;
+    ++m_visitCount;
 }
 
 void HistoryItem::setLastVisitedTime(double time)
@@ -267,21 +235,9 @@ void HistoryItem::setLastVisitedTime(double time)
         recordVisitAtTime(time);
 }
 
-void HistoryItem::visited(const String& title, double time, VisitCountBehavior visitCountBehavior)
-{
-    m_title = title;
-    recordVisitAtTime(time, visitCountBehavior);
-}
-
 int HistoryItem::visitCount() const
 {
     return m_visitCount;
-}
-
-void HistoryItem::recordInitialVisit()
-{
-    ASSERT(!m_visitCount);
-    recordVisitAtTime(m_lastVisitedTime);
 }
 
 void HistoryItem::setVisitCount(int count)
@@ -388,11 +344,6 @@ HistoryItem* HistoryItem::childItemWithDocumentSequenceNumber(long long number) 
 const HistoryItemVector& HistoryItem::children() const
 {
     return m_children;
-}
-
-bool HistoryItem::hasChildren() const
-{
-    return !m_children.isEmpty();
 }
 
 void HistoryItem::clearChildren()

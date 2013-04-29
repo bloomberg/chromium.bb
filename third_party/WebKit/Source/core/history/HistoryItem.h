@@ -30,8 +30,6 @@
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/platform/graphics/IntPoint.h"
 #include <wtf/HashMap.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>
 
@@ -46,27 +44,14 @@ class ResourceRequest;
 
 typedef Vector<RefPtr<HistoryItem> > HistoryItemVector;
 
-enum VisitCountBehavior {
-    IncreaseVisitCount,
-    DoNotIncreaseVisitCount
-};
-
 class HistoryItem : public RefCounted<HistoryItem> {
 public: 
     static PassRefPtr<HistoryItem> create() { return adoptRef(new HistoryItem); }
-    static PassRefPtr<HistoryItem> create(const String& urlString, const String& title, double lastVisited)
+    static PassRefPtr<HistoryItem> create(const String& urlString)
     {
-        return adoptRef(new HistoryItem(urlString, title, lastVisited));
+        return adoptRef(new HistoryItem(urlString));
     }
-    static PassRefPtr<HistoryItem> create(const String& urlString, const String& title, const String& alternateTitle, double lastVisited)
-    {
-        return adoptRef(new HistoryItem(urlString, title, alternateTitle, lastVisited));
-    }
-    static PassRefPtr<HistoryItem> create(const KURL& url, const String& target, const String& parent, const String& title)
-    {
-        return adoptRef(new HistoryItem(url, target, parent, title));
-    }
-    
+
     ~HistoryItem();
 
     PassRefPtr<HistoryItem> copy() const;
@@ -128,8 +113,6 @@ public:
     void setFormData(PassRefPtr<FormData>);
     void setFormContentType(const String&);
 
-    void recordInitialVisit();
-
     void setVisitCount(int);
 
     void addChildItem(PassRefPtr<HistoryItem>);
@@ -137,7 +120,6 @@ public:
     HistoryItem* childItemWithTarget(const String&) const;
     HistoryItem* childItemWithDocumentSequenceNumber(long long number) const;
     const HistoryItemVector& children() const;
-    bool hasChildren() const;
     void clearChildren();
     bool isAncestorOf(const HistoryItem*) const;
     
@@ -145,11 +127,6 @@ public:
     bool hasSameFrames(HistoryItem* otherItem) const;
 
     void setLastVisitedTime(double);
-    void visited(const String& title, double time, VisitCountBehavior);
-
-    void addRedirectURL(const String&);
-    Vector<String>* redirectURLs() const;
-    void setRedirectURLs(PassOwnPtr<Vector<String> >);
 
     bool isCurrentDocument(Document*) const;
 
@@ -160,13 +137,11 @@ public:
 
 private:
     HistoryItem();
-    HistoryItem(const String& urlString, const String& title, double lastVisited);
-    HistoryItem(const String& urlString, const String& title, const String& alternateTitle, double lastVisited);
-    HistoryItem(const KURL& url, const String& frameName, const String& parent, const String& title);
+    explicit HistoryItem(const String& urlString);
 
     explicit HistoryItem(const HistoryItem&);
 
-    void recordVisitAtTime(double, VisitCountBehavior = IncreaseVisitCount);
+    void recordVisitAtTime(double);
     
     bool hasSameDocumentTree(HistoryItem* otherItem) const;
 
