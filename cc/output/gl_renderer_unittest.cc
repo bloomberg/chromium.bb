@@ -55,47 +55,47 @@ namespace cc {
   } while (false)
 
 // Explicitly named to be a friend in GLRenderer for shader access.
-class GLRendererShaderPixelTest : public PixelTest {
+class GLRendererShaderPixelTest : public GLRendererPixelTest {
  public:
   void TestShaders() {
-    ASSERT_FALSE(renderer_->IsContextLost());
-    EXPECT_PROGRAM_VALID(renderer_->GetTileCheckerboardProgram());
-    EXPECT_PROGRAM_VALID(renderer_->GetDebugBorderProgram());
-    EXPECT_PROGRAM_VALID(renderer_->GetSolidColorProgram());
-    EXPECT_PROGRAM_VALID(renderer_->GetSolidColorProgramAA());
+    ASSERT_FALSE(renderer()->IsContextLost());
+    EXPECT_PROGRAM_VALID(renderer()->GetTileCheckerboardProgram());
+    EXPECT_PROGRAM_VALID(renderer()->GetDebugBorderProgram());
+    EXPECT_PROGRAM_VALID(renderer()->GetSolidColorProgram());
+    EXPECT_PROGRAM_VALID(renderer()->GetSolidColorProgramAA());
     TestShadersWithTexCoordPrecision(TexCoordPrecisionMedium);
     TestShadersWithTexCoordPrecision(TexCoordPrecisionHigh);
-    ASSERT_FALSE(renderer_->IsContextLost());
+    ASSERT_FALSE(renderer()->IsContextLost());
   }
 
   void TestShadersWithTexCoordPrecision(TexCoordPrecision precision) {
-    EXPECT_PROGRAM_VALID(renderer_->GetTileProgram(precision));
-    EXPECT_PROGRAM_VALID(renderer_->GetTileProgramOpaque(precision));
-    EXPECT_PROGRAM_VALID(renderer_->GetTileProgramAA(precision));
-    EXPECT_PROGRAM_VALID(renderer_->GetTileProgramSwizzle(precision));
-    EXPECT_PROGRAM_VALID(renderer_->GetTileProgramSwizzleOpaque(precision));
-    EXPECT_PROGRAM_VALID(renderer_->GetTileProgramSwizzleAA(precision));
-    EXPECT_PROGRAM_VALID(renderer_->GetRenderPassProgram(precision));
-    EXPECT_PROGRAM_VALID(renderer_->GetRenderPassProgramAA(precision));
-    EXPECT_PROGRAM_VALID(renderer_->GetRenderPassMaskProgram(precision));
-    EXPECT_PROGRAM_VALID(renderer_->GetRenderPassMaskProgramAA(precision));
+    EXPECT_PROGRAM_VALID(renderer()->GetTileProgram(precision));
+    EXPECT_PROGRAM_VALID(renderer()->GetTileProgramOpaque(precision));
+    EXPECT_PROGRAM_VALID(renderer()->GetTileProgramAA(precision));
+    EXPECT_PROGRAM_VALID(renderer()->GetTileProgramSwizzle(precision));
+    EXPECT_PROGRAM_VALID(renderer()->GetTileProgramSwizzleOpaque(precision));
+    EXPECT_PROGRAM_VALID(renderer()->GetTileProgramSwizzleAA(precision));
+    EXPECT_PROGRAM_VALID(renderer()->GetRenderPassProgram(precision));
+    EXPECT_PROGRAM_VALID(renderer()->GetRenderPassProgramAA(precision));
+    EXPECT_PROGRAM_VALID(renderer()->GetRenderPassMaskProgram(precision));
+    EXPECT_PROGRAM_VALID(renderer()->GetRenderPassMaskProgramAA(precision));
     EXPECT_PROGRAM_VALID(
-        renderer_->GetRenderPassColorMatrixProgram(precision));
+        renderer()->GetRenderPassColorMatrixProgram(precision));
     EXPECT_PROGRAM_VALID(
-        renderer_->GetRenderPassMaskColorMatrixProgramAA(precision));
+        renderer()->GetRenderPassMaskColorMatrixProgramAA(precision));
     EXPECT_PROGRAM_VALID(
-        renderer_->GetRenderPassColorMatrixProgramAA(precision));
+        renderer()->GetRenderPassColorMatrixProgramAA(precision));
     EXPECT_PROGRAM_VALID(
-        renderer_->GetRenderPassMaskColorMatrixProgram(precision));
-    EXPECT_PROGRAM_VALID(renderer_->GetTextureProgram(precision));
-    EXPECT_PROGRAM_VALID(renderer_->GetTextureProgramFlip(precision));
-    EXPECT_PROGRAM_VALID(renderer_->GetTextureIOSurfaceProgram(precision));
-    EXPECT_PROGRAM_VALID(renderer_->GetVideoYUVProgram(precision));
+        renderer()->GetRenderPassMaskColorMatrixProgram(precision));
+    EXPECT_PROGRAM_VALID(renderer()->GetTextureProgram(precision));
+    EXPECT_PROGRAM_VALID(renderer()->GetTextureProgramFlip(precision));
+    EXPECT_PROGRAM_VALID(renderer()->GetTextureIOSurfaceProgram(precision));
+    EXPECT_PROGRAM_VALID(renderer()->GetVideoYUVProgram(precision));
     // This is unlikely to be ever true in tests due to usage of osmesa.
-    if (renderer_->Capabilities().using_egl_image)
-      EXPECT_PROGRAM_VALID(renderer_->GetVideoStreamTextureProgram(precision));
+    if (renderer()->Capabilities().using_egl_image)
+      EXPECT_PROGRAM_VALID(renderer()->GetVideoStreamTextureProgram(precision));
     else
-      EXPECT_FALSE(renderer_->GetVideoStreamTextureProgram(precision));
+      EXPECT_FALSE(renderer()->GetVideoStreamTextureProgram(precision));
   }
 };
 

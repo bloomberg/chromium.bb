@@ -12,7 +12,9 @@
 #define CC_TEST_PIXEL_TEST_H_
 
 namespace cc {
+class DirectRenderer;
 class GLRenderer;
+class SoftwareRenderer;
 class OutputSurface;
 class ResourceProvider;
 
@@ -20,8 +22,6 @@ class PixelTest : public testing::Test {
  protected:
   PixelTest();
   virtual ~PixelTest();
-
-  virtual void SetUp() OVERRIDE;
 
   bool RunPixelTest(RenderPassList* pass_list,
                     const base::FilePath& ref_file,
@@ -32,8 +32,11 @@ class PixelTest : public testing::Test {
   scoped_ptr<ResourceProvider> resource_provider_;
   class PixelTestRendererClient;
   scoped_ptr<PixelTestRendererClient> fake_client_;
-  scoped_ptr<GLRenderer> renderer_;
+  scoped_ptr<DirectRenderer> renderer_;
   scoped_ptr<SkBitmap> result_bitmap_;
+
+  void SetUpGLRenderer();
+  void SetUpSoftwareRenderer();
 
  private:
   void ReadbackResult(scoped_ptr<SkBitmap> bitmap);
@@ -41,6 +44,30 @@ class PixelTest : public testing::Test {
   bool PixelsMatchReference(const base::FilePath& ref_file,
                             const PixelComparator& comparator);
 };
+
+template<typename RendererType>
+class RendererPixelTest : public PixelTest {
+ public:
+  RendererType* renderer() {
+    return static_cast<RendererType*>(renderer_.get());
+  }
+
+ protected:
+  virtual void SetUp() OVERRIDE;
+};
+
+template<>
+inline void RendererPixelTest<GLRenderer>::SetUp() {
+  SetUpGLRenderer();
+}
+
+template<>
+inline void RendererPixelTest<SoftwareRenderer>::SetUp() {
+  SetUpSoftwareRenderer();
+}
+
+typedef RendererPixelTest<GLRenderer> GLRendererPixelTest;
+typedef RendererPixelTest<SoftwareRenderer> SoftwareRendererPixelTest;
 
 }  // namespace cc
 

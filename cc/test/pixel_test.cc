@@ -8,6 +8,7 @@
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/gl_renderer.h"
 #include "cc/output/output_surface.h"
+#include "cc/output/software_renderer.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/test/paths.h"
 #include "cc/test/pixel_test_utils.h"
@@ -50,32 +51,11 @@ class PixelTest::PixelTestRendererClient : public RendererClient {
   LayerTreeSettings settings_;
 };
 
-PixelTest::PixelTest() : device_viewport_size_(gfx::Size(200, 200)) {}
+PixelTest::PixelTest()
+    : device_viewport_size_(gfx::Size(200, 200)),
+      fake_client_(new PixelTestRendererClient(device_viewport_size_)) {}
 
 PixelTest::~PixelTest() {}
-
-void PixelTest::SetUp() {
-  CHECK(gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL));
-
-  using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
-  scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d(
-      WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
-          WebKit::WebGraphicsContext3D::Attributes()));
-  output_surface_.reset(new OutputSurface(
-      context3d.PassAs<WebKit::WebGraphicsContext3D>()));
-  resource_provider_ = ResourceProvider::Create(output_surface_.get(), 0);
-  fake_client_ =
-      make_scoped_ptr(new PixelTestRendererClient(device_viewport_size_));
-  renderer_ = GLRenderer::Create(fake_client_.get(),
-                                 output_surface_.get(),
-                                 resource_provider_.get(),
-                                 0);
-
-  scoped_refptr<webkit::gpu::ContextProviderInProcess> offscreen_contexts =
-      webkit::gpu::ContextProviderInProcess::Create();
-  ASSERT_TRUE(offscreen_contexts->BindToCurrentThread());
-  resource_provider_->set_offscreen_context_provider(offscreen_contexts);
-}
 
 bool PixelTest::RunPixelTest(RenderPassList* pass_list,
                              const base::FilePath& ref_file,
@@ -111,6 +91,40 @@ bool PixelTest::PixelsMatchReference(const base::FilePath& ref_file,
   return MatchesPNGFile(*result_bitmap_,
                         test_data_dir.Append(ref_file),
                         comparator);
+}
+
+void PixelTest::SetUpGLRenderer() {
+  CHECK(fake_client_);
+  CHECK(gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL));
+
+  using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
+  scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d(
+      WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
+          WebKit::WebGraphicsContext3D::Attributes()));
+  output_surface_.reset(new OutputSurface(
+      context3d.PassAs<WebKit::WebGraphicsContext3D>()));
+  resource_provider_ = ResourceProvider::Create(output_surface_.get(), 0);
+  renderer_ = GLRenderer::Create(fake_client_.get(),
+                                 output_surface_.get(),
+                                 resource_provider_.get(),
+                                 0).PassAs<DirectRenderer>();
+
+  scoped_refptr<webkit::gpu::ContextProviderInProcess> offscreen_contexts =
+      webkit::gpu::ContextProviderInProcess::Create();
+  ASSERT_TRUE(offscreen_contexts->BindToCurrentThread());
+  resource_provider_->set_offscreen_context_provider(offscreen_contexts);
+}
+
+void PixelTest::SetUpSoftwareRenderer() {
+  CHECK(fake_client_);
+
+  scoped_ptr<SoftwareOutputDevice> device(new SoftwareOutputDevice());
+  output_surface_.reset(new OutputSurface(device.Pass()));
+  resource_provider_ = ResourceProvider::Create(output_surface_.get(), 0);
+  renderer_ = SoftwareRenderer::Create(
+      fake_client_.get(),
+      output_surface_.get(),
+      resource_provider_.get()).PassAs<DirectRenderer>();
 }
 
 }  // namespace cc

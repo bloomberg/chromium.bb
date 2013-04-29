@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/gl_renderer.h"
-
 #include "base/message_loop.h"
 #include "cc/layers/append_quads_data.h"
+#include "cc/output/gl_renderer.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/resources/sync_point_helper.h"
 #include "cc/test/pixel_test.h"
@@ -17,8 +16,6 @@
 
 namespace cc {
 namespace {
-
-class GLRendererPixelTest : public PixelTest {};
 
 scoped_ptr<RenderPass> CreateTestRootRenderPass(RenderPass::Id id,
                                                 gfx::Rect rect) {
@@ -75,10 +72,47 @@ scoped_ptr<DrawQuad> CreateTestRenderPassDrawQuad(
   return quad.PassAs<DrawQuad>();
 }
 
+typedef ::testing::Types<GLRenderer, SoftwareRenderer> RendererTypes;
+TYPED_TEST_CASE(RendererPixelTest, RendererTypes);
+
+// All pixels can be off by one, but any more than that is an error.
+class FuzzyPixelOffByOneComparator : public FuzzyPixelComparator {
+ public:
+  explicit FuzzyPixelOffByOneComparator(bool discard_alpha)
+    : FuzzyPixelComparator(discard_alpha, 100.f, 0.f, 1.f, 1, 0) {}
+};
+
+template <typename RendererType>
+class FuzzyForSoftwareOnlyPixelComparator : public PixelComparator {
+ public:
+  explicit FuzzyForSoftwareOnlyPixelComparator(bool discard_alpha)
+      : fuzzy_(discard_alpha), exact_(discard_alpha) {}
+
+  virtual bool Compare(const SkBitmap& actual_bmp,
+                       const SkBitmap& expected_bmp) const;
+
+ private:
+  FuzzyPixelOffByOneComparator fuzzy_;
+  ExactPixelComparator exact_;
+};
+
+template<>
+bool FuzzyForSoftwareOnlyPixelComparator<GLRenderer>::Compare(
+    const SkBitmap& actual_bmp,
+    const SkBitmap& expected_bmp) const {
+  return exact_.Compare(actual_bmp, expected_bmp);
+}
+
+template<>
+bool FuzzyForSoftwareOnlyPixelComparator<SoftwareRenderer>::Compare(
+    const SkBitmap& actual_bmp,
+    const SkBitmap& expected_bmp) const {
+  return fuzzy_.Compare(actual_bmp, expected_bmp);
+}
 
 #if !defined(OS_ANDROID)
-TEST_F(GLRendererPixelTest, SimpleGreenRect) {
-  gfx::Rect rect(device_viewport_size_);
+TYPED_TEST(RendererPixelTest, SimpleGreenRect) {
+  gfx::Rect rect(this->device_viewport_size_);
 
   RenderPass::Id id(1, 1);
   scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
@@ -95,21 +129,21 @@ TEST_F(GLRendererPixelTest, SimpleGreenRect) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
 
-  EXPECT_TRUE(RunPixelTest(
+  EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("green.png")),
       ExactPixelComparator(true)));
 }
 
-TEST_F(GLRendererPixelTest, FastPassColorFilterAlpha) {
-  gfx::Rect viewport_rect(device_viewport_size_);
+TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
+  gfx::Rect viewport_rect(this->device_viewport_size_);
 
   RenderPass::Id root_pass_id(1, 1);
   scoped_ptr<RenderPass> root_pass =
       CreateTestRootRenderPass(root_pass_id, viewport_rect);
 
   RenderPass::Id child_pass_id(2, 2);
-  gfx::Rect pass_rect(device_viewport_size_);
+  gfx::Rect pass_rect(this->device_viewport_size_);
   gfx::Transform transform_to_root;
   scoped_ptr<RenderPass> child_pass =
       CreateTestRenderPass(child_pass_id, pass_rect, transform_to_root);
@@ -123,15 +157,15 @@ TEST_F(GLRendererPixelTest, FastPassColorFilterAlpha) {
   blue->SetNew(shared_state.get(),
                gfx::Rect(0,
                          0,
-                         device_viewport_size_.width() / 2,
-                         device_viewport_size_.height()),
+                         this->device_viewport_size_.width() / 2,
+                         this->device_viewport_size_.height()),
                SK_ColorBLUE);
   scoped_ptr<SolidColorDrawQuad> yellow = SolidColorDrawQuad::Create();
   yellow->SetNew(shared_state.get(),
-                 gfx::Rect(device_viewport_size_.width() / 2,
+                 gfx::Rect(this->device_viewport_size_.width() / 2,
                            0,
-                           device_viewport_size_.width() / 2,
-                           device_viewport_size_.height()),
+                           this->device_viewport_size_.width() / 2,
+                           this->device_viewport_size_.height()),
                  SK_ColorYELLOW);
 
   scoped_ptr<SharedQuadState> blank_state =
@@ -189,21 +223,23 @@ TEST_F(GLRendererPixelTest, FastPassColorFilterAlpha) {
   pass_list.push_back(child_pass.Pass());
   pass_list.push_back(root_pass.Pass());
 
-  EXPECT_TRUE(RunPixelTest(
+  // This test has alpha=254 for the software renderer vs. alpha=255 for the gl
+  // renderer so use a fuzzy comparator.
+  EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_alpha.png")),
-      ExactPixelComparator(false)));
+      FuzzyForSoftwareOnlyPixelComparator<TypeParam>(false)));
 }
 
-TEST_F(GLRendererPixelTest, FastPassColorFilterAlphaTranslation) {
-  gfx::Rect viewport_rect(device_viewport_size_);
+TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
+  gfx::Rect viewport_rect(this->device_viewport_size_);
 
   RenderPass::Id root_pass_id(1, 1);
   scoped_ptr<RenderPass> root_pass =
       CreateTestRootRenderPass(root_pass_id, viewport_rect);
 
   RenderPass::Id child_pass_id(2, 2);
-  gfx::Rect pass_rect(device_viewport_size_);
+  gfx::Rect pass_rect(this->device_viewport_size_);
   gfx::Transform transform_to_root;
   scoped_ptr<RenderPass> child_pass =
       CreateTestRenderPass(child_pass_id, pass_rect, transform_to_root);
@@ -217,15 +253,15 @@ TEST_F(GLRendererPixelTest, FastPassColorFilterAlphaTranslation) {
   blue->SetNew(shared_state.get(),
                gfx::Rect(0,
                          0,
-                         device_viewport_size_.width() / 2,
-                         device_viewport_size_.height()),
+                         this->device_viewport_size_.width() / 2,
+                         this->device_viewport_size_.height()),
                SK_ColorBLUE);
   scoped_ptr<SolidColorDrawQuad> yellow = SolidColorDrawQuad::Create();
   yellow->SetNew(shared_state.get(),
-                 gfx::Rect(device_viewport_size_.width() / 2,
+                 gfx::Rect(this->device_viewport_size_.width() / 2,
                            0,
-                           device_viewport_size_.width() / 2,
-                           device_viewport_size_.height()),
+                           this->device_viewport_size_.width() / 2,
+                           this->device_viewport_size_.height()),
                  SK_ColorYELLOW);
 
   scoped_ptr<SharedQuadState> blank_state =
@@ -286,21 +322,23 @@ TEST_F(GLRendererPixelTest, FastPassColorFilterAlphaTranslation) {
   pass_list.push_back(child_pass.Pass());
   pass_list.push_back(root_pass.Pass());
 
-  EXPECT_TRUE(RunPixelTest(
+  // This test has alpha=254 for the software renderer vs. alpha=255 for the gl
+  // renderer so use a fuzzy comparator.
+  EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_alpha_translate.png")),
-      ExactPixelComparator(false)));
+      FuzzyForSoftwareOnlyPixelComparator<TypeParam>(false)));
 }
 
-TEST_F(GLRendererPixelTest, RenderPassChangesSize) {
-  gfx::Rect viewport_rect(device_viewport_size_);
+TYPED_TEST(RendererPixelTest, RenderPassChangesSize) {
+  gfx::Rect viewport_rect(this->device_viewport_size_);
 
   RenderPass::Id root_pass_id(1, 1);
   scoped_ptr<RenderPass> root_pass =
       CreateTestRootRenderPass(root_pass_id, viewport_rect);
 
   RenderPass::Id child_pass_id(2, 2);
-  gfx::Rect pass_rect(device_viewport_size_);
+  gfx::Rect pass_rect(this->device_viewport_size_);
   gfx::Transform transform_to_root;
   scoped_ptr<RenderPass> child_pass =
       CreateTestRenderPass(child_pass_id, pass_rect, transform_to_root);
@@ -313,15 +351,15 @@ TEST_F(GLRendererPixelTest, RenderPassChangesSize) {
   blue->SetNew(shared_state.get(),
                gfx::Rect(0,
                          0,
-                         device_viewport_size_.width() / 2,
-                         device_viewport_size_.height()),
+                         this->device_viewport_size_.width() / 2,
+                         this->device_viewport_size_.height()),
                SK_ColorBLUE);
   scoped_ptr<SolidColorDrawQuad> yellow = SolidColorDrawQuad::Create();
   yellow->SetNew(shared_state.get(),
-                 gfx::Rect(device_viewport_size_.width() / 2,
+                 gfx::Rect(this->device_viewport_size_.width() / 2,
                            0,
-                           device_viewport_size_.width() / 2,
-                           device_viewport_size_.height()),
+                           this->device_viewport_size_.width() / 2,
+                           this->device_viewport_size_.height()),
                  SK_ColorYELLOW);
 
   child_pass->quad_list.push_back(blue.PassAs<DrawQuad>());
@@ -338,18 +376,20 @@ TEST_F(GLRendererPixelTest, RenderPassChangesSize) {
   pass_list.push_back(child_pass.Pass());
   pass_list.push_back(root_pass.Pass());
 
-  renderer_->SetEnlargePassTextureAmountForTesting(gfx::Vector2d(50, 75));
+  this->renderer_->SetEnlargePassTextureAmountForTesting(gfx::Vector2d(50, 75));
 
-  EXPECT_TRUE(RunPixelTest(
+  EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")),
       ExactPixelComparator(true)));
 }
 
-class GLRendererPixelTestWithBackgroundFilter : public GLRendererPixelTest {
+template <typename RendererType>
+class RendererPixelTestWithBackgroundFilter
+    : public RendererPixelTest<RendererType> {
  protected:
   void SetUpRenderPassList() {
-    gfx::Rect device_viewport_rect(device_viewport_size_);
+    gfx::Rect device_viewport_rect(this->device_viewport_size_);
 
     RenderPass::Id root_id(1, 1);
     scoped_ptr<RenderPass> root_pass =
@@ -394,7 +434,7 @@ class GLRendererPixelTestWithBackgroundFilter : public GLRendererPixelTest {
           gfx::RectF(),  // mask_uv_rect
           WebKit::WebFilterOperations(),  // filters
           skia::RefPtr<SkImageFilter>(),  // filter
-          background_filters_);
+          this->background_filters_);
       root_pass->quad_list.push_back(filter_pass_quad.PassAs<DrawQuad>());
       root_pass->shared_quad_state_list.push_back(shared_state.Pass());
     }
@@ -458,20 +498,28 @@ class GLRendererPixelTestWithBackgroundFilter : public GLRendererPixelTest {
   gfx::Rect filter_pass_content_rect_;
 };
 
+typedef ::testing::Types<GLRenderer, SoftwareRenderer> RendererTypes;
+TYPED_TEST_CASE(RendererPixelTestWithBackgroundFilter, RendererTypes);
+
+typedef RendererPixelTestWithBackgroundFilter<GLRenderer>
+GLRendererPixelTestWithBackgroundFilter;
+
+// TODO(skaslev): The software renderer does not support filters yet.
 TEST_F(GLRendererPixelTestWithBackgroundFilter, InvertFilter) {
-  background_filters_.append(
+  this->background_filters_.append(
       WebKit::WebFilterOperation::createInvertFilter(1.f));
 
-  filter_pass_content_rect_ = gfx::Rect(device_viewport_size_);
-  filter_pass_content_rect_.Inset(12, 14, 16, 18);
+  this->filter_pass_content_rect_ = gfx::Rect(this->device_viewport_size_);
+  this->filter_pass_content_rect_.Inset(12, 14, 16, 18);
 
-  SetUpRenderPassList();
-  EXPECT_TRUE(RunPixelTest(
-      &pass_list_,
+  this->SetUpRenderPassList();
+  EXPECT_TRUE(this->RunPixelTest(
+      &this->pass_list_,
       base::FilePath(FILE_PATH_LITERAL("background_filter.png")),
       ExactPixelComparator(true)));
 }
 
+// Software renderer does not support anti-aliased edges.
 TEST_F(GLRendererPixelTest, AntiAliasing) {
   gfx::Rect rect(0, 0, 200, 200);
 
@@ -510,12 +558,14 @@ TEST_F(GLRendererPixelTest, AntiAliasing) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
 
-  EXPECT_TRUE(RunPixelTest(
+  EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("anti_aliasing.png")),
       ExactPixelComparator(true)));
 }
 
+// This test tests that anti-aliasing works for axis aligned quads.
+// Anti-aliasing is only supported in the gl renderer.
 TEST_F(GLRendererPixelTest, AxisAligned) {
   gfx::Rect rect(0, 0, 200, 200);
 
@@ -560,7 +610,7 @@ TEST_F(GLRendererPixelTest, AxisAligned) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
 
-  EXPECT_TRUE(RunPixelTest(
+  EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("axis_aligned.png")),
       ExactPixelComparator(true)));

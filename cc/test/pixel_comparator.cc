@@ -114,18 +114,6 @@ bool FuzzyPixelComparator::Compare(const SkBitmap& actual_bmp,
       if (actual_color != expected_color) {
         ++error_pixels_count;
 
-        LOG(ERROR) << "Pixel error at x=" << x << " y=" << y << "; "
-                   << "actual RGBA=("
-                   << SkColorGetR(actual_color) << ","
-                   << SkColorGetG(actual_color) << ","
-                   << SkColorGetB(actual_color) << ","
-                   << SkColorGetA(actual_color) << "); "
-                   << "expected RGBA=("
-                   << SkColorGetR(expected_color) << ","
-                   << SkColorGetG(expected_color) << ","
-                   << SkColorGetB(expected_color) << ","
-                   << SkColorGetA(expected_color) << ")";
-
         // Compute per channel errors
         int error_r = SkColorGetR(actual_color) - SkColorGetR(expected_color);
         int error_g = SkColorGetG(actual_color) - SkColorGetG(expected_color);
@@ -204,6 +192,31 @@ bool FuzzyPixelComparator::Compare(const SkBitmap& actual_bmp,
                << "G=" << max_abs_error_g << " "
                << "B=" << max_abs_error_b << " "
                << "A=" << max_abs_error_a;
+
+      for (int x = 0; x < actual_bmp.width(); ++x) {
+        for (int y = 0; y < actual_bmp.height(); ++y) {
+          SkColor actual_color = actual_bmp.getColor(x, y);
+          SkColor expected_color = expected_bmp.getColor(x, y);
+          if (discard_alpha_) {
+            SkColorSetA(actual_color, 0);
+            SkColorSetA(expected_color, 0);
+          }
+          if (actual_color != expected_color) {
+            LOG(ERROR) << "Pixel error at x=" << x << " y=" << y << "; "
+                       << "actual RGBA=("
+                       << SkColorGetR(actual_color) << ","
+                       << SkColorGetG(actual_color) << ","
+                       << SkColorGetB(actual_color) << ","
+                       << SkColorGetA(actual_color) << "); "
+                       << "expected RGBA=("
+                       << SkColorGetR(expected_color) << ","
+                       << SkColorGetG(expected_color) << ","
+                       << SkColorGetB(expected_color) << ","
+                       << SkColorGetA(expected_color) << ")";
+          }
+        }
+      }
+
     return false;
   } else {
     return true;
