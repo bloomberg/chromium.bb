@@ -39,7 +39,6 @@
 #include "V8HTMLDocument.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Utilities.h"
-#include "bindings/v8/custom/V8ArrayBufferCustom.h"
 #include "core/dom/Document.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Frame.h"
@@ -109,10 +108,6 @@ v8::Handle<v8::Value> V8XMLHttpRequest::responseAttrGetterCustom(v8::Local<v8::S
             ArrayBuffer* arrayBuffer = xmlHttpRequest->responseArrayBuffer(ec);
             if (ec)
                 return setDOMException(ec, info.GetIsolate());
-            if (arrayBuffer && !arrayBuffer->hasDeallocationObserver()) {
-                arrayBuffer->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
-                v8::V8::AdjustAmountOfExternalAllocatedMemory(arrayBuffer->byteLength());
-            }
             return toV8Fast(arrayBuffer, info, xmlHttpRequest);
         }
     }
