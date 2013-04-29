@@ -571,11 +571,6 @@ void GraphicsContext::setImageInterpolationQuality(InterpolationQuality q)
     platformContext()->setInterpolationQuality(q);
 }
 
-FloatRect GraphicsContext::roundToDevicePixels(const FloatRect& rect, RoundingMode)
-{
-    return rect;
-}
-
 void GraphicsContext::drawConvexPolygon(size_t numPoints, const FloatPoint* points, bool shouldAntialias)
 {
     if (paintingDisabled())

@@ -277,12 +277,6 @@ namespace WebCore {
         void drawBidiText(const Font&, const TextRun&, const FloatPoint&, Font::CustomFontNotReadyAction = Font::DoNotPaintIfFontNotReady);
         void drawHighlightForText(const Font&, const TextRun&, const FloatPoint&, int h, const Color& backgroundColor, ColorSpace, int from = 0, int to = -1);
 
-        enum RoundingMode {
-            RoundAllSides,
-            RoundOriginAndDimensions
-        };
-        FloatRect roundToDevicePixels(const FloatRect&, RoundingMode = RoundAllSides);
-
         void drawLineForText(const FloatPoint&, float width, bool printing);
         enum DocumentMarkerLineStyle {
             DocumentMarkerSpellingLineStyle,
