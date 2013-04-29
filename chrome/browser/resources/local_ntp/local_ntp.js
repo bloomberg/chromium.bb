@@ -1222,7 +1222,6 @@ function updateSuggestions() {
     // onnativesuggestion events firing on the same input value. Only clear if
     // the first such event actually dictates to do so.
     hideActiveSuggestions();
-    searchboxApiHandle.showBars();
   }
 
   lastInputValue = inputValue;
