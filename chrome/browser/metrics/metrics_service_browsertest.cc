@@ -25,7 +25,7 @@
 #include "net/base/net_util.h"
 #include "ui/base/window_open_disposition.h"
 
-class MetricsServiceTest : public InProcessBrowserTest {
+class MetricsServiceBrowserTest : public InProcessBrowserTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // Enable the metrics service for testing (in recording-only mode).
@@ -65,7 +65,7 @@ class MetricsServiceReportingTest : public InProcessBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(MetricsServiceTest, CloseRenderersNormally) {
+IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, CloseRenderersNormally) {
   OpenTabs();
 
   // Verify that the expected stability metrics were recorded.
@@ -84,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceTest, CloseRenderersNormally) {
 #else
 #define MAYBE_CrashRenderers CrashRenderers
 #endif
-IN_PROC_BROWSER_TEST_F(MetricsServiceTest, MAYBE_CrashRenderers) {
+IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, MAYBE_CrashRenderers) {
   OpenTabs();
 
   // Kill the process for one of the tabs.
@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceTest, MAYBE_CrashRenderers) {
   // exits... it's not clear to me how to test that.
 }
 
-IN_PROC_BROWSER_TEST_F(MetricsServiceTest, CheckLowEntropySourceUsed) {
+IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, CheckLowEntropySourceUsed) {
   // Since MetricsService is only in recording mode, and is not reporting,
   // check that the low entropy source is returned at some point.
   ASSERT_TRUE(g_browser_process->metrics_service());
