@@ -156,6 +156,7 @@ bool ResourceLoader::init(const ResourceRequest& r)
             clientRequest.setFirstPartyForCookies(document->firstPartyForCookies());
     }
 
+    m_identifier = createUniqueIdentifier();
     willSendRequest(0, clientRequest, ResourceResponse());
     if (clientRequest.isNull()) {
         cancel();
@@ -337,19 +338,8 @@ void ResourceLoader::willSendRequest(ResourceHandle*, ResourceRequest& request, 
     if (request.isNull() || reachedTerminalState())
         return;
 
-    // We need a resource identifier for all requests, even if FrameLoader is never going to see it (such as with CORS preflight requests).
-    bool createdResourceIdentifier = false;
-    if (!m_identifier) {
-        m_identifier = createUniqueIdentifier();
-        createdResourceIdentifier = true;
-    }
-
-    if (m_options.sendLoadCallbacks == SendCallbacks) {
-        if (createdResourceIdentifier)
-            frameLoader()->notifier()->assignIdentifierToInitialRequest(m_identifier, documentLoader(), request);
-
+    if (m_options.sendLoadCallbacks == SendCallbacks)
         frameLoader()->notifier()->willSendRequest(this, request, redirectResponse);
-    }
     else
         InspectorInstrumentation::willSendRequest(m_frame.get(), m_identifier, m_frame->loader()->documentLoader(), request, redirectResponse);
 

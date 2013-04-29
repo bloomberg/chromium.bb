@@ -249,15 +249,6 @@ public:
 
     // Low-level resource notifications ------------------------------------
 
-    // An identifier was assigned to the specified request.  The client
-    // should remember this association if interested in subsequent events.
-    virtual void assignIdentifierToRequest(
-        WebFrame*, unsigned identifier, const WebURLRequest&) { }
-
-     // Remove the association between an identifier assigned to a request if
-     // the client keeps such an association.
-     virtual void removeIdentifierForRequest(unsigned identifier) { }
-
     // An element will request a resource.
     virtual void willRequestResource(WebFrame*, const WebCachedURLRequest&) { }
 

@@ -2583,10 +2583,8 @@ void FrameLoader::requestFromDelegate(ResourceRequest& request, unsigned long& i
     ASSERT(!request.isNull());
 
     identifier = 0;
-    if (Page* page = m_frame->page()) {
+    if (Page* page = m_frame->page())
         identifier = createUniqueIdentifier();
-        notifier()->assignIdentifierToInitialRequest(identifier, m_documentLoader.get(), request);
-    }
 
     ResourceRequest newRequest(request);
     notifier()->dispatchWillSendRequest(m_documentLoader.get(), identifier, newRequest, ResourceResponse());

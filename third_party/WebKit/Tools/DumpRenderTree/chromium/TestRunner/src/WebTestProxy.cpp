@@ -1227,14 +1227,6 @@ void WebTestProxyBase::didDetectXSS(WebFrame*, const WebURL&, bool)
         m_delegate->printMessage("didDetectXSS\n");
 }
 
-void WebTestProxyBase::assignIdentifierToRequest(WebFrame*, unsigned identifier, const WebKit::WebURLRequest& request)
-{
-    if (m_testInterfaces->testRunner()->shouldDumpResourceLoadCallbacks() || m_testInterfaces->testRunner()->shouldDumpResourcePriorities()) {
-        WEBKIT_ASSERT(m_resourceIdentifierMap.find(identifier) == m_resourceIdentifierMap.end());
-        m_resourceIdentifierMap[identifier] = descriptionSuitableForTestResult(request.url().spec());
-    }
-}
-
 void WebTestProxyBase::willRequestResource(WebFrame* frame, const WebKit::WebCachedURLRequest& request)
 {
     if (m_testInterfaces->testRunner()->shouldDumpResourceRequestCallbacks()) {
@@ -1284,6 +1276,11 @@ void WebTestProxyBase::willSendRequest(WebFrame*, unsigned identifier, WebKit::W
     string requestURL = url.possibly_invalid_spec();
 
     GURL mainDocumentURL = request.firstPartyForCookies();
+
+    if (redirectResponse.isNull() && m_testInterfaces->testRunner()->shouldDumpResourceLoadCallbacks() || m_testInterfaces->testRunner()->shouldDumpResourcePriorities()) {
+        WEBKIT_ASSERT(m_resourceIdentifierMap.find(identifier) == m_resourceIdentifierMap.end());
+        m_resourceIdentifierMap[identifier] = descriptionSuitableForTestResult(requestURL);
+    }
 
     if (m_testInterfaces->testRunner()->shouldDumpResourceLoadCallbacks()) {
         if (m_resourceIdentifierMap.find(identifier) == m_resourceIdentifierMap.end())

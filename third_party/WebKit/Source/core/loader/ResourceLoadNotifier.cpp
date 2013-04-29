@@ -88,11 +88,6 @@ void ResourceLoadNotifier::didFailToLoad(ResourceLoader* loader, const ResourceE
     InspectorInstrumentation::didFailLoading(m_frame, loader->documentLoader(), loader->identifier(), error);
 }
 
-void ResourceLoadNotifier::assignIdentifierToInitialRequest(unsigned long identifier, DocumentLoader* loader, const ResourceRequest& request)
-{
-    m_frame->loader()->client()->assignIdentifierToInitialRequest(identifier, loader, request);
-}
-
 void ResourceLoadNotifier::dispatchWillSendRequest(DocumentLoader* loader, unsigned long identifier, ResourceRequest& request, const ResourceResponse& redirectResponse)
 {
     String oldRequestURL = request.url().string();

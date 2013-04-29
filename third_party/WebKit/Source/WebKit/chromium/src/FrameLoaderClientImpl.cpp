@@ -286,21 +286,6 @@ void FrameLoaderClientImpl::detachedFromParent()
     m_webFrame->setClient(0);
 }
 
-// This function is responsible for associating the |identifier| with a given
-// subresource load.  The following functions that accept an |identifier| are
-// called for each subresource, so they should not be dispatched to the
-// WebFrame.
-void FrameLoaderClientImpl::assignIdentifierToInitialRequest(
-    unsigned long identifier, DocumentLoader* loader,
-    const ResourceRequest& request)
-{
-    if (m_webFrame->client()) {
-        WrappedResourceRequest webreq(request);
-        m_webFrame->client()->assignIdentifierToRequest(
-            m_webFrame, identifier, webreq);
-    }
-}
-
 // If the request being loaded by |loader| is a frame, update the ResourceType.
 // A subresource in this context is anything other than a frame --
 // this includes images and xmlhttp requests.  It is important to note that a
