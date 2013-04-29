@@ -1505,8 +1505,12 @@ void AutofillDialogViews::TextfieldEditedOrActivated(
 }
 
 void AutofillDialogViews::ContentsPreferredSizeChanged() {
-  if (GetWidget())
+  if (GetWidget()) {
     GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
+    // If the above line does not cause the dialog's size to change, |contents_|
+    // may not be laid out. This will trigger a layout only if it's needed.
+    contents_->SetBoundsRect(contents_->bounds());
+  }
 }
 
 AutofillDialogViews::DetailsGroup* AutofillDialogViews::GroupForSection(
