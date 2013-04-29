@@ -49,6 +49,14 @@
       '<(SHARED_INTERMEDIATE_DIR)/webkit',
       '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
     ],
+
+    'conditions': [
+      ['OS=="android" and use_openmax_dl_fft!=0', {
+        'webcore_include_dirs': [
+          '<(DEPTH)/third_party/openmax_dl'
+        ]
+      }],
+    ],
   },  # variables
 
   'target_defaults': {
@@ -885,11 +893,6 @@
         }, { # OS!="android"
           'sources/': [
             ['exclude', 'Android\\.cpp$'],
-          ],
-        }],
-        ['OS=="android" and use_openmax_dl_fft!=0', {
-          'include_dirs': [
-            '<(DEPTH)/third_party/openmax_dl',
           ],
         }],
       ],
