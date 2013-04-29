@@ -77,12 +77,12 @@ class WebUnitTestSupport;
 class WebThemeEngine;
 class WebThread;
 class WebURL;
-class WebURLError;
 class WebURLLoader;
 class WebWorkerRunLoop;
 struct WebFloatPoint;
 struct WebLocalizedString;
 struct WebSize;
+struct WebURLError;
 
 class WEBKIT_EXPORT Platform {
 public:
