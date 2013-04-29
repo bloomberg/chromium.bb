@@ -59,6 +59,7 @@ class DiskCacheEntryTest : public DiskCacheTestWithCache {
   void DoomSparseEntry();
   void PartialSparseEntry();
   void EvictOldEntries();
+  void SimpleCacheMakeBadChecksumEntry(const char* key);
 };
 
 // This part of the test runs on the background thread.
@@ -2351,12 +2352,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheDoomedEntry) {
   DoomedEntry();
 }
 
-// Tests that the simple cache can detect entries that have bad data.
-TEST_F(DiskCacheEntryTest, SimpleCacheBadChecksum) {
-  SetSimpleCacheMode();
-  InitCache();
-
-  const char key[] = "the first key";
+void DiskCacheEntryTest::SimpleCacheMakeBadChecksumEntry(const char* key) {
   disk_cache::Entry* entry = NULL;
 
   ASSERT_EQ(net::OK, CreateEntry(key, &entry));
@@ -2388,15 +2384,50 @@ TEST_F(DiskCacheEntryTest, SimpleCacheBadChecksum) {
             base::WritePlatformFile(entry_file0, file_offset,
                                     bad_data.data(), bad_data.size()));
   EXPECT_TRUE(base::ClosePlatformFile(entry_file0));
+}
+
+// Tests that the simple cache can detect entries that have bad data.
+TEST_F(DiskCacheEntryTest, SimpleCacheBadChecksum) {
+  SetSimpleCacheMode();
+  InitCache();
+
+  const char key[] = "the first key";
+  SimpleCacheMakeBadChecksumEntry(key);
+
+  disk_cache::Entry* entry = NULL;
 
   // Open the entry.
   EXPECT_EQ(net::OK, OpenEntry(key, &entry));
 
-  const size_t kReadBufferSize = 200;
-  EXPECT_LE(data.size(), kReadBufferSize);
+  const int kReadBufferSize = 200;
+  DCHECK_GE(kReadBufferSize, entry->GetDataSize(0));
   scoped_refptr<net::IOBuffer> read_buffer(new net::IOBuffer(kReadBufferSize));
   EXPECT_EQ(net::ERR_FAILED,
             ReadData(entry, 0, 0, read_buffer, kReadBufferSize));
+
+  entry->Close();
+}
+
+// Tests that an entry that has had an IO error occur can still be Doomed().
+TEST_F(DiskCacheEntryTest, SimpleCacheErrorThenDoom) {
+  SetSimpleCacheMode();
+  InitCache();
+
+  const char key[] = "the first key";
+  SimpleCacheMakeBadChecksumEntry(key);
+
+  disk_cache::Entry* entry = NULL;
+
+  // Open the entry, forcing an IO error.
+  EXPECT_EQ(net::OK, OpenEntry(key, &entry));
+
+  const int kReadBufferSize = 200;
+  DCHECK_GE(kReadBufferSize, entry->GetDataSize(0));
+  scoped_refptr<net::IOBuffer> read_buffer(new net::IOBuffer(kReadBufferSize));
+  EXPECT_EQ(net::ERR_FAILED,
+            ReadData(entry, 0, 0, read_buffer, kReadBufferSize));
+
+  entry->Doom();  // Should not crash.
   entry->Close();
 }
 

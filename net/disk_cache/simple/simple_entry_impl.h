@@ -15,7 +15,6 @@
 #include "base/threading/thread_checker.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
-#include "net/disk_cache/simple/simple_index.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -27,30 +26,31 @@ class IOBuffer;
 
 namespace disk_cache {
 
+class SimpleBackendImpl;
 class SimpleSynchronousEntry;
 
 // SimpleEntryImpl is the IO thread interface to an entry in the very simple
 // disk cache. It proxies for the SimpleSynchronousEntry, which performs IO
 // on the worker thread.
-class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl> {
+class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
+    public base::SupportsWeakPtr<SimpleEntryImpl> {
   friend class base::RefCounted<SimpleEntryImpl>;
  public:
-  static int OpenEntry(SimpleIndex* entry_index,
-                       const base::FilePath& path,
-                       const std::string& key,
-                       Entry** entry,
-                       const CompletionCallback& callback);
+  SimpleEntryImpl(SimpleBackendImpl* backend,
+                  const base::FilePath& path,
+                  const std::string& key);
 
-  static int CreateEntry(SimpleIndex* entry_index,
-                         const base::FilePath& path,
-                         const std::string& key,
-                         Entry** entry,
-                         const CompletionCallback& callback);
+  // Adds another reader/writer to this entry, if possible, returning |this| to
+  // |entry|.
+  int OpenEntry(Entry** entry, const CompletionCallback& callback);
 
-  static int DoomEntry(SimpleIndex* entry_index,
-                       const base::FilePath& path,
-                       const std::string& key,
-                       const CompletionCallback& callback);
+  // Creates this entry, if possible. Returns |this| to |entry|.
+  int CreateEntry(Entry** entry, const CompletionCallback& callback);
+
+  // Identical to Backend::Doom() except that it accepts a CompletionCallback.
+  int DoomEntry(const CompletionCallback& callback);
+
+  const std::string& key() const { return key_; }
 
   // From Entry:
   virtual void Doom() OVERRIDE;
@@ -87,15 +87,52 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl> {
   virtual int ReadyForSparseIO(const CompletionCallback& callback) OVERRIDE;
 
  private:
-  SimpleEntryImpl(SimpleIndex* entry_index,
-                  const base::FilePath& path,
-                  const std::string& key);
+  class ScopedOperationRunner;
+  friend class ScopedOperationRunner;
+
+  enum State {
+    // The state immediately after construction, but before |synchronous_entry_|
+    // has been assigned. This is the state at construction, and is the only
+    // legal state to destruct an entry in.
+    STATE_UNINITIALIZED,
+
+    // This entry is available for regular IO.
+    STATE_READY,
+
+    // IO is currently in flight, operations must wait for completion before
+    // launching.
+    STATE_IO_PENDING,
+  };
 
   virtual ~SimpleEntryImpl();
 
+  // Sets entry o STATE_UNINITIALIZED.
+  void MakeUninitialized();
+
+  // Return this entry to a user of the API in |out_entry|. Increments the user
+  // count.
+  void ReturnEntryToCaller(Entry** out_entry);
+
+  // Ensures that |this| is no longer referenced by our |backend_|, this
+  // guarantees that this entry cannot have OpenEntry/CreateEntry called again.
+  void RemoveSelfFromBackend();
+
+  // An error occured, and the SimpleSynchronousEntry should have Doomed
+  // us at this point. We need to remove |this| from the Backend and the
+  // index.
+  void MarkAsDoomed();
+
   // Runs the next operation in the queue, if any and if there is no other
-  // operation running at the moment. Returns true if a operation has run.
-  bool RunNextOperationIfNeeded();
+  // operation running at the moment.
+  // WARNING: May delete |this|, as an operation in the queue can contain
+  // the last reference.
+  void RunNextOperationIfNeeded();
+
+  void OpenEntryInternal(Entry** entry,
+                         const CompletionCallback& callback);
+
+  void CreateEntryInternal(Entry** entry,
+                           const CompletionCallback& callback);
 
   void CloseInternal();
 
@@ -121,6 +158,11 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl> {
       const base::TimeTicks& start_time,
       scoped_ptr<SimpleSynchronousEntry*> in_sync_entry,
       Entry** out_entry);
+
+  // Called after we've closed and written the EOF record to our entry. Until
+  // this point it hasn't been safe to OpenEntry() the same entry, but from this
+  // point it is.
+  void CloseOperationComplete();
 
   // Called after a SimpleSynchronousEntry has completed an asynchronous IO
   // operation, such as ReadData() or WriteData(). Calls |completion_callback|.
@@ -156,7 +198,7 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl> {
   // thread, in all cases. |io_thread_checker_| documents and enforces this.
   base::ThreadChecker io_thread_checker_;
 
-  base::WeakPtr<SimpleIndex> entry_index_;
+  base::WeakPtr<SimpleBackendImpl> backend_;
   const base::FilePath path_;
   const std::string key_;
 
@@ -165,6 +207,13 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl> {
   base::Time last_used_;
   base::Time last_modified_;
   int32 data_size_[kSimpleEntryFileCount];
+
+  // Number of times this object has been returned from Backend::OpenEntry() and
+  // Backend::CreateEntry() without subsequent Entry::Close() calls. Used to
+  // notify the backend when this entry not used by any callers.
+  int open_count_;
+
+  State state_;
 
   // When possible, we compute a crc32, for the data in each entry as we read or
   // write. For each stream, |crc32s_[index]| is the crc32 of that stream from
@@ -181,10 +230,6 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl> {
   // is false (i.e. when an operation is not pending on the worker pool).
   SimpleSynchronousEntry* synchronous_entry_;
 
-  // Set to true when a worker operation is posted on the |synchronous_entry_|,
-  // and false after. Used to ensure thread safety by not allowing multiple
-  // threads to access the |synchronous_entry_| simultaneously.
-  bool operation_running_;
   std::queue<base::Closure> pending_operations_;
 };
 

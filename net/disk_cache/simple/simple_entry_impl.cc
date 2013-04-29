@@ -19,12 +19,15 @@
 #include "base/time.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/disk_cache/simple/simple_backend_impl.h"
 #include "net/disk_cache/simple/simple_index.h"
 #include "net/disk_cache/simple/simple_synchronous_entry.h"
 #include "third_party/zlib/zlib.h"
 
 namespace {
 
+// Short trampoline to take an owned input parameter and call a net completion
+// callback with its value.
 void CallCompletionCallback(const net::CompletionCallback& callback,
                             scoped_ptr<int> result) {
   DCHECK(result);
@@ -42,91 +45,64 @@ using base::MessageLoopProxy;
 using base::Time;
 using base::WorkerPool;
 
-// static
-int SimpleEntryImpl::OpenEntry(SimpleIndex* entry_index,
-                               const FilePath& path,
-                               const std::string& key,
-                               Entry** out_entry,
-                               const CompletionCallback& callback) {
-  // This enumeration is used in histograms, add entries only at end.
-  enum OpenEntryIndexEnum {
-    INDEX_NOEXIST = 0,
-    INDEX_MISS = 1,
-    INDEX_HIT = 2,
-    INDEX_MAX = 3,
-  };
-  OpenEntryIndexEnum open_entry_index_enum = INDEX_NOEXIST;
-  if (entry_index) {
-    if (entry_index->Has(key))
-      open_entry_index_enum = INDEX_HIT;
-    else
-      open_entry_index_enum = INDEX_MISS;
+// A helper class to insure that RunNextOperationIfNeeded() is called when
+// exiting the current stack frame.
+class SimpleEntryImpl::ScopedOperationRunner {
+ public:
+  explicit ScopedOperationRunner(SimpleEntryImpl* entry) : entry_(entry) {
   }
-  UMA_HISTOGRAM_ENUMERATION("SimpleCache.OpenEntryIndexState",
-                            open_entry_index_enum, INDEX_MAX);
-  // If entry is not known to the index, initiate fast failover to the network.
-  if (open_entry_index_enum == INDEX_MISS)
-    return net::ERR_FAILED;
 
-  const base::TimeTicks start_time = base::TimeTicks::Now();
-  // Go down to the disk to find the entry.
-  scoped_refptr<SimpleEntryImpl> new_entry =
-      new SimpleEntryImpl(entry_index, path, key);
-  typedef SimpleSynchronousEntry* PointerToSimpleSynchronousEntry;
-  scoped_ptr<PointerToSimpleSynchronousEntry> sync_entry(
-      new PointerToSimpleSynchronousEntry());
-  Closure task = base::Bind(&SimpleSynchronousEntry::OpenEntry, path, key,
-                            sync_entry.get());
-  Closure reply = base::Bind(&SimpleEntryImpl::CreationOperationComplete,
-                             new_entry,
-                             callback,
-                             start_time,
-                             base::Passed(&sync_entry),
-                             out_entry);
-  WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
-  return net::ERR_IO_PENDING;
-}
+  ~ScopedOperationRunner() {
+    entry_->RunNextOperationIfNeeded();
+  }
 
-// static
-int SimpleEntryImpl::CreateEntry(SimpleIndex* entry_index,
+ private:
+  SimpleEntryImpl* const entry_;
+};
+
+SimpleEntryImpl::SimpleEntryImpl(SimpleBackendImpl* backend,
                                  const FilePath& path,
-                                 const std::string& key,
-                                 Entry** out_entry,
-                                 const CompletionCallback& callback) {
-  const base::TimeTicks start_time = base::TimeTicks::Now();
-  // We insert the entry in the index before creating the entry files in the
-  // SimpleSynchronousEntry, because this way the worse scenario is when we
-  // have the entry in the index but we don't have the created files yet, this
-  // way we never leak files. CreationOperationComplete will remove the entry
-  // from the index if the creation fails.
-  if (entry_index)
-    entry_index->Insert(key);
-  scoped_refptr<SimpleEntryImpl> new_entry =
-      new SimpleEntryImpl(entry_index, path, key);
+                                 const std::string& key)
+    : backend_(backend->AsWeakPtr()),
+      path_(path),
+      key_(key),
+      open_count_(0),
+      state_(STATE_UNINITIALIZED),
+      synchronous_entry_(NULL) {
+  COMPILE_ASSERT(arraysize(data_size_) == arraysize(crc32s_end_offset_),
+                 arrays_should_be_same_size);
+  COMPILE_ASSERT(arraysize(data_size_) == arraysize(crc32s_),
+                 arrays_should_be_same_size2);
+  COMPILE_ASSERT(arraysize(data_size_) == arraysize(have_written_),
+                 arrays_should_be_same_size3);
 
-  typedef SimpleSynchronousEntry* PointerToSimpleSynchronousEntry;
-  scoped_ptr<PointerToSimpleSynchronousEntry> sync_entry(
-      new PointerToSimpleSynchronousEntry());
-  Closure task = base::Bind(&SimpleSynchronousEntry::CreateEntry, path, key,
-                            sync_entry.get());
-  Closure reply = base::Bind(&SimpleEntryImpl::CreationOperationComplete,
-                             new_entry,
-                             callback,
-                             start_time,
-                             base::Passed(&sync_entry),
-                             out_entry);
-  WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
+  MakeUninitialized();
+}
+
+int SimpleEntryImpl::OpenEntry(Entry** out_entry,
+                               const CompletionCallback& callback) {
+  DCHECK(backend_);
+
+  pending_operations_.push(base::Bind(&SimpleEntryImpl::OpenEntryInternal,
+                                      this, out_entry, callback));
+  RunNextOperationIfNeeded();
   return net::ERR_IO_PENDING;
 }
 
-// static
-int SimpleEntryImpl::DoomEntry(SimpleIndex* entry_index,
-                               const FilePath& path,
-                               const std::string& key,
-                               const CompletionCallback& callback) {
-  entry_index->Remove(key);
+int SimpleEntryImpl::CreateEntry(Entry** out_entry,
+                                 const CompletionCallback& callback) {
+  DCHECK(backend_);
+  pending_operations_.push(base::Bind(&SimpleEntryImpl::CreateEntryInternal,
+                                      this, out_entry, callback));
+  RunNextOperationIfNeeded();
+  return net::ERR_IO_PENDING;
+}
+
+int SimpleEntryImpl::DoomEntry(const CompletionCallback& callback) {
+  MarkAsDoomed();
+
   scoped_ptr<int> result(new int());
-  Closure task = base::Bind(&SimpleSynchronousEntry::DoomEntry, path, key,
+  Closure task = base::Bind(&SimpleSynchronousEntry::DoomEntry, path_, key_,
                             result.get());
   Closure reply = base::Bind(&CallCompletionCallback,
                              callback, base::Passed(&result));
@@ -134,26 +110,24 @@ int SimpleEntryImpl::DoomEntry(SimpleIndex* entry_index,
   return net::ERR_IO_PENDING;
 }
 
+
 void SimpleEntryImpl::Doom() {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
-  DCHECK(synchronous_entry_);
-#if defined(OS_POSIX)
-  // This call to static SimpleEntryImpl::DoomEntry() will just erase the
-  // underlying files. On POSIX, this is fine; the files are still open on the
-  // SimpleSynchronousEntry, and operations can even happen on them. The files
-  // will be removed from the filesystem when they are closed.
-  DoomEntry(entry_index_, path_, key_, CompletionCallback());
-#else
-  NOTIMPLEMENTED();
-#endif
+  DoomEntry(CompletionCallback());
 }
 
 void SimpleEntryImpl::Close() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  // Postpone close operation.
-  // Push the close operation to the end of the line. This way we run all
-  // operations before we are able close.
+  DCHECK_LT(0, open_count_);
+
+  if (--open_count_ > 0) {
+    DCHECK(!HasOneRef());
+    Release();  // Balanced in ReturnEntryToCaller().
+    return;
+  }
+
   pending_operations_.push(base::Bind(&SimpleEntryImpl::CloseInternal, this));
+  DCHECK(!HasOneRef());
+  Release();  // Balanced in ReturnEntryToCaller().
   RunNextOperationIfNeeded();
 }
 
@@ -277,50 +251,145 @@ int SimpleEntryImpl::ReadyForSparseIO(const CompletionCallback& callback) {
   return net::ERR_FAILED;
 }
 
-SimpleEntryImpl::SimpleEntryImpl(SimpleIndex* entry_index,
-                                 const FilePath& path,
-                                 const std::string& key)
-    :  entry_index_(entry_index->AsWeakPtr()),
-       path_(path),
-       key_(key),
-       synchronous_entry_(NULL),
-       operation_running_(false) {
-  COMPILE_ASSERT(arraysize(data_size_) == arraysize(crc32s_end_offset_),
-                 arrays_should_be_same_size);
-  COMPILE_ASSERT(arraysize(data_size_) == arraysize(crc32s_),
-                 arrays_should_be_same_size2);
-  COMPILE_ASSERT(arraysize(data_size_) == arraysize(have_written_),
-                 arrays_should_be_same_size3);
+SimpleEntryImpl::~SimpleEntryImpl() {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(0U, pending_operations_.size());
+  DCHECK_EQ(STATE_UNINITIALIZED, state_);
+  DCHECK(!synchronous_entry_);
+  RemoveSelfFromBackend();
+}
 
+void SimpleEntryImpl::MakeUninitialized() {
+  state_ = STATE_UNINITIALIZED;
   std::memset(crc32s_end_offset_, 0, sizeof(crc32s_end_offset_));
   std::memset(crc32s_, 0, sizeof(crc32s_));
   std::memset(have_written_, 0, sizeof(have_written_));
 }
 
-SimpleEntryImpl::~SimpleEntryImpl() {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(0U, pending_operations_.size());
-  DCHECK(!operation_running_);
-  DCHECK(!synchronous_entry_);
+void SimpleEntryImpl::ReturnEntryToCaller(Entry** out_entry) {
+  ++open_count_;
+  AddRef();  // Balanced in Close()
+  *out_entry = this;
 }
 
-bool SimpleEntryImpl::RunNextOperationIfNeeded() {
+void SimpleEntryImpl::RemoveSelfFromBackend() {
+  if (!backend_)
+    return;
+  backend_->OnDeactivated(this);
+  backend_.reset();
+}
+
+void SimpleEntryImpl::MarkAsDoomed() {
+  if (!backend_)
+    return;
+  backend_->index()->Remove(key_);
+  RemoveSelfFromBackend();
+}
+
+void SimpleEntryImpl::RunNextOperationIfNeeded() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
+
   UMA_HISTOGRAM_CUSTOM_COUNTS("SimpleCache.EntryOperationsPending",
                               pending_operations_.size(), 0, 100, 20);
-  if (pending_operations_.size() <= 0 || operation_running_)
-    return false;
-  base::Closure operation = pending_operations_.front();
-  pending_operations_.pop();
-  operation.Run();
-  return true;
+
+  if (!pending_operations_.empty() && state_ != STATE_IO_PENDING) {
+    base::Closure operation = pending_operations_.front();
+    pending_operations_.pop();
+    operation.Run();
+    // |this| may have been deleted.
+  }
+}
+
+void SimpleEntryImpl::OpenEntryInternal(Entry** out_entry,
+                                        const CompletionCallback& callback) {
+  ScopedOperationRunner operation_runner(this);
+
+  if (state_ == STATE_READY) {
+    ReturnEntryToCaller(out_entry);
+    MessageLoopProxy::current()->PostTask(FROM_HERE, base::Bind(callback,
+                                                                net::OK));
+    return;
+  }
+  DCHECK_EQ(STATE_UNINITIALIZED, state_);
+
+  // This enumeration is used in histograms, add entries only at end.
+  enum OpenEntryIndexEnum {
+    INDEX_NOEXIST = 0,
+    INDEX_MISS = 1,
+    INDEX_HIT = 2,
+    INDEX_MAX = 3,
+  };
+  OpenEntryIndexEnum open_entry_index_enum = INDEX_NOEXIST;
+  if (backend_) {
+    if (backend_->index()->Has(key_))
+      open_entry_index_enum = INDEX_HIT;
+    else
+      open_entry_index_enum = INDEX_MISS;
+  }
+  UMA_HISTOGRAM_ENUMERATION("SimpleCache.OpenEntryIndexState",
+                            open_entry_index_enum, INDEX_MAX);
+  // If entry is not known to the index, initiate fast failover to the network.
+  if (open_entry_index_enum == INDEX_MISS) {
+    MessageLoopProxy::current()->PostTask(FROM_HERE,
+                                          base::Bind(callback,
+                                                     net::ERR_FAILED));
+    return;
+  }
+  state_ = STATE_IO_PENDING;
+
+  const base::TimeTicks start_time = base::TimeTicks::Now();
+  typedef SimpleSynchronousEntry* PointerToSimpleSynchronousEntry;
+  scoped_ptr<PointerToSimpleSynchronousEntry> sync_entry(
+      new PointerToSimpleSynchronousEntry());
+  Closure task = base::Bind(&SimpleSynchronousEntry::OpenEntry, path_, key_,
+                            sync_entry.get());
+  Closure reply = base::Bind(&SimpleEntryImpl::CreationOperationComplete, this,
+                             callback, start_time, base::Passed(&sync_entry),
+                             out_entry);
+  WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
+}
+
+void SimpleEntryImpl::CreateEntryInternal(Entry** out_entry,
+                                          const CompletionCallback& callback) {
+  ScopedOperationRunner operation_runner(this);
+
+  if (state_ == STATE_READY) {
+    // There is already an active normal entry.
+    MessageLoopProxy::current()->PostTask(FROM_HERE,
+                                          base::Bind(callback,
+                                                     net::ERR_FAILED));
+    return;
+  }
+  DCHECK_EQ(STATE_UNINITIALIZED, state_);
+
+  state_ = STATE_IO_PENDING;
+
+  // We insert the entry in the index before creating the entry files in the
+  // SimpleSynchronousEntry, because this way the worst scenario is when we
+  // have the entry in the index but we don't have the created files yet, this
+  // way we never leak files. CreationOperationComplete will remove the entry
+  // from the index if the creation fails.
+  if (backend_)
+    backend_->index()->Insert(key_);
+  const base::TimeTicks start_time = base::TimeTicks::Now();
+  typedef SimpleSynchronousEntry* PointerToSimpleSynchronousEntry;
+  scoped_ptr<PointerToSimpleSynchronousEntry> sync_entry(
+      new PointerToSimpleSynchronousEntry());
+  Closure task = base::Bind(&SimpleSynchronousEntry::CreateEntry, path_, key_,
+                            sync_entry.get());
+  Closure reply = base::Bind(&SimpleEntryImpl::CreationOperationComplete, this,
+                             callback, start_time, base::Passed(&sync_entry),
+                             out_entry);
+  WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
 }
 
 void SimpleEntryImpl::CloseInternal() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK_EQ(0U, pending_operations_.size());
-  DCHECK(!operation_running_);
+  DCHECK_EQ(STATE_READY, state_);
   DCHECK(synchronous_entry_);
+
+  state_ = STATE_IO_PENDING;
 
   typedef SimpleSynchronousEntry::CRCRecord CRCRecord;
 
@@ -334,15 +403,12 @@ void SimpleEntryImpl::CloseInternal() {
         crc32s_to_write->push_back(CRCRecord(i, false, 0));
     }
   }
-  WorkerPool::PostTask(FROM_HERE,
-                       base::Bind(&SimpleSynchronousEntry::Close,
-                                  base::Unretained(synchronous_entry_),
-                                  base::Passed(&crc32s_to_write)),
-                       true);
+  Closure task = base::Bind(&SimpleSynchronousEntry::Close,
+                            base::Unretained(synchronous_entry_),
+                            base::Passed(&crc32s_to_write));
+  Closure reply = base::Bind(&SimpleEntryImpl::CloseOperationComplete, this);
+  WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
   synchronous_entry_ = NULL;
-  // Entry::Close() is expected to delete this entry. See disk_cache.h for
-  // details.
-  Release();  // Balanced in CreationOperationComplete().
 }
 
 void SimpleEntryImpl::ReadDataInternal(int stream_index,
@@ -351,10 +417,10 @@ void SimpleEntryImpl::ReadDataInternal(int stream_index,
                                        int buf_len,
                                        const CompletionCallback& callback) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  DCHECK(!operation_running_);
-  operation_running_ = true;
-  if (entry_index_)
-      entry_index_->UseIfExists(key_);
+  DCHECK_EQ(STATE_READY, state_);
+  state_ = STATE_IO_PENDING;
+  if (backend_)
+    backend_->index()->UseIfExists(key_);
 
   scoped_ptr<uint32> read_crc32(new uint32());
   scoped_ptr<int> result(new int());
@@ -375,10 +441,10 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
                                        const CompletionCallback& callback,
                                        bool truncate) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  DCHECK(!operation_running_);
-  operation_running_ = true;
-  if (entry_index_)
-    entry_index_->UseIfExists(key_);
+  DCHECK_EQ(STATE_READY, state_);
+  state_ = STATE_IO_PENDING;
+  if (backend_)
+    backend_->index()->UseIfExists(key_);
   // It is easy to incrementally compute the CRC from [0 .. |offset + buf_len|)
   // if |offset == 0| or we have already computed the CRC for [0 .. offset).
   // We rely on most write operations being sequential, start to end to compute
@@ -413,30 +479,25 @@ void SimpleEntryImpl::CreationOperationComplete(
     scoped_ptr<SimpleSynchronousEntry*> in_sync_entry,
     Entry** out_entry) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(state_, STATE_IO_PENDING);
   DCHECK(in_sync_entry);
 
-  bool creation_result = !*in_sync_entry;
-  UMA_HISTOGRAM_BOOLEAN("SimpleCache.EntryCreationResult", creation_result);
-  if (creation_result) {
+  ScopedOperationRunner operation_runner(this);
+
+  bool creation_failed = !*in_sync_entry;
+  UMA_HISTOGRAM_BOOLEAN("SimpleCache.EntryCreationResult", creation_failed);
+  if (creation_failed) {
     completion_callback.Run(net::ERR_FAILED);
-    // If OpenEntry failed, we must remove it from our index.
-    if (entry_index_)
-      entry_index_->Remove(key_);
-    // The reference held by the Callback calling us will go out of scope and
-    // delete |this| on leaving this scope.
+    MarkAsDoomed();
+    state_ = STATE_UNINITIALIZED;
     return;
   }
-
-  // The Backend interface requires us to return |this|, and keep the Entry
-  // alive until Entry::Close(). Adding a reference to self will keep |this|
-  // alive after the scope of the Callback calling us is destroyed.
-  AddRef();  // Balanced in CloseInternal().
+  state_ = STATE_READY;
   synchronous_entry_ = *in_sync_entry;
   SetSynchronousData();
-  *out_entry = this;
+  ReturnEntryToCaller(out_entry);
   UMA_HISTOGRAM_TIMES("SimpleCache.EntryCreationTime",
                       (base::TimeTicks::Now() - start_time));
-
   completion_callback.Run(net::OK);
 }
 
@@ -446,15 +507,13 @@ void SimpleEntryImpl::EntryOperationComplete(
     scoped_ptr<int> result) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK(synchronous_entry_);
-  DCHECK(operation_running_);
+  DCHECK_EQ(STATE_IO_PENDING, state_);
   DCHECK(result);
 
-  operation_running_ = false;
+  state_ = STATE_READY;
 
   if (*result < 0) {
-    if (entry_index_)
-      entry_index_->Remove(key_);
-    entry_index_.reset();
+    MarkAsDoomed();
     crc32s_end_offset_[stream_index] = 0;
   }
   SetSynchronousData();
@@ -470,7 +529,7 @@ void SimpleEntryImpl::ReadOperationComplete(
     scoped_ptr<int> result) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK(synchronous_entry_);
-  DCHECK(operation_running_);
+  DCHECK_EQ(STATE_IO_PENDING, state_);
   DCHECK(read_crc32);
   DCHECK(result);
 
@@ -514,16 +573,25 @@ void SimpleEntryImpl::ChecksumOperationComplete(
     scoped_ptr<int> result) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK(synchronous_entry_);
-  DCHECK(operation_running_);
+  DCHECK_EQ(STATE_IO_PENDING, state_);
   DCHECK(result);
   if (*result == net::OK)
     *result = orig_result;
   EntryOperationComplete(stream_index, completion_callback, result.Pass());
 }
 
+void SimpleEntryImpl::CloseOperationComplete() {
+  DCHECK(!synchronous_entry_);
+  DCHECK_EQ(0, open_count_);
+  DCHECK_EQ(STATE_IO_PENDING, state_);
+
+  MakeUninitialized();
+  RunNextOperationIfNeeded();
+}
+
 void SimpleEntryImpl::SetSynchronousData() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  DCHECK(!operation_running_);
+  DCHECK_EQ(STATE_READY, state_);
   // TODO(felipeg): These copies to avoid data races are not optimal. While
   // adding an IO thread index (for fast misses etc...), we can store this data
   // in that structure. This also solves problems with last_used() on ext4
@@ -532,8 +600,8 @@ void SimpleEntryImpl::SetSynchronousData() {
   last_modified_ = synchronous_entry_->last_modified();
   for (int i = 0; i < kSimpleEntryFileCount; ++i)
     data_size_[i] = synchronous_entry_->data_size(i);
-  if (entry_index_)
-    entry_index_->UpdateEntrySize(key_, synchronous_entry_->GetFileSize());
+  if (backend_)
+    backend_->index()->UpdateEntrySize(key_, synchronous_entry_->GetFileSize());
 }
 
 }  // namespace disk_cache

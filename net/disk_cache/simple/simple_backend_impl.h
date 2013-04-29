@@ -5,6 +5,7 @@
 #ifndef NET_DISK_CACHE_SIMPLE_SIMPLE_BACKEND_IMPL_H_
 #define NET_DISK_CACHE_SIMPLE_SIMPLE_BACKEND_IMPL_H_
 
+#include <map>
 #include <string>
 #include <utility>
 #include <vector>
@@ -13,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task_runner.h"
 #include "net/base/cache_type.h"
 #include "net/disk_cache/disk_cache.h"
@@ -31,6 +33,7 @@ namespace disk_cache {
 
 // See http://www.chromium.org/developers/design-documents/network-stack/disk-cache/very-simple-backend
 
+class SimpleEntryImpl;
 class SimpleIndex;
 
 class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
@@ -43,11 +46,17 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
 
   virtual ~SimpleBackendImpl();
 
+  SimpleIndex* index() { return index_.get(); }
+
   // Must run on IO Thread.
   int Init(const CompletionCallback& completion_callback);
 
   // Sets the maximum size for the total amount of data stored by this instance.
   bool SetMaxSize(int max_bytes);
+
+  // Removes |entry| from the |active_entries_| set, forcing future Open/Create
+  // operations to construct a new object.
+  void OnDeactivated(const SimpleEntryImpl* entry);
 
   // From Backend:
   virtual net::CacheType GetCacheType() const OVERRIDE;
@@ -72,6 +81,8 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   virtual void OnExternalCacheHit(const std::string& key) OVERRIDE;
 
  private:
+  typedef std::map<std::string, base::WeakPtr<SimpleEntryImpl> > EntryMap;
+
   typedef base::Callback<void(uint64 max_size, int result)>
       InitializeIndexCallback;
 
@@ -95,10 +106,20 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
       const InitializeIndexCallback& initialize_index_callback,
       uint64 suggested_max_size);
 
+  // Searches |active_entries_| for the entry corresponding to |key|. If found,
+  // returns the found entry. Otherwise, creates a new entry and returns that.
+  scoped_refptr<SimpleEntryImpl> CreateOrFindActiveEntry(
+      const std::string& key);
+
   const base::FilePath path_;
   scoped_ptr<SimpleIndex> index_;
   const scoped_refptr<base::SingleThreadTaskRunner> cache_thread_;
+
   int orig_max_size_;
+
+  // TODO(gavinp): Store the entry_hash in SimpleEntryImpl, and index this map
+  // by hash. This will save memory, and make IndexReadyForDoom easier.
+  EntryMap active_entries_;
 };
 
 }  // namespace disk_cache

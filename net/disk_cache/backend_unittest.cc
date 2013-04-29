@@ -2479,6 +2479,7 @@ void DiskCacheBackendTest::BackendDoomAll() {
   MessageLoop::current()->RunUntilIdle();
 
   disk_cache::Entry *entry3, *entry4;
+  EXPECT_NE(net::OK, OpenEntry("third", &entry3));
   ASSERT_EQ(net::OK, CreateEntry("third", &entry3));
   ASSERT_EQ(net::OK, CreateEntry("fourth", &entry4));
 

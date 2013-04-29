@@ -19,6 +19,7 @@
 #include "net/disk_cache/simple/simple_entry_impl.h"
 #include "net/disk_cache/simple/simple_index.h"
 #include "net/disk_cache/simple/simple_synchronous_entry.h"
+#include "net/disk_cache/simple/simple_util.h"
 
 using base::Closure;
 using base::FilePath;
@@ -168,6 +169,11 @@ bool SimpleBackendImpl::SetMaxSize(int max_bytes) {
   return index_->SetMaxSize(max_bytes);
 }
 
+void SimpleBackendImpl::OnDeactivated(const SimpleEntryImpl* entry) {
+  DCHECK_LT(0U, active_entries_.count(entry->key()));
+  active_entries_.erase(entry->key());
+}
+
 net::CacheType SimpleBackendImpl::GetCacheType() const {
   return net::DISK_CACHE;
 }
@@ -180,19 +186,21 @@ int32 SimpleBackendImpl::GetEntryCount() const {
 int SimpleBackendImpl::OpenEntry(const std::string& key,
                                  Entry** entry,
                                  const CompletionCallback& callback) {
-  return SimpleEntryImpl::OpenEntry(index_.get(), path_, key, entry, callback);
+  scoped_refptr<SimpleEntryImpl> simple_entry = CreateOrFindActiveEntry(key);
+  return simple_entry->OpenEntry(entry, callback);
 }
 
 int SimpleBackendImpl::CreateEntry(const std::string& key,
                                    Entry** entry,
                                    const CompletionCallback& callback) {
-  return SimpleEntryImpl::CreateEntry(index_.get(), path_, key, entry,
-                                      callback);
+  scoped_refptr<SimpleEntryImpl> simple_entry = CreateOrFindActiveEntry(key);
+  return simple_entry->CreateEntry(entry, callback);
 }
 
 int SimpleBackendImpl::DoomEntry(const std::string& key,
                                  const net::CompletionCallback& callback) {
-  return SimpleEntryImpl::DoomEntry(index_.get(), path_, key, callback);
+  scoped_refptr<SimpleEntryImpl> simple_entry = CreateOrFindActiveEntry(key);
+  return simple_entry->DoomEntry(callback);
 }
 
 int SimpleBackendImpl::DoomAllEntries(const CompletionCallback& callback) {
@@ -207,12 +215,41 @@ void SimpleBackendImpl::IndexReadyForDoom(Time initial_time,
     callback.Run(result);
     return;
   }
-  scoped_ptr<std::vector<uint64> > key_hashes(
+  scoped_ptr<std::vector<uint64> > removed_key_hashes(
       index_->RemoveEntriesBetween(initial_time, end_time).release());
+
+  // If any of the entries we are dooming are currently open, we need to remove
+  // them from |active_entries_|, so that attempts to create new entries will
+  // succeed and attempts to open them will fail.
+
+  // Construct a mapping by entry hash of |active_entries_|.
+  typedef std::map<uint64, SimpleEntryImpl*> EntryByHashMap;
+  EntryByHashMap active_entries_by_entry_hash;
+  for (EntryMap::const_iterator it = active_entries_.begin();
+       it != active_entries_.end(); ++it) {
+    if (SimpleEntryImpl* entry = it->second.get()) {
+      const uint64 entry_hash = simple_util::GetEntryHashKey(entry->key());
+      active_entries_by_entry_hash[entry_hash] = entry;
+    }
+  }
+
+  for (int i = removed_key_hashes->size() - 1; i >= 0; --i) {
+    EntryByHashMap::const_iterator it =
+        active_entries_by_entry_hash.find((*removed_key_hashes)[i]);
+    if (it == active_entries_by_entry_hash.end())
+      continue;
+    SimpleEntryImpl* entry = it->second;
+    entry->Doom();
+
+    (*removed_key_hashes)[i] = removed_key_hashes->back();
+    removed_key_hashes->resize(removed_key_hashes->size() - 1);
+  }
+
   scoped_ptr<int> new_result(new int());
   Closure task = base::Bind(&SimpleSynchronousEntry::DoomEntrySet,
-                            base::Passed(&key_hashes), path_, new_result.get());
-  Closure reply = base::Bind(CallCompletionCallback,
+                            base::Passed(&removed_key_hashes), path_,
+                            new_result.get());
+  Closure reply = base::Bind(&CallCompletionCallback,
                              callback, base::Passed(&new_result));
   WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
 }
@@ -287,6 +324,23 @@ void SimpleBackendImpl::ProvideDirectorySuggestBetterCacheSize(
   }
   io_thread->PostTask(FROM_HERE,
                       base::Bind(initialize_index_callback, max_size, rv));
+}
+
+scoped_refptr<SimpleEntryImpl> SimpleBackendImpl::CreateOrFindActiveEntry(
+    const std::string& key) {
+  std::pair<EntryMap::iterator, bool> insert_result =
+      active_entries_.insert(std::make_pair(key,
+                                            base::WeakPtr<SimpleEntryImpl>()));
+  EntryMap::iterator& it = insert_result.first;
+  if (insert_result.second)
+    DCHECK(!it->second);
+  if (!it->second) {
+    SimpleEntryImpl* entry = new SimpleEntryImpl(this, path_, key);
+    it->second = entry->AsWeakPtr();
+  }
+  DCHECK(it->second);
+  DCHECK_EQ(key, it->second->key());
+  return make_scoped_refptr(it->second.get());
 }
 
 }  // namespace disk_cache
