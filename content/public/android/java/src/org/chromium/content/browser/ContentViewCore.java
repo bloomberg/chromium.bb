@@ -219,20 +219,25 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         if (!isVSyncNotificationEnabled() && enabled) {
             mDidSignalVSyncUsingInputEvent = false;
         }
-        mVSyncSubscriberCount += enabled ? 1 : -1;
-        assert mVSyncSubscriberCount >= 0;
         if (mVSyncProvider != null) {
-            mVSyncProvider.setVSyncNotificationEnabled(mVSyncListener, mVSyncSubscriberCount > 0);
+            if (mVSyncSubscriberCount == 0 && enabled) {
+                mVSyncProvider.registerVSyncListener(mVSyncListener);
+            } else if (mVSyncSubscriberCount == 1 && !enabled) {
+                mVSyncProvider.unregisterVSyncListener(mVSyncListener);
+            }
+            mVSyncSubscriberCount += enabled ? 1 : -1;
+            assert mVSyncSubscriberCount >= 0;
         }
     }
 
     @CalledByNative
     private void resetVSyncNotification() {
         while (isVSyncNotificationEnabled()) setVSyncNotificationEnabled(false);
+        mVSyncSubscriberCount = 0;
     }
 
     private boolean isVSyncNotificationEnabled() {
-        return mVSyncSubscriberCount > 0;
+        return mVSyncProvider != null && mVSyncSubscriberCount > 0;
     }
 
     private final Context mContext;
@@ -706,6 +711,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
             nativeOnJavaContentViewCoreDestroyed(mNativeContentViewCore);
         }
         resetVSyncNotification();
+        mVSyncProvider = null;
         if (mViewAndroid != null) mViewAndroid.destroy();
         mNativeContentViewCore = 0;
         mContentSettings = null;

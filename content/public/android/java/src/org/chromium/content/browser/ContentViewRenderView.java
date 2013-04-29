@@ -103,9 +103,14 @@ public class ContentViewRenderView extends FrameLayout {
         }
 
         @Override
-        public void setVSyncNotificationEnabled(VSyncManager.Listener listener, boolean enabled) {
-            if (enabled && !mVSyncNotificationEnabled) mVSyncMonitor.requestUpdate();
-            mVSyncNotificationEnabled = enabled;
+        public void registerVSyncListener(VSyncManager.Listener listener) {
+            if (!mVSyncNotificationEnabled) mVSyncMonitor.requestUpdate();
+            mVSyncNotificationEnabled = true;
+        }
+
+        @Override
+        public void unregisterVSyncListener(VSyncManager.Listener listener) {
+            mVSyncNotificationEnabled = false;
         }
 
         void setVSyncListener(VSyncManager.Listener listener) {

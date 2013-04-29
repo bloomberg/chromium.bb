@@ -6,11 +6,13 @@ package org.chromium.content.browser;
 
 public abstract class VSyncManager {
     /**
-     * Interface for requesting notification of the display vsync signal.
-     * The provider will call Listener.onVSync() to notify about vsync.
+     * Interface for requesting notification of the display vsync signal. The provider will call
+     * Listener.onVSync() to notify about vsync. The number of registrations and unregistrations of
+     * a given listener must be balanced.
      */
     public static interface Provider {
-        void setVSyncNotificationEnabled(Listener listener, boolean enable);
+        void registerVSyncListener(Listener listener);
+        void unregisterVSyncListener(Listener listener);
     }
 
     /**
