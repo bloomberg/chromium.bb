@@ -811,11 +811,8 @@ public:
 
     bool isOutOfFlowRenderFlowThread() const { return renderer()->isOutOfFlowRenderFlowThread(); }
 
-#ifndef NDEBUG
-    String paintOrderListsAsText();
-#endif
     enum PaintOrderListType {BeforePromote, AfterPromote};
-    PassRefPtr<NodeList> paintOrderList(PaintOrderListType type);
+    void computePaintOrderList(PaintOrderListType type, Vector<RefPtr<Node> >&);
 
 private:
     enum CollectLayersBehavior { StopAtStackingContexts, StopAtStackingContainers };
@@ -838,8 +835,8 @@ private:
     bool acceleratedCompositingForOverflowScrollEnabled() const;
     void updateDescendantsAreContiguousInStackingOrder();
     void updateDescendantsAreContiguousInStackingOrderRecursive(const HashMap<const RenderLayer*, int>&, int& minIndex, int& maxIndex, int& count, bool firstIteration);
-    void collectBeforePromotionZOrderList(RenderLayer* ancestorStackingContext, OwnPtr<Vector<RenderLayer*> >& posZOrderListBeforePromote, OwnPtr<Vector<RenderLayer*> >& negZOrderListBeforePromote, size_t& posZOrderListSizeBeforePromote, size_t& negZOrderListSizeBeforePromote);
-    void collectAfterPromotionZOrderList(RenderLayer* ancestorStackingContext, OwnPtr<Vector<RenderLayer*> >& posZOrderListAfterPromote, OwnPtr<Vector<RenderLayer*> >& negZOrderListAfterPromote, size_t& posZOrderListSizeAfterPromote, size_t& negZOrderListSizeAfterPromote);
+    void collectBeforePromotionZOrderList(RenderLayer* ancestorStackingContext, OwnPtr<Vector<RenderLayer*> >& posZOrderListBeforePromote, OwnPtr<Vector<RenderLayer*> >& negZOrderListBeforePromote);
+    void collectAfterPromotionZOrderList(RenderLayer* ancestorStackingContext, OwnPtr<Vector<RenderLayer*> >& posZOrderListAfterPromote, OwnPtr<Vector<RenderLayer*> >& negZOrderListAfterPromote);
 
     void computeRepaintRects(const RenderLayerModelObject* repaintContainer, const RenderGeometryMap* = 0);
     void computeRepaintRectsIncludingDescendants();

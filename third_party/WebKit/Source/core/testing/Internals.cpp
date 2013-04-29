@@ -1591,7 +1591,9 @@ static PassRefPtr<NodeList> paintOrderList(Element* element, ExceptionCode& ec, 
         return 0;
     }
 
-    return layer->paintOrderList(type);
+    Vector<RefPtr<Node> > nodes;
+    layer->computePaintOrderList(type, nodes);
+    return StaticNodeList::adopt(nodes);
 }
 
 PassRefPtr<NodeList> Internals::paintOrderListBeforePromote(Element* element, ExceptionCode& ec)

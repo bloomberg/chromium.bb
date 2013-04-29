@@ -52,7 +52,6 @@
 #include "core/dom/DocumentEventQueue.h"
 #include "core/dom/OverflowEvent.h"
 #include "core/dom/ShadowRoot.h"
-#include "core/dom/StaticHashSetNodeList.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/editing/FrameSelection.h"
 #include "core/html/HTMLFrameElement.h"
@@ -647,31 +646,60 @@ static inline bool isPositionedContainer(const RenderLayer* layer)
     return layer->isRootLayer() || layerRenderer->isPositioned() || layer->hasTransform();
 }
 
-enum StackingOrderDirection { FromBackground, FromForeground };
-
-// We'd like to be able to iterate through a single paint order list, but for
-// efficiency's sake, we hang onto two lists instead (namely, the pos and neg
-// z-order lists produced by CollectLayers). This function allows us to index
-// into these two lists as if they were one. It also allows us to index into
-// this virtual list either from the start or from the end (i.e., in either
-// stacking order direction).
-static const RenderLayer* getStackingOrderElementAt(const Vector<RenderLayer*>* posZOrderList, const Vector<RenderLayer*>* negZOrderList, const StackingOrderDirection direction, const size_t index)
+void RenderLayer::collectBeforePromotionZOrderList(RenderLayer* ancestorStackingContext, OwnPtr<Vector<RenderLayer*> >& posZOrderListBeforePromote, OwnPtr<Vector<RenderLayer*> >& negZOrderListBeforePromote)
 {
-    size_t negZOrderListSize = negZOrderList ? negZOrderList->size() : 0;
+    // FIXME: TemporaryChange should support bit fields.
+    bool oldNeedsCompositedScrolling = m_needsCompositedScrolling;
+    bool oldIsNormalFlowOnly = m_isNormalFlowOnly;
 
-    if (direction == FromBackground) {
-        if (index < negZOrderListSize)
-            return negZOrderList->at(index);
+    m_needsCompositedScrolling = false;
+    m_isNormalFlowOnly = shouldBeNormalFlowOnly();
 
-        return posZOrderList->at(index - negZOrderListSize);
+    ancestorStackingContext->rebuildZOrderLists(StopAtStackingContexts, posZOrderListBeforePromote, negZOrderListBeforePromote, 0);
+
+    m_needsCompositedScrolling = oldNeedsCompositedScrolling;
+    m_isNormalFlowOnly = oldIsNormalFlowOnly;
+
+    const RenderLayer* positionedAncestor = parent();
+    while (positionedAncestor && !isPositionedContainer(positionedAncestor) && !positionedAncestor->isStackingContext())
+        positionedAncestor = positionedAncestor->parent();
+    if (positionedAncestor && (!isPositionedContainer(positionedAncestor) || positionedAncestor->isStackingContext()))
+        positionedAncestor = 0;
+
+    if (!posZOrderListBeforePromote)
+        posZOrderListBeforePromote = adoptPtr(new Vector<RenderLayer*>());
+    else if (posZOrderListBeforePromote->find(this) != notFound)
+        return;
+
+    // The current layer will appear in the z-order lists after promotion, so
+    // for a meaningful comparison, we must insert it in the z-order lists
+    // before promotion if it does not appear there already.
+    if (!positionedAncestor) {
+        posZOrderListBeforePromote->prepend(this);
+        return;
     }
 
-    size_t posZOrderListSize = posZOrderList ? posZOrderList->size() : 0;
+    for (size_t index = 0; index < posZOrderListBeforePromote->size(); index++) {
+        if (posZOrderListBeforePromote->at(index) == positionedAncestor) {
+            posZOrderListBeforePromote->insert(index + 1, this);
+            return;
+        }
+    }
+}
 
-    if (index < posZOrderListSize)
-        return posZOrderList->at(posZOrderListSize - index - 1);
+void RenderLayer::collectAfterPromotionZOrderList(RenderLayer* ancestorStackingContext, OwnPtr<Vector<RenderLayer*> >& posZOrderListAfterPromote, OwnPtr<Vector<RenderLayer*> >& negZOrderListAfterPromote)
+{
+    // FIXME: TemporaryChange should support bit fields.
+    bool oldNeedsCompositedScrolling = m_needsCompositedScrolling;
+    bool oldIsNormalFlowOnly = m_isNormalFlowOnly;
 
-    return negZOrderList->at(negZOrderListSize - (index - posZOrderListSize) - 1);
+    m_isNormalFlowOnly = false;
+    m_needsCompositedScrolling = true;
+
+    ancestorStackingContext->rebuildZOrderLists(StopAtStackingContexts, posZOrderListAfterPromote, negZOrderListAfterPromote, this);
+
+    m_needsCompositedScrolling = oldNeedsCompositedScrolling;
+    m_isNormalFlowOnly = oldIsNormalFlowOnly;
 }
 
 // Compute what positive and negative z-order lists would look like before and
@@ -688,7 +716,6 @@ static const RenderLayer* getStackingOrderElementAt(const Vector<RenderLayer*>* 
 // (a) xxxxx-----++a+++x
 // (b) xxx-----c++++++xx
 //
-//
 // Normally the current layer would be painted in the normal flow list if it
 // doesn't already appear in the positive z-order list. However, in the case
 // that the layer has a positioned ancestor, it will paint directly after the
@@ -702,164 +729,35 @@ static const RenderLayer* getStackingOrderElementAt(const Vector<RenderLayer*>* 
 // the layer's negative z-order children, so again, a promotion would cause a
 // change in paint order (causing the background to get painted after the
 // negative z-order children instead of before).
-void RenderLayer::collectBeforePromotionZOrderList(RenderLayer* ancestorStackingContext, OwnPtr<Vector<RenderLayer*> >& posZOrderListBeforePromote, OwnPtr<Vector<RenderLayer*> >& negZOrderListBeforePromote, size_t& posZOrderListSizeBeforePromote, size_t& negZOrderListSizeBeforePromote)
-{
-    // We can't use TemporaryChange<> here since m_needsCompositedScrolling and
-    // m_isNormalFlowOnly are both bitfields, so we have to do it the
-    // old-fashioned way.
-    bool oldNeedsCompositedScrolling = m_needsCompositedScrolling;
-    bool oldIsNormalFlowOnly = m_isNormalFlowOnly;
-
-    // Set the flag on the current layer, then rebuild ancestor stacking
-    // context's lists. This way, we can see the exact effects that promoting
-    // this layer would cause.
-    m_needsCompositedScrolling = false;
-    m_isNormalFlowOnly = shouldBeNormalFlowOnly();
-    ancestorStackingContext->rebuildZOrderLists(StopAtStackingContexts, posZOrderListBeforePromote, negZOrderListBeforePromote, 0);
-
-    m_needsCompositedScrolling = oldNeedsCompositedScrolling;
-    m_isNormalFlowOnly = oldIsNormalFlowOnly;
-
-
-    posZOrderListSizeBeforePromote = posZOrderListBeforePromote ? posZOrderListBeforePromote->size() : 0;
-    negZOrderListSizeBeforePromote = negZOrderListBeforePromote ? negZOrderListBeforePromote->size() : 0;
-
-    const RenderLayer* positionedAncestor = parent();
-    while (positionedAncestor && !isPositionedContainer(positionedAncestor) && !positionedAncestor->isStackingContext())
-        positionedAncestor = positionedAncestor->parent();
-    if (positionedAncestor && (!isPositionedContainer(positionedAncestor) || positionedAncestor->isStackingContext()))
-        positionedAncestor = 0;
-
-    bool currentLayerIsInPosZOrderListBeforePromote = false;
-
-    for (size_t index = 0; index < posZOrderListSizeBeforePromote; index++) {
-        if (posZOrderListBeforePromote->at(index) == this) {
-            currentLayerIsInPosZOrderListBeforePromote = true;
-            break;
-        }
-    }
-
-    // Insert this into the posZOrderListBeforePromote directly after the
-    // positioned ancestor, if there is one. Otherwise, add it to the very
-    // beginning.
-    //
-    // The current layer will appear in the z-order lists after promotion, so
-    // for a meaningful comparison, we must insert it in the z-order lists
-    // before promotion if it does not appear there already.
-    if (!currentLayerIsInPosZOrderListBeforePromote) {
-        if (!positionedAncestor) {
-            if (!posZOrderListBeforePromote)
-                posZOrderListBeforePromote = adoptPtr(new Vector<RenderLayer*>());
-
-            posZOrderListBeforePromote->prepend(this);
-            posZOrderListSizeBeforePromote++;
-        } else {
-            for (size_t index = 0; index < posZOrderListSizeBeforePromote; index++) {
-                if (posZOrderListBeforePromote->at(index) == positionedAncestor) {
-                    posZOrderListBeforePromote->insert(index + 1, this);
-                    posZOrderListSizeBeforePromote++;
-                    break;
-                }
-            }
-        }
-    }
-}
-
-void RenderLayer::collectAfterPromotionZOrderList(RenderLayer* ancestorStackingContext, OwnPtr<Vector<RenderLayer*> >& posZOrderListAfterPromote, OwnPtr<Vector<RenderLayer*> >& negZOrderListAfterPromote, size_t& posZOrderListSizeAfterPromote, size_t& negZOrderListSizeAfterPromote)
-{
-    // We can't use TemporaryChange<> here since m_needsCompositedScrolling and
-    // m_isNormalFlowOnly are both bitfields, so we have to do it the
-    // old-fashioned way.
-    bool oldNeedsCompositedScrolling = m_needsCompositedScrolling;
-    bool oldIsNormalFlowOnly = m_isNormalFlowOnly;
-
-    // Set the flag on the current layer, then rebuild ancestor stacking
-    // context's lists. This way, we can see the exact effects that promoting
-    // this layer would cause.
-    m_isNormalFlowOnly = false;
-    m_needsCompositedScrolling = true;
-    ancestorStackingContext->rebuildZOrderLists(StopAtStackingContexts, posZOrderListAfterPromote, negZOrderListAfterPromote, this);
-
-    m_needsCompositedScrolling = oldNeedsCompositedScrolling;
-    m_isNormalFlowOnly = oldIsNormalFlowOnly;
-
-    posZOrderListSizeAfterPromote = posZOrderListAfterPromote ? posZOrderListAfterPromote->size() : 0;
-    negZOrderListSizeAfterPromote = negZOrderListAfterPromote ? negZOrderListAfterPromote->size() : 0;
-}
-
-#ifndef NDEBUG
-String RenderLayer::paintOrderListsAsText()
-{
-    OwnPtr<Vector<RenderLayer*> > posZOrderListBeforePromote;
-    OwnPtr<Vector<RenderLayer*> > negZOrderListBeforePromote;
-    OwnPtr<Vector<RenderLayer*> > posZOrderListAfterPromote;
-    OwnPtr<Vector<RenderLayer*> > negZOrderListAfterPromote;
-    size_t posZOrderListSizeBeforePromote, negZOrderListSizeBeforePromote, posZOrderListSizeAfterPromote, negZOrderListSizeAfterPromote;
-
-    RenderLayer* stackingContext = ancestorStackingContext();
-
-    if (!stackingContext)
-        return String();
-
-    collectBeforePromotionZOrderList(stackingContext, posZOrderListBeforePromote, negZOrderListBeforePromote, posZOrderListSizeBeforePromote, negZOrderListSizeBeforePromote);
-    collectAfterPromotionZOrderList(stackingContext, posZOrderListAfterPromote, negZOrderListAfterPromote, posZOrderListSizeAfterPromote, negZOrderListSizeAfterPromote);
-
-    size_t sizeBeforePromote = posZOrderListSizeBeforePromote + negZOrderListSizeBeforePromote;
-    size_t sizeAfterPromote = posZOrderListSizeAfterPromote + negZOrderListSizeAfterPromote;
-
-    TextStream ts;
-
-    ts << "Layer: " << this << " \"" << debugName() << "\", z-index: " << renderer()->style()->zIndex() << "\n";
-
-    ts << "  stacking context's paint order list BEFORE promote:\n";
-    for (size_t index = 0; index < sizeBeforePromote; index++) {
-        const RenderLayer* layerBeforePromote = getStackingOrderElementAt(posZOrderListBeforePromote.get(), negZOrderListBeforePromote.get(), FromBackground, index);
-        ts << "    " << layerBeforePromote << " \"" << layerBeforePromote->debugName() << "\", z-index: " << layerBeforePromote->renderer()->style()->zIndex() << "\n";
-    }
-
-    ts << "  stacking context's paint order list AFTER promote:\n";
-    for (size_t index = 0; index < sizeAfterPromote; index++) {
-        const RenderLayer* layerAfterPromote = getStackingOrderElementAt(posZOrderListAfterPromote.get(), negZOrderListAfterPromote.get(), FromBackground, index);
-        ts << "    " << layerAfterPromote << " \"" << layerAfterPromote->debugName() << "\", z-index: " << layerAfterPromote->renderer()->style()->zIndex() << "\n";
-    }
-
-    return ts.release();
-}
-#endif
-
-PassRefPtr<NodeList> RenderLayer::paintOrderList(PaintOrderListType type)
+//
+void RenderLayer::computePaintOrderList(PaintOrderListType type, Vector<RefPtr<Node> >& list)
 {
     OwnPtr<Vector<RenderLayer*> > posZOrderList;
     OwnPtr<Vector<RenderLayer*> > negZOrderList;
-    size_t posZOrderListSize, negZOrderListSize;
 
     RenderLayer* stackingContext = ancestorStackingContext();
 
     if (!stackingContext)
-        return 0;
+        return;
 
-    switch(type) {
-        case BeforePromote:
-            collectBeforePromotionZOrderList(stackingContext, posZOrderList, negZOrderList, posZOrderListSize, negZOrderListSize);
-            break;
-
-        case AfterPromote:
-            collectAfterPromotionZOrderList(stackingContext, posZOrderList, negZOrderList, posZOrderListSize, negZOrderListSize);
-            break;
-
-        default:
-            return 0;
+    switch (type) {
+    case BeforePromote:
+        collectBeforePromotionZOrderList(stackingContext, posZOrderList, negZOrderList);
+        break;
+    case AfterPromote:
+        collectAfterPromotionZOrderList(stackingContext, posZOrderList, negZOrderList);
+        break;
     }
 
-    size_t size = posZOrderListSize + negZOrderListSize;
-
-    ListHashSet<RefPtr<Node> > list;
-    for (size_t index = 0; index < size; index++) {
-        const RenderLayer* layer = getStackingOrderElementAt(posZOrderList.get(), negZOrderList.get(), FromBackground, index);
-        list.add(layer->renderer()->node());
+    if (negZOrderList) {
+        for (size_t index = 0; index < negZOrderList->size(); ++index)
+            list.append(negZOrderList->at(index)->renderer()->node());
     }
 
-    return StaticHashSetNodeList::adopt(list);
+    if (posZOrderList) {
+        for (size_t index = 0; index < posZOrderList->size(); ++index)
+            list.append(posZOrderList->at(index)->renderer()->node());
+    }
 }
 
 void RenderLayer::computeRepaintRects(const RenderLayerModelObject* repaintContainer, const RenderGeometryMap* geometryMap)
