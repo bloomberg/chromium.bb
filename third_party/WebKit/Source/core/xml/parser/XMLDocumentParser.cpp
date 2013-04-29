@@ -101,6 +101,140 @@ static inline AtomicString toAtomicString(const xmlChar* string)
     return AtomicString::fromUTF8(reinterpret_cast<const char*>(string));
 }
 
+struct PendingStartElementNSCallback : public XMLDocumentParser::PendingCallback {
+    virtual ~PendingStartElementNSCallback()
+    {
+        xmlFree(xmlLocalName);
+        xmlFree(xmlPrefix);
+        xmlFree(xmlURI);
+        for (int i = 0; i < nb_namespaces * 2; i++)
+            xmlFree(namespaces[i]);
+        xmlFree(namespaces);
+        for (int i = 0; i < nb_attributes; i++)
+            for (int j = 0; j < 4; j++)
+                xmlFree(attributes[i * 5 + j]);
+        xmlFree(attributes);
+    }
+
+    virtual void call(XMLDocumentParser* parser)
+    {
+        parser->startElementNs(xmlLocalName, xmlPrefix, xmlURI,
+                                  nb_namespaces, const_cast<const xmlChar**>(namespaces),
+                                  nb_attributes, nb_defaulted, const_cast<const xmlChar**>(attributes));
+    }
+
+    xmlChar* xmlLocalName;
+    xmlChar* xmlPrefix;
+    xmlChar* xmlURI;
+    int nb_namespaces;
+    xmlChar** namespaces;
+    int nb_attributes;
+    int nb_defaulted;
+    xmlChar** attributes;
+};
+
+struct PendingEndElementNSCallback : public XMLDocumentParser::PendingCallback {
+    virtual void call(XMLDocumentParser* parser)
+    {
+        parser->endElementNs();
+    }
+};
+
+struct PendingCharactersCallback : public XMLDocumentParser::PendingCallback {
+    virtual ~PendingCharactersCallback()
+    {
+        xmlFree(s);
+    }
+
+    virtual void call(XMLDocumentParser* parser)
+    {
+        parser->characters(s, len);
+    }
+
+    xmlChar* s;
+    int len;
+};
+
+struct PendingProcessingInstructionCallback : public XMLDocumentParser::PendingCallback {
+    virtual ~PendingProcessingInstructionCallback()
+    {
+        xmlFree(target);
+        xmlFree(data);
+    }
+
+    virtual void call(XMLDocumentParser* parser)
+    {
+        parser->processingInstruction(target, data);
+    }
+
+    xmlChar* target;
+    xmlChar* data;
+};
+
+struct PendingCDATABlockCallback : public XMLDocumentParser::PendingCallback {
+    virtual ~PendingCDATABlockCallback()
+    {
+        xmlFree(s);
+    }
+
+    virtual void call(XMLDocumentParser* parser)
+    {
+        parser->cdataBlock(s, len);
+    }
+
+    xmlChar* s;
+    int len;
+};
+
+struct PendingCommentCallback : public XMLDocumentParser::PendingCallback {
+    virtual ~PendingCommentCallback()
+    {
+        xmlFree(s);
+    }
+
+    virtual void call(XMLDocumentParser* parser)
+    {
+        parser->comment(s);
+    }
+
+    xmlChar* s;
+};
+
+struct PendingInternalSubsetCallback : public XMLDocumentParser::PendingCallback {
+    virtual ~PendingInternalSubsetCallback()
+    {
+        xmlFree(name);
+        xmlFree(externalID);
+        xmlFree(systemID);
+    }
+
+    virtual void call(XMLDocumentParser* parser)
+    {
+        parser->internalSubset(name, externalID, systemID);
+    }
+
+    xmlChar* name;
+    xmlChar* externalID;
+    xmlChar* systemID;
+};
+
+struct PendingErrorCallback: public XMLDocumentParser::PendingCallback {
+    virtual ~PendingErrorCallback()
+    {
+        xmlFree(message);
+    }
+
+    virtual void call(XMLDocumentParser* parser)
+    {
+        parser->handleError(type, reinterpret_cast<char*>(message), TextPosition(lineNumber, columnNumber));
+    }
+
+    XMLErrors::ErrorType type;
+    xmlChar* message;
+    OrdinalNumber lineNumber;
+    OrdinalNumber columnNumber;
+};
+
 void XMLDocumentParser::pushCurrentNode(ContainerNode* n)
 {
     ASSERT(n);
@@ -325,266 +459,103 @@ bool XMLDocumentParser::parseDocumentFragment(const String& chunk, DocumentFragm
     return wellFormed; // appendFragmentSource()'s wellFormed is more permissive than wellFormed().
 }
 
-class PendingCallbacks {
-    WTF_MAKE_NONCOPYABLE(PendingCallbacks); WTF_MAKE_FAST_ALLOCATED;
-public:
-    ~PendingCallbacks() { }
-    static PassOwnPtr<PendingCallbacks> create()
-    {
-        return adoptPtr(new PendingCallbacks);
+void XMLDocumentParser::appendStartElementNSCallback(const xmlChar* xmlLocalName, const xmlChar* xmlPrefix, const xmlChar* xmlURI, int nb_namespaces,
+                                  const xmlChar** namespaces, int nb_attributes, int nb_defaulted, const xmlChar** attributes)
+{
+    OwnPtr<PendingStartElementNSCallback> callback = adoptPtr(new PendingStartElementNSCallback);
+
+    callback->xmlLocalName = xmlStrdup(xmlLocalName);
+    callback->xmlPrefix = xmlStrdup(xmlPrefix);
+    callback->xmlURI = xmlStrdup(xmlURI);
+    callback->nb_namespaces = nb_namespaces;
+    callback->namespaces = static_cast<xmlChar**>(xmlMalloc(sizeof(xmlChar*) * nb_namespaces * 2));
+    for (int i = 0; i < nb_namespaces * 2 ; i++)
+        callback->namespaces[i] = xmlStrdup(namespaces[i]);
+    callback->nb_attributes = nb_attributes;
+    callback->nb_defaulted = nb_defaulted;
+    callback->attributes = static_cast<xmlChar**>(xmlMalloc(sizeof(xmlChar*) * nb_attributes * 5));
+    for (int i = 0; i < nb_attributes; i++) {
+        // Each attribute has 5 elements in the array:
+        // name, prefix, uri, value and an end pointer.
+
+        for (int j = 0; j < 3; j++)
+            callback->attributes[i * 5 + j] = xmlStrdup(attributes[i * 5 + j]);
+
+        int len = attributes[i * 5 + 4] - attributes[i * 5 + 3];
+
+        callback->attributes[i * 5 + 3] = xmlStrndup(attributes[i * 5 + 3], len);
+        callback->attributes[i * 5 + 4] = callback->attributes[i * 5 + 3] + len;
     }
 
-    void appendStartElementNSCallback(const xmlChar* xmlLocalName, const xmlChar* xmlPrefix, const xmlChar* xmlURI, int nb_namespaces,
-                                      const xmlChar** namespaces, int nb_attributes, int nb_defaulted, const xmlChar** attributes)
-    {
-        OwnPtr<PendingStartElementNSCallback> callback = adoptPtr(new PendingStartElementNSCallback);
+    m_pendingCallbacks.append(callback.release());
+}
 
-        callback->xmlLocalName = xmlStrdup(xmlLocalName);
-        callback->xmlPrefix = xmlStrdup(xmlPrefix);
-        callback->xmlURI = xmlStrdup(xmlURI);
-        callback->nb_namespaces = nb_namespaces;
-        callback->namespaces = static_cast<xmlChar**>(xmlMalloc(sizeof(xmlChar*) * nb_namespaces * 2));
-        for (int i = 0; i < nb_namespaces * 2 ; i++)
-            callback->namespaces[i] = xmlStrdup(namespaces[i]);
-        callback->nb_attributes = nb_attributes;
-        callback->nb_defaulted = nb_defaulted;
-        callback->attributes = static_cast<xmlChar**>(xmlMalloc(sizeof(xmlChar*) * nb_attributes * 5));
-        for (int i = 0; i < nb_attributes; i++) {
-            // Each attribute has 5 elements in the array:
-            // name, prefix, uri, value and an end pointer.
+void XMLDocumentParser::appendEndElementNSCallback()
+{
+    m_pendingCallbacks.append(adoptPtr(new PendingEndElementNSCallback));
+}
 
-            for (int j = 0; j < 3; j++)
-                callback->attributes[i * 5 + j] = xmlStrdup(attributes[i * 5 + j]);
+void XMLDocumentParser::appendCharactersCallback(const xmlChar* s, int len)
+{
+    OwnPtr<PendingCharactersCallback> callback = adoptPtr(new PendingCharactersCallback);
 
-            int len = attributes[i * 5 + 4] - attributes[i * 5 + 3];
+    callback->s = xmlStrndup(s, len);
+    callback->len = len;
 
-            callback->attributes[i * 5 + 3] = xmlStrndup(attributes[i * 5 + 3], len);
-            callback->attributes[i * 5 + 4] = callback->attributes[i * 5 + 3] + len;
-        }
+    m_pendingCallbacks.append(callback.release());
+}
 
-        m_callbacks.append(callback.release());
-    }
+void XMLDocumentParser::appendProcessingInstructionCallback(const xmlChar* target, const xmlChar* data)
+{
+    OwnPtr<PendingProcessingInstructionCallback> callback = adoptPtr(new PendingProcessingInstructionCallback);
 
-    void appendEndElementNSCallback()
-    {
-        m_callbacks.append(adoptPtr(new PendingEndElementNSCallback));
-    }
+    callback->target = xmlStrdup(target);
+    callback->data = xmlStrdup(data);
 
-    void appendCharactersCallback(const xmlChar* s, int len)
-    {
-        OwnPtr<PendingCharactersCallback> callback = adoptPtr(new PendingCharactersCallback);
+    m_pendingCallbacks.append(callback.release());
+}
 
-        callback->s = xmlStrndup(s, len);
-        callback->len = len;
+void XMLDocumentParser::appendCDATABlockCallback(const xmlChar* s, int len)
+{
+    OwnPtr<PendingCDATABlockCallback> callback = adoptPtr(new PendingCDATABlockCallback);
 
-        m_callbacks.append(callback.release());
-    }
+    callback->s = xmlStrndup(s, len);
+    callback->len = len;
 
-    void appendProcessingInstructionCallback(const xmlChar* target, const xmlChar* data)
-    {
-        OwnPtr<PendingProcessingInstructionCallback> callback = adoptPtr(new PendingProcessingInstructionCallback);
+    m_pendingCallbacks.append(callback.release());
+}
 
-        callback->target = xmlStrdup(target);
-        callback->data = xmlStrdup(data);
+void XMLDocumentParser::appendCommentCallback(const xmlChar* s)
+{
+    OwnPtr<PendingCommentCallback> callback = adoptPtr(new PendingCommentCallback);
 
-        m_callbacks.append(callback.release());
-    }
+    callback->s = xmlStrdup(s);
 
-    void appendCDATABlockCallback(const xmlChar* s, int len)
-    {
-        OwnPtr<PendingCDATABlockCallback> callback = adoptPtr(new PendingCDATABlockCallback);
+    m_pendingCallbacks.append(callback.release());
+}
 
-        callback->s = xmlStrndup(s, len);
-        callback->len = len;
+void XMLDocumentParser::appendInternalSubsetCallback(const xmlChar* name, const xmlChar* externalID, const xmlChar* systemID)
+{
+    OwnPtr<PendingInternalSubsetCallback> callback = adoptPtr(new PendingInternalSubsetCallback);
 
-        m_callbacks.append(callback.release());
-    }
+    callback->name = xmlStrdup(name);
+    callback->externalID = xmlStrdup(externalID);
+    callback->systemID = xmlStrdup(systemID);
 
-    void appendCommentCallback(const xmlChar* s)
-    {
-        OwnPtr<PendingCommentCallback> callback = adoptPtr(new PendingCommentCallback);
+    m_pendingCallbacks.append(callback.release());
+}
 
-        callback->s = xmlStrdup(s);
+void XMLDocumentParser::appendErrorCallback(XMLErrors::ErrorType type, const xmlChar* message, OrdinalNumber lineNumber, OrdinalNumber columnNumber)
+{
+    OwnPtr<PendingErrorCallback> callback = adoptPtr(new PendingErrorCallback);
 
-        m_callbacks.append(callback.release());
-    }
+    callback->message = xmlStrdup(message);
+    callback->type = type;
+    callback->lineNumber = lineNumber;
+    callback->columnNumber = columnNumber;
 
-    void appendInternalSubsetCallback(const xmlChar* name, const xmlChar* externalID, const xmlChar* systemID)
-    {
-        OwnPtr<PendingInternalSubsetCallback> callback = adoptPtr(new PendingInternalSubsetCallback);
-
-        callback->name = xmlStrdup(name);
-        callback->externalID = xmlStrdup(externalID);
-        callback->systemID = xmlStrdup(systemID);
-
-        m_callbacks.append(callback.release());
-    }
-
-    void appendErrorCallback(XMLErrors::ErrorType type, const xmlChar* message, OrdinalNumber lineNumber, OrdinalNumber columnNumber)
-    {
-        OwnPtr<PendingErrorCallback> callback = adoptPtr(new PendingErrorCallback);
-
-        callback->message = xmlStrdup(message);
-        callback->type = type;
-        callback->lineNumber = lineNumber;
-        callback->columnNumber = columnNumber;
-
-        m_callbacks.append(callback.release());
-    }
-
-    void callAndRemoveFirstCallback(XMLDocumentParser* parser)
-    {
-        OwnPtr<PendingCallback> callback = m_callbacks.takeFirst();
-        callback->call(parser);
-    }
-
-    bool isEmpty() const { return m_callbacks.isEmpty(); }
-
-private:
-    PendingCallbacks() { }
-
-    struct PendingCallback {
-        virtual ~PendingCallback() { }
-        virtual void call(XMLDocumentParser* parser) = 0;
-    };
-
-    struct PendingStartElementNSCallback : public PendingCallback {
-        virtual ~PendingStartElementNSCallback()
-        {
-            xmlFree(xmlLocalName);
-            xmlFree(xmlPrefix);
-            xmlFree(xmlURI);
-            for (int i = 0; i < nb_namespaces * 2; i++)
-                xmlFree(namespaces[i]);
-            xmlFree(namespaces);
-            for (int i = 0; i < nb_attributes; i++)
-                for (int j = 0; j < 4; j++)
-                    xmlFree(attributes[i * 5 + j]);
-            xmlFree(attributes);
-        }
-
-        virtual void call(XMLDocumentParser* parser)
-        {
-            parser->startElementNs(xmlLocalName, xmlPrefix, xmlURI,
-                                      nb_namespaces, const_cast<const xmlChar**>(namespaces),
-                                      nb_attributes, nb_defaulted, const_cast<const xmlChar**>(attributes));
-        }
-
-        xmlChar* xmlLocalName;
-        xmlChar* xmlPrefix;
-        xmlChar* xmlURI;
-        int nb_namespaces;
-        xmlChar** namespaces;
-        int nb_attributes;
-        int nb_defaulted;
-        xmlChar** attributes;
-    };
-
-    struct PendingEndElementNSCallback : public PendingCallback {
-        virtual void call(XMLDocumentParser* parser)
-        {
-            parser->endElementNs();
-        }
-    };
-
-    struct PendingCharactersCallback : public PendingCallback {
-        virtual ~PendingCharactersCallback()
-        {
-            xmlFree(s);
-        }
-
-        virtual void call(XMLDocumentParser* parser)
-        {
-            parser->characters(s, len);
-        }
-
-        xmlChar* s;
-        int len;
-    };
-
-    struct PendingProcessingInstructionCallback : public PendingCallback {
-        virtual ~PendingProcessingInstructionCallback()
-        {
-            xmlFree(target);
-            xmlFree(data);
-        }
-
-        virtual void call(XMLDocumentParser* parser)
-        {
-            parser->processingInstruction(target, data);
-        }
-
-        xmlChar* target;
-        xmlChar* data;
-    };
-
-    struct PendingCDATABlockCallback : public PendingCallback {
-        virtual ~PendingCDATABlockCallback()
-        {
-            xmlFree(s);
-        }
-
-        virtual void call(XMLDocumentParser* parser)
-        {
-            parser->cdataBlock(s, len);
-        }
-
-        xmlChar* s;
-        int len;
-    };
-
-    struct PendingCommentCallback : public PendingCallback {
-        virtual ~PendingCommentCallback()
-        {
-            xmlFree(s);
-        }
-
-        virtual void call(XMLDocumentParser* parser)
-        {
-            parser->comment(s);
-        }
-
-        xmlChar* s;
-    };
-
-    struct PendingInternalSubsetCallback : public PendingCallback {
-        virtual ~PendingInternalSubsetCallback()
-        {
-            xmlFree(name);
-            xmlFree(externalID);
-            xmlFree(systemID);
-        }
-
-        virtual void call(XMLDocumentParser* parser)
-        {
-            parser->internalSubset(name, externalID, systemID);
-        }
-
-        xmlChar* name;
-        xmlChar* externalID;
-        xmlChar* systemID;
-    };
-
-    struct PendingErrorCallback: public PendingCallback {
-        virtual ~PendingErrorCallback()
-        {
-            xmlFree(message);
-        }
-
-        virtual void call(XMLDocumentParser* parser)
-        {
-            parser->handleError(type, reinterpret_cast<char*>(message), TextPosition(lineNumber, columnNumber));
-        }
-
-        XMLErrors::ErrorType type;
-        xmlChar* message;
-        OrdinalNumber lineNumber;
-        OrdinalNumber columnNumber;
-    };
-
-    Deque<OwnPtr<PendingCallback> > m_callbacks;
-};
-// --------------------------------
+    m_pendingCallbacks.append(callback.release());
+}
 
 static int globalDescriptor = 0;
 static ThreadIdentifier libxmlLoaderThread = 0;
@@ -802,7 +773,6 @@ XMLDocumentParser::XMLDocumentParser(Document* document, FrameView* frameView)
     : ScriptableDocumentParser(document)
     , m_view(frameView)
     , m_context(0)
-    , m_pendingCallbacks(PendingCallbacks::create())
     , m_depthTriggeringEntityExpansion(-1)
     , m_isParsingEntityDeclaration(false)
     , m_currentNode(document)
@@ -825,7 +795,6 @@ XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment, Element* parent
     : ScriptableDocumentParser(fragment->document(), parserContentPolicy)
     , m_view(0)
     , m_context(0)
-    , m_pendingCallbacks(PendingCallbacks::create())
     , m_depthTriggeringEntityExpansion(-1)
     , m_isParsingEntityDeclaration(false)
     , m_currentNode(fragment)
@@ -997,7 +966,7 @@ void XMLDocumentParser::startElementNs(const xmlChar* xmlLocalName, const xmlCha
         return;
 
     if (m_parserPaused) {
-        m_pendingCallbacks->appendStartElementNSCallback(xmlLocalName, xmlPrefix, xmlURI, nb_namespaces, libxmlNamespaces,
+        appendStartElementNSCallback(xmlLocalName, xmlPrefix, xmlURI, nb_namespaces, libxmlNamespaces,
                                                          nb_attributes, nb_defaulted, libxmlAttributes);
         return;
     }
@@ -1076,7 +1045,7 @@ void XMLDocumentParser::endElementNs()
         return;
 
     if (m_parserPaused) {
-        m_pendingCallbacks->appendEndElementNSCallback();
+        appendEndElementNSCallback();
         return;
     }
 
@@ -1154,7 +1123,7 @@ void XMLDocumentParser::characters(const xmlChar* s, int len)
         return;
 
     if (m_parserPaused) {
-        m_pendingCallbacks->appendCharactersCallback(s, len);
+        appendCharactersCallback(s, len);
         return;
     }
 
@@ -1178,7 +1147,7 @@ void XMLDocumentParser::error(XMLErrors::ErrorType type, const char* message, va
 #endif
 
     if (m_parserPaused)
-        m_pendingCallbacks->appendErrorCallback(type, reinterpret_cast<const xmlChar*>(m), lineNumber(), columnNumber());
+        appendErrorCallback(type, reinterpret_cast<const xmlChar*>(m), lineNumber(), columnNumber());
     else
         handleError(type, m, textPosition());
 
@@ -1193,7 +1162,7 @@ void XMLDocumentParser::processingInstruction(const xmlChar* target, const xmlCh
         return;
 
     if (m_parserPaused) {
-        m_pendingCallbacks->appendProcessingInstructionCallback(target, data);
+        appendProcessingInstructionCallback(target, data);
         return;
     }
 
@@ -1227,7 +1196,7 @@ void XMLDocumentParser::cdataBlock(const xmlChar* s, int len)
         return;
 
     if (m_parserPaused) {
-        m_pendingCallbacks->appendCDATABlockCallback(s, len);
+        appendCDATABlockCallback(s, len);
         return;
     }
 
@@ -1245,7 +1214,7 @@ void XMLDocumentParser::comment(const xmlChar* s)
         return;
 
     if (m_parserPaused) {
-        m_pendingCallbacks->appendCommentCallback(s);
+        appendCommentCallback(s);
         return;
     }
 
@@ -1292,7 +1261,7 @@ void XMLDocumentParser::internalSubset(const xmlChar* name, const xmlChar* exter
         return;
 
     if (m_parserPaused) {
-        m_pendingCallbacks->appendInternalSubsetCallback(name, externalID, systemID);
+        appendInternalSubsetCallback(name, externalID, systemID);
         return;
     }
 
@@ -1659,8 +1628,9 @@ void XMLDocumentParser::resumeParsing()
     m_parserPaused = false;
 
     // First, execute any pending callbacks
-    while (!m_pendingCallbacks->isEmpty()) {
-        m_pendingCallbacks->callAndRemoveFirstCallback(this);
+    while (!m_pendingCallbacks.isEmpty()) {
+        OwnPtr<PendingCallback> callback = m_pendingCallbacks.takeFirst();
+        callback->call(this);
 
         // A callback paused the parser
         if (m_parserPaused)
@@ -1677,7 +1647,7 @@ void XMLDocumentParser::resumeParsing()
 
     // Finally, if finish() has been called and write() didn't result
     // in any further callbacks being queued, call end()
-    if (m_finishCalled && m_pendingCallbacks->isEmpty())
+    if (m_finishCalled && m_pendingCallbacks.isEmpty())
         end();
 }
 

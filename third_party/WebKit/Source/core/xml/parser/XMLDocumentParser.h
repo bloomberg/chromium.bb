@@ -46,7 +46,6 @@ class DocumentFragment;
 class Document;
 class Element;
 class FrameView;
-class PendingCallbacks;
 class Text;
 
     class XMLParserContext : public RefCounted<XMLParserContext> {
@@ -92,6 +91,11 @@ class Text;
         TextPosition textPosition() const;
 
         static bool supportsXMLVersion(const String&);
+
+        struct PendingCallback {
+            virtual ~PendingCallback() { }
+            virtual void call(XMLDocumentParser*) = 0;
+        };
 
     private:
         XMLDocumentParser(Document*, FrameView* = 0);
@@ -151,13 +155,23 @@ class Text;
         void doWrite(const String&);
         void doEnd();
 
+        void appendStartElementNSCallback(const xmlChar* xmlLocalName, const xmlChar* xmlPrefix, const xmlChar* xmlURI, int nb_namespaces,
+                                      const xmlChar** namespaces, int nb_attributes, int nb_defaulted, const xmlChar** attributes);
+        void appendEndElementNSCallback();
+        void appendCharactersCallback(const xmlChar* s, int len);
+        void appendProcessingInstructionCallback(const xmlChar* target, const xmlChar* data);
+        void appendCDATABlockCallback(const xmlChar* s, int len);
+        void appendCommentCallback(const xmlChar* s);
+        void appendInternalSubsetCallback(const xmlChar* name, const xmlChar* externalID, const xmlChar* systemID);
+        void appendErrorCallback(XMLErrors::ErrorType type, const xmlChar* message, OrdinalNumber lineNumber, OrdinalNumber columnNumber);
+
         FrameView* m_view;
 
         SegmentedString m_originalSourceForTransform;
 
         xmlParserCtxtPtr context() const { return m_context ? m_context->context() : 0; };
         RefPtr<XMLParserContext> m_context;
-        OwnPtr<PendingCallbacks> m_pendingCallbacks;
+        Deque<OwnPtr<PendingCallback> > m_pendingCallbacks;
         Vector<xmlChar> m_bufferedText;
         int m_depthTriggeringEntityExpansion;
         bool m_isParsingEntityDeclaration;
