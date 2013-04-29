@@ -15,19 +15,21 @@ BoxFilterInterpreter::BoxFilterInterpreter(PropRegistry* prop_reg,
                                            Interpreter* next,
                                            Tracer* tracer)
     : FilterInterpreter(NULL, next, tracer, false),
-      box_width_(prop_reg, "Box Width", 0.0) {
+      box_width_(prop_reg, "Box Width", 0.0),
+      box_height_(prop_reg, "Box Height", 0.0) {
   InitName();
 }
 
 void BoxFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                              stime_t* timeout) {
-  if (box_width_.val_ == 0.0) {
+  if (box_width_.val_ == 0.0 && box_height_.val_ == 0.0) {
     next_->SyncInterpret(hwstate, timeout);
     return;
   }
   RemoveMissingIdsFromMap(&previous_output_, *hwstate);
 
   const float kHalfWidth = box_width_.val_ * 0.5;
+  const float kHalfHeight = box_height_.val_ * 0.5;
 
   for (size_t i = 0; i < hwstate->finger_cnt; i++) {
     FingerState& fs = hwstate->fingers[i];
@@ -37,6 +39,7 @@ void BoxFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
     const FingerState& prev_out = previous_output_[fs.tracking_id];
     float FingerState::*fields[] = { &FingerState::position_x,
                                      &FingerState::position_y };
+    const float kBounds[] = { kHalfWidth, kHalfHeight };
     unsigned warp[] = { GESTURES_FINGER_WARP_X_MOVE,
                         GESTURES_FINGER_WARP_Y_MOVE };
     for (size_t f_idx = 0; f_idx < arraysize(fields); f_idx++) {
@@ -45,14 +48,15 @@ void BoxFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
       float FingerState::*field = fields[f_idx];
       float prev_out_val = prev_out.*field;
       float val = fs.*field;
+      float bound = kBounds[f_idx];
 
-      if (prev_out_val - kHalfWidth < val && val < prev_out_val + kHalfWidth) {
+      if (prev_out_val - bound < val && val < prev_out_val + bound) {
         // keep box in place
         fs.*field = prev_out_val;
       } else if (val > prev_out_val) {
-        fs.*field -= kHalfWidth;
+        fs.*field -= bound;
       } else {
-        fs.*field += kHalfWidth;
+        fs.*field += bound;
       }
     }
   }

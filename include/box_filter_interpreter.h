@@ -20,11 +20,12 @@ namespace gestures {
 // This filter interpreter applies simple "box" algorithm to fingers as they
 // pass through the filter. The purpose is to filter noisy input.
 // The algorithm is: For each axis:
-// - For each input point, compare distance to previous output point for
+// - For each input point, compare X distance to previous output point for
 //   the finger.
-// - If the distance is under box_width_ / 2, report the old location.
+// - If the X distance is under box_width_ / 2, report the old location.
 // - Report the new point shifted box_width_ / 2 toward the previous
 //   output point.
+// - Apply box_height_ to Y distance.
 //
 // The way to think about this is that there is a box around the previous
 // output point with a width and height of box_width_. If a new point is
@@ -45,6 +46,7 @@ class BoxFilterInterpreter : public FilterInterpreter, public PropertyDelegate {
 
  private:
   DoubleProperty box_width_;
+  DoubleProperty box_height_;
 
   map<short, FingerState, kMaxFingers> previous_output_;
 };

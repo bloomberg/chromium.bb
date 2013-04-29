@@ -54,6 +54,7 @@ TEST(BoxFilterInterpreterTest, SimpleTest) {
   BoxFilterInterpreter interpreter(NULL, base_interpreter, NULL);
 
   interpreter.box_width_.val_ = 1.0;
+  interpreter.box_height_.val_ = 1.0;
 
   HardwareProperties hwprops = {
     0, 0, 100, 100,  // left, top, right, bottom
