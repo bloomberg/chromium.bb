@@ -145,26 +145,6 @@ class GoogleServiceAuthError {
       const GURL& captcha_image_url,
       const GURL& captcha_unlock_url);
 
-  // Construct a CAPTCHA_REQUIRED error with CAPTCHA challenge data from the
-  // ClientOAuth endpoint.
-  static GoogleServiceAuthError FromCaptchaChallenge(
-      const std::string& captcha_token,
-      const GURL& captcha_audio_url,
-      const GURL& captcha_image_url,
-      int image_width,
-      int image_height);
-
-  // Construct a TWO_FACTOR error with second-factor challenge data.
-  static GoogleServiceAuthError FromSecondFactorChallenge(
-      const std::string& captcha_token,
-      const std::string& prompt_text,
-      const std::string& alternate_text,
-      int field_length);
-
-  // Construct an INVALID_GAIA_CREDENTIALS error from a ClientOAuth response.
-  // |data| is the JSON response from the server explaning the error.
-  static GoogleServiceAuthError FromClientOAuthError(const std::string& data);
-
   // Provided for convenience for clients needing to reset an instance to NONE.
   // (avoids err_ = GoogleServiceAuthError(GoogleServiceAuthError::NONE), due
   // to explicit class and State enum relation. Note: shouldn't be inlined!

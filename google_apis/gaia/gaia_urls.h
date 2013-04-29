@@ -34,7 +34,6 @@ class GaiaUrls {
 
   const std::string& oauth1_login_scope();
   const std::string& oauth_wrap_bridge_user_info_scope();
-  const std::string& client_oauth_url();
 
   const std::string& oauth2_chrome_client_id();
   const std::string& oauth2_chrome_client_secret();
@@ -72,7 +71,6 @@ class GaiaUrls {
 
   std::string oauth1_login_scope_;
   std::string oauth_wrap_bridge_user_info_scope_;
-  std::string client_oauth_url_;
 
   std::string oauth2_chrome_client_id_;
   std::string oauth2_chrome_client_secret_;

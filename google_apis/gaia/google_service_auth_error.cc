@@ -96,49 +96,6 @@ GoogleServiceAuthError GoogleServiceAuthError::FromClientLoginCaptchaChallenge(
                                 captcha_image_url, captcha_unlock_url, 0, 0);
 }
 
-// static
-GoogleServiceAuthError GoogleServiceAuthError::FromCaptchaChallenge(
-    const std::string& captcha_token,
-    const GURL& captcha_audio_url,
-    const GURL& captcha_image_url,
-    int image_width,
-    int image_height) {
- return GoogleServiceAuthError(CAPTCHA_REQUIRED, captcha_token,
-                               captcha_audio_url, captcha_image_url,
-                               GURL(), image_width, image_height);
-}
-
-// static
-GoogleServiceAuthError GoogleServiceAuthError::FromSecondFactorChallenge(
-    const std::string& captcha_token,
-    const std::string& prompt_text,
-    const std::string& alternate_text,
-    int field_length) {
- return GoogleServiceAuthError(TWO_FACTOR, captcha_token, prompt_text,
-                               alternate_text, field_length);
-}
-
-// static
-GoogleServiceAuthError GoogleServiceAuthError::FromClientOAuthError(
-    const std::string& data) {
-  scoped_ptr<base::Value> value(base::JSONReader::Read(data));
-  if (!value.get() || value->GetType() != base::Value::TYPE_DICTIONARY)
-    return GoogleServiceAuthError(CONNECTION_FAILED, 0);
-
-  DictionaryValue* dict = static_cast<DictionaryValue*>(value.get());
-
-  std::string cause;
-  if (!dict->GetStringWithoutPathExpansion("cause", &cause))
-    return GoogleServiceAuthError(CONNECTION_FAILED, 0);
-
-  // The explanation field is optional.
-  std::string explanation;
-  if (!dict->GetStringWithoutPathExpansion("explanation", &explanation))
-    explanation.clear();
-
- return GoogleServiceAuthError(explanation);
-}
-
 GoogleServiceAuthError GoogleServiceAuthError::AuthErrorNone() {
   return GoogleServiceAuthError(NONE);
 }

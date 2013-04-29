@@ -147,38 +147,6 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   // called on the consumer on the original thread.
   void StartTokenFetchForUberAuthExchange(const std::string& access_token);
 
-  // Start a request to obtain an OAuth2 token for the account identified by
-  // |username| and |password|.  |scopes| is a list of oauth scopes that
-  // indicate the access permerssions to assign to the returned token.
-  // |persistent_id| is an optional client identifier used to identify this
-  // particular chrome instances, which may reduce the chance of a challenge.
-  // |locale| will be used to format messages to be presented to the user in
-  // challenges, if needed.
-  //
-  // If the request cannot complete due to a challenge, the
-  // GoogleServiceAuthError will indicate the type of challenge required:
-  // either CAPTCHA_REQUIRED or TWO_FACTOR.
-  //
-  // Either OnClientOAuthSuccess or OnClientOAuthFailure will be
-  // called on the consumer on the original thread.
-  void StartClientOAuth(const std::string& username,
-                        const std::string& password,
-                        const std::vector<std::string>& scopes,
-                        const std::string& persistent_id,
-                        const std::string& locale);
-
-  // Start a challenge response to obtain an OAuth2 token.  This method is
-  // called after a challenge response is issued from a previous call to
-  // StartClientOAuth().  The |type| and |token| arguments come from the
-  // error response to StartClientOAuth(), while the |solution| argument
-  // represents the answer from the user for the partocular challenge.
-  //
-  // Either OnClientOAuthSuccess or OnClientOAuthFailure will be
-  // called on the consumer on the original thread.
-  void StartClientOAuthChallengeResponse(GoogleServiceAuthError::State type,
-                                         const std::string& token,
-                                         const std::string& solution);
-
   // Start a request to exchange an OAuthLogin-scoped oauth2 access token for a
   // ClientLogin-style service tokens.  The response to this request is the
   // same as the response to a ClientLogin request, except that captcha
@@ -297,10 +265,6 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
                             const net::URLRequestStatus& status,
                             int response_code);
 
-  void OnClientOAuthFetched(const std::string& data,
-                            const net::URLRequestStatus& status,
-                            int response_code);
-
   void OnOAuthLoginFetched(const std::string& data,
                            const net::URLRequestStatus& status,
                            int response_code);
@@ -324,10 +288,6 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
 
   static bool ParseClientLoginToOAuth2Cookie(const std::string& cookie,
                                              std::string* auth_code);
-
-  static GoogleServiceAuthError GenerateClientOAuthError(
-      const std::string& data,
-      const net::URLRequestStatus& status);
 
   // Is this a special case Gaia error for TwoFactor auth?
   static bool IsSecondFactorSuccess(const std::string& alleged_error);
@@ -362,18 +322,6 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
                                        const std::string& source);
 
   static std::string MakeGetAuthCodeHeader(const std::string& auth_token);
-
-  static std::string MakeClientOAuthBody(const std::string& username,
-                                         const std::string& password,
-                                         const std::vector<std::string>& scopes,
-                                         const std::string& persistent_id,
-                                         const std::string& friendly_name,
-                                         const std::string& locale);
-
-  static std::string MakeClientOAuthChallengeResponseBody(
-      const std::string& name,
-      const std::string& token,
-      const std::string& solution);
 
   static std::string MakeOAuthLoginBody(const std::string& service,
                                         const std::string& source);
@@ -410,7 +358,6 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   const GURL get_user_info_gurl_;
   const GURL merge_session_gurl_;
   const GURL uberauth_token_gurl_;
-  const GURL client_oauth_gurl_;
   const GURL oauth_login_gurl_;
 
   // While a fetch is going on:

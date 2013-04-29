@@ -111,7 +111,6 @@ GaiaUrls::GaiaUrls() {
   oauth_wrap_bridge_url_ = gaia_url_base + kOAuthWrapBridgeUrlSuffix;
   oauth_revoke_token_url_ = gaia_url_base + kOAuthRevokeTokenUrlSuffix;
   oauth1_login_url_ = gaia_url_base + kOAuth1LoginUrlSuffix;
-  client_oauth_url_ = gaia_url_base + kClientOAuthUrlSuffix;
 
   // URLs from accounts.google.com (LSO).
   get_oauth_token_url_ = lso_origin_url_ + kGetOAuthTokenUrlSuffix;
@@ -216,10 +215,6 @@ const std::string& GaiaUrls::oauth1_login_scope() {
 
 const std::string& GaiaUrls::oauth_wrap_bridge_user_info_scope() {
   return oauth_wrap_bridge_user_info_scope_;
-}
-
-const std::string& GaiaUrls::client_oauth_url() {
-  return client_oauth_url_;
 }
 
 const std::string& GaiaUrls::oauth2_chrome_client_id() {
