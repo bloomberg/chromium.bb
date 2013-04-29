@@ -1286,7 +1286,7 @@ END
         # Fix amigious conversion problem, by casting to the base type first ($getterString returns a type that inherits from SVGAnimatedEnumeration, not the base class directly).
         $expression = "static_pointer_cast<SVGAnimatedEnumeration>($expression)" if $returnType eq "SVGAnimatedEnumeration";
     }
- 
+
     # Special case for readonly or Replaceable attributes (with a few exceptions). This attempts to ensure that JS wrappers don't get
     # garbage-collected prematurely when their lifetime is strongly tied to their owner. We accomplish this by inserting a reference to
     # the newly created wrapper into an internal field of the holder object.
@@ -1938,7 +1938,7 @@ END
     my ($svgPropertyType, $svgListPropertyType, $svgNativeType) = GetSVGPropertyTypes($interfaceName);
 
     if ($svgNativeType) {
-        my $nativeClassName = GetNativeType($interfaceName); 
+        my $nativeClassName = GetNativeType($interfaceName);
         if ($interfaceName =~ /List$/) {
             $code .= "    $nativeClassName imp = ${v8InterfaceName}::toNative(args.Holder());\n";
         } else {
@@ -3120,7 +3120,7 @@ sub GenerateImplementation
     AddToImplIncludes("bindings/v8/V8Binding.h");
     AddToImplIncludes("bindings/v8/V8DOMWrapper.h");
     AddToImplIncludes("core/dom/ContextFeatures.h");
-    AddToImplIncludes("core/page/RuntimeEnabledFeatures.h");
+    AddToImplIncludes("RuntimeEnabledFeatures.h");
 
     AddIncludesForType($interfaceName);
 
@@ -3869,7 +3869,7 @@ sub GenerateCallbackHeader
     push(@unsortedIncludes, "#include <v8.h>");
     push(@unsortedIncludes, "#include <wtf/Forward.h>");
     AddToHeader(join("\n", sort @unsortedIncludes));
-    
+
     AddToHeader("\n\nnamespace WebCore {\n\n");
     AddToHeader("class ScriptExecutionContext;\n\n");
     AddToHeader("class $v8InterfaceName : public $interfaceName, public ActiveDOMCallback {\n");

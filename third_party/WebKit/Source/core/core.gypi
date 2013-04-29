@@ -1177,8 +1177,6 @@
             'page/RuntimeCSSEnabled.cpp',
             'page/RuntimeCSSEnabled.h',
             'page/RuntimeEnabledFeaturesCustom.cpp',
-            'page/RuntimeEnabledFeatures.cpp',
-            'page/RuntimeEnabledFeatures.h',
             'page/Screen.cpp',
             'page/Screen.h',
             'page/SecurityOrigin.cpp',

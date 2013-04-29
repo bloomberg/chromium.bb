@@ -29,7 +29,7 @@
 
 #include "config.h"
 #include "core/page/RuntimeCSSEnabled.h"
-#include "core/page/RuntimeEnabledFeatures.h"
+#include "RuntimeEnabledFeatures.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {

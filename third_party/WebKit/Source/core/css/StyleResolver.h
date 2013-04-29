@@ -35,7 +35,7 @@
 #include "core/css/SelectorFilter.h"
 #include "core/css/SiblingTraversalStrategies.h"
 #include "core/css/ViewportStyleResolver.h"
-#include "core/page/RuntimeEnabledFeatures.h"
+#include "RuntimeEnabledFeatures.h"
 #include "core/platform/LinkHash.h"
 #include "core/platform/ScrollTypes.h"
 #include "core/rendering/style/RenderStyle.h"
@@ -289,7 +289,7 @@ public:
     bool usesBeforeAfterRules() const { return m_ruleSets.features().usesBeforeAfterRules; }
 
     static bool createTransformOperations(CSSValue* inValue, RenderStyle* inStyle, RenderStyle* rootStyle, TransformOperations& outOperations);
-    
+
     void invalidateMatchedPropertiesCache();
 
     bool createFilterOperations(CSSValue* inValue, RenderStyle* inStyle, RenderStyle* rootStyle, FilterOperations& outOperations);
@@ -304,7 +304,7 @@ public:
     PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithInlineSyntax(WebKitCSSFilterValue*);
     PassRefPtr<CustomFilterOperation> createCustomFilterOperation(WebKitCSSFilterValue*);
     void loadPendingShaders();
-    PassRefPtr<CustomFilterProgram> lookupCustomFilterProgram(WebKitCSSShaderValue* vertexShader, WebKitCSSShaderValue* fragmentShader, 
+    PassRefPtr<CustomFilterProgram> lookupCustomFilterProgram(WebKitCSSShaderValue* vertexShader, WebKitCSSShaderValue* fragmentShader,
         CustomFilterProgramType, const CustomFilterProgramMixSettings&, CustomFilterMeshType);
 #if ENABLE(SVG)
     void loadPendingSVGDocuments();
@@ -335,7 +335,7 @@ public:
         MatchedProperties();
         ~MatchedProperties();
         void reportMemoryUsage(MemoryObjectInfo*) const;
-        
+
         RefPtr<StylePropertySet> properties;
         union {
             struct {
@@ -500,7 +500,7 @@ public:
 
         // Required to ASSERT in applyProperties.
         RenderRegion* m_regionForStyling;
-        
+
         EInsideLink m_elementLinkState;
 
         bool m_distributedToInsertionPoint;
@@ -549,9 +549,9 @@ public:
     void setEffectiveZoom(float f) { m_state.setEffectiveZoom(f); }
     void setWritingMode(WritingMode writingMode) { m_state.setWritingMode(writingMode); }
     void setTextOrientation(TextOrientation textOrientation) { m_state.setTextOrientation(textOrientation); }
-    
+
     void reportMemoryUsage(MemoryObjectInfo*) const;
-    
+
 private:
     static RenderStyle* s_styleNotYetAvailable;
 

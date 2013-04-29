@@ -149,6 +149,24 @@
           ],
         },
         {
+          'action_name': 'RuntimeEnabledFeatures',
+          'inputs': [
+            '../scripts/make_runtime_features.py',
+            '../scripts/in_file.py',
+            '../page/RuntimeEnabledFeatures.in',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/RuntimeEnabledFeatures.cpp'
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/RuntimeEnabledFeatures.h'
+          ],
+          'action': [
+            'python',
+            '../scripts/make_runtime_features.py',
+            '../page/RuntimeEnabledFeatures.in',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/',
+          ],
+        },
+        {
           'action_name': 'CSSPropertyNames',
           'inputs': [
             '../css/makeprop.pl',

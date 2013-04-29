@@ -33,7 +33,7 @@
 #include "core/loader/cache/MemoryCache.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
-#include "core/page/RuntimeEnabledFeatures.h"
+#include "RuntimeEnabledFeatures.h"
 #include "core/page/Settings.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/BitmapImage.h"
@@ -89,7 +89,7 @@ void CachedImage::didAddClient(CachedResourceClient* c)
         createImage();
         m_image->setData(m_data, true);
     }
-    
+
     ASSERT(c->resourceClientType() == CachedImageClient::expectedType());
     if (m_image && !m_image->isNull())
         static_cast<CachedImageClient*>(c)->imageChanged(this);
@@ -160,8 +160,8 @@ Image* CachedImage::image()
 
     if (errorOccurred()) {
         // Returning the 1x broken image is non-ideal, but we cannot reliably access the appropriate
-        // deviceScaleFactor from here. It is critical that callers use CachedImage::brokenImage() 
-        // when they need the real, deviceScaleFactor-appropriate broken image icon. 
+        // deviceScaleFactor from here. It is critical that callers use CachedImage::brokenImage()
+        // when they need the real, deviceScaleFactor-appropriate broken image icon.
         return brokenImage(1).first;
     }
 
@@ -177,8 +177,8 @@ Image* CachedImage::imageForRenderer(const RenderObject* renderer)
 
     if (errorOccurred()) {
         // Returning the 1x broken image is non-ideal, but we cannot reliably access the appropriate
-        // deviceScaleFactor from here. It is critical that callers use CachedImage::brokenImage() 
-        // when they need the real, deviceScaleFactor-appropriate broken image icon. 
+        // deviceScaleFactor from here. It is critical that callers use CachedImage::brokenImage()
+        // when they need the real, deviceScaleFactor-appropriate broken image icon.
         return brokenImage(1).first;
     }
 
@@ -265,7 +265,7 @@ LayoutSize CachedImage::imageSizeForRenderer(const RenderObject* renderer, float
 
     if (multiplier == 1.0f)
         return imageSize;
-        
+
     // Don't let images that have a width/height >= 1 shrink below 1 when zoomed.
     float widthScale = m_image->hasRelativeWidth() ? 1.0f : multiplier;
     float heightScale = m_image->hasRelativeHeight() ? 1.0f : multiplier;
@@ -352,7 +352,7 @@ void CachedImage::updateImage(bool allDataReceived)
     bool sizeAvailable = false;
 
     // Have the image update its data from its internal buffer.
-    // It will not do anything now, but will delay decoding until 
+    // It will not do anything now, but will delay decoding until
     // queried for info (like size or specific image frames).
     if (m_image)
         sizeAvailable = m_image->setData(m_data, allDataReceived);
@@ -368,7 +368,7 @@ void CachedImage::updateImage(bool allDataReceived)
                 memoryCache()->remove(this);
             return;
         }
-        
+
         // It would be nice to only redraw the decoded band of the image, but with the current design
         // (decoding delayed until painting) that seems hard.
         notifyObservers();
@@ -403,7 +403,7 @@ void CachedImage::destroyDecodedData()
 {
     bool canDeleteImage = !m_image || (m_image->hasOneRef() && m_image->isBitmapImage());
     if (isSafeToMakePurgeable() && canDeleteImage && !isLoading()) {
-        // Image refs the data buffer so we should not make it purgeable while the image is alive. 
+        // Image refs the data buffer so we should not make it purgeable while the image is alive.
         // Invoking addClient() will reconstruct the image object.
         m_image = 0;
         setDecodedSize(0);
@@ -417,7 +417,7 @@ void CachedImage::decodedSizeChanged(const Image* image, int delta)
 {
     if (!image || image != m_image)
         return;
-    
+
     setDecodedSize(decodedSize() + delta);
 }
 
@@ -425,11 +425,11 @@ void CachedImage::didDraw(const Image* image)
 {
     if (!image || image != m_image)
         return;
-    
+
     double timeStamp = FrameView::currentPaintTimeStamp();
     if (!timeStamp) // If didDraw is called outside of a Frame paint.
         timeStamp = currentTime();
-    
+
     CachedResource::didAccessDecodedData(timeStamp);
 }
 
@@ -437,7 +437,7 @@ bool CachedImage::shouldPauseAnimation(const Image* image)
 {
     if (!image || image != m_image)
         return false;
-    
+
     CachedResourceClientWalker<CachedImageClient> w(m_clients);
     while (CachedImageClient* c = w.next()) {
         if (c->willRenderImage(this))

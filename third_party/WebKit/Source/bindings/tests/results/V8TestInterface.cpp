@@ -32,7 +32,7 @@
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
-#include "core/page/RuntimeEnabledFeatures.h"
+#include "RuntimeEnabledFeatures.h"
 #include <wtf/GetPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
