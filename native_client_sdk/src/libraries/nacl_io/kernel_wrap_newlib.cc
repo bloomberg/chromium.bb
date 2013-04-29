@@ -35,7 +35,7 @@ EXTERN_C_BEGIN
 
 DECLARE_STRUCT(fdio)
 DECLARE_STRUCT(filename)
-DECLARE_STRUCT_VERSION(memory, v0_2)
+DECLARE_STRUCT(memory)
 
 DECLARE(fdio, close)
 DECLARE(fdio, dup)
