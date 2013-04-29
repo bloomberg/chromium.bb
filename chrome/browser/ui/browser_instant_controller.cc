@@ -241,12 +241,11 @@ void BrowserInstantController::ResetInstant(const std::string& pref_name) {
   if (pref_name == prefs::kInstantEnabled)
     chrome::SetInstantExtendedPrefDefault(profile());
 
-  bool instant_pref_enabled = chrome::IsInstantPrefEnabled(profile());
-  bool use_local_overlay_only = profile()->IsOffTheRecord() ||
+  bool instant_checkbox_checked = chrome::IsInstantCheckboxChecked(profile());
+  bool use_local_overlay_only =
       chrome::IsLocalOnlyInstantExtendedAPIEnabled() ||
-      (!instant_pref_enabled &&
-       !profile()->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled));
-  instant_.SetInstantEnabled(instant_pref_enabled, use_local_overlay_only);
+      !chrome::IsInstantCheckboxEnabled(profile());
+  instant_.SetInstantEnabled(instant_checkbox_checked, use_local_overlay_only);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

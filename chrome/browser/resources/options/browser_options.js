@@ -699,8 +699,10 @@ cr.define('options', function() {
         expander.textContent = loadTimeData.getString('hideAdvancedSettings');
     },
 
-    updateInstantState_: function(suggestEnabled) {
-      $('instant-enabled-control').disabled = !suggestEnabled;
+    updateInstantState_: function(enabled, checked) {
+      var checkbox = $('instant-enabled-control');
+      checkbox.disabled = !enabled;
+      checkbox.checked = checked;
     },
 
     /**

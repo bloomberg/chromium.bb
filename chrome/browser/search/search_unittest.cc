@@ -210,6 +210,31 @@ class SearchTest : public BrowserWithTestWindowTest {
     template_url_service->Add(template_url);
     template_url_service->SetDefaultSearchProvider(template_url);
   }
+
+  // Build an Instant URL with or without a valid search terms replacement key
+  // as per |has_search_term_replacement_key|. Set that URL as the instant URL
+  // for the default search provider.
+  void SetDefaultInstantTemplateUrl(bool has_search_term_replacement_key) {
+    TemplateURLService* template_url_service =
+        TemplateURLServiceFactory::GetForProfile(profile());
+
+    static const char kInstantURLWithStrk[] =
+        "http://foo.com/instant?foo=foo#foo=foo&strk";
+    static const char kInstantURLNoStrk[] =
+        "http://foo.com/instant?foo=foo#foo=foo";
+
+    TemplateURLData data;
+    data.SetURL("http://foo.com/url?bar={searchTerms}");
+    data.instant_url = (has_search_term_replacement_key ?
+        kInstantURLWithStrk : kInstantURLNoStrk);
+    data.search_terms_replacement_key = "strk";
+
+    TemplateURL* template_url = new TemplateURL(profile(), data);
+    // Takes ownership of |template_url|.
+    template_url_service->Add(template_url);
+    template_url_service->SetDefaultSearchProvider(template_url);
+  }
+
 };
 
 struct SearchTestCase {
@@ -383,21 +408,8 @@ TEST_F(SearchTest, GetInstantURLExtendedEnabled) {
   profile()->GetPrefs()->SetBoolean(prefs::kInstantExtendedEnabled, true);
   EXPECT_EQ(GURL(), GetInstantURL(profile(), kDisableStartMargin));
 
-  {
-    // Set an Instant URL with a valid search terms replacement key.
-    TemplateURLService* template_url_service =
-        TemplateURLServiceFactory::GetForProfile(profile());
-
-    TemplateURLData data;
-    data.SetURL("http://foo.com/url?bar={searchTerms}");
-    data.instant_url = "http://foo.com/instant?foo=foo#foo=foo&strk";
-    data.search_terms_replacement_key = "strk";
-
-    TemplateURL* template_url = new TemplateURL(profile(), data);
-    // Takes ownership of |template_url|.
-    template_url_service->Add(template_url);
-    template_url_service->SetDefaultSearchProvider(template_url);
-  }
+  // Set an Instant URL with a valid search terms replacement key.
+  SetDefaultInstantTemplateUrl(true);
 
   // Now there should be a valid Instant URL. Note the HTTPS "upgrade".
   EXPECT_EQ(GURL("https://foo.com/instant?foo=foo#foo=foo&strk"),
@@ -454,21 +466,8 @@ TEST_F(SearchTest, DefaultSearchProviderSupportsInstant) {
   // No default search provider support yet.
   EXPECT_FALSE(DefaultSearchProviderSupportsInstant(profile()));
 
-  {
-    // Set an Instant URL with a valid search terms replacement key.
-    TemplateURLService* template_url_service =
-        TemplateURLServiceFactory::GetForProfile(profile());
-
-    TemplateURLData data;
-    data.SetURL("http://foo.com/url?bar={searchTerms}");
-    data.instant_url = "http://foo.com/instant?foo=foo#foo=foo&strk";
-    data.search_terms_replacement_key = "strk";
-
-    TemplateURL* template_url = new TemplateURL(profile(), data);
-    // Takes ownership of |template_url|.
-    template_url_service->Add(template_url);
-    template_url_service->SetDefaultSearchProvider(template_url);
-  }
+  // Set an Instant URL with a valid search terms replacement key.
+  SetDefaultInstantTemplateUrl(true);
 
   // Default search provider should now support instant.
   EXPECT_TRUE(DefaultSearchProviderSupportsInstant(profile()));
@@ -496,23 +495,81 @@ TEST_F(SearchTest, DefaultSearchProviderSupportsInstant) {
   // instant.
   EXPECT_TRUE(DefaultSearchProviderSupportsInstant(profile()));
 
-  {
-    // Set an Instant URL with no valid search terms replacement key.
-    TemplateURLService* template_url_service =
-        TemplateURLServiceFactory::GetForProfile(profile());
-
-    TemplateURLData data;
-    data.SetURL("http://bar.com/url?bar={searchTerms}");
-    data.instant_url = "http://bar.com/instant?foo=foo#foo=foo";
-    data.search_terms_replacement_key = "strk";
-
-    TemplateURL* template_url = new TemplateURL(profile(), data);
-    // Takes ownership of |template_url|.
-    template_url_service->Add(template_url);
-    template_url_service->SetDefaultSearchProvider(template_url);
-  }
+  // Set an Instant URL with no valid search terms replacement key.
+  SetDefaultInstantTemplateUrl(false);
 
   EXPECT_FALSE(DefaultSearchProviderSupportsInstant(profile()));
 }
+
+TEST_F(SearchTest, IsInstantCheckboxEnabledExtendedDisabled) {
+  // Enable suggest.
+  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
+
+  // Set an Instant URL with a valid search terms replacement key.
+  SetDefaultInstantTemplateUrl(true);
+
+  const char* pref_name = GetInstantPrefName();
+  profile()->GetPrefs()->SetBoolean(pref_name, true);
+
+  EXPECT_TRUE(IsInstantCheckboxEnabled(profile()));
+  EXPECT_TRUE(IsInstantCheckboxChecked(profile()));
+
+  // Set an Instant URL with no valid search terms replacement key.
+  SetDefaultInstantTemplateUrl(false);
+
+  // For non-extended instant, the checkbox should still be enabled and checked.
+  EXPECT_TRUE(IsInstantCheckboxEnabled(profile()));
+  EXPECT_TRUE(IsInstantCheckboxChecked(profile()));
+
+  // Disable suggest.
+  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, false);
+
+  // With suggest off, the checkbox should now be disabled and unchecked.
+  EXPECT_FALSE(IsInstantCheckboxEnabled(profile()));
+  EXPECT_FALSE(IsInstantCheckboxChecked(profile()));
+}
+
+TEST_F(SearchTest, IsInstantCheckboxEnabledExtendedEnabled) {
+  // Enable instant extended.
+  EnableInstantExtendedAPIForTesting();
+
+  // Enable suggest.
+  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
+
+  // Set an Instant URL with a valid search terms replacement key.
+  SetDefaultInstantTemplateUrl(true);
+
+  const char* pref_name = GetInstantPrefName();
+  profile()->GetPrefs()->SetBoolean(pref_name, true);
+
+  EXPECT_TRUE(IsInstantCheckboxEnabled(profile()));
+  EXPECT_TRUE(IsInstantCheckboxChecked(profile()));
+
+  // Set an Instant URL with no valid search terms replacement key.
+  SetDefaultInstantTemplateUrl(false);
+
+  // For extended instant, the checkbox should now be disabled.
+  EXPECT_FALSE(IsInstantCheckboxEnabled(profile()));
+
+  // Disable suggest.
+  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, false);
+
+  EXPECT_FALSE(IsInstantCheckboxEnabled(profile()));
+  EXPECT_FALSE(IsInstantCheckboxChecked(profile()));
+
+  // Set an Instant URL with a search terms replacement key.
+  SetDefaultInstantTemplateUrl(true);
+
+  // Should still be disabled, since suggest is still off.
+  EXPECT_FALSE(IsInstantCheckboxEnabled(profile()));
+
+  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
+
+  // Now that suggest is back on and the instant url is good, the checkbox
+  // should be enabled and checked again.
+  EXPECT_TRUE(IsInstantCheckboxEnabled(profile()));
+  EXPECT_TRUE(IsInstantCheckboxChecked(profile()));
+}
+
 
 }  // namespace chrome

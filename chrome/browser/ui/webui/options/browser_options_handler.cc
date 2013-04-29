@@ -633,17 +633,10 @@ void BrowserOptionsHandler::OnSigninAllowedPrefChange() {
 
 void BrowserOptionsHandler::OnSearchSuggestPrefChange() {
   Profile* profile = Profile::FromWebUI(web_ui());
-  PrefService* prefs = profile->GetPrefs();
-
-  bool instant_checkbox_enabled = true;
-  if (!chrome::DefaultSearchProviderSupportsInstant(profile) ||
-      !prefs->GetBoolean(prefs::kSearchSuggestEnabled)) {
-    instant_checkbox_enabled = false;
-  }
-
   web_ui()->CallJavascriptFunction(
       "BrowserOptions.updateInstantState",
-      base::FundamentalValue(instant_checkbox_enabled));
+      base::FundamentalValue(chrome::IsInstantCheckboxEnabled(profile)),
+      base::FundamentalValue(chrome::IsInstantCheckboxChecked(profile)));
 }
 
 void BrowserOptionsHandler::PageLoadStarted() {
@@ -932,8 +925,8 @@ void BrowserOptionsHandler::OnTemplateURLServiceChanged() {
       base::FundamentalValue(
           template_url_service_->is_default_search_managed()));
 
-  // Update the state of the instant checkbox as the new search engine may
-  // not support instant.
+  // Update the state of the Instant checkbox as the new search engine may
+  // not support Instant.
   OnSearchSuggestPrefChange();
 }
 

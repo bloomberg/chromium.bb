@@ -78,12 +78,19 @@ void RegisterInstantUserPrefs(PrefRegistrySyncable* registry);
 // prefs::kInstantEnabled otherwise.
 const char* GetInstantPrefName();
 
-// Returns whether the Instant pref (as per GetInstantPrefName()) is enabled.
-bool IsInstantPrefEnabled(Profile* profile);
-
 // Sets the default value of prefs::kInstantExtendedEnabled, based on field
 // trials and the current value of prefs::kInstantEnabled.
 void SetInstantExtendedPrefDefault(Profile* profile);
+
+// Returns whether the Instant checkbox in chrome://settings/ should be enabled
+// (i.e., toggleable). This returns true iff prefs::kSearchSuggestEnabled is
+// true and the default search engine has a valid Instant URL in its template.
+bool IsInstantCheckboxEnabled(Profile* profile);
+
+// Returns whether the Instant checkbox in chrome://settings/ should be checked
+// (i.e., with a tick mark). This returns true iff IsInstantCheckboxEnabled()
+// and the pref indicated by GetInstantPrefName() is set to true.
+bool IsInstantCheckboxChecked(Profile* profile);
 
 // Returns the Instant URL of the default search engine. Returns an empty GURL
 // if the engine doesn't have an Instant URL, or if it shouldn't be used (say
@@ -104,7 +111,7 @@ GURL GetLocalInstantURL(Profile* profile);
 // Instant (loading a remote server page and talking to it using the searchbox
 // API) is considered enabled if there's a valid Instant URL that can be used,
 // so this simply returns whether GetInstantURL() is a valid URL.
-// NOTE: This method expands the default search engine's instant_ur templatel,
+// NOTE: This method expands the default search engine's instant_url template,
 // so it shouldn't be called from SearchTermsData or other such code that would
 // lead to an infinite recursion.
 bool IsInstantEnabled(Profile* profile);
@@ -113,8 +120,8 @@ bool IsInstantEnabled(Profile* profile);
 // trials.
 bool IsAggressiveLocalNTPFallbackEnabled();
 
-// Returns whether the current default search provider supports instant.
-bool DefaultSearchProviderSupportsInstant(Profile* profile);
+// Returns true if |my_url| matches |other_url|.
+bool MatchesOriginAndPath(const GURL& my_url, const GURL& other_url);
 
 // -----------------------------------------------------
 // The following APIs are exposed for use in tests only.
@@ -163,8 +170,9 @@ GURL CoerceCommandLineURLToTemplateURL(const GURL& instant_url,
                                        const TemplateURLRef& ref,
                                        int start_margin);
 
-// Returns true if |my_url| matches |other_url|.
-bool MatchesOriginAndPath(const GURL& my_url, const GURL& other_url);
+// Returns whether the default search provider has a valid Instant URL in its
+// template. Exposed for testing only.
+bool DefaultSearchProviderSupportsInstant(Profile* profile);
 
 }  // namespace chrome
 
