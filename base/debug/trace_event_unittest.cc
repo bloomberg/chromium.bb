@@ -90,6 +90,7 @@ class TraceEventTestFixture : public testing::Test {
   virtual void SetUp() OVERRIDE {
     const char* name = PlatformThread::GetName();
     old_thread_name_ = name ? strdup(name) : NULL;
+    notifications_received_ = 0;
   }
   virtual void TearDown() OVERRIDE {
     if (TraceLog::GetInstance())
