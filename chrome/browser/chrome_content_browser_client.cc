@@ -2038,7 +2038,8 @@ bool ChromeContentBrowserClient::SupportsBrowserPlugin(
   if (!extension)
     return false;
 
-  return extension->HasAPIPermission(APIPermission::kWebView);
+  return extension->HasAPIPermission(APIPermission::kWebView) ||
+         extension->HasAPIPermission(APIPermission::kAdView);
 }
 
 bool ChromeContentBrowserClient::AllowPepperSocketAPI(
