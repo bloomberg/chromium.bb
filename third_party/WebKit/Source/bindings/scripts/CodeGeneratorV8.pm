@@ -802,10 +802,6 @@ sub GenerateHeaderNamedAndIndexedPropertyAccessors
         $hasIndexedGetter = 1;
         $hasCustomNamedGetter = 1;
     }
-    if ($interfaceName eq "DOMWindow") {
-        $hasCustomDeleters = 0;
-        $hasCustomEnumerator = 0;
-    }
     if ($interfaceName eq "HTMLAppletElement" || $interfaceName eq "HTMLEmbedElement" || $interfaceName eq "HTMLObjectElement") {
         $hasCustomNamedGetter = 1;
     }
@@ -2951,7 +2947,6 @@ sub GenerateImplementationIndexedProperty
     # on the object.
     if ($interfaceName eq "DOMWindow") {
         $setOn = "Prototype";
-        $hasDeleter = 0;
     }
     # FIXME: Implement V8DataTransferItemList::indexedPropertyDeleter
     if ($interfaceName eq "DataTransferItemList") {
@@ -3067,8 +3062,6 @@ END
         # on the object.
         if ($interfaceName eq "DOMWindow") {
             $setOn = "Prototype";
-            $hasDeleter = 0;
-            $hasEnumerator = 0;
         }
 
         $subCode .= "    desc->${setOn}Template()->SetNamedPropertyHandler(${v8InterfaceName}::namedPropertyGetter, ";

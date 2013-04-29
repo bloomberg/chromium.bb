@@ -26,9 +26,7 @@
 
 [
     CheckSecurity,
-    CustomDeleteProperty,
     CustomGetOwnPropertySlot,
-    CustomEnumerateProperty,
     EventTarget,
     CustomToJSObject,
     NoWrapperCache,
