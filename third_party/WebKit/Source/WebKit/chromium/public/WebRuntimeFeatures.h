@@ -176,6 +176,9 @@ public:
     WEBKIT_EXPORT static void enableIMEAPI(bool);
     WEBKIT_EXPORT static bool isIMEAPIEnabled();
 
+    WEBKIT_EXPORT static void enableExperimentalCanvasFeatures(bool);
+    WEBKIT_EXPORT static bool areExperimentalCanvasFeaturesEnabled();
+
 private:
     WebRuntimeFeatures();
 };

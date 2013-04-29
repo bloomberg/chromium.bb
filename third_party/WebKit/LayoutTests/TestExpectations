@@ -2610,6 +2610,9 @@ crbug.com/230771 [ Linux Mac ] fast/forms/file/selected-files-from-history-state
 crbug.com/230771 [ Linux Mac ] http/tests/security/clipboard/clipboard-file-access.html [ Failure ]
 crbug.com/230771 [ Linux Mac ] fast/forms/file/file-input-reset.html [ ImageOnlyFailure ]
 
+# This test will need to be modified to reflect the added canvas API.
+crbug.com/234297 inspector/profiler/canvas2d/canvas2d-api-changes.html [ Failure ]
+
 # From WebKit's generic expectations.
 # pending functional patch and per-port verification
 webkit.org/b/109954 css3/line-break [ Skip ]

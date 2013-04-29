@@ -77,7 +77,7 @@ protected:
 
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 
-        OwnPtr<Canvas2DLayerBridge> bridge = Canvas2DLayerBridge::create(mainContext.release(), &canvas, threadMode);
+        OwnPtr<Canvas2DLayerBridge> bridge = Canvas2DLayerBridge::create(mainContext.release(), &canvas, Canvas2DLayerBridge::NonOpaque, threadMode);
 
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 

@@ -26,6 +26,7 @@
 #ifndef CanvasRenderingContext2D_h
 #define CanvasRenderingContext2D_h
 
+#include "core/html/canvas/Canvas2DContextAttributes.h"
 #include "core/html/canvas/CanvasPathMethods.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/platform/graphics/Color.h"
@@ -60,9 +61,9 @@ typedef int ExceptionCode;
 
 class CanvasRenderingContext2D : public CanvasRenderingContext, public CanvasPathMethods {
 public:
-    static PassOwnPtr<CanvasRenderingContext2D> create(HTMLCanvasElement* canvas, bool usesCSSCompatibilityParseMode)
+    static PassOwnPtr<CanvasRenderingContext2D> create(HTMLCanvasElement* canvas, const Canvas2DContextAttributes* attrs, bool usesCSSCompatibilityParseMode)
     {
-        return adoptPtr(new CanvasRenderingContext2D(canvas, usesCSSCompatibilityParseMode));
+        return adoptPtr(new CanvasRenderingContext2D(canvas, attrs, usesCSSCompatibilityParseMode));
     }
     virtual ~CanvasRenderingContext2D();
 
@@ -220,6 +221,8 @@ public:
     bool webkitImageSmoothingEnabled() const;
     void setWebkitImageSmoothingEnabled(bool);
 
+    PassRefPtr<Canvas2DContextAttributes> getContextAttributes() const;
+
 private:
     struct State : FontSelectorClient {
         State();
@@ -267,7 +270,7 @@ private:
         CanvasDidDrawApplyAll = 0xffffffff
     };
 
-    CanvasRenderingContext2D(HTMLCanvasElement*, bool usesCSSCompatibilityParseMode);
+    CanvasRenderingContext2D(HTMLCanvasElement*, const Canvas2DContextAttributes* attrs, bool usesCSSCompatibilityParseMode);
 
     State& modifiableState() { ASSERT(!m_unrealizedSaveCount); return m_stateStack.last(); }
     const State& state() const { return m_stateStack.last(); }
@@ -316,6 +319,7 @@ private:
 
     virtual bool is2d() const OVERRIDE { return true; }
     virtual bool isAccelerated() const OVERRIDE;
+    virtual bool hasAlpha() const OVERRIDE { return m_hasAlpha; }
 
     virtual bool isTransformInvertible() const { return state().m_invertibleCTM; }
 
@@ -324,6 +328,7 @@ private:
     Vector<State, 1> m_stateStack;
     unsigned m_unrealizedSaveCount;
     bool m_usesCSSCompatibilityParseMode;
+    bool m_hasAlpha;
 };
 
 } // namespace WebCore

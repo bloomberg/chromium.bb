@@ -54,6 +54,7 @@ public:
     virtual bool is2d() const { return false; }
     virtual bool is3d() const { return false; }
     virtual bool isAccelerated() const { return false; }
+    virtual bool hasAlpha() const { return true; }
 
     virtual void paintRenderingResultsToCanvas() {}
 

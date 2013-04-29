@@ -45,7 +45,7 @@ using WebKit::WebTextureUpdater;
 
 namespace WebCore {
 
-Canvas2DLayerBridge::Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, SkDeferredCanvas* canvas, ThreadMode threadMode)
+Canvas2DLayerBridge::Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, SkDeferredCanvas* canvas, OpacityMode opacityMode, ThreadMode threadMode)
     : m_canvas(canvas)
     , m_context(context)
     , m_bytesAllocated(0)
@@ -64,6 +64,7 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, 
     if (renderTarget) {
         m_layer->setTextureId(renderTarget->asTexture()->getTextureHandle());
     }
+    m_layer->setOpaque(opacityMode == Opaque);
     GraphicsLayerChromium::registerContentsLayer(m_layer->layer());
 }
 

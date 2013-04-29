@@ -96,5 +96,6 @@ bool RuntimeEnabledFeatures::isWebPInAcceptHeaderEnabled = false;
 bool RuntimeEnabledFeatures::isDirectoryUploadEnabled = true;
 bool RuntimeEnabledFeatures::isExperimentalWebSocketEnabled = false;
 bool RuntimeEnabledFeatures::isIMEAPIEnabled = false;
+bool RuntimeEnabledFeatures::areExperimentalCanvasFeaturesEnabled = false;
 
 } // namespace WebCore

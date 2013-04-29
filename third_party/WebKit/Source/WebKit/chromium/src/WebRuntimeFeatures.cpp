@@ -500,4 +500,14 @@ bool WebRuntimeFeatures::isIMEAPIEnabled()
     return RuntimeEnabledFeatures::imeAPIEnabled();
 }
 
+void WebRuntimeFeatures::enableExperimentalCanvasFeatures(bool enable)
+{
+    RuntimeEnabledFeatures::setExperimentalCanvasFeaturesEnabled(enable);
+}
+
+bool WebRuntimeFeatures::areExperimentalCanvasFeaturesEnabled()
+{
+    return RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled();
+}
+
 } // namespace WebKit

@@ -83,6 +83,7 @@ TestInterfaces::TestInterfaces()
     WebRuntimeFeatures::enableSeamlessIFrames(true);
     WebRuntimeFeatures::enableCanvasPath(true);
     WebRuntimeFeatures::enableExperimentalShadowDOM(true);
+    WebRuntimeFeatures::enableExperimentalCanvasFeatures(true);
 
     resetAll();
 }

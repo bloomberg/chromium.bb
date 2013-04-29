@@ -70,7 +70,7 @@ ImageBufferData::ImageBufferData(const IntSize& size)
 {
 }
 
-static SkCanvas* createAcceleratedCanvas(const IntSize& size, ImageBufferData* data)
+static SkCanvas* createAcceleratedCanvas(const IntSize& size, ImageBufferData* data, OpacityMode opacityMode)
 {
     RefPtr<GraphicsContext3D> context3D = SharedGraphicsContext3D::get();
     if (!context3D)
@@ -79,6 +79,7 @@ static SkCanvas* createAcceleratedCanvas(const IntSize& size, ImageBufferData* d
     if (!gr)
         return 0;
     gr->resetContext();
+    Canvas2DLayerBridge::OpacityMode bridgeOpacityMode = opacityMode == Opaque ? Canvas2DLayerBridge::Opaque : Canvas2DLayerBridge::NonOpaque;
     Canvas2DLayerBridge::ThreadMode threadMode = WebKit::Platform::current()->isThreadedCompositingEnabled() ? Canvas2DLayerBridge::Threaded : Canvas2DLayerBridge::SingleThread;
     SkImage::Info info;
     info.fWidth = size.width();
@@ -89,7 +90,7 @@ static SkCanvas* createAcceleratedCanvas(const IntSize& size, ImageBufferData* d
     if (!surface.get())
         return 0;
     SkDeferredCanvas* canvas = new SkDeferredCanvas(surface.get());
-    data->m_layerBridge = Canvas2DLayerBridge::create(context3D.release(), canvas, threadMode);
+    data->m_layerBridge = Canvas2DLayerBridge::create(context3D.release(), canvas, bridgeOpacityMode, threadMode);
     // If canvas buffer allocation failed, debug build will have asserted
     // For release builds, we must verify whether the device has a render target
     data->m_platformContext.setAccelerated(true);
@@ -144,7 +145,7 @@ ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, ColorSpace,
     success = true;
 }
 
-ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, ColorSpace, RenderingMode renderingMode, bool& success)
+ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, ColorSpace, RenderingMode renderingMode, OpacityMode opacityMode, bool& success)
     : m_data(size)
     , m_size(size)
     , m_logicalSize(size)
@@ -153,7 +154,7 @@ ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, ColorSpace,
     OwnPtr<SkCanvas> canvas;
 
     if (renderingMode == Accelerated)
-        canvas = adoptPtr(createAcceleratedCanvas(size, &m_data));
+        canvas = adoptPtr(createAcceleratedCanvas(size, &m_data, opacityMode));
     else if (renderingMode == UnacceleratedNonPlatformBuffer)
         canvas = adoptPtr(createNonPlatformCanvas(size));
 
@@ -168,13 +169,16 @@ ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, ColorSpace,
     m_data.m_canvas = canvas.release();
     m_data.m_platformContext.setCanvas(m_data.m_canvas.get());
     m_context = adoptPtr(new GraphicsContext(&m_data.m_platformContext));
-    m_context->setShouldSmoothFonts(false);
+    m_context->setShouldSmoothFonts(opacityMode == Opaque);
     m_context->scale(FloatSize(m_resolutionScale, m_resolutionScale));
 
-    // Make the background transparent. It would be nice if this wasn't
+    // Clear the background transparent or opaque, as required. It would be nice if this wasn't
     // required, but the canvas is currently filled with the magic transparency
     // color. Can we have another way to manage this?
-    m_data.m_canvas->drawARGB(0, 0, 0, 0, SkXfermode::kClear_Mode);
+    if (opacityMode == Opaque)
+        m_data.m_canvas->drawARGB(255, 0, 0, 0, SkXfermode::kSrc_Mode);
+    else
+        m_data.m_canvas->drawARGB(0, 0, 0, 0, SkXfermode::kClear_Mode);
 
     success = true;
 }

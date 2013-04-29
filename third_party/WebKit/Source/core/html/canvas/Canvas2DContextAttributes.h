@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, Google Inc. All rights reserved.
+ * Copyright (c) 2013, Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -24,24 +24,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CanvasContextAttributes_h
-#define CanvasContextAttributes_h
+#ifndef Canvas2DContextAttributes_h
+#define Canvas2DContextAttributes_h
 
-#include <wtf/RefCounted.h>
+#include "CanvasContextAttributes.h"
+#include <wtf/PassRefPtr.h>
 
 namespace WebCore {
 
-// A base class for any attributes that are needed which would affect
-// the creation of the Canvas's rendering context.
+class Canvas2DContextAttributes : public CanvasContextAttributes {
+public:
+    virtual ~Canvas2DContextAttributes();
 
-class CanvasContextAttributes : public RefCounted<CanvasContextAttributes> {
-  public:
-    virtual ~CanvasContextAttributes();
+    // Create a new attributes object
+    static PassRefPtr<Canvas2DContextAttributes> create();
 
-  protected:
-    CanvasContextAttributes();
+    // Whether or not the drawing buffer has an alpha channel; default=true
+    bool alpha() const;
+    void setAlpha(bool);
+
+protected:
+    Canvas2DContextAttributes();
+
+    bool m_alpha;
 };
 
 } // namespace WebCore
 
-#endif // CanvasContextAttributes_h
+#endif // Canvas2DContextAttributes_h

@@ -37,7 +37,7 @@
 #include "V8WebGLRenderingContext.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/html/HTMLCanvasElement.h"
-#include "core/html/canvas/CanvasContextAttributes.h"
+#include "core/html/canvas/Canvas2DContextAttributes.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/WebGLContextAttributes.h"
 #include "core/inspector/InspectorCanvasInstrumentation.h"
@@ -53,8 +53,7 @@ v8::Handle<v8::Value> V8HTMLCanvasElement::getContextMethodCustom(const v8::Argu
     String contextId = toWebCoreString(args[0]);
     RefPtr<CanvasContextAttributes> attrs;
     if (contextId == "webgl" || contextId == "experimental-webgl" || contextId == "webkit-3d") {
-        attrs = WebGLContextAttributes::create();
-        WebGLContextAttributes* webGLAttrs = static_cast<WebGLContextAttributes*>(attrs.get());
+        RefPtr<WebGLContextAttributes> webGLAttrs = WebGLContextAttributes::create();
         if (args.Length() > 1 && args[1]->IsObject()) {
             v8::Handle<v8::Object> jsAttrs = args[1]->ToObject();
             v8::Handle<v8::String> alpha = v8::String::NewSymbol("alpha");
@@ -76,6 +75,16 @@ v8::Handle<v8::Value> V8HTMLCanvasElement::getContextMethodCustom(const v8::Argu
             if (jsAttrs->Has(preserveDrawingBuffer))
                 webGLAttrs->setPreserveDrawingBuffer(jsAttrs->Get(preserveDrawingBuffer)->BooleanValue());
         }
+        attrs = webGLAttrs;
+    } else {
+        RefPtr<Canvas2DContextAttributes> canvas2DAttrs = Canvas2DContextAttributes::create();
+        if (args.Length() > 1 && args[1]->IsObject()) {
+            v8::Handle<v8::Object> jsAttrs = args[1]->ToObject();
+            v8::Handle<v8::String> alpha = v8::String::NewSymbol("alpha");
+            if (jsAttrs->Has(alpha))
+                canvas2DAttrs->setAlpha(jsAttrs->Get(alpha)->BooleanValue());
+        }
+        attrs = canvas2DAttrs;
     }
     CanvasRenderingContext* result = imp->getContext(contextId, attrs.get());
     if (!result)

@@ -221,6 +221,9 @@ public:
     static void setIMEAPIEnabled(bool isEnabled) { isIMEAPIEnabled = isEnabled; }
     static bool imeAPIEnabled() { return isIMEAPIEnabled; }
 
+    static bool experimentalCanvasFeaturesEnabled() { return areExperimentalCanvasFeaturesEnabled; }
+    static void setExperimentalCanvasFeaturesEnabled(bool isEnabled) { areExperimentalCanvasFeaturesEnabled = isEnabled; }
+
 private:
     RuntimeEnabledFeatures() { }
 
@@ -287,6 +290,8 @@ private:
     static bool isDirectoryUploadEnabled;
     static bool isExperimentalWebSocketEnabled;
     static bool isIMEAPIEnabled;
+
+    static bool areExperimentalCanvasFeaturesEnabled;
 };
 
 } // namespace WebCore

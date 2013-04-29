@@ -37,7 +37,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/html/ImageData.h"
-#include "core/html/canvas/CanvasContextAttributes.h"
+#include "core/html/canvas/Canvas2DContextAttributes.h"
 #include "core/html/canvas/CanvasGradient.h"
 #include "core/html/canvas/CanvasPattern.h"
 #include "core/html/canvas/CanvasRenderingContext2D.h"
@@ -45,6 +45,7 @@
 #include "core/page/Chrome.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include "core/page/Settings.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/GraphicsContext.h"
@@ -164,7 +165,7 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
         if (m_context && !m_context->is2d())
             return 0;
         if (!m_context) {
-            m_context = CanvasRenderingContext2D::create(this, document()->inQuirksMode());
+            m_context = CanvasRenderingContext2D::create(this, RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled() ? static_cast<Canvas2DContextAttributes*>(attrs) : 0, document()->inQuirksMode());
             if (m_context) {
                 // Need to make sure a RenderLayer and compositing layer get created for the Canvas
                 setNeedsStyleRecalc(SyntheticStyleChange);
@@ -328,10 +329,11 @@ void HTMLCanvasElement::paint(GraphicsContext* context, const LayoutRect& r, boo
     if (hasCreatedImageBuffer()) {
         ImageBuffer* imageBuffer = buffer();
         if (imageBuffer) {
+            CompositeOperator compositeOperator = !m_context || m_context->hasAlpha() ? CompositeSourceOver : CompositeCopy;
             if (m_presentedImage)
-                context->drawImage(m_presentedImage.get(), ColorSpaceDeviceRGB, pixelSnappedIntRect(r), CompositeSourceOver, DoNotRespectImageOrientation, useLowQualityScale);
+                context->drawImage(m_presentedImage.get(), ColorSpaceDeviceRGB, pixelSnappedIntRect(r), compositeOperator, DoNotRespectImageOrientation, useLowQualityScale);
             else
-                context->drawImageBuffer(imageBuffer, ColorSpaceDeviceRGB, pixelSnappedIntRect(r), CompositeSourceOver, BlendModeNormal, useLowQualityScale);
+                context->drawImageBuffer(imageBuffer, ColorSpaceDeviceRGB, pixelSnappedIntRect(r), compositeOperator, BlendModeNormal, useLowQualityScale);
         }
     }
 
@@ -499,8 +501,8 @@ void HTMLCanvasElement::createImageBuffer() const
         return;
 
     RenderingMode renderingMode = shouldAccelerate(bufferSize) ? Accelerated : UnacceleratedNonPlatformBuffer;
-
-    m_imageBuffer = ImageBuffer::create(size(), m_deviceScaleFactor, ColorSpaceDeviceRGB, renderingMode);
+    OpacityMode opacityMode = !m_context || m_context->hasAlpha() ? NonOpaque : Opaque;
+    m_imageBuffer = ImageBuffer::create(size(), m_deviceScaleFactor, ColorSpaceDeviceRGB, renderingMode, opacityMode);
     if (!m_imageBuffer)
         return;
     m_imageBuffer->context()->setShadowsIgnoreTransforms(true);

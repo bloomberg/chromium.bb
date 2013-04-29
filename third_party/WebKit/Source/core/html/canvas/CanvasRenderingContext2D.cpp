@@ -47,6 +47,7 @@
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
 #include "core/html/TextMetrics.h"
+#include "core/html/canvas/Canvas2DContextAttributes.h"
 #include "core/html/canvas/CanvasGradient.h"
 #include "core/html/canvas/CanvasPattern.h"
 #include "core/html/canvas/CanvasStyle.h"
@@ -117,11 +118,12 @@ private:
     CanvasRenderingContext2D* m_canvasContext;
 };
 
-CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, bool usesCSSCompatibilityParseMode)
+CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, const Canvas2DContextAttributes* attrs, bool usesCSSCompatibilityParseMode)
     : CanvasRenderingContext(canvas)
     , m_stateStack(1)
     , m_unrealizedSaveCount(0)
     , m_usesCSSCompatibilityParseMode(usesCSSCompatibilityParseMode)
+    , m_hasAlpha(!attrs || attrs->alpha())
 {
     ScriptWrappable::init(this);
 }
@@ -2248,6 +2250,13 @@ void CanvasRenderingContext2D::setWebkitImageSmoothingEnabled(bool enabled)
     GraphicsContext* c = drawingContext();
     if (c)
         c->setImageInterpolationQuality(enabled ? DefaultInterpolationQuality : InterpolationNone);
+}
+
+PassRefPtr<Canvas2DContextAttributes> CanvasRenderingContext2D::getContextAttributes() const
+{
+    RefPtr<Canvas2DContextAttributes> attributes = Canvas2DContextAttributes::create();
+    attributes->setAlpha(m_hasAlpha);
+    return attributes.release();
 }
 
 } // namespace WebCore
