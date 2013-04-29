@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 
+#include "base/logging.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 
 namespace chromeos {
@@ -43,6 +44,14 @@ void BaseScreen::Finish(const std::string& outcome) {
 }
 
 void BaseScreen::SetContext(ScreenContext* context) {
+}
+
+void BaseScreen::OnButtonPressed(const std::string& button_id) {
+  LOG(WARNING) << "BaseScreen::OnButtonPressed(): button_id=" << button_id;
+}
+
+void BaseScreen::OnContextChanged(const base::DictionaryValue* diff) {
+  LOG(WARNING) << "BaseScreen::OnContextChanged()";
 }
 
 }  // namespace chromeos

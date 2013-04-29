@@ -22,6 +22,9 @@ ScreenManager::ScreenManager(ScreenFactory* factory,
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   js_is_ready_ = display_->IsJSReady(
       base::Bind(&ScreenManager::OnDisplayIsReady, weak_factory_.GetWeakPtr()));
+
+  // TODO({antrim|ygorshenin}@): register ScreenManager as delegate in
+  // ScreenManagerHandler instance.
 }
 
 ScreenManager::~ScreenManager() {
@@ -50,11 +53,6 @@ void ScreenManager::PopupScreenWithParameters(const std::string& id,
   ShowScreenImpl(id, context, true);
 }
 
-std::string ScreenManager::GetCurrentScreenId() {
-  DCHECK(!screen_stack_.empty());
-  return screen_stack_.top();
-}
-
 void ScreenManager::HidePopupScreen(const std::string& screen_id) {
   DCHECK(!screen_stack_.empty());
   DCHECK_EQ(screen_stack_.top(), screen_id);
@@ -71,6 +69,18 @@ void ScreenManager::HidePopupScreen(const std::string& screen_id) {
     GetTopmostScreen()->OnShow();
   }
   TransitionScreen(previous_screen, screen_below);
+}
+
+std::string ScreenManager::GetCurrentScreenId() {
+  DCHECK(!screen_stack_.empty());
+  return screen_stack_.top();
+}
+
+void ScreenManager::SetScreenFlow(ScreenFlow* flow) {
+  if (flow)
+    flow->set_screen_manager(this);
+  // TODO(antrim): delayed reset.
+  flow_.reset(flow);
 }
 
 void ScreenManager::ShowScreenImpl(const std::string& id,
@@ -106,28 +116,6 @@ void ScreenManager::TransitionScreen(const std::string& from_id,
                                      const std::string& to_id) {
 }
 
-BaseScreen* ScreenManager::GetTopmostScreen() {
-  DCHECK(!screen_stack_.empty());
-  return FindOrCreateScreen(screen_stack_.top());
-}
-
-void ScreenManager::OnDisplayIsReady() {
-  js_is_ready_ = true;
-  ShowScreenImpl(
-      start_screen_,
-      start_screen_params_.release(),
-      start_screen_popup_);
-}
-
-BaseScreen* ScreenManager::FindOrCreateScreen(const std::string& id) {
-  ScreenMap::iterator i = existing_screens_.find(id);
-  if (i != existing_screens_.end())
-    return i->second.get();
-  BaseScreen* result = factory_->CreateScreen(id);
-  existing_screens_[id] = linked_ptr<BaseScreen>(result);
-  return result;
-}
-
 void ScreenManager::TearDownTopmostScreen() {
   DCHECK(!screen_stack_.empty());
   std::string screen_id = screen_stack_.top();
@@ -145,11 +133,40 @@ void ScreenManager::TearDownTopmostScreen() {
   }
 }
 
-void ScreenManager::SetScreenFlow(ScreenFlow* flow) {
-  if (flow)
-    flow->set_screen_manager(this);
-  // TODO(antrim): delayed reset.
-  flow_.reset(flow);
+void ScreenManager::OnDisplayIsReady() {
+  js_is_ready_ = true;
+  ShowScreenImpl(
+      start_screen_,
+      start_screen_params_.release(),
+      start_screen_popup_);
+}
+
+BaseScreen* ScreenManager::GetTopmostScreen() {
+  DCHECK(!screen_stack_.empty());
+  return FindOrCreateScreen(screen_stack_.top());
+}
+
+BaseScreen* ScreenManager::FindOrCreateScreen(const std::string& id) {
+  ScreenMap::iterator i = existing_screens_.find(id);
+  if (i != existing_screens_.end())
+    return i->second.get();
+  BaseScreen* result = factory_->CreateScreen(id);
+  existing_screens_[id] = linked_ptr<BaseScreen>(result);
+  return result;
+}
+
+void ScreenManager::OnButtonPressed(const std::string& screen_name,
+                                    const std::string& button_id) {
+  CallOnScreen<const std::string&>(screen_name,
+                                   &BaseScreen::OnButtonPressed,
+                                   button_id);
+}
+
+void ScreenManager::OnContextChanged(const std::string& screen_name,
+                                     const base::DictionaryValue* diff) {
+  CallOnScreen<const base::DictionaryValue*>(screen_name,
+                                             &BaseScreen::OnContextChanged,
+                                             diff);
 }
 
 }  // namespace chromeos

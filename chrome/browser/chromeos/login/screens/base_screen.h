@@ -10,6 +10,10 @@
 #include "base/basictypes.h"
 #include "chrome/browser/chromeos/login/screens/screen_context.h"
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace chromeos {
 
 // Base class for the all OOBE/login/before-session screens.
@@ -71,6 +75,15 @@ class BaseScreen {
   // Screen can call this method to notify framework that it have finished
   // it's work with |outcome|.
   void Finish(const std::string& outcome);
+
+  // Called when button with |button_id| was pressed. Notification
+  // about this event comes from the JS counterpart.
+  virtual void OnButtonPressed(const std::string& button_id);
+
+  // Called when context for the currenct screen was
+  // changed. Notification about this event comes from the JS
+  // counterpart.
+  virtual void OnContextChanged(const base::DictionaryValue* diff);
 
  private:
   friend class ScreenManager;

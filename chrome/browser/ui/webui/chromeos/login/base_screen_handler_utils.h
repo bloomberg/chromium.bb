@@ -55,6 +55,13 @@ inline bool ParseValue<base::string16>(const Value* value,
   return value->GetAsString(out_value);
 }
 
+template<>
+inline bool ParseValue<const base::DictionaryValue*>(
+    const Value* value,
+    const base::DictionaryValue** out_value) {
+  return value->GetAsDictionary(out_value);
+}
+
 template<typename T>
 inline bool GetArg(const base::ListValue* args, size_t index, T* out_value) {
   const Value* value;

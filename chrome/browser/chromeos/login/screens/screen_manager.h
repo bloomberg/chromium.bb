@@ -12,6 +12,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/ui/webui/chromeos/login/screen_manager_handler.h"
 
 namespace chromeos {
 
@@ -23,7 +24,7 @@ class ScreenFlow;
 
 // Class that manages screen states and flow.
 // TODO(antrim): add implementation details comments.
-class ScreenManager {
+class ScreenManager : public ScreenManagerHandler::Delegate {
  public:
   ScreenManager(ScreenFactory* factory,
                 OobeDisplay* oobe_display,
@@ -74,6 +75,27 @@ class ScreenManager {
 
   BaseScreen* GetTopmostScreen();
   BaseScreen* FindOrCreateScreen(const std::string& id);
+
+  // Helper method which simply calls corresponding method on the
+  // screen if it exists
+  template<typename A1>
+  void CallOnScreen(const std::string& screen_name,
+                    void (BaseScreen::*method)(A1 arg1),
+                    A1 arg1) {
+    ScreenMap::const_iterator it = existing_screens_.find(screen_name);
+    if (it != existing_screens_.end()) {
+      BaseScreen* screen = it->second.get();
+      (screen->*method)(arg1);
+    } else {
+      NOTREACHED();
+    }
+  }
+
+  // ScreenManagerHandler::Delegate implementation:
+  virtual void OnButtonPressed(const std::string& screen_name,
+                               const std::string& button_id) OVERRIDE;
+  virtual void OnContextChanged(const std::string& screen_name,
+                                const DictionaryValue* diff) OVERRIDE;
 
   typedef std::map<std::string, linked_ptr<BaseScreen> > ScreenMap;
 
