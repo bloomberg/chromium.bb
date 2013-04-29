@@ -46,7 +46,8 @@ function getStyle(pageStyle) {
     urlColor: '#009933',
     titleColor: '#666666',
     font: apiHandle.font,
-    fontSize: apiHandle.fontSize
+    fontSize: apiHandle.fontSize,
+    isRtl: apiHandle.rtl
   };
   if ('queryColor' in pageStyle)
     style.queryColor = convertColor(pageStyle.queryColor) || style.queryColor;
@@ -65,6 +66,7 @@ function getStyle(pageStyle) {
  */
 function updateResult(resultDoc, suggestion, pageStyle) {
   var style = getStyle(pageStyle);
+  resultDoc.body.dir = style.isRtl ? 'rtl' : 'ltr';
   resultDoc.body.style.fontSize = style.fontSize + 'px';
   resultDoc.body.style.fontFamily = style.font;
   var contentsNode = resultDoc.querySelector('#contents');

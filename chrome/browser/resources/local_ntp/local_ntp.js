@@ -773,6 +773,16 @@ IframePool.prototype = {
     this.iframes_.push(iframe);
     iframe.style.top = OFF_SCREEN;
   },
+
+  /**
+   * Sets the text direction on each iframe element.
+   * @param {boolean} isRtl True if rendering rtl and false if ltr.
+   */
+  setTextDirection: function(isRtl) {
+    for (var i = 0; i < this.iframes_.length; i++) {
+      this.iframes_[i].dir = isRtl ? 'rtl' : 'ltr';
+    }
+  }
 };
 
 
@@ -1006,10 +1016,10 @@ SuggestionsBox.prototype = {
   repositionSuggestions: function() {
     // Note: This may be called before margins are ready. In that case,
     // suggestion iframes will initially be too large and then size down
-    // onresize.
+    // onmarginchange.
     var startMargin = searchboxApiHandle.startMargin;
     var totalMargin = window.innerWidth - searchboxApiHandle.width;
-    var isRtl = searchboxApiHandle.isRtl;
+    var isRtl = searchboxApiHandle.rtl;
     for (var i = 0; i < this.suggestions_.length; ++i) {
       this.suggestions_[i].reposition(isRtl, startMargin, totalMargin);
     }
@@ -1181,7 +1191,6 @@ function hideActiveSuggestions() {
  * Updates suggestions in response to a onchange or onnativesuggestions call.
  */
 function updateSuggestions() {
-  appendSuggestionStyles();
   if (pendingBox)
     pendingBox.destroy();
   pendingBox = null;
@@ -1220,15 +1229,14 @@ function updateSuggestions() {
 }
 
 /**
- * Appends a style node for suggestion properties that depend on apiHandle.
+ * Appends or replaces a style node for suggestion properties that depend on
+ * searchboxApiHandle.
  */
-function appendSuggestionStyles() {
-  if ($(IDS.SUGGESTION_STYLE))
-    return;
-
+function setSuggestionStyles() {
+  assert(window.innerWidth > 0);
   var isRtl = searchboxApiHandle.rtl;
   var startMargin = searchboxApiHandle.startMargin;
-  var style = document.createElement('style');
+  var style = $(IDS.SUGGESTION_STYLE) || document.createElement('style');
   style.type = 'text/css';
   style.id = IDS.SUGGESTION_STYLE;
   style.textContent =
@@ -1242,7 +1250,14 @@ function appendSuggestionStyles() {
       '  font: ' + searchboxApiHandle.fontSize + 'px "' +
           searchboxApiHandle.font + '";' +
       '}';
-  document.querySelector('head').appendChild(style);
+  $qs('head').appendChild(style);
+
+  if (activeBox)
+    activeBox.repositionSuggestions();
+
+  // This is bound only for initialization. Afterwards this style should only
+  // change onmarginchange.
+  window.removeEventListener('resize', setSuggestionStyles);
 }
 
 /**
@@ -1422,6 +1437,14 @@ function init() {
   searchboxApiHandle.onnativesuggestions = updateSuggestions;
   searchboxApiHandle.onchange = updateSuggestions;
   searchboxApiHandle.onkeypress = handleKeyPress;
+  // TODO(jered): Re-enable this after http://crbug.com/236492 is fixed.
+  // searchboxApiHandle.onmarginchange = setSuggestionStyles;
+  if (window.innerWidth > 0) {
+    setSuggestionStyles();
+  } else {
+    // Wait until the overlay is shown to initialize suggestion margins.
+    window.addEventListener('resize', setSuggestionStyles);
+  }
   searchboxApiHandle.onsubmit = function() {
     var value = searchboxApiHandle.value;
     if (!value) {
@@ -1433,6 +1456,7 @@ function init() {
       searchboxApiHandle.rtl ? 'rtl' : 'ltr';
   $qs('.' + CLASSES.PENDING_SUGGESTIONS_CONTAINER).dir =
       searchboxApiHandle.rtl ? 'rtl' : 'ltr';
+  iframePool.setTextDirection(searchboxApiHandle.rtl);
 
   if (fakebox) {
     // Listener for updating the fakebox focus.
