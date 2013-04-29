@@ -740,7 +740,9 @@ function getSelectedBookmarkNodes(opt_target) {
  * @return {!Array.<string>} An array of the selected bookmark IDs.
  */
 function getSelectedBookmarkIds() {
-  return getSelectedBookmarkNodes().map(function(node) {
+  var selectedNodes = getSelectedBookmarkNodes();
+  selectedNodes.sort(function(a, b) { return a.index - b.index });
+  return selectedNodes.map(function(node) {
     return node.id;
   });
 }
