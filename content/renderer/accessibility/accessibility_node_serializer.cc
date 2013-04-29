@@ -557,6 +557,9 @@ void SerializeAccessibilityNode(
       std::set<int> unique_cell_id_set;
       dst->int_attributes[dst->ATTR_TABLE_COLUMN_COUNT] = column_count;
       dst->int_attributes[dst->ATTR_TABLE_ROW_COUNT] = row_count;
+      WebAccessibilityObject header = src.headerContainerObject();
+      if (!header.isDetached())
+        dst->int_attributes[dst->ATTR_TABLE_HEADER_ID] = header.axID();
       for (int i = 0; i < column_count * row_count; ++i) {
         WebAccessibilityObject cell = src.cellForColumnAndRow(
             i % column_count, i / column_count);
@@ -571,6 +574,20 @@ void SerializeAccessibilityNode(
         dst->cell_ids.push_back(cell_id);
       }
     }
+  }
+
+  if (dst->role == dst->ROLE_ROW) {
+    dst->int_attributes[dst->ATTR_TABLE_ROW_INDEX] = src.rowIndex();
+    WebAccessibilityObject header = src.rowHeader();
+    if (!header.isDetached())
+      dst->int_attributes[dst->ATTR_TABLE_ROW_HEADER_ID] = header.axID();
+  }
+
+  if (dst->role == dst->ROLE_COLUMN) {
+    dst->int_attributes[dst->ATTR_TABLE_COLUMN_INDEX] = src.columnIndex();
+    WebAccessibilityObject header = src.columnHeader();
+    if (!header.isDetached())
+      dst->int_attributes[dst->ATTR_TABLE_COLUMN_HEADER_ID] = header.axID();
   }
 
   if (dst->role == dst->ROLE_CELL ||

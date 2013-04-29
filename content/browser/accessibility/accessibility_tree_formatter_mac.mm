@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/json/json_writer.h"
 #include "base/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -30,6 +31,8 @@ const char* kYCoordDictAttr = "y";
 const char* kSizeDictAttr = "size";
 const char* kWidthDictAttr = "width";
 const char* kHeightDictAttr = "height";
+const char* kRangeLocDictAttr = "loc";
+const char* kRangeLenDictAttr = "len";
 
 scoped_ptr<DictionaryValue> PopulatePosition(const BrowserAccessibility& node) {
   scoped_ptr<DictionaryValue> position(new DictionaryValue);
@@ -65,6 +68,20 @@ PopulateSize(const BrowserAccessibilityCocoa* cocoa_node) {
   return size.Pass();
 }
 
+scoped_ptr<DictionaryValue> PopulateRange(NSRange range) {
+  scoped_ptr<DictionaryValue> rangeDict(new DictionaryValue);
+  rangeDict->SetInteger(kRangeLocDictAttr, static_cast<int>(range.location));
+  rangeDict->SetInteger(kRangeLenDictAttr, static_cast<int>(range.length));
+  return rangeDict.Pass();
+}
+
+// Returns true if |value| is an NSValue containing a NSRange.
+bool IsRangeValue(id value) {
+  if (![value isKindOfClass:[NSValue class]])
+    return false;
+  return 0 == strcmp([value objCType], @encode(NSRange));
+}
+
 NSArray* BuildAllAttributesArray() {
   return [NSArray arrayWithObjects:
       NSAccessibilityRoleDescriptionAttribute,
@@ -83,13 +100,16 @@ NSArray* BuildAllAttributesArray() {
       @"AXARIABusy",
       @"AXARIALive",
       @"AXARIARelevant",
+      NSAccessibilityColumnIndexRangeAttribute,
       NSAccessibilityEnabledAttribute,
       NSAccessibilityFocusedAttribute,
+      NSAccessibilityIndexAttribute,
       @"AXLoaded",
       @"AXLoadingProcess",
       NSAccessibilityNumberOfCharactersAttribute,
       NSAccessibilityOrientationAttribute,
       @"AXRequired",
+      NSAccessibilityRowIndexRangeAttribute,
       NSAccessibilityURLAttribute,
       NSAccessibilityVisibleCharacterRangeAttribute,
       @"AXVisited",
@@ -125,7 +145,11 @@ void AccessibilityTreeFormatter::AddProperties(const BrowserAccessibility& node,
       continue;
     }
     id value = [cocoa_node accessibilityAttributeValue:requestedAttribute];
-    if (value != nil) {
+    if (IsRangeValue(value)) {
+      dict->Set(
+          SysNSStringToUTF8(requestedAttribute),
+          PopulateRange([value rangeValue]).release());
+    } else if (value != nil) {
       dict->SetString(
           SysNSStringToUTF8(requestedAttribute),
           SysNSStringToUTF16([NSString stringWithFormat:@"%@", value]));
@@ -157,6 +181,17 @@ string16 AccessibilityTreeFormatter::ToString(const DictionaryValue& dict,
   CR_DEFINE_STATIC_LOCAL(NSArray*, all_attributes, (BuildAllAttributesArray()));
   for (NSString* requestedAttribute in all_attributes) {
     string requestedAttributeUTF8 = SysNSStringToUTF8(requestedAttribute);
+    const DictionaryValue* d_value;
+    if (dict.GetDictionary(requestedAttributeUTF8, &d_value)) {
+      std::string json_value;
+      base::JSONWriter::Write(d_value, &json_value);
+      WriteAttribute(
+          [defaultAttributes containsObject:requestedAttribute],
+          StringPrintf("%s=%s",
+                       requestedAttributeUTF8.c_str(),
+                       json_value.c_str()),
+          &line);
+    }
     if (!dict.GetString(requestedAttributeUTF8, &s_value))
       continue;
     WriteAttribute([defaultAttributes containsObject:requestedAttribute],

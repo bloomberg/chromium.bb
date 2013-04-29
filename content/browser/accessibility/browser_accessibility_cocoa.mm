@@ -275,6 +275,9 @@ NSDictionary* attributeToMethodNameMap = nil;
   } attributeToMethodNameContainer[] = {
     { NSAccessibilityChildrenAttribute, @"children" },
     { NSAccessibilityColumnsAttribute, @"columns" },
+    { NSAccessibilityColumnHeaderUIElementsAttribute, @"columnHeaders" },
+    { NSAccessibilityColumnIndexRangeAttribute, @"columnIndexRange" },
+    { NSAccessibilityContentsAttribute, @"contents" },
     { NSAccessibilityDescriptionAttribute, @"description" },
     { NSAccessibilityDisclosingAttribute, @"disclosing" },
     { NSAccessibilityDisclosedByRowAttribute, @"disclosedByRow" },
@@ -282,7 +285,9 @@ NSDictionary* attributeToMethodNameMap = nil;
     { NSAccessibilityDisclosedRowsAttribute, @"disclosedRows" },
     { NSAccessibilityEnabledAttribute, @"enabled" },
     { NSAccessibilityFocusedAttribute, @"focused" },
+    { NSAccessibilityHeaderAttribute, @"header" },
     { NSAccessibilityHelpAttribute, @"help" },
+    { NSAccessibilityIndexAttribute, @"index" },
     { NSAccessibilityMaxValueAttribute, @"maxValue" },
     { NSAccessibilityMinValueAttribute, @"minValue" },
     { NSAccessibilityNumberOfCharactersAttribute, @"numberOfCharacters" },
@@ -291,6 +296,8 @@ NSDictionary* attributeToMethodNameMap = nil;
     { NSAccessibilityPositionAttribute, @"position" },
     { NSAccessibilityRoleAttribute, @"role" },
     { NSAccessibilityRoleDescriptionAttribute, @"roleDescription" },
+    { NSAccessibilityRowHeaderUIElementsAttribute, @"rowHeaders" },
+    { NSAccessibilityRowIndexRangeAttribute, @"rowIndexRange" },
     { NSAccessibilityRowsAttribute, @"rows" },
     { NSAccessibilitySizeAttribute, @"size" },
     { NSAccessibilitySubroleAttribute, @"subrole" },
@@ -302,6 +309,9 @@ NSDictionary* attributeToMethodNameMap = nil;
     { NSAccessibilityValueAttribute, @"value" },
     { NSAccessibilityValueDescriptionAttribute, @"valueDescription" },
     { NSAccessibilityVisibleCharacterRangeAttribute, @"visibleCharacterRange" },
+    { NSAccessibilityVisibleCellsAttribute, @"visibleCells" },
+    { NSAccessibilityVisibleColumnsAttribute, @"visibleColumns" },
+    { NSAccessibilityVisibleRowsAttribute, @"visibleRows" },
     { NSAccessibilityWindowAttribute, @"window" },
     { @"AXAccessKey", @"accessKey" },
     { @"AXARIAAtomic", @"ariaAtomic" },
@@ -424,6 +434,40 @@ NSDictionary* attributeToMethodNameMap = nil;
   }
 }
 
+- (NSArray*)columnHeaders {
+  if ([self internalRole] != AccessibilityNodeData::ROLE_TABLE &&
+      [self internalRole] != AccessibilityNodeData::ROLE_GRID) {
+    return nil;
+  }
+
+  NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
+  const std::vector<int32>& uniqueCellIds =
+      browserAccessibility_->unique_cell_ids();
+  for (size_t i = 0; i < uniqueCellIds.size(); ++i) {
+    int id = uniqueCellIds[i];
+    BrowserAccessibility* cell =
+        browserAccessibility_->manager()->GetFromRendererID(id);
+    if (cell && cell->role() == AccessibilityNodeData::ROLE_COLUMN_HEADER)
+      [ret addObject:cell->ToBrowserAccessibilityCocoa()];
+  }
+  return ret;
+}
+
+- (NSValue*)columnIndexRange {
+  if ([self internalRole] != AccessibilityNodeData::ROLE_CELL)
+    return nil;
+
+  int column = -1;
+  int colspan = -1;
+  browserAccessibility_->GetIntAttribute(
+      AccessibilityNodeData::ATTR_TABLE_CELL_COLUMN_INDEX, &column);
+  browserAccessibility_->GetIntAttribute(
+      AccessibilityNodeData::ATTR_TABLE_CELL_COLUMN_SPAN, &colspan);
+  if (column >= 0 && colspan >= 1)
+    return [NSValue valueWithRange:NSMakeRange(column, colspan)];
+  return nil;
+}
+
 - (NSArray*)columns {
   NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
   for (BrowserAccessibilityCocoa* child in [self children]) {
@@ -517,10 +561,51 @@ NSDictionary* attributeToMethodNameMap = nil;
   return ret;
 }
 
+- (id)header {
+  int headerElementId = -1;
+  if ([self internalRole] == AccessibilityNodeData::ROLE_TABLE ||
+      [self internalRole] == AccessibilityNodeData::ROLE_GRID) {
+    browserAccessibility_->GetIntAttribute(
+        AccessibilityNodeData::ATTR_TABLE_HEADER_ID, &headerElementId);
+  } else if ([self internalRole] == AccessibilityNodeData::ROLE_COLUMN) {
+    browserAccessibility_->GetIntAttribute(
+        AccessibilityNodeData::ATTR_TABLE_COLUMN_HEADER_ID, &headerElementId);
+  } else if ([self internalRole] == AccessibilityNodeData::ROLE_ROW) {
+    browserAccessibility_->GetIntAttribute(
+        AccessibilityNodeData::ATTR_TABLE_ROW_HEADER_ID, &headerElementId);
+  }
+
+  if (headerElementId > 0) {
+    BrowserAccessibility* headerObject =
+        browserAccessibility_->manager()->GetFromRendererID(headerElementId);
+    if (headerObject)
+      return headerObject->ToBrowserAccessibilityCocoa();
+  }
+  return nil;
+}
+
 - (NSString*)help {
   return NSStringForStringAttribute(
       browserAccessibility_->string_attributes(),
       AccessibilityNodeData::ATTR_HELP);
+}
+
+- (NSNumber*)index {
+  if ([self internalRole] == AccessibilityNodeData::ROLE_COLUMN) {
+    int columnIndex;
+    if (browserAccessibility_->GetIntAttribute(
+            AccessibilityNodeData::ATTR_TABLE_COLUMN_INDEX, &columnIndex)) {
+      return [NSNumber numberWithInt:columnIndex];
+    }
+  } else if ([self internalRole] == AccessibilityNodeData::ROLE_ROW) {
+    int rowIndex;
+    if (browserAccessibility_->GetIntAttribute(
+            AccessibilityNodeData::ATTR_TABLE_ROW_INDEX, &rowIndex)) {
+      return [NSNumber numberWithInt:rowIndex];
+    }
+  }
+
+  return nil;
 }
 
 // Returns whether or not this node should be ignored in the
@@ -679,11 +764,59 @@ NSDictionary* attributeToMethodNameMap = nil;
   return NSAccessibilityRoleDescription(role, nil);
 }
 
+- (NSArray*)rowHeaders {
+  if ([self internalRole] != AccessibilityNodeData::ROLE_TABLE &&
+      [self internalRole] != AccessibilityNodeData::ROLE_GRID) {
+    return nil;
+  }
+
+  NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
+  const std::vector<int32>& uniqueCellIds =
+      browserAccessibility_->unique_cell_ids();
+  for (size_t i = 0; i < uniqueCellIds.size(); ++i) {
+    int id = uniqueCellIds[i];
+    BrowserAccessibility* cell =
+        browserAccessibility_->manager()->GetFromRendererID(id);
+    if (cell && cell->role() == AccessibilityNodeData::ROLE_ROW_HEADER)
+      [ret addObject:cell->ToBrowserAccessibilityCocoa()];
+  }
+  return ret;
+}
+
+- (NSValue*)rowIndexRange {
+  if ([self internalRole] != AccessibilityNodeData::ROLE_CELL)
+    return nil;
+
+  int row = -1;
+  int rowspan = -1;
+  browserAccessibility_->GetIntAttribute(
+      AccessibilityNodeData::ATTR_TABLE_CELL_ROW_INDEX, &row);
+  browserAccessibility_->GetIntAttribute(
+      AccessibilityNodeData::ATTR_TABLE_CELL_ROW_SPAN, &rowspan);
+  if (row >= 0 && rowspan >= 1)
+    return [NSValue valueWithRange:NSMakeRange(row, rowspan)];
+  return nil;
+}
+
 - (NSArray*)rows {
   NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
-  for (BrowserAccessibilityCocoa* child in [self children]) {
-    if ([[child role] isEqualToString:NSAccessibilityRowRole])
-      [ret addObject:child];
+
+  if ([self internalRole] == AccessibilityNodeData::ROLE_TABLE||
+      [self internalRole] == AccessibilityNodeData::ROLE_GRID) {
+    for (BrowserAccessibilityCocoa* child in [self children]) {
+      if ([[child role] isEqualToString:NSAccessibilityRowRole])
+        [ret addObject:child];
+    }
+  } else if ([self internalRole] == AccessibilityNodeData::ROLE_COLUMN) {
+    const std::vector<int32>& indirectChildIds =
+        browserAccessibility_->indirect_child_ids();
+    for (uint32 i = 0; i < indirectChildIds.size(); ++i) {
+      int id = indirectChildIds[i];
+      BrowserAccessibility* rowElement =
+          browserAccessibility_->manager()->GetFromRendererID(id);
+      if (rowElement)
+        [ret addObject:rowElement->ToBrowserAccessibilityCocoa()];
+    }
   }
 
   return ret;
@@ -827,6 +960,28 @@ NSDictionary* attributeToMethodNameMap = nil;
       NSMakeRange(0, browserAccessibility_->value().length())];
 }
 
+- (NSArray*)visibleCells {
+  NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
+  const std::vector<int32>& uniqueCellIds =
+      browserAccessibility_->unique_cell_ids();
+  for (size_t i = 0; i < uniqueCellIds.size(); ++i) {
+    int id = uniqueCellIds[i];
+    BrowserAccessibility* cell =
+        browserAccessibility_->manager()->GetFromRendererID(id);
+    if (cell)
+      [ret addObject:cell->ToBrowserAccessibilityCocoa()];
+  }
+  return ret;
+}
+
+- (NSArray*)visibleColumns {
+  return [self columns];
+}
+
+- (NSArray*)visibleRows {
+  return [self rows];
+}
+
 - (NSNumber*)visited {
   return [NSNumber numberWithBool:
       GetState(browserAccessibility_, AccessibilityNodeData::STATE_TRAVERSED)];
@@ -914,6 +1069,63 @@ NSDictionary* attributeToMethodNameMap = nil;
         NSMakeRange(start, end - start)];
   }
 
+  if ([attribute isEqualToString:
+      NSAccessibilityCellForColumnAndRowParameterizedAttribute]) {
+    if ([self internalRole] != AccessibilityNodeData::ROLE_TABLE &&
+        [self internalRole] != AccessibilityNodeData::ROLE_GRID) {
+      return nil;
+    }
+    if (![parameter isKindOfClass:[NSArray self]])
+      return nil;
+    NSArray* array = parameter;
+    int column = [[array objectAtIndex:0] intValue];
+    int row = [[array objectAtIndex:1] intValue];
+    int num_columns = 0;
+    int num_rows = 0;
+    browserAccessibility_->GetIntAttribute(
+        AccessibilityNodeData::ATTR_TABLE_COLUMN_COUNT, &num_columns);
+    browserAccessibility_->GetIntAttribute(
+        AccessibilityNodeData::ATTR_TABLE_ROW_COUNT, &num_rows);
+    if (column < 0 || column >= num_columns ||
+        row < 0 || row >= num_rows) {
+      return nil;
+    }
+    for (size_t i = 0;
+         i < browserAccessibility_->child_count();
+         ++i) {
+      BrowserAccessibility* child = browserAccessibility_->GetChild(i);
+      if (child->role() != AccessibilityNodeData::ROLE_ROW)
+        continue;
+      int rowIndex;
+      if (!child->GetIntAttribute(
+              AccessibilityNodeData::ATTR_TABLE_ROW_INDEX, &rowIndex)) {
+        continue;
+      }
+      if (rowIndex < row)
+        continue;
+      if (rowIndex > row)
+        break;
+      for (size_t j = 0;
+           j < child->child_count();
+           ++j) {
+        BrowserAccessibility* cell = child->GetChild(j);
+        if (cell->role() != AccessibilityNodeData::ROLE_CELL)
+          continue;
+        int colIndex;
+        if (!cell->GetIntAttribute(
+                AccessibilityNodeData::ATTR_TABLE_CELL_COLUMN_INDEX,
+                &colIndex)) {
+          continue;
+        }
+        if (colIndex == column)
+          return cell->ToBrowserAccessibilityCocoa();
+        if (colIndex > column)
+          break;
+      }
+    }
+    return nil;
+  }
+
   // TODO(dtseng): support the following attributes.
   if ([attribute isEqualTo:
           NSAccessibilityRangeForPositionParameterizedAttribute] ||
@@ -932,6 +1144,12 @@ NSDictionary* attributeToMethodNameMap = nil;
 // Returns an array of parameterized attributes names that this object will
 // respond to.
 - (NSArray*)accessibilityParameterizedAttributeNames {
+  if ([[self role] isEqualToString:NSAccessibilityTableRole] ||
+      [[self role] isEqualToString:NSAccessibilityGridRole]) {
+    return [NSArray arrayWithObjects:
+        NSAccessibilityCellForColumnAndRowParameterizedAttribute,
+        nil];
+  }
   if ([[self role] isEqualToString:NSAccessibilityTextFieldRole] ||
       [[self role] isEqualToString:NSAccessibilityTextAreaRole]) {
     return [NSArray arrayWithObjects:
@@ -1023,10 +1241,29 @@ NSDictionary* attributeToMethodNameMap = nil;
   // Specific role attributes.
   NSString* role = [self role];
   NSString* subrole = [self subrole];
-  if ([role isEqualToString:NSAccessibilityTableRole]) {
+  if ([role isEqualToString:NSAccessibilityTableRole] ||
+      [role isEqualToString:NSAccessibilityGridRole]) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         NSAccessibilityColumnsAttribute,
+        NSAccessibilityVisibleColumnsAttribute,
         NSAccessibilityRowsAttribute,
+        NSAccessibilityVisibleRowsAttribute,
+        NSAccessibilityVisibleCellsAttribute,
+        NSAccessibilityHeaderAttribute,
+        NSAccessibilityColumnHeaderUIElementsAttribute,
+        NSAccessibilityRowHeaderUIElementsAttribute,
+        nil]];
+  } else if ([role isEqualToString:NSAccessibilityColumnRole]) {
+    [ret addObjectsFromArray:[NSArray arrayWithObjects:
+        NSAccessibilityIndexAttribute,
+        NSAccessibilityHeaderAttribute,
+        NSAccessibilityRowsAttribute,
+        NSAccessibilityVisibleRowsAttribute,
+        nil]];
+  } else if ([role isEqualToString:NSAccessibilityCellRole]) {
+    [ret addObjectsFromArray:[NSArray arrayWithObjects:
+        NSAccessibilityColumnIndexRangeAttribute,
+        NSAccessibilityRowIndexRangeAttribute,
         nil]];
   } else if ([role isEqualToString:@"AXWebArea"]) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
@@ -1073,10 +1310,13 @@ NSDictionary* attributeToMethodNameMap = nil;
             NSAccessibilityDisclosureLevelAttribute,
             NSAccessibilityDisclosedRowsAttribute,
             nil]];
+      } else {
+        [ret addObjectsFromArray:[NSArray arrayWithObjects:
+            NSAccessibilityIndexAttribute,
+            nil]];
       }
     }
   }
-
 
   // Live regions.
   string16 s;

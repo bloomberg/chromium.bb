@@ -1,0 +1,13 @@
+AXWebArea AXTitle='Table example with rowspan and colspan'
+    AXTable
+        AXRow AXIndex='0'
+            AXCell AXColumnIndexRange={"len":1,"loc":0} AXRowIndexRange={"len":2,"loc":0}
+                AXStaticText AXValue='AD'
+            AXCell AXColumnIndexRange={"len":2,"loc":1} AXRowIndexRange={"len":1,"loc":0}
+                AXStaticText AXValue='BC'
+        AXRow AXIndex='1'
+            AXCell AXColumnIndexRange={"len":2,"loc":1} AXRowIndexRange={"len":1,"loc":1}
+                AXStaticText AXValue='EF'
+        AXColumn AXIndex='0'
+        AXColumn AXIndex='1'
+        AXGroup

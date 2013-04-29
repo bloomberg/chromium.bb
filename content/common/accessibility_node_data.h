@@ -214,6 +214,15 @@ struct CONTENT_EXPORT AccessibilityNodeData {
     // Table attributes.
     ATTR_TABLE_ROW_COUNT,
     ATTR_TABLE_COLUMN_COUNT,
+    ATTR_TABLE_HEADER_ID,
+
+    // Table row attributes.
+    ATTR_TABLE_ROW_INDEX,
+    ATTR_TABLE_ROW_HEADER_ID,
+
+    // Table column attributes.
+    ATTR_TABLE_COLUMN_INDEX,
+    ATTR_TABLE_COLUMN_HEADER_ID,
 
     // Table cell attributes.
     ATTR_TABLE_CELL_COLUMN_INDEX,
