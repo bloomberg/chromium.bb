@@ -27,6 +27,7 @@ typedef unsigned long XSharedMemoryId;  // ShmSeg in the X headers.
 typedef struct _XDisplay Display;
 typedef unsigned long Cursor;
 typedef struct _XcursorImage XcursorImage;
+typedef union _XEvent XEvent;
 typedef struct _XImage XImage;
 typedef struct _XGC *GC;
 

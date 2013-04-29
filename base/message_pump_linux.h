@@ -23,7 +23,6 @@ class BASE_EXPORT MessagePumpLinux : public MessagePumpLibevent,
                                      public MessagePumpDispatcher {
  public:
   MessagePumpLinux();
-  virtual ~MessagePumpLinux();
 
   // Returns the UI message pump.
   static MessagePumpLinux* Current();
@@ -43,6 +42,7 @@ class BASE_EXPORT MessagePumpLinux : public MessagePumpLibevent,
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
  private:
+  virtual ~MessagePumpLinux();
   std::vector<MessagePumpDispatcher*> dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePumpLinux);
