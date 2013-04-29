@@ -28,12 +28,12 @@ enum {
 const int kMaxBubbleViewWidth = 262;
 
 // The horizontal padding between the title and the icon.
-const int kTitleHorizontalPadding = 3;
+const int kTitleHorizontalPadding = 5;
 
 // The vertical inset of the wrench bubble anchor from the wrench menu button.
 const int kAnchorVerticalInset = 5;
 
-const int kLayoutBottomPadding = 2;
+const int kBubblePadding = 6;
 
 }  // namespace
 
@@ -107,7 +107,8 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
 
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
-  layout->SetInsets(0, 0, kLayoutBottomPadding, 0);
+  layout->SetInsets(kBubblePadding, kBubblePadding,
+                    kBubblePadding, kBubblePadding);
 
   // Top row, icon and title.
   views::ColumnSet* cs = layout->AddColumnSet(0);
@@ -136,7 +137,7 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
   layout->StartRow(1, 0);
   layout->AddView(image_view.release());
   layout->AddView(title_label.release());
-  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   for (size_t i = 0; i < message_labels.size(); ++i) {
     layout->StartRow(1, 1);
