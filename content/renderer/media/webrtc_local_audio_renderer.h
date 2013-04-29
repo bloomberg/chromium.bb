@@ -11,13 +11,17 @@
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
-#include "content/renderer/media/webrtc_local_audio_track.h"
+#include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 #include "webkit/media/media_stream_audio_renderer.h"
 
 namespace media {
 class AudioBus;
 class AudioOutputDevice;
 class AudioParameters;
+}
+
+namespace webrtc {
+class AudioTrackInterface;
 }
 
 namespace content {
@@ -28,7 +32,7 @@ class WebRtcAudioCapturer;
 // designed for rendering local audio media stream tracks,
 // http://dev.w3.org/2011/webrtc/editor/getusermedia.html#mediastreamtrack
 // It also implements media::AudioRendererSink::RenderCallback to render audio
-// data provided from a WebRtcLocalAudioTrack source.
+// data provided from a WebRtcAudioCapturer source which is set at construction.
 // When the audio layer in the browser process asks for data to render, this
 // class provides the data by implementing the WebRtcAudioCapturerSink
 // interface, i.e., we are a sink seen from the WebRtcAudioCapturer perspective.
@@ -39,12 +43,14 @@ class WebRtcAudioCapturer;
 class CONTENT_EXPORT WebRtcLocalAudioRenderer
     : NON_EXPORTED_BASE(public webkit_media::MediaStreamAudioRenderer),
       NON_EXPORTED_BASE(public media::AudioRendererSink::RenderCallback),
-      NON_EXPORTED_BASE(public WebRtcAudioCapturerSink) {
+      NON_EXPORTED_BASE(public WebRtcAudioCapturerSink),
+      NON_EXPORTED_BASE(public webrtc::ObserverInterface) {
  public:
   // Creates a local renderer and registers a capturing |source| object.
   // The |source| is owned by the WebRtcAudioDeviceImpl.
   // Called on the main thread.
-  WebRtcLocalAudioRenderer(WebRtcLocalAudioTrack* audio_track,
+  WebRtcLocalAudioRenderer(const scoped_refptr<WebRtcAudioCapturer>& source,
+                           webrtc::AudioTrackInterface* audio_track,
                            int source_render_view_id);
 
   // webkit_media::MediaStreamAudioRenderer implementation.
@@ -57,14 +63,6 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   virtual base::TimeDelta GetCurrentRenderTime() const OVERRIDE;
   virtual bool IsLocalRenderer() const OVERRIDE;
 
-  const base::TimeDelta& total_render_time() const {
-    return total_render_time_;
-  }
-
- protected:
-  virtual ~WebRtcLocalAudioRenderer();
-
- private:
   // content::WebRtcAudioCapturerSink implementation.
 
   // Called on the AudioInputDevice worker thread.
@@ -84,13 +82,24 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
                      int audio_delay_milliseconds) OVERRIDE;
   virtual void OnRenderError() OVERRIDE;
 
-  // The audio track which provides data to render. Given that this class
-  // implements local loopback, the audio track is getting data from a capture
-  // instance like a selected microphone and forwards the recorded data to its
-  // sinks. The recorded data is stored in a FIFO and consumed
+  // webrtc::ObserverInterface implementation.
+  // Called on the main render thread.
+  virtual void OnChanged() OVERRIDE;
+
+  base::TimeDelta total_render_time() const { return total_render_time_; }
+
+ protected:
+  virtual ~WebRtcLocalAudioRenderer();
+
+ private:
+  // The source of data to render. Given that this class implements local
+  // loopback, the source is a capture instance reading data from the
+  // selected microphone. The recorded data is stored in a FIFO and consumed
   // by this class when the sink asks for new data.
   // The WebRtcAudioCapturer is today created by WebRtcAudioDeviceImpl.
-  scoped_refptr<WebRtcLocalAudioTrack> audio_track_;
+  scoped_refptr<WebRtcAudioCapturer> source_;
+
+  scoped_refptr<webrtc::AudioTrackInterface> audio_track_;
 
   // The render view in which the audio is rendered into |sink_|.
   const int source_render_view_id_;
@@ -112,11 +121,11 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   // Keeps track of total time audio has been rendered.
   base::TimeDelta total_render_time_;
 
-  // The audio parameters used by the renderer.
-  media::AudioParameters audio_params_;
-
   // Set when playing, cleared when paused.
   bool playing_;
+
+  // Stores latest media track state for the enabled attribute.
+  bool track_is_enabled_;
 
   // Protects |loopback_fifo_|, |playing_| and |sink_|.
   mutable base::Lock thread_lock_;
