@@ -58,7 +58,7 @@
           # Remove -g from all targets defined here.
           'cflags!': ['-g'],
         }],
-        ['os_posix==1 and OS!="mac" and gcc_version>=46', {
+        ['gcc_version>=46', {
           # Disable warnings about c++0x compatibility, as some names (such as
           # nullptr) conflict with upcoming c++0x types.
           'cflags_cc': ['-Wno-c++0x-compat'],

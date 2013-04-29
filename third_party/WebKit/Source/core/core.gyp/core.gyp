@@ -978,7 +978,7 @@
         },{ # OS!="mac"
           'sources/': [['exclude', 'Mac\\.(cpp|mm?)$']]
         }],
-        ['os_posix == 1 and OS != "mac" and gcc_version == 42', {
+        ['gcc_version == 42', {
           # Due to a bug in gcc 4.2.1 (the current version on hardy), we get
           # warnings about uninitialized this.
           'cflags': ['-Wno-uninitialized'],
@@ -1035,7 +1035,7 @@
         ['OS=="win" and buildtype=="Official"', {
           'msvs_shard': 19,
         }],
-        ['os_posix == 1 and OS != "mac" and gcc_version == 42', {
+        ['gcc_version == 42', {
           # Due to a bug in gcc 4.2.1 (the current version on hardy), we get
           # warnings about uninitialized this.
           'cflags': ['-Wno-uninitialized'],
