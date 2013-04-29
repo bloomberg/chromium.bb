@@ -6,7 +6,6 @@ package org.chromium.android_webview.test;
 
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -44,17 +43,9 @@ public class ContentViewZoomTest extends AwTestBase {
     }
 
     private String getZoomableHtml() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("<html><head><meta name=\"viewport\" content=\""
-                  + "width=device-width, minimum-scale=0.5, maximum-scale=2.0, initial-scale=0.5"
-                  + "\"/></head><body>");
-
-        for (int i = 0; i < 1000; i++) {
-            sb.append("This is body. ");
-        }
-
-        sb.append("</body></html>");
-        return sb.toString();
+        return "<html><head><meta name=\"viewport\" content=\"" +
+                "width=device-width, minimum-scale=0.5, maximum-scale=2.0, initial-scale=0.5" +
+                "\"/></head><body>Zoomable</body></html>";
     }
 
     private String getNonZoomableHtml() {
@@ -177,27 +168,11 @@ public class ContentViewZoomTest extends AwTestBase {
             }, TEST_TIMEOUT_MS, CHECK_INTERVAL_MS);
     }
 
-    private boolean waitUntilCanNotZoomOut() throws Throwable {
-        return CriteriaHelper.pollForCriteria(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    try {
-                        return !canZoomOutOnUiThread();
-                    } catch (Throwable t) {
-                        t.printStackTrace();
-                        fail("Failed to query canZoomIn/Out: " + t.toString());
-                        return false;
-                    }
-                }
-            }, TEST_TIMEOUT_MS, CHECK_INTERVAL_MS);
-    }
-
     private void runMagnificationTest(boolean supportZoom) throws Throwable {
-        getAwSettingsOnUiThread(mAwContents).setUseWideViewPort(true);
+        int onScaleChangedCallCount = mContentsClient.getOnScaleChangedHelper().getCallCount();
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 getZoomableHtml(), "text/html", false);
-        // It takes some time for scaling to settle down.
-        waitUntilCanNotZoomOut();
+        mContentsClient.getOnScaleChangedHelper().waitForCallback(onScaleChangedCallCount);
         getContentSettingsOnUiThread(mAwContents).setSupportZoom(supportZoom);
         assertTrue("Should be able to zoom in", canZoomInOnUiThread());
         assertFalse("Should not be able to zoom out", canZoomOutOnUiThread());
@@ -213,24 +188,16 @@ public class ContentViewZoomTest extends AwTestBase {
         assertTrue("Should be able to zoom in", canZoomInOnUiThread());
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"AndroidWebView"})
-     * BUG 153522
-     */
-    @FlakyTest
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testMagnification() throws Throwable {
         runMagnificationTest(true);
     }
 
     // According to Android CTS test, zoomIn/Out must work
     // even if supportZoom is turned off.
-    /**
-     * @SmallTest
-     * @Feature({"AndroidWebView"})
-     * BUG 153522
-     */
-    @FlakyTest
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testMagnificationWithZoomSupportOff() throws Throwable {
         runMagnificationTest(false);
     }
@@ -239,7 +206,6 @@ public class ContentViewZoomTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     public void testZoomUsingMultiTouch() throws Throwable {
         AwSettings webSettings = getAwSettingsOnUiThread(mAwContents);
-        webSettings.setUseWideViewPort(true);
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 getZoomableHtml(), "text/html", false);
 
@@ -254,15 +220,10 @@ public class ContentViewZoomTest extends AwTestBase {
         assertFalse(isMultiTouchZoomSupportedOnUiThread());
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"AndroidWebView"})
-     * BUG 153522
-     */
-    @FlakyTest
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testZoomControls() throws Throwable {
         AwSettings webSettings = getAwSettingsOnUiThread(mAwContents);
-        webSettings.setUseWideViewPort(true);
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 getZoomableHtml(), "text/html", false);
 
@@ -287,7 +248,6 @@ public class ContentViewZoomTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     public void testZoomControlsOnNonZoomableContent() throws Throwable {
         AwSettings webSettings = getAwSettingsOnUiThread(mAwContents);
-        webSettings.setUseWideViewPort(true);
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 getNonZoomableHtml(), "text/html", false);
 
@@ -307,7 +267,6 @@ public class ContentViewZoomTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     public void testZoomControlsOnOrientationChange() throws Throwable {
         AwSettings webSettings = getAwSettingsOnUiThread(mAwContents);
-        webSettings.setUseWideViewPort(true);
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 getZoomableHtml(), "text/html", false);
 
