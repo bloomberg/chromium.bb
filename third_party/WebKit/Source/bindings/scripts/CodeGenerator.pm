@@ -519,6 +519,7 @@ sub WK_lcfirst
     $ret =~ s/xML/xml/ if $ret =~ /^xML/;
     $ret =~ s/xSLT/xslt/ if $ret =~ /^xSLT/;
     $ret =~ s/cSS/css/ if $ret =~ /^cSS/;
+    $ret =~ s/iME/ime/ if $ret =~ /^iME/;
 
     # For HTML5 FileSystem API Flags attributes.
     # (create is widely used to instantiate an object and must be avoided.)
