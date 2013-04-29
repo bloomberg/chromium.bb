@@ -743,6 +743,8 @@
         'browser/history/thumbnail_database.h',
         'browser/history/top_sites.cc',
         'browser/history/top_sites.h',
+        'browser/history/top_sites_impl.cc',
+        'browser/history/top_sites_impl.h',
         'browser/history/top_sites_backend.cc',
         'browser/history/top_sites_backend.h',
         'browser/history/top_sites_cache.cc',

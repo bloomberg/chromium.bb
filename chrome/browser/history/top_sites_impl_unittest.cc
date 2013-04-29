@@ -19,10 +19,10 @@
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_unittest_base.h"
-#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/history/top_sites_backend.h"
 #include "chrome/browser/history/top_sites_cache.h"
 #include "chrome/browser/history/top_sites_database.h"
+#include "chrome/browser/history/top_sites_impl.h"
 #include "chrome/browser/ui/webui/ntp/most_visited_handler.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/chrome_constants.h"
@@ -80,7 +80,7 @@ class TopSitesQuerier {
 
   // Queries top sites. If |wait| is true a nested message loop is run until the
   // callback is notified.
-  void QueryTopSites(TopSites* top_sites, bool wait) {
+  void QueryTopSites(TopSitesImpl* top_sites, bool wait) {
     int start_number_of_callbacks = number_of_callbacks_;
     top_sites->GetMostVisitedURLs(
         base::Bind(&TopSitesQuerier::OnTopSitesAvailable,
@@ -101,7 +101,7 @@ class TopSitesQuerier {
   int number_of_callbacks() const { return number_of_callbacks_; }
 
  private:
-  // Callback for TopSites::GetMostVisitedURLs.
+  // Callback for TopSitesImpl::GetMostVisitedURLs.
   void OnTopSitesAvailable(const history::MostVisitedURLList& data) {
     urls_ = data;
     number_of_callbacks_++;
@@ -139,9 +139,9 @@ bool ThumbnailsAreEqual(base::RefCountedMemory* t1,
 
 }  // namespace
 
-class TopSitesTest : public HistoryUnitTestBase {
+class TopSitesImplTest : public HistoryUnitTestBase {
  public:
-  TopSitesTest()
+  TopSitesImplTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
         db_thread_(BrowserThread::DB, &message_loop_) {
   }
@@ -200,12 +200,14 @@ class TopSitesTest : public HistoryUnitTestBase {
   // to wait until top sites finishes processing a task.
   void WaitForTopSites() {
     top_sites()->backend_->DoEmptyRequest(
-        base::Bind(&TopSitesTest::QuitCallback, base::Unretained(this)),
+        base::Bind(&TopSitesImplTest::QuitCallback, base::Unretained(this)),
         &cancelable_task_tracker_);
     MessageLoop::current()->Run();
   }
 
-  TopSites* top_sites() { return profile_->GetTopSites(); }
+  TopSitesImpl* top_sites() {
+    return static_cast<TopSitesImpl*>(profile_->GetTopSites());
+  }
   CancelableRequestConsumer* consumer() { return &consumer_; }
   TestingProfile* profile() {return profile_.get();}
   HistoryService* history_service() {
@@ -282,7 +284,7 @@ class TopSitesTest : public HistoryUnitTestBase {
   bool ThumbnailEqualsBytes(const gfx::Image& image,
                             base::RefCountedMemory* bytes) {
     scoped_refptr<base::RefCountedBytes> encoded_image;
-    TopSites::EncodeBitmap(image, &encoded_image);
+    TopSitesImpl::EncodeBitmap(image, &encoded_image);
     return ThumbnailsAreEqual(encoded_image, bytes);
   }
 
@@ -336,15 +338,15 @@ class TopSitesTest : public HistoryUnitTestBase {
   // To cancel TopSitesBackend tasks.
   CancelableTaskTracker cancelable_task_tracker_;
 
-  DISALLOW_COPY_AND_ASSIGN(TopSitesTest);
-};  // Class TopSitesTest
+  DISALLOW_COPY_AND_ASSIGN(TopSitesImplTest);
+};  // Class TopSitesImplTest
 
-class TopSitesMigrationTest : public TopSitesTest {
+class TopSitesMigrationTest : public TopSitesImplTest {
  public:
   TopSitesMigrationTest() {}
 
   virtual void SetUp() {
-    TopSitesTest::SetUp();
+    TopSitesImplTest::SetUp();
 
     base::FilePath data_path;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
@@ -420,7 +422,7 @@ static void AppendMostVisitedURLWithRedirect(
 }
 
 // Tests GetCanonicalURL.
-TEST_F(TopSitesTest, GetCanonicalURL) {
+TEST_F(TopSitesImplTest, GetCanonicalURL) {
   // Have two chains:
   //   google.com -> www.google.com
   //   news.google.com (no redirects)
@@ -451,7 +453,7 @@ TEST_F(TopSitesTest, GetCanonicalURL) {
 }
 
 // Tests DiffMostVisited.
-TEST_F(TopSitesTest, DiffMostVisited) {
+TEST_F(TopSitesImplTest, DiffMostVisited) {
   GURL stays_the_same("http://staysthesame/");
   GURL gets_added_1("http://getsadded1/");
   GURL gets_added_2("http://getsadded2/");
@@ -470,7 +472,7 @@ TEST_F(TopSitesTest, DiffMostVisited) {
   AppendMostVisitedURL(&new_list, gets_moved_1);    // 3  (moved from 2)
 
   history::TopSitesDelta delta;
-  history::TopSites::DiffMostVisited(old_list, new_list, &delta);
+  history::TopSitesImpl::DiffMostVisited(old_list, new_list, &delta);
 
   ASSERT_EQ(2u, delta.added.size());
   ASSERT_TRUE(gets_added_1 == delta.added[0].url.url);
@@ -487,7 +489,7 @@ TEST_F(TopSitesTest, DiffMostVisited) {
 }
 
 // Tests SetPageThumbnail.
-TEST_F(TopSitesTest, SetPageThumbnail) {
+TEST_F(TopSitesImplTest, SetPageThumbnail) {
   GURL url1a("http://google.com/");
   GURL url1b("http://www.google.com/");
   GURL url2("http://images.google.com/");
@@ -532,7 +534,7 @@ TEST_F(TopSitesTest, SetPageThumbnail) {
 }
 
 // Makes sure a thumbnail is correctly removed when the page is removed.
-TEST_F(TopSitesTest, ThumbnailRemoved) {
+TEST_F(TopSitesImplTest, ThumbnailRemoved) {
   GURL url("http://google.com/");
 
   // Configure top sites with 'google.com'.
@@ -563,7 +565,7 @@ TEST_F(TopSitesTest, ThumbnailRemoved) {
 }
 
 // Tests GetPageThumbnail.
-TEST_F(TopSitesTest, GetPageThumbnail) {
+TEST_F(TopSitesImplTest, GetPageThumbnail) {
   MostVisitedURLList url_list;
   MostVisitedURL url1;
   url1.url = GURL("http://asdf.com");
@@ -602,7 +604,7 @@ TEST_F(TopSitesTest, GetPageThumbnail) {
 }
 
 // Tests GetMostVisitedURLs.
-TEST_F(TopSitesTest, GetMostVisited) {
+TEST_F(TopSitesImplTest, GetMostVisited) {
   GURL news("http://news.google.com/");
   GURL google("http://google.com/");
 
@@ -625,7 +627,7 @@ TEST_F(TopSitesTest, GetMostVisited) {
 }
 
 // Makes sure changes done to top sites get mirrored to the db.
-TEST_F(TopSitesTest, SaveToDB) {
+TEST_F(TopSitesImplTest, SaveToDB) {
   MostVisitedURL url;
   GURL asdf_url("http://asdf.com");
   string16 asdf_title(ASCIIToUTF16("ASDF"));
@@ -689,7 +691,7 @@ TEST_F(TopSitesTest, SaveToDB) {
 }
 
 // More permutations of saving to db.
-TEST_F(TopSitesTest, RealDatabase) {
+TEST_F(TopSitesImplTest, RealDatabase) {
   MostVisitedURL url;
   GURL asdf_url("http://asdf.com");
   string16 asdf_title(ASCIIToUTF16("ASDF"));
@@ -802,7 +804,7 @@ TEST_F(TopSitesTest, RealDatabase) {
   }
 }
 
-TEST_F(TopSitesTest, DeleteNotifications) {
+TEST_F(TopSitesImplTest, DeleteNotifications) {
   GURL google1_url("http://google.com");
   GURL google2_url("http://google.com/redirect");
   GURL google3_url("http://www.google.com");
@@ -874,7 +876,7 @@ TEST_F(TopSitesTest, DeleteNotifications) {
 }
 
 // Makes sure GetUpdateDelay is updated appropriately.
-TEST_F(TopSitesTest, GetUpdateDelay) {
+TEST_F(TopSitesImplTest, GetUpdateDelay) {
   SetLastNumUrlsChanged(0);
   EXPECT_EQ(30, GetUpdateDelay().InSeconds());
 
@@ -920,7 +922,7 @@ TEST_F(TopSitesMigrationTest, Migrate) {
 
 // Verifies that callbacks are notified correctly if requested before top sites
 // has loaded.
-TEST_F(TopSitesTest, NotifyCallbacksWhenLoaded) {
+TEST_F(TopSitesImplTest, NotifyCallbacksWhenLoaded) {
   // Recreate top sites. It won't be loaded now.
   profile()->CreateTopSites();
 
@@ -1006,7 +1008,7 @@ TEST_F(TopSitesTest, NotifyCallbacksWhenLoaded) {
 }
 
 // Makes sure canceled requests are not notified.
-TEST_F(TopSitesTest, CancelingRequestsForTopSites) {
+TEST_F(TopSitesImplTest, CancelingRequestsForTopSites) {
   // Recreate top sites. It won't be loaded now.
   profile()->CreateTopSites();
 
@@ -1037,7 +1039,7 @@ TEST_F(TopSitesTest, CancelingRequestsForTopSites) {
 }
 
 // Makes sure temporary thumbnails are copied over correctly.
-TEST_F(TopSitesTest, AddTemporaryThumbnail) {
+TEST_F(TopSitesImplTest, AddTemporaryThumbnail) {
   GURL unknown_url("http://news.google.com/");
   GURL invalid_url("chrome://thumb/http://google.com/");
   GURL url1a("http://google.com/");
@@ -1084,7 +1086,7 @@ TEST_F(TopSitesTest, AddTemporaryThumbnail) {
 }
 
 // Tests variations of blacklisting.
-TEST_F(TopSitesTest, Blacklisting) {
+TEST_F(TopSitesImplTest, Blacklisting) {
   MostVisitedURLList pages;
   MostVisitedURL url, url1;
   url.url = GURL("http://bbc.com/");
@@ -1175,7 +1177,7 @@ TEST_F(TopSitesTest, Blacklisting) {
 }
 
 // Makes sure prepopulated pages exist.
-TEST_F(TopSitesTest, AddPrepopulatedPages) {
+TEST_F(TopSitesImplTest, AddPrepopulatedPages) {
   TopSitesQuerier q;
   q.QueryTopSites(top_sites(), true);
   EXPECT_EQ(GetPrepopulatePages().size(), q.urls().size());
@@ -1190,7 +1192,7 @@ TEST_F(TopSitesTest, AddPrepopulatedPages) {
 }
 
 // Makes sure creating top sites before history is created works.
-TEST_F(TopSitesTest, CreateTopSitesThenHistory) {
+TEST_F(TopSitesImplTest, CreateTopSitesThenHistory) {
   profile()->DestroyTopSites();
   profile()->DestroyHistoryService();
 
@@ -1210,7 +1212,7 @@ TEST_F(TopSitesTest, CreateTopSitesThenHistory) {
   EXPECT_TRUE(IsTopSitesLoaded());
 }
 
-class TopSitesUnloadTest : public TopSitesTest {
+class TopSitesUnloadTest : public TopSitesImplTest {
  public:
   TopSitesUnloadTest() {}
 

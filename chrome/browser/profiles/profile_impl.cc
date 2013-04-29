@@ -931,8 +931,8 @@ Time ProfileImpl::GetStartTime() const {
 
 history::TopSites* ProfileImpl::GetTopSites() {
   if (!top_sites_.get()) {
-    top_sites_ = new history::TopSites(this);
-    top_sites_->Init(GetPath().Append(chrome::kTopSitesFilename));
+    top_sites_ = history::TopSites::Create(
+        this, GetPath().Append(chrome::kTopSitesFilename));
   }
   return top_sites_;
 }

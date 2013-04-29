@@ -382,17 +382,16 @@ void TestingProfile::DestroyHistoryService() {
 
 void TestingProfile::CreateTopSites() {
   DestroyTopSites();
-  top_sites_ = new history::TopSites(this);
-  base::FilePath file_name = GetPath().Append(chrome::kTopSitesFilename);
-  top_sites_->Init(file_name);
+  top_sites_ = history::TopSites::Create(
+      this, GetPath().Append(chrome::kTopSitesFilename));
 }
 
 void TestingProfile::DestroyTopSites() {
   if (top_sites_.get()) {
     top_sites_->Shutdown();
     top_sites_ = NULL;
-    // TopSites::Shutdown schedules some tasks (from TopSitesBackend) that need
-    // to be run to properly shutdown. Run all pending tasks now. This is
+    // TopSitesImpl::Shutdown schedules some tasks (from TopSitesBackend) that
+    // need to be run to properly shutdown. Run all pending tasks now. This is
     // normally handled by browser_process shutdown.
     if (MessageLoop::current())
       MessageLoop::current()->RunUntilIdle();
