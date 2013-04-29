@@ -89,12 +89,6 @@ public:
     WEBKIT_EXPORT static bool shouldInterruptForMessage(const WebString&);
     WEBKIT_EXPORT static void processPendingMessages();
 
-    // Returns an Inspector.detached event that can be dispatched on the front-end by the embedder.
-    WEBKIT_EXPORT static WebString inspectorDetachedEvent(const WebString& reason);
-
-    // Returns a Worker.disconnectedFromWorker event that can be dispatched on the front-end
-    // in order to let it know that it has disconnected from the agent.
-    WEBKIT_EXPORT static WebString workerDisconnectedFromWorkerEvent();
 };
 
 } // namespace WebKit

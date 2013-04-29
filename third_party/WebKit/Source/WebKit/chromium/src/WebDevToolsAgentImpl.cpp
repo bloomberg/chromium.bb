@@ -352,16 +352,6 @@ private:
     double m_originalZoomFactor;
 };
 
-class SerializingFrontendChannel : public InspectorFrontendChannel {
-public:
-    virtual bool sendMessageToFrontend(const String& message)
-    {
-        m_message = message;
-        return true;
-    }
-    String m_message;
-};
-
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     WebViewImpl* webViewImpl,
     WebDevToolsAgentClient* client)
@@ -738,22 +728,6 @@ bool WebDevToolsAgent::shouldInterruptForMessage(const WebString& message)
 void WebDevToolsAgent::processPendingMessages()
 {
     PageScriptDebugServer::shared().runPendingTasks();
-}
-
-WebString WebDevToolsAgent::inspectorDetachedEvent(const WebString& reason)
-{
-    SerializingFrontendChannel channel;
-    InspectorFrontend::Inspector inspector(&channel);
-    inspector.detached(reason);
-    return channel.m_message;
-}
-
-WebString WebDevToolsAgent::workerDisconnectedFromWorkerEvent()
-{
-    SerializingFrontendChannel channel;
-    InspectorFrontend::Worker inspector(&channel);
-    inspector.disconnectedFromWorker();
-    return channel.m_message;
 }
 
 } // namespace WebKit
