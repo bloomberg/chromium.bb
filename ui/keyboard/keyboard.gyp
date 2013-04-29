@@ -57,6 +57,7 @@
         'keyboard_constants.h',
         'keyboard_controller.cc',
         'keyboard_controller.h',
+        'keyboard_controller_observer.h',
         'keyboard_controller_proxy.cc',
         'keyboard_controller_proxy.h',
         'keyboard_export.h',

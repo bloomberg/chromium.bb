@@ -640,7 +640,7 @@ void ShelfLayoutManager::AdjustBoundsBasedOnAlignment(int inset,
 void ShelfLayoutManager::CalculateTargetBounds(
     const State& state,
     TargetBounds* target_bounds) {
-  const gfx::Rect& available_bounds(root_window_->bounds());
+  const gfx::Rect available_bounds(GetAvailableBounds());
   gfx::Rect status_size(
       shelf_->status_area_widget()->GetWindowBoundsInScreen().size());
   int shelf_width = 0, shelf_height = 0;
@@ -659,7 +659,8 @@ void ShelfLayoutManager::CalculateTargetBounds(
       shelf_height = kAutoHideSize;
     else
       shelf_width = kAutoHideSize;
-  } else if (state.visibility_state == SHELF_HIDDEN) {
+  } else if (state.visibility_state == SHELF_HIDDEN ||
+      !keyboard_bounds_.IsEmpty()) {
     if (IsHorizontalAlignment())
       shelf_height = 0;
     else
@@ -696,6 +697,15 @@ void ShelfLayoutManager::CalculateTargetBounds(
       gfx::Insets(0, GetWorkAreaSize(state, shelf_width), 0, 0),
       gfx::Insets(0, 0, 0, GetWorkAreaSize(state, shelf_width)),
       gfx::Insets(GetWorkAreaSize(state, shelf_height), 0, 0, 0));
+
+  // Also push in the work area inset for the keyboard if it is visible.
+  if (!keyboard_bounds_.IsEmpty()) {
+    target_bounds->work_area_insets.Set(
+        target_bounds->work_area_insets.top(),
+        target_bounds->work_area_insets.left(),
+        target_bounds->work_area_insets.bottom() + keyboard_bounds_.height(),
+        target_bounds->work_area_insets.right());
+  }
 
   target_bounds->opacity =
       (gesture_drag_status_ != GESTURE_DRAG_NONE ||
@@ -911,6 +921,18 @@ int ShelfLayoutManager::GetWorkAreaSize(const State& state, int size) const {
   if (state.visibility_state == SHELF_AUTO_HIDE)
     return kAutoHideSize;
   return 0;
+}
+
+gfx::Rect ShelfLayoutManager::GetAvailableBounds() const {
+  gfx::Rect bounds(root_window_->bounds());
+  bounds.set_height(bounds.height() - keyboard_bounds_.height());
+  return bounds;
+}
+
+void ShelfLayoutManager::OnKeyboardBoundsChanging(
+    const gfx::Rect& keyboard_bounds) {
+  keyboard_bounds_ = keyboard_bounds;
+  OnWindowResized();
 }
 
 }  // namespace internal

@@ -20,6 +20,8 @@
 #include "ui/aura/layout_manager.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
+#include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace aura {
 class RootWindow;
@@ -48,7 +50,8 @@ class WorkspaceController;
 class ASH_EXPORT ShelfLayoutManager :
     public aura::LayoutManager,
     public ash::ShellObserver,
-    public aura::client::ActivationChangeObserver {
+    public aura::client::ActivationChangeObserver,
+    public keyboard::KeyboardControllerObserver {
  public:
 
   // TODO(rharrison): Move this observer out of ash::internal::
@@ -279,6 +282,14 @@ class ASH_EXPORT ShelfLayoutManager :
 
   int GetWorkAreaSize(const State& state, int size) const;
 
+  // Return the bounds available in the parent, taking into account the bounds
+  // of the keyboard if necessary.
+  gfx::Rect GetAvailableBounds() const;
+
+  // Overridden from keyboard::KeyboardControllerObserver:
+  virtual void OnKeyboardBoundsChanging(
+      const gfx::Rect& keyboard_bounds) OVERRIDE;
+
   // The RootWindow is cached so that we don't invoke Shell::GetInstance() from
   // our destructor. We avoid that as at the time we're deleted Shell is being
   // deleted too.
@@ -331,6 +342,9 @@ class ASH_EXPORT ShelfLayoutManager :
 
   // Used to delay updating shelf background.
   UpdateShelfObserver* update_shelf_observer_;
+
+  // The bounds of the keyboard.
+  gfx::Rect keyboard_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);
 };

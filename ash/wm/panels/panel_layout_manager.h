@@ -18,6 +18,8 @@
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window_observer.h"
+#include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace aura {
 class Window;
@@ -52,6 +54,7 @@ class ASH_EXPORT PanelLayoutManager
       public ash::ShellObserver,
       public aura::WindowObserver,
       public aura::client::ActivationChangeObserver,
+      public keyboard::KeyboardControllerObserver,
       public ShelfLayoutManager::Observer {
  public:
   explicit PanelLayoutManager(aura::Window* panel_container);
@@ -139,6 +142,10 @@ class ASH_EXPORT PanelLayoutManager
 
   // Update the callout arrows for all managed panels.
   void UpdateCallouts();
+
+  // Overridden from keyboard::KeyboardControllerObserver:
+  virtual void OnKeyboardBoundsChanging(
+      const gfx::Rect& keyboard_bounds) OVERRIDE;
 
   // Parent window associated with this layout manager.
   aura::Window* panel_container_;

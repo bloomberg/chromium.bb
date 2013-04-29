@@ -14,6 +14,7 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/keyboard/keyboard_controller_proxy.h"
 
 namespace {
@@ -141,6 +142,14 @@ aura::Window* KeyboardController::GetContainerWindow() {
   return container_;
 }
 
+void KeyboardController::AddObserver(KeyboardControllerObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void KeyboardController::RemoveObserver(KeyboardControllerObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 void KeyboardController::OnWindowParentChanged(aura::Window* window,
                                                aura::Window* parent) {
   OnTextInputStateChanged(proxy_->GetInputMethod()->GetTextInputClient());
@@ -156,8 +165,10 @@ void KeyboardController::OnTextInputStateChanged(
   if (!container_)
     return;
 
+  bool was_showing = container_->IsVisible();
+  bool should_show = was_showing;
   if (!client || client->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE) {
-    container_->Hide();
+    should_show = false;
   } else {
     if (container_->children().empty()) {
       aura::Window* keyboard = proxy_->GetKeyboardWindow();
@@ -166,8 +177,24 @@ void KeyboardController::OnTextInputStateChanged(
       container_->layout_manager()->OnWindowResized();
     }
     container_->parent()->StackChildAtTop(container_);
-    container_->Show();
+    should_show = true;
   }
+
+  if (was_showing != should_show) {
+    gfx::Rect new_bounds(
+        should_show ? container_->children()[0]->bounds() : gfx::Rect());
+
+    FOR_EACH_OBSERVER(
+        KeyboardControllerObserver,
+        observer_list_,
+        OnKeyboardBoundsChanging(new_bounds));
+
+    if (should_show)
+      container_->Show();
+    else
+      container_->Hide();
+  }
+
   // TODO(bryeung): whenever the TextInputClient changes we need to notify the
   // keyboard (with the TextInputType) so that it can reset it's state (e.g.
   // abandon compositions in progress)

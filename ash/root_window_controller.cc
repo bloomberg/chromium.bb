@@ -463,6 +463,10 @@ void RootWindowController::InitKeyboard() {
         Shell::GetInstance()->delegate()->CreateKeyboardControllerProxy();
     keyboard_controller_.reset(
         new keyboard::KeyboardController(proxy));
+
+    keyboard_controller_->AddObserver(shelf()->shelf_layout_manager());
+    keyboard_controller_->AddObserver(panel_layout_manager_);
+
     aura::Window* keyboard_container =
         keyboard_controller_->GetContainerWindow();
     parent->AddChild(keyboard_container);
