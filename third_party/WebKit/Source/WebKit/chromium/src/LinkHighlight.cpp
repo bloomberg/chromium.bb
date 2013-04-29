@@ -241,7 +241,7 @@ bool LinkHighlight::computeHighlightLayerPathAndPosition(RenderLayer* compositin
     FloatRect boundingRect = newPath.boundingRect();
     newPath.translate(-toFloatSize(boundingRect.location()));
 
-    bool pathHasChanged = m_path.isNull() || !(newPath == m_path);
+    bool pathHasChanged = !(newPath == m_path);
     if (pathHasChanged) {
         m_path = newPath;
         m_contentLayer->layer()->setBounds(enclosingIntRect(boundingRect).size());

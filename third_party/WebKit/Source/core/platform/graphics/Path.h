@@ -31,6 +31,7 @@
 
 #include "core/platform/graphics/RoundedRect.h"
 #include "core/platform/graphics/WindRule.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include <wtf/FastAllocBase.h>
 #include <wtf/Forward.h>
 
@@ -83,7 +84,6 @@ namespace WebCore {
         float normalAngleAtLength(float length, bool& ok) const;
 
         void clear();
-        bool isNull() const { return !m_path; }
         bool isEmpty() const;
         // Gets the current point of the current path, which is conceptually the final point reached by the path so far.
         // Note the Path can be empty (isEmpty() == true) and still have a current point.
@@ -112,11 +112,7 @@ namespace WebCore {
 
         void translate(const FloatSize&);
 
-        // To keep Path() cheap, it does not allocate an SkPath immediately
-        // meaning Path::skPath() can return null.
-        SkPath* skPath() const { return m_path; }
-        // ensureSkPath() will allocate a SkPath if necessary, and will never return null.
-        SkPath* ensureSkPath();
+        const SkPath& skPath() const { return m_path; }
 
         void apply(void* info, PathApplierFunction) const;
         void transform(const AffineTransform&);
@@ -125,7 +121,7 @@ namespace WebCore {
         void addBeziersForRoundedRect(const FloatRect&, const FloatSize& topLeftRadius, const FloatSize& topRightRadius, const FloatSize& bottomLeftRadius, const FloatSize& bottomRightRadius);
 
     private:
-        SkPath* m_path;
+        SkPath m_path;
     };
 
 }

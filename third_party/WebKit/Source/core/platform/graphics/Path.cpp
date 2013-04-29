@@ -30,7 +30,6 @@
 #include "core/platform/graphics/Path.h"
 
 #include <math.h>
-#include "SkPath.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/ImageBuffer.h"
@@ -38,6 +37,7 @@
 #include "core/platform/graphics/StrokeStyleApplier.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include <wtf/MathExtras.h>
 
 namespace WebCore {
@@ -71,51 +71,39 @@ static void pathLengthApplierFunction(void* info, const PathElement* element)
 }
 
 Path::Path()
-    : m_path(0)
+    : m_path()
 {
 }
 
 Path::Path(const Path& other)
 {
-    m_path = other.m_path ? new SkPath(*other.m_path) : 0;
+    m_path = SkPath(other.m_path);
 }
 
 Path::~Path()
 {
-    if (m_path)
-        delete m_path;
 }
 
 Path& Path::operator=(const Path& other)
 {
-    if (other.isNull()) {
-        if (m_path)
-            delete m_path;
-        m_path = 0;
-    } else
-        *ensureSkPath() = *other.m_path;
+    m_path = SkPath(other.m_path);
     return *this;
 }
 
 bool Path::operator==(const Path& other) const
 {
-    if (isNull() || other.isNull())
-        return isNull() == other.isNull();
-    return m_path == other.skPath();
+    return m_path == other.m_path;
 }
 
 bool Path::contains(const FloatPoint& point, WindRule rule) const
 {
-    if (isNull())
-        return false;
-    return SkPathContainsPoint(m_path, point, rule == RULE_NONZERO ? SkPath::kWinding_FillType : SkPath::kEvenOdd_FillType);
+    // After crbug.com/236559 is fixed, SkPathContainsPoint should take a const path so this will be unnecessary.
+    SkPath* path = const_cast<SkPath*>(&m_path);
+    return SkPathContainsPoint(path, point, rule == RULE_NONZERO ? SkPath::kWinding_FillType : SkPath::kEvenOdd_FillType);
 }
 
 bool Path::strokeContains(StrokeStyleApplier* applier, const FloatPoint& point) const
 {
-    if (isNull())
-        return false;
-
     // FIXME(crbug.com/229267): Rewrite this to not require a scratch context.
     GraphicsContext* scratch = scratchContext();
     scratch->save();
@@ -126,7 +114,8 @@ bool Path::strokeContains(StrokeStyleApplier* applier, const FloatPoint& point) 
     SkPaint paint;
     scratch->platformContext()->setupPaintForStroking(&paint, 0, 0);
     SkPath strokePath;
-    paint.getFillPath(*m_path, &strokePath);
+    paint.getFillPath(m_path, &strokePath);
+
     bool contains = SkPathContainsPoint(&strokePath, point, SkPath::kWinding_FillType);
 
     scratch->restore();
@@ -135,16 +124,11 @@ bool Path::strokeContains(StrokeStyleApplier* applier, const FloatPoint& point) 
 
 FloatRect Path::boundingRect() const
 {
-    if (isNull())
-        return FloatRect();
-    return m_path->getBounds();
+    return m_path.getBounds();
 }
 
 FloatRect Path::strokeBoundingRect(StrokeStyleApplier* applier) const
 {
-    if (isNull())
-        return FloatRect();
-
     // FIXME(crbug.com/229267): Rewrite this to not require a scratch context.
     GraphicsContext* scratch = scratchContext();
     scratch->save();
@@ -155,18 +139,11 @@ FloatRect Path::strokeBoundingRect(StrokeStyleApplier* applier) const
     SkPaint paint;
     scratch->platformContext()->setupPaintForStroking(&paint, 0, 0);
     SkPath boundingPath;
-    paint.getFillPath(*m_path, &boundingPath);
+    paint.getFillPath(m_path, &boundingPath);
 
     FloatRect boundingRect = boundingPath.getBounds();
     scratch->restore();
     return boundingRect;
-}
-
-SkPath* Path::ensureSkPath()
-{
-    if (!m_path)
-        m_path = new SkPath();
-    return m_path;
 }
 
 static FloatPoint* convertPathPoints(FloatPoint dst[], const SkPoint src[], int count)
@@ -180,10 +157,7 @@ static FloatPoint* convertPathPoints(FloatPoint dst[], const SkPoint src[], int 
 
 void Path::apply(void* info, PathApplierFunction function) const
 {
-    if (isNull())
-        return;
-
-    SkPath::RawIter iter(*m_path);
+    SkPath::RawIter iter(m_path);
     SkPoint pts[4];
     PathElement pathElement;
     FloatPoint pathPoints[3];
@@ -219,7 +193,7 @@ void Path::apply(void* info, PathApplierFunction function) const
 
 void Path::transform(const AffineTransform& xform)
 {
-    ensureSkPath()->transform(xform);
+    m_path.transform(xform);
 }
 
 float Path::length() const
@@ -249,26 +223,24 @@ float Path::normalAngleAtLength(float length, bool& ok) const
 
 void Path::clear()
 {
-    if (isNull())
-        return;
-    m_path->reset();
+    m_path.reset();
 }
 
 bool Path::isEmpty() const
 {
-    return isNull() || m_path->isEmpty();
+    return m_path.isEmpty();
 }
 
 bool Path::hasCurrentPoint() const
 {
-    return !isNull() && m_path->getPoints(0, 0);
+    return m_path.getPoints(0, 0);
 }
 
 FloatPoint Path::currentPoint() const
 {
-    if (!isNull() && m_path->countPoints() > 0) {
+    if (m_path.countPoints() > 0) {
         SkPoint skResult;
-        m_path->getLastPt(&skResult);
+        m_path.getLastPt(&skResult);
         FloatPoint result;
         result.setX(SkScalarToFloat(skResult.fX));
         result.setY(SkScalarToFloat(skResult.fY));
@@ -282,38 +254,36 @@ FloatPoint Path::currentPoint() const
 
 void Path::moveTo(const FloatPoint& point)
 {
-    ensureSkPath()->moveTo(point);
+    m_path.moveTo(point);
 }
 
 void Path::addLineTo(const FloatPoint& point)
 {
-    ensureSkPath()->lineTo(point);
+    m_path.lineTo(point);
 }
 
 void Path::addQuadCurveTo(const FloatPoint& cp, const FloatPoint& ep)
 {
-    ensureSkPath()->quadTo(cp, ep);
+    m_path.quadTo(cp, ep);
 }
 
 void Path::addBezierCurveTo(const FloatPoint& p1, const FloatPoint& p2, const FloatPoint& ep)
 {
-    ensureSkPath()->cubicTo(p1, p2, ep);
+    m_path.cubicTo(p1, p2, ep);
 }
 
 void Path::addArcTo(const FloatPoint& p1, const FloatPoint& p2, float radius)
 {
-    ensureSkPath()->arcTo(p1, p2, WebCoreFloatToSkScalar(radius));
+    m_path.arcTo(p1, p2, WebCoreFloatToSkScalar(radius));
 }
 
 void Path::closeSubpath()
 {
-    ensureSkPath()->close();
+    m_path.close();
 }
 
 void Path::addArc(const FloatPoint& p, float r, float sa, float ea, bool anticlockwise)
 {
-    ensureSkPath(); // Make sure m_path is not null.
-
     SkScalar cx = WebCoreFloatToSkScalar(p.x());
     SkScalar cy = WebCoreFloatToSkScalar(p.y());
     SkScalar radius = WebCoreFloatToSkScalar(r);
@@ -328,12 +298,12 @@ void Path::addArc(const FloatPoint& p, float r, float sa, float ea, bool anticlo
     // Check for a circle.
     if (sweepDegrees >= s360 || sweepDegrees <= -s360) {
         // Move to the start position (0 sweep means we add a single point).
-        m_path->arcTo(oval, startDegrees, 0, false);
+        m_path.arcTo(oval, startDegrees, 0, false);
         // Draw the circle.
-        m_path->addOval(oval, anticlockwise ?
+        m_path.addOval(oval, anticlockwise ?
             SkPath::kCCW_Direction : SkPath::kCW_Direction);
         // Force a moveTo the end position.
-        m_path->arcTo(oval, startDegrees + sweepDegrees, 0, true);
+        m_path.arcTo(oval, startDegrees + sweepDegrees, 0, true);
         return;
     }
 
@@ -346,17 +316,17 @@ void Path::addArc(const FloatPoint& p, float r, float sa, float ea, bool anticlo
     else if (!anticlockwise && sweepDegrees < 0)
         sweepDegrees += s360;
 
-    m_path->arcTo(oval, startDegrees, sweepDegrees, false);
+    m_path.arcTo(oval, startDegrees, sweepDegrees, false);
 }
 
 void Path::addRect(const FloatRect& rect)
 {
-    ensureSkPath()->addRect(rect);
+    m_path.addRect(rect);
 }
 
 void Path::addEllipse(const FloatRect& rect)
 {
-    ensureSkPath()->addOval(rect);
+    m_path.addOval(rect);
 }
 
 void Path::addRoundedRect(const RoundedRect& r)
@@ -453,7 +423,7 @@ void Path::addBeziersForRoundedRect(const FloatRect& rect, const FloatSize& topL
 
 void Path::translate(const FloatSize& size)
 {
-    ensureSkPath()->offset(WebCoreFloatToSkScalar(size.width()), WebCoreFloatToSkScalar(size.height()));
+    m_path.offset(WebCoreFloatToSkScalar(size.width()), WebCoreFloatToSkScalar(size.height()));
 }
 
 }

@@ -1058,22 +1058,18 @@ void GraphicsContext::fillPath(const Path& pathToFill)
     if (paintingDisabled() || pathToFill.isEmpty())
         return;
 
-    const GraphicsContextState& state = m_state;
-    SkPath::FillType ftype = state.fillRule == RULE_EVENODD ?
-        SkPath::kEvenOdd_FillType : SkPath::kWinding_FillType;
+    // Use const_cast and temporarily modify the fill type instead of copying the path.
+    SkPath& path = const_cast<SkPath&>(pathToFill.skPath());
+    SkPath::FillType previousFillType = path.getFillType();
 
-    const SkPath* path = pathToFill.skPath();
-    SkPath storage;
-    if (path->getFillType() != ftype) {
-        storage = *path;
-        storage.setFillType(ftype);
-        path = &storage;
-    }
+    SkPath::FillType temporaryFillType = m_state.fillRule == RULE_EVENODD ? SkPath::kEvenOdd_FillType : SkPath::kWinding_FillType;
+    path.setFillType(temporaryFillType);
 
     SkPaint paint;
     platformContext()->setupPaintForFilling(&paint);
+    platformContext()->drawPath(path, paint);
 
-    platformContext()->drawPath(*path, paint);
+    path.setFillType(previousFillType);
 }
 
 void GraphicsContext::fillRect(const FloatRect& rect)
@@ -1176,7 +1172,7 @@ void GraphicsContext::strokePath(const Path& pathToStroke)
     if (paintingDisabled() || pathToStroke.isEmpty())
         return;
 
-    const SkPath& path = *pathToStroke.skPath();
+    const SkPath& path = pathToStroke.skPath();
     SkPaint paint;
     platformContext()->setupPaintForStroking(&paint, 0, 0);
     platformContext()->drawPath(path, paint);
@@ -1264,15 +1260,16 @@ void GraphicsContext::clipOut(const IntRect& rect)
     platformContext()->clipRect(rect, PlatformContextSkia::NotAntiAliased, SkRegion::kDifference_Op);
 }
 
-void GraphicsContext::clipOut(const Path& p)
+void GraphicsContext::clipOut(const Path& pathToClip)
 {
     if (paintingDisabled())
         return;
 
-    // We must make a copy of the path, to mark it as inverse-filled.
-    SkPath path(p.isNull() ? SkPath() : *p.skPath());
+    // Use const_cast and temporarily toggle the inverse fill type instead of copying the path.
+    SkPath& path = const_cast<SkPath&>(pathToClip.skPath());
     path.toggleInverseFillType();
     platformContext()->clipPath(path, PlatformContextSkia::AntiAliased);
+    path.toggleInverseFillType();
 }
 
 void GraphicsContext::clipPath(const Path& pathToClip, WindRule clipRule)
@@ -1280,17 +1277,15 @@ void GraphicsContext::clipPath(const Path& pathToClip, WindRule clipRule)
     if (paintingDisabled())
         return;
 
-    const SkPath* path = pathToClip.skPath();
-    SkPath::FillType ftype = (clipRule == RULE_EVENODD) ? SkPath::kEvenOdd_FillType : SkPath::kWinding_FillType;
-    SkPath storage;
-    if (!path)
-        path = &storage;
-    else if (path->getFillType() != ftype) {
-        storage = *path;
-        storage.setFillType(ftype);
-        path = &storage;
-    }
-    platformContext()->clipPath(*path, PlatformContextSkia::AntiAliased);
+    // Use const_cast and temporarily modify the fill type instead of copying the path.
+    SkPath& path = const_cast<SkPath&>(pathToClip.skPath());
+    SkPath::FillType previousFillType = path.getFillType();
+
+    SkPath::FillType temporaryFillType = clipRule == RULE_EVENODD ? SkPath::kEvenOdd_FillType : SkPath::kWinding_FillType;
+    path.setFillType(temporaryFillType);
+    platformContext()->clipPath(path, PlatformContextSkia::AntiAliased);
+
+    path.setFillType(previousFillType);
 }
 
 void GraphicsContext::clipConvexPolygon(size_t numPoints, const FloatPoint* points, bool antialiased)
@@ -1335,17 +1330,15 @@ void GraphicsContext::canvasClip(const Path& pathToClip, WindRule clipRule)
     if (paintingDisabled())
         return;
 
-    const SkPath* path = pathToClip.skPath();
-    SkPath::FillType ftype = (clipRule == RULE_EVENODD) ? SkPath::kEvenOdd_FillType : SkPath::kWinding_FillType;
-    SkPath storage;
+    // Use const_cast and temporarily modify the fill type instead of copying the path.
+    SkPath& path = const_cast<SkPath&>(pathToClip.skPath());
+    SkPath::FillType previousFillType = path.getFillType();
 
-    if (path && (path->getFillType() != ftype)) {
-        storage = *path;
-        storage.setFillType(ftype);
-        path = &storage;
-    }
+    SkPath::FillType temporaryFillType = clipRule == RULE_EVENODD ? SkPath::kEvenOdd_FillType : SkPath::kWinding_FillType;
+    path.setFillType(temporaryFillType);
+    platformContext()->clipPath(path);
 
-    platformContext()->clipPath(path ? *path : SkPath());
+    path.setFillType(previousFillType);
 }
 
 void GraphicsContext::rotate(float angleInRadians)
