@@ -154,6 +154,12 @@ InspectorInstrumentationCookie::~InspectorInstrumentationCookie()
 
 namespace InspectorInstrumentation {
 
+void pauseOnNativeEventIfNeeded(InstrumentingAgents*, bool isDOMEvent, const String& eventName, bool synchronous);
+
+void cancelPauseOnNativeEvent(InstrumentingAgents*);
+
+InspectorTimelineAgent* retrieveTimelineAgent(const InspectorInstrumentationCookie&);
+
 void didClearWindowObjectInWorldImpl(InstrumentingAgents* instrumentingAgents, Frame* frame, DOMWrapperWorld* world)
 {
     InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent();
@@ -1186,7 +1192,7 @@ void updateApplicationCacheStatusImpl(InstrumentingAgents* instrumentingAgents, 
         applicationCacheAgent->updateApplicationCacheStatus(frame);
 }
 
-bool collectingHTMLParseErrors(InstrumentingAgents* instrumentingAgents)
+bool collectingHTMLParseErrorsImpl(InstrumentingAgents* instrumentingAgents)
 {
     if (InspectorAgent* inspectorAgent = instrumentingAgents->inspectorAgent())
         return inspectorAgent->hasFrontend();

@@ -40,6 +40,8 @@ namespace WebCore {
 
 namespace InspectorInstrumentation {
 
+void didOpenDatabaseImpl(InstrumentingAgents*, PassRefPtr<Database>, const String& domain, const String& name, const String& version);
+
 inline void didOpenDatabase(ScriptExecutionContext* context, PassRefPtr<Database> database, const String& domain, const String& name, const String& version)
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))

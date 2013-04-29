@@ -42,31 +42,43 @@ namespace WebCore {
 
 namespace InspectorInstrumentation {
 
-inline void addMessageToConsole(Page* page, MessageSource source, MessageType type, MessageLevel level, const String& message, PassRefPtr<ScriptCallStack> callStack, unsigned long requestIdentifier)
+void addMessageToConsoleImpl(InstrumentingAgents*, MessageSource, MessageType, MessageLevel, const String& message, ScriptState*, PassRefPtr<ScriptArguments>, unsigned long requestIdentifier);
+void addMessageToConsoleImpl(InstrumentingAgents*, MessageSource, MessageType, MessageLevel, const String& message, const String& scriptId, unsigned lineNumber, ScriptState*, unsigned long requestIdentifier);
+// FIXME: Remove once we no longer generate stacks outside of Inspector.
+void addMessageToConsoleImpl(InstrumentingAgents*, MessageSource, MessageType, MessageLevel, const String& message, PassRefPtr<ScriptCallStack>, unsigned long requestIdentifier);
+void consoleCountImpl(InstrumentingAgents*, ScriptState*, PassRefPtr<ScriptArguments>);
+void startConsoleTimingImpl(InstrumentingAgents*, Frame*, const String& title);
+void stopConsoleTimingImpl(InstrumentingAgents*, Frame*, const String& title, PassRefPtr<ScriptCallStack>);
+void consoleTimeStampImpl(InstrumentingAgents*, Frame*, PassRefPtr<ScriptArguments>);
+void addStartProfilingMessageToConsoleImpl(InstrumentingAgents*, const String& title, unsigned lineNumber, const String& sourceURL);
+void addProfileImpl(InstrumentingAgents*, RefPtr<ScriptProfile>, PassRefPtr<ScriptCallStack>);
+
+inline void addMessageToConsole(Page* page, MessageSource source, MessageType type, MessageLevel level, const String& message, PassRefPtr<ScriptCallStack> callStack, unsigned long requestIdentifier = 0)
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
         addMessageToConsoleImpl(instrumentingAgents, source, type, level, message, callStack, requestIdentifier);
 }
 
-inline void addMessageToConsole(Page* page, MessageSource source, MessageType type, MessageLevel level, const String& message, ScriptState* state, PassRefPtr<ScriptArguments> arguments, unsigned long requestIdentifier)
+inline void addMessageToConsole(Page* page, MessageSource source, MessageType type, MessageLevel level, const String& message, ScriptState* state, PassRefPtr<ScriptArguments> arguments, unsigned long requestIdentifier = 0)
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
         addMessageToConsoleImpl(instrumentingAgents, source, type, level, message, state, arguments, requestIdentifier);
 }
 
-inline void addMessageToConsole(Page* page, MessageSource source, MessageType type, MessageLevel level, const String& message, const String& scriptId, unsigned lineNumber, ScriptState* state, unsigned long requestIdentifier)
+inline void addMessageToConsole(Page* page, MessageSource source, MessageType type, MessageLevel level, const String& message, const String& scriptId, unsigned lineNumber, ScriptState* state = 0, unsigned long requestIdentifier = 0)
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
         addMessageToConsoleImpl(instrumentingAgents, source, type, level, message, scriptId, lineNumber, state, requestIdentifier);
 }
 
-inline void addMessageToConsole(WorkerContext* workerContext, MessageSource source, MessageType type, MessageLevel level, const String& message, PassRefPtr<ScriptCallStack> callStack, unsigned long requestIdentifier)
+// FIXME: Convert to ScriptArguments to match non-worker context.
+inline void addMessageToConsole(WorkerContext* workerContext, MessageSource source, MessageType type, MessageLevel level, const String& message, PassRefPtr<ScriptCallStack> callStack, unsigned long requestIdentifier = 0)
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForWorkerContext(workerContext))
         addMessageToConsoleImpl(instrumentingAgents, source, type, level, message, callStack, requestIdentifier);
 }
 
-inline void addMessageToConsole(WorkerContext* workerContext, MessageSource source, MessageType type, MessageLevel level, const String& message, const String& scriptId, unsigned lineNumber, ScriptState* state, unsigned long requestIdentifier)
+inline void addMessageToConsole(WorkerContext* workerContext, MessageSource source, MessageType type, MessageLevel level, const String& message, const String& scriptId, unsigned lineNumber, ScriptState* state, unsigned long requestIdentifier = 0)
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForWorkerContext(workerContext))
         addMessageToConsoleImpl(instrumentingAgents, source, type, level, message, scriptId, lineNumber, state, requestIdentifier);
@@ -107,20 +119,6 @@ inline void addProfile(Page* page, RefPtr<ScriptProfile> profile, PassRefPtr<Scr
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
         addProfileImpl(instrumentingAgents, profile, callStack);
-}
-
-inline bool profilerEnabled(Page* page)
-{
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
-        return profilerEnabledImpl(instrumentingAgents);
-    return false;
-}
-
-inline String getCurrentUserInitiatedProfileName(Page* page, bool incrementProfileNumber)
-{
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
-        return getCurrentUserInitiatedProfileNameImpl(instrumentingAgents, incrementProfileNumber);
-    return "";
 }
 
 } // namespace InspectorInstrumentation
