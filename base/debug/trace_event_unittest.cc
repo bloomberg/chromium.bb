@@ -55,6 +55,7 @@ class TraceEventTestFixture : public testing::Test {
   void OnTraceNotification(int notification) {
     if (notification & TraceLog::EVENT_WATCH_NOTIFICATION)
       ++event_watch_notification_;
+      notifications_received_ |= notification;
   }
   DictionaryValue* FindMatchingTraceEntry(const JsonKeyValue* key_values);
   DictionaryValue* FindNamePhase(const char* name, const char* phase);
@@ -73,6 +74,7 @@ class TraceEventTestFixture : public testing::Test {
 
   void BeginTrace() {
     event_watch_notification_ = 0;
+    notifications_received_ = 0;
     TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
                                         TraceLog::RECORD_UNTIL_FULL);
   }
@@ -102,6 +104,7 @@ class TraceEventTestFixture : public testing::Test {
   base::debug::TraceResultBuffer trace_buffer_;
   base::debug::TraceResultBuffer::SimpleOutput json_output_;
   int event_watch_notification_;
+  int notifications_received_;
 
  private:
   // We want our singleton torn down after each test.
@@ -1666,9 +1669,22 @@ TEST_F(TraceEventCallbackTest, TraceEventCallback) {
   TraceLog::GetInstance()->SetEventCallback(NULL);
   TRACE_EVENT_INSTANT0("all", "after callback removed",
                        TRACE_EVENT_SCOPE_GLOBAL);
-  EXPECT_EQ(2u, collected_events_.size());
+  ASSERT_EQ(2u, collected_events_.size());
   EXPECT_EQ("event1", collected_events_[0]);
   EXPECT_EQ("event2", collected_events_[1]);
+}
+
+TEST_F(TraceEventCallbackTest, TraceEventCallbackWhileFull) {
+  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
+      TraceLog::RECORD_UNTIL_FULL);
+  do {
+    TRACE_EVENT_INSTANT0("all", "badger badger", TRACE_EVENT_SCOPE_GLOBAL);
+  } while ((notifications_received_ & TraceLog::TRACE_BUFFER_FULL) == 0);
+  TraceLog::GetInstance()->SetEventCallback(Callback);
+  TRACE_EVENT_INSTANT0("all", "a snake", TRACE_EVENT_SCOPE_GLOBAL);
+  TraceLog::GetInstance()->SetEventCallback(NULL);
+  ASSERT_EQ(1u, collected_events_.size());
+  EXPECT_EQ("a snake", collected_events_[0]);
 }
 
 // TODO(dsinclair): Continuous Tracing unit test.

@@ -1000,12 +1000,14 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
 
   NotificationHelper notifier(this);
 
-  {
+  do {
     AutoLock lock(lock_);
     if (*category_group_enabled != CATEGORY_ENABLED)
       return;
+
+    event_callback_copy = event_callback_;
     if (logged_events_->IsFull())
-      return;
+      break;
 
     const char* new_name = ThreadIdNameManager::GetInstance()->
         GetName(thread_id);
@@ -1047,9 +1049,7 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
 
     if (watch_category_ == category_group_enabled && watch_event_name_ == name)
       notifier.AddNotificationWhileLocked(EVENT_WATCH_NOTIFICATION);
-
-    event_callback_copy = event_callback_;
-  }  // release lock
+  } while (0); // release lock
 
   notifier.SendNotificationIfAny();
   if (event_callback_copy != NULL) {
