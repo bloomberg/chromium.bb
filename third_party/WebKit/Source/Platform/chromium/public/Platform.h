@@ -84,7 +84,7 @@ struct WebLocalizedString;
 struct WebSize;
 struct WebURLError;
 
-class WEBKIT_EXPORT Platform {
+class Platform {
 public:
     // HTML5 Database ------------------------------------------------------
 
@@ -272,8 +272,6 @@ public:
 
     // A suggestion to cache this metadata in association with this URL.
     virtual void cacheMetadata(const WebURL&, double responseTime, const char* data, size_t dataSize) { }
-
-    virtual WebURLError cancelledError(const WebURL&) const;
 
 
     // Plugins -------------------------------------------------------------

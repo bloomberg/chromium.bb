@@ -1238,6 +1238,18 @@ public:
         EXPECT_FALSE(isRedirect);
         return WebNavigationPolicyCurrentTab;
     }
+
+    virtual WebURLError cancelledError(WebFrame*, const WebURLRequest& request)
+    {
+        // Return a dummy error so the DocumentLoader doesn't assert when
+        // the reload cancels it.
+        WebURLError webURLError;
+        webURLError.domain = "";
+        webURLError.reason = 1;
+        webURLError.isCancellation = true;
+        webURLError.unreachableURL = WebURL();
+        return webURLError;
+    }
 };
 
 TEST_F(WebFrameTest, ReloadDoesntSetRedirect)

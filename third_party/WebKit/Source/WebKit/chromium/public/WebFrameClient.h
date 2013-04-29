@@ -140,6 +140,23 @@ public:
         WebFrame*, const WebURLRequest&, WebNavigationType,
         WebNavigationPolicy defaultPolicy, bool isRedirect) { return defaultPolicy; }
 
+    // Query if the specified request can be handled.
+    virtual bool canHandleRequest(
+        WebFrame*, const WebURLRequest& request) { return true; }
+
+    // Returns an error corresponding to canHandledRequest() returning false.
+    virtual WebURLError cannotHandleRequestError(
+        WebFrame*, const WebURLRequest& request) { return WebURLError(); }
+
+    // Returns an error corresponding to a user cancellation event.
+    virtual WebURLError cancelledError(
+        WebFrame*, const WebURLRequest& request) { return WebURLError(); }
+
+    // Notify that a URL cannot be handled.
+    virtual void unableToImplementPolicyWithError(
+        WebFrame*, const WebURLError&) { }
+
+
     // Navigational notifications ------------------------------------------
 
     // A form submission has been requested, but the page's submit event handler

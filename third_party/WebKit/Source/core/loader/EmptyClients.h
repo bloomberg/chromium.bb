@@ -237,6 +237,8 @@ public:
     virtual PolicyAction policyForNewWindowAction(const NavigationAction&, const String&) OVERRIDE;
     virtual PolicyAction decidePolicyForNavigationAction(const NavigationAction&, const ResourceRequest&) OVERRIDE;
 
+    virtual void dispatchUnableToImplementPolicy(const ResourceError&) { }
+
     virtual void dispatchWillSendSubmitEvent(PassRefPtr<FormState>) OVERRIDE;
     virtual void dispatchWillSubmitForm(PassRefPtr<FormState>) OVERRIDE;
 
@@ -250,8 +252,18 @@ public:
 
     virtual void committedLoad(DocumentLoader*, const char*, int) { }
     virtual void finishedLoading(DocumentLoader*) { }
+
+    virtual ResourceError cancelledError(const ResourceRequest&) { ResourceError error("", 0, "", ""); error.setIsCancellation(true); return error; }
+    virtual ResourceError cannotShowURLError(const ResourceRequest&) { return ResourceError("", 0, "", ""); }
     virtual ResourceError interruptedForPolicyChangeError(const ResourceRequest&) { return ResourceError("", 0, "", ""); }
 
+    virtual ResourceError cannotShowMIMETypeError(const ResourceResponse&) { return ResourceError("", 0, "", ""); }
+    virtual ResourceError fileDoesNotExistError(const ResourceResponse&) { return ResourceError("", 0, "", ""); }
+    virtual ResourceError pluginWillHandleLoadError(const ResourceResponse&) { return ResourceError("", 0, "", ""); }
+
+    virtual bool shouldFallBack(const ResourceError&) { return false; }
+
+    virtual bool canHandleRequest(const ResourceRequest&) const { return false; }
     virtual bool canShowMIMEType(const String&) const { return false; }
     virtual String generatedMIMETypeForURLScheme(const String&) const { return ""; }
 

@@ -182,6 +182,9 @@ class WebViewHost : public WebKit::WebViewClient, public WebKit::WebFrameClient,
     virtual WebKit::WebNavigationPolicy decidePolicyForNavigation(
         WebKit::WebFrame*, const WebKit::WebURLRequest&,
         WebKit::WebNavigationType, WebKit::WebNavigationPolicy, bool isRedirect);
+    virtual bool canHandleRequest(WebKit::WebFrame*, const WebKit::WebURLRequest&);
+    virtual WebKit::WebURLError cancelledError(WebKit::WebFrame*, const WebKit::WebURLRequest&);
+    virtual void unableToImplementPolicyWithError(WebKit::WebFrame*, const WebKit::WebURLError&);
     virtual void didCreateDataSource(WebKit::WebFrame*, WebKit::WebDataSource*);
     virtual void didCommitProvisionalLoad(WebKit::WebFrame*, bool isNewNavigation);
     virtual void didClearWindowObject(WebKit::WebFrame*);

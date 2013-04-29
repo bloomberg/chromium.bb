@@ -1252,6 +1252,25 @@ void WebTestProxyBase::willRequestResource(WebFrame* frame, const WebKit::WebCac
     }
 }
 
+bool WebTestProxyBase::canHandleRequest(WebFrame*, const WebURLRequest& request)
+{
+    GURL url = request.url();
+    // Just reject the scheme used in
+    // LayoutTests/http/tests/misc/redirect-to-external-url.html
+    return !url.SchemeIs("spaceballs");
+}
+
+WebURLError WebTestProxyBase::cannotHandleRequestError(WebFrame*, const WebURLRequest& request)
+{
+    WebURLError error;
+    // A WebKit layout test expects the following values.
+    // unableToImplementPolicyWithError() below prints them.
+    error.domain = WebString::fromUTF8("WebKitErrorDomain");
+    error.reason = 101;
+    error.unreachableURL = request.url();
+    return error;
+}
+
 void WebTestProxyBase::didCreateDataSource(WebFrame*, WebDataSource* ds)
 {
     if (!m_testInterfaces->testRunner()->deferMainResourceDataLoad())
@@ -1380,6 +1399,15 @@ void WebTestProxyBase::didFailResourceLoad(WebFrame*, unsigned identifier, const
         m_delegate->printMessage("\n");
     }
     m_resourceIdentifierMap.erase(identifier);
+}
+
+void WebTestProxyBase::unableToImplementPolicyWithError(WebKit::WebFrame* frame, const WebKit::WebURLError& error)
+{
+    char errorBuffer[40];
+    snprintf(errorBuffer, sizeof(errorBuffer), "%d", error.reason);
+    m_delegate->printMessage(string("Policy delegate: unable to implement policy with error domain '") + error.domain.utf8().data() +
+        "', error code " +  errorBuffer +
+        ", in frame '" + frame->uniqueName().utf8().data() + "'\n");
 }
 
 void WebTestProxyBase::didAddMessageToConsole(const WebConsoleMessage& message, const WebString& sourceName, unsigned sourceLine)

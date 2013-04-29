@@ -273,18 +273,20 @@ void DocumentLoader::stopLoading()
         return;
 
     m_isStopping = true;
+
+    FrameLoader* frameLoader = DocumentLoader::frameLoader();
     
     if (isLoadingMainResource())
         // Stop the main resource loader and let it send the cancelled message.
-        cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
+        cancelMainResourceLoad(frameLoader->cancelledError(m_request));
     else if (!m_resourceLoaders.isEmpty())
         // The main resource loader already finished loading. Set the cancelled error on the 
         // document and let the resourceLoaders send individual cancelled messages below.
-        setMainDocumentError(ResourceError::cancelledError(m_request.url()));
+        setMainDocumentError(frameLoader->cancelledError(m_request));
     else
         // If there are no resource loaders, we need to manufacture a cancelled message.
         // (A back/forward navigation has no resource loaders because its resources are cached.)
-        mainReceivedError(ResourceError::cancelledError(m_request.url()));
+        mainReceivedError(frameLoader->cancelledError(m_request));
     
     stopLoadingSubresources();
     
@@ -451,7 +453,7 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
     ASSERT(!newRequest.isNull());
 
     if (!frameLoader()->checkIfFormActionAllowedByCSP(newRequest.url())) {
-        cancelMainResourceLoad(ResourceError::cancelledError(newRequest.url()));
+        cancelMainResourceLoad(frameLoader()->cancelledError(newRequest));
         return;
     }
 
@@ -462,7 +464,7 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
         RefPtr<SecurityOrigin> redirectingOrigin = SecurityOrigin::create(redirectResponse.url());
         if (!redirectingOrigin->canDisplay(newRequest.url())) {
             FrameLoader::reportLocalLoadFailed(m_frame, newRequest.url().string());
-            cancelMainResourceLoad(ResourceError::cancelledError(newRequest.url()));
+            cancelMainResourceLoad(frameLoader()->cancelledError(newRequest));
             return;
         }
         timing()->addRedirect(redirectResponse.url(), newRequest.url());
@@ -483,7 +485,7 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
     Frame* top = m_frame->tree()->top();
     if (top != m_frame) {
         if (!frameLoader()->mixedContentChecker()->canDisplayInsecureContent(top->document()->securityOrigin(), newRequest.url())) {
-            cancelMainResourceLoad(ResourceError::cancelledError(newRequest.url()));
+            cancelMainResourceLoad(frameLoader()->cancelledError(newRequest));
             return;
         }
     }
@@ -581,7 +583,7 @@ void DocumentLoader::responseReceived(CachedResource* resource, const ResourceRe
             frame()->document()->enforceSandboxFlags(SandboxOrigin);
             if (HTMLFrameOwnerElement* ownerElement = frame()->ownerElement())
                 ownerElement->dispatchEvent(Event::create(eventNames().loadEvent, false, false));
-            cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
+            cancelMainResourceLoad(frameLoader()->cancelledError(m_request));
             return;
         }
     }
@@ -617,7 +619,7 @@ void DocumentLoader::responseReceived(CachedResource* resource, const ResourceRe
             // keep trying to process data from their load
 
             if (hostedByObject)
-                cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
+                cancelMainResourceLoad(frameLoader()->cancelledError(m_request));
         }
     }
 
@@ -650,9 +652,14 @@ void DocumentLoader::commitLoad(const char* data, int length)
     frameLoader->client()->committedLoad(this, data, length);
 }
 
+ResourceError DocumentLoader::interruptedForPolicyChangeError() const
+{
+    return frameLoader()->client()->interruptedForPolicyChangeError(request());
+}
+
 void DocumentLoader::stopLoadingForPolicyChange()
 {
-    ResourceError error = frameLoader()->client()->interruptedForPolicyChangeError(m_request);
+    ResourceError error = interruptedForPolicyChangeError();
     error.setIsCancellation(true);
     cancelMainResourceLoad(error);
 }
@@ -896,7 +903,6 @@ void DocumentLoader::substituteResourceDeliveryTimerFired(Timer<DocumentLoader>*
     for (SubstituteResourceMap::const_iterator it = copy.begin(); it != end; ++it) {
         RefPtr<ResourceLoader> loader = it->key;
         SubstituteResource* resource = it->value.get();
-        ASSERT(resource);
         
         if (resource) {
             SharedBuffer* data = resource->data();
@@ -916,6 +922,10 @@ void DocumentLoader::substituteResourceDeliveryTimerFired(Timer<DocumentLoader>*
                 return;
 
             loader->didFinishLoading(0, 0);
+        } else {
+            // A null resource means that we should fail the load.
+            // FIXME: Maybe we should use another error here - something like "not in cache".
+            loader->didFail(0, loader->cannotShowURLError());
         }
     }
 }
@@ -1134,7 +1144,7 @@ void DocumentLoader::startLoadingMainResource()
 void DocumentLoader::cancelMainResourceLoad(const ResourceError& resourceError)
 {
     RefPtr<DocumentLoader> protect(this);
-    ResourceError error = resourceError.isNull() ? ResourceError::cancelledError(m_request.url()) : resourceError;
+    ResourceError error = resourceError.isNull() ? frameLoader()->cancelledError(m_request) : resourceError;
 
     m_dataLoadTimer.stop();
     if (mainResourceLoader())
