@@ -33,9 +33,7 @@
 
 namespace WebCore {
 
-// A class that stores static enablers for all experimental features. Note that
-// the method names must line up with the JavaScript method they enable for code
-// generation to work properly.
+// A class that stores static enablers for all experimental features.
 
 class RuntimeEnabledFeatures {
 public:
@@ -144,7 +142,7 @@ public:
 
 #if ENABLE(MEDIA_STREAM)
     static void setPeerConnectionEnabled(bool isEnabled) { isPeerConnectionEnabled = isEnabled; }
-    static bool peerConnectionEnabled() { return isMediaStreamEnabled && isPeerConnectionEnabled; }
+    static bool peerConnectionEnabled() { return isPeerConnectionEnabled && isMediaStreamEnabled; }
 #else
     static void setPeerConnectionEnabled(bool) { }
     static bool peerConnectionEnabled() { return false; }
@@ -205,7 +203,6 @@ public:
     static void setSeamlessIFramesEnabled(bool isEnabled) { isSeamlessIFramesEnabled = isEnabled; }
     static bool seamlessIFramesEnabled() { return isSeamlessIFramesEnabled; }
 
-    // The lang attribute support is incomplete and should only be turned on for tests.
     static void setLangAttributeAwareFormControlUIEnabled(bool isEnabled) { isLangAttributeAwareFormControlUIEnabled = isEnabled; }
     static bool langAttributeAwareFormControlUIEnabled() { return isLangAttributeAwareFormControlUIEnabled; }
 
@@ -225,7 +222,6 @@ public:
     static bool imeAPIEnabled() { return isIMEAPIEnabled; }
 
 private:
-    // Never instantiate.
     RuntimeEnabledFeatures() { }
 
     static bool isLocalStorageEnabled;

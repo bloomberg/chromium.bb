@@ -29,10 +29,7 @@
  */
 
 #include "config.h"
-#include "core/page/RuntimeEnabledFeatures.h"
-
-#include "core/platform/graphics/MediaPlayer.h"
-#include "core/workers/SharedWorkerRepository.h"
+#include "RuntimeEnabledFeatures.h"
 
 namespace WebCore {
 
@@ -99,15 +96,5 @@ bool RuntimeEnabledFeatures::isWebPInAcceptHeaderEnabled = false;
 bool RuntimeEnabledFeatures::isDirectoryUploadEnabled = true;
 bool RuntimeEnabledFeatures::isExperimentalWebSocketEnabled = false;
 bool RuntimeEnabledFeatures::isIMEAPIEnabled = false;
-
-bool RuntimeEnabledFeatures::mediaEnabled()
-{
-    return MediaPlayer::isAvailable();
-}
-
-bool RuntimeEnabledFeatures::sharedWorkerEnabled()
-{
-    return SharedWorkerRepository::isAvailable();
-}
 
 } // namespace WebCore
