@@ -39,6 +39,13 @@ cr.define('print_preview', function() {
     this.cssBackgroundTicketItem_ = printTicketStore.cssBackground;
 
     /**
+     * Print selection only ticket item, used to read/write.
+     * @type {!print_preview.ticket_items.SelectionOnly}
+     * @private
+     */
+    this.selectionOnlyTicketItem_ = printTicketStore.selectionOnly;
+
+    /**
      * Used to monitor the state of the print ticket.
      * @type {!print_preview.PrintTicketStore}
      * @private
@@ -178,6 +185,10 @@ cr.define('print_preview', function() {
           this.cssBackgroundTicketItem_,
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
           this.onCssBackgroundChange_.bind(this));
+      this.tracker.add(
+          this.selectionOnlyTicketItem_,
+          print_preview.ticket_items.TicketItem.EventType.CHANGE,
+          this.onSelectionOnlyChange_.bind(this));
     },
 
     /** @override */
@@ -228,7 +239,7 @@ cr.define('print_preview', function() {
           this.fitToPageTicketItem_.isCapabilityAvailable() ||
           this.duplexTicketItem_.isCapabilityAvailable() ||
           this.cssBackgroundTicketItem_.isCapabilityAvailable() ||
-          this.printTicketStore_.hasSelectionOnlyCapability()) {
+          this.selectionOnlyTicketItem_.isCapabilityAvailable()) {
         fadeInOption(this.getElement());
       } else {
         fadeOutOption(this.getElement());
@@ -278,7 +289,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onSelectionOnlyCheckboxClick_: function() {
-      this.printTicketStore_.updateSelectionOnly(
+      this.selectionOnlyTicketItem_.updateValue(
           this.selectionOnlyCheckbox_.checked);
     },
 
@@ -292,12 +303,6 @@ cr.define('print_preview', function() {
                    this.printTicketStore_.hasHeaderFooterCapability());
       this.headerFooterCheckbox_.checked =
           this.printTicketStore_.isHeaderFooterEnabled();
-
-
-      setIsVisible(this.selectionOnlyContainer_,
-                   this.printTicketStore_.hasSelectionOnlyCapability());
-      this.selectionOnlyCheckbox_.checked =
-          this.printTicketStore_.isSelectionOnlyEnabled();
 
       this.updateContainerState_();
     },
@@ -336,6 +341,19 @@ cr.define('print_preview', function() {
                    this.cssBackgroundTicketItem_.isCapabilityAvailable());
       this.cssBackgroundCheckbox_.checked =
           this.cssBackgroundTicketItem_.getValue();
+      this.updateContainerState_();
+    },
+
+    /**
+     * Called when the print selection only ticket item has changed. Updates the
+     * CSS background checkbox.
+     * @private
+     */
+    onSelectionOnlyChange_: function() {
+      setIsVisible(this.selectionOnlyContainer_,
+                   this.selectionOnlyTicketItem_.isCapabilityAvailable());
+      this.selectionOnlyCheckbox_.checked =
+          this.selectionOnlyTicketItem_.getValue();
       this.updateContainerState_();
     }
   };

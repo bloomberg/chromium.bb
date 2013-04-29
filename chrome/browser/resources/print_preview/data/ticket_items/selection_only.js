@@ -14,14 +14,12 @@ cr.define('print_preview.ticket_items', function() {
    * @extends {print_preview.ticket_items.TicketItem}
    */
   function SelectionOnly(documentInfo) {
-    print_preview.ticket_items.TicketItem.call(this);
-
-    /**
-     * Information about the document to print.
-     * @type {!print_preview.DocumentInfo}
-     * @private
-     */
-    this.documentInfo_ = documentInfo;
+    print_preview.ticket_items.TicketItem.call(
+        this,
+        null /*appState*/,
+        null /*field*/,
+        null /*destinationStore*/,
+        documentInfo);
   };
 
   SelectionOnly.prototype = {
@@ -34,8 +32,8 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     isCapabilityAvailable: function() {
-      return this.documentInfo_.isModifiable &&
-             this.documentInfo_.hasSelection;
+      return this.getDocumentInfoInternal().isModifiable &&
+             this.getDocumentInfoInternal().hasSelection;
     },
 
     /** @override */

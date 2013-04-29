@@ -173,7 +173,7 @@ cr.define('print_preview', function() {
       this.isCssBackgroundEnabled_ =
           this.printTicketStore_.cssBackground.getValue();
       this.isSelectionOnlyEnabled_ =
-          this.printTicketStore_.isSelectionOnlyEnabled();
+          this.printTicketStore_.selectionOnly.getValue();
       this.selectedDestination_ = this.destinationStore_.selectedDestination;
 
       this.inFlightRequestId_++;
@@ -281,7 +281,7 @@ cr.define('print_preview', function() {
                   this.documentInfo_.margins)) ||
           !ticketStore.cssBackground.isValueEqual(
               this.isCssBackgroundEnabled_) ||
-          (ticketStore.isSelectionOnlyEnabled() !=
+          !ticketStore.selectionOnly.isValueEqual(
               this.isSelectionOnlyEnabled_) ||
           (this.selectedDestination_ !=
               this.destinationStore_.selectedDestination);

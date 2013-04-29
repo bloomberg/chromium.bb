@@ -178,7 +178,7 @@ cr.define('print_preview', function() {
         'copies': printTicketStore.copies.getValueAsNumber(),
         'collate': printTicketStore.collate.getValue(),
         'shouldPrintBackgrounds': printTicketStore.cssBackground.getValue(),
-        'shouldPrintSelectionOnly': printTicketStore.isSelectionOnlyEnabled()
+        'shouldPrintSelectionOnly': printTicketStore.selectionOnly.getValue()
       };
 
       // Set 'cloudPrintID' only if the destination is not local.
@@ -237,7 +237,7 @@ cr.define('print_preview', function() {
         'copies': printTicketStore.copies.getValueAsNumber(),
         'collate': printTicketStore.collate.getValue(),
         'shouldPrintBackgrounds': printTicketStore.cssBackground.getValue(),
-        'shouldPrintSelectionOnly': printTicketStore.isSelectionOnlyEnabled(),
+        'shouldPrintSelectionOnly': printTicketStore.selectionOnly.getValue(),
         'previewModifiable': documentInfo.isModifiable,
         'printToPDF': destination.id ==
             print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,

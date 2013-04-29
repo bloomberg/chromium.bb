@@ -205,6 +205,10 @@ cr.define('print_preview', function() {
       return this.fitToPage_;
     },
 
+    get selectionOnly() {
+      return this.selectionOnly_;
+    },
+
     /**
      * @return {!print_preview.MeasurementSystem} Measurement system of the
      *     local system.
@@ -450,33 +454,6 @@ cr.define('print_preview', function() {
     updatePageRange: function(pageRangeStr) {
       if (this.pageRange_.getValue() != pageRangeStr) {
         this.pageRange_.updateValue(pageRangeStr);
-        cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
-      }
-    },
-
-    /**
-     * @return {boolean} Whether the print selection only capability is
-     *     available.
-     */
-    hasSelectionOnlyCapability: function() {
-      return this.selectionOnly_.isCapabilityAvailable();
-    },
-
-    /**
-     * @return {boolean} Whether the print selection only capability is
-     *     enabled.
-     */
-    isSelectionOnlyEnabled: function() {
-      return this.selectionOnly_.getValue();
-    },
-
-    /**
-     * @param {boolean} isSelectionOnlyEnabled Whether to enable the
-     *     print selection only capability.
-     */
-    updateSelectionOnly: function(isSelectionOnlyEnabled) {
-      if (this.selectionOnly_.getValue() != isSelectionOnlyEnabled) {
-        this.selectionOnly_.updateValue(isSelectionOnlyEnabled);
         cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
       }
     },
