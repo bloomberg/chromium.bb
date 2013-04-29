@@ -6,6 +6,7 @@
 #ifndef BASE_DEBUG_TRACE_EVENT_IMPL_H_
 #define BASE_DEBUG_TRACE_EVENT_IMPL_H_
 
+#include <stack>
 #include <string>
 #include <vector>
 
@@ -261,7 +262,10 @@ class BASE_EXPORT TraceLog {
     RECORD_CONTINUOUSLY = 1 << 1,
 
     // Enable the sampling profiler.
-    ENABLE_SAMPLING = 1 << 2
+    ENABLE_SAMPLING = 1 << 2,
+
+    // Echo to VLOG. Events are discared.
+    ECHO_TO_VLOG = 1 << 3
   };
 
   static TraceLog* GetInstance();
@@ -496,6 +500,8 @@ class BASE_EXPORT TraceLog {
   ObserverList<EnabledStateChangedObserver> enabled_state_observer_list_;
 
   base::hash_map<int, std::string> thread_names_;
+  base::hash_map<int, std::stack<TimeTicks> > thread_event_start_times_;
+  base::hash_map<std::string, int> thread_colors_;
 
   // XORed with TraceID to make it unlikely to collide with other processes.
   unsigned long long process_id_hash_;
