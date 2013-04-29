@@ -92,7 +92,7 @@ class NET_EXPORT ServerBoundCertService
   // longer hold.
   bool IsSystemTimeValid() const { return is_system_time_valid_; }
 
-  // Fetches the domain bound cert for the specified origin of the specified
+  // Fetches the domain bound cert for the specified host of the specified
   // type if one exists and creates one otherwise. Returns OK if successful or
   // an error code upon failure.
   //
@@ -112,7 +112,7 @@ class NET_EXPORT ServerBoundCertService
   // RequestHandle object must be cancelled or destroyed before the
   // ServerBoundCertService is destroyed.
   int GetDomainBoundCert(
-      const std::string& origin,
+      const std::string& host,
       const std::vector<uint8>& requested_types,
       SSLClientCertType* type,
       std::string* private_key,

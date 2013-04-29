@@ -417,26 +417,26 @@ std::string ServerBoundCertService::GetDomainForHost(const std::string& host) {
 }
 
 int ServerBoundCertService::GetDomainBoundCert(
-    const std::string& origin,
+    const std::string& host,
     const std::vector<uint8>& requested_types,
     SSLClientCertType* type,
     std::string* private_key,
     std::string* cert,
     const CompletionCallback& callback,
     RequestHandle* out_req) {
-  DVLOG(1) << __FUNCTION__ << " " << origin << " "
+  DVLOG(1) << __FUNCTION__ << " " << host << " "
            << (requested_types.empty() ? -1 : requested_types[0])
            << (requested_types.size() > 1 ? "..." : "");
   DCHECK(CalledOnValidThread());
   base::TimeTicks request_start = base::TimeTicks::Now();
 
-  if (callback.is_null() || !private_key || !cert || origin.empty() ||
+  if (callback.is_null() || !private_key || !cert || host.empty() ||
       requested_types.empty()) {
     RecordGetDomainBoundCertResult(INVALID_ARGUMENT);
     return ERR_INVALID_ARGUMENT;
   }
 
-  std::string domain = GetDomainForHost(GURL(origin).host());
+  std::string domain = GetDomainForHost(host);
   if (domain.empty()) {
     RecordGetDomainBoundCertResult(INVALID_ARGUMENT);
     return ERR_INVALID_ARGUMENT;

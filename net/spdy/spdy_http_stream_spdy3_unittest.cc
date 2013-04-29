@@ -678,7 +678,7 @@ TEST_F(SpdyHttpStreamSpdy3Test, SpdyURLTest) {
 namespace {
 
 void GetECServerBoundCertAndProof(
-    const std::string& origin,
+    const std::string& host,
     ServerBoundCertService* server_bound_cert_service,
     std::string* cert,
     std::string* proof) {
@@ -689,7 +689,7 @@ void GetECServerBoundCertAndProof(
   std::string key;
   ServerBoundCertService::RequestHandle request_handle;
   int rv = server_bound_cert_service->GetDomainBoundCert(
-      origin, requested_cert_types, &cert_type, &key, cert, callback.callback(),
+      host, requested_cert_types, &cert_type, &key, cert, callback.callback(),
       &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback.WaitForResult());
@@ -893,7 +893,7 @@ TEST_F(SpdyHttpStreamSpdy3Test, SendCredentialsEC) {
                                  sequenced_worker_pool));
   std::string cert;
   std::string proof;
-  GetECServerBoundCertAndProof("http://www.gmail.com/",
+  GetECServerBoundCertAndProof("www.gmail.com",
                                server_bound_cert_service.get(),
                                &cert, &proof);
 

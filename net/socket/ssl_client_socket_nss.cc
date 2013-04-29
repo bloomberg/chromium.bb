@@ -777,7 +777,7 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
   ////////////////////////////////////////////////////////////////////////////
   int DoBufferRecv(IOBuffer* buffer, int len);
   int DoBufferSend(IOBuffer* buffer, int len);
-  int DoGetDomainBoundCert(const std::string& origin,
+  int DoGetDomainBoundCert(const std::string& host,
                            const std::vector<uint8>& requested_cert_types);
 
   void OnGetDomainBoundCertComplete(int result);
@@ -2351,18 +2351,18 @@ SECStatus SSLClientSocketNSS::Core::ClientChannelIDHandler(
 
   // We have negotiated the TLS channel ID extension.
   core->channel_id_xtn_negotiated_ = true;
-  std::string origin = "https://" + core->host_and_port_.ToString();
+  std::string host = core->host_and_port_.host();
   std::vector<uint8> requested_cert_types;
   requested_cert_types.push_back(CLIENT_CERT_ECDSA_SIGN);
   int error = ERR_UNEXPECTED;
   if (core->OnNetworkTaskRunner()) {
-    error = core->DoGetDomainBoundCert(origin, requested_cert_types);
+    error = core->DoGetDomainBoundCert(host, requested_cert_types);
   } else {
     bool posted = core->network_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(
             IgnoreResult(&Core::DoGetDomainBoundCert),
-            core, origin, requested_cert_types));
+            core, host, requested_cert_types));
     error = posted ? ERR_IO_PENDING : ERR_ABORTED;
   }
 
@@ -2608,7 +2608,7 @@ int SSLClientSocketNSS::Core::DoBufferSend(IOBuffer* send_buffer, int len) {
 }
 
 int SSLClientSocketNSS::Core::DoGetDomainBoundCert(
-    const std::string& origin,
+    const std::string& host,
     const std::vector<uint8>& requested_cert_types) {
   DCHECK(OnNetworkTaskRunner());
 
@@ -2618,7 +2618,7 @@ int SSLClientSocketNSS::Core::DoGetDomainBoundCert(
   weak_net_log_->BeginEvent(NetLog::TYPE_SSL_GET_DOMAIN_BOUND_CERT);
 
   int rv = server_bound_cert_service_->GetDomainBoundCert(
-      origin,
+      host,
       requested_cert_types,
       &domain_bound_cert_type_,
       &domain_bound_private_key_,
