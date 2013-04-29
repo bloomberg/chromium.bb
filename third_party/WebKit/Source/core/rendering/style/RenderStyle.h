@@ -33,7 +33,7 @@
 #include "core/platform/LengthBox.h"
 #include "core/platform/LengthSize.h"
 #include "core/platform/ThemeTypes.h"
-#include "core/platform/animation/AnimationList.h"
+#include "core/platform/animation/CSSAnimationDataList.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/ColorSpace.h"
 #include "core/platform/graphics/FontBaseline.h"
@@ -877,11 +877,11 @@ public:
 
     // Apple-specific property getter methods
     EPointerEvents pointerEvents() const { return static_cast<EPointerEvents>(inherited_flags._pointerEvents); }
-    const AnimationList* animations() const { return rareNonInheritedData->m_animations.get(); }
-    const AnimationList* transitions() const { return rareNonInheritedData->m_transitions.get(); }
+    const CSSAnimationDataList* animations() const { return rareNonInheritedData->m_animations.get(); }
+    const CSSAnimationDataList* transitions() const { return rareNonInheritedData->m_transitions.get(); }
 
-    AnimationList* accessAnimations();
-    AnimationList* accessTransitions();
+    CSSAnimationDataList* accessAnimations();
+    CSSAnimationDataList* accessTransitions();
 
     bool hasAnimations() const { return rareNonInheritedData->m_animations && rareNonInheritedData->m_animations->size() > 0; }
     bool hasTransitions() const { return rareNonInheritedData->m_transitions && rareNonInheritedData->m_transitions->size() > 0; }
@@ -1323,8 +1323,8 @@ public:
         rareNonInheritedData.access()->m_transitions.clear();
     }
 
-    void inheritAnimations(const AnimationList* parent) { rareNonInheritedData.access()->m_animations = parent ? adoptPtr(new AnimationList(*parent)) : nullptr; }
-    void inheritTransitions(const AnimationList* parent) { rareNonInheritedData.access()->m_transitions = parent ? adoptPtr(new AnimationList(*parent)) : nullptr; }
+    void inheritAnimations(const CSSAnimationDataList* parent) { rareNonInheritedData.access()->m_animations = parent ? adoptPtr(new CSSAnimationDataList(*parent)) : nullptr; }
+    void inheritTransitions(const CSSAnimationDataList* parent) { rareNonInheritedData.access()->m_transitions = parent ? adoptPtr(new CSSAnimationDataList(*parent)) : nullptr; }
     void adjustAnimations();
     void adjustTransitions();
 

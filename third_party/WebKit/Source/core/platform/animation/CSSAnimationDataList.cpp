@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include "core/platform/animation/AnimationList.h"
+#include "core/platform/animation/CSSAnimationDataList.h"
 
 namespace WebCore {
 
@@ -31,13 +31,13 @@ if (i < size() && i != 0) { \
         animation(i)->propSet(animation(j)->propGet()); \
 }
 
-AnimationList::AnimationList(const AnimationList& o)
+CSSAnimationDataList::CSSAnimationDataList(const CSSAnimationDataList& o)
 {
     for (size_t i = 0; i < o.size(); ++i)
         m_animations.append(CSSAnimationData::create(o.animation(i)));
 }
 
-void AnimationList::fillUnsetProperties()
+void CSSAnimationDataList::fillUnsetProperties()
 {
     size_t i;
     FILL_UNSET_PROPERTY(isDelaySet, delay, setDelay);
@@ -51,7 +51,7 @@ void AnimationList::fillUnsetProperties()
     FILL_UNSET_PROPERTY(isPropertySet, property, setProperty);
 }
 
-bool AnimationList::operator==(const AnimationList& o) const
+bool CSSAnimationDataList::operator==(const CSSAnimationDataList& o) const
 {
     if (size() != o.size())
         return false;

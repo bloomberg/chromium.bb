@@ -1632,8 +1632,8 @@ template <typename T,
           void (CSSAnimationData::*clearFunction)(),
           T (*initialFunction)(),
           void (CSSToStyleMap::*mapFunction)(CSSAnimationData*, CSSValue*),
-          AnimationList* (RenderStyle::*animationGetterFunction)(),
-          const AnimationList* (RenderStyle::*immutableAnimationGetterFunction)() const>
+          CSSAnimationDataList* (RenderStyle::*animationGetterFunction)(),
+          const CSSAnimationDataList* (RenderStyle::*immutableAnimationGetterFunction)() const>
 class ApplyPropertyAnimation {
 public:
     static void setValue(CSSAnimationData* animation, T value) { (animation->*setterFunction)(value); }
@@ -1642,13 +1642,13 @@ public:
     static void clear(CSSAnimationData* animation) { (animation->*clearFunction)(); }
     static T initial() { return (*initialFunction)(); }
     static void map(StyleResolver* styleResolver, CSSAnimationData* animation, CSSValue* value) { (styleResolver->styleMap()->*mapFunction)(animation, value); }
-    static AnimationList* accessAnimations(RenderStyle* style) { return (style->*animationGetterFunction)(); }
-    static const AnimationList* animations(RenderStyle* style) { return (style->*immutableAnimationGetterFunction)(); }
+    static CSSAnimationDataList* accessAnimations(RenderStyle* style) { return (style->*animationGetterFunction)(); }
+    static const CSSAnimationDataList* animations(RenderStyle* style) { return (style->*immutableAnimationGetterFunction)(); }
 
     static void applyInheritValue(CSSPropertyID, StyleResolver* styleResolver)
     {
-        AnimationList* list = accessAnimations(styleResolver->style());
-        const AnimationList* parentList = animations(styleResolver->parentStyle());
+        CSSAnimationDataList* list = accessAnimations(styleResolver->style());
+        const CSSAnimationDataList* parentList = animations(styleResolver->parentStyle());
         size_t i = 0, parentSize = parentList ? parentList->size() : 0;
         for ( ; i < parentSize && test(parentList->animation(i)); ++i) {
             if (list->size() <= i)
@@ -1664,7 +1664,7 @@ public:
 
     static void applyInitialValue(CSSPropertyID propertyID, StyleResolver* styleResolver)
     {
-        AnimationList* list = accessAnimations(styleResolver->style());
+        CSSAnimationDataList* list = accessAnimations(styleResolver->style());
         if (list->isEmpty())
             list->append(CSSAnimationData::create());
         setValue(list->animation(0), initial());
@@ -1676,7 +1676,7 @@ public:
 
     static void applyValue(CSSPropertyID, StyleResolver* styleResolver, CSSValue* value)
     {
-        AnimationList* list = accessAnimations(styleResolver->style());
+        CSSAnimationDataList* list = accessAnimations(styleResolver->style());
         size_t childIndex = 0;
         if (value->isValueList()) {
             /* Walk each value and put it into an animation, creating new animations as needed. */

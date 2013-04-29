@@ -1068,7 +1068,7 @@ static PassRefPtr<CSSValue> createTransitionPropertyValue(const CSSAnimationData
         propertyValue = cssValuePool().createValue(getPropertyNameString(animation->property()), CSSPrimitiveValue::CSS_STRING);
     return propertyValue.release();
 }
-static PassRefPtr<CSSValue> getTransitionPropertyValue(const AnimationList* animList)
+static PassRefPtr<CSSValue> getTransitionPropertyValue(const CSSAnimationDataList* animList)
 {
     RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
     if (animList) {
@@ -1079,7 +1079,7 @@ static PassRefPtr<CSSValue> getTransitionPropertyValue(const AnimationList* anim
     return list.release();
 }
 
-static PassRefPtr<CSSValue> getDelayValue(const AnimationList* animList)
+static PassRefPtr<CSSValue> getDelayValue(const CSSAnimationDataList* animList)
 {
     RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
     if (animList) {
@@ -1092,7 +1092,7 @@ static PassRefPtr<CSSValue> getDelayValue(const AnimationList* animList)
     return list.release();
 }
 
-static PassRefPtr<CSSValue> getDurationValue(const AnimationList* animList)
+static PassRefPtr<CSSValue> getDurationValue(const CSSAnimationDataList* animList)
 {
     RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
     if (animList) {
@@ -1141,7 +1141,7 @@ static PassRefPtr<CSSValue> createTimingFunctionValue(const TimingFunction* timi
     return CSSLinearTimingFunctionValue::create();
 }
 
-static PassRefPtr<CSSValue> getTimingFunctionValue(const AnimationList* animList)
+static PassRefPtr<CSSValue> getTimingFunctionValue(const CSSAnimationDataList* animList)
 {
     RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
     if (animList) {
@@ -2285,7 +2285,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return getDelayValue(style->animations());
         case CSSPropertyWebkitAnimationDirection: {
             RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-            const AnimationList* t = style->animations();
+            const CSSAnimationDataList* t = style->animations();
             if (t) {
                 for (size_t i = 0; i < t->size(); ++i) {
                     if (t->animation(i)->direction())
@@ -2301,7 +2301,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return getDurationValue(style->animations());
         case CSSPropertyWebkitAnimationFillMode: {
             RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-            const AnimationList* t = style->animations();
+            const CSSAnimationDataList* t = style->animations();
             if (t) {
                 for (size_t i = 0; i < t->size(); ++i) {
                     switch (t->animation(i)->fillMode()) {
@@ -2325,7 +2325,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         }
         case CSSPropertyWebkitAnimationIterationCount: {
             RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-            const AnimationList* t = style->animations();
+            const CSSAnimationDataList* t = style->animations();
             if (t) {
                 for (size_t i = 0; i < t->size(); ++i) {
                     double iterationCount = t->animation(i)->iterationCount();
@@ -2340,7 +2340,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         }
         case CSSPropertyWebkitAnimationName: {
             RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-            const AnimationList* t = style->animations();
+            const CSSAnimationDataList* t = style->animations();
             if (t) {
                 for (size_t i = 0; i < t->size(); ++i)
                     list->append(cssValuePool().createValue(t->animation(i)->name(), CSSPrimitiveValue::CSS_STRING));
@@ -2350,7 +2350,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         }
         case CSSPropertyWebkitAnimationPlayState: {
             RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-            const AnimationList* t = style->animations();
+            const CSSAnimationDataList* t = style->animations();
             if (t) {
                 for (size_t i = 0; i < t->size(); ++i) {
                     int prop = t->animation(i)->playState();
@@ -2500,7 +2500,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return getTimingFunctionValue(style->transitions());
         case CSSPropertyTransition:
         case CSSPropertyWebkitTransition: {
-            const AnimationList* animList = style->transitions();
+            const CSSAnimationDataList* animList = style->transitions();
             if (animList) {
                 RefPtr<CSSValueList> transitionsList = CSSValueList::createCommaSeparated();
                 for (size_t i = 0; i < animList->size(); ++i) {

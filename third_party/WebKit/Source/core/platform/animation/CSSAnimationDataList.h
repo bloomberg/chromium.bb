@@ -22,8 +22,8 @@
  *
  */
 
-#ifndef AnimationList_h
-#define AnimationList_h
+#ifndef CSSAnimationDataList_h
+#define CSSAnimationDataList_h
 
 #include "core/platform/animation/CSSAnimationData.h"
 #include <wtf/RefPtr.h>
@@ -31,36 +31,36 @@
 
 namespace WebCore {
 
-class AnimationList {
+class CSSAnimationDataList {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    AnimationList() { }
-    AnimationList(const AnimationList&);
+    CSSAnimationDataList() { }
+    CSSAnimationDataList(const CSSAnimationDataList&);
 
     void fillUnsetProperties();
-    bool operator==(const AnimationList& o) const;
-    bool operator!=(const AnimationList& o) const
+    bool operator==(const CSSAnimationDataList& o) const;
+    bool operator!=(const CSSAnimationDataList& o) const
     {
         return !(*this == o);
     }
-    
+
     size_t size() const { return m_animations.size(); }
     bool isEmpty() const { return m_animations.isEmpty(); }
-    
+
     void resize(size_t n) { m_animations.resize(n); }
     void remove(size_t i) { m_animations.remove(i); }
     void append(PassRefPtr<CSSAnimationData> anim) { m_animations.append(anim); }
-    
+
     CSSAnimationData* animation(size_t i) { return m_animations[i].get(); }
     const CSSAnimationData* animation(size_t i) const { return m_animations[i].get(); }
-    
+
 private:
-    AnimationList& operator=(const AnimationList&);
+    CSSAnimationDataList& operator=(const CSSAnimationDataList&);
 
     Vector<RefPtr<CSSAnimationData> > m_animations;
-};    
+};
 
 
 } // namespace WebCore
 
-#endif // AnimationList_h
+#endif // CSSAnimationDataList_h

@@ -1070,7 +1070,7 @@ const AtomicString& RenderStyle::textEmphasisMarkString() const
 
 void RenderStyle::adjustAnimations()
 {
-    AnimationList* animationList = rareNonInheritedData->m_animations.get();
+    CSSAnimationDataList* animationList = rareNonInheritedData->m_animations.get();
     if (!animationList)
         return;
 
@@ -1093,7 +1093,7 @@ void RenderStyle::adjustAnimations()
 
 void RenderStyle::adjustTransitions()
 {
-    AnimationList* transitionList = rareNonInheritedData->m_transitions.get();
+    CSSAnimationDataList* transitionList = rareNonInheritedData->m_transitions.get();
     if (!transitionList)
         return;
 
@@ -1126,17 +1126,17 @@ void RenderStyle::adjustTransitions()
     }
 }
 
-AnimationList* RenderStyle::accessAnimations()
+CSSAnimationDataList* RenderStyle::accessAnimations()
 {
     if (!rareNonInheritedData.access()->m_animations)
-        rareNonInheritedData.access()->m_animations = adoptPtr(new AnimationList());
+        rareNonInheritedData.access()->m_animations = adoptPtr(new CSSAnimationDataList());
     return rareNonInheritedData->m_animations.get();
 }
 
-AnimationList* RenderStyle::accessTransitions()
+CSSAnimationDataList* RenderStyle::accessTransitions()
 {
     if (!rareNonInheritedData.access()->m_transitions)
-        rareNonInheritedData.access()->m_transitions = adoptPtr(new AnimationList());
+        rareNonInheritedData.access()->m_transitions = adoptPtr(new CSSAnimationDataList());
     return rareNonInheritedData->m_transitions.get();
 }
 

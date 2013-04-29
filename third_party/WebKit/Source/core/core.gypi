@@ -2527,7 +2527,7 @@
             'platform/Widget.cpp',
             'platform/Widget.h',
             'platform/animation/CSSAnimationData.cpp',
-            'platform/animation/AnimationList.cpp',
+            'platform/animation/CSSAnimationDataList.cpp',
             'platform/audio/AudioArray.h',
             'platform/audio/AudioBus.cpp',
             'platform/audio/AudioBus.h',

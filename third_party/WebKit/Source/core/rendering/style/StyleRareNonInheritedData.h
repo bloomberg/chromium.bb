@@ -40,7 +40,7 @@
 
 namespace WebCore {
 
-class AnimationList;
+class CSSAnimationDataList;
 class ShadowData;
 class StyleDeprecatedFlexibleBoxData;
 class StyleFilterData;
@@ -117,8 +117,8 @@ public:
     
     RefPtr<StyleReflection> m_boxReflect;
 
-    OwnPtr<AnimationList> m_animations;
-    OwnPtr<AnimationList> m_transitions;
+    OwnPtr<CSSAnimationDataList> m_animations;
+    OwnPtr<CSSAnimationDataList> m_transitions;
 
     FillLayer m_mask;
     NinePieceImage m_maskBoxImage;
