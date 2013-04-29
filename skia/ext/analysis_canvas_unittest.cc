@@ -73,7 +73,6 @@ TEST(AnalysisCanvasTest, EmptyCanvas) {
   SkColor color;
   EXPECT_FALSE(canvas.getColorIfSolid(&color));
   EXPECT_FALSE(canvas.isTransparent());
-  EXPECT_TRUE(canvas.isCheap());
 }
 
 TEST(AnalysisCanvasTest, ClearCanvas) {
@@ -89,7 +88,6 @@ TEST(AnalysisCanvasTest, ClearCanvas) {
   SkColor outputColor;
   EXPECT_FALSE(canvas.getColorIfSolid(&outputColor));
   EXPECT_TRUE(canvas.isTransparent());
-  EXPECT_TRUE(canvas.isCheap());
 
   // Solid color
   color = SkColorSetARGB(255, 65, 43, 21);
@@ -97,7 +95,6 @@ TEST(AnalysisCanvasTest, ClearCanvas) {
 
   EXPECT_TRUE(canvas.getColorIfSolid(&outputColor));
   EXPECT_FALSE(canvas.isTransparent());
-  EXPECT_FALSE(canvas.isCheap());
   EXPECT_EQ(outputColor, color);
 
   // Translucent color
@@ -106,7 +103,6 @@ TEST(AnalysisCanvasTest, ClearCanvas) {
 
   EXPECT_FALSE(canvas.getColorIfSolid(&outputColor));
   EXPECT_FALSE(canvas.isTransparent());
-  EXPECT_FALSE(canvas.isCheap());
 
   // Test helper methods
   solidColorFill(canvas);
@@ -135,7 +131,6 @@ TEST(AnalysisCanvasTest, ComplexActions) {
   //TODO(vmpstr): This should return true. (crbug.com/180597)
   EXPECT_FALSE(canvas.getColorIfSolid(&outputColor));
   EXPECT_FALSE(canvas.isTransparent());
-  EXPECT_TRUE(canvas.isCheap());
 
   // Draw points test.
   SkPoint points[4] = {
@@ -150,7 +145,6 @@ TEST(AnalysisCanvasTest, ComplexActions) {
 
   EXPECT_FALSE(canvas.getColorIfSolid(&outputColor));
   EXPECT_FALSE(canvas.isTransparent());
-  EXPECT_FALSE(canvas.isCheap());
 
   // Draw oval test.
   solidColorFill(canvas);
@@ -158,7 +152,6 @@ TEST(AnalysisCanvasTest, ComplexActions) {
 
   EXPECT_FALSE(canvas.getColorIfSolid(&outputColor));
   EXPECT_FALSE(canvas.isTransparent());
-  EXPECT_FALSE(canvas.isCheap());
 
   // Draw bitmap test.
   solidColorFill(canvas);
@@ -168,7 +161,6 @@ TEST(AnalysisCanvasTest, ComplexActions) {
 
   EXPECT_FALSE(canvas.getColorIfSolid(&outputColor));
   EXPECT_FALSE(canvas.isTransparent());
-  EXPECT_FALSE(canvas.isCheap());
 }
 
 TEST(AnalysisCanvasTest, SimpleDrawRect) {
@@ -186,7 +178,6 @@ TEST(AnalysisCanvasTest, SimpleDrawRect) {
   SkColor outputColor;
   EXPECT_TRUE(canvas.getColorIfSolid(&outputColor));
   EXPECT_FALSE(canvas.isTransparent());
-  EXPECT_TRUE(canvas.isCheap());
   EXPECT_EQ(color, outputColor);
 
   color = SkColorSetARGB(255, 22, 33, 44);
@@ -196,7 +187,6 @@ TEST(AnalysisCanvasTest, SimpleDrawRect) {
 
   EXPECT_FALSE(canvas.getColorIfSolid(&outputColor));
   EXPECT_FALSE(canvas.isTransparent());
-  EXPECT_TRUE(canvas.isCheap());
 
   color = SkColorSetARGB(255, 33, 44, 55);
   paint.setColor(color);
@@ -204,7 +194,6 @@ TEST(AnalysisCanvasTest, SimpleDrawRect) {
 
   EXPECT_TRUE(canvas.getColorIfSolid(&outputColor));
   EXPECT_FALSE(canvas.isTransparent());
-  EXPECT_TRUE(canvas.isCheap());
   EXPECT_EQ(color, outputColor);
 
   color = SkColorSetARGB(0, 0, 0, 0);
@@ -213,7 +202,6 @@ TEST(AnalysisCanvasTest, SimpleDrawRect) {
 
   EXPECT_TRUE(canvas.getColorIfSolid(&outputColor));
   EXPECT_FALSE(canvas.isTransparent());
-  EXPECT_TRUE(canvas.isCheap());
   EXPECT_EQ(outputColor, SkColorSetARGB(255, 33, 44, 55));
 
   color = SkColorSetARGB(128, 128, 128, 128);
@@ -222,20 +210,17 @@ TEST(AnalysisCanvasTest, SimpleDrawRect) {
 
   EXPECT_FALSE(canvas.getColorIfSolid(&outputColor));
   EXPECT_FALSE(canvas.isTransparent());
-  EXPECT_TRUE(canvas.isCheap());
 
   paint.setXfermodeMode(SkXfermode::kClear_Mode);
   canvas.drawRect(SkRect::MakeWH(382, 382), paint);
 
   EXPECT_FALSE(canvas.getColorIfSolid(&outputColor));
   EXPECT_FALSE(canvas.isTransparent());
-  EXPECT_TRUE(canvas.isCheap());
 
   canvas.drawRect(SkRect::MakeWH(383, 383), paint);
 
   EXPECT_FALSE(canvas.getColorIfSolid(&outputColor));
   EXPECT_TRUE(canvas.isTransparent());
-  EXPECT_TRUE(canvas.isCheap());
 
   canvas.translate(128, 128);
   color = SkColorSetARGB(255, 11, 22, 33);
@@ -245,7 +230,6 @@ TEST(AnalysisCanvasTest, SimpleDrawRect) {
 
   EXPECT_TRUE(canvas.getColorIfSolid(&outputColor));
   EXPECT_FALSE(canvas.isTransparent());
-  EXPECT_TRUE(canvas.isCheap());
   EXPECT_EQ(color, outputColor);
 
   canvas.rotate(50);
@@ -253,7 +237,6 @@ TEST(AnalysisCanvasTest, SimpleDrawRect) {
 
   EXPECT_FALSE(canvas.getColorIfSolid(&outputColor));
   EXPECT_FALSE(canvas.isTransparent());
-  EXPECT_TRUE(canvas.isCheap());
 }
 
 TEST(AnalysisCanvasTest, ClipPath) {

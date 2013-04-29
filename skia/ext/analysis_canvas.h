@@ -22,7 +22,7 @@ class AnalysisDevice;
 // played back through it.
 // To use: create a SkBitmap with kNo_Config, create an AnalysisDevice
 // using that bitmap, and create an AnalysisCanvas using the device.
-// Play a picture into the canvas, and then check isCheap().
+// Play a picture into the canvas, and then check result.
 class SK_API AnalysisCanvas : public SkCanvas {
  public:
   typedef std::list<skia::LazyPixelRef*> LazyPixelRefList;
@@ -30,16 +30,10 @@ class SK_API AnalysisCanvas : public SkCanvas {
   AnalysisCanvas(AnalysisDevice*);
   virtual ~AnalysisCanvas();
 
-  // Returns true if the estimated cost of drawing is below an
-  // arbitrary threshold.
-  bool isCheap() const;
   bool getColorIfSolid(SkColor* color) const;
   bool isTransparent() const;
   bool hasText() const;
   void consumeLazyPixelRefs(LazyPixelRefList* pixelRefs);
-
-  // Returns the estimated cost of drawing, in arbitrary units.
-  int getEstimatedCost() const;
 
   virtual bool clipRect(const SkRect& rect,
                         SkRegion::Op op = SkRegion::kIntersect_Op,
@@ -74,7 +68,6 @@ class SK_API AnalysisDevice : public SkDevice {
   AnalysisDevice(const SkBitmap& bm);
   virtual ~AnalysisDevice();
 
-  int getEstimatedCost() const;
   bool getColorIfSolid(SkColor* color) const;
   bool isTransparent() const;
   bool hasText() const;
@@ -130,8 +123,6 @@ class SK_API AnalysisDevice : public SkDevice {
                             const SkPaint& paint) OVERRIDE;
   virtual void drawDevice(const SkDraw&, SkDevice*, int x, int y,
                           const SkPaint&) OVERRIDE;
-
-  int estimatedCost_;
 
  private:
 
