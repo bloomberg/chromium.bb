@@ -5789,6 +5789,38 @@ other types of suffix sets.
   <summary>Error codes returned by sqlite the web db.</summary>
 </histogram>
 
+<histogram name="Tab.SwitchedToForegroundAge" units="ms">
+  <summary>Age (in ms) when the tab was switched to foreground.</summary>
+</histogram>
+
+<histogram name="Tab.SwitchedToForegroundLaunchedWithURL"
+    enum="TabSwitchedToForegroundLaunchedWithURL">
+  <summary>
+    Each time a tab is brought to the foreground, this histogram indicates if
+    chrome was launched without an URL (i.e., from the launcher), or with an URL
+    (i.e., from another app).
+  </summary>
+</histogram>
+
+<histogram name="Tab.SwitchedToForegroundMRURank">
+  <summary>
+    Rank in MRU order (0 being first) when the tab was switched to foreground.
+  </summary>
+</histogram>
+
+<histogram name="Tab.SwitchedToForegroundNumTabs">
+  <summary>Count of all tabs when a tab is switched.</summary>
+</histogram>
+
+<histogram name="Tab.SwitchedToForegroundRevisit"
+    enum="TabSwitchedToForegroundRevisit">
+  <summary>
+    Each time a tab is brought to the foreground, this histogram indicates if
+    this is the first viewing of the tab since Chrome was put into foreground,
+    or if it was a return to a tab that has already been shown in this session.
+  </summary>
+</histogram>
+
 <histogram name="Touchpad.Device" enum="TouchpadDeviceState">
   <summary>Tracks touchpad device state.</summary>
 </histogram>
@@ -9262,6 +9294,16 @@ other types of suffix sets.
   <int value="101" label="SQLITE_DONE">
     sqlite3_step() has finished executing
   </int>
+</enum>
+
+<enum name="TabSwitchedToForegroundLaunchedWithURL" type="int">
+  <int value="0" label="Launched without an URL"/>
+  <int value="1" label="Launched with an URL"/>
+</enum>
+
+<enum name="TabSwitchedToForegroundRevisit" type="int">
+  <int value="0" label="First time"/>
+  <int value="1" label="Revisit"/>
 </enum>
 
 <enum name="TcpSocketStatus" type="int">
