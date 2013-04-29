@@ -90,11 +90,12 @@ enum {
   FILE_O3D_PLUGIN,              // Full path to the O3D Pepper plugin file.
   FILE_O1D_PLUGIN,              // Full path to the O1D Pepper plugin file.
   FILE_GTALK_PLUGIN,            // Full path to the GTalk Pepper plugin file.
+  DIR_WIDEVINE_CDM,             // Directory that contains Widevine CDM files.
   FILE_WIDEVINE_CDM_PLUGIN,     // Full path to the Widevine CDM Pepper plugin
                                 // file.
   FILE_RESOURCES_PACK,          // Full path to the .pak file containing
                                 // binary data (e.g., html files and images
-                                // used by interal pages).
+                                // used by internal pages).
   DIR_RESOURCES_EXTENSION,      // Full path to extension resources.
 #if defined(OS_CHROMEOS)
   DIR_CHROMEOS_WALLPAPERS,      // Directory where downloaded chromeos
