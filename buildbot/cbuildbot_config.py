@@ -137,31 +137,6 @@ def IsCQType(b_type):
 # List of usable cbuildbot configs; see add_config method.
 config = {}
 
-# pylint: disable=W0102
-def GetSlavesForMaster(master_config, configs=config):
-  """Gets the important builds corresponding to a master builder.
-
-  Given a master builder, find all corresponding slaves that
-  are important to me.  These are those builders that share the same
-  build_type and manifest_version url.
-  """
-  assert not master_config['unified_manifest_version']
-  assert master_config['manifest_version']
-  assert master_config['master']
-  builders = []
-  build_type = master_config['build_type']
-  branch_config = master_config['branch']
-  chrome_rev = master_config['chrome_rev']
-  for build_name, conf in configs.iteritems():
-    if (conf['important'] and conf['manifest_version'] and
-        not conf['unified_manifest_version'] and
-        conf['build_type'] == build_type and
-        conf['chrome_rev'] == chrome_rev and
-        conf['branch'] == branch_config):
-      builders.append(build_name)
-
-  return builders
-
 
 # pylint: disable=W0102
 def GetCanariesForChromeLKGM(configs=config):
@@ -383,11 +358,6 @@ _settings = dict(
 # manifest_version -- Whether we are using the manifest_version repo that stores
 #                     per-build manifests.
   manifest_version=False,
-
-# TODO(sosa): Merge with overlays == both once unified waterfall launched.
-# unified_manifest_version -- If True, publish manifests to both manifest
-# version repositories.
-  unified_manifest_version=False,
 
 # use_lkgm -- Use the Last Known Good Manifest blessed by Paladin.
   use_lkgm=False,
@@ -673,7 +643,6 @@ pfq = _config(
 
 paladin = _config(
   important=True,
-  unified_manifest_version=True,
   build_type=constants.PALADIN_TYPE,
   overlays=constants.PUBLIC_OVERLAYS,
   prebuilts=True,
