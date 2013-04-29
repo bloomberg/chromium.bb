@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "base/supports_user_data.h"
 #include "components/autofill/browser/webdata/autofill_webdata.h"
 #include "components/autofill/common/form_field_data.h"
 #include "components/webdata/common/web_data_results.h"
@@ -52,6 +53,9 @@ class AutofillWebDataService : public AutofillWebData,
   static void NotifyOfMultipleAutofillChanges(
       AutofillWebDataService* web_data_service);
 
+  // WebDataServiceBase implementation.
+  virtual void ShutdownOnUIThread() OVERRIDE;
+
   // AutofillWebData implementation.
   virtual void AddFormFields(
       const std::vector<FormFieldData>& fields) OVERRIDE;
@@ -85,8 +89,16 @@ class AutofillWebDataService : public AutofillWebData,
   void AddObserver(AutofillWebDataServiceObserverOnUIThread* observer);
   void RemoveObserver(AutofillWebDataServiceObserverOnUIThread* observer);
 
+  // Returns a SupportsUserData objects that may be used to store data
+  // owned by the DB thread on this object. Should be called only from
+  // the DB thread, and will be destroyed on the DB thread soon after
+  // |ShutdownOnUIThread()| is called.
+  base::SupportsUserData* GetDBUserData();
+
  protected:
   virtual ~AutofillWebDataService();
+
+  virtual void ShutdownOnDBThread();
 
  private:
   WebDatabase::State AddFormElementsImpl(
@@ -124,6 +136,23 @@ class AutofillWebDataService : public AutofillWebData,
   void DestroyAutofillCreditCardResult(const WDTypedResult* result);
 
   void NotifyAutofillMultipleChangedOnUIThread();
+
+  // This makes the destructor public, and thus allows us to aggregate
+  // SupportsUserData. It is private by default to prevent incorrect
+  // usage in class hierarchies where it is inherited by
+  // reference-counted objects.
+  class SupportsUserDataAggregatable : public base::SupportsUserData {
+   public:
+    SupportsUserDataAggregatable() {}
+    virtual ~SupportsUserDataAggregatable() {}
+   private:
+    DISALLOW_COPY_AND_ASSIGN(SupportsUserDataAggregatable);
+  };
+
+  // Storage for user data to be accessed only on the DB thread. May
+  // be used e.g. for SyncableService subclasses that need to be owned
+  // by this object. Is created on first call to |GetDBUserData()|.
+  scoped_ptr<SupportsUserDataAggregatable> db_thread_user_data_;
 
   ObserverList<AutofillWebDataServiceObserverOnDBThread> db_observer_list_;
   ObserverList<AutofillWebDataServiceObserverOnUIThread> ui_observer_list_;

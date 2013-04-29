@@ -47,6 +47,13 @@ AutofillWebDataService::AutofillWebDataService()
                          WebDataServiceBase::ProfileErrorCallback()) {
 }
 
+void AutofillWebDataService::ShutdownOnUIThread() {
+  BrowserThread::PostTask(
+    BrowserThread::DB, FROM_HERE,
+    base::Bind(&AutofillWebDataService::ShutdownOnDBThread, this));
+  WebDataServiceBase::ShutdownOnUIThread();
+}
+
 void AutofillWebDataService::AddFormFields(
     const std::vector<FormFieldData>& fields) {
   wdbs_->ScheduleDBTask(FROM_HERE,
@@ -164,7 +171,21 @@ void AutofillWebDataService::RemoveObserver(
   ui_observer_list_.RemoveObserver(observer);
 }
 
-AutofillWebDataService::~AutofillWebDataService() {}
+base::SupportsUserData* AutofillWebDataService::GetDBUserData() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  if (!db_thread_user_data_)
+    db_thread_user_data_.reset(new SupportsUserDataAggregatable());
+  return db_thread_user_data_.get();
+}
+
+void AutofillWebDataService::ShutdownOnDBThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  db_thread_user_data_.reset();
+}
+
+AutofillWebDataService::~AutofillWebDataService() {
+   DCHECK(!db_thread_user_data_.get()) << "Forgot to call ShutdownOnUIThread?";
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //

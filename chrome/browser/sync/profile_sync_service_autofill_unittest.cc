@@ -279,7 +279,7 @@ class WebDataServiceFake : public AutofillWebDataService {
 
   void DestroySyncableService() {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
-    WebDataServiceBase::ShutdownOnDBThread();
+    AutofillWebDataService::ShutdownOnDBThread();
     autocomplete_syncable_service_ = NULL;
     autofill_profile_syncable_service_ = NULL;
     syncable_service_created_or_destroyed_.Signal();

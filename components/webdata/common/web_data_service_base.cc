@@ -45,9 +45,6 @@ void WebDataServiceBase::WebDatabaseLoadFailed(sql::InitStatus status) {
 
 void WebDataServiceBase::ShutdownOnUIThread() {
   db_loaded_ = false;
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&WebDataServiceBase::ShutdownOnDBThread, this));
 }
 
 void WebDataServiceBase::Init() {
@@ -100,18 +97,5 @@ WebDatabase* WebDataServiceBase::GetDatabase() {
   return wdbs_->GetDatabaseOnDB();
 }
 
-base::SupportsUserData* WebDataServiceBase::GetDBUserData() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  if (!db_thread_user_data_)
-    db_thread_user_data_.reset(new SupportsUserDataAggregatable());
-  return db_thread_user_data_.get();
-}
-
 WebDataServiceBase::~WebDataServiceBase() {
-  DCHECK(!db_thread_user_data_.get()) << "Forgot to call ShutdownOnUIThread?";
-}
-
-void WebDataServiceBase::ShutdownOnDBThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  db_thread_user_data_.reset();
 }
