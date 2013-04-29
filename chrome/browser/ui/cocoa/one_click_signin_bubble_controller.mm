@@ -26,7 +26,8 @@ void PerformClose(OneClickSigninBubbleController* controller) {
       initWithNibName:@"OneClickSigninBubble"
           webContents:NULL
          syncCallback:syncCallback
-        closeCallback:base::Bind(PerformClose, self)]);
+        closeCallback:base::Bind(PerformClose, self)
+        isModalDialog:NO]);
   NSWindow* parentWindow = [controller window];
 
   // Set the anchor point to right below the wrench menu.

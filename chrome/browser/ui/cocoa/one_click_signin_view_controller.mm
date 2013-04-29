@@ -9,6 +9,8 @@
 #include "base/mac/bundle_locations.h"
 #import "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
+#include "chrome/browser/ui/sync/one_click_signin_helper.h"
+#include "chrome/browser/ui/sync/one_click_signin_histogram.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
@@ -38,12 +40,15 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
 - (id)initWithNibName:(NSString*)nibName
           webContents:(content::WebContents*)webContents
          syncCallback:(const BrowserWindow::StartSyncCallback&)syncCallback
-        closeCallback:(const base::Closure&)closeCallback {
+        closeCallback:(const base::Closure&)closeCallback
+        isModalDialog:(BOOL)isModalDialog {
   if ((self = [super initWithNibName:nibName
                               bundle:base::mac::FrameworkBundle()])) {
     webContents_ = webContents;
     startSyncCallback_ = syncCallback;
     closeCallback_ = closeCallback;
+    isModalDialog_ = isModalDialog;
+    clickedLearnMore_ = NO;
     DCHECK(!startSyncCallback_.is_null());
   }
   return self;
@@ -59,18 +64,55 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
 - (IBAction)ok:(id)sender {
   base::ResetAndReturn(&startSyncCallback_).Run(
       OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
+
+  if (isModalDialog_) {
+    OneClickSigninHelper::LogConfirmHistogramValue(
+        clickedLearnMore_ ?
+            one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE_OK :
+            one_click_signin::HISTOGRAM_CONFIRM_OK);
+  }
+
   [self close];
 }
 
 - (IBAction)onClickUndo:(id)sender {
   base::ResetAndReturn(&startSyncCallback_).Run(
       OneClickSigninSyncStarter::UNDO_SYNC);
+
+  if (isModalDialog_) {
+    OneClickSigninHelper::LogConfirmHistogramValue(
+        clickedLearnMore_ ?
+            one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE_UNDO :
+            one_click_signin::HISTOGRAM_CONFIRM_UNDO);
+  }
+
   [self close];
 }
 
 - (IBAction)onClickAdvancedLink:(id)sender {
   base::ResetAndReturn(&startSyncCallback_).Run(
       OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST);
+
+  if (isModalDialog_) {
+    OneClickSigninHelper::LogConfirmHistogramValue(
+        clickedLearnMore_ ?
+            one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE_ADVANCED :
+            one_click_signin::HISTOGRAM_CONFIRM_ADVANCED);
+  }
+  [self close];
+}
+
+- (IBAction)onClickClose:(id)sender {
+  base::ResetAndReturn(&startSyncCallback_).Run(
+      OneClickSigninSyncStarter::UNDO_SYNC);
+
+  if (isModalDialog_) {
+    OneClickSigninHelper::LogConfirmHistogramValue(
+        clickedLearnMore_ ?
+            one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE_CLOSE :
+            one_click_signin::HISTOGRAM_CONFIRM_CLOSE);
+  }
+
   [self close];
 }
 
@@ -102,6 +144,11 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
   [GTMUILocalizerAndLayoutTweaker
       resizeViewWithoutAutoResizingSubViews:[self view]
                                       delta:delta];
+
+  if (isModalDialog_) {
+    OneClickSigninHelper::LogConfirmHistogramValue(
+        one_click_signin::HISTOGRAM_CONFIRM_SHOWN);
+  }
 }
 
 - (CGFloat)initializeInformativeTextView {
@@ -153,6 +200,13 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
 - (BOOL)textView:(NSTextView*)textView
    clickedOnLink:(id)link
          atIndex:(NSUInteger)charIndex {
+
+  if (isModalDialog_ && !clickedLearnMore_) {
+    clickedLearnMore_ = YES;
+
+    OneClickSigninHelper::LogConfirmHistogramValue(
+        one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE);
+  }
   content::OpenURLParams params(GURL(chrome::kChromeSyncLearnMoreURL),
                                 content::Referrer(), NEW_WINDOW,
                                 content::PAGE_TRANSITION_LINK, false);
