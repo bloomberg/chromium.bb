@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 #include "base/time.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 
 namespace content {
@@ -20,8 +21,9 @@ struct PasswordForm;
 
 // The RenderView stores an instance of this class in the "extra data" of each
 // WebDataSource (see RenderView::DidCreateDataSource).
-class DocumentState : public WebKit::WebDataSource::ExtraData,
-                      public base::SupportsUserData {
+class CONTENT_EXPORT DocumentState
+    : NON_EXPORTED_BASE(public WebKit::WebDataSource::ExtraData),
+      public base::SupportsUserData {
  public:
   // The exact values of this enum are used in histograms, so new values must be
   // added to the end.

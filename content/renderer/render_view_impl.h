@@ -40,6 +40,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIconURL.h"
@@ -533,9 +534,11 @@ class CONTENT_EXPORT RenderViewImpl
                                  const WebKit::WebURLRequest& request,
                                  WebKit::WebNavigationPolicy policy,
                                  const WebKit::WebString& suggested_name);
+
+  // The WebDataSource::ExtraData* is assumed to be a DocumentState* subclass.
   virtual WebKit::WebNavigationPolicy decidePolicyForNavigation(
       WebKit::WebFrame* frame,
-      WebKit::WebDataSource* dataSource,
+      WebKit::WebDataSource::ExtraData* extraData,
       const WebKit::WebURLRequest& request,
       WebKit::WebNavigationType type,
       WebKit::WebNavigationPolicy default_policy,
@@ -826,6 +829,10 @@ class CONTENT_EXPORT RenderViewImpl
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, NormalCase);
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, ShowPopupThenNavigate);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, DecideNavigationPolicyForWebUI);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
+                           DidFailProvisionalLoadWithErrorForError);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
+                           DidFailProvisionalLoadWithErrorForCancellation);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
                            DontIgnoreBackAfterNavEntryLimit);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, ImeComposition);

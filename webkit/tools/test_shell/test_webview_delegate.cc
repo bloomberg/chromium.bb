@@ -557,9 +557,9 @@ void TestWebViewDelegate::loadURLExternally(
 }
 
 WebNavigationPolicy TestWebViewDelegate::decidePolicyForNavigation(
-    WebFrame* frame, WebDataSource* dataSource, const WebURLRequest& request,
-    WebNavigationType type, WebNavigationPolicy default_policy,
-    bool is_redirect) {
+    WebFrame* frame, WebDataSource::ExtraData* extraData,
+    const WebURLRequest& request, WebNavigationType type,
+    WebNavigationPolicy default_policy, bool is_redirect) {
   WebNavigationPolicy result;
   if (policy_delegate_enabled_) {
     printf("Policy delegate: attempt to load %s with navigation type '%s'\n",

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "content/common/content_export.h"
 #include "content/public/common/page_transition_types.h"
 
 namespace content {
@@ -14,7 +15,7 @@ namespace content {
 // NavigationState is the portion of DocumentState that is affected by
 // in-document navigation.
 // TODO(simonjam): Move this to HistoryItem's ExtraData.
-class NavigationState {
+class CONTENT_EXPORT NavigationState {
  public:
   virtual ~NavigationState();
 
