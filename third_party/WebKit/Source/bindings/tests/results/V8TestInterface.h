@@ -22,11 +22,11 @@
 #define V8TestInterface_h
 
 #if ENABLE(Condition1) || ENABLE(Condition2)
-#include <v8.h>
-#include "TestInterface.h"
+#include "bindings/bindings/tests/idls/TestInterface.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/WrapperTypeInfo.h"
+#include <v8.h>
 #include <wtf/HashMap.h>
 #include <wtf/text/StringHash.h>
 

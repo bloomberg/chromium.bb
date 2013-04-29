@@ -21,6 +21,7 @@
 #include "config.h"
 #include "V8TestTypedefs.h"
 
+#include "SerializedScriptValue.h"
 #include "V8DOMStringList.h"
 #include "V8SVGPoint.h"
 #include "V8SerializedScriptValue.h"

@@ -22,9 +22,9 @@
 #if ENABLE(Condition1) || ENABLE(Condition2)
 #include "V8TestInterface.h"
 
-#include "TestPartialInterface.h"
 #include "V8Node.h"
 #include "V8TestObj.h"
+#include "bindings/bindings/tests/idls/TestPartialInterface.h"
 #include "bindings/v8/BindingState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"

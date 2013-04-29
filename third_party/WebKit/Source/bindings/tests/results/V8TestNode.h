@@ -21,11 +21,11 @@
 #ifndef V8TestNode_h
 #define V8TestNode_h
 
-#include <v8.h>
-#include "TestNode.h"
+#include "bindings/bindings/tests/idls/TestNode.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/WrapperTypeInfo.h"
+#include <v8.h>
 #include <wtf/HashMap.h>
 #include <wtf/text/StringHash.h>
 

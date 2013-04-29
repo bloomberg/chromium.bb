@@ -21,11 +21,11 @@
 #ifndef V8TestCustomNamedGetter_h
 #define V8TestCustomNamedGetter_h
 
-#include <v8.h>
-#include "TestCustomNamedGetter.h"
+#include "bindings/bindings/tests/idls/TestCustomNamedGetter.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/WrapperTypeInfo.h"
+#include <v8.h>
 #include <wtf/HashMap.h>
 #include <wtf/text/StringHash.h>
 

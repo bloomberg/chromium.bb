@@ -22,6 +22,8 @@
 #if ENABLE(Condition1) || ENABLE(Condition2)
 #include "V8TestSerializedScriptValueInterface.h"
 
+#include "MessagePort.h"
+#include "SerializedScriptValue.h"
 #include "V8MessagePort.h"
 #include "bindings/v8/BindingState.h"
 #include "bindings/v8/ScriptController.h"
@@ -29,7 +31,6 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "core/dom/ContextFeatures.h"
-#include "core/dom/MessagePort.h"
 #include "core/page/Frame.h"
 #include "core/page/RuntimeEnabledFeatures.h"
 #include <wtf/UnusedParam.h>

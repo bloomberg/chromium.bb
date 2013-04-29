@@ -22,7 +22,7 @@
 #include "V8TestObj.h"
 
 #include "HTMLNames.h"
-#include "PageConsole.h"
+#include "ScriptProfile.h"
 #include "V8DOMStringList.h"
 #include "V8Document.h"
 #include "V8Float32Array.h"
@@ -49,8 +49,8 @@
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/inspector/ScriptProfile.h"
 #include "core/page/Frame.h"
+#include "core/page/PageConsole.h"
 #include "core/page/RuntimeEnabledFeatures.h"
 #include "core/page/UseCounter.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"

@@ -21,11 +21,11 @@
 #ifndef V8TestTypedefs_h
 #define V8TestTypedefs_h
 
-#include <v8.h>
-#include "TestTypedefs.h"
+#include "bindings/bindings/tests/idls/TestTypedefs.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/WrapperTypeInfo.h"
+#include <v8.h>
 #include <wtf/HashMap.h>
 #include <wtf/text/StringHash.h>
 
