@@ -31,6 +31,8 @@
 #include "config.h"
 #include <public/Platform.h>
 
+#include <public/WebURLError.h>
+
 namespace WebKit {
 
 static Platform* s_platform = 0;
@@ -48,6 +50,14 @@ void Platform::shutdown()
 Platform* Platform::current()
 {
     return s_platform;
+}
+
+WebURLError Platform::cancelledError(const WebURL& unreachableURL) const
+{
+    WebURLError error;
+    error.unreachableURL = unreachableURL;
+    error.isCancellation = true;
+    return error;
 }
 
 } // namespace WebKit

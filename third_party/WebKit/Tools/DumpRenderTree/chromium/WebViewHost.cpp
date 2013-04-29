@@ -433,20 +433,6 @@ WebNavigationPolicy WebViewHost::decidePolicyForNavigation(
     return defaultPolicy;
 }
 
-bool WebViewHost::canHandleRequest(WebFrame*, const WebURLRequest& request)
-{
-    return true;
-}
-
-WebURLError WebViewHost::cancelledError(WebFrame*, const WebURLRequest& request)
-{
-    return webkit_support::CreateCancelledError(request);
-}
-
-void WebViewHost::unableToImplementPolicyWithError(WebFrame* frame, const WebURLError& error)
-{
-}
-
 void WebViewHost::didCreateDataSource(WebFrame*, WebDataSource* ds)
 {
     ds->setExtraData(m_pendingExtraData.leakPtr());

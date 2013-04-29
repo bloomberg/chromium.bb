@@ -743,7 +743,7 @@ void FrameLoaderClientImpl::dispatchDidFailProvisionalLoad(
     // a memory leak in the plugin!!
     if (error.domain() == internalErrorDomain
         && error.errorCode() == PolicyChangeError) {
-        m_webFrame->didFail(cancelledError(error.failingURL()), true);
+        m_webFrame->didFail(ResourceError::cancelledError(error.failingURL()), true);
         return;
     }
 
@@ -893,11 +893,6 @@ PolicyAction FrameLoaderClientImpl::decidePolicyForNavigationAction(
     return PolicyIgnore;
 }
 
-void FrameLoaderClientImpl::dispatchUnableToImplementPolicy(const ResourceError& error)
-{
-    m_webFrame->client()->unableToImplementPolicyWithError(m_webFrame, error);
-}
-
 void FrameLoaderClientImpl::dispatchWillRequestResource(CachedResourceRequest* request)
 {
     if (m_webFrame->client()) {
@@ -981,7 +976,7 @@ void FrameLoaderClientImpl::committedLoad(DocumentLoader* loader, const char* da
     // If we are sending data to MediaDocument, we should stop here
     // and cancel the request.
     if (m_webFrame->frame()->document()->isMediaDocument())
-        loader->cancelMainResourceLoad(pluginWillHandleLoadError(loader->response()));
+        loader->cancelMainResourceLoad(ResourceError::cancelledError(loader->response().url()));
 
     // The plugin widget could have been created in the m_webFrame->DidReceiveData
     // function.
@@ -1070,65 +1065,11 @@ void FrameLoaderClientImpl::didDetectXSS(const KURL& insecureURL, bool didBlockE
         m_webFrame->client()->didDetectXSS(m_webFrame, insecureURL, didBlockEntirePage);
 }
 
-ResourceError FrameLoaderClientImpl::cancelledError(const ResourceRequest& request)
-{
-    if (!m_webFrame->client())
-        return ResourceError();
-
-    return m_webFrame->client()->cancelledError(
-        m_webFrame, WrappedResourceRequest(request));
-}
-
-ResourceError FrameLoaderClientImpl::cannotShowURLError(const ResourceRequest& request)
-{
-    if (!m_webFrame->client())
-        return ResourceError();
-
-    return m_webFrame->client()->cannotHandleRequestError(
-        m_webFrame, WrappedResourceRequest(request));
-}
-
 ResourceError FrameLoaderClientImpl::interruptedForPolicyChangeError(
     const ResourceRequest& request)
 {
     return ResourceError(internalErrorDomain, PolicyChangeError,
                          request.url().string(), String());
-}
-
-ResourceError FrameLoaderClientImpl::cannotShowMIMETypeError(const ResourceResponse&)
-{
-    // FIXME
-    return ResourceError();
-}
-
-ResourceError FrameLoaderClientImpl::fileDoesNotExistError(const ResourceResponse&)
-{
-    // FIXME
-    return ResourceError();
-}
-
-ResourceError FrameLoaderClientImpl::pluginWillHandleLoadError(const ResourceResponse&)
-{
-    // FIXME
-    return ResourceError();
-}
-
-bool FrameLoaderClientImpl::shouldFallBack(const ResourceError& error)
-{
-    // This method is called when we fail to load the URL for an <object> tag
-    // that has fallback content (child elements) and is being loaded as a frame.
-    // The error parameter indicates the reason for the load failure.
-    // We should let the fallback content load only if this wasn't a cancelled
-    // request.
-    // Note: The mac version also has a case for "WebKitErrorPluginWillHandleLoad"
-    ResourceError c = cancelledError(ResourceRequest());
-    return error.errorCode() != c.errorCode() || error.domain() != c.domain();
-}
-
-bool FrameLoaderClientImpl::canHandleRequest(const ResourceRequest& request) const
-{
-    return m_webFrame->client()->canHandleRequest(
-        m_webFrame, WrappedResourceRequest(request));
 }
 
 bool FrameLoaderClientImpl::canShowMIMEType(const String& mimeType) const

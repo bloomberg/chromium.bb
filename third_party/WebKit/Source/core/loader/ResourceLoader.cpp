@@ -260,7 +260,7 @@ void ResourceLoader::cancel(const ResourceError& error)
     if (m_reachedTerminalState)
         return;
        
-    ResourceError nonNullError = error.isNull() ? cancelledError() : error;
+    ResourceError nonNullError = error.isNull() ? ResourceError::cancelledError(m_request.url()) : error;
 
     // This function calls out to clients at several points that might do
     // something that causes the last reference to this object to go away.
@@ -300,16 +300,6 @@ void ResourceLoader::cancel(const ResourceError& error)
     if (m_reachedTerminalState)
         return;
     releaseResources();
-}
-
-ResourceError ResourceLoader::cancelledError()
-{
-    return frameLoader()->cancelledError(m_request);
-}
-
-ResourceError ResourceLoader::cannotShowURLError()
-{
-    return frameLoader()->client()->cannotShowURLError(m_request);
 }
 
 void ResourceLoader::willSendRequest(ResourceHandle*, ResourceRequest& request, const ResourceResponse& redirectResponse)

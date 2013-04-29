@@ -185,15 +185,12 @@ protected:
     void didDetectXSS(WebKit::WebFrame*, const WebKit::WebURL& insecureURL, bool didBlockEntirePage);
     void assignIdentifierToRequest(WebKit::WebFrame*, unsigned identifier, const WebKit::WebURLRequest&);
     void willRequestResource(WebKit::WebFrame*, const WebKit::WebCachedURLRequest&);
-    bool canHandleRequest(WebKit::WebFrame*, const WebKit::WebURLRequest&);
-    WebKit::WebURLError cannotHandleRequestError(WebKit::WebFrame*, const WebKit::WebURLRequest&);
     void didCreateDataSource(WebKit::WebFrame*, WebKit::WebDataSource*);
     void willSendRequest(WebKit::WebFrame*, unsigned identifier, WebKit::WebURLRequest&, const WebKit::WebURLResponse& redirectResponse);
     void didReceiveResponse(WebKit::WebFrame*, unsigned identifier, const WebKit::WebURLResponse&);
     void didChangeResourcePriority(WebKit::WebFrame*, unsigned identifier, const WebKit::WebURLRequest::Priority&);
     void didFinishResourceLoad(WebKit::WebFrame*, unsigned identifier);
     void didFailResourceLoad(WebKit::WebFrame*, unsigned identifier, const WebKit::WebURLError&);
-    void unableToImplementPolicyWithError(WebKit::WebFrame*, const WebKit::WebURLError&);
     void didAddMessageToConsole(const WebKit::WebConsoleMessage&, const WebKit::WebString& sourceName, unsigned sourceLine);
     void runModalAlertDialog(WebKit::WebFrame*, const WebKit::WebString&);
     bool runModalConfirmDialog(WebKit::WebFrame*, const WebKit::WebString&);
@@ -522,16 +519,6 @@ public:
         WebTestProxyBase::willRequestResource(frame, request);
         Base::willRequestResource(frame, request);
     }
-    virtual bool canHandleRequest(WebKit::WebFrame* frame, const WebKit::WebURLRequest& request)
-    {
-        if (!WebTestProxyBase::canHandleRequest(frame, request))
-            return false;
-        return Base::canHandleRequest(frame, request);
-    }
-    virtual WebKit::WebURLError cannotHandleRequestError(WebKit::WebFrame* frame, const WebKit::WebURLRequest& request)
-    {
-        return WebTestProxyBase::cannotHandleRequestError(frame, request);
-    }
     virtual void didCreateDataSource(WebKit::WebFrame* frame, WebKit::WebDataSource* ds)
     {
         WebTestProxyBase::didCreateDataSource(frame, ds);
@@ -561,11 +548,6 @@ public:
     {
         WebTestProxyBase::didFailResourceLoad(frame, identifier, error);
         Base::didFailResourceLoad(frame, identifier, error);
-    }
-    virtual void unableToImplementPolicyWithError(WebKit::WebFrame* frame, const WebKit::WebURLError& error)
-    {
-        WebTestProxyBase::unableToImplementPolicyWithError(frame, error);
-        Base::unableToImplementPolicyWithError(frame, error);
     }
     virtual void didAddMessageToConsole(const WebKit::WebConsoleMessage& message, const WebKit::WebString& sourceName, unsigned sourceLine)
     {

@@ -123,8 +123,6 @@ namespace WebCore {
         virtual PolicyAction policyForNewWindowAction(const NavigationAction&, const String& frameName) = 0;
         virtual PolicyAction decidePolicyForNavigationAction(const NavigationAction&, const ResourceRequest&) = 0;
 
-        virtual void dispatchUnableToImplementPolicy(const ResourceError&) = 0;
-
         virtual void dispatchWillRequestResource(CachedResourceRequest*) { }
 
         virtual void dispatchWillSendSubmitEvent(PassRefPtr<FormState>) = 0;
@@ -165,17 +163,7 @@ namespace WebCore {
         virtual void didRunInsecureContent(SecurityOrigin*, const KURL&) = 0;
         virtual void didDetectXSS(const KURL&, bool didBlockEntirePage) = 0;
 
-        virtual ResourceError cancelledError(const ResourceRequest&) = 0;
-        virtual ResourceError cannotShowURLError(const ResourceRequest&) = 0;
         virtual ResourceError interruptedForPolicyChangeError(const ResourceRequest&) = 0;
-
-        virtual ResourceError cannotShowMIMETypeError(const ResourceResponse&) = 0;
-        virtual ResourceError fileDoesNotExistError(const ResourceResponse&) = 0;
-        virtual ResourceError pluginWillHandleLoadError(const ResourceResponse&) = 0;
-
-        virtual bool shouldFallBack(const ResourceError&) = 0;
-
-        virtual bool canHandleRequest(const ResourceRequest&) const = 0;
         virtual bool canShowMIMEType(const String& MIMEType) const = 0;
         virtual String generatedMIMETypeForURLScheme(const String& URLScheme) const = 0;
 

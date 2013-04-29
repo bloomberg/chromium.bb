@@ -77,13 +77,14 @@ class WebUnitTestSupport;
 class WebThemeEngine;
 class WebThread;
 class WebURL;
+class WebURLError;
 class WebURLLoader;
 class WebWorkerRunLoop;
 struct WebFloatPoint;
 struct WebLocalizedString;
 struct WebSize;
 
-class Platform {
+class WEBKIT_EXPORT Platform {
 public:
     // HTML5 Database ------------------------------------------------------
 
@@ -271,6 +272,8 @@ public:
 
     // A suggestion to cache this metadata in association with this URL.
     virtual void cacheMetadata(const WebURL&, double responseTime, const char* data, size_t dataSize) { }
+
+    virtual WebURLError cancelledError(const WebURL&) const;
 
 
     // Plugins -------------------------------------------------------------

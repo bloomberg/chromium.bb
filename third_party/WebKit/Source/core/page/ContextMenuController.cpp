@@ -544,11 +544,9 @@ void ContextMenuController::populate()
         FrameLoader* loader = frame->loader();
         KURL linkURL = m_hitTestResult.absoluteLinkURL();
         if (!linkURL.isEmpty()) {
-            if (loader->client()->canHandleRequest(ResourceRequest(linkURL))) {
-                appendItem(OpenLinkItem, m_contextMenu.get());
-                appendItem(OpenLinkInNewWindowItem, m_contextMenu.get());
-                appendItem(DownloadFileItem, m_contextMenu.get());
-            }
+            appendItem(OpenLinkItem, m_contextMenu.get());
+            appendItem(OpenLinkInNewWindowItem, m_contextMenu.get());
+            appendItem(DownloadFileItem, m_contextMenu.get());
             appendItem(CopyLinkItem, m_contextMenu.get());
         }
 
@@ -661,14 +659,11 @@ void ContextMenuController::populate()
             }
         }
 
-        FrameLoader* loader = frame->loader();
         KURL linkURL = m_hitTestResult.absoluteLinkURL();
         if (!linkURL.isEmpty()) {
-            if (loader->client()->canHandleRequest(ResourceRequest(linkURL))) {
-                appendItem(OpenLinkItem, m_contextMenu.get());
-                appendItem(OpenLinkInNewWindowItem, m_contextMenu.get());
-                appendItem(DownloadFileItem, m_contextMenu.get());
-            }
+            appendItem(OpenLinkItem, m_contextMenu.get());
+            appendItem(OpenLinkInNewWindowItem, m_contextMenu.get());
+            appendItem(DownloadFileItem, m_contextMenu.get());
             appendItem(CopyLinkItem, m_contextMenu.get());
             appendItem(*separatorItem(), m_contextMenu.get());
         }

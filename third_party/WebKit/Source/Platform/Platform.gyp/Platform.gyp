@@ -39,6 +39,7 @@
             'type': 'static_library',
             'dependencies': [
                 '../../wtf/wtf.gyp:wtf',
+                '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
                 '<(DEPTH)/skia/skia.gyp:skia',
             ],
             'include_dirs': [
