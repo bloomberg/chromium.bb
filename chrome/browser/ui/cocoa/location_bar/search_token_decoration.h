@@ -19,14 +19,14 @@ class SearchTokenDecoration : public LocationBarDecoration {
   SearchTokenDecoration();
   virtual ~SearchTokenDecoration();
 
-  void SetSearchProviderName(const string16& search_provider_name);
+  void SetSearchTokenText(const string16& search_token_text);
 
   // Implement LocationBarDecoration:
   virtual void DrawInFrame(NSRect frame, NSView* control_view) OVERRIDE;
   virtual CGFloat GetWidthForSpace(CGFloat width, CGFloat text_width) OVERRIDE;
 
  private:
-  string16 search_provider_name_;
+  string16 search_token_text_;
   scoped_nsobject<NSAttributedString> search_provider_attributed_string_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchTokenDecoration);

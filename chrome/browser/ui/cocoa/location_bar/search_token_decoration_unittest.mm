@@ -13,11 +13,11 @@ typedef CocoaTest SearchTokenDecorationTest;
 TEST_F(SearchTokenDecorationTest, GetWidthForSpace) {
   SearchTokenDecoration decoration;
 
-  decoration.SetSearchProviderName(ASCIIToUTF16("short"));
+  decoration.SetSearchTokenText(ASCIIToUTF16("short"));
   CGFloat short_width = decoration.GetWidthForSpace(1000, 0);
   EXPECT_LT(0, short_width);
 
-  decoration.SetSearchProviderName(ASCIIToUTF16("longer name"));
+  decoration.SetSearchTokenText(ASCIIToUTF16("longer name"));
   CGFloat long_width = decoration.GetWidthForSpace(1000, 0);
   EXPECT_LT(short_width, long_width);
 
@@ -28,7 +28,7 @@ TEST_F(SearchTokenDecorationTest, GetWidthForSpace) {
 // Test that the search token is hidden if the omnibox text would overlap.
 TEST_F(SearchTokenDecorationTest, AutoCollapse) {
   SearchTokenDecoration decoration;
-  decoration.SetSearchProviderName(ASCIIToUTF16("short"));
+  decoration.SetSearchTokenText(ASCIIToUTF16("short"));
   CGFloat width = decoration.GetWidthForSpace(1000, 1000);
   EXPECT_EQ(width, LocationBarDecoration::kOmittedWidth);
 }
@@ -40,7 +40,7 @@ TEST_F(SearchTokenDecorationTest, DrawInFrame) {
 
   [view lockFocus];
   SearchTokenDecoration decoration;
-  decoration.SetSearchProviderName(ASCIIToUTF16("short"));
+  decoration.SetSearchTokenText(ASCIIToUTF16("short"));
   decoration.DrawInFrame(frame, view);
   [view unlockFocus];
 }

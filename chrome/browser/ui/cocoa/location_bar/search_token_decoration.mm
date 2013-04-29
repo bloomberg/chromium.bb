@@ -4,9 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/location_bar/search_token_decoration.h"
 
+#include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
-#include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util_mac.h"
 
 SearchTokenDecoration::SearchTokenDecoration() {
 }
@@ -14,20 +13,18 @@ SearchTokenDecoration::SearchTokenDecoration() {
 SearchTokenDecoration::~SearchTokenDecoration() {
 }
 
-void SearchTokenDecoration::SetSearchProviderName(
-    const string16& search_provider_name) {
-  if (search_provider_name_ == search_provider_name)
+void SearchTokenDecoration::SetSearchTokenText(
+    const string16& search_token_text) {
+  if (search_token_text_ == search_token_text)
     return;
-  search_provider_name_ = search_provider_name;
+  search_token_text_ = search_token_text;
 
   NSDictionary* attributes = [NSDictionary dictionaryWithObjectsAndKeys:
       OmniboxViewMac::GetFieldFont(), NSFontAttributeName,
       OmniboxViewMac::SuggestTextColor(), NSForegroundColorAttributeName,
       nil];
-  NSString* string = l10n_util::GetNSStringF(IDS_OMNIBOX_SEARCH_TOKEN_TEXT,
-                                             search_provider_name);
   search_provider_attributed_string_.reset([[NSAttributedString alloc]
-      initWithString:string
+      initWithString:base::SysUTF16ToNSString(search_token_text_)
           attributes:attributes]);
 }
 

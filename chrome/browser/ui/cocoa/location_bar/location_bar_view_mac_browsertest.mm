@@ -69,3 +69,22 @@ IN_PROC_BROWSER_TEST_F(LocationBarViewMacBrowserTest, SearchToken) {
   EXPECT_FALSE(GetSearchTokenDecoration()->IsVisible());
   EXPECT_FALSE(GetSeparatorDecoration()->IsVisible());
 }
+
+// Verify that the prominent search token UI is displayed.
+IN_PROC_BROWSER_TEST_F(LocationBarViewMacBrowserTest, ProminentSearchToken) {
+  GetLocationBar()->Layout();
+  EXPECT_FALSE(GetSearchTokenDecoration()->IsVisible());
+  EXPECT_FALSE(GetSeparatorDecoration()->IsVisible());
+
+  test_toolbar_model_.SetInputInProgress(false);
+  test_toolbar_model_.set_search_terms_type(
+      ToolbarModel::URL_LIKE_SEARCH_TERMS);
+  GetLocationBar()->Layout();
+  EXPECT_TRUE(GetSearchTokenDecoration()->IsVisible());
+  EXPECT_FALSE(GetSeparatorDecoration()->IsVisible());
+
+  test_toolbar_model_.SetInputInProgress(true);
+  GetLocationBar()->Layout();
+  EXPECT_FALSE(GetSearchTokenDecoration()->IsVisible());
+  EXPECT_FALSE(GetSeparatorDecoration()->IsVisible());
+}
