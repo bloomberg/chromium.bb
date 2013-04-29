@@ -11,6 +11,7 @@
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/image_transport_factory_android.h"
+#include "content/public/browser/browser_thread.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "ui/gl/android/surface_texture_bridge.h"
 #include "webkit/compositor_bindings/web_compositor_support_impl.h"
@@ -46,21 +47,23 @@ class SurfaceRefAndroid : public GpuSurfaceTracker::SurfaceRef {
 SurfaceTextureTransportClient::SurfaceTextureTransportClient()
     : window_(NULL),
       texture_id_(0),
-      surface_id_(0) {
+      surface_id_(0),
+      weak_factory_(this) {
 }
 
 SurfaceTextureTransportClient::~SurfaceTextureTransportClient() {
 }
 
 scoped_refptr<cc::Layer> SurfaceTextureTransportClient::Initialize() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Use a SurfaceTexture to stream frames to the UI thread.
   video_layer_ = cc::VideoLayer::Create(this);
 
   surface_texture_ = new gfx::SurfaceTextureBridge(0);
   surface_texture_->SetFrameAvailableCallback(
-      base::Bind(
-          &SurfaceTextureTransportClient::OnSurfaceTextureFrameAvailable,
-          base::Unretained(this)));
+    base::Bind(
+        &SurfaceTextureTransportClient::OnSurfaceTextureFrameAvailable,
+        weak_factory_.GetWeakPtr()));
   surface_texture_->DetachFromGLContext();
   return video_layer_.get();
 }
@@ -120,6 +123,7 @@ void SurfaceTextureTransportClient::PutCurrentFrame(
 }
 
 void SurfaceTextureTransportClient::OnSurfaceTextureFrameAvailable() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   video_layer_->SetNeedsDisplay();
 }
 

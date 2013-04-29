@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "cc/layers/video_frame_provider.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
@@ -48,6 +49,7 @@ class SurfaceTextureTransportClient : public cc::VideoFrameProvider {
   scoped_refptr<media::VideoFrame> video_frame_;
   uint32 texture_id_;
   int surface_id_;
+  base::WeakPtrFactory<SurfaceTextureTransportClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceTextureTransportClient);
 };
