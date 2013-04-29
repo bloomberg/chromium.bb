@@ -926,7 +926,7 @@ void CanvasRenderingContext2D::fill(const String& windingRuleString)
             didDrawEntireCanvas();
         } else {
             c->fillPath(m_path);
-            didDraw(m_path.fastBoundingRect());
+            didDraw(m_path.boundingRect());
         }
         
         c->setFillRule(windRule);
@@ -947,7 +947,7 @@ void CanvasRenderingContext2D::stroke()
         return;
 
     if (!m_path.isEmpty()) {
-        FloatRect dirtyRect = m_path.fastBoundingRect();
+        FloatRect dirtyRect = m_path.boundingRect();
         inflateStrokeRect(dirtyRect);
 
         c->strokePath(m_path);
@@ -1529,7 +1529,7 @@ template<class T> IntRect CanvasRenderingContext2D::calculateCompositingBufferRe
     IntRect canvasRect(0, 0, canvas()->width(), canvas()->height());
     canvasRect = canvas()->baseTransform().mapRect(canvasRect);
     Path path = transformAreaToDevice(area);
-    IntRect bufferRect = enclosingIntRect(path.fastBoundingRect());
+    IntRect bufferRect = enclosingIntRect(path.boundingRect());
     IntPoint originalLocation = bufferRect.location();
     bufferRect.intersect(canvasRect);
     if (croppedOffset)

@@ -140,11 +140,6 @@ FloatRect Path::boundingRect() const
     return m_path->getBounds();
 }
 
-FloatRect Path::fastBoundingRect() const
-{
-    return boundingRect();
-}
-
 FloatRect Path::strokeBoundingRect(StrokeStyleApplier* applier) const
 {
     if (isNull())

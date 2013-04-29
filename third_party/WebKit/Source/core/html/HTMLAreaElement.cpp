@@ -122,7 +122,7 @@ Path HTMLAreaElement::computePath(RenderObject* obj) const
     
 LayoutRect HTMLAreaElement::computeRect(RenderObject* obj) const
 {
-    return enclosingLayoutRect(computePath(obj).fastBoundingRect());
+    return enclosingLayoutRect(computePath(obj).boundingRect());
 }
 
 Path HTMLAreaElement::getRegion(const LayoutSize& size) const

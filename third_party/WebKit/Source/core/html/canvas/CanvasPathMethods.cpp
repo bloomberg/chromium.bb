@@ -46,7 +46,7 @@ void CanvasPathMethods::closePath()
     if (m_path.isEmpty())
         return;
 
-    FloatRect boundRect = m_path.fastBoundingRect();
+    FloatRect boundRect = m_path.boundingRect();
     if (boundRect.width() || boundRect.height())
         m_path.closeSubpath();
 }
