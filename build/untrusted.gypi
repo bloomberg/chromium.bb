@@ -21,13 +21,18 @@
       'DYNAMIC_ANNOTATIONS_ENABLED=1',
       'DYNAMIC_ANNOTATIONS_PREFIX=NACL_',
     ],
+    'variables': {
+      # Enable -Werror by default, but put it in a variable so it can
+      # be optionally disabled.
+      'werror%': '-Werror',
+    },
     'nacl_default_compile_flags': [
       #'-std=gnu99',  Added by build_nexe
       '-O2',
       '-g',
       '-Wall',
-      '-Werror',
       '-fdiagnostics-show-option',
+      '<(werror)',
     ],
   },
   'conditions': [
