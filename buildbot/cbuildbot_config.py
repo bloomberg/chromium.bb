@@ -73,6 +73,7 @@ def OverrideConfigForTrybot(build_config, options):
     my_config['chromeos_official'] = False
     my_config['push_image'] = False
     if options.hwtest:
+      my_config['upload_hw_test_artifacts'] = True
       if not my_config['hw_tests']:
         my_config['hw_tests'] = HWTestConfig.DefaultList(
             num=constants.HWTEST_TRYBOT_NUM, pool=constants.HWTEST_TRYBOT_POOL,
