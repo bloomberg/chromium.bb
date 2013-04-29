@@ -8,6 +8,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
@@ -82,6 +83,9 @@ void AttestationCAClient::FetchURL(const std::string& url,
                                                      net::URLFetcher::POST,
                                                      this);
   fetcher->SetRequestContext(g_browser_process->system_request_context());
+  fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
+                        net::LOAD_DO_NOT_SAVE_COOKIES |
+                        net::LOAD_DISABLE_CACHE);
   fetcher->SetUploadData(kMimeContentType, request);
   pending_requests_[fetcher] = on_response;
   fetcher->Start();
