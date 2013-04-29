@@ -44,7 +44,7 @@ bool ActiveDesktopMonitor::IsDesktopWindow(aura::RootWindow* root_window) {
 #if defined(OS_WIN)
   return views::DesktopRootWindowHostWin::GetContentWindowForHWND(
       root_window->GetAcceleratedWidget()) != NULL;
-#elif defined(OS_LINUX)
+#elif defined(USE_X11)
   return views::DesktopRootWindowHostX11::GetContentWindowForXID(
       root_window->GetAcceleratedWidget()) != NULL;
 #else

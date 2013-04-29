@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/idle_query_linux.h"
+#include "chrome/browser/idle_query_x11.h"
 
 #include <X11/extensions/scrnsaver.h>
 #include "ui/base/x/x11_util.h"
@@ -30,11 +30,11 @@ class IdleData {
   XScreenSaverInfo *mit_info;
 };
 
-IdleQueryLinux::IdleQueryLinux() : idle_data_(new IdleData()) {}
+IdleQueryX11::IdleQueryX11() : idle_data_(new IdleData()) {}
 
-IdleQueryLinux::~IdleQueryLinux() {}
+IdleQueryX11::~IdleQueryX11() {}
 
-int IdleQueryLinux::IdleTime() {
+int IdleQueryX11::IdleTime() {
   if (!idle_data_->mit_info)
     return 0;
 

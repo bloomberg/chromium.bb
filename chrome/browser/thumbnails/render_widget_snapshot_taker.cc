@@ -52,7 +52,7 @@ void RenderWidgetSnapshotTaker::AskForSnapshot(
   scoped_ptr<TransportDIB> thumbnail_dib(TransportDIB::Create(
       desired_size_in_pixel.GetArea() * 4, sequence_num));
 
-#if defined(USE_X11)
+#if defined(OS_LINUX)
   // TODO: IPC a handle to the renderer like Windows.
   // http://code.google.com/p/chromium/issues/detail?id=89777
   NOTIMPLEMENTED();

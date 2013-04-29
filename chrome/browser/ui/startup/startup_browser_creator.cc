@@ -586,7 +586,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   }
 #endif
 
-#if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
+#if defined(TOOLKIT_VIEWS) && defined(USE_X11)
   ui::TouchFactory::SetTouchDeviceListFromCommandLine();
 #endif
 

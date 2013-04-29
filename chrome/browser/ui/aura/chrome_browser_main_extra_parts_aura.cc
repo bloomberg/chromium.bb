@@ -40,7 +40,7 @@ void ChromeBrowserMainExtraPartsAura::ToolkitInitialized() {
   }
 #endif
 
-#if !defined(USE_ASH) && defined(OS_LINUX)
+#if !defined(USE_ASH) && defined(OS_LINUX) && defined(USE_X11)
   // TODO(erg): Refactor this into a dlopen call when we add a GTK3 port.
   ui::LinuxUI::SetInstance(BuildGtk2UI());
 #endif
