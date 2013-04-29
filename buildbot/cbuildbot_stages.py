@@ -957,6 +957,16 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
                 private_builders))
       return statuses
 
+  def _AbortCQHWTests(self):
+    """Abort any HWTests started by the CQ."""
+    manifest_manager = ManifestVersionedSyncStage.manifest_manager
+    if (cbuildbot_config.IsCQType(self._build_config['build_type']) and
+        manifest_manager is not None and
+        self._target_manifest_branch == 'master'):
+      release_tag = manifest_manager.current_version
+      if release_tag and not commands.HaveHWTestsBeenAborted(release_tag):
+        commands.AbortHWTests(release_tag, self._options.debug)
+
   def HandleSuccess(self):
     # We only promote for the pfq, not chrome pfq.
     # TODO(build): Run this logic in debug mode too.
@@ -964,7 +974,7 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         cbuildbot_config.IsPFQType(self._build_config['build_type']) and
         self._build_config['master'] and
         self._target_manifest_branch == 'master' and
-        ManifestVersionedSyncStage.manifest_manager != None and
+        ManifestVersionedSyncStage.manifest_manager is not None and
         self._build_config['build_type'] != constants.CHROME_PFQ_TYPE):
       ManifestVersionedSyncStage.manifest_manager.PromoteCandidate()
       if LKGMCandidateSyncStage.sub_manager:
@@ -988,6 +998,8 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     if ManifestVersionedSyncStage.manifest_manager:
       ManifestVersionedSyncStage.manifest_manager.UploadStatus(
           success=self.success, message=self.message)
+      if not self.success:
+        self._AbortCQHWTests()
 
       statuses = self._GetSlavesStatus()
       failing_build_dict, inflight_build_dict = {}, {}
@@ -1668,7 +1680,7 @@ class HWTestStage(ArchivingStage):
     logging.info('Copy of %s completed. Printing below:', result_file_name)
     self._PrintFile(os.path.join(self._options.log_dir, result_file_name))
 
-  # Disable use of calling parents HandleStageException class.
+  # Disable complaint about calling _HandleStageException.
   # pylint: disable=W0212
   def _HandleStageException(self, exception):
     """Override and don't set status to FAIL but FORGIVEN instead."""
@@ -1682,7 +1694,8 @@ class HWTestStage(ArchivingStage):
     is_lab_down = (isinstance(exception, lab_status.LabIsDownException) or
         isinstance(exception, lab_status.BoardIsDisabledException))
     is_warning_code = (isinstance(exception, cros_build_lib.RunCommandError) and
-        exception.result.returncode in codes_handled_as_warning)
+        exception.result.returncode in codes_handled_as_warning or
+        commands.HaveHWTestsBeenAborted(self.archive_stage.release_tag))
     if is_lab_down or is_warning_code:
       return self._HandleExceptionAsWarning(exception)
     else:
@@ -1695,6 +1708,11 @@ class HWTestStage(ArchivingStage):
     return super(HWTestStage, self)._HandleStageException(exception)
 
   def PerformStage(self):
+    if (self.archive_stage.release_tag and
+        commands.HaveHWTestsBeenAborted(self.archive_stage.release_tag)):
+      cros_build_lib.Info('Skipping HWTests as they have been aborted.')
+      return
+
     build = '/'.join([self._bot_id, self.version])
     if self._options.remote_trybot and self._options.hwtest:
       debug = self._options.debug_forced

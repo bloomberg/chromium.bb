@@ -664,6 +664,7 @@ class HWTestStageTest(AbstractStageTest):
     self.archive_stage = stages.ArchiveStage(self.options, self.build_config,
                                              self._current_board, '')
     self.mox.StubOutWithMock(lab_status, 'CheckLabStatus')
+    self.mox.StubOutWithMock(commands, 'HaveHWTestsBeenAborted')
     self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
     self.mox.StubOutWithMock(cros_build_lib, 'PrintBuildbotStepWarnings')
     self.mox.StubOutWithMock(cros_build_lib, 'PrintBuildbotStepFailure')
@@ -697,6 +698,7 @@ class HWTestStageTest(AbstractStageTest):
 
       # Make sure failures are logged correctly.
       if fails:
+        commands.HaveHWTestsBeenAborted(self.archive_stage.release_tag)
         cros_build_lib.PrintBuildbotStepFailure()
         cros_build_lib.Error(mox.IgnoreArg())
       else:
@@ -761,6 +763,7 @@ class HWTestStageTest(AbstractStageTest):
 
   def testHandleLabDownAsWarning(self):
     """Test that buildbot warn when lab is down."""
+    commands.HaveHWTestsBeenAborted(self.archive_stage.release_tag)
     check_lab = lab_status.CheckLabStatus(mox.IgnoreArg())
     check_lab.AndRaise(lab_status.LabIsDownException('Lab is not up.'))
     cros_build_lib.PrintBuildbotStepWarnings()
@@ -781,6 +784,8 @@ class AUTestStageTest(AbstractStageTest,
     self.StartPatcher(self.archive_mock)
     self.PatchObject(commands, 'ArchiveFile', autospec=True,
                      return_value='foo.txt')
+    self.PatchObject(commands, 'HaveHWTestsBeenAborted', autospec=True,
+                     return_value=False)
     self.PatchObject(lab_status, 'CheckLabStatus', autospec=True)
     self.archive_stage = stages.ArchiveStage(self.options, self.build_config,
                                              self._current_board, '0.0.1')

@@ -1582,7 +1582,7 @@ class ValidationPool(object):
 
   def _GetPreCQStatusURL(self, change):
     internal = 'int' if change.internal else 'ext'
-    components = [manifest_version.MANIFEST_VERSIONS_URL, 'pre-cq',
+    components = [constants.MANIFEST_VERSIONS_GS_URL, 'pre-cq',
                   internal, change.gerrit_number, change.patch_number]
     return '/'.join(components)
 

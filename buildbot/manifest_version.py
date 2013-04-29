@@ -22,8 +22,7 @@ from chromite.lib import gs
 from chromite.lib import osutils
 
 
-MANIFEST_VERSIONS_URL = 'gs://chromeos-manifest-versions'
-BUILD_STATUS_URL = '%s/builder-status' % MANIFEST_VERSIONS_URL
+BUILD_STATUS_URL = '%s/builder-status' % constants.MANIFEST_VERSIONS_GS_URL
 PUSH_BRANCH = 'temp_auto_checkin_branch'
 NUM_RETRIES = 20
 

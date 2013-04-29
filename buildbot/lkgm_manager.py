@@ -373,7 +373,11 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       return None
 
   def GetBuildersStatus(self, builders_array):
-    """Returns a build-names->status dictionary of build statuses."""
+    """Returns a build-names->status dictionary of build statuses.
+
+    Args:
+      builders_array: A list of the names of the builders to check.
+    """
     builders_completed = set()
     builder_statuses = {}
 
@@ -393,7 +397,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
           elif builder_status.Failed():
             builders_completed.add(b)
             logging.info('Builder %s completed with status failed', b)
-
 
       if len(builders_completed) < len(builders_array):
         logging.info('Still waiting for the following builds to complete: %r',

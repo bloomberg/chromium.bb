@@ -45,6 +45,7 @@ _BINHOST_PACKAGE_FILE = ('/usr/share/dev-install/portage/make.profile/'
                          'package.installable')
 _AUTOTEST_RPC_CLIENT = ('/b/build_internal/scripts/slave-internal/autotest_rpc/'
                         'autotest_rpc_client.py')
+_AUTOTEST_RPC_HOSTNAME = 'master2'
 _LOCAL_BUILD_FLAGS = ['--nousepkg', '--reuse_pkgs_from_local_boards']
 UPLOADED_LIST_FILENAME = 'UPLOADED'
 
@@ -486,7 +487,7 @@ def RunHWTestSuite(build, suite, board, pool, num, file_bugs, wait_for_results,
   """
   # TODO(scottz): RPC client option names are misnomers crosbug.com/26445.
   cmd = [_AUTOTEST_RPC_CLIENT,
-         'master2', # TODO(frankf): Pass master_host param to cbuildbot.
+         _AUTOTEST_RPC_HOSTNAME,
          'RunSuite',
          '-i', build,
          '-s', suite,
@@ -496,9 +497,62 @@ def RunHWTestSuite(build, suite, board, pool, num, file_bugs, wait_for_results,
          '-f', str(file_bugs),
          '-n', str(not wait_for_results)]
   if debug:
-    cros_build_lib.Info('RunHWTestSuite would run: %s' % ' '.join(cmd))
+    cros_build_lib.Info('RunHWTestSuite would run: %s',
+                        ' '.join(map(repr, cmd)))
   else:
     cros_build_lib.RunCommand(cmd)
+
+
+def _GetAbortHWTestsURL(substr, suite):
+  """Get the URL where we should save state about the specified abort command.
+
+  Args:
+    substr: The substr argument that AbortHWTests was called with.
+    suite: The suite argument that AbortHWTests was called with, if any.
+  """
+  url = '%s/hwtests-aborted/%s/suite=%s'
+  return url % (constants.MANIFEST_VERSIONS_GS_URL, substr, suite)
+
+
+def AbortHWTests(substr, debug, suite=''):
+  """Abort the specified hardware tests.
+
+  Args:
+    substr: The substr of the build id to abort.
+      e.g. x86-mario-release/R18-1655.0.0-a1-b1584.
+    debug: Whether we are in debug mode.
+    suite: Name of the Autotest suite. If empty, abort all suites.
+  """
+  cmd = [_AUTOTEST_RPC_CLIENT,
+         _AUTOTEST_RPC_HOSTNAME,
+         'AbortSuiteByName',
+         '-i', substr,
+         '-s', suite]
+  if debug:
+    cros_build_lib.Info('AbortHWTests would run: %s', ' '.join(map(repr, cmd)))
+    return
+
+  # Mark the substr/suite as aborted in Google Storage.
+  gs.GSContext().Copy('-', _GetAbortHWTestsURL(substr, suite), input='')
+
+  # Actually abort the build.
+  try:
+    cros_build_lib.RunCommand(cmd)
+  except cros_build_lib.RunCommandError:
+    cros_build_lib.Warning('AbortHWTests failed', exc_info=True)
+
+
+def HaveHWTestsBeenAborted(substr, suite=''):
+  """Check in Google Storage whether the specified abort call was sent.
+
+  This function literally checks whether the following call has occurred:
+    AbortHWTests(substr, debug=True, suite=suite)
+
+  Args:
+    substr: The substr argument that AbortHWTests was called with.
+    suite: The suite argument that AbortHWTests was called with, if any.
+  """
+  return gs.GSContext().Exists(_GetAbortHWTestsURL(substr, suite))
 
 
 def GenerateStackTraces(buildroot, board, gzipped_test_tarball,
