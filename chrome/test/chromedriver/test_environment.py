@@ -61,7 +61,7 @@ class BaseTestEnvironment(object):
       Filter string, in Google Test (C++) format.
     """
     return _EXPECTATIONS['GetPassedJavaTestFilter'](
-        'android', self._chrome_version)
+        self.GetOS(), self._chrome_version)
 
   def GetPassedJavaTests(self):
     """Get the list of passed java tests.
@@ -71,7 +71,7 @@ class BaseTestEnvironment(object):
     """
     with open(os.path.join(_THIS_DIR, 'java_tests.txt'), 'r') as f:
       return _EXPECTATIONS['ApplyJavaTestFilter'](
-          'android', self._chrome_version,
+          self.GetOS(), self._chrome_version,
           [t.strip('\n') for t in f.readlines()])
 
 
