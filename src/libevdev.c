@@ -404,8 +404,8 @@ static int EvdevReadBitmask(FILE* fp, const char* expected_name,
   int ret;
   char name[64];
 
-  ret = fscanf(fp, "# %64s:", name);
-  if (ret <= 0 || strcmp(name, expected_name) == 0)
+  ret = fscanf(fp, "# %63[^:]:", name);
+  if (ret <= 0 || strcmp(name, expected_name))
     return ret;
   for (int i = 0; i < num_bytes; ++i) {
     unsigned int tmp;
@@ -415,7 +415,12 @@ static int EvdevReadBitmask(FILE* fp, const char* expected_name,
     else
       bytes[i] = (unsigned char)tmp;
   }
-  ret = fscanf(fp, "\n");
+  // size(in bytes) of bitmask array may differs per platform, try to read
+  // remaining bytes if exists
+  do {
+    if (fgets(name, sizeof(name), fp) == NULL)
+      return -1;
+  } while (name[strlen(name) - 1] != '\n');
   return 1;
 }
 
