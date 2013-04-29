@@ -8,6 +8,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
+import android.accounts.AuthenticatorDescription;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
@@ -292,6 +293,14 @@ public class MockAccountManager implements AccountManagerDelegate {
                 break;
             }
         }
+    }
+
+    @Override
+    public AuthenticatorDescription[] getAuthenticatorTypes() {
+        AuthenticatorDescription googleAuthenticator = new AuthenticatorDescription(
+                AccountManagerHelper.GOOGLE_ACCOUNT_TYPE, "p1", 0, 0, 0, 0);
+
+        return new AuthenticatorDescription[] { googleAuthenticator };
     }
 
     public void prepareAllowAppPermission(Account account, String authTokenType) {

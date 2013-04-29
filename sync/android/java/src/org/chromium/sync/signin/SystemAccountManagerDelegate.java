@@ -8,6 +8,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
+import android.accounts.AuthenticatorDescription;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
@@ -101,5 +102,10 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     @Override
     public String peekAuthToken(Account account, String authTokenType) {
         return mAccountManager.peekAuthToken(account, authTokenType);
+    }
+
+    @Override
+    public AuthenticatorDescription[] getAuthenticatorTypes() {
+        return mAccountManager.getAuthenticatorTypes();
     }
 }

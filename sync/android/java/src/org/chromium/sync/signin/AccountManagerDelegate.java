@@ -7,6 +7,7 @@ package org.chromium.sync.signin;
 import android.accounts.Account;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
+import android.accounts.AuthenticatorDescription;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
@@ -49,4 +50,6 @@ public interface AccountManagerDelegate {
             Activity activity, AccountManagerCallback<Bundle> callback, Handler handler);
 
     String peekAuthToken(Account account, String authTokenType);
+
+    AuthenticatorDescription[] getAuthenticatorTypes();
 }

@@ -10,6 +10,7 @@ import com.google.common.annotations.VisibleForTesting;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerFuture;
+import android.accounts.AuthenticatorDescription;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
@@ -131,6 +132,17 @@ public class AccountManagerHelper {
             }
         }
         return null;
+    }
+
+    /**
+     * @return Whether or not there is an account authenticator for Google accounts.
+     */
+    public boolean hasGoogleAccountAuthenticator() {
+        AuthenticatorDescription[] descs = mAccountManager.getAuthenticatorTypes();
+        for (AuthenticatorDescription desc : descs) {
+            if (GOOGLE_ACCOUNT_TYPE.equals(desc.type)) return true;
+        }
+        return false;
     }
 
     /**
