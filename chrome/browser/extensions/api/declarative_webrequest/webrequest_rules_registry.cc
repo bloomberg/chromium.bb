@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/browser/extensions/api/web_request/web_request_permissions.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -32,9 +33,14 @@ const char kAllURLsPermissionNeeded[] =
 
 namespace extensions {
 
-WebRequestRulesRegistry::WebRequestRulesRegistry(Profile* profile,
-                                                 Delegate* delegate)
-    : RulesRegistryWithCache(delegate),
+WebRequestRulesRegistry::WebRequestRulesRegistry(
+    Profile* profile,
+    scoped_ptr<RulesRegistryWithCache::RuleStorageOnUI>* ui_part)
+    : RulesRegistryWithCache((ui_part ? profile : NULL),
+                             declarative_webrequest_constants::kOnRequest,
+                             content::BrowserThread::IO,
+                             true /*log_storage_init_delay*/,
+                             ui_part),
       profile_id_(profile) {
   if (profile)
     extension_info_map_ = ExtensionSystem::Get(profile)->info_map();
@@ -274,10 +280,6 @@ std::string WebRequestRulesRegistry::RemoveAllRulesImpl(
   // No need to call ClearCacheOnNavigation() here because RemoveRulesImpl
   // takes care of that.
   return RemoveRulesImpl(extension_id, rule_identifiers);
-}
-
-content::BrowserThread::ID WebRequestRulesRegistry::GetOwnerThread() const {
-  return content::BrowserThread::IO;
 }
 
 bool WebRequestRulesRegistry::IsEmpty() const {

@@ -48,7 +48,8 @@ class TestWebRequestRulesRegistry : public WebRequestRulesRegistry {
  public:
   explicit TestWebRequestRulesRegistry(
       scoped_refptr<ExtensionInfoMap> extension_info_map)
-      : WebRequestRulesRegistry(NULL, NULL), num_clear_cache_calls_(0) {
+      : WebRequestRulesRegistry(NULL /*profile*/, NULL /*ui_part*/),
+        num_clear_cache_calls_(0) {
     SetExtensionInfoMapForTesting(extension_info_map);
   }
 

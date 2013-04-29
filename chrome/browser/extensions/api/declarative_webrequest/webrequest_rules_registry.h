@@ -15,6 +15,7 @@
 #include "base/time.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/declarative/declarative_rule.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_with_cache.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
@@ -72,7 +73,11 @@ typedef DeclarativeRule<WebRequestCondition, WebRequestAction> WebRequestRule;
 // example 'scheme': 'http') are fulfilled.
 class WebRequestRulesRegistry : public RulesRegistryWithCache {
  public:
-  WebRequestRulesRegistry(Profile* profile, Delegate* delegate);
+  // For testing, |ui_part| can be NULL. In that case it constructs the
+  // registry with storage functionality suspended.
+  WebRequestRulesRegistry(
+      Profile* profile,
+      scoped_ptr<RulesRegistryWithCache::RuleStorageOnUI>* ui_part);
 
   // TODO(battre): This will become an implementation detail, because we need
   // a way to also execute the actions of the rules.
@@ -95,7 +100,6 @@ class WebRequestRulesRegistry : public RulesRegistryWithCache {
       const std::vector<std::string>& rule_identifiers) OVERRIDE;
   virtual std::string RemoveAllRulesImpl(
       const std::string& extension_id) OVERRIDE;
-  virtual content::BrowserThread::ID GetOwnerThread() const OVERRIDE;
 
   // Returns true if this object retains no allocated data. Only for debugging.
   bool IsEmpty() const;

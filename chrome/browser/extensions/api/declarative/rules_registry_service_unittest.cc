@@ -53,17 +53,17 @@ class RulesRegistryServiceTest : public testing::Test {
 };
 
 TEST_F(RulesRegistryServiceTest, TestConstructionAndMultiThreading) {
-  TestRulesRegistry* ui_registry = new TestRulesRegistry;
-  ui_registry->SetOwnerThread(content::BrowserThread::UI);
+  TestRulesRegistry* ui_registry =
+      new TestRulesRegistry(content::BrowserThread::UI, "ui");
 
-  TestRulesRegistry* io_registry = new TestRulesRegistry;
-  io_registry->SetOwnerThread(content::BrowserThread::IO);
+  TestRulesRegistry* io_registry =
+      new TestRulesRegistry(content::BrowserThread::IO, "io");
 
   // Test registration.
 
   RulesRegistryService registry_service(NULL);
-  registry_service.RegisterRulesRegistry("ui", make_scoped_refptr(ui_registry));
-  registry_service.RegisterRulesRegistry("io", make_scoped_refptr(io_registry));
+  registry_service.RegisterRulesRegistry(make_scoped_refptr(ui_registry));
+  registry_service.RegisterRulesRegistry(make_scoped_refptr(io_registry));
 
   EXPECT_TRUE(registry_service.GetRulesRegistry("ui").get());
   EXPECT_TRUE(registry_service.GetRulesRegistry("io").get());

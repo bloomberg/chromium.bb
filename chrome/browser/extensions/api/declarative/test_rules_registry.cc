@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "chrome/browser/extensions/api/declarative/test_rules_registry.h"
 
 namespace extensions {
 
-TestRulesRegistry::TestRulesRegistry()
-    : RulesRegistryWithCache(NULL),
-      owner_thread_(content::BrowserThread::UI) {}
-
-void TestRulesRegistry::SetOwnerThread(
-    content::BrowserThread::ID owner_thread) {
-  owner_thread_ = owner_thread;
-}
+TestRulesRegistry::TestRulesRegistry(content::BrowserThread::ID owner_thread,
+                                     const char* event_name)
+    : RulesRegistryWithCache(NULL /*profile*/,
+                             event_name,
+                             owner_thread,
+                             false /*log_storage_init_delay, this is ignored*/,
+                             NULL /*ui_part*/) {}
 
 std::string TestRulesRegistry::AddRulesImpl(
     const std::string& extension_id,
@@ -30,10 +31,6 @@ std::string TestRulesRegistry::RemoveRulesImpl(
 std::string TestRulesRegistry::RemoveAllRulesImpl(
     const std::string& extension_id) {
   return result_;
-}
-
-content::BrowserThread::ID TestRulesRegistry::GetOwnerThread() const {
-  return owner_thread_;
 }
 
 void TestRulesRegistry::SetResult(const std::string& result) {

@@ -29,7 +29,9 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
  public:
   typedef extensions::api::events::Rule Rule;
 
-  RulesRegistry() {}
+  RulesRegistry(content::BrowserThread::ID owner_thread,
+                const std::string& event_name)
+      : owner_thread_(owner_thread), event_name_(event_name) {}
 
   // Registers |rules|, owned by |extension_id| to this RulesRegistry.
   // If a concrete RuleRegistry does not support some of the rules,
@@ -88,14 +90,24 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   virtual void OnExtensionUnloaded(const std::string& extension_id) = 0;
 
   // Returns the ID of the thread on which the rules registry lives.
-  // It must be safe to call this function from any thread.
-  virtual content::BrowserThread::ID GetOwnerThread() const = 0;
+  // It is safe to call this function from any thread.
+  content::BrowserThread::ID owner_thread() const { return owner_thread_; }
+
+  // The name of the event with which rules are registered.
+  const std::string& event_name() const { return event_name_; }
 
  protected:
   virtual ~RulesRegistry() {}
 
  private:
   friend class base::RefCountedThreadSafe<RulesRegistry>;
+
+  // The ID of the thread on which the rules registry lives.
+  const content::BrowserThread::ID owner_thread_;
+
+  // The name of the event with which rules are registered.
+  const std::string event_name_;
+
   DISALLOW_COPY_AND_ASSIGN(RulesRegistry);
 };
 

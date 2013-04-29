@@ -18,9 +18,9 @@ namespace extensions {
 
 InitializingRulesRegistry::InitializingRulesRegistry(
     scoped_refptr<RulesRegistry> delegate)
-    : delegate_(delegate),
-      last_generated_rule_identifier_id_(0) {
-}
+    : RulesRegistry(delegate->owner_thread(), delegate->event_name()),
+      delegate_(delegate),
+      last_generated_rule_identifier_id_(0) {}
 
 std::string InitializingRulesRegistry::AddRules(
     const std::string& extension_id,
@@ -68,10 +68,6 @@ void InitializingRulesRegistry::OnExtensionUnloaded(
     const std::string& extension_id) {
   delegate_->OnExtensionUnloaded(extension_id);
   used_rule_identifiers_.erase(extension_id);
-}
-
-content::BrowserThread::ID InitializingRulesRegistry::GetOwnerThread() const {
-  return delegate_->GetOwnerThread();
 }
 
 size_t

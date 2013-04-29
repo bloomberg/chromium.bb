@@ -23,8 +23,8 @@ TEST(InitializingRulesRegistryTest, FillOptionalIdentifiers) {
   content::TestBrowserThread thread(content::BrowserThread::UI, &message_loop);
 
   std::string error;
-  scoped_refptr<RulesRegistry> registry =
-      new InitializingRulesRegistry(new TestRulesRegistry);
+  scoped_refptr<RulesRegistry> registry = new InitializingRulesRegistry(
+      new TestRulesRegistry(content::BrowserThread::UI, "" /*event_name*/));
   InitializingRulesRegistry* init_registry =
       static_cast<InitializingRulesRegistry*>(registry.get());
 
@@ -140,8 +140,8 @@ TEST(InitializingRulesRegistryTest, FillOptionalPriority) {
   content::TestBrowserThread thread(content::BrowserThread::UI, &message_loop);
 
   std::string error;
-  scoped_refptr<RulesRegistry> registry =
-      new InitializingRulesRegistry(new TestRulesRegistry);
+  scoped_refptr<RulesRegistry> registry = new InitializingRulesRegistry(
+      new TestRulesRegistry(content::BrowserThread::UI, "" /*event_name*/));
 
   // Add rules and check that their priorities are filled if they are empty.
 

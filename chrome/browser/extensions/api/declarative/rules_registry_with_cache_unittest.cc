@@ -25,7 +25,8 @@ class RulesRegistryWithCacheTest : public testing::Test {
  public:
   RulesRegistryWithCacheTest()
       : ui_(content::BrowserThread::UI, &message_loop_),
-        registry_(new TestRulesRegistry()) {}
+        registry_(new TestRulesRegistry(content::BrowserThread::UI,
+                                        "" /*event_name*/)) {}
 
   virtual ~RulesRegistryWithCacheTest() {}
 

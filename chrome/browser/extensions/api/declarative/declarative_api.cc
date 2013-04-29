@@ -44,13 +44,13 @@ bool RulesFunction::RunImpl() {
   // there should never be a request for a nonexisting rules registry.
   EXTENSION_FUNCTION_VALIDATE(rules_registry_);
 
-  if (content::BrowserThread::CurrentlyOn(rules_registry_->GetOwnerThread())) {
+  if (content::BrowserThread::CurrentlyOn(rules_registry_->owner_thread())) {
     bool success = RunImplOnCorrectThread();
     SendResponse(success);
   } else {
     scoped_refptr<base::MessageLoopProxy> message_loop_proxy =
         content::BrowserThread::GetMessageLoopProxyForThread(
-            rules_registry_->GetOwnerThread());
+            rules_registry_->owner_thread());
     base::PostTaskAndReplyWithResult(
         message_loop_proxy,
         FROM_HERE,

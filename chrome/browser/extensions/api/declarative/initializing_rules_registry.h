@@ -40,7 +40,6 @@ class InitializingRulesRegistry : public RulesRegistry {
       const std::string& extension_id,
       std::vector<linked_ptr<RulesRegistry::Rule> >* out) OVERRIDE;
   virtual void OnExtensionUnloaded(const std::string& extension_id) OVERRIDE;
-  virtual content::BrowserThread::ID GetOwnerThread() const OVERRIDE;
 
   // Returns the number of entries in used_rule_identifiers_ for leak detection.
   // Every ExtensionId counts as one entry, even if it contains no rules.

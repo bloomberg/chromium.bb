@@ -9,7 +9,11 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
+#include "chrome/browser/extensions/api/declarative/rules_registry_with_cache.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -43,8 +47,7 @@ class RulesRegistryService : public content::NotificationObserver  {
   void RegisterDefaultRulesRegistries();
 
   // Registers a RulesRegistry and wraps it in an InitializingRulesRegistry.
-  void RegisterRulesRegistry(const std::string& event_name,
-                             scoped_refptr<RulesRegistry> rule_registry);
+  void RegisterRulesRegistry(scoped_refptr<RulesRegistry> rule_registry);
 
   // Returns the RulesRegistry for |event_name| or NULL if no such registry
   // has been registered.
@@ -74,9 +77,8 @@ class RulesRegistryService : public content::NotificationObserver  {
 
   RulesRegistryMap rule_registries_;
 
-  // These are weak pointers to the delegates owned by the RulesRegistry's. We
-  // keep track of them so we can tell them to do cleanup on shutdown.
-  std::vector<RulesRegistryStorageDelegate*> delegates_;
+  // We own the parts of the registries which need to run on the UI thread.
+  ScopedVector<RulesRegistryWithCache::RuleStorageOnUI> ui_parts_of_registries_;
 
   // Weak pointer into rule_registries_ to make it easier to handle content rule
   // conditions.

@@ -12,6 +12,7 @@
 
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/extensions/api/declarative/declarative_rule.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_with_cache.h"
@@ -61,7 +62,11 @@ typedef DeclarativeRule<ContentCondition, ContentAction> ContentRule;
 class ContentRulesRegistry : public RulesRegistryWithCache,
                              public content::NotificationObserver {
  public:
-  ContentRulesRegistry(Profile* profile, Delegate* delegate);
+  // For testing, |ui_part| can be NULL. In that case it constructs the
+  // registry with storage functionality suspended.
+  ContentRulesRegistry(
+      Profile* profile,
+      scoped_ptr<RulesRegistryWithCache::RuleStorageOnUI>* ui_part);
 
   // Applies all content rules given an update (CSS match change or
   // page navigation, for now) from the renderer.
@@ -82,7 +87,6 @@ class ContentRulesRegistry : public RulesRegistryWithCache,
       const std::vector<std::string>& rule_identifiers) OVERRIDE;
   virtual std::string RemoveAllRulesImpl(
       const std::string& extension_id) OVERRIDE;
-  virtual content::BrowserThread::ID GetOwnerThread() const OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

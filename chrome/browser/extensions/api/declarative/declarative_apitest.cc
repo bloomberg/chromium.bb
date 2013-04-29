@@ -54,12 +54,12 @@ IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, DeclarativeApi) {
   std::vector<linked_ptr<RulesRegistry::Rule> > known_rules;
 
   content::BrowserThread::PostTask(
-      rules_registry->GetOwnerThread(),
+      rules_registry->owner_thread(),
       FROM_HERE,
       base::Bind(base::IgnoreResult(&RulesRegistry::GetAllRules),
                  rules_registry, extension_id, &known_rules));
 
-  content::RunAllPendingInMessageLoop(rules_registry->GetOwnerThread());
+  content::RunAllPendingInMessageLoop(rules_registry->owner_thread());
 
   EXPECT_TRUE(known_rules.empty());
 }

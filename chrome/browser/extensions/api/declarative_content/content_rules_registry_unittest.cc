@@ -48,7 +48,7 @@ TEST_F(DeclarativeContentRulesRegistryTest, ActiveRulesDoesntGrow) {
   TestExtensionEnvironment env;
 
   scoped_refptr<ContentRulesRegistry> registry(
-      new ContentRulesRegistry(env.profile(), NULL));
+      new ContentRulesRegistry(env.profile(), NULL /*ui_part*/));
 
   EXPECT_EQ(0u, active_rules(*registry).size());
 
