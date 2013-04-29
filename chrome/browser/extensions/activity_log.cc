@@ -170,15 +170,11 @@ ActivityLog::ActivityLog(Profile* profile) {
   KillActivityDatabaseErrorDelegate* error_delegate =
       new KillActivityDatabaseErrorDelegate(this);
   db_->SetErrorDelegate(error_delegate);
-  ScheduleAndForget(&ActivityDatabase::Init, database_name);
+  ScheduleAndForget(&ActivityDatabase::Init,
+                    database_name);
 }
 
 ActivityLog::~ActivityLog() {
-  ScheduleAndForget(&ActivityDatabase::Close);
-}
-
-void ActivityLog::SetArgumentLoggingForTesting(bool log_arguments) {
-  testing_mode_ = log_arguments;
 }
 
 // static
@@ -420,11 +416,12 @@ void ActivityLog::GetActions(
     const int day,
     const base::Callback
         <void(scoped_ptr<std::vector<scoped_refptr<Action> > >)>& callback) {
+  if (!db_) return;
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::DB,
       FROM_HERE,
       base::Bind(&ActivityDatabase::GetActions,
-                 base::Unretained(db_),
+                 db_.get(),
                  extension_id,
                  day),
       callback);
@@ -473,7 +470,9 @@ void ActivityLog::OnScriptsExecuted(
 }
 
 void ActivityLog::KillActivityLogDatabase() {
-  ScheduleAndForget(&ActivityDatabase::KillDatabase);
+  if (db_) {
+    ScheduleAndForget(&ActivityDatabase::KillDatabase);
+  }
 }
 
 // static

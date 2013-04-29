@@ -43,8 +43,6 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
             &command_line, base::FilePath(), false);
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExtensionActivityUI);
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableExtensionActivityLogTesting);
     ActivityLog::RecomputeLoggingIsEnabled();
   }
 
@@ -141,7 +139,6 @@ TEST_F(ActivityLogTest, LogAndFetchActions) {
 
 TEST_F(ActivityLogTest, LogWithoutArguments) {
   ActivityLog* activity_log = ActivityLog::GetInstance(profile_);
-  activity_log->SetArgumentLoggingForTesting(false);
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetManifest(DictionaryBuilder()
