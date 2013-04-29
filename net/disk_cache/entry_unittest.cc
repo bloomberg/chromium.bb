@@ -19,7 +19,6 @@
 #include "net/disk_cache/disk_cache_test_util.h"
 #include "net/disk_cache/entry_impl.h"
 #include "net/disk_cache/mem_entry_impl.h"
-#include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -2382,48 +2381,10 @@ TEST_F(DiskCacheEntryTest, SimpleCacheErrorThenDoom) {
   entry->Close();
 }
 
-bool TruncatePath(const base::FilePath& file_path, int64 length)  {
-  const int flags = base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_OPEN;
-  base::PlatformFile file =
-      base::CreatePlatformFile(file_path, flags, NULL, NULL);
-  if (base::kInvalidPlatformFileValue == file)
-    return false;
-  const bool result = base::TruncatePlatformFile(file, length);
-  base::ClosePlatformFile(file);
-  return result;
-}
-
-TEST_F(DiskCacheEntryTest, SimpleCacheNoEOF) {
-  SetSimpleCacheMode();
-  InitCache();
-
-  const char key[] = "the first key";
-
-  disk_cache::Entry* entry = NULL;
-  ASSERT_EQ(net::OK, CreateEntry(key, &entry));
-  disk_cache::Entry* null = NULL;
-  EXPECT_NE(null, entry);
-  entry->Close();
-  entry = NULL;
-
-  // Truncate the file such that the length isn't sufficient to have an EOF
-  // record.
-  int kTruncationBytes = -implicit_cast<int>(sizeof(disk_cache::SimpleFileEOF));
-  const base::FilePath entry_path = cache_path_.AppendASCII(
-      disk_cache::simple_util::GetFilenameFromKeyAndIndex(key, 0));
-  const int64 invalid_size =
-      disk_cache::simple_util::GetFileSizeFromKeyAndDataSize(key,
-                                                             kTruncationBytes);
-  EXPECT_TRUE(TruncatePath(entry_path, invalid_size));
-  EXPECT_EQ(net::ERR_FAILED, OpenEntry(key, &entry));
-  DisableIntegrityCheck();
-}
-
 // Tests that old entries are evicted while new entries remain in the index.
 // This test relies on non-mandatory properties of the simple Cache Backend:
 // LRU eviction, specific values of high-watermark and low-watermark etc.
 // When changing the eviction algorithm, the test will have to be re-engineered.
-
 TEST_F(DiskCacheEntryTest, SimpleCacheEvictOldEntries) {
   const int kMaxSize = 200 * 1024;
   const int kWriteSize = kMaxSize / 10;

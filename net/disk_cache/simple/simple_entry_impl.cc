@@ -364,10 +364,6 @@ void SimpleEntryImpl::CreateEntryInternal(Entry** out_entry,
 
   state_ = STATE_IO_PENDING;
 
-  // If creation succeeds, we should mark all streams to be saved on close.
-  for (int i = 0; i < kSimpleEntryFileCount; ++i)
-    have_written_[i] = true;
-
   // We insert the entry in the index before creating the entry files in the
   // SimpleSynchronousEntry, because this way the worst scenario is when we
   // have the entry in the index but we don't have the created files yet, this
@@ -401,12 +397,10 @@ void SimpleEntryImpl::CloseInternal() {
       crc32s_to_write(new std::vector<CRCRecord>());
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
     if (have_written_[i]) {
-      if (data_size_[i] == crc32s_end_offset_[i]) {
-        int32 crc = data_size_[i] == 0 ? crc32(0, Z_NULL, 0) : crc32s_[i];
-        crc32s_to_write->push_back(CRCRecord(i, true, crc));
-      } else {
+      if (data_size_[i] == crc32s_end_offset_[i])
+        crc32s_to_write->push_back(CRCRecord(i, true, crc32s_[i]));
+      else
         crc32s_to_write->push_back(CRCRecord(i, false, 0));
-      }
     }
   }
   Closure task = base::Bind(&SimpleSynchronousEntry::Close,
@@ -495,7 +489,7 @@ void SimpleEntryImpl::CreationOperationComplete(
   if (creation_failed) {
     completion_callback.Run(net::ERR_FAILED);
     MarkAsDoomed();
-    MakeUninitialized();
+    state_ = STATE_UNINITIALIZED;
     return;
   }
   state_ = STATE_READY;
