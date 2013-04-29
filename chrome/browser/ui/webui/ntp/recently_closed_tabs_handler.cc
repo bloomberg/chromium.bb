@@ -26,7 +26,7 @@ namespace {
 
 void TabToValue(const TabRestoreService::Tab& tab,
                 DictionaryValue* dictionary) {
-  const TabNavigation& current_navigation =
+  const sessions::SerializedNavigationEntry& current_navigation =
       tab.navigations.at(tab.current_navigation_index);
   NewTabUI::SetUrlTitleAndDirection(dictionary, current_navigation.title(),
                                     current_navigation.virtual_url());

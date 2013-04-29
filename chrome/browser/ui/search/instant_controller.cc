@@ -28,6 +28,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "components/sessions/serialized_navigation_entry.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -218,7 +219,7 @@ void EnsureSearchTermsAreSet(content::WebContents* contents,
       false,
       std::string(),
       contents->GetBrowserContext());
-  transient->SetExtraData(chrome::kInstantExtendedSearchTermsKey, search_terms);
+  transient->SetExtraData(sessions::kSearchTermsKey, search_terms);
   controller->SetTransientEntry(transient);
 
   SearchTabHelper::FromWebContents(contents)->NavigationEntryUpdated();

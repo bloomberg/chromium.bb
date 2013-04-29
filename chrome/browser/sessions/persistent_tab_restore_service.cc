@@ -414,7 +414,8 @@ void PersistentTabRestoreService::Delegate::ScheduleCommandsForWindow(
 void PersistentTabRestoreService::Delegate::ScheduleCommandsForTab(
     const Tab& tab,
     int selected_index) {
-  const std::vector<TabNavigation>& navigations = tab.navigations;
+  const std::vector<sessions::SerializedNavigationEntry>& navigations =
+      tab.navigations;
   int max_index = static_cast<int>(navigations.size());
 
   // Determine the first navigation we'll persist.
@@ -515,7 +516,8 @@ PersistentTabRestoreService::Delegate::CreateRestoredEntryCommand(
 
 int PersistentTabRestoreService::Delegate::GetSelectedNavigationIndexToPersist(
     const Tab& tab) {
-  const std::vector<TabNavigation>& navigations = tab.navigations;
+  const std::vector<sessions::SerializedNavigationEntry>& navigations =
+      tab.navigations;
   int selected_index = tab.current_navigation_index;
   int max_index = static_cast<int>(navigations.size());
 

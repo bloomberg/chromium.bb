@@ -15,6 +15,7 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "components/sessions/serialized_navigation_entry.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -81,7 +82,7 @@ class TabRestoreService : public ProfileKeyedService {
     bool has_browser() const { return browser_id > 0; }
 
     // The navigations.
-    std::vector<TabNavigation> navigations;
+    std::vector<sessions::SerializedNavigationEntry> navigations;
 
     // Index of the selected navigation in navigations.
     int current_navigation_index;

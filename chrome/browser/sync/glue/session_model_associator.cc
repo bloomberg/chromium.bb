@@ -29,6 +29,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/sessions/serialized_navigation_entry.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
@@ -482,7 +483,8 @@ void SessionModelAssociator::SetSessionTabFromDelegate(
     DCHECK(entry);
     if (entry->GetVirtualURL().is_valid()) {
       session_tab->navigations.push_back(
-          TabNavigation::FromNavigationEntry(i, *entry));
+          ::sessions::SerializedNavigationEntry::FromNavigationEntry(i,
+                                                                     *entry));
     }
   }
   session_tab->session_storage_persistent_id.clear();

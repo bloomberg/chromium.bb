@@ -50,7 +50,7 @@ namespace session_restore = api::session_restore;
 scoped_ptr<tabs::Tab> SessionRestoreGetRecentlyClosedFunction::CreateTabModel(
     const TabRestoreService::Tab& tab, int selected_index) {
   scoped_ptr<tabs::Tab> tab_struct(new tabs::Tab);
-  const TabNavigation& current_navigation =
+  const sessions::SerializedNavigationEntry& current_navigation =
       tab.navigations[tab.current_navigation_index];
   GURL gurl = current_navigation.virtual_url();
   std::string title = UTF16ToUTF8(current_navigation.title());

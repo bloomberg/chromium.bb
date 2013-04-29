@@ -11,6 +11,9 @@ per-file navigation_interception.gypi=jknotten@chromium.org
 per-file navigation_interception.gypi=joth@chromium.org
 per-file navigation_interception.gypi=mkosiba@chromium.org
 
+per-file sessions.gypi=marja@chromium.org
+per-file sessions.gypi=sky@chromium.org
+
 per-file user_prefs.gypi=battre@chromium.org
 per-file user_prefs.gypi=bauerb@chromium.org
 per-file user_prefs.gypi=mnissler@chromium.org

@@ -14,7 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_types.h"
-#include "chrome/browser/sessions/session_types_test_helper.h"
+#include "components/sessions/serialized_navigation_entry_test_helper.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/common/page_transition_types.h"
@@ -64,8 +64,7 @@ scoped_ptr<content::NavigationEntry> MakeNavigationEntryForTest() {
   navigation_entry->SetOriginalRequestURL(kOriginalRequestURL);
   navigation_entry->SetIsOverridingUserAgent(kIsOverridingUserAgent);
   navigation_entry->SetTimestamp(kTimestamp);
-  navigation_entry->SetExtraData(
-      chrome::kInstantExtendedSearchTermsKey, kSearchTerms);
+  navigation_entry->SetExtraData(sessions::kSearchTermsKey, kSearchTerms);
   navigation_entry->GetFavicon().valid = true;
   navigation_entry->GetFavicon().url = kFaviconURL;
   return navigation_entry.Pass();
@@ -87,216 +86,6 @@ sync_pb::TabNavigation MakeSyncDataForTest() {
   sync_data.set_search_terms(UTF16ToUTF8(kSearchTerms));
   sync_data.set_favicon_url(kFaviconURL.spec());
   return sync_data;
-}
-
-// Create a default TabNavigation.  All its fields should be
-// initialized to their respective default values.
-TEST(TabNavigationTest, DefaultInitializer) {
-  const TabNavigation navigation;
-  EXPECT_EQ(-1, navigation.index());
-  EXPECT_EQ(0, navigation.unique_id());
-  EXPECT_EQ(GURL(), SessionTypesTestHelper::GetReferrer(navigation).url);
-  EXPECT_EQ(WebKit::WebReferrerPolicyDefault,
-            SessionTypesTestHelper::GetReferrer(navigation).policy);
-  EXPECT_EQ(GURL(), navigation.virtual_url());
-  EXPECT_TRUE(navigation.title().empty());
-  EXPECT_TRUE(navigation.content_state().empty());
-  EXPECT_EQ(content::PAGE_TRANSITION_TYPED,
-            SessionTypesTestHelper::GetTransitionType(navigation));
-  EXPECT_FALSE(SessionTypesTestHelper::GetHasPostData(navigation));
-  EXPECT_EQ(-1, SessionTypesTestHelper::GetPostID(navigation));
-  EXPECT_EQ(GURL(), SessionTypesTestHelper::GetOriginalRequestURL(navigation));
-  EXPECT_FALSE(SessionTypesTestHelper::GetIsOverridingUserAgent(navigation));
-  EXPECT_TRUE(SessionTypesTestHelper::GetTimestamp(navigation).is_null());
-  EXPECT_TRUE(navigation.search_terms().empty());
-  EXPECT_FALSE(navigation.favicon_url().is_valid());
-}
-
-// Create a TabNavigation from a NavigationEntry.  All its fields
-// should match the NavigationEntry's.
-TEST(TabNavigationTest, FromNavigationEntry) {
-  const scoped_ptr<content::NavigationEntry> navigation_entry(
-      MakeNavigationEntryForTest());
-
-  const TabNavigation& navigation =
-      TabNavigation::FromNavigationEntry(kIndex, *navigation_entry);
-
-  EXPECT_EQ(kIndex, navigation.index());
-
-  EXPECT_EQ(navigation_entry->GetUniqueID(), navigation.unique_id());
-  EXPECT_EQ(kReferrer.url,
-            SessionTypesTestHelper::GetReferrer(navigation).url);
-  EXPECT_EQ(kReferrer.policy,
-            SessionTypesTestHelper::GetReferrer(navigation).policy);
-  EXPECT_EQ(kVirtualURL, navigation.virtual_url());
-  EXPECT_EQ(kTitle, navigation.title());
-  EXPECT_EQ(kContentState, navigation.content_state());
-  EXPECT_EQ(kTransitionType,
-            SessionTypesTestHelper::GetTransitionType(navigation));
-  EXPECT_EQ(kHasPostData, SessionTypesTestHelper::GetHasPostData(navigation));
-  EXPECT_EQ(kPostID, SessionTypesTestHelper::GetPostID(navigation));
-  EXPECT_EQ(kOriginalRequestURL,
-            SessionTypesTestHelper::GetOriginalRequestURL(navigation));
-  EXPECT_EQ(kIsOverridingUserAgent,
-            SessionTypesTestHelper::GetIsOverridingUserAgent(navigation));
-  EXPECT_EQ(kTimestamp, SessionTypesTestHelper::GetTimestamp(navigation));
-  EXPECT_EQ(kFaviconURL, navigation.favicon_url());
-}
-
-// Create a TabNavigation from a sync_pb::TabNavigation.  All its
-// fields should match the protocol buffer's if it exists there, and
-// sbould be set to the default value otherwise.
-TEST(TabNavigationTest, FromSyncData) {
-  const sync_pb::TabNavigation sync_data = MakeSyncDataForTest();
-
-  const TabNavigation& navigation =
-      TabNavigation::FromSyncData(kIndex, sync_data);
-
-  EXPECT_EQ(kIndex, navigation.index());
-  EXPECT_EQ(kUniqueID, navigation.unique_id());
-  EXPECT_EQ(kReferrer.url,
-            SessionTypesTestHelper::GetReferrer(navigation).url);
-  EXPECT_EQ(WebKit::WebReferrerPolicyDefault,
-            SessionTypesTestHelper::GetReferrer(navigation).policy);
-  EXPECT_EQ(kVirtualURL, navigation.virtual_url());
-  EXPECT_EQ(kTitle, navigation.title());
-  EXPECT_EQ(kContentState, navigation.content_state());
-  EXPECT_EQ(kTransitionType,
-            SessionTypesTestHelper::GetTransitionType(navigation));
-  EXPECT_FALSE(SessionTypesTestHelper::GetHasPostData(navigation));
-  EXPECT_EQ(-1, SessionTypesTestHelper::GetPostID(navigation));
-  EXPECT_EQ(GURL(), SessionTypesTestHelper::GetOriginalRequestURL(navigation));
-  EXPECT_FALSE(SessionTypesTestHelper::GetIsOverridingUserAgent(navigation));
-  EXPECT_TRUE(SessionTypesTestHelper::GetTimestamp(navigation).is_null());
-  EXPECT_EQ(kSearchTerms, navigation.search_terms());
-  EXPECT_EQ(kFaviconURL, navigation.favicon_url());
-}
-
-// Create a TabNavigation, pickle it, then create another one by
-// unpickling.  The new one should match the old one except for fields
-// that aren't pickled, which should be set to default values.
-TEST(TabNavigationTest, Pickle) {
-  const TabNavigation& old_navigation =
-      TabNavigation::FromNavigationEntry(kIndex, *MakeNavigationEntryForTest());
-
-  Pickle pickle;
-  old_navigation.WriteToPickle(&pickle);
-
-  TabNavigation new_navigation;
-  PickleIterator pickle_iterator(pickle);
-  EXPECT_TRUE(new_navigation.ReadFromPickle(&pickle_iterator));
-
-  EXPECT_EQ(kIndex, new_navigation.index());
-
-  EXPECT_EQ(0, new_navigation.unique_id());
-  EXPECT_EQ(kReferrer.url,
-            SessionTypesTestHelper::GetReferrer(new_navigation).url);
-  EXPECT_EQ(kReferrer.policy,
-            SessionTypesTestHelper::GetReferrer(new_navigation).policy);
-  EXPECT_EQ(kVirtualURL, new_navigation.virtual_url());
-  EXPECT_EQ(kTitle, new_navigation.title());
-  EXPECT_TRUE(new_navigation.content_state().empty());
-  EXPECT_EQ(kTransitionType,
-            SessionTypesTestHelper::GetTransitionType(new_navigation));
-  EXPECT_EQ(kHasPostData,
-            SessionTypesTestHelper::GetHasPostData(new_navigation));
-  EXPECT_EQ(-1, SessionTypesTestHelper::GetPostID(new_navigation));
-  EXPECT_EQ(kOriginalRequestURL,
-            SessionTypesTestHelper::GetOriginalRequestURL(new_navigation));
-  EXPECT_EQ(kIsOverridingUserAgent,
-            SessionTypesTestHelper::GetIsOverridingUserAgent(new_navigation));
-  EXPECT_EQ(kTimestamp, SessionTypesTestHelper::GetTimestamp(new_navigation));
-  EXPECT_EQ(kSearchTerms, new_navigation.search_terms());
-}
-
-// Create a NavigationEntry, then create another one by converting to
-// a TabNavigation and back.  The new one should match the old one
-// except for fields that aren't preserved, which should be set to
-// expected values.
-TEST(TabNavigationTest, ToNavigationEntry) {
-  const scoped_ptr<content::NavigationEntry> old_navigation_entry(
-      MakeNavigationEntryForTest());
-
-  const TabNavigation& navigation =
-      TabNavigation::FromNavigationEntry(kIndex, *old_navigation_entry);
-
-  const scoped_ptr<content::NavigationEntry> new_navigation_entry(
-      navigation.ToNavigationEntry(kPageID, NULL));
-
-  EXPECT_EQ(kReferrer.url, new_navigation_entry->GetReferrer().url);
-  EXPECT_EQ(kReferrer.policy, new_navigation_entry->GetReferrer().policy);
-  EXPECT_EQ(kVirtualURL, new_navigation_entry->GetVirtualURL());
-  EXPECT_EQ(kTitle, new_navigation_entry->GetTitle());
-  EXPECT_EQ(kContentState, new_navigation_entry->GetContentState());
-  EXPECT_EQ(kPageID, new_navigation_entry->GetPageID());
-  EXPECT_EQ(content::PAGE_TRANSITION_RELOAD,
-            new_navigation_entry->GetTransitionType());
-  EXPECT_EQ(kHasPostData, new_navigation_entry->GetHasPostData());
-  EXPECT_EQ(kPostID, new_navigation_entry->GetPostID());
-  EXPECT_EQ(kOriginalRequestURL,
-            new_navigation_entry->GetOriginalRequestURL());
-  EXPECT_EQ(kIsOverridingUserAgent,
-            new_navigation_entry->GetIsOverridingUserAgent());
-  EXPECT_EQ(kSearchTerms,
-            chrome::GetSearchTermsFromNavigationEntry(
-                new_navigation_entry.get()));
-}
-
-// Create a NavigationEntry, convert it to a TabNavigation, then
-// create a sync protocol buffer from it.  The protocol buffer should
-// have matching fields to the NavigationEntry (when applicable).
-TEST(TabNavigationTest, ToSyncData) {
-  const scoped_ptr<content::NavigationEntry> navigation_entry(
-      MakeNavigationEntryForTest());
-
-  const TabNavigation& navigation =
-      TabNavigation::FromNavigationEntry(kIndex, *navigation_entry);
-
-  const sync_pb::TabNavigation sync_data = navigation.ToSyncData();
-
-  EXPECT_EQ(kVirtualURL.spec(), sync_data.virtual_url());
-  EXPECT_EQ(kReferrer.url.spec(), sync_data.referrer());
-  EXPECT_EQ(kTitle, ASCIIToUTF16(sync_data.title()));
-  EXPECT_TRUE(sync_data.state().empty());
-  EXPECT_EQ(sync_pb::SyncEnums_PageTransition_AUTO_SUBFRAME,
-            sync_data.page_transition());
-  EXPECT_TRUE(sync_data.has_redirect_type());
-  EXPECT_EQ(navigation_entry->GetUniqueID(), sync_data.unique_id());
-  EXPECT_EQ(syncer::TimeToProtoTime(kTimestamp), sync_data.timestamp_msec());
-  EXPECT_EQ(kTimestamp.ToInternalValue(), sync_data.global_id());
-  EXPECT_EQ(kFaviconURL.spec(), sync_data.favicon_url());
-}
-
-// Ensure all transition types and qualifiers are converted to/from the sync
-// TabNavigation representation properly.
-TEST(TabNavigationTest, TransitionTypes) {
-  scoped_ptr<content::NavigationEntry> navigation_entry(
-      MakeNavigationEntryForTest());
-  for (uint32 core_type = content::PAGE_TRANSITION_LINK;
-       core_type != content::PAGE_TRANSITION_LAST_CORE; ++core_type) {
-    // Because qualifier is a uint32, left shifting will eventually overflow
-    // and hit zero again. SERVER_REDIRECT, as the last qualifier and also
-    // in place of the sign bit, is therefore the last transition before
-    // breaking.
-    for (uint32 qualifier = content::PAGE_TRANSITION_FORWARD_BACK;
-         qualifier != 0; qualifier <<= 1) {
-      if (qualifier == 0x08000000)
-        continue;  // 0x08000000 is not a valid qualifier.
-      content::PageTransition transition =
-          static_cast<content::PageTransition>(core_type | qualifier);
-
-      navigation_entry->SetTransitionType(transition);
-      const TabNavigation& navigation =
-          TabNavigation::FromNavigationEntry(kIndex, *navigation_entry);
-      const sync_pb::TabNavigation& sync_data = navigation.ToSyncData();
-      const TabNavigation& constructed_nav =
-          TabNavigation::FromSyncData(kIndex, sync_data);
-      const content::PageTransition constructed_transition =
-          SessionTypesTestHelper::GetTransitionType(constructed_nav);
-
-      EXPECT_EQ(transition, constructed_transition);
-    }
-  }
 }
 
 // Create a typical SessionTab protocol buffer and set an existing
@@ -342,11 +131,10 @@ TEST(SessionTab, FromSyncData) {
   ASSERT_EQ(5u, tab.navigations.size());
   for (int i = 0; i < 5; ++i) {
     EXPECT_EQ(i, tab.navigations[i].index());
-    EXPECT_EQ(GURL("referrer"),
-              SessionTypesTestHelper::GetReferrer(tab.navigations[i]).url);
+    EXPECT_EQ(GURL("referrer"), tab.navigations[i].referrer().url);
     EXPECT_EQ(string16(ASCIIToUTF16("title")), tab.navigations[i].title());
     EXPECT_EQ(content::PAGE_TRANSITION_TYPED,
-              SessionTypesTestHelper::GetTransitionType(tab.navigations[i]));
+              tab.navigations[i].transition_type());
     EXPECT_EQ(GURL("http://foo/" + base::IntToString(i)),
               tab.navigations[i].virtual_url());
   }
@@ -365,7 +153,7 @@ TEST(SessionTab, ToSyncData) {
   tab.timestamp = base::Time::FromInternalValue(100);
   for (int i = 0; i < 5; ++i) {
     tab.navigations.push_back(
-        SessionTypesTestHelper::CreateNavigation(
+        sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
             "http://foo/" + base::IntToString(i), "title"));
   }
   tab.session_storage_persistent_id = "fake";

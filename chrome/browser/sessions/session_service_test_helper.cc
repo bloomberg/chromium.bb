@@ -9,7 +9,7 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_types.h"
-#include "chrome/browser/sessions/session_types_test_helper.h"
+#include "components/sessions/serialized_navigation_entry_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -83,10 +83,13 @@ void SessionServiceTestHelper::AssertTabEquals(
   ASSERT_EQ(nav_count, session_tab.navigations.size());
 }
 
+// TODO(sky): nuke this and change to call directly into
+// SerializedNavigationEntryTestHelper.
 void SessionServiceTestHelper::AssertNavigationEquals(
-    const TabNavigation& expected,
-    const TabNavigation& actual) {
-  SessionTypesTestHelper::ExpectNavigationEquals(expected, actual);
+    const sessions::SerializedNavigationEntry& expected,
+    const sessions::SerializedNavigationEntry& actual) {
+  sessions::SerializedNavigationEntryTestHelper::ExpectNavigationEquals(
+      expected, actual);
 }
 
 void SessionServiceTestHelper::AssertSingleWindowWithSingleTab(

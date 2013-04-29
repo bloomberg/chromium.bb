@@ -21,6 +21,7 @@
 using content::WebContents;
 using content::NavigationController;
 using content::NavigationEntry;
+using sessions::SerializedNavigationEntry;
 
 namespace chrome {
 
@@ -37,7 +38,7 @@ NavigationController::RestoreType GetRestoreType(Browser* browser,
 
 WebContents* CreateRestoredTab(
     Browser* browser,
-    const std::vector<TabNavigation>& navigations,
+    const std::vector<SerializedNavigationEntry>& navigations,
     int selected_navigation,
     const std::string& extension_app_id,
     bool from_last_session,
@@ -67,7 +68,7 @@ WebContents* CreateRestoredTab(
   extensions::TabHelper::FromWebContents(web_contents)->
       SetExtensionAppById(extension_app_id);
   std::vector<NavigationEntry*> entries =
-      TabNavigation::CreateNavigationEntriesFromTabNavigations(
+      SerializedNavigationEntry::ToNavigationEntries(
           navigations, browser->profile());
   web_contents->SetUserAgentOverride(user_agent_override);
   web_contents->GetController().Restore(
@@ -82,7 +83,7 @@ WebContents* CreateRestoredTab(
 
 content::WebContents* AddRestoredTab(
     Browser* browser,
-    const std::vector<TabNavigation>& navigations,
+    const std::vector<SerializedNavigationEntry>& navigations,
     int tab_index,
     int selected_navigation,
     const std::string& extension_app_id,
@@ -131,7 +132,7 @@ content::WebContents* AddRestoredTab(
 
 void ReplaceRestoredTab(
     Browser* browser,
-    const std::vector<TabNavigation>& navigations,
+    const std::vector<SerializedNavigationEntry>& navigations,
     int selected_navigation,
     bool from_last_session,
     const std::string& extension_app_id,

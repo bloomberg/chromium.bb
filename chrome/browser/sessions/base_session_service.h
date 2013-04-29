@@ -21,7 +21,10 @@
 class Profile;
 class SessionBackend;
 class SessionCommand;
-class TabNavigation;
+
+namespace sessions {
+class SerializedNavigationEntry;
+}
 
 // BaseSessionService is the super class of both tab restore service and
 // session service. It contains commonality needed by both, in particular
@@ -89,7 +92,7 @@ class BaseSessionService : public CancelableRequestProvider {
   SessionCommand* CreateUpdateTabNavigationCommand(
       SessionID::id_type command_id,
       SessionID::id_type tab_id,
-      const TabNavigation& navigation);
+      const sessions::SerializedNavigationEntry& navigation);
 
   // Creates a SessionCommand that represents marking a tab as an application.
   SessionCommand* CreateSetTabExtensionAppIDCommand(
@@ -111,11 +114,13 @@ class BaseSessionService : public CancelableRequestProvider {
       const std::string& app_name);
 
   // Converts a SessionCommand previously created by
-  // CreateUpdateTabNavigationCommand into a TabNavigation. Returns true
-  // on success. If successful |tab_id| is set to the id of the restored tab.
-  bool RestoreUpdateTabNavigationCommand(const SessionCommand& command,
-                                         TabNavigation* navigation,
-                                         SessionID::id_type* tab_id);
+  // CreateUpdateTabNavigationCommand into a
+  // sessions::SerializedNavigationEntry. Returns true on success. If
+  // successful |tab_id| is set to the id of the restored tab.
+  bool RestoreUpdateTabNavigationCommand(
+      const SessionCommand& command,
+      sessions::SerializedNavigationEntry* navigation,
+      SessionID::id_type* tab_id);
 
   // Extracts a SessionCommand as previously created by
   // CreateSetTabExtensionAppIDCommand into the tab id and application

@@ -59,7 +59,6 @@ class Profile;
 class SearchDelegate;
 class SearchModel;
 class StatusBubble;
-class TabNavigation;
 class TabStripModel;
 class TabStripModelDelegate;
 struct SearchMode;

@@ -127,7 +127,7 @@ bool ForeignSessionHandler::SessionTabToValue(
 
   int selected_index = std::min(tab.current_navigation_index,
                                 static_cast<int>(tab.navigations.size() - 1));
-  const TabNavigation& current_navigation =
+  const ::sessions::SerializedNavigationEntry& current_navigation =
       tab.navigations.at(selected_index);
   GURL tab_url = current_navigation.virtual_url();
   if (tab_url == GURL(chrome::kChromeUINewTabURL))

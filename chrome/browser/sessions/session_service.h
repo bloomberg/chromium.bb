@@ -49,11 +49,11 @@ class WebContents;
 // with incognito windows.
 //
 // SessionService itself maintains a set of SessionCommands that allow
-// SessionService to rebuild the open state of the browser (as
-// SessionWindow, SessionTab and TabNavigation). The commands are periodically
+// SessionService to rebuild the open state of the browser (as SessionWindow,
+// SessionTab and SerializedNavigationEntry). The commands are periodically
 // flushed to SessionBackend and written to a file. Every so often
-// SessionService rebuilds the contents of the file from the open state
-// of the browser.
+// SessionService rebuilds the contents of the file from the open state of the
+// browser.
 class SessionService : public BaseSessionService,
                        public ProfileKeyedService,
                        public content::NotificationObserver,
@@ -159,9 +159,10 @@ class SessionService : public BaseSessionService,
                                         int count);
 
   // Updates the navigation entry for the specified tab.
-  void UpdateTabNavigation(const SessionID& window_id,
-                           const SessionID& tab_id,
-                           const TabNavigation& navigation);
+  void UpdateTabNavigation(
+      const SessionID& window_id,
+      const SessionID& tab_id,
+      const sessions::SerializedNavigationEntry& navigation);
 
   // Notification that a tab has restored its entries or a closed tab is being
   // reused.
@@ -308,8 +309,9 @@ class SessionService : public BaseSessionService,
   // navigation with an index > |index| is returned.
   //
   // This assumes the navigations are ordered by index in ascending order.
-  std::vector<TabNavigation>::iterator FindClosestNavigationWithIndex(
-      std::vector<TabNavigation>* navigations,
+  std::vector<sessions::SerializedNavigationEntry>::iterator
+  FindClosestNavigationWithIndex(
+      std::vector<sessions::SerializedNavigationEntry>* navigations,
       int index);
 
   // Does the following:

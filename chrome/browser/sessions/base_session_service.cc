@@ -148,11 +148,15 @@ void BaseSessionService::Save() {
 SessionCommand* BaseSessionService::CreateUpdateTabNavigationCommand(
     SessionID::id_type command_id,
     SessionID::id_type tab_id,
-    const TabNavigation& navigation) {
+    const sessions::SerializedNavigationEntry& navigation) {
   // Use pickle to handle marshalling.
   Pickle pickle;
   pickle.WriteInt(tab_id);
-  navigation.WriteToPickle(&pickle);
+  // We only allow navigations up to 63k (which should be completely
+  // reasonable).
+  static const size_t max_state_size =
+      std::numeric_limits<SessionCommand::size_type>::max() - 1024;
+  navigation.WriteToPickle(max_state_size, &pickle);
   return new SessionCommand(command_id, pickle);
 }
 
@@ -217,7 +221,7 @@ SessionCommand* BaseSessionService::CreateSetWindowAppNameCommand(
 
 bool BaseSessionService::RestoreUpdateTabNavigationCommand(
     const SessionCommand& command,
-    TabNavigation* navigation,
+    sessions::SerializedNavigationEntry* navigation,
     SessionID::id_type* tab_id) {
   scoped_ptr<Pickle> pickle(command.PayloadAsPickle());
   if (!pickle.get())

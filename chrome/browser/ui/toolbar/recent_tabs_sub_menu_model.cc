@@ -300,7 +300,7 @@ void RecentTabsSubMenuModel::BuildDevices() {
         const SessionTab* tab = window->tabs[t];
         if (tab->navigations.empty())
           continue;
-        const TabNavigation& current_navigation =
+        const sessions::SerializedNavigationEntry& current_navigation =
             tab->navigations.at(tab->normalized_navigation_index());
         if (current_navigation.virtual_url() ==
             GURL(chrome::kChromeUINewTabURL)) {
@@ -340,7 +340,7 @@ void RecentTabsSubMenuModel::BuildDevices() {
 void RecentTabsSubMenuModel::BuildForeignTabItem(
     const std::string& session_tag,
     const SessionTab& tab) {
-  const TabNavigation& current_navigation =
+  const sessions::SerializedNavigationEntry& current_navigation =
       tab.navigations.at(tab.normalized_navigation_index());
   NavigationItem item(session_tag, tab.tab_id.id(),
                       current_navigation.virtual_url());

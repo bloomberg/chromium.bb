@@ -10,8 +10,8 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/sessions/session_types.h"
-#include "chrome/browser/sessions/session_types_test_helper.h"
 #include "chrome/browser/sync/glue/synced_session_tracker.h"
+#include "components/sessions/serialized_navigation_entry_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {
@@ -63,7 +63,8 @@ TEST_F(SyncedSessionTrackerTest, LookupAllForeignSessions) {
   tracker.PutTabInWindow("tag1", 0, 15, 0);
   SessionTab* tab = tracker.GetTab("tag1", 15);
   ASSERT_TRUE(tab);
-  tab->navigations.push_back(SessionTypesTestHelper::CreateNavigation(
+  tab->navigations.push_back(
+      sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
       "bla://valid_url", "title"));
   ASSERT_TRUE(tracker.LookupAllForeignSessions(&sessions));
   // Only the session with a valid window and tab gets returned.

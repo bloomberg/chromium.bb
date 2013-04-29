@@ -16,7 +16,6 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"
 #include "chrome/browser/sessions/session_types.h"
-#include "chrome/browser/sessions/session_types_test_helper.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -31,6 +30,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/sessions/serialized_navigation_entry_test_helper.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -42,6 +42,9 @@
 #include "content/public/common/page_transition_types.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "sync/protocol/session_specifics.pb.h"
+
+using sessions::SerializedNavigationEntry;
+using sessions::SerializedNavigationEntryTestHelper;
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -344,7 +347,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
     const TabRestoreService::Tab& tab = *it;
     // If this tab held url2, then restore this single tab.
     if (tab.navigations[0].virtual_url() == url2) {
-      timestamp = SessionTypesTestHelper::GetTimestamp(tab.navigations[0]);
+      timestamp = tab.navigations[0].timestamp();
       service->RestoreEntryById(NULL, tab.id, host_desktop_type, UNKNOWN);
       break;
     }
@@ -454,10 +457,10 @@ void VerifyNavigationEntries(
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
   GURL url1("http://google.com");
   GURL url2("http://google2.com");
-  TabNavigation nav1 =
-      SessionTypesTestHelper::CreateNavigation(url1.spec(), "one");
-  TabNavigation nav2 =
-      SessionTypesTestHelper::CreateNavigation(url2.spec(), "two");
+  SerializedNavigationEntry nav1 =
+      SerializedNavigationEntryTestHelper::CreateNavigation(url1.spec(), "one");
+  SerializedNavigationEntry nav2 =
+      SerializedNavigationEntryTestHelper::CreateNavigation(url2.spec(), "two");
 
   // Set up the restore data.
   sync_pb::SessionTab sync_data;
@@ -470,10 +473,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
   SessionTab tab;
   tab.SetFromSyncData(sync_data, base::Time::Now());
   EXPECT_EQ(2U, tab.navigations.size());
-  for (size_t i = 0; i < tab.navigations.size(); ++i) {
-    EXPECT_TRUE(
-        SessionTypesTestHelper::GetTimestamp(tab.navigations[i]).is_null());
-  }
+  for (size_t i = 0; i < tab.navigations.size(); ++i)
+    EXPECT_TRUE(tab.navigations[i].timestamp().is_null());
 
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
 
@@ -532,11 +533,11 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
 
   GURL url1("http://google.com");
   GURL url2("http://google2.com");
-  TabNavigation nav1 =
-      SessionTypesTestHelper::CreateNavigation(url1.spec(), "one");
-  TabNavigation nav2 =
-      SessionTypesTestHelper::CreateNavigation(url2.spec(), "two");
-  SessionTypesTestHelper::SetIsOverridingUserAgent(&nav2, true);
+  SerializedNavigationEntry nav1 =
+      SerializedNavigationEntryTestHelper::CreateNavigation(url1.spec(), "one");
+  SerializedNavigationEntry nav2 =
+      SerializedNavigationEntryTestHelper::CreateNavigation(url2.spec(), "two");
+  SerializedNavigationEntryTestHelper::SetIsOverridingUserAgent(true, &nav2);
 
   // Set up the restore data -- one window with two tabs.
   std::vector<const SessionWindow*> session;

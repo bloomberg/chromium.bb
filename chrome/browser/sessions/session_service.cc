@@ -49,6 +49,7 @@
 using base::Time;
 using content::NavigationEntry;
 using content::WebContents;
+using sessions::SerializedNavigationEntry;
 
 // Identifier for commands written to file.
 static const SessionCommand::id_type kCommandSetTabWindow = 0;
@@ -414,7 +415,7 @@ void SessionService::TabNavigationPathPrunedFromFront(
 void SessionService::UpdateTabNavigation(
     const SessionID& window_id,
     const SessionID& tab_id,
-    const TabNavigation& navigation) {
+    const SerializedNavigationEntry& navigation) {
   if (!ShouldTrackEntry(navigation.virtual_url()) ||
       !ShouldTrackChangesToWindow(window_id)) {
     return;
@@ -621,8 +622,8 @@ void SessionService::Observe(int type,
       if (!session_tab_helper || web_contents->GetBrowserContext() != profile())
         return;
       content::Details<content::EntryChangedDetails> changed(details);
-      const TabNavigation navigation =
-          TabNavigation::FromNavigationEntry(
+      const SerializedNavigationEntry navigation =
+          SerializedNavigationEntry::FromNavigationEntry(
               changed->index, *changed->changed_entry);
       UpdateTabNavigation(session_tab_helper->window_id(),
                           session_tab_helper->session_id(),
@@ -644,8 +645,8 @@ void SessionService::Observe(int type,
           session_tab_helper->window_id(),
           session_tab_helper->session_id(),
           current_entry_index);
-      const TabNavigation navigation =
-          TabNavigation::FromNavigationEntry(
+      const SerializedNavigationEntry navigation =
+          SerializedNavigationEntry::FromNavigationEntry(
               current_entry_index,
               *web_contents->GetController().GetEntryAtIndex(
                   current_entry_index));
@@ -908,13 +909,13 @@ SessionTab* SessionService::GetTab(
   return i->second;
 }
 
-std::vector<TabNavigation>::iterator
+std::vector<SerializedNavigationEntry>::iterator
   SessionService::FindClosestNavigationWithIndex(
-    std::vector<TabNavigation>* navigations,
+    std::vector<SerializedNavigationEntry>* navigations,
     int index) {
   DCHECK(navigations);
-  for (std::vector<TabNavigation>::iterator i = navigations->begin();
-       i != navigations->end(); ++i) {
+  for (std::vector<SerializedNavigationEntry>::iterator
+           i = navigations->begin(); i != navigations->end(); ++i) {
     if (i->index() >= index)
       return i;
   }
@@ -980,7 +981,7 @@ void SessionService::AddTabsToWindows(std::map<int, SessionTab*>* tabs,
       tabs->erase(i++);
 
       // See note in SessionTab as to why we do this.
-      std::vector<TabNavigation>::iterator j =
+      std::vector<SerializedNavigationEntry>::iterator j =
           FindClosestNavigationWithIndex(&(tab->navigations),
                                          tab->current_navigation_index);
       if (j == tab->navigations.end()) {
@@ -1126,7 +1127,8 @@ bool SessionService::CreateTabsAndWindows(
             std::max(-1, tab->current_navigation_index - payload.index);
 
         // And update the index of existing navigations.
-        for (std::vector<TabNavigation>::iterator i = tab->navigations.begin();
+        for (std::vector<SerializedNavigationEntry>::iterator
+                 i = tab->navigations.begin();
              i != tab->navigations.end();) {
           i->set_index(i->index() - payload.index);
           if (i->index() < 0)
@@ -1138,7 +1140,7 @@ bool SessionService::CreateTabsAndWindows(
       }
 
       case kCommandUpdateTabNavigation: {
-        TabNavigation navigation;
+        SerializedNavigationEntry navigation;
         SessionID::id_type tab_id;
         if (!RestoreUpdateTabNavigationCommand(
                 *command, &navigation, &tab_id)) {
@@ -1146,7 +1148,7 @@ bool SessionService::CreateTabsAndWindows(
           return true;
         }
         SessionTab* tab = GetTab(tab_id, tabs);
-        std::vector<TabNavigation>::iterator i =
+        std::vector<SerializedNavigationEntry>::iterator i =
             FindClosestNavigationWithIndex(&(tab->navigations),
                                            navigation.index());
         if (i != tab->navigations.end() && i->index() == navigation.index())
@@ -1315,8 +1317,8 @@ void SessionService::BuildCommandsForTab(const SessionID& window_id,
         tab->GetController().GetEntryAtIndex(i);
     DCHECK(entry);
     if (ShouldTrackEntry(entry->GetVirtualURL())) {
-      const TabNavigation navigation =
-          TabNavigation::FromNavigationEntry(i, *entry);
+      const SerializedNavigationEntry navigation =
+          SerializedNavigationEntry::FromNavigationEntry(i, *entry);
       commands->push_back(
           CreateUpdateTabNavigationCommand(
               kCommandUpdateTabNavigation, session_id.id(), navigation));

@@ -172,7 +172,7 @@ GlobalHistoryMenu::HistoryItem* GlobalHistoryMenu::HistoryItemForMenuItem(
 
 GlobalHistoryMenu::HistoryItem* GlobalHistoryMenu::HistoryItemForTab(
     const TabRestoreService::Tab& entry) {
-  const TabNavigation& current_navigation =
+  const sessions::SerializedNavigationEntry& current_navigation =
       entry.navigations.at(entry.current_navigation_index);
   HistoryItem* item = new HistoryItem();
   item->title = current_navigation.title();

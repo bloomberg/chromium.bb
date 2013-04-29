@@ -26,6 +26,7 @@ class SessionCommand {
   // These get written to disk, so we define types for them.
   // Type for the identifier.
   typedef uint8 id_type;
+
   // Type for writing the size.
   typedef uint16 size_type;
 

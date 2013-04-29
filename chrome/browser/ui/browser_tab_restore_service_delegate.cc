@@ -50,7 +50,7 @@ bool BrowserTabRestoreServiceDelegate::IsTabPinned(int index) const {
 }
 
 WebContents* BrowserTabRestoreServiceDelegate::AddRestoredTab(
-      const std::vector<TabNavigation>& navigations,
+      const std::vector<sessions::SerializedNavigationEntry>& navigations,
       int tab_index,
       int selected_navigation,
       const std::string& extension_app_id,
@@ -66,7 +66,7 @@ WebContents* BrowserTabRestoreServiceDelegate::AddRestoredTab(
 }
 
 void BrowserTabRestoreServiceDelegate::ReplaceRestoredTab(
-      const std::vector<TabNavigation>& navigations,
+      const std::vector<sessions::SerializedNavigationEntry>& navigations,
       int selected_navigation,
       bool from_last_session,
       const std::string& extension_app_id,

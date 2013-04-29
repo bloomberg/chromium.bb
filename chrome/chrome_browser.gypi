@@ -28,6 +28,7 @@
         'variations_seed_proto',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../components/components.gyp:encryptor',
+        '../components/components.gyp:sessions',
         '../components/components.gyp:user_prefs',
         '../components/components.gyp:visitedlink_browser',
         '../components/components.gyp:visitedlink_common',

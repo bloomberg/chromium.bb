@@ -392,7 +392,7 @@ void TabRestoreServiceHelper::PopulateTab(
     NavigationEntry* entry = (i == pending_index) ?
         controller->GetPendingEntry() : controller->GetEntryAtIndex(i);
     tab->navigations[i] =
-        TabNavigation::FromNavigationEntry(i, *entry);
+        sessions::SerializedNavigationEntry::FromNavigationEntry(i, *entry);
   }
   tab->timestamp = TimeNow();
   tab->current_navigation_index = controller->GetCurrentEntryIndex();

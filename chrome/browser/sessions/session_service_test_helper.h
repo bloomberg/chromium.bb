@@ -17,7 +17,10 @@ class SessionCommand;
 class SessionService;
 struct SessionTab;
 struct SessionWindow;
-class TabNavigation;
+
+namespace sessions {
+class SerializedNavigationEntry;
+}
 
 // A simple class that makes writing SessionService related tests easier.
 
@@ -59,8 +62,9 @@ class SessionServiceTestHelper {
                        size_t nav_count,
                        const SessionTab& session_tab);
 
-  void AssertNavigationEquals(const TabNavigation& expected,
-                              const TabNavigation& actual);
+  void AssertNavigationEquals(
+      const sessions::SerializedNavigationEntry& expected,
+      const sessions::SerializedNavigationEntry& actual);
 
   void AssertSingleWindowWithSingleTab(
       const std::vector<SessionWindow*>& windows,

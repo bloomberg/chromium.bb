@@ -11,11 +11,12 @@
           'type': '<(gtest_target_type)',
           'sources': [
             'auto_login_parser/auto_login_parser_unittest.cc',
-            'webdata/encryptor/encryptor_password_mac_unittest.cc',
-            'webdata/encryptor/encryptor_unittest.cc',
             'navigation_interception/intercept_navigation_resource_throttle_unittest.cc',
+            'sessions/serialized_navigation_entry_unittest.cc',
             'test/run_all_unittests.cc',
             'visitedlink/test/visitedlink_unittest.cc',
+            'webdata/encryptor/encryptor_password_mac_unittest.cc',
+            'webdata/encryptor/encryptor_unittest.cc',
             'zip/zip_reader_unittest.cc',
             'zip/zip_unittest.cc',
           ],
@@ -37,6 +38,12 @@
             '../content/content.gyp:test_support_content',
             '../skia/skia.gyp:skia',
             'navigation_interception',
+
+            # Dependencies of sessions
+            '../sync/sync.gyp:sync',
+            '../third_party/protobuf/protobuf.gyp:protobuf_lite',
+            'sessions',
+            'sessions_test_support',
 
             # Dependencies of visitedlink
             'visitedlink_browser',

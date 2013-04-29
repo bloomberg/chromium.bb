@@ -14,6 +14,7 @@
     'auto_login_parser.gypi',
     'components_tests.gypi',
     'navigation_interception.gypi',
+    'sessions.gypi',
     'user_prefs.gypi',
     'visitedlink.gypi',
     'webdata.gypi',

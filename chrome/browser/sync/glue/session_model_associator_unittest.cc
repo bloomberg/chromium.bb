@@ -8,13 +8,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/sessions/session_types.h"
-#include "chrome/browser/sessions/session_types_test_helper.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/profile_mock.h"
+#include "components/sessions/serialized_navigation_entry_test_helper.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -27,6 +27,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using sessions::SerializedNavigationEntry;
+using sessions::SerializedNavigationEntryTestHelper;
 using testing::NiceMock;
 using testing::Return;
 using testing::StrictMock;
@@ -94,8 +96,9 @@ TEST_F(SyncSessionModelAssociatorTest, SessionWindowHasNoTabsToSync) {
   scoped_ptr<SessionTab> tab(new SessionTab());
   win.tabs.push_back(tab.release());
   ASSERT_TRUE(SessionWindowHasNoTabsToSync(win));
-  TabNavigation nav =
-      SessionTypesTestHelper::CreateNavigation("about:bubba", "title");
+  SerializedNavigationEntry nav =
+      SerializedNavigationEntryTestHelper::CreateNavigation("about:bubba",
+                                                            "title");
   win.tabs[0]->navigations.push_back(nav);
   ASSERT_FALSE(SessionWindowHasNoTabsToSync(win));
 }
@@ -103,14 +106,15 @@ TEST_F(SyncSessionModelAssociatorTest, SessionWindowHasNoTabsToSync) {
 TEST_F(SyncSessionModelAssociatorTest, ShouldSyncSessionTab) {
   SessionTab tab;
   ASSERT_FALSE(ShouldSyncSessionTab(tab));
-  TabNavigation nav =
-      SessionTypesTestHelper::CreateNavigation(
+  SerializedNavigationEntry nav =
+      SerializedNavigationEntryTestHelper::CreateNavigation(
           chrome::kChromeUINewTabURL, "title");
   tab.navigations.push_back(nav);
   // NewTab does not count as valid if it's the only navigation.
   ASSERT_FALSE(ShouldSyncSessionTab(tab));
-  TabNavigation nav2 =
-      SessionTypesTestHelper::CreateNavigation("about:bubba", "title");
+  SerializedNavigationEntry nav2 =
+      SerializedNavigationEntryTestHelper::CreateNavigation("about:bubba",
+                                                            "title");
   tab.navigations.push_back(nav2);
   // Once there's another navigation, the tab is valid.
   ASSERT_TRUE(ShouldSyncSessionTab(tab));
@@ -120,8 +124,8 @@ TEST_F(SyncSessionModelAssociatorTest,
        ShouldSyncSessionTabIgnoresFragmentForNtp) {
   SessionTab tab;
   ASSERT_FALSE(ShouldSyncSessionTab(tab));
-  TabNavigation nav =
-      SessionTypesTestHelper::CreateNavigation(
+  SerializedNavigationEntry nav =
+      SerializedNavigationEntryTestHelper::CreateNavigation(
           std::string(chrome::kChromeUINewTabURL) + "#bookmarks", "title");
   tab.navigations.push_back(nav);
   // NewTab does not count as valid if it's the only navigation.
@@ -343,7 +347,7 @@ TEST_F(SyncSessionModelAssociatorTest, SetSessionTabFromDelegate) {
   session_tab.user_agent_override = "override";
   session_tab.timestamp = kTime5;
   session_tab.navigations.push_back(
-      SessionTypesTestHelper::CreateNavigation(
+      SerializedNavigationEntryTestHelper::CreateNavigation(
           "http://www.example.com", "Example"));
   session_tab.session_storage_persistent_id = "persistent id";
   SetSessionTabFromDelegate(tab_mock, kTime4, &session_tab);
@@ -363,12 +367,9 @@ TEST_F(SyncSessionModelAssociatorTest, SetSessionTabFromDelegate) {
             session_tab.navigations[1].virtual_url());
   EXPECT_EQ(entry3->GetVirtualURL(),
             session_tab.navigations[2].virtual_url());
-  EXPECT_EQ(kTime1,
-            SessionTypesTestHelper::GetTimestamp(session_tab.navigations[0]));
-  EXPECT_EQ(kTime2,
-            SessionTypesTestHelper::GetTimestamp(session_tab.navigations[1]));
-  EXPECT_EQ(kTime3,
-            SessionTypesTestHelper::GetTimestamp(session_tab.navigations[2]));
+  EXPECT_EQ(kTime1, session_tab.navigations[0].timestamp());
+  EXPECT_EQ(kTime2, session_tab.navigations[1].timestamp());
+  EXPECT_EQ(kTime3, session_tab.navigations[2].timestamp());
   EXPECT_TRUE(session_tab.session_storage_persistent_id.empty());
 }
 

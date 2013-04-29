@@ -71,8 +71,8 @@ void SortSyncedSessions(SyncedSessionVector* sessions);
 
 // Compares two tab navigations base on the parameters we sync.
 // (Namely, we don't sync state or type mask)
-bool NavigationEquals(const TabNavigation& expected,
-                      const TabNavigation& actual);
+bool NavigationEquals(const sessions::SerializedNavigationEntry& expected,
+                      const sessions::SerializedNavigationEntry& actual);
 
 // Verifies that two SessionWindows match.
 // Returns:

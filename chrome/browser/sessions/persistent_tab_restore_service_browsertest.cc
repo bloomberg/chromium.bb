@@ -11,7 +11,6 @@
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_types.h"
-#include "chrome/browser/sessions/session_types_test_helper.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -20,6 +19,7 @@
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/sessions/serialized_navigation_entry_test_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -35,9 +35,11 @@
 
 typedef TabRestoreService::Tab Tab;
 typedef TabRestoreService::Window Window;
-using content::WebContentsTester;
 
 using content::NavigationEntry;
+using content::WebContentsTester;
+using sessions::SerializedNavigationEntry;
+using sessions::SerializedNavigationEntryTestHelper;
 
 // Create subclass that overrides TimeNow so that we can control the time used
 // for closed tabs and windows.
@@ -137,7 +139,8 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
       session_service->SetPinnedState(window_id, tab_id, true);
     session_service->UpdateTabNavigation(
         window_id, tab_id,
-        SessionTypesTestHelper::CreateNavigation(url1_.spec(), "title"));
+        SerializedNavigationEntryTestHelper::CreateNavigation(
+            url1_.spec(), "title"));
   }
 
   // Creates a SessionService and assigns it to the Profile. The SessionService
@@ -546,7 +549,7 @@ TEST_F(PersistentTabRestoreServiceTest, TimestampSurvivesRestore) {
   ASSERT_EQ(1U, service_->entries().size());
 
   // Make sure the entry matches.
-  std::vector<TabNavigation> old_navigations;
+  std::vector<SerializedNavigationEntry> old_navigations;
   {
     // |entry|/|tab| doesn't survive after RecreateService().
     TabRestoreService::Entry* entry = service_->entries().front();
@@ -558,8 +561,7 @@ TEST_F(PersistentTabRestoreServiceTest, TimestampSurvivesRestore) {
 
   EXPECT_EQ(3U, old_navigations.size());
   for (size_t i = 0; i < old_navigations.size(); ++i) {
-    EXPECT_FALSE(
-        SessionTypesTestHelper::GetTimestamp(old_navigations[i]).is_null());
+    EXPECT_FALSE(old_navigations[i].timestamp().is_null());
   }
 
   // Set this, otherwise previous session won't be loaded.
@@ -579,9 +581,8 @@ TEST_F(PersistentTabRestoreServiceTest, TimestampSurvivesRestore) {
             restored_tab->timestamp.ToInternalValue());
   ASSERT_EQ(old_navigations.size(), restored_tab->navigations.size());
   for (size_t i = 0; i < restored_tab->navigations.size(); ++i) {
-    EXPECT_EQ(
-        SessionTypesTestHelper::GetTimestamp(old_navigations[i]),
-        SessionTypesTestHelper::GetTimestamp(restored_tab->navigations[i]));
+    EXPECT_EQ(old_navigations[i].timestamp(),
+              restored_tab->navigations[i].timestamp());
   }
 }
 
@@ -591,8 +592,8 @@ TEST_F(PersistentTabRestoreServiceTest, PruneEntries) {
 
   const size_t max_entries = kMaxEntries;
   for (size_t i = 0; i < max_entries + 5; i++) {
-    TabNavigation navigation =
-        SessionTypesTestHelper::CreateNavigation(
+    SerializedNavigationEntry navigation =
+        SerializedNavigationEntryTestHelper::CreateNavigation(
             base::StringPrintf("http://%d", static_cast<int>(i)),
             base::StringPrintf("%d", static_cast<int>(i)));
 
@@ -613,8 +614,9 @@ TEST_F(PersistentTabRestoreServiceTest, PruneEntries) {
 
   // Prune older first.
   const char kRecentUrl[] = "http://recent";
-  TabNavigation navigation =
-      SessionTypesTestHelper::CreateNavigation(kRecentUrl, "Most recent");
+  SerializedNavigationEntry navigation =
+      SerializedNavigationEntryTestHelper::CreateNavigation(kRecentUrl,
+                                                            "Most recent");
   Tab* tab = new Tab();
   tab->navigations.push_back(navigation);
   tab->current_navigation_index = 0;
@@ -627,9 +629,8 @@ TEST_F(PersistentTabRestoreServiceTest, PruneEntries) {
           navigations[0].virtual_url());
 
   // Ignore NTPs.
-  navigation =
-      SessionTypesTestHelper::CreateNavigation(
-          chrome::kChromeUINewTabURL, "New tab");
+  navigation = SerializedNavigationEntryTestHelper::CreateNavigation(
+      chrome::kChromeUINewTabURL, "New tab");
 
   tab = new Tab();
   tab->navigations.push_back(navigation);

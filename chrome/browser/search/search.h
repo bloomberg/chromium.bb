@@ -25,11 +25,6 @@ class WebContents;
 
 namespace chrome {
 
-// The key used to store search terms data in the NavigationEntry to be later
-// displayed in the omnibox. With the context of the user's exact query,
-// InstantController sets the correct search terms to be displayed.
-extern const char kInstantExtendedSearchTermsKey[];
-
 // Use this value for "start margin" to prevent the "es_sm" parameter from
 // being used.
 extern const int kDisableStartMargin;

@@ -1,0 +1,9 @@
+include_rules = [
+  "+base",
+  "+content/public/browser",
+  "+content/public/common",
+  "+googleurl",
+  "+sync",
+  "+third_party/WebKit/Source/Platform/chromium/public",
+  "+webkit",
+]

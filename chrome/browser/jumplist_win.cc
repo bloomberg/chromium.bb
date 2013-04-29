@@ -638,7 +638,7 @@ bool JumpList::AddTab(const TabRestoreService::Tab* tab,
     return false;
 
   scoped_refptr<ShellLinkItem> link(new ShellLinkItem);
-  const TabNavigation& current_navigation =
+  const sessions::SerializedNavigationEntry& current_navigation =
       tab->navigations.at(tab->current_navigation_index);
   std::string url = current_navigation.virtual_url().spec();
   link->SetArguments(UTF8ToWide(url));

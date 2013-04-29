@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/sessions/serialized_navigation_entry.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
@@ -230,8 +231,6 @@ string16 GetSearchTermsImpl(const content::WebContents* contents,
 
 }  // namespace
 
-const char kInstantExtendedSearchTermsKey[] = "search_terms";
-
 // Negative start-margin values prevent the "es_sm" parameter from being used.
 const int kDisableStartMargin = -1;
 
@@ -303,7 +302,7 @@ string16 GetSearchTermsFromNavigationEntry(
     const content::NavigationEntry* entry) {
   string16 search_terms;
   if (entry)
-    entry->GetExtraData(kInstantExtendedSearchTermsKey, &search_terms);
+    entry->GetExtraData(sessions::kSearchTermsKey, &search_terms);
   return search_terms;
 }
 
