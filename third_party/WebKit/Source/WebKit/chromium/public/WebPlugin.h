@@ -119,6 +119,8 @@ public:
     virtual WebString selectionAsText() const { return WebString(); }
     virtual WebString selectionAsMarkup() const { return WebString(); }
 
+    virtual bool executeEditCommand(const WebString& name) { return false; }
+
     // If the given position is over a link, returns the absolute url.
     // Otherwise an empty url is returned.
     virtual WebURL linkAtPosition(const WebPoint& position) const { return WebURL(); }

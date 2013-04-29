@@ -138,6 +138,9 @@ public:
     // Copy the selected text.
     void copy();
 
+    // Pass the edit command to the plugin.
+    bool executeEditCommand(const WebString& name);
+
     // Resource load events for the plugin's source data:
     void didReceiveResponse(const WebCore::ResourceResponse&);
     void didReceiveData(const char *data, int dataLength);

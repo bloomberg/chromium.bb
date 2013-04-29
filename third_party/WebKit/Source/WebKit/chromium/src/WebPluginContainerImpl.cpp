@@ -338,6 +338,18 @@ void WebPluginContainerImpl::copy()
     WebKit::Platform::current()->clipboard()->writeHTML(m_webPlugin->selectionAsMarkup(), WebURL(), m_webPlugin->selectionAsText(), false);
 }
 
+bool WebPluginContainerImpl::executeEditCommand(const WebString& name)
+{
+    if (m_webPlugin->executeEditCommand(name))
+        return true;
+
+    if (name != "copy")
+        return false;
+
+    copy();
+    return true;
+}
+
 WebElement WebPluginContainerImpl::element()
 {
     return WebElement(m_element);

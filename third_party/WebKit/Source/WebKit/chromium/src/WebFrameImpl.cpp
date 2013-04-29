@@ -1197,15 +1197,11 @@ bool WebFrameImpl::executeCommand(const WebString& name, const WebNode& node)
     if (command[command.length() - 1] == UChar(':'))
         command = command.substring(0, command.length() - 1);
 
-    if (command == "Copy") {
-        WebPluginContainerImpl* pluginContainer = pluginContainerFromFrame(frame());
-        if (!pluginContainer)
-            pluginContainer = static_cast<WebPluginContainerImpl*>(node.pluginContainer());
-        if (pluginContainer) {
-            pluginContainer->copy();
-            return true;
-        }
-    }
+    WebPluginContainerImpl* pluginContainer = pluginContainerFromFrame(frame());
+    if (!pluginContainer)
+        pluginContainer = static_cast<WebPluginContainerImpl*>(node.pluginContainer());
+    if (pluginContainer && pluginContainer->executeEditCommand(name))
+        return true;
 
     bool result = true;
 
