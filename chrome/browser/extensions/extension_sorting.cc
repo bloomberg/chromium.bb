@@ -98,7 +98,7 @@ void ExtensionSorting::MigrateAppIndex(
            extension_ids.begin(); ext_id != extension_ids.end(); ++ext_id) {
     int old_page_index = 0;
     syncer::StringOrdinal page = GetPageOrdinal(*ext_id);
-    if (extension_scoped_prefs_->ReadExtensionPrefInteger(
+    if (extension_scoped_prefs_->ReadPrefAsInteger(
             *ext_id,
             kPrefPageIndexDeprecated,
             &old_page_index)) {
@@ -120,7 +120,7 @@ void ExtensionSorting::MigrateAppIndex(
     }
 
     int old_app_launch_index = 0;
-    if (extension_scoped_prefs_->ReadExtensionPrefInteger(
+    if (extension_scoped_prefs_->ReadPrefAsInteger(
             *ext_id,
             kPrefAppLaunchIndexDeprecated,
             &old_app_launch_index)) {
@@ -289,7 +289,7 @@ syncer::StringOrdinal ExtensionSorting::GetAppLaunchOrdinal(
   // If the preference read fails then raw_value will still be unset and we
   // will return an invalid StringOrdinal to signal that no app launch ordinal
   // was found.
-  extension_scoped_prefs_->ReadExtensionPrefString(
+  extension_scoped_prefs_->ReadPrefAsString(
       extension_id, kPrefAppLaunchOrdinal, &raw_value);
   return syncer::StringOrdinal(raw_value);
 }
@@ -378,7 +378,7 @@ syncer::StringOrdinal ExtensionSorting::GetPageOrdinal(
   std::string raw_data;
   // If the preference read fails then raw_data will still be unset and we will
   // return an invalid StringOrdinal to signal that no page ordinal was found.
-  extension_scoped_prefs_->ReadExtensionPrefString(
+  extension_scoped_prefs_->ReadPrefAsString(
       extension_id, kPrefPageOrdinal, &raw_data);
   return syncer::StringOrdinal(raw_data);
 }

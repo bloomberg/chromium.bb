@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/media_galleries_private/gallery_watch_state_tracker.h"
+#include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_api.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -531,7 +532,8 @@ void MediaGalleriesPreferences::ForgetGalleryById(MediaGalleryPrefId pref_id) {
     MediaGalleryPrefId iter_id;
     if ((*iter)->GetAsDictionary(&dict) && GetPrefId(*dict, &iter_id) &&
         pref_id == iter_id) {
-      GetExtensionPrefs()->RemoveMediaGalleryPermissions(pref_id);
+      extensions::MediaGalleriesPrivateAPI::RemoveMediaGalleryPermissions(
+          GetExtensionPrefs(), pref_id);
       MediaGalleryPrefInfo::Type type;
       if (GetType(*dict, &type) &&
           type == MediaGalleryPrefInfo::kAutoDetected) {
@@ -560,9 +562,9 @@ MediaGalleryPrefIdSet MediaGalleriesPreferences::GalleriesForExtension(
     }
   }
 
-  std::vector<MediaGalleryPermission> stored_permissions =
-      GetExtensionPrefs()->GetMediaGalleryPermissions(extension.id());
-
+  std::vector<MediaGalleryPermission> stored_permissions;
+  extensions::MediaGalleriesPrivateAPI::GetMediaGalleryPermissions(
+      GetExtensionPrefs(), extension.id(), &stored_permissions);
   for (std::vector<MediaGalleryPermission>::const_iterator it =
            stored_permissions.begin(); it != stored_permissions.end(); ++it) {
     if (!it->has_permission) {
@@ -599,7 +601,8 @@ void MediaGalleriesPreferences::SetGalleryPermissionForExtension(
   bool all_permission = HasAutoDetectedGalleryPermission(extension);
   if (has_permission && all_permission) {
     if (gallery_info->second.type == MediaGalleryPrefInfo::kAutoDetected) {
-      GetExtensionPrefs()->UnsetMediaGalleryPermission(extension.id(), pref_id);
+      extensions::MediaGalleriesPrivateAPI::UnsetMediaGalleryPermission(
+          GetExtensionPrefs(), extension.id(), pref_id);
       NotifyChangeObservers(extension.id());
 #if defined(ENABLE_EXTENSIONS)
       if (state_tracker) {
@@ -612,10 +615,11 @@ void MediaGalleriesPreferences::SetGalleryPermissionForExtension(
   }
 
   if (!has_permission && !all_permission) {
-    GetExtensionPrefs()->UnsetMediaGalleryPermission(extension.id(), pref_id);
+    extensions::MediaGalleriesPrivateAPI::UnsetMediaGalleryPermission(
+        GetExtensionPrefs(), extension.id(), pref_id);
   } else {
-    GetExtensionPrefs()->SetMediaGalleryPermission(extension.id(), pref_id,
-                                                   has_permission);
+    extensions::MediaGalleriesPrivateAPI::SetMediaGalleryPermission(
+        GetExtensionPrefs(), extension.id(), pref_id, has_permission);
   }
   NotifyChangeObservers(extension.id());
 #if defined(ENABLE_EXTENSIONS)
@@ -649,9 +653,8 @@ void MediaGalleriesPreferences::RegisterUserPrefs(
 
 extensions::ExtensionPrefs*
 MediaGalleriesPreferences::GetExtensionPrefs() const {
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  return extension_service->extension_prefs();
+  return extensions::ExtensionSystem::Get(profile_)->extension_service()->
+      extension_prefs();
 }
 
 }  // namespace chrome

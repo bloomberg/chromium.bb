@@ -16,7 +16,7 @@
 #include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
 #include "chrome/browser/extensions/extension_prefs_scope.h"
 #include "chrome/browser/extensions/extension_scoped_prefs.h"
-#include "chrome/browser/media_galleries/media_galleries_preferences.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/extensions/extension.h"
 #include "extensions/common/url_pattern_set.h"
 #include "sync/api/string_ordinal.h"
@@ -29,12 +29,6 @@ class PrefRegistrySyncable;
 namespace extensions {
 class ExtensionPrefsUninstallExtension;
 class URLPatternSet;
-
-namespace api {
-namespace omnibox {
-struct SuggestResult;
-}
-}
 
 namespace app_file_handler_util {
 struct SavedFileEntry;
@@ -99,6 +93,39 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
     DISALLOW_COPY_AND_ASSIGN(TimeProvider);
   };
 
+  // A wrapper around a ScopedUserPrefUpdate, which allows us to access the
+  // entry of a particular key for an extension. Use this if you need a mutable
+  // record of a dictionary or list in the current settings. Otherwise, prefer
+  // ReadPrefAsT() and UpdateExtensionPref() methods.
+  template <typename T, base::Value::Type type_enum_value>
+  class ScopedUpdate {
+   public:
+    ScopedUpdate(ExtensionPrefs* prefs,
+                 const std::string& extension_id,
+                 const std::string& key);
+    virtual ~ScopedUpdate();
+
+    // Returns a mutable value for the key (ownership remains with the prefs),
+    // if one exists. Otherwise, returns NULL.
+    virtual T* Get();
+
+    // Creates and returns a mutable value for the key (the prefs own the new
+    // value), if one does not already exist. Otherwise, returns the current
+    // value.
+    virtual T* Create();
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ScopedUpdate);
+
+    DictionaryPrefUpdate update_;
+    const std::string extension_id_;
+    const std::string key_;
+  };
+  typedef ScopedUpdate<base::DictionaryValue, base::Value::TYPE_DICTIONARY>
+      ScopedDictionaryUpdate;
+  typedef ScopedUpdate<base::ListValue, base::Value::TYPE_LIST>
+      ScopedListUpdate;
+
   // Creates and initializes an ExtensionPrefs object.
   // Does not take ownership of |prefs| and |extension_pref_value_map|.
   static scoped_ptr<ExtensionPrefs> Create(
@@ -156,8 +183,36 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // Called to change the extension's state when it is enabled/disabled.
   void SetExtensionState(const std::string& extension_id, Extension::State);
 
-  // Returns all installed extensions
+  // Populates |out| with the ids of all installed extensions.
   void GetExtensions(ExtensionIdList* out);
+
+  // ExtensionScopedPrefs methods:
+  virtual void UpdateExtensionPref(const std::string& id,
+                                   const std::string& key,
+                                   base::Value* value) OVERRIDE;
+
+  virtual void DeleteExtensionPrefs(const std::string& id) OVERRIDE;
+
+  virtual bool ReadPrefAsBoolean(const std::string& extension_id,
+                                 const std::string& pref_key,
+                                 bool* out_value) const OVERRIDE;
+
+  virtual bool ReadPrefAsInteger(const std::string& extension_id,
+                                 const std::string& pref_key,
+                                 int* out_value) const OVERRIDE;
+
+  virtual bool ReadPrefAsString(const std::string& extension_id,
+                                const std::string& pref_key,
+                                std::string* out_value) const OVERRIDE;
+
+  virtual bool ReadPrefAsList(const std::string& extension_id,
+                              const std::string& pref_key,
+                              const base::ListValue** out_value) const OVERRIDE;
+
+  virtual bool ReadPrefAsDictionary(
+      const std::string& extension_id,
+      const std::string& pref_key,
+      const base::DictionaryValue** out_value) const OVERRIDE;
 
   // Getter and setter for browser action visibility.
   bool GetBrowserActionVisibility(const Extension* extension);
@@ -300,16 +355,16 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // Adds a filter to an event.
   void AddFilterToEvent(const std::string& event_name,
                         const std::string& extension_id,
-                        const DictionaryValue* filter);
+                        const base::DictionaryValue* filter);
 
   // Removes a filter from an event.
   void RemoveFilterFromEvent(const std::string& event_name,
                              const std::string& extension_id,
-                             const DictionaryValue* filter);
+                             const base::DictionaryValue* filter);
 
   // Returns the dictionary of event filters that the given extension has
   // registered.
-  const DictionaryValue* GetFilteredEvents(
+  const base::DictionaryValue* GetFilteredEvents(
       const std::string& extension_id) const;
 
   // Records whether or not this extension is currently running.
@@ -327,13 +382,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   void GetSavedFileEntries(
       const std::string& extension_id,
       std::vector<app_file_handler_util::SavedFileEntry>* out);
-
-  // Controls the omnibox default suggestion as set by the extension.
-  scoped_ptr<api::omnibox::SuggestResult> GetOmniboxDefaultSuggestion(
-      const std::string& extension_id);
-  void SetOmniboxDefaultSuggestion(
-      const std::string& extension_id,
-      const api::omnibox::SuggestResult& suggestion);
 
   // Returns true if the user enabled this extension to be loaded in incognito
   // mode.
@@ -359,17 +407,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   extension_misc::LaunchContainer GetLaunchContainer(
       const Extension* extension,
       LaunchType default_pref_value);
-
-  // Set and retrieve permissions for media galleries as identified by the
-  // gallery id.
-  void SetMediaGalleryPermission(const std::string& extension_id,
-                                 chrome::MediaGalleryPrefId gallery,
-                                 bool has_access);
-  void UnsetMediaGalleryPermission(const std::string& extension_id,
-                                   chrome::MediaGalleryPrefId gallery);
-  std::vector<chrome::MediaGalleryPermission> GetMediaGalleryPermissions(
-      const std::string& extension_id);
-  void RemoveMediaGalleryPermissions(chrome::MediaGalleryPrefId gallery_id);
 
   // Saves ExtensionInfo for each installed extension with the path to the
   // version directory and the location. Blacklisted extensions won't be saved
@@ -536,25 +573,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   virtual void OnContentSettingChanged(const std::string& extension_id,
                                        bool incognito) OVERRIDE;
 
-  // ExtensionScopedPrefs methods:
-  virtual void UpdateExtensionPref(const std::string& id,
-                                   const std::string& key,
-                                   base::Value* value) OVERRIDE;
-  virtual void DeleteExtensionPrefs(const std::string& id) OVERRIDE;
-  virtual bool ReadExtensionPrefBoolean(
-      const std::string& extension_id,
-      const std::string& pref_key) const OVERRIDE;
-  virtual bool ReadExtensionPrefInteger(const std::string& extension_id,
-                                        const std::string& pref_key,
-                                        int* out_value) const OVERRIDE;
-  virtual bool ReadExtensionPrefList(
-      const std::string& extension_id,
-      const std::string& pref_key,
-      const base::ListValue** out_value) const OVERRIDE;
-  virtual bool ReadExtensionPrefString(const std::string& extension_id,
-                                       const std::string& pref_key,
-                                       std::string* out_value) const OVERRIDE;
-
   // Converts absolute paths in the pref to paths relative to the
   // install_directory_.
   void MakePathsRelative();
@@ -563,12 +581,19 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // consumers who expect full paths.
   void MakePathsAbsolute(base::DictionaryValue* dict);
 
+  // Helper function used by GetInstalledExtensionInfo() and
+  // GetDelayedInstallInfo() to construct an ExtensionInfo from the provided
+  // |extension| dictionary.
+  scoped_ptr<ExtensionInfo> GetInstalledInfoHelper(
+      const std::string& extension_id,
+      const base::DictionaryValue* extension) const;
+
   // Interprets the list pref, |pref_key| in |extension_id|'s preferences, as a
   // URLPatternSet. The |valid_schemes| specify how to parse the URLPatterns.
-  bool ReadExtensionPrefURLPatternSet(const std::string& extension_id,
-                                      const std::string& pref_key,
-                                      URLPatternSet* result,
-                                      int valid_schemes);
+  bool ReadPrefAsURLPatternSet(const std::string& extension_id,
+                               const std::string& pref_key,
+                               URLPatternSet* result,
+                               int valid_schemes);
 
   // Converts |new_value| to a list of strings and sets the |pref_key| pref
   // belonging to |extension_id|.
@@ -576,10 +601,15 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
                                      const std::string& pref_key,
                                      const URLPatternSet& new_value);
 
+  // Read the boolean preference entry and return true if the preference exists
+  // and the preference's value is true; false otherwise.
+  bool ReadPrefAsBooleanAndReturn(const std::string& extension_id,
+                                  const std::string& key) const;
+
   // Interprets |pref_key| in |extension_id|'s preferences as an
   // PermissionSet, and passes ownership of the set to the caller.
-  PermissionSet* ReadExtensionPrefPermissionSet(const std::string& extension_id,
-                                                const std::string& pref_key);
+  PermissionSet* ReadPrefAsPermissionSet(const std::string& extension_id,
+                                         const std::string& pref_key);
 
   // Converts the |new_value| to its value and sets the |pref_key| pref
   // belonging to |extension_id|.
@@ -587,8 +617,8 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
                                      const std::string& pref_key,
                                      const PermissionSet* new_value);
 
-  // Returns a dictionary for extension |id|'s prefs or NULL if it doesn't
-  // exist.
+  // Returns an immutable dictionary for extension |id|'s prefs, or NULL if it
+  // doesn't exist.
   const base::DictionaryValue* GetExtensionPref(const std::string& id) const;
 
   // Loads the preferences controlled by the specified extension from their
@@ -630,7 +660,7 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   void PopulateExtensionInfoPrefs(const Extension* extension,
                                   const base::Time install_time,
                                   Extension::State initial_state,
-                                  DictionaryValue* extension_dict);
+                                  base::DictionaryValue* extension_dict);
 
   // Helper function to complete initialization of the values in
   // |extension_dict| for an extension install. Also see
@@ -640,7 +670,7 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
       const base::Time install_time,
       bool needs_sort_ordinal,
       const syncer::StringOrdinal& suggested_page_ordinal,
-      DictionaryValue* extension_dict);
+      base::DictionaryValue* extension_dict);
 
   // The pref service specific to this set of extension prefs. Owned by profile.
   PrefService* prefs_;

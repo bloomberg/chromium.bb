@@ -731,6 +731,7 @@
         'browser/extensions/api/identity/identity_mint_queue_unittest.cc',
         'browser/extensions/api/identity/web_auth_flow_unittest.cc',
         'browser/extensions/api/idle/idle_api_unittest.cc',
+        'browser/extensions/api/media_galleries_private/media_galleries_private_unittest.cc',
         'browser/extensions/api/messaging/native_message_process_host_unittest.cc',
         'browser/extensions/api/messaging/native_messaging_host_manifest_unittest.cc',
         'browser/extensions/api/omnibox/omnibox_unittest.cc',

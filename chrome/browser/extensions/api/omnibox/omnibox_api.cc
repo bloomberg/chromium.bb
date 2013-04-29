@@ -53,6 +53,9 @@ const char kCurrentTabDisposition[] = "currentTab";
 const char kForegroundTabDisposition[] = "newForegroundTab";
 const char kBackgroundTabDisposition[] = "newBackgroundTab";
 
+// Pref key for omnibox.setDefaultSuggestion.
+const char kOmniboxDefaultSuggestion[] = "omnibox_default_suggestion";
+
 #if defined(OS_LINUX)
 static const int kOmniboxIconPaddingLeft = 2;
 static const int kOmniboxIconPaddingRight = 2;
@@ -63,6 +66,43 @@ static const int kOmniboxIconPaddingRight = 2;
 static const int kOmniboxIconPaddingLeft = 0;
 static const int kOmniboxIconPaddingRight = 0;
 #endif
+
+scoped_ptr<omnibox::SuggestResult> GetOmniboxDefaultSuggestion(
+    Profile* profile,
+    const std::string& extension_id) {
+  ExtensionPrefs* prefs =
+      ExtensionSystem::Get(profile)->extension_service()->extension_prefs();
+
+  scoped_ptr<omnibox::SuggestResult> suggestion;
+  const DictionaryValue* dict = NULL;
+  if (prefs && prefs->ReadPrefAsDictionary(extension_id,
+                                           kOmniboxDefaultSuggestion,
+                                           &dict)) {
+    suggestion.reset(new omnibox::SuggestResult);
+    omnibox::SuggestResult::Populate(*dict, suggestion.get());
+  }
+  return suggestion.Pass();
+}
+
+// Tries to set the omnibox default suggestion; returns true on success or
+// false on failure.
+bool SetOmniboxDefaultSuggestion(Profile* profile,
+                                 const std::string& extension_id,
+                                 const omnibox::SuggestResult& suggestion) {
+  ExtensionPrefs* prefs =
+      ExtensionSystem::Get(profile)->extension_service()->extension_prefs();
+  if (!prefs)
+    return false;
+
+  scoped_ptr<base::DictionaryValue> dict = suggestion.ToValue();
+  // A default suggestion should not have the content field set.
+  dict->Remove(kSuggestionContent, NULL);
+  prefs->UpdateExtensionPref(extension_id,
+                             kOmniboxDefaultSuggestion,
+                             dict.release());
+
+  return true;
+}
 
 }  // namespace
 
@@ -258,15 +298,14 @@ bool OmniboxSetDefaultSuggestionFunction::RunImpl() {
       SetDefaultSuggestion::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  ExtensionPrefs* prefs =
-      ExtensionSystem::Get(profile())->extension_service()->extension_prefs();
-  if (prefs)
-    prefs->SetOmniboxDefaultSuggestion(extension_id(), params->suggestion);
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED,
-      content::Source<Profile>(profile_->GetOriginalProfile()),
-      content::NotificationService::NoDetails());
+  if (SetOmniboxDefaultSuggestion(profile(),
+                                  extension_id(),
+                                  params->suggestion)) {
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED,
+        content::Source<Profile>(profile_->GetOriginalProfile()),
+        content::NotificationService::NoDetails());
+  }
 
   return true;
 }
@@ -332,13 +371,9 @@ void ApplyDefaultSuggestionForExtensionKeyword(
     AutocompleteMatch* match) {
   DCHECK(keyword->IsExtensionKeyword());
 
-  ExtensionPrefs* prefs =
-      ExtensionSystem::Get(profile)->extension_service()->extension_prefs();
-  if (!prefs)
-    return;
 
   scoped_ptr<omnibox::SuggestResult> suggestion(
-      prefs->GetOmniboxDefaultSuggestion(keyword->GetExtensionId()));
+      GetOmniboxDefaultSuggestion(profile, keyword->GetExtensionId()));
   if (!suggestion || suggestion->description.empty())
     return;  // fall back to the universal default
 
