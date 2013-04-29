@@ -11,7 +11,11 @@ not invoke MSBuild actions and rules.
 """
 
 import os
+import sys
 import TestGyp
+
+if int(os.environ.get('GYP_MSVS_VERSION', 0)) < 2010:
+  sys.exit(0)
 
 test = TestGyp.TestGyp(formats=['msvs'], workdir='workarea_all')
 
@@ -53,4 +57,3 @@ test.must_match('external_builder.out', 'external_builder.py clean 4 5')
 os.remove('external_builder.out')
 
 test.pass_test()
-
