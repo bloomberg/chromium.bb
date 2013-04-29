@@ -2059,16 +2059,15 @@ void ExtensionService::AddExtension(const Extension* extension) {
   UntrackTerminatedExtension(extension->id());
 
   // If the extension was disabled for a reload, then enable it.
-  if (reloading_extensions_.erase(extension->id()) > 0)
-    EnableExtension(extension->id());
+  bool reloading = reloading_extensions_.erase(extension->id()) > 0;
 
   // Check if the extension's privileges have changed and mark the
   // extension disabled if necessary.
   CheckPermissionsIncrease(extension, is_extension_upgrade);
 
-  if (is_extension_upgrade) {
-    // To upgrade an extension in place, unload the old one and
-    // then load the new one.
+  if (is_extension_upgrade && !reloading) {
+    // To upgrade an extension in place, unload the old one and then load the
+    // new one.  ReloadExtension disables the extension, which is sufficient.
     UnloadExtension(extension->id(), extension_misc::UNLOAD_REASON_UPDATE);
   }
 
@@ -2077,7 +2076,8 @@ void ExtensionService::AddExtension(const Extension* extension) {
     // blacklist before calling into here, e.g. CrxInstaller checks before
     // installation, we check when loading installed extensions.
     blacklisted_extensions_.Insert(extension);
-  } else if (extension_prefs_->IsExtensionDisabled(extension->id())) {
+  } else if (!reloading &&
+             extension_prefs_->IsExtensionDisabled(extension->id())) {
     disabled_extensions_.Insert(extension);
     SyncExtensionChangeIfNeeded(*extension);
     content::NotificationService::current()->Notify(
@@ -2091,6 +2091,11 @@ void ExtensionService::AddExtension(const Extension* extension) {
         Extension::DISABLE_PERMISSIONS_INCREASE) {
       extensions::AddExtensionDisabledError(this, extension);
     }
+  } else if (reloading) {
+    // Replace the old extension with the new version.
+    CHECK(!disabled_extensions_.Insert(extension));
+    EnableExtension(extension->id());
+    DoPostLoadTasks(extension);
   } else {
     // All apps that are displayed in the launcher are ordered by their ordinals
     // so we must ensure they have valid ordinals.
