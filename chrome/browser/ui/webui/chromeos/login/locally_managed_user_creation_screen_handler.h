@@ -67,8 +67,6 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
   void ShowProgressPage();
   void ShowTutorialPage();
 
-  void ShowSuccessMessage();
-
   void ShowManagerInconsistentStateErrorPage();
   void ShowErrorPage(const string16& message, bool recoverable);
 

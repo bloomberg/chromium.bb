@@ -148,14 +148,10 @@ void LocallyManagedUserCreationScreenHandler::ShowTutorialPage() {
   CallJS("login.LocallyManagedUserCreationScreen.showTutorialPage");
 }
 
-void LocallyManagedUserCreationScreenHandler::ShowSuccessMessage() {
-  CallJS("login.LocallyManagedUserCreationScreen.showFinishedMessage");
-}
-
 void LocallyManagedUserCreationScreenHandler::ShowErrorPage(
     const string16& message,
     bool recoverable) {
-  CallJS("login.LocallyManagedUserCreationScreen.showErrorMessage", message,
+  CallJS("login.LocallyManagedUserCreationScreen.showErrorPage", message,
          recoverable);
 }
 
