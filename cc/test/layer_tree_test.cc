@@ -9,7 +9,6 @@
 #include "cc/animation/animation_registrar.h"
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/animation/timing_function.h"
-#include "cc/base/switches.h"
 #include "cc/base/thread_impl.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/content_layer.h"
@@ -314,7 +313,7 @@ LayerTreeTest::LayerTreeTest()
   // Tests should timeout quickly unless --cc-layer-tree-test-no-timeout was
   // specified (for running in a debugger).
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kCCLayerTreeTestNoTimeout))
+  if (!command_line->HasSwitch("cc-layer-tree-test-no-timeout"))
     timeout_seconds_ = 5;
 }
 
@@ -546,7 +545,7 @@ void LayerTreeTest::DispatchComposite() {
 
 void LayerTreeTest::RunTest(bool threaded) {
   if (threaded) {
-    impl_thread_.reset(new base::Thread("Compositor"));
+    impl_thread_.reset(new base::Thread("LayerTreeTest"));
     ASSERT_TRUE(impl_thread_->Start());
   }
 

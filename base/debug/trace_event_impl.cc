@@ -228,33 +228,6 @@ class TraceBufferVector : public TraceBuffer {
   DISALLOW_COPY_AND_ASSIGN(TraceBufferVector);
 };
 
-class TraceBufferDiscardsEvents : public TraceBuffer {
- public:
-  virtual ~TraceBufferDiscardsEvents() { }
-
-  virtual void AddEvent(const TraceEvent& event) { }
-  virtual bool HasMoreEvents() const { return false; }
-
-  virtual const TraceEvent& NextEvent() {
-    NOTREACHED();
-    return *static_cast<TraceEvent*>(NULL);
-  }
-
-  virtual bool IsFull() const { return false; }
-
-  virtual size_t CountEnabledByName(const unsigned char* category,
-                                    const std::string& event_name) const {
-    return 0;
-  }
-
-  virtual size_t Size() const { return 0; }
-
-  virtual const TraceEvent& GetEventAt(size_t index) const {
-    NOTREACHED();
-    return *static_cast<TraceEvent*>(NULL);
-  }
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // TraceEvent
@@ -949,8 +922,6 @@ void TraceLog::SetNotificationCallback(
 TraceBuffer* TraceLog::GetTraceBuffer() {
   if (trace_options_ & RECORD_CONTINUOUSLY)
     return new TraceBufferRingBuffer();
-  else if (trace_options_ & ECHO_TO_VLOG)
-    return new TraceBufferDiscardsEvents();
   return new TraceBufferVector();
 }
 
@@ -1016,12 +987,6 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     unsigned char flags) {
   DCHECK(name);
 
-  TimeDelta duration;
-  if (phase == TRACE_EVENT_PHASE_END && trace_options_ & ECHO_TO_VLOG) {
-    duration = timestamp - thread_event_start_times_[thread_id].top();
-    thread_event_start_times_[thread_id].pop();
-  }
-
   if (flags & TRACE_EVENT_FLAG_MANGLE_ID)
     id ^= process_id_hash_;
 
@@ -1074,32 +1039,6 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
       }
     }
 
-    if (trace_options_ & ECHO_TO_VLOG) {
-      std::string thread_name = thread_names_[thread_id];
-      if (thread_colors_.find(thread_name) == thread_colors_.end())
-        thread_colors_[thread_name] = (thread_colors_.size() % 6) + 1;
-
-      std::ostringstream log;
-      log << base::StringPrintf("%s: \e[0;3%dm",
-                                thread_name.c_str(),
-                                thread_colors_[thread_name]);
-
-      size_t depth = 0;
-      if (thread_event_start_times_.find(thread_id) !=
-          thread_event_start_times_.end())
-        depth = thread_event_start_times_[thread_id].size();
-
-      for (size_t i = 0; i < depth; ++i)
-        log << "| ";
-
-      log << base::StringPrintf("'%c', %s", phase, name);
-
-      if (phase == TRACE_EVENT_PHASE_END)
-        log << base::StringPrintf(" (%.3f ms)", duration.InMillisecondsF());
-
-      VLOG(0) << log.str() << "\e[0;m";
-    }
-
     logged_events_->AddEvent(TraceEvent(thread_id,
         now, phase, category_group_enabled, name, id,
         num_args, arg_names, arg_types, arg_values,
@@ -1111,9 +1050,6 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     if (watch_category_ == category_group_enabled && watch_event_name_ == name)
       notifier.AddNotificationWhileLocked(EVENT_WATCH_NOTIFICATION);
   } while (0); // release lock
-
-  if (phase == TRACE_EVENT_PHASE_BEGIN && trace_options_ & ECHO_TO_VLOG)
-    thread_event_start_times_[thread_id].push(timestamp);
 
   notifier.SendNotificationIfAny();
   if (event_callback_copy != NULL) {
