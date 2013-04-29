@@ -85,7 +85,7 @@ class Forwarder(object):
       raise Exception('Error while running adb forward.')
 
     (exit_code, output) = self._adb.GetShellCommandStatusAndOutput(
-        '%s %s %s %s' % (tool.GetUtilWrapper(), Forwarder._LD_LIBRARY_PATH,
+        '%s %s %s %s' % (Forwarder._LD_LIBRARY_PATH, tool.GetUtilWrapper(),
                          Forwarder._DEVICE_FORWARDER_PATH,
                          Forwarder._DEVICE_ADB_CONTROL_PORT))
     if exit_code != 0:
