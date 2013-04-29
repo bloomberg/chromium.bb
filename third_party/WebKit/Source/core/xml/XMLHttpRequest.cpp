@@ -921,8 +921,8 @@ void XMLHttpRequest::setRequestHeader(const AtomicString& name, const String& va
         return;
     }
 
-    // A privileged script can set any headers.
-    if (!securityOrigin()->canLoadLocalResources() && !isAllowedHTTPHeader(name)) {
+    // No script (privileged or not) can set unsafe headers.
+    if (!isAllowedHTTPHeader(name)) {
         logConsoleError(scriptExecutionContext(), "Refused to set unsafe header \"" + name + "\"");
         return;
     }
