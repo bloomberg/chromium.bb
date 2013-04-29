@@ -44,17 +44,17 @@ void DelegateImpl::Report(
   // Need to duplicate HISTOGRAM_CUSTOM_TIMES(), since it is a macro that
   // defines a static variable.
   if (evicted_cookie.is_google) {
-    HISTOGRAM_CUSTOM_TIMES("Cookie.ReinstatedCookiesGoogle",
-                           reinstatement_delay,
-                           TimeDelta::FromSeconds(1),
-                           TimeDelta::FromDays(7),
-                           50);
+    UMA_HISTOGRAM_CUSTOM_TIMES("Cookie.ReinstatedCookiesGoogle",
+                               reinstatement_delay,
+                               TimeDelta::FromSeconds(1),
+                               TimeDelta::FromDays(7),
+                               50);
   } else {
-    HISTOGRAM_CUSTOM_TIMES("Cookie.ReinstatedCookiesOther",
-                           reinstatement_delay,
-                           TimeDelta::FromSeconds(1),
-                           TimeDelta::FromDays(7),
-                           50);
+    UMA_HISTOGRAM_CUSTOM_TIMES("Cookie.ReinstatedCookiesOther",
+                               reinstatement_delay,
+                               TimeDelta::FromSeconds(1),
+                               TimeDelta::FromDays(7),
+                               50);
   }
 }
 
