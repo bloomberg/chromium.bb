@@ -40,7 +40,6 @@
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
-#include "content/port/browser/smooth_scroll_gesture.h"
 #include "content/public/browser/compositor_util.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
@@ -90,9 +89,6 @@ namespace {
 // returning a null or incorrectly sized backing-store from GetBackingStore.
 // This timeout impacts the "choppiness" of our window resize perf.
 const int kPaintMsgTimeoutMS = 50;
-
-// How many milliseconds apart synthetic scroll messages should be sent.
-static const int kSyntheticScrollMessageIntervalMs = 8;
 
 // Returns |true| if the two wheel events should be coalesced.
 bool ShouldCoalesceMouseWheelEvents(const WebMouseWheelEvent& last_event,
@@ -170,7 +166,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       allow_privileged_mouse_lock_(false),
       has_touch_handler_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
-      tick_active_smooth_scroll_gestures_task_posted_(false),
       touch_event_queue_(new TouchEventQueue(this)),
       gesture_event_filter_(new GestureEventFilter(this)) {
   CHECK(delegate_);
@@ -303,8 +298,9 @@ void RenderWidgetHostImpl::SendScreenRects() {
   waiting_for_screen_rects_ack_ = true;
 }
 
-int RenderWidgetHostImpl::SyntheticScrollMessageInterval() const {
-  return kSyntheticScrollMessageIntervalMs;
+base::TimeDelta
+    RenderWidgetHostImpl::GetSyntheticScrollMessageInterval() const {
+  return smooth_scroll_gesture_controller_.GetSyntheticScrollMessageInterval();
 }
 
 void RenderWidgetHostImpl::SetOverscrollControllerEnabled(bool enabled) {
@@ -1813,12 +1809,6 @@ void RenderWidgetHostImpl::OnInputEventAck(
   if (decrement_in_flight_event_count() == 0)
     StopHangMonitorTimeout();
 
-  // If an input ack is pending, then hold off ticking the gesture
-  // until we get an input ack.
-  if (in_process_event_types_.empty() &&
-      !active_smooth_scroll_gestures_.empty())
-    TickActiveSmoothScrollGesture();
-
   int type = static_cast<int>(event_type);
   if (type < WebInputEvent::Undefined) {
     RecordAction(UserMetricsAction("BadMessageTerminate_RWH2"));
@@ -1857,90 +1847,10 @@ void RenderWidgetHostImpl::OnInputEventAck(
 }
 
 void RenderWidgetHostImpl::OnBeginSmoothScroll(
-    int gesture_id, const ViewHostMsg_BeginSmoothScroll_Params &params) {
+    const ViewHostMsg_BeginSmoothScroll_Params& params) {
   if (!view_)
     return;
-  active_smooth_scroll_gestures_.insert(
-      std::make_pair(gesture_id,
-                     view_->CreateSmoothScrollGesture(
-                         params.scroll_down, params.pixels_to_scroll,
-                         params.mouse_event_x, params.mouse_event_y)));
-
-  // If an input ack is pending, then hold off ticking the gesture
-  // until we get an input ack.
-  if (!in_process_event_types_.empty())
-    return;
-  if (tick_active_smooth_scroll_gestures_task_posted_)
-    return;
-  TickActiveSmoothScrollGesture();
-}
-
-void RenderWidgetHostImpl::TickActiveSmoothScrollGesture() {
-  TRACE_EVENT0("input", "RenderWidgetHostImpl::TickActiveSmoothScrollGesture");
-  tick_active_smooth_scroll_gestures_task_posted_ = false;
-  if (active_smooth_scroll_gestures_.empty()) {
-    TRACE_EVENT_INSTANT0("input", "EarlyOut_NoActiveScrollGesture",
-                         TRACE_EVENT_SCOPE_THREAD);
-    return;
-  }
-
-  base::TimeTicks now = TimeTicks::HighResNow();
-  base::TimeDelta preferred_interval =
-      base::TimeDelta::FromMilliseconds(kSyntheticScrollMessageIntervalMs);
-  base::TimeDelta time_until_next_ideal_interval =
-      (last_smooth_scroll_gestures_tick_time_ + preferred_interval) -
-      now;
-  if (time_until_next_ideal_interval.InMilliseconds() > 0) {
-    TRACE_EVENT_INSTANT1(
-        "input", "EarlyOut_TickedTooRecently", TRACE_EVENT_SCOPE_THREAD,
-        "delay", time_until_next_ideal_interval.InMilliseconds());
-    // Post a task.
-    tick_active_smooth_scroll_gestures_task_posted_ = true;
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&RenderWidgetHostImpl::TickActiveSmoothScrollGesture,
-                   weak_factory_.GetWeakPtr()),
-        time_until_next_ideal_interval);
-    return;
-  }
-
-  last_smooth_scroll_gestures_tick_time_ = now;
-
-  // Separate ticking of gestures from sending their completion messages.
-  std::vector<int> ids_that_are_done;
-  for (SmoothScrollGestureMap::iterator it =
-           active_smooth_scroll_gestures_.begin();
-       it != active_smooth_scroll_gestures_.end();
-       ++it) {
-
-    bool active = it->second->ForwardInputEvents(now, this);
-    if (!active)
-      ids_that_are_done.push_back(it->first);
-  }
-
-  // Delete completed gestures and send their completion event.
-  for(size_t i = 0; i < ids_that_are_done.size(); i++) {
-    int id = ids_that_are_done[i];
-    SmoothScrollGestureMap::iterator it =
-        active_smooth_scroll_gestures_.find(id);
-    DCHECK(it != active_smooth_scroll_gestures_.end());
-    active_smooth_scroll_gestures_.erase(it);
-
-    Send(new ViewMsg_SmoothScrollCompleted(routing_id_, id));
-  }
-
-  // No need to post the next tick if an input is in flight.
-  if (!in_process_event_types_.empty())
-    return;
-
-  TRACE_EVENT_INSTANT1("input", "PostTickTask", TRACE_EVENT_SCOPE_THREAD,
-                       "delay", preferred_interval.InMilliseconds());
-  tick_active_smooth_scroll_gestures_task_posted_ = true;
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&RenderWidgetHostImpl::TickActiveSmoothScrollGesture,
-                 weak_factory_.GetWeakPtr()),
-      preferred_interval);
+  smooth_scroll_gesture_controller_.BeginSmoothScroll(view_, params);
 }
 
 void RenderWidgetHostImpl::OnSelectRangeAck() {

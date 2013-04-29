@@ -851,8 +851,7 @@ IPC_MESSAGE_ROUTED0(ViewMsg_UpdateRect_ACK)
 IPC_MESSAGE_ROUTED0(ViewMsg_SwapBuffers_ACK)
 
 // Tells the render widget that a smooth scroll completed.
-IPC_MESSAGE_ROUTED1(ViewMsg_SmoothScrollCompleted,
-                    int /* gesture_id */)
+IPC_MESSAGE_ROUTED0(ViewMsg_SmoothScrollCompleted)
 
 // Tells the renderer to focus the first (last if reverse is true) focusable
 // node.
@@ -1598,8 +1597,7 @@ IPC_STRUCT_BEGIN(ViewHostMsg_BeginSmoothScroll_Params)
   IPC_STRUCT_MEMBER(int, mouse_event_y)
 IPC_STRUCT_END()
 
-IPC_MESSAGE_ROUTED2(ViewHostMsg_BeginSmoothScroll,
-                    int /* gesture_id */,
+IPC_MESSAGE_ROUTED1(ViewHostMsg_BeginSmoothScroll,
                     ViewHostMsg_BeginSmoothScroll_Params /* params */)
 
 IPC_MESSAGE_ROUTED0(ViewHostMsg_Focus)

@@ -23,6 +23,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "build/build_config.h"
+#include "content/browser/renderer_host/smooth_scroll_gesture_controller.h"
 #include "content/common/view_message_enums.h"
 #include "content/port/common/input_event_ack_state.h"
 #include "content/public/browser/render_widget_host.h"
@@ -71,7 +72,7 @@ class MockRenderWidgetHost;
 class OverscrollController;
 class RenderWidgetHostDelegate;
 class RenderWidgetHostViewPort;
-class SmoothScrollGesture;
+class SmoothScrollGestureController;
 class TouchEventQueue;
 struct EditCommand;
 
@@ -450,7 +451,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
     return overscroll_controller_.get();
   }
 
-  int SyntheticScrollMessageInterval() const;
+  base::TimeDelta GetSyntheticScrollMessageInterval() const;
 
   // Sets whether the overscroll controller should be enabled for this page.
   void SetOverscrollControllerEnabled(bool enabled);
@@ -583,8 +584,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void OnInputEventAck(WebKit::WebInputEvent::Type event_type,
                        InputEventAckState ack_result);
   void OnBeginSmoothScroll(
-      int gesture_id,
-      const ViewHostMsg_BeginSmoothScroll_Params &params);
+      const ViewHostMsg_BeginSmoothScroll_Params& params);
   void OnSelectRangeAck();
   void OnMsgMoveCaretAck();
   virtual void OnFocus();
@@ -665,9 +665,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // which may get in recursive loops).
   void DelayedAutoResized();
 
-  // Called periodically to advance the active scroll gesture after being
-  // initiated by OnBeginSmoothScroll.
-  void TickActiveSmoothScrollGesture();
 
   // Our delegate, which wants to know mainly about keyboard events.
   // It will remain non-NULL until DetachDelegate() is called.
@@ -861,12 +858,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 
-  typedef std::map<int, scoped_refptr<SmoothScrollGesture> >
-      SmoothScrollGestureMap;
-  SmoothScrollGestureMap active_smooth_scroll_gestures_;
-  base::TimeTicks last_smooth_scroll_gestures_tick_time_;
-  bool tick_active_smooth_scroll_gestures_task_posted_;
-
+  SmoothScrollGestureController smooth_scroll_gesture_controller_;
   scoped_ptr<TouchEventQueue> touch_event_queue_;
   scoped_ptr<GestureEventFilter> gesture_event_filter_;
   scoped_ptr<OverscrollController> overscroll_controller_;
