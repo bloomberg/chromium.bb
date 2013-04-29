@@ -181,9 +181,13 @@ def expand_symlinks(indir, relfile):
     # pylint: disable=E1101
     target = os.path.normpath(os.path.join(done, pre_symlink))
     symlink_target = os.readlink(symlink_path)
-
-    # The symlink itself could be using the wrong path case.
-    target = fix_native_path_case(target, symlink_target)
+    if os.path.isabs(symlink_target):
+      # Absolute path are considered a normal directories. The use case is
+      # generally someone who puts the output directory on a separate drive.
+      target = symlink_target
+    else:
+      # The symlink itself could be using the wrong path case.
+      target = fix_native_path_case(target, symlink_target)
 
     if not os.path.exists(target):
       raise run_isolated.MappingError(

@@ -997,6 +997,24 @@ class IsolateTest(IsolateBase):
       }
       self.assertEqual(expected, actual)
 
+  if sys.platform != 'win32':
+    def test_symlink_input_absolute_path(self):
+      # A symlink is outside of the checkout, it should be treated as a normal
+      # directory.
+      src = os.path.join(self.cwd, u'src')
+      src_out = os.path.join(src, 'out')
+      tmp = os.path.join(self.cwd, 'tmp')
+      tmp_foo = os.path.join(self.cwd, 'foo')
+      os.mkdir(src)
+      os.mkdir(tmp)
+      os.mkdir(tmp_foo)
+      # The problem was that it's an absolute path, so it must be considered a
+      # normal directory.
+      os.symlink(tmp, src_out)
+      open(os.path.join(tmp_foo, 'bar.txt'), 'w').close()
+      actual = isolate.expand_symlinks(src, u'out/foo/bar.txt')
+      self.assertEqual((u'out/foo/bar.txt', []), actual)
+
 
 class IsolateLoad(IsolateBase):
   def setUp(self):
