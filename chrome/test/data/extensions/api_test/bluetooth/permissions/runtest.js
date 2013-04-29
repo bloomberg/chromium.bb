@@ -6,40 +6,50 @@ var assertTrue = chrome.test.assertTrue;
 var fail = chrome.test.callbackFail;
 var pass = chrome.test.callbackPass;
 
-var PERMISSION_DENIED_ERROR = "Permission to access device denied";
+var PERMISSION_DENIED_ERROR = 'Permission to access device denied';
 
-var kUUID = "00001101-0000-1000-8000-00805f9b34fb";
-var kAddress1 = "11:12:13:14:15:16";
+var kDevice = {
+  address: '11:12:13:14:15:16',
+  name: 'Test Device',
+  paired: true,
+  connected: false
+};
+
+var kWrongDevice = {
+  address: '55:44:33:22:11:00',
+  name: 'Wrong Device',
+  paired: true,
+  connected: false
+};
+
+var kProfile = {uuid: '00001101-0000-1000-8000-00805f9b34fb'};
 
 chrome.test.runTests([
   function permissionRequest() {
     chrome.permissions.request(
-        {
-          permissions: [
-            {"bluetoothDevices":[{"deviceAddress":kAddress1}]}
-          ]
-        },
-        pass(function(granted) {
-          // They were not granted, and there should be no error.
-          assertTrue(granted);
-          assertTrue(chrome.runtime.lastError === undefined);
+      {
+        permissions: [
+          {'bluetoothDevices': [{'deviceAddress': kDevice.address}]}
+        ]
+      },
+      pass(function(granted) {
+        // They were not granted, and there should be no error.
+        assertTrue(granted);
+        assertTrue(chrome.runtime.lastError === undefined);
 
-          chrome.bluetooth.connect(
-              {
-                "deviceAddress":kAddress1,
-                "serviceUuid":kUUID
-              },
-              pass(function(socket) {
-                chrome.bluetooth.disconnect(
-                    {"socketId":socket.id},
-                    pass(function(){})
-                );
-              }));
-        }));
+        chrome.bluetooth.connect(
+          {device: kDevice, profile: kProfile},
+          pass(function(bluetoothSocket) {
+            chrome.bluetooth.disconnect(
+              {socket: bluetoothSocket},
+              pass(function(){})
+            );
+          }));
+      }));
   },
   function permissionDenied() {
     chrome.bluetooth.connect(
-        {"deviceAddress":"55:44:33:22:11:00","serviceUuid":kUUID},
-        fail(PERMISSION_DENIED_ERROR));
+      {device: kWrongDevice, profile: kProfile},
+      fail(PERMISSION_DENIED_ERROR));
   }
 ]);

@@ -141,30 +141,29 @@ namespace bluetooth {
 
   // Options for the connect function.
   dictionary ConnectOptions {
-    // The connection is made to the device at |deviceAddress|.
-    // |deviceAddress| should be in the format 'XX:XX:XX:XX:XX:XX'.
-    DOMString deviceAddress;
+    // The connection is made to |device|.
+    Device device;
 
-    // The connection is made to the service with UUID |serviceUuid|.
-    DOMString serviceUuid;
+    // The connection is made to |profile|.
+    Profile profile;
   };
 
   // Options for the disconnect function.
   dictionary DisconnectOptions {
     // The socket to disconnect.
-    long socketId;
+    Socket socket;
   };
 
   // Options for the read function.
   dictionary ReadOptions {
     // The socket to read from.
-    long socketId;
+    Socket socket;
   };
 
   // Options for the write function.
   dictionary WriteOptions {
     // The socket to write to.
-    long socketId;
+    Socket socket;
 
     // The data to write.
     ArrayBuffer data;

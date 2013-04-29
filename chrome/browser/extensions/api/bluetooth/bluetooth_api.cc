@@ -288,7 +288,7 @@ bool BluetoothConnectFunction::DoWork(scoped_refptr<BluetoothAdapter> adapter) {
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
   const bluetooth::ConnectOptions& options = params->options;
 
-  BluetoothDevicePermission::CheckParam param(options.device_address);
+  BluetoothDevicePermission::CheckParam param(options.device.address);
   if (!GetExtension()->CheckAPIPermissionWithParam(
         APIPermission::kBluetoothDevice, &param)) {
     SetError(kDevicePermissionDenied);
@@ -296,13 +296,13 @@ bool BluetoothConnectFunction::DoWork(scoped_refptr<BluetoothAdapter> adapter) {
     return false;
   }
 
-  if (!BluetoothDevice::IsUUIDValid(options.service_uuid)) {
+  if (!BluetoothDevice::IsUUIDValid(options.profile.uuid)) {
     SetError(kInvalidUuid);
     SendResponse(false);
     return false;
   }
 
-  BluetoothDevice* device = adapter->GetDevice(options.device_address);
+  BluetoothDevice* device = adapter->GetDevice(options.device.address);
   if (!device) {
     SetError(kInvalidDevice);
     SendResponse(false);
@@ -310,7 +310,7 @@ bool BluetoothConnectFunction::DoWork(scoped_refptr<BluetoothAdapter> adapter) {
   }
 
   std::string uuid = device::bluetooth_utils::CanonicalUuid(
-      options.service_uuid);
+      options.profile.uuid);
 
   device->ConnectToService(uuid,
       base::Bind(&BluetoothConnectFunction::ConnectToServiceCallback,
@@ -325,7 +325,7 @@ bool BluetoothDisconnectFunction::RunImpl() {
   scoped_ptr<Disconnect::Params> params(Disconnect::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
   const bluetooth::DisconnectOptions& options = params->options;
-  return GetEventRouter(profile())->ReleaseSocket(options.socket_id);
+  return GetEventRouter(profile())->ReleaseSocket(options.socket.id);
 }
 
 BluetoothReadFunction::BluetoothReadFunction() : success_(false) {}
@@ -336,7 +336,7 @@ bool BluetoothReadFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
   const bluetooth::ReadOptions& options = params->options;
 
-  socket_ = GetEventRouter(profile())->GetSocket(options.socket_id);
+  socket_ = GetEventRouter(profile())->GetSocket(options.socket.id);
   if (socket_.get() == NULL) {
     SetError(kSocketNotFoundError);
     return false;
@@ -377,8 +377,12 @@ bool BluetoothWriteFunction::Prepare() {
   // support is added
   DictionaryValue* options;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &options));
+
+  DictionaryValue* socket;
+  EXTENSION_FUNCTION_VALIDATE(options->GetDictionary("socket", &socket));
+
   int socket_id;
-  EXTENSION_FUNCTION_VALIDATE(options->GetInteger("socketId", &socket_id));
+  EXTENSION_FUNCTION_VALIDATE(socket->GetInteger("id", &socket_id));
 
   socket_ = GetEventRouter(profile())->GetSocket(socket_id);
   if (socket_.get() == NULL) {
