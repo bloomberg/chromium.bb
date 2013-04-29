@@ -74,6 +74,7 @@ void didInvalidateLayoutImpl(InstrumentingAgents*, Frame*);
 InspectorInstrumentationCookie willLayoutImpl(InstrumentingAgents*, Frame*);
 void didLayoutImpl(const InspectorInstrumentationCookie&, RenderObject*);
 void didScrollImpl(InstrumentingAgents*);
+void didResizeMainFrameImpl(InstrumentingAgents*);
 InspectorInstrumentationCookie willDispatchXHRLoadEventImpl(InstrumentingAgents*, XMLHttpRequest*, ScriptExecutionContext*);
 void didDispatchXHRLoadEventImpl(const InspectorInstrumentationCookie&);
 void willScrollLayerImpl(InstrumentingAgents*, Frame*);
@@ -418,6 +419,13 @@ inline void didScroll(Page* page)
     FAST_RETURN_IF_NO_FRONTENDS(void());
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
         didScrollImpl(instrumentingAgents);
+}
+
+inline void didResizeMainFrame(Page* page)
+{
+    FAST_RETURN_IF_NO_FRONTENDS(void());
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
+        didResizeMainFrameImpl(instrumentingAgents);
 }
 
 inline InspectorInstrumentationCookie willDispatchXHRLoadEvent(ScriptExecutionContext* context, XMLHttpRequest* request)

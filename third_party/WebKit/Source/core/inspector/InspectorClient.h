@@ -41,8 +41,6 @@ class Page;
 
 class InspectorClient : public InspectorStateClient {
 public:
-    virtual void didResizeMainFrame(Frame*) { }
-
     virtual void highlight() = 0;
     virtual void hideHighlight() = 0;
 

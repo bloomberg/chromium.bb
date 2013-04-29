@@ -194,6 +194,8 @@ static void buildQuadHighlight(Page* page, const FloatQuad& quad, const Highligh
 InspectorOverlay::InspectorOverlay(Page* page, InspectorClient* client)
     : m_page(page)
     , m_client(client)
+    , m_drawViewSize(false)
+    , m_timer(this, &InspectorOverlay::onTimer)
 {
 }
 
@@ -203,7 +205,7 @@ InspectorOverlay::~InspectorOverlay()
 
 void InspectorOverlay::paint(GraphicsContext& context)
 {
-    if (m_pausedInDebuggerMessage.isNull() && !m_highlightNode && !m_highlightQuad && m_size.isEmpty())
+    if (m_pausedInDebuggerMessage.isNull() && !m_highlightNode && !m_highlightQuad && m_size.isEmpty() && !m_drawViewSize)
         return;
     GraphicsContextStateSaver stateSaver(context);
     FrameView* view = overlayPage()->mainFrame()->view();
@@ -264,6 +266,13 @@ void InspectorOverlay::highlightQuad(PassOwnPtr<FloatQuad> quad, const Highlight
     update();
 }
 
+void InspectorOverlay::showAndHideViewSize()
+{
+    m_drawViewSize = true;
+    update();
+    m_timer.startOneShot(1);
+}
+
 Node* InspectorOverlay::highlightedNode() const
 {
     return m_highlightNode.get();
@@ -271,7 +280,7 @@ Node* InspectorOverlay::highlightedNode() const
 
 void InspectorOverlay::update()
 {
-    if (!m_highlightNode && !m_eventTargetNode && !m_highlightQuad && m_pausedInDebuggerMessage.isNull() && m_size.isEmpty()) {
+    if (!m_highlightNode && !m_eventTargetNode && !m_highlightQuad && m_pausedInDebuggerMessage.isNull() && m_size.isEmpty() && !m_drawViewSize) {
         m_client->hideHighlight();
         return;
     }
@@ -279,22 +288,23 @@ void InspectorOverlay::update()
     FrameView* view = m_page->mainFrame()->view();
     if (!view)
         return;
-
+    FloatRect viewRect = view->visibleContentRect();
     FrameView* overlayView = overlayPage()->mainFrame()->view();
-    IntSize viewportSize = enclosingIntRect(view->visibleContentRect()).size();
+    IntSize viewportSize = enclosingIntRect(viewRect).size();
     IntSize frameViewFullSize = enclosingIntRect(view->visibleContentRect(ScrollableArea::IncludeScrollbars)).size();
     IntSize size = m_size.isEmpty() ? frameViewFullSize : m_size;
     size.scale(m_page->pageScaleFactor());
     overlayView->resize(size);
 
     // Clear canvas and paint things.
-    reset(size, m_size.isEmpty() ? IntSize() : frameViewFullSize);
+    reset(size, m_size.isEmpty() ? IntSize() : frameViewFullSize, viewRect.x(), viewRect.y());
 
     // Include scrollbars to avoid masking them by the gutter.
     drawGutter();
     drawNodeHighlight();
     drawQuadHighlight();
     drawPausedInDebuggerMessage();
+    drawViewSize();
 
     // Position DOM elements.
     overlayPage()->mainFrame()->document()->recalcStyle(Node::Force);
@@ -323,7 +333,7 @@ static PassRefPtr<InspectorArray> buildArrayForQuad(const FloatQuad& quad)
     return array.release();
 }
 
-static PassRefPtr<InspectorObject> buildObjectForHighlight(FrameView* mainView, const Highlight& highlight)
+static PassRefPtr<InspectorObject> buildObjectForHighlight(const Highlight& highlight)
 {
     RefPtr<InspectorObject> object = InspectorObject::create();
     RefPtr<InspectorArray> array = InspectorArray::create();
@@ -337,11 +347,6 @@ static PassRefPtr<InspectorObject> buildObjectForHighlight(FrameView* mainView, 
     object->setString("borderColor", highlight.borderColor.serialized());
     object->setString("marginColor", highlight.marginColor.serialized());
     object->setString("eventTargetColor", highlight.eventTargetColor.serialized());
-
-    FloatRect visibleRect = mainView->visibleContentRect();
-    object->setNumber("scrollX", visibleRect.x());
-    object->setNumber("scrollY", visibleRect.y());
-
     return object.release();
 }
 
@@ -370,7 +375,7 @@ void InspectorOverlay::drawNodeHighlight()
         buildNodeHighlight(m_eventTargetNode.get(), m_nodeHighlightConfig, &eventTargetHighlight);
         highlight.quads.append(eventTargetHighlight.quads[1]); // Add border from eventTargetNode to highlight.
     }
-    RefPtr<InspectorObject> highlightObject = buildObjectForHighlight(m_page->mainFrame()->view(), highlight);
+    RefPtr<InspectorObject> highlightObject = buildObjectForHighlight(highlight);
 
     Node* node = m_highlightNode.get();
     if (node->isElementNode() && m_nodeHighlightConfig.showInfo && node->renderer() && node->document()->frame()) {
@@ -414,13 +419,19 @@ void InspectorOverlay::drawQuadHighlight()
 
     Highlight highlight;
     buildQuadHighlight(m_page, *m_highlightQuad, m_quadHighlightConfig, &highlight);
-    evaluateInOverlay("drawQuadHighlight", buildObjectForHighlight(m_page->mainFrame()->view(), highlight));
+    evaluateInOverlay("drawQuadHighlight", buildObjectForHighlight(highlight));
 }
 
 void InspectorOverlay::drawPausedInDebuggerMessage()
 {
     if (!m_pausedInDebuggerMessage.isNull())
         evaluateInOverlay("drawPausedInDebuggerMessage", m_pausedInDebuggerMessage);
+}
+
+void InspectorOverlay::drawViewSize()
+{
+    if (m_drawViewSize)
+        evaluateInOverlay("drawViewSize", m_pausedInDebuggerMessage);
 }
 
 Page* InspectorOverlay::overlayPage()
@@ -471,7 +482,7 @@ Page* InspectorOverlay::overlayPage()
     return m_overlayPage.get();
 }
 
-void InspectorOverlay::reset(const IntSize& viewportSize, const IntSize& frameViewFullSize)
+void InspectorOverlay::reset(const IntSize& viewportSize, const IntSize& frameViewFullSize, int scrollX, int scrollY)
 {
     RefPtr<InspectorObject> resetData = InspectorObject::create();
     resetData->setNumber("pageScaleFactor", m_page->pageScaleFactor());
@@ -479,6 +490,8 @@ void InspectorOverlay::reset(const IntSize& viewportSize, const IntSize& frameVi
     resetData->setObject("viewportSize", buildObjectForSize(viewportSize));
     resetData->setObject("frameViewFullSize", buildObjectForSize(frameViewFullSize));
     resetData->setNumber("pageZoomFactor", m_page->mainFrame()->pageZoomFactor());
+    resetData->setNumber("scrollX", scrollX);
+    resetData->setNumber("scrollY", scrollY);
     evaluateInOverlay("reset", resetData.release());
 }
 
@@ -498,6 +511,12 @@ void InspectorOverlay::evaluateInOverlay(const String& method, PassRefPtr<Inspec
     overlayPage()->mainFrame()->script()->evaluate(ScriptSourceCode(makeString("dispatch(", command->toJSONString(), ")")));
 }
 
+void InspectorOverlay::onTimer(Timer<InspectorOverlay>*)
+{
+    m_drawViewSize = false;
+    update();
+}
+
 void InspectorOverlay::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::InspectorOverlay);
@@ -515,6 +534,7 @@ void InspectorOverlay::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) con
 void InspectorOverlay::freePage()
 {
     m_overlayPage.clear();
+    m_timer.stop();
 }
 
 } // namespace WebCore

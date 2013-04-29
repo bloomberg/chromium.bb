@@ -114,12 +114,13 @@ body.platform-linux {
     position: absolute;
     background-color: darkgray;
 }
+
 </style>
 <script>
 const lightGridColor = "rgba(0,0,0,0.2)";
-const darkGridColor = "rgba(0,0,0,0.5)";
+const darkGridColor = "rgba(0,0,0,0.7)";
 const transparentColor = "rgba(0, 0, 0, 0)";
-const gridBackgroundColor = "rgba(255, 255, 255, 0.6)";
+const gridBackgroundColor = "rgba(255, 255, 255, 0.8)";
 
 function drawPausedInDebuggerMessage(message)
 {
@@ -129,10 +130,12 @@ function drawPausedInDebuggerMessage(message)
     document.body.classList.add("dimmed");
 }
 
-function _drawGrid(highlight, rulerAtRight, rulerAtBottom)
+function _drawGrid(rulerAtRight, rulerAtBottom)
 {
-    if (!highlight.showRulers)
+    if (window._gridPainted)
         return;
+    window._gridPainted = true;
+
     context.save();
 
     var pageFactor = pageZoomFactor * pageScaleFactor;
@@ -145,8 +148,8 @@ function _drawGrid(highlight, rulerAtRight, rulerAtBottom)
         return Math.round(x / pageFactor);
     }
 
-    var width = canvas.width / pageFactor;
-    var height = canvas.height / pageFactor;
+    var width = canvasWidth / pageFactor;
+    var height = canvasHeight / pageFactor;
 
     const gridSubStep = 5;
     const gridStep = 50;
@@ -183,20 +186,20 @@ function _drawGrid(highlight, rulerAtRight, rulerAtBottom)
     {
         // Draw labels.
         context.save();
-        context.translate(-highlight.scrollX, 0.5 - highlight.scrollY);
-        var maxY = height + unzoom(highlight.scrollY);
+        context.translate(-scrollX, 0.5 - scrollY);
+        var maxY = height + unzoom(scrollY);
         for (var y = 2 * gridStep; y < maxY; y += 2 * gridStep) {
             context.save();
-            context.translate(highlight.scrollX, zoom(y));
+            context.translate(scrollX, zoom(y));
             context.rotate(-Math.PI / 2);
             context.fillText(y, 2, rulerAtRight ? zoom(width) - 7 : 13);
             context.restore();
         }
         context.translate(0.5, -0.5);
-        var maxX = width + unzoom(highlight.scrollX);
+        var maxX = width + unzoom(scrollX);
         for (var x = 2 * gridStep; x < maxX; x += 2 * gridStep) {
             context.save();
-            context.fillText(x, zoom(x) + 2, rulerAtBottom ? highlight.scrollY + zoom(height) - 7 : highlight.scrollY + 13);
+            context.fillText(x, zoom(x) + 2, rulerAtBottom ? scrollY + zoom(height) - 7 : scrollY + 13);
             context.restore();
         }
         context.restore();
@@ -209,13 +212,13 @@ function _drawGrid(highlight, rulerAtRight, rulerAtBottom)
             context.translate(zoom(width), 0);
             context.scale(-1, 1);
         }
-        context.translate(-highlight.scrollX, 0.5 - highlight.scrollY);
-        var maxY = height + unzoom(highlight.scrollY);
+        context.translate(-scrollX, 0.5 - scrollY);
+        var maxY = height + unzoom(scrollY);
         for (var y = gridStep; y < maxY; y += gridStep) {
             context.beginPath();
-            context.moveTo(highlight.scrollX, zoom(y));
+            context.moveTo(scrollX, zoom(y));
             var markLength = (y % (gridStep * 2)) ? 5 : 8;
-            context.lineTo(highlight.scrollX + markLength, zoom(y));
+            context.lineTo(scrollX + markLength, zoom(y));
             context.stroke();
         }
         context.strokeStyle = lightGridColor;
@@ -223,8 +226,8 @@ function _drawGrid(highlight, rulerAtRight, rulerAtBottom)
             if (!(y % gridStep))
                 continue;
             context.beginPath();
-            context.moveTo(highlight.scrollX, zoom(y));
-            context.lineTo(highlight.scrollX + gridSubStep, zoom(y));
+            context.moveTo(scrollX, zoom(y));
+            context.lineTo(scrollX + gridSubStep, zoom(y));
             context.stroke();
         }
         context.restore();
@@ -237,13 +240,13 @@ function _drawGrid(highlight, rulerAtRight, rulerAtBottom)
             context.translate(0, zoom(height));
             context.scale(1, -1);
         }
-        context.translate(0.5 - highlight.scrollX, -highlight.scrollY);
-        var maxX = width + unzoom(highlight.scrollX);
+        context.translate(0.5 - scrollX, -scrollY);
+        var maxX = width + unzoom(scrollX);
         for (var x = gridStep; x < maxX; x += gridStep) {
             context.beginPath();
-            context.moveTo(zoom(x), highlight.scrollY);
+            context.moveTo(zoom(x), scrollY);
             var markLength = (x % (gridStep * 2)) ? 5 : 8;
-            context.lineTo(zoom(x), highlight.scrollY + markLength);
+            context.lineTo(zoom(x), scrollY + markLength);
             context.stroke();
         }
         context.strokeStyle = lightGridColor;
@@ -251,8 +254,8 @@ function _drawGrid(highlight, rulerAtRight, rulerAtBottom)
             if (!(x % gridStep))
                 continue;
             context.beginPath();
-            context.moveTo(zoom(x), highlight.scrollY);
-            context.lineTo(zoom(x), highlight.scrollY + gridSubStep);
+            context.moveTo(zoom(x), scrollY);
+            context.lineTo(zoom(x), scrollY + gridSubStep);
             context.stroke();
         }
         context.restore();
@@ -337,13 +340,37 @@ function drawGutter()
     }
 }
 
+function drawViewSize()
+{
+    var text = viewportSize.width + "px \u00D7 " + viewportSize.height + "px";
+    context.save();
+    context.font = "20px ";
+    switch (platform) {
+    case "windows": context.font = "14px Consolas"; break;
+    case "mac": context.font = "14px Menlo"; break;
+    case "linux": context.font = "14px dejavu sans mono"; break;
+    }
+
+    var frameWidth = frameViewFullSize.width || canvasWidth;
+    var textWidth = context.measureText(text).width;
+    context.fillStyle = gridBackgroundColor;
+    context.fillRect(frameWidth - textWidth - 12, 15, frameWidth, 25);
+    context.fillStyle = darkGridColor;
+    context.fillText(text, frameWidth - textWidth - 6, 33);
+    context.restore();
+
+    _drawGrid(false, false);
+}
+
 function reset(resetData)
 {
-    var deviceScaleFactor = resetData.deviceScaleFactor;
-    var viewportSize = resetData.viewportSize;
+    window.viewportSize = resetData.viewportSize;
     window.frameViewFullSize = resetData.frameViewFullSize;
+    window.deviceScaleFactor = resetData.deviceScaleFactor;
     window.pageZoomFactor = resetData.pageZoomFactor;
     window.pageScaleFactor = resetData.pageScaleFactor;
+    window.scrollX = Math.round(resetData.scrollX * pageScaleFactor);
+    window.scrollY = Math.round(resetData.scrollY * pageScaleFactor);
 
     window.canvas = document.getElementById("canvas");
     window.context = canvas.getContext("2d");
@@ -355,10 +382,13 @@ function reset(resetData)
     canvas.style.width = viewportSize.width + "px";
     canvas.style.height = viewportSize.height + "px";
     context.scale(deviceScaleFactor, deviceScaleFactor);
+    window.canvasWidth = viewportSize.width;
+    window.canvasHeight = viewportSize.height;
 
     document.getElementById("paused-in-debugger").style.visibility = "hidden";
     document.getElementById("element-title").style.visibility = "hidden";
     document.body.classList.remove("dimmed");
+    window._gridPainted = false;
 }
 
 function _drawElementTitle(highlight)
@@ -390,17 +420,17 @@ function _drawElementTitle(highlight)
     var renderArrowDown = false;
 
     var boxX = Math.max(2, marginQuad[0].x);
-    if (boxX + titleWidth > canvas.width)
-        boxX = canvas.width - titleWidth - 2;
+    if (boxX + titleWidth > canvasWidth)
+        boxX = canvasWidth - titleWidth - 2;
 
     var boxY;
-    if (anchorTop > canvas.height) {
-        boxY = canvas.height - titleHeight - arrowHeight;
+    if (anchorTop > canvasHeight) {
+        boxY = canvasHeight - titleHeight - arrowHeight;
         renderArrowDown = true;
     } else if (anchorBottom < 0) {
         boxY = arrowHeight;
         renderArrowUp = true;
-    } else if (anchorBottom + titleHeight + arrowHeight < canvas.height) {
+    } else if (anchorBottom + titleHeight + arrowHeight < canvasHeight) {
         boxY = anchorBottom + arrowHeight - 4;
         renderArrowUp = true;
     } else if (anchorTop - titleHeight - arrowHeight > 0) {
@@ -441,11 +471,9 @@ function _drawElementTitle(highlight)
 
 function _drawRulers(highlight, rulerAtRight, rulerAtBottom)
 {
-    if (!highlight.showRulers)
-        return;
     context.save();
-    var width = canvas.width;
-    var height = canvas.height;
+    var width = canvasWidth;
+    var height = canvasHeight;
     context.strokeStyle = "rgba(128, 128, 128, 0.3)";
     context.lineWidth = 1;
     context.translate(0.5, 0.5);
@@ -504,21 +532,18 @@ function _drawRulers(highlight, rulerAtRight, rulerAtBottom)
 function drawNodeHighlight(highlight)
 {
     {
-        // Scale incoming data.
-        highlight.scrollX = Math.round(highlight.scrollX * pageScaleFactor);
-        highlight.scrollY = Math.round(highlight.scrollY * pageScaleFactor);
-
         for (var i = 0; i < highlight.quads.length; ++i) {
             var quad = highlight.quads[i];
             for (var j = 0; j < quad.length; ++j) {
-                quad[j].x = Math.round(quad[j].x * pageScaleFactor - highlight.scrollX);
-                quad[j].y = Math.round(quad[j].y * pageScaleFactor - highlight.scrollY);
+                quad[j].x = Math.round(quad[j].x * pageScaleFactor - scrollX);
+                quad[j].y = Math.round(quad[j].y * pageScaleFactor - scrollY);
             }
         }
     }
 
     if (!highlight.quads.length) {
-        _drawGrid(highlight, false, false);
+        if (highlight.showRulers)
+            _drawGrid(false, false);
         return;
     }
 
@@ -555,8 +580,8 @@ function drawNodeHighlight(highlight)
     if (hasEventTarget)
         drawUnderlyingQuad(eventTargetQuad, highlight.eventTargetColor);
 
-    var width = canvas.width;
-    var height = canvas.height;
+    var width = canvasWidth;
+    var height = canvasHeight;
     var minX = Number.MAX_VALUE, minY = Number.MAX_VALUE, maxX = Number.MIN_VALUE; maxY = Number.MIN_VALUE;
     for (var i = 0; i < highlight.quads.length; ++i) {
         var quad = highlight.quads[i];
@@ -571,8 +596,10 @@ function drawNodeHighlight(highlight)
     var rulerAtRight = minX < 20 && maxX + 20 < width;
     var rulerAtBottom = minY < 20 && maxY + 20 < height;
 
-    _drawGrid(highlight, rulerAtRight, rulerAtBottom);
-    _drawRulers(highlight, rulerAtRight, rulerAtBottom);
+    if (highlight.showRulers) {
+        _drawGrid(rulerAtRight, rulerAtBottom);
+        _drawRulers(highlight, rulerAtRight, rulerAtBottom);
+    }
     _drawElementTitle(highlight);
 
     context.restore();
@@ -587,6 +614,7 @@ function drawQuadHighlight(highlight)
 
 function setPlatform(platform)
 {
+    window.platform = platform;
     document.body.classList.add("platform-" + platform);
 }
 
