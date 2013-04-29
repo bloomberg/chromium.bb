@@ -4,6 +4,7 @@
 
 #include "chrome/browser/lifetime/application_lifetime.h"
 
+#include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -388,14 +389,17 @@ bool ShouldStartShutdown(Browser* browser) {
   if (BrowserList::GetInstance(browser->host_desktop_type())->size() > 1)
     return false;
 #if defined(OS_WIN) && defined(USE_AURA)
-  // On Windows 8 browser windows could be open in ASH and in the desktop. We
-  // should not start the shutdown process if browser windows are open in the
-  // other environment.
-  chrome::HostDesktopType other_desktop =
-      (browser->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_NATIVE ?
-          chrome::HOST_DESKTOP_TYPE_ASH : chrome::HOST_DESKTOP_TYPE_NATIVE);
-  if (!BrowserList::GetInstance(other_desktop)->empty())
-    return false;
+  // On Windows 8 the desktop and ASH environments could be active
+  // at the same time.
+  // We should not start the shutdown process in the following cases:-
+  // 1. If the desktop type of the browser going away is ASH and there
+  //    are browser windows open in the desktop.
+  // 2. If the desktop type of the browser going away is desktop and the ASH
+  //    environment is still active.
+  if (browser->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_NATIVE)
+    return !ash::Shell::HasInstance();
+  else if (browser->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH)
+    return BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE)->empty();
 #endif
   return true;
 }
