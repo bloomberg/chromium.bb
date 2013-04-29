@@ -17,8 +17,12 @@ class SpellcheckService;
 // Internally, this owns all SpellcheckService objects.
 class SpellcheckServiceFactory : public ProfileKeyedServiceFactory {
  public:
-  // Returns the spell check host. This may be NULL.
+  // Returns the spell check host. This will create the SpellcheckService if it
+  // does not already exist.
   static SpellcheckService* GetForProfile(Profile* profile);
+
+  // Returns the spell check host. This can return NULL.
+  static SpellcheckService* GetForProfileWithoutCreating(Profile* profile);
 
   static SpellcheckServiceFactory* GetInstance();
 

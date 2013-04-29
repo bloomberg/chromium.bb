@@ -20,6 +20,13 @@ SpellcheckService* SpellcheckServiceFactory::GetForProfile(Profile* profile) {
 }
 
 // static
+SpellcheckService* SpellcheckServiceFactory::GetForProfileWithoutCreating(
+    Profile* profile) {
+  return static_cast<SpellcheckService*>(
+      GetInstance()->GetServiceForProfile(profile, false));
+}
+
+// static
 SpellcheckServiceFactory* SpellcheckServiceFactory::GetInstance() {
   return Singleton<SpellcheckServiceFactory>::get();
 }

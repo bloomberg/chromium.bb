@@ -53,10 +53,17 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, DeleteCorruptedBDICT) {
       arraysize(kCorruptedBDICT));
   EXPECT_EQ(arraysize(kCorruptedBDICT), actual);
 
-  // Attach an event to the SpellCheckHost object so we can receive its status
-  // updates.
+  // Attach an event to the SpellcheckService object so we can receive its
+  // status updates.
   base::WaitableEvent event(true, false);
   SpellcheckService::AttachStatusEvent(&event);
+
+  // Ensure that the SpellcheckService object does not already exist. Otherwise
+  // the next line will not force creation of the SpellcheckService and the
+  // test will fail.
+  SpellcheckService* service =
+      SpellcheckServiceFactory::GetForProfileWithoutCreating(GetProfile());
+  ASSERT_EQ(NULL, service);
 
   // Getting the spellcheck_service will initialize the SpellcheckService
   // object with the corrupted BDICT file created above since the hunspell
