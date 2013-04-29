@@ -16,11 +16,11 @@
 namespace remoting {
 
 // This code is expected to be called on the desktop thread only.
-class ClipboardLinux : public Clipboard,
-                       public MessageLoopForIO::Watcher {
+class ClipboardX11 : public Clipboard,
+                     public MessageLoopForIO::Watcher {
  public:
-  ClipboardLinux();
-  virtual ~ClipboardLinux();
+  ClipboardX11();
+  virtual ~ClipboardX11();
 
   // Clipboard interface.
   virtual void Start(
@@ -50,18 +50,18 @@ class ClipboardLinux : public Clipboard,
   // Watcher used to handle X11 events from |display_|.
   MessageLoopForIO::FileDescriptorWatcher x_connection_watcher_;
 
-  DISALLOW_COPY_AND_ASSIGN(ClipboardLinux);
+  DISALLOW_COPY_AND_ASSIGN(ClipboardX11);
 };
 
-ClipboardLinux::ClipboardLinux()
+ClipboardX11::ClipboardX11()
     : display_(NULL) {
 }
 
-ClipboardLinux::~ClipboardLinux() {
+ClipboardX11::~ClipboardX11() {
   Stop();
 }
 
-void ClipboardLinux::Start(
+void ClipboardX11::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   // TODO(lambroslambrou): Share the X connection with InputInjector.
   display_ = XOpenDisplay(NULL);
@@ -72,7 +72,7 @@ void ClipboardLinux::Start(
   client_clipboard_.swap(client_clipboard);
 
   x_server_clipboard_.Init(display_,
-                           base::Bind(&ClipboardLinux::OnClipboardChanged,
+                           base::Bind(&ClipboardX11::OnClipboardChanged,
                                       base::Unretained(this)));
 
   MessageLoopForIO::current()->WatchFileDescriptor(
@@ -81,12 +81,12 @@ void ClipboardLinux::Start(
   PumpXEvents();
 }
 
-void ClipboardLinux::InjectClipboardEvent(
+void ClipboardX11::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
   x_server_clipboard_.SetClipboard(event.mime_type(), event.data());
 }
 
-void ClipboardLinux::Stop() {
+void ClipboardX11::Stop() {
   client_clipboard_.reset();
   x_connection_watcher_.StopWatchingFileDescriptor();
 
@@ -96,15 +96,15 @@ void ClipboardLinux::Stop() {
   }
 }
 
-void ClipboardLinux::OnFileCanReadWithoutBlocking(int fd) {
+void ClipboardX11::OnFileCanReadWithoutBlocking(int fd) {
   PumpXEvents();
 }
 
-void ClipboardLinux::OnFileCanWriteWithoutBlocking(int fd) {
+void ClipboardX11::OnFileCanWriteWithoutBlocking(int fd) {
 }
 
-void ClipboardLinux::OnClipboardChanged(const std::string& mime_type,
-                                        const std::string& data) {
+void ClipboardX11::OnClipboardChanged(const std::string& mime_type,
+                                      const std::string& data) {
   protocol::ClipboardEvent event;
   event.set_mime_type(mime_type);
   event.set_data(data);
@@ -114,7 +114,7 @@ void ClipboardLinux::OnClipboardChanged(const std::string& mime_type,
   }
 }
 
-void ClipboardLinux::PumpXEvents() {
+void ClipboardX11::PumpXEvents() {
   DCHECK(display_);
 
   while (XPending(display_)) {
@@ -125,7 +125,7 @@ void ClipboardLinux::PumpXEvents() {
 }
 
 scoped_ptr<Clipboard> Clipboard::Create() {
-  return scoped_ptr<Clipboard>(new ClipboardLinux());
+  return scoped_ptr<Clipboard>(new ClipboardX11());
 }
 
 }  // namespace remoting
