@@ -124,7 +124,7 @@ class NET_EXPORT_PRIVATE SimpleIndex
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SimpleIndexTest, IsIndexFileStale);
-
+  FRIEND_TEST_ALL_PREFIXES(SimpleIndexTest, IndexSizeCorrectOnMerge);
   typedef base::Callback<void(scoped_ptr<EntrySet>, bool force_index_flush)>
       IndexCompletionCallback;
 

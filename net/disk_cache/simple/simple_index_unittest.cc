@@ -13,6 +13,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "net/disk_cache/simple/simple_index.h"
+#include "net/disk_cache/simple/simple_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -127,6 +128,35 @@ TEST_F(SimpleIndexTest, IsIndexFileStale) {
                                  kDummyData.size()));
 
   EXPECT_TRUE(SimpleIndex::IsIndexFileStale(index_path));
+}
+
+TEST_F(SimpleIndexTest, IndexSizeCorrectOnMerge) {
+  typedef disk_cache::SimpleIndex::EntrySet EntrySet;
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  disk_cache::SimpleIndex index(NULL, NULL, temp_dir.path());
+  index.SetMaxSize(100);
+  index.Insert("two");
+  index.UpdateEntrySize("two", 2);
+  index.Insert("five");
+  index.UpdateEntrySize("five", 5);
+  index.Insert("seven");
+  index.UpdateEntrySize("seven", 7);
+  EXPECT_EQ(14U, index.cache_size_);
+  {
+    scoped_ptr<EntrySet> entries(new EntrySet());
+    index.MergeInitializingSet(entries.Pass(), false);
+  }
+  EXPECT_EQ(14U, index.cache_size_);
+  {
+    scoped_ptr<EntrySet> entries(new EntrySet());
+    const uint64 hash_key = simple_util::GetEntryHashKey("eleven");
+    entries->insert(std::make_pair(hash_key, EntryMetadata(hash_key,
+                                                           base::Time::Now(),
+                                                           11)));
+    index.MergeInitializingSet(entries.Pass(), false);
+  }
+  EXPECT_EQ(25U, index.cache_size_);
 }
 
 }  // namespace disk_cache
