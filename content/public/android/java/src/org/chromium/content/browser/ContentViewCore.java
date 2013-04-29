@@ -1324,6 +1324,9 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         }
         setAccessibilityState(false);
         hidePopupDialog();
+        if (mContentSettings != null && mContentSettings.supportZoom()) {
+            mZoomManager.dismissZoomPicker();
+        }
     }
 
     /**

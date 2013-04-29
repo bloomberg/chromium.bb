@@ -14,7 +14,6 @@ import android.view.ViewConfiguration;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentSettings;
 import org.chromium.content.browser.ContentViewCore;
@@ -304,12 +303,8 @@ public class ContentViewZoomTest extends AwTestBase {
         assertEquals(View.GONE, zoomControls.getVisibility());
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"AndroidWebView"})
-     * BUG 153523
-     */
-    @DisabledTest
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testZoomControlsOnOrientationChange() throws Throwable {
         AwSettings webSettings = getAwSettingsOnUiThread(mAwContents);
         webSettings.setUseWideViewPort(true);
