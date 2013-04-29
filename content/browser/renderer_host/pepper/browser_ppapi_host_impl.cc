@@ -21,15 +21,14 @@ BrowserPpapiHost* BrowserPpapiHost::CreateExternalPluginProcess(
     IPC::ChannelProxy* channel,
     net::HostResolver* host_resolver,
     int render_process_id,
-    int render_view_id) {
-  // TODO(raymes): Figure out how to plumb plugin_name and
-  // profile_data_directory through for NaCl. They are currently only needed for
-  // PPB_Flash_File interfaces so it doesn't matter.
+    int render_view_id,
+    const base::FilePath& profile_directory) {
+  // TODO(raymes): Figure out how to plumb plugin_name through for NaCl. It is
+  // currently only needed for PPB_Flash_File interfaces so it doesn't matter.
   std::string plugin_name;
-  base::FilePath profile_data_directory;
   BrowserPpapiHostImpl* browser_ppapi_host =
       new BrowserPpapiHostImpl(sender, permissions, plugin_name,
-                               profile_data_directory,
+                               profile_directory,
                                true);
   browser_ppapi_host->set_plugin_process_handle(plugin_child_process);
 

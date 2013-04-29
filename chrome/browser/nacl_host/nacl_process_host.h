@@ -47,12 +47,14 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // render_view_id: RenderView routing id, to control access to private APIs.
   // permission_bits: controls which interfaces the NaCl plugin can use.
   // off_the_record: was the process launched from an incognito renderer?
+  // profile_directory: is the path of current profile directory.
   NaClProcessHost(const GURL& manifest_url,
                   int render_view_id,
                   uint32 permission_bits,
                   bool uses_irt,
                   bool enable_dyncode_syscalls,
-                  bool off_the_record);
+                  bool off_the_record,
+                  const base::FilePath& profile_directory);
   virtual ~NaClProcessHost();
 
   // Do any minimal work that must be done at browser startup.
@@ -204,6 +206,8 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   bool enable_dyncode_syscalls_;
 
   bool off_the_record_;
+
+  const base::FilePath profile_directory_;
 
   // Channel proxy to terminate the NaCl-Browser PPAPI channel.
   scoped_ptr<IPC::ChannelProxy> ipc_proxy_channel_;

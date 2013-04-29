@@ -47,7 +47,8 @@ class CONTENT_EXPORT BrowserPpapiHost {
       IPC::ChannelProxy* channel,
       net::HostResolver* host_resolver,
       int render_process_id,
-      int render_view_id);
+      int render_view_id,
+      const base::FilePath& profile_directory);
 
   virtual ~BrowserPpapiHost() {}
 
