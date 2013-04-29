@@ -102,9 +102,6 @@ public:
 #endif
     unsigned m_lineBoxContain: 7; // LineBoxContain
     // CSS Image Values Level 3
-#if ENABLE(CSS_IMAGE_ORIENTATION)
-    unsigned m_imageOrientation : 4; // ImageOrientationEnum
-#endif
     unsigned m_imageRendering : 2; // EImageRendering
     unsigned m_lineSnap : 2; // LineSnap
     unsigned m_lineAlign : 1; // LineAlign

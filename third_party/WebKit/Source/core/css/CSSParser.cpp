@@ -2845,11 +2845,6 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitWrap:
         return RuntimeEnabledFeatures::cssExclusionsEnabled() && parseShorthand(propId, webkitWrapShorthand(), important);
 #endif
-#if ENABLE(CSS_IMAGE_ORIENTATION)
-    case CSSPropertyImageOrientation:
-        validPrimitive = !id && validUnit(value, FAngle);
-        break;
-#endif
     case CSSPropertyBorderBottomStyle:
     case CSSPropertyBorderCollapse:
     case CSSPropertyBorderLeftStyle:

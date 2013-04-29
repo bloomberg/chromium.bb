@@ -109,9 +109,6 @@ empty-cells
 float
 font-stretch
 height
-#if defined(ENABLE_CSS_IMAGE_ORIENTATION) && ENABLE_CSS_IMAGE_ORIENTATION
-image-orientation
-#endif
 image-rendering
 left
 letter-spacing

@@ -139,9 +139,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyFontVariant,
     CSSPropertyFontWeight,
     CSSPropertyHeight,
-#if ENABLE(CSS_IMAGE_ORIENTATION)
-    CSSPropertyImageOrientation,
-#endif
     CSSPropertyImageRendering,
     CSSPropertyLeft,
     CSSPropertyLetterSpacing,
@@ -1972,10 +1969,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             if (style->borderFit() == BorderFitBorder)
                 return cssValuePool().createIdentifierValue(CSSValueBorder);
             return cssValuePool().createIdentifierValue(CSSValueLines);
-#if ENABLE(CSS_IMAGE_ORIENTATION)
-        case CSSPropertyImageOrientation:
-            return cssValuePool().createValue(style->imageOrientation());
-#endif
         case CSSPropertyImageRendering:
             return CSSPrimitiveValue::create(style->imageRendering());
         case CSSPropertyLeft:

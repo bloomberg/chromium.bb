@@ -265,9 +265,6 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyFontStyle:
     case CSSPropertyFontVariant:
     case CSSPropertyFontWeight:
-#if ENABLE(CSS_IMAGE_ORIENTATION)
-    case CSSPropertyImageOrientation:
-#endif
     case CSSPropertyImageRendering:
     case CSSPropertyLetterSpacing:
     case CSSPropertyLineHeight:

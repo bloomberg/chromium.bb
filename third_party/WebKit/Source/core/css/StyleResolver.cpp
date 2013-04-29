@@ -3090,9 +3090,6 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     case CSSPropertyFontVariant:
     case CSSPropertyFontWeight:
     case CSSPropertyHeight:
-#if ENABLE(CSS_IMAGE_ORIENTATION)
-    case CSSPropertyImageOrientation:
-#endif
     case CSSPropertyImageRendering:
     case CSSPropertyLeft:
     case CSSPropertyLetterSpacing:
