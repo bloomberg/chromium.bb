@@ -58,7 +58,6 @@ class DiskCacheEntryTest : public DiskCacheTestWithCache {
   void UpdateSparseEntry();
   void DoomSparseEntry();
   void PartialSparseEntry();
-  void EvictOldEntries();
   void SimpleCacheMakeBadChecksumEntry(const char* key);
 };
 
@@ -2051,55 +2050,6 @@ TEST_F(DiskCacheEntryTest, MemoryPartialSparseEntry) {
   PartialSparseEntry();
 }
 
-// Tests that old entries are evicted while new entries remain in the index.
-// May need to update some thresholds to match individual backend heuristics.
-void DiskCacheEntryTest::EvictOldEntries() {
-  const int kMaxSize = 200 * 1024;
-  const int kWriteSize = kMaxSize / 10;
-  const int kNumExtraEntries = 12;
-  SetMaxSize(kMaxSize);
-  InitCache();
-
-  std::string key1("the first key");
-  disk_cache::Entry* entry;
-  ASSERT_EQ(net::OK, CreateEntry(key1, &entry));
-  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kWriteSize));
-  CacheTestFillBuffer(buffer->data(), kWriteSize, false);
-  EXPECT_EQ(kWriteSize, WriteData(entry, 0, 0, buffer, kWriteSize, false));
-  entry->Close();
-
-  std::string key2("the key prefix");
-  for (int i = 0; i < kNumExtraEntries; i++) {
-    ASSERT_EQ(net::OK, CreateEntry(key2 + base::StringPrintf("%d", i), &entry));
-    EXPECT_EQ(kWriteSize, WriteData(entry, 0, 0, buffer, kWriteSize, false));
-    entry->Close();
-  }
-
-  ASSERT_NE(net::OK, OpenEntry(key1, &entry))
-      << "Should have evicted the old entry";
-  for (int i = 0; i < 2; i++) {
-    int entry_no = kNumExtraEntries - i - 1;
-    EXPECT_EQ(net::OK, OpenEntry(key2 + base::StringPrintf("%d", entry_no),
-                                 &entry))
-        << "Should not have evicted fresh entry " << entry_no;
-    entry->Close();
-  }
-}
-
-TEST_F(DiskCacheEntryTest, EvictOldEntries) {
-  EvictOldEntries();
-}
-
-TEST_F(DiskCacheEntryTest, NewEvictionEvictOldEntries) {
-  SetNewEviction();
-  EvictOldEntries();
-}
-
-TEST_F(DiskCacheEntryTest, MemoryEvictOldEntries) {
-  SetMemoryOnlyMode();
-  EvictOldEntries();
-}
-
 // Tests that corrupt sparse children are removed automatically.
 TEST_F(DiskCacheEntryTest, CleanupSparseEntry) {
   InitCache();
@@ -2234,7 +2184,7 @@ TEST_F(DiskCacheEntryTest, KeySanityCheck) {
 
 // The simple cache backend isn't intended to work on Windows, which has very
 // different file system guarantees from Linux.
-#if !defined(OS_WIN)
+#if defined(OS_POSIX)
 
 TEST_F(DiskCacheEntryTest, SimpleCacheInternalAsyncIO) {
   SetSimpleCacheMode();
@@ -2431,9 +2381,47 @@ TEST_F(DiskCacheEntryTest, SimpleCacheErrorThenDoom) {
   entry->Close();
 }
 
+// Tests that old entries are evicted while new entries remain in the index.
+// This test relies on non-mandatory properties of the simple Cache Backend:
+// LRU eviction, specific values of high-watermark and low-watermark etc.
+// When changing the eviction algorithm, the test will have to be re-engineered.
 TEST_F(DiskCacheEntryTest, SimpleCacheEvictOldEntries) {
+  const int kMaxSize = 200 * 1024;
+  const int kWriteSize = kMaxSize / 10;
+  const int kNumExtraEntries = 12;
   SetSimpleCacheMode();
-  EvictOldEntries();
+  SetMaxSize(kMaxSize);
+  InitCache();
+
+  std::string key1("the first key");
+  disk_cache::Entry* entry;
+  ASSERT_EQ(net::OK, CreateEntry(key1, &entry));
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kWriteSize));
+  CacheTestFillBuffer(buffer->data(), kWriteSize, false);
+  EXPECT_EQ(kWriteSize, WriteData(entry, 0, 0, buffer, kWriteSize, false));
+  entry->Close();
+
+  std::string key2("the key prefix");
+  for (int i = 0; i < kNumExtraEntries; i++) {
+    ASSERT_EQ(net::OK, CreateEntry(key2 + base::StringPrintf("%d", i), &entry));
+    EXPECT_EQ(kWriteSize, WriteData(entry, 0, 0, buffer, kWriteSize, false));
+    entry->Close();
+  }
+
+  // TODO(pasko): Find a way to wait for the eviction task(s) to finish by using
+  // the internal knowledge about |SimpleBackendImpl|.
+  ASSERT_NE(net::OK, OpenEntry(key1, &entry))
+      << "Should have evicted the old entry";
+  for (int i = 0; i < 2; i++) {
+    int entry_no = kNumExtraEntries - i - 1;
+    // Generally there is no guarantee that at this point the backround eviction
+    // is finished. We are testing the positive case, i.e. when the eviction
+    // never reaches this entry, should be non-flaky.
+    ASSERT_EQ(net::OK, OpenEntry(key2 + base::StringPrintf("%d", entry_no),
+                                 &entry))
+        << "Should not have evicted fresh entry " << entry_no;
+    entry->Close();
+  }
 }
 
-#endif  // !defined(OS_WIN)
+#endif  // defined(OS_POSIX)
