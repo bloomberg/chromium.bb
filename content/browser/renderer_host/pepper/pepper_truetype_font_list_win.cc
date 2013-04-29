@@ -63,7 +63,7 @@ void GetFontFamilies_SlowBlocking(FontFamilyList* font_families) {
   LOGFONTW logfont;
   memset(&logfont, 0, sizeof(logfont));
   logfont.lfCharSet = DEFAULT_CHARSET;
-  base::win::ScopedCreateDC hdc(::GetDC(NULL));
+  base::win::ScopedCreateDC hdc(::CreateCompatibleDC(NULL));
   ::EnumFontFamiliesExW(hdc, &logfont, (FONTENUMPROCW)&EnumFontFamiliesProc,
                         (LPARAM)font_families, 0);
 }
@@ -75,7 +75,7 @@ void GetFontsInFamily_SlowBlocking(const std::string& family,
   logfont.lfCharSet = DEFAULT_CHARSET;
   string16 family16 = UTF8ToUTF16(family);
   memcpy(&logfont.lfFaceName, &family16[0], sizeof(logfont.lfFaceName));
-  base::win::ScopedCreateDC hdc(::GetDC(NULL));
+  base::win::ScopedCreateDC hdc(::CreateCompatibleDC(NULL));
   ::EnumFontFamiliesExW(hdc, &logfont, (FONTENUMPROCW)&EnumFontsInFamilyProc,
                         (LPARAM)fonts_in_family, 0);
 }

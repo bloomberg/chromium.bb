@@ -451,13 +451,3 @@ name=http://crbug.com/234484
 ...
 *!chrome::`anonymous namespace'::SetOverlayIcon
 
-GDI USAGE ERROR
-name=http://crbug.com/236165
-# "use DeleteDC only for CreateDC on browser_tests"
-system call NtGdiDeleteObjectApp
-GDI32.dll!DeleteDC
-content.dll!base::win::CreateDCTraits::CloseHandle
-content.dll!base::win::GenericScopedHandle<base::win::CreateDCTraits,base::win::VerifierTraits>::Close
-content.dll!base::win::GenericScopedHandle<base::win::CreateDCTraits,base::win::VerifierTraits>::~GenericScopedHandle<base::win::CreateDCTraits,base::win::VerifierTraits>
-content.dll!content::GetFontFamilies_SlowBlocking
-
