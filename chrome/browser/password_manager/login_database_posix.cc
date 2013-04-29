@@ -8,12 +8,14 @@
 
 // TODO: Actually encrypt passwords on Linux.
 
-std::string LoginDatabase::EncryptedString(const string16& plain_text)
-    const {
-  return UTF16ToUTF8(plain_text);
+bool LoginDatabase::EncryptedString(const string16& plain_text,
+                                    std::string* cipher_text) const {
+  *cipher_text = UTF16ToUTF8(plain_text);
+  return true;
 }
 
-string16 LoginDatabase::DecryptedString(const std::string& cipher_text)
-    const {
-  return UTF8ToUTF16(cipher_text);
+bool LoginDatabase::DecryptedString(const std::string& cipher_text,
+                                    string16* plain_text) const {
+  *plain_text = UTF8ToUTF16(cipher_text);
+  return true;
 }

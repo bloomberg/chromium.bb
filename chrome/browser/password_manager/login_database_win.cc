@@ -6,18 +6,12 @@
 #include "chrome/browser/password_manager/login_database.h"
 #include "components/webdata/encryptor/encryptor.h"
 
-std::string LoginDatabase::EncryptedString(const string16& plain_text)
-    const {
-  std::string cipher_text;
-  if (!Encryptor::EncryptString16(plain_text, &cipher_text))
-    NOTREACHED() << "Failed to encrypt string";
-  return cipher_text;
+bool LoginDatabase::EncryptedString(const string16& plain_text,
+                                    std::string* cipher_text) const {
+  return Encryptor::EncryptString16(plain_text, cipher_text);
 }
 
-string16 LoginDatabase::DecryptedString(const std::string& cipher_text)
-    const {
-  string16 plain_text;
-  if (!Encryptor::DecryptString16(cipher_text, &plain_text))
-    NOTREACHED() << "Failed to decrypt string";
-  return plain_text;
+bool LoginDatabase::DecryptedString(const std::string& cipher_text,
+                                    string16* plain_text) const {
+  return Encryptor::DecryptString16(cipher_text, plain_text);
 }

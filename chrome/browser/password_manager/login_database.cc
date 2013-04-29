@@ -171,6 +171,10 @@ void LoginDatabase::ReportMetrics() {
 }
 
 bool LoginDatabase::AddLogin(const PasswordForm& form) {
+  std::string encrypted_password;
+  if (!EncryptedString(form.password_value, &encrypted_password))
+    return false;
+
   // You *must* change LoginTableColumns if this query changes.
   sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
       "INSERT OR REPLACE INTO logins "
@@ -185,7 +189,6 @@ bool LoginDatabase::AddLogin(const PasswordForm& form) {
   s.BindString16(COLUMN_USERNAME_ELEMENT, form.username_element);
   s.BindString16(COLUMN_USERNAME_VALUE, form.username_value);
   s.BindString16(COLUMN_PASSWORD_ELEMENT, form.password_element);
-  std::string encrypted_password = EncryptedString(form.password_value);
   s.BindBlob(COLUMN_PASSWORD_VALUE, encrypted_password.data(),
               static_cast<int>(encrypted_password.length()));
   s.BindString16(COLUMN_SUBMIT_ELEMENT, form.submit_element);
@@ -203,6 +206,10 @@ bool LoginDatabase::AddLogin(const PasswordForm& form) {
 }
 
 bool LoginDatabase::UpdateLogin(const PasswordForm& form, int* items_changed) {
+  std::string encrypted_password;
+  if (!EncryptedString(form.password_value, &encrypted_password))
+    return false;
+
   sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
       "UPDATE logins SET "
       "action_url = ?, "
@@ -216,7 +223,6 @@ bool LoginDatabase::UpdateLogin(const PasswordForm& form, int* items_changed) {
       "password_element = ? AND "
       "signon_realm = ?"));
   s.BindString(0, form.action.spec());
-  std::string encrypted_password = EncryptedString(form.password_value);
   s.BindBlob(1, encrypted_password.data(),
              static_cast<int>(encrypted_password.length()));
   s.BindInt(2, form.ssl_valid);
@@ -270,8 +276,14 @@ bool LoginDatabase::RemoveLoginsCreatedBetween(const base::Time delete_begin,
   return s.Run();
 }
 
-void LoginDatabase::InitPasswordFormFromStatement(PasswordForm* form,
+bool LoginDatabase::InitPasswordFormFromStatement(PasswordForm* form,
                                                   sql::Statement& s) const {
+  std::string encrypted_password;
+  s.ColumnBlobAsString(COLUMN_PASSWORD_VALUE, &encrypted_password);
+  string16 decrypted_password;
+  if (!DecryptedString(encrypted_password, &decrypted_password))
+    return false;
+
   std::string tmp = s.ColumnString(COLUMN_ORIGIN_URL);
   form->origin = GURL(tmp);
   tmp = s.ColumnString(COLUMN_ACTION_URL);
@@ -279,9 +291,7 @@ void LoginDatabase::InitPasswordFormFromStatement(PasswordForm* form,
   form->username_element = s.ColumnString16(COLUMN_USERNAME_ELEMENT);
   form->username_value = s.ColumnString16(COLUMN_USERNAME_VALUE);
   form->password_element = s.ColumnString16(COLUMN_PASSWORD_ELEMENT);
-  std::string encrypted_password;
-  s.ColumnBlobAsString(COLUMN_PASSWORD_VALUE, &encrypted_password);
-  form->password_value = DecryptedString(encrypted_password);
+  form->password_value = decrypted_password;
   form->submit_element = s.ColumnString16(COLUMN_SUBMIT_ELEMENT);
   tmp = s.ColumnString(COLUMN_SIGNON_REALM);
   form->signon_realm = tmp;
@@ -300,6 +310,7 @@ void LoginDatabase::InitPasswordFormFromStatement(PasswordForm* form,
       static_cast<const char*>(s.ColumnBlob(COLUMN_POSSIBLE_USERNAMES)),
       s.ColumnByteLength(COLUMN_POSSIBLE_USERNAMES));
   form->possible_usernames = DeserializeVector(pickle);
+  return true;
 }
 
 bool LoginDatabase::GetLogins(const PasswordForm& form,
@@ -316,10 +327,10 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
   s.BindString(0, form.signon_realm);
 
   while (s.Step()) {
-    PasswordForm* new_form = new PasswordForm();
-    InitPasswordFormFromStatement(new_form, s);
-
-    forms->push_back(new_form);
+    scoped_ptr<PasswordForm> new_form(new PasswordForm());
+    if (!InitPasswordFormFromStatement(new_form.get(), s))
+      return false;
+    forms->push_back(new_form.release());
   }
   return s.Succeeded();
 }
@@ -342,10 +353,10 @@ bool LoginDatabase::GetLoginsCreatedBetween(
                                : end.ToTimeT());
 
   while (s.Step()) {
-    PasswordForm* new_form = new PasswordForm();
-    InitPasswordFormFromStatement(new_form, s);
-
-    forms->push_back(new_form);
+    scoped_ptr<PasswordForm> new_form(new PasswordForm());
+    if (!InitPasswordFormFromStatement(new_form.get(), s))
+      return false;
+    forms->push_back(new_form.release());
   }
   return s.Succeeded();
 }
@@ -375,10 +386,10 @@ bool LoginDatabase::GetAllLoginsWithBlacklistSetting(
   s.BindInt(0, blacklisted ? 1 : 0);
 
   while (s.Step()) {
-    PasswordForm* new_form = new PasswordForm();
-    InitPasswordFormFromStatement(new_form, s);
-
-    forms->push_back(new_form);
+    scoped_ptr<PasswordForm> new_form(new PasswordForm());
+    if (!InitPasswordFormFromStatement(new_form.get(), s))
+      return false;
+    forms->push_back(new_form.release());
   }
   return s.Succeeded();
 }
