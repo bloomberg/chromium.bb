@@ -213,6 +213,12 @@ TranslatorPatterns = [
                        "env.append('LLC_FLAGS_EXTRA', '--nacl-cc-rewrite')"),
   ( '--newlib-shared-experiment',  "env.set('NEWLIB_SHARED_EXPERIMENT', '1')"),
 
+  # TODO(eliben): make this actually link appropriate objects for EH
+  # This is temporary to teach pnacl-translate not to fail on the bots when this
+  # flag is encountered; preparation for a subsequent CL where the scons scripts
+  # will actually pass this flag to pnacl-translate for some tests.
+  ( '--pnacl-allow-exceptions', ""),
+
   # Toggle the use of ELF-stubs / bitcode metadata, which represent real .so
   # files in the final native link.
   # There may be cases where this will not work (e.g., when the final link
