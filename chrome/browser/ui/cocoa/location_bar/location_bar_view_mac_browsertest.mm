@@ -59,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(LocationBarViewMacBrowserTest, SearchToken) {
   EXPECT_FALSE(GetSeparatorDecoration()->IsVisible());
 
   test_toolbar_model_.SetInputInProgress(false);
-  test_toolbar_model_.set_replace_search_url_with_search_terms(true);
+  test_toolbar_model_.set_search_terms_type(ToolbarModel::NORMAL_SEARCH_TERMS);
   GetLocationBar()->Layout();
   EXPECT_TRUE(GetSearchTokenDecoration()->IsVisible());
   EXPECT_TRUE(GetSeparatorDecoration()->IsVisible());

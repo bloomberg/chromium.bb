@@ -386,7 +386,8 @@ bool OmniboxEditModel::UseVerbatimInstant() {
 }
 
 bool OmniboxEditModel::CurrentTextIsURL() const {
-  if (view_->toolbar_model()->WouldReplaceSearchURLWithSearchTerms())
+  if (view_->toolbar_model()->GetSearchTermsType() !=
+      ToolbarModel::NO_SEARCH_TERMS)
     return false;
 
   // If current text is not composed of replaced search terms and
@@ -417,8 +418,9 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
 
   // Do not adjust if selection did not start at the beginning of the field, or
   // if the URL was replaced by search terms.
-  if (sel_min != 0 ||
-      view_->toolbar_model()->WouldReplaceSearchURLWithSearchTerms())
+  if ((sel_min != 0) ||
+      (view_->toolbar_model()->GetSearchTermsType() !=
+          ToolbarModel::NO_SEARCH_TERMS))
     return;
 
   if (!user_input_in_progress_ && is_all_selected) {

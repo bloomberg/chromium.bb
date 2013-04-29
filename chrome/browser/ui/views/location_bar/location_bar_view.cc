@@ -428,7 +428,7 @@ void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
 
   string16 search_provider;
   if (!model_->GetInputInProgress() &&
-      model_->WouldReplaceSearchURLWithSearchTerms()) {
+      (model_->GetSearchTermsType() != ToolbarModel::NO_SEARCH_TERMS)) {
     const TemplateURL* template_url =
         TemplateURLServiceFactory::GetForProfile(profile_)->
             GetDefaultSearchProvider();

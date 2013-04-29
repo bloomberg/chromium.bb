@@ -20,7 +20,8 @@ class TestToolbarModel : public ToolbarModel {
       bool display_search_urls_as_search_terms) const OVERRIDE;
   virtual string16 GetCorpusNameForMobile() const OVERRIDE;
   virtual GURL GetURL() const OVERRIDE;
-  virtual bool WouldReplaceSearchURLWithSearchTerms() const OVERRIDE;
+  virtual SearchTermsType GetSearchTermsType() const OVERRIDE;
+  virtual void SetSupportsExtractionOfURLLikeSearchTerms(bool value) OVERRIDE;
   virtual SecurityLevel GetSecurityLevel() const OVERRIDE;
   virtual int GetIcon() const OVERRIDE;
   virtual string16 GetEVCertName() const OVERRIDE;
@@ -30,8 +31,8 @@ class TestToolbarModel : public ToolbarModel {
 
   void set_text(const string16& text) { text_ = text; }
   void set_url(const GURL& url) { url_ = url;}
-  void set_replace_search_url_with_search_terms(bool should_replace_url) {
-    should_replace_url_ = should_replace_url;
+  void set_search_terms_type(SearchTermsType type) {
+    search_terms_type_ = type;
   }
   void set_security_level(SecurityLevel security_level) {
     security_level_ = security_level;
@@ -47,7 +48,7 @@ class TestToolbarModel : public ToolbarModel {
  private:
   string16 text_;
   GURL url_;
-  bool should_replace_url_;
+  SearchTermsType search_terms_type_;
   SecurityLevel security_level_;
   int icon_;
   string16 ev_cert_name_;

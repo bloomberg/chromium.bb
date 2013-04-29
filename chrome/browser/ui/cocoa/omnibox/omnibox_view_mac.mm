@@ -887,7 +887,7 @@ void OmniboxViewMac::OnPaste() {
 // this method could call the OmniboxView version.
 bool OmniboxViewMac::ShouldEnableCopyURL() {
   return !model()->user_input_in_progress() &&
-      toolbar_model()->WouldReplaceSearchURLWithSearchTerms();
+      toolbar_model()->GetSearchTermsType() != ToolbarModel::NO_SEARCH_TERMS;
 }
 
 bool OmniboxViewMac::CanPasteAndGo() {

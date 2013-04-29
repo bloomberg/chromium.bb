@@ -772,8 +772,9 @@ bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
   if (command_id == IDS_PASTE_AND_GO)
     return model()->CanPasteAndGo(GetClipboardText());
   if (command_id == IDC_COPY_URL) {
-    return toolbar_model()->WouldReplaceSearchURLWithSearchTerms() &&
-      !model()->user_input_in_progress();
+    return !model()->user_input_in_progress() &&
+        (toolbar_model()->GetSearchTermsType() !=
+            ToolbarModel::NO_SEARCH_TERMS);
   }
   return command_updater()->IsCommandEnabled(command_id);
 }

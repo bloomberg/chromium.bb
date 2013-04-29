@@ -825,6 +825,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
   MakeRequestFail make_request_fail("search.example");
 
   chrome::EnableInstantExtendedAPIForTesting();
+  browser()->toolbar_model()->SetSupportsExtractionOfURLLikeSearchTerms(true);
 
   // Verifies that a default search is made using the provider configured via
   // policy. Also checks that default search can be completely disabled.

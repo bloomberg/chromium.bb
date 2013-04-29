@@ -90,6 +90,10 @@ class InstantExtendedTest : public InProcessBrowserTest,
     InstantTestBase::Init(instant_url);
   }
 
+  virtual void SetUpOnMainThread() OVERRIDE {
+    browser()->toolbar_model()->SetSupportsExtractionOfURLLikeSearchTerms(true);
+  }
+
   std::string GetOmniboxText() {
     return UTF16ToUTF8(omnibox()->GetText());
   }

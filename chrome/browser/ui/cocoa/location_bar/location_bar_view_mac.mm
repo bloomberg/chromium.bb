@@ -787,7 +787,7 @@ void LocationBarViewMac::UpdatePlusDecorationVisibility() {
 
 string16 LocationBarViewMac::GetSearchProviderName() const {
   if (!toolbar_model_->GetInputInProgress() &&
-      toolbar_model_->WouldReplaceSearchURLWithSearchTerms()) {
+      toolbar_model_->GetSearchTermsType() != ToolbarModel::NO_SEARCH_TERMS) {
     const TemplateURL* template_url =
         TemplateURLServiceFactory::GetForProfile(profile_)->
             GetDefaultSearchProvider();

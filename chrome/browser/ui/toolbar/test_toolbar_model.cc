@@ -8,7 +8,7 @@
 
 TestToolbarModel::TestToolbarModel()
     : ToolbarModel(),
-      should_replace_url_(false),
+      search_terms_type_(NO_SEARCH_TERMS),
       security_level_(NONE),
       icon_(IDR_LOCATION_BAR_HTTP),
       should_display_url_(true),
@@ -29,8 +29,11 @@ GURL TestToolbarModel::GetURL() const {
   return url_;
 }
 
-bool TestToolbarModel::WouldReplaceSearchURLWithSearchTerms() const {
-  return should_replace_url_;
+ToolbarModel::SearchTermsType TestToolbarModel::GetSearchTermsType() const {
+  return search_terms_type_;
+}
+
+void TestToolbarModel::SetSupportsExtractionOfURLLikeSearchTerms(bool value) {
 }
 
 ToolbarModel::SecurityLevel TestToolbarModel::GetSecurityLevel() const {
