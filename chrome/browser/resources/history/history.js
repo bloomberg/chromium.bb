@@ -157,10 +157,15 @@ Visit.prototype.getResultDOM = function(propertyBag) {
   entryBox.appendChild(time);
   var titleAndDomainWrapper = entryBox.appendChild(
       createElementWithClassName('div', 'title-and-domain'));
-  titleAndDomainWrapper.appendChild(this.getTitleDOM_());
+  if (this.blockedVisit) {
+    titleAndDomainWrapper.classList.add('blocked-indicator');
+    titleAndDomainWrapper.appendChild(this.getVisitAttemptDOM_());
+  } else {
+    titleAndDomainWrapper.appendChild(this.getTitleDOM_());
+    if (addTitleFavicon)
+      this.addFaviconToElement_(titleAndDomainWrapper);
+  }
   titleAndDomainWrapper.appendChild(domain);
-  if (addTitleFavicon)
-    this.addFaviconToElement_(titleAndDomainWrapper);
 
   if (isMobileVersion()) {
     var removeButton = createElementWithClassName('button', 'remove-entry');
@@ -206,9 +211,7 @@ Visit.prototype.getResultDOM = function(propertyBag) {
   if (!isSearchResult && this.model_.isManagedProfile &&
       this.model_.getGroupByDomain()) {
     entryBoxContainer.appendChild(
-        getManagedStatusDOM(this.urlManualBehavior,
-                            this.urlInContentPack,
-                            this.blockedVisit));
+        getManagedStatusDOM(this.urlManualBehavior, this.urlInContentPack));
   }
 
   if (isSearchResult) {
@@ -313,6 +316,18 @@ Visit.prototype.getTitleDOM_ = function() {
     star.addEventListener('click', this.starClicked_.bind(this));
   }
 
+  return node;
+};
+
+/**
+ * Returns the DOM element containing the text for a blocked visit attempt.
+ * @return {Element} DOM representation of the visit attempt.
+ * @private
+ */
+Visit.prototype.getVisitAttemptDOM_ = function() {
+  var node = createElementWithClassName('div', 'title');
+  node.innerHTML = loadTimeData.getStringF('blockedVisitText',
+                                           this.url_, this.id_);
   return node;
 };
 
@@ -1072,8 +1087,7 @@ HistoryView.prototype.getGroupedVisitsDOM_ = function(
     // Visit attempts don't make sense for domains so set the last parameter to
     // false.
     siteDomainWrapper.appendChild(getManagedStatusDOM(
-        domainVisits[0].hostManualBehavior, domainVisits[0].hostInContentPack,
-        false));
+        domainVisits[0].hostManualBehavior, domainVisits[0].hostInContentPack));
   }
 
   siteResults.appendChild(siteDomainWrapper);
@@ -1593,15 +1607,6 @@ function updateHostStatus(statusElement, newStatus) {
       inContentPackDiv.classList.add('in-content-pack-active');
   }
 
-  if ('blockedVisit' in newStatus) {
-    var blockedVisitDiv = statusElement.querySelector('.blocked-visit');
-    // Reset the class to .blocked-visit first, then set it to active if
-    // needed.
-    blockedVisitDiv.className = 'blocked-visit';
-    if (newStatus['blockedVisit'])
-      blockedVisitDiv.classList.add('blocked-visit-active');
-  }
-
   if ('manualBehavior' in newStatus) {
     var manualBehaviorDiv = statusElement.querySelector('.manual-behavior');
     // Reset to the base class first, then add modifier classes if needed.
@@ -1857,24 +1862,19 @@ function toggleHandler(e) {
  *     this item.
  * @param {boolean} inContentPack Whether this element is in a content pack or
  *     not.
- * @param {boolean} blockedVisit Whether this visit was an attempted visit.
  * @return {Element} Returns the DOM elements which show the status.
  */
-function getManagedStatusDOM(manualBehavior, inContentPack, blockedVisit) {
+function getManagedStatusDOM(manualBehavior, inContentPack) {
   var filterStatusDiv = createElementWithClassName('div', 'filter-status');
   var inContentPackDiv = createElementWithClassName('div', 'in-content-pack');
-  var blockedVisitDiv = createElementWithClassName('div', 'blocked-visit');
   inContentPackDiv.textContent = loadTimeData.getString('inContentPack');
-  blockedVisitDiv.textContent = loadTimeData.getString('filterBlocked');
   var manualBehaviorDiv = createElementWithClassName('div', 'manual-behavior');
   filterStatusDiv.appendChild(inContentPackDiv);
   filterStatusDiv.appendChild(manualBehaviorDiv);
-  filterStatusDiv.appendChild(blockedVisitDiv);
 
   updateHostStatus(filterStatusDiv, {
     'inContentPack' : inContentPack,
-    'manualBehavior' : manualBehavior,
-    'blockedVisit' : blockedVisit
+    'manualBehavior' : manualBehavior
   });
   return filterStatusDiv;
 }

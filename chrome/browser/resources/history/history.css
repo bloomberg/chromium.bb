@@ -325,10 +325,15 @@ html[dir='rtl'] .site-domain {
   color: rgb(148, 148, 148);
 }
 
-.blocked-visit {
-  border: 1px solid rgb(211, 0, 0);
-  background-color: rgb(255, 197, 105);
-  color: rgb(54, 54, 54);
+/* TODO(sergiu): If this is the final icon replace it with a separate resource.
+ */
+.blocked-indicator {
+  background: url(../ssl_roadblock_icon.png) no-repeat;
+  background-size: 30%;
+}
+
+.blocked-indicator .title {
+  color: rgb(151, 156, 160);
 }
 </if>
 
