@@ -128,7 +128,6 @@ DrawingBuffer::DrawingBuffer(GraphicsContext3D* context,
     , m_internalColorFormat(0)
     , m_colorFormat(0)
     , m_internalRenderbufferFormat(0)
-    , m_maxTextureSize(0)
     , m_contextEvictionManager(contextEvictionManager)
 {
     // Used by browser tests to detect the use of a DrawingBuffer.
@@ -143,12 +142,15 @@ DrawingBuffer::DrawingBuffer(GraphicsContext3D* context,
 
 DrawingBuffer::~DrawingBuffer()
 {
-    releaseResources();
+    clear();
+
+    if (m_layer)
+        GraphicsLayerChromium::unregisterContentsLayer(m_layer->layer());
 }
 
 unsigned DrawingBuffer::prepareTexture(WebKit::WebTextureUpdater& updater)
 {
-    if (!m_context || !m_colorBuffer)
+    if (!m_colorBuffer)
         return 0;
 
     prepareBackBuffer();
@@ -165,14 +167,12 @@ unsigned DrawingBuffer::prepareTexture(WebKit::WebTextureUpdater& updater)
 
 WebKit::WebGraphicsContext3D* DrawingBuffer::context()
 {
-    if (!m_context)
-        return 0;
     return GraphicsContext3DPrivate::extractWebGraphicsContext3D(m_context.get());
 }
 
 bool DrawingBuffer::prepareMailbox(WebKit::WebExternalTextureMailbox* outMailbox)
 {
-    if (!m_context || !m_contentsChanged || !m_lastColorBuffer)
+    if (!m_contentsChanged || !m_lastColorBuffer)
         return false;
 
     m_context->makeContextCurrent();
@@ -244,7 +244,7 @@ void DrawingBuffer::mailboxReleased(const WebKit::WebExternalTextureMailbox& mai
 
 PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::getRecycledMailbox()
 {
-    if (!m_context || m_recycledMailboxes.isEmpty())
+    if (m_recycledMailboxes.isEmpty())
         return PassRefPtr<MailboxInfo>();
 
     RefPtr<MailboxInfo> mailboxInfo = m_recycledMailboxes.last().release();
@@ -278,10 +278,9 @@ PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::createNewMailbox(unsigned 
 
 void DrawingBuffer::initialize(const IntSize& size)
 {
-    ASSERT(m_context);
-    m_attributes = m_context->getContextAttributes();
+    const GraphicsContext3D::Attributes& attributes = m_context->getContextAttributes();
 
-    if (m_attributes.alpha) {
+    if (attributes.alpha) {
         m_internalColorFormat = GraphicsContext3D::RGBA;
         m_colorFormat = GraphicsContext3D::RGBA;
         m_internalRenderbufferFormat = Extensions3D::RGBA8_OES;
@@ -290,8 +289,6 @@ void DrawingBuffer::initialize(const IntSize& size)
         m_colorFormat = GraphicsContext3D::RGB;
         m_internalRenderbufferFormat = Extensions3D::RGB8_OES;
     }
-
-    m_context->getIntegerv(GraphicsContext3D::MAX_TEXTURE_SIZE, &m_maxTextureSize);
 
     m_fbo = m_context->createFramebuffer();
 
@@ -310,7 +307,7 @@ void DrawingBuffer::initialize(const IntSize& size)
 
 void DrawingBuffer::prepareBackBuffer()
 {
-    if (!m_context || !m_contentsChanged)
+    if (!m_contentsChanged)
         return;
 
     m_context->makeContextCurrent();
@@ -353,9 +350,6 @@ Platform3DObject DrawingBuffer::framebuffer() const
 
 PlatformLayer* DrawingBuffer::platformLayer()
 {
-    if (!m_context)
-        return 0;
-
     if (!m_layer){
 #if ENABLE(CANVAS_USES_MAILBOX)
         m_layer = adoptPtr(WebKit::Platform::current()->compositorSupport()->createExternalTextureLayerForMailbox(this));
@@ -363,8 +357,9 @@ PlatformLayer* DrawingBuffer::platformLayer()
         m_layer = adoptPtr(WebKit::Platform::current()->compositorSupport()->createExternalTextureLayer(this));
 #endif // ENABLE(CANVAS_USES_MAILBOX)
 
-        m_layer->setOpaque(!m_attributes.alpha);
-        m_layer->setPremultipliedAlpha(m_attributes.premultipliedAlpha);
+        GraphicsContext3D::Attributes attributes = m_context->getContextAttributes();
+        m_layer->setOpaque(!attributes.alpha);
+        m_layer->setPremultipliedAlpha(attributes.premultipliedAlpha);
         GraphicsLayerChromium::registerContentsLayer(m_layer->layer());
     }
 
@@ -373,7 +368,7 @@ PlatformLayer* DrawingBuffer::platformLayer()
 
 void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
 {
-    if (!m_context || !m_context->makeContextCurrent() || m_context->getExtensions()->getGraphicsResetStatusARB() != GraphicsContext3D::NO_ERROR)
+    if (!m_context->makeContextCurrent() || m_context->getExtensions()->getGraphicsResetStatusARB() != GraphicsContext3D::NO_ERROR)
         return;
 
     Extensions3D* extensions = m_context->getExtensions();
@@ -398,7 +393,7 @@ void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
     m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, framebuffer);
     m_context->framebufferTexture2D(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::COLOR_ATTACHMENT0, GraphicsContext3D::TEXTURE_2D, sourceTexture, 0);
 
-    extensions->paintFramebufferToCanvas(framebuffer, size().width(), size().height(), !m_attributes.premultipliedAlpha, imageBuffer);
+    extensions->paintFramebufferToCanvas(framebuffer, size().width(), size().height(), !m_context->getContextAttributes().premultipliedAlpha, imageBuffer);
     m_context->deleteFramebuffer(framebuffer);
 #if ENABLE(CANVAS_USES_MAILBOX)
     m_context->deleteTexture(sourceTexture);
@@ -412,11 +407,10 @@ void DrawingBuffer::clearPlatformLayer()
     if (m_layer)
         m_layer->clearTexture();
 
-    if (m_context)
-        m_context->flush();
+    m_context->flush();
 }
 
-void DrawingBuffer::releaseResources()
+void DrawingBuffer::clear()
 {
     if (m_context) {
         m_context->makeContextCurrent();
@@ -451,8 +445,6 @@ void DrawingBuffer::releaseResources()
 
         if (m_fbo)
             m_context->deleteFramebuffer(m_fbo);
-
-        m_context.clear();
     }
 
     setSize(IntSize());
@@ -472,18 +464,10 @@ void DrawingBuffer::releaseResources()
     m_recycledMailboxes.clear();
     m_textureMailboxes.clear();
 #endif  // ENABLE(CANVAS_USES_MAILBOX)
-
-    if (m_layer) {
-        GraphicsLayerChromium::unregisterContentsLayer(m_layer->layer());
-        m_layer.clear();
-    }
 }
 
 unsigned DrawingBuffer::createColorTexture(const IntSize& size)
 {
-    if (!m_context)
-        return 0;
-
     unsigned offscreenColorTexture = m_context->createTexture();
     if (!offscreenColorTexture)
         return 0;
@@ -564,7 +548,8 @@ bool DrawingBuffer::resizeMultisampleFramebuffer(const IntSize& size)
 
 void DrawingBuffer::resizeDepthStencil(const IntSize& size, int sampleCount)
 {
-    if (m_attributes.depth && m_attributes.stencil && m_packedDepthStencilExtensionSupported) {
+    const GraphicsContext3D::Attributes& attributes = m_context->getContextAttributes();
+    if (attributes.depth && attributes.stencil && m_packedDepthStencilExtensionSupported) {
         if (!m_depthStencilBuffer)
             m_depthStencilBuffer = m_context->createRenderbuffer();
         m_context->bindRenderbuffer(GraphicsContext3D::RENDERBUFFER, m_depthStencilBuffer);
@@ -575,7 +560,7 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size, int sampleCount)
         m_context->framebufferRenderbuffer(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::STENCIL_ATTACHMENT, GraphicsContext3D::RENDERBUFFER, m_depthStencilBuffer);
         m_context->framebufferRenderbuffer(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::DEPTH_ATTACHMENT, GraphicsContext3D::RENDERBUFFER, m_depthStencilBuffer);
     } else {
-        if (m_attributes.depth) {
+        if (attributes.depth) {
             if (!m_depthBuffer)
                 m_depthBuffer = m_context->createRenderbuffer();
             m_context->bindRenderbuffer(GraphicsContext3D::RENDERBUFFER, m_depthBuffer);
@@ -585,7 +570,7 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size, int sampleCount)
                 m_context->renderbufferStorage(GraphicsContext3D::RENDERBUFFER, GraphicsContext3D::DEPTH_COMPONENT16, size.width(), size.height());
             m_context->framebufferRenderbuffer(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::DEPTH_ATTACHMENT, GraphicsContext3D::RENDERBUFFER, m_depthBuffer);
         }
-        if (m_attributes.stencil) {
+        if (attributes.stencil) {
             if (!m_stencilBuffer)
                 m_stencilBuffer = m_context->createRenderbuffer();
             m_context->bindRenderbuffer(GraphicsContext3D::RENDERBUFFER, m_stencilBuffer);
@@ -603,9 +588,6 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size, int sampleCount)
 
 void DrawingBuffer::clearFramebuffers(GC3Dbitfield clearMask)
 {
-    if (!m_context)
-        return;
-
     m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, m_multisampleFBO ? m_multisampleFBO : m_fbo);
 
     m_context->clear(clearMask);
@@ -654,18 +636,25 @@ void DrawingBuffer::setSize(const IntSize& size) {
 }
 
 int DrawingBuffer::pixelDelta(const IntSize& size) {
-    return (max(0, size.width()) * max(0, size.height())) - (max(0, m_size.width()) * max(0, m_size.height()));
+    return (size.width() * size.height()) - (m_size.width() * m_size.height());;
 }
 
 IntSize DrawingBuffer::adjustSize(const IntSize& size) {
+    if (!m_context)
+        return IntSize();
+
+    m_context->makeContextCurrent();
+
     IntSize adjustedSize = size;
 
     // Clamp if the desired size is greater than the maximum texture size for the device.
-    if (adjustedSize.height() > m_maxTextureSize)
-        adjustedSize.setHeight(m_maxTextureSize);
+    int maxTextureSize = 0;
+    m_context->getIntegerv(GraphicsContext3D::MAX_TEXTURE_SIZE, &maxTextureSize);
+    if (adjustedSize.height() > maxTextureSize)
+        adjustedSize.setHeight(maxTextureSize);
 
-    if (adjustedSize.width() > m_maxTextureSize)
-        adjustedSize.setWidth(m_maxTextureSize);
+    if (adjustedSize.width() > maxTextureSize)
+        adjustedSize.setWidth(maxTextureSize);
 
     // Try progressively smaller sizes until we find a size that fits or reach a scale limit.
     int scaleAttempts = 0;
@@ -704,9 +693,6 @@ IntSize DrawingBuffer::adjustSizeWithContextEviction(const IntSize& size, bool& 
 
 void DrawingBuffer::reset(const IntSize& newSize)
 {
-    if (!m_context)
-        return;
-
     IntSize adjustedSize;
     bool evictContext = false;
     bool isNewContext = m_size.isEmpty();
@@ -749,13 +735,15 @@ void DrawingBuffer::reset(const IntSize& newSize)
     m_context->clearColor(0, 0, 0, 0);
     m_context->colorMask(true, true, true, true);
 
+    const GraphicsContext3D::Attributes& attributes = m_context->getContextAttributes();
+
     GC3Dbitfield clearMask = GraphicsContext3D::COLOR_BUFFER_BIT;
-    if (m_attributes.depth) {
+    if (attributes.depth) {
         m_context->clearDepth(1.0f);
         clearMask |= GraphicsContext3D::DEPTH_BUFFER_BIT;
         m_context->depthMask(true);
     }
-    if (m_attributes.stencil) {
+    if (attributes.stencil) {
         m_context->clearStencil(0);
         clearMask |= GraphicsContext3D::STENCIL_BUFFER_BIT;
         m_context->stencilMaskSeparate(GraphicsContext3D::FRONT, 0xFFFFFFFF);
@@ -803,7 +791,7 @@ void DrawingBuffer::restoreFramebufferBinding()
 
 bool DrawingBuffer::multisample() const
 {
-    return m_attributes.antialias && m_multisampleExtensionSupported;
+    return m_context && m_context->getContextAttributes().antialias && m_multisampleExtensionSupported;
 }
 
 void DrawingBuffer::bind()

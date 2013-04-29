@@ -585,7 +585,7 @@ WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, Pa
 
 void WebGLRenderingContext::initializeNewContext()
 {
-    ASSERT(!isContextLost());
+    ASSERT(!m_contextLost);
     m_needsUpdate = true;
     m_markedCanvasDirty = false;
     m_activeTextureUnit = 0;
@@ -729,11 +729,9 @@ WebGLRenderingContext::~WebGLRenderingContext()
 
 void WebGLRenderingContext::destroyGraphicsContext3D()
 {
-    m_contextLost = true;
-
     // The drawing buffer holds a context reference. It must also be destroyed
     // in order for the context to be released.
-    m_drawingBuffer->releaseResources();
+    m_drawingBuffer.clear();
 
     if (m_context) {
         m_context->setContextLostCallback(nullptr);
@@ -744,7 +742,7 @@ void WebGLRenderingContext::destroyGraphicsContext3D()
 
 void WebGLRenderingContext::markContextChanged()
 {
-    if (m_framebufferBinding || isContextLost())
+    if (m_framebufferBinding)
         return;
 
     m_context->markContextChanged();
@@ -766,7 +764,7 @@ void WebGLRenderingContext::markContextChanged()
 
 bool WebGLRenderingContext::clearIfComposited(GC3Dbitfield mask)
 {
-    if (isContextLost())
+    if (isContextLost()) 
         return false;
 
     if (!m_context->layerComposited() || m_layerCleared
@@ -815,9 +813,6 @@ bool WebGLRenderingContext::clearIfComposited(GC3Dbitfield mask)
 
 void WebGLRenderingContext::restoreStateAfterClear()
 {
-    if (isContextLost())
-        return;
-
     // Restore the state that the context set.
     if (m_scissorEnabled)
         m_context->enable(GraphicsContext3D::SCISSOR_TEST);
@@ -833,17 +828,11 @@ void WebGLRenderingContext::restoreStateAfterClear()
 
 void WebGLRenderingContext::markLayerComposited()
 {
-    if (!isContextLost())
-        m_context->markLayerComposited();
+    m_context->markLayerComposited();
 }
 
 void WebGLRenderingContext::paintRenderingResultsToCanvas()
 {
-    if (isContextLost()) {
-        canvas()->clearPresentationCopy();
-        return;
-    }
-
     if (canvas()->document()->printing())
         canvas()->clearPresentationCopy();
 
@@ -876,9 +865,6 @@ void WebGLRenderingContext::paintRenderingResultsToCanvas()
 
 PassRefPtr<ImageData> WebGLRenderingContext::paintRenderingResultsToImageData()
 {
-    if (isContextLost())
-        return 0;
-
     clearIfComposited();
     m_drawingBuffer->commit();
     RefPtr<ImageData> imageData = m_context->paintRenderingResultsToImageData(m_drawingBuffer.get());
@@ -893,9 +879,6 @@ PassRefPtr<ImageData> WebGLRenderingContext::paintRenderingResultsToImageData()
 
 void WebGLRenderingContext::reshape(int width, int height)
 {
-    if (isContextLost())
-        return;
-
     // This is an approximation because at WebGLRenderingContext level we don't
     // know if the underlying FBO uses textures or renderbuffers.
     GC3Dint maxSize = std::min(m_maxTextureSize, m_maxRenderbufferSize);
@@ -2441,15 +2424,6 @@ PassRefPtr<WebGLContextAttributes> WebGLRenderingContext::getContextAttributes()
 
 GC3Denum WebGLRenderingContext::getError()
 {
-    if (lost_context_errors_.size()) {
-        GC3Denum err = lost_context_errors_.first();
-        lost_context_errors_.remove(0);
-        return err;
-    }
-
-    if (isContextLost())
-        return GraphicsContext3D::NO_ERROR;
-
     return m_context->getError();
 }
 
@@ -3043,9 +3017,6 @@ String WebGLRenderingContext::getShaderSource(WebGLShader* shader, ExceptionCode
 Vector<String> WebGLRenderingContext::getSupportedExtensions()
 {
     Vector<String> result;
-    if (isContextLost())
-        return result;
-
     if (m_context->getExtensions()->supports("GL_OES_texture_float"))
         result.append("OES_texture_float");
     if (m_context->getExtensions()->supports("GL_OES_standard_derivatives"))
@@ -3752,7 +3723,6 @@ void WebGLRenderingContext::stencilOpSeparate(GC3Denum face, GC3Denum fail, GC3D
 
 void WebGLRenderingContext::texImage2DBase(GC3Denum target, GC3Dint level, GC3Denum internalformat, GC3Dsizei width, GC3Dsizei height, GC3Dint border, GC3Denum format, GC3Denum type, const void* pixels, ExceptionCode& ec)
 {
-    // All calling functions check isContextLost, so a duplicate check is not needed here.
     // FIXME: For now we ignore any errors returned
     ec = 0;
     WebGLTexture* tex = validateTextureBinding("texImage2D", target, true);
@@ -3783,7 +3753,6 @@ void WebGLRenderingContext::texImage2DBase(GC3Denum target, GC3Dint level, GC3De
 
 void WebGLRenderingContext::texImage2DImpl(GC3Denum target, GC3Dint level, GC3Denum internalformat, GC3Denum format, GC3Denum type, Image* image, GraphicsContext3D::ImageHtmlDomSource domSource, bool flipY, bool premultiplyAlpha, ExceptionCode& ec)
 {
-    // All calling functions check isContextLost, so a duplicate check is not needed here.
     ec = 0;
     Vector<uint8_t> data;
     GraphicsContext3D::ImageExtractor imageExtractor(image, domSource, premultiplyAlpha, m_unpackColorspaceConversion == GraphicsContext3D::NONE);
@@ -4071,7 +4040,6 @@ void WebGLRenderingContext::texSubImage2DBase(GC3Denum target, GC3Dint level, GC
 
 void WebGLRenderingContext::texSubImage2DImpl(GC3Denum target, GC3Dint level, GC3Dint xoffset, GC3Dint yoffset, GC3Denum format, GC3Denum type, Image* image, GraphicsContext3D::ImageHtmlDomSource domSource, bool flipY, bool premultiplyAlpha, ExceptionCode& ec)
 {
-    // All calling functions check isContextLost, so a duplicate check is not needed here.
     ec = 0;
     Vector<uint8_t> data;
     GraphicsContext3D::ImageExtractor imageExtractor(image, domSource, premultiplyAlpha, m_unpackColorspaceConversion == GraphicsContext3D::NONE);  
@@ -4704,13 +4672,21 @@ void WebGLRenderingContext::loseContextImpl(WebGLRenderingContext::LostContextMo
         }
     }
 
+    detachAndRemoveAllObjects();
+
     // Make absolutely sure we do not refer to an already-deleted texture or framebuffer.
     m_drawingBuffer->setTexture2DBinding(0);
     m_drawingBuffer->setFramebufferBinding(0);
+    m_drawingBuffer->clear();
 
-    detachAndRemoveAllObjects();
-    destroyGraphicsContext3D();
-
+    // There is no direct way to clear errors from a GL implementation and
+    // looping until getError() becomes NO_ERROR might cause an infinite loop if
+    // the driver or context implementation had a bug. So, loop a reasonably
+    // large number of times to clear any existing errors.
+    for (int i = 0; i < 100; ++i) {
+        if (m_context->getError() == GraphicsContext3D::NO_ERROR)
+            break;
+    }
     ConsoleDisplayPreference display = (mode == RealLostContext) ? DisplayInConsole: DontDisplayInConsole;
     synthesizeGLError(GraphicsContext3D::CONTEXT_LOST_WEBGL, "loseContext", "context lost", display);
 
@@ -4791,8 +4767,7 @@ void WebGLRenderingContext::stop()
 WebGLGetInfo WebGLRenderingContext::getBooleanParameter(GC3Denum pname)
 {
     GC3Dboolean value = 0;
-    if (!isContextLost())
-        m_context->getBooleanv(pname, &value);
+    m_context->getBooleanv(pname, &value);
     return WebGLGetInfo(static_cast<bool>(value));
 }
 
@@ -4803,8 +4778,7 @@ WebGLGetInfo WebGLRenderingContext::getBooleanArrayParameter(GC3Denum pname)
         return WebGLGetInfo(0, 0);
     }
     GC3Dboolean value[4] = {0};
-    if (!isContextLost())
-        m_context->getBooleanv(pname, value);
+    m_context->getBooleanv(pname, value);
     bool boolValue[4];
     for (int ii = 0; ii < 4; ++ii)
         boolValue[ii] = static_cast<bool>(value[ii]);
@@ -4814,32 +4788,28 @@ WebGLGetInfo WebGLRenderingContext::getBooleanArrayParameter(GC3Denum pname)
 WebGLGetInfo WebGLRenderingContext::getFloatParameter(GC3Denum pname)
 {
     GC3Dfloat value = 0;
-    if (!isContextLost())
-        m_context->getFloatv(pname, &value);
+    m_context->getFloatv(pname, &value);
     return WebGLGetInfo(value);
 }
 
 WebGLGetInfo WebGLRenderingContext::getIntParameter(GC3Denum pname)
 {
     GC3Dint value = 0;
-    if (!isContextLost())
-        m_context->getIntegerv(pname, &value);
+    m_context->getIntegerv(pname, &value);
     return WebGLGetInfo(value);
 }
 
 WebGLGetInfo WebGLRenderingContext::getUnsignedIntParameter(GC3Denum pname)
 {
     GC3Dint value = 0;
-    if (!isContextLost())
-        m_context->getIntegerv(pname, &value);
+    m_context->getIntegerv(pname, &value);
     return WebGLGetInfo(static_cast<unsigned int>(value));
 }
 
 WebGLGetInfo WebGLRenderingContext::getWebGLFloatArrayParameter(GC3Denum pname)
 {
     GC3Dfloat value[4] = {0};
-    if (!isContextLost())
-        m_context->getFloatv(pname, value);
+    m_context->getFloatv(pname, value);
     unsigned length = 0;
     switch (pname) {
     case GraphicsContext3D::ALIASED_POINT_SIZE_RANGE:
@@ -4860,8 +4830,7 @@ WebGLGetInfo WebGLRenderingContext::getWebGLFloatArrayParameter(GC3Denum pname)
 WebGLGetInfo WebGLRenderingContext::getWebGLIntArrayParameter(GC3Denum pname)
 {
     GC3Dint value[4] = {0};
-    if (!isContextLost())
-        m_context->getIntegerv(pname, value);
+    m_context->getIntegerv(pname, value);
     unsigned length = 0;
     switch (pname) {
     case GraphicsContext3D::MAX_VIEWPORT_DIMS:
@@ -4879,7 +4848,6 @@ WebGLGetInfo WebGLRenderingContext::getWebGLIntArrayParameter(GC3Denum pname)
 
 void WebGLRenderingContext::handleNPOTTextures(const char* functionName, bool prepareToDraw)
 {
-    // All calling functions check isContextLost, so a duplicate check is not needed here.
     bool resetActiveUnit = false;
     for (unsigned ii = 0; ii < m_textureUnits.size(); ++ii) {
         if ((m_textureUnits[ii].m_texture2DBinding && m_textureUnits[ii].m_texture2DBinding->needToUseBlackTexture())
@@ -4915,7 +4883,6 @@ void WebGLRenderingContext::handleNPOTTextures(const char* functionName, bool pr
 
 void WebGLRenderingContext::createFallbackBlackTextures1x1()
 {
-    // All calling functions check isContextLost, so a duplicate check is not needed here.
     unsigned char black[] = {0, 0, 0, 255};
     m_blackTexture2D = createTexture();
     m_context->bindTexture(GraphicsContext3D::TEXTURE_2D, m_blackTexture2D->object());
@@ -5246,7 +5213,6 @@ bool WebGLRenderingContext::validateTexFuncData(const char* functionName, GC3Din
                                                 ArrayBufferView* pixels,
                                                 NullDisposition disposition)
 {
-    // All calling functions check isContextLost, so a duplicate check is not needed here.
     if (!pixels) {
         if (disposition == NullAllowed)
             return true;
@@ -5791,7 +5757,6 @@ void WebGLRenderingContext::vertexAttribfvImpl(const char* functionName, GC3Duin
 
 void WebGLRenderingContext::initVertexAttrib0()
 {
-    // All calling functions check isContextLost, so a duplicate check is not needed here.
     WebGLVertexArrayObjectOES::VertexAttribState& state = m_boundVertexArrayObject->getVertexAttribState(0);
     
     m_vertexAttrib0Buffer = createBuffer();
@@ -5812,7 +5777,6 @@ void WebGLRenderingContext::initVertexAttrib0()
 
 bool WebGLRenderingContext::simulateVertexAttrib0(GC3Dsizei numVertex)
 {
-    // All calling functions check isContextLost, so a duplicate check is not needed here.
     const WebGLVertexArrayObjectOES::VertexAttribState& state = m_boundVertexArrayObject->getVertexAttribState(0);
     const VertexAttribValue& attribValue = m_vertexAttribValue[0];
     if (!m_currentProgram)
@@ -5858,7 +5822,6 @@ bool WebGLRenderingContext::simulateVertexAttrib0(GC3Dsizei numVertex)
 
 void WebGLRenderingContext::restoreStatesAfterVertexAttrib0Simulation()
 {
-    // All calling functions check isContextLost, so a duplicate check is not needed here.
     const WebGLVertexArrayObjectOES::VertexAttribState& state = m_boundVertexArrayObject->getVertexAttribState(0);
     if (state.bufferBinding != m_vertexAttrib0Buffer) {
         m_context->bindBuffer(GraphicsContext3D::ARRAY_BUFFER, objectOrZero(state.bufferBinding.get()));
@@ -5879,7 +5842,9 @@ void WebGLRenderingContext::dispatchContextLostEvent(Timer<WebGLRenderingContext
 
 void WebGLRenderingContext::maybeRestoreContext(Timer<WebGLRenderingContext>*)
 {
-    ASSERT(isContextLost());
+    ASSERT(m_contextLost);
+    if (!m_contextLost)
+        return;
 
     // The rendering context is not restored unless the default behavior of the
     // webglcontextlost event was prevented earlier.
@@ -5889,6 +5854,33 @@ void WebGLRenderingContext::maybeRestoreContext(Timer<WebGLRenderingContext>*)
     // the retry loop for real context lost events.
     if (!m_restoreAllowed)
         return;
+
+    int contextLostReason = m_context->getExtensions()->getGraphicsResetStatusARB();
+
+    switch (contextLostReason) {
+    case GraphicsContext3D::NO_ERROR:
+        // The GraphicsContext3D implementation might not fully
+        // support GL_ARB_robustness semantics yet. Alternatively, the
+        // WEBGL_lose_context extension might have been used to force
+        // a lost context.
+        break;
+    case Extensions3D::GUILTY_CONTEXT_RESET_ARB:
+        // The rendering context is not restored if this context was
+        // guilty of causing the graphics reset.
+        printWarningToConsole("WARNING: WebGL content on the page caused the graphics card to reset; not restoring the context");
+        return;
+    case Extensions3D::INNOCENT_CONTEXT_RESET_ARB:
+        // Always allow the context to be restored.
+        break;
+    case Extensions3D::UNKNOWN_CONTEXT_RESET_ARB:
+        // Warn. Ideally, prompt the user telling them that WebGL
+        // content on the page might have caused the graphics card to
+        // reset and ask them whether they want to continue running
+        // the content. Only if they say "yes" should we start
+        // attempting to restore the context.
+        printWarningToConsole("WARNING: WebGL content on the page might have caused the graphics card to reset");
+        break;
+    }
 
     Document* document = canvas()->document();
     if (!document)
@@ -5923,7 +5915,7 @@ void WebGLRenderingContext::maybeRestoreContext(Timer<WebGLRenderingContext>*)
     RefPtr<WebGLRenderingContextEvictionManager> contextEvictionManager = adoptRef(new WebGLRenderingContextEvictionManager());
 
     // Construct a new drawing buffer with the new GraphicsContext3D.
-    m_drawingBuffer->releaseResources();
+    m_drawingBuffer->clear();
     DrawingBuffer::PreserveDrawingBuffer preserve = m_attributes.preserveDrawingBuffer ? DrawingBuffer::Preserve : DrawingBuffer::Discard;
     m_drawingBuffer = DrawingBuffer::create(context.get(), clampedCanvasSize(), preserve, contextEvictionManager.release());
 
@@ -5932,11 +5924,8 @@ void WebGLRenderingContext::maybeRestoreContext(Timer<WebGLRenderingContext>*)
 
     m_drawingBuffer->bind();
 
-    lost_context_errors_.clear();
-
     m_context = context;
     m_contextLost = false;
-
     setupFlags();
     initializeNewContext();
     canvas()->dispatchEvent(WebGLContextEvent::create(eventNames().webglcontextrestoredEvent, false, true, ""));
@@ -6015,12 +6004,7 @@ void WebGLRenderingContext::synthesizeGLError(GC3Denum error, const char* functi
       String str = String("WebGL: ") + GetErrorString(error) +  ": " + String(functionName) + ": " + String(description);
       printGLErrorToConsole(str);
     }
-    if (!isContextLost())
-        m_context->synthesizeGLError(error);
-    else {
-        if (lost_context_errors_.find(error) == WTF::notFound)
-            lost_context_errors_.append(error);
-    }
+    m_context->synthesizeGLError(error);
 }
 
 
@@ -6048,8 +6032,6 @@ void WebGLRenderingContext::applyStencilTest()
 
 void WebGLRenderingContext::enableOrDisable(GC3Denum capability, bool enable)
 {
-    if (isContextLost())
-        return;
     if (enable)
         m_context->enable(capability);
     else
@@ -6064,7 +6046,7 @@ IntSize WebGLRenderingContext::clampedCanvasSize()
 
 GC3Dint WebGLRenderingContext::getMaxDrawBuffers()
 {
-    if (isContextLost() || !supportsDrawBuffers())
+    if (!supportsDrawBuffers())
         return 0;
     if (!m_maxDrawBuffers)
         m_context->getIntegerv(Extensions3D::MAX_DRAW_BUFFERS_EXT, &m_maxDrawBuffers);
@@ -6076,7 +6058,7 @@ GC3Dint WebGLRenderingContext::getMaxDrawBuffers()
 
 GC3Dint WebGLRenderingContext::getMaxColorAttachments()
 {
-    if (isContextLost() || !supportsDrawBuffers())
+    if (!supportsDrawBuffers())
         return 0;
     if (!m_maxColorAttachments)
         m_context->getIntegerv(Extensions3D::MAX_COLOR_ATTACHMENTS_EXT, &m_maxColorAttachments);

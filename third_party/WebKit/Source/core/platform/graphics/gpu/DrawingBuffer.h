@@ -80,7 +80,7 @@ public:
 
     // Clear all resources from this object, as well as context. Called when context is destroyed
     // to prevent invalid accesses to the resources.
-    void releaseResources();
+    void clear();
 
     // Issues a glClear() on all framebuffers associated with this DrawingBuffer. The caller is responsible for
     // making the context current and setting the clear values and masks. Modifies the framebuffer binding.
@@ -194,11 +194,9 @@ private:
     // True if our contents have been modified since the last presentation of this buffer.
     bool m_contentsChanged;
 
-    GraphicsContext3D::Attributes m_attributes;
     unsigned m_internalColorFormat;
     unsigned m_colorFormat;
     unsigned m_internalRenderbufferFormat;
-    int m_maxTextureSize;
 
     OwnPtr<WebKit::WebExternalTextureLayer> m_layer;
 

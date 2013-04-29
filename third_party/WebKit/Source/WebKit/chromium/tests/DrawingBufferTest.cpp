@@ -79,7 +79,7 @@ TEST_F(DrawingBufferTest, verifyNoNewBuffersAfterContextLostWithTextures)
 {
     // Tell the buffer its contents changed and context was lost.
     m_drawingBuffer->markContentsChanged();
-    m_drawingBuffer->releaseResources();
+    m_drawingBuffer->clear();
 
     MockWebTextureUpdater updater;
     EXPECT_CALL(updater, appendCopy(_, _, _)).Times(0);
@@ -92,7 +92,7 @@ TEST_F(DrawingBufferTest, verifyNoNewBuffersAfterContextLostWithMailboxes)
 {
     // Tell the buffer its contents changed and context was lost.
     m_drawingBuffer->markContentsChanged();
-    m_drawingBuffer->releaseResources();
+    m_drawingBuffer->clear();
 
     WebKit::WebExternalTextureMailbox mailbox;
     EXPECT_FALSE(m_drawingBuffer->prepareMailbox(&mailbox));
