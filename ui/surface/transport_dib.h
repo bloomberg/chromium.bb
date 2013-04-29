@@ -14,7 +14,8 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#elif defined(TOOLKIT_GTK) || (defined(OS_LINUX) && defined(USE_AURA))
+#elif defined(TOOLKIT_GTK) || \
+  (defined(OS_LINUX) && defined(USE_AURA) && defined(USE_X11))
 #include "ui/base/x/x11_util.h"
 #endif
 
@@ -80,7 +81,8 @@ class SURFACE_EXPORT TransportDIB {
     static int fake_handle = 10;
     return reinterpret_cast<Handle>(fake_handle++);
   }
-#elif defined(TOOLKIT_GTK) || (defined(OS_LINUX) && defined(USE_AURA))
+#elif defined(TOOLKIT_GTK) || \
+  (defined(OS_LINUX) && defined(USE_AURA) && defined(USE_X11))
   typedef int Handle;  // These two ints are SysV IPC shared memory keys
   struct Id {
     // Ensure that default initialized Ids are invalid.
@@ -186,7 +188,8 @@ class SURFACE_EXPORT TransportDIB {
   // wire to give this transport DIB to another process.
   Handle handle() const;
 
-#if defined(TOOLKIT_GTK) || (defined(OS_LINUX) && defined(USE_AURA))
+#if defined(TOOLKIT_GTK) || \
+  (defined(OS_LINUX) && defined(USE_AURA) && defined(USE_X11))
   // Map the shared memory into the X server and return an id for the shared
   // segment.
   XID MapToX(Display* connection);
@@ -207,7 +210,8 @@ class SURFACE_EXPORT TransportDIB {
   // Verifies that the dib can hold a canvas of the requested dimensions.
   bool VerifyCanvasSize(int w, int h);
 
-#if defined(TOOLKIT_GTK) || (defined(OS_LINUX) && defined(USE_AURA))
+#if defined(TOOLKIT_GTK) || \
+  (defined(OS_LINUX) && defined(USE_AURA) && defined(USE_X11))
   Id key_;  // SysV shared memory id
   void* address_;  // mapped address
   XSharedMemoryId x_shm_;  // X id for the shared segment

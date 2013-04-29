@@ -269,7 +269,7 @@
         'base/resource/resource_bundle.cc',
         'base/resource/resource_bundle.h',
         'base/resource/resource_bundle_android.cc',
-        'base/resource/resource_bundle_aurax11.cc',
+        'base/resource/resource_bundle_auralinux.cc',
         'base/resource/resource_bundle_gtk.cc',
         'base/resource/resource_bundle_ios.mm',
         'base/resource/resource_bundle_mac.mm',
@@ -634,6 +634,12 @@
             'base/x/selection_utils.cc',
             'base/x/selection_utils.h',
           ]
+        }],
+        
+        ['use_aura==0 or OS!="linux"', {
+          'sources!': [
+            'base/resource/resource_bundle_auralinux.cc',
+          ],
         }],
         ['use_aura==1 and OS=="win"', {
           'sources/': [

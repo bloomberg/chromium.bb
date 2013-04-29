@@ -31,7 +31,7 @@
 #elif defined(__linux__)
 #define OS_LINUX 1
 // Use TOOLKIT_GTK on linux if TOOLKIT_VIEWS isn't defined.
-#if !defined(TOOLKIT_VIEWS)
+#if !defined(TOOLKIT_VIEWS) && defined(USE_X11)
 #define TOOLKIT_GTK
 #endif
 #elif defined(_WIN32)

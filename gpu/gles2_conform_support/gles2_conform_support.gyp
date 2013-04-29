@@ -14,7 +14,7 @@
       ['OS=="linux"', {
         'bootstrap_sources_native': [
           'native/egl_native.cc',
-          'native/egl_native_linux.cc',
+          'native/egl_native_x11.cc',
         ],
       }],
       ['OS=="win"', {
