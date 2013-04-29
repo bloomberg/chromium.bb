@@ -12,9 +12,9 @@
   'sources': [
     'gpu/gpu_dx_diagnostics_win.cc',
     'gpu/gpu_info_collector_android.cc',
-    'gpu/gpu_info_collector_linux.cc',
     'gpu/gpu_info_collector_mac.mm',
     'gpu/gpu_info_collector_win.cc',
+    'gpu/gpu_info_collector_x11.cc',
     'gpu/gpu_info_collector.cc',
     'gpu/gpu_info_collector.h',
     'gpu/gpu_main.cc',
@@ -85,7 +85,7 @@
         '../third_party/amd/amd_videocard_info_win.cc',
       ],
     }],
-    ['OS=="linux"', {
+    ['OS=="linux" and use_x11==1', {
       'dependencies': [
         '../build/linux/system.gyp:libpci',
         '../third_party/libXNVCtrl/libXNVCtrl.gyp:libXNVCtrl',

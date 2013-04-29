@@ -20,13 +20,32 @@ WebKit::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
     base::NativeEvent native_event);
 WebKit::WebGestureEvent MakeWebGestureEventFromNativeEvent(
     base::NativeEvent native_event);
-#else
+#elif defined(USE_X11)
 WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
     ui::ScrollEvent* event);
 WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
     ui::KeyEvent* event);
 WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
     ui::ScrollEvent* event);
+#else
+WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
+    ui::ScrollEvent* event) {
+  WebKit::WebMouseWheelEvent webkit_event;
+  return webkit_event;
+}
+
+WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
+    ui::KeyEvent* event) {
+  WebKit::WebKeyboardEvent webkit_event;
+  return webkit_event;
+}
+
+WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
+    ui::ScrollEvent* event) {
+  WebKit::WebGestureEvent webkit_event;
+  return webkit_event;
+}
+
 #endif
 
 WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(

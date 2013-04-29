@@ -641,9 +641,9 @@
     'browser/power_save_blocker_chromeos.cc',
     'browser/power_save_blocker_impl.cc',
     'browser/power_save_blocker_impl.h',
-    'browser/power_save_blocker_linux.cc',
     'browser/power_save_blocker_mac.cc',
     'browser/power_save_blocker_win.cc',
+    'browser/power_save_blocker_x11.cc',
     'browser/ppapi_plugin_process_host.cc',
     'browser/ppapi_plugin_process_host.h',
     'browser/profiler_controller_impl.cc',
@@ -1180,6 +1180,10 @@
     ['use_x11==1', {
       'dependencies': [
         '../build/linux/system.gyp:x11',
+      ],
+    }],
+    ['OS=="linux"', {
+      'dependencies': [
         '../build/linux/system.gyp:pangocairo',
       ],
     }],
@@ -1229,7 +1233,7 @@
       ],
       'sources!': [
         'browser/geolocation/wifi_data_provider_linux.cc',
-        'browser/power_save_blocker_linux.cc',
+        'browser/power_save_blocker_x11.cc',
         'browser/renderer_host/gtk_key_bindings_handler.cc',
         'browser/renderer_host/gtk_key_bindings_handler.h',
       ],

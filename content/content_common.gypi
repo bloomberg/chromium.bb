@@ -445,10 +445,12 @@
         '../build/linux/system.gyp:gtk',
       ],
     }],
-    ['use_x11 == 1', {
+    ['OS=="linux"', {
       'dependencies': [
         '../build/linux/system.gyp:pangocairo',
       ],
+    }],
+    ['use_x11 == 1', {
       'include_dirs': [
         '<(DEPTH)/third_party/angle/include',
       ],
