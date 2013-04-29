@@ -557,8 +557,9 @@ MediaStreamImpl::CreateLocalAudioRenderer(
 
   // Create a new WebRtcLocalAudioRenderer instance and connect it to the
   // existing WebRtcAudioCapturer so that the renderer can use it as source.
-  return new WebRtcLocalAudioRenderer(source, audio_track,
-                                      RenderViewObserver::routing_id());
+  return new WebRtcLocalAudioRenderer(
+      static_cast<WebRtcLocalAudioTrack*>(audio_track),
+      RenderViewObserver::routing_id());
 }
 
 MediaStreamSourceExtraData::MediaStreamSourceExtraData(

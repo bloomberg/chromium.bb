@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "content/common/child_process.h"
 #include "content/renderer/media/audio_device_factory.h"
+#include "content/renderer/media/webrtc_audio_capturer_sink_owner.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "media/audio/audio_util.h"
 #include "media/audio/sample_rates.h"
@@ -65,77 +66,6 @@ static int GetBufferSizeForSampleRate(int sample_rate) {
   return buffer_size;
 }
 
-// Reference counted container of WebRtcAudioCapturerSink delegates.
-class WebRtcAudioCapturer::SinkOwner
-    : public base::RefCounted<WebRtcAudioCapturer::SinkOwner>,
-      public WebRtcAudioCapturerSink {
- public:
-  explicit SinkOwner(WebRtcAudioCapturerSink* sink);
-
-  virtual void CaptureData(const int16* audio_data,
-                           int number_of_channels,
-                           int number_of_frames,
-                           int audio_delay_milliseconds,
-                           double volume) OVERRIDE;
-  virtual void SetCaptureFormat(const media::AudioParameters& params) OVERRIDE;
-
-  bool IsEqual(const WebRtcAudioCapturerSink* other) const;
-  void Reset();
-
-  // Wrapper which allows to use std::find_if() when adding and removing
-  // sinks to/from the list.
-  struct WrapsSink {
-    WrapsSink(WebRtcAudioCapturerSink* sink) : sink_(sink) {}
-    bool operator()(
-        const scoped_refptr<WebRtcAudioCapturer::SinkOwner>& owner) {
-      return owner->IsEqual(sink_);
-    }
-    WebRtcAudioCapturerSink* sink_;
-  };
-
- private:
-  virtual ~SinkOwner() {}
-
-  friend class base::RefCounted<WebRtcAudioCapturer::SinkOwner>;
-  WebRtcAudioCapturerSink* delegate_;
-  mutable base::Lock lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(SinkOwner);
-};
-
-WebRtcAudioCapturer::SinkOwner::SinkOwner(
-    WebRtcAudioCapturerSink* sink)
-    : delegate_(sink) {
-}
-
-void WebRtcAudioCapturer::SinkOwner::CaptureData(
-    const int16* audio_data, int number_of_channels, int number_of_frames,
-    int audio_delay_milliseconds, double volume) {
-  base::AutoLock lock(lock_);
-  if (delegate_) {
-    delegate_->CaptureData(audio_data, number_of_channels, number_of_frames,
-                           audio_delay_milliseconds, volume);
-  }
-}
-
-void WebRtcAudioCapturer::SinkOwner::SetCaptureFormat(
-    const media::AudioParameters& params) {
-  base::AutoLock lock(lock_);
-  if (delegate_)
-    delegate_->SetCaptureFormat(params);
-}
-
-bool WebRtcAudioCapturer::SinkOwner::IsEqual(
-    const WebRtcAudioCapturerSink* other) const {
-  base::AutoLock lock(lock_);
-  return (other == delegate_);
-}
-
-void WebRtcAudioCapturer::SinkOwner::Reset() {
-  base::AutoLock lock(lock_);
-  delegate_ = NULL;
-}
-
 // This is a temporary audio buffer with parameters used to send data to
 // callbacks.
 class WebRtcAudioCapturer::ConfiguredBuffer :
@@ -189,16 +119,17 @@ bool WebRtcAudioCapturer::Reconfigure(int sample_rate,
   if (!new_buffer->Initialize(sample_rate, channel_layout))
     return false;
 
-  SinkList sinks;
+  TrackList tracks;
   {
     base::AutoLock auto_lock(lock_);
 
     buffer_ = new_buffer;
-    sinks = sinks_;
+    tracks = tracks_;
   }
 
-  // Tell all sinks which format we use.
-  for (SinkList::const_iterator it = sinks.begin(); it != sinks.end(); ++it)
+  // Tell all audio_tracks which format we use.
+  for (TrackList::const_iterator it = tracks.begin();
+       it != tracks.end(); ++it)
     (*it)->SetCaptureFormat(new_buffer->params());
 
   return true;
@@ -209,7 +140,6 @@ bool WebRtcAudioCapturer::Initialize(int render_view_id,
                                      int sample_rate,
                                      int session_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!sinks_.empty());
   DVLOG(1) << "WebRtcAudioCapturer::Initialize()";
 
   DVLOG(1) << "Audio input hardware channel layout: " << channel_layout;
@@ -263,39 +193,44 @@ WebRtcAudioCapturer::WebRtcAudioCapturer()
 
 WebRtcAudioCapturer::~WebRtcAudioCapturer() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(sinks_.empty());
+  DCHECK(tracks_.empty());
   DCHECK(!running_);
   DVLOG(1) << "WebRtcAudioCapturer::~WebRtcAudioCapturer()";
 }
 
-void WebRtcAudioCapturer::AddCapturerSink(WebRtcAudioCapturerSink* sink) {
+void WebRtcAudioCapturer::AddSink(
+    WebRtcAudioCapturerSink* track) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(1) << "WebRtcAudioCapturer::AddCapturerSink()";
+  DVLOG(1) << "WebRtcAudioCapturer::AddSink()";
   base::AutoLock auto_lock(lock_);
-  // Verify that |sink| is not already added to the list.
+  // Verify that |track| is not already added to the list.
   DCHECK(std::find_if(
-      sinks_.begin(), sinks_.end(), SinkOwner::WrapsSink(sink)) ==
-      sinks_.end());
-  // Create (and add to the list) a new SinkOwner which owns the |sink|
-  // and delagates all calls to the WebRtcAudioCapturerSink interface.
-  sinks_.push_back(new WebRtcAudioCapturer::SinkOwner(sink));
+      tracks_.begin(), tracks_.end(),
+      WebRtcAudioCapturerSinkOwner::WrapsSink(track)) == tracks_.end());
+  // Create (and add to the list) a new WebRtcAudioCapturerSinkOwner which owns
+  // the |track| and delagates all calls to the WebRtcAudioCapturerSink
+  // interface.
+  tracks_.push_back(new WebRtcAudioCapturerSinkOwner(track));
+  // TODO(xians): should we call SetCapturerFormat() to each track?
 }
 
-void WebRtcAudioCapturer::RemoveCapturerSink(WebRtcAudioCapturerSink* sink) {
+void WebRtcAudioCapturer::RemoveSink(
+    WebRtcAudioCapturerSink* track) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(1) << "WebRtcAudioCapturer::RemoveCapturerSink()";
+  DVLOG(1) << "WebRtcAudioCapturer::RemoveSink()";
 
   base::AutoLock auto_lock(lock_);
 
-  // Get iterator to the first element for which WrapsSink(sink) returns true.
-  SinkList::iterator it = std::find_if(sinks_.begin(), sinks_.end(),
-                                       SinkOwner::WrapsSink(sink));
-  if (it != sinks_.end()) {
+  // Get iterator to the first element for which WrapsSink(track) returns true.
+  TrackList::iterator it = std::find_if(
+      tracks_.begin(), tracks_.end(),
+      WebRtcAudioCapturerSinkOwner::WrapsSink(track));
+  if (it != tracks_.end()) {
     // Clear the delegate to ensure that no more capture callbacks will
     // be sent to this sink. Also avoids a possible crash which can happen
     // if this method is called while capturing is active.
     (*it)->Reset();
-    sinks_.erase(it);
+    tracks_.erase(it);
   }
 }
 
@@ -406,7 +341,7 @@ void WebRtcAudioCapturer::Capture(media::AudioBus* audio_source,
   // This callback is driven by AudioInputDevice::AudioThreadCallback if
   // |source_| is AudioInputDevice, otherwise it is driven by client's
   // CaptureCallback.
-  SinkList sinks;
+  TrackList tracks;
   scoped_refptr<ConfiguredBuffer> buffer_ref_while_calling;
   {
     base::AutoLock auto_lock(lock_);
@@ -417,7 +352,7 @@ void WebRtcAudioCapturer::Capture(media::AudioBus* audio_source,
     // a reference to the buffer so we can ensure it stays alive even if the
     // buffer is reconfigured while we are calling back.
     buffer_ref_while_calling = buffer_;
-    sinks = sinks_;
+    tracks = tracks_;
   }
 
   int bytes_per_sample =
@@ -428,9 +363,9 @@ void WebRtcAudioCapturer::Capture(media::AudioBus* audio_source,
   audio_source->ToInterleaved(audio_source->frames(), bytes_per_sample,
                               buffer_ref_while_calling->buffer());
 
-  // Feed the data to the sinks.
-  for (SinkList::const_iterator it = sinks.begin();
-       it != sinks.end();
+  // Feed the data to the tracks.
+  for (TrackList::const_iterator it = tracks.begin();
+       it != tracks.end();
        ++it) {
     (*it)->CaptureData(buffer_ref_while_calling->buffer(),
                        audio_source->channels(), audio_source->frames(),

@@ -15,6 +15,7 @@
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/webaudio_capturer_source.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
+#include "content/renderer/media/webrtc_local_audio_track.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "content/renderer/p2p/ipc_network_manager.h"
 #include "content/renderer/p2p/ipc_socket_factory.h"
@@ -557,7 +558,11 @@ scoped_refptr<webrtc::AudioTrackInterface>
 MediaStreamDependencyFactory::CreateLocalAudioTrack(
     const std::string& id,
     webrtc::AudioSourceInterface* source) {
-  return pc_factory_->CreateAudioTrack(id, source).get();
+  // TODO(xians): Merge |source| to the capturer(). We can't do this today
+  // because only one capturer() is supported while one |source| is created
+  // for each audio track.
+  return WebRtcLocalAudioTrack::Create(id, GetWebRtcAudioDevice()->capturer(),
+                                       source);
 }
 
 webrtc::SessionDescriptionInterface*

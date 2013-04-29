@@ -60,12 +60,11 @@ void WebRtcLocalAudioRenderer::CaptureData(const int16* audio_data,
   TRACE_EVENT0("audio", "WebRtcLocalAudioRenderer::CaptureData");
   base::AutoLock auto_lock(thread_lock_);
 
-  if (!playing_ || !track_is_enabled_) {
+  if (!playing_)
     return;
-  }
 
   // Push captured audio to FIFO so it can be read by a local sink.
-  if (loopback_fifo_ && track_is_enabled_) {
+  if (loopback_fifo_) {
     if (loopback_fifo_->frames() + number_of_frames <=
         loopback_fifo_->max_frames()) {
       scoped_ptr<media::AudioBus> audio_source = media::AudioBus::Create(
@@ -82,27 +81,17 @@ void WebRtcLocalAudioRenderer::CaptureData(const int16* audio_data,
 
 void WebRtcLocalAudioRenderer::SetCaptureFormat(
     const media::AudioParameters& params) {
-  NOTIMPLEMENTED() << "WebRtcLocalAudioRenderer::SetCaptureFormat()";
-}
-
-// webrtc::ObserverInterface implementation
-void WebRtcLocalAudioRenderer::OnChanged() {
-  DVLOG(1) << "WebRtcLocalAudioRenderer::OnChanged()";
-  DCHECK(thread_checker_.CalledOnValidThread());
-  base::AutoLock auto_lock(thread_lock_);
-  track_is_enabled_ = audio_track_->enabled();
+  audio_params_ = params;
 }
 
 // WebRtcLocalAudioRenderer::WebRtcLocalAudioRenderer implementation.
 WebRtcLocalAudioRenderer::WebRtcLocalAudioRenderer(
-    const scoped_refptr<WebRtcAudioCapturer>& source,
-    webrtc::AudioTrackInterface* audio_track,
+    WebRtcLocalAudioTrack* audio_track,
     int source_render_view_id)
-    : source_(source),
-      audio_track_(audio_track),
+    : audio_track_(audio_track),
       source_render_view_id_(source_render_view_id),
-      playing_(false),
-      track_is_enabled_(true) {
+      playing_(false) {
+  DCHECK(audio_track);
   DVLOG(1) << "WebRtcLocalAudioRenderer::WebRtcLocalAudioRenderer()";
 }
 
@@ -115,30 +104,13 @@ WebRtcLocalAudioRenderer::~WebRtcLocalAudioRenderer() {
 void WebRtcLocalAudioRenderer::Start() {
   DVLOG(1) << "WebRtcLocalAudioRenderer::Start()";
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(source_);
-
-  if (audio_track_) {
-    audio_track_->RegisterObserver(this);
-    track_is_enabled_ = audio_track_->enabled();
-  }
+  // Add this class as sink to the audio track to ensure that we receive
+  // WebRtcAudioCapturerSink::CaptureData() callbacks for captured audio.
+  // |audio_params_| will be updated right after the AddCapturerAudioTrack().
+  audio_track_->AddSink(this);
 
   base::AutoLock auto_lock(thread_lock_);
   DCHECK(!sink_);
-
-  // Add this class as sink to the capturer to ensure that we receive
-  // WebRtcAudioCapturerSink::CaptureData() callbacks for captured audio.
-  source_->AddCapturerSink(this);
-
-  // Use the capturing source audio parameters when opening the output audio
-  // device. Any mismatch will be compensated for by the audio output back-end.
-  // Note that the buffer size is modified to make the full-duplex scheme less
-  // resource intensive. By doubling the buffer size (compared to the capture
-  // side), the callback frequency of browser side callbacks will be lower and
-  // tests have shown that it resolves issues with audio glitches for some
-  // cases where resampling is needed on the output side.
-  // TODO(henrika): verify this scheme on as many different devices and
-  // combinations of sample rates as possible
-  media::AudioParameters source_params = source_->audio_parameters();
 
   // TODO(henrika): we could add a more dynamic solution here but I prefer
   // a fixed size combined with bad audio at overflow. The alternative is
@@ -150,15 +122,15 @@ void WebRtcLocalAudioRenderer::Start() {
   // the FIFO overflows.
   DCHECK(!loopback_fifo_);
   loopback_fifo_.reset(new media::AudioFifo(
-      source_params.channels(),
-      10 * source_params.frames_per_buffer()));
+      audio_params_.channels(), 10 * audio_params_.frames_per_buffer()));
 
-  media::AudioParameters sink_params(source_params.format(),
-                                     source_params.channel_layout(),
-                                     source_params.sample_rate(),
-                                     source_params.bits_per_sample(),
-                                     2 * source_params.frames_per_buffer());
+  media::AudioParameters sink_params(audio_params_.format(),
+                                     audio_params_.channel_layout(),
+                                     audio_params_.sample_rate(),
+                                     audio_params_.bits_per_sample(),
+                                     2 * audio_params_.frames_per_buffer());
   sink_ = AudioDeviceFactory::NewOutputDevice(source_render_view_id_);
+
   // TODO(henrika): we could utilize the unified audio here instead and do
   // sink_->InitializeIO(sink_params, 2, callback_.get());
   // It would then be possible to avoid using the WebRtcAudioCapturer.
@@ -166,7 +138,6 @@ void WebRtcLocalAudioRenderer::Start() {
 
   // Start the capturer and local rendering. Note that, the capturer is owned
   // by the WebRTC ADM and might already bee running.
-  source_->Start();
   sink_->Start();
 
   last_render_time_ = base::Time::Now();
@@ -197,13 +168,8 @@ void WebRtcLocalAudioRenderer::Stop() {
   // Ensure that the capturer stops feeding us with captured audio.
   // Note that, we do not stop the capturer here since it may still be used by
   // the WebRTC ADM.
-  source_->RemoveCapturerSink(this);
-  source_ = NULL;
-
-  if (audio_track_) {
-    audio_track_->UnregisterObserver(this);
-    audio_track_ = NULL;
-  }
+  audio_track_->RemoveSink(this);
+  audio_track_ = NULL;
 }
 
 void WebRtcLocalAudioRenderer::Play() {

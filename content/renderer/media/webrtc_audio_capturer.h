@@ -23,10 +23,11 @@ class AudioBus;
 namespace content {
 
 class WebRtcAudioCapturerSink;
+class WebRtcAudioCapturerSinkOwner;
 class WebRtcLocalAudioRenderer;
 
 // This class manages the capture data flow by getting data from its
-// |source_|, and passing it to its |sink_|.
+// |source_|, and passing it to its |tracks_|.
 // It allows clients to inject their own capture data source by calling
 // SetCapturerSource().
 // The threading model for this class is rather complex since it will be
@@ -51,17 +52,16 @@ class CONTENT_EXPORT WebRtcAudioCapturer
                   int sample_rate,
                   int session_id);
 
-  // Called by the client on the sink side to add a sink.
+  // Add a audio track to the sinks of the capturer.
   // WebRtcAudioDeviceImpl calls this method on the main render thread but
   // other clients may call it from other threads. The current implementation
   // does not support multi-thread calling.
   // Called on the main render thread.
-  void AddCapturerSink(WebRtcAudioCapturerSink* sink);
+  void AddSink(WebRtcAudioCapturerSink* track);
 
-  // Called by the client on the sink side to remove a sink.
+  // Remove a audio track from the sinks of the capturer.
   // Called on the main render thread.
-  // Called on the main render thread.
-  void RemoveCapturerSink(WebRtcAudioCapturerSink* sink);
+  void RemoveSink(WebRtcAudioCapturerSink* track);
 
   // SetCapturerSource() is called if the client on the source side desires to
   // provide their own captured audio data. Client is responsible for calling
@@ -98,22 +98,21 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   // of this accessor and if we can remove it.
   media::AudioParameters audio_parameters() const;
 
+ protected:
+  friend class base::RefCountedThreadSafe<WebRtcAudioCapturer>;
+  WebRtcAudioCapturer();
+  virtual ~WebRtcAudioCapturer();
+
+ private:
+  typedef std::list<scoped_refptr<class WebRtcAudioCapturerSinkOwner> >
+      TrackList;
+
   // AudioCapturerSource::CaptureCallback implementation.
   // Called on the AudioInputDevice audio thread.
   virtual void Capture(media::AudioBus* audio_source,
                        int audio_delay_milliseconds,
                        double volume) OVERRIDE;
   virtual void OnCaptureError() OVERRIDE;
-
- protected:
-  friend class base::RefCountedThreadSafe<WebRtcAudioCapturer>;
-  virtual ~WebRtcAudioCapturer();
-
- private:
-  class SinkOwner;
-  typedef std::list<scoped_refptr<SinkOwner> > SinkList;
-
-  WebRtcAudioCapturer();
 
   // Reconfigures the capturer with a new buffer size and capture parameters.
   // Must be called without holding the lock. Returns true on success.
@@ -122,12 +121,12 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;
 
-  // Protects |source_|, |sinks_|, |running_|, |loopback_fifo_|, |params_|,
-  // |buffering_| and |agc_is_enabled_|.
+  // Protects |source_|, |audio_tracks_|, |running_|, |loopback_fifo_|,
+  // |params_|, |buffering_| and |agc_is_enabled_|.
   mutable base::Lock lock_;
 
-  // A list of sinks that the audio data is fed to.
-  SinkList sinks_;
+  // A list of audio tracks that the audio data is fed to.
+  TrackList tracks_;
 
   // The audio data source from the browser process.
   scoped_refptr<media::AudioCapturerSource> source_;
