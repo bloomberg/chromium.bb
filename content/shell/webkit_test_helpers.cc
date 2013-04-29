@@ -5,6 +5,8 @@
 #include "content/shell/webkit_test_helpers.h"
 
 #include "base/command_line.h"
+#include "base/file_util.h"
+#include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "content/shell/shell_switches.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebPreferences.h"
@@ -108,6 +110,39 @@ void ApplyLayoutTestDefaultPreferences(webkit_glue::WebPreferences* prefs) {
   prefs->apply_page_scale_factor_in_compositor = false;
   prefs->smart_insert_delete_enabled = true;
   prefs->minimum_accelerated_2d_canvas_size = 0;
+}
+
+base::FilePath GetWebKitRootDirFilePath() {
+  base::FilePath base_path;
+  PathService::Get(base::DIR_SOURCE_ROOT, &base_path);
+  if (file_util::PathExists(
+          base_path.Append(FILE_PATH_LITERAL("third_party/WebKit")))) {
+    // We're in a WebKit-in-chrome checkout.
+    return base_path.Append(FILE_PATH_LITERAL("third_party/WebKit"));
+  } else if (file_util::PathExists(
+          base_path.Append(FILE_PATH_LITERAL("chromium")))) {
+    // We're in a WebKit-only checkout on Windows.
+    return base_path.Append(FILE_PATH_LITERAL("../.."));
+  } else if (file_util::PathExists(
+          base_path.Append(FILE_PATH_LITERAL("webkit/support")))) {
+    // We're in a WebKit-only/xcodebuild checkout on Mac
+    return base_path.Append(FILE_PATH_LITERAL("../../.."));
+  }
+  // We're in a WebKit-only, make-build, so the DIR_SOURCE_ROOT is already the
+  // WebKit root. That, or we have no idea where we are.
+  return base_path;
+}
+
+base::FilePath GetChromiumRootDirFilePath() {
+  base::FilePath webkit_path = GetWebKitRootDirFilePath();
+  if (file_util::PathExists(webkit_path.Append(
+          FILE_PATH_LITERAL("Source/WebKit/chromium/webkit/support")))) {
+    // We're in a WebKit-only checkout.
+    return webkit_path.Append(FILE_PATH_LITERAL("Source/WebKit/chromium"));
+  } else {
+    // We're in a Chromium checkout, and WebKit is in third_party/WebKit.
+    return webkit_path.Append(FILE_PATH_LITERAL("../.."));
+  }
 }
 
 }  // namespace content

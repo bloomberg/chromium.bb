@@ -9,6 +9,10 @@ namespace WebTestRunner {
 struct WebPreferences;
 }
 
+namespace base {
+class FilePath;
+}
+
 namespace webkit_glue {
 struct WebPreferences;
 }
@@ -24,6 +28,12 @@ void ExportLayoutTestSpecificPreferences(
 
 // Applies settings that differ between layout tests and regular mode.
 void ApplyLayoutTestDefaultPreferences(webkit_glue::WebPreferences* prefs);
+
+// Returns the root of the Blink checkout.
+base::FilePath GetWebKitRootDirFilePath();
+
+// Returns the root of the chromium checkout.
+base::FilePath GetChromiumRootDirFilePath();
 
 }  // namespace content
 

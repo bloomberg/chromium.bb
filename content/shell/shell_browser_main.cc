@@ -20,6 +20,7 @@
 #include "content/shell/shell.h"
 #include "content/shell/shell_switches.h"
 #include "content/shell/webkit_test_controller.h"
+#include "content/shell/webkit_test_helpers.h"
 #include "net/base/net_util.h"
 #include "webkit/support/webkit_support.h"
 
@@ -60,6 +61,10 @@ GURL GetURLForLayoutTest(const std::string& test_name,
 #else
     base::FilePath local_file(path_or_url);
 #endif
+    if (!file_util::PathExists(local_file)) {
+      local_file = content::GetWebKitRootDirFilePath()
+          .Append(FILE_PATH_LITERAL("LayoutTests")).Append(local_file);
+    }
     test_url = net::FilePathToFileURL(base::MakeAbsoluteFilePath(local_file));
   }
   base::FilePath local_path;
