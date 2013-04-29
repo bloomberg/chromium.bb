@@ -271,7 +271,7 @@ END
         GetGenerateIsReachable($interface) eq  "ImplOwnerRoot" ||
         GetGenerateIsReachable($interface) eq  "ImplOwnerNodeRoot") {
 
-        $implIncludes{"bindings/v8/V8GCController.h"} = 1;
+        AddToImplIncludes("bindings/v8/V8GCController.h");
 
         my $methodName;
         $methodName = "document" if (GetGenerateIsReachable($interface) eq "ImplDocument");
@@ -3422,7 +3422,6 @@ END
         my $name = $constant->name;
         my $value = $constant->value;
         my $attrExt = $constant->extendedAttributes;
-        my $conditional = $attrExt->{"Conditional"};
         my $implementedBy = $attrExt->{"ImplementedBy"};
         if ($implementedBy) {
             AddInterfaceToImplIncludes($implementedBy);
@@ -3430,10 +3429,8 @@ END
         if ($attrExt->{"EnabledAtRuntime"}) {
             push(@constantsEnabledAtRuntime, $constant);
         } else {
-            if ($conditional) {
-                my $conditionalString = GenerateConditionalStringFromAttributeValue($conditional);
-                $code .= "#if ${conditionalString}\n";
-            }
+            my $conditionalString = GenerateConditionalString($constant);
+            $code .= "#if ${conditionalString}\n" if $conditionalString;
             # If the value we're dealing with is a hex number, preprocess it into a signed integer
             # here, rather than running static_cast<signed int> in the generated code.
             if (substr($value, 0, 2) eq "0x") {
@@ -3442,7 +3439,7 @@ END
             $code .= <<END;
     {"${name}", $value},
 END
-            $code .= "#endif\n" if $conditional;
+            $code .= "#endif\n" if $conditionalString;
         }
     }
     if ($has_constants) {
@@ -3814,10 +3811,6 @@ END
 
     my $conditionalString = GenerateConditionalString($interface);
     AddToImplContent("\n#endif // ${conditionalString}\n") if $conditionalString;
-
-    # We've already added the header for this file in implContentHeader, so remove
-    # it from implIncludes to ensure we don't #include it twice.
-    delete $implIncludes{"${v8InterfaceName}.h"};
 }
 
 sub GenerateHeaderContentHeader
@@ -5301,7 +5294,7 @@ sub ContentAttributeName
 
     my $namespace = NamespaceForAttributeName($interfaceName, $contentAttributeName);
 
-    $implIncludes->{"${namespace}.h"} = 1;
+    AddToImplIncludes("${namespace}.h");
     return "WebCore::${namespace}::${contentAttributeName}Attr";
 }
 
@@ -5422,12 +5415,8 @@ sub GenerateCompileTimeCheckForEnumsIfNeeded
             my $reflect = $constant->extendedAttributes->{"Reflect"};
             my $name = $reflect ? $reflect : $constant->name;
             my $value = $constant->value;
-            my $conditional = $constant->extendedAttributes->{"Conditional"};
-
-            if ($conditional) {
-                my $conditionalString = GenerateConditionalStringFromAttributeValue($conditional);
-                push(@checks, "#if ${conditionalString}\n");
-            }
+            my $conditionalString = GenerateConditionalString($constant);
+            push(@checks, "#if ${conditionalString}\n") if $conditionalString;
 
             if ($constant->extendedAttributes->{"ImplementedBy"}) {
                 push(@checks, "COMPILE_ASSERT($value == " . $constant->extendedAttributes->{"ImplementedBy"} . "::$name, ${interfaceName}Enum${name}IsWrongUseDoNotCheckConstants);\n");
@@ -5435,9 +5424,7 @@ sub GenerateCompileTimeCheckForEnumsIfNeeded
                 push(@checks, "COMPILE_ASSERT($value == ${interfaceName}::$name, ${interfaceName}Enum${name}IsWrongUseDoNotCheckConstants);\n");
             }
 
-            if ($conditional) {
-                push(@checks, "#endif\n");
-            }
+            push(@checks, "#endif\n") if $conditionalString;
         }
         push(@checks, "\n");
     }
