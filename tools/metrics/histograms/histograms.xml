@@ -371,6 +371,29 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Bluetooth.ConnectedDeviceCount" units="devices">
+  <summary>
+    Counts the number of simulataneously connected Bluetooth devices. Used to
+    direct testing efforts, and by our UI team to determine appropriate UI
+    sizes.
+  </summary>
+</histogram>
+
+<histogram name="Bluetooth.PairingMethod" enum="BluetoothPairingMethod">
+  <summary>
+    Records the method used to pair each Bluetooth Device. Used to direct our
+    testing efforts.
+  </summary>
+</histogram>
+
+<histogram name="Bluetooth.PairingResult" enum="BluetoothPairingResult">
+  <summary>
+    Records the result of pairing each Bluetooth Device. Used to understand
+    whether we are having significant problems with Bluetooth pairing and seeing
+    errors more commonly than we should.
+  </summary>
+</histogram>
+
 <histogram name="Cellular.ActivationFailure">
   <summary>
     The count of cellular device activation failures (Chrome OS).
@@ -6345,6 +6368,27 @@ other types of suffix sets.
   <int value="0" label="Unused"/>
   <int value="1" label="Success"/>
   <int value="2" label="Failure"/>
+</enum>
+
+<enum name="BluetoothPairingMethod" type="int">
+  <int value="0" label="No user interaction required"/>
+  <int value="1" label="PIN Code requested from user"/>
+  <int value="2" label="Passkey requested from user"/>
+  <int value="3" label="PIN Code entered into device"/>
+  <int value="4" label="Passkey entered into device"/>
+  <int value="5" label="Passkey confirmed on both devices"/>
+</enum>
+
+<enum name="BluetoothPairingResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Connection already in-progress"/>
+  <int value="2" label="Failed for non-specific reason"/>
+  <int value="3" label="Authentication failed"/>
+  <int value="4" label="Authentication canceled"/>
+  <int value="5" label="Authentication rejected"/>
+  <int value="6" label="Authentication timed out"/>
+  <int value="7" label="Unsupported device"/>
+  <int value="8" label="Unknown or unhandler error"/>
 </enum>
 
 <enum name="BooleanAttempted" type="int">

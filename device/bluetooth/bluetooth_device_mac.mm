@@ -82,6 +82,18 @@ std::string BluetoothDeviceMac::GetAddress() const {
   return base::SysNSStringToUTF8([device_ addressString]);
 }
 
+uint16 BluetoothDeviceMac::GetVendorID() const {
+  return 0;
+}
+
+uint16 BluetoothDeviceMac::GetProductID() const {
+  return 0;
+}
+
+uint16 BluetoothDeviceMac::GetDeviceID() const {
+  return 0;
+}
+
 bool BluetoothDeviceMac::IsPaired() const {
   return [device_ isPaired];
 }

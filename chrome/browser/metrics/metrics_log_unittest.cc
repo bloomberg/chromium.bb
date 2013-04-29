@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/port.h"
 #include "base/prefs/pref_service.h"
@@ -29,6 +30,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/size.h"
 #include "webkit/plugins/webplugininfo.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
+#endif  // OS_CHROMEOS
 
 using base::TimeDelta;
 using metrics::ProfilerEventProto;
@@ -151,17 +157,39 @@ class MetricsLogTest : public testing::Test {
     // of this call.
   }
 
+  virtual void SetUp() OVERRIDE {
+#if defined(OS_CHROMEOS)
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kEnableExperimentalBluetooth))
+      CommandLine::ForCurrentProcess()->AppendSwitch(
+          chromeos::switches::kEnableExperimentalBluetooth);
+
+    mock_dbus_thread_manager_ =
+        new chromeos::MockDBusThreadManagerWithoutGMock();
+    chromeos::DBusThreadManager::InitializeForTesting(
+        mock_dbus_thread_manager_);
+#endif  // OS_CHROMEOS
+  }
+
   virtual void TearDown() OVERRIDE {
     // Drain the blocking pool from PostTaskAndReply executed by
     // MetrticsLog.network_observer_.
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
     content::RunAllPendingInMessageLoop();
+
+#if defined(OS_CHROMEOS)
+    chromeos::DBusThreadManager::Shutdown();
+#endif  // OS_CHROMEOS
   }
 
  private:
   // This is necessary because eventually some tests call base::RepeatingTimer
   // functions and a message loop is required for that.
   MessageLoop message_loop_;
+
+#if defined(OS_CHROMEOS)
+  chromeos::MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager_;
+#endif  // OS_CHROMEOS
 };
 
 TEST_F(MetricsLogTest, RecordEnvironment) {
