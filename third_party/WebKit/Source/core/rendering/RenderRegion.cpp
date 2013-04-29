@@ -596,30 +596,15 @@ void RenderRegion::clearObjectStyleInRegion(const RenderObject* object)
         clearObjectStyleInRegion(child);
 }
 
-void RenderRegion::computePreferredLogicalWidths()
+void RenderRegion::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
-    ASSERT(preferredLogicalWidthsDirty());
-
     if (!isValid()) {
-        RenderBlock::computePreferredLogicalWidths();
+        RenderBlock::computeIntrinsicLogicalWidths(minLogicalWidth, maxLogicalWidth);
         return;
     }
 
-    // FIXME: Currently, the code handles only the <length> case for min-width/max-width.
-    // It should also support other values, like percentage, calc or viewport relative.
-    m_minPreferredLogicalWidth = m_flowThread->minPreferredLogicalWidth();
-    m_maxPreferredLogicalWidth = m_flowThread->maxPreferredLogicalWidth();
-
-    RenderStyle* styleToUse = style();
-    if (styleToUse->logicalMaxWidth().isFixed()) {
-        m_minPreferredLogicalWidth = std::min(m_minPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse->logicalMaxWidth().value()));
-        m_maxPreferredLogicalWidth = std::min(m_maxPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse->logicalMaxWidth().value()));
-    }
-
-    LayoutUnit borderAndPadding = borderAndPaddingLogicalWidth();
-    m_minPreferredLogicalWidth += borderAndPadding;
-    m_maxPreferredLogicalWidth += borderAndPadding;
-    setPreferredLogicalWidthsDirty(false);
+    minLogicalWidth = m_flowThread->minPreferredLogicalWidth();
+    maxLogicalWidth = m_flowThread->maxPreferredLogicalWidth();
 }
 
 void RenderRegion::getRanges(Vector<RefPtr<Range> >& rangeObjects) const
