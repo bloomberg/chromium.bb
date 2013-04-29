@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/screens/screen_context.h"
 
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace chromeos {
@@ -77,14 +78,17 @@ base::string16 ScreenContext::GetString16(const KeyType& key,
 }
 
 bool ScreenContext::HasKey(const KeyType& key) const {
+  DCHECK(CalledOnValidThread());
   return storage_.HasKey(key);
 }
 
 bool ScreenContext::HasChanges() const {
+  DCHECK(CalledOnValidThread());
   return !changes_.empty();
 }
 
 void ScreenContext::GetChangesAndReset(DictionaryValue* diff) {
+  DCHECK(CalledOnValidThread());
   DCHECK(diff);
   changes_.Swap(diff);
   changes_.Clear();
@@ -92,6 +96,7 @@ void ScreenContext::GetChangesAndReset(DictionaryValue* diff) {
 
 void ScreenContext::ApplyChanges(const DictionaryValue& diff,
                                  std::vector<std::string>* keys) {
+  DCHECK(CalledOnValidThread());
   DCHECK(!HasChanges());
   DCHECK(keys);
   keys->clear();
@@ -106,6 +111,7 @@ void ScreenContext::ApplyChanges(const DictionaryValue& diff,
 }
 
 bool ScreenContext::Set(const KeyType& key, Value* value) {
+  DCHECK(CalledOnValidThread());
   DCHECK(value);
   scoped_ptr<Value> new_value(value);
 

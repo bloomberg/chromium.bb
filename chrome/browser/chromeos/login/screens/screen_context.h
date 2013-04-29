@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/string16.h"
+#include "base/threading/non_thread_safe.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler_utils.h"
 
@@ -31,7 +32,7 @@ namespace chromeos {
 // ScreenContext memorizes changed key-value pairs and returns them
 // via GetChangesAndReset() method. After call to this method an
 // internal buffer of changes will be cleared.
-class ScreenContext {
+class ScreenContext : public base::NonThreadSafe {
  public:
   typedef std::string KeyType;
   typedef base::Value ValueType;
@@ -79,6 +80,7 @@ class ScreenContext {
 
   template<typename T>
   T Get(const KeyType& key) {
+    DCHECK(CalledOnValidThread());
     const Value* value;
     bool has_key = storage_.Get(key, &value);
     DCHECK(has_key);
@@ -92,6 +94,7 @@ class ScreenContext {
 
   template<typename T>
   T Get(const KeyType& key, const T& default_value) {
+    DCHECK(CalledOnValidThread());
     if (!HasKey(key))
       return default_value;
     return Get<T>(key);
