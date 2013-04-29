@@ -168,7 +168,7 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
   int w = anchor_rect.width();
   int h = anchor_rect.height();
   const int arrow_offset = GetArrowOffset(size);
-  const int arrow_size = (arrow_paint_type_ == PAINT_NONE) ? 0 :
+  const int arrow_size =
       images_->arrow_interior_thickness + kStroke - images_->arrow_thickness;
   const bool mid_anchor = alignment_ == ALIGN_ARROW_TO_MID_ANCHOR;
 
@@ -224,6 +224,8 @@ int BubbleBorder::GetArrowOffset(const gfx::Size& border_size) const {
 gfx::Insets BubbleBorder::GetInsets() const {
   // The insets contain the stroke and shadow pixels outside the bubble fill.
   const int inset = GetBorderThickness();
+  if (arrow_paint_type_ == PAINT_NONE)
+    return gfx::Insets(inset, inset, inset, inset);
   const int inset_with_arrow = std::max(inset, images_->arrow_thickness);
   if (is_arrow_on_horizontal(arrow_)) {
     if (is_arrow_on_top(arrow_))
