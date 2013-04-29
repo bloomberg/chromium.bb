@@ -28,6 +28,7 @@ class OneClickSigninBubbleGtk : public BubbleDelegateGtk {
   OneClickSigninBubbleGtk(
       BrowserWindowGtk* browser_window_gtk,
       BrowserWindow::OneClickSigninBubbleType type,
+      const string16& email,
       const BrowserWindow::StartSyncCallback& start_sync_callback);
 
   // BubbleDelegateGtk implementation.
@@ -61,6 +62,7 @@ class OneClickSigninBubbleGtk : public BubbleDelegateGtk {
   BrowserWindow::StartSyncCallback start_sync_callback_;
 
   bool is_modal_;
+  const string16 email_;
 
   GtkWidget* message_label_;
   GtkWidget* advanced_link_;

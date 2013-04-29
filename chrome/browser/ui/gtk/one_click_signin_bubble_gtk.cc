@@ -10,6 +10,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
@@ -30,10 +31,12 @@ static const int kModalDialogMessageWidth = 400;
 OneClickSigninBubbleGtk::OneClickSigninBubbleGtk(
     BrowserWindowGtk* browser_window_gtk,
     BrowserWindow::OneClickSigninBubbleType type,
+    const string16& email,
     const BrowserWindow::StartSyncCallback& start_sync_callback)
     : bubble_(NULL),
       start_sync_callback_(start_sync_callback),
       is_modal_(type != BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE),
+      email_(email),
       message_label_(NULL),
       advanced_link_(NULL),
       ok_button_(NULL),
@@ -124,9 +127,17 @@ OneClickSigninBubbleGtk::~OneClickSigninBubbleGtk() {
 void OneClickSigninBubbleGtk::InitializeWidgets(
     BrowserWindowGtk* browser_window_gtk) {
   // Message.
-  message_label_ = gtk_label_new(l10n_util::GetStringUTF8(
-      is_modal_ ? IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE :
-                  IDS_ONE_CLICK_SIGNIN_BUBBLE_MESSAGE).c_str());
+  std::string message;
+  if (is_modal_) {
+    message = email_.empty() ?
+        l10n_util::GetStringUTF8(IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE) :
+        l10n_util::GetStringFUTF8(IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE_NEW,
+                                  email_);
+  } else {
+    message = l10n_util::GetStringUTF8(IDS_ONE_CLICK_SIGNIN_BUBBLE_MESSAGE);
+  }
+
+  message_label_ = gtk_label_new(message.c_str());
   gtk_label_set_line_wrap(GTK_LABEL(message_label_), TRUE);
   gtk_misc_set_alignment(GTK_MISC(message_label_), 0.0, 0.5);
   if (is_modal_)
@@ -171,8 +182,9 @@ void OneClickSigninBubbleGtk::InitializeWidgets(
   g_signal_connect(learn_more_, "clicked",
                    G_CALLBACK(OnClickLearnMoreLinkThunk), this);
 
-  header_label_ = theme_provider->BuildLabel(
-      l10n_util::GetStringUTF8(IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE),
+  header_label_ = theme_provider->BuildLabel(email_.empty() ?
+      l10n_util::GetStringUTF8(IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE) :
+      l10n_util::GetStringFUTF8(IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE_NEW, email_),
       ui::kGdkBlack);
 
   PangoAttrList* attributes = pango_attr_list_new();

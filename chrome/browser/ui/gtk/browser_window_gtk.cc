@@ -977,7 +977,7 @@ void BrowserWindowGtk::ShowOneClickSigninBubble(
     OneClickSigninBubbleType type,
     const string16& email,
     const StartSyncCallback& start_sync_callback) {
-  new OneClickSigninBubbleGtk(this, type, start_sync_callback);
+  new OneClickSigninBubbleGtk(this, type, email, start_sync_callback);
 }
 #endif
 

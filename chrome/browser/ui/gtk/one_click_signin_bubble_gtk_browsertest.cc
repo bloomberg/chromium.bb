@@ -28,6 +28,7 @@ class OneClickSigninBubbleGtkTest : public InProcessBrowserTest {
     return new OneClickSigninBubbleGtk(
         static_cast<BrowserWindowGtk*>(browser()->window()),
         BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE,
+        string16(),
         start_sync_callback_);
   }
 
