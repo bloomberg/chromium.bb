@@ -19,6 +19,8 @@ class Vector2dF;
 
 namespace cc {
 
+class LayerScrollOffsetDelegate;
+
 // The InputHandler is a way for the embedders to interact with the impl thread
 // side of the compositor implementation. There is one InputHandler per
 // LayerTreeHost. To use the input handler, implement the InputHanderClient
@@ -61,6 +63,16 @@ class CC_EXPORT InputHandler {
   // Stop scrolling the selected layer. Should only be called if ScrollBegin()
   // returned ScrollStarted.
   virtual void ScrollEnd() = 0;
+
+  virtual void SetRootLayerScrollOffsetDelegate(
+      LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate) = 0;
+
+  // Called when the value returned by
+  // LayerScrollOffsetDelegate.GetTotalScrollOffset has changed for reasons
+  // other than a SetTotalScrollOffset call.
+  // NOTE: This should only called after a valid delegate was set via a call to
+  // SetRootLayerScrollOffsetDelegate.
+  virtual void OnRootLayerDelegatedScrollOffsetChanged() = 0;
 
   virtual void PinchGestureBegin() = 0;
   virtual void PinchGestureUpdate(float magnify_delta, gfx::Point anchor) = 0;

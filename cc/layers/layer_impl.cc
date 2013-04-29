@@ -13,6 +13,7 @@
 #include "cc/base/math_util.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/debug/layer_tree_debug_state.h"
+#include "cc/input/layer_scroll_offset_delegate.h"
 #include "cc/layers/quad_sink.h"
 #include "cc/layers/scrollbar_layer_impl.h"
 #include "cc/quads/debug_border_draw_quad.h"
@@ -33,6 +34,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       layer_tree_impl_(tree_impl),
       anchor_point_(0.5f, 0.5f),
       anchor_point_z_(0.f),
+      scroll_offset_delegate_(NULL),
       scrollable_(false),
       should_scroll_on_main_thread_(false),
       have_wheel_event_handlers_(false),
@@ -242,10 +244,10 @@ gfx::Vector2dF LayerImpl::ScrollBy(gfx::Vector2dF scroll) {
   gfx::Vector2dF min_delta = -scroll_offset_;
   gfx::Vector2dF max_delta = max_scroll_offset_ - scroll_offset_;
   // Clamp new_delta so that position + delta stays within scroll bounds.
-  gfx::Vector2dF new_delta = (scroll_delta_ + scroll);
+  gfx::Vector2dF new_delta = (ScrollDelta() + scroll);
   new_delta.ClampToMin(min_delta);
   new_delta.ClampToMax(max_delta);
-  gfx::Vector2dF unscrolled = scroll_delta_ + scroll - new_delta;
+  gfx::Vector2dF unscrolled = ScrollDelta() + scroll - new_delta;
 
   SetScrollDelta(new_delta);
   return unscrolled;
@@ -388,7 +390,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   update_rect_.Union(layer->update_rect());
   layer->set_update_rect(update_rect_);
 
-  layer->SetScrollDelta(layer->scroll_delta() - layer->sent_scroll_delta());
+  layer->SetScrollDelta(layer->ScrollDelta() - layer->sent_scroll_delta());
   layer->SetSentScrollDelta(gfx::Vector2d());
 
   layer->SetStackingOrderChanged(stacking_order_changed_);
@@ -829,7 +831,7 @@ void LayerImpl::CalculateContentsScale(
 }
 
 void LayerImpl::UpdateScrollbarPositions() {
-  gfx::Vector2dF current_offset = scroll_offset_ + scroll_delta_;
+  gfx::Vector2dF current_offset = scroll_offset_ + ScrollDelta();
 
   gfx::RectF viewport(PointAtOffsetFromOrigin(current_offset), bounds_);
   gfx::SizeF scrollable_size(max_scroll_offset_.x() + bounds_.width(),
@@ -867,17 +869,39 @@ void LayerImpl::UpdateScrollbarPositions() {
   }
 }
 
+void LayerImpl::SetScrollOffsetDelegate(
+    LayerScrollOffsetDelegate* scroll_offset_delegate) {
+  if (!scroll_offset_delegate && scroll_offset_delegate_) {
+    scroll_delta_ =
+        scroll_offset_delegate_->GetTotalScrollOffset() - scroll_offset_;
+  }
+  gfx::Vector2dF total_offset = TotalScrollOffset();
+  scroll_offset_delegate_ = scroll_offset_delegate;
+  if (scroll_offset_delegate_)
+    scroll_offset_delegate_->SetTotalScrollOffset(total_offset);
+}
+
 void LayerImpl::SetScrollOffset(gfx::Vector2d scroll_offset) {
   if (scroll_offset_ == scroll_offset)
     return;
 
   scroll_offset_ = scroll_offset;
+
+  if (scroll_offset_delegate_)
+    scroll_offset_delegate_->SetTotalScrollOffset(TotalScrollOffset());
+
   NoteLayerPropertyChangedForSubtree();
   UpdateScrollbarPositions();
 }
 
+gfx::Vector2dF LayerImpl::ScrollDelta() const {
+  if (scroll_offset_delegate_)
+    return scroll_offset_delegate_->GetTotalScrollOffset() - scroll_offset_;
+  return scroll_delta_;
+}
+
 void LayerImpl::SetScrollDelta(gfx::Vector2dF scroll_delta) {
-  if (scroll_delta_ == scroll_delta)
+  if (ScrollDelta() == scroll_delta)
     return;
 
   if (layer_tree_impl()->IsActiveTree()) {
@@ -893,14 +917,19 @@ void LayerImpl::SetScrollDelta(gfx::Vector2dF scroll_delta) {
     }
   }
 
-  scroll_delta_ = scroll_delta;
+  if (scroll_offset_delegate_) {
+    scroll_offset_delegate_->SetTotalScrollOffset(
+        scroll_offset_ + scroll_delta);
+  } else {
+    scroll_delta_ = scroll_delta;
+  }
   NoteLayerPropertyChangedForSubtree();
 
   UpdateScrollbarPositions();
 }
 
 gfx::Vector2dF LayerImpl::TotalScrollOffset() const {
-  return scroll_offset_ + scroll_delta_;
+  return scroll_offset_ + ScrollDelta();
 }
 
 void LayerImpl::SetDoubleSided(bool double_sided) {
