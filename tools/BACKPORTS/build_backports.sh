@@ -165,6 +165,7 @@ while read name id comment ; do
 	END
       fi
       if [[ "$name" = ppapi1? ]] || [[ "$name" = ppapi2[01234567] ]]; then
+	patch -p0 <<-END
 	--- native_client/tools/glibc_download.sh
 	+++ native_client/tools/glibc_download.sh
 	@@ -20 +20 @@
