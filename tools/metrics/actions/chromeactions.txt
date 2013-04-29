@@ -1066,6 +1066,7 @@
 0x61bd701a880845ea	MobileTabSwitched
 0xeddccaa7cc01c9c4	MobileToolbarBack
 0x0082decef81a99e8	MobileToolbarForward
+0xc7cd1610c9a15c4d	MobileToolbarNewTab
 0xf7a930aae6dd681f	MobileToolbarReload
 0x3cf24b6fee3f97bf	MobileToolbarShowMenu
 0x3deff4b1d1a6c795	MobileToolbarShowStackView
