@@ -1540,6 +1540,12 @@ bool EventHandler::passMouseMovedEventToScrollbars(const PlatformMouseEvent& eve
     return handleMouseMoveEvent(event, &hoveredNode, true);
 }
 
+static Cursor& syntheticTouchCursor()
+{
+    DEFINE_STATIC_LOCAL(Cursor, c, (Image::loadPlatformResource("syntheticTouchCursor").get(), IntPoint(10, 10)));
+    return c;
+}
+
 bool EventHandler::handleMouseMoveEvent(const PlatformMouseEvent& mouseEvent, HitTestResult* hoveredNode, bool onlyUpdateScrollbars)
 {
     // in Radar 3703768 we saw frequent crashes apparently due to the
@@ -1551,8 +1557,10 @@ bool EventHandler::handleMouseMoveEvent(const PlatformMouseEvent& mouseEvent, Hi
         return false;
 
     bool defaultPrevented = dispatchSyntheticTouchEventIfEnabled(mouseEvent);
-    if (defaultPrevented)
+    if (defaultPrevented) {
+        m_frame->view()->setCursor(syntheticTouchCursor());
         return true;
+    }
 
     RefPtr<FrameView> protector(m_frame->view());
     
