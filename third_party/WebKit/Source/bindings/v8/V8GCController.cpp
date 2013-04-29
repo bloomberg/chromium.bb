@@ -414,9 +414,8 @@ private:
 void V8GCController::gcPrologue(v8::GCType type, v8::GCCallbackFlags flags)
 {
     // It would be nice if the GC callbacks passed the Isolate directly....
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     if (type == v8::kGCTypeScavenge)
-        minorGCPrologue(isolate);
+        minorGCPrologue(v8::Isolate::GetCurrent());
     else if (type == v8::kGCTypeMarkSweepCompact)
         majorGCPrologue();
 }
@@ -426,7 +425,6 @@ void V8GCController::minorGCPrologue(v8::Isolate* isolate)
     TRACE_EVENT_BEGIN0("v8", "GC");
 
     if (isMainThread()) {
-        v8::Isolate* isolate = v8::Isolate::GetCurrent();
         v8::HandleScope scope;
 
         MinorGCWrapperVisitor visitor(isolate);
