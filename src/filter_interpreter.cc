@@ -18,10 +18,12 @@ void FilterInterpreter::HandleTimerImpl(stime_t now, stime_t* timeout) {
 }
 
 void FilterInterpreter::Initialize(const HardwareProperties* hwprops,
+                                   Metrics* metrics,
+                                   MetricsProperties* mprops,
                                    GestureConsumer* consumer) {
-  Interpreter::Initialize(hwprops, consumer);
+  Interpreter::Initialize(hwprops, metrics, mprops, consumer);
   if (next_)
-    next_->Initialize(hwprops, this);
+    next_->Initialize(hwprops, metrics, mprops, this);
 }
 
 void FilterInterpreter::ConsumeGesture(const Gesture& gesture) {

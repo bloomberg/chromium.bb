@@ -209,6 +209,8 @@ void ScalingFilterInterpreter::ConsumeGesture(const Gesture& gs) {
 }
 
 void ScalingFilterInterpreter::Initialize(const HardwareProperties* hwprops,
+                                          Metrics* metrics,
+                                          MetricsProperties* mprops,
                                           GestureConsumer* consumer) {
   tp_x_scale_ = 1.0 / hwprops->res_x;
   tp_y_scale_ = 1.0 / hwprops->res_y;
@@ -255,8 +257,8 @@ void ScalingFilterInterpreter::Initialize(const HardwareProperties* hwprops,
     hwprops->support_semi_mt,
     hwprops->is_button_pad
   };
-
-  FilterInterpreter::Initialize(&friendly_props_, consumer);
+  // current metrics is no longer valid, pass metrics=NULL
+  FilterInterpreter::Initialize(&friendly_props_, NULL, mprops, consumer);
 }
 
 }  // namespace gestures

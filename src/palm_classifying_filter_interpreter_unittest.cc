@@ -43,7 +43,7 @@ class PalmClassifyingFilterInterpreterTestInterpreter : public Interpreter {
 };
 
 TEST(PalmClassifyingFilterInterpreterTest, PalmTest) {
-  PalmClassifyingFilterInterpreter pci(NULL, NULL, NULL, NULL);
+  PalmClassifyingFilterInterpreter pci(NULL, NULL, NULL);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -120,7 +120,7 @@ TEST(PalmClassifyingFilterInterpreterTest, PalmTest) {
 }
 
 TEST(PalmClassifyingFilterInterpreterTest, StationaryPalmTest) {
-  PalmClassifyingFilterInterpreter pci(NULL, NULL, NULL, NULL);
+  PalmClassifyingFilterInterpreter pci(NULL, NULL, NULL);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -178,7 +178,7 @@ TEST(PalmClassifyingFilterInterpreterTest, StationaryPalmTest) {
 TEST(PalmClassifyingFilterInterpreterTest, PalmAtEdgeTest) {
   PalmClassifyingFilterInterpreterTestInterpreter* base_interpreter = NULL;
   scoped_ptr<PalmClassifyingFilterInterpreter> pci(
-      new PalmClassifyingFilterInterpreter(NULL, NULL, NULL, NULL));
+      new PalmClassifyingFilterInterpreter(NULL, NULL, NULL));
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -260,7 +260,7 @@ TEST(PalmClassifyingFilterInterpreterTest, PalmAtEdgeTest) {
     if ((i % 2) == 0) {
       base_interpreter = new PalmClassifyingFilterInterpreterTestInterpreter;
       pci.reset(new PalmClassifyingFilterInterpreter(NULL, base_interpreter,
-                                                     NULL, NULL));
+                                                     NULL));
       wrapper.Reset(pci.get());
     }
     switch (i) {
@@ -301,7 +301,7 @@ struct PalmReevaluateTestInputs {
 // This tests that a palm that doesn't start out as a palm, but actually is,
 // and can be classified as one shortly after it starts, doesn't cause motion.
 TEST(PalmClassifyingFilterInterpreterTest, PalmReevaluateTest) {
-  PalmClassifyingFilterInterpreter pci(NULL, NULL, NULL, NULL);
+  PalmClassifyingFilterInterpreter pci(NULL, NULL, NULL);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -389,7 +389,7 @@ struct LargeTouchMajorTestInputs {
 TEST(PalmClassifyingFilterInterpreterTest, LargeTouchMajorTest) {
   PalmClassifyingFilterInterpreterTestInterpreter* base_interpreter =
       new PalmClassifyingFilterInterpreterTestInterpreter;
-  PalmClassifyingFilterInterpreter pci(NULL, base_interpreter, NULL, NULL);
+  PalmClassifyingFilterInterpreter pci(NULL, base_interpreter, NULL);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge

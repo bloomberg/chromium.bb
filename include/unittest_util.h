@@ -5,6 +5,7 @@
 #ifndef GESTURES_UNITTEST_UTIL_H_
 #define GESTURES_UNITTEST_UTIL_H_
 
+#include "gestures/include/finger_metrics.h"
 #include "gestures/include/gestures.h"
 #include "gestures/include/interpreter.h"
 
@@ -29,6 +30,8 @@ class TestInterpreterWrapper : public GestureConsumer {
   const HardwareProperties* hwprops_;
   HardwareProperties dummy_;
   Gesture gesture_;
+  scoped_ptr<PropRegistry> prop_reg_;
+  scoped_ptr<MetricsProperties> mprops_;
 };
 
 

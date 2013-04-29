@@ -78,9 +78,9 @@ void TapRecord::NoteTouch(short the_id, const FingerState& fs) {
     for (map<short, FingerState, kMaxTapFingers>::const_iterator it =
              touched_.begin(), e = touched_.end(); it != e; ++it) {
       const FingerState& existing_fs = (*it).second;
-      if (immediate_interpreter_->finger_metrics_->FingersCloseEnoughToGesture(
-              existing_fs,
-              fs)) {
+      if (immediate_interpreter_->metrics_->CloseEnoughToGesture(
+              Vector2(existing_fs),
+              Vector2(fs))) {
         reject_new_finger = false;
         break;
       }
@@ -637,7 +637,6 @@ done:
 }
 
 ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
-                                           FingerMetrics* finger_metrics,
                                            Tracer* tracer)
     : Interpreter(NULL, tracer, false),
       button_type_(0),
@@ -656,7 +655,6 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       current_gesture_type_(kGestureTypeNull),
       state_buffer_(4),
       scroll_buffer_(20),
-      finger_metrics_(finger_metrics),
       pinch_guess_start_(-1.0),
       pinch_locked_(false),
       finger_seen_since_button_down_(false),
@@ -735,10 +733,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
                                      "Right Click Second Finger Age Thresh",
                                      0.5) {
   InitName();
-  if (!finger_metrics_) {
-    test_finger_metrics_.reset(new FingerMetrics(prop_reg));
-    finger_metrics_ = test_finger_metrics_.get();
-  }
+  requires_metrics_ = true;
 }
 
 void ImmediateInterpreter::SyncInterpretImpl(HardwareState* hwstate,
@@ -1238,7 +1233,7 @@ bool ImmediateInterpreter::TwoFingersGesturing(
     const FingerState& finger1,
     const FingerState& finger2) const {
   // Make sure distance between fingers isn't too great
-  if (!finger_metrics_->FingersCloseEnoughToGesture(finger1, finger2))
+  if (!metrics_->CloseEnoughToGesture(Vector2(finger1), Vector2(finger2)))
     return false;
 
   // Next, if two fingers are moving a lot, they are gesturing together.
@@ -1994,7 +1989,7 @@ int ImmediateInterpreter::EvaluateButtonType(
   int num_separate = 0;
   const FingerState* last_separate = NULL;
 
-  if (finger_metrics_->FingersCloseEnoughToGesture(*pair_a, *pair_b)) {
+  if (metrics_->CloseEnoughToGesture(Vector2(*pair_a), Vector2(*pair_b))) {
     // Expect the remaining fingers to be next to the pair, all with the same
     // distance from each other.
     float dx = pair_b->position_x - pair_a->position_x;
@@ -2307,8 +2302,10 @@ void ImmediateInterpreter::IntWasWritten(IntProperty* prop) {
 }
 
 void ImmediateInterpreter::Initialize(const HardwareProperties* hwprops,
+                                      Metrics* metrics,
+                                      MetricsProperties* mprops,
                                       GestureConsumer* consumer) {
-  Interpreter::Initialize(hwprops, consumer);
+  Interpreter::Initialize(hwprops, metrics, mprops, consumer);
   state_buffer_.Reset(hwprops_->max_finger_cnt);
 }
 

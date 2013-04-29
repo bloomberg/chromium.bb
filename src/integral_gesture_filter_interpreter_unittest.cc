@@ -18,7 +18,6 @@
 using std::deque;
 using std::make_pair;
 using std::pair;
-using std::vector;
 
 namespace gestures {
 
@@ -45,7 +44,7 @@ class IntegralGestureFilterInterpreterTestInterpreter : public Interpreter {
 
   Gesture return_value_;
   deque<Gesture> return_values_;
-  deque<vector<pair<float, float> > > expected_coordinates_;
+  deque<std::vector<pair<float, float> > > expected_coordinates_;
 };
 
 TEST(IntegralGestureFilterInterpreterTestInterpreter, OverflowTest) {

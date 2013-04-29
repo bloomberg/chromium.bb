@@ -19,7 +19,6 @@
 using std::deque;
 using std::make_pair;
 using std::pair;
-using std::vector;
 
 namespace gestures {
 
@@ -32,7 +31,8 @@ class ScalingFilterInterpreterTestInterpreter : public Interpreter {
 
   virtual void SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
     if (!expected_coordinates_.empty()) {
-      vector<pair<float, float> >& expected = expected_coordinates_.front();
+      std::vector<pair<float, float> >& expected =
+          expected_coordinates_.front();
       for (unsigned short i = 0; i < hwstate->finger_cnt; i++) {
         EXPECT_FLOAT_EQ(expected[i].first, hwstate->fingers[i].position_x)
             << "i = " << i;
@@ -42,7 +42,7 @@ class ScalingFilterInterpreterTestInterpreter : public Interpreter {
       expected_coordinates_.pop_front();
     }
     if (!expected_orientation_.empty()) {
-      const vector<float>& expected = expected_orientation_.front();
+      const std::vector<float>& expected = expected_orientation_.front();
       EXPECT_EQ(expected.size(), hwstate->finger_cnt);
       for (size_t i = 0; i < hwstate->finger_cnt; i++)
         EXPECT_FLOAT_EQ(expected[i], hwstate->fingers[i].orientation)
@@ -50,7 +50,7 @@ class ScalingFilterInterpreterTestInterpreter : public Interpreter {
       expected_orientation_.pop_front();
     }
     if (!expected_touch_major_.empty()) {
-      const vector<float>& expected = expected_touch_major_.front();
+      const std::vector<float>& expected = expected_touch_major_.front();
       EXPECT_EQ(expected.size(), hwstate->finger_cnt);
       for (size_t i = 0; i < hwstate->finger_cnt; i++)
         EXPECT_FLOAT_EQ(expected[i], hwstate->fingers[i].touch_major)
@@ -58,7 +58,7 @@ class ScalingFilterInterpreterTestInterpreter : public Interpreter {
       expected_touch_major_.pop_front();
     }
     if (!expected_touch_minor_.empty()) {
-      const vector<float>& expected = expected_touch_minor_.front();
+      const std::vector<float>& expected = expected_touch_minor_.front();
       EXPECT_EQ(expected.size(), hwstate->finger_cnt);
       for (size_t i = 0; i < hwstate->finger_cnt; i++)
         EXPECT_FLOAT_EQ(expected[i], hwstate->fingers[i].touch_minor)
@@ -90,6 +90,8 @@ class ScalingFilterInterpreterTestInterpreter : public Interpreter {
   }
 
   virtual void Initialize(const HardwareProperties* hw_props,
+                          Metrics* metrics,
+                          MetricsProperties* mprops,
                           GestureConsumer* consumer) {
     EXPECT_FLOAT_EQ(expected_hwprops_.left, hw_props->left);
     EXPECT_FLOAT_EQ(expected_hwprops_.top, hw_props->top);
@@ -109,15 +111,15 @@ class ScalingFilterInterpreterTestInterpreter : public Interpreter {
     EXPECT_EQ(expected_hwprops_.support_semi_mt, hw_props->support_semi_mt);
     EXPECT_EQ(expected_hwprops_.is_button_pad, hw_props->is_button_pad);
     initialize_called_ = true;
-    Interpreter::Initialize(hw_props, consumer);
+    Interpreter::Initialize(hw_props, metrics, mprops, consumer);
   };
 
   Gesture return_value_;
   deque<Gesture> return_values_;
-  deque<vector<pair<float, float> > > expected_coordinates_;
-  deque<vector<float> > expected_orientation_;
-  deque<vector<float> > expected_touch_major_;
-  deque<vector<float> > expected_touch_minor_;
+  deque<std::vector<pair<float, float> > > expected_coordinates_;
+  deque<std::vector<float> > expected_orientation_;
+  deque<std::vector<float> > expected_touch_major_;
+  deque<std::vector<float> > expected_touch_minor_;
   deque<float> expected_pressures_;
   deque<int> expected_finger_cnt_;
   deque<int> expected_touch_cnt_;
@@ -174,19 +176,19 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
 
   // Set up expected translated coordinates
   base_interpreter->expected_coordinates_.push_back(
-      vector<pair<float, float> >(1, make_pair(
+      std::vector<pair<float, float> >(1, make_pair(
           static_cast<float>(100.0 * (150.0 - 133.0) / (10279.0 - 133.0)),
           static_cast<float>(60.0 * (4000.0 - 728.0) / (5822.0 - 728.0)))));
   base_interpreter->expected_coordinates_.push_back(
-      vector<pair<float, float> >(1, make_pair(
+      std::vector<pair<float, float> >(1, make_pair(
           static_cast<float>(100.0 * (550.0 - 133.0) / (10279.0 - 133.0)),
           static_cast<float>(60.0 * (2000.0 - 728.0) / (5822.0 - 728.0)))));
   base_interpreter->expected_coordinates_.push_back(
-      vector<pair<float, float> >(1, make_pair(
+      std::vector<pair<float, float> >(1, make_pair(
           static_cast<float>(100.0 * (250.0 - 133.0) / (10279.0 - 133.0)),
           static_cast<float>(60.0 * (3000.0 - 728.0) / (5822.0 - 728.0)))));
   base_interpreter->expected_coordinates_.push_back(
-      vector<pair<float, float> >(1, make_pair(
+      std::vector<pair<float, float> >(1, make_pair(
           static_cast<float>(100.0 * (250.0 - 133.0) / (10279.0 - 133.0)),
           static_cast<float>(60.0 * (3000.0 - 728.0) / (5822.0 - 728.0)))));
 
@@ -200,7 +202,7 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
       fs[3].pressure * kPressureScale + kPressureTranslate);
 
   base_interpreter->expected_touch_major_.push_back(
-      vector<float>(1, interpreter.tp_y_scale_ *
+      std::vector<float>(1, interpreter.tp_y_scale_ *
                        (fs[0].touch_major - kTpYBias)));
 
   // Set up gestures to return
@@ -324,26 +326,26 @@ static void RunTouchMajorAndMinorTest(
 
     if (has_zero_area[i]) {
       base_interpreter->expected_orientation_.push_back(
-          vector<float>(0));
+          std::vector<float>(0));
       base_interpreter->expected_touch_major_.push_back(
-          vector<float>(0));
+          std::vector<float>(0));
       base_interpreter->expected_touch_minor_.push_back(
-          vector<float>(0));
+          std::vector<float>(0));
       base_interpreter->expected_finger_cnt_.push_back(0);
       base_interpreter->expected_touch_cnt_.push_back(0);
     } else {
       base_interpreter->expected_orientation_.push_back(
-          vector<float>(1, orientation));
+          std::vector<float>(1, orientation));
       base_interpreter->expected_touch_major_.push_back(
-          vector<float>(1, touch_major));
+          std::vector<float>(1, touch_major));
       base_interpreter->expected_touch_minor_.push_back(
-          vector<float>(1, touch_minor));
+          std::vector<float>(1, touch_minor));
       base_interpreter->expected_pressures_.push_back(pressure);
     }
   }
 
   base_interpreter->expected_hwprops_ = *expected_hwprops;
-  interpreter->Initialize(hwprops, NULL);
+  interpreter->Initialize(hwprops, NULL, NULL, NULL);
   EXPECT_TRUE(base_interpreter->initialize_called_);
 
   for (size_t i = 0; i < n_fs; i++) {

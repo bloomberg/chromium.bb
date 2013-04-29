@@ -11,6 +11,7 @@
 #include <base/values.h>
 
 #include "gestures/include/activity_log.h"
+#include "gestures/include/finger_metrics.h"
 #include "gestures/include/gestures.h"
 #include "gestures/include/logging.h"
 #include "gestures/include/tracer.h"
@@ -21,6 +22,7 @@ Interpreter::Interpreter(PropRegistry* prop_reg,
                          Tracer* tracer,
                          bool force_logging)
     : log_(NULL),
+      requires_metrics_(false),
       initialized_(false),
       name_(NULL),
       tracer_(tracer) {
@@ -51,6 +53,9 @@ void Interpreter::SyncInterpret(HardwareState* hwstate,
     log_->LogHardwareState(*hwstate);
     Trace("log: end: ", "LogHardwareState");
   }
+  if (own_metrics_)
+    own_metrics_->Update(*hwstate);
+
   Trace("SyncInterpret: start: ", name());
   SyncInterpretImpl(hwstate, timeout);
   Trace("SyncInterpret: end: ", name());
@@ -77,12 +82,21 @@ void Interpreter::ProduceGesture(const Gesture& gesture) {
 }
 
 void Interpreter::Initialize(const HardwareProperties* hwprops,
+                             Metrics* metrics,
+                             MetricsProperties* mprops,
                              GestureConsumer* consumer) {
   if (log_.get() && hwprops) {
     Trace("log: start: ", "SetHardwareProperties");
     log_->SetHardwareProperties(*hwprops);
     Trace("log: end: ", "SetHardwareProperties");
   }
+
+  metrics_ = metrics;
+  if (requires_metrics_ && metrics == NULL) {
+    own_metrics_.reset(new Metrics(mprops));
+    metrics_ = own_metrics_.get();
+  }
+
   hwprops_ = hwprops;
   consumer_ = consumer;
   initialized_ = true;

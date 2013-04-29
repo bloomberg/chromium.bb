@@ -397,12 +397,12 @@ typedef struct GesturesPropProvider {
 
 namespace gestures {
 
-class FingerMetrics;
 class Interpreter;
 class PropRegistry;
 class LoggingFilterInterpreter;
 class Tracer;
 class GestureInterpreterConsumer;
+class MetricsProperties;
 
 struct GestureInterpreter {
  public:
@@ -438,8 +438,8 @@ struct GestureInterpreter {
 
   scoped_ptr<PropRegistry> prop_reg_;
   scoped_ptr<Tracer> tracer_;
-  scoped_ptr<FingerMetrics> finger_metrics_;
   scoped_ptr<Interpreter> interpreter_;
+  scoped_ptr<MetricsProperties> mprops_;
 
   GesturesTimerProvider* timer_provider_;
   void* timer_provider_data_;

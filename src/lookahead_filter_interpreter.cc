@@ -520,8 +520,11 @@ void LookaheadFilterInterpreter::UpdateInterpreterDue(
 }
 
 void LookaheadFilterInterpreter::Initialize(
-    const HardwareProperties* hwprops, GestureConsumer* consumer) {
-  FilterInterpreter::Initialize(hwprops, consumer);
+    const HardwareProperties* hwprops,
+    Metrics* metrics,
+    MetricsProperties* mprops,
+    GestureConsumer* consumer) {
+  FilterInterpreter::Initialize(hwprops, NULL, mprops, consumer);
   const size_t kMaxQNodes = 16;
   queue_.DeleteAll();
   free_list_.DeleteAll();

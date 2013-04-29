@@ -15,7 +15,6 @@
 using std::deque;
 using std::make_pair;
 using std::pair;
-using std::vector;
 
 namespace gestures {
 
@@ -31,7 +30,7 @@ class Cr48ProfileSensorFilterInterpreterTestInterpreter : public Interpreter {
     sync_interpret_cnt_++;
 
     if (!expected_coordinates_.empty()) {
-      vector<FingerPosition>& expected = expected_coordinates_.front();
+      std::vector<FingerPosition>& expected = expected_coordinates_.front();
       for (size_t i = 0; i < hwstate->finger_cnt; i++) {
         EXPECT_FLOAT_EQ(expected[i].x, hwstate->fingers[i].position_x)
             << "i = " << i;
@@ -57,7 +56,7 @@ class Cr48ProfileSensorFilterInterpreterTestInterpreter : public Interpreter {
     }
 
     if (!expected_tracking_id_.empty()) {
-      vector<short>& expected = expected_tracking_id_.front();
+      std::vector<short>& expected = expected_tracking_id_.front();
       for (size_t i = 0; i < hwstate->finger_cnt; i++) {
         EXPECT_EQ(expected[i], hwstate->fingers[i].tracking_id)
             << "i = " << i;
@@ -69,12 +68,12 @@ class Cr48ProfileSensorFilterInterpreterTestInterpreter : public Interpreter {
   virtual void HandleTimer(stime_t now, stime_t* timeout) {}
 
   int sync_interpret_cnt_;
-  deque<vector<FingerPosition> > expected_coordinates_;
+  deque<std::vector<FingerPosition> > expected_coordinates_;
   deque<float> expected_pressures_;
   deque<int> expected_finger_cnt_;
   deque<int> expected_touch_cnt_;
   deque<int> unexpected_tracking_id_;
-  deque<vector<short> > expected_tracking_id_;
+  deque<std::vector<short> > expected_tracking_id_;
 };
 
 TEST(Cr48ProfileSensorFilterInterpreterTest, LowPressureTest) {
@@ -168,7 +167,7 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, TrackingIdMappingTest) {
   wrapper.SyncInterpret(&hs[0], NULL);
   wrapper.SyncInterpret(&hs[1], NULL);
 
-  vector<short>  result;
+  std::vector<short>  result;
   result.push_back(hs[1].fingers[0].tracking_id);
   base_interpreter->expected_tracking_id_.push_back(result);
   short original_id = hs[2].fingers[0].tracking_id;
@@ -218,7 +217,7 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, CorrectFingerPositionTest) {
   wrapper.SyncInterpret(&hs[0], NULL);
 
   // Test if both finger positions are corrected.
-  vector<FingerPosition>  result;
+  std::vector<FingerPosition>  result;
   FingerPosition first_finger_position1 = { 4000, 3300 };
   result.push_back(first_finger_position1);  // first finger
   FingerPosition second_finger_position1 = { 2900, 2700 };
@@ -315,7 +314,7 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, FingerCrossOverTest) {
 
   // Test if both finger positions are corrected with the new pattern
   // by examining the swapped position_y values.
-  vector<FingerPosition>  result;
+  std::vector<FingerPosition>  result;
   FingerPosition first_finger_position1 = { 2969, 3096 };
   result.push_back(first_finger_position1);  // first finger
   FingerPosition second_finger_position1 = { 4118, 3117 };

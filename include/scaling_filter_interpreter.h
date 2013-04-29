@@ -56,6 +56,7 @@ class ScalingFilterInterpreter : public FilterInterpreter {
   virtual ~ScalingFilterInterpreter() {}
 
   virtual void Initialize(const HardwareProperties* hwprops,
+                          Metrics* metrics, MetricsProperties* mprops,
                           GestureConsumer* consumer);
  protected:
   virtual void SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);

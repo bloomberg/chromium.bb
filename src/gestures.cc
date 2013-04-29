@@ -377,7 +377,6 @@ GestureInterpreter::GestureInterpreter(int version)
       consumer_(NULL) {
   prop_reg_.reset(new PropRegistry);
   tracer_.reset(new Tracer(prop_reg_.get(), TraceMarker::StaticTraceWrite));
-  finger_metrics_.reset(new FingerMetrics(prop_reg_.get()));
   TraceMarker::CreateTraceMarker();
 }
 
@@ -428,7 +427,7 @@ void GestureInterpreter::SetHardwareProperties(
   }
   hwprops_ = hwprops;
   if (consumer_)
-    interpreter_->Initialize(&hwprops, consumer_.get());
+    interpreter_->Initialize(&hwprops, NULL, mprops_.get(), consumer_.get());
 }
 
 void GestureInterpreter::TimerCallback(stime_t now, stime_t* timeout) {
@@ -470,13 +469,10 @@ void GestureInterpreter::set_callback(GestureReadyFunction callback,
 }
 
 void GestureInterpreter::InitializeTouchpad(void) {
-  Interpreter* temp = new ImmediateInterpreter(prop_reg_.get(),
-                                               finger_metrics_.get(),
-                                               tracer_.get());
+  Interpreter* temp = new ImmediateInterpreter(prop_reg_.get(), tracer_.get());
   temp = new FlingStopFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
   temp = new ClickWiggleFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
   temp = new PalmClassifyingFilterInterpreter(prop_reg_.get(), temp,
-                                              finger_metrics_.get(),
                                               tracer_.get());
   temp = new IirFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
   temp = new LookaheadFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
@@ -546,6 +542,7 @@ void GestureInterpreter::Initialize(GestureInterpreterDeviceClass cls) {
   else
     Err("Couldn't recognize device class: %d", cls);
 
+  mprops_.reset(new MetricsProperties(prop_reg_.get()));
   consumer_.reset(new GestureInterpreterConsumer(callback_,
                                                    callback_data_));
 }

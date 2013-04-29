@@ -45,6 +45,7 @@ class LookaheadFilterInterpreter : public FilterInterpreter {
   virtual void HandleTimerImpl(stime_t now, stime_t* timeout);
 
   virtual void Initialize(const HardwareProperties* hwprops,
+                          Metrics* metrics, MetricsProperties* mprops,
                           GestureConsumer* consumer);
 
  private:

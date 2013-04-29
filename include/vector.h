@@ -194,16 +194,17 @@ class vector {
   // methods for erasing elements
   // note that all these methods might invalidate existing iterators
 
-  void erase(iterator it) {
-    erase(it, it + 1);
+  iterator erase(iterator it) {
+    return erase(it, it + 1);
   }
 
-  void erase(iterator first, iterator last) {
+  iterator erase(iterator first, iterator last) {
     size_t count = last - first;
     std::copy(last, end(), first);
     for (iterator it = end() - count, e = end(); it != e; ++it)
       (*it).~ValueType();
     size_ = size_ - count;
+    return first;
   }
 
   void clear() {

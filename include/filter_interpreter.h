@@ -29,6 +29,7 @@ class FilterInterpreter : public Interpreter, public GestureConsumer {
   void Clear();
 
   virtual void Initialize(const HardwareProperties* hwprops,
+                          Metrics* metrics, MetricsProperties* mprops,
                           GestureConsumer* consumer);
 
   virtual void ConsumeGesture(const Gesture& gesture);

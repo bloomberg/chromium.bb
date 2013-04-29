@@ -31,7 +31,6 @@ class PalmClassifyingFilterInterpreter : public FilterInterpreter {
  public:
   // Takes ownership of |next|:
   PalmClassifyingFilterInterpreter(PropRegistry* prop_reg, Interpreter* next,
-                                   FingerMetrics* finger_metrics,
                                    Tracer* tracer);
   virtual ~PalmClassifyingFilterInterpreter() {}
 
@@ -113,9 +112,6 @@ class PalmClassifyingFilterInterpreter : public FilterInterpreter {
   // tracking ids that have ever travelled out of the palm envelope or bottom
   // area.
   set<short, kMaxFingers> fingers_not_in_edge_;
-
-  FingerMetrics* finger_metrics_;
-  scoped_ptr<FingerMetrics> test_finger_metrics_;
 
   // Previously input timestamp
   stime_t prev_time_;

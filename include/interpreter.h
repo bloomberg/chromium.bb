@@ -28,6 +28,9 @@ class GestureConsumer {
   virtual void ConsumeGesture(const Gesture& gesture) = 0;
 };
 
+class Metrics;
+class MetricsProperties;
+
 // Interface for all interpreters. Interpreters currently are synchronous.
 // A synchronous interpreter will return  0 or 1 Gestures for each passed in
 // HardwareState.
@@ -56,6 +59,7 @@ class Interpreter {
   virtual void HandleTimer(stime_t now, stime_t* timeout);
 
   virtual void Initialize(const HardwareProperties* hwprops,
+                          Metrics* metrics, MetricsProperties* mprops,
                           GestureConsumer* consumer);
 
   virtual DictionaryValue* EncodeCommonInfo();
@@ -73,6 +77,9 @@ class Interpreter {
   scoped_ptr<ActivityLog> log_;
   GestureConsumer* consumer_;
   const HardwareProperties* hwprops_;
+  Metrics* metrics_;
+  scoped_ptr<Metrics> own_metrics_;
+  bool requires_metrics_;
   bool initialized_;
 
   void InitName();

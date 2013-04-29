@@ -14,10 +14,9 @@
 namespace gestures {
 
 PalmClassifyingFilterInterpreter::PalmClassifyingFilterInterpreter(
-    PropRegistry* prop_reg, Interpreter* next, FingerMetrics* finger_metrics,
+    PropRegistry* prop_reg, Interpreter* next,
     Tracer* tracer)
     : FilterInterpreter(NULL, next, tracer, false),
-      finger_metrics_(finger_metrics),
       palm_pressure_(prop_reg, "Palm Pressure", 200.0),
       palm_width_(prop_reg, "Palm Width", 21.2),
       fat_finger_pressure_ratio_(prop_reg, "Fat Finger Pressure Ratio", 1.4),
@@ -37,10 +36,7 @@ PalmClassifyingFilterInterpreter::PalmClassifyingFilterInterpreter(
                                       0.3)
 {
   InitName();
-  if (!finger_metrics_) {
-    test_finger_metrics_.reset(new FingerMetrics(prop_reg));
-    finger_metrics_ = test_finger_metrics_.get();
-  }
+  requires_metrics_ = true;
 }
 
 void PalmClassifyingFilterInterpreter::SyncInterpretImpl(
@@ -135,7 +131,7 @@ bool PalmClassifyingFilterInterpreter::FingerNearOtherFinger(
     if (other_fs.tracking_id == fs.tracking_id)
       continue;
     bool too_close_to_other_finger =
-        finger_metrics_->FingersCloseEnoughToGesture(fs, other_fs) &&
+        metrics_->CloseEnoughToGesture(Vector2(fs), Vector2(other_fs)) &&
         !SetContainsValue(palm_, other_fs.tracking_id);
     if (too_close_to_other_finger) {
       was_near_other_fingers_.insert(fs.tracking_id);

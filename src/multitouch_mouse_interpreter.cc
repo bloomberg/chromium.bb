@@ -97,8 +97,11 @@ void MultitouchMouseInterpreter::SyncInterpretImpl(HardwareState* hwstate,
 }
 
 void MultitouchMouseInterpreter::Initialize(
-    const HardwareProperties* hw_props, GestureConsumer* consumer) {
-  Interpreter::Initialize(hw_props, consumer);
+    const HardwareProperties* hw_props,
+    Metrics* metrics,
+    MetricsProperties* mprops,
+    GestureConsumer* consumer) {
+  Interpreter::Initialize(hw_props, metrics, mprops, consumer);
   state_buffer_.Reset(hw_props->max_finger_cnt);
 }
 

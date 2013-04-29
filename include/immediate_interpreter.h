@@ -275,8 +275,7 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
     kTtcDragRetouch
   };
 
-  ImmediateInterpreter(PropRegistry* prop_reg, FingerMetrics* finger_metrics,
-                       Tracer* tracer);
+  ImmediateInterpreter(PropRegistry* prop_reg, Tracer* tracer);
   virtual ~ImmediateInterpreter() {}
 
  protected:
@@ -285,6 +284,7 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   virtual void HandleTimerImpl(stime_t now, stime_t* timeout);
 
   virtual void Initialize(const HardwareProperties* hwprops,
+                          Metrics* metrics, MetricsProperties* mprops,
                           GestureConsumer* consumer);
 
  public:
