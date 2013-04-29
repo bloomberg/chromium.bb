@@ -41,9 +41,3 @@ STUB(_Unwind_Backtrace)
 STUB(longjmp)
 STUB(setjmp)
 
-/* These should probably not be exposed, but libLLVMJIT.a
- * in the sandboxed translator refers to them directly.
- * TODO: Determine whether these should actually be part of the ABI.
- */
-STUB(__deregister_frame)
-STUB(__register_frame)

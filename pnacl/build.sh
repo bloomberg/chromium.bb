@@ -53,8 +53,6 @@ if ${BUILD_PLATFORM_MAC} || ${BUILD_PLATFORM_WIN}; then
   PNACL_BUILD_MIPS=false
 fi
 
-readonly SB_JIT=${SB_JIT:-false}
-
 # TODO(pdox): Decide what the target should really permanently be
 readonly CROSS_TARGET_ARM=arm-none-linux-gnueabi
 readonly BINUTILS_TARGET=arm-pc-nacl
@@ -1409,7 +1407,6 @@ llvm-make() {
       env -i PATH="${PATH}" \
       MAKE_OPTS="${MAKE_OPTS_HOST}" \
       NACL_SANDBOX=0 \
-      NACL_SB_JIT=0 \
       CC="${CC}" \
       CXX="${CXX}" \
       make ${MAKE_OPTS_HOST} all
@@ -1434,7 +1431,6 @@ llvm-install() {
       env -i PATH=/usr/bin/:/bin \
       MAKE_OPTS="${MAKE_OPTS}" \
       NACL_SANDBOX=0 \
-      NACL_SB_JIT=0 \
       CC="${CC}" \
       CXX="${CXX}" \
       make ${MAKE_OPTS} install
@@ -2167,10 +2163,6 @@ check-arch() {
 
 llvm-sb-setup() {
   local arch=$1
-  if ${SB_JIT}; then
-    llvm-sb-setup-jit ${arch}
-    return
-  fi
   LLVM_SB_LOG_PREFIX="llvm.sb.${arch}"
   LLVM_SB_OBJDIR="$(GetTranslatorBuildDir ${arch})/llvm-sb"
 
@@ -2179,8 +2171,6 @@ llvm-sb-setup() {
   # build.sh sdk step.
   # This is always statically linked.
   local flags=" -static -DNACL_SRPC -I$(GetAbsolutePath ${NACL_ROOT}/..) "
-  LLVM_SB_EXTRA_CONFIG_FLAGS="--disable-jit --enable-optimized \
-  --target=${CROSS_TARGET_ARM} llvm_cv_link_use_export_dynamic=no "
 
   LLVM_SB_CONFIGURE_ENV=(
     AR="${PNACL_AR}" \
@@ -2192,41 +2182,13 @@ llvm-sb-setup() {
     RANLIB="${PNACL_RANLIB}")
 }
 
-# TODO(pdox): Unify with llvm-sb-setup above.
-llvm-sb-setup-jit() {
-  local arch=$1
-  LLVM_SB_LOG_PREFIX="llvm.sb.jit.${arch}"
-  LLVM_SB_OBJDIR="$(GetTranslatorBuildDir ${arch})/llvm-sb-jit"
-
-  local flags=" -DNACL_SRPC -I$(GetAbsolutePath ${NACL_ROOT}/..) "
-  local naclgcc_root="${NNACL_GLIBC_ROOT}"
-  local gcc_arch=""
-  case ${arch} in
-    i686)  gcc_arch="i686";;
-    x86_64)  gcc_arch="x86_64";;
-    default) Fatal "Can't build universal/arm translator with nacl-gcc";;
-  esac
-
-  LLVM_SB_EXTRA_CONFIG_FLAGS="--enable-jit --disable-optimized \
-  --target=${gcc_arch}-nacl"
-
-  LLVM_SB_CONFIGURE_ENV=(
-    AR="${naclgcc_root}/bin/${gcc_arch}-nacl-ar" \
-    As="${naclgcc_root}/bin/${gcc_arch}-nacl-as" \
-    CC="${naclgcc_root}/bin/${gcc_arch}-nacl-gcc ${flags}" \
-    CXX="${naclgcc_root}/bin/${gcc_arch}-nacl-g++ ${flags}" \
-    LD="${naclgcc_root}/bin/${gcc_arch}-nacl-ld" \
-    NM="${naclgcc_root}/bin/${gcc_arch}-nacl-nm" \
-    RANLIB="${naclgcc_root}/bin/${gcc_arch}-nacl-ranlib")
-}
-
 #+-------------------------------------------------------------------------
 #+ llvm-sb <arch>- Build and install llvm tools (sandboxed)
 llvm-sb() {
   local arch=$1
   check-arch ${arch}
   llvm-sb-setup ${arch}
-  StepBanner "LLVM-SB" "Sandboxed llc + lli [${arch}]"
+  StepBanner "LLVM-SB" "Sandboxed llc [${arch}]"
   local srcdir="${TC_SRC_LLVM}"
   assert-dir "${srcdir}" "You need to checkout llvm."
 
@@ -2287,7 +2249,10 @@ llvm-sb-configure() {
         --enable-pic=no \
         --enable-static \
         --enable-shared=no \
-        ${LLVM_SB_EXTRA_CONFIG_FLAGS}
+        --disable-jit \
+        --enable-optimized \
+        --target=${CROSS_TARGET_ARM} \
+        llvm_cv_link_use_export_dynamic=no
   spopd
 }
 
@@ -2303,16 +2268,10 @@ llvm-sb-make() {
   local tools_to_build="llc"
   local export_dyn_env="llvm_cv_link_use_export_dynamic=no"
   local isjit=0
-  if ${SB_JIT}; then
-    isjit=1
-    tools_to_build="llc lli"
-    export_dyn_env=""
-  fi
   RunWithLog ${LLVM_SB_LOG_PREFIX}.make \
       env -i PATH="/usr/bin:/bin" \
       ONLY_TOOLS="${tools_to_build}" \
       NACL_SANDBOX=1 \
-      NACL_SB_JIT=${isjit} \
       KEEP_SYMBOLS=1 \
       VERBOSE=1 \
       ${export_dyn_env} \
@@ -2328,32 +2287,23 @@ llvm-sb-install() {
   local arch=$1
   StepBanner "LLVM-SB" "Install ${arch}"
 
-  # Install only llc or lli
   local toolname="llc"
-  if ${SB_JIT}; then
-    toolname="lli"
-  fi
   local installdir="$(GetTranslatorInstallDir ${arch})"/bin
   mkdir -p "${installdir}"
   spushd "${installdir}"
   local objdir="${LLVM_SB_OBJDIR}"
   cp -f "${objdir}"/Release*/bin/${toolname} .
-  if ${SB_JIT} ; then
-    # JIT is always built as .nexe
-    mv -f ${toolname} ${toolname}.nexe
-  else
-    mv -f ${toolname} ${toolname}.pexe
-    local arches=${arch}
-    if [[ "${arch}" == "universal" ]]; then
-      arches="${SBTC_ARCHES_ALL}"
-    elif [[ "${arch}" == "i686" ]]; then
-      # LLVM does not separate the i686 and x86_64 backends.
-      # Translate twice to get both nexes.
-      arches="i686 x86_64"
-    fi
-    translate-sb-tool ${toolname} "${arches}"
-    install-sb-tool ${toolname} "${arches}"
+  mv -f ${toolname} ${toolname}.pexe
+  local arches=${arch}
+  if [[ "${arch}" == "universal" ]]; then
+    arches="${SBTC_ARCHES_ALL}"
+  elif [[ "${arch}" == "i686" ]]; then
+    # LLVM does not separate the i686 and x86_64 backends.
+    # Translate twice to get both nexes.
+    arches="i686 x86_64"
   fi
+  translate-sb-tool ${toolname} "${arches}"
+  install-sb-tool ${toolname} "${arches}"
   spopd
 }
 
@@ -2435,20 +2385,12 @@ install-sb-tool() {
 
 GetTranslatorBuildDir() {
   local arch="$1"
-  local extra=""
-  if ${SB_JIT}; then
-    extra+="_jit"
-  fi
   echo "${TC_BUILD}/translator-${arch//_/-}"
 }
 
 GetTranslatorInstallDir() {
   local arch="$1"
-  local extra=""
-  if ${SB_JIT}; then
-    extra+="_jit"
-  fi
-  echo "${INSTALL_TRANSLATOR}"${extra}/${arch}
+  echo "${INSTALL_TRANSLATOR}"/${arch}
 }
 
 #+-------------------------------------------------------------------------
