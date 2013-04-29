@@ -68,10 +68,53 @@ OSStatus TestRootCerts::FixupSecTrustRef(SecTrustRef trust_ref) const {
   if (IsEmpty())
     return noErr;
 
-  OSStatus status = SecTrustSetAnchorCertificates(trust_ref, temporary_roots_);
+  CFBundleRef bundle =
+      CFBundleGetBundleWithIdentifier(CFSTR("com.apple.security"));
+  SecTrustSetAnchorCertificatesOnlyFuncPtr set_anchor_certificates_only = NULL;
+  if (bundle) {
+    set_anchor_certificates_only =
+        reinterpret_cast<SecTrustSetAnchorCertificatesOnlyFuncPtr>(
+            CFBundleGetFunctionPointerForName(bundle,
+                CFSTR("SecTrustSetAnchorCertificatesOnly")));
+  }
+
+  OSStatus status = noErr;
+  if (set_anchor_certificates_only) {
+    // OS X 10.6 includes a function where the system trusts can be
+    // preserved while appending application trusts. This is preferable,
+    // because it preserves any user trust settings (explicit distrust),
+    // which the naive copy in 10.5 does not. Unfortunately, though the
+    // function pointer may be available, it is not always implemented. If it
+    // returns errSecUnimplemented, fall through to the 10.5 behaviour.
+    status = SecTrustSetAnchorCertificates(trust_ref, temporary_roots_);
+    if (status)
+      return status;
+    status = set_anchor_certificates_only(trust_ref, false);
+    if (status != errSecUnimplemented)
+      return status;
+
+    // Restore the original settings before falling back.
+    status = SecTrustSetAnchorCertificates(trust_ref, NULL);
+    if (status)
+      return status;
+  }
+
+  // On 10.5, the system certificates have to be copied and merged into
+  // the application trusts, and may override any user trust settings.
+  CFArrayRef system_roots = NULL;
+  status = SecTrustCopyAnchorCertificates(&system_roots);
   if (status)
     return status;
-  return SecTrustSetAnchorCertificatesOnly(trust_ref, false);
+
+  base::mac::ScopedCFTypeRef<CFArrayRef> scoped_system_roots(system_roots);
+  base::mac::ScopedCFTypeRef<CFMutableArrayRef> scoped_roots(
+      CFArrayCreateMutableCopy(kCFAllocatorDefault, 0,
+                               scoped_system_roots));
+  DCHECK(scoped_roots.get());
+
+  CFArrayAppendArray(scoped_roots, temporary_roots_,
+                     CFRangeMake(0, CFArrayGetCount(temporary_roots_)));
+  return SecTrustSetAnchorCertificates(trust_ref, scoped_roots);
 }
 
 TestRootCerts::~TestRootCerts() {}

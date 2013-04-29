@@ -555,7 +555,8 @@ int CertVerifyProcMac::VerifyInternal(
 
   if (flags & CertVerifier::VERIFY_EV_CERT) {
     // Determine the certificate's EV status using SecTrustCopyExtendedResult(),
-    // which is an internal/private API function added in OS X 10.5.7.
+    // which we need to look up because the function wasn't added until
+    // Mac OS X 10.5.7.
     // Note: "ExtendedResult" means extended validation results.
     CFBundleRef bundle =
         CFBundleGetBundleWithIdentifier(CFSTR("com.apple.security"));
