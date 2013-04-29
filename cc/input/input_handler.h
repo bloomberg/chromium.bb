@@ -19,15 +19,11 @@ class Vector2dF;
 
 namespace cc {
 
-// The InputHandler is a way for the embedders to interact with
-// the impl thread side of the compositor implementation.
-//
-// There is one InputHandler for every LayerTreeHost. It is
-// created on the main thread and used only on the impl thread.
-//
-// The InputHandler is constructed with a InputHandlerClient, which is the
-// interface by which the handler can manipulate the LayerTree.
-class CC_EXPORT InputHandlerClient {
+// The InputHandler is a way for the embedders to interact with the impl thread
+// side of the compositor implementation. There is one InputHandler per
+// LayerTreeHost. To use the input handler, implement the InputHanderClient
+// interface and bind it to the handler on the compositor thread.
+class CC_EXPORT InputHandler {
  public:
   enum ScrollStatus { ScrollOnMainThread, ScrollStarted, ScrollIgnored };
   enum ScrollInputType { Gesture, Wheel, NonBubblingGesture };
@@ -74,7 +70,7 @@ class CC_EXPORT InputHandlerClient {
                                        base::TimeTicks start_time,
                                        base::TimeDelta duration) = 0;
 
-  // Request another callback to InputHandler::Animate().
+  // Request another callback to InputHandlerClient::Animate().
   virtual void ScheduleAnimation() = 0;
 
   virtual bool HaveTouchEventHandlersAt(gfx::Point viewport_point) = 0;
@@ -83,26 +79,26 @@ class CC_EXPORT InputHandlerClient {
       base::TimeTicks frame_time) = 0;
 
  protected:
-  InputHandlerClient() {}
-  virtual ~InputHandlerClient() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InputHandlerClient);
-};
-
-class CC_EXPORT InputHandler {
- public:
+  InputHandler() {}
   virtual ~InputHandler() {}
 
-  virtual void BindToClient(InputHandlerClient* client) = 0;
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InputHandler);
+};
+
+class CC_EXPORT InputHandlerClient {
+ public:
+  virtual ~InputHandlerClient() {}
+
+  virtual void BindToHandler(InputHandler* handler) = 0;
   virtual void Animate(base::TimeTicks time) = 0;
   virtual void MainThreadHasStoppedFlinging() = 0;
 
  protected:
-  InputHandler() {}
+  InputHandlerClient() {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(InputHandler);
+  DISALLOW_COPY_AND_ASSIGN(InputHandlerClient);
 };
 
 }  // namespace cc

@@ -202,9 +202,9 @@ WebLayerTreeViewImplForTesting::CreateOutputSurface() {
   return surface.Pass();
 }
 
-scoped_ptr<cc::InputHandler>
-WebLayerTreeViewImplForTesting::CreateInputHandler() {
-  return scoped_ptr<cc::InputHandler>();
+scoped_ptr<cc::InputHandlerClient>
+WebLayerTreeViewImplForTesting::CreateInputHandlerClient() {
+  return scoped_ptr<cc::InputHandlerClient>();
 }
 
 void WebLayerTreeViewImplForTesting::ScheduleComposite() {

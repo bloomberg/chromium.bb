@@ -113,7 +113,7 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   void WillCommit();
   void CommitComplete();
   scoped_ptr<OutputSurface> CreateOutputSurface();
-  scoped_ptr<InputHandler> CreateInputHandler();
+  scoped_ptr<InputHandlerClient> CreateInputHandlerClient();
   virtual scoped_ptr<LayerTreeHostImpl> CreateLayerTreeHostImpl(
       LayerTreeHostImplClient* client);
   void DidLoseOutputSurface();

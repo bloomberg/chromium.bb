@@ -33,7 +33,7 @@ class FakeLayerTreeHostClient : public LayerTreeHostClient {
 
   virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE;
   virtual void DidRecreateOutputSurface(bool success) OVERRIDE {}
-  virtual scoped_ptr<InputHandler> CreateInputHandler() OVERRIDE;
+  virtual scoped_ptr<InputHandlerClient> CreateInputHandlerClient() OVERRIDE;
   virtual void WillCommit() OVERRIDE {}
   virtual void DidCommit() OVERRIDE {}
   virtual void DidCommitAndDrawFrame() OVERRIDE {}

@@ -100,9 +100,9 @@ TEST(ScrollbarLayerTest, ShouldScrollNonOverlayOnMainThread) {
   // When the scrollbar is not an overlay scrollbar, the scroll should be
   // responded to on the main thread as the compositor does not yet implement
   // scrollbar scrolling.
-  EXPECT_EQ(InputHandlerClient::ScrollOnMainThread,
+  EXPECT_EQ(InputHandler::ScrollOnMainThread,
             scrollbar_layer_impl->TryScroll(gfx::Point(0, 0),
-                                            InputHandlerClient::Gesture));
+                                            InputHandler::Gesture));
 
   // Create and attach an overlay scrollbar.
   scrollbar = FakeWebScrollbar::Create();
@@ -115,9 +115,9 @@ TEST(ScrollbarLayerTest, ShouldScrollNonOverlayOnMainThread) {
 
   // The user shouldn't be able to drag an overlay scrollbar and the scroll
   // may be handled in the compositor.
-  EXPECT_EQ(InputHandlerClient::ScrollIgnored,
+  EXPECT_EQ(InputHandler::ScrollIgnored,
             scrollbar_layer_impl->TryScroll(gfx::Point(0, 0),
-                                            InputHandlerClient::Gesture));
+                                            InputHandler::Gesture));
 }
 
 TEST(ScrollbarLayerTest, ScrollOffsetSynchronization) {

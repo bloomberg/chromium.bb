@@ -12,15 +12,15 @@
                  mismatching_enums)
 
 COMPILE_ASSERT_MATCHING_ENUM(WebInputHandlerClient::ScrollStatusOnMainThread,
-                             InputHandlerClient::ScrollOnMainThread);
+                             InputHandler::ScrollOnMainThread);
 COMPILE_ASSERT_MATCHING_ENUM(WebInputHandlerClient::ScrollStatusStarted,
-                             InputHandlerClient::ScrollStarted);
+                             InputHandler::ScrollStarted);
 COMPILE_ASSERT_MATCHING_ENUM(WebInputHandlerClient::ScrollStatusIgnored,
-                             InputHandlerClient::ScrollIgnored);
+                             InputHandler::ScrollIgnored);
 COMPILE_ASSERT_MATCHING_ENUM(WebInputHandlerClient::ScrollInputTypeGesture,
-                             InputHandlerClient::Gesture);
+                             InputHandler::Gesture);
 COMPILE_ASSERT_MATCHING_ENUM(WebInputHandlerClient::ScrollInputTypeWheel,
-                             InputHandlerClient::Wheel);
+                             InputHandler::Wheel);
 
 namespace WebKit {
 
@@ -36,41 +36,42 @@ WebToCCInputHandlerAdapter::WebToCCInputHandlerAdapter(
 
 WebToCCInputHandlerAdapter::~WebToCCInputHandlerAdapter() {}
 
-class WebToCCInputHandlerAdapter::ClientAdapter : public WebInputHandlerClient {
+class WebToCCInputHandlerAdapter::HandlerAdapter
+    : public WebInputHandlerClient {
  public:
-  explicit ClientAdapter(cc::InputHandlerClient* client) : client_(client) {}
+  explicit HandlerAdapter(cc::InputHandler* handler) : handler_(handler) {}
 
-  virtual ~ClientAdapter() {}
+  virtual ~HandlerAdapter() {}
 
   virtual ScrollStatus scrollBegin(WebPoint point, ScrollInputType type) {
     return static_cast<WebInputHandlerClient::ScrollStatus>(
-        client_->ScrollBegin(
-            point, static_cast<cc::InputHandlerClient::ScrollInputType>(type)));
+        handler_->ScrollBegin(
+            point, static_cast<cc::InputHandler::ScrollInputType>(type)));
   }
 
   virtual bool scrollByIfPossible(WebPoint point, WebFloatSize delta) {
-    return client_->ScrollBy(point, delta);
+    return handler_->ScrollBy(point, delta);
   }
 
   virtual bool scrollVerticallyByPageIfPossible(
       WebPoint point, WebScrollbar::ScrollDirection direction) {
-    return client_->ScrollVerticallyByPage(point, direction);
+    return handler_->ScrollVerticallyByPage(point, direction);
   }
 
   virtual ScrollStatus flingScrollBegin() {
     return static_cast<WebInputHandlerClient::ScrollStatus>(
-        client_->FlingScrollBegin());
+        handler_->FlingScrollBegin());
   }
 
-  virtual void scrollEnd() { client_->ScrollEnd(); }
+  virtual void scrollEnd() { handler_->ScrollEnd(); }
 
-  virtual void pinchGestureBegin() { client_->PinchGestureBegin(); }
+  virtual void pinchGestureBegin() { handler_->PinchGestureBegin(); }
 
   virtual void pinchGestureUpdate(float magnify_delta, WebPoint anchor) {
-    client_->PinchGestureUpdate(magnify_delta, anchor);
+    handler_->PinchGestureUpdate(magnify_delta, anchor);
   }
 
-  virtual void pinchGestureEnd() { client_->PinchGestureEnd(); }
+  virtual void pinchGestureEnd() { handler_->PinchGestureEnd(); }
 
   virtual void startPageScaleAnimation(WebSize target_position,
                                        bool anchor_point,
@@ -81,30 +82,30 @@ class WebToCCInputHandlerAdapter::ClientAdapter : public WebInputHandlerClient {
         start_time_sec * base::Time::kMicrosecondsPerSecond);
     base::TimeDelta duration = base::TimeDelta::FromMicroseconds(
         duration_sec * base::Time::kMicrosecondsPerSecond);
-    client_->StartPageScaleAnimation(
+    handler_->StartPageScaleAnimation(
         target_position, anchor_point, page_scale, start_time, duration);
   }
 
-  virtual void scheduleAnimation() { client_->ScheduleAnimation(); }
+  virtual void scheduleAnimation() { handler_->ScheduleAnimation(); }
 
   virtual bool haveTouchEventHandlersAt(WebPoint point) {
-    return client_->HaveTouchEventHandlersAt(point);
+    return handler_->HaveTouchEventHandlersAt(point);
   }
 
   virtual void didReceiveLastInputEventForVSync(double frame_time_sec)
       OVERRIDE {
     base::TimeTicks frame_time = base::TimeTicks::FromInternalValue(
         frame_time_sec * base::Time::kMicrosecondsPerSecond);
-    client_->DidReceiveLastInputEventForVSync(frame_time);
+    handler_->DidReceiveLastInputEventForVSync(frame_time);
   }
 
  private:
-  cc::InputHandlerClient* client_;
+  cc::InputHandler* handler_;
 };
 
-void WebToCCInputHandlerAdapter::BindToClient(cc::InputHandlerClient* client) {
-  client_adapter_.reset(new ClientAdapter(client));
-  handler_->bindToClient(client_adapter_.get());
+void WebToCCInputHandlerAdapter::BindToHandler(cc::InputHandler* handler) {
+  handler_adapter_.reset(new HandlerAdapter(handler));
+  handler_->bindToClient(handler_adapter_.get());
 }
 
 void WebToCCInputHandlerAdapter::Animate(base::TimeTicks time) {

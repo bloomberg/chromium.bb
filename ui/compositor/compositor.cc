@@ -715,8 +715,8 @@ scoped_ptr<cc::OutputSurface> Compositor::CreateOutputSurface() {
       ContextFactory::GetInstance()->CreateOutputSurface(this));
 }
 
-scoped_ptr<cc::InputHandler> Compositor::CreateInputHandler() {
-  return scoped_ptr<cc::InputHandler>();
+scoped_ptr<cc::InputHandlerClient> Compositor::CreateInputHandlerClient() {
+  return scoped_ptr<cc::InputHandlerClient>();
 }
 
 void Compositor::DidCommit() {

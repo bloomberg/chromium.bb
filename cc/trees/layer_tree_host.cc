@@ -476,8 +476,8 @@ scoped_ptr<OutputSurface> LayerTreeHost::CreateOutputSurface() {
   return client_->CreateOutputSurface();
 }
 
-scoped_ptr<InputHandler> LayerTreeHost::CreateInputHandler() {
-  return client_->CreateInputHandler();
+scoped_ptr<InputHandlerClient> LayerTreeHost::CreateInputHandlerClient() {
+  return client_->CreateInputHandlerClient();
 }
 
 scoped_ptr<LayerTreeHostImpl> LayerTreeHost::CreateLayerTreeHostImpl(

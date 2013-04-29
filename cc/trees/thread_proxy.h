@@ -19,7 +19,7 @@
 namespace cc {
 
 class ContextProvider;
-class InputHandler;
+class InputHandlerClient;
 class LayerTreeHost;
 class ResourceUpdateQueue;
 class Scheduler;
@@ -154,7 +154,7 @@ class ThreadProxy : public Proxy,
   void RequestReadbackOnImplThread(ReadbackRequest* request);
   void FinishAllRenderingOnImplThread(CompletionEvent* completion);
   void InitializeImplOnImplThread(CompletionEvent* completion,
-                                  InputHandler* input_handler);
+                                  InputHandlerClient* input_handler_client);
   void SetSurfaceReadyOnImplThread();
   void SetVisibleOnImplThread(CompletionEvent* completion, bool visible);
   void InitializeOutputSurfaceOnImplThread(
@@ -215,7 +215,7 @@ class ThreadProxy : public Proxy,
 
   scoped_ptr<LayerTreeHostImpl> layer_tree_host_impl_;
 
-  scoped_ptr<InputHandler> input_handler_on_impl_thread_;
+  scoped_ptr<InputHandlerClient> input_handler_client_on_impl_thread_;
 
   scoped_ptr<Scheduler> scheduler_on_impl_thread_;
 

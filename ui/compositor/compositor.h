@@ -348,7 +348,8 @@ class COMPOSITOR_EXPORT Compositor
   virtual scoped_ptr<cc::OutputSurface>
       CreateOutputSurface() OVERRIDE;
   virtual void DidRecreateOutputSurface(bool success) OVERRIDE {}
-  virtual scoped_ptr<cc::InputHandler> CreateInputHandler() OVERRIDE;
+  virtual scoped_ptr<cc::InputHandlerClient> CreateInputHandlerClient()
+      OVERRIDE;
   virtual void WillCommit() OVERRIDE {}
   virtual void DidCommit() OVERRIDE;
   virtual void DidCommitAndDrawFrame() OVERRIDE;

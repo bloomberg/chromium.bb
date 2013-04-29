@@ -336,9 +336,9 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   }
   bool DrawCheckerboardForMissingTiles() const;
 
-  InputHandlerClient::ScrollStatus TryScroll(
+  InputHandler::ScrollStatus TryScroll(
       gfx::PointF screen_space_point,
-      InputHandlerClient::ScrollInputType type) const;
+      InputHandler::ScrollInputType type) const;
 
   void SetDoubleSided(bool double_sided);
   bool double_sided() const { return double_sided_; }

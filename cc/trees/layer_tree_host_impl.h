@@ -81,7 +81,7 @@ class LayerTreeHostImplClient {
 
 // LayerTreeHostImpl owns the LayerImpl trees as well as associated rendering
 // state.
-class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
+class CC_EXPORT LayerTreeHostImpl : public InputHandler,
                                     public RendererClient,
                                     public TileManagerClient,
                                     public OutputSurfaceClient,
@@ -94,17 +94,17 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
       RenderingStatsInstrumentation* rendering_stats_instrumentation);
   virtual ~LayerTreeHostImpl();
 
-  // InputHandlerClient implementation
-  virtual InputHandlerClient::ScrollStatus ScrollBegin(
+  // InputHandler implementation
+  virtual InputHandler::ScrollStatus ScrollBegin(
       gfx::Point viewport_point,
-      InputHandlerClient::ScrollInputType type) OVERRIDE;
+      InputHandler::ScrollInputType type) OVERRIDE;
   virtual bool ScrollBy(gfx::Point viewport_point,
                         gfx::Vector2dF scroll_delta) OVERRIDE;
   virtual bool ScrollVerticallyByPage(
       gfx::Point viewport_point,
       WebKit::WebScrollbar::ScrollDirection direction) OVERRIDE;
   virtual void ScrollEnd() OVERRIDE;
-  virtual InputHandlerClient::ScrollStatus FlingScrollBegin() OVERRIDE;
+  virtual InputHandler::ScrollStatus FlingScrollBegin() OVERRIDE;
   virtual void PinchGestureBegin() OVERRIDE;
   virtual void PinchGestureUpdate(float magnify_delta,
                                   gfx::Point anchor) OVERRIDE;

@@ -12,23 +12,23 @@
 
 namespace WebKit {
 
-class WebToCCInputHandlerAdapter : public cc::InputHandler {
+class WebToCCInputHandlerAdapter : public cc::InputHandlerClient {
  public:
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT static
       scoped_ptr<WebToCCInputHandlerAdapter> create(
           scoped_ptr<WebInputHandler>);
   virtual ~WebToCCInputHandlerAdapter();
 
-  // cc::InputHandler implementation.
-  virtual void BindToClient(cc::InputHandlerClient*) OVERRIDE;
+  // cc::InputHandlerClient implementation.
+  virtual void BindToHandler(cc::InputHandler*) OVERRIDE;
   virtual void Animate(base::TimeTicks time) OVERRIDE;
   virtual void MainThreadHasStoppedFlinging() OVERRIDE;
 
  private:
   explicit WebToCCInputHandlerAdapter(scoped_ptr<WebInputHandler>);
 
-  class ClientAdapter;
-  scoped_ptr<ClientAdapter> client_adapter_;
+  class HandlerAdapter;
+  scoped_ptr<HandlerAdapter> handler_adapter_;
   scoped_ptr<WebInputHandler> handler_;
 
   DISALLOW_COPY_AND_ASSIGN(WebToCCInputHandlerAdapter);

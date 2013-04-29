@@ -14,7 +14,7 @@ class Vector2d;
 
 namespace cc {
 class ContextProvider;
-class InputHandler;
+class InputHandlerClient;
 class OutputSurface;
 
 class LayerTreeHostClient {
@@ -29,7 +29,7 @@ class LayerTreeHostClient {
                                    float page_scale) = 0;
   virtual scoped_ptr<OutputSurface> CreateOutputSurface() = 0;
   virtual void DidRecreateOutputSurface(bool success) = 0;
-  virtual scoped_ptr<InputHandler> CreateInputHandler() = 0;
+  virtual scoped_ptr<InputHandlerClient> CreateInputHandlerClient() = 0;
   virtual void WillCommit() = 0;
   virtual void DidCommit() = 0;
   virtual void DidCommitAndDrawFrame() = 0;

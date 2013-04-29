@@ -260,8 +260,8 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient {
     test_hooks_->WillRetryRecreateOutputSurface();
   }
 
-  virtual scoped_ptr<InputHandler> CreateInputHandler() OVERRIDE {
-    return scoped_ptr<InputHandler>();
+  virtual scoped_ptr<InputHandlerClient> CreateInputHandlerClient() OVERRIDE {
+    return scoped_ptr<InputHandlerClient>();
   }
 
   virtual void WillCommit() OVERRIDE {}

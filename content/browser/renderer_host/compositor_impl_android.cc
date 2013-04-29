@@ -370,8 +370,8 @@ scoped_ptr<cc::OutputSurface> CompositorImpl::CreateOutputSurface() {
   }
 }
 
-scoped_ptr<cc::InputHandler> CompositorImpl::CreateInputHandler() {
-  return scoped_ptr<cc::InputHandler>();
+scoped_ptr<cc::InputHandlerClient> CompositorImpl::CreateInputHandlerClient() {
+  return scoped_ptr<cc::InputHandlerClient>();
 }
 
 void CompositorImpl::DidCompleteSwapBuffers() {

@@ -521,8 +521,9 @@ void RenderWidgetCompositor::DidRecreateOutputSurface(bool success) {
     widget_->webwidget()->didExitCompositingMode();
 }
 
-scoped_ptr<cc::InputHandler> RenderWidgetCompositor::CreateInputHandler() {
-  scoped_ptr<cc::InputHandler> ret;
+scoped_ptr<cc::InputHandlerClient>
+RenderWidgetCompositor::CreateInputHandlerClient() {
+  scoped_ptr<cc::InputHandlerClient> ret;
   scoped_ptr<WebKit::WebInputHandler> web_handler(
       widget_->webwidget()->createInputHandler());
   if (web_handler)

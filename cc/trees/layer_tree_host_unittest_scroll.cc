@@ -368,12 +368,12 @@ class LayerTreeHostScrollTestCaseWithChild
     switch (impl->active_tree()->source_frame_number()) {
       case 0: {
         // Gesture scroll on impl thread.
-        InputHandlerClient::ScrollStatus status = impl->ScrollBegin(
+        InputHandler::ScrollStatus status = impl->ScrollBegin(
             gfx::ToCeiledPoint(
                 expected_scroll_layer_impl->position() +
                 gfx::Vector2dF(0.5f, 0.5f)),
-            InputHandlerClient::Gesture);
-        EXPECT_EQ(InputHandlerClient::ScrollStarted, status);
+            InputHandler::Gesture);
+        EXPECT_EQ(InputHandler::ScrollStarted, status);
         impl->ScrollBy(gfx::Point(), scroll_amount_);
         impl->ScrollEnd();
 
@@ -388,12 +388,12 @@ class LayerTreeHostScrollTestCaseWithChild
       }
       case 1: {
         // Wheel scroll on impl thread.
-        InputHandlerClient::ScrollStatus status = impl->ScrollBegin(
+        InputHandler::ScrollStatus status = impl->ScrollBegin(
             gfx::ToCeiledPoint(
                 expected_scroll_layer_impl->position() +
                 gfx::Vector2dF(0.5f, 0.5f)),
-            InputHandlerClient::Wheel);
-        EXPECT_EQ(InputHandlerClient::ScrollStarted, status);
+            InputHandler::Wheel);
+        EXPECT_EQ(InputHandler::ScrollStarted, status);
         impl->ScrollBy(gfx::Point(), scroll_amount_);
         impl->ScrollEnd();
 
@@ -635,24 +635,24 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
 
     root->SetMaxScrollOffset(gfx::Vector2d(100, 100));
     EXPECT_EQ(
-        InputHandlerClient::ScrollStarted,
+        InputHandler::ScrollStarted,
         root->TryScroll(
             gfx::PointF(0.0f, 1.0f),
-            InputHandlerClient::Gesture));
+            InputHandler::Gesture));
 
     root->SetMaxScrollOffset(gfx::Vector2d(0, 0));
     EXPECT_EQ(
-        InputHandlerClient::ScrollIgnored,
+        InputHandler::ScrollIgnored,
         root->TryScroll(
             gfx::PointF(0.0f, 1.0f),
-            InputHandlerClient::Gesture));
+            InputHandler::Gesture));
 
     root->SetMaxScrollOffset(gfx::Vector2d(-100, -100));
     EXPECT_EQ(
-        InputHandlerClient::ScrollIgnored,
+        InputHandler::ScrollIgnored,
         root->TryScroll(
             gfx::PointF(0.0f, 1.0f),
-            InputHandlerClient::Gesture));
+            InputHandler::Gesture));
 
     EndTest();
   }
@@ -663,14 +663,14 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostScrollTestScrollZeroMaxScrollOffset);
 
-class ThreadCheckingInputHandler : public InputHandler {
+class ThreadCheckingInputHandlerClient : public InputHandlerClient {
  public:
-  ThreadCheckingInputHandler(base::SingleThreadTaskRunner* runner,
-                             bool* received_stop_flinging)
+  ThreadCheckingInputHandlerClient(base::SingleThreadTaskRunner* runner,
+                                   bool* received_stop_flinging)
       : task_runner_(runner) ,
         received_stop_flinging_(received_stop_flinging) {}
 
-  virtual void BindToClient(InputHandlerClient* client) OVERRIDE {
+  virtual void BindToHandler(InputHandler* handler) OVERRIDE {
     if (!task_runner_->BelongsToCurrentThread())
       ADD_FAILURE() << "BindToClient called on wrong thread";
   }
@@ -700,8 +700,8 @@ class ThreadCheckingFakeLayerTreeHostClient : public FakeLayerTreeHostClient {
         task_runner_(task_runner),
         received_stop_flinging_(received_stop_flinging) {}
 
-  virtual scoped_ptr<InputHandler> CreateInputHandler() OVERRIDE {
-    return scoped_ptr<InputHandler>(new ThreadCheckingInputHandler(
+  virtual scoped_ptr<InputHandlerClient> CreateInputHandlerClient() OVERRIDE {
+    return scoped_ptr<InputHandlerClient>(new ThreadCheckingInputHandlerClient(
           task_runner_, received_stop_flinging_)).Pass();
   }
 

@@ -251,17 +251,17 @@ gfx::Vector2dF LayerImpl::ScrollBy(gfx::Vector2dF scroll) {
   return unscrolled;
 }
 
-InputHandlerClient::ScrollStatus LayerImpl::TryScroll(
+InputHandler::ScrollStatus LayerImpl::TryScroll(
     gfx::PointF screen_space_point,
-    InputHandlerClient::ScrollInputType type) const {
+    InputHandler::ScrollInputType type) const {
   if (should_scroll_on_main_thread()) {
     TRACE_EVENT0("cc", "LayerImpl::TryScroll: Failed ShouldScrollOnMainThread");
-    return InputHandlerClient::ScrollOnMainThread;
+    return InputHandler::ScrollOnMainThread;
   }
 
   if (!screen_space_transform().IsInvertible()) {
     TRACE_EVENT0("cc", "LayerImpl::TryScroll: Ignored NonInvertibleTransform");
-    return InputHandlerClient::ScrollIgnored;
+    return InputHandler::ScrollIgnored;
   }
 
   if (!non_fast_scrollable_region().IsEmpty()) {
@@ -287,28 +287,28 @@ InputHandlerClient::ScrollStatus LayerImpl::TryScroll(
             gfx::ToRoundedPoint(hit_test_point_in_layer_space))) {
       TRACE_EVENT0("cc",
                    "LayerImpl::tryScroll: Failed NonFastScrollableRegion");
-      return InputHandlerClient::ScrollOnMainThread;
+      return InputHandler::ScrollOnMainThread;
     }
   }
 
-  if (type == InputHandlerClient::Wheel && have_wheel_event_handlers()) {
+  if (type == InputHandler::Wheel && have_wheel_event_handlers()) {
     TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed WheelEventHandlers");
-    return InputHandlerClient::ScrollOnMainThread;
+    return InputHandler::ScrollOnMainThread;
   }
 
   if (!scrollable()) {
     TRACE_EVENT0("cc", "LayerImpl::tryScroll: Ignored not scrollable");
-    return InputHandlerClient::ScrollIgnored;
+    return InputHandler::ScrollIgnored;
   }
 
   if (max_scroll_offset_.x() <= 0 && max_scroll_offset_.y() <= 0) {
     TRACE_EVENT0("cc",
                  "LayerImpl::tryScroll: Ignored. Technically scrollable,"
                  " but has no affordance in either direction.");
-    return InputHandlerClient::ScrollIgnored;
+    return InputHandler::ScrollIgnored;
   }
 
-  return InputHandlerClient::ScrollStarted;
+  return InputHandler::ScrollStarted;
 }
 
 bool LayerImpl::DrawCheckerboardForMissingTiles() const {

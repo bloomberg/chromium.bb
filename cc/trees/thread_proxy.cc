@@ -518,8 +518,8 @@ void ThreadProxy::MainThreadHasStoppedFlinging() {
 
 void ThreadProxy::MainThreadHasStoppedFlingingOnImplThread() {
   DCHECK(IsImplThread());
-  if (input_handler_on_impl_thread_)
-    input_handler_on_impl_thread_->MainThreadHasStoppedFlinging();
+  if (input_handler_client_on_impl_thread_)
+    input_handler_client_on_impl_thread_->MainThreadHasStoppedFlinging();
 }
 
 void ThreadProxy::Start() {
@@ -528,12 +528,13 @@ void ThreadProxy::Start() {
   // Create LayerTreeHostImpl.
   DebugScopedSetMainThreadBlocked main_thread_blocked(this);
   CompletionEvent completion;
-  scoped_ptr<InputHandler> handler = layer_tree_host_->CreateInputHandler();
+  scoped_ptr<InputHandlerClient> input_handler_client =
+      layer_tree_host_->CreateInputHandlerClient();
   Proxy::ImplThread()->PostTask(
       base::Bind(&ThreadProxy::InitializeImplOnImplThread,
                  base::Unretained(this),
                  &completion,
-                 handler.release()));
+                 input_handler_client.release()));
   completion.Wait();
 
   main_thread_weak_ptr_ = weak_factory_.GetWeakPtr();
@@ -885,8 +886,8 @@ ThreadProxy::ScheduledActionDrawAndSwapInternal(bool forced_draw) {
       layer_tree_host_impl_->CurrentFrameTimeTicks();
   base::Time wall_clock_time = layer_tree_host_impl_->CurrentFrameTime();
 
-  if (input_handler_on_impl_thread_)
-    input_handler_on_impl_thread_->Animate(monotonic_time);
+  if (input_handler_client_on_impl_thread_)
+    input_handler_client_on_impl_thread_->Animate(monotonic_time);
 
   layer_tree_host_impl_->ActivatePendingTreeIfNeeded();
   layer_tree_host_impl_->Animate(monotonic_time, wall_clock_time);
@@ -1079,8 +1080,9 @@ void ThreadProxy::TryToRecreateOutputSurface() {
     output_surface_recreation_callback_.Cancel();
 }
 
-void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion,
-                                             InputHandler* handler) {
+void ThreadProxy::InitializeImplOnImplThread(
+    CompletionEvent* completion,
+    InputHandlerClient* input_handler_client) {
   TRACE_EVENT0("cc", "ThreadProxy::InitializeImplOnImplThread");
   DCHECK(IsImplThread());
   layer_tree_host_impl_ = layer_tree_host_->CreateLayerTreeHostImpl(this);
@@ -1111,9 +1113,11 @@ void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion,
                                                 scheduler_settings);
   scheduler_on_impl_thread_->SetVisible(layer_tree_host_impl_->visible());
 
-  input_handler_on_impl_thread_ = scoped_ptr<InputHandler>(handler);
-  if (input_handler_on_impl_thread_)
-    input_handler_on_impl_thread_->BindToClient(layer_tree_host_impl_.get());
+  input_handler_client_on_impl_thread_.reset(input_handler_client);
+  if (input_handler_client_on_impl_thread_) {
+    input_handler_client_on_impl_thread_->BindToHandler(
+        layer_tree_host_impl_.get());
+  }
 
   impl_thread_weak_ptr_ = weak_factory_on_impl_thread_.GetWeakPtr();
   completion->Signal();
@@ -1159,7 +1163,7 @@ void ThreadProxy::LayerTreeHostClosedOnImplThread(CompletionEvent* completion) {
   layer_tree_host_->DeleteContentsTexturesOnImplThread(
       layer_tree_host_impl_->resource_provider());
   layer_tree_host_impl_->EnableVSyncNotification(false);
-  input_handler_on_impl_thread_.reset();
+  input_handler_client_on_impl_thread_.reset();
   layer_tree_host_impl_.reset();
   scheduler_on_impl_thread_.reset();
   weak_factory_on_impl_thread_.InvalidateWeakPtrs();

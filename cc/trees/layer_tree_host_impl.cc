@@ -1459,8 +1459,8 @@ bool LayerTreeHostImpl::EnsureRenderSurfaceLayerList() {
   return !active_tree_->RenderSurfaceLayerList().empty();
 }
 
-InputHandlerClient::ScrollStatus LayerTreeHostImpl::ScrollBegin(
-    gfx::Point viewport_point, InputHandlerClient::ScrollInputType type) {
+InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
+    gfx::Point viewport_point, InputHandler::ScrollInputType type) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::ScrollBegin");
 
   if (top_controls_manager_)
@@ -1755,7 +1755,7 @@ void LayerTreeHostImpl::ScrollEnd() {
   StartScrollbarAnimation(CurrentFrameTimeTicks());
 }
 
-InputHandlerClient::ScrollStatus LayerTreeHostImpl::FlingScrollBegin() {
+InputHandler::ScrollStatus LayerTreeHostImpl::FlingScrollBegin() {
   if (active_tree_->CurrentlyScrollingLayer())
     return ScrollStarted;
 
