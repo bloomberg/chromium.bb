@@ -101,6 +101,7 @@ public:
     unsigned propertyCount() const;
     bool isEmpty() const;
     PropertyReference propertyAt(unsigned index) const { return PropertyReference(*this, index); }
+    int findPropertyIndex(CSSPropertyID) const;
 
     PassRefPtr<CSSValue> getPropertyCSSValue(CSSPropertyID) const;
     String getPropertyValue(CSSPropertyID) const;
@@ -190,20 +191,9 @@ protected:
     unsigned m_arraySize : 28;
     
 private:
-    String getShorthandValue(const StylePropertyShorthand&) const;
-    String getCommonValue(const StylePropertyShorthand&) const;
-    enum CommonValueMode { OmitUncommonValues, ReturnNullOnUncommonValues };
-    String borderPropertyValue(CommonValueMode) const;
-    String getLayeredShorthandValue(const StylePropertyShorthand&) const;
-    String get4Values(const StylePropertyShorthand&) const;
-    String borderSpacingValue(const StylePropertyShorthand&) const;
-    String fontValue() const;
-    void appendFontLonghandValueIfExplicit(CSSPropertyID, StringBuilder& result, String& value) const;
-
     bool removeShorthandProperty(CSSPropertyID);
     bool propertyMatches(CSSPropertyID, const CSSValue*) const;
 
-    int findPropertyIndex(CSSPropertyID) const;
     CSSProperty* findMutableCSSPropertyWithID(CSSPropertyID);
 
     friend class PropertySetCSSStyleDeclaration;

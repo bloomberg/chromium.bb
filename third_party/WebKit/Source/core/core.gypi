@@ -668,6 +668,8 @@
             'css/StyleInvalidationAnalysis.h',
             'css/StyleMedia.cpp',
             'css/StyleMedia.h',
+            'css/StylePropertySerializer.cpp',
+            'css/StylePropertySerializer.h',
             'css/StylePropertySet.cpp',
             'css/StylePropertySet.h',
             'css/StylePropertyShorthand.cpp',
