@@ -38,6 +38,7 @@ class WEBKIT_GLUE_EXPORT FlingAnimatorImpl : public WebKit::WebGestureCurve {
   // Returns true if the animation is not yet finished.
   bool UpdatePosition();
   gfx::Point GetCurrentPosition();
+  float GetCurrentVelocity();
   virtual void CancelFling();
 
   bool is_active_;
@@ -46,6 +47,8 @@ class WEBKIT_GLUE_EXPORT FlingAnimatorImpl : public WebKit::WebGestureCurve {
   base::android::ScopedJavaGlobalRef<jobject> java_scroller_;
 
   gfx::Point last_position_;
+  gfx::PointF last_velocity_;
+  double last_time_;
 
   DISALLOW_COPY_AND_ASSIGN(FlingAnimatorImpl);
 };

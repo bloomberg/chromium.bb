@@ -126,23 +126,31 @@ TouchFlingGestureCurve::~TouchFlingGestureCurve() {
 
 bool TouchFlingGestureCurve::apply(double time, WebGestureCurveTarget* target) {
   float displacement;
-  if (time < 0)
-    displacement = 0;
-  else if (time + time_offset_ < curve_duration_) {
+  float speed;
+  if (time < 0) {
+    displacement = 0.f;
+    speed = 0.f;
+  } else if (time + time_offset_ < curve_duration_) {
     displacement =
         position(time + time_offset_, coefficients_) - position_offset_;
-  } else
+    speed = velocity(time + time_offset_, coefficients_);
+  } else {
     displacement = position(curve_duration_, coefficients_) - position_offset_;
+    speed = 0.f;
+  }
 
   // Keep track of integer portion of scroll thus far, and prepare increment.
   WebFloatSize scroll(displacement * displacement_ratio_.x,
                       displacement * displacement_ratio_.y);
   WebFloatSize scroll_increment(scroll.width - cumulative_scroll_.width,
                                 scroll.height - cumulative_scroll_.height);
+  WebFloatSize scroll_velocity(speed * displacement_ratio_.x,
+                               speed * displacement_ratio_.y);
   cumulative_scroll_ = scroll;
 
   if (time + time_offset_ < curve_duration_ ||
       scroll_increment != WebFloatSize()) {
+    target->notifyCurrentFlingVelocity(scroll_velocity);
     // scrollBy() could delete this curve if the animation is over, so don't
     // touch any member variables after making that call.
     target->scrollBy(scroll_increment);

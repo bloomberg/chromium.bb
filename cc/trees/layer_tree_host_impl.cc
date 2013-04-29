@@ -1745,6 +1745,7 @@ bool LayerTreeHostImpl::ScrollVerticallyByPage(
 void LayerTreeHostImpl::ClearCurrentlyScrollingLayer() {
   active_tree_->ClearCurrentlyScrollingLayer();
   did_lock_scrolling_layer_ = false;
+  current_fling_velocity_ = gfx::Vector2dF();
 }
 
 void LayerTreeHostImpl::ScrollEnd() {
@@ -1760,6 +1761,10 @@ InputHandler::ScrollStatus LayerTreeHostImpl::FlingScrollBegin() {
     return ScrollStarted;
 
   return ScrollIgnored;
+}
+
+void LayerTreeHostImpl::NotifyCurrentFlingVelocity(gfx::Vector2dF velocity) {
+  current_fling_velocity_ = velocity;
 }
 
 void LayerTreeHostImpl::PinchGestureBegin() {

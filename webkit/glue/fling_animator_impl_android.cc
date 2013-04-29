@@ -15,6 +15,10 @@
 
 namespace webkit_glue {
 
+namespace {
+static const float kEpsilon = 1e-4;
+}
+
 FlingAnimatorImpl::FlingAnimatorImpl()
     : is_active_(false) {
   // hold the global reference of the Java objects.
@@ -44,6 +48,8 @@ void FlingAnimatorImpl::StartFling(const gfx::PointF& velocity)
     CancelFling();
 
   is_active_ = true;
+  last_time_ = 0;
+  last_velocity_ = velocity;
 
   JNIEnv* env = base::android::AttachCurrentThread();
 
@@ -82,6 +88,15 @@ gfx::Point FlingAnimatorImpl::GetCurrentPosition()
   return position;
 }
 
+float FlingAnimatorImpl::GetCurrentVelocity()
+{
+  JNIEnv* env = base::android::AttachCurrentThread();
+  // TODO(jdduke): Add Java-side hooks for getCurrVelocityX/Y, and return
+  //               vector velocity.
+  return JNI_OverScroller::Java_OverScroller_getCurrVelocity(
+      env, java_scroller_.obj());
+}
+
 bool FlingAnimatorImpl::apply(double time,
                               WebKit::WebGestureCurveTarget* target) {
   if (!UpdatePosition())
@@ -94,6 +109,28 @@ bool FlingAnimatorImpl::apply(double time,
       .device_scale_factor();
   WebKit::WebFloatSize scroll_amount(diff.x() / dpi_scale,
                                      diff.y() / dpi_scale);
+
+  float delta_time = time - last_time_;
+  last_time_ = time;
+
+  // Currently, the OverScroller only provides the velocity magnitude; use the
+  // angle of the scroll delta to yield approximate x and y velocity components.
+  // TODO(jdduke): Remove this when we can properly poll OverScroller velocity.
+  gfx::PointF current_velocity = last_velocity_;
+  if (delta_time > kEpsilon) {
+    float diff_length = diff.Length();
+    if (diff_length > kEpsilon) {
+      float velocity = GetCurrentVelocity();
+      float scroll_to_velocity = velocity / diff_length;
+      current_velocity = gfx::PointF(diff.x() * scroll_to_velocity,
+                                     diff.y() * scroll_to_velocity);
+    }
+  }
+  last_velocity_ = current_velocity;
+  WebKit::WebFloatSize fling_velocity(current_velocity.x() / dpi_scale,
+                                      current_velocity.y() / dpi_scale);
+  target->notifyCurrentFlingVelocity(fling_velocity);
+
   // scrollBy() could delete this curve if the animation is over, so don't touch
   // any member variables after making that call.
   target->scrollBy(scroll_amount);

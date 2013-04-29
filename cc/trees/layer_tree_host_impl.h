@@ -105,6 +105,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
       WebKit::WebScrollbar::ScrollDirection direction) OVERRIDE;
   virtual void ScrollEnd() OVERRIDE;
   virtual InputHandler::ScrollStatus FlingScrollBegin() OVERRIDE;
+  virtual void NotifyCurrentFlingVelocity(gfx::Vector2dF velocity) OVERRIDE;
   virtual void PinchGestureBegin() OVERRIDE;
   virtual void PinchGestureUpdate(float magnify_delta,
                                   gfx::Point anchor) OVERRIDE;
@@ -437,6 +438,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   float device_scale_factor_;
   bool visible_;
   ManagedMemoryPolicy managed_memory_policy_;
+
+  gfx::Vector2dF current_fling_velocity_;
 
   bool pinch_gesture_active_;
   gfx::Point previous_pinch_anchor_;

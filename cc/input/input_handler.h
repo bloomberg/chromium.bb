@@ -56,6 +56,8 @@ class CC_EXPORT InputHandler {
   // ScrollIgnored if not.
   virtual ScrollStatus FlingScrollBegin() = 0;
 
+  virtual void NotifyCurrentFlingVelocity(gfx::Vector2dF velocity) = 0;
+
   // Stop scrolling the selected layer. Should only be called if ScrollBegin()
   // returned ScrollStarted.
   virtual void ScrollEnd() = 0;

@@ -63,6 +63,10 @@ class WebToCCInputHandlerAdapter::HandlerAdapter
         handler_->FlingScrollBegin());
   }
 
+  virtual void notifyCurrentFlingVelocity(WebFloatSize velocity) {
+    handler_->NotifyCurrentFlingVelocity(velocity);
+  }
+
   virtual void scrollEnd() { handler_->ScrollEnd(); }
 
   virtual void pinchGestureBegin() { handler_->PinchGestureBegin(); }

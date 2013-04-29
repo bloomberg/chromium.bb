@@ -23,6 +23,8 @@ bool WebGestureCurveMock::apply(double time,
   WebKit::WebFloatSize increment(displacement.width - cumulative_scroll_.width,
       displacement.height - cumulative_scroll_.height);
   cumulative_scroll_ = displacement;
+  target->notifyCurrentFlingVelocity(WebKit::WebFloatSize(velocity_.x,
+                                                          velocity_.y));
   // scrollBy() could delete this curve if the animation is over, so don't
   // touch any member variables after making that call.
   target->scrollBy(increment);
