@@ -1795,8 +1795,11 @@ bool RenderWidgetHostViewAura::LockMouse() {
   window_->SetCapture();
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(root_window);
-  if (cursor_client)
+  if (cursor_client) {
     cursor_client->HideCursor();
+    cursor_client->LockCursor();
+  }
+
   synthetic_move_sent_ = true;
   window_->MoveCursorTo(gfx::Rect(window_->bounds().size()).CenterPoint());
   if (aura::client::GetTooltipClient(root_window))
@@ -1815,8 +1818,11 @@ void RenderWidgetHostViewAura::UnlockMouse() {
   window_->MoveCursorTo(unlocked_mouse_position_);
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(root_window);
-  if (cursor_client)
+  if (cursor_client) {
+    cursor_client->UnlockCursor();
     cursor_client->ShowCursor();
+  }
+
   if (aura::client::GetTooltipClient(root_window))
     aura::client::GetTooltipClient(root_window)->SetTooltipsEnabled(true);
 
@@ -2253,11 +2259,9 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
     return;
 
   if (mouse_locked_) {
-    // Hide the cursor if someone else has shown it.
     aura::client::CursorClient* cursor_client =
         aura::client::GetCursorClient(window_->GetRootWindow());
-    if (cursor_client && cursor_client->IsCursorVisible())
-      cursor_client->DisableMouseEvents();
+    DCHECK(!cursor_client || !cursor_client->IsCursorVisible());
 
     WebKit::WebMouseEvent mouse_event = MakeWebMouseEvent(event);
     gfx::Point center(gfx::Rect(window_->bounds().size()).CenterPoint());
