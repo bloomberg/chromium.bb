@@ -50,8 +50,6 @@ my %stringTypeHash = ("DOMString" => 1, "AtomicString" => 1);
 
 my %enumTypeHash = ();
 
-my %nonPointerTypeHash = ("DOMTimeStamp" => 1, "CompareHow" => 1);
-
 my %svgAnimatedTypeHash = ("SVGAnimatedAngle" => 1, "SVGAnimatedBoolean" => 1,
                            "SVGAnimatedEnumeration" => 1, "SVGAnimatedInteger" => 1,
                            "SVGAnimatedLength" => 1, "SVGAnimatedLengthList" => 1,
@@ -5119,14 +5117,6 @@ sub ValidEnumValues
     my $type = shift;
 
     return @{$enumTypeHash{$type}};
-}
-
-sub IsNonPointerType
-{
-    my $type = shift;
-
-    return 1 if $nonPointerTypeHash{$type} or $primitiveTypeHash{$type} or $numericTypeHash{$type};
-    return 0;
 }
 
 sub IsSVGTypeNeedingTearOff
