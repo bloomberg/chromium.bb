@@ -45,43 +45,13 @@
       <message desc="Sync error string for service unavailable. [CHAR-LIMIT=80]" name="IDS_SYNC_ERROR_SERVICE_UNAVAILABLE">
         The service is not available; try again later.
       </message>
-      <message desc="Message for editing the current shipping item on the autofill dialog. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_EDIT_SHIPPING">
-        Edit shipping address
-      </message>
-      <message desc="Message for adding a new shipping item to the autofill dialog. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_NEW_SHIPPING">
-        Add new shipping address
-      </message>
-      <message desc="Message for editing the current credit card item on the autofill dialog. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_EDIT_CREDIT_CARD">
-        Edit credit card details
-      </message>
-      <message desc="Message for adding a new credir card item to the autofill dialog. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_NEW_CREDIT_CARD">
-        Add new credit card
-      </message>
-      <message desc="Message for editing the current email item on the autofill dialog. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_EDIT_EMAIL">
-        Edit email address
-      </message>
-      <message desc="Message for adding a new email item to the autofill dialog. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_NEW_EMAIL">
-        Add new email address
-      </message>
-      <message desc="Message for editing the current billing address item on the autofill dialog. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_EDIT_BILLING">
-        Edit billing address
-      </message>
-      <message desc="Message for adding a new billing address item to the autofill dialog. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_NEW_BILLING">
-        Add new billing address
-      </message>
-      <message desc="Message for editing the current billing item on the autofill dialog. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_EDIT_CC_BILLING">
-        Edit billing details
-      </message>
-      <message desc="Message for adding a new billing item to the autofill dialog. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_NEW_CC_BILLING">
-        Add new billing details
-      </message>
       <message desc="Message for positive button while editing details on the autofill dialog. [CHAR-LIMIT=32]" name="IDS_AUTOFILL_POSITIVE_BUTTON_EDITING">
         Done
       </message>
       <message desc="Message for negative button while editing details on the autofill dialog. [CHAR-LIMIT=32]" name="IDS_AUTOFILL_NEGATIVE_BUTTON_EDITING">
         Cancel
       </message>
-      <message desc="Message for editing an single item on the autofill dialog. [CHAR-LIMIT=32]" name="IDS_AUTOFILL_EDIT_BUTTON">
+      <message desc="Message for editing a single item on the autofill dialog. [CHAR-LIMIT=32]" name="IDS_AUTOFILL_EDIT_BUTTON">
         Edit
       </message>
       <message desc="Placeholder message for ToS on autofill dialog. [CHAR-LIMIT=None]" name="IDS_AUTOFILL_TERMS_OF_SERVICE">

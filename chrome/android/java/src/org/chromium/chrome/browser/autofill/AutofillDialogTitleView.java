@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.autofill;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -23,8 +23,6 @@ import org.chromium.chrome.R;
  * the content.
  */
 public class AutofillDialogTitleView extends FrameLayout {
-
-    private ArrayList<String> mAccountNames;
     private ArrayAdapter<String> mAdapter;
 
     /**
@@ -48,11 +46,9 @@ public class AutofillDialogTitleView extends FrameLayout {
      * @param selectedAccountIndex The index of a currently selected account or
      *                             -1 if nothing is selected.
      */
-    public void updateAccountsAndSelect(ArrayList<String> accountNames,
-            int selectedAccountIndex) {
+    public void updateAccountsAndSelect(List<String> accountNames, int selectedAccountIndex) {
         mAdapter.clear();
-        mAccountNames = accountNames;
-        mAdapter.addAll(mAccountNames);
+        mAdapter.addAll(accountNames);
         Spinner accountsSpinner = (Spinner) findViewById(R.id.accounts_spinner);
         if (selectedAccountIndex >= 0) {
             accountsSpinner.setSelection(selectedAccountIndex);

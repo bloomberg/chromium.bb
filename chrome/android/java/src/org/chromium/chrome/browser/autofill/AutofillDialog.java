@@ -37,20 +37,15 @@ import java.util.List;
  * title and the content views and relays messages from the backend to them.
  */
 public class AutofillDialog extends AlertDialog
-        implements OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
-    private static final int ADD_MENU_ITEM_INDEX = -1;
-    private static final int EDIT_MENU_ITEM_INDEX = -2;
-
+        implements OnClickListener, OnItemSelectedListener,
+                AutofillDialogContentView.OnItemEditButtonClickedListener,
+                OnFocusChangeListener {
     private final AutofillDialogContentView mContentView;
     private final AutofillDialogTitleView mTitleView;
     private final AutofillDialogDelegate mDelegate;
 
     private AutofillDialogField[][] mAutofillSectionFieldData =
             new AutofillDialogField[AutofillDialogConstants.NUM_SECTIONS][];
-    private AutofillDialogMenuItem[][] mAutofillSectionMenuData =
-            new AutofillDialogMenuItem[AutofillDialogConstants.NUM_SECTIONS][];
-    private final AutofillDialogMenuItem[][] mDefaultMenuItems =
-            new AutofillDialogMenuItem[AutofillDialogConstants.NUM_SECTIONS][];
 
     /**
      * An interface to handle the interaction with an AutofillDialog object.
@@ -201,7 +196,6 @@ public class AutofillDialog extends AlertDialog
         mContentView.initializeLabelsForEachSection(labels);
         scroll.addView(mContentView);
         setView(scroll);
-        Resources resources = context.getResources();
 
         setButton(AlertDialog.BUTTON_NEGATIVE,
                 mDelegate.getDialogButtonText(AutofillDialogConstants.DIALOG_BUTTON_CANCEL), this);
@@ -209,44 +203,7 @@ public class AutofillDialog extends AlertDialog
                 mDelegate.getDialogButtonText(AutofillDialogConstants.DIALOG_BUTTON_OK), this);
 
         mContentView.setOnItemSelectedListener(this);
-
-        // TODO(aruslan): remove as part of the native model wrapper http://crbug.com/224162.
-        final AutofillDialogMenuItem[] emailItems = {
-                new AutofillDialogMenuItem(ADD_MENU_ITEM_INDEX,
-                        resources.getString(R.string.autofill_new_email)),
-                new AutofillDialogMenuItem(EDIT_MENU_ITEM_INDEX,
-                        resources.getString(R.string.autofill_edit_email))
-        };
-        final AutofillDialogMenuItem[] ccItems = {
-                new AutofillDialogMenuItem(ADD_MENU_ITEM_INDEX,
-                        resources.getString(R.string.autofill_new_credit_card)),
-                new AutofillDialogMenuItem(EDIT_MENU_ITEM_INDEX,
-                        resources.getString(R.string.autofill_edit_credit_card))
-        };
-        final AutofillDialogMenuItem[] billingDetailsItems = {
-                new AutofillDialogMenuItem(ADD_MENU_ITEM_INDEX,
-                        resources.getString(R.string.autofill_new_cc_billing)),
-                new AutofillDialogMenuItem(EDIT_MENU_ITEM_INDEX,
-                        resources.getString(R.string.autofill_edit_cc_billing))
-        };
-        final AutofillDialogMenuItem[] billingAddressItems = {
-                new AutofillDialogMenuItem(ADD_MENU_ITEM_INDEX,
-                        resources.getString(R.string.autofill_new_billing)),
-                new AutofillDialogMenuItem(EDIT_MENU_ITEM_INDEX,
-                        resources.getString(R.string.autofill_edit_billing))
-        };
-        final AutofillDialogMenuItem[] shippingItems = {
-                new AutofillDialogMenuItem(ADD_MENU_ITEM_INDEX,
-                        resources.getString(R.string.autofill_new_shipping)),
-                new AutofillDialogMenuItem(EDIT_MENU_ITEM_INDEX,
-                        resources.getString(R.string.autofill_edit_shipping))
-        };
-
-        mDefaultMenuItems[AutofillDialogConstants.SECTION_EMAIL] = emailItems;
-        mDefaultMenuItems[AutofillDialogConstants.SECTION_CC] = ccItems;
-        mDefaultMenuItems[AutofillDialogConstants.SECTION_BILLING] = billingAddressItems;
-        mDefaultMenuItems[AutofillDialogConstants.SECTION_CC_BILLING] = billingDetailsItems;
-        mDefaultMenuItems[AutofillDialogConstants.SECTION_SHIPPING] = shippingItems;
+        mContentView.setOnItemEditButtonClickedListener(this);
 
         String hint = mDelegate.getPlaceholderForField(
                 AutofillDialogConstants.SECTION_CC,
@@ -301,9 +258,6 @@ public class AutofillDialog extends AlertDialog
 
     @Override
     public void onClick(DialogInterface dialog, int which) {
-        // The buttons will be updated as the result of a controller callback or a layout change.
-        disableButtons();
-
         // Note that the dialog will NOT be dismissed automatically.
         if (!mContentView.isInEditingMode()) {
             if (which == AlertDialog.BUTTON_POSITIVE) {
@@ -315,6 +269,8 @@ public class AutofillDialog extends AlertDialog
                 // The dialog will be dismissed with a call to dismissAutofillDialog().
                 mDelegate.dialogCancel();
             }
+            // The buttons will be updated as the result of a controller callback.
+            disableButtons();
             return;
         }
 
@@ -338,18 +294,20 @@ public class AutofillDialog extends AlertDialog
         }
 
         int section = AutofillDialogUtils.getSectionForSpinnerID(spinner.getId());
-
-        if (!selectionShouldChangeLayout(spinner, section, position)) {
+        if (!isAnAddItem(spinner, section, position)) {
             mDelegate.itemSelected(section, position);
             return;
         }
 
+        onItemEditButtonClicked(section, position);
+    }
+
+    @Override
+    public void onItemEditButtonClicked(int section, int position) {
+        mContentView.updateMenuSelectionForSection(section, position);
+        mDelegate.itemSelected(section, position);
         mDelegate.editingStart(section);
-        AutofillDialogMenuItem currentItem =
-                (AutofillDialogMenuItem) spinner.getItemAtPosition(position);
-        if (currentItem.mIndex == ADD_MENU_ITEM_INDEX) {
-            clearAutofillSectionFieldValues(section);
-        }
+
         changeLayoutTo(AutofillDialogContentView.getLayoutModeForSection(section));
     }
 
@@ -361,12 +319,12 @@ public class AutofillDialog extends AlertDialog
      * @param spinner The dropdown that was selected by the user.
      * @param section The section  that the dropdown corresponds to.
      * @param position The position for the selected item in the dropdown.
-     * @return Whether the selection should cause a layout state change.
+     * @return Whether the selection is the "Add..." item.
      */
-    private boolean selectionShouldChangeLayout(AdapterView<?> spinner, int section, int position) {
-        int numDefaultItems = mDefaultMenuItems[section] != null ?
-                mDefaultMenuItems[section].length : 0;
-        return position >= spinner.getCount() - numDefaultItems;
+    private boolean isAnAddItem(AdapterView<?> spinner, int section, int position) {
+        // TODO(aruslan): this ignores the "always" last "Manage..." and targets to the "Add...".
+        // TODO(aruslan): remove/fix this after http://crbug.com/224162.
+        return position == spinner.getCount() - 2;
     }
 
     /**
@@ -433,9 +391,7 @@ public class AutofillDialog extends AlertDialog
      * @param selectedAccountIndex The index of a currently selected account.
      */
     public void updateAccountChooser(String[] accounts, int selectedAccountIndex) {
-        ArrayList<String> combinedItems = new ArrayList<String>(accounts.length);
-        combinedItems.addAll(Arrays.asList(accounts));
-        mTitleView.updateAccountsAndSelect(combinedItems, selectedAccountIndex);
+        mTitleView.updateAccountsAndSelect(Arrays.asList(accounts), selectedAccountIndex);
     }
 
     /**
@@ -497,9 +453,12 @@ public class AutofillDialog extends AlertDialog
      * @param dialogInputs The array that contains the data for each field in the section.
      * @param menuItems The array that contains the dropdown items to be shown for the section.
      * @param selectedMenuItem The menu item that is currently selected or -1 otherwise.
+     * @param clobberInputs Whether to clobber the user input.
+     * @param fieldTypeToAlwaysClobber Field type to be clobbered anyway, or UNKNOWN_TYPE.
      */
     public void updateSection(int section, boolean visible, AutofillDialogField[] dialogInputs,
-            AutofillDialogMenuItem[] menuItems, int selectedMenuItem) {
+            AutofillDialogMenuItem[] menuItems, int selectedMenuItem,
+            boolean clobberInputs, int fieldTypeToAlwaysClobber) {
         View currentField;
         String inputValue;
         for (int i = 0; i < dialogInputs.length; i++) {
@@ -507,12 +466,19 @@ public class AutofillDialog extends AlertDialog
                     section, dialogInputs[i].mFieldType));
             if (currentField instanceof EditText) {
                 EditText currentEdit = (EditText) currentField;
+                if (!clobberInputs
+                    && !TextUtils.isEmpty(currentEdit.getText())
+                    && dialogInputs[i].mFieldType != fieldTypeToAlwaysClobber) {
+                    continue;
+                }
+
                 if (AutofillDialogUtils.containsCreditCardInfo(section)
                         && dialogInputs[i].mFieldType
                                 == AutofillDialogConstants.CREDIT_CARD_VERIFICATION_CODE) {
                     currentEdit.setCompoundDrawables(
                             null, null, mContentView.getCVCDrawable(), null);
                 }
+
                 currentEdit.setHint(dialogInputs[i].mPlaceholder);
                 currentField.setOnFocusChangeListener(this);
                 inputValue = dialogInputs[i].getValue();
@@ -534,25 +500,20 @@ public class AutofillDialog extends AlertDialog
         }
         setFieldsForSection(section, dialogInputs);
         mContentView.setVisibilityForSection(section, visible);
-        List<AutofillDialogMenuItem> combinedItems;
 
-        // This is a temporary hack in absence of an Android-specific model wrapper,
-        // which would handle Edit/Add/EditingDone operations.
-        // TODO(aruslan): remove as part of the native model wrapper http://crbug.com/224162.
-        if (mDefaultMenuItems[section] == null || menuItems.length == 0) {
-            combinedItems = Arrays.asList(menuItems);
-        } else {
-            combinedItems = new ArrayList<AutofillDialogMenuItem>(
-                    menuItems.length - 2 + mDefaultMenuItems[section].length);
-            combinedItems.addAll(Arrays.asList(menuItems));
-            // Replace the provided "Add..." item with ours and add "Edit".
-            // Also remove the "Manage..." item (for now).
-            combinedItems.remove(menuItems.length - 2);
-            combinedItems.addAll(Arrays.asList(mDefaultMenuItems[section]));
-        }
+        updateSectionMenuItems(section, menuItems, selectedMenuItem);
+    }
 
-        mContentView.updateMenuItemsForSection(section, combinedItems);
-        mAutofillSectionMenuData[section] = menuItems;
+    /**
+     * Updates menu items in a given section with the data provided.
+     * @param section The section to update with the given data.
+     * @param menuItems The array that contains the dropdown items to be shown for the section.
+     * @param selectedMenuItem The menu item that is currently selected or -1 otherwise.
+     */
+    public void updateSectionMenuItems(
+            int section, AutofillDialogMenuItem[] menuItems, int selectedMenuItem) {
+        mContentView.updateMenuItemsForSection(
+                section, Arrays.asList(menuItems), selectedMenuItem);
     }
 
     /**

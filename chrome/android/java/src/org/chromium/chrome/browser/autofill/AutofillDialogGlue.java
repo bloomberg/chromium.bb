@@ -55,17 +55,23 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
      */
     @CalledByNative
     private void updateNotificationArea(AutofillDialogNotification[] notifications) {
+        assert mNativeDialogPopup != 0;
+        if (mNativeDialogPopup == 0) return;
+
         mAutofillDialog.updateNotificationArea(notifications);
     }
 
     /**
      * @see AutofillDialog#updateSection(int, boolean, AutofillDialogField[],
-     *                                   AutofillDialogMenuItem[], int)
+     *                                   AutofillDialogMenuItem[], int, boolean, int)
      */
     @CalledByNative
     private void updateSection(int section, boolean visible, AutofillDialogField[] dialogInputs,
-            AutofillDialogMenuItem[] menuItems, int selectedMenuItem) {
-        mAutofillDialog.updateSection(section, visible, dialogInputs, menuItems, selectedMenuItem);
+            AutofillDialogMenuItem[] menuItems, int selectedMenuItem,
+            boolean clobberInputs, int fieldTypeToAlwaysClobber) {
+        mAutofillDialog.updateSection(
+                section, visible, dialogInputs, menuItems, selectedMenuItem,
+                clobberInputs, fieldTypeToAlwaysClobber);
     }
 
     /**
@@ -330,8 +336,8 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
 
     @CalledByNative
     private static void addToAutofillDialogMenuItemArray(AutofillDialogMenuItem[] array, int index,
-            String line1, String line2, Bitmap icon) {
-        array[index] = new AutofillDialogMenuItem(index, line1, line2, icon);
+            String line1, String line2, Bitmap icon, boolean editable) {
+        array[index] = new AutofillDialogMenuItem(index, line1, line2, icon, editable);
     }
 
     @CalledByNative

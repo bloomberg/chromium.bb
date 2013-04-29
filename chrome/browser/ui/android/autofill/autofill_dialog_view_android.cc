@@ -8,8 +8,14 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/android/window_android_helper.h"
+#include "chrome/browser/ui/autofill/data_model_wrapper.h"
+#include "components/autofill/browser/autofill_profile.h"
+#include "components/autofill/browser/autofill_type.h"
+#include "components/autofill/browser/credit_card.h"
 #include "content/public/browser/web_contents.h"
+#include "grit/generated_resources.h"
 #include "jni/AutofillDialogGlue_jni.h"
 #include "ui/android/window_android.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -114,79 +120,13 @@ void AutofillDialogViewAndroid::UpdateButtonStrip() {
 }
 
 void AutofillDialogViewAndroid::UpdateSection(DialogSection section) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  const DetailInputs& updated_inputs =
-      controller_->RequestedFieldsForSection(section);
-
-  const size_t inputCount = updated_inputs.size();
-  ScopedJavaLocalRef<jobjectArray> field_array =
-      Java_AutofillDialogGlue_createAutofillDialogFieldArray(
-          env, inputCount);
-
-  for (size_t i = 0; i < inputCount; ++i) {
-    const DetailInput& input = updated_inputs[i];
-
-    ScopedJavaLocalRef<jstring> autofilled =
-        base::android::ConvertUTF16ToJavaString(env, input.initial_value);
-
-    string16 placeholder16;
-    if (input.placeholder_text_rid > 0)
-      placeholder16 = l10n_util::GetStringUTF16(input.placeholder_text_rid);
-    ScopedJavaLocalRef<jstring> placeholder =
-        base::android::ConvertUTF16ToJavaString(env, placeholder16);
-
-    Java_AutofillDialogGlue_addToAutofillDialogFieldArray(
-        env,
-        field_array.obj(),
-        i,
-        reinterpret_cast<jint>(&input),
-        input.type,
-        placeholder.obj(),
-        autofilled.obj());
-  }
-
-  ui::MenuModel* menuModel = controller_->MenuModelForSection(section);
-  const int itemCount = menuModel->GetItemCount();
-  ScopedJavaLocalRef<jobjectArray> menu_array =
-      Java_AutofillDialogGlue_createAutofillDialogMenuItemArray(env,
-                                                                itemCount);
-
-  int checkedItem = -1;
-
-  for (int i = 0; i < itemCount; ++i) {
-    if (menuModel->IsItemCheckedAt(i))
-      checkedItem = i;
-
-    ScopedJavaLocalRef<jstring> line1 =
-        base::android::ConvertUTF16ToJavaString(env, menuModel->GetLabelAt(i));
-    ScopedJavaLocalRef<jstring> line2 =
-        base::android::ConvertUTF16ToJavaString(env,
-            menuModel->GetSublabelAt(i));
-
-    ScopedJavaLocalRef<jobject> bitmap;
-    gfx::Image icon;
-    if (menuModel->GetIconAt(i, &icon)) {
-      const SkBitmap& sk_icon = icon.AsBitmap();
-      bitmap = gfx::ConvertToJavaBitmap(&sk_icon);
-    }
-
-    Java_AutofillDialogGlue_addToAutofillDialogMenuItemArray(
-        env, menu_array.obj(), i, line1.obj(), line2.obj(), bitmap.obj());
-  }
-
-  Java_AutofillDialogGlue_updateSection(env,
-                                        java_object_.obj(),
-                                        section,
-                                        controller_->SectionIsActive(section),
-                                        field_array.obj(),
-                                        menu_array.obj(),
-                                        checkedItem);
+  UpdateOrFillSectionToJava(section, true, UNKNOWN_TYPE);
 }
 
 void AutofillDialogViewAndroid::FillSection(
     DialogSection section,
     const DetailInput& originating_input) {
-  NOTIMPLEMENTED();
+  UpdateOrFillSectionToJava(section, false, originating_input.type);
 }
 
 void AutofillDialogViewAndroid::GetUserInput(DialogSection section,
@@ -299,9 +239,12 @@ ScopedJavaLocalRef<jstring> AutofillDialogViewAndroid::GetPlaceholderForField(
     jobject obj,
     jint section,
     jint field_id) {
-  // TODO(aruslan): We shouldn't be hardcoding this.
-  string16 cvc(ASCIIToUTF16("CVC"));
-  return base::android::ConvertUTF16ToJavaString(env, cvc);
+  if (static_cast<int>(field_id) == CREDIT_CARD_VERIFICATION_CODE) {
+    return base::android::ConvertUTF16ToJavaString(
+        env,
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC));
+  }
+  return ScopedJavaLocalRef<jstring>();
 }
 
 ScopedJavaLocalRef<jstring> AutofillDialogViewAndroid::GetDialogButtonText(
@@ -377,10 +320,15 @@ void AutofillDialogViewAndroid::EditingStart(JNIEnv* env, jobject obj,
 
 jboolean AutofillDialogViewAndroid::EditingComplete(JNIEnv* env,
                                                     jobject obj,
-                                                    jint section) {
+                                                    jint jsection) {
   // Unfortunately, edits are not sent to the models, http://crbug.com/223919.
-  return ValidateSection(static_cast<DialogSection>(section),
-                         AutofillDialogController::VALIDATE_FINAL);
+  const DialogSection section = static_cast<DialogSection>(jsection);
+  if (ValidateSection(section, AutofillDialogController::VALIDATE_FINAL)) {
+    UpdateOrFillSectionToJava(section, false, UNKNOWN_TYPE);
+    return true;
+  }
+
+  return false;
 }
 
 void AutofillDialogViewAndroid::EditingCancel(JNIEnv* env,
@@ -505,6 +453,258 @@ void AutofillDialogViewAndroid::UpdateSaveLocallyCheckBox() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_AutofillDialogGlue_updateSaveLocallyCheckBox(
       env, java_object_.obj(), controller_->ShouldOfferToSaveInChrome());
+}
+
+void AutofillDialogViewAndroid::UpdateOrFillSectionToJava(
+    DialogSection section,
+    bool clobber_inputs,
+    int field_type_to_always_clobber) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  const DetailInputs& updated_inputs =
+      controller_->RequestedFieldsForSection(section);
+
+  const size_t inputCount = updated_inputs.size();
+  ScopedJavaLocalRef<jobjectArray> field_array =
+      Java_AutofillDialogGlue_createAutofillDialogFieldArray(
+          env, inputCount);
+
+  for (size_t i = 0; i < inputCount; ++i) {
+    const DetailInput& input = updated_inputs[i];
+
+    ScopedJavaLocalRef<jstring> autofilled =
+        base::android::ConvertUTF16ToJavaString(env, input.initial_value);
+
+    string16 placeholder16;
+    if (input.placeholder_text_rid > 0)
+      placeholder16 = l10n_util::GetStringUTF16(input.placeholder_text_rid);
+    ScopedJavaLocalRef<jstring> placeholder =
+        base::android::ConvertUTF16ToJavaString(env, placeholder16);
+
+    Java_AutofillDialogGlue_addToAutofillDialogFieldArray(
+        env,
+        field_array.obj(),
+        i,
+        reinterpret_cast<jint>(&input),
+        input.type,
+        placeholder.obj(),
+        autofilled.obj());
+  }
+
+  ui::MenuModel* menuModel = controller_->MenuModelForSection(section);
+  const int itemCount = menuModel->GetItemCount();
+  ScopedJavaLocalRef<jobjectArray> menu_array =
+      Java_AutofillDialogGlue_createAutofillDialogMenuItemArray(env,
+                                                                itemCount);
+
+  int checkedItem = -1;
+
+  for (int i = 0; i < itemCount; ++i) {
+    const bool editable = IsMenuItemEditable(section, i);
+
+    string16 line1_value = menuModel->GetLabelAt(i);
+    string16 line2_value = menuModel->GetSublabelAt(i);
+    gfx::Image icon_value;
+    menuModel->GetIconAt(i, &icon_value);
+
+    if (menuModel->IsItemCheckedAt(i)) {
+      checkedItem = i;
+      CollapseUserDataIntoMenuItem(section,
+                                   &line1_value, &line2_value,
+                                   &icon_value);
+    }
+
+    ScopedJavaLocalRef<jstring> line1 =
+        base::android::ConvertUTF16ToJavaString(env, line1_value);
+    ScopedJavaLocalRef<jstring> line2 =
+        base::android::ConvertUTF16ToJavaString(env, line2_value);
+    ScopedJavaLocalRef<jobject> bitmap;
+    const SkBitmap& sk_icon = icon_value.AsBitmap();
+    if (!sk_icon.isNull() && sk_icon.bytesPerPixel() != 0)
+      bitmap = gfx::ConvertToJavaBitmap(&sk_icon);
+
+    Java_AutofillDialogGlue_addToAutofillDialogMenuItemArray(
+        env, menu_array.obj(), i,
+        line1.obj(), line2.obj(), bitmap.obj(), editable);
+  }
+
+  Java_AutofillDialogGlue_updateSection(env,
+                                        java_object_.obj(),
+                                        section,
+                                        controller_->SectionIsActive(section),
+                                        field_array.obj(),
+                                        menu_array.obj(),
+                                        checkedItem,
+                                        clobber_inputs,
+                                        field_type_to_always_clobber);
+}
+
+// Whether the item at the |index| in the |section| menu model is editable.
+// TODO(aruslan): Remove/fix this once http://crbug.com/224162 is closed.
+bool AutofillDialogViewAndroid::IsMenuItemEditable(DialogSection section,
+                                                   int index) const {
+  // "Use billing for shipping" is not editable and it's always first.
+  if (section == SECTION_SHIPPING && index == 0)
+    return false;
+
+  // Any other items except the last ("Manage...") are editable.
+  ui::MenuModel* menuModel = controller_->MenuModelForSection(section);
+  return index < menuModel->GetItemCount() - 1;
+}
+
+// TODO(aruslan): Remove/fix this once http://crbug.com/230685 is closed.
+namespace {
+
+bool IsCreditCardType(AutofillFieldType type) {
+  return AutofillType(type).group() == AutofillType::CREDIT_CARD;
+}
+
+class CollapsedAutofillProfileWrapper : public AutofillProfileWrapper {
+ public:
+  explicit CollapsedAutofillProfileWrapper(const AutofillProfile* profile)
+    : AutofillProfileWrapper(profile, 0) {
+  }
+  virtual ~CollapsedAutofillProfileWrapper() {
+  }
+
+  virtual string16 GetDisplayText() OVERRIDE {
+    const string16 name_full = GetInfo(NAME_FULL);
+    const string16 comma = ASCIIToUTF16(", ");
+    const string16 address2 = GetInfo(ADDRESS_HOME_LINE2);
+
+    string16 label;
+    if (!name_full.empty())
+      label = name_full + comma;
+    label += GetInfo(ADDRESS_HOME_LINE1);
+    if (!address2.empty())
+      label += comma + address2;
+    return label;
+  }
+
+  string16 GetSublabel() {
+    const string16 comma = ASCIIToUTF16(", ");
+    return
+        GetInfo(ADDRESS_HOME_CITY) + comma +
+        GetInfo(ADDRESS_HOME_STATE) + ASCIIToUTF16(" ") +
+        GetInfo(ADDRESS_HOME_ZIP);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CollapsedAutofillProfileWrapper);
+};
+
+
+// Get billing info from |output| and put it into |card|, |cvc|, and |profile|.
+// These outparams are required because |card|/|profile| accept different types
+// of raw info.
+void GetBillingInfoFromOutputs(const DetailOutputMap& output,
+                               CreditCard* card,
+                               AutofillProfile* profile) {
+  for (DetailOutputMap::const_iterator it = output.begin();
+       it != output.end(); ++it) {
+    string16 trimmed;
+    TrimWhitespace(it->second, TRIM_ALL, &trimmed);
+
+    if (it->first->type == ADDRESS_HOME_COUNTRY ||
+        it->first->type == ADDRESS_BILLING_COUNTRY) {
+        profile->SetInfo(it->first->type,
+                         trimmed,
+                         g_browser_process->GetApplicationLocale());
+    } else {
+      // Copy the credit card name to |profile| in addition to |card| as
+      // wallet::Instrument requires a recipient name for its billing address.
+      if (profile && it->first->type == CREDIT_CARD_NAME)
+        profile->SetRawInfo(NAME_FULL, trimmed);
+
+      if (IsCreditCardType(it->first->type)) {
+        if (card)
+          card->SetRawInfo(it->first->type, trimmed);
+      } else if (profile) {
+        profile->SetRawInfo(it->first->type, trimmed);
+      }
+    }
+  }
+}
+
+}  // namespace
+
+// Returns true and fills in the |label|, |sublabel| and |icon if
+// a given |section| has the user input.
+// TODO(aruslan): Remove/fix this once http://crbug.com/230685 is closed.
+bool AutofillDialogViewAndroid::CollapseUserDataIntoMenuItem(
+    DialogSection section,
+    string16* label_to_set,
+    string16* sublabel_to_set,
+    gfx::Image* icon_to_set) {
+
+  const SuggestionState& suggestion_state =
+      controller_->SuggestionStateForSection(section);
+  if (!suggestion_state.text.empty())
+    return false;
+
+  DetailOutputMap inputs;
+  GetUserInput(section, &inputs);
+
+  string16 label;
+  string16 sublabel;
+  gfx::Image icon;
+
+  switch (section) {
+    case SECTION_CC: {
+      CreditCard card;
+      GetBillingInfoFromOutputs(inputs, &card, NULL);
+      AutofillCreditCardWrapper ccw(&card);
+      label = ccw.GetDisplayText();
+      icon = ccw.GetIcon();
+      break;
+    }
+
+    case SECTION_BILLING: {
+      AutofillProfile profile;
+      GetBillingInfoFromOutputs(inputs, NULL, &profile);
+      CollapsedAutofillProfileWrapper pw(&profile);
+      label = pw.GetDisplayText();
+      sublabel = pw.GetSublabel();
+      break;
+    }
+
+    case SECTION_CC_BILLING: {
+      CreditCard card;
+      AutofillProfile profile;
+      GetBillingInfoFromOutputs(inputs, &card, &profile);
+      AutofillCreditCardWrapper ccw(&card);
+      CollapsedAutofillProfileWrapper pw(&profile);
+      label = ccw.GetDisplayText();
+      sublabel = pw.GetDisplayText();
+      icon = ccw.GetIcon();
+      break;
+    }
+
+    case SECTION_SHIPPING: {
+      AutofillProfile profile;
+      GetBillingInfoFromOutputs(inputs, NULL, &profile);
+      CollapsedAutofillProfileWrapper pw(&profile);
+      label = pw.GetDisplayText();
+      sublabel = pw.GetSublabel();
+      break;
+    }
+
+    case SECTION_EMAIL: {
+      for (DetailOutputMap::const_iterator iter = inputs.begin();
+           iter != inputs.end(); ++iter) {
+        if (iter->first->type == EMAIL_ADDRESS)
+          label = iter->second;
+      }
+      break;
+    }
+  }
+
+  if (label.empty())
+    return false;
+
+  *label_to_set = label;
+  *sublabel_to_set = sublabel;
+  *icon_to_set = icon;
+  return true;
 }
 
 }  // namespace autofill

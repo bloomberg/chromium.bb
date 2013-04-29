@@ -14,18 +14,22 @@ public class AutofillDialogMenuItem {
     public final String mLine1;
     public final String mLine2;
     public final Bitmap mIcon;
+    public final boolean mIsEditable;
 
     /**
      * @param index Index of the menu item.
      * @param line1 First line of the menu item.
      * @param line2 Second line of the menu item.
      * @param icon An icon for the menu item (might be null).
+     * @param editable Whether the menu item is editable.
      */
-    public AutofillDialogMenuItem(int index, String line1, String line2, Bitmap icon) {
+    public AutofillDialogMenuItem(int index,
+            String line1, String line2, Bitmap icon, boolean editable) {
         mIndex = index;
         mLine1 = line1;
         mLine2 = line2;
         mIcon = icon;
+        mIsEditable = editable;
     }
 
     /**
@@ -33,6 +37,6 @@ public class AutofillDialogMenuItem {
      * @param label Label of the menu item.
      */
     public AutofillDialogMenuItem(int index, String label) {
-        this(index, label, "", null);
+        this(index, label, "", null, false);
     }
 }

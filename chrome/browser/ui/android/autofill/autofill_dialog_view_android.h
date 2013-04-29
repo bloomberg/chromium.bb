@@ -98,6 +98,23 @@ class AutofillDialogViewAndroid : public AutofillDialogView {
   // locally.
   void UpdateSaveLocallyCheckBox();
 
+  // Updates a given |section| to match the state provided by |controller_|. If
+  // |clobber_inputs| is true, the user input will be ignored, otherwise it will
+  // be preserved for all inputs except for the |field_type_to_always_clobber|.
+  void UpdateOrFillSectionToJava(DialogSection section,
+                                 bool clobber_inputs,
+                                 int field_type_to_always_clobber);
+
+  // Whether the item at the |index| in the |section| menu model is editable.
+  bool IsMenuItemEditable(DialogSection section, int index) const;
+
+  // Collapse the user input into a menu item.
+  // TODO(aruslan): http://crbug.com/230685
+  bool CollapseUserDataIntoMenuItem(DialogSection section,
+                                    string16* label,
+                                    string16* sublabel,
+                                    gfx::Image* icon);
+
   // The controller that drives this view. Weak pointer, always non-NULL.
   AutofillDialogController* const controller_;
 

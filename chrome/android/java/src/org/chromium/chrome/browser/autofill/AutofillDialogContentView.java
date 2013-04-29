@@ -11,6 +11,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -18,6 +19,7 @@ import android.view.animation.AnimationSet;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -68,6 +70,21 @@ public class AutofillDialogContentView extends LinearLayout {
     private int mCurrentLayout = -1;
     private String mCVCHint;
     private Bitmap mCVCIcon;
+    private OnItemSelectedListener mOnItemSelectedListener;
+    private OnItemEditButtonClickedListener mOnItemEditButtonClickedListener;
+
+    /**
+     * Interface definition for a callback to be invoked when an "Edit" button
+     * in the AutofillDialogMenuAdapter is clicked.
+     */
+    public interface OnItemEditButtonClickedListener {
+        /**
+         * Callback method to be invoked when an "Edit" button has been clicked.
+         * @param section The dialog section associated with the adapter.
+         * @param position The position of the view in the adapter
+         */
+        void onItemEditButtonClicked(int section, int position);
+    }
 
     public AutofillDialogContentView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -82,11 +99,6 @@ public class AutofillDialogContentView extends LinearLayout {
                     AutofillDialogUtils.getLayoutIDForSection(i));
             int id = AutofillDialogUtils.getSpinnerIDForSection(i);
             mSpinners[i] = (Spinner) findViewById(id);
-            AutofillDialogMenuAdapter adapter = new AutofillDialogMenuAdapter(getContext(),
-                    new ArrayList<AutofillDialogMenuItem>());
-            mAdapters[i] = adapter;
-            if (id == AutofillDialogUtils.INVALID_ID) continue;
-            mSpinners[i].setAdapter(adapter);
         }
 
         changeLayoutTo(LAYOUT_FETCHING);
@@ -108,13 +120,14 @@ public class AutofillDialogContentView extends LinearLayout {
         for (int i = 0; i < AutofillDialogConstants.NUM_SECTIONS; i++) {
             AutofillDialogMenuAdapter adapter;
             if (AutofillDialogUtils.containsCreditCardInfo(i)) {
-                adapter = new AutofillDialogCCMenuAdapter(getContext(),
+                adapter = new AutofillDialogCCMenuAdapter(i, getContext(),
                         new ArrayList<AutofillDialogMenuItem>(),
                         mCVCHint, getCVCDrawable());
             } else {
-                adapter = new AutofillDialogMenuAdapter(getContext(),
+                adapter = new AutofillDialogMenuAdapter(i, getContext(),
                         new ArrayList<AutofillDialogMenuItem>());
             }
+            adapter.setOnItemEditButtonClickedListener(mOnItemEditButtonClickedListener);
             mAdapters[i] = adapter;
             mSpinners[i].setAdapter(adapter);
         }
@@ -161,7 +174,21 @@ public class AutofillDialogContentView extends LinearLayout {
      * @param listener The listener object to attach to the dropdowns.
      */
     public void setOnItemSelectedListener(OnItemSelectedListener listener) {
+        mOnItemSelectedListener = listener;
         for (int i = 0; i < NUM_SECTIONS; i++) mSpinners[i].setOnItemSelectedListener(listener);
+    }
+
+    /**
+     * Set the listener for all the dropdown members in the layout.
+     * @param listener The listener object to attach to the dropdowns.
+     */
+    public void setOnItemEditButtonClickedListener(OnItemEditButtonClickedListener listener) {
+        mOnItemEditButtonClickedListener = listener;
+        for (int i = 0; i < NUM_SECTIONS; i++) {
+            if (mAdapters[i] != null) {
+                mAdapters[i].setOnItemEditButtonClickedListener(listener);
+            }
+        }
     }
 
     /**
@@ -207,11 +234,13 @@ public class AutofillDialogContentView extends LinearLayout {
 
     /**
      * Updates a dropdown with the given items and adds default items to the end.
+     * @param section The dialog section.
      * @param items The {@link AutofillDialogMenuItem} array to update the dropdown with.
+     * @param selectedMenuItem The index of the selected menu item, or -1.
      */
-    public void updateMenuItemsForSection(int section, List<AutofillDialogMenuItem> items) {
+    public void updateMenuItemsForSection(int section,
+            List<AutofillDialogMenuItem> items, final int selectedMenuItem) {
         final Spinner spinner = mSpinners[section];
-        final OnItemSelectedListener listener = spinner.getOnItemSelectedListener();
         // Set the listener to null and reset it after updating the menu items to avoid getting an
         // onItemSelected call when the first item is selected after updating the items.
         spinner.setOnItemSelectedListener(null);
@@ -221,9 +250,20 @@ public class AutofillDialogContentView extends LinearLayout {
         spinner.post(new Runnable() {
             @Override
             public void run() {
-                spinner.setOnItemSelectedListener(listener);
+                spinner.setSelection(selectedMenuItem);
+                spinner.setOnItemSelectedListener(mOnItemSelectedListener);
             }
         });
+    }
+
+    /**
+     * Updates a dropdown selection.
+     * @param section The dialog section.
+     * @param selectedMenuItem The index of the selected menu item, or -1.
+     */
+    public void updateMenuSelectionForSection(int section, int selectedMenuItem) {
+        final Spinner spinner = mSpinners[section];
+        spinner.setSelection(selectedMenuItem);
     }
 
     /**
@@ -367,9 +407,19 @@ public class AutofillDialogContentView extends LinearLayout {
 
     private static class AutofillDialogMenuAdapter extends ArrayAdapter<AutofillDialogMenuItem> {
         protected boolean mShouldShowCVC = true;
+        private int mSection;
+        private OnItemEditButtonClickedListener mOnItemEditButtonClickedListener;
 
-        public AutofillDialogMenuAdapter(Context context, List<AutofillDialogMenuItem> objects) {
+        public AutofillDialogMenuAdapter(
+                int section,
+                Context context,
+                List<AutofillDialogMenuItem> objects) {
             super(context, R.layout.autofill_menu_item, objects);
+            mSection = section;
+        }
+
+        public void setOnItemEditButtonClickedListener(OnItemEditButtonClickedListener listener) {
+            mOnItemEditButtonClickedListener = listener;
         }
 
         /**
@@ -381,24 +431,29 @@ public class AutofillDialogContentView extends LinearLayout {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            return initView(position, convertView);
+            return initView(position, convertView, parent, false);
         }
 
         @Override
         public View getDropDownView(int position, View convertView, ViewGroup parent) {
-            return initView(position, convertView);
+            return initView(position, convertView, parent, true);
         }
 
-        private View initView(int position, View convertView) {
+        private View initView(
+                final int position, View convertView, final ViewGroup parent,
+                boolean showEditButton) {
             if (convertView == null) {
                 convertView = View.inflate(getContext(),
                         R.layout.autofill_menu_item, null);
                 mShouldShowCVC = true;
             }
+
             AutofillDialogMenuItem item = getItem(position);
             ImageView icon = (ImageView) convertView.findViewById(R.id.cc_icon);
             TextView line1 = (TextView) convertView.findViewById(R.id.adapter_item_line_1);
             TextView line2 = (TextView) convertView.findViewById(R.id.adapter_item_line_2);
+            Button button = (Button) convertView.findViewById(R.id.adapter_item_edit_button);
+
             if (icon != null) {
                 if (item.mIcon != null) {
                     icon.setImageBitmap(item.mIcon);
@@ -419,6 +474,31 @@ public class AutofillDialogContentView extends LinearLayout {
                     line2.setVisibility(GONE);
                 }
             }
+            if (button != null) {
+                button.setText(R.string.autofill_edit_button);
+                if (showEditButton && item.mIsEditable) {
+                    button.setOnClickListener(new OnClickListener() {
+                        // TODO(aruslan): http://crbug.com/236101.
+                        @Override
+                        public void onClick(View view) {
+                            View root = parent.getRootView();
+                            root.dispatchKeyEvent(
+                                    new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+                            root.dispatchKeyEvent(
+                                    new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
+                            assert mOnItemEditButtonClickedListener != null;
+                            if (mOnItemEditButtonClickedListener != null) {
+                                mOnItemEditButtonClickedListener.onItemEditButtonClicked(
+                                        mSection, position);
+                            }
+                        }
+                    });
+                    button.setVisibility(VISIBLE);
+                } else {
+                    button.setOnClickListener(null);
+                    button.setVisibility(GONE);
+                }
+            }
             return convertView;
         }
     }
@@ -427,9 +507,11 @@ public class AutofillDialogContentView extends LinearLayout {
         private String mCVCHint;
         private BitmapDrawable mCVCIcon;
 
-        public AutofillDialogCCMenuAdapter(Context context, List<AutofillDialogMenuItem> objects,
+        public AutofillDialogCCMenuAdapter(
+                int section,
+                Context context, List<AutofillDialogMenuItem> objects,
                 String hint, BitmapDrawable icon) {
-            super(context, objects);
+            super(section, context, objects);
             mCVCHint = hint;
             mCVCIcon = icon;
         }
