@@ -55,8 +55,6 @@ namespace WebCore {
         virtual const AtomicString& interfaceName() const OVERRIDE;
 
         void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionCode&);
-        // Needed for Objective-C bindings (see bug 28774).
-        void postMessage(PassRefPtr<SerializedScriptValue> message, MessagePort*, ExceptionCode&);
 
         void terminate();
 

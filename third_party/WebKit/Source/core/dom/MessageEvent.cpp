@@ -148,32 +148,6 @@ void MessageEvent::initMessageEvent(const AtomicString& type, bool canBubble, bo
         m_dataAsSerializedScriptValue->registerMemoryAllocatedWithCurrentScriptContext();
 }
 
-// FIXME: Remove this when we have custom ObjC binding support.
-SerializedScriptValue* MessageEvent::data() const
-{
-    // WebSocket is not exposed in ObjC bindings, thus the data type should always be SerializedScriptValue.
-    ASSERT(m_dataType == DataTypeSerializedScriptValue);
-    return m_dataAsSerializedScriptValue.get();
-}
-
-MessagePort* MessageEvent::messagePort()
-{
-    if (!m_ports)
-        return 0;
-    ASSERT(m_ports->size() == 1);
-    return (*m_ports)[0].get();
-}
-
-void MessageEvent::initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, DOMWindow* source, MessagePort* port)
-{
-    OwnPtr<MessagePortArray> ports;
-    if (port) {
-        ports = adoptPtr(new MessagePortArray);
-        ports->append(port);
-    }
-    initMessageEvent(type, canBubble, cancelable, data, origin, lastEventId, source, ports.release());
-}
-
 const AtomicString& MessageEvent::interfaceName() const
 {
     return eventNames().interfaceForMessageEvent;

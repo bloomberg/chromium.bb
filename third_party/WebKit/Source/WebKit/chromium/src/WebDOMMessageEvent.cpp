@@ -59,7 +59,7 @@ void WebDOMMessageEvent::initMessageEvent(const WebString& type, bool canBubble,
 
 WebSerializedScriptValue WebDOMMessageEvent::data() const
 {
-    return WebSerializedScriptValue(constUnwrap<MessageEvent>()->data());
+    return WebSerializedScriptValue(constUnwrap<MessageEvent>()->dataAsSerializedScriptValue());
 }
 
 WebString WebDOMMessageEvent::origin() const

@@ -90,13 +90,6 @@ public:
     DOMWindow* source() const { return m_source.get(); }
     MessagePortArray* ports() const { return m_ports.get(); }
 
-    // FIXME: Remove this when we have custom ObjC binding support.
-    SerializedScriptValue* data() const;
-
-    // Needed for Objective-C bindings (see bug 28774).
-    MessagePort* messagePort();
-    void initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, DOMWindow* source, MessagePort*);
-
     virtual const AtomicString& interfaceName() const;
 
     enum DataType {

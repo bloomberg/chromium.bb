@@ -25,7 +25,6 @@
 #ifndef NodeFilter_h
 #define NodeFilter_h
 
-#include "bindings/v8/DOMWrapperWorld.h"
 #include "core/dom/NodeFilterCondition.h"
 #include <wtf/RefPtr.h>
 
@@ -76,12 +75,6 @@ namespace WebCore {
         }
 
         short acceptNode(ScriptState*, Node*) const;
-
-        // Do not call these functions. They are just scaffolding to support the Objective-C bindings.
-        // They operate in the main thread normal world, and they swallow JS exceptions.
-        short acceptNode(Node* node) const { return acceptNode(scriptStateFromNode(mainThreadNormalWorld(), node), node); }
-        
-        void setCondition(PassRefPtr<NodeFilterCondition> condition) { ASSERT(!m_condition); m_condition = condition; }
 
     private:
         explicit NodeFilter(PassRefPtr<NodeFilterCondition> condition) : m_condition(condition) { }
