@@ -158,9 +158,6 @@ InternalPageInfoPopupGtk::InternalPageInfoPopupGtk(
   GtkThemeService* theme_service = GtkThemeService::GetFrom(profile);
   GtkWidget* label = theme_service->BuildLabel(
       l10n_util::GetStringUTF8(IDS_PAGE_INFO_INTERNAL_PAGE), ui::kGdkBlack);
-  PangoAttrList* attributes = pango_attr_list_new();
-  pango_attr_list_insert(attributes,
-                         pango_attr_weight_new(PANGO_WEIGHT_BOLD));
   gtk_box_pack_start(GTK_BOX(contents), label, FALSE, FALSE, 0);
 
   gtk_widget_show_all(contents);
