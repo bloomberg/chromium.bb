@@ -1065,6 +1065,7 @@ void LayerTreeHost::UpdateTopControlsState(bool enable_hiding,
   if (!settings_.calculate_top_controls_position)
     return;
 
+  // Top controls are only used in threaded mode.
   proxy_->ImplThread()->PostTask(
       base::Bind(&TopControlsManager::UpdateTopControlsState,
                  top_controls_manager_weak_ptr_,
