@@ -203,7 +203,8 @@ URLMatcherCondition URLMatcherFactory::CreateURLMatcherCondition(
   }
 
   // Test regular expressions for validity.
-  if (condition_attribute_name == keys::kURLMatchesKey) {
+  if (condition_attribute_name == keys::kURLMatchesKey ||
+      condition_attribute_name == keys::kOriginAndPathMatchesKey) {
     re2::RE2 regex(str_value);
     if (!regex.ok()) {
       *error = ErrorUtils::FormatErrorMessage(kUnparseableRegexString,

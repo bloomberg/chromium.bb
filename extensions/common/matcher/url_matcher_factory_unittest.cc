@@ -34,6 +34,10 @@ TEST(URLMatcherFactoryTest, CreateFromURLFilterDictionary) {
   DictionaryValue invalid_condition3;
   invalid_condition3.SetString(keys::kURLMatchesKey, "*");
 
+  // Invalid regex value: {"originAndPathMatches": "*"}
+  DictionaryValue invalid_condition4;
+  invalid_condition4.SetString(keys::kOriginAndPathMatchesKey, "*");
+
   // Valid values:
   // {
   //   "port_range": [80, [1000, 1010]],
@@ -77,6 +81,12 @@ TEST(URLMatcherFactoryTest, CreateFromURLFilterDictionary) {
   error.clear();
   result = URLMatcherFactory::CreateFromURLFilterDictionary(
       matcher.condition_factory(), &invalid_condition3, 3, &error);
+  EXPECT_FALSE(error.empty());
+  EXPECT_FALSE(result.get());
+
+  error.clear();
+  result = URLMatcherFactory::CreateFromURLFilterDictionary(
+      matcher.condition_factory(), &invalid_condition4, 4, &error);
   EXPECT_FALSE(error.empty());
   EXPECT_FALSE(result.get());
 
