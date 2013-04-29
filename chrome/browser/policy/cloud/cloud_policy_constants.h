@@ -29,6 +29,7 @@ extern const char kValueDeviceType[];
 extern const char kValueRequestAutoEnrollment[];
 extern const char kValueRequestPolicy[];
 extern const char kValueRequestRegister[];
+extern const char kValueRequestApiAuthorization[];
 extern const char kValueRequestUnregister[];
 extern const char kValueRequestUploadCertificate[];
 extern const char kValueUserAffiliationManaged[];

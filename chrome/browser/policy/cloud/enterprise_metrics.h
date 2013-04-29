@@ -152,6 +152,9 @@ enum MetricEnrollment {
   // DM server reported that the licenses for the domain has expired or been
   // exhausted.
   kMetricMissingLicensesError,
+  // Enrollment failed because the robot account auth token couldn't be
+  // exchanged for a refresh token.
+  kMetricEnrollmentRobotRefreshTokenFetchFailed,
 
   kMetricEnrollmentSize  // Must be the last.
 };

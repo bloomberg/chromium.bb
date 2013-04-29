@@ -17,15 +17,15 @@ class EnrollmentStatus {
  public:
   // Enrollment status codes.
   enum Status {
-    STATUS_SUCCESS,                 // Enrollment succeeded.
-    STATUS_REGISTRATION_FAILED,     // DM registration failed.
-    STATUS_REGISTRATION_BAD_MODE,   // Bad device mode.
-    STATUS_POLICY_FETCH_FAILED,     // DM policy fetch failed.
-    STATUS_VALIDATION_FAILED,       // Policy validation failed.
-    STATUS_LOCK_ERROR,              // Cryptohome failed to lock the device.
-    STATUS_LOCK_TIMEOUT,            // Timeout while waiting for the lock.
-    STATUS_LOCK_WRONG_USER,         // Locked to different domain.
-    STATUS_STORE_ERROR,             // Failed to store the policy.
+    STATUS_SUCCESS,                     // Enrollment succeeded.
+    STATUS_REGISTRATION_FAILED,         // DM registration failed.
+    STATUS_REGISTRATION_BAD_MODE,       // Bad device mode.
+    STATUS_POLICY_FETCH_FAILED,         // DM policy fetch failed.
+    STATUS_VALIDATION_FAILED,           // Policy validation failed.
+    STATUS_LOCK_ERROR,                  // Cryptohome failed to lock the device.
+    STATUS_LOCK_TIMEOUT,                // Timeout while waiting for the lock.
+    STATUS_LOCK_WRONG_USER,             // Locked to different domain.
+    STATUS_STORE_ERROR,                 // Failed to store the policy.
   };
 
   // Helpers for constructing errors for relevant cases.

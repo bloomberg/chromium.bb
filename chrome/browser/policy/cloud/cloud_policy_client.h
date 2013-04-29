@@ -53,6 +53,11 @@ class CloudPolicyClient {
     // successful completion of registration and unregistration requests.
     virtual void OnRegistrationStateChanged(CloudPolicyClient* client) = 0;
 
+    // Called when a request for device robot OAuth2 authorization tokens
+    // returns successfully. Only occurs during enrollment. Optional
+    // (default implementation is a noop).
+    virtual void OnRobotAuthCodesFetched(CloudPolicyClient* client);
+
     // Indicates there's been an error in a previously-issued request.
     virtual void OnClientError(CloudPolicyClient* client) = 0;
   };
@@ -106,6 +111,11 @@ class CloudPolicyClient {
   // multiple requests to fetch policy, new requests will cancel any pending
   // requests and the latest request will eventually trigger notifications.
   virtual void FetchPolicy();
+
+  // Requests OAuth2 auth codes for the device robot account. The client being
+  // registered is a prerequisite to this operation and this call will CHECK if
+  // the client is not in registered state.
+  virtual void FetchRobotAuthCodes(const std::string& auth_token);
 
   // Sends an unregistration request to the server.
   virtual void Unregister();
@@ -171,6 +181,10 @@ class CloudPolicyClient {
     return status_;
   }
 
+  const std::string& robot_api_auth_code() const {
+    return robot_api_auth_code_;
+  }
+
  protected:
   // A set of PolicyNamespaceKeys to fetch.
   typedef std::set<PolicyNamespaceKey> NamespaceSet;
@@ -188,6 +202,11 @@ class CloudPolicyClient {
       DeviceManagementStatus status,
       const enterprise_management::DeviceManagementResponse& response);
 
+  // Callback for robot account api authorization requests.
+  void OnFetchRobotAuthCodesCompleted(
+      DeviceManagementStatus status,
+      const enterprise_management::DeviceManagementResponse& response);
+
   // Callback for unregistration requests.
   void OnUnregisterCompleted(
       DeviceManagementStatus status,
@@ -202,6 +221,7 @@ class CloudPolicyClient {
   // Observer notification helpers.
   void NotifyPolicyFetched();
   void NotifyRegistrationStateChanged();
+  void NotifyRobotAuthCodesFetched();
   void NotifyClientError();
 
   // Data necessary for constructing policy requests.
@@ -217,6 +237,7 @@ class CloudPolicyClient {
   base::Time last_policy_timestamp_;
   int public_key_version_;
   bool public_key_version_valid_;
+  std::string robot_api_auth_code_;
 
   // Used for issuing requests to the cloud.
   DeviceManagementService* service_;

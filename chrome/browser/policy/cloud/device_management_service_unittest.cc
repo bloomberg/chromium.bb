@@ -42,6 +42,7 @@ const char kGaiaAuthToken[] = "gaia-auth-token";
 const char kOAuthToken[] = "oauth-token";
 const char kDMToken[] = "device-management-token";
 const char kClientID[] = "device-id";
+const char kRobotAuthCode[] = "robot-oauth-auth-code";
 
 // Unit tests for the device management policy service. The tests are run
 // against a TestURLFetcherFactory that is used to short-circuit the request
@@ -80,6 +81,20 @@ class DeviceManagementServiceTestBase : public testing::Test {
     job->SetOAuthToken(kOAuthToken);
     job->SetClientID(kClientID);
     job->GetRequest()->mutable_register_request();
+    job->SetRetryCallback(base::Bind(
+        &DeviceManagementServiceTestBase::OnJobRetry, base::Unretained(this)));
+    job->Start(base::Bind(&DeviceManagementServiceTestBase::OnJobDone,
+                          base::Unretained(this)));
+    return job;
+  }
+
+  DeviceManagementRequestJob* StartApiAuthCodeFetchJob() {
+    DeviceManagementRequestJob* job = service_->CreateJob(
+        DeviceManagementRequestJob::TYPE_API_AUTH_CODE_FETCH);
+    job->SetGaiaToken(kGaiaAuthToken);
+    job->SetOAuthToken(kOAuthToken);
+    job->SetClientID(kClientID);
+    job->GetRequest()->mutable_service_api_access_request();
     job->SetRetryCallback(base::Bind(
         &DeviceManagementServiceTestBase::OnJobRetry, base::Unretained(this)));
     job->Start(base::Bind(&DeviceManagementServiceTestBase::OnJobDone,
@@ -189,6 +204,18 @@ TEST_P(DeviceManagementServiceFailedRequestTest, RegisterRequest) {
   EXPECT_CALL(*this, OnJobDone(GetParam().expected_status_, _));
   EXPECT_CALL(*this, OnJobRetry(_)).Times(0);
   scoped_ptr<DeviceManagementRequestJob> request_job(StartRegistrationJob());
+  net::TestURLFetcher* fetcher = GetFetcher();
+  ASSERT_TRUE(fetcher);
+
+  SendResponse(fetcher, GetParam().request_status_, GetParam().http_status_,
+               GetParam().response_);
+}
+
+TEST_P(DeviceManagementServiceFailedRequestTest, ApiAuthCodeFetchRequest) {
+  EXPECT_CALL(*this, OnJobDone(GetParam().expected_status_, _));
+  EXPECT_CALL(*this, OnJobRetry(_)).Times(0);
+  scoped_ptr<DeviceManagementRequestJob> request_job(
+      StartApiAuthCodeFetchJob());
   net::TestURLFetcher* fetcher = GetFetcher();
   ASSERT_TRUE(fetcher);
 
@@ -390,6 +417,33 @@ TEST_F(DeviceManagementServiceTest, RegisterRequest) {
   SendResponse(fetcher, status, 200, response_data);
 }
 
+TEST_F(DeviceManagementServiceTest, ApiAuthCodeFetchRequest) {
+  em::DeviceManagementResponse expected_response;
+  expected_response.mutable_service_api_access_response()->set_auth_code(
+      kRobotAuthCode);
+  EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS,
+                               MessageEquals(expected_response)));
+  EXPECT_CALL(*this, OnJobRetry(_)).Times(0);
+  scoped_ptr<DeviceManagementRequestJob> request_job(
+      StartApiAuthCodeFetchJob());
+  net::TestURLFetcher* fetcher = GetFetcher();
+  ASSERT_TRUE(fetcher);
+
+  CheckURLAndQueryParams(fetcher->GetOriginalURL(),
+                         dm_protocol::kValueRequestApiAuthorization,
+                         kClientID);
+
+  std::string expected_data;
+  ASSERT_TRUE(request_job->GetRequest()->SerializeToString(&expected_data));
+  EXPECT_EQ(expected_data, fetcher->upload_data());
+
+  // Generate the response.
+  std::string response_data;
+  ASSERT_TRUE(expected_response.SerializeToString(&response_data));
+  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
+  SendResponse(fetcher, status, 200, response_data);
+}
+
 TEST_F(DeviceManagementServiceTest, UnregisterRequest) {
   em::DeviceManagementResponse expected_response;
   expected_response.mutable_unregister_response();
@@ -427,6 +481,18 @@ TEST_F(DeviceManagementServiceTest, CancelRegisterRequest) {
   EXPECT_CALL(*this, OnJobDone(_, _)).Times(0);
   EXPECT_CALL(*this, OnJobRetry(_)).Times(0);
   scoped_ptr<DeviceManagementRequestJob> request_job(StartRegistrationJob());
+  net::TestURLFetcher* fetcher = GetFetcher();
+  ASSERT_TRUE(fetcher);
+
+  // There shouldn't be any callbacks.
+  request_job.reset();
+}
+
+TEST_F(DeviceManagementServiceTest, CancelApiAuthCodeFetch) {
+  EXPECT_CALL(*this, OnJobDone(_, _)).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_)).Times(0);
+  scoped_ptr<DeviceManagementRequestJob> request_job(
+      StartApiAuthCodeFetchJob());
   net::TestURLFetcher* fetcher = GetFetcher();
   ASSERT_TRUE(fetcher);
 

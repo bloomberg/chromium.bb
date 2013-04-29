@@ -9,6 +9,8 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/browser/policy/cloud/device_management_service.h"
+#include "google_apis/gaia/gaia_constants.h"
+#include "google_apis/gaia/gaia_urls.h"
 
 namespace em = enterprise_management;
 
@@ -38,6 +40,9 @@ bool IsChromePolicy(const std::string& type) {
 }  // namespace
 
 CloudPolicyClient::Observer::~Observer() {}
+
+void CloudPolicyClient::Observer::OnRobotAuthCodesFetched(
+    CloudPolicyClient* client) {}
 
 CloudPolicyClient::StatusProvider::~StatusProvider() {}
 
@@ -177,6 +182,29 @@ void CloudPolicyClient::FetchPolicy() {
                                  base::Unretained(this)));
 }
 
+void CloudPolicyClient::FetchRobotAuthCodes(const std::string& auth_token) {
+  CHECK(is_registered());
+  DCHECK(!auth_token.empty());
+
+  request_job_.reset(service_->CreateJob(
+      DeviceManagementRequestJob::TYPE_API_AUTH_CODE_FETCH));
+  // The credentials of a domain user are needed in order to mint a new OAuth2
+  // authorization token for the robot account.
+  request_job_->SetOAuthToken(auth_token);
+  request_job_->SetDMToken(dm_token_);
+  request_job_->SetClientID(client_id_);
+
+  em::DeviceServiceApiAccessRequest* request =
+      request_job_->GetRequest()->mutable_service_api_access_request();
+  request->set_oauth2_client_id(
+      GaiaUrls::GetInstance()->oauth2_chrome_client_id());
+  request->add_auth_scope(GaiaConstants::kAnyApiOAuth2Scope);
+
+  request_job_->Start(
+      base::Bind(&CloudPolicyClient::OnFetchRobotAuthCodesCompleted,
+                 base::Unretained(this)));
+}
+
 void CloudPolicyClient::Unregister() {
   DCHECK(service_);
   request_job_.reset(
@@ -269,6 +297,28 @@ void CloudPolicyClient::OnRegisterCompleted(
   }
 }
 
+void CloudPolicyClient::OnFetchRobotAuthCodesCompleted(
+    DeviceManagementStatus status,
+    const em::DeviceManagementResponse& response) {
+  if (status == DM_STATUS_SUCCESS &&
+      (!response.has_service_api_access_response() ||
+       response.service_api_access_response().auth_code().empty())) {
+    LOG(WARNING) << "Invalid service api access response.";
+    status = DM_STATUS_RESPONSE_DECODING_ERROR;
+  }
+
+  status_ = status;
+  if (status == DM_STATUS_SUCCESS) {
+    robot_api_auth_code_ = response.service_api_access_response().auth_code();
+    DVLOG(1) << "Device robot account auth code fetch complete - code = "
+             << robot_api_auth_code_;
+
+    NotifyRobotAuthCodesFetched();
+  } else {
+    NotifyClientError();
+  }
+}
+
 void CloudPolicyClient::OnPolicyFetchCompleted(
     DeviceManagementStatus status,
     const em::DeviceManagementResponse& response) {
@@ -356,6 +406,10 @@ void CloudPolicyClient::NotifyPolicyFetched() {
 
 void CloudPolicyClient::NotifyRegistrationStateChanged() {
   FOR_EACH_OBSERVER(Observer, observers_, OnRegistrationStateChanged(this));
+}
+
+void CloudPolicyClient::NotifyRobotAuthCodesFetched() {
+  FOR_EACH_OBSERVER(Observer, observers_, OnRobotAuthCodesFetched(this));
 }
 
 void CloudPolicyClient::NotifyClientError() {

@@ -103,6 +103,21 @@ message DevicePolicySettingRequest {
   optional string watermark = 2;
 }
 
+// Request to access a Google service with the given scope.
+message DeviceServiceApiAccessRequest {
+  // The list of auth scopes the device requests from DMServer.
+  repeated string auth_scope = 1;
+
+  // OAuth2 client ID to which the returned authorization code is bound.
+  optional string oauth2_client_id = 2;
+}
+
+message DeviceServiceApiAccessResponse {
+  // The OAuth2 authorization code for the requested scope(s).
+  // This can be exchanged for a refresh token.
+  optional string auth_code = 1;
+}
+
 message PolicyFetchRequest {
   // This is the policy type, which maps to D3 policy type internally.
   // By convention, we use "/" as separator to create policy namespace.
@@ -446,6 +461,7 @@ message DeviceAutoEnrollmentResponse {
 //     * register
 //     * status
 //     * unregister
+//     * api_authorization
 //
 //   * devicetype: MUST BE "1" for Android or "2" for Chrome OS.
 //   * apptype: MUST BE Android or Chrome.
@@ -493,6 +509,9 @@ message DeviceManagementRequest {
 
   // EMCert upload (for remote attestation)
   optional DeviceCertUploadRequest cert_upload_request = 7;
+
+  // Request for OAuth2 authorization codes to access Google services.
+  optional DeviceServiceApiAccessRequest service_api_access_request = 8;
 }
 
 // Response from server to device.
@@ -535,4 +554,7 @@ message DeviceManagementResponse {
 
   // EMCert upload response.
   optional DeviceCertUploadResponse cert_upload_response = 9;
+
+  // Response to OAuth2 authorization code request.
+  optional DeviceServiceApiAccessResponse service_api_access_response = 10;
 }

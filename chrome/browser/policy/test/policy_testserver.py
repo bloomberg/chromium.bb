@@ -46,7 +46,8 @@ Example:
   "managed_users" : [
     "secret123456"
   ],
-  "current_key_index": 0
+  "current_key_index": 0,
+  "robot_api_auth_code": "fake_auth_code"
 }
 
 """
@@ -202,6 +203,8 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       return (400, 'Invalid request parameter')
     if request_type == 'register':
       return self.ProcessRegister(rmsg.register_request)
+    if request_type == 'api_authorization':
+      return self.ProcessApiAuthorization(rmsg.service_api_access_request)
     elif request_type == 'unregister':
       return self.ProcessUnregister(rmsg.unregister_request)
     elif request_type == 'policy' or request_type == 'ping':
@@ -288,6 +291,26 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     response.register_response.machine_name = token_info['machine_name']
     response.register_response.enrollment_type = token_info['enrollment_mode']
 
+    self.DumpMessage('Response', response)
+
+    return (200, response.SerializeToString())
+
+  def ProcessApiAuthorization(self, msg):
+    """Handles an API authorization request.
+
+    Args:
+      msg: The DeviceServiceApiAccessRequest message received from the client.
+
+    Returns:
+      A tuple of HTTP status code and response data to send to the client.
+    """
+    policy = self.server.GetPolicies()
+
+    # Return the auth code from the config file if it's defined,
+    # else return a descriptive default value.
+    response = dm.DeviceManagementResponse()
+    response.service_api_access_response.auth_code = policy.get(
+        'robot_api_auth_code', 'policy_test_server.py-auth_code')
     self.DumpMessage('Response', response)
 
     return (200, response.SerializeToString())

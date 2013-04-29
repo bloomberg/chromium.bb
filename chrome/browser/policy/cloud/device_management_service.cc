@@ -144,6 +144,8 @@ const char* JobTypeToRequestType(DeviceManagementRequestJob::JobType type) {
       return dm_protocol::kValueRequestRegister;
     case DeviceManagementRequestJob::TYPE_POLICY_FETCH:
       return dm_protocol::kValueRequestPolicy;
+    case DeviceManagementRequestJob::TYPE_API_AUTH_CODE_FETCH:
+      return dm_protocol::kValueRequestApiAuthorization;
     case DeviceManagementRequestJob::TYPE_UNREGISTRATION:
       return dm_protocol::kValueRequestUnregister;
     case DeviceManagementRequestJob::TYPE_UPLOAD_CERTIFICATE:

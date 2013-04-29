@@ -20,11 +20,6 @@ class DeviceOAuth2TokenServiceFactory {
   // during shutdown.
   static DeviceOAuth2TokenService* Get();
 
- private:
-  friend class ChromeBrowserMainPartsChromeos;
-
-  DeviceOAuth2TokenServiceFactory();
-
   // Called by ChromeBrowserMainPartsChromeOS in order to bootstrap the
   // DeviceOAuth2TokenService instance after the required global data is
   // available (local state and request context getter).
@@ -35,6 +30,9 @@ class DeviceOAuth2TokenServiceFactory {
   // before the required global data is destroyed (local state and request
   // context getter).
   static void Shutdown();
+
+ private:
+  DeviceOAuth2TokenServiceFactory();
 
   DISALLOW_COPY_AND_ASSIGN(DeviceOAuth2TokenServiceFactory);
 };

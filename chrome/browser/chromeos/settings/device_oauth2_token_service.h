@@ -39,7 +39,6 @@ class DeviceOAuth2TokenService : public OAuth2TokenService {
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
- protected:
   virtual std::string GetRefreshToken() OVERRIDE;
 
  private:

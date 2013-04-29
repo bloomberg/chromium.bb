@@ -42,6 +42,9 @@ void ConstructResponse(const char* request_data,
   if (request.has_register_request()) {
     response.mutable_register_response()->set_device_management_token(
         "fake_token");
+  } else if (request.has_service_api_access_request()) {
+    response.mutable_service_api_access_response()->set_auth_code(
+        "fake_auth_code");
   } else if (request.has_unregister_request()) {
     response.mutable_unregister_response();
   } else if (request.has_policy_request()) {
@@ -99,6 +102,11 @@ class DeviceManagementServiceIntegrationTest
     return test_server_->GetServiceURL().spec();
   }
 
+  void RecordAuthCode(DeviceManagementStatus status,
+                      const em::DeviceManagementResponse& response) {
+    robot_auth_code_ = response.service_api_access_response().auth_code();
+  }
+
  protected:
   void ExpectRequest() {
     if (interceptor_)
@@ -148,6 +156,7 @@ class DeviceManagementServiceIntegrationTest
   }
 
   std::string token_;
+  std::string robot_auth_code_;
   scoped_ptr<DeviceManagementService> service_;
   scoped_ptr<LocalPolicyTestServer> test_server_;
   scoped_ptr<TestRequestInterceptor> interceptor_;
@@ -156,6 +165,31 @@ class DeviceManagementServiceIntegrationTest
 IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, Registration) {
   PerformRegistration();
   EXPECT_FALSE(token_.empty());
+}
+
+IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest,
+                       ApiAuthCodeFetch) {
+  PerformRegistration();
+
+  ExpectRequest();
+  EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _))
+      .WillOnce(
+          DoAll(Invoke(this,
+                       &DeviceManagementServiceIntegrationTest::RecordAuthCode),
+                InvokeWithoutArgs(MessageLoop::current(),
+                                  &MessageLoop::Quit)));
+  scoped_ptr<DeviceManagementRequestJob> job(service_->CreateJob(
+      DeviceManagementRequestJob::TYPE_API_AUTH_CODE_FETCH));
+  job->SetDMToken(token_);
+  job->SetClientID("testid");
+  em::DeviceServiceApiAccessRequest* request =
+      job->GetRequest()->mutable_service_api_access_request();
+  request->add_auth_scope("authScope4Test");
+  request->set_oauth2_client_id("oauth2ClientId4Test");
+  job->Start(base::Bind(&DeviceManagementServiceIntegrationTest::OnJobDone,
+                        base::Unretained(this)));
+  MessageLoop::current()->Run();
+  ASSERT_EQ("fake_auth_code", robot_auth_code_);
 }
 
 IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, PolicyFetch) {

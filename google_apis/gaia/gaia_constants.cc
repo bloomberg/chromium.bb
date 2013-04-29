@@ -29,6 +29,9 @@ const char kCloudPrintService[] = "cloudprint";
 const char kDeviceManagementServiceOAuth[] =
     "https://www.googleapis.com/auth/chromeosdevicemanagement";
 
+// OAuth2 scope for access to all Google APIs.
+const char kAnyApiOAuth2Scope[] = "https://www.googleapis.com/auth/any-api";
+
 // Service for LSO endpoint of Google that exposes OAuth APIs.
 const char kLSOService[] = "lso";
 
