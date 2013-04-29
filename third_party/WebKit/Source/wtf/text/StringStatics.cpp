@@ -53,14 +53,14 @@ StringImpl* StringImpl::empty()
     return &emptyString;
 }
 
-WTF_EXPORTDATA DEFINE_GLOBAL(AtomicString, nullAtom)
-WTF_EXPORTDATA DEFINE_GLOBAL(AtomicString, emptyAtom)
-WTF_EXPORTDATA DEFINE_GLOBAL(AtomicString, textAtom)
-WTF_EXPORTDATA DEFINE_GLOBAL(AtomicString, commentAtom)
-WTF_EXPORTDATA DEFINE_GLOBAL(AtomicString, starAtom)
-WTF_EXPORTDATA DEFINE_GLOBAL(AtomicString, xmlAtom)
-WTF_EXPORTDATA DEFINE_GLOBAL(AtomicString, xmlnsAtom)
-WTF_EXPORTDATA DEFINE_GLOBAL(AtomicString, xlinkAtom)
+DEFINE_GLOBAL(AtomicString, nullAtom)
+DEFINE_GLOBAL(AtomicString, emptyAtom)
+DEFINE_GLOBAL(AtomicString, textAtom)
+DEFINE_GLOBAL(AtomicString, commentAtom)
+DEFINE_GLOBAL(AtomicString, starAtom)
+DEFINE_GLOBAL(AtomicString, xmlAtom)
+DEFINE_GLOBAL(AtomicString, xmlnsAtom)
+DEFINE_GLOBAL(AtomicString, xlinkAtom)
 
 NEVER_INLINE unsigned StringImpl::hashSlowCase() const
 {

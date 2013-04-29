@@ -63,15 +63,15 @@ namespace WTF {
 
     struct HashTableStats {
         // The following variables are all atomically incremented when modified.
-        WTF_EXPORTDATA static int numAccesses;
-        WTF_EXPORTDATA static int numRehashes;
-        WTF_EXPORTDATA static int numRemoves;
-        WTF_EXPORTDATA static int numReinserts;
+        static int numAccesses;
+        static int numRehashes;
+        static int numRemoves;
+        static int numReinserts;
 
         // The following variables are only modified in the recordCollisionAtCount method within a mutex.
-        WTF_EXPORTDATA static int maxCollisions;
-        WTF_EXPORTDATA static int numCollisions;
-        WTF_EXPORTDATA static int collisionGraph[4096];
+        static int maxCollisions;
+        static int numCollisions;
+        static int collisionGraph[4096];
 
         WTF_EXPORT_PRIVATE static void recordCollisionAtCount(int count);
         WTF_EXPORT_PRIVATE static void dumpStats();

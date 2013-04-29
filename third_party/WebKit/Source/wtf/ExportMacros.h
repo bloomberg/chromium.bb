@@ -59,67 +59,12 @@
 
 #endif
 
-#if defined(BUILDING_WTF) || defined(STATICALLY_LINKED_WITH_WTF)
-#define WTF_IS_LINKED_IN_SAME_BINARY 1
-#endif
-
-// See note in wtf/Platform.h for more info on EXPORT_MACROS.
-#if USE(EXPORT_MACROS)
-
-#define WTF_EXPORT WTF_EXPORT_DECLARATION
-#define WTF_IMPORT WTF_IMPORT_DECLARATION
-#define WTF_HIDDEN WTF_IMPORT_DECLARATION
-
-// FIXME: When all ports are using the export macros, we should replace
-// WTF_EXPORTDATA with WTF_EXPORT_PRIVATE macros.
-#if defined(WTF_IS_LINKED_IN_SAME_BINARY)
-#define WTF_EXPORTDATA WTF_EXPORT
-#else
-#define WTF_EXPORTDATA WTF_IMPORT
-#endif
-
-#else // !USE(EXPORT_MACROS)
-
-#define WTF_EXPORTDATA
-
-#define WTF_EXPORTCLASS WTF_EXPORTDATA
-
-#define WTF_EXPORT
-#define WTF_IMPORT
-#define WTF_HIDDEN
-
-#endif // USE(EXPORT_MACROS)
-
-// WTF_TESTING (and WEBCORE_TESTING in PlatformExportMacros.h) is used for
-// exporting symbols which are referred from WebCoreTestSupport library.
-// Since the set of APIs is common between ports,
-// it is rather worth annotating inside the code than maintaining port specific export lists.
-#if USE(EXPORT_MACROS_FOR_TESTING)
-
-#if defined(WTF_IS_LINKED_IN_SAME_BINARY)
-#define WTF_TESTING WTF_EXPORT_DECLARATION
-#else
-#define WTF_TESTING WTF_IMPORT_DECLARATION
-#endif
-
-#else // USE(EXPORT_MACROS_FOR_TESTING)
-
-#define WTF_TESTING
-
-#endif // USE(EXPORT_MACROS_FOR_TESTING)
-
-#if defined(WTF_IS_LINKED_IN_SAME_BINARY)
-#define WTF_EXPORT_PRIVATE WTF_EXPORT
-#else
-#define WTF_EXPORT_PRIVATE WTF_IMPORT
-#endif
-
+// FIXME: Remove the following empty macros.
+#define WTF_EXPORT_PRIVATE
 #define WTF_EXPORT_PRIVATE_RTTI
-#define WTF_EXPORT_PRIVATE_NO_RTTI WTF_EXPORT_PRIVATE
-
-#define WTF_EXPORT_STRING_API WTF_EXPORT_PRIVATE
-
-#define WTF_EXPORT_HIDDEN WTF_HIDDEN
+#define WTF_EXPORT_PRIVATE_NO_RTTI
+#define WTF_EXPORT_STRING_API
+#define WTF_EXPORT_HIDDEN
 
 #define HIDDEN_INLINE WTF_EXPORT_HIDDEN inline
 

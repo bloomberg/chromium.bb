@@ -712,7 +712,7 @@ private:
     static const unsigned s_hashMaskBufferOwnership = 1u | (1u << 1);
 
 #ifdef STRING_STATS
-    WTF_EXPORTDATA static StringStats m_stringStats;
+    static StringStats m_stringStats;
 #endif
 
 public:

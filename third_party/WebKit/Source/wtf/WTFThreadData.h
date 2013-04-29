@@ -59,7 +59,7 @@ private:
     AtomicStringTable* m_atomicStringTable;
     AtomicStringTableDestructor m_atomicStringTableDestructor;
 
-    static WTF_EXPORTDATA ThreadSpecific<WTFThreadData>* staticData;
+    static ThreadSpecific<WTFThreadData>* staticData;
     friend WTFThreadData& wtfThreadData();
     friend class AtomicStringTable;
 };
