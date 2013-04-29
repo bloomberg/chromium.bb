@@ -123,12 +123,6 @@ void ExtensionViewViews::ViewHierarchyChanged(bool is_add,
     CreateWidgetHostView();
 }
 
-void ExtensionViewViews::PreferredSizeChanged() {
-  View::PreferredSizeChanged();
-  if (container_)
-    container_->OnExtensionSizeChanged(this);
-}
-
 bool ExtensionViewViews::SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) {
   // Let the tab key event be processed by the renderer (instead of moving the
   // focus to the next focusable view). Also handle Backspace, since otherwise
@@ -147,6 +141,16 @@ void ExtensionViewViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
     if (container_)
       container_->OnViewWasResized();
   }
+}
+
+void ExtensionViewViews::PreferredSizeChanged() {
+  View::PreferredSizeChanged();
+  if (container_)
+    container_->OnExtensionSizeChanged(this);
+}
+
+void ExtensionViewViews::OnFocus() {
+  host()->host_contents()->GetView()->Focus();
 }
 
 void ExtensionViewViews::RenderViewCreated() {

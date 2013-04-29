@@ -65,11 +65,12 @@ class ExtensionViewViews : public views::NativeViewHost {
                                     views::View* parent,
                                     views::View* child) OVERRIDE;
 
- protected:
+ private:
   // Overridden from views::View.
-  virtual void PreferredSizeChanged() OVERRIDE;
   virtual bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
+  virtual void PreferredSizeChanged() OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
 
  private:
   friend class extensions::ExtensionHost;
