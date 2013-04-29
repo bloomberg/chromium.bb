@@ -307,6 +307,14 @@ bool SimpleSynchronousEntry::OpenOrCreateFiles(bool create) {
     }
   }
 
+  have_open_files_ = true;
+  if (create) {
+    last_modified_ = last_used_ = Time::Now();
+    for (int i = 0; i < kSimpleEntryFileCount; ++i)
+      data_size_[i] = 0;
+    return true;
+  }
+
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
     PlatformFileInfo file_info;
     bool success = GetPlatformFileInfo(files_[i], &file_info);
@@ -316,11 +324,14 @@ bool SimpleSynchronousEntry::OpenOrCreateFiles(bool create) {
     }
     last_used_ = std::max(last_used_, file_info.last_accessed);
     last_modified_ = std::max(last_modified_, file_info.last_modified);
-    data_size_[i] = create ? 0 : GetDataSizeFromKeyAndFileSize(key_,
-                                                               file_info.size);
+    data_size_[i] = GetDataSizeFromKeyAndFileSize(key_, file_info.size);
+    if (data_size_[i] < 0) {
+      // This entry can't possibly be valid, as it does not enough space to
+      // store a valid SimpleFileEOF record.
+      return false;
+    }
   }
 
-  have_open_files_ = true;
   return true;
 }
 
