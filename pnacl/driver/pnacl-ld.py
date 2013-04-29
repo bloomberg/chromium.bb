@@ -378,13 +378,18 @@ def main(argv):
       # reintroduce ConstantExprs.  However, '-expand-getelementptr'
       # must follow '-expand-constant-expr' to expand the
       # getelementptr instructions it creates.
-      passes = ['-expand-constant-expr',
+      # We place '-strip-metadata' after optimization passes since
+      # optimizations depend on the metadata.
+      passes = ['-strip-metadata',
+                '-expand-constant-expr',
                 '-expand-getelementptr']
       if (not env.getbool('DISABLE_ABI_CHECK') and
           not env.getbool('ALLOW_CXX_EXCEPTIONS') and
           len(native_objects) == 0):
         passes += ['-verify-pnaclabi-module',
-                   '-verify-pnaclabi-functions']
+                   '-verify-pnaclabi-functions',
+                   # A flag for the above -verify-pnaclabi-* passes.
+                   '-pnaclabi-allow-debug-metadata']
       chain.add(DoLLVMPasses(passes),
                 'expand_features_after_opt.' + bitcode_type)
   else:
