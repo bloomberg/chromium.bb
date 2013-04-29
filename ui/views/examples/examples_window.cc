@@ -102,7 +102,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
   virtual void WindowClosing() OVERRIDE {
     instance_ = NULL;
     if (operation_ == QUIT_ON_CLOSE)
-      MessageLoopForUI::current()->Quit();
+      base::MessageLoopForUI::current()->Quit();
   }
 
   // Overridden from View:

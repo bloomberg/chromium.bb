@@ -100,13 +100,13 @@ size_t AppsGridControllerTestHelper::GetPageIndexForItem(int item_id) const {
 }
 
 void AppsGridControllerTestHelper::DelayForCollectionView() {
-  message_loop_.PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(),
+  message_loop_.PostDelayedTask(FROM_HERE, base::MessageLoop::QuitClosure(),
                                 base::TimeDelta::FromMilliseconds(100));
   message_loop_.Run();
 }
 
 void AppsGridControllerTestHelper::SinkEvents() {
-  message_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
   message_loop_.Run();
 }
 

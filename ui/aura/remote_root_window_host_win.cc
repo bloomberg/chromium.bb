@@ -474,7 +474,7 @@ void RemoteRootWindowHostWin::DispatchKeyboardMessage(ui::EventType type,
                                                       uint32 scan_code,
                                                       uint32 flags,
                                                       bool is_character) {
-  if (MessageLoop::current()->IsNested()) {
+  if (base::MessageLoop::current()->IsNested()) {
     SetVirtualKeyStates(flags);
 
     uint32 message = is_character ? WM_CHAR :

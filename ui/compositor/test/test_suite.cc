@@ -36,7 +36,7 @@ void CompositorTestSuite::Initialize() {
 
   gfx::RegisterPathProvider();
 
-  message_loop_.reset(new MessageLoop(MessageLoop::TYPE_UI));
+  message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
   CompositorTestSupport::Initialize();
   Compositor::Initialize();
 }

@@ -256,7 +256,7 @@ void RootWindowHostWin::PrepareForShutdown() {
 
 void RootWindowHostWin::OnClose() {
   // TODO: this obviously shouldn't be here.
-  MessageLoopForUI::current()->Quit();
+  base::MessageLoopForUI::current()->Quit();
 }
 
 LRESULT RootWindowHostWin::OnKeyEvent(UINT message,

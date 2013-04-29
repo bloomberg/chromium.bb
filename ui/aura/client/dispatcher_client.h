@@ -16,7 +16,7 @@ namespace client {
 // An interface implemented by an object which handles nested dispatchers.
 class AURA_EXPORT DispatcherClient {
  public:
-  virtual void RunWithDispatcher(MessageLoop::Dispatcher* dispatcher,
+  virtual void RunWithDispatcher(base::MessageLoop::Dispatcher* dispatcher,
                                  aura::Window* associated_window,
                                  bool nestable_tasks_allowed) = 0;
 };

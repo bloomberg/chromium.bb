@@ -40,11 +40,11 @@ namespace corewm {
 class CursorManager;
 }
 
-class VIEWS_EXPORT DesktopRootWindowHostX11
-    : public DesktopRootWindowHost,
-      public aura::RootWindowHost,
-      public ui::DesktopSelectionProviderAuraX11,
-      public MessageLoop::Dispatcher {
+class VIEWS_EXPORT DesktopRootWindowHostX11 :
+    public DesktopRootWindowHost,
+    public aura::RootWindowHost,
+    public ui::DesktopSelectionProviderAuraX11,
+    public base::MessageLoop::Dispatcher {
  public:
   DesktopRootWindowHostX11(
       internal::NativeWidgetDelegate* native_widget_delegate,

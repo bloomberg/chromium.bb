@@ -53,8 +53,8 @@ bool SelectionRequestor::PerformBlockingConvertSelection(
 
   // Now that we've thrown our message off to the X11 server, we block waiting
   // for a response.
-  MessageLoopForUI* loop = MessageLoopForUI::current();
-  MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
+  base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
+  base::MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
   base::RunLoop run_loop(base::MessagePumpAuraX11::Current());
 
   current_target_ = target;

@@ -92,8 +92,8 @@ void MenuController::RunMessageLoop(bool nested_menu) {
     aura::client::GetDispatcherClient(root)->
         RunWithDispatcher(this, owner_->GetNativeWindow(), true);
   } else {
-    MessageLoopForUI* loop = MessageLoopForUI::current();
-    MessageLoop::ScopedNestableTaskAllower allow(loop);
+    base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
+    base::MessageLoop::ScopedNestableTaskAllower allow(loop);
     base::RunLoop run_loop(this);
     run_loop.Run();
   }

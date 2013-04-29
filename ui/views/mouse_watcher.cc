@@ -19,16 +19,16 @@ namespace views {
 // the listener is notified.
 const int kNotifyListenerTimeMs = 300;
 
-class MouseWatcher::Observer : public MessageLoopForUI::Observer {
+class MouseWatcher::Observer : public base::MessageLoopForUI::Observer {
  public:
   explicit Observer(MouseWatcher* mouse_watcher)
       : mouse_watcher_(mouse_watcher),
         notify_listener_factory_(this) {
-    MessageLoopForUI::current()->AddObserver(this);
+    base::MessageLoopForUI::current()->AddObserver(this);
   }
 
   virtual ~Observer() {
-    MessageLoopForUI::current()->RemoveObserver(this);
+    base::MessageLoopForUI::current()->RemoveObserver(this);
   }
 
   // MessageLoop::Observer implementation:
@@ -94,13 +94,13 @@ class MouseWatcher::Observer : public MessageLoopForUI::Observer {
       // Mouse moved outside the host's zone, start a timer to notify the
       // listener.
       if (!notify_listener_factory_.HasWeakPtrs()) {
-        MessageLoop::current()->PostDelayedTask(
+        base::MessageLoop::current()->PostDelayedTask(
             FROM_HERE,
             base::Bind(&Observer::NotifyListener,
                        notify_listener_factory_.GetWeakPtr()),
-            event_type == MouseWatcherHost::MOUSE_MOVE ?
-                base::TimeDelta::FromMilliseconds(kNotifyListenerTimeMs) :
-                mouse_watcher_->notify_on_exit_time_);
+            event_type == MouseWatcherHost::MOUSE_MOVE
+                ? base::TimeDelta::FromMilliseconds(kNotifyListenerTimeMs)
+                : mouse_watcher_->notify_on_exit_time_);
       }
     } else {
       // Mouse moved quickly out of the host and then into it again, so cancel

@@ -117,9 +117,9 @@ void SelectFileDialog::SelectFile(
     // Inform the listener that no file was selected.
     // Post a task rather than calling FileSelectionCanceled directly to ensure
     // that the listener is called asynchronously.
-    MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&SelectFileDialog::CancelFileSelection, this,
-                              params));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&SelectFileDialog::CancelFileSelection, this, params));
     return;
   }
 

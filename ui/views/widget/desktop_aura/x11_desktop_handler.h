@@ -21,9 +21,8 @@ namespace views {
 // A singleton that owns global objects related to the desktop and listens for
 // X11 events on the X11 root window. Destroys itself when aura::Env is
 // deleted.
-class VIEWS_EXPORT X11DesktopHandler
-    : public MessageLoop::Dispatcher,
-      public aura::EnvObserver {
+class VIEWS_EXPORT X11DesktopHandler : public base::MessageLoop::Dispatcher,
+                                       public aura::EnvObserver {
  public:
   // Returns the singleton handler.
   static X11DesktopHandler* get();

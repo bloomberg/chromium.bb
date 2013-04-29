@@ -435,9 +435,8 @@ class LayerWithDelegateTest : public testing::Test, public CompositorDelegate {
   virtual void ScheduleDraw() OVERRIDE {
     DCHECK(!ui::Compositor::WasInitializedWithThread());
     if (compositor_) {
-      MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&Compositor::Draw, compositor_->AsWeakPtr()));
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE, base::Bind(&Compositor::Draw, compositor_->AsWeakPtr()));
     }
   }
 

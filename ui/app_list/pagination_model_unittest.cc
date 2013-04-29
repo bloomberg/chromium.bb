@@ -68,7 +68,7 @@ class TestPaginationModelObserver : public PaginationModelObserver {
     ++selection_count_;
     if (expected_page_selection_ &&
         selection_count_ == expected_page_selection_) {
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
     }
   }
   virtual void TransitionChanged() OVERRIDE {
@@ -84,7 +84,7 @@ class TestPaginationModelObserver : public PaginationModelObserver {
          transition_start_count_ == expected_transition_start_) ||
         (expected_transition_end_ &&
          transition_end_count_ == expected_transition_end_)) {
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
     }
   }
 
@@ -141,7 +141,7 @@ class PaginationModelTest : public testing::Test {
   TestPaginationModelObserver observer_;
 
  private:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(PaginationModelTest);
 };
@@ -169,7 +169,7 @@ TEST_F(PaginationModelTest, SelectPageAnimated) {
   // One transition.
   SetStartPageAndExpects(kStartPage, 1, 0, 0);
   pagination_.SelectPage(1, true /* animate */);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_EQ(1, observer_.transition_start_count());
   EXPECT_EQ(1, observer_.transition_end_count());
   EXPECT_EQ(1, observer_.selection_count());
@@ -179,7 +179,7 @@ TEST_F(PaginationModelTest, SelectPageAnimated) {
   SetStartPageAndExpects(kStartPage, 2, 0, 0);
   pagination_.SelectPage(1, true /* animate */);
   pagination_.SelectPage(3, true /* animate */);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_EQ(2, observer_.transition_start_count());
   EXPECT_EQ(2, observer_.transition_end_count());
   EXPECT_EQ(2, observer_.selection_count());
@@ -189,7 +189,7 @@ TEST_F(PaginationModelTest, SelectPageAnimated) {
   SetStartPageAndExpects(kStartPage, 1, 0, 0);
   pagination_.SelectPage(1, true /* animate */);
   pagination_.SelectPage(1, true /* animate */);  // Ignored.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_EQ(1, observer_.transition_start_count());
   EXPECT_EQ(1, observer_.transition_end_count());
   EXPECT_EQ(1, observer_.selection_count());
@@ -201,7 +201,7 @@ TEST_F(PaginationModelTest, SelectPageAnimated) {
   pagination_.SelectPage(3, true /* animate */);  // Ignored
   pagination_.SelectPage(4, true /* animate */);  // Ignored
   pagination_.SelectPage(2, true /* animate */);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_EQ(2, observer_.transition_start_count());
   EXPECT_EQ(2, observer_.transition_end_count());
   EXPECT_EQ(2, observer_.selection_count());
@@ -216,7 +216,7 @@ TEST_F(PaginationModelTest, SelectPageAnimated) {
   pagination_.SelectPage(2, true /* animate */);  // Ignored
   pagination_.SelectPage(kStartPage, true /* animate */);
   pagination_.SelectPage(3, true /* animate */);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_EQ(std::string("3"), observer_.selected_pages());
 }
 
@@ -229,7 +229,7 @@ TEST_F(PaginationModelTest, SimpleScroll) {
   pagination_.UpdateScroll(-0.1);
   EXPECT_EQ(kStartPage + 1, pagination_.transition().target_page);
   pagination_.EndScroll(false);  // Finish transition
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_EQ(1, observer_.selection_count());
 
   // Scroll to the previous page (positive delta) and finish it.
@@ -238,7 +238,7 @@ TEST_F(PaginationModelTest, SimpleScroll) {
   pagination_.UpdateScroll(0.1);
   EXPECT_EQ(kStartPage - 1, pagination_.transition().target_page);
   pagination_.EndScroll(false);  // Finish transition
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_EQ(1, observer_.selection_count());
 
   // Scroll to the next page (negative delta) and cancel it.
@@ -247,7 +247,7 @@ TEST_F(PaginationModelTest, SimpleScroll) {
   pagination_.UpdateScroll(-0.1);
   EXPECT_EQ(kStartPage + 1, pagination_.transition().target_page);
   pagination_.EndScroll(true);  // Cancel transition
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_EQ(0, observer_.selection_count());
 
   // Scroll to the previous page (position delta) and cancel it.
@@ -256,7 +256,7 @@ TEST_F(PaginationModelTest, SimpleScroll) {
   pagination_.UpdateScroll(0.1);
   EXPECT_EQ(kStartPage - 1, pagination_.transition().target_page);
   pagination_.EndScroll(true);  // Cancel transition
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_EQ(0, observer_.selection_count());
 }
 
@@ -272,7 +272,7 @@ TEST_F(PaginationModelTest, ScrollWithTransition) {
   EXPECT_EQ(kStartPage + 1, pagination_.transition().target_page);
   EXPECT_EQ(0.6, pagination_.transition().progress);
   pagination_.EndScroll(false);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_EQ(1, observer_.selection_count());
 
   // Scroll to the next page (negative delta) with a transition in a different
@@ -294,7 +294,7 @@ TEST_F(PaginationModelTest, ScrollWithTransition) {
   EXPECT_EQ(kStartPage - 1, pagination_.transition().target_page);
   EXPECT_EQ(0.6, pagination_.transition().progress);
   pagination_.EndScroll(false);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_EQ(1, observer_.selection_count());
 
   // Scroll to the previous page (positive delta) with a transition in a
@@ -324,7 +324,7 @@ TEST_F(PaginationModelTest, LongScroll) {
   pagination_.UpdateScroll(-0.5);
   EXPECT_EQ(kStartPage + 2, pagination_.transition().target_page);
   pagination_.EndScroll(false);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_EQ(2, observer_.selection_count());
 
   // Scroll to the next page (negative delta) with a transition in a different
@@ -339,7 +339,7 @@ TEST_F(PaginationModelTest, LongScroll) {
   pagination_.UpdateScroll(-0.5);  // This starts a new transition.
   EXPECT_EQ(kStartPage + 1, pagination_.transition().target_page);
   pagination_.EndScroll(false);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_EQ(1, observer_.selection_count());
 
   // Similar cases as above but in the opposite direction.
@@ -356,7 +356,7 @@ TEST_F(PaginationModelTest, LongScroll) {
   pagination_.UpdateScroll(0.5);
   EXPECT_EQ(kStartPage - 2, pagination_.transition().target_page);
   pagination_.EndScroll(false);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_EQ(2, observer_.selection_count());
 
   // Scroll to the previous page (positive delta) with a transition in a
@@ -371,7 +371,7 @@ TEST_F(PaginationModelTest, LongScroll) {
   pagination_.UpdateScroll(0.5);  // This starts a new transition.
   EXPECT_EQ(kStartPage - 1, pagination_.transition().target_page);
   pagination_.EndScroll(false);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_EQ(1, observer_.selection_count());
 }
 

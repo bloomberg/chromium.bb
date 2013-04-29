@@ -187,7 +187,7 @@ Clipboard::FormatType Clipboard::FormatType::Deserialize(
 }
 
 Clipboard::Clipboard() : create_window_(false) {
-  if (MessageLoop::current()->type() == MessageLoop::TYPE_UI) {
+  if (base::MessageLoop::current()->type() == base::MessageLoop::TYPE_UI) {
     // Make a dummy HWND to be the clipboard's owner.
     WNDCLASSEX window_class;
     base::win::InitializeWindowClass(

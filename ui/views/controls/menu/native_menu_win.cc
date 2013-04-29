@@ -455,7 +455,7 @@ void NativeMenuWin::RunMenuAt(const gfx::Point& point, int alignment) {
     // state. Instead post a task, then notify. This mirrors what WM_MENUCOMMAND
     // does.
     menu_to_select_factory_.InvalidateWeakPtrs();
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&NativeMenuWin::DelayedSelect,
                    menu_to_select_factory_.GetWeakPtr()));

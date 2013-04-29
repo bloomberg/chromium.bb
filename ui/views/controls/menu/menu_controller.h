@@ -45,7 +45,7 @@ class MenuRunnerImpl;
 // MenuController is used internally by the various menu classes to manage
 // showing, selecting and drag/drop for menus. All relevant events are
 // forwarded to the MenuController from SubmenuView and MenuHost.
-class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher,
+class VIEWS_EXPORT MenuController : public base::MessageLoop::Dispatcher,
                                     public WidgetObserver {
  public:
   // Enumeration of how the menu should exit.

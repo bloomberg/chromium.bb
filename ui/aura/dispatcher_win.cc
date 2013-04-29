@@ -8,7 +8,7 @@
 
 namespace aura {
 
-class DispatcherWin : public MessageLoop::Dispatcher {
+class DispatcherWin : public base::MessageLoop::Dispatcher {
  public:
   DispatcherWin() {}
   virtual ~DispatcherWin() {}

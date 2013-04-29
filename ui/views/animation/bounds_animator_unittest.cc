@@ -100,7 +100,7 @@ class BoundsAnimatorTest : public testing::Test {
   TestBoundsAnimator* animator() { return &animator_; }
 
  private:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   TestView parent_;
   TestView* child_;  // Owned by |parent_|.
   TestBoundsAnimator animator_;
@@ -122,7 +122,7 @@ TEST_F(BoundsAnimatorTest, AnimateViewTo) {
 
   // Run the message loop; the delegate exits the loop when the animation is
   // done.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // Make sure the bounds match of the view that was animated match.
   EXPECT_EQ(target_bounds, child()->bounds());

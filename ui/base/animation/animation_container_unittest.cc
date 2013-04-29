@@ -44,7 +44,7 @@ class TestAnimation : public LinearAnimation {
 
 class AnimationContainerTest: public testing::Test {
  private:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
 };
 
 // Makes sure the animation ups the ref count of the container and releases it
@@ -81,7 +81,7 @@ TEST_F(AnimationContainerTest, Multi) {
   EXPECT_TRUE(container->is_running());
 
   // Run the message loop the delegate quits the message loop when notified.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // Both timers should have finished.
   EXPECT_TRUE(delegate1.finished());
@@ -112,7 +112,7 @@ TEST_F(AnimationContainerTest, Observer) {
   EXPECT_TRUE(container->is_running());
 
   // Run the message loop. The delegate quits the message loop when notified.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // The timer should have finished.
   EXPECT_TRUE(delegate1.finished());

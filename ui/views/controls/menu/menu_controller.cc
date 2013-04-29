@@ -2255,7 +2255,7 @@ void MenuController::SetExitType(ExitType type) {
       message_loop_depth_;
 
   if (quit_now)
-    MessageLoop::current()->QuitNow();
+    base::MessageLoop::current()->QuitNow();
 }
 
 void MenuController::HandleMouseLocation(SubmenuView* source,

@@ -33,7 +33,7 @@ class NativeWidgetWinTest : public testing::Test {
   }
 
  private:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   ui::ScopedOleInitializer ole_initializer_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetWinTest);

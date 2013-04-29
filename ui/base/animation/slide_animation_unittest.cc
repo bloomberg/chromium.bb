@@ -33,7 +33,7 @@ class SlideAnimation::TestApi {
 // SlideAnimationTest
 class SlideAnimationTest: public testing::Test {
  private:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
 };
 
 // Tests animation construction.

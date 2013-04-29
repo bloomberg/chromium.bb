@@ -18,7 +18,7 @@ class VIEWS_EXPORT DesktopDispatcherClient
   DesktopDispatcherClient();
   virtual ~DesktopDispatcherClient();
 
-  virtual void RunWithDispatcher(MessageLoop::Dispatcher* dispatcher,
+  virtual void RunWithDispatcher(base::MessageLoop::Dispatcher* dispatcher,
                                  aura::Window* associated_window,
                                  bool nestable_tasks_allowed) OVERRIDE;
 

@@ -411,7 +411,7 @@ void NativeWidgetAura::Close() {
   }
 
   if (!close_widget_factory_.HasWeakPtrs()) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&NativeWidgetAura::CloseNow,
                    close_widget_factory_.GetWeakPtr()));

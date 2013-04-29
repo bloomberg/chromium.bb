@@ -24,9 +24,9 @@ class RootWindow;
 namespace views {
 
 // When we're dragging tabs, we need to manually position our window.
-class VIEWS_EXPORT X11DesktopWindowMoveClient
-    : public MessageLoop::Dispatcher,
-      public aura::client::WindowMoveClient {
+class VIEWS_EXPORT X11DesktopWindowMoveClient :
+    public base::MessageLoop::Dispatcher,
+    public aura::client::WindowMoveClient {
  public:
   X11DesktopWindowMoveClient();
   virtual ~X11DesktopWindowMoveClient();

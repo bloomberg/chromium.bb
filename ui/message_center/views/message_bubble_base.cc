@@ -41,7 +41,7 @@ void MessageBubbleBase::BubbleViewDestroyed() {
 
 void MessageBubbleBase::ScheduleUpdate() {
   weak_ptr_factory_.InvalidateWeakPtrs();  // Cancel any pending update.
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&MessageBubbleBase::UpdateBubbleView,
                  weak_ptr_factory_.GetWeakPtr()),

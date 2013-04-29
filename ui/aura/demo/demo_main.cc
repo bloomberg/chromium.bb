@@ -109,7 +109,7 @@ class DemoStackingClient : public aura::client::StackingClient {
 
 int DemoMain() {
   // Create the message-loop here before creating the root window.
-  MessageLoop message_loop(MessageLoop::TYPE_UI);
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
   ui::CompositorTestSupport::Initialize();
   aura::Env::GetInstance();
   scoped_ptr<aura::TestScreen> test_screen(aura::TestScreen::Create());
@@ -145,7 +145,7 @@ int DemoMain() {
   window2.AddChild(&window3);
 
   root_window->ShowRootWindow();
-  MessageLoopForUI::current()->Run();
+  base::MessageLoopForUI::current()->Run();
 
   ui::CompositorTestSupport::Terminate();
 

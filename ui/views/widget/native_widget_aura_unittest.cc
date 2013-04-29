@@ -53,7 +53,7 @@ class NativeWidgetAuraTest : public testing::Test {
   aura::RootWindow* root_window() { return aura_test_helper_->root_window(); }
 
  private:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetAuraTest);
@@ -404,7 +404,7 @@ TEST_F(NativeWidgetAuraTest, NoCrashOnThemeAfterClose) {
   NativeWidgetAura* window = Init(parent.get(), widget.get());
   window->Show();
   window->Close();
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   widget->GetNativeTheme();  // Shouldn't crash.
 }
 

@@ -52,8 +52,8 @@ const char* kAtomsToCache[] = {
 
 namespace views {
 
-class DesktopDragDropClientAuraX11::X11DragContext
-    : public MessageLoop::Dispatcher {
+class DesktopDragDropClientAuraX11::X11DragContext :
+    public base::MessageLoop::Dispatcher {
  public:
   X11DragContext(ui::X11AtomCache* atom_cache,
                  const XClientMessageEvent& event);

@@ -372,7 +372,7 @@ void TooltipManagerWin::ShowKeyboardTooltip(View* focused_view) {
   ::SetWindowPos(keyboard_tooltip_hwnd_, NULL, rect_bounds.left,
                  rect_bounds.top, 0, 0,
                  SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSIZE);
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&TooltipManagerWin::DestroyKeyboardTooltipWindow,
                  keyboard_tooltip_factory_.GetWeakPtr(),

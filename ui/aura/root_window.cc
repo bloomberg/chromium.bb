@@ -225,7 +225,7 @@ void RootWindow::RepostEvent(const ui::LocatedEvent& event) {
             static_cast<const ui::MouseEvent&>(event),
             static_cast<aura::Window*>(event.target()),
             static_cast<aura::Window*>(this)));
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&RootWindow::DispatchHeldEvents,
                    repostable_event_factory_.GetWeakPtr()));
@@ -471,7 +471,7 @@ void RootWindow::ReleaseMouseMoves() {
     // dispatching another one may not be safe/expected.
     // Instead we post a task, that we may cancel if HoldMouseMoves is called
     // again before it executes.
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&RootWindow::DispatchHeldEvents,
                    held_event_factory_.GetWeakPtr()));
@@ -552,7 +552,7 @@ void RootWindow::ScheduleDraw() {
   DCHECK(!ui::Compositor::WasInitializedWithThread());
   if (!defer_draw_scheduling_) {
     defer_draw_scheduling_ = true;
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&RootWindow::Draw, schedule_paint_factory_.GetWeakPtr()));
   }
@@ -1142,7 +1142,7 @@ void RootWindow::PostMouseMoveEventAfterWindowChange() {
   if (synthesize_mouse_move_)
     return;
   synthesize_mouse_move_ = true;
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&RootWindow::SynthesizeMouseMoveEvent,
                  event_factory_.GetWeakPtr()));

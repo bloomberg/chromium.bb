@@ -95,7 +95,8 @@ AeroTooltipManager::InitialTimer::InitialTimer(AeroTooltipManager* manager)
 }
 
 void AeroTooltipManager::InitialTimer::Start(int time) {
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
       base::Bind(&InitialTimer::Execute, this),
       base::TimeDelta::FromMilliseconds(time));
 }

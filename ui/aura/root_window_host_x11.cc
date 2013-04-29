@@ -180,7 +180,7 @@ class TouchEventCalibrate : public base::MessagePumpObserver {
       right_(0),
       top_(0),
       bottom_(0) {
-    MessageLoopForUI::current()->AddObserver(this);
+    base::MessageLoopForUI::current()->AddObserver(this);
 #if defined(USE_XI2_MT)
     std::vector<std::string> parts;
     if (Tokenize(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -198,7 +198,7 @@ class TouchEventCalibrate : public base::MessagePumpObserver {
   }
 
   virtual ~TouchEventCalibrate() {
-    MessageLoopForUI::current()->RemoveObserver(this);
+    base::MessageLoopForUI::current()->RemoveObserver(this);
   }
 
   // Modify the location of the |event|,

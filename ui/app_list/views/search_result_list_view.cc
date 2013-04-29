@@ -126,7 +126,7 @@ void SearchResultListView::ScheduleUpdate() {
   // When search results are added one by one, each addition generates an update
   // request. Consolidates those update requests into one Update call.
   if (!update_factory_.HasWeakPtrs()) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&SearchResultListView::Update,
                    update_factory_.GetWeakPtr()));

@@ -438,7 +438,7 @@ void HWNDMessageHandler::Close() {
     // we don't destroy the window before the callback returned (as the caller
     // may delete ourselves on destroy and the ATL callback would still
     // dereference us when the callback returns).
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&HWNDMessageHandler::CloseNow,
                    close_widget_factory_.GetWeakPtr()));
@@ -786,7 +786,7 @@ void HWNDMessageHandler::SchedulePaintInRect(const gfx::Rect& rect) {
     // windows, so we schedule a redraw manually using a task, since those never
     // seem to be starved. Also, wtf.
     if (!paint_layered_window_factory_.HasWeakPtrs()) {
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&HWNDMessageHandler::RedrawLayeredWindowContents,
                      paint_layered_window_factory_.GetWeakPtr()));
@@ -870,7 +870,7 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
   if (delegate_)
     delegate_->PostHandleMSG(message, w_param, l_param);
   if (message == WM_NCDESTROY) {
-    MessageLoopForUI::current()->RemoveObserver(this);
+    base::MessageLoopForUI::current()->RemoveObserver(this);
     if (delegate_)
       delegate_->HandleDestroyed();
   }
@@ -1272,7 +1272,7 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
   // aggressively if the contents of our window become invalid. Unfortunately
   // WM_PAINT messages are starved and we get flickery redrawing when resizing
   // if we do not do this.
-  MessageLoopForUI::current()->AddObserver(this);
+  base::MessageLoopForUI::current()->AddObserver(this);
 
   delegate_->HandleCreate();
 
@@ -2078,7 +2078,7 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
         // and send us further updates.
         ignore_window_pos_changes_ = true;
         DCHECK(!ignore_pos_changes_factory_.HasWeakPtrs());
-        MessageLoop::current()->PostTask(
+        base::MessageLoop::current()->PostTask(
             FROM_HERE,
             base::Bind(&HWNDMessageHandler::StopIgnoringPosChanges,
                        ignore_pos_changes_factory_.GetWeakPtr()));

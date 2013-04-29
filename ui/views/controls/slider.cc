@@ -91,7 +91,7 @@ void Slider::SetValueInternal(float value, SliderChangeReason reason) {
   if (listener_)
     listener_->SliderValueChanged(this, value_, old_value, reason);
 
-  if (old_value_valid && MessageLoop::current()) {
+  if (old_value_valid && base::MessageLoop::current()) {
     // Do not animate when setting the value of the slider for the first time.
     // There is no message-loop when running tests. So we cannot animate then.
     animating_value_ = old_value;

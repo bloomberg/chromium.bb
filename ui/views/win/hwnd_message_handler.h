@@ -55,9 +55,10 @@ const int WM_NCUAHDRAWFRAME = 0xAF;
 // used by both a views::NativeWidget and an aura::RootWindowHost
 // implementation.
 // TODO(beng): This object should eventually *become* the WindowImpl.
-class VIEWS_EXPORT HWNDMessageHandler : public ui::WindowImpl,
-                                        public internal::InputMethodDelegate,
-                                        public MessageLoopForUI::Observer {
+class VIEWS_EXPORT HWNDMessageHandler :
+    public ui::WindowImpl,
+    public internal::InputMethodDelegate,
+    public base::MessageLoopForUI::Observer {
  public:
   explicit HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate);
   ~HWNDMessageHandler();

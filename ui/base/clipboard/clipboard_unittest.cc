@@ -38,7 +38,7 @@ class ClipboardTest : public PlatformTest {
   Clipboard& clipboard() { return clipboard_; }
 
  private:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   Clipboard clipboard_;
 };
 

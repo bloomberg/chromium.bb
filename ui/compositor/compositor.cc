@@ -320,7 +320,7 @@ std::string Texture::Produce() {
 
 CompositorLock::CompositorLock(Compositor* compositor)
     : compositor_(compositor) {
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&CompositorLock::CancelLock, AsWeakPtr()),
       base::TimeDelta::FromMilliseconds(kCompositorLockTimeoutMs));

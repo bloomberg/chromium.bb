@@ -678,7 +678,7 @@ void NativeTextfieldViews::HandleFocus() {
   SchedulePaint();
   OnCaretBoundsChanged();
   // Start blinking cursor.
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&NativeTextfieldViews::UpdateCursor,
                  cursor_timer_.GetWeakPtr()),
@@ -1078,7 +1078,7 @@ void NativeTextfieldViews::UpdateColorsFromTheme(const ui::NativeTheme* theme) {
 void NativeTextfieldViews::UpdateCursor() {
   is_cursor_visible_ = !is_cursor_visible_;
   RepaintCursor();
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&NativeTextfieldViews::UpdateCursor,
                  cursor_timer_.GetWeakPtr()),

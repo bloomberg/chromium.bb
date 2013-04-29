@@ -184,7 +184,7 @@ void PresentThread::ResetDevice() {
   lock_.AssertAcquired();
 
   // The D3D device must be created on the present thread.
-  CHECK(message_loop() == MessageLoop::current());
+  CHECK(message_loop() == base::MessageLoop::current());
 
   // This will crash some Intel drivers but we can't render anything without
   // reseting the device, which would be disappointing.

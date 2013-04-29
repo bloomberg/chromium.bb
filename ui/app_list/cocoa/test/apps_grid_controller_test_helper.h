@@ -62,7 +62,7 @@ class AppsGridControllerTestHelper : public ui::CocoaTest {
   AppsGridController* apps_grid_controller_;
 
  private:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsGridControllerTestHelper);
 };

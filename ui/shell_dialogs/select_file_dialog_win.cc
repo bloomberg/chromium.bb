@@ -449,7 +449,7 @@ class SelectFileDialogImpl : public ui::SelectFileDialog,
           file_type_index(file_type_index),
           default_extension(default_extension),
           run_state(run_state),
-          ui_proxy(MessageLoopForUI::current()->message_loop_proxy()),
+          ui_proxy(base::MessageLoopForUI::current()->message_loop_proxy()),
           owner(owner),
           params(params) {
       if (file_types)

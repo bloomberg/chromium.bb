@@ -62,19 +62,26 @@ class SelectFileDialogImplKDE : public ui::SelectFileDialogImpl {
 
   struct KDialogParams {
     // This constructor can only be run from the UI thread.
-    KDialogParams(const std::string& type, const std::string& title,
-                  const base::FilePath& default_path, gfx::NativeWindow parent,
-                  bool file_operation, bool multiple_selection,
+    KDialogParams(const std::string& type,
+                  const std::string& title,
+                  const base::FilePath& default_path,
+                  gfx::NativeWindow parent,
+                  bool file_operation,
+                  bool multiple_selection,
                   void* kdialog_params,
-                  void (SelectFileDialogImplKDE::*callback)(const std::string&,
-                                                            int, void*))
-        : type(type), title(title), default_path(default_path), parent(parent),
+                  void(SelectFileDialogImplKDE::* callback)(const std::string&,
+                                                            int,
+                                                            void*))
+        : type(type),
+          title(title),
+          default_path(default_path),
+          parent(parent),
           file_operation(file_operation),
           multiple_selection(multiple_selection),
           kdialog_params(kdialog_params),
-          ui_loop_proxy(MessageLoopForUI::current()->message_loop_proxy()),
-          callback(callback) {
-    }
+          ui_loop_proxy(
+              base::MessageLoopForUI::current()->message_loop_proxy()),
+          callback(callback) {}
 
     std::string type;
     std::string title;

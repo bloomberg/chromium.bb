@@ -113,8 +113,8 @@ aura::client::WindowMoveResult X11DesktopWindowMoveClient::RunMoveLoop(
     return aura::client::MOVE_CANCELED;
   }
 
-  MessageLoopForUI* loop = MessageLoopForUI::current();
-  MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
+  base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
+  base::MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
   base::RunLoop run_loop(aura::Env::GetInstance()->GetDispatcher());
   quit_closure_ = run_loop.QuitClosure();
   run_loop.Run();

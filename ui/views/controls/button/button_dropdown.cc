@@ -67,7 +67,7 @@ bool ButtonDropDown::OnMousePressed(const ui::MouseEvent& event) {
     y_position_on_lbuttondown_ = event.y();
 
     // Schedule a task that will show the menu.
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&ButtonDropDown::ShowDropDownMenu,
                    show_menu_factory_.GetWeakPtr()),

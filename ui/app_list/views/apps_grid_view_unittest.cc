@@ -34,12 +34,8 @@ const int kHeight = 240;
 
 class PageFlipWaiter : public PaginationModelObserver {
  public:
-  PageFlipWaiter(MessageLoopForUI* ui_loop,
-                 PaginationModel* model)
-      : ui_loop_(ui_loop),
-        model_(model),
-        wait_(false),
-        page_changed_(false) {
+  PageFlipWaiter(base::MessageLoopForUI* ui_loop, PaginationModel* model)
+      : ui_loop_(ui_loop), model_(model), wait_(false), page_changed_(false) {
     model_->AddObserver(this);
   }
 
@@ -77,7 +73,7 @@ class PageFlipWaiter : public PaginationModelObserver {
   virtual void TransitionChanged() OVERRIDE {
   }
 
-  MessageLoopForUI* ui_loop_;
+  base::MessageLoopForUI* ui_loop_;
   PaginationModel* model_;
   bool wait_;
   bool page_changed_;
@@ -165,7 +161,7 @@ class AppsGridViewTest : public testing::Test {
   scoped_ptr<AppsGridView> apps_grid_view_;
   scoped_ptr<AppsGridViewTestApi> test_api_;
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppsGridViewTest);

@@ -1602,7 +1602,7 @@ class TestDialog : public DialogDelegate, public ButtonListener {
     widget_->Close();
     widget_ = NULL;
     // delegate has to be alive while shutting down.
-    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+    base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   }
 
   // DialogDelegate implementation:
