@@ -7,6 +7,13 @@
       "chrome/src/tools/perf/perf_tools/page_cycler.py"
     ]
   },
+  "cc_perftests": {
+    "description": "Microbenchmarks for compositor (cc/) component.",
+    "code": [
+      "chrome/src/cc/cc_tests.gyp",
+      "chrome/src/cc/trees/layer_tree_host_perftest.cc"
+    ]
+  },
   "dhtml": {
     "description": "Benchmarks for various DHTML operations like simple animations.",
     "code": [
