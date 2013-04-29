@@ -226,6 +226,10 @@ void BluetoothDeviceExperimentalChromeOS::CancelPairing() {
             base::Bind(
                 &BluetoothDeviceExperimentalChromeOS::OnCancelPairingError,
                 weak_ptr_factory_.GetWeakPtr()));
+
+    // Since there's no calback to this method, it's possible that the pairing
+    // delegate is going to be freed before things complete.
+    UnregisterAgent();
   }
 }
 
@@ -556,7 +560,9 @@ void BluetoothDeviceExperimentalChromeOS::OnSetTrusted(bool success) {
 }
 
 void BluetoothDeviceExperimentalChromeOS::UnregisterAgent() {
-  DCHECK(agent_.get());
+  if (!agent_.get())
+    return;
+
   DCHECK(pairing_delegate_);
 
   DCHECK(pincode_callback_.is_null());
