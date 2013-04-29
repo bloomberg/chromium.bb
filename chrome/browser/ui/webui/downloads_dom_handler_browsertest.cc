@@ -73,6 +73,10 @@ class MockDownloadsDOMHandler : public DownloadsDOMHandler {
     content::RunMessageLoop();
   }
 
+  void ForceSendCurrentDownloads() {
+    ScheduleSendCurrentDownloads();
+  }
+
   void reset_downloads_list() { downloads_list_.reset(); }
   void reset_download_updated() { download_updated_.reset(); }
 
@@ -115,6 +119,7 @@ class DownloadsDOMHandlerTest : public InProcessBrowserTest {
   virtual ~DownloadsDOMHandlerTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
+    mock_handler_.reset(new MockDownloadsDOMHandler(download_manager()));
     CHECK(downloads_directory_.CreateUniqueTempDir());
     browser()->profile()->GetPrefs()->SetFilePath(
         prefs::kDownloadDefaultDirectory,
@@ -126,64 +131,114 @@ class DownloadsDOMHandlerTest : public InProcessBrowserTest {
     return content::BrowserContext::GetDownloadManager(browser()->profile());
   }
 
+  void DownloadAnItem() {
+    GURL url = test_server()->GetURL("files/downloads/image.jpg");
+    std::vector<GURL> url_chain;
+    url_chain.push_back(url);
+    base::Time current(base::Time::Now());
+    download_manager()->CreateDownloadItem(
+        base::FilePath(FILE_PATH_LITERAL("/path/to/file")),
+        base::FilePath(FILE_PATH_LITERAL("/path/to/file")),
+        url_chain,
+        GURL(std::string()),
+        current,
+        current,
+        128,
+        128,
+        content::DownloadItem::COMPLETE,
+        content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+        content::DOWNLOAD_INTERRUPT_REASON_NONE,
+        false);
+
+    mock_handler_->WaitForDownloadsList();
+    ASSERT_EQ(1, static_cast<int>(mock_handler_->downloads_list()->GetSize()));
+    EXPECT_TRUE(ListMatches(
+        mock_handler_->downloads_list(),
+        "[{\"file_externally_removed\": false,"
+        "  \"file_name\": \"file\","
+        "  \"id\": 0,"
+        "  \"otr\": false,"
+        "  \"since_string\": \"Today\","
+        "  \"state\": \"COMPLETE\","
+        "  \"total\": 128}]"));
+  }
+
+ protected:
+  scoped_ptr<MockDownloadsDOMHandler> mock_handler_;
+
  private:
   base::ScopedTempDir downloads_directory_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadsDOMHandlerTest);
 };
 
+// Tests removing all items, both when prohibited and when allowed.
+IN_PROC_BROWSER_TEST_F(DownloadsDOMHandlerTest, RemoveAll) {
+  DownloadAnItem();
+
+  mock_handler_->reset_downloads_list();
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kAllowDeletingBrowserHistory, false);
+  mock_handler_->HandleClearAll(NULL);
+  mock_handler_->WaitForDownloadsList();
+  ASSERT_EQ(1, static_cast<int>(mock_handler_->downloads_list()->GetSize()));
+
+  mock_handler_->reset_downloads_list();
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kAllowDeletingBrowserHistory, true);
+  mock_handler_->HandleClearAll(NULL);
+  mock_handler_->WaitForDownloadsList();
+  EXPECT_EQ(0, static_cast<int>(mock_handler_->downloads_list()->GetSize()));
+}
+
+// Tests removing one item, both when prohibited and when allowed.
+IN_PROC_BROWSER_TEST_F(DownloadsDOMHandlerTest, RemoveOneItem) {
+  DownloadAnItem();
+  base::ListValue item;
+  item.AppendInteger(0);
+
+  mock_handler_->reset_downloads_list();
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kAllowDeletingBrowserHistory, false);
+  mock_handler_->HandleRemove(&item);
+  // Removing an item only sends the new download list if anything was actually
+  // removed, so force it.
+  mock_handler_->ForceSendCurrentDownloads();
+  mock_handler_->WaitForDownloadsList();
+  ASSERT_EQ(1, static_cast<int>(mock_handler_->downloads_list()->GetSize()));
+
+  mock_handler_->reset_downloads_list();
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kAllowDeletingBrowserHistory, true);
+  mock_handler_->HandleRemove(&item);
+  mock_handler_->WaitForDownloadsList();
+  EXPECT_EQ(0, static_cast<int>(mock_handler_->downloads_list()->GetSize()));
+}
+
 // Tests that DownloadsDOMHandler detects new downloads and relays them to the
 // renderer.
 // crbug.com/159390: This test fails when daylight savings time ends.
-IN_PROC_BROWSER_TEST_F(DownloadsDOMHandlerTest,
-    DownloadsDOMHandlerTest_Created) {
-  MockDownloadsDOMHandler mddh(download_manager());
+IN_PROC_BROWSER_TEST_F(DownloadsDOMHandlerTest, DownloadsRelayed) {
+  DownloadAnItem();
 
-  GURL url = test_server()->GetURL("files/downloads/image.jpg");
-  std::vector<GURL> url_chain;
-  url_chain.push_back(url);
-  base::Time current(base::Time::Now());
-  download_manager()->CreateDownloadItem(
-      base::FilePath(FILE_PATH_LITERAL("/path/to/file")),
-      base::FilePath(FILE_PATH_LITERAL("/path/to/file")),
-      url_chain,
-      GURL(std::string()),
-      current,
-      current,
-      128,
-      128,
-      content::DownloadItem::COMPLETE,
-      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      content::DOWNLOAD_INTERRUPT_REASON_NONE,
-      false);
-
-  mddh.WaitForDownloadsList();
-  ASSERT_EQ(1, static_cast<int>(mddh.downloads_list()->GetSize()));
+  mock_handler_->WaitForDownloadUpdated();
+  ASSERT_EQ(1, static_cast<int>(mock_handler_->download_updated()->GetSize()));
   EXPECT_TRUE(ListMatches(
-      mddh.downloads_list(),
-      "[{\"file_externally_removed\": false,"
-      "  \"file_name\": \"file\","
-      "  \"id\": 0,"
-      "  \"otr\": false,"
-      "  \"since_string\": \"Today\","
-      "  \"state\": \"COMPLETE\","
-      "  \"total\": 128}]"));
-
-  mddh.WaitForDownloadUpdated();
-  ASSERT_EQ(1, static_cast<int>(mddh.download_updated()->GetSize()));
-  EXPECT_TRUE(ListMatches(
-      mddh.download_updated(),
+      mock_handler_->download_updated(),
       "[{\"file_externally_removed\": true,"
       "  \"id\": 0}]"));
 
-  mddh.reset_downloads_list();
-  mddh.HandleClearAll(NULL);
-  mddh.WaitForDownloadsList();
-  EXPECT_EQ(0, static_cast<int>(mddh.downloads_list()->GetSize()));
+  mock_handler_->reset_downloads_list();
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kAllowDeletingBrowserHistory, true);
+  mock_handler_->HandleClearAll(NULL);
+  mock_handler_->WaitForDownloadsList();
+  EXPECT_EQ(0, static_cast<int>(mock_handler_->downloads_list()->GetSize()));
 }
 
+
 // TODO(benjhayden): Test the extension downloads filter for both
-// mddh.downloads_list() and mddh.download_updated().
+// mock_handler_.downloads_list() and mock_handler_.download_updated().
 
 // TODO(benjhayden): Test incognito, both downloads_list() and that on-record
 // calls can't access off-record items.

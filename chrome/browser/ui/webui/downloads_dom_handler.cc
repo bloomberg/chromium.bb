@@ -14,6 +14,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
@@ -32,6 +33,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/fileicon_source.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -394,6 +396,9 @@ void DownloadsDOMHandler::HandleResume(const base::ListValue* args) {
 }
 
 void DownloadsDOMHandler::HandleRemove(const base::ListValue* args) {
+  if (!IsDeletingHistoryAllowed())
+    return;
+
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_REMOVE);
   content::DownloadItem* file = GetDownloadByValue(args);
   if (file)
@@ -408,14 +413,17 @@ void DownloadsDOMHandler::HandleCancel(const base::ListValue* args) {
 }
 
 void DownloadsDOMHandler::HandleClearAll(const base::ListValue* args) {
-  CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_CLEAR_ALL);
-  if (main_notifier_.GetManager())
+  if (IsDeletingHistoryAllowed()) {
+    CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_CLEAR_ALL);
+    // IsDeletingHistoryAllowed already checked for the existence of the
+    // manager.
     main_notifier_.GetManager()->RemoveAllDownloads();
 
-  // If this is an incognito downloads page, clear All should clear main
-  // download manager as well.
-  if (original_notifier_.get() && original_notifier_->GetManager())
-    original_notifier_->GetManager()->RemoveAllDownloads();
+    // If this is an incognito downloads page, clear All should clear main
+    // download manager as well.
+    if (original_notifier_.get() && original_notifier_->GetManager())
+      original_notifier_->GetManager()->RemoveAllDownloads();
+  }
 
   // downloads.js always clears the display and relies on HandleClearAll to
   // ScheduleSendCurrentDownloads(). If any downloads are removed, then
@@ -505,6 +513,13 @@ void DownloadsDOMHandler::DangerPromptAccepted(int download_id) {
     return;
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_SAVE_DANGEROUS);
   item->DangerousDownloadValidated();
+}
+
+bool DownloadsDOMHandler::IsDeletingHistoryAllowed() {
+  content::DownloadManager* manager = main_notifier_.GetManager();
+  return (manager &&
+          Profile::FromBrowserContext(manager->GetBrowserContext())->
+              GetPrefs()->GetBoolean(prefs::kAllowDeletingBrowserHistory));
 }
 
 content::DownloadItem* DownloadsDOMHandler::GetDownloadByValue(

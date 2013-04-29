@@ -98,14 +98,14 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
   virtual void CallDownloadsList(const base::ListValue& downloads);
   virtual void CallDownloadUpdated(const base::ListValue& download);
 
+  // Schedules a call to SendCurrentDownloads() in the next message loop
+  // iteration. Protected rather than private for use in tests.
+  void ScheduleSendCurrentDownloads();
+
  private:
   // Shorthand for |observing_items_|, which tracks all items that this is
   // observing so that RemoveObserver will be called for all of them.
   typedef std::set<content::DownloadItem*> DownloadSet;
-
-  // Schedules a call to SendCurrentDownloads() in the next message loop
-  // iteration.
-  void ScheduleSendCurrentDownloads();
 
   // Sends the current list of downloads to the page.
   void SendCurrentDownloads();
@@ -121,6 +121,10 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
   // Conveys danger acceptance from the DownloadDangerPrompt to the
   // DownloadItem.
   void DangerPromptAccepted(int download_id);
+
+  // Returns true if the records of any downloaded items are allowed (and able)
+  // to be deleted.
+  bool IsDeletingHistoryAllowed();
 
   // Returns the download that is referred to in a given value.
   content::DownloadItem* GetDownloadByValue(const base::ListValue* args);

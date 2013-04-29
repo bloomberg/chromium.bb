@@ -6,6 +6,7 @@
 
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/singleton.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/downloads_dom_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/url_data_source.h"
@@ -32,7 +34,7 @@ using content::WebContents;
 
 namespace {
 
-content::WebUIDataSource* CreateDownloadsUIHTMLSource() {
+content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIDownloadsHost);
 
@@ -71,6 +73,10 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource() {
   source->AddLocalizedString("control_removefromlist",
                              IDS_DOWNLOAD_LINK_REMOVE);
 
+  PrefService* prefs = profile->GetPrefs();
+  source->AddBoolean("allow_deleting_history",
+                     prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory));
+
   source->SetJsonPath("strings.js");
   source->AddResourcePath("downloads.css", IDR_DOWNLOADS_CSS);
   source->AddResourcePath("downloads.js", IDR_DOWNLOADS_JS);
@@ -96,7 +102,7 @@ DownloadsUI::DownloadsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(handler);
 
   // Set up the chrome://downloads/ source.
-  content::WebUIDataSource* source = CreateDownloadsUIHTMLSource();
+  content::WebUIDataSource* source = CreateDownloadsUIHTMLSource(profile);
   content::WebUIDataSource::Add(profile, source);
 #if defined(ENABLE_THEMES)
   ThemeSource* theme = new ThemeSource(profile);

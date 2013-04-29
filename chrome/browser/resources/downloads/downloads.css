@@ -46,7 +46,13 @@ html[dir=rtl] #downloads-actions {
   float: left;
 }
 
-#downloads-actions > a {
+.disabled-link {
+  color: #999;
+  text-decoration: none;
+}
+
+#downloads-actions > a,
+#downloads-actions > .disabled-link {
   -webkit-margin-start: 10px;
 }
 
