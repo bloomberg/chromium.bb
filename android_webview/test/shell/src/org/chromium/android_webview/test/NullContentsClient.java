@@ -27,7 +27,7 @@ import org.chromium.android_webview.JsResultReceiver;
  */
 public class NullContentsClient extends AwContentsClient {
     @Override
-    public boolean shouldIgnoreNavigation(String url) {
+    public boolean shouldOverrideUrlLoading(String url) {
         return false;
     }
 
@@ -50,6 +50,11 @@ public class NullContentsClient extends AwContentsClient {
     @Override
     public InterceptedRequestData shouldInterceptRequest(String url) {
         return null;
+    }
+
+    @Override
+    public boolean shouldOverrideKeyEvent(KeyEvent event) {
+        return false;
     }
 
     @Override
@@ -154,6 +159,10 @@ public class NullContentsClient extends AwContentsClient {
 
     @Override
     public void onReceivedIcon(Bitmap bitmap) {
+    }
+
+    @Override
+    public void onReceivedTitle(String title) {
     }
 
     @Override

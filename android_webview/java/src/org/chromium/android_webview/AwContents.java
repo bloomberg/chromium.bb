@@ -225,26 +225,26 @@ public class AwContents {
                 mLastLoadUrlAddress = null;
 
                 // If the embedder requested the load of a certain URL via the loadUrl API, then we
-                // do not offer it to AwContentsClient.shouldIgnoreNavigation.
+                // do not offer it to AwContentsClient.shouldOverrideUrlLoading.
                 // The embedder is also not allowed to intercept POST requests because of
                 // crbug.com/155250.
             } else if (!navigationParams.isPost) {
-                ignoreNavigation = mContentsClient.shouldIgnoreNavigation(url);
+                ignoreNavigation = mContentsClient.shouldOverrideUrlLoading(url);
             }
 
-            // The existing contract is that shouldIgnoreNavigation callbacks are delivered before
+            // The existing contract is that shouldOverrideUrlLoading callbacks are delivered before
             // onPageStarted callbacks; third party apps depend on this behavior.
             // Using a ResouceThrottle to implement the navigation interception feature results in
             // the WebContentsObserver.didStartLoading callback happening before the
             // ResourceThrottle has a chance to run.
             // To preserve the ordering the onPageStarted callback is synthesized from the
-            // shouldIgnoreNavigationCallback, and only if the navigation was not ignored (this
+            // shouldOverrideUrlLoading, and only if the navigation was not ignored (this
             // balances out with the onPageFinished callback, which is suppressed in the
             // AwContentsClient if the navigation was ignored).
             if (!ignoreNavigation) {
-                // The shouldIgnoreNavigation call might have resulted in posting messages to the
+                // The shouldOverrideUrlLoading call might have resulted in posting messages to the
                 // UI thread. Using sendMessage here (instead of calling onPageStarted directly)
-                // will allow those to run.
+                // will allow those to run in order.
                 mContentsClient.getCallbackHelper().postOnPageStarted(url);
             }
 
@@ -329,7 +329,7 @@ public class AwContents {
 
         int nativeWebContents = nativeGetWebContents(mNativeAwContents);
         mContentViewCore.initialize(containerView, internalAccessAdapter, nativeWebContents, null);
-        mContentViewCore.setContentViewClient(mContentsClient);
+        mContentViewCore.setContentViewClient(mContentsClient.getContentViewClient());
         mContentsClient.installWebContentsObserver(mContentViewCore);
 
         mSettings = new AwSettings(mContentViewCore.getContext(), nativeWebContents,
@@ -572,7 +572,7 @@ public class AwContents {
         ContentViewCore newCore = new ContentViewCore(mContainerView.getContext(),
                 ContentViewCore.PERSONALITY_VIEW);
         newCore.initialize(mContainerView, mInternalAccessAdapter, newWebContentsPtr, null);
-        newCore.setContentViewClient(mContentsClient);
+        newCore.setContentViewClient(mContentsClient.getContentViewClient());
         mContentsClient.installWebContentsObserver(newCore);
 
         ContentSettings oldSettings = mContentViewCore.getContentSettings();
@@ -1132,7 +1132,7 @@ public class AwContents {
         // but is optimized out in the restoreState case because the title is
         // already restored. See WebContentsImpl::UpdateTitleForEntry. So we
         // call the callback explicitly here.
-        if (result) mContentsClient.onUpdateTitle(mContentViewCore.getTitle());
+        if (result) mContentsClient.onReceivedTitle(mContentViewCore.getTitle());
 
         return result;
     }

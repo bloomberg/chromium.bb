@@ -69,7 +69,7 @@ class TestAwContentsClient extends NullContentsClient {
     }
 
     @Override
-    public void onUpdateTitle(String title) {
+    public void onReceivedTitle(String title) {
         mUpdatedTitle = title;
     }
 

@@ -5,6 +5,7 @@
 package org.chromium.android_webview;
 
 import android.content.pm.ActivityInfo;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Picture;
 import android.graphics.Rect;
@@ -36,13 +37,15 @@ import org.chromium.net.NetError;
  * new abstract methods that the our own client must implement.
  * i.e.: all methods in this class should either be final, or abstract.
  */
-public abstract class AwContentsClient extends ContentViewClient {
+public abstract class AwContentsClient {
 
     private static final String TAG = "AwContentsClient";
     private final AwContentsClientCallbackHelper mCallbackHelper =
         new AwContentsClientCallbackHelper(this);
 
     private AwWebContentsObserver mWebContentsObserver;
+
+    private AwContentViewClient mContentViewClient = new AwContentViewClient();
 
     private double mDIPScale;
 
@@ -62,7 +65,7 @@ public abstract class AwContentsClient extends ContentViewClient {
             if (errorCode == NetError.ERR_ABORTED) {
                 // This error code is generated for the following reasons:
                 // - WebView.stopLoading is called,
-                // - the navigation is intercepted by the embedder via shouldIgnoreNavigation.
+                // - the navigation is intercepted by the embedder via shouldOverrideNavigation.
                 //
                 // The Android WebView does not notify the embedder of these situations using this
                 // error code with the WebViewClient.onReceivedError callback.
@@ -83,19 +86,55 @@ public abstract class AwContentsClient extends ContentViewClient {
 
     }
 
-    void installWebContentsObserver(ContentViewCore contentViewCore) {
+    private class AwContentViewClient extends ContentViewClient {
+
+        @Override
+        public void onScaleChanged(float oldScale, float newScale) {
+            AwContentsClient.this.onScaleChangedScaled((float)(oldScale * mDIPScale),
+                    (float)(newScale * mDIPScale));
+        }
+
+        @Override
+        public void onStartContentIntent(Context context, String contentUrl) {
+            //  Callback when detecting a click on a content link.
+            AwContentsClient.this.shouldOverrideUrlLoading(contentUrl);
+        }
+
+        @Override
+        public void onTabCrash() {
+            // This is not possible so long as the webview is run single process!
+            throw new RuntimeException("Renderer crash reported.");
+        }
+
+        @Override
+        public void onUpdateTitle(String title) {
+            AwContentsClient.this.onReceivedTitle(title);
+        }
+
+        @Override
+        public boolean shouldOverrideKeyEvent(KeyEvent event) {
+            return AwContentsClient.this.shouldOverrideKeyEvent(event);
+        }
+
+    }
+
+    final void installWebContentsObserver(ContentViewCore contentViewCore) {
         if (mWebContentsObserver != null) {
             mWebContentsObserver.detachFromWebContents();
         }
         mWebContentsObserver = new AwWebContentsObserver(contentViewCore);
     }
 
-    void setDIPScale(double dipScale) {
+    final void setDIPScale(double dipScale) {
         mDIPScale = dipScale;
     }
 
     final AwContentsClientCallbackHelper getCallbackHelper() {
         return mCallbackHelper;
+    }
+
+    final ContentViewClient getContentViewClient() {
+        return mContentViewClient;
     }
 
     //--------------------------------------------------------------------------------------------
@@ -110,9 +149,11 @@ public abstract class AwContentsClient extends ContentViewClient {
 
     public abstract InterceptedRequestData shouldInterceptRequest(String url);
 
-    public abstract void onLoadResource(String url);
+    public abstract boolean shouldOverrideKeyEvent(KeyEvent event);
 
-    public abstract boolean shouldIgnoreNavigation(String url);
+    public abstract boolean shouldOverrideUrlLoading(String url);
+
+    public abstract void onLoadResource(String url);
 
     public abstract void onUnhandledKeyEvent(KeyEvent event);
 
@@ -135,10 +176,6 @@ public abstract class AwContentsClient extends ContentViewClient {
 
     public abstract void onGeolocationPermissionsHidePrompt();
 
-    public final void onScaleChanged(float oldScale, float newScale) {
-        onScaleChangedScaled((float)(oldScale * mDIPScale), (float)(newScale * mDIPScale));
-    }
-
     public abstract void onScaleChangedScaled(float oldScale, float newScale);
 
     protected abstract void handleJsAlert(String url, String message, JsResultReceiver receiver);
@@ -158,6 +195,8 @@ public abstract class AwContentsClient extends ContentViewClient {
     public abstract void onReceivedTouchIconUrl(String url, boolean precomposed);
 
     public abstract void onReceivedIcon(Bitmap bitmap);
+
+    public abstract void onReceivedTitle(String title);
 
     protected abstract void onRequestFocus();
 
@@ -198,21 +237,4 @@ public abstract class AwContentsClient extends ContentViewClient {
      */
     public abstract void onNewPicture(Picture picture);
 
-    //--------------------------------------------------------------------------------------------
-    //             Stuff that we ignore since it only makes sense for Chrome browser
-    //--------------------------------------------------------------------------------------------
-    //
-
-    @Override
-    final public boolean shouldOverrideScroll(float dx, float dy, float scrollX, float scrollY) {
-        return false;
-    }
-
-    @Override
-    final public void onContextualActionBarShown() {
-    }
-
-    @Override
-    final public void onContextualActionBarHidden() {
-    }
 }

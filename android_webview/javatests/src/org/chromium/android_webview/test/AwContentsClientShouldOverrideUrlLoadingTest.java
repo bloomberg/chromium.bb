@@ -32,7 +32,7 @@ import java.util.concurrent.Callable;
 /**
  * Tests for the WebViewClient.shouldOverrideUrlLoading() method.
  */
-public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
+public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     private final static String ABOUT_BLANK_URL = "about:blank";
     private final static String DATA_URL = "data:text/html,<div/>";
     private final static String REDIRECT_TARGET_PATH = "/redirect_target.html";
@@ -44,54 +44,54 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
     private static class TestAwContentsClient
             extends org.chromium.android_webview.test.TestAwContentsClient {
 
-        public static class ShouldIgnoreNavigationHelper extends CallbackHelper {
-            private String mShouldIgnoreNavigationUrl;
-            private String mPreviousShouldIgnoreNavigationUrl;
-            private boolean mShouldIgnoreNavigationReturnValue = false;
-            void setShouldIgnoreNavigationUrl(String url) {
-                mShouldIgnoreNavigationUrl = url;
+        public static class ShouldOverrideUrlLoadingHelper extends CallbackHelper {
+            private String mShouldOverrideUrlLoadingUrl;
+            private String mPreviousShouldOverrideUrlLoadingUrl;
+            private boolean mShouldOverrideUrlLoadingReturnValue = false;
+            void setShouldOverrideUrlLoadingUrl(String url) {
+                mShouldOverrideUrlLoadingUrl = url;
             }
-            void setPreviousShouldIgnoreNavigationUrl(String url) {
-                mPreviousShouldIgnoreNavigationUrl = url;
+            void setPreviousShouldOverrideUrlLoadingUrl(String url) {
+                mPreviousShouldOverrideUrlLoadingUrl = url;
             }
-            void setShouldIgnoreNavigationReturnValue(boolean value) {
-                mShouldIgnoreNavigationReturnValue = value;
+            void setShouldOverrideUrlLoadingReturnValue(boolean value) {
+                mShouldOverrideUrlLoadingReturnValue = value;
             }
-            public String getShouldIgnoreNavigationUrl() {
+            public String getShouldOverrideUrlLoadingUrl() {
                 assert getCallCount() > 0;
-                return mShouldIgnoreNavigationUrl;
+                return mShouldOverrideUrlLoadingUrl;
             }
-            public String getPreviousShouldIgnoreNavigationUrl() {
+            public String getPreviousShouldOverrideUrlLoadingUrl() {
                 assert getCallCount() > 1;
-                return mPreviousShouldIgnoreNavigationUrl;
+                return mPreviousShouldOverrideUrlLoadingUrl;
             }
-            public boolean getShouldIgnoreNavigationReturnValue() {
-                return mShouldIgnoreNavigationReturnValue;
+            public boolean getShouldOverrideUrlLoadingReturnValue() {
+                return mShouldOverrideUrlLoadingReturnValue;
             }
             public void notifyCalled(String url) {
-                mPreviousShouldIgnoreNavigationUrl = mShouldIgnoreNavigationUrl;
-                mShouldIgnoreNavigationUrl = url;
+                mPreviousShouldOverrideUrlLoadingUrl = mShouldOverrideUrlLoadingUrl;
+                mShouldOverrideUrlLoadingUrl = url;
                 notifyCalled();
             }
         }
 
         @Override
-        public boolean shouldIgnoreNavigation(String url) {
-            super.shouldIgnoreNavigation(url);
+        public boolean shouldOverrideUrlLoading(String url) {
+            super.shouldOverrideUrlLoading(url);
             boolean returnValue =
-                mShouldIgnoreNavigationHelper.getShouldIgnoreNavigationReturnValue();
-            mShouldIgnoreNavigationHelper.notifyCalled(url);
+                mShouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingReturnValue();
+            mShouldOverrideUrlLoadingHelper.notifyCalled(url);
             return returnValue;
         }
 
-        private ShouldIgnoreNavigationHelper mShouldIgnoreNavigationHelper;
+        private ShouldOverrideUrlLoadingHelper mShouldOverrideUrlLoadingHelper;
 
         public TestAwContentsClient() {
-            mShouldIgnoreNavigationHelper = new ShouldIgnoreNavigationHelper();
+            mShouldOverrideUrlLoadingHelper = new ShouldOverrideUrlLoadingHelper();
         }
 
-        public ShouldIgnoreNavigationHelper getShouldIgnoreNavigationHelper() {
-            return mShouldIgnoreNavigationHelper;
+        public ShouldOverrideUrlLoadingHelper getShouldOverrideUrlLoadingHelper() {
+            return mShouldOverrideUrlLoadingHelper;
         }
     }
 
@@ -117,13 +117,13 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
     }
 
     // Since this value is read on the UI thread, it's simpler to set it there too.
-    void setShouldIgnoreNavigationReturnValueOnUiThread(
-            final TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper,
+    void setShouldOverrideUrlLoadingReturnValueOnUiThread(
+            final TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideHelper,
             final boolean value) throws Throwable {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                shouldIgnoreNavigationHelper.setShouldIgnoreNavigationReturnValue(value);
+                shouldOverrideHelper.setShouldOverrideUrlLoadingReturnValue(value);
             }
         });
     }
@@ -194,13 +194,13 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
         final AwTestContainerView testContainerView =
             createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
-            contentsClient.getShouldIgnoreNavigationHelper();
+        TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
+            contentsClient.getShouldOverrideUrlLoadingHelper();
 
         loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 getHtmlForPageWithSimpleLinkTo(DATA_URL), "text/html", false);
 
-        assertEquals(0, shouldIgnoreNavigationHelper.getCallCount());
+        assertEquals(0, shouldOverrideUrlLoadingHelper.getCallCount());
     }
 
     private void waitForNavigationRunnableAndAssertTitleChanged(AwContents awContents,
@@ -220,8 +220,8 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
         final AwTestContainerView testContainerView =
             createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
-            contentsClient.getShouldIgnoreNavigationHelper();
+        TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
+            contentsClient.getShouldOverrideUrlLoadingHelper();
         final String[] pageTitles = new String[] { "page1", "page2", "page3" };
 
         for (String title: pageTitles) {
@@ -229,7 +229,7 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
                     CommonResources.makeHtmlPageFrom("<title>" + title + "</title>", ""),
                     "text/html", false);
         }
-        assertEquals(0, shouldIgnoreNavigationHelper.getCallCount());
+        assertEquals(0, shouldOverrideUrlLoadingHelper.getCallCount());
 
         waitForNavigationRunnableAndAssertTitleChanged(awContents,
                 contentsClient.getOnPageFinishedHelper(), new Runnable() {
@@ -238,7 +238,7 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
                 awContents.goBack();
             }
         });
-        assertEquals(0, shouldIgnoreNavigationHelper.getCallCount());
+        assertEquals(0, shouldOverrideUrlLoadingHelper.getCallCount());
 
         waitForNavigationRunnableAndAssertTitleChanged(awContents,
                 contentsClient.getOnPageFinishedHelper(), new Runnable() {
@@ -247,7 +247,7 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
                 awContents.goForward();
             }
         });
-        assertEquals(0, shouldIgnoreNavigationHelper.getCallCount());
+        assertEquals(0, shouldOverrideUrlLoadingHelper.getCallCount());
 
         waitForNavigationRunnableAndAssertTitleChanged(awContents,
                 contentsClient.getOnPageFinishedHelper(), new Runnable() {
@@ -256,7 +256,7 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
                 awContents.goBackOrForward(-2);
             }
         });
-        assertEquals(0, shouldIgnoreNavigationHelper.getCallCount());
+        assertEquals(0, shouldOverrideUrlLoadingHelper.getCallCount());
 
         waitForNavigationRunnableAndAssertTitleChanged(awContents,
                 contentsClient.getOnPageFinishedHelper(), new Runnable() {
@@ -265,7 +265,7 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
                 awContents.goBackOrForward(1);
             }
         });
-        assertEquals(0, shouldIgnoreNavigationHelper.getCallCount());
+        assertEquals(0, shouldOverrideUrlLoadingHelper.getCallCount());
     }
 
     @SmallTest
@@ -275,10 +275,10 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
         final AwTestContainerView testContainerView =
             createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
-            contentsClient.getShouldIgnoreNavigationHelper();
+        TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
+            contentsClient.getShouldOverrideUrlLoadingHelper();
 
-        setShouldIgnoreNavigationReturnValueOnUiThread(shouldIgnoreNavigationHelper, true);
+        setShouldOverrideUrlLoadingReturnValueOnUiThread(shouldOverrideUrlLoadingHelper, true);
 
         loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 getHtmlForPageWithSimpleLinkTo(DATA_URL), "text/html", false);
@@ -293,19 +293,19 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
         final AwTestContainerView testContainerView =
             createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
-            contentsClient.getShouldIgnoreNavigationHelper();
+        TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
+            contentsClient.getShouldOverrideUrlLoadingHelper();
         OnPageStartedHelper onPageStartedHelper = contentsClient.getOnPageStartedHelper();
 
         loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 getHtmlForPageWithSimpleLinkTo(DATA_URL), "text/html", false);
 
-        final int shouldIgnoreNavigationCallCount = shouldIgnoreNavigationHelper.getCallCount();
+        final int shouldOverrideUrlLoadingCallCount = shouldOverrideUrlLoadingHelper.getCallCount();
         final int onPageStartedCallCount = onPageStartedHelper.getCallCount();
-        setShouldIgnoreNavigationReturnValueOnUiThread(shouldIgnoreNavigationHelper, true);
+        setShouldOverrideUrlLoadingReturnValueOnUiThread(shouldOverrideUrlLoadingHelper, true);
         clickOnLinkUsingJs(awContents, contentsClient);
 
-        shouldIgnoreNavigationHelper.waitForCallback(shouldIgnoreNavigationCallCount);
+        shouldOverrideUrlLoadingHelper.waitForCallback(shouldOverrideUrlLoadingCallCount);
         assertEquals(onPageStartedCallCount, onPageStartedHelper.getCallCount());
     }
 
@@ -317,23 +317,23 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
         final AwTestContainerView testContainerView =
             createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        final TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
-            contentsClient.getShouldIgnoreNavigationHelper();
+        final TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
+            contentsClient.getShouldOverrideUrlLoadingHelper();
         OnReceivedErrorHelper onReceivedErrorHelper = contentsClient.getOnReceivedErrorHelper();
         final int onReceivedErrorCallCount = onReceivedErrorHelper.getCallCount();
 
         loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 getHtmlForPageWithSimpleLinkTo(DATA_URL), "text/html", false);
 
-        final int shouldIgnoreNavigationCallCount = shouldIgnoreNavigationHelper.getCallCount();
+        final int shouldOverrideUrlLoadingCallCount = shouldOverrideUrlLoadingHelper.getCallCount();
 
-        setShouldIgnoreNavigationReturnValueOnUiThread(shouldIgnoreNavigationHelper, true);
+        setShouldOverrideUrlLoadingReturnValueOnUiThread(shouldOverrideUrlLoadingHelper, true);
 
         clickOnLinkUsingJs(awContents, contentsClient);
 
-        shouldIgnoreNavigationHelper.waitForCallback(shouldIgnoreNavigationCallCount);
+        shouldOverrideUrlLoadingHelper.waitForCallback(shouldOverrideUrlLoadingCallCount);
 
-        setShouldIgnoreNavigationReturnValueOnUiThread(shouldIgnoreNavigationHelper, false);
+        setShouldOverrideUrlLoadingReturnValueOnUiThread(shouldOverrideUrlLoadingHelper, false);
 
         // After we load this URL we're certain that any in-flight callbacks for the previous
         // navigation have been delivered.
@@ -349,8 +349,8 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
         final AwTestContainerView testContainerView =
             createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        final TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
-            contentsClient.getShouldIgnoreNavigationHelper();
+        final TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
+            contentsClient.getShouldOverrideUrlLoadingHelper();
 
         final String anchorLinkPath = "/anchor_link.html";
         final String anchorLinkUrl = mWebServer.getResponseUrl(anchorLinkPath);
@@ -359,8 +359,8 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
 
         loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), anchorLinkUrl);
 
-        final int shouldIgnoreNavigationCallCount =
-            shouldIgnoreNavigationHelper.getCallCount();
+        final int shouldOverrideUrlLoadingCallCount =
+            shouldOverrideUrlLoadingHelper.getCallCount();
 
         clickOnLinkUsingJs(awContents, contentsClient);
 
@@ -368,8 +368,8 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
         // navigation have been delivered.
         loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), ABOUT_BLANK_URL);
 
-        assertEquals(shouldIgnoreNavigationCallCount,
-                shouldIgnoreNavigationHelper.getCallCount());
+        assertEquals(shouldOverrideUrlLoadingCallCount,
+                shouldOverrideUrlLoadingHelper.getCallCount());
     }
 
     @SmallTest
@@ -379,18 +379,18 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
         final AwTestContainerView testContainerView =
             createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
-                contentsClient.getShouldIgnoreNavigationHelper();
+        TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
+                contentsClient.getShouldOverrideUrlLoadingHelper();
 
         // We can't go to about:blank from here because we'd get a cross-origin error.
         loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 getHtmlForPageWithSimpleLinkTo(DATA_URL), "text/html", false);
 
-        int callCount = shouldIgnoreNavigationHelper.getCallCount();
+        int callCount = shouldOverrideUrlLoadingHelper.getCallCount();
 
         clickOnLinkUsingJs(awContents, contentsClient);
 
-        shouldIgnoreNavigationHelper.waitForCallback(callCount);
+        shouldOverrideUrlLoadingHelper.waitForCallback(callCount);
     }
 
 
@@ -401,8 +401,8 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
         final AwTestContainerView testContainerView =
             createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
-                contentsClient.getShouldIgnoreNavigationHelper();
+        TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
+                contentsClient.getShouldOverrideUrlLoadingHelper();
 
         final String httpPath = "/page_with_link_to_self.html";
         final String httpPathOnServer = mWebServer.getResponseUrl(httpPath);
@@ -412,13 +412,13 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
         loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 httpPathOnServer);
 
-        int callCount = shouldIgnoreNavigationHelper.getCallCount();
+        int callCount = shouldOverrideUrlLoadingHelper.getCallCount();
 
         clickOnLinkUsingJs(awContents, contentsClient);
 
-        shouldIgnoreNavigationHelper.waitForCallback(callCount);
+        shouldOverrideUrlLoadingHelper.waitForCallback(callCount);
         assertEquals(httpPathOnServer,
-                shouldIgnoreNavigationHelper.getShouldIgnoreNavigationUrl());
+                shouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingUrl());
     }
 
     @SmallTest
@@ -430,18 +430,18 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
             createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         enableJavaScriptOnUiThread(awContents);
-        TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
-                contentsClient.getShouldIgnoreNavigationHelper();
+        TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
+                contentsClient.getShouldOverrideUrlLoadingHelper();
 
         final String redirectTargetUrl = createRedirectTargetPage(mWebServer);
         loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 getHtmlForPageWithJsAssignLinkTo(redirectTargetUrl), "text/html", false);
 
-        int callCount = shouldIgnoreNavigationHelper.getCallCount();
+        int callCount = shouldOverrideUrlLoadingHelper.getCallCount();
 
         clickOnLinkUsingJs(awContents, contentsClient);
 
-        shouldIgnoreNavigationHelper.waitForCallback(callCount);
+        shouldOverrideUrlLoadingHelper.waitForCallback(callCount);
     }
 
     @SmallTest
@@ -453,16 +453,16 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
             createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         enableJavaScriptOnUiThread(awContents);
-        TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
-                contentsClient.getShouldIgnoreNavigationHelper();
+        TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
+                contentsClient.getShouldOverrideUrlLoadingHelper();
 
         final String redirectTargetUrl = createRedirectTargetPage(mWebServer);
         loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 getHtmlForPageWithJsReplaceLinkTo(redirectTargetUrl), "text/html", false);
 
-        int callCount = shouldIgnoreNavigationHelper.getCallCount();
+        int callCount = shouldOverrideUrlLoadingHelper.getCallCount();
         clickOnLinkUsingJs(awContents, contentsClient);
-        shouldIgnoreNavigationHelper.waitForCallback(callCount);
+        shouldOverrideUrlLoadingHelper.waitForCallback(callCount);
     }
 
     @SmallTest
@@ -472,18 +472,18 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
         final AwTestContainerView testContainerView =
             createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
-                contentsClient.getShouldIgnoreNavigationHelper();
+        TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
+                contentsClient.getShouldOverrideUrlLoadingHelper();
 
         final String redirectTargetUrl = createRedirectTargetPage(mWebServer);
         loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 getHtmlForPageWithSimpleLinkTo(redirectTargetUrl), "text/html", false);
 
-        int callCount = shouldIgnoreNavigationHelper.getCallCount();
+        int callCount = shouldOverrideUrlLoadingHelper.getCallCount();
         clickOnLinkUsingJs(awContents, contentsClient);
-        shouldIgnoreNavigationHelper.waitForCallback(callCount);
+        shouldOverrideUrlLoadingHelper.waitForCallback(callCount);
         assertEquals(redirectTargetUrl,
-                shouldIgnoreNavigationHelper.getShouldIgnoreNavigationUrl());
+                shouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingUrl());
     }
 
     @SmallTest
@@ -493,8 +493,8 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
         final AwTestContainerView testContainerView =
             createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        final TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
-                contentsClient.getShouldIgnoreNavigationHelper();
+        final TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
+                contentsClient.getShouldOverrideUrlLoadingHelper();
 
         final String redirectTargetUrl = createRedirectTargetPage(mWebServer);
         final String pageWithLinkToIgnorePath = "/page_with_link_to_ignore.html";
@@ -509,17 +509,17 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
         loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 pageWithLinkToIgnoreUrl);
 
-        setShouldIgnoreNavigationReturnValueOnUiThread(shouldIgnoreNavigationHelper, true);
+        setShouldOverrideUrlLoadingReturnValueOnUiThread(shouldOverrideUrlLoadingHelper, true);
 
-        int callCount = shouldIgnoreNavigationHelper.getCallCount();
+        int callCount = shouldOverrideUrlLoadingHelper.getCallCount();
         int onPageFinishedCallCount = contentsClient.getOnPageFinishedHelper().getCallCount();
         clickOnLinkUsingJs(awContents, contentsClient);
-        // Some time around here true should be returned from the shouldIgnoreNavigation
+        // Some time around here true should be returned from the shouldOverrideUrlLoading
         // callback causing the navigation caused by calling clickOnLinkUsingJs to be ignored.
         // We validate this by checking which pages were loaded on the server.
-        shouldIgnoreNavigationHelper.waitForCallback(callCount);
+        shouldOverrideUrlLoadingHelper.waitForCallback(callCount);
 
-        setShouldIgnoreNavigationReturnValueOnUiThread(shouldIgnoreNavigationHelper, false);
+        setShouldOverrideUrlLoadingReturnValueOnUiThread(shouldOverrideUrlLoadingHelper, false);
 
         // We need to wait for the navigation to complete before we can initiate another load.
         contentsClient.getOnPageFinishedHelper().waitForCallback(onPageFinishedCallCount);
@@ -541,18 +541,18 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
         final AwTestContainerView testContainerView =
             createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
-                contentsClient.getShouldIgnoreNavigationHelper();
+        TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
+                contentsClient.getShouldOverrideUrlLoadingHelper();
         loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 getHtmlForPageWithSimpleLinkTo(dataUrl), "text/html", false);
 
-        int callCount = shouldIgnoreNavigationHelper.getCallCount();
+        int callCount = shouldOverrideUrlLoadingHelper.getCallCount();
         clickOnLinkUsingJs(awContents, contentsClient);
 
-        shouldIgnoreNavigationHelper.waitForCallback(callCount);
+        shouldOverrideUrlLoadingHelper.waitForCallback(callCount);
         assertTrue("Expected URL that starts with 'data:' but got: <" +
-                   shouldIgnoreNavigationHelper.getShouldIgnoreNavigationUrl() + "> instead.",
-                   shouldIgnoreNavigationHelper.getShouldIgnoreNavigationUrl().startsWith(
+                   shouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingUrl() + "> instead.",
+                   shouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingUrl().startsWith(
                            "data:"));
     }
 
@@ -563,18 +563,18 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
         final AwTestContainerView testContainerView =
             createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
-                contentsClient.getShouldIgnoreNavigationHelper();
+        TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
+                contentsClient.getShouldOverrideUrlLoadingHelper();
         final String unsupportedSchemeUrl = "foobar://resource/1";
         loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 getHtmlForPageWithSimpleLinkTo(unsupportedSchemeUrl), "text/html", false);
 
-        int callCount = shouldIgnoreNavigationHelper.getCallCount();
+        int callCount = shouldOverrideUrlLoadingHelper.getCallCount();
         clickOnLinkUsingJs(awContents, contentsClient);
 
-        shouldIgnoreNavigationHelper.waitForCallback(callCount);
+        shouldOverrideUrlLoadingHelper.waitForCallback(callCount);
         assertEquals(unsupportedSchemeUrl,
-                shouldIgnoreNavigationHelper.getShouldIgnoreNavigationUrl());
+                shouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingUrl());
     }
 
     @SmallTest
@@ -585,8 +585,8 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
         final AwTestContainerView testContainerView =
             createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        final TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
-            contentsClient.getShouldIgnoreNavigationHelper();
+        final TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
+            contentsClient.getShouldOverrideUrlLoadingHelper();
 
         final String redirectTargetUrl = createRedirectTargetPage(mWebServer);
         final String postLinkUrl = addPageToTestServer(mWebServer, "/page_with_post_link.html",
@@ -594,8 +594,8 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
 
         loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), postLinkUrl);
 
-        final int shouldIgnoreNavigationCallCount =
-            shouldIgnoreNavigationHelper.getCallCount();
+        final int shouldOverrideUrlLoadingCallCount =
+            shouldOverrideUrlLoadingHelper.getCallCount();
 
         assertEquals(0, mWebServer.getRequestCount(REDIRECT_TARGET_PATH));
         clickOnLinkUsingJs(awContents, contentsClient);
@@ -609,10 +609,10 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
         }, WAIT_TIMEOUT_SECONDS * 1000L, CHECK_INTERVAL));
 
         // Since the targetURL was loaded from the test server it means all processing related
-        // to dispatching a shouldIgnoreNavigation callback had finished and checking the call
+        // to dispatching a shouldOverrideUrlLoading callback had finished and checking the call
         // is stable.
-        assertEquals(shouldIgnoreNavigationCallCount,
-                shouldIgnoreNavigationHelper.getCallCount());
+        assertEquals(shouldOverrideUrlLoadingCallCount,
+                shouldOverrideUrlLoadingHelper.getCallCount());
     }
 
     @SmallTest
@@ -622,8 +622,8 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
         final AwTestContainerView testContainerView =
             createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        final TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
-            contentsClient.getShouldIgnoreNavigationHelper();
+        final TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
+            contentsClient.getShouldOverrideUrlLoadingHelper();
 
         final String iframeRedirectTargetUrl = createRedirectTargetPage(mWebServer);
         final String iframeRedirectUrl =
@@ -632,8 +632,8 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
             addPageToTestServer(mWebServer, "/iframe_intercept.html",
                 makeHtmlPageFrom("", "<iframe src=\"" + iframeRedirectUrl + "\" />"));
 
-        final int shouldIgnoreNavigationCallCount =
-            shouldIgnoreNavigationHelper.getCallCount();
+        final int shouldOverrideUrlLoadingCallCount =
+            shouldOverrideUrlLoadingHelper.getCallCount();
 
         assertEquals(0, mWebServer.getRequestCount(REDIRECT_TARGET_PATH));
         loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), pageWithIframeUrl);
@@ -646,8 +646,8 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
             }
         }, WAIT_TIMEOUT_SECONDS * 1000L, CHECK_INTERVAL));
 
-        assertEquals(shouldIgnoreNavigationCallCount,
-                shouldIgnoreNavigationHelper.getCallCount());
+        assertEquals(shouldOverrideUrlLoadingCallCount,
+                shouldOverrideUrlLoadingHelper.getCallCount());
     }
 
     @SmallTest
@@ -657,22 +657,22 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
         final AwTestContainerView testContainerView =
             createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        final TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
-            contentsClient.getShouldIgnoreNavigationHelper();
+        final TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
+            contentsClient.getShouldOverrideUrlLoadingHelper();
 
         final String unsupportedSchemeUrl = "foobar://resource/1";
         final String pageWithIframeUrl =
             addPageToTestServer(mWebServer, "/iframe_intercept.html",
                 makeHtmlPageFrom("", "<iframe src=\"" + unsupportedSchemeUrl + "\" />"));
 
-        final int shouldIgnoreNavigationCallCount =
-            shouldIgnoreNavigationHelper.getCallCount();
+        final int shouldOverrideUrlLoadingCallCount =
+            shouldOverrideUrlLoadingHelper.getCallCount();
 
         loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), pageWithIframeUrl);
 
-        shouldIgnoreNavigationHelper.waitForCallback(shouldIgnoreNavigationCallCount);
+        shouldOverrideUrlLoadingHelper.waitForCallback(shouldOverrideUrlLoadingCallCount);
         assertEquals(unsupportedSchemeUrl,
-                shouldIgnoreNavigationHelper.getShouldIgnoreNavigationUrl());
+                shouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingUrl());
     }
 
     /**
@@ -694,14 +694,14 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
                 getHtmlForPageWithSimpleLinkTo(redirectUrl));
         enableJavaScriptOnUiThread(awContents);
 
-        TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
-                contentsClient.getShouldIgnoreNavigationHelper();
-        int directLoadCallCount = shouldIgnoreNavigationHelper.getCallCount();
+        TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
+                contentsClient.getShouldOverrideUrlLoadingHelper();
+        int directLoadCallCount = shouldOverrideUrlLoadingHelper.getCallCount();
         loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), redirectUrl);
 
-        shouldIgnoreNavigationHelper.waitForCallback(directLoadCallCount, 1);
+        shouldOverrideUrlLoadingHelper.waitForCallback(directLoadCallCount, 1);
         assertEquals(redirectTarget,
-                shouldIgnoreNavigationHelper.getShouldIgnoreNavigationUrl());
+                shouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingUrl());
 
         // There is a slight difference between navigations caused by calling load and navigations
         // caused by clicking on a link:
@@ -710,19 +710,19 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AwTestBase {
         //  * when clicking on a link the navigation has the LINK type and has_user_gesture is
         //    true.
         // Both of these should yield the same result which is what we're verifying here.
-        int indirectLoadCallCount = shouldIgnoreNavigationHelper.getCallCount();
+        int indirectLoadCallCount = shouldOverrideUrlLoadingHelper.getCallCount();
         loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 pageWithLinkToRedirectUrl);
 
-        assertEquals(indirectLoadCallCount, shouldIgnoreNavigationHelper.getCallCount());
+        assertEquals(indirectLoadCallCount, shouldOverrideUrlLoadingHelper.getCallCount());
 
         clickOnLinkUsingJs(awContents, contentsClient);
 
-        shouldIgnoreNavigationHelper.waitForCallback(indirectLoadCallCount, 2);
+        shouldOverrideUrlLoadingHelper.waitForCallback(indirectLoadCallCount, 2);
         assertEquals(redirectTarget,
-                shouldIgnoreNavigationHelper.getShouldIgnoreNavigationUrl());
+                shouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingUrl());
         assertEquals(redirectUrl,
-                shouldIgnoreNavigationHelper.getPreviousShouldIgnoreNavigationUrl());
+                shouldOverrideUrlLoadingHelper.getPreviousShouldOverrideUrlLoadingUrl());
     }
 
     @SmallTest
