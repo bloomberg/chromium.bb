@@ -36,8 +36,6 @@
 #include "core/page/EventHandler.h"
 #include "core/rendering/HitTestResult.h"
 
-#if ENABLE(VIEWPORT)
-
 using namespace WebCore;
 
 namespace WebKit {
@@ -127,5 +125,3 @@ IntPoint ViewportAnchor::computeOrigin(const IntSize& currentViewSize) const
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(VIEWPORT)

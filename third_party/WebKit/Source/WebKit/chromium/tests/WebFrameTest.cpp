@@ -249,8 +249,6 @@ TEST_F(WebFrameTest, DispatchMessageEventWithOriginCheck)
     EXPECT_EQ(std::string::npos, content.find("Message 2."));
 }
 
-#if ENABLE(VIEWPORT)
-
 class FixedLayoutTestWebViewClient : public WebViewClient {
  public:
     virtual WebScreenInfo screenInfo() OVERRIDE { return m_screenInfo; }
@@ -710,7 +708,6 @@ TEST_F(WebFrameTest, targetDensityDpiDevice)
         m_webView = 0;
     }
 }
-#endif
 
 class WebFrameResizeTest : public WebFrameTest {
 protected:

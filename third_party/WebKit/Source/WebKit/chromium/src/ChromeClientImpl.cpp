@@ -651,7 +651,6 @@ static float getLayoutWidthForNonWideViewport(const ViewportArguments& arguments
 
 void ChromeClientImpl::dispatchViewportPropertiesDidChange(const ViewportArguments& arguments) const
 {
-#if ENABLE(VIEWPORT)
     if (!m_webView->settings()->viewportEnabled() || !m_webView->isFixedLayoutModeEnabled() || !m_webView->client() || !m_webView->page())
         return;
 
@@ -696,7 +695,6 @@ void ChromeClientImpl::dispatchViewportPropertiesDidChange(const ViewportArgumen
     m_webView->setFixedLayoutSize(flooredIntSize(computed.layoutSize));
     m_webView->setDeviceScaleFactor(deviceScaleFactor);
     m_webView->setPageScaleFactorLimits(computed.minimumScale, computed.maximumScale);
-#endif
 }
 
 void ChromeClientImpl::print(Frame* frame)

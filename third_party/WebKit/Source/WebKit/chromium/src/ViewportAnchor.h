@@ -52,7 +52,6 @@ namespace WebKit {
 // node; as the node moves or the view is resized, the viewport anchor maintains
 // its orientation relative to the node, and the viewport origin maintains its
 // orientation relative to the anchor.
-#if ENABLE(VIEWPORT)
 class ViewportAnchor {
     WTF_MAKE_NONCOPYABLE(ViewportAnchor);
 public:
@@ -73,7 +72,6 @@ private:
     WebCore::FloatSize m_anchorInViewCoords;
     WebCore::FloatSize m_anchorInNodeCoords;
 };
-#endif // ENABLE(VIEWPORT)
 
 } // namespace WebKit
 

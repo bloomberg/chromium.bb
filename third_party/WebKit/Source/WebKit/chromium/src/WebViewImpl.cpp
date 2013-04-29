@@ -1647,7 +1647,6 @@ void WebViewImpl::resize(const WebSize& newSize)
 
     m_size = newSize;
 
-#if ENABLE(VIEWPORT)
     bool shouldAnchorAndRescaleViewport = settings()->viewportEnabled() && oldSize.width && oldContentsWidth;
     ViewportAnchor viewportAnchor(mainFrameImpl()->frame()->eventHandler());
     if (shouldAnchorAndRescaleViewport) {
@@ -1657,7 +1656,6 @@ void WebViewImpl::resize(const WebSize& newSize)
 
     ViewportArguments viewportArguments = mainFrameImpl()->frame()->document()->viewportArguments();
     m_page->chrome()->client()->dispatchViewportPropertiesDidChange(viewportArguments);
-#endif
 
     WebDevToolsAgentPrivate* agentPrivate = devToolsAgentPrivate();
     if (agentPrivate)
@@ -1668,7 +1666,6 @@ void WebViewImpl::resize(const WebSize& newSize)
             webFrame->frameView()->resize(m_size);
     }
 
-#if ENABLE(VIEWPORT)
     if (settings()->viewportEnabled()) {
         // Relayout immediately to recalculate the minimum scale limit.
         if (view->needsLayout())
@@ -1691,7 +1688,6 @@ void WebViewImpl::resize(const WebSize& newSize)
             }
         }
     }
-#endif
 
     sendResizeEventAndRepaint();
 }
