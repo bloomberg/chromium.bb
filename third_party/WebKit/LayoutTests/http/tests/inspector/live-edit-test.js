@@ -2,7 +2,7 @@ var initialize_LiveEditTest = function() {
 
 InspectorTest.replaceInSource = function(sourceFrame, string, replacement)
 {
-    sourceFrame._textEditor._mainPanel.setReadOnly(false);
+    sourceFrame._textEditor.setReadOnly(false);
     for (var i = 0; i < sourceFrame._textEditor.linesCount; ++i) {
         var line = sourceFrame._textEditor.line(i);
         var column = line.indexOf(string);
@@ -21,7 +21,7 @@ InspectorTest.commitSource = function(sourceFrame)
 
 InspectorTest.undoSourceEditing = function(sourceFrame)
 {
-    sourceFrame._textEditor._mainPanel._handleUndoRedo(false);
+    sourceFrame._textEditor.undo();
 }
 
 };

@@ -71,8 +71,6 @@ function test()
     }
 
     WebInspector.breakpointManager._storage._breakpoints = {};
-    InspectorTest.addSniffer(WebInspector.DefaultTextEditor.prototype, "addBreakpoint", addBreakpointSniffer, true);
-    InspectorTest.addSniffer(WebInspector.DefaultTextEditor.prototype, "removeBreakpoint", removeBreakpointSniffer, true);
 
     InspectorTest.runDebuggerTestSuite([
         function testEditUndo(next)
@@ -86,6 +84,9 @@ function test()
                 javaScriptSourceFrame = sourceFrame;
                 uiSourceCode = sourceFrame._uiSourceCode;
                 javaScriptSourceFrame._textEditor.main = true;
+
+                InspectorTest.addSniffer(javaScriptSourceFrame._textEditor.__proto__, "addBreakpoint", addBreakpointSniffer, true);
+                InspectorTest.addSniffer(javaScriptSourceFrame._textEditor.__proto__, "removeBreakpoint", removeBreakpointSniffer, true);
                 
                 InspectorTest.addResult("Setting breakpoint:");
                 InspectorTest.addSniffer(WebInspector.BreakpointManager.Breakpoint.prototype, "_addResolvedLocation", breakpointResolved);

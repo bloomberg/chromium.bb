@@ -44,8 +44,12 @@ function test()
             function testWordSelectionToSearchQuery(next)
             {
                 setSelection(sourceFrame, lineColumn, {line: lineColumn.line, column: lineColumn.column + string.length});
-                selectionToSearchInputTest();
-                next();
+                setTimeout(secondStep);
+                function secondStep()
+                {
+                    selectionToSearchInputTest();
+                    next();
+                }
             },
         ]);
     }
