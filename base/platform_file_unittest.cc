@@ -262,7 +262,11 @@ TEST(PlatformFile, TruncatePlatformFile) {
 }
 
 // Flakily fails: http://crbug.com/86494
+#if defined(OS_ANDROID)
+TEST(PlatformFile, TouchGetInfoPlatformFile) {
+#else
 TEST(PlatformFile, DISABLED_TouchGetInfoPlatformFile) {
+#endif
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::PlatformFile file = base::CreatePlatformFile(
