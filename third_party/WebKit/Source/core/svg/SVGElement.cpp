@@ -78,6 +78,11 @@ SVGElement::~SVGElement()
             cursorImageValue->removeReferencedElement(this);
 
         delete rareData;
+
+        // The rare data cleanup may have caused other SVG nodes to be deleted,
+        // modifying the rare data map, so we must re-get the iterator here.
+        it = rareDataMap.find(this);
+        ASSERT(it != rareDataMap.end());
         rareDataMap.remove(it);
     }
     ASSERT(document());
