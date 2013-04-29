@@ -131,6 +131,9 @@ class ActivityLog : public ProfileKeyedService,
   // Needs to be public so the error delegate can call it.
   void KillActivityLogDatabase();
 
+  // For unit tests only.
+  void SetArgumentLoggingForTesting(bool log_arguments);
+
  private:
   friend class ActivityLogFactory;
 
@@ -173,26 +176,23 @@ class ActivityLog : public ProfileKeyedService,
   // separate thread.
   template<typename DatabaseFunc>
   void ScheduleAndForget(DatabaseFunc func) {
-    if (db_)
-      BrowserThread::PostTask(BrowserThread::DB,
-                              FROM_HERE,
-                              base::Bind(func, db_.get()));
+    BrowserThread::PostTask(BrowserThread::DB,
+                            FROM_HERE,
+                            base::Bind(func, base::Unretained(db_)));
   }
 
   template<typename DatabaseFunc, typename ArgA>
   void ScheduleAndForget(DatabaseFunc func, ArgA a) {
-    if (db_)
-      BrowserThread::PostTask(BrowserThread::DB,
-                              FROM_HERE,
-                              base::Bind(func, db_.get(), a));
+    BrowserThread::PostTask(BrowserThread::DB,
+                            FROM_HERE,
+                            base::Bind(func, base::Unretained(db_), a));
   }
 
   template<typename DatabaseFunc, typename ArgA, typename ArgB>
   void ScheduleAndForget(DatabaseFunc func, ArgA a, ArgB b) {
-    if (db_)
-      BrowserThread::PostTask(BrowserThread::DB,
-                              FROM_HERE,
-                              base::Bind(func, db_.get(), a, b));
+    BrowserThread::PostTask(BrowserThread::DB,
+                            FROM_HERE,
+                            base::Bind(func, base::Unretained(db_), a, b));
   }
 
   typedef ObserverListThreadSafe<Observer> ObserverList;
@@ -202,7 +202,11 @@ class ActivityLog : public ProfileKeyedService,
   ObserverMap observers_;
 
   // The database wrapper that does the actual database I/O.
-  scoped_refptr<extensions::ActivityDatabase> db_;
+  // We initialize this on the same thread as the ActivityLog, but then
+  // subsequent operations occur on the DB thread. Instead of destructing the
+  // ActivityDatabase, we call its Close() method on the DB thread and it
+  // commits suicide.
+  extensions::ActivityDatabase* db_;
 
   // Whether to log activity to stdout or the UI. These are set by switches.
   bool log_activity_to_stdout_;
