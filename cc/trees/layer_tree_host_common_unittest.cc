@@ -6397,11 +6397,6 @@ TEST(LayerTreeHostCommonTest, ContentsScale) {
   float device_scale_factor = 2.5f;
   float page_scale_factor = 1.f;
 
-  // FIXME: Remove this when page_scale_factor is applied in the compositor.
-  gfx::Transform page_scale_matrix;
-  page_scale_matrix.Scale(page_scale_factor, page_scale_factor);
-  parent->SetSublayerTransform(page_scale_matrix);
-
   LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
                                                parent->bounds(),
                                                device_scale_factor,
