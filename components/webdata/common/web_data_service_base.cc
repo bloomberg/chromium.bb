@@ -34,6 +34,15 @@ WebDataServiceBase::WebDataServiceBase(scoped_refptr<WebDatabaseService> wdbs,
   DCHECK(BrowserThread::IsWellKnownThread(BrowserThread::DB));
 }
 
+void WebDataServiceBase::WebDatabaseLoaded() {
+  db_loaded_ = true;
+}
+
+void WebDataServiceBase::WebDatabaseLoadFailed(sql::InitStatus status) {
+  if (!profile_error_callback_.is_null())
+    profile_error_callback_.Run(status);
+}
+
 void WebDataServiceBase::ShutdownOnUIThread() {
   db_loaded_ = false;
   BrowserThread::PostTask(
@@ -43,7 +52,8 @@ void WebDataServiceBase::ShutdownOnUIThread() {
 
 void WebDataServiceBase::Init() {
   DCHECK(wdbs_.get());
-  wdbs_->LoadDatabase(Bind(&WebDataServiceBase::DatabaseInitOnDB, this));
+  wdbs_->AddObserver(this);
+  wdbs_->LoadDatabase();
 }
 
 void WebDataServiceBase::UnloadDatabase() {
@@ -72,6 +82,18 @@ bool WebDataServiceBase::IsDatabaseLoaded() {
   return db_loaded_;
 }
 
+void WebDataServiceBase::AddDBObserver(WebDatabaseObserver* observer) {
+  if (!wdbs_)
+    return;
+  wdbs_->AddObserver(observer);
+}
+
+void WebDataServiceBase::RemoveDBObserver(WebDatabaseObserver* observer) {
+  if (!wdbs_)
+    return;
+  wdbs_->RemoveObserver(observer);
+}
+
 WebDatabase* WebDataServiceBase::GetDatabase() {
   if (!wdbs_)
     return NULL;
@@ -92,30 +114,4 @@ WebDataServiceBase::~WebDataServiceBase() {
 void WebDataServiceBase::ShutdownOnDBThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   db_thread_user_data_.reset();
-}
-
-void WebDataServiceBase::NotifyDatabaseLoadedOnUIThread() {}
-
-void WebDataServiceBase::DBInitFailed(sql::InitStatus sql_status) {
-  if (!profile_error_callback_.is_null())
-    profile_error_callback_.Run(sql_status);
-}
-
-void WebDataServiceBase::DBInitSucceeded() {
-  db_loaded_ = true;
-  NotifyDatabaseLoadedOnUIThread();
-}
-
-// Executed on DB thread.
-void WebDataServiceBase::DatabaseInitOnDB(sql::InitStatus status) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  if (status == sql::INIT_OK) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&WebDataServiceBase::DBInitSucceeded, this));
-  } else {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&WebDataServiceBase::DBInitFailed, this, status));
-  }
 }

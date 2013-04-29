@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/sync/glue/non_ui_data_type_controller.h"
-#include "components/autofill/browser/webdata/autofill_webdata_service_observer.h"
+#include "components/webdata/common/web_database_observer.h"
 
 namespace autofill {
 class AutofillWebDataService;
@@ -22,7 +22,7 @@ namespace browser_sync {
 // A class that manages the startup and shutdown of autofill sync.
 class AutofillDataTypeController
     : public NonUIDataTypeController,
-      public autofill::AutofillWebDataServiceObserverOnUIThread {
+      public WebDatabaseObserver {
  public:
   AutofillDataTypeController(
       ProfileSyncComponentsFactory* profile_sync_factory,
@@ -37,7 +37,7 @@ class AutofillDataTypeController
   // 163431 is addressed / implemented.
   virtual void StartAssociating(const StartCallback& start_callback) OVERRIDE;
 
-  // AutofillWebDataServiceObserverOnUIThread implementation.
+  // WebDatabaseObserver implementation.
   virtual void WebDatabaseLoaded() OVERRIDE;
 
  protected:

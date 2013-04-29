@@ -24,10 +24,6 @@ class AutofillWebDataServiceObserverOnDBThread {
 
 class AutofillWebDataServiceObserverOnUIThread {
  public:
-  // Called on UI thread whenever the web database service has finished loading
-  // the web database.
-  virtual void WebDatabaseLoaded() {}
-
   // Called on UI thread when multiple Autofill entries have been modified by
   // Sync.
   virtual void AutofillMultipleChanged() {}

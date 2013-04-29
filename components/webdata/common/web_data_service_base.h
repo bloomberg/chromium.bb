@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
+#include "components/webdata/common/web_database_observer.h"
 #include "components/webdata/common/webdata_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
@@ -25,7 +26,8 @@ class Thread;
 
 // Base for WebDataService class hierarchy.
 class WEBDATA_EXPORT WebDataServiceBase
-    : public base::RefCountedThreadSafe<WebDataServiceBase,
+    : public WebDatabaseObserver,
+      public base::RefCountedThreadSafe<WebDataServiceBase,
           content::BrowserThread::DeleteOnUIThread> {
  public:
   // All requests return an opaque handle of the following type.
@@ -49,6 +51,10 @@ class WEBDATA_EXPORT WebDataServiceBase
   WebDataServiceBase(scoped_refptr<WebDatabaseService> wdbs,
                      const ProfileErrorCallback& callback);
 
+  // WebDatabaseObserver implementation.
+  virtual void WebDatabaseLoaded() OVERRIDE;
+  virtual void WebDatabaseLoadFailed(sql::InitStatus status) OVERRIDE;
+
   // Cancel any pending request. You need to call this method if your
   // WebDataServiceConsumer is about to be deleted.
   virtual void CancelRequest(Handle h);
@@ -70,6 +76,9 @@ class WEBDATA_EXPORT WebDataServiceBase
 
   // Unloads the database permanently and shuts down service.
   void ShutdownDatabase();
+
+  virtual void AddDBObserver(WebDatabaseObserver* observer);
+  virtual void RemoveDBObserver(WebDatabaseObserver* observer);
 
   // Returns true if the database load has completetd successfully, and
   // ShutdownOnUIThread has not yet been called.
@@ -122,14 +131,6 @@ class WEBDATA_EXPORT WebDataServiceBase
   // be used e.g. for SyncableService subclasses that need to be owned
   // by this object. Is created on first call to |GetDBUserData()|.
   scoped_ptr<SupportsUserDataAggregatable> db_thread_user_data_;
-
-  // Called after database is successfully loaded. By default this function does
-  // nothing. Subclasses can override to support notification.
-  virtual void NotifyDatabaseLoadedOnUIThread();
-
-  void DBInitFailed(sql::InitStatus sql_status);
-  void DBInitSucceeded();
-  void DatabaseInitOnDB(sql::InitStatus status);
 };
 
 #endif  // COMPONENTS_WEBDATA_COMMON_WEB_DATA_SERVICE_BASE_H_

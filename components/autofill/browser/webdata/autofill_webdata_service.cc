@@ -166,13 +166,6 @@ void AutofillWebDataService::RemoveObserver(
 
 AutofillWebDataService::~AutofillWebDataService() {}
 
-void AutofillWebDataService::NotifyDatabaseLoadedOnUIThread() {
-  // Notify that the database has been initialized.
-  FOR_EACH_OBSERVER(AutofillWebDataServiceObserverOnUIThread,
-                    ui_observer_list_,
-                    WebDatabaseLoaded());
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Autofill implementation.

@@ -80,9 +80,7 @@ WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
   web_database_->AddTable(
       scoped_ptr<WebDatabaseTable>(new WebIntentsTable()));
 
-  // TODO (caitkp): Rework the callbacks here. They're ugly.
-
-  web_database_->LoadDatabase(WebDatabaseService::InitCallback());
+  web_database_->LoadDatabase();
 
   autofill_web_data_ = new AutofillWebDataService(
       web_database_, base::Bind(&ProfileErrorCallback));

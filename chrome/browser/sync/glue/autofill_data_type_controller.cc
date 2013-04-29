@@ -41,7 +41,7 @@ void AutofillDataTypeController::WebDatabaseLoaded() {
   DCHECK_EQ(MODEL_STARTING, state());
 
   if (web_data_service_)
-    web_data_service_->RemoveObserver(this);
+    web_data_service_->RemoveDBObserver(this);
 
   OnModelLoaded();
 }
@@ -49,7 +49,7 @@ void AutofillDataTypeController::WebDatabaseLoaded() {
 AutofillDataTypeController::~AutofillDataTypeController() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (web_data_service_)
-    web_data_service_->RemoveObserver(this);
+    web_data_service_->RemoveDBObserver(this);
 }
 
 bool AutofillDataTypeController::PostTaskOnBackendThread(
@@ -68,7 +68,8 @@ bool AutofillDataTypeController::StartModels() {
   if (web_data_service_->IsDatabaseLoaded()) {
     return true;
   } else {
-    web_data_service_->AddObserver(this);
+    if (web_data_service_)
+      web_data_service_->AddDBObserver(this);
     return false;
   }
 }
@@ -78,7 +79,7 @@ void AutofillDataTypeController::StopModels() {
   DCHECK(state() == STOPPING || state() == NOT_RUNNING || state() == DISABLED);
   DVLOG(1) << "AutofillDataTypeController::StopModels() : State = " << state();
   if (web_data_service_)
-    web_data_service_->RemoveObserver(this);
+    web_data_service_->RemoveDBObserver(this);
 }
 
 void AutofillDataTypeController::StartAssociating(

@@ -21,6 +21,7 @@
 #include "chrome/test/base/profile_mock.h"
 #include "components/autofill/browser/webdata/autofill_webdata_service.h"
 #include "components/webdata/common/web_data_service_test_util.h"
+#include "components/webdata/common/web_database_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -46,13 +47,15 @@ class FakeWebDataService : public AutofillWebDataService {
   FakeWebDataService()
       : AutofillWebDataService(
             NULL, WebDataServiceBase::ProfileErrorCallback()),
-        is_database_loaded_(false) {}
+        is_database_loaded_(false),
+        observer_(NULL) {}
 
   // Mark the database as loaded and send out the appropriate notification.
   void LoadDatabase() {
     StartSyncableService();
     is_database_loaded_ = true;
-    NotifyDatabaseLoadedOnUIThread();
+    if (observer_)
+      observer_->WebDatabaseLoaded();
   }
 
   virtual bool IsDatabaseLoaded() OVERRIDE {
@@ -67,6 +70,22 @@ class FakeWebDataService : public AutofillWebDataService {
         base::Bind(&FakeWebDataService::ShutdownOnDBThread,
                    base::Unretained(this)), run_loop.QuitClosure());
     run_loop.Run();
+  }
+
+  // Note: this implementation violates the contract for AddDBObserver (which
+  // should support having multiple observers at the same time), however, it
+  // is the simplest thing that works for the purpose of the unit test, which
+  // only registers one observer.
+  virtual void AddDBObserver(WebDatabaseObserver* observer) OVERRIDE {
+    DCHECK(!observer_);
+    observer_ = observer;
+  }
+
+  virtual void RemoveDBObserver(WebDatabaseObserver* observer) OVERRIDE {
+    if (!observer_)
+      return;
+    DCHECK_EQ(observer_, observer);
+    observer_ = NULL;
   }
 
   void StartSyncableService() {
@@ -106,6 +125,8 @@ class FakeWebDataService : public AutofillWebDataService {
   }
 
   bool is_database_loaded_;
+
+  WebDatabaseObserver* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeWebDataService);
 };

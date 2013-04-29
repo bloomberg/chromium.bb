@@ -74,7 +74,7 @@ class WebDataServiceTest : public testing::Test {
 
     wdbs_ = new WebDatabaseService(path);
     wdbs_->AddTable(scoped_ptr<WebDatabaseTable>(new AutofillTable("en-US")));
-    wdbs_->LoadDatabase(WebDatabaseService::InitCallback());
+    wdbs_->LoadDatabase();
 
     wds_ = new AutofillWebDataService(
         wdbs_, WebDataServiceBase::ProfileErrorCallback());

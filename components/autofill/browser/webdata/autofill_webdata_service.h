@@ -88,9 +88,6 @@ class AutofillWebDataService : public AutofillWebData,
  protected:
   virtual ~AutofillWebDataService();
 
-  // WebDataServiceBase overrides:
-  virtual void NotifyDatabaseLoadedOnUIThread() OVERRIDE;
-
  private:
   WebDatabase::State AddFormElementsImpl(
       const std::vector<FormFieldData>& fields, WebDatabase* db);

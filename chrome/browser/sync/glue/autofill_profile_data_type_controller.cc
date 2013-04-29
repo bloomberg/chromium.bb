@@ -28,8 +28,7 @@ AutofillProfileDataTypeController::AutofillProfileDataTypeController(
     : NonUIDataTypeController(profile_sync_factory,
                               profile,
                               sync_service),
-      personal_data_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(scoped_observer_(this)) {}
+      personal_data_(NULL) {}
 
 syncer::ModelType AutofillProfileDataTypeController::type() const {
   return syncer::AUTOFILL_PROFILE;
@@ -42,8 +41,8 @@ syncer::ModelSafeGroup
 
 void AutofillProfileDataTypeController::WebDatabaseLoaded() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (scoped_observer_.IsObserving(web_data_service_.get()))
-    scoped_observer_.Remove(web_data_service_.get());
+  if (web_data_service_)
+    web_data_service_->RemoveDBObserver(this);
   OnModelLoaded();
 }
 
@@ -60,7 +59,7 @@ void AutofillProfileDataTypeController::OnPersonalDataChanged() {
   if (web_data_service_->IsDatabaseLoaded())
     OnModelLoaded();
   else
-    scoped_observer_.Add(web_data_service_.get());
+    web_data_service_->AddDBObserver(this);
 }
 
 AutofillProfileDataTypeController::~AutofillProfileDataTypeController() {}
@@ -93,7 +92,7 @@ bool AutofillProfileDataTypeController::StartModels() {
   if (web_data_service_->IsDatabaseLoaded())
     return true;
 
-  scoped_observer_.Add(web_data_service_.get());
+  web_data_service_->AddDBObserver(this);
   return false;
 }
 
@@ -101,8 +100,8 @@ void AutofillProfileDataTypeController::StopModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(state() == STOPPING || state() == NOT_RUNNING);
 
-  if (scoped_observer_.IsObserving(web_data_service_.get()))
-    scoped_observer_.Remove(web_data_service_.get());
+  if (web_data_service_)
+    web_data_service_->RemoveDBObserver(this);
 
   personal_data_->RemoveObserver(this);
 }

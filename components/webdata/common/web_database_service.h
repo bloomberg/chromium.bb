@@ -15,6 +15,8 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_database.h"
 #include "components/webdata/common/webdata_export.h"
@@ -49,7 +51,6 @@ class WEBDATA_EXPORT WebDatabaseService
  public:
   typedef base::Callback<scoped_ptr<WDTypedResult>(WebDatabase*)> ReadTask;
   typedef base::Callback<WebDatabase::State(WebDatabase*)> WriteTask;
-  typedef base::Callback<void(sql::InitStatus)> InitCallback;
 
   // Takes the path to the WebDatabase file.
   explicit WebDatabaseService(const base::FilePath& path);
@@ -61,7 +62,7 @@ class WEBDATA_EXPORT WebDatabaseService
 
   // Initializes the web database service. Takes a callback which will return
   // the status of the DB after the init.
-  virtual void LoadDatabase(const InitCallback& callback);
+  virtual void LoadDatabase();
 
   // Unloads the database without actually shutting down the service.  This can
   // be used to temporarily reduce the browser process' memory footprint.
@@ -90,21 +91,33 @@ class WEBDATA_EXPORT WebDatabaseService
   // somewhere else.
   virtual void CancelRequest(WebDataServiceBase::Handle h);
 
+  void AddObserver(WebDatabaseObserver* observer);
+  void RemoveObserver(WebDatabaseObserver* observer);
+
  private:
+  class BackendDelegate;
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
   friend class base::DeleteHelper<WebDatabaseService>;
   // We have to friend RCTS<> so WIN shared-lib build is happy (crbug/112250).
   friend class base::RefCountedThreadSafe<WebDatabaseService,
       content::BrowserThread::DeleteOnUIThread>;
+  friend class BackendDelegate;
 
   virtual ~WebDatabaseService();
+
+  void OnDatabaseLoadDone(sql::InitStatus status);
 
   base::FilePath path_;
 
   // The primary owner is |WebDatabaseService| but is refcounted because
   // PostTask on DB thread may outlive us.
   scoped_refptr<WebDataServiceBackend> wds_backend_;
+
+  ObserverList<WebDatabaseObserver> observer_list_;
+
+  // All vended weak pointers are invalidated in ShutdownDatabase().
+  base::WeakPtrFactory<WebDatabaseService> weak_ptr_factory_;
 };
 
 #endif  // COMPONENTS_WEBDATA_COMMON_WEB_DATABASE_SERVICE_H_
