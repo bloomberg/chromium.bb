@@ -1006,12 +1006,6 @@ void InspectorPageAgent::didScroll()
         m_overlay->update();
 }
 
-void InspectorPageAgent::didResizeMainFrame()
-{
-    if (m_enabled)
-        m_overlay->showAndHideViewSize();
-}
-
 void InspectorPageAgent::didRecalculateStyle()
 {
     if (m_enabled)

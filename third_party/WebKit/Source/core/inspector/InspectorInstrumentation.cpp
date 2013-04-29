@@ -300,12 +300,6 @@ void didScrollImpl(InstrumentingAgents* instrumentingAgents)
         pageAgent->didScroll();
 }
 
-void didResizeMainFrameImpl(InstrumentingAgents* instrumentingAgents)
-{
-    if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
-        pageAgent->didResizeMainFrame();
-}
-
 bool handleTouchEventImpl(InstrumentingAgents* instrumentingAgents, Node* node)
 {
     if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())

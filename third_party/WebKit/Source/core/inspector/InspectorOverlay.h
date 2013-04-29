@@ -32,7 +32,6 @@
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/LayoutRect.h"
-#include "core/platform/Timer.h"
 
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
@@ -120,7 +119,6 @@ public:
     void hideHighlight();
     void highlightNode(Node*, Node* eventTarget, const HighlightConfig&);
     void highlightQuad(PassOwnPtr<FloatQuad>, const HighlightConfig&);
-    void showAndHideViewSize();
 
     Node* highlightedNode() const;
 
@@ -134,13 +132,10 @@ private:
     void drawNodeHighlight();
     void drawQuadHighlight();
     void drawPausedInDebuggerMessage();
-    void drawViewSize();
-
     Page* overlayPage();
-    void reset(const IntSize& viewportSize, const IntSize& frameViewFullSize, int scrollX, int scrollY);
+    void reset(const IntSize& viewportSize, const IntSize& frameViewFullSize);
     void evaluateInOverlay(const String& method, const String& argument);
     void evaluateInOverlay(const String& method, PassRefPtr<InspectorValue> argument);
-    void onTimer(Timer<InspectorOverlay>*);
 
     Page* m_page;
     InspectorClient* m_client;
@@ -152,8 +147,6 @@ private:
     OwnPtr<Page> m_overlayPage;
     HighlightConfig m_quadHighlightConfig;
     IntSize m_size;
-    bool m_drawViewSize;
-    Timer<InspectorOverlay> m_timer;
 };
 
 } // namespace WebCore

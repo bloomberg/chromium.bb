@@ -151,7 +151,6 @@ public:
     void didPaint(GraphicsContext*, const LayoutRect&);
     void didLayout();
     void didScroll();
-    void didResizeMainFrame();
     void didRecalculateStyle();
     void scriptsEnabled(bool isEnabled);
 
