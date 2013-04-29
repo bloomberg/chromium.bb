@@ -40,7 +40,7 @@ typedef std::pair<String, String> NewLineAndWhitespace;
 
 class InspectorStyleTextEditor {
 public:
-    InspectorStyleTextEditor(Vector<InspectorStyleProperty>* allProperties, Vector<InspectorStyleProperty>* disabledProperties, const String& styleText, const NewLineAndWhitespace& format);
+    InspectorStyleTextEditor(Vector<InspectorStyleProperty>* allProperties,const String& styleText, const NewLineAndWhitespace& format);
     void insertProperty(unsigned index, const String& propertyText, unsigned styleBodyLength);
     void replaceProperty(unsigned index, const String& newText);
     void removeProperty(unsigned index);
@@ -49,12 +49,9 @@ public:
     const String& styleText() const { return m_styleText; }
 
 private:
-    unsigned disabledIndexByOrdinal(unsigned ordinal, bool canUseSubsequent);
-    void shiftDisabledProperties(unsigned fromIndex, long delta);
-    void internalReplaceProperty(const InspectorStyleProperty&, const String& newText, SourceRange* removedRange, unsigned* insertedLength);
+    void internalReplaceProperty(const InspectorStyleProperty&, const String& newText);
 
     Vector<InspectorStyleProperty>* m_allProperties;
-    Vector<InspectorStyleProperty>* m_disabledProperties;
     String m_styleText;
     const std::pair<String, String> m_format;
 };

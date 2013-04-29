@@ -31,9 +31,8 @@
 
 namespace WebCore {
 
-InspectorStyleTextEditor::InspectorStyleTextEditor(Vector<InspectorStyleProperty>* allProperties, Vector<InspectorStyleProperty>* disabledProperties, const String& styleText, const NewLineAndWhitespace& format)
+InspectorStyleTextEditor::InspectorStyleTextEditor(Vector<InspectorStyleProperty>* allProperties, const String& styleText, const NewLineAndWhitespace& format)
     : m_allProperties(allProperties)
-    , m_disabledProperties(disabledProperties)
     , m_styleText(styleText)
     , m_format(format)
 {
@@ -53,19 +52,11 @@ void InspectorStyleTextEditor::insertProperty(unsigned index, const String& prop
         }
     }
 
-    bool insertFirstInSource = true;
-    for (unsigned i = 0, size = m_allProperties->size(); i < index && i < size; ++i) {
-        const InspectorStyleProperty& property = m_allProperties->at(i);
-        if (property.hasSource && !property.disabled) {
-            insertFirstInSource = false;
-            break;
-        }
-    }
-
+    bool insertFirstInSource = !m_allProperties->size() || !m_allProperties->at(0).hasSource;
     bool insertLastInSource = true;
     for (unsigned i = index, size = m_allProperties->size(); i < size; ++i) {
-      const InspectorStyleProperty& property = m_allProperties->at(i);
-        if (property.hasSource && !property.disabled) {
+        const InspectorStyleProperty& property = m_allProperties->at(i);
+        if (property.hasSource) {
             insertLastInSource = false;
             break;
         }
@@ -82,11 +73,14 @@ void InspectorStyleTextEditor::insertProperty(unsigned index, const String& prop
             long curPos = propertyStart - 1; // The last position of style declaration, since propertyStart points past one.
             while (curPos && isHTMLSpace(characters[curPos]))
                 --curPos;
-            if (curPos && characters[curPos] != ';') {
-                // Prepend a ";" to the property text if appending to a style declaration where
-                // the last property has no trailing ";".
-                textToSet.insert(";", 0);
-                formattingPrependOffset = 1;
+            if (curPos) {
+                bool terminated = characters[curPos] == ';' || (characters[curPos] == '/' && characters[curPos - 1] == '*');
+                if (!terminated) {
+                    // Prepend a ";" to the property text if appending to a style declaration where
+                    // the last property has no trailing ";".
+                    textToSet.insert(";", 0);
+                    formattingPrependOffset = 1;
+                }
             }
         }
     }
@@ -110,42 +104,12 @@ void InspectorStyleTextEditor::insertProperty(unsigned index, const String& prop
             textToSet.insert(fullPrefix, formattingPrependOffset);
     }
     m_styleText.insert(textToSet, propertyStart);
-
-    // Recompute disabled property ranges after an inserted property.
-    long propertyLengthDelta = textToSet.length();
-    shiftDisabledProperties(disabledIndexByOrdinal(index, true), propertyLengthDelta);
 }
 
 void InspectorStyleTextEditor::replaceProperty(unsigned index, const String& newText)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(index < m_allProperties->size());
-
-    const InspectorStyleProperty& property = m_allProperties->at(index);
-    long propertyStart = property.sourceData.range.start;
-    long propertyEnd = property.sourceData.range.end;
-    long oldLength = propertyEnd - propertyStart;
-    long newLength = newText.length();
-    long propertyLengthDelta = newLength - oldLength;
-
-    if (!property.disabled) {
-        SourceRange overwrittenRange;
-        unsigned insertedLength;
-        internalReplaceProperty(property, newText, &overwrittenRange, &insertedLength);
-        propertyLengthDelta = static_cast<long>(insertedLength) - static_cast<long>(overwrittenRange.length());
-
-        // Recompute subsequent disabled property ranges if acting on a non-disabled property.
-        shiftDisabledProperties(disabledIndexByOrdinal(index, true), propertyLengthDelta);
-    } else {
-        long textLength = newText.length();
-        unsigned disabledIndex = disabledIndexByOrdinal(index, false);
-        if (!textLength) {
-            // Delete disabled property.
-            m_disabledProperties->remove(disabledIndex);
-        } else {
-            // Patch disabled property text.
-            m_disabledProperties->at(disabledIndex).rawText = newText;
-        }
-    }
+    internalReplaceProperty(m_allProperties->at(index), newText);
 }
 
 void InspectorStyleTextEditor::removeProperty(unsigned index)
@@ -155,72 +119,23 @@ void InspectorStyleTextEditor::removeProperty(unsigned index)
 
 void InspectorStyleTextEditor::enableProperty(unsigned index)
 {
-    ASSERT(m_allProperties->at(index).disabled);
-
-    unsigned disabledIndex = disabledIndexByOrdinal(index, false);
-    ASSERT(disabledIndex != UINT_MAX);
-
-    InspectorStyleProperty disabledProperty = m_disabledProperties->at(disabledIndex);
-    m_disabledProperties->remove(disabledIndex);
-    SourceRange removedRange;
-    unsigned insertedLength;
-    internalReplaceProperty(disabledProperty, disabledProperty.rawText, &removedRange, &insertedLength);
-    shiftDisabledProperties(disabledIndex, static_cast<long>(insertedLength) - static_cast<long>(removedRange.length()));
+    InspectorStyleProperty& disabledProperty = m_allProperties->at(index);
+    ASSERT(disabledProperty.sourceData.disabled);
+    internalReplaceProperty(disabledProperty, disabledProperty.rawText.substring(2, disabledProperty.rawText.length() - 4).stripWhiteSpace());
 }
 
 void InspectorStyleTextEditor::disableProperty(unsigned index)
 {
-    ASSERT(!m_allProperties->at(index).disabled);
+    ASSERT(!m_allProperties->at(index).sourceData.disabled);
 
-    const InspectorStyleProperty& property = m_allProperties->at(index);
-    InspectorStyleProperty disabledProperty(property);
-    disabledProperty.setRawTextFromStyleDeclaration(m_styleText);
-    disabledProperty.disabled = true;
+    InspectorStyleProperty& property = m_allProperties->at(index);
+    property.setRawTextFromStyleDeclaration(m_styleText);
+    property.sourceData.disabled = true;
 
-    SourceRange removedRange;
-    unsigned insertedLength;
-    internalReplaceProperty(property, "", &removedRange, &insertedLength);
-
-    // If some preceding formatting has been removed, move the property to the start of the removed range.
-    if (property.sourceData.range.start > removedRange.start)
-        disabledProperty.sourceData.range.start = removedRange.start;
-    disabledProperty.sourceData.range.end = disabledProperty.sourceData.range.start;
-
-    // Add disabled property at correct position.
-    unsigned insertionIndex = disabledIndexByOrdinal(index, true);
-    if (insertionIndex == UINT_MAX)
-        m_disabledProperties->append(disabledProperty);
-    else {
-        m_disabledProperties->insert(insertionIndex, disabledProperty);
-        long styleLengthDelta = -(static_cast<long>(removedRange.length()));
-        shiftDisabledProperties(insertionIndex + 1, styleLengthDelta); // Property removed from text - shift these back.
-    }
+    internalReplaceProperty(property, "/* " + property.rawText + " */");
 }
 
-unsigned InspectorStyleTextEditor::disabledIndexByOrdinal(unsigned ordinal, bool canUseSubsequent)
-{
-    unsigned disabledIndex = 0;
-    for (unsigned i = 0, size = m_allProperties->size(); i < size; ++i) {
-        if (m_allProperties->at(i).disabled) {
-            if (i == ordinal || (canUseSubsequent && i > ordinal))
-                return disabledIndex;
-            ++disabledIndex;
-        }
-    }
-
-    return UINT_MAX;
-}
-
-void InspectorStyleTextEditor::shiftDisabledProperties(unsigned fromIndex, long delta)
-{
-    for (unsigned i = fromIndex, size = m_disabledProperties->size(); i < size; ++i) {
-        SourceRange& range = m_disabledProperties->at(i).sourceData.range;
-        range.start += delta;
-        range.end += delta;
-    }
-}
-
-void InspectorStyleTextEditor::internalReplaceProperty(const InspectorStyleProperty& property, const String& newText, SourceRange* removedRange, unsigned* insertedLength)
+void InspectorStyleTextEditor::internalReplaceProperty(const InspectorStyleProperty& property, const String& newText)
 {
     const SourceRange& range = property.sourceData.range;
     long replaceRangeStart = range.start;
@@ -261,8 +176,6 @@ void InspectorStyleTextEditor::internalReplaceProperty(const InspectorStylePrope
 
     int replacedLength = replaceRangeEnd - replaceRangeStart;
     m_styleText.replace(replaceRangeStart, replacedLength, finalNewText);
-    *removedRange = SourceRange(replaceRangeStart, replaceRangeEnd);
-    *insertedLength = finalNewText.length();
 }
 
 } // namespace WebCore

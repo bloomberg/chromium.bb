@@ -103,16 +103,15 @@ private:
 };
 
 struct InspectorStyleProperty {
-    InspectorStyleProperty()
-        : hasSource(false)
-        , disabled(false)
+    explicit InspectorStyleProperty(CSSPropertySourceData sourceData)
+        : sourceData(sourceData)
+        , hasSource(true)
     {
     }
 
-    InspectorStyleProperty(CSSPropertySourceData sourceData, bool hasSource, bool disabled)
+    InspectorStyleProperty(CSSPropertySourceData sourceData, bool hasSource)
         : sourceData(sourceData)
         , hasSource(hasSource)
-        , disabled(disabled)
     {
     }
 
@@ -129,7 +128,6 @@ struct InspectorStyleProperty {
 
     CSSPropertySourceData sourceData;
     bool hasSource;
-    bool disabled;
     String rawText;
 };
 
@@ -141,7 +139,6 @@ public:
     CSSStyleDeclaration* cssStyle() const { return m_style.get(); }
     PassRefPtr<TypeBuilder::CSS::CSSStyle> buildObjectForStyle() const;
     PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty> > buildArrayForComputedStyle() const;
-    bool hasDisabledProperties() const { return !m_disabledProperties.isEmpty(); }
     bool setPropertyText(unsigned index, const String& text, bool overwrite, String* oldText, ExceptionCode&);
     bool toggleProperty(unsigned index, bool disable, ExceptionCode&);
     bool styleText(String* result) const;
@@ -149,7 +146,7 @@ public:
 private:
     InspectorStyle(const InspectorCSSId& styleId, PassRefPtr<CSSStyleDeclaration> style, InspectorStyleSheet* parentStyleSheet);
 
-    bool populateAllProperties(Vector<InspectorStyleProperty>* result) const;
+    void populateAllProperties(Vector<InspectorStyleProperty>& result) const;
     PassRefPtr<TypeBuilder::CSS::CSSStyle> styleWithProperties() const;
     PassRefPtr<CSSRuleSourceData> extractSourceData() const;
     bool applyStyleText(const String&);
@@ -157,11 +154,11 @@ private:
     String shorthandPriority(const String& shorthandProperty) const;
     Vector<String> longhandProperties(const String& shorthandProperty) const;
     NewLineAndWhitespace& newLineAndWhitespaceDelimiters() const;
+    inline Document* ownerDocument() const;
 
     InspectorCSSId m_styleId;
     RefPtr<CSSStyleDeclaration> m_style;
     InspectorStyleSheet* m_parentStyleSheet;
-    Vector<InspectorStyleProperty> m_disabledProperties;
     mutable std::pair<String, String> m_format;
     mutable bool m_formatAcquired;
 };
@@ -213,12 +210,10 @@ protected:
 
     InspectorCSSId ruleOrStyleId(CSSStyleDeclaration* style) const;
     virtual Document* ownerDocument() const;
-    virtual RefPtr<CSSRuleSourceData> ruleSourceDataFor(CSSStyleDeclaration* style) const;
+    virtual PassRefPtr<CSSRuleSourceData> ruleSourceDataFor(CSSStyleDeclaration* style) const;
     virtual unsigned ruleIndexByStyle(CSSStyleDeclaration*) const;
     virtual bool ensureParsedDataReady();
     virtual PassRefPtr<InspectorStyle> inspectorStyleForId(const InspectorCSSId&);
-    virtual void rememberInspectorStyle(RefPtr<InspectorStyle> inspectorStyle);
-    virtual void forgetInspectorStyle(CSSStyleDeclaration* style);
 
     // Also accessed by friend class InspectorStyle.
     virtual bool setStyleText(CSSStyleDeclaration*, const String&);
@@ -249,7 +244,6 @@ private:
     bool m_isRevalidating;
     bool m_isReparsing;
     ParsedStyleSheet* m_parsedStyleSheet;
-    InspectorStyleMap m_inspectorStyles;
     mutable CSSStyleRuleVector m_flatRules;
     Listener* m_listener;
 };
@@ -266,12 +260,10 @@ protected:
     InspectorStyleSheetForInlineStyle(InspectorPageAgent*, const String& id, PassRefPtr<Element>, TypeBuilder::CSS::StyleSheetOrigin::Enum, Listener*);
 
     virtual Document* ownerDocument() const;
-    virtual RefPtr<CSSRuleSourceData> ruleSourceDataFor(CSSStyleDeclaration* style) const { ASSERT_UNUSED(style, style == inlineStyle()); return m_ruleSourceData; }
+    virtual PassRefPtr<CSSRuleSourceData> ruleSourceDataFor(CSSStyleDeclaration* style) const { ASSERT_UNUSED(style, style == inlineStyle()); return m_ruleSourceData; }
     virtual unsigned ruleIndexByStyle(CSSStyleDeclaration*) const { return 0; }
     virtual bool ensureParsedDataReady();
     virtual PassRefPtr<InspectorStyle> inspectorStyleForId(const InspectorCSSId&);
-    virtual void rememberInspectorStyle(RefPtr<InspectorStyle>) { }
-    virtual void forgetInspectorStyle(CSSStyleDeclaration*) { }
 
     // Also accessed by friend class InspectorStyle.
     virtual bool setStyleText(CSSStyleDeclaration*, const String&);
@@ -280,7 +272,7 @@ protected:
 private:
     CSSStyleDeclaration* inlineStyle() const;
     const String& elementStyleText() const;
-    PassRefPtr<CSSRuleSourceData> getStyleAttributeRanges() const;
+    PassRefPtr<CSSRuleSourceData> getStyleAttributeData() const;
 
     RefPtr<Element> m_element;
     RefPtr<CSSRuleSourceData> m_ruleSourceData;

@@ -75,7 +75,6 @@ public:
     const String& text() const { ASSERT(m_hasText); return m_text; }
     void setText(const String& text);
     bool hasText() const { return m_hasText; }
-    RuleSourceDataList* sourceData() const { return m_sourceData.get(); }
     void setSourceData(PassOwnPtr<RuleSourceDataList>);
     bool hasSourceData() const { return m_sourceData; }
     PassRefPtr<WebCore::CSSRuleSourceData> ruleSourceDataAt(unsigned) const;
@@ -142,16 +141,25 @@ PassRefPtr<WebCore::CSSRuleSourceData> ParsedStyleSheet::ruleSourceDataAt(unsign
 
 namespace WebCore {
 
+static PassOwnPtr<CSSParser> createCSSParser(Document* document)
+{
+    return adoptPtr(new CSSParser(document ? CSSParserContext(document) : strictCSSParserContext()));
+}
+
 namespace {
 
 class StyleSheetHandler : public CSSParser::SourceDataHandler {
 public:
-    StyleSheetHandler(const String& parsedText, RuleSourceDataList* result)
+    StyleSheetHandler(const String& parsedText, Document* document, StyleSheetContents* styleSheetContents, RuleSourceDataList* result)
         : m_parsedText(parsedText)
-        , m_ruleSourceDataResult(result)
+        , m_document(document)
+        , m_styleSheetContents(styleSheetContents)
+        , m_result(result)
         , m_propertyRangeStart(UINT_MAX)
         , m_selectorRangeStart(UINT_MAX)
+        , m_commentRangeStart(UINT_MAX)
     {
+        ASSERT(m_result);
     }
 
 private:
@@ -173,11 +181,15 @@ private:
     void fixUnparsedPropertyRanges(CSSRuleSourceData*);
 
     const String& m_parsedText;
-    RuleSourceDataList* m_ruleSourceDataResult;
+    Document* m_document;
+    StyleSheetContents* m_styleSheetContents;
+    RuleSourceDataList* m_result;
     RuleSourceDataList m_currentRuleDataStack;
     RefPtr<CSSRuleSourceData> m_currentRuleData;
+    OwnPtr<CSSParser> m_commentParser;
     unsigned m_propertyRangeStart;
     unsigned m_selectorRangeStart;
+    unsigned m_commentRangeStart;
 };
 
 void StyleSheetHandler::startRuleHeader(CSSRuleSourceData::Type type, unsigned offset)
@@ -240,6 +252,7 @@ void StyleSheetHandler::endRuleBody(unsigned offset, bool error)
 {
     ASSERT(!m_currentRuleDataStack.isEmpty());
     m_currentRuleDataStack.last()->ruleBodyRange.end = offset;
+    m_propertyRangeStart = UINT_MAX;
     RefPtr<CSSRuleSourceData> rule = popRuleData();
     if (error)
         return;
@@ -251,16 +264,13 @@ void StyleSheetHandler::endRuleBody(unsigned offset, bool error)
 void StyleSheetHandler::addNewRuleToSourceTree(PassRefPtr<CSSRuleSourceData> rule)
 {
     if (m_currentRuleDataStack.isEmpty())
-        m_ruleSourceDataResult->append(rule);
+        m_result->append(rule);
     else
         m_currentRuleDataStack.last()->childRules.append(rule);
 }
 
 PassRefPtr<CSSRuleSourceData> StyleSheetHandler::popRuleData()
 {
-    if (!m_ruleSourceDataResult)
-        return 0;
-
     ASSERT(!m_currentRuleDataStack.isEmpty());
     m_currentRuleData.clear();
     RefPtr<CSSRuleSourceData> data = m_currentRuleDataStack.last();
@@ -359,20 +369,66 @@ void StyleSheetHandler::endProperty(bool isImportant, bool isParsed, unsigned of
     // The property range is relative to the declaration start offset.
     unsigned topRuleBodyRangeStart = m_currentRuleDataStack.last()->ruleBodyRange.start;
     m_currentRuleDataStack.last()->styleSourceData->propertyData.append(
-        CSSPropertySourceData(name, value, isImportant, isParsed, SourceRange(start - topRuleBodyRangeStart, end - topRuleBodyRangeStart)));
+        CSSPropertySourceData(name, value, isImportant, false, isParsed, SourceRange(start - topRuleBodyRangeStart, end - topRuleBodyRangeStart)));
     m_propertyRangeStart = UINT_MAX;
 }
 
 void StyleSheetHandler::startComment(unsigned offset)
 {
-    UNUSED_PARAM(offset);
-    // Do nothing.
+    ASSERT(m_commentRangeStart == UINT_MAX);
+    m_commentRangeStart = offset;
 }
 
 void StyleSheetHandler::endComment(unsigned offset)
 {
-    ASSERT_UNUSED(offset, offset <= m_parsedText.length());
-    // Do nothing.
+    ASSERT(offset <= m_parsedText.length());
+
+    unsigned startOffset = m_commentRangeStart;
+    m_commentRangeStart = UINT_MAX;
+    if (m_propertyRangeStart != UINT_MAX) {
+        ASSERT(startOffset >= m_propertyRangeStart);
+        // startProperty() is called automatically at the start of a style declaration.
+        // Check if no text has been scanned yet, otherwise the comment is inside a property.
+        if (!m_parsedText.substring(m_propertyRangeStart, startOffset).stripWhiteSpace().isEmpty())
+            return;
+        m_propertyRangeStart = UINT_MAX;
+    }
+    if (m_currentRuleDataStack.isEmpty() || !m_currentRuleDataStack.last()->ruleHeaderRange.end)
+        return;
+
+    // The lexer is not inside a property AND it is scanning a declaration-aware rule body.
+    String commentText = m_parsedText.substring(startOffset, offset - startOffset);
+
+    ASSERT(commentText.startsWith("/*"));
+    commentText = commentText.substring(2);
+
+    // Require well-formed comments.
+    if (!commentText.endsWith("*/"))
+        return;
+    commentText = commentText.substring(0, commentText.length() - 2).stripWhiteSpace();
+    if (commentText.isEmpty())
+        return;
+
+    // FIXME: Use the actual rule type rather than STYLE_RULE?
+    if (!m_commentParser)
+        m_commentParser = createCSSParser(m_document);
+    RuleSourceDataList sourceData;
+
+    // FIXME: Use another subclass of CSSParser::SourceDataHandler and assert that
+    // no comments are encountered (will not need m_document and m_styleSheetContents).
+    StyleSheetHandler handler(commentText, m_document, m_styleSheetContents, &sourceData);
+    RefPtr<StylePropertySet> tempMutableStyle = StylePropertySet::create();
+    m_commentParser->parseDeclaration(tempMutableStyle.get(), commentText, &handler, m_styleSheetContents);
+    Vector<CSSPropertySourceData>& commentPropertyData = sourceData.first()->styleSourceData->propertyData;
+    if (commentPropertyData.size() != 1)
+        return;
+    CSSPropertySourceData& propertyData = commentPropertyData.at(0);
+    if (propertyData.range.length() != commentText.length())
+        return;
+
+    unsigned topRuleBodyRangeStart = m_currentRuleDataStack.last()->ruleBodyRange.start;
+    m_currentRuleDataStack.last()->styleSourceData->propertyData.append(
+        CSSPropertySourceData(propertyData.name, propertyData.value, false, true, true, SourceRange(startOffset - topRuleBodyRangeStart, offset - topRuleBodyRangeStart)));
 }
 
 } // namespace
@@ -520,11 +576,6 @@ static void fillMediaListChain(CSSRule* rule, Array<TypeBuilder::CSS::CSSMedia>*
     }
 }
 
-static PassOwnPtr<CSSParser> createCSSParser(Document* document)
-{
-    return adoptPtr(new CSSParser(document ? CSSParserContext(document) : strictCSSParserContext()));
-}
-
 PassRefPtr<InspectorStyle> InspectorStyle::create(const InspectorCSSId& styleId, PassRefPtr<CSSStyleDeclaration> style, InspectorStyleSheet* parentStyleSheet)
 {
     return adoptRef(new InspectorStyle(styleId, style, parentStyleSheet));
@@ -563,7 +614,7 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty> > Insp
 {
     RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty> > result = TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty>::create();
     Vector<InspectorStyleProperty> properties;
-    populateAllProperties(&properties);
+    populateAllProperties(properties);
 
     for (Vector<InspectorStyleProperty>::iterator it = properties.begin(), itEnd = properties.end(); it != itEnd; ++it) {
         const CSSPropertySourceData& propertyEntry = it->sourceData;
@@ -593,16 +644,15 @@ bool InspectorStyle::setPropertyText(unsigned index, const String& propertyText,
     }
 
     Vector<InspectorStyleProperty> allProperties;
-    populateAllProperties(&allProperties);
+    populateAllProperties(allProperties);
 
-    if (propertyText.stripWhiteSpace().length()) {
+    if (!propertyText.stripWhiteSpace().isEmpty()) {
         RefPtr<StylePropertySet> tempMutableStyle = StylePropertySet::create();
-        Document* ownerDocument = m_parentStyleSheet->pageStyleSheet() ? m_parentStyleSheet->pageStyleSheet()->ownerDocument() : 0;
         String declarationText = propertyText + " " + bogusPropertyName + ": none";
-        OwnPtr<RuleSourceDataList> ruleSourceDataResult = adoptPtr(new RuleSourceDataList());
-        StyleSheetHandler handler(declarationText, ruleSourceDataResult.get());
-        createCSSParser(ownerDocument)->parseDeclaration(tempMutableStyle.get(), declarationText, &handler, m_style->parentStyleSheet()->contents());
-        Vector<CSSPropertySourceData>& propertyData = ruleSourceDataResult->first()->styleSourceData->propertyData;
+        RuleSourceDataList sourceData;
+        StyleSheetHandler handler(declarationText, ownerDocument(), m_style->parentStyleSheet()->contents(), &sourceData);
+        createCSSParser(ownerDocument())->parseDeclaration(tempMutableStyle.get(), declarationText, &handler, m_style->parentStyleSheet()->contents());
+        Vector<CSSPropertySourceData>& propertyData = sourceData.first()->styleSourceData->propertyData;
         unsigned propertyCount = propertyData.size();
 
         // At least one property + the bogus property added just above should be present.
@@ -611,7 +661,7 @@ bool InspectorStyle::setPropertyText(unsigned index, const String& propertyText,
             return false;
         }
 
-        // Check for a proper propertyText termination (the parser could at least restore to the PROPERTY_NAME state).
+        // Check for the proper propertyText termination (the parser could at least restore to the PROPERTY_NAME state).
         if (propertyData.at(propertyCount - 1).name != bogusPropertyName) {
             ec = SYNTAX_ERR;
             return false;
@@ -631,7 +681,7 @@ bool InspectorStyle::setPropertyText(unsigned index, const String& propertyText,
         return false;
     }
 
-    InspectorStyleTextEditor editor(&allProperties, &m_disabledProperties, text, newLineAndWhitespaceDelimiters());
+    InspectorStyleTextEditor editor(&allProperties, text, newLineAndWhitespaceDelimiters());
     if (overwrite) {
         if (index >= allProperties.size()) {
             ec = INDEX_SIZE_ERR;
@@ -667,17 +717,17 @@ bool InspectorStyle::toggleProperty(unsigned index, bool disable, ExceptionCode&
     }
 
     Vector<InspectorStyleProperty> allProperties;
-    populateAllProperties(&allProperties);
+    populateAllProperties(allProperties);
     if (index >= allProperties.size()) {
         ec = INDEX_SIZE_ERR;
         return false;
     }
 
     InspectorStyleProperty& property = allProperties.at(index);
-    if (property.disabled == disable)
+    if (property.sourceData.disabled == disable)
         return true; // Idempotent operation.
 
-    InspectorStyleTextEditor editor(&allProperties, &m_disabledProperties, text, newLineAndWhitespaceDelimiters());
+    InspectorStyleTextEditor editor(&allProperties, text, newLineAndWhitespaceDelimiters());
     if (disable)
         editor.disableProperty(index);
     else
@@ -702,38 +752,24 @@ bool InspectorStyle::styleText(String* result) const
     return true;
 }
 
-bool InspectorStyle::populateAllProperties(Vector<InspectorStyleProperty>* result) const
+void InspectorStyle::populateAllProperties(Vector<InspectorStyleProperty>& result) const
 {
     HashSet<String> foundShorthands;
     HashSet<String> sourcePropertyNames;
-    unsigned disabledIndex = 0;
-    unsigned disabledLength = m_disabledProperties.size();
-    InspectorStyleProperty disabledProperty;
-    if (disabledIndex < disabledLength)
-        disabledProperty = m_disabledProperties.at(disabledIndex);
 
     RefPtr<CSSRuleSourceData> sourceData = extractSourceData();
-    Vector<CSSPropertySourceData>* sourcePropertyData = sourceData ? &(sourceData->styleSourceData->propertyData) : 0;
-    if (sourcePropertyData) {
+    OwnPtr<CSSParser> cssParser;
+    if (sourceData) {
         String styleDeclaration;
         bool isStyleTextKnown = styleText(&styleDeclaration);
         ASSERT_UNUSED(isStyleTextKnown, isStyleTextKnown);
-        for (Vector<CSSPropertySourceData>::const_iterator it = sourcePropertyData->begin(); it != sourcePropertyData->end(); ++it) {
-            while (disabledIndex < disabledLength && disabledProperty.sourceData.range.start <= it->range.start) {
-                result->append(disabledProperty);
-                if (++disabledIndex < disabledLength)
-                    disabledProperty = m_disabledProperties.at(disabledIndex);
-            }
-            InspectorStyleProperty p(*it, true, false);
+        Vector<CSSPropertySourceData>& sourcePropertyData = sourceData->styleSourceData->propertyData;
+        for (Vector<CSSPropertySourceData>::const_iterator it = sourcePropertyData.begin(); it != sourcePropertyData.end(); ++it) {
+            InspectorStyleProperty p(*it, true);
             p.setRawTextFromStyleDeclaration(styleDeclaration);
-            result->append(p);
+            result.append(p);
             sourcePropertyNames.add(it->name.lower());
         }
-    }
-
-    while (disabledIndex < disabledLength) {
-        disabledProperty = m_disabledProperties.at(disabledIndex++);
-        result->append(disabledProperty);
     }
 
     for (int i = 0, size = m_style->length(); i < size; ++i) {
@@ -742,16 +778,14 @@ bool InspectorStyle::populateAllProperties(Vector<InspectorStyleProperty>* resul
             continue;
 
         sourcePropertyNames.add(name.lower());
-        result->append(InspectorStyleProperty(CSSPropertySourceData(name, m_style->getPropertyValue(name), !m_style->getPropertyPriority(name).isEmpty(), true, SourceRange()), false, false));
+        result.append(InspectorStyleProperty(CSSPropertySourceData(name, m_style->getPropertyValue(name), !m_style->getPropertyPriority(name).isEmpty(), false, true, SourceRange()), false));
     }
-
-    return true;
 }
 
 PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties() const
 {
     Vector<InspectorStyleProperty> properties;
-    populateAllProperties(&properties);
+    populateAllProperties(properties);
 
     RefPtr<Array<TypeBuilder::CSS::CSSProperty> > propertiesObject = Array<TypeBuilder::CSS::CSSProperty>::create();
     RefPtr<Array<TypeBuilder::CSS::ShorthandEntry> > shorthandEntries = Array<TypeBuilder::CSS::ShorthandEntry>::create();
@@ -766,13 +800,13 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties() con
     for (Vector<InspectorStyleProperty>::iterator it = properties.begin(), itEnd = properties.end(); it != itEnd; ++it) {
         const CSSPropertySourceData& propertyEntry = it->sourceData;
         const String& name = propertyEntry.name;
+        const bool disabled = it->sourceData.disabled;
 
-        TypeBuilder::CSS::CSSProperty::Status::Enum status = it->disabled ? TypeBuilder::CSS::CSSProperty::Status::Disabled : TypeBuilder::CSS::CSSProperty::Status::Active;
+        TypeBuilder::CSS::CSSProperty::Status::Enum status = disabled ? TypeBuilder::CSS::CSSProperty::Status::Disabled : TypeBuilder::CSS::CSSProperty::Status::Active;
 
         RefPtr<TypeBuilder::CSS::CSSProperty> property = TypeBuilder::CSS::CSSProperty::create()
             .setName(name)
             .setValue(propertyEntry.value);
-
         propertiesObject->addItem(property);
 
         // Default "parsedOk" == true.
@@ -784,17 +818,19 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties() con
         // Default "priority" == "".
         if (propertyEntry.important)
             property->setPriority("important");
-        if (!it->disabled) {
+        if (it->hasSource) {
+            // The property range is relative to the style body start.
+            // Should be converted into an absolute range (relative to the stylesheet start)
+            // for the proper conversion into line:column.
+            SourceRange absolutePropertyRange = propertyEntry.range;
+            absolutePropertyRange.start += ruleBodyRangeStart;
+            absolutePropertyRange.end += ruleBodyRangeStart;
+            property->setRange(buildSourceRangeObject(absolutePropertyRange, lineEndings.get()));
+        }
+        if (!disabled) {
             if (it->hasSource) {
                 ASSERT(sourceData);
                 property->setImplicit(false);
-                // The property range is relative to the style body start.
-                // Should be converted into an absolute range (relative to the stylesheet start)
-                // for the proper conversion into line:column.
-                SourceRange absolutePropertyRange = propertyEntry.range;
-                absolutePropertyRange.start += ruleBodyRangeStart;
-                absolutePropertyRange.end += ruleBodyRangeStart;
-                property->setRange(buildSourceRangeObject(absolutePropertyRange, lineEndings.get()));
 
                 // Parsed property overrides any property with the same name. Non-parsed property overrides
                 // previous non-parsed property with the same name (if any).
@@ -988,6 +1024,11 @@ NewLineAndWhitespace& InspectorStyle::newLineAndWhitespaceDelimiters() const
     return m_format;
 }
 
+Document* InspectorStyle::ownerDocument() const
+{
+    return m_parentStyleSheet->pageStyleSheet() ? m_parentStyleSheet->pageStyleSheet()->ownerDocument() : 0;
+}
+
 PassRefPtr<InspectorStyleSheet> InspectorStyleSheet::create(InspectorPageAgent* pageAgent, const String& id, PassRefPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, const String& documentURL, Listener* listener)
 {
     return adoptRef(new InspectorStyleSheet(pageAgent, id, pageStyleSheet, origin, documentURL, listener));
@@ -1037,7 +1078,6 @@ void InspectorStyleSheet::reparseStyleSheet(const String& text)
         m_isReparsing = true;
         CSSStyleSheet::RuleMutationScope mutationScope(m_pageStyleSheet.get());
         m_pageStyleSheet->contents()->parseString(text);
-        m_inspectorStyles.clear();
         fireStyleSheetChanged();
         m_isReparsing = false;
     }
@@ -1386,13 +1426,8 @@ bool InspectorStyleSheet::toggleProperty(const InspectorCSSId& id, unsigned prop
     }
 
     bool success = inspectorStyle->toggleProperty(propertyIndex, disable, ec);
-    if (success) {
-        if (disable)
-            rememberInspectorStyle(inspectorStyle);
-        else if (!inspectorStyle->hasDisabledProperties())
-            forgetInspectorStyle(inspectorStyle->cssStyle());
+    if (success)
         fireStyleSheetChanged();
-    }
     return success;
 }
 
@@ -1425,22 +1460,7 @@ PassRefPtr<InspectorStyle> InspectorStyleSheet::inspectorStyleForId(const Inspec
     if (!style)
         return 0;
 
-    InspectorStyleMap::iterator it = m_inspectorStyles.find(style);
-    if (it == m_inspectorStyles.end()) {
-        RefPtr<InspectorStyle> inspectorStyle = InspectorStyle::create(id, style, this);
-        return inspectorStyle.release();
-    }
-    return it->value;
-}
-
-void InspectorStyleSheet::rememberInspectorStyle(RefPtr<InspectorStyle> inspectorStyle)
-{
-    m_inspectorStyles.set(inspectorStyle->cssStyle(), inspectorStyle);
-}
-
-void InspectorStyleSheet::forgetInspectorStyle(CSSStyleDeclaration* style)
-{
-    m_inspectorStyles.remove(style);
+    return InspectorStyle::create(id, style, this);
 }
 
 InspectorCSSId InspectorStyleSheet::ruleOrStyleId(CSSStyleDeclaration* style) const
@@ -1456,7 +1476,7 @@ Document* InspectorStyleSheet::ownerDocument() const
     return m_pageStyleSheet->ownerDocument();
 }
 
-RefPtr<CSSRuleSourceData> InspectorStyleSheet::ruleSourceDataFor(CSSStyleDeclaration* style) const
+PassRefPtr<CSSRuleSourceData> InspectorStyleSheet::ruleSourceDataFor(CSSStyleDeclaration* style) const
 {
     return m_parsedStyleSheet->ruleSourceDataAt(ruleIndexByStyle(style));
 }
@@ -1520,10 +1540,10 @@ bool InspectorStyleSheet::ensureSourceData()
         return false;
 
     RefPtr<StyleSheetContents> newStyleSheet = StyleSheetContents::create();
-    OwnPtr<RuleSourceDataList> ruleSourceDataResult = adoptPtr(new RuleSourceDataList());
-    StyleSheetHandler handler(m_parsedStyleSheet->text(), ruleSourceDataResult.get());
+    OwnPtr<RuleSourceDataList> result = adoptPtr(new RuleSourceDataList());
+    StyleSheetHandler handler(m_parsedStyleSheet->text(), m_pageStyleSheet->ownerDocument(), newStyleSheet.get(), result.get());
     createCSSParser(m_pageStyleSheet->ownerDocument())->parseSheet(newStyleSheet.get(), m_parsedStyleSheet->text(), 0, &handler);
-    m_parsedStyleSheet->setSourceData(ruleSourceDataResult.release());
+    m_parsedStyleSheet->setSourceData(result.release());
     return m_parsedStyleSheet->hasSourceData();
 }
 
@@ -1594,11 +1614,8 @@ void InspectorStyleSheet::revalidateStyle(CSSStyleDeclaration* pageStyle)
     for (unsigned i = 0, size = m_flatRules.size(); i < size; ++i) {
         CSSStyleRule* parsedRule = m_flatRules.at(i).get();
         if (parsedRule->style() == pageStyle) {
-            if (parsedRule->styleRule()->properties()->asText() != pageStyle->cssText()) {
-                // Clear the disabled properties for the invalid style here.
-                m_inspectorStyles.remove(pageStyle);
+            if (parsedRule->styleRule()->properties()->asText() != pageStyle->cssText())
                 setStyleText(pageStyle, pageStyle->cssText());
-            }
             break;
         }
     }
@@ -1754,7 +1771,7 @@ bool InspectorStyleSheetForInlineStyle::ensureParsedDataReady()
     if (m_ruleSourceData)
         return true;
 
-    m_ruleSourceData = getStyleAttributeRanges();
+    m_ruleSourceData = getStyleAttributeData();
 
     bool success = !!m_ruleSourceData;
     if (!success) {
@@ -1781,7 +1798,7 @@ const String& InspectorStyleSheetForInlineStyle::elementStyleText() const
     return m_element->getAttribute("style").string();
 }
 
-PassRefPtr<CSSRuleSourceData> InspectorStyleSheetForInlineStyle::getStyleAttributeRanges() const
+PassRefPtr<CSSRuleSourceData> InspectorStyleSheetForInlineStyle::getStyleAttributeData() const
 {
     if (!m_element->isStyledElement())
         return 0;
@@ -1794,10 +1811,10 @@ PassRefPtr<CSSRuleSourceData> InspectorStyleSheetForInlineStyle::getStyleAttribu
     }
 
     RefPtr<StylePropertySet> tempDeclaration = StylePropertySet::create();
-    OwnPtr<RuleSourceDataList> ruleSourceDataResult = adoptPtr(new RuleSourceDataList());
-    StyleSheetHandler handler(m_styleText, ruleSourceDataResult.get());
+    RuleSourceDataList ruleSourceDataResult;
+    StyleSheetHandler handler(m_styleText, m_element->document(), m_element->document()->elementSheet()->contents(), &ruleSourceDataResult);
     createCSSParser(m_element->document())->parseDeclaration(tempDeclaration.get(), m_styleText, &handler, m_element->document()->elementSheet()->contents());
-    return ruleSourceDataResult->first().release();
+    return ruleSourceDataResult.first().release();
 }
 
 } // namespace WebCore
