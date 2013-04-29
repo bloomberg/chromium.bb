@@ -71,6 +71,10 @@
     },
     'enable_svg%': '<(enable_svg)',
     'conditions': [
+      ['use_concatenated_impulse_responses==1', {
+        # Use concatenated HRTF impulse responses
+        'feature_defines': ['WTF_USE_CONCATENATED_IMPULSE_RESPONSES=1'],
+      }],
       ['OS=="android"', {
         'feature_defines': [
           'ENABLE_CALENDAR_PICKER=0',
