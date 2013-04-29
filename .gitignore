@@ -47,6 +47,7 @@ v8.log
 /build/Debug_x64
 /build/Release
 /build/Release_x64
+/build/gomacc.lock
 /build/ipch/
 /build/util/LASTCHANGE
 /build/util/support
