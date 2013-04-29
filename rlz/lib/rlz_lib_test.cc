@@ -427,7 +427,7 @@ TEST_F(RlzLibTest, SendFinancialPing) {
 #endif
 
   base::Thread::Options options;
-  options.message_loop_type = MessageLoop::TYPE_IO;
+  options.message_loop_type = base::MessageLoop::TYPE_IO;
 
   base::Thread io_thread("rlz_unittest_io_thread");
   ASSERT_TRUE(io_thread.StartWithOptions(options));

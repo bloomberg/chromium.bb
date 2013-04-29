@@ -266,10 +266,10 @@ bool FinancialPing::PingServer(const char* request, std::string* response) {
   return true;
 #else
   // Run a blocking event loop to match the win inet implementation.
-  scoped_ptr<MessageLoop> message_loop;
+  scoped_ptr<base::MessageLoop> message_loop;
   // Ensure that we have a MessageLoop.
-  if (!MessageLoop::current())
-    message_loop.reset(new MessageLoop);
+  if (!base::MessageLoop::current())
+    message_loop.reset(new base::MessageLoop);
   base::RunLoop loop;
   FinancialPingUrlFetcherDelegate delegate(loop.QuitClosure());
 
@@ -292,11 +292,12 @@ bool FinancialPing::PingServer(const char* request, std::string* response) {
   fetcher->SetRequestContext(g_context);
 
   const base::TimeDelta kTimeout = base::TimeDelta::FromMinutes(5);
-  MessageLoop::ScopedNestableTaskAllower allow_nested(MessageLoop::current());
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::ScopedNestableTaskAllower allow_nested(
+      base::MessageLoop::current());
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&net::URLFetcher::Start, base::Unretained(fetcher.get())));
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE, loop.QuitClosure(), kTimeout);
 
   loop.Run();
