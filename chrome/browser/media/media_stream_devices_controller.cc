@@ -11,6 +11,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
+#include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -37,18 +38,19 @@ bool HasAnyAvailableDevice() {
 }  // namespace
 
 MediaStreamDevicesController::MediaStreamDevicesController(
-    Profile* profile,
-    TabSpecificContentSettings* content_settings,
+    content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback)
-    : profile_(profile),
-      content_settings_(content_settings),
+    : web_contents_(web_contents),
       request_(request),
       callback_(callback),
       microphone_requested_(
           request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE),
       webcam_requested_(
           request.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE) {
+  profile_ = Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  content_settings_ = TabSpecificContentSettings::FromWebContents(web_contents);
+
   // Don't call GetDevicePolicy from the initializer list since the
   // implementation depends on member variables.
   if (microphone_requested_ &&
@@ -164,7 +166,13 @@ void MediaStreamDevicesController::Accept(bool update_content_setting) {
       SetPermission(true);
   }
 
-  callback_.Run(devices);
+  scoped_ptr<content::MediaStreamUI> ui;
+  if (!devices.empty()) {
+    ui = MediaCaptureDevicesDispatcher::GetInstance()->
+        GetMediaStreamCaptureIndicator()->RegisterMediaStream(
+            web_contents_, devices);
+  }
+  callback_.Run(devices, ui.Pass());
 }
 
 void MediaStreamDevicesController::Deny(bool update_content_setting) {
@@ -179,7 +187,8 @@ void MediaStreamDevicesController::Deny(bool update_content_setting) {
   if (update_content_setting)
     SetPermission(false);
 
-  callback_.Run(content::MediaStreamDevices());
+  callback_.Run(content::MediaStreamDevices(),
+                scoped_ptr<content::MediaStreamUI>());
 }
 
 MediaStreamDevicesController::DevicePolicy

@@ -188,7 +188,12 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
     }
   }
 
-  callback.Run(devices);
+  scoped_ptr<content::MediaStreamUI> ui;
+  if (!devices.empty()) {
+    ui = media_stream_capture_indicator_->RegisterMediaStream(
+        web_contents, devices);
+  }
+  callback.Run(devices, ui.Pass());
 }
 
 void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequestFromExtension(
@@ -239,7 +244,12 @@ void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequestFromExtension(
     GetRequestedDevice(default_device, false, true, &devices);
   }
 
-  callback.Run(devices);
+  scoped_ptr<content::MediaStreamUI> ui;
+  if (!devices.empty()) {
+    ui = media_stream_capture_indicator_->RegisterMediaStream(
+        web_contents, devices);
+  }
+  callback.Run(devices, ui.Pass());
 }
 
 void MediaCaptureDevicesDispatcher::GetDefaultDevicesForProfile(
@@ -295,26 +305,6 @@ scoped_refptr<MediaStreamCaptureIndicator>
 scoped_refptr<AudioStreamIndicator>
 MediaCaptureDevicesDispatcher::GetAudioStreamIndicator() {
   return audio_stream_indicator_;
-}
-
-void MediaCaptureDevicesDispatcher::OnCaptureDevicesOpened(
-    int render_process_id,
-    int render_view_id,
-    const content::MediaStreamDevices& devices,
-    const base::Closure& close_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  media_stream_capture_indicator_->CaptureDevicesOpened(
-      render_process_id, render_view_id, devices, close_callback);
-}
-
-void MediaCaptureDevicesDispatcher::OnCaptureDevicesClosed(
-    int render_process_id,
-    int render_view_id,
-    const content::MediaStreamDevices& devices) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  media_stream_capture_indicator_->CaptureDevicesClosed(render_process_id,
-                                                        render_view_id,
-                                                        devices);
 }
 
 void MediaCaptureDevicesDispatcher::OnAudioCaptureDevicesChanged(

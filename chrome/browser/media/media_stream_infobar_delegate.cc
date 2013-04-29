@@ -6,10 +6,8 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
@@ -25,13 +23,8 @@ bool MediaStreamInfoBarDelegate::Create(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
   scoped_ptr<MediaStreamDevicesController> controller(
-      new MediaStreamDevicesController(profile, content_settings,
-                                       request, callback));
+      new MediaStreamDevicesController(web_contents, request, callback));
   if (controller->DismissInfoBarAndTakeActionOnSettings())
     return false;
 

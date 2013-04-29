@@ -62,8 +62,6 @@ struct NativeWebKeyboardEvent;
 struct Referrer;
 struct RendererPreferences;
 
-typedef base::Callback< void(const MediaStreamDevices&) > MediaResponseCallback;
-
 //
 // RenderViewHostDelegate
 //

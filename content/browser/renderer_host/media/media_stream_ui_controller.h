@@ -21,7 +21,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/weak_ptr.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/public/browser/web_contents_delegate.h"
 
@@ -52,34 +51,20 @@ class CONTENT_EXPORT MediaStreamUIController {
   // user has no action for the media stream InfoBar.
   void CancelUIRequest(const std::string& label);
 
-  // Called by the InfoBar when the user grants/denies access to some devices
-  // to the webpage. This is placed here, so the request can be cleared from the
-  // list of pending requests, instead of letting the InfoBar itself respond to
-  // the requester. An empty list of devices means that access has been denied.
-  // This method must be called on the IO thread.
-  void PostResponse(const std::string& label,
-                    const MediaStreamDevices& devices);
-
   // Called to signal the UI indicator that the devices are opened.
-  void NotifyUIIndicatorDevicesOpened(
-      const std::string& label,
-      int render_process_id,
-      int render_view_id,
-      const MediaStreamDevices& devices);
+  void NotifyUIIndicatorDevicesOpened(const std::string& label);
 
   // Called to signal the UI indicator that the devices are closed.
-  void NotifyUIIndicatorDevicesClosed(
-      int render_process_id,
-      int render_view_id,
-      const MediaStreamDevices& devices);
+  void NotifyUIIndicatorDevicesClosed(const std::string& label);
 
   // Used for testing only. This function is called to use faked UI, which is
   // needed for server based tests. The first non-opened device(s) will be
   // picked.
-  void UseFakeUI();
+  void UseFakeUI(scoped_ptr<MediaStreamUI> fake_ui);
 
  private:
   typedef std::map<std::string, MediaStreamRequestForUI*> UIRequests;
+  typedef std::map<std::string, MediaStreamUI*> IndicatorsMap;
 
   // Returns true if the UI is already processing a request for this render
   // view.
@@ -95,6 +80,11 @@ class CONTENT_EXPORT MediaStreamUIController {
   // Posts a request to fake UI which is used for testing purpose.
   void PostRequestToFakeUI(const std::string& label);
 
+  // Callback handler for WebContents::RequestMediaAccessPermission().
+  void ProcessAccessRequestResponse(const std::string& label,
+                                    const MediaStreamDevices& devices,
+                                    scoped_ptr<MediaStreamUI> stream_ui);
+
   // Callback for UI called when user requests a stream to be stopped.
   void OnStopStreamFromUI(const std::string& label);
 
@@ -103,8 +93,10 @@ class CONTENT_EXPORT MediaStreamUIController {
 
   // See comment above for method UseFakeUI. Used for automated testing.
   bool use_fake_ui_;
+  scoped_ptr<MediaStreamUI> fake_ui_;
 
-  base::WeakPtrFactory<MediaStreamUIController> weak_ptr_factory_;
+  // Container MediaStreamUI objects for currently active streams.
+  IndicatorsMap stream_indicators_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamUIController);
 };

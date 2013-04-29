@@ -98,17 +98,21 @@ TEST_F(MediaStreamDeviceUIControllerTest, GenerateAndRemoveRequest) {
 }
 
 TEST_F(MediaStreamDeviceUIControllerTest, HandleRequestUsingFakeUI) {
-  ui_controller_->UseFakeUI();
+  ui_controller_->UseFakeUI(scoped_ptr<MediaStreamUI>());
 
   const std::string label = "label";
   CreateDummyRequest(label, true, true);
 
   // Remove the current request, it should not crash.
   EXPECT_CALL(*this, DevicesAccepted(label, _));
+
+  message_loop_->RunUntilIdle();
+
+  ui_controller_->NotifyUIIndicatorDevicesClosed(label);
 }
 
 TEST_F(MediaStreamDeviceUIControllerTest, CreateRequestsAndCancelTheFirst) {
-  ui_controller_->UseFakeUI();
+  ui_controller_->UseFakeUI(scoped_ptr<MediaStreamUI>());
 
   // Create the first audio request.
   const std::string label_1 = "label_1";
@@ -128,10 +132,15 @@ TEST_F(MediaStreamDeviceUIControllerTest, CreateRequestsAndCancelTheFirst) {
   // We should get callbacks from the rest of the requests.
   EXPECT_CALL(*this, DevicesAccepted(label_2, _));
   EXPECT_CALL(*this, DevicesAccepted(label_3, _));
+
+  message_loop_->RunUntilIdle();
+
+  ui_controller_->NotifyUIIndicatorDevicesClosed(label_2);
+  ui_controller_->NotifyUIIndicatorDevicesClosed(label_3);
 }
 
 TEST_F(MediaStreamDeviceUIControllerTest, CreateRequestsAndCancelTheLast) {
-  ui_controller_->UseFakeUI();
+  ui_controller_->UseFakeUI(scoped_ptr<MediaStreamUI>());
 
   // Create the first audio request.
   const std::string label_1 = "label_1";
@@ -151,6 +160,11 @@ TEST_F(MediaStreamDeviceUIControllerTest, CreateRequestsAndCancelTheLast) {
   // We should get callbacks from the rest of the requests.
   EXPECT_CALL(*this, DevicesAccepted(label_1, _));
   EXPECT_CALL(*this, DevicesAccepted(label_2, _));
+
+  message_loop_->RunUntilIdle();
+
+  ui_controller_->NotifyUIIndicatorDevicesClosed(label_1);
+  ui_controller_->NotifyUIIndicatorDevicesClosed(label_2);
 }
 
 }  // namespace content

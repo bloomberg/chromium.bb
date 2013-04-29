@@ -27,13 +27,19 @@ class ScreenCaptureNotificationUI;
 class StatusIcon;
 class StatusTray;
 
-// This indicator is owned by MediaInternals and deleted when MediaInternals
-// is deleted.
+// This indicator is owned by MediaCaptureDevicesDispatcher
+// (MediaCaptureDevicesDispatcher is a singleton).
 class MediaStreamCaptureIndicator
     : public base::RefCountedThreadSafe<MediaStreamCaptureIndicator>,
       public ui::SimpleMenuModel::Delegate {
  public:
   MediaStreamCaptureIndicator();
+
+  // Registers a new media stream for |web_contents| and returns UI object
+  // that's used by the content layer to notify about state of the stream.
+  scoped_ptr<content::MediaStreamUI> RegisterMediaStream(
+      content::WebContents* web_contents,
+      const content::MediaStreamDevices& devices);
 
   // Overrides from SimpleMenuModel::Delegate implementation.
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
@@ -42,17 +48,6 @@ class MediaStreamCaptureIndicator
       int command_id,
       ui::Accelerator* accelerator) OVERRIDE;
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
-
-  // Called on IO thread when MediaStream opens new capture devices.
-  void CaptureDevicesOpened(int render_process_id,
-                            int render_view_id,
-                            const content::MediaStreamDevices& devices,
-                            const base::Closure& close_callback);
-
-  // Called on IO thread when MediaStream closes the opened devices.
-  void CaptureDevicesClosed(int render_process_id,
-                            int render_view_id,
-                            const content::MediaStreamDevices& devices);
 
   // Returns true if the |web_contents| is capturing user media (e.g., webcam or
   // microphone input).
@@ -63,58 +58,36 @@ class MediaStreamCaptureIndicator
   bool IsBeingMirrored(content::WebContents* web_contents) const;
 
  private:
+  class UIDelegate;
   class WebContentsDeviceUsage;
+  friend class WebContentsDeviceUsage;
 
   friend class base::RefCountedThreadSafe<MediaStreamCaptureIndicator>;
   virtual ~MediaStreamCaptureIndicator();
 
   // Following functions/variables are executed/accessed only on UI thread.
 
-  // Creates and shows the status tray icon if it has not been created and is
-  // supported on the current platform.
-  void MaybeCreateStatusTrayIcon();
-
-  // Makes sure we have done one-time initialization of the images.
-  void EnsureStatusTrayIconResources();
-
-  // Finds a WebContents instance by its RenderView's current or
-  // previously-known IDs. This is necessary since clients that called
-  // CaptureDevicesOpened() may later call CaptureDevicesClosed() with stale
-  // IDs. Do not attempt to dereference the pointer without first consulting
-  // WebContentsDeviceUsage::IsWebContentsDestroyed().
-  content::WebContents* LookUpByKnownAlias(int render_process_id,
-                                           int render_view_id) const;
-
-  // Adds devices to usage map and triggers necessary UI updates.
-  void AddCaptureDevices(int render_process_id,
-                         int render_view_id,
-                         const content::MediaStreamDevices& devices,
-                         const base::Closure& close_callback);
-
-  // Removes devices from the usage map and triggers necessary UI updates.
-  void RemoveCaptureDevices(int render_process_id,
-                            int render_view_id,
-                            const content::MediaStreamDevices& devices);
+  // Called by WebContentsDeviceUsage when it's about to destroy itself, i.e.
+  // when WebContents is being destroyed.
+  void UnregisterWebContents(content::WebContents* web_contents);
 
   // Triggers a balloon in the corner telling capture devices are being used.
-  // This function is called by AddCaptureDevices().
+  // Called by CaptureDevicesOpened().
   void ShowBalloon(content::WebContents* web_contents,
                    int balloon_body_message_id);
 
   // ImageLoader callback.
   void OnImageLoaded(const string16& message, const gfx::Image& image);
 
-  // Removes the status tray icon from the desktop. This function is called by
-  // RemoveCaptureDevices() when the device usage map becomes empty.
-  void MaybeDestroyStatusTrayIcon();
-
-  // Updates the status tray menu and the screen capture notification. Called
-  // from AddCaptureDevices() and RemoveCaptureDevices().
+  // Updates the status tray menu and the screen capture notification. Called by
+  // WebContentsDeviceUsage.
   void UpdateNotificationUserInterface();
 
-  // Updates the status tray tooltip and image according to which kind of
-  // devices are being used. This function is called by
-  // UpdateStatusTrayIconContextMenu().
+  // Helpers to create and destroy status tray icon. Called from
+  // UpdateNotificationUserInterface().
+  void EnsureStatusTrayIconResources();
+  void MaybeCreateStatusTrayIcon();
+  void MaybeDestroyStatusTrayIcon();
   void UpdateStatusTrayIconDisplay(bool audio, bool video);
 
   // Callback for ScreenCaptureNotificationUI.
@@ -133,12 +106,6 @@ class MediaStreamCaptureIndicator
   // WebContents instance.
   typedef std::map<content::WebContents*, WebContentsDeviceUsage*> UsageMap;
   UsageMap usage_map_;
-
-  // A map of previously-known render_process_id/render_view_id pairs that have
-  // been associated with a WebContents instance.
-  typedef std::pair<int, int> RenderViewIDs;
-  typedef std::map<RenderViewIDs, content::WebContents*> AliasMap;
-  AliasMap aliases_;
 
   // A vector which maps command IDs to their associated WebContents
   // instance. This is rebuilt each time the status tray icon context menu is

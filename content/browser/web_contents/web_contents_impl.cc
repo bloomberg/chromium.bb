@@ -1571,7 +1571,7 @@ void WebContentsImpl::RequestMediaAccessPermission(
   if (delegate_)
     delegate_->RequestMediaAccessPermission(this, request, callback);
   else
-    callback.Run(MediaStreamDevices());
+    callback.Run(MediaStreamDevices(), scoped_ptr<MediaStreamUI>());
 }
 
 void WebContentsImpl::UpdatePreferredSize(const gfx::Size& pref_size) {

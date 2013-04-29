@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 
@@ -130,6 +132,23 @@ struct CONTENT_EXPORT MediaStreamRequest {
   // Flag to indicate if the request contains video.
   MediaStreamType video_type;
 };
+
+// Interface used by the content layer to notify chrome about changes in the
+// state of a media stream. Instances of this class are passed to content layer
+// when MediaStream access is approved using MediaResponseCallback.
+class MediaStreamUI {
+ public:
+  virtual ~MediaStreamUI() {}
+
+  // Called when MediaStream capturing is started. Chrome layer can call |stop|
+  // to stop the stream.
+  virtual void OnStarted(const base::Closure& stop) = 0;
+};
+
+// Callback used return results of media access requests.
+typedef base::Callback<void(
+    const MediaStreamDevices& devices,
+    scoped_ptr<MediaStreamUI> ui)> MediaResponseCallback;
 
 }  // namespace content
 

@@ -1956,7 +1956,8 @@ class MediaStreamDevicesControllerBrowserTest
   }
   virtual ~MediaStreamDevicesControllerBrowserTest() {}
 
-  void Accept(const content::MediaStreamDevices& devices) {
+  void Accept(const content::MediaStreamDevices& devices,
+              scoped_ptr<content::MediaStreamUI> ui) {
     if (policy_value_) {
       ASSERT_EQ(1U, devices.size());
       ASSERT_EQ("fake_dev", devices[0].id);
@@ -1970,13 +1971,8 @@ class MediaStreamDevicesControllerBrowserTest
                                         content::MEDIA_OPEN_DEVICE, "fake_dev",
                                         content::MEDIA_DEVICE_AUDIO_CAPTURE,
                                         content::MEDIA_NO_SERVICE);
-    TabSpecificContentSettings* content_settings =
-        TabSpecificContentSettings::FromWebContents(
-            browser()->tab_strip_model()->GetActiveWebContents());
     MediaStreamDevicesController controller(
-        browser()->profile(),
-        content_settings,
-        request,
+        browser()->tab_strip_model()->GetActiveWebContents(), request,
         base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept, this));
     controller.DismissInfoBarAndTakeActionOnSettings();
 
@@ -1988,11 +1984,8 @@ class MediaStreamDevicesControllerBrowserTest
                                         content::MEDIA_OPEN_DEVICE, "fake_dev",
                                         content::MEDIA_NO_SERVICE,
                                         content::MEDIA_DEVICE_VIDEO_CAPTURE);
-    TabSpecificContentSettings* content_settings =
-        TabSpecificContentSettings::FromWebContents(
-            browser()->tab_strip_model()->GetActiveWebContents());
     MediaStreamDevicesController controller(
-        browser()->profile(), content_settings, request,
+        browser()->tab_strip_model()->GetActiveWebContents(), request,
         base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept, this));
     controller.DismissInfoBarAndTakeActionOnSettings();
 

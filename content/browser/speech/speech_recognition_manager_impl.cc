@@ -263,8 +263,7 @@ void SpeechRecognitionManagerImpl::OnRecognitionStart(int session_id) {
   if (!context.devices.empty()) {
     // Notify the UI the devices are being used.
     BrowserMainLoop::GetMediaStreamManager()->NotifyUIDevicesOpened(
-        context.label, context.render_process_id, context.render_view_id,
-        context.devices);
+        context.label);
   }
 #endif  // !defined(OS_IOS)
 
@@ -383,7 +382,7 @@ void SpeechRecognitionManagerImpl::OnRecognitionEnd(int session_id) {
   if (!context.devices.empty()) {
     // Notify the UI the devices has been closed.
      BrowserMainLoop::GetMediaStreamManager()->NotifyUIDevicesClosed(
-         context.render_process_id, context.render_view_id, context.devices);
+         context.label);
   }
 #endif  // !defined(OS_IOS)
 

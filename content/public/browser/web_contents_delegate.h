@@ -56,8 +56,6 @@ namespace content {
 
 struct OpenURLParams;
 
-typedef base::Callback< void(const MediaStreamDevices&) > MediaResponseCallback;
-
 // Objects implement this interface to get notified about changes in the
 // WebContents and to provide necessary functionality.
 class CONTENT_EXPORT WebContentsDelegate {

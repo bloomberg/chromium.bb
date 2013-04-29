@@ -62,7 +62,7 @@ void ProceedMediaAccessPermission(const MediaStreamRequestForUI& request,
 
   // Tab may have gone away.
   if (!host || !host->GetDelegate()) {
-    callback.Run(MediaStreamDevices());
+    callback.Run(MediaStreamDevices(), scoped_ptr<MediaStreamUI>());
     return;
   }
 
@@ -73,13 +73,13 @@ void ProceedMediaAccessPermission(const MediaStreamRequestForUI& request,
 
 MediaStreamUIController::MediaStreamUIController(SettingsRequester* requester)
     : requester_(requester),
-      use_fake_ui_(false),
-      weak_ptr_factory_(this) {
+      use_fake_ui_(false) {
   DCHECK(requester_);
 }
 
 MediaStreamUIController::~MediaStreamUIController() {
   DCHECK(requests_.empty());
+  DCHECK(stream_indicators_.empty());
 }
 
 void MediaStreamUIController::MakeUIRequest(
@@ -135,16 +135,25 @@ void MediaStreamUIController::CancelUIRequest(const std::string& label) {
     // page.
     ProcessNextRequestForView(render_process_id, render_view_id);
   }
+
+  NotifyUIIndicatorDevicesClosed(label);
 }
 
-void MediaStreamUIController::PostResponse(
+void MediaStreamUIController::ProcessAccessRequestResponse(
     const std::string& label,
-    const MediaStreamDevices& devices) {
+    const MediaStreamDevices& devices,
+    scoped_ptr<MediaStreamUI> stream_ui) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
   UIRequests::iterator request_iter = requests_.find(label);
   // Return if the request has been removed.
-  if (request_iter == requests_.end())
+  if (request_iter == requests_.end()) {
+    if (stream_ui) {
+      BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE,
+                                stream_ui.release());
+    }
     return;
+  }
 
   DCHECK(requester_);
   scoped_ptr<MediaStreamRequestForUI> request(request_iter->second);
@@ -155,7 +164,12 @@ void MediaStreamUIController::PostResponse(
   ProcessNextRequestForView(request->render_process_id,
                             request->render_view_id);
 
-  if (devices.size() > 0) {
+  if (!devices.empty()) {
+    if (stream_ui) {
+      DCHECK(stream_indicators_.find(label) == stream_indicators_.end());
+      stream_indicators_[label] = stream_ui.release();
+    }
+
     // Build a list of "full" device objects for the accepted devices.
     StreamDeviceInfoArray device_list;
     // TODO(xians): figure out if it is all right to hard code in_use to false,
@@ -169,49 +183,47 @@ void MediaStreamUIController::PostResponse(
 
     requester_->DevicesAccepted(label, device_list);
   } else {
+    DCHECK(!stream_ui);
     requester_->SettingsError(label);
   }
 }
 
 void MediaStreamUIController::NotifyUIIndicatorDevicesOpened(
-    const std::string& label,
-    int render_process_id,
-    int render_view_id,
-    const MediaStreamDevices& devices) {
+    const std::string& label) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!devices.empty());
-  MediaObserver* media_observer =
-      GetContentClient()->browser()->GetMediaObserver();
-  if (media_observer == NULL)
-    return;
 
-  media_observer->OnCaptureDevicesOpened(
-      render_process_id, render_view_id, devices,
-      media::BindToLoop(
-          base::MessageLoopProxy::current(),
-          base::Bind(&MediaStreamUIController::OnStopStreamFromUI,
-                     weak_ptr_factory_.GetWeakPtr(), label)));
+  IndicatorsMap::iterator it = stream_indicators_.find(label);
+  if (it != stream_indicators_.end()) {
+    base::Closure stop_callback = media::BindToLoop(
+        base::MessageLoopProxy::current(),
+        base::Bind(&MediaStreamUIController::OnStopStreamFromUI,
+                   base::Unretained(this), label));
+
+    // base::Unretained is safe here because the target can be deleted only on
+    // UI thread when posted from IO thread (see
+    // NotifyUIIndicatorDevicesClosed()).
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&MediaStreamUI::OnStarted,
+                   base::Unretained(it->second), stop_callback));
+  }
 }
 
 void MediaStreamUIController::NotifyUIIndicatorDevicesClosed(
-    int render_process_id,
-    int render_view_id,
-    const MediaStreamDevices& devices) {
+    const std::string& label) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!devices.empty());
-  MediaObserver* media_observer =
-      GetContentClient()->browser()->GetMediaObserver();
-  if (media_observer == NULL)
-    return;
 
-  media_observer->OnCaptureDevicesClosed(render_process_id,
-                                         render_view_id,
-                                         devices);
+  IndicatorsMap::iterator indicator = stream_indicators_.find(label);
+  if (indicator != stream_indicators_.end()) {
+    BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, indicator->second);
+    stream_indicators_.erase(indicator);
+  }
 }
 
-void MediaStreamUIController::UseFakeUI() {
+void MediaStreamUIController::UseFakeUI(scoped_ptr<MediaStreamUI> fake_ui) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   use_fake_ui_ = true;
+  fake_ui_ = fake_ui.Pass();
 }
 
 bool MediaStreamUIController::IsUIBusy(int render_process_id,
@@ -246,7 +258,7 @@ void MediaStreamUIController::ProcessNextRequestForView(
   if (next_request_label.empty())
     return;
 
-  if (use_fake_ui_) {
+  if (fake_ui_) {
     PostRequestToFakeUI(next_request_label);
   } else {
     PostRequestToUI(next_request_label);
@@ -256,6 +268,7 @@ void MediaStreamUIController::ProcessNextRequestForView(
 void MediaStreamUIController::PostRequestToUI(const std::string& label) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   UIRequests::iterator request_iter = requests_.find(label);
+
   if (request_iter == requests_.end()) {
     NOTREACHED();
     return;
@@ -266,11 +279,11 @@ void MediaStreamUIController::PostRequestToUI(const std::string& label) {
   request->posted_task = true;
 
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&ProceedMediaAccessPermission, *request, media::BindToLoop(
+      BrowserThread::UI, FROM_HERE, base::Bind(
+          &ProceedMediaAccessPermission, *request, media::BindToLoop(
           base::MessageLoopProxy::current(), base::Bind(
-              &MediaStreamUIController::PostResponse,
-              weak_ptr_factory_.GetWeakPtr(), label))));
+              &MediaStreamUIController::ProcessAccessRequestResponse,
+              base::Unretained(this), label))));
 }
 
 void MediaStreamUIController::PostRequestToFakeUI(const std::string& label) {
@@ -304,13 +317,20 @@ void MediaStreamUIController::PostRequestToFakeUI(const std::string& label) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&MediaStreamUIController::PostResponse,
-                 weak_ptr_factory_.GetWeakPtr(), label, devices_to_use));
+      base::Bind(&MediaStreamUIController::ProcessAccessRequestResponse,
+                 base::Unretained(this), label, devices_to_use,
+                 base::Passed(&fake_ui_)));
 }
 
 void MediaStreamUIController::OnStopStreamFromUI(const std::string& label) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  requester_->StopStreamFromUI(label);
+  // It's safe to base::Unretained() here because |requester_| references
+  // MediaStreamManager which always outlives IO thread.
+  //
+  // TODO(sergeyu): Refactor this code to not rely on what |requester_| is.
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&SettingsRequester::StopStreamFromUI,
+                 base::Unretained(requester_), label));
 }
 
 }  // namespace content

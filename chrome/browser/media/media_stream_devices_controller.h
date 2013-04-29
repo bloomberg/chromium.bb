@@ -9,14 +9,17 @@
 
 #include "content/public/browser/web_contents_delegate.h"
 
+namespace content {
+class WebContents;
+}
+
 class PrefRegistrySyncable;
 class Profile;
 class TabSpecificContentSettings;
 
 class MediaStreamDevicesController {
  public:
-  MediaStreamDevicesController(Profile* profile,
-                               TabSpecificContentSettings* content_settings,
+  MediaStreamDevicesController(content::WebContents* web_contents,
                                const content::MediaStreamRequest& request,
                                const content::MediaResponseCallback& callback);
 
@@ -70,6 +73,8 @@ class MediaStreamDevicesController {
   // Sets the permission of the origin of the request. This is triggered when
   // the users deny the request or allow the request for https sites.
   void SetPermission(bool allowed) const;
+
+  content::WebContents* web_contents_;
 
   // The owner of this class needs to make sure it does not outlive the profile.
   Profile* profile_;

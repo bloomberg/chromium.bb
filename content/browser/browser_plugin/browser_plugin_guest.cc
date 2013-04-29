@@ -1140,7 +1140,7 @@ void BrowserPluginGuest::RequestMediaAccessPermission(
     const MediaResponseCallback& callback) {
   if (media_requests_map_.size() >= kNumMaxOutstandingPermissionRequests) {
     // Deny the media request.
-    callback.Run(MediaStreamDevices());
+    callback.Run(MediaStreamDevices(), scoped_ptr<MediaStreamUI>());
     return;
   }
   int request_id = next_permission_request_id_++;
@@ -1277,7 +1277,7 @@ void BrowserPluginGuest::OnRespondPermissionMedia(
     embedder_web_contents_->RequestMediaAccessPermission(request, callback);
   } else {
     // Deny the request.
-    callback.Run(MediaStreamDevices());
+    callback.Run(MediaStreamDevices(), scoped_ptr<MediaStreamUI>());
   }
   media_requests_map_.erase(media_request_iter);
 }

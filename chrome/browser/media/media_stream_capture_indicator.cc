@@ -111,14 +111,24 @@ string16 GetTitle(WebContents* web_contents) {
 }  // namespace
 
 // Stores usage counts for all the capture devices associated with a single
-// WebContents instance, and observes for the destruction of the WebContents
-// instance.
+// WebContents instance. Instances of this class are owned by
+// MediaStreamCaptureIndicator. They also observe for the destruction of the
+// WebContents instances and delete themselves when corresponding WebContents is
+// deleted.
 class MediaStreamCaptureIndicator::WebContentsDeviceUsage
-    : protected content::WebContentsObserver {
+    : public content::WebContentsObserver {
  public:
-  explicit WebContentsDeviceUsage(WebContents* web_contents);
-
-  bool IsWebContentsDestroyed() const { return web_contents() == NULL; }
+  explicit WebContentsDeviceUsage(
+      scoped_refptr<MediaStreamCaptureIndicator> indicator,
+      WebContents* web_contents)
+      : WebContentsObserver(web_contents),
+        indicator_(indicator),
+        audio_ref_count_(0),
+        video_ref_count_(0),
+        mirroring_ref_count_(0),
+        screen_capture_ref_count_(0),
+        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+  }
 
   bool IsCapturingAudio() const { return audio_ref_count_ > 0; }
   bool IsCapturingVideo() const { return video_ref_count_ > 0; }
@@ -128,35 +138,83 @@ class MediaStreamCaptureIndicator::WebContentsDeviceUsage
     return stop_screen_capture_callback_;
   }
 
+  scoped_ptr<content::MediaStreamUI> RegisterMediaStream(
+      const content::MediaStreamDevices& devices);
+
   // Increment ref-counts up based on the type of each device provided. The
   // return value is the message ID for the balloon body to show, or zero if the
   // balloon should not be shown.
-  int AddDevices(const content::MediaStreamDevices& devices,
-                 const base::Closure& close_callback);
+  void AddDevices(const content::MediaStreamDevices& devices,
+                  const base::Closure& close_callback);
 
   // Decrement ref-counts up based on the type of each device provided.
   void RemoveDevices(const content::MediaStreamDevices& devices);
 
  private:
+  // content::WebContentsObserver overrides.
+  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE {
+    indicator_->UnregisterWebContents(web_contents);
+    delete this;
+  }
+
+  scoped_refptr<MediaStreamCaptureIndicator> indicator_;
   int audio_ref_count_;
   int video_ref_count_;
   int mirroring_ref_count_;
   int screen_capture_ref_count_;
   base::Closure stop_screen_capture_callback_;
 
+  base::WeakPtrFactory<WebContentsDeviceUsage> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(WebContentsDeviceUsage);
 };
 
-MediaStreamCaptureIndicator::WebContentsDeviceUsage::WebContentsDeviceUsage(
-    WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      audio_ref_count_(0),
-      video_ref_count_(0),
-      mirroring_ref_count_(0),
-      screen_capture_ref_count_(0) {
+// Implements MediaStreamUI interface. Instances of this class are created for
+// each MediaStream and their ownership is passed to MediaStream implementation
+// in the content layer. Each UIDelegate keeps a weak pointer to the
+// corresponding WebContentsDeviceUsage object to deliver updates about state of
+// the stream.
+class MediaStreamCaptureIndicator::UIDelegate
+    : public content::MediaStreamUI {
+ public:
+  UIDelegate(base::WeakPtr<WebContentsDeviceUsage> device_usage,
+             const content::MediaStreamDevices& devices)
+      : device_usage_(device_usage),
+        devices_(devices),
+        started_(false) {
+    DCHECK(!devices_.empty());
+  }
+
+  virtual ~UIDelegate() {
+    if (started_ && device_usage_)
+      device_usage_->RemoveDevices(devices_);
+  }
+
+ private:
+  // content::MediaStreamUI interface.
+  virtual void OnStarted(const base::Closure& close_callback) OVERRIDE {
+    DCHECK(!started_);
+    started_ = true;
+    if (device_usage_)
+      device_usage_->AddDevices(devices_, close_callback);
+  }
+
+  base::WeakPtr<WebContentsDeviceUsage> device_usage_;
+  content::MediaStreamDevices devices_;
+  bool started_;
+
+  DISALLOW_COPY_AND_ASSIGN(UIDelegate);
+};
+
+
+scoped_ptr<content::MediaStreamUI>
+MediaStreamCaptureIndicator::WebContentsDeviceUsage::RegisterMediaStream(
+    const content::MediaStreamDevices& devices) {
+  return scoped_ptr<content::MediaStreamUI>(new UIDelegate(
+      weak_factory_.GetWeakPtr(), devices));
 }
 
-int MediaStreamCaptureIndicator::WebContentsDeviceUsage::AddDevices(
+void MediaStreamCaptureIndicator::WebContentsDeviceUsage::AddDevices(
     const content::MediaStreamDevices& devices,
     const base::Closure& close_callback) {
   bool incremented_audio_count = false;
@@ -180,14 +238,24 @@ int MediaStreamCaptureIndicator::WebContentsDeviceUsage::AddDevices(
     }
   }
 
-  if (incremented_audio_count && incremented_video_count)
-    return IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_BODY_AUDIO_AND_VIDEO;
-  else if (incremented_audio_count)
-    return IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_BODY_AUDIO_ONLY;
-  else if (incremented_video_count)
-    return IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_BODY_VIDEO_ONLY;
-  else
-    return 0;
+  int balloon_body_message_id = 0;
+
+  if (incremented_audio_count && incremented_video_count) {
+    balloon_body_message_id =
+        IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_BODY_AUDIO_AND_VIDEO;
+  } else if (incremented_audio_count) {
+    balloon_body_message_id =
+        IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_BODY_AUDIO_ONLY;
+  } else if (incremented_video_count) {
+    balloon_body_message_id =
+        IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_BODY_VIDEO_ONLY;
+  }
+
+  if (web_contents())
+    web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
+  if (balloon_body_message_id && web_contents())
+    indicator_->ShowBalloon(web_contents(), balloon_body_message_id);
+  indicator_->UpdateNotificationUserInterface();
 }
 
 void MediaStreamCaptureIndicator::WebContentsDeviceUsage::RemoveDevices(
@@ -212,6 +280,9 @@ void MediaStreamCaptureIndicator::WebContentsDeviceUsage::RemoveDevices(
   DCHECK_GE(video_ref_count_, 0);
   DCHECK_GE(mirroring_ref_count_, 0);
   DCHECK_GE(screen_capture_ref_count_, 0);
+
+  web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
+  indicator_->UpdateNotificationUserInterface();
 }
 
 MediaStreamCaptureIndicator::MediaStreamCaptureIndicator()
@@ -236,6 +307,16 @@ MediaStreamCaptureIndicator::~MediaStreamCaptureIndicator() {
        ++it) {
     delete it->second;
   }
+}
+
+scoped_ptr<content::MediaStreamUI>
+MediaStreamCaptureIndicator::RegisterMediaStream(
+    content::WebContents* web_contents,
+    const content::MediaStreamDevices& devices) {
+  WebContentsDeviceUsage*& usage = usage_map_[web_contents];
+  if (!usage)
+    usage = new WebContentsDeviceUsage(this, web_contents);
+  return usage->RegisterMediaStream(devices);
 }
 
 bool MediaStreamCaptureIndicator::IsCommandIdChecked(
@@ -265,39 +346,10 @@ void MediaStreamCaptureIndicator::ExecuteCommand(int command_id,
   DCHECK_GT(static_cast<int>(command_targets_.size()), index);
   WebContents* const web_contents = command_targets_[index];
   UsageMap::const_iterator it = usage_map_.find(web_contents);
-  if (it == usage_map_.end() || it->second->IsWebContentsDestroyed())
+  if (it == usage_map_.end())
     return;
   web_contents->GetDelegate()->ActivateContents(web_contents);
 }
-
-void MediaStreamCaptureIndicator::CaptureDevicesOpened(
-    int render_process_id,
-    int render_view_id,
-    const content::MediaStreamDevices& devices,
-    const base::Closure& close_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!devices.empty());
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&MediaStreamCaptureIndicator::AddCaptureDevices,
-                 this, render_process_id, render_view_id, devices,
-                 close_callback));
-}
-
-void MediaStreamCaptureIndicator::CaptureDevicesClosed(
-    int render_process_id,
-    int render_view_id,
-    const content::MediaStreamDevices& devices) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!devices.empty());
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&MediaStreamCaptureIndicator::RemoveCaptureDevices,
-                 this, render_process_id, render_view_id, devices));
-}
-
 
 bool MediaStreamCaptureIndicator::IsCapturingUserMedia(
     content::WebContents* web_contents) const {
@@ -314,6 +366,12 @@ bool MediaStreamCaptureIndicator::IsBeingMirrored(
 
   UsageMap::const_iterator it = usage_map_.find(web_contents);
   return it != usage_map_.end() && it->second->IsMirroring();
+}
+
+void MediaStreamCaptureIndicator::UnregisterWebContents(
+    WebContents* web_contents) {
+  usage_map_.erase(web_contents);
+  UpdateNotificationUserInterface();
 }
 
 void MediaStreamCaptureIndicator::MaybeCreateStatusTrayIcon() {
@@ -430,11 +488,6 @@ void MediaStreamCaptureIndicator::UpdateNotificationUserInterface() {
     // Check if any audio and video devices have been used.
     const WebContentsDeviceUsage& usage = *iter->second;
     WebContents* const web_contents = iter->first;
-    if (usage.IsWebContentsDestroyed()) {
-      // We only show the tray icon for extensions that have not been
-      // destroyed and are capturing audio or video.
-      continue;
-    }
 
     if (usage.IsCapturingScreen()) {
       DCHECK(!screen_capturer);
@@ -509,94 +562,6 @@ void MediaStreamCaptureIndicator::UpdateStatusTrayIconDisplay(
 
   status_icon_->SetToolTip(l10n_util::GetStringFUTF16(
       message_id, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-}
-
-WebContents* MediaStreamCaptureIndicator::LookUpByKnownAlias(
-    int render_process_id, int render_view_id) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  WebContents* result =
-      tab_util::GetWebContentsByID(render_process_id, render_view_id);
-  if (!result) {
-    const RenderViewIDs key(render_process_id, render_view_id);
-    AliasMap::const_iterator it = aliases_.find(key);
-    if (it != aliases_.end())
-      result = it->second;
-  }
-  return result;
-}
-
-void MediaStreamCaptureIndicator::AddCaptureDevices(
-    int render_process_id,
-    int render_view_id,
-    const content::MediaStreamDevices& devices,
-    const base::Closure& close_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  WebContents* const web_contents =
-      LookUpByKnownAlias(render_process_id, render_view_id);
-  if (!web_contents)
-    return;
-
-  // Increase the usage ref-counts.
-  WebContentsDeviceUsage*& usage = usage_map_[web_contents];
-  if (!usage)
-    usage = new WebContentsDeviceUsage(web_contents);
-  const int balloon_body_message_id =
-      usage->AddDevices(devices, close_callback);
-
-  // Keep track of the IDs as a known alias to the WebContents instance.
-  const AliasMap::iterator insert_it = aliases_.insert(
-      make_pair(RenderViewIDs(render_process_id, render_view_id),
-                web_contents)).first;
-  DCHECK_EQ(web_contents, insert_it->second)
-      << "BUG: IDs refer to two different WebContents instances.";
-
-  web_contents->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
-
-  UpdateNotificationUserInterface();
-  if (balloon_body_message_id)
-    ShowBalloon(web_contents, balloon_body_message_id);
-}
-
-void MediaStreamCaptureIndicator::RemoveCaptureDevices(
-    int render_process_id,
-    int render_view_id,
-    const content::MediaStreamDevices& devices) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  WebContents* const web_contents =
-      LookUpByKnownAlias(render_process_id, render_view_id);
-  if (!web_contents)
-    return;
-
-  // Decrease the usage ref-counts.
-  const UsageMap::iterator it = usage_map_.find(web_contents);
-  if (it == usage_map_.end()) {
-    DLOG(FATAL) << "BUG: Attempt to remove devices more than once.";
-    return;
-  }
-  WebContentsDeviceUsage* const usage = it->second;
-  usage->RemoveDevices(devices);
-
-  if (!usage->IsWebContentsDestroyed())
-    web_contents->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
-
-  // Remove the usage and alias mappings if all the devices have been closed.
-  if (!usage->IsCapturingAudio() && !usage->IsCapturingVideo() &&
-      !usage->IsMirroring() && !usage->IsCapturingScreen()) {
-    for (AliasMap::iterator alias_it = aliases_.begin();
-         alias_it != aliases_.end(); ) {
-      if (alias_it->second == web_contents)
-        aliases_.erase(alias_it++);
-      else
-        ++alias_it;
-    }
-    delete usage;
-    usage_map_.erase(it);
-  }
-
-  UpdateNotificationUserInterface();
 }
 
 void MediaStreamCaptureIndicator::OnStopScreenCapture(

@@ -125,15 +125,10 @@ class CONTENT_EXPORT MediaStreamManager
   // Signals the UI that the devices are opened.
   // Users are responsible for calling NotifyUIDevicesClosed when the devices
   // are not used anymore, otherwise UI will leak.
-  void NotifyUIDevicesOpened(const std::string& label,
-                             int render_process_id,
-                             int render_view_id,
-                             const MediaStreamDevices& devices);
+  void NotifyUIDevicesOpened(const std::string& label);
 
   // Signals the UI that the devices are being closed.
-  void NotifyUIDevicesClosed(int render_process_id,
-                             int render_view_id,
-                             const MediaStreamDevices& devices);
+  void NotifyUIDevicesClosed(const std::string& label);
 
   // Implements MediaStreamProviderListener.
   virtual void Opened(MediaStreamType stream_type,
@@ -161,6 +156,10 @@ class CONTENT_EXPORT MediaStreamManager
   // devices, which is needed for server based testing.
   void UseFakeDevice();
 
+  // Called by the unittests to specify fake UI that should be used for next
+  // generated stream.
+  void UseFakeUI(scoped_ptr<MediaStreamUI> fake_ui);
+
   // This object gets deleted on the UI thread after the IO thread has been
   // destroyed. So we need to know when IO thread is being destroyed so that
   // we can delete VideoCaptureManager and AudioInputDeviceManager.
@@ -184,14 +183,6 @@ class CONTENT_EXPORT MediaStreamManager
   // Initializes the device managers on IO thread.  Auto-starts the device
   // thread and registers this as a listener with the device managers.
   void InitializeDeviceManagersOnIOThread();
-
-  // Helpers for signaling the media observer that new capture devices are
-  // opened/closed.
-  void NotifyDevicesOpened(const std::string& label,
-                           const DeviceRequest& request);
-  void NotifyDevicesClosed(const DeviceRequest& request);
-  void DevicesFromRequest(const DeviceRequest& request,
-                          MediaStreamDevices* devices);
 
   // Helper for sending up-to-date device lists to media observer when a
   // capture device is plugged in or unplugged.
