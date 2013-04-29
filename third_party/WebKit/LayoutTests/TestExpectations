@@ -1219,8 +1219,6 @@ webkit.org/b/55300 [ Mac ] fast/images/support-broken-image-delegate.html [ Fail
 # Skip an overly restrictive cross-origin HTTPS test
 crbug.com/69594 http/tests/appcache/different-https-origin-resource-main.html
 
-crbug.com/76253 plugins/npruntime/np-deallocate-called-before-np-shutdown.html [ Failure ]
-
 crbug.com/76550 [ Win Debug ] fast/dom/Window/window-function-frame-getter-precedence.html [ Slow ]
 crbug.com/76550 [ Lion SnowLeopard Debug ] fast/dom/Window/window-function-frame-getter-precedence.html [ Timeout ]
 

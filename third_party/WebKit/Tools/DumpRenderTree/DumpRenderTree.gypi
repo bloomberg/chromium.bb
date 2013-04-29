@@ -114,6 +114,7 @@
             'TestNetscapePlugIn/Tests/GetURLWithJavaScriptURLDestroyingPlugin.cpp',
             'TestNetscapePlugIn/Tests/GetUserAgentWithNullNPPFromNPPNew.cpp',
             'TestNetscapePlugIn/Tests/LogNPPSetWindow.cpp',
+            'TestNetscapePlugIn/Tests/NPDeallocateCalledBeforeNPShutdown.cpp',
             'TestNetscapePlugIn/Tests/NPPNewFails.cpp',
             'TestNetscapePlugIn/Tests/NPRuntimeCallsWithNullNPP.cpp',
             'TestNetscapePlugIn/Tests/NPRuntimeObjectFromDestroyedPlugin.cpp',
