@@ -535,7 +535,7 @@ class AutofillTest : public InProcessBrowserTest {
 #if defined(OS_MACOSX)
 #define MAYBE_BasicFormFill BasicFormFill
 #else
-#define MAYBE_BasicFormFill FLAKY_BasicFormFill
+#define MAYBE_BasicFormFill DISABLED_BasicFormFill
 #endif
 // Test that basic form fill is working.
 IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_BasicFormFill) {
@@ -553,7 +553,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_BasicFormFill) {
 #if defined(OS_MACOSX)
 #define MAYBE_AutofillViaDownArrow AutofillViaDownArrow
 #else
-#define MAYBE_AutofillViaDownArrow FLAKY_AutofillViaDownArrow
+#define MAYBE_AutofillViaDownArrow DISABLED_AutofillViaDownArrow
 #endif
 // Test that form filling can be initiated by pressing the down arrow.
 IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_AutofillViaDownArrow) {
@@ -581,36 +581,11 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_AutofillViaDownArrow) {
   ExpectFilledTestForm();
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillTest, DISABLED_AutofillSelectViaTab) {
-  CreateTestProfile();
-
-  // Load the test page.
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
-      GURL(std::string(kDataURIPrefix) + kTestFormString)));
-
-  // Focus a fillable field.
-  FocusFirstNameField();
-
-  // Press the down arrow to initiate Autofill and wait for the popup to be
-  // shown.
-  SendKeyToPageAndWait(ui::VKEY_DOWN);
-
-  // Press the down arrow to select the suggestion and preview the autofilled
-  // form.
-  SendKeyToPopupAndWait(ui::VKEY_DOWN);
-
-  // Press tab to accept the autofill suggestions.
-  SendKeyToPopupAndWait(ui::VKEY_TAB);
-
-  // The form should be filled.
-  ExpectFilledTestForm();
-}
-
 // http://crbug.com/150084
 #if defined(OS_MACOSX)
 #define MAYBE_OnChangeAfterAutofill OnChangeAfterAutofill
 #else
-#define MAYBE_OnChangeAfterAutofill FLAKY_OnChangeAfterAutofill
+#define MAYBE_OnChangeAfterAutofill DISABLED_OnChangeAfterAutofill
 #endif
 // Test that a JavaScript onchange event is fired after auto-filling a form.
 IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_OnChangeAfterAutofill) {
