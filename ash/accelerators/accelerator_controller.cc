@@ -816,6 +816,12 @@ bool AcceleratorController::PerformAction(int action,
     case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
       internal::DisplayManager::ToggleDisplayScaleFactor();
       return true;
+    case DEBUG_TOGGLE_SHOW_DEBUG_BORDERS:
+      ash::debug::ToggleShowDebugBorders();
+      return true;
+    case DEBUG_TOGGLE_SHOW_FPS_COUNTER:
+      ash::debug::ToggleShowFpsCounter();
+      return true;
     case DEBUG_TOGGLE_SHOW_PAINT_RECTS:
       ash::debug::ToggleShowPaintRects();
       return true;

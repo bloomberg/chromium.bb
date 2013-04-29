@@ -206,6 +206,10 @@ const AcceleratorData kDebugAcceleratorData[] = {
     PRINT_WINDOW_HIERARCHY },
   { true, ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     DEBUG_TOGGLE_DEVICE_SCALE_FACTOR },
+  { true, ui::VKEY_B, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
+    DEBUG_TOGGLE_SHOW_DEBUG_BORDERS },
+  { true, ui::VKEY_F, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
+    DEBUG_TOGGLE_SHOW_FPS_COUNTER },
   { true, ui::VKEY_P, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     DEBUG_TOGGLE_SHOW_PAINT_RECTS },
 };

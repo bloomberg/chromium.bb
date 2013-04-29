@@ -12,6 +12,8 @@ namespace debug {
 
 // Toggles debugging features controlled by
 // cc::LayerTreeDebugState.
+ASH_EXPORT void ToggleShowDebugBorders();
+ASH_EXPORT void ToggleShowFpsCounter();
 ASH_EXPORT void ToggleShowPaintRects();
 
 }  // debug

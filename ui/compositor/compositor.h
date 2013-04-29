@@ -31,6 +31,7 @@ class RunLoop;
 namespace cc {
 class ContextProvider;
 class Layer;
+class LayerTreeDebugState;
 class LayerTreeHost;
 }
 
@@ -363,8 +364,8 @@ class COMPOSITOR_EXPORT Compositor
 
   bool IsLocked() { return compositor_lock_ != NULL; }
 
-  bool IsShowPaintRectsEnabled() const;
-  void SetShowPaintRectsEnabled(bool enabled);
+  const cc::LayerTreeDebugState& GetLayerTreeDebugState() const;
+  void SetLayerTreeDebugState(const cc::LayerTreeDebugState& debug_state);
 
  private:
   friend class base::RefCounted<Compositor>;

@@ -20,6 +20,7 @@
         '../base/base.gyp:base_i18n',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../build/temp_gyp/googleurl.gyp:googleurl',
+        '../cc/cc.gyp:cc',
         '../content/content.gyp:content',
         '../content/content.gyp:content_browser',
         '../ipc/ipc.gyp:ipc',
