@@ -181,6 +181,11 @@ while read name id comment ; do
 	@@ -237 +237 @@
 	-	sed -e s'|cloog_LDADD = \$(LDADD)|cloog_LDADD = \$(LDADD) -lstdc++ -lm |' \\
 	+	sed -e s'|LIBS = @LIBS@|LIBS = @LIBS@ -lstdc++ -lm |' \\
+	@@ -315,2 +315,2 @@
+	-	  CC="gcc" \\
+	-	  CFLAGS="-m\$(HOST_TOOLCHAIN_BITS) -O2 \$(CFLAGS)" \\
+	+	  CC="\$(GCC_CC)" \\
+	+	  CFLAGS="\$(CFLAGS)" \\
 	@@ -847 +847 @@
 	-	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \\" \`LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1-\\2-\\3+'\` (Native Client r\`LC_ALL=C svnversion\`, Git Commit \`cd SRC/binutils ; LC_ALL=C git rev-parse HEAD\`)\\"\\n" |\\
 	+	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \\" \`cd ../../.. ; LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1-\\2-\\3+'\` (Native Client r$rev)\\"\\n" |\\
@@ -201,6 +206,11 @@ while read name id comment ; do
 	@@ -237 +237 @@
 	-	sed -e s'|cloog_LDADD = \$(LDADD)|cloog_LDADD = \$(LDADD) -lstdc++ -lm |' \\
 	+	sed -e s'|LIBS = @LIBS@|LIBS = @LIBS@ -lstdc++ -lm |' \\
+	@@ -315,2 +315,2 @@
+	-	  CC="gcc" \\
+	-	  CFLAGS="-m\$(HOST_TOOLCHAIN_BITS) -O2 \$(CFLAGS)" \\
+	+	  CC="\$(GCC_CC)" \\
+	+	  CFLAGS="\$(CFLAGS)" \\
 	@@ -847 +847 @@
 	-	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \\" \`LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+'\` (Native Client r\`LC_ALL=C svnversion\`, Git Commit \`cd SRC/binutils ; LC_ALL=C git rev-parse HEAD\`)\\"\\n" |\\
 	+	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \\" \`cd ../../.. ; LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+'\` (Native Client r$rev)\\"\\n" |\\
