@@ -40,7 +40,7 @@
 #include "core/dom/MutationObserver.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include "core/page/Settings.h"
 #include "core/platform/EventTracer.h"
 #include "core/platform/LayoutTestSupport.h"

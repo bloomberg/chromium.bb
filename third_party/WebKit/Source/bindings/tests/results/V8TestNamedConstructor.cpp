@@ -29,7 +29,7 @@
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include <wtf/UnusedParam.h>
 
 #if ENABLE(BINDING_INTEGRITY)
@@ -94,8 +94,8 @@ WrapperTypeInfo V8TestNamedConstructorConstructor::info = { V8TestNamedConstruct
 
 static v8::Handle<v8::Value> V8TestNamedConstructorConstructorCallback(const v8::Arguments& args)
 {
-
-
+    
+    
     if (!args.IsConstructCall())
         return throwTypeError("DOM object constructor cannot be called as a function.", args.GetIsolate());
 

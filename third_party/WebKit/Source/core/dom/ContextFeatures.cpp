@@ -29,7 +29,7 @@
 
 #include "core/dom/Document.h"
 #include "core/page/Page.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 
 namespace WebCore {
 

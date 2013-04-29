@@ -61,7 +61,7 @@
 #include "core/page/PageGroup.h"
 #include "core/page/PlugInClient.h"
 #include "core/page/PointerLockController.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include "core/page/Settings.h"
 #include "core/page/animation/AnimationController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
@@ -93,7 +93,7 @@ DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, pageCounter, ("Page"));
 static void networkStateChanged()
 {
     Vector<RefPtr<Frame> > frames;
-
+    
     // Get all the frames of all the pages in all the page groups
     HashSet<Page*>::iterator end = allPages->end();
     for (HashSet<Page*>::iterator it = allPages->begin(); it != end; ++it) {
@@ -169,7 +169,7 @@ Page::Page(PageClients& pageClients)
 
     if (!allPages) {
         allPages = new HashSet<Page*>;
-
+        
         networkStateNotifier().setNetworkStateChangedFunction(networkStateChanged);
     }
 
@@ -186,7 +186,7 @@ Page::~Page()
     m_mainFrame->setView(0);
     clearPageGroup();
     allPages->remove(this);
-
+    
     for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext()) {
         frame->willDetachPage();
         frame->detachFromPage();
@@ -322,7 +322,7 @@ void Page::setOpenedByDOM()
 bool Page::goBack()
 {
     HistoryItem* item = backForward()->backItem();
-
+    
     if (item) {
         goToItem(item, FrameLoadTypeBack);
         return true;
@@ -333,7 +333,7 @@ bool Page::goBack()
 bool Page::goForward()
 {
     HistoryItem* item = backForward()->forwardItem();
-
+    
     if (item) {
         goToItem(item, FrameLoadTypeForward);
         return true;
@@ -360,7 +360,7 @@ void Page::goBackOrForward(int distance)
     HistoryItem* item = backForward()->itemAtIndex(distance);
     if (!item) {
         if (distance > 0) {
-            if (int forwardCount = backForward()->forwardCount())
+            if (int forwardCount = backForward()->forwardCount()) 
                 item = backForward()->itemAtIndex(forwardCount);
         } else {
             if (int backCount = backForward()->backCount())
@@ -443,14 +443,14 @@ void Page::refreshPlugins(bool reload)
     HashSet<Page*>::iterator end = allPages->end();
     for (HashSet<Page*>::iterator it = allPages->begin(); it != end; ++it) {
         Page* page = *it;
-
+        
         // Clear out the page's plug-in data.
         if (page->m_pluginData)
             page->m_pluginData = 0;
 
         if (!reload)
             continue;
-
+        
         for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
             if (frame->loader()->subframeLoader()->containsPlugins())
                 framesNeedingReload.append(frame);
@@ -674,7 +674,7 @@ void Page::setShouldSuppressScrollbarAnimations(bool suppressAnimations)
         return;
 
     view->finishCurrentScrollAnimations();
-
+    
     for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext()) {
         FrameView* frameView = frame->view();
         if (!frameView)
@@ -726,7 +726,7 @@ void Page::didMoveOnscreen()
         if (FrameView* frameView = frame->view())
             frameView->didMoveOnscreen();
     }
-
+    
     resumeScriptedAnimations();
 }
 
@@ -738,7 +738,7 @@ void Page::willMoveOffscreen()
         if (FrameView* frameView = frame->view())
             frameView->willMoveOffscreen();
     }
-
+    
     suspendScriptedAnimations();
 }
 
@@ -778,13 +778,13 @@ void Page::userStyleSheetLocationChanged()
     // FIXME: Eventually we will move to a model of just being handed the sheet
     // text instead of loading the URL ourselves.
     KURL url = m_settings->userStyleSheetLocation();
-
+    
     m_didLoadUserStyleSheet = false;
     m_userStyleSheet = String();
     m_userStyleSheetModificationTime = 0;
 
     // Data URLs with base64-encoded UTF-8 style sheets are common. We can process them
-    // synchronously and avoid using a loader.
+    // synchronously and avoid using a loader. 
     if (url.protocolIsData() && url.string().startsWith("data:text/css;charset=utf-8;base64,")) {
         m_didLoadUserStyleSheet = true;
 

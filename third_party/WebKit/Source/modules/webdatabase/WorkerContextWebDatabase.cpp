@@ -29,7 +29,7 @@
 
 #include "modules/webdatabase/WorkerContextWebDatabase.h"
 
-#include "RuntimeEnabledFeatures.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include "core/page/SecurityOrigin.h"
 #include "core/workers/WorkerContext.h"
 #include "modules/webdatabase/Database.h"

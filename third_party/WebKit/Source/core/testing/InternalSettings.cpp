@@ -34,7 +34,7 @@
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include "core/page/Settings.h"
 #include "core/platform/Language.h"
 #include "core/platform/Supplementable.h"

@@ -39,7 +39,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/html/HTMLUnknownElement.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include <wtf/HashSet.h>
 
 #if ENABLE(SVG)
@@ -109,7 +109,7 @@ PassRefPtr<CustomElementConstructor> CustomElementRegistry::registerElement(Scri
         ec = INVALID_CHARACTER_ERR;
         return 0;
     }
-
+        
     ScriptValue prototypeValue;
     if (!options.get("prototype", prototypeValue)) {
         // FIXME: Implement the default value handling.
@@ -139,7 +139,7 @@ PassRefPtr<CustomElementConstructor> CustomElementRegistry::registerElement(Scri
         ec = INVALID_STATE_ERR;
         return 0;
     }
-
+    
     // A script execution could happen in isValidPrototypeParameter(), which kills the document.
     if (!document()) {
         ec = INVALID_STATE_ERR;

@@ -35,7 +35,7 @@
 #include "WebDocument.h"
 #include "WebSocketClient.h"
 #include "core/dom/Document.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include "core/platform/KURL.h"
 #include "modules/websockets/MainThreadWebSocketChannel.h"
 #include "modules/websockets/WebSocketChannel.h"

@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 
 #include "core/platform/graphics/MediaPlayer.h"
 #include "core/workers/SharedWorkerRepository.h"

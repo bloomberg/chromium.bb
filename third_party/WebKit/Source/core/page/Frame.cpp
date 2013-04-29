@@ -77,7 +77,7 @@
 #include "core/page/Navigator.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include "core/page/Settings.h"
 #include "core/page/UserContentURLPattern.h"
 #include "core/page/animation/AnimationController.h"
@@ -248,10 +248,10 @@ void Frame::setView(PassRefPtr<FrameView> view)
         // FIXME: We don't call willRemove here. Why is that OK?
         m_doc->prepareForDestruction();
     }
-
+    
     if (m_view)
         m_view->unscheduleRelayout();
-
+    
     eventHandler()->clear();
 
     m_view = view;
@@ -307,7 +307,7 @@ void Frame::sendOrientationChangeEvent(int orientation)
         doc->dispatchWindowEvent(Event::create(eventNames().orientationchangeEvent, false, false));
 }
 #endif // ENABLE(ORIENTATION_EVENTS)
-
+    
 Settings* Frame::settings() const
 {
     return m_page ? m_page->settings() : 0;

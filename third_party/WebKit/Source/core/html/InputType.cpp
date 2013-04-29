@@ -70,7 +70,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/HTMLShadowElement.h"
 #include "core/page/Page.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include "core/platform/DateComponents.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/TextBreakIterator.h"

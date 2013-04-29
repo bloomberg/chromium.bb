@@ -76,7 +76,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include "core/page/Settings.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/HashTools.h"
@@ -1566,7 +1566,7 @@ bool CSSParser::validCalculationUnit(CSSParserValue* value, Units unitflags, Rel
     }
     if (!b || releaseCalc == ReleaseParsedCalcValue)
         m_parsedCalculation.release();
-    return b;
+    return b;    
 }
 
 inline bool CSSParser::shouldAcceptUnitLessValues(CSSParserValue* value, Units unitflags, CSSParserMode cssParserMode)
@@ -1579,7 +1579,7 @@ bool CSSParser::validUnit(CSSParserValue* value, Units unitflags, CSSParserMode 
 {
     if (isCalculation(value))
         return validCalculationUnit(value, unitflags, releaseCalc);
-
+        
     bool b = false;
     switch (value->unit) {
     case CSSPrimitiveValue::CSS_VARIABLE_NAME:
@@ -1683,8 +1683,8 @@ inline PassRefPtr<CSSPrimitiveValue> CSSParser::createPrimitiveVariableNameValue
 }
 
 static inline bool isComma(CSSParserValue* value)
-{
-    return value && value->unit == CSSParserValue::Operator && value->iValue == ',';
+{ 
+    return value && value->unit == CSSParserValue::Operator && value->iValue == ','; 
 }
 
 static inline bool isForwardSlashOperator(CSSParserValue* value)
@@ -1756,7 +1756,7 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     // Note: m_parsedCalculation is used to pass the calc value to validUnit and then cleared at the end of this function.
     // FIXME: This is to avoid having to pass parsedCalc to all validUnit callers.
     ASSERT(!m_parsedCalculation);
-
+    
     int id = value->id;
 
     int num = inShorthand() ? 1 : m_valueList->size();
@@ -3166,9 +3166,9 @@ void CSSParser::storeVariableDeclaration(const CSSParserString& name, PassOwnPtr
     // When CSSGrammar.y encounters an invalid declaration it passes null for the CSSParserValueList, just bail.
     if (!value)
         return;
-
+    
     static const unsigned prefixLength = sizeof("-webkit-var-") - 1;
-
+    
     ASSERT(name.length() > prefixLength);
     AtomicString variableName = name.lowerSubstring(prefixLength, name.length() - prefixLength);
 
@@ -3672,7 +3672,7 @@ bool CSSParser::parseFillImage(CSSParserValueList* valueList, RefPtr<CSSValue>& 
 
     if (isGeneratedImageValue(valueList->current()))
         return parseGeneratedImage(valueList, value);
-
+    
 #if ENABLE(CSS_IMAGE_SET)
     if (valueList->current()->unit == CSSParserValue::Function && equalIgnoringCase(valueList->current()->function->name, "-webkit-image-set(")) {
         value = parseImageSet(m_valueList.get());
@@ -5028,9 +5028,9 @@ PassRefPtr<CSSBasicShape> CSSParser::parseBasicShapePolygon(CSSParserValueList* 
         CSSParserValue* commaOrNull = args->next();
         if (!commaOrNull)
             argumentX = 0;
-        else if (!isComma(commaOrNull))
+        else if (!isComma(commaOrNull)) 
             return 0;
-        else
+        else 
             argumentX = args->next();
     }
 
@@ -5743,7 +5743,7 @@ template <typename CharacterType>
 static inline bool fastParseColorInternal(RGBA32& rgb, const CharacterType* characters, unsigned length , bool strict)
 {
     CSSPrimitiveValue::UnitTypes expect = CSSPrimitiveValue::CSS_UNKNOWN;
-
+    
     if (!strict && length >= 3) {
         if (characters[0] == '#') {
             if (Color::parseHexColor(characters + 1, length - 1, rgb))
@@ -5762,7 +5762,7 @@ static inline bool fastParseColorInternal(RGBA32& rgb, const CharacterType* char
         int green;
         int blue;
         int alpha;
-
+        
         if (!parseColorIntOrPercentage(current, end, ',', expect, red))
             return false;
         if (!parseColorIntOrPercentage(current, end, ',', expect, green))
@@ -5825,7 +5825,7 @@ bool CSSParser::fastParseColor(RGBA32& rgb, const StringType& name, bool strict)
     }
     return false;
 }
-
+    
 inline double CSSParser::parsedDouble(CSSParserValue *v, ReleaseParsedCalcValueCondition releaseCalc)
 {
     const double result = m_parsedCalculation ? m_parsedCalculation->doubleValue() : v->fValue;
@@ -5834,9 +5834,9 @@ inline double CSSParser::parsedDouble(CSSParserValue *v, ReleaseParsedCalcValueC
     return result;
 }
 
-bool CSSParser::isCalculation(CSSParserValue* value)
+bool CSSParser::isCalculation(CSSParserValue* value) 
 {
-    return (value->unit == CSSParserValue::Function)
+    return (value->unit == CSSParserValue::Function) 
         && (equalIgnoringCase(value->function->name, "calc(")
             || equalIgnoringCase(value->function->name, "-webkit-calc(")
             || equalIgnoringCase(value->function->name, "-webkit-min(")
@@ -5846,14 +5846,14 @@ bool CSSParser::isCalculation(CSSParserValue* value)
 inline int CSSParser::colorIntFromValue(CSSParserValue* v)
 {
     bool isPercent;
-
+    
     if (m_parsedCalculation)
         isPercent = m_parsedCalculation->category() == CalcPercent;
     else
         isPercent = v->unit == CSSPrimitiveValue::CSS_PERCENTAGE;
 
     const double value = parsedDouble(v, ReleaseParsedCalcValue);
-
+    
     if (value <= 0.0)
         return 0;
 
@@ -5881,7 +5881,7 @@ bool CSSParser::parseColorParameters(CSSParserValue* value, int* colorArray, boo
         unitType = FPercent;
     else
         return false;
-
+    
     colorArray[0] = colorIntFromValue(v);
     for (int i = 1; i < 3; i++) {
         v = args->next();
@@ -7648,7 +7648,7 @@ bool CSSParser::parseCrossfade(CSSParserValueList* valueList, RefPtr<CSSValue>& 
     RefPtr<CSSPrimitiveValue> percentage;
     if (!a)
         return false;
-
+    
     if (a->unit == CSSPrimitiveValue::CSS_PERCENTAGE)
         percentage = cssValuePool().createValue(clampTo<double>(a->fValue / 100, 0, 1), CSSPrimitiveValue::CSS_NUMBER);
     else if (a->unit == CSSPrimitiveValue::CSS_NUMBER)
@@ -7701,7 +7701,7 @@ PassRefPtr<CSSValue> CSSParser::parseImageSet(CSSParserValueList* valueList)
 
         RefPtr<CSSImageValue> image = CSSImageValue::create(completeURL(arg->string));
         imageSet->append(image);
-
+    
         arg = functionArgs->next();
         if (!arg || arg->unit != CSSPrimitiveValue::CSS_DIMENSION)
             return 0;
@@ -8014,7 +8014,7 @@ PassRefPtr<CSSValueList> CSSParser::parseTransform()
 
     return list.release();
 }
-
+    
 
 PassRefPtr<CSSValue> CSSParser::parseTransformValue(CSSParserValue *value)
 {
@@ -8181,7 +8181,7 @@ PassRefPtr<WebKitCSSMixFunctionValue> CSSParser::parseMixFunction(CSSParserValue
     unsigned numArgs = argsList->size();
     if (numArgs < 1 || numArgs > 3)
         return 0;
-
+    
     RefPtr<WebKitCSSMixFunctionValue> mixFunction = WebKitCSSMixFunctionValue::create();
 
     bool hasBlendMode = false;
@@ -8231,8 +8231,8 @@ PassRefPtr<CSSValueList> CSSParser::parseCustomFilterParameters(CSSParserValueLi
     // array: 'array('<number>[wsp<number>]*')'
     // css-3d-transform: <transform-function>;[<transform-function>]*
     // transform:   <css-3d-transform> | <mat>
-    // mat:         'mat2('<number>(,<number>){3}')' |
-    //              'mat3('<number>(,<number>){8}')' |
+    // mat:         'mat2('<number>(,<number>){3}')' | 
+    //              'mat3('<number>(,<number>){8}')' | 
     //              'mat4('<number>(,<number>){15}')' )
     //
 
@@ -8286,7 +8286,7 @@ PassRefPtr<CSSValueList> CSSParser::parseCustomFilterParameters(CSSParserValueLi
         paramList->append(parameter.release());
     }
 
-    return paramList;
+    return paramList;   
 }
 
 PassRefPtr<WebKitCSSFilterValue> CSSParser::parseCustomFilterFunctionWithAtRuleReferenceSyntax(CSSParserValue* value)
@@ -8388,12 +8388,12 @@ PassRefPtr<WebKitCSSFilterValue> CSSParser::parseCustomFilterFunctionWithInlineS
 
     if (!shadersList->length() || !hadAtLeastOneCustomShader || shadersList->length() > 2 || !acceptCommaOperator(argsList))
         return 0;
-
+        
     filterValue->append(shadersList.release());
-
+    
     // 2. Parse the mesh size <vertex-mesh>
     RefPtr<CSSValueList> meshSizeList = CSSValueList::createSpaceSeparated();
-
+    
     while ((arg = argsList->current())) {
         if (!validUnit(arg, FInteger | FNonNeg, CSSStrictMode))
             break;
@@ -8404,28 +8404,28 @@ PassRefPtr<WebKitCSSFilterValue> CSSParser::parseCustomFilterFunctionWithInlineS
         meshSizeList->append(cssValuePool().createValue(integerValue, CSSPrimitiveValue::CSS_NUMBER));
         argsList->next();
     }
-
+    
     if (meshSizeList->length() > 2)
         return 0;
-
+    
     // FIXME: For legacy content, we accept the mesh box types. We don't do anything else with them.
     // Eventually, we'll remove them completely.
     // https://bugs.webkit.org/show_bug.cgi?id=103778
     if ((arg = argsList->current()) && (arg->id == CSSValueBorderBox || arg->id == CSSValuePaddingBox
         || arg->id == CSSValueContentBox || arg->id == CSSValueFilterBox))
         argsList->next();
-
+    
     if ((arg = argsList->current()) && arg->id == CSSValueDetached) {
         meshSizeList->append(cssValuePool().createIdentifierValue(arg->id));
         argsList->next();
     }
-
+    
     if (meshSizeList->length()) {
         if (!acceptCommaOperator(argsList))
             return 0;
         filterValue->append(meshSizeList.release());
     }
-
+    
     // 3. Parse the parameters.
     RefPtr<CSSValueList> paramList = parseCustomFilterParameters(argsList);
     if (!paramList)
@@ -8433,7 +8433,7 @@ PassRefPtr<WebKitCSSFilterValue> CSSParser::parseCustomFilterFunctionWithInlineS
 
     if (paramList->length())
         filterValue->append(paramList.release());
-
+    
     return filterValue;
 }
 
@@ -8447,11 +8447,11 @@ PassRefPtr<WebKitCSSFilterValue> CSSParser::parseCustomFilterFunction(CSSParserV
     if (!argsList || !argsList->size())
         return 0;
 
-    // The at-rule reference syntax expects a single ident or an ident followed by a comma.
+    // The at-rule reference syntax expects a single ident or an ident followed by a comma. 
     // e.g. custom(my-filter) or custom(my-filter, ...)
     // In contrast, when the inline syntax starts with an ident like "none", it expects a uri or a mix function next.
     // e.g. custom(none url(...)) or custom(none mix(...)
-    bool isAtRuleReferenceSyntax = argsList->valueAt(0)->unit == CSSPrimitiveValue::CSS_IDENT
+    bool isAtRuleReferenceSyntax = argsList->valueAt(0)->unit == CSSPrimitiveValue::CSS_IDENT 
         && (argsList->size() == 1 || isComma(argsList->valueAt(1)));
     return isAtRuleReferenceSyntax ? parseCustomFilterFunctionWithAtRuleReferenceSyntax(value) : parseCustomFilterFunctionWithInlineSyntax(value);
 }
@@ -8544,7 +8544,7 @@ PassRefPtr<WebKitCSSFilterValue> CSSParser::parseBuiltinFilterArguments(CSSParse
     RefPtr<WebKitCSSFilterValue> filterValue = WebKitCSSFilterValue::create(filterType);
     ASSERT(args);
 
-    switch (filterType) {
+    switch (filterType) {    
     case WebKitCSSFilterValue::GrayscaleFilterOperation:
     case WebKitCSSFilterValue::SepiaFilterOperation:
     case WebKitCSSFilterValue::SaturateFilterOperation:
@@ -8559,9 +8559,9 @@ PassRefPtr<WebKitCSSFilterValue> CSSParser::parseBuiltinFilterArguments(CSSParse
             CSSParserValue* value = args->current();
             if (!validUnit(value, FNumber | FPercent | FNonNeg, CSSStrictMode))
                 return 0;
-
+                
             double amount = value->fValue;
-
+            
             // Saturate and Contrast allow values over 100%.
             if (filterType != WebKitCSSFilterValue::SaturateFilterOperation
                 && filterType != WebKitCSSFilterValue::ContrastFilterOperation) {
@@ -8592,12 +8592,12 @@ PassRefPtr<WebKitCSSFilterValue> CSSParser::parseBuiltinFilterArguments(CSSParse
         // hue-rotate() takes one optional angle.
         if (args->size() > 1)
             return 0;
-
+        
         if (args->size()) {
             CSSParserValue* argument = args->current();
             if (!validUnit(argument, FAngle, CSSStrictMode))
                 return 0;
-
+        
             filterValue->append(createPrimitiveNumericValue(argument));
         }
         break;
@@ -8606,7 +8606,7 @@ PassRefPtr<WebKitCSSFilterValue> CSSParser::parseBuiltinFilterArguments(CSSParse
         // Blur takes a single length. Zero parameters are allowed.
         if (args->size() > 1)
             return 0;
-
+        
         if (args->size()) {
             CSSParserValue* argument = args->current();
             if (!validUnit(argument, FLength | FNonNeg, CSSStrictMode))
@@ -8621,7 +8621,7 @@ PassRefPtr<WebKitCSSFilterValue> CSSParser::parseBuiltinFilterArguments(CSSParse
         RefPtr<CSSValueList> shadowValueList = parseShadow(args, CSSPropertyWebkitFilter);
         if (!shadowValueList || shadowValueList->length() != 1)
             return 0;
-
+        
         filterValue->append((shadowValueList.release())->itemWithoutBoundsCheck(0));
         break;
     }
@@ -8664,7 +8664,7 @@ PassRefPtr<CSSValueList> CSSParser::parseFilter()
                 // Make sure parsing fails if custom filters are disabled.
                 if (!m_context.isCSSCustomFilterEnabled)
                     return 0;
-
+                
                 RefPtr<WebKitCSSFilterValue> filterValue = parseCustomFilterFunction(value);
                 if (!filterValue)
                     return 0;
@@ -8678,7 +8678,7 @@ PassRefPtr<CSSValueList> CSSParser::parseFilter()
             RefPtr<WebKitCSSFilterValue> filterValue = parseBuiltinFilterArguments(args, filterType);
             if (!filterValue)
                 return 0;
-
+            
             list->append(filterValue);
         }
     }
@@ -9192,20 +9192,20 @@ bool CSSParser::parseFontVariantLigatures(bool important)
     return true;
 }
 
-bool CSSParser::parseCalculation(CSSParserValue* value, CalculationPermittedValueRange range)
+bool CSSParser::parseCalculation(CSSParserValue* value, CalculationPermittedValueRange range) 
 {
     ASSERT(isCalculation(value));
-
+    
     CSSParserValueList* args = value->function->args.get();
     if (!args || !args->size())
         return false;
 
     ASSERT(!m_parsedCalculation);
     m_parsedCalculation = CSSCalcValue::create(value->function->name, args, range);
-
+    
     if (!m_parsedCalculation)
         return false;
-
+    
     return true;
 }
 
@@ -9714,7 +9714,7 @@ template <typename CharacterType>
 inline bool CSSParser::findURI(CharacterType*& start, CharacterType*& end, UChar& quote)
 {
     start = skipWhiteSpace(currentCharacter<CharacterType>());
-
+    
     if (*start == '"' || *start == '\'') {
         quote = *start++;
         end = checkAndSkipString(start, quote);
@@ -9737,7 +9737,7 @@ inline bool CSSParser::findURI(CharacterType*& start, CharacterType*& end, UChar
     end = skipWhiteSpace(end);
     if (*end != ')')
         return false;
-
+    
     return true;
 }
 
@@ -9748,7 +9748,7 @@ inline bool CSSParser::parseURIInternal(SrcCharacterType*& src, DestCharacterTyp
         ASSERT(quote == '"' || quote == '\'');
         return parseStringInternal(src, dest, quote);
     }
-
+    
     while (isURILetter(*src)) {
         if (LIKELY(*src != '\\'))
             *dest++ = *src++;
@@ -9771,7 +9771,7 @@ inline void CSSParser::parseURI(CSSParserString& string)
     UChar quote;
     if (!findURI(uriStart, uriEnd, quote))
         return;
-
+    
     CharacterType* dest = currentCharacter<CharacterType>() = uriStart;
     if (LIKELY(parseURIInternal(currentCharacter<CharacterType>(), dest, quote)))
         string.init(uriStart, dest - uriStart);
@@ -10478,7 +10478,7 @@ restartAfterComment:
         } else
 #endif
             yylval->number = charactersToDouble(tokenStart<SrcCharacterType>(), currentCharacter<SrcCharacterType>() - tokenStart<SrcCharacterType>());
-
+ 
         // Type of the function.
         if (isIdentifierStart<SrcCharacterType>()) {
             SrcCharacterType* type = currentCharacter<SrcCharacterType>();
@@ -11514,7 +11514,7 @@ CSSPropertyID cssPropertyID(const String& string)
         return CSSPropertyInvalid;
     if (length > maxCSSPropertyNameLength)
         return CSSPropertyInvalid;
-
+    
     return string.is8Bit() ? cssPropertyID(string.characters8(), length) : cssPropertyID(string.characters(), length);
 }
 
@@ -11526,7 +11526,7 @@ CSSPropertyID cssPropertyID(const CSSParserString& string)
         return CSSPropertyInvalid;
     if (length > maxCSSPropertyNameLength)
         return CSSPropertyInvalid;
-
+    
     return string.is8Bit() ? cssPropertyID(string.characters8(), length) : cssPropertyID(string.characters16(), length);
 }
 
@@ -11608,7 +11608,7 @@ template <typename CharacterType>
 static inline bool isCSSTokenizerURL(const CharacterType* characters, unsigned length)
 {
     const CharacterType* end = characters + length;
-
+    
     for (; characters != end; ++characters) {
         CharacterType c = characters[0];
         switch (c) {
@@ -11627,7 +11627,7 @@ static inline bool isCSSTokenizerURL(const CharacterType* characters, unsigned l
                     return false;
         }
     }
-
+    
     return true;
 }
 

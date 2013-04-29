@@ -85,7 +85,7 @@
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/PrintContext.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include "core/page/Settings.h"
 #include "core/page/animation/AnimationController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
@@ -804,11 +804,11 @@ void Internals::enableMockSpeechSynthesizer()
     SpeechSynthesis* synthesis = DOMWindowSpeechSynthesis::speechSynthesis(document->domWindow());
     if (!synthesis)
         return;
-
+    
     synthesis->setPlatformSynthesizer(PlatformSpeechSynthesizerMock::create(synthesis));
 }
 #endif
-
+    
 void Internals::setEnableMockPagePopup(bool enabled, ExceptionCode& ec)
 {
 #if ENABLE(PAGE_POPUP)
@@ -1413,12 +1413,12 @@ bool Internals::hasSpellingMarker(Document* document, int from, int length, Exce
 
     return document->frame()->editor()->selectionStartHasMarkerFor(DocumentMarker::Spelling, from, length);
 }
-
+    
 bool Internals::hasAutocorrectedMarker(Document* document, int from, int length, ExceptionCode&)
 {
     if (!document || !document->frame())
         return 0;
-
+    
     return document->frame()->editor()->selectionStartHasMarkerFor(DocumentMarker::Autocorrected, from, length);
 }
 
@@ -1554,7 +1554,7 @@ unsigned Internals::numberOfScrollableAreas(Document* document, ExceptionCode&)
 
     return count;
 }
-
+    
 bool Internals::isPageBoxVisible(Document* document, int pageNumber, ExceptionCode& ec)
 {
     if (!document) {

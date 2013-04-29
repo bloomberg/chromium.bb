@@ -31,7 +31,7 @@
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include <wtf/ArrayBuffer.h>
 #include <wtf/ArrayBufferView.h>
 #include <wtf/UnusedParam.h>

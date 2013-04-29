@@ -33,7 +33,7 @@
 #include "core/editing/markup.h"
 #include "core/html/shadow/ContentDistributor.h"
 #include "core/html/shadow/InsertionPoint.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include "core/platform/HistogramSupport.h"
 
 namespace WebCore {
@@ -251,7 +251,7 @@ ScopeContentDistribution* ShadowRoot::ensureScopeDistribution()
 
     m_scopeDistribution = adoptPtr(new ScopeContentDistribution);
     return m_scopeDistribution.get();
-}
+}   
 
 void ShadowRoot::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {

@@ -39,7 +39,7 @@
 #include "core/page/Console.h"
 #include "core/page/Frame.h"
 #include "core/page/PageConsole.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include "core/page/SecurityOrigin.h"
 #include "core/page/UseCounter.h"
 #include "core/platform/KURL.h"
@@ -1447,7 +1447,7 @@ ContentSecurityPolicy::~ContentSecurityPolicy()
 {
 }
 
-void ContentSecurityPolicy::copyStateFrom(const ContentSecurityPolicy* other)
+void ContentSecurityPolicy::copyStateFrom(const ContentSecurityPolicy* other) 
 {
     ASSERT(m_policies.isEmpty());
     for (CSPDirectiveListVector::const_iterator iter = other->m_policies.begin(); iter != other->m_policies.end(); ++iter)

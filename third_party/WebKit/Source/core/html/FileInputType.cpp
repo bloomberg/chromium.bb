@@ -35,7 +35,7 @@
 #include "core/html/InputTypeNames.h"
 #include "core/page/Chrome.h"
 #include "core/page/Frame.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include "core/platform/DragData.h"
 #include "core/platform/FileSystem.h"
 #include "core/platform/LocalizedStrings.h"

@@ -33,7 +33,7 @@
 #include "core/dom/ShadowRoot.h"
 #include "core/html/shadow/ContentDistributor.h"
 #include "core/html/shadow/ContentSelectorQuery.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {

@@ -27,7 +27,7 @@
 #include "bindings/v8/V8DOMWrapper.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/page/Frame.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include <wtf/UnusedParam.h>
 
 #if ENABLE(BINDING_INTEGRITY)
