@@ -714,6 +714,15 @@ int Connection::OnSqliteError(int err, sql::Statement *stmt) {
 
   static size_t kSqliteErrorMax = 50;
   UMA_HISTOGRAM_ENUMERATION("Sqlite.Error", base_err, kSqliteErrorMax);
+  if (base_err == SQLITE_IOERR) {
+    // TODO(shess): Consider folding the IOERR range into the main
+    // histogram directly.  Perhaps 30..49?  The downside risk would
+    // be that SQLite core adds a bunch of codes and this becomes a
+    // complicated mapping.
+    static size_t kSqliteIOErrorMax = 20;
+    UMA_HISTOGRAM_ENUMERATION("Sqlite.Error.IOERR", err>>8, kSqliteIOErrorMax);
+  }
+
   if (!error_histogram_name_.empty()) {
     // TODO(shess): The histogram macros create a bit of static
     // storage for caching the histogram object.  Since SQLite is
