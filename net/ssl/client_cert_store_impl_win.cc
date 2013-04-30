@@ -160,9 +160,10 @@ bool ClientCertStoreImpl::GetClientCerts(const SSLCertRequestInfo& request,
   return rv;
 }
 
-bool ClientCertStoreImpl::SelectClientCerts(const CertificateList& input_certs,
-                                            const SSLCertRequestInfo& request,
-                                            CertificateList* selected_certs) {
+bool ClientCertStoreImpl::SelectClientCertsForTesting(
+    const CertificateList& input_certs,
+    const SSLCertRequestInfo& request,
+    CertificateList* selected_certs) {
   typedef crypto::ScopedCAPIHandle<
       HCERTSTORE,
       crypto::CAPIDestroyerWithFlags<HCERTSTORE,

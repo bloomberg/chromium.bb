@@ -32,20 +32,43 @@ unsigned char kAuthority2DN[] = {
 
 }  // namespace
 
-TEST(ClientCertStoreImplTest, EmptyQuery) {
+class ClientCertStoreImplTest : public ::testing::Test {
+ protected:
+  bool SelectClientCerts(const CertificateList& input_certs,
+                         const SSLCertRequestInfo& cert_request_info,
+                         CertificateList* selected_certs) {
+    return store_.SelectClientCertsForTesting(
+        input_certs, cert_request_info, selected_certs);
+  }
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  bool SelectClientCertsGivenPreferred(
+      const scoped_refptr<X509Certificate>& preferred_cert,
+      const CertificateList& regular_certs,
+      const SSLCertRequestInfo& request,
+      CertificateList* selected_certs) {
+    return store_.SelectClientCertsGivenPreferredForTesting(
+        preferred_cert, regular_certs, request, selected_certs);
+  }
+#endif
+
+ private:
+  ClientCertStoreImpl store_;
+};
+
+TEST_F(ClientCertStoreImplTest, EmptyQuery) {
   std::vector<scoped_refptr<X509Certificate> > certs;
   scoped_refptr<SSLCertRequestInfo> request(new SSLCertRequestInfo());
 
-  ClientCertStoreImpl store;
   std::vector<scoped_refptr<X509Certificate> > selected_certs;
-  bool rv = store.SelectClientCerts(certs, *request, &selected_certs);
+  bool rv = SelectClientCerts(certs, *request, &selected_certs);
   EXPECT_TRUE(rv);
   EXPECT_EQ(0u, selected_certs.size());
 }
 
 // Verify that CertRequestInfo with empty |cert_authorities| matches all
 // issuers, rather than no issuers.
-TEST(ClientCertStoreImplTest, AllIssuersAllowed) {
+TEST_F(ClientCertStoreImplTest, AllIssuersAllowed) {
   scoped_refptr<X509Certificate> cert(
       ImportCertFromFile(GetTestCertsDirectory(), "client_1.pem"));
   ASSERT_TRUE(cert);
@@ -54,9 +77,8 @@ TEST(ClientCertStoreImplTest, AllIssuersAllowed) {
   certs.push_back(cert);
   scoped_refptr<SSLCertRequestInfo> request(new SSLCertRequestInfo());
 
-  ClientCertStoreImpl store;
   std::vector<scoped_refptr<X509Certificate> > selected_certs;
-  bool rv = store.SelectClientCerts(certs, *request, &selected_certs);
+  bool rv = SelectClientCerts(certs, *request, &selected_certs);
   EXPECT_TRUE(rv);
   ASSERT_EQ(1u, selected_certs.size());
   EXPECT_TRUE(selected_certs[0]->Equals(cert));
@@ -64,7 +86,7 @@ TEST(ClientCertStoreImplTest, AllIssuersAllowed) {
 
 // Verify that certificates are correctly filtered against CertRequestInfo with
 // |cert_authorities| containing only |authority_1_DN|.
-TEST(ClientCertStoreImplTest, CertAuthorityFiltering) {
+TEST_F(ClientCertStoreImplTest, CertAuthorityFiltering) {
   scoped_refptr<X509Certificate> cert_1(
       ImportCertFromFile(GetTestCertsDirectory(), "client_1.pem"));
   ASSERT_TRUE(cert_1);
@@ -89,9 +111,8 @@ TEST(ClientCertStoreImplTest, CertAuthorityFiltering) {
   scoped_refptr<SSLCertRequestInfo> request(new SSLCertRequestInfo());
   request->cert_authorities = authority_1;
 
-  ClientCertStoreImpl store;
   std::vector<scoped_refptr<X509Certificate> > selected_certs;
-  bool rv = store.SelectClientCerts(certs, *request, &selected_certs);
+  bool rv = SelectClientCerts(certs, *request, &selected_certs);
   EXPECT_TRUE(rv);
   ASSERT_EQ(1u, selected_certs.size());
   EXPECT_TRUE(selected_certs[0]->Equals(cert_1));
@@ -100,7 +121,7 @@ TEST(ClientCertStoreImplTest, CertAuthorityFiltering) {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 // Verify that the preferred cert gets filtered out when it doesn't match the
 // server criteria.
-TEST(ClientCertStoreImplTest, FilterOutThePreferredCert) {
+TEST_F(ClientCertStoreImplTest, FilterOutThePreferredCert) {
   scoped_refptr<X509Certificate> cert_1(
       ImportCertFromFile(GetTestCertsDirectory(), "client_1.pem"));
   ASSERT_TRUE(cert_1);
@@ -114,17 +135,16 @@ TEST(ClientCertStoreImplTest, FilterOutThePreferredCert) {
   scoped_refptr<SSLCertRequestInfo> request(new SSLCertRequestInfo());
   request->cert_authorities = authority_2;
 
-  ClientCertStoreImpl store;
   std::vector<scoped_refptr<X509Certificate> > selected_certs;
-  bool rv = store.SelectClientCertsGivenPreferred(cert_1, certs, *request,
-                                                  &selected_certs);
+  bool rv =
+      SelectClientCertsGivenPreferred(cert_1, certs, *request, &selected_certs);
   EXPECT_TRUE(rv);
   EXPECT_EQ(0u, selected_certs.size());
 }
 
 // Verify that the preferred cert takes the first position in the output list,
 // when it does not get filtered out.
-TEST(ClientCertStoreImplTest, PreferredCertGoesFirst) {
+TEST_F(ClientCertStoreImplTest, PreferredCertGoesFirst) {
   scoped_refptr<X509Certificate> cert_1(
       ImportCertFromFile(GetTestCertsDirectory(), "client_1.pem"));
   ASSERT_TRUE(cert_1);
@@ -136,10 +156,9 @@ TEST(ClientCertStoreImplTest, PreferredCertGoesFirst) {
   certs.push_back(cert_2);
   scoped_refptr<SSLCertRequestInfo> request(new SSLCertRequestInfo());
 
-  ClientCertStoreImpl store;
   std::vector<scoped_refptr<X509Certificate> > selected_certs;
-  bool rv = store.SelectClientCertsGivenPreferred(cert_1, certs, *request,
-                                                  &selected_certs);
+  bool rv =
+      SelectClientCertsGivenPreferred(cert_1, certs, *request, &selected_certs);
   EXPECT_TRUE(rv);
   ASSERT_EQ(2u, selected_certs.size());
   EXPECT_TRUE(selected_certs[0]->Equals(cert_1));

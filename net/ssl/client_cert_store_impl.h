@@ -16,7 +16,6 @@ namespace net {
 class NET_EXPORT ClientCertStoreImpl : public ClientCertStore {
  public:
   ClientCertStoreImpl() {}
-
   virtual ~ClientCertStoreImpl() {}
 
   // ClientCertStore:
@@ -24,13 +23,7 @@ class NET_EXPORT ClientCertStoreImpl : public ClientCertStore {
                               CertificateList* selected_certs) OVERRIDE;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ClientCertStoreImplTest, EmptyQuery);
-  FRIEND_TEST_ALL_PREFIXES(ClientCertStoreImplTest, AllIssuersAllowed);
-  FRIEND_TEST_ALL_PREFIXES(ClientCertStoreImplTest, CertAuthorityFiltering);
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  FRIEND_TEST_ALL_PREFIXES(ClientCertStoreImplTest, FilterOutThePreferredCert);
-  FRIEND_TEST_ALL_PREFIXES(ClientCertStoreImplTest, PreferredCertGoesFirst);
-#endif
+  friend class ClientCertStoreImplTest;
 
   // A hook for testing. Filters |input_certs| using the logic being used to
   // filter the system store when GetClientCerts() is called. Depending on the
@@ -40,16 +33,16 @@ class NET_EXPORT ClientCertStoreImpl : public ClientCertStore {
   // - Implemented by creating a list of certificates that otherwise would be
   // extracted from the system store and filtering it using the common logic
   // (less adequate, currently on NSS and Mac).
-  bool SelectClientCerts(const CertificateList& input_certs,
-                         const SSLCertRequestInfo& cert_request_info,
-                         CertificateList* selected_certs);
+  bool SelectClientCertsForTesting(const CertificateList& input_certs,
+                                   const SSLCertRequestInfo& cert_request_info,
+                                   CertificateList* selected_certs);
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // Testing hook specific to Mac, where the internal logic recognizes preferred
   // certificates for particular domains. If the preferred certificate is
   // present in the output list (i.e. it doesn't get filtered out), it should
   // always come first.
-  bool SelectClientCertsGivenPreferred(
+  bool SelectClientCertsGivenPreferredForTesting(
       const scoped_refptr<X509Certificate>& preferred_cert,
       const CertificateList& regular_certs,
       const SSLCertRequestInfo& request,
