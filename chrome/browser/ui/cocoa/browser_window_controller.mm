@@ -17,6 +17,7 @@
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile.h"
@@ -628,6 +629,18 @@ enum {
   // selected WebContents's RenderWidgetHostView and tell it to activate.
   if (WebContents* contents =
           browser_->tab_strip_model()->GetActiveWebContents()) {
+
+    DevToolsWindow* devtoolsWindow =
+        DevToolsWindow::GetDockedInstanceForInspectedTab(contents);
+    if (devtoolsWindow) {
+      RenderWidgetHostView* devtoolsView =
+          devtoolsWindow->web_contents()->GetRenderWidgetHostView();
+      if (devtoolsView->HasFocus()) {
+        devtoolsView->SetActive(true);
+        return;
+      }
+    }
+
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetActive(true);
   }
@@ -646,6 +659,18 @@ enum {
   // selected WebContents's RenderWidgetHostView and tell it to deactivate.
   if (WebContents* contents =
           browser_->tab_strip_model()->GetActiveWebContents()) {
+
+    DevToolsWindow* devtoolsWindow =
+        DevToolsWindow::GetDockedInstanceForInspectedTab(contents);
+    if (devtoolsWindow) {
+      RenderWidgetHostView* devtoolsView =
+          devtoolsWindow->web_contents()->GetRenderWidgetHostView();
+      if (devtoolsView->HasFocus()) {
+        devtoolsView->SetActive(false);
+        return;
+      }
+    }
+
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetActive(false);
   }

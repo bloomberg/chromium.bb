@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/memory/scoped_nsobject.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -84,8 +85,22 @@ using content::WebContents;
   // formally resigns first responder status.  Handle this by explicitly sending
   // a Blur() message to the renderer, but only if the RWHV currently has focus.
   content::RenderViewHost* rvh = [self webContents]->GetRenderViewHost();
-  if (rvh && rvh->GetView() && rvh->GetView()->HasFocus())
-    rvh->Blur();
+  if (rvh) {
+    if (rvh->GetView() && rvh->GetView()->HasFocus()) {
+      rvh->Blur();
+      return;
+    }
+    DevToolsWindow* devtoolsWindow =
+        DevToolsWindow::GetDockedInstanceForInspectedTab([self webContents]);
+    if (devtoolsWindow) {
+      content::RenderViewHost* devtoolsView =
+          devtoolsWindow->web_contents()->GetRenderViewHost();
+      if (devtoolsView && devtoolsView->GetView() &&
+          devtoolsView->GetView()->HasFocus()) {
+        devtoolsView->Blur();
+      }
+    }
+  }
 }
 
 - (void)willBecomeSelectedTab {
