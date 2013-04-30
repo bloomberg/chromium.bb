@@ -1147,7 +1147,7 @@ void MetricsLog::SetBluetoothAdapter(
 
 void MetricsLog::WriteBluetoothProto(
     SystemProfileProto::Hardware* hardware) {
-#if defined(OS_CHROMEOS)
+#if 0
   SystemProfileProto::Hardware::Bluetooth* bluetooth =
       hardware->mutable_bluetooth();
 
