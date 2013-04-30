@@ -253,11 +253,11 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
 
   // Callback for DriveFilesystem::GetMetadata for local update.
   void OnGetFilesystemMetadataForLocal(
-      const drive::DriveFileSystemMetadata& metadata);
+      const drive::FileSystemMetadata& metadata);
 
   // Callback for DriveFilesystem::GetMetadata for local update.
   void OnGetFilesystemMetadataForDeltaUpdate(
-      const drive::DriveFileSystemMetadata& metadata);
+      const drive::FileSystemMetadata& metadata);
 
   // Called when the page requests periodic update.
   void OnPeriodicUpdate(const base::ListValue* args);
@@ -473,7 +473,7 @@ void DriveInternalsWebUIHandler::UpdateLocalMetadataSection(
 }
 
 void DriveInternalsWebUIHandler::OnGetFilesystemMetadataForLocal(
-    const drive::DriveFileSystemMetadata& metadata) {
+    const drive::FileSystemMetadata& metadata) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   base::DictionaryValue local_metadata;
@@ -512,7 +512,7 @@ void DriveInternalsWebUIHandler::UpdateDeltaUpdateStatusSection() {
 }
 
 void DriveInternalsWebUIHandler::OnGetFilesystemMetadataForDeltaUpdate(
-    const drive::DriveFileSystemMetadata& metadata) {
+    const drive::FileSystemMetadata& metadata) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Profile* profile = Profile::FromWebUI(web_ui());
   google_apis::DriveNotificationManager* drive_notification_manager =

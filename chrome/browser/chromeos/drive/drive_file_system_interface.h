@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_metadata.h"
+#include "chrome/browser/chromeos/drive/file_system_metadata.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/google_apis/gdata_wapi_operations.h"
 
@@ -127,8 +127,8 @@ typedef base::Callback<void(FileError error,
                             int64 bytes_total,
                             int64 bytes_used)> GetAvailableSpaceCallback;
 
-// Used to get drive filesystem metadata.
-typedef base::Callback<void(const DriveFileSystemMetadata&)>
+// Used to get filesystem metadata.
+typedef base::Callback<void(const FileSystemMetadata&)>
     GetFilesystemMetadataCallback;
 
 // Priority of a job.  Higher values are lower priority.

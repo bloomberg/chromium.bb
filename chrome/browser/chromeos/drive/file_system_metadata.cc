@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/drive_file_system_metadata.h"
+#include "chrome/browser/chromeos/drive/file_system_metadata.h"
 
 namespace drive {
 
-DriveFileSystemMetadata::DriveFileSystemMetadata()
+FileSystemMetadata::FileSystemMetadata()
     : largest_changestamp(0),
       refreshing(false),
       last_update_check_error(FILE_ERROR_OK) {
 }
 
-DriveFileSystemMetadata::~DriveFileSystemMetadata() {
+FileSystemMetadata::~FileSystemMetadata() {
 }
 
 }  // namespace drive

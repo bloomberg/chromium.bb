@@ -81,7 +81,7 @@ void RunGetEntryInfoWithFilePathCallback(
 // Callback for ResourceMetadata::GetLargestChangestamp.
 // |callback| must not be null.
 void OnGetLargestChangestamp(
-    DriveFileSystemMetadata metadata,  // Will be modified.
+    FileSystemMetadata metadata,  // Will be modified.
     const GetFilesystemMetadataCallback& callback,
     int64 largest_changestamp) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1424,7 +1424,7 @@ void DriveFileSystem::GetMetadata(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  DriveFileSystemMetadata metadata;
+  FileSystemMetadata metadata;
   metadata.refreshing = change_list_loader_->IsRefreshing();
 
   // Metadata related to delta update.

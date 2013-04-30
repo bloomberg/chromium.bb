@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_SYSTEM_METADATA_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_SYSTEM_METADATA_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_METADATA_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_METADATA_H_
 
 #include "base/basictypes.h"
 #include "base/time.h"
@@ -12,9 +12,9 @@
 namespace drive {
 
 // Metadata of DriveFileSystem. Used by DriveFileSystem::GetMetadata().
-struct DriveFileSystemMetadata {
-  DriveFileSystemMetadata();
-  ~DriveFileSystemMetadata();
+struct FileSystemMetadata {
+  FileSystemMetadata();
+  ~FileSystemMetadata();
 
   // The largest changestamp that the file system holds (may be different
   // from the one on the server)
@@ -32,4 +32,4 @@ struct DriveFileSystemMetadata {
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_SYSTEM_METADATA_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_METADATA_H_
