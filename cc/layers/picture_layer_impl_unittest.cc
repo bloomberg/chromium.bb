@@ -41,16 +41,12 @@ class TestablePictureLayerImpl : public PictureLayerImpl {
   Region& invalidation() { return invalidation_; }
 
   virtual gfx::Size CalculateTileSize(
-      gfx::Size current_tile_size,
       gfx::Size content_bounds) OVERRIDE {
     if (fixed_tile_size_.IsEmpty()) {
-      return PictureLayerImpl::CalculateTileSize(current_tile_size,
-                                                 content_bounds);
+      return PictureLayerImpl::CalculateTileSize(content_bounds);
     }
 
-    if (current_tile_size.IsEmpty())
-      return fixed_tile_size_;
-    return current_tile_size;
+    return fixed_tile_size_;
   }
 
   using PictureLayerImpl::AddTiling;
@@ -116,8 +112,12 @@ class PictureLayerImplTest : public testing::Test {
     active_layer_->AddTiling(2.3f);
     active_layer_->AddTiling(1.0f);
     active_layer_->AddTiling(0.5f);
+    for (size_t i = 0; i < active_layer_->tilings().num_tilings(); ++i)
+      active_layer_->tilings().tiling_at(i)->CreateAllTilesForTesting();
     pending_layer_->invalidation() = invalidation;
     pending_layer_->SyncFromActiveLayer();
+    for (size_t i = 0; i < pending_layer_->tilings().num_tilings(); ++i)
+      pending_layer_->tilings().tiling_at(i)->CreateAllTilesForTesting();
   }
 
   void SetupPendingTree(
@@ -178,6 +178,7 @@ class PictureLayerImplTest : public testing::Test {
         1.f, false, &result_scale_x, &result_scale_y, &result_bounds);
 
     // Add 1x1 rects at the centers of each tile, then re-record pile contents
+    active_layer_->tilings().tiling_at(0)->CreateAllTilesForTesting();
     std::vector<Tile*> tiles =
         active_layer_->tilings().tiling_at(0)->AllTilesForTesting();
     EXPECT_EQ(16u, tiles.size());
@@ -352,8 +353,13 @@ TEST_F(PictureLayerImplTest, NoInvalidationBoundsChange) {
          ++iter) {
       EXPECT_TRUE(*iter);
       EXPECT_FALSE(iter.geometry_rect().IsEmpty());
+      std::vector<Tile*> active_tiles =
+          active_layer_->tilings().tiling_at(i)->AllTilesForTesting();
+      std::vector<Tile*> pending_tiles = tiling->AllTilesForTesting();
       if (iter.geometry_rect().right() >= active_content_bounds.width() ||
-          iter.geometry_rect().bottom() >= active_content_bounds.height()) {
+          iter.geometry_rect().bottom() >= active_content_bounds.height() ||
+          active_tiles[0]->content_rect().size() !=
+              pending_tiles[0]->content_rect().size()) {
         EXPECT_EQ(pending_pile, iter->picture_pile());
       } else {
         EXPECT_EQ(active_pile, iter->picture_pile());
@@ -698,6 +704,8 @@ TEST_F(PictureLayerImplTest, ClampTilesToToMaxTileSize) {
       1.f, false, &result_scale_x, &result_scale_y, &result_bounds);
   ASSERT_EQ(2u, pending_layer_->tilings().num_tilings());
 
+  pending_layer_->tilings().tiling_at(0)->CreateAllTilesForTesting();
+
   // The default value.
   EXPECT_EQ(gfx::Size(256, 256).ToString(),
             host_impl_.settings().default_tile_size.ToString());
@@ -718,6 +726,8 @@ TEST_F(PictureLayerImplTest, ClampTilesToToMaxTileSize) {
   pending_layer_->CalculateContentsScale(
       1.f, false, &result_scale_x, &result_scale_y, &result_bounds);
   ASSERT_EQ(2u, pending_layer_->tilings().num_tilings());
+
+  pending_layer_->tilings().tiling_at(0)->CreateAllTilesForTesting();
 
   // Verify the tiles are not larger than the context's max texture size.
   tile = pending_layer_->tilings().tiling_at(0)->AllTilesForTesting()[0];
@@ -745,6 +755,8 @@ TEST_F(PictureLayerImplTest, ClampSingleTileToToMaxTileSize) {
       1.f, false, &result_scale_x, &result_scale_y, &result_bounds);
   ASSERT_EQ(2u, pending_layer_->tilings().num_tilings());
 
+  pending_layer_->tilings().tiling_at(0)->CreateAllTilesForTesting();
+
   // The default value. The layer is smaller than this.
   EXPECT_EQ(gfx::Size(512, 512).ToString(),
             host_impl_.settings().max_untiled_layer_size.ToString());
@@ -765,6 +777,8 @@ TEST_F(PictureLayerImplTest, ClampSingleTileToToMaxTileSize) {
   pending_layer_->CalculateContentsScale(
       1.f, false, &result_scale_x, &result_scale_y, &result_bounds);
   ASSERT_EQ(2u, pending_layer_->tilings().num_tilings());
+
+  pending_layer_->tilings().tiling_at(0)->CreateAllTilesForTesting();
 
   // There should be more than one tile since the max texture size won't cover
   // the layer.

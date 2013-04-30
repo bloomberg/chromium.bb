@@ -12,6 +12,27 @@
 namespace cc {
 namespace {
 
+class TestablePictureLayerTiling : public PictureLayerTiling {
+ public:
+  using PictureLayerTiling::SetLiveTilesRect;
+
+  static scoped_ptr<TestablePictureLayerTiling> Create(
+      float contents_scale,
+      gfx::Size layer_bounds,
+      PictureLayerTilingClient* client) {
+    return make_scoped_ptr(new TestablePictureLayerTiling(
+        contents_scale,
+        layer_bounds,
+        client));
+  }
+
+ protected:
+  TestablePictureLayerTiling(float contents_scale,
+                             gfx::Size layer_bounds,
+                             PictureLayerTilingClient* client)
+      : PictureLayerTiling(contents_scale, layer_bounds, client) { }
+};
+
 class PictureLayerTilingIteratorTest : public testing::Test {
  public:
   PictureLayerTilingIteratorTest() {}
@@ -21,9 +42,20 @@ class PictureLayerTilingIteratorTest : public testing::Test {
                   float contents_scale,
                   gfx::Size layer_bounds) {
     client_.SetTileSize(tile_size);
-    tiling_ = PictureLayerTiling::Create(contents_scale);
-    tiling_->SetClient(&client_);
-    tiling_->SetLayerBounds(layer_bounds);
+    tiling_ = TestablePictureLayerTiling::Create(contents_scale,
+                                                 layer_bounds,
+                                                 &client_);
+  }
+
+  void SetLiveRectAndVerifyTiles(gfx::Rect live_tiles_rect) {
+    tiling_->SetLiveTilesRect(live_tiles_rect);
+
+    std::vector<Tile*> tiles = tiling_->AllTilesForTesting();
+    for (std::vector<Tile*>::iterator iter = tiles.begin();
+         iter != tiles.end();
+         ++iter) {
+      EXPECT_TRUE(live_tiles_rect.Intersects((*iter)->content_rect()));
+    }
   }
 
   void VerifyTilesExactlyCoverRect(
@@ -68,16 +100,17 @@ class PictureLayerTilingIteratorTest : public testing::Test {
     VerifyTilesExactlyCoverRect(rect_scale, rect, rect);
   }
 
-  void VerifyTiles(float rect_scale,
-                   gfx::Rect rect,
-                   base::Callback<void(Tile* tile)> callback) {
+  void VerifyTiles(
+      float rect_scale,
+      gfx::Rect rect,
+      base::Callback<void(Tile* tile, gfx::Rect geometry_rect)> callback) {
     Region remaining = rect;
     for (PictureLayerTiling::CoverageIterator iter(
              tiling_.get(), rect_scale, rect);
          iter;
          ++iter) {
       remaining.Subtract(iter.geometry_rect());
-      callback.Run(*iter);
+      callback.Run(*iter, iter.geometry_rect());
     }
     EXPECT_TRUE(remaining.IsEmpty());
   }
@@ -92,10 +125,20 @@ class PictureLayerTilingIteratorTest : public testing::Test {
 
  protected:
   FakePictureLayerTilingClient client_;
-  scoped_ptr<PictureLayerTiling> tiling_;
+  scoped_ptr<TestablePictureLayerTiling> tiling_;
 
   DISALLOW_COPY_AND_ASSIGN(PictureLayerTilingIteratorTest);
 };
+
+TEST_F(PictureLayerTilingIteratorTest, LiveTilesExactlyCoverLiveTileRect) {
+  Initialize(gfx::Size(100, 100), 1, gfx::Size(1099, 801));
+  SetLiveRectAndVerifyTiles(gfx::Rect(100, 100));
+  SetLiveRectAndVerifyTiles(gfx::Rect(101, 99));
+  SetLiveRectAndVerifyTiles(gfx::Rect(1099, 1));
+  SetLiveRectAndVerifyTiles(gfx::Rect(1, 801));
+  SetLiveRectAndVerifyTiles(gfx::Rect(1099, 1));
+  SetLiveRectAndVerifyTiles(gfx::Rect(201, 800));
+}
 
 TEST_F(PictureLayerTilingIteratorTest, IteratorCoversLayerBoundsNoScale) {
   Initialize(gfx::Size(100, 100), 1, gfx::Size(1099, 801));
@@ -406,9 +449,9 @@ TEST(PictureLayerTilingTest, EmptyStartingRect) {
   EXPECT_TRUE(out.IsEmpty());
 }
 
-static void TileExists(bool live, Tile* tile) {
-  ASSERT_TRUE(tile != NULL);
-  EXPECT_EQ(live, tile->priority(ACTIVE_TREE).is_live);
+static void TileExists(bool exists, Tile* tile, gfx::Rect geometry_rect) {
+  EXPECT_EQ(exists, tile != NULL && tile->priority(ACTIVE_TREE).is_live) <<
+      geometry_rect.ToString();
 }
 
 TEST_F(PictureLayerTilingIteratorTest, TilesExist) {
@@ -526,12 +569,14 @@ TEST_F(PictureLayerTilingIteratorTest, TilesExistOutsideViewport) {
   VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, true));
 }
 
-static void TilesIntersectingRectExist(gfx::Rect rect, Tile* tile) {
-  ASSERT_TRUE(tile != NULL);
-  bool expected_live = rect.Intersects(tile->content_rect());
-  EXPECT_EQ(expected_live, tile->priority(ACTIVE_TREE).is_live) <<
+static void TilesIntersectingRectExist(gfx::Rect rect,
+                                       Tile* tile,
+                                       gfx::Rect geometry_rect) {
+  bool expected_exists = rect.Intersects(geometry_rect);
+  EXPECT_EQ(expected_exists,
+            tile != NULL && tile->priority(ACTIVE_TREE).is_live) <<
       "Rects intersecting " << rect.ToString() << " should exist. " <<
-      "Current tile rect is " << tile->content_rect().ToString();
+      "Current tile rect is " << geometry_rect.ToString();
 }
 
 TEST_F(PictureLayerTilingIteratorTest,
@@ -563,9 +608,10 @@ TEST_F(PictureLayerTilingIteratorTest,
               base::Bind(&TilesIntersectingRectExist, visible_rect));
 }
 
-static void CountExistingTiles(int *count, Tile* tile) {
-  ASSERT_TRUE(tile != NULL);
-  if (tile->priority(ACTIVE_TREE).is_live)
+static void CountExistingTiles(int *count,
+                               Tile* tile,
+                               gfx::Rect geometry_rect) {
+  if (tile != NULL && tile->priority(ACTIVE_TREE).is_live)
     ++(*count);
 }
 
