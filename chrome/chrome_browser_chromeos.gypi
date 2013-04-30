@@ -242,6 +242,8 @@
         'browser/chromeos/drive/file_change.h',
         'browser/chromeos/drive/file_errors.cc',
         'browser/chromeos/drive/file_errors.h',
+        'browser/chromeos/drive/file_reader.cc',
+        'browser/chromeos/drive/file_reader.h',
         'browser/chromeos/drive/file_system/copy_operation.cc',
         'browser/chromeos/drive/file_system/copy_operation.h',
         'browser/chromeos/drive/file_system/create_directory_operation.cc',

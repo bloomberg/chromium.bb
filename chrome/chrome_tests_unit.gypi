@@ -587,6 +587,7 @@
         'browser/chromeos/drive/fake_free_disk_space_getter.cc',
         'browser/chromeos/drive/fake_free_disk_space_getter.h',
         'browser/chromeos/drive/file_change_unittest.cc',
+        'browser/chromeos/drive/file_reader_unittest.cc',
         'browser/chromeos/drive/file_system/create_directory_operation_unittest.cc',
         'browser/chromeos/drive/file_system_util_unittest.cc',
         'browser/chromeos/drive/file_write_helper_unittest.cc',
