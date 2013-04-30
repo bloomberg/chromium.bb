@@ -33,6 +33,17 @@ class DriveFileSyncClient
       public base::NonThreadSafe,
       public base::SupportsWeakPtr<DriveFileSyncClient> {
  public:
+  // The resulting status of EnsureTitleUniqueness.
+  enum EnsureUniquenessStatus {
+    NO_DUPLICATES_FOUND,
+    RESOLVED_DUPLICATES,
+  };
+
+  typedef base::Callback<void(google_apis::GDataErrorCode,
+                              EnsureUniquenessStatus status,
+                              scoped_ptr<google_apis::ResourceEntry> entry)>
+      EnsureUniquenessCallback;
+
   explicit DriveFileSyncClient(Profile* profile);
   virtual ~DriveFileSyncClient();
 
@@ -135,6 +146,7 @@ class DriveFileSyncClient
   void DidEnsureUniquenessForCreateDirectory(
       const ResourceIdCallback& callback,
       google_apis::GDataErrorCode error,
+      EnsureUniquenessStatus status,
       scoped_ptr<google_apis::ResourceEntry> entry);
 
   void SearchByTitle(const std::string& title,
@@ -176,6 +188,7 @@ class DriveFileSyncClient
       const std::string& expected_resource_id,
       const UploadFileCallback& callback,
       google_apis::GDataErrorCode error,
+      EnsureUniquenessStatus status,
       scoped_ptr<google_apis::ResourceEntry> entry);
 
   void UploadExistingFileInternal(
@@ -199,11 +212,11 @@ class DriveFileSyncClient
 
   void EnsureTitleUniqueness(const std::string& parent_resource_id,
                              const std::string& expected_title,
-                             const ResourceEntryCallback& callback);
+                             const EnsureUniquenessCallback& callback);
   void DidListEntriesToEnsureUniqueness(
       const std::string& parent_resource_id,
       const std::string& expected_title,
-      const ResourceEntryCallback& callback,
+      const EnsureUniquenessCallback& callback,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceList> feed);
   void DeleteEntriesForEnsuringTitleUniqueness(

@@ -1,0 +1,213 @@
+{
+  "encoding": "UTF-8",
+  "feed": {
+    "author": [ {
+      "email": { "$t": "tester@example.com" },
+      "name": { "$t": "testing" }
+    } ],
+    "category": [ {
+      "label": "item",
+      "scheme": "http://schemas.google.com/g/2005#kind",
+      "term": "http://schemas.google.com/docs/2007#item"
+    } ],
+    "entry": [ {
+      "app$edited": {
+        "$t": "2013-02-07T12:35:26.742Z",
+        "xmlns$app": "http://www.w3.org/2007/app"
+      },
+      "author": [ {
+        "email": { "$t": "tester@example.com" },
+        "name": { "$t": "testing" }
+      } ],
+      "category": [ {
+        "label": "application/octet-stream",
+        "scheme": "http://schemas.google.com/g/2005#kind",
+        "term": "http://schemas.google.com/docs/2007#file"
+      }, {
+        "label": "modified-by-me",
+        "scheme": "http://schemas.google.com/g/2005/labels",
+        "term": "http://schemas.google.com/g/2005/labels#modified-by-me"
+      } ],
+      "content": {
+        "src": "https://content_url",
+        "type": "application/octet-stream"
+      },
+      "docs$filename": { "$t": "testfile" },
+      "docs$isShareable": { "value": "true" },
+      "docs$md5Checksum": { "$t": "6cd860c0d7b9deec409c4980e89b8d09" },
+      "docs$modifiedByMeDate": { "$t": "2013-02-07T12:35:26.733Z" },
+      "docs$size": { "$t": "97" },
+      "docs$suggestedFilename": { "$t": "testfile" },
+      "docs$writersCanInvite": { "value": "true" },
+      "gd$etag": "\"ClAUE0pVQSt7ImBk\"",
+      "gd$feedLink": [ {
+        "href": "https://docs.google.com/feeds/default/private/full/file%3Afile_resource_id/revisions",
+        "rel": "http://schemas.google.com/docs/2007/revisions"
+      } ],
+      "gd$lastModifiedBy": {
+        "email": { "$t": "tester@example.com" },
+        "name": { "$t": "testing" }
+      },
+      "gd$quotaBytesUsed": { "$t": "97" },
+      "gd$resourceId": { "$t": "file:file_resource_id" },
+      "id": { "$t": "https://docs.google.com/feeds/id/file%3Afile_resource_id" },
+      "link": [ {
+        "href": "https://docs.google.com/feeds/default/private/full/folder%3Aorigin_directory_resource_id",
+        "rel": "http://schemas.google.com/docs/2007#parent",
+        "title": "example",
+        "type": "application/atom+xml"
+      }, {
+        "href": "https://docs.google.com/file/d/file_resource_id/edit",
+        "rel": "alternate",
+        "type": "text/html"
+      }, {
+        "href": "https://ssl.gstatic.com/docs/doclist/images/icon_10_generic_list.png",
+        "rel": "http://schemas.google.com/docs/2007#icon",
+        "type": "image/png"
+      }, {
+        "href": "https://docs.google.com/feeds/upload/create-session/default/private/full/file%3Afile_resource_id",
+        "rel": "http://schemas.google.com/g/2005#resumable-edit-media",
+        "type": "application/atom+xml"
+      }, {
+        "href": "https://docs.google.com/feeds/upload/file/default/private/full/file%3Afile_resource_id",
+        "rel": "http://schemas.google.com/docs/2007#alt-edit-media",
+        "type": "application/atom+xml"
+      }, {
+        "href": "https://docs.google.com/feeds/default/private/full/folder%3Asub_dir_folder_resource_id/contents/file%3Afile_resource_id",
+        "rel": "self",
+        "type": "application/atom+xml"
+      }, {
+        "href": "https://docs.google.com/feeds/default/private/full/folder%3Asub_dir_folder_resource_id/contents/file%3Afile_resource_id",
+        "rel": "edit",
+        "type": "application/atom+xml"
+      }, {
+        "href": "https://docs.google.com/feeds/default/contentmedia/folder%3Asub_dir_folder_resource_id/file%3Afile_resource_id",
+        "rel": "edit-media",
+        "type": "application/octet-stream"
+      } ],
+      "published": { "$t": "2013-03-01T12:35:26.742Z" },
+      "title": { "$t": "test_entry" },
+      "updated": { "$t": "2013-03-01T12:35:26.742Z" }
+    }, {
+      "app$edited": {
+        "$t": "2013-02-07T12:35:26.742Z",
+        "xmlns$app": "http://www.w3.org/2007/app"
+      },
+      "author": [ {
+        "email": { "$t": "tester@example.com" },
+        "name": { "$t": "testing" }
+      } ],
+      "category": [ {
+        "label": "application/octet-stream",
+        "scheme": "http://schemas.google.com/g/2005#kind",
+        "term": "http://schemas.google.com/docs/2007#file"
+      }, {
+        "label": "modified-by-me",
+        "scheme": "http://schemas.google.com/g/2005/labels",
+        "term": "http://schemas.google.com/g/2005/labels#modified-by-me"
+      } ],
+      "content": {
+        "src": "https://content_url",
+        "type": "application/octet-stream"
+      },
+      "docs$filename": { "$t": "testfile" },
+      "docs$isShareable": { "value": "true" },
+      "docs$md5Checksum": { "$t": "6cd860c0d7b9deec409c4980e89b8d09" },
+      "docs$modifiedByMeDate": { "$t": "2013-02-07T12:35:26.733Z" },
+      "docs$size": { "$t": "97" },
+      "docs$suggestedFilename": { "$t": "testfile" },
+      "docs$writersCanInvite": { "value": "true" },
+      "gd$etag": "\"ClAUE0pVQSt7ImBk\"",
+      "gd$feedLink": [ {
+        "href": "https://docs.google.com/feeds/default/private/full/file%3Afile_duplicated_resource_id/revisions",
+        "rel": "http://schemas.google.com/docs/2007/revisions"
+      } ],
+      "gd$lastModifiedBy": {
+        "email": { "$t": "tester@example.com" },
+        "name": { "$t": "testing" }
+      },
+      "gd$quotaBytesUsed": { "$t": "97" },
+      "gd$resourceId": { "$t": "file:file_duplicated_resource_id" },
+      "id": { "$t": "https://docs.google.com/feeds/id/file%3Afile_resource_id" },
+      "link": [ {
+        "href": "https://docs.google.com/feeds/default/private/full/folder%3Aorigin_directory_resource_id",
+        "rel": "http://schemas.google.com/docs/2007#parent",
+        "title": "example",
+        "type": "application/atom+xml"
+      }, {
+        "href": "https://docs.google.com/file/d/file_duplicated_resource_id/edit",
+        "rel": "alternate",
+        "type": "text/html"
+      }, {
+        "href": "https://ssl.gstatic.com/docs/doclist/images/icon_10_generic_list.png",
+        "rel": "http://schemas.google.com/docs/2007#icon",
+        "type": "image/png"
+      }, {
+        "href": "https://docs.google.com/feeds/upload/create-session/default/private/full/file%3Afile_duplicated_resource_id",
+        "rel": "http://schemas.google.com/g/2005#resumable-edit-media",
+        "type": "application/atom+xml"
+      }, {
+        "href": "https://docs.google.com/feeds/upload/file/default/private/full/file%3Afile_duplicated_resource_id",
+        "rel": "http://schemas.google.com/docs/2007#alt-edit-media",
+        "type": "application/atom+xml"
+      }, {
+        "href": "https://docs.google.com/feeds/default/private/full/folder%3Asub_dir_folder_resource_id/contents/file%3Afile_duplicated_resource_id",
+        "rel": "self",
+        "type": "application/atom+xml"
+      }, {
+        "href": "https://docs.google.com/feeds/default/private/full/folder%3Asub_dir_folder_resource_id/contents/file%3Afile_duplicated_resource_id",
+        "rel": "edit",
+        "type": "application/atom+xml"
+      }, {
+        "href": "https://docs.google.com/feeds/default/contentmedia/folder%3Asub_dir_folder_resource_id/file%3Afile_duplicated_resource_id",
+        "rel": "edit-media",
+        "type": "application/octet-stream"
+      } ],
+      "published": { "$t": "2013-02-07T12:35:26.742Z" },
+      "title": { "$t": "test_entry" },
+      "updated": { "$t": "2013-02-07T12:35:26.742Z" }
+    } ],
+    "gd$etag": "W/\"AkEFR3Y7eSt7ImA9WhNSF0k.\"",
+    "id": { "$t": "https://directory_listing_feed_id" },
+    "link": [ {
+      "href": "https://directory_listing_feed_alternate_link",
+      "rel": "alternate",
+      "type": "text/html"
+    }, {
+      "href": "https://directory_listing_feed_create_media_link",
+      "rel": "http://schemas.google.com/g/2005#resumable-create-media",
+      "type": "application/atom+xml"
+    }, {
+      "href": "https://directory_listing_feed_alt_post_link",
+      "rel": "http://schemas.google.com/docs/2007#alt-post",
+      "type": "application/atom+xml"
+    }, {
+      "href": "https://directory_listing_feed_feed_link",
+      "rel": "http://schemas.google.com/g/2005#feed",
+      "type": "application/atom+xml"
+    }, {
+      "href": "https://directory_listing_feed_post_link",
+      "rel": "http://schemas.google.com/g/2005#post",
+      "type": "application/atom+xml"
+    }, {
+      "href": "https://directory_listing_feed_batch_link",
+      "rel": "http://schemas.google.com/g/2005#batch",
+      "type": "application/atom+xml"
+    }, {
+      "href": "https://directory_listing_feed_self_link",
+      "rel": "self",
+      "type": "application/atom+xml"
+    } ],
+    "openSearch$itemsPerPage": { "$t": "50" },
+    "openSearch$startIndex": { "$t": "1" },
+    "title": { "$t": "Documents in \"example.com\"" },
+    "updated": { "$t": "2012-11-01T05:43:36.801Z" },
+    "xmlns": "http://www.w3.org/2005/Atom",
+    "xmlns$batch": "http://schemas.google.com/gdata/batch",
+    "xmlns$docs": "http://schemas.google.com/docs/2007",
+    "xmlns$gd": "http://schemas.google.com/g/2005",
+    "xmlns$openSearch": "http://a9.com/-/spec/opensearch/1.1/"
+  },
+  "version": "1.0"
+}
+

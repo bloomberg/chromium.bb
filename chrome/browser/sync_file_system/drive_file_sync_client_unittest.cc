@@ -260,6 +260,7 @@ void DidUploadFile(bool* done_out,
   EXPECT_FALSE(*done_out);
   *done_out = true;
   *error_out = error;
+  *resource_id_out = resource_id;
 }
 
 void DidDeleteFile(bool* done_out,
@@ -867,6 +868,45 @@ TEST_F(DriveFileSyncClientTest, UploadNewFile) {
 
   EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_CREATED, error);
+}
+
+TEST_F(DriveFileSyncClientTest, UploadNewFile_ConflictWithFile) {
+  const std::string kDirectoryResourceId =
+      "folder:origin_directory_resource_id";
+  const base::FilePath kLocalFilePath(FPL("/tmp/dir/file"));
+  const std::string kTitle("test_entry");
+
+  scoped_ptr<base::Value> file_file_conflict_data(
+      LoadJSONFile("chromeos/sync_file_system/file_file_conflict.json").Pass());
+  scoped_ptr<ResourceList> file_file_conflict(
+      ResourceList::ExtractAndParse(*file_file_conflict_data));
+
+  // Expect to call SearchInDirectory from EnsureTitleUniqueness.
+  EXPECT_CALL(*mock_drive_service(),
+              SearchByTitle(kTitle, kDirectoryResourceId, _))
+      .WillOnce(InvokeGetResourceListCallback2(
+          google_apis::HTTP_SUCCESS,
+          base::Passed(&file_file_conflict)));
+
+  // Expect to call DeleteResource to delete this for conflict.
+  EXPECT_CALL(*mock_drive_service(),
+              DeleteResource("file:file_resource_id", _, _))
+      .WillOnce(InvokeEntryActionCallback2(google_apis::HTTP_SUCCESS));
+
+  bool done = false;
+  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  std::string resource_id;
+  sync_client()->UploadNewFile(kDirectoryResourceId,
+                               kLocalFilePath,
+                               kTitle,
+                               base::Bind(&DidUploadFile,
+                                          &done, &error, &resource_id));
+  message_loop()->RunUntilIdle();
+
+  // HTTP_CONFLICT error must be returned with empty resource_id.
+  EXPECT_TRUE(done);
+  EXPECT_TRUE(resource_id.empty());
+  EXPECT_EQ(google_apis::HTTP_CONFLICT, error);
 }
 
 TEST_F(DriveFileSyncClientTest, UploadExistingFile) {

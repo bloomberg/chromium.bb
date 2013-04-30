@@ -1180,25 +1180,33 @@ void DriveFileSyncService::DidUploadNewFileForLocalSync(
     const std::string& file_md5) {
   DCHECK(param);
   const FileSystemURL& url = param->url;
-  if (error == google_apis::HTTP_CREATED) {
-    param->drive_metadata.set_resource_id(resource_id);
-    param->drive_metadata.set_md5_checksum(file_md5);
-    param->drive_metadata.set_conflicted(false);
-    param->drive_metadata.set_to_be_fetched(false);
-    param->drive_metadata.set_type(DriveMetadata::RESOURCE_TYPE_FILE);
-    const DriveMetadata& metadata = param->drive_metadata;
-    metadata_store_->UpdateEntry(
-        url, metadata,
-        base::Bind(&DriveFileSyncService::DidApplyLocalChange,
-                   AsWeakPtr(), base::Passed(&param), error));
-    NotifyObserversFileStatusChanged(url,
-                                     SYNC_FILE_STATUS_SYNCED,
-                                     SYNC_ACTION_ADDED,
-                                     SYNC_DIRECTION_LOCAL_TO_REMOTE);
-    return;
+  switch (error) {
+    case google_apis::HTTP_CREATED: {
+      param->drive_metadata.set_resource_id(resource_id);
+      param->drive_metadata.set_md5_checksum(file_md5);
+      param->drive_metadata.set_conflicted(false);
+      param->drive_metadata.set_to_be_fetched(false);
+      param->drive_metadata.set_type(DriveMetadata::RESOURCE_TYPE_FILE);
+      const DriveMetadata& metadata = param->drive_metadata;
+      metadata_store_->UpdateEntry(
+          url, metadata,
+          base::Bind(&DriveFileSyncService::DidApplyLocalChange,
+                     AsWeakPtr(), base::Passed(&param), error));
+      NotifyObserversFileStatusChanged(url,
+                                       SYNC_FILE_STATUS_SYNCED,
+                                       SYNC_ACTION_ADDED,
+                                       SYNC_DIRECTION_LOCAL_TO_REMOTE);
+      return;
+    }
+    case google_apis::HTTP_CONFLICT:
+      // File-file conflict is found.
+      HandleConflictForLocalSync(param.Pass());
+      return;
+
+    default:
+      FinalizeLocalSync(param->token.Pass(), param->callback,
+                        GDataErrorCodeToSyncStatusCodeWrapper(error));
   }
-  FinalizeLocalSync(param->token.Pass(), param->callback,
-                    GDataErrorCodeToSyncStatusCodeWrapper(error));
 }
 
 void DriveFileSyncService::DidUploadExistingFileForLocalSync(

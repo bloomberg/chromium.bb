@@ -106,10 +106,12 @@ google_apis::ResourceEntry* GetDocumentByTitleAndParent(
   return NULL;
 }
 
-void EntryAdapter(scoped_ptr<google_apis::ResourceEntry> entry,
-                  const DriveFileSyncClient::ResourceEntryCallback& callback,
-                  google_apis::GDataErrorCode error) {
-  callback.Run(error, entry.Pass());
+void EntryAdapterForEnsureTitleUniqueness(
+    scoped_ptr<google_apis::ResourceEntry> entry,
+    const DriveFileSyncClient::EnsureUniquenessCallback& callback,
+    DriveFileSyncClient::EnsureUniquenessStatus status,
+    google_apis::GDataErrorCode error) {
+  callback.Run(error, status, entry.Pass());
 }
 
 void UploadResultAdapter(
@@ -285,22 +287,17 @@ void DriveFileSyncClient::DidCreateDirectory(
 void DriveFileSyncClient::DidEnsureUniquenessForCreateDirectory(
     const ResourceIdCallback& callback,
     google_apis::GDataErrorCode error,
+    EnsureUniquenessStatus status,
     scoped_ptr<google_apis::ResourceEntry> entry) {
   DCHECK(CalledOnValidThread());
-  // If error == HTTP_FOUND: the directory is successfully created without
-  //   conflict.
-  // If error == HTTP_SUCCESS: the directory is created with conflict, but
-  //   the conflict was resolved.
-  //
 
-  if (error == google_apis::HTTP_FOUND)
-    error = google_apis::HTTP_CREATED;
-
-  if (error != google_apis::HTTP_SUCCESS &&
-      error != google_apis::HTTP_CREATED) {
+  if (error != google_apis::HTTP_SUCCESS) {
     callback.Run(error, std::string());
     return;
   }
+
+  if (status == NO_DUPLICATES_FOUND)
+    error = google_apis::HTTP_CREATED;
 
   DCHECK(entry) << "No entry: " << error;
 
@@ -669,35 +666,43 @@ void DriveFileSyncClient::DidEnsureUniquenessForCreateFile(
     const std::string& expected_resource_id,
     const UploadFileCallback& callback,
     google_apis::GDataErrorCode error,
+    EnsureUniquenessStatus status,
     scoped_ptr<google_apis::ResourceEntry> entry) {
-  if (error == google_apis::HTTP_FOUND) {
-    // The file was uploaded successfully and no conflict was detected.
-    DCHECK(entry);
-    DVLOG(2) << "No conflict detected on uploading new file";
-    callback.Run(google_apis::HTTP_CREATED,
-                 entry->resource_id(), entry->file_md5());
+  if (error != google_apis::HTTP_SUCCESS) {
+    DVLOG(2) << "Error on uploading new file: " << error;
+    callback.Run(error, std::string(), std::string());
     return;
   }
 
-  if (error == google_apis::HTTP_SUCCESS) {
-    // The file was uploaded successfully but a conflict was detected.
-    // The duplicated file was deleted successfully.
-    DCHECK(entry);
-    if (entry->resource_id() != expected_resource_id) {
-      DVLOG(2) << "Conflict detected on uploading new file";
-      callback.Run(google_apis::HTTP_CONFLICT,
-                   std::string(), std::string());
+  switch (status) {
+    case NO_DUPLICATES_FOUND:
+      // The file was uploaded successfully and no conflict was detected.
+      DCHECK(entry);
+      DVLOG(2) << "No conflict detected on uploading new file";
+      callback.Run(google_apis::HTTP_CREATED,
+                   entry->resource_id(), entry->file_md5());
       return;
-    }
 
-    DVLOG(2) << "Conflict detected on uploading new file and resolved";
-    callback.Run(google_apis::HTTP_CREATED,
-                 entry->resource_id(), entry->file_md5());
-    return;
+    case RESOLVED_DUPLICATES:
+      // The file was uploaded successfully but a conflict was detected.
+      // The duplicated file was deleted successfully.
+      DCHECK(entry);
+      if (entry->resource_id() != expected_resource_id) {
+        DVLOG(2) << "Conflict detected on uploading new file";
+        callback.Run(google_apis::HTTP_CONFLICT,
+                     std::string(), std::string());
+        return;
+      }
+
+      DVLOG(2) << "Conflict detected on uploading new file and resolved";
+      callback.Run(google_apis::HTTP_CREATED,
+                   entry->resource_id(), entry->file_md5());
+      return;
+
+    default:
+      NOTREACHED() << "Unknown status from EnsureTitleUniqueness:" << status
+                   << " for " << expected_resource_id;
   }
-
-  DVLOG(2) << "Error on uploading new file: " << error;
-  callback.Run(error, std::string(), std::string());
 }
 
 void DriveFileSyncClient::UploadExistingFileInternal(
@@ -810,7 +815,7 @@ void DriveFileSyncClient::DidDeleteFile(
 void DriveFileSyncClient::EnsureTitleUniqueness(
     const std::string& parent_resource_id,
     const std::string& expected_title,
-    const ResourceEntryCallback& callback) {
+    const EnsureUniquenessCallback& callback) {
   DCHECK(CalledOnValidThread());
   DVLOG(2) << "Checking if there's no conflict on entry creation";
 
@@ -824,14 +829,15 @@ void DriveFileSyncClient::EnsureTitleUniqueness(
 void DriveFileSyncClient::DidListEntriesToEnsureUniqueness(
     const std::string& parent_resource_id,
     const std::string& expected_title,
-    const ResourceEntryCallback& callback,
+    const EnsureUniquenessCallback& callback,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceList> feed) {
   DCHECK(CalledOnValidThread());
 
   if (error != google_apis::HTTP_SUCCESS) {
     DVLOG(2) << "Error on listing resource for ensuring title uniqueness";
-    callback.Run(error, scoped_ptr<google_apis::ResourceEntry>());
+    callback.Run(error, NO_DUPLICATES_FOUND,
+                 scoped_ptr<google_apis::ResourceEntry>());
     return;
   }
   DVLOG(2) << "Got resource list for ensuring title uniqueness";
@@ -855,6 +861,7 @@ void DriveFileSyncClient::DidListEntriesToEnsureUniqueness(
   if (entries.empty()) {
     DVLOG(2) << "Uploaded file is not found";
     callback.Run(google_apis::HTTP_NOT_FOUND,
+                 NO_DUPLICATES_FOUND,
                  scoped_ptr<google_apis::ResourceEntry>());
     return;
   }
@@ -874,7 +881,9 @@ void DriveFileSyncClient::DidListEntriesToEnsureUniqueness(
 
     DeleteEntriesForEnsuringTitleUniqueness(
         entries.Pass(),
-        base::Bind(&EntryAdapter, base::Passed(&earliest_entry), callback));
+        base::Bind(&EntryAdapterForEnsureTitleUniqueness,
+                   base::Passed(&earliest_entry), callback,
+                   RESOLVED_DUPLICATES));
     return;
   }
 
@@ -882,7 +891,8 @@ void DriveFileSyncClient::DidListEntriesToEnsureUniqueness(
   DCHECK_EQ(1u, entries.size());
   scoped_ptr<google_apis::ResourceEntry> entry(entries.front());
   entries.weak_clear();
-  callback.Run(google_apis::HTTP_FOUND, entry.Pass());
+
+  callback.Run(google_apis::HTTP_SUCCESS, NO_DUPLICATES_FOUND, entry.Pass());
 }
 
 void DriveFileSyncClient::DeleteEntriesForEnsuringTitleUniqueness(
