@@ -35,6 +35,7 @@
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/PathTraversalState.h"
 #include "core/platform/graphics/StrokeStyleApplier.h"
+#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkPath.h"

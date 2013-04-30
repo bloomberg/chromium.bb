@@ -32,6 +32,7 @@
 #include "core/platform/graphics/chromium/TransparencyWin.h"
 
 #include "core/platform/graphics/ImageBuffer.h"
+#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 
 #include <windows.h>

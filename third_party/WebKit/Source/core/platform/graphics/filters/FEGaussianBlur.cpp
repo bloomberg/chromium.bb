@@ -30,6 +30,8 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/cpu/arm/filters/FEGaussianBlurNEON.h"
 #include "core/platform/graphics/filters/Filter.h"
+#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include "core/platform/text/TextStream.h"
 #include "core/rendering/RenderTreeAsText.h"
 
@@ -38,7 +40,6 @@
 #include <wtf/Uint8ClampedArray.h>
 
 #include "SkBlurImageFilter.h"
-#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 
 using namespace std;
 

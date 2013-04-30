@@ -50,7 +50,6 @@
 
 namespace WebCore {
 class PlatformContextSkia;
-typedef PlatformContextSkia GraphicsContextPlatformPrivate;
 }
 typedef WebCore::PlatformContextSkia PlatformGraphicsContext;
 
@@ -155,7 +154,7 @@ namespace WebCore {
     class GraphicsContext {
         WTF_MAKE_NONCOPYABLE(GraphicsContext); WTF_MAKE_FAST_ALLOCATED;
     public:
-        GraphicsContext(PlatformGraphicsContext*);
+        explicit GraphicsContext(SkCanvas*);
         ~GraphicsContext();
 
         PlatformGraphicsContext* platformContext() const;
@@ -388,7 +387,7 @@ namespace WebCore {
             return value;
         }
 
-        GraphicsContextPlatformPrivate* m_data;
+        OwnPtr<PlatformContextSkia> m_data;
 
         GraphicsContextState m_state;
         Vector<GraphicsContextState> m_stack;

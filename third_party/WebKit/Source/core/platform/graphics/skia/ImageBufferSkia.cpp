@@ -66,7 +66,6 @@ namespace WebCore {
 // PlatformContext doesn't actually need to use the object, and this makes all
 // the ownership easier to manage.
 ImageBufferData::ImageBufferData(const IntSize& size)
-    : m_platformContext(0)  // Canvas is set in ImageBuffer constructor.
 {
 }
 
@@ -93,7 +92,6 @@ static SkCanvas* createAcceleratedCanvas(const IntSize& size, ImageBufferData* d
     data->m_layerBridge = Canvas2DLayerBridge::create(context3D.release(), canvas, bridgeOpacityMode, threadMode);
     // If canvas buffer allocation failed, debug build will have asserted
     // For release builds, we must verify whether the device has a render target
-    data->m_platformContext.setAccelerated(true);
     return canvas;
 }
 
@@ -137,8 +135,7 @@ ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, ColorSpace,
     }
 
     m_data.m_canvas = adoptPtr(new SkCanvas(device));
-    m_data.m_platformContext.setCanvas(m_data.m_canvas.get());
-    m_context = adoptPtr(new GraphicsContext(&m_data.m_platformContext));
+    m_context = adoptPtr(new GraphicsContext(m_data.m_canvas.get()));
     m_context->setShouldSmoothFonts(false);
     m_context->scale(FloatSize(m_resolutionScale, m_resolutionScale));
 
@@ -167,9 +164,9 @@ ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, ColorSpace,
     }
 
     m_data.m_canvas = canvas.release();
-    m_data.m_platformContext.setCanvas(m_data.m_canvas.get());
-    m_context = adoptPtr(new GraphicsContext(&m_data.m_platformContext));
+    m_context = adoptPtr(new GraphicsContext(m_data.m_canvas.get()));
     m_context->setShouldSmoothFonts(opacityMode == Opaque);
+    m_context->platformContext()->setAccelerated(renderingMode == Accelerated);
     m_context->scale(FloatSize(m_resolutionScale, m_resolutionScale));
 
     // Clear the background transparent or opaque, as required. It would be nice if this wasn't
@@ -208,7 +205,7 @@ static SkBitmap deepSkBitmapCopy(const SkBitmap& bitmap)
 
 PassRefPtr<Image> ImageBuffer::copyImage(BackingStoreCopy copyBehavior, ScaleBehavior) const
 {
-    const SkBitmap& bitmap = *m_data.m_platformContext.bitmap();
+    const SkBitmap& bitmap = *context()->platformContext()->bitmap();
     // FIXME: Start honoring ScaleBehavior to scale 2x buffers down to 1x.
     return BitmapImage::create(NativeImageSkia::create(copyBehavior == CopyBackingStore ? deepSkBitmapCopy(bitmap) : bitmap, m_resolutionScale));
 }
@@ -264,7 +261,7 @@ static bool drawNeedsCopy(GraphicsContext* src, GraphicsContext* dst)
 void ImageBuffer::draw(GraphicsContext* context, ColorSpace styleColorSpace, const FloatRect& destRect, const FloatRect& srcRect,
     CompositeOperator op, BlendMode, bool useLowQualityScale)
 {
-    const SkBitmap& bitmap = *m_data.m_platformContext.bitmap();
+    const SkBitmap& bitmap = *m_context->platformContext()->bitmap();
     RefPtr<Image> image = BitmapImage::create(NativeImageSkia::create(drawNeedsCopy(m_context.get(), context) ? deepSkBitmapCopy(bitmap) : bitmap));
     context->drawImage(image.get(), styleColorSpace, destRect, srcRect, op, DoNotRespectImageOrientation, useLowQualityScale);
 }
@@ -272,7 +269,7 @@ void ImageBuffer::draw(GraphicsContext* context, ColorSpace styleColorSpace, con
 void ImageBuffer::drawPattern(GraphicsContext* context, const FloatRect& srcRect, const AffineTransform& patternTransform,
                               const FloatPoint& phase, ColorSpace styleColorSpace, CompositeOperator op, const FloatRect& destRect)
 {
-    const SkBitmap& bitmap = *m_data.m_platformContext.bitmap();
+    const SkBitmap& bitmap = *m_context->platformContext()->bitmap();
     RefPtr<Image> image = BitmapImage::create(NativeImageSkia::create(drawNeedsCopy(m_context.get(), context) ? deepSkBitmapCopy(bitmap) : bitmap));
     image->drawPattern(context, srcRect, patternTransform, phase, styleColorSpace, op, destRect);
 }
@@ -280,7 +277,7 @@ void ImageBuffer::drawPattern(GraphicsContext* context, const FloatRect& srcRect
 void ImageBuffer::platformTransformColorSpace(const Vector<int>& lookUpTable)
 {
     // FIXME: Disable color space conversions on accelerated canvases (for now).
-    if (m_data.m_platformContext.isAccelerated()) 
+    if (context()->platformContext()->isAccelerated())
         return;
 
     const SkBitmap& bitmap = *context()->platformContext()->bitmap();
@@ -430,7 +427,6 @@ void ImageBufferData::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) cons
 {
     MemoryClassInfo info(memoryObjectInfo, this);
     info.addMember(m_canvas, "canvas");
-    info.addMember(m_platformContext, "platformContext");
     info.addMember(m_layerBridge, "layerBridge");
 }
 

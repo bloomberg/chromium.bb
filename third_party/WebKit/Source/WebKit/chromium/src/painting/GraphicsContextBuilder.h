@@ -40,15 +40,13 @@ namespace WebKit {
 class GraphicsContextBuilder {
 public:
     GraphicsContextBuilder(WebCanvas* canvas)
-        : m_platformContext(canvas)
-        , m_graphicsContext(&m_platformContext)
+        : m_graphicsContext(canvas)
     {
     }
 
     WebCore::GraphicsContext& context() { return m_graphicsContext; }
 
 private:
-    WebCore::PlatformContextSkia m_platformContext;
     WebCore::GraphicsContext m_graphicsContext;
 };
 

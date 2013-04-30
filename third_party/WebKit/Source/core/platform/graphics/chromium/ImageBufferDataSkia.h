@@ -28,8 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/platform/graphics/skia/PlatformContextSkia.h"
-
 #include "skia/ext/platform_canvas.h"
 
 namespace WebCore {
@@ -43,7 +41,6 @@ public:
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
     OwnPtr<SkCanvas> m_canvas;
-    PlatformContextSkia m_platformContext;
     OwnPtr<Canvas2DLayerBridge> m_layerBridge;
 };
 

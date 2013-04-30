@@ -38,6 +38,7 @@
 #include "SkRegion.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/ImageBuffer.h"
+#include "core/platform/graphics/skia/PlatformContextSkia.h"
 
 namespace WebCore {
 

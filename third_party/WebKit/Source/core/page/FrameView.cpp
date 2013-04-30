@@ -2957,8 +2957,8 @@ void FrameView::paintControlTints()
 {
     if (needsLayout())
         layout();
-    PlatformGraphicsContext* const noContext = 0;
-    GraphicsContext context(noContext);
+    // FIXME: The use of paint seems like overkill: crbug.com/236892
+    GraphicsContext context(0); // NULL canvas to get a non-painting context.
     context.setUpdatingControlTints(true);
     paint(&context, frameRect());
 }

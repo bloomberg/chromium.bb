@@ -37,6 +37,7 @@
 #include "core/platform/graphics/Extensions3D.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/gpu/DrawingBuffer.h"
+#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include <public/WebGraphicsContext3D.h>
 #include <public/WebGraphicsMemoryAllocation.h>
 #include <wtf/text/CString.h>

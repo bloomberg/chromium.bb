@@ -257,8 +257,7 @@ void LinkHighlight::paintContents(WebCanvas* canvas, const WebRect& webClipRect,
     if (!m_node || !m_node->renderer())
         return;
 
-    PlatformContextSkia platformContext(canvas);
-    GraphicsContext gc(&platformContext);
+    GraphicsContext gc(canvas);
     IntRect clipRect(IntPoint(webClipRect.x, webClipRect.y), IntSize(webClipRect.width, webClipRect.height));
     gc.clip(clipRect);
     gc.setFillColor(m_node->renderer()->style()->tapHighlightColor(), ColorSpaceDeviceRGB);

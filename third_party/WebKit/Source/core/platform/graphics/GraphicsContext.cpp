@@ -55,16 +55,17 @@ using namespace std;
 
 namespace WebCore {
 
-GraphicsContext::GraphicsContext(PlatformGraphicsContext* platformGraphicsContext)
+GraphicsContext::GraphicsContext(SkCanvas* canvas)
     : m_updatingControlTints(false)
     , m_transparencyCount(0)
 {
-    if (platformGraphicsContext)
-        platformGraphicsContext->setGraphicsContext(this);
-
-    // the caller owns the gc
-    m_data = platformGraphicsContext;
-    setPaintingDisabled(!platformGraphicsContext || !platformGraphicsContext->canvas());
+    if (canvas) {
+        m_data = adoptPtr(new PlatformContextSkia(canvas));
+        m_data->setGraphicsContext(this);
+    } else {
+        // the caller owns the gc
+        setPaintingDisabled(true);
+    }
 }
 
 GraphicsContext::~GraphicsContext()
@@ -76,7 +77,7 @@ GraphicsContext::~GraphicsContext()
 PlatformGraphicsContext* GraphicsContext::platformContext() const
 {
     ASSERT(!paintingDisabled());
-    return m_data;
+    return m_data.get();
 }
 
 bool GraphicsContext::isAcceleratedContext() const
