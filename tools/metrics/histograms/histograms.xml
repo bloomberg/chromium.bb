@@ -913,6 +913,16 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="LevelDBEnv.IDB.TimeTo" units="milliseconds">
+  <obsolete>
+    Deprecated 2013-04. As of m28 use LevelDBEnv.IDB.TimeUntilSuccessFor.
+  </obsolete>
+  <summary>
+    Time IDB LevelDBEnv slept before successfully completing this operation. 0
+    means success on the first try.
+  </summary>
+</histogram>
+
+<histogram name="LevelDBEnv.IDB.TimeUntilSuccessFor" units="milliseconds">
   <summary>
     Time IDB LevelDBEnv slept before successfully completing this operation. 0
     means success on the first try.
@@ -953,6 +963,16 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="LevelDBEnv.TimeTo" units="milliseconds">
+  <obsolete>
+    Deprecated 2013-04. As of m28 use LevelDBEnv.TimeUntilSuccessFor.
+  </obsolete>
+  <summary>
+    Time Non-IDB LevelDBEnv slept before successfully completing this operation.
+    0 means success on the first try.
+  </summary>
+</histogram>
+
+<histogram name="LevelDBEnv.TimeUntilSuccessFor" units="milliseconds">
   <summary>
     Time Non-IDB LevelDBEnv slept before successfully completing this operation.
     0 means success on the first try.
@@ -8177,7 +8197,7 @@ other types of suffix sets.
   <int value="11" label="CreateDir"/>
   <int value="12" label="DeleteDir"/>
   <int value="13" label="GetFileSize"/>
-  <int value="14" label="Renamefile"/>
+  <int value="14" label="RenameFile"/>
   <int value="15" label="LockFile"/>
   <int value="16" label="UnlockFile"/>
   <int value="17" label="GetTestDirectory"/>
@@ -9842,6 +9862,13 @@ other types of suffix sets.
   <affected-histogram name="Renderer4.StartToFinish"/>
 </fieldtrial>
 
+<fieldtrial name="LevelDBEnvExponentialRetryTimes" separator="">
+  <group name="RenameFile" label="RenameFile"/>
+  <group name="LockFile" label="LockFile"/>
+  <affected-histogram name="LevelDBEnv.IDB.TimeUntilSuccessFor"/>
+  <affected-histogram name="LevelDBEnv.TimeUntilSuccessFor"/>
+</fieldtrial>
+
 <fieldtrial name="LevelDBEnvPlatformFileErrors" separator="">
   <group name="NewRandomAccessFile" label="NewRandomAccessFile"/>
   <group name="LockFile" label="LockFile"/>
@@ -9850,6 +9877,9 @@ other types of suffix sets.
 </fieldtrial>
 
 <fieldtrial name="LevelDBEnvRetryTimes" separator="">
+  <obsolete>
+    Deprecated 2013-04 in favor of LevelDBEnvExponentialRetryTimes.
+  </obsolete>
   <group name="Rename" label="RenameFile"/>
   <group name="LockFile" label="LockFile"/>
   <affected-histogram name="LevelDBEnv.IDB.TimeTo"/>

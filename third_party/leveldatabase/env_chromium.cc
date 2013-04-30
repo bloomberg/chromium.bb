@@ -122,7 +122,7 @@ enum MethodID {
   kCreateDir,
   kDeleteDir,
   kGetFileSize,
-  kRenamefile,
+  kRenameFile,
   kLockFile,
   kUnlockFile,
   kGetTestDirectory,
@@ -160,8 +160,8 @@ const char* MethodIDToString(MethodID method) {
       return "DeleteDir";
     case kGetFileSize:
       return "GetFileSize";
-    case kRenamefile:
-      return "Renamefile";
+    case kRenameFile:
+      return "RenameFile";
     case kLockFile:
       return "LockFile";
     case kUnlockFile:
@@ -530,7 +530,7 @@ class ChromiumEnv : public Env, public UMALogger {
       return result;
     base::FilePath destination = CreateFilePath(dst);
 
-    Retrier r(rename_time_histogram_, kMaxRenameTimeMillis);
+    Retrier retrier(GetRetryTimeHistogram(kRenameFile), kMaxRenameTimeMillis);
     do {
       if (::file_util::ReplaceFile(src_file_path, destination)) {
         sync_parent(dst);
@@ -538,9 +538,9 @@ class ChromiumEnv : public Env, public UMALogger {
           sync_parent(src);
         return result;
       }
-    } while (r.ShouldKeepTrying());
+    } while (retrier.ShouldKeepTrying());
 
-    RecordErrorAt(kRenamefile);
+    RecordErrorAt(kRenameFile);
     return Status::IOError(src, "Could not rename file.");
   }
 
@@ -555,11 +555,12 @@ class ChromiumEnv : public Env, public UMALogger {
     bool created;
     ::base::PlatformFileError error_code;
     ::base::PlatformFile file;
-    Retrier r(lockfile_time_histogram_, kMaxRenameTimeMillis);
+    Retrier retrier(GetRetryTimeHistogram(kLockFile), kMaxRenameTimeMillis);
     do {
       file = ::base::CreatePlatformFile(
           CreateFilePath(fname), flags, &created, &error_code);
-    } while (error_code != ::base::PLATFORM_FILE_OK && r.ShouldKeepTrying());
+    } while (error_code != ::base::PLATFORM_FILE_OK &&
+             retrier.ShouldKeepTrying());
 
     if (error_code != ::base::PLATFORM_FILE_OK) {
       result = Status::IOError(fname, PlatformFileErrorString(error_code));
@@ -642,37 +643,23 @@ class ChromiumEnv : public Env, public UMALogger {
   }
 
   void RecordErrorAt(MethodID method) const {
-    io_error_histogram_->Add(method);
+    GetMethodIOErrorHistogram()->Add(method);
   }
 
   void RecordOSError(MethodID method, base::PlatformFileError error) const {
     DCHECK(error < 0);
-    RecordOSError(method, -error);
+    RecordErrorAt(method);
+    GetOSErrorHistogram(method, -base::PLATFORM_FILE_ERROR_MAX)->
+        Add(-error);
   }
 
   void RecordOSError(MethodID method, int error) const {
+    DCHECK(error > 0);
     RecordErrorAt(method);
-    if (error_histograms_.find(method) == error_histograms_.end()) {
-      NOTREACHED();
-      return;
-    }
-    error_histograms_.find(method)->second->Add(error);
-  }
-
-  void RecordTimeToRename(base::TimeDelta t) const {
-    rename_time_histogram_->AddTime(t);
+    GetOSErrorHistogram(method, ERANGE + 1)->Add(error);
   }
 
  protected:
-  void InitHistograms(const std::string& uma_title);
-  void MakePlatformFileErrorHistogram(const std::string& prefix_with_dot,
-                                      MethodID method);
-  void MakeErrnoHistogram(const std::string& prefix_with_dot,
-                          MethodID method);
-  void MakeErrorHistogram(const std::string& prefix_with_dot,
-                          MethodID method,
-                          int limit);
-
   std::string name_;
 
  private:
@@ -683,6 +670,9 @@ class ChromiumEnv : public Env, public UMALogger {
     reinterpret_cast<ChromiumEnv*>(arg)->BGThread();
   }
 
+  base::HistogramBase* GetOSErrorHistogram(MethodID method, int limit) const;
+  base::HistogramBase* GetRetryTimeHistogram(MethodID method) const;
+  base::HistogramBase* GetMethodIOErrorHistogram() const;
   base::FilePath test_directory_;
 
   size_t page_size_;
@@ -694,12 +684,6 @@ class ChromiumEnv : public Env, public UMALogger {
   struct BGItem { void* arg; void (*function)(void*); };
   typedef std::deque<BGItem> BGQueue;
   BGQueue queue_;
-
-  base::HistogramBase* io_error_histogram_;
-  base::HistogramBase* random_access_file_histogram_;
-  base::HistogramBase* rename_time_histogram_;
-  base::HistogramBase* lockfile_time_histogram_;
-  std::map<MethodID, base::HistogramBase*> error_histograms_;
 };
 
 ChromiumEnv::ChromiumEnv()
@@ -708,61 +692,37 @@ ChromiumEnv::ChromiumEnv()
       bgsignal_(&mu_),
       started_bgthread_(false),
       kMaxRenameTimeMillis(1000) {
-  InitHistograms(name_);
 }
 
-void ChromiumEnv::MakePlatformFileErrorHistogram(
-    const std::string& prefix_with_dot, MethodID method) {
-  MakeErrorHistogram(prefix_with_dot, method, -base::PLATFORM_FILE_ERROR_MAX);
+base::HistogramBase* ChromiumEnv::GetOSErrorHistogram(MethodID method,
+                                                            int limit) const {
+  std::string uma_name(name_);
+  // TODO(dgrogan): This is probably not the best way to concatenate strings.
+  uma_name.append(".IOError.").append(MethodIDToString(method));
+  return base::LinearHistogram::FactoryGet(uma_name, 1, limit, limit + 1,
+      base::Histogram::kUmaTargetedHistogramFlag);
 }
 
-void ChromiumEnv::MakeErrnoHistogram(const std::string& prefix_with_dot,
-                                     MethodID method) {
-  MakeErrorHistogram(prefix_with_dot, method, ERANGE + 1);
-}
-
-void ChromiumEnv::MakeErrorHistogram(const std::string& prefix_with_dot,
-                                     MethodID method,
-                                     int limit) {
-  std::string uma_name(prefix_with_dot);
-  uma_name.append(MethodIDToString(method));
-  error_histograms_[method] = base::LinearHistogram::FactoryGet(uma_name, 1,
-    limit, limit + 1, base::Histogram::kUmaTargetedHistogramFlag);
-}
-
-void ChromiumEnv::InitHistograms(const std::string& uma_title) {
-  std::string uma_name(uma_title);
-  uma_name.append(".IOError");
-  io_error_histogram_ = base::LinearHistogram::FactoryGet(uma_name, 1,
-      kNumEntries, kNumEntries + 1, base::Histogram::kUmaTargetedHistogramFlag);
-
-  uma_name.append(".");
-  MakeErrnoHistogram(uma_name, kWritableFileAppend);
-  MakeErrnoHistogram(uma_name, kNewSequentialFile);
-  MakeErrnoHistogram(uma_name, kWritableFileFlush);
-  MakeErrnoHistogram(uma_name, kNewLogger);
-  MakePlatformFileErrorHistogram(uma_name, kNewRandomAccessFile);
-  MakePlatformFileErrorHistogram(uma_name, kLockFile);
+base::HistogramBase* ChromiumEnv::GetRetryTimeHistogram(MethodID method) const {
+  std::string uma_name(name_);
+  // TODO(dgrogan): This is probably not the best way to concatenate strings.
+  uma_name.append(".TimeUntilSuccessFor").append(MethodIDToString(method));
 
   const int kBucketSizeMillis = 25;
   // Add 2, 1 for each of the buckets <1 and >max.
   const int kNumBuckets = kMaxRenameTimeMillis / kBucketSizeMillis + 2;
-
-  std::string retry_name(uma_title);
-  retry_name.append(".TimeToRename");
-  rename_time_histogram_ = base::LinearHistogram::FactoryTimeGet(
-      retry_name, base::TimeDelta::FromMilliseconds(1),
+  return base::Histogram::FactoryTimeGet(
+      uma_name, base::TimeDelta::FromMilliseconds(1),
       base::TimeDelta::FromMilliseconds(kMaxRenameTimeMillis + 1),
       kNumBuckets,
       base::Histogram::kUmaTargetedHistogramFlag);
+}
 
-  std::string lock_name(uma_title);
-  lock_name.append(".TimeToLockFile");
-  lockfile_time_histogram_ = base::LinearHistogram::FactoryTimeGet(
-      lock_name, base::TimeDelta::FromMilliseconds(1),
-      base::TimeDelta::FromMilliseconds(kMaxRenameTimeMillis + 1),
-      kNumBuckets,
-      base::Histogram::kUmaTargetedHistogramFlag);
+base::HistogramBase* ChromiumEnv::GetMethodIOErrorHistogram() const {
+  std::string uma_name(name_);
+  uma_name.append("IOError");
+  return base::LinearHistogram::FactoryGet(uma_name, 1, kNumEntries,
+      kNumEntries + 1, base::Histogram::kUmaTargetedHistogramFlag);
 }
 
 class Thread : public ::base::PlatformThread::Delegate {
@@ -835,7 +795,6 @@ class IDBEnv : public ChromiumEnv {
  public:
   IDBEnv() : ChromiumEnv() {
     name_ = "LevelDBEnv.IDB";
-    InitHistograms(name_);
   }
 };
 
