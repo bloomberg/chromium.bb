@@ -270,7 +270,8 @@ void MediaStorageUtil::IsDeviceAttached(const std::string& device_id,
   } else {
     DCHECK(type == MTP_OR_PTP ||
            type == REMOVABLE_MASS_STORAGE_WITH_DCIM ||
-           type == REMOVABLE_MASS_STORAGE_NO_DCIM);
+           type == REMOVABLE_MASS_STORAGE_NO_DCIM ||
+           type == MAC_IMAGE_CAPTURE);
     // We should be able to find removable storage.
     callback.Run(IsRemovableStorageAttached(device_id));
   }
