@@ -780,7 +780,10 @@ void MessageCenterView::AddNotificationAt(const Notification& notification,
 }
 
 void MessageCenterView::NotificationsChanged() {
-  if (message_views_.empty()) {
+  if (!message_views_.empty()) {
+    button_bar_->SetCloseAllVisible(true);
+    scroller_->set_focusable(true);
+  } else if (!message_list_view_->has_children()) {
     views::Label* label = new views::Label(l10n_util::GetStringUTF16(
         IDS_MESSAGE_CENTER_NO_MESSAGES));
     label->SetFont(label->font().DeriveFont(1));
@@ -791,9 +794,6 @@ void MessageCenterView::NotificationsChanged() {
     message_list_view_->AddChildView(label);
     button_bar_->SetCloseAllVisible(false);
     scroller_->set_focusable(false);
-  } else {
-    button_bar_->SetCloseAllVisible(true);
-    scroller_->set_focusable(true);
   }
   scroller_->InvalidateLayout();
   PreferredSizeChanged();
