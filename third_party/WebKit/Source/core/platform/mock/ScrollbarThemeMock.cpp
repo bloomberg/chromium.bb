@@ -42,6 +42,11 @@ int ScrollbarThemeMock::scrollbarThickness(ScrollbarControlSize controlSize)
     return cScrollbarThickness[controlSize];
 }
 
+bool ScrollbarThemeMock::usesOverlayScrollbars() const
+{
+    return Settings::usesOverlayScrollbars();
+}
+
 void ScrollbarThemeMock::paintTrackBackground(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& trackRect)
 {
     context->fillRect(trackRect, scrollbar->enabled() ? Color::lightGray : Color(0xFFE0E0E0), ColorSpaceDeviceRGB);

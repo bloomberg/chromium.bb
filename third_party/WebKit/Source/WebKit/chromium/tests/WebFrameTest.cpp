@@ -67,6 +67,7 @@
 #include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
 #include "v8.h"
 #include <public/Platform.h>
@@ -93,6 +94,29 @@ namespace {
     EXPECT_EQ(a.y(), b.y()); \
     EXPECT_EQ(a.width(), b.width()); \
     EXPECT_EQ(a.height(), b.height());
+
+class FakeWebFrameClient : public WebFrameClient {
+    // To make the destructor public.
+};
+
+class FakeCompositingWebViewClient : public WebViewClient {
+public:
+    virtual void initializeLayerTreeView() OVERRIDE
+    {
+        m_layerTreeView = adoptPtr(Platform::current()->unitTestSupport()->createLayerTreeViewForTesting(WebUnitTestSupport::TestViewTypeUnitTest));
+        ASSERT(m_layerTreeView);
+    }
+
+    virtual WebLayerTreeView* layerTreeView() OVERRIDE
+    {
+        return m_layerTreeView.get();
+    }
+
+    FakeWebFrameClient m_fakeWebFrameClient;
+
+private:
+    OwnPtr<WebLayerTreeView> m_layerTreeView;
+};
 
 class WebFrameTest : public testing::Test {
 public:
@@ -124,9 +148,25 @@ public:
         URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_chromeURL.c_str()), WebString::fromUTF8(fileName.c_str()));
     }
 
+    void createCompositingWebView()
+    {
+        m_fakeCompositingWebViewClient = adoptPtr(new FakeCompositingWebViewClient());
+        m_webView = WebView::create(m_fakeCompositingWebViewClient.get());
+        m_webView->settings()->setJavaScriptEnabled(true);
+        m_webView->settings()->setForceCompositingMode(true);
+        m_webView->settings()->setAcceleratedCompositingEnabled(true);
+        m_webView->settings()->setAcceleratedCompositingForFixedPositionEnabled(true);
+        m_webView->settings()->setAcceleratedCompositingForOverflowScrollEnabled(true);
+        m_webView->settings()->setAcceleratedCompositingForScrollableFramesEnabled(true);
+        m_webView->settings()->setCompositedScrollingForFramesEnabled(true);
+        m_webView->settings()->setFixedPositionCreatesStackingContext(true);
+        m_webView->initializeMainFrame(&m_fakeCompositingWebViewClient->m_fakeWebFrameClient);
+    }
+
 protected:
     std::string m_baseURL;
     std::string m_chromeURL;
+    OwnPtr<FakeCompositingWebViewClient> m_fakeCompositingWebViewClient;
 
     WebView* m_webView;
 };
@@ -565,8 +605,9 @@ TEST_F(WebFrameTest, setPageScaleFactorDoesNotLayout)
 
     FixedLayoutTestWebViewClient client;
     client.m_screenInfo.deviceScaleFactor = 1;
-    int viewportWidth = 640;
-    int viewportHeight = 480;
+    // Small viewport to ensure there are always scrollbars.
+    int viewportWidth = 64;
+    int viewportHeight = 48;
 
     m_webView = static_cast<WebViewImpl*>(FrameTestHelpers::createWebViewAndLoad(m_baseURL + "fixed_layout.html", true, 0, &client));
     m_webView->enableFixedLayoutMode(true);
@@ -579,6 +620,49 @@ TEST_F(WebFrameTest, setPageScaleFactorDoesNotLayout)
     webViewImpl->setPageScaleFactor(3, WebPoint());
     EXPECT_FALSE(webViewImpl->mainFrameImpl()->frameView()->needsLayout());
     EXPECT_EQ(prevLayoutCount, webViewImpl->mainFrameImpl()->frameView()->layoutCount());
+}
+
+TEST_F(WebFrameTest, setPageScaleFactorWithOverlayScrollbarsDoesNotLayout)
+{
+    WebCore::Settings::setMockScrollbarsEnabled(true);
+    WebCore::Settings::setUsesOverlayScrollbars(true);
+    EXPECT_TRUE(WebCore::ScrollbarTheme::theme()->usesOverlayScrollbars());
+
+    registerMockedHttpURLLoad("fixed_layout.html");
+
+    FixedLayoutTestWebViewClient client;
+    client.m_screenInfo.deviceScaleFactor = 1;
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+
+    m_webView = static_cast<WebViewImpl*>(FrameTestHelpers::createWebViewAndLoad(m_baseURL + "fixed_layout.html", true, 0, &client));
+    m_webView->enableFixedLayoutMode(true);
+    m_webView->settings()->setViewportEnabled(true);
+    m_webView->resize(WebSize(viewportWidth, viewportHeight));
+    m_webView->layout();
+
+    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
+    int prevLayoutCount = webViewImpl->mainFrameImpl()->frameView()->layoutCount();
+    webViewImpl->setPageScaleFactor(30, WebPoint());
+    EXPECT_FALSE(webViewImpl->mainFrameImpl()->frameView()->needsLayout());
+    EXPECT_EQ(prevLayoutCount, webViewImpl->mainFrameImpl()->frameView()->layoutCount());
+
+    WebCore::Settings::setMockScrollbarsEnabled(false);
+    WebCore::Settings::setUsesOverlayScrollbars(false);
+}
+
+TEST_F(WebFrameTest, setPageScaleFactorBeforeFrameHasView)
+{
+    registerMockedHttpURLLoad("fixed_layout.html");
+
+    float pageScaleFactor = 3;
+    m_webView = static_cast<WebViewImpl*>(FrameTestHelpers::createWebViewAndLoad("about:html", true, 0, 0));
+    m_webView->setPageScaleFactor(pageScaleFactor, WebPoint());
+
+    FrameTestHelpers::loadFrame(m_webView->mainFrame(), m_baseURL + "fixed_layout.html");
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    WebCore::FrameView* view = static_cast<WebViewImpl*>(m_webView)->mainFrameImpl()->frameView();
+    EXPECT_EQ(pageScaleFactor, view->visibleContentScaleFactor());
 }
 
 TEST_F(WebFrameTest, pageScaleFactorWrittenToHistoryItem)
@@ -610,8 +694,9 @@ TEST_F(WebFrameTest, pageScaleFactorShrinksViewport)
 
     FixedLayoutTestWebViewClient client;
     client.m_screenInfo.deviceScaleFactor = 1;
-    int viewportWidth = 640;
-    int viewportHeight = 480;
+    // Small viewport to ensure there are always scrollbars.
+    int viewportWidth = 64;
+    int viewportHeight = 48;
 
     m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "fixed_layout.html", true, 0, &client);
     m_webView->enableFixedLayoutMode(true);
@@ -620,8 +705,8 @@ TEST_F(WebFrameTest, pageScaleFactorShrinksViewport)
     m_webView->layout();
 
     WebCore::FrameView* view = static_cast<WebViewImpl*>(m_webView)->mainFrameImpl()->frameView();
-    int viewportWidthMinusScrollbar = 640 - (view->verticalScrollbar()->isOverlayScrollbar() ? 0 : 15);
-    int viewportHeightMinusScrollbar = 480 - (view->horizontalScrollbar()->isOverlayScrollbar() ? 0 : 15);
+    int viewportWidthMinusScrollbar = viewportWidth - (view->verticalScrollbar()->isOverlayScrollbar() ? 0 : 15);
+    int viewportHeightMinusScrollbar = viewportHeight - (view->horizontalScrollbar()->isOverlayScrollbar() ? 0 : 15);
 
     m_webView->setPageScaleFactor(2, WebPoint());
 
@@ -863,6 +948,31 @@ TEST_F(WebFrameTest, pageScaleFactorScalesPaintClip)
     EXPECT_EQ_RECT(clippedRect, platformContext.opaqueRegion().asRect());
 }
 
+TEST_F(WebFrameTest, pageScaleFactorUpdatesScrollbars)
+{
+    registerMockedHttpURLLoad("fixed_layout.html");
+
+    FixedLayoutTestWebViewClient client;
+    client.m_screenInfo.deviceScaleFactor = 1;
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "fixed_layout.html", true, 0, &client);
+    m_webView->enableFixedLayoutMode(true);
+    m_webView->settings()->setViewportEnabled(true);
+    m_webView->resize(WebSize(viewportWidth, viewportHeight));
+    m_webView->layout();
+
+    WebCore::FrameView* view = static_cast<WebViewImpl*>(m_webView)->mainFrameImpl()->frameView();
+    EXPECT_EQ(view->scrollSize(WebCore::HorizontalScrollbar), view->contentsSize().width() - view->visibleContentRect().width());
+    EXPECT_EQ(view->scrollSize(WebCore::VerticalScrollbar), view->contentsSize().height() - view->visibleContentRect().height());
+
+    m_webView->setPageScaleFactor(10, WebPoint());
+
+    EXPECT_EQ(view->scrollSize(WebCore::HorizontalScrollbar), view->contentsSize().width() - view->visibleContentRect().width());
+    EXPECT_EQ(view->scrollSize(WebCore::VerticalScrollbar), view->contentsSize().height() - view->visibleContentRect().height());
+}
+
 TEST_F(WebFrameTest, CanOverrideMaximumScaleFactor)
 {
     registerMockedHttpURLLoad("no_scale_for_you.html");
@@ -883,6 +993,33 @@ TEST_F(WebFrameTest, CanOverrideMaximumScaleFactor)
     m_webView->layout();
 
     EXPECT_EQ(4.0f, m_webView->maximumPageScaleFactor());
+}
+
+TEST_F(WebFrameTest, updateOverlayScrollbarLayers)
+{
+    WebCore::Settings::setMockScrollbarsEnabled(true);
+    WebCore::Settings::setUsesOverlayScrollbars(true);
+    EXPECT_TRUE(WebCore::ScrollbarTheme::theme()->usesOverlayScrollbars());
+
+    registerMockedHttpURLLoad("large-div.html");
+
+    int viewWidth = 500;
+    int viewHeight = 500;
+
+    createCompositingWebView();
+    m_webView->resize(WebSize(viewWidth, viewHeight));
+    FrameTestHelpers::loadFrame(m_webView->mainFrame(), m_baseURL + "large-div.html");
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    m_webView->layout();
+
+    WebCore::FrameView* view = static_cast<WebViewImpl*>(m_webView)->mainFrameImpl()->frameView();
+    EXPECT_TRUE(view->renderView()->compositor()->layerForHorizontalScrollbar());
+    EXPECT_TRUE(view->renderView()->compositor()->layerForVerticalScrollbar());
+
+    m_webView->resize(WebSize(viewWidth * 10, viewHeight * 10));
+    m_webView->layout();
+    EXPECT_FALSE(view->renderView()->compositor()->layerForHorizontalScrollbar());
+    EXPECT_FALSE(view->renderView()->compositor()->layerForVerticalScrollbar());
 }
 
 void setScaleAndScrollAndLayout(WebKit::WebView* webView, WebPoint scroll, float scale)
