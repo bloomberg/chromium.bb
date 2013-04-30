@@ -92,6 +92,8 @@ class StorageMonitorLinux : public StorageMonitor,
   // StorageMonitor implementation.
   virtual bool GetStorageInfoForPath(const base::FilePath& path,
                                      StorageInfo* device_info) const OVERRIDE;
+  virtual void EjectDevice(const std::string& device_id,
+                           base::Callback<void(EjectStatus)> callback) OVERRIDE;
   virtual device::MediaTransferProtocolManager*
       media_transfer_protocol_manager() OVERRIDE;
 

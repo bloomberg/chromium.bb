@@ -15,6 +15,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
+#include "base/process.h"
+#include "base/process_util.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -226,6 +228,41 @@ MtabWatcherLinux* CreateMtabWatcherLinuxOnFileThread(
   return new MtabWatcherLinux(mtab_path, delegate);
 }
 
+StorageMonitor::EjectStatus EjectPathOnFileThread(
+    const base::FilePath& path,
+    const base::FilePath& device) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  // Note: Linux LSB says umount should exist in /bin.
+  static const char kUmountBinary[] = "/bin/umount";
+  std::vector<std::string> command;
+  command.push_back(kUmountBinary);
+  command.push_back(path.value());
+
+  base::LaunchOptions options;
+  base::ProcessHandle handle;
+  if (!base::LaunchProcess(command, options, &handle))
+    return StorageMonitor::EJECT_FAILURE;
+
+  int exit_code = -1;
+  if (!base::WaitForExitCodeWithTimeout(handle, &exit_code,
+      base::TimeDelta::FromMilliseconds(3000))) {
+    base::KillProcess(handle, -1, false);
+    base::EnsureProcessTerminated(handle);
+    return StorageMonitor::EJECT_FAILURE;
+  }
+
+  // TODO(gbillock): Make sure this is found in documentation
+  // somewhere. Experimentally it seems to hold that exit code
+  // 1 means device is in use.
+  if (exit_code == 1)
+    return StorageMonitor::EJECT_IN_USE;
+  if (exit_code != 0)
+    return StorageMonitor::EJECT_FAILURE;
+
+  return StorageMonitor::EJECT_OK;
+}
+
 }  // namespace
 
 StorageMonitorLinux::StorageMonitorLinux(const base::FilePath& path)
@@ -310,6 +347,35 @@ void StorageMonitorLinux::SetMediaTransferProtocolManagerForTest(
     device::MediaTransferProtocolManager* test_manager) {
   DCHECK(!media_transfer_protocol_manager_);
   media_transfer_protocol_manager_.reset(test_manager);
+}
+
+void StorageMonitorLinux::EjectDevice(
+    const std::string& device_id,
+    base::Callback<void(EjectStatus)> callback) {
+  // Find the mount point for the given device ID.
+  base::FilePath path;
+  base::FilePath device;
+  for (MountMap::iterator mount_info = mount_info_map_.begin();
+       mount_info != mount_info_map_.end(); ++mount_info) {
+    if (mount_info->second.storage_info.device_id == device_id) {
+      path = mount_info->first;
+      device = mount_info->second.mount_device;
+      mount_info_map_.erase(mount_info);
+      break;
+    }
+  }
+
+  if (path.empty()) {
+    callback.Run(EJECT_NO_SUCH_DEVICE);
+    return;
+  }
+
+  receiver()->ProcessDetach(device_id);
+
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&EjectPathOnFileThread, path, device),
+      callback);
 }
 
 void StorageMonitorLinux::OnMtabWatcherCreated(MtabWatcherLinux* watcher) {
