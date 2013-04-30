@@ -26,7 +26,6 @@
 
 [
     EventTarget,
-    IsWorkerContext,
     CustomToJSObject,
     NoWrapperCache
 ] interface WorkerContext {

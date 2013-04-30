@@ -68,7 +68,6 @@ IndexedGetter
 InitializedByEventConstructor
 InterfaceName=*
 IsIndex
-IsWorkerContext
 MasqueradesAsUndefined
 MeasureAs=*
 NamedConstructor=*
