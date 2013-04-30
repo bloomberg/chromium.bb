@@ -394,6 +394,7 @@ void InspectorPageAgent::disable(ErrorString*)
     m_enabled = false;
     m_state->setBoolean(PageAgentState::pageAgentEnabled, false);
     m_state->remove(PageAgentState::pageAgentScriptsToEvaluateOnLoad);
+    m_overlay->hide();
     m_instrumentingAgents->setInspectorPageAgent(0);
 
     setShowPaintRects(0, false);
@@ -1004,6 +1005,12 @@ void InspectorPageAgent::didScroll()
 {
     if (m_enabled)
         m_overlay->update();
+}
+
+void InspectorPageAgent::didResizeMainFrame()
+{
+    if (m_enabled)
+        m_overlay->showAndHideViewSize();
 }
 
 void InspectorPageAgent::didRecalculateStyle()
