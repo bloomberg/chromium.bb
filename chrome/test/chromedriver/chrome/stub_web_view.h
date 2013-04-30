@@ -58,9 +58,10 @@ class StubWebView : public WebView {
   virtual JavaScriptDialogManager* GetJavaScriptDialogManager() OVERRIDE;
   virtual Status OverrideGeolocation(const Geoposition& geoposition) OVERRIDE;
   virtual Status CaptureScreenshot(std::string* screenshot) OVERRIDE;
-  virtual Status SetFileInputFiles(const std::string& frame,
-                                   const base::DictionaryValue& element,
-                                   const base::ListValue& files) OVERRIDE;
+  virtual Status SetFileInputFiles(
+      const std::string& frame,
+      const base::DictionaryValue& element,
+      const std::vector<base::FilePath>& files) OVERRIDE;
 
  private:
   std::string id_;

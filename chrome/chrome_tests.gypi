@@ -1063,6 +1063,7 @@
         'test/chromedriver/session_commands_unittest.cc',
         'test/chromedriver/session_unittest.cc',
         'test/chromedriver/synchronized_map_unittest.cc',
+        'test/chromedriver/util_unittest.cc',
       ],
     },
     # ChromeDriver2 tests that aren't run on the main buildbot. Available

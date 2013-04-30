@@ -232,6 +232,8 @@ void CommandExecutorImpl::Init() {
       base::Bind(&ExecuteGetAvailableLogTypes);
   session_command_map[CommandNames::kGetLog] =
       base::Bind(&ExecuteGetLog);
+  session_command_map[CommandNames::kUploadFile] =
+      base::Bind(&ExecuteUploadFile);
 
   // Wrap SessionCommand into non-session Command.
   base::Callback<Status(

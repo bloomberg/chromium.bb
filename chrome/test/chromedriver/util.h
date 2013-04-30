@@ -8,6 +8,7 @@
 #include <string>
 
 namespace base {
+class FilePath;
 class ListValue;
 }
 
@@ -23,5 +24,19 @@ Status SendKeysOnWindow(
     const base::ListValue* key_list,
     bool release_modifiers,
     int* sticky_modifiers);
+
+// Decodes the given base64-encoded string, after removing any newlines,
+// which are required in some base64 standards. Returns true on success.
+bool Base64Decode(const std::string& base64, std::string* bytes);
+
+// Unzips the sole file contained in the given zip data |bytes| into
+// |unzip_dir|. The zip data may be a normal zip archive or a single zip file
+// entry. If the unzip successfully produced one file, returns true and sets
+// |file| to the unzipped file.
+// TODO(kkania): Remove the ability to parse single zip file entries when
+// the current versions of all WebDriver clients send actual zip files.
+Status UnzipSoleFile(const base::FilePath& unzip_dir,
+                     const std::string& bytes,
+                     base::FilePath* file);
 
 #endif  // CHROME_TEST_CHROMEDRIVER_UTIL_H_

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/file_util.h"
 #include "base/logging.h"  // For CHECK macros.
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
@@ -23,6 +24,7 @@
 #include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/session_map.h"
+#include "chrome/test/chromedriver/util.h"
 
 namespace {
 
@@ -506,4 +508,34 @@ Status ExecuteGetLog(
     }
   }
   return Status(kUnknownError, "log type '" + log_type + "' not found");
+}
+
+Status ExecuteUploadFile(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+    std::string base64_zip_data;
+  if (!params.GetString("file", &base64_zip_data))
+    return Status(kUnknownError, "missing or invalid 'file'");
+  std::string zip_data;
+  if (!Base64Decode(base64_zip_data, &zip_data))
+    return Status(kUnknownError, "unable to decode 'file'");
+
+  if (!session->temp_dir.IsValid()) {
+    if (!session->temp_dir.CreateUniqueTempDir())
+      return Status(kUnknownError, "unable to create temp dir");
+  }
+  base::FilePath upload_dir;
+  if (!file_util::CreateTemporaryDirInDir(
+          session->temp_dir.path(), FILE_PATH_LITERAL("upload"), &upload_dir)) {
+    return Status(kUnknownError, "unable to create temp dir");
+  }
+  std::string error_msg;
+  base::FilePath upload;
+  Status status = UnzipSoleFile(upload_dir, zip_data, &upload);
+  if (status.IsError())
+    return Status(kUnknownError, "unable to unzip 'file'", status);
+
+  value->reset(new base::StringValue(upload.value()));
+  return Status(kOk);
 }

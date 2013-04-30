@@ -7,11 +7,13 @@
 
 #include <list>
 #include <string>
+#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 
 namespace base {
 class DictionaryValue;
+class FilePath;
 class ListValue;
 class TimeDelta;
 class Value;
@@ -119,9 +121,10 @@ class WebView {
 
   // Set files in a file input element.
   // |element| is the WebElement JSON Object of the input element.
-  virtual Status SetFileInputFiles(const std::string& frame,
-                                   const base::DictionaryValue& element,
-                                   const base::ListValue& files) = 0;
+  virtual Status SetFileInputFiles(
+      const std::string& frame,
+      const base::DictionaryValue& element,
+      const std::vector<base::FilePath>& files) = 0;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_WEB_VIEW_H_

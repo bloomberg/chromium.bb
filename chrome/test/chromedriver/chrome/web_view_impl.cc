@@ -5,6 +5,7 @@
 #include "chrome/test/chromedriver/chrome/web_view_impl.h"
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
@@ -311,9 +312,19 @@ Status WebViewImpl::CaptureScreenshot(std::string* screenshot) {
   return Status(kOk);
 }
 
-Status WebViewImpl::SetFileInputFiles(const std::string& frame,
-                                      const base::DictionaryValue& element,
-                                      const base::ListValue& files) {
+Status WebViewImpl::SetFileInputFiles(
+    const std::string& frame,
+    const base::DictionaryValue& element,
+    const std::vector<base::FilePath>& files) {
+  base::ListValue file_list;
+  for (size_t i = 0; i < files.size(); ++i) {
+    if (!files[i].IsAbsolute()) {
+      return Status(kUnknownError,
+                    "path is not absolute: " + files[i].AsUTF8Unsafe());
+    }
+    file_list.AppendString(files[i].value());
+  }
+
   int context_id;
   Status status = GetContextIdForFrame(frame_tracker_.get(), frame,
                                        &context_id);
@@ -332,7 +343,7 @@ Status WebViewImpl::SetFileInputFiles(const std::string& frame,
     return Status(kUnknownError, "no node ID for file input");
   base::DictionaryValue params;
   params.SetInteger("nodeId", node_id);
-  params.Set("files", files.DeepCopy());
+  params.Set("files", file_list.DeepCopy());
   return client_->SendCommand("DOM.setFileInputFiles", params);
 }
 

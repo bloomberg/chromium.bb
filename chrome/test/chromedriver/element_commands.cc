@@ -222,8 +222,11 @@ Status ExecuteSendKeysToElement(
     }
 
     // Separate the string into separate paths, delimited by '\n'.
-    std::vector<base::FilePath::StringType> paths;
-    base::SplitString(paths_string, '\n', &paths);
+    std::vector<base::FilePath::StringType> path_strings;
+    base::SplitString(paths_string, '\n', &path_strings);
+    std::vector<base::FilePath> paths;
+    for (size_t i = 0; i < path_strings.size(); ++i)
+      paths.push_back(base::FilePath(path_strings[i]));
 
     bool multiple = false;
     status = IsElementAttributeEqualToIgnoreCase(
@@ -233,13 +236,9 @@ Status ExecuteSendKeysToElement(
     if (!multiple && paths.size() > 1)
       return Status(kUnknownError, "the element can not hold multiple files");
 
-    base::ListValue files;
-    for (size_t i = 0; i < paths.size(); ++i)
-      files.AppendString(paths[i]);
-
     scoped_ptr<base::DictionaryValue> element(CreateElement(element_id));
     return web_view->SetFileInputFiles(
-        session->GetCurrentFrameId(), *element, files);
+        session->GetCurrentFrameId(), *element, paths);
   } else {
     return SendKeysToElement(session, web_view, element_id, key_list);
   }

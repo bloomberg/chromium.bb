@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/files/file_path.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/stub_web_view.h"
@@ -105,8 +106,9 @@ Status StubWebView::CaptureScreenshot(std::string* screenshot) {
   return Status(kOk);
 }
 
-Status StubWebView::SetFileInputFiles(const std::string& frame,
-                                      const base::DictionaryValue& element,
-                                      const base::ListValue& files) {
+Status StubWebView::SetFileInputFiles(
+    const std::string& frame,
+    const base::DictionaryValue& element,
+    const std::vector<base::FilePath>& files) {
   return Status(kOk);
 }

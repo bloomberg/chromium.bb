@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -64,6 +65,7 @@ struct Session {
   std::string prompt_text;
   scoped_ptr<Geoposition> overridden_geoposition;
   ScopedVector<DevToolsEventLogger> devtools_event_loggers;
+  base::ScopedTempDir temp_dir;
   const scoped_ptr<base::DictionaryValue> capabilities;
 
  private:
