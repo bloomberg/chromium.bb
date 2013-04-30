@@ -4,7 +4,9 @@
 
 #include "chrome/service/cloud_print/connector_settings.h"
 
+#include "base/command_line.h"
 #include "base/values.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/service/cloud_print/print_system.h"
@@ -53,11 +55,16 @@ void ConnectorSettings::InitFrom(ServiceProcessPrefs* prefs) {
   }
 
   // Check if there is an override for the cloud print server URL.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   server_url_ =
-      GURL(prefs->GetString(prefs::kCloudPrintServiceURL, std::string()));
-  DCHECK(server_url_.is_empty() || server_url_.is_valid());
+      GURL(command_line.GetSwitchValueASCII(switches::kCloudPrintServiceURL));
   if (server_url_.is_empty() || !server_url_.is_valid()) {
-    server_url_ = GURL(kDefaultCloudPrintServerUrl);
+    server_url_ =
+        GURL(prefs->GetString(prefs::kCloudPrintServiceURL, std::string()));
+    DCHECK(server_url_.is_empty() || server_url_.is_valid());
+    if (server_url_.is_empty() || !server_url_.is_valid()) {
+      server_url_ = GURL(kDefaultCloudPrintServerUrl);
+    }
   }
   DCHECK(server_url_.is_valid());
 

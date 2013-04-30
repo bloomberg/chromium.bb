@@ -48,6 +48,7 @@ string16 GetCurrentUserName() {
 
 void CopyChromeSwitchesFromCurrentProcess(CommandLine* destination) {
   static const char* const kSwitchesToCopy[] = {
+    switches::kCloudPrintServiceURL,
     switches::kEnableLogging,
     switches::kV,
   };
