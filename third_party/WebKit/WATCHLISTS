@@ -129,7 +129,7 @@
                   'caseq+blink@chromium.org'],
     'bindings': [ 'abarth@chromium.org',
                   'japhet@chromium.org',
-                  'jsbell@chromium.org',
+                  'jsbell+bindings@chromium.org',
                   'haraken@chromium.org' ],
     'layers': [ 'blink-layers@chromium.org' ],
     'loader': [ 'japhet@chromium.org', 'gavinp+loader@chromium.org' ],
