@@ -119,6 +119,7 @@ public:
         GestureFlingStart,
         GestureFlingCancel,
         GestureTap,
+        GestureTapUnconfirmed,
         GestureTapDown,
         GestureTapCancel,
         GestureDoubleTap,
@@ -230,6 +231,7 @@ public:
             || type == GesturePinchEnd
             || type == GesturePinchUpdate
             || type == GestureTap
+            || type == GestureTapUnconfirmed
             || type == GestureTapDown
             || type == GestureTapCancel
             || type == GestureDoubleTap

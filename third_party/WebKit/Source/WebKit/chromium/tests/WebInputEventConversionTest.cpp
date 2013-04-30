@@ -164,6 +164,17 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
 
     {
         WebGestureEvent webGestureEvent;
+        webGestureEvent.type = WebInputEvent::GestureTapUnconfirmed;
+        webGestureEvent.data.tap.width = 10;
+        webGestureEvent.data.tap.height = 10;
+
+        PlatformGestureEventBuilder platformGestureBuilder(view, webGestureEvent);
+        EXPECT_EQ(5, platformGestureBuilder.area().width());
+        EXPECT_EQ(5, platformGestureBuilder.area().height());
+    }
+
+    {
+        WebGestureEvent webGestureEvent;
         webGestureEvent.type = WebInputEvent::GestureTapDown;
         webGestureEvent.data.tapDown.width = 10;
         webGestureEvent.data.tapDown.height = 10;

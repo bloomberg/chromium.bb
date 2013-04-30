@@ -176,6 +176,10 @@ PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const W
         // FIXME: PlatformGestureEvent deltaX is overloaded - wkb.ug/93123
         m_deltaX = static_cast<int>(e.data.tap.tapCount);
         break;
+    case WebInputEvent::GestureTapUnconfirmed:
+        m_type = PlatformEvent::GestureTapUnconfirmed;
+        m_area = expandedIntSize(FloatSize(e.data.tap.width / scale, e.data.tap.height / scale));
+        break;
     case WebInputEvent::GestureTapDown:
         m_type = PlatformEvent::GestureTapDown;
         m_area = expandedIntSize(FloatSize(e.data.tapDown.width / scale, e.data.tapDown.height / scale));

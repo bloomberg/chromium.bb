@@ -54,6 +54,7 @@ public:
         GestureScrollUpdate,
         GestureScrollUpdateWithoutPropagation,
         GestureTap,
+        GestureTapUnconfirmed,
         GestureTapDown,
         GestureTapDownCancel,
         GestureTwoFingerTap,

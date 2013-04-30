@@ -1244,6 +1244,14 @@ void EventSender::gestureEvent(WebInputEvent::Type type, const CppArgumentList& 
         event.x = point.x;
         event.y = point.y;
         break;
+    case WebInputEvent::GestureTapUnconfirmed:
+        if (arguments.size() >= 3)
+            event.data.tap.tapCount = static_cast<float>(arguments[2].toDouble());
+        else
+          event.data.tap.tapCount = 1;
+        event.x = point.x;
+        event.y = point.y;
+        break;
     case WebInputEvent::GestureTapDown:
         event.x = point.x;
         event.y = point.y;

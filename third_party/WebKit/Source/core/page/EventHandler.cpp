@@ -2408,6 +2408,7 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
     case PlatformEvent::GesturePinchEnd:
     case PlatformEvent::GesturePinchUpdate:
     case PlatformEvent::GestureTapDownCancel:
+    case PlatformEvent::GestureTapUnconfirmed:
         break;
     default:
         ASSERT_NOT_REACHED();
