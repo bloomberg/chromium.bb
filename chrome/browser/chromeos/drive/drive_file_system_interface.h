@@ -26,6 +26,13 @@ class ResourceMetadata;
 
 typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 
+// File type on the drive file system can be either a regular file or
+// a hosted document.
+enum DriveFileType {
+  REGULAR_FILE,
+  HOSTED_DOCUMENT,
+};
+
 // Information about search result returned by Search Async callback.
 // This is data needed to create a file system entry that will be used by file
 // browser.

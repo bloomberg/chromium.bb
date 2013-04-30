@@ -60,13 +60,6 @@ class DirectoryFetchInfo {
   const int64 changestamp_;
 };
 
-// File type on the drive file system can be either a regular file or
-// a hosted document.
-enum DriveFileType {
-  REGULAR_FILE,
-  HOSTED_DOCUMENT,
-};
-
 // Callback similar to FileOperationCallback but with a given |file_path|.
 // Used for operations that change a file path like moving files.
 typedef base::Callback<void(FileError error,
