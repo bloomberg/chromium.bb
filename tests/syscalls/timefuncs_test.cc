@@ -10,16 +10,16 @@
 */
 
 
-#include <time.h>       // For nanosleep.
-#include <sys/time.h>   // For gettimeofday.
-#include <sys/times.h>  // For clock which uses times
-
+#include <errno.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/time.h>   // For gettimeofday.
+#include <sys/times.h>  // For clock which uses times
+#include <time.h>       // For nanosleep.
 #include <unistd.h>
-#include <errno.h>
 
-#include "native_client/src/include/nacl/nacl_inttypes.h"
+#include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 // #include "native_client/tests/syscalls/test.h"
@@ -183,8 +183,8 @@ int TestNanoSleep(struct timespec *t_suspend) {
     printf("Error: Elapsed time too short!"
            " t_elapsed.tv_sec=%"NACL_PRIdNACL_TIME" "
            " t_suspend->tv_sec=%"NACL_PRIdNACL_TIME" "
-           " t_elapsed.tv_usec=%"NACL_PRId64" "
-           " t_suspend->tv_nsec=%"NACL_PRId64" \n",
+           " t_elapsed.tv_usec=%"PRId64" "
+           " t_suspend->tv_nsec=%"PRId64" \n",
            t_elapsed.tv_sec, t_suspend->tv_sec,
            (int64_t) t_elapsed.tv_usec, (int64_t) t_suspend->tv_nsec);
   }

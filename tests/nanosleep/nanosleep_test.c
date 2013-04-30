@@ -4,15 +4,16 @@
  * found in the LICENSE file.
  */
 
+#include <errno.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
-#include <time.h>
-#include <sys/types.h>
 #include <sys/time.h>
+#include <sys/types.h>
+#include <time.h>
+#include <unistd.h>
 
-#include "native_client/src/include/nacl/nacl_inttypes.h"
+#include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 /*

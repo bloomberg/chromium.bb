@@ -3164,7 +3164,6 @@ if not nacl_env.Bit('nacl_glibc'):
 nacl_env.Append(
     BUILD_SCONSCRIPTS = [
     ####  ALPHABETICALLY SORTED ####
-    'src/include/nacl/nacl.scons',
     'src/shared/gio/nacl.scons',
     'src/shared/imc/nacl.scons',
     'src/shared/ldr/nacl.scons',
@@ -3568,7 +3567,6 @@ AddImplicitLibs(nacl_irt_env)
 
 nacl_irt_env.Append(
     BUILD_SCONSCRIPTS = [
-        'src/include/nacl/nacl.scons',
         'src/shared/gio/nacl.scons',
         'src/shared/platform/nacl.scons',
         'src/shared/srpc/nacl.scons',

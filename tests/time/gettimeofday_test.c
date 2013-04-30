@@ -4,15 +4,16 @@
  * found in the LICENSE file.
  */
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
 #include <sys/time.h>
+#include <sys/types.h>
 #include <time.h>
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
+#include <unistd.h>
 
-#include "native_client/src/include/nacl/nacl_inttypes.h"
+#include "native_client/src/trusted/service_runtime/include/machine/_types.h"
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 /*
  * The mocking of gettimeofday is only useful for testing the libc
