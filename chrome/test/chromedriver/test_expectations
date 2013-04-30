@@ -13,8 +13,6 @@ import fnmatch
 _REVISION_NEGATIVE_FILTER = {}
 _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'AlertsTest.*',
-    'PerformanceLoggingTest.*',
-    'ChromeOptionsFunctionalTest.canStartChromeWithCustomOptions',
     'AuthenticatedPageLoadingTest.*',
     'AvailableLogsTest.browserLogShouldBeEnabledByDefault',
     'AvailableLogsTest.clientLogShouldBeEnabledByDefault',
@@ -29,11 +27,8 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'ClickScrollingTest.testShouldNotBeAbleToClickElementThatIsOutOfViewInANonScrollableFrame',
     'ClickScrollingTest.testShouldNotScrollIfAlreadyScrolledAndElementIsInView',
     'ClickTest.testCanClickAnImageMapArea',
-    'ClickTest.testCanClickOnALinkThatContainsEmbeddedBlockElements',
     'CombinedInputActionsTest.testClickingOnFormElements',
-    'CombinedInputActionsTest.testHoldingDownShiftKeyWhileClicking',
     'CoordinatesTest.testShouldScrollPageAndGetCoordinatesOfAnElementThatIsOutOfViewPort',
-    'CorrectEventFiringTest.testShouldEmitOnClickEventsWhenSelectingElements',
     'CorrectEventFiringTest.testShouldFireEventsInTheRightOrder',
     'CorrectEventFiringTest.testShouldFireFocusEventWhenClicking',
     'DragAndDropTest.testDragTooFar',
@@ -60,19 +55,16 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'PageLoadingTest.shouldBeAbleToDisableAcceptOfInsecureSslCertsWithRequiredCapability',
     'PageLoadingTest.testShouldNotWaitIndefinitelyIfAnExternalResourceFailsToLoad',
     'PageLoadingTest.testShouldTimeoutIfAPageTakesTooLongToLoad',
-    'PerformanceLoggingTest.testDisabledProfilingDoesNotLog',
+    # PerformanceLoggingTest is for firefox only.
+    'PerformanceLoggingTest.*',
     'ProxySettingTest.canConfigureProxyWithRequiredCapability',
     'ProxySettingTest.requiredProxyCapabilityShouldHavePriority',
-    'RenderedWebElementTest.testGetCssValueShouldReturnStandardizedColour',
-    'RenderedWebElementTest.testShouldAllowInheritedStylesToBeUsed',
     'RenderedWebElementTest.testShouldHandleNonIntegerPositionAndSize',
-    'RenderedWebElementTest.testShouldPickUpStyleOfAnElement',
     'SessionHandlingTest.callingQuitAfterClosingTheLastWindowIsANoOp',
     # Broken because AddWebStorage.java is broken.
     'SessionStorageTest.*',
     'SqlDatabaseTest.*',
     'TextHandlingTest.testShouldNotReturnLtrMarks',
-    'TextHandlingTest.testShouldReturnEmptyStringWhenTagIsSelfClosing',
     'TextPagesTest.testShouldBeAbleToLoadASimplePageOfText',
     'TextPagesTest.testShouldThrowExceptionWhenAddingCookieToAPageThatIsNotHtml',
     'TypingTest.testNonPrintableCharactersShouldWorkWithContentEditableOrDesignModeSet',
@@ -81,7 +73,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'TypingTest.testTypingIntoAnIFrameWithContentEditableOrDesignModeSet',
     'UnexpectedAlertBehaviorTest.*',
     'VisibilityTest.tooSmallAWindowWithOverflowHiddenIsNotAProblem',
-    'WebElementTest.testElementReturnsOriginDriver',
     'WindowTest.*',
 ]
 _REVISION_NEGATIVE_FILTER['27'] = [] + _REVISION_NEGATIVE_FILTER['HEAD']
@@ -95,21 +86,15 @@ _REVISION_NEGATIVE_FILTER['26'] = [
 
 _OS_NEGATIVE_FILTER = {}
 _OS_NEGATIVE_FILTER['win'] = [
-    # https://code.google.com/p/chromedriver/issues/detail?id=303
-    'CombinedInputActionsTest.testChordControlCutAndPaste',
     # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=282
     'PageLoadingTest.testShouldNotHangIfDocumentOpenCallIsNeverFollowedByDocumentCloseCall',
 ]
-_OS_NEGATIVE_FILTER['linux'] = [
-    # https://code.google.com/p/chromedriver/issues/detail?id=284
-    'TypingTest.testArrowKeysAndPageUpAndDown',
-    'TypingTest.testHomeAndEndAndPageUpAndPageDownKeys',
-    'TypingTest.testNumberpadKeys',
-]
+_OS_NEGATIVE_FILTER['linux'] = []
 _OS_NEGATIVE_FILTER['mac'] = []
 _OS_NEGATIVE_FILTER['android'] = [
     'BasicKeyboardInterfaceTest.*',
     'BasicMouseInterfaceTest.*',
+    'ChromeOptionsFunctionalTest.canStartChromeWithCustomOptions',
     'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrameThatIsOutOfView',
     'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrame',
     'ClickTest.testCanClickOnAnElementWithTopSetToANegativeNumber',
