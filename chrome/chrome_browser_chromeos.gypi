@@ -23,6 +23,7 @@
       'dependencies': [
         # TODO(tbarzic): Cleanup this list.
         'app/policy/cloud_policy_codegen.gyp:policy',
+	'attestation_proto',
         'browser_extensions',
         'browser/performance_monitor/performance_monitor.gyp:performance_monitor',
         'cert_logger_proto',
@@ -893,6 +894,19 @@
       'variables': {
         'proto_in_dir': 'browser/policy/proto/chromeos',
         'proto_out_dir': 'chrome/browser/policy/proto/chromeos',
+      },
+      'includes': [ '../build/protoc.gypi' ]
+    },
+    {
+      # Protobuf compiler / generator for attestation protocol buffers.
+      'target_name': 'attestation_proto',
+      'type': 'static_library',
+      'sources': [
+        'browser/chromeos/attestation/attestation_key_payload.proto',
+      ],
+      'variables': {
+        'proto_in_dir': 'browser/chromeos/attestation',
+        'proto_out_dir': 'chrome/browser/chromeos/attestation',
       },
       'includes': [ '../build/protoc.gypi' ]
     },

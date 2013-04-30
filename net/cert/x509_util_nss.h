@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/time.h"
+#include "net/base/net_export.h"
 #include "net/cert/x509_certificate.h"
 
 class PickleIterator;
@@ -28,7 +29,7 @@ namespace x509_util {
 // number and validity period are given as parameters.  The certificate is
 // signed by |private_key|. The hashing algorithm for the signature is SHA-1.
 // |subject| is a distinguished name defined in RFC4514.
-CERTCertificate* CreateSelfSignedCert(
+NET_EXPORT_PRIVATE CERTCertificate* CreateSelfSignedCert(
     SECKEYPublicKey* public_key,
     SECKEYPrivateKey* private_key,
     const std::string& subject,

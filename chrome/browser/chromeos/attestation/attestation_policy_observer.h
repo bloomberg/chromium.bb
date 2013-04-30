@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/notification_observer.h"
@@ -50,8 +51,6 @@ class AttestationPolicyObserver : public content::NotificationObserver {
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  static const char kEnterpriseMachineKey[];
-
   // Checks attestation policy and starts any necessary work.
   void Start();
 
@@ -68,7 +67,18 @@ class AttestationPolicyObserver : public content::NotificationObserver {
   void UploadCertificate(const std::string& certificate);
 
   // Checks if a certificate has already been uploaded and, if not, upload.
-  void CheckIfUploaded(const std::string& certificate);
+  void CheckIfUploaded(const std::string& certificate,
+                       const std::string& key_payload);
+
+  // Gets the payload associated with the EMK and sends it to |callback|.
+  void GetKeyPayload(base::Callback<void(const std::string&)> callback);
+
+  // Called when a certificate upload operation completes.  On success, |status|
+  // will be true.
+  void OnUploadComplete(bool status);
+
+  // Marks a key as uploaded in the payload proto.
+  void MarkAsUploaded(const std::string& key_payload);
 
   CrosSettings* cros_settings_;
   policy::CloudPolicyClient* policy_client_;
