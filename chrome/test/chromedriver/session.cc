@@ -76,7 +76,7 @@ scoped_ptr<base::DictionaryValue> Session::CreateCapabilities() {
   scoped_ptr<base::DictionaryValue> caps(new base::DictionaryValue());
   caps->SetString("browserName", "chrome");
   caps->SetString("version", chrome->GetVersion());
-  caps->SetString("driverVersion", kChromeDriverVersion);
+  caps->SetString("chrome.chromedriverVersion", kChromeDriverVersion);
   caps->SetString("platform", chrome->GetOperatingSystemName());
   caps->SetBoolean("javascriptEnabled", true);
   caps->SetBoolean("takesScreenshot", true);
