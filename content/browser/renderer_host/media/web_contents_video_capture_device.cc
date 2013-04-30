@@ -212,6 +212,9 @@ class CaptureOracle : public base::RefCountedThreadSafe<CaptureOracle> {
   // Stores the frame number from the last delivered frame.
   int last_delivered_frame_number_;
 
+  // Stores the timestamp of the last delivered frame.
+  base::Time last_delivered_frame_timestamp_;
+
   // Whether capturing is currently allowed. Can toggle back and forth.
   bool is_started_;
 
@@ -256,7 +259,8 @@ class FrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
 // autonomously on some other thread.
 class ContentCaptureSubscription : public content::NotificationObserver {
  public:
-  typedef base::Callback<void(const scoped_refptr<media::VideoFrame>&,
+  typedef base::Callback<void(const base::Time&,
+                              const scoped_refptr<media::VideoFrame>&,
                               const DeliverFrameCallback&)> CaptureCallback;
 
   // Create a subscription. Whenever a manual capture is required, the
@@ -327,6 +331,7 @@ class CaptureMachine : public WebContentsObserver,
   //
   // This may be used as a ContentCaptureSubscription::CaptureCallback.
   void Capture(
+      const base::Time& start_time,
       const scoped_refptr<media::VideoFrame>& target,
       const DeliverFrameCallback& deliver_frame_cb);
 
@@ -372,7 +377,7 @@ class CaptureMachine : public WebContentsObserver,
 
   // Response callback for RenderWidgetHost::CopyFromBackingStore().
   void DidCopyFromBackingStore(
-      base::Time start_time,
+      const base::Time& start_time,
       const scoped_refptr<media::VideoFrame>& target,
       const DeliverFrameCallback& deliver_frame_cb,
       bool success,
@@ -380,7 +385,7 @@ class CaptureMachine : public WebContentsObserver,
 
   // Response callback for RWHVP::CopyFromCompositingSurfaceToVideoFrame().
   void DidCopyFromCompositingSurfaceToVideoFrame(
-      base::Time start_time,
+      const base::Time& start_time,
       const DeliverFrameCallback& deliver_frame_cb,
       bool success);
 
@@ -544,14 +549,27 @@ void CaptureOracle::DidCaptureFrame(
   if (!consumer_ || !is_started_)
     return;  // Capture is stopped.
 
-  // Drop the frame if a frame with a higher frame number was already delivered.
-  if (last_delivered_frame_number_ > frame_number)
-    return;
+  if (success) {
+    // Drop frame if previous frame number is higher or we're trying to deliver
+    // a frame with the same timestamp.
+    if (last_delivered_frame_number_ > frame_number ||
+        last_delivered_frame_timestamp_ == timestamp) {
+      LOG(ERROR) << "Frame with same timestamp or out of order delivery. "
+                 << "Dropping frame.";
+      return;
+    }
 
-  last_delivered_frame_number_ = frame_number;
+    if (last_delivered_frame_timestamp_ > timestamp) {
+      // We should not get here unless time was adjusted backwards.
+      LOG(ERROR) << "Frame with past timestamp (" << timestamp.ToInternalValue()
+                 << ") was delivered";
+    }
 
-  if (success)
+    last_delivered_frame_number_ = frame_number;
+    last_delivered_frame_timestamp_ = timestamp;
+
     consumer_->OnIncomingCapturedVideoFrame(frame, timestamp);
+  }
 }
 
 bool FrameSubscriber::ShouldCaptureFrame(
@@ -635,13 +653,15 @@ void ContentCaptureSubscription::Observe(
   base::Closure copy_done_callback;
   scoped_refptr<media::VideoFrame> frame;
   RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback deliver_frame_cb;
-  if (paint_subscriber_.ShouldCaptureFrame(base::Time::Now(),
-                                           &frame, &deliver_frame_cb)) {
+  const base::Time start_time = base::Time::Now();
+  if (paint_subscriber_.ShouldCaptureFrame(start_time,
+                                           &frame,
+                                           &deliver_frame_cb)) {
     // This message happens just before paint. If we post a task to do the copy,
     // it should run soon after the paint.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(capture_callback_, frame, deliver_frame_cb));
+        base::Bind(capture_callback_, start_time, frame, deliver_frame_cb));
   }
 }
 
@@ -651,9 +671,12 @@ void ContentCaptureSubscription::OnTimer() {
 
   scoped_refptr<media::VideoFrame> frame;
   RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback deliver_frame_cb;
-  if (timer_subscriber_.ShouldCaptureFrame(base::Time::Now(),
-                                           &frame, &deliver_frame_cb)) {
-    capture_callback_.Run(frame, deliver_frame_cb);
+
+  const base::Time start_time = base::Time::Now();
+  if (timer_subscriber_.ShouldCaptureFrame(start_time,
+                                           &frame,
+                                           &deliver_frame_cb)) {
+    capture_callback_.Run(start_time, frame, deliver_frame_cb);
   }
 }
 
@@ -792,6 +815,7 @@ CaptureMachine::~CaptureMachine() {
 }
 
 void CaptureMachine::Capture(
+    const base::Time& start_time,
     const scoped_refptr<media::VideoFrame>& target,
     const DeliverFrameCallback& deliver_frame_cb) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -819,7 +843,6 @@ void CaptureMachine::Capture(
         view_size.width() * view_size.height() / 1024);
   }
 
-  base::Time start_time = base::Time::Now();
   if (!view->IsSurfaceAvailableForCopy()) {
     // Fallback to the more expensive renderer-side copy if the surface and
     // backing store are not accessible.
@@ -901,7 +924,7 @@ RenderWidgetHost* CaptureMachine::GetTarget() {
 }
 
 void CaptureMachine::DidCopyFromBackingStore(
-    base::Time start_time,
+    const base::Time& start_time,
     const scoped_refptr<media::VideoFrame>& target,
     const DeliverFrameCallback& deliver_frame_cb,
     bool success,
@@ -914,16 +937,16 @@ void CaptureMachine::DidCopyFromBackingStore(
     TRACE_EVENT_ASYNC_STEP0("mirroring", "Capture", target.get(), "Render");
     render_task_runner_->PostTask(FROM_HERE, base::Bind(
         &RenderVideoFrame, bitmap, target,
-        base::Bind(deliver_frame_cb, now)));
+        base::Bind(deliver_frame_cb, start_time)));
   } else {
     // Capture can fail due to transient issues, so just skip this frame.
     DVLOG(1) << "CopyFromBackingStore failed; skipping frame.";
-    deliver_frame_cb.Run(now, false);
+    deliver_frame_cb.Run(start_time, false);
   }
 }
 
 void CaptureMachine::DidCopyFromCompositingSurfaceToVideoFrame(
-    base::Time start_time,
+    const base::Time& start_time,
     const DeliverFrameCallback& deliver_frame_cb,
     bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -935,7 +958,7 @@ void CaptureMachine::DidCopyFromCompositingSurfaceToVideoFrame(
     // Capture can fail due to transient issues, so just skip this frame.
     DVLOG(1) << "CopyFromCompositingSurface failed; skipping frame.";
   }
-  deliver_frame_cb.Run(now, success);
+  deliver_frame_cb.Run(start_time, success);
 }
 
 void CaptureMachine::RenewFrameSubscription() {
