@@ -484,9 +484,6 @@ public:
     LayoutSize minimumSizeForResizing() const;
     void setMinimumSizeForResizing(const LayoutSize&);
 
-    // Use Document::registerForMediaVolumeCallbacks() to subscribe to this
-    virtual void mediaVolumeDidChange() { }
-
     virtual void didBecomeFullscreenElement() { }
     virtual void willStopBeingFullscreenElement() { }
 

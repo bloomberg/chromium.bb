@@ -324,7 +324,6 @@ public:
     virtual int spellCheckerDocumentTag() { return -1; }
 
     virtual bool selectWordBeforeMenuEvent() { return false; }
-    virtual bool isEditable() { return false; }
 
     virtual bool shouldBeginEditing(Range*) { return false; }
     virtual bool shouldEndEditing(Range*) { return false; }

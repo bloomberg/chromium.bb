@@ -22,7 +22,6 @@
 #define Page_h
 
 #include "core/dom/ViewportArguments.h"
-#include "core/editing/FindOptions.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/page/LayoutMilestones.h"
 #include "core/page/PageVisibilityState.h"
@@ -83,8 +82,6 @@ class StorageNamespace;
 class ValidationMessageClient;
 
 typedef uint64_t LinkHash;
-
-enum FindDirection { FindDirectionForward, FindDirectionBackward };
 
 float deviceScaleFactor(Frame*);
 
@@ -191,51 +188,19 @@ public:
 
     UseCounter* useCounter() { return &m_UseCounter; }
 
-    enum ViewMode {
-        ViewModeInvalid,
-        ViewModeWindowed,
-        ViewModeFloating,
-        ViewModeFullscreen,
-        ViewModeMaximized,
-        ViewModeMinimized
-    };
-    static ViewMode stringToViewMode(const String&);
-
-    ViewMode viewMode() const { return m_viewMode; }
-    void setViewMode(ViewMode);
-
     void setTabKeyCyclesThroughElements(bool b) { m_tabKeyCyclesThroughElements = b; }
     bool tabKeyCyclesThroughElements() const { return m_tabKeyCyclesThroughElements; }
 
-    bool findString(const String&, FindOptions);
-    // FIXME: Switch callers over to the FindOptions version and retire this one.
-    bool findString(const String&, TextCaseSensitivity, FindDirection, bool shouldWrap);
-
-    PassRefPtr<Range> rangeOfString(const String&, Range*, FindOptions);
-
     void unmarkAllTextMatches();
-
-    const VisibleSelection& selection() const;
 
     void setDefersLoading(bool);
     bool defersLoading() const { return m_defersLoading; }
-
-    void clearUndoRedoOperations();
-
-    bool inLowQualityImageInterpolationMode() const;
-    void setInLowQualityImageInterpolationMode(bool = true);
-
-    float mediaVolume() const { return m_mediaVolume; }
-    void setMediaVolume(float);
 
     void setPageScaleFactor(float scale, const IntPoint& origin);
     float pageScaleFactor() const { return m_pageScaleFactor; }
 
     float deviceScaleFactor() const { return m_deviceScaleFactor; }
     void setDeviceScaleFactor(float);
-
-    bool shouldSuppressScrollbarAnimations() const { return m_suppressScrollbarAnimations; }
-    void setShouldSuppressScrollbarAnimations(bool suppressAnimations);
 
     // Page and FrameView both store a Pagination value. Page::pagination() is set only by API,
     // and FrameView::pagination() is set only by CSS. Page::pagination() will affect all
@@ -244,41 +209,20 @@ public:
     const Pagination& pagination() const { return m_pagination; }
     void setPagination(const Pagination&);
 
-    unsigned pageCount() const;
-
-    // Notifications when the Page starts and stops being presented via a native window.
-    void didMoveOnscreen();
-    void willMoveOffscreen();
-    bool isOnscreen() const { return m_isOnscreen; }
-
     // Notification that this Page was moved into or out of a native window.
     void setIsInWindow(bool);
     bool isInWindow() const { return m_isInWindow; }
-
-    void suspendScriptedAnimations();
-    void resumeScriptedAnimations();
-    bool scriptedAnimationsSuspended() const { return m_scriptedAnimationsSuspended; }
 
     void userStyleSheetLocationChanged();
     const String& userStyleSheet() const;
 
     void dnsPrefetchingStateChanged();
 
-    static void removeAllVisitedLinks();
-
     static void allVisitedStateChanged(PageGroup*);
     static void visitedStateChanged(PageGroup*, LinkHash visitedHash);
 
     StorageNamespace* sessionStorage(bool optionalCreate = true);
     void setSessionStorage(PassRefPtr<StorageNamespace>);
-
-    void setCustomHTMLTokenizerTimeDelay(double);
-    bool hasCustomHTMLTokenizerTimeDelay() const { return m_customHTMLTokenizerTimeDelay != -1; }
-    double customHTMLTokenizerTimeDelay() const { ASSERT(m_customHTMLTokenizerTimeDelay != -1); return m_customHTMLTokenizerTimeDelay; }
-
-    void setCustomHTMLTokenizerChunkSize(int);
-    bool hasCustomHTMLTokenizerChunkSize() const { return m_customHTMLTokenizerChunkSize != -1; }
-    int customHTMLTokenizerChunkSize() const { ASSERT(m_customHTMLTokenizerChunkSize != -1); return m_customHTMLTokenizerChunkSize; }
 
     void setMemoryCacheClientCallsEnabled(bool);
     bool areMemoryCacheClientCallsEnabled() const { return m_areMemoryCacheClientCallsEnabled; }
@@ -288,9 +232,6 @@ public:
     // recursive frameset pages can quickly bring the program to its knees
     // with exponential growth in the number of frames.
     static const int maxNumberOfFrames = 1000;
-
-    void setEditable(bool isEditable) { m_isEditable = isEditable; }
-    bool isEditable() { return m_isEditable; }
 
     PageVisibilityState visibilityState() const;
     void setVisibilityState(PageVisibilityState, bool);
@@ -310,16 +251,6 @@ public:
 #endif
 
     AlternativeTextClient* alternativeTextClient() const { return m_alternativeTextClient; }
-
-    bool hasSeenPlugin(const String& serviceType) const;
-    bool hasSeenAnyPlugin() const;
-    void sawPlugin(const String& serviceType);
-    void resetSeenPlugins();
-
-    bool hasSeenMediaEngine(const String& engineName) const;
-    bool hasSeenAnyMediaEngine() const;
-    void sawMediaEngine(const String& engineName);
-    void resetSeenMediaEngines();
 
     PageConsole* console() { return m_console.get(); }
 
@@ -375,15 +306,10 @@ private:
     bool m_defersLoading;
     unsigned m_defersLoadingCallCount;
 
-    bool m_inLowQualityInterpolationMode;
-    bool m_cookieEnabled;
     bool m_areMemoryCacheClientCallsEnabled;
-    float m_mediaVolume;
 
     float m_pageScaleFactor;
     float m_deviceScaleFactor;
-
-    bool m_suppressScrollbarAnimations;
 
     Pagination m_pagination;
 
@@ -393,19 +319,12 @@ private:
 
     RefPtr<PageGroup> m_group;
 
-    double m_customHTMLTokenizerTimeDelay;
-    int m_customHTMLTokenizerChunkSize;
-
     bool m_canStartMedia;
 
     RefPtr<StorageNamespace> m_sessionStorage;
 
-    ViewMode m_viewMode;
-
     double m_timerAlignmentInterval;
 
-    bool m_isEditable;
-    bool m_isOnscreen;
     bool m_isInWindow;
 
     PageVisibilityState m_visibilityState;
@@ -422,11 +341,7 @@ private:
 #endif
     AlternativeTextClient* m_alternativeTextClient;
 
-    bool m_scriptedAnimationsSuspended;
     OwnPtr<PageConsole> m_console;
-
-    HashSet<String> m_seenPlugins;
-    HashSet<String> m_seenMediaEngines;
 };
 
 } // namespace WebCore

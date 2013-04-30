@@ -2901,11 +2901,6 @@ void FrameLoader::dispatchDidCommitLoad()
 
     m_client->dispatchDidCommitLoad();
 
-    if (isLoadingMainFrame()) {
-        m_frame->page()->resetSeenPlugins();
-        m_frame->page()->resetSeenMediaEngines();
-    }
-
     InspectorInstrumentation::didCommitLoad(m_frame, m_documentLoader.get());
 
     if (m_frame->page()->mainFrame() == m_frame)

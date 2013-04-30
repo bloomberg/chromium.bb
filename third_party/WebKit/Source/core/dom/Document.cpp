@@ -3826,23 +3826,6 @@ void Document::documentWillBecomeInactive()
         renderView()->setIsInWindow(false);
 }
 
-void Document::mediaVolumeDidChange()
-{
-    HashSet<Element*>::iterator end = m_mediaVolumeCallbackElements.end();
-    for (HashSet<Element*>::iterator i = m_mediaVolumeCallbackElements.begin(); i != end; ++i)
-        (*i)->mediaVolumeDidChange();
-}
-
-void Document::registerForMediaVolumeCallbacks(Element* e)
-{
-    m_mediaVolumeCallbackElements.add(e);
-}
-
-void Document::unregisterForMediaVolumeCallbacks(Element* e)
-{
-    m_mediaVolumeCallbackElements.remove(e);
-}
-
 void Document::registerForCaptionPreferencesChangedCallbacks(Element* e)
 {
     if (page())
@@ -5196,10 +5179,8 @@ int Document::requestAnimationFrame(PassRefPtr<RequestAnimationFrameCallback> ca
 {
     if (!m_scriptedAnimationController) {
         m_scriptedAnimationController = ScriptedAnimationController::create(this);
-        // It's possible that the Page may have suspended scripted animations before
-        // we were created. We need to make sure that we don't start up the animation
-        // controller on a background tab, for example.
-        if (!page() || page()->scriptedAnimationsSuspended())
+        // We need to make sure that we don't start up the animation controller on a background tab, for example.
+        if (!page())
             m_scriptedAnimationController->suspend();
     }
 
@@ -5580,7 +5561,6 @@ void Document::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_annotatedRegions, "annotatedRegions");
     info.addMember(m_cssCanvasElements, "cssCanvasElements");
     info.addMember(m_iconURLs, "iconURLs");
-    info.addMember(m_mediaVolumeCallbackElements, "mediaVolumeCallbackElements");
     info.addMember(m_elementsByAccessKey, "elementsByAccessKey");
     info.addMember(m_eventQueue, "eventQueue");
     info.addMember(m_mediaCanStartListeners, "mediaCanStartListeners");

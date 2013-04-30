@@ -660,9 +660,6 @@ bool Node::isContentRichlyEditable()
 
 bool Node::rendererIsEditable(EditableLevel editableLevel, UserSelectAllTreatment treatment) const
 {
-    if (document()->frame() && document()->frame()->page() && document()->frame()->page()->isEditable() && !containingShadowRoot())
-        return true;
-
     if (isPseudoElement())
         return false;
 

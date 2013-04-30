@@ -379,8 +379,6 @@ private:
     virtual void suspend(ReasonForSuspension);
     virtual void resume();
     virtual void stop();
-    
-    virtual void mediaVolumeDidChange();
 
     virtual void updateDisplayState() { }
     

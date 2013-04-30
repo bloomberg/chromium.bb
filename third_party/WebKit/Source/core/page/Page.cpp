@@ -31,7 +31,6 @@
 #include "core/dom/VisitedLinkState.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/editing/Editor.h"
-#include "core/editing/FrameSelection.h"
 #include "core/history/BackForwardController.h"
 #include "core/history/HistoryItem.h"
 #include "core/html/HTMLElement.h"
@@ -137,23 +136,14 @@ Page::Page(PageClients& pageClients)
     , m_tabKeyCyclesThroughElements(true)
     , m_defersLoading(false)
     , m_defersLoadingCallCount(0)
-    , m_inLowQualityInterpolationMode(false)
-    , m_cookieEnabled(true)
     , m_areMemoryCacheClientCallsEnabled(true)
-    , m_mediaVolume(1)
     , m_pageScaleFactor(1)
     , m_deviceScaleFactor(1)
-    , m_suppressScrollbarAnimations(false)
     , m_didLoadUserStyleSheet(false)
     , m_userStyleSheetModificationTime(0)
     , m_group(0)
-    , m_customHTMLTokenizerTimeDelay(-1)
-    , m_customHTMLTokenizerChunkSize(-1)
     , m_canStartMedia(true)
-    , m_viewMode(ViewModeWindowed)
     , m_timerAlignmentInterval(DOMTimer::visiblePageAlignmentInterval())
-    , m_isEditable(false)
-    , m_isOnscreen(true)
     , m_isInWindow(true)
     , m_visibilityState(PageVisibilityStateVisible)
     , m_layoutMilestones(0)
@@ -162,7 +152,6 @@ Page::Page(PageClients& pageClients)
     , m_isPainting(false)
 #endif
     , m_alternativeTextClient(pageClients.alternativeTextClient)
-    , m_scriptedAnimationsSuspended(false)
     , m_console(PageConsole::create(this))
 {
     ASSERT(m_editorClient);
@@ -208,7 +197,6 @@ Page::~Page()
 #ifndef NDEBUG
     pageCounter.decrement();
 #endif
-
 }
 
 ArenaSize Page::renderTreeSize() const
@@ -262,45 +250,6 @@ PassRefPtr<ClientRectList> Page::nonFastScrollableRects(const Frame* frame)
     for (size_t i = 0; i < rects.size(); ++i)
         quads[i] = FloatRect(rects[i]);
     return ClientRectList::create(quads);
-}
-
-struct ViewModeInfo {
-    const char* name;
-    Page::ViewMode type;
-};
-static const int viewModeMapSize = 5;
-static ViewModeInfo viewModeMap[viewModeMapSize] = {
-    {"windowed", Page::ViewModeWindowed},
-    {"floating", Page::ViewModeFloating},
-    {"fullscreen", Page::ViewModeFullscreen},
-    {"maximized", Page::ViewModeMaximized},
-    {"minimized", Page::ViewModeMinimized}
-};
-
-Page::ViewMode Page::stringToViewMode(const String& text)
-{
-    for (int i = 0; i < viewModeMapSize; ++i) {
-        if (text == viewModeMap[i].name)
-            return viewModeMap[i].type;
-    }
-    return Page::ViewModeInvalid;
-}
-
-void Page::setViewMode(ViewMode viewMode)
-{
-    if (viewMode == m_viewMode || viewMode == ViewModeInvalid)
-        return;
-
-    m_viewMode = viewMode;
-
-    if (!m_mainFrame)
-        return;
-
-    if (m_mainFrame->view())
-        m_mainFrame->view()->forceLayout();
-
-    if (m_mainFrame->document())
-        m_mainFrame->document()->styleResolverChanged(RecalcStyleImmediately);
 }
 
 void Page::setMainFrame(PassRefPtr<Frame> mainFrame)
@@ -501,68 +450,6 @@ static Frame* incrementFrame(Frame* curr, bool forward, bool wrapFlag)
         : curr->tree()->traversePreviousWithWrap(wrapFlag);
 }
 
-bool Page::findString(const String& target, TextCaseSensitivity caseSensitivity, FindDirection direction, bool shouldWrap)
-{
-    return findString(target, (caseSensitivity == TextCaseInsensitive ? CaseInsensitive : 0) | (direction == FindDirectionBackward ? Backwards : 0) | (shouldWrap ? WrapAround : 0));
-}
-
-bool Page::findString(const String& target, FindOptions options)
-{
-    if (target.isEmpty() || !mainFrame())
-        return false;
-
-    bool shouldWrap = options & WrapAround;
-    Frame* frame = focusController()->focusedOrMainFrame();
-    Frame* startFrame = frame;
-    do {
-        if (frame->editor()->findString(target, (options & ~WrapAround) | StartInSelection)) {
-            if (frame != startFrame)
-                startFrame->selection()->clear();
-            focusController()->setFocusedFrame(frame);
-            return true;
-        }
-        frame = incrementFrame(frame, !(options & Backwards), shouldWrap);
-    } while (frame && frame != startFrame);
-
-    // Search contents of startFrame, on the other side of the selection that we did earlier.
-    // We cheat a bit and just research with wrap on
-    if (shouldWrap && !startFrame->selection()->isNone()) {
-        bool found = startFrame->editor()->findString(target, options | WrapAround | StartInSelection);
-        focusController()->setFocusedFrame(frame);
-        return found;
-    }
-
-    return false;
-}
-
-PassRefPtr<Range> Page::rangeOfString(const String& target, Range* referenceRange, FindOptions options)
-{
-    if (target.isEmpty() || !mainFrame())
-        return 0;
-
-    if (referenceRange && referenceRange->ownerDocument()->page() != this)
-        return 0;
-
-    bool shouldWrap = options & WrapAround;
-    Frame* frame = referenceRange ? referenceRange->ownerDocument()->frame() : mainFrame();
-    Frame* startFrame = frame;
-    do {
-        if (RefPtr<Range> resultRange = frame->editor()->rangeOfString(target, frame == startFrame ? referenceRange : 0, options & ~WrapAround))
-            return resultRange.release();
-
-        frame = incrementFrame(frame, !(options & Backwards), shouldWrap);
-    } while (frame && frame != startFrame);
-
-    // Search contents of startFrame, on the other side of the reference range that we did earlier.
-    // We cheat a bit and just search again with wrap on.
-    if (shouldWrap && referenceRange) {
-        if (RefPtr<Range> resultRange = startFrame->editor()->rangeOfString(target, referenceRange, options | WrapAround | StartInSelection))
-            return resultRange.release();
-    }
-
-    return 0;
-}
-
 void Page::unmarkAllTextMatches()
 {
     if (!mainFrame())
@@ -575,11 +462,6 @@ void Page::unmarkAllTextMatches()
     } while (frame);
 }
 
-const VisibleSelection& Page::selection() const
-{
-    return focusController()->focusedOrMainFrame()->selection()->selection();
-}
-
 void Page::setDefersLoading(bool defers)
 {
     ASSERT(!m_defersLoadingCallCount);
@@ -589,35 +471,6 @@ void Page::setDefersLoading(bool defers)
     m_defersLoading = defers;
     for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext())
         frame->loader()->setDefersLoading(defers);
-}
-
-void Page::clearUndoRedoOperations()
-{
-    m_editorClient->clearUndoRedoOperations();
-}
-
-bool Page::inLowQualityImageInterpolationMode() const
-{
-    return m_inLowQualityInterpolationMode;
-}
-
-void Page::setInLowQualityImageInterpolationMode(bool mode)
-{
-    m_inLowQualityInterpolationMode = mode;
-}
-
-void Page::setMediaVolume(float volume)
-{
-    if (volume < 0 || volume > 1)
-        return;
-
-    if (m_mediaVolume == volume)
-        return;
-
-    m_mediaVolume = volume;
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext()) {
-        frame->document()->mediaVolumeDidChange();
-    }
 }
 
 void Page::setPageScaleFactor(float scale, const IntPoint& origin)
@@ -656,46 +509,6 @@ void Page::setDeviceScaleFactor(float scaleFactor)
         mainFrame()->deviceOrPageScaleFactorChanged();
 }
 
-void Page::setShouldSuppressScrollbarAnimations(bool suppressAnimations)
-{
-    if (suppressAnimations == m_suppressScrollbarAnimations)
-        return;
-
-    if (!suppressAnimations) {
-        // If animations are not going to be suppressed anymore, then there is nothing to do here but
-        // change the cached value.
-        m_suppressScrollbarAnimations = suppressAnimations;
-        return;
-    }
-
-    // On the other hand, if we are going to start suppressing animations, then we need to make sure we
-    // finish any current scroll animations first.
-    FrameView* view = mainFrame()->view();
-    if (!view)
-        return;
-
-    view->finishCurrentScrollAnimations();
-
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext()) {
-        FrameView* frameView = frame->view();
-        if (!frameView)
-            continue;
-
-        const HashSet<ScrollableArea*>* scrollableAreas = frameView->scrollableAreas();
-        if (!scrollableAreas)
-            continue;
-
-        for (HashSet<ScrollableArea*>::const_iterator it = scrollableAreas->begin(), end = scrollableAreas->end(); it != end; ++it) {
-            ScrollableArea* scrollableArea = *it;
-            ASSERT(scrollableArea->scrollbarsCanBeActive());
-
-            scrollableArea->finishCurrentScrollAnimations();
-        }
-    }
-
-    m_suppressScrollbarAnimations = suppressAnimations;
-}
-
 void Page::setPagination(const Pagination& pagination)
 {
     if (m_pagination == pagination)
@@ -704,43 +517,6 @@ void Page::setPagination(const Pagination& pagination)
     m_pagination = pagination;
 
     setNeedsRecalcStyleInAllFrames();
-}
-
-unsigned Page::pageCount() const
-{
-    if (m_pagination.mode == Pagination::Unpaginated)
-        return 0;
-
-    FrameView* frameView = mainFrame()->view();
-    if (frameView->needsLayout())
-        frameView->layout();
-
-    RenderView* contentRenderer = mainFrame()->contentRenderer();
-    return contentRenderer ? contentRenderer->columnCount(contentRenderer->columnInfo()) : 0;
-}
-
-void Page::didMoveOnscreen()
-{
-    m_isOnscreen = true;
-
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext()) {
-        if (FrameView* frameView = frame->view())
-            frameView->didMoveOnscreen();
-    }
-
-    resumeScriptedAnimations();
-}
-
-void Page::willMoveOffscreen()
-{
-    m_isOnscreen = false;
-
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext()) {
-        if (FrameView* frameView = frame->view())
-            frameView->willMoveOffscreen();
-    }
-
-    suspendScriptedAnimations();
 }
 
 void Page::setIsInWindow(bool isInWindow)
@@ -753,24 +529,6 @@ void Page::setIsInWindow(bool isInWindow)
     for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext()) {
         if (FrameView* frameView = frame->view())
             frameView->setIsInWindow(isInWindow);
-    }
-}
-
-void Page::suspendScriptedAnimations()
-{
-    m_scriptedAnimationsSuspended = true;
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext()) {
-        if (frame->document())
-            frame->document()->suspendScriptedAnimationControllerCallbacks();
-    }
-}
-
-void Page::resumeScriptedAnimations()
-{
-    m_scriptedAnimationsSuspended = false;
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext()) {
-        if (frame->document())
-            frame->document()->resumeScriptedAnimationControllerCallbacks();
     }
 }
 
@@ -850,24 +608,6 @@ StorageNamespace* Page::sessionStorage(bool optionalCreate)
 void Page::setSessionStorage(PassRefPtr<StorageNamespace> newStorage)
 {
     m_sessionStorage = newStorage;
-}
-
-void Page::setCustomHTMLTokenizerTimeDelay(double customHTMLTokenizerTimeDelay)
-{
-    if (customHTMLTokenizerTimeDelay < 0) {
-        m_customHTMLTokenizerTimeDelay = -1;
-        return;
-    }
-    m_customHTMLTokenizerTimeDelay = customHTMLTokenizerTimeDelay;
-}
-
-void Page::setCustomHTMLTokenizerChunkSize(int customHTMLTokenizerChunkSize)
-{
-    if (customHTMLTokenizerChunkSize < 0) {
-        m_customHTMLTokenizerChunkSize = -1;
-        return;
-    }
-    m_customHTMLTokenizerChunkSize = customHTMLTokenizerChunkSize;
 }
 
 void Page::setMemoryCacheClientCallsEnabled(bool enabled)
@@ -1071,46 +811,6 @@ void Page::addRelevantUnpaintedObject(RenderObject* object, const LayoutRect& ob
     m_relevantUnpaintedRegion.unite(pixelSnappedIntRect(objectPaintRect));
 }
 
-bool Page::hasSeenAnyPlugin() const
-{
-    return !m_seenPlugins.isEmpty();
-}
-
-bool Page::hasSeenPlugin(const String& serviceType) const
-{
-    return m_seenPlugins.contains(serviceType);
-}
-
-void Page::sawPlugin(const String& serviceType)
-{
-    m_seenPlugins.add(serviceType);
-}
-
-void Page::resetSeenPlugins()
-{
-    m_seenPlugins.clear();
-}
-
-bool Page::hasSeenAnyMediaEngine() const
-{
-    return !m_seenMediaEngines.isEmpty();
-}
-
-bool Page::hasSeenMediaEngine(const String& engineDescription) const
-{
-    return m_seenMediaEngines.contains(engineDescription);
-}
-
-void Page::sawMediaEngine(const String& engineDescription)
-{
-    m_seenMediaEngines.add(engineDescription);
-}
-
-void Page::resetSeenMediaEngines()
-{
-    m_seenMediaEngines.clear();
-}
-
 void Page::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::Page);
@@ -1138,8 +838,6 @@ void Page::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_topRelevantPaintedRegion, "relevantPaintedRegion");
     info.addMember(m_bottomRelevantPaintedRegion, "relevantPaintedRegion");
     info.addMember(m_relevantUnpaintedRegion, "relevantUnpaintedRegion");
-    info.addMember(m_seenPlugins, "seenPlugins");
-    info.addMember(m_seenMediaEngines, "seenMediaEngines");
 
     info.ignoreMember(m_alternativeTextClient);
     info.ignoreMember(m_editorClient);

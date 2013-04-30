@@ -39,7 +39,6 @@
 
 namespace WebCore {
 
-static const double cInterpolationCutoff = 800. * 800.;
 static const double cLowQualityTimeThreshold = 0.500; // 500 ms
 
 static ImageQualityController* gImageQualityController = 0;
@@ -181,13 +180,6 @@ bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, R
         // There is no scale in effect. If we had a scale in effect before, we can just remove this object from the list.
         removeLayer(object, innerMap, layer);
         return false;
-    }
-
-    // There is no need to hash scaled images that always use low quality mode when the page demands it. This is the iChat case.
-    if (object->document()->page()->inLowQualityImageInterpolationMode()) {
-        double totalPixels = static_cast<double>(image->width()) * static_cast<double>(image->height());
-        if (totalPixels > cInterpolationCutoff)
-            return true;
     }
 
     // If an animated resize is active, paint in low quality and kick the timer ahead.

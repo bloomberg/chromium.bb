@@ -856,14 +856,6 @@ crbug.com/36966 fast/loader/about-blank-hash-kept.html [ Failure ]
 # New test, added http://trac.webkit.org/changeset/55546
 crbug.com/37896 [ Linux Win ] fast/multicol/hit-test-above-or-below.html [ Failure ]
 
-# Needs testRunner.setViewModeMediaFeature()
-crbug.com/40680 fast/media/view-mode-media-feature.html
-crbug.com/40680 fast/media/media-query-list-02.html
-crbug.com/40680 fast/media/media-query-list-03.html
-crbug.com/40680 fast/media/media-query-list-05.html
-crbug.com/40680 fast/media/media-query-list-06.html
-crbug.com/40680 fast/media/media-query-list-07.html
-
 # Caused by http://trac.webkit.org/changeset/56394.
 crbug.com/143475 [ Win ] http/tests/xmlhttprequest/xmlhttprequest-50ms-download-dispatch.html [ Failure Pass Timeout ]
 

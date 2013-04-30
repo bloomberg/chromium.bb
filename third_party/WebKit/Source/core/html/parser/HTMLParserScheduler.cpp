@@ -29,37 +29,18 @@
 #include "core/dom/Document.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/page/FrameView.h"
-#include "core/page/Page.h"
-
-// defaultParserChunkSize is used to define how many tokens the parser will
-// process before checking against parserTimeLimit and possibly yielding.
-// This is a performance optimization to prevent checking after every token.
-static const int defaultParserChunkSize = 4096;
-
-// defaultParserTimeLimit is the seconds the parser will run in one write() call
-// before yielding. Inline <script> execution can cause it to exceed the limit.
-// FIXME: We would like this value to be 0.2.
-static const double defaultParserTimeLimit = 0.500;
 
 namespace WebCore {
 
-static double parserTimeLimit(Page* page)
-{
-    // We're using the poorly named customHTMLTokenizerTimeDelay setting.
-    if (page && page->hasCustomHTMLTokenizerTimeDelay())
-        return page->customHTMLTokenizerTimeDelay();
-    return defaultParserTimeLimit;
-}
+// parserChunkSize is used to define how many tokens the parser will
+// process before checking against parserTimeLimit and possibly yielding.
+// This is a performance optimization to prevent checking after every token.
+const int HTMLParserScheduler::parserChunkSize = 4096;
 
-static int parserChunkSize(Page* page)
-{
-    // FIXME: We may need to divide the value from customHTMLTokenizerChunkSize
-    // by some constant to translate from the "character" based behavior of the
-    // old LegacyHTMLDocumentParser to the token-based behavior of this parser.
-    if (page && page->hasCustomHTMLTokenizerChunkSize())
-        return page->customHTMLTokenizerChunkSize();
-    return defaultParserChunkSize;
-}
+// parserTimeLimit is the seconds the parser will run in one write() call
+// before yielding. Inline <script> execution can cause it to exceed the limit.
+// FIXME: We would like this value to be 0.2.
+const double HTMLParserScheduler::parserTimeLimit = 0.500;
 
 ActiveParserSession::ActiveParserSession(Document* document)
     : m_document(document)
@@ -95,8 +76,6 @@ PumpSession::~PumpSession()
 
 HTMLParserScheduler::HTMLParserScheduler(HTMLDocumentParser* parser)
     : m_parser(parser)
-    , m_parserTimeLimit(parserTimeLimit(m_parser->document()->page()))
-    , m_parserChunkSize(parserChunkSize(m_parser->document()->page()))
     , m_continueNextChunkTimer(this, &HTMLParserScheduler::continueNextChunkTimerFired)
     , m_isSuspendedWithActiveTimer(false)
 {

@@ -128,8 +128,6 @@ public:
     // a faithful representation of the content.
     bool isSoftwareRenderable() const;
 
-    void didMoveOnscreen();
-    void willMoveOffscreen();
     void setIsInWindow(bool);
 
     void resetScrollbars();

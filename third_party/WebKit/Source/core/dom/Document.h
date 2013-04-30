@@ -910,10 +910,6 @@ public:
 
     void documentWillBecomeInactive();
 
-    void registerForMediaVolumeCallbacks(Element*);
-    void unregisterForMediaVolumeCallbacks(Element*);
-    void mediaVolumeDidChange();
-
     void registerForCaptionPreferencesChangedCallbacks(Element*);
     void unregisterForCaptionPreferencesChangedCallbacks(Element*);
     void captionPreferencesChanged();
@@ -1358,7 +1354,6 @@ private:
     bool m_createRenderers;
     Vector<IconURL> m_iconURLs;
 
-    HashSet<Element*> m_mediaVolumeCallbackElements;
     HashSet<Element*> m_captionPreferencesChangedElements;
 
     HashMap<StringImpl*, Element*, CaseFoldingHash> m_elementsByAccessKey;

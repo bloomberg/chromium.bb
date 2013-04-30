@@ -2918,7 +2918,7 @@ void EventHandler::fakeMouseMoveEventTimerFired(Timer<EventHandler>* timer)
     if (!view)
         return;
 
-    if (!m_frame->page() || !m_frame->page()->isOnscreen() || !m_frame->page()->focusController()->isActive())
+    if (!m_frame->page() || !m_frame->page()->focusController()->isActive())
         return;
 
     bool shiftKey;

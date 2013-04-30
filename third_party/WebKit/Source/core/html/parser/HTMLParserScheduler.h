@@ -70,7 +70,7 @@ public:
     // Inline as this is called after every token in the parser.
     void checkForYieldBeforeToken(PumpSession& session)
     {
-        if (session.processedTokens > m_parserChunkSize || session.didSeeScript) {
+        if (session.processedTokens > parserChunkSize || session.didSeeScript) {
             // currentTime() can be expensive.  By delaying, we avoided calling
             // currentTime() when constructing non-yielding PumpSessions.
             if (!session.startTime)
@@ -80,7 +80,7 @@ public:
             session.didSeeScript = false;
 
             double elapsedTime = currentTime() - session.startTime;
-            if (elapsedTime > m_parserTimeLimit)
+            if (elapsedTime > parserTimeLimit)
                 session.needsYield = true;
         }
         ++session.processedTokens;
@@ -94,14 +94,15 @@ public:
     void resume();
 
 private:
+    static const double parserTimeLimit;
+    static const int parserChunkSize;
+
     HTMLParserScheduler(HTMLDocumentParser*);
 
     void continueNextChunkTimerFired(Timer<HTMLParserScheduler>*);
 
     HTMLDocumentParser* m_parser;
 
-    double m_parserTimeLimit;
-    int m_parserChunkSize;
     Timer<HTMLParserScheduler> m_continueNextChunkTimer;
     bool m_isSuspendedWithActiveTimer;
 };

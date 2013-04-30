@@ -657,31 +657,7 @@ static bool view_modeMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* fram
     if (!value)
         return true;
 
-    const int viewModeCSSKeywordID = static_cast<CSSPrimitiveValue*>(value)->getIdent();
-    const Page::ViewMode viewMode = frame->page()->viewMode();
-    bool result = false;
-    switch (viewMode) {
-    case Page::ViewModeWindowed:
-        result = viewModeCSSKeywordID == CSSValueWindowed;
-        break;
-    case Page::ViewModeFloating:
-        result = viewModeCSSKeywordID == CSSValueFloating;
-        break;
-    case Page::ViewModeFullscreen:
-        result = viewModeCSSKeywordID == CSSValueFullscreen;
-        break;
-    case Page::ViewModeMaximized:
-        result = viewModeCSSKeywordID == CSSValueMaximized;
-        break;
-    case Page::ViewModeMinimized:
-        result = viewModeCSSKeywordID == CSSValueMinimized;
-        break;
-    default:
-        result = false;
-        break;
-    }
-
-    return result;
+    return static_cast<CSSPrimitiveValue*>(value)->getIdent() == CSSValueWindowed;
 }
 
 enum PointerDeviceType { TouchPointer, MousePointer, NoPointer, UnknownPointer };

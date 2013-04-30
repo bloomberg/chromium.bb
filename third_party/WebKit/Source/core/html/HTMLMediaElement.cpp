@@ -274,8 +274,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* docum
     LOG(Media, "HTMLMediaElement::HTMLMediaElement");
     ScriptWrappable::init(this);
 
-    document->registerForMediaVolumeCallbacks(this);
-
     if (document->settings() && document->settings()->mediaPlaybackRequiresUserGesture()) {
         addBehaviorRestriction(RequireUserGestureForRateChangeRestriction);
         addBehaviorRestriction(RequireUserGestureForLoadRestriction);
@@ -293,7 +291,6 @@ HTMLMediaElement::~HTMLMediaElement()
     if (m_isWaitingUntilMediaCanStart)
         document()->removeMediaCanStartListener(this);
     setShouldDelayLoadEvent(false);
-    document()->unregisterForMediaVolumeCallbacks(this);
     document()->unregisterForCaptionPreferencesChangedCallbacks(this);
     if (m_textTracks)
         m_textTracks->clearOwner();
@@ -331,12 +328,9 @@ void HTMLMediaElement::didMoveToNewDocument(Document* oldDocument)
         document()->incrementLoadEventDelayCount();
     }
 
-    if (oldDocument) {
-        oldDocument->unregisterForMediaVolumeCallbacks(this);
+    if (oldDocument)
         removeElementFromDocumentMap(this, oldDocument);
-    }
 
-    document()->registerForMediaVolumeCallbacks(this);
     addElementToDocumentMap(this, document());
 
     HTMLElement::didMoveToNewDocument(oldDocument);
@@ -3535,8 +3529,7 @@ void HTMLMediaElement::updateVolume()
 
     // Avoid recursion when the player reports volume changes.
     if (!processingMediaPlayerCallback()) {
-        Page* page = document()->page();
-        double volumeMultiplier = page ? page->mediaVolume() : 1;
+        double volumeMultiplier = 1;
         bool shouldMute = m_muted;
 
         if (m_mediaController) {
@@ -3759,12 +3752,6 @@ void HTMLMediaElement::resume()
 bool HTMLMediaElement::hasPendingActivity() const
 {
     return (hasAudio() && isPlaying()) || m_asyncEventQueue->hasPendingEvents();
-}
-
-void HTMLMediaElement::mediaVolumeDidChange()
-{
-    LOG(Media, "HTMLMediaElement::mediaVolumeDidChange");
-    updateVolume();
 }
 
 bool HTMLMediaElement::requiresTextTrackRepresentation() const
