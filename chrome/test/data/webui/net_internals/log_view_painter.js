@@ -148,6 +148,7 @@ TEST_F('NetInternalsTest', 'netInternalsLogViewPainterPrintAsText', function() {
   runTestCase(painterTestURLRequest());
   runTestCase(painterTestURLRequestIncomplete());
   runTestCase(painterTestURLRequestIncompleteFromLoadedLog());
+  runTestCase(painterTestURLRequestIncompleteFromLoadedLogSingleEvent());
   runTestCase(painterTestNetError());
   runTestCase(painterTestHexEncodedBytes());
   runTestCase(painterTestCertVerifierJob());
@@ -856,6 +857,20 @@ function painterTestURLRequestIncompleteFromLoadedLog() {
 '                            --> method = "GET"\n' +
 '                            --> priority = 4\n' +
 '                            --> url = "http://www.google.com/"\n' +
+'t=1338864634013 [st=789]';
+  return testCase;
+}
+
+/**
+ * Test case for a URLRequest that was not completed that came from a loaded
+ * log file when there's only a begin event.
+ */
+function painterTestURLRequestIncompleteFromLoadedLogSingleEvent() {
+  var testCase = painterTestURLRequestIncomplete();
+  testCase.logEntries = [testCase.logEntries[0]];
+  testCase.logCreationTime = 1338864634013;
+  testCase.expectedText =
+'t=1338864633224 [st=  0] +REQUEST_ALIVE  [dt=789+]\n' +
 't=1338864634013 [st=789]';
   return testCase;
 }

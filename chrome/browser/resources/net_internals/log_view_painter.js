@@ -88,10 +88,12 @@ createLogEntryTablePrinter = function(logEntries, privacyStripping,
 
   // If viewing a saved log file, add row with just the time the log was
   // created, if the event never completed.
-  if (logCreationTime != undefined &&
-      entries[entries.length - 1].getDepth() > 0) {
+  var lastEntry = entries[entries.length - 1];
+  // If the last entry has a non-zero depth or is a begin event, the source is
+  // still active.
+  var isSourceActive = lastEntry.getDepth() != 0 || lastEntry.isBegin();
+  if (logCreationTime != undefined && isSourceActive)
     addRowWithTime(tablePrinter, logCreationTime, startTime);
-  }
 
   return tablePrinter;
 }
