@@ -126,7 +126,7 @@ function sendKey(keyIdentifier) {
 
   // Exit shift mode after pressing any key but space.
   if (currentMode == SHIFT_MODE && keyIdentifier != 'Spacebar') {
-    transitionMode(SHIFT_MODE);
+    transitionMode(KEY_MODE);
   }
   // Enter shift mode after typing a closing punctuation and then a space for a
   // new sentence.
@@ -634,6 +634,97 @@ HideKeyboardKey.prototype = {
 
     setupKeyEventHandlers(this, this.modeElements_[mode],
         { 'down': function() { console.log('Hide the keyboard!'); } });
+
+    return this.modeElements_[mode];
+  }
+};
+
+/**
+ * The mic key: activate speech input.
+ * @constructor
+ * @extends {BaseKey}
+ */
+function MicKey() {
+  this.modeElements_ = {};
+  this.recognition_ = new webkitSpeechRecognition();
+  this.recognition_.onstart = this.onStartHandler.bind(this);
+  this.recognition_.onresult = this.onResultHandler.bind(this);
+  this.recognition_.onerror = this.onErrorHandler.bind(this);
+  this.recognition_.onend = this.onEndHandler.bind(this);
+  this.finalResult_ = '';
+  this.recognizing_ = false;
+  this.cellType_ = 'nc';
+}
+
+MicKey.prototype = {
+  __proto__: BaseKey.prototype,
+
+  /**
+   * Event handler for mouse/touch down events.
+   */
+  onDown: function() {
+    if (this.recognizing_) {
+      this.recognition_.stop();
+      return;
+    }
+    this.recognition_.start();
+  },
+
+  /**
+   * Speech recognition started. Change mic key's icon.
+   */
+  onStartHandler: function() {
+    this.recognizing_ = true;
+    this.finalResult_ = '';
+    for (var i = 0; i < MODES.length; ++i)
+      this.modeElements_[MODES[i]].classList.add('start');
+  },
+
+  /**
+   * Speech recognizer returns a result.
+   * @param{Event} e The SpeechRecognition event that is raised each time there
+   *     are any changes to interim or final results.
+   */
+  onResultHandler: function(e) {
+    for (var i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal)
+        this.finalResult_ = e.results[i][0].transcript;
+    }
+    for (var i = 0; i < this.finalResult_.length; i++) {
+      var keyEvent = {
+        keyIdentifier: this.finalResult_.charAt(i)
+      };
+      sendKeyEvent(keyEvent);
+    }
+  },
+
+  /**
+   * Speech recognizer returns an error.
+   * @param{Event} e The SpeechRecognitionError event that is raised each time
+   *     there is an error.
+   */
+  onErrorHandler: function(e) {
+    console.error('error code = ' + e.error);
+  },
+
+  /**
+   * Speech recognition ended. Reset mic key's icon.
+   */
+  onEndHandler: function() {
+   for (var i = 0; i < MODES.length; ++i)
+     this.modeElements_[MODES[i]].classList.remove('start');
+
+   this.recognizing_ = false;
+  },
+
+  /** @override */
+  makeDOM: function(mode) {
+    this.modeElements_[mode] = document.createElement('div');
+    this.modeElements_[mode].className = 'key mic';
+    addContent(this.modeElements_[mode]);
+
+    setupKeyEventHandlers(this, this.modeElements_[mode],
+        { 'down': this.onDown.bind(this) });
 
     return this.modeElements_[mode];
   }

@@ -48,6 +48,7 @@ var KEYS_US = [
     new SvgKey('backspace', 'Backspace', true /* repeat */)
   ],
   [
+    new MicKey(),
     new SymbolKey(),
     new SpecialKey('comma', ',', ','),
     new SpecialKey('space', ' ', 'Spacebar'),
