@@ -209,6 +209,7 @@ LocationBarView::LocationBarView(Browser* browser,
       base::Bind(&LocationBarView::Update,
                  base::Unretained(this),
                  static_cast<content::WebContents*>(NULL)));
+  browser_->toolbar_model()->SetSupportsExtractionOfURLLikeSearchTerms(true);
 }
 
 LocationBarView::~LocationBarView() {
@@ -433,8 +434,14 @@ void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
         TemplateURLServiceFactory::GetForProfile(profile_)->
             GetDefaultSearchProvider();
     if (template_url && !template_url->short_name().empty()) {
-      search_provider = l10n_util::GetStringFUTF16(
-          IDS_OMNIBOX_SEARCH_TOKEN_TEXT, template_url->short_name());
+      if (model_->GetSearchTermsType() == ToolbarModel::URL_LIKE_SEARCH_TERMS) {
+        search_provider =
+            l10n_util::GetStringFUTF16(IDS_OMNIBOX_SEARCH_TOKEN_TEXT_PROMINENT,
+                                       template_url->short_name());
+      } else {
+        search_provider = l10n_util::GetStringFUTF16(
+            IDS_OMNIBOX_SEARCH_TOKEN_TEXT, template_url->short_name());
+      }
       search_token_view_->SetBackgroundColor(GetColor(
           model_->GetSecurityLevel(), LocationBarView::BACKGROUND));
       SkColor text_color = GetColor(
@@ -774,15 +781,21 @@ void LocationBarView::Layout() {
       keyword_hint_view_->SetKeyword(keyword);
   }
   if (show_search_token) {
-    right_decorations.AddSeparator(kVerticalEdgeThickness, location_height,
-        GetItemPadding(), search_token_separator_view_);
-    // This must be the last item in the right decorations list, otherwise
-    // right_decorations.set_item_padding() makes no sense.
-    right_decorations.AddDecoration(
-        kVerticalEdgeThickness, location_height, true, 0, GetEdgeItemPadding(),
-        GetItemPadding() * 2, 0, search_token_view_);
-    right_decorations.set_item_edit_padding(
-        views::kUnrelatedControlLargeHorizontalSpacing);
+    if (model_->GetSearchTermsType() == ToolbarModel::URL_LIKE_SEARCH_TERMS) {
+      left_decorations.AddDecoration(
+          kVerticalEdgeThickness, location_height, true, 0,
+          GetEdgeItemPadding(), GetItemPadding(), 0, search_token_view_);
+    } else {
+      right_decorations.AddSeparator(kVerticalEdgeThickness, location_height,
+          GetItemPadding(), search_token_separator_view_);
+      // This must be the last item in the right decorations list, otherwise
+      // right_decorations.set_item_padding() makes no sense.
+      right_decorations.AddDecoration(
+          kVerticalEdgeThickness, location_height, true, 0,
+          GetEdgeItemPadding(), GetItemPadding(), 0, search_token_view_);
+      right_decorations.set_item_edit_padding(
+          views::kUnrelatedControlLargeHorizontalSpacing);
+    }
   }
 
   // Perform layout.
