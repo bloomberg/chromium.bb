@@ -12,7 +12,6 @@
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../content/content.gyp:content_browser',
         '../skia/skia.gyp:skia',
-        '../sync/sync.gyp:sync',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
       ],
       'include_dirs': [
@@ -31,6 +30,11 @@
             '../webkit/support/webkit_support.gyp:glue',
           ]
         }],
+        ['android_webview_build == 0', {
+          'dependencies': [
+             '../sync/sync.gyp:sync',
+          ]
+        }],
       ],
     },
     {
@@ -39,7 +43,6 @@
       'defines!': ['SESSIONS_IMPLEMENTATION'],
       'dependencies': [
         '../skia/skia.gyp:skia',
-        '../sync/sync.gyp:sync',
         '../testing/gtest.gyp:gtest',
       ],
       'include_dirs': [
@@ -48,6 +51,13 @@
       'sources': [
         'sessions/serialized_navigation_entry_test_helper.cc',
         'sessions/serialized_navigation_entry_test_helper.h',
+      ],
+      'conditions': [
+        ['android_webview_build == 0', {
+          'dependencies': [
+             '../sync/sync.gyp:sync',
+          ]
+        }],
       ],
     },
   ],

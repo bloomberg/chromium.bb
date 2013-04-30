@@ -40,7 +40,6 @@
             'navigation_interception',
 
             # Dependencies of sessions
-            '../sync/sync.gyp:sync',
             '../third_party/protobuf/protobuf.gyp:protobuf_lite',
             'sessions',
             'sessions_test_support',
@@ -62,6 +61,11 @@
             ['OS=="win" and win_use_allocator_shim==1', {
               'dependencies': [
                 '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+            ['android_webview_build == 0', {
+              'dependencies': [
+                '../sync/sync.gyp:sync',
               ],
             }],
           ],
