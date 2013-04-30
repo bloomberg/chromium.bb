@@ -683,6 +683,7 @@ void MessageCenterView::SetNotifications(
       break;
   }
   NotificationsChanged();
+  scroller_->RequestFocus();
 }
 
 size_t MessageCenterView::NumMessageViewsForTest() const {
@@ -793,7 +794,6 @@ void MessageCenterView::NotificationsChanged() {
   } else {
     button_bar_->SetCloseAllVisible(true);
     scroller_->set_focusable(true);
-    scroller_->RequestFocus();
   }
   scroller_->InvalidateLayout();
   PreferredSizeChanged();
