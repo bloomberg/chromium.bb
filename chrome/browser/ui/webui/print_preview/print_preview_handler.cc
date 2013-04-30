@@ -99,13 +99,17 @@ enum UserActionBuckets {
 };
 
 enum PrintSettingsBuckets {
-  LANDSCAPE,
+  LANDSCAPE = 0,
   PORTRAIT,
   COLOR,
   BLACK_AND_WHITE,
   COLLATE,
   SIMPLEX,
   DUPLEX,
+  TOTAL,
+  HEADERS_AND_FOOTERS,
+  CSS_BACKGROUND,
+  SELECTION_ONLY,
   PRINT_SETTINGS_BUCKET_BOUNDARY
 };
 
@@ -196,22 +200,42 @@ DictionaryValue* GetSettingsDictionary(const ListValue* args) {
 
 // Track the popularity of print settings and report the stats.
 void ReportPrintSettingsStats(const DictionaryValue& settings) {
-  bool landscape;
+  ReportPrintSettingHistogram(TOTAL);
+
+  bool landscape = false;
   if (settings.GetBoolean(printing::kSettingLandscape, &landscape))
     ReportPrintSettingHistogram(landscape ? LANDSCAPE : PORTRAIT);
 
-  bool collate;
+  bool collate = false;
   if (settings.GetBoolean(printing::kSettingCollate, &collate) && collate)
     ReportPrintSettingHistogram(COLLATE);
 
-  int duplex_mode;
+  int duplex_mode = 0;
   if (settings.GetInteger(printing::kSettingDuplexMode, &duplex_mode))
     ReportPrintSettingHistogram(duplex_mode ? DUPLEX : SIMPLEX);
 
-  int color_mode;
+  int color_mode = 0;
   if (settings.GetInteger(printing::kSettingColor, &color_mode)) {
     ReportPrintSettingHistogram(
         printing::isColorModelSelected(color_mode) ? COLOR : BLACK_AND_WHITE);
+  }
+
+  bool headers = false;
+  if (settings.GetBoolean(printing::kSettingHeaderFooterEnabled, &headers) &&
+      headers) {
+    ReportPrintSettingHistogram(HEADERS_AND_FOOTERS);
+  }
+
+  bool css_background = false;
+  if (settings.GetBoolean(printing::kSettingShouldPrintBackgrounds,
+                          &css_background) && css_background) {
+    ReportPrintSettingHistogram(CSS_BACKGROUND);
+  }
+
+  bool selection_only = false;
+  if (settings.GetBoolean(printing::kSettingShouldPrintSelectionOnly,
+                          &selection_only) && selection_only) {
+    ReportPrintSettingHistogram(SELECTION_ONLY);
   }
 }
 
