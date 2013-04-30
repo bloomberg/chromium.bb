@@ -71,13 +71,14 @@ protected:
     bool m_initialized;
 #endif
 
+    virtual bool computeAccessibilityIsIgnored() const;
+    virtual AccessibilityRole determineAccessibilityRole();
+
     String accessibilityDescriptionForElements(Vector<Element*> &elements) const;
     void alterSliderValue(bool increase);
     String ariaAccessibilityDescription() const;
     void ariaLabeledByElements(Vector<Element*>& elements) const;
     void changeValueByStep(bool increase);
-    virtual bool computeAccessibilityIsIgnored() const;
-    virtual AccessibilityRole determineAccessibilityRole();
     AccessibilityRole determineAriaRoleAttribute() const;
     void elementsFromAttribute(Vector<Element*>& elements, const QualifiedName&) const;
     bool hasContentEditableAttributeSet() const;
