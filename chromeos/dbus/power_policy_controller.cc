@@ -78,6 +78,7 @@ PowerPolicyController::PrefValues::PrefValues()
       lid_closed_action(ACTION_SUSPEND),
       use_audio_activity(true),
       use_video_activity(true),
+      allow_screen_wake_locks(true),
       enable_screen_lock(false),
       presentation_idle_delay_factor(2.0),
       user_activity_screen_dim_delay_factor(1.0) {}
@@ -117,7 +118,8 @@ PowerPolicyController::PowerPolicyController(DBusThreadManager* manager,
     : manager_(manager),
       client_(client),
       prefs_were_set_(false),
-      next_block_id_(1) {
+      honor_screen_wake_locks_(true),
+      next_wake_lock_id_(1) {
   manager_->AddObserver(this);
   client_->AddObserver(this);
   SendCurrentPolicy();
@@ -174,27 +176,29 @@ void PowerPolicyController::ApplyPrefs(const PrefValues& values) {
   prefs_policy_.set_user_activity_screen_dim_delay_factor(
       values.user_activity_screen_dim_delay_factor);
 
+  honor_screen_wake_locks_ = values.allow_screen_wake_locks;
+
   prefs_were_set_ = true;
   SendCurrentPolicy();
 }
 
-int PowerPolicyController::AddScreenBlock(const std::string& reason) {
-  int id = next_block_id_++;
-  screen_blocks_[id] = reason;
+int PowerPolicyController::AddScreenWakeLock(const std::string& reason) {
+  int id = next_wake_lock_id_++;
+  screen_wake_locks_[id] = reason;
   SendCurrentPolicy();
   return id;
 }
 
-int PowerPolicyController::AddSuspendBlock(const std::string& reason) {
-  int id = next_block_id_++;
-  suspend_blocks_[id] = reason;
+int PowerPolicyController::AddSystemWakeLock(const std::string& reason) {
+  int id = next_wake_lock_id_++;
+  system_wake_locks_[id] = reason;
   SendCurrentPolicy();
   return id;
 }
 
-void PowerPolicyController::RemoveBlock(int id) {
-  if (!screen_blocks_.erase(id) && !suspend_blocks_.erase(id))
-    LOG(WARNING) << "Ignoring request to remove nonexistent block " << id;
+void PowerPolicyController::RemoveWakeLock(int id) {
+  if (!screen_wake_locks_.erase(id) && !system_wake_locks_.erase(id))
+    LOG(WARNING) << "Ignoring request to remove nonexistent wake lock " << id;
   else
     SendCurrentPolicy();
 }
@@ -216,26 +220,26 @@ void PowerPolicyController::SendCurrentPolicy() {
   if (prefs_were_set_)
     reason = "Prefs";
 
-  if (!screen_blocks_.empty()) {
+  if (honor_screen_wake_locks_ && !screen_wake_locks_.empty()) {
     policy.mutable_ac_delays()->set_screen_dim_ms(0);
     policy.mutable_ac_delays()->set_screen_off_ms(0);
     policy.mutable_battery_delays()->set_screen_dim_ms(0);
     policy.mutable_battery_delays()->set_screen_off_ms(0);
   }
 
-  if ((!screen_blocks_.empty() || !suspend_blocks_.empty()) &&
+  if ((!screen_wake_locks_.empty() || !system_wake_locks_.empty()) &&
       (!policy.has_idle_action() || policy.idle_action() ==
        power_manager::PowerManagementPolicy_Action_SUSPEND)) {
     policy.set_idle_action(
         power_manager::PowerManagementPolicy_Action_DO_NOTHING);
   }
 
-  for (BlockMap::const_iterator it = screen_blocks_.begin();
-       it != screen_blocks_.end(); ++it) {
+  for (WakeLockMap::const_iterator it = screen_wake_locks_.begin();
+       it != screen_wake_locks_.end(); ++it) {
     reason += (reason.empty() ? "" : ", ") + it->second;
   }
-  for (BlockMap::const_iterator it = suspend_blocks_.begin();
-       it != suspend_blocks_.end(); ++it) {
+  for (WakeLockMap::const_iterator it = system_wake_locks_.begin();
+       it != system_wake_locks_.end(); ++it) {
     reason += (reason.empty() ? "" : ", ") + it->second;
   }
 

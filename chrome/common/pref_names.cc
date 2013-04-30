@@ -867,6 +867,10 @@ const char kPowerLidClosedAction[] = "power.lid_closed_action";
 const char kPowerUseAudioActivity[] = "power.use_audio_activity";
 const char kPowerUseVideoActivity[] = "power.use_video_activity";
 
+// Should extensions be able to use the chrome.power API to override
+// screen-related power management (including locking)?
+const char kPowerAllowScreenWakeLocks[] = "power.allow_screen_wake_locks";
+
 // Amount by which the idle delay should be scaled while the system is in
 // presentation mode.  Values are limited to a minimum of 1.0.
 const char kPowerPresentationIdleDelayFactor[] =

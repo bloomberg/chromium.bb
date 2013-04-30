@@ -114,39 +114,53 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
             PowerPolicyController::GetPolicyDebugString(
                 fake_power_client_.get_policy()));
+
+  // Set the "allow screen wake locks" pref to false.  The system should be
+  // prevented from suspending due to user inactivity but the pref-supplied
+  // screen-related delays should be left untouched.
+  prefs.allow_screen_wake_locks = false;
+  policy_controller_->ApplyPrefs(prefs);
+  policy_controller_->AddScreenWakeLock("Screen");
+  expected_policy.set_idle_action(
+      power_manager::PowerManagementPolicy_Action_DO_NOTHING);
+  expected_policy.set_reason("Prefs, Screen");
+  EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
+            PowerPolicyController::GetPolicyDebugString(
+                fake_power_client_.get_policy()));
 }
 
-TEST_F(PowerPolicyControllerTest, Blocks) {
-  const char kSuspendBlockReason[] = "suspend";
-  const int suspend_id =
-      policy_controller_->AddSuspendBlock(kSuspendBlockReason);
+TEST_F(PowerPolicyControllerTest, WakeLocks) {
+  const char kSystemWakeLockReason[] = "system";
+  const int system_id =
+      policy_controller_->AddSystemWakeLock(kSystemWakeLockReason);
   power_manager::PowerManagementPolicy expected_policy;
   expected_policy.set_idle_action(
       power_manager::PowerManagementPolicy_Action_DO_NOTHING);
-  expected_policy.set_reason(kSuspendBlockReason);
+  expected_policy.set_reason(kSystemWakeLockReason);
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
             PowerPolicyController::GetPolicyDebugString(
                 fake_power_client_.get_policy()));
 
-  const char kScreenBlockReason[] = "screen";
-  const int screen_id = policy_controller_->AddScreenBlock(kScreenBlockReason);
+  const char kScreenWakeLockReason[] = "screen";
+  const int screen_id = policy_controller_->AddScreenWakeLock(
+      kScreenWakeLockReason);
   expected_policy.mutable_ac_delays()->set_screen_dim_ms(0);
   expected_policy.mutable_ac_delays()->set_screen_off_ms(0);
   expected_policy.mutable_battery_delays()->set_screen_dim_ms(0);
   expected_policy.mutable_battery_delays()->set_screen_off_ms(0);
   expected_policy.set_reason(
-      std::string(kScreenBlockReason) + ", " + kSuspendBlockReason);
+      std::string(kScreenWakeLockReason) + ", " + kSystemWakeLockReason);
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
             PowerPolicyController::GetPolicyDebugString(
                 fake_power_client_.get_policy()));
 
-  policy_controller_->RemoveBlock(suspend_id);
-  expected_policy.set_reason(kScreenBlockReason);
+  policy_controller_->RemoveWakeLock(system_id);
+  expected_policy.set_reason(kScreenWakeLockReason);
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
             PowerPolicyController::GetPolicyDebugString(
                 fake_power_client_.get_policy()));
 
-  policy_controller_->RemoveBlock(screen_id);
+  policy_controller_->RemoveWakeLock(screen_id);
   expected_policy.Clear();
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
             PowerPolicyController::GetPolicyDebugString(

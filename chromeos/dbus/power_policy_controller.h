@@ -51,6 +51,7 @@ class CHROMEOS_EXPORT PowerPolicyController
     Action lid_closed_action;
     bool use_audio_activity;
     bool use_video_activity;
+    bool allow_screen_wake_locks;
     bool enable_screen_lock;
     double presentation_idle_delay_factor;
     double user_activity_screen_dim_delay_factor;
@@ -68,14 +69,15 @@ class CHROMEOS_EXPORT PowerPolicyController
 
   // Registers a request to temporarily prevent the screen from getting
   // dimmed or turned off or the system from suspending in response to user
-  // inactivity and sends an updated policy.  Returns a unique ID that can
-  // be passed to RemoveBlock() later.
-  int AddScreenBlock(const std::string& reason);
-  int AddSuspendBlock(const std::string& reason);
+  // inactivity and sends an updated policy.  |reason| is a human-readable
+  // description of the reason the lock was created.  Returns a unique ID
+  // that can be passed to RemoveWakeLock() later.
+  int AddScreenWakeLock(const std::string& reason);
+  int AddSystemWakeLock(const std::string& reason);
 
-  // Unregisters a request previously created via AddScreenBlock() or
-  // AddSuspendBlock() and sends an updated policy.
-  void RemoveBlock(int id);
+  // Unregisters a request previously created via AddScreenWakeLock() or
+  // AddSystemWakeLock() and sends an updated policy.
+  void RemoveWakeLock(int id);
 
   // DBusThreadManagerObserver implementation:
   virtual void OnDBusThreadManagerDestroying(DBusThreadManager* manager)
@@ -85,7 +87,7 @@ class CHROMEOS_EXPORT PowerPolicyController
   virtual void PowerManagerRestarted() OVERRIDE;
 
  private:
-  typedef std::map<int, std::string> BlockMap;
+  typedef std::map<int, std::string> WakeLockMap;
 
   // Sends a policy based on |prefs_policy_| to the power manager.
   void SendCurrentPolicy();
@@ -105,11 +107,15 @@ class CHROMEOS_EXPORT PowerPolicyController
   // Maps from an ID representing a request to prevent the screen from
   // getting dimmed or turned off or to prevent the system from suspending
   // to the reason for the request.
-  BlockMap screen_blocks_;
-  BlockMap suspend_blocks_;
+  WakeLockMap screen_wake_locks_;
+  WakeLockMap system_wake_locks_;
 
-  // Next ID to be used by AddScreenBlock() or AddSuspendBlock().
-  int next_block_id_;
+  // Should entries in |screen_wake_locks_| be honored?  If false, screen
+  // wake locks are just treated as system wake locks instead.
+  bool honor_screen_wake_locks_;
+
+  // Next ID to be used by AddScreenWakeLock() or AddSystemWakeLock().
+  int next_wake_lock_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerPolicyController);
 };

@@ -318,6 +318,9 @@ void Preferences::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kPowerUseVideoActivity,
                                 true,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kPowerAllowScreenWakeLocks,
+                                true,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(prefs::kPowerPresentationIdleDelayFactor,
                                2.0,
                                PrefRegistrySyncable::UNSYNCABLE_PREF);
@@ -449,6 +452,8 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
       prefs::kPowerUseAudioActivity, prefs, callback);
   power_use_video_activity_.Init(
       prefs::kPowerUseVideoActivity, prefs, callback);
+  power_allow_screen_wake_locks_.Init(
+      prefs::kPowerAllowScreenWakeLocks, prefs, callback);
   power_presentation_idle_delay_factor_.Init(
       prefs::kPowerPresentationIdleDelayFactor, prefs, callback);
   power_user_activity_screen_dim_delay_factor_.Init(
@@ -775,6 +780,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
       *pref_name == prefs::kPowerLidClosedAction ||
       *pref_name == prefs::kPowerUseAudioActivity ||
       *pref_name == prefs::kPowerUseVideoActivity ||
+      *pref_name == prefs::kPowerAllowScreenWakeLocks ||
       *pref_name == prefs::kPowerPresentationIdleDelayFactor ||
       *pref_name == prefs::kPowerUserActivityScreenDimDelayFactor ||
       *pref_name == prefs::kEnableScreenLock) {
@@ -800,6 +806,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
         power_lid_closed_action_.GetValue());
     values.use_audio_activity = power_use_audio_activity_.GetValue();
     values.use_video_activity = power_use_video_activity_.GetValue();
+    values.allow_screen_wake_locks = power_allow_screen_wake_locks_.GetValue();
     values.enable_screen_lock = enable_screen_lock_.GetValue();
     values.presentation_idle_delay_factor =
         power_presentation_idle_delay_factor_.GetValue();

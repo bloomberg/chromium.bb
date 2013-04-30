@@ -36,10 +36,10 @@ class PowerSaveBlockerImpl::Delegate
         chromeos::DBusThreadManager::Get()->GetPowerPolicyController();
     switch (type_) {
       case kPowerSaveBlockPreventAppSuspension:
-        block_id_ = controller->AddSuspendBlock(reason_);
+        block_id_ = controller->AddSystemWakeLock(reason_);
         break;
       case kPowerSaveBlockPreventDisplaySleep:
-        block_id_ = controller->AddScreenBlock(reason_);
+        block_id_ = controller->AddScreenWakeLock(reason_);
         break;
       default:
         NOTREACHED() << "Unhandled block type " << type_;
@@ -53,7 +53,7 @@ class PowerSaveBlockerImpl::Delegate
       return;
     }
     chromeos::DBusThreadManager::Get()->GetPowerPolicyController()->
-        RemoveBlock(block_id_);
+        RemoveWakeLock(block_id_);
   }
 
  private:

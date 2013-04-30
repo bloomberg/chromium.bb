@@ -316,6 +316,7 @@ extern const char kPowerIdleAction[];
 extern const char kPowerLidClosedAction[];
 extern const char kPowerUseAudioActivity[];
 extern const char kPowerUseVideoActivity[];
+extern const char kPowerAllowScreenWakeLocks[];
 extern const char kPowerPresentationIdleDelayFactor[];
 extern const char kPowerUserActivityScreenDimDelayFactor[];
 extern const char kTermsOfServiceURL[];
