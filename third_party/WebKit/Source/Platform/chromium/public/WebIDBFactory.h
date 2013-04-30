@@ -26,4 +26,39 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "../../../Platform/chromium/public/WebIDBFactory.h"
+#ifndef WebIDBFactory_h
+#define WebIDBFactory_h
+
+#include "WebCommon.h"
+#include "WebIDBCallbacks.h"
+#include "WebIDBMetadata.h"
+#include "WebString.h"
+#include "WebVector.h"
+
+namespace WebKit {
+
+class WebIDBDatabase;
+class WebIDBDatabaseCallbacks;
+
+// The entry point into the IndexedDatabase API.  These classes match their Foo and
+// FooSync counterparts in the spec, but operate only in an async manner.
+// http://dev.w3.org/2006/webapi/WebSimpleDB/
+class WebIDBFactory {
+public:
+    WEBKIT_EXPORT static WebIDBFactory* create();
+
+    virtual ~WebIDBFactory() { }
+
+    virtual void getDatabaseNames(WebIDBCallbacks* callbacks, const WebString& databaseIdentifier, const WebString& dataDir) { }
+
+    virtual void open(const WebString& name, long long version, long long transactionId, WebIDBCallbacks* callbacks, WebIDBDatabaseCallbacks* databaseCallbacks, const WebString& databaseIdentifier, const WebString& dataDir) { WEBKIT_ASSERT_NOT_REACHED(); }
+
+    virtual void deleteDatabase(const WebString& name, WebIDBCallbacks* callbacks, const WebString& databaseIdentifier, const WebString& dataDir) { WEBKIT_ASSERT_NOT_REACHED(); }
+};
+
+// Initializes IndexedDB support.
+WEBKIT_EXPORT void setIDBFactory(WebIDBFactory*);
+
+} // namespace WebKit
+
+#endif // WebIDBFactory_h

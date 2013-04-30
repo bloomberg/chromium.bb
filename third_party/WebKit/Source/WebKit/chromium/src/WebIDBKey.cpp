@@ -26,7 +26,7 @@
  */
 
 #include "config.h"
-#include "WebIDBKey.h"
+#include <public/WebIDBKey.h>
 
 #include "modules/indexeddb/IDBKey.h"
 

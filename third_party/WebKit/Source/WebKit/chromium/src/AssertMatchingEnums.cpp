@@ -33,6 +33,27 @@
 
 #include "config.h"
 
+#include <public/WebClipboard.h>
+#include <public/WebFileError.h>
+#include <public/WebFileInfo.h>
+#include <public/WebFileSystem.h>
+#include <public/WebFilterOperation.h>
+#include <public/WebIDBCursor.h>
+#include <public/WebIDBDatabase.h>
+#include <public/WebIDBDatabaseException.h>
+#include <public/WebIDBFactory.h>
+#include <public/WebIDBKey.h>
+#include <public/WebIDBKeyPath.h>
+#include <public/WebIDBMetadata.h>
+#include <public/WebMediaStreamSource.h>
+#include <public/WebReferrerPolicy.h>
+#include <public/WebRTCDataChannelHandlerClient.h>
+#include <public/WebRTCPeerConnectionHandlerClient.h>
+#include <public/WebScrollbar.h>
+#include <public/WebURLRequest.h>
+#include <public/WebURLResponse.h>
+#include <wtf/Assertions.h>
+#include <wtf/text/StringImpl.h>
 #include "WebAccessibilityNotification.h"
 #include "WebAccessibilityObject.h"
 #include "WebApplicationCacheHost.h"
@@ -44,13 +65,6 @@
 #include "WebFormElement.h"
 #include "WebGeolocationError.h"
 #include "WebGeolocationPosition.h"
-#include "WebIDBCursor.h"
-#include "WebIDBDatabase.h"
-#include "WebIDBDatabaseException.h"
-#include "WebIDBFactory.h"
-#include "WebIDBKey.h"
-#include "WebIDBKeyPath.h"
-#include "WebIDBMetadata.h"
 #include "WebIconURL.h"
 #include "WebInputElement.h"
 #include "WebMediaPlayer.h"
@@ -110,20 +124,6 @@
 #include "modules/notifications/NotificationClient.h"
 #include "modules/quota/StorageQuota.h"
 #include "modules/speech/SpeechRecognitionError.h"
-#include <public/WebClipboard.h>
-#include <public/WebFileError.h>
-#include <public/WebFileInfo.h>
-#include <public/WebFileSystem.h>
-#include <public/WebFilterOperation.h>
-#include <public/WebMediaStreamSource.h>
-#include <public/WebReferrerPolicy.h>
-#include <public/WebRTCDataChannelHandlerClient.h>
-#include <public/WebRTCPeerConnectionHandlerClient.h>
-#include <public/WebScrollbar.h>
-#include <public/WebURLRequest.h>
-#include <public/WebURLResponse.h>
-#include <wtf/Assertions.h>
-#include <wtf/text/StringImpl.h>
 
 #define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, webcore_name) \
     COMPILE_ASSERT(int(WebKit::webkit_name) == int(WebCore::webcore_name), mismatching_enums)

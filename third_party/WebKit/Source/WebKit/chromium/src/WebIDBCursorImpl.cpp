@@ -26,8 +26,8 @@
 #include "config.h"
 #include "WebIDBCursorImpl.h"
 
+#include <public/WebIDBKey.h>
 #include "IDBCallbacksProxy.h"
-#include "WebIDBKey.h"
 #include "modules/indexeddb/IDBAny.h"
 #include "modules/indexeddb/IDBCursorBackendInterface.h"
 #include "modules/indexeddb/IDBKey.h"

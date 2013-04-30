@@ -29,15 +29,17 @@
 #include "config.h"
 #include "IDBFactoryBackendProxy.h"
 
+#include <public/WebIDBDatabase.h>
+#include <public/WebIDBDatabaseError.h>
+#include <public/WebIDBFactory.h>
+#include <public/WebVector.h>
 #include "IDBDatabaseBackendProxy.h"
 #include "WebFrameImpl.h"
 #include "WebIDBCallbacksImpl.h"
-#include "WebIDBDatabase.h"
 #include "WebIDBDatabaseCallbacksImpl.h"
-#include "WebIDBDatabaseError.h"
-#include "WebIDBFactory.h"
 #include "WebKit.h"
 #include "WebPermissionClient.h"
+#include "WebSecurityOrigin.h"
 #include "WebViewImpl.h"
 #include "WebWorkerBase.h"
 #include "WebWorkerClientImpl.h"
@@ -50,7 +52,6 @@
 #include "core/workers/WorkerThread.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
 #include "modules/indexeddb/IDBDatabaseError.h"
-#include <public/WebVector.h>
 
 
 using namespace WebCore;

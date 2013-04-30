@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
-#include "WebIDBKeyRange.h"
+#include <public/WebIDBKeyRange.h>
 
-#include "WebIDBKey.h"
+#include <public/WebIDBKey.h>
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyRange.h"
 

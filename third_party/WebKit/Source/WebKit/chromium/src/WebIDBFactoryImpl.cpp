@@ -31,13 +31,12 @@
 #include "config.h"
 #include "WebIDBFactoryImpl.h"
 
+#include <public/WebIDBDatabaseCallbacks.h>
+#include <public/WebIDBDatabaseError.h>
+#include <wtf/OwnPtr.h>
 #include "IDBCallbacksProxy.h"
 #include "IDBDatabaseCallbacksProxy.h"
-#include "WebIDBDatabaseCallbacks.h"
-#include "WebIDBDatabaseError.h"
-#include "core/page/SecurityOrigin.h"
 #include "modules/indexeddb/IDBFactoryBackendImpl.h"
-#include <wtf/OwnPtr.h>
 
 using namespace WebCore;
 

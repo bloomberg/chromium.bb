@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-#include "WebIDBKeyPath.h"
+#include <public/WebIDBKeyPath.h>
 
-#include "modules/indexeddb/IDBKeyPath.h"
 #include <public/WebString.h>
 #include <public/WebVector.h>
 #include <wtf/Vector.h>
+#include "modules/indexeddb/IDBKeyPath.h"
 
 using namespace WebCore;
 

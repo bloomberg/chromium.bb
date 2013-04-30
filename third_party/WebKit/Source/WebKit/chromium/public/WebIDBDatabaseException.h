@@ -28,18 +28,4 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebIDBDatabaseException_h
-#define WebIDBDatabaseException_h
-
-namespace WebKit {
-
-enum WebIDBDatabaseException {
-    WebIDBDatabaseExceptionUnknownError = 1201,
-    WebIDBDatabaseExceptionDataError = 1203,
-    WebIDBDatabaseExceptionAbortError = 1210,
-    WebIDBDatabaseExceptionQuotaError = 1212,
-};
-
-} // namespace WebKit
-
-#endif // WebIDBDatabaseException_h
+#include "../../../Platform/chromium/public/WebIDBDatabaseException.h"

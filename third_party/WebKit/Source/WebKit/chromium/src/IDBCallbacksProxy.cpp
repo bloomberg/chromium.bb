@@ -29,21 +29,21 @@
 #include "config.h"
 #include "IDBCallbacksProxy.h"
 
+#include <public/WebData.h>
+#include <public/WebIDBCallbacks.h>
+#include <public/WebIDBDatabaseCallbacks.h>
+#include <public/WebIDBDatabaseError.h>
+#include <public/WebIDBDatabaseException.h>
+#include <public/WebIDBKey.h>
+#include <public/WebIDBMetadata.h>
 #include "IDBDatabaseBackendProxy.h"
 #include "IDBDatabaseCallbacksProxy.h"
-#include "WebIDBCallbacks.h"
 #include "WebIDBCursorImpl.h"
-#include "WebIDBDatabaseCallbacks.h"
-#include "WebIDBDatabaseError.h"
-#include "WebIDBDatabaseException.h"
 #include "WebIDBDatabaseImpl.h"
-#include "WebIDBKey.h"
-#include "WebIDBMetadata.h"
 #include "modules/indexeddb/IDBCursorBackendInterface.h"
 #include "modules/indexeddb/IDBDatabaseBackendInterface.h"
 #include "modules/indexeddb/IDBDatabaseError.h"
 #include "modules/indexeddb/IDBMetadata.h"
-#include <public/WebData.h>
 
 using namespace WebCore;
 

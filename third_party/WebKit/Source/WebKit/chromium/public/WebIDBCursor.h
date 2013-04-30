@@ -23,39 +23,4 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebIDBCursor_h
-#define WebIDBCursor_h
-
-#include "../../../Platform/chromium/public/WebCommon.h"
-#include "../../../Platform/chromium/public/WebString.h"
-#include "WebIDBCallbacks.h"
-#include "WebIDBKey.h"
-
-namespace WebKit {
-
-// See comment in WebIDBFactory for a high level overview these classes.
-class WebIDBCursor {
-public:
-    virtual ~WebIDBCursor() { }
-
-    enum Direction {
-        Next = 0,
-        NextNoDuplicate = 1,
-        Prev = 2,
-        PrevNoDuplicate = 3,
-    };
-
-    virtual void advance(unsigned long, WebIDBCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void continueFunction(const WebIDBKey&, WebIDBCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void deleteFunction(WebIDBCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void prefetchContinue(int numberToFetch, WebIDBCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void prefetchReset(int usedPrefetches, int unusedPrefetches) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void postSuccessHandlerCallback() { } // Only used in frontend.
-
-protected:
-    WebIDBCursor() { }
-};
-
-} // namespace WebKit
-
-#endif // WebIDBCursor_h
+#include "../../../Platform/chromium/public/WebIDBCursor.h"

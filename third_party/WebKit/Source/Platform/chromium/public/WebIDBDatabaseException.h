@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2012 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,60 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include <public/WebIDBDatabaseError.h>
-
-#include <public/WebString.h>
-#include "modules/indexeddb/IDBDatabaseError.h"
-
-using namespace WebCore;
+#ifndef WebIDBDatabaseException_h
+#define WebIDBDatabaseException_h
 
 namespace WebKit {
 
-void WebIDBDatabaseError::assign(const WebIDBDatabaseError& value)
-{
-    m_private = value.m_private;
-}
-
-void WebIDBDatabaseError::assign(unsigned short code)
-{
-    m_private = IDBDatabaseError::create(code);
-}
-
-void WebIDBDatabaseError::assign(unsigned short code, const WebString& message)
-{
-    m_private = IDBDatabaseError::create(code, message);
-}
-
-void WebIDBDatabaseError::reset()
-{
-    m_private.reset();
-}
-
-unsigned short WebIDBDatabaseError::code() const
-{
-    return m_private->idbCode();
-}
-
-WebString WebIDBDatabaseError::message() const
-{
-    return m_private->message();
-}
-
-WebIDBDatabaseError::WebIDBDatabaseError(const PassRefPtr<IDBDatabaseError>& value)
-    : m_private(value)
-{
-}
-
-WebIDBDatabaseError& WebIDBDatabaseError::operator=(const PassRefPtr<IDBDatabaseError>& value)
-{
-    m_private = value;
-    return *this;
-}
-
-WebIDBDatabaseError::operator PassRefPtr<IDBDatabaseError>() const
-{
-    return m_private.get();
-}
+enum WebIDBDatabaseException {
+    WebIDBDatabaseExceptionUnknownError = 1201,
+    WebIDBDatabaseExceptionDataError = 1203,
+    WebIDBDatabaseExceptionAbortError = 1210,
+    WebIDBDatabaseExceptionQuotaError = 1212,
+};
 
 } // namespace WebKit
+
+#endif // WebIDBDatabaseException_h

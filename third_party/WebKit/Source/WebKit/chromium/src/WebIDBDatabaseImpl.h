@@ -26,12 +26,11 @@
 #ifndef WebIDBDatabaseImpl_h
 #define WebIDBDatabaseImpl_h
 
-#include "IDBDatabaseCallbacksProxy.h"
-#include "WebExceptionCode.h"
-#include "WebIDBDatabase.h"
 #include <public/WebCommon.h>
+#include <public/WebIDBDatabase.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
+#include "IDBDatabaseCallbacksProxy.h"
 
 namespace WebCore { class IDBDatabaseBackendInterface; }
 

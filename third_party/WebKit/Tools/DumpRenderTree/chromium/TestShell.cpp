@@ -41,7 +41,6 @@
 #include "WebElement.h"
 #include "WebFrame.h"
 #include "WebHistoryItem.h"
-#include "WebIDBFactory.h"
 #include "WebTestingSupport.h"
 #include "WebSettings.h"
 #include "WebTestProxy.h"

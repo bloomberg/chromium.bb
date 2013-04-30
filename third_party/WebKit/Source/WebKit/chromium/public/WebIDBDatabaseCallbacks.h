@@ -23,26 +23,4 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebIDBDatabaseCallbacks_h
-#define WebIDBDatabaseCallbacks_h
-
-#include "../../../Platform/chromium/public/WebCommon.h"
-#include "../../../Platform/chromium/public/WebString.h"
-#include "WebIDBDatabaseError.h"
-
-namespace WebKit {
-
-class WebIDBDatabaseCallbacks {
-public:
-    virtual ~WebIDBDatabaseCallbacks() { }
-
-    virtual void onForcedClose() { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void onVersionChange(long long oldVersion, long long newVersion) { WEBKIT_ASSERT_NOT_REACHED(); }
-
-    virtual void onAbort(long long transactionId, const WebIDBDatabaseError&) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void onComplete(long long transactionId) { WEBKIT_ASSERT_NOT_REACHED(); }
-};
-
-} // namespace WebKit
-
-#endif // WebIDBDatabaseCallbacks_h
+#include "../../../Platform/chromium/public/WebIDBDatabaseCallbacks.h"

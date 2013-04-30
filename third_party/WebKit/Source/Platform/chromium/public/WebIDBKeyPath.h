@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2010 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,36 +23,56 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IDBCursorBackendProxy_h
-#define IDBCursorBackendProxy_h
+#ifndef WebIDBKeyPath_h
+#define WebIDBKeyPath_h
 
-#include <public/WebIDBCursor.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-#include "modules/indexeddb/IDBCursorBackendInterface.h"
+#include "WebCommon.h"
+#include "WebPrivateOwnPtr.h"
+#include "WebString.h"
+#include "WebVector.h"
+
+namespace WebCore { class IDBKeyPath; }
 
 namespace WebKit {
 
-class IDBCursorBackendProxy : public WebCore::IDBCursorBackendInterface {
+class WebIDBKeyPath {
 public:
-    static PassRefPtr<WebCore::IDBCursorBackendInterface> create(PassOwnPtr<WebIDBCursor>);
-    virtual ~IDBCursorBackendProxy();
+    WEBKIT_EXPORT static WebIDBKeyPath create(const WebString&);
+    WEBKIT_EXPORT static WebIDBKeyPath create(const WebVector<WebString>&);
+    WEBKIT_EXPORT static WebIDBKeyPath createNull();
 
-    virtual void advance(unsigned long, PassRefPtr<WebCore::IDBCallbacks>);
-    virtual void continueFunction(PassRefPtr<WebCore::IDBKey>, PassRefPtr<WebCore::IDBCallbacks>);
-    virtual void deleteFunction(PassRefPtr<WebCore::IDBCallbacks>);
-    virtual void prefetchContinue(int numberToFetch, PassRefPtr<WebCore::IDBCallbacks>) { ASSERT_NOT_REACHED(); } // Only used in the backend.
-    virtual void prefetchReset(int usedPrefetches, int unusedPrefetches) { ASSERT_NOT_REACHED(); } // Only used in the backend.
-    virtual void postSuccessHandlerCallback();
+    WebIDBKeyPath(const WebIDBKeyPath& keyPath) { assign(keyPath); }
+    virtual ~WebIDBKeyPath() { reset(); }
+    WebIDBKeyPath& operator=(const WebIDBKeyPath& keyPath)
+    {
+        assign(keyPath);
+        return *this;
+    }
+
+    WEBKIT_EXPORT void reset();
+    WEBKIT_EXPORT void assign(const WebIDBKeyPath&);
+
+    enum Type {
+        NullType = 0,
+        StringType,
+        ArrayType,
+    };
+
+    WEBKIT_EXPORT bool isValid() const;
+    WEBKIT_EXPORT Type type() const;
+    WEBKIT_EXPORT WebVector<WebString> array() const; // Only valid for ArrayType.
+    WEBKIT_EXPORT WebString string() const; // Only valid for StringType.
+
+#if WEBKIT_IMPLEMENTATION
+    WebIDBKeyPath(const WebCore::IDBKeyPath&);
+    WebIDBKeyPath& operator=(const WebCore::IDBKeyPath&);
+    operator const WebCore::IDBKeyPath&() const;
+#endif
 
 private:
-    IDBCursorBackendProxy(PassOwnPtr<WebIDBCursor>);
-
-    OwnPtr<WebIDBCursor> m_idbCursor;
+    WebPrivateOwnPtr<WebCore::IDBKeyPath> m_private;
 };
 
 } // namespace WebKit
 
-#endif // IDBCursorBackendProxy_h
+#endif // WebIDBKeyPath_h

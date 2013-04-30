@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2011 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,4 +23,26 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "../../../Platform/chromium/public/WebIDBDatabase.h"
+#ifndef WebIDBDatabaseCallbacks_h
+#define WebIDBDatabaseCallbacks_h
+
+#include "WebCommon.h"
+#include "WebIDBDatabaseError.h"
+#include "WebString.h"
+
+namespace WebKit {
+
+class WebIDBDatabaseCallbacks {
+public:
+    virtual ~WebIDBDatabaseCallbacks() { }
+
+    virtual void onForcedClose() { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void onVersionChange(long long oldVersion, long long newVersion) { WEBKIT_ASSERT_NOT_REACHED(); }
+
+    virtual void onAbort(long long transactionId, const WebIDBDatabaseError&) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void onComplete(long long transactionId) { WEBKIT_ASSERT_NOT_REACHED(); }
+};
+
+} // namespace WebKit
+
+#endif // WebIDBDatabaseCallbacks_h

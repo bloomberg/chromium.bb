@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2010 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,4 +26,50 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "../../../Platform/chromium/public/WebIDBFactory.h"
+#ifndef WebIDBDatabaseError_h
+#define WebIDBDatabaseError_h
+
+#include "WebCommon.h"
+#include "WebPrivatePtr.h"
+#include "WebString.h"
+
+namespace WebCore { class IDBDatabaseError; }
+
+namespace WebKit {
+
+// See comment in WebIDBFactory for a high level overview these classes.
+class WebIDBDatabaseError {
+public:
+    ~WebIDBDatabaseError() { reset(); }
+
+    WebIDBDatabaseError(unsigned short code) { assign(code); }
+    WebIDBDatabaseError(unsigned short code, const WebString& message) { assign(code, message); }
+    WebIDBDatabaseError(const WebIDBDatabaseError& error) { assign(error); }
+    WebIDBDatabaseError& operator=(const WebIDBDatabaseError& error)
+    {
+        assign(error);
+        return *this;
+    }
+
+    WEBKIT_EXPORT void assign(const WebIDBDatabaseError&);
+    WEBKIT_EXPORT void reset();
+
+    WEBKIT_EXPORT unsigned short code() const;
+    WEBKIT_EXPORT WebString message() const;
+
+#if WEBKIT_IMPLEMENTATION
+    WebIDBDatabaseError(const WTF::PassRefPtr<WebCore::IDBDatabaseError>&);
+    WebIDBDatabaseError& operator=(const WTF::PassRefPtr<WebCore::IDBDatabaseError>&);
+    operator WTF::PassRefPtr<WebCore::IDBDatabaseError>() const;
+#endif
+
+private:
+    WEBKIT_EXPORT void assign(unsigned short code);
+    WEBKIT_EXPORT void assign(unsigned short code, const WebString& message);
+
+    WebPrivatePtr<WebCore::IDBDatabaseError> m_private;
+};
+
+} // namespace WebKit
+
+#endif // WebIDBDatabaseError_h

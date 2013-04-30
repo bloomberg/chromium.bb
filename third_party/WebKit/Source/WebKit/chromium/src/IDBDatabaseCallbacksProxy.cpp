@@ -26,7 +26,7 @@
 #include "config.h"
 #include "IDBDatabaseCallbacksProxy.h"
 
-#include "WebIDBDatabaseCallbacks.h"
+#include <public/WebIDBDatabaseCallbacks.h>
 
 using namespace WebCore;
 
