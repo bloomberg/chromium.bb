@@ -437,9 +437,9 @@ TEST_F('HistoryWebUITest', 'basicTest', function() {
 });
 
 /**
- * Test deletion of history entries.
+ * Test bulk deletion of history entries.
  */
-TEST_F('HistoryWebUITest', 'deletion', function() {
+TEST_F('HistoryWebUITest', 'bulkDeletion', function() {
   var checkboxes = document.querySelectorAll(
       '#results-display input[type=checkbox]');
 
@@ -479,6 +479,35 @@ TEST_F('HistoryWebUITest', 'deletion', function() {
                    nextEntry.textContent);
       testDone();
     });
+  });
+});
+
+/**
+ * Test individual deletion of history entries.
+ */
+TEST_F('HistoryWebUITest', 'singleDeletion', function() {
+  var dropDownButton = document.querySelector('.entry-box .drop-down');
+  assertNotEquals(dropDownButton, null);
+  expectFalse(dropDownButton.disabled);
+
+  var removeMenuItem = document.getElementById('remove-visit');
+  assertNotEquals(removeMenuItem, null);
+  expectFalse(removeMenuItem.disabled);
+
+  var secondEntry = document.querySelectorAll('.title a')[1];
+
+  // Delete the first entry.
+  cr.dispatchSimpleEvent(dropDownButton, 'mousedown');
+  expectEquals(window.activeVisit.textContent,
+               historyModel.visits_[0].textContent);
+  cr.dispatchSimpleEvent(removeMenuItem, 'activate');
+
+  // Removing the item triggers a fade-out transition followed by node removal.
+  waitForCallback('removeNodeWithoutTransition', function() {
+    // The original second entry should now be the first.
+    expectEquals(document.querySelector('.title a').textContent,
+                 secondEntry.textContent);
+    testDone();
   });
 });
 

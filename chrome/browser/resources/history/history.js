@@ -1498,7 +1498,7 @@ function load() {
 
   if (mayRemoveVisits) {
     $('remove-visit').addEventListener('activate', function(e) {
-      activeVisit.removeFromHistory_();
+      activeVisit.removeFromHistory();
       activeVisit = null;
     });
   }
@@ -1794,12 +1794,17 @@ function entryBoxMousedown(event) {
   }
 }
 
+// This is pulled out so we can wait for it in tests.
+function removeNodeWithoutTransition(node) {
+  node.parentNode.removeChild(node);
+}
+
 function removeNode(node) {
   node.classList.add('fade-out'); // Trigger CSS fade out animation.
 
   // Delete the node when the animation is complete.
   node.addEventListener('webkitTransitionEnd', function() {
-    node.parentNode.removeChild(node);
+    removeNodeWithoutTransition(node);
   });
 }
 
