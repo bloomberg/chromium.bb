@@ -22,43 +22,6 @@ namespace chromeos {
 
 namespace {
 
-const char kIncompleteServiceProperties[] = "Error.IncompleteServiceProperties";
-const char kIncompleteServicePropertiesMessage[] =
-    "Service properties are incomplete.";
-
-// Returns whether the properties have the required keys or not.
-bool AreServicePropertiesValidWithMode(
-    const base::DictionaryValue& properties,
-    const ShillManagerClient::ErrorCallback& error_callback) {
-  if (properties.HasKey(flimflam::kGuidProperty) ||
-      (properties.HasKey(flimflam::kTypeProperty) &&
-       properties.HasKey(flimflam::kSecurityProperty) &&
-       properties.HasKey(flimflam::kModeProperty) &&
-       properties.HasKey(flimflam::kSSIDProperty))) {
-    return true;
-  }
-  error_callback.Run(kIncompleteServiceProperties,
-                     kIncompleteServicePropertiesMessage);
-  return false;
-}
-
-// DEPRECATED: Keep this only for backward compatibility with NetworkLibrary.
-// Returns whether the properties have the required keys or not.
-// TODO(pneubeck): remove this once NetworkLibrary is gone (crbug/230799).
-bool AreServicePropertiesValid(
-    const base::DictionaryValue& properties,
-    const ShillManagerClient::ErrorCallback& error_callback) {
-  if (properties.HasKey(flimflam::kGuidProperty) ||
-      (properties.HasKey(flimflam::kTypeProperty) &&
-       properties.HasKey(flimflam::kSecurityProperty) &&
-       properties.HasKey(flimflam::kSSIDProperty))) {
-    return true;
-  }
-  error_callback.Run(kIncompleteServiceProperties,
-                     kIncompleteServicePropertiesMessage);
-  return false;
-}
-
 // Appends a string-to-variant dictionary to the writer.
 void AppendServicePropertiesDictionary(
     dbus::MessageWriter* writer,
@@ -175,10 +138,6 @@ class ShillManagerClientImpl : public ShillManagerClient {
       const base::DictionaryValue& properties,
       const ObjectPathCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE {
-    if (!AreServicePropertiesValid(properties, error_callback)) {
-      NOTREACHED() << kIncompleteServicePropertiesMessage;
-      return;
-    }
     dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
                                  flimflam::kConfigureServiceFunction);
     dbus::MessageWriter writer(&method_call);
@@ -193,10 +152,6 @@ class ShillManagerClientImpl : public ShillManagerClient {
       const base::DictionaryValue& properties,
       const ObjectPathCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE {
-    if (!AreServicePropertiesValidWithMode(properties, error_callback)) {
-      NOTREACHED() << kIncompleteServicePropertiesMessage;
-      return;
-    }
     dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
                                  shill::kConfigureServiceForProfileFunction);
     dbus::MessageWriter writer(&method_call);
