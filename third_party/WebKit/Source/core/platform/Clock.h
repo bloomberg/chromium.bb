@@ -34,20 +34,26 @@ namespace WebCore {
 class Clock : public RefCounted<Clock> {
 public:
     static PassRefPtr<Clock> create();
-    virtual ~Clock() { }
 
-    virtual void setCurrentTime(double) = 0;
-    virtual double currentTime() const = 0;
+    void setCurrentTime(double);
+    double currentTime() const;
 
-    virtual void setPlayRate(double) = 0;
-    virtual double playRate() const = 0;
+    void setPlayRate(double);
+    virtual double playRate() const { return m_rate; }
 
-    virtual void start() = 0;
-    virtual void stop() = 0;
-    virtual bool isRunning() const = 0;
+    void start();
+    void stop();
+    bool isRunning() const { return m_running; }
 
-protected:
-    Clock() { }
+private:
+    Clock();
+    double now() const;
+
+    bool m_running;
+    double m_rate;
+    double m_offset;
+    double m_startTime;
+    mutable double m_lastTime;
 };
 
 }

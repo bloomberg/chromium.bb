@@ -26,23 +26,63 @@
 #include "config.h"
 #include "core/platform/Clock.h"
 
-#if USE(COREMEDIA)
-    #include "PlatformClockCM.h"
-#elif USE(COREAUDIO)
-    #include "PlatformClockCA.h"
-#else
-    #include "ClockGeneric.h"
-#endif
+#include <wtf/CurrentTime.h>
 
 using namespace WebCore;
 
+Clock::Clock()
+    : m_running(false)
+    , m_rate(1)
+    , m_offset(0)
+{
+    m_startTime = m_lastTime = now();
+}
+
+void Clock::setCurrentTime(double time)
+{
+    m_startTime = m_lastTime = now();
+    m_offset = time;
+}
+
+double Clock::currentTime() const
+{
+    if (m_running)
+        m_lastTime = now();
+    return ((m_lastTime - m_startTime) * m_rate) + m_offset;
+}
+
+void Clock::setPlayRate(double rate)
+{
+    m_offset = now();
+    m_lastTime = m_startTime = now();
+    m_rate = rate;
+}
+
+void Clock::start()
+{
+    if (m_running)
+        return;
+
+    m_lastTime = m_startTime = now();
+    m_running = true;
+}
+
+void Clock::stop()
+{
+    if (!m_running)
+        return;
+
+    m_offset = now();
+    m_lastTime = m_startTime = now();
+    m_running = false;
+}
+
+double Clock::now() const
+{
+    return WTF::currentTime();
+}
+
 PassRefPtr<Clock> Clock::create()
 {
-#if USE(COREMEDIA)
-    return adoptRef(new PlatformClockCM());
-#elif USE(COREAUDIO)
-    return adoptRef(new PlatformClockCA());
-#else
-    return adoptRef(new ClockGeneric());
-#endif
+    return adoptRef(new Clock());
 }

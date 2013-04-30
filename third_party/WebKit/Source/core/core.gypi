@@ -2441,8 +2441,6 @@
             'platform/FileStream.cpp',
             'platform/FileSystem.cpp',
             'platform/FloatConversion.h',
-            'platform/ClockGeneric.cpp',
-            'platform/ClockGeneric.h',
             'platform/HashTools.h',
             'platform/KURL.cpp',
             'platform/KURLGoogle.cpp',
