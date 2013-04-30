@@ -34,7 +34,7 @@ AppListService* AppListService::Get() {
   return chrome::GetAppListServiceWin();
 #elif defined(OS_MACOSX)
   return chrome::GetAppListServiceMac();
-#elif defined(OS_CHROMEOS)
+#elif defined(USE_ASH)
   return chrome::GetAppListServiceAsh();
 #else
 #error "ENABLE_APP_LIST defined, but no AppListService available"

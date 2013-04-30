@@ -1784,6 +1784,7 @@
           'sources!': [
             'browser/extensions/api/rtc_private/rtc_private_apitest.cc',
             'browser/extensions/api/terminal/terminal_private_apitest.cc',
+            'browser/ui/ash/caps_lock_delegate_chromeos_browsertest.cc',
             'test/data/webui/certificate_viewer_dialog_test.js',
             'test/data/webui/certificate_viewer_ui_test-inl.h',
           ],

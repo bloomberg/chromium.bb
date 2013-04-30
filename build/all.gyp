@@ -158,9 +158,13 @@
         }],
         ['use_aura==1', {
           'dependencies': [
-            '../ash/ash.gyp:*',
             '../ui/aura/aura.gyp:*',
             '../ui/oak/oak.gyp:*',
+          ],
+        }],
+        ['use_ash==1', {
+          'dependencies': [
+            '../ash/ash.gyp:*',
           ],
         }],
         ['remoting==1', {
