@@ -210,7 +210,7 @@ void VaapiVideoDecodeAccelerator::InitialDecodeTask() {
       case VaapiH264Decoder::kReadyToDecode:
         if (state_ == kInitialized) {
           state_ = kPicturesRequested;
-          int num_pics = decoder_.GetRequiredNumOfPictures();
+          size_t num_pics = decoder_.GetRequiredNumOfPictures();
           gfx::Size size(decoder_.pic_width(), decoder_.pic_height());
           DVLOG(1) << "Requesting " << num_pics << " pictures of size: "
                    << size.width() << "x" << size.height();
@@ -429,6 +429,10 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
 
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, kPicturesRequested);
+  size_t num_pics = decoder_.GetRequiredNumOfPictures();
+  RETURN_AND_NOTIFY_ON_FAILURE((num_pics == buffers.size()),
+      "Failed to provide requested picture buffers. (Got " << buffers.size() <<
+      ", requested " << num_pics << ")", INVALID_ARGUMENT,);
 
   for (size_t i = 0; i < buffers.size(); ++i) {
     DVLOG(2) << "Assigning picture id " << buffers[i].id()

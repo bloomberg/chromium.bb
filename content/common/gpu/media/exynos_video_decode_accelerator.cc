@@ -428,7 +428,9 @@ void ExynosVideoDecodeAccelerator::AssignPictureBuffers(
   DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
 
   if (buffers.size() != gsc_output_buffer_map_.size()) {
-    DLOG(ERROR) << "AssignPictureBuffers(): invalid buffer count";
+    DLOG(ERROR) << "AssignPictureBuffers(): Failed to provide requested picture"
+      " buffers. (Got " << buffers.size() << ", requested " <<
+      gsc_output_buffer_map_.size() << ")";
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }

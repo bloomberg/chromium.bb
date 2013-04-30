@@ -409,6 +409,9 @@ void OmxVideoDecodeAccelerator::AssignPictureBuffers(
     return;
 
   RETURN_ON_FAILURE(CanFillBuffer(), "Can't fill buffer", ILLEGAL_STATE,);
+  RETURN_ON_FAILURE((kNumPictureBuffers == buffers.size()),
+      "Failed to provide requested picture buffers. (Got " << buffers.size() <<
+      ", requested " << kNumPictureBuffers << ")", INVALID_ARGUMENT,);
 
   DCHECK_EQ(output_buffers_at_component_, 0);
   DCHECK_EQ(fake_output_buffers_.size(), 0U);
@@ -426,10 +429,6 @@ void OmxVideoDecodeAccelerator::AssignPictureBuffers(
     CHECK(pictures_.insert(std::make_pair(
         buffers[i].id(), OutputPicture(buffers[i], NULL, egl_image))).second);
   }
-
-  if (pictures_.size() < kNumPictureBuffers)
-    return;  // get all the buffers first.
-  DCHECK_EQ(pictures_.size(), kNumPictureBuffers);
 
   // These do their own RETURN_ON_FAILURE dances.
   if (!AllocateOutputBuffers())
