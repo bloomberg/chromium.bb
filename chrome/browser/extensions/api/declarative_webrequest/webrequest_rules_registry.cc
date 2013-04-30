@@ -354,7 +354,7 @@ bool WebRequestRulesRegistry::StageChecker(
        action_iter != actions->actions().end();
        ++action_iter) {
     // Test the intersection of bit masks, this is intentionally & and not &&.
-    if ((*action_iter)->GetStages() & condition_stages)
+    if ((*action_iter)->stages() & condition_stages)
       continue;
     // We only get here if no matching condition was found.
     *error = ErrorUtils::FormatErrorMessage(kActionCannotBeExecuted,

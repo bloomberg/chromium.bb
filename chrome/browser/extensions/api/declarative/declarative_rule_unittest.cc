@@ -230,7 +230,7 @@ struct SummingAction {
     *sum += increment;
   }
 
-  int GetMinimumPriority() const {
+  int minimum_priority() const {
     return min_priority;
   }
 };

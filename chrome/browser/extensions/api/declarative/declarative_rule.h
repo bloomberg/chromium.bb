@@ -125,8 +125,8 @@ class DeclarativeConditionSet {
 //               // Contains action-type-specific in/out parameters.
 //               typename ActionT::ApplyInfo* apply_info) const;
 //   // Return the minimum priority of rules that can be evaluated after this
-//   // action runs.  Return MIN_INT by default.
-//   int GetMinimumPriority() const;
+//   // action runs.  A suitable default value is MIN_INT.
+//   int minimum_priority() const;
 //
 // TODO(battre): As DeclarativeActionSet can become the single owner of all
 // actions, we can optimize here by making some of them singletons (e.g. Cancel
@@ -390,7 +390,7 @@ int DeclarativeActionSet<ActionT>::GetMinimumPriority() const {
   int minimum_priority = std::numeric_limits<int>::min();
   for (typename Actions::const_iterator i = actions_.begin();
        i != actions_.end(); ++i) {
-    minimum_priority = std::max(minimum_priority, (*i)->GetMinimumPriority());
+    minimum_priority = std::max(minimum_priority, (*i)->minimum_priority());
   }
   return minimum_priority;
 }

@@ -93,20 +93,21 @@ class WebRequestAction {
 
   virtual ~WebRequestAction();
 
-  // Returns a bit vector representing extensions::RequestStage. The bit vector
-  // contains a 1 for each request stage during which the condition can be
-  // tested.
-  virtual int GetStages() const = 0;
+  int stages() const {
+    return stages_;
+  }
 
-  virtual Type GetType() const = 0;
+  Type type() const {
+    return type_;
+  }
 
-  // Return the JavaScript type name corresponding to GetType(). If there are
+  // Return the JavaScript type name corresponding to type(). If there are
   // more names, they are returned separated by a colon.
   const std::string& GetName() const;
 
-  // Returns the minimum priority of rules that may be evaluated after
-  // this rule. Defaults to MIN_INT.
-  virtual int GetMinimumPriority() const;
+  int minimum_priority() const {
+    return minimum_priority_;
+  }
 
   HostPermissionsStrategy host_permissions_strategy() const {
     return host_permissions_strategy_;
@@ -148,9 +149,22 @@ class WebRequestAction {
              ApplyInfo* apply_info) const;
 
  protected:
-  explicit WebRequestAction(HostPermissionsStrategy strategy);
+  WebRequestAction(int stages,
+                   Type type,
+                   int minimum_priority,
+                   HostPermissionsStrategy strategy);
 
  private:
+  // A bit vector representing a set of extensions::RequestStage during which
+  // the condition can be tested.
+  const int stages_;
+
+  const Type type_;
+
+  // The minimum priority of rules that may be evaluated after the rule
+  // containing this action.
+  const int minimum_priority_;
+
   // Defaults to STRATEGY_DEFAULT.
   const HostPermissionsStrategy host_permissions_strategy_;
 };
@@ -168,8 +182,6 @@ class WebRequestCancelAction : public WebRequestAction {
   virtual ~WebRequestCancelAction();
 
   // Implementation of WebRequestAction:
-  virtual int GetStages() const OVERRIDE;
-  virtual Type GetType() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -186,8 +198,6 @@ class WebRequestRedirectAction : public WebRequestAction {
   virtual ~WebRequestRedirectAction();
 
   // Implementation of WebRequestAction:
-  virtual int GetStages() const OVERRIDE;
-  virtual Type GetType() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -206,8 +216,6 @@ class WebRequestRedirectToTransparentImageAction : public WebRequestAction {
   virtual ~WebRequestRedirectToTransparentImageAction();
 
   // Implementation of WebRequestAction:
-  virtual int GetStages() const OVERRIDE;
-  virtual Type GetType() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -225,8 +233,6 @@ class WebRequestRedirectToEmptyDocumentAction : public WebRequestAction {
   virtual ~WebRequestRedirectToEmptyDocumentAction();
 
   // Implementation of WebRequestAction:
-  virtual int GetStages() const OVERRIDE;
-  virtual Type GetType() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -250,8 +256,6 @@ class WebRequestRedirectByRegExAction : public WebRequestAction {
   static std::string PerlToRe2Style(const std::string& perl);
 
   // Implementation of WebRequestAction:
-  virtual int GetStages() const OVERRIDE;
-  virtual Type GetType() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -272,8 +276,6 @@ class WebRequestSetRequestHeaderAction : public WebRequestAction {
   virtual ~WebRequestSetRequestHeaderAction();
 
   // Implementation of WebRequestAction:
-  virtual int GetStages() const OVERRIDE;
-  virtual Type GetType() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -292,8 +294,6 @@ class WebRequestRemoveRequestHeaderAction : public WebRequestAction {
   virtual ~WebRequestRemoveRequestHeaderAction();
 
   // Implementation of WebRequestAction:
-  virtual int GetStages() const OVERRIDE;
-  virtual Type GetType() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -312,8 +312,6 @@ class WebRequestAddResponseHeaderAction : public WebRequestAction {
   virtual ~WebRequestAddResponseHeaderAction();
 
   // Implementation of WebRequestAction:
-  virtual int GetStages() const OVERRIDE;
-  virtual Type GetType() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -334,8 +332,6 @@ class WebRequestRemoveResponseHeaderAction : public WebRequestAction {
   virtual ~WebRequestRemoveResponseHeaderAction();
 
   // Implementation of WebRequestAction:
-  virtual int GetStages() const OVERRIDE;
-  virtual Type GetType() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -356,9 +352,6 @@ class WebRequestIgnoreRulesAction : public WebRequestAction {
   virtual ~WebRequestIgnoreRulesAction();
 
   // Implementation of WebRequestAction:
-  virtual int GetStages() const OVERRIDE;
-  virtual Type GetType() const OVERRIDE;
-  virtual int GetMinimumPriority() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -366,7 +359,6 @@ class WebRequestIgnoreRulesAction : public WebRequestAction {
   const std::string& ignore_tag() const { return ignore_tag_; }
 
  private:
-  int minimum_priority_;
   // Rules are ignored if they have a tag matching |ignore_tag_| and
   // |ignore_tag_| is non-empty.
   std::string ignore_tag_;
@@ -384,8 +376,6 @@ class WebRequestRequestCookieAction : public WebRequestAction {
   virtual ~WebRequestRequestCookieAction();
 
   // Implementation of WebRequestAction:
-  virtual int GetStages() const OVERRIDE;
-  virtual Type GetType() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -407,8 +397,6 @@ class WebRequestResponseCookieAction : public WebRequestAction {
   virtual ~WebRequestResponseCookieAction();
 
   // Implementation of WebRequestAction:
-  virtual int GetStages() const OVERRIDE;
-  virtual Type GetType() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -427,8 +415,6 @@ class WebRequestSendMessageToExtensionAction : public WebRequestAction {
   virtual ~WebRequestSendMessageToExtensionAction();
 
   // Implementation of WebRequestAction:
-  virtual int GetStages() const OVERRIDE;
-  virtual Type GetType() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,

@@ -206,7 +206,7 @@ TEST(WebRequestActionTest, CreateAction) {
   EXPECT_EQ("", error);
   EXPECT_FALSE(bad_message);
   ASSERT_TRUE(result.get());
-  EXPECT_EQ(WebRequestAction::ACTION_CANCEL_REQUEST, result->GetType());
+  EXPECT_EQ(WebRequestAction::ACTION_CANCEL_REQUEST, result->type());
 }
 
 TEST(WebRequestActionTest, CreateActionSet) {
@@ -240,7 +240,7 @@ TEST(WebRequestActionTest, CreateActionSet) {
   ASSERT_TRUE(result.get());
   ASSERT_EQ(1u, result->actions().size());
   EXPECT_EQ(WebRequestAction::ACTION_IGNORE_RULES,
-            result->actions()[0]->GetType());
+            result->actions()[0]->type());
   EXPECT_EQ(10, result->GetMinimumPriority());
 
   // Test failure.
