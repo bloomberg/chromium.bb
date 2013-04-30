@@ -16,8 +16,7 @@ static URLFetcherFactory* g_factory = NULL;
 URLFetcherImpl::URLFetcherImpl(const GURL& url,
                                RequestType request_type,
                                URLFetcherDelegate* d)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(
-        core_(new URLFetcherCore(this, url, request_type, d))) {
+    : core_(new URLFetcherCore(this, url, request_type, d)) {
 }
 
 URLFetcherImpl::~URLFetcherImpl() {

@@ -52,8 +52,8 @@ SOCKSConnectJob::SOCKSConnectJob(
       socks_params_(socks_params),
       transport_pool_(transport_pool),
       resolver_(host_resolver),
-      ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
-          base::Bind(&SOCKSConnectJob::OnIOComplete, base::Unretained(this)))) {
+      callback_(base::Bind(&SOCKSConnectJob::OnIOComplete,
+                           base::Unretained(this))) {
 }
 
 SOCKSConnectJob::~SOCKSConnectJob() {

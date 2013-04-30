@@ -122,7 +122,7 @@ UploadFileElementReader::UploadFileElementReader(
       file_stream_(NULL, FileStreamDeleter(task_runner_)),
       content_length_(0),
       bytes_remaining_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   DCHECK(task_runner_);
 }
 

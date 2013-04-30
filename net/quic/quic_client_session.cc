@@ -26,7 +26,7 @@ QuicClientSession::QuicClientSession(
     QuicCryptoClientConfig* crypto_config,
     NetLog* net_log)
     : QuicSession(connection, false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       stream_factory_(stream_factory),
       socket_(socket),
       read_buffer_(new IOBufferWithSize(kMaxPacketSize)),

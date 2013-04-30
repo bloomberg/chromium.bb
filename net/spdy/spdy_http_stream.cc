@@ -28,7 +28,7 @@ namespace net {
 
 SpdyHttpStream::SpdyHttpStream(SpdySession* spdy_session,
                                bool direct)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+    : weak_factory_(this),
       spdy_session_(spdy_session),
       stream_closed_(false),
       closed_stream_pushed_(false),

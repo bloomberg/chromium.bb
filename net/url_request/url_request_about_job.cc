@@ -17,7 +17,7 @@ namespace net {
 URLRequestAboutJob::URLRequestAboutJob(URLRequest* request,
                                        NetworkDelegate* network_delegate)
     : URLRequestJob(request, network_delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 // static

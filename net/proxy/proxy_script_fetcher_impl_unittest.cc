@@ -47,7 +47,7 @@ struct FetchResult {
 // A non-mock URL request which can access http:// and file:// urls.
 class RequestContext : public URLRequestContext {
  public:
-  RequestContext() : ALLOW_THIS_IN_INITIALIZER_LIST(storage_(this)) {
+  RequestContext() : storage_(this) {
     ProxyConfig no_proxy;
     storage_.set_host_resolver(scoped_ptr<HostResolver>(new MockHostResolver));
     storage_.set_cert_verifier(new MockCertVerifier);

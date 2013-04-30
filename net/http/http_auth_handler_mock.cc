@@ -15,7 +15,7 @@ namespace net {
 
 HttpAuthHandlerMock::HttpAuthHandlerMock()
   : resolve_(RESOLVE_INIT),
-    ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+    weak_factory_(this),
     generate_async_(false),
     generate_rv_(OK),
     auth_token_(NULL),

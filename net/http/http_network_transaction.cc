@@ -116,9 +116,8 @@ Value* NetLogSSLVersionFallbackCallback(const GURL* url,
 HttpNetworkTransaction::HttpNetworkTransaction(RequestPriority priority,
                                                HttpNetworkSession* session)
     : pending_auth_target_(HttpAuth::AUTH_NONE),
-      ALLOW_THIS_IN_INITIALIZER_LIST(io_callback_(
-          base::Bind(&HttpNetworkTransaction::OnIOComplete,
-                     base::Unretained(this)))),
+      io_callback_(base::Bind(&HttpNetworkTransaction::OnIOComplete,
+                              base::Unretained(this))),
       session_(session),
       request_(NULL),
       priority_(priority),

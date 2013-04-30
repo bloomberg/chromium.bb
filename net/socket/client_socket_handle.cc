@@ -20,9 +20,8 @@ ClientSocketHandle::ClientSocketHandle()
       pool_(NULL),
       layered_pool_(NULL),
       is_reused_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
-          base::Bind(&ClientSocketHandle::OnIOComplete,
-                     base::Unretained(this)))),
+      callback_(base::Bind(&ClientSocketHandle::OnIOComplete,
+                           base::Unretained(this))),
       is_ssl_error_(false) {}
 
 ClientSocketHandle::~ClientSocketHandle() {

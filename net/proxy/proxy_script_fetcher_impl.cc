@@ -73,7 +73,7 @@ void ConvertResponseToUTF16(const std::string& charset,
 
 ProxyScriptFetcherImpl::ProxyScriptFetcherImpl(
     URLRequestContext* url_request_context)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+    : weak_factory_(this),
       url_request_context_(url_request_context),
       buf_(new IOBuffer(kBufSize)),
       next_id_(0),

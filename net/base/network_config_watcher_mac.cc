@@ -54,7 +54,7 @@ NetworkConfigWatcherMacThread::NetworkConfigWatcherMacThread(
     NetworkConfigWatcherMac::Delegate* delegate)
     : base::Thread("NetworkConfigWatcher"),
       delegate_(delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
+      weak_factory_(this) {}
 
 NetworkConfigWatcherMacThread::~NetworkConfigWatcherMacThread() {
   // Allow IO because Stop() calls PlatformThread::Join(), which is a blocking

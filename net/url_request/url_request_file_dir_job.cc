@@ -26,14 +26,14 @@ URLRequestFileDirJob::URLRequestFileDirJob(URLRequest* request,
                                            NetworkDelegate* network_delegate,
                                            const base::FilePath& dir_path)
     : URLRequestJob(request, network_delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(lister_(dir_path, this)),
+      lister_(dir_path, this),
       dir_path_(dir_path),
       canceled_(false),
       list_complete_(false),
       wrote_header_(false),
       read_pending_(false),
       read_buffer_length_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 void URLRequestFileDirJob::StartAsync() {

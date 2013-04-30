@@ -16,7 +16,7 @@ URLRequestErrorJob::URLRequestErrorJob(
     URLRequest* request, NetworkDelegate* network_delegate, int error)
     : URLRequestJob(request, network_delegate),
       error_(error),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
+      weak_factory_(this) {}
 
 URLRequestErrorJob::~URLRequestErrorJob() {}
 

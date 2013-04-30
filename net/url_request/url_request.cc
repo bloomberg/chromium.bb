@@ -217,9 +217,8 @@ URLRequest::URLRequest(const GURL& url,
       priority_(DEFAULT_PRIORITY),
       identifier_(GenerateURLRequestIdentifier()),
       blocked_on_delegate_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(before_request_callback_(
-          base::Bind(&URLRequest::BeforeRequestComplete,
-                     base::Unretained(this)))),
+      before_request_callback_(base::Bind(&URLRequest::BeforeRequestComplete,
+                                          base::Unretained(this))),
       has_notified_completion_(false),
       received_response_content_length_(0),
       creation_time_(base::TimeTicks::Now()) {
@@ -256,9 +255,8 @@ URLRequest::URLRequest(const GURL& url,
       priority_(DEFAULT_PRIORITY),
       identifier_(GenerateURLRequestIdentifier()),
       blocked_on_delegate_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(before_request_callback_(
-          base::Bind(&URLRequest::BeforeRequestComplete,
-                     base::Unretained(this)))),
+      before_request_callback_(base::Bind(&URLRequest::BeforeRequestComplete,
+                                          base::Unretained(this))),
       has_notified_completion_(false),
       received_response_content_length_(0),
       creation_time_(base::TimeTicks::Now()) {

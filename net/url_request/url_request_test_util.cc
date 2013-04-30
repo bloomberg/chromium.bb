@@ -45,14 +45,14 @@ const int kStageDestruction = 1 << 10;
 TestURLRequestContext::TestURLRequestContext()
     : initialized_(false),
       client_socket_factory_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(context_storage_(this)) {
+      context_storage_(this) {
   Init();
 }
 
 TestURLRequestContext::TestURLRequestContext(bool delay_initialization)
     : initialized_(false),
       client_socket_factory_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(context_storage_(this)) {
+      context_storage_(this) {
   if (!delay_initialization)
     Init();
 }

@@ -15,7 +15,7 @@
 
 HttpListenSocket::HttpListenSocket(SocketDescriptor s,
                                    HttpListenSocket::Delegate* delegate)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(net::TCPListenSocket(s, this)),
+    : net::TCPListenSocket(s, this),
       delegate_(delegate) {
 }
 

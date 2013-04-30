@@ -142,7 +142,7 @@ int PreferedCacheSize(int64 available) {
 BackendImpl::BackendImpl(const base::FilePath& path,
                          base::MessageLoopProxy* cache_thread,
                          net::NetLog* net_log)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(background_queue_(this, cache_thread)),
+    : background_queue_(this, cache_thread),
       path_(path),
       block_files_(path),
       mask_(0),
@@ -161,14 +161,14 @@ BackendImpl::BackendImpl(const base::FilePath& path,
       user_load_(false),
       net_log_(net_log),
       done_(true, false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(ptr_factory_(this)) {
+      ptr_factory_(this) {
 }
 
 BackendImpl::BackendImpl(const base::FilePath& path,
                          uint32 mask,
                          base::MessageLoopProxy* cache_thread,
                          net::NetLog* net_log)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(background_queue_(this, cache_thread)),
+    : background_queue_(this, cache_thread),
       path_(path),
       block_files_(path),
       mask_(mask),
@@ -187,7 +187,7 @@ BackendImpl::BackendImpl(const base::FilePath& path,
       user_load_(false),
       net_log_(net_log),
       done_(true, false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(ptr_factory_(this)) {
+      ptr_factory_(this) {
 }
 
 BackendImpl::~BackendImpl() {

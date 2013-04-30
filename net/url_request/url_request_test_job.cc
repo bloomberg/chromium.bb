@@ -93,7 +93,7 @@ URLRequestTestJob::URLRequestTestJob(URLRequest* request,
       offset_(0),
       async_buf_(NULL),
       async_buf_size_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 URLRequestTestJob::URLRequestTestJob(URLRequest* request,
@@ -106,7 +106,7 @@ URLRequestTestJob::URLRequestTestJob(URLRequest* request,
       offset_(0),
       async_buf_(NULL),
       async_buf_size_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 URLRequestTestJob::URLRequestTestJob(URLRequest* request,
@@ -123,7 +123,7 @@ URLRequestTestJob::URLRequestTestJob(URLRequest* request,
       offset_(0),
       async_buf_(NULL),
       async_buf_size_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 URLRequestTestJob::~URLRequestTestJob() {

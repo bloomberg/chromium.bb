@@ -106,8 +106,8 @@ class UDPSocketWin::Core : public base::RefCounted<Core> {
 
 UDPSocketWin::Core::Core(UDPSocketWin* socket)
     : socket_(socket),
-      ALLOW_THIS_IN_INITIALIZER_LIST(reader_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(writer_(this)) {
+      reader_(this),
+      writer_(this) {
   memset(&read_overlapped_, 0, sizeof(read_overlapped_));
   memset(&write_overlapped_, 0, sizeof(write_overlapped_));
 

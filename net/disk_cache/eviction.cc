@@ -70,7 +70,7 @@ namespace disk_cache {
 Eviction::Eviction()
     : backend_(NULL),
       init_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(ptr_factory_(this)) {
+      ptr_factory_(this) {
 }
 
 Eviction::~Eviction() {

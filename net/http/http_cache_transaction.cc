@@ -190,10 +190,9 @@ HttpCache::Transaction::Transaction(
       read_offset_(0),
       effective_load_flags_(0),
       write_len_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(io_callback_(
-          base::Bind(&Transaction::OnIOComplete,
-                     weak_factory_.GetWeakPtr()))),
+      weak_factory_(this),
+      io_callback_(base::Bind(
+          &Transaction::OnIOComplete, weak_factory_.GetWeakPtr())),
       transaction_pattern_(PATTERN_UNDEFINED),
       defer_cache_sensitivity_delay_(false),
       transaction_delegate_(transaction_delegate) {

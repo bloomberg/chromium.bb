@@ -80,8 +80,8 @@ WebSocketJob::WebSocketJob(SocketStream::Delegate* delegate)
       handshake_request_sent_(0),
       response_cookies_save_index_(0),
       spdy_protocol_version_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_for_send_pending_(this)) {
+      weak_ptr_factory_(this),
+      weak_ptr_factory_for_send_pending_(this) {
 }
 
 WebSocketJob::~WebSocketJob() {

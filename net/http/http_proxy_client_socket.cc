@@ -35,9 +35,8 @@ HttpProxyClientSocket::HttpProxyClientSocket(
     bool using_spdy,
     NextProto protocol_negotiated,
     bool is_https_proxy)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(io_callback_(
-        base::Bind(&HttpProxyClientSocket::OnIOComplete,
-                   base::Unretained(this)))),
+    : io_callback_(base::Bind(&HttpProxyClientSocket::OnIOComplete,
+                              base::Unretained(this))),
       next_state_(STATE_NONE),
       transport_(transport_socket),
       endpoint_(endpoint),

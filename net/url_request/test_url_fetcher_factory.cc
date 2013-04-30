@@ -242,7 +242,7 @@ void TestURLFetcher::SetResponseFilePath(const base::FilePath& path) {
 }
 
 TestURLFetcherFactory::TestURLFetcherFactory()
-    : ScopedURLFetcherFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+    : ScopedURLFetcherFactory(this),
       delegate_for_tests_(NULL),
       remove_fetcher_on_delete_(false) {
 }
@@ -283,7 +283,7 @@ FakeURLFetcher::FakeURLFetcher(const GURL& url,
                                const std::string& response_data,
                                bool success)
     : TestURLFetcher(0, url, d),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   set_status(URLRequestStatus(
       success ? URLRequestStatus::SUCCESS : URLRequestStatus::FAILED,
       0));
@@ -309,7 +309,7 @@ const GURL& FakeURLFetcher::GetURL() const {
 
 FakeURLFetcherFactory::FakeURLFetcherFactory(
     URLFetcherFactory* default_factory)
-    : ScopedURLFetcherFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+    : ScopedURLFetcherFactory(this),
       creator_(base::Bind(&DefaultFakeURLFetcherCreator)),
       default_factory_(default_factory) {
 }
@@ -317,7 +317,7 @@ FakeURLFetcherFactory::FakeURLFetcherFactory(
 FakeURLFetcherFactory::FakeURLFetcherFactory(
     URLFetcherFactory* default_factory,
     const FakeURLFetcherCreator& creator)
-    : ScopedURLFetcherFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+    : ScopedURLFetcherFactory(this),
       creator_(creator),
       default_factory_(default_factory) {
 }

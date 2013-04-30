@@ -167,7 +167,7 @@ class ProxyConfigServiceAndroid::Delegate
   Delegate(base::SequencedTaskRunner* network_task_runner,
            base::SequencedTaskRunner* jni_task_runner,
            const GetPropertyCallback& get_property_callback)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(jni_delegate_(this)),
+      : jni_delegate_(this),
         network_task_runner_(network_task_runner),
         jni_task_runner_(jni_task_runner),
         get_property_callback_(get_property_callback) {

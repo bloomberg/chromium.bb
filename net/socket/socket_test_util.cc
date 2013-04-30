@@ -289,7 +289,7 @@ DelayedSocketData::DelayedSocketData(
     : StaticSocketDataProvider(reads, reads_count, writes, writes_count),
       write_delay_(write_delay),
       read_in_progress_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   DCHECK_GE(write_delay_, 0);
 }
 
@@ -299,7 +299,7 @@ DelayedSocketData::DelayedSocketData(
     : StaticSocketDataProvider(reads, reads_count, writes, writes_count),
       write_delay_(write_delay),
       read_in_progress_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   DCHECK_GE(write_delay_, 0);
   set_connect_data(connect);
 }
@@ -349,7 +349,7 @@ OrderedSocketData::OrderedSocketData(
     MockRead* reads, size_t reads_count, MockWrite* writes, size_t writes_count)
     : StaticSocketDataProvider(reads, reads_count, writes, writes_count),
       sequence_number_(0), loop_stop_stage_(0),
-      blocked_(false), ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      blocked_(false), weak_factory_(this) {
 }
 
 OrderedSocketData::OrderedSocketData(
@@ -358,7 +358,7 @@ OrderedSocketData::OrderedSocketData(
     MockWrite* writes, size_t writes_count)
     : StaticSocketDataProvider(reads, reads_count, writes, writes_count),
       sequence_number_(0), loop_stop_stage_(0),
-      blocked_(false), ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      blocked_(false), weak_factory_(this) {
   set_connect_data(connect);
 }
 
@@ -695,7 +695,7 @@ void MockClientSocketFactory::ClearSSLSessionCache() {
 const char MockClientSocket::kTlsUnique[] = "MOCK_TLSUNIQ";
 
 MockClientSocket::MockClientSocket(const BoundNetLog& net_log)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+    : weak_factory_(this),
       connected_(false),
       net_log_(net_log) {
   IPAddressNumber ip;
@@ -1285,7 +1285,7 @@ MockUDPClientSocket::MockUDPClientSocket(SocketDataProvider* data,
       pending_buf_(NULL),
       pending_buf_len_(0),
       net_log_(BoundNetLog::Make(net_log, net::NetLog::SOURCE_NONE)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   DCHECK(data_);
   data_->Reset();
   peer_addr_ = data->connect_data().peer_addr;
@@ -1445,8 +1445,8 @@ TestSocketRequest::TestSocketRequest(
     std::vector<TestSocketRequest*>* request_order, size_t* completion_count)
     : request_order_(request_order),
       completion_count_(completion_count),
-      ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
-          base::Bind(&TestSocketRequest::OnComplete, base::Unretained(this)))) {
+      callback_(base::Bind(&TestSocketRequest::OnComplete,
+                           base::Unretained(this))) {
   DCHECK(request_order);
   DCHECK(completion_count);
 }

@@ -42,7 +42,7 @@ SpdyProxyClientSocket::SpdyProxyClientSocket(
       user_buffer_len_(0),
       write_buffer_len_(0),
       write_bytes_outstanding_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       net_log_(BoundNetLog::Make(spdy_stream->net_log().net_log(),
                                  NetLog::SOURCE_PROXY_CLIENT_SOCKET)) {
   request_.method = "CONNECT";

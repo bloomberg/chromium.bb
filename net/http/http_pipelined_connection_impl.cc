@@ -90,7 +90,7 @@ HttpPipelinedConnectionImpl::HttpPipelinedConnectionImpl(
       active_(false),
       usable_(true),
       completed_one_request_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       send_next_state_(SEND_STATE_NONE),
       send_still_on_call_stack_(false),
       read_next_state_(READ_STATE_NONE),

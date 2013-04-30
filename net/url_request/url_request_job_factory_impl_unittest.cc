@@ -22,7 +22,7 @@ class MockURLRequestJob : public URLRequestJob {
                     const URLRequestStatus& status)
       : URLRequestJob(request, network_delegate),
         status_(status),
-        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
+        weak_factory_(this) {}
 
   virtual void Start() OVERRIDE {
     // Start reading asynchronously so that all error reporting and data

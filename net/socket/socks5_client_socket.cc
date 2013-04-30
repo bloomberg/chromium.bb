@@ -30,9 +30,8 @@ COMPILE_ASSERT(sizeof(struct in6_addr) == 16, incorrect_system_size_of_IPv6);
 SOCKS5ClientSocket::SOCKS5ClientSocket(
     ClientSocketHandle* transport_socket,
     const HostResolver::RequestInfo& req_info)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(
-          io_callback_(base::Bind(&SOCKS5ClientSocket::OnIOComplete,
-                                  base::Unretained(this)))),
+    : io_callback_(base::Bind(&SOCKS5ClientSocket::OnIOComplete,
+                              base::Unretained(this))),
       transport_(transport_socket),
       next_state_(STATE_NONE),
       completed_handshake_(false),
@@ -46,9 +45,8 @@ SOCKS5ClientSocket::SOCKS5ClientSocket(
 SOCKS5ClientSocket::SOCKS5ClientSocket(
     StreamSocket* transport_socket,
     const HostResolver::RequestInfo& req_info)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(
-          io_callback_(base::Bind(&SOCKS5ClientSocket::OnIOComplete,
-                                  base::Unretained(this)))),
+    : io_callback_(base::Bind(&SOCKS5ClientSocket::OnIOComplete,
+                              base::Unretained(this))),
       transport_(new ClientSocketHandle()),
       next_state_(STATE_NONE),
       completed_handshake_(false),

@@ -998,8 +998,8 @@ class StreamDeleter {
  public:
   StreamDeleter(HttpStream* stream)
       : stream_(stream),
-        ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
-            base::Bind(&StreamDeleter::OnIOComplete, base::Unretained(this)))) {
+        callback_(base::Bind(&StreamDeleter::OnIOComplete,
+                             base::Unretained(this))) {
   }
 
   ~StreamDeleter() {

@@ -719,7 +719,7 @@ net::HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
 }
 
 SpdyURLRequestContext::SpdyURLRequestContext()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(storage_(this)) {
+    : storage_(this) {
   storage_.set_host_resolver(scoped_ptr<HostResolver>(new MockHostResolver));
   storage_.set_cert_verifier(new MockCertVerifier);
   storage_.set_proxy_service(ProxyService::CreateDirect());

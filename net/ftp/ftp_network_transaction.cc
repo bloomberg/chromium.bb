@@ -206,9 +206,8 @@ FtpNetworkTransaction::FtpNetworkTransaction(
     FtpNetworkSession* session,
     ClientSocketFactory* socket_factory)
     : command_sent_(COMMAND_NONE),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          io_callback_(base::Bind(&FtpNetworkTransaction::OnIOComplete,
-                                  base::Unretained(this)))),
+      io_callback_(base::Bind(&FtpNetworkTransaction::OnIOComplete,
+                              base::Unretained(this))),
       session_(session),
       request_(NULL),
       resolver_(session->host_resolver()),

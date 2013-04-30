@@ -224,7 +224,7 @@ void TestTransactionConsumer::OnIOComplete(int result) {
 MockNetworkTransaction::MockNetworkTransaction(
     net::RequestPriority priority,
     MockNetworkLayer* factory)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+    : weak_factory_(this),
       data_cursor_(0),
       priority_(priority),
       transaction_factory_(factory->AsWeakPtr()) {

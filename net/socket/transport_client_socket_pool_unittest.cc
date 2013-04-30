@@ -227,7 +227,7 @@ class MockPendingClientSocket : public StreamSocket {
       bool should_stall,
       base::TimeDelta delay,
       net::NetLog* net_log)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      : weak_factory_(this),
         should_connect_(should_connect),
         should_stall_(should_stall),
         delay_(delay),
@@ -829,9 +829,8 @@ class RequestSocketCallback : public TestCompletionCallbackBase {
       : handle_(handle),
         pool_(pool),
         within_callback_(false),
-        ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
-            base::Bind(&RequestSocketCallback::OnComplete,
-                       base::Unretained(this)))) {
+        callback_(base::Bind(&RequestSocketCallback::OnComplete,
+                             base::Unretained(this))) {
   }
 
   virtual ~RequestSocketCallback() {}

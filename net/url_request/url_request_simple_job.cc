@@ -17,7 +17,7 @@ URLRequestSimpleJob::URLRequestSimpleJob(
     URLRequest* request, NetworkDelegate* network_delegate)
     : URLRequestJob(request, network_delegate),
       data_offset_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
+      weak_factory_(this) {}
 
 void URLRequestSimpleJob::Start() {
   // Start reading asynchronously so that all error reporting and data

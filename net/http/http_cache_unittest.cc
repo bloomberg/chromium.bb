@@ -40,9 +40,8 @@ class DeleteCacheCompletionCallback : public net::TestCompletionCallbackBase {
  public:
   explicit DeleteCacheCompletionCallback(MockHttpCache* cache)
       : cache_(cache),
-        ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
-            base::Bind(&DeleteCacheCompletionCallback::OnComplete,
-                       base::Unretained(this)))) {
+        callback_(base::Bind(&DeleteCacheCompletionCallback::OnComplete,
+                             base::Unretained(this))) {
   }
 
   const net::CompletionCallback& callback() const { return callback_; }

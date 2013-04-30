@@ -303,7 +303,7 @@ SpdySession::SpdySession(const HostPortProxyPair& host_port_proxy_pair,
                          TimeFunc time_func,
                          const HostPortPair& trusted_spdy_proxy,
                          NetLog* net_log)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+    : weak_factory_(this),
       host_port_proxy_pair_(host_port_proxy_pair),
       spdy_session_pool_(spdy_session_pool),
       http_server_properties_(http_server_properties),

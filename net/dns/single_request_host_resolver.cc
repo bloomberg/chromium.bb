@@ -15,9 +15,9 @@ namespace net {
 SingleRequestHostResolver::SingleRequestHostResolver(HostResolver* resolver)
     : resolver_(resolver),
       cur_request_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
+      callback_(
           base::Bind(&SingleRequestHostResolver::OnResolveCompletion,
-                     base::Unretained(this)))) {
+                     base::Unretained(this))) {
   DCHECK(resolver_ != NULL);
 }
 

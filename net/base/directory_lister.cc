@@ -100,8 +100,7 @@ void SortData(std::vector<DirectoryLister::DirectoryListerData>* data,
 
 DirectoryLister::DirectoryLister(const base::FilePath& dir,
                                  DirectoryListerDelegate* delegate)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(
-        core_(new Core(dir, false, ALPHA_DIRS_FIRST, this))),
+    : core_(new Core(dir, false, ALPHA_DIRS_FIRST, this)),
       delegate_(delegate) {
   DCHECK(delegate_);
   DCHECK(!dir.value().empty());
@@ -111,8 +110,7 @@ DirectoryLister::DirectoryLister(const base::FilePath& dir,
                                  bool recursive,
                                  SortType sort,
                                  DirectoryListerDelegate* delegate)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(
-        core_(new Core(dir, recursive, sort, this))),
+    : core_(new Core(dir, recursive, sort, this)),
       delegate_(delegate) {
   DCHECK(delegate_);
   DCHECK(!dir.value().empty());

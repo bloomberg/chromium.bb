@@ -72,7 +72,7 @@ class MockHttpStream : public HttpStream {
         is_sync_(false),
         is_last_chunk_zero_size_(false),
         is_complete_(false),
-        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
+        weak_factory_(this) {}
   virtual ~MockHttpStream() {}
 
   // HttpStream implementation.

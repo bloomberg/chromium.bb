@@ -125,7 +125,7 @@ class BasicURLRequestContext : public URLRequestContext {
   BasicURLRequestContext()
       : cache_thread_("Cache Thread"),
         file_thread_("File Thread"),
-        ALLOW_THIS_IN_INITIALIZER_LIST(storage_(this)) {}
+        storage_(this) {}
 
   URLRequestContextStorage* storage() {
     return &storage_;

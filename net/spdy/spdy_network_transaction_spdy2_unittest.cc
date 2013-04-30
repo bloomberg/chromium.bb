@@ -1371,8 +1371,8 @@ class KillerCallback : public TestCompletionCallbackBase {
  public:
   explicit KillerCallback(HttpNetworkTransaction* transaction)
       : transaction_(transaction),
-        ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
-            base::Bind(&KillerCallback::OnComplete, base::Unretained(this)))) {
+        callback_(base::Bind(&KillerCallback::OnComplete,
+                             base::Unretained(this))) {
   }
 
   virtual ~KillerCallback() {}

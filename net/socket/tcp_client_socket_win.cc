@@ -269,8 +269,8 @@ TCPClientSocketWin::Core::Core(
       disable_overlapped_reads_(g_disable_overlapped_reads),
       non_blocking_reads_initialized_(false),
       socket_(socket),
-      ALLOW_THIS_IN_INITIALIZER_LIST(reader_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(writer_(this)),
+      reader_(this),
+      writer_(this),
       slow_start_throttle_(kInitialSlowStartThrottle) {
   memset(&read_overlapped_, 0, sizeof(read_overlapped_));
   memset(&write_overlapped_, 0, sizeof(write_overlapped_));

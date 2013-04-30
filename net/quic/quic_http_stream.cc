@@ -32,7 +32,7 @@ QuicHttpStream::QuicHttpStream(QuicReliableClientStream* stream)
       response_headers_received_(false),
       read_buf_(new GrowableIOBuffer()),
       user_buffer_len_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   DCHECK(stream_);
   stream_->SetDelegate(this);
 }

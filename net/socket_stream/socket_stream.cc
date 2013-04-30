@@ -101,9 +101,8 @@ SocketStream::SocketStream(const GURL& url, Delegate* delegate)
       pac_request_(NULL),
       // Unretained() is required; without it, Bind() creates a circular
       // dependency and the SocketStream object will not be freed.
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          io_callback_(base::Bind(&SocketStream::OnIOCompleted,
-                                  base::Unretained(this)))),
+      io_callback_(base::Bind(&SocketStream::OnIOCompleted,
+                              base::Unretained(this))),
       read_buf_(NULL),
       current_write_buf_(NULL),
       waiting_for_write_completion_(false),

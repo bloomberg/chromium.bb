@@ -233,12 +233,11 @@ URLRequestHttpJob::URLRequestHttpJob(
       response_cookies_save_index_(0),
       proxy_auth_state_(AUTH_STATE_DONT_NEED_AUTH),
       server_auth_state_(AUTH_STATE_DONT_NEED_AUTH),
-      ALLOW_THIS_IN_INITIALIZER_LIST(start_callback_(
-          base::Bind(&URLRequestHttpJob::OnStartCompleted,
-                     base::Unretained(this)))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(notify_before_headers_sent_callback_(
-          base::Bind(&URLRequestHttpJob::NotifyBeforeSendHeadersCallback,
-                     base::Unretained(this)))),
+      start_callback_(base::Bind(
+          &URLRequestHttpJob::OnStartCompleted, base::Unretained(this))),
+      notify_before_headers_sent_callback_(base::Bind(
+          &URLRequestHttpJob::NotifyBeforeSendHeadersCallback,
+          base::Unretained(this))),
       read_in_progress_(false),
       transaction_(NULL),
       throttling_entry_(NULL),
@@ -252,12 +251,11 @@ URLRequestHttpJob::URLRequestHttpJob(
       bytes_observed_in_packets_(0),
       request_time_snapshot_(),
       final_packet_time_(),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          filter_context_(new HttpFilterContext(this))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(on_headers_received_callback_(
-          base::Bind(&URLRequestHttpJob::OnHeadersReceivedCallback,
-                     base::Unretained(this)))),
+      filter_context_(new HttpFilterContext(this)),
+      weak_factory_(this),
+      on_headers_received_callback_(base::Bind(
+          &URLRequestHttpJob::OnHeadersReceivedCallback,
+          base::Unretained(this))),
       awaiting_callback_(false),
       http_transaction_delegate_(new HttpTransactionDelegateImpl(
           request, network_delegate)),

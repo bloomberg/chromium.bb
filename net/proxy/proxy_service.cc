@@ -552,7 +552,7 @@ class ProxyService::ProxyScriptDeciderPoller {
                            int init_net_error,
                            ProxyResolverScriptData* init_script_data,
                            NetLog* net_log)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      : weak_factory_(this),
         change_callback_(callback),
         config_(config),
         proxy_resolver_expects_pac_bytes_(proxy_resolver_expects_pac_bytes),
@@ -1507,9 +1507,8 @@ SyncProxyServiceHelper::SyncProxyServiceHelper(MessageLoop* io_message_loop,
     : io_message_loop_(io_message_loop),
       proxy_service_(proxy_service),
       event_(false, false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
-          base::Bind(&SyncProxyServiceHelper::OnCompletion,
-                     base::Unretained(this)))) {
+      callback_(base::Bind(&SyncProxyServiceHelper::OnCompletion,
+                           base::Unretained(this))) {
   DCHECK(io_message_loop_ != MessageLoop::current());
 }
 

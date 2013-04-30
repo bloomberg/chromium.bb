@@ -102,7 +102,7 @@ SpawnerCommunicator::SpawnerCommunicator(uint16 port)
       event_(false, false),
       port_(port),
       next_id_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       is_running_(false) {}
 
 SpawnerCommunicator::~SpawnerCommunicator() {

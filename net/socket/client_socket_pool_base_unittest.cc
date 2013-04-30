@@ -259,7 +259,7 @@ class TestConnectJob : public ConnectJob {
                    BoundNetLog::Make(net_log, NetLog::SOURCE_CONNECT_JOB)),
         job_type_(job_type),
         client_socket_factory_(client_socket_factory),
-        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+        weak_factory_(this),
         load_state_(LOAD_STATE_IDLE),
         store_additional_error_state_(false) {}
 
@@ -1441,9 +1441,8 @@ class RequestSocketCallback : public TestCompletionCallbackBase {
         within_callback_(false),
         test_connect_job_factory_(test_connect_job_factory),
         next_job_type_(next_job_type),
-        ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
-            base::Bind(&RequestSocketCallback::OnComplete,
-                       base::Unretained(this)))) {
+        callback_(base::Bind(&RequestSocketCallback::OnComplete,
+                             base::Unretained(this))) {
   }
 
   virtual ~RequestSocketCallback() {}
@@ -2408,9 +2407,8 @@ class TestReleasingSocketRequest : public TestCompletionCallbackBase {
       : pool_(pool),
         expected_result_(expected_result),
         reset_releasing_handle_(reset_releasing_handle),
-        ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
-            base::Bind(&TestReleasingSocketRequest::OnComplete,
-                       base::Unretained(this)))) {
+        callback_(base::Bind(&TestReleasingSocketRequest::OnComplete,
+                             base::Unretained(this))) {
   }
 
   virtual ~TestReleasingSocketRequest() {}
@@ -2533,9 +2531,8 @@ class ConnectWithinCallback : public TestCompletionCallbackBase {
       : group_name_(group_name),
         params_(params),
         pool_(pool),
-        ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
-            base::Bind(&ConnectWithinCallback::OnComplete,
-                       base::Unretained(this)))) {
+        callback_(base::Bind(&ConnectWithinCallback::OnComplete,
+                             base::Unretained(this))) {
   }
 
   virtual ~ConnectWithinCallback() {}

@@ -331,7 +331,7 @@ InFlightBackendIO::InFlightBackendIO(BackendImpl* backend,
                     base::MessageLoopProxy* background_thread)
     : backend_(backend),
       background_thread_(background_thread),
-      ALLOW_THIS_IN_INITIALIZER_LIST(ptr_factory_(this)) {
+      ptr_factory_(this) {
 }
 
 InFlightBackendIO::~InFlightBackendIO() {

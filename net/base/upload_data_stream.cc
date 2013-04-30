@@ -23,7 +23,7 @@ UploadDataStream::UploadDataStream(
       last_chunk_appended_(false),
       read_failed_(false),
       initialized_successfully_(false),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(this) {
   element_readers_.swap(*element_readers);
 }
 
@@ -36,7 +36,7 @@ UploadDataStream::UploadDataStream(Chunked /*chunked*/, int64 identifier)
       last_chunk_appended_(false),
       read_failed_(false),
       initialized_successfully_(false),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(this) {
 }
 
 UploadDataStream::~UploadDataStream() {

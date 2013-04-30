@@ -1353,10 +1353,9 @@ TEST_F(SpdyProxyClientSocketSpdy3Test, NetLog) {
 class DeleteSockCallback : public TestCompletionCallbackBase {
  public:
   explicit DeleteSockCallback(scoped_ptr<SpdyProxyClientSocket>* sock)
-    : sock_(sock),
-      ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
-          base::Bind(&DeleteSockCallback::OnComplete,
-                     base::Unretained(this)))) {
+      : sock_(sock),
+        callback_(base::Bind(&DeleteSockCallback::OnComplete,
+                             base::Unretained(this))) {
   }
 
   virtual ~DeleteSockCallback() {

@@ -41,7 +41,7 @@ int URLFetcherStringWriter::Finish(const CompletionCallback& callback) {
 URLFetcherFileWriter::URLFetcherFileWriter(
     scoped_refptr<base::TaskRunner> file_task_runner)
     : error_code_(OK),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       file_task_runner_(file_task_runner),
       owns_file_(false),
       total_bytes_written_(0) {

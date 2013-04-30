@@ -388,7 +388,7 @@ BlockingNetworkDelegate::BlockingNetworkDelegate(BlockMode block_mode)
       block_on_(0),
       target_auth_credentials_(NULL),
       stage_blocked_for_callback_(NOT_BLOCKED),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 void BlockingNetworkDelegate::DoCallback(int response) {

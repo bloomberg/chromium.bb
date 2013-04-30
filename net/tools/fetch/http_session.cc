@@ -6,14 +6,13 @@
 #include "net/tools/fetch/http_server_response_info.h"
 
 HttpSession::HttpSession(const std::string& ip, int port)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(
-          socket_(HttpListenSocket::CreateAndListen(ip, port, this))) {
+    : socket_(HttpListenSocket::CreateAndListen(ip, port, this)) {
 }
 
 HttpSession::~HttpSession() {
 }
 
-void HttpSession::OnRequest(HttpListenSocket* connection, 
+void HttpSession::OnRequest(HttpListenSocket* connection,
                             HttpServerRequestInfo* info) {
   // TODO(mbelshe):  Make this function more interesting.
 

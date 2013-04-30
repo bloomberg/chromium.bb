@@ -55,7 +55,7 @@ NetworkChangeNotifierWin::NetworkChangeNotifierWin()
     : NetworkChangeNotifier(NetworkChangeCalculatorParamsWin()),
       is_watching_(false),
       sequential_failures_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       dns_config_service_thread_(new DnsConfigServiceThread()),
       last_announced_offline_(IsOffline()) {
   memset(&addr_overlapped_, 0, sizeof addr_overlapped_);

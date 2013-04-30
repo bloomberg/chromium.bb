@@ -32,7 +32,7 @@ URLRequestFtpJob::URLRequestFtpJob(
       pac_request_(NULL),
       http_response_info_(NULL),
       read_in_progress_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       ftp_transaction_factory_(ftp_transaction_factory),
       ftp_auth_cache_(ftp_auth_cache) {
   DCHECK(ftp_transaction_factory);

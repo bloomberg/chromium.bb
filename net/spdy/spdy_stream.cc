@@ -114,7 +114,7 @@ SpdyStream::SpdyStream(SpdySession* session,
                        int32 initial_recv_window_size,
                        bool pushed,
                        const BoundNetLog& net_log)
-    : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+    : weak_ptr_factory_(this),
       continue_buffering_data_(true),
       stream_id_(0),
       path_(path),

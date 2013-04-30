@@ -38,18 +38,16 @@ TestCompletionCallbackBaseInternal::TestCompletionCallbackBaseInternal()
 }  // namespace internal
 
 TestCompletionCallback::TestCompletionCallback()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
-        base::Bind(&TestCompletionCallback::SetResult,
-                   base::Unretained(this)))) {
+    : callback_(base::Bind(&TestCompletionCallback::SetResult,
+                base::Unretained(this))) {
 }
 
 TestCompletionCallback::~TestCompletionCallback() {
 }
 
 TestInt64CompletionCallback::TestInt64CompletionCallback()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
-        base::Bind(&TestInt64CompletionCallback::SetResult,
-                   base::Unretained(this)))) {
+    : callback_(base::Bind(&TestInt64CompletionCallback::SetResult,
+                base::Unretained(this))) {
 }
 
 TestInt64CompletionCallback::~TestInt64CompletionCallback() {

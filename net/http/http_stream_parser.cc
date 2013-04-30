@@ -186,7 +186,7 @@ HttpStreamParser::HttpStreamParser(ClientSocketHandle* connection,
       connection_(connection),
       net_log_(net_log),
       sent_last_chunk_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   io_callback_ = base::Bind(&HttpStreamParser::OnIOComplete,
                             weak_ptr_factory_.GetWeakPtr());
 }

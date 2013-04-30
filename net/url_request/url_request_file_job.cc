@@ -59,7 +59,7 @@ URLRequestFileJob::URLRequestFileJob(URLRequest* request,
       file_path_(file_path),
       stream_(new FileStream(NULL)),
       remaining_bytes_(0),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(this) {
 }
 
 // static

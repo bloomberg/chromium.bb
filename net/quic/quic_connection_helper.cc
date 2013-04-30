@@ -18,7 +18,7 @@ QuicConnectionHelper::QuicConnectionHelper(base::TaskRunner* task_runner,
                                            const QuicClock* clock,
                                            QuicRandom* random_generator,
                                            DatagramClientSocket* socket)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+    : weak_factory_(this),
       task_runner_(task_runner),
       socket_(socket),
       clock_(clock),

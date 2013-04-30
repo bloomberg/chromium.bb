@@ -127,8 +127,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
                          params.spdy_max_concurrent_streams_limit,
                          params.time_func,
                          params.trusted_spdy_proxy),
-      ALLOW_THIS_IN_INITIALIZER_LIST(http_stream_factory_(
-          new HttpStreamFactoryImpl(this))),
+      http_stream_factory_(new HttpStreamFactoryImpl(this)),
       params_(params) {
   DCHECK(proxy_service_);
   DCHECK(ssl_config_service_);

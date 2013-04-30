@@ -5,7 +5,7 @@
 #include "net/tools/fetch/http_server.h"
 
 HttpServer::HttpServer(std::string ip, int port)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(session_(new HttpSession(ip, port))) {
+    : session_(new HttpSession(ip, port)) {
 }
 
 HttpServer::~HttpServer() {

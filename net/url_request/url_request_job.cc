@@ -34,7 +34,7 @@ URLRequestJob::URLRequestJob(URLRequest* request,
       expected_content_size_(-1),
       deferred_redirect_status_code_(-1),
       network_delegate_(network_delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
   if (power_monitor)
     power_monitor->AddObserver(this);

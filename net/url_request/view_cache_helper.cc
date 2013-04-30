@@ -50,7 +50,7 @@ ViewCacheHelper::ViewCacheHelper()
       index_(0),
       data_(NULL),
       next_state_(STATE_NONE),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 ViewCacheHelper::~ViewCacheHelper() {

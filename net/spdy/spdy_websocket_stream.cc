@@ -19,7 +19,7 @@ namespace net {
 
 SpdyWebSocketStream::SpdyWebSocketStream(
     SpdySession* spdy_session, Delegate* delegate)
-    : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+    : weak_ptr_factory_(this),
       stream_(NULL),
       spdy_session_(spdy_session),
       delegate_(delegate) {

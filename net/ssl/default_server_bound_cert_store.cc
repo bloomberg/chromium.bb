@@ -234,7 +234,7 @@ DefaultServerBoundCertStore::DefaultServerBoundCertStore(
     : initialized_(false),
       loaded_(false),
       store_(store),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {}
+      weak_ptr_factory_(this) {}
 
 bool DefaultServerBoundCertStore::GetServerBoundCert(
     const std::string& server_identifier,

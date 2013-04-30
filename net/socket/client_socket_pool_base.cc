@@ -155,7 +155,7 @@ ClientSocketPoolBaseHelper::ClientSocketPoolBaseHelper(
       connect_job_factory_(connect_job_factory),
       connect_backup_jobs_enabled_(false),
       pool_generation_number_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   DCHECK_LE(0, max_sockets_per_group);
   DCHECK_LE(max_sockets_per_group, max_sockets);
 
@@ -1126,7 +1126,7 @@ void ClientSocketPoolBaseHelper::TryToCloseSocketsInLayeredPools() {
 ClientSocketPoolBaseHelper::Group::Group()
     : unassigned_job_count_(0),
       active_socket_count_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
+      weak_factory_(this) {}
 
 ClientSocketPoolBaseHelper::Group::~Group() {
   CleanupBackupJob();

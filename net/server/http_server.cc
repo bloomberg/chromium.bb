@@ -21,7 +21,7 @@ namespace net {
 HttpServer::HttpServer(const StreamListenSocketFactory& factory,
                        HttpServer::Delegate* delegate)
     : delegate_(delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(server_(factory.CreateAndListen(this))) {
+      server_(factory.CreateAndListen(this)) {
   DCHECK(server_);
 }
 

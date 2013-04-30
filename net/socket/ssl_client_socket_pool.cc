@@ -94,9 +94,8 @@ SSLConnectJob::SSLConnectJob(const std::string& group_name,
       client_socket_factory_(client_socket_factory),
       host_resolver_(host_resolver),
       context_(context),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          callback_(base::Bind(&SSLConnectJob::OnIOComplete,
-                               base::Unretained(this)))) {}
+      callback_(base::Bind(&SSLConnectJob::OnIOComplete,
+                           base::Unretained(this))) {}
 
 SSLConnectJob::~SSLConnectJob() {}
 

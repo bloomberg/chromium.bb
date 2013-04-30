@@ -17,7 +17,7 @@ URLRequestRedirectJob::URLRequestRedirectJob(URLRequest* request,
     : URLRequestJob(request, network_delegate),
       redirect_destination_(redirect_destination),
       http_status_code_(http_status_code),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
+      weak_factory_(this) {}
 
 void URLRequestRedirectJob::Start() {
   MessageLoop::current()->PostTask(
