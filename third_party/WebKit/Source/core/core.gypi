@@ -1862,8 +1862,6 @@
             'dom/ShadowRoot.h',
             'dom/SimulatedClickOptions.h',
             'dom/SpaceSplitString.cpp',
-            'dom/StaticHashSetNodeList.cpp',
-            'dom/StaticHashSetNodeList.h',
             'dom/StaticNodeList.cpp',
             'dom/StaticNodeList.h',
             'dom/StringCallback.cpp',
