@@ -257,7 +257,7 @@ class ProfileSyncServiceSessionTest
 
   bool StartSyncService(const base::Closure& callback,
                         bool will_fail_association) {
-    if (sync_service_.get())
+    if (sync_service_)
       return false;
     SigninManagerBase* signin =
         SigninManagerFactory::GetForProfile(profile());

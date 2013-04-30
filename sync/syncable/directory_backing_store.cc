@@ -1443,7 +1443,7 @@ bool DirectoryBackingStore::LoadEntriesInternal(const std::string& table,
   while (s.Step()) {
     scoped_ptr<EntryKernel> kernel = UnpackEntry(&s);
     // A null kernel is evidence of external data corruption.
-    if (!kernel.get())
+    if (!kernel)
       return false;
     bucket->insert(kernel.release());
   }

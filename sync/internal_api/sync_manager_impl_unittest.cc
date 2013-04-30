@@ -594,7 +594,7 @@ TEST_F(SyncApiTest, BaseNodeGetSummaryAsValue) {
   ReadNode node(&trans);
   node.InitByRootLookup();
   scoped_ptr<base::DictionaryValue> details(node.GetSummaryAsValue());
-  if (details.get()) {
+  if (details) {
     CheckNodeValue(node, *details, false);
   } else {
     ADD_FAILURE();
@@ -606,7 +606,7 @@ TEST_F(SyncApiTest, BaseNodeGetDetailsAsValue) {
   ReadNode node(&trans);
   node.InitByRootLookup();
   scoped_ptr<base::DictionaryValue> details(node.GetDetailsAsValue());
-  if (details.get()) {
+  if (details) {
     CheckNodeValue(node, *details, true);
   } else {
     ADD_FAILURE();

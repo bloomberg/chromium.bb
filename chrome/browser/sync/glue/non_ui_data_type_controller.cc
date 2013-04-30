@@ -322,7 +322,7 @@ void NonUIDataTypeController::
       this,
       type(),
       weak_ptr_factory.GetWeakPtr());
-  if (!local_service_.get()) {
+  if (!local_service_) {
     syncer::SyncError error(FROM_HERE, "Failed to connect to syncer.", type());
     local_merge_result.set_error(error);
     StartDone(ASSOCIATION_FAILED,
@@ -398,7 +398,7 @@ void NonUIDataTypeController::ClearSharedChangeProcessor() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // |shared_change_processor_| can already be NULL if Stop() is
   // called after StartDoneImpl(_, DISABLED, _).
-  if (shared_change_processor_.get()) {
+  if (shared_change_processor_) {
     shared_change_processor_->Disconnect();
     shared_change_processor_ = NULL;
   }
@@ -413,7 +413,7 @@ void NonUIDataTypeController::StopLocalServiceAsync() {
 
 void NonUIDataTypeController::StopLocalService() {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (local_service_.get())
+  if (local_service_)
     local_service_->StopSyncing(type());
   local_service_.reset();
 }

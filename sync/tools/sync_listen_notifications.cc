@@ -98,7 +98,7 @@ class MyTestURLRequestContextGetter : public net::TestURLRequestContextGetter {
   virtual net::TestURLRequestContext* GetURLRequestContext() OVERRIDE {
     // Construct |context_| lazily so it gets constructed on the right
     // thread (the IO thread).
-    if (!context_.get())
+    if (!context_)
       context_.reset(new MyTestURLRequestContext());
     return context_.get();
   }

@@ -111,7 +111,7 @@ class AndroidInvalidatorBridgeTest : public testing::Test {
   void VerifyAndDestroyObserverOnSyncThread(
       const syncer::ModelTypeInvalidationMap& expected_invalidations) {
     DCHECK(sync_thread_.message_loop_proxy()->RunsTasksOnCurrentThread());
-    if (sync_handler_.get()) {
+    if (sync_handler_) {
       sync_handler_notification_success_ =
           (sync_handler_->GetInvalidationCount() == 1) &&
           ObjectIdInvalidationMapEquals(

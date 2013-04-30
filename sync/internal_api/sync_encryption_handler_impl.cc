@@ -177,7 +177,7 @@ bool UnpackKeystoreBootstrapToken(
   JSONStringValueSerializer json(&decrypted_keystore_bootstrap);
   scoped_ptr<base::Value> deserialized_keystore_keys(
       json.Deserialize(NULL, NULL));
-  if (!deserialized_keystore_keys.get())
+  if (!deserialized_keystore_keys)
     return false;
   base::ListValue* internal_list_value = NULL;
   if (!deserialized_keystore_keys->GetAsList(&internal_list_value))

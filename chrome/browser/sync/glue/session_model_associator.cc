@@ -595,7 +595,7 @@ syncer::SyncError SessionModelAssociator::AssociateModels(
     // Make sure we have a machine tag.
     if (current_machine_tag_.empty())
       InitializeCurrentMachineTag(&trans);
-    if (local_device_info.get()) {
+    if (local_device_info) {
       current_session_name_ = local_device_info->client_name();
     } else {
       return error_handler_->CreateAndUploadError(

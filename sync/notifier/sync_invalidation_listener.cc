@@ -128,7 +128,7 @@ void SyncInvalidationListener::UpdateRegisteredIds(const ObjectIdSet& ids) {
   // |ticl_state_| can go to INVALIDATIONS_ENABLED even without a
   // working XMPP connection (as observed by us), so check it instead
   // of GetState() (see http://crbug.com/139424).
-  if (ticl_state_ == INVALIDATIONS_ENABLED && registration_manager_.get()) {
+  if (ticl_state_ == INVALIDATIONS_ENABLED && registration_manager_) {
     DoRegistrationUpdate();
   }
 }
@@ -393,7 +393,7 @@ AckTracker* SyncInvalidationListener::GetAckTrackerForTest() {
 
 void SyncInvalidationListener::Stop() {
   DCHECK(CalledOnValidThread());
-  if (!invalidation_client_.get()) {
+  if (!invalidation_client_) {
     return;
   }
 

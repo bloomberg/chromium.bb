@@ -138,7 +138,7 @@ history::FaviconBitmapResult GetImageDataFromSpecifics(
 void FillSpecificsWithImageData(
     const history::FaviconBitmapResult& bitmap_result,
     sync_pb::FaviconData* favicon_data) {
-  if (!bitmap_result.bitmap_data.get())
+  if (!bitmap_result.bitmap_data)
     return;
   favicon_data->set_height(bitmap_result.pixel_size.height());
   favicon_data->set_width(bitmap_result.pixel_size.width());
@@ -473,7 +473,7 @@ bool FaviconCache::GetSyncedFaviconForFaviconURL(
     return false;
 
   // TODO(zea): support getting other resolutions.
-  if (!iter->second->bitmap_data[SIZE_16].bitmap_data.get())
+  if (!iter->second->bitmap_data[SIZE_16].bitmap_data)
     return false;
 
   *favicon_png = iter->second->bitmap_data[SIZE_16].bitmap_data;
@@ -817,19 +817,19 @@ void FaviconCache::MergeSyncFavicon(const syncer::SyncData& sync_favicon,
     if (image_specifics.has_favicon_web()) {
       favicon_info->bitmap_data[SIZE_16] = GetImageDataFromSpecifics(
           image_specifics.favicon_web());
-    } else if (favicon_info->bitmap_data[SIZE_16].bitmap_data.get()) {
+    } else if (favicon_info->bitmap_data[SIZE_16].bitmap_data) {
       needs_update = true;
     }
     if (image_specifics.has_favicon_web_32()) {
       favicon_info->bitmap_data[SIZE_32] = GetImageDataFromSpecifics(
           image_specifics.favicon_web_32());
-    } else if (favicon_info->bitmap_data[SIZE_32].bitmap_data.get()) {
+    } else if (favicon_info->bitmap_data[SIZE_32].bitmap_data) {
       needs_update = true;
     }
     if (image_specifics.has_favicon_touch_64()) {
       favicon_info->bitmap_data[SIZE_64] = GetImageDataFromSpecifics(
           image_specifics.favicon_touch_64());
-    } else if (favicon_info->bitmap_data[SIZE_64].bitmap_data.get()) {
+    } else if (favicon_info->bitmap_data[SIZE_64].bitmap_data) {
       needs_update = true;
     }
 

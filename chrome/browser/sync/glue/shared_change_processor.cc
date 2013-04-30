@@ -31,7 +31,7 @@ SharedChangeProcessor::~SharedChangeProcessor() {
   // thread).  |generic_change_processor_|, if non-NULL, must be
   // deleted on |backend_loop_|.
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    if (backend_loop_.get()) {
+    if (backend_loop_) {
       if (!backend_loop_->DeleteSoon(FROM_HERE, generic_change_processor_)) {
         NOTREACHED();
       }
@@ -64,7 +64,7 @@ base::WeakPtr<syncer::SyncableService> SharedChangeProcessor::Connect(
   error_handler_ = error_handler;
   base::WeakPtr<syncer::SyncableService> local_service =
       sync_factory->GetSyncableServiceForType(type);
-  if (!local_service.get()) {
+  if (!local_service) {
     NOTREACHED() << "SyncableService destroyed before DTC was stopped.";
     disconnected_ = true;
     return base::WeakPtr<syncer::SyncableService>();

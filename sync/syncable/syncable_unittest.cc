@@ -51,7 +51,7 @@ class SyncableKernelTest : public testing::Test {};
 TEST_F(SyncableKernelTest, ToValue) {
   EntryKernel kernel;
   scoped_ptr<DictionaryValue> value(kernel.ToValue(NULL));
-  if (value.get()) {
+  if (value) {
     // Not much to check without repeating the ToValue() code.
     EXPECT_TRUE(value->HasKey("isDirty"));
     // The extra +2 is for "isDirty" and "serverModelType".
@@ -462,7 +462,7 @@ class SyncableDirectoryTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    if (dir_.get())
+    if (dir_)
       dir_->SaveChanges();
     dir_.reset();
   }

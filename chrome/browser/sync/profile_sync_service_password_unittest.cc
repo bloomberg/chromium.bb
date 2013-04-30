@@ -178,7 +178,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
   }
 
   virtual void TearDown() {
-    if (password_store_.get())
+    if (password_store_)
       password_store_->ShutdownOnUIThread();
       ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
           &profile_, NULL);
@@ -227,7 +227,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
                                          sync_service_);
       ProfileSyncComponentsFactoryMock* components =
           sync_service_->components_factory_mock();
-      if (password_store_.get()) {
+      if (password_store_) {
         EXPECT_CALL(*components, CreatePasswordSyncComponents(_, _, _)).
             Times(AtLeast(1)).  // Can be more if we hit NEEDS_CRYPTO.
             WillRepeatedly(MakePasswordSyncComponents(sync_service_,

@@ -130,7 +130,7 @@ void UIDataTypeController::Associate() {
       this,
       type(),
       weak_ptr_factory.GetWeakPtr());
-  if (!local_service_.get()) {
+  if (!local_service_) {
     syncer::SyncError error(FROM_HERE, "Failed to connect to syncer.", type());
     local_merge_result.set_error(error);
     StartDone(UNRECOVERABLE_ERROR,
@@ -201,7 +201,7 @@ void UIDataTypeController::AbortModelLoad() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   state_ = NOT_RUNNING;
 
-  if (shared_change_processor_.get()) {
+  if (shared_change_processor_) {
     shared_change_processor_ = NULL;
   }
 
@@ -230,7 +230,7 @@ void UIDataTypeController::StartDone(
     }
     RecordStartFailure(start_result);
 
-    if (shared_change_processor_.get()) {
+    if (shared_change_processor_) {
       shared_change_processor_->Disconnect();
       shared_change_processor_ = NULL;
     }
@@ -251,7 +251,7 @@ void UIDataTypeController::Stop() {
   State prev_state = state_;
   state_ = STOPPING;
 
-  if (shared_change_processor_.get()) {
+  if (shared_change_processor_) {
     shared_change_processor_->Disconnect();
     shared_change_processor_ = NULL;
   }
@@ -270,7 +270,7 @@ void UIDataTypeController::Stop() {
 
   sync_service_->DeactivateDataType(type());
 
-  if (local_service_.get()) {
+  if (local_service_) {
     local_service_->StopSyncing(type());
   }
 

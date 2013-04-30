@@ -427,7 +427,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
 
   void StopSync() {
     change_processor_.reset();
-    if (model_associator_.get()) {
+    if (model_associator_) {
       syncer::SyncError error = model_associator_->DisassociateModels();
       EXPECT_FALSE(error.IsSet());
     }

@@ -470,7 +470,7 @@ class SyncerTest : public testing::Test,
     ModelSafeRoutingInfo routing_info;
     GetModelSafeRoutingInfo(&routing_info);
 
-    if (context_.get()) {
+    if (context_) {
       context_->set_routing_info(routing_info);
     }
 
@@ -483,7 +483,7 @@ class SyncerTest : public testing::Test,
     ModelSafeRoutingInfo routing_info;
     GetModelSafeRoutingInfo(&routing_info);
 
-    if (context_.get()) {
+    if (context_) {
       context_->set_routing_info(routing_info);
     }
 

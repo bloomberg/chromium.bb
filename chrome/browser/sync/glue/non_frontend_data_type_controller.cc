@@ -103,7 +103,7 @@ void NonFrontendDataTypeController::StopWhileAssociating() {
   {
     base::AutoLock lock(abort_association_lock_);
     abort_association_ = true;
-    if (model_associator_.get())
+    if (model_associator_)
       model_associator_->AbortAssociation();
     if (!start_association_called_.IsSignaled()) {
       StartDoneImpl(ABORTED,
@@ -477,7 +477,7 @@ bool NonFrontendDataTypeController::StopAssociationAsync() {
 void NonFrontendDataTypeController::StopAssociation() {
   DCHECK(!HasOneRef());
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (model_associator_.get()) {
+  if (model_associator_) {
     syncer::SyncError error;  // Not used.
     error = model_associator_->DisassociateModels();
   }

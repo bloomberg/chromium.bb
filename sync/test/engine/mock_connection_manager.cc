@@ -552,7 +552,7 @@ void MockConnectionManager::ProcessGetUpdates(
 
   update_queue_.pop_front();
 
-  if (gu_client_command_.get()) {
+  if (gu_client_command_) {
     response->mutable_client_command()->CopyFrom(*gu_client_command_.get());
   }
 }
@@ -639,7 +639,7 @@ void MockConnectionManager::ProcessCommit(
   }
   commit_responses_.push_back(new CommitResponse(*commit_response));
 
-  if (commit_client_command_.get()) {
+  if (commit_client_command_) {
     response_buffer->mutable_client_command()->CopyFrom(
         *commit_client_command_.get());
   }

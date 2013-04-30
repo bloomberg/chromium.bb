@@ -19,7 +19,7 @@ namespace syncer {
 TestUserShare::TestUserShare() : dir_maker_(new TestDirectorySetterUpper()) {}
 
 TestUserShare::~TestUserShare() {
-  if (user_share_.get())
+  if (user_share_)
     ADD_FAILURE() << "Should have called TestUserShare::TearDown()";
 }
 

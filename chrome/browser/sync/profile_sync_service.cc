@@ -314,7 +314,7 @@ void ProfileSyncService::TryStart() {
 }
 
 void ProfileSyncService::StartSyncingWithServer() {
-  if (backend_.get())
+  if (backend_)
     backend_->StartSyncingWithServer();
 }
 
@@ -429,7 +429,7 @@ SyncCredentials ProfileSyncService::GetCredentials() {
 }
 
 void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
-  if (!backend_.get()) {
+  if (!backend_) {
     NOTREACHED();
     return;
   }
@@ -492,7 +492,7 @@ void ProfileSyncService::OnSyncConfigureRetry() {
 
 void ProfileSyncService::StartUp(StartUpDeferredOption deferred_option) {
   // Don't start up multiple times.
-  if (backend_.get()) {
+  if (backend_) {
     DVLOG(1) << "Skipping bringing up backend host.";
     return;
   }
@@ -512,7 +512,7 @@ void ProfileSyncService::StartUp(StartUpDeferredOption deferred_option) {
   }
 #endif
 
-  if (!sync_global_error_.get()) {
+  if (!sync_global_error_) {
 #if !defined(OS_ANDROID)
     sync_global_error_.reset(new SyncGlobalError(this, signin()));
 #endif
@@ -533,7 +533,7 @@ void ProfileSyncService::StartUp(StartUpDeferredOption deferred_option) {
 void ProfileSyncService::StartUpSlowBackendComponents(
     StartUpDeferredOption deferred_option) {
   // Don't start up multiple times.
-  if (backend_.get()) {
+  if (backend_) {
     DVLOG(1) << "Skipping bringing up backend host.";
     return;
   }
@@ -557,7 +557,7 @@ void ProfileSyncService::StartUpSlowBackendComponents(
   //
   // TODO(akalin): Fix this horribly non-intuitive behavior (see
   // http://crbug.com/140354).
-  if (backend_.get()) {
+  if (backend_) {
     backend_->UpdateRegisteredInvalidationIds(
         invalidator_registrar_->GetAllRegisteredIds());
     for (AckHandleReplayQueue::const_iterator it = ack_replay_queue_.begin();
@@ -580,7 +580,7 @@ void ProfileSyncService::UpdateRegisteredInvalidationIds(
 
   // If |backend_| is NULL, its registered IDs will be updated when
   // it's created and initialized.
-  if (backend_.get()) {
+  if (backend_) {
     backend_->UpdateRegisteredInvalidationIds(
         invalidator_registrar_->GetAllRegisteredIds());
   }
@@ -594,7 +594,7 @@ void ProfileSyncService::UnregisterInvalidationHandler(
 void ProfileSyncService::AcknowledgeInvalidation(
     const invalidation::ObjectId& id,
     const syncer::AckHandle& ack_handle) {
-  if (backend_.get()) {
+  if (backend_) {
     backend_->AcknowledgeInvalidation(id, ack_handle);
   } else {
     // If |backend_| is NULL, save the acknowledgements to replay when
@@ -636,7 +636,7 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
   // applying changes to the sync db that wouldn't get applied via
   // ChangeProcessors, leading to back-from-the-dead bugs.
   base::Time shutdown_start_time = base::Time::Now();
-  if (backend_.get()) {
+  if (backend_) {
     backend_->StopSyncingForShutdown();
   }
 
@@ -645,7 +645,7 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
   // change from a native model.  In that case, it will get applied to the sync
   // database (which doesn't get destroyed until we destroy the backend below)
   // as an unsynced change.  That will be persisted, and committed on restart.
-  if (data_type_manager_.get()) {
+  if (data_type_manager_) {
     if (data_type_manager_->state() != DataTypeManager::STOPPED) {
       // When aborting as part of shutdown, we should expect an aborted sync
       // configure result, else we'll dcheck when we try to read the sync error.
@@ -663,7 +663,7 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
   // Move aside the backend so nobody else tries to use it while we are
   // shutting it down.
   scoped_ptr<SyncBackendHost> doomed_backend(backend_.release());
-  if (doomed_backend.get()) {
+  if (doomed_backend) {
     doomed_backend->Shutdown(sync_disabled);
 
     doomed_backend.reset();
@@ -678,7 +678,7 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
   is_auth_in_progress_ = false;
   backend_initialized_ = false;
   // NULL if we're called from Shutdown().
-  if (invalidator_registrar_.get())
+  if (invalidator_registrar_)
     UpdateInvalidatorRegistrarState();
   cached_passphrase_.clear();
   encryption_pending_ = false;
@@ -689,7 +689,7 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
   if (last_auth_error_.state() != GoogleServiceAuthError::NONE)
     UpdateAuthErrorState(GoogleServiceAuthError::AuthErrorNone());
 
-  if (sync_global_error_.get()) {
+  if (sync_global_error_) {
     GlobalErrorServiceFactory::GetForProfile(profile_)->RemoveGlobalError(
         sync_global_error_.get());
     RemoveObserver(sync_global_error_.get());
@@ -970,7 +970,7 @@ void ProfileSyncService::OnExperimentsChanged(
 
     // Only automatically turn on types if we have already finished set up.
     // Otherwise, just leave the experimental types on by default.
-    if (!to_register.Empty() && HasSyncSetupCompleted() && migrator_.get()) {
+    if (!to_register.Empty() && HasSyncSetupCompleted() && migrator_) {
       DVLOG(1) << "Dynamically enabling new datatypes: "
                << syncer::ModelTypeSetToString(to_register);
       OnMigrationNeededForTypes(to_register);
@@ -1092,7 +1092,7 @@ void ProfileSyncService::OnPassphraseAccepted() {
   // this time.
   const syncer::ModelTypeSet types = GetPreferredDataTypes();
 
-  if (data_type_manager_.get()) {
+  if (data_type_manager_) {
     // Unblock the data type manager if necessary.
     data_type_manager_->Configure(types,
                                   syncer::CONFIGURE_REASON_RECONFIGURATION);
@@ -1292,7 +1292,7 @@ void ProfileSyncService::OnConfigureStart() {
 std::string ProfileSyncService::QuerySyncStatusSummary() {
   if (HasUnrecoverableError()) {
     return "Unrecoverable error detected";
-  } else if (!backend_.get()) {
+  } else if (!backend_) {
     return "Syncing not enabled";
   } else if (backend_.get() && !HasSyncSetupCompleted()) {
     return "First time sync setup incomplete";
@@ -1557,7 +1557,7 @@ void ProfileSyncService::ConfigureDataTypeManager() {
     return;
 
   bool restart = false;
-  if (!data_type_manager_.get()) {
+  if (!data_type_manager_) {
     restart = true;
     data_type_manager_.reset(
         factory_->CreateDataTypeManager(debug_info_listener_,
@@ -1737,7 +1737,7 @@ Value* ProfileSyncService::GetTypeStatusMap() const {
 void ProfileSyncService::ActivateDataType(
     syncer::ModelType type, syncer::ModelSafeGroup group,
     ChangeProcessor* change_processor) {
-  if (!backend_.get()) {
+  if (!backend_) {
     NOTREACHED();
     return;
   }
@@ -1746,7 +1746,7 @@ void ProfileSyncService::ActivateDataType(
 }
 
 void ProfileSyncService::DeactivateDataType(syncer::ModelType type) {
-  if (!backend_.get())
+  if (!backend_)
     return;
   backend_->DeactivateDataType(type);
 }
@@ -1909,7 +1909,7 @@ void ProfileSyncService::Observe(int type,
       // Initialize the backend if sync is enabled. If the sync token was
       // not loaded, GetCredentials() will generate invalid credentials to
       // cause the backend to generate an auth error (crbug.com/121755).
-      if (backend_.get())
+      if (backend_)
         backend_->UpdateCredentials(GetCredentials());
       else
         TryStart();
@@ -1918,7 +1918,7 @@ void ProfileSyncService::Observe(int type,
     case chrome::NOTIFICATION_TOKENS_CLEARED: {
       // GetCredentials() will generate invalid credentials to cause the backend
       // to generate an auth error.
-      if (backend_.get())
+      if (backend_)
         backend_->UpdateCredentials(GetCredentials());
       break;
     }
@@ -1970,7 +1970,7 @@ bool ProfileSyncService::ShouldPushChanges() {
   if (HasUnrecoverableError())
     return false;
 
-  if (!data_type_manager_.get())
+  if (!data_type_manager_)
     return false;
 
   return data_type_manager_->state() == DataTypeManager::CONFIGURED;

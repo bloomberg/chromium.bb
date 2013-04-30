@@ -655,7 +655,7 @@ void SyncManagerImpl::RemoveObserver(SyncManager::Observer* observer) {
 void SyncManagerImpl::StopSyncingForShutdown(const base::Closure& callback) {
   DVLOG(2) << "StopSyncingForShutdown";
   scheduler_->RequestStop(callback);
-  if (connection_manager_.get())
+  if (connection_manager_)
     connection_manager_->TerminateAllIO();
 }
 
@@ -670,7 +670,7 @@ void SyncManagerImpl::ShutdownOnSyncThread() {
   scheduler_.reset();
   session_context_.reset();
 
-  if (sync_encryption_handler_.get()) {
+  if (sync_encryption_handler_) {
     sync_encryption_handler_->RemoveObserver(&debug_info_event_listener_);
     sync_encryption_handler_->RemoveObserver(this);
   }
@@ -685,11 +685,11 @@ void SyncManagerImpl::ShutdownOnSyncThread() {
   //
   // TODO(akalin): Fix this behavior.
 
-  if (invalidator_.get())
+  if (invalidator_)
     invalidator_->UnregisterHandler(this);
   invalidator_.reset();
 
-  if (connection_manager_.get())
+  if (connection_manager_)
     connection_manager_->RemoveListener(this);
   connection_manager_.reset();
 
@@ -868,7 +868,7 @@ void SyncManagerImpl::SetExtraChangeRecordData(int64 id,
       // Passwords must use their own legacy ExtraPasswordChangeRecordData.
       scoped_ptr<sync_pb::PasswordSpecificsData> data(
           DecryptPasswordSpecifics(original_specifics, cryptographer));
-      if (!data.get()) {
+      if (!data) {
         NOTREACHED();
         return;
       }
@@ -985,7 +985,7 @@ void SyncManagerImpl::OnSyncEngineEvent(const SyncEngineEvent& event) {
     bool is_notifiable_commit =
         (event.snapshot.model_neutral_state().num_successful_commits > 0);
     if (is_notifiable_commit) {
-      if (invalidator_.get()) {
+      if (invalidator_) {
         const ObjectIdInvalidationMap& invalidation_map =
             ModelTypeInvalidationMapToObjectIdInvalidationMap(
                 event.snapshot.source().types);

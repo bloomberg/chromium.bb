@@ -107,7 +107,7 @@ class SyncerCommandTestBase : public testing::Test,
 
   // Create a session with the provided source.
   sessions::SyncSession* session(const sessions::SyncSourceInfo& source) {
-    if (!session_.get()) {
+    if (!session_) {
       std::vector<ModelSafeWorker*> workers = GetWorkers();
       session_.reset(new sessions::SyncSession(context(), delegate(), source));
     }

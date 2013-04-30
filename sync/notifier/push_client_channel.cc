@@ -81,7 +81,7 @@ void PushClientChannel::OnNotificationsDisabled(
 
 void PushClientChannel::OnIncomingNotification(
     const notifier::Notification& notification) {
-  if (!incoming_receiver_.get()) {
+  if (!incoming_receiver_) {
     DLOG(ERROR) << "No receiver for incoming notification";
     return;
   }

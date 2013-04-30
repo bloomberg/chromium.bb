@@ -172,7 +172,7 @@ class SyncBackendHostTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    if (backend_.get()) {
+    if (backend_) {
       backend_->StopSyncingForShutdown();
       backend_->Shutdown(false);
     }

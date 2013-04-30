@@ -118,7 +118,7 @@ ServerConnectionManager::ScopedConnectionHelper::ScopedConnectionHelper(
     : manager_(manager), connection_(connection) {}
 
 ServerConnectionManager::ScopedConnectionHelper::~ScopedConnectionHelper() {
-  if (connection_.get())
+  if (connection_)
     manager_->OnConnectionDestroyed(connection_.get());
   connection_.reset();
 }

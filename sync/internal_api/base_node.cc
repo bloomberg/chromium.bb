@@ -72,7 +72,7 @@ bool BaseNode::DecryptIfNecessary() {
     // Passwords have their own legacy encryption structure.
     scoped_ptr<sync_pb::PasswordSpecificsData> data(DecryptPasswordSpecifics(
         specifics, GetTransaction()->GetCryptographer()));
-    if (!data.get()) {
+    if (!data) {
       LOG(ERROR) << "Failed to decrypt password specifics.";
       return false;
     }

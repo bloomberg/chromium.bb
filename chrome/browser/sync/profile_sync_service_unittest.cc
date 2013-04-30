@@ -68,7 +68,7 @@ class ProfileSyncServiceTestHarness {
 
   void TearDown() {
     // Kill the service before the profile.
-    if (service.get()) {
+    if (service) {
       service->Shutdown();
     }
     service.reset();
@@ -95,7 +95,7 @@ class ProfileSyncServiceTestHarness {
       bool synchronous_sync_configuration,
       bool sync_setup_completed,
       syncer::StorageOption storage_option) {
-    if (!service.get()) {
+    if (!service) {
       SigninManagerBase* signin =
           SigninManagerFactory::GetForProfile(profile.get());
       signin->SetAuthenticatedUsername("test");

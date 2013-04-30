@@ -469,7 +469,7 @@ void SyncTest::SetupMockGaiaResponses() {
 
 void SyncTest::ClearMockGaiaResponses() {
   // Clear any mock gaia responses that might have been set.
-  if (fake_factory_.get()) {
+  if (fake_factory_) {
     fake_factory_->ClearFakeResponses();
     fake_factory_.reset();
   }
