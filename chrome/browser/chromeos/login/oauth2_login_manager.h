@@ -9,9 +9,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/oauth2_login_verifier.h"
-#include "chrome/browser/chromeos/login/oauth2_policy_fetcher.h"
 #include "chrome/browser/chromeos/login/oauth2_token_fetcher.h"
 #include "chrome/browser/chromeos/login/oauth_login_manager.h"
+#include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -111,13 +111,16 @@ class OAuth2LoginManager : public OAuthLoginManager,
   void StartTokenService(
       const GaiaAuthConsumer::ClientLoginResult& gaia_credentials);
 
+  // Callback for the |oauth2_token_fetcher_|.
+  static void OnPolicyTokenFetched(const std::string& policy_token);
+
   // Keeps the track if we have already reported OAuth2 token being loaded
   // by TokenService.
   bool loading_reported_;
   content::NotificationRegistrar registrar_;
   scoped_ptr<OAuth2TokenFetcher> oauth2_token_fetcher_;
   scoped_ptr<OAuth2LoginVerifier> login_verifier_;
-  scoped_ptr<OAuth2PolicyFetcher> oauth2_policy_fetcher_;
+  scoped_ptr<policy::PolicyOAuth2TokenFetcher> policy_oauth2_token_fetcher_;
   // OAuth2 refresh token.
   std::string refresh_token_;
   // Authorization code for fetching OAuth2 tokens.

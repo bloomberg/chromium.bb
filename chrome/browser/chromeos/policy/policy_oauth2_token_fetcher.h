@@ -1,47 +1,55 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_OAUTH2_POLICY_FETCHER_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_OAUTH2_POLICY_FETCHER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_POLICY_POLICY_OAUTH2_TOKEN_FETCHER_H_
+#define CHROME_BROWSER_CHROMEOS_POLICY_POLICY_OAUTH2_TOKEN_FETCHER_H_
 
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
-#include "net/url_request/url_request_context_getter.h"
 
 class GaiaAuthFetcher;
 class OAuth2AccessTokenFetcher;
 
-namespace chromeos {
+namespace net {
+class URLRequestContextGetter;
+}
+
+namespace policy {
 
 // Fetches the OAuth2 token for the device management service. Since Profile
 // creation might be blocking on a user policy fetch, this fetcher must always
-// send a (possibly empty) token to the BrowserPolicyConnector, which will then
-// let the policy subsystem proceed and resume Profile creation.
-// Sending the token even when no Profile is pending is also OK.
-class OAuth2PolicyFetcher : public base::SupportsWeakPtr<OAuth2PolicyFetcher>,
-                            public GaiaAuthConsumer,
-                            public OAuth2AccessTokenConsumer {
+// send a (possibly empty) token to the callback, which will then let the policy
+// subsystem proceed and resume Profile creation. Sending the token even when no
+// Profile is pending is also OK.
+class PolicyOAuth2TokenFetcher
+    : public base::SupportsWeakPtr<PolicyOAuth2TokenFetcher>,
+      public GaiaAuthConsumer,
+      public OAuth2AccessTokenConsumer {
  public:
+  typedef base::Callback<void(const std::string&)> TokenCallback;
+
   // Fetches the device management service's OAuth2 token using
   // |oauth2_tokens.refresh_token|.
-  OAuth2PolicyFetcher(net::URLRequestContextGetter* system_context_getter,
-                      const std::string& oauth2_refresh_token);
+  PolicyOAuth2TokenFetcher(net::URLRequestContextGetter* system_context_getter,
+                           const std::string& oauth2_refresh_token,
+                           const TokenCallback& callback);
+
   // Fetches the device management service's oauth2 token, after also retrieving
   // the OAuth2 refresh tokens.
-  OAuth2PolicyFetcher(
-      net::URLRequestContextGetter* auth_context_getter,
-      net::URLRequestContextGetter* system_context_getter);
+  PolicyOAuth2TokenFetcher(net::URLRequestContextGetter* auth_context_getter,
+                           net::URLRequestContextGetter* system_context_getter,
+                           const TokenCallback& callback);
 
-  virtual ~OAuth2PolicyFetcher();
+  virtual ~PolicyOAuth2TokenFetcher();
 
   // Starts process of minting device management service OAuth2 access token.
   void Start();
@@ -77,10 +85,10 @@ class OAuth2PolicyFetcher : public base::SupportsWeakPtr<OAuth2PolicyFetcher>,
 
   // Starts fetching OAuth2 refresh token.
   void StartFetchingRefreshToken();
+
   // Starts fetching OAuth2 access token for the device management service.
   void StartFetchingAccessToken();
 
-  void SetPolicyToken(const std::string& token);
   // Decides how to proceed on GAIA |error|. If the error looks temporary,
   // retries |task| until max retry count is reached.
   // If retry count runs out, or error condition is unrecoverable, it calls
@@ -88,23 +96,31 @@ class OAuth2PolicyFetcher : public base::SupportsWeakPtr<OAuth2PolicyFetcher>,
   void RetryOnError(const GoogleServiceAuthError& error,
                     const base::Closure& task);
 
+  // Passes |token| to the |callback_|.
+  void ForwardPolicyToken(const std::string& token);
+
   scoped_refptr<net::URLRequestContextGetter> auth_context_getter_;
   scoped_refptr<net::URLRequestContextGetter> system_context_getter_;
   scoped_ptr<GaiaAuthFetcher> refresh_token_fetcher_;
   scoped_ptr<OAuth2AccessTokenFetcher> access_token_fetcher_;
-  std::string policy_token_;
   GaiaAuthConsumer::ClientOAuthResult oauth2_tokens_;
+
   // OAuth2 refresh token. Could come either from the outside or through
   // refresh token fetching flow within this class.
   std::string oauth2_refresh_token_;
+
   // The retry counter. Increment this only when failure happened.
   int retry_count_;
+
   // True if we have already failed to fetch the policy.
   bool failed_;
 
-  DISALLOW_COPY_AND_ASSIGN(OAuth2PolicyFetcher);
+  // The callback to invoke when done.
+  TokenCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(PolicyOAuth2TokenFetcher);
 };
 
-}  // namespace chromeos
+}  // namespace policy
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_OAUTH2_POLICY_FETCHER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_POLICY_POLICY_OAUTH2_TOKEN_FETCHER_H_
