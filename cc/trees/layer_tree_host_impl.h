@@ -16,6 +16,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/debug/latency_info.h"
 #include "cc/input/input_handler.h"
+#include "cc/input/layer_scroll_offset_delegate.h"
 #include "cc/input/top_controls_manager_client.h"
 #include "cc/layers/layer_lists.h"
 #include "cc/layers/render_pass_sink.h"
@@ -103,6 +104,9 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   virtual bool ScrollVerticallyByPage(
       gfx::Point viewport_point,
       WebKit::WebScrollbar::ScrollDirection direction) OVERRIDE;
+  virtual void SetRootLayerScrollOffsetDelegate(
+      LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate) OVERRIDE;
+  virtual void OnRootLayerDelegatedScrollOffsetChanged() OVERRIDE;
   virtual void ScrollEnd() OVERRIDE;
   virtual InputHandler::ScrollStatus FlingScrollBegin() OVERRIDE;
   virtual void NotifyCurrentFlingVelocity(gfx::Vector2dF velocity) OVERRIDE;
@@ -431,6 +435,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   bool did_lock_scrolling_layer_;
   bool should_bubble_scrolls_;
   bool wheel_scrolling_;
+  // The optional delegate for the root layer scroll offset.
+  LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate_;
   LayerTreeSettings settings_;
   LayerTreeDebugState debug_state_;
   gfx::Size device_viewport_size_;

@@ -162,7 +162,7 @@ class LayerTreeHostImplTest : public testing::Test,
   }
 
   static void ExpectClearedScrollDeltasRecursive(LayerImpl* layer) {
-    ASSERT_EQ(layer->scroll_delta(), gfx::Vector2d());
+    ASSERT_EQ(layer->ScrollDelta(), gfx::Vector2d());
     for (size_t i = 0; i < layer->children().size(); ++i)
       ExpectClearedScrollDeltasRecursive(layer->children()[i]);
   }
@@ -681,7 +681,7 @@ TEST_F(LayerTreeHostImplTest, ScrollVerticallyByPageReturnsCorrectValue) {
   // Trying to scroll with a vertical scrollbar will succeed.
   EXPECT_TRUE(host_impl_->ScrollVerticallyByPage(
       gfx::Point(), WebKit::WebScrollbar::ScrollForward));
-  EXPECT_FLOAT_EQ(875.f, host_impl_->RootScrollLayer()->scroll_delta().y());
+  EXPECT_FLOAT_EQ(875.f, host_impl_->RootScrollLayer()->ScrollDelta().y());
   EXPECT_TRUE(host_impl_->ScrollVerticallyByPage(
       gfx::Point(), WebKit::WebScrollbar::ScrollBackward));
 }
