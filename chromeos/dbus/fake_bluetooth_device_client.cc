@@ -70,7 +70,7 @@ const char FakeBluetoothDeviceClient::kMicrosoftMouseAddress[] =
     "7C:ED:8D:00:00:00";
 const char FakeBluetoothDeviceClient::kMicrosoftMouseName[] =
     "Microsoft Mouse";
-const uint32 FakeBluetoothDeviceClient::kMicrosoftMouseClass = 0x002540;
+const uint32 FakeBluetoothDeviceClient::kMicrosoftMouseClass = 0x002580;
 
 const char FakeBluetoothDeviceClient::kMotorolaKeyboardPath[] =
     "/fake/hci0/dev5";
@@ -78,7 +78,7 @@ const char FakeBluetoothDeviceClient::kMotorolaKeyboardAddress[] =
     "00:0F:F6:00:00:00";
 const char FakeBluetoothDeviceClient::kMotorolaKeyboardName[] =
     "Motorola Keyboard";
-const uint32 FakeBluetoothDeviceClient::kMotorolaKeyboardClass = 0x002580;
+const uint32 FakeBluetoothDeviceClient::kMotorolaKeyboardClass = 0x002540;
 
 const char FakeBluetoothDeviceClient::kSonyHeadphonesPath[] =
     "/fake/hci0/dev6";
@@ -103,6 +103,14 @@ const char FakeBluetoothDeviceClient::kWeirdDeviceAddress[] =
 const char FakeBluetoothDeviceClient::kWeirdDeviceName[] =
     "Weird Device";
 const uint32 FakeBluetoothDeviceClient::kWeirdDeviceClass = 0x7a020c;
+
+const char FakeBluetoothDeviceClient::kUnconnectableDevicePath[] =
+    "/fake/hci0/dev9";
+const char FakeBluetoothDeviceClient::kUnconnectableDeviceAddress[] =
+    "20:7D:74:00:00:02";
+const char FakeBluetoothDeviceClient::kUnconnectableDeviceName[] =
+    "Unconnectable Device";
+const uint32 FakeBluetoothDeviceClient::kUnconnectableDeviceClass = 0x7a020c;
 
 FakeBluetoothDeviceClient::Properties::Properties(
     const PropertyChangedCallback& callback)
@@ -216,7 +224,7 @@ void FakeBluetoothDeviceClient::Connect(
     error_callback.Run(bluetooth_adapter::kErrorFailed, "Not paired");
     return;
   } else if (properties->paired.value() == true &&
-             object_path == dbus::ObjectPath(kMicrosoftMousePath)) {
+             object_path == dbus::ObjectPath(kUnconnectableDevicePath)) {
     // Must not be paired
     error_callback.Run(bluetooth_adapter::kErrorFailed,
                        "Connection fails while paired");
@@ -288,7 +296,8 @@ void FakeBluetoothDeviceClient::Pair(
   }
 
   if (object_path == dbus::ObjectPath(kAppleMousePath) ||
-      object_path == dbus::ObjectPath(kMicrosoftMousePath)) {
+      object_path == dbus::ObjectPath(kMicrosoftMousePath) ||
+      object_path == dbus::ObjectPath(kUnconnectableDevicePath)) {
     // No need to call anything on the pairing delegate, just wait 3 times
     // the interval before acting as if the other end accepted it.
     MessageLoop::current()->PostDelayedTask(
@@ -618,6 +627,27 @@ void FakeBluetoothDeviceClient::DiscoverySimulationTimer() {
       device_list_.push_back(dbus::ObjectPath(kWeirdDevicePath));
       FOR_EACH_OBSERVER(ExperimentalBluetoothDeviceClient::Observer, observers_,
                         DeviceAdded(dbus::ObjectPath(kWeirdDevicePath)));
+    }
+
+    if (std::find(device_list_.begin(), device_list_.end(),
+                  dbus::ObjectPath(kUnconnectableDevicePath)) ==
+        device_list_.end()) {
+      Properties* properties = new Properties(base::Bind(
+          &FakeBluetoothDeviceClient::OnPropertyChanged,
+          base::Unretained(this),
+          dbus::ObjectPath(kUnconnectableDevicePath)));
+      properties->address.ReplaceValue(kUnconnectableDeviceAddress);
+      properties->bluetooth_class.ReplaceValue(kUnconnectableDeviceClass);
+      properties->name.ReplaceValue("Fake Unconnectable Device");
+      properties->alias.ReplaceValue(kUnconnectableDeviceName);
+      properties->adapter.ReplaceValue(
+          dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath));
+
+      properties_map_[dbus::ObjectPath(kUnconnectableDevicePath)] = properties;
+      device_list_.push_back(dbus::ObjectPath(kUnconnectableDevicePath));
+      FOR_EACH_OBSERVER(
+          ExperimentalBluetoothDeviceClient::Observer, observers_,
+          DeviceAdded(dbus::ObjectPath(kUnconnectableDevicePath)));
     }
 
   } else if (discovery_simulation_step_ == 13) {

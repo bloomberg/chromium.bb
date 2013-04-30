@@ -126,6 +126,11 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
   static const char kWeirdDeviceAddress[];
   static const uint32 kWeirdDeviceClass;
 
+  static const char kUnconnectableDevicePath[];
+  static const char kUnconnectableDeviceName[];
+  static const char kUnconnectableDeviceAddress[];
+  static const uint32 kUnconnectableDeviceClass;
+
  private:
   // Property callback passed when we create Properties* structures.
   void OnPropertyChanged(const dbus::ObjectPath& object_path,

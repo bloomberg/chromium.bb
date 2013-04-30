@@ -1612,10 +1612,10 @@ TEST_F(BluetoothExperimentalChromeOSTest, PairingFailsAtConnection) {
   GetAdapter();
   DiscoverDevices();
 
-  // Everything seems to go according to plan with the Microsoft Mouse, it
-  // pairs with 0000, but then you can't make connections to it after.
+  // Everything seems to go according to plan with the unconnectable device;
+  // it pairs, but then you can't make connections to it after.
   BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kMicrosoftMouseAddress);
+      FakeBluetoothDeviceClient::kUnconnectableDeviceAddress);
   ASSERT_TRUE(device != NULL);
   ASSERT_FALSE(device->IsPaired());
 
@@ -1639,10 +1639,9 @@ TEST_F(BluetoothExperimentalChromeOSTest, PairingFailsAtConnection) {
   EXPECT_EQ(1, error_callback_count_);
   EXPECT_EQ(BluetoothDevice::ERROR_FAILED, last_connect_error_);
 
-  // Two changes for connecting, one for paired, one for for trusted
-  // after pairing and one for the reconnect mode (IsConnectable).
-  // The device should not be connected,
-  EXPECT_EQ(5, observer.device_changed_count_);
+  // Two changes for connecting, one for paired and one for trusted after
+  // pairing. The device should not be connected.
+  EXPECT_EQ(4, observer.device_changed_count_);
   EXPECT_EQ(device, observer.last_device_);
 
   EXPECT_FALSE(device->IsConnected());
@@ -1658,7 +1657,8 @@ TEST_F(BluetoothExperimentalChromeOSTest, PairingFailsAtConnection) {
   // worked).
   FakeBluetoothDeviceClient::Properties* properties =
       fake_bluetooth_device_client_->GetProperties(
-          dbus::ObjectPath(FakeBluetoothDeviceClient::kMicrosoftMousePath));
+          dbus::ObjectPath(
+              FakeBluetoothDeviceClient::kUnconnectableDevicePath));
   EXPECT_TRUE(properties->trusted.value());
 }
 
