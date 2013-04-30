@@ -26,14 +26,11 @@
 #include "core/platform/graphics/FontPlatformData.h"
 #include "core/platform/graphics/opentype/OpenTypeSanitizer.h"
 
-#if USE(SKIA_ON_MAC_CHROMIUM)
 #include "SkStream.h"
 #include "SkTypeface.h"
-#endif
 
 namespace WebCore {
 
-#if USE(SKIA_ON_MAC_CHROMIUM)
 class RemoteFontStream : public SkStream {
 public:
     explicit RemoteFontStream(PassRefPtr<SharedBuffer> buffer)
@@ -73,13 +70,10 @@ private:
     RefPtr<SharedBuffer> m_buffer;
     size_t m_offset;
 };
-#endif
 
 FontCustomPlatformData::~FontCustomPlatformData()
 {
-#if USE(SKIA_ON_MAC_CHROMIUM)
     SkSafeUnref(m_typeface);
-#endif
     CGFontRelease(m_cgFont);
 }
 
@@ -110,11 +104,9 @@ FontCustomPlatformData* createFontCustomPlatformData(SharedBuffer* buffer)
         return 0;
 
     FontCustomPlatformData* fontCustomPlatformData = new FontCustomPlatformData(containerRef, cgFontRef.leakRef());
-#if USE(SKIA_ON_MAC_CHROMIUM)
     RemoteFontStream* stream = new RemoteFontStream(buffer);
     fontCustomPlatformData->m_typeface = SkTypeface::CreateFromStream(stream);
     stream->unref();
-#endif
     return fontCustomPlatformData;
 }
 

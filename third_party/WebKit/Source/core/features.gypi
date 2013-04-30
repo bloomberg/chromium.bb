@@ -144,7 +144,6 @@
       ['OS=="mac"', {
         'feature_defines': [
           'ENABLE_RUBBER_BANDING=1',
-          'WTF_USE_SKIA_ON_MAC_CHROMIUM=1',
         ],
       }],
       ['OS=="linux" or OS=="android"', {

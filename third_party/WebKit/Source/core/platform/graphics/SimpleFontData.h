@@ -134,7 +134,7 @@ public:
     float adjustedSpaceWidth() const { return m_adjustedSpaceWidth; }
     void setSpaceWidth(float spaceWidth) { m_spaceWidth = spaceWidth; }
 
-#if USE(SKIA_ON_MAC_CHROMIUM)
+#if OS(DARWIN)
     float syntheticBoldOffset() const { return m_syntheticBoldOffset; }
 #endif
 
@@ -258,11 +258,9 @@ private:
 
     mutable OwnPtr<DerivedFontData> m_derivedFontData;
 
-#if USE(SKIA_ON_MAC_CHROMIUM)
-    float m_syntheticBoldOffset;
-#endif
-
 #if OS(DARWIN)
+    float m_syntheticBoldOffset;
+
     mutable HashMap<unsigned, RetainPtr<CFDictionaryRef> > m_CFStringAttributes;
 #endif
 
@@ -303,7 +301,7 @@ ALWAYS_INLINE float SimpleFontData::widthForGlyph(Glyph glyph) const
         width = m_fontData->widthForSVGGlyph(glyph, m_platformData.size());
 #if ENABLE(OPENTYPE_VERTICAL)
     else if (m_verticalData)
-#if USE(SKIA_ON_MAC_CHROMIUM)
+#if OS(DARWIN)
         width = m_verticalData->advanceHeight(this, glyph) + m_syntheticBoldOffset;
 #else
         width = m_verticalData->advanceHeight(this, glyph);

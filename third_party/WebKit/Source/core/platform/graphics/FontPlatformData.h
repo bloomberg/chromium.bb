@@ -56,14 +56,12 @@ typedef const struct __CTFont* CTFontRef;
 #include "core/platform/graphics/chromium/CrossProcessFontLoading.h"
 #endif
 
-#if USE(SKIA_ON_MAC_CHROMIUM)
-typedef struct CGFont* CGFontRef;
 #if OS(DARWIN)
+typedef struct CGFont* CGFontRef;
 typedef const struct __CTFont* CTFontRef;
 typedef UInt32 FMFont;
 typedef FMFont ATSUFontID;
 typedef UInt32 ATSFontRef;
-#endif
 #endif
 
 namespace WebCore {
@@ -90,9 +88,7 @@ public:
 #if OS(DARWIN)
     FontPlatformData(NSFont*, float size, bool isPrinterFont = false, bool syntheticBold = false, bool syntheticOblique = false,
                      FontOrientation = Horizontal, FontWidthVariant = RegularWidth);
-#if USE(SKIA_ON_MAC_CHROMIUM)
     FontPlatformData(CGFontRef, float size, bool syntheticBold, bool syntheticOblique, FontOrientation, FontWidthVariant);
-#endif
 #endif
 
     ~FontPlatformData();
@@ -102,16 +98,12 @@ public:
     void setFont(NSFont*);
 #endif
 
-#if USE(SKIA_ON_MAC_CHROMIUM)
 #if OS(DARWIN)
     CGFontRef cgFont() const { return m_cgFont.get(); }
     CTFontRef ctFont() const;
 
     bool roundsGlyphAdvances() const;
     bool allowsLigatures() const;
-#else
-    CGFontRef cgFont() const { return m_cgFont.get(); }
-#endif
 #endif
 
     bool isFixedPitch() const;
@@ -136,9 +128,7 @@ public:
     unsigned hash() const
     {
 #if OS(DARWIN)
-#if USE(SKIA_ON_MAC_CHROMIUM)
         ASSERT(m_font || !m_cgFont);
-#endif
         uintptr_t hashCodes[3] = { (uintptr_t)m_font, m_widthVariant, static_cast<uintptr_t>(m_isPrinterFont << 3 | m_orientation << 2 | m_syntheticBold << 1 | m_syntheticOblique) };
         return StringHasher::hashMemory<sizeof(hashCodes)>(hashCodes);
 #endif
@@ -199,12 +189,10 @@ private:
     NSFont* m_font;
 #endif
 
-#if USE(SKIA_ON_MAC_CHROMIUM)
+#if OS(DARWIN)
     RetainPtr<CGFontRef> m_cgFont;
     mutable RetainPtr<CTFontRef> m_CTFont;
-#endif
 
-#if OS(DARWIN)
     RefPtr<MemoryActivatedFont> m_inMemoryFont;
     RefPtr<HarfBuzzFace> m_harfBuzzFace;
 #endif
