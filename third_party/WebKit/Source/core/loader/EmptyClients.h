@@ -82,8 +82,6 @@ public:
     virtual void takeFocus(FocusDirection) { }
 
     virtual void focusedNodeChanged(Node*) { }
-    virtual void focusedFrameChanged(Frame*) { }
-
     virtual Page* createWindow(Frame*, const FrameLoadRequest&, const WindowFeatures&, const NavigationAction&) { return 0; }
     virtual void show() { }
 
@@ -114,10 +112,7 @@ public:
     virtual void runJavaScriptAlert(Frame*, const String&) { }
     virtual bool runJavaScriptConfirm(Frame*, const String&) { return false; }
     virtual bool runJavaScriptPrompt(Frame*, const String&, const String&, String&) { return false; }
-    virtual bool shouldInterruptJavaScript() { return false; }
 
-    virtual bool selectItemWritingDirectionIsNatural() { return false; }
-    virtual bool selectItemAlignmentFollowsMenuWritingDirection() { return false; }
     virtual bool hasOpenedPopup() const OVERRIDE { return false; }
     virtual PassRefPtr<PopupMenu> createPopupMenu(PopupMenuClient*) const OVERRIDE;
     virtual PassRefPtr<SearchPopupMenu> createSearchPopupMenu(PopupMenuClient*) const OVERRIDE;
@@ -134,7 +129,6 @@ public:
 
     virtual IntRect windowResizerRect() const { return IntRect(); }
 
-    virtual void invalidateRootView(const IntRect&) OVERRIDE { }
     virtual void invalidateContentsAndRootView(const IntRect&) OVERRIDE { }
     virtual void invalidateContentsForSlowScroll(const IntRect&) OVERRIDE { }
     virtual void scroll(const IntSize&, const IntRect&, const IntRect&) { }
@@ -151,11 +145,6 @@ public:
     virtual void setToolTip(const String&, TextDirection) { }
 
     virtual void print(Frame*) { }
-
-    virtual void exceededDatabaseQuota(Frame*, const String&, DatabaseDetails) { }
-
-    virtual void reachedMaxAppCacheSize(int64_t) { }
-    virtual void reachedApplicationCacheOriginQuota(SecurityOrigin*, int64_t) { }
 
     virtual void enumerateChosenDirectory(FileChooser*) { }
 
@@ -190,7 +179,6 @@ public:
     virtual bool isEmptyChromeClient() const { return true; }
 
     virtual void didAssociateFormControls(const Vector<RefPtr<Element> >&) { }
-    virtual bool shouldNotifyOnFormChanges() { return false; }
 
     virtual void popupOpened(PopupContainer* popupContainer, const IntRect& bounds,
                              bool handleExternal) { }

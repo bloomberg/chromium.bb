@@ -197,8 +197,6 @@ void FocusController::setFocusedFrame(PassRefPtr<Frame> frame)
         newFrame->document()->dispatchWindowEvent(Event::create(eventNames().focusEvent, false, false));
     }
 
-    m_page->chrome()->focusedFrameChanged(newFrame.get());
-
     m_isChangingFocusedFrame = false;
 }
 

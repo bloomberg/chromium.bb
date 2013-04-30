@@ -2394,10 +2394,6 @@ bool HTMLMediaElement::controls() const
     if (frame && !frame->script()->canExecuteScripts(NotAboutToExecuteScript))
         return true;
 
-    // always show controls for video when fullscreen playback is required.
-    if (isVideo() && document()->page() && document()->page()->chrome()->requiresFullscreenForVideoPlayback())
-        return true;
-
     // Always show controls when in full screen mode.
     if (isFullscreen())
         return true;
@@ -3582,9 +3578,6 @@ void HTMLMediaElement::updatePlayState()
         invalidateCachedTime();
 
         if (playerPaused) {
-            if (!m_isFullscreen && isVideo() && document() && document()->page() && document()->page()->chrome()->requiresFullscreenForVideoPlayback())
-                enterFullscreen();
-
             // Set rate, muted before calling play in case they were set before the media engine was setup.
             // The media engine should just stash the rate and muted values since it isn't already playing.
             m_player->setRate(m_playbackRate);
@@ -3830,8 +3823,6 @@ void HTMLMediaElement::exitFullscreen()
     if (hasMediaControls())
         mediaControls()->exitedFullscreen();
     if (document() && document()->page()) {
-        if (document()->page()->chrome()->requiresFullscreenForVideoPlayback())
-            pauseInternal();
         document()->page()->chrome()->client()->exitFullscreenForNode(this);
         scheduleEvent(eventNames().webkitendfullscreenEvent);
     }

@@ -587,9 +587,6 @@ void ScrollView::scrollContents(const IntSize& scrollDelta)
     IntRect updateRect = clipRect;
     updateRect.intersect(scrollViewRect);
 
-    // Invalidate the root view (not the backing store).
-    hostWindow()->invalidateRootView(updateRect);
-
     if (m_drawPanScrollIcon) {
         // FIXME: the pan icon is broken when accelerated compositing is on, since it will draw under the compositing layers.
         // https://bugs.webkit.org/show_bug.cgi?id=47837
@@ -615,9 +612,6 @@ void ScrollView::scrollContents(const IntSize& scrollDelta)
 
     // This call will move children with native widgets (plugins) and invalidate them as well.
     frameRectsChanged();
-
-    // Now blit the backingstore into the window which should be very fast.
-    hostWindow()->invalidateRootView(IntRect());
 }
 
 bool ScrollView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect)

@@ -113,7 +113,6 @@ public:
     ~WebPopupMenuImpl();
 
     // WebCore::HostWindow methods:
-    virtual void invalidateRootView(const WebCore::IntRect&) OVERRIDE;
     virtual void invalidateContentsAndRootView(const WebCore::IntRect&) OVERRIDE;
     virtual void invalidateContentsForSlowScroll(const WebCore::IntRect&) OVERRIDE;
     virtual void scheduleAnimation() OVERRIDE;

@@ -4724,17 +4724,6 @@ void Document::requestFullScreenForElement(Element* element, unsigned short flag
         if (!page() || !page()->settings()->fullScreenEnabled())
             break;
 
-        if (!page()->chrome()->client()->supportsFullScreenForElement(element, flags & Element::ALLOW_KEYBOARD_INPUT)) {
-            // The new full screen API does not accept a "flags" parameter, so fall back to disallowing
-            // keyboard input if the chrome client refuses to allow keyboard input.
-            if (!inLegacyMozillaMode && flags & Element::ALLOW_KEYBOARD_INPUT) {
-                flags &= ~Element::ALLOW_KEYBOARD_INPUT;
-                if (!page()->chrome()->client()->supportsFullScreenForElement(element, false))
-                    break;
-            } else
-                break;
-        }
-
         // 2. Let doc be element's node document. (i.e. "this")
         Document* currentDoc = this;
 
@@ -5002,18 +4991,11 @@ void Document::setFullScreenRenderer(RenderFullScreen* renderer)
     ASSERT(!m_fullScreenRenderer);
 
     m_fullScreenRenderer = renderer;
-
-    // This notification can come in after the page has been destroyed.
-    if (page())
-        page()->chrome()->client()->fullScreenRendererChanged(m_fullScreenRenderer);
 }
 
 void Document::fullScreenRendererDestroyed()
 {
     m_fullScreenRenderer = 0;
-
-    if (page())
-        page()->chrome()->client()->fullScreenRendererChanged(0);
 }
 
 void Document::setFullScreenRendererSize(const IntSize& size)
@@ -5699,7 +5681,7 @@ PassRefPtr<FontLoader> Document::fontloader()
 
 void Document::didAssociateFormControl(Element* element)
 {
-    if (!frame() || !frame()->page() || !frame()->page()->chrome()->client()->shouldNotifyOnFormChanges())
+    if (!frame() || !frame()->page())
         return;
     m_associatedFormControls.add(element);
     if (!m_didAssociateFormControlsTimer.isActive())

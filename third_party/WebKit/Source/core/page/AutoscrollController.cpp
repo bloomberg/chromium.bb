@@ -157,7 +157,7 @@ void AutoscrollController::updateDragAndDrop(Node* dropTargetNode, const IntPoin
     }
 
     Page* page = m_frame->page();
-    if (!page || !page->chrome()->client()->shouldAutoscrollForDragAndDrop(scrollable)) {
+    if (!page) {
         stopAutoscrollTimer();
         return;
     }

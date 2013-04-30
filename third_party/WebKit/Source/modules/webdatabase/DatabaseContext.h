@@ -59,7 +59,6 @@ public:
     bool stopDatabases(DatabaseTaskSynchronizer*);
 
     bool allowDatabaseAccess() const;
-    void databaseExceededQuota(const String& name, DatabaseDetails);
 
 private:
     explicit DatabaseContext(ScriptExecutionContext*);

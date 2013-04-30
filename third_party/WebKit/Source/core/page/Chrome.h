@@ -64,7 +64,6 @@ public:
     ChromeClient* client() { return m_client; }
 
     // HostWindow methods.
-    virtual void invalidateRootView(const IntRect&) OVERRIDE;
     virtual void invalidateContentsAndRootView(const IntRect&) OVERRIDE;
     virtual void invalidateContentsForSlowScroll(const IntRect&) OVERRIDE;
     virtual void scroll(const IntSize&, const IntRect&, const IntRect&) OVERRIDE;
@@ -94,7 +93,6 @@ public:
     void takeFocus(FocusDirection) const;
 
     void focusedNodeChanged(Node*) const;
-    void focusedFrameChanged(Frame*) const;
 
     Page* createWindow(Frame*, const FrameLoadRequest&, const WindowFeatures&, const NavigationAction&) const;
     void show() const;
@@ -126,7 +124,6 @@ public:
     bool runJavaScriptConfirm(Frame*, const String&);
     bool runJavaScriptPrompt(Frame*, const String& message, const String& defaultValue, String& result);
     void setStatusbarText(Frame*, const String&);
-    bool shouldInterruptJavaScript();
 
     IntRect windowResizerRect() const;
 
@@ -147,10 +144,6 @@ public:
 
     void dispatchViewportPropertiesDidChange(const ViewportArguments&) const;
 
-    bool requiresFullscreenForVideoPlayback();
-
-    bool selectItemWritingDirectionIsNatural();
-    bool selectItemAlignmentFollowsMenuWritingDirection();
     bool hasOpenedPopup() const;
     PassRefPtr<PopupMenu> createPopupMenu(PopupMenuClient*) const;
     PassRefPtr<SearchPopupMenu> createSearchPopupMenu(PopupMenuClient*) const;

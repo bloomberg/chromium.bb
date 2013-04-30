@@ -337,11 +337,6 @@ void WebPopupMenuImpl::setTextDirection(WebTextDirection)
 //-----------------------------------------------------------------------------
 // WebCore::HostWindow
 
-void WebPopupMenuImpl::invalidateRootView(const IntRect&)
-{
-    notImplemented();
-}
-
 void WebPopupMenuImpl::invalidateContentsAndRootView(const IntRect& paintRect)
 {
     if (paintRect.isEmpty())

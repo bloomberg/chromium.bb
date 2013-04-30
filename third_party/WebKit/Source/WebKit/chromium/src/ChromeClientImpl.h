@@ -82,7 +82,6 @@ public:
     virtual bool canTakeFocus(WebCore::FocusDirection);
     virtual void takeFocus(WebCore::FocusDirection);
     virtual void focusedNodeChanged(WebCore::Node*);
-    virtual void focusedFrameChanged(WebCore::Frame*);
     virtual WebCore::Page* createWindow(
         WebCore::Frame*, const WebCore::FrameLoadRequest&, const WebCore::WindowFeatures&, const WebCore::NavigationAction&);
     virtual void show();
@@ -111,10 +110,8 @@ public:
         WebCore::Frame*, const WTF::String& message,
         const WTF::String& defaultValue, WTF::String& result);
     virtual void setStatusbarText(const WTF::String& message);
-    virtual bool shouldInterruptJavaScript();
     virtual bool tabsToLinks();
     virtual WebCore::IntRect windowResizerRect() const;
-    virtual void invalidateRootView(const WebCore::IntRect&);
     virtual void invalidateContentsAndRootView(const WebCore::IntRect&);
     virtual void invalidateContentsForSlowScroll(const WebCore::IntRect&);
     virtual void scheduleAnimation();
@@ -136,10 +133,6 @@ public:
     virtual void setToolTip(const WTF::String& tooltipText, WebCore::TextDirection);
     virtual void dispatchViewportPropertiesDidChange(const WebCore::ViewportArguments&) const;
     virtual void print(WebCore::Frame*);
-    virtual void exceededDatabaseQuota(
-        WebCore::Frame*, const WTF::String& databaseName, WebCore::DatabaseDetails);
-    virtual void reachedMaxAppCacheSize(int64_t spaceNeeded);
-    virtual void reachedApplicationCacheOriginQuota(WebCore::SecurityOrigin*, int64_t totalSpaceNeeded);
     virtual void annotatedRegionsChanged();
     virtual bool paintCustomOverhangArea(WebCore::GraphicsContext*, const WebCore::IntRect&, const WebCore::IntRect&, const WebCore::IntRect&);
 #if ENABLE(INPUT_TYPE_COLOR)
@@ -166,14 +159,11 @@ public:
 
     virtual CompositingTriggerFlags allowedCompositingTriggers() const;
 
-    virtual bool supportsFullscreenForNode(const WebCore::Node*);
     virtual void enterFullscreenForNode(WebCore::Node*);
     virtual void exitFullscreenForNode(WebCore::Node*);
 
-    virtual bool supportsFullScreenForElement(const WebCore::Element*, bool withKeyboard);
     virtual void enterFullScreenForElement(WebCore::Element*);
     virtual void exitFullScreenForElement(WebCore::Element*);
-    virtual void fullScreenRendererChanged(WebCore::RenderBox*);
 
     // ChromeClient methods:
     virtual void popupOpened(WebCore::PopupContainer* popupContainer,
@@ -189,8 +179,6 @@ public:
     void setCursorForPlugin(const WebCursorInfo&);
     void setNewWindowNavigationPolicy(WebNavigationPolicy);
 
-    virtual bool selectItemWritingDirectionIsNatural();
-    virtual bool selectItemAlignmentFollowsMenuWritingDirection();
     virtual bool hasOpenedPopup() const OVERRIDE;
     virtual PassRefPtr<WebCore::PopupMenu> createPopupMenu(WebCore::PopupMenuClient*) const;
     virtual PassRefPtr<WebCore::SearchPopupMenu> createSearchPopupMenu(WebCore::PopupMenuClient*) const;
@@ -208,14 +196,11 @@ public:
     virtual bool shouldRubberBandInDirection(WebCore::ScrollDirection) const;
     virtual void numWheelEventHandlersChanged(unsigned);
 
-    virtual bool shouldAutoscrollForDragAndDrop(WebCore::RenderBox* scrollable) const OVERRIDE;
-
     virtual bool requestPointerLock();
     virtual void requestPointerUnlock();
     virtual bool isPointerLocked();
 
     virtual void didAssociateFormControls(const Vector<RefPtr<WebCore::Element> >&) OVERRIDE;
-    virtual bool shouldNotifyOnFormChanges() OVERRIDE;
 
 private:
     WebNavigationPolicy getNavigationPolicy();

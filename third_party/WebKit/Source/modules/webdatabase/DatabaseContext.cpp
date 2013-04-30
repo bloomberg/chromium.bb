@@ -211,15 +211,4 @@ bool DatabaseContext::allowDatabaseAccess() const
     return true;
 }
 
-void DatabaseContext::databaseExceededQuota(const String& name, DatabaseDetails details)
-{
-    if (m_scriptExecutionContext->isDocument()) {
-        Document* document = toDocument(m_scriptExecutionContext);
-        if (Page* page = document->page())
-            page->chrome()->client()->exceededDatabaseQuota(document->frame(), name, details);
-        return;
-    }
-    ASSERT(m_scriptExecutionContext->isWorkerContext());
-}
-
 } // namespace WebCore

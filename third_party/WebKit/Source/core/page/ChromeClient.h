@@ -99,7 +99,6 @@ public:
     virtual void takeFocus(FocusDirection) = 0;
 
     virtual void focusedNodeChanged(Node*) = 0;
-    virtual void focusedFrameChanged(Frame*) = 0;
 
     // The Frame pointer provides the ChromeClient with context about which
     // Frame wants to create the new Page. Also, the newly created window
@@ -143,7 +142,6 @@ public:
     virtual bool runJavaScriptConfirm(Frame*, const String&) = 0;
     virtual bool runJavaScriptPrompt(Frame*, const String& message, const String& defaultValue, String& result) = 0;
     virtual void setStatusbarText(const String&) = 0;
-    virtual bool shouldInterruptJavaScript() = 0;
     virtual bool tabsToLinks() = 0;
 
     virtual void* webView() const = 0;
@@ -151,7 +149,6 @@ public:
     virtual IntRect windowResizerRect() const = 0;
 
     // Methods used by HostWindow.
-    virtual void invalidateRootView(const IntRect&) = 0;
     virtual void invalidateContentsAndRootView(const IntRect&) = 0;
     virtual void invalidateContentsForSlowScroll(const IntRect&) = 0;
     virtual void scroll(const IntSize&, const IntRect&, const IntRect&) = 0;
@@ -186,25 +183,6 @@ public:
     virtual bool shouldRubberBandInDirection(ScrollDirection) const = 0;
 
     virtual Color underlayColor() const { return Color(); }
-
-    virtual void exceededDatabaseQuota(Frame*, const String& databaseName, DatabaseDetails) = 0;
-
-    // Callback invoked when the application cache fails to save a cache object
-    // because storing it would grow the database file past its defined maximum
-    // size or past the amount of free space on the device. 
-    // The chrome client would need to take some action such as evicting some
-    // old caches.
-    virtual void reachedMaxAppCacheSize(int64_t spaceNeeded) = 0;
-
-    // Callback invoked when the application cache origin quota is reached. This
-    // means that the resources attempting to be cached via the manifest are
-    // more than allowed on this origin. This callback allows the chrome client
-    // to take action, such as prompting the user to ask to increase the quota
-    // for this origin. The totalSpaceNeeded parameter is the total amount of
-    // storage, in bytes, needed to store the new cache along with all of the
-    // other existing caches for the origin that would not be replaced by
-    // the new cache.
-    virtual void reachedApplicationCacheOriginQuota(SecurityOrigin*, int64_t totalSpaceNeeded) = 0;
 
     virtual void annotatedRegionsChanged();
 
@@ -271,21 +249,15 @@ public:
     // Returns a bitfield indicating conditions that can trigger the compositor.
     virtual CompositingTriggerFlags allowedCompositingTriggers() const { return static_cast<CompositingTriggerFlags>(AllTriggers); }
 
-    virtual bool supportsFullscreenForNode(const Node*) { return false; }
     virtual void enterFullscreenForNode(Node*) { }
     virtual void exitFullscreenForNode(Node*) { }
-    virtual bool requiresFullscreenForVideoPlayback() { return false; } 
 
-    virtual bool supportsFullScreenForElement(const Element*, bool) { return false; }
     virtual void enterFullScreenForElement(Element*) { }
     virtual void exitFullScreenForElement(Element*) { }
-    virtual void fullScreenRendererChanged(RenderBox*) { }
     virtual void setRootFullScreenLayer(GraphicsLayer*) { }
 
     virtual void needTouchEvents(bool) = 0;
 
-    virtual bool selectItemWritingDirectionIsNatural() = 0;
-    virtual bool selectItemAlignmentFollowsMenuWritingDirection() = 0;
     // Checks if there is an opened popup, called by RenderMenuList::showPopup().
     virtual bool hasOpenedPopup() const = 0;
     virtual PassRefPtr<PopupMenu> createPopupMenu(PopupMenuClient*) const = 0;
@@ -338,11 +310,7 @@ public:
     virtual String plugInStartLabelSubtitle() const { return String(); }
     virtual String plugInExtraStyleSheet() const { return String(); }
 
-    // FIXME: Port should return true using heuristic based on scrollable(RenderBox).
-    virtual bool shouldAutoscrollForDragAndDrop(RenderBox*) const { return false; }
-
     virtual void didAssociateFormControls(const Vector<RefPtr<Element> >&) { };
-    virtual bool shouldNotifyOnFormChanges() { return false; };
 
     // Notifies the client of a new popup widget.  The client should place
     // and size the widget with the given bounds, relative to the screen.

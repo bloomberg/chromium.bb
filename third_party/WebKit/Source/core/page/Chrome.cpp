@@ -79,11 +79,6 @@ PassOwnPtr<Chrome> Chrome::create(Page* page, ChromeClient* client)
     return adoptPtr(new Chrome(page, client));
 }
 
-void Chrome::invalidateRootView(const IntRect& updateRect)
-{
-    m_client->invalidateRootView(updateRect);
-}
-
 void Chrome::invalidateContentsAndRootView(const IntRect& updateRect)
 {
     m_client->invalidateContentsAndRootView(updateRect);
@@ -173,11 +168,6 @@ void Chrome::takeFocus(FocusDirection direction) const
 void Chrome::focusedNodeChanged(Node* node) const
 {
     m_client->focusedNodeChanged(node);
-}
-
-void Chrome::focusedFrameChanged(Frame* frame) const
-{
-    m_client->focusedFrameChanged(frame);
 }
 
 Page* Chrome::createWindow(Frame* frame, const FrameLoadRequest& request, const WindowFeatures& features, const NavigationAction& action) const
@@ -360,15 +350,6 @@ void Chrome::setStatusbarText(Frame* frame, const String& status)
     m_client->setStatusbarText(frame->displayStringModifiedByEncoding(status));
 }
 
-bool Chrome::shouldInterruptJavaScript()
-{
-    // Defer loads in case the client method runs a new event loop that would
-    // otherwise cause the load to continue while we're in the middle of executing JavaScript.
-    PageGroupLoadDeferrer deferrer(m_page, true);
-
-    return m_client->shouldInterruptJavaScript();
-}
-
 IntRect Chrome::windowResizerRect() const
 {
     return m_client->windowResizerRect();
@@ -505,16 +486,6 @@ bool ChromeClient::paintCustomOverhangArea(GraphicsContext*, const IntRect&, con
     return false;
 }
 
-bool Chrome::selectItemWritingDirectionIsNatural()
-{
-    return m_client->selectItemWritingDirectionIsNatural();
-}
-
-bool Chrome::selectItemAlignmentFollowsMenuWritingDirection()
-{
-    return m_client->selectItemAlignmentFollowsMenuWritingDirection();
-}
-
 bool Chrome::hasOpenedPopup() const
 {
     return m_client->hasOpenedPopup();
@@ -530,11 +501,6 @@ PassRefPtr<SearchPopupMenu> Chrome::createSearchPopupMenu(PopupMenuClient* clien
 {
     notifyPopupOpeningObservers();
     return m_client->createSearchPopupMenu(client);
-}
-
-bool Chrome::requiresFullscreenForVideoPlayback()
-{
-    return m_client->requiresFullscreenForVideoPlayback();
 }
 
 void Chrome::registerPopupOpeningObserver(PopupOpeningObserver* observer)

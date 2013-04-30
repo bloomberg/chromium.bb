@@ -240,10 +240,6 @@ void ChromeClientImpl::focusedNodeChanged(Node* node)
     m_webView->client()->setKeyboardFocusURL(focusURL);
 }
 
-void ChromeClientImpl::focusedFrameChanged(Frame*)
-{
-}
-
 Page* ChromeClientImpl::createWindow(
     Frame* frame, const FrameLoadRequest& r, const WindowFeatures& features, const NavigationAction& action)
 {
@@ -479,12 +475,6 @@ void ChromeClientImpl::setStatusbarText(const String& message)
         m_webView->client()->setStatusText(message);
 }
 
-bool ChromeClientImpl::shouldInterruptJavaScript()
-{
-    // FIXME: implement me
-    return false;
-}
-
 bool ChromeClientImpl::tabsToLinks()
 {
     return m_webView->tabsToLinks();
@@ -496,11 +486,6 @@ IntRect ChromeClientImpl::windowResizerRect() const
     if (m_webView->client())
         result = m_webView->client()->windowResizerRect();
     return result;
-}
-
-void ChromeClientImpl::invalidateRootView(const IntRect&)
-{
-    notImplemented();
 }
 
 void ChromeClientImpl::invalidateContentsAndRootView(const IntRect& updateRect)
@@ -701,21 +686,6 @@ void ChromeClientImpl::print(Frame* frame)
 {
     if (m_webView->client())
         m_webView->client()->printPage(WebFrameImpl::fromFrame(frame));
-}
-
-void ChromeClientImpl::exceededDatabaseQuota(Frame* frame, const String& databaseName, DatabaseDetails)
-{
-    // Chromium users cannot currently change the default quota
-}
-
-void ChromeClientImpl::reachedMaxAppCacheSize(int64_t spaceNeeded)
-{
-    ASSERT_NOT_REACHED();
-}
-
-void ChromeClientImpl::reachedApplicationCacheOriginQuota(SecurityOrigin*, int64_t)
-{
-    ASSERT_NOT_REACHED();
 }
 
 #if ENABLE(INPUT_TYPE_COLOR)
@@ -989,11 +959,6 @@ ChromeClient::CompositingTriggerFlags ChromeClientImpl::allowedCompositingTrigge
     return flags;
 }
 
-bool ChromeClientImpl::supportsFullscreenForNode(const Node* node)
-{
-    return false;
-}
-
 void ChromeClientImpl::enterFullscreenForNode(Node* node)
 {
     ASSERT_NOT_REACHED();
@@ -1004,11 +969,6 @@ void ChromeClientImpl::exitFullscreenForNode(Node* node)
     ASSERT_NOT_REACHED();
 }
 
-bool ChromeClientImpl::supportsFullScreenForElement(const Element* element, bool withKeyboard)
-{
-    return true;
-}
-
 void ChromeClientImpl::enterFullScreenForElement(Element* element)
 {
     m_webView->enterFullScreenForElement(element);
@@ -1017,21 +977,6 @@ void ChromeClientImpl::enterFullScreenForElement(Element* element)
 void ChromeClientImpl::exitFullScreenForElement(Element* element)
 {
     m_webView->exitFullScreenForElement(element);
-}
-
-void ChromeClientImpl::fullScreenRendererChanged(RenderBox*)
-{
-    notImplemented();
-}
-
-bool ChromeClientImpl::selectItemWritingDirectionIsNatural()
-{
-    return false;
-}
-
-bool ChromeClientImpl::selectItemAlignmentFollowsMenuWritingDirection()
-{
-    return true;
 }
 
 bool ChromeClientImpl::hasOpenedPopup() const
@@ -1138,12 +1083,6 @@ void ChromeClientImpl::numWheelEventHandlersChanged(unsigned numberOfWheelHandle
     m_webView->numberOfWheelEventHandlersChanged(numberOfWheelHandlers);
 }
 
-bool ChromeClientImpl::shouldAutoscrollForDragAndDrop(WebCore::RenderBox*) const
-{
-    return true;
-}
-
-
 void ChromeClientImpl::needTouchEvents(bool needsTouchEvents)
 {
     m_webView->hasTouchEventHandlers(needsTouchEvents);
@@ -1180,11 +1119,6 @@ void ChromeClientImpl::didAssociateFormControls(const Vector<RefPtr<Element> >& 
     for (size_t i = 0; i < elementsCount; ++i)
         elementVector[i] = elements[i];
     m_webView->autofillClient()->didAssociateFormControls(elementVector);
-}
-
-bool ChromeClientImpl::shouldNotifyOnFormChanges()
-{
-    return true;
 }
 
 #if ENABLE(NAVIGATOR_CONTENT_UTILS)
