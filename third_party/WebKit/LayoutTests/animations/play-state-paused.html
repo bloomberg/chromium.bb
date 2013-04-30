@@ -33,9 +33,6 @@
       from { -webkit-transform: translateX(0px); }
       to   { -webkit-transform: translateX(300px); }
     }
-    #result {
-      color: white; /* hide from pixel results */
-    }
   </style>
   <script src="resources/animation-test-helpers.js" type="text/javascript" charset="utf-8"></script>
   <script type="text/javascript" charset="utf-8">
@@ -56,7 +53,7 @@
         setTimeout(pauseAnimation, 1000);
     }
 
-    runAnimationTest(expectedValues, setTimers, null, true);
+    runAnimationTest(expectedValues, setTimers, null, true, true);
 
   </script>
 </head>
