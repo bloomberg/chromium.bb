@@ -19,7 +19,7 @@ namespace apps {
 
 ShortcutManager::ShortcutManager(Profile* profile)
     : profile_(profile),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
