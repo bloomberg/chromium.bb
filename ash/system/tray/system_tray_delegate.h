@@ -148,6 +148,12 @@ class SystemTrayDelegate {
   // Returns notification for enterprise enrolled devices.
   virtual const base::string16 GetEnterpriseMessage() const = 0;
 
+  // Returns the email of user that manages current locally managed user.
+  virtual const std::string GetLocallyManagedUserManager() const = 0;
+
+  // Returns notification for locally managed users.
+  virtual const base::string16 GetLocallyManagedUserMessage() const = 0;
+
   // Returns whether a system upgrade is available.
   virtual bool SystemShouldUpgrade() const = 0;
 
@@ -192,6 +198,9 @@ class SystemTrayDelegate {
 
   // Shows information about enterprise enrolled devices.
   virtual void ShowEnterpriseInfo() = 0;
+
+  // Shows information about locally managed users.
+  virtual void ShowLocallyManagedUserInfo() = 0;
 
   // Shows login UI to add other users to this session.
   virtual void ShowUserLogin() = 0;

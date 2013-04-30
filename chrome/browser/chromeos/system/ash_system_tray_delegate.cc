@@ -481,6 +481,20 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                                       UTF8ToUTF16(GetEnterpriseDomain()));
   }
 
+  virtual const std::string GetLocallyManagedUserManager() const OVERRIDE {
+    if (GetUserLoginStatus() != ash::user::LOGGED_IN_LOCALLY_MANAGED)
+      return std::string();
+    return UserManager::Get()->GetManagerForManagedUser(GetUserEmail());
+  }
+
+  virtual const string16 GetLocallyManagedUserMessage() const OVERRIDE {
+    if (GetUserLoginStatus() != ash::user::LOGGED_IN_LOCALLY_MANAGED)
+        return string16();
+    return l10n_util::GetStringFUTF16(IDS_USER_IS_LOCALLY_MANAGED_BY_NOTICE,
+                                      UTF8ToUTF16(
+                                          GetLocallyManagedUserManager()));
+  }
+
   virtual bool SystemShouldUpgrade() const OVERRIDE {
     return UpgradeDetector::GetInstance()->notify_upgrade();
   }
@@ -550,6 +564,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void ShowPublicAccountInfo() OVERRIDE {
     chrome::ShowPolicy(GetAppropriateBrowser());
+  }
+
+  virtual void ShowLocallyManagedUserInfo() OVERRIDE {
+    // TODO(antrim): find out what should we show in this case.
+    // http://crbug.com/229762
   }
 
   virtual void ShowEnterpriseInfo() OVERRIDE {

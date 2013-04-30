@@ -36,6 +36,8 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual void ChangeProfilePicture() OVERRIDE;
   virtual const std::string GetEnterpriseDomain() const OVERRIDE;
   virtual const base::string16 GetEnterpriseMessage() const OVERRIDE;
+  virtual const std::string GetLocallyManagedUserManager() const OVERRIDE;
+  virtual const base::string16 GetLocallyManagedUserMessage() const OVERRIDE;
   virtual bool SystemShouldUpgrade() const OVERRIDE;
   virtual base::HourClockType GetHourClockType() const OVERRIDE;
   virtual PowerSupplyStatus GetPowerSupplyStatus() const OVERRIDE;
@@ -51,6 +53,7 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual void ShowAccessibilityHelp() OVERRIDE;
   virtual void ShowPublicAccountInfo() OVERRIDE;
   virtual void ShowEnterpriseInfo() OVERRIDE;
+  virtual void ShowLocallyManagedUserInfo() OVERRIDE;
   virtual void ShowUserLogin() OVERRIDE;
   virtual void ShutDown() OVERRIDE;
   virtual void SignOut() OVERRIDE;

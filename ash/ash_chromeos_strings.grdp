@@ -234,5 +234,5 @@
   <message name="IDS_CHROMEOS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_STOP" desc="label used for screen sharing stop button">
     Stop
   </message>
-  
+
 </grit-part>

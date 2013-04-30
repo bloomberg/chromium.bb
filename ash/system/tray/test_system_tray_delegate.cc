@@ -122,6 +122,15 @@ const base::string16 TestSystemTrayDelegate::GetEnterpriseMessage() const {
   return string16();
 }
 
+const std::string TestSystemTrayDelegate::GetLocallyManagedUserManager() const {
+  return std::string();
+}
+
+const base::string16 TestSystemTrayDelegate::GetLocallyManagedUserMessage()
+    const {
+  return string16();
+}
+
 bool TestSystemTrayDelegate::SystemShouldUpgrade() const {
   return true;
 }
@@ -168,6 +177,9 @@ void TestSystemTrayDelegate::ShowPublicAccountInfo() {
 }
 
 void TestSystemTrayDelegate::ShowEnterpriseInfo() {
+}
+
+void TestSystemTrayDelegate::ShowLocallyManagedUserInfo() {
 }
 
 void TestSystemTrayDelegate::ShowUserLogin() {

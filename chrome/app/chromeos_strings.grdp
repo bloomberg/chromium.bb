@@ -513,6 +513,9 @@ Press any key to continue exploring.
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_RETRY_BUTTON_TITLE" desc="Text for button on an error reporting screen for locally managed user creation, that is used to retry failed operation">
     Retry
   </message>
+  <message name="IDS_USER_IS_LOCALLY_MANAGED_BY_NOTICE" desc="Text for notifications showing that this user is locally managed">
+    This user is managed by <ph name="MANAGER_EMAIL">$1<ex>john.doe@example.com</ex></ph>. Device usage and history may be tracked.
+  </message>
   <message name="IDS_OFFLINE_LOGIN_HTML" desc="Text which suggests enter as an existing user when valid network isn't presented.">
     If you've already registered on this device, you can <ph name="LINK2_START">$1<ex>&gt;a&lt;</ex></ph>sign in as an existing user<ph name="LINK2_END">$2<ex>&gt;/a&lt;</ex></ph>.
   </message>

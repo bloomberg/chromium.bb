@@ -553,12 +553,18 @@ void UserView::AddUserCard(SystemTrayItem* owner,
   username->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   details->AddChildView(username);
 
-  views::Label* email = new views::Label(UTF8ToUTF16(delegate->GetUserEmail()));
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  email->SetFont(bundle.GetFont(ui::ResourceBundle::SmallFont));
-  email->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  email->SetEnabled(false);
-  details->AddChildView(email);
+
+  views::Label* additional = new views::Label();
+
+  additional->SetText(login == ash::user::LOGGED_IN_LOCALLY_MANAGED ?
+      bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_LOCALLY_MANAGED_LABEL) :
+      UTF8ToUTF16(delegate->GetUserEmail()));
+
+  additional->SetFont(bundle.GetFont(ui::ResourceBundle::SmallFont));
+  additional->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  additional->SetEnabled(false);
+  details->AddChildView(additional);
   user_card_->AddChildView(details);
 }
 

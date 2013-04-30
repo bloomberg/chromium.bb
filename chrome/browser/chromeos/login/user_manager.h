@@ -255,6 +255,10 @@ class UserManager {
   virtual bool IsUserNonCryptohomeDataEphemeral(
       const std::string& email) const = 0;
 
+  // Returns manager user ID for given |managed_user_id|.
+  virtual std::string GetManagerForManagedUser(
+      const std::string& managed_user_id) const = 0;
+
   // Create a record about starting locally managed user creation transaction.
   virtual void StartLocallyManagedUserCreationTransaction(
       const string16& display_name) = 0;

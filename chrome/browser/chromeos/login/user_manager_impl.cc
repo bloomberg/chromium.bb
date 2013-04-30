@@ -379,6 +379,12 @@ std::string UserManagerImpl::GenerateUniqueLocallyManagedUserId() {
   return id;
 }
 
+std::string UserManagerImpl::GetManagerForManagedUser(
+    const std::string& managed_user_id) const {
+  // TODO (antrim): implement this method when we have appropriate API.
+  return std::string();
+}
+
 const User* UserManagerImpl::CreateLocallyManagedUserRecord(
       const std::string& e_mail,
       const string16& display_name) {
