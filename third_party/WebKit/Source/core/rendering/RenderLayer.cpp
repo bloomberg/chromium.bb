@@ -3710,14 +3710,6 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
     bool didQuantizeFonts = true;
     bool scrollingOnMainThread = true;
     Frame* frame = renderer()->frame();
-#if ENABLE(THREADED_SCROLLING)
-    if (frame) {
-        if (Page* page = frame->page()) {
-            if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
-                scrollingOnMainThread = scrollingCoordinator->shouldUpdateScrollLayerPositionOnMainThread();
-        }
-    }
-#endif
 
     // FIXME: We shouldn't have to disable subpixel quantization for overflow clips or subframes once we scroll those
     // things on the scrolling thread.
