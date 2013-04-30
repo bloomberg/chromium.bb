@@ -429,10 +429,14 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::
   if (clipped || !visible_transformed_quad.IsRectilinear())
     return;
 
-  gfx::Rect clip_rect_in_target = gfx::IntersectRects(
-      layer->render_target()->render_surface()->content_rect(),
-      ScreenSpaceClipRectInTargetSurface(
-          layer->render_target()->render_surface(), screen_space_clip_rect_));
+  gfx::Rect clip_rect_in_target = ScreenSpaceClipRectInTargetSurface(
+      layer->render_target()->render_surface(), screen_space_clip_rect_);
+  if (layer->is_clipped()) {
+    clip_rect_in_target.Intersect(layer->clip_rect());
+  } else {
+    clip_rect_in_target.Intersect(
+        layer->render_target()->render_surface()->content_rect());
+  }
 
   for (Region::Iterator opaque_content_rects(opaque_contents);
        opaque_content_rects.has_rect();

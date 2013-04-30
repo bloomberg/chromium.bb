@@ -4732,5 +4732,85 @@ class OcclusionTrackerTestPreventOcclusionByClipping
 
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestPreventOcclusionByClipping)
 
+template <class Types>
+class OcclusionTrackerTestScaledLayerIsClipped
+    : public OcclusionTrackerTest<Types> {
+ protected:
+  explicit OcclusionTrackerTestScaledLayerIsClipped(bool opaque_layers)
+      : OcclusionTrackerTest<Types>(opaque_layers) {}
+  void RunMyTest() {
+    gfx::Transform scale_transform;
+    scale_transform.Scale(512.0, 512.0);
+
+    typename Types::ContentLayerType* parent = this->CreateRoot(
+        this->identity_matrix, gfx::PointF(), gfx::Size(400, 400));
+    typename Types::LayerType* clip = this->CreateLayer(parent,
+                                                        this->identity_matrix,
+                                                        gfx::PointF(10.f, 10.f),
+                                                        gfx::Size(50, 50));
+    clip->SetMasksToBounds(true);
+    typename Types::LayerType* scale = this->CreateLayer(
+        clip, scale_transform, gfx::PointF(), gfx::Size(1, 1));
+    typename Types::LayerType* scaled = this->CreateDrawingLayer(
+        scale, this->identity_matrix, gfx::PointF(), gfx::Size(500, 500), true);
+    this->CalcDrawEtc(parent);
+
+    TestOcclusionTrackerWithClip<typename Types::LayerType,
+                                 typename Types::RenderSurfaceType> occlusion(
+        gfx::Rect(0, 0, 1000, 1000));
+
+    this->VisitLayer(scaled, &occlusion);
+
+    EXPECT_EQ(gfx::Rect().ToString(),
+              occlusion.occlusion_from_outside_target().ToString());
+    EXPECT_EQ(gfx::Rect(10, 10, 50, 50).ToString(),
+              occlusion.occlusion_from_inside_target().ToString());
+  }
+};
+
+ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestScaledLayerIsClipped)
+
+template <class Types>
+class OcclusionTrackerTestScaledLayerInSurfaceIsClipped
+    : public OcclusionTrackerTest<Types> {
+ protected:
+  explicit OcclusionTrackerTestScaledLayerInSurfaceIsClipped(bool opaque_layers)
+      : OcclusionTrackerTest<Types>(opaque_layers) {}
+  void RunMyTest() {
+    gfx::Transform scale_transform;
+    scale_transform.Scale(512.0, 512.0);
+
+    typename Types::ContentLayerType* parent = this->CreateRoot(
+        this->identity_matrix, gfx::PointF(), gfx::Size(400, 400));
+    typename Types::LayerType* clip = this->CreateLayer(parent,
+                                                        this->identity_matrix,
+                                                        gfx::PointF(10.f, 10.f),
+                                                        gfx::Size(50, 50));
+    clip->SetMasksToBounds(true);
+    typename Types::LayerType* surface = this->CreateDrawingSurface(
+        clip, this->identity_matrix, gfx::PointF(), gfx::Size(400, 30), false);
+    typename Types::LayerType* scale = this->CreateLayer(
+        surface, scale_transform, gfx::PointF(), gfx::Size(1, 1));
+    typename Types::LayerType* scaled = this->CreateDrawingLayer(
+        scale, this->identity_matrix, gfx::PointF(), gfx::Size(500, 500), true);
+    this->CalcDrawEtc(parent);
+
+    TestOcclusionTrackerWithClip<typename Types::LayerType,
+                                 typename Types::RenderSurfaceType> occlusion(
+        gfx::Rect(0, 0, 1000, 1000));
+
+    this->VisitLayer(scaled, &occlusion);
+    this->VisitLayer(surface, &occlusion);
+    this->VisitContributingSurface(surface, &occlusion);
+
+    EXPECT_EQ(gfx::Rect().ToString(),
+              occlusion.occlusion_from_outside_target().ToString());
+    EXPECT_EQ(gfx::Rect(10, 10, 50, 50).ToString(),
+              occlusion.occlusion_from_inside_target().ToString());
+  }
+};
+
+ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestScaledLayerInSurfaceIsClipped)
+
 }  // namespace
 }  // namespace cc
