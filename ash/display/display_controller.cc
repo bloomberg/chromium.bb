@@ -42,9 +42,10 @@
 #include "ui/gfx/screen.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/display/output_configurator_animation.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/time.h"
+#if defined(USE_X11)
+#include "ash/display/output_configurator_animation.h"
 #include "chromeos/display/output_configurator.h"
 #include "ui/base/x/x11_util.h"
 
@@ -52,6 +53,7 @@
 // potential conflict with chrome headers.
 #include <X11/extensions/Xrandr.h>
 #undef RootWindow
+#endif  // defined(USE_X11)
 #endif  // defined(OS_CHROMEOS)
 
 namespace ash {
@@ -128,7 +130,7 @@ void SetDisplayPropertiesOnHostWindow(aura::RootWindow* root,
                                       const gfx::Display& display) {
   internal::DisplayInfo info =
       GetDisplayManager()->GetDisplayInfo(display.id());
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && defined(USE_X11)
   // Native window property (Atom in X11) that specifies the display's
   // rotation, scale factor and if it's internal display.  They are
   // read and used by touchpad/mouse driver directly on X (contact
@@ -624,7 +626,7 @@ void DisplayController::CycleDisplayMode() {
       return;
     limiter_->SetThrottleTimeout(kCycleDisplayThrottleTimeoutMs);
   }
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && defined(USE_X11)
   Shell* shell = Shell::GetInstance();
   internal::DisplayManager* display_manager = GetDisplayManager();
   if (!base::chromeos::IsRunningOnChromeOS()) {
@@ -650,7 +652,7 @@ void DisplayController::SwapPrimaryDisplay() {
   }
 
   if (Shell::GetScreen()->GetNumDisplays() > 1) {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && defined(USE_X11)
     internal::OutputConfiguratorAnimation* animation =
         Shell::GetInstance()->output_configurator_animation();
     if (animation) {
@@ -1033,7 +1035,7 @@ void DisplayController::RegisterLayoutForDisplayIdPairInternal(
 }
 
 void DisplayController::OnFadeOutForSwapDisplayFinished() {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && defined(USE_X11)
   SetPrimaryDisplay(ScreenAsh::GetSecondaryDisplay());
   Shell::GetInstance()->output_configurator_animation()->StartFadeInAnimation();
 #endif

@@ -107,7 +107,7 @@
 #include "ash/accelerators/nested_dispatcher_controller.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && defined(USE_X11)
 #include "ash/ash_constants.h"
 #include "ash/display/display_change_observer_x11.h"
 #include "ash/display/display_error_dialog.h"
@@ -201,7 +201,7 @@ Shell::Shell(ShellDelegate* delegate)
       active_root_window_(NULL),
       delegate_(delegate),
       activation_client_(NULL),
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && defined(USE_X11)
       output_configurator_(new chromeos::OutputConfigurator()),
 #endif  // defined(OS_CHROMEOS)
       native_cursor_manager_(new AshNativeCursorManager),
@@ -216,7 +216,7 @@ Shell::Shell(ShellDelegate* delegate)
   if (!gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE))
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_);
   display_controller_.reset(new DisplayController);
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && defined(USE_X11)
   bool is_panel_fitting_disabled =
       content::GpuDataManager::GetInstance()->IsFeatureBlacklisted(
           content::GPU_FEATURE_TYPE_PANEL_FITTING) ||
@@ -309,8 +309,8 @@ Shell::~Shell() {
   // because they might have registered ActivationChangeObserver.
   activation_controller_.reset();
 
-#if defined(OS_CHROMEOS)
-  if (display_change_observer_)
+#if defined(OS_CHROMEOS) && defined(USE_X11)
+   if (display_change_observer_)
     output_configurator_->RemoveObserver(display_change_observer_.get());
   if (output_configurator_animation_)
     output_configurator_->RemoveObserver(output_configurator_animation_.get());
@@ -421,7 +421,7 @@ bool Shell::IsLauncherPerDisplayEnabled() {
 
 void Shell::Init() {
   delegate_->PreInit();
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && defined(USE_X11)
   output_configurator_animation_.reset(
       new internal::OutputConfiguratorAnimation());
   output_configurator_->AddObserver(output_configurator_animation_.get());

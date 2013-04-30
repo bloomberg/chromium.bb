@@ -58,6 +58,9 @@ class DisplayView : public ash::internal::ActionableView {
   virtual ~DisplayView() {}
 
   void Update() {
+#if !defined(USE_X11)
+     SetVisible(false);
+#else
     chromeos::OutputState state =
         base::chromeos::IsRunningOnChromeOS() ?
         Shell::GetInstance()->output_configurator()->output_state() :
@@ -80,6 +83,7 @@ class DisplayView : public ash::internal::ActionableView {
         return;
     }
     NOTREACHED() << "Unhandled state " << state;
+#endif
   }
 
   chromeos::OutputState InferOutputState() const {
@@ -138,12 +142,16 @@ TrayDisplay::TrayDisplay(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
       default_(NULL) {
   Shell::GetScreen()->AddObserver(this);
+#if defined(USE_X11)
   Shell::GetInstance()->output_configurator()->AddObserver(this);
+#endif
 }
 
 TrayDisplay::~TrayDisplay() {
   Shell::GetScreen()->RemoveObserver(this);
+#if defined(USE_X11)
   Shell::GetInstance()->output_configurator()->RemoveObserver(this);
+#endif
 }
 
 views::View* TrayDisplay::CreateDefaultView(user::LoginStatus status) {

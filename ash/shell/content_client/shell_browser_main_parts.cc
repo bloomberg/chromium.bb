@@ -35,7 +35,7 @@
 #include "ui/message_center/message_center.h"
 #endif
 
-#if defined(OS_LINUX)
+#if defined(USE_X11)
 #include "ui/base/touch/touch_factory_x11.h"
 #endif
 
@@ -89,7 +89,7 @@ ShellBrowserMainParts::~ShellBrowserMainParts() {
 
 #if !defined(OS_MACOSX)
 void ShellBrowserMainParts::PreMainMessageLoopStart() {
-#if defined(OS_LINUX)
+#if defined(USE_X11)
   ui::TouchFactory::SetTouchDeviceListFromCommandLine();
 #endif
 }
