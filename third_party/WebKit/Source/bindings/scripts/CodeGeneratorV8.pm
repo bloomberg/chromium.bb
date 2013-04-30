@@ -46,8 +46,6 @@ my %numericTypeHash = ("int" => 1, "short" => 1, "long" => 1, "long long" => 1,
 
 my %primitiveTypeHash = ( "boolean" => 1, "void" => 1, "Date" => 1);
 
-my %stringTypeHash = ("DOMString" => 1, "AtomicString" => 1);
-
 my %enumTypeHash = ();
 
 my %svgAnimatedTypeHash = ("SVGAnimatedAngle" => 1, "SVGAnimatedBoolean" => 1,
@@ -196,7 +194,7 @@ sub AddIncludesForType
     if (IsTypedArrayType($type)) {
         AddToImplIncludes("wtf/${type}.h");
     }
-    if (!IsPrimitiveType($type) and !IsStringType($type) and !SkipIncludeHeader($type) and $type ne "Date") {
+    if (!IsPrimitiveType($type) and $type ne "DOMString" and !SkipIncludeHeader($type) and $type ne "Date") {
         # default, include the same named file
         AddToImplIncludes(GetV8HeaderName(${type}));
 
@@ -1183,7 +1181,7 @@ END
     } else {
         my $reflect = $attribute->signature->extendedAttributes->{"Reflect"};
         my $url = $attribute->signature->extendedAttributes->{"URL"};
-        if ($getterStringUsesImp && $reflect && !$url && InheritsInterface($interface, "Node") && IsStringType($attrType)) {
+        if ($getterStringUsesImp && $reflect && !$url && InheritsInterface($interface, "Node") && $attrType eq "DOMString") {
             # Generate super-compact call for regular attribute getter:
             my ($functionName, @arguments) = GetterExpression(\%implIncludes, $interfaceName, $attribute);
             $code .= "    Element* imp = V8Element::toNative(info.Holder());\n";
@@ -1558,7 +1556,7 @@ END
 END
     } else {
         my $reflect = $attribute->signature->extendedAttributes->{"Reflect"};
-        if ($reflect && InheritsInterface($interface, "Node") && IsStringType($attrType)) {
+        if ($reflect && InheritsInterface($interface, "Node") && $attrType eq "DOMString") {
             # Generate super-compact call for regular attribute setter:
             my $contentAttributeName = $reflect eq "VALUE_IS_MISSING" ? lc $attrName : $reflect;
             my $namespace = NamespaceForAttributeName($interfaceName, $contentAttributeName);
@@ -1722,7 +1720,7 @@ sub GenerateParametersCheckExpression
         # are accepted for compatibility. Otherwise, no restrictions are made to
         # match the non-overloaded behavior.
         # FIXME: Implement WebIDL overload resolution algorithm.
-        if (IsStringType($type)) {
+        if ($type eq "DOMString") {
             if ($parameter->extendedAttributes->{"StrictTypeChecking"}) {
                 push(@andExpression, "(${value}->IsNull() || ${value}->IsUndefined() || ${value}->IsString() || ${value}->IsObject())");
             }
@@ -4787,7 +4785,7 @@ sub NativeToJSValue
     return "v8::Number::New($value)" if IsPrimitiveType($type);
     return "$value.v8Value()" if $nativeType eq "ScriptValue";
 
-    if (IsStringType($type) or IsEnumType($type)) {
+    if ($type eq "DOMString" or IsEnumType($type)) {
         my $conv = $signature->extendedAttributes->{"TreatReturnedNullStringAs"};
         if (defined $conv) {
             return "v8StringOrNull($value, $getIsolate$returnHandleTypeArg)" if $conv eq "Null";
@@ -5079,14 +5077,6 @@ sub IsPrimitiveType
 
     return 1 if $primitiveTypeHash{$type};
     return 1 if $numericTypeHash{$type};
-    return 0;
-}
-
-sub IsStringType
-{
-    my $type = shift;
-
-    return 1 if $stringTypeHash{$type};
     return 0;
 }
 
