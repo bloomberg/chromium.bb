@@ -2182,7 +2182,6 @@ sub GenerateParametersCheck
 
     my $parameterCheckString = "";
     my $paramIndex = 0;
-    my @paramTransferListNames = ();
     my %replacements = ();
 
     foreach my $parameter (@{$function->parameters}) {
@@ -2205,12 +2204,6 @@ sub GenerateParametersCheck
         }
 
         my $parameterName = $parameter->name;
-        if (GetIndexOf($parameterName, @paramTransferListNames) != -1) {
-            $replacements{$parameterName} = "messagePortArray" . ucfirst($parameterName);
-            $paramIndex++;
-            next;
-        }
-
         AddToImplIncludes("core/dom/ExceptionCode.h");
         if ($parameter->extendedAttributes->{"Callback"}) {
             my $v8InterfaceName = "V8" . $parameter->type;
@@ -2236,39 +2229,8 @@ sub GenerateParametersCheck
                 $parameterCheckString .= "        $parameterName = clampTo<$paramType>($nativeValue);\n";
         } elsif ($parameter->type eq "SerializedScriptValue") {
             AddToImplIncludes("bindings/v8/SerializedScriptValue.h");
-            my $useTransferList = 0;
-            my $transferListName = "";
-            my $TransferListName = "";
-            if ($parameter->extendedAttributes->{"TransferList"}) {
-                $transferListName = $parameter->extendedAttributes->{"TransferList"};
-                push(@paramTransferListNames, $transferListName);
-
-                my @allParameterNames = ();
-                foreach my $parameter (@{$function->parameters}) {
-                    push(@allParameterNames, $parameter->name);
-                }
-                my $transferListIndex = GetIndexOf($transferListName, @allParameterNames);
-                if ($transferListIndex == -1) {
-                    die "IDL error: TransferList refers to a nonexistent argument";
-                }
-
-                AddToImplIncludes("wtf/ArrayBuffer.h");
-                AddToImplIncludes("MessagePort.h");
-                $TransferListName = ucfirst($transferListName);
-                $parameterCheckString .= "    MessagePortArray messagePortArray$TransferListName;\n";
-                $parameterCheckString .= "    ArrayBufferArray arrayBufferArray$TransferListName;\n";
-                $parameterCheckString .= "    if (args.Length() > $transferListIndex) {\n";
-                $parameterCheckString .= "        if (!extractTransferables(args[$transferListIndex], messagePortArray$TransferListName, arrayBufferArray$TransferListName, args.GetIsolate()))\n";
-                $parameterCheckString .= "            return throwTypeError(\"Could not extract transferables\", args.GetIsolate());\n";
-                $parameterCheckString .= "    }\n";
-                $useTransferList = 1;
-            }
             $parameterCheckString .= "    bool ${parameterName}DidThrow = false;\n";
-            if (!$useTransferList) {
-                    $parameterCheckString .= "    $nativeType $parameterName = SerializedScriptValue::create(args[$paramIndex], 0, 0, ${parameterName}DidThrow, args.GetIsolate());\n";
-            } else {
-                    $parameterCheckString .= "    $nativeType $parameterName = SerializedScriptValue::create(args[$paramIndex], &messagePortArray$TransferListName, &arrayBufferArray$TransferListName, ${parameterName}DidThrow, args.GetIsolate());\n";
-            }
+            $parameterCheckString .= "    $nativeType $parameterName = SerializedScriptValue::create(args[$paramIndex], 0, 0, ${parameterName}DidThrow, args.GetIsolate());\n";
             $parameterCheckString .= "    if (${parameterName}DidThrow)\n";
             $parameterCheckString .= "        return v8Undefined();\n";
         } elsif (TypeCanFailConversion($parameter)) {
