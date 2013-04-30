@@ -121,38 +121,54 @@ def UpdateProjects(pepperdir, platform, project_tree, toolchains,
       out = landing_page.GeneratePage(index_template)
       fh.write(out)
 
+  # Generate top Make for examples
   targets = ['api', 'demos', 'getting_started', 'tutorials']
   targets = [x for x in targets if 'examples/'+x in project_tree]
-  generate_make.GenerateMasterMakefile(os.path.join(pepperdir, 'examples'),
-                                       targets, 2)
+  branch_name = 'examples'
+  depth = len(branch_name.split('/'))
+  generate_make.GenerateMasterMakefile(os.path.join(pepperdir, branch_name),
+                                       targets, depth)
+
+
+def BuildProjectsBranch(pepperdir, platform, branch, deps=True, clean=False,
+                        config='Debug'):
+  make_dir = os.path.join(pepperdir, branch)
+  print "\n\nMake: " + make_dir
+  if platform == 'win':
+    # We need to modify the environment to build host on Windows.
+    make = os.path.join(make_dir, 'make.bat')
+  else:
+    make = 'make'
+
+  extra_args = ['CONFIG='+config]
+  if not deps:
+    extra_args += ['IGNORE_DEPS=1']
+
+  try:
+    buildbot_common.Run([make, '-j8', 'all_versions'] + extra_args,
+                        cwd=make_dir)
+  except:
+    print 'Failed to build ' + branch
+    raise
+
+  if clean:
+    # Clean to remove temporary files but keep the built
+    buildbot_common.Run([make, '-j8', 'clean'] + extra_args,
+                        cwd=make_dir)
 
 
 def BuildProjects(pepperdir, platform, project_tree, deps=True,
                   clean=False, config='Debug'):
+  # First build libraries
+  build_order = ['src', 'testlibs']
+  for branch in build_order:
+    if branch in project_tree:
+      BuildProjectsBranch(pepperdir, platform, branch, deps, clean, config)
+
+  # Build everything else.
   for branch in project_tree:
-    make_dir = os.path.join(pepperdir, branch)
-    print "\n\nMake: " + make_dir
-    if platform == 'win':
-      # We need to modify the environment to build host on Windows.
-      make = os.path.join(make_dir, 'make.bat')
-    else:
-      make = 'make'
-
-    extra_args = ['CONFIG='+config]
-    if not deps:
-      extra_args += ['IGNORE_DEPS=1']
-
-    try:
-      buildbot_common.Run([make, '-j8', 'all_versions'] + extra_args,
-                          cwd=make_dir)
-    except:
-      print 'Failed to build ' + branch
-      raise
-
-    if clean:
-      # Clean to remove temporary files but keep the built
-      buildbot_common.Run([make, '-j8', 'clean'] + extra_args,
-                          cwd=make_dir)
+    if branch not in build_order:
+      BuildProjectsBranch(pepperdir, platform, branch, deps, clean, config)
 
 
 def main(args):
