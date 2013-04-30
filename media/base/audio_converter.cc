@@ -1,6 +1,12 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// AudioConverter implementation.  Uses MultiChannelSincResampler for resampling
+// audio, ChannelMixer for channel mixing, and AudioPullFifo for buffering.
+//
+// Delay estimates are provided to InputCallbacks based on the frame delay
+// information reported via the resampler and FIFO units.
 
 #include "media/base/audio_converter.h"
 
@@ -117,10 +123,17 @@ void AudioConverter::Convert(AudioBus* dest) {
     return;
   }
 
+  // Determine if channel mixing should be done and if it should be done before
+  // or after resampling.  If it's possible to reduce the channel count prior to
+  // resampling we can save a lot of processing time.  Vice versa, we don't want
+  // to increase the channel count prior to resampling for the same reason.
   bool needs_mixing = channel_mixer_ && !downmix_early_;
   AudioBus* temp_dest = needs_mixing ? unmixed_audio_.get() : dest;
   DCHECK(temp_dest);
 
+  // Figure out which method to call based on whether we're resampling and
+  // rebuffering, just resampling, or just mixing.  We want to avoid any extra
+  // steps when possible since we may be converting audio data in real time.
   if (!resampler_ && !audio_fifo_) {
     SourceCallback(0, temp_dest);
   } else {
@@ -130,6 +143,7 @@ void AudioConverter::Convert(AudioBus* dest) {
       ProvideInput(0, temp_dest);
   }
 
+  // Finally upmix the channels if we didn't do so earlier.
   if (needs_mixing) {
     DCHECK_EQ(temp_dest->frames(), dest->frames());
     channel_mixer_->Transform(temp_dest, dest);
