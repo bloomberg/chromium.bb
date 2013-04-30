@@ -76,7 +76,6 @@ function populateDeviceLists() {
   var deviceElements = document.querySelectorAll('.device');
   for (var i = 0; i < deviceElements.length; i++)
     deviceElements[i].remove();
-  var containerElement = document.getElementById('devices');
 
   // Populate with new entries
   for (var i = 0; pages && i < pages.length; i++) {
@@ -92,8 +91,8 @@ function populateDeviceLists() {
       listElement = document.createElement('div');
       listElement.className = 'list device';
       listElement.id = listId;
-      containerElement.appendChild(sectionElement);
-      containerElement.appendChild(listElement);
+      document.body.appendChild(sectionElement);
+      document.body.appendChild(listElement);
     }
 
     var packageId = 'package-' + page.adbModel + '-' + page.adbPackage;
