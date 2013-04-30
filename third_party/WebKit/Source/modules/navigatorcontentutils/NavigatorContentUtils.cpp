@@ -44,6 +44,7 @@ static void initProtocolHandlerWhitelist()
 {
     protocolWhitelist = new HashSet<String>;
     static const char* protocols[] = {
+        "bitcoin",
         "irc",
         "mailto",
         "mms",
