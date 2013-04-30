@@ -18,17 +18,9 @@
         embedderWindowChannel.postMessage(JSON.stringify(msg_array), '*');
       };
 
-      var openWindow = function(url, frameName) {
+      var startTest = function(url, frameName) {
         window.open(url, frameName);
       };
-
-      var openWindowBlankRedirect = function(url, frameName) {
-        var w = window.open('', frameName);
-        w.opener = null;
-        w.document.write(
-            '<META HTTP-EQUIV="refresh" content="0; url=' + url + '">');
-        w.document.close();
-      }
 
       var onPostMessageReceived = function(e) {
         embedderWindowChannel = e.source;
@@ -36,12 +28,8 @@
         if (data[0] == 'open-window') {
           var url = data[1];
           var frameName = data[2];
-          var redirect = data[3];
-          if (redirect) {
-            openWindowBlankRedirect(url, frameName);
-          } else {
-            openWindow(url, frameName);
-          }
+          // Start the test once we have |embedderWindowChannel|.
+          startTest(url, frameName);
         } else if (data[0] == 'get-frame-name') {
           var testName = data[1];
           notifyEmbedder(['get-frame-name', testName, window.name]);
