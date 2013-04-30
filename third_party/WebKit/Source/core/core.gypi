@@ -3662,6 +3662,11 @@
             'tests/LayoutUnit.cpp',
             'tests/LinkRelAttribute.cpp',
         ],
+        'scripts_for_in_files': [
+            'scripts/in_file.py',
+            'scripts/in_generator.py',
+            'scripts/license.py',
+        ],
         'conditions': [
             ['OS=="win"', {
                 # Using native perl rather than cygwin perl cuts execution time

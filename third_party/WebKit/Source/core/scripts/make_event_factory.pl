@@ -57,61 +57,6 @@ sub generateCode()
     my $parsedParametersRef = shift;
     my $parsedItemsRef = shift;
 
-    generateImplementation($parsedParametersRef, $parsedItemsRef);
     $InCompiler->generateInterfacesHeader();
     $InCompiler->generateHeadersHeader()
-}
-
-sub generateImplementation()
-{
-    my $parsedParametersRef = shift;
-    my $parsedItemsRef = shift;
-
-    my $F;
-    my %parsedEvents = %{ $parsedItemsRef };
-    my %parsedParameters = %{ $parsedParametersRef };
-
-    my $namespace = $parsedParameters{"namespace"};
-
-    # Currently, only Events have factory files.
-    return if $namespace ne "Event";
-
-    my $outputFile = "$outputDir/${namespace}Factory.cpp";
-
-    open F, ">$outputFile" or die "Failed to open file: $!";
-
-    print F $InCompiler->license();
-
-    print F "#include \"config.h\"\n";
-    print F "#include \"${namespace}Factory.h\"\n";
-    print F "\n";
-    print F "#include \"${namespace}Headers.h\"\n";
-    print F "#include \"RuntimeEnabledFeatures.h\"\n";
-    print F "\n";
-    print F "namespace WebCore {\n";
-    print F "\n";
-    print F "PassRefPtr<$namespace> ${namespace}Factory::create(const String& type)\n";
-    print F "{\n";
-
-    for my $eventName (sort keys %parsedEvents) {
-        my $conditional = $parsedEvents{$eventName}{"conditional"};
-        my $runtimeConditional = $parsedEvents{$eventName}{"runtimeConditional"};
-        my $interfaceName = $InCompiler->interfaceForItem($eventName);
-
-        print F "#if ENABLE($conditional)\n" if $conditional;
-        if ($runtimeConditional) {
-            print F "    if (type == \"$eventName\" && RuntimeEnabledFeatures::$runtimeConditional())\n";
-        } else {
-            print F "    if (type == \"$eventName\")\n";
-        }
-        print F "        return ${interfaceName}::create();\n";
-        print F "#endif\n" if $conditional;
-    }
-
-    print F "    return 0;\n";
-    print F "}\n";
-    print F "\n";
-    print F "} // namespace WebCore\n";
-
-    close F;
 }

@@ -97,11 +97,6 @@ class RuntimeFeatureWriter(in_generator.Writer):
         lowered = lowered.replace("iME", "ime")
         return lowered
 
-    def _wrap_with_condition(self, string, condition):
-        if not condition:
-            return string
-        return "#if ENABLE(%(condition)s)\n%(string)s\n#endif" % { 'condition' : condition, 'string' : string }
-
     def _method_declaration(self, feature):
         if feature['custom']:
             return "    static bool %(first_lowered_name)sEnabled();\n" % feature
@@ -118,7 +113,7 @@ class RuntimeFeatureWriter(in_generator.Writer):
 
     def _storage_declarations(self, feature):
         declaration = "    static bool is%(name)sEnabled;" % feature
-        return self._wrap_with_condition(declaration, feature['condition'])
+        return self.wrap_with_condition(declaration, feature['condition'])
 
     def generate_header(self):
         return HEADER_TEMPLATE % {
@@ -130,7 +125,7 @@ class RuntimeFeatureWriter(in_generator.Writer):
 
     def _storage_definition(self, feature):
         definition = "bool RuntimeEnabledFeatures::is%(name)sEnabled = %(default)s;" % feature
-        return self._wrap_with_condition(definition, feature['condition'])
+        return self.wrap_with_condition(definition, feature['condition'])
 
     def generate_implementation(self):
         return IMPLEMENTATION_TEMPLATE % {

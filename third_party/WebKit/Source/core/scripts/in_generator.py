@@ -49,6 +49,11 @@ class Writer(object):
     def generate_implementation(self):
         raise NotImplementedError
 
+    def wrap_with_condition(self, string, condition):
+        if not condition:
+            return string
+        return "#if ENABLE(%(condition)s)\n%(string)s\n#endif" % { 'condition' : condition, 'string' : string }
+
     def _forcibly_create_text_file_at_path_with_contents(self, file_path, contents):
         # FIXME: This method can be made less force-full anytime after 6/1/2013.
         # A gyp error was briefly checked into the tree, causing
@@ -65,12 +70,18 @@ class Writer(object):
             file_to_write.write(contents)
 
     def write_header(self, output_dir):
-        header_path = os.path.join(output_dir, self.class_name + ".h")
-        self._forcibly_create_text_file_at_path_with_contents(header_path, self.generate_header())
+        contents = self.generate_header()
+        if not contents:
+            return
+        path = os.path.join(output_dir, self.class_name + ".h")
+        self._forcibly_create_text_file_at_path_with_contents(path, contents)
 
     def write_implmentation(self, output_dir):
-        implmentation_path = os.path.join(output_dir, self.class_name + ".cpp")
-        self._forcibly_create_text_file_at_path_with_contents(implmentation_path, self.generate_implementation())
+        contents = self.generate_implementation()
+        if not contents:
+            return
+        path = os.path.join(output_dir, self.class_name + ".cpp")
+        self._forcibly_create_text_file_at_path_with_contents(path, contents)
 
 
 class Maker(object):
