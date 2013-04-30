@@ -19,7 +19,7 @@ class StackedPanelBrowserTest : public BasePanelBrowserTest {
 
 // TODO(jianli): to be enabled for other platforms when grouping and snapping
 // are supported.
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN)
 
 IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, CheckStackedPanelProperties) {
   PanelManager* panel_manager = PanelManager::GetInstance();
@@ -347,7 +347,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ExpandToFitWithinScreen) {
   ASSERT_EQ(3, stack->num_panels());
 
   // Create 1 detached panel such that all stacked panel are not focused.
-  CreateDetachedPanel("4", gfx::Rect(400, 150, 100, 100));
+  Panel* panel4 = CreateDetachedPanel("4", gfx::Rect(400, 150, 100, 100));
   ASSERT_FALSE(panel1->IsActive());
   ASSERT_FALSE(panel2->IsActive());
   ASSERT_FALSE(panel3->IsActive());
@@ -435,7 +435,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ExpandAllToFitWithinScreen) {
   ASSERT_EQ(3, stack->num_panels());
 
   // Create 1 detached panel such that all stacked panel are not focused.
-  CreateDetachedPanel("4", gfx::Rect(400, 150, 100, 100));
+  Panel* panel4 = CreateDetachedPanel("4", gfx::Rect(400, 150, 100, 100));
   ASSERT_FALSE(panel1->IsActive());
   ASSERT_FALSE(panel2->IsActive());
   ASSERT_FALSE(panel3->IsActive());
@@ -668,17 +668,17 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
 
   // Create one stack with 2 panels.
   StackedPanelCollection* stack1 = panel_manager->CreateStack();
-  CreateStackedPanel("1", gfx::Rect(200, 50, 200, 150), stack1);
-  CreateStackedPanel("2", gfx::Rect(0, 0, 150, 100), stack1);
+  Panel* panel1 = CreateStackedPanel("1", gfx::Rect(200, 50, 200, 150), stack1);
+  Panel* panel2 = CreateStackedPanel("2", gfx::Rect(0, 0, 150, 100), stack1);
   ASSERT_EQ(2, panel_manager->num_panels());
   ASSERT_EQ(1, panel_manager->num_stacks());
   ASSERT_EQ(2, stack1->num_panels());
 
   // Create another stack with 3 panels.
   StackedPanelCollection* stack2 = panel_manager->CreateStack();
-  CreateStackedPanel("3", gfx::Rect(100, 50, 200, 150), stack2);
-  CreateStackedPanel("4", gfx::Rect(0, 0, 150, 100), stack2);
-  CreateStackedPanel("5", gfx::Rect(0, 0, 250, 120), stack2);
+  Panel* panel3 = CreateStackedPanel("3", gfx::Rect(100, 50, 200, 150), stack2);
+  Panel* panel4 = CreateStackedPanel("4", gfx::Rect(0, 0, 150, 100), stack2);
+  Panel* panel5 = CreateStackedPanel("5", gfx::Rect(0, 0, 250, 120), stack2);
   ASSERT_EQ(5, panel_manager->num_panels());
   ASSERT_EQ(2, panel_manager->num_stacks());
   ASSERT_EQ(3, stack2->num_panels());
@@ -704,16 +704,16 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
 
   // Create one stack with 2 panels.
   StackedPanelCollection* stack1 = panel_manager->CreateStack();
-  CreateStackedPanel("1", gfx::Rect(100, 50, 200, 150), stack1);
-  CreateStackedPanel("2", gfx::Rect(0, 0, 150, 100), stack1);
+  Panel* panel1 = CreateStackedPanel("1", gfx::Rect(100, 50, 200, 150), stack1);
+  Panel* panel2 = CreateStackedPanel("2", gfx::Rect(0, 0, 150, 100), stack1);
   ASSERT_EQ(2, panel_manager->num_panels());
   ASSERT_EQ(1, panel_manager->num_stacks());
   ASSERT_EQ(2, stack1->num_panels());
 
   // Create another stack with 2 panels.
   StackedPanelCollection* stack2 = panel_manager->CreateStack();
-  CreateStackedPanel("3", gfx::Rect(200, 50, 200, 150), stack2);
-  CreateStackedPanel("4", gfx::Rect(0, 0, 150, 100), stack2);
+  Panel* panel3 = CreateStackedPanel("3", gfx::Rect(200, 50, 200, 150), stack2);
+  Panel* panel4 = CreateStackedPanel("4", gfx::Rect(0, 0, 150, 100), stack2);
   ASSERT_EQ(4, panel_manager->num_panels());
   ASSERT_EQ(2, panel_manager->num_stacks());
   ASSERT_EQ(2, stack2->num_panels());
@@ -739,16 +739,16 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
 
   // Create one stack with 2 panels.
   StackedPanelCollection* stack1 = panel_manager->CreateStack();
-  CreateStackedPanel("1", gfx::Rect(100, 90, 200, 150), stack1);
-  CreateStackedPanel("2", gfx::Rect(0, 0, 150, 100), stack1);
+  Panel* panel1 = CreateStackedPanel("1", gfx::Rect(100, 90, 200, 150), stack1);
+  Panel* panel2 = CreateStackedPanel("2", gfx::Rect(0, 0, 150, 100), stack1);
   ASSERT_EQ(2, panel_manager->num_panels());
   ASSERT_EQ(1, panel_manager->num_stacks());
   ASSERT_EQ(2, stack1->num_panels());
 
   // Create another stack with 2 panels.
   StackedPanelCollection* stack2 = panel_manager->CreateStack();
-  CreateStackedPanel("3", gfx::Rect(100, 50, 200, 150), stack2);
-  CreateStackedPanel("4", gfx::Rect(0, 0, 150, 100), stack2);
+  Panel* panel3 = CreateStackedPanel("3", gfx::Rect(100, 50, 200, 150), stack2);
+  Panel* panel4 = CreateStackedPanel("4", gfx::Rect(0, 0, 150, 100), stack2);
   ASSERT_EQ(4, panel_manager->num_panels());
   ASSERT_EQ(2, panel_manager->num_stacks());
   ASSERT_EQ(2, stack2->num_panels());
@@ -774,7 +774,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   // Create 2 detached panels.
-  CreateDetachedPanel("1", gfx::Rect(200, 50, 250, 150));
+  Panel* panel1 = CreateDetachedPanel("1", gfx::Rect(200, 50, 250, 150));
   Panel* panel2 = CreateDetachedPanel("2", gfx::Rect(250, 100, 150, 100));
   ASSERT_EQ(2, panel_manager->num_panels());
   ASSERT_EQ(0, panel_manager->num_stacks());
@@ -801,7 +801,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   // Create 2 detached panels.
-  CreateDetachedPanel("1", gfx::Rect(200, 100, 100, 150));
+  Panel* panel1 = CreateDetachedPanel("1", gfx::Rect(200, 100, 100, 150));
   Panel* panel2 = CreateDetachedPanel("2", gfx::Rect(200, 50, 100, 100));
   ASSERT_EQ(2, panel_manager->num_panels());
   ASSERT_EQ(0, panel_manager->num_stacks());
@@ -927,15 +927,15 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
 
   // Create one stack with 2 panels.
   StackedPanelCollection* stack = panel_manager->CreateStack();
-  CreateStackedPanel("1", gfx::Rect(100, 350, 200, 100), stack);
-  CreateStackedPanel("2", gfx::Rect(0, 0, 150, 100), stack);
+  Panel* panel1 = CreateStackedPanel("1", gfx::Rect(100, 350, 200, 100), stack);
+  Panel* panel2 = CreateStackedPanel("2", gfx::Rect(0, 0, 150, 100), stack);
   ASSERT_EQ(2, panel_manager->num_panels());
   ASSERT_EQ(1, panel_manager->num_stacks());
   ASSERT_EQ(2, stack->num_panels());
 
   // Create 2 detached panels.
-  CreateDetachedPanel("3", gfx::Rect(300, 450, 200, 100));
-  CreateDetachedPanel("4", gfx::Rect(250, 150, 150, 200));
+  Panel* panel3 = CreateDetachedPanel("3", gfx::Rect(300, 450, 200, 100));
+  Panel* panel4 = CreateDetachedPanel("4", gfx::Rect(250, 150, 150, 200));
   ASSERT_EQ(4, panel_manager->num_panels());
   ASSERT_EQ(2, panel_manager->detached_collection()->num_panels());
   ASSERT_EQ(1, panel_manager->num_stacks());
@@ -1275,20 +1275,13 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   panel_manager->CloseAll();
 }
 
-// The activation waiting logic does not work well on MacOSX. Disabled for now.
-#if defined(OS_MACOSX)
-#define MAYBE_FocusCollapsedStackedPanel DISABLED_FocusCollapsedStackedPanel
-#else
-#define MAYBE_FocusCollapsedStackedPanel FocusCollapsedStackedPanel
-#endif
-IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
-                       MAYBE_FocusCollapsedStackedPanel) {
+IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, FocusCollapsedStackedPanel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   // Create 2 stacked panels.
   StackedPanelCollection* stack = panel_manager->CreateStack();
   gfx::Rect panel1_initial_bounds = gfx::Rect(100, 50, 200, 150);
-  CreateStackedPanel("1", panel1_initial_bounds, stack);
+  Panel* panel1 = CreateStackedPanel("1", panel1_initial_bounds, stack);
   gfx::Rect panel2_initial_bounds = gfx::Rect(0, 0, 150, 100);
   Panel* panel2 = CreateStackedPanel("2", panel2_initial_bounds, stack);
   ASSERT_EQ(2, panel_manager->num_panels());

@@ -144,7 +144,7 @@ bool PanelManager::ShouldUsePanels(const std::string& extension_id) {
 
 // static
 bool PanelManager::IsPanelStackingEnabled() {
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN)
   return true;
 #else
   return false;

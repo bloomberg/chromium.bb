@@ -7,7 +7,7 @@
 #include "base/logging.h"
 
 // static
-#if !defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
+#if !defined(TOOLKIT_VIEWS)
 NativePanelStackWindow* NativePanelStackWindow::Create(
     NativePanelStackWindowDelegate* delegate) {
   NOTIMPLEMENTED();

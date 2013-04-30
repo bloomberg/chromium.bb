@@ -70,10 +70,6 @@ class PanelCocoa : public NativePanel {
   Panel* panel() const;
   void DidCloseNativeWindow();
 
-  // PanelStackWindowCocoa might want to update the stored bounds directly since
-  // it has already taken care of updating the window bounds directly.
-  void set_cached_bounds_directly(const gfx::Rect& bounds) { bounds_ = bounds; }
-
  private:
   friend class CocoaNativePanelTesting;
   friend class PanelCocoaTest;

@@ -742,8 +742,6 @@
         'browser/ui/cocoa/panels/mouse_drag_controller.mm',
         'browser/ui/cocoa/panels/panel_cocoa.h',
         'browser/ui/cocoa/panels/panel_cocoa.mm',
-        'browser/ui/cocoa/panels/panel_stack_window_cocoa.h',
-        'browser/ui/cocoa/panels/panel_stack_window_cocoa.mm',
         'browser/ui/cocoa/panels/panel_titlebar_view_cocoa.h',
         'browser/ui/cocoa/panels/panel_titlebar_view_cocoa.mm',
         'browser/ui/cocoa/panels/panel_utils_cocoa.h',
