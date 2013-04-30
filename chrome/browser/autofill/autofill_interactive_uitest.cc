@@ -326,7 +326,7 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
   scoped_ptr<TestAutofillExternalDelegate> external_delegate_;
 };
 
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillSelectViaTab) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DISABLED_AutofillSelectViaTab) {
   CreateTestProfile();
 
   // Load the test page.
