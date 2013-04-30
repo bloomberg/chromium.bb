@@ -33,6 +33,11 @@
 
 namespace WebKit {
 
+WebSpeechSynthesisVoice::WebSpeechSynthesisVoice()
+    : m_private(WebCore::PlatformSpeechSynthesisVoice::create())
+{
+}
+
 void WebSpeechSynthesisVoice::assign(const WebSpeechSynthesisVoice& other)
 {
     m_private = other.m_private;

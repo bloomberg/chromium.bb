@@ -38,7 +38,7 @@ namespace WebKit {
 
 class WebSpeechSynthesisVoice {
 public:
-    WebSpeechSynthesisVoice() { }
+    WEBKIT_EXPORT WebSpeechSynthesisVoice();
     WebSpeechSynthesisVoice(const WebSpeechSynthesisVoice& other) { assign(other); }
     ~WebSpeechSynthesisVoice() { reset(); }
 
