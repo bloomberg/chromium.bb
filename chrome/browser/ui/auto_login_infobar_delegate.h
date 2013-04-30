@@ -46,6 +46,17 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
   const std::string& args() const { return params_.header.args; }
 
  private:
+  // Enum values used for UMA histograms.
+  enum Actions {
+    HISTOGRAM_SHOWN,       // The infobar was shown to the user.
+    HISTOGRAM_ACCEPTED,    // The user pressed the accept button.
+    HISTOGRAM_REJECTED,    // The user pressed the reject button.
+    HISTOGRAM_DISMISSED,   // The user pressed the close button.
+    HISTOGRAM_IGNORED,     // The user ignored the infobar.
+    HISTOGRAM_LEARN_MORE,  // The user clicked on the learn more link.
+    HISTOGRAM_MAX
+  };
+
   AutoLoginInfoBarDelegate(InfoBarService* owner, const Params& params);
   virtual ~AutoLoginInfoBarDelegate();
 
@@ -64,7 +75,7 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  void RecordHistogramAction(int action);
+  void RecordHistogramAction(Actions action);
 
   const Params params_;
 

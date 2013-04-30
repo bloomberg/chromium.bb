@@ -44,33 +44,10 @@ using content::NavigationController;
 using content::NotificationSource;
 using content::NotificationDetails;
 
-namespace {
-
-// Enum values used for UMA histograms.
-enum {
-  // The infobar was shown to the user.
-  HISTOGRAM_SHOWN,
-
-  // The user pressed the accept button to perform the suggested action.
-  HISTOGRAM_ACCEPTED,
-
-  // The user pressed the reject to turn off the feature.
-  HISTOGRAM_REJECTED,
-
-  // The user pressed the X button to dismiss the infobar this time.
-  HISTOGRAM_DISMISSED,
-
-  // The user completely ignored the infoar.  Either they navigated away, or
-  // they used the page as is.
-  HISTOGRAM_IGNORED,
-
-  // The user clicked on the learn more link in the infobar.
-  HISTOGRAM_LEARN_MORE,
-
-  HISTOGRAM_MAX
-};
 
 // AutoLoginRedirector --------------------------------------------------------
+
+namespace {
 
 // This class is created by the AutoLoginInfoBarDelegate when the user wishes to
 // auto-login.  It holds context information needed while re-issuing service
@@ -254,6 +231,6 @@ void AutoLoginInfoBarDelegate::Observe(int type,
     owner()->RemoveInfoBar(this);
 }
 
-void AutoLoginInfoBarDelegate::RecordHistogramAction(int action) {
+void AutoLoginInfoBarDelegate::RecordHistogramAction(Actions action) {
   UMA_HISTOGRAM_ENUMERATION("AutoLogin.Regular", action, HISTOGRAM_MAX);
 }
