@@ -142,7 +142,7 @@ TileManager::~TileManager() {
   AssignGpuMemoryToTiles();
   // This should finish all pending tasks and release any uninitialized
   // resources.
-  raster_worker_pool_.reset();
+  raster_worker_pool_->Shutdown();
   AbortPendingTileUploads();
   DCHECK_EQ(0u, tiles_with_pending_upload_.size());
   DCHECK_EQ(0u, all_tiles_.size());

@@ -308,8 +308,6 @@ WorkerPool::WorkerPool(WorkerPoolClient* client,
 }
 
 WorkerPool::~WorkerPool() {
-  Shutdown();
-
   // Cancel all pending callbacks.
   weak_ptr_factory_.InvalidateWeakPtrs();
 
