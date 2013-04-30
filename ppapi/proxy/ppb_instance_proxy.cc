@@ -84,7 +84,7 @@ void RequestSurroundingText(PP_Instance instance) {
 
 PPB_Instance_Proxy::PPB_Instance_Proxy(Dispatcher* dispatcher)
     : InterfaceProxy(dispatcher),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      callback_factory_(this) {
 }
 
 PPB_Instance_Proxy::~PPB_Instance_Proxy() {

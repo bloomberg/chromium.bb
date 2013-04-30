@@ -205,7 +205,7 @@ uint32_t FileRef::SendCallback(scoped_refptr<TrackedCallback> callback) {
 
 PPB_FileRef_Proxy::PPB_FileRef_Proxy(Dispatcher* dispatcher)
     : InterfaceProxy(dispatcher),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      callback_factory_(this) {
 }
 
 PPB_FileRef_Proxy::~PPB_FileRef_Proxy() {

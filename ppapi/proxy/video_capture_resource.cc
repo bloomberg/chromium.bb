@@ -24,7 +24,7 @@ VideoCaptureResource::VideoCaptureResource(
     PluginDispatcher* dispatcher)
     : PluginResource(connection, instance),
       open_state_(BEFORE_OPEN),
-      ALLOW_THIS_IN_INITIALIZER_LIST(enumeration_helper_(this)) {
+      enumeration_helper_(this) {
   SendCreate(RENDERER, PpapiHostMsg_VideoCapture_Create());
 
   ppp_video_capture_impl_ = static_cast<const PPP_VideoCapture_Dev*>(

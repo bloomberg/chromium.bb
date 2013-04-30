@@ -217,7 +217,7 @@ void ImageDataInstanceCache::IncrementInsertionPoint() {
 
 class ImageDataCache {
  public:
-  ImageDataCache() : weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+  ImageDataCache() : weak_factory_(this) {}
   ~ImageDataCache() {}
 
   static ImageDataCache* GetInstance();

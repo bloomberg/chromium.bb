@@ -388,7 +388,7 @@ void URLLoader::PopBuffer(void* output_buffer, int32_t output_size) {
 
 PPB_URLLoader_Proxy::PPB_URLLoader_Proxy(Dispatcher* dispatcher)
     : InterfaceProxy(dispatcher),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      callback_factory_(this) {
 }
 
 PPB_URLLoader_Proxy::~PPB_URLLoader_Proxy() {

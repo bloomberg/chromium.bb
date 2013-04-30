@@ -17,7 +17,7 @@ namespace ppapi {
 
 ResourceTracker::ResourceTracker(ThreadMode thread_mode)
     : last_resource_value_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   if (thread_mode == SINGLE_THREADED)
     thread_checker_.reset(new base::ThreadChecker);
 }

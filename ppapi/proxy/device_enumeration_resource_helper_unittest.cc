@@ -67,7 +67,7 @@ class TestResource : public PluginResource {
  public:
   TestResource(Connection connection, PP_Instance instance)
       : PluginResource(connection, instance),
-        ALLOW_THIS_IN_INITIALIZER_LIST(device_enumeration_(this)) {
+        device_enumeration_(this) {
   }
 
   virtual ~TestResource() {}

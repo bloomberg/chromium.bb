@@ -294,7 +294,7 @@ void Graphics3D::PopAlreadyLocked() {
 
 PPB_Graphics3D_Proxy::PPB_Graphics3D_Proxy(Dispatcher* dispatcher)
     : InterfaceProxy(dispatcher),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      callback_factory_(this) {
 }
 
 PPB_Graphics3D_Proxy::~PPB_Graphics3D_Proxy() {

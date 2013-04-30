@@ -150,7 +150,7 @@ void VideoDecoder::EndOfBitstreamACK(
 
 PPB_VideoDecoder_Proxy::PPB_VideoDecoder_Proxy(Dispatcher* dispatcher)
     : InterfaceProxy(dispatcher),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      callback_factory_(this) {
 }
 
 PPB_VideoDecoder_Proxy::~PPB_VideoDecoder_Proxy() {
