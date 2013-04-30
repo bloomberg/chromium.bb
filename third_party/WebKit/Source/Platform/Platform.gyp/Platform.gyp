@@ -43,7 +43,6 @@
             ],
             'include_dirs': [
                 '../chromium',
-                '<(output_dir)',
             ],
             'defines': [
                 'WEBKIT_IMPLEMENTATION=1',
@@ -51,29 +50,9 @@
             'sources': [
                 '<@(platform_files)',
             ],
-            'variables': {
-                # List of headers that are #included in Platform API headers that exist inside
-                # the WebCore directory. These are only included when WEBKIT_IMPLEMENTATION=1.
-                # Since Platform/ can't add core/* to the include path, this build step
-                # copies these headers into the shared intermediate directory and adds that to the include path.
-                # This is temporary, the better solution is to move these headers into the Platform
-                # directory for all ports and just use them as normal.
-                'webcore_headers': [
-                    '../../core/platform/graphics/FloatPoint.h',
-                    '../../core/platform/graphics/FloatPoint3D.h',
-                    '../../core/platform/graphics/FloatQuad.h',
-                    '../../core/platform/graphics/FloatRect.h',
-                    '../../core/platform/graphics/FloatSize.h',
-                    '../../core/platform/graphics/IntPoint.h',
-                    '../../core/platform/graphics/IntRect.h',
-                    '../../core/platform/graphics/IntSize.h',
-                ],
-                'output_dir': '<(SHARED_INTERMEDIATE_DIR)/webcore_headers'
-            },
             'direct_dependent_settings': {
                 'include_dirs': [
                     '../chromium',
-                    '<(output_dir)'
                 ],
             },
             'conditions': [
@@ -87,15 +66,6 @@
                     'msvs_disabled_warnings': [4267, ],
                 }],
             ],
-            'copies': [
-                {
-                    'destination': '<(output_dir)',
-                    'files': [
-                        '<@(webcore_headers)'
-                    ]
-                }
-            ]
         }
     ]
 }
-
