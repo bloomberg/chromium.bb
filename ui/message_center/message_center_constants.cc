@@ -38,7 +38,7 @@ const SkColor kRegularTextColor = SkColorSetRGB(34, 34, 34);
 const SkColor kFocusBorderColor = SkColorSetRGB(64, 128, 250);
 
 // Limits.
-const int kNotificationMaximumImageHeight = kNotificationWidth;
+const int kNotificationMaximumImageHeight = kNotificationWidth * 1.5;
 const size_t kNotificationMaximumItems = 8;
 
 // Timing.
