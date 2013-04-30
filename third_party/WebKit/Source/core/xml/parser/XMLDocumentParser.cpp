@@ -42,7 +42,6 @@
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/ScriptElement.h"
 #include "core/dom/TransformSource.h"
-#include "core/dom/TreeDepthLimit.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLStyleElement.h"
@@ -80,6 +79,9 @@ using namespace std;
 namespace WebCore {
 
 using namespace HTMLNames;
+
+// FIXME: HTMLConstructionSite has a limit of 512, should these match?
+static const unsigned maxXMLTreeDepth = 5000;
 
 static inline String toString(const xmlChar* string, size_t size)
 {
@@ -243,7 +245,7 @@ void XMLDocumentParser::pushCurrentNode(ContainerNode* n)
         n->ref();
     m_currentNodeStack.append(m_currentNode);
     m_currentNode = n;
-    if (m_currentNodeStack.size() > maxDOMTreeDepth)
+    if (m_currentNodeStack.size() > maxXMLTreeDepth)
         handleError(XMLErrors::fatal, "Excessive node nesting.", textPosition());
 }
 

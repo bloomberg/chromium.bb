@@ -1886,7 +1886,6 @@
             'dom/TransitionEvent.h',
             'dom/Traversal.cpp',
             'dom/Traversal.h',
-            'dom/TreeDepthLimit.h',
             'dom/TreeScope.cpp',
             'dom/TreeScope.h',
             'dom/TreeScopeAdopter.cpp',
