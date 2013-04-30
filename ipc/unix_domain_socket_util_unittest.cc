@@ -16,7 +16,7 @@
 
 namespace {
 
-class SocketAcceptor : public MessageLoopForIO::Watcher {
+class SocketAcceptor : public base::MessageLoopForIO::Watcher {
  public:
   SocketAcceptor(int fd, base::MessageLoopProxy* target_thread)
       : server_fd_(-1),
@@ -51,16 +51,12 @@ class SocketAcceptor : public MessageLoopForIO::Watcher {
 
  private:
   void StartWatching(int fd) {
-    watcher_.reset(new MessageLoopForIO::FileDescriptorWatcher);
-    MessageLoopForIO::current()->WatchFileDescriptor(
-        fd,
-        true,
-        MessageLoopForIO::WATCH_READ,
-        watcher_.get(),
-        this);
+    watcher_.reset(new base::MessageLoopForIO::FileDescriptorWatcher);
+    base::MessageLoopForIO::current()->WatchFileDescriptor(
+        fd, true, base::MessageLoopForIO::WATCH_READ, watcher_.get(), this);
     started_watching_event_.Signal();
   }
-  void StopWatching(MessageLoopForIO::FileDescriptorWatcher* watcher) {
+  void StopWatching(base::MessageLoopForIO::FileDescriptorWatcher* watcher) {
     watcher->StopWatchingFileDescriptor();
     delete watcher;
   }
@@ -74,7 +70,7 @@ class SocketAcceptor : public MessageLoopForIO::Watcher {
 
   int server_fd_;
   base::MessageLoopProxy* target_thread_;
-  scoped_ptr<MessageLoopForIO::FileDescriptorWatcher> watcher_;
+  scoped_ptr<base::MessageLoopForIO::FileDescriptorWatcher> watcher_;
   base::WaitableEvent started_watching_event_;
   base::WaitableEvent accepted_event_;
 
@@ -100,7 +96,7 @@ class TestUnixSocketConnection {
         client_fd_(-1) {
     socket_name_ = GetChannelDir().Append("TestSocket");
     base::Thread::Options options;
-    options.message_loop_type = MessageLoop::TYPE_IO;
+    options.message_loop_type = base::MessageLoop::TYPE_IO;
     worker_.StartWithOptions(options);
   }
 

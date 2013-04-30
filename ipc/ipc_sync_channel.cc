@@ -395,7 +395,7 @@ void SyncChannel::SyncContext::OnWaitableEventSignaled(WaitableEvent* event) {
   } else {
     // We got the reply, timed out or the process shutdown.
     DCHECK_EQ(GetSendDoneEvent(), event);
-    MessageLoop::current()->QuitNow();
+    base::MessageLoop::current()->QuitNow();
   }
 }
 
@@ -542,8 +542,9 @@ void SyncChannel::WaitForReplyWithNestedMessageLoop(SyncContext* context) {
                                   context->MakeWaitableEventCallback());
 
   {
-    MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
-    MessageLoop::current()->Run();
+    base::MessageLoop::ScopedNestableTaskAllower allow(
+        base::MessageLoop::current());
+    base::MessageLoop::current()->Run();
   }
 
   sync_msg_queue->set_top_send_done_watcher(old_send_done_event_watcher);

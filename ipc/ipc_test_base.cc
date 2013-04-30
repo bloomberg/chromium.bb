@@ -31,7 +31,7 @@ void IPCTestBase::SetUp() {
 
   // Construct a fresh IO Message loop for the duration of each test.
   DCHECK(!message_loop_.get());
-  message_loop_.reset(new MessageLoopForIO());
+  message_loop_.reset(new base::MessageLoopForIO());
 }
 
 void IPCTestBase::TearDown() {

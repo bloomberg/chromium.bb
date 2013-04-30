@@ -46,7 +46,7 @@ Logging::Logging()
       enabled_color_(false),
       queue_invoke_later_pending_(false),
       sender_(NULL),
-      main_thread_(MessageLoop::current()),
+      main_thread_(base::MessageLoop::current()),
       consumer_(NULL) {
 #if defined(OS_WIN)
   // getenv triggers an unsafe warning. Simply check how big of a buffer
@@ -159,7 +159,7 @@ void Logging::OnPostDispatchMessage(const Message& message,
   LogData data;
   GenerateLogData(channel_id, message, &data, true);
 
-  if (MessageLoop::current() == main_thread_) {
+  if (base::MessageLoop::current() == main_thread_) {
     Log(data);
   } else {
     main_thread_->PostTask(
@@ -232,8 +232,9 @@ void Logging::Log(const LogData& data) {
       queued_logs_.push_back(data);
       if (!queue_invoke_later_pending_) {
         queue_invoke_later_pending_ = true;
-        MessageLoop::current()->PostDelayedTask(
-            FROM_HERE, base::Bind(&Logging::OnSendLogs, base::Unretained(this)),
+        base::MessageLoop::current()->PostDelayedTask(
+            FROM_HERE,
+            base::Bind(&Logging::OnSendLogs, base::Unretained(this)),
             base::TimeDelta::FromMilliseconds(kLogSendDelayMs));
       }
     }

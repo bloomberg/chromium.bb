@@ -49,7 +49,7 @@
 namespace IPC {
 
 class Channel::ChannelImpl : public internal::ChannelReader,
-                             public MessageLoopForIO::Watcher {
+                             public base::MessageLoopForIO::Watcher {
  public:
   // Mirror methods of Channel, see ipc_channel.h for description.
   ChannelImpl(const IPC::ChannelHandle& channel_handle, Mode mode,
@@ -118,9 +118,10 @@ class Channel::ChannelImpl : public internal::ChannelReader,
 
   // After accepting one client connection on our server socket we want to
   // stop listening.
-  MessageLoopForIO::FileDescriptorWatcher server_listen_connection_watcher_;
-  MessageLoopForIO::FileDescriptorWatcher read_watcher_;
-  MessageLoopForIO::FileDescriptorWatcher write_watcher_;
+  base::MessageLoopForIO::FileDescriptorWatcher
+  server_listen_connection_watcher_;
+  base::MessageLoopForIO::FileDescriptorWatcher read_watcher_;
+  base::MessageLoopForIO::FileDescriptorWatcher write_watcher_;
 
   // Indicates whether we're currently blocked waiting for a write to complete.
   bool is_blocked_on_write_;

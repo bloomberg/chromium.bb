@@ -65,7 +65,7 @@ class GenericChannelListener : public IPC::Listener {
   virtual void OnChannelError() OVERRIDE {
     // There is a race when closing the channel so the last message may be lost.
     EXPECT_LE(messages_left_, 1);
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   void Init(IPC::Sender* s) {
@@ -75,7 +75,7 @@ class GenericChannelListener : public IPC::Listener {
  protected:
   void SendNextMessage() {
     if (--messages_left_ <= 0)
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
     else
       Send(sender_, "Foo");
   }
@@ -133,7 +133,7 @@ TEST_F(IPCChannelTest, ChannelTest) {
   Send(sender(), "hello from parent");
 
   // Run message loop.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // Close the channel so the client's OnChannelError() gets fired.
   channel()->Close();
@@ -172,7 +172,7 @@ TEST_F(IPCChannelTest, ChannelTestExistingPipe) {
   Send(sender(), "hello from parent");
 
   // Run message loop.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // Close the channel so the client's OnChannelError() gets fired.
   channel()->Close();
@@ -187,7 +187,7 @@ TEST_F(IPCChannelTest, ChannelProxyTest) {
 
   base::Thread thread("ChannelProxyTestServer");
   base::Thread::Options options;
-  options.message_loop_type = MessageLoop::TYPE_IO;
+  options.message_loop_type = base::MessageLoop::TYPE_IO;
   thread.StartWithOptions(options);
 
   // Set up IPC channel proxy.
@@ -200,7 +200,7 @@ TEST_F(IPCChannelTest, ChannelProxyTest) {
   Send(sender(), "hello from parent");
 
   // Run message loop.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_TRUE(WaitForClientShutdown());
 
@@ -240,7 +240,7 @@ TEST_F(IPCChannelTest, MAYBE_SendMessageInChannelConnected) {
   Send(sender(), "hello from parent");
 
   // Run message loop.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // Close the channel so the client's OnChannelError() gets fired.
   channel()->Close();
@@ -250,7 +250,7 @@ TEST_F(IPCChannelTest, MAYBE_SendMessageInChannelConnected) {
 }
 
 MULTIPROCESS_IPC_TEST_CLIENT_MAIN(GenericClient) {
-  MessageLoopForIO main_message_loop;
+  base::MessageLoopForIO main_message_loop;
   GenericChannelListener listener;
 
   // Set up IPC channel.
@@ -261,7 +261,7 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(GenericClient) {
   listener.Init(&channel);
   Send(&channel, "hello from child");
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   return 0;
 }
 

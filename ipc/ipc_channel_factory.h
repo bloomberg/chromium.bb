@@ -16,7 +16,7 @@ namespace IPC {
 // the socket, it accept()s the connection and passes the new FD to the
 // delegate. The delegate is then responsible for creating a new IPC::Channel
 // for the FD.
-class IPC_EXPORT ChannelFactory : public MessageLoopForIO::Watcher {
+class IPC_EXPORT ChannelFactory : public base::MessageLoopForIO::Watcher {
  public:
   class Delegate {
    public:
@@ -44,7 +44,8 @@ class IPC_EXPORT ChannelFactory : public MessageLoopForIO::Watcher {
   virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
   virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
 
-  MessageLoopForIO::FileDescriptorWatcher server_listen_connection_watcher_;
+  base::MessageLoopForIO::FileDescriptorWatcher
+  server_listen_connection_watcher_;
   base::FilePath path_;
   Delegate* delegate_;
   int listen_fd_;

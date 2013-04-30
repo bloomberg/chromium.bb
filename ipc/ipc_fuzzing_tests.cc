@@ -175,7 +175,7 @@ class FuzzerServerListener : public SimpleListener {
     --message_count_;
     --pending_messages_;
     if (0 == message_count_)
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
   }
 
   void ReplyMsgNotHandled(uint32 type_id) {
@@ -201,7 +201,7 @@ class FuzzerClientListener : public SimpleListener {
 
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE {
     last_msg_ = new IPC::Message(msg);
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
     return true;
   }
 
@@ -231,7 +231,7 @@ class FuzzerClientListener : public SimpleListener {
 
  private:
   bool MsgHandlerInternal(uint32 type_id) {
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
     if (NULL == last_msg_)
       return false;
     if (FUZZER_ROUTING_ID != last_msg_->routing_id())
@@ -245,14 +245,14 @@ class FuzzerClientListener : public SimpleListener {
 // Runs the fuzzing server child mode. Returns when the preset number of
 // messages have been received.
 MULTIPROCESS_IPC_TEST_CLIENT_MAIN(FuzzServerClient) {
-  MessageLoopForIO main_message_loop;
+  base::MessageLoopForIO main_message_loop;
   FuzzerServerListener listener;
   IPC::Channel channel(IPCTestBase::GetChannelName("FuzzServerClient"),
                        IPC::Channel::MODE_CLIENT,
                        &listener);
   CHECK(channel.Connect());
   listener.Init(&channel);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   return 0;
 }
 

@@ -82,7 +82,7 @@ class IPCChannelPosixTestListener : public IPC::Listener {
   STATUS status() { return status_; }
 
   void QuitRunLoop() {
-    MessageLoopForIO::current()->QuitNow();
+    base::MessageLoopForIO::current()->QuitNow();
   }
 
  private:
@@ -105,8 +105,8 @@ class IPCChannelPosixTest : public base::MultiProcessTest {
   virtual void SetUp();
   virtual void TearDown();
 
-private:
-  scoped_ptr<MessageLoopForIO> message_loop_;
+ private:
+  scoped_ptr<base::MessageLoopForIO> message_loop_;
 };
 
 const std::string IPCChannelPosixTest::GetChannelDirName() {
@@ -126,7 +126,7 @@ const std::string IPCChannelPosixTest::GetConnectionSocketName() {
 void IPCChannelPosixTest::SetUp() {
   MultiProcessTest::SetUp();
   // Construct a fresh IO Message loop for the duration of each test.
-  message_loop_.reset(new MessageLoopForIO());
+  message_loop_.reset(new base::MessageLoopForIO());
 }
 
 void IPCChannelPosixTest::TearDown() {
@@ -180,15 +180,12 @@ void IPCChannelPosixTest::SetUpSocket(IPC::ChannelHandle *handle,
 }
 
 void IPCChannelPosixTest::SpinRunLoop(base::TimeDelta delay) {
-  MessageLoopForIO *loop = MessageLoopForIO::current();
+  base::MessageLoopForIO* loop = base::MessageLoopForIO::current();
   // Post a quit task so that this loop eventually ends and we don't hang
   // in the case of a bad test. Usually, the run loop will quit sooner than
   // that because all tests use a IPCChannelPosixTestListener which quits the
   // current run loop on any channel activity.
-  loop->PostDelayedTask(
-      FROM_HERE,
-      MessageLoop::QuitClosure(),
-      delay);
+  loop->PostDelayedTask(FROM_HERE, base::MessageLoop::QuitClosure(), delay);
   loop->Run();
 }
 
@@ -391,7 +388,7 @@ TEST_F(IPCChannelPosixTest, IsNamedServerInitialized) {
 
 // A long running process that connects to us
 MULTIPROCESS_TEST_MAIN(IPCChannelPosixTestConnectionProc) {
-  MessageLoopForIO message_loop;
+  base::MessageLoopForIO message_loop;
   IPCChannelPosixTestListener listener(true);
   IPC::ChannelHandle handle(IPCChannelPosixTest::GetConnectionSocketName());
   IPCChannelPosixTest::SetUpSocket(&handle, IPC::Channel::MODE_NAMED_CLIENT);
@@ -404,7 +401,7 @@ MULTIPROCESS_TEST_MAIN(IPCChannelPosixTestConnectionProc) {
 
 // Simple external process that shouldn't be able to connect to us.
 MULTIPROCESS_TEST_MAIN(IPCChannelPosixFailConnectionProc) {
-  MessageLoopForIO message_loop;
+  base::MessageLoopForIO message_loop;
   IPCChannelPosixTestListener listener(false);
   IPC::ChannelHandle handle(IPCChannelPosixTest::GetConnectionSocketName());
   IPCChannelPosixTest::SetUpSocket(&handle, IPC::Channel::MODE_NAMED_CLIENT);

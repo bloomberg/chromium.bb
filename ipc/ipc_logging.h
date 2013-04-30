@@ -113,7 +113,7 @@ class IPC_EXPORT Logging {
   bool queue_invoke_later_pending_;
 
   Sender* sender_;
-  MessageLoop* main_thread_;
+  base::MessageLoop* main_thread_;
 
   Consumer* consumer_;
 

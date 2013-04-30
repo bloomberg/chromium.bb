@@ -335,10 +335,10 @@ bool Channel::ChannelImpl::Connect() {
   if (server_listen_pipe_ != -1) {
     // Watch the pipe for connections, and turn any connections into
     // active sockets.
-    MessageLoopForIO::current()->WatchFileDescriptor(
+    base::MessageLoopForIO::current()->WatchFileDescriptor(
         server_listen_pipe_,
         true,
-        MessageLoopForIO::WATCH_READ,
+        base::MessageLoopForIO::WATCH_READ,
         &server_listen_connection_watcher_,
         this);
   } else {
@@ -469,10 +469,10 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
 
       // Tell libevent to call us back once things are unblocked.
       is_blocked_on_write_ = true;
-      MessageLoopForIO::current()->WatchFileDescriptor(
+      base::MessageLoopForIO::current()->WatchFileDescriptor(
           pipe_,
           false,  // One shot
-          MessageLoopForIO::WATCH_WRITE,
+          base::MessageLoopForIO::WATCH_WRITE,
           &write_watcher_,
           this);
       return true;
@@ -667,11 +667,8 @@ void Channel::ChannelImpl::OnFileCanWriteWithoutBlocking(int fd) {
 }
 
 bool Channel::ChannelImpl::AcceptConnection() {
-  MessageLoopForIO::current()->WatchFileDescriptor(pipe_,
-                                                   true,
-                                                   MessageLoopForIO::WATCH_READ,
-                                                   &read_watcher_,
-                                                   this);
+  base::MessageLoopForIO::current()->WatchFileDescriptor(
+      pipe_, true, base::MessageLoopForIO::WATCH_READ, &read_watcher_, this);
   QueueHelloMessage();
 
   if (mode_ & MODE_CLIENT_FLAG) {

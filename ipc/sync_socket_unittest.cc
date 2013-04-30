@@ -96,7 +96,7 @@ class SyncSocketServerListener : public IPC::Listener {
   // When the client responds, it sends back a shutdown message,
   // which causes the message loop to exit.
   void OnMsgClassShutdown() {
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   IPC::Channel* chan_;
@@ -107,14 +107,14 @@ class SyncSocketServerListener : public IPC::Listener {
 // Runs the fuzzing server child mode. Returns when the preset number of
 // messages have been received.
 MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SyncSocketServerClient) {
-  MessageLoopForIO main_message_loop;
+  base::MessageLoopForIO main_message_loop;
   SyncSocketServerListener listener;
   IPC::Channel channel(IPCTestBase::GetChannelName("SyncSocketServerClient"),
                        IPC::Channel::MODE_CLIENT,
                        &listener);
   EXPECT_TRUE(channel.Connect());
   listener.Init(&channel);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   return 0;
 }
 
@@ -154,7 +154,7 @@ class SyncSocketClientListener : public IPC::Listener {
     EXPECT_EQ(0U, socket_->Peek());
     IPC::Message* msg = new MsgClassShutdown();
     EXPECT_TRUE(chan_->Send(msg));
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   base::SyncSocket* socket_;
@@ -198,7 +198,7 @@ TEST_F(SyncSocketTest, SanityTest) {
 #endif  // defined(OS_WIN)
   EXPECT_TRUE(sender()->Send(msg));
   // Use the current thread as the I/O thread.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   // Shut down.
   pair[0].Close();
   pair[1].Close();

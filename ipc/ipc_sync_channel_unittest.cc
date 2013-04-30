@@ -70,11 +70,11 @@ class Worker : public Listener, public Sender {
   }
   void WaitForChannelCreation() { channel_created_->Wait(); }
   void CloseChannel() {
-    DCHECK(MessageLoop::current() == ListenerThread()->message_loop());
+    DCHECK(base::MessageLoop::current() == ListenerThread()->message_loop());
     channel_->Close();
   }
   void Start() {
-    StartThread(&listener_thread_, MessageLoop::TYPE_DEFAULT);
+    StartThread(&listener_thread_, base::MessageLoop::TYPE_DEFAULT);
     ListenerThread()->message_loop()->PostTask(
         FROM_HERE, base::Bind(&Worker::OnStart, this));
   }
@@ -169,7 +169,7 @@ class Worker : public Listener, public Sender {
   // Called on the listener thread to create the sync channel.
   void OnStart() {
     // Link ipc_thread_, listener_thread_ and channel_ altogether.
-    StartThread(&ipc_thread_, MessageLoop::TYPE_IO);
+    StartThread(&ipc_thread_, base::MessageLoop::TYPE_IO);
     channel_.reset(CreateChannel());
     channel_created_->Signal();
     Run();
@@ -213,7 +213,7 @@ class Worker : public Listener, public Sender {
     return true;
   }
 
-  void StartThread(base::Thread* thread, MessageLoop::Type type) {
+  void StartThread(base::Thread* thread, base::MessageLoop::Type type) {
     base::Thread::Options options;
     options.message_loop_type = type;
     thread->StartWithOptions(options);
@@ -266,7 +266,7 @@ void RunTest(std::vector<Worker*> workers) {
 
 class IPCSyncChannelTest : public testing::Test {
  private:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 };
 
 //------------------------------------------------------------------------------
@@ -1001,9 +1001,9 @@ class DoneEventRaceServer : public Worker {
       : Worker(Channel::MODE_SERVER, "done_event_race_server") { }
 
   virtual void Run() OVERRIDE {
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     base::Bind(&NestedCallback, this));
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::Bind(&NestedCallback, this));
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&TimeoutCallback),
         base::TimeDelta::FromSeconds(9));
@@ -1068,7 +1068,7 @@ class SyncMessageFilterServer : public Worker {
       : Worker(Channel::MODE_SERVER, "sync_message_filter_server"),
         thread_("helper_thread") {
     base::Thread::Options options;
-    options.message_loop_type = MessageLoop::TYPE_DEFAULT;
+    options.message_loop_type = base::MessageLoop::TYPE_DEFAULT;
     thread_.StartWithOptions(options);
     filter_ = new TestSyncMessageFilter(shutdown_event(), this,
                                         thread_.message_loop_proxy());

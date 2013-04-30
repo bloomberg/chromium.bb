@@ -70,7 +70,7 @@ void Channel::ChannelImpl::Close() {
   // Make sure all IO has completed.
   base::Time start = base::Time::Now();
   while (input_state_.is_pending || output_state_.is_pending) {
-    MessageLoopForIO::current()->WaitForIOCompletion(INFINITE, this);
+    base::MessageLoopForIO::current()->WaitForIOCompletion(INFINITE, this);
   }
 
   while (!output_queue_.empty()) {
@@ -294,7 +294,7 @@ bool Channel::ChannelImpl::Connect() {
   if (pipe_ == INVALID_HANDLE_VALUE)
     return false;
 
-  MessageLoopForIO::current()->RegisterIOHandler(pipe_, this);
+  base::MessageLoopForIO::current()->RegisterIOHandler(pipe_, this);
 
   // Check to see if there is a client connected to our pipe...
   if (waiting_connect_)
@@ -304,10 +304,13 @@ bool Channel::ChannelImpl::Connect() {
     // Complete setup asynchronously. By not setting input_state_.is_pending
     // to true, we indicate to OnIOCompleted that this is the special
     // initialization signal.
-    MessageLoopForIO::current()->PostTask(
-        FROM_HERE, base::Bind(&Channel::ChannelImpl::OnIOCompleted,
-                              weak_factory_.GetWeakPtr(), &input_state_.context,
-                              0, 0));
+    base::MessageLoopForIO::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&Channel::ChannelImpl::OnIOCompleted,
+                   weak_factory_.GetWeakPtr(),
+                   &input_state_.context,
+                   0,
+                   0));
   }
 
   if (!waiting_connect_)
@@ -353,7 +356,7 @@ bool Channel::ChannelImpl::ProcessConnection() {
 }
 
 bool Channel::ChannelImpl::ProcessOutgoingMessages(
-    MessageLoopForIO::IOContext* context,
+    base::MessageLoopForIO::IOContext* context,
     DWORD bytes_written) {
   DCHECK(!waiting_connect_);  // Why are we trying to send messages if there's
                               // no connection?
@@ -409,9 +412,10 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages(
   return true;
 }
 
-void Channel::ChannelImpl::OnIOCompleted(MessageLoopForIO::IOContext* context,
-                                         DWORD bytes_transfered,
-                                         DWORD error) {
+void Channel::ChannelImpl::OnIOCompleted(
+    base::MessageLoopForIO::IOContext* context,
+    DWORD bytes_transfered,
+    DWORD error) {
   bool ok = true;
   DCHECK(thread_check_->CalledOnValidThread());
   if (context == &input_state_.context) {

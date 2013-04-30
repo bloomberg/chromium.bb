@@ -59,13 +59,13 @@ class MyChannelDescriptorListener : public IPC::Listener {
 
     VerifyAndCloseDescriptor(descriptor.fd, expected_inode_num_);
     if (num_fds_received_ == kNumFDsToSend)
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
 
     return true;
   }
 
   virtual void OnChannelError() OVERRIDE {
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   bool GotExpectedNumberOfDescriptors() const {
@@ -98,7 +98,7 @@ class IPCSendFdsTest : public IPCTestBase {
     }
 
     // Run message loop.
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
 
     // Close the channel so the client's OnChannelError() gets fired.
     channel()->Close();
@@ -115,7 +115,7 @@ TEST_F(IPCSendFdsTest, DescriptorTest) {
 
 int SendFdsClientCommon(const std::string& test_client_name,
                         ino_t expected_inode_num) {
-  MessageLoopForIO main_message_loop;
+  base::MessageLoopForIO main_message_loop;
   MyChannelDescriptorListener listener(expected_inode_num);
 
   // Set up IPC channel.
@@ -125,7 +125,7 @@ int SendFdsClientCommon(const std::string& test_client_name,
   CHECK(channel.Connect());
 
   // Run message loop.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // Verify that the message loop was exited due to getting the correct number
   // of descriptors, and not because of the channel closing unexpectedly.

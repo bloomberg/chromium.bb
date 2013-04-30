@@ -114,7 +114,7 @@ class ChannelReflectorListener : public IPC::Listener {
       latency_tracker_.Reset();
     } else if (payload == "quit") {
       latency_tracker_.ShowResults();
-      MessageLoop::current()->QuitWhenIdle();
+      base::MessageLoop::current()->QuitWhenIdle();
       return true;
     } else {
       // Don't track hello and quit messages.
@@ -196,7 +196,7 @@ class PerformanceChannelListener : public IPC::Listener {
       if (count_down_ == 0) {
         perf_logger_.reset();  // Stop the perf timer now.
         latency_tracker_.ShowResults();
-        MessageLoop::current()->QuitWhenIdle();
+        base::MessageLoop::current()->QuitWhenIdle();
         return true;
       }
     }
@@ -246,7 +246,7 @@ TEST_F(IPCChannelPerfTest, Performance) {
     sender()->Send(message);
 
     // Run message loop.
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
 
     msg_size *= kMsgSizeBase;
   }
@@ -264,7 +264,7 @@ TEST_F(IPCChannelPerfTest, Performance) {
 
 // This message loop bounces all messages back to the sender.
 MULTIPROCESS_IPC_TEST_CLIENT_MAIN(PerformanceClient) {
-  MessageLoopForIO main_message_loop;
+  base::MessageLoopForIO main_message_loop;
   ChannelReflectorListener listener;
   IPC::Channel channel(IPCTestBase::GetChannelName("PerformanceClient"),
                        IPC::Channel::MODE_CLIENT,
@@ -272,7 +272,7 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(PerformanceClient) {
   listener.Init(&channel);
   CHECK(channel.Connect());
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   return 0;
 }
 

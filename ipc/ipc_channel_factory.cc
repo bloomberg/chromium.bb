@@ -33,10 +33,10 @@ bool ChannelFactory::Listen() {
 
   // Watch the fd for connections, and turn any connections into
   // active sockets.
-  MessageLoopForIO::current()->WatchFileDescriptor(
+  base::MessageLoopForIO::current()->WatchFileDescriptor(
       listen_fd_,
       true,
-      MessageLoopForIO::WATCH_READ,
+      base::MessageLoopForIO::WATCH_READ,
       &server_listen_connection_watcher_,
       this);
   return true;
