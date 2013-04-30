@@ -680,7 +680,7 @@ void FocusController::setContainingWindowIsVisible(bool containingWindowIsVisibl
 
         for (HashSet<ScrollableArea*>::const_iterator it = scrollableAreas->begin(), end = scrollableAreas->end(); it != end; ++it) {
             ScrollableArea* scrollableArea = *it;
-            ASSERT(scrollableArea->scrollbarsCanBeActive() || m_page->shouldSuppressScrollbarAnimations());
+            ASSERT(scrollableArea->scrollbarsCanBeActive());
 
             contentAreaDidShowOrHide(scrollableArea, containingWindowIsVisible);
         }
