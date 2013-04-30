@@ -490,6 +490,59 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
     }
 
     /**
+     * Verify that for a normal fling (fling after scroll) the following events are sent:
+     * - GESTURE_SCROLL_BEGIN
+     * - GESTURE_FLING_START
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Gestures"})
+    public void testFlingEventSequence() throws Exception {
+        final long downTime = SystemClock.uptimeMillis();
+        final long eventTime = SystemClock.uptimeMillis();
+
+        GestureRecordingMotionEventDelegate mockDelegate =
+                new GestureRecordingMotionEventDelegate();
+        mGestureHandler = new ContentViewGestureHandler(
+                getInstrumentation().getTargetContext(), mockDelegate,
+                new MockZoomManager(getInstrumentation().getTargetContext(), null));
+
+        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
+
+        assertTrue(mGestureHandler.onTouchEvent(event));
+
+        event = MotionEvent.obtain(
+                downTime, eventTime + 10, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X * 5, FAKE_COORD_Y * 5, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+
+        assertTrue("A flingCancel event should have been sent",
+                mockDelegate.mGestureTypeList.contains(
+                        ContentViewGestureHandler.GESTURE_FLING_CANCEL));
+        assertTrue("A scrollStart event should have been sent",
+                mockDelegate.mGestureTypeList.contains(
+                        ContentViewGestureHandler.GESTURE_SCROLL_START));
+        assertEquals("We should have started scrolling",
+                ContentViewGestureHandler.GESTURE_SCROLL_BY,
+                        mockDelegate.mMostRecentGestureEvent.mType);
+        assertEquals("Only flingCancel, scrollBegin and scrollBy should have been sent",
+                3, mockDelegate.mGestureTypeList.size());
+
+        event = MotionEvent.obtain(
+                downTime, eventTime + 15, MotionEvent.ACTION_UP,
+                FAKE_COORD_X * 10, FAKE_COORD_Y * 10, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals("We should have started flinging",
+                ContentViewGestureHandler.GESTURE_FLING_START,
+                        mockDelegate.mMostRecentGestureEvent.mType);
+        assertTrue("A scroll end event should not have been sent",
+                !mockDelegate.mGestureTypeList.contains(
+                        ContentViewGestureHandler.GESTURE_SCROLL_END));
+        assertEquals("The last up should have caused flingCancel and flingStart to be sent",
+                5, mockDelegate.mGestureTypeList.size());
+    }
+
+    /**
      * Verify that a recent show pressed state gesture is canceled when scrolling begins.
      * @throws Exception
      */
@@ -542,12 +595,11 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         assertEquals("We should have started flinging",
                 ContentViewGestureHandler.GESTURE_FLING_START,
                         mockDelegate.mMostRecentGestureEvent.mType);
-        assertTrue("A scroll end event should have been sent",
-                mockDelegate.mGestureTypeList.contains(
+        assertTrue("A scroll end event should not have been sent",
+                !mockDelegate.mGestureTypeList.contains(
                         ContentViewGestureHandler.GESTURE_SCROLL_END));
-        assertEquals(
-                "The last up should have caused scrollEnd, flingCancel and flingStart to be sent",
-                        8, mockDelegate.mGestureTypeList.size());
+        assertEquals("The last up should have caused flingCancel and flingStart to be sent",
+                7, mockDelegate.mGestureTypeList.size());
     }
 
     /**
