@@ -4452,6 +4452,31 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Overscroll.Completed" enum="OverscrollMode">
+  <summary>Completed overscroll gestures.</summary>
+  <details>
+    An overscroll gesture starts when user scrolls past the edge of the web page
+    and continues scrolling in the same direction. An overscroll gesture is
+    completed when user stops scrolling (e.g. by lifting the fingers from the
+    touchscreen or touchpad).
+  </details>
+</histogram>
+
+<histogram name="Overscroll.Navigated" enum="OverscrollMode">
+  <summary>
+    Navigations that were triggered due to completed overscroll gesture. Note
+    that not all completed overscroll gestures trigger a navigation.
+  </summary>
+</histogram>
+
+<histogram name="Overscroll.Started" enum="OverscrollMode">
+  <summary>
+    Overscroll gestures initiated by the user. Note that not all overcroll
+    gestures started are completed (e.g. the overscroll gesture is aborted if
+    user clicks or presses a key during the gesture).
+  </summary>
+</histogram>
+
 <histogram name="PlatformFile.UnknownCreateFileErrors" units="code">
   <summary>
     Errors returned by CreateFile on windows that PlatformFileError doesn't yet
@@ -8914,6 +8939,14 @@ other types of suffix sets.
   <int value="32" label="EPIPE">Broken pipe</int>
   <int value="33" label="EDOM">Numerical argument out of domain</int>
   <int value="34" label="ERANGE">Numerical result out of range</int>
+</enum>
+
+<enum name="OverscrollMode" type="int">
+  <summary>Direction of the overscroll gesture.</summary>
+  <int value="1" label="North">Scrolled from bottom towards top</int>
+  <int value="2" label="South">Scrolled from top towards the bottom</int>
+  <int value="3" label="West">Scrolled from right towards left</int>
+  <int value="4" label="East">Scrolled from left towards right</int>
 </enum>
 
 <enum name="PhotoEditorFileType" type="int">
