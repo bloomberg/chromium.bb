@@ -28,8 +28,6 @@ class ExtensionInstallUIDefault : public ExtensionInstallUI {
   virtual void SetUseAppInstalledBubble(bool use_bubble) OVERRIDE;
 
  private:
-  static bool disable_failure_ui_for_tests_;
-
   // Whether or not to show the default UI after completing the installation.
   bool skip_post_install_ui_;
 

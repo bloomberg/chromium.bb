@@ -18,6 +18,18 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 
+namespace {
+
+// To be able to map from language id <-> entry in the combo box, we
+// store the language id in the combo box data model in addition to the
+// displayed name.
+enum {
+  LANGUAGE_COMBO_COLUMN_ID,
+  LANGUAGE_COMBO_COLUMN_NAME,
+  LANGUAGE_COMBO_COLUMN_COUNT
+};
+
+}  // namespace
 
 // TranslateInfoBarDelegate specific method:
 InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {

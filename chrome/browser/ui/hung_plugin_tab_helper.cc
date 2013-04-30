@@ -37,9 +37,17 @@
 #include "chrome/browser/hang_monitor/hang_crash_dump_win.h"
 #endif
 
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(HungPluginTabHelper);
+
 namespace {
 
+// Delay in seconds before re-showing the hung plugin message. This will be
+// increased each time.
+const int kInitialReshowDelaySec = 10;
+
 #if defined(OS_WIN)
+
+const char kDumpChildProcessesSequenceName[] = "DumpChildProcesses";
 
 class OwnedHandleVector {
  public:
@@ -59,8 +67,6 @@ class OwnedHandleVector {
 
   DISALLOW_COPY_AND_ASSIGN(OwnedHandleVector);
 };
-
-const char kDumpChildProcessesSequenceName[] = "DumpChildProcesses";
 
 void DumpBrowserInBlockingPool() {
   CrashDumpForHangDebugging(::GetCurrentProcess());
@@ -225,17 +231,10 @@ struct HungPluginTabHelper::PluginState {
   base::Timer timer;
 
   private:
-  // Delay in seconds before re-showing the hung plugin message. This will be
-  // increased each time.
-  static const int kInitialReshowDelaySec;
-
   // Since the scope of the timer manages our callback, this struct should
   // not be copied.
   DISALLOW_COPY_AND_ASSIGN(PluginState);
 };
-
-// static
-const int HungPluginTabHelper::PluginState::kInitialReshowDelaySec = 10;
 
 HungPluginTabHelper::PluginState::PluginState(const base::FilePath& p,
                                               const string16& n)
@@ -250,8 +249,6 @@ HungPluginTabHelper::PluginState::~PluginState() {
 }
 
 // -----------------------------------------------------------------------------
-
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(HungPluginTabHelper);
 
 HungPluginTabHelper::HungPluginTabHelper(content::WebContents* contents)
     : content::WebContentsObserver(contents) {

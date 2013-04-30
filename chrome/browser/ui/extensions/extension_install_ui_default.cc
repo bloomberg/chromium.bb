@@ -49,6 +49,8 @@ using extensions::Extension;
 
 namespace {
 
+bool disable_failure_ui_for_tests = false;
+
 Browser* FindOrCreateVisibleBrowser(Profile* profile) {
   Browser* browser =
       chrome::FindOrCreateTabbedBrowser(profile, chrome::GetActiveDesktop());
@@ -136,61 +138,6 @@ void ErrorInfobarDelegate::Create(InfoBarService* infobar_service,
 
 }  // namespace
 
-// static
-ExtensionInstallUI* ExtensionInstallUI::Create(Profile* profile) {
-  return new ExtensionInstallUIDefault(profile);
-}
-
-// static
-void ExtensionInstallUI::OpenAppInstalledUI(Profile* profile,
-                                            const std::string& app_id) {
-#if defined(OS_CHROMEOS)
-  AppListService::Get()->ShowAppList(profile);
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
-      content::Source<Profile>(profile),
-      content::Details<const std::string>(&app_id));
-#else
-  Browser* browser = FindOrCreateVisibleBrowser(profile);
-  GURL url(chrome::IsInstantExtendedAPIEnabled() ?
-           chrome::kChromeUIAppsURL : chrome::kChromeUINewTabURL);
-  chrome::NavigateParams params(
-      chrome::GetSingletonTabNavigateParams(browser, url));
-  chrome::Navigate(&params);
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
-      content::Source<WebContents>(params.target_contents),
-      content::Details<const std::string>(&app_id));
-#endif
-}
-
-// static
-void ExtensionInstallUI::DisableFailureUIForTests() {
-  disable_failure_ui_for_tests = true;
-}
-
-// static
-ExtensionInstallPrompt* ExtensionInstallUI::CreateInstallPromptWithBrowser(
-    Browser* browser) {
-  content::WebContents* web_contents = NULL;
-  if (browser)
-    web_contents = browser->tab_strip_model()->GetActiveWebContents();
-  return new ExtensionInstallPrompt(web_contents);
-}
-
-// static
-ExtensionInstallPrompt* ExtensionInstallUI::CreateInstallPromptWithProfile(
-    Profile* profile) {
-  Browser* browser = chrome::FindLastActiveWithProfile(profile,
-      chrome::GetActiveDesktop());
-  return CreateInstallPromptWithBrowser(browser);
-}
-
-// static
-bool ExtensionInstallUIDefault::disable_failure_ui_for_tests_ = false;
-
 ExtensionInstallUIDefault::ExtensionInstallUIDefault(Profile* profile)
     : skip_post_install_ui_(false),
       previous_using_native_theme_(false),
@@ -275,4 +222,56 @@ void ExtensionInstallUIDefault::SetSkipPostInstallUI(bool skip_ui) {
 
 void ExtensionInstallUIDefault::SetUseAppInstalledBubble(bool use_bubble) {
   use_app_installed_bubble_ = use_bubble;
+}
+
+// static
+ExtensionInstallUI* ExtensionInstallUI::Create(Profile* profile) {
+  return new ExtensionInstallUIDefault(profile);
+}
+
+// static
+void ExtensionInstallUI::OpenAppInstalledUI(Profile* profile,
+                                            const std::string& app_id) {
+#if defined(OS_CHROMEOS)
+  AppListService::Get()->ShowAppList(profile);
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
+      content::Source<Profile>(profile),
+      content::Details<const std::string>(&app_id));
+#else
+  Browser* browser = FindOrCreateVisibleBrowser(profile);
+  GURL url(chrome::IsInstantExtendedAPIEnabled() ?
+           chrome::kChromeUIAppsURL : chrome::kChromeUINewTabURL);
+  chrome::NavigateParams params(
+      chrome::GetSingletonTabNavigateParams(browser, url));
+  chrome::Navigate(&params);
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
+      content::Source<WebContents>(params.target_contents),
+      content::Details<const std::string>(&app_id));
+#endif
+}
+
+// static
+void ExtensionInstallUI::DisableFailureUIForTests() {
+  disable_failure_ui_for_tests = true;
+}
+
+// static
+ExtensionInstallPrompt* ExtensionInstallUI::CreateInstallPromptWithBrowser(
+    Browser* browser) {
+  content::WebContents* web_contents = NULL;
+  if (browser)
+    web_contents = browser->tab_strip_model()->GetActiveWebContents();
+  return new ExtensionInstallPrompt(web_contents);
+}
+
+// static
+ExtensionInstallPrompt* ExtensionInstallUI::CreateInstallPromptWithProfile(
+    Profile* profile) {
+  Browser* browser = chrome::FindLastActiveWithProfile(profile,
+      chrome::GetActiveDesktop());
+  return CreateInstallPromptWithBrowser(browser);
 }

@@ -154,11 +154,6 @@ class OneClickSigninHelper
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest,
                            CanOfferOnIOThreadDisabledByPolicy);
 
-  // Maximum number of navigations away from the set of valid Gaia URLs before
-  // clearing the internal state of the helper.  This is necessary to support
-  // SAML-based accounts, but causes bug crbug.com/181163.
-  static const int kMaxNavigationsSince;
-
   explicit OneClickSigninHelper(content::WebContents* web_contents);
 
   // Returns true if the one-click signin feature can be offered at this time.
