@@ -134,25 +134,6 @@ class GeolocationNotificationObserver : public content::NotificationObserver {
     }
   }
 
-  void AddWatchAndWaitForNotification(content::RenderViewHost* render_view_host,
-                                      const std::string& iframe_xpath) {
-    LOG(WARNING) << "will add geolocation watch";
-    std::string script =
-        "window.domAutomationController.setAutomationId(0);"
-        "window.domAutomationController.send(geoStart());";
-    render_view_host->ExecuteJavascriptInWebFrame(UTF8ToUTF16(iframe_xpath),
-                                                  UTF8ToUTF16(script));
-    content::RunMessageLoop();
-    registrar_.RemoveAll();
-    LOG(WARNING) << "got geolocation watch" << javascript_response_;
-    EXPECT_NE("\"0\"", javascript_response_);
-    if (wait_for_infobar_) {
-      EXPECT_TRUE(infobar_);
-    } else {
-      EXPECT_TRUE(navigation_completed_);
-    }
-  }
-
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -183,6 +164,25 @@ class GeolocationNotificationObserver : public content::NotificationObserver {
       MessageLoopForUI::current()->Quit();
   }
 
+  void AddWatchAndWaitForNotification(content::RenderViewHost* render_view_host,
+                                      const std::string& iframe_xpath) {
+    LOG(WARNING) << "will add geolocation watch";
+    std::string script =
+        "window.domAutomationController.setAutomationId(0);"
+        "window.domAutomationController.send(geoStart());";
+    render_view_host->ExecuteJavascriptInWebFrame(UTF8ToUTF16(iframe_xpath),
+                                                  UTF8ToUTF16(script));
+    content::RunMessageLoop();
+    registrar_.RemoveAll();
+    LOG(WARNING) << "got geolocation watch" << javascript_response_;
+    EXPECT_NE("\"0\"", javascript_response_);
+    if (wait_for_infobar_) {
+      EXPECT_TRUE(infobar_);
+    } else {
+      EXPECT_TRUE(navigation_completed_);
+    }
+  }
+
   content::NotificationRegistrar registrar_;
   bool wait_for_infobar_;
   InfoBarDelegate* infobar_;
@@ -202,6 +202,13 @@ class GeolocationNotificationObserver : public content::NotificationObserver {
 // 5. Incognito profiles don't use saved permissions.
 class GeolocationBrowserTest : public InProcessBrowserTest {
  public:
+  enum InitializationOptions {
+    INITIALIZATION_NONE,
+    INITIALIZATION_OFFTHERECORD,
+    INITIALIZATION_NEWTAB,
+    INITIALIZATION_IFRAMES,
+  };
+
   GeolocationBrowserTest()
     : infobar_(NULL),
       current_browser_(NULL),
@@ -219,13 +226,6 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
     LOG(WARNING) << "TearDownInProcessBrowserTestFixture. Test Finished.";
   }
-
-  enum InitializationOptions {
-    INITIALIZATION_NONE,
-    INITIALIZATION_OFFTHERECORD,
-    INITIALIZATION_NEWTAB,
-    INITIALIZATION_IFRAMES,
-  };
 
   bool Initialize(InitializationOptions options) WARN_UNUSED_RESULT {
     if (!started_test_server_)

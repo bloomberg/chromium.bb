@@ -79,23 +79,6 @@ void ThemeInstalledInfoBarDelegate::Create(
     infobar_service->AddInfoBar(new_delegate.Pass());
 }
 
-bool ThemeInstalledInfoBarDelegate::Cancel() {
-  if (!previous_theme_id_.empty()) {
-    const extensions::Extension* previous_theme =
-        extension_service_->GetExtensionById(previous_theme_id_, true);
-    if (previous_theme) {
-      theme_service_->SetTheme(previous_theme);
-        return false;  // The theme change will close us.
-    }
-  }
-
-  if (previous_using_native_theme_)
-    theme_service_->SetNativeTheme();
-  else
-    theme_service_->UseDefaultTheme();
-  return false;  // The theme change will close us.
-}
-
 ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
     InfoBarService* infobar_service,
     ExtensionService* extension_service,
@@ -151,6 +134,23 @@ string16 ThemeInstalledInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   DCHECK_EQ(BUTTON_CANCEL, button);
   return l10n_util::GetStringUTF16(IDS_THEME_INSTALL_INFOBAR_UNDO_BUTTON);
+}
+
+bool ThemeInstalledInfoBarDelegate::Cancel() {
+  if (!previous_theme_id_.empty()) {
+    const extensions::Extension* previous_theme =
+        extension_service_->GetExtensionById(previous_theme_id_, true);
+    if (previous_theme) {
+      theme_service_->SetTheme(previous_theme);
+        return false;  // The theme change will close us.
+    }
+  }
+
+  if (previous_using_native_theme_)
+    theme_service_->SetNativeTheme();
+  else
+    theme_service_->UseDefaultTheme();
+  return false;  // The theme change will close us.
 }
 
 void ThemeInstalledInfoBarDelegate::Observe(

@@ -28,6 +28,10 @@
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
 
+InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
+  return new ExtensionInfoBarGtk(owner, this);
+}
+
 ExtensionInfoBarGtk::ExtensionInfoBarGtk(InfoBarService* owner,
                                          ExtensionInfoBarDelegate* delegate)
     : InfoBarGtk(owner, delegate),
@@ -235,8 +239,4 @@ gboolean ExtensionInfoBarGtk::OnExpose(GtkWidget* sender,
       PaintInfobarBitsOn(sender, event, this);
 
   return FALSE;
-}
-
-InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
-  return new ExtensionInfoBarGtk(owner, this);
 }

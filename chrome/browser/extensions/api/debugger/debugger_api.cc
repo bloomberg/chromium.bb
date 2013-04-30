@@ -67,41 +67,7 @@ namespace OnDetach = extensions::api::debugger::OnDetach;
 namespace OnEvent = extensions::api::debugger::OnEvent;
 namespace SendCommand = extensions::api::debugger::SendCommand;
 
-class ExtensionDevToolsClientHost;
-
-class ExtensionDevToolsInfoBarDelegate : public ConfirmInfoBarDelegate {
- public:
-  // Creates an extension dev tools delegate and adds it to |infobar_service|.
-  // Returns a pointer to the delegate if it was successfully added.
-  static ExtensionDevToolsInfoBarDelegate* Create(
-      RenderViewHost* rvh,
-      const std::string& client_name);
-
-  // Associates DevToolsClientHost with this infobar delegate.
-  void AttachClientHost(ExtensionDevToolsClientHost* client_host);
-
-  // Notifies infobar delegate that associated DevToolsClientHost will be
-  // destroyed.
-  void DiscardClientHost();
-
- private:
-  ExtensionDevToolsInfoBarDelegate(InfoBarService* infobar_service,
-                                   const std::string& client_name);
-  virtual ~ExtensionDevToolsInfoBarDelegate();
-
-  // ConfirmInfoBarDelegate:
-  virtual int GetButtons() const OVERRIDE;
-  virtual Type GetInfoBarType() const OVERRIDE;
-  virtual bool ShouldExpireInternal(
-      const content::LoadCommittedDetails& details) const OVERRIDE;
-  virtual string16 GetMessageText() const OVERRIDE;
-  virtual void InfoBarDismissed() OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
-
-  std::string client_name_;
-  ExtensionDevToolsClientHost* client_host_;
-  DISALLOW_COPY_AND_ASSIGN(ExtensionDevToolsInfoBarDelegate);
-};
+class ExtensionDevToolsInfoBarDelegate;
 
 class ExtensionDevToolsClientHost : public DevToolsClientHost,
                                     public content::NotificationObserver {
@@ -152,6 +118,110 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDevToolsClientHost);
 };
+
+class ExtensionDevToolsInfoBarDelegate : public ConfirmInfoBarDelegate {
+ public:
+  // Creates an extension dev tools delegate and adds it to |infobar_service|.
+  // Returns a pointer to the delegate if it was successfully added.
+  static ExtensionDevToolsInfoBarDelegate* Create(
+      RenderViewHost* rvh,
+      const std::string& client_name);
+
+  // Associates DevToolsClientHost with this infobar delegate.
+  void AttachClientHost(ExtensionDevToolsClientHost* client_host);
+
+  // Notifies infobar delegate that associated DevToolsClientHost will be
+  // destroyed.
+  void DiscardClientHost();
+
+ private:
+  ExtensionDevToolsInfoBarDelegate(InfoBarService* infobar_service,
+                                   const std::string& client_name);
+  virtual ~ExtensionDevToolsInfoBarDelegate();
+
+  // ConfirmInfoBarDelegate:
+  virtual int GetButtons() const OVERRIDE;
+  virtual Type GetInfoBarType() const OVERRIDE;
+  virtual bool ShouldExpireInternal(
+      const content::LoadCommittedDetails& details) const OVERRIDE;
+  virtual string16 GetMessageText() const OVERRIDE;
+  virtual void InfoBarDismissed() OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
+
+  std::string client_name_;
+  ExtensionDevToolsClientHost* client_host_;
+  DISALLOW_COPY_AND_ASSIGN(ExtensionDevToolsInfoBarDelegate);
+};
+
+// static
+ExtensionDevToolsInfoBarDelegate* ExtensionDevToolsInfoBarDelegate::Create(
+    RenderViewHost* rvh,
+    const std::string& client_name) {
+  if (!rvh)
+    return NULL;
+
+  WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
+  if (!web_contents)
+    return NULL;
+
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+  if (!infobar_service)
+    return NULL;
+
+  return static_cast<ExtensionDevToolsInfoBarDelegate*>(
+      infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+          new ExtensionDevToolsInfoBarDelegate(infobar_service, client_name))));
+}
+
+void ExtensionDevToolsInfoBarDelegate::AttachClientHost(
+    ExtensionDevToolsClientHost* client_host) {
+  client_host_ = client_host;
+}
+
+void ExtensionDevToolsInfoBarDelegate::DiscardClientHost() {
+  client_host_ = NULL;
+}
+
+ExtensionDevToolsInfoBarDelegate::ExtensionDevToolsInfoBarDelegate(
+    InfoBarService* infobar_service,
+    const std::string& client_name)
+    : ConfirmInfoBarDelegate(infobar_service),
+      client_name_(client_name),
+      client_host_(NULL) {
+}
+
+ExtensionDevToolsInfoBarDelegate::~ExtensionDevToolsInfoBarDelegate() {
+}
+
+int ExtensionDevToolsInfoBarDelegate::GetButtons() const {
+  return BUTTON_CANCEL;
+}
+
+InfoBarDelegate::Type ExtensionDevToolsInfoBarDelegate::GetInfoBarType() const {
+  return WARNING_TYPE;
+}
+
+bool ExtensionDevToolsInfoBarDelegate::ShouldExpireInternal(
+    const content::LoadCommittedDetails& details) const {
+  return false;
+}
+
+string16 ExtensionDevToolsInfoBarDelegate::GetMessageText() const {
+  return l10n_util::GetStringFUTF16(IDS_DEV_TOOLS_INFOBAR_LABEL,
+                                    UTF8ToUTF16(client_name_));
+}
+
+void ExtensionDevToolsInfoBarDelegate::InfoBarDismissed() {
+  if (client_host_)
+    client_host_->MarkAsDismissed();
+}
+
+bool ExtensionDevToolsInfoBarDelegate::Cancel() {
+  if (client_host_)
+    client_host_->MarkAsDismissed();
+  return true;
+}
 
 namespace {
 
@@ -445,76 +515,6 @@ void ExtensionDevToolsClientHost::DispatchOnInspectorFrontend(
     function->SendResponseBody(dictionary);
     pending_requests_.erase(id);
   }
-}
-
-// static
-ExtensionDevToolsInfoBarDelegate* ExtensionDevToolsInfoBarDelegate::Create(
-    RenderViewHost* rvh,
-    const std::string& client_name) {
-  if (!rvh)
-    return NULL;
-
-  WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
-  if (!web_contents)
-    return NULL;
-
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  if (!infobar_service)
-    return NULL;
-
-  return static_cast<ExtensionDevToolsInfoBarDelegate*>(
-      infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-          new ExtensionDevToolsInfoBarDelegate(infobar_service, client_name))));
-}
-
-void ExtensionDevToolsInfoBarDelegate::AttachClientHost(
-    ExtensionDevToolsClientHost* client_host) {
-  client_host_ = client_host;
-}
-
-void ExtensionDevToolsInfoBarDelegate::DiscardClientHost() {
-  client_host_ = NULL;
-}
-
-ExtensionDevToolsInfoBarDelegate::ExtensionDevToolsInfoBarDelegate(
-    InfoBarService* infobar_service,
-    const std::string& client_name)
-    : ConfirmInfoBarDelegate(infobar_service),
-      client_name_(client_name),
-      client_host_(NULL) {
-}
-
-ExtensionDevToolsInfoBarDelegate::~ExtensionDevToolsInfoBarDelegate() {
-}
-
-int ExtensionDevToolsInfoBarDelegate::GetButtons() const {
-  return BUTTON_CANCEL;
-}
-
-InfoBarDelegate::Type ExtensionDevToolsInfoBarDelegate::GetInfoBarType() const {
-  return WARNING_TYPE;
-}
-
-bool ExtensionDevToolsInfoBarDelegate::ShouldExpireInternal(
-    const content::LoadCommittedDetails& details) const {
-  return false;
-}
-
-string16 ExtensionDevToolsInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringFUTF16(IDS_DEV_TOOLS_INFOBAR_LABEL,
-                                    UTF8ToUTF16(client_name_));
-}
-
-void ExtensionDevToolsInfoBarDelegate::InfoBarDismissed() {
-  if (client_host_)
-    client_host_->MarkAsDismissed();
-}
-
-bool ExtensionDevToolsInfoBarDelegate::Cancel() {
-  if (client_host_)
-    client_host_->MarkAsDismissed();
-  return true;
 }
 
 DebuggerFunction::DebuggerFunction()

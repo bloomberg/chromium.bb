@@ -23,8 +23,16 @@ class RegisterProtocolHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
                      ProtocolHandlerRegistry* registry,
                      const ProtocolHandler& handler);
 
+ private:
+  RegisterProtocolHandlerInfoBarDelegate(InfoBarService* infobar_service,
+                                         ProtocolHandlerRegistry* registry,
+                                         const ProtocolHandler& handler);
+
   // ConfirmInfoBarDelegate:
+  virtual InfoBarAutomationType GetInfoBarAutomationType() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
+  virtual RegisterProtocolHandlerInfoBarDelegate*
+      AsRegisterProtocolHandlerInfoBarDelegate() OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool NeedElevation(InfoBarButton button) const OVERRIDE;
@@ -32,16 +40,6 @@ class RegisterProtocolHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool Cancel() OVERRIDE;
   virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
-
-  virtual RegisterProtocolHandlerInfoBarDelegate*
-      AsRegisterProtocolHandlerInfoBarDelegate() OVERRIDE;
-
-  virtual InfoBarAutomationType GetInfoBarAutomationType() const OVERRIDE;
-
- private:
-  RegisterProtocolHandlerInfoBarDelegate(InfoBarService* infobar_service,
-                                         ProtocolHandlerRegistry* registry,
-                                         const ProtocolHandler& handler);
 
   // Returns a user-friendly name for the protocol of this protocol handler.
   string16 GetProtocolName(const ProtocolHandler& handler) const;

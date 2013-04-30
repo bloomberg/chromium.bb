@@ -49,42 +49,6 @@ using content::UserMetricsAction;
 
 namespace {
 
-// For use in histograms.
-enum PreviewInfobarCommand {
-  INFOBAR_ACCEPT,
-  INFOBAR_CANCEL,
-  INFOBAR_HISTOGRAM_BOUNDING_VALUE
-};
-
-class ManagedModeWarningInfobarDelegate : public ConfirmInfoBarDelegate {
- public:
-  // Creates a managed mode warning delegate and adds it to |infobar_service|.
-  // Returns the delegate if it was successfully added.
-  static InfoBarDelegate* Create(InfoBarService* infobar_service,
-                                 int last_allowed_page);
-
- private:
-  explicit ManagedModeWarningInfobarDelegate(InfoBarService* infobar_service,
-                                             int last_allowed_page);
-  virtual ~ManagedModeWarningInfobarDelegate();
-
-  // ConfirmInfoBarDelegate overrides:
-  virtual string16 GetMessageText() const OVERRIDE;
-  virtual int GetButtons() const OVERRIDE;
-  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
-
-  // InfoBarDelegate override:
-  virtual bool ShouldExpire(
-      const content::LoadCommittedDetails& details) const OVERRIDE;
-  virtual void InfoBarDismissed() OVERRIDE;
-
-  int last_allowed_page_;
-
-  DISALLOW_COPY_AND_ASSIGN(ManagedModeWarningInfobarDelegate);
-};
-
 void GoBackToSafety(content::WebContents* web_contents) {
   // For now, just go back one page (the user didn't retreat from that page,
   // so it should be okay).
@@ -111,6 +75,33 @@ void GoBackToSafety(content::WebContents* web_contents) {
   web_contents->GetDelegate()->CloseContents(web_contents);
 }
 
+class ManagedModeWarningInfobarDelegate : public ConfirmInfoBarDelegate {
+ public:
+  // Creates a managed mode warning delegate and adds it to |infobar_service|.
+  // Returns the delegate if it was successfully added.
+  static InfoBarDelegate* Create(InfoBarService* infobar_service,
+                                 int last_allowed_page);
+
+ private:
+  explicit ManagedModeWarningInfobarDelegate(InfoBarService* infobar_service,
+                                             int last_allowed_page);
+  virtual ~ManagedModeWarningInfobarDelegate();
+
+  // ConfirmInfoBarDelegate overrides:
+  virtual bool ShouldExpire(
+      const content::LoadCommittedDetails& details) const OVERRIDE;
+  virtual void InfoBarDismissed() OVERRIDE;
+  virtual string16 GetMessageText() const OVERRIDE;
+  virtual int GetButtons() const OVERRIDE;
+  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual bool Accept() OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
+
+  int last_allowed_page_;
+
+  DISALLOW_COPY_AND_ASSIGN(ManagedModeWarningInfobarDelegate);
+};
+
 // static
 InfoBarDelegate* ManagedModeWarningInfobarDelegate::Create(
     InfoBarService* infobar_service, int last_allowed_page) {
@@ -126,6 +117,18 @@ ManagedModeWarningInfobarDelegate::ManagedModeWarningInfobarDelegate(
       last_allowed_page_(last_allowed_page) {}
 
 ManagedModeWarningInfobarDelegate::~ManagedModeWarningInfobarDelegate() {}
+
+bool ManagedModeWarningInfobarDelegate::ShouldExpire(
+    const content::LoadCommittedDetails& details) const {
+  // ManagedModeNavigationObserver removes us below.
+  return false;
+}
+
+void ManagedModeWarningInfobarDelegate::InfoBarDismissed() {
+  ManagedModeNavigationObserver* observer =
+      ManagedModeNavigationObserver::FromWebContents(web_contents());
+  observer->WarnInfobarDismissed();
+}
 
 string16 ManagedModeWarningInfobarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_MANAGED_MODE_WARNING_MESSAGE);
@@ -152,18 +155,6 @@ bool ManagedModeWarningInfobarDelegate::Cancel() {
   return false;
 }
 
-bool ManagedModeWarningInfobarDelegate::ShouldExpire(
-    const content::LoadCommittedDetails& details) const {
-  // ManagedModeNavigationObserver removes us below.
-  return false;
-}
-
-void ManagedModeWarningInfobarDelegate::InfoBarDismissed() {
-  ManagedModeNavigationObserver* observer =
-      ManagedModeNavigationObserver::FromWebContents(web_contents());
-  observer->WarnInfobarDismissed();
-}
-
 class ManagedModePreviewInfobarDelegate : public ConfirmInfoBarDelegate {
  public:
   // Creates a managed mode preview delegate and adds it to |infobar_service|.
@@ -171,20 +162,25 @@ class ManagedModePreviewInfobarDelegate : public ConfirmInfoBarDelegate {
   static InfoBarDelegate* Create(InfoBarService* infobar_service);
 
  private:
+  // For use in histograms.
+  enum PreviewInfobarCommand {
+    INFOBAR_ACCEPT,
+    INFOBAR_CANCEL,
+    INFOBAR_HISTOGRAM_BOUNDING_VALUE
+  };
+
   explicit ManagedModePreviewInfobarDelegate(InfoBarService* infobar_service);
   virtual ~ManagedModePreviewInfobarDelegate();
 
   // ConfirmInfoBarDelegate overrides:
+  virtual bool ShouldExpire(
+      const content::LoadCommittedDetails& details) const OVERRIDE;
+  virtual void InfoBarDismissed() OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual int GetButtons() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
-
-  // InfoBarDelegate override:
-  virtual bool ShouldExpire(
-      const content::LoadCommittedDetails& details) const OVERRIDE;
-  virtual void InfoBarDismissed() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ManagedModePreviewInfobarDelegate);
 };
@@ -202,6 +198,18 @@ ManagedModePreviewInfobarDelegate::ManagedModePreviewInfobarDelegate(
     : ConfirmInfoBarDelegate(infobar_service) {}
 
 ManagedModePreviewInfobarDelegate::~ManagedModePreviewInfobarDelegate() {}
+
+bool ManagedModePreviewInfobarDelegate::ShouldExpire(
+    const content::LoadCommittedDetails& details) const {
+  // ManagedModeNavigationObserver removes us below.
+  return false;
+}
+
+void ManagedModePreviewInfobarDelegate::InfoBarDismissed() {
+  ManagedModeNavigationObserver* observer =
+      ManagedModeNavigationObserver::FromWebContents(web_contents());
+  observer->PreviewInfobarDismissed();
+}
 
 string16 ManagedModePreviewInfobarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_MANAGED_MODE_PREVIEW_MESSAGE);
@@ -237,18 +245,6 @@ bool ManagedModePreviewInfobarDelegate::Cancel() {
   GoBackToSafety(web_contents());
   observer->ClearObserverState();
   return false;
-}
-
-bool ManagedModePreviewInfobarDelegate::ShouldExpire(
-    const content::LoadCommittedDetails& details) const {
-  // ManagedModeNavigationObserver removes us below.
-  return false;
-}
-
-void ManagedModePreviewInfobarDelegate::InfoBarDismissed() {
-  ManagedModeNavigationObserver* observer =
-      ManagedModeNavigationObserver::FromWebContents(web_contents());
-  observer->PreviewInfobarDismissed();
 }
 
 }  // namespace

@@ -133,19 +133,19 @@ class HungPluginInfoBarDelegate : public ConfirmInfoBarDelegate {
                                            int plugin_child_id,
                                            const string16& plugin_name);
 
-  // ConfirmInfoBarDelegate:
-  virtual gfx::Image* GetIcon() const OVERRIDE;
-  virtual string16 GetMessageText() const OVERRIDE;
-  virtual int GetButtons() const OVERRIDE;
-  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-
  private:
   HungPluginInfoBarDelegate(HungPluginTabHelper* helper,
                             InfoBarService* infobar_service,
                             int plugin_child_id,
                             const string16& plugin_name);
   virtual ~HungPluginInfoBarDelegate();
+
+  // ConfirmInfoBarDelegate:
+  virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual string16 GetMessageText() const OVERRIDE;
+  virtual int GetButtons() const OVERRIDE;
+  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual bool Accept() OVERRIDE;
 
   HungPluginTabHelper* helper_;
   int plugin_child_id_;

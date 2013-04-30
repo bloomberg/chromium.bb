@@ -47,6 +47,15 @@ bool MediaStreamInfoBarDelegate::Create(
   return true;
 }
 
+MediaStreamInfoBarDelegate::MediaStreamInfoBarDelegate(
+    InfoBarService* infobar_service,
+    MediaStreamDevicesController* controller)
+    : ConfirmInfoBarDelegate(infobar_service),
+      controller_(controller) {
+  DCHECK(controller_.get());
+  DCHECK(controller_->has_audio() || controller_->has_video());
+}
+
 void MediaStreamInfoBarDelegate::InfoBarDismissed() {
   // Deny the request if the infobar was closed with the 'x' button, since
   // we don't want WebRTC to be waiting for an answer that will never come.
@@ -110,13 +119,4 @@ bool MediaStreamInfoBarDelegate::LinkClicked(
   web_contents()->OpenURL(params);
 
   return false;  // Do not dismiss the info bar.
-}
-
-MediaStreamInfoBarDelegate::MediaStreamInfoBarDelegate(
-    InfoBarService* infobar_service,
-    MediaStreamDevicesController* controller)
-    : ConfirmInfoBarDelegate(infobar_service),
-      controller_(controller) {
-  DCHECK(controller_.get());
-  DCHECK(controller_->has_audio() || controller_->has_video());
 }

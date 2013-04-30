@@ -18,9 +18,10 @@ class GeolocationInfoBarDelegateAndroid: public GeolocationInfoBarDelegate {
       const GeolocationPermissionRequestID& id,
       const GURL& requesting_frame_url,
       const std::string& display_languages);
-  virtual ~GeolocationInfoBarDelegateAndroid();
 
  private:
+  virtual ~GeolocationInfoBarDelegateAndroid();
+
   // ConfirmInfoBarDelegate:
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;

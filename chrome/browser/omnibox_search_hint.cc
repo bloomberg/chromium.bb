@@ -41,8 +41,6 @@
 using content::NavigationController;
 using content::NavigationEntry;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(OmniboxSearchHint);
-
 
 // HintInfoBarDelegate ---------------------------------------------------------
 
@@ -195,6 +193,8 @@ bool HintInfoBarDelegate::ShouldExpireInternal(
 
 
 // OmniboxSearchHint ----------------------------------------------------------
+
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(OmniboxSearchHint);
 
 OmniboxSearchHint::OmniboxSearchHint(content::WebContents* web_contents)
     : web_contents_(web_contents) {

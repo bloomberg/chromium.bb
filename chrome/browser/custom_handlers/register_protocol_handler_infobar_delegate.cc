@@ -43,6 +43,15 @@ void RegisterProtocolHandlerInfoBarDelegate::Create(
   infobar_service->AddInfoBar(infobar.Pass());
 }
 
+RegisterProtocolHandlerInfoBarDelegate::RegisterProtocolHandlerInfoBarDelegate(
+    InfoBarService* infobar_service,
+    ProtocolHandlerRegistry* registry,
+    const ProtocolHandler& handler)
+    : ConfirmInfoBarDelegate(infobar_service),
+      registry_(registry),
+      handler_(handler) {
+}
+
 InfoBarDelegate::InfoBarAutomationType
     RegisterProtocolHandlerInfoBarDelegate::GetInfoBarAutomationType() const {
   return RPH_INFOBAR;
@@ -51,6 +60,12 @@ InfoBarDelegate::InfoBarAutomationType
 InfoBarDelegate::Type
 RegisterProtocolHandlerInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
+}
+
+RegisterProtocolHandlerInfoBarDelegate*
+    RegisterProtocolHandlerInfoBarDelegate::
+        AsRegisterProtocolHandlerInfoBarDelegate() {
+  return this;
 }
 
 string16 RegisterProtocolHandlerInfoBarDelegate::GetMessageText() const {
@@ -62,15 +77,6 @@ string16 RegisterProtocolHandlerInfoBarDelegate::GetMessageText() const {
       l10n_util::GetStringFUTF16(IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM,
           handler_.title(), UTF8ToUTF16(handler_.url().host()),
           GetProtocolName(handler_));
-}
-
-RegisterProtocolHandlerInfoBarDelegate::RegisterProtocolHandlerInfoBarDelegate(
-    InfoBarService* infobar_service,
-    ProtocolHandlerRegistry* registry,
-    const ProtocolHandler& handler)
-    : ConfirmInfoBarDelegate(infobar_service),
-      registry_(registry),
-      handler_(handler) {
 }
 
 string16 RegisterProtocolHandlerInfoBarDelegate::GetProtocolName(
@@ -125,10 +131,4 @@ bool RegisterProtocolHandlerInfoBarDelegate::LinkClicked(
       false);
   web_contents()->OpenURL(params);
   return false;
-}
-
-RegisterProtocolHandlerInfoBarDelegate*
-    RegisterProtocolHandlerInfoBarDelegate::
-        AsRegisterProtocolHandlerInfoBarDelegate() {
-  return this;
 }

@@ -31,6 +31,26 @@ enum {
 
 }  // namespace
 
+// TranslateInfoBarDelegate specific method:
+InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
+  TranslateInfoBarBase* infobar = NULL;
+  switch (infobar_type_) {
+    case BEFORE_TRANSLATE:
+      infobar = new BeforeTranslateInfoBar(owner, this);
+      break;
+    case AFTER_TRANSLATE:
+      infobar = new AfterTranslateInfoBar(owner, this);
+      break;
+    case TRANSLATING:
+    case TRANSLATION_ERROR:
+      infobar = new TranslateMessageInfoBar(owner, this);
+      break;
+    default:
+      NOTREACHED();
+  }
+  return infobar;
+}
+
 TranslateInfoBarBase::TranslateInfoBarBase(InfoBarService* owner,
                                            TranslateInfoBarDelegate* delegate)
     : InfoBarGtk(owner, delegate),
@@ -56,6 +76,17 @@ TranslateInfoBarBase::TranslateInfoBarBase(InfoBarService* owner,
 }
 
 TranslateInfoBarBase::~TranslateInfoBarBase() {
+}
+
+void TranslateInfoBarBase::AnimationProgressed(const ui::Animation* animation) {
+  DCHECK(widget());
+  if (animation == background_color_animation_.get()) {
+    background_error_percent_ = animation->GetCurrentValue();
+    // Queue the info bar widget for redisplay so it repaints its background.
+    gtk_widget_queue_draw(widget());
+  } else {
+    InfoBar::AnimationProgressed(animation);
+  }
 }
 
 void TranslateInfoBarBase::GetTopColor(InfoBarDelegate::Type type,
@@ -124,17 +155,6 @@ void TranslateInfoBarBase::InitWidgets() {
   gtk_util::CenterWidgetInHBox(hbox_, options_menu_button, true, 0);
 }
 
-void TranslateInfoBarBase::AnimationProgressed(const ui::Animation* animation) {
-  DCHECK(widget());
-  if (animation == background_color_animation_.get()) {
-    background_error_percent_ = animation->GetCurrentValue();
-    // Queue the info bar widget for redisplay so it repaints its background.
-    gtk_widget_queue_draw(widget());
-  } else {
-    InfoBar::AnimationProgressed(animation);
-  }
-}
-
 bool TranslateInfoBarBase::ShowOptionsMenuButton() const {
   return false;
 }
@@ -198,24 +218,4 @@ TranslateInfoBarDelegate* TranslateInfoBarBase::GetDelegate() {
 void TranslateInfoBarBase::OnOptionsClicked(GtkWidget* sender) {
   menu_model_.reset(new OptionsMenuModel(GetDelegate()));
   ShowMenuWithModel(sender, NULL, menu_model_.get());
-}
-
-// TranslateInfoBarDelegate specific method:
-InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
-  TranslateInfoBarBase* infobar = NULL;
-  switch (infobar_type_) {
-    case BEFORE_TRANSLATE:
-      infobar = new BeforeTranslateInfoBar(owner, this);
-      break;
-    case AFTER_TRANSLATE:
-      infobar = new AfterTranslateInfoBar(owner, this);
-      break;
-    case TRANSLATING:
-    case TRANSLATION_ERROR:
-      infobar = new TranslateMessageInfoBar(owner, this);
-      break;
-    default:
-      NOTREACHED();
-  }
-  return infobar;
 }

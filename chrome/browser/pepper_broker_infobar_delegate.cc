@@ -106,6 +106,33 @@ void PepperBrokerInfoBarDelegate::Create(
   }
 }
 
+PepperBrokerInfoBarDelegate::PepperBrokerInfoBarDelegate(
+    InfoBarService* infobar_service,
+    const GURL& url,
+    const base::FilePath& plugin_path,
+    const std::string& languages,
+    HostContentSettingsMap* content_settings,
+    TabSpecificContentSettings* tab_content_settings,
+    const base::Callback<void(bool)>& callback)
+    : ConfirmInfoBarDelegate(infobar_service),
+      url_(url),
+      plugin_path_(plugin_path),
+      languages_(languages),
+      content_settings_(content_settings),
+      tab_content_settings_(tab_content_settings),
+      callback_(callback) {
+}
+
+PepperBrokerInfoBarDelegate::~PepperBrokerInfoBarDelegate() {
+  if (!callback_.is_null())
+    callback_.Run(false);
+}
+
+gfx::Image* PepperBrokerInfoBarDelegate::GetIcon() const {
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      IDR_INFOBAR_PLUGIN_INSTALL);
+}
+
 string16 PepperBrokerInfoBarDelegate::GetMessageText() const {
   content::PluginService* plugin_service =
       content::PluginService::GetInstance();
@@ -160,33 +187,6 @@ bool PepperBrokerInfoBarDelegate::LinkClicked(
       false);
   web_contents()->OpenURL(params);
   return false;
-}
-
-gfx::Image* PepperBrokerInfoBarDelegate::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_INFOBAR_PLUGIN_INSTALL);
-}
-
-PepperBrokerInfoBarDelegate::PepperBrokerInfoBarDelegate(
-    InfoBarService* infobar_service,
-    const GURL& url,
-    const base::FilePath& plugin_path,
-    const std::string& languages,
-    HostContentSettingsMap* content_settings,
-    TabSpecificContentSettings* tab_content_settings,
-    const base::Callback<void(bool)>& callback)
-    : ConfirmInfoBarDelegate(infobar_service),
-      url_(url),
-      plugin_path_(plugin_path),
-      languages_(languages),
-      content_settings_(content_settings),
-      tab_content_settings_(tab_content_settings),
-      callback_(callback) {
-}
-
-PepperBrokerInfoBarDelegate::~PepperBrokerInfoBarDelegate() {
-  if (!callback_.is_null())
-    callback_.Run(false);
 }
 
 void PepperBrokerInfoBarDelegate::DispatchCallback(bool result) {

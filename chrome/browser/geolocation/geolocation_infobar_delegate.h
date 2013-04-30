@@ -34,8 +34,13 @@ class GeolocationInfoBarDelegate : public ConfirmInfoBarDelegate {
                              const GURL& requesting_frame,
                              const std::string& display_languages);
 
-  const GeolocationPermissionRequestID& id() const { return id_; }
+  // ConfirmInfoBarDelegate:
+  virtual bool Accept() OVERRIDE;
 
+  // Call back to the controller, to inform of the user's decision.
+  void SetPermission(bool update_content_setting, bool allowed);
+
+ private:
   // ConfirmInfoBarDelegate:
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
@@ -43,13 +48,9 @@ class GeolocationInfoBarDelegate : public ConfirmInfoBarDelegate {
       const content::LoadCommittedDetails& details) const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
-  virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
-
-  // Call back to the controller, to inform of the user's decision.
-  void SetPermission(bool update_content_setting, bool allowed);
 
  private:
   GeolocationInfoBarQueueController* controller_;

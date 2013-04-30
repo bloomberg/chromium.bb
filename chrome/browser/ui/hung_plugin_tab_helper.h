@@ -57,11 +57,12 @@ class HungPluginTabHelper
   void KillPlugin(int child_id);
 
  private:
-  explicit HungPluginTabHelper(content::WebContents* contents);
   friend class content::WebContentsUserData<HungPluginTabHelper>;
 
   struct PluginState;
   typedef std::map<int, linked_ptr<PluginState> > PluginStateMap;
+
+  explicit HungPluginTabHelper(content::WebContents* contents);
 
   // Called on a timer for a hung plugin to re-show the bar.
   void OnReshowTimer(int child_id);

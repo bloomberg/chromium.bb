@@ -74,7 +74,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(OneClickSigninHelper);
 
 namespace {
 
@@ -82,6 +81,34 @@ namespace {
 // clearing the internal state of the helper.  This is necessary to support
 // SAML-based accounts, but causes bug crbug.com/181163.
 const int kMaxNavigationsSince = 10;
+
+// Arguments used with StartSync function.  base::Bind() cannot support too
+// many args for performance reasons, so they are packaged up into a struct.
+struct StartSyncArgs {
+  StartSyncArgs(Profile* profile,
+                Browser* browser,
+                OneClickSigninHelper::AutoAccept auto_accept,
+                const std::string& session_index,
+                const std::string& email,
+                const std::string& password,
+                bool force_same_tab_navigation)
+      : profile(profile),
+        browser(browser),
+        auto_accept(auto_accept),
+        session_index(session_index),
+        email(email),
+        password(password),
+        force_same_tab_navigation(force_same_tab_navigation) {
+  }
+
+  Profile* profile;
+  Browser* browser;
+  OneClickSigninHelper::AutoAccept auto_accept;
+  std::string session_index;
+  std::string email;
+  std::string password;
+  bool force_same_tab_navigation;
+};
 
 // Add a specific email to the list of emails rejected for one-click
 // sign-in, for this profile.
@@ -137,34 +164,6 @@ void LogOneClickHistogramValue(int action) {
   UMA_HISTOGRAM_ENUMERATION("Signin.AllAccessPointActions", action,
                             one_click_signin::HISTOGRAM_MAX);
 }
-
-// Arguments used with StartSync function.  base::Bind() cannot support too
-// many args for performance reasons, so they are packaged up into a struct.
-struct StartSyncArgs {
-  StartSyncArgs(Profile* profile,
-                Browser* browser,
-                OneClickSigninHelper::AutoAccept auto_accept,
-                const std::string& session_index,
-                const std::string& email,
-                const std::string& password,
-                bool force_same_tab_navigation)
-      : profile(profile),
-        browser(browser),
-        auto_accept(auto_accept),
-        session_index(session_index),
-        email(email),
-        password(password),
-        force_same_tab_navigation(force_same_tab_navigation) {
-  }
-
-  Profile* profile;
-  Browser* browser;
-  OneClickSigninHelper::AutoAccept auto_accept;
-  std::string session_index;
-  std::string email;
-  std::string password;
-  bool force_same_tab_navigation;
-};
 
 // Start syncing with the given user information.
 void StartSync(const StartSyncArgs& args,
@@ -286,6 +285,28 @@ bool IsValidGaiaSigninRedirectOrResponseURL(const GURL& url) {
   return false;
 }
 
+// Tells when we are in the process of showing either the signin to chrome page
+// or the one click sign in to chrome page.
+// NOTE: This should only be used for logging purposes since it relies on hard
+// coded URLs that could change.
+bool AreWeShowingSignin(GURL url, SyncPromoUI::Source source,
+                        std::string email) {
+  GURL::Replacements replacements;
+  replacements.ClearQuery();
+  GURL clean_login_url =
+      GURL(GaiaUrls::GetInstance()->service_login_url()).ReplaceComponents(
+          replacements);
+
+  GURL clean_one_click_url =
+      GURL(GaiaUrls::GetInstance()->gaia_login_form_realm() +
+           "ChromeLoginPrompt").ReplaceComponents(replacements);
+
+  return (url.ReplaceComponents(replacements) == clean_login_url &&
+          source != SyncPromoUI::SOURCE_UNKNOWN) ||
+      (url.ReplaceComponents(replacements) == clean_one_click_url &&
+       !email.empty());
+}
+
 // Constants for the modal dialog / bubble sign in to chrome confirmation
 // experiment
 const char kSignInToChromeDialogFieldTrialName[] = "SignInToChromeConfirmation";
@@ -371,28 +392,6 @@ ConfirmEmailDialogDelegate::ConfirmEmailDialogDelegate(
     callback_(callback) {
 }
 
-// Tells when we are in the process of showing either the signin to chrome page
-// or the one click sign in to chrome page.
-// NOTE: This should only be used for logging purposes since it relies on hard
-// coded URLs that could change.
-bool AreWeShowingSignin(GURL url, SyncPromoUI::Source source,
-                        std::string email) {
-  GURL::Replacements replacements;
-  replacements.ClearQuery();
-  GURL clean_login_url =
-      GURL(GaiaUrls::GetInstance()->service_login_url()).ReplaceComponents(
-          replacements);
-
-  GURL clean_one_click_url =
-      GURL(GaiaUrls::GetInstance()->gaia_login_form_realm() +
-           "ChromeLoginPrompt").ReplaceComponents(replacements);
-
-  return (url.ReplaceComponents(replacements) == clean_login_url &&
-          source != SyncPromoUI::SOURCE_UNKNOWN) ||
-      (url.ReplaceComponents(replacements) == clean_one_click_url &&
-       !email.empty());
-}
-
 
 // Watch a webcontents and remove URL from the history once loading is complete.
 // We have to delay the cleaning until the new URL has finished loading because
@@ -436,6 +435,8 @@ void CurrentHistoryCleaner::WebContentsDestroyed(
 }
 
 }  // namespace
+
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(OneClickSigninHelper);
 
 OneClickSigninHelper::OneClickSigninHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),

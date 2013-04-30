@@ -22,6 +22,8 @@ class ExtensionInfoBarGtk : public InfoBarGtk,
  public:
   ExtensionInfoBarGtk(InfoBarService* owner,
                       ExtensionInfoBarDelegate* delegate);
+
+ private:
   virtual ~ExtensionInfoBarGtk();
 
   // Overridden from InfoBar (through InfoBarGtk):
@@ -40,7 +42,6 @@ class ExtensionInfoBarGtk : public InfoBarGtk,
   // Overridden from ExtensionInfoBarDelegate::DelegateObserver:
   virtual void OnDelegateDeleted() OVERRIDE;
 
- private:
   void OnImageLoaded(const gfx::Image& image);
 
   // Looks at the window the infobar is in and gets the browser. Can return

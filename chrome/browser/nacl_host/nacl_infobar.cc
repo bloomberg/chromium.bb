@@ -29,20 +29,31 @@ const char kNaClLearnMoreUrl[] =
 // so use a ConfirmInfoBarDelegate without any buttons instead.
 class NaClInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  virtual string16 GetMessageText() const OVERRIDE;
-  virtual string16 GetLinkText() const OVERRIDE;
-  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
-  virtual int GetButtons() const OVERRIDE;
   static void Create(InfoBarService* ibs, WebContents* wc);
+
  private:
   NaClInfoBarDelegate(WebContents* wc, InfoBarService* ibs) :
       ConfirmInfoBarDelegate(ibs), wc_(wc) {}
+
+  virtual string16 GetMessageText() const OVERRIDE;
+  virtual int GetButtons() const OVERRIDE;
+  virtual string16 GetLinkText() const OVERRIDE;
+  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
+
   WebContents* wc_;
 };
+
+// static
+void NaClInfoBarDelegate::Create(InfoBarService* ibs, WebContents *wc) {
+  ibs->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+      new NaClInfoBarDelegate(wc, ibs)));
+}
 
 string16 NaClInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_NACL_APP_MISSING_ARCH_MESSAGE);
 }
+
+int NaClInfoBarDelegate::GetButtons() const { return BUTTON_NONE; }
 
 string16 NaClInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
@@ -56,14 +67,6 @@ bool NaClInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
       false);
   wc_->OpenURL(params);
   return false;
-}
-
-int NaClInfoBarDelegate::GetButtons() const { return BUTTON_NONE; }
-
-// static
-void NaClInfoBarDelegate::Create(InfoBarService* ibs, WebContents *wc) {
-  ibs->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-      new NaClInfoBarDelegate(wc, ibs)));
 }
 
 void ShowInfobar(int render_process_id, int render_view_id,

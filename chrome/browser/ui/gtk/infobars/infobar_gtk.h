@@ -29,6 +29,10 @@ class MenuModel;
 class InfoBarGtk : public InfoBar,
                    public content::NotificationObserver {
  public:
+  // Conversion from cairo colors to SkColor.
+  typedef void (InfoBarGtk::*ColorGetter)(InfoBarDelegate::Type,
+                                          double* r, double* g, double* b);
+
   InfoBarGtk(InfoBarService* owner, InfoBarDelegate* delegate);
   virtual ~InfoBarGtk();
 
@@ -54,9 +58,6 @@ class InfoBarGtk : public InfoBar,
   // unnecessary renderer repaints while animating.
   int AnimatingHeight() const;
 
-  // Conversion from cairo colors to SkColor.
-  typedef void (InfoBarGtk::*ColorGetter)(InfoBarDelegate::Type,
-                                          double* r, double* g, double* b);
   SkColor ConvertGetColor(ColorGetter getter);
 
   // Retrieves the component colors for the infobar's background
@@ -69,6 +70,16 @@ class InfoBarGtk : public InfoBar,
  protected:
   // Spacing after message (and before buttons).
   static const int kEndOfLabelSpacing;
+
+  // InfoBar:
+  virtual void PlatformSpecificShow(bool animate) OVERRIDE;
+  virtual void PlatformSpecificOnCloseSoon() OVERRIDE;
+  virtual void PlatformSpecificOnHeightsRecalculated() OVERRIDE;
+
+  // content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Returns the signal registrar for this infobar. All signals representing
   // user actions on visible widgets must go through this registrar!
@@ -100,16 +111,6 @@ class InfoBarGtk : public InfoBar,
                          MenuGtk::Delegate* delegate,
                          ui::MenuModel* model);
 
-  // InfoBar:
-  virtual void PlatformSpecificShow(bool animate) OVERRIDE;
-  virtual void PlatformSpecificOnCloseSoon() OVERRIDE;
-  virtual void PlatformSpecificOnHeightsRecalculated() OVERRIDE;
-
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // The second highest widget in the hierarchy (after the |widget_|).
   GtkWidget* bg_box_;
 
@@ -125,14 +126,13 @@ class InfoBarGtk : public InfoBar,
   content::NotificationRegistrar registrar_;
 
  private:
+  void UpdateBorderColor();
+
   CHROMEGTK_CALLBACK_0(InfoBarGtk, void, OnCloseButton);
   CHROMEGTK_CALLBACK_1(InfoBarGtk, gboolean, OnBackgroundExpose,
                        GdkEventExpose*);
-
   CHROMEGTK_CALLBACK_2(InfoBarGtk, void, OnChildSizeRequest, GtkWidget*,
                        GtkRequisition*);
-
-  void UpdateBorderColor();
 
   // A GtkExpandedContainer that contains |bg_box_| so we can varry the height
   // of the infobar.

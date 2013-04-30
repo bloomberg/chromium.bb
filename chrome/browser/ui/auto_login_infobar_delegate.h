@@ -37,6 +37,18 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
   // Creates an autologin delegate and adds it to |infobar_service|.
   static void Create(InfoBarService* infobar_service, const Params& params);
 
+  // All the methods below are used by the Android implementation of the
+  // AutoLogin bar on the app side.
+  string16 GetMessageText(const std::string& username) const;
+
+  const std::string& realm() const { return params_.header.realm; }
+  const std::string& account() const { return params_.header.account; }
+  const std::string& args() const { return params_.header.args; }
+
+ private:
+  AutoLoginInfoBarDelegate(InfoBarService* owner, const Params& params);
+  virtual ~AutoLoginInfoBarDelegate();
+
   // ConfirmInfoBarDelegate:
   virtual void InfoBarDismissed() OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
@@ -51,18 +63,6 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // All the methods below are used by the Android implementation of the
-  // AutoLogin bar on the app side.
-  string16 GetMessageText(const std::string& username) const;
-
-  const std::string& realm() const { return params_.header.realm; }
-  const std::string& account() const { return params_.header.account; }
-  const std::string& args() const { return params_.header.args; }
-
- private:
-  AutoLoginInfoBarDelegate(InfoBarService* owner, const Params& params);
-  virtual ~AutoLoginInfoBarDelegate();
 
   void RecordHistogramAction(int action);
 

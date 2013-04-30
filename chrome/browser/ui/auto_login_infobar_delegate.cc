@@ -172,9 +172,26 @@ void AutoLoginInfoBarDelegate::Create(InfoBarService* infobar_service,
       new AutoLoginInfoBarDelegate(infobar_service, params)));
 }
 
-AutoLoginInfoBarDelegate*
-    AutoLoginInfoBarDelegate::AsAutoLoginInfoBarDelegate() {
-  return this;
+string16 AutoLoginInfoBarDelegate::GetMessageText() const {
+  return GetMessageText(params_.username);
+}
+
+AutoLoginInfoBarDelegate::AutoLoginInfoBarDelegate(
+    InfoBarService* owner,
+    const Params& params)
+    : ConfirmInfoBarDelegate(owner),
+      params_(params),
+      button_pressed_(false) {
+  RecordHistogramAction(HISTOGRAM_SHOWN);
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
+                 content::Source<Profile>(Profile::FromBrowserContext(
+                     web_contents()->GetBrowserContext())));
+}
+
+AutoLoginInfoBarDelegate::~AutoLoginInfoBarDelegate() {
+  if (!button_pressed_)
+    RecordHistogramAction(HISTOGRAM_IGNORED);
 }
 
 void AutoLoginInfoBarDelegate::InfoBarDismissed() {
@@ -191,8 +208,9 @@ InfoBarDelegate::Type AutoLoginInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 
-string16 AutoLoginInfoBarDelegate::GetMessageText() const {
-  return GetMessageText(params_.username);
+AutoLoginInfoBarDelegate*
+    AutoLoginInfoBarDelegate::AsAutoLoginInfoBarDelegate() {
+  return this;
 }
 
 string16 AutoLoginInfoBarDelegate::GetButtonLabel(
@@ -226,28 +244,6 @@ string16 AutoLoginInfoBarDelegate::GetMessageText(
                                     UTF8ToUTF16(username));
 }
 
-AutoLoginInfoBarDelegate::AutoLoginInfoBarDelegate(
-    InfoBarService* owner,
-    const Params& params)
-    : ConfirmInfoBarDelegate(owner),
-      params_(params),
-      button_pressed_(false) {
-  RecordHistogramAction(HISTOGRAM_SHOWN);
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
-                 content::Source<Profile>(Profile::FromBrowserContext(
-                     web_contents()->GetBrowserContext())));
-}
-
-AutoLoginInfoBarDelegate::~AutoLoginInfoBarDelegate() {
-  if (!button_pressed_)
-    RecordHistogramAction(HISTOGRAM_IGNORED);
-}
-
-void AutoLoginInfoBarDelegate::RecordHistogramAction(int action) {
-  UMA_HISTOGRAM_ENUMERATION("AutoLogin.Regular", action, HISTOGRAM_MAX);
-}
-
 void AutoLoginInfoBarDelegate::Observe(int type,
                                        const NotificationSource& source,
                                        const NotificationDetails& details) {
@@ -256,4 +252,8 @@ void AutoLoginInfoBarDelegate::Observe(int type,
   // |InfoBarDelegate::clear_owner|.
   if (owner())
     owner()->RemoveInfoBar(this);
+}
+
+void AutoLoginInfoBarDelegate::RecordHistogramAction(int action) {
+  UMA_HISTOGRAM_ENUMERATION("AutoLogin.Regular", action, HISTOGRAM_MAX);
 }

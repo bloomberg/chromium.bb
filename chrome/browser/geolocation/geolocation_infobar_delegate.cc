@@ -53,6 +53,18 @@ GeolocationInfoBarDelegate::GeolocationInfoBarDelegate(
    contents_unique_id_ = committed_entry ? committed_entry->GetUniqueID() : 0;
 }
 
+bool GeolocationInfoBarDelegate::Accept() {
+  SetPermission(true, true);
+  return true;
+}
+
+void GeolocationInfoBarDelegate::SetPermission(bool update_content_setting,
+                                               bool allowed) {
+  controller_->OnPermissionSet(id_, requesting_frame_,
+                               web_contents()->GetURL(),
+                               update_content_setting, allowed);
+}
+
 gfx::Image* GeolocationInfoBarDelegate::GetIcon() const {
   return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_GEOLOCATION_INFOBAR_ICON);
@@ -82,18 +94,6 @@ string16 GeolocationInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
       IDS_GEOLOCATION_ALLOW_BUTTON : IDS_GEOLOCATION_DENY_BUTTON);
-}
-
-void GeolocationInfoBarDelegate::SetPermission(bool update_content_setting,
-                                               bool allowed) {
-  controller_->OnPermissionSet(id_, requesting_frame_,
-                               web_contents()->GetURL(),
-                               update_content_setting, allowed);
-}
-
-bool GeolocationInfoBarDelegate::Accept() {
-  SetPermission(true, true);
-  return true;
 }
 
 bool GeolocationInfoBarDelegate::Cancel() {

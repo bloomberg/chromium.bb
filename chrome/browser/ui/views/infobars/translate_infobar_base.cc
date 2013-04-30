@@ -31,15 +31,6 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
 // static
 const int TranslateInfoBarBase::kButtonInLabelSpacing = 5;
 
-TranslateInfoBarBase::TranslateInfoBarBase(InfoBarService* owner,
-                                           TranslateInfoBarDelegate* delegate)
-    : InfoBarView(owner, delegate),
-      error_background_(InfoBarDelegate::WARNING_TYPE) {
-}
-
-TranslateInfoBarBase::~TranslateInfoBarBase() {
-}
-
 void TranslateInfoBarBase::UpdateLanguageButtonText(views::MenuButton* button,
                                                     const string16& text) {
   DCHECK(button);
@@ -47,6 +38,15 @@ void TranslateInfoBarBase::UpdateLanguageButtonText(views::MenuButton* button,
   // The button may have to grow to show the new text.
   Layout();
   SchedulePaint();
+}
+
+TranslateInfoBarBase::TranslateInfoBarBase(InfoBarService* owner,
+                                           TranslateInfoBarDelegate* delegate)
+    : InfoBarView(owner, delegate),
+      error_background_(InfoBarDelegate::WARNING_TYPE) {
+}
+
+TranslateInfoBarBase::~TranslateInfoBarBase() {
 }
 
 void TranslateInfoBarBase::ViewHierarchyChanged(bool is_add,

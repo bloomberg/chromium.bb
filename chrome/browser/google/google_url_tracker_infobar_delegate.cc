@@ -37,27 +37,6 @@ bool GoogleURLTrackerInfoBarDelegate::Cancel() {
   return false;
 }
 
-string16 GoogleURLTrackerInfoBarDelegate::GetLinkText() const {
-  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
-}
-
-bool GoogleURLTrackerInfoBarDelegate::LinkClicked(
-    WindowOpenDisposition disposition) {
-  content::OpenURLParams params(google_util::AppendGoogleLocaleParam(GURL(
-      "https://www.google.com/support/chrome/bin/answer.py?answer=1618699")),
-      content::Referrer(),
-      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-      content::PAGE_TRANSITION_LINK, false);
-  web_contents()->OpenURL(params);
-  return false;
-}
-
-bool GoogleURLTrackerInfoBarDelegate::ShouldExpireInternal(
-    const content::LoadCommittedDetails& details) const {
-  int unique_id = details.entry->GetUniqueID();
-  return (unique_id != contents_unique_id()) && (unique_id != pending_id_);
-}
-
 void GoogleURLTrackerInfoBarDelegate::Update(const GURL& search_url) {
   StoreActiveEntryUniqueID();
   search_url_ = search_url;
@@ -112,4 +91,25 @@ string16 GoogleURLTrackerInfoBarDelegate::GetButtonLabel(
   return l10n_util::GetStringFUTF16(
       IDS_GOOGLE_URL_TRACKER_INFOBAR_DONT_SWITCH,
       net::StripWWWFromHost(google_url_tracker_->google_url()));
+}
+
+string16 GoogleURLTrackerInfoBarDelegate::GetLinkText() const {
+  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+}
+
+bool GoogleURLTrackerInfoBarDelegate::LinkClicked(
+    WindowOpenDisposition disposition) {
+  content::OpenURLParams params(google_util::AppendGoogleLocaleParam(GURL(
+      "https://www.google.com/support/chrome/bin/answer.py?answer=1618699")),
+      content::Referrer(),
+      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
+      content::PAGE_TRANSITION_LINK, false);
+  web_contents()->OpenURL(params);
+  return false;
+}
+
+bool GoogleURLTrackerInfoBarDelegate::ShouldExpireInternal(
+    const content::LoadCommittedDetails& details) const {
+  int unique_id = details.entry->GetUniqueID();
+  return (unique_id != contents_unique_id()) && (unique_id != pending_id_);
 }

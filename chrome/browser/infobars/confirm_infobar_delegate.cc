@@ -49,17 +49,20 @@ ConfirmInfoBarDelegate::ConfirmInfoBarDelegate(
     : InfoBarDelegate(infobar_service) {
 }
 
+bool ConfirmInfoBarDelegate::ShouldExpireInternal(
+    const content::LoadCommittedDetails& details) const {
+  return !details.did_replace_entry &&
+      InfoBarDelegate::ShouldExpireInternal(details);
+}
+
+// ConfirmInfoBarDelegate::CreateInfoBar() is implemented in platform-specific
+// files.
+
 bool ConfirmInfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
   ConfirmInfoBarDelegate* confirm_delegate =
       delegate->AsConfirmInfoBarDelegate();
   return confirm_delegate &&
       (confirm_delegate->GetMessageText() == GetMessageText());
-}
-
-bool ConfirmInfoBarDelegate::ShouldExpireInternal(
-    const content::LoadCommittedDetails& details) const {
-  return !details.did_replace_entry &&
-      InfoBarDelegate::ShouldExpireInternal(details);
 }
 
 ConfirmInfoBarDelegate* ConfirmInfoBarDelegate::AsConfirmInfoBarDelegate() {

@@ -33,12 +33,6 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
                      const std::string& previous_theme_id,
                      bool previous_using_native_theme);
 
- protected:
-  ThemeService* theme_service() { return theme_service_; }
-
-  // ConfirmInfoBarDelegate:
-  virtual bool Cancel() OVERRIDE;
-
  private:
   ThemeInstalledInfoBarDelegate(InfoBarService* infobar_service,
                                 ExtensionService* extension_service,
@@ -56,6 +50,7 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
   virtual string16 GetMessageText() const OVERRIDE;
   virtual int GetButtons() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual bool Cancel() OVERRIDE;
 
   // content::NotificationObserver:
   virtual void Observe(int type,

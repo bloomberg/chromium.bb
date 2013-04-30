@@ -48,6 +48,7 @@ class GeolocationInfoBarQueueController : content::NotificationObserver {
                        bool update_content_setting,
                        bool allowed);
 
+ protected:
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,

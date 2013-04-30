@@ -30,6 +30,14 @@ class MediaStreamInfoBarDelegate : public ConfirmInfoBarDelegate {
                      const content::MediaStreamRequest& request,
                      const content::MediaResponseCallback& callback);
 
+ private:
+  friend class WebrtcBrowserTest;
+
+  // MediaStreamInfoBarDelegate takes the ownership of the |controller|.
+  MediaStreamInfoBarDelegate(
+      InfoBarService* infobar_service,
+      MediaStreamDevicesController* controller);
+
   // ConfirmInfoBarDelegate:
   virtual void InfoBarDismissed() OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
@@ -41,12 +49,6 @@ class MediaStreamInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool Cancel() OVERRIDE;
   virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
-
- private:
-  // MediaStreamInfoBarDelegate takes the ownership of the |controller|.
-  MediaStreamInfoBarDelegate(
-      InfoBarService* infobar_service,
-      MediaStreamDevicesController* controller);
 
   scoped_ptr<MediaStreamDevicesController> controller_;
 

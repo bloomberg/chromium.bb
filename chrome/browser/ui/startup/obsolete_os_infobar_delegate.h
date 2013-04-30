@@ -21,15 +21,15 @@ class ObsoleteOSInfoBarDelegate : public ConfirmInfoBarDelegate {
   static void Create(InfoBarService* infobar_service);
 
  private:
-  virtual string16 GetMessageText() const OVERRIDE;
-  virtual int GetButtons() const OVERRIDE;
-  virtual string16 GetLinkText() const OVERRIDE;
-  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
-
   ObsoleteOSInfoBarDelegate(InfoBarService* infobar_service,
                             const string16& message,
                             const GURL& url);
   virtual ~ObsoleteOSInfoBarDelegate();
+
+  virtual string16 GetMessageText() const OVERRIDE;
+  virtual int GetButtons() const OVERRIDE;
+  virtual string16 GetLinkText() const OVERRIDE;
+  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
   const string16 message_;
   const GURL learn_more_url_;

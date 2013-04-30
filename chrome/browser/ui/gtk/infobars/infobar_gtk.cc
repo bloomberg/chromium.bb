@@ -125,6 +125,72 @@ int InfoBarGtk::AnimatingHeight() const {
   return animation().is_animating() ? bar_target_height() : 0;
 }
 
+SkColor InfoBarGtk::ConvertGetColor(ColorGetter getter) {
+  double r, g, b;
+  (this->*getter)(delegate()->GetInfoBarType(), &r, &g, &b);
+  return SkColorSetARGB(255, 255 * r, 255 * g, 255 * b);
+}
+
+void InfoBarGtk::GetTopColor(InfoBarDelegate::Type type,
+                             double* r, double* g, double* b) {
+  DCHECK(theme_service_);
+  SkColor color = theme_service_->UsingNativeTheme() ?
+                  theme_service_->GetColor(ThemeProperties::COLOR_TOOLBAR) :
+                  GetInfoBarTopColor(type);
+  *r = SkColorGetR(color) / 255.0;
+  *g = SkColorGetG(color) / 255.0;
+  *b = SkColorGetB(color) / 255.0;
+}
+
+void InfoBarGtk::GetBottomColor(InfoBarDelegate::Type type,
+                                double* r, double* g, double* b) {
+  DCHECK(theme_service_);
+  SkColor color = theme_service_->UsingNativeTheme() ?
+                  theme_service_->GetColor(ThemeProperties::COLOR_TOOLBAR) :
+                  GetInfoBarBottomColor(type);
+  *r = SkColorGetR(color) / 255.0;
+  *g = SkColorGetG(color) / 255.0;
+  *b = SkColorGetB(color) / 255.0;
+}
+
+void InfoBarGtk::PlatformSpecificShow(bool animate) {
+  DCHECK(bg_box_);
+
+  DCHECK(widget());
+  gtk_widget_show_all(widget_.get());
+  gtk_widget_set_size_request(widget_.get(), -1, bar_height());
+
+  GdkWindow* gdk_window = gtk_widget_get_window(bg_box_);
+  if (gdk_window)
+    gdk_window_lower(gdk_window);
+}
+
+void InfoBarGtk::PlatformSpecificOnCloseSoon() {
+  // We must close all menus and prevent any signals from being emitted while
+  // we are animating the info bar closed.
+  menu_.reset();
+  signals_.reset();
+}
+
+void InfoBarGtk::PlatformSpecificOnHeightsRecalculated() {
+  DCHECK(bg_box_);
+  DCHECK(widget());
+  gtk_widget_set_size_request(bg_box_, -1, bar_target_height());
+  gtk_expanded_container_move(GTK_EXPANDED_CONTAINER(widget_.get()),
+                              bg_box_, 0,
+                              bar_height() - bar_target_height());
+
+  gtk_widget_set_size_request(widget_.get(), -1, bar_height());
+  gtk_widget_queue_draw(widget_.get());
+}
+
+void InfoBarGtk::Observe(int type,
+                         const content::NotificationSource& source,
+                         const content::NotificationDetails& details) {
+  DCHECK(widget());
+  UpdateBorderColor();
+}
+
 ui::GtkSignalRegistrar* InfoBarGtk::Signals() {
   return signals_.get();
 }
@@ -157,12 +223,6 @@ GtkWidget* InfoBarGtk::CreateMenuButton(const std::string& text) {
   gtk_container_add(GTK_CONTAINER(button), hbox);
 
   return button;
-}
-
-SkColor InfoBarGtk::ConvertGetColor(ColorGetter getter) {
-  double r, g, b;
-  (this->*getter)(delegate()->GetInfoBarType(), &r, &g, &b);
-  return SkColorSetARGB(255, 255 * r, 255 * g, 255 * b);
 }
 
 void InfoBarGtk::AddLabelWithInlineLink(const string16& display_text,
@@ -208,28 +268,6 @@ void InfoBarGtk::ShowMenuWithModel(GtkWidget* sender,
                                    ui::MenuModel* model) {
   menu_.reset(new MenuGtk(delegate, model));
   menu_->PopupForWidget(sender, 1, gtk_get_current_event_time());
-}
-
-void InfoBarGtk::GetTopColor(InfoBarDelegate::Type type,
-                             double* r, double* g, double* b) {
-  DCHECK(theme_service_);
-  SkColor color = theme_service_->UsingNativeTheme() ?
-                  theme_service_->GetColor(ThemeProperties::COLOR_TOOLBAR) :
-                  GetInfoBarTopColor(type);
-  *r = SkColorGetR(color) / 255.0;
-  *g = SkColorGetG(color) / 255.0;
-  *b = SkColorGetB(color) / 255.0;
-}
-
-void InfoBarGtk::GetBottomColor(InfoBarDelegate::Type type,
-                                double* r, double* g, double* b) {
-  DCHECK(theme_service_);
-  SkColor color = theme_service_->UsingNativeTheme() ?
-                  theme_service_->GetColor(ThemeProperties::COLOR_TOOLBAR) :
-                  GetInfoBarBottomColor(type);
-  *r = SkColorGetR(color) / 255.0;
-  *g = SkColorGetG(color) / 255.0;
-  *b = SkColorGetB(color) / 255.0;
 }
 
 void InfoBarGtk::UpdateBorderColor() {
@@ -290,44 +328,6 @@ gboolean InfoBarGtk::OnBackgroundExpose(GtkWidget* sender,
   }
 
   return FALSE;
-}
-
-void InfoBarGtk::PlatformSpecificShow(bool animate) {
-  DCHECK(bg_box_);
-
-  DCHECK(widget());
-  gtk_widget_show_all(widget_.get());
-  gtk_widget_set_size_request(widget_.get(), -1, bar_height());
-
-  GdkWindow* gdk_window = gtk_widget_get_window(bg_box_);
-  if (gdk_window)
-    gdk_window_lower(gdk_window);
-}
-
-void InfoBarGtk::PlatformSpecificOnCloseSoon() {
-  // We must close all menus and prevent any signals from being emitted while
-  // we are animating the info bar closed.
-  menu_.reset();
-  signals_.reset();
-}
-
-void InfoBarGtk::PlatformSpecificOnHeightsRecalculated() {
-  DCHECK(bg_box_);
-  DCHECK(widget());
-  gtk_widget_set_size_request(bg_box_, -1, bar_target_height());
-  gtk_expanded_container_move(GTK_EXPANDED_CONTAINER(widget_.get()),
-                              bg_box_, 0,
-                              bar_height() - bar_target_height());
-
-  gtk_widget_set_size_request(widget_.get(), -1, bar_height());
-  gtk_widget_queue_draw(widget_.get());
-}
-
-void InfoBarGtk::Observe(int type,
-                         const content::NotificationSource& source,
-                         const content::NotificationDetails& details) {
-  DCHECK(widget());
-  UpdateBorderColor();
 }
 
 void InfoBarGtk::OnChildSizeRequest(GtkWidget* expanded,

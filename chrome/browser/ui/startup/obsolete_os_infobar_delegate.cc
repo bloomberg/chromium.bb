@@ -48,6 +48,18 @@ void ObsoleteOSInfoBarDelegate::Create(InfoBarService* infobar_service) {
                                     GURL(kLearnMoreURL))));
 }
 
+ObsoleteOSInfoBarDelegate::ObsoleteOSInfoBarDelegate(
+    InfoBarService* infobar_service,
+    const string16& message,
+    const GURL& url)
+    : ConfirmInfoBarDelegate(infobar_service),
+      message_(message),
+      learn_more_url_(url) {
+}
+
+ObsoleteOSInfoBarDelegate::~ObsoleteOSInfoBarDelegate() {
+}
+
 string16 ObsoleteOSInfoBarDelegate::GetMessageText() const {
   return message_;
 }
@@ -66,18 +78,6 @@ bool ObsoleteOSInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
       content::PAGE_TRANSITION_LINK, false);
   web_contents()->OpenURL(params);
   return false;
-}
-
-ObsoleteOSInfoBarDelegate::ObsoleteOSInfoBarDelegate(
-    InfoBarService* infobar_service,
-    const string16& message,
-    const GURL& url)
-    : ConfirmInfoBarDelegate(infobar_service),
-      message_(message),
-      learn_more_url_(url) {
-}
-
-ObsoleteOSInfoBarDelegate::~ObsoleteOSInfoBarDelegate() {
 }
 
 }  // namespace chrome

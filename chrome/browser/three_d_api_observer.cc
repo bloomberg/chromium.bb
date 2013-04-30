@@ -15,16 +15,6 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace {
-
-enum ThreeDInfobarDismissalHistogram {
-  THREE_D_INFOBAR_IGNORED,
-  THREE_D_INFOBAR_RELOADED,
-  THREE_D_INFOBAR_CLOSED_WITHOUT_ACTION,
-  THREE_D_INFOBAR_DISMISSAL_MAX
-};
-
-}  // namespace
 
 // ThreeDAPIInfoBarDelegate ---------------------------------------------
 
@@ -36,6 +26,13 @@ class ThreeDAPIInfoBarDelegate : public ConfirmInfoBarDelegate {
                      content::ThreeDAPIType requester);
 
  private:
+  enum ThreeDInfobarDismissalHistogram {
+    THREE_D_INFOBAR_IGNORED,
+    THREE_D_INFOBAR_RELOADED,
+    THREE_D_INFOBAR_CLOSED_WITHOUT_ACTION,
+    THREE_D_INFOBAR_DISMISSAL_MAX
+  };
+
   ThreeDAPIInfoBarDelegate(
       InfoBarService* owner,
       const GURL& url,

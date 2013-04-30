@@ -166,4 +166,8 @@ class StartupBrowserCreator {
   DISALLOW_COPY_AND_ASSIGN(StartupBrowserCreator);
 };
 
+// Returns true if |profile| has exited uncleanly and has not been launched
+// after the unclean exit.
+bool HasPendingUncleanExit(Profile* profile);
+
 #endif  // CHROME_BROWSER_UI_STARTUP_STARTUP_BROWSER_CREATOR_H_

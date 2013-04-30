@@ -51,6 +51,45 @@ namespace {
 
 bool disable_failure_ui_for_tests = false;
 
+Browser* FindOrCreateVisibleBrowser(Profile* profile) {
+  Browser* browser =
+      chrome::FindOrCreateTabbedBrowser(profile, chrome::GetActiveDesktop());
+  if (browser->tab_strip_model()->count() == 0)
+    chrome::AddBlankTabAt(browser, -1, true);
+  browser->window()->Show();
+  return browser;
+}
+
+void ShowExtensionInstalledBubble(const extensions::Extension* extension,
+                                  Profile* profile,
+                                  const SkBitmap& icon) {
+  Browser* browser = FindOrCreateVisibleBrowser(profile);
+  chrome::ShowExtensionInstalledBubble(extension, browser, icon);
+}
+
+void OnAppLauncherEnabledCompleted(const extensions::Extension* extension,
+                                   Profile* profile,
+                                   SkBitmap* icon,
+                                   bool use_bubble,
+                                   bool use_launcher) {
+  if (use_launcher) {
+    AppListService::Get()->ShowAppList(profile);
+
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
+        content::Source<Profile>(profile),
+        content::Details<const std::string>(&extension->id()));
+    return;
+  }
+
+  if (use_bubble) {
+    ShowExtensionInstalledBubble(extension, profile, *icon);
+    return;
+  }
+
+  ExtensionInstallUI::OpenAppInstalledUI(profile, extension->id());
+}
+
 // Helper class to put up an infobar when installation fails.
 class ErrorInfobarDelegate : public ConfirmInfoBarDelegate {
  public:
@@ -95,45 +134,6 @@ void ErrorInfobarDelegate::Create(InfoBarService* infobar_service,
                                   const extensions::CrxInstallerError& error) {
   infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
       new ErrorInfobarDelegate(infobar_service, error)));
-}
-
-Browser* FindOrCreateVisibleBrowser(Profile* profile) {
-  Browser* browser =
-      chrome::FindOrCreateTabbedBrowser(profile, chrome::GetActiveDesktop());
-  if (browser->tab_strip_model()->count() == 0)
-    chrome::AddBlankTabAt(browser, -1, true);
-  browser->window()->Show();
-  return browser;
-}
-
-void ShowExtensionInstalledBubble(const extensions::Extension* extension,
-                                  Profile* profile,
-                                  const SkBitmap& icon) {
-  Browser* browser = FindOrCreateVisibleBrowser(profile);
-  chrome::ShowExtensionInstalledBubble(extension, browser, icon);
-}
-
-void OnAppLauncherEnabledCompleted(const extensions::Extension* extension,
-                                   Profile* profile,
-                                   SkBitmap* icon,
-                                   bool use_bubble,
-                                   bool use_launcher) {
-  if (use_launcher) {
-    AppListService::Get()->ShowAppList(profile);
-
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
-        content::Source<Profile>(profile),
-        content::Details<const std::string>(&extension->id()));
-    return;
-  }
-
-  if (use_bubble) {
-    ShowExtensionInstalledBubble(extension, profile, *icon);
-    return;
-  }
-
-  ExtensionInstallUI::OpenAppInstalledUI(profile, extension->id());
 }
 
 }  // namespace

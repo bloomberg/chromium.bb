@@ -34,12 +34,12 @@ void AlternateNavInfoBarGtk::InitWidgets() {
                          G_CALLBACK(OnLinkClickedThunk));
 }
 
+AlternateNavInfoBarDelegate* AlternateNavInfoBarGtk::GetDelegate() {
+  return static_cast<AlternateNavInfoBarDelegate*>(delegate());
+}
+
 void AlternateNavInfoBarGtk::OnLinkClicked(GtkWidget* button) {
   if (GetDelegate()->LinkClicked(
         event_utils::DispositionForCurrentButtonPressEvent()))
     RemoveSelf();
-}
-
-AlternateNavInfoBarDelegate* AlternateNavInfoBarGtk::GetDelegate() {
-  return static_cast<AlternateNavInfoBarDelegate*>(delegate());
 }
