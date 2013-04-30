@@ -21,6 +21,13 @@
           'src/port/win',
         ],
       }],
+      ['OS == "android" and android_webview_build == 1', {
+        'variables': {
+          # Snappy not used in Android WebView
+          # crbug.com/236780
+          'use_snappy': 0,
+        },
+      }],
       ['use_snappy', {
         'defines': [
           'USE_SNAPPY=1',
