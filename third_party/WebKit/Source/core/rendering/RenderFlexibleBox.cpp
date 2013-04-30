@@ -235,8 +235,9 @@ static int synthesizedBaselineFromContentBox(const RenderBox* box, LineDirection
     return direction == HorizontalLine ? box->borderTop() + box->paddingTop() + box->contentHeight() : box->borderRight() + box->paddingRight() + box->contentWidth();
 }
 
-int RenderFlexibleBox::baselinePosition(FontBaseline, bool, LineDirectionMode direction, LinePositionMode) const
+int RenderFlexibleBox::baselinePosition(FontBaseline, bool, LineDirectionMode direction, LinePositionMode mode) const
 {
+    ASSERT(mode == PositionOnContainingLine);
     int baseline = firstLineBoxBaseline();
     if (baseline == -1)
         baseline = synthesizedBaselineFromContentBox(this, direction);

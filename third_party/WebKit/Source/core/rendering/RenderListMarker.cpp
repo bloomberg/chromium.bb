@@ -1660,6 +1660,7 @@ LayoutUnit RenderListMarker::lineHeight(bool firstLine, LineDirectionMode direct
 
 int RenderListMarker::baselinePosition(FontBaseline baselineType, bool firstLine, LineDirectionMode direction, LinePositionMode linePositionMode) const
 {
+    ASSERT(linePositionMode == PositionOnContainingLine);
     if (!isImage())
         return m_listItem->baselinePosition(baselineType, firstLine, direction, PositionOfInteriorLineBoxes);
     return RenderBox::baselinePosition(baselineType, firstLine, direction, linePositionMode);

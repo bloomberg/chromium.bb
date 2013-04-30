@@ -1325,6 +1325,7 @@ void RenderTable::updateFirstLetter()
 
 int RenderTable::baselinePosition(FontBaseline baselineType, bool firstLine, LineDirectionMode direction, LinePositionMode linePositionMode) const
 {
+    ASSERT(linePositionMode == PositionOnContainingLine);
     LayoutUnit baseline = firstLineBoxBaseline();
     if (baseline != -1)
         return baseline;

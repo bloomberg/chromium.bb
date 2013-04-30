@@ -64,8 +64,9 @@ bool RenderSlider::canBeReplacedWithInlineRunIn() const
     return false;
 }
 
-int RenderSlider::baselinePosition(FontBaseline, bool /*firstLine*/, LineDirectionMode, LinePositionMode) const
+int RenderSlider::baselinePosition(FontBaseline, bool /*firstLine*/, LineDirectionMode, LinePositionMode linePositionMode) const
 {
+    ASSERT(linePositionMode == PositionOnContainingLine);
     // FIXME: Patch this function for writing-mode.
     return height() + marginTop();
 }
