@@ -62,6 +62,7 @@ class WEBKIT_STORAGE_EXPORT FileChangeList {
   void clear() { list_.clear(); }
   const List& list() const { return list_; }
   const FileChange& front() const { return list_.front(); }
+  const FileChange& back() const { return list_.back(); }
 
   FileChangeList PopAndGetNewList() const;
 

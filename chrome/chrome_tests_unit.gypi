@@ -1216,6 +1216,7 @@
         'browser/sync_file_system/mock_remote_change_processor.h',
         'browser/sync_file_system/mock_remote_file_sync_service.cc',
         'browser/sync_file_system/mock_remote_file_sync_service.h',
+        'browser/sync_file_system/remote_sync_operation_resolver_unittest.cc',
         'browser/sync_file_system/sync_file_system_service_unittest.cc',
         'browser/sync_file_system/sync_file_system_test_util.cc',
         'browser/sync_file_system/sync_file_system_test_util.h',

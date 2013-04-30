@@ -27,6 +27,7 @@
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/file_status_observer.h"
 #include "chrome/browser/sync_file_system/remote_change_processor.h"
+#include "chrome/browser/sync_file_system/remote_sync_operation_resolver.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
@@ -1428,19 +1429,27 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
   bool missing_local_file = (metadata.file_type == SYNC_FILE_TYPE_UNKNOWN);
 
   RemoteSyncOperationType operation =
-      ResolveRemoteSyncOperationType(remote_file_change, param.get(),
-                                     local_changes, missing_local_file);
+      RemoteSyncOperationResolver::Resolve(remote_file_change,
+                                           local_changes,
+                                           param->local_metadata.file_type,
+                                           param->drive_metadata.conflicted());
 
   DVLOG(1) << "ProcessRemoteChange for " << url.DebugString()
            << (param->drive_metadata.conflicted() ? " (conflicted)" : " ")
            << (missing_local_file ? " (missing local file)" : " ")
            << " remote_change: " << remote_file_change.DebugString()
            << " ==> operation: " << operation;
+  DCHECK_NE(REMOTE_SYNC_OPERATION_FAIL, operation);
 
   switch (operation) {
     case REMOTE_SYNC_OPERATION_ADD_FILE:
       param->sync_action = SYNC_ACTION_ADDED;
       DownloadForRemoteSync(param.Pass());
+      return;
+    case REMOTE_SYNC_OPERATION_ADD_DIRECTORY:
+      // TODO(nhiroki): support directory operations (http://crbug.com/161442).
+      NOTIMPLEMENTED();
+      AbortRemoteSync(param.Pass(), SYNC_STATUS_FAILED);
       return;
     case REMOTE_SYNC_OPERATION_UPDATE_FILE:
       param->sync_action = SYNC_ACTION_UPDATED;
@@ -1455,6 +1464,11 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
                      base::Passed(&param)));
       return;
     }
+    case REMOTE_SYNC_OPERATION_DELETE_DIRECTORY:
+      // TODO(nhiroki): support directory operations (http://crbug.com/161442).
+      NOTIMPLEMENTED();
+      AbortRemoteSync(param.Pass(), SYNC_STATUS_FAILED);
+      return;
     case REMOTE_SYNC_OPERATION_NONE:
       param->sync_action = SYNC_ACTION_NONE;
       CompleteRemoteSync(param.Pass(), SYNC_STATUS_OK);
@@ -1488,49 +1502,6 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
   }
   NOTREACHED();
   AbortRemoteSync(param.Pass(), SYNC_STATUS_FAILED);
-}
-
-DriveFileSyncService::RemoteSyncOperationType
-DriveFileSyncService::ResolveRemoteSyncOperationType(
-    const FileChange& remote_file_change,
-    ProcessRemoteChangeParam* param,
-    const FileChangeList& local_changes,
-    bool missing_local_file) {
-  if (param->drive_metadata.conflicted()) {
-    switch (remote_file_change.change()) {
-      case FileChange::FILE_CHANGE_ADD_OR_UPDATE:
-        return missing_local_file ? REMOTE_SYNC_OPERATION_RESOLVE_TO_REMOTE
-                                  : REMOTE_SYNC_OPERATION_CONFLICT;
-      case FileChange::FILE_CHANGE_DELETE:
-        return missing_local_file ? REMOTE_SYNC_OPERATION_DELETE_METADATA
-                                  : REMOTE_SYNC_OPERATION_RESOLVE_TO_LOCAL;
-    }
-  }
-
-  if (remote_file_change.IsAddOrUpdate()) {
-    if (local_changes.empty())
-      return missing_local_file ? REMOTE_SYNC_OPERATION_ADD_FILE
-                                : REMOTE_SYNC_OPERATION_UPDATE_FILE;
-    switch (local_changes.list().back().change()) {
-      case FileChange::FILE_CHANGE_ADD_OR_UPDATE:
-        return REMOTE_SYNC_OPERATION_CONFLICT;
-      case FileChange::FILE_CHANGE_DELETE:
-        return REMOTE_SYNC_OPERATION_ADD_FILE;
-    }
-  }
-
-  DCHECK(remote_file_change.IsDelete());
-  if (local_changes.empty())
-    return missing_local_file ? REMOTE_SYNC_OPERATION_DELETE_METADATA
-                              : REMOTE_SYNC_OPERATION_DELETE_FILE;
-  switch (local_changes.list().back().change()) {
-    case FileChange::FILE_CHANGE_ADD_OR_UPDATE:
-      return REMOTE_SYNC_OPERATION_NONE;
-    case FileChange::FILE_CHANGE_DELETE:
-      return REMOTE_SYNC_OPERATION_DELETE_METADATA;
-  }
-  NOTREACHED();
-  return REMOTE_SYNC_OPERATION_FAIL;
 }
 
 void DriveFileSyncService::DidResolveConflictToLocalChange(
