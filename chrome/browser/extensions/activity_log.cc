@@ -158,6 +158,16 @@ ActivityLog::ActivityLog(Profile* profile) {
     }
   }
 
+  // We normally dispatch DB requests to the DB thread, but the thread might
+  // not exist if we are under test conditions. Substitute the UI thread for
+  // this case.
+  if (BrowserThread::IsMessageLoopValid(BrowserThread::DB)) {
+    dispatch_thread_ = BrowserThread::DB;
+  } else {
+    LOG(ERROR) << "BrowserThread::DB does not exist, running on UI thread!";
+    dispatch_thread_ = BrowserThread::UI;
+  }
+
   // If the database cannot be initialized for some reason, we keep
   // chugging along but nothing will get recorded. If the UI is
   // available, things will still get sent to the UI even if nothing
@@ -170,11 +180,15 @@ ActivityLog::ActivityLog(Profile* profile) {
   KillActivityDatabaseErrorDelegate* error_delegate =
       new KillActivityDatabaseErrorDelegate(this);
   db_->SetErrorDelegate(error_delegate);
-  ScheduleAndForget(&ActivityDatabase::Init,
-                    database_name);
+  ScheduleAndForget(&ActivityDatabase::Init, database_name);
 }
 
 ActivityLog::~ActivityLog() {
+  ScheduleAndForget(&ActivityDatabase::Close);
+}
+
+void ActivityLog::SetArgumentLoggingForTesting(bool log_arguments) {
+  testing_mode_ = log_arguments;
 }
 
 // static
@@ -416,12 +430,11 @@ void ActivityLog::GetActions(
     const int day,
     const base::Callback
         <void(scoped_ptr<std::vector<scoped_refptr<Action> > >)>& callback) {
-  if (!db_) return;
   BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::DB,
+      dispatch_thread_,
       FROM_HERE,
       base::Bind(&ActivityDatabase::GetActions,
-                 db_.get(),
+                 base::Unretained(db_),
                  extension_id,
                  day),
       callback);
@@ -470,9 +483,7 @@ void ActivityLog::OnScriptsExecuted(
 }
 
 void ActivityLog::KillActivityLogDatabase() {
-  if (db_) {
-    ScheduleAndForget(&ActivityDatabase::KillDatabase);
-  }
+  ScheduleAndForget(&ActivityDatabase::KillDatabase);
 }
 
 // static

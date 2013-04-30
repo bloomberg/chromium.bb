@@ -3,12 +3,16 @@
 // found in the LICENSE file.
 
 #include <string>
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/threading/thread.h"
+#include "base/threading/thread_checker.h"
+#include "base/time.h"
 #include "base/time/clock.h"
 #include "chrome/browser/extensions/activity_database.h"
-#include "content/public/browser/browser_thread.h"
+#include "chrome/common/chrome_switches.h"
 #include "sql/transaction.h"
 
 #if defined(OS_MACOSX)
@@ -31,17 +35,20 @@ namespace extensions {
 ActivityDatabase::ActivityDatabase()
     : testing_clock_(NULL),
       initialized_(false) {
+  // We don't batch commits when in testing mode.
+  batch_mode_ = !(CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kEnableExtensionActivityLogTesting));
 }
 
-ActivityDatabase::~ActivityDatabase() {
-  Close();  // Safe to call Close() even if Open() never happened.
-}
+ActivityDatabase::~ActivityDatabase() {}
 
 void ActivityDatabase::SetErrorDelegate(sql::ErrorDelegate* error_delegate) {
   db_.set_error_delegate(error_delegate);
 }
 
 void ActivityDatabase::Init(const base::FilePath& db_name) {
+  if (BrowserThread::IsMessageLoopValid(BrowserThread::DB))
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   db_.set_page_size(4096);
   db_.set_cache_size(32);
 
@@ -76,10 +83,14 @@ void ActivityDatabase::Init(const base::FilePath& db_name) {
     return LogInitFailure();
 
   sql::InitStatus stat = committer.Commit() ? sql::INIT_OK : sql::INIT_FAILURE;
-  if (stat == sql::INIT_OK)
-    initialized_ = true;
-  else
+  if (stat != sql::INIT_OK)
     return LogInitFailure();
+
+  initialized_ = true;
+  timer_.Start(FROM_HERE,
+               base::TimeDelta::FromMinutes(2),
+               this,
+               &ActivityDatabase::RecordBatchedActions);
 }
 
 void ActivityDatabase::LogInitFailure() {
@@ -87,12 +98,39 @@ void ActivityDatabase::LogInitFailure() {
 }
 
 void ActivityDatabase::RecordAction(scoped_refptr<Action> action) {
-  if (initialized_)
-    action->Record(&db_);
+  if (initialized_) {
+    if (batch_mode_)
+      batched_actions_.push_back(action);
+    else
+      action->Record(&db_);
+  }
+}
+
+void ActivityDatabase::RecordBatchedActions() {
+  std::vector<scoped_refptr<Action> >::size_type i;
+  for (i = 0; i != batched_actions_.size(); ++i) {
+    batched_actions_.at(i)->Record(&db_);
+  }
+  batched_actions_.clear();
+}
+
+void ActivityDatabase::SetBatchModeForTesting(bool batch_mode) {
+  if (batch_mode && !batch_mode_) {
+    timer_.Start(FROM_HERE,
+                 base::TimeDelta::FromMinutes(2),
+                 this,
+                 &ActivityDatabase::RecordBatchedActions);
+  } else if (!batch_mode && batch_mode_) {
+    timer_.Stop();
+    RecordBatchedActions();
+  }
+  batch_mode_ = batch_mode;
 }
 
 scoped_ptr<std::vector<scoped_refptr<Action> > > ActivityDatabase::GetActions(
     const std::string& extension_id, const int days_ago) {
+  if (BrowserThread::IsMessageLoopValid(BrowserThread::DB))
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   DCHECK_GE(days_ago, 0);
   scoped_ptr<std::vector<scoped_refptr<Action> > >
       actions(new std::vector<scoped_refptr<Action> >());
@@ -179,15 +217,32 @@ bool ActivityDatabase::Raze() {
 }
 
 void ActivityDatabase::Close() {
+  timer_.Stop();
+  RecordBatchedActions();
   db_.Close();
+  delete this;
 }
 
 void ActivityDatabase::KillDatabase() {
+  timer_.Stop();
   db_.RazeAndClose();
 }
 
 void ActivityDatabase::SetClockForTesting(base::Clock* clock) {
   testing_clock_ = clock;
+}
+
+void ActivityDatabase::RecordBatchedActionsWhileTesting() {
+  RecordBatchedActions();
+  timer_.Stop();
+}
+
+void ActivityDatabase::SetTimerForTesting(int ms) {
+  timer_.Stop();
+  timer_.Start(FROM_HERE,
+               base::TimeDelta::FromMilliseconds(ms),
+               this,
+               &ActivityDatabase::RecordBatchedActionsWhileTesting);
 }
 
 }  // namespace extensions
