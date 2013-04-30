@@ -85,9 +85,7 @@ class ChromeV8Context : public RequestSender::Source {
   // context is in the process of being destroyed.
   content::RenderView* GetRenderView() const;
 
-  // Fires the onload and onunload events on the chromeHidden object.
-  // TODO(aa): Move this to EventBindings.
-  void DispatchOnLoadEvent(bool is_incognito_process, int manifest_version);
+  // Fires the onunload event on the chromeHidden object.
   void DispatchOnUnloadEvent();
 
   // Call the named method of the chromeHidden object in this context.

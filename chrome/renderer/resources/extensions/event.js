@@ -453,11 +453,7 @@
   // Special load events: we don't use the DOM unload because that slows
   // down tab shutdown.  On the other hand, onUnload might not always fire,
   // since Chrome will terminate renderers on shutdown (SuddenTermination).
-  chromeHidden.onLoad = new Event();
   chromeHidden.onUnload = new Event();
-
-  chromeHidden.dispatchOnLoad =
-      chromeHidden.onLoad.dispatch.bind(chromeHidden.onLoad);
 
   chromeHidden.dispatchOnUnload = function() {
     chromeHidden.onUnload.dispatch();

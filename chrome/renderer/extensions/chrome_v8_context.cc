@@ -172,18 +172,6 @@ Feature::Availability ChromeV8Context::GetAvailabilityInternal(
       UserScriptSlave::GetDataSourceURLForFrame(web_frame_));
 }
 
-void ChromeV8Context::DispatchOnLoadEvent(bool is_incognito_process,
-                                          int manifest_version) {
-  v8::HandleScope handle_scope;
-  v8::Handle<v8::Value> argv[] = {
-    v8::String::New(GetExtensionID().c_str()),
-    v8::String::New(GetContextTypeDescription().c_str()),
-    v8::Boolean::New(is_incognito_process),
-    v8::Integer::New(manifest_version),
-  };
-  CallChromeHiddenMethod("dispatchOnLoad", arraysize(argv), argv, NULL);
-}
-
 void ChromeV8Context::DispatchOnUnloadEvent() {
   v8::HandleScope handle_scope;
   CallChromeHiddenMethod("dispatchOnUnload", 0, NULL, NULL);

@@ -1075,10 +1075,6 @@ void Dispatcher::DidCreateScriptContext(
 
   context->set_module_system(module_system.Pass());
 
-  context->DispatchOnLoadEvent(
-      ChromeRenderProcessObserver::is_incognito_process(),
-      manifest_version);
-
   VLOG(1) << "Num tracked contexts: " << v8_context_set_.size();
 }
 
