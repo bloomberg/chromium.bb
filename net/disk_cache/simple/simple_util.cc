@@ -55,9 +55,9 @@ uint64 GetEntryHashKey(const std::string& key) {
   return u.key_hash;
 }
 
-std::string GetFilenameFromHexStringAndIndex(const std::string& hex_key,
+std::string GetFilenameFromEntryHashAndIndex(uint64 entry_hash,
                                              int index) {
-  return hex_key + base::StringPrintf("_%1d", index);
+  return base::StringPrintf("%016" PRIx64 "_%1d", entry_hash, index);
 }
 
 std::string GetFilenameFromKeyAndIndex(const std::string& key, int index) {

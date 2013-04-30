@@ -22,6 +22,7 @@
 #include "net/disk_cache/simple/simple_backend_impl.h"
 #include "net/disk_cache/simple/simple_index.h"
 #include "net/disk_cache/simple/simple_synchronous_entry.h"
+#include "net/disk_cache/simple/simple_util.h"
 #include "third_party/zlib/zlib.h"
 
 namespace {
@@ -62,13 +63,16 @@ class SimpleEntryImpl::ScopedOperationRunner {
 
 SimpleEntryImpl::SimpleEntryImpl(SimpleBackendImpl* backend,
                                  const FilePath& path,
-                                 const std::string& key)
+                                 const std::string& key,
+                                 const uint64 entry_hash)
     : backend_(backend->AsWeakPtr()),
       path_(path),
       key_(key),
+      entry_hash_(entry_hash),
       open_count_(0),
       state_(STATE_UNINITIALIZED),
       synchronous_entry_(NULL) {
+  DCHECK_EQ(entry_hash, simple_util::GetEntryHashKey(key));
   COMPILE_ASSERT(arraysize(data_size_) == arraysize(crc32s_end_offset_),
                  arrays_should_be_same_size);
   COMPILE_ASSERT(arraysize(data_size_) == arraysize(crc32s_),
@@ -103,7 +107,7 @@ int SimpleEntryImpl::DoomEntry(const CompletionCallback& callback) {
 
   scoped_ptr<int> result(new int());
   Closure task = base::Bind(&SimpleSynchronousEntry::DoomEntry, path_, key_,
-                            result.get());
+                            entry_hash_, result.get());
   Closure reply = base::Bind(&CallCompletionCallback,
                              callback, base::Passed(&result));
   WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
@@ -342,7 +346,7 @@ void SimpleEntryImpl::OpenEntryInternal(Entry** out_entry,
   scoped_ptr<PointerToSimpleSynchronousEntry> sync_entry(
       new PointerToSimpleSynchronousEntry());
   Closure task = base::Bind(&SimpleSynchronousEntry::OpenEntry, path_, key_,
-                            sync_entry.get());
+                            entry_hash_, sync_entry.get());
   Closure reply = base::Bind(&SimpleEntryImpl::CreationOperationComplete, this,
                              callback, start_time, base::Passed(&sync_entry),
                              out_entry);
@@ -376,7 +380,7 @@ void SimpleEntryImpl::CreateEntryInternal(Entry** out_entry,
   scoped_ptr<PointerToSimpleSynchronousEntry> sync_entry(
       new PointerToSimpleSynchronousEntry());
   Closure task = base::Bind(&SimpleSynchronousEntry::CreateEntry, path_, key_,
-                            sync_entry.get());
+                            entry_hash_, sync_entry.get());
   Closure reply = base::Bind(&SimpleEntryImpl::CreationOperationComplete, this,
                              callback, start_time, base::Passed(&sync_entry),
                              out_entry);

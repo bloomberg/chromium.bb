@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <functional>
 #include <limits>
 
 #include "base/basictypes.h"
@@ -39,9 +40,8 @@ using base::WritePlatformFile;
 namespace disk_cache {
 
 using simple_util::ConvertEntryHashKeyToHexString;
-using simple_util::GetEntryHashKeyAsHexString;
-using simple_util::GetFilenameFromHexStringAndIndex;
-using simple_util::GetFilenameFromKeyAndIndex;
+using simple_util::GetEntryHashKey;
+using simple_util::GetFilenameFromEntryHashAndIndex;
 using simple_util::GetDataSizeFromKeyAndFileSize;
 using simple_util::GetFileSizeFromKeyAndDataSize;
 using simple_util::GetFileOffsetFromKeyAndDataOffset;
@@ -63,8 +63,11 @@ SimpleSynchronousEntry::CRCRecord::CRCRecord(int index_p,
 void SimpleSynchronousEntry::OpenEntry(
     const FilePath& path,
     const std::string& key,
+    const uint64 entry_hash,
     SimpleSynchronousEntry** out_entry) {
-  SimpleSynchronousEntry* sync_entry = new SimpleSynchronousEntry(path, key);
+  DCHECK_EQ(entry_hash, simple_util::GetEntryHashKey(key));
+  SimpleSynchronousEntry* sync_entry = new SimpleSynchronousEntry(path, key,
+                                                                  entry_hash);
   int rv = sync_entry->InitializeForOpen();
   if (rv != net::OK) {
     sync_entry->Doom();
@@ -79,8 +82,11 @@ void SimpleSynchronousEntry::OpenEntry(
 void SimpleSynchronousEntry::CreateEntry(
     const FilePath& path,
     const std::string& key,
+    const uint64 entry_hash,
     SimpleSynchronousEntry** out_entry) {
-  SimpleSynchronousEntry* sync_entry = new SimpleSynchronousEntry(path, key);
+  DCHECK_EQ(entry_hash, GetEntryHashKey(key));
+  SimpleSynchronousEntry* sync_entry = new SimpleSynchronousEntry(path, key,
+                                                                  entry_hash);
   int rv = sync_entry->InitializeForCreate();
   if (rv != net::OK) {
     if (rv != net::ERR_FILE_EXISTS) {
@@ -93,13 +99,15 @@ void SimpleSynchronousEntry::CreateEntry(
   *out_entry = sync_entry;
 }
 
+// TODO(gavinp): Move this function to its correct location in this .cc file.
 // static
-bool SimpleSynchronousEntry::DeleteFilesForEntry(const FilePath& path,
-                                                 const std::string& hash_key) {
+bool SimpleSynchronousEntry::DeleteFilesForEntryHash(
+    const FilePath& path,
+    const uint64 entry_hash) {
   bool result = true;
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
     FilePath to_delete = path.AppendASCII(
-        GetFilenameFromHexStringAndIndex(hash_key, i));
+        GetFilenameFromEntryHashAndIndex(entry_hash, i));
     if (!file_util::Delete(to_delete, false)) {
       result = false;
       DLOG(ERROR) << "Could not delete " << to_delete.MaybeAsASCII();
@@ -112,9 +120,10 @@ bool SimpleSynchronousEntry::DeleteFilesForEntry(const FilePath& path,
 void SimpleSynchronousEntry::DoomEntry(
     const FilePath& path,
     const std::string& key,
+    uint64 entry_hash,
     int* out_result) {
-  bool deleted_well = DeleteFilesForEntry(path,
-                                          GetEntryHashKeyAsHexString(key));
+  DCHECK_EQ(entry_hash, GetEntryHashKey(key));
+  bool deleted_well = DeleteFilesForEntryHash(path, entry_hash);
   *out_result = deleted_well ? net::OK : net::ERR_FAILED;
 }
 
@@ -123,12 +132,11 @@ void SimpleSynchronousEntry::DoomEntrySet(
     scoped_ptr<std::vector<uint64> > key_hashes,
     const FilePath& path,
     int* out_result) {
-  bool deleted_well = true;
-  for (std::vector<uint64>::const_iterator it = key_hashes->begin(),
-       end = key_hashes->end(); it != end; ++it)
-    deleted_well &= DeleteFilesForEntry(path,
-                                        ConvertEntryHashKeyToHexString((*it)));
-  *out_result = deleted_well ? net::OK : net::ERR_FAILED;
+  const size_t did_delete_count = std::count_if(
+      key_hashes->begin(), key_hashes->end(), std::bind1st(
+          std::ptr_fun(SimpleSynchronousEntry::DeleteFilesForEntryHash), path));
+  *out_result = (did_delete_count == key_hashes->size()) ? net::OK
+                                                         : net::ERR_FAILED;
 }
 
 void SimpleSynchronousEntry::ReadData(
@@ -263,11 +271,21 @@ void SimpleSynchronousEntry::Close(
   delete this;
 }
 
+int64 SimpleSynchronousEntry::GetFileSize() const {
+  int64 file_size = 0;
+  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
+    file_size += GetFileSizeFromKeyAndDataSize(key_, data_size_[i]);
+  }
+  return file_size;
+}
+
 SimpleSynchronousEntry::SimpleSynchronousEntry(
     const FilePath& path,
-    const std::string& key)
+    const std::string& key,
+    const uint64 entry_hash)
     : path_(path),
       key_(key),
+      entry_hash_(entry_hash),
       have_open_files_(false),
       initialized_(false) {
   COMPILE_ASSERT(arraysize(data_size_) == arraysize(files_),
@@ -286,7 +304,8 @@ SimpleSynchronousEntry::~SimpleSynchronousEntry() {
 
 bool SimpleSynchronousEntry::OpenOrCreateFiles(bool create) {
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
-    FilePath filename = path_.AppendASCII(GetFilenameFromKeyAndIndex(key_, i));
+    FilePath filename = path_.AppendASCII(
+        GetFilenameFromEntryHashAndIndex(entry_hash_, i));
     int flags = PLATFORM_FILE_READ | PLATFORM_FILE_WRITE;
     if (create)
       flags |= PLATFORM_FILE_CREATE;
@@ -330,14 +349,6 @@ void SimpleSynchronousEntry::CloseFiles() {
     bool did_close = ClosePlatformFile(files_[i]);
     DCHECK(did_close);
   }
-}
-
-int64 SimpleSynchronousEntry::GetFileSize() const {
-  int64 file_size = 0;
-  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
-    file_size += GetFileSizeFromKeyAndDataSize(key_, data_size_[i]);
-  }
-  return file_size;
 }
 
 int SimpleSynchronousEntry::InitializeForOpen() {
@@ -426,7 +437,7 @@ int SimpleSynchronousEntry::InitializeForCreate() {
 
 void SimpleSynchronousEntry::Doom() {
   // TODO(gavinp): Consider if we should guard against redundant Doom() calls.
-  DeleteFilesForEntry(path_, GetEntryHashKeyAsHexString(key_));
+  DeleteFilesForEntryHash(path_, entry_hash_);
 }
 
 }  // namespace disk_cache

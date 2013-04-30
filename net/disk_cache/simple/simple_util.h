@@ -39,8 +39,7 @@ NET_EXPORT_PRIVATE std::string GetFilenameFromKeyAndIndex(
     int index);
 
 // Same as |GetFilenameFromKeyAndIndex| above, but using a hex string.
-std::string GetFilenameFromHexStringAndIndex(const std::string& hex_key,
-                                             int index);
+std::string GetFilenameFromEntryHashAndIndex(uint64 entry_hash, int index);
 
 // Given the size of a file holding a stream in the simple backend and the key
 // to an entry, returns the number of bytes in the stream.

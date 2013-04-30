@@ -81,7 +81,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   virtual void OnExternalCacheHit(const std::string& key) OVERRIDE;
 
  private:
-  typedef std::map<std::string, base::WeakPtr<SimpleEntryImpl> > EntryMap;
+  typedef std::map<uint64, base::WeakPtr<SimpleEntryImpl> > EntryMap;
 
   typedef base::Callback<void(uint64 max_size, int result)>
       InitializeIndexCallback;

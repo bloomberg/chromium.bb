@@ -170,8 +170,8 @@ bool SimpleBackendImpl::SetMaxSize(int max_bytes) {
 }
 
 void SimpleBackendImpl::OnDeactivated(const SimpleEntryImpl* entry) {
-  DCHECK_LT(0U, active_entries_.count(entry->key()));
-  active_entries_.erase(entry->key());
+  DCHECK_LT(0U, active_entries_.count(entry->entry_hash()));
+  active_entries_.erase(entry->entry_hash());
 }
 
 net::CacheType SimpleBackendImpl::GetCacheType() const {
@@ -221,22 +221,10 @@ void SimpleBackendImpl::IndexReadyForDoom(Time initial_time,
   // If any of the entries we are dooming are currently open, we need to remove
   // them from |active_entries_|, so that attempts to create new entries will
   // succeed and attempts to open them will fail.
-
-  // Construct a mapping by entry hash of |active_entries_|.
-  typedef std::map<uint64, SimpleEntryImpl*> EntryByHashMap;
-  EntryByHashMap active_entries_by_entry_hash;
-  for (EntryMap::const_iterator it = active_entries_.begin();
-       it != active_entries_.end(); ++it) {
-    if (SimpleEntryImpl* entry = it->second.get()) {
-      const uint64 entry_hash = simple_util::GetEntryHashKey(entry->key());
-      active_entries_by_entry_hash[entry_hash] = entry;
-    }
-  }
-
   for (int i = removed_key_hashes->size() - 1; i >= 0; --i) {
-    EntryByHashMap::const_iterator it =
-        active_entries_by_entry_hash.find((*removed_key_hashes)[i]);
-    if (it == active_entries_by_entry_hash.end())
+    const uint64 entry_hash = (*removed_key_hashes)[i];
+    EntryMap::iterator it = active_entries_.find(entry_hash);
+    if (it == active_entries_.end())
       continue;
     SimpleEntryImpl* entry = it->second;
     entry->Doom();
@@ -328,18 +316,26 @@ void SimpleBackendImpl::ProvideDirectorySuggestBetterCacheSize(
 
 scoped_refptr<SimpleEntryImpl> SimpleBackendImpl::CreateOrFindActiveEntry(
     const std::string& key) {
+  const uint64 entry_hash = simple_util::GetEntryHashKey(key);
+
   std::pair<EntryMap::iterator, bool> insert_result =
-      active_entries_.insert(std::make_pair(key,
+      active_entries_.insert(std::make_pair(entry_hash,
                                             base::WeakPtr<SimpleEntryImpl>()));
   EntryMap::iterator& it = insert_result.first;
   if (insert_result.second)
     DCHECK(!it->second);
   if (!it->second) {
-    SimpleEntryImpl* entry = new SimpleEntryImpl(this, path_, key);
+    SimpleEntryImpl* entry = new SimpleEntryImpl(this, path_, key, entry_hash);
     it->second = entry->AsWeakPtr();
   }
   DCHECK(it->second);
-  DCHECK_EQ(key, it->second->key());
+  // It's possible, but unlikely, that we have an entry hash collision with a
+  // currently active entry.
+  if (key != it->second->key()) {
+    it->second->Doom();
+    DCHECK_EQ(0U, active_entries_.count(entry_hash));
+    return CreateOrFindActiveEntry(key);
+  }
   return make_scoped_refptr(it->second.get());
 }
 

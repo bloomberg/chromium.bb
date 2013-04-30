@@ -39,11 +39,13 @@ class SimpleSynchronousEntry {
   static void OpenEntry(
       const base::FilePath& path,
       const std::string& key,
+      uint64 entry_hash,
       SimpleSynchronousEntry** out_entry);
 
   static void CreateEntry(
       const base::FilePath& path,
       const std::string& key,
+      uint64 entry_hash,
       SimpleSynchronousEntry** out_entry);
 
   // Deletes an entry without first Opening it. Does not check if there is
@@ -52,6 +54,7 @@ class SimpleSynchronousEntry {
   // run by |callback_runner|.
   static void DoomEntry(const base::FilePath& path,
                         const std::string& key,
+                        uint64 entry_hash,
                         int* out_result);
 
   // Like |DoomEntry()| above. Deletes all entries corresponding to the
@@ -92,7 +95,8 @@ class SimpleSynchronousEntry {
  private:
   SimpleSynchronousEntry(
       const base::FilePath& path,
-      const std::string& key);
+      const std::string& key,
+      uint64 entry_hash);
 
   // Like Entry, the SimpleSynchronousEntry self releases when Close() is
   // called.
@@ -110,11 +114,12 @@ class SimpleSynchronousEntry {
 
   void Doom();
 
-  static bool DeleteFilesForEntry(const base::FilePath& path,
-                                  const std::string& key);
+  static bool DeleteFilesForEntryHash(const base::FilePath& path,
+                                      uint64 entry_hash);
 
   const base::FilePath path_;
   const std::string key_;
+  const uint64 entry_hash_;
 
   bool have_open_files_;
   bool initialized_;

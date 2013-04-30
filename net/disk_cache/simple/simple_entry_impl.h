@@ -38,7 +38,8 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
  public:
   SimpleEntryImpl(SimpleBackendImpl* backend,
                   const base::FilePath& path,
-                  const std::string& key);
+                  const std::string& key,
+                  uint64 entry_hash);
 
   // Adds another reader/writer to this entry, if possible, returning |this| to
   // |entry|.
@@ -51,6 +52,7 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
   int DoomEntry(const CompletionCallback& callback);
 
   const std::string& key() const { return key_; }
+  uint64 entry_hash() const { return entry_hash_; }
 
   // From Entry:
   virtual void Doom() OVERRIDE;
@@ -201,6 +203,7 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
   base::WeakPtr<SimpleBackendImpl> backend_;
   const base::FilePath path_;
   const std::string key_;
+  const uint64 entry_hash_;
 
   // |last_used_|, |last_modified_| and |data_size_| are copied from the
   // synchronous entry at the completion of each item of asynchronous IO.
