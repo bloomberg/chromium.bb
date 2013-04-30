@@ -40,8 +40,6 @@
 #include <public/WebSpeechSynthesizerClient.h>
 #include <wtf/RetainPtr.h>
 
-#if ENABLE(SPEECH_SYNTHESIS)
-
 namespace WebCore {
 
 PlatformSpeechSynthesizer::PlatformSpeechSynthesizer(PlatformSpeechSynthesizerClient* client)
@@ -88,5 +86,3 @@ void PlatformSpeechSynthesizer::cancel()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SPEECH_SYNTHESIS)

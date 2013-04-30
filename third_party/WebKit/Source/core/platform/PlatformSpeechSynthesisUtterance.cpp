@@ -26,8 +26,6 @@
 #include "config.h"
 #include "core/platform/PlatformSpeechSynthesisUtterance.h"
 
-#if ENABLE(SPEECH_SYNTHESIS)
-
 namespace WebCore {
 
 PassRefPtr<PlatformSpeechSynthesisUtterance> PlatformSpeechSynthesisUtterance::create(PlatformSpeechSynthesisUtteranceClient* client)
@@ -44,5 +42,3 @@ PlatformSpeechSynthesisUtterance::PlatformSpeechSynthesisUtterance(PlatformSpeec
 }
     
 } // namespace WebCore
-
-#endif // ENABLE(SPEECH_SYNTHESIS)

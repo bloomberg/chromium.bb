@@ -26,8 +26,6 @@
 #ifndef PlatformSpeechSynthesizerMock_h
 #define PlatformSpeechSynthesizerMock_h
 
-#if ENABLE(SPEECH_SYNTHESIS)
-
 #include "core/platform/PlatformSpeechSynthesizer.h"
 #include "core/platform/Timer.h"
 #include <wtf/PassOwnPtr.h>
@@ -54,7 +52,5 @@ private:
 };
     
 } // namespace WebCore
-
-#endif // ENABLE(SPEECH_SYNTHESIS)
 
 #endif // PlatformSpeechSynthesizer_h

@@ -24,9 +24,8 @@
  */
 
 [
-    Conditional=SPEECH_SYNTHESIS,
+    EnabledAtRuntime=speechSynthesis
 ] partial interface DOMWindow {
-
     readonly attribute SpeechSynthesis speechSynthesis;
     attribute SpeechSynthesisEventConstructor SpeechSynthesisEvent;
     attribute SpeechSynthesisUtteranceConstructor SpeechSynthesisUtterance;

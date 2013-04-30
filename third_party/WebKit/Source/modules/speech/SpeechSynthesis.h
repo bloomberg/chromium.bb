@@ -26,8 +26,6 @@
 #ifndef SpeechSynthesis_h
 #define SpeechSynthesis_h
 
-#if ENABLE(SPEECH_SYNTHESIS)
-
 #include "core/platform/PlatformSpeechSynthesisUtterance.h"
 #include "core/platform/PlatformSpeechSynthesizer.h"
 #include "modules/speech/SpeechSynthesisUtterance.h"
@@ -84,7 +82,5 @@ private:
 };
     
 } // namespace WebCore
-
-#endif // ENABLE(SPEECH_SYNTHESIS)
 
 #endif // SpeechSynthesisEvent_h

@@ -31,8 +31,6 @@
 #include <wtf/PassRefPtr.h>
 #include <wtf/Vector.h>
 
-#if ENABLE(SPEECH_SYNTHESIS)
-
 namespace WebKit {
 
 void WebSpeechSynthesisVoice::assign(const WebSpeechSynthesisVoice& other)
@@ -76,5 +74,3 @@ WebSpeechSynthesisVoice::operator PassRefPtr<WebCore::PlatformSpeechSynthesisVoi
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(SPEECH_SYNTHESIS)

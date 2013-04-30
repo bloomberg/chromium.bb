@@ -127,11 +127,9 @@
 #include "core/page/CaptionUserPreferences.h"
 #include "core/page/PageGroup.h"
 
-#if ENABLE(SPEECH_SYNTHESIS)
 #include "core/platform/mock/PlatformSpeechSynthesizerMock.h"
 #include "modules/speech/DOMWindowSpeechSynthesis.h"
 #include "modules/speech/SpeechSynthesis.h"
-#endif
 
 namespace WebCore {
 
@@ -795,7 +793,6 @@ void Internals::setFormControlStateOfPreviousHistoryItem(const Vector<String>& s
         ec = INVALID_ACCESS_ERR;
 }
 
-#if ENABLE(SPEECH_SYNTHESIS)
 void Internals::enableMockSpeechSynthesizer()
 {
     Document* document = contextDocument();
@@ -807,7 +804,6 @@ void Internals::enableMockSpeechSynthesizer()
 
     synthesis->setPlatformSynthesizer(PlatformSpeechSynthesizerMock::create(synthesis));
 }
-#endif
 
 void Internals::setEnableMockPagePopup(bool enabled, ExceptionCode& ec)
 {

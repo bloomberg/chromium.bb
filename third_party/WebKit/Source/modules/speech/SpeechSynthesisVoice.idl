@@ -24,7 +24,7 @@
  */
  
 [
-    Conditional=SPEECH_SYNTHESIS
+    EnabledAtRuntime=speechSynthesis
 ] interface SpeechSynthesisVoice {
     readonly attribute DOMString voiceURI;
     readonly attribute DOMString name;

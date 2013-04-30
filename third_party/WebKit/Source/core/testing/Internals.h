@@ -287,9 +287,7 @@ public:
     void initializeMockCDM();
 #endif
 
-#if ENABLE(SPEECH_SYNTHESIS)
     void enableMockSpeechSynthesizer();
-#endif
 
     String getImageSourceURL(Element*, ExceptionCode&);
 

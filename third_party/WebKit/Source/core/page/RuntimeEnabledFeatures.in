@@ -54,3 +54,4 @@ DirectoryUpload default=true
 ExperimentalWebSocket
 IMEAPI
 ExperimentalCanvasFeatures
+SpeechSynthesis

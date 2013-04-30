@@ -24,7 +24,7 @@
  */
  
 [
-    Conditional=SPEECH_SYNTHESIS
+    EnabledAtRuntime=speechSynthesis
 ] interface SpeechSynthesisEvent : Event {
     readonly attribute unsigned long charIndex;
     readonly attribute float elapsedTime;

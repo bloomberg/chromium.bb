@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(SPEECH_SYNTHESIS)
-
 #include <public/WebSpeechSynthesisUtterance.h>
 
 #include "core/platform/PlatformSpeechSynthesisUtterance.h"
@@ -104,5 +102,3 @@ double WebSpeechSynthesisUtterance::startTime() const
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(SPEECH_SYNTHESIS)

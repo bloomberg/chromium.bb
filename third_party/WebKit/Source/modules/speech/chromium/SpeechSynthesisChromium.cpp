@@ -26,8 +26,6 @@
 #include "config.h"
 #include "modules/speech/SpeechSynthesis.h"
 
-#if ENABLE(SPEECH_SYNTHESIS)
-
 #include "modules/speech/SpeechSynthesisUtterance.h"
 #include "modules/speech/SpeechSynthesisVoice.h"
 
@@ -69,5 +67,3 @@ void SpeechSynthesis::resume()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SPEECH_SYNTHESIS)

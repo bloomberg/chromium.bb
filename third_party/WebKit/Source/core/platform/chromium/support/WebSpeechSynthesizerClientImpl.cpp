@@ -31,10 +31,8 @@
 namespace WebCore {
 
 WebSpeechSynthesizerClientImpl::WebSpeechSynthesizerClientImpl(PlatformSpeechSynthesizer* synthesizer, PlatformSpeechSynthesizerClient* client)
-#if ENABLE(SPEECH_SYNTHESIS)
     : m_synthesizer(synthesizer)
     , m_client(client)
-#endif
 {
 }
 
@@ -44,62 +42,46 @@ WebSpeechSynthesizerClientImpl::~WebSpeechSynthesizerClientImpl()
 
 void WebSpeechSynthesizerClientImpl::setVoiceList(const WebKit::WebVector<WebKit::WebSpeechSynthesisVoice>& voices)
 {
-#if ENABLE(SPEECH_SYNTHESIS)
     Vector<RefPtr<PlatformSpeechSynthesisVoice> > outVoices;
     for (size_t i = 0; i < voices.size(); i++)
         outVoices.append(PassRefPtr<PlatformSpeechSynthesisVoice>(voices[i]));
     m_synthesizer->setVoiceList(outVoices);
     m_client->voicesDidChange();
-#endif
 }
 
 void WebSpeechSynthesizerClientImpl::didStartSpeaking(const WebKit::WebSpeechSynthesisUtterance& utterance)
 {
-#if ENABLE(SPEECH_SYNTHESIS)
     m_client->didStartSpeaking(utterance);
-#endif
 }
 
 void WebSpeechSynthesizerClientImpl::didFinishSpeaking(const WebKit::WebSpeechSynthesisUtterance& utterance)
 {
-#if ENABLE(SPEECH_SYNTHESIS)
     m_client->didFinishSpeaking(utterance);
-#endif
 }
 
 void WebSpeechSynthesizerClientImpl::didPauseSpeaking(const WebKit::WebSpeechSynthesisUtterance& utterance)
 {
-#if ENABLE(SPEECH_SYNTHESIS)
     m_client->didPauseSpeaking(utterance);
-#endif
 }
 
 void WebSpeechSynthesizerClientImpl::didResumeSpeaking(const WebKit::WebSpeechSynthesisUtterance& utterance)
 {
-#if ENABLE(SPEECH_SYNTHESIS)
     m_client->didResumeSpeaking(utterance);
-#endif
 }
 
 void WebSpeechSynthesizerClientImpl::speakingErrorOccurred(const WebKit::WebSpeechSynthesisUtterance& utterance)
 {
-#if ENABLE(SPEECH_SYNTHESIS)
     m_client->speakingErrorOccurred(utterance);
-#endif
 }
 
 void WebSpeechSynthesizerClientImpl::wordBoundaryEventOccurred(const WebKit::WebSpeechSynthesisUtterance& utterance, unsigned charIndex)
 {
-#if ENABLE(SPEECH_SYNTHESIS)
     m_client->boundaryEventOccurred(utterance, SpeechWordBoundary, charIndex);
-#endif
 }
 
 void WebSpeechSynthesizerClientImpl::sentenceBoundaryEventOccurred(const WebKit::WebSpeechSynthesisUtterance& utterance, unsigned charIndex)
 {
-#if ENABLE(SPEECH_SYNTHESIS)
     m_client->boundaryEventOccurred(utterance, SpeechSentenceBoundary, charIndex);
-#endif
 }
 
 } // namespace WebCore

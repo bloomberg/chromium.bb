@@ -26,8 +26,6 @@
 #include "config.h"
 #include "modules/speech/SpeechSynthesisEvent.h"
 
-#if ENABLE(SPEECH_SYNTHESIS)
-
 namespace WebCore {
     
 PassRefPtr<SpeechSynthesisEvent> SpeechSynthesisEvent::create()
@@ -54,5 +52,3 @@ SpeechSynthesisEvent::SpeechSynthesisEvent(const AtomicString& type, unsigned lo
 }
     
 } // namespace WebCore
-
-#endif // ENABLE(SPEECH_SYNTHESIS)

@@ -26,8 +26,6 @@
 #include "config.h"
 #include "core/platform/PlatformSpeechSynthesisVoice.h"
 
-#if ENABLE(SPEECH_SYNTHESIS)
-
 namespace WebCore {
 
 PassRefPtr<PlatformSpeechSynthesisVoice> PlatformSpeechSynthesisVoice::create(const String& voiceURI, const String& name, const String& lang, bool localService, bool isDefault)
@@ -56,5 +54,3 @@ PlatformSpeechSynthesisVoice::PlatformSpeechSynthesisVoice()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SPEECH_SYNTHESIS)

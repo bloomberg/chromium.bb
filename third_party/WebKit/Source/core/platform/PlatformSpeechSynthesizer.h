@@ -26,8 +26,6 @@
 #ifndef PlatformSpeechSynthesizer_h
 #define PlatformSpeechSynthesizer_h
 
-#if ENABLE(SPEECH_SYNTHESIS)
-
 #include "core/platform/PlatformSpeechSynthesisVoice.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>
@@ -88,7 +86,5 @@ private:
 };
     
 } // namespace WebCore
-
-#endif // ENABLE(SPEECH_SYNTHESIS)
 
 #endif // PlatformSpeechSynthesizer_h

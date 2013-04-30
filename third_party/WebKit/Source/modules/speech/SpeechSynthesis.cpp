@@ -26,8 +26,6 @@
 #include "config.h"
 #include "modules/speech/SpeechSynthesis.h"
 
-#if ENABLE(SPEECH_SYNTHESIS)
-
 #include "core/platform/PlatformSpeechSynthesisVoice.h"
 #include "core/platform/PlatformSpeechSynthesizer.h"
 #include "modules/speech/SpeechSynthesisEvent.h"
@@ -210,5 +208,3 @@ void SpeechSynthesis::speakingErrorOccurred(PassRefPtr<PlatformSpeechSynthesisUt
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(INPUT_SPEECH)

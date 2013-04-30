@@ -26,8 +26,6 @@
 #include "config.h"
 #include "core/platform/PlatformSpeechSynthesizer.h"
 
-#if ENABLE(SPEECH_SYNTHESIS)
-
 namespace WebCore {
     
 PassOwnPtr<PlatformSpeechSynthesizer> PlatformSpeechSynthesizer::create(PlatformSpeechSynthesizerClient* client)
@@ -44,5 +42,3 @@ void PlatformSpeechSynthesizer::setVoiceList(Vector<RefPtr<PlatformSpeechSynthes
 
 
 } // namespace WebCore
-
-#endif // ENABLE(SPEECH_SYNTHESIS)

@@ -39,7 +39,7 @@ modules/mediastream/RTCDTMFToneChangeEvent conditional=MEDIA_STREAM
 core/page/SpeechInputEvent conditional=INPUT_SPEECH
 modules/speech/SpeechRecognitionError
 modules/speech/SpeechRecognitionEvent
-modules/speech/SpeechSynthesisEvent conditional=SPEECH_SYNTHESIS
+modules/speech/SpeechSynthesisEvent
 core/html/canvas/WebGLContextEvent conditional=WEBGL
 core/storage/StorageEvent
 core/svg/SVGEvents interfaceName=Event, conditional=SVG

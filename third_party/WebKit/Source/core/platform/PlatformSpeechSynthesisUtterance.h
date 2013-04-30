@@ -26,8 +26,6 @@
 #ifndef PlatformSpeechSynthesisUtterance_h
 #define PlatformSpeechSynthesisUtterance_h
 
-#if ENABLE(SPEECH_SYNTHESIS)
-
 #include "core/platform/PlatformSpeechSynthesisVoice.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
@@ -87,7 +85,5 @@ private:
 };
     
 } // namespace WebCore
-
-#endif // ENABLE(SPEECH_SYNTHESIS)
 
 #endif // PlatformSpeechSynthesisUtterance_h

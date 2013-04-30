@@ -265,6 +265,7 @@
         # includes for these correctly. (Sequences don't work yet.)
         '<(bindings_dir)/v8/custom',
         '../../modules/mediastream',
+        '../../modules/speech',
         '../dom',
         '../html',
         '../html/shadow',

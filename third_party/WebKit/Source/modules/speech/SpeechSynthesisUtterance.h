@@ -26,8 +26,6 @@
 #ifndef SpeechSynthesisUtterance_h
 #define SpeechSynthesisUtterance_h
 
-#if ENABLE(SPEECH_SYNTHESIS)
-
 #include "core/dom/ContextDestructionObserver.h"
 #include "core/dom/EventTarget.h"
 #include "core/platform/PlatformSpeechSynthesisUtterance.h"
@@ -95,7 +93,5 @@ private:
 };
     
 } // namespace WebCore
-
-#endif // ENABLE(SPEECH_SYNTHESIS)
 
 #endif // SpeechSynthesisUtterance_h

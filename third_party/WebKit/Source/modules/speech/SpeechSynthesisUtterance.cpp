@@ -26,8 +26,6 @@
 #include "config.h"
 #include "modules/speech/SpeechSynthesisUtterance.h"
 
-#if ENABLE(SPEECH_SYNTHESIS)
-
 namespace WebCore {
     
 PassRefPtr<SpeechSynthesisUtterance> SpeechSynthesisUtterance::create(ScriptExecutionContext* context, const String& text)
@@ -73,5 +71,3 @@ void SpeechSynthesisUtterance::setVoice(SpeechSynthesisVoice* voice)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SPEECH_SYNTHESIS)

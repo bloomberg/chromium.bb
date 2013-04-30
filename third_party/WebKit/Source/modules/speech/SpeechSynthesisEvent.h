@@ -26,8 +26,6 @@
 #ifndef SpeechSynthesisEvent_h
 #define SpeechSynthesisEvent_h
 
-#if ENABLE(SPEECH_SYNTHESIS)
-
 #include "core/dom/Event.h"
 #include "wtf/PassRefPtr.h"
 
@@ -54,7 +52,5 @@ private:
 };
     
 } // namespace WebCore
-
-#endif // ENABLE(SPEECH_SYNTHESIS)
 
 #endif // SpeechSynthesisEvent_h

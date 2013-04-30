@@ -32,7 +32,7 @@ core/workers/SharedWorker
 core/workers/SharedWorkerContext
 modules/mediasource/SourceBufferList
 modules/speech/SpeechRecognition
-modules/speech/SpeechSynthesisUtterance conditional=SPEECH_SYNTHESIS
+modules/speech/SpeechSynthesisUtterance
 core/html/track/TextTrack
 core/html/track/TextTrackCue
 core/html/track/TextTrackList

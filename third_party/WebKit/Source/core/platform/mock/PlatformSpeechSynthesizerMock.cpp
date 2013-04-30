@@ -27,8 +27,6 @@
 #include "core/platform/PlatformSpeechSynthesisUtterance.h"
 #include "core/platform/mock/PlatformSpeechSynthesizerMock.h"
 
-#if ENABLE(SPEECH_SYNTHESIS)
-
 namespace WebCore {
 
 PassOwnPtr<PlatformSpeechSynthesizerMock> PlatformSpeechSynthesizerMock::create(PlatformSpeechSynthesizerClient* client)
@@ -100,5 +98,3 @@ void PlatformSpeechSynthesizerMock::resume()
 
     
 } // namespace WebCore
-
-#endif // ENABLE(SPEECH_SYNTHESIS)

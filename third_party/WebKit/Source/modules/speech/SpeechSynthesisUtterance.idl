@@ -24,7 +24,7 @@
  */
  
 [
-    Conditional=SPEECH_SYNTHESIS,
+    EnabledAtRuntime=speechSynthesis,
     EventTarget,
     CallWith=ScriptExecutionContext,
     Constructor([Default=NullString] optional DOMString text)

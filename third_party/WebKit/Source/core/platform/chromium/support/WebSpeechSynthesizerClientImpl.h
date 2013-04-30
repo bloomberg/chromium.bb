@@ -53,10 +53,8 @@ public:
     virtual void sentenceBoundaryEventOccurred(const WebKit::WebSpeechSynthesisUtterance&, unsigned charIndex);
 
 private:
-#if ENABLE(SPEECH_SYNTHESIS)
     PlatformSpeechSynthesizer* m_synthesizer;
     PlatformSpeechSynthesizerClient* m_client;
-#endif
 };
 
 } // namespace WebCore
