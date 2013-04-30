@@ -113,10 +113,6 @@ extern const char kOnNotificationButtonClicked[];
 extern const char kOnNetworksChanged[];
 extern const char kOnNetworkListChanged[];
 
-// Runtime.
-extern const char kOnLaunched[];
-extern const char kOnRestarted[];
-
 // Audio
 extern const char kOnAudioDeviceChanged[];
 

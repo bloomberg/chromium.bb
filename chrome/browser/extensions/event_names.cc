@@ -97,9 +97,6 @@ const char kOnNotificationButtonClicked[] = "notifications.onButtonClicked";
 const char kOnNetworksChanged[] = "networkingPrivate.onNetworksChanged";
 const char kOnNetworkListChanged[] = "networkingPrivate.onNetworkListChanged";
 
-const char kOnLaunched[] = "app.runtime.onLaunched";
-const char kOnRestarted[] = "app.runtime.onRestarted";
-
 const char kOnAudioDeviceChanged[] = "audio.onDeviceChanged";
 
 }  // namespace event_names
