@@ -106,6 +106,7 @@ WebPreferences::WebPreferences()
       css_shaders_enabled(false),
       css_variables_enabled(false),
       css_grid_layout_enabled(false),
+      lazy_layout_enabled(false),
       touch_enabled(false),
       device_supports_touch(false),
       device_supports_mouse(true),
@@ -430,6 +431,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setExperimentalCSSCustomFilterEnabled(css_shaders_enabled);
   settings->setExperimentalCSSVariablesEnabled(css_variables_enabled);
   settings->setExperimentalCSSGridLayoutEnabled(css_grid_layout_enabled);
+  WebRuntimeFeatures::enableLazyLayout(lazy_layout_enabled);
 
   WebRuntimeFeatures::enableTouch(touch_enabled);
   settings->setDeviceSupportsTouch(device_supports_touch);

@@ -513,6 +513,8 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures);
   prefs.css_grid_layout_enabled =
       command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures);
+  prefs.lazy_layout_enabled =
+      command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures);
 
   // TODO(abarth, eseidel): Enable threaded_html_parser by default on Android
   // once crbug 230542 is resolved.
