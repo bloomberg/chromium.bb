@@ -891,6 +891,22 @@ TYPED_TEST_P(CookieStoreTest, CookieOrdering) {
       this->GetCookies(cs, GURL("http://d.c.b.a.google.com/aa/bb/cc/dd")));
 }
 
+TYPED_TEST_P(CookieStoreTest, DeleteSessionCookie) {
+  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  // Create a session cookie and a persistent cookie.
+  EXPECT_TRUE(this->SetCookie(cs, this->url_google_,
+                              std::string(kValidCookieLine)));
+  EXPECT_TRUE(this->SetCookie(cs, this->url_google_,
+                              "C=D; path=/; domain=google.izzle;"
+                              "expires=Mon, 18-Apr-22 22:50:13 GMT"));
+  this->MatchCookieLines("A=B; C=D",
+                         this->GetCookies(cs, this->url_google_));
+  // Delete the session cookie.
+  this->DeleteSessionCookies(cs);
+  // Check that the session cookie has been deleted but not the persistent one.
+  EXPECT_EQ("C=D", this->GetCookies(cs, this->url_google_));
+}
+
 REGISTER_TYPED_TEST_CASE_P(CookieStoreTest,
                            TypeTest,
                            DomainTest,
@@ -912,7 +928,8 @@ REGISTER_TYPED_TEST_CASE_P(CookieStoreTest,
                            TestSecure,
                            NetUtilCookieTest,
                            OverwritePersistentCookie,
-                           CookieOrdering);
+                           CookieOrdering,
+                           DeleteSessionCookie);
 
 template<class CookieStoreTestTraits>
 class MultiThreadedCookieStoreTest :
