@@ -973,6 +973,8 @@ void BrowserPluginGuest::OnSetFocus(int instance_id, bool focused) {
       return;
   focused_ = focused;
   Send(new InputMsg_SetFocus(routing_id(), focused));
+  if (!focused && mouse_locked_)
+    OnUnlockMouse();
 }
 
 void BrowserPluginGuest::OnSetName(int instance_id, const std::string& name) {
