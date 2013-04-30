@@ -160,10 +160,6 @@ void FakeDriveFileSystem::GetFileContentByPath(
                  completion_callback));
 }
 
-void FakeDriveFileSystem::CancelGetFile(const base::FilePath& drive_file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-}
-
 void FakeDriveFileSystem::UpdateFileByResourceId(
     const std::string& resource_id,
     const DriveClientContext& context,

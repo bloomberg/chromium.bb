@@ -1830,12 +1830,6 @@ TEST_F(DriveFileSystemTest, GetFileContentByPath) {
   }
 }
 
-TEST_F(DriveFileSystemTest, CancelGetFile) {
-  base::FilePath cancel_file_path(FILE_PATH_LITERAL("drive/root/File 1.txt"));
-  file_system_->CancelGetFile(cancel_file_path);
-  EXPECT_EQ(cancel_file_path, fake_drive_service_->last_cancelled_file());
-}
-
 TEST_F(DriveFileSystemTest, GetFileByResourceId_FromCache) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 

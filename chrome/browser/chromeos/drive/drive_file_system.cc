@@ -674,14 +674,6 @@ void DriveFileSystem::GetFileContentByPathAfterGetEntry(
           get_content_callback)));
 }
 
-void DriveFileSystem::CancelGetFile(const base::FilePath& drive_file_path) {
-  // Currently the task is managed on DriveServiceInterface, so we directly
-  // call its method here.
-  // Note: the task management will be moved to JobScheduler, an the we
-  // can cancel the job via the |scheduler_|.
-  drive_service_->CancelForFilePath(drive_file_path);
-}
-
 void DriveFileSystem::GetEntryInfoByPath(const base::FilePath& file_path,
                                          const GetEntryInfoCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

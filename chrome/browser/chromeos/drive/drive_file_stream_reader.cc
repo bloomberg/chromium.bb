@@ -53,32 +53,6 @@ int ReadInternal(ScopedVector<std::string>* pending_data,
   return offset;
 }
 
-// Calls DriveFileSystemInterface::CancelGetFile if the file system
-// is available.
-void CancelGetFileOnUIThread(
-    const DriveFileStreamReader::DriveFileSystemGetter& file_system_getter,
-    const base::FilePath& drive_file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  DriveFileSystemInterface* file_system = file_system_getter.Run();
-  if (file_system) {
-    file_system->CancelGetFile(drive_file_path);
-  }
-}
-
-// Helper to run DriveFileSystemInterface::CancelGetFile on UI thread.
-void CancelGetFile(
-    const DriveFileStreamReader::DriveFileSystemGetter& file_system_getter,
-    const base::FilePath& drive_file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&CancelGetFileOnUIThread,
-                 file_system_getter, drive_file_path));
-}
-
 }  // namespace
 
 LocalReaderProxy::LocalReaderProxy(scoped_ptr<net::FileStream> file_stream)
@@ -323,7 +297,7 @@ void DriveFileStreamReader::InitializeAfterGetFileContentByPathInitialized(
     FileError error,
     scoped_ptr<DriveEntryProto> entry,
     const base::FilePath& local_cache_file_path,
-    const base::Closure& cancel_download_closure) {
+    const base::Closure& ui_cancel_download_closure) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (error != FILE_ERROR_OK) {
@@ -334,11 +308,12 @@ void DriveFileStreamReader::InitializeAfterGetFileContentByPathInitialized(
 
   if (local_cache_file_path.empty()) {
     // The file is not cached, and being downloaded.
+    DCHECK(!ui_cancel_download_closure.is_null());
     reader_proxy_.reset(
         new internal::NetworkReaderProxy(
             0, entry->file_info().size(),
-            base::Bind(&internal::CancelGetFile,
-                       drive_file_system_getter_, drive_file_path)));
+            base::Bind(&google_apis::RunTaskOnUIThread,
+                       ui_cancel_download_closure)));
     callback.Run(FILE_ERROR_OK, entry.Pass());
     return;
   }
