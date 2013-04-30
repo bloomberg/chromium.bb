@@ -19,7 +19,6 @@ cr.define('cr.ui.Oobe', function() {
       login.WrongHWIDScreen.register();
       login.AccountPickerScreen.register();
       login.GaiaSigninScreen.register();
-      login.OAuthEnrollmentScreen.register();
       login.UserImageScreen.register(/* lazyInit= */ true);
       login.ResetScreen.register();
       login.ErrorMessageScreen.register();
@@ -53,6 +52,3 @@ cr.define('cr.ui.Oobe', function() {
     reloadContent: function(data) {},
   };
 });
-
-document.addEventListener('DOMContentLoaded', cr.ui.Oobe.initialize);
-

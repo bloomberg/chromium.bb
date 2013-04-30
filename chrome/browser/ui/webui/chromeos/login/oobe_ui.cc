@@ -60,6 +60,11 @@ const char kLoginJSPath[] = "login.js";
 const char kOobeJSPath[] = "oobe.js";
 const char kDemoUserLoginJSPath[] = "demo_user_login.js";
 
+// Paths for deferred resource loading.
+const char kEnrollmentHTMLPath[] = "enrollment.html";
+const char kEnrollmentCSSPath[] = "enrollment.css";
+const char kEnrollmentJSPath[] = "enrollment.js";
+
 // Filter handler of chrome://oobe data source.
 bool HandleRequestCallback(
     const std::string& path,
@@ -104,6 +109,15 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   source->OverrideContentSecurityPolicyFrameSrc(
       "frame-src chrome://terms/ "
       "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/;");
+
+  // Serve deferred resources.
+  source->AddResourcePath(kEnrollmentHTMLPath,
+                          IDR_OOBE_ENROLLMENT_HTML);
+  source->AddResourcePath(kEnrollmentCSSPath,
+                          IDR_OOBE_ENROLLMENT_CSS);
+  source->AddResourcePath(kEnrollmentJSPath,
+                          IDR_OOBE_ENROLLMENT_JS);
+
   return source;
 }
 

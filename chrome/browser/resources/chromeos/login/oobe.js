@@ -57,7 +57,6 @@ cr.define('cr.ui.Oobe', function() {
       login.NetworkScreen.register();
       login.EulaScreen.register();
       login.UpdateScreen.register();
-      login.OAuthEnrollmentScreen.register();
       login.ResetScreen.register();
       login.AccountPickerScreen.register();
       login.GaiaSigninScreen.register();
@@ -306,6 +305,3 @@ cr.define('cr.ui.Oobe', function() {
     }
   };
 });
-
-document.addEventListener('DOMContentLoaded', cr.ui.Oobe.initialize);
-

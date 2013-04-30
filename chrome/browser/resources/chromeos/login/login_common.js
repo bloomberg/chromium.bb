@@ -13,7 +13,6 @@
 <include src="display_manager.js"></include>
 <include src="header_bar.js"></include>
 <include src="network_dropdown.js"></include>
-<include src="oobe_screen_oauth_enrollment.js"></include>
 <include src="oobe_screen_reset.js"></include>
 <include src="oobe_screen_terms_of_service.js"></include>
 <include src="oobe_screen_user_image.js"></include>
@@ -25,6 +24,7 @@
 <include src="screen_tpm_error.js"></include>
 <include src="screen_wrong_hwid.js"></include>
 <include src="user_pod_row.js"></include>
+<include src="resource_loader.js"></include>
 
 cr.define('cr.ui', function() {
   var DisplayManager = cr.ui.login.DisplayManager;
@@ -262,3 +262,27 @@ disableTextSelectAndDrag(function(e) {
          /text|password|search/.test(src.type);
 });
 
+// Register assets for async loading.
+[{
+  id: SCREEN_OOBE_ENROLLMENT,
+  html: [{ url: 'chrome://oobe/enrollment.html', targetID: 'inner-container' }],
+  css: ['chrome://oobe/enrollment.css'],
+  js: ['chrome://oobe/enrollment.js']
+}].forEach(cr.ui.login.ResourceLoader.registerAssets);
+
+document.addEventListener('DOMContentLoaded', function() {
+  'use strict';
+
+  // Immediately load async assets.
+  // TODO(dconnelly): remove this at some point and only load as needed.
+  // See crbug.com/236426
+  cr.ui.login.ResourceLoader.loadAssets(SCREEN_OOBE_ENROLLMENT, function() {
+    // This screen is async-loaded so we manually trigger i18n processing.
+    i18nTemplate.process($('oauth-enrollment'), loadTimeData);
+    // Delayed binding since this isn't defined yet.
+    login.OAuthEnrollmentScreen.register();
+  });
+
+  // Delayed binding since this isn't defined yet.
+  cr.ui.Oobe.initialize();
+});

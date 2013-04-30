@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
   /** @const */ var STEP_SIGNIN = 'signin';
   /** @const */ var STEP_WORKING = 'working';
