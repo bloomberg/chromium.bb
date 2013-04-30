@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
+#include "base/time.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
@@ -264,6 +265,7 @@ class ChangeListLoader {
   // Part of UpdateFromFeed().
   // Callback for ChangeListProcessor::ApplyFeeds.
   void NotifyDirectoryChangedAfterApplyFeed(bool should_notify,
+                                            base::Time start_time,
                                             const base::Closure& callback);
 
   ResourceMetadata* resource_metadata_;  // Not owned.
