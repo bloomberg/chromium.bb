@@ -838,6 +838,22 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
     else:
       self.SetPoolFromManifest(self.manifest_manager.GetLocalManifest())
 
+  def ChangeFilter(self, pool, changes, non_manifest_changes):
+    # First, look for changes that were tested by the Pre-CQ.
+    changes_to_test = []
+    for change in changes:
+      status = pool.GetPreCQStatus(change)
+      if status == manifest_version.BuilderStatus.STATUS_PASSED:
+        changes_to_test.append(change)
+
+    # If we only see changes that weren't verified by Pre-CQ, try all of the
+    # changes. This ensures that the CQ continues to work even if the Pre-CQ is
+    # down.
+    if not changes_to_test:
+      changes_to_test = changes
+
+    return changes_to_test, non_manifest_changes
+
   def SetPoolFromManifest(self, manifest):
     """Sets validation pool based on manifest path passed in."""
     # Note that GetNextManifest() calls GetLatestCandidate() in this case,
@@ -865,7 +881,8 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
             self._build_config['overlays'], self.repo,
             self._options.buildnumber, self.builder_name,
             self._options.debug, check_tree_open=not self._options.debug,
-            changes_query=self._options.cq_gerrit_override)
+            changes_query=self._options.cq_gerrit_override,
+            change_filter=self.ChangeFilter)
 
         # We only have work to do if there are changes to try.
         try:
