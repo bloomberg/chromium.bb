@@ -79,7 +79,7 @@ class QuotaFileIO::WriteOperation : public PendingOperationBase {
         finished_(false),
         status_(base::PLATFORM_FILE_OK),
         bytes_written_(0),
-        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+        weak_factory_(this) {
     if (!is_will_operation) {
       // TODO(kinuko): Check the API convention if we really need to keep a copy
       // of the buffer during the async write operations.
@@ -173,7 +173,7 @@ class QuotaFileIO::SetLengthOperation : public PendingOperationBase {
       : PendingOperationBase(quota_io, is_will_operation),
         length_(length),
         callback_(callback),
-        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
+        weak_factory_(this) {}
 
   virtual ~SetLengthOperation() {}
 
@@ -238,7 +238,7 @@ QuotaFileIO::QuotaFileIO(
       outstanding_errors_(0),
       max_written_offset_(0),
       inflight_operations_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   DCHECK_NE(base::kInvalidPlatformFileValue, file_);
   DCHECK_NE(quota::kStorageTypeUnknown, storage_type_);
 }

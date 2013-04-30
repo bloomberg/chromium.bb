@@ -25,7 +25,7 @@ LocalFileStreamWriter::LocalFileStreamWriter(const base::FilePath& file_path,
     : file_path_(file_path),
       initial_offset_(initial_offset),
       has_pending_operation_(false),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+      weak_factory_(this) {}
 
 LocalFileStreamWriter::~LocalFileStreamWriter() {
   // Invalidate weak pointers so that we won't receive any callbacks from

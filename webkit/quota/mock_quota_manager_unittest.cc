@@ -35,7 +35,7 @@ const QuotaClient::ID kClientDB = QuotaClient::kIndexedDatabase;
 class MockQuotaManagerTest : public testing::Test {
  public:
   MockQuotaManagerTest()
-    : weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+    : weak_factory_(this),
       deletion_callback_count_(0) {
   }
 

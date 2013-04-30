@@ -43,7 +43,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
  protected:
   FileSystemDirURLRequestJobTest()
     : message_loop_(MessageLoop::TYPE_IO),  // simulate an IO thread
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   }
 
   virtual void SetUp() OVERRIDE {

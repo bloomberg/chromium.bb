@@ -23,7 +23,7 @@ MockStorageClient::MockStorageClient(
     : quota_manager_proxy_(quota_manager_proxy),
       id_(id),
       mock_time_counter_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   Populate(mock_data, mock_data_size);
 }
 

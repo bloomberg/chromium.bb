@@ -331,7 +331,7 @@ MessageChannel::MessageChannel(PluginInstance* instance)
     : instance_(instance),
       passthrough_object_(NULL),
       np_object_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      weak_ptr_factory_(this),
       early_message_queue_state_(QUEUE_MESSAGES) {
   // Now create an NPObject for receiving calls to postMessage. This sets the
   // reference count to 1.  We release it in the destructor.

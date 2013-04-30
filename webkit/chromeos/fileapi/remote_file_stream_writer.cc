@@ -21,7 +21,7 @@ RemoteFileStreamWriter::RemoteFileStreamWriter(
       url_(url),
       initial_offset_(offset),
       has_pending_create_snapshot_(false),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
 }
 
 RemoteFileStreamWriter::~RemoteFileStreamWriter() {

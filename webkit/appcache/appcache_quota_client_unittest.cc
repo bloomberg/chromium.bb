@@ -35,7 +35,7 @@ class AppCacheQuotaClientTest : public testing::Test {
         num_get_origin_usage_completions_(0),
         num_get_origins_completions_(0),
         num_delete_origins_completions_(0),
-        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+        weak_factory_(this) {
   }
 
   int64 GetOriginUsage(

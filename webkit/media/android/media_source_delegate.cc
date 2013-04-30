@@ -65,7 +65,7 @@ MediaSourceDelegate::MediaSourceDelegate(
     WebMediaPlayerProxyAndroid* proxy,
     int player_id,
     media::MediaLog* media_log)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_this_(this)),
+    : weak_this_(this),
       client_(client),
       proxy_(proxy),
       player_id_(player_id),

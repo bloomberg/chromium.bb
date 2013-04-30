@@ -49,7 +49,7 @@ FileWriterDelegate::FileWriterDelegate(
       bytes_written_(0),
       bytes_read_(0),
       io_buffer_(new net::IOBufferWithSize(kReadBufSize)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 FileWriterDelegate::~FileWriterDelegate() {

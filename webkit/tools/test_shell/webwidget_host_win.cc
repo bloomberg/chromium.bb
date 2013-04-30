@@ -200,7 +200,7 @@ WebWidgetHost::WebWidgetHost()
       track_mouse_leave_(false),
       scroll_dx_(0),
       scroll_dy_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   set_painting(false);
 }
 

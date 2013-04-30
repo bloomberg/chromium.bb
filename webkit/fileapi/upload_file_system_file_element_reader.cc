@@ -25,7 +25,7 @@ UploadFileSystemFileElementReader::UploadFileSystemFileElementReader(
       expected_modification_time_(expected_modification_time),
       stream_length_(0),
       position_(0),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(this) {
 }
 
 UploadFileSystemFileElementReader::~UploadFileSystemFileElementReader() {

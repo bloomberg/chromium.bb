@@ -42,7 +42,7 @@ MockQuotaManager::MockQuotaManager(
     SpecialStoragePolicy* special_storage_policy)
     : QuotaManager(is_incognito, profile_path, io_thread, db_thread,
         special_storage_policy),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
 }
 
 void MockQuotaManager::GetUsageAndQuota(

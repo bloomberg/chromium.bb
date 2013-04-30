@@ -36,7 +36,7 @@ class ClientUsageTracker::GatherUsageTaskBase : public QuotaTask {
         client_(client),
         tracker_(tracker),
         current_gathered_usage_(0),
-        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+        weak_factory_(this) {
     DCHECK(tracker_);
     DCHECK(client_);
     client_tracker_ = base::AsWeakPtr(
@@ -153,7 +153,7 @@ class ClientUsageTracker::GatherGlobalUsageTask
       : GatherUsageTaskBase(tracker, client),
         client_(client),
         non_cached_global_usage_(0),
-        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+        weak_factory_(this) {
     DCHECK(tracker);
     DCHECK(client);
   }
@@ -201,7 +201,7 @@ class ClientUsageTracker::GatherHostUsageTask
       : GatherUsageTaskBase(tracker, client),
         client_(client),
         host_(host),
-        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+        weak_factory_(this) {
     DCHECK(client_);
   }
   virtual ~GatherHostUsageTask() {}
@@ -230,7 +230,7 @@ class ClientUsageTracker::GatherHostUsageTask
 UsageTracker::UsageTracker(const QuotaClientList& clients, StorageType type,
                            SpecialStoragePolicy* special_storage_policy)
     : type_(type),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
   for (QuotaClientList::const_iterator iter = clients.begin();
       iter != clients.end();
       ++iter) {

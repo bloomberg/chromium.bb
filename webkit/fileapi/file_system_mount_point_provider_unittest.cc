@@ -111,7 +111,7 @@ const base::FilePath::CharType kVirtualPath[] = FILE_PATH_LITERAL("testing");
 class FileSystemMountPointProviderTest : public testing::Test {
  public:
   FileSystemMountPointProviderTest()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      : weak_factory_(this) {
   }
 
   virtual void SetUp() {

@@ -42,7 +42,7 @@ class WebKitClientMessageLoopImpl
 } //  namespace
 
 TestShellDevToolsAgent::TestShellDevToolsAgent()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+    : weak_factory_(this),
       dev_tools_client_(NULL) {
   static int dev_tools_agent_counter;
   routing_id_ = ++dev_tools_agent_counter;

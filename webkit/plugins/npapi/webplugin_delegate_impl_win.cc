@@ -292,7 +292,7 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       handle_event_message_filter_hook_(NULL),
       handle_event_pump_messages_event_(NULL),
       user_gesture_message_posted_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(user_gesture_msg_factory_(this)),
+      user_gesture_msg_factory_(this),
       handle_event_depth_(0),
       mouse_hook_(NULL),
       first_set_window_call_(true),

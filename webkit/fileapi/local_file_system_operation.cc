@@ -41,7 +41,7 @@ LocalFileSystemOperation::LocalFileSystemOperation(
       async_file_util_(NULL),
       peer_handle_(base::kNullProcessHandle),
       pending_operation_(kOperationNone),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
   DCHECK(operation_context_.get());
   operation_context_->DetachUserDataThread();
 }

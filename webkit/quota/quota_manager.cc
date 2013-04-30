@@ -341,7 +341,7 @@ class QuotaManager::UsageAndQuotaDispatcherTask : public QuotaTask {
         available_space_(-1),
         quota_status_(kQuotaStatusUnknown),
         waiting_callbacks_(1),
-        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+        weak_factory_(this) {}
 
   virtual ~UsageAndQuotaDispatcherTask() {}
 
@@ -478,7 +478,7 @@ class QuotaManager::GetUsageInfoTask : public QuotaTask {
       const GetUsageInfoCallback& callback)
       : QuotaTask(manager),
         callback_(callback),
-        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+        weak_factory_(this) {
   }
 
  protected:
@@ -679,7 +679,7 @@ class QuotaManager::OriginDataDeleter : public QuotaTask {
         remaining_clients_(-1),
         skipped_clients_(0),
         callback_(callback),
-        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+        weak_factory_(this) {}
 
  protected:
   virtual void Run() OVERRIDE {
@@ -758,7 +758,7 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
         remaining_clients_(-1),
         remaining_deleters_(-1),
         callback_(callback),
-        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+        weak_factory_(this) {}
 
  protected:
   virtual void Run() OVERRIDE {
@@ -941,7 +941,7 @@ QuotaManager::QuotaManager(bool is_incognito,
   : is_incognito_(is_incognito),
     profile_path_(profile_path),
     proxy_(new QuotaManagerProxy(
-        ALLOW_THIS_IN_INITIALIZER_LIST(this), io_thread)),
+        this, io_thread)),
     db_disabled_(false),
     eviction_disabled_(false),
     io_thread_(io_thread),
@@ -950,7 +950,7 @@ QuotaManager::QuotaManager(bool is_incognito,
     temporary_quota_override_(-1),
     desired_available_space_(-1),
     special_storage_policy_(special_storage_policy),
-    weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+    weak_factory_(this),
     get_disk_space_fn_(&CallSystemGetAmountOfFreeDiskSpace) {
 }
 

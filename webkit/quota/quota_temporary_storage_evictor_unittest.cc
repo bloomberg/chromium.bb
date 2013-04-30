@@ -143,7 +143,7 @@ class QuotaTemporaryStorageEvictorTest : public testing::Test {
  public:
   QuotaTemporaryStorageEvictorTest()
       : num_get_usage_and_quota_for_eviction_(0),
-        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
+        weak_factory_(this) {}
 
   virtual void SetUp() {
     quota_eviction_handler_.reset(new MockQuotaEvictionHandler(this));

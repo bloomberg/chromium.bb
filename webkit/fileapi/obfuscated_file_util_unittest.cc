@@ -120,7 +120,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
   ObfuscatedFileUtilTest()
       : origin_(GURL("http://www.example.com")),
         type_(kFileSystemTypeTemporary),
-        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+        weak_factory_(this),
         test_helper_(origin_, type_),
         quota_status_(quota::kQuotaStatusUnknown),
         usage_(-1) {

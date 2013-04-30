@@ -89,9 +89,9 @@ class AppCacheServiceTest : public testing::Test {
         kManifestUrl(kOrigin.Resolve("manifest")),
         service_(new AppCacheService(NULL)),
         delete_result_(net::OK), delete_completion_count_(0),
-        ALLOW_THIS_IN_INITIALIZER_LIST(deletion_callback_(
+        deletion_callback_(
             base::Bind(&AppCacheServiceTest::OnDeleteAppCachesComplete,
-                       base::Unretained(this)))) {
+                       base::Unretained(this))) {
     // Setup to use mock storage.
     service_->storage_.reset(new MockAppCacheStorage(service_.get()));
   }

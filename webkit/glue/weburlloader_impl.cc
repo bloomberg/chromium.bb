@@ -796,7 +796,7 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
 // WebURLLoaderImpl -----------------------------------------------------------
 
 WebURLLoaderImpl::WebURLLoaderImpl(WebKitPlatformSupportImpl* platform)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(context_(new Context(this))),
+    : context_(new Context(this)),
       platform_(platform) {
 }
 

@@ -43,7 +43,7 @@ class LocalFileSystemQuotaTest
       public base::SupportsWeakPtr<LocalFileSystemQuotaTest> {
  public:
   LocalFileSystemQuotaTest()
-      : weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      : weak_factory_(this),
         next_unique_path_suffix_(0),
         status_(kFileOperationStatusNotSet),
         quota_status_(quota::kQuotaStatusUnknown),

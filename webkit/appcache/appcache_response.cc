@@ -82,7 +82,7 @@ AppCacheResponseIO::AppCacheResponseIO(
       disk_cache_(disk_cache),
       entry_(NULL),
       buffer_len_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 AppCacheResponseIO::~AppCacheResponseIO() {
@@ -142,7 +142,7 @@ AppCacheResponseReader::AppCacheResponseReader(
       range_offset_(0),
       range_length_(kint32max),
       read_position_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 AppCacheResponseReader::~AppCacheResponseReader() {
@@ -286,7 +286,7 @@ AppCacheResponseWriter::AppCacheResponseWriter(
       write_position_(0),
       write_amount_(0),
       creation_phase_(INITIAL_ATTEMPT),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 AppCacheResponseWriter::~AppCacheResponseWriter() {

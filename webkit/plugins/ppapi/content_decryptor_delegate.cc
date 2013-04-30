@@ -281,7 +281,7 @@ ContentDecryptorDelegate::ContentDecryptorDelegate(
       pending_video_decoder_init_request_id_(0),
       pending_audio_decode_request_id_(0),
       pending_video_decode_request_id_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      weak_ptr_factory_(this),
       weak_this_(weak_ptr_factory_.GetWeakPtr()) {
 }
 

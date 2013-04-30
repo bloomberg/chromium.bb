@@ -37,7 +37,7 @@ FileSystemDirURLRequestJob::FileSystemDirURLRequestJob(
     FileSystemContext* file_system_context)
     : URLRequestJob(request, network_delegate),
       file_system_context_(file_system_context),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 FileSystemDirURLRequestJob::~FileSystemDirURLRequestJob() {

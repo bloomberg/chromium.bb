@@ -162,7 +162,7 @@ SandboxMountPointProvider::SandboxMountPointProvider(
           !CommandLine::ForCurrentProcess()->HasSwitch(
               kDisableUsageTracking)),
       special_storage_policy_(special_storage_policy),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
   // Set quota observers.
   UpdateObserverList::Source update_observers_src;
   AccessObserverList::Source access_observers_src;

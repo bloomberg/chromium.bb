@@ -362,10 +362,8 @@ SimpleAppCacheSystem* SimpleAppCacheSystem::instance_ = NULL;
 
 SimpleAppCacheSystem::SimpleAppCacheSystem()
     : io_message_loop_(NULL), ui_message_loop_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          backend_proxy_(new SimpleBackendProxy(this))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          frontend_proxy_(new SimpleFrontendProxy(this))),
+      backend_proxy_(new SimpleBackendProxy(this)),
+      frontend_proxy_(new SimpleFrontendProxy(this)),
       backend_impl_(NULL), service_(NULL), db_thread_("AppCacheDBThread") {
   DCHECK(!instance_);
   instance_ = this;

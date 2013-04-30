@@ -56,7 +56,7 @@ class QuotaManagerTest : public testing::Test {
 
  public:
   QuotaManagerTest()
-      : weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      : weak_factory_(this),
         mock_time_counter_(0) {
   }
 

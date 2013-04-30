@@ -98,8 +98,7 @@ AppCacheUpdateJob::URLFetcher::URLFetcher(
       fetch_type_(fetch_type),
       retry_503_attempts_(0),
       buffer_(new net::IOBuffer(kBufferSize)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(request_(
-          job->service_->request_context()->CreateRequest(url, this))) {
+      request_(job->service_->request_context()->CreateRequest(url, this)) {
 }
 
 AppCacheUpdateJob::URLFetcher::~URLFetcher() {

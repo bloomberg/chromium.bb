@@ -53,7 +53,7 @@ SandboxFileStreamWriter::SandboxFileStreamWriter(
       allowed_bytes_to_write_(0),
       has_pending_operation_(false),
       default_quota_(kint64max),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
   DCHECK(url_.is_valid());
 }
 

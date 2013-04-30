@@ -29,7 +29,7 @@ namespace appcache {
 
 MockAppCacheStorage::MockAppCacheStorage(AppCacheService* service)
     : AppCacheStorage(service),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       simulate_make_group_obsolete_failure_(false),
       simulate_store_group_and_newest_cache_failure_(false),
       simulate_find_main_resource_(false),

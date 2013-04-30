@@ -24,7 +24,7 @@ SandboxQuotaObserver::SandboxQuotaObserver(
       sandbox_file_util_(sandbox_file_util),
       file_system_usage_cache_(file_system_usage_cache),
       running_delayed_cache_update_(false),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+      weak_factory_(this) {}
 
 SandboxQuotaObserver::~SandboxQuotaObserver() {}
 

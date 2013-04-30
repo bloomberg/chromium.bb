@@ -38,7 +38,7 @@ const quota::StorageType kPersistent = quota::kStorageTypePersistent;
 class FileSystemQuotaClientTest : public testing::Test {
  public:
   FileSystemQuotaClientTest()
-      : weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      : weak_factory_(this),
         additional_callback_count_(0),
         deletion_status_(quota::kQuotaStatusUnknown) {
   }

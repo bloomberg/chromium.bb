@@ -129,7 +129,7 @@ class DatabaseQuotaClientTest : public testing::Test {
         kOriginOther("http://other"),
         usage_(0),
         mock_tracker_(new MockDatabaseTracker),
-        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+        weak_factory_(this) {
   }
 
   int64 GetOriginUsage(

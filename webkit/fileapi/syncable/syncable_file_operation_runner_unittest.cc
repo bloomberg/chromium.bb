@@ -53,7 +53,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
       write_bytes_(0),
       write_complete_(false),
       url_request_context_(file_system_.file_system_context()),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+      weak_factory_(this) {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(dir_.CreateUniqueTempDir());

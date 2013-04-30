@@ -36,7 +36,7 @@ class SyncableFileSystemTest : public testing::Test {
       : file_system_(GURL("http://example.com/"), "test",
                      base::MessageLoopProxy::current(),
                      base::MessageLoopProxy::current()),
-        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+        weak_factory_(this) {}
 
   virtual void SetUp() {
     file_system_.SetUp();

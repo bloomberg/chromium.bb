@@ -52,7 +52,7 @@ QuotaTemporaryStorageEvictor::QuotaTemporaryStorageEvictor(
       quota_eviction_handler_(quota_eviction_handler),
       interval_ms_(interval_ms),
       repeated_eviction_(true),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
   DCHECK(quota_eviction_handler);
 }
 

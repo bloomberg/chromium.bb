@@ -71,7 +71,7 @@ WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
     AppCacheBackend* backend)
     : client_(client),
       backend_(backend),
-      ALLOW_THIS_IN_INITIALIZER_LIST(host_id_(all_hosts()->Add(this))),
+      host_id_(all_hosts()->Add(this)),
       status_(UNCACHED),
       is_scheme_supported_(false),
       is_get_method_(false),

@@ -26,7 +26,7 @@ using WebKit::WebView;
 
 TestShellDevToolsClient::TestShellDevToolsClient(TestShellDevToolsAgent *agent,
                                                  WebView* web_view)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+    : weak_factory_(this),
       dev_tools_agent_(agent),
       web_view_(web_view) {
   web_tools_frontend_.reset(WebDevToolsFrontend::create(web_view_, this,

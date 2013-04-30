@@ -46,7 +46,7 @@ PP_Resource PPB_Scrollbar_Impl::Create(PP_Instance instance,
 
 PPB_Scrollbar_Impl::PPB_Scrollbar_Impl(PP_Instance instance)
     : PPB_Widget_Impl(instance),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
 }
 
 PPB_Scrollbar_Impl::~PPB_Scrollbar_Impl() {

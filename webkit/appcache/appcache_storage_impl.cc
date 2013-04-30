@@ -1295,7 +1295,7 @@ AppCacheStorageImpl::AppCacheStorageImpl(AppCacheService* service)
       last_deletable_response_rowid_(0),
       database_(NULL),
       is_disabled_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 AppCacheStorageImpl::~AppCacheStorageImpl() {

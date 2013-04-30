@@ -33,7 +33,7 @@ class QuotaMockPluginDelegate : public MockPluginDelegate {
       : available_space_(0),
         will_update_count_(0),
         file_thread_(MessageLoopProxy::current()),
-        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+        weak_factory_(this) {
   }
   virtual ~QuotaMockPluginDelegate() {}
 
@@ -83,7 +83,7 @@ class QuotaMockPluginDelegate : public MockPluginDelegate {
 class QuotaFileIOTest : public PpapiUnittest {
  public:
   QuotaFileIOTest()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
+      : weak_factory_(this) {}
 
   virtual void SetUp() OVERRIDE {
     PpapiUnittest::SetUp();

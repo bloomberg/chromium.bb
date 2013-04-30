@@ -351,7 +351,7 @@ PluginInstance::PluginInstance(
       plugin_url_(plugin_url),
       full_frame_(false),
       sent_initial_did_change_view_(false),
-      view_change_weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      view_change_weak_ptr_factory_(this),
       bound_graphics_2d_platform_(NULL),
       has_webkit_focus_(false),
       has_content_area_focus_(false),

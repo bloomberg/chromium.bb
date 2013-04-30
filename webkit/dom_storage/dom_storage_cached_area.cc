@@ -16,7 +16,7 @@ DomStorageCachedArea::DomStorageCachedArea(
     int64 namespace_id, const GURL& origin, DomStorageProxy* proxy)
     : ignore_all_mutations_(false),
       namespace_id_(namespace_id), origin_(origin),
-      proxy_(proxy), weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      proxy_(proxy), weak_factory_(this) {
 }
 
 DomStorageCachedArea::~DomStorageCachedArea() {

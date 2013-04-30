@@ -54,7 +54,7 @@ class TestShellHttpUserAgentSettings : public net::HttpUserAgentSettings {
 };
 
 TestShellRequestContext::TestShellRequestContext()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(storage_(this)) {
+    : storage_(this) {
   Init(base::FilePath(), net::HttpCache::NORMAL, false);
 }
 
@@ -62,7 +62,7 @@ TestShellRequestContext::TestShellRequestContext(
     const base::FilePath& cache_path,
     net::HttpCache::Mode cache_mode,
     bool no_proxy)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(storage_(this)) {
+    : storage_(this) {
   Init(cache_path, cache_mode, no_proxy);
 }
 

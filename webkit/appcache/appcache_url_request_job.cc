@@ -35,7 +35,7 @@ AppCacheURLRequestJob::AppCacheURLRequestJob(
       delivery_type_(AWAITING_DELIVERY_ORDERS),
       group_id_(0), cache_id_(kNoCacheId), is_fallback_(false),
       cache_entry_not_found_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   DCHECK(storage_);
 }
 

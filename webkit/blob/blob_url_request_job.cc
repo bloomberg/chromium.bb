@@ -68,7 +68,7 @@ BlobURLRequestJob::BlobURLRequestJob(
     fileapi::FileSystemContext* file_system_context,
     base::MessageLoopProxy* file_thread_proxy)
     : net::URLRequestJob(request, network_delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       blob_data_(blob_data),
       file_system_context_(file_system_context),
       file_thread_proxy_(file_thread_proxy),

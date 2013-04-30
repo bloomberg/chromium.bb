@@ -103,7 +103,7 @@ ViewBlobInternalsJob::ViewBlobInternalsJob(
     BlobStorageController* blob_storage_controller)
     : net::URLRequestSimpleJob(request, network_delegate),
       blob_storage_controller_(blob_storage_controller),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 ViewBlobInternalsJob::~ViewBlobInternalsJob() {

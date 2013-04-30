@@ -21,7 +21,7 @@ const size_t kMaxHandleCacheSize = 2;
 
 FileSystemUsageCache::FileSystemUsageCache(
     base::SequencedTaskRunner* task_runner)
-    : weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+    : weak_factory_(this),
       task_runner_(task_runner) {
 }
 

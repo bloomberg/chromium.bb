@@ -328,7 +328,7 @@ class MainPageJob : public BaseInternalsJob {
               net::NetworkDelegate* network_delegate,
               AppCacheService* service)
       : BaseInternalsJob(request, network_delegate, service),
-        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+        weak_factory_(this) {
   }
 
   virtual void Start() OVERRIDE {
@@ -421,7 +421,7 @@ class RemoveAppCacheJob : public RedirectToMainPageJob {
       const GURL& manifest_url)
       : RedirectToMainPageJob(request, network_delegate, service),
         manifest_url_(manifest_url),
-        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+        weak_factory_(this) {
   }
 
   virtual void Start() OVERRIDE {
