@@ -231,7 +231,8 @@ void InspectorConsoleAgent::count(ScriptState* state, PassRefPtr<ScriptArguments
     // the same bucket as no argument
     String title;
     arguments->getFirstArgumentAsString(title);
-    String identifier = title + '@' + lastCaller.sourceURL() + ':' + String::number(lastCaller.lineNumber());
+    String identifier = title.isEmpty() ? String(lastCaller.sourceURL() + ':' + String::number(lastCaller.lineNumber()))
+                                        : String(title + '@');
 
     HashMap<String, unsigned>::iterator it = m_counts.find(identifier);
     int count;
