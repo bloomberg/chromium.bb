@@ -71,7 +71,8 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
 
     body = ''.join(binascii.unhexlify(h) for h in file_hashes)
     expected = chr(1) * len(files)
-    for _ in xrange(10):
+    MAX_ATTEMPTS = 10
+    for i in xrange(MAX_ATTEMPTS):
       # AppEngine's database is eventually consistent and isolateserver do not
       # use transaction for performance reasons, so even if one request was able
       # to retrieve the file, an subsequent may not see it! So retry a few time
@@ -82,6 +83,10 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
           content_type='application/octet-stream').read()
       if response == expected:
         break
+      # GAE is exposing its internal data inconsistency.
+      if i != (MAX_ATTEMPTS - 1):
+        print('Visible datastore inconsistency, retrying.')
+        time.sleep(0.1)
     self.assertEquals(expected, response)
 
   def test_archive_empty_file(self):
