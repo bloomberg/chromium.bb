@@ -508,7 +508,7 @@ int NotificationView::GetHeightForWidth(int width) {
   // <http://crbug.com/230448> Fix: Adjust the height when the message_view's
   // line limit would be different for the specified width than it currently is.
   // TODO(dharcourt): Avoid BoxLayout and directly compute the correct height.
-  if (message_view_ && title_view_) {
+  if (message_view_) {
     int used_limit = message_view_->GetLineLimit();
     int correct_limit = GetMessageLineLimit(width);
     if (used_limit != correct_limit) {
