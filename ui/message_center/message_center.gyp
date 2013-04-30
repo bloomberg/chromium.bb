@@ -74,6 +74,8 @@
         'views/notifier_settings_view.h',
         'views/notification_view.cc',
         'views/notification_view.h',
+        'views/toast_contents_view.cc',
+        'views/toast_contents_view.h',
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
