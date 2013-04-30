@@ -13,6 +13,7 @@ import ctypes
 import hashlib
 import httplib
 import inspect
+import itertools
 import json
 import locale
 import logging
@@ -77,8 +78,10 @@ DELAY_BETWEEN_UPDATES_IN_SECS = 30
 # The name of the key to store the count of url attempts.
 COUNT_KEY = 'UrlOpenAttempt'
 
-# The maximum number of attempts to trying opening a url before aborting.
-MAX_URL_OPEN_ATTEMPTS = 30
+# Default maximum number of attempts to trying opening a url before aborting.
+URL_OPEN_MAX_ATTEMPTS = 30
+# Default timeout when retrying.
+URL_OPEN_TIMEOUT = 6*60.
 
 # Global (for now) map: server URL (http://example.com) -> HttpService instance.
 # Used by get_http_service to cache HttpService instances.
@@ -536,11 +539,34 @@ class HttpService(object):
 
     return self._retry_loop(make_request, **kwargs)
 
-  def _retry_loop(self, make_request, retry_404=False, retry_50x=True):
-    """Runs internal request-retry loop."""
+  def _retry_loop(
+      self,
+      make_request,
+      max_attempts=URL_OPEN_MAX_ATTEMPTS,
+      retry_404=False,
+      retry_50x=True,
+      timeout=URL_OPEN_TIMEOUT):
+    """Runs internal request-retry loop.
+
+    - Optionally retries HTTP 404 and 50x.
+    - Retries up to |max_attempts| times. If None or 0, there's no limit in the
+      number of retries.
+    - Retries up to |timeout| duration in seconds. If None or 0, there's no
+      limit in the time taken to do retries.
+    - If both |max_attempts| and |timeout| are None or 0, this functions retries
+      indefinitely.
+    """
     authenticated = False
     last_error = None
-    for attempt in range(MAX_URL_OPEN_ATTEMPTS):
+    attempt = 0
+    start = self._now()
+    for attempt in itertools.count():
+      if max_attempts and attempt >= max_attempts:
+        # Too many attempts.
+        break
+      if timeout and (self._now() - start) >= timeout:
+        # Retried for too long.
+        break
       extra = {COUNT_KEY: attempt} if attempt else {}
       request = make_request(extra)
       try:
@@ -558,7 +584,9 @@ class HttpService(object):
               self._format_exception(e, verbose=True))
           if not authenticated and self.authenticate():
             authenticated = True
+            # Do not sleep.
             continue
+          # If authentication failed, return.
           logging.error(
               'Unable to authenticate to %s.\n%s',
               request.get_full_url(), self._format_exception(e, verbose=True))
@@ -586,26 +614,52 @@ class HttpService(object):
         last_error = e
 
       # Only sleep if we are going to try again.
-      if attempt != MAX_URL_OPEN_ATTEMPTS - 1:
-        self._sleep_before_retry(attempt)
+      if max_attempts and attempt != max_attempts:
+        remaining = None
+        if timeout:
+          remaining = timeout - (self._now() - start)
+          if remaining <= 0:
+            break
+        self.sleep_before_retry(attempt, remaining)
 
     logging.error('Unable to open given url, %s, after %d attempts.\n%s',
-                  request.get_full_url(), MAX_URL_OPEN_ATTEMPTS,
+                  request.get_full_url(), max_attempts,
                   self._format_exception(last_error, verbose=True))
     return None
 
   def _url_open(self, request):
     """Low level method to execute urllib2.Request's.
+
     To be mocked in tests.
     """
     return self.opener.open(request)
 
-  def _sleep_before_retry(self, attempt):  # pylint: disable=R0201
+  @staticmethod
+  def _now():
+    """To be mocked in tests."""
+    return time.time()
+
+  @staticmethod
+  def calculate_sleep_before_retry(attempt, max_duration):
+    # Maximum sleeping time. We're hammering a cloud-distributed service, it'll
+    # survive.
+    MAX_SLEEP = 10.
+    # random.random() returns [0.0, 1.0). Starts with relatively short waiting
+    # time by starting with 1.5/2+1.5^-1 median offset.
+    duration = (random.random() * 1.5) + math.pow(1.5, (attempt - 1))
+    assert duration > 0.1
+    duration = min(MAX_SLEEP, duration)
+    if max_duration:
+      duration = min(max_duration, duration)
+    return duration
+
+  @classmethod
+  def sleep_before_retry(cls, attempt, max_duration):
     """Sleeps for some amount of time when retrying the request.
-    To be mocked in tests."""
-    duration = random.random() * 3 + math.pow(1.5, (attempt + 1))
-    duration = min(20, max(0.1, duration))
-    time.sleep(duration)
+
+    To be mocked in tests.
+    """
+    time.sleep(cls.calculate_sleep_before_retry(attempt, max_duration))
 
   @staticmethod
   def _format_exception(exc, verbose=False):

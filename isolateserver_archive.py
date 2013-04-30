@@ -130,7 +130,7 @@ def upload_hash_content_to_blobstore(
   # TODO(maruel): Support large files. This would require streaming support.
   content_type, body = encode_multipart_formdata(
       data, [('content', hash_key, content)])
-  for _ in range(run_isolated.MAX_URL_OPEN_ATTEMPTS):
+  for attempt in xrange(run_isolated.URL_OPEN_MAX_ATTEMPTS):
     # Retry HTTP 50x here.
     response = run_isolated.url_open(generate_upload_url, data=data)
     if not response:
@@ -144,6 +144,8 @@ def upload_hash_content_to_blobstore(
         upload_url, data=body, content_type=content_type, retry_50x=False)
     if result:
       return result.read()
+    if attempt != run_isolated.URL_OPEN_MAX_ATTEMPTS - 1:
+      run_isolated.HttpService.sleep_before_retry(attempt, None)
   raise run_isolated.MappingError(
       'Unable to connect to server %s' % generate_upload_url)
 
