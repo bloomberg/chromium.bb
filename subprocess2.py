@@ -355,7 +355,6 @@ class Popen(subprocess.Popen):
     self._tee_threads(input)
     if stdout is not None:
       stdout = ''.join(stdout)
-    stderr = None
     if stderr is not None:
       stderr = ''.join(stderr)
     return (stdout, stderr)

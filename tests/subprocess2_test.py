@@ -326,6 +326,14 @@ class RegressionTest(BaseTestCase):
       self._check_res(res, None, None, 0)
     self._run_test(fn)
 
+  def test_stderr(self):
+    cmd = ['expr', '1', '/', '0']
+    p1 = subprocess.Popen(cmd, stderr=subprocess.PIPE)
+    p2 = subprocess2.Popen(cmd, stderr=subprocess.PIPE)
+    r1 = p1.communicate()
+    r2 = p2.communicate(timeout=100)
+    self.assertEquals(r1, r2)
+
 
 class S2Test(BaseTestCase):
   # Tests that can only run in subprocess2, e.g. new functionalities.
