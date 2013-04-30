@@ -531,6 +531,13 @@ other types of suffix sets.
   <summary>Result of GetDomainBoundCert function.</summary>
 </histogram>
 
+<histogram name="DomainBoundCerts.KillDatabaseResult" enum="BooleanSuccess">
+  <summary>
+    Whether the domain-bound certs sqlite database was killed succesfully when
+    an unrecoverable error was detected.
+  </summary>
+</histogram>
+
 <histogram name="DomainBoundCerts.Support" enum="DomainBoundCerts.Support">
   <summary>
     Counts of SSL client sockets broken down by support for Domain Bound
@@ -5810,6 +5817,12 @@ other types of suffix sets.
 
 <histogram name="Sqlite.DatabaseTracker.Error" enum="SqliteErrorCode">
   <summary>Error codes returned by sqlite the websqldb tracker db.</summary>
+</histogram>
+
+<histogram name="Sqlite.DomainBoundCerts.Error" enum="SqliteErrorCode">
+  <summary>
+    Error codes returned by sqlite for the domain-bound certs db.
+  </summary>
 </histogram>
 
 <histogram name="Sqlite.DomStorageDatabase.Error" enum="SqliteErrorCode">

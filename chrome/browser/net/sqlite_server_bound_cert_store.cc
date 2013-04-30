@@ -23,15 +23,17 @@
 #include "net/cert/x509_certificate.h"
 #include "net/cookies/cookie_util.h"
 #include "net/ssl/ssl_client_cert_type.h"
+#include "sql/error_delegate_util.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
+#include "third_party/sqlite/sqlite3.h"
 #include "webkit/quota/special_storage_policy.h"
 
 using content::BrowserThread;
 
 // This class is designed to be shared between any calling threads and the
-// database thread.  It batches operations and commits them on a timer.
+// database thread. It batches operations and commits them on a timer.
 class SQLiteServerBoundCertStore::Backend
     : public base::RefCountedThreadSafe<SQLiteServerBoundCertStore::Backend> {
  public:
@@ -41,7 +43,8 @@ class SQLiteServerBoundCertStore::Backend
         db_(NULL),
         num_pending_(0),
         force_keep_session_state_(false),
-        special_storage_policy_(special_storage_policy) {
+        special_storage_policy_(special_storage_policy),
+        corruption_detected_(false) {
   }
 
   // Creates or loads the SQLite database.
@@ -67,6 +70,28 @@ class SQLiteServerBoundCertStore::Backend
       std::vector<net::DefaultServerBoundCertStore::ServerBoundCert*>* certs);
 
   friend class base::RefCountedThreadSafe<SQLiteServerBoundCertStore::Backend>;
+
+  class KillDatabaseErrorDelegate : public sql::ErrorDelegate {
+   public:
+    explicit KillDatabaseErrorDelegate(Backend* backend);
+
+    virtual ~KillDatabaseErrorDelegate() {}
+
+    // ErrorDelegate implementation.
+    virtual int OnError(int error,
+                        sql::Connection* connection,
+                        sql::Statement* stmt) OVERRIDE;
+
+   private:
+    // Do not increment the count on Backend, as that would create a circular
+    // reference (Backend -> Connection -> ErrorDelegate -> Backend).
+    Backend* backend_;
+
+    // True if the delegate has previously attempted to kill the database.
+    bool attempted_to_kill_database_;
+
+    DISALLOW_COPY_AND_ASSIGN(KillDatabaseErrorDelegate);
+  };
 
   // You should call Close() before destructing this object.
   ~Backend() {
@@ -100,7 +125,7 @@ class SQLiteServerBoundCertStore::Backend
   };
 
  private:
-  // Batch a server bound cert operation (add or delete)
+  // Batch a server bound cert operation (add or delete).
   void BatchOperation(
       PendingOperation::OperationType op,
       const net::DefaultServerBoundCertStore::ServerBoundCert& cert);
@@ -110,6 +135,10 @@ class SQLiteServerBoundCertStore::Backend
   void InternalBackgroundClose();
 
   void DeleteCertificatesOnShutdown();
+
+  void KillDatabase();
+
+  void ScheduleKillDatabase();
 
   base::FilePath path_;
   scoped_ptr<sql::Connection> db_;
@@ -128,8 +157,30 @@ class SQLiteServerBoundCertStore::Backend
 
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
 
+  // Indicates if the kill-database callback has been scheduled.
+  bool corruption_detected_;
+
   DISALLOW_COPY_AND_ASSIGN(Backend);
 };
+
+SQLiteServerBoundCertStore::Backend::KillDatabaseErrorDelegate::
+KillDatabaseErrorDelegate(Backend* backend)
+    : backend_(backend),
+      attempted_to_kill_database_(false) {
+}
+
+int SQLiteServerBoundCertStore::Backend::KillDatabaseErrorDelegate::OnError(
+    int error, sql::Connection* connection, sql::Statement* stmt) {
+  // Do not attempt to kill database more than once. If the first time failed,
+  // it is unlikely that a second time will be successful.
+  if (!attempted_to_kill_database_ && sql::IsErrorCatastrophic(error)) {
+    attempted_to_kill_database_ = true;
+
+    backend_->ScheduleKillDatabase();
+  }
+
+  return error;
+}
 
 // Version number of the database.
 static const int kCurrentVersionNumber = 4;
@@ -202,14 +253,22 @@ void SQLiteServerBoundCertStore::Backend::LoadOnDBThread(
     UMA_HISTOGRAM_COUNTS("DomainBoundCerts.DBSizeInKB", db_size / 1024 );
 
   db_.reset(new sql::Connection);
+  db_->set_error_histogram_name("Sqlite.DomainBoundCerts.Error");
+  db_->set_error_delegate(new KillDatabaseErrorDelegate(this));
+
   if (!db_->Open(path_)) {
     NOTREACHED() << "Unable to open cert DB.";
+    if (corruption_detected_)
+      KillDatabase();
     db_.reset();
     return;
   }
 
   if (!EnsureDatabaseVersion() || !InitTable(db_.get())) {
     NOTREACHED() << "Unable to open cert DB.";
+    if (corruption_detected_)
+      KillDatabase();
+    meta_table_.Reset();
     db_.reset();
     return;
   }
@@ -221,6 +280,9 @@ void SQLiteServerBoundCertStore::Backend::LoadOnDBThread(
       "SELECT origin, private_key, cert, cert_type, expiration_time, "
       "creation_time FROM origin_bound_certs"));
   if (!smt.is_valid()) {
+    if (corruption_detected_)
+      KillDatabase();
+    meta_table_.Reset();
     db_.reset();
     return;
   }
@@ -376,6 +438,28 @@ bool SQLiteServerBoundCertStore::Backend::EnsureDatabaseVersion() {
       " is too old to handle.";
 
   return true;
+}
+
+void SQLiteServerBoundCertStore::Backend::ScheduleKillDatabase() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+
+  corruption_detected_ = true;
+
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+                          base::Bind(&Backend::KillDatabase, this));
+}
+
+void SQLiteServerBoundCertStore::Backend::KillDatabase() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+
+  if (db_) {
+    // This Backend will now be in-memory only. In a future run the database
+    // will be recreated. Hopefully things go better then!
+    bool success = db_->RazeAndClose();
+    UMA_HISTOGRAM_BOOLEAN("DomainBoundCerts.KillDatabaseResult", success);
+    meta_table_.Reset();
+    db_.reset();
+  }
 }
 
 void SQLiteServerBoundCertStore::Backend::AddServerBoundCert(
