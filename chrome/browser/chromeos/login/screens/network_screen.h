@@ -31,6 +31,7 @@ class NetworkScreen : public WizardScreen,
 
   // ConnectivityStateHelperObserver implementation:
   virtual void NetworkManagerChanged() OVERRIDE;
+  virtual void DefaultNetworkChanged() OVERRIDE;
 
   // NetworkScreenActor::Delegate implementation:
   virtual void OnActorDestroyed(NetworkScreenActor* actor) OVERRIDE;

@@ -39,6 +39,7 @@ class ConnectivityStateHelperImpl
 
   // NetworkStateHandlerObserver overrides.
   virtual void NetworkManagerChanged() OVERRIDE;
+  virtual void DefaultNetworkChanged(const NetworkState* network) OVERRIDE;
 
  private:
   NetworkStateHandler* network_state_handler_;
@@ -117,12 +118,12 @@ void ConnectivityStateHelper::SetForTest(ConnectivityStateHelper* impl) {
 
 void ConnectivityStateHelper::AddNetworkManagerObserver(
     ConnectivityStateHelperObserver* observer) {
-  network_manager_observers_.AddObserver(observer);
+  connectivity_observers_.AddObserver(observer);
 }
 
 void ConnectivityStateHelper::RemoveNetworkManagerObserver(
     ConnectivityStateHelperObserver* observer) {
-  network_manager_observers_.RemoveObserver(observer);
+  connectivity_observers_.RemoveObserver(observer);
 }
 
 ConnectivityStateHelperImpl::ConnectivityStateHelperImpl() {
@@ -185,8 +186,14 @@ void ConnectivityStateHelperImpl::RequestScan() const {
 }
 
 void ConnectivityStateHelperImpl::NetworkManagerChanged() {
-  FOR_EACH_OBSERVER(ConnectivityStateHelperObserver, network_manager_observers_,
+  FOR_EACH_OBSERVER(ConnectivityStateHelperObserver, connectivity_observers_,
                     NetworkManagerChanged());
+}
+
+void ConnectivityStateHelperImpl::DefaultNetworkChanged(
+    const NetworkState* network) {
+  FOR_EACH_OBSERVER(ConnectivityStateHelperObserver, connectivity_observers_,
+                    DefaultNetworkChanged());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -273,7 +280,7 @@ void ConnectivityStateHelperNetworkLibrary::RequestScan() const {
 
 void ConnectivityStateHelperNetworkLibrary::OnNetworkManagerChanged(
     NetworkLibrary* network_library) {
-  FOR_EACH_OBSERVER(ConnectivityStateHelperObserver, network_manager_observers_,
+  FOR_EACH_OBSERVER(ConnectivityStateHelperObserver, connectivity_observers_,
                     NetworkManagerChanged());
 }
 

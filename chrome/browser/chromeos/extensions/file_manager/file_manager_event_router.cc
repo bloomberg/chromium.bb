@@ -578,6 +578,10 @@ void FileManagerEventRouter::NetworkManagerChanged() {
       BroadcastEvent(event.Pass());
 }
 
+void FileManagerEventRouter::DefaultNetworkChanged() {
+  NetworkManagerChanged();
+}
+
 void FileManagerEventRouter::OnExternalStorageDisabledChanged() {
   // If the policy just got disabled we have to unmount every device currently
   // mounted. The opposite is fine - we can let the user re-plug her device to

@@ -14,6 +14,9 @@ class ConnectivityStateHelperObserver {
  public:
   // Called when there's a change on the connection manager.
   virtual void NetworkManagerChanged() = 0;
+
+  // Called when the default network changes.
+  virtual void DefaultNetworkChanged() = 0;
 };
 
 }  // namespace chromeos

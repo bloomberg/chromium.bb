@@ -64,7 +64,7 @@ class ConnectivityStateHelper {
 
  protected:
   ConnectivityStateHelper();
-  ObserverList<ConnectivityStateHelperObserver> network_manager_observers_;
+  ObserverList<ConnectivityStateHelperObserver> connectivity_observers_;
 };
 
 }  // namespace chromeos

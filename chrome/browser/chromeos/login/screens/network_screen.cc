@@ -80,6 +80,10 @@ void NetworkScreen::NetworkManagerChanged() {
   UpdateStatus();
 }
 
+void NetworkScreen::DefaultNetworkChanged() {
+  NetworkManagerChanged();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkScreen, public:
 

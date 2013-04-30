@@ -93,6 +93,7 @@ class FileManagerEventRouter
 
   // chromeos::ConnectivityStateHelperObserver override.
   virtual void NetworkManagerChanged() OVERRIDE;
+  virtual void DefaultNetworkChanged() OVERRIDE;
 
   // drive::JobListObserver overrides.
   virtual void OnJobAdded(const drive::JobInfo& job_info) OVERRIDE;
