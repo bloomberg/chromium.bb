@@ -54,7 +54,7 @@ replacements = [
         ('localhost:8000', 'www.w3c-test.org'),   # This is the alternate host for cross-server requests.
         ('127.0.0.1:8000', 'w3c-test.org'),       # This is the primary test server.
         ('w3c/webperf', 'webperf/tests'),         # We prepend /w3c to all of our paths.
-        ('/w3c/resources/testharness', '/resources/testharness'),
+        ('/w3c/resources/', '/resources/'),
         ('\n', '\r\n'),                           # Convert from *NIX format.
 ]
 
