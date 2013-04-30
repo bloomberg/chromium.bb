@@ -151,6 +151,8 @@ AutofillAgent::AutofillAgent(content::RenderView* render_view,
       has_shown_autofill_popup_for_current_edit_(false),
       did_set_node_text_(false),
       autocheckout_click_in_progress_(false),
+      is_autocheckout_supported_(false),
+      has_new_forms_for_browser_(false),
       try_to_show_autocheckout_bubble_(false),
       ignore_text_changes_(false),
       weak_ptr_factory_(this) {
@@ -214,11 +216,14 @@ void AutofillAgent::DidFinishDocumentLoad(WebFrame* frame) {
     form_cache_.ExtractForms(*frame, &forms);
   }
 
+  autofill::FormsSeenState state = has_more_forms ?
+      autofill::PARTIAL_FORMS_SEEN : autofill::NO_SPECIAL_FORMS_SEEN;
+
   // Always communicate to browser process for topmost frame.
   if (!forms.empty() || !frame->parent()) {
     Send(new AutofillHostMsg_FormsSeen(routing_id(), forms,
                                        forms_seen_timestamp_,
-                                       has_more_forms));
+                                       state));
   }
 }
 
@@ -736,7 +741,8 @@ void AutofillAgent::OnGetAllForms() {
 
   // Report to AutofillManager that all forms are being sent.
   Send(new AutofillHostMsg_FormsSeen(routing_id(), forms,
-                                     forms_seen_timestamp_, false));
+                                     forms_seen_timestamp_,
+                                     NO_SPECIAL_FORMS_SEEN));
 }
 
 void AutofillAgent::OnRequestAutocompleteResult(
@@ -783,7 +789,10 @@ void AutofillAgent::OnFillFormsAndClick(
 }
 
 void AutofillAgent::OnAutocheckoutSupported() {
+  is_autocheckout_supported_ = true;
   try_to_show_autocheckout_bubble_ = true;
+  if (has_new_forms_for_browser_)
+    MaybeSendDynamicFormsSeen();
   MaybeShowAutocheckoutBubble();
 }
 
@@ -943,6 +952,40 @@ void AutofillAgent::HideAutofillUi() {
 
 void AutofillAgent::HideHostAutofillUi() {
   Send(new AutofillHostMsg_HideAutofillUi(routing_id()));
+}
+
+void AutofillAgent::didAssociateFormControls(
+    const WebKit::WebVector<WebKit::WebNode>& nodes) {
+  for (size_t i = 0; i < nodes.size(); ++i) {
+    WebKit::WebNode node = nodes[i];
+    if (node.document().frame() == topmost_frame_) {
+      forms_seen_timestamp_ = base::TimeTicks::Now();
+      has_new_forms_for_browser_ = true;
+      break;
+    }
+  }
+
+  if (has_new_forms_for_browser_ && is_autocheckout_supported_)
+    MaybeSendDynamicFormsSeen();
+}
+
+void AutofillAgent::MaybeSendDynamicFormsSeen() {
+  has_new_forms_for_browser_ = false;
+  form_elements_.clear();
+  std::vector<FormData> forms;
+  // This will only be called for Autocheckout flows, so send all forms to
+  // save an IPC.
+  form_cache_.ExtractFormsAndFormElements(
+      *topmost_frame_, 0, &forms, &form_elements_);
+  autofill::FormsSeenState state = autofill::DYNAMIC_FORMS_SEEN;
+
+  if (!forms.empty()) {
+    if (click_timer_.IsRunning())
+      click_timer_.Stop();
+    Send(new AutofillHostMsg_FormsSeen(routing_id(), forms,
+                                       forms_seen_timestamp_,
+                                       state));
+  }
 }
 
 }  // namespace autofill

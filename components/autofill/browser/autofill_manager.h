@@ -29,6 +29,7 @@
 #include "components/autofill/browser/personal_data_manager.h"
 #include "components/autofill/common/autocheckout_status.h"
 #include "components/autofill/common/form_data.h"
+#include "components/autofill/common/forms_seen_state.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/ssl_status.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
@@ -214,7 +215,7 @@ class AutofillManager : public content::WebContentsObserver,
 
   void OnFormsSeen(const std::vector<FormData>& forms,
                    const base::TimeTicks& timestamp,
-                   bool has_more_forms);
+                   autofill::FormsSeenState state);
   void OnTextFieldDidChange(const FormData& form,
                             const FormFieldData& field,
                             const base::TimeTicks& timestamp);

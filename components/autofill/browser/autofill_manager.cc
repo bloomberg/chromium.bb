@@ -381,17 +381,28 @@ bool AutofillManager::OnFormSubmitted(const FormData& form,
 
 void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms,
                                   const TimeTicks& timestamp,
-                                  bool has_more_forms) {
+                                  autofill::FormsSeenState state) {
+  bool is_post_document_load = state == autofill::DYNAMIC_FORMS_SEEN;
+  bool has_more_forms = state == autofill::PARTIAL_FORMS_SEEN;
+  // If new forms were added via AJAX or DHML, treat as new page.
+  if (is_post_document_load)
+    Reset();
+
   RenderViewHost* host = web_contents()->GetRenderViewHost();
   if (!host)
     return;
 
   if (!GetAutocheckoutURLPrefix().empty()) {
     // If whitelisted URL, fetch all the forms.
-    if (has_more_forms) {
+    if (has_more_forms)
       host->Send(new AutofillMsg_GetAllForms(host->GetRoutingID()));
-      return;
+    if (!is_post_document_load) {
+      host->Send(
+          new AutofillMsg_AutocheckoutSupported(host->GetRoutingID()));
     }
+    // Now return early, as OnFormsSeen will get called again with all forms.
+    if (has_more_forms)
+      return;
   }
 
   autocheckout_manager_.OnFormsSeen();

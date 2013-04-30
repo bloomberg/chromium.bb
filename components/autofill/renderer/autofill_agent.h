@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "components/autofill/common/forms_seen_state.h"
 #include "components/autofill/renderer/form_cache.h"
 #include "components/autofill/renderer/page_click_listener.h"
 #include "content/public/renderer/render_view_observer.h"
@@ -103,6 +104,8 @@ class AutofillAgent : public content::RenderViewObserver,
       WebKit::WebFrame* frame,
       const WebKit::WebFormElement& form) OVERRIDE;
   virtual void setIgnoreTextChanges(bool ignore) OVERRIDE;
+  virtual void didAssociateFormControls(
+      const WebKit::WebVector<WebKit::WebNode>& nodes) OVERRIDE;
 
   void OnSuggestionsReturned(int query_id,
                              const std::vector<base::string16>& values,
@@ -206,6 +209,8 @@ class AutofillAgent : public content::RenderViewObserver,
   // Hides any currently showing Autofill UI in the browser only.
   void HideHostAutofillUi();
 
+  void MaybeSendDynamicFormsSeen();
+
   // Send |AutofillHostMsg_MaybeShowAutocheckoutBubble| to browser if needed.
   void MaybeShowAutocheckoutBubble();
 
@@ -256,6 +261,13 @@ class AutofillAgent : public content::RenderViewObserver,
   // Autocheckout flow.
   bool autocheckout_click_in_progress_;
 
+  // Whether or not |topmost_frame_| is whitelisted for Autocheckout.
+  bool is_autocheckout_supported_;
+
+  // Whether or not new forms/fields have been dynamically added
+  // since the last loaded forms were sent to the browser process.
+  bool has_new_forms_for_browser_;
+
   // Whether or not we should try to offer the user Autocheckout functionality
   // by sending |AutofillHostMsg_MaybeShowAutocheckoutBubble| to the browser.
   bool try_to_show_autocheckout_bubble_;
@@ -273,6 +285,7 @@ class AutofillAgent : public content::RenderViewObserver,
   friend class PasswordAutofillAgentTest;
   FRIEND_TEST_ALL_PREFIXES(ChromeRenderViewTest, FillFormElement);
   FRIEND_TEST_ALL_PREFIXES(ChromeRenderViewTest, SendForms);
+  FRIEND_TEST_ALL_PREFIXES(ChromeRenderViewTest, SendDynamicForms);
   FRIEND_TEST_ALL_PREFIXES(ChromeRenderViewTest, ShowAutofillWarning);
   FRIEND_TEST_ALL_PREFIXES(PasswordAutofillAgentTest, WaitUsername);
   FRIEND_TEST_ALL_PREFIXES(PasswordAutofillAgentTest, SuggestionAccept);

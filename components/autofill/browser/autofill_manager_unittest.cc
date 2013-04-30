@@ -38,6 +38,7 @@
 #include "components/autofill/common/autofill_messages.h"
 #include "components/autofill/common/form_data.h"
 #include "components/autofill/common/form_field_data.h"
+#include "components/autofill/common/forms_seen_state.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -697,11 +698,18 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   void FormsSeen(const std::vector<FormData>& forms) {
-    autofill_manager_->OnFormsSeen(forms, base::TimeTicks(), false);
+    autofill_manager_->OnFormsSeen(forms, base::TimeTicks(),
+                                   autofill::NO_SPECIAL_FORMS_SEEN);
   }
 
   void PartialFormsSeen(const std::vector<FormData>& forms) {
-    autofill_manager_->OnFormsSeen(forms, base::TimeTicks(), true);
+    autofill_manager_->OnFormsSeen(forms, base::TimeTicks(),
+                                   autofill::PARTIAL_FORMS_SEEN);
+  }
+
+  void DynamicFormsSeen(const std::vector<FormData>& forms) {
+    autofill_manager_->OnFormsSeen(forms, base::TimeTicks(),
+                                   autofill::DYNAMIC_FORMS_SEEN);
   }
 
   void FormSubmitted(const FormData& form) {
@@ -904,6 +912,42 @@ TEST_F(AutofillManagerTest, AutocheckoutFormsSeen) {
   ASSERT_EQ(3U, form_structures.size());
   EXPECT_EQ("/shipping.html", form_structures[0]->source_url().path());
   EXPECT_EQ("/userspecified.html", form_structures[1]->source_url().path());
+  EXPECT_EQ("/form.html", form_structures[2]->source_url().path());
+}
+
+// Test that in the case of Autocheckout, forms seen are in order supplied.
+TEST_F(AutofillManagerTest, DynamicFormsSeen) {
+  FormData shipping_options;
+  CreateTestShippingOptionsFormData(&shipping_options);
+  FormData user_supplied;
+  CreateTestFormWithAutocompleteAttribute(&user_supplied);
+  FormData address;
+  CreateTestAddressFormData(&address);
+
+  autofill_manager_->set_autocheckout_url_prefix("test-prefix");
+  // Push user_supplied only
+  std::vector<FormData> forms;
+  forms.push_back(user_supplied);
+
+  // Make sure normal form is handled correctly.
+  FormsSeen(forms);
+  std::vector<FormStructure*> form_structures;
+  form_structures = autofill_manager_->GetFormStructures();
+  ASSERT_EQ(1U, form_structures.size());
+  EXPECT_EQ("/userspecified.html", form_structures[0]->source_url().path());
+
+  // Push other forms
+  forms.push_back(shipping_options);
+  forms.push_back(address);
+
+  // FormStructure should contain three and only three forms. Otherwise, it
+  // would indicate that the manager didn't reset upon being notified of
+  // the new forms;
+  DynamicFormsSeen(forms);
+  form_structures = autofill_manager_->GetFormStructures();
+  ASSERT_EQ(3U, form_structures.size());
+  EXPECT_EQ("/userspecified.html", form_structures[0]->source_url().path());
+  EXPECT_EQ("/shipping.html", form_structures[1]->source_url().path());
   EXPECT_EQ("/form.html", form_structures[2]->source_url().path());
 }
 

@@ -12,6 +12,7 @@
 #include "components/autofill/common/form_data_predictions.h"
 #include "components/autofill/common/form_field_data.h"
 #include "components/autofill/common/form_field_data_predictions.h"
+#include "components/autofill/common/forms_seen_state.h"
 #include "components/autofill/common/password_form_fill_data.h"
 #include "components/autofill/common/web_element_descriptor.h"
 #include "content/public/common/common_param_traits.h"
@@ -27,6 +28,7 @@
 #define IPC_MESSAGE_START AutofillMsgStart
 
 IPC_ENUM_TRAITS(autofill::AutocheckoutStatus)
+IPC_ENUM_TRAITS(autofill::FormsSeenState)
 
 IPC_STRUCT_TRAITS_BEGIN(autofill::WebElementDescriptor)
   IPC_STRUCT_TRAITS_MEMBER(descriptor)
@@ -181,7 +183,7 @@ IPC_MESSAGE_ROUTED0(AutofillMsg_AutocheckoutSupported)
 IPC_MESSAGE_ROUTED3(AutofillHostMsg_FormsSeen,
                     std::vector<autofill::FormData> /* forms */,
                     base::TimeTicks /* timestamp */,
-                    bool /* has_more_forms */)
+                    autofill::FormsSeenState /* state */)
 
 // Notification that password forms have been seen that are candidates for
 // filling/submitting by the password manager.

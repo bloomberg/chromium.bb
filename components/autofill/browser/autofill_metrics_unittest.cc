@@ -22,6 +22,7 @@
 #include "components/autofill/browser/personal_data_manager.h"
 #include "components/autofill/common/form_data.h"
 #include "components/autofill/common/form_field_data.h"
+#include "components/autofill/common/forms_seen_state.h"
 #include "components/webdata/common/web_data_results.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -777,7 +778,8 @@ TEST_F(AutofillMetricsTest, DeveloperEngagement) {
   {
     EXPECT_CALL(*autofill_manager_->metric_logger(),
                 LogDeveloperEngagementMetric(_)).Times(0);
-    autofill_manager_->OnFormsSeen(forms, TimeTicks(), false);
+    autofill_manager_->OnFormsSeen(forms, TimeTicks(),
+                                   autofill::NO_SPECIAL_FORMS_SEEN);
     autofill_manager_->Reset();
     Mock::VerifyAndClearExpectations(autofill_manager_->metric_logger());
   }
@@ -797,7 +799,8 @@ TEST_F(AutofillMetricsTest, DeveloperEngagement) {
         *autofill_manager_->metric_logger(),
         LogDeveloperEngagementMetric(
             AutofillMetrics::FILLABLE_FORM_CONTAINS_TYPE_HINTS)).Times(0);
-    autofill_manager_->OnFormsSeen(forms, TimeTicks(), false);
+    autofill_manager_->OnFormsSeen(forms, TimeTicks(),
+                                   autofill::NO_SPECIAL_FORMS_SEEN);
     autofill_manager_->Reset();
     Mock::VerifyAndClearExpectations(autofill_manager_->metric_logger());
   }
@@ -828,7 +831,8 @@ TEST_F(AutofillMetricsTest, DeveloperEngagement) {
         *autofill_manager_->metric_logger(),
         LogDeveloperEngagementMetric(
             AutofillMetrics::FILLABLE_FORM_CONTAINS_TYPE_HINTS)).Times(1);
-    autofill_manager_->OnFormsSeen(forms, TimeTicks(), false);
+    autofill_manager_->OnFormsSeen(forms, TimeTicks(),
+                                   autofill::NO_SPECIAL_FORMS_SEEN);
     autofill_manager_->Reset();
     Mock::VerifyAndClearExpectations(autofill_manager_->metric_logger());
   }
@@ -1103,7 +1107,8 @@ TEST_F(AutofillMetricsTest, AutofillIsEnabledAtPageLoad) {
               LogIsAutofillEnabledAtPageLoad(true)).Times(1);
 
   autofill_manager_->set_autofill_enabled(true);
-  autofill_manager_->OnFormsSeen(std::vector<FormData>(), TimeTicks(), false);
+  autofill_manager_->OnFormsSeen(std::vector<FormData>(), TimeTicks(),
+                                 autofill::NO_SPECIAL_FORMS_SEEN);
 
   // Reset the autofill manager state.
   autofill_manager_->Reset();
@@ -1113,7 +1118,8 @@ TEST_F(AutofillMetricsTest, AutofillIsEnabledAtPageLoad) {
               LogIsAutofillEnabledAtPageLoad(false)).Times(1);
 
   autofill_manager_->set_autofill_enabled(false);
-  autofill_manager_->OnFormsSeen(std::vector<FormData>(), TimeTicks(), false);
+  autofill_manager_->OnFormsSeen(std::vector<FormData>(), TimeTicks(),
+                                 autofill::NO_SPECIAL_FORMS_SEEN);
 }
 
 // Test that credit card infobar metrics are logged correctly.
@@ -1226,7 +1232,8 @@ TEST_F(AutofillMetricsTest, UserHappinessFormLoadAndSubmission) {
   {
     EXPECT_CALL(*autofill_manager_->metric_logger(),
                 LogUserHappinessMetric(AutofillMetrics::FORMS_LOADED)).Times(0);
-    autofill_manager_->OnFormsSeen(forms, TimeTicks(), false);
+    autofill_manager_->OnFormsSeen(forms, TimeTicks(),
+                                   autofill::NO_SPECIAL_FORMS_SEEN);
   }
 
 
@@ -1262,7 +1269,8 @@ TEST_F(AutofillMetricsTest, UserHappinessFormLoadAndSubmission) {
   {
     EXPECT_CALL(*autofill_manager_->metric_logger(),
                 LogUserHappinessMetric(AutofillMetrics::FORMS_LOADED));
-    autofill_manager_->OnFormsSeen(forms, TimeTicks(), false);
+    autofill_manager_->OnFormsSeen(forms, TimeTicks(),
+                                   autofill::NO_SPECIAL_FORMS_SEEN);
   }
 
   // Expect a notification when the form is submitted.
@@ -1362,7 +1370,8 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction) {
   {
     EXPECT_CALL(*autofill_manager_->metric_logger(),
                 LogUserHappinessMetric(AutofillMetrics::FORMS_LOADED));
-    autofill_manager_->OnFormsSeen(forms, TimeTicks(), false);
+    autofill_manager_->OnFormsSeen(forms, TimeTicks(),
+                                   autofill::NO_SPECIAL_FORMS_SEEN);
   }
 
   // Simulate typing.
@@ -1482,7 +1491,8 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
     EXPECT_CALL(*autofill_manager_->metric_logger(),
                 LogFormFillDurationFromInteractionWithoutAutofill(_)).Times(0);
     autofill_manager_->OnFormsSeen(
-        forms, TimeTicks::FromInternalValue(1), false);
+        forms, TimeTicks::FromInternalValue(1),
+        autofill::NO_SPECIAL_FORMS_SEEN);
     autofill_manager_->FormSubmitted(form, TimeTicks::FromInternalValue(17));
     autofill_manager_->Reset();
     Mock::VerifyAndClearExpectations(autofill_manager_->metric_logger());
@@ -1501,7 +1511,8 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
                 LogFormFillDurationFromInteractionWithoutAutofill(
                     TimeDelta::FromInternalValue(14)));
     autofill_manager_->OnFormsSeen(
-        forms, TimeTicks::FromInternalValue(1), false);
+        forms, TimeTicks::FromInternalValue(1),
+        autofill::NO_SPECIAL_FORMS_SEEN);
     autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
                                             TimeTicks::FromInternalValue(3));
     autofill_manager_->FormSubmitted(form, TimeTicks::FromInternalValue(17));
@@ -1523,7 +1534,8 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
     EXPECT_CALL(*autofill_manager_->metric_logger(),
                 LogFormFillDurationFromInteractionWithoutAutofill(_)).Times(0);
     autofill_manager_->OnFormsSeen(
-        forms, TimeTicks::FromInternalValue(1), false);
+        forms, TimeTicks::FromInternalValue(1),
+        autofill::NO_SPECIAL_FORMS_SEEN);
     autofill_manager_->OnDidFillAutofillFormData(
         TimeTicks::FromInternalValue(5));
     autofill_manager_->FormSubmitted(form, TimeTicks::FromInternalValue(17));
@@ -1546,7 +1558,8 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
     EXPECT_CALL(*autofill_manager_->metric_logger(),
                 LogFormFillDurationFromInteractionWithoutAutofill(_)).Times(0);
     autofill_manager_->OnFormsSeen(
-        forms, TimeTicks::FromInternalValue(1), false);
+        forms, TimeTicks::FromInternalValue(1),
+        autofill::NO_SPECIAL_FORMS_SEEN);
     autofill_manager_->OnDidFillAutofillFormData(
         TimeTicks::FromInternalValue(5));
     autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
