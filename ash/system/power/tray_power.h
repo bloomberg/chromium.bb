@@ -41,6 +41,13 @@ class TrayPower : public SystemTrayItem,
   // Looks up the actual icon in the icon array image for |image_index|.
   static gfx::ImageSkia GetBatteryImage(int image_index, IconSet icon_set);
 
+  // Gets the battery accessible string for |supply_status|.
+  static base::string16 GetAccessibleNameString(
+      const PowerSupplyStatus& supply_status);
+
+  // Gets rounded battery percentage for |battery_percentage|.
+  static int GetRoundedBatteryPercentage(double battery_percentage);
+
  private:
   enum NotificationState {
     NOTIFICATION_NONE,

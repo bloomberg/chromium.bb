@@ -42,7 +42,6 @@ class PowerStatusView : public views::View {
   void Update();
   void UpdateTextForDefaultView();
   void UpdateTextForNotificationView();
-  int GetRoundedBatteryPercentage() const;
   base::string16 GetBatteryTimeAccessibilityString(int hour, int min);
 
   // Overridden from views::View.
