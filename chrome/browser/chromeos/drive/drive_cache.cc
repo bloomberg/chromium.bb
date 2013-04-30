@@ -598,7 +598,7 @@ FileError DriveCache::StoreOnBlockingPool(
 
   // If file was previously pinned, store it in persistent dir.
   CacheEntry cache_entry;
-  if (GetCacheEntryOnBlockingPool(resource_id, md5, &cache_entry)) {
+  if (GetCacheEntryOnBlockingPool(resource_id, std::string(), &cache_entry)) {
     // File exists in cache.
     // If file is dirty or mounted, return error.
     if (cache_entry.is_dirty() || cache_entry.is_mounted()) {

@@ -1334,4 +1334,40 @@ TEST(DriveCacheExtraTest, InitializationFailure) {
   EXPECT_FALSE(success);
 }
 
+TEST_F(DriveCacheTest, UpdatePinnedCache) {
+  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
+
+  std::string resource_id("pdf:1a2b");
+  std::string md5("abcdef0123456789");
+  std::string md5_modified("aaaaaa0000000000");
+
+  // Store an existing file.
+  TestStoreToCache(
+      resource_id, md5,
+      google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
+      FILE_ERROR_OK,
+      test_util::TEST_CACHE_STATE_PRESENT,
+      DriveCache::CACHE_TYPE_TMP);
+
+  // Pin the file.
+  EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
+  TestPin(
+      resource_id, md5,
+      FILE_ERROR_OK,
+      test_util::TEST_CACHE_STATE_PRESENT |
+      test_util::TEST_CACHE_STATE_PINNED |
+      test_util::TEST_CACHE_STATE_PERSISTENT,
+      DriveCache::CACHE_TYPE_PERSISTENT);
+
+  // Store the file with a modified content and md5. It should stay pinned.
+  TestStoreToCache(
+      resource_id, md5_modified,
+      google_apis::test_util::GetTestFilePath("chromeos/gdata/empty_feed.json"),
+      FILE_ERROR_OK,
+      test_util::TEST_CACHE_STATE_PRESENT |
+      test_util::TEST_CACHE_STATE_PINNED |
+      test_util::TEST_CACHE_STATE_PERSISTENT,
+      DriveCache::CACHE_TYPE_PERSISTENT);
+}
+
 }   // namespace drive
