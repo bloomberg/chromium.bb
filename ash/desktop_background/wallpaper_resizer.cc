@@ -34,7 +34,7 @@ void ResizeToFitScreens(const SkBitmap& wallpaper,
                         WallpaperLayout layout,
                         int width,
                         int height,
-                        MessageLoop* origin_loop,
+                        base::MessageLoop* origin_loop,
                         const ResizedCallback& callback) {
   SkBitmap resized_wallpaper = wallpaper;
   if (wallpaper.width() > width || wallpaper.height() > height) {
@@ -122,16 +122,16 @@ void WallpaperResizer::StartResize() {
   }
 
   if (!BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
-      FROM_HERE,
-      base::Bind(&ResizeToFitScreens,
-                 *wallpaper_image_.bitmap(),
-                 wallpaper_info_.layout,
-                 width,
-                 height,
-                 MessageLoop::current(),
-                 base::Bind(&WallpaperResizer::OnResizeFinished,
-                            weak_ptr_factory_.GetWeakPtr())),
-      base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)) {
+          FROM_HERE,
+          base::Bind(&ResizeToFitScreens,
+                     *wallpaper_image_.bitmap(),
+                     wallpaper_info_.layout,
+                     width,
+                     height,
+                     base::MessageLoop::current(),
+                     base::Bind(&WallpaperResizer::OnResizeFinished,
+                                weak_ptr_factory_.GetWeakPtr())),
+          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)) {
     LOG(WARNING) << "PostSequencedWorkerTask failed. " <<
                     "Wallpaper may not be resized.";
   }

@@ -319,7 +319,8 @@ ui::Layer* DesktopBackgroundController::SetColorLayerForContainer(
   Shell::GetContainer(root_window,container_id)->
       layer()->Add(background_layer);
 
-  MessageLoop::current()->PostTask(FROM_HERE,
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
       base::Bind(&DesktopBackgroundController::NotifyAnimationFinished,
                  weak_ptr_factory_.GetWeakPtr()));
 

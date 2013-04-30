@@ -19,10 +19,10 @@ namespace ash {
 // TODO(pkotwicz): Port AcceleratorDispatcher to mac.
 // TODO(pkotwicz): Add support for a |nested_dispatcher| which sends
 //  events to a system IME.
-class ASH_EXPORT AcceleratorDispatcher : public MessageLoop::Dispatcher,
+class ASH_EXPORT AcceleratorDispatcher : public base::MessageLoop::Dispatcher,
                                          public aura::WindowObserver {
  public:
-  AcceleratorDispatcher(MessageLoop::Dispatcher* nested_dispatcher,
+  AcceleratorDispatcher(base::MessageLoop::Dispatcher* nested_dispatcher,
                         aura::Window* associated_window);
   virtual ~AcceleratorDispatcher();
 
@@ -33,7 +33,7 @@ class ASH_EXPORT AcceleratorDispatcher : public MessageLoop::Dispatcher,
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
  private:
-  MessageLoop::Dispatcher* nested_dispatcher_;
+  base::MessageLoop::Dispatcher* nested_dispatcher_;
 
   // Window associated with |nested_dispatcher_| which is used to determine
   // whether the |nested_dispatcher_| is allowed to receive events.

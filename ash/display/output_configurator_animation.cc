@@ -44,9 +44,9 @@ class CallbackRunningObserver {
   void OnSingleTaskCompleted() {
     completed_counter_++;
     if (completed_counter_ >= observer_list_.size()) {
-      MessageLoopForUI::current()->DeleteSoon(FROM_HERE, this);
+      base::MessageLoopForUI::current()->DeleteSoon(FROM_HERE, this);
       if (!animation_aborted_)
-        MessageLoopForUI::current()->PostTask(FROM_HERE, callback_);
+        base::MessageLoopForUI::current()->PostTask(FROM_HERE, callback_);
     }
   }
 

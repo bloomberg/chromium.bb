@@ -40,7 +40,7 @@ TestMetroViewerProcessHost::TestMetroViewerProcessHost(
           closed_unexpectedly_(false) {
 
   base::Thread::Options options;
-  options.message_loop_type = MessageLoop::TYPE_IO;
+  options.message_loop_type = base::MessageLoop::TYPE_IO;
   ipc_thread_.StartWithOptions(options);
 
   channel_.reset(new IPC::ChannelProxy(

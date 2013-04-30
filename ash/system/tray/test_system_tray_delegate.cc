@@ -186,11 +186,11 @@ void TestSystemTrayDelegate::ShowUserLogin() {
 }
 
 void TestSystemTrayDelegate::ShutDown() {
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 void TestSystemTrayDelegate::SignOut() {
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 void TestSystemTrayDelegate::RequestLockScreen() {

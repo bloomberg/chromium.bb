@@ -230,8 +230,8 @@ int DragDropController::StartDragAndDrop(
   if (should_block_during_drag_drop_) {
     base::RunLoop run_loop(aura::Env::GetInstance()->GetDispatcher());
     quit_closure_ = run_loop.QuitClosure();
-    MessageLoopForUI* loop = MessageLoopForUI::current();
-    MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
+    base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
+    base::MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
     run_loop.Run();
   }
 #endif  // !defined(OS_MACOSX)
@@ -492,9 +492,10 @@ void DragDropController::AnimationEnded(const ui::Animation* animation) {
       ForwardPendingLongTap();
     else {
       // See comment about this in OnGestureEvent().
-      MessageLoopForUI::current()->PostTask(
-          FROM_HERE, base::Bind(&DragDropController::ForwardPendingLongTap,
-                                weak_factory_.GetWeakPtr()));
+      base::MessageLoopForUI::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&DragDropController::ForwardPendingLongTap,
+                     weak_factory_.GetWeakPtr()));
     }
   }
 }

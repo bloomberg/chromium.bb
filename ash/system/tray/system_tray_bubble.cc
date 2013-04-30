@@ -116,7 +116,7 @@ class AnimationObserverDeleteLayer : public ui::ImplicitAnimationObserver {
   }
 
   virtual void OnImplicitAnimationsCompleted() OVERRIDE {
-    MessageLoopForUI::current()->DeleteSoon(FROM_HERE, this);
+    base::MessageLoopForUI::current()->DeleteSoon(FROM_HERE, this);
   }
 
  private:

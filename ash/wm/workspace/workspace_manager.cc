@@ -501,7 +501,7 @@ void WorkspaceManager::SetUnminimizingWorkspace(Workspace* workspace) {
   // the process unminimizing and can do the right animation.
   unminimizing_workspace_ = workspace;
   if (unminimizing_workspace_) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&WorkspaceManager::SetUnminimizingWorkspace,
                    clear_unminimizing_workspace_factory_.GetWeakPtr(),

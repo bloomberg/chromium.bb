@@ -783,7 +783,7 @@ void NetworkStateListDetailedView::CallRequestScan() {
   VLOG(1) << "Requesting Network Scan.";
   NetworkStateHandler::Get()->RequestScan();
   // Periodically request a scan while this UI is open.
-  MessageLoopForUI::current()->PostDelayedTask(
+  base::MessageLoopForUI::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&NetworkStateListDetailedView::CallRequestScan, AsWeakPtr()),
       base::TimeDelta::FromSeconds(kRequestScanDelaySeconds));

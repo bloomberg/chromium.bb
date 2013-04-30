@@ -332,7 +332,7 @@ void LauncherTooltipManager::CancelHidingAnimation() {
 }
 
 void LauncherTooltipManager::CloseSoon() {
-  MessageLoopForUI::current()->PostTask(
+  base::MessageLoopForUI::current()->PostTask(
       FROM_HERE,
       base::Bind(&LauncherTooltipManager::Close, base::Unretained(this)));
 }

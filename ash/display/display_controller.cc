@@ -899,7 +899,7 @@ void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
   // Delete most of root window related objects, but don't delete
   // root window itself yet because the stack may be using it.
   controller->Shutdown();
-  MessageLoop::current()->DeleteSoon(FROM_HERE, controller);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, controller);
 }
 
 aura::RootWindow* DisplayController::CreateRootWindowForDisplay(

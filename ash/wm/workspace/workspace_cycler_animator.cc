@@ -725,7 +725,7 @@ void WorkspaceCyclerAnimator::OnImplicitAnimationsCompleted() {
       completed_animation == CYCLER_END) {
     // Post a task to notify the delegate of the animation completion because
     // the delegate may delete |this| as a result of getting notified.
-    MessageLoopForUI::current()->PostTask(
+    base::MessageLoopForUI::current()->PostTask(
         FROM_HERE,
         base::Bind(&WorkspaceCyclerAnimator::NotifyDelegate,
                    AsWeakPtr(),

@@ -75,11 +75,11 @@ class DesktopBackgroundControllerTest : public test::AshTestBase,
   }
 
   void WaitForResize() {
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 
   virtual void OnWallpaperResized() OVERRIDE {
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   void AddWallpaperResizerObserver() {

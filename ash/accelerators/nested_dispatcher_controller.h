@@ -22,7 +22,7 @@ class ASH_EXPORT NestedDispatcherController
   NestedDispatcherController();
   virtual ~NestedDispatcherController();
 
-  virtual void RunWithDispatcher(MessageLoop::Dispatcher* dispatcher,
+  virtual void RunWithDispatcher(base::MessageLoop::Dispatcher* dispatcher,
                                  aura::Window* associated_window,
                                  bool nestable_tasks_allowed) OVERRIDE;
 

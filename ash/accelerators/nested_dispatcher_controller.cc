@@ -17,10 +17,10 @@ NestedDispatcherController::~NestedDispatcherController() {
 }
 
 void NestedDispatcherController::RunWithDispatcher(
-    MessageLoop::Dispatcher* nested_dispatcher,
+    base::MessageLoop::Dispatcher* nested_dispatcher,
     aura::Window* associated_window,
     bool nestable_tasks_allowed) {
-  MessageLoopForUI* loop = MessageLoopForUI::current();
+  base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
   bool did_allow_task_nesting = loop->NestableTasksAllowed();
   loop->SetNestableTasksAllowed(nestable_tasks_allowed);
 

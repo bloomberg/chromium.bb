@@ -84,7 +84,7 @@ void ShellDelegateImpl::Shutdown() {
 }
 
 void ShellDelegateImpl::Exit() {
-  MessageLoopForUI::current()->Quit();
+  base::MessageLoopForUI::current()->Quit();
 }
 
 void ShellDelegateImpl::NewTab() {

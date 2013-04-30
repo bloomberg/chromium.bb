@@ -62,7 +62,8 @@ bool IsPossibleAcceleratorNotForMenu(const ui::KeyEvent& key_event) {
 }  // namespace
 
 AcceleratorDispatcher::AcceleratorDispatcher(
-    MessageLoop::Dispatcher* nested_dispatcher, aura::Window* associated_window)
+    base::MessageLoop::Dispatcher* nested_dispatcher,
+    aura::Window* associated_window)
     : nested_dispatcher_(nested_dispatcher),
       associated_window_(associated_window) {
   DCHECK(nested_dispatcher_);
