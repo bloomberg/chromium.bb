@@ -209,6 +209,7 @@ void EnrollmentHandlerChromeOS::OnRobotAuthCodesFetched(
   client_info.client_id = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
   client_info.client_secret =
       GaiaUrls::GetInstance()->oauth2_chrome_client_secret();
+  client_info.redirect_uri = "oob";
 
   // Use the system request context to avoid sending user cookies.
   gaia_oauth_client_.reset(new gaia::GaiaOAuthClient(
