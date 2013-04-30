@@ -1008,6 +1008,28 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   RunUseNonIncognitoWindowTest(GetSettingsURL());
 }
 
+// This test verifies that the view-source settings page isn't opened in the
+// incognito window.
+IN_PROC_BROWSER_TEST_F(
+    BrowserNavigatorTest,
+    Disposition_ViewSource_Settings_DoNothingIfIncognitoForced) {
+  std::string view_source(chrome::kViewSourceScheme);
+  view_source.append(":");
+  view_source.append(chrome::kChromeUISettingsURL);
+  RunDoNothingIfIncognitoIsForcedTest(GURL(view_source));
+}
+
+// This test verifies that the view-source settings page isn't opened in the
+// incognito window even if incognito mode is forced (does nothing in that
+// case).
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
+                       Disposition_ViewSource_Settings_UseNonIncognitoWindow) {
+  std::string view_source(chrome::kViewSourceScheme);
+  view_source.append(":");
+  view_source.append(chrome::kChromeUISettingsURL);
+  RunUseNonIncognitoWindowTest(GURL(view_source));
+}
+
 // This test verifies that the settings page isn't opened in the incognito
 // window from a non-incognito window (bookmark open-in-incognito trigger).
 // Disabled until fixed for uber settings: http://crbug.com/111243

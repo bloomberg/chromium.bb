@@ -648,6 +648,17 @@ void Navigate(NavigateParams* params) {
 
 bool IsURLAllowedInIncognito(const GURL& url,
                              content::BrowserContext* browser_context) {
+  if (url.scheme() == chrome::kViewSourceScheme) {
+    // A view-source URL is allowed in incognito mode only if the URL itself
+    // is allowed in incognito mode. Remove the "view-source:" from the start
+    // of the URL and validate the rest.
+    std::string stripped_spec = url.spec();
+    DCHECK_GT(stripped_spec.size(), strlen(kViewSourceScheme));
+    stripped_spec.erase(0, strlen(kViewSourceScheme)+1);
+    GURL stripped_url(stripped_spec);
+    return stripped_url.is_valid() &&
+        IsURLAllowedInIncognito(stripped_url, browser_context);
+  }
   // Most URLs are allowed in incognito; the following are exceptions.
   // chrome://extensions is on the list because it redirects to
   // chrome://settings.
