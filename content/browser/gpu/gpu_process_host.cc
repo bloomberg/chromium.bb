@@ -1183,6 +1183,13 @@ void GpuProcessHost::SendOutstandingReplies() {
     channel_requests_.pop();
     callback.Run(IPC::ChannelHandle(), GPUInfo());
   }
+
+  while (!create_command_buffer_requests_.empty()) {
+    CreateCommandBufferCallback callback =
+        create_command_buffer_requests_.front();
+    create_command_buffer_requests_.pop();
+    callback.Run(MSG_ROUTING_NONE);
+  }
 }
 
 void GpuProcessHost::BlockLiveOffscreenContexts() {
