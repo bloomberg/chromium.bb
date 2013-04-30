@@ -696,11 +696,11 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
     // This code is identical to that in LayerImpl::SetScrollDelta.
     if (active_twin) {
       DCHECK(layer->sent_scroll_delta().IsZero());
-      layer->SetScrollDelta(active_twin->ScrollDelta() -
+      layer->SetScrollDelta(active_twin->scroll_delta() -
                             active_twin->sent_scroll_delta());
     }
   } else {
-    layer->SetScrollDelta(layer->ScrollDelta() - layer->sent_scroll_delta());
+    layer->SetScrollDelta(layer->scroll_delta() - layer->sent_scroll_delta());
     layer->SetSentScrollDelta(gfx::Vector2d());
   }
 

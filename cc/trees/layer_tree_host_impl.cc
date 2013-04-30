@@ -168,7 +168,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       did_lock_scrolling_layer_(false),
       should_bubble_scrolls_(false),
       wheel_scrolling_(false),
-      root_layer_scroll_offset_delegate_(NULL),
       settings_(settings),
       overdraw_bottom_height_(0.f),
       device_scale_factor_(1.f),
@@ -309,7 +308,7 @@ void LayerTreeHostImpl::StartPageScaleAnimation(gfx::Vector2d target_offset,
     return;
 
   gfx::Vector2dF scroll_total =
-      RootScrollLayer()->scroll_offset() + RootScrollLayer()->ScrollDelta();
+      RootScrollLayer()->scroll_offset() + RootScrollLayer()->scroll_delta();
   gfx::SizeF scaled_scrollable_size = active_tree_->ScrollableSize();
   gfx::SizeF viewport_size = VisibleViewportSize();
 
@@ -1283,7 +1282,6 @@ void LayerTreeHostImpl::ActivatePendingTree() {
   CHECK(pending_tree_);
   TRACE_EVENT_ASYNC_END0("cc", "PendingTree", pending_tree_.get());
 
-  active_tree_->SetRootLayerScrollOffsetDelegate(NULL);
   active_tree_->PushPersistedState(pending_tree_.get());
   if (pending_tree_->needs_full_tree_sync()) {
     active_tree_->SetRootLayer(
@@ -1303,8 +1301,6 @@ void LayerTreeHostImpl::ActivatePendingTree() {
   pending_tree_.swap(recycle_tree_);
   recycle_tree_->ClearRenderSurfaces();
 
-  active_tree_->SetRootLayerScrollOffsetDelegate(
-      root_layer_scroll_offset_delegate_);
   active_tree_->DidBecomeActive();
 
   // Reduce wasted memory now that unlinked resources are guaranteed not
@@ -1587,13 +1583,13 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollLayerWithViewportSpaceDelta(
   local_end_point.Scale(width_scale, height_scale);
 
   // Apply the scroll delta.
-  gfx::Vector2dF previous_delta = layer_impl->ScrollDelta();
+  gfx::Vector2dF previous_delta = layer_impl->scroll_delta();
   layer_impl->ScrollBy(local_end_point - local_start_point);
 
   // Get the end point in the layer's content space so we can apply its
   // ScreenSpaceTransform.
   gfx::PointF actual_local_end_point = local_start_point +
-                                       layer_impl->ScrollDelta() -
+                                       layer_impl->scroll_delta() -
                                        previous_delta;
   gfx::PointF actual_local_content_end_point =
       gfx::ScalePoint(actual_local_end_point,
@@ -1616,9 +1612,9 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollLayerWithViewportSpaceDelta(
 
 static gfx::Vector2dF ScrollLayerWithLocalDelta(LayerImpl* layer_impl,
                                                 gfx::Vector2dF local_delta) {
-  gfx::Vector2dF previous_delta(layer_impl->ScrollDelta());
+  gfx::Vector2dF previous_delta(layer_impl->scroll_delta());
   layer_impl->ScrollBy(local_delta);
-  return layer_impl->ScrollDelta() - previous_delta;
+  return layer_impl->scroll_delta() - previous_delta;
 }
 
 bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
@@ -1746,18 +1742,6 @@ bool LayerTreeHostImpl::ScrollVerticallyByPage(
   return false;
 }
 
-void LayerTreeHostImpl::SetRootLayerScrollOffsetDelegate(
-      LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate) {
-  root_layer_scroll_offset_delegate_ = root_layer_scroll_offset_delegate;
-  active_tree_->SetRootLayerScrollOffsetDelegate(
-      root_layer_scroll_offset_delegate_);
-}
-
-void LayerTreeHostImpl::OnRootLayerDelegatedScrollOffsetChanged() {
-  DCHECK(root_layer_scroll_offset_delegate_ != NULL);
-  client_->SetNeedsCommitOnImplThread();
-}
-
 void LayerTreeHostImpl::ClearCurrentlyScrollingLayer() {
   active_tree_->ClearCurrentlyScrollingLayer();
   did_lock_scrolling_layer_ = false;
@@ -1829,7 +1813,7 @@ static void CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
     return;
 
   gfx::Vector2d scroll_delta =
-      gfx::ToFlooredVector2d(layer_impl->ScrollDelta());
+      gfx::ToFlooredVector2d(layer_impl->scroll_delta());
   if (!scroll_delta.IsZero()) {
     LayerTreeHostCommon::ScrollUpdateInfo scroll;
     scroll.layer_id = layer_impl->id();
@@ -1862,7 +1846,7 @@ void LayerTreeHostImpl::AnimatePageScale(base::TimeTicks time) {
 
   double monotonic_time = (time - base::TimeTicks()).InSecondsF();
   gfx::Vector2dF scroll_total = RootScrollLayer()->scroll_offset() +
-                                RootScrollLayer()->ScrollDelta();
+                                RootScrollLayer()->scroll_delta();
 
   active_tree_->SetPageScaleDelta(
       page_scale_animation_->PageScaleFactorAtTime(monotonic_time) /

@@ -505,8 +505,8 @@ gfx::Transform ComputeScrollCompensationForThisLayer(
   gfx::Transform scroll_compensation_for_this_layer =
       partial_layer_origin_transform;        // Step 3
   scroll_compensation_for_this_layer.Translate(
-      scrolling_layer->ScrollDelta().x(),
-      scrolling_layer->ScrollDelta().y());  // Step 2
+      scrolling_layer->scroll_delta().x(),
+      scrolling_layer->scroll_delta().y());  // Step 2
 
   gfx::Transform inverse_partial_layer_origin_transform(
       gfx::Transform::kSkipInitialization);
@@ -560,7 +560,7 @@ gfx::Transform ComputeScrollCompensationMatrixForChildren(
   // initialization/copy) if we know that the scroll compensation doesn't need
   // to be reset or adjusted.
   if (!layer->IsContainerForFixedPositionLayers() &&
-      layer->ScrollDelta().IsZero() && !layer->render_surface())
+      layer->scroll_delta().IsZero() && !layer->render_surface())
     return current_scroll_compensation_matrix;
 
   // Start as identity matrix.
@@ -574,7 +574,7 @@ gfx::Transform ComputeScrollCompensationMatrixForChildren(
   // If the current layer has a non-zero scroll_delta, then we should compute
   // its local scroll compensation and accumulate it to the
   // next_scroll_compensation_matrix.
-  if (!layer->ScrollDelta().IsZero()) {
+  if (!layer->scroll_delta().IsZero()) {
     gfx::Transform scroll_compensation_for_this_layer =
         ComputeScrollCompensationForThisLayer(
             layer, current_page_scale, parent_matrix);
@@ -956,7 +956,7 @@ static void CalculateDrawPropertiesInternal(
 
   gfx::Size bounds = layer->bounds();
   gfx::PointF anchor_point = layer->anchor_point();
-  gfx::PointF position = layer->position() - layer->ScrollDelta();
+  gfx::PointF position = layer->position() - layer->scroll_delta();
 
   gfx::Transform combined_transform = parent_matrix;
   if (!layer->transform().IsIdentity()) {

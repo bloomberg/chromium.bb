@@ -25,9 +25,8 @@ LayerTreeImpl::LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl)
     : layer_tree_host_impl_(layer_tree_host_impl),
       source_frame_number_(-1),
       hud_layer_(0),
-      root_scroll_layer_(NULL),
-      currently_scrolling_layer_(NULL),
-      root_layer_scroll_offset_delegate_(NULL),
+      root_scroll_layer_(0),
+      currently_scrolling_layer_(0),
       background_color_(0),
       has_transparent_background_(false),
       pinch_zoom_scrollbar_horizontal_layer_id_(Layer::INVALID_ID),
@@ -68,8 +67,6 @@ static LayerImpl* FindRootScrollLayerRecursive(LayerImpl* layer) {
 
 void LayerTreeImpl::SetRootLayer(scoped_ptr<LayerImpl> layer) {
   root_layer_ = layer.Pass();
-  if (root_scroll_layer_)
-    root_scroll_layer_->SetScrollOffsetDelegate(NULL);
   root_scroll_layer_ = NULL;
   currently_scrolling_layer_ = NULL;
 
@@ -78,11 +75,6 @@ void LayerTreeImpl::SetRootLayer(scoped_ptr<LayerImpl> layer) {
 
 void LayerTreeImpl::FindRootScrollLayer() {
   root_scroll_layer_ = FindRootScrollLayerRecursive(root_layer_.get());
-
-  if (root_scroll_layer_) {
-    root_scroll_layer_->SetScrollOffsetDelegate(
-        root_layer_scroll_offset_delegate_);
-  }
 
   if (root_layer_ && scrolling_layer_id_from_previous_tree_) {
     currently_scrolling_layer_ = LayerTreeHostCommon::FindLayerInSubtree(
@@ -97,8 +89,6 @@ scoped_ptr<LayerImpl> LayerTreeImpl::DetachLayerTree() {
   // Clear all data structures that have direct references to the layer tree.
   scrolling_layer_id_from_previous_tree_ =
     currently_scrolling_layer_ ? currently_scrolling_layer_->id() : 0;
-  if (root_scroll_layer_)
-    root_scroll_layer_->SetScrollOffsetDelegate(NULL);
   root_scroll_layer_ = NULL;
   currently_scrolling_layer_ = NULL;
 
@@ -569,15 +559,6 @@ void LayerTreeImpl::DidUpdateScroll() {
 void LayerTreeImpl::DidEndScroll() {
   if (HasPinchZoomScrollbars())
     FadeOutPinchZoomScrollbars();
-}
-
-void LayerTreeImpl::SetRootLayerScrollOffsetDelegate(
-      LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate) {
-  root_layer_scroll_offset_delegate_ = root_layer_scroll_offset_delegate;
-  if (root_scroll_layer_) {
-    root_scroll_layer_->SetScrollOffsetDelegate(
-        root_layer_scroll_offset_delegate_);
-  }
 }
 
 void LayerTreeImpl::SetPinchZoomHorizontalLayerId(int layer_id) {

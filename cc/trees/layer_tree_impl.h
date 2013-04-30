@@ -197,9 +197,6 @@ class CC_EXPORT LayerTreeImpl {
   void DidUpdateScroll();
   void DidEndScroll();
 
-  void SetRootLayerScrollOffsetDelegate(
-      LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate);
-
   void SetLatencyInfo(const LatencyInfo& latency_info);
   const LatencyInfo& GetLatencyInfo();
   void ClearLatencyInfo();
@@ -225,7 +222,6 @@ class CC_EXPORT LayerTreeImpl {
   HeadsUpDisplayLayerImpl* hud_layer_;
   LayerImpl* root_scroll_layer_;
   LayerImpl* currently_scrolling_layer_;
-  LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate_;
   SkColor background_color_;
   bool has_transparent_background_;
 

@@ -245,7 +245,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void SetForceRenderSurface(bool force_render_surface);
   bool force_render_surface() const { return force_render_surface_; }
 
-  gfx::Vector2d ScrollDelta() const { return gfx::Vector2d(); }
+  gfx::Vector2d scroll_delta() const { return gfx::Vector2d(); }
 
   void SetDoubleSided(bool double_sided);
   bool double_sided() const { return double_sided_; }

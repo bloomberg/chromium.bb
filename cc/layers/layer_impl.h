@@ -284,8 +284,6 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
                                       float* contents_scale_y,
                                       gfx::Size* content_bounds);
 
-  void SetScrollOffsetDelegate(
-      LayerScrollOffsetDelegate* scroll_offset_delegate);
   void SetScrollOffset(gfx::Vector2d scroll_offset);
   gfx::Vector2d scroll_offset() const { return scroll_offset_; }
 
@@ -293,7 +291,7 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   gfx::Vector2d max_scroll_offset() const { return max_scroll_offset_; }
 
   void SetScrollDelta(gfx::Vector2dF scroll_delta);
-  gfx::Vector2dF ScrollDelta() const;
+  gfx::Vector2dF scroll_delta() const { return scroll_delta_; }
 
   gfx::Vector2dF TotalScrollOffset() const;
 
@@ -458,7 +456,6 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   float anchor_point_z_;
   gfx::Size bounds_;
   gfx::Vector2d scroll_offset_;
-  LayerScrollOffsetDelegate* scroll_offset_delegate_;
   bool scrollable_;
   bool should_scroll_on_main_thread_;
   bool have_wheel_event_handlers_;
