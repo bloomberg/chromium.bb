@@ -35,6 +35,7 @@
 #include "ui/gfx/size.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/glue/clipboard_client.h"
+#include "webkit/plugins/webkit_plugins_export.h"
 #include "webkit/quota/quota_types.h"
 
 class GURL;
@@ -177,8 +178,10 @@ class PluginDelegate {
     virtual TransportDIB* GetTransportDIB() const = 0;
   };
 
-  class PlatformGraphics2D {
+  class WEBKIT_PLUGINS_EXPORT PlatformGraphics2D {
    public:
+    virtual ~PlatformGraphics2D() {}
+
     virtual bool ReadImageData(PP_Resource image, const PP_Point* top_left) = 0;
 
     // Assciates this device with the given plugin instance. You can pass NULL
