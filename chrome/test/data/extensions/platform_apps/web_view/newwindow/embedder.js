@@ -18,9 +18,7 @@ embedder.setUp = function(config) {
 /** @private */
 embedder.setUpGuest_ = function(partitionName) {
   document.querySelector('#webview-tag-container').innerHTML =
-      '<webview style="width: 100px; height: 100px;"' +
-      ' src="' + embedder.guestURL + '"' +
-      '></webview>';
+      '<webview style="width: 100px; height: 100px;"></webview>';
   var webview = document.querySelector('webview');
   if (partitionName) {
     webview.partition = partitionName;
@@ -32,27 +30,27 @@ embedder.setUpGuest_ = function(partitionName) {
 };
 
 /** @private */
-embedder.setUpNewWindowRequest_ = function(webview, url, frameName) {
+embedder.setUpNewWindowRequest_ = function(webview, url, frameName, testName) {
   var onWebViewLoadStop = function(e) {
     // Send post message to <webview> when it's ready to receive them.
+    var redirect = testName.indexOf("_blank") != -1;
     webview.contentWindow.postMessage(
-        JSON.stringify(['open-window', '' + url, '' + frameName]), '*');
+        JSON.stringify(
+            ['open-window', '' + url, '' + frameName, redirect]), '*');
   };
   webview.addEventListener('loadstop', onWebViewLoadStop);
+  webview.setAttribute('src', embedder.guestURL);
 };
 
-embedder.setUpFrameNameRequest_ = function(webview, testName) {
+/** @private */
+embedder.requestFrameName_ =
+    function(webview, openerWebview, testName, expectedFrameName) {
   var onWebViewLoadStop = function(e) {
     // Send post message to <webview> when it's ready to receive them.
     webview.contentWindow.postMessage(
         JSON.stringify(['get-frame-name', testName]), '*');
   };
   webview.addEventListener('loadstop', onWebViewLoadStop);
-};
-
-/** @private */
-embedder.requestFrameName_ =
-    function(webview, openerwebview, testName, expectedFrameName) {
   var onPostMessageReceived = function(e) {
     var data = JSON.parse(e.data);
     if (data[0] == 'get-frame-name') {
@@ -62,7 +60,7 @@ embedder.requestFrameName_ =
       var frameName = data[2];
       chrome.test.assertEq(expectedFrameName, frameName);
       chrome.test.assertEq(expectedFrameName, webview.name);
-      chrome.test.assertEq(openerwebview.partition, webview.partition);
+      chrome.test.assertEq(openerWebview.partition, webview.partition);
       chrome.test.succeed();
     }
   };
@@ -73,7 +71,6 @@ embedder.requestFrameName_ =
 embedder.assertCorrectEvent_ = function(e) {
   chrome.test.assertEq('newwindow', e.type);
   chrome.test.assertTrue(!!e.targetUrl);
-  chrome.test.assertTrue(e.targetUrl.indexOf(embedder.baseGuestURL) == 0);
 };
 
 // Tests begin.
@@ -104,7 +101,6 @@ var testNewWindow = function(testName,
         var w = newwindow.contentWindow;
         var newwebview = w.document.querySelector('webview');
         newwebview.name = webViewName;
-        embedder.setUpFrameNameRequest_(newwebview, testName);
         embedder.requestFrameName_(
             newwebview, webview, testName, expectedFrameName);
         try {
@@ -118,7 +114,7 @@ var testNewWindow = function(testName,
   webview.addEventListener('newwindow', onNewWindow);
 
   // Load a new window with the given name.
-  embedder.setUpNewWindowRequest_(webview, 'guest.html', guestName);
+  embedder.setUpNewWindowRequest_(webview, 'guest.html', guestName, testName);
 };
 
 // Loads a guest which requests a new window.
@@ -151,13 +147,23 @@ embedder.tests.testNoName = function testNoName() {
                 webViewName, guestName, partitionName, expectedName);
 };
 
+embedder.tests.testNewWindowRedirect = function testNewWindowRedirect() {
+  var webViewName = 'foo';
+  var guestName = '';
+  var partitionName = 'persist:foobar';
+  var expectedName = webViewName;
+  testNewWindow('testNewWindowRedirect_blank',
+                webViewName, guestName, partitionName, expectedName);
+};
+
 onload = function() {
   chrome.test.getConfig(function(config) {
     embedder.setUp(config);
     chrome.test.runTests([
       embedder.tests.testNewWindowNameTakesPrecedence,
       embedder.tests.testWebViewNameTakesPrecedence,
-      embedder.tests.testNoName
+      embedder.tests.testNoName,
+      embedder.tests.testNewWindowRedirect
     ]);
   });
 };

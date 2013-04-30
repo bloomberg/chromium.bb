@@ -90,6 +90,12 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
       int instance_id,
       WebContentsImpl* web_contents);
 
+  static BrowserPluginGuest* CreateWithOpener(
+      int instance_id,
+      WebContentsImpl* web_contents,
+      BrowserPluginGuest* opener,
+      bool has_render_view);
+
   // Destroys the guest WebContents and all its associated state, including
   // this BrowserPluginGuest, and its new unattached windows.
   void Destroy();
@@ -177,6 +183,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
                            const std::string& request_method,
                            const base::Callback<void(bool)>& callback) OVERRIDE;
   virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
+  virtual WebContents* OpenURLFromTab(WebContents* source,
+                                      const OpenURLParams& params) OVERRIDE;
   virtual void WebContentsCreated(WebContents* source_contents,
                                   int64 source_frame_id,
                                   const string16& frame_name,
@@ -248,7 +256,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   friend class TestBrowserPluginGuest;
 
   BrowserPluginGuest(int instance_id,
-                     WebContentsImpl* web_contents);
+                     WebContentsImpl* web_contents,
+                     BrowserPluginGuest* opener,
+                     bool has_render_view);
 
   // Destroy unattached new windows that have been opened by this
   // BrowserPluginGuest.
@@ -433,7 +443,18 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   gfx::Size max_auto_size_;
   gfx::Size min_auto_size_;
 
-  typedef std::map<BrowserPluginGuest*, std::string> PendingWindowMap;
+  // Tracks the target URL of the new window and whether or not it has changed
+  // since the WebContents has been created and before the new window has been
+  // attached to a BrowserPlugin. Once the first navigation commits, we no
+  // longer track this URL.
+  struct TargetURL {
+    bool changed;
+    GURL url;
+    explicit TargetURL(const GURL& url) :
+        changed(false),
+        url(url) {}
+  };
+  typedef std::map<BrowserPluginGuest*, TargetURL> PendingWindowMap;
   PendingWindowMap pending_new_windows_;
   BrowserPluginGuest* opener_;
   // A counter to generate a unique request id for a permission request.
@@ -450,6 +471,11 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
 
   typedef std::map<int, base::Callback<void(bool)> > DownloadRequestMap;
   DownloadRequestMap download_request_callback_map_;
+
+  // Indicates that this BrowserPluginGuest has associated renderer-side state.
+  // This is used to determine whether or not to create a new RenderView when
+  // this guest is attached.
+  bool has_render_view_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginGuest);
 };
