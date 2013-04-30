@@ -125,6 +125,7 @@
 #include "core/platform/chromium/PopupContainer.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/chromium/support/GraphicsContext3DPrivate.h"
+#include "core/platform/chromium/support/WebActiveGestureAnimation.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/ColorSpace.h"
 #include "core/platform/graphics/Extensions3D.h"
@@ -144,7 +145,6 @@
 #include "modules/geolocation/GeolocationController.h"
 #include "painting/ContinuousPainter.h"
 #include "painting/GraphicsContextBuilder.h"
-#include "src/WebActiveGestureAnimation.h"
 #include <public/Platform.h>
 #include <public/WebCompositorOutputSurface.h>
 #include <public/WebCompositorSupport.h>

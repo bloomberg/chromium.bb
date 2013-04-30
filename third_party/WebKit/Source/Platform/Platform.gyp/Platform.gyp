@@ -36,7 +36,7 @@
     'targets': [
         {
             'target_name': 'webkit_platform',
-            'type': 'static_library',
+            'type': 'none',
             'dependencies': [
                 '../../wtf/wtf.gyp:wtf',
                 '<(DEPTH)/skia/skia.gyp:skia',

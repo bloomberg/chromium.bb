@@ -163,15 +163,6 @@
             'chromium/public/mac/WebThemeEngine.h',
             'chromium/public/win/WebSandboxSupport.h',
             'chromium/public/win/WebThemeEngine.h',
-            'chromium/src/Platform.cpp',
-            'chromium/src/WebActiveGestureAnimation.cpp',
-            'chromium/src/WebActiveGestureAnimation.h',
-            'chromium/src/WebCString.cpp',
-            'chromium/src/WebFilterOperation.cpp',
-            'chromium/src/WebFilterOperations.cpp',
-            'chromium/src/WebFloatQuad.cpp',
-            'chromium/src/WebPrerenderingSupport.cpp',
-            'chromium/src/WebString.cpp',
         ]
     }
 }
