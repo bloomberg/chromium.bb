@@ -140,12 +140,12 @@ class ExtensionDevToolsInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~ExtensionDevToolsInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
-  virtual int GetButtons() const OVERRIDE;
+  virtual void InfoBarDismissed() OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
   virtual bool ShouldExpireInternal(
       const content::LoadCommittedDetails& details) const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
-  virtual void InfoBarDismissed() OVERRIDE;
+  virtual int GetButtons() const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
 
   std::string client_name_;
@@ -194,8 +194,9 @@ ExtensionDevToolsInfoBarDelegate::ExtensionDevToolsInfoBarDelegate(
 ExtensionDevToolsInfoBarDelegate::~ExtensionDevToolsInfoBarDelegate() {
 }
 
-int ExtensionDevToolsInfoBarDelegate::GetButtons() const {
-  return BUTTON_CANCEL;
+void ExtensionDevToolsInfoBarDelegate::InfoBarDismissed() {
+  if (client_host_)
+    client_host_->MarkAsDismissed();
 }
 
 InfoBarDelegate::Type ExtensionDevToolsInfoBarDelegate::GetInfoBarType() const {
@@ -212,9 +213,8 @@ string16 ExtensionDevToolsInfoBarDelegate::GetMessageText() const {
                                     UTF8ToUTF16(client_name_));
 }
 
-void ExtensionDevToolsInfoBarDelegate::InfoBarDismissed() {
-  if (client_host_)
-    client_host_->MarkAsDismissed();
+int ExtensionDevToolsInfoBarDelegate::GetButtons() const {
+  return BUTTON_CANCEL;
 }
 
 bool ExtensionDevToolsInfoBarDelegate::Cancel() {
@@ -224,6 +224,93 @@ bool ExtensionDevToolsInfoBarDelegate::Cancel() {
 }
 
 namespace {
+
+void CopyDebuggee(Debuggee & dst, const Debuggee& src) {
+  if (src.tab_id)
+    dst.tab_id.reset(new int(*src.tab_id));
+  if (src.extension_id)
+    dst.extension_id.reset(new std::string(*src.extension_id));
+  if (src.target_id)
+    dst.target_id.reset(new std::string(*src.target_id));
+}
+
+extensions::ExtensionHost* GetExtensionBackgroundHost(
+    WebContents* web_contents) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (!profile)
+    return NULL;
+
+  extensions::ExtensionHost* extension_host =
+      extensions::ExtensionSystem::Get(profile)->process_manager()->
+          GetBackgroundHostForExtension(web_contents->GetURL().host());
+
+  if (extension_host && extension_host->host_contents() == web_contents)
+    return extension_host;
+
+  return NULL;
+}
+
+const char kTargetIdField[]  = "id";
+const char kTargetTypeField[]  = "type";
+const char kTargetTitleField[]  = "title";
+const char kTargetAttachedField[]  = "attached";
+const char kTargetUrlField[]  = "url";
+const char kTargetFaviconUrlField[] = "faviconUrl";
+
+const char kTargetTypePage[]  = "page";
+const char kTargetTypeBackgroundPage[]  = "background_page";
+const char kTargetTypeWorker[]  = "worker";
+
+base::Value* SerializePageInfo(RenderViewHost* rvh) {
+  WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
+  if (!web_contents)
+    return NULL;
+
+  DevToolsAgentHost* agent_host = DevToolsAgentHost::GetOrCreateFor(rvh);
+
+  base::DictionaryValue* dictionary = new base::DictionaryValue();
+
+  dictionary->SetString(kTargetIdField, agent_host->GetId());
+  dictionary->SetBoolean(kTargetAttachedField, agent_host->IsAttached());
+  dictionary->SetString(kTargetUrlField, web_contents->GetURL().spec());
+
+  extensions::ExtensionHost* extension_host =
+      GetExtensionBackgroundHost(web_contents);
+  if (extension_host) {
+    // This RenderViewHost belongs to a background page.
+    dictionary->SetString(kTargetTypeField, kTargetTypeBackgroundPage);
+    dictionary->SetString(kTargetTitleField,
+        extension_host->extension()->name());
+  } else {
+    // This RenderViewHost belongs to a regular page.
+    dictionary->SetString(kTargetTypeField, kTargetTypePage);
+    dictionary->SetString(kTargetTitleField, web_contents->GetTitle());
+
+    content::NavigationController& controller = web_contents->GetController();
+    content::NavigationEntry* entry = controller.GetActiveEntry();
+    if (entry != NULL && entry->GetURL().is_valid()) {
+      dictionary->SetString(kTargetFaviconUrlField,
+          entry->GetFavicon().url.spec());
+    }
+  }
+
+  return dictionary;
+}
+
+base::Value* SerializeWorkerInfo(const WorkerService::WorkerInfo& worker) {
+  base::DictionaryValue* dictionary = new base::DictionaryValue;
+
+  scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetForWorker(
+      worker.process_id, worker.route_id));
+  dictionary->SetString(kTargetIdField, agent->GetId());
+  dictionary->SetString(kTargetTypeField, kTargetTypeWorker);
+  dictionary->SetString(kTargetTitleField, worker.name);
+  dictionary->SetString(kTargetUrlField, worker.url.spec());
+  dictionary->SetBoolean(kTargetAttachedField, agent->IsAttached());
+
+  return dictionary;
+}
 
 class AttachedClientHosts {
  public:
@@ -260,95 +347,7 @@ class AttachedClientHosts {
   ClientHostSet client_hosts_;
 };
 
-static extensions::ExtensionHost* GetExtensionBackgroundHost(
-    WebContents* web_contents) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (!profile)
-    return NULL;
-
-  extensions::ExtensionHost* extension_host =
-      extensions::ExtensionSystem::Get(profile)->process_manager()->
-          GetBackgroundHostForExtension(web_contents->GetURL().host());
-
-  if (extension_host && extension_host->host_contents() == web_contents)
-    return extension_host;
-
-  return NULL;
-}
-
-static const char kTargetIdField[]  = "id";
-static const char kTargetTypeField[]  = "type";
-static const char kTargetTitleField[]  = "title";
-static const char kTargetAttachedField[]  = "attached";
-static const char kTargetUrlField[]  = "url";
-static const char kTargetFaviconUrlField[] = "faviconUrl";
-
-static const char kTargetTypePage[]  = "page";
-static const char kTargetTypeBackgroundPage[]  = "background_page";
-static const char kTargetTypeWorker[]  = "worker";
-
-static base::Value* SerializePageInfo(RenderViewHost* rvh) {
-  WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
-  if (!web_contents)
-    return NULL;
-
-  DevToolsAgentHost* agent_host = DevToolsAgentHost::GetOrCreateFor(rvh);
-
-  base::DictionaryValue* dictionary = new base::DictionaryValue();
-
-  dictionary->SetString(kTargetIdField, agent_host->GetId());
-  dictionary->SetBoolean(kTargetAttachedField, agent_host->IsAttached());
-  dictionary->SetString(kTargetUrlField, web_contents->GetURL().spec());
-
-  extensions::ExtensionHost* extension_host =
-      GetExtensionBackgroundHost(web_contents);
-  if (extension_host) {
-    // This RenderViewHost belongs to a background page.
-    dictionary->SetString(kTargetTypeField, kTargetTypeBackgroundPage);
-    dictionary->SetString(kTargetTitleField,
-        extension_host->extension()->name());
-  } else {
-    // This RenderViewHost belongs to a regular page.
-    dictionary->SetString(kTargetTypeField, kTargetTypePage);
-    dictionary->SetString(kTargetTitleField, web_contents->GetTitle());
-
-    content::NavigationController& controller = web_contents->GetController();
-    content::NavigationEntry* entry = controller.GetActiveEntry();
-    if (entry != NULL && entry->GetURL().is_valid()) {
-      dictionary->SetString(kTargetFaviconUrlField,
-          entry->GetFavicon().url.spec());
-    }
-  }
-
-  return dictionary;
-}
-
-static base::Value* SerializeWorkerInfo(
-    const WorkerService::WorkerInfo& worker) {
-  base::DictionaryValue* dictionary = new base::DictionaryValue;
-
-  scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetForWorker(
-      worker.process_id, worker.route_id));
-  dictionary->SetString(kTargetIdField, agent->GetId());
-  dictionary->SetString(kTargetTypeField, kTargetTypeWorker);
-  dictionary->SetString(kTargetTitleField, worker.name);
-  dictionary->SetString(kTargetUrlField, worker.url.spec());
-  dictionary->SetBoolean(kTargetAttachedField, agent->IsAttached());
-
-  return dictionary;
-}
-
 }  // namespace
-
-static void CopyDebuggee(Debuggee & dst, const Debuggee& src) {
-  if (src.tab_id)
-    dst.tab_id.reset(new int(*src.tab_id));
-  if (src.extension_id)
-    dst.extension_id.reset(new std::string(*src.extension_id));
-  if (src.target_id)
-    dst.target_id.reset(new std::string(*src.target_id));
-}
 
 ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
     Profile* profile,
