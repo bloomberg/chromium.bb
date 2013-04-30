@@ -110,6 +110,8 @@ def builder():
     generator = os.environ['GYP_GENERATORS'].split(',')[0]
     if generator.endswith('-android'):
       return generator.split('-')[0]
+    elif generator.endswith('-ninja'):
+      return 'ninja'
     else:
       return generator
   else:
