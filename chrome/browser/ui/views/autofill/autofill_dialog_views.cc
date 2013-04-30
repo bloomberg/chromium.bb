@@ -1014,6 +1014,8 @@ void AutofillDialogViews::ButtonPressed(views::Button* sender,
                            controller_->MenuModelForSection(group->section)));
 
     group->container->SetActive(true);
+    views::Button::ButtonState state = group->suggested_button->state();
+    group->suggested_button->SetState(views::Button::STATE_PRESSED);
     // Ignore the result since we don't need to handle a deleted menu specially.
     gfx::Rect bounds = group->suggested_button->GetBoundsInScreen();
     bounds.Inset(group->suggested_button->GetInsets());
@@ -1024,6 +1026,7 @@ void AutofillDialogViews::ButtonPressed(views::Button* sender,
                                 views::MenuItemView::TOPRIGHT,
                                 0));
     group->container->SetActive(false);
+    group->suggested_button->SetState(state);
   }
 }
 
@@ -1215,13 +1218,16 @@ views::View* AutofillDialogViews::CreateInputsContainer(DialogSection section) {
   info_view->AddChildView(suggested_info);
   layout->AddView(info_view);
 
-  // TODO(estade): Fix the appearance of this button.
   views::ImageButton* menu_button = new views::ImageButton(this);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  menu_button->SetImage(views::CustomButton::STATE_NORMAL,
+  menu_button->SetImage(views::Button::STATE_NORMAL,
       rb.GetImageSkiaNamed(IDR_AUTOFILL_DIALOG_MENU_BUTTON));
-  menu_button->SetImage(views::CustomButton::STATE_PRESSED,
+  menu_button->SetImage(views::Button::STATE_PRESSED,
       rb.GetImageSkiaNamed(IDR_AUTOFILL_DIALOG_MENU_BUTTON_P));
+  menu_button->SetImage(views::Button::STATE_HOVERED,
+      rb.GetImageSkiaNamed(IDR_AUTOFILL_DIALOG_MENU_BUTTON_H));
+  menu_button->SetImage(views::Button::STATE_DISABLED,
+      rb.GetImageSkiaNamed(IDR_AUTOFILL_DIALOG_MENU_BUTTON_D));
   menu_button->set_border(views::Border::CreateEmptyBorder(
       kMenuButtonTopOffset,
       kMenuButtonHorizontalPadding,
