@@ -16,7 +16,8 @@ NavigationController::LoadURLParams::LoadURLParams(const GURL& url)
       override_user_agent(UA_OVERRIDE_INHERIT),
       browser_initiated_post_data(NULL),
       can_load_local_resources(false),
-      is_cross_site_redirect(false) {
+      is_cross_site_redirect(false),
+      should_clear_history_list(false)  {
 }
 
 NavigationController::LoadURLParams::~LoadURLParams() {
@@ -35,7 +36,8 @@ NavigationController::LoadURLParams::LoadURLParams(
       base_url_for_data_url(other.base_url_for_data_url),
       virtual_url_for_data_url(other.virtual_url_for_data_url),
       browser_initiated_post_data(other.browser_initiated_post_data),
-      is_cross_site_redirect(false) {
+      is_cross_site_redirect(false),
+      should_clear_history_list(false) {
 }
 
 NavigationController::LoadURLParams&
@@ -53,6 +55,7 @@ NavigationController::LoadURLParams::operator=(
   virtual_url_for_data_url = other.virtual_url_for_data_url;
   browser_initiated_post_data = other.browser_initiated_post_data;
   is_cross_site_redirect = other.is_cross_site_redirect;
+  should_clear_history_list = other.should_clear_history_list;
 
   return *this;
 }

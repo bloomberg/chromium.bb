@@ -284,6 +284,11 @@ class TestRenderViewHost
   // False by default.
   void set_simulate_fetch_via_proxy(bool proxy);
 
+  // If set, navigations will appear to have cleared the history list in the
+  // RenderView (ViewHostMsg_FrameNavigate_Params::history_list_was_cleared).
+  // False by default.
+  void set_simulate_history_list_was_cleared(bool cleared);
+
   // RenderViewHost overrides --------------------------------------------------
 
   virtual bool CreateRenderView(const string16& frame_name,
@@ -318,6 +323,9 @@ class TestRenderViewHost
 
   // See set_simulate_fetch_via_proxy() above.
   bool simulate_fetch_via_proxy_;
+
+  // See set_simulate_history_list_was_cleared() above.
+  bool simulate_history_list_was_cleared_;
 
   // See SetContentsMimeType() above.
   std::string contents_mime_type_;

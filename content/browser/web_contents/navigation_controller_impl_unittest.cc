@@ -3325,6 +3325,55 @@ TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
   }
 }
 
+// Test that the navigation controller clears its session history when a
+// navigation commits with the clear history list flag set.
+TEST_F(NavigationControllerTest, ClearHistoryList) {
+  const GURL url1("http://foo1");
+  const GURL url2("http://foo2");
+  const GURL url3("http://foo3");
+  const GURL url4("http://foo4");
+
+  NavigationControllerImpl& controller = controller_impl();
+
+  // Create a session history with three entries, second entry is active.
+  NavigateAndCommit(url1);
+  NavigateAndCommit(url2);
+  NavigateAndCommit(url3);
+  controller.GoBack();
+  contents()->CommitPendingNavigation();
+  EXPECT_EQ(3, controller.GetEntryCount());
+  EXPECT_EQ(1, controller.GetCurrentEntryIndex());
+
+  // Create a new pending navigation, and indicate that the session history
+  // should be cleared.
+  NavigationController::LoadURLParams params(url4);
+  params.should_clear_history_list = true;
+  controller.LoadURLWithParams(params);
+
+  // Verify that the pending entry correctly indicates that the session history
+  // should be cleared.
+  NavigationEntryImpl* entry =
+      NavigationEntryImpl::FromNavigationEntry(
+          controller.GetPendingEntry());
+  ASSERT_TRUE(entry);
+  EXPECT_TRUE(entry->should_clear_history_list());
+
+  // Assume that the RV correctly cleared its history and commit the navigation.
+  static_cast<TestRenderViewHost*>(contents()->GetPendingRenderViewHost())->
+      set_simulate_history_list_was_cleared(true);
+  contents()->CommitPendingNavigation();
+
+  // Verify that the NavigationController's session history was correctly
+  // cleared.
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  EXPECT_FALSE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
+  EXPECT_EQ(url4, controller.GetActiveEntry()->GetURL());
+}
+
 /* TODO(brettw) These test pass on my local machine but fail on the XP buildbot
    (but not Vista) cleaning up the directory after they run.
    This should be fixed.

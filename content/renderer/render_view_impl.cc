@@ -1164,6 +1164,11 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
     SetSwappedOut(false);
   }
 
+  if (params.should_clear_history_list) {
+    CHECK_EQ(params.pending_history_list_offset, -1);
+    CHECK_EQ(params.current_history_list_offset, -1);
+    CHECK_EQ(params.current_history_list_length, 0);
+  }
   history_list_offset_ = params.current_history_list_offset;
   history_list_length_ = params.current_history_list_length;
   if (history_list_length_ >= 0)
@@ -1746,6 +1751,9 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
     // Track the URL of the original request.
     params.original_request_url = original_request.url();
 
+    params.history_list_was_cleared =
+        navigation_state->history_list_was_cleared();
+
     // Save some histogram data so we can compute the average memory used per
     // page load of the glyphs.
     UMA_HISTOGRAM_COUNTS_10000("Memory.GlyphPagesPerLoad",
@@ -1766,6 +1774,9 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
       params.transition = PAGE_TRANSITION_MANUAL_SUBFRAME;
     else
       params.transition = PAGE_TRANSITION_AUTO_SUBFRAME;
+
+    DCHECK(!navigation_state->history_list_was_cleared());
+    params.history_list_was_cleared = false;
 
     Send(new ViewHostMsg_FrameNavigate(routing_id_, params));
   }
@@ -3295,6 +3306,7 @@ NavigationState* RenderViewImpl::CreateNavigationStateFromPending() {
     navigation_state = NavigationState::CreateBrowserInitiated(
         params.page_id,
         params.pending_history_list_offset,
+        params.should_clear_history_list,
         params.transition);
     navigation_state->set_transferred_request_child_id(
         params.transferred_request_child_id);
@@ -3492,6 +3504,8 @@ void RenderViewImpl::didFailProvisionalLoad(WebFrame* frame,
         navigation_state->pending_page_id();
     pending_navigation_params_->pending_history_list_offset =
         navigation_state->pending_history_list_offset();
+    pending_navigation_params_->should_clear_history_list =
+        navigation_state->history_list_was_cleared();
     pending_navigation_params_->transition =
         navigation_state->transition_type();
     pending_navigation_params_->request_time =

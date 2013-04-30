@@ -659,6 +659,7 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
           browser_context_));
   if (params.is_cross_site_redirect)
     entry->set_should_replace_entry(true);
+  entry->set_should_clear_history_list(params.should_clear_history_list);
   entry->SetIsOverridingUserAgent(override);
   entry->set_transferred_global_request_id(
       params.transferred_global_request_id);
@@ -781,6 +782,10 @@ bool NavigationControllerImpl::RendererDidNavigate(
   // the renderer.
   active_entry->set_is_renderer_initiated(false);
 
+  // Once committed, we no longer need to track whether the session history was
+  // cleared. Navigating to this entry again shouldn't clear it again.
+  active_entry->set_should_clear_history_list(false);
+
   // The active entry's SiteInstance should match our SiteInstance.
   CHECK(active_entry->site_instance() == web_contents_->GetSiteInstance());
 
@@ -842,6 +847,9 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
     // Valid subframe navigation.
     return NAVIGATION_TYPE_NEW_SUBFRAME;
   }
+
+  // We only clear the session history when navigating to a new page.
+  DCHECK(!params.history_list_was_cleared);
 
   // Now we know that the notification is for an existing page. Find that entry.
   int existing_entry_index = GetEntryIndexWithPageID(
@@ -987,6 +995,16 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
   new_entry->SetPostID(params.post_id);
   new_entry->SetOriginalRequestURL(params.original_request_url);
   new_entry->SetIsOverridingUserAgent(params.is_overriding_user_agent);
+
+  DCHECK(!params.history_list_was_cleared || !replace_entry);
+  // The browser requested to clear the session history when it initiated the
+  // navigation. Now we know that the renderer has updated its state accordingly
+  // and it is safe to also clear the browser side history.
+  if (params.history_list_was_cleared) {
+    DiscardNonCommittedEntriesInternal();
+    entries_.clear();
+    last_committed_entry_index_ = -1;
+  }
 
   InsertOrReplaceEntry(new_entry, replace_entry);
 }

@@ -190,6 +190,15 @@ class CONTENT_EXPORT NavigationEntryImpl
     return screenshot_;
   }
 
+  // Whether this (pending) navigation should clear the session history. Resets
+  // to false after commit.
+  bool should_clear_history_list() const {
+    return should_clear_history_list_;
+  }
+  void set_should_clear_history_list(bool should_clear_history_list) {
+    should_clear_history_list_ = should_clear_history_list;
+  }
+
  private:
   // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
   // Session/Tab restore save portions of this class so that it can be recreated
@@ -274,6 +283,13 @@ class CONTENT_EXPORT NavigationEntryImpl
   // browser will replace the current navigation entry (which is the page
   // doing the redirect).
   bool should_replace_entry_;
+
+  // This is set to true when this entry's navigation should clear the session
+  // history both on the renderer and browser side. The browser side history
+  // won't be cleared until the renderer has committed this navigation. This
+  // entry is not persisted by the session restore system, as it is always
+  // reset to false after commit.
+  bool should_clear_history_list_;
 
   // Set when this entry should be able to access local file:// resources. This
   // value is not needed after the entry commits and is not persisted.

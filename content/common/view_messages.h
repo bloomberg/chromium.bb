@@ -421,6 +421,10 @@ IPC_STRUCT_BEGIN_WITH_PARENT(ViewHostMsg_FrameNavigate_Params,
 
   // User agent override used to navigate.
   IPC_STRUCT_MEMBER(bool, is_overriding_user_agent)
+
+  // Notifies the browser that for this navigation, the session history was
+  // successfully cleared.
+  IPC_STRUCT_MEMBER(bool, history_list_was_cleared)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewHostMsg_OpenURL_Params)
@@ -571,6 +575,11 @@ IPC_STRUCT_BEGIN(ViewMsg_Navigate_Params)
   // session history and the total size of the session history list.
   IPC_STRUCT_MEMBER(int, current_history_list_offset)
   IPC_STRUCT_MEMBER(int, current_history_list_length)
+
+  // Informs the RenderView the session history should be cleared. In that
+  // case, the RenderView needs to notify the browser that the clearing was
+  // succesful when the navigation commits.
+  IPC_STRUCT_MEMBER(bool, should_clear_history_list)
 
   // The URL to load.
   IPC_STRUCT_MEMBER(GURL, url)

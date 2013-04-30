@@ -22,13 +22,18 @@ class CONTENT_EXPORT NavigationState {
   static NavigationState* CreateBrowserInitiated(
       int32 pending_page_id,
       int pending_history_list_offset,
+      bool history_list_was_cleared,
       content::PageTransition transition_type) {
-    return new NavigationState(transition_type, false, pending_page_id,
-                               pending_history_list_offset);
+    return new NavigationState(transition_type,
+                               false,
+                               pending_page_id,
+                               pending_history_list_offset,
+                               history_list_was_cleared);
   }
 
   static NavigationState* CreateContentInitiated() {
-    return new NavigationState(content::PAGE_TRANSITION_LINK, true, -1, -1);
+    return new NavigationState(
+        content::PAGE_TRANSITION_LINK, true, -1, -1, false);
   }
 
   // Contains the page_id for this navigation or -1 if there is none yet.
@@ -38,6 +43,12 @@ class CONTENT_EXPORT NavigationState {
   // offset of the page in the back/forward history list.
   int pending_history_list_offset() const {
     return pending_history_list_offset_;
+  }
+
+  // If pending_page_id() is not -1, then this returns true if the session
+  // history was cleared during this navigation.
+  bool history_list_was_cleared() const {
+    return history_list_was_cleared_;
   }
 
   // Contains the transition type that the browser specified when it
@@ -91,13 +102,15 @@ class CONTENT_EXPORT NavigationState {
   NavigationState(content::PageTransition transition_type,
                   bool is_content_initiated,
                   int32 pending_page_id,
-                  int pending_history_list_offset);
+                  int pending_history_list_offset,
+                  bool history_list_was_cleared);
 
   content::PageTransition transition_type_;
   bool request_committed_;
   bool is_content_initiated_;
   int32 pending_page_id_;
   int pending_history_list_offset_;
+  bool history_list_was_cleared_;
 
   bool was_within_same_page_;
   int transferred_request_child_id_;

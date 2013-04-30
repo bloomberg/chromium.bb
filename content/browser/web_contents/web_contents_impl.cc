@@ -199,9 +199,20 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
                         NavigationController::ReloadType reload_type,
                         ViewMsg_Navigate_Params* params) {
   params->page_id = entry.GetPageID();
-  params->pending_history_list_offset = controller.GetIndexOfEntry(&entry);
-  params->current_history_list_offset = controller.GetLastCommittedEntryIndex();
-  params->current_history_list_length = controller.GetEntryCount();
+  params->should_clear_history_list = entry.should_clear_history_list();
+  if (entry.should_clear_history_list()) {
+    // Set the history list related parameters to the same values a
+    // NavigationController would return before its first navigation. This will
+    // fully clear the RenderView's view of the session history.
+    params->pending_history_list_offset = -1;
+    params->current_history_list_offset = -1;
+    params->current_history_list_length = 0;
+  } else {
+    params->pending_history_list_offset = controller.GetIndexOfEntry(&entry);
+    params->current_history_list_offset =
+        controller.GetLastCommittedEntryIndex();
+    params->current_history_list_length = controller.GetEntryCount();
+  }
   if (!entry.GetBaseURLForDataURL().is_empty()) {
     params->base_url_for_data_url = entry.GetBaseURLForDataURL();
     params->history_url_for_data_url = entry.GetVirtualURL();

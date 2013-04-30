@@ -22,6 +22,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_content_browser_client.h"
@@ -223,6 +224,7 @@ bool WebKitTestController::PrepareForLayoutTest(
     WebContentsObserver::Observe(main_window_->web_contents());
     send_configuration_to_next_host_ = true;
     current_pid_ = base::kNullProcessId;
+    main_window_->LoadURL(test_url);
   } else {
 #if (defined(OS_WIN) && !defined(USE_AURA)) || defined(TOOLKIT_GTK)
     // Shell::SizeTo is not implemented on all platforms.
@@ -238,12 +240,14 @@ bool WebKitTestController::PrepareForLayoutTest(
     OverrideWebkitPrefs(&prefs);
     render_view_host->UpdateWebkitPreferences(prefs);
     SendTestConfiguration();
-    registrar_.Add(this,
-                   NOTIFICATION_NAV_ENTRY_PENDING,
-                   Source<NavigationController>(
-                       &main_window_->web_contents()->GetController()));
+
+    NavigationController::LoadURLParams params(test_url);
+    params.transition_type = PageTransitionFromInt(
+        PAGE_TRANSITION_TYPED | PAGE_TRANSITION_FROM_ADDRESS_BAR);
+    params.should_clear_history_list = true;
+    main_window_->web_contents()->GetController().LoadURLWithParams(params);
+    main_window_->web_contents()->GetView()->Focus();
   }
-  main_window_->LoadURL(test_url);
   main_window_->web_contents()->GetRenderViewHost()->SetActive(true);
   main_window_->web_contents()->GetRenderViewHost()->Focus();
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTimeout)) {
@@ -394,11 +398,6 @@ void WebKitTestController::Observe(int type,
       if (render_process_host != render_view_host->GetProcess())
         return;
       current_pid_ = base::GetProcId(render_process_host->GetHandle());
-      break;
-    }
-    case NOTIFICATION_NAV_ENTRY_PENDING: {
-      registrar_.Remove(this, NOTIFICATION_NAV_ENTRY_PENDING, source);
-      main_window_->web_contents()->GetController().PruneAllButActive();
       break;
     }
     default:

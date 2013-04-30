@@ -159,6 +159,14 @@ class NavigationController {
     // navigated. This is currently only used in tests.
     std::string frame_name;
 
+    // Indicates that during this navigation, the session history should be
+    // cleared such that the resulting page is the first and only entry of the
+    // session history.
+    //
+    // The clearing is done asynchronously, and completes when this navigation
+    // commits.
+    bool should_clear_history_list;
+
     explicit LoadURLParams(const GURL& url);
     ~LoadURLParams();
 

@@ -241,6 +241,7 @@ TestRenderViewHost::TestRenderViewHost(
       render_view_created_(false),
       delete_counter_(NULL),
       simulate_fetch_via_proxy_(false),
+      simulate_history_list_was_cleared_(false),
       contents_mime_type_("text/html") {
   // For normal RenderViewHosts, this is freed when |Shutdown()| is
   // called.  For TestRenderViewHost, the view is explicitly
@@ -322,6 +323,7 @@ void TestRenderViewHost::SendNavigateWithParameters(
   params.socket_address.set_host("2001:db8::1");
   params.socket_address.set_port(80);
   params.was_fetched_via_proxy = simulate_fetch_via_proxy_;
+  params.history_list_was_cleared = simulate_history_list_was_cleared_;
   params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url));
   params.original_request_url = original_request_url;
 
@@ -360,6 +362,10 @@ void TestRenderViewHost::TestOnStartDragging(
 
 void TestRenderViewHost::set_simulate_fetch_via_proxy(bool proxy) {
   simulate_fetch_via_proxy_ = proxy;
+}
+
+void TestRenderViewHost::set_simulate_history_list_was_cleared(bool cleared) {
+  simulate_history_list_was_cleared_ = cleared;
 }
 
 RenderViewHostImplTestHarness::RenderViewHostImplTestHarness() {
