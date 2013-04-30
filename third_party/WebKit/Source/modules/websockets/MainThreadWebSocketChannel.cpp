@@ -356,7 +356,7 @@ void MainThreadWebSocketChannel::didFailSocketStream(SocketStreamHandle* handle,
         failingURL = m_handshake->url().string();
     LOG(Network, "Error Message: '%s', FailURL: '%s'", message.utf8().data(), failingURL.utf8().data());
     RefPtr<WebSocketChannel> protect(this);
-    if (m_client && !m_didFailOfClientAlreadyRun) {
+    if (m_client && !m_closing && !m_didFailOfClientAlreadyRun) {
         m_didFailOfClientAlreadyRun = true;
         m_client->didReceiveMessageError();
     }
