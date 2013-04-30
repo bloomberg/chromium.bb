@@ -4,7 +4,7 @@ This test validates that all of the initiator types are represented even when dy
 
 
 
-PASS /w3c/webperf/resources/generate_resource.php?type=css is expected to have initiatorType link 
-PASS /w3c/webperf/resources/generate_resource.php?type=iframe is expected to have initiatorType iframe 
-PASS /w3c/webperf/resources/generate_resource.php?type=image is expected to have initiatorType img 
+PASS http://127.0.0.1:8000/w3c/webperf/resources/generate_resource.php?type=css is expected to have initiatorType link 
+PASS http://127.0.0.1:8000/w3c/webperf/resources/generate_resource.php?type=iframe is expected to have initiatorType iframe 
+PASS http://127.0.0.1:8000/w3c/webperf/resources/generate_resource.php?type=image is expected to have initiatorType img 
 

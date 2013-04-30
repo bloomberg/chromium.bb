@@ -13,7 +13,7 @@ var mark_names = [
     '1',
     'abc',
 ];
-   
+
 var measures = [
     [''],
     ['2', 1],
@@ -51,12 +51,13 @@ function test_resource_entries(entries, expected_entries)
 {
     // This is slightly convoluted so that we can sort the output.
     var actual_entries = {};
+    var origin = window.location.protocol + "//" + window.location.host;
 
     for (var i = 0; i < entries.length; ++i) {
         var entry = entries[i];
         var found = false;
         for (var expected_entry in expected_entries) {
-            if (entry.name == window.location.origin + expected_entry) {
+            if (entry.name == origin + expected_entry) {
                 found = true;
                 if (expected_entry in actual_entries) {
                     test_fail(expected_entry + ' is not expected to have duplicate entries');
@@ -79,11 +80,11 @@ function test_resource_entries(entries, expected_entries)
         var url = sorted_urls[i];
         test_equals(actual_entries[url].initiatorType,
                     expected_entries[url],
-                    url + ' is expected to have initiatorType ' + expected_entries[url]);
+                    origin + url + ' is expected to have initiatorType ' + expected_entries[url]);
     }
     for (var j in expected_entries) {
         if (!(j in actual_entries)) {
-            test_fail(j + ' is expected to be in the Resource Timing buffer');
+            test_fail(origin + j + ' is expected to be in the Resource Timing buffer');
         }
     }
 }
@@ -101,7 +102,7 @@ function performance_entrylist_checker(type)
             test_true(isFinite(entry.duration), 'duration should be a number.');
         } else if (type === "mark") {
             test_greater_than(entry.startTime, 0, 'startTime should greater than 0.');
-            test_equals(entry.duration, 0, 'duration of mark should be 0.');            
+            test_equals(entry.duration, 0, 'duration of mark should be 0.');
         }
     }
 
@@ -136,13 +137,13 @@ function PerformanceContext(context)
     this.performanceContext = context;
 }
 
-PerformanceContext.prototype = 
+PerformanceContext.prototype =
 {
 
     initialMeasures: function(item, index, array)
     {
         (this.performanceContext.measure     ||
-         this.performanceContext.mozMeasure  || 
+         this.performanceContext.mozMeasure  ||
          this.performanceContext.msMeasure   ||
          this.performanceContext.oMeasure    ||
          this.performanceContext.webkitMeasure)
@@ -152,7 +153,7 @@ PerformanceContext.prototype =
     mark: function()
     {
         (this.performanceContext.mark     ||
-         this.performanceContext.mozMark  || 
+         this.performanceContext.mozMark  ||
          this.performanceContext.msMark   ||
          this.performanceContext.oMark    ||
          this.performanceContext.webkitMark)
@@ -162,7 +163,7 @@ PerformanceContext.prototype =
     measure: function()
     {
         (this.performanceContext.measure     ||
-         this.performanceContext.mozMeasure  || 
+         this.performanceContext.mozMeasure  ||
          this.performanceContext.msMeasure   ||
          this.performanceContext.oMeasure    ||
          this.performanceContext.webkitMeasure)
@@ -172,7 +173,7 @@ PerformanceContext.prototype =
     clearMarks: function()
     {
         (this.performanceContext.clearMarks     ||
-         this.performanceContext.mozClearMarks  || 
+         this.performanceContext.mozClearMarks  ||
          this.performanceContext.msClearMarks   ||
          this.performanceContext.oClearMarks    ||
          this.performanceContext.webkitClearMarks)
@@ -183,7 +184,7 @@ PerformanceContext.prototype =
     clearMeasures: function()
     {
         (this.performanceContext.clearMeasures     ||
-         this.performanceContext.mozClearMeasures  || 
+         this.performanceContext.mozClearMeasures  ||
          this.performanceContext.msClearMeasures   ||
          this.performanceContext.oClearMeasures    ||
          this.performanceContext.webkitClearMeasures)
@@ -194,7 +195,7 @@ PerformanceContext.prototype =
     getEntries: function()
     {
         return (this.performanceContext.getEntries     ||
-                this.performanceContext.mozGetEntries  || 
+                this.performanceContext.mozGetEntries  ||
                 this.performanceContext.msGetEntries   ||
                 this.performanceContext.oGetEntries    ||
                 this.performanceContext.webkitGetEntries)
@@ -204,7 +205,7 @@ PerformanceContext.prototype =
     getEntriesByType: function()
     {
         return (this.performanceContext.getEntriesByType     ||
-                this.performanceContext.mozGetEntriesByType  || 
+                this.performanceContext.mozGetEntriesByType  ||
                 this.performanceContext.msGetEntriesByType   ||
                 this.performanceContext.oGetEntriesByType    ||
                 this.performanceContext.webkitGetEntriesByType)
@@ -214,7 +215,7 @@ PerformanceContext.prototype =
     getEntriesByName: function()
     {
         return (this.performanceContext.getEntriesByName     ||
-                this.performanceContext.mozGetEntriesByName  || 
+                this.performanceContext.mozGetEntriesByName  ||
                 this.performanceContext.msGetEntriesByName   ||
                 this.performanceContext.oGetEntriesByName    ||
                 this.performanceContext.webkitGetEntriesByName)
@@ -224,7 +225,7 @@ PerformanceContext.prototype =
     setResourceTimingBufferSize: function()
     {
         return (this.performanceContext.setResourceTimingBufferSize     ||
-                this.performanceContext.mozSetResourceTimingBufferSize  || 
+                this.performanceContext.mozSetResourceTimingBufferSize  ||
                 this.performanceContext.msSetResourceTimingBufferSize   ||
                 this.performanceContext.oSetResourceTimingBufferSize    ||
                 this.performanceContext.webkitSetResourceTimingBufferSize)
@@ -248,7 +249,7 @@ PerformanceContext.prototype =
     clearResourceTimings: function()
     {
         (this.performanceContext.clearResourceTimings     ||
-         this.performanceContext.mozClearResourceTimings  || 
+         this.performanceContext.mozClearResourceTimings  ||
          this.performanceContext.msClearResourceTimings   ||
          this.performanceContext.oClearResourceTimings    ||
          this.performanceContext.webkitClearResourceTimings)

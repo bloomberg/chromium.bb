@@ -80,8 +80,8 @@ for directory_to_copy in directories_to_copy:
             with open(os.path.join(source_directory, root, filename), 'r') as in_file:
                 with open(os.path.join(destination_directory, root, filename), 'w') as out_file:
                     for line in in_file:
-                        for to_find, replace_with in replacements:
-                            line = line.replace(to_find, replace_with)
-                        assert 'w3c-test.org' not in line, 'Imported test must not depend on live site. Bad line: "%s"' % line
-                        out_file.write(line.rstrip())
-                        out_file.write('\n')
+                        if filename.endswith(('.htm', '.html', '.css', '.js', '.php')):
+                            for to_find, replace_with in replacements:
+                                line = line.replace(to_find, replace_with).rstrip() + '\n'
+                            assert 'w3c-test.org' not in line, 'Imported test must not depend on live site. Bad line: "%s"' % line
+                        out_file.write(line)

@@ -27,6 +27,8 @@ function check_finished() {
     }
     if (page_loaded && ol_font_loaded && ul_font_loaded && background_loaded && xhr_loaded) {
         perform_test();
+    } else {
+        setTimeout(check_finished, 100);
     }
 }
 
@@ -51,23 +53,23 @@ function onload_test() {
 
     var image = document.createElement('img');
     image.src = '/w3c/webperf/resources/generate_resource.php?type=image&id=n1';
-    background_loaded = image.completed;
+    background_loaded = image.complete;
     if (!background_loaded) {
         image.onload = function() {
             background_loaded = true;
         }
     }
 
-    setInterval(check_finished, 100);
+    setTimeout(check_finished, 100);
 }
 
 function perform_test() {
     var context = new PerformanceContext(document.getElementById('frameContext').contentWindow.performance);
-    var entries = context.getEntries();
+    var entries = context.getEntriesByType('resource');
 
     var expected_entries = {
         '/w3c/webperf/resources/Ahem.ttf': 'css',
-        '/w3c/webperf/resources/blank_image.png': 'img',
+        '/w3c/webperf/resources/1x1-blue.png': 'img',
         '/w3c/webperf/resources/blank_page_green.htm': 'iframe',
         '/w3c/webperf/resources/empty_script.js': 'script',
         '/w3c/webperf/resources/generate_resource.php?type=css&id=embed': 'embed',

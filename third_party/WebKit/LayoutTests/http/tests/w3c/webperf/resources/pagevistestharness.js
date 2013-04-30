@@ -17,7 +17,6 @@ var VISIBILITY_STATES =
     VISIBLE: "visible"
 };
 
-var skip_all_tests = false;
 var feature_check = false;
 
 //
@@ -34,7 +33,7 @@ function pv_test(func, msg, doc)
         doc = document;
     }
 
-    // only run the feature check once, unless func == null, in which case, 
+    // only run the feature check once, unless func == null, in which case,
     // this call is intended as a feature check
     if (!feature_check)
     {
@@ -55,16 +54,10 @@ function pv_test(func, msg, doc)
             assert_true(visStateVal !== undefined && hiddenVal != null,
                         "document.visibilityState is defined and not null.");},
                         "document.visibilityState is defined and not null.");
-    
-        //Skip only if both are undefined
 
-        if (hiddenVal === undefined || visStateVal === undefined)
-        {
-            skip_all_tests = true;
-        }
     }
 
-    if (!skip_all_tests && func)
+    if (func)
     {
         test(func, msg);
     }

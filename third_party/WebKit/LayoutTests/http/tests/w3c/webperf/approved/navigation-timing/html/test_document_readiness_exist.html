@@ -7,7 +7,6 @@
     <link rel="help" href="http://www.w3.org/TR/html5/dom.html#resource-metadata-management"/>
     <script src="/w3c/resources/testharness.js"></script>
     <script src="/w3c/resources/testharnessreport.js"></script>
-    <script src="/w3c/webperf/resources/webperftestharness.js"></script>
     <link rel="stylesheet" href="/w3c/resources/testharness.css" />
  <script id="metadata_cache">/*
 {
@@ -15,7 +14,7 @@
   "Document readiness has interactive state.": {},
   "Document readiness has complete state.": {}
 }
-*/</script>   
+*/</script>
     <script>
         setup({ explicit_done: true });
         var has_loading = (document.readyState == "loading");
@@ -40,9 +39,9 @@
 
         function onload_test()
         {
-            test_true(has_loading, "Document readiness has loading state.");
-            test_true(has_interactive, "Document readiness has interactive state.");
-            test_true(has_complete, "Document readiness has complete state.");
+            test(function () { assert_true(has_loading); }, "Document readiness has loading state.");
+            test(function () { assert_true(has_interactive); }, "Document readiness has interactive state.");
+            test(function () { assert_true(has_complete); }, "Document readiness has complete state.");
             done();
         }
     </script>

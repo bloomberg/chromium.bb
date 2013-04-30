@@ -1,0 +1,4 @@
+NOTE(simonjam): Blink has never passed this test. I don't know what this file
+would look like had we passed everything. Until then, I'm leaving this bogus
+file here and marking it failing in TestExpectations. If we ever pass all of
+these tests, please rebaseline this file.

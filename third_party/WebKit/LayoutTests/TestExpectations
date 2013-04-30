@@ -2682,4 +2682,6 @@ crbug.com/169374 transitions/default-timing-function.html [ ImageOnlyFailure ]
 # started failing in r149321/r149322
 crbug.com/236555 fast/forms/calendar-picker/week-picker-key-operations.html [ Failure ]
 
+crbug.com/232182 http/tests/w3c/webperf/approved/HighResolutionTime/idlharness.html [ Failure ]
+crbug.com/232182 http/tests/w3c/webperf/approved/navigation-timing/html/idlharness.html [ Failure ]
 crbug.com/232182 http/tests/w3c/webperf/approved/UserTiming/idlharness.html [ Failure ]
