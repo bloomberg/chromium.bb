@@ -251,6 +251,12 @@ const char kEnableAcceleratedFilters[]      = "enable-accelerated-filters";
 // Turns on extremely verbose logging of accessibility events.
 const char kEnableAccessibilityLogging[]    = "enable-accessibility-logging";
 
+// Enable notifications of audible/silent audio output from a render view.
+//
+// TODO(miu): Remove --enable-audible-notifications once the feature goes
+// live.  http://crbug.com/178934
+const char kEnableAudibleNotifications[]   = "enable-audible-notifications";
+
 // Enables browser plugin compositing experiment.
 const char kDisableBrowserPluginCompositing[] =
     "disable-browser-plugin-compositing";

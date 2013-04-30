@@ -91,6 +91,7 @@ CONTENT_EXPORT extern const char kReduceSecurityForDomAutomationTests[];
 CONTENT_EXPORT extern const char kEnableAcceleratedPainting[];
 CONTENT_EXPORT extern const char kEnableAcceleratedFilters[];
 extern const char kEnableAccessibilityLogging[];
+extern const char kEnableAudibleNotifications[];
 CONTENT_EXPORT extern const char kDisableBrowserPluginCompositing[];
 CONTENT_EXPORT extern const char kEnableBrowserPluginForAllViewTypes[];
 CONTENT_EXPORT extern const char kEnableCompositingForFixedPosition[];

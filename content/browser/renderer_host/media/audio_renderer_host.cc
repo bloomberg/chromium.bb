@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/process.h"
 #include "base/shared_memory.h"
@@ -16,6 +17,7 @@
 #include "content/common/media/audio_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/media_observer.h"
+#include "content/public/common/content_switches.h"
 #include "media/audio/shared_memory_util.h"
 #include "media/base/audio_bus.h"
 #include "media/base/limits.h"
@@ -238,9 +240,12 @@ void AudioRendererHost::DoNotifyAudibleState(AudioEntry* entry,
              << "::DoNotifyAudibleState(is_audible=" << is_audible
              << ") for stream_id=" << entry->stream_id();
 
-    media_observer->OnAudioStreamPlayingChanged(
-        render_process_id_, entry->render_view_id(), entry->stream_id(),
-        is_audible);
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableAudibleNotifications)) {
+      media_observer->OnAudioStreamPlayingChanged(
+          render_process_id_, entry->render_view_id(), entry->stream_id(),
+          is_audible);
+    }
   }
 }
 
