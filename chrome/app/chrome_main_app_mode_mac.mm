@@ -11,7 +11,9 @@
 
 #include "apps/app_shim/app_shim_messages.h"
 #include "base/at_exit.h"
+#include "base/command_line.h"
 #include "base/logging.h"
+#include "base/mac/launch_services_util.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -280,34 +282,17 @@ int ChromeAppModeStart(const app_mode::ChromeAppModeInfo* info) {
   g_io_thread = io_thread;
 
   // Launch Chrome if it isn't already running.
-  FSRef app_fsref;
-  if (!base::mac::FSRefFromPath(info->chrome_outer_bundle_path.value(),
-        &app_fsref)) {
-    LOG(ERROR) << "base::mac::FSRefFromPath failed for "
-               << info->chrome_outer_bundle_path.value();
-    return 1;
-  }
-  std::string silent = std::string("--") + switches::kSilentLaunch;
-  CFArrayRef launch_args =
-      base::mac::NSToCFCast(@[base::SysUTF8ToNSString(silent)]);
-
-  LSApplicationParameters ls_parameters = {
-    0,     // version
-    kLSLaunchDefaults,
-    &app_fsref,
-    NULL,  // asyncLaunchRefCon
-    NULL,  // environment
-    launch_args,
-    NULL   // initialEvent
-  };
-  ProcessSerialNumber psn;
   // TODO(jeremya): this opens a new browser window if Chrome is already
   // running without any windows open.
-  OSStatus status = LSOpenApplication(&ls_parameters, &psn);
-  if (status != noErr) {
-    OSSTATUS_LOG(ERROR, status) << "LSOpenApplication";
+  CommandLine command_line(CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kSilentLaunch);
+  ProcessSerialNumber psn;
+  bool success =
+      base::mac::OpenApplicationWithPath(info->chrome_outer_bundle_path,
+                                         command_line,
+                                         &psn);
+  if (!success)
     return 1;
-  }
 
   // This code abuses the fact that Apple Events sent before the process is
   // fully initialized don't receive a reply until its run loop starts. Once

@@ -224,6 +224,8 @@
           'mac/cocoa_protocols.h',
           'mac/foundation_util.h',
           'mac/foundation_util.mm',
+          'mac/launch_services_util.cc',
+          'mac/launch_services_util.h',
           'mac/launchd.cc',
           'mac/launchd.h',
           'mac/libdispatch_task_runner.cc',
