@@ -5879,6 +5879,10 @@ other types of suffix sets.
   <summary>Error codes returned by sqlite for all databases.</summary>
 </histogram>
 
+<histogram name="Sqlite.Error.IOERR" enum="SqliteIOERRCode">
+  <summary>Error codes returned by sqlite for all databases.</summary>
+</histogram>
+
 <histogram name="Sqlite.History.Error" enum="SqliteErrorCode">
   <summary>Error codes returned by sqlite for the history db.</summary>
 </histogram>
@@ -9452,6 +9456,45 @@ other types of suffix sets.
   <int value="101" label="SQLITE_DONE">
     sqlite3_step() has finished executing
   </int>
+</enum>
+
+<enum name="SqliteIOERRCode" type="int">
+  <summary>Extended error codes returned by SQLite - see sqlite.h</summary>
+  <int value="0" label="SQLITE_IOERR">No extended code given</int>
+  <int value="1" label="SQLITE_IOERR_READ">Error reading from file</int>
+  <int value="2" label="SQLITE_IOERR_SHORT_READ">Short read from file</int>
+  <int value="3" label="SQLITE_IOERR_WRITE">
+    Error writing to file (other than SQLITE_FULL)
+  </int>
+  <int value="4" label="SQLITE_IOERR_FSYNC">Error syncing to disk</int>
+  <int value="5" label="SQLITE_IOERR_DIR_FSYNC">
+    Error syncing directory changes to disk
+  </int>
+  <int value="6" label="SQLITE_IOERR_TRUNCATE">Error truncating file</int>
+  <int value="7" label="SQLITE_IOERR_FSTAT">Error reading file metadata</int>
+  <int value="8" label="SQLITE_IOERR_UNLOCK">Error unlocking file</int>
+  <int value="9" label="SQLITE_IOERR_RDLOCK">
+    Error getting read lock - should not be possible
+  </int>
+  <int value="10" label="SQLITE_IOERR_DELETE">Error deleting file</int>
+  <int value="11" label="SQLITE_IOERR_BLOCKED">
+    Deadlock due to other process access to SQLite files
+  </int>
+  <int value="12" label="SQLITE_IOERR_NOMEM">Error mapping shared memory</int>
+  <int value="13" label="SQLITE_IOERR_ACCESS">
+    Error getting file attributes (other than not found)
+  </int>
+  <int value="14" label="SQLITE_IOERR_CHECKRESERVEDLOCK">
+    Error while querying lock status
+  </int>
+  <int value="15" label="SQLITE_IOERR_LOCK">Error acquiring lock</int>
+  <int value="16" label="SQLITE_IOERR_CLOSE">Error closing file</int>
+  <int value="17" label="SQLITE_IOERR_DIR_CLOSE">Unused</int>
+  <int value="18" label="SQLITE_IOERR_SHMOPEN">Error mmapping file</int>
+  <int value="19" label="SQLITE_IOERR_SHMSIZE">
+    Error in stat while mmapping file
+  </int>
+  <int value="20" label="SQLITE_IOERR_SHMLOCK">Unused</int>
 </enum>
 
 <enum name="TabSwitchedToForegroundLaunchedWithURL" type="int">
