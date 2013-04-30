@@ -51,6 +51,7 @@
 #include "core/page/Frame.h"
 #include "core/page/Performance.h"
 #include "core/page/SecurityOrigin.h"
+#include "core/page/SecurityPolicy.h"
 #include "core/page/Settings.h"
 #include "core/platform/Logging.h"
 #include <wtf/MemoryInstrumentationHashMap.h>
@@ -184,17 +185,9 @@ CachedResourceHandle<CachedCSSStyleSheet> CachedResourceLoader::requestUserCSSSt
             return static_cast<CachedCSSStyleSheet*>(existing);
         memoryCache()->remove(existing);
     }
-    if (url.string() != request.resourceRequest().url())
-        request.mutableResourceRequest().setURL(url);
 
-    CachedResourceHandle<CachedCSSStyleSheet> userSheet = new CachedCSSStyleSheet(request.resourceRequest(), request.charset());
-
-    memoryCache()->add(userSheet.get());
-    // FIXME: loadResource calls setOwningCachedResourceLoader() if the resource couldn't be added to cache. Does this function need to call it, too?
-
-    userSheet->load(this, ResourceLoaderOptions(DoNotSendCallbacks, SniffContent, BufferData, AllowStoredCredentials, AskClientForCrossOriginCredentials, SkipSecurityCheck));
-    
-    return userSheet;
+    request.setOptions(ResourceLoaderOptions(DoNotSendCallbacks, SniffContent, BufferData, AllowStoredCredentials, AskClientForCrossOriginCredentials, SkipSecurityCheck));
+    return static_cast<CachedCSSStyleSheet*>(requestResource(CachedResource::CSSStyleSheet, request).get());
 }
 
 CachedResourceHandle<CachedScript> CachedResourceLoader::requestScript(CachedResourceRequest& request)
@@ -420,6 +413,13 @@ CachedResourceHandle<CachedResource> CachedResourceLoader::requestResource(Cache
         resource->setLoadPriority(request.priority());
 
     if ((policy != Use || resource->stillNeedsLoad()) && CachedResourceRequest::NoDefer == request.defer()) {
+        if (!frame())
+            return 0;
+
+        FrameLoader* frameLoader = frame()->loader();
+        if (request.options().securityCheck == DoSecurityCheck && (frameLoader->state() == FrameStateProvisional || !frameLoader->activeDocumentLoader() || frameLoader->activeDocumentLoader()->isStopping()))
+            return 0;
+
         resource->load(this, request.options());
 
         // We don't support immediate loads, but we do support immediate failure.
@@ -448,6 +448,90 @@ CachedResourceHandle<CachedResource> CachedResourceLoader::requestResource(Cache
     return resource;
 }
 
+void CachedResourceLoader::determineTargetType(ResourceRequest& request, CachedResource::Type type)
+{
+   ResourceRequest::TargetType targetType;
+
+    switch (type) {
+    case CachedResource::MainResource:
+        if (frame()->tree()->parent())
+            targetType = ResourceRequest::TargetIsSubframe;
+        else
+            targetType = ResourceRequest::TargetIsMainFrame;
+        break;
+    case CachedResource::CSSStyleSheet:
+    case CachedResource::XSLStyleSheet:
+        targetType = ResourceRequest::TargetIsStyleSheet;
+        break;
+    case CachedResource::Script:
+        targetType = ResourceRequest::TargetIsScript;
+        break;
+    case CachedResource::FontResource:
+        targetType = ResourceRequest::TargetIsFontResource;
+        break;
+    case CachedResource::ImageResource:
+        targetType = ResourceRequest::TargetIsImage;
+        break;
+    case CachedResource::ShaderResource:
+    case CachedResource::RawResource:
+        targetType = ResourceRequest::TargetIsSubresource;
+        break;
+    case CachedResource::LinkPrefetch:
+        targetType = ResourceRequest::TargetIsPrefetch;
+        break;
+    case CachedResource::LinkSubresource:
+        targetType = ResourceRequest::TargetIsSubresource;
+        break;
+    case CachedResource::TextTrackResource:
+        targetType = ResourceRequest::TargetIsTextTrack;
+        break;
+#if ENABLE(SVG)
+    case CachedResource::SVGDocumentResource:
+        targetType = ResourceRequest::TargetIsImage;
+        break;
+#endif
+    default:
+        ASSERT_NOT_REACHED();
+        targetType = ResourceRequest::TargetIsSubresource;
+        break;
+    }
+    request.setTargetType(targetType);
+}
+
+void CachedResourceLoader::addAdditionalRequestHeaders(ResourceRequest& request, CachedResource::Type type)
+{
+    if (!frame())
+        return;
+
+    bool isMainResource = type == CachedResource::MainResource;
+
+    FrameLoader* frameLoader = frame()->loader();
+
+    if (!isMainResource) {
+        String outgoingReferrer;
+        String outgoingOrigin;
+        if (request.httpReferrer().isNull()) {
+            outgoingReferrer = frameLoader->outgoingReferrer();
+            outgoingOrigin = frameLoader->outgoingOrigin();
+        } else {
+            outgoingReferrer = request.httpReferrer();
+            outgoingOrigin = SecurityOrigin::createFromString(outgoingReferrer)->toString();
+        }
+
+        outgoingReferrer = SecurityPolicy::generateReferrerHeader(document()->referrerPolicy(), request.url(), outgoingReferrer);
+        if (outgoingReferrer.isEmpty())
+            request.clearHTTPReferrer();
+        else if (!request.httpReferrer())
+            request.setHTTPReferrer(outgoingReferrer);
+
+        FrameLoader::addHTTPOriginIfNeeded(request, outgoingOrigin);
+    }
+
+    if (request.targetType() == ResourceRequest::TargetIsUnspecified)
+        determineTargetType(request, type);
+    frameLoader->addExtraFieldsToRequest(request);
+}
+
 CachedResourceHandle<CachedResource> CachedResourceLoader::revalidateResource(const CachedResourceRequest& request, CachedResource* resource)
 {
     ASSERT(resource);
@@ -455,9 +539,8 @@ CachedResourceHandle<CachedResource> CachedResourceLoader::revalidateResource(co
     ASSERT(!memoryCache()->disabled());
     ASSERT(resource->canUseCacheValidator());
     ASSERT(!resource->resourceToRevalidate());
-    
-    // Copy the URL out of the resource to be revalidated in case it gets deleted by the remove() call below.
-    String url = resource->url();
+
+    addAdditionalRequestHeaders(resource->resourceRequest(), resource->type());
     CachedResourceHandle<CachedResource> newResource = createResource(resource->type(), resource->resourceRequest(), resource->encoding());
     
     LOG(ResourceLoading, "Resource %p created to revalidate %p", newResource.get(), resource);
@@ -475,6 +558,7 @@ CachedResourceHandle<CachedResource> CachedResourceLoader::loadResource(CachedRe
 
     LOG(ResourceLoading, "Loading CachedResource for '%s'.", request.resourceRequest().url().elidedString().latin1().data());
 
+    addAdditionalRequestHeaders(request.mutableResourceRequest(), type);
     CachedResourceHandle<CachedResource> resource = createResource(type, request.mutableResourceRequest(), charset);
 
     if (!memoryCache()->add(resource.get()))
