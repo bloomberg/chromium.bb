@@ -47,15 +47,17 @@ class ProfileIOData;
 class PrefService;
 class SigninGlobalError;
 
-namespace policy {
-class CloudPolicyClient;
-}
-
 class SigninManager : public SigninManagerBase,
                       public GaiaAuthConsumer,
                       public UbertokenConsumer,
                       public content::NotificationObserver {
  public:
+  // The callback invoked once the OAuth token has been fetched during signin,
+  // but before the profile transitions to the "signed-in" state. This allows
+  // callers to load policy and prompt the user appropriately before completing
+  // signin. The callback is passed the just-fetched OAuth login refresh token.
+  typedef base::Callback<void(const std::string&)> OAuthTokenFetchedCallback;
+
   // Returns true if |url| is a web signin URL and should be hosted in an
   // isolated, privileged signin process.
   static bool IsWebBasedSigninFlowURL(const GURL& url);
@@ -88,13 +90,29 @@ class SigninManager : public SigninManagerBase,
   // |session_index| indicates which user account to use if the cookie jar
   // contains a multi-login session. Otherwise the end result of this call is
   // the same as StartSignIn().
-  virtual void StartSignInWithCredentials(const std::string& session_index,
-                                          const std::string& username,
-                                          const std::string& password);
+  // If non-null, the passed |signin_complete| callback is invoked once signin
+  // has been completed and the oauth login token has been generated - the
+  // callback will not be invoked if no token is generated (either because of
+  // a failed signin or because web-based signin is not enabled).
+  // The callback should invoke SignOut() or CompletePendingSignin() to either
+  // continue or cancel the in-process signin.
+  virtual void StartSignInWithCredentials(
+      const std::string& session_index,
+      const std::string& username,
+      const std::string& password,
+      const OAuthTokenFetchedCallback& oauth_fetched_callback);
+
+  // Copies auth credentials from one SigninManager to this one. This is used
+  // when creating a new profile during the signin process to transfer the
+  // in-progress credentials to the new profile.
+  virtual void CopyCredentialsFrom(const SigninManager& source);
 
   // Sign a user out, removing the preference, erasing all keys
   // associated with the user, and canceling all auth in progress.
   virtual void SignOut() OVERRIDE;
+
+  // Invoked from an OAuthTokenFetchedCallback to complete user signin.
+  virtual void CompletePendingSignin();
 
   // Returns true if there's a signin in progress.
   virtual bool AuthInProgress() const OVERRIDE;
@@ -204,36 +222,6 @@ class SigninManager : public SigninManagerBase,
   // token.
   void RevokeOAuthLoginToken();
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  // Callback invoked once policy registration is complete. If registration
-  // fails, |client| will be null.
-  void OnRegisteredForPolicy(scoped_ptr<policy::CloudPolicyClient> client);
-
-  // Callback invoked when a policy fetch request has completed. |success| is
-  // true if policy was successfully fetched.
-  void OnPolicyFetchComplete(bool success);
-
-  // Called to create a new profile, which is then signed in with the
-  // in-progress auth credentials currently stored in this object.
-  void TransferCredentialsToNewProfile();
-
-  // Helper function that loads policy with the passed CloudPolicyClient, then
-  // completes the signin process.
-  void LoadPolicyWithCachedClient();
-
-  // Callback invoked once a profile is created, so we can complete the
-  // credentials transfer and load policy.
-  void CompleteSigninForNewProfile(Profile* profile,
-                                   Profile::CreateStatus status);
-
-  // Cancels the in-progress signin for this profile.
-  void CancelSignin();
-
-#endif  // defined(ENABLE_CONFIGURATION_POLICY)
-
-  // Invoked once policy has been loaded to complete user signin.
-  void CompleteSigninAfterPolicyLoad();
-
   // ClientLogin identity.
   std::string possibly_invalid_username_;
   std::string password_;  // This is kept empty whenever possible.
@@ -273,11 +261,9 @@ class SigninManager : public SigninManagerBase,
   // by ID, if there is one.
   int signin_process_id_;
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  // CloudPolicyClient reference we keep while determining whether to create
-  // a new profile for an enterprise user or not.
-  scoped_ptr<policy::CloudPolicyClient> policy_client_;
-#endif
+  // Callback invoked during signin after an OAuth token has been fetched
+  // but before signin is complete.
+  OAuthTokenFetchedCallback oauth_token_fetched_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninManager);
 };

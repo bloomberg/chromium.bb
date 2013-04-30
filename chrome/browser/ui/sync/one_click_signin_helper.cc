@@ -1119,6 +1119,8 @@ void OneClickSigninHelper::DidStopLoading(
       if (!is_trusted_) {
         // The user has navigated away from valid Gaia URLs during sign in,
         // verify this sign in is desired.
+        // TODO(atwilson): Move this into OneClickSyncStarter so we can avoid
+        // prompting policy-based users twice (http://crbug.com/232339).
         browser->window()->ShowOneClickSigninBubble(
             BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_SAML_MODAL_DIALOG,
             UTF8ToUTF16(email_),

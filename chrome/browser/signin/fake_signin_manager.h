@@ -44,9 +44,13 @@ class FakeSigninManager : public SigninManager {
                            const std::string& login_token,
                            const std::string& login_captcha) OVERRIDE;
 
-  virtual void StartSignInWithCredentials(const std::string& session_index,
-                                          const std::string& username,
-                                          const std::string& password) OVERRIDE;
+  virtual void StartSignInWithCredentials(
+      const std::string& session_index,
+      const std::string& username,
+      const std::string& password,
+      const OAuthTokenFetchedCallback& oauth_fetched_callback) OVERRIDE;
+
+  virtual void CompletePendingSignin() OVERRIDE;
 
   // Helper function to be used with ProfileKeyedService::SetTestingFactory().
   static ProfileKeyedService* Build(content::BrowserContext* profile);

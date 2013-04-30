@@ -68,13 +68,22 @@ void FakeSigninManager::StartSignIn(const std::string& username,
 void FakeSigninManager::StartSignInWithCredentials(
     const std::string& session_index,
     const std::string& username,
-    const std::string& password) {
-  SetAuthenticatedUsername(username);
+    const std::string& password,
+    const OAuthTokenFetchedCallback& oauth_fetched_callback) {
+  set_auth_in_progress(username);
+  if (!oauth_fetched_callback.is_null())
+    oauth_fetched_callback.Run("fake_oauth_token");
+}
+
+void FakeSigninManager::CompletePendingSignin() {
+  SetAuthenticatedUsername(GetUsernameForAuthInProgress());
+  set_auth_in_progress(std::string());
 }
 
 void FakeSigninManager::SignOut() {
   if (IsSignoutProhibited())
     return;
+  set_auth_in_progress(std::string());
   authenticated_username_.clear();
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,

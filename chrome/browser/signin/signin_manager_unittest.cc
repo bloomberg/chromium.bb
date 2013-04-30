@@ -229,10 +229,21 @@ class SigninManagerTest : public TokenServiceTestHarness {
     EXPECT_EQ(1U, google_login_failure_.size());
   }
 
+  void CompleteSigninCallback(const std::string& oauth_token) {
+    oauth_tokens_fetched_.push_back(oauth_token);
+    manager_->CompletePendingSignin();
+  }
+
+  void CancelSigninCallback(const std::string& oauth_token) {
+    oauth_tokens_fetched_.push_back(oauth_token);
+    manager_->SignOut();
+  }
+
   net::TestURLFetcherFactory factory_;
   scoped_ptr<SigninManager> manager_;
   content::TestNotificationTracker google_login_success_;
   content::TestNotificationTracker google_login_failure_;
+  std::vector<std::string> oauth_tokens_fetched_;
   scoped_ptr<TestingPrefServiceSimple> prefs_;
   scoped_ptr<content::TestBrowserThread> io_thread_;
   std::vector<std::string> cookies_;
@@ -273,7 +284,11 @@ TEST_F(SigninManagerTest, SignInWithCredentials) {
   manager_->Initialize(profile_.get());
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
-  manager_->StartSignInWithCredentials("0", "user@gmail.com", "password");
+  manager_->StartSignInWithCredentials(
+      "0",
+      "user@gmail.com",
+      "password",
+      SigninManager::OAuthTokenFetchedCallback());
 
   ExpectSignInWithCredentialsSuccess();
 }
@@ -282,7 +297,11 @@ TEST_F(SigninManagerTest, SignInWithCredentialsNonCanonicalEmail) {
   manager_->Initialize(profile_.get());
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
-  manager_->StartSignInWithCredentials("0", "user", "password");
+  manager_->StartSignInWithCredentials(
+      "0",
+      "user",
+      "password",
+      SigninManager::OAuthTokenFetchedCallback());
 
   ExpectSignInWithCredentialsSuccess();
 }
@@ -293,7 +312,11 @@ TEST_F(SigninManagerTest, SignInWithCredentialsWrongEmail) {
 
   // If the email address used to start the sign in does not match the
   // email address returned by /GetUserInfo, the sign in should fail.
-  manager_->StartSignInWithCredentials("0", "user2@gmail.com", "password");
+  manager_->StartSignInWithCredentials(
+      "0",
+      "user2@gmail.com",
+      "password",
+      SigninManager::OAuthTokenFetchedCallback());
 
   ExpectSignInWithCredentialsFail(true /* requestSent */);
 }
@@ -313,7 +336,11 @@ TEST_F(SigninManagerTest, SignInWithCredentialsEmptyPasswordValidCookie) {
         net::CookieMonster::SetCookiesCallback());
 
   // Since the password is empty, will verify the gaia cookies first.
-  manager_->StartSignInWithCredentials("0", "user@gmail.com", std::string());
+  manager_->StartSignInWithCredentials(
+      "0",
+      "user@gmail.com",
+      std::string(),
+      SigninManager::OAuthTokenFetchedCallback());
 
   WaitUntilUIDone();
 
@@ -326,7 +353,11 @@ TEST_F(SigninManagerTest, SignInWithCredentialsEmptyPasswordNoValidCookie) {
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
   // Since the password is empty, will verify the gaia cookies first.
-  manager_->StartSignInWithCredentials("0", "user@gmail.com", std::string());
+  manager_->StartSignInWithCredentials(
+      "0",
+      "user@gmail.com",
+      std::string(),
+      SigninManager::OAuthTokenFetchedCallback());
 
   WaitUntilUIDone();
 
@@ -350,13 +381,56 @@ TEST_F(SigninManagerTest, SignInWithCredentialsEmptyPasswordInValidCookie) {
         net::CookieMonster::SetCookiesCallback());
 
   // Since the password is empty, must verify the gaia cookies first.
-  manager_->StartSignInWithCredentials("0", "user@gmail.com", std::string());
+  manager_->StartSignInWithCredentials(
+      "0",
+      "user@gmail.com",
+      std::string(),
+      SigninManager::OAuthTokenFetchedCallback());
 
   WaitUntilUIDone();
 
   // Since the LSID cookie is invalid, verification should fail and throws
   // a login error.
   ExpectSignInWithCredentialsFail(false /* requestSent */);
+}
+
+TEST_F(SigninManagerTest, SignInWithCredentialsCallbackComplete) {
+  manager_->Initialize(profile_.get());
+  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+
+  // Since the password is empty, must verify the gaia cookies first.
+  SigninManager::OAuthTokenFetchedCallback callback =
+      base::Bind(&SigninManagerTest::CompleteSigninCallback,
+                 base::Unretained(this));
+  manager_->StartSignInWithCredentials(
+      "0",
+      "user@gmail.com",
+      "password",
+      callback);
+
+  ExpectSignInWithCredentialsSuccess();
+  ASSERT_EQ(1U, oauth_tokens_fetched_.size());
+  EXPECT_EQ(oauth_tokens_fetched_[0], "rt1");
+}
+
+TEST_F(SigninManagerTest, SignInWithCredentialsCallbackCancel) {
+  manager_->Initialize(profile_.get());
+  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+
+  // Since the password is empty, must verify the gaia cookies first.
+  SigninManager::OAuthTokenFetchedCallback callback =
+      base::Bind(&SigninManagerTest::CancelSigninCallback,
+                 base::Unretained(this));
+  manager_->StartSignInWithCredentials(
+      "0",
+      "user@gmail.com",
+      "password",
+      callback);
+
+  // Signin should fail since it would be cancelled by the callback.
+  ExpectSignInWithCredentialsFail(true);
+  ASSERT_EQ(1U, oauth_tokens_fetched_.size());
+  EXPECT_EQ(oauth_tokens_fetched_[0], "rt1");
 }
 
 TEST_F(SigninManagerTest, SignInClientLoginNoGPlus) {

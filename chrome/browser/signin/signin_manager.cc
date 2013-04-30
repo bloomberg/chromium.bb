@@ -13,12 +13,8 @@
 #include "base/string_util.h"
 #include "base/strings/string_split.h"
 #include "base/time.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
-#include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/about_signin_internals.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/signin_global_error.h"
@@ -27,12 +23,8 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
-#include "chrome/browser/ui/host_desktop.h"
-#include "chrome/browser/ui/webui/signin/profile_signin_confirmation_dialog.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -46,11 +38,6 @@
 #include "net/base/escape.h"
 #include "net/url_request/url_request_context.h"
 #include "third_party/icu/public/i18n/unicode/regex.h"
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
-#include "chrome/browser/policy/cloud/user_policy_signin_service.h"
-#include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
-#endif
 
 using namespace signin_internals_util;
 
@@ -237,14 +224,20 @@ void SigninManager::ProvideSecondFactorAccessCode(
                                   GaiaAuthFetcher::HostedAccountsNotAllowed);
 }
 
-void SigninManager::StartSignInWithCredentials(const std::string& session_index,
-                                               const std::string& username,
-                                               const std::string& password) {
+void SigninManager::StartSignInWithCredentials(
+    const std::string& session_index,
+    const std::string& username,
+    const std::string& password,
+    const OAuthTokenFetchedCallback& callback) {
   DCHECK(GetAuthenticatedUsername().empty() ||
          gaia::AreEmailsSame(username, GetAuthenticatedUsername()));
 
   if (!PrepareForSignin(SIGNIN_TYPE_WITH_CREDENTIALS, username, password))
     return;
+
+  // Store our callback.
+  DCHECK(oauth_token_fetched_callback_.is_null());
+  oauth_token_fetched_callback_ = callback;
 
   if (password.empty()) {
     // Chrome must verify the GAIA cookies first if auto sign-in is triggered
@@ -303,20 +296,25 @@ void SigninManager::OnGaiaCookiesFetched(
   }
 }
 
+void SigninManager::CopyCredentialsFrom(const SigninManager& source) {
+  DCHECK_NE(this, &source);
+  possibly_invalid_username_ = source.possibly_invalid_username_;
+  last_result_ = source.last_result_;
+  temp_oauth_login_tokens_ = source.temp_oauth_login_tokens_;
+}
+
 void SigninManager::ClearTransientSigninData() {
   DCHECK(IsInitialized());
 
   CleanupNotificationRegistration();
   client_login_.reset();
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  policy_client_.reset();
-#endif
   last_result_ = ClientLoginResult();
   possibly_invalid_username_.clear();
   password_.clear();
   had_two_factor_error_ = false;
   type_ = SIGNIN_TYPE_NONE;
   temp_oauth_login_tokens_ = ClientOAuthResult();
+  oauth_token_fetched_callback_.Reset();
 }
 
 void SigninManager::HandleAuthError(const GoogleServiceAuthError& error,
@@ -485,133 +483,17 @@ void SigninManager::OnGetUserInfoSuccess(const UserInfoMap& data) {
 
   possibly_invalid_username_ = email_iter->second;
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  // TODO(atwilson): Move this code out to OneClickSignin instead of having
-  // it embedded in SigninManager - we don't want UI logic in SigninManager.
-  // If this is a new signin (authenticated_username_ is not set) and we have
-  // an OAuth token, try loading policy for this user now, before any signed in
-  // services are initialized. If there's no oauth token (the user is using the
-  // old ClientLogin flow) then policy will get loaded once the TokenService
-  // finishes initializing (not ideal, but it's a reasonable fallback).
-  if (GetAuthenticatedUsername().empty() &&
+  if (!oauth_token_fetched_callback_.is_null() &&
       !temp_oauth_login_tokens_.refresh_token.empty()) {
-    policy::UserPolicySigninService* policy_service =
-        policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
-    policy_service->RegisterPolicyClient(
-        possibly_invalid_username_,
-        temp_oauth_login_tokens_.refresh_token,
-        base::Bind(&SigninManager::OnRegisteredForPolicy,
-                   weak_pointer_factory_.GetWeakPtr()));
-    return;
-  }
-#endif
-
-  // Not waiting for policy load - just complete signin directly.
-  CompleteSigninAfterPolicyLoad();
-}
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
-void SigninManager::OnRegisteredForPolicy(
-    scoped_ptr<policy::CloudPolicyClient> client) {
-  // If there's no token for the user (no policy) just finish signing in.
-  if (!client.get()) {
-    DVLOG(1) << "Policy registration failed";
-    CompleteSigninAfterPolicyLoad();
-    return;
-  }
-
-  // Stash away a copy of our CloudPolicyClient (should not already have one).
-  DCHECK(!policy_client_);
-  policy_client_.swap(client);
-
-  DVLOG(1) << "Policy registration succeeded: dm_token="
-           << policy_client_->dm_token();
-
-  // Allow user to create a new profile before continuing with sign-in.
-  ProfileSigninConfirmationDialog::ShowDialog(
-      profile_,
-      possibly_invalid_username_,
-      base::Bind(&SigninManager::SignOut,
-                 weak_pointer_factory_.GetWeakPtr()),
-      base::Bind(&SigninManager::TransferCredentialsToNewProfile,
-                 weak_pointer_factory_.GetWeakPtr()),
-      base::Bind(&SigninManager::LoadPolicyWithCachedClient,
-                 weak_pointer_factory_.GetWeakPtr()));
-}
-
-void SigninManager::LoadPolicyWithCachedClient() {
-  DCHECK(policy_client_);
-  policy::UserPolicySigninService* policy_service =
-      policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
-  policy_service->FetchPolicyForSignedInUser(
-      policy_client_.Pass(),
-      base::Bind(&SigninManager::OnPolicyFetchComplete,
-                 weak_pointer_factory_.GetWeakPtr()));
-}
-
-void SigninManager::OnPolicyFetchComplete(bool success) {
-  // For now, we allow signin to complete even if the policy fetch fails. If
-  // we ever want to change this behavior, we could call HandleAuthError() here
-  // instead.
-  DLOG_IF(ERROR, !success) << "Error fetching policy for user";
-  DVLOG_IF(1, success) << "Policy fetch successful - completing signin";
-  CompleteSigninAfterPolicyLoad();
-}
-
-void SigninManager::TransferCredentialsToNewProfile() {
-  DCHECK(!possibly_invalid_username_.empty());
-  DCHECK(policy_client_);
-  // Create a new profile and have it call back when done so we can inject our
-  // signin credentials.
-  size_t icon_index = g_browser_process->profile_manager()->
-      GetProfileInfoCache().ChooseAvatarIconIndexForNewProfile();
-  ProfileManager::CreateMultiProfileAsync(
-      UTF8ToUTF16(possibly_invalid_username_),
-      UTF8ToUTF16(ProfileInfoCache::GetDefaultAvatarIconUrl(icon_index)),
-      base::Bind(&SigninManager::CompleteSigninForNewProfile,
-                 weak_pointer_factory_.GetWeakPtr()),
-      chrome::GetActiveDesktop(),
-      false);
-}
-
-void SigninManager::CompleteSigninForNewProfile(
-    Profile* profile,
-    Profile::CreateStatus status) {
-  DCHECK_NE(profile_, profile);
-  if (status == Profile::CREATE_STATUS_FAIL) {
-    // TODO(atwilson): On error, unregister the client to release the DMToken
-    // and surface a better error for the user.
-    NOTREACHED() << "Error creating new profile";
-    GoogleServiceAuthError error(GoogleServiceAuthError::SERVICE_UNAVAILABLE);
-    HandleAuthError(error, true);
-    return;
-  }
-
-  // Wait until the profile is initialized before we transfer credentials.
-  if (status == Profile::CREATE_STATUS_INITIALIZED) {
-    DCHECK(!possibly_invalid_username_.empty());
-    DCHECK(policy_client_);
-    // Sign in to the just-created profile and fetch policy for it.
-    SigninManager* signin_manager =
-        SigninManagerFactory::GetForProfile(profile);
-    DCHECK(signin_manager);
-    signin_manager->possibly_invalid_username_ = possibly_invalid_username_;
-    signin_manager->last_result_ = last_result_;
-    signin_manager->temp_oauth_login_tokens_ = temp_oauth_login_tokens_;
-    signin_manager->policy_client_.reset(policy_client_.release());
-    signin_manager->LoadPolicyWithCachedClient();
-    // Allow sync to start up if it is not overridden by policy.
-    browser_sync::SyncPrefs prefs(profile->GetPrefs());
-    prefs.SetSyncSetupCompleted();
-
-    // We've transferred our credentials to the new profile - notify that
-    // the signin for this profile was cancelled.
-    SignOut();
+    oauth_token_fetched_callback_.Run(temp_oauth_login_tokens_.refresh_token);
+  } else {
+    // No oauth token or callback, so just complete our pending signin.
+    CompletePendingSignin();
   }
 }
-#endif
 
-void SigninManager::CompleteSigninAfterPolicyLoad() {
+
+void SigninManager::CompletePendingSignin() {
   DCHECK(!possibly_invalid_username_.empty());
   SetAuthenticatedUsername(possibly_invalid_username_);
   possibly_invalid_username_.clear();
