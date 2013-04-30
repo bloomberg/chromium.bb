@@ -69,7 +69,9 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
     picture_pile_ = pile;
   }
 
-  bool IsAssignedGpuMemory() const { return managed_state_.can_use_gpu_memory; }
+  bool IsAssignedGpuMemory() const {
+    return drawing_info().memory_state_ != NOT_ALLOWED_TO_USE_MEMORY;
+  }
 
  private:
   // Methods called by by tile manager.
