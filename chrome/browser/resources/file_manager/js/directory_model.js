@@ -980,13 +980,10 @@ DirectoryModel.prototype.setupPath = function(path, opt_pathResolveCallback) {
         var fileName = path.substr(nameDelimiter + 1);
         resolveCallback(parentDirectoryEntry.fullPath, fileName, fileExists);
         changeDirectoryEntry(parentDirectoryEntry,
-                             !INITIAL /*HACK*/,
+                             INITIAL,
                              function() {
                                self.selectEntry(fileName);
                              });
-        // TODO(kaznacheev): Fix history.replaceState for the File Browser and
-        // change !INITIAL to INITIAL. Passing |false| makes things
-        // less ugly for now.
       }, noParentDirectory.bind(null, leafName));
     } else {
       // Unexpected errors.
