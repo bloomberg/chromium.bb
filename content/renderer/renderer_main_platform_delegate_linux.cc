@@ -40,8 +40,7 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   // The setuid sandbox is started in the zygote process: zygote_main_linux.cc
   // http://code.google.com/p/chromium/wiki/LinuxSUIDSandbox
   //
-  // The seccomp sandbox mode 1 (sandbox/linux/seccomp-legacy) and mode 2
-  // (sandbox/linux/seccomp-bpf) are started in InitializeSandbox().
+  // Anything else is started in InitializeSandbox().
   LinuxSandbox::InitializeSandbox();
   return true;
 }

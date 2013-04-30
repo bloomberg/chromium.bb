@@ -915,10 +915,6 @@ std::string AboutSandbox() {
                   status & content::kSandboxLinuxNetNS);
   AboutSandboxRow(&data,
                   std::string(),
-                  IDS_ABOUT_SANDBOX_SECCOMP_LEGACY_SANDBOX,
-                  status & content::kSandboxLinuxSeccompLegacy);
-  AboutSandboxRow(&data,
-                  std::string(),
                   IDS_ABOUT_SANDBOX_SECCOMP_BPF_SANDBOX,
                   status & content::kSandboxLinuxSeccompBpf);
 

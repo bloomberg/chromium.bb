@@ -101,7 +101,6 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
     switches::kV,
     switches::kVModule,
     switches::kRegisterPepperPlugins,
-    switches::kDisableSeccompSandbox,
     switches::kDisableSeccompFilterSandbox,
     switches::kEnableSeccompSandbox,
 

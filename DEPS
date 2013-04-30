@@ -63,9 +63,6 @@ deps = {
   "src/googleurl":
     (Var("googlecode_url") % "google-url") + "/trunk@183",
 
-  "src/sandbox/linux/seccomp-legacy":
-    (Var("googlecode_url") % "seccompsandbox") + "/trunk@189",
-
   "src/sdch/open-vcdiff":
     (Var("googlecode_url") % "open-vcdiff") + "/trunk@42",
 
@@ -447,7 +444,6 @@ deps_os = {
     "src/chrome/test/data/perf/frame_rate/content": None,
     "src/native_client": None,
     "src/native_client/src/third_party/ppapi": None,
-    "src/sandbox/linux/seccomp-legacy": None,
     "src/third_party/angle": None,
     "src/third_party/bidichecker": None,
     "src/third_party/webgl_conformance": None,

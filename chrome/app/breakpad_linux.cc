@@ -4,7 +4,6 @@
 
 // For linux_syscall_support.h. This makes it safe to call embedded system
 // calls when in seccomp mode.
-#define SYS_SYSCALL_ENTRYPOINT "playground$syscallEntryPoint"
 
 #include "chrome/app/breakpad_linux.h"
 
@@ -53,10 +52,8 @@
 #include "base/android/build_info.h"
 #include "base/android/path_utils.h"
 #include "chrome/common/descriptors_android.h"
-#include "third_party/lss/linux_syscall_support.h"
-#else
-#include "sandbox/linux/seccomp-legacy/linux_syscall_support.h"
 #endif
+#include "third_party/lss/linux_syscall_support.h"
 
 #if defined(ADDRESS_SANITIZER)
 #include <ucontext.h>  // for getcontext().

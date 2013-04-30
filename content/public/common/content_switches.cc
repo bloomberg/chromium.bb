@@ -183,10 +183,7 @@ const char kDisableSSLFalseStart[]          = "disable-ssl-false-start";
 // Disable smooth scrolling for testing.
 const char kDisableSmoothScrolling[]        = "disable-smooth-scrolling";
 
-// Disable the seccomp sandbox (Linux only)
-const char kDisableSeccompSandbox[]         = "disable-seccomp-sandbox";
-
-// Disable the seccomp filter sandbox (Linux only)
+// Disable the seccomp filter sandbox (seccomp-bpf) (Linux only).
 const char kDisableSeccompFilterSandbox[]   = "disable-seccomp-filter-sandbox";
 
 // Disable session storage.

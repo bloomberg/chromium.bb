@@ -20,11 +20,8 @@ enum LinuxSandboxStatus {
   // SUID sandbox is using the network namespace.
   kSandboxLinuxNetNS = 1 << 2,
 
-  // seccomp-legacy sandbox active.
-  kSandboxLinuxSeccompLegacy = 1 << 3,
-
   // seccomp-bpf sandbox active.
-  kSandboxLinuxSeccompBpf = 1 << 4,
+  kSandboxLinuxSeccompBpf = 1 << 3,
 };
 
 }  // namespace content

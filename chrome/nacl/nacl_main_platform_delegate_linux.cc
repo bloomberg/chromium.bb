@@ -5,7 +5,6 @@
 #include "chrome/nacl/nacl_main_platform_delegate.h"
 
 #include "base/command_line.h"
-#include "sandbox/linux/seccomp-legacy/sandbox.h"
 
 NaClMainPlatformDelegate::NaClMainPlatformDelegate(
     const content::MainFunctionParams& parameters)
