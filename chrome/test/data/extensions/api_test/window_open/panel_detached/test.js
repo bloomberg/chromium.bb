@@ -6,6 +6,8 @@ function createCallback(win) {
   chrome.test.assertEq('panel', win.type);
   // Unlike docked panels, detached is not alwaysOnTop.
   chrome.test.assertEq(false, win.alwaysOnTop);
+  // Close the detached window to prevent the stacking.
+  chrome.windows.remove(win.id);
 }
 
 chrome.test.runTests([
@@ -42,7 +44,8 @@ chrome.test.runTests([
     chrome.test.listenOnce(chrome.windows.onCreated, function(window) {
       chrome.test.assertEq("panel", window.type);
       chrome.test.assertTrue(!window.incognito);
-      chrome.test.assertEq(42, window.top);
+      // The top position could be changed when the stacking mode is enabled.
+      //chrome.test.assertEq(42, window.top);
       chrome.test.assertEq(24, window.left);
       chrome.test.assertTrue(window.width > 0);
       chrome.test.assertTrue(window.height > 0);
@@ -58,7 +61,8 @@ chrome.test.runTests([
     chrome.test.listenOnce(chrome.windows.onCreated, function(window) {
       chrome.test.assertEq("panel", window.type);
       chrome.test.assertTrue(!window.incognito);
-      chrome.test.assertEq(42, window.top);
+      // The top position could be changed when the stacking mode is enabled.
+      //chrome.test.assertEq(42, window.top);
       chrome.test.assertEq(24, window.left);
       chrome.test.assertEq(250, window.width);
       chrome.test.assertEq(300, window.height);
