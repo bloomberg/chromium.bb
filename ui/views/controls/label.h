@@ -233,6 +233,8 @@ class VIEWS_EXPORT Label : public View {
   // |text_size_valid_| as false.
   void ResetCachedSize();
 
+  bool ShouldShowDefaultTooltip() const;
+
   string16 text_;
   gfx::Font font_;
   SkColor requested_enabled_color_;

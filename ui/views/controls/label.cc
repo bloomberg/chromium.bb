@@ -255,8 +255,7 @@ View* Label::GetTooltipHandlerForPoint(const gfx::Point& point) {
   if (!View::HitTestRect(gfx::Rect(point, gfx::Size(1, 1))))
     return NULL;
 
-  // If the label does not have a tooltip text, return NULL.
-  if (tooltip_text_.empty())
+  if (tooltip_text_.empty() && !ShouldShowDefaultTooltip())
     return NULL;
 
   return this;
@@ -276,11 +275,11 @@ bool Label::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
   }
 
   // Show the full text if the text does not fit.
-  if (!is_multi_line_ &&
-      (font_.GetStringWidth(text_) > GetAvailableRect().width())) {
+  if (ShouldShowDefaultTooltip()) {
     *tooltip = text_;
     return true;
   }
+
   return false;
 }
 
@@ -517,6 +516,11 @@ void Label::ResetCachedSize() {
   cached_heights_cursor_ = 0;
   for (int i = 0; i < kCachedSizeLimit; ++i)
     cached_heights_[i] = gfx::Size();
+}
+
+bool Label::ShouldShowDefaultTooltip() const {
+  return !is_multi_line_ &&
+      font_.GetStringWidth(text_) > GetAvailableRect().width();
 }
 
 }  // namespace views

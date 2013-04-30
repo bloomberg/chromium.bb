@@ -856,9 +856,14 @@ TEST(LabelTest, DisableSubpixelRendering) {
 // Check that labels support GetTooltipHandlerForPoint.
 TEST(LabelTest, GetTooltipHandlerForPoint) {
   Label label;
-  label.SetBounds(0, 0, 50, 50);
+  label.SetText(
+      ASCIIToUTF16("A string that's long enough to exceed the bounds"));
+  label.SetBounds(0, 0, 10, 10);
+  // There's a default tooltip if the text is too big to fit.
+  EXPECT_EQ(&label, label.GetTooltipHandlerForPoint(gfx::Point(2, 2)));
 
-  // Hit test for tooltip should return NULL if the tooltip is not set.
+  // If there's no default tooltip, this should return NULL.
+  label.SetBounds(0, 0, 500, 50);
   EXPECT_FALSE(label.GetTooltipHandlerForPoint(gfx::Point(2, 2)));
 
   label.SetTooltipText(ASCIIToUTF16("a tooltip"));

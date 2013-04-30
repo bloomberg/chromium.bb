@@ -204,7 +204,7 @@ views::View* NonClientView::GetTooltipHandlerForPoint(const gfx::Point& point) {
       return handler;
   }
 
-  return View::GetEventHandlerForPoint(point);
+  return View::GetTooltipHandlerForPoint(point);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
