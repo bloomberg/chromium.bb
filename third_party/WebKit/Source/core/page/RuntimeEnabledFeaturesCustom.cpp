@@ -43,11 +43,7 @@ bool RuntimeEnabledFeatures::mediaEnabled()
 
 bool RuntimeEnabledFeatures::sharedWorkerEnabled()
 {
-#if ENABLE(SHARED_WORKERS)
     return SharedWorkerRepository::isAvailable();
-#else
-    return false;
-#endif
 }
 
 } // namespace WebCore
