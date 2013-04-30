@@ -865,13 +865,6 @@ bool DesktopRootWindowHostX11::CopyAreaToSkCanvas(
   return false;
 }
 
-bool DesktopRootWindowHostX11::GrabSnapshot(
-      const gfx::Rect& snapshot_bounds,
-      std::vector<unsigned char>* png_representation) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void DesktopRootWindowHostX11::PostNativeEvent(
     const base::NativeEvent& native_event) {
   DCHECK(xwindow_);

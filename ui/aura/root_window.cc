@@ -492,14 +492,6 @@ bool RootWindow::CopyAreaToSkCanvas(const gfx::Rect& source_bounds,
   return host_->CopyAreaToSkCanvas(source_pixels, dest_offset, canvas);
 }
 
-bool RootWindow::GrabSnapshot(const gfx::Rect& snapshot_bounds,
-                              std::vector<unsigned char>* png_representation) {
-  DCHECK(png_representation);
-  DCHECK(bounds().Contains(snapshot_bounds));
-  gfx::Rect snapshot_pixels = ui::ConvertRectToPixel(layer(), snapshot_bounds);
-  return host_->GrabSnapshot(snapshot_pixels, png_representation);
-}
-
 gfx::Point RootWindow::GetLastMouseLocationInRoot() const {
   gfx::Point location = Env::GetInstance()->last_mouse_location();
   client::ScreenPositionClient* client = client::GetScreenPositionClient(this);

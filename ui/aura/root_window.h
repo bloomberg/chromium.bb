@@ -242,11 +242,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
                           const gfx::Point& dest_offset,
                           SkCanvas* canvas);
 
-  // Grabs a snapshot of the root window using platform-specific APIs, encodes
-  // it in PNG format, and saves it to |png_representation|.
-  bool GrabSnapshot(const gfx::Rect& snapshot_bounds,
-                    std::vector<unsigned char>* png_representation);
-
   // Gets the last location seen in a mouse event in this root window's
   // coordinates. This may return a point outside the root window's bounds.
   gfx::Point GetLastMouseLocationInRoot() const;

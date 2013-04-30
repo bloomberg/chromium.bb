@@ -500,13 +500,6 @@ bool DesktopRootWindowHostWin::CopyAreaToSkCanvas(
   return false;
 }
 
-bool DesktopRootWindowHostWin::GrabSnapshot(
-      const gfx::Rect& snapshot_bounds,
-      std::vector<unsigned char>* png_representation) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void DesktopRootWindowHostWin::PostNativeEvent(
     const base::NativeEvent& native_event) {
 }

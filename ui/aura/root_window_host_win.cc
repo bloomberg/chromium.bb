@@ -217,13 +217,6 @@ bool RootWindowHostWin::CopyAreaToSkCanvas(const gfx::Rect& source_bounds,
   return false;
 }
 
-bool RootWindowHostWin::GrabSnapshot(
-    const gfx::Rect& snapshot_bounds,
-    std::vector<unsigned char>* png_representation) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void RootWindowHostWin::UnConfineCursor() {
   ClipCursor(NULL);
 }

@@ -311,13 +311,6 @@ bool RemoteRootWindowHostWin::CopyAreaToSkCanvas(const gfx::Rect& source_bounds,
   return false;
 }
 
-bool RemoteRootWindowHostWin::GrabSnapshot(
-    const gfx::Rect& snapshot_bounds,
-    std::vector<unsigned char>* png_representation) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void RemoteRootWindowHostWin::UnConfineCursor() {
 }
 

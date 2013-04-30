@@ -215,19 +215,6 @@ void PostSaveScreenshotTask(const ShowNotificationCallback& callback,
 bool GrabWindowSnapshot(aura::Window* window,
                         const gfx::Rect& snapshot_bounds,
                         std::vector<unsigned char>* png_data) {
-#if defined(OS_LINUX)
-  // chrome::GrabWindowSnapshotForUser checks this too, but
-  // RootWindow::GrabSnapshot does not.
-  if (ScreenshotSource::AreScreenshotsDisabled())
-    return false;
-
-  // We use XGetImage() for Linux/ChromeOS for performance reasons.
-  // See crbug.com/119492
-  // TODO(mukai): remove this when the performance issue has been fixed.
-  if (window->GetRootWindow()->GrabSnapshot(snapshot_bounds, png_data))
-    return true;
-#endif  // OS_LINUX
-
   return chrome::GrabWindowSnapshotForUser(window, png_data, snapshot_bounds);
 }
 
