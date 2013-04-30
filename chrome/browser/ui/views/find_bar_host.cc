@@ -268,6 +268,10 @@ gfx::Rect FindBarHost::GetDialogPosition(gfx::Rect avoid_overlapping_rect) {
   if (widget_bounds.width() < prefsize.width())
     prefsize.set_width(widget_bounds.width());
 
+  // Don't show the find bar if |widget_bounds| is not tall enough.
+  if (widget_bounds.height() < prefsize.height())
+    return gfx::Rect();
+
   // Place the view in the top right corner of the widget boundaries (top left
   // for RTL languages).
   gfx::Rect view_location;

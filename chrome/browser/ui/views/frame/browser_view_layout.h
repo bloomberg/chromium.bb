@@ -61,7 +61,7 @@ class BrowserViewLayout : public views::LayoutManager {
   // Returns the minimum size of the browser view.
   gfx::Size GetMinimumSize();
 
-  // Returns the bounding box for the find bar.
+  // Returns the bounding box, in widget coordinates,  for the find bar.
   gfx::Rect GetFindBarBoundingBox() const;
 
   // Returns true if the specified point(BrowserView coordinates) is in
@@ -158,9 +158,6 @@ class BrowserViewLayout : public views::LayoutManager {
   // BrowserView.
   // TODO(jamescook): Remove this and just use browser_view_->GetLocalBounds().
   gfx::Rect vertical_layout_rect_;
-
-  // The distance the FindBar is from the top of the window, in pixels.
-  int find_bar_y_;
 
   // The host for use in positioning the web contents modal dialog.
   scoped_ptr<WebContentsModalDialogHostViews> dialog_host_;

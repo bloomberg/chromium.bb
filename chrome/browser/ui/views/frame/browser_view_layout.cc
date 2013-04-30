@@ -113,7 +113,6 @@ BrowserViewLayout::BrowserViewLayout()
       contents_split_(NULL),
       contents_container_(NULL),
       download_shelf_(NULL),
-      find_bar_y_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           dialog_host_(new WebContentsModalDialogHostViews(this))),
       web_contents_modal_dialog_top_y_(-1) {
@@ -160,6 +159,8 @@ gfx::Size BrowserViewLayout::GetMinimumSize() {
         -(views::NonClientFrameView::kClientEdgeThickness +
             bookmark_bar_->GetToolbarOverlap(true)));
   }
+  // TODO: Adjust the minimum height for the find bar.
+
   gfx::Size contents_size(contents_split_->GetMinimumSize());
 
   int min_height = tabstrip_size.height() + toolbar_size.height() +
@@ -174,24 +175,31 @@ gfx::Size BrowserViewLayout::GetMinimumSize() {
 }
 
 gfx::Rect BrowserViewLayout::GetFindBarBoundingBox() const {
-  // This function returns the area the Find Bar can be laid out
-  // within. This basically implies the "user-perceived content
-  // area" of the browser window excluding the vertical
-  // scrollbar. This is not quite so straightforward as positioning
-  // based on the TabContentsContainer since the BookmarkBarView may
-  // be visible but not persistent (in the New Tab case) and we
-  // position the Find Bar over the top of it in that case since the
-  // BookmarkBarView is not _visually_ connected to the Toolbar.
+  // This function returns the area the Find Bar can be laid out within. This
+  // basically implies the "user-perceived content area" of the browser
+  // window excluding the vertical scrollbar. The "user-perceived content area"
+  // excludes the detached bookmark bar (in the New Tab case) and any infobars
+  // since they are not _visually_ connected to the Toolbar.
 
   // First determine the bounding box of the content area in Widget
   // coordinates.
   gfx::Rect bounding_box = contents_container_->ConvertRectToWidget(
       contents_container_->GetLocalBounds());
 
-  // Adjust the position and size of the bounding box by the find bar offset
-  // calculated during the last Layout.
-  int height_delta = find_bar_y_ - bounding_box.y();
-  bounding_box.set_y(find_bar_y_);
+  TopContainerView* top_container = browser_view_->top_container();
+  gfx::Rect top_container_bounds = top_container->ConvertRectToWidget(
+      top_container->GetLocalBounds());
+
+  // The find bar is positioned 1 pixel above the bottom of the top container so
+  // that it occludes the border between the content area and the top container
+  // and looks connected to the top container.
+  int find_bar_y = top_container_bounds.bottom() - 1;
+
+  // Grow the height of |bounding_box| by the height of any elements between
+  // the top container and |contents_container_| such as the detached bookmark
+  // bar and any infobars.
+  int height_delta = bounding_box.y() - find_bar_y;
+  bounding_box.set_y(find_bar_y);
   bounding_box.set_height(std::max(0, bounding_box.height() + height_delta));
 
   // Finally decrease the width of the bounding box by the width of
@@ -412,7 +420,6 @@ int BrowserViewLayout::LayoutToolbar(int top) {
 int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top) {
   web_contents_modal_dialog_top_y_ =
       top + browser_view_->y() - kConstrainedWindowOverlap;
-  find_bar_y_ = top + browser_view_->y() - 1;
   if (bookmark_bar_) {
     // If we're showing the Bookmark bar in detached style, then we
     // need to show any Info bar _above_ the Bookmark bar, since the
@@ -423,7 +430,6 @@ int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top) {
     top = std::max(browser_view_->toolbar_->bounds().bottom(),
                    LayoutBookmarkBar(top));
   }
-  find_bar_y_ = top + browser_view_->y() - 1;
   return LayoutInfoBar(top);
 }
 
