@@ -92,6 +92,19 @@ TEST_F(TranslateHelperTest, CLDDisagreeWithWrongLanguageCode) {
   EXPECT_EQ(chrome::kUnknownLanguageCode, language);
 }
 
+// Tests that the language meta tag providing "en-US" style information is
+// agreed by CLD.
+TEST_F(TranslateHelperTest, CLDAgreeWithLanguageCodeHavingCountryCode) {
+  string16 contents = ASCIIToUTF16(
+      "<html><head><meta http-equiv='Content-Language' content='en-US'></head>"
+      "<body>This is a page apparently written in English. Even though "
+      "content-language is provided, the value will be ignored if the value "
+      "is suspicious.</body></html>");
+  std::string language =
+      TranslateHelper::DeterminePageLanguage(std::string("en-US"), contents);
+  EXPECT_EQ("en-US", language);
+}
+
 // Tests that the language meta tag providing wrong information is ignored and
 // CLD's language will be adopted by TranslateHelper due to an invalid meta tag.
 TEST_F(TranslateHelperTest, InvalidLanguageMetaTagProviding) {

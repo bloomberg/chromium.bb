@@ -324,7 +324,7 @@ std::string TranslateHelper::DeterminePageLanguage(const std::string& code,
     return cld_language;
 
   if (cld_language != chrome::kUnknownLanguageCode &&
-      cld_language != language) {
+      cld_language.find(language.c_str(), 0, 2) != 0) {
     // Content-Language value might be wrong because CLD says that this page
     // is written in another language with confidence.
     // In this case, Chrome doesn't rely on any of the language codes, and

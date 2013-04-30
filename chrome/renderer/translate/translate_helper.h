@@ -93,6 +93,8 @@ class TranslateHelper : public content::RenderViewObserver {
   FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest,
                            CLDDisagreeWithWrongLanguageCode);
   FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest,
+                           CLDAgreeWithLanguageCodeHavingCountryCode);
+  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest,
                            InvalidLanguageMetaTagProviding);
 
   // Correct language code if it contains well-known mistakes.
