@@ -387,15 +387,6 @@ SocketBinding *SocketBinding::Bind(const char *addr) {
                  sizeof(reuse_address))) {
     NaClLog(LOG_WARNING, "Failed to set SO_REUSEADDR option.\n");
   }
-  // Do not delay sending small packets.  This significantly speeds up
-  // remote debugging.  Debug stub uses buffering to send outgoing packets so
-  // they are not split into more TCP packets than necessary.
-  int nodelay = 1;
-  if (setsockopt(socket_handle, IPPROTO_TCP, TCP_NODELAY,
-                 reinterpret_cast<char *>(&nodelay),
-                 sizeof(nodelay))) {
-    NaClLog(LOG_WARNING, "Failed to set TCP_NODELAY option.\n");
-  }
 
   struct sockaddr *psaddr = reinterpret_cast<struct sockaddr *>(&saddr);
   if (bind(socket_handle, psaddr, addrlen)) {
@@ -412,8 +403,18 @@ SocketBinding *SocketBinding::Bind(const char *addr) {
 
 ITransport *SocketBinding::AcceptConnection() {
   NaClSocketHandle socket = ::accept(socket_handle_, NULL, 0);
-  if (socket != NACL_INVALID_SOCKET)
+  if (socket != NACL_INVALID_SOCKET) {
+    // Do not delay sending small packets.  This significantly speeds up
+    // remote debugging.  Debug stub uses buffering to send outgoing packets so
+    // they are not split into more TCP packets than necessary.
+    int nodelay = 1;
+    if (setsockopt(socket, IPPROTO_TCP, TCP_NODELAY,
+                   reinterpret_cast<char *>(&nodelay),
+                   sizeof(nodelay))) {
+      NaClLog(LOG_WARNING, "Failed to set TCP_NODELAY option.\n");
+    }
     return new Transport(socket);
+  }
   return NULL;
 }
 
