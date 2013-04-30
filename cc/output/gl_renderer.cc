@@ -1876,7 +1876,7 @@ void GLRenderer::Finish() {
   context_->finish();
 }
 
-bool GLRenderer::SwapBuffers(const LatencyInfo& latency_info) {
+void GLRenderer::SwapBuffers(const LatencyInfo& latency_info) {
   DCHECK(visible_);
   DCHECK(!is_backbuffer_discarded_);
 
@@ -1907,8 +1907,6 @@ bool GLRenderer::SwapBuffers(const LatencyInfo& latency_info) {
     static_cast<SimpleSwapFence*>(last_swap_fence_.get())->SetHasPassed();
   last_swap_fence_ = resource_provider_->GetReadLockFence();
   resource_provider_->SetReadLockFence(new SimpleSwapFence());
-
-  return true;
 }
 
 void GLRenderer::onMemoryAllocationChanged(

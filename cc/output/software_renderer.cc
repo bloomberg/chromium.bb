@@ -115,10 +115,9 @@ void SoftwareRenderer::FinishDrawingFrame(DrawingFrame* frame) {
   }
 }
 
-bool SoftwareRenderer::SwapBuffers(const LatencyInfo& latency_info) {
+void SoftwareRenderer::SwapBuffers(const LatencyInfo& latency_info) {
   if (Settings().compositor_frame_message)
     output_surface_->SendFrameToParentCompositor(&compositor_frame_);
-  return true;
 }
 
 void SoftwareRenderer::ReceiveCompositorFrameAck(

@@ -64,7 +64,7 @@ class CC_EXPORT Renderer {
   virtual void DoNoOp() {}
 
   // Puts backbuffer onscreen.
-  virtual bool SwapBuffers(const LatencyInfo& latency_info) = 0;
+  virtual void SwapBuffers(const LatencyInfo& latency_info) = 0;
 
   virtual void GetFramebufferPixels(void* pixels, gfx::Rect rect) = 0;
 

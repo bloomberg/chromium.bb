@@ -1149,10 +1149,9 @@ const RendererCapabilities& LayerTreeHostImpl::GetRendererCapabilities() const {
 bool LayerTreeHostImpl::SwapBuffers(const LayerTreeHostImpl::FrameData& frame) {
   if (frame.has_no_damage)
     return false;
-  bool result = renderer_->SwapBuffers(frame.latency_info);
-  if (result)
-    active_tree_->ClearLatencyInfo();
-  return result;
+  renderer_->SwapBuffers(frame.latency_info);
+  active_tree_->ClearLatencyInfo();
+  return true;
 }
 
 void LayerTreeHostImpl::EnableVSyncNotification(bool enable) {
