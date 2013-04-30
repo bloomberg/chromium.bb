@@ -8,8 +8,11 @@
 
 #include "ash/launcher/launcher_button_host.h"
 #include "ash/launcher/launcher_types.h"
+#include "ash/shell.h"
+#include "ash/wm/app_list_controller.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
+#include "ui/aura/window.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -17,6 +20,7 @@
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace internal {
@@ -30,7 +34,7 @@ const int kBorderSize = 9;
 
 AppListButton::AppListButton(views::ButtonListener* listener,
                              LauncherButtonHost* host)
-    : views::ImageButton(listener),
+    : views::ToggleImageButton(listener),
       host_(host) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   SetImage(
@@ -44,12 +48,23 @@ AppListButton::AppListButton(views::ButtonListener* listener,
       views::CustomButton::STATE_PRESSED,
       rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST_PUSHED).
           ToImageSkia());
+
+  const gfx::ImageSkia* toggled_image =
+      rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST_PUSHED).
+          ToImageSkia();
+  SetToggledImage(views::CustomButton::STATE_NORMAL, toggled_image);
+  SetToggledImage(views::CustomButton::STATE_HOVERED, toggled_image);
+  SetToggledImage(views::CustomButton::STATE_PRESSED, toggled_image);
+
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE));
   SetSize(gfx::Size(kLauncherPreferredSize, kLauncherPreferredSize));
-  SetImageAlignment(ImageButton::ALIGN_CENTER, ImageButton::ALIGN_TOP);
+  SetImageAlignment(ImageButton::ALIGN_CENTER, ImageButton::ALIGN_MIDDLE);
+
+  Shell::GetInstance()->app_list_controller()->AddObserver(this);
 }
 
 AppListButton::~AppListButton() {
+  Shell::GetInstance()->app_list_controller()->RemoveObserver(this);
 }
 
 void AppListButton::StartLoadingAnimation() {
@@ -128,6 +143,16 @@ void AppListButton::OnMouseExited(const ui::MouseEvent& event) {
 void AppListButton::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
   state->name = host_->GetAccessibleName(this);
+}
+
+void AppListButton::OnAppLauncherVisibilityChanged(
+    bool visible, const aura::RootWindow* root_window) {
+  if (!GetWidget() ||
+      GetWidget()->GetNativeView()->GetRootWindow() != root_window) {
+    return;
+  }
+
+  SetToggled(visible);
 }
 
 }  // namespace internal

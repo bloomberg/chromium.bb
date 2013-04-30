@@ -5,6 +5,7 @@
 #ifndef ASH_LAUNCHER_APP_LIST_BUTTON_H_
 #define ASH_LAUNCHER_APP_LIST_BUTTON_H_
 
+#include "ash/wm/app_list_controller_observer.h"
 #include "ui/views/controls/button/image_button.h"
 
 namespace ash {
@@ -13,7 +14,8 @@ namespace internal {
 class LauncherButtonHost;
 
 // Button used for the AppList icon on the launcher.
-class AppListButton : public views::ImageButton {
+class AppListButton : public views::ToggleImageButton,
+                      public AppListControllerObserver {
  public:
   AppListButton(views::ButtonListener* listener,
                 LauncherButtonHost* host);
@@ -34,6 +36,11 @@ class AppListButton : public views::ImageButton {
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
  private:
+  // AppListControllerObserver overrides:
+  virtual void OnAppLauncherVisibilityChanged(
+      bool visible,
+      const aura::RootWindow* root_window) OVERRIDE;
+
   LauncherButtonHost* host_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListButton);
