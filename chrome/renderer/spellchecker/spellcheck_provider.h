@@ -86,7 +86,7 @@ class SpellCheckProvider
   virtual void requestCheckingOfText(
       const WebKit::WebString& text,
       const WebKit::WebVector<uint32_t>& markers,
-      const WebKit::WebVector<int>& marker_offsets,
+      const WebKit::WebVector<unsigned>& marker_offsets,
       WebKit::WebTextCheckingCompletion* completion);
 
   virtual WebKit::WebString autoCorrectWord(
