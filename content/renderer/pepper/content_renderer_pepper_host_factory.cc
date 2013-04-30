@@ -91,14 +91,14 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
         return scoped_ptr<ResourceHost>(new PepperFileChooserHost(
             host_, instance, params.pp_resource()));
       case PpapiHostMsg_TrueTypeFont_Create::ID: {
-        PpapiHostMsg_TrueTypeFont_Create::Schema::Param msg_params;
-        if (!PpapiHostMsg_TrueTypeFont_Create::Read(&message, &msg_params)) {
+        SerializedTrueTypeFontDesc desc;
+        if (!UnpackMessage<PpapiHostMsg_TrueTypeFont_Create>(message,
+                                                             &desc)) {
           NOTREACHED();
           return scoped_ptr<ResourceHost>();
         }
         // Check that the family name is valid UTF-8 before passing it to the
         // host OS.
-        const SerializedTrueTypeFontDesc& desc = msg_params.a;
         if (IsStringUTF8(desc.family)) {
           return scoped_ptr<ResourceHost>(new PepperTrueTypeFontHost(
               host_, instance, params.pp_resource(), desc));
