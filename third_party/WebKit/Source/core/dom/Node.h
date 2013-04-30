@@ -835,7 +835,7 @@ inline void Node::setParentOrShadowHostNode(ContainerNode* parent)
 
 inline ContainerNode* Node::parentOrShadowHostNode() const
 {
-    ASSERT(isMainThreadOrGCThread());
+    ASSERT(isMainThread());
     return m_parentOrShadowHostNode;
 }
 

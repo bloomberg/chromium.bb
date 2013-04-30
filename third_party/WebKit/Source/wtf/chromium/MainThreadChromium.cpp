@@ -67,16 +67,6 @@ void callOnMainThread(const Function<void()>& function)
     callOnMainThread(callFunctionObject, new Function<void()>(function));
 }
 
-void callOnMainThreadAndWait(MainThreadFunction*, void*)
-{
-    ASSERT_NOT_REACHED();
-}
-
-void setMainThreadCallbacksPaused(bool)
-{
-    ASSERT_NOT_REACHED();
-}
-
 bool isMainThread()
 {
     return currentThread() == mainThreadIdentifier;
