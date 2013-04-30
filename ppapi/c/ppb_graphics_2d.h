@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_graphics_2d.idl modified Sun Mar 31 14:34:56 2013. */
+/* From ppb_graphics_2d.idl modified Fri Apr 26 08:49:08 2013. */
 
 #ifndef PPAPI_C_PPB_GRAPHICS_2D_H_
 #define PPAPI_C_PPB_GRAPHICS_2D_H_
@@ -88,7 +88,7 @@ struct PPB_Graphics2D_1_1 {
    */
   PP_Bool (*Describe)(PP_Resource graphics_2d,
                       struct PP_Size* size,
-                      PP_Bool* is_always_opqaue);
+                      PP_Bool* is_always_opaque);
   /**
    * PaintImageData() enqueues a paint of the given image into the context.
    * This function has no effect until you call Flush() As a result, what
@@ -287,7 +287,7 @@ struct PPB_Graphics2D_1_0 {
   PP_Bool (*IsGraphics2D)(PP_Resource resource);
   PP_Bool (*Describe)(PP_Resource graphics_2d,
                       struct PP_Size* size,
-                      PP_Bool* is_always_opqaue);
+                      PP_Bool* is_always_opaque);
   void (*PaintImageData)(PP_Resource graphics_2d,
                          PP_Resource image_data,
                          const struct PP_Point* top_left,

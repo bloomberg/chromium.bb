@@ -108,7 +108,7 @@ class ResourceCreationProxy : public InterfaceProxy,
                                         PP_FileChooserMode_Dev mode,
                                         const PP_Var& accept_types) OVERRIDE;
   virtual PP_Resource CreateGraphics2D(PP_Instance pp_instance,
-                                       const PP_Size& size,
+                                       const PP_Size* size,
                                        PP_Bool is_always_opaque) OVERRIDE;
   virtual PP_Resource CreateGraphics3D(PP_Instance instance,
                                        PP_Resource share_context,

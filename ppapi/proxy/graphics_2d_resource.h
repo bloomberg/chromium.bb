@@ -38,10 +38,9 @@ class PPAPI_PROXY_EXPORT Graphics2DResource
   virtual void Scroll(const PP_Rect* clip_rect,
                       const PP_Point* amount) OVERRIDE;
   virtual void ReplaceContents(PP_Resource image_data) OVERRIDE;
-  virtual bool SetScale(float scale) OVERRIDE;
+  virtual PP_Bool SetScale(float scale) OVERRIDE;
   virtual float GetScale() OVERRIDE;
-  virtual int32_t Flush(scoped_refptr<TrackedCallback> callback,
-                        PP_Resource* old_image_data) OVERRIDE;
+  virtual int32_t Flush(scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual bool ReadImageData(PP_Resource image,
                              const PP_Point* top_left) OVERRIDE;
 

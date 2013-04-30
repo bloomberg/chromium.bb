@@ -99,28 +99,23 @@ void Graphics2DResource::ReplaceContents(PP_Resource image_data) {
       image_object->host_resource()));
 }
 
-bool Graphics2DResource::SetScale(float scale) {
+PP_Bool Graphics2DResource::SetScale(float scale) {
   if (scale <= 0.0f)
-    return false;
+    return PP_FALSE;
   Post(RENDERER, PpapiHostMsg_Graphics2D_Dev_SetScale(scale));
   scale_ = scale;
-  return true;
+  return PP_TRUE;
 }
 
 float Graphics2DResource::GetScale() {
   return scale_;
 }
 
-int32_t Graphics2DResource::Flush(scoped_refptr<TrackedCallback> callback,
-                                  PP_Resource* old_image_data) {
+int32_t Graphics2DResource::Flush(scoped_refptr<TrackedCallback> callback) {
   // If host is not even created, return failure immediately.  This can happen
   // when failed to initialize (in constructor).
   if (!sent_create_to_renderer())
     return PP_ERROR_FAILED;
-
-  // We don't support this feature, it's for in-renderer only.
-  if (old_image_data)
-    *old_image_data = 0;
 
   if (TrackedCallback::IsPending(current_flush_callback_))
     return PP_ERROR_INPROGRESS;  // Can't have >1 flush pending.

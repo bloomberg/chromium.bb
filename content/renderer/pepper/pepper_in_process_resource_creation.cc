@@ -92,11 +92,11 @@ PP_Resource PepperInProcessResourceCreation::CreateFileSystem(
 
 PP_Resource PepperInProcessResourceCreation::CreateGraphics2D(
     PP_Instance instance,
-    const PP_Size& size,
+    const PP_Size* size,
     PP_Bool is_always_opaque) {
   return (new ppapi::proxy::Graphics2DResource(
           host_impl_->in_process_router()->GetPluginConnection(),
-          instance, size, is_always_opaque))->GetReference();
+          instance, *size, is_always_opaque))->GetReference();
 }
 
 PP_Resource PepperInProcessResourceCreation::CreatePrinting(

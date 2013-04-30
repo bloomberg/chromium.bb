@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/c/dev/ppb_graphics_2d_dev.h"
+// From ppb_graphics_2d.idl modified Fri Apr 26 08:49:08 2013.
+
+#include <string.h>
+
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_graphics_2d_api.h"
+#include "ppapi/thunk/ppb_instance_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
 
@@ -17,30 +21,30 @@ namespace thunk {
 
 namespace {
 
-typedef EnterResource<PPB_Graphics2D_API> EnterGraphics2D;
-
 PP_Resource Create(PP_Instance instance,
-                   const PP_Size* size,
+                   const struct PP_Size* size,
                    PP_Bool is_always_opaque) {
+  VLOG(4) << "PPB_Graphics2D::Create()";
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
-  return enter.functions()->CreateGraphics2D(instance, *size, is_always_opaque);
+  return enter.functions()->CreateGraphics2D(instance, size, is_always_opaque);
 }
 
 PP_Bool IsGraphics2D(PP_Resource resource) {
-  EnterGraphics2D enter(resource, false);
-  return enter.succeeded() ? PP_TRUE : PP_FALSE;
+  VLOG(4) << "PPB_Graphics2D::IsGraphics2D()";
+  EnterResource<PPB_Graphics2D_API> enter(resource, false);
+  return PP_FromBool(enter.succeeded());
 }
 
 PP_Bool Describe(PP_Resource graphics_2d,
-                 PP_Size* size,
+                 struct PP_Size* size,
                  PP_Bool* is_always_opaque) {
-  EnterGraphics2D enter(graphics_2d, true);
+  VLOG(4) << "PPB_Graphics2D::Describe()";
+  EnterResource<PPB_Graphics2D_API> enter(graphics_2d, true);
   if (enter.failed()) {
-    size->width = 0;
-    size->height = 0;
-    *is_always_opaque = PP_FALSE;
+    memset(size, 0, sizeof(*size));
+    memset(is_always_opaque, 0, sizeof(*is_always_opaque));
     return PP_FALSE;
   }
   return enter.object()->Describe(size, is_always_opaque);
@@ -48,52 +52,58 @@ PP_Bool Describe(PP_Resource graphics_2d,
 
 void PaintImageData(PP_Resource graphics_2d,
                     PP_Resource image_data,
-                    const PP_Point* top_left,
-                    const PP_Rect* src_rect) {
-  EnterGraphics2D enter(graphics_2d, true);
+                    const struct PP_Point* top_left,
+                    const struct PP_Rect* src_rect) {
+  VLOG(4) << "PPB_Graphics2D::PaintImageData()";
+  EnterResource<PPB_Graphics2D_API> enter(graphics_2d, true);
   if (enter.failed())
     return;
   enter.object()->PaintImageData(image_data, top_left, src_rect);
 }
 
 void Scroll(PP_Resource graphics_2d,
-            const PP_Rect* clip_rect,
-            const PP_Point* amount) {
-  EnterGraphics2D enter(graphics_2d, true);
+            const struct PP_Rect* clip_rect,
+            const struct PP_Point* amount) {
+  VLOG(4) << "PPB_Graphics2D::Scroll()";
+  EnterResource<PPB_Graphics2D_API> enter(graphics_2d, true);
   if (enter.failed())
     return;
   enter.object()->Scroll(clip_rect, amount);
 }
 
 void ReplaceContents(PP_Resource graphics_2d, PP_Resource image_data) {
-  EnterGraphics2D enter(graphics_2d, true);
+  VLOG(4) << "PPB_Graphics2D::ReplaceContents()";
+  EnterResource<PPB_Graphics2D_API> enter(graphics_2d, true);
   if (enter.failed())
     return;
   enter.object()->ReplaceContents(image_data);
 }
 
-int32_t Flush(PP_Resource graphics_2d, PP_CompletionCallback callback) {
-  EnterGraphics2D enter(graphics_2d, callback, true);
+int32_t Flush(PP_Resource graphics_2d, struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_Graphics2D::Flush()";
+  EnterResource<PPB_Graphics2D_API> enter(graphics_2d, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Flush(enter.callback(), NULL));
+  return enter.SetResult(enter.object()->Flush(enter.callback()));
 }
 
-PP_Bool SetScale(PP_Resource graphics_2d, float scale) {
-  EnterGraphics2D enter(graphics_2d, true);
+PP_Bool SetScale(PP_Resource resource, float scale) {
+  VLOG(4) << "PPB_Graphics2D::SetScale()";
+  EnterResource<PPB_Graphics2D_API> enter(resource, true);
   if (enter.failed())
     return PP_FALSE;
-  return PP_FromBool(enter.object()->SetScale(scale));
+  return enter.object()->SetScale(scale);
 }
 
-float GetScale(PP_Resource graphics_2d) {
-  EnterGraphics2D enter(graphics_2d, true);
+float GetScale(PP_Resource resource) {
+  VLOG(4) << "PPB_Graphics2D::GetScale()";
+  EnterResource<PPB_Graphics2D_API> enter(resource, true);
   if (enter.failed())
     return 0.0f;
   return enter.object()->GetScale();
 }
 
-const PPB_Graphics2D_1_0 g_ppb_graphics_2d_1_0_thunk = {
+const PPB_Graphics2D_1_0 g_ppb_graphics2d_thunk_1_0 = {
   &Create,
   &IsGraphics2D,
   &Describe,
@@ -103,7 +113,7 @@ const PPB_Graphics2D_1_0 g_ppb_graphics_2d_1_0_thunk = {
   &Flush
 };
 
-const PPB_Graphics2D_1_1 g_ppb_graphics_2d_1_1_thunk = {
+const PPB_Graphics2D_1_1 g_ppb_graphics2d_thunk_1_1 = {
   &Create,
   &IsGraphics2D,
   &Describe,
@@ -115,23 +125,14 @@ const PPB_Graphics2D_1_1 g_ppb_graphics_2d_1_1_thunk = {
   &GetScale
 };
 
-const PPB_Graphics2D_Dev g_ppb_graphics_2d_dev_thunk = {
-  &SetScale,
-  &GetScale
-};
-
 }  // namespace
 
 const PPB_Graphics2D_1_0* GetPPB_Graphics2D_1_0_Thunk() {
-  return &g_ppb_graphics_2d_1_0_thunk;
+  return &g_ppb_graphics2d_thunk_1_0;
 }
 
 const PPB_Graphics2D_1_1* GetPPB_Graphics2D_1_1_Thunk() {
-  return &g_ppb_graphics_2d_1_1_thunk;
-}
-
-const PPB_Graphics2D_Dev_0_1* GetPPB_Graphics2D_Dev_0_1_Thunk() {
-  return &g_ppb_graphics_2d_dev_thunk;
+  return &g_ppb_graphics2d_thunk_1_1;
 }
 
 }  // namespace thunk

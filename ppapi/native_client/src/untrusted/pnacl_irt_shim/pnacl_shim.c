@@ -602,9 +602,9 @@ static PP_Bool Pnacl_M14_PPB_Graphics2D_IsGraphics2D(PP_Resource resource) {
   return iface->IsGraphics2D(resource);
 }
 
-static PP_Bool Pnacl_M14_PPB_Graphics2D_Describe(PP_Resource graphics_2d, struct PP_Size* size, PP_Bool* is_always_opqaue) {
+static PP_Bool Pnacl_M14_PPB_Graphics2D_Describe(PP_Resource graphics_2d, struct PP_Size* size, PP_Bool* is_always_opaque) {
   const struct PPB_Graphics2D_1_0 *iface = Pnacl_WrapperInfo_PPB_Graphics2D_1_0.real_iface;
-  return iface->Describe(graphics_2d, size, is_always_opqaue);
+  return iface->Describe(graphics_2d, size, is_always_opaque);
 }
 
 static void Pnacl_M14_PPB_Graphics2D_PaintImageData(PP_Resource graphics_2d, PP_Resource image_data, const struct PP_Point* top_left, const struct PP_Rect* src_rect) {
@@ -641,9 +641,9 @@ static PP_Bool Pnacl_M27_PPB_Graphics2D_IsGraphics2D(PP_Resource resource) {
   return iface->IsGraphics2D(resource);
 }
 
-static PP_Bool Pnacl_M27_PPB_Graphics2D_Describe(PP_Resource graphics_2d, struct PP_Size* size, PP_Bool* is_always_opqaue) {
+static PP_Bool Pnacl_M27_PPB_Graphics2D_Describe(PP_Resource graphics_2d, struct PP_Size* size, PP_Bool* is_always_opaque) {
   const struct PPB_Graphics2D_1_1 *iface = Pnacl_WrapperInfo_PPB_Graphics2D_1_1.real_iface;
-  return iface->Describe(graphics_2d, size, is_always_opqaue);
+  return iface->Describe(graphics_2d, size, is_always_opaque);
 }
 
 static void Pnacl_M27_PPB_Graphics2D_PaintImageData(PP_Resource graphics_2d, PP_Resource image_data, const struct PP_Point* top_left, const struct PP_Rect* src_rect) {
@@ -3711,7 +3711,7 @@ struct PPB_FileSystem_1_0 Pnacl_Wrappers_PPB_FileSystem_1_0 = {
 struct PPB_Graphics2D_1_0 Pnacl_Wrappers_PPB_Graphics2D_1_0 = {
     .Create = (PP_Resource (*)(PP_Instance instance, const struct PP_Size* size, PP_Bool is_always_opaque))&Pnacl_M14_PPB_Graphics2D_Create,
     .IsGraphics2D = (PP_Bool (*)(PP_Resource resource))&Pnacl_M14_PPB_Graphics2D_IsGraphics2D,
-    .Describe = (PP_Bool (*)(PP_Resource graphics_2d, struct PP_Size* size, PP_Bool* is_always_opqaue))&Pnacl_M14_PPB_Graphics2D_Describe,
+    .Describe = (PP_Bool (*)(PP_Resource graphics_2d, struct PP_Size* size, PP_Bool* is_always_opaque))&Pnacl_M14_PPB_Graphics2D_Describe,
     .PaintImageData = (void (*)(PP_Resource graphics_2d, PP_Resource image_data, const struct PP_Point* top_left, const struct PP_Rect* src_rect))&Pnacl_M14_PPB_Graphics2D_PaintImageData,
     .Scroll = (void (*)(PP_Resource graphics_2d, const struct PP_Rect* clip_rect, const struct PP_Point* amount))&Pnacl_M14_PPB_Graphics2D_Scroll,
     .ReplaceContents = (void (*)(PP_Resource graphics_2d, PP_Resource image_data))&Pnacl_M14_PPB_Graphics2D_ReplaceContents,
@@ -3721,7 +3721,7 @@ struct PPB_Graphics2D_1_0 Pnacl_Wrappers_PPB_Graphics2D_1_0 = {
 struct PPB_Graphics2D_1_1 Pnacl_Wrappers_PPB_Graphics2D_1_1 = {
     .Create = (PP_Resource (*)(PP_Instance instance, const struct PP_Size* size, PP_Bool is_always_opaque))&Pnacl_M27_PPB_Graphics2D_Create,
     .IsGraphics2D = (PP_Bool (*)(PP_Resource resource))&Pnacl_M27_PPB_Graphics2D_IsGraphics2D,
-    .Describe = (PP_Bool (*)(PP_Resource graphics_2d, struct PP_Size* size, PP_Bool* is_always_opqaue))&Pnacl_M27_PPB_Graphics2D_Describe,
+    .Describe = (PP_Bool (*)(PP_Resource graphics_2d, struct PP_Size* size, PP_Bool* is_always_opaque))&Pnacl_M27_PPB_Graphics2D_Describe,
     .PaintImageData = (void (*)(PP_Resource graphics_2d, PP_Resource image_data, const struct PP_Point* top_left, const struct PP_Rect* src_rect))&Pnacl_M27_PPB_Graphics2D_PaintImageData,
     .Scroll = (void (*)(PP_Resource graphics_2d, const struct PP_Rect* clip_rect, const struct PP_Point* amount))&Pnacl_M27_PPB_Graphics2D_Scroll,
     .ReplaceContents = (void (*)(PP_Resource graphics_2d, PP_Resource image_data))&Pnacl_M27_PPB_Graphics2D_ReplaceContents,

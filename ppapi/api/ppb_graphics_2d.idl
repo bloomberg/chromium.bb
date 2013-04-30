@@ -8,6 +8,8 @@
  * context within the browser.
  */
 
+[generate_thunk]
+
 label Chrome {
   M14 = 1.0,
   M27 = 1.1
@@ -71,10 +73,11 @@ interface PPB_Graphics2D {
    * the resource is invalid. The output parameters will be set to 0 on a
    * <code>PP_FALSE</code>.
    */
+  [always_set_output_parameters]
   PP_Bool Describe(
       [in] PP_Resource graphics_2d,
       [out] PP_Size size,
-      [out] PP_Bool is_always_opqaue);
+      [out] PP_Bool is_always_opaque);
 
   /**
    * PaintImageData() enqueues a paint of the given image into the context.

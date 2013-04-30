@@ -225,9 +225,9 @@ PP_Resource ResourceCreationProxy::CreateFileChooser(
 }
 
 PP_Resource ResourceCreationProxy::CreateGraphics2D(PP_Instance instance,
-                                                    const PP_Size& size,
+                                                    const PP_Size* size,
                                                     PP_Bool is_always_opaque) {
-  return (new Graphics2DResource(GetConnection(), instance, size,
+  return (new Graphics2DResource(GetConnection(), instance, *size,
                                  is_always_opaque))->GetReference();
 }
 

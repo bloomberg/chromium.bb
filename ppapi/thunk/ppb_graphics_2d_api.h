@@ -31,20 +31,11 @@ class PPAPI_THUNK_EXPORT PPB_Graphics2D_API {
   virtual void Scroll(const PP_Rect* clip_rect,
                       const PP_Point* amount) = 0;
   virtual void ReplaceContents(PP_Resource image_data) = 0;
-  virtual bool SetScale(float scale) = 0;
-  virtual float GetScale() = 0;
+  virtual int32_t Flush(scoped_refptr<TrackedCallback> callback) = 0;
 
-  // When |old_image_data| is non-null and the flush is executing a replace
-  // contents (which leaves the "old" ImageData unowned), the resource ID of
-  // the old image data will be placed into |*old_image_data| synchronously
-  // (not when the flush callback completes).
-  //
-  // When this happens, a reference to this resource will be transferred to the
-  // caller. If there is no replace contents operation, old_image_data will be
-  // ignored. If |*old_image_data| is null, then the old image data will be
-  // destroyed if there was one.
-  virtual int32_t Flush(scoped_refptr<TrackedCallback> callback,
-                        PP_Resource* old_image_data) = 0;
+  // Dev interface.
+  virtual PP_Bool SetScale(float scale) = 0;
+  virtual float GetScale() = 0;
 
   // Test only
   virtual bool ReadImageData(PP_Resource image, const PP_Point* top_left) = 0;

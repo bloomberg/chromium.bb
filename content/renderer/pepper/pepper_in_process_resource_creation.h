@@ -54,7 +54,7 @@ class PepperInProcessResourceCreation
                                        PP_FileSystemType type) OVERRIDE;
   virtual PP_Resource CreateGraphics2D(
       PP_Instance pp_instance,
-      const PP_Size& size,
+      const PP_Size* size,
       PP_Bool is_always_opaque) OVERRIDE;
   virtual PP_Resource CreatePrinting(
       PP_Instance instance) OVERRIDE;

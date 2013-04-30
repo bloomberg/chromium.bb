@@ -119,7 +119,7 @@ class ResourceCreationAPI {
                                         PP_FileChooserMode_Dev mode,
                                         const PP_Var& accept_types) = 0;
   virtual PP_Resource CreateGraphics2D(PP_Instance instance,
-                                       const PP_Size& size,
+                                       const PP_Size* size,
                                        PP_Bool is_always_opaque) = 0;
   virtual PP_Resource CreateGraphics3D(PP_Instance instance,
                                        PP_Resource share_context,
