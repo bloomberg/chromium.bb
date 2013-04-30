@@ -6406,6 +6406,10 @@ int RenderBlock::baselinePosition(FontBaseline baselineType, bool firstLine, Lin
         return RenderBox::baselinePosition(baselineType, firstLine, direction, linePositionMode);
     }
 
+    // If we're not replaced, we'll only get called with PositionOfInteriorLineBoxes.
+    // Note that inline-block counts as replaced here.
+    ASSERT(linePositionMode == PositionOfInteriorLineBoxes);
+
     const FontMetrics& fontMetrics = style(firstLine)->fontMetrics();
     return fontMetrics.ascent(baselineType) + (lineHeight(firstLine, direction, linePositionMode) - fontMetrics.height()) / 2;
 }
