@@ -322,6 +322,10 @@ Status WebViewImpl::SetFileInputFiles(
       return Status(kUnknownError,
                     "path is not absolute: " + files[i].AsUTF8Unsafe());
     }
+    if (files[i].ReferencesParent()) {
+      return Status(kUnknownError,
+                    "path is not canonical: " + files[i].AsUTF8Unsafe());
+    }
     file_list.AppendString(files[i].value());
   }
 
