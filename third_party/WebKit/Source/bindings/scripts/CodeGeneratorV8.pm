@@ -39,12 +39,19 @@ my @implContentInternals = ();
 my %implIncludes = ();
 my %headerIncludes = ();
 
-my %numericTypeHash = ("int" => 1, "short" => 1, "long" => 1, "long long" => 1,
-                       "unsigned int" => 1, "unsigned short" => 1,
-                       "unsigned long" => 1, "unsigned long long" => 1,
-                       "float" => 1, "double" => 1);
-
-my %primitiveTypeHash = ( "boolean" => 1, "void" => 1, "Date" => 1);
+my %primitiveTypeHash = ( "boolean" => 1,
+                          "void" => 1,
+                          "Date" => 1,
+                          "int" => 1,
+                          "short" => 1,
+                          "long" => 1,
+                          "long long" => 1,
+                          "unsigned int" => 1,
+                          "unsigned short" => 1,
+                          "unsigned long" => 1,
+                          "unsigned long long" => 1,
+                          "float" => 1,
+                          "double" => 1);
 
 my %enumTypeHash = ();
 
@@ -5061,7 +5068,6 @@ sub SkipIncludeHeader
     my $type = shift;
 
     return 1 if $primitiveTypeHash{$type};
-    return 1 if $numericTypeHash{$type};
     return 1 if $type eq "String";
 
     # Special case: SVGPoint.h / SVGNumber.h do not exist.
@@ -5082,7 +5088,6 @@ sub IsPrimitiveType
     my $type = shift;
 
     return 1 if $primitiveTypeHash{$type};
-    return 1 if $numericTypeHash{$type};
     return 0;
 }
 
