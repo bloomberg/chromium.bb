@@ -150,6 +150,16 @@ protected:
     ExpectedDisposition m_expectedDisposition;
 };
 
+TEST_F(WebCompositorInputHandlerImplTest, mouseWheelByPageMainThread)
+{
+    WebMouseWheelEvent wheel;
+    wheel.type = WebInputEvent::MouseWheel;
+    wheel.scrollByPage = true;
+
+    EXPECT_CALL(m_mockClient, didNotHandleInputEvent(true)).Times(1);
+    m_inputHandler->handleInputEvent(wheel);
+    testing::Mock::VerifyAndClearExpectations(&m_mockClient);
+}
 
 TEST_F(WebCompositorInputHandlerImplTest, gestureScrollStarted)
 {
