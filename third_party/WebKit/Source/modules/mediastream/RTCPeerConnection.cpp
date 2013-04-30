@@ -93,7 +93,7 @@ PassRefPtr<RTCConfiguration> RTCPeerConnection::parseConfiguration(const Diction
             return 0;
         }
 
-        String urlString, credential;
+        String urlString, username, credential;
         ok = iceServer.get("url", urlString);
         if (!ok) {
             ec = TYPE_MISMATCH_ERR;
@@ -105,9 +105,10 @@ PassRefPtr<RTCConfiguration> RTCPeerConnection::parseConfiguration(const Diction
             return 0;
         }
 
+        iceServer.get("username", username);
         iceServer.get("credential", credential);
 
-        rtcConfiguration->appendServer(RTCIceServer::create(url, credential));
+        rtcConfiguration->appendServer(RTCIceServer::create(url, username, credential));
     }
 
     return rtcConfiguration.release();

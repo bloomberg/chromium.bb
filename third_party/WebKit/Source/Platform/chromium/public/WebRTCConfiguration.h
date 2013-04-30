@@ -63,6 +63,7 @@ public:
     bool isNull() const { return m_private.isNull(); }
 
     WEBKIT_EXPORT WebURL uri() const;
+    WEBKIT_EXPORT WebString username() const;
     WEBKIT_EXPORT WebString credential() const;
 
 #if WEBKIT_IMPLEMENTATION

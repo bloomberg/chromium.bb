@@ -64,6 +64,12 @@ WebURL WebRTCICEServer::uri() const
     return m_private->uri();
 }
 
+WebString WebRTCICEServer::username() const
+{
+    ASSERT(!isNull());
+    return m_private->username();
+}
+
 WebString WebRTCICEServer::credential() const
 {
     ASSERT(!isNull());
