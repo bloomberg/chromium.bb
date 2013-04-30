@@ -237,30 +237,6 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   virtual int32_t AddRef() OVERRIDE;
   virtual int32_t Release() OVERRIDE;
 
-  // WebRtcAudioCapturerSink implementation.
-
-  // Called on the AudioInputDevice worker thread.
-  virtual void CaptureData(const int16* audio_data,
-                           int number_of_channels,
-                           int number_of_frames,
-                           int audio_delay_milliseconds,
-                           double volume) OVERRIDE;
-
-  // Called on the main render thread.
-  virtual void SetCaptureFormat(const media::AudioParameters& params) OVERRIDE;
-
-  // WebRtcAudioRendererSource implementation.
-
-  // Called on the AudioInputDevice worker thread.
-  virtual void RenderData(uint8* audio_data,
-                          int number_of_channels,
-                          int number_of_frames,
-                          int audio_delay_milliseconds) OVERRIDE;
-
-  // Called on the main render thread.
-  virtual void SetRenderFormat(const media::AudioParameters& params) OVERRIDE;
-  virtual void RemoveAudioRenderer(WebRtcAudioRenderer* renderer) OVERRIDE;
-
   // webrtc::AudioDeviceModule implementation.
   // All implemented methods are called on the main render thread unless
   // anything else is stated.
@@ -337,6 +313,30 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
  private:
   // Make destructor private to ensure that we can only be deleted by Release().
   virtual ~WebRtcAudioDeviceImpl();
+
+  // WebRtcAudioCapturerSink implementation.
+
+  // Called on the AudioInputDevice worker thread.
+  virtual void CaptureData(const int16* audio_data,
+                           int number_of_channels,
+                           int number_of_frames,
+                           int audio_delay_milliseconds,
+                           double volume) OVERRIDE;
+
+  // Called on the main render thread.
+  virtual void SetCaptureFormat(const media::AudioParameters& params) OVERRIDE;
+
+  // WebRtcAudioRendererSource implementation.
+
+  // Called on the AudioInputDevice worker thread.
+  virtual void RenderData(uint8* audio_data,
+                          int number_of_channels,
+                          int number_of_frames,
+                          int audio_delay_milliseconds) OVERRIDE;
+
+  // Called on the main render thread.
+  virtual void SetRenderFormat(const media::AudioParameters& params) OVERRIDE;
+  virtual void RemoveAudioRenderer(WebRtcAudioRenderer* renderer) OVERRIDE;
 
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;
