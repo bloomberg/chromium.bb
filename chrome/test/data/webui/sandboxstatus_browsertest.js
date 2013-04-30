@@ -37,10 +37,6 @@ GEN('#endif');
 
 /**
  * Test if the SUID sandbox is enabled.
- *
- * TODO(bradchen): Remove DISABLED_ and flip polarity of this test once
- * the SUID sandbox is enabled on the Chromium bots. In the mean time
- * this test will make it clear that the enabling steps are effective.
  */
 TEST_F('SandboxStatusUITest', 'MAYBE_testSUIDSandboxEnabled', function() {
     var suidyesstring = 'SUID Sandbox\tYes';
@@ -56,7 +52,7 @@ TEST_F('SandboxStatusUITest', 'MAYBE_testSUIDSandboxEnabled', function() {
 // The seccomp-bpf sandbox is also not compatible with ASAN.
 GEN('#if defined(OS_LINUX) && !defined(ADDRESS_SANITIZER)');
 GEN('# define MAYBE_testBPFSandboxEnabled \\');
-GEN('     DISABLED_testBPFSandboxEnabled');
+GEN('     testBPFSandboxEnabled');
 GEN('#else');
 GEN('# define MAYBE_testBPFSandboxEnabled \\');
 GEN('     DISABLED_testBPFSandboxEnabled');
@@ -64,10 +60,6 @@ GEN('#endif');
 
 /**
  * Test if the seccomp-bpf sandbox is enabled.
- * We know that some machines lack kernel support for this. So we mark
- * it as DISABLED_.
- * It's very convenient to quickly be able to check whether tests ran with
- * or without the Seccomp BPF sandbox through this mechanism.
  */
 TEST_F('SandboxStatusUITest', 'MAYBE_testBPFSandboxEnabled', function() {
     var bpfyesstring = 'Seccomp-BPF sandbox\tYes';
