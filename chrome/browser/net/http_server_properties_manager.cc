@@ -180,9 +180,16 @@ bool HttpServerPropertiesManager::SetSpdySetting(
   return persist;
 }
 
-void HttpServerPropertiesManager::ClearSpdySettings() {
+void HttpServerPropertiesManager::ClearSpdySettings(
+    const net::HostPortPair& host_port_pair) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  http_server_properties_impl_->ClearSpdySettings();
+  http_server_properties_impl_->ClearSpdySettings(host_port_pair);
+  ScheduleUpdatePrefsOnIO();
+}
+
+void HttpServerPropertiesManager::ClearAllSpdySettings() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  http_server_properties_impl_->ClearAllSpdySettings();
   ScheduleUpdatePrefsOnIO();
 }
 

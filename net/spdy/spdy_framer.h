@@ -196,6 +196,10 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
                                  size_t len,
                                  bool fin) = 0;
 
+  // Called when a SETTINGS frame is received.
+  // |clear_persisted| True if the respective flag is set on the SETTINGS frame.
+  virtual void OnSettings(bool clear_persisted) {}
+
   // Called when a complete setting within a SETTINGS frame has been parsed and
   // validated.
   virtual void OnSetting(SpdySettingsIds id, uint8 flags, uint32 value) = 0;

@@ -75,6 +75,8 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
     LOG(FATAL) << "Unexpected OnStreamFrameData call.";
   }
 
+  virtual void OnSettings(bool clear_persisted) OVERRIDE {}
+
   virtual void OnSetting(SpdySettingsIds id,
                          uint8 flags,
                          uint32 value) OVERRIDE {

@@ -118,6 +118,14 @@ class HttpServerPropertiesManagerTest : public testing::Test {
                    UpdatePrefsFromCacheOnIOConcrete));
   }
 
+  void ExpectPrefsUpdateRepeatedly() {
+    EXPECT_CALL(*http_server_props_manager_, UpdatePrefsFromCacheOnIO(_))
+        .WillRepeatedly(
+            Invoke(http_server_props_manager_.get(),
+                   &TestingHttpServerPropertiesManager::
+                   UpdatePrefsFromCacheOnIOConcrete));
+  }
+
   MessageLoop loop_;
   TestingPrefServiceSimple pref_service_;
   scoped_ptr<TestingHttpServerPropertiesManager> http_server_props_manager_;
@@ -262,6 +270,81 @@ TEST_F(HttpServerPropertiesManagerTest, SetSpdySetting) {
   net::SettingsFlagsAndValue flags_and_value1_ret = it1_ret->second;
   EXPECT_EQ(net::SETTINGS_FLAG_PERSISTED, flags_and_value1_ret.first);
   EXPECT_EQ(value1, flags_and_value1_ret.second);
+
+  Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
+}
+
+TEST_F(HttpServerPropertiesManagerTest, ClearSpdySetting) {
+  ExpectPrefsUpdateRepeatedly();
+
+  // Add SpdySetting for mail.google.com:443.
+  net::HostPortPair spdy_server_mail("mail.google.com", 443);
+  const net::SpdySettingsIds id1 = net::SETTINGS_UPLOAD_BANDWIDTH;
+  const net::SpdySettingsFlags flags1 = net::SETTINGS_FLAG_PLEASE_PERSIST;
+  const uint32 value1 = 31337;
+  http_server_props_manager_->SetSpdySetting(
+      spdy_server_mail, id1, flags1, value1);
+
+  // Run the task.
+  loop_.RunUntilIdle();
+
+  const net::SettingsMap& settings_map1_ret =
+      http_server_props_manager_->GetSpdySettings(spdy_server_mail);
+  ASSERT_EQ(1U, settings_map1_ret.size());
+  net::SettingsMap::const_iterator it1_ret = settings_map1_ret.find(id1);
+  EXPECT_TRUE(it1_ret != settings_map1_ret.end());
+  net::SettingsFlagsAndValue flags_and_value1_ret = it1_ret->second;
+  EXPECT_EQ(net::SETTINGS_FLAG_PERSISTED, flags_and_value1_ret.first);
+  EXPECT_EQ(value1, flags_and_value1_ret.second);
+
+  // Clear SpdySetting for mail.google.com:443.
+  http_server_props_manager_->ClearSpdySettings(spdy_server_mail);
+
+  // Run the task.
+  loop_.RunUntilIdle();
+
+  // Verify that there are no entries in the settings map for
+  // mail.google.com:443.
+  const net::SettingsMap& settings_map2_ret =
+      http_server_props_manager_->GetSpdySettings(spdy_server_mail);
+  ASSERT_EQ(0U, settings_map2_ret.size());
+
+  Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
+}
+
+TEST_F(HttpServerPropertiesManagerTest, ClearAllSpdySetting) {
+  ExpectPrefsUpdateRepeatedly();
+
+  // Add SpdySetting for mail.google.com:443.
+  net::HostPortPair spdy_server_mail("mail.google.com", 443);
+  const net::SpdySettingsIds id1 = net::SETTINGS_UPLOAD_BANDWIDTH;
+  const net::SpdySettingsFlags flags1 = net::SETTINGS_FLAG_PLEASE_PERSIST;
+  const uint32 value1 = 31337;
+  http_server_props_manager_->SetSpdySetting(
+      spdy_server_mail, id1, flags1, value1);
+
+  // Run the task.
+  loop_.RunUntilIdle();
+
+  const net::SettingsMap& settings_map1_ret =
+      http_server_props_manager_->GetSpdySettings(spdy_server_mail);
+  ASSERT_EQ(1U, settings_map1_ret.size());
+  net::SettingsMap::const_iterator it1_ret = settings_map1_ret.find(id1);
+  EXPECT_TRUE(it1_ret != settings_map1_ret.end());
+  net::SettingsFlagsAndValue flags_and_value1_ret = it1_ret->second;
+  EXPECT_EQ(net::SETTINGS_FLAG_PERSISTED, flags_and_value1_ret.first);
+  EXPECT_EQ(value1, flags_and_value1_ret.second);
+
+  // Clear All SpdySettings.
+  http_server_props_manager_->ClearAllSpdySettings();
+
+  // Run the task.
+  loop_.RunUntilIdle();
+
+  // Verify that there are no entries in the settings map.
+  const net::SpdySettingsMap& spdy_settings_map2_ret =
+      http_server_props_manager_->spdy_settings_map();
+  ASSERT_EQ(0U, spdy_settings_map2_ret.size());
 
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 }

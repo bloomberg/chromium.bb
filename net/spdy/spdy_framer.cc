@@ -1102,6 +1102,8 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
         CHANGE_STATE(SPDY_CONTROL_FRAME_HEADER_BLOCK);
         break;
       case SETTINGS:
+        visitor_->OnSettings(current_frame_flags_ &
+                             SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS);
         CHANGE_STATE(SPDY_SETTINGS_FRAME_PAYLOAD);
         break;
       default:

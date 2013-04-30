@@ -121,8 +121,12 @@ class HttpServerPropertiesManager
                               net::SpdySettingsFlags flags,
                               uint32 value) OVERRIDE;
 
-  // Clears all SPDY settings.
-  virtual void ClearSpdySettings() OVERRIDE;
+  // Clears all SPDY settings for a host.
+  virtual void ClearSpdySettings(
+      const net::HostPortPair& host_port_pair) OVERRIDE;
+
+  // Clears all SPDY settings for all hosts.
+  virtual void ClearAllSpdySettings() OVERRIDE;
 
   // Returns all SPDY persistent settings.
   virtual const net::SpdySettingsMap& spdy_settings_map() const OVERRIDE;

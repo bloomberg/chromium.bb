@@ -244,7 +244,12 @@ bool HttpServerPropertiesImpl::SetSpdySetting(
   return true;
 }
 
-void HttpServerPropertiesImpl::ClearSpdySettings() {
+void HttpServerPropertiesImpl::ClearSpdySettings(
+    const HostPortPair& host_port_pair) {
+  spdy_settings_map_.erase(host_port_pair);
+}
+
+void HttpServerPropertiesImpl::ClearAllSpdySettings() {
   spdy_settings_map_.clear();
 }
 

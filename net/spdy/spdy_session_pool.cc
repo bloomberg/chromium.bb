@@ -276,7 +276,7 @@ Value* SpdySessionPool::SpdySessionPoolInfoToValue() const {
 
 void SpdySessionPool::OnIPAddressChanged() {
   CloseCurrentSessions(ERR_NETWORK_CHANGED);
-  http_server_properties_->ClearSpdySettings();
+  http_server_properties_->ClearAllSpdySettings();
 }
 
 void SpdySessionPool::OnSSLConfigChanged() {

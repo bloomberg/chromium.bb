@@ -455,10 +455,12 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy2Test, GetActivePushStream);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy2Test, DeleteExpiredPushStreams);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy2Test, ProtocolNegotiation);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy2Test, ClearSettings);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, ClientPing);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, FailedPing);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, GetActivePushStream);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, DeleteExpiredPushStreams);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, ClearSettings);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, ProtocolNegotiation);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, ProtocolNegotiation31);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, ProtocolNegotiation4);
@@ -641,6 +643,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
                                  const char* data,
                                  size_t len,
                                  bool fin) OVERRIDE;
+  virtual void OnSettings(bool clear_persisted) OVERRIDE;
   virtual void OnSetting(
       SpdySettingsIds id, uint8 flags, uint32 value) OVERRIDE;
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
@@ -748,6 +751,8 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   base::TimeTicks last_activity_time() const { return last_activity_time_; }
 
   bool check_ping_status_pending() const { return check_ping_status_pending_; }
+
+  size_t max_concurrent_streams() const { return max_concurrent_streams_; }
 
   // Returns the SSLClientSocket that this SPDY session sits on top of,
   // or NULL, if the transport is not SSL.

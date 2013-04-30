@@ -213,6 +213,7 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
                                  const char* data,
                                  size_t len,
                                  bool fin) OVERRIDE {}
+  virtual void OnSettings(bool clear_persisted) OVERRIDE {}
   virtual void OnSetting(
       SpdySettingsIds id, uint8 flags, uint32 value) OVERRIDE {}
   virtual void OnPing(uint32 unique_id) OVERRIDE {}

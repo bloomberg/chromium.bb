@@ -119,6 +119,15 @@ base::Value* NetLogSpdySessionCallback(const HostPortProxyPair* host_pair,
   return dict;
 }
 
+base::Value* NetLogSpdySettingsCallback(const HostPortPair& host_port_pair,
+                                        bool clear_persisted,
+                                        NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  dict->SetString("host", host_port_pair.ToString());
+  dict->SetBoolean("clear_persisted", clear_persisted);
+  return dict;
+}
+
 base::Value* NetLogSpdySettingCallback(SpdySettingsIds id,
                                        SpdySettingsFlags flags,
                                        uint32 value,
@@ -130,8 +139,8 @@ base::Value* NetLogSpdySettingCallback(SpdySettingsIds id,
   return dict;
 }
 
-base::Value* NetLogSpdySettingsCallback(const SettingsMap* settings,
-                                        NetLog::LogLevel /* log_level */) {
+base::Value* NetLogSpdySendSettingsCallback(const SettingsMap* settings,
+                                            NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   base::ListValue* settings_list = new base::ListValue();
   for (SettingsMap::const_iterator it = settings->begin();
@@ -1508,6 +1517,18 @@ void SpdySession::OnStreamFrameData(SpdyStreamId stream_id,
   it->second->OnDataReceived(buffer.Pass());
 }
 
+void SpdySession::OnSettings(bool clear_persisted) {
+  if (clear_persisted)
+    http_server_properties_->ClearSpdySettings(host_port_pair());
+
+  if (net_log_.IsLoggingAllEvents()) {
+    net_log_.AddEvent(
+        NetLog::TYPE_SPDY_SESSION_RECV_SETTINGS,
+        base::Bind(&NetLogSpdySettingsCallback, host_port_pair(),
+                   clear_persisted));
+  }
+}
+
 void SpdySession::OnSetting(SpdySettingsIds id,
                             uint8 flags,
                             uint32 value) {
@@ -1940,7 +1961,7 @@ void SpdySession::SendInitialSettings() {
 void SpdySession::SendSettings(const SettingsMap& settings) {
   net_log_.AddEvent(
       NetLog::TYPE_SPDY_SESSION_SEND_SETTINGS,
-      base::Bind(&NetLogSpdySettingsCallback, &settings));
+      base::Bind(&NetLogSpdySendSettingsCallback, &settings));
 
   // Create the SETTINGS frame and send it.
   DCHECK(buffered_spdy_framer_.get());

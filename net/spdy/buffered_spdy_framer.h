@@ -59,6 +59,10 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
                                  size_t len,
                                  bool fin) = 0;
 
+  // Called when a SETTINGS frame is received.
+  // |clear_persisted| True if the respective flag is set on the SETTINGS frame.
+  virtual void OnSettings(bool clear_persisted) = 0;
+
   // Called when an individual setting within a SETTINGS frame has been parsed
   // and validated.
   virtual void OnSetting(SpdySettingsIds id, uint8 flags, uint32 value) = 0;
@@ -123,6 +127,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
                                  const char* data,
                                  size_t len,
                                  bool fin) OVERRIDE;
+  virtual void OnSettings(bool clear_persisted) OVERRIDE;
   virtual void OnSetting(
       SpdySettingsIds id, uint8 flags, uint32 value) OVERRIDE;
   virtual void OnPing(uint32 unique_id) OVERRIDE;

@@ -1035,6 +1035,15 @@ EVENT_TYPE(SPDY_SESSION_SYN_REPLY)
 //   }
 EVENT_TYPE(SPDY_SESSION_SEND_SETTINGS)
 
+// Receipt of a SPDY SETTINGS frame is received.
+// The following parameters are attached:
+//   {
+//     "host": <The host-port string>,
+//     "clear_persisted": <Boolean indicating whether to clear all persisted
+//                         settings data for the given host>,
+//   }
+EVENT_TYPE(SPDY_SESSION_RECV_SETTINGS)
+
 // Receipt of a SPDY SETTING frame.
 // The following parameters are attached:
 //   {

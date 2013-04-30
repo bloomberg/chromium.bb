@@ -115,8 +115,11 @@ class NET_EXPORT HttpServerPropertiesImpl
                               SpdySettingsFlags flags,
                               uint32 value) OVERRIDE;
 
+  // Clears all entries in |spdy_settings_map_| for a host.
+  virtual void ClearSpdySettings(const HostPortPair& host_port_pair) OVERRIDE;
+
   // Clears all entries in |spdy_settings_map_|.
-  virtual void ClearSpdySettings() OVERRIDE;
+  virtual void ClearAllSpdySettings() OVERRIDE;
 
   // Returns all persistent SPDY settings.
   virtual const SpdySettingsMap& spdy_settings_map() const OVERRIDE;

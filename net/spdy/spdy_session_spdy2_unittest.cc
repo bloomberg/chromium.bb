@@ -18,6 +18,7 @@
 #include "net/spdy/spdy_stream_test_util.h"
 #include "net/spdy/spdy_test_util_common.h"
 #include "net/spdy/spdy_test_util_spdy2.h"
+#include "net/spdy/spdy_test_utils.h"
 #include "net/test/cert_test_util.h"
 #include "testing/platform_test.h"
 
@@ -544,6 +545,76 @@ TEST_F(SpdySessionSpdy2Test, OnSettings) {
   spdy_stream1 = NULL;
 
   EXPECT_EQ(OK, stream_releaser.WaitForResult());
+}
+
+// Start with max concurrent streams set to 1 (that is persisted). Receive a
+// settings frame setting max concurrent streams to 2 and which also clears the
+// persisted data. Verify that persisted data is correct.
+TEST_F(SpdySessionSpdy2Test, ClearSettings) {
+  session_deps_.host_resolver->set_synchronous_mode(true);
+
+  SettingsMap new_settings;
+  const SpdySettingsIds kSpdySettingsIds1 = SETTINGS_MAX_CONCURRENT_STREAMS;
+  const uint32 max_concurrent_streams = 2;
+  new_settings[kSpdySettingsIds1] =
+      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, max_concurrent_streams);
+
+  // Set up the socket so we read a SETTINGS frame that raises max concurrent
+  // streams to 2 and clears previously persisted data.
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  scoped_ptr<SpdyFrame> settings_frame(ConstructSpdySettings(new_settings));
+  uint8 flags = SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS;
+  test::SetFrameFlags(settings_frame.get(), flags, kSpdyVersion3);
+  MockRead reads[] = {
+    CreateMockRead(*settings_frame),
+    MockRead(SYNCHRONOUS, 0, 0)  // EOF
+  };
+
+  StaticSocketDataProvider data(reads, arraysize(reads), NULL, 0);
+  data.set_connect_data(connect_data);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  CreateNetworkSession();
+
+  // Initialize the SpdySetting with 1 max concurrent streams.
+  spdy_session_pool_->http_server_properties()->SetSpdySetting(
+      test_host_port_pair_,
+      kSpdySettingsIds1,
+      SETTINGS_FLAG_PLEASE_PERSIST,
+      1);
+
+  EXPECT_EQ(1u, spdy_session_pool_->http_server_properties()->GetSpdySettings(
+      test_host_port_pair_).size());
+
+  scoped_refptr<SpdySession> session = CreateInitializedSession();
+
+  // Create 2 streams.  First will succeed.  Second will be pending.
+  scoped_refptr<SpdyStream> spdy_stream1 =
+      CreateStreamSynchronously(session, test_url_, MEDIUM, BoundNetLog());
+  ASSERT_TRUE(spdy_stream1.get() != NULL);
+
+  StreamReleaserCallback stream_releaser(session, spdy_stream1);
+
+  SpdyStreamRequest request;
+  ASSERT_EQ(ERR_IO_PENDING,
+            request.StartRequest(session, test_url_, MEDIUM,
+                                 BoundNetLog(),
+                                 stream_releaser.MakeCallback(&request)));
+
+  spdy_stream1 = NULL;
+  EXPECT_EQ(OK, stream_releaser.WaitForResult());
+
+  // Make sure that persisted data is cleared.
+  EXPECT_EQ(0u, spdy_session_pool_->http_server_properties()->GetSpdySettings(
+      test_host_port_pair_).size());
+
+  // Make sure session's max_concurrent_streams is 2.
+  EXPECT_EQ(2u, session->max_concurrent_streams());
+
+  session = NULL;
 }
 
 // Start with max concurrent streams set to 1.  Request two streams.  When the

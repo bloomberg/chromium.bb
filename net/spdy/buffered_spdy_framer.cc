@@ -158,6 +158,10 @@ void BufferedSpdyFramer::OnStreamFrameData(SpdyStreamId stream_id,
   visitor_->OnStreamFrameData(stream_id, data, len, fin);
 }
 
+void BufferedSpdyFramer::OnSettings(bool clear_persisted) {
+  visitor_->OnSettings(clear_persisted);
+}
+
 void BufferedSpdyFramer::OnSetting(SpdySettingsIds id,
                                    uint8 flags,
                                    uint32 value) {

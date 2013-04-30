@@ -53,6 +53,7 @@ class MockVisitor : public SpdyFramerVisitorInterface {
                                        const char* data,
                                        size_t len,
                                        bool fin));
+  MOCK_METHOD1(OnSettings, void(bool clear_persisted));
   MOCK_METHOD3(OnSetting, void(SpdySettingsIds id, uint8 flags, uint32 value));
   MOCK_METHOD1(OnPing, void(uint32 unique_id));
   MOCK_METHOD2(OnRstStream, void(SpdyStreamId stream_id,
@@ -3835,6 +3836,8 @@ TEST_P(SpdyFramerTest, SettingsFrameFlags) {
     if (flags & ~SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS) {
       EXPECT_CALL(visitor, OnError(_));
     } else {
+      EXPECT_CALL(visitor, OnSettings(
+          flags & SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS));
       EXPECT_CALL(visitor, OnSetting(SETTINGS_UPLOAD_BANDWIDTH,
                                      SETTINGS_FLAG_NONE, 54321));
     }
