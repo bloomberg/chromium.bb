@@ -7102,3 +7102,9 @@
    fun:_ZN3net18SSLClientSocketNSS4Core21OnHandshakeIOCompleteEi
    fun:_ZN3net18SSLClientSocketNSS4Core28OnGetDomainBoundCertCompleteEi
 }
+{
+   bug_236791
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3ash4test53FocusCyclerTest_CycleFocusThroughWindowWithPanes_Test8TestBodyEv
+}
