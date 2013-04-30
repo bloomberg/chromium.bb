@@ -1393,7 +1393,8 @@ void WebContentsImpl::CreateNewWindow(
     WebContentsImpl* new_contents_impl =
         static_cast<WebContentsImpl*>(new_contents);
     new_contents_impl->browser_plugin_guest_.reset(
-        BrowserPluginGuest::Create(instance_id, new_contents_impl));
+        BrowserPluginGuest::CreateWithOpener(instance_id, new_contents_impl,
+            GetBrowserPluginGuest(), !!new_contents_impl->opener()));
   }
   new_contents->Init(create_params);
 
