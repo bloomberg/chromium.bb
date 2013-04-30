@@ -391,10 +391,7 @@ bool ProcessIterator::CheckForNextProcess() {
   entry_.ppid_ = GetProcStatsFieldAsInt(proc_stats, VM_PPID);
   entry_.gid_ = GetProcStatsFieldAsInt(proc_stats, VM_PGRP);
   entry_.cmd_line_args_.assign(cmd_line_args.begin(), cmd_line_args.end());
-
-  // TODO(port): read pid's commandline's $0, like killall does.  Using the
-  // short name between openparen and closeparen won't work for long names!
-  entry_.exe_file_ = GetProcStatsFieldAsString(proc_stats, VM_COMM);
+  entry_.exe_file_ = GetProcessExecutablePath(pid).BaseName().value();
   return true;
 }
 
