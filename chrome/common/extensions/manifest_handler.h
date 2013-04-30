@@ -9,12 +9,16 @@
 #include <string>
 #include <vector>
 
+#include "base/lazy_instance.h"
+#include "base/memory/linked_ptr.h"
 #include "base/string16.h"
 #include "chrome/common/extensions/manifest.h"
 
 namespace extensions {
 class Extension;
 
+// An interface for clients that recognize and parse keys in extension
+// manifests.
 class ManifestHandler {
  public:
   ManifestHandler();
@@ -83,6 +87,48 @@ class ManifestHandler {
  private:
   // The keys to register us for (in Register).
   virtual const std::vector<std::string> Keys() const = 0;
+};
+
+// The global registry for manifest handlers.
+class ManifestHandlerRegistry {
+ private:
+  friend class ManifestHandler;
+  friend class ScopedTestingManifestHandlerRegistry;
+  friend struct base::DefaultLazyInstanceTraits<ManifestHandlerRegistry>;
+
+  ManifestHandlerRegistry();
+  ~ManifestHandlerRegistry();
+
+  void RegisterManifestHandler(const std::string& key,
+                               linked_ptr<ManifestHandler> handler);
+  bool ParseExtension(Extension* extension, string16* error);
+  bool ValidateExtension(const Extension* extension,
+                         std::string* error,
+                         std::vector<InstallWarning>* warnings);
+
+  void ClearForTesting();
+  // Overrides the current global ManifestHandlerRegistry with
+  // |registry|, returning the current one.
+  static ManifestHandlerRegistry* SetForTesting(
+      ManifestHandlerRegistry* new_registry);
+
+  typedef std::map<std::string, linked_ptr<ManifestHandler> >
+      ManifestHandlerMap;
+  typedef std::map<ManifestHandler*, int> ManifestHandlerPriorityMap;
+
+  // Puts the manifest handlers in order such that each handler comes after
+  // any handlers for their PrerequisiteKeys. If there is no handler for
+  // a prerequisite key, that dependency is simply ignored.
+  // CHECKs that there are no manifest handlers with circular dependencies.
+  void SortManifestHandlers();
+
+  // All registered manifest handlers.
+  ManifestHandlerMap handlers_;
+
+  // The priority for each manifest handler. Handlers with lower priority
+  // values are evaluated first.
+  ManifestHandlerPriorityMap priority_map_;
+  bool is_sorted_;
 };
 
 }  // namespace extensions

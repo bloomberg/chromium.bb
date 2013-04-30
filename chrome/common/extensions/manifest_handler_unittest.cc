@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/extensions/extension.h"
@@ -24,6 +25,20 @@ std::vector<std::string> SingleKey(const std::string& key) {
 }
 
 }  // namespace
+
+class ScopedTestingManifestHandlerRegistry {
+ public:
+  ScopedTestingManifestHandlerRegistry() {
+    old_registry_ = ManifestHandlerRegistry::SetForTesting(&registry_);
+  }
+
+  ~ScopedTestingManifestHandlerRegistry() {
+    ManifestHandlerRegistry::SetForTesting(old_registry_);
+  }
+
+  ManifestHandlerRegistry registry_;
+  ManifestHandlerRegistry* old_registry_;
+};
 
 class ManifestHandlerTest : public testing::Test {
  public:
@@ -83,7 +98,6 @@ class ManifestHandlerTest : public testing::Test {
     std::vector<std::string> prereqs_;
     ParsingWatcher* watcher_;
 
-   private:
     virtual const std::vector<std::string> Keys() const OVERRIDE {
       return keys_;
     }
@@ -147,18 +161,15 @@ class ManifestHandlerTest : public testing::Test {
       return keys_;
     }
 
+ protected:
     bool return_value_;
     bool always_validate_;
     std::vector<std::string> keys_;
   };
-
- protected:
-  virtual void TearDown() OVERRIDE {
-    ManifestHandler::ClearRegistryForTesting();
-  }
 };
 
 TEST_F(ManifestHandlerTest, DependentHandlers) {
+  ScopedTestingManifestHandlerRegistry registry;
   ParsingWatcher watcher;
   std::vector<std::string> prereqs;
   (new TestManifestHandler("A", SingleKey("a"), prereqs, &watcher))->Register();
@@ -199,6 +210,7 @@ TEST_F(ManifestHandlerTest, DependentHandlers) {
 }
 
 TEST_F(ManifestHandlerTest, FailingHandlers) {
+  ScopedTestingManifestHandlerRegistry registry;
   // Can't use ExtensionBuilder, because this extension will fail to
   // be parsed.
   scoped_ptr<base::DictionaryValue> manifest_a(
@@ -235,6 +247,7 @@ TEST_F(ManifestHandlerTest, FailingHandlers) {
 }
 
 TEST_F(ManifestHandlerTest, Validate) {
+  ScopedTestingManifestHandlerRegistry registry;
   scoped_refptr<Extension> extension = ExtensionBuilder()
       .SetManifest(DictionaryBuilder()
                    .Set("name", "no name")
