@@ -20,6 +20,8 @@
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "chrome/installer/util/util_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "grit/chromium_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_family.h"
@@ -247,6 +249,11 @@ bool CreatePlatformShortcuts(
     shortcut_properties.set_icon(icon_file, 0);
     shortcut_properties.set_app_id(app_id);
     shortcut_properties.set_dual_mode(false);
+    if (!file_util::PathExists(shortcut_file.DirName()) &&
+        !file_util::CreateDirectory(shortcut_file.DirName())) {
+      NOTREACHED();
+      return false;
+    }
     success = base::win::CreateOrUpdateShortcutLink(
         shortcut_file, shortcut_properties,
         base::win::SHORTCUT_CREATE_ALWAYS) && success;
@@ -290,6 +297,12 @@ void DeletePlatformShortcuts(
   all_shortcut_locations.in_applications_menu = true;
   all_shortcut_locations.in_quick_launch_bar = true;
   all_shortcut_locations.on_desktop = true;
+  // Delete shortcuts from the Chrome Apps subdirectory.
+  // This matches the subdir name set by CreateApplicationShortcutView::Accept
+  // for Chrome apps (not URL apps, but this function does not apply for them).
+  string16 start_menu_subdir =
+      l10n_util::GetStringUTF16(IDS_APP_SHORTCUTS_SUBDIR_NAME);
+  all_shortcut_locations.applications_menu_subdir = start_menu_subdir;
   std::vector<base::FilePath> shortcut_paths = GetShortcutPaths(
       all_shortcut_locations);
   if (base::win::GetVersion() >= base::win::VERSION_WIN7)
@@ -307,6 +320,14 @@ void DeletePlatformShortcuts(
       base::win::TaskbarUnpinShortcutLink(j->value().c_str());
       file_util::Delete(*j, false);
     }
+  }
+
+  // If there are no more shortcuts in the Chrome Apps subdirectory, remove it.
+  base::FilePath chrome_apps_dir;
+  if (PathService::Get(base::DIR_START_MENU, &chrome_apps_dir)) {
+    chrome_apps_dir = chrome_apps_dir.Append(start_menu_subdir);
+    if (file_util::IsDirectoryEmpty(chrome_apps_dir))
+      file_util::Delete(chrome_apps_dir, false);
   }
 }
 

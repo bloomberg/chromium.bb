@@ -27,6 +27,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
@@ -377,6 +378,7 @@ bool CreateApplicationShortcutView::Accept() {
   creation_locations.on_desktop = desktop_check_box_->checked();
   creation_locations.in_applications_menu = menu_check_box_ == NULL ? false :
       menu_check_box_->checked();
+  creation_locations.applications_menu_subdir = shortcut_menu_subdir_;
 
 #if defined(OS_WIN)
   creation_locations.in_quick_launch_bar = quick_launch_check_box_ == NULL ?
@@ -430,6 +432,9 @@ CreateUrlApplicationShortcutView::CreateUrlApplicationShortcutView(
     web_app::GetIconsInfo(app_info, &unprocessed_icons_);
     FetchIcon();
   }
+
+  // NOTE: Leave shortcut_menu_subdir_ blank to create URL app shortcuts in the
+  // top-level menu.
 
   InitControls();
 }
@@ -509,6 +514,10 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
   // Required by InitControls().
   shortcut_info_.title = UTF8ToUTF16(app->name());
   shortcut_info_.description = UTF8ToUTF16(app->description());
+
+  // Place Chrome app shortcuts in the "Chrome Apps" submenu.
+  shortcut_menu_subdir_ =
+      l10n_util::GetStringUTF16(IDS_APP_SHORTCUTS_SUBDIR_NAME);
 
   InitControls();
 

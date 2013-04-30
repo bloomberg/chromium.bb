@@ -78,6 +78,7 @@ class CreateApplicationShortcutView : public views::DialogDelegateView,
 
   // Target shortcut info.
   ShellIntegration::ShortcutInfo shortcut_info_;
+  string16 shortcut_menu_subdir_;
 
   DISALLOW_COPY_AND_ASSIGN(CreateApplicationShortcutView);
 };

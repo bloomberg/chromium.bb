@@ -878,6 +878,11 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
         You need to be signed into Chrome to use apps. This allows Chrome to sync your apps, bookmarks, history, passwords and other settings across devices.
       </message>
 
+      <!-- App shortcuts -->
+      <message name="IDS_APP_SHORTCUTS_SUBDIR_NAME" desc="Name for the Chrome Apps Start Menu folder name.">
+        Chrome Apps
+      </message>
+
       <!-- Chrome OS OOBE Terms of Service screen-->
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_TERMS_OF_SERVICE_SCREEN_SUBHEADING" desc="Subheading at the top of the Terms of Service screen.">

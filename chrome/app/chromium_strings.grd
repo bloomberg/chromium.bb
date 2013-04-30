@@ -954,6 +954,11 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
         You need to be signed into Chromium to use apps. This allows Chromium to sync your apps, bookmarks, history, passwords and other settings across devices.
       </message>
 
+      <!-- App shortcuts -->
+      <message name="IDS_APP_SHORTCUTS_SUBDIR_NAME" desc="Name for the Chromium Apps Start Menu folder name.">
+        Chromium Apps
+      </message>
+
       <!-- Chrome OS OOBE Terms of Service screen-->
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_TERMS_OF_SERVICE_SCREEN_SUBHEADING" desc="Subheading at the top of the Terms of Service screen.">
