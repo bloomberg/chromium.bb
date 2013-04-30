@@ -29,8 +29,6 @@ deps = {
         Var('git_url') + '/external/google-url.git@8debb9b26bab1b66e9b28a58447338eca544765d',
     'src/native_client':
         Var('git_url') + '/native_client/src/native_client.git@3c5a7a1fff576d9ed7c7d271cf42130e932a256f',
-    'src/sandbox/linux/seccomp-legacy':
-        Var('git_url') + '/external/seccompsandbox.git@91baa6234536b66149ba576d0e6c0506c3b3d2e3',
     'src/sdch/open-vcdiff':
         Var('git_url') + '/external/open-vcdiff.git@438f2a5be6d809bc21611a94cd37bfc8c28ceb33',
     'src/testing/gmock':
@@ -222,8 +220,6 @@ deps_os = {
         'src/native_client':
             None,
         'src/native_client/src/third_party/ppapi':
-            None,
-        'src/sandbox/linux/seccomp-legacy':
             None,
         'src/testing/iossim/third_party/class-dump':
             Var('git_url') + '/chromium/deps/class-dump.git@8461cdd762a604887dc7f251a619d7ec1c1c930d',
