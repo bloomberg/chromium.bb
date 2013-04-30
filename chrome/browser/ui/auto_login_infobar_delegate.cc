@@ -172,8 +172,10 @@ void AutoLoginInfoBarDelegate::Create(InfoBarService* infobar_service,
       new AutoLoginInfoBarDelegate(infobar_service, params)));
 }
 
-string16 AutoLoginInfoBarDelegate::GetMessageText() const {
-  return GetMessageText(params_.username);
+string16 AutoLoginInfoBarDelegate::GetMessageText(
+    const std::string& username) const {
+  return l10n_util::GetStringFUTF16(IDS_AUTOLOGIN_INFOBAR_MESSAGE,
+                                    UTF8ToUTF16(username));
 }
 
 AutoLoginInfoBarDelegate::AutoLoginInfoBarDelegate(
@@ -213,6 +215,10 @@ AutoLoginInfoBarDelegate*
   return this;
 }
 
+string16 AutoLoginInfoBarDelegate::GetMessageText() const {
+  return GetMessageText(params_.username);
+}
+
 string16 AutoLoginInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
@@ -236,12 +242,6 @@ bool AutoLoginInfoBarDelegate::Cancel() {
   RecordHistogramAction(HISTOGRAM_REJECTED);
   button_pressed_ = true;
   return true;
-}
-
-string16 AutoLoginInfoBarDelegate::GetMessageText(
-    const std::string& username) const {
-  return l10n_util::GetStringFUTF16(IDS_AUTOLOGIN_INFOBAR_MESSAGE,
-                                    UTF8ToUTF16(username));
 }
 
 void AutoLoginInfoBarDelegate::Observe(int type,

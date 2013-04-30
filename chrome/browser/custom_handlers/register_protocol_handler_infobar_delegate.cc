@@ -79,15 +79,6 @@ string16 RegisterProtocolHandlerInfoBarDelegate::GetMessageText() const {
           GetProtocolName(handler_));
 }
 
-string16 RegisterProtocolHandlerInfoBarDelegate::GetProtocolName(
-    const ProtocolHandler& handler) const {
-  if (handler.protocol() == "mailto")
-    return l10n_util::GetStringUTF16(IDS_REGISTER_PROTOCOL_HANDLER_MAILTO_NAME);
-  if (handler.protocol() == "webcal")
-    return l10n_util::GetStringUTF16(IDS_REGISTER_PROTOCOL_HANDLER_WEBCAL_NAME);
-  return UTF8ToUTF16(handler.protocol());
-}
-
 string16 RegisterProtocolHandlerInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return (button == BUTTON_OK) ?
@@ -131,4 +122,13 @@ bool RegisterProtocolHandlerInfoBarDelegate::LinkClicked(
       false);
   web_contents()->OpenURL(params);
   return false;
+}
+
+string16 RegisterProtocolHandlerInfoBarDelegate::GetProtocolName(
+    const ProtocolHandler& handler) const {
+  if (handler.protocol() == "mailto")
+    return l10n_util::GetStringUTF16(IDS_REGISTER_PROTOCOL_HANDLER_MAILTO_NAME);
+  if (handler.protocol() == "webcal")
+    return l10n_util::GetStringUTF16(IDS_REGISTER_PROTOCOL_HANDLER_WEBCAL_NAME);
+  return UTF8ToUTF16(handler.protocol());
 }

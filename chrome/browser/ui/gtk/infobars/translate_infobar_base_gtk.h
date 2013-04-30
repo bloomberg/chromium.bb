@@ -27,7 +27,6 @@ class TranslateInfoBarBase : public InfoBarGtk {
                               double* r, double* g, double* b) OVERRIDE;
   virtual void InitWidgets() OVERRIDE;
 
- protected:
   // Sub-classes that want to have the options menu button showing sould
   // override and return true.
   virtual bool ShowOptionsMenuButton() const;
