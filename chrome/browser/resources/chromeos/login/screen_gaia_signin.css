@@ -103,3 +103,18 @@
   -webkit-box-pack: center;
   display: -webkit-box;
 }
+
+#createManagedUserSeparator {
+  background-color: rgba(128,128,128,0.3);
+  height: 1px;
+  width: 200px;
+}
+
+#createManagedUserLogo {
+  font-weight: bold;
+  margin-top: 16px;
+}
+
+#createManagedUserLinkPlaceholder {
+  margin-top: 10px;
+}

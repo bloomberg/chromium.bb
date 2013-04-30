@@ -358,6 +358,8 @@ void SigninScreenHandler::DeclareLocalizedValues(
   builder->Add("guestSignin", IDS_BROWSE_WITHOUT_SIGNING_IN_HTML);
   builder->Add("createLocallyManagedUser",
                IDS_CREATE_LOCALLY_MANAGED_USER_HTML);
+  builder->Add("createManagedUserFeatureName",
+               IDS_CREATE_LOCALLY_MANAGED_USER_FEATURE_NAME);
   builder->Add("offlineLogin", IDS_OFFLINE_LOGIN_HTML);
   builder->Add("ownerUserPattern", IDS_LOGIN_POD_OWNER_USER);
   builder->Add("removeUser", IDS_LOGIN_POD_REMOVE_USER);

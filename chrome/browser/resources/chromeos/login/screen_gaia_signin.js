@@ -264,7 +264,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       $('createAccount').hidden = !data.createAccount;
       $('guestSignin').hidden = !data.guestSignin;
-      $('createLocallyManagedUser').hidden = !data.createLocallyManagedUser;
+      $('createManagedUserPane').hidden = !data.createLocallyManagedUser;
       // Allow cancellation of screen only when user pods can be displayed.
       this.cancelAllowed_ = data.isShowUsers && $('pod-row').pods.length;
       $('login-header-bar').allowCancel = this.cancelAllowed_;
@@ -273,7 +273,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       var noRightPanel = $('gaia-signin-reason').hidden &&
                          $('createAccount').hidden &&
                          $('guestSignin').hidden &&
-                         $('createLocallyManagedUser').hidden;
+                         $('createManagedUserPane').hidden;
       this.classList.toggle('no-right-panel', noRightPanel);
       if (Oobe.getInstance().currentScreen === this)
         Oobe.getInstance().updateScreenSize(this);
@@ -371,17 +371,17 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           'guestSignin',
           '<a id="guestSigninLink" class="signin-link" href="#">',
           '</a>');
-      $('createLocallyManagedUser').innerHTML = loadTimeData.getStringF(
-          'createLocallyManagedUser',
-          '<a id="createLocallyManagedUserLink" class="signin-link" href="#">',
-          '</a>');
+      $('createManagedUserLinkPlaceholder').innerHTML = loadTimeData.getStringF(
+            'createLocallyManagedUser',
+            '<a id="createManagedUserLink" class="signin-link" href="#">',
+            '</a>');
       $('createAccountLink').onclick = function() {
         chrome.send('createAccount');
       };
       $('guestSigninLink').onclick = function() {
         chrome.send('launchIncognito');
       };
-      $('createLocallyManagedUserLink').onclick = function() {
+      $('createManagedUserLink').onclick = function() {
         chrome.send('showLocallyManagedUserCreationScreen');
       };
     },
