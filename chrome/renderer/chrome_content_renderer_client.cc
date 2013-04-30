@@ -361,9 +361,7 @@ void ChromeContentRendererClient::RenderViewCreated(
   PasswordAutofillAgent* password_autofill_agent =
       new PasswordAutofillAgent(render_view);
   new AutofillAgent(render_view, password_autofill_agent);
-#if defined(OS_MACOSX)
   new ValidationMessageAgent(render_view);
-#endif
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnablePasswordGeneration))
