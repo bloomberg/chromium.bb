@@ -193,6 +193,13 @@ void FakeDriveFileSyncClient::UploadExistingFile(
   NOTREACHED();
 }
 
+void FakeDriveFileSyncClient::CreateDirectory(
+    const std::string& parent_resource_id,
+    const std::string& title,
+    const ResourceIdCallback& callback) {
+  NOTREACHED();
+}
+
 bool FakeDriveFileSyncClient::IsAuthenticated() const {
   return true;
 }

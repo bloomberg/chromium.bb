@@ -81,6 +81,10 @@ class DriveFileSyncClient
       const std::string& remote_file_md5,
       const base::FilePath& local_file_path,
       const UploadFileCallback& callback) OVERRIDE;
+  virtual void CreateDirectory(
+      const std::string& parent_resource_id,
+      const std::string& title,
+      const ResourceIdCallback& callback) OVERRIDE;
   virtual bool IsAuthenticated() const OVERRIDE;
   virtual void DeleteFile(
       const std::string& resource_id,

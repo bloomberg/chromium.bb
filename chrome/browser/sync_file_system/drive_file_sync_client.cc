@@ -460,6 +460,21 @@ void DriveFileSyncClient::UploadExistingFile(
                             callback)));
 }
 
+void DriveFileSyncClient::CreateDirectory(
+    const std::string& parent_resource_id,
+    const std::string& title,
+    const ResourceIdCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  // TODO(kinuko): This will call EnsureTitleUniqueness and will delete
+  // directories if there're duplicated directories. This must be ok
+  // for current design but we'll need to merge directories when we support
+  // 'real' directories.
+  drive_service_->AddNewDirectory(
+      parent_resource_id, title,
+      base::Bind(&DriveFileSyncClient::DidCreateDirectory, AsWeakPtr(),
+                  parent_resource_id, title, callback));
+}
+
 void DriveFileSyncClient::DeleteFile(
     const std::string& resource_id,
     const std::string& remote_file_md5,
@@ -813,6 +828,7 @@ void DriveFileSyncClient::DidListEntriesToEnsureUniqueness(
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceList> feed) {
   DCHECK(CalledOnValidThread());
+
   if (error != google_apis::HTTP_SUCCESS) {
     DVLOG(2) << "Error on listing resource for ensuring title uniqueness";
     callback.Run(error, scoped_ptr<google_apis::ResourceEntry>());

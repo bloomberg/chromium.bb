@@ -1016,6 +1016,51 @@ TEST_F(DriveFileSyncClientTest, DeleteFileInConflict) {
   EXPECT_EQ(google_apis::HTTP_CONFLICT, error);
 }
 
+TEST_F(DriveFileSyncClientTest, CreateDirectory) {
+  const std::string kParentResourceId("folder:origin_directory_resource_id");
+  const std::string kDirectory("directory");
+
+  scoped_ptr<base::Value> created_result_value(
+      LoadJSONFile("chromeos/sync_file_system/directory_created.json").Pass());
+  scoped_ptr<google_apis::ResourceEntry> created_result =
+      google_apis::ResourceEntry::ExtractAndParse(*created_result_value);
+
+  scoped_ptr<base::Value> duplicated_result_value =
+      LoadJSONFile(
+          "chromeos/sync_file_system/directory_duplicated.json").Pass();
+  scoped_ptr<google_apis::ResourceList> duplicated_result =
+      google_apis::ResourceList::ExtractAndParse(*duplicated_result_value);
+
+  EXPECT_CALL(*mock_drive_service(),
+              AddNewDirectory(kParentResourceId, kDirectory, _))
+      .WillOnce(InvokeGetResourceEntryCallback2(google_apis::HTTP_CREATED,
+                                                base::Passed(&created_result)));
+
+  // Expect to call SearchInDirectory from EnsureTitleUniqueness.
+  EXPECT_CALL(*mock_drive_service(),
+              SearchByTitle(kDirectory, kParentResourceId, _))
+      .WillOnce(InvokeGetResourceListCallback2(
+          google_apis::HTTP_SUCCESS,
+          base::Passed(&duplicated_result)));
+
+  // Expect to call DeleteResource to delete a duplicated directory.
+  EXPECT_CALL(*mock_drive_service(),
+              DeleteResource("folder:directory_resource_id_duplicated", _, _))
+      .WillOnce(InvokeEntryActionCallback2(google_apis::HTTP_SUCCESS));
+
+  bool done = false;
+  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  std::string resource_id;
+  sync_client()->CreateDirectory(
+      kParentResourceId, kDirectory,
+      base::Bind(&DidGetResourceID, &done, &error, &resource_id));
+  message_loop()->RunUntilIdle();
+
+  EXPECT_TRUE(done);
+  EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
+  EXPECT_EQ("folder:directory_resource_id", resource_id);
+}
+
 #endif  // !defined(OS_ANDROID)
 
 }  // namespace sync_file_system

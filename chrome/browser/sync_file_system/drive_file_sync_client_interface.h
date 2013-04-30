@@ -153,6 +153,14 @@ class DriveFileSyncClientInterface {
                                   const base::FilePath& local_file_path,
                                   const UploadFileCallback& callback) = 0;
 
+  // Creates a new directory with specified |title| into the directory
+  // identified by |parent_resource_id|.
+  // Upon completion, invokes |callback| and returns HTTP_CREATED if
+  // the directory is created.
+  virtual void CreateDirectory(const std::string& parent_resource_id,
+                               const std::string& title,
+                               const ResourceIdCallback& callback) = 0;
+
   // Returns true if the user is authenticated.
   virtual bool IsAuthenticated() const = 0;
 
