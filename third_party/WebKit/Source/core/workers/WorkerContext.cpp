@@ -94,6 +94,7 @@ WorkerContext::WorkerContext(const KURL& url, const String& userAgent, PassOwnPt
     , m_eventQueue(WorkerEventQueue::create(this))
     , m_topOrigin(topOrigin)
 {
+    ScriptWrappable::init(this);
     setSecurityOrigin(SecurityOrigin::create(url));
 }
 

@@ -47,6 +47,7 @@ namespace WebCore {
 AbstractWorker::AbstractWorker(ScriptExecutionContext* context)
     : ActiveDOMObject(context)
 {
+    ScriptWrappable::init(this);
 }
 
 AbstractWorker::~AbstractWorker()

@@ -31,6 +31,7 @@
 #ifndef AbstractWorker_h
 #define AbstractWorker_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
@@ -45,7 +46,7 @@ namespace WebCore {
     class KURL;
     class ScriptExecutionContext;
 
-    class AbstractWorker : public RefCounted<AbstractWorker>, public ActiveDOMObject, public EventTarget {
+    class AbstractWorker : public RefCounted<AbstractWorker>, public ScriptWrappable, public ActiveDOMObject, public EventTarget {
     public:
         // EventTarget APIs
         virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE { return ActiveDOMObject::scriptExecutionContext(); }
