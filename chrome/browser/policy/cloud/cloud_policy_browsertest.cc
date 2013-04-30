@@ -39,6 +39,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/mock_cryptohome_client.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
@@ -216,7 +217,8 @@ class CloudPolicyTest : public InProcessBrowserTest {
 
 #if defined(OS_CHROMEOS)
     UserCloudPolicyManagerChromeOS* policy_manager =
-        connector->GetUserCloudPolicyManager();
+        UserCloudPolicyManagerFactoryChromeOS::GetForProfile(
+            browser()->profile());
     ASSERT_TRUE(policy_manager);
 #else
     // Mock a signed-in user. This is used by the UserCloudPolicyStore to pass
@@ -243,10 +245,19 @@ class CloudPolicyTest : public InProcessBrowserTest {
 
     // Give a bogus OAuth token to the |policy_manager|. This should make its
     // CloudPolicyClient fetch the DMToken.
-    policy_manager->RegisterClient("bogus");
+    ASSERT_FALSE(policy_manager->core()->client()->is_registered());
+    em::DeviceRegisterRequest::Type registration_type =
+#if defined(OS_CHROMEOS)
+        em::DeviceRegisterRequest::USER;
+#else
+        em::DeviceRegisterRequest::BROWSER;
+#endif
+    policy_manager->core()->client()->Register(
+        registration_type, "bogus", std::string(), false);
     run_loop.Run();
     Mock::VerifyAndClearExpectations(&observer);
     policy_manager->core()->client()->RemoveObserver(&observer);
+    EXPECT_TRUE(policy_manager->core()->client()->is_registered());
   }
 
 #if defined(OS_CHROMEOS)
@@ -259,6 +270,10 @@ class CloudPolicyTest : public InProcessBrowserTest {
                                 .AppendASCII("policy.pub");
   }
 #endif
+
+  PolicyService* GetPolicyService() {
+    return browser()->profile()->GetPolicyService();
+  }
 
   void SetServerPolicy(const std::string& policy) {
     int result = file_util::WriteFile(policy_file_path(), policy.data(),
@@ -280,7 +295,7 @@ class CloudPolicyTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(CloudPolicyTest, FetchPolicy) {
-  PolicyService* policy_service = browser()->profile()->GetPolicyService();
+  PolicyService* policy_service = GetPolicyService();
   {
     base::RunLoop run_loop;
     // This does the initial fetch and stores the initial key.
@@ -307,7 +322,7 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyTest, FetchPolicy) {
 
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(CloudPolicyTest, FetchPolicyWithRotatedKey) {
-  PolicyService* policy_service = browser()->profile()->GetPolicyService();
+  PolicyService* policy_service = GetPolicyService();
   {
     base::RunLoop run_loop;
     // This does the initial fetch and stores the initial key.

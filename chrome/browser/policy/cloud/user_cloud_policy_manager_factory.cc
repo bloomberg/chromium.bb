@@ -4,11 +4,13 @@
 
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_store.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "chrome/common/chrome_switches.h"
 
 namespace policy {
 
@@ -38,7 +40,9 @@ UserCloudPolicyManagerFactory::~UserCloudPolicyManagerFactory() {}
 
 UserCloudPolicyManager* UserCloudPolicyManagerFactory::GetManagerForProfile(
     Profile* profile) {
-  ManagerMap::const_iterator it = managers_.find(profile);
+  // Get the manager for the original profile, since the PolicyService is
+  // also shared between the incognito Profile and the original Profile.
+  ManagerMap::const_iterator it = managers_.find(profile->GetOriginalProfile());
   return it != managers_.end() ? it->second : NULL;
 }
 
@@ -46,20 +50,29 @@ scoped_ptr<UserCloudPolicyManager>
     UserCloudPolicyManagerFactory::CreateManagerForProfile(
         Profile* profile,
         bool force_immediate_load) {
-  scoped_ptr<policy::UserCloudPolicyStore> store(
-      policy::UserCloudPolicyStore::Create(profile));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableCloudPolicyOnSignin)) {
+    return scoped_ptr<UserCloudPolicyManager>();
+  }
+  scoped_ptr<UserCloudPolicyStore> store(UserCloudPolicyStore::Create(profile));
   if (force_immediate_load)
     store->LoadImmediately();
-  return make_scoped_ptr(
-      new policy::UserCloudPolicyManager(profile, store.Pass()));
+  scoped_ptr<UserCloudPolicyManager> manager(
+      new UserCloudPolicyManager(profile, store.Pass()));
+  manager->Init();
+  return manager.Pass();
 }
 
 void UserCloudPolicyManagerFactory::ProfileShutdown(
-    content::BrowserContext* profile) {
-  UserCloudPolicyManager* manager =
-      GetManagerForProfile(static_cast<Profile*>(profile));
-  if (manager)
-    manager->Shutdown();
+    content::BrowserContext* context) {
+  Profile* profile = static_cast<Profile*>(context);
+  if (profile->IsOffTheRecord())
+    return;
+  UserCloudPolicyManager* manager = GetManagerForProfile(profile);
+  if (manager) {
+    manager->CloudPolicyManager::Shutdown();
+    manager->ProfileKeyedService::Shutdown();
+  }
 }
 
 void UserCloudPolicyManagerFactory::SetEmptyTestingFactory(

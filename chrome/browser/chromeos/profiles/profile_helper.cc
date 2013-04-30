@@ -58,6 +58,11 @@ Profile* ProfileHelper::GetSigninProfile() {
 }
 
 // static
+bool ProfileHelper::IsSigninProfile(Profile* profile) {
+  return profile->GetPath().BaseName().value() == chrome::kInitialProfile;
+}
+
+// static
 void ProfileHelper::ProfileStartup(Profile* profile, bool process_startup) {
   // Initialize Chrome OS preferences like touch pad sensitivity. For the
   // preferences to work in the guest mode, the initialization has to be

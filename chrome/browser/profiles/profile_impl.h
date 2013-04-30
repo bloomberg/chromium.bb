@@ -47,7 +47,7 @@ class ExtensionSystem;
 }
 
 namespace policy {
-class UserCloudPolicyManager;
+class CloudPolicyManager;
 }
 
 // The default profile implementation.
@@ -205,9 +205,7 @@ class ProfileImpl : public Profile {
   // |user_cloud_policy_manager_| and |managed_mode_policy_provider_|.
   // TODO(bauerb, mnissler): Once |prefs_| is a ProfileKeyedService, these
   // should become proper ProfileKeyedServices as well.
-#if !defined(OS_CHROMEOS)
-  scoped_ptr<policy::UserCloudPolicyManager> cloud_policy_manager_;
-#endif  // !defined(OS_CHROMEOS)
+  scoped_ptr<policy::CloudPolicyManager> cloud_policy_manager_;
 #if defined(ENABLE_MANAGED_USERS)
   scoped_ptr<policy::ManagedModePolicyProvider> managed_mode_policy_provider_;
 #endif  // defined(ENABLE_MANAGED_USERS)

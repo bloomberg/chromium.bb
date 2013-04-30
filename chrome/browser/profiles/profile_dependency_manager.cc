@@ -101,7 +101,13 @@
 #endif
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
+#include "chrome/browser/chromeos/policy/user_cloud_policy_token_forwarder_factory.h"
+#else
+#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
+#endif
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -348,9 +354,14 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
 #if defined(ENABLE_PLUGINS)
   PluginPrefsFactory::GetInstance();
 #endif
-#if defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
-  // Not used on chromeos because signin happens before the profile is loaded.
+#if defined(ENABLE_CONFIGURATION_POLICY)
+#if defined(OS_CHROMEOS)
+  policy::UserCloudPolicyManagerFactoryChromeOS::GetInstance();
+  policy::UserCloudPolicyTokenForwarderFactory::GetInstance();
+#else
+  policy::UserCloudPolicyManagerFactory::GetInstance();
   policy::UserPolicySigninServiceFactory::GetInstance();
+#endif
 #endif
   predictors::AutocompleteActionPredictorFactory::GetInstance();
   predictors::PredictorDatabaseFactory::GetInstance();

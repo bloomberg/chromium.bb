@@ -54,9 +54,6 @@ class OAuthLoginManager {
     // Raised when stored OAuth(1|2) tokens are found and authentication
     // profile is no longer needed.
     virtual void OnFoundStoredTokens() = 0;
-
-    // Raised when policy tokens are retrieved.
-    virtual void OnRestoredPolicyTokens() {}
   };
 
   // Factory method.
@@ -64,10 +61,6 @@ class OAuthLoginManager {
 
   explicit OAuthLoginManager(OAuthLoginManager::Delegate* delegate);
   virtual ~OAuthLoginManager();
-
-  // Starts the process of retrieving policy tokens.
-  virtual void RestorePolicyTokens(
-      net::URLRequestContextGetter* auth_request_context) = 0;
 
   // Restores and verifies OAuth tokens either following specified
   // |restore_strategy|. For |restore_strategy| with values

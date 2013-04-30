@@ -11,7 +11,6 @@
 #include "chrome/browser/chromeos/login/oauth2_login_verifier.h"
 #include "chrome/browser/chromeos/login/oauth2_token_fetcher.h"
 #include "chrome/browser/chromeos/login/oauth_login_manager.h"
-#include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -35,8 +34,6 @@ class OAuth2LoginManager : public OAuthLoginManager,
   static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
   // OAuthLoginManager overrides.
-  virtual void RestorePolicyTokens(
-      net::URLRequestContextGetter* auth_request_context) OVERRIDE;
   virtual void RestoreSession(
       Profile* user_profile,
       net::URLRequestContextGetter* auth_request_context,
@@ -81,8 +78,8 @@ class OAuth2LoginManager : public OAuthLoginManager,
   // Removes legacy tokens from OAuth1 flow.
   void RemoveLegacyTokens();
 
-  // Records OAuth2 tokens fetched through either policy fetcher or cookies-to-
-  // token exchange into TokenService.
+  // Records OAuth2 tokens fetched through cookies-to-token exchange into
+  // TokenService.
   void StoreOAuth2Tokens(
       const GaiaAuthConsumer::ClientOAuthResult& oauth2_tokens);
 
@@ -99,10 +96,6 @@ class OAuth2LoginManager : public OAuthLoginManager,
   // Issue GAIA cookie recovery (MergeSession) from |refresh_token_|.
   void RestoreSessionCookies();
 
-  // Fetches device policy OAuth2 access tokens if have not attempted or
-  // failed that step previously.
-  void FetchPolicyTokens();
-
   // Checks GAIA error and figures out whether the request should be
   // re-attempted.
   bool RetryOnError(const GoogleServiceAuthError& error);
@@ -111,16 +104,12 @@ class OAuth2LoginManager : public OAuthLoginManager,
   void StartTokenService(
       const GaiaAuthConsumer::ClientLoginResult& gaia_credentials);
 
-  // Callback for the |oauth2_token_fetcher_|.
-  static void OnPolicyTokenFetched(const std::string& policy_token);
-
   // Keeps the track if we have already reported OAuth2 token being loaded
   // by TokenService.
   bool loading_reported_;
   content::NotificationRegistrar registrar_;
   scoped_ptr<OAuth2TokenFetcher> oauth2_token_fetcher_;
   scoped_ptr<OAuth2LoginVerifier> login_verifier_;
-  scoped_ptr<policy::PolicyOAuth2TokenFetcher> policy_oauth2_token_fetcher_;
   // OAuth2 refresh token.
   std::string refresh_token_;
   // Authorization code for fetching OAuth2 tokens.

@@ -94,7 +94,10 @@
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/browser_policy_connector.h"
-#if !defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
+#else
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #endif
@@ -368,13 +371,14 @@ ProfileImpl::ProfileImpl(
   // PrefServiceSyncable is a ProfileKeyedService (policy must be initialized
   // before PrefServiceSyncable because PrefServiceSyncable depends on policy
   // loading to get overridden pref values).
-#if !defined(OS_CHROMEOS)
-  if (!command_line->HasSwitch(switches::kDisableCloudPolicyOnSignin)) {
-    cloud_policy_manager_ =
-        policy::UserCloudPolicyManagerFactory::CreateForProfile(
-            this, force_immediate_policy_load);
-    cloud_policy_manager_->Init();
-  }
+#if defined(OS_CHROMEOS)
+  cloud_policy_manager_ =
+      policy::UserCloudPolicyManagerFactoryChromeOS::CreateForProfile(
+          this, force_immediate_policy_load);
+#else
+  cloud_policy_manager_ =
+      policy::UserCloudPolicyManagerFactory::CreateForProfile(
+          this, force_immediate_policy_load);
 #endif
 #if defined(ENABLE_MANAGED_USERS)
   managed_mode_policy_provider_ =
@@ -383,8 +387,9 @@ ProfileImpl::ProfileImpl(
                                                 force_immediate_policy_load);
   managed_mode_policy_provider_->Init();
 #endif
-  policy_service_ =
-      g_browser_process->browser_policy_connector()->CreatePolicyService(this);
+  policy::BrowserPolicyConnector* connector =
+      g_browser_process->browser_policy_connector();
+  policy_service_ = connector->CreatePolicyServiceForProfile(this);
 #else
   policy_service_.reset(new policy::PolicyServiceStub());
 #endif
@@ -640,9 +645,15 @@ ProfileImpl::~ProfileImpl() {
   if (host_content_settings_map_)
     host_content_settings_map_->ShutdownOnUIThread();
 
-#if defined(ENABLE_CONFIGURATION_POLICY) && defined(ENABLE_MANAGED_USERS)
+  // TODO(joaodasilva): remove this after introducing a ProfilePolicyConnector.
+#if defined(ENABLE_CONFIGURATION_POLICY)
+#if defined(OS_CHROMEOS)
+  g_browser_process->browser_policy_connector()->SetUserPolicyDelegate(NULL);
+#endif
+#if defined(ENABLE_MANAGED_USERS)
   if (managed_mode_policy_provider_)
     managed_mode_policy_provider_->Shutdown();
+#endif
 #endif
 
   // This causes the Preferences file to be written to disk.

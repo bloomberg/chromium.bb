@@ -563,15 +563,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     // Redirects Chrome logging to the user data dir.
     logging::RedirectChromeLogging(parsed_command_line());
 
-    // Initialize user policy before creating the profile so the profile
-    // initialization code sees policy settings.
-    // Guest accounts are not subject to user policy.
-    if (!user_manager->IsLoggedInAsGuest()) {
-      g_browser_process->browser_policy_connector()->InitializeUserPolicy(
-          username, user_manager->IsLoggedInAsPublicAccount(),
-          false  /* wait_for_policy_fetch */);
-    }
-
     // Load the default app order synchronously for restarting case.
     app_order_loader_.reset(
         new default_app_order::ExternalLoader(false /* async */));

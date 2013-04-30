@@ -6,8 +6,13 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/logging.h"
+#include "base/memory/ref_counted.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
+#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/cloud/cloud_policy_refresh_scheduler.h"
-#include "chrome/browser/policy/cloud/cloud_policy_service.h"
 #include "chrome/browser/policy/cloud/resource_cache.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/common/pref_names.h"
@@ -51,49 +56,34 @@ void UserCloudPolicyManagerChromeOS::Connect(
   if (component_policy_service_)
     component_policy_service_->Connect(client(), request_context);
 
-  if (wait_for_policy_fetch_) {
-    // If we are supposed to wait for a policy fetch, we trigger an explicit
-    // policy refresh at startup that allows us to unblock initialization once
-    // done. The refresh scheduler only gets started once that refresh
-    // completes. Note that we might have to wait for registration to happen,
-    // see OnRegistrationStateChanged() below.
-    if (client()->is_registered()) {
-      service()->RefreshPolicy(
-          base::Bind(
-              &UserCloudPolicyManagerChromeOS::OnInitialPolicyFetchComplete,
-              base::Unretained(this)));
-    }
+  // Determine the next step after the CloudPolicyService initializes.
+  if (service()->IsInitializationComplete()) {
+    OnInitializationCompleted(service());
   } else {
-    CancelWaitForPolicyFetch();
+    service()->AddObserver(this);
   }
 }
 
-void UserCloudPolicyManagerChromeOS::CancelWaitForPolicyFetch() {
-  wait_for_policy_fetch_ = false;
-  CheckAndPublishPolicy();
-
-  // Now that |wait_for_policy_fetch_| is guaranteed to be false, the scheduler
-  // can be started.
-  StartRefreshScheduler();
+void UserCloudPolicyManagerChromeOS::OnRefreshTokenAvailable(
+    const std::string& refresh_token) {
+  oauth2_login_tokens_.refresh_token = refresh_token;
+  if (!oauth2_login_tokens_.refresh_token.empty() &&
+      service() && service()->IsInitializationComplete() &&
+      client() && !client()->is_registered()) {
+    FetchPolicyOAuthTokenUsingRefreshToken();
+  }
 }
 
 bool UserCloudPolicyManagerChromeOS::IsClientRegistered() const {
   return client() && client()->is_registered();
 }
 
-void UserCloudPolicyManagerChromeOS::RegisterClient(
-    const std::string& access_token) {
-  DCHECK(client()) << "Callers must invoke Initialize() first";
-  if (!client()->is_registered()) {
-    DVLOG(1) << "Registering client with access token: " << access_token;
-    client()->Register(em::DeviceRegisterRequest::USER,
-                       access_token, std::string(), false);
-  }
-}
-
 void UserCloudPolicyManagerChromeOS::Shutdown() {
   if (client())
     client()->RemoveObserver(this);
+  if (service())
+    service()->RemoveObserver(this);
+  token_fetcher_.reset();
   component_policy_service_.reset();
   CloudPolicyManager::Shutdown();
 }
@@ -125,6 +115,41 @@ scoped_ptr<PolicyBundle> UserCloudPolicyManagerChromeOS::CreatePolicyBundle() {
   if (component_policy_service_)
     bundle->MergeFrom(component_policy_service_->policy());
   return bundle.Pass();
+}
+
+void UserCloudPolicyManagerChromeOS::OnInitializationCompleted(
+    CloudPolicyService* cloud_policy_service) {
+  DCHECK_EQ(service(), cloud_policy_service);
+  cloud_policy_service->RemoveObserver(this);
+  // If the CloudPolicyClient isn't registered at this stage then it needs an
+  // OAuth token for the initial registration.
+  //
+  // If |wait_for_policy_fetch_| is true then Profile initialization is blocking
+  // on the initial policy fetch, so the token must be fetched immediately.
+  // In that case, the signin Profile is used to authenticate a Gaia request to
+  // fetch a refresh token, and then the policy token is fetched.
+  //
+  // If |wait_for_policy_fetch_| is false then the UserCloudPolicyTokenForwarder
+  // service will eventually call OnRefreshTokenAvailable() once the
+  // TokenService has one. That call may have already happened while waiting for
+  // initialization of the CloudPolicyService, so in that case check if a
+  // refresh token is already available.
+  if (!client()->is_registered()) {
+    if (wait_for_policy_fetch_) {
+      FetchPolicyOAuthTokenUsingSigninProfile();
+    } else if (!oauth2_login_tokens_.refresh_token.empty()) {
+      FetchPolicyOAuthTokenUsingRefreshToken();
+    }
+  }
+
+  if (!wait_for_policy_fetch_) {
+    // If this isn't blocking on a policy fetch then
+    // CloudPolicyManager::OnStoreLoaded() already published the cached policy.
+    // Start the refresh scheduler now, which will eventually refresh the
+    // cached policy or make the first fetch once the OAuth2 token is
+    // available.
+    StartRefreshScheduler();
+  }
 }
 
 void UserCloudPolicyManagerChromeOS::OnPolicyFetched(
@@ -166,9 +191,66 @@ void UserCloudPolicyManagerChromeOS::OnComponentCloudPolicyUpdated() {
   StartRefreshScheduler();
 }
 
+void UserCloudPolicyManagerChromeOS::FetchPolicyOAuthTokenUsingSigninProfile() {
+  scoped_refptr<net::URLRequestContextGetter> signin_context;
+  Profile* signin_profile = chromeos::ProfileHelper::GetSigninProfile();
+  if (signin_profile)
+    signin_context = signin_profile->GetRequestContext();
+  if (!signin_context) {
+    LOG(ERROR) << "No signin Profile for policy oauth token fetch!";
+    OnOAuth2PolicyTokenFetched(std::string());
+    return;
+  }
+
+  token_fetcher_.reset(new PolicyOAuth2TokenFetcher(
+      signin_context,
+      g_browser_process->system_request_context(),
+      base::Bind(&UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched,
+                 base::Unretained(this))));
+  token_fetcher_->Start();
+}
+
+void UserCloudPolicyManagerChromeOS::FetchPolicyOAuthTokenUsingRefreshToken() {
+  token_fetcher_.reset(new PolicyOAuth2TokenFetcher(
+      g_browser_process->system_request_context(),
+      oauth2_login_tokens_.refresh_token,
+      base::Bind(&UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched,
+                 base::Unretained(this))));
+  token_fetcher_->Start();
+}
+
+void UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched(
+    const std::string& policy_token) {
+  DCHECK(!client()->is_registered());
+  // The TokenService will reuse the refresh token fetched by the
+  // |token_fetcher_|, if it fetched one.
+  if (token_fetcher_->has_oauth2_tokens())
+    oauth2_login_tokens_ = token_fetcher_->oauth2_tokens();
+
+  if (policy_token.empty()) {
+    // Failed to get a token, stop waiting and use an empty policy.
+    CancelWaitForPolicyFetch();
+  } else {
+    // Start client registration. Either OnRegistrationStateChanged() or
+    // OnClientError() will be called back.
+    client()->Register(em::DeviceRegisterRequest::USER,
+                       policy_token, std::string(), false);
+  }
+
+  token_fetcher_.reset();
+}
+
 void UserCloudPolicyManagerChromeOS::OnInitialPolicyFetchComplete(
     bool success) {
   CancelWaitForPolicyFetch();
+}
+
+void UserCloudPolicyManagerChromeOS::CancelWaitForPolicyFetch() {
+  wait_for_policy_fetch_ = false;
+  CheckAndPublishPolicy();
+  // Now that |wait_for_policy_fetch_| is guaranteed to be false, the scheduler
+  // can be started.
+  StartRefreshScheduler();
 }
 
 void UserCloudPolicyManagerChromeOS::StartRefreshScheduler() {

@@ -46,6 +46,7 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
 #else
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
@@ -441,15 +442,16 @@ void PolicyUIHandler::RegisterMessages() {
               user_manager->GetLoggedInUser()->email(), local_account_service));
     }
   } else {
-    policy::CloudPolicyManager* user_cloud_policy_manager =
-        connector->GetUserCloudPolicyManager();
+    policy::UserCloudPolicyManagerChromeOS* user_cloud_policy_manager =
+        policy::UserCloudPolicyManagerFactoryChromeOS::GetForProfile(
+            Profile::FromWebUI(web_ui()));
     if (user_cloud_policy_manager) {
       user_status_provider_.reset(
           new UserPolicyStatusProvider(user_cloud_policy_manager->core()));
     }
   }
 #else
-  policy::CloudPolicyManager* user_cloud_policy_manager =
+  policy::UserCloudPolicyManager* user_cloud_policy_manager =
       policy::UserCloudPolicyManagerFactory::GetForProfile(
           Profile::FromWebUI(web_ui()));
   if (user_cloud_policy_manager) {

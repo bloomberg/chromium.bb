@@ -43,7 +43,6 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/net/connectivity_state_helper.h"
 #include "chrome/browser/chromeos/net/connectivity_state_helper_observer.h"
-#include "chrome/browser/chromeos/policy/network_configuration_updater.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
@@ -53,9 +52,6 @@
 #include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/preconnect.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
-#include "chrome/browser/policy/cloud/cloud_policy_client.h"
-#include "chrome/browser/policy/cloud/cloud_policy_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/rlz/rlz.h"
@@ -357,55 +353,11 @@ void LoginUtilsImpl::PrepareProfile(
   delegate_ = delegate;
   InitSessionRestoreStrategy();
 
-  bool wait_for_policy_fetch = false;
-
-  // TODO(nkostylev): Figure out implementation for multiple-profiles.
-  // http://crbug.com/230349
-  bool is_primary_user = UserManager::Get()->GetLoggedInUsers().size() == 1;
-  if (is_primary_user) {
-    policy::BrowserPolicyConnector* connector =
-        g_browser_process->browser_policy_connector();
-
-    // If this is an enterprise device and the user belongs to the enterprise
-    // domain, then wait for a policy fetch before logging the user in. This
-    // will delay Profile creation until the policy is fetched, so that features
-    // controlled by policy (e.g. Sync, Startup tabs) only start after the
-    // PrefService has the right values.
-    // Profile creation is also resumed if the fetch attempt fails.
-    wait_for_policy_fetch =
-        using_oauth_ &&
-        authenticator_.get() &&
-        (connector->GetUserAffiliation(user_context_.username) ==
-             policy::USER_AFFILIATION_MANAGED);
-
-    // Initialize user policy before the profile is created so the profile
-    // initialization code sees the cached policy settings.
-    connector->InitializeUserPolicy(user_context_.username,
-                                    user_manager->IsLoggedInAsPublicAccount(),
-                                    wait_for_policy_fetch);
-  }
-
   // The default profile will have been changed because the ProfileManager
   // will process the notification that the UserManager sends out so
   // username_hash has been already propogated to ProfileManager.
   ProfileManager::CreateDefaultProfileAsync(
       base::Bind(&LoginUtilsImpl::OnProfileCreated, AsWeakPtr()));
-
-  if (wait_for_policy_fetch) {
-    // Profile creation will block until user policy is fetched, which
-    // requires the DeviceManagement token. Try to fetch it now.
-    // TODO(atwilson): This is somewhat racy, as we are trying to fetch a
-    // DMToken in parallel with loading the cached policy blob (there could
-    // already be a DMToken in the cached policy). Once the legacy policy
-    // framework is removed, this code can register a
-    // CloudPolicyService::Observer to check whether the CloudPolicyClient was
-    // able to register itself using the cached policy data, and then only
-    // create a PolicyOAuthFetcher if the client is still unregistered
-    // (http://crbug.com/143187).
-    VLOG(1) << "Profile creation requires policy token, fetching now";
-    login_manager_->RestorePolicyTokens(
-        authenticator_->authentication_profile()->GetRequestContext());
-  }
 }
 
 void LoginUtilsImpl::DelegateDeleted(LoginUtils::Delegate* delegate) {
@@ -436,11 +388,6 @@ void LoginUtilsImpl::InitProfilePreferences(Profile* user_profile) {
       user_profile->GetPrefs()->FindPreference(prefs::kUseSharedProxies);
   if (use_shared_proxies_pref->IsDefaultValue())
     user_profile->GetPrefs()->SetBoolean(prefs::kUseSharedProxies, false);
-
-  // Notify the network configuration updater that policies are initialized. If
-  // there is no policy, it will read an empty policy which is fine.
-  g_browser_process->browser_policy_connector()->
-      GetNetworkConfigurationUpdater()->OnUserPolicyInitialized();
 
   RespectLocalePreference(user_profile);
 }

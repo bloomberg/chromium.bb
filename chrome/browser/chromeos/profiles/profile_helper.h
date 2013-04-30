@@ -25,6 +25,11 @@ class ProfileHelper : public UserManager::UserSessionStateObserver {
   // Returns OffTheRecord profile for use during signing phase.
   static Profile* GetSigninProfile();
 
+  // Returns true if |profile| is the signin Profile. This can be used during
+  // construction of the signin Profile to determine if that Profile is the
+  // signin Profile.
+  static bool IsSigninProfile(Profile* profile);
+
   // Initialize a bunch of services that are tied to a browser profile.
   // TODO(dzhioev): Investigate whether or not this method is needed.
   static void ProfileStartup(Profile* profile, bool process_startup);

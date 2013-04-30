@@ -22,6 +22,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
 #else
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
@@ -69,12 +70,11 @@ class CloudPolicyManagerTest : public InProcessBrowserTest {
     ASSERT_TRUE(signin_manager);
     signin_manager->SetAuthenticatedUsername("user@example.com");
 
-    UserCloudPolicyManager* policy_manager =
-        UserCloudPolicyManagerFactory::GetForProfile(browser()->profile());
-    ASSERT_TRUE(policy_manager);
-    policy_manager->Connect(g_browser_process->local_state(),
-                            UserCloudPolicyManager::CreateCloudPolicyClient(
-                                connector->device_management_service()).Pass());
+    ASSERT_TRUE(policy_manager());
+    policy_manager()->Connect(
+        g_browser_process->local_state(),
+        UserCloudPolicyManager::CreateCloudPolicyClient(
+            connector->device_management_service()).Pass());
 #endif
   }
 
@@ -87,8 +87,8 @@ class CloudPolicyManagerTest : public InProcessBrowserTest {
 
 #if defined(OS_CHROMEOS)
   UserCloudPolicyManagerChromeOS* policy_manager() {
-    return g_browser_process->browser_policy_connector()->
-        GetUserCloudPolicyManager();
+    return UserCloudPolicyManagerFactoryChromeOS::GetForProfile(
+        browser()->profile());
   }
 #else
   UserCloudPolicyManager* policy_manager() {
@@ -114,7 +114,14 @@ class CloudPolicyManagerTest : public InProcessBrowserTest {
 
     // Give a bogus OAuth token to the |policy_manager|. This should make its
     // CloudPolicyClient fetch the DMToken.
-    policy_manager()->RegisterClient("bogus");
+    em::DeviceRegisterRequest::Type registration_type =
+#if defined(OS_CHROMEOS)
+        em::DeviceRegisterRequest::USER;
+#else
+        em::DeviceRegisterRequest::BROWSER;
+#endif
+    policy_manager()->core()->client()->Register(
+        registration_type, "bogus", std::string(), false);
     run_loop.Run();
     Mock::VerifyAndClearExpectations(&observer);
     policy_manager()->core()->client()->RemoveObserver(&observer);

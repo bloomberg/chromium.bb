@@ -34,6 +34,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
@@ -200,7 +201,8 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
 
 #if defined(OS_CHROMEOS)
     UserCloudPolicyManagerChromeOS* policy_manager =
-        connector->GetUserCloudPolicyManager();
+        UserCloudPolicyManagerFactoryChromeOS::GetForProfile(
+            browser()->profile());
     ASSERT_TRUE(policy_manager);
 #else
     // Mock a signed-in user. This is used by the UserCloudPolicyStore to pass

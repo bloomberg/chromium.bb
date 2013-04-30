@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_POLICY_BROWSER_POLICY_CONNECTOR_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -42,7 +43,6 @@ class DeviceLocalAccountPolicyProvider;
 class DeviceLocalAccountPolicyService;
 class EnterpriseInstallAttributes;
 class NetworkConfigurationUpdater;
-class UserCloudPolicyManagerChromeOS;
 #endif
 
 // Manages the lifecycle of browser-global policy infrastructure, such as the
@@ -70,9 +70,6 @@ class BrowserPolicyConnector {
   // Returns true if Init() has been called but Shutdown() hasn't been yet.
   bool is_initialized() const { return is_initialized_; }
 
-  // Creates a new policy service for the given profile.
-  scoped_ptr<PolicyService> CreatePolicyService(Profile* profile);
-
   // Returns the browser-global PolicyService, that contains policies for the
   // whole browser.
   PolicyService* GetPolicyService();
@@ -96,15 +93,19 @@ class BrowserPolicyConnector {
   // services are already constructed.
   void ScheduleServiceInitialization(int64 delay_milliseconds);
 
-#if defined(OS_CHROMEOS)
-  // Initializes the user cloud policy infrastructure.
-  // If |wait_for_policy_fetch| is true, the user policy will only become fully
-  // initialized after a policy fetch is attempted. Note that Profile creation
-  // is blocked until this initialization is complete.
-  void InitializeUserPolicy(const std::string& user_name,
-                            bool is_public_account,
-                            bool wait_for_policy_fetch);
-#endif
+  // Creates a new PolicyService that gets its policies from the global policy
+  // providers owned by the BrowserPolicyConnector and the optional
+  // |additional_providers|, which will have lower priority.
+  // The lifetime of the returned PolicyService is tied to the lifetime of
+  // the BrowserPolicyConnector.
+  scoped_ptr<PolicyService> CreatePolicyService(
+      const std::vector<ConfigurationPolicyProvider*>& additional_providers);
+
+  // Creates a new PolicyService for a Profile.
+  // TODO(joaodasilva): remove this method and use CreatePolicyService()
+  // directly from the ProfilePolicyConnector, by moving this method to that
+  // class once it's introduced.
+  scoped_ptr<PolicyService> CreatePolicyServiceForProfile(Profile* profile);
 
   const ConfigurationPolicyHandlerList* GetHandlerList() const;
 
@@ -126,15 +127,23 @@ class BrowserPolicyConnector {
   DeviceCloudPolicyManagerChromeOS* GetDeviceCloudPolicyManager() {
     return device_cloud_policy_manager_.get();
   }
-  UserCloudPolicyManagerChromeOS* GetUserCloudPolicyManager() {
-    return user_cloud_policy_manager_.get();
-  }
   DeviceLocalAccountPolicyService* GetDeviceLocalAccountPolicyService() {
     return device_local_account_policy_service_.get();
   }
   EnterpriseInstallAttributes* GetInstallAttributes() {
     return install_attributes_.get();
   }
+
+  // The browser-global PolicyService is created before Profiles are ready, to
+  // provide managed values for the local state PrefService. It includes a
+  // policy provider that forwards policies from a delegate policy provider.
+  // This call can be used to set the user policy provider as that delegate
+  // once the Profile is ready, so that user policies can also affect local
+  // state preferences.
+  // Only one user policy provider can be set as a delegate at a time, and any
+  // previously set delegate is removed. Passing NULL removes the current
+  // delegate, if there is one.
+  void SetUserPolicyDelegate(ConfigurationPolicyProvider* user_policy_provider);
 #endif
 
   // Allows setting a DeviceManagementService (for injecting mocks in
@@ -175,13 +184,6 @@ class BrowserPolicyConnector {
   // Set the timezone as soon as the policies are available.
   void SetTimezoneIfPolicyAvailable();
 
-  // Creates a new PolicyService with the shared policy providers and the given
-  // |user_cloud_policy_provider| and |managed_mode_policy_provider|, which are
-  // optional.
-  scoped_ptr<PolicyService> CreatePolicyServiceWithProviders(
-      ConfigurationPolicyProvider* user_cloud_policy_provider,
-      ConfigurationPolicyProvider* managed_mode_policy_provider);
-
   static ConfigurationPolicyProvider* CreatePlatformProvider();
 
   // Whether Init() but not Shutdown() has been invoked.
@@ -198,9 +200,7 @@ class BrowserPolicyConnector {
 
   scoped_ptr<ConfigurationPolicyProvider> platform_provider_;
 
-  // Components of the new-style cloud policy implementation.
-  // TODO(mnissler): Remove the old-style components below once we have
-  // completed the switch to the new cloud policy implementation.
+  // Components of the device cloud policy implementation.
 #if defined(OS_CHROMEOS)
   scoped_ptr<EnterpriseInstallAttributes> install_attributes_;
   scoped_ptr<DeviceCloudPolicyManagerChromeOS> device_cloud_policy_manager_;
@@ -208,12 +208,11 @@ class BrowserPolicyConnector {
       device_local_account_policy_service_;
   scoped_ptr<DeviceLocalAccountPolicyProvider>
       device_local_account_policy_provider_;
-  scoped_ptr<UserCloudPolicyManagerChromeOS> user_cloud_policy_manager_;
 
   // This policy provider is used on Chrome OS to feed user policy into the
-  // global PolicyService instance. This works by installing
-  // |user_cloud_policy_manager_| or |device_local_account_policy_provider_|,
-  // respectively as the delegate after login.
+  // global PolicyService instance. This works by installing the cloud policy
+  // provider of the primary profile as the delegate of the ProxyPolicyProvider,
+  // after login.
   ProxyPolicyProvider global_user_cloud_policy_provider_;
 #endif
 

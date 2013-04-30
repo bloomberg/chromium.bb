@@ -4,16 +4,12 @@
 
 #include "chrome/browser/chromeos/login/oauth2_login_manager.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
@@ -78,18 +74,6 @@ void OAuth2LoginManager::RestoreSession(
   // TODO(zelidrag): Remove eventually the next line in some future milestone.
   RemoveLegacyTokens();
 
-  // Reuse the access token fetched by the PolicyOAuth2TokenFetcher, if it was
-  // used to fetch policies before Profile creation.
-  if (policy_oauth2_token_fetcher_.get() &&
-      policy_oauth2_token_fetcher_->has_oauth2_tokens()) {
-    VLOG(1) << "Resuming profile creation after fetching policy token";
-    // We already have tokens, no need to get them from the cookie jar again.
-    if (restore_strategy_ == RESTORE_FROM_COOKIE_JAR)
-      restore_strategy_ = RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN;
-
-    StoreOAuth2Tokens(policy_oauth2_token_fetcher_->oauth2_tokens());
-  }
-
   ContinueSessionRestore();
 }
 
@@ -112,15 +96,6 @@ void OAuth2LoginManager::ContinueSessionRestore() {
 
   DCHECK(restore_strategy_ == RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN);
   LoadAndVerifyOAuth2Tokens();
-}
-
-void OAuth2LoginManager::RestorePolicyTokens(
-    net::URLRequestContextGetter* auth_request_context) {
-  policy_oauth2_token_fetcher_.reset(new policy::PolicyOAuth2TokenFetcher(
-      auth_request_context,
-      g_browser_process->system_request_context(),
-      base::Bind(&OAuth2LoginManager::OnPolicyTokenFetched)));
-  policy_oauth2_token_fetcher_->Start();
 }
 
 void OAuth2LoginManager::Stop() {
@@ -251,21 +226,8 @@ void OAuth2LoginManager::RestoreSessionCookies() {
                               g_browser_process->system_request_context(),
                               user_profile_->GetRequestContext()));
   login_verifier_->VerifyOAuth2RefreshToken(refresh_token_);
-  FetchPolicyTokens();
 }
 
-void OAuth2LoginManager::FetchPolicyTokens() {
-  DCHECK(!refresh_token_.empty());
-  if (!policy_oauth2_token_fetcher_.get() ||
-      policy_oauth2_token_fetcher_->failed()) {
-    // Trigger OAuth2 token fetch for user policy.
-    policy_oauth2_token_fetcher_.reset(new policy::PolicyOAuth2TokenFetcher(
-        g_browser_process->system_request_context(),
-        refresh_token_,
-        base::Bind(&OAuth2LoginManager::OnPolicyTokenFetched)));
-    policy_oauth2_token_fetcher_->Start();
-  }
-}
 void OAuth2LoginManager::OnOAuthLoginSuccess(
     const GaiaAuthConsumer::ClientLoginResult& gaia_credentials) {
   LOG(INFO) << "OAuth2 refresh token successfully exchanged for GAIA token.";
@@ -313,20 +275,6 @@ void OAuth2LoginManager::StartTokenService(
   TokenService* token_service = SetupTokenService();
   token_service->UpdateCredentials(gaia_credentials);
   CompleteAuthentication();
-}
-
-// static
-void OAuth2LoginManager::OnPolicyTokenFetched(const std::string& policy_token) {
-  policy::BrowserPolicyConnector* browser_policy_connector =
-      g_browser_process->browser_policy_connector();
-  policy::UserCloudPolicyManagerChromeOS* cloud_policy_manager =
-      browser_policy_connector->GetUserCloudPolicyManager();
-  if (cloud_policy_manager) {
-    if (policy_token.empty())
-      cloud_policy_manager->CancelWaitForPolicyFetch();
-    else
-      cloud_policy_manager->RegisterClient(policy_token);
-  }
 }
 
 }  // namespace chromeos

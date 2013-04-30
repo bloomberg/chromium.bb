@@ -38,7 +38,8 @@ class UserCloudPolicyManagerTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
     if (manager_) {
       manager_->RemoveObserver(&observer_);
-      manager_->Shutdown();
+      manager_->CloudPolicyManager::Shutdown();
+      manager_->ProfileKeyedService::Shutdown();
     }
   }
 
