@@ -173,6 +173,8 @@ BrowserPlugin* BrowserPlugin::FromContainer(
 bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPlugin, message)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_AddMessageToConsole,
+                        OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_AdvanceFocus, OnAdvanceFocus)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_Attach_ACK, OnAttachACK)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_BuffersSwapped, OnBuffersSwapped)
@@ -455,6 +457,17 @@ void BrowserPlugin::SetInstanceID(int instance_id, bool new_guest) {
 void BrowserPlugin::DidCommitCompositorFrame() {
   if (compositing_helper_)
     compositing_helper_->DidCommitCompositorFrame();
+}
+
+void BrowserPlugin::OnAddMessageToConsole(
+    int instance_id, const base::DictionaryValue& message_info) {
+  std::map<std::string, base::Value*> props;
+  // Fill in the info provided by the browser.
+  for (DictionaryValue::Iterator iter(message_info); !iter.IsAtEnd();
+           iter.Advance()) {
+    props[iter.key()] = iter.value().DeepCopy();
+  }
+  TriggerEvent(browser_plugin::kEventConsoleMessage, &props);
 }
 
 void BrowserPlugin::OnAdvanceFocus(int instance_id, bool reverse) {
@@ -1260,6 +1273,7 @@ gfx::Point BrowserPlugin::ToLocalCoordinates(const gfx::Point& point) const {
 bool BrowserPlugin::ShouldForwardToBrowserPlugin(
     const IPC::Message& message) {
   switch (message.type()) {
+    case BrowserPluginMsg_AddMessageToConsole::ID:
     case BrowserPluginMsg_AdvanceFocus::ID:
     case BrowserPluginMsg_Attach_ACK::ID:
     case BrowserPluginMsg_BuffersSwapped::ID:

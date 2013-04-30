@@ -1,0 +1,13 @@
+{
+  "name": "Packaged App Test: <webview> console message",
+  "description": "Loads a guest which logs console messages",
+  "version": "1",
+  "permissions": [
+    "webview"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}

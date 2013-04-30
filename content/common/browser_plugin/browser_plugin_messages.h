@@ -305,6 +305,9 @@ IPC_MESSAGE_ROUTED2(BrowserPluginMsg_AllocateInstanceID_ACK,
                     int /* request_id */,
                     int /* instance_id */)
 
+IPC_MESSAGE_CONTROL2(BrowserPluginMsg_AddMessageToConsole,
+                     int /* instance_id */,
+                     DictionaryValue /* message_info */)
 
 // This message is sent in response to a completed attachment of a guest
 // to a BrowserPlugin. This message carries information about the guest

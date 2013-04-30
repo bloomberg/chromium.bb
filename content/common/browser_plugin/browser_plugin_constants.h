@@ -38,6 +38,7 @@ extern const char kAttributePartition[];
 extern const char kAttributeSrc[];
 
 // Events.
+extern const char kEventConsoleMessage[];
 extern const char kEventExit[];
 extern const char kEventLoadAbort[];
 extern const char kEventLoadCommit[];
@@ -55,6 +56,9 @@ extern const char kInitialHeight[];
 extern const char kInitialWidth[];
 extern const char kIsTopLevel[];
 extern const char kLastUnlockedBySelf[];
+extern const char kLevel[];
+extern const char kLine[];
+extern const char kMessage[];
 extern const char kName[];
 extern const char kNewURL[];
 extern const char kNewHeight[];
@@ -73,6 +77,7 @@ extern const char kProcessId[];
 extern const char kReason[];
 extern const char kRequestId[];
 extern const char kRequestMethod[];
+extern const char kSourceId[];
 extern const char kTargetURL[];
 extern const char kURL[];
 extern const char kUserGesture[];

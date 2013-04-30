@@ -149,6 +149,26 @@ BrowserPluginGuest::BrowserPluginGuest(
                                                              GetWebContents());
 }
 
+bool BrowserPluginGuest::AddMessageToConsole(WebContents* source,
+                                             int32 level,
+                                             const string16& message,
+                                             int32 line_no,
+                                             const string16& source_id) {
+  base::DictionaryValue message_info;
+  // Log levels are from base/logging.h: LogSeverity.
+  message_info.Set(browser_plugin::kLevel,
+                   base::Value::CreateIntegerValue(level));
+  message_info.Set(browser_plugin::kMessage,
+                   base::Value::CreateStringValue(message));
+  message_info.Set(browser_plugin::kLine,
+                   base::Value::CreateIntegerValue(line_no));
+  message_info.Set(browser_plugin::kSourceId,
+                   base::Value::CreateStringValue(source_id));
+  SendMessageToEmbedder(
+      new BrowserPluginMsg_AddMessageToConsole(instance_id_, message_info));
+  return false;
+}
+
 void BrowserPluginGuest::DestroyUnattachedWindows() {
   // Destroy() reaches in and removes the BrowserPluginGuest from its opener's
   // pending_new_windows_ set. To avoid mutating the set while iterating, we

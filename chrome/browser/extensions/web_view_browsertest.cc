@@ -961,6 +961,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPICancelGeolocation) {
         "platform_apps/web_view/geolocation/cancel_request")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest, ConsoleMessage) {
+  ASSERT_TRUE(StartTestServer());  // For serving guest pages.
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/console_messages"))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, DownloadPermission) {
   ASSERT_TRUE(StartTestServer());  // For serving guest pages.
   content::WebContents* guest_web_contents =

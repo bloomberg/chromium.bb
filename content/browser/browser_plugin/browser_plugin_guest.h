@@ -169,6 +169,11 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
 
   // WebContentsDelegate implementation.
 
+  virtual bool AddMessageToConsole(WebContents* source,
+                                   int32 level,
+                                   const string16& message,
+                                   int32 line_no,
+                                   const string16& source_id) OVERRIDE;
   // If a new window is created with target="_blank" and rel="noreferrer", then
   // this method is called, indicating that the new WebContents is ready to be
   // attached.
