@@ -256,7 +256,7 @@ void InspectorConsoleAgent::frameWindowDiscarded(DOMWindow* window)
     m_injectedScriptManager->discardInjectedScriptsFor(window);
 }
 
-void InspectorConsoleAgent::didFinishXHRLoading(unsigned long requestIdentifier, const String& url, const String& sendURL, unsigned sendLineNumber)
+void InspectorConsoleAgent::didFinishXHRLoading(ThreadableLoaderClient*, unsigned long requestIdentifier, const String&, const String& url, const String& sendURL, unsigned sendLineNumber)
 {
     if (m_frontend && m_state->getBoolean(ConsoleAgentState::monitoringXHR)) {
         String message = "XHR finished loading: \"" + url + "\".";
@@ -266,15 +266,17 @@ void InspectorConsoleAgent::didFinishXHRLoading(unsigned long requestIdentifier,
 
 }
 
-void InspectorConsoleAgent::didReceiveResponse(unsigned long requestIdentifier, const ResourceResponse& response)
+void InspectorConsoleAgent::didReceiveResourceResponse(unsigned long requestIdentifier, DocumentLoader* loader, const ResourceResponse& response, ResourceLoader*)
 {
+    if (!loader)
+        return;
     if (response.httpStatusCode() >= 400) {
         String message = "Failed to load resource: the server responded with a status of " + String::number(response.httpStatusCode()) + " (" + response.httpStatusText() + ')';
         addMessageToConsole(NetworkMessageSource, LogMessageType, ErrorMessageLevel, message, response.url().string(), 0, 0, requestIdentifier);
     }
 }
 
-void InspectorConsoleAgent::didFailLoading(unsigned long requestIdentifier, const ResourceError& error)
+void InspectorConsoleAgent::didFailLoading(unsigned long requestIdentifier, DocumentLoader*, const ResourceError& error)
 {
     if (error.isCancellation()) // Report failures only.
         return;

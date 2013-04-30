@@ -43,6 +43,8 @@
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/TimelineRecordFactory.h"
 #include "core/inspector/TimelineTraceEventProcessor.h"
+#include "core/loader/DocumentLoader.h"
+#include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/platform/MemoryUsageSupport.h"
@@ -51,6 +53,7 @@
 #include "core/platform/network/ResourceResponse.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
+#include "core/xml/XMLHttpRequest.h"
 
 #include <wtf/CurrentTime.h>
 
@@ -117,6 +120,30 @@ static const char WebSocketDestroy[] = "WebSocketDestroy";
 // Event names visible to other modules.
 const char DecodeImage[] = "DecodeImage";
 const char Rasterize[] = "Rasterize";
+}
+
+static Frame* frameForScriptExecutionContext(ScriptExecutionContext* context)
+{
+    Frame* frame = 0;
+    if (context->isDocument())
+        frame = toDocument(context)->frame();
+    return frame;
+}
+
+static bool eventHasListeners(const AtomicString& eventType, DOMWindow* window, Node* node, const EventPath& eventPath)
+{
+    if (window && window->hasEventListeners(eventType))
+        return true;
+
+    if (node->hasEventListeners(eventType))
+        return true;
+
+    for (size_t i = 0; i < eventPath.size(); i++) {
+        if (eventPath[i]->node()->hasEventListeners(eventType))
+            return true;
+    }
+
+    return false;
 }
 
 void TimelineTimeConverter::reset()
@@ -221,9 +248,10 @@ void InspectorTimelineAgent::didCancelFrame()
     m_pendingFrameRecord.clear();
 }
 
-void InspectorTimelineAgent::willCallFunction(const String& scriptName, int scriptLine, Frame* frame)
+bool InspectorTimelineAgent::willCallFunction(ScriptExecutionContext* context, const String& scriptName, int scriptLine)
 {
-    pushCurrentRecord(TimelineRecordFactory::createFunctionCallData(scriptName, scriptLine), TimelineRecordType::FunctionCall, true, frame);
+    pushCurrentRecord(TimelineRecordFactory::createFunctionCallData(scriptName, scriptLine), TimelineRecordType::FunctionCall, true, frameForScriptExecutionContext(context));
+    return true;
 }
 
 void InspectorTimelineAgent::didCallFunction()
@@ -231,9 +259,21 @@ void InspectorTimelineAgent::didCallFunction()
     didCompleteCurrentRecord(TimelineRecordType::FunctionCall);
 }
 
-void InspectorTimelineAgent::willDispatchEvent(const Event& event, Frame* frame)
+bool InspectorTimelineAgent::willDispatchEvent(Document* document, const Event& event, DOMWindow* window, Node* node, const EventPath& eventPath)
 {
-    pushCurrentRecord(TimelineRecordFactory::createEventDispatchData(event), TimelineRecordType::EventDispatch, false, frame);
+    if (!eventHasListeners(event.type(), window, node, eventPath))
+       return false;
+
+    pushCurrentRecord(TimelineRecordFactory::createEventDispatchData(event), TimelineRecordType::EventDispatch, false, document->frame());
+    return true;
+}
+
+bool InspectorTimelineAgent::willDispatchEventOnWindow(const Event& event, DOMWindow* window)
+{
+    if (!window->hasEventListeners(event.type()))
+        return false;
+    pushCurrentRecord(TimelineRecordFactory::createEventDispatchData(event), TimelineRecordType::EventDispatch, false, window->frame());
+    return true;
 }
 
 void InspectorTimelineAgent::didDispatchEvent()
@@ -241,12 +281,17 @@ void InspectorTimelineAgent::didDispatchEvent()
     didCompleteCurrentRecord(TimelineRecordType::EventDispatch);
 }
 
+void InspectorTimelineAgent::didDispatchEventOnWindow()
+{
+    didDispatchEvent();
+}
+
 void InspectorTimelineAgent::didInvalidateLayout(Frame* frame)
 {
     appendRecord(InspectorObject::create(), TimelineRecordType::InvalidateLayout, true, frame);
 }
 
-void InspectorTimelineAgent::willLayout(Frame* frame)
+bool InspectorTimelineAgent::willLayout(Frame* frame)
 {
     RenderObject* root = frame->view()->layoutRoot();
     bool partialLayout = !!root;
@@ -262,6 +307,7 @@ void InspectorTimelineAgent::willLayout(Frame* frame)
             ++dirtyObjects;
     }
     pushCurrentRecord(TimelineRecordFactory::createLayoutData(dirtyObjects, totalObjects, partialLayout), TimelineRecordType::Layout, true, frame);
+    return true;
 }
 
 void InspectorTimelineAgent::didLayout(RenderObject* root)
@@ -279,15 +325,16 @@ void InspectorTimelineAgent::didLayout(RenderObject* root)
     didCompleteCurrentRecord(TimelineRecordType::Layout);
 }
 
-void InspectorTimelineAgent::didScheduleStyleRecalculation(Frame* frame)
+void InspectorTimelineAgent::didScheduleStyleRecalculation(Document* document)
 {
-    appendRecord(InspectorObject::create(), TimelineRecordType::ScheduleStyleRecalculation, true, frame);
+    appendRecord(InspectorObject::create(), TimelineRecordType::ScheduleStyleRecalculation, true, document->frame());
 }
 
-void InspectorTimelineAgent::willRecalculateStyle(Frame* frame)
+bool InspectorTimelineAgent::willRecalculateStyle(Document* document)
 {
-    pushCurrentRecord(InspectorObject::create(), TimelineRecordType::RecalculateStyles, true, frame);
+    pushCurrentRecord(InspectorObject::create(), TimelineRecordType::RecalculateStyles, true, document->frame());
     ASSERT(!m_styleRecalcElementCounter);
+    return true;
 }
 
 void InspectorTimelineAgent::didRecalculateStyle()
@@ -311,7 +358,7 @@ void InspectorTimelineAgent::willPaint(Frame* frame)
     pushCurrentRecord(InspectorObject::create(), TimelineRecordType::Paint, true, frame, true);
 }
 
-void InspectorTimelineAgent::didPaint(RenderObject* renderer, const LayoutRect& clipRect)
+void InspectorTimelineAgent::didPaint(RenderObject* renderer, GraphicsContext*, const LayoutRect& clipRect)
 {
     TimelineRecordEntry& entry = m_recordStack.last();
     ASSERT(entry.type == TimelineRecordType::Paint);
@@ -321,12 +368,12 @@ void InspectorTimelineAgent::didPaint(RenderObject* renderer, const LayoutRect& 
     didCompleteCurrentRecord(TimelineRecordType::Paint);
 }
 
-void InspectorTimelineAgent::willScroll(Frame* frame)
+void InspectorTimelineAgent::willScrollLayer(Frame* frame)
 {
     pushCurrentRecord(InspectorObject::create(), TimelineRecordType::ScrollLayer, false, frame);
 }
 
-void InspectorTimelineAgent::didScroll()
+void InspectorTimelineAgent::didScrollLayer()
 {
     didCompleteCurrentRecord(TimelineRecordType::ScrollLayer);
 }
@@ -361,9 +408,10 @@ void InspectorTimelineAgent::didComposite()
     didCompleteCurrentRecord(TimelineRecordType::CompositeLayers);
 }
 
-void InspectorTimelineAgent::willWriteHTML(unsigned startLine, Frame* frame)
+bool InspectorTimelineAgent::willWriteHTML(Document* document, unsigned startLine)
 {
-    pushCurrentRecord(TimelineRecordFactory::createParseHTMLData(startLine), TimelineRecordType::ParseHTML, true, frame);
+    pushCurrentRecord(TimelineRecordFactory::createParseHTMLData(startLine), TimelineRecordType::ParseHTML, true, document->frame());
+    return true;
 }
 
 void InspectorTimelineAgent::didWriteHTML(unsigned endLine)
@@ -375,19 +423,20 @@ void InspectorTimelineAgent::didWriteHTML(unsigned endLine)
     }
 }
 
-void InspectorTimelineAgent::didInstallTimer(int timerId, int timeout, bool singleShot, Frame* frame)
+void InspectorTimelineAgent::didInstallTimer(ScriptExecutionContext* context, int timerId, int timeout, bool singleShot)
 {
-    appendRecord(TimelineRecordFactory::createTimerInstallData(timerId, timeout, singleShot), TimelineRecordType::TimerInstall, true, frame);
+    appendRecord(TimelineRecordFactory::createTimerInstallData(timerId, timeout, singleShot), TimelineRecordType::TimerInstall, true, frameForScriptExecutionContext(context));
 }
 
-void InspectorTimelineAgent::didRemoveTimer(int timerId, Frame* frame)
+void InspectorTimelineAgent::didRemoveTimer(ScriptExecutionContext* context, int timerId)
 {
-    appendRecord(TimelineRecordFactory::createGenericTimerData(timerId), TimelineRecordType::TimerRemove, true, frame);
+    appendRecord(TimelineRecordFactory::createGenericTimerData(timerId), TimelineRecordType::TimerRemove, true, frameForScriptExecutionContext(context));
 }
 
-void InspectorTimelineAgent::willFireTimer(int timerId, Frame* frame)
+bool InspectorTimelineAgent::willFireTimer(ScriptExecutionContext* context, int timerId)
 {
-    pushCurrentRecord(TimelineRecordFactory::createGenericTimerData(timerId), TimelineRecordType::TimerFire, false, frame);
+    pushCurrentRecord(TimelineRecordFactory::createGenericTimerData(timerId), TimelineRecordType::TimerFire, false, frameForScriptExecutionContext(context));
+    return true;
 }
 
 void InspectorTimelineAgent::didFireTimer()
@@ -395,9 +444,12 @@ void InspectorTimelineAgent::didFireTimer()
     didCompleteCurrentRecord(TimelineRecordType::TimerFire);
 }
 
-void InspectorTimelineAgent::willDispatchXHRReadyStateChangeEvent(const String& url, int readyState, Frame* frame)
+bool InspectorTimelineAgent::willDispatchXHRReadyStateChangeEvent(ScriptExecutionContext* context, XMLHttpRequest* request)
 {
-    pushCurrentRecord(TimelineRecordFactory::createXHRReadyStateChangeData(url, readyState), TimelineRecordType::XHRReadyStateChange, false, frame);
+    if (!request->hasEventListeners(eventNames().readystatechangeEvent))
+        return false;
+    pushCurrentRecord(TimelineRecordFactory::createXHRReadyStateChangeData(request->url().string(), request->readyState()), TimelineRecordType::XHRReadyStateChange, false, frameForScriptExecutionContext(context));
+    return true;
 }
 
 void InspectorTimelineAgent::didDispatchXHRReadyStateChangeEvent()
@@ -405,9 +457,12 @@ void InspectorTimelineAgent::didDispatchXHRReadyStateChangeEvent()
     didCompleteCurrentRecord(TimelineRecordType::XHRReadyStateChange);
 }
 
-void InspectorTimelineAgent::willDispatchXHRLoadEvent(const String& url, Frame* frame)
+bool InspectorTimelineAgent::willDispatchXHRLoadEvent(ScriptExecutionContext* context, XMLHttpRequest* request)
 {
-    pushCurrentRecord(TimelineRecordFactory::createXHRLoadData(url), TimelineRecordType::XHRLoad, true, frame);
+    if (!request->hasEventListeners(eventNames().loadEvent))
+        return false;
+    pushCurrentRecord(TimelineRecordFactory::createXHRLoadData(request->url()), TimelineRecordType::XHRLoad, true, frameForScriptExecutionContext(context));
+    return true;
 }
 
 void InspectorTimelineAgent::didDispatchXHRLoadEvent()
@@ -415,9 +470,10 @@ void InspectorTimelineAgent::didDispatchXHRLoadEvent()
     didCompleteCurrentRecord(TimelineRecordType::XHRLoad);
 }
 
-void InspectorTimelineAgent::willEvaluateScript(const String& url, int lineNumber, Frame* frame)
+bool InspectorTimelineAgent::willEvaluateScript(Frame* frame, const String& url, int lineNumber)
 {
     pushCurrentRecord(TimelineRecordFactory::createEvaluateScriptData(url, lineNumber), TimelineRecordType::EvaluateScript, true, frame);
+    return true;
 }
 
 void InspectorTimelineAgent::didEvaluateScript()
@@ -425,21 +481,22 @@ void InspectorTimelineAgent::didEvaluateScript()
     didCompleteCurrentRecord(TimelineRecordType::EvaluateScript);
 }
 
-void InspectorTimelineAgent::didScheduleResourceRequest(const String& url, Frame* frame)
+void InspectorTimelineAgent::didScheduleResourceRequest(Document* document, const String& url)
 {
-    appendRecord(TimelineRecordFactory::createScheduleResourceRequestData(url), TimelineRecordType::ScheduleResourceRequest, true, frame);
+    appendRecord(TimelineRecordFactory::createScheduleResourceRequestData(url), TimelineRecordType::ScheduleResourceRequest, true, document->frame());
 }
 
-void InspectorTimelineAgent::willSendResourceRequest(unsigned long identifier, const ResourceRequest& request, Frame* frame)
+void InspectorTimelineAgent::willSendResourceRequest(unsigned long identifier, DocumentLoader* loader, const ResourceRequest& request, const ResourceResponse&)
 {
     String requestId = IdentifiersFactory::requestId(identifier);
-    appendRecord(TimelineRecordFactory::createResourceSendRequestData(requestId, request), TimelineRecordType::ResourceSendRequest, true, frame);
+    appendRecord(TimelineRecordFactory::createResourceSendRequestData(requestId, request), TimelineRecordType::ResourceSendRequest, true, loader->frame());
 }
 
-void InspectorTimelineAgent::willReceiveResourceData(unsigned long identifier, Frame* frame, int length)
+bool InspectorTimelineAgent::willReceiveResourceData(Frame* frame, unsigned long identifier, int length)
 {
     String requestId = IdentifiersFactory::requestId(identifier);
     pushCurrentRecord(TimelineRecordFactory::createReceiveResourceData(requestId, length), TimelineRecordType::ResourceReceivedData, false, frame);
+    return true;
 }
 
 void InspectorTimelineAgent::didReceiveResourceData()
@@ -447,13 +504,14 @@ void InspectorTimelineAgent::didReceiveResourceData()
     didCompleteCurrentRecord(TimelineRecordType::ResourceReceivedData);
 }
 
-void InspectorTimelineAgent::willReceiveResourceResponse(unsigned long identifier, const ResourceResponse& response, Frame* frame)
+bool InspectorTimelineAgent::willReceiveResourceResponse(Frame* frame, unsigned long identifier, const ResourceResponse& response)
 {
     String requestId = IdentifiersFactory::requestId(identifier);
     pushCurrentRecord(TimelineRecordFactory::createResourceReceiveResponseData(requestId, response), TimelineRecordType::ResourceReceiveResponse, false, frame);
+    return true;
 }
 
-void InspectorTimelineAgent::didReceiveResourceResponse()
+void InspectorTimelineAgent::didReceiveResourceResponse(unsigned long identifier, DocumentLoader* loader, const ResourceResponse& response, ResourceLoader* resourceLoader)
 {
     didCompleteCurrentRecord(TimelineRecordType::ResourceReceiveResponse);
 }
@@ -461,6 +519,11 @@ void InspectorTimelineAgent::didReceiveResourceResponse()
 void InspectorTimelineAgent::didFinishLoadingResource(unsigned long identifier, bool didFail, double finishTime, Frame* frame)
 {
     appendRecord(TimelineRecordFactory::createResourceFinishData(IdentifiersFactory::requestId(identifier), didFail, finishTime * 1000), TimelineRecordType::ResourceFinish, false, frame);
+}
+
+void InspectorTimelineAgent::didFailLoading(unsigned long identifier, DocumentLoader* loader, const ResourceError& error)
+{
+    didFinishLoadingResource(identifier, true, 0, loader->frame());
 }
 
 void InspectorTimelineAgent::didTimeStamp(Frame* frame, const String& message)
@@ -495,19 +558,20 @@ void InspectorTimelineAgent::didCommitLoad()
     clearRecordStack();
 }
 
-void InspectorTimelineAgent::didRequestAnimationFrame(int callbackId, Frame* frame)
+void InspectorTimelineAgent::didRequestAnimationFrame(Document* document, int callbackId)
 {
-    appendRecord(TimelineRecordFactory::createAnimationFrameData(callbackId), TimelineRecordType::RequestAnimationFrame, true, frame);
+    appendRecord(TimelineRecordFactory::createAnimationFrameData(callbackId), TimelineRecordType::RequestAnimationFrame, true, document->frame());
 }
 
-void InspectorTimelineAgent::didCancelAnimationFrame(int callbackId, Frame* frame)
+void InspectorTimelineAgent::didCancelAnimationFrame(Document* document, int callbackId)
 {
-    appendRecord(TimelineRecordFactory::createAnimationFrameData(callbackId), TimelineRecordType::CancelAnimationFrame, true, frame);
+    appendRecord(TimelineRecordFactory::createAnimationFrameData(callbackId), TimelineRecordType::CancelAnimationFrame, true, document->frame());
 }
 
-void InspectorTimelineAgent::willFireAnimationFrame(int callbackId, Frame* frame)
+bool InspectorTimelineAgent::willFireAnimationFrame(Document* document, int callbackId)
 {
-    pushCurrentRecord(TimelineRecordFactory::createAnimationFrameData(callbackId), TimelineRecordType::FireAnimationFrame, false, frame);
+    pushCurrentRecord(TimelineRecordFactory::createAnimationFrameData(callbackId), TimelineRecordType::FireAnimationFrame, false, document->frame());
+    return true;
 }
 
 void InspectorTimelineAgent::didFireAnimationFrame()
@@ -525,24 +589,24 @@ void InspectorTimelineAgent::didProcessTask()
     didCompleteCurrentRecord(TimelineRecordType::Program);
 }
 
-void InspectorTimelineAgent::didCreateWebSocket(unsigned long identifier, const KURL& url, const String& protocol, Frame* frame)
+void InspectorTimelineAgent::didCreateWebSocket(Document* document, unsigned long identifier, const KURL& url, const String& protocol)
 {
-    appendRecord(TimelineRecordFactory::createWebSocketCreateData(identifier, url, protocol), TimelineRecordType::WebSocketCreate, true, frame);
+    appendRecord(TimelineRecordFactory::createWebSocketCreateData(identifier, url, protocol), TimelineRecordType::WebSocketCreate, true, document->frame());
 }
 
-void InspectorTimelineAgent::willSendWebSocketHandshakeRequest(unsigned long identifier, Frame* frame)
+void InspectorTimelineAgent::willSendWebSocketHandshakeRequest(Document* document, unsigned long identifier, const WebSocketHandshakeRequest&)
 {
-    appendRecord(TimelineRecordFactory::createGenericWebSocketData(identifier), TimelineRecordType::WebSocketSendHandshakeRequest, true, frame);
+    appendRecord(TimelineRecordFactory::createGenericWebSocketData(identifier), TimelineRecordType::WebSocketSendHandshakeRequest, true, document->frame());
 }
 
-void InspectorTimelineAgent::didReceiveWebSocketHandshakeResponse(unsigned long identifier, Frame* frame)
+void InspectorTimelineAgent::didReceiveWebSocketHandshakeResponse(Document* document, unsigned long identifier, const WebSocketHandshakeResponse&)
 {
-    appendRecord(TimelineRecordFactory::createGenericWebSocketData(identifier), TimelineRecordType::WebSocketReceiveHandshakeResponse, false, frame);
+    appendRecord(TimelineRecordFactory::createGenericWebSocketData(identifier), TimelineRecordType::WebSocketReceiveHandshakeResponse, false, document->frame());
 }
 
-void InspectorTimelineAgent::didDestroyWebSocket(unsigned long identifier, Frame* frame)
+void InspectorTimelineAgent::didCloseWebSocket(Document* document, unsigned long identifier)
 {
-    appendRecord(TimelineRecordFactory::createGenericWebSocketData(identifier), TimelineRecordType::WebSocketDestroy, true, frame);
+    appendRecord(TimelineRecordFactory::createGenericWebSocketData(identifier), TimelineRecordType::WebSocketDestroy, true, document->frame());
 }
 
 void InspectorTimelineAgent::addRecordToTimeline(PassRefPtr<InspectorObject> record, const String& type)

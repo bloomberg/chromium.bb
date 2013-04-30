@@ -306,7 +306,7 @@ void InspectorDOMDebuggerAgent::willRemoveDOMNode(Node* node)
     }
 }
 
-void InspectorDOMDebuggerAgent::willModifyDOMAttr(Element* element)
+void InspectorDOMDebuggerAgent::willModifyDOMAttr(Element* element, const AtomicString&, const AtomicString&)
 {
     if (hasBreakpoint(element, AttributeModified)) {
         RefPtr<InspectorObject> eventData = InspectorObject::create();

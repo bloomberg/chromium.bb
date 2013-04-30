@@ -76,7 +76,7 @@ public:
     void didInsertDOMNode(Node*);
     void willRemoveDOMNode(Node*);
     void didRemoveDOMNode(Node*);
-    void willModifyDOMAttr(Element*);
+    void willModifyDOMAttr(Element*, const AtomicString&, const AtomicString&);
     void willSendXMLHttpRequest(const String& url);
     void pauseOnNativeEventIfNeeded(bool isDOMEvent, const String& eventName, bool synchronous);
 

@@ -324,7 +324,7 @@ void InspectorCanvasAgent::frameNavigated(Frame* frame)
     }
 }
 
-void InspectorCanvasAgent::frameDetached(Frame* frame)
+void InspectorCanvasAgent::frameDetachedFromParent(Frame* frame)
 {
     if (m_enabled)
         m_framesWithUninstrumentedCanvases.remove(frame);

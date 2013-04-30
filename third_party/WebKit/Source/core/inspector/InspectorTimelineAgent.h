@@ -34,6 +34,7 @@
 
 #include "InspectorFrontend.h"
 #include "bindings/v8/ScriptGCEvent.h"
+#include "core/dom/EventContext.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorValues.h"
 #include "core/inspector/ScriptGCEventListener.h"
@@ -44,9 +45,13 @@
 #include <wtf/WeakPtr.h>
 
 namespace WebCore {
+class DOMWindow;
+class Document;
+class DocumentLoader;
 class Event;
 class FloatQuad;
 class Frame;
+class GraphicsContext;
 class InspectorClient;
 class InspectorFrontend;
 class InspectorMemoryAgent;
@@ -55,11 +60,18 @@ class InspectorState;
 class InstrumentingAgents;
 class IntRect;
 class KURL;
+class Node;
 class Page;
 class RenderObject;
+class ResourceError;
+class ResourceLoader;
 class ResourceRequest;
 class ResourceResponse;
+class ScriptExecutionContext;
 class TimelineTraceEventProcessor;
+class WebSocketHandshakeRequest;
+class WebSocketHandshakeResponse;
+class XMLHttpRequest;
 
 typedef String ErrorString;
 
@@ -109,47 +121,49 @@ public:
     void didCommitLoad();
 
     // Methods called from WebCore.
-    void willCallFunction(const String& scriptName, int scriptLine, Frame*);
+    bool willCallFunction(ScriptExecutionContext* context, const String& scriptName, int scriptLine);
     void didCallFunction();
 
-    void willDispatchEvent(const Event&, Frame*);
+    bool willDispatchEvent(Document* document, const Event& event, DOMWindow* window, Node* node, const EventPath& eventPath);
+    bool willDispatchEventOnWindow(const Event& event, DOMWindow* window);
     void didDispatchEvent();
+    void didDispatchEventOnWindow();
 
     void didBeginFrame();
     void didCancelFrame();
 
     void didInvalidateLayout(Frame*);
-    void willLayout(Frame*);
+    bool willLayout(Frame*);
     void didLayout(RenderObject*);
 
-    void didScheduleStyleRecalculation(Frame*);
-    void willRecalculateStyle(Frame*);
+    void didScheduleStyleRecalculation(Document*);
+    bool willRecalculateStyle(Document*);
     void didRecalculateStyle();
     void didRecalculateStyleForElement();
 
     void willPaint(Frame*);
-    void didPaint(RenderObject*, const LayoutRect&);
+    void didPaint(RenderObject*, GraphicsContext*, const LayoutRect&);
 
-    void willScroll(Frame*);
-    void didScroll();
+    void willScrollLayer(Frame*);
+    void didScrollLayer();
 
     void willComposite();
     void didComposite();
 
-    void willWriteHTML(unsigned startLine, Frame*);
+    bool willWriteHTML(Document*, unsigned startLine);
     void didWriteHTML(unsigned endLine);
 
-    void didInstallTimer(int timerId, int timeout, bool singleShot, Frame*);
-    void didRemoveTimer(int timerId, Frame*);
-    void willFireTimer(int timerId, Frame*);
+    void didInstallTimer(ScriptExecutionContext* context, int timerId, int timeout, bool singleShot);
+    void didRemoveTimer(ScriptExecutionContext* context, int timerId);
+    bool willFireTimer(ScriptExecutionContext* context, int timerId);
     void didFireTimer();
 
-    void willDispatchXHRReadyStateChangeEvent(const String&, int, Frame*);
+    bool willDispatchXHRReadyStateChangeEvent(ScriptExecutionContext* context, XMLHttpRequest* request);
     void didDispatchXHRReadyStateChangeEvent();
-    void willDispatchXHRLoadEvent(const String&, Frame*);
+    bool willDispatchXHRLoadEvent(ScriptExecutionContext* context, XMLHttpRequest* request);
     void didDispatchXHRLoadEvent();
 
-    void willEvaluateScript(const String&, int, Frame*);
+    bool willEvaluateScript(Frame*, const String&, int);
     void didEvaluateScript();
 
     void didTimeStamp(Frame*, const String&);
@@ -159,26 +173,27 @@ public:
     void time(Frame*, const String&);
     void timeEnd(Frame*, const String&);
 
-    void didScheduleResourceRequest(const String& url, Frame*);
-    void willSendResourceRequest(unsigned long, const ResourceRequest&, Frame*);
-    void willReceiveResourceResponse(unsigned long, const ResourceResponse&, Frame*);
-    void didReceiveResourceResponse();
+    void didScheduleResourceRequest(Document*, const String& url);
+    void willSendResourceRequest(unsigned long, DocumentLoader*, const ResourceRequest&, const ResourceResponse&);
+    bool willReceiveResourceResponse(Frame*, unsigned long, const ResourceResponse&);
+    void didReceiveResourceResponse(unsigned long, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
     void didFinishLoadingResource(unsigned long, bool didFail, double finishTime, Frame*);
-    void willReceiveResourceData(unsigned long identifier, Frame*, int length);
+    void didFailLoading(unsigned long identifier, DocumentLoader* loader, const ResourceError& error);
+    bool willReceiveResourceData(Frame*, unsigned long identifier, int length);
     void didReceiveResourceData();
 
-    void didRequestAnimationFrame(int callbackId, Frame*);
-    void didCancelAnimationFrame(int callbackId, Frame*);
-    void willFireAnimationFrame(int callbackId, Frame*);
+    void didRequestAnimationFrame(Document*, int callbackId);
+    void didCancelAnimationFrame(Document*, int callbackId);
+    bool willFireAnimationFrame(Document*, int callbackId);
     void didFireAnimationFrame();
 
     void willProcessTask();
     void didProcessTask();
 
-    void didCreateWebSocket(unsigned long identifier, const KURL&, const String& protocol, Frame*);
-    void willSendWebSocketHandshakeRequest(unsigned long identifier, Frame*);
-    void didReceiveWebSocketHandshakeResponse(unsigned long identifier, Frame*);
-    void didDestroyWebSocket(unsigned long identifier, Frame*);
+    void didCreateWebSocket(Document*, unsigned long identifier, const KURL&, const String& protocol);
+    void willSendWebSocketHandshakeRequest(Document*, unsigned long identifier, const WebSocketHandshakeRequest&);
+    void didReceiveWebSocketHandshakeResponse(Document*, unsigned long identifier, const WebSocketHandshakeResponse&);
+    void didCloseWebSocket(Document*, unsigned long identifier);
 
     // ScriptGCEventListener methods.
     virtual void didGC(double, double, size_t);

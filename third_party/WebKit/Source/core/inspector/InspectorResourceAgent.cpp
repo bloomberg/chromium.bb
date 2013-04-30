@@ -202,7 +202,7 @@ InspectorResourceAgent::~InspectorResourceAgent()
     ASSERT(!m_instrumentingAgents->inspectorResourceAgent());
 }
 
-void InspectorResourceAgent::willSendRequest(unsigned long identifier, DocumentLoader* loader, ResourceRequest& request, const ResourceResponse& redirectResponse)
+void InspectorResourceAgent::willSendResourceRequest(unsigned long identifier, DocumentLoader* loader, ResourceRequest& request, const ResourceResponse& redirectResponse)
 {
     String requestId = IdentifiersFactory::requestId(identifier);
     m_resourcesData->resourceCreated(requestId, m_pageAgent->loaderId(loader));
@@ -236,8 +236,11 @@ void InspectorResourceAgent::markResourceAsCached(unsigned long identifier)
     m_frontend->requestServedFromCache(IdentifiersFactory::requestId(identifier));
 }
 
-void InspectorResourceAgent::didReceiveResponse(unsigned long identifier, DocumentLoader* loader, const ResourceResponse& response, ResourceLoader* resourceLoader)
+void InspectorResourceAgent::didReceiveResourceResponse(unsigned long identifier, DocumentLoader* loader, const ResourceResponse& response, ResourceLoader* resourceLoader)
 {
+    if (!loader)
+        return;
+
     String requestId = IdentifiersFactory::requestId(identifier);
     RefPtr<TypeBuilder::Network::Response> resourceResponse = buildObjectForResourceResponse(response, loader);
 
@@ -342,7 +345,7 @@ void InspectorResourceAgent::didLoadResourceFromMemoryCache(DocumentLoader* load
     m_frontend->requestServedFromMemoryCache(requestId, frameId, loaderId, loader->url().string(), currentTime(), initiatorObject, buildObjectForCachedResource(*resource, loader));
 }
 
-void InspectorResourceAgent::setInitialScriptContent(unsigned long identifier, const String& sourceString)
+void InspectorResourceAgent::scriptImported(unsigned long identifier, const String& sourceString)
 {
     m_resourcesData->setResourceContent(IdentifiersFactory::requestId(identifier), sourceString);
 }
@@ -380,7 +383,7 @@ void InspectorResourceAgent::didFailXHRLoading(ThreadableLoaderClient* client)
     m_pendingXHRReplayData.remove(client);
 }
 
-void InspectorResourceAgent::didFinishXHRLoading(ThreadableLoaderClient* client, unsigned long identifier, const String& sourceString)
+void InspectorResourceAgent::didFinishXHRLoading(ThreadableLoaderClient* client, unsigned long identifier, const String& sourceString, const String&, const String&, unsigned)
 {
     // For Asynchronous XHRs, the inspector can grab the data directly off of the CachedResource. For sync XHRs, we need to
     // provide the data here, since no CachedResource was involved.
@@ -426,7 +429,7 @@ void InspectorResourceAgent::applyUserAgentOverride(String* userAgent)
         *userAgent = userAgentOverride;
 }
 
-void InspectorResourceAgent::willRecalculateStyle()
+void InspectorResourceAgent::willRecalculateStyle(Document*)
 {
     m_isRecalculatingStyle = true;
 }
@@ -469,19 +472,19 @@ PassRefPtr<TypeBuilder::Network::Initiator> InspectorResourceAgent::buildInitiat
         .release();
 }
 
-void InspectorResourceAgent::didCreateWebSocket(unsigned long identifier, const KURL& requestURL)
+void InspectorResourceAgent::didCreateWebSocket(Document*, unsigned long identifier, const KURL& requestURL, const String&)
 {
     m_frontend->webSocketCreated(IdentifiersFactory::requestId(identifier), requestURL.string());
 }
 
-void InspectorResourceAgent::willSendWebSocketHandshakeRequest(unsigned long identifier, const WebSocketHandshakeRequest& request)
+void InspectorResourceAgent::willSendWebSocketHandshakeRequest(Document*, unsigned long identifier, const WebSocketHandshakeRequest& request)
 {
     RefPtr<TypeBuilder::Network::WebSocketRequest> requestObject = TypeBuilder::Network::WebSocketRequest::create()
         .setHeaders(buildObjectForHeaders(request.headerFields()));
     m_frontend->webSocketWillSendHandshakeRequest(IdentifiersFactory::requestId(identifier), currentTime(), requestObject);
 }
 
-void InspectorResourceAgent::didReceiveWebSocketHandshakeResponse(unsigned long identifier, const WebSocketHandshakeResponse& response)
+void InspectorResourceAgent::didReceiveWebSocketHandshakeResponse(Document*, unsigned long identifier, const WebSocketHandshakeResponse& response)
 {
     RefPtr<TypeBuilder::Network::WebSocketResponse> responseObject = TypeBuilder::Network::WebSocketResponse::create()
         .setStatus(response.statusCode())
@@ -490,7 +493,7 @@ void InspectorResourceAgent::didReceiveWebSocketHandshakeResponse(unsigned long 
     m_frontend->webSocketHandshakeResponseReceived(IdentifiersFactory::requestId(identifier), currentTime(), responseObject);
 }
 
-void InspectorResourceAgent::didCloseWebSocket(unsigned long identifier)
+void InspectorResourceAgent::didCloseWebSocket(Document*, unsigned long identifier)
 {
     m_frontend->webSocketClosed(IdentifiersFactory::requestId(identifier), currentTime());
 }

@@ -60,6 +60,7 @@ class InspectorState;
 class InstrumentingAgents;
 class KURL;
 class Page;
+class RenderObject;
 class RegularExpression;
 class SharedBuffer;
 class TextResourceDecoder;
@@ -137,7 +138,7 @@ public:
     void domContentEventFired();
     void loadEventFired();
     void frameNavigated(DocumentLoader*);
-    void frameDetached(Frame*);
+    void frameDetachedFromParent(Frame*);
     void loaderDetachedFromFrame(DocumentLoader*);
     void frameStartedLoading(Frame*);
     void frameStoppedLoading(Frame*);
@@ -148,8 +149,8 @@ public:
     void applyScreenWidthOverride(long*);
     void applyScreenHeightOverride(long*);
     void applyEmulatedMedia(String*);
-    void didPaint(GraphicsContext*, const LayoutRect&);
-    void didLayout();
+    void didPaint(RenderObject*, GraphicsContext*, const LayoutRect&);
+    void didLayout(RenderObject*);
     void didScroll();
     void didRecalculateStyle();
     void scriptsEnabled(bool isEnabled);

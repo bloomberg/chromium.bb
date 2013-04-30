@@ -40,16 +40,19 @@
 namespace WebCore {
 
 class ConsoleMessage;
+class DocumentLoader;
 class DOMWindow;
 class InspectorFrontend;
 class InspectorState;
 class InjectedScriptManager;
 class InstrumentingAgents;
 class ResourceError;
+class ResourceLoader;
 class ResourceResponse;
 class ScriptArguments;
 class ScriptCallStack;
 class ScriptProfile;
+class ThreadableLoaderClient;
 
 typedef String ErrorString;
 
@@ -83,9 +86,9 @@ public:
 
     void frameWindowDiscarded(DOMWindow*);
 
-    void didFinishXHRLoading(unsigned long requestIdentifier, const String& url, const String& sendURL, unsigned sendLineNumber);
-    void didReceiveResponse(unsigned long requestIdentifier, const ResourceResponse&);
-    void didFailLoading(unsigned long requestIdentifier, const ResourceError&);
+    void didFinishXHRLoading(ThreadableLoaderClient*, unsigned long requestIdentifier, const String&, const String& url, const String& sendURL, unsigned sendLineNumber);
+    void didReceiveResourceResponse(unsigned long requestIdentifier, DocumentLoader*, const ResourceResponse& response, ResourceLoader*);
+    void didFailLoading(unsigned long requestIdentifier, DocumentLoader*, const ResourceError&);
     void addProfileFinishedMessageToConsole(PassRefPtr<ScriptProfile>, unsigned lineNumber, const String& sourceURL);
     void addStartProfilingMessageToConsole(const String& title, unsigned lineNumber, const String& sourceURL);
     virtual void setMonitoringXHREnabled(ErrorString*, bool enabled);

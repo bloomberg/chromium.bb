@@ -42,12 +42,9 @@ void didRemoveDOMNodeImpl(InstrumentingAgents*, Node*);
 void didPushShadowRootImpl(InstrumentingAgents*, Element* host, ShadowRoot*);
 void willPopShadowRootImpl(InstrumentingAgents*, Element* host, ShadowRoot*);
 InspectorInstrumentationCookie willProcessRuleImpl(InstrumentingAgents*, StyleRule*, StyleResolver*);
-InspectorInstrumentationCookie willReceiveResourceDataImpl(InstrumentingAgents*, unsigned long identifier, Frame*, int length);
 void continueAfterXFrameOptionsDeniedImpl(Frame*, DocumentLoader*, unsigned long identifier, const ResourceResponse&);
 void continueWithPolicyDownloadImpl(Frame*, DocumentLoader*, unsigned long identifier, const ResourceResponse&);
 void continueWithPolicyIgnoreImpl(Frame*, DocumentLoader*, unsigned long identifier, const ResourceResponse&);
-void didFinishLoadingImpl(InstrumentingAgents*, unsigned long identifier, DocumentLoader*, double finishTime);
-void didFailLoadingImpl(InstrumentingAgents*, unsigned long identifier, DocumentLoader*, const ResourceError&);
 void willDestroyCachedResourceImpl(CachedResource*);
 void didDispatchDOMStorageEventImpl(InstrumentingAgents*, const String& key, const String& oldValue, const String& newValue, StorageType, SecurityOrigin*, Page*);
 bool collectingHTMLParseErrorsImpl(InstrumentingAgents*);
@@ -106,14 +103,6 @@ inline InspectorInstrumentationCookie willProcessRule(Document* document, StyleR
     return InspectorInstrumentationCookie();
 }
 
-inline InspectorInstrumentationCookie willReceiveResourceData(Frame* frame, unsigned long identifier, int length)
-{
-    FAST_RETURN_IF_NO_FRONTENDS(InspectorInstrumentationCookie());
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForFrame(frame))
-        return willReceiveResourceDataImpl(instrumentingAgents, identifier, frame, length);
-    return InspectorInstrumentationCookie();
-}
-
 inline void continueAfterXFrameOptionsDenied(Frame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r)
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
@@ -130,18 +119,6 @@ inline void continueWithPolicyIgnore(Frame* frame, DocumentLoader* loader, unsig
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
     continueWithPolicyIgnoreImpl(frame, loader, identifier, r);
-}
-
-inline void didFinishLoading(Frame* frame, DocumentLoader* loader, unsigned long identifier, double finishTime)
-{
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForFrame(frame))
-        didFinishLoadingImpl(instrumentingAgents, identifier, loader, finishTime);
-}
-
-inline void didFailLoading(Frame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceError& error)
-{
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForFrame(frame))
-        didFailLoadingImpl(instrumentingAgents, identifier, loader, error);
 }
 
 inline void willDestroyCachedResource(CachedResource* cachedResource)

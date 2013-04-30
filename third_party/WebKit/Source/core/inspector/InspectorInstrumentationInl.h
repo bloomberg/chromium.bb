@@ -51,36 +51,36 @@ void willRemoveNamedFlowImpl(InstrumentingAgents*, Document*, NamedFlow*);
 void didUpdateRegionLayoutImpl(InstrumentingAgents*, Document*, NamedFlow*);
 void handleMouseMoveImpl(InstrumentingAgents*, Frame*, const PlatformMouseEvent&);
 void willSendXMLHttpRequestImpl(InstrumentingAgents*, const String& url);
-void didScheduleResourceRequestImpl(InstrumentingAgents*, const String& url, Frame*);
-void didInstallTimerImpl(InstrumentingAgents*, int timerId, int timeout, bool singleShot, ScriptExecutionContext*);
-void didRemoveTimerImpl(InstrumentingAgents*, int timerId, ScriptExecutionContext*);
-InspectorInstrumentationCookie willCallFunctionImpl(InstrumentingAgents*, const String& scriptName, int scriptLine, ScriptExecutionContext*);
+void didScheduleResourceRequestImpl(InstrumentingAgents*, Document*, const String& url);
+void didInstallTimerImpl(InstrumentingAgents*, ScriptExecutionContext*, int timerId, int timeout, bool singleShot);
+void didRemoveTimerImpl(InstrumentingAgents*, ScriptExecutionContext*, int timerId);
+InspectorInstrumentationCookie willCallFunctionImpl(InstrumentingAgents*, ScriptExecutionContext*, const String& scriptName, int scriptLine);
 void didCallFunctionImpl(const InspectorInstrumentationCookie&);
-InspectorInstrumentationCookie willDispatchXHRReadyStateChangeEventImpl(InstrumentingAgents*, XMLHttpRequest*, ScriptExecutionContext*);
+InspectorInstrumentationCookie willDispatchXHRReadyStateChangeEventImpl(InstrumentingAgents*, ScriptExecutionContext*, XMLHttpRequest*);
 void didDispatchXHRReadyStateChangeEventImpl(const InspectorInstrumentationCookie&);
-InspectorInstrumentationCookie willDispatchEventImpl(InstrumentingAgents*, const Event&, DOMWindow*, Node*, const EventPath&, Document*);
+InspectorInstrumentationCookie willDispatchEventImpl(InstrumentingAgents*, Document*, const Event&, DOMWindow*, Node*, const EventPath&);
 void didDispatchEventImpl(const InspectorInstrumentationCookie&);
 InspectorInstrumentationCookie willHandleEventImpl(InstrumentingAgents*, Event*);
 void didHandleEventImpl(const InspectorInstrumentationCookie&);
 InspectorInstrumentationCookie willDispatchEventOnWindowImpl(InstrumentingAgents*, const Event&, DOMWindow*);
 void didDispatchEventOnWindowImpl(const InspectorInstrumentationCookie&);
-InspectorInstrumentationCookie willEvaluateScriptImpl(InstrumentingAgents*, const String& url, int lineNumber, Frame*);
+InspectorInstrumentationCookie willEvaluateScriptImpl(InstrumentingAgents*, Frame*, const String& url, int lineNumber);
 void didEvaluateScriptImpl(const InspectorInstrumentationCookie&);
 void scriptsEnabledImpl(InstrumentingAgents*, bool isEnabled);
 void didCreateIsolatedContextImpl(InstrumentingAgents*, Frame*, ScriptState*, SecurityOrigin*);
-InspectorInstrumentationCookie willFireTimerImpl(InstrumentingAgents*, int timerId, ScriptExecutionContext*);
+InspectorInstrumentationCookie willFireTimerImpl(InstrumentingAgents*, ScriptExecutionContext*, int timerId);
 void didFireTimerImpl(const InspectorInstrumentationCookie&);
 void didInvalidateLayoutImpl(InstrumentingAgents*, Frame*);
 InspectorInstrumentationCookie willLayoutImpl(InstrumentingAgents*, Frame*);
 void didLayoutImpl(const InspectorInstrumentationCookie&, RenderObject*);
 void didScrollImpl(InstrumentingAgents*);
-InspectorInstrumentationCookie willDispatchXHRLoadEventImpl(InstrumentingAgents*, XMLHttpRequest*, ScriptExecutionContext*);
+InspectorInstrumentationCookie willDispatchXHRLoadEventImpl(InstrumentingAgents*, ScriptExecutionContext*, XMLHttpRequest*);
 void didDispatchXHRLoadEventImpl(const InspectorInstrumentationCookie&);
 void willScrollLayerImpl(InstrumentingAgents*, Frame*);
 void didScrollLayerImpl(InstrumentingAgents*);
 void willPaintImpl(InstrumentingAgents*, RenderObject*);
 void didPaintImpl(InstrumentingAgents*, RenderObject*, GraphicsContext*, const LayoutRect&);
-InspectorInstrumentationCookie willRecalculateStyleImpl(InstrumentingAgents*, Frame*);
+InspectorInstrumentationCookie willRecalculateStyleImpl(InstrumentingAgents*, Document*);
 void didRecalculateStyleImpl(const InspectorInstrumentationCookie&);
 void didRecalculateStyleForElementImpl(InstrumentingAgents*);
 void didScheduleStyleRecalculationImpl(InstrumentingAgents*, Document*);
@@ -95,10 +95,13 @@ void willSendRequestImpl(InstrumentingAgents*, unsigned long identifier, Documen
 void continueAfterPingLoaderImpl(InstrumentingAgents*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse&);
 void markResourceAsCachedImpl(InstrumentingAgents*, unsigned long identifier);
 void didLoadResourceFromMemoryCacheImpl(InstrumentingAgents*, DocumentLoader*, CachedResource*);
+InspectorInstrumentationCookie willReceiveResourceDataImpl(InstrumentingAgents*, Frame*, unsigned long identifier, int length);
 void didReceiveResourceDataImpl(const InspectorInstrumentationCookie&);
-InspectorInstrumentationCookie willReceiveResourceResponseImpl(InstrumentingAgents*, unsigned long identifier, const ResourceResponse&, Frame*);
+InspectorInstrumentationCookie willReceiveResourceResponseImpl(InstrumentingAgents*, Frame*, unsigned long identifier, const ResourceResponse&);
 void didReceiveResourceResponseImpl(const InspectorInstrumentationCookie&, unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
 void didReceiveDataImpl(InstrumentingAgents*, unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
+void didFinishLoadingImpl(InstrumentingAgents*, DocumentLoader*, unsigned long identifier, double finishTime);
+void didFailLoadingImpl(InstrumentingAgents*, DocumentLoader*, unsigned long identifier, const ResourceError&);
 void documentThreadableLoaderStartedLoadingForClientImpl(InstrumentingAgents*, unsigned long identifier, ThreadableLoaderClient*);
 void willLoadXHRImpl(InstrumentingAgents*, ThreadableLoaderClient*, const String&, const KURL&, bool, PassRefPtr<FormData>, const HTTPHeaderMap&, bool);
 void didFailXHRLoadingImpl(InstrumentingAgents*, ThreadableLoaderClient*);
@@ -112,7 +115,7 @@ void didReceiveScriptResponseImpl(InstrumentingAgents*, unsigned long identifier
 void domContentLoadedEventFiredImpl(InstrumentingAgents*, Frame*);
 void loadEventFiredImpl(InstrumentingAgents*, Frame*);
 void frameDetachedFromParentImpl(InstrumentingAgents*, Frame*);
-void didCommitLoadImpl(InstrumentingAgents*, Page*, DocumentLoader*);
+void didCommitLoadImpl(InstrumentingAgents*, Frame*, DocumentLoader*);
 void frameDocumentUpdatedImpl(InstrumentingAgents*, Frame*);
 void loaderDetachedFromFrameImpl(InstrumentingAgents*, DocumentLoader*);
 void frameStartedLoadingImpl(InstrumentingAgents*, Frame*);
@@ -121,18 +124,18 @@ void frameScheduledNavigationImpl(InstrumentingAgents*, Frame*, double delay);
 void frameClearedScheduledNavigationImpl(InstrumentingAgents*, Frame*);
 InspectorInstrumentationCookie willRunJavaScriptDialogImpl(InstrumentingAgents*, const String& message);
 void didRunJavaScriptDialogImpl(const InspectorInstrumentationCookie&);
-InspectorInstrumentationCookie willWriteHTMLImpl(InstrumentingAgents*, unsigned startLine, Frame*);
+InspectorInstrumentationCookie willWriteHTMLImpl(InstrumentingAgents*, Document*, unsigned startLine);
 void didWriteHTMLImpl(const InspectorInstrumentationCookie&, unsigned endLine);
-void didRequestAnimationFrameImpl(InstrumentingAgents*, int callbackId, Frame*);
-void didCancelAnimationFrameImpl(InstrumentingAgents*, int callbackId, Frame*);
-InspectorInstrumentationCookie willFireAnimationFrameImpl(InstrumentingAgents*, int callbackId, Frame*);
+void didRequestAnimationFrameImpl(InstrumentingAgents*, Document*, int callbackId);
+void didCancelAnimationFrameImpl(InstrumentingAgents*, Document*, int callbackId);
+InspectorInstrumentationCookie willFireAnimationFrameImpl(InstrumentingAgents*, Document*, int callbackId);
 void didFireAnimationFrameImpl(const InspectorInstrumentationCookie&);
 void didStartWorkerContextImpl(InstrumentingAgents*, WorkerContextProxy*, const KURL&);
 void workerContextTerminatedImpl(InstrumentingAgents*, WorkerContextProxy*);
-void didCreateWebSocketImpl(InstrumentingAgents*, unsigned long identifier, const KURL& requestURL, const KURL& documentURL, const String& protocol, Document*);
-void willSendWebSocketHandshakeRequestImpl(InstrumentingAgents*, unsigned long identifier, const WebSocketHandshakeRequest&, Document*);
-void didReceiveWebSocketHandshakeResponseImpl(InstrumentingAgents*, unsigned long identifier, const WebSocketHandshakeResponse&, Document*);
-void didCloseWebSocketImpl(InstrumentingAgents*, unsigned long identifier, Document*);
+void didCreateWebSocketImpl(InstrumentingAgents*, Document*, unsigned long identifier, const KURL& requestURL, const KURL& documentURL, const String& protocol);
+void willSendWebSocketHandshakeRequestImpl(InstrumentingAgents*, Document*, unsigned long identifier, const WebSocketHandshakeRequest&);
+void didReceiveWebSocketHandshakeResponseImpl(InstrumentingAgents*, Document*, unsigned long identifier, const WebSocketHandshakeResponse&);
+void didCloseWebSocketImpl(InstrumentingAgents*, Document*, unsigned long identifier);
 void didReceiveWebSocketFrameImpl(InstrumentingAgents*, unsigned long identifier, const WebSocketFrame&);
 void didSendWebSocketFrameImpl(InstrumentingAgents*, unsigned long identifier, const WebSocketFrame&);
 void didReceiveWebSocketFrameErrorImpl(InstrumentingAgents*, unsigned long identifier, const String&);
@@ -255,28 +258,28 @@ inline void didScheduleResourceRequest(Document* document, const String& url)
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
-        didScheduleResourceRequestImpl(instrumentingAgents, url, document->frame());
+        didScheduleResourceRequestImpl(instrumentingAgents, document, url);
 }
 
 inline void didInstallTimer(ScriptExecutionContext* context, int timerId, int timeout, bool singleShot)
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
-        didInstallTimerImpl(instrumentingAgents, timerId, timeout, singleShot, context);
+        didInstallTimerImpl(instrumentingAgents, context, timerId, timeout, singleShot);
 }
 
 inline void didRemoveTimer(ScriptExecutionContext* context, int timerId)
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
-        didRemoveTimerImpl(instrumentingAgents, timerId, context);
+        didRemoveTimerImpl(instrumentingAgents, context, timerId);
 }
 
 inline InspectorInstrumentationCookie willCallFunction(ScriptExecutionContext* context, const String& scriptName, int scriptLine)
 {
     FAST_RETURN_IF_NO_FRONTENDS(InspectorInstrumentationCookie());
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
-        return willCallFunctionImpl(instrumentingAgents, scriptName, scriptLine, context);
+        return willCallFunctionImpl(instrumentingAgents, context, scriptName, scriptLine);
     return InspectorInstrumentationCookie();
 }
 
@@ -291,7 +294,7 @@ inline InspectorInstrumentationCookie willDispatchXHRReadyStateChangeEvent(Scrip
 {
     FAST_RETURN_IF_NO_FRONTENDS(InspectorInstrumentationCookie());
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
-        return willDispatchXHRReadyStateChangeEventImpl(instrumentingAgents, request, context);
+        return willDispatchXHRReadyStateChangeEventImpl(instrumentingAgents, context, request);
     return InspectorInstrumentationCookie();
 }
 
@@ -306,7 +309,7 @@ inline InspectorInstrumentationCookie willDispatchEvent(Document* document, cons
 {
     FAST_RETURN_IF_NO_FRONTENDS(InspectorInstrumentationCookie());
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
-        return willDispatchEventImpl(instrumentingAgents, event, window, node, eventPath, document);
+        return willDispatchEventImpl(instrumentingAgents, document, event, window, node, eventPath);
     return InspectorInstrumentationCookie();
 }
 
@@ -351,7 +354,7 @@ inline InspectorInstrumentationCookie willEvaluateScript(Frame* frame, const Str
 {
     FAST_RETURN_IF_NO_FRONTENDS(InspectorInstrumentationCookie());
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForFrame(frame))
-        return willEvaluateScriptImpl(instrumentingAgents, url, lineNumber, frame);
+        return willEvaluateScriptImpl(instrumentingAgents, frame, url, lineNumber);
     return InspectorInstrumentationCookie();
 }
 
@@ -380,7 +383,7 @@ inline InspectorInstrumentationCookie willFireTimer(ScriptExecutionContext* cont
 {
     FAST_RETURN_IF_NO_FRONTENDS(InspectorInstrumentationCookie());
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
-        return willFireTimerImpl(instrumentingAgents, timerId, context);
+        return willFireTimerImpl(instrumentingAgents, context, timerId);
     return InspectorInstrumentationCookie();
 }
 
@@ -424,7 +427,7 @@ inline InspectorInstrumentationCookie willDispatchXHRLoadEvent(ScriptExecutionCo
 {
     FAST_RETURN_IF_NO_FRONTENDS(InspectorInstrumentationCookie());
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
-        return willDispatchXHRLoadEventImpl(instrumentingAgents, request, context);
+        return willDispatchXHRLoadEventImpl(instrumentingAgents, context, request);
     return InspectorInstrumentationCookie();
 }
 
@@ -467,7 +470,7 @@ inline InspectorInstrumentationCookie willRecalculateStyle(Document* document)
 {
     FAST_RETURN_IF_NO_FRONTENDS(InspectorInstrumentationCookie());
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
-        return willRecalculateStyleImpl(instrumentingAgents, document->frame());
+        return willRecalculateStyleImpl(instrumentingAgents, document);
     return InspectorInstrumentationCookie();
 }
 
@@ -573,10 +576,18 @@ inline void didReceiveResourceData(const InspectorInstrumentationCookie& cookie)
         didReceiveResourceDataImpl(cookie);
 }
 
+inline InspectorInstrumentationCookie willReceiveResourceData(Frame* frame, unsigned long identifier, int length)
+{
+    FAST_RETURN_IF_NO_FRONTENDS(InspectorInstrumentationCookie());
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForFrame(frame))
+        return willReceiveResourceDataImpl(instrumentingAgents, frame, identifier, length);
+    return InspectorInstrumentationCookie();
+}
+
 inline InspectorInstrumentationCookie willReceiveResourceResponse(Frame* frame, unsigned long identifier, const ResourceResponse& response)
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForFrame(frame))
-        return willReceiveResourceResponseImpl(instrumentingAgents, identifier, response, frame);
+        return willReceiveResourceResponseImpl(instrumentingAgents, frame, identifier, response);
     return InspectorInstrumentationCookie();
 }
 
@@ -591,6 +602,18 @@ inline void didReceiveData(Frame* frame, unsigned long identifier, const char* d
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForFrame(frame))
         didReceiveDataImpl(instrumentingAgents, identifier, data, dataLength, encodedDataLength);
+}
+
+inline void didFinishLoading(Frame* frame, DocumentLoader* loader, unsigned long identifier, double finishTime)
+{
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForFrame(frame))
+        didFinishLoadingImpl(instrumentingAgents, loader, identifier, finishTime);
+}
+
+inline void didFailLoading(Frame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceError& error)
+{
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForFrame(frame))
+        didFailLoadingImpl(instrumentingAgents, loader, identifier, error);
 }
 
 inline void documentThreadableLoaderStartedLoadingForClient(ScriptExecutionContext* context, unsigned long identifier, ThreadableLoaderClient* client)
@@ -674,7 +697,7 @@ inline void frameDetachedFromParent(Frame* frame)
 inline void didCommitLoad(Frame* frame, DocumentLoader* loader)
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForFrame(frame))
-        didCommitLoadImpl(instrumentingAgents, frame->page(), loader);
+        didCommitLoadImpl(instrumentingAgents, frame, loader);
 }
 
 inline void frameDocumentUpdated(Frame* frame)
@@ -733,7 +756,7 @@ inline InspectorInstrumentationCookie willWriteHTML(Document* document, unsigned
 {
     FAST_RETURN_IF_NO_FRONTENDS(InspectorInstrumentationCookie());
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
-        return willWriteHTMLImpl(instrumentingAgents, startLine, document->frame());
+        return willWriteHTMLImpl(instrumentingAgents, document, startLine);
     return InspectorInstrumentationCookie();
 }
 
@@ -747,19 +770,19 @@ inline void didWriteHTML(const InspectorInstrumentationCookie& cookie, unsigned 
 inline void didRequestAnimationFrame(Document* document, int callbackId)
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
-        didRequestAnimationFrameImpl(instrumentingAgents, callbackId, document->frame());
+        didRequestAnimationFrameImpl(instrumentingAgents, document, callbackId);
 }
 
 inline void didCancelAnimationFrame(Document* document, int callbackId)
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
-        didCancelAnimationFrameImpl(instrumentingAgents, callbackId, document->frame());
+        didCancelAnimationFrameImpl(instrumentingAgents, document, callbackId);
 }
 
 inline InspectorInstrumentationCookie willFireAnimationFrame(Document* document, int callbackId)
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
-        return willFireAnimationFrameImpl(instrumentingAgents, callbackId, document->frame());
+        return willFireAnimationFrameImpl(instrumentingAgents, document, callbackId);
     return InspectorInstrumentationCookie();
 }
 
@@ -785,25 +808,25 @@ inline void workerContextTerminated(ScriptExecutionContext* context, WorkerConte
 inline void didCreateWebSocket(Document* document, unsigned long identifier, const KURL& requestURL, const KURL& documentURL, const String& protocol)
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
-        didCreateWebSocketImpl(instrumentingAgents, identifier, requestURL, documentURL, protocol, document);
+        didCreateWebSocketImpl(instrumentingAgents, document, identifier, requestURL, documentURL, protocol);
 }
 
 inline void willSendWebSocketHandshakeRequest(Document* document, unsigned long identifier, const WebSocketHandshakeRequest& request)
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
-        willSendWebSocketHandshakeRequestImpl(instrumentingAgents, identifier, request, document);
+        willSendWebSocketHandshakeRequestImpl(instrumentingAgents, document, identifier, request);
 }
 
 inline void didReceiveWebSocketHandshakeResponse(Document* document, unsigned long identifier, const WebSocketHandshakeResponse& response)
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
-        didReceiveWebSocketHandshakeResponseImpl(instrumentingAgents, identifier, response, document);
+        didReceiveWebSocketHandshakeResponseImpl(instrumentingAgents, document, identifier, response);
 }
 
 inline void didCloseWebSocket(Document* document, unsigned long identifier)
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
-        didCloseWebSocketImpl(instrumentingAgents, identifier, document);
+        didCloseWebSocketImpl(instrumentingAgents, document, identifier);
 }
 
 inline void didReceiveWebSocketFrame(Document* document, unsigned long identifier, const WebSocketFrame& frame)

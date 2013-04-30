@@ -92,21 +92,21 @@ public:
 
     ~InspectorResourceAgent();
 
-    void willSendRequest(unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse);
+    void willSendResourceRequest(unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse);
     void markResourceAsCached(unsigned long identifier);
-    void didReceiveResponse(unsigned long identifier, DocumentLoader* laoder, const ResourceResponse&, ResourceLoader*);
+    void didReceiveResourceResponse(unsigned long identifier, DocumentLoader* laoder, const ResourceResponse&, ResourceLoader*);
     void didReceiveData(unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
     void didFinishLoading(unsigned long identifier, DocumentLoader*, double finishTime);
     void didFailLoading(unsigned long identifier, DocumentLoader*, const ResourceError&);
     void didLoadResourceFromMemoryCache(DocumentLoader*, CachedResource*);
     void mainFrameNavigated(DocumentLoader*);
-    void setInitialScriptContent(unsigned long identifier, const String& sourceString);
+    void scriptImported(unsigned long identifier, const String& sourceString);
     void didReceiveScriptResponse(unsigned long identifier);
 
     void documentThreadableLoaderStartedLoadingForClient(unsigned long identifier, ThreadableLoaderClient*);
     void willLoadXHR(ThreadableLoaderClient*, const String& method, const KURL&, bool async, PassRefPtr<FormData> body, const HTTPHeaderMap& headers, bool includeCrendentials);
     void didFailXHRLoading(ThreadableLoaderClient*);
-    void didFinishXHRLoading(ThreadableLoaderClient*, unsigned long identifier, const String& sourceString);
+    void didFinishXHRLoading(ThreadableLoaderClient*, unsigned long identifier, const String& sourceString, const String&, const String&, unsigned);
     void didReceiveXHRResponse(unsigned long identifier);
     void willLoadXHRSynchronously();
     void didLoadXHRSynchronously();
@@ -116,16 +116,16 @@ public:
     void applyUserAgentOverride(String* userAgent);
 
     // FIXME: InspectorResourceAgent should now be aware of style recalculation.
-    void willRecalculateStyle();
+    void willRecalculateStyle(Document*);
     void didRecalculateStyle();
     void didScheduleStyleRecalculation(Document*);
 
     PassRefPtr<TypeBuilder::Network::Initiator> buildInitiatorObject(Document*);
 
-    void didCreateWebSocket(unsigned long identifier, const KURL& requestURL);
-    void willSendWebSocketHandshakeRequest(unsigned long identifier, const WebSocketHandshakeRequest&);
-    void didReceiveWebSocketHandshakeResponse(unsigned long identifier, const WebSocketHandshakeResponse&);
-    void didCloseWebSocket(unsigned long identifier);
+    void didCreateWebSocket(Document*, unsigned long identifier, const KURL& requestURL, const String&);
+    void willSendWebSocketHandshakeRequest(Document*, unsigned long identifier, const WebSocketHandshakeRequest&);
+    void didReceiveWebSocketHandshakeResponse(Document*, unsigned long identifier, const WebSocketHandshakeResponse&);
+    void didCloseWebSocket(Document*, unsigned long identifier);
     void didReceiveWebSocketFrame(unsigned long identifier, const WebSocketFrame&);
     void didSendWebSocketFrame(unsigned long identifier, const WebSocketFrame&);
     void didReceiveWebSocketFrameError(unsigned long identifier, const String&);

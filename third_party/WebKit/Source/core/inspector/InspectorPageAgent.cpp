@@ -835,7 +835,7 @@ void InspectorPageAgent::frameNavigated(DocumentLoader* loader)
     m_frontend->frameNavigated(buildObjectForFrame(loader->frame()));
 }
 
-void InspectorPageAgent::frameDetached(Frame* frame)
+void InspectorPageAgent::frameDetachedFromParent(Frame* frame)
 {
     HashMap<Frame*, String>::iterator iterator = m_frameToIdentifier.find(frame);
     if (iterator != m_frameToIdentifier.end()) {
@@ -964,7 +964,7 @@ void InspectorPageAgent::applyScreenHeightOverride(long* height)
         *height = heightOverride;
 }
 
-void InspectorPageAgent::didPaint(GraphicsContext* context, const LayoutRect& rect)
+void InspectorPageAgent::didPaint(RenderObject*, GraphicsContext* context, const LayoutRect& rect)
 {
     if (!m_enabled || m_client->overridesShowPaintRects() || !m_state->getBoolean(PageAgentState::pageAgentShowPaintRects))
         return;
@@ -981,7 +981,7 @@ void InspectorPageAgent::didPaint(GraphicsContext* context, const LayoutRect& re
     m_overlay->drawOutline(context, inflatedRect, colors[colorSelector++ % WTF_ARRAY_LENGTH(colors)]);
 }
 
-void InspectorPageAgent::didLayout()
+void InspectorPageAgent::didLayout(RenderObject*)
 {
     bool isFirstLayout = m_isFirstLayoutAfterOnLoad;
     if (isFirstLayout)

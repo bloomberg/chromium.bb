@@ -66,7 +66,7 @@ public:
     virtual void restore();
 
     void frameNavigated(Frame*);
-    void frameDetached(Frame*);
+    void frameDetachedFromParent(Frame*);
     void didBeginFrame();
 
     // Called from InspectorCanvasInstrumentation.
