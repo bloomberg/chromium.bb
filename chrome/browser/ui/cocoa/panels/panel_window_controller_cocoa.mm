@@ -929,6 +929,14 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
   [[self window] setHasShadow:show];
 }
 
+- (void)miniaturize {
+  [[self window] miniaturize:nil];
+}
+
+- (BOOL)isMiniaturized {
+  return [[self window] isMiniaturized];
+}
+
 // We have custom implementation of these because our titlebar height is custom
 // and does not match the standard one.
 - (NSRect)frameRectForContentRect:(NSRect)contentRect {
