@@ -161,7 +161,7 @@ class DriveFileSystemTest : public testing::Test {
   }
 
   void SetUpResourceMetadataAndFileSystem() {
-    resource_metadata_.reset(new ResourceMetadata(
+    resource_metadata_.reset(new internal::ResourceMetadata(
         cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META),
         blocking_task_runner_));
 
@@ -314,8 +314,8 @@ class DriveFileSystemTest : public testing::Test {
 
     const std::string root_resource_id =
         fake_drive_service_->GetRootResourceId();
-    scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
-        resource_metadata(new ResourceMetadata(
+    scoped_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
+        resource_metadata(new internal::ResourceMetadata(
             cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META),
             blocking_task_runner_));
 
@@ -451,7 +451,7 @@ class DriveFileSystemTest : public testing::Test {
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<DriveWebAppsRegistry> drive_webapps_registry_;
-  scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
+  scoped_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
   scoped_ptr<StrictMock<MockCacheObserver> > mock_cache_observer_;

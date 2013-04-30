@@ -25,6 +25,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
+namespace internal {
 namespace {
 
 const char kTestRootResourceId[] = "test_root";
@@ -1200,4 +1201,5 @@ TEST_F(ResourceMetadataTest, IterateEntries) {
   EXPECT_TRUE(completed);
 }
 
+}  // namespace internal
 }  // namespace drive

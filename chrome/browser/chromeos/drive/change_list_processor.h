@@ -25,7 +25,10 @@ class ResourceList;
 namespace drive {
 
 class DriveEntryProto;
+
+namespace internal {
 class ResourceMetadata;
+}  // namespace internal
 
 // Class to represent a change list.
 class ChangeList {
@@ -56,7 +59,7 @@ class ChangeListProcessor {
   // Class used to record UMA stats with FeedToEntryProtoMap().
   class ChangeListToEntryProtoMapUMAStats;
 
-  explicit ChangeListProcessor(ResourceMetadata* resource_metadata);
+  explicit ChangeListProcessor(internal::ResourceMetadata* resource_metadata);
   ~ChangeListProcessor();
 
   // Applies the documents feeds to the file system using |resource_metadata_|.
@@ -187,7 +190,7 @@ class ChangeListProcessor {
   // Reset the state of this object.
   void Clear();
 
-  ResourceMetadata* resource_metadata_;  // Not owned.
+  internal::ResourceMetadata* resource_metadata_;  // Not owned.
 
   DriveEntryProtoMap entry_proto_map_;
   std::set<base::FilePath> changed_dirs_;

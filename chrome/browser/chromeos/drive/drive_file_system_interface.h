@@ -22,7 +22,6 @@ class ResourceEntry;
 namespace drive {
 
 class FileSystemObserver;
-class ResourceMetadata;
 
 typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 

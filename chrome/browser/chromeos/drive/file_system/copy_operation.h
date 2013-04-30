@@ -40,7 +40,7 @@ class CopyOperation {
  public:
   CopyOperation(JobScheduler* job_scheduler,
                 DriveFileSystemInterface* drive_file_system,
-                ResourceMetadata* metadata,
+                internal::ResourceMetadata* metadata,
                 scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
                 OperationObserver* observer);
   virtual ~CopyOperation();
@@ -199,7 +199,7 @@ class CopyOperation {
 
   JobScheduler* job_scheduler_;
   DriveFileSystemInterface* drive_file_system_;
-  ResourceMetadata* metadata_;
+  internal::ResourceMetadata* metadata_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;
 

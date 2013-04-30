@@ -82,7 +82,7 @@ class ChangeListProcessor::ChangeListToEntryProtoMapUMAStats {
 };
 
 ChangeListProcessor::ChangeListProcessor(
-    ResourceMetadata* resource_metadata)
+    internal::ResourceMetadata* resource_metadata)
   : resource_metadata_(resource_metadata),
     largest_changestamp_(0),
     ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {

@@ -40,7 +40,7 @@ typedef base::Callback<void(ScopedVector<ChangeList> change_lists,
 // Documents List API) or Google Drive API and load the cached metadata.
 class ChangeListLoader {
  public:
-  ChangeListLoader(ResourceMetadata* resource_metadata,
+  ChangeListLoader(internal::ResourceMetadata* resource_metadata,
                    JobScheduler* scheduler,
                    DriveWebAppsRegistry* webapps_registry);
   ~ChangeListLoader();
@@ -268,7 +268,7 @@ class ChangeListLoader {
                                             base::Time start_time,
                                             const base::Closure& callback);
 
-  ResourceMetadata* resource_metadata_;  // Not owned.
+  internal::ResourceMetadata* resource_metadata_;  // Not owned.
   JobScheduler* scheduler_;  // Not owned.
   DriveWebAppsRegistry* webapps_registry_;  // Not owned.
   ObserverList<ChangeListLoaderObserver> observers_;

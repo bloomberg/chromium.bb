@@ -134,7 +134,7 @@ EntryInfoPairResult::EntryInfoPairResult() {
 EntryInfoPairResult::~EntryInfoPairResult() {
 }
 
-// ResourceMetadata class implementation.
+namespace internal {
 
 ResourceMetadata::ResourceMetadata(
     const base::FilePath& data_directory_path,
@@ -951,4 +951,5 @@ ResourceMetadata::DirectoryChildrenToProtoVector(
   return entries.Pass();
 }
 
+}  // namespace internal
 }  // namespace drive

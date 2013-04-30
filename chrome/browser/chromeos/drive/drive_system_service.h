@@ -37,9 +37,12 @@ class DriveWebAppsRegistry;
 class FileSystemProxy;
 class FileWriteHelper;
 class JobListInterface;
-class ResourceMetadata;
 class StaleCacheFilesRemover;
 class SyncClient;
+
+namespace internal {
+class ResourceMetadata;
+}  // namespace internal
 
 // Interface for classes that need to observe events from DriveSystemService.
 // All events are notified on UI thread.
@@ -156,7 +159,8 @@ class DriveSystemService
   scoped_ptr<google_apis::DriveServiceInterface> drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<DriveWebAppsRegistry> webapps_registry_;
-  scoped_ptr<ResourceMetadata, util::DestroyHelper> resource_metadata_;
+  scoped_ptr<internal::ResourceMetadata,
+             util::DestroyHelper> resource_metadata_;
   scoped_ptr<DriveFileSystemInterface> file_system_;
   scoped_ptr<FileWriteHelper> file_write_helper_;
   scoped_ptr<DownloadHandler> download_handler_;

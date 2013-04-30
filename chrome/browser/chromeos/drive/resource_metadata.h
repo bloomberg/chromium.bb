@@ -117,6 +117,8 @@ struct EntryInfoPairResult {
 typedef base::Callback<void(scoped_ptr<EntryInfoPairResult> pair_result)>
     GetEntryInfoPairCallback;
 
+namespace internal {
+
 // Storage for Drive Metadata.
 class ResourceMetadata {
  public:
@@ -355,6 +357,7 @@ class ResourceMetadata {
   DISALLOW_COPY_AND_ASSIGN(ResourceMetadata);
 };
 
+}  // namespace internal
 }  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_RESOURCE_METADATA_H_

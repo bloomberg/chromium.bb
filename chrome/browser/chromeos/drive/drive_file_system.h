@@ -41,7 +41,10 @@ class ChangeListLoader;
 class DriveWebAppsRegistry;
 class FileSystemObserver;
 class JobScheduler;
+
+namespace internal {
 class ResourceMetadata;
+}  // namespace internal
 
 // The production implementation of DriveFileSystemInterface.
 class DriveFileSystem : public DriveFileSystemInterface,
@@ -53,7 +56,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
                   google_apis::DriveServiceInterface* drive_service,
                   JobScheduler* scheduler,
                   DriveWebAppsRegistry* webapps_registry,
-                  ResourceMetadata* resource_metadata,
+                  internal::ResourceMetadata* resource_metadata,
                   base::SequencedTaskRunner* blocking_task_runner);
   virtual ~DriveFileSystem();
 
@@ -481,7 +484,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   google_apis::DriveServiceInterface* drive_service_;
   JobScheduler* scheduler_;
   DriveWebAppsRegistry* webapps_registry_;
-  ResourceMetadata* resource_metadata_;
+  internal::ResourceMetadata* resource_metadata_;
 
   // Time of the last update check.
   base::Time last_update_check_time_;

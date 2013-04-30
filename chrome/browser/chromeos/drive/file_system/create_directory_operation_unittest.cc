@@ -46,8 +46,8 @@ class CreateDirectoryOperationTest
         "chromeos/gdata/account_metadata.json");
     fake_drive_service_->LoadAppListForDriveApi("chromeos/drive/applist.json");
 
-    metadata_.reset(new ResourceMetadata(temp_dir_.path(),
-                                         blocking_task_runner_));
+    metadata_.reset(new internal::ResourceMetadata(temp_dir_.path(),
+                                                   blocking_task_runner_));
 
     FileError error = FILE_ERROR_FAILED;
     metadata_->Initialize(
@@ -101,7 +101,8 @@ class CreateDirectoryOperationTest
   base::ScopedTempDir temp_dir_;
 
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
-  scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests> metadata_;
+  scoped_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
+      metadata_;
   scoped_ptr<JobScheduler> scheduler_;
 
   scoped_ptr<CreateDirectoryOperation> operation_;

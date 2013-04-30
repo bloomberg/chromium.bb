@@ -34,7 +34,7 @@ class OperationObserver;
 class UpdateOperation {
  public:
   UpdateOperation(DriveCache* cache,
-                  ResourceMetadata* metadata,
+                  internal::ResourceMetadata* metadata,
                   JobScheduler* scheduler,
                   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
                   OperationObserver* observer);
@@ -95,7 +95,7 @@ class UpdateOperation {
                               scoped_ptr<DriveEntryProto> entry_proto);
 
   DriveCache* cache_;
-  ResourceMetadata* metadata_;
+  internal::ResourceMetadata* metadata_;
   JobScheduler* scheduler_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;

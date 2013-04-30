@@ -212,7 +212,7 @@ DriveFileSystem::DriveFileSystem(
     google_apis::DriveServiceInterface* drive_service,
     JobScheduler* scheduler,
     DriveWebAppsRegistry* webapps_registry,
-    ResourceMetadata* resource_metadata,
+    internal::ResourceMetadata* resource_metadata,
     base::SequencedTaskRunner* blocking_task_runner)
     : profile_(profile),
       cache_(cache),

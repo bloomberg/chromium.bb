@@ -39,7 +39,7 @@ class DriveOperations {
   void Init(JobScheduler* job_scheduler,
             DriveFileSystemInterface* drive_file_system,
             DriveCache* cache,
-            ResourceMetadata* metadata,
+            internal::ResourceMetadata* metadata,
             scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
             OperationObserver* observer);
 

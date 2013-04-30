@@ -24,9 +24,10 @@ using content::BrowserThread;
 
 namespace drive {
 
-ChangeListLoader::ChangeListLoader(ResourceMetadata* resource_metadata,
-                                   JobScheduler* scheduler,
-                                   DriveWebAppsRegistry* webapps_registry)
+ChangeListLoader::ChangeListLoader(
+    internal::ResourceMetadata* resource_metadata,
+    JobScheduler* scheduler,
+    DriveWebAppsRegistry* webapps_registry)
     : resource_metadata_(resource_metadata),
       scheduler_(scheduler),
       webapps_registry_(webapps_registry),

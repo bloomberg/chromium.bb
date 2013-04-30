@@ -24,7 +24,10 @@ namespace drive {
 
 class DriveEntryProto;
 class JobScheduler;
+
+namespace internal {
 class ResourceMetadata;
+}  // namespace internal
 
 namespace file_system {
 
@@ -36,7 +39,7 @@ class OperationObserver;
 class CreateDirectoryOperation {
  public:
   CreateDirectoryOperation(JobScheduler* job_scheduler,
-                           ResourceMetadata* metadata,
+                           internal::ResourceMetadata* metadata,
                            OperationObserver* observer);
   ~CreateDirectoryOperation();
 
@@ -142,7 +145,7 @@ class CreateDirectoryOperation {
       scoped_ptr<DriveEntryProto> entry_proto);
 
   JobScheduler* job_scheduler_;
-  ResourceMetadata* metadata_;
+  internal::ResourceMetadata* metadata_;
   OperationObserver* observer_;
 
   // WeakPtrFactory bound to the UI thread.

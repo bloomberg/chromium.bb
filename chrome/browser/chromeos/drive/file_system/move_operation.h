@@ -22,7 +22,10 @@ namespace drive {
 class DriveCache;
 class DriveEntryProto;
 class JobScheduler;
+
+namespace internal {
 class ResourceMetadata;
+}  // namespace internal
 
 namespace file_system {
 
@@ -34,7 +37,7 @@ class OperationObserver;
 class MoveOperation {
  public:
   MoveOperation(JobScheduler* job_scheduler,
-                ResourceMetadata* metadata,
+                internal::ResourceMetadata* metadata,
                 OperationObserver* observer);
   virtual ~MoveOperation();
 
@@ -119,7 +122,7 @@ class MoveOperation {
                                     google_apis::GDataErrorCode status);
 
   JobScheduler* job_scheduler_;
-  ResourceMetadata* metadata_;
+  internal::ResourceMetadata* metadata_;
   OperationObserver* observer_;
 
   // WeakPtrFactory bound to the UI thread.

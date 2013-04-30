@@ -38,7 +38,7 @@ class RemoveOperation {
  public:
   RemoveOperation(JobScheduler* job_scheduler,
                   DriveCache* cache,
-                  ResourceMetadata* metadata,
+                  internal::ResourceMetadata* metadata,
                   OperationObserver* observer);
   virtual ~RemoveOperation();
 
@@ -74,7 +74,7 @@ class RemoveOperation {
 
   JobScheduler* job_scheduler_;
   DriveCache* cache_;
-  ResourceMetadata* metadata_;
+  internal::ResourceMetadata* metadata_;
   OperationObserver* observer_;
 
   // WeakPtrFactory bound to the UI thread.
