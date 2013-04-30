@@ -131,22 +131,7 @@ void AutofillDialogViewAndroid::FillSection(
 
 void AutofillDialogViewAndroid::GetUserInput(DialogSection section,
                                              DetailOutputMap* output) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobjectArray> fields =
-      Java_AutofillDialogGlue_getSection(env, java_object_.obj(), section);
-  if (fields.is_null())
-    return;
-
-  const int arrayLength = env->GetArrayLength(fields.obj());
-  for (int i = 0; i < arrayLength; ++i) {
-    ScopedJavaLocalRef<jobject> field(
-        env, env->GetObjectArrayElement(fields.obj(), i));
-    DetailInput* input = reinterpret_cast<DetailInput*>(
-        Java_AutofillDialogGlue_getFieldNativePointer(env, field.obj()));
-    string16 value = base::android::ConvertJavaStringToUTF16(
-        env, Java_AutofillDialogGlue_getFieldValue(env, field.obj()).obj());
-    output->insert(std::make_pair(input, value));
-  }
+  GetUserInputImpl(section, output);
 }
 
 string16 AutofillDialogViewAndroid::GetCvc() {
@@ -219,7 +204,8 @@ void AutofillDialogViewAndroid::ItemSelected(JNIEnv* env, jobject obj,
                                              jint section, jint index) {
   ui::MenuModel* menuModel =
       controller_->MenuModelForSection(static_cast<DialogSection>(section));
-  menuModel->ActivatedAt(index);
+  if (menuModel)
+    menuModel->ActivatedAt(index);
 }
 
 ScopedJavaLocalRef<jobject> AutofillDialogViewAndroid::GetIconForField(
@@ -540,6 +526,27 @@ void AutofillDialogViewAndroid::UpdateOrFillSectionToJava(
                                         field_type_to_always_clobber);
 }
 
+void AutofillDialogViewAndroid::GetUserInputImpl(
+    DialogSection section,
+    DetailOutputMap* output) const {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobjectArray> fields =
+      Java_AutofillDialogGlue_getSection(env, java_object_.obj(), section);
+  if (fields.is_null())
+    return;
+
+  const int arrayLength = env->GetArrayLength(fields.obj());
+  for (int i = 0; i < arrayLength; ++i) {
+    ScopedJavaLocalRef<jobject> field(
+        env, env->GetObjectArrayElement(fields.obj(), i));
+    DetailInput* input = reinterpret_cast<DetailInput*>(
+        Java_AutofillDialogGlue_getFieldNativePointer(env, field.obj()));
+    string16 value = base::android::ConvertJavaStringToUTF16(
+        env, Java_AutofillDialogGlue_getFieldValue(env, field.obj()).obj());
+    output->insert(std::make_pair(input, value));
+  }
+}
+
 // Whether the item at the |index| in the |section| menu model is editable.
 // TODO(aruslan): Remove/fix this once http://crbug.com/224162 is closed.
 bool AutofillDialogViewAndroid::IsMenuItemEditable(DialogSection section,
@@ -548,9 +555,18 @@ bool AutofillDialogViewAndroid::IsMenuItemEditable(DialogSection section,
   if (section == SECTION_SHIPPING && index == 0)
     return false;
 
-  // Any other items except the last ("Manage...") are editable.
+  // Any items except the two last ("Add..." and "Manage...") are editable.
+  // An item is editable if
+  // - it's not a "Manage..." (the last one), and
+  // - it's a normal item, or it's an "Add..." and it has some data.
   ui::MenuModel* menuModel = controller_->MenuModelForSection(section);
-  return index < menuModel->GetItemCount() - 1;
+  string16 label, sublabel;
+  gfx::Image icon;
+
+  return menuModel &&
+         index != menuModel->GetItemCount() - 1 &&
+         (index < menuModel->GetItemCount() - 2 ||
+             CollapseUserDataIntoMenuItem(section, &label, &sublabel, &icon));
 }
 
 // TODO(aruslan): Remove/fix this once http://crbug.com/230685 is closed.
@@ -636,15 +652,14 @@ bool AutofillDialogViewAndroid::CollapseUserDataIntoMenuItem(
     DialogSection section,
     string16* label_to_set,
     string16* sublabel_to_set,
-    gfx::Image* icon_to_set) {
-
+    gfx::Image* icon_to_set) const {
   const SuggestionState& suggestion_state =
       controller_->SuggestionStateForSection(section);
   if (!suggestion_state.text.empty())
     return false;
 
   DetailOutputMap inputs;
-  GetUserInput(section, &inputs);
+  GetUserInputImpl(section, &inputs);
 
   string16 label;
   string16 sublabel;

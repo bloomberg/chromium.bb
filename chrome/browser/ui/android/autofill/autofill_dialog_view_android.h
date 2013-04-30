@@ -105,6 +105,9 @@ class AutofillDialogViewAndroid : public AutofillDialogView {
                                  bool clobber_inputs,
                                  int field_type_to_always_clobber);
 
+  // Fills |output| with data the user manually input.
+  void GetUserInputImpl(DialogSection section, DetailOutputMap* output) const;
+
   // Whether the item at the |index| in the |section| menu model is editable.
   bool IsMenuItemEditable(DialogSection section, int index) const;
 
@@ -113,7 +116,7 @@ class AutofillDialogViewAndroid : public AutofillDialogView {
   bool CollapseUserDataIntoMenuItem(DialogSection section,
                                     string16* label,
                                     string16* sublabel,
-                                    gfx::Image* icon);
+                                    gfx::Image* icon) const;
 
   // The controller that drives this view. Weak pointer, always non-NULL.
   AutofillDialogController* const controller_;
