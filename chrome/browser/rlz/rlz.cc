@@ -581,6 +581,7 @@ bool RLZTracker::ScheduleClearRlzState() {
 void RLZTracker::CleanupRlz() {
   GetInstance()->rlz_cache_.clear();
   GetInstance()->registrar_.RemoveAll();
+  rlz_lib::SetURLRequestContext(NULL);
 }
 
 // static

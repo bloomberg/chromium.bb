@@ -201,9 +201,6 @@ class RLZTracker : public content::NotificationObserver {
   // sequentially in the blocking pool.
   base::SequencedWorkerPool::SequenceToken worker_pool_token_;
 
-  // URLRequestContextGetter used by RLZ library.
-  net::URLRequestContextGetter* url_request_context_;
-
   // Keeps track if the RLZ tracker has already performed its delayed
   // initialization.
   bool already_ran_;

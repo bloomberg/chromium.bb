@@ -265,6 +265,10 @@ bool FinancialPing::PingServer(const char* request, std::string* response) {
 
   return true;
 #else
+  // Browser shutdown will cause the context to be reset to NULL.
+  if (!g_context)
+    return false;
+
   // Run a blocking event loop to match the win inet implementation.
   scoped_ptr<base::MessageLoop> message_loop;
   // Ensure that we have a MessageLoop.
@@ -288,7 +292,6 @@ bool FinancialPing::PingServer(const char* request, std::string* response) {
 
   // Ensure rlz_lib::SetURLRequestContext() has been called before sending
   // pings.
-  CHECK(g_context);
   fetcher->SetRequestContext(g_context);
 
   const base::TimeDelta kTimeout = base::TimeDelta::FromMinutes(5);
