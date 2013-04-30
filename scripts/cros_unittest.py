@@ -21,14 +21,21 @@ class RunScriptTest(cros_test_lib.MockTempDirTestCase):
   """Test the main functionality."""
 
   def setUp(self):
-    self.StartPatcher(stats_unittest.StatsModuleMock())
+    self.stats_module_mock = stats_unittest.StatsModuleMock()
+    self.StartPatcher(self.stats_module_mock)
     self.PatchObject(cros, '_RunSubCommand', autospec=True)
 
-  def testStatsUpload(self):
+  def testStatsUpload(self, upload_count=1, return_value=0):
     """Test stats uploading."""
     return_value = cros.main(['chrome-sdk', '--board', 'lumpy'])
-    self.assertEquals(stats.StatsUploader._Upload.call_count, 1)
-    self.assertEquals(return_value, 0)
+    self.assertEquals(stats.StatsUploader._Upload.call_count, upload_count)
+    self.assertEquals(return_value, return_value)
+
+  def testStatsUploadError(self):
+    """We don't upload stats if the stats creation failed."""
+    self.stats_module_mock.stats_mock.init_exception = True
+    with cros_test_lib.LoggingCapturer():
+      self.testStatsUpload(upload_count=0)
 
 
 if __name__ == '__main__':

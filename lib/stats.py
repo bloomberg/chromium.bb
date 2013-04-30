@@ -47,23 +47,21 @@ class Stats(object):
     If unset, the |username| and |host|  attributes will be determined
     automatically.
     """
+    if kwargs.get('username') is None:
+      kwargs['username'] = git.GetProjectUserEmail(os.path.dirname(__file__))
+
+    if kwargs.get('host') is None:
+      kwargs['host'] = cros_build_lib.GetHostName(fully_qualified=True)
+
+    for attr in ('cmd_args', 'cmd_base', 'cmd_line'):
+      val = kwargs.get(attr)
+      if isinstance(val, (list, tuple,)):
+        kwargs[attr] = ' '.join(map(repr, val))
+
     for arg in self.__slots__:
       setattr(self, arg, kwargs.pop(arg, None))
     if kwargs:
       raise TypeError('Unknown options specified %r:' % kwargs)
-
-    # pylint: disable=E0203
-    if self.username is None:
-      self.username = git.GetProjectUserEmail(os.path.dirname(__file__))
-
-    # pylint: disable=E0203
-    if self.host is None:
-      self.host = cros_build_lib.GetHostName(fully_qualified=True)
-
-    for arg in ('cmd_args', 'cmd_base', 'cmd_line'):
-      val = getattr(self, arg)
-      if isinstance(val, (list, tuple,)):
-        setattr(self, arg, ' '.join(map(repr, val)))
 
   @property
   def data(self):
@@ -74,6 +72,23 @@ class Stats(object):
       if val is not None:
         data[arg] = val
     return data
+
+  @classmethod
+  def SafeInit(cls, **kwargs):
+    """Construct a Stats object, catching any exceptions.
+
+    See Stats.__init__() for argument list.
+
+    Returns:
+      A Stats() instance if things went smoothly, and None if exceptions were
+      caught in the process.
+    """
+    try:
+      inst = cls(**kwargs)
+    except Exception:
+      logging.error('Exception during stats upload.', exc_info=True)
+    else:
+      return inst
 
 
 class StatsUploader(object):

@@ -501,8 +501,9 @@ def main(argv):
     logging.getLogger().setLevel(logging.INFO)
 
   with stats.UploadContext() as queue:
-    cmd_stats = stats.Stats(cmd_line=argv, cmd_base='deploy_chrome')
-    queue.put([cmd_stats, stats.StatsUploader.URL, 1])
+    cmd_stats = stats.Stats.SafeInit(cmd_line=argv, cmd_base='deploy_chrome')
+    if cmd_stats:
+      queue.put([cmd_stats, stats.StatsUploader.URL, 1])
 
     with osutils.TempDir(set_global=True) as tempdir:
       staging_dir = options.staging_dir

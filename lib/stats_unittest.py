@@ -42,8 +42,15 @@ class StatsMock(partial_mock.PartialMock):
   TARGET = 'chromite.lib.stats.Stats'
   ATTRS = ('__init__',)
 
+  def __init__(self):
+    partial_mock.PartialMock.__init__(self)
+    self.init_exception = False
+
   def _target__init__(self, _inst, **kwargs):
     """Fill in good values for username and host."""
+    if self.init_exception:
+      raise Exception('abc')
+
     kwargs.setdefault('username', 'monkey@google.com')
     kwargs.setdefault('host', 'typewriter.mtv.corp.google.com')
     return self.backup['__init__'](_inst, **kwargs)
@@ -55,21 +62,38 @@ class StatsModuleMock(partial_mock.PartialMock):
   def __init__(self):
     partial_mock.PartialMock.__init__(self)
     self.uploader_mock = StatsUploaderMock()
+    self.stats_mock = StatsMock()
+    self.parallel_mock = parallel_unittest.ParallelMock()
 
   def PreStart(self):
     self.StartPatcher(self.uploader_mock)
-    self.StartPatcher(StatsMock())
-    self.StartPatcher(parallel_unittest.ParallelMock())
+    self.StartPatcher(self.stats_mock)
+    self.StartPatcher(self.parallel_mock)
 
 
-class StatsCreationTest(cros_test_lib.MockTestCase):
+class StatsCreationTest(cros_test_lib.MockLoggingTestCase):
   """Test the stats creation functionality."""
+
+  def VerifyStats(self, cmd_stat):
+    self.assertNotEquals(cmd_stat.host, None)
+    self.assertNotEquals(cmd_stat.username, None)
 
   def testIt(self):
     """Test normal stats creation, exercising default functionality."""
     cmd_stat = stats.Stats()
-    self.assertNotEquals(cmd_stat.host, None)
-    self.assertNotEquals(cmd_stat.username, None)
+    self.VerifyStats(cmd_stat)
+
+  def testSafeInitNormal(self):
+    """Test normal safe stats creation."""
+    cmd_stat = stats.Stats.SafeInit()
+    self.VerifyStats(cmd_stat)
+
+  def testSafeInitException(self):
+    """Safe stats creation handles exceptions properly."""
+    with cros_test_lib.LoggingCapturer() as logs:
+      cmd_stat = stats.Stats.SafeInit(monkey='foon')
+      self.assertEquals(cmd_stat, None)
+      self.AssertLogsContain(logs, 'Exception')
 
 
 class ConditionsTest(cros_test_lib.MockTestCase):

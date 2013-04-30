@@ -44,9 +44,10 @@ def main(args):
   with stats.UploadContext() as queue:
     if subcommand.upload_stats:
       cmd_base = subcommand.options.cros_class.command_name
-      cmd_stats = stats.Stats(cmd_line=sys.argv, cmd_base=cmd_base)
-      queue.put([cmd_stats, stats.StatsUploader.URL,
-                 subcommand.upload_stats_timeout])
+      cmd_stats = stats.Stats.SafeInit(cmd_line=sys.argv, cmd_base=cmd_base)
+      if cmd_stats:
+        queue.put([cmd_stats, stats.StatsUploader.URL,
+                   subcommand.upload_stats_timeout])
     # TODO: to make command completion faster, send an interrupt signal to the
     # stats uploader task after the subcommand completes.
     _RunSubCommand(subcommand)
