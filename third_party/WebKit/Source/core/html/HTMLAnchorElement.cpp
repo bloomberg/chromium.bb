@@ -36,8 +36,10 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/PingLoader.h"
-#include "core/page/EventHandler.h"
+#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/Frame.h"
+#include "core/page/Page.h"
 #include "core/page/SecurityOrigin.h"
 #include "core/page/SecurityPolicy.h"
 #include "core/page/Settings.h"
@@ -134,10 +136,11 @@ bool HTMLAnchorElement::isKeyboardFocusable(KeyboardEvent* event) const
     if (!isFocusable())
         return false;
     
-    if (!document()->frame())
+    Page* page = document()->page();
+    if (!page)
         return false;
 
-    if (!document()->frame()->eventHandler()->tabsToLinks(event))
+    if (!page->chrome()->client()->tabsToLinks())
         return false;
 
     if (isInCanvasSubtree())

@@ -146,9 +146,6 @@ public:
     bool scrollRecursively(ScrollDirection, ScrollGranularity, Node* startingNode = 0);
     bool logicalScrollRecursively(ScrollLogicalDirection, ScrollGranularity, Node* startingNode = 0);
 
-    bool tabsToLinks(KeyboardEvent*) const;
-    bool tabsToAllFormControls(KeyboardEvent*) const;
-
     bool mouseMoved(const PlatformMouseEvent&);
     bool passMouseMovedEventToScrollbars(const PlatformMouseEvent&);
 
@@ -213,7 +210,6 @@ private:
     
     PassRefPtr<Clipboard> createDraggingClipboard() const;
 
-    bool eventActivatedView(const PlatformMouseEvent&) const;
     bool updateSelectionForMouseDownDispatchingSelectStart(Node*, const VisibleSelection&, TextGranularity);
     void selectClosestWordFromHitTestResult(const HitTestResult&, AppendTrailingWhitespace);
     void selectClosestWordFromMouseEvent(const MouseEventWithHitTestResults&);
@@ -235,7 +231,6 @@ private:
     bool mouseDownMayStartSelect() const { return m_mouseDownMayStartSelect; }
 
     static bool isKeyboardOptionTab(KeyboardEvent*);
-    static bool eventInvertsTabsToLinksClientCallResult(KeyboardEvent*);
 
     void fakeMouseMoveEventTimerFired(Timer<EventHandler>*);
     void cancelFakeMouseMoveEvent();
@@ -277,9 +272,7 @@ private:
     bool passMousePressEventToScrollbar(MouseEventWithHitTestResults&, Scrollbar*);
 
     bool passWidgetMouseDownEventToWidget(const MouseEventWithHitTestResults&);
-    bool passWidgetMouseDownEventToWidget(RenderWidget*);
 
-    bool passMouseDownEventToWidget(Widget*);
     bool passWheelEventToWidget(const PlatformWheelEvent&, Widget*);
 
     void defaultSpaceEventHandler(KeyboardEvent*);

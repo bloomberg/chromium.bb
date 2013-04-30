@@ -822,7 +822,7 @@ bool EventHandler::handleMouseUp(const MouseEventWithHitTestResults& event)
     // the mouse down and drag events to see if we might start a drag.  For other first clicks
     // in a window, we just don't acceptFirstMouse, and the whole down-drag-up sequence gets
     // ignored upstream of this layer.
-    return eventActivatedView(event.event());
+    return false;
 }    
 
 bool EventHandler::handleMouseReleaseEvent(const MouseEventWithHitTestResults& event)
@@ -3312,9 +3312,6 @@ bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, CheckDr
             // ... but only bail if we're not over an unselectable element.
             m_mouseDownMayStartDrag = false;
             dragState().m_dragSrc = 0;
-            // ... but if this was the first click in the window, we don't even want to start selection
-            if (eventActivatedView(event.event()))
-                m_mouseDownMayStartSelect = false;
         } else {
             // Prevent the following case from occuring:
             // 1. User starts a drag immediately after mouse down over an unselectable element.
@@ -3455,23 +3452,6 @@ bool EventHandler::isKeyboardOptionTab(KeyboardEvent* event)
         && (event->type() == eventNames().keydownEvent || event->type() == eventNames().keypressEvent)
         && event->altKey()
         && event->keyIdentifier() == "U+0009";    
-}
-
-bool EventHandler::eventInvertsTabsToLinksClientCallResult(KeyboardEvent* event)
-{
-    return false;
-}
-
-bool EventHandler::tabsToLinks(KeyboardEvent* event) const
-{
-    // FIXME: This function needs a better name. It can be called for keypresses other than Tab when spatial navigation is enabled.
-
-    Page* page = m_frame->page();
-    if (!page)
-        return false;
-
-    bool tabsToLinksClientCallResult = page->chrome()->client()->keyboardUIMode() & KeyboardAccessTabsToLinks;
-    return eventInvertsTabsToLinksClientCallResult(event) ? !tabsToLinksClientCallResult : tabsToLinksClientCallResult;
 }
 
 void EventHandler::defaultTextInputEventHandler(TextEvent* event)
@@ -3955,24 +3935,6 @@ bool EventHandler::passWidgetMouseDownEventToWidget(const MouseEventWithHitTestR
     // Figure out which view to send the event to.
     if (!event.targetNode() || !event.targetNode()->renderer() || !event.targetNode()->renderer()->isWidget())
         return false;
-    return passMouseDownEventToWidget(toRenderWidget(event.targetNode()->renderer())->widget());
-}
-
-bool EventHandler::passMouseDownEventToWidget(Widget* widget)
-{
-    notImplemented();
-    return false;
-}
-
-bool EventHandler::tabsToAllFormControls(KeyboardEvent*) const
-{
-    return true;
-}
-
-bool EventHandler::eventActivatedView(const PlatformMouseEvent& event) const
-{
-    // FIXME: EventHandlerWin.cpp does the following:
-    // return event.activatedWebView();
     return false;
 }
 
@@ -3988,11 +3950,6 @@ void EventHandler::focusDocumentView()
     if (!page)
         return;
     page->focusController()->setFocusedFrame(m_frame);
-}
-
-bool EventHandler::passWidgetMouseDownEventToWidget(RenderWidget* renderWidget)
-{
-    return passMouseDownEventToWidget(renderWidget->widget());
 }
 
 unsigned EventHandler::accessKeyModifiers()

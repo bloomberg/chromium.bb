@@ -112,7 +112,7 @@ public:
         const WTF::String& defaultValue, WTF::String& result);
     virtual void setStatusbarText(const WTF::String& message);
     virtual bool shouldInterruptJavaScript();
-    virtual WebCore::KeyboardUIMode keyboardUIMode();
+    virtual bool tabsToLinks();
     virtual WebCore::IntRect windowResizerRect() const;
     virtual void invalidateRootView(const WebCore::IntRect&);
     virtual void invalidateContentsAndRootView(const WebCore::IntRect&);

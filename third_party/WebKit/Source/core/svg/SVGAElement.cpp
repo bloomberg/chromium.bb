@@ -38,8 +38,10 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderTypes.h"
-#include "core/page/EventHandler.h"
+#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/Frame.h"
+#include "core/page/Page.h"
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/rendering/svg/RenderSVGInline.h"
@@ -219,15 +221,16 @@ bool SVGAElement::isMouseFocusable() const
     return false;
 }
 
-bool SVGAElement::isKeyboardFocusable(KeyboardEvent* event) const
+bool SVGAElement::isKeyboardFocusable(KeyboardEvent*) const
 {
     if (!isFocusable())
         return false;
     
-    if (!document()->frame())
+    Page* page = document()->page();
+    if (!page)
         return false;
     
-    return document()->frame()->eventHandler()->tabsToLinks(event);
+    return page->chrome()->client()->tabsToLinks();
 }
 
 bool SVGAElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const

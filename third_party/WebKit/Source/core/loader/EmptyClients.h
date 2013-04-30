@@ -130,7 +130,7 @@ public:
 
     virtual void setStatusbarText(const String&) { }
 
-    virtual KeyboardUIMode keyboardUIMode() { return KeyboardAccessDefault; }
+    virtual bool tabsToLinks() { return false; }
 
     virtual IntRect windowResizerRect() const { return IntRect(); }
 

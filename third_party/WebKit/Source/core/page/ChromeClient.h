@@ -27,7 +27,6 @@
 #include "core/loader/FrameLoader.h"
 #include "core/page/ConsoleTypes.h"
 #include "core/page/FocusDirection.h"
-#include "core/page/WebCoreKeyboardUIMode.h"
 #include "core/platform/Cursor.h"
 #include "core/platform/HostWindow.h"
 #include "core/platform/PopupMenu.h"
@@ -145,7 +144,7 @@ public:
     virtual bool runJavaScriptPrompt(Frame*, const String& message, const String& defaultValue, String& result) = 0;
     virtual void setStatusbarText(const String&) = 0;
     virtual bool shouldInterruptJavaScript() = 0;
-    virtual KeyboardUIMode keyboardUIMode() = 0;
+    virtual bool tabsToLinks() = 0;
 
     virtual void* webView() const = 0;
 

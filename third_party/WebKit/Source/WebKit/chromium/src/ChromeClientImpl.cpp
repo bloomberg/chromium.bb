@@ -485,9 +485,9 @@ bool ChromeClientImpl::shouldInterruptJavaScript()
     return false;
 }
 
-KeyboardUIMode ChromeClientImpl::keyboardUIMode()
+bool ChromeClientImpl::tabsToLinks()
 {
-    return m_webView->tabsToLinks() ? KeyboardAccessTabsToLinks : KeyboardAccessDefault;
+    return m_webView->tabsToLinks();
 }
 
 IntRect ChromeClientImpl::windowResizerRect() const
