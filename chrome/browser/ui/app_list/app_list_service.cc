@@ -17,11 +17,15 @@ namespace {
 void SendAppListAppLaunch(int count) {
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Apps.AppListDailyAppLaunches", count, 1, 1000, 50);
+  if (count > 0)
+    UMA_HISTOGRAM_ENUMERATION("Apps.AppListHasLaunchedAppToday", 1, 2);
 }
 
 void SendAppListLaunch(int count) {
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Apps.AppListDailyLaunches", count, 1, 1000, 50);
+  if (count > 0)
+    UMA_HISTOGRAM_ENUMERATION("Apps.AppListHasLaunchedAppListToday", 1, 2);
 }
 
 bool SendDailyEventFrequency(
