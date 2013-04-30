@@ -105,6 +105,7 @@ class base(cros_test_lib.MoxTestCase):
     if change_id is None:
       change_id = self._patch_counter()
     patch.gerrit_number = str(change_id)
+    patch.gerrit_number_str = patch.gerrit_number
     # Strip off the leading 0x, trailing 'l'
     change_id = hex(change_id)[2:].rstrip('L').lower()
     patch.change_id = patch.id = 'I%s' % change_id.rjust(40, '0')
@@ -1019,6 +1020,7 @@ class SimplePatch(object):
   def __init__(self):
     self.id = _GetNumber()
     self.change_id = "I%s" % str(self.id).rjust(40, "0")
+    self.gerrit_number_str = self.id
 
   def __str__(self):
     return str(self.id)

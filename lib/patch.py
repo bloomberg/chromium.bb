@@ -1098,6 +1098,8 @@ class GerritPatch(GitRepoPatch):
     self.owner, _, _ = patch_dict['owner']['email'].partition('@')
     self.gerrit_number = FormatGerritNumber(str(patch_dict['number']),
                                             strict=True)
+    prefix_str = '*' if self.internal else ''
+    self.gerrit_number_str = '%s%s' % (prefix_str, self.gerrit_number)
     self.url = patch_dict['url']
     # status - Current state of this change.  Can be one of
     # ['NEW', 'SUBMITTED', 'MERGED', 'ABANDONED'].
@@ -1172,8 +1174,7 @@ class GerritPatch(GitRepoPatch):
 
   def __str__(self):
     """Returns custom string to identify this patch."""
-    s = '%s:%s%s' % (self.owner, '*' if self.internal else '',
-                     self.gerrit_number)
+    s = '%s:%s' % (self.owner, self.gerrit_number_str)
     if self.sha1 is not None:
       s = '%s:%s%s' % (s, '*' if self.internal else '', self.sha1[:8])
     if self._subject_line:

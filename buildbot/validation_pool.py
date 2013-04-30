@@ -79,12 +79,18 @@ class DependencyNotReadyForCommit(cros_patch.PatchException):
 
 
 def _RunCommand(cmd, dryrun):
-  """Runs the specified shell cmd if dryrun=False."""
+  """Runs the specified shell cmd if dryrun=False.
+
+  Errors are ignored, but logged.
+  """
   if dryrun:
     logging.info('Would have run: %s', ' '.join(cmd))
-  else:
-    cros_build_lib.RunCommand(cmd, error_code_ok=True)
+    return
 
+  try:
+    cros_build_lib.RunCommand(cmd)
+  except cros_build_lib.RunCommandError:
+    cros_build_lib.Error('Command failed', exc_info=True)
 
 class GerritHelperNotAvailable(gerrit.GerritException):
   """Exception thrown when a specific helper is requested but unavailable."""
@@ -1198,7 +1204,7 @@ class ValidationPool(object):
           "infinite loop hanging on these CLs." % (e,))
       cros_build_lib.Error(
           "%s\nAffected Patches are: %s", msg,
-          ', '.join(x.change_id for x in self.changes))
+          ', '.join('CL:%s' % x.gerrit_number_str for x in self.changes))
       try:
         self._HandleApplyFailure(
             [InternalCQError(patch, msg) for patch in self.changes])
@@ -1472,14 +1478,28 @@ class ValidationPool(object):
       suspects: The set of suspect changes that we think broke the build.
       messages: A list of build failure messages from supporting builders.
     """
-    msg = ['The following build(s) failed:'] + map(str, messages)
+    # Build a list of error messages. We don't want to build a ridiculously
+    # long comment, as Gerrit will reject it. See http://crbug.com/236831
+    max_error_len = 20000 / max(1, len(messages))
+    msg = ['The following build(s) failed:']
+    for message in map(str, messages):
+      if len(message) > max_error_len:
+        message = message[:max_error_len] + '... (truncated)'
+      msg.append(message)
 
     if not pre_cq:
       # Create a list of changes other than this one that might be guilty.
+      # Limit the number of suspects to 20 so that the list of suspects isn't
+      # ridiculously long.
+      max_suspects = 20
       other_suspects = suspects - set([change])
-      other_suspects_str = ', '.join(sorted(
-          cros_patch.FormatChangeId(x.change_id, force_internal=x.internal)
-                                    for x in other_suspects))
+      if len(other_suspects) < max_suspects:
+        other_suspects_str = ', '.join(sorted(
+            'CL:%s' % x.gerrit_number_str for x in other_suspects))
+      else:
+        other_suspects_str = ('%d other changes. See the blamelist for more '
+                              'details.' % (len(other_suspects),))
+
 
       if change in suspects:
         if other_suspects_str:
@@ -1644,7 +1664,12 @@ class PaladinMessage():
                                 'tree-sheriffs/sheriff-details-chromium-os/'
                                 'commit-queue-overview')
 
+  # Gerrit can't handle commands over 32768 bytes. See http://crbug.com/236831
+  MAX_MESSAGE_LEN = 32000
+
   def __init__(self, message, patch, helper):
+    if len(message) > self.MAX_MESSAGE_LEN:
+      message = message[:self.MAX_MESSAGE_LEN] + '... (truncated)'
     self.message = message
     self.patch = patch
     self.helper = helper
