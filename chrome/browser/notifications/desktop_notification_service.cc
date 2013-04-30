@@ -11,6 +11,7 @@
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
@@ -437,7 +438,7 @@ void DesktopNotificationService::RequestPermission(
           DesktopNotificationServiceFactory::GetForProfile(
               Profile::FromBrowserContext(contents->GetBrowserContext())),
           origin,
-          DisplayNameForOrigin(origin),
+          DisplayNameForOriginInProcessId(origin, process_id),
           process_id,
           route_id,
           callback_context);
@@ -471,17 +472,12 @@ bool DesktopNotificationService::ShowDesktopNotification(
     int process_id, int route_id, DesktopNotificationSource source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const GURL& origin = params.origin;
-  if (origin.scheme() == extensions::kExtensionScheme &&
-      !IsExtensionEnabled(origin.host())) {
-    // The webkit notification from an extension which is disabled. Should fail.
-    return false;
-  }
   NotificationObjectProxy* proxy =
       new NotificationObjectProxy(process_id, route_id,
                                   params.notification_id,
                                   source == WorkerNotification);
 
-  string16 display_source = DisplayNameForOrigin(origin);
+  string16 display_source = DisplayNameForOriginInProcessId(origin, process_id);
   if (params.is_html) {
     ShowNotification(Notification(origin, params.contents_url, display_source,
         params.replace_id, proxy));
@@ -496,21 +492,25 @@ bool DesktopNotificationService::ShowDesktopNotification(
   return true;
 }
 
-string16 DesktopNotificationService::DisplayNameForOrigin(
-    const GURL& origin) {
+string16 DesktopNotificationService::DisplayNameForOriginInProcessId(
+    const GURL& origin, int process_id) {
   // If the source is an extension, lookup the display name.
-  if (origin.SchemeIs(extensions::kExtensionScheme)) {
-    ExtensionService* extension_service =
-        extensions::ExtensionSystem::Get(profile_)->extension_service();
-    if (extension_service) {
-      const extensions::Extension* extension =
-          extension_service->extensions()->GetExtensionOrAppByURL(
-              ExtensionURLInfo(
-                  WebSecurityOrigin::createFromString(
-                      UTF8ToUTF16(origin.spec())),
-                  origin));
-      if (extension)
-        return UTF8ToUTF16(extension->name());
+  // Message center prefers to use extension name if the notification
+  // is allowed by an extension.
+  if (NotificationUIManager::DelegatesToMessageCenter() ||
+      origin.SchemeIs(extensions::kExtensionScheme)) {
+    ExtensionInfoMap* extension_info_map =
+        extensions::ExtensionSystem::Get(profile_)->info_map();
+    if (extension_info_map) {
+      ExtensionSet extensions;
+      extension_info_map->GetExtensionsWithAPIPermissionForSecurityOrigin(
+          origin, process_id, extensions::APIPermission::kNotification,
+          &extensions);
+      for (ExtensionSet::const_iterator iter = extensions.begin();
+           iter != extensions.end(); ++iter) {
+        if (IsExtensionEnabled((*iter)->id()))
+          return UTF8ToUTF16((*iter)->name());
+      }
     }
   }
   return UTF8ToUTF16(origin.host());

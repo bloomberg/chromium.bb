@@ -18,6 +18,8 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/features/feature.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "googleurl/src/gurl.h"
 
 namespace extensions {
@@ -36,8 +38,11 @@ class NotificationsApiDelegate : public NotificationDelegate {
         profile_(profile),
         extension_id_(extension_id),
         id_(id),
-        scoped_id_(CreateScopedIdentifier(extension_id, id)) {
+        scoped_id_(CreateScopedIdentifier(extension_id, id)),
+        process_id_(-1) {
     DCHECK(api_function_);
+    if (api_function_->render_view_host())
+      process_id_ = api_function->render_view_host()->GetProcess()->GetID();
   }
 
   // Given an extension id and another id, returns an id that is unique
@@ -75,6 +80,10 @@ class NotificationsApiDelegate : public NotificationDelegate {
     return scoped_id_;
   }
 
+  virtual int process_id() const OVERRIDE {
+    return process_id_;
+  }
+
   virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE {
     // We're holding a reference to api_function_, so we know it'll be valid
     // until ReleaseRVH is called, and api_function_ (as a
@@ -109,6 +118,7 @@ class NotificationsApiDelegate : public NotificationDelegate {
   const std::string extension_id_;
   const std::string id_;
   const std::string scoped_id_;
+  int process_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationsApiDelegate);
 };

@@ -7,5 +7,9 @@
 void NotificationDelegate::ButtonClick(int button_index) {
 }
 
+int NotificationDelegate::process_id() const {
+  return -1;
+}
+
 void NotificationDelegate::ReleaseRenderViewHost() {
 }

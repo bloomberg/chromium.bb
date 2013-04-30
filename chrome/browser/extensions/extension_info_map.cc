@@ -124,15 +124,21 @@ void ExtensionInfoMap::UnregisterAllExtensionsInProcess(int process_id) {
   process_map_.RemoveAllFromProcess(process_id);
 }
 
-bool ExtensionInfoMap::SecurityOriginHasAPIPermission(
-    const GURL& origin, int process_id,
-    extensions::APIPermission::ID permission) const {
+void ExtensionInfoMap::GetExtensionsWithAPIPermissionForSecurityOrigin(
+    const GURL& origin,
+    int process_id,
+    extensions::APIPermission::ID permission,
+    ExtensionSet* extensions) const {
+  DCHECK(extensions);
+
   if (origin.SchemeIs(extensions::kExtensionScheme)) {
     const std::string& id = origin.host();
     const Extension* extension = extensions_.GetByID(id);
-    return extension &&
-        extension->HasAPIPermission(permission) &&
-        process_map_.Contains(id, process_id);
+    if (extension && extension->HasAPIPermission(permission) &&
+        process_map_.Contains(id, process_id)) {
+      extensions->Insert(extension);
+    }
+    return;
   }
 
   ExtensionSet::const_iterator i = extensions_.begin();
@@ -140,10 +146,18 @@ bool ExtensionInfoMap::SecurityOriginHasAPIPermission(
     if ((*i)->web_extent().MatchesSecurityOrigin(origin) &&
         process_map_.Contains((*i)->id(), process_id) &&
         (*i)->HasAPIPermission(permission)) {
-      return true;
+      extensions->Insert(*i);
     }
   }
-  return false;
+}
+
+bool ExtensionInfoMap::SecurityOriginHasAPIPermission(
+    const GURL& origin, int process_id,
+    extensions::APIPermission::ID permission) const {
+  ExtensionSet extensions;
+  GetExtensionsWithAPIPermissionForSecurityOrigin(
+      origin, process_id, permission, &extensions);
+  return !extensions.is_empty();
 }
 
 ExtensionsQuotaService* ExtensionInfoMap::GetQuotaService() {

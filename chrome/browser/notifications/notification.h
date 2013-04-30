@@ -115,6 +115,8 @@ class Notification {
 
   std::string notification_id() const { return delegate()->id(); }
 
+  int process_id() const { return delegate()->process_id(); }
+
   content::RenderViewHost* GetRenderViewHost() const {
     return delegate()->GetRenderViewHost();
   }

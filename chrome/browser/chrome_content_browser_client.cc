@@ -1614,11 +1614,24 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
   // extension has the 'notify' permission. (If the extension does not have the
   // permission, the user will still be prompted.)
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  const Extension* extension = !service ? NULL :
-      service->extensions()->GetExtensionOrAppByURL(ExtensionURLInfo(
-          source_origin));
+  ExtensionInfoMap* extension_info_map =
+      extensions::ExtensionSystem::Get(profile)->info_map();
+  DesktopNotificationService* notification_service =
+      DesktopNotificationServiceFactory::GetForProfile(profile);
+  const Extension* extension = NULL;
+  if (extension_info_map) {
+    ExtensionSet extensions;
+    extension_info_map->GetExtensionsWithAPIPermissionForSecurityOrigin(
+        source_origin, render_process_id,
+        extensions::APIPermission::kNotification, &extensions);
+    for (ExtensionSet::const_iterator iter = extensions.begin();
+         iter != extensions.end(); ++iter) {
+      if (notification_service->IsExtensionEnabled((*iter)->id())) {
+        extension = *iter;
+        break;
+      }
+    }
+  }
   RenderViewHost* rvh =
       RenderViewHost::FromID(render_process_id, render_view_id);
   if (IsExtensionWithPermissionOrSuggestInConsole(
@@ -1628,9 +1641,7 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
     return;
   }
 
-  DesktopNotificationService* notifications =
-      DesktopNotificationServiceFactory::GetForProfile(profile);
-  notifications->RequestPermission(source_origin, render_process_id,
+  notification_service->RequestPermission(source_origin, render_process_id,
       render_view_id, callback_context, contents);
 #else
   NOTIMPLEMENTED();
@@ -1645,16 +1656,25 @@ WebKit::WebNotificationPresenter::Permission
 #if defined(ENABLE_NOTIFICATIONS)
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-  if (io_data->GetExtensionInfoMap()->SecurityOriginHasAPIPermission(
-        source_origin, render_process_id,
-        APIPermission::kNotification))
-    return WebKit::WebNotificationPresenter::PermissionAllowed;
 
-  // Fall back to the regular notification preferences, which works on an
-  // origin basis.
-  return io_data->GetNotificationService() ?
-      io_data->GetNotificationService()->HasPermission(source_origin) :
-      WebKit::WebNotificationPresenter::PermissionNotAllowed;
+  DesktopNotificationService* notification_service =
+      io_data->GetNotificationService();
+  if (notification_service) {
+    ExtensionInfoMap* extension_info_map = io_data->GetExtensionInfoMap();
+    ExtensionSet extensions;
+    extension_info_map->GetExtensionsWithAPIPermissionForSecurityOrigin(
+        source_origin, render_process_id,
+        extensions::APIPermission::kNotification, &extensions);
+    for (ExtensionSet::const_iterator iter = extensions.begin();
+         iter != extensions.end(); ++iter) {
+      if (notification_service->IsExtensionEnabled((*iter)->id()))
+        return WebKit::WebNotificationPresenter::PermissionAllowed;
+    }
+
+    return notification_service->HasPermission(source_origin);
+  }
+
+  return WebKit::WebNotificationPresenter::PermissionNotAllowed;
 #else
   return WebKit::WebNotificationPresenter::PermissionAllowed;
 #endif

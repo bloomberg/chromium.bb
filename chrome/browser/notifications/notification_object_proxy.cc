@@ -57,6 +57,10 @@ std::string NotificationObjectProxy::id() const {
                             notification_id_, worker_);
 }
 
+int NotificationObjectProxy::process_id() const {
+  return process_id_;
+}
+
 RenderViewHost* NotificationObjectProxy::GetRenderViewHost() const {
   return RenderViewHost::FromID(process_id_, route_id_);
 }

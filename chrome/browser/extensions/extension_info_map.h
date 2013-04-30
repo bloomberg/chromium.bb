@@ -65,6 +65,14 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
                                   int site_instance_id);
   void UnregisterAllExtensionsInProcess(int process_id);
 
+  // Returns the subset of extensions which has the same |origin| in
+  // |process_id| with the specified |permission|.
+  void GetExtensionsWithAPIPermissionForSecurityOrigin(
+      const GURL& origin,
+      int process_id,
+      extensions::APIPermission::ID permission,
+      ExtensionSet* extensions) const;
+
   // Returns true if there is exists an extension with the same origin as
   // |origin| in |process_id| with |permission|.
   bool SecurityOriginHasAPIPermission(

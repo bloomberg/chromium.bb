@@ -7,7 +7,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_info_map.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/message_center_settings_controller.h"
@@ -419,11 +420,21 @@ MessageCenterNotificationManager::ProfileNotification::OnDownloadsCompleted() {
 
 std::string
     MessageCenterNotificationManager::ProfileNotification::GetExtensionId() {
-  const ExtensionURLInfo url(notification().origin_url());
-  const ExtensionService* service = profile()->GetExtensionService();
-  const extensions::Extension* extension = service ?
-      service->extensions()->GetExtensionOrAppByURL(url) : NULL;
-  return extension ? extension->id() : std::string();
+  ExtensionInfoMap* extension_info_map =
+      extensions::ExtensionSystem::Get(profile())->info_map();
+  ExtensionSet extensions;
+  extension_info_map->GetExtensionsWithAPIPermissionForSecurityOrigin(
+      notification().origin_url(), notification().process_id(),
+      extensions::APIPermission::kNotification, &extensions);
+
+  DesktopNotificationService* desktop_service =
+      DesktopNotificationServiceFactory::GetForProfile(profile());
+  for (ExtensionSet::const_iterator iter = extensions.begin();
+       iter != extensions.end(); ++iter) {
+    if (desktop_service->IsExtensionEnabled((*iter)->id()))
+      return (*iter)->id();
+  }
+  return std::string();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

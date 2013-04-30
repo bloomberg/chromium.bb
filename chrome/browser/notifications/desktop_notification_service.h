@@ -158,10 +158,10 @@ class DesktopNotificationService : public ProfileKeyedService {
   // Takes a notification object and shows it in the UI.
   void ShowNotification(const Notification& notification);
 
-  // Returns a display name for an origin, to be used in permission infobar
-  // or on the frame of the notification toast.  Different from the origin
-  // itself when dealing with extensions.
-  string16 DisplayNameForOrigin(const GURL& origin);
+  // Returns a display name for an origin in the process id, to be used in
+  // permission infobar or on the frame of the notification toast.  Different
+  // from the origin itself when dealing with extensions.
+  string16 DisplayNameForOriginInProcessId(const GURL& origin, int process_id);
 
   // Notifies the observers when permissions settings change.
   void NotifySettingsChange();
