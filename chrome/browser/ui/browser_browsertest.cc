@@ -11,6 +11,7 @@
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/defaults.h"
@@ -57,6 +58,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/page_transition_types.h"
@@ -178,6 +180,17 @@ class InterstitialObserver : public content::WebContentsObserver {
   base::Closure detach_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(InterstitialObserver);
+};
+
+class TransfersAllRedirectsContentBrowserClient
+    : public chrome::ChromeContentBrowserClient {
+ public:
+  virtual bool ShouldSwapProcessesForRedirect(
+      content::ResourceContext* resource_context,
+      const GURL& current_url,
+      const GURL& new_url) OVERRIDE {
+    return true;
+  }
 };
 
 // Used by CloseWithAppMenuOpen. Invokes CloseWindow on the supplied browser.
@@ -360,6 +373,46 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
   browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(),
                                   ASCIIToUTF16("onbeforeunload=null;"));
+}
+
+// Tests that a cross-process redirect will only cause the beforeunload
+// handler to run once.
+IN_PROC_BROWSER_TEST_F(BrowserTest, SingleBeforeUnloadAfterRedirect) {
+  // Create HTTP and HTTPS servers for cross-site transition.
+  ASSERT_TRUE(test_server()->Start());
+  net::TestServer https_test_server(net::TestServer::TYPE_HTTPS,
+                                    net::TestServer::kLocalhost,
+                                    base::FilePath(kDocRoot));
+  ASSERT_TRUE(https_test_server.Start());
+
+  // Temporarily replace ContentBrowserClient with one that will cause a
+  // process swap on all redirects.
+  TransfersAllRedirectsContentBrowserClient new_client;
+  content::ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&new_client);
+
+  // Navigate to a page with a beforeunload handler.
+  GURL url(test_server()->GetURL("files/beforeunload.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Navigate to a URL that redirects to another process and approve the
+  // beforeunload dialog that pops up.
+  content::WindowedNotificationObserver nav_observer(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::NotificationService::AllSources());
+  GURL https_url(https_test_server.GetURL("files/title1.html"));
+  GURL redirect_url(test_server()->GetURL("server-redirect?" +
+      https_url.spec()));
+  browser()->OpenURL(OpenURLParams(redirect_url, Referrer(), CURRENT_TAB,
+                                   content::PAGE_TRANSITION_TYPED, false));
+  AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
+  EXPECT_TRUE(
+      static_cast<JavaScriptAppModalDialog*>(alert)->is_before_unload_dialog());
+  alert->native_dialog()->AcceptAppModalDialog();
+  nav_observer.Wait();
+
+  // Restore previous browser client.
+  SetBrowserClientForTesting(old_client);
 }
 
 // Test for crbug.com/80401.  Canceling a before unload dialog should reset

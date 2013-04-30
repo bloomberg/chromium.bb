@@ -832,26 +832,35 @@ RenderViewHostImpl* RenderViewHostManager::UpdateRendererStateForNavigate(
     render_view_host_->Send(
         new ViewMsg_Stop(render_view_host_->GetRoutingID()));
 
+    // We need to wait until the beforeunload handler has run, unless we are
+    // transferring an existing request (in which case it has already run).
     // Suspend the new render view (i.e., don't let it send the cross-site
     // Navigate message) until we hear back from the old renderer's
-    // onbeforeunload handler.  If the handler returns false, we'll have to
+    // beforeunload handler.  If the handler returns false, we'll have to
     // cancel the request.
     DCHECK(!pending_render_view_host_->are_navigations_suspended());
-    pending_render_view_host_->SetNavigationsSuspended(true, base::TimeTicks());
+    bool is_transfer =
+        entry.transferred_global_request_id() != GlobalRequestID();
+    if (!is_transfer) {
+      pending_render_view_host_->SetNavigationsSuspended(true,
+                                                         base::TimeTicks());
+    }
 
     // Tell the CrossSiteRequestManager that this RVH has a pending cross-site
     // request, so that ResourceDispatcherHost will know to tell us to run the
-    // old page's onunload handler before it sends the response.
+    // old page's unload handler before it sends the response.
     pending_render_view_host_->SetHasPendingCrossSiteRequest(true, -1);
 
     // We now have a pending RVH.
     DCHECK(!cross_navigation_pending_);
     cross_navigation_pending_ = true;
 
-    // Tell the old render view to run its onbeforeunload handler, since it
+    // Unless we are transferring an existing request, we should now
+    // tell the old render view to run its beforeunload handler, since it
     // doesn't otherwise know that the cross-site request is happening.  This
     // will trigger a call to ShouldClosePage with the reply.
-    render_view_host_->FirePageBeforeUnload(true);
+    if (!is_transfer)
+      render_view_host_->FirePageBeforeUnload(true);
 
     return pending_render_view_host_;
   } else {
