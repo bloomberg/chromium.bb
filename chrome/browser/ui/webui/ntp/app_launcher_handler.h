@@ -12,6 +12,7 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/favicon/favicon_service.h"
+#include "chrome/browser/managed_mode/scoped_extension_elevation.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/extensions/extension.h"
@@ -131,6 +132,11 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   static void RecordAppLaunchByUrl(Profile* profile,
                                    std::string escaped_url,
                                    extension_misc::AppLaunchBucket bucket);
+
+  // Generates a temporary elevation for a managed user which is bound to the
+  // life-time of the return value.
+  static scoped_ptr<ScopedExtensionElevation> GetScopedElevation(
+      const std::string& extension_id, ExtensionService* service);
 
   // Prompts the user to re-enable the app for |extension_id|.
   void PromptToEnableApp(const std::string& extension_id);
