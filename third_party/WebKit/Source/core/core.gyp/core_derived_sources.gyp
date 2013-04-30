@@ -153,6 +153,7 @@
           'inputs': [
             '../scripts/make_runtime_features.py',
             '../scripts/in_file.py',
+            '../scripts/in_generator.py',
             '../scripts/license.py',
             '../page/RuntimeEnabledFeatures.in',
           ],

@@ -29,9 +29,9 @@
 
 import os.path
 import sys
-import shutil
 
 from in_file import InFile
+import in_generator
 import license
 
 
@@ -47,7 +47,7 @@ class %(class_name)s {
 public:
 %(method_declarations)s
 private:
-    RuntimeEnabledFeatures() { }
+    %(class_name)s() { }
 
 %(storage_declarations)s
 };
@@ -59,7 +59,7 @@ private:
 
 IMPLEMENTATION_TEMPLATE = """%(license)s
 #include "config.h"
-#include "RuntimeEnabledFeatures.h"
+#include "%(class_name)s.h"
 
 namespace WebCore {
 
@@ -68,17 +68,18 @@ namespace WebCore {
 } // namespace WebCore
 """
 
-class RuntimeFeatureWriter(object):
+class RuntimeFeatureWriter(in_generator.Writer):
+    class_name = "RuntimeEnabledFeatures"
+    defaults = {
+        'condition' : None,
+        'depends_on' : [],
+        'default': 'false',
+        'custom': False,
+    }
+
     def __init__(self, in_file_path):
-        # Assume that the class should be called the same as the file.
-        self.class_name, _ = os.path.splitext(os.path.basename(in_file_path))
-        defaults = {
-            'condition' : None,
-            'depends_on' : [],
-            'default': 'false',
-            'custom': False,
-        }
-        self._all_features = InFile.load_from_path(in_file_path, defaults).name_dictionaries
+        super(RuntimeFeatureWriter, self).__init__(in_file_path)
+        self._all_features = self.in_file.name_dictionaries
         # Make sure the resulting dictionaries have all the keys we expect.
         for feature in self._all_features:
             feature['first_lowered_name'] = self._lower_first(feature['name'])
@@ -119,7 +120,7 @@ class RuntimeFeatureWriter(object):
         declaration = "    static bool is%(name)sEnabled;" % feature
         return self._wrap_with_condition(declaration, feature['condition'])
 
-    def _generate_header(self):
+    def generate_header(self):
         return HEADER_TEMPLATE % {
             'class_name' : self.class_name,
             'license' : license.license_for_generated_cpp(),
@@ -131,50 +132,13 @@ class RuntimeFeatureWriter(object):
         definition = "bool RuntimeEnabledFeatures::is%(name)sEnabled = %(default)s;" % feature
         return self._wrap_with_condition(definition, feature['condition'])
 
-    def _generate_implementation(self):
+    def generate_implementation(self):
         return IMPLEMENTATION_TEMPLATE % {
             'class_name' : self.class_name,
             'license' : license.license_for_generated_cpp(),
             'storage_definitions' : "\n".join(map(self._storage_definition, self._non_custom_features)),
         }
 
-    def _forcibly_create_text_file_at_path_with_contents(self, file_path, contents):
-        # FIXME: This method can be made less force-full anytime after 6/1/2013.
-        # A gyp error was briefly checked into the tree, causing
-        # a directory to have been generated in place of one of
-        # our output files.  Clean up after that error so that
-        # all users don't need to clobber their output directories.
-        shutil.rmtree(file_path, ignore_errors=True)
-        # The build system should ensure our output directory exists, but just in case.
-        directory = os.path.dirname(file_path)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-
-        with open(file_path, "w") as file_to_write:
-            file_to_write.write(contents)
-
-    def write_header(self, output_dir):
-        header_path = os.path.join(output_dir, self.class_name + ".h")
-        self._forcibly_create_text_file_at_path_with_contents(header_path, self._generate_header())
-
-    def write_implmentation(self, output_dir):
-        implmentation_path = os.path.join(output_dir, self.class_name + ".cpp")
-        self._forcibly_create_text_file_at_path_with_contents(implmentation_path, self._generate_implementation())
-
-
-class MakeRuntimeFeatures(object):
-    def main(self, argv):
-        script_name = os.path.basename(argv[0])
-        args = argv[1:]
-        if len(args) < 1:
-            print "USAGE: %i INPUT_FILE [OUTPUT_DIRECTORY]" % script_name
-            exit(1)
-        output_dir = args[1] if len(args) > 1 else os.getcwd()
-
-        writer = RuntimeFeatureWriter(args[0])
-        writer.write_header(output_dir)
-        writer.write_implmentation(output_dir)
-
 
 if __name__ == "__main__":
-    MakeRuntimeFeatures().main(sys.argv)
+    in_generator.Maker(RuntimeFeatureWriter).main(sys.argv)
