@@ -27,7 +27,7 @@
 #include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderOverflow.h"
 #if ENABLE(CSS_EXCLUSIONS)
-#include "core/rendering/ExclusionShapeOutsideInfo.h"
+#include "core/rendering/exclusions/ExclusionShapeOutsideInfo.h"
 #endif
 
 namespace WebCore {

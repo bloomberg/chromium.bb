@@ -12,7 +12,7 @@
  *    copyright notice, this list of conditions and the following
  *    disclaimer in the documentation and/or other materials
  *    provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -28,14 +28,14 @@
  */
 
 #include "config.h"
-#include "core/rendering/ExclusionShape.h"
+#include "core/rendering/exclusions/ExclusionShape.h"
 
 #include "core/css/BasicShapeFunctions.h"
 #include "core/css/LengthFunctions.h"
 #include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/WindRule.h"
-#include "core/rendering/ExclusionPolygon.h"
-#include "core/rendering/ExclusionRectangle.h"
+#include "core/rendering/exclusions/ExclusionPolygon.h"
+#include "core/rendering/exclusions/ExclusionRectangle.h"
 #include <wtf/MathExtras.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>

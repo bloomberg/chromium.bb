@@ -35,7 +35,7 @@
 #include <wtf/OwnPtr.h>
 
 #if ENABLE(CSS_EXCLUSIONS)
-#include "core/rendering/ExclusionShapeInsideInfo.h"
+#include "core/rendering/exclusions/ExclusionShapeInsideInfo.h"
 #include "core/rendering/style/ExclusionShapeValue.h"
 #endif
 

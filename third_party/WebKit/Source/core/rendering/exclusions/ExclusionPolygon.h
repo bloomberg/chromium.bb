@@ -12,7 +12,7 @@
  *    copyright notice, this list of conditions and the following
  *    disclaimer in the documentation and/or other materials
  *    provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -31,8 +31,8 @@
 #define ExclusionPolygon_h
 
 #include "core/platform/graphics/FloatPolygon.h"
-#include "core/rendering/ExclusionInterval.h"
-#include "core/rendering/ExclusionShape.h"
+#include "core/rendering/exclusions/ExclusionInterval.h"
+#include "core/rendering/exclusions/ExclusionShape.h"
 
 namespace WebCore {
 

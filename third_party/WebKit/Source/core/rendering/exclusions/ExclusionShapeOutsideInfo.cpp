@@ -31,7 +31,7 @@
 
 #if ENABLE(CSS_EXCLUSIONS)
 
-#include "core/rendering/ExclusionShapeOutsideInfo.h"
+#include "core/rendering/exclusions/ExclusionShapeOutsideInfo.h"
 
 #include "core/rendering/RenderBox.h"
 

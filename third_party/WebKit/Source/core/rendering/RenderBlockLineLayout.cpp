@@ -47,7 +47,7 @@
 #include <wtf/Vector.h>
 
 #if ENABLE(CSS_EXCLUSIONS)
-#include "core/rendering/ExclusionShapeInsideInfo.h"
+#include "core/rendering/exclusions/ExclusionShapeInsideInfo.h"
 #endif
 
 #if ENABLE(SVG)

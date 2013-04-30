@@ -28,11 +28,11 @@
  */
 
 #include "config.h"
-#include "core/rendering/ExclusionShapeInfo.h"
+#include "core/rendering/exclusions/ExclusionShapeInfo.h"
 
 #if ENABLE(CSS_EXCLUSIONS)
 
-#include "core/rendering/ExclusionShape.h"
+#include "core/rendering/exclusions/ExclusionShape.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderRegion.h"

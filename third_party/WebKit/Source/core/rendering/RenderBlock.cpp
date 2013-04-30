@@ -67,8 +67,8 @@
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
 #include <wtf/StdLibExtras.h>
 #if ENABLE(CSS_EXCLUSIONS)
-#include "core/rendering/ExclusionShapeInsideInfo.h"
-#include "core/rendering/ExclusionShapeOutsideInfo.h"
+#include "core/rendering/exclusions/ExclusionShapeInsideInfo.h"
+#include "core/rendering/exclusions/ExclusionShapeOutsideInfo.h"
 #endif
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationHashSet.h>

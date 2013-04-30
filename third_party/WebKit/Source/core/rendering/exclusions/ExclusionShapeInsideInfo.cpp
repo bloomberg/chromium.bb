@@ -28,7 +28,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/ExclusionShapeInsideInfo.h"
+#include "core/rendering/exclusions/ExclusionShapeInsideInfo.h"
 
 #if ENABLE(CSS_EXCLUSIONS)
 

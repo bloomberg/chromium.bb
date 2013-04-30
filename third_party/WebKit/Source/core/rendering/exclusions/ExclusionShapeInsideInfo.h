@@ -32,7 +32,7 @@
 
 #if ENABLE(CSS_EXCLUSIONS)
 
-#include "core/rendering/ExclusionShapeInfo.h"
+#include "core/rendering/exclusions/ExclusionShapeInfo.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>
 
