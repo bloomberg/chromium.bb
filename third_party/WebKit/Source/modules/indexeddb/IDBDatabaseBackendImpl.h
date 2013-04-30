@@ -90,12 +90,14 @@ public:
 private:
     IDBDatabaseBackendImpl(const String& name, IDBBackingStore* database, IDBFactoryBackendImpl*, const String& uniqueIdentifier);
 
+    bool isOpenConnectionBlocked() const;
     bool openInternal();
-    void runIntVersionChangeTransaction(PassRefPtr<IDBCallbacks>, PassRefPtr<IDBDatabaseCallbacks>, int64_t transactionId, int64_t requestedVersion);
-    size_t connectionCount();
+    void runVersionChangeTransaction(PassRefPtr<IDBCallbacks>, PassRefPtr<IDBDatabaseCallbacks>, int64_t transactionId, int64_t requestedVersion);
+    void runVersionChangeTransactionFinal(PassRefPtr<IDBCallbacks>, PassRefPtr<IDBDatabaseCallbacks>, int64_t transactionId, int64_t requestedVersion);
+    size_t connectionCount() const;
     void processPendingCalls();
 
-    bool isDeleteDatabaseBlocked();
+    bool isDeleteDatabaseBlocked() const;
     void deleteDatabaseFinal(PassRefPtr<IDBCallbacks>);
 
     class VersionChangeOperation;
@@ -118,6 +120,7 @@ private:
 
     class PendingOpenCall;
     Deque<OwnPtr<PendingOpenCall> > m_pendingOpenCalls;
+    OwnPtr<PendingOpenCall> m_pendingRunVersionChangeTransactionCall;
     OwnPtr<PendingOpenCall> m_pendingSecondHalfOpen;
 
     class PendingDeleteCall;

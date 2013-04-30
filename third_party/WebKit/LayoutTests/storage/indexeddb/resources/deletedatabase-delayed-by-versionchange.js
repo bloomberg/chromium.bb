@@ -50,7 +50,9 @@ function h1OpenSuccess(evt)
         request.onerror = unexpectedErrorCallback;
         request.onsuccess = function h3OpenSuccess(evt) {
             preamble(evt);
-        }
+            h3 = event.target.result;
+            evalAndLog("h3.close()");
+        };
         request.onblocked = function h3Blocked(evt) {
             preamble(evt);
             evalAndLog("setVersionBlockedEventFired = true");
