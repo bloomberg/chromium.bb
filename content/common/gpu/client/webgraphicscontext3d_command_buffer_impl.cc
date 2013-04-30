@@ -180,16 +180,6 @@ WebGraphicsContext3DCommandBufferImpl::
   Destroy();
 }
 
-void WebGraphicsContext3DCommandBufferImpl::InitializeWithCommandBuffer(
-    CommandBufferProxyImpl* command_buffer,
-    const WebGraphicsContext3D::Attributes& attributes,
-    bool bind_generates_resources) {
-  DCHECK(command_buffer);
-  command_buffer_ = command_buffer;
-  attributes_ = attributes;
-  bind_generates_resources_ = bind_generates_resources;
-}
-
 bool WebGraphicsContext3DCommandBufferImpl::Initialize(
     const WebGraphicsContext3D::Attributes& attributes,
     bool bind_generates_resources,
@@ -230,6 +220,7 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL(
                      allowed_extensions ?
                          allowed_extensions : preferred_extensions)) {
     Destroy();
+    initialize_failed_ = true;
     return false;
   }
 
@@ -1527,30 +1518,6 @@ bool WebGraphicsContext3DCommandBufferImpl::IsCommandBufferContextLost() {
     return true;
   gpu::CommandBuffer::State state = command_buffer_->GetLastState();
   return state.error == gpu::error::kLostContext;
-}
-
-// static
-WebGraphicsContext3DCommandBufferImpl*
-WebGraphicsContext3DCommandBufferImpl::CreateViewContext(
-      GpuChannelHostFactory* factory,
-      int32 surface_id,
-      const char* allowed_extensions,
-      const WebGraphicsContext3D::Attributes& attributes,
-      bool bind_generates_resources,
-      const GURL& active_url,
-      CauseForGpuLaunch cause) {
-  WebGraphicsContext3DCommandBufferImpl* context =
-      new WebGraphicsContext3DCommandBufferImpl(
-          surface_id,
-          active_url,
-          factory,
-          base::WeakPtr<WebGraphicsContext3DSwapBuffersClient>());
-  if (!context->Initialize(attributes, bind_generates_resources, cause) ||
-      !context->MaybeInitializeGL(allowed_extensions)) {
-    delete context;
-    return NULL;
-  }
-  return context;
 }
 
 // static

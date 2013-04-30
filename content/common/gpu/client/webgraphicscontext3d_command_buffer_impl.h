@@ -79,11 +79,6 @@ class WebGraphicsContext3DCommandBufferImpl
 
   virtual ~WebGraphicsContext3DCommandBufferImpl();
 
-  void InitializeWithCommandBuffer(
-      CommandBufferProxyImpl* command_buffer,
-      const Attributes& attributes,
-      bool bind_generates_resources);
-
   bool Initialize(const Attributes& attributes,
                   bool bind_generates_resources,
                   CauseForGpuLaunch cause);
@@ -105,28 +100,6 @@ class WebGraphicsContext3DCommandBufferImpl
   // Return true if GPU process reported context lost or there was a
   // problem communicating with the GPU process.
   bool IsCommandBufferContextLost();
-
-  // Create a WebGraphicsContext3DCommandBufferImpl that renders directly to a
-  // view. The view and the associated window must not be destroyed until
-  // the returned ContentGLContext has been destroyed, otherwise the GPU process
-  // might attempt to render to an invalid window handle.
-  //
-  // NOTE: on Mac OS X, this entry point is only used to set up the
-  // accelerated compositor's output. On this platform, we actually pass
-  // a gfx::PluginWindowHandle in place of the gfx::NativeViewId,
-  // because the facility to allocate a fake PluginWindowHandle is
-  // already in place. We could add more entry points and messages to
-  // allocate both fake PluginWindowHandles and NativeViewIds and map
-  // from fake NativeViewIds to PluginWindowHandles, but this seems like
-  // unnecessary complexity at the moment.
-  static WebGraphicsContext3DCommandBufferImpl* CreateViewContext(
-      GpuChannelHostFactory* factory,
-      int32 surface_id,
-      const char* allowed_extensions,
-      const WebGraphicsContext3D::Attributes& attributes,
-      bool bind_generates_resources,
-      const GURL& active_url,
-      CauseForGpuLaunch cause);
 
   // Create & initialize a WebGraphicsContext3DCommandBufferImpl.  Return NULL
   // on any failure.
