@@ -42,10 +42,6 @@
 
 #include "core/platform/graphics/InbandTextTrackPrivate.h"
 
-#if ENABLE(MEDIA_SOURCE)
-#include "modules/mediasource/MediaSource.h"
-#endif
-
 #include "core/platform/graphics/chromium/MediaPlayerPrivateChromium.h"
 #define PlatformMediaEngineClassName MediaPlayerPrivate
 
