@@ -22,6 +22,8 @@ typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 // Implementation of File API's remote file system proxy for Drive file system.
 class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
  public:
+  using fileapi::RemoteFileSystemProxyInterface::OpenFileCallback;
+
   // |file_system| is the DriveFileSystem instance owned by DriveSystemService.
   explicit FileSystemProxy(DriveFileSystemInterface* file_system);
 
@@ -78,8 +80,7 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const fileapi::FileSystemURL& url,
       int file_flags,
       base::ProcessHandle peer_handle,
-      const fileapi::FileSystemOperation::OpenFileCallback&
-          callback) OVERRIDE;
+      const OpenFileCallback& callback) OVERRIDE;
   virtual void NotifyCloseFile(const fileapi::FileSystemURL& url) OVERRIDE;
   virtual void TouchFile(
       const fileapi::FileSystemURL& url,
@@ -176,7 +177,7 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   void OnOpenFileForWriting(
       int file_flags,
       base::ProcessHandle peer_handle,
-      const fileapi::FileSystemOperation::OpenFileCallback& callback,
+      const OpenFileCallback& callback,
       FileError file_error,
       const base::FilePath& local_cache_path);
 
@@ -185,7 +186,7 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const base::FilePath& file_path,
       int file_flags,
       base::ProcessHandle peer_handle,
-      const fileapi::FileSystemOperation::OpenFileCallback& callback,
+      const OpenFileCallback& callback,
       FileError file_error);
 
   // Invoked during OpenFile() operation when base::PLATFORM_FILE_OPEN_TRUNCATED
@@ -193,7 +194,7 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   // finished on FILE thread.
   void OnOpenAndTruncate(
       base::ProcessHandle peer_handle,
-      const fileapi::FileSystemOperation::OpenFileCallback& callback,
+      const OpenFileCallback& callback,
       base::PlatformFile* platform_file,
       base::PlatformFileError* truncate_result);
 

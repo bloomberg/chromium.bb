@@ -21,6 +21,13 @@ typedef base::Callback<
 class RemoteFileSystemProxyInterface :
     public base::RefCountedThreadSafe<RemoteFileSystemProxyInterface> {
  public:
+  // Used for OpenFile(). |result| is the return code of the operation.
+  typedef base::Callback<
+      void(base::PlatformFileError result,
+           base::PlatformFile file,
+           base::ProcessHandle peer_handle)> OpenFileCallback;
+
+
   // Gets the file or directory info for given|path|.
   virtual void GetFileInfo(const FileSystemURL& url,
       const FileSystemOperation::GetMetadataCallback& callback) = 0;
@@ -98,7 +105,7 @@ class RemoteFileSystemProxyInterface :
       const FileSystemURL& url,
       int flags,
       base::ProcessHandle peer_handle,
-      const FileSystemOperation::OpenFileCallback& callback) = 0;
+      const OpenFileCallback& callback) = 0;
 
   // Notifies that a file opened by OpenFile (at |path|) is closed.
   virtual void NotifyCloseFile(const FileSystemURL& url) = 0;

@@ -255,16 +255,18 @@ class PluginInstanceLockTarget : public MouseLockDispatcher::LockTarget {
   webkit::ppapi::PluginInstance* plugin_;
 };
 
+void DoNotifyCloseFile(int file_open_id, base::PlatformFileError /* unused */) {
+  ChildThread::current()->file_system_dispatcher()->NotifyCloseFile(
+      file_open_id);
+}
+
 class AsyncOpenFileSystemURLCallbackTranslator
     : public fileapi::FileSystemCallbackDispatcher {
  public:
   AsyncOpenFileSystemURLCallbackTranslator(
       const webkit::ppapi::PluginDelegate::AsyncOpenFileSystemURLCallback&
-          callback,
-      const webkit::ppapi::PluginDelegate::NotifyCloseFileCallback&
-          close_file_callback)
-    : callback_(callback),
-      close_file_callback_(close_file_callback) {
+          callback)
+    : callback_(callback) {
   }
 
   virtual ~AsyncOpenFileSystemURLCallbackTranslator() {}
@@ -305,27 +307,23 @@ class AsyncOpenFileSystemURLCallbackTranslator
   }
 
   virtual void DidOpenFile(base::PlatformFile file,
+                           int file_open_id,
                            quota::QuotaLimitType quota_policy) OVERRIDE {
     callback_.Run(base::PLATFORM_FILE_OK,
                   base::PassPlatformFile(&file),
                   quota_policy,
-                  close_file_callback_);
+                  base::Bind(&DoNotifyCloseFile, file_open_id));
     // Make sure we won't leak file handle if the requester has died.
     if (file != base::kInvalidPlatformFileValue) {
       base::FileUtilProxy::Close(
           RenderThreadImpl::current()->GetFileThreadMessageLoopProxy(), file,
-          close_file_callback_);
+          base::Bind(&DoNotifyCloseFile, file_open_id));
     }
   }
 
  private:
   webkit::ppapi::PluginDelegate::AsyncOpenFileSystemURLCallback callback_;
-  webkit::ppapi::PluginDelegate::NotifyCloseFileCallback close_file_callback_;
 };
-
-void DoNotifyCloseFile(const GURL& path, base::PlatformFileError /* unused */) {
-  ChildThread::current()->file_system_dispatcher()->NotifyCloseFile(path);
-}
 
 void CreateHostForInProcessModule(RenderViewImpl* render_view,
                                   webkit::ppapi::PluginModule* module,
@@ -1139,8 +1137,7 @@ bool PepperPluginDelegateImpl::AsyncOpenFileSystemURL(
       ChildThread::current()->file_system_dispatcher();
   return file_system_dispatcher->OpenFile(path, flags,
       new AsyncOpenFileSystemURLCallbackTranslator(
-          callback,
-          base::Bind(&DoNotifyCloseFile, path)));
+          callback));
 }
 
 void PepperPluginDelegateImpl::SyncGetFileSystemPlatformPath(

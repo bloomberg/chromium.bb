@@ -46,6 +46,7 @@ void NullFileSystemCallbackDispatcher::DidWrite(int64 /* bytes */,
 
 void NullFileSystemCallbackDispatcher::DidOpenFile(
     base::PlatformFile /* file */,
+    int /* file_open_id */,
     quota::QuotaLimitType /* quota_policy */) {
   NOTREACHED();
 }

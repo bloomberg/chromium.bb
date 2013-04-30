@@ -114,6 +114,7 @@ class RemoteFileSystemOperation : public fileapi::FileSystemOperation {
       const base::FilePath& platform_path,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
   void DidOpenFile(
+      const fileapi::FileSystemURL& url,
       const OpenFileCallback& callback,
       base::PlatformFileError result,
       base::PlatformFile file,

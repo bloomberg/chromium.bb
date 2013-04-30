@@ -42,6 +42,7 @@ class NullFileSystemCallbackDispatcher
                                  const GURL& root) OVERRIDE;
   virtual void DidWrite(int64 bytes, bool complete) OVERRIDE;
   virtual void DidOpenFile(base::PlatformFile file,
+                           int file_open_id,
                            quota::QuotaLimitType quota_policy) OVERRIDE;
   virtual void DidFail(base::PlatformFileError platform_error) OVERRIDE;
 

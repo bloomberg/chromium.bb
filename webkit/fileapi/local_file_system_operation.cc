@@ -33,6 +33,10 @@ using webkit_blob::ShareableFileReference;
 
 namespace fileapi {
 
+namespace {
+void NopCloseFileCallback() {}
+}
+
 LocalFileSystemOperation::LocalFileSystemOperation(
     FileSystemContext* file_system_context,
     scoped_ptr<FileSystemOperationContext> operation_context)
@@ -333,6 +337,7 @@ void LocalFileSystemOperation::OpenFile(const FileSystemURL& url,
        base::PLATFORM_FILE_HIDDEN))) {
     callback.Run(base::PLATFORM_FILE_ERROR_FAILED,
                  base::kInvalidPlatformFileValue,
+                 base::Closure(),
                  base::kNullProcessHandle);
     return;
   }
@@ -346,6 +351,7 @@ void LocalFileSystemOperation::OpenFile(const FileSystemURL& url,
     if (result != base::PLATFORM_FILE_OK) {
       callback.Run(result,
                    base::kInvalidPlatformFileValue,
+                   base::Closure(),
                    base::kNullProcessHandle);
       return;
     }
@@ -354,6 +360,7 @@ void LocalFileSystemOperation::OpenFile(const FileSystemURL& url,
     if (result != base::PLATFORM_FILE_OK) {
       callback.Run(result,
                    base::kInvalidPlatformFileValue,
+                   base::Closure(),
                    base::kNullProcessHandle);
       return;
     }
@@ -365,6 +372,7 @@ void LocalFileSystemOperation::OpenFile(const FileSystemURL& url,
                  url, callback, file_flags),
       base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED,
                  base::kInvalidPlatformFileValue,
+                 base::Closure(),
                  base::kNullProcessHandle));
 }
 
@@ -825,7 +833,9 @@ void LocalFileSystemOperation::DidOpenFile(
     bool unused) {
   if (rv == base::PLATFORM_FILE_OK)
     CHECK_NE(base::kNullProcessHandle, peer_handle_);
-  callback.Run(rv, file.ReleaseValue(), peer_handle_);
+  callback.Run(rv, file.ReleaseValue(),
+               base::Bind(&NopCloseFileCallback),
+               peer_handle_);
 }
 
 void LocalFileSystemOperation::DidCreateSnapshotFile(

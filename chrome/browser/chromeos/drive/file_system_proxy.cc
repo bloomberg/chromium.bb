@@ -33,12 +33,15 @@ namespace drive {
 
 namespace {
 
+typedef fileapi::RemoteFileSystemProxyInterface::OpenFileCallback
+    OpenFileCallback;
+
 const char kFeedField[] = "feed";
 
 // Helper function to run reply on results of base::CreatePlatformFile() on
 // IO thread.
 void OnPlatformFileOpened(
-    const FileSystemOperation::OpenFileCallback& callback,
+    const OpenFileCallback& callback,
     base::ProcessHandle peer_handle,
     base::PlatformFileError* open_error,
     base::PlatformFile platform_file) {
@@ -48,7 +51,7 @@ void OnPlatformFileOpened(
 // Helper function to run OpenFileCallback from
 // FileSystemProxy::OpenFile().
 void OnGetFileByPathForOpen(
-    const FileSystemOperation::OpenFileCallback& callback,
+    const OpenFileCallback& callback,
     int file_flags,
     base::ProcessHandle peer_handle,
     FileError file_error,
@@ -395,7 +398,7 @@ void FileSystemProxy::Truncate(
 void FileSystemProxy::OnOpenFileForWriting(
     int file_flags,
     base::ProcessHandle peer_handle,
-    const FileSystemOperation::OpenFileCallback& callback,
+    const OpenFileCallback& callback,
     FileError file_error,
     const base::FilePath& local_cache_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -429,7 +432,7 @@ void FileSystemProxy::OnCreateFileForOpen(
     const base::FilePath& file_path,
     int file_flags,
     base::ProcessHandle peer_handle,
-    const FileSystemOperation::OpenFileCallback& callback,
+    const OpenFileCallback& callback,
     FileError file_error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   base::PlatformFileError create_result =
@@ -510,7 +513,7 @@ void FileSystemProxy::OpenFile(
     const FileSystemURL& file_url,
     int file_flags,
     base::ProcessHandle peer_handle,
-    const FileSystemOperation::OpenFileCallback& callback) {
+    const OpenFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   base::FilePath file_path;

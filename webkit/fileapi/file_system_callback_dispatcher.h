@@ -65,6 +65,7 @@ class WEBKIT_STORAGE_EXPORT FileSystemCallbackDispatcher {
   // for Pepper.
   // The method will be responsible for closing |file|.
   virtual void DidOpenFile(base::PlatformFile file,
+                           int file_open_id,
                            quota::QuotaLimitType quota_policy);
 };
 

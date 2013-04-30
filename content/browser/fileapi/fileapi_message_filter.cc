@@ -111,20 +111,18 @@ void FileAPIMessageFilter::OnChannelClosing() {
   in_transit_snapshot_files_.clear();
 
   // Close all files that are previously OpenFile()'ed in this process.
-  if (!open_filesystem_urls_.empty()) {
+  if (!on_close_callbacks_.IsEmpty()) {
     DLOG(INFO)
         << "File API: Renderer process shut down before NotifyCloseFile"
-        << " for " << open_filesystem_urls_.size() << " files opened in PPAPI";
+        << " for " << on_close_callbacks_.size() << " files opened in PPAPI";
   }
-  for (std::multiset<GURL>::const_iterator iter =
-       open_filesystem_urls_.begin();
-       iter != open_filesystem_urls_.end(); ++iter) {
-    FileSystemURL url(context_->CrackURL(*iter));
-    FileSystemOperation* operation = context_->CreateFileSystemOperation(
-        url, NULL);
-    if (operation)
-      operation->NotifyCloseFile(url);
+
+  for (OnCloseCallbackMap::iterator itr(&on_close_callbacks_);
+       !itr.IsAtEnd(); itr.Advance()) {
+    itr.GetCurrentValue()->Run();
   }
+
+  on_close_callbacks_.Clear();
 }
 
 void FileAPIMessageFilter::OverrideThreadForMessage(
@@ -470,27 +468,21 @@ void FileAPIMessageFilter::OnOpenFile(
     return;
   operation->OpenFile(
       url, file_flags, peer_handle(),
-      base::Bind(&FileAPIMessageFilter::DidOpenFile, this, request_id, path,
+      base::Bind(&FileAPIMessageFilter::DidOpenFile, this, request_id,
                  quota_policy));
 }
 
-void FileAPIMessageFilter::OnNotifyCloseFile(const GURL& path) {
+void FileAPIMessageFilter::OnNotifyCloseFile(int file_open_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  // Remove |path| from the set of opened urls. It must only be called for a URL
-  // that is successfully opened and enrolled in DidOpenFile.
-  std::multiset<GURL>::iterator iter = open_filesystem_urls_.find(path);
-  DCHECK(iter != open_filesystem_urls_.end());
-  open_filesystem_urls_.erase(iter);
-
-  FileSystemURL url(context_->CrackURL(path));
-
-  // Do not use GetNewOperation() here, because NotifyCloseFile is a one-way
-  // operation that does not have request_id by which we respond back.
-  FileSystemOperation* operation = context_->CreateFileSystemOperation(
-      url, NULL);
-  if (operation)
-    operation->NotifyCloseFile(url);
+  // Remove |file_open_id| from the map of |on_close_callback|s.
+  // It must only be called for a ID that is successfully opened and enrolled in
+  // DidOpenFile.
+  base::Closure* on_close_callback = on_close_callbacks_.Lookup(file_open_id);
+  if (on_close_callback && !on_close_callback->is_null()) {
+    on_close_callback->Run();
+    on_close_callbacks_.Remove(file_open_id);
+  }
 }
 
 void FileAPIMessageFilter::OnWillUpdate(const GURL& path) {
@@ -668,20 +660,22 @@ void FileAPIMessageFilter::DidReadDirectory(
 }
 
 void FileAPIMessageFilter::DidOpenFile(int request_id,
-                                       const GURL& path,
                                        quota::QuotaLimitType quota_policy,
                                        base::PlatformFileError result,
                                        base::PlatformFile file,
+                                       const base::Closure& on_close_callback,
                                        base::ProcessHandle peer_handle) {
   if (result == base::PLATFORM_FILE_OK) {
     IPC::PlatformFileForTransit file_for_transit =
         file != base::kInvalidPlatformFileValue ?
             IPC::GetFileHandleForProcess(file, peer_handle, true) :
             IPC::InvalidPlatformFileForTransit();
-    open_filesystem_urls_.insert(path);
+    int file_open_id = on_close_callbacks_.Add(
+        new base::Closure(on_close_callback));
 
     Send(new FileSystemMsg_DidOpenFile(request_id,
                                        file_for_transit,
+                                       file_open_id,
                                        quota_policy));
   } else {
     Send(new FileSystemMsg_DidFail(request_id,

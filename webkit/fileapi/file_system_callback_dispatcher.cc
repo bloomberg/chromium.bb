@@ -12,7 +12,9 @@ FileSystemCallbackDispatcher::~FileSystemCallbackDispatcher() {
 }
 
 void FileSystemCallbackDispatcher::DidOpenFile(
-    base::PlatformFile file, quota::QuotaLimitType quota_policy) {
+    base::PlatformFile file,
+    int file_open_id,
+    quota::QuotaLimitType quota_policy) {
   NOTREACHED();
 
   if (file != base::kInvalidPlatformFileValue)

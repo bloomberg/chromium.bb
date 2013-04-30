@@ -111,7 +111,7 @@ class FileAPIMessageFilter : public BrowserMessageFilter {
                    const base::Time& last_modified_time);
   void OnCancel(int request_id, int request_to_cancel);
   void OnOpenFile(int request_id, const GURL& path, int file_flags);
-  void OnNotifyCloseFile(const GURL& path);
+  void OnNotifyCloseFile(int file_open_id);
   void OnWillUpdate(const GURL& path);
   void OnDidUpdate(const GURL& path, int64 delta);
   void OnSyncGetPlatformPath(const GURL& path,
@@ -141,10 +141,10 @@ class FileAPIMessageFilter : public BrowserMessageFilter {
                         const std::vector<base::FileUtilProxy::Entry>& entries,
                         bool has_more);
   void DidOpenFile(int request_id,
-                   const GURL& path,
                    quota::QuotaLimitType quota_policy,
                    base::PlatformFileError result,
                    base::PlatformFile file,
+                   const base::Closure& on_close_callback,
                    base::ProcessHandle peer_handle);
   void DidWrite(int request_id,
                 base::PlatformFileError result,
@@ -198,9 +198,10 @@ class FileAPIMessageFilter : public BrowserMessageFilter {
   std::map<int, scoped_refptr<webkit_blob::ShareableFileReference> >
       in_transit_snapshot_files_;
 
-  // Keep track of file system file URLs opened by OpenFile() in this process.
+  // Keep track of file system file opened by OpenFile() in this process.
   // Need to close all of them when the renderer process dies.
-  std::multiset<GURL> open_filesystem_urls_;
+  typedef IDMap<base::Closure, IDMapOwnPointer> OnCloseCallbackMap;
+  OnCloseCallbackMap on_close_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(FileAPIMessageFilter);
 };

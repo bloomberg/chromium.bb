@@ -90,7 +90,7 @@ class FileSystemDispatcher : public IPC::Listener {
                 fileapi::FileSystemCallbackDispatcher* dispatcher);
   // This must be paired with OpenFile, and called after finished using the
   // raw PlatformFile returned from OpenFile.
-  bool NotifyCloseFile(const GURL& file_path);
+  bool NotifyCloseFile(int file_open_id);
 
   bool CreateSnapshotFile(const GURL& file_path,
                           fileapi::FileSystemCallbackDispatcher* dispatcher);
@@ -116,6 +116,7 @@ class FileSystemDispatcher : public IPC::Listener {
   void OnDidOpenFile(
       int request_id,
       IPC::PlatformFileForTransit file,
+      int file_open_id,
       quota::QuotaLimitType quota_policy);
 
   IDMap<fileapi::FileSystemCallbackDispatcher, IDMapOwnPointer> dispatchers_;

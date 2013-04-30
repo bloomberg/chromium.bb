@@ -247,9 +247,9 @@ bool FileSystemDispatcher::OpenFile(
   return true;
 }
 
-bool FileSystemDispatcher::NotifyCloseFile(const GURL& file_path) {
+bool FileSystemDispatcher::NotifyCloseFile(int file_open_id) {
   return ChildThread::current()->Send(
-      new FileSystemHostMsg_NotifyCloseFile(file_path));
+      new FileSystemHostMsg_NotifyCloseFile(file_open_id));
 }
 
 bool FileSystemDispatcher::CreateSnapshotFile(
@@ -339,11 +339,13 @@ void FileSystemDispatcher::OnDidWrite(
 void FileSystemDispatcher::OnDidOpenFile(
     int request_id,
     IPC::PlatformFileForTransit file,
+    int file_open_id,
     quota::QuotaLimitType quota_policy) {
   fileapi::FileSystemCallbackDispatcher* dispatcher =
       dispatchers_.Lookup(request_id);
   DCHECK(dispatcher);
   dispatcher->DidOpenFile(IPC::PlatformFileForTransitToPlatformFile(file),
+                          file_open_id,
                           quota_policy);
   dispatchers_.Remove(request_id);
 }
