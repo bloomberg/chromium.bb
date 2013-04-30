@@ -101,6 +101,12 @@ void GetFileCallbackToFileOperationCallbackAdapter(
   callback.Run(error);
 }
 
+// Wraps |callback| and always passes FILE_ERROR_OK when invoked.
+// This is used for adopting |callback| to wait for a non-fatal operation.
+void IgnoreError(const FileOperationCallback& callback, FileError error) {
+  callback.Run(FILE_ERROR_OK);
+}
+
 }  // namespace
 
 // DriveFileSystem::GetFileCompleteForOpenParams struct implementation.
@@ -1405,18 +1411,23 @@ void DriveFileSystem::AddUploadedFileToCache(
   DCHECK(!params.md5.empty());
   DCHECK(!params.callback.is_null());
 
-  if (error != FILE_ERROR_OK) {
+  // Depending on timing, a metadata may have inserted via delta feed already.
+  // So, FILE_ERROR_EXISTS is not an error.
+  if (error != FILE_ERROR_OK && error != FILE_ERROR_EXISTS) {
     params.callback.Run(error);
     return;
   }
 
   OnDirectoryChanged(file_path.DirName());
 
+  // At this point, upload to the server is fully succeeded. Failure to store to
+  // cache is not a fatal error, so we wrap the callback with IgnoreError, and
+  // always return success to the caller.
   cache_->Store(params.resource_id,
                 params.md5,
                 params.file_content_path,
                 DriveCache::FILE_OPERATION_COPY,
-                params.callback);
+                base::Bind(&IgnoreError, params.callback));
 }
 
 void DriveFileSystem::GetMetadata(

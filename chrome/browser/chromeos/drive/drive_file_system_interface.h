@@ -422,6 +422,7 @@ class DriveFileSystemInterface {
   // the cache.
   //
   // |callback| must not be null.
+  // TODO(kinaba): move to an internal operation class. http://crbug.com/236771.
   virtual void AddUploadedFile(scoped_ptr<google_apis::ResourceEntry> doc_entry,
                                const base::FilePath& file_content_path,
                                const FileOperationCallback& callback) = 0;
