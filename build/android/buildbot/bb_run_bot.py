@@ -113,6 +113,8 @@ def GetBotStepMap():
         ['bb_compile', 'bb_compile_experimental', 'bb_zip_build'], None, None),
       B('fyi-tests', std_test_steps,
         T(std_tests, ['--experimental', flakiness_server]), None),
+      B('fyi-component-builder-tests-dbg', compile_step,
+        T(std_tests, ['--experimental', flakiness_server]), None),
       B('perf-tests-rel', std_test_steps,
         T([], ['--install=ContentShell']),
         None),
