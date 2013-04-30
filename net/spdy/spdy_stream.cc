@@ -791,7 +791,8 @@ int SpdyStream::DoLoop(int result) {
 
 int SpdyStream::DoGetDomainBoundCert() {
   CHECK(request_.get());
-  if (!session_->NeedsCredentials()) {
+  GURL url = GetUrl();
+  if (!session_->NeedsCredentials() || pushed_ || !url.SchemeIs("https")) {
     // Proceed directly to sending headers
     io_state_ = STATE_SEND_HEADERS;
     return OK;
@@ -810,7 +811,7 @@ int SpdyStream::DoGetDomainBoundCert() {
   std::vector<uint8> requested_cert_types;
   requested_cert_types.push_back(CLIENT_CERT_ECDSA_SIGN);
   int rv = sbc_service->GetDomainBoundCert(
-      GetUrl().GetOrigin().host(), requested_cert_types,
+      url.GetOrigin().host(), requested_cert_types,
       &domain_bound_cert_type_, &domain_bound_private_key_, &domain_bound_cert_,
       base::Bind(&SpdyStream::OnGetDomainBoundCertComplete,
                  weak_ptr_factory_.GetWeakPtr()),

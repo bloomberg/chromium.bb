@@ -902,6 +902,134 @@ TEST_F(SpdyHttpStreamSpdy3Test, SendCredentialsEC) {
   sequenced_worker_pool->Shutdown();
 }
 
+TEST_F(SpdyHttpStreamSpdy3Test, DontSendCredentialsForHttpUrlsEC) {
+  scoped_refptr<base::SequencedWorkerPool> sequenced_worker_pool =
+      new base::SequencedWorkerPool(1, "SpdyHttpStreamSpdy3Test");
+  scoped_ptr<ServerBoundCertService> server_bound_cert_service(
+      new ServerBoundCertService(new DefaultServerBoundCertStore(NULL),
+                                 sequenced_worker_pool));
+  std::string cert;
+  std::string proof;
+  GetECServerBoundCertAndProof("proxy.google.com",
+                               server_bound_cert_service.get(),
+                               &cert, &proof);
+
+  const char* kUrl1 = "http://www.google.com/";
+  const char* kUrl2 = "http://www.gmail.com/";
+
+  SpdyCredential cred;
+  cred.slot = 2;
+  cred.proof = proof;
+  cred.certs.push_back(cert);
+
+  scoped_ptr<SpdyFrame> req(ConstructCredentialRequestFrame(
+      0, GURL(kUrl1), 1));
+  scoped_ptr<SpdyFrame> req2(ConstructCredentialRequestFrame(
+      0, GURL(kUrl2), 3));
+  MockWrite writes[] = {
+    CreateMockWrite(*req.get(), 0),
+    CreateMockWrite(*req2.get(), 2),
+  };
+
+  scoped_ptr<SpdyFrame> resp(ConstructSpdyGetSynReply(NULL, 0, 1));
+  scoped_ptr<SpdyFrame> resp2(ConstructSpdyGetSynReply(NULL, 0, 3));
+  MockRead reads[] = {
+    CreateMockRead(*resp, 1),
+    CreateMockRead(*resp2, 3),
+    MockRead(ASYNC, 0, 4)  // EOF
+  };
+
+  HostPortPair host_port_pair(HostPortPair::FromURL(GURL(kUrl1)));
+  HostPortProxyPair pair(host_port_pair,
+                         ProxyServer::FromURI("proxy.google.com",
+                                              ProxyServer::SCHEME_HTTPS));
+
+  DeterministicMockClientSocketFactory* socket_factory =
+      session_deps_.deterministic_socket_factory.get();
+  DeterministicSocketData data(reads, arraysize(reads),
+                               writes, arraysize(writes));
+  socket_factory->AddSocketDataProvider(&data);
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  ssl.channel_id_sent = true;
+  ssl.server_bound_cert_service = server_bound_cert_service.get();
+  ssl.protocol_negotiated = kProtoSPDY3;
+  socket_factory->AddSSLSocketDataProvider(&ssl);
+  http_session_ = SpdySessionDependencies::SpdyCreateSessionDeterministic(
+      &session_deps_);
+  session_ = http_session_->spdy_session_pool()->Get(pair, BoundNetLog());
+  transport_params_ = new TransportSocketParams(host_port_pair,
+                                                MEDIUM, false, false,
+                                                OnHostResolutionCallback());
+  TestCompletionCallback callback;
+  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
+  SSLConfig ssl_config;
+  scoped_refptr<SOCKSSocketParams> socks_params;
+  scoped_refptr<HttpProxySocketParams> http_proxy_params;
+  scoped_refptr<SSLSocketParams> ssl_params(
+      new SSLSocketParams(transport_params_,
+                          socks_params,
+                          http_proxy_params,
+                          ProxyServer::SCHEME_DIRECT,
+                          host_port_pair,
+                          ssl_config,
+                          0,
+                          false,
+                          false));
+  EXPECT_EQ(ERR_IO_PENDING,
+            connection->Init(host_port_pair.ToString(),
+                             ssl_params,
+                             MEDIUM,
+                             callback.callback(),
+                             http_session_->GetSSLSocketPool(
+                                 HttpNetworkSession::NORMAL_SOCKET_POOL),
+                             BoundNetLog()));
+  callback.WaitForResult();
+  EXPECT_EQ(OK,
+            session_->InitializeWithSocket(connection.release(), true, OK));
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL(kUrl1);
+  HttpResponseInfo response;
+  HttpRequestHeaders headers;
+  BoundNetLog net_log;
+  scoped_ptr<SpdyHttpStream> http_stream(
+      new SpdyHttpStream(session_.get(), true));
+  ASSERT_EQ(
+      OK,
+      http_stream->InitializeStream(&request, DEFAULT_PRIORITY,
+                                    net_log, CompletionCallback()));
+
+  EXPECT_EQ(ERR_IO_PENDING, http_stream->SendRequest(headers, &response,
+                                                     callback.callback()));
+  EXPECT_TRUE(http_session_->spdy_session_pool()->HasSession(pair));
+
+  data.RunFor(2);
+  EXPECT_EQ(OK, callback.WaitForResult());
+
+  // Start up second request for resource on a new origin.
+  scoped_ptr<SpdyHttpStream> http_stream2(
+      new SpdyHttpStream(session_.get(), true));
+  request.url = GURL(kUrl2);
+  ASSERT_EQ(
+      OK,
+      http_stream2->InitializeStream(&request, DEFAULT_PRIORITY,
+                                     net_log, CompletionCallback()));
+  EXPECT_EQ(ERR_IO_PENDING, http_stream2->SendRequest(headers, &response,
+                                                      callback.callback()));
+  data.RunFor(1);
+  EXPECT_EQ(OK, callback.WaitForResult());
+
+  EXPECT_EQ(ERR_IO_PENDING, http_stream2->ReadResponseHeaders(
+      callback.callback()));
+  data.RunFor(1);
+  EXPECT_EQ(OK, callback.WaitForResult());
+  ASSERT_TRUE(response.headers.get() != NULL);
+  ASSERT_EQ(200, response.headers->response_code());
+  data.RunFor(1);
+  sequenced_worker_pool->Shutdown();
+}
+
 #endif  // !defined(USE_OPENSSL)
 
 // TODO(willchan): Write a longer test for SpdyStream that exercises all
