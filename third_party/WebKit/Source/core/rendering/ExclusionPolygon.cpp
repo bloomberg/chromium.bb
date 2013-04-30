@@ -28,8 +28,9 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/LayoutPoint.h"
 #include "core/rendering/ExclusionPolygon.h"
+
+#include "core/platform/graphics/LayoutPoint.h"
 
 #include <wtf/MathExtras.h>
 
@@ -488,7 +489,9 @@ bool ExclusionPolygon::firstIncludedIntervalLogicalTop(float minLogicalIntervalT
             if (offsetEdges[i].intersection(offsetEdges[j], offsetEdgesIntersection)) {
                 FloatPoint potentialFirstFitLocation(offsetEdgesIntersection.x() - dx, offsetEdgesIntersection.y() - dy);
                 FloatRect potentialFirstFitRect(potentialFirstFitLocation, minLogicalIntervalSize);
-                if ((potentialFirstFitLocation.y() >= minLogicalIntervalTop)
+                if ((offsetEdges[i].basis() == OffsetPolygonEdge::LineTop
+                    || offsetEdges[j].basis() == OffsetPolygonEdge::LineTop
+                    || potentialFirstFitLocation.y() >= minLogicalIntervalTop)
                     && (!firstFitFound || aboveOrToTheLeft(potentialFirstFitRect, firstFitRect))
                     && polygon.contains(offsetEdgesIntersection)
                     && firstFitRectInPolygon(polygon, potentialFirstFitRect, offsetEdges[i].edgeIndex(), offsetEdges[j].edgeIndex())) {
