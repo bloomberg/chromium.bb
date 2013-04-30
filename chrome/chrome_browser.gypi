@@ -1012,6 +1012,8 @@
         'browser/metrics/perf_provider_chromeos.h',
         'browser/metrics/thread_watcher.cc',
         'browser/metrics/thread_watcher.h',
+        'browser/metrics/time_ticks_experiment_win.cc',
+        'browser/metrics/time_ticks_experiment_win.h',
         'browser/metrics/tracking_synchronizer.cc',
         'browser/metrics/tracking_synchronizer.h',
         'browser/metrics/tracking_synchronizer_observer.h',

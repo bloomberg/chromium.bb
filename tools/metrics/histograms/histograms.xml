@@ -6241,6 +6241,49 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WinTimeTicks.FailedToChangeCores" enum="WindowsVersion">
+  <summary>
+    Incremented each time the TimeTicks field trial runs on a machine with
+    multiple cores, but failed to change thread affinity. Broken down by Windows
+    version.
+  </summary>
+</histogram>
+
+<histogram name="WinTimeTicks.MinResolutionNanoseconds" units="nanoseconds">
+  <summary>
+    The smallest non-zero delta reported by subsequent calls to
+    QueryPerformanceCounter.
+  </summary>
+</histogram>
+
+<histogram name="WinTimeTicks.NonStopTsc">
+  <summary>
+    True if the CPU's time stamp counter ticks at a constant rate regardless of
+    CPU frequency.
+  </summary>
+</histogram>
+
+<histogram name="WinTimeTicks.TickedBackwards" enum="WindowsVersion">
+  <summary>
+    The number of times the TimeTicks field trial failed because
+    QueryPerformanceCounter ticked backwards. Broken down by Windows version.
+  </summary>
+</histogram>
+
+<histogram name="WinTimeTicks.VersionSuccessful" enum="WindowsVersion">
+  <summary>
+    The number of times the TimeTicks field trial succeeded. Broken down by
+    Windows version.
+  </summary>
+</histogram>
+
+<histogram name="WinTimeTicks.VersionTotal" enum="WindowsVersion">
+  <summary>
+    The number of times the TimeTicks field trial ran for comparison with
+    WinTimeTicks.VersionSuccess. Broken down by Windows version.
+  </summary>
+</histogram>
+
 </histograms>
 
 <!-- Enum types -->
@@ -9716,6 +9759,15 @@ other types of suffix sets.
   <int value="1" label="kStatusCodeTypeByClient"/>
   <int value="2" label="kStatusCodeTypeByUser"/>
   <int value="3" label="kStatusCodeTypeConsideredDead"/>
+</enum>
+
+<enum name="WindowsVersion" type="int">
+  <int value="0" label="Pre-XP"/>
+  <int value="1" label="XP"/>
+  <int value="2" label="2003 Server"/>
+  <int value="3" label="Vista"/>
+  <int value="4" label="Windows 7"/>
+  <int value="5" label="Windows 8"/>
 </enum>
 
 </enums>

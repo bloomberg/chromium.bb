@@ -45,6 +45,9 @@ class BASE_EXPORT CPU {
   bool has_sse41() const { return has_sse41_; }
   bool has_sse42() const { return has_sse42_; }
   bool has_avx() const { return has_avx_; }
+  bool has_non_stop_time_stamp_counter() const {
+    return has_non_stop_time_stamp_counter_;
+  }
   IntelMicroArchitecture GetIntelMicroArchitecture() const;
   const std::string& cpu_brand() const { return cpu_brand_; }
 
@@ -66,6 +69,7 @@ class BASE_EXPORT CPU {
   bool has_sse41_;
   bool has_sse42_;
   bool has_avx_;
+  bool has_non_stop_time_stamp_counter_;
   std::string cpu_vendor_;
   std::string cpu_brand_;
 };

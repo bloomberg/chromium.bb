@@ -32,6 +32,7 @@ CPU::CPU()
     has_ssse3_(false),
     has_sse41_(false),
     has_sse42_(false),
+    has_non_stop_time_stamp_counter_(false),
     cpu_vendor_("unknown") {
   Initialize();
 }
@@ -123,6 +124,7 @@ void CPU::Initialize() {
   // Get the brand string of the cpu.
   __cpuid(cpu_info, 0x80000000);
   const int parameter_end = 0x80000004;
+  int max_parameter = cpu_info[0];
 
   if (cpu_info[0] >= parameter_end) {
     char* cpu_string_ptr = cpu_string;
@@ -134,6 +136,12 @@ void CPU::Initialize() {
       cpu_string_ptr += sizeof(cpu_info);
     }
     cpu_brand_.assign(cpu_string, cpu_string_ptr - cpu_string);
+  }
+
+  const int parameter_containing_non_stop_time_stamp_counter = 0x80000007;
+  if (max_parameter >= parameter_containing_non_stop_time_stamp_counter) {
+    __cpuid(cpu_info, parameter_containing_non_stop_time_stamp_counter);
+    has_non_stop_time_stamp_counter_ = (cpu_info[3] & (1 << 8)) != 0;
   }
 #endif
 }
