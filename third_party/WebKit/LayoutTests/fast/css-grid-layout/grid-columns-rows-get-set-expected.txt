@@ -22,6 +22,8 @@ PASS getComputedStyle(gridWithMinContent, '').getPropertyValue('-webkit-grid-col
 PASS getComputedStyle(gridWithMinContent, '').getPropertyValue('-webkit-grid-rows') is '-webkit-min-content'
 PASS getComputedStyle(gridWithMaxContent, '').getPropertyValue('-webkit-grid-columns') is '-webkit-max-content'
 PASS getComputedStyle(gridWithMaxContent, '').getPropertyValue('-webkit-grid-rows') is '-webkit-max-content'
+PASS getComputedStyle(gridWithFraction, '').getPropertyValue('-webkit-grid-columns') is '1fr'
+PASS getComputedStyle(gridWithFraction, '').getPropertyValue('-webkit-grid-rows') is '2fr'
 
 Test getting wrong values for -webkit-grid-columns and -webkit-grid-rows through CSS (they should resolve to the default: 'none')
 PASS getComputedStyle(gridWithFitContentElement, '').getPropertyValue('-webkit-grid-columns') is 'none'
@@ -60,8 +62,23 @@ PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns') is '
 PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows') is 'minmax(-webkit-max-content, 50px)'
 PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns') is 'minmax(-webkit-min-content, -webkit-max-content)'
 PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows') is 'minmax(-webkit-max-content, -webkit-min-content)'
+PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns') is '3600fr'
+PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows') is '154fr'
+PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns') is '3fr'
+PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows') is '4fr'
 
-Test setting grid-columns and grid-rows to bad minmax value through JS
+Test setting grid-columns and grid-rows to bad values through JS
+PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns') is 'none'
+PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows') is 'none'
+PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns') is 'none'
+PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows') is 'none'
+PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns') is 'none'
+PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows') is 'none'
+PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns') is 'none'
+PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows') is 'none'
+We are failing the following test due to crbug.com/235629
+FAIL getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns') should be none. Was 2fr.
+PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows') is 'none'
 PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns') is 'none'
 PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows') is 'none'
 PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns') is 'none'

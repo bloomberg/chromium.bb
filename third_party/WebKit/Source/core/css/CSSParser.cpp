@@ -4720,6 +4720,39 @@ PassRefPtr<CSSPrimitiveValue> CSSParser::parseGridBreadth(CSSParserValue* curren
     if (currentValue->id == CSSValueWebkitMinContent || currentValue->id == CSSValueWebkitMaxContent)
         return cssValuePool().createIdentifierValue(currentValue->id);
 
+    // Fractional unit is a non-negative dimension.
+    if (currentValue->unit == CSSPrimitiveValue::CSS_DIMENSION) {
+        // We need to split the string into the <number> and the unit.
+        const CSSParserString& data = currentValue->string;
+        size_t startOfUnit = 0;
+
+        // FIXME: Until crbug.com/235629 is fixed, we don't check for a leading '+' or '-'.
+
+        while (startOfUnit < data.length() && isASCIIDigit(data[startOfUnit]))
+            ++startOfUnit;
+
+        // Checks that the unit is 'fr'.
+        if (data.length() - startOfUnit != 2 || !isASCIIAlphaCaselessEqual(data[data.length() - 1], 'r') || !isASCIIAlphaCaselessEqual(data[data.length() - 2], 'f'))
+            return 0;
+
+        double flexValue = -1;
+        size_t readBytes = 0;
+        // FIXME: There is no parseInt for CSSParserString which is why we use to parseDouble.
+        if (data.is8Bit())
+            flexValue = WTF::parseDouble(data.characters8(), startOfUnit, readBytes);
+        else
+            flexValue = WTF::parseDouble(data.characters16(), startOfUnit, readBytes);
+
+        // Our parsing should be successful as we checked the <number> above and shouldn't let any non-positive or non-integer.
+        ASSERT(readBytes == startOfUnit);
+        ASSERT(flexValue >= 0);
+        ASSERT(flexValue == (unsigned)flexValue);
+        if (!flexValue)
+            return 0;
+
+        return cssValuePool().createValue(flexValue, CSSPrimitiveValue::CSS_DIMENSION);
+    }
+
     if (!validUnit(currentValue, FLength | FPercent))
         return 0;
 

@@ -76,7 +76,7 @@ struct CSSParserString {
 
     void lower();
 
-    UChar operator[](unsigned i)
+    UChar operator[](unsigned i) const
     {
         ASSERT_WITH_SECURITY_IMPLICATION(i < m_length);
         if (is8Bit())
@@ -84,7 +84,7 @@ struct CSSParserString {
         return m_data.characters16[i];
     }
 
-    bool equalIgnoringCase(const char* str)
+    bool equalIgnoringCase(const char* str) const
     {
         if (is8Bit())
             return WTF::equalIgnoringCase(str, characters8(), length());

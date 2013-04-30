@@ -42,16 +42,30 @@ class GridLength {
 public:
     GridLength()
         : m_length(Undefined)
+        , m_flex(0)
+        , m_type(LengthType)
     {
     }
 
     GridLength(const Length& length)
         : m_length(length)
+        , m_flex(0)
+        , m_type(LengthType)
     {
     }
 
-    const Length& length() const { return m_length; }
-    Length& length() { return m_length; }
+    bool isLength() const { return m_type == LengthType; }
+    bool isFlex() const { return m_type == FlexType; }
+
+    const Length& length() const { ASSERT(isLength()); return m_length; }
+    Length& length() { ASSERT(isLength()); return m_length; }
+
+    unsigned flex() const { ASSERT(isFlex()); return m_flex; }
+    void setFlex(unsigned flex)
+    {
+        m_type = FlexType;
+        m_flex = flex;
+    }
 
     bool operator==(const GridLength& o) const
     {
@@ -59,7 +73,15 @@ public:
     }
 
 private:
+    // Ideally we would put the 2 following fields in a union, but Length has a constructor,
+    // a destructor and a copy assignment which isn't allowed.
     Length m_length;
+    unsigned m_flex;
+    enum GridLengthType {
+        LengthType,
+        FlexType
+    };
+    GridLengthType m_type;
 };
 
 } // namespace WebCore

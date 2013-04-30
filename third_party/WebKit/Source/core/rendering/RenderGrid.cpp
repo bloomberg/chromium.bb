@@ -231,6 +231,10 @@ void RenderGrid::computePreferredLogicalWidths()
 
 LayoutUnit RenderGrid::computePreferredTrackWidth(const GridLength& gridLength, size_t trackIndex) const
 {
+    // FIXME: Implement support for <flex> (crbug.com/235258)
+    if (gridLength.isFlex())
+        return 0;
+
     const Length& length = gridLength.length();
 
     if (length.isFixed()) {
@@ -295,17 +299,27 @@ void RenderGrid::computedUsedBreadthOfGridTracks(TrackSizingDirection direction,
 
 LayoutUnit RenderGrid::computeUsedBreadthOfMinLength(TrackSizingDirection direction, const GridLength& gridLength) const
 {
+    if (gridLength.isFlex())
+        return 0;
+
     const Length& trackLength = gridLength.length();
+    ASSERT(!trackLength.isAuto());
     if (trackLength.isFixed() || trackLength.isPercent() || trackLength.isViewportPercentage())
         return computeUsedBreadthOfSpecifiedLength(direction, trackLength);
 
-    ASSERT(trackLength.isMinContent() || trackLength.isMaxContent() || trackLength.isAuto());
+    ASSERT(trackLength.isMinContent() || trackLength.isMaxContent());
     return 0;
 }
 
 LayoutUnit RenderGrid::computeUsedBreadthOfMaxLength(TrackSizingDirection direction, const GridLength& gridLength) const
 {
+    if (gridLength.isFlex()) {
+        // FIXME: We should return the UsedBreadth per the specification.
+        return 0;
+    }
+
     const Length& trackLength = gridLength.length();
+    ASSERT(!trackLength.isAuto());
     if (trackLength.isFixed() || trackLength.isPercent() || trackLength.isViewportPercentage()) {
         LayoutUnit computedBreadth = computeUsedBreadthOfSpecifiedLength(direction, trackLength);
         // FIXME: We should ASSERT that computedBreadth cannot return infinity but it's currently
@@ -313,7 +327,7 @@ LayoutUnit RenderGrid::computeUsedBreadthOfMaxLength(TrackSizingDirection direct
         return computedBreadth;
     }
 
-    ASSERT(trackLength.isMinContent() || trackLength.isMaxContent() || trackLength.isAuto());
+    ASSERT(trackLength.isMinContent() || trackLength.isMaxContent());
     return infinity;
 }
 

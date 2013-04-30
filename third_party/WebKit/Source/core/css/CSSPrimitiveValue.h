@@ -184,6 +184,7 @@ public:
     bool isDotsPerCentimeter() const { return primitiveType() == CSS_DPCM; }
     bool isVariableName() const { return primitiveType() == CSS_VARIABLE_NAME; }
     bool isViewportPercentageLength() const { return m_primitiveUnitType >= CSS_VW && m_primitiveUnitType <= CSS_VMAX; }
+    bool isDimension() const { return primitiveType() == CSS_DIMENSION; }
 
     static PassRefPtr<CSSPrimitiveValue> createIdentifier(int identifier) { return adoptRef(new CSSPrimitiveValue(identifier)); }
     static PassRefPtr<CSSPrimitiveValue> createColor(unsigned rgbValue) { return adoptRef(new CSSPrimitiveValue(rgbValue)); }

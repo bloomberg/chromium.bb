@@ -2265,6 +2265,12 @@ static bool createGridTrackBreadth(CSSPrimitiveValue* primitiveValue, const Styl
         return true;
     }
 
+    if (primitiveValue->isDimension()) {
+        // Fractional unit.
+        workingLength.setFlex(primitiveValue->getIntValue());
+        return true;
+    }
+
     workingLength = primitiveValue->convertToLength<FixedIntegerConversion | PercentConversion | ViewportPercentageConversion | AutoConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
     if (workingLength.length().isUndefined())
         return false;

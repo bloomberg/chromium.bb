@@ -37,6 +37,10 @@ var gridWithMaxContent = document.getElementById("gridWithMaxContent");
 shouldBe("getComputedStyle(gridWithMaxContent, '').getPropertyValue('-webkit-grid-columns')", "'-webkit-max-content'");
 shouldBe("getComputedStyle(gridWithMaxContent, '').getPropertyValue('-webkit-grid-rows')", "'-webkit-max-content'");
 
+var gridWithFraction = document.getElementById("gridWithFraction");
+shouldBe("getComputedStyle(gridWithFraction, '').getPropertyValue('-webkit-grid-columns')", "'1fr'");
+shouldBe("getComputedStyle(gridWithFraction, '').getPropertyValue('-webkit-grid-rows')", "'2fr'");
+
 debug("");
 debug("Test getting wrong values for -webkit-grid-columns and -webkit-grid-rows through CSS (they should resolve to the default: 'none')");
 var gridWithFitContentElement = document.getElementById("gridWithFitContentElement");
@@ -143,8 +147,24 @@ element.style.webkitGridRows = "minmax(-webkit-max-content, -webkit-min-content)
 shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns')", "'minmax(-webkit-min-content, -webkit-max-content)'");
 shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows')", "'minmax(-webkit-max-content, -webkit-min-content)'");
 
+// Unit comparison should be case-insensitive.
+element = document.createElement("div");
+document.body.appendChild(element);
+element.style.webkitGridColumns = "3600Fr";
+element.style.webkitGridRows = "154fR";
+shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns')", "'3600fr'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows')", "'154fr'");
+
+// A leading '+' is allowed.
+element = document.createElement("div");
+document.body.appendChild(element);
+element.style.webkitGridColumns = "+3fr";
+element.style.webkitGridRows = "+4fr";
+shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns')", "'3fr'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows')", "'4fr'");
+
 debug("");
-debug("Test setting grid-columns and grid-rows to bad minmax value through JS");
+debug("Test setting grid-columns and grid-rows to bad values through JS");
 element = document.createElement("div");
 document.body.appendChild(element);
 // No comma.
@@ -177,6 +197,40 @@ document.body.appendChild(element);
 // Auto is not allowed inside minmax.
 element.style.webkitGridColumns = "minmax(auto, 8vh)";
 element.style.webkitGridRows = "minmax(10vw, auto)";
+shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns')", "'none'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows')", "'none'");
+
+element = document.createElement("div");
+document.body.appendChild(element);
+element.style.webkitGridColumns = "-2fr";
+element.style.webkitGridRows = "3ffr";
+debug("We are failing the following test due to crbug.com/235629");
+shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns')", "'none'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows')", "'none'");
+
+element = document.createElement("div");
+document.body.appendChild(element);
+element.style.webkitGridColumns = "2.0fr";
+element.style.webkitGridRows = "+-3fr";
+shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns')", "'none'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows')", "'none'");
+
+element = document.createElement("div");
+document.body.appendChild(element);
+element.style.webkitGridColumns = "0fr";
+element.style.webkitGridRows = "1r";
+shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns')", "'none'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows')", "'none'");
+
+element = document.createElement("div");
+document.body.appendChild(element);
+element.style.webkitGridColumns = "fr";
+element.style.webkitGridRows = "13 fr"; // A dimension doesn't allow spaces between the number and the unit.
+shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns')", "'none'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows')", "'none'");
+
+element.style.webkitGridColumns = "7.0fr";
+element.style.webkitGridRows = "-8,0fr";
 shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns')", "'none'");
 shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows')", "'none'");
 

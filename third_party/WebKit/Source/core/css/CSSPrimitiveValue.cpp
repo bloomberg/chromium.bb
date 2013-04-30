@@ -927,7 +927,7 @@ String CSSPrimitiveValue::customCssText() const
             text = formatNumber(m_value.num, "turn");
             break;
         case CSS_DIMENSION:
-            // FIXME
+            text = m_value.string;
             break;
         case CSS_STRING:
             text = quoteCSSStringIfNeeded(m_value.string);
