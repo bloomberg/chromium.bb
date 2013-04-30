@@ -1536,6 +1536,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.ErrorCodesForImages" enum="NetErrorCodes">
+  <summary>
+    Net error codes that requests for images end with, including net::OK and
+    net:ERR_ABORTED.
+  </summary>
+</histogram>
+
 <histogram name="Net.ErrorCodesForMainFrame" enum="NetErrorCodes">
   <obsolete>
     Deprecated as of 2011/5/24, replaced by Net.ErrorCodesForMainFrame2, which

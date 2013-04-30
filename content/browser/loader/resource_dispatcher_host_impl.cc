@@ -18,6 +18,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/shared_memory.h"
 #include "base/stl_util.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
@@ -741,27 +742,26 @@ void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
   if (info->GetResourceType() == ResourceType::MAIN_FRAME) {
     // This enumeration has "3" appended to its name to distinguish it from
     // older versions.
-    UMA_HISTOGRAM_CUSTOM_ENUMERATION(
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
         "Net.ErrorCodesForMainFrame3",
-        -loader->request()->status().error(),
-        base::CustomHistogram::ArrayToCustomRanges(
-            kAllNetErrorCodes, arraysize(kAllNetErrorCodes)));
+        -loader->request()->status().error());
 
     if (loader->request()->url().SchemeIsSecure() &&
         loader->request()->url().host() == "www.google.com") {
-      UMA_HISTOGRAM_CUSTOM_ENUMERATION(
+      UMA_HISTOGRAM_SPARSE_SLOWLY(
           "Net.ErrorCodesForHTTPSGoogleMainFrame2",
-          -loader->request()->status().error(),
-          base::CustomHistogram::ArrayToCustomRanges(
-              kAllNetErrorCodes, arraysize(kAllNetErrorCodes)));
+          -loader->request()->status().error());
     }
   } else {
+    if (info->GetResourceType() == ResourceType::IMAGE) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY(
+          "Net.ErrorCodesForImages",
+          -loader->request()->status().error());
+    }
     // This enumeration has "2" appended to distinguish it from older versions.
-    UMA_HISTOGRAM_CUSTOM_ENUMERATION(
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
         "Net.ErrorCodesForSubresources2",
-        -loader->request()->status().error(),
-        base::CustomHistogram::ArrayToCustomRanges(
-            kAllNetErrorCodes, arraysize(kAllNetErrorCodes)));
+        -loader->request()->status().error());
   }
 
   // Destroy the ResourceLoader.
