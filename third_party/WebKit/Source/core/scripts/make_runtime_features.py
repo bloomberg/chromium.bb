@@ -2,6 +2,7 @@
 
 import os.path
 import sys
+import shutil
 
 from in_file import InFile
 
@@ -141,15 +142,28 @@ class RuntimeFeatureWriter(object):
             'storage_definitions' : "\n".join(map(self._storage_definition, self._non_custom_features)),
         }
 
+    def _forcibly_create_text_file_at_path_with_contents(self, file_path, contents):
+        # FIXME: This method can be made less force-full anytime after 6/1/2013.
+        # A gyp error was briefly checked into the tree, causing
+        # a directory to have been generated in place of one of
+        # our output files.  Clean up after that error so that
+        # all users don't need to clobber their output directories.
+        shutil.rmtree(file_path, ignore_errors=True)
+        # The build system should ensure our output directory exists, but just in case.
+        directory = os.path.dirname(file_path)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        with open(file_path, "w") as file_to_write:
+            file_to_write.write(contents)
+
     def write_header(self, output_dir):
         header_path = os.path.join(output_dir, self.class_name + ".h")
-        with open(header_path, "w") as header:
-            header.write(self._generate_header())
+        self._forcibly_create_text_file_at_path_with_contents(header_path, self._generate_header())
 
     def write_implmentation(self, output_dir):
         implmentation_path = os.path.join(output_dir, self.class_name + ".cpp")
-        with open(implmentation_path, "w") as implmentation:
-            implmentation.write(self._generate_implementation())
+        self._forcibly_create_text_file_at_path_with_contents(implmentation_path, self._generate_implementation())
 
 
 class MakeRuntimeFeatures(object):
