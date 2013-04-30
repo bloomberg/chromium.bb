@@ -29,8 +29,8 @@ partial interface DOMWindow {
     const unsigned short PERSISTENT = 1;
 
     [EnabledAtRuntime=FileSystem] void webkitRequestFileSystem(unsigned short type, long long size,
-            [Callback] FileSystemCallback successCallback, [Callback] optional ErrorCallback errorCallback);
+            FileSystemCallback successCallback, optional ErrorCallback errorCallback);
     [EnabledAtRuntime=FileSystem] void webkitResolveLocalFileSystemURL(DOMString url,
-            [Callback] EntryCallback successCallback, [Callback] optional ErrorCallback errorCallback);
+            EntryCallback successCallback, optional ErrorCallback errorCallback);
 };
 

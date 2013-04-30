@@ -50,7 +50,7 @@
 
 #if defined(ENABLE_NOTIFICATIONS) && ENABLE_NOTIFICATIONS
     [CallWith=ScriptExecutionContext] static readonly attribute DOMString permission;
-    [CallWith=ScriptExecutionContext] static void requestPermission([Callback] optional NotificationPermissionCallback callback);
+    [CallWith=ScriptExecutionContext] static void requestPermission(optional NotificationPermissionCallback callback);
 #endif
 
     attribute EventListener onshow;

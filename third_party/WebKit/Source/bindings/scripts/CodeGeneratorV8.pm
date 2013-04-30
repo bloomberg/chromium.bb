@@ -8,6 +8,7 @@
 # Copyright (C) Research In Motion Limited 2010. All rights reserved.
 # Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
 # Copyright (C) 2012 Ericsson AB. All rights reserved.
+# Copyright (C) 2013 Samsung Electronics. All rights reserved.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Library General Public
@@ -1823,7 +1824,7 @@ sub GenerateParametersCheckExpression
             if ($parameter->extendedAttributes->{"StrictTypeChecking"}) {
                 push(@andExpression, "(${value}->IsNull() || ${value}->IsUndefined() || ${value}->IsString() || ${value}->IsObject())");
             }
-        } elsif ($parameter->extendedAttributes->{"Callback"}) {
+        } elsif (IsCallbackInterface($parameter->type)) {
             # For Callbacks only checks if the value is null or object.
             push(@andExpression, "(${value}->IsNull() || ${value}->IsFunction())");
         } elsif (GetArrayType($type) || GetSequenceType($type)) {
@@ -2068,7 +2069,7 @@ END
     my $raisesExceptions = $function->signature->extendedAttributes->{"RaisesException"};
     if (!$raisesExceptions) {
         foreach my $parameter (@{$function->parameters}) {
-            if ((!$parameter->extendedAttributes->{"Callback"} and TypeCanFailConversion($parameter)) or $parameter->extendedAttributes->{"IsIndex"}) {
+            if ((!IsCallbackInterface($parameter->type) and TypeCanFailConversion($parameter)) or $parameter->extendedAttributes->{"IsIndex"}) {
                 $raisesExceptions = 1;
             }
         }
@@ -2190,7 +2191,7 @@ sub GenerateParametersCheck
         # Optional arguments without [Default=...] should generate an early call with fewer arguments.
         # Optional arguments with [Optional=...] should not generate the early call.
         # Optional Dictionary arguments always considered to have default of empty dictionary.
-        if ($parameter->isOptional && !$parameter->extendedAttributes->{"Default"} && $nativeType ne "Dictionary" && !$parameter->extendedAttributes->{"Callback"}) {
+        if ($parameter->isOptional && !$parameter->extendedAttributes->{"Default"} && $nativeType ne "Dictionary" && !IsCallbackInterface($parameter->type)) {
             $parameterCheckString .= "    if (args.Length() <= $paramIndex) {\n";
             my $functionCall = GenerateFunctionCallString($function, $paramIndex, "    " x 2, $interfaceName, $forMainWorldSuffix, %replacements);
             $parameterCheckString .= $functionCall;
@@ -2205,7 +2206,7 @@ sub GenerateParametersCheck
 
         my $parameterName = $parameter->name;
         AddToImplIncludes("core/dom/ExceptionCode.h");
-        if ($parameter->extendedAttributes->{"Callback"}) {
+        if (IsCallbackInterface($parameter->type)) {
             my $v8InterfaceName = "V8" . $parameter->type;
             AddToImplIncludes("$v8InterfaceName.h");
             if ($parameter->isOptional) {
@@ -2358,7 +2359,7 @@ sub GenerateSingleConstructorCallback
     }
     if (!$raisesExceptions) {
         foreach my $parameter (@{$function->parameters}) {
-            if ((!$parameter->extendedAttributes->{"Callback"} and TypeCanFailConversion($parameter)) or $parameter->extendedAttributes->{"IsIndex"}) {
+            if ((!IsCallbackInterface($parameter->type) and TypeCanFailConversion($parameter)) or $parameter->extendedAttributes->{"IsIndex"}) {
                 $raisesExceptions = 1;
             }
         }
@@ -2583,7 +2584,7 @@ sub GenerateNamedConstructor
     }
     if (!$raisesExceptions) {
         foreach my $parameter (@{$function->parameters}) {
-            if ((!$parameter->extendedAttributes->{"Callback"} and TypeCanFailConversion($parameter)) or $parameter->extendedAttributes->{"IsIndex"}) {
+            if ((!IsCallbackInterface($parameter->type) and TypeCanFailConversion($parameter)) or $parameter->extendedAttributes->{"IsIndex"}) {
                 $raisesExceptions = 1;
             }
         }
@@ -2615,9 +2616,9 @@ END
     $code .= <<END;
 static v8::Handle<v8::Value> ${v8InterfaceName}ConstructorCallback(const v8::Arguments& args)
 {
-    ${maybeObserveFeature}
-    ${maybeDeprecateFeature}
 END
+    $code .= $maybeObserveFeature if $maybeObserveFeature;
+    $code .= $maybeDeprecateFeature if $maybeDeprecateFeature;
     $code .= GenerateConstructorHeader();
     AddToImplIncludes("V8Document.h");
     $code .= <<END;
@@ -4705,7 +4706,7 @@ sub RequiresCustomSignature
       return 0;
     }
     foreach my $parameter (@{$function->parameters}) {
-        if (($parameter->isOptional && !$parameter->extendedAttributes->{"Default"}) || $parameter->extendedAttributes->{"Callback"}) {
+        if (($parameter->isOptional && !$parameter->extendedAttributes->{"Default"}) || IsCallbackInterface($parameter->type)) {
             return 0;
         }
     }
@@ -4755,6 +4756,26 @@ sub IsWrapperType
     # FIXME: Should this return false for Sequence and Array types?
     return 0 if IsEnumType($type);
     return !($non_wrapper_types{$type});
+}
+
+sub IsCallbackInterface
+{
+    my $type = shift;
+    return 0 unless IsWrapperType($type);
+    # FIXME: Those checks for Sequence and Array types should probably
+    # be moved to IsWrapperType().
+    return 0 if GetArrayType($type);
+    return 0 if GetSequenceType($type);
+
+    my $idlFile = IDLFileForInterface($type)
+        or die("Could NOT find IDL file for interface \"$type\"!\n");
+
+    open FILE, "<", $idlFile;
+    my @lines = <FILE>;
+    close FILE;
+
+    my $fileContents = join('', @lines);
+    return ($fileContents =~ /callback\s+interface\s+(\w+)/gs);
 }
 
 sub GetTypeNameOfExternalTypedArray

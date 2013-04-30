@@ -71,7 +71,7 @@ typedef long[]                     ARRAY_OF_LONGS;
 typedef SVGPoint                   SVGPOINT;
 typedef DOMString                  STRING;
 typedef DOMString[]                ARRAY_OF_STRINGS;
-typedef [Callback] TestCallback    TEST_CALLBACK;
+typedef TestCallback               TEST_CALLBACK;
 typedef TestSubObjConstructor      T;
 typedef Array                      ARRAY;
 typedef DOMException               E;

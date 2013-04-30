@@ -33,7 +33,7 @@
 enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
 
 [
-    Constructor([Callback] TestCallback testCallback),
+    Constructor(TestCallback testCallback),
     InterfaceName=TestObject
 ] interface TestObj {
     // Attributes
@@ -133,13 +133,13 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
     void    methodWithOptionalStringIsUndefined([Default=Undefined] optional DOMString str);
     void    methodWithOptionalStringIsNullString([Default=NullString] optional DOMString str);
 
-    // 'Callback' extended attribute
-    void    methodWithCallbackArg([Callback] TestCallback callback);
-    void    methodWithNonCallbackArgAndCallbackArg(long nonCallback, [Callback] TestCallback callback);
-    void    methodWithCallbackAndOptionalArg([Callback] optional TestCallback callback);
-    // static methods with 'Callback' extended attribute
-    static void    staticMethodWithCallbackAndOptionalArg([Callback] optional TestCallback callback);
-    static void    staticMethodWithCallbackArg([Callback] TestCallback callback);
+    // Callback parameters
+    void    methodWithCallbackArg(TestCallback callback);
+    void    methodWithNonCallbackArgAndCallbackArg(long nonCallback, TestCallback callback);
+    void    methodWithCallbackAndOptionalArg(optional TestCallback callback);
+    // static methods with Callback parameter
+    static void    staticMethodWithCallbackAndOptionalArg(optional TestCallback callback);
+    static void    staticMethodWithCallbackArg(TestCallback callback);
 
     // 'EnforceRange' extended attribute
     void    methodWithEnforceRangeInt32([EnforceRange] long value);
@@ -178,7 +178,7 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
     void    overloadedMethod(TestObj? objArg, optional long longArg);
     void    overloadedMethod([StrictTypeChecking] DOMString strArg);
     void    overloadedMethod(long longArg);
-    void    overloadedMethod([Callback] TestCallback callback);
+    void    overloadedMethod(TestCallback callback);
     void    overloadedMethod(DOMStringList? listArg);
     void    overloadedMethod(DOMString[]? arrayArg);
     void    overloadedMethod(TestObj objArg);
@@ -218,10 +218,10 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
     [CheckSecurityForNode] readonly attribute Document contentDocument;
     [CheckSecurityForNode, RaisesException] SVGDocument getSVGDocument();
 
-    void convert1([TreatReturnedNullStringAs=Null] a value);
-    void convert2([TreatReturnedNullStringAs=Undefined] b value);
-    void convert4([TreatNullAs=NullString] d value);
-    void convert5([TreatNullAs=NullString, TreatUndefinedAs=NullString] e value);
+    void convert1([TreatReturnedNullStringAs=Null] TestNode value);
+    void convert2([TreatReturnedNullStringAs=Undefined] TestNode value);
+    void convert4([TreatNullAs=NullString] TestNode value);
+    void convert5([TreatNullAs=NullString, TreatUndefinedAs=NullString] TestNode value);
 
     attribute SVGPoint mutablePoint;
     [Immutable] attribute SVGPoint immutablePoint;

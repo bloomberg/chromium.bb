@@ -6,6 +6,7 @@
 # Copyright (C) 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
 # Copyright (C) 2009 Cameron McCormack <cam@mcc.id.au>
 # Copyright (C) Research In Motion Limited 2010. All rights reserved.
+# Copyright (C) 2013 Samsung Electronics. All rights reserved.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Library General Public
@@ -85,6 +86,22 @@ sub ProcessDocument
         $codeGenerator->GenerateInterface($interface, $defines);
         $codeGenerator->WriteData($interface, $useOutputDir, $useOutputHeadersDir);
     }
+}
+
+sub IsCallbackInterfaceFromFile
+{
+    my $object = shift;
+    my $interfaceName = shift;
+
+    my $idlFile = $object->IDLFileForInterface($interfaceName)
+        or die("Could NOT find IDL file for interface \"$interfaceName\"!\n");
+
+    open FILE, "<", $idlFile;
+    my @lines = <FILE>;
+    close FILE;
+
+    my $fileContents = join('', @lines);
+    return ($fileContents =~ /callback\s+interface\s+(\w+)/gs);
 }
 
 1;

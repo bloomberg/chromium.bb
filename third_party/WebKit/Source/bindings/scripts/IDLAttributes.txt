@@ -23,7 +23,6 @@ ActivityLog=Access|Setter|Getter|AccessForIsolatedWorlds|SetterForIsolatedWorlds
 CachedAttribute
 CacheAttributeForGC
 CallWith=ScriptExecutionContext|ScriptState|ScriptArguments
-Callback
 CheckSecurity
 CheckSecurityForNode
 Clamp

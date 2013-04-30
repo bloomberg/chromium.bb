@@ -25,7 +25,7 @@
  */
 
 partial interface DOMWindow {
-    [EnabledAtRuntime=database, MeasureAs=OpenWebDatabase, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Database openDatabase(DOMString name, DOMString version, DOMString displayName, unsigned long estimatedSize, [Callback] optional DatabaseCallback creationCallback);
+    [EnabledAtRuntime=database, MeasureAs=OpenWebDatabase, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Database openDatabase(DOMString name, DOMString version, DOMString displayName, unsigned long estimatedSize, optional DatabaseCallback creationCallback);
     attribute SQLExceptionConstructor SQLException;
 };
 
