@@ -21,6 +21,7 @@
 #include "extensions/common/constants.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
+#include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
 namespace sync_file_system {
 
@@ -32,6 +33,7 @@ enum ParentType {
 };
 
 const char kSyncRootDirectoryName[] = "Chrome Syncable FileSystem";
+const char kSyncRootDirectoryNameDev[] = "Chrome Syncable FileSystem Dev";
 const char kMimeTypeOctetStream[] = "application/octet-stream";
 
 // This path is not actually used but is required by DriveUploaderInterface.
@@ -183,7 +185,7 @@ void DriveFileSyncClient::GetDriveDirectoryForSyncRoot(
   DCHECK(CalledOnValidThread());
   DVLOG(2) << "Getting Drive directory for SyncRoot";
 
-  std::string directory_name(kSyncRootDirectoryName);
+  std::string directory_name(GetSyncRootDirectoryName());
   SearchByTitle(directory_name, std::string(),
                 base::Bind(&DriveFileSyncClient::DidGetDirectory, AsWeakPtr(),
                            std::string(), directory_name, callback));
@@ -250,7 +252,7 @@ void DriveFileSyncClient::DidGetDirectory(
   DCHECK_EQ(google_apis::ENTRY_KIND_FOLDER, entry->kind());
   DCHECK_EQ(directory_name, entry->title());
 
-  if (entry->title() == kSyncRootDirectoryName)
+  if (entry->title() == GetSyncRootDirectoryName())
     EnsureSyncRootIsNotInMyDrive(entry->resource_id());
 
   callback.Run(error, entry->resource_id());
@@ -302,7 +304,7 @@ void DriveFileSyncClient::DidEnsureUniquenessForCreateDirectory(
 
   DCHECK(entry) << "No entry: " << error;
 
-  if (entry->title() == kSyncRootDirectoryName)
+  if (entry->title() == GetSyncRootDirectoryName())
     EnsureSyncRootIsNotInMyDrive(entry->resource_id());
 
   callback.Run(error, entry->resource_id());
@@ -499,6 +501,14 @@ void DriveFileSyncClient::EnsureSyncRootIsNotInMyDrive(
       drive_service_->GetRootResourceId(),
       sync_root_resource_id,
       base::Bind(&EmptyGDataErrorCodeCallback));
+}
+
+// static
+// TODO(calvinlo): Delete this when Sync Directory Operations are supported by
+// default.
+std::string DriveFileSyncClient::GetSyncRootDirectoryName() {
+  return IsSyncDirectoryOperationEnabled() ?
+    kSyncRootDirectoryNameDev : kSyncRootDirectoryName;
 }
 
 // static

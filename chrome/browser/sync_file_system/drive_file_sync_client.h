@@ -91,6 +91,7 @@ class DriveFileSyncClient
   virtual void EnsureSyncRootIsNotInMyDrive(
       const std::string& sync_root_resource_id) const OVERRIDE;
 
+  static std::string GetSyncRootDirectoryName();
   static std::string OriginToDirectoryTitle(const GURL& origin);
   static GURL DirectoryTitleToOrigin(const std::string& title);
 

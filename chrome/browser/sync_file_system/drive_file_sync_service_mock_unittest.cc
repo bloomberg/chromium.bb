@@ -66,7 +66,6 @@ namespace sync_file_system {
 namespace {
 
 const char kRootResourceId[] = "folder:root";
-const char kSyncRootDirectoryName[] = "Chrome Syncable FileSystem";
 const char* kServiceName = DriveFileSyncService::kServiceName;
 
 base::FilePath::StringType ASCIIToFilePathString(const std::string& path) {
@@ -572,7 +571,8 @@ class DriveFileSyncServiceMockTest : public testing::Test {
     scoped_ptr<google_apis::ResourceList> result(
         google_apis::ResourceList::ExtractAndParse(*result_value));
     EXPECT_CALL(*mock_drive_service(),
-                SearchByTitle(kSyncRootDirectoryName, std::string(), _))
+                SearchByTitle(DriveFileSyncClient::GetSyncRootDirectoryName(),
+                              std::string(), _))
         .Times(AtMost(1))
         .WillOnce(InvokeGetResourceListCallback2(
             google_apis::HTTP_SUCCESS,

@@ -36,7 +36,6 @@ using google_apis::test_util::LoadJSONFile;
 namespace sync_file_system {
 
 namespace {
-const char kSyncRootDirectoryName[] = "Chrome Syncable FileSystem";
 
 // A fake implementation of DriveUploaderInterface, which provides fake
 // behaviors for file uploading.
@@ -281,7 +280,8 @@ TEST_F(DriveFileSyncClientTest, GetSyncRoot) {
 
   // Expect to call Search from GetDriveDirectoryForSyncRoot.
   EXPECT_CALL(*mock_drive_service(),
-              SearchByTitle(kSyncRootDirectoryName, std::string(), _))
+              SearchByTitle(DriveFileSyncClient::GetSyncRootDirectoryName(),
+                            std::string(), _))
       .WillOnce(InvokeGetResourceListCallback2(
           google_apis::HTTP_SUCCESS,
           base::Passed(&found_result)));
@@ -327,7 +327,9 @@ TEST_F(DriveFileSyncClientTest, CreateSyncRoot) {
   // Expect to call Search from GetDriveDirectoryForSyncRoot and
   // EnsureTitleUniqueness
   EXPECT_CALL(*mock_drive_service(),
-              SearchByTitle(kSyncRootDirectoryName, std::string(), _))
+              SearchByTitle(DriveFileSyncClient::GetSyncRootDirectoryName(),
+                            std::string(),
+                            _))
       .WillOnce(InvokeGetResourceListCallback2(
           google_apis::HTTP_SUCCESS,
           base::Passed(&not_found_result)))
@@ -342,7 +344,10 @@ TEST_F(DriveFileSyncClientTest, CreateSyncRoot) {
 
   // Expect to call AddNewDirectory from GetDriveDirectoryForSyncRoot.
   EXPECT_CALL(*mock_drive_service(),
-              AddNewDirectory(kRootResourceId, kSyncRootDirectoryName, _))
+              AddNewDirectory(
+                  kRootResourceId,
+                  DriveFileSyncClient::GetSyncRootDirectoryName(),
+                  _))
       .WillOnce(InvokeGetResourceEntryCallback2(google_apis::HTTP_CREATED,
                                                 base::Passed(&created_result)));
 
@@ -386,7 +391,9 @@ TEST_F(DriveFileSyncClientTest, CreateSyncRoot_Conflict) {
   // Expect to call Search from GetDriveDirectoryForSyncRoot and
   // EnsureTitleUniqueness.
   EXPECT_CALL(*mock_drive_service(),
-              SearchByTitle(kSyncRootDirectoryName, std::string(), _))
+              SearchByTitle(DriveFileSyncClient::GetSyncRootDirectoryName(),
+                            std::string(),
+                            _))
       .WillOnce(InvokeGetResourceListCallback2(
           google_apis::HTTP_SUCCESS,
           base::Passed(&not_found_result)))
@@ -401,7 +408,9 @@ TEST_F(DriveFileSyncClientTest, CreateSyncRoot_Conflict) {
 
   // Expect to call AddNewDirectory from GetDriveDirectoryForSyncRoot.
   EXPECT_CALL(*mock_drive_service(),
-              AddNewDirectory(kRootResourceId, kSyncRootDirectoryName, _))
+              AddNewDirectory(kRootResourceId,
+                              DriveFileSyncClient::GetSyncRootDirectoryName(),
+                              _))
       .WillOnce(InvokeGetResourceEntryCallback2(google_apis::HTTP_CREATED,
                                                 base::Passed(&created_result)));
 
