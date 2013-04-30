@@ -101,7 +101,15 @@ TEST(DirectoryListerTest, BigDirTest) {
   EXPECT_EQ(OK, delegate.error());
 }
 
-TEST(DirectoryListerTest, BigDirRecursiveTest) {
+#if defined(NDEBUG)
+#define MAYBE_BigDirRecursiveTest BigDirRecursiveTest
+#else
+// Disabling DirectoryListerTest.BigDirRecursiveTest in debug builds as it has
+// been very flaky on debug try bots, http://crbug.com/236360.
+#define MAYBE_BigDirRecursiveTest DISABLED_BigDirRecursiveTest
+#endif
+
+TEST(DirectoryListerTest, MAYBE_BigDirRecursiveTest) {
   base::FilePath path;
   ASSERT_TRUE(PathService::Get(base::DIR_EXE, &path));
 
