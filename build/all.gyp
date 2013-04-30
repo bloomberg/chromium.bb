@@ -696,7 +696,6 @@
                 '../chrome/chrome.gyp:chromedriver',
                 '../chrome/chrome.gyp:crash_service',
                 '../chrome/chrome.gyp:interactive_ui_tests',
-                '../chrome/chrome.gyp:performance_ui_tests',
                 '../chrome/chrome.gyp:policy_templates',
                 '../chrome/chrome.gyp:reliability_tests',
                 '../chrome/chrome.gyp:automated_ui_tests',
@@ -710,7 +709,7 @@
               'conditions': [
                 # If you change this condition, make sure you also change it
                 # in chrome_tests.gypi
-                ['enable_automation==1 and (OS=="mac" or ((OS=="win" or os_posix==1) and target_arch==python_arch))', {
+                ['enable_automation==1 and (OS=="mac" or (os_posix==1 and target_arch==python_arch))', {
                   'dependencies': [
                     '../chrome/chrome.gyp:pyautolib',
                   ],
