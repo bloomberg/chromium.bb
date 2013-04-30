@@ -114,6 +114,16 @@ namespace socket {
 
   callback GetNetworkCallback = void (NetworkInterface[] result);
 
+  callback JoinGroupCallback = void (long result);
+
+  callback LeaveGroupCallback = void (long result);
+
+  callback SetMulticastTimeToLiveCallback = void (long result);
+
+  callback SetMulticastLoopbackModeCallback = void (long result);
+
+  callback GetJoinedGroupsCallback = void (DOMString[] groups);
+
   interface Functions {
     // Creates a socket of the specified type that will connect to the specified
     // remote machine.
@@ -205,6 +215,7 @@ namespace socket {
     // |address| : The address of the local machine.
     // |port| : The port of the local machine.
     // |backlog| : Length of the socket's listen queue.
+    // |callback| : Called when listen operation completes.
     static void listen(long socketId,
                        DOMString address,
                        long port,
@@ -250,6 +261,72 @@ namespace socket {
     // Retrieves information about local adapters on this system.
     // |callback| : Called when local adapter information is available.
     static void getNetworkList(GetNetworkCallback callback);
+
+    // Join the multicast group and start to receive packets from that group.
+    // The socket must be of UDP type and must be bound to a local port
+    // before calling this method.
+    // |socketId| : The socketId.
+    // |address| : The group address to join. Domain names are not supported.
+    // |callback| : Called when the join group operation is done with an 
+    // integer parameter indicating the platform-independent error code.
+    static void joinGroup(long socketId,
+                          DOMString address,
+                          JoinGroupCallback callback);
+
+    // Leave the multicast group previously joined using <code>joinGroup</code>.
+    // It's not necessary to leave the multicast group before destroying the 
+    // socket or exiting. This is automatically called by the OS.
+    //
+    // Leaving the group will prevent the router from sending multicast 
+    // datagrams to the local host, presuming no other process on the host is 
+    // still joined to the group.
+    //
+    // |socketId| : The socketId.
+    // |address| : The group address to leave. Domain names are not supported.
+    // |callback| : Called when the leave group operation is done with an
+    // integer parameter indicating the platform-independent error code.
+    static void leaveGroup(long socketId, DOMString address,
+                           LeaveGroupCallback callback);
+
+    // Set the time-to-live of multicast packets sent to the multicast group.
+    //
+    // Calling this method does not require multicast permissions.
+    //
+    // |socketId| : The socketId.
+    // |ttl| : The time-to-live value.
+    // |callback| : Called when the configuration operation is done.
+    static void setMulticastTimeToLive(
+        long socketId,
+        long ttl,
+        SetMulticastTimeToLiveCallback callback);
+
+    // Set whether multicast packets sent from the host to the multicast 
+    // group will be looped back to the host.
+    //
+    // Note: the behavior of <code>setMulticastLoopbackMode</code> is slightly
+    // different between Windows and Unix-like systems. The inconsistency
+    // happens only when there is more than one application on the same host
+    // joined to the same multicast group while having different settings on
+    // multicast loopback mode. On Windows, the applications with loopback off
+    // will not RECEIVE the loopback packets; while on Unix-like systems, the
+    // applications with loopback off will not SEND the loopback packets to
+    // other applications on the same host. See MSDN: http://goo.gl/6vqbj
+    //
+    // Calling this method does not require multicast permissions.
+    //
+    // |socketId| : The socketId.
+    // |enabled| : Indicate whether to enable loopback mode.
+    // |callback| : Called when the configuration operation is done.
+    static void setMulticastLoopbackMode(
+        long socketId,
+        boolean enabled,
+        SetMulticastLoopbackModeCallback callback);
+
+    // Get the multicast group addresses the socket is currently joined to.
+    // |socketId| : The socketId.
+    // |callback| : Called with an array of strings of the result.
+    static void getJoinedGroups(long socketId,
+                                GetJoinedGroupsCallback callback);
   };
 
 };

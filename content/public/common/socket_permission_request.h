@@ -18,6 +18,7 @@ struct SocketPermissionRequest {
     TCP_LISTEN,
     UDP_BIND,
     UDP_SEND_TO,
+    UDP_MULTICAST_MEMBERSHIP
   };
 
   SocketPermissionRequest(OperationType type,

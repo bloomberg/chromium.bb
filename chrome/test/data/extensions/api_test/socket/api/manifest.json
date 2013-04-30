@@ -4,7 +4,7 @@
   "description": "end-to-end browser test for chrome.socket API",
   "app": {
     "background": {
-      "scripts": ["background.js"]
+      "scripts": ["multicast.js", "background.js"]
     }
   },
   "permissions": [
@@ -12,7 +12,8 @@
       "tcp-connect",
       "tcp-listen",
       "udp-send-to",
-      "udp-bind"
+      "udp-bind",
+      "udp-multicast-membership"
     ]}
   ]
 }

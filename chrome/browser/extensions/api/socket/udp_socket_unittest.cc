@@ -8,6 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "net/base/io_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,7 +21,7 @@ class UDPSocketUnitTest : public BrowserWithTestWindowTest {
 };
 
 static void OnConnected(int result) {
-  DCHECK(result == 0);
+  EXPECT_EQ(0, result);
 }
 
 static void OnCompleted(int bytes_read,
@@ -30,8 +31,15 @@ static void OnCompleted(int bytes_read,
   // Do nothing; don't care.
 }
 
+static const char test_message[] = "$$TESTMESSAGETESTMESSAGETESTMESSAGETEST$$";
+static const int test_message_length = ARRAYSIZE_UNSAFE(test_message);
+
+static void OnSendCompleted(int result) {
+  EXPECT_EQ(test_message_length, result);
+}
+
 TEST(UDPSocketUnitTest, TestUDPSocketRecvFrom) {
-  MessageLoopForIO io_loop;  // for RecvFrom to do its threaded work.
+  MessageLoopForIO io_loop;  // For RecvFrom to do its threaded work.
   UDPSocket socket("abcdefghijklmnopqrst");
 
   // Confirm that we can call two RecvFroms in quick succession without
@@ -39,6 +47,92 @@ TEST(UDPSocketUnitTest, TestUDPSocketRecvFrom) {
   socket.Connect("127.0.0.1", 40000, base::Bind(&OnConnected));
   socket.RecvFrom(4096, base::Bind(&OnCompleted));
   socket.RecvFrom(4096, base::Bind(&OnCompleted));
+}
+
+TEST(UDPSocketUnitTest, TestUDPMulticastJoinGroup) {
+  const char* kGroup = "237.132.100.17";
+  UDPSocket src("abcdefghijklmnopqrst");
+  UDPSocket dest("abcdefghijklmnopqrst");
+
+  EXPECT_EQ(0, dest.Bind("0.0.0.0", 13333));
+  EXPECT_EQ(0, dest.JoinGroup(kGroup));
+  std::vector<std::string> groups = dest.GetJoinedGroups();
+  EXPECT_EQ(static_cast<size_t>(1), groups.size());
+  EXPECT_EQ(kGroup, *groups.begin());
+  EXPECT_NE(0, dest.LeaveGroup("237.132.100.13"));
+  EXPECT_EQ(0, dest.LeaveGroup(kGroup));
+  groups = dest.GetJoinedGroups();
+  EXPECT_EQ(static_cast<size_t>(0), groups.size());
+}
+
+TEST(UDPSocketUnitTest, TestUDPMulticastTimeToLive) {
+  const char* kGroup = "237.132.100.17";
+  UDPSocket socket("abcdefghijklmnopqrst");
+  EXPECT_NE(0, socket.SetMulticastTimeToLive(-1));  // Negative TTL shall fail.
+  EXPECT_EQ(0, socket.SetMulticastTimeToLive(3));
+  socket.Connect(kGroup, 13333, base::Bind(&OnConnected));
+}
+
+TEST(UDPSocketUnitTest, TestUDPMulticastLoopbackMode) {
+  const char* kGroup = "237.132.100.17";
+  UDPSocket socket("abcdefghijklmnopqrst");
+  EXPECT_EQ(0, socket.SetMulticastLoopbackMode(false));
+  socket.Connect(kGroup, 13333, base::Bind(&OnConnected));
+}
+
+static void QuitMessageLoop() {
+  MessageLoopForIO::current()->QuitNow();
+}
+
+// Send a test multicast packet every second.
+// Once the target socket received the packet, the message loop will exit.
+static void SendMulticastPacket(UDPSocket* src, int result) {
+  if (result == 0) {
+    scoped_refptr<net::IOBuffer> data = new net::WrappedIOBuffer(test_message);
+    src->Write(data, test_message_length, base::Bind(&OnSendCompleted));
+    MessageLoopForIO::current()->PostDelayedTask(FROM_HERE,
+          base::Bind(&SendMulticastPacket, src, result),
+          base::TimeDelta::FromSeconds(1));
+  } else {
+    QuitMessageLoop();
+    FAIL() << "Failed to connect to multicast address. Error code: " << result;
+  }
+}
+
+static void OnMulticastReadCompleted(bool *packet_received,
+                                     int count,
+                                     scoped_refptr<net::IOBuffer> io_buffer) {
+  EXPECT_EQ(test_message_length, count);
+  EXPECT_EQ(0, strncmp(io_buffer->data(), test_message, test_message_length));
+  *packet_received = true;
+  QuitMessageLoop();
+}
+
+TEST(UDPSocketUnitTest, TestUDPMulticastRecv) {
+  const int kPort = 9999;
+  const char* const kGroup = "237.132.100.17";
+  bool packet_received = false;
+  MessageLoopForIO io_loop;  // For Read to do its threaded work.
+  UDPSocket dest("abcdefghijklmnopqrst");
+  UDPSocket src("abcdefghijklmnopqrst");
+
+  // Receiver
+  EXPECT_EQ(0, dest.Bind("0.0.0.0", kPort));
+  EXPECT_EQ(0, dest.JoinGroup(kGroup));
+  dest.Read(1024, base::Bind(&OnMulticastReadCompleted, &packet_received));
+
+  // Sender
+  EXPECT_EQ(0, src.SetMulticastTimeToLive(0));
+  src.Connect(kGroup, kPort, base::Bind(&SendMulticastPacket, &src));
+
+  // If not received within the test action timeout, quit the message loop.
+  io_loop.PostDelayedTask(FROM_HERE,
+                          base::Bind(&QuitMessageLoop),
+                          TestTimeouts::action_timeout());
+
+  io_loop.Run();
+
+  EXPECT_TRUE(packet_received) << "Failed to receive from multicast address";
 }
 
 }  // namespace extensions

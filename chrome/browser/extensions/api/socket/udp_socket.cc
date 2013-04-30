@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/socket/udp_socket.h"
 
+#include <algorithm>
+
 #include "chrome/browser/extensions/api/api_resource.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -220,6 +222,56 @@ void UDPSocket::OnSendToComplete(int result) {
   DCHECK(!send_to_callback_.is_null());
   send_to_callback_.Run(result);
   send_to_callback_.Reset();
+}
+
+int UDPSocket::JoinGroup(const std::string& address) {
+  net::IPAddressNumber ip;
+  if (!net::ParseIPLiteralToNumber(address, &ip))
+    return net::ERR_ADDRESS_INVALID;
+
+  std::string normalized_address = net::IPAddressToString(ip);
+  std::vector<std::string>::iterator find_result =
+        std::find(multicast_groups_.begin(),
+                  multicast_groups_.end(),
+                  normalized_address);
+  if (find_result != multicast_groups_.end())
+    return net::ERR_ADDRESS_INVALID;
+
+  int rv = socket_.JoinGroup(ip);
+  if (rv == 0)
+    multicast_groups_.push_back(normalized_address);
+  return rv;
+}
+
+int UDPSocket::LeaveGroup(const std::string& address) {
+  net::IPAddressNumber ip;
+  if (!net::ParseIPLiteralToNumber(address, &ip))
+    return net::ERR_ADDRESS_INVALID;
+
+  std::string normalized_address = net::IPAddressToString(ip);
+  std::vector<std::string>::iterator find_result =
+      std::find(multicast_groups_.begin(),
+                multicast_groups_.end(),
+                normalized_address);
+  if (find_result == multicast_groups_.end())
+    return net::ERR_ADDRESS_INVALID;
+
+  int rv = socket_.LeaveGroup(ip);
+  if (rv == 0)
+    multicast_groups_.erase(find_result);
+  return rv;
+}
+
+int UDPSocket::SetMulticastTimeToLive(int ttl) {
+  return socket_.SetMulticastTimeToLive(ttl);
+}
+
+int UDPSocket::SetMulticastLoopbackMode(bool loopback) {
+  return socket_.SetMulticastLoopbackMode(loopback);
+}
+
+const std::vector<std::string>& UDPSocket::GetJoinedGroups() const {
+  return multicast_groups_;
 }
 
 }  // namespace extensions

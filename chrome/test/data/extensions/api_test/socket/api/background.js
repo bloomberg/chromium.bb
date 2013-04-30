@@ -42,26 +42,23 @@ function arrayBuffer2String(buf, callback) {
 }
 
 var testSocketCreation = function() {
-  function onGetInfo(info) {
-    chrome.test.assertEq(info.socketType, protocol);
-    chrome.test.assertFalse(info.connected);
-
-    if (info.peerAddress || info.peerPort) {
-      chrome.test.fail('Unconnected socket should not have peer');
-    }
-    if (info.localAddress || info.localPort) {
-      chrome.test.fail('Unconnected socket should not have local binding');
-    }
-
-    // TODO(miket): this doesn't work yet. It's possible this will become
-    // automatic, but either way we can't forget to clean up.
-    //
-    //socket.destroy(socketInfo.socketId);
-
-    chrome.test.succeed();
-  }
-
   function onCreate(socketInfo) {
+    function onGetInfo(info) {
+      chrome.test.assertEq(info.socketType, protocol);
+      chrome.test.assertFalse(info.connected);
+
+      if (info.peerAddress || info.peerPort) {
+        chrome.test.fail('Unconnected socket should not have peer');
+      }
+      if (info.localAddress || info.localPort) {
+        chrome.test.fail('Unconnected socket should not have local binding');
+      }
+
+      socket.destroy(socketInfo.socketId);
+
+      chrome.test.succeed();
+    }
+
     chrome.test.assertTrue(socketInfo.socketId > 0);
 
     // Obtaining socket information before a connect() call should be safe, but
@@ -236,13 +233,16 @@ var testSocketListening = function() {
 
 var onMessageReply = function(message) {
   var parts = message.split(":");
-  test_type = parts[0];
+  var test_type = parts[0];
   address = parts[1];
   port = parseInt(parts[2]);
   console.log("Running tests, protocol " + protocol + ", echo server " +
               address + ":" + port);
   if (test_type == 'tcp_server') {
     chrome.test.runTests([ testSocketListening ]);
+  } else if (test_type == 'multicast') {
+    console.log("Running multicast tests");
+    chrome.test.runTests([ testMulticast ]);
   } else {
     protocol = test_type;
     chrome.test.runTests([ testSocketCreation, testSending ]);

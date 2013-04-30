@@ -30,6 +30,7 @@ const char kTCPConnect[] = "tcp-connect";
 const char kTCPListen[] = "tcp-listen";
 const char kUDPBind[] = "udp-bind";
 const char kUDPSendTo[] = "udp-send-to";
+const char kUDPMulticastMembership[] = "udp-multicast-membership";
 const int kWildcardPortNumber = 0;
 const int kInvalidPort = -1;
 
@@ -42,6 +43,8 @@ SocketPermissionRequest::OperationType StringToType(const std::string& s) {
     return SocketPermissionRequest::UDP_BIND;
   if (s == kUDPSendTo)
     return SocketPermissionRequest::UDP_SEND_TO;
+  if (s == kUDPMulticastMembership)
+    return SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP;
   return SocketPermissionRequest::NONE;
 }
 
@@ -55,6 +58,8 @@ const char* TypeToString(SocketPermissionRequest::OperationType type) {
       return kUDPBind;
     case SocketPermissionRequest::UDP_SEND_TO:
       return kUDPSendTo;
+    case SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP:
+      return kUDPMulticastMembership;
     default:
       return kInvalid;
   }
@@ -207,6 +212,10 @@ bool SocketPermissionData::Parse(const std::string& permission) {
     if (tokens.size() == 1)
       return true;
 
+    // Multicast membership permission string does not include an address.
+    if (pattern_.type == SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP)
+      return false;
+
     pattern_.host = tokens[1];
     if (!pattern_.host.empty()) {
       if (StartsOrEndsWithWhitespace(pattern_.host))
@@ -249,6 +258,9 @@ const std::string& SocketPermissionData::GetAsString() const {
 
   spec_.reserve(64);
   spec_.append(TypeToString(pattern_.type));
+
+  if (pattern_.type == SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP)
+    return spec_;
 
   if (match_subdomains_) {
     spec_.append(1, kColon).append(kWildcard);

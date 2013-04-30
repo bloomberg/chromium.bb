@@ -113,12 +113,51 @@ class NET_EXPORT UDPSocketLibevent : public base::NonThreadSafe {
   // called before Bind().
   void AllowBroadcast();
 
+  // Join the multicast group.
+  // |group_address| is the group address to join, could be either
+  // an IPv4 or IPv6 address.
+  // Return a network error code.
+  int JoinGroup(const IPAddressNumber& group_address) const;
+
+  // Leave the multicast group.
+  // |group_address| is the group address to leave, could be either
+  // an IPv4 or IPv6 address. If the socket hasn't joined the group,
+  // it will be ignored.
+  // It's optional to leave the multicast group before destroying
+  // the socket. It will be done by the OS.
+  // Return a network error code.
+  int LeaveGroup(const IPAddressNumber& group_address) const;
+
+  // Set the time-to-live option for UDP packets sent to the multicast
+  // group address. The default value of this option is 1.
+  // Cannot be negative or more than 255.
+  // Should be called before Bind().
+  // Return a network error code.
+  int SetMulticastTimeToLive(int time_to_live);
+
+  // Set the loopback flag for UDP socket. If this flag is true, the host
+  // will receive packets sent to the joined group from itself.
+  // The default value of this option is true.
+  // Should be called before Bind().
+  // Return a network error code.
+  //
+  // Note: the behavior of |SetMulticastLoopbackMode| is slightly
+  // different between Windows and Unix-like systems. The inconsistency only
+  // happens when there are more than one applications on the same host
+  // joined to the same multicast group while having different settings on
+  // multicast loopback mode. On Windows, the applications with loopback off
+  // will not RECEIVE the loopback packets; while on Unix-like systems, the
+  // applications with loopback off will not SEND the loopback packets to
+  // other applications on the same host. See MSDN: http://goo.gl/6vqbj
+  int SetMulticastLoopbackMode(bool loopback);
+
  private:
   static const int kInvalidSocket = -1;
 
   enum SocketOptions {
-    SOCKET_OPTION_REUSE_ADDRESS = 1 << 0,
-    SOCKET_OPTION_BROADCAST     = 1 << 1
+    SOCKET_OPTION_REUSE_ADDRESS  = 1 << 0,
+    SOCKET_OPTION_BROADCAST      = 1 << 1,
+    SOCKET_OPTION_MULTICAST_LOOP = 1 << 2
   };
 
   class ReadWatcher : public MessageLoopForIO::Watcher {
@@ -188,10 +227,15 @@ class NET_EXPORT UDPSocketLibevent : public base::NonThreadSafe {
   int RandomBind(const IPEndPoint& address);
 
   int socket_;
+  int addr_family_;
 
   // Bitwise-or'd combination of SocketOptions. Specifies the set of
   // options that should be applied to |socket_| before Bind().
   int socket_options_;
+
+  // Multicast socket options cached for SetSocketOption.
+  // Cannot be used after Bind().
+  int multicast_time_to_live_;
 
   // How to do source port binding, used only when UDPSocket is part of
   // UDPClientSocket, since UDPServerSocket provides Bind.

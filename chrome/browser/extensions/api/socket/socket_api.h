@@ -349,6 +349,93 @@ class SocketGetNetworkListFunction : public AsyncExtensionFunction {
   void SendResponseOnUIThread(const net::NetworkInterfaceList& interface_list);
 };
 
+class SocketJoinGroupFunction : public SocketAsyncApiFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("socket.joinGroup", SOCKET_MULTICAST_JOIN_GROUP)
+
+  SocketJoinGroupFunction();
+
+ protected:
+  virtual ~SocketJoinGroupFunction();
+
+  // AsyncApiFunction
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+
+ private:
+  scoped_ptr<api::socket::JoinGroup::Params> params_;
+};
+
+class SocketLeaveGroupFunction : public SocketAsyncApiFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("socket.leaveGroup", SOCKET_MULTICAST_LEAVE_GROUP)
+
+  SocketLeaveGroupFunction();
+
+ protected:
+  virtual ~SocketLeaveGroupFunction();
+
+  // AsyncApiFunction
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+
+ private:
+  scoped_ptr<api::socket::LeaveGroup::Params> params_;
+};
+
+class SocketSetMulticastTimeToLiveFunction : public SocketAsyncApiFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("socket.setMulticastTimeToLive",
+                             SOCKET_MULTICAST_SET_TIME_TO_LIVE)
+
+  SocketSetMulticastTimeToLiveFunction();
+
+ protected:
+  virtual ~SocketSetMulticastTimeToLiveFunction();
+
+  // AsyncApiFunction
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+
+ private:
+  scoped_ptr<api::socket::SetMulticastTimeToLive::Params> params_;
+};
+
+class SocketSetMulticastLoopbackModeFunction : public SocketAsyncApiFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("socket.setMulticastLoopbackMode",
+                             SOCKET_MULTICAST_SET_LOOPBACK_MODE)
+
+  SocketSetMulticastLoopbackModeFunction();
+
+ protected:
+  virtual ~SocketSetMulticastLoopbackModeFunction();
+
+  // AsyncApiFunction
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+
+ private:
+  scoped_ptr<api::socket::SetMulticastLoopbackMode::Params> params_;
+};
+
+class SocketGetJoinedGroupsFunction : public SocketAsyncApiFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("socket.getJoinedGroups",
+                             SOCKET_MULTICAST_GET_JOINED_GROUPS)
+
+  SocketGetJoinedGroupsFunction();
+
+ protected:
+  virtual ~SocketGetJoinedGroupsFunction();
+
+  // AsyncApiFunction
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+
+ private:
+  scoped_ptr<api::socket::GetJoinedGroups::Params> params_;
+};
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_SOCKET_SOCKET_API_H_

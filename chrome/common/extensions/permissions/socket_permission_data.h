@@ -17,7 +17,8 @@ namespace extensions {
 //          := <op> |
 //             <op> ':' <host> |
 //             <op> ':' ':' <port> |
-//             <op> ':' <host> ':' <port>
+//             <op> ':' <host> ':' <port> |
+//             'udp-multicast-membership'
 //   <op>   := 'tcp-connect' |
 //             'tcp-listen' |
 //             'udp-bind' |
@@ -27,6 +28,7 @@ namespace extensions {
 //             <anychar except '/' and '*'>+
 //   <port> := '*' |
 //             <port number between 0 and 65535>)
+// The multicast membership permission implies a permission to any address.
 class SocketPermissionData {
  public:
   enum HostType {

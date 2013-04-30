@@ -4,7 +4,10 @@
 
 #include "chrome/browser/extensions/api/socket/socket_api.h"
 
+#include <vector>
+
 #include "base/bind.h"
+#include "base/hash_tables.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
 #include "chrome/browser/browser_process.h"
@@ -38,6 +41,10 @@ const char kPermissionError[] = "App does not have permission";
 const char kNetworkListError[] = "Network lookup failed or unsupported";
 const char kTCPSocketBindError[] =
     "TCP socket does not support bind. For TCP server please use listen.";
+const char kMulticastSocketTypeError[] =
+    "Only UDP socket supports multicast.";
+const char kWildcardAddress[] = "*";
+const int kWildcardPort = 0;
 
 SocketAsyncApiFunction::SocketAsyncApiFunction()
     : manager_(NULL) {
@@ -159,7 +166,9 @@ void SocketDestroyFunction::Work() {
 
 SocketConnectFunction::SocketConnectFunction()
     : socket_id_(0),
-      port_(0) {
+      hostname_(),
+      port_(0),
+      socket_(NULL) {
 }
 
 SocketConnectFunction::~SocketConnectFunction() {
@@ -476,7 +485,8 @@ SocketSendToFunction::SocketSendToFunction()
     : socket_id_(0),
       io_buffer_(NULL),
       io_buffer_size_(0),
-      port_(0) {
+      port_(0),
+      socket_(NULL) {
 }
 
 SocketSendToFunction::~SocketSendToFunction() {}
@@ -678,6 +688,205 @@ void SocketGetNetworkListFunction::SendResponseOnUIThread(
 
   results_ = api::socket::GetNetworkList::Results::Create(create_arg);
   SendResponse(true);
+}
+
+SocketJoinGroupFunction::SocketJoinGroupFunction()
+    : params_(NULL) {}
+
+SocketJoinGroupFunction::~SocketJoinGroupFunction() {}
+
+bool SocketJoinGroupFunction::Prepare() {
+  params_ = api::socket::JoinGroup::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
+  return true;
+}
+
+void SocketJoinGroupFunction::Work() {
+  int result = -1;
+  Socket* socket = GetSocket(params_->socket_id);
+  if (!socket) {
+    error_ = kSocketNotFoundError;
+    SetResult(Value::CreateIntegerValue(result));
+    return;
+  }
+
+  if (socket->GetSocketType() != Socket::TYPE_UDP) {
+    error_ = kMulticastSocketTypeError;
+    SetResult(Value::CreateIntegerValue(result));
+    return;
+  }
+
+  SocketPermission::CheckParam param(
+      SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP,
+      kWildcardAddress,
+      kWildcardPort);
+
+  if (!GetExtension()->CheckAPIPermissionWithParam(APIPermission::kSocket,
+                                                   &param)) {
+    error_ = kPermissionError;
+    SetResult(Value::CreateIntegerValue(result));
+    return;
+  }
+
+  result = static_cast<UDPSocket*>(socket)->JoinGroup(params_->address);
+  if (result != 0) {
+    error_ = net::ErrorToString(result);
+  }
+  SetResult(Value::CreateIntegerValue(result));
+}
+
+
+SocketLeaveGroupFunction::SocketLeaveGroupFunction()
+  : params_(NULL) {}
+
+SocketLeaveGroupFunction::~SocketLeaveGroupFunction() {}
+
+bool SocketLeaveGroupFunction::Prepare() {
+  params_ = api::socket::LeaveGroup::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
+  return true;
+}
+
+void SocketLeaveGroupFunction::Work() {
+  int result = -1;
+  Socket* socket = GetSocket(params_->socket_id);
+
+  if (!socket) {
+    error_ = kSocketNotFoundError;
+    SetResult(Value::CreateIntegerValue(result));
+    return;
+  }
+
+  if (socket->GetSocketType() != Socket::TYPE_UDP) {
+    error_ = kMulticastSocketTypeError;
+    SetResult(Value::CreateIntegerValue(result));
+    return;
+  }
+
+  SocketPermission::CheckParam param(
+      SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP,
+      kWildcardAddress,
+      kWildcardPort);
+  if (!GetExtension()->CheckAPIPermissionWithParam(APIPermission::kSocket,
+                                                   &param)) {
+    error_ = kPermissionError;
+    SetResult(Value::CreateIntegerValue(result));
+    return;
+  }
+
+  result = static_cast<UDPSocket*>(socket)->LeaveGroup(params_->address);
+  if (result != 0)
+    error_ = net::ErrorToString(result);
+  SetResult(Value::CreateIntegerValue(result));
+}
+
+SocketSetMulticastTimeToLiveFunction::SocketSetMulticastTimeToLiveFunction()
+  : params_(NULL) {}
+
+SocketSetMulticastTimeToLiveFunction::~SocketSetMulticastTimeToLiveFunction() {}
+
+bool SocketSetMulticastTimeToLiveFunction::Prepare() {
+  params_ = api::socket::SetMulticastTimeToLive::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
+  return true;
+}
+void SocketSetMulticastTimeToLiveFunction::Work() {
+  int result = -1;
+  Socket* socket = GetSocket(params_->socket_id);
+  if (!socket) {
+    error_ = kSocketNotFoundError;
+    SetResult(Value::CreateIntegerValue(result));
+    return;
+  }
+
+  if (socket->GetSocketType() != Socket::TYPE_UDP) {
+    error_ = kMulticastSocketTypeError;
+    SetResult(Value::CreateIntegerValue(result));
+    return;
+  }
+
+  result = static_cast<UDPSocket*>(socket)->SetMulticastTimeToLive(
+      params_->ttl);
+  if (result != 0)
+    error_ = net::ErrorToString(result);
+  SetResult(Value::CreateIntegerValue(result));
+}
+
+SocketSetMulticastLoopbackModeFunction::SocketSetMulticastLoopbackModeFunction()
+  : params_(NULL) {}
+
+SocketSetMulticastLoopbackModeFunction::
+  ~SocketSetMulticastLoopbackModeFunction() {}
+
+bool SocketSetMulticastLoopbackModeFunction::Prepare() {
+  params_ = api::socket::SetMulticastLoopbackMode::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
+  return true;
+}
+
+void SocketSetMulticastLoopbackModeFunction::Work() {
+  int result = -1;
+  Socket* socket = GetSocket(params_->socket_id);
+  if (!socket) {
+    error_ = kSocketNotFoundError;
+    SetResult(Value::CreateIntegerValue(result));
+    return;
+  }
+
+  if (socket->GetSocketType() != Socket::TYPE_UDP) {
+    error_ = kMulticastSocketTypeError;
+    SetResult(Value::CreateIntegerValue(result));
+    return;
+  }
+
+  result = static_cast<UDPSocket*>(socket)->
+      SetMulticastLoopbackMode(params_->enabled);
+  if (result != 0)
+    error_ = net::ErrorToString(result);
+  SetResult(Value::CreateIntegerValue(result));
+}
+
+SocketGetJoinedGroupsFunction::SocketGetJoinedGroupsFunction()
+  : params_(NULL) {}
+
+SocketGetJoinedGroupsFunction::~SocketGetJoinedGroupsFunction() {}
+
+bool SocketGetJoinedGroupsFunction::Prepare() {
+  params_ = api::socket::GetJoinedGroups::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
+  return true;
+}
+
+void SocketGetJoinedGroupsFunction::Work() {
+  int result = -1;
+  Socket* socket = GetSocket(params_->socket_id);
+  if (!socket) {
+    error_ = kSocketNotFoundError;
+    SetResult(Value::CreateIntegerValue(result));
+    return;
+  }
+
+  if (socket->GetSocketType() != Socket::TYPE_UDP) {
+    error_ = kMulticastSocketTypeError;
+    SetResult(Value::CreateIntegerValue(result));
+    return;
+  }
+
+  SocketPermission::CheckParam param(
+      SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP,
+      kWildcardAddress,
+      kWildcardPort);
+  if (!GetExtension()->CheckAPIPermissionWithParam(APIPermission::kSocket,
+        &param)) {
+    error_ = kPermissionError;
+    SetResult(Value::CreateIntegerValue(result));
+    return;
+  }
+
+  base::ListValue* values = new base::ListValue();
+  values->AppendStrings((std::vector<std::string>&)
+      static_cast<UDPSocket*>(socket)->GetJoinedGroups());
+  SetResult(values);
 }
 
 }  // namespace extensions
