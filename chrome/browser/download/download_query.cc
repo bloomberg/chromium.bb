@@ -29,7 +29,7 @@
 #include "content/public/browser/download_item.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
-#include "third_party/icu/public/i18n/unicode/regex.h"
+#include "third_party/re2/re2/re2.h"
 
 using content::DownloadDangerType;
 using content::DownloadItem;
@@ -188,13 +188,10 @@ template <typename ValueType> DownloadQuery::FilterCallback BuildFilter(
 
 // Returns true if |accessor.Run(item)| matches |pattern|.
 static bool FindRegex(
-    icu::RegexPattern* pattern,
+    RE2* pattern,
     const base::Callback<std::string(const DownloadItem&)>& accessor,
     const DownloadItem& item) {
-  icu::UnicodeString input(accessor.Run(item).c_str());
-  UErrorCode status = U_ZERO_ERROR;
-  scoped_ptr<icu::RegexMatcher> matcher(pattern->matcher(input, status));
-  return matcher->find() == TRUE;  // Ugh, VS complains bool != UBool.
+  return RE2::PartialMatch(accessor.Run(item), *pattern);
 }
 
 // Helper for building a Callback to FindRegex().
@@ -203,11 +200,8 @@ DownloadQuery::FilterCallback BuildRegexFilter(
     std::string (*accessor)(const DownloadItem&)) {
   std::string regex_str;
   if (!GetAs(regex_value, &regex_str)) return DownloadQuery::FilterCallback();
-  UParseError re_err;
-  UErrorCode re_status = U_ZERO_ERROR;
-  scoped_ptr<icu::RegexPattern> pattern(icu::RegexPattern::compile(
-      icu::UnicodeString::fromUTF8(regex_str.c_str()), re_err, re_status));
-  if (!U_SUCCESS(re_status)) return DownloadQuery::FilterCallback();
+  scoped_ptr<RE2> pattern(new RE2(regex_str));
+  if (!pattern->ok()) return DownloadQuery::FilterCallback();
   return base::Bind(&FindRegex, base::Owned(pattern.release()),
                     base::Bind(accessor));
 }
