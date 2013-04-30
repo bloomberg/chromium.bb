@@ -159,6 +159,12 @@ sub AddToImplIncludes
     }
 }
 
+sub AddToHeaderIncludes
+{
+    my $header = shift;
+    $headerIncludes{$header} = 1;
+}
+
 sub AddInterfaceToImplIncludes
 {
     my $interface = shift;
@@ -313,15 +319,15 @@ sub GetSVGPropertyTypes
         AddToImplIncludes("core/svg/properties/SVGAnimatedPropertyTearOff.h");
     } elsif ($svgNativeType =~ /SVGListPropertyTearOff/ or $svgNativeType =~ /SVGStaticListPropertyTearOff/) {
         $svgListPropertyType = $svgWrappedNativeType;
-        $headerIncludes{"core/svg/properties/SVGAnimatedListPropertyTearOff.h"} = 1;
-        $headerIncludes{"core/svg/properties/SVGStaticListPropertyTearOff.h"} = 1;
+        AddToHeaderIncludes("core/svg/properties/SVGAnimatedListPropertyTearOff.h");
+        AddToHeaderIncludes("core/svg/properties/SVGStaticListPropertyTearOff.h");
     } elsif ($svgNativeType =~ /SVGTransformListPropertyTearOff/) {
         $svgListPropertyType = $svgWrappedNativeType;
-        $headerIncludes{"core/svg/properties/SVGAnimatedListPropertyTearOff.h"} = 1;
-        $headerIncludes{"core/svg/properties/SVGTransformListPropertyTearOff.h"} = 1;
+        AddToHeaderIncludes("core/svg/properties/SVGAnimatedListPropertyTearOff.h");
+        AddToHeaderIncludes("core/svg/properties/SVGTransformListPropertyTearOff.h");
     } elsif ($svgNativeType =~ /SVGPathSegListPropertyTearOff/) {
         $svgListPropertyType = $svgWrappedNativeType;
-        $headerIncludes{"core/svg/properties/SVGPathSegListPropertyTearOff.h"} = 1;
+        AddToHeaderIncludes("core/svg/properties/SVGPathSegListPropertyTearOff.h");
     }
 
     if ($svgPropertyType) {
@@ -366,22 +372,22 @@ sub GenerateHeader
     if (!$hasDependentLifetime) {
         foreach (@{$interface->parents}) {
             my $parent = $_;
-            $headerIncludes{"V8${parent}.h"} = 1;
+            AddToHeaderIncludes("V8${parent}.h");
         }
     }
 
     # - Add default header template
     AddToHeader(GenerateHeaderContentHeader($interface));
 
-    $headerIncludes{"bindings/v8/WrapperTypeInfo.h"} = 1;
-    $headerIncludes{"bindings/v8/V8Binding.h"} = 1;
-    $headerIncludes{"bindings/v8/V8DOMWrapper.h"} = 1;
-    $headerIncludes{"v8.h"} = 1;
-    $headerIncludes{"wtf/HashMap.h"} = 1;
-    $headerIncludes{"wtf/text/StringHash.h"} = 1;
+    AddToHeaderIncludes("bindings/v8/WrapperTypeInfo.h");
+    AddToHeaderIncludes("bindings/v8/V8Binding.h");
+    AddToHeaderIncludes("bindings/v8/V8DOMWrapper.h");
+    AddToHeaderIncludes("v8.h");
+    AddToHeaderIncludes("wtf/HashMap.h");
+    AddToHeaderIncludes("wtf/text/StringHash.h");
 
     my $headerClassInclude = GetHeaderClassInclude($interfaceName);
-    $headerIncludes{$headerClassInclude} = 1 if $headerClassInclude ne "";
+    AddToHeaderIncludes($headerClassInclude) if $headerClassInclude;
 
     my ($svgPropertyType, $svgListPropertyType, $svgNativeType) = GetSVGPropertyTypes($interfaceName);
 
@@ -431,7 +437,7 @@ END
         my $separator = "";
         foreach (@{$interface->parents}) {
             my $parent = $_;
-            $headerIncludes{"V8${parent}.h"} = 1;
+            AddToHeaderIncludes("V8${parent}.h");
             AddToHeader("${separator}V8${parent}::hasDependentLifetime");
             $separator = " || ";
         }
