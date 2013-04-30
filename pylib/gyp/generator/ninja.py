@@ -1827,7 +1827,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
         for config_name in config_names:
           arglists.append(
               (target_list, target_dicts, data, params, config_name))
-          pool.map(CallGenerateOutputForConfig, arglists)
+        pool.map(CallGenerateOutputForConfig, arglists)
       except KeyboardInterrupt, e:
         pool.terminate()
         raise e
