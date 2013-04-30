@@ -121,9 +121,6 @@ void GetDiskInfoAndUpdateOnFileThread(
   std::string bsd_name;
   StorageInfo info = BuildStorageInfo(dict, &bsd_name);
 
-  if (info.device_id.empty())
-    return;
-
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
@@ -131,21 +128,6 @@ void GetDiskInfoAndUpdateOnFileThread(
                  monitor,
                  bsd_name,
                  info,
-                 update_type));
-}
-
-void GetDiskInfoAndUpdate(StorageMonitorMac* monitor,
-                          DADiskRef disk,
-                          StorageMonitorMac::UpdateType update_type) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  base::mac::ScopedCFTypeRef<CFDictionaryRef> dict(DADiskCopyDescription(disk));
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(GetDiskInfoAndUpdateOnFileThread,
-                 monitor->AsWeakPtr(),
-                 dict,
                  update_type));
 }
 
@@ -189,7 +171,7 @@ void EjectDisk(EjectDiskOptions* options) {
 
 }  // namespace
 
-StorageMonitorMac::StorageMonitorMac() {
+StorageMonitorMac::StorageMonitorMac() : pending_disk_updates_(0) {
 }
 
 StorageMonitorMac::~StorageMonitorMac() {
@@ -228,6 +210,10 @@ void StorageMonitorMac::Init() {
     image_capture_device_manager_.reset(new chrome::ImageCaptureDeviceManager);
     image_capture_device_manager_->SetNotifications(receiver());
   }
+
+  // Fallback. Notifications on attached volumes don't come through reliably.
+  // TODO(gbillock): use NSWorkspace/NSFileManager to do this.
+  MarkInitialized();
 }
 
 void StorageMonitorMac::UpdateDisk(
@@ -236,8 +222,15 @@ void StorageMonitorMac::UpdateDisk(
     UpdateType update_type) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  if (bsd_name.empty())
+  bool initialization_complete = false;
+  if (!IsInitialized() && pending_disk_updates_-- == 0)
+    initialization_complete = true;
+
+  if (info.device_id.empty() || bsd_name.empty()) {
+    if (!IsInitialized() && initialization_complete)
+      MarkInitialized();
     return;
+  }
 
   std::map<std::string, StorageInfo>::iterator it =
       disk_info_map_.find(bsd_name);
@@ -266,6 +259,11 @@ void StorageMonitorMac::UpdateDisk(
     if (ShouldPostNotificationForDisk(storage_info))
       receiver()->ProcessAttach(storage_info);
   }
+
+  // We're not really honestly sure we're done, but this looks the best we
+  // can do. Any misses should go out through notifications.
+  if (!IsInitialized() && initialization_complete)
+    MarkInitialized();
 }
 
 bool StorageMonitorMac::GetStorageInfoForPath(const base::FilePath& path,
@@ -331,13 +329,13 @@ void StorageMonitorMac::EjectDevice(
 // static
 void StorageMonitorMac::DiskAppearedCallback(DADiskRef disk, void* context) {
   StorageMonitorMac* monitor = static_cast<StorageMonitorMac*>(context);
-  GetDiskInfoAndUpdate(monitor->AsWeakPtr(), disk, UPDATE_DEVICE_ADDED);
+  monitor->GetDiskInfoAndUpdate(disk, UPDATE_DEVICE_ADDED);
 }
 
 // static
 void StorageMonitorMac::DiskDisappearedCallback(DADiskRef disk, void* context) {
   StorageMonitorMac* monitor = static_cast<StorageMonitorMac*>(context);
-  GetDiskInfoAndUpdate(monitor->AsWeakPtr(), disk, UPDATE_DEVICE_REMOVED);
+  monitor->GetDiskInfoAndUpdate(disk, UPDATE_DEVICE_REMOVED);
 }
 
 // static
@@ -345,8 +343,24 @@ void StorageMonitorMac::DiskDescriptionChangedCallback(DADiskRef disk,
                                                        CFArrayRef keys,
                                                        void *context) {
   StorageMonitorMac* monitor = static_cast<StorageMonitorMac*>(context);
-  GetDiskInfoAndUpdate(monitor->AsWeakPtr(), disk, UPDATE_DEVICE_CHANGED);
+  monitor->GetDiskInfoAndUpdate(disk, UPDATE_DEVICE_CHANGED);
 }
+
+void StorageMonitorMac::GetDiskInfoAndUpdate(
+    DADiskRef disk,
+    StorageMonitorMac::UpdateType update_type) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  pending_disk_updates_++;
+
+  base::mac::ScopedCFTypeRef<CFDictionaryRef> dict(DADiskCopyDescription(disk));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(GetDiskInfoAndUpdateOnFileThread,
+                 AsWeakPtr(), dict, update_type));
+}
+
 
 bool StorageMonitorMac::ShouldPostNotificationForDisk(
     const StorageInfo& info) const {

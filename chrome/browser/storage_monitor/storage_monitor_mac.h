@@ -32,7 +32,7 @@ class StorageMonitorMac : public StorageMonitor,
 
   virtual ~StorageMonitorMac();
 
-  void Init();
+  virtual void Init() OVERRIDE;
 
   void UpdateDisk(const std::string& bsd_name,
                   const StorageInfo& info,
@@ -52,6 +52,7 @@ class StorageMonitorMac : public StorageMonitor,
   static void DiskDescriptionChangedCallback(DADiskRef disk,
                                              CFArrayRef keys,
                                              void *context);
+  void GetDiskInfoAndUpdate(DADiskRef disk, UpdateType update_type);
 
   bool ShouldPostNotificationForDisk(const StorageInfo& info) const;
   bool FindDiskWithMountPoint(const base::FilePath& mount_point,
@@ -62,6 +63,8 @@ class StorageMonitorMac : public StorageMonitor,
   // devices on the system, though only notifications for removable devices are
   // posted.
   std::map<std::string, StorageInfo> disk_info_map_;
+
+  int pending_disk_updates_;
 
   scoped_ptr<chrome::ImageCaptureDeviceManager> image_capture_device_manager_;
 

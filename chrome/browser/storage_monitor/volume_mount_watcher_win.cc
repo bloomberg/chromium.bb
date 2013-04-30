@@ -278,6 +278,11 @@ void VolumeMountWatcherWin::DeviceCheckComplete(
     const base::FilePath& device_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   pending_device_checks_.erase(device_path);
+
+  if (pending_device_checks_.size() == 0) {
+    if (notifications_)
+      notifications_->MarkInitialized();
+  }
 }
 
 VolumeMountWatcherWin::GetAttachedDevicesCallbackType

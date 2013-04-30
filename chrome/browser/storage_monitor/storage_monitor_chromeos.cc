@@ -160,6 +160,16 @@ void StorageMonitorCros::CheckExistingMountPoints() {
         base::Bind(&StorageMonitorCros::AddMountedPath,
                    weak_ptr_factory_.GetWeakPtr(), it->second));
   }
+
+  // Note: relies on scheduled tasks on the file thread being sequential. This
+  // block needs to follow the for loop, so that the DoNothing call on the FILE
+  // thread happens after the scheduled metadata retrievals, meaning that the
+  // reply callback will then happen after all the AddNewMount calls.
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&base::DoNothing),
+      base::Bind(&StorageMonitorCros::MarkInitialized,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void StorageMonitorCros::OnDiskEvent(

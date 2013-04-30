@@ -49,6 +49,7 @@ class StorageMonitor {
 
     virtual void ProcessAttach(const StorageInfo& info) = 0;
     virtual void ProcessDetach(const std::string& id) = 0;
+    virtual void MarkInitialized() = 0;
   };
 
   // Status codes for the result of an EjectDevice() call.
@@ -62,6 +63,18 @@ class StorageMonitor {
   // Returns a pointer to an object owned by the BrowserMainParts, with lifetime
   // somewhat shorter than a process Singleton.
   static StorageMonitor* GetInstance();
+
+  // Initialize the storage monitor. The provided callback, if non-null,
+  // will be called when initialization is complete. If initialization has
+  // already completed, this callback will be invoked within the calling stack.
+  // Before the callback is run, calls to |GetAttachedStorage| and
+  // |GetStorageInfoForPath| may not return the correct results. In addition,
+  // registered observers will not be notified on device attachment/detachment.
+  // Should be invoked on the UI thread; callbacks will be run on the UI thread.
+  void Initialize(base::Closure callback);
+
+  // Return true if the storage monitor has already been initialized.
+  bool IsInitialized();
 
   // Finds the device that contains |path| and populates |device_info|.
   // Should be able to handle any path on the local system, not just removable
@@ -118,6 +131,13 @@ class StorageMonitor {
 
   virtual Receiver* receiver() const;
 
+  // Called to initialize the storage monitor.
+  virtual void Init() = 0;
+
+  // Called by subclasses to mark the storage monitor as
+  // fully initialized. Must be called on the UI thread.
+  void MarkInitialized();
+
  private:
   class ReceiverImpl;
   friend class ReceiverImpl;
@@ -132,6 +152,9 @@ class StorageMonitor {
 
   scoped_refptr<ObserverListThreadSafe<RemovableStorageObserver> >
       observer_list_;
+
+  bool initialized_;
+  std::vector<base::Closure> on_initialize_callbacks_;
 
   // For manipulating removable_storage_map_ structure.
   mutable base::Lock storage_lock_;

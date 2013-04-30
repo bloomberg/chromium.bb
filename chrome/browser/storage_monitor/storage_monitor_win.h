@@ -32,7 +32,7 @@ class StorageMonitorWin : public StorageMonitor {
   virtual ~StorageMonitorWin();
 
   // Must be called after the file thread is created.
-  void Init();
+  virtual void Init() OVERRIDE;
 
   // StorageMonitor:
   virtual bool GetStorageInfoForPath(const base::FilePath& path,

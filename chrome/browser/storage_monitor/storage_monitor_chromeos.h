@@ -39,7 +39,7 @@ class StorageMonitorCros : public chrome::StorageMonitor,
 
   // Sets up disk listeners and issues notifications for any discovered
   // mount points. Sets up MTP manager and listeners.
-  void Init();
+  virtual void Init() OVERRIDE;
 
  protected:
   void SetMediaTransferProtocolManagerForTest(

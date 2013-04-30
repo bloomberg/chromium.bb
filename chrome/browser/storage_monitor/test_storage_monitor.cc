@@ -15,7 +15,8 @@ namespace chrome {
 namespace test {
 
 TestStorageMonitor::TestStorageMonitor()
-    : StorageMonitor() {
+    : StorageMonitor(),
+      init_called_(false) {
 #if defined(OS_LINUX)
   media_transfer_protocol_manager_.reset(
       new TestMediaTransferProtocolManagerLinux());
@@ -28,6 +29,14 @@ TestStorageMonitor*
 TestStorageMonitor::CreateForBrowserTests() {
   StorageMonitor::RemoveSingletonForTesting();
   return new TestStorageMonitor();
+}
+
+void TestStorageMonitor::Init() {
+  init_called_ = true;
+}
+
+void TestStorageMonitor::MarkInitialized() {
+  StorageMonitor::MarkInitialized();
 }
 
 bool TestStorageMonitor::GetStorageInfoForPath(

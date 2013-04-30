@@ -42,7 +42,7 @@ class StorageMonitorLinux : public StorageMonitor,
   virtual ~StorageMonitorLinux();
 
   // Must be called for StorageMonitorLinux to work.
-  void Init();
+  virtual void Init() OVERRIDE;
 
  protected:
   // Gets device information given a |device_path| and |mount_point|.

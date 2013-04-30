@@ -27,6 +27,8 @@ class StorageMonitor::ReceiverImpl : public StorageMonitor::Receiver {
 
   virtual void ProcessDetach(const std::string& id) OVERRIDE;
 
+  virtual void MarkInitialized() OVERRIDE;
+
  private:
   StorageMonitor* notifications_;
 };
@@ -37,6 +39,10 @@ void StorageMonitor::ReceiverImpl::ProcessAttach(const StorageInfo& info) {
 
 void StorageMonitor::ReceiverImpl::ProcessDetach(const std::string& id) {
   notifications_->ProcessDetach(id);
+}
+
+void StorageMonitor::ReceiverImpl::MarkInitialized() {
+  notifications_->MarkInitialized();
 }
 
 StorageMonitor* StorageMonitor::GetInstance() {
@@ -53,6 +59,24 @@ std::vector<StorageInfo> StorageMonitor::GetAttachedStorage() const {
     results.push_back(it->second);
   }
   return results;
+}
+
+void StorageMonitor::Initialize(base::Closure callback) {
+  if (initialized_) {
+    if (!callback.is_null())
+      callback.Run();
+    return;
+  }
+
+  if (!callback.is_null()) {
+    on_initialize_callbacks_.push_back(callback);
+  }
+
+  Init();
+}
+
+bool StorageMonitor::IsInitialized() {
+  return initialized_;
 }
 
 void StorageMonitor::AddObserver(RemovableStorageObserver* obs) {
@@ -84,6 +108,7 @@ void StorageMonitor::EjectDevice(
 
 StorageMonitor::StorageMonitor()
     : observer_list_(new ObserverListThreadSafe<RemovableStorageObserver>()),
+      initialized_(false),
       transient_device_ids_(new TransientDeviceIds) {
   receiver_.reset(new ReceiverImpl(this));
 
@@ -102,6 +127,16 @@ void StorageMonitor::RemoveSingletonForTesting() {
 
 StorageMonitor::Receiver* StorageMonitor::receiver() const {
   return receiver_.get();
+}
+
+void StorageMonitor::MarkInitialized() {
+  initialized_ = true;
+  for (std::vector<base::Closure>::iterator iter =
+           on_initialize_callbacks_.begin();
+       iter != on_initialize_callbacks_.end(); ++iter) {
+    iter->Run();
+  }
+  on_initialize_callbacks_.clear();
 }
 
 void StorageMonitor::ProcessAttach(const StorageInfo& info) {

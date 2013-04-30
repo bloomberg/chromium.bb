@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/storage_monitor/mock_removable_storage_observer.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
@@ -10,6 +11,19 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome {
+
+TEST(StorageMonitorTest, TestInitialize) {
+  test::TestStorageMonitor monitor;
+  EXPECT_FALSE(monitor.init_called_);
+
+  base::WaitableEvent event(false, false);
+  monitor.Initialize(base::Bind(&base::WaitableEvent::Signal,
+                                base::Unretained(&event)));
+  EXPECT_TRUE(monitor.init_called_);
+  EXPECT_FALSE(event.IsSignaled());
+  monitor.MarkInitialized();
+  EXPECT_TRUE(event.IsSignaled());
+}
 
 TEST(StorageMonitorTest, DeviceAttachDetachNotifications) {
   MessageLoop message_loop;

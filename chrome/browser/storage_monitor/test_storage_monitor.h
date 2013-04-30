@@ -17,6 +17,10 @@ class TestStorageMonitor : public chrome::StorageMonitor {
   TestStorageMonitor();
   virtual ~TestStorageMonitor();
 
+  virtual void Init() OVERRIDE;
+
+  virtual void MarkInitialized();
+
   // Will create a new testing implementation for browser tests,
   // taking care to deal with the existing singleton correctly.
   static TestStorageMonitor* CreateForBrowserTests();
@@ -45,6 +49,8 @@ class TestStorageMonitor : public chrome::StorageMonitor {
       OVERRIDE;
 
   const std::string& ejected_device() const { return ejected_device_; }
+
+  bool init_called_;
 
  private:
   std::string ejected_device_;
