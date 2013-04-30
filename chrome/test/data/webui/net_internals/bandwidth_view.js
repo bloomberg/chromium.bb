@@ -48,12 +48,11 @@ BandwidthTask.prototype = {
   },
 
   /**
-   * Returns the float value the specified cell of the
-   * |BandwidthView.BANDWIDTH_USAGE_TABLE| table.
+   * Returns the float value the specified cell of the bandwidth table.
    */
   getBandwidthTableCell_: function(row, col) {
     return parseFloat(NetInternalsTest.getTbodyText(
-        BandwidthView.BANDWIDTH_USAGE_TABLE, row, col));
+        BandwidthView.MAIN_BOX_ID, row, col));
   },
 
   /**
@@ -88,8 +87,7 @@ BandwidthTask.prototype = {
   completeIfDone: function() {
     if (this.historicVerified && this.sessionVerified) {
       // Check number of rows in the table.
-      NetInternalsTest.checkTbodyRows(
-          BandwidthView.BANDWIDTH_USAGE_TABLE, 4);
+      NetInternalsTest.checkTbodyRows(BandwidthView.MAIN_BOX_ID, 4);
       this.onTaskDone();
     }
   },

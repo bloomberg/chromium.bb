@@ -21,7 +21,6 @@ var BandwidthView = (function() {
     g_browser.addSessionNetworkStatsObserver(this, true);
     g_browser.addHistoricNetworkStatsObserver(this, true);
 
-    this.bandwidthUsageTable_ = $(BandwidthView.BANDWIDTH_USAGE_TABLE);
     this.sessionNetworkStats_ = null;
     this.historicNetworkStats_ = null;
   }
@@ -32,7 +31,6 @@ var BandwidthView = (function() {
 
   // IDs for special HTML elements in bandwidth_view.html
   BandwidthView.MAIN_BOX_ID = 'bandwidth-view-tab-content';
-  BandwidthView.BANDWIDTH_USAGE_TABLE = 'bandwidth-usage-table';
 
   cr.addSingletonGetter(BandwidthView);
 
@@ -41,8 +39,9 @@ var BandwidthView = (function() {
     __proto__: superClass.prototype,
 
     onLoadLogFinish: function(data) {
-      return this.onSessionNetworkStatsChanged(data.sessionNetworkStats) &&
-          this.onHistoricNetworkStatsChanged(data.historicNetworkStats);
+      // Even though this information is included in log dumps, there's no real
+      // reason to display it when debugging a loaded log file.
+      return false;
     },
 
     /**
@@ -50,8 +49,7 @@ var BandwidthView = (function() {
      */
     onSessionNetworkStatsChanged: function(sessionNetworkStats) {
       this.sessionNetworkStats_ = sessionNetworkStats;
-      this.updateBandwidthUsageTable();
-      return true;
+      return this.updateBandwidthUsageTable_();
     },
 
     /**
@@ -60,18 +58,52 @@ var BandwidthView = (function() {
      */
     onHistoricNetworkStatsChanged: function(historicNetworkStats) {
       this.historicNetworkStats_ = historicNetworkStats;
-      this.updateBandwidthUsageTable();
-      return true;
+      return this.updateBandwidthUsageTable_();
     },
 
     /**
-     * Update the bandwidth usage table.
+     * Update the bandwidth usage table.  Returns false on failure.
      */
-    updateBandwidthUsageTable: function() {
-      this.bandwidthUsageTable_.innerHTML = '';
-      var tabPrinter = createBandwidthUsageTablePrinter(
-          this.sessionNetworkStats_, this.historicNetworkStats_);
-      tabPrinter.toHTML(this.bandwidthUsageTable_, 'styled-table');
+    updateBandwidthUsageTable_: function() {
+      var sessionNetworkStats = this.sessionNetworkStats_;
+      var historicNetworkStats = this.historicNetworkStats_;
+      if (!sessionNetworkStats || !historicNetworkStats)
+        return false;
+
+      var sessionOriginal = sessionNetworkStats.session_original_content_length;
+      var sessionReceived = sessionNetworkStats.session_received_content_length;
+      var historicOriginal =
+          historicNetworkStats.historic_original_content_length;
+      var historicReceived =
+          historicNetworkStats.historic_received_content_length;
+
+      var rows = [];
+      rows.push({
+          title: 'Original (KB)',
+          sessionValue: bytesToRoundedKilobytes_(sessionOriginal),
+          historicValue: bytesToRoundedKilobytes_(historicOriginal)
+      });
+      rows.push({
+          title: 'Received (KB)',
+          sessionValue: bytesToRoundedKilobytes_(sessionReceived),
+          historicValue: bytesToRoundedKilobytes_(historicReceived)
+      });
+      rows.push({
+          title: 'Savings (KB)',
+          sessionValue:
+              bytesToRoundedKilobytes_(sessionOriginal - sessionReceived),
+          historicValue:
+              bytesToRoundedKilobytes_(historicOriginal - historicReceived)
+      });
+      rows.push({
+          title: 'Savings (%)',
+          sessionValue: getPercentSavings_(sessionOriginal, sessionReceived),
+          historicValue: getPercentSavings_(historicOriginal,
+                                            historicReceived)
+      });
+
+      var input = new JsEvalContext({rows: rows});
+      jstProcess(input, $(BandwidthView.MAIN_BOX_ID));
       return true;
     }
   };
@@ -79,67 +111,18 @@ var BandwidthView = (function() {
   /**
    * Converts bytes to kilobytes rounded to one decimal place.
    */
-  function bytesToRoundedKilobytes(val) {
+  function bytesToRoundedKilobytes_(val) {
     return (val / 1024).toFixed(1);
   }
 
   /**
    * Returns bandwidth savings as a percent rounded to one decimal place.
    */
-  function getPercentSavings(original, received) {
+  function getPercentSavings_(original, received) {
     if (original > 0) {
       return ((original - received) * 100 / original).toFixed(1);
     }
     return '0.0';
-  }
-
-  /**
-   * Adds a row of bandwidth usage statistics to the bandwidth usage table.
-   */
-  function addRow(tablePrinter, title, sessionValue, historicValue) {
-    tablePrinter.addRow();
-    tablePrinter.addCell(title);
-    tablePrinter.addCell(sessionValue);
-    tablePrinter.addCell(historicValue);
-  }
-
-  /**
-   * Creates a table printer to print out the bandwidth usage statistics.
-   */
-  function createBandwidthUsageTablePrinter(sessionNetworkStats,
-                                            historicNetworkStats) {
-    var tablePrinter = new TablePrinter();
-    tablePrinter.addHeaderCell('');
-    tablePrinter.addHeaderCell('Session');
-    tablePrinter.addHeaderCell('Total');
-
-    var sessionOriginal = 0;
-    var historicOriginal = 0;
-    var sessionReceived = 0;
-    var historicReceived = 0;
-
-    if (sessionNetworkStats != null) {
-      sessionOriginal = sessionNetworkStats.session_original_content_length;
-      sessionReceived = sessionNetworkStats.session_received_content_length;
-    }
-    if (historicNetworkStats != null) {
-      historicOriginal = historicNetworkStats.historic_original_content_length;
-      historicReceived = historicNetworkStats.historic_received_content_length;
-    }
-
-    addRow(tablePrinter, 'Original (KB)',
-        bytesToRoundedKilobytes(sessionOriginal),
-        bytesToRoundedKilobytes(historicOriginal));
-    addRow(tablePrinter, 'Received (KB)',
-        bytesToRoundedKilobytes(sessionReceived),
-        bytesToRoundedKilobytes(historicReceived));
-    addRow(tablePrinter, 'Savings (KB)',
-        bytesToRoundedKilobytes(sessionOriginal - sessionReceived),
-        bytesToRoundedKilobytes(historicOriginal - historicReceived));
-    addRow(tablePrinter, 'Savings (%)',
-        getPercentSavings(sessionOriginal, sessionReceived),
-        getPercentSavings(historicOriginal, historicReceived));
-    return tablePrinter;
   }
 
   return BandwidthView;
