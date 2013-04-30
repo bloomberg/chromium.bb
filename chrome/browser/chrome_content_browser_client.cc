@@ -78,6 +78,7 @@
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/browser/user_style_sheet_watcher_factory.h"
+#include "chrome/browser/validation_message_message_filter.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -726,6 +727,10 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
       id, profile, context));
   host->GetChannel()->AddFilter(
       new prerender::PrerenderMessageFilter(id, profile));
+#if defined(OS_MACOSX)
+  // TODO(tkent): Enable it for other platforms.
+  host->GetChannel()->AddFilter(new ValidationMessageMessageFilter(id));
+#endif
 
   host->Send(new ChromeViewMsg_SetIsIncognitoProcess(
       profile->IsOffTheRecord()));

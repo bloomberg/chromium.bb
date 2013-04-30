@@ -302,6 +302,8 @@
         'renderer/static_v8_external_string_resource.h',
         'renderer/translate/translate_helper.cc',
         'renderer/translate/translate_helper.h',
+        'renderer/validation_message_agent.cc',
+        'renderer/validation_message_agent.h',
         'renderer/webview_color_overlay.cc',
         'renderer/webview_color_overlay.h',
       ],

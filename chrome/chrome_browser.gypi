@@ -2137,6 +2137,8 @@
         'browser/user_style_sheet_watcher.h',
         'browser/user_style_sheet_watcher_factory.cc',
         'browser/user_style_sheet_watcher_factory.h',
+        'browser/validation_message_message_filter.cc',
+        'browser/validation_message_message_filter.h',
         'browser/value_store/leveldb_value_store.cc',
         'browser/value_store/leveldb_value_store.h',
         'browser/value_store/testing_value_store.cc',

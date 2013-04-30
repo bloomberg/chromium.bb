@@ -28,6 +28,7 @@
 @synthesize parentWindow = parentWindow_;
 @synthesize anchorPoint = anchor_;
 @synthesize bubble = bubble_;
+@synthesize shouldOpenAsKeyWindow = shouldOpenAsKeyWindow_;
 
 - (id)initWithWindowNibPath:(NSString*)nibPath
                parentWindow:(NSWindow*)parentWindow
@@ -37,6 +38,7 @@
   if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
     parentWindow_ = parentWindow;
     anchor_ = anchoredAt;
+    shouldOpenAsKeyWindow_ = YES;
 
     // Watch to see if the parent window closes, and if so, close this one.
     NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
@@ -69,6 +71,7 @@
   if ((self = [super initWithWindow:theWindow])) {
     parentWindow_ = parentWindow;
     anchor_ = anchoredAt;
+    shouldOpenAsKeyWindow_ = YES;
 
     DCHECK(![[self window] delegate]);
     [theWindow setDelegate:self];
@@ -148,7 +151,10 @@
   NSWindow* window = [self window];  // Completes nib load.
   [self updateOriginFromAnchor];
   [parentWindow_ addChildWindow:window ordered:NSWindowAbove];
-  [window makeKeyAndOrderFront:self];
+  if (shouldOpenAsKeyWindow_)
+    [window makeKeyAndOrderFront:self];
+  else
+    [window orderFront:nil];
   [self registerKeyStateEventTap];
 }
 

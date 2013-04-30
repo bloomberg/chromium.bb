@@ -35,6 +35,9 @@ class TabStripModelObserverBridge;
   id eventTap_;
   // A notification observer that gets triggered when any window resigns key.
   id resignationObserver_;
+  // The controlled window should be the key window when it's opened. True by
+  // default.
+  bool shouldOpenAsKeyWindow_;
 }
 
 @property(nonatomic, readonly) NSWindow* parentWindow;
@@ -42,6 +45,7 @@ class TabStripModelObserverBridge;
 // arrow tip points.
 @property(nonatomic, assign) NSPoint anchorPoint;
 @property(nonatomic, readonly) InfoBubbleView* bubble;
+@property(nonatomic, assign) bool shouldOpenAsKeyWindow;
 
 // Creates a bubble. |nibPath| is just the basename, e.g. @"FirstRunBubble".
 // |anchoredAt| is in screen space. You need to call -showWindow: to make the

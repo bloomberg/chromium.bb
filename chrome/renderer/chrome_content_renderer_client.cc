@@ -70,6 +70,7 @@
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
+#include "chrome/renderer/validation_message_agent.h"
 #include "components/autofill/renderer/autofill_agent.h"
 #include "components/autofill/renderer/password_autofill_agent.h"
 #include "components/autofill/renderer/password_generation_manager.h"
@@ -360,6 +361,7 @@ void ChromeContentRendererClient::RenderViewCreated(
   PasswordAutofillAgent* password_autofill_agent =
       new PasswordAutofillAgent(render_view);
   new AutofillAgent(render_view, password_autofill_agent);
+  new ValidationMessageAgent(render_view);
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnablePasswordGeneration))

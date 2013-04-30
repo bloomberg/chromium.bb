@@ -409,6 +409,7 @@
         'common/time_format.h',
         'common/url_constants.cc',
         'common/url_constants.h',
+        'common/validation_message_messages.h',
         'common/web_apps.cc',
         'common/web_apps.h',
         'common/web_resource/web_resource_unpacker.cc',
@@ -475,6 +476,7 @@
             ['exclude', '^common/profiling\\.'],
             ['exclude', '^common/service_process_util_'],
             ['exclude', '^common/spellcheck_'],
+            ['exclude', '^common/validation_message_'],
             ['exclude', '^common/web_apps\\.'],
             # TODO(ios): Include files here as they are made to work; once
             # everything is online, remove everything below here and just
