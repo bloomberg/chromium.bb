@@ -68,15 +68,6 @@ void CreateBitmap(gfx::Size size, const char* uri, SkBitmap* bitmap) {
   bitmap->setPixelRef(lazy_pixel_ref);
 }
 
-void RerecordPile(scoped_refptr<FakePicturePileImpl> pile) {
-  for (int y = 0; y < pile->num_tiles_y(); ++y) {
-    for (int x = 0; x < pile->num_tiles_x(); ++x) {
-      pile->RemoveRecordingAt(x, y);
-      pile->AddRecordingAt(x, y);
-    }
-  }
-}
-
 TEST(PicturePileImplTest, AnalyzeIsSolidUnscaled) {
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(400, 400);
@@ -93,7 +84,7 @@ TEST(PicturePileImplTest, AnalyzeIsSolidUnscaled) {
   non_solid_paint.setColor(non_solid_color);
 
   pile->add_draw_rect_with_paint(gfx::Rect(0, 0, 400, 400), solid_paint);
-  RerecordPile(pile);
+  pile->RerecordPile();
 
   // Ensure everything is solid
   for (int y = 0; y <= 300; y += 100) {
@@ -108,7 +99,7 @@ TEST(PicturePileImplTest, AnalyzeIsSolidUnscaled) {
 
   // One pixel non solid
   pile->add_draw_rect_with_paint(gfx::Rect(50, 50, 1, 1), non_solid_paint);
-  RerecordPile(pile);
+  pile->RerecordPile();
 
   PicturePileImpl::Analysis analysis;
   pile->AnalyzeInRect(gfx::Rect(0, 0, 100, 100), 1.0, &analysis);
@@ -151,7 +142,7 @@ TEST(PicturePileImplTest, AnalyzeIsSolidScaled) {
   non_solid_paint.setColor(non_solid_color);
 
   pile->add_draw_rect_with_paint(gfx::Rect(0, 0, 400, 400), solid_paint);
-  RerecordPile(pile);
+  pile->RerecordPile();
 
   // Ensure everything is solid
   for (int y = 0; y <= 30; y += 10) {
@@ -166,7 +157,7 @@ TEST(PicturePileImplTest, AnalyzeIsSolidScaled) {
 
   // One pixel non solid
   pile->add_draw_rect_with_paint(gfx::Rect(50, 50, 1, 1), non_solid_paint);
-  RerecordPile(pile);
+  pile->RerecordPile();
 
   PicturePileImpl::Analysis analysis;
   pile->AnalyzeInRect(gfx::Rect(0, 0, 10, 10), 0.1f, &analysis);
@@ -290,7 +281,7 @@ TEST(PicturePileImplTest, PixelRefIteratorNoLazyRefs) {
   pile->add_draw_bitmap(non_lazy_bitmap, gfx::Point(0, 128));
   pile->add_draw_bitmap(non_lazy_bitmap, gfx::Point(150, 150));
 
-  RerecordPile(pile);
+  pile->RerecordPile();
 
   // Tile sized iterators.
   {
@@ -382,7 +373,7 @@ TEST(PicturePileImplTest, PixelRefIteratorLazyRefs) {
   pile->add_draw_bitmap(lazy_bitmap[1][0], gfx::Point(0, 130));
   pile->add_draw_bitmap(lazy_bitmap[1][1], gfx::Point(140, 140));
 
-  RerecordPile(pile);
+  pile->RerecordPile();
 
   // Tile sized iterators. These should find only one pixel ref.
   {
@@ -512,7 +503,7 @@ TEST(PicturePileImplTest, PixelRefIteratorLazyRefsOneTile) {
   pile->add_draw_bitmap(lazy_bitmap[0][1], gfx::Point(260, 0));
   pile->add_draw_bitmap(lazy_bitmap[1][1], gfx::Point(260, 260));
 
-  RerecordPile(pile);
+  pile->RerecordPile();
 
   // Tile sized iterators. These should find only one pixel ref.
   {
@@ -670,7 +661,7 @@ TEST(PicturePileImplTest, PixelRefIteratorLazyRefsBaseNonLazy) {
   pile->add_draw_bitmap(lazy_bitmap[0][1], gfx::Point(260, 0));
   pile->add_draw_bitmap(lazy_bitmap[1][1], gfx::Point(260, 260));
 
-  RerecordPile(pile);
+  pile->RerecordPile();
 
   // Tile sized iterators. These should find only one pixel ref.
   {
@@ -805,7 +796,7 @@ TEST(PicturePileImplTest, PixelRefIteratorMultiplePictures) {
   // ||     |x||
   // ||=======||
   pile->add_draw_bitmap(non_lazy_bitmap, gfx::Point(0, 0));
-  RerecordPile(pile);
+  pile->RerecordPile();
 
   FakeContentLayerClient content_layer_clients[2][2];
   scoped_refptr<Picture> pictures[2][2];

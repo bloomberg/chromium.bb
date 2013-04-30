@@ -6,13 +6,17 @@
 #include "cc/layers/append_quads_data.h"
 #include "cc/output/gl_renderer.h"
 #include "cc/quads/draw_quad.h"
+#include "cc/quads/picture_draw_quad.h"
+#include "cc/resources/platform_color.h"
 #include "cc/resources/sync_point_helper.h"
+#include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/pixel_test.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
+#include "ui/gfx/rect_conversions.h"
 
 namespace cc {
 namespace {
@@ -44,6 +48,24 @@ scoped_ptr<SharedQuadState> CreateTestSharedQuadState(
   const gfx::Rect visible_content_rect = rect;
   const gfx::Rect clip_rect = rect;
   const bool is_clipped = false;
+  const float opacity = 1.0f;
+  scoped_ptr<SharedQuadState> shared_state = SharedQuadState::Create();
+  shared_state->SetAll(content_to_target_transform,
+                       content_bounds,
+                       visible_content_rect,
+                       clip_rect,
+                       is_clipped,
+                       opacity);
+  return shared_state.Pass();
+}
+
+scoped_ptr<SharedQuadState> CreateTestSharedQuadStateClipped(
+    gfx::Transform content_to_target_transform,
+    gfx::Rect rect,
+    gfx::Rect clip_rect) {
+  const gfx::Size content_bounds = rect.size();
+  const gfx::Rect visible_content_rect = clip_rect;
+  const bool is_clipped = true;
   const float opacity = 1.0f;
   scoped_ptr<SharedQuadState> shared_state = SharedQuadState::Create();
   shared_state->SetAll(content_to_target_transform,
@@ -680,7 +702,233 @@ TEST_F(GLRendererPixelTest, SignalSyncPoint) {
   EXPECT_EQ(1, sync_point_callback_count);
   EXPECT_EQ(1, other_callback_count);
 }
-#endif
+
+TEST_F(GLRendererPixelTest, PictureDrawQuadIdentityScale) {
+  gfx::Size pile_tile_size(1000, 1000);
+  gfx::Rect viewport(this->device_viewport_size_);
+  // TODO(enne): the renderer should figure this out on its own.
+  bool contents_swizzled = !PlatformColor::SameComponentOrder(GL_RGBA);
+
+  RenderPass::Id id(1, 1);
+  gfx::Transform transform_to_root;
+  scoped_ptr<RenderPass> pass =
+      CreateTestRenderPass(id, viewport, transform_to_root);
+
+  // One clipped blue quad in the lower right corner.  Outside the clip
+  // is red, which should not appear.
+  gfx::Rect blue_rect(gfx::Size(100, 100));
+  gfx::Rect blue_clip_rect(gfx::Point(50, 50), gfx::Size(50, 50));
+  scoped_refptr<FakePicturePileImpl> blue_pile =
+      FakePicturePileImpl::CreateFilledPile(pile_tile_size, blue_rect.size());
+  SkPaint red_paint;
+  red_paint.setColor(SK_ColorRED);
+  blue_pile->add_draw_rect_with_paint(blue_rect, red_paint);
+  SkPaint blue_paint;
+  blue_paint.setColor(SK_ColorBLUE);
+  blue_pile->add_draw_rect_with_paint(blue_clip_rect, blue_paint);
+  blue_pile->RerecordPile();
+
+  gfx::Transform blue_content_to_target_transform;
+  gfx::Vector2d offset(viewport.bottom_right() - blue_rect.bottom_right());
+  blue_content_to_target_transform.Translate(offset.x(), offset.y());
+  gfx::RectF blue_scissor_rect = blue_clip_rect;
+  blue_content_to_target_transform.TransformRect(&blue_scissor_rect);
+  scoped_ptr<SharedQuadState> blue_shared_state =
+      CreateTestSharedQuadStateClipped(blue_content_to_target_transform,
+                                       blue_rect,
+                                       gfx::ToEnclosingRect(blue_scissor_rect));
+
+  scoped_ptr<PictureDrawQuad> blue_quad = PictureDrawQuad::Create();
+
+  blue_quad->SetNew(blue_shared_state.get(),
+                    viewport,  // Intentionally bigger than clip.
+                    gfx::Rect(),
+                    viewport,
+                    viewport.size(),
+                    contents_swizzled,
+                    viewport,
+                    1.f,
+                    blue_pile);
+  pass->quad_list.push_back(blue_quad.PassAs<DrawQuad>());
+
+  // One viewport-filling green quad.
+  scoped_refptr<FakePicturePileImpl> green_pile =
+      FakePicturePileImpl::CreateFilledPile(pile_tile_size, viewport.size());
+  SkPaint green_paint;
+  green_paint.setColor(SK_ColorGREEN);
+  green_pile->add_draw_rect_with_paint(viewport, green_paint);
+  green_pile->RerecordPile();
+
+  gfx::Transform green_content_to_target_transform;
+  scoped_ptr<SharedQuadState> green_shared_state =
+      CreateTestSharedQuadState(green_content_to_target_transform, viewport);
+
+  scoped_ptr<PictureDrawQuad> green_quad = PictureDrawQuad::Create();
+  green_quad->SetNew(green_shared_state.get(),
+                     viewport,
+                     gfx::Rect(),
+                     gfx::RectF(0.f, 0.f, 1.f, 1.f),
+                     viewport.size(),
+                     contents_swizzled,
+                     viewport,
+                     1.f,
+                     green_pile);
+  pass->quad_list.push_back(green_quad.PassAs<DrawQuad>());
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      base::FilePath(FILE_PATH_LITERAL("green_with_blue_corner.png")),
+      ExactPixelComparator(true)));
+}
+
+TEST_F(GLRendererPixelTest, PictureDrawQuadNonIdentityScale) {
+  gfx::Size pile_tile_size(1000, 1000);
+  gfx::Rect viewport(gfx::Size(200, 200));
+  // TODO(enne): the renderer should figure this out on its own.
+  bool contents_swizzled = !PlatformColor::SameComponentOrder(GL_RGBA);
+
+  RenderPass::Id id(1, 1);
+  gfx::Transform transform_to_root;
+  scoped_ptr<RenderPass> pass =
+      CreateTestRenderPass(id, viewport, transform_to_root);
+
+  // As scaling up the blue checkerboards will cause sampling on the GPU,
+  // a few extra "cleanup rects" need to be added to clobber the blending
+  // to make the output image more clean.  This will also test subrects
+  // of the layer.
+  gfx::Transform green_content_to_target_transform;
+  gfx::Rect green_rect1(gfx::Point(80, 0), gfx::Size(20, 100));
+  gfx::Rect green_rect2(gfx::Point(0, 80), gfx::Size(100, 20));
+  scoped_refptr<FakePicturePileImpl> green_pile =
+      FakePicturePileImpl::CreateFilledPile(pile_tile_size, viewport.size());
+  SkPaint red_paint;
+  red_paint.setColor(SK_ColorRED);
+  green_pile->add_draw_rect_with_paint(viewport, red_paint);
+  SkPaint green_paint;
+  green_paint.setColor(SK_ColorGREEN);
+  green_pile->add_draw_rect_with_paint(green_rect1, green_paint);
+  green_pile->add_draw_rect_with_paint(green_rect2, green_paint);
+  green_pile->RerecordPile();
+
+  scoped_ptr<SharedQuadState> top_right_green_shared_quad_state =
+      CreateTestSharedQuadState(green_content_to_target_transform, viewport);
+
+  scoped_ptr<PictureDrawQuad> green_quad1 = PictureDrawQuad::Create();
+  green_quad1->SetNew(top_right_green_shared_quad_state.get(),
+                      green_rect1,
+                      gfx::Rect(),
+                      green_rect1,
+                      green_rect1.size(),
+                      contents_swizzled,
+                      green_rect1,
+                      1.f,
+                      green_pile);
+  pass->quad_list.push_back(green_quad1.PassAs<DrawQuad>());
+
+  scoped_ptr<PictureDrawQuad> green_quad2 = PictureDrawQuad::Create();
+  green_quad2->SetNew(top_right_green_shared_quad_state.get(),
+                      green_rect2,
+                      gfx::Rect(),
+                      green_rect2,
+                      green_rect2.size(),
+                      contents_swizzled,
+                      green_rect2,
+                      1.f,
+                      green_pile);
+  pass->quad_list.push_back(green_quad2.PassAs<DrawQuad>());
+
+  // Add a green clipped checkerboard in the bottom right to help test
+  // interleaving picture quad content and solid color content.
+  gfx::Rect bottom_right_rect(
+      gfx::Point(viewport.width() / 2, viewport.height() / 2),
+      gfx::Size(viewport.width() / 2, viewport.height() / 2));
+  scoped_ptr<SharedQuadState> bottom_right_green_shared_state =
+      CreateTestSharedQuadStateClipped(
+          green_content_to_target_transform, viewport, bottom_right_rect);
+  scoped_ptr<SolidColorDrawQuad> bottom_right_color_quad =
+      SolidColorDrawQuad::Create();
+  bottom_right_color_quad->SetNew(
+      bottom_right_green_shared_state.get(), viewport, SK_ColorGREEN);
+  pass->quad_list.push_back(bottom_right_color_quad.PassAs<DrawQuad>());
+
+  // Add two blue checkerboards taking up the bottom left and top right,
+  // but use content scales as content rects to make this happen.
+  // The content is at a 4x content scale.
+  gfx::Rect layer_rect(gfx::Size(20, 30));
+  float contents_scale = 4.f;
+  // Two rects that touch at their corners, arbitrarily placed in the layer.
+  gfx::RectF blue_layer_rect1(gfx::PointF(5.5f, 9.0f), gfx::SizeF(2.5f, 2.5f));
+  gfx::RectF blue_layer_rect2(gfx::PointF(8.0f, 6.5f), gfx::SizeF(2.5f, 2.5f));
+  gfx::RectF union_layer_rect = blue_layer_rect1;
+  union_layer_rect.Union(blue_layer_rect2);
+
+  // Because scaling up will cause sampling outside the rects, add one extra
+  // pixel of buffer at the final content scale.
+  float inset = -1.f / contents_scale;
+  blue_layer_rect1.Inset(inset, inset, inset, inset);
+  blue_layer_rect2.Inset(inset, inset, inset, inset);
+
+  scoped_refptr<FakePicturePileImpl> pile =
+      FakePicturePileImpl::CreateFilledPile(pile_tile_size, layer_rect.size());
+  pile->add_draw_rect_with_paint(layer_rect, red_paint);
+  SkPaint transparent_paint;
+  transparent_paint.setXfermodeMode(SkXfermode::kClear_Mode);
+  pile->add_draw_rect_with_paint(union_layer_rect, transparent_paint);
+  SkPaint blue_paint;
+  blue_paint.setColor(SK_ColorBLUE);
+  pile->add_draw_rect_with_paint(blue_layer_rect1, blue_paint);
+  pile->add_draw_rect_with_paint(blue_layer_rect2, blue_paint);
+  pile->RerecordPile();
+
+  gfx::Rect content_rect(
+      gfx::ToEnclosingRect(gfx::ScaleRect(layer_rect, contents_scale)));
+  gfx::Rect content_union_rect(
+      gfx::ToEnclosingRect(gfx::ScaleRect(union_layer_rect, contents_scale)));
+
+  // At a scale of 4x the rectangles with a width of 2.5 will take up 10 pixels,
+  // so scale an additional 10x to make them 100x100.
+  gfx::Transform content_to_target_transform;
+  content_to_target_transform.Scale(10.0, 10.0);
+  gfx::Rect quad_content_rect(gfx::Size(20, 20));
+  scoped_ptr<SharedQuadState> blue_shared_state =
+      CreateTestSharedQuadState(content_to_target_transform, quad_content_rect);
+
+  scoped_ptr<PictureDrawQuad> blue_quad = PictureDrawQuad::Create();
+  blue_quad->SetNew(blue_shared_state.get(),
+                    quad_content_rect,
+                    gfx::Rect(),
+                    quad_content_rect,
+                    content_union_rect.size(),
+                    contents_swizzled,
+                    content_union_rect,
+                    contents_scale,
+                    pile);
+  pass->quad_list.push_back(blue_quad.PassAs<DrawQuad>());
+
+  // Fill left half of viewport with green.
+  gfx::Transform half_green_content_to_target_transform;
+  gfx::Rect half_green_rect(gfx::Size(viewport.width() / 2, viewport.height()));
+  scoped_ptr<SharedQuadState> half_green_shared_state =
+      CreateTestSharedQuadState(half_green_content_to_target_transform,
+                                half_green_rect);
+  scoped_ptr<SolidColorDrawQuad> half_color_quad = SolidColorDrawQuad::Create();
+  half_color_quad->SetNew(
+      half_green_shared_state.get(), half_green_rect, SK_ColorGREEN);
+  pass->quad_list.push_back(half_color_quad.PassAs<DrawQuad>());
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      base::FilePath(FILE_PATH_LITERAL("four_blue_green_checkers.png")),
+      ExactPixelComparator(true)));
+}
+
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace
 }  // namespace cc

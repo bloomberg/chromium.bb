@@ -17,21 +17,20 @@ FakeContentLayerClient::~FakeContentLayerClient() {
 }
 
 void FakeContentLayerClient::PaintContents(SkCanvas* canvas,
-    gfx::Rect rect, gfx::RectF* opaque_rect) {
+    gfx::Rect paint_rect, gfx::RectF* opaque_rect) {
   if (paint_all_opaque_)
-    *opaque_rect = rect;
+    *opaque_rect = paint_rect;
 
-  canvas->clipRect(gfx::RectToSkRect(rect));
+  canvas->clipRect(gfx::RectToSkRect(paint_rect));
   for (RectPaintVector::const_iterator it = draw_rects_.begin();
       it != draw_rects_.end(); ++it) {
-    gfx::Rect rect = it->first;
+    const gfx::RectF& draw_rect = it->first;
     const SkPaint& paint = it->second;
-    SkRect draw_rect = SkRect::MakeXYWH(
-        rect.x(),
-        rect.y(),
-        rect.width(),
-        rect.height());
-    canvas->drawRect(draw_rect, paint);
+    canvas->drawRectCoords(draw_rect.x(),
+                           draw_rect.y(),
+                           draw_rect.right(),
+                           draw_rect.bottom(),
+                           paint);
   }
 
   for (BitmapVector::const_iterator it = draw_bitmaps_.begin();

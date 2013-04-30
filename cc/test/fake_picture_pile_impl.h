@@ -24,15 +24,15 @@ class FakePicturePileImpl : public PicturePileImpl {
   TilingData& tiling() { return tiling_; }
 
   void AddRecordingAt(int x, int y);
-
   void RemoveRecordingAt(int x, int y);
+  void RerecordPile();
 
   void AddPictureToRecording(
       int x,
       int y,
       scoped_refptr<Picture> picture);
 
-  void add_draw_rect(gfx::Rect rect) {
+  void add_draw_rect(const gfx::RectF& rect) {
     client_.add_draw_rect(rect, default_paint_);
   }
 
@@ -40,7 +40,7 @@ class FakePicturePileImpl : public PicturePileImpl {
     client_.add_draw_bitmap(bitmap, point);
   }
 
-  void add_draw_rect_with_paint(gfx::Rect rect, const SkPaint& paint) {
+  void add_draw_rect_with_paint(const gfx::RectF& rect, const SkPaint& paint) {
     client_.add_draw_rect(rect, paint);
   }
 

@@ -80,4 +80,13 @@ void FakePicturePileImpl::RemoveRecordingAt(int x, int y) {
   UpdateRecordedRegion();
 }
 
+void FakePicturePileImpl::RerecordPile() {
+  for (int y = 0; y < num_tiles_y(); ++y) {
+    for (int x = 0; x < num_tiles_x(); ++x) {
+      RemoveRecordingAt(x, y);
+      AddRecordingAt(x, y);
+    }
+  }
+}
+
 }  // namespace cc
