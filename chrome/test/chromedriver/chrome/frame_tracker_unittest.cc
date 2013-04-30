@@ -22,7 +22,7 @@ TEST(FrameTracker, GetContextIdForFrame) {
   base::DictionaryValue params;
   params.Set("context", base::JSONReader::Read(context));
   tracker.OnEvent(&client, "Runtime.executionContextCreated", params);
-  ASSERT_EQ(kNoSuchFrame,
+  ASSERT_EQ(kNoSuchExecutionContext,
             tracker.GetContextIdForFrame("foo", &context_id).code());
   ASSERT_EQ(-1, context_id);
   ASSERT_TRUE(tracker.GetContextIdForFrame("f", &context_id).IsOk());
@@ -34,7 +34,7 @@ TEST(FrameTracker, GetContextIdForFrame) {
   ASSERT_TRUE(tracker.GetContextIdForFrame("f", &context_id).IsOk());
   nav_params.Clear();
   tracker.OnEvent(&client, "Page.frameNavigated", nav_params);
-  ASSERT_EQ(kNoSuchFrame,
+  ASSERT_EQ(kNoSuchExecutionContext,
             tracker.GetContextIdForFrame("f", &context_id).code());
 }
 

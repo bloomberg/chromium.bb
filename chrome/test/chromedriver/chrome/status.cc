@@ -47,6 +47,8 @@ const char* DefaultMessageForStatusCode(StatusCode code) {
       return "invalid selector";
     case kSessionNotCreatedException:
       return "session not created exception";
+    case kNoSuchExecutionContext:
+      return "no such execution context";
     case kChromeNotReachable:
       return "chrome not reachable";
     case kDisconnected:

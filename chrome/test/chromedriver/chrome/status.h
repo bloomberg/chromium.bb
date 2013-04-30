@@ -29,6 +29,7 @@ enum StatusCode {
   kSessionNotCreatedException = 33,
   // Chrome-specific status codes.
   kChromeNotReachable = 100,
+  kNoSuchExecutionContext,
   kDisconnected,
 };
 

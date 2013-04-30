@@ -21,8 +21,10 @@ FrameTracker::~FrameTracker() {}
 
 Status FrameTracker::GetContextIdForFrame(
     const std::string& frame_id, int* context_id) {
-  if (frame_to_context_map_.count(frame_id) == 0)
-    return Status(kNoSuchFrame, "frame does not have execution context");
+  if (frame_to_context_map_.count(frame_id) == 0) {
+    return Status(kNoSuchExecutionContext,
+                  "frame does not have execution context");
+  }
   *context_id = frame_to_context_map_[frame_id];
   return Status(kOk);
 }

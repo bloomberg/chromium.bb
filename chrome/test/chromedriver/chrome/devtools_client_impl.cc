@@ -27,7 +27,7 @@ Status ParseInspectorError(const std::string& error_json) {
   std::string error_message;
   if (error_dict->GetString("message", &error_message) &&
       error_message == kInspectorContextError) {
-    return Status(kNoSuchFrame);
+    return Status(kNoSuchExecutionContext);
   }
   return Status(kUnknownError, "unhandled inspector error: " + error_json);
 }

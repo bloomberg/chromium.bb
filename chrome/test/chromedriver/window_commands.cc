@@ -148,7 +148,7 @@ Status ExecuteWindowCommand(
     return nav_status;
   status = command.Run(session, web_view, params, value);
   // Switch to main frame and retry command if subframe no longer exists.
-  if (status.code() == kNoSuchFrame) {
+  if (status.code() == kNoSuchExecutionContext) {
     session->SwitchToTopFrame();
     nav_status =
         web_view->WaitForPendingNavigations(session->GetCurrentFrameId());
