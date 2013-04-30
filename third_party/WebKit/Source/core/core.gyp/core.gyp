@@ -308,6 +308,9 @@
         # Generated from HTMLEntityNames.in
         '<(SHARED_INTERMEDIATE_DIR)/webkit/HTMLEntityTable.cpp',
 
+        # Generated from RuntimeEnabledFeatures.in
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/RuntimeEnabledFeatures.cpp',
+
         # Additional .cpp files from the make_derived_sources rules.
         '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSGrammar.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/XPathGrammar.cpp',

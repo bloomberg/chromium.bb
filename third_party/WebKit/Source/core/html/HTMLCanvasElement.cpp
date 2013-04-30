@@ -22,7 +22,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "config.h"
@@ -45,7 +45,7 @@
 #include "core/page/Chrome.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
-#include "core/page/RuntimeEnabledFeatures.h"
+#include "RuntimeEnabledFeatures.h"
 #include "core/page/Settings.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/GraphicsContext.h"
@@ -157,7 +157,7 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
     // context is already 2D, just return that. If the existing context is WebGL, then destroy it
     // before creating a new 2D context. Vice versa when requesting a WebGL canvas. Requesting a
     // context with any other type string will destroy any existing context.
-    
+
     // FIXME - The code depends on the context not going away once created, to prevent JS from
     // seeing a dangling pointer. So for now we will disallow the context from being changed
     // once it is created.
@@ -319,7 +319,7 @@ void HTMLCanvasElement::paint(GraphicsContext* context, const LayoutRect& r, boo
 
     if (context->paintingDisabled())
         return;
-    
+
     if (m_context) {
         if (!paintsIntoCanvasBuffer() && !document()->printing())
             return;

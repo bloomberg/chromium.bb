@@ -47,7 +47,7 @@
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
-#include "core/page/RuntimeEnabledFeatures.h"
+#include "RuntimeEnabledFeatures.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderView.h"
 #include <wtf/text/AtomicString.h>

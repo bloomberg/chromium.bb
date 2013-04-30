@@ -32,7 +32,7 @@
 #include "WebRuntimeFeatures.h"
 
 #include "WebMediaPlayerClientImpl.h"
-#include "core/page/RuntimeEnabledFeatures.h"
+#include "RuntimeEnabledFeatures.h"
 #include "modules/websockets/WebSocket.h"
 
 #include <wtf/UnusedParam.h>

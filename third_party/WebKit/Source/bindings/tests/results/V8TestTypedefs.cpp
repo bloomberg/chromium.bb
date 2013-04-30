@@ -36,7 +36,7 @@
 #include "core/dom/DOMStringList.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
-#include "core/page/RuntimeEnabledFeatures.h"
+#include "RuntimeEnabledFeatures.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
 #include <wtf/UnusedParam.h>
 

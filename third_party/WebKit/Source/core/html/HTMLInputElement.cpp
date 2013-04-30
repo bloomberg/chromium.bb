@@ -62,7 +62,7 @@
 #include "core/html/shadow/InsertionPoint.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
-#include "core/page/RuntimeEnabledFeatures.h"
+#include "RuntimeEnabledFeatures.h"
 #include "core/page/UseCounter.h"
 #include "core/platform/DateTimeChooser.h"
 #include "core/platform/Language.h"
@@ -79,7 +79,7 @@
 #endif
 
 #if ENABLE(INPUT_SPEECH)
-#include "core/page/RuntimeEnabledFeatures.h"
+#include "RuntimeEnabledFeatures.h"
 #endif
 
 using namespace std;
@@ -1495,7 +1495,7 @@ void HTMLInputElement::selectColorInColorChooser(const Color& color)
     static_cast<ColorInputType*>(m_inputType.get())->didChooseColor(color);
 }
 #endif
-    
+
 #if ENABLE(DATALIST_ELEMENT)
 HTMLElement* HTMLInputElement::list() const
 {
@@ -1713,7 +1713,7 @@ String HTMLInputElement::defaultToolTip() const
     return m_inputType->defaultToolTip();
 }
 
-bool HTMLInputElement::shouldAppearIndeterminate() const 
+bool HTMLInputElement::shouldAppearIndeterminate() const
 {
     return m_inputType->supportsIndeterminateAppearance() && indeterminate();
 }

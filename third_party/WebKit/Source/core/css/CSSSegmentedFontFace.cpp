@@ -30,7 +30,7 @@
 #include "core/css/CSSFontFaceSource.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/dom/Document.h"
-#include "core/page/RuntimeEnabledFeatures.h"
+#include "RuntimeEnabledFeatures.h"
 #include "core/platform/graphics/FontDescription.h"
 #include "core/platform/graphics/SegmentedFontData.h"
 #include "core/platform/graphics/SimpleFontData.h"

@@ -53,3 +53,4 @@ WebPInAcceptHeader
 DirectoryUpload default=true
 ExperimentalWebSocket
 IMEAPI
+ExperimentalCanvasFeatures

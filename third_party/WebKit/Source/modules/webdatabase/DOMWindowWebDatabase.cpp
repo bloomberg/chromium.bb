@@ -31,7 +31,7 @@
 #include "core/dom/Document.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
-#include "core/page/RuntimeEnabledFeatures.h"
+#include "RuntimeEnabledFeatures.h"
 #include "core/page/SecurityOrigin.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseCallback.h"
