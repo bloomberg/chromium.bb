@@ -28,6 +28,7 @@ struct Mappings {
     extension_types["packaged_app"] = Manifest::TYPE_LEGACY_PACKAGED_APP;
     extension_types["hosted_app"] = Manifest::TYPE_HOSTED_APP;
     extension_types["platform_app"] = Manifest::TYPE_PLATFORM_APP;
+    extension_types["shared_module"] = Manifest::TYPE_SHARED_MODULE;
 
     contexts["blessed_extension"] = Feature::BLESSED_EXTENSION_CONTEXT;
     contexts["unblessed_extension"] = Feature::UNBLESSED_EXTENSION_CONTEXT;
@@ -165,6 +166,8 @@ std::string GetDisplayTypeName(Manifest::Type type) {
       return "theme";
     case Manifest::TYPE_USER_SCRIPT:
       return "user script";
+    case Manifest::TYPE_SHARED_MODULE:
+      return "shared module";
   }
 
   NOTREACHED();

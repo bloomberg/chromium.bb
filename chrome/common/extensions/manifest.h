@@ -55,7 +55,8 @@ class Manifest {
     // This is marked legacy because platform apps are preferred. For
     // backwards compatibility, we can't remove support for packaged apps
     TYPE_LEGACY_PACKAGED_APP,
-    TYPE_PLATFORM_APP
+    TYPE_PLATFORM_APP,
+    TYPE_SHARED_MODULE
   };
 
   // Given two install sources, return the one which should take priority
@@ -122,6 +123,7 @@ class Manifest {
     return type_ == TYPE_LEGACY_PACKAGED_APP;
   }
   bool is_extension() const { return type_ == TYPE_EXTENSION; }
+  bool is_shared_module() const { return type_ == TYPE_SHARED_MODULE; }
 
   // These access the wrapped manifest value, returning false when the property
   // does not exist or if the manifest type can't access it.

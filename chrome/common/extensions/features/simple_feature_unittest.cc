@@ -377,16 +377,18 @@ TEST_F(ExtensionSimpleFeatureTest, ParsePackageTypes) {
   extension_types->Append(new base::StringValue("packaged_app"));
   extension_types->Append(new base::StringValue("hosted_app"));
   extension_types->Append(new base::StringValue("platform_app"));
+  extension_types->Append(new base::StringValue("shared_module"));
   value->Set("extension_types", extension_types);
   scoped_ptr<SimpleFeature> feature(new SimpleFeature());
   feature->Parse(value.get());
-  EXPECT_EQ(5u, feature->extension_types()->size());
+  EXPECT_EQ(6u, feature->extension_types()->size());
   EXPECT_TRUE(feature->extension_types()->count(Manifest::TYPE_EXTENSION));
   EXPECT_TRUE(feature->extension_types()->count(Manifest::TYPE_THEME));
   EXPECT_TRUE(feature->extension_types()->count(
       Manifest::TYPE_LEGACY_PACKAGED_APP));
   EXPECT_TRUE(feature->extension_types()->count(Manifest::TYPE_HOSTED_APP));
   EXPECT_TRUE(feature->extension_types()->count(Manifest::TYPE_PLATFORM_APP));
+  EXPECT_TRUE(feature->extension_types()->count(Manifest::TYPE_SHARED_MODULE));
 
   value->SetString("extension_types", "all");
   scoped_ptr<SimpleFeature> feature2(new SimpleFeature());

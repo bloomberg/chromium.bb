@@ -102,6 +102,9 @@ const char kDecodedMessageCatalogsFilename[] = "DECODED_MESSAGE_CATALOGS";
 
 const char kGeneratedBackgroundPageFilename[] =
     "_generated_background_page.html";
+
+const char kModulesDir[] = "_modules";
+
 }
 
 // These must match the values expected by the chrome.management extension API.

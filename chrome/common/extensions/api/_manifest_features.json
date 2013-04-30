@@ -29,14 +29,14 @@
     "extension_types": ["platform_app"],
     "min_manifest_version": 2
   },
-  "app.launch": {
-    "channel": "stable",
-    "extension_types": ["packaged_app", "hosted_app"]
-  },
   "app.isolation": {
     "channel": "stable",
     // Platform apps always have isolated storage, thus they cannot specify it
     // via the manifest.
+    "extension_types": ["packaged_app", "hosted_app"]
+  },
+  "app.launch": {
+    "channel": "stable",
     "extension_types": ["packaged_app", "hosted_app"]
   },
   "author": {
@@ -143,6 +143,14 @@
       ]
     }
   ],
+  "export": {
+    "channel": "dev",
+    "extension_types": ["shared_module"],
+    "whitelist": [
+      "gpcckkmippodnppallflahfabmeilgjg", // browser and unit tests
+      "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F"
+    ]
+  },
   "externally_connectable": {
     "channel": "stable",
     "extension_types": [
@@ -152,10 +160,6 @@
   "file_browser_handlers": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
-  },
-  "media_galleries_handlers": {
-    "channel": "stable",
-    "extension_types": ["packaged_app", "platform_app"]
   },
   "file_handlers": {
     "channel": "stable",
@@ -167,6 +171,10 @@
   },
   "icons": {
     "channel": "stable",
+    "extension_types": "all"
+  },
+  "import": {
+    "channel": "dev",
     "extension_types": "all"
   },
   "incognito": {
@@ -187,9 +195,19 @@
     "channel": "stable",
     "extension_types": "all"
   },
+  "kiosk_enabled": {
+    "channel": "stable",
+    "extension_types": [
+      "platform_app"
+    ]
+  },
   "manifest_version": {
     "channel": "stable",
     "extension_types": "all"
+  },
+  "media_galleries_handlers": {
+    "channel": "stable",
+    "extension_types": ["packaged_app", "platform_app"]
   },
   "mime_types": {
     "channel": "stable",
@@ -218,10 +236,10 @@
     "channel": "stable",
     "extension_types": "all"
   },
-  "kiosk_enabled": {
+  "oauth2": {
     "channel": "stable",
     "extension_types": [
-      "platform_app"
+      "extension", "packaged_app", "platform_app"
     ]
   },
   "offline_enabled": {
@@ -244,12 +262,6 @@
     "channel": "stable",
     "extension_types": [
       "extension", "packaged_app", "hosted_app"
-    ]
-  },
-  "oauth2": {
-    "channel": "stable",
-    "extension_types": [
-      "extension", "packaged_app", "platform_app"
     ]
   },
   "page_action": {

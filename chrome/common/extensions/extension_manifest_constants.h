@@ -40,6 +40,7 @@ namespace extension_manifest_keys {
   extern const char kEventName[];
   extern const char kExcludeGlobs[];
   extern const char kExcludeMatches[];
+  extern const char kExport[];
   extern const char kExternallyConnectable[];
   extern const char kFileAccessList[];
   extern const char kFileHandlers[];
@@ -51,6 +52,7 @@ namespace extension_manifest_keys {
   extern const char kHomepageURL[];
   extern const char kIcons[];
   extern const char kId[];
+  extern const char kImport[];
   extern const char kIncognito[];
   extern const char kIncludeGlobs[];
   extern const char kInputComponents[];
@@ -82,6 +84,7 @@ namespace extension_manifest_keys {
   extern const char kMIMETypes[];
   extern const char kMimeTypesHandler[];
   extern const char kMinimumChromeVersion[];
+  extern const char kMinimumVersion[];
   extern const char kNaClModules[];
   extern const char kNaClModulesMIMEType[];
   extern const char kNaClModulesPath[];
@@ -113,6 +116,7 @@ namespace extension_manifest_keys {
   extern const char kPluginsPath[];
   extern const char kPluginsPublic[];
   extern const char kPublicKey[];
+  extern const char kResources[];
   extern const char kRequirements[];
   extern const char kRunAt[];
   extern const char kSandboxedPages[];
@@ -225,6 +229,10 @@ namespace extension_manifest_errors {
   extern const char kInvalidDisplayInNewTabPage[];
   extern const char kInvalidExcludeMatch[];
   extern const char kInvalidExcludeMatches[];
+  extern const char kInvalidExport[];
+  extern const char kInvalidExportPermissions[];
+  extern const char kInvalidExportResources[];
+  extern const char kInvalidExportResourcesString[];
   extern const char kInvalidFileAccessList[];
   extern const char kInvalidFileAccessValue[];
   extern const char kInvalidFileBrowserHandler[];
@@ -241,6 +249,10 @@ namespace extension_manifest_errors {
   extern const char kInvalidHomepageURL[];
   extern const char kInvalidIconPath[];
   extern const char kInvalidIcons[];
+  extern const char kInvalidImport[];
+  extern const char kInvalidImportAndExport[];
+  extern const char kInvalidImportId[];
+  extern const char kInvalidImportVersion[];
   extern const char kInvalidIncognitoBehavior[];
   extern const char kInvalidIncognitoModeForPlatformApp[];
   extern const char kInvalidInputComponents[];

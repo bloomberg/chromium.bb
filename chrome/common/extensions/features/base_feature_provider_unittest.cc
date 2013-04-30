@@ -21,7 +21,7 @@ TEST_F(BaseFeatureProviderTest, ManifestFeatures) {
   SimpleFeature* feature =
       static_cast<SimpleFeature*>(provider->GetFeature("description"));
   ASSERT_TRUE(feature);
-  EXPECT_EQ(5u, feature->extension_types()->size());
+  EXPECT_EQ(6u, feature->extension_types()->size());
   EXPECT_EQ(1u, feature->extension_types()->count(Manifest::TYPE_EXTENSION));
   EXPECT_EQ(1u,
       feature->extension_types()->count(Manifest::TYPE_LEGACY_PACKAGED_APP));
@@ -29,6 +29,8 @@ TEST_F(BaseFeatureProviderTest, ManifestFeatures) {
             feature->extension_types()->count(Manifest::TYPE_PLATFORM_APP));
   EXPECT_EQ(1u, feature->extension_types()->count(Manifest::TYPE_HOSTED_APP));
   EXPECT_EQ(1u, feature->extension_types()->count(Manifest::TYPE_THEME));
+  EXPECT_EQ(1u,
+            feature->extension_types()->count(Manifest::TYPE_SHARED_MODULE));
 
   base::DictionaryValue manifest;
   manifest.SetString("name", "test extension");

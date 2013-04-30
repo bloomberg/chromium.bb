@@ -34,6 +34,7 @@ const char kDisplayInNewTabPage[] = "display_in_new_tab_page";
 const char kEventName[] = "event_name";
 const char kExcludeGlobs[] = "exclude_globs";
 const char kExcludeMatches[] = "exclude_matches";
+const char kExport[] = "export";
 const char kExternallyConnectable[] = "externally_connectable";
 const char kFileAccessList[] = "file_access";
 const char kFileFilters[] = "file_filters";
@@ -45,6 +46,7 @@ const char kFileHandlerTypes[] = "types";
 const char kHomepageURL[] = "homepage_url";
 const char kIcons[] = "icons";
 const char kId[] = "id";
+const char kImport[] = "import";
 const char kIncognito[] = "incognito";
 const char kIncludeGlobs[] = "include_globs";
 const char kInputComponents[] = "input_components";
@@ -74,6 +76,7 @@ const char kLayouts[] = "layouts";
 const char kManifestVersion[] = "manifest_version";
 const char kMatches[] = "matches";
 const char kMinimumChromeVersion[] = "minimum_chrome_version";
+const char kMinimumVersion[] = "minimum_version";
 const char kMIMETypes[] = "mime_types";
 const char kMimeTypesHandler[] = "mime_types_handler";
 const char kName[] = "name";
@@ -107,6 +110,7 @@ const char kPlugins[] = "plugins";
 const char kPluginsPath[] = "path";
 const char kPluginsPublic[] = "public";
 const char kPublicKey[] = "key";
+const char kResources[] = "resources";
 const char kRequirements[] = "requirements";
 const char kRunAt[] = "run_at";
 const char kSandboxedPages[] = "sandbox.pages";
@@ -263,6 +267,14 @@ const char kInvalidExcludeMatch[] =
     "Invalid value for 'content_scripts[*].exclude_matches[*]': *";
 const char kInvalidExcludeMatches[] =
     "Invalid value for 'content_scripts[*].exclude_matches'.";
+const char kInvalidExport[] =
+    "Invalid value for 'export'.";
+const char kInvalidExportPermissions[] =
+    "Permissions are not allowed for extensions that export resources.";
+const char kInvalidExportResources[] =
+    "Invalid value for 'export.resources'.";
+const char kInvalidExportResourcesString[] =
+    "Invalid value for 'export.resources[*]'.";
 const char kInvalidFileAccessList[] =
     "Invalid value for 'file_access'.";
 const char kInvalidFileAccessValue[] =
@@ -293,6 +305,14 @@ const char kInvalidIconPath[] =
     "Invalid value for 'icons[\"*\"]'.";
 const char kInvalidIcons[] =
     "Invalid value for 'icons'.";
+const char kInvalidImport[] =
+    "Invalid value for 'import'.";
+const char kInvalidImportAndExport[] =
+    "Simultaneous 'import' and 'export' are not allowed.";
+const char kInvalidImportId[] =
+    "Invalid value for 'import[*].id'.";
+const char kInvalidImportVersion[] =
+    "Invalid value for 'import[*].minimum_version'.";
 const char kInvalidIncognitoBehavior[] =
     "Invalid value for 'incognito'.";
 const char kInvalidIncognitoModeForPlatformApp[] =

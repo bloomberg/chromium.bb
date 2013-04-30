@@ -1392,6 +1392,7 @@
         'browser/extensions/process_management_browsertest.cc',
         'browser/extensions/requirements_checker_browsertest.cc',
         'browser/extensions/sandboxed_pages_apitest.cc',
+        'browser/extensions/shared_module_apitest.cc',
         'browser/extensions/startup_helper_browsertest.cc',
         'browser/extensions/stubs_apitest.cc',
         'browser/extensions/subscribe_page_action_browsertest.cc',

@@ -64,6 +64,9 @@ namespace extension_filenames {
   // The filename to use for a background page generated from
   // background.scripts.
   extern const char kGeneratedBackgroundPageFilename[];
+
+  // Path to imported modules.
+  extern const char kModulesDir[];
 }
 
 // Keys in the dictionary returned by Extension::GetBasicInfo().

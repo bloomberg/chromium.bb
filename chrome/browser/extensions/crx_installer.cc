@@ -42,6 +42,7 @@
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
+#include "chrome/common/extensions/manifest_handlers/shared_module_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -60,6 +61,7 @@
 
 using content::BrowserThread;
 using content::UserMetricsAction;
+using extensions::SharedModuleInfo;
 
 namespace extensions {
 
@@ -400,14 +402,42 @@ void CrxInstaller::OnUnpackSuccess(const base::FilePath& temp_dir,
 
   if (!BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&CrxInstaller::CheckRequirements, this)))
+        base::Bind(&CrxInstaller::CheckImportsAndRequirements, this)))
     NOTREACHED();
 }
 
-void CrxInstaller::CheckRequirements() {
+void CrxInstaller::CheckImportsAndRequirements() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!frontend_weak_.get() || frontend_weak_->browser_terminating())
     return;
+
+  if (SharedModuleInfo::ImportsModules(extension_)) {
+    const std::vector<SharedModuleInfo::ImportInfo>& imports =
+        SharedModuleInfo::GetImports(extension_);
+    std::vector<SharedModuleInfo::ImportInfo>::const_iterator i;
+    for (i = imports.begin(); i != imports.end(); ++i) {
+      Version version_required(i->minimum_version);
+      const Extension* imported_module =
+          frontend_weak_->GetExtensionById(i->extension_id, true);
+      if (!imported_module ||
+          (version_required.IsValid() &&
+           imported_module->version()->CompareTo(version_required) < 0)) {
+        ReportFailureFromUIThread(
+            CrxInstallerError(l10n_util::GetStringFUTF16(
+                IDS_EXTENSION_INSTALL_DEPENDENCY_NOT_FOUND,
+                ASCIIToUTF16(i->extension_id),
+                ASCIIToUTF16(i->minimum_version))));
+        return;
+      }
+      if (!SharedModuleInfo::IsSharedModule(imported_module)) {
+        ReportFailureFromUIThread(
+            CrxInstallerError(l10n_util::GetStringFUTF16(
+                IDS_EXTENSION_INSTALL_DEPENDENCY_NOT_SHARED_MODULE,
+                ASCIIToUTF16(i->extension_id))));
+        return;
+      }
+    }
+  }
   AddRef();  // Balanced in OnRequirementsChecked().
   requirements_checker_->Check(extension_,
                                base::Bind(&CrxInstaller::OnRequirementsChecked,
@@ -417,7 +447,7 @@ void CrxInstaller::CheckRequirements() {
 void CrxInstaller::OnRequirementsChecked(
     std::vector<std::string> requirement_errors) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  Release();  // Balanced in CheckRequirements().
+  Release();  // Balanced in CheckImportsAndRequirements().
   if (!requirement_errors.empty()) {
     if (error_on_unsupported_requirements_) {
       ReportFailureFromUIThread(CrxInstallerError(

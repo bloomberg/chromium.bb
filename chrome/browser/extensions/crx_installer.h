@@ -222,7 +222,7 @@ class CrxInstaller
                                const Extension* extension) OVERRIDE;
 
   // Called on the UI thread to start the requirements check on the extension.
-  void CheckRequirements();
+  void CheckImportsAndRequirements();
 
   // Runs on the UI thread. Callback from RequirementsChecker.
   void OnRequirementsChecked(std::vector<std::string> requirement_errors);

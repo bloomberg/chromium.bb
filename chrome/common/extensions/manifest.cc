@@ -106,6 +106,8 @@ Manifest::Manifest(Location location, scoped_ptr<base::DictionaryValue> value)
       type_(TYPE_UNKNOWN) {
   if (value_->HasKey(keys::kTheme)) {
     type_ = TYPE_THEME;
+  } else if (value_->HasKey(keys::kExport)) {
+    type_ = TYPE_SHARED_MODULE;
   } else if (value_->HasKey(keys::kApp)) {
     if (value_->Get(keys::kWebURLs, NULL) ||
         value_->Get(keys::kLaunchWebURL, NULL)) {

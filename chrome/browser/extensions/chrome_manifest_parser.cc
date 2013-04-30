@@ -13,6 +13,7 @@
 #include "chrome/common/extensions/manifest_handlers/kiosk_enabled_info.h"
 #include "chrome/common/extensions/manifest_handlers/offline_enabled_info.h"
 #include "chrome/common/extensions/manifest_handlers/requirements_handler.h"
+#include "chrome/common/extensions/manifest_handlers/shared_module_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -29,6 +30,7 @@ ChromeManifestParser::ChromeManifestParser(Profile* profile)
   (new OfflineEnabledHandler)->Register();
   (new OptionsPageHandler)->Register();
   (new RequirementsHandler)->Register();
+  (new SharedModuleHandler)->Register();
   (new UpdateURLHandler)->Register();
   (new URLOverridesHandler)->Register();
 

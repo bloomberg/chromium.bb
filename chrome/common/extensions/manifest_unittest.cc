@@ -36,6 +36,8 @@ class ManifestTest : public testing::Test {
     EXPECT_EQ(type == Manifest::TYPE_LEGACY_PACKAGED_APP,
               manifest->is_legacy_packaged_app());
     EXPECT_EQ(type == Manifest::TYPE_HOSTED_APP, manifest->is_hosted_app());
+    EXPECT_EQ(type == Manifest::TYPE_SHARED_MODULE,
+              manifest->is_shared_module());
   }
 
   // Helper function that replaces the Manifest held by |manifest| with a copy
@@ -137,6 +139,13 @@ TEST_F(ManifestTest, ExtensionTypes) {
   AssertType(manifest.get(), Manifest::TYPE_THEME);
   MutateManifest(
       &manifest, keys::kTheme, NULL);
+
+  // Shared module.
+  MutateManifest(
+      &manifest, keys::kExport, new base::DictionaryValue());
+  AssertType(manifest.get(), Manifest::TYPE_SHARED_MODULE);
+  MutateManifest(
+      &manifest, keys::kExport, NULL);
 
   // Packaged app.
   MutateManifest(

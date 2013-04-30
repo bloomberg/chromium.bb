@@ -127,6 +127,7 @@ void ChromeRenderViewHostObserver::InitRenderViewForExtensions() {
 
     case Manifest::TYPE_UNKNOWN:
     case Manifest::TYPE_THEME:
+    case Manifest::TYPE_SHARED_MODULE:
       break;
   }
 }
