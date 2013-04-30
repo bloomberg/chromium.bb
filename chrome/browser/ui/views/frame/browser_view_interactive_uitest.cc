@@ -210,7 +210,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewImmersiveInstantExtendedTest,
   // Test suggestions on a normal web page, which are in an overlay.
 
   // Focus omnibox, which constructs an overlay web contents.
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
   EXPECT_TRUE(instant()->model()->mode().is_default());
   // The above testing code doesn't trigger the views location bar focus path,
   // so force it to happen explicitly.

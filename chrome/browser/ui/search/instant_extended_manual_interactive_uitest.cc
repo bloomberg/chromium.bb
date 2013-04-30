@@ -143,7 +143,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
   EXPECT_FALSE(instant()->GetOverlayContents());
 
   // Refocus the omnibox. The InstantController should've preloaded Instant.
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
   EXPECT_TRUE(OverlayIsGoogle());
 
   EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
@@ -160,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
                        DISABLED_BackspaceFromQueryToSameQueryAndSearch) {
   set_browser(browser());
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
   EXPECT_TRUE(OverlayIsGoogle());
 
   // Type "face" and expect Google to set gray text for "book" to suggest
@@ -184,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
                        DISABLED_BackspaceFromQueryToOtherQueryAndSearch) {
   set_browser(browser());
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
   EXPECT_TRUE(OverlayIsGoogle());
 
   // Type "fan" and expect Google to set gray text to "dango" to suggest
@@ -208,7 +208,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
                        MANUAL_BackspaceFromUrlToNonSelectedUrlAndSearch) {
   set_browser(browser());
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
   EXPECT_TRUE(OverlayIsGoogle());
 
   // Type "facebook.c" and expect Google to set blue text to "om" to suggest
@@ -238,7 +238,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
                        MANUAL_BackspaceFromUrlToUrlAndNavigate) {
   set_browser(browser());
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
   EXPECT_TRUE(OverlayIsGoogle());
 
   // Type "facebook.com/" and expect Google to set blue text to "login.php" to
@@ -268,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
                        MANUAL_BackspaceFromQueryToSelectedUrlAndNavigate) {
   set_browser(browser());
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
   EXPECT_TRUE(OverlayIsGoogle());
 
   // Type "a.cop" and expect top match to be a search, not a url.
@@ -295,7 +295,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
                        DISABLED_BackspaceFromSelectedUrlToQueryAndSearch) {
   set_browser(browser());
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
   EXPECT_TRUE(OverlayIsGoogle());
 
   // Type "e.co/" and expect the top suggestion to be the URL "e.co/".
@@ -324,7 +324,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_TypeURLAndPressEnter) {
   set_browser(browser());
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
   EXPECT_TRUE(OverlayIsGoogle());
 
   // Type "www.facebook.com" and expect the top suggestion to be the URL
@@ -345,7 +345,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_TypeURLAndPressEnter) {
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
                        DISABLED_TypeAutocompletedURLAndPressEnter) {
   set_browser(browser());
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
   EXPECT_TRUE(OverlayIsGoogle());
 
   // Type "www.facebook." and expect the top suggestion to be the URL
@@ -365,7 +365,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
                        MANUAL_PasteURLAndPressEnter) {
   set_browser(browser());
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
   EXPECT_TRUE(OverlayIsGoogle());
 
   // Paste "www.facebook.com" and expect the top suggestion to be the URL
@@ -391,7 +391,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_PasteAndGo) {
   set_browser(browser());
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
   EXPECT_TRUE(OverlayIsGoogle());
 
   // "Paste and Go" with the text www.facebook.com.
@@ -406,7 +406,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_PasteAndGo) {
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
                        MANUAL_TypeSearchAndPressControlEnter) {
   set_browser(browser());
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
   EXPECT_TRUE(OverlayIsGoogle());
 
   // Type "example" and expect Google to suggest a query, i.e., no blue text.

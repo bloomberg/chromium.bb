@@ -117,7 +117,7 @@ void InstantTestBase::FocusOmnibox() {
   }
 }
 
-void InstantTestBase::FocusOmniboxAndWaitForInstantSupport() {
+void InstantTestBase::FocusOmniboxAndWaitForInstantOverlaySupport() {
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_INSTANT_OVERLAY_SUPPORT_DETERMINED,
       content::NotificationService::AllSources());
@@ -125,7 +125,7 @@ void InstantTestBase::FocusOmniboxAndWaitForInstantSupport() {
   observer.Wait();
 }
 
-void InstantTestBase::FocusOmniboxAndWaitForInstantExtendedSupport() {
+void InstantTestBase::FocusOmniboxAndWaitForInstantOverlayAndNTPSupport() {
   content::WindowedNotificationObserver ntp_observer(
       chrome::NOTIFICATION_INSTANT_NTP_SUPPORT_DETERMINED,
       content::NotificationService::AllSources());
