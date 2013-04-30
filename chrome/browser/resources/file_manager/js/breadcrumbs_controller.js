@@ -57,10 +57,11 @@ BreadcrumbsController.prototype.update = function(rootPath, path) {
 
   var doc = this.bc_.ownerDocument;
 
+  var divAdded = false;
   for (var i = 0;
        i < (this.hideLast_ ? pathNames.length - 1 : pathNames.length);
        i++) {
-    if (i > 0) {
+    if (divAdded) {
       var spacer = doc.createElement('div');
       spacer.className = 'separator';
       this.bc_.appendChild(spacer);
@@ -68,14 +69,23 @@ BreadcrumbsController.prototype.update = function(rootPath, path) {
     var pathName = pathNames[i];
     path += pathName;
 
-    var div = doc.createElement('div');
+    // We have a special case for the root crumb /drive/other, which contains
+    // the Drive entries not in "My Drive". It is hidden as this path is not
+    // meaningful for the user.
+    // TODO(haruki): Show "Shared with me" as a crumb for shared-with-me entry.
+    if (i > 0 &&
+        path === RootDirectory.DRIVE + '/' + DriveSubRootDirectory.OTHER)
+      continue;
 
+    // Create a crumb.
+    var div = doc.createElement('div');
     div.className = 'breadcrumb-path';
     div.textContent = i == 0 ? PathUtil.getRootLabel(path) : pathName;
 
     path = path + '/';
 
     this.bc_.appendChild(div);
+    divAdded = true;
 
     if (i == pathNames.length - 1)
       div.classList.add('breadcrumb-last');
