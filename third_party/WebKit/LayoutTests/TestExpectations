@@ -1,6 +1,6 @@
 # See http://trac.webkit.org/wiki/TestExpectations for more information on this file.
 
-webkit.org/b/79679 [ Win Debug ] virtual/gpu/fast/canvas/getPutImageDataPairTest.html [ Slow ]
+crbug.com/237000 [ Win Linux ] virtual/gpu/fast/canvas/getPutImageDataPairTest.html [ Slow ]
 crbug.com/24182 [ Debug ] css3/flexbox/multiline-justify-content.html [ Slow ]
 webkit.org/b/82097 [ Debug ] editing/selection/move-by-word-visually-crash-test-5.html [ Slow ]
 webkit.org/b/92287 fast/canvas/webgl/context-creation-and-destruction.html [ Pass Timeout Failure ]
