@@ -649,13 +649,10 @@ void WebGLRenderingContext::initializeNewContext()
 
     if (!isGLES2NPOTStrict())
         createFallbackBlackTextures1x1();
-    if (!isGLES2Compliant())
-        initVertexAttrib0();
 
     IntSize canvasSize = clampedCanvasSize();
     m_drawingBuffer->reset(canvasSize);
 
-    m_context->reshape(canvasSize.width(), canvasSize.height());
     m_context->viewport(0, 0, canvasSize.width(), canvasSize.height());
     m_context->scissor(0, 0, canvasSize.width(), canvasSize.height());
 
@@ -673,16 +670,8 @@ void WebGLRenderingContext::setupFlags()
     if (p)
         m_synthesizedErrorsToConsole = p->settings()->webGLErrorsToConsoleEnabled();
 
-    m_isGLES2Compliant = m_context->isGLES2Compliant();
-    m_isErrorGeneratedOnOutOfBoundsAccesses = m_context->getExtensions()->isEnabled("GL_CHROMIUM_strict_attribs");
-    m_isResourceSafe = m_context->getExtensions()->isEnabled("GL_CHROMIUM_resource_safe");
-    if (m_isGLES2Compliant) {
-        m_isGLES2NPOTStrict = !m_context->getExtensions()->isEnabled("GL_OES_texture_npot");
-        m_isDepthStencilSupported = m_context->getExtensions()->isEnabled("GL_OES_packed_depth_stencil");
-    } else {
-        m_isGLES2NPOTStrict = !m_context->getExtensions()->isEnabled("GL_ARB_texture_non_power_of_two");
-        m_isDepthStencilSupported = m_context->getExtensions()->isEnabled("GL_EXT_packed_depth_stencil");
-    }
+    m_isGLES2NPOTStrict = !m_context->getExtensions()->isEnabled("GL_OES_texture_npot");
+    m_isDepthStencilSupported = m_context->getExtensions()->isEnabled("GL_OES_packed_depth_stencil");
     m_isRobustnessEXTSupported = m_context->getExtensions()->isEnabled("GL_EXT_robustness");
 }
 
@@ -1179,12 +1168,6 @@ void WebGLRenderingContext::bufferData(GC3Denum target, long long size, GC3Denum
         synthesizeGLError(GraphicsContext3D::INVALID_VALUE, "bufferData", "size == 0");
         return;
     }
-    if (!isErrorGeneratedOnOutOfBoundsAccesses()) {
-        if (!buffer->associateBufferData(static_cast<GC3Dsizeiptr>(size))) {
-            synthesizeGLError(GraphicsContext3D::INVALID_VALUE, "bufferData", "invalid buffer");
-            return;
-        }
-    }
 
     m_context->bufferData(target, static_cast<GC3Dsizeiptr>(size), usage);
     cleanupAfterGraphicsCall(false);
@@ -1202,13 +1185,6 @@ void WebGLRenderingContext::bufferData(GC3Denum target, ArrayBuffer* data, GC3De
         synthesizeGLError(GraphicsContext3D::INVALID_VALUE, "bufferData", "no data");
         return;
     }
-    if (!isErrorGeneratedOnOutOfBoundsAccesses()) {
-        if (!buffer->associateBufferData(data)) {
-            synthesizeGLError(GraphicsContext3D::INVALID_VALUE, "bufferData", "invalid buffer");
-            return;
-        }
-    }
-
     m_context->bufferData(target, data->byteLength(), data->data(), usage);
     cleanupAfterGraphicsCall(false);
 }
@@ -1224,12 +1200,6 @@ void WebGLRenderingContext::bufferData(GC3Denum target, ArrayBufferView* data, G
     if (!data) {
         synthesizeGLError(GraphicsContext3D::INVALID_VALUE, "bufferData", "no data");
         return;
-    }
-    if (!isErrorGeneratedOnOutOfBoundsAccesses()) {
-        if (!buffer->associateBufferData(data)) {
-            synthesizeGLError(GraphicsContext3D::INVALID_VALUE, "bufferData", "invalid buffer");
-            return;
-        }
     }
 
     m_context->bufferData(target, data->byteLength(), data->baseAddress(), usage);
@@ -1250,12 +1220,6 @@ void WebGLRenderingContext::bufferSubData(GC3Denum target, long long offset, Arr
     }
     if (!data)
         return;
-    if (!isErrorGeneratedOnOutOfBoundsAccesses()) {
-        if (!buffer->associateBufferSubData(static_cast<GC3Dintptr>(offset), data)) {
-            synthesizeGLError(GraphicsContext3D::INVALID_VALUE, "bufferSubData", "offset out of range");
-            return;
-        }
-    }
 
     m_context->bufferSubData(target, static_cast<GC3Dintptr>(offset), data->byteLength(), data->data());
     cleanupAfterGraphicsCall(false);
@@ -1275,12 +1239,6 @@ void WebGLRenderingContext::bufferSubData(GC3Denum target, long long offset, Arr
     }
     if (!data)
         return;
-    if (!isErrorGeneratedOnOutOfBoundsAccesses()) {
-        if (!buffer->associateBufferSubData(static_cast<GC3Dintptr>(offset), data)) {
-            synthesizeGLError(GraphicsContext3D::INVALID_VALUE, "bufferSubData", "offset out of range");
-            return;
-        }
-    }
 
     m_context->bufferSubData(target, static_cast<GC3Dintptr>(offset), data->byteLength(), data->baseAddress());
     cleanupAfterGraphicsCall(false);
@@ -1316,7 +1274,7 @@ void WebGLRenderingContext::clear(GC3Dbitfield mask)
         return;
     }
     const char* reason = "framebuffer incomplete";
-    if (m_framebufferBinding && !m_framebufferBinding->onAccess(graphicsContext3D(), !isResourceSafe(), &reason)) {
+    if (m_framebufferBinding && !m_framebufferBinding->onAccess(graphicsContext3D(), &reason)) {
         synthesizeGLError(GraphicsContext3D::INVALID_FRAMEBUFFER_OPERATION, "clear", reason);
         return;
     }
@@ -1480,28 +1438,13 @@ void WebGLRenderingContext::copyTexImage2D(GC3Denum target, GC3Dint level, GC3De
         return;
     }
     const char* reason = "framebuffer incomplete";
-    if (m_framebufferBinding && !m_framebufferBinding->onAccess(graphicsContext3D(), !isResourceSafe(), &reason)) {
+    if (m_framebufferBinding && !m_framebufferBinding->onAccess(graphicsContext3D(), &reason)) {
         synthesizeGLError(GraphicsContext3D::INVALID_FRAMEBUFFER_OPERATION, "copyTexImage2D", reason);
         return;
     }
     clearIfComposited();
-    if (isResourceSafe()) {
-        ScopedDrawingBufferBinder binder(m_drawingBuffer.get(), m_framebufferBinding.get());
-        m_context->copyTexImage2D(target, level, internalformat, x, y, width, height, border);
-    } else {
-        ScopedDrawingBufferBinder binder(m_drawingBuffer.get(), m_framebufferBinding.get());
-        GC3Dint clippedX, clippedY;
-        GC3Dsizei clippedWidth, clippedHeight;
-        if (clip2D(x, y, width, height, getBoundFramebufferWidth(), getBoundFramebufferHeight(), &clippedX, &clippedY, &clippedWidth, &clippedHeight)) {
-            m_context->texImage2DResourceSafe(target, level, internalformat, width, height, border,
-                                              internalformat, GraphicsContext3D::UNSIGNED_BYTE, m_unpackAlignment);
-            if (clippedWidth > 0 && clippedHeight > 0) {
-                m_context->copyTexSubImage2D(target, level, clippedX - x, clippedY - y,
-                                             clippedX, clippedY, clippedWidth, clippedHeight);
-            }
-        } else
-            m_context->copyTexImage2D(target, level, internalformat, x, y, width, height, border);
-    }
+    ScopedDrawingBufferBinder binder(m_drawingBuffer.get(), m_framebufferBinding.get());
+    m_context->copyTexImage2D(target, level, internalformat, x, y, width, height, border);
     // FIXME: if the framebuffer is not complete, none of the below should be executed.
     tex->setLevelInfo(target, level, internalformat, width, height, GraphicsContext3D::UNSIGNED_BYTE);
     cleanupAfterGraphicsCall(false);
@@ -1535,46 +1478,13 @@ void WebGLRenderingContext::copyTexSubImage2D(GC3Denum target, GC3Dint level, GC
         return;
     }
     const char* reason = "framebuffer incomplete";
-    if (m_framebufferBinding && !m_framebufferBinding->onAccess(graphicsContext3D(), !isResourceSafe(), &reason)) {
+    if (m_framebufferBinding && !m_framebufferBinding->onAccess(graphicsContext3D(), &reason)) {
         synthesizeGLError(GraphicsContext3D::INVALID_FRAMEBUFFER_OPERATION, "copyTexSubImage2D", reason);
         return;
     }
     clearIfComposited();
-    if (isResourceSafe()) {
-        ScopedDrawingBufferBinder binder(m_drawingBuffer.get(), m_framebufferBinding.get());
-        m_context->copyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
-    } else {
-        GC3Dint clippedX, clippedY;
-        GC3Dsizei clippedWidth, clippedHeight;
-        if (clip2D(x, y, width, height, getBoundFramebufferWidth(), getBoundFramebufferHeight(), &clippedX, &clippedY, &clippedWidth, &clippedHeight)) {
-            GC3Denum format = tex->getInternalFormat(target, level);
-            GC3Denum type = tex->getType(target, level);
-            OwnArrayPtr<unsigned char> zero;
-            if (width && height) {
-                unsigned int size;
-                GC3Denum error = m_context->computeImageSizeInBytes(format, type, width, height, m_unpackAlignment, &size, 0);
-                if (error != GraphicsContext3D::NO_ERROR) {
-                    synthesizeGLError(error, "copyTexSubImage2D", "bad dimensions");
-                    return;
-                }
-                zero = adoptArrayPtr(new unsigned char[size]);
-                if (!zero) {
-                    synthesizeGLError(GraphicsContext3D::INVALID_VALUE, "copyTexSubImage2D", "out of memory");
-                    return;
-                }
-                memset(zero.get(), 0, size);
-            }
-            m_context->texSubImage2D(target, level, xoffset, yoffset, width, height, format, type, zero.get());
-            if (clippedWidth > 0 && clippedHeight > 0) {
-                ScopedDrawingBufferBinder binder(m_drawingBuffer.get(), m_framebufferBinding.get());
-                m_context->copyTexSubImage2D(target, level, xoffset + clippedX - x, yoffset + clippedY - y,
-                                             clippedX, clippedY, clippedWidth, clippedHeight);
-            }
-        } else {
-            ScopedDrawingBufferBinder binder(m_drawingBuffer.get(), m_framebufferBinding.get());
-            m_context->copyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
-        }
-    }
+    ScopedDrawingBufferBinder binder(m_drawingBuffer.get(), m_framebufferBinding.get());
+    m_context->copyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
     cleanupAfterGraphicsCall(false);
 }
 
@@ -1792,169 +1702,11 @@ void WebGLRenderingContext::disableVertexAttribArray(GC3Duint index, ExceptionCo
 
     WebGLVertexArrayObjectOES::VertexAttribState& state = m_boundVertexArrayObject->getVertexAttribState(index);
     state.enabled = false;
-
-    if (index > 0 || isGLES2Compliant()) {
-        m_context->disableVertexAttribArray(index);
-        cleanupAfterGraphicsCall(false);
-    }
+    m_context->disableVertexAttribArray(index);
+    cleanupAfterGraphicsCall(false);
 }
 
-bool WebGLRenderingContext::validateElementArraySize(GC3Dsizei count, GC3Denum type, GC3Dintptr offset)
-{
-    RefPtr<WebGLBuffer> elementArrayBuffer = m_boundVertexArrayObject->getElementArrayBuffer();
-    
-    if (!elementArrayBuffer)
-        return false;
-
-    if (offset < 0)
-        return false;
-
-    if (type == GraphicsContext3D::UNSIGNED_INT) {
-        // For an unsigned int array, offset must be divisible by 4 for alignment reasons.
-        if (offset % 4)
-            return false;
-
-        // Make uoffset an element offset.
-        offset /= 4;
-
-        GC3Dsizeiptr n = elementArrayBuffer->byteLength() / 4;
-        if (offset > n || count > n - offset)
-            return false;
-    } else if (type == GraphicsContext3D::UNSIGNED_SHORT) {
-        // For an unsigned short array, offset must be divisible by 2 for alignment reasons.
-        if (offset % 2)
-            return false;
-
-        // Make uoffset an element offset.
-        offset /= 2;
-
-        GC3Dsizeiptr n = elementArrayBuffer->byteLength() / 2;
-        if (offset > n || count > n - offset)
-            return false;
-    } else if (type == GraphicsContext3D::UNSIGNED_BYTE) {
-        GC3Dsizeiptr n = elementArrayBuffer->byteLength();
-        if (offset > n || count > n - offset)
-            return false;
-    }
-    return true;
-}
-
-bool WebGLRenderingContext::validateIndexArrayConservative(GC3Denum type, unsigned& numElementsRequired)
-{
-    // Performs conservative validation by caching a maximum index of
-    // the given type per element array buffer. If all of the bound
-    // array buffers have enough elements to satisfy that maximum
-    // index, skips the expensive per-draw-call iteration in
-    // validateIndexArrayPrecise.
-    
-    RefPtr<WebGLBuffer> elementArrayBuffer = m_boundVertexArrayObject->getElementArrayBuffer();
-
-    if (!elementArrayBuffer)
-        return false;
-
-    GC3Dsizeiptr numElements = elementArrayBuffer->byteLength();
-    // The case count==0 is already dealt with in drawElements before validateIndexArrayConservative.
-    if (!numElements)
-        return false;
-    const ArrayBuffer* buffer = elementArrayBuffer->elementArrayBuffer();
-    ASSERT(buffer);
-
-    int maxIndex = elementArrayBuffer->getCachedMaxIndex(type);
-    if (maxIndex < 0) {
-        // Compute the maximum index in the entire buffer for the given type of index.
-        switch (type) {
-        case GraphicsContext3D::UNSIGNED_BYTE: {
-            const GC3Dubyte* p = static_cast<const GC3Dubyte*>(buffer->data());
-            for (GC3Dsizeiptr i = 0; i < numElements; i++)
-                maxIndex = max(maxIndex, static_cast<int>(p[i]));
-            break;
-        }
-        case GraphicsContext3D::UNSIGNED_SHORT: {
-            numElements /= sizeof(GC3Dushort);
-            const GC3Dushort* p = static_cast<const GC3Dushort*>(buffer->data());
-            for (GC3Dsizeiptr i = 0; i < numElements; i++)
-                maxIndex = max(maxIndex, static_cast<int>(p[i]));
-            break;
-        }
-        case GraphicsContext3D::UNSIGNED_INT: {
-            if (!m_oesElementIndexUint)
-                return false;
-            numElements /= sizeof(GC3Duint);
-            const GC3Duint* p = static_cast<const GC3Duint*>(buffer->data());
-            for (GC3Dsizeiptr i = 0; i < numElements; i++)
-                maxIndex = max(maxIndex, static_cast<int>(p[i]));
-            break;
-        }
-        default:
-            return false;
-        }
-        elementArrayBuffer->setCachedMaxIndex(type, maxIndex);
-    }
-
-    if (maxIndex >= 0) {
-        // The number of required elements is one more than the maximum
-        // index that will be accessed.
-        numElementsRequired = maxIndex + 1;
-        return true;
-    }
-
-    return false;
-}
-
-bool WebGLRenderingContext::validateIndexArrayPrecise(GC3Dsizei count, GC3Denum type, GC3Dintptr offset, unsigned& numElementsRequired)
-{
-    ASSERT(count >= 0 && offset >= 0);
-    unsigned lastIndex = 0;
-    
-    RefPtr<WebGLBuffer> elementArrayBuffer = m_boundVertexArrayObject->getElementArrayBuffer();
-
-    if (!elementArrayBuffer)
-        return false;
-
-    if (!count) {
-        numElementsRequired = 0;
-        return true;
-    }
-
-    if (!elementArrayBuffer->elementArrayBuffer())
-        return false;
-
-    unsigned long uoffset = offset;
-    unsigned long n = count;
-
-    if (type == GraphicsContext3D::UNSIGNED_INT) {
-        // Make uoffset an element offset.
-        uoffset /= sizeof(GC3Duint);
-        const GC3Duint* p = static_cast<const GC3Duint*>(elementArrayBuffer->elementArrayBuffer()->data()) + uoffset;
-        while (n-- > 0) {
-            if (*p > lastIndex)
-                lastIndex = *p;
-            ++p;
-        }
-    } else if (type == GraphicsContext3D::UNSIGNED_SHORT) {
-        // Make uoffset an element offset.
-        uoffset /= sizeof(GC3Dushort);
-        const GC3Dushort* p = static_cast<const GC3Dushort*>(elementArrayBuffer->elementArrayBuffer()->data()) + uoffset;
-        while (n-- > 0) {
-            if (*p > lastIndex)
-                lastIndex = *p;
-            ++p;
-        }
-    } else if (type == GraphicsContext3D::UNSIGNED_BYTE) {
-        const GC3Dubyte* p = static_cast<const GC3Dubyte*>(elementArrayBuffer->elementArrayBuffer()->data()) + uoffset;
-        while (n-- > 0) {
-            if (*p > lastIndex)
-                lastIndex = *p;
-            ++p;
-        }
-    }
-
-    // Then set the last index in the index array and make sure it is valid.
-    numElementsRequired = lastIndex + 1;
-    return numElementsRequired > 0;
-}
-
-bool WebGLRenderingContext::validateRenderingState(unsigned numElementsRequired)
+bool WebGLRenderingContext::validateRenderingState()
 {
     if (!m_currentProgram)
         return false;
@@ -1967,35 +1719,7 @@ bool WebGLRenderingContext::validateRenderingState(unsigned numElementsRequired)
             return false;
     }
 
-    if (numElementsRequired <= 0)
-        return true;
-
-    // Look in each consumed vertex attrib (by the current program) and find the smallest buffer size
-    unsigned smallestNumElements = UINT_MAX;
-    int numActiveAttribLocations = m_currentProgram->numActiveAttribLocations();
-    for (int i = 0; i < numActiveAttribLocations; ++i) {
-        int loc = m_currentProgram->getActiveAttribLocation(i);
-        if (loc >= 0 && loc < static_cast<int>(m_maxVertexAttribs)) {
-            const WebGLVertexArrayObjectOES::VertexAttribState& state = m_boundVertexArrayObject->getVertexAttribState(loc);
-            if (state.enabled) {
-                // Avoid off-by-one errors in numElements computation.
-                // For the last element, we will only touch the data for the
-                // element and nothing beyond it.
-                int bytesRemaining = static_cast<int>(state.bufferBinding->byteLength() - state.offset);
-                unsigned numElements = 0;
-                ASSERT(state.stride > 0);
-                if (bytesRemaining >= state.bytesPerElement)
-                    numElements = 1 + (bytesRemaining - state.bytesPerElement) / state.stride;
-                if (numElements < smallestNumElements)
-                    smallestNumElements = numElements;
-            }
-        }
-    }
-
-    if (smallestNumElements == INT_MAX)
-        smallestNumElements = 0;
-
-    return numElementsRequired <= smallestNumElements;
+    return true;
 }
 
 bool WebGLRenderingContext::validateWebGLObject(const char* functionName, WebGLObject* object)
@@ -2031,24 +1755,13 @@ void WebGLRenderingContext::drawArrays(GC3Denum mode, GC3Dint first, GC3Dsizei c
         return;
     }
 
-    if (!isErrorGeneratedOnOutOfBoundsAccesses()) {
-        // Ensure we have a valid rendering state
-        CheckedInt<GC3Dint> checkedFirst(first);
-        CheckedInt<GC3Dint> checkedCount(count);
-        CheckedInt<GC3Dint> checkedSum = checkedFirst + checkedCount;
-        if (!checkedSum.isValid() || !validateRenderingState(checkedSum.value())) {
-            synthesizeGLError(GraphicsContext3D::INVALID_OPERATION, "drawArrays", "attempt to access out of bounds arrays");
-            return;
-        }
-    } else {
-        if (!validateRenderingState(0)) {
-            synthesizeGLError(GraphicsContext3D::INVALID_OPERATION, "drawArrays", "attribs not setup correctly");
-            return;
-        }
+    if (!validateRenderingState()) {
+        synthesizeGLError(GraphicsContext3D::INVALID_OPERATION, "drawArrays", "attribs not setup correctly");
+        return;
     }
 
     const char* reason = "framebuffer incomplete";
-    if (m_framebufferBinding && !m_framebufferBinding->onAccess(graphicsContext3D(), !isResourceSafe(), &reason)) {
+    if (m_framebufferBinding && !m_framebufferBinding->onAccess(graphicsContext3D(), &reason)) {
         synthesizeGLError(GraphicsContext3D::INVALID_FRAMEBUFFER_OPERATION, "drawArrays", reason);
         return;
     }
@@ -2056,13 +1769,9 @@ void WebGLRenderingContext::drawArrays(GC3Denum mode, GC3Dint first, GC3Dsizei c
     clearIfComposited();
 
     bool vertexAttrib0Simulated = false;
-    if (!isGLES2Compliant())
-        vertexAttrib0Simulated = simulateVertexAttrib0(first + count - 1);
     if (!isGLES2NPOTStrict())
         handleNPOTTextures("drawArrays", true);
     m_context->drawArrays(mode, first, count);
-    if (!isGLES2Compliant() && vertexAttrib0Simulated)
-        restoreStatesAfterVertexAttrib0Simulation();
     if (!isGLES2NPOTStrict())
         handleNPOTTextures("drawArrays", false);
     cleanupAfterGraphicsCall(true);
@@ -2108,45 +1817,21 @@ void WebGLRenderingContext::drawElements(GC3Denum mode, GC3Dsizei count, GC3Denu
     }
 
     unsigned numElements = 0;
-    if (!isErrorGeneratedOnOutOfBoundsAccesses()) {
-        // Ensure we have a valid rendering state
-        if (!validateElementArraySize(count, type, static_cast<GC3Dintptr>(offset))) {
-            synthesizeGLError(GraphicsContext3D::INVALID_OPERATION, "drawElements", "request out of bounds for current ELEMENT_ARRAY_BUFFER");
-            return;
-        }
-        if (!count)
-            return;
-        if (!validateIndexArrayConservative(type, numElements) || !validateRenderingState(numElements)) {
-            if (!validateIndexArrayPrecise(count, type, static_cast<GC3Dintptr>(offset), numElements) || !validateRenderingState(numElements)) {
-                synthesizeGLError(GraphicsContext3D::INVALID_OPERATION, "drawElements", "attempt to access out of bounds arrays");
-                return;
-            }
-        }
-    } else {
-        if (!validateRenderingState(0)) {
-            synthesizeGLError(GraphicsContext3D::INVALID_OPERATION, "drawElements", "attribs not setup correctly");
-            return;
-        }
+    if (!validateRenderingState()) {
+        synthesizeGLError(GraphicsContext3D::INVALID_OPERATION, "drawElements", "attribs not setup correctly");
+        return;
     }
 
     const char* reason = "framebuffer incomplete";
-    if (m_framebufferBinding && !m_framebufferBinding->onAccess(graphicsContext3D(), !isResourceSafe(), &reason)) {
+    if (m_framebufferBinding && !m_framebufferBinding->onAccess(graphicsContext3D(), &reason)) {
         synthesizeGLError(GraphicsContext3D::INVALID_FRAMEBUFFER_OPERATION, "drawElements", reason);
         return;
     }
     clearIfComposited();
 
-    bool vertexAttrib0Simulated = false;
-    if (!isGLES2Compliant()) {
-        if (!numElements)
-            validateIndexArrayPrecise(count, type, static_cast<GC3Dintptr>(offset), numElements);
-        vertexAttrib0Simulated = simulateVertexAttrib0(numElements);
-    }
     if (!isGLES2NPOTStrict())
         handleNPOTTextures("drawElements", true);
     m_context->drawElements(mode, count, type, static_cast<GC3Dintptr>(offset));
-    if (!isGLES2Compliant() && vertexAttrib0Simulated)
-        restoreStatesAfterVertexAttrib0Simulation();
     if (!isGLES2NPOTStrict())
         handleNPOTTextures("drawElements", false);
     cleanupAfterGraphicsCall(true);
@@ -2336,9 +2021,6 @@ PassRefPtr<WebGLActiveInfo> WebGLRenderingContext::getActiveUniform(WebGLProgram
     ActiveInfo info;
     if (!m_context->getActiveUniform(objectOrZero(program), index, info))
         return 0;
-    if (!isGLES2Compliant())
-        if (info.size > 1 && !info.name.endsWith("[0]"))
-            info.name.append("[0]");
     return WebGLActiveInfo::create(info.name, info.type, info.size);
 }
 
@@ -3266,9 +2948,7 @@ WebGLGetInfo WebGLRenderingContext::getVertexAttrib(GC3Duint index, GC3Denum pna
     const WebGLVertexArrayObjectOES::VertexAttribState& state = m_boundVertexArrayObject->getVertexAttribState(index);
     switch (pname) {
     case GraphicsContext3D::VERTEX_ATTRIB_ARRAY_BUFFER_BINDING:
-        if ((!isGLES2Compliant() && !index && m_boundVertexArrayObject->getVertexAttribState(0).bufferBinding == m_vertexAttrib0Buffer)
-            || !state.bufferBinding
-            || !state.bufferBinding->object())
+        if (!state.bufferBinding || !state.bufferBinding->object())
             return WebGLGetInfo();
         return WebGLGetInfo(PassRefPtr<WebGLBuffer>(state.bufferBinding));
     case GraphicsContext3D::VERTEX_ATTRIB_ARRAY_ENABLED:
@@ -3407,12 +3087,6 @@ void WebGLRenderingContext::linkProgram(WebGLProgram* program, ExceptionCode& ec
     UNUSED_PARAM(ec);
     if (isContextLost() || !validateWebGLObject("linkProgram", program))
         return;
-    if (!isGLES2Compliant()) {
-        if (!program->getAttachedShader(GraphicsContext3D::VERTEX_SHADER) || !program->getAttachedShader(GraphicsContext3D::FRAGMENT_SHADER)) {
-            program->setLinkStatus(false);
-            return;
-        }
-    }
 
     m_context->linkProgram(objectOrZero(program));
     program->increaseLinkCount();
@@ -3507,7 +3181,7 @@ void WebGLRenderingContext::readPixels(GC3Dint x, GC3Dint y, GC3Dsizei width, GC
         return;
     }
     const char* reason = "framebuffer incomplete";
-    if (m_framebufferBinding && !m_framebufferBinding->onAccess(graphicsContext3D(), !isResourceSafe(), &reason)) {
+    if (m_framebufferBinding && !m_framebufferBinding->onAccess(graphicsContext3D(), &reason)) {
         synthesizeGLError(GraphicsContext3D::INVALID_FRAMEBUFFER_OPERATION, "readPixels", reason);
         return;
     }
@@ -3729,24 +3403,9 @@ void WebGLRenderingContext::texImage2DBase(GC3Denum target, GC3Dint level, GC3De
     ASSERT(validateTexFuncParameters("texImage2D", NotTexSubImage2D, target, level, internalformat, width, height, border, format, type));
     ASSERT(tex);
     ASSERT(!level || !WebGLTexture::isNPOT(width, height));
-    if (!pixels) {
-        // Note: Chromium's OpenGL implementation clears textures and isResourceSafe() is therefore true.
-        // For other implementations, if they are using ANGLE_depth_texture, ANGLE depth textures
-        // can not be cleared with texImage2D and must be cleared by binding to an fbo and calling
-        // clear.
-        if (isResourceSafe())
-            m_context->texImage2D(target, level, internalformat, width, height, border, format, type, 0);
-        else {
-            bool succeed = m_context->texImage2DResourceSafe(target, level, internalformat, width, height,
-                                                             border, format, type, m_unpackAlignment);
-            if (!succeed)
-                return;
-        }
-    } else {
-        ASSERT(validateSettableTexFormat("texImage2D", internalformat));
-        m_context->texImage2D(target, level, internalformat, width, height,
-                              border, format, type, pixels);
-    }
+    ASSERT(validateSettableTexFormat("texImage2D", internalformat));
+    m_context->texImage2D(target, level, internalformat, width, height,
+                          border, format, type, pixels);
     tex->setLevelInfo(target, level, internalformat, width, height, type);
     cleanupAfterGraphicsCall(false);
 }
@@ -5680,23 +5339,21 @@ void WebGLRenderingContext::vertexAttribfImpl(const char* functionName, GC3Duint
         return;
     }
     // In GL, we skip setting vertexAttrib0 values.
-    if (index || isGLES2Compliant()) {
-        switch (expectedSize) {
-        case 1:
-            m_context->vertexAttrib1f(index, v0);
-            break;
-        case 2:
-            m_context->vertexAttrib2f(index, v0, v1);
-            break;
-        case 3:
-            m_context->vertexAttrib3f(index, v0, v1, v2);
-            break;
-        case 4:
-            m_context->vertexAttrib4f(index, v0, v1, v2, v3);
-            break;
-        }
-        cleanupAfterGraphicsCall(false);
+    switch (expectedSize) {
+    case 1:
+        m_context->vertexAttrib1f(index, v0);
+        break;
+    case 2:
+        m_context->vertexAttrib2f(index, v0, v1);
+        break;
+    case 3:
+        m_context->vertexAttrib3f(index, v0, v1, v2);
+        break;
+    case 4:
+        m_context->vertexAttrib4f(index, v0, v1, v2, v3);
+        break;
     }
+    cleanupAfterGraphicsCall(false);
     VertexAttribValue& attribValue = m_vertexAttribValue[index];
     attribValue.value[0] = v0;
     attribValue.value[1] = v1;
@@ -5732,102 +5389,25 @@ void WebGLRenderingContext::vertexAttribfvImpl(const char* functionName, GC3Duin
         return;
     }
     // In GL, we skip setting vertexAttrib0 values.
-    if (index || isGLES2Compliant()) {
-        switch (expectedSize) {
-        case 1:
-            m_context->vertexAttrib1fv(index, v);
-            break;
-        case 2:
-            m_context->vertexAttrib2fv(index, v);
-            break;
-        case 3:
-            m_context->vertexAttrib3fv(index, v);
-            break;
-        case 4:
-            m_context->vertexAttrib4fv(index, v);
-            break;
-        }
-        cleanupAfterGraphicsCall(false);
+    switch (expectedSize) {
+    case 1:
+        m_context->vertexAttrib1fv(index, v);
+        break;
+    case 2:
+        m_context->vertexAttrib2fv(index, v);
+        break;
+    case 3:
+        m_context->vertexAttrib3fv(index, v);
+        break;
+    case 4:
+        m_context->vertexAttrib4fv(index, v);
+        break;
     }
+    cleanupAfterGraphicsCall(false);
     VertexAttribValue& attribValue = m_vertexAttribValue[index];
     attribValue.initValue();
     for (int ii = 0; ii < expectedSize; ++ii)
         attribValue.value[ii] = v[ii];
-}
-
-void WebGLRenderingContext::initVertexAttrib0()
-{
-    WebGLVertexArrayObjectOES::VertexAttribState& state = m_boundVertexArrayObject->getVertexAttribState(0);
-    
-    m_vertexAttrib0Buffer = createBuffer();
-    m_context->bindBuffer(GraphicsContext3D::ARRAY_BUFFER, m_vertexAttrib0Buffer->object());
-    m_context->bufferData(GraphicsContext3D::ARRAY_BUFFER, 0, GraphicsContext3D::DYNAMIC_DRAW);
-    m_context->vertexAttribPointer(0, 4, GraphicsContext3D::FLOAT, false, 0, 0);
-    state.bufferBinding = m_vertexAttrib0Buffer;
-    m_context->bindBuffer(GraphicsContext3D::ARRAY_BUFFER, 0);
-    m_context->enableVertexAttribArray(0);
-    m_vertexAttrib0BufferSize = 0;
-    m_vertexAttrib0BufferValue[0] = 0.0f;
-    m_vertexAttrib0BufferValue[1] = 0.0f;
-    m_vertexAttrib0BufferValue[2] = 0.0f;
-    m_vertexAttrib0BufferValue[3] = 1.0f;
-    m_forceAttrib0BufferRefill = false;
-    m_vertexAttrib0UsedBefore = false;
-}
-
-bool WebGLRenderingContext::simulateVertexAttrib0(GC3Dsizei numVertex)
-{
-    const WebGLVertexArrayObjectOES::VertexAttribState& state = m_boundVertexArrayObject->getVertexAttribState(0);
-    const VertexAttribValue& attribValue = m_vertexAttribValue[0];
-    if (!m_currentProgram)
-        return false;
-    bool usingVertexAttrib0 = m_currentProgram->isUsingVertexAttrib0();
-    if (usingVertexAttrib0)
-        m_vertexAttrib0UsedBefore = true;
-    if (state.enabled && usingVertexAttrib0)
-        return false;
-    if (!usingVertexAttrib0 && !m_vertexAttrib0UsedBefore)
-        return false;
-    m_vertexAttrib0UsedBefore = true;
-    m_context->bindBuffer(GraphicsContext3D::ARRAY_BUFFER, m_vertexAttrib0Buffer->object());
-    GC3Dsizeiptr bufferDataSize = (numVertex + 1) * 4 * sizeof(GC3Dfloat);
-    if (bufferDataSize > m_vertexAttrib0BufferSize) {
-        m_context->bufferData(GraphicsContext3D::ARRAY_BUFFER, bufferDataSize, 0, GraphicsContext3D::DYNAMIC_DRAW);
-        m_vertexAttrib0BufferSize = bufferDataSize;
-        m_forceAttrib0BufferRefill = true;
-    }
-    if (usingVertexAttrib0
-        && (m_forceAttrib0BufferRefill
-            || attribValue.value[0] != m_vertexAttrib0BufferValue[0]
-            || attribValue.value[1] != m_vertexAttrib0BufferValue[1]
-            || attribValue.value[2] != m_vertexAttrib0BufferValue[2]
-            || attribValue.value[3] != m_vertexAttrib0BufferValue[3])) {
-        OwnArrayPtr<GC3Dfloat> bufferData = adoptArrayPtr(new GC3Dfloat[(numVertex + 1) * 4]);
-        for (GC3Dsizei ii = 0; ii < numVertex + 1; ++ii) {
-            bufferData[ii * 4] = attribValue.value[0];
-            bufferData[ii * 4 + 1] = attribValue.value[1];
-            bufferData[ii * 4 + 2] = attribValue.value[2];
-            bufferData[ii * 4 + 3] = attribValue.value[3];
-        }
-        m_vertexAttrib0BufferValue[0] = attribValue.value[0];
-        m_vertexAttrib0BufferValue[1] = attribValue.value[1];
-        m_vertexAttrib0BufferValue[2] = attribValue.value[2];
-        m_vertexAttrib0BufferValue[3] = attribValue.value[3];
-        m_forceAttrib0BufferRefill = false;
-        m_context->bufferSubData(GraphicsContext3D::ARRAY_BUFFER, 0, bufferDataSize, bufferData.get());
-    }
-    m_context->vertexAttribPointer(0, 4, GraphicsContext3D::FLOAT, 0, 0, 0);
-    return true;
-}
-
-void WebGLRenderingContext::restoreStatesAfterVertexAttrib0Simulation()
-{
-    const WebGLVertexArrayObjectOES::VertexAttribState& state = m_boundVertexArrayObject->getVertexAttribState(0);
-    if (state.bufferBinding != m_vertexAttrib0Buffer) {
-        m_context->bindBuffer(GraphicsContext3D::ARRAY_BUFFER, objectOrZero(state.bufferBinding.get()));
-        m_context->vertexAttribPointer(0, state.size, state.type, state.normalized, state.originalStride, state.offset);
-    }
-    m_context->bindBuffer(GraphicsContext3D::ARRAY_BUFFER, objectOrZero(m_boundArrayBuffer.get()));
 }
 
 void WebGLRenderingContext::dispatchContextLostEvent(Timer<WebGLRenderingContext>*)

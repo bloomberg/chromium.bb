@@ -124,19 +124,7 @@ void WebGLVertexArrayObjectOES::unbindBuffer(PassRefPtr<WebGLBuffer> buffer)
         VertexAttribState& state = m_vertexAttribState[i];
         if (state.bufferBinding == buffer) {
             buffer->onDetached(context()->graphicsContext3D());
-
-            if (!i && !context()->isGLES2Compliant()) {
-                state.bufferBinding = context()->m_vertexAttrib0Buffer;
-                state.bufferBinding->onAttached();
-                state.bytesPerElement = 0;
-                state.size = 4;
-                state.type = GraphicsContext3D::FLOAT;
-                state.normalized = false;
-                state.stride = 16;
-                state.originalStride = 0;
-                state.offset = 0;
-            } else
-                state.bufferBinding = 0;
+            state.bufferBinding = 0;
         }
     }
 }

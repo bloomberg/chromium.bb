@@ -471,12 +471,10 @@ GC3Denum WebGLFramebuffer::checkStatus(const char** reason) const
     return GraphicsContext3D::FRAMEBUFFER_COMPLETE;
 }
 
-bool WebGLFramebuffer::onAccess(GraphicsContext3D* context3d, bool needToInitializeAttachments, const char** reason)
+bool WebGLFramebuffer::onAccess(GraphicsContext3D* context3d, const char** reason)
 {
     if (checkStatus(reason) != GraphicsContext3D::FRAMEBUFFER_COMPLETE)
         return false;
-    if (needToInitializeAttachments)
-        return initializeAttachments(context3d, reason);
     return true;
 }
 
@@ -494,93 +492,6 @@ void WebGLFramebuffer::deleteObjectImpl(GraphicsContext3D* context3d, Platform3D
         it->value->onDetached(context3d);
 
     context3d->deleteFramebuffer(object);
-}
-
-bool WebGLFramebuffer::initializeAttachments(GraphicsContext3D* g3d, const char** reason)
-{
-    ASSERT(object());
-    GC3Dbitfield mask = 0;
-
-    for (AttachmentMap::iterator it = m_attachments.begin(); it != m_attachments.end(); ++it) {
-        GC3Denum attachmentType = it->key;
-        WebGLAttachment* attachment = it->value.get();
-        if (!attachment->isInitialized())
-           mask |= GraphicsContext3D::getClearBitsByAttachmentType(attachmentType);
-    }
-    if (!mask)
-        return true;
-
-    // We only clear un-initialized renderbuffers when they are ready to be
-    // read, i.e., when the framebuffer is complete.
-    if (g3d->checkFramebufferStatus(GraphicsContext3D::FRAMEBUFFER) != GraphicsContext3D::FRAMEBUFFER_COMPLETE) {
-        *reason = "framebuffer not complete";
-        return false;
-    }
-
-    bool initColor = mask & GraphicsContext3D::COLOR_BUFFER_BIT;
-    bool initDepth = mask & GraphicsContext3D::DEPTH_BUFFER_BIT;
-    bool initStencil = mask & GraphicsContext3D::STENCIL_BUFFER_BIT;
-
-    GC3Dfloat colorClearValue[] = {0, 0, 0, 0}, depthClearValue = 0;
-    GC3Dint stencilClearValue = 0;
-    GC3Dboolean colorMask[] = {0, 0, 0, 0}, depthMask = 0;
-    GC3Duint stencilMask = 0xffffffff;
-    GC3Dboolean isScissorEnabled = 0;
-    GC3Dboolean isDitherEnabled = 0;
-    if (initColor) {
-        g3d->getFloatv(GraphicsContext3D::COLOR_CLEAR_VALUE, colorClearValue);
-        g3d->getBooleanv(GraphicsContext3D::COLOR_WRITEMASK, colorMask);
-        g3d->clearColor(0, 0, 0, 0);
-        g3d->colorMask(true, true, true, true);
-    }
-    if (initDepth) {
-        g3d->getFloatv(GraphicsContext3D::DEPTH_CLEAR_VALUE, &depthClearValue);
-        g3d->getBooleanv(GraphicsContext3D::DEPTH_WRITEMASK, &depthMask);
-        g3d->clearDepth(0);
-        g3d->depthMask(true);
-    }
-    if (initStencil) {
-        g3d->getIntegerv(GraphicsContext3D::STENCIL_CLEAR_VALUE, &stencilClearValue);
-        g3d->getIntegerv(GraphicsContext3D::STENCIL_WRITEMASK, reinterpret_cast<GC3Dint*>(&stencilMask));
-        g3d->clearStencil(0);
-        g3d->stencilMask(0xffffffff);
-    }
-    isScissorEnabled = g3d->isEnabled(GraphicsContext3D::SCISSOR_TEST);
-    g3d->disable(GraphicsContext3D::SCISSOR_TEST);
-    isDitherEnabled = g3d->isEnabled(GraphicsContext3D::DITHER);
-    g3d->disable(GraphicsContext3D::DITHER);
-
-    g3d->clear(mask);
-
-    if (initColor) {
-        g3d->clearColor(colorClearValue[0], colorClearValue[1], colorClearValue[2], colorClearValue[3]);
-        g3d->colorMask(colorMask[0], colorMask[1], colorMask[2], colorMask[3]);
-    }
-    if (initDepth) {
-        g3d->clearDepth(depthClearValue);
-        g3d->depthMask(depthMask);
-    }
-    if (initStencil) {
-        g3d->clearStencil(stencilClearValue);
-        g3d->stencilMask(stencilMask);
-    }
-    if (isScissorEnabled)
-        g3d->enable(GraphicsContext3D::SCISSOR_TEST);
-    else
-        g3d->disable(GraphicsContext3D::SCISSOR_TEST);
-    if (isDitherEnabled)
-        g3d->enable(GraphicsContext3D::DITHER);
-    else
-        g3d->disable(GraphicsContext3D::DITHER);
-
-    for (AttachmentMap::iterator it = m_attachments.begin(); it != m_attachments.end(); ++it) {
-        GC3Denum attachmentType = it->key;
-        WebGLAttachment* attachment = it->value.get();
-        GC3Dbitfield bits = GraphicsContext3D::getClearBitsByAttachmentType(attachmentType);
-        if (bits & mask)
-            attachment->setInitialized();
-    }
-    return true;
 }
 
 bool WebGLFramebuffer::isBound() const

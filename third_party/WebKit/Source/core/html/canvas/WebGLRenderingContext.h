@@ -347,14 +347,8 @@ public:
             markContextChanged();
     }
 
-    // Query whether it is built on top of compliant GLES2 implementation.
-    bool isGLES2Compliant() { return m_isGLES2Compliant; }
     // Query if the GL implementation is NPOT strict.
     bool isGLES2NPOTStrict() { return m_isGLES2NPOTStrict; }
-    // Query if the GL implementation generates errors on out-of-bounds buffer accesses.
-    bool isErrorGeneratedOnOutOfBoundsAccesses() { return m_isErrorGeneratedOnOutOfBoundsAccesses; }
-    // Query if the GL implementation initializes textures/renderbuffers to 0.
-    bool isResourceSafe() { return m_isResourceSafe; }
     // Query if depth_stencil buffer is supported.
     bool isDepthStencilSupported() { return m_isDepthStencilSupported; }
 
@@ -362,16 +356,8 @@ public:
     // like GL_FLOAT, GL_INT, etc.
     unsigned int sizeInBytes(GC3Denum type);
 
-    // Basic validation of count and offset against number of elements in element array buffer
-    bool validateElementArraySize(GC3Dsizei count, GC3Denum type, GC3Dintptr offset);
-
-    // Conservative but quick index validation
-    bool validateIndexArrayConservative(GC3Denum type, unsigned& numElementsRequired);
-
-    // Precise but slow index validation -- only done if conservative checks fail
-    bool validateIndexArrayPrecise(GC3Dsizei count, GC3Denum type, GC3Dintptr offset, unsigned& numElementsRequired);
-    // If numElements <= 0, we only check if each enabled vertex attribute is bound to a buffer.
-    bool validateRenderingState(unsigned numElements);
+    // Check if each enabled vertex attribute is bound to a buffer.
+    bool validateRenderingState();
 
     bool validateWebGLObject(const char*, WebGLObject*);
 
@@ -502,10 +488,7 @@ public:
     GC3Dint m_stencilFuncRef, m_stencilFuncRefBack; // Note that these are the user specified values, not the internal clamped value.
     GC3Duint m_stencilFuncMask, m_stencilFuncMaskBack;
 
-    bool m_isGLES2Compliant;
     bool m_isGLES2NPOTStrict;
-    bool m_isErrorGeneratedOnOutOfBoundsAccesses;
-    bool m_isResourceSafe;
     bool m_isDepthStencilSupported;
     bool m_isRobustnessEXTSupported;
 
@@ -724,11 +707,6 @@ public:
     // If the object has already been deleted, set deleted to true upon return.
     // Return false if caller should return without further processing.
     bool checkObjectToBeBound(const char* functionName, WebGLObject*, bool& deleted);
-
-    // Helpers for simulating vertexAttrib0
-    void initVertexAttrib0();
-    bool simulateVertexAttrib0(GC3Dsizei numVertex);
-    void restoreStatesAfterVertexAttrib0Simulation();
 
     void dispatchContextLostEvent(Timer<WebGLRenderingContext>*);
     // Helper for restoration after context lost.

@@ -81,7 +81,7 @@ public:
     // Return false if the framebuffer is incomplete; otherwise initialize
     // the buffers if they haven't been initialized and
     // needToInitializeAttachments is true.
-    bool onAccess(GraphicsContext3D*, bool needToInitializeAttachments, const char** reason);
+    bool onAccess(GraphicsContext3D*, const char** reason);
 
     // Software version of glCheckFramebufferStatus(), except that when
     // FRAMEBUFFER_COMPLETE is returned, it is still possible for
@@ -109,9 +109,6 @@ private:
     virtual bool isFramebuffer() const { return true; }
 
     WebGLAttachment* getAttachment(GC3Denum) const;
-
-    // Return false if framebuffer is incomplete.
-    bool initializeAttachments(GraphicsContext3D*, const char** reason);
 
     // Check if the framebuffer is currently bound.
     bool isBound() const;
