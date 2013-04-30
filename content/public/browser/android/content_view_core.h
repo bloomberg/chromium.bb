@@ -49,7 +49,6 @@ class CONTENT_EXPORT ContentViewCore {
   virtual ui::WindowAndroid* GetWindowAndroid() const = 0;
   virtual scoped_refptr<cc::Layer> GetLayer() const = 0;
   virtual void LoadUrl(NavigationController::LoadURLParams& params) = 0;
-  virtual void OnWebPreferencesUpdated() = 0;
   virtual jint GetCurrentRenderProcessId(JNIEnv* env, jobject obj) = 0;
   virtual void ShowPastePopup(int x, int y) = 0;
   virtual unsigned int GetScaledContentTexture(

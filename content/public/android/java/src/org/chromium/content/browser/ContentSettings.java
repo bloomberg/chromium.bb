@@ -7,8 +7,6 @@ package org.chromium.content.browser;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.webkit.WebSettings.PluginState;
-import android.webkit.WebView;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;

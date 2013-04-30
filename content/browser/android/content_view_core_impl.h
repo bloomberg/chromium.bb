@@ -53,7 +53,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   virtual ui::WindowAndroid* GetWindowAndroid() const OVERRIDE;
   virtual scoped_refptr<cc::Layer> GetLayer() const OVERRIDE;
   virtual void LoadUrl(NavigationController::LoadURLParams& params) OVERRIDE;
-  virtual void OnWebPreferencesUpdated() OVERRIDE;
   virtual jint GetCurrentRenderProcessId(JNIEnv* env, jobject obj) OVERRIDE;
   virtual void ShowPastePopup(int x, int y) OVERRIDE;
   virtual unsigned int GetScaledContentTexture(

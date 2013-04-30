@@ -311,10 +311,6 @@ ScopedJavaLocalRef<jobject> ContentViewCoreImpl::GetJavaObject() {
   return java_ref_.get(env);
 }
 
-void ContentViewCoreImpl::OnWebPreferencesUpdated() {
-  // TODO(mnaganov): Remove after all usages got removed.
-}
-
 jint ContentViewCoreImpl::GetBackgroundColor(JNIEnv* env, jobject obj) {
   RenderWidgetHostViewAndroid* rwhva = GetRenderWidgetHostViewAndroid();
   if (!rwhva)
