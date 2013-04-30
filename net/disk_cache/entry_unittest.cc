@@ -19,6 +19,7 @@
 #include "net/disk_cache/disk_cache_test_util.h"
 #include "net/disk_cache/entry_impl.h"
 #include "net/disk_cache/mem_entry_impl.h"
+#include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -2379,6 +2380,49 @@ TEST_F(DiskCacheEntryTest, SimpleCacheErrorThenDoom) {
 
   entry->Doom();  // Should not crash.
   entry->Close();
+}
+
+bool TruncatePath(const base::FilePath& file_path, int64 length)  {
+  const int flags = base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_OPEN;
+  base::PlatformFile file =
+      base::CreatePlatformFile(file_path, flags, NULL, NULL);
+  if (base::kInvalidPlatformFileValue == file)
+    return false;
+  const bool result = base::TruncatePlatformFile(file, length);
+  base::ClosePlatformFile(file);
+  return result;
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheNoEOF) {
+  SetSimpleCacheMode();
+  InitCache();
+
+  const char key[] = "the first key";
+
+  disk_cache::Entry* entry = NULL;
+  ASSERT_EQ(net::OK, CreateEntry(key, &entry));
+  disk_cache::Entry* null = NULL;
+  EXPECT_NE(null, entry);
+  entry->Close();
+  entry = NULL;
+
+  // Force the entry to flush to disk, so subsequent platform file operations
+  // succed.
+  ASSERT_EQ(net::OK, OpenEntry(key, &entry));
+  entry->Close();
+  entry = NULL;
+
+  // Truncate the file such that the length isn't sufficient to have an EOF
+  // record.
+  int kTruncationBytes = -implicit_cast<int>(sizeof(disk_cache::SimpleFileEOF));
+  const base::FilePath entry_path = cache_path_.AppendASCII(
+      disk_cache::simple_util::GetFilenameFromKeyAndIndex(key, 0));
+  const int64 invalid_size =
+      disk_cache::simple_util::GetFileSizeFromKeyAndDataSize(key,
+                                                             kTruncationBytes);
+  EXPECT_TRUE(TruncatePath(entry_path, invalid_size));
+  EXPECT_EQ(net::ERR_FAILED, OpenEntry(key, &entry));
+  DisableIntegrityCheck();
 }
 
 // Tests that old entries are evicted while new entries remain in the index.
