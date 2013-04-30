@@ -6,6 +6,15 @@
   'variables': {
     'use_snappy%': 1,
   },
+  'conditions': [
+    ['OS == "android" and android_webview_build == 1', {
+      'variables': {
+        # Snappy not used in Android WebView
+        # crbug.com/236780
+        'use_snappy': 0,
+      },
+    }],
+  ],
   'target_defaults': {
     'defines': [
       'LEVELDB_PLATFORM_CHROMIUM=1',
@@ -20,13 +29,6 @@
         'include_dirs': [
           'src/port/win',
         ],
-      }],
-      ['OS == "android" and android_webview_build == 1', {
-        'variables': {
-          # Snappy not used in Android WebView
-          # crbug.com/236780
-          'use_snappy': 0,
-        },
       }],
       ['use_snappy', {
         'defines': [
