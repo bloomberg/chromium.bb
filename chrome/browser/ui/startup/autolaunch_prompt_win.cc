@@ -33,8 +33,6 @@ using content::BrowserThread;
 
 namespace {
 
-const int kMaxInfobarShown = 5;
-
 // The delegate for the infobar shown when Chrome was auto-launched.
 class AutolaunchInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
@@ -156,6 +154,7 @@ bool ShowAutolaunchPrompt(Browser* browser) {
 
   int infobar_shown =
       profile->GetPrefs()->GetInteger(prefs::kShownAutoLaunchInfobar);
+  const int kMaxInfobarShown = 5;
   if (infobar_shown >= kMaxInfobarShown)
     return false;
 

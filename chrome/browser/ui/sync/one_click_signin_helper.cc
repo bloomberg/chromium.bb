@@ -77,11 +77,6 @@
 
 namespace {
 
-// Maximum number of navigations away from the set of valid Gaia URLs before
-// clearing the internal state of the helper.  This is necessary to support
-// SAML-based accounts, but causes bug crbug.com/181163.
-const int kMaxNavigationsSince = 10;
-
 // Arguments used with StartSync function.  base::Bind() cannot support too
 // many args for performance reasons, so they are packaged up into a struct.
 struct StartSyncArgs {
@@ -307,11 +302,6 @@ bool AreWeShowingSignin(GURL url, SyncPromoUI::Source source,
        !email.empty());
 }
 
-// Constants for the modal dialog / bubble sign in to chrome confirmation
-// experiment
-const char kSignInToChromeDialogFieldTrialName[] = "SignInToChromeConfirmation";
-const char kSignInConfirmBubbleGroupName[] = "Bubble";
-
 class ConfirmEmailDialogDelegate : public TabModalConfirmDialogDelegate {
  public:
   // Callback indicating action performed by the user.  The argument to the
@@ -435,6 +425,9 @@ void CurrentHistoryCleaner::WebContentsDestroyed(
 }
 
 }  // namespace
+
+// static
+const int OneClickSigninHelper::kMaxNavigationsSince = 10;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(OneClickSigninHelper);
 
@@ -1069,6 +1062,9 @@ void OneClickSigninHelper::DidStopLoading(
           << " auto_accept=" << auto_accept_
           << " source=" << source_;
 
+  const char kSignInToChromeDialogFieldTrialName[] =
+      "SignInToChromeConfirmation";
+  const char kSignInConfirmBubbleGroupName[] = "Bubble";
   BrowserWindow::OneClickSigninBubbleType bubble_type;
   if (base::FieldTrialList::FindFullName(kSignInToChromeDialogFieldTrialName) ==
       kSignInConfirmBubbleGroupName)
