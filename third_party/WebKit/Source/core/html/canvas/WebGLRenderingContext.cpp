@@ -3310,7 +3310,8 @@ void WebGLRenderingContext::texImage2DBase(GC3Denum target, GC3Dint level, GC3De
     ASSERT(validateTexFuncParameters("texImage2D", NotTexSubImage2D, target, level, internalformat, width, height, border, format, type));
     ASSERT(tex);
     ASSERT(!level || !WebGLTexture::isNPOT(width, height));
-    ASSERT(validateSettableTexFormat("texImage2D", internalformat));
+    if(pixels)
+        ASSERT(validateSettableTexFormat("texImage2D", internalformat));
     m_context->texImage2D(target, level, internalformat, width, height,
                           border, format, type, pixels);
     tex->setLevelInfo(target, level, internalformat, width, height, type);
