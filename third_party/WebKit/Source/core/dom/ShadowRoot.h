@@ -40,7 +40,7 @@ namespace WebCore {
 class ElementShadow;
 class ScopeContentDistribution;
 
-class ShadowRoot : public DocumentFragment, public TreeScope, public DoublyLinkedListNode<ShadowRoot> {
+class ShadowRoot FINAL : public DocumentFragment, public TreeScope, public DoublyLinkedListNode<ShadowRoot> {
     friend class WTF::DoublyLinkedListNode<ShadowRoot>;
 public:
     // FIXME: We will support multiple shadow subtrees, however current implementation does not work well

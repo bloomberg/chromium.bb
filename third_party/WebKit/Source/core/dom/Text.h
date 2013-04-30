@@ -50,10 +50,10 @@ public:
     RenderText* createTextRenderer(RenderArena*, RenderStyle*);
     void updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData);
 
-    virtual void attach();
+    virtual void attach() OVERRIDE FINAL;
     
-    virtual bool canContainRangeEndPoint() const { return true; }
-    virtual NodeType nodeType() const;
+    virtual bool canContainRangeEndPoint() const OVERRIDE FINAL { return true; }
+    virtual NodeType nodeType() const OVERRIDE;
 
 protected:
     Text(Document* document, const String& data, ConstructionType type)
@@ -63,9 +63,9 @@ protected:
     }
 
 private:
-    virtual String nodeName() const;
-    virtual PassRefPtr<Node> cloneNode(bool deep);
-    virtual bool childTypeAllowed(NodeType) const;
+    virtual String nodeName() const OVERRIDE;
+    virtual PassRefPtr<Node> cloneNode(bool deep) OVERRIDE;
+    virtual bool childTypeAllowed(NodeType) const OVERRIDE;
 
     virtual PassRefPtr<Text> virtualCreate(const String&);
 

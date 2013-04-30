@@ -65,7 +65,7 @@ public:
 
 // A TextFieldDecorationElement object must be in a shadow tree of an
 // HTMLInputElement.
-class TextFieldDecorationElement : public HTMLDivElement {
+class TextFieldDecorationElement FINAL : public HTMLDivElement {
 public:
     static PassRefPtr<TextFieldDecorationElement> create(Document*, TextFieldDecorator*);
     static TextFieldDecorationElement* fromShadowRoot(ShadowRoot*);

@@ -48,7 +48,7 @@ protected:
     virtual bool rendererIsNeeded(const NodeRenderingContext&);
 };
 
-class ProgressInnerElement : public ProgressShadowElement {
+class ProgressInnerElement FINAL : public ProgressShadowElement {
 public:
     ProgressInnerElement(Document*);
 
@@ -58,7 +58,7 @@ private:
     virtual bool rendererIsNeeded(const NodeRenderingContext&);
 };
 
-class ProgressBarElement : public ProgressShadowElement {
+class ProgressBarElement FINAL : public ProgressShadowElement {
 public:
     ProgressBarElement(Document* document) 
         : ProgressShadowElement(document)
@@ -75,7 +75,7 @@ inline PassRefPtr<ProgressBarElement> ProgressBarElement::create(Document* docum
     return adoptRef(new ProgressBarElement(document));
 }
 
-class ProgressValueElement : public ProgressShadowElement {
+class ProgressValueElement FINAL : public ProgressShadowElement {
 public:
     ProgressValueElement(Document* document) 
         : ProgressShadowElement(document)

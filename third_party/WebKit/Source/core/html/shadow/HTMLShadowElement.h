@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-class HTMLShadowElement : public InsertionPoint {
+class HTMLShadowElement FINAL : public InsertionPoint {
 public:
     static PassRefPtr<HTMLShadowElement> create(const QualifiedName&, Document*);
 

@@ -38,7 +38,7 @@
 
 namespace WebCore {
 
-class ScriptWrappable {
+class ScriptWrappable : public MemoryReporterTag {
     friend class WeakHandleListener<ScriptWrappable>;
 public:
     ScriptWrappable() : m_maskedStorage(0) { }
