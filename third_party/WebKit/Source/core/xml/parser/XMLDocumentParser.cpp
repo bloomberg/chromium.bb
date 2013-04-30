@@ -1249,65 +1249,33 @@ static inline XMLDocumentParser* getParser(void* closure)
     return static_cast<XMLDocumentParser*>(ctxt->_private);
 }
 
-// This is a hack around http://bugzilla.gnome.org/show_bug.cgi?id=159219
-// Otherwise libxml seems to call all the SAX callbacks twice for any replaced entity.
-static inline bool hackAroundLibXMLEntityBug(void* closure)
-{
-#if LIBXML_VERSION >= 20627
-    UNUSED_PARAM(closure);
-
-    // This bug has been fixed in libxml 2.6.27.
-    return false;
-#else
-    return static_cast<xmlParserCtxtPtr>(closure)->node;
-#endif
-}
-
 static void startElementNsHandler(void* closure, const xmlChar* localname, const xmlChar* prefix, const xmlChar* uri, int nb_namespaces, const xmlChar** namespaces, int nb_attributes, int nb_defaulted, const xmlChar** libxmlAttributes)
 {
-    if (hackAroundLibXMLEntityBug(closure))
-        return;
-
     getParser(closure)->startElementNs(localname, prefix, uri, nb_namespaces, namespaces, nb_attributes, nb_defaulted, libxmlAttributes);
 }
 
 static void endElementNsHandler(void* closure, const xmlChar*, const xmlChar*, const xmlChar*)
 {
-    if (hackAroundLibXMLEntityBug(closure))
-        return;
-
     getParser(closure)->endElementNs();
 }
 
 static void charactersHandler(void* closure, const xmlChar* s, int len)
 {
-    if (hackAroundLibXMLEntityBug(closure))
-        return;
-
     getParser(closure)->characters(s, len);
 }
 
 static void processingInstructionHandler(void* closure, const xmlChar* target, const xmlChar* data)
 {
-    if (hackAroundLibXMLEntityBug(closure))
-        return;
-
     getParser(closure)->processingInstruction(target, data);
 }
 
 static void cdataBlockHandler(void* closure, const xmlChar* s, int len)
 {
-    if (hackAroundLibXMLEntityBug(closure))
-        return;
-
     getParser(closure)->cdataBlock(s, len);
 }
 
 static void commentHandler(void* closure, const xmlChar* comment)
 {
-    if (hackAroundLibXMLEntityBug(closure))
-        return;
-
     getParser(closure)->comment(comment);
 }
 
