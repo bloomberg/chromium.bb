@@ -24,6 +24,7 @@ class GpuMemoryBufferImpl : public gpu::GpuMemoryBuffer {
   virtual void Map(gpu::GpuMemoryBuffer::AccessMode mode,
       void** vaddr) OVERRIDE;
   virtual void Unmap() OVERRIDE;
+  virtual bool IsMapped() OVERRIDE;
   virtual void* GetNativeBuffer() OVERRIDE;
   virtual uint32 GetStride() OVERRIDE;
 

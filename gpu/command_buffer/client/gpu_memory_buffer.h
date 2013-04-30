@@ -43,6 +43,9 @@ class GLES2_IMPL_EXPORT GpuMemoryBuffer {
   // completed.
   virtual void Unmap() = 0;
 
+  // Returns true iff the buffer is mapped.
+  virtual bool IsMapped() = 0;
+
   // Returns the native pointer for the buffer.
   virtual void* GetNativeBuffer() = 0;
 

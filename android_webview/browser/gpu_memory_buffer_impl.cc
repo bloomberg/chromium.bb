@@ -33,7 +33,6 @@ GpuMemoryBufferImpl::~GpuMemoryBufferImpl() {
 void GpuMemoryBufferImpl::Map(gpu::GpuMemoryBuffer::AccessMode mode,
     void** vaddr) {
   DCHECK(buffer_id_ != 0);
-  DCHECK(!mapped_);
   int err = g_gl_draw_functions->lock(buffer_id_, mode, vaddr);
   DCHECK(err == 0);
   mapped_ = true;
@@ -41,7 +40,6 @@ void GpuMemoryBufferImpl::Map(gpu::GpuMemoryBuffer::AccessMode mode,
 
 void GpuMemoryBufferImpl::Unmap() {
   DCHECK(buffer_id_ != 0);
-  DCHECK(mapped_);
   int err = g_gl_draw_functions->unlock(buffer_id_);
   DCHECK(err == 0);
   mapped_ = false;
@@ -55,6 +53,10 @@ void* GpuMemoryBufferImpl::GetNativeBuffer() {
 uint32 GpuMemoryBufferImpl::GetStride() {
   DCHECK(buffer_id_ != 0);
   return g_gl_draw_functions->get_stride(buffer_id_);
+}
+
+bool GpuMemoryBufferImpl::IsMapped() {
+  return mapped_;
 }
 
 // static

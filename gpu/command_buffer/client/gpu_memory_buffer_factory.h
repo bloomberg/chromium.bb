@@ -15,7 +15,8 @@ namespace gpu {
 // renderer are within the same process.
 
 // It is not valid to call this method before the setter is called.
-const GpuMemoryBuffer::Creator& GetProcessDefaultGpuMemoryBufferFactory();
+GLES2_IMPL_EXPORT const GpuMemoryBuffer::Creator&
+    GetProcessDefaultGpuMemoryBufferFactory();
 
 // It is illegal to call the setter more than once.
 GLES2_IMPL_EXPORT void SetProcessDefaultGpuMemoryBufferFactory(
