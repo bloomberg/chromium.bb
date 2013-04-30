@@ -29,9 +29,9 @@ class MediaGalleriesDialogGtk : public MediaGalleriesDialog {
   virtual ~MediaGalleriesDialogGtk();
 
   // MediaGalleriesDialog implementation:
-  virtual void UpdateGallery(const MediaGalleryPrefInfo* gallery,
+  virtual void UpdateGallery(const MediaGalleryPrefInfo& gallery,
                              bool permitted) OVERRIDE;
-  virtual void ForgetGallery(const MediaGalleryPrefInfo* gallery) OVERRIDE;
+  virtual void ForgetGallery(MediaGalleryPrefId gallery) OVERRIDE;
 
   // Event callbacks.
   CHROMEGTK_CALLBACK_0(MediaGalleriesDialogGtk, void, OnToggled);
@@ -45,13 +45,12 @@ class MediaGalleriesDialogGtk : public MediaGalleriesDialog {
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, UpdateAdds);
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, ForgetDeletes);
 
-  // TODO(gbillock): Make this map hold a MediaGalleryPrefInfo key directly.
-  typedef std::map<const MediaGalleryPrefInfo*, GtkWidget*> CheckboxMap;
+  typedef std::map<MediaGalleryPrefId, GtkWidget*> CheckboxMap;
 
   // Creates the widget hierarchy.
   void InitWidgets();
 
-  virtual void UpdateGalleryInContainer(const MediaGalleryPrefInfo* gallery,
+  virtual void UpdateGalleryInContainer(const MediaGalleryPrefInfo& gallery,
                                         bool permitted,
                                         GtkWidget* checkbox_container);
 

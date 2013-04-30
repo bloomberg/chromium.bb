@@ -19,13 +19,14 @@ class MediaGalleriesDialogControllerMock
   MOCK_CONST_METHOD0(GetHeader, string16());
   MOCK_CONST_METHOD0(GetSubtext, string16());
   MOCK_CONST_METHOD0(HasPermittedGalleries, bool());
-  MOCK_CONST_METHOD0(permissions, const KnownGalleryPermissions&());
+  MOCK_CONST_METHOD0(AttachedPermissions, GalleryPermissionsVector());
+  MOCK_CONST_METHOD0(UnattachedPermissions, GalleryPermissionsVector());
   MOCK_METHOD0(web_contents, content::WebContents*());
 
   MOCK_METHOD0(OnAddFolderClicked, void());
-  MOCK_METHOD2(DidToggleGallery, void(const MediaGalleryPrefInfo* pref_info,
-                                      bool enabled));
-  MOCK_METHOD1(DialogFinished, void(bool accepted));
+  MOCK_METHOD2(DidToggleGalleryId, void(MediaGalleryPrefId pref_id,
+                                        bool enabled));
+  MOCK_METHOD1(DialogFinished, void(bool));
 };
 
 }  // namespace chrome

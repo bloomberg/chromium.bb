@@ -26,10 +26,8 @@ const int kGalleryControlScrollableHeight = 192;
 
 }  // namespace
 
-typedef MediaGalleriesDialogController::KnownGalleryPermissions
-    GalleryPermissions;
-typedef MediaGalleriesDialogController::NewGalleryPermissions
-    NewGalleryPermissions;
+typedef MediaGalleriesDialogController::GalleryPermissionsVector
+    GalleryPermissionsVector;
 
 MediaGalleriesDialogGtk::MediaGalleriesDialogGtk(
     MediaGalleriesDialogController* controller)
@@ -97,22 +95,11 @@ void MediaGalleriesDialogGtk::InitWidgets() {
   gtk_widget_show(scroll_window);
 
   // Attached galleries checkboxes
-  const GalleryPermissions& permissions = controller_->permissions();
-  const NewGalleryPermissions& new_permissions = controller_->new_permissions();
-  for (GalleryPermissions::const_iterator iter = permissions.begin();
+  GalleryPermissionsVector permissions = controller_->AttachedPermissions();
+  for (GalleryPermissionsVector::const_iterator iter = permissions.begin();
        iter != permissions.end(); ++iter) {
-    if (MediaGalleriesDialogController::GetGalleryAttached(
-            iter->second.pref_info)) {
-      UpdateGalleryInContainer(&iter->second.pref_info, iter->second.allowed,
-                               checkbox_container);
-    }
-  }
-  for (NewGalleryPermissions::const_iterator iter = new_permissions.begin();
-       iter != new_permissions.end(); ++iter) {
-    if (MediaGalleriesDialogController::GetGalleryAttached(iter->pref_info)) {
-      UpdateGalleryInContainer(&iter->pref_info, iter->allowed,
-                               checkbox_container);
-    }
+    UpdateGalleryInContainer(iter->pref_info, iter->allowed,
+                             checkbox_container);
   }
 
   // Separator line and unattached volumes header text.
@@ -129,19 +116,13 @@ void MediaGalleriesDialogGtk::InitWidgets() {
                      FALSE, FALSE, 0);
 
   // Unattached galleries checkboxes
-  for (GalleryPermissions::const_iterator iter = permissions.begin();
-       iter != permissions.end(); ++iter) {
-    if (!MediaGalleriesDialogController::GetGalleryAttached(
-            iter->second.pref_info)) {
-      UpdateGalleryInContainer(&iter->second.pref_info, iter->second.allowed,
-                               checkbox_container);
-    }
-  }
-  for (NewGalleryPermissions::const_iterator iter = new_permissions.begin();
-       iter != new_permissions.end(); ++iter) {
-    if (!MediaGalleriesDialogController::GetGalleryAttached(iter->pref_info))
-      UpdateGalleryInContainer(&iter->pref_info, iter->allowed,
-                               checkbox_container);
+  const GalleryPermissionsVector unattached_permissions =
+      controller_->UnattachedPermissions();
+  for (GalleryPermissionsVector::const_iterator iter =
+           unattached_permissions.begin();
+       iter != unattached_permissions.end(); ++iter) {
+    UpdateGalleryInContainer(iter->pref_info, iter->allowed,
+                             checkbox_container);
   }
 
   // Holds the "add gallery" and cancel/confirm buttons.
@@ -183,13 +164,13 @@ void MediaGalleriesDialogGtk::InitWidgets() {
 }
 
 void MediaGalleriesDialogGtk::UpdateGallery(
-    const MediaGalleryPrefInfo* gallery,
+    const MediaGalleryPrefInfo& gallery,
     bool permitted) {
   InitWidgets();
 }
 
 void MediaGalleriesDialogGtk::UpdateGalleryInContainer(
-    const MediaGalleryPrefInfo* gallery,
+    const MediaGalleryPrefInfo& gallery,
     bool permitted,
     GtkWidget* checkbox_container) {
   GtkWidget* hbox = gtk_hbox_new(FALSE, ui::kLabelSpacing);
@@ -198,31 +179,30 @@ void MediaGalleriesDialogGtk::UpdateGalleryInContainer(
   gtk_box_pack_start(GTK_BOX(checkbox_container), hbox, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   std::string details = UTF16ToUTF8(
-      MediaGalleriesDialogController::GetGalleryAdditionalDetails(*gallery));
+      MediaGalleriesDialogController::GetGalleryAdditionalDetails(gallery));
   GtkWidget* details_label = gtk_label_new(details.c_str());
   gtk_label_set_line_wrap(GTK_LABEL(details_label), FALSE);
   gtk_util::SetLabelColor(details_label, &kDeemphasizedTextColor);
   gtk_box_pack_start(GTK_BOX(hbox), details_label, FALSE, FALSE, 0);
 
   gtk_widget_show(hbox);
-  checkbox_map_[gallery] = widget;
+  checkbox_map_[gallery.pref_id] = widget;
 
   std::string tooltip_text = UTF16ToUTF8(
-      MediaGalleriesDialogController::GetGalleryTooltip(*gallery));
+      MediaGalleriesDialogController::GetGalleryTooltip(gallery));
   gtk_widget_set_tooltip_text(widget, tooltip_text.c_str());
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), permitted);
   std::string label = UTF16ToUTF8(
       MediaGalleriesDialogController::GetGalleryDisplayNameNoAttachment(
-          *gallery));
+          gallery));
   gtk_button_set_label(GTK_BUTTON(widget), label.c_str());
 }
 
-void MediaGalleriesDialogGtk::ForgetGallery(
-    const MediaGalleryPrefInfo* gallery) {
+void MediaGalleriesDialogGtk::ForgetGallery(MediaGalleryPrefId gallery) {
   for (CheckboxMap::iterator iter = checkbox_map_.begin();
        iter != checkbox_map_.end(); ++iter) {
-    if (iter->first->pref_id == gallery->pref_id) {
+    if (iter->first == gallery) {
       GtkWidget* checkbox = iter->second;
       checkbox_map_.erase(iter);
       gtk_widget_destroy(gtk_widget_get_parent(checkbox));
@@ -238,7 +218,7 @@ void MediaGalleriesDialogGtk::OnToggled(GtkWidget* widget) {
   for (CheckboxMap::const_iterator iter = checkbox_map_.begin();
        iter != checkbox_map_.end(); ++iter) {
     if (iter->second == widget) {
-      controller_->DidToggleGallery(
+      controller_->DidToggleGalleryId(
           iter->first,
           gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
     }

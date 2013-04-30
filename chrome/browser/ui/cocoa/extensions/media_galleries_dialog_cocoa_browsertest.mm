@@ -32,9 +32,13 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesDialogBrowserTest, Close) {
   EXPECT_CALL(controller, web_contents()).
       WillRepeatedly(Return(web_contents));
 
-  MediaGalleriesDialogController::KnownGalleryPermissions permissions;
-  EXPECT_CALL(controller, permissions()).
-      WillRepeatedly(ReturnRef(permissions));
+  MediaGalleriesDialogController::GalleryPermissionsVector attached_permissions;
+  EXPECT_CALL(controller, AttachedPermissions()).
+      WillRepeatedly(Return(attached_permissions));
+  MediaGalleriesDialogController::GalleryPermissionsVector
+      unattached_permissions;
+  EXPECT_CALL(controller, UnattachedPermissions()).
+      WillRepeatedly(Return(unattached_permissions));
 
   scoped_ptr<MediaGalleriesDialogCocoa> dialog(
       static_cast<MediaGalleriesDialogCocoa*>(

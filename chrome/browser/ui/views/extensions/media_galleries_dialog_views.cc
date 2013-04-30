@@ -64,10 +64,8 @@ void ScrollableView::Layout() {
 
 namespace chrome {
 
-typedef MediaGalleriesDialogController::KnownGalleryPermissions
-    GalleryPermissions;
-typedef MediaGalleriesDialogController::NewGalleryPermissions
-    NewGalleryPermissions;
+typedef MediaGalleriesDialogController::GalleryPermissionsVector
+    GalleryPermissionsVector;
 
 MediaGalleriesDialogViews::MediaGalleriesDialogViews(
     MediaGalleriesDialogController* controller)
@@ -144,20 +142,10 @@ void MediaGalleriesDialogViews::InitChildViews() {
 
   // Add attached galleries checkboxes.
   checkbox_map_.clear();
-  const GalleryPermissions& permissions = controller_->permissions();
-  const NewGalleryPermissions& new_permissions = controller_->new_permissions();
-  for (GalleryPermissions::const_iterator iter = permissions.begin();
+  GalleryPermissionsVector permissions = controller_->AttachedPermissions();
+  for (GalleryPermissionsVector::const_iterator iter = permissions.begin();
        iter != permissions.end(); ++iter) {
-    if (MediaGalleriesDialogController::GetGalleryAttached(
-            iter->second.pref_info)) {
-      AddOrUpdateGallery(&iter->second.pref_info, iter->second.allowed,
-                         scroll_container);
-    }
-  }
-  for (NewGalleryPermissions::const_iterator iter = new_permissions.begin();
-       iter != new_permissions.end(); ++iter) {
-    if (MediaGalleriesDialogController::GetGalleryAttached(iter->pref_info))
-      AddOrUpdateGallery(&iter->pref_info, iter->allowed, scroll_container);
+    AddOrUpdateGallery(iter->pref_info, iter->allowed, scroll_container);
   }
 
   // Separator line.
@@ -181,21 +169,15 @@ void MediaGalleriesDialogViews::InitChildViews() {
   scroll_container->AddChildView(unattached_text);
 
   // Add unattached galleries checkboxes.
-  for (GalleryPermissions::const_iterator iter = permissions.begin();
-       iter != permissions.end(); ++iter) {
-    if (!MediaGalleriesDialogController::GetGalleryAttached(
-            iter->second.pref_info)) {
-      AddOrUpdateGallery(&iter->second.pref_info, iter->second.allowed,
-                         scroll_container);
-    }
-  }
-  for (NewGalleryPermissions::const_iterator iter = new_permissions.begin();
-       iter != new_permissions.end(); ++iter) {
-    if (!MediaGalleriesDialogController::GetGalleryAttached(iter->pref_info))
-      AddOrUpdateGallery(&iter->pref_info, iter->allowed, scroll_container);
+  GalleryPermissionsVector unattached_permissions =
+      controller_->UnattachedPermissions();
+  for (GalleryPermissionsVector::const_iterator iter =
+           unattached_permissions.begin();
+       iter != unattached_permissions.end(); ++iter) {
+    AddOrUpdateGallery(iter->pref_info, iter->allowed, scroll_container);
   }
 
-  confirm_available_ |= new_permissions.size() > 0;
+  confirm_available_ = controller_->HasPermittedGalleries();
 
   // Add the scrollable area to the outer dialog view. It will squeeze against
   // the title/subtitle and buttons to occupy all available space in the dialog.
@@ -228,31 +210,30 @@ void MediaGalleriesDialogViews::InitChildViews() {
 }
 
 void MediaGalleriesDialogViews::UpdateGallery(
-    const MediaGalleryPrefInfo* gallery,
+    const MediaGalleryPrefInfo& gallery,
     bool permitted) {
   InitChildViews();
   contents_->Layout();
 }
 
-void MediaGalleriesDialogViews::ForgetGallery(
-    const MediaGalleryPrefInfo* gallery) {
+void MediaGalleriesDialogViews::ForgetGallery(MediaGalleryPrefId gallery) {
   InitChildViews();
   contents_->Layout();
 }
 
 bool MediaGalleriesDialogViews::AddOrUpdateGallery(
-    const MediaGalleryPrefInfo* gallery,
+    const MediaGalleryPrefInfo& gallery,
     bool permitted,
     views::View* container) {
   string16 label =
       MediaGalleriesDialogController::GetGalleryDisplayNameNoAttachment(
-          *gallery);
+          gallery);
   string16 tooltip_text =
-      MediaGalleriesDialogController::GetGalleryTooltip(*gallery);
+      MediaGalleriesDialogController::GetGalleryTooltip(gallery);
   string16 details =
-      MediaGalleriesDialogController::GetGalleryAdditionalDetails(*gallery);
+      MediaGalleriesDialogController::GetGalleryAdditionalDetails(gallery);
 
-  CheckboxMap::iterator iter = checkbox_map_.find(gallery);
+  CheckboxMap::iterator iter = checkbox_map_.find(gallery.pref_id);
   if (iter != checkbox_map_.end()) {
     views::Checkbox* checkbox = iter->second;
     checkbox->SetChecked(permitted);
@@ -296,7 +277,7 @@ bool MediaGalleriesDialogViews::AddOrUpdateGallery(
   container->AddChildView(checkbox_view);
 
   checkbox->SetChecked(permitted);
-  checkbox_map_[gallery] = checkbox;
+  checkbox_map_[gallery.pref_id] = checkbox;
 
   return true;
 }
@@ -377,7 +358,8 @@ void MediaGalleriesDialogViews::ButtonPressed(views::Button* sender,
   for (CheckboxMap::const_iterator iter = checkbox_map_.begin();
        iter != checkbox_map_.end(); ++iter) {
     if (sender == iter->second) {
-      controller_->DidToggleGallery(iter->first, iter->second->checked());
+      controller_->DidToggleGalleryId(iter->first,
+                                      iter->second->checked());
       return;
     }
   }

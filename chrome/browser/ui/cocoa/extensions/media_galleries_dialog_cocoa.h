@@ -39,9 +39,9 @@ class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
   void OnCheckboxToggled(NSButton* checkbox);
 
   // MediaGalleriesDialog implementation:
-  virtual void UpdateGallery(const MediaGalleryPrefInfo* gallery,
+  virtual void UpdateGallery(const MediaGalleryPrefInfo& gallery,
                              bool permitted) OVERRIDE;
-  virtual void ForgetGallery(const MediaGalleryPrefInfo* gallery) OVERRIDE;
+  virtual void ForgetGallery(MediaGalleryPrefId gallery) OVERRIDE;
 
   // ConstrainedWindowMacDelegate implementation.
   virtual void OnConstrainedWindowClosed(
@@ -54,9 +54,7 @@ class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, UpdateAdds);
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, ForgetDeletes);
 
-  NSButton* CheckboxForGallery(const MediaGalleryPrefInfo* gallery);
-
-  void UpdateGalleryCheckbox(const MediaGalleryPrefInfo* gallery,
+  void UpdateGalleryCheckbox(const MediaGalleryPrefInfo& gallery,
                              bool permitted,
                              CGFloat y_pos);
 
@@ -64,16 +62,12 @@ class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
   CGFloat CreateAddFolderButton();
   CGFloat CreateAttachedCheckboxes(
       CGFloat y_pos,
-      const MediaGalleriesDialogController::KnownGalleryPermissions&
-          permissions,
-      const MediaGalleriesDialogController::NewGalleryPermissions&
-          new_permissions);
+      const MediaGalleriesDialogController::GalleryPermissionsVector&
+          permissions);
   CGFloat CreateUnattachedCheckboxes(
       CGFloat y_pos,
-      const MediaGalleriesDialogController::KnownGalleryPermissions&
-          permissions,
-      const MediaGalleriesDialogController::NewGalleryPermissions&
-          new_permissions);
+      const MediaGalleriesDialogController::GalleryPermissionsVector&
+          permissions);
   CGFloat CreateCheckboxSeparator(CGFloat y_pos);
 
   MediaGalleriesDialogController* controller_;  // weak
