@@ -120,7 +120,7 @@ DefaultBrowserInfoBarDelegate::DefaultBrowserInfoBarDelegate(
       action_taken_(false),
       should_expire_(false),
       interactive_flow_required_(interactive_flow_required),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   // We want the info-bar to stick-around for few seconds and then be hidden
   // on the next navigation after that.
   MessageLoop::current()->PostDelayedTask(

@@ -13,7 +13,7 @@ PermissionMenuModel::PermissionMenuModel(
     ContentSettingsType type,
     ContentSetting default_setting,
     ContentSetting current_setting)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
+    : ui::SimpleMenuModel(this),
       delegate_(delegate),
       site_url_(url) {
   string16 label;

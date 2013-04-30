@@ -34,7 +34,7 @@ using content::UserMetricsAction;
 using content::WebContents;
 
 FullscreenController::FullscreenController(Browser* browser)
-    : ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+    : ptr_factory_(this),
       browser_(browser),
       window_(browser->window()),
       profile_(browser->profile()),

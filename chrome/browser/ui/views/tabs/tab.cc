@@ -313,7 +313,7 @@ class Tab::FaviconCrashAnimation : public ui::LinearAnimation,
                                    public ui::AnimationDelegate {
  public:
   explicit FaviconCrashAnimation(Tab* target)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(ui::LinearAnimation(1000, 25, this)),
+      : ui::LinearAnimation(1000, 25, this),
         target_(target) {
   }
   virtual ~FaviconCrashAnimation() {}
@@ -456,7 +456,7 @@ Tab::Tab(TabController* controller)
       immersive_loading_step_(0),
       should_display_crashed_favicon_(false),
       theme_provider_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(hover_controller_(this)),
+      hover_controller_(this),
       showing_icon_(false),
       showing_close_button_(false),
       close_button_color_(0) {

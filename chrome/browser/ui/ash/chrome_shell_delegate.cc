@@ -55,7 +55,7 @@ ChromeShellDelegate* ChromeShellDelegate::instance_ = NULL;
 
 ChromeShellDelegate::ChromeShellDelegate()
     : window_positioner_(new ash::WindowPositioner()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       launcher_delegate_(NULL) {
   instance_ = this;
   PlatformInit();

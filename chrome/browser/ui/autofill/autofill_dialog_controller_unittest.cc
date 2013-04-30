@@ -152,9 +152,9 @@ class TestAutofillDialogController
                                      dialog_type,
                                      callback),
         metric_logger_(metric_logger),
-        ALLOW_THIS_IN_INITIALIZER_LIST(test_wallet_client_(
+        test_wallet_client_(
             Profile::FromBrowserContext(contents->GetBrowserContext())->
-                GetRequestContext(), this)),
+                GetRequestContext(), this),
         is_first_run_(true) {}
   virtual ~TestAutofillDialogController() {}
 

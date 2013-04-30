@@ -151,7 +151,7 @@ void ProfilerMessageHandler::OnResetData(const ListValue* list) {
 
 ProfilerUI::ProfilerUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   web_ui->AddMessageHandler(new ProfilerMessageHandler());
 
   // Set up the chrome://profiler/ source.

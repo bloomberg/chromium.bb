@@ -138,7 +138,7 @@ void ChromeToMobileBubbleGtk::OnSendComplete(bool success) {
 
 ChromeToMobileBubbleGtk::ChromeToMobileBubbleGtk(GtkWidget* anchor_widget,
                                                  Browser* browser)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+    : weak_ptr_factory_(this),
       browser_(browser),
       service_(ChromeToMobileServiceFactory::GetForProfile(browser->profile())),
       theme_service_(GtkThemeService::GetFrom(browser->profile())),

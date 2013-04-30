@@ -26,8 +26,8 @@
 namespace options {
 
 PasswordManagerHandler::PasswordManagerHandler()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(populater_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(exception_populater_(this)) {
+    : populater_(this),
+      exception_populater_(this) {
 }
 
 PasswordManagerHandler::~PasswordManagerHandler() {

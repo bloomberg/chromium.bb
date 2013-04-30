@@ -12,7 +12,7 @@ ContentSettingMediaMenuModel::ContentSettingMediaMenuModel(
     content::MediaStreamType type,
     ContentSettingBubbleModel* bubble_model,
     const MenuLabelChangedCallback& callback)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
+    : ui::SimpleMenuModel(this),
       type_(type),
       media_bubble_model_(bubble_model),
       callback_(callback) {

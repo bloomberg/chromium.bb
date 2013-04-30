@@ -282,7 +282,7 @@ class TabRendererGtk::FaviconCrashAnimation : public ui::LinearAnimation,
                                               public ui::AnimationDelegate {
  public:
   explicit FaviconCrashAnimation(TabRendererGtk* target)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(ui::LinearAnimation(1000, 25, this)),
+      : ui::LinearAnimation(1000, 25, this),
         target_(target) {
   }
   virtual ~FaviconCrashAnimation() {}

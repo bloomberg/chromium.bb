@@ -22,7 +22,7 @@ ActionBoxButtonView::ActionBoxButtonView(Browser* browser,
     : views::MenuButton(NULL, string16(), this, false),
       browser_(browser),
       menu_offset_(menu_offset),
-      ALLOW_THIS_IN_INITIALIZER_LIST(controller_(browser, this)) {
+      controller_(browser, this) {
   set_id(VIEW_ID_ACTION_BOX_BUTTON);
   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_ACTION_BOX_BUTTON));
   SetIcon(*ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(

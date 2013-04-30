@@ -21,7 +21,7 @@ const int kThrobberDurationMs = 750;
 
 ThrobberGtk::ThrobberGtk(GtkThemeService* theme_service)
     : theme_service_(theme_service),
-      ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)),
+      animation_(this),
       num_frames_(0) {
   DCHECK(theme_service_);
   Init();

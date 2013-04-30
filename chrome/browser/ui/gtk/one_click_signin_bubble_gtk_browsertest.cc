@@ -18,7 +18,7 @@
 class OneClickSigninBubbleGtkTest : public InProcessBrowserTest {
  public:
   OneClickSigninBubbleGtkTest()
-      : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      : weak_ptr_factory_(this),
         start_sync_callback_(
             base::Bind(&OneClickSigninBubbleGtkTest::OnStartSync,
                        weak_ptr_factory_.GetWeakPtr())),

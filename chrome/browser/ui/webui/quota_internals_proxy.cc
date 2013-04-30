@@ -18,7 +18,7 @@ namespace quota_internals {
 
 QuotaInternalsProxy::QuotaInternalsProxy(QuotaInternalsHandler* handler)
     : handler_(handler),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
 }
 
 void QuotaInternalsProxy::RequestInfo(

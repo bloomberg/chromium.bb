@@ -30,7 +30,7 @@ namespace chrome {
 
 BrowserTabStripModelDelegate::BrowserTabStripModelDelegate(Browser* browser)
     : browser_(browser),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 BrowserTabStripModelDelegate::~BrowserTabStripModelDelegate() {

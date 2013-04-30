@@ -404,8 +404,8 @@ BrowserView::BrowserView()
 #endif
       force_location_bar_focus_(false),
       immersive_mode_controller_(chrome::CreateImmersiveModeController()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(color_change_listener_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(activate_modal_dialog_factory_(this)) {
+      color_change_listener_(this),
+      activate_modal_dialog_factory_(this) {
 }
 
 BrowserView::~BrowserView() {

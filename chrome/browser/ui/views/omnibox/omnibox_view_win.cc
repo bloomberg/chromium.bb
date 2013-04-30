@@ -490,9 +490,8 @@ OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
           ToolbarModel::NONE, LocationBarView::BACKGROUND))),
       security_level_(ToolbarModel::NONE),
       text_object_model_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          tsf_event_router_(base::win::IsTSFAwareRequired() ?
-              new ui::TSFEventRouter(this) : NULL)) {
+      tsf_event_router_(base::win::IsTSFAwareRequired() ?
+          new ui::TSFEventRouter(this) : NULL) {
   if (!loaded_library_module_)
     loaded_library_module_ = LoadLibrary(kRichEditDLLName);
 

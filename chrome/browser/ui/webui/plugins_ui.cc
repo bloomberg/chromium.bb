@@ -186,7 +186,7 @@ class PluginsDOMHandler : public WebUIMessageHandler,
 };
 
 PluginsDOMHandler::PluginsDOMHandler()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+    : weak_ptr_factory_(this) {
 }
 
 void PluginsDOMHandler::RegisterMessages() {

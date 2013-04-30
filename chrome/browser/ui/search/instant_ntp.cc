@@ -10,7 +10,7 @@
 InstantNTP::InstantNTP(InstantPage::Delegate* delegate,
                        const std::string& instant_url)
     : InstantPage(delegate),
-      loader_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      loader_(this),
       instant_url_(instant_url) {
 }
 

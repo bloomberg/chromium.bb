@@ -14,7 +14,7 @@ TranslateLanguageMenuModel::TranslateLanguageMenuModel(
     TranslateInfoBarBase* infobar,
     views::MenuButton* button,
     bool translate_on_change)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
+    : ui::SimpleMenuModel(this),
       language_type_(language_type),
       infobar_delegate_(infobar_delegate),
       infobar_(infobar),

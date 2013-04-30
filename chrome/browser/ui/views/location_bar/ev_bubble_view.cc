@@ -9,7 +9,7 @@ EVBubbleView::EVBubbleView(const int background_images[],
                            SkColor color,
                            LocationBarView* location_bar)
     : IconLabelBubbleView(background_images, contained_image, color),
-      ALLOW_THIS_IN_INITIALIZER_LIST(page_info_helper_(this, location_bar)) {
+      page_info_helper_(this, location_bar) {
   SetElideInMiddle(true);
 }
 

@@ -53,10 +53,10 @@ PageActionDecoration::PageActionDecoration(
       page_action_(page_action),
       current_tab_id_(-1),
       preview_enabled_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(scoped_icon_animation_observer_(
+      scoped_icon_animation_observer_(
           page_action->GetIconAnimation(
               SessionID::IdForTab(owner->GetWebContents())),
-          this)) {
+          this) {
   const Extension* extension = browser->profile()->GetExtensionService()->
       GetExtensionById(page_action->extension_id(), false);
   DCHECK(extension);

@@ -18,7 +18,7 @@ AfterTranslateInfoBar::AfterTranslateInfoBar(
     InfoBarService* owner,
     TranslateInfoBarDelegate* delegate)
     : TranslateInfoBarBase(owner, delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 AfterTranslateInfoBar::~AfterTranslateInfoBar() {

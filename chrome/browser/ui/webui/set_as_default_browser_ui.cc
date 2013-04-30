@@ -135,8 +135,7 @@ class SetAsDefaultBrowserHandler
 
 SetAsDefaultBrowserHandler::SetAsDefaultBrowserHandler(
     const base::WeakPtr<ResponseDelegate>& response_delegate)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(default_browser_worker_(
-          new ShellIntegration::DefaultBrowserWorker(this))),
+    : default_browser_worker_(new ShellIntegration::DefaultBrowserWorker(this)),
       set_default_returned_(false), set_default_result_(false),
       response_delegate_(response_delegate) {
 }
@@ -266,7 +265,7 @@ SetAsDefaultBrowserDialogImpl::SetAsDefaultBrowserDialogImpl(Profile* profile,
     : profile_(profile),
       browser_(browser),
       owns_handler_(true),
-      ALLOW_THIS_IN_INITIALIZER_LIST(response_delegate_ptr_factory_(this)),
+      response_delegate_ptr_factory_(this),
       handler_(new SetAsDefaultBrowserHandler(
           response_delegate_ptr_factory_.GetWeakPtr())),
       dialog_interaction_result_(MAKE_CHROME_DEFAULT_DECLINED) {

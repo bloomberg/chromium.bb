@@ -58,7 +58,7 @@ bool GetProfilePathFromArgs(const ListValue* args,
 }  // namespace
 
 ManageProfileHandler::ManageProfileHandler()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+    : weak_factory_(this) {
 }
 
 ManageProfileHandler::~ManageProfileHandler() {

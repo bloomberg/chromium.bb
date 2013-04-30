@@ -108,12 +108,12 @@ RecentTabsSubMenuModel::RecentTabsSubMenuModel(
     ui::AcceleratorProvider* accelerator_provider,
     Browser* browser,
     browser_sync::SessionModelAssociator* associator)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
+    : ui::SimpleMenuModel(this),
       browser_(browser),
       associator_(associator),
       default_favicon_(ResourceBundle::GetSharedInstance().
           GetNativeImageNamed(IDR_DEFAULT_FAVICON)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   Build();
 
   // Retrieve accelerator key for IDC_RESTORE_TAB now, because on ASH, it's not

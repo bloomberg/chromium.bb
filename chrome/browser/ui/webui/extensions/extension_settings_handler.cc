@@ -96,10 +96,10 @@ ExtensionSettingsHandler::ExtensionSettingsHandler()
       ignore_notifications_(false),
       deleting_rvh_(NULL),
       registered_for_notifications_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(rvh_created_callback_(
+      rvh_created_callback_(
           base::Bind(&ExtensionSettingsHandler::RenderViewHostCreated,
-                     base::Unretained(this)))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(warning_service_observer_(this)) {
+                     base::Unretained(this))),
+      warning_service_observer_(this) {
 }
 
 ExtensionSettingsHandler::~ExtensionSettingsHandler() {
@@ -118,7 +118,7 @@ ExtensionSettingsHandler::ExtensionSettingsHandler(ExtensionService* service,
       ignore_notifications_(false),
       deleting_rvh_(NULL),
       registered_for_notifications_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(warning_service_observer_(this)) {
+      warning_service_observer_(this) {
 }
 
 // static

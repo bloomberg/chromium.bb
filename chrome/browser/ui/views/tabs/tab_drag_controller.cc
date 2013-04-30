@@ -248,7 +248,7 @@ class TabDragController::DockDisplayer : public ui::AnimationDelegate {
       : controller_(controller),
         popup_(NULL),
         popup_view_(NULL),
-        ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)),
+        animation_(this),
         hidden_(false),
         in_enable_area_(info.in_enable_area()) {
     popup_ = new views::Widget;

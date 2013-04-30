@@ -102,7 +102,7 @@ class NaClDOMHandler : public WebUIMessageHandler {
 };
 
 NaClDOMHandler::NaClDOMHandler()
-    : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+    : weak_ptr_factory_(this),
       page_has_requested_data_(false),
       has_plugin_info_(false) {
   PluginService::GetInstance()->GetPlugins(base::Bind(

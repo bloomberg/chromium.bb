@@ -44,7 +44,7 @@ using content::UserMetricsAction;
 
 BrowserInstantController::BrowserInstantController(Browser* browser)
     : browser_(browser),
-      instant_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
+      instant_(this,
                chrome::IsInstantExtendedAPIEnabled()),
       instant_unload_handler_(browser),
       initialized_theme_info_(false) {

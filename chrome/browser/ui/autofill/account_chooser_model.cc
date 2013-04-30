@@ -29,7 +29,7 @@ AccountChooserModel::AccountChooserModel(
     PrefService* prefs,
     const AutofillMetrics& metric_logger,
     DialogType dialog_type)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
+    : ui::SimpleMenuModel(this),
       delegate_(delegate),
       checked_item_(
           prefs->GetBoolean(::prefs::kAutofillDialogPayWithoutWallet) ?

@@ -85,7 +85,7 @@ ExtensionInfoBar::ExtensionInfoBar(Browser* browser,
       infobar_icon_(NULL),
       icon_as_menu_(NULL),
       icon_as_image_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   delegate->set_observer(this);
 
   int height = delegate->height();

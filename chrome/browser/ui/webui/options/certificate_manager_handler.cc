@@ -265,7 +265,7 @@ void FileAccessProvider::DoWrite(const base::FilePath& path,
 CertificateManagerHandler::CertificateManagerHandler()
     : use_hardware_backed_(false),
       file_access_provider_(new FileAccessProvider()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      weak_ptr_factory_(this),
       cert_id_map_(new CertIdMap) {
   certificate_manager_model_.reset(new CertificateManagerModel(this));
 }

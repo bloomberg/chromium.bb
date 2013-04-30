@@ -123,7 +123,7 @@ NativeAppWindowViews::NativeAppWindowViews(
       minimum_size_(create_params.minimum_size),
       maximum_size_(create_params.maximum_size),
       resizable_(create_params.resizable),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   Observe(web_contents());
 
   window_ = new views::Widget;

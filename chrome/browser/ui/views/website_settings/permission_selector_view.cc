@@ -86,8 +86,7 @@ class PermissionMenuButton : public views::MenuButton,
 PermissionMenuButton::PermissionMenuButton(const string16& text,
                                            PermissionMenuModel* model,
                                            bool show_menu_marker)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(MenuButton(NULL, text, this,
-                                                show_menu_marker)),
+    : MenuButton(NULL, text, this, show_menu_marker),
       menu_model_(model) {
   SetEnabledColor(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_LabelEnabledColor));

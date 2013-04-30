@@ -338,7 +338,7 @@ ImmersiveModeControllerAsh::ImmersiveModeControllerAsh()
       revealed_lock_count_(0),
       tab_indicator_visibility_(TAB_INDICATORS_HIDE),
       native_window_(NULL),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(this) {
 }
 
 ImmersiveModeControllerAsh::~ImmersiveModeControllerAsh() {

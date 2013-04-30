@@ -331,9 +331,7 @@ Browser::Browser(const CreateParams& params)
     : type_(params.type),
       profile_(params.profile),
       window_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          tab_strip_model_delegate_(
-            new chrome::BrowserTabStripModelDelegate(this))),
+      tab_strip_model_delegate_(new chrome::BrowserTabStripModelDelegate(this)),
       tab_strip_model_(new TabStripModel(tab_strip_model_delegate_.get(),
                                          params.profile)),
       app_name_(params.app_name),
@@ -344,25 +342,16 @@ Browser::Browser(const CreateParams& params)
       initial_show_state_(params.initial_show_state),
       is_session_restore_(params.is_session_restore),
       host_desktop_type_(params.host_desktop_type),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          unload_controller_(new chrome::UnloadController(this))),
+      unload_controller_(new chrome::UnloadController(this)),
       weak_factory_(this),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          content_setting_bubble_model_delegate_(
-              new BrowserContentSettingBubbleModelDelegate(this))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          toolbar_model_delegate_(
-              new BrowserToolbarModelDelegate(this))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          tab_restore_service_delegate_(
-              new BrowserTabRestoreServiceDelegate(this))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          synced_window_delegate_(
-              new BrowserSyncedWindowDelegate(this))),
+      content_setting_bubble_model_delegate_(
+          new BrowserContentSettingBubbleModelDelegate(this)),
+      toolbar_model_delegate_(new BrowserToolbarModelDelegate(this)),
+      tab_restore_service_delegate_(new BrowserTabRestoreServiceDelegate(this)),
+      synced_window_delegate_(new BrowserSyncedWindowDelegate(this)),
       bookmark_bar_state_(BookmarkBar::HIDDEN),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          command_controller_(new chrome::BrowserCommandController(
-              this, g_browser_process->profile_manager()))),
+      command_controller_(new chrome::BrowserCommandController(
+          this, g_browser_process->profile_manager())),
       window_has_shown_(false) {
   if (!app_name_.empty())
     chrome::RegisterAppPrefs(app_name_, profile_);

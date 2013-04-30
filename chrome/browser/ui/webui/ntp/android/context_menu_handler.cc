@@ -15,7 +15,7 @@
 #include "content/public/common/page_transition_types.h"
 
 ContextMenuHandler::ContextMenuHandler()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+    : weak_ptr_factory_(this) {
 }
 
 ContextMenuHandler::~ContextMenuHandler() {

@@ -594,7 +594,7 @@ TabStrip::TabStrip(TabStripController* controller)
       available_width_for_tabs_(-1),
       in_tab_close_(false),
       animation_container_(new ui::AnimationContainer()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(bounds_animator_(this)),
+      bounds_animator_(this),
       layout_type_(TAB_STRIP_LAYOUT_SHRINK),
       adjust_layout_(false),
       reset_to_shrink_on_exit_(false),

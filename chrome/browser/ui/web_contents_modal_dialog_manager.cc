@@ -104,8 +104,7 @@ WebContentsModalDialogManager::WebContentsModalDialogManager(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       delegate_(NULL),
-      native_manager_(
-          ALLOW_THIS_IN_INITIALIZER_LIST(CreateNativeManager(this))),
+      native_manager_(CreateNativeManager(this)),
       closing_all_dialogs_(false) {
   DCHECK(native_manager_);
   registrar_.Add(this,

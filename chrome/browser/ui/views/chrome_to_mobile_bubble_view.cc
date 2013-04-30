@@ -295,7 +295,7 @@ void ChromeToMobileBubbleView::Init() {
 ChromeToMobileBubbleView::ChromeToMobileBubbleView(views::View* anchor_view,
                                                    Browser* browser)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      weak_ptr_factory_(this),
       browser_(browser),
       service_(ChromeToMobileServiceFactory::GetForProfile(browser->profile())),
       send_copy_(NULL),

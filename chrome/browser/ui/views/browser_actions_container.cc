@@ -69,8 +69,8 @@ BrowserActionsContainer::BrowserActionsContainer(Browser* browser,
       resize_amount_(0),
       animation_target_size_(0),
       drop_indicator_position_(-1),
-      ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(show_menu_task_factory_(this)) {
+      task_factory_(this),
+      show_menu_task_factory_(this) {
   set_id(VIEW_ID_BROWSER_ACTION_TOOLBAR);
 
   ExtensionService* service =

@@ -42,7 +42,7 @@ InstantOverlay* InstantOverlay::FromWebContents(
 InstantOverlay::InstantOverlay(InstantController* controller,
                                const std::string& instant_url)
     : InstantPage(controller),
-      loader_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      loader_(this),
       instant_url_(instant_url),
       is_stale_(false),
       is_pointer_down_from_activate_(false) {

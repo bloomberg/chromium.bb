@@ -216,9 +216,9 @@ bool IsDownloadDisplayable(const content::DownloadItem& item) {
 
 DownloadsDOMHandler::DownloadsDOMHandler(content::DownloadManager* dlm)
     : search_text_(),
-      ALLOW_THIS_IN_INITIALIZER_LIST(main_notifier_(dlm, this)),
+      main_notifier_(dlm, this),
       update_scheduled_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   // Create our fileicon data source.
   Profile* profile = Profile::FromBrowserContext(dlm->GetBrowserContext());
   content::URLDataSource::Add(profile, new FileIconSource());

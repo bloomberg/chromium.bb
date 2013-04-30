@@ -221,7 +221,7 @@ bool GrabWindowSnapshot(aura::Window* window,
 }  // namespace
 
 ScreenshotTaker::ScreenshotTaker()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(factory_(this)),
+    : factory_(this),
       profile_for_test_(NULL) {
 }
 

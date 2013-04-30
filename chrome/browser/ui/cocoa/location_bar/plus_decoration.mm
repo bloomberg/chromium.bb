@@ -26,7 +26,7 @@ PlusDecoration::PlusDecoration(LocationBarViewMac* owner,
                                Browser* browser)
     : owner_(owner),
       browser_(browser),
-      ALLOW_THIS_IN_INITIALIZER_LIST(controller_(browser, this)) {
+      controller_(browser, this) {
   SetVisible(true);
   ResetIcon();
 }

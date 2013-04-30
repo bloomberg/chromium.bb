@@ -39,12 +39,11 @@ BookmarkContextMenu::BookmarkContextMenu(
     const BookmarkNode* parent,
     const std::vector<const BookmarkNode*>& selection,
     bool close_on_remove)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(
-          controller_(new BookmarkContextMenuController(
-              parent_widget ? parent_widget->GetNativeWindow() : NULL, this,
-              browser, profile, page_navigator, parent, selection))),
+    : controller_(new BookmarkContextMenuController(
+          parent_widget ? parent_widget->GetNativeWindow() : NULL, this,
+          browser, profile, page_navigator, parent, selection)),
       parent_widget_(parent_widget),
-      ALLOW_THIS_IN_INITIALIZER_LIST(menu_(new views::MenuItemView(this))),
+      menu_(new views::MenuItemView(this)),
       menu_runner_(new views::MenuRunner(menu_)),
       parent_node_(parent),
       observer_(NULL),

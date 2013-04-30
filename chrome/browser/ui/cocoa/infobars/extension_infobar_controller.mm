@@ -59,7 +59,7 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver {
   explicit InfobarBridge(ExtensionInfoBarController* owner)
       : owner_(owner),
         delegate_([owner delegate]->AsExtensionInfoBarDelegate()),
-        ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+        weak_ptr_factory_(this) {
     delegate_->set_observer(this);
     LoadIcon();
   }

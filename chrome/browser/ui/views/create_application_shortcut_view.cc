@@ -510,7 +510,7 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
     const extensions::Extension* app) :
       CreateApplicationShortcutView(profile),
       app_(app),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   // Required by InitControls().
   shortcut_info_.title = UTF8ToUTF16(app->name());
   shortcut_info_.description = UTF8ToUTF16(app->description());

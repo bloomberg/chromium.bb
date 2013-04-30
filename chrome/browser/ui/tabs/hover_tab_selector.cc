@@ -13,7 +13,7 @@ HoverTabSelector::HoverTabSelector(
     TabStripModel* tab_strip_model)
     : tab_strip_model_(tab_strip_model),
       tab_transition_tab_index_(-1),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   DCHECK(tab_strip_model_);
 }
 

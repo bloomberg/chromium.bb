@@ -96,7 +96,7 @@ string16 GetUpgradeDialogMenuItemName() {
 // EncodingMenuModel
 
 EncodingMenuModel::EncodingMenuModel(Browser* browser)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
+    : ui::SimpleMenuModel(this),
       browser_(browser) {
   Build();
 }
@@ -239,7 +239,7 @@ void ToolsMenuModel::Build(Browser* browser) {
 WrenchMenuModel::WrenchMenuModel(ui::AcceleratorProvider* provider,
                                  Browser* browser,
                                  bool is_new_menu)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
+    : ui::SimpleMenuModel(this),
       provider_(provider),
       browser_(browser),
       tab_strip_model_(browser_->tab_strip_model()),
@@ -470,7 +470,7 @@ void WrenchMenuModel::Observe(int type,
 
 // For testing.
 WrenchMenuModel::WrenchMenuModel()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
+    : ui::SimpleMenuModel(this),
       provider_(NULL),
       browser_(NULL),
       tab_strip_model_(NULL) {

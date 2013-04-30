@@ -90,7 +90,7 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
       location_bar_(location_bar),
       font_(font.DeriveFont(kEditFontAdjust)),
       ignore_mouse_drag_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(size_animation_(this)) {
+      size_animation_(this) {
   bubble_border_ = new views::BubbleBorder(views::BubbleBorder::NONE,
       views::BubbleBorder::NO_SHADOW, SK_ColorWHITE);
   set_border(const_cast<views::BubbleBorder*>(bubble_border_));

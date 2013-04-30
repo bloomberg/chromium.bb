@@ -25,7 +25,7 @@ SuggestionsMenuModelDelegate::~SuggestionsMenuModelDelegate() {}
 
 SuggestionsMenuModel::SuggestionsMenuModel(
     SuggestionsMenuModelDelegate* delegate)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
+    : ui::SimpleMenuModel(this),
       delegate_(delegate),
       checked_item_(0) {}
 

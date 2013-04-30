@@ -39,7 +39,7 @@ const int kReloadMenuItems[]  = {
 
 ReloadButton::ReloadButton(LocationBarView* location_bar,
                            CommandUpdater* command_updater)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(ButtonDropDown(this, CreateMenuModel())),
+    : ButtonDropDown(this, CreateMenuModel()),
       location_bar_(location_bar),
       command_updater_(command_updater),
       intended_mode_(MODE_RELOAD),

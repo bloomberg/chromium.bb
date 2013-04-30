@@ -113,7 +113,7 @@ Value* g_build_date_string = NULL;
 
 HelpHandler::HelpHandler()
     : version_updater_(VersionUpdater::Create()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 HelpHandler::~HelpHandler() {

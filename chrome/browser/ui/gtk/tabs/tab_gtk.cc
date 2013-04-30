@@ -66,8 +66,8 @@ TabGtk::TabGtk(TabDelegate* delegate)
       last_mouse_down_(NULL),
       drag_widget_(NULL),
       title_width_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(destroy_factory_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(drag_end_factory_(this)) {
+      destroy_factory_(this),
+      drag_end_factory_(this) {
   event_box_ = gtk_input_event_box_new();
   g_signal_connect(event_box_, "button-press-event",
                    G_CALLBACK(OnButtonPressEventThunk), this);

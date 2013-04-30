@@ -77,7 +77,7 @@ ProfileSyncService* GetProfileSyncService(Profile* profile) {
 
 SyncInternalsUI::SyncInternalsUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(this) {
   // TODO(akalin): Fix.
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, CreateSyncInternalsHTMLSource());

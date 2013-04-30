@@ -89,7 +89,7 @@ AutolaunchInfoBarDelegate::AutolaunchInfoBarDelegate(
       prefs_(prefs),
       should_expire_(false),
       profile_(profile),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   int count = prefs_->GetInteger(prefs::kShownAutoLaunchInfobar);
   prefs_->SetInteger(prefs::kShownAutoLaunchInfobar, count + 1);
 

@@ -174,7 +174,7 @@ void FlagsDOMHandler::HandleResetAllFlags(const ListValue* args) {
 
 FlagsUI::FlagsUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   Profile* profile = Profile::FromWebUI(web_ui);
 
 #if defined(OS_CHROMEOS)

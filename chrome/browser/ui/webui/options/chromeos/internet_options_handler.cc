@@ -593,7 +593,7 @@ int FindCurrentCarrierIndex(const base::ListValue* carriers,
 namespace options {
 
 InternetOptionsHandler::InternetOptionsHandler()
-  : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+  : weak_factory_(this) {
   registrar_.Add(this, chrome::NOTIFICATION_REQUIRE_PIN_SETTING_CHANGE_ENDED,
       content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_ENTER_PIN_ENDED,

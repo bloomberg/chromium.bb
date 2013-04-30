@@ -42,7 +42,7 @@ ShellWindowLauncherItemController::ShellWindowLauncherItemController(
     : LauncherItemController(type, app_id, controller),
       last_active_shell_window_(NULL),
       app_launcher_id_(app_launcher_id),
-      ALLOW_THIS_IN_INITIALIZER_LIST(observed_windows_(this)) {
+      observed_windows_(this) {
 }
 
 ShellWindowLauncherItemController::~ShellWindowLauncherItemController() {

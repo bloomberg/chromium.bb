@@ -1804,10 +1804,10 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
       window_(NULL),
       accel_group_(NULL),
       preview_enabled_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(scoped_icon_animation_observer_(
+      scoped_icon_animation_observer_(
           page_action->GetIconAnimation(
               SessionID::IdForTab(owner->GetWebContents())),
-          this)) {
+          this) {
   event_box_.Own(gtk_event_box_new());
   gtk_widget_set_size_request(event_box_.get(),
                               extensions::IconsInfo::kPageActionIconMaxSize,

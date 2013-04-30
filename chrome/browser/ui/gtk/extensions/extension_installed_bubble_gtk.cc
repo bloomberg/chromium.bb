@@ -80,7 +80,7 @@ ExtensionInstalledBubbleGtk::ExtensionInstalledBubbleGtk(
       icon_(icon),
       animation_wait_retries_(kAnimationWaitRetries),
       bubble_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   extensions::ExtensionActionManager* extension_action_manager =
       ExtensionActionManager::Get(browser_->profile());
 

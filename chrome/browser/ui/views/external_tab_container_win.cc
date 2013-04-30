@@ -165,9 +165,9 @@ ExternalTabContainerWin::ExternalTabContainerWin(
     AutomationResourceMessageFilter* filter)
     : widget_(NULL),
       automation_(automation),
-      ALLOW_THIS_IN_INITIALIZER_LIST(rvh_callback_(base::Bind(
+      rvh_callback_(base::Bind(
           &ExternalTabContainerWin::RegisterRenderViewHostForAutomation,
-          base::Unretained(this), false))),
+          base::Unretained(this), false)),
       tab_contents_container_(NULL),
       tab_handle_(0),
       ignore_next_load_notification_(false),
@@ -175,7 +175,7 @@ ExternalTabContainerWin::ExternalTabContainerWin(
       load_requests_via_automation_(false),
       handle_top_level_requests_(false),
       route_all_top_level_navigations_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       pending_(false),
       focus_manager_(NULL),
       external_tab_view_(NULL),

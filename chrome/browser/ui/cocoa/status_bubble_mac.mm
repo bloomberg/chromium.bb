@@ -98,8 +98,8 @@ const CGFloat kExpansionDuration = 0.125;
 @end
 
 StatusBubbleMac::StatusBubbleMac(NSWindow* parent, id delegate)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(timer_factory_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(expand_timer_factory_(this)),
+    : timer_factory_(this),
+      expand_timer_factory_(this),
       parent_(parent),
       delegate_(delegate),
       window_(nil),

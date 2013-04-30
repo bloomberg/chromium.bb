@@ -30,7 +30,7 @@ class FaviconBitmapHandler : public content::WebContentsObserver {
       : content::WebContentsObserver(web_contents),
         delegate_(delegate),
         web_contents_(web_contents),
-        ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+        weak_ptr_factory_(this) {
   }
 
   virtual ~FaviconBitmapHandler() {}

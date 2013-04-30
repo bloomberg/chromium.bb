@@ -92,8 +92,8 @@ class SwitchToMetroUIHandler
     : public ShellIntegration::DefaultWebClientObserver {
  public:
   SwitchToMetroUIHandler()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(default_browser_worker_(
-            new ShellIntegration::DefaultBrowserWorker(this))),
+      : default_browser_worker_(
+            new ShellIntegration::DefaultBrowserWorker(this)),
         first_check_(true) {
     default_browser_worker_->StartCheckIsDefault();
   }
@@ -157,7 +157,7 @@ BrowserCommandController::BrowserCommandController(
     ProfileManager* profile_manager)
     : browser_(browser),
       profile_manager_(profile_manager),
-      ALLOW_THIS_IN_INITIALIZER_LIST(command_updater_(this)),
+      command_updater_(this),
       block_command_execution_(false),
       last_blocked_command_id_(-1),
       last_blocked_command_disposition_(CURRENT_TAB) {

@@ -96,7 +96,7 @@ GlobalHistoryMenu::GlobalHistoryMenu(Browser* browser)
     : browser_(browser),
       profile_(browser_->profile()),
       top_sites_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      weak_ptr_factory_(this),
       tab_restore_service_(NULL) {
 }
 

@@ -80,10 +80,10 @@ class StatusBubbleViews::StatusView : public views::Label,
   StatusView(StatusBubble* status_bubble,
              views::Widget* popup,
              ui::ThemeProvider* theme_provider)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(ui::LinearAnimation(kFramerate, this)),
+      : ui::LinearAnimation(kFramerate, this),
         stage_(BUBBLE_HIDDEN),
         style_(STYLE_STANDARD),
-        ALLOW_THIS_IN_INITIALIZER_LIST(timer_factory_(this)),
+        timer_factory_(this),
         status_bubble_(status_bubble),
         popup_(popup),
         opacity_start_(0),
@@ -470,7 +470,7 @@ class StatusBubbleViews::StatusViewExpander : public ui::LinearAnimation,
  public:
   StatusViewExpander(StatusBubbleViews* status_bubble,
                      StatusView* status_view)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(ui::LinearAnimation(kFramerate, this)),
+      : ui::LinearAnimation(kFramerate, this),
         status_bubble_(status_bubble),
         status_view_(status_view),
         expansion_start_(0),
@@ -554,7 +554,7 @@ StatusBubbleViews::StatusBubbleViews(views::View* base_view)
       view_(NULL),
       download_shelf_is_visible_(false),
       is_expanded_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(expand_timer_factory_(this)) {
+      expand_timer_factory_(this) {
   expand_view_.reset();
 }
 

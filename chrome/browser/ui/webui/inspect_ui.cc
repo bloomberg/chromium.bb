@@ -361,7 +361,7 @@ class InspectUI::WorkerCreationDestructionListener
 InspectUI::InspectUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
       observer_(new WorkerCreationDestructionListener(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   Profile* profile = Profile::FromWebUI(web_ui);
   adb_bridge_.reset(new DevToolsAdbBridge(profile));
   web_ui->AddMessageHandler(new InspectMessageHandler(adb_bridge_.get()));

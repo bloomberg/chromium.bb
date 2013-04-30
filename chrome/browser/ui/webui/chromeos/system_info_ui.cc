@@ -99,7 +99,7 @@ class SystemInfoHandler : public WebUIMessageHandler,
 
 SystemInfoUIHTMLSource::SystemInfoUIHTMLSource()
     : response_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
 }
 
 std::string SystemInfoUIHTMLSource::GetSource() const {

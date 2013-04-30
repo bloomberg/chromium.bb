@@ -540,7 +540,7 @@ ExtensionInstalledBubble::ExtensionInstalledBubble(const Extension* extension,
       browser_(browser),
       icon_(icon),
       animation_wait_retries_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   extensions::ExtensionActionManager* extension_action_manager =
       extensions::ExtensionActionManager::Get(browser_->profile());
   if (!extensions::OmniboxInfo::GetKeyword(extension).empty())

@@ -56,8 +56,8 @@ RenderViewContextMenuMac::RenderViewContextMenuMac(
     const content::ContextMenuParams& params,
     NSView* parent_view)
     : RenderViewContextMenu(web_contents, params),
-      ALLOW_THIS_IN_INITIALIZER_LIST(speech_submenu_model_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(bidi_submenu_model_(this)),
+      speech_submenu_model_(this),
+      bidi_submenu_model_(this),
       parent_view_(parent_view) {
 }
 

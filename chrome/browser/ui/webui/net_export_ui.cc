@@ -96,7 +96,7 @@ class NetExportMessageHandler
 
 NetExportMessageHandler::NetExportMessageHandler()
     : net_log_temp_file_(g_browser_process->net_log()->net_log_temp_file()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
 }
 
 NetExportMessageHandler::~NetExportMessageHandler() {

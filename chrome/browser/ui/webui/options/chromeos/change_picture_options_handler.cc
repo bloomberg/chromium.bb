@@ -75,7 +75,7 @@ const char kProfileDownloadReason[] = "Preferences";
 ChangePictureOptionsHandler::ChangePictureOptionsHandler()
     : previous_image_url_(chrome::kAboutBlankURL),
       previous_image_index_(User::kInvalidImageIndex),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
       content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,

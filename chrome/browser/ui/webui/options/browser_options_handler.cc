@@ -141,7 +141,7 @@ bool ShouldShowMultiProfilesUserList() {
 BrowserOptionsHandler::BrowserOptionsHandler()
     : page_initialized_(false),
       template_url_service_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
 #if !defined(OS_MACOSX)
   default_browser_worker_ = new ShellIntegration::DefaultBrowserWorker(this);
 #endif

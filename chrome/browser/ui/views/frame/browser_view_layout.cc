@@ -113,8 +113,7 @@ BrowserViewLayout::BrowserViewLayout()
       contents_split_(NULL),
       contents_container_(NULL),
       download_shelf_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          dialog_host_(new WebContentsModalDialogHostViews(this))),
+      dialog_host_(new WebContentsModalDialogHostViews(this)),
       web_contents_modal_dialog_top_y_(-1) {
 }
 

@@ -8,7 +8,7 @@
 
 LauncherApplicationMenuItemModel::LauncherApplicationMenuItemModel(
     ChromeLauncherAppMenuItems item_list)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(ash::LauncherMenuModel(this)),
+    : ash::LauncherMenuModel(this),
       launcher_items_(item_list.Pass()) {
   Build();
 }

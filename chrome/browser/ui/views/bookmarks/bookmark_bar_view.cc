@@ -473,7 +473,7 @@ BookmarkBarView::BookmarkBarView(Browser* browser, BrowserView* browser_view)
       bookmark_drop_menu_(NULL),
       other_bookmarked_button_(NULL),
       apps_page_shortcut_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(show_folder_method_factory_(this)),
+      show_folder_method_factory_(this),
       overflow_button_(NULL),
       instructions_(NULL),
       bookmarks_separator_view_(NULL),

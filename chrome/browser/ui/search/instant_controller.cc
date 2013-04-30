@@ -249,7 +249,7 @@ InstantController::InstantController(BrowserInstantController* browser,
       extended_enabled_(extended_enabled),
       instant_enabled_(false),
       use_local_page_only_(true),
-      model_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      model_(this),
       last_omnibox_text_has_inline_autocompletion_(false),
       last_verbatim_(false),
       last_transition_type_(content::PAGE_TRANSITION_LINK),
@@ -257,7 +257,7 @@ InstantController::InstantController(BrowserInstantController* browser,
       omnibox_focus_state_(OMNIBOX_FOCUS_NONE),
       omnibox_bounds_(-1, -1, 0, 0),
       allow_overlay_to_show_search_suggestions_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
 
   // When the InstantController lives, the InstantService should live.
   // InstantService sets up profile-level facilities such as the ThemeSource for

@@ -59,7 +59,7 @@ ScriptBubbleGtk::ScriptBubbleGtk(GtkWidget* anchor, WebContents* web_contents)
     : anchor_(anchor),
       web_contents_(web_contents),
       profile_(Profile::FromBrowserContext(web_contents_->GetBrowserContext())),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   BuildBubble();
 }
 

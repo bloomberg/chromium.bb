@@ -803,7 +803,7 @@ Panel::Panel(Profile* profile, const std::string& app_name,
       attention_mode_(USE_PANEL_ATTENTION),
       expansion_state_(EXPANDED),
       command_updater_(this),
-      ALLOW_THIS_IN_INITIALIZER_LIST(image_loader_ptr_factory_(this)) {
+      image_loader_ptr_factory_(this) {
 }
 
 void Panel::OnImageLoaded(const gfx::Image& image) {

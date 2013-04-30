@@ -9,7 +9,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 LocationIconView::LocationIconView(LocationBarView* location_bar)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(page_info_helper_(this, location_bar)) {
+    : page_info_helper_(this, location_bar) {
   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_LOCATION_ICON));
   TouchableLocationBarView::Init(this);
 }

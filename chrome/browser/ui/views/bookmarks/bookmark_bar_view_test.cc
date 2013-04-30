@@ -452,8 +452,7 @@ class ContextMenuNotificationObserver : public content::NotificationObserver {
 class BookmarkBarViewTest4 : public BookmarkBarViewEventTestBase {
  public:
   BookmarkBarViewTest4()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(
-          observer_(CreateEventTask(this, &BookmarkBarViewTest4::Step3))) {
+      : observer_(CreateEventTask(this, &BookmarkBarViewTest4::Step3)) {
   }
 
  protected:
@@ -1007,8 +1006,7 @@ VIEW_TEST(BookmarkBarViewTest10, KeyEvents)
 class BookmarkBarViewTest11 : public BookmarkBarViewEventTestBase {
  public:
   BookmarkBarViewTest11()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(
-          observer_(CreateEventTask(this, &BookmarkBarViewTest11::Step3))) {
+      : observer_(CreateEventTask(this, &BookmarkBarViewTest11::Step3)) {
   }
 
  protected:
@@ -1165,8 +1163,7 @@ VIEW_TEST(BookmarkBarViewTest12, CloseWithModalDialog)
 class BookmarkBarViewTest13 : public BookmarkBarViewEventTestBase {
  public:
   BookmarkBarViewTest13()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(
-          observer_(CreateEventTask(this, &BookmarkBarViewTest13::Step3))) {
+      : observer_(CreateEventTask(this, &BookmarkBarViewTest13::Step3)) {
   }
 
  protected:
@@ -1250,8 +1247,7 @@ VIEW_TEST(BookmarkBarViewTest13, ClickOnContextMenuSeparator)
 class BookmarkBarViewTest14 : public BookmarkBarViewEventTestBase {
  public:
   BookmarkBarViewTest14()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(
-          observer_(CreateEventTask(this, &BookmarkBarViewTest14::Step2))) {
+      : observer_(CreateEventTask(this, &BookmarkBarViewTest14::Step2)) {
   }
 
  protected:
@@ -1291,8 +1287,7 @@ class BookmarkBarViewTest15 : public BookmarkBarViewEventTestBase {
  public:
   BookmarkBarViewTest15()
       : deleted_menu_id_(0),
-        ALLOW_THIS_IN_INITIALIZER_LIST(
-            observer_(CreateEventTask(this, &BookmarkBarViewTest15::Step3))) {
+        observer_(CreateEventTask(this, &BookmarkBarViewTest15::Step3)) {
   }
 
  protected:
@@ -1403,8 +1398,7 @@ VIEW_TEST(BookmarkBarViewTest16, DeleteMenu)
 class BookmarkBarViewTest17 : public BookmarkBarViewEventTestBase {
  public:
   BookmarkBarViewTest17()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(
-          observer_(CreateEventTask(this, &BookmarkBarViewTest17::Step3))) {
+      : observer_(CreateEventTask(this, &BookmarkBarViewTest17::Step3)) {
   }
 
  protected:
@@ -1714,8 +1708,7 @@ VIEW_TEST(BookmarkBarViewTest20, ContextMenuExitTest)
 class BookmarkBarViewTest21 : public BookmarkBarViewEventTestBase {
  public:
   BookmarkBarViewTest21()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(
-          observer_(CreateEventTask(this, &BookmarkBarViewTest21::Step3))) {
+      : observer_(CreateEventTask(this, &BookmarkBarViewTest21::Step3)) {
   }
 
  protected:

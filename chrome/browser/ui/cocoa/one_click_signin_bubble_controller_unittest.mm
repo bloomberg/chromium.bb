@@ -25,7 +25,7 @@ using ::testing::_;
 class OneClickSigninBubbleControllerTest : public CocoaProfileTest {
  public:
   OneClickSigninBubbleControllerTest()
-      : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      : weak_ptr_factory_(this),
         start_sync_callback_(
             base::Bind(&OneClickSigninBubbleControllerTest::OnStartSync,
                        weak_ptr_factory_.GetWeakPtr())) {}

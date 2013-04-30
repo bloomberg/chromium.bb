@@ -103,7 +103,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download_item,
     dangerous_download_label_sized_(false),
     disabled_while_opening_(false),
     creation_time_(base::Time::Now()),
-    ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+    weak_ptr_factory_(this) {
   DCHECK(download());
   download()->AddObserver(this);
   set_context_menu_controller(this);

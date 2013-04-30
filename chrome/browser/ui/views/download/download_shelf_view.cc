@@ -97,9 +97,8 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
       show_all_view_(NULL),
       close_button_(NULL),
       parent_(parent),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          mouse_watcher_(new views::MouseWatcherViewHost(this, gfx::Insets()),
-                         this)) {
+      mouse_watcher_(new views::MouseWatcherViewHost(this, gfx::Insets()),
+                     this) {
   mouse_watcher_.set_notify_on_exit_time(
       base::TimeDelta::FromMilliseconds(kNotifyOnExitTimeMS));
   set_id(VIEW_ID_DOWNLOAD_SHELF);

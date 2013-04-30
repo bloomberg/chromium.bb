@@ -63,8 +63,7 @@ const SkColor kFrameColorAppPanelInactive = SK_ColorWHITE;
 AppPanelBrowserFrameView::AppPanelBrowserFrameView(BrowserFrame* frame,
                                                    BrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          close_button_(new views::ImageButton(this))),
+      close_button_(new views::ImageButton(this)),
       window_icon_(NULL) {
   DCHECK(browser_view->ShouldShowWindowIcon());
   DCHECK(browser_view->ShouldShowWindowTitle());

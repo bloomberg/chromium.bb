@@ -675,7 +675,7 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogController* controller)
       footnote_view_(NULL),
       legal_document_view_(NULL),
       focus_manager_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(observer_(this)) {
+      observer_(this) {
   DCHECK(controller);
   detail_groups_.insert(std::make_pair(SECTION_EMAIL,
                                        DetailsGroup(SECTION_EMAIL)));

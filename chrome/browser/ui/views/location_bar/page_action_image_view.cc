@@ -43,10 +43,10 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
       current_tab_id_(-1),
       preview_enabled_(false),
       popup_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(scoped_icon_animation_observer_(
+      scoped_icon_animation_observer_(
           page_action->GetIconAnimation(
               SessionID::IdForTab(owner->GetWebContents())),
-          this)) {
+          this) {
   const Extension* extension = owner_->profile()->GetExtensionService()->
       GetExtensionById(page_action->extension_id(), false);
   DCHECK(extension);

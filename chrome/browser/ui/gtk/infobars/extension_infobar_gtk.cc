@@ -40,7 +40,7 @@ ExtensionInfoBarGtk::ExtensionInfoBarGtk(InfoBarService* owner,
       button_(NULL),
       icon_(NULL),
       alignment_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   delegate->set_observer(this);
 
   int height = delegate->height();

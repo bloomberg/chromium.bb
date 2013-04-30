@@ -98,7 +98,7 @@ KeystonePromotionInfoBarDelegate::KeystonePromotionInfoBarDelegate(
     : ConfirmInfoBarDelegate(infobar_service),
       prefs_(prefs),
       can_expire_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   const base::TimeDelta kCanExpireOnNavigationAfterDelay =
       base::TimeDelta::FromSeconds(8);
   MessageLoop::current()->PostDelayedTask(FROM_HERE,

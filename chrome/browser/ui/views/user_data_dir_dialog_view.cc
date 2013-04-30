@@ -16,9 +16,8 @@
 
 UserDataDirDialogView::UserDataDirDialogView(
     const base::FilePath& user_data_dir)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(select_file_dialog_(
-        ui::SelectFileDialog::Create(this,
-                                     new ChromeSelectFilePolicy(NULL)))),
+    : select_file_dialog_(ui::SelectFileDialog::Create(
+          this, new ChromeSelectFilePolicy(NULL))),
       is_blocking_(true) {
   const int kDialogWidth = 400;
   views::MessageBoxView::InitParams params(

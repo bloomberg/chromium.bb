@@ -295,7 +295,7 @@ SigninScreenHandler::SigninScreenHandler(
       cookies_cleared_(false),
       network_state_informer_(network_state_informer),
       cookie_remover_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       webui_visible_(false),
       login_ui_active_(false),
       error_screen_actor_(error_screen_actor),

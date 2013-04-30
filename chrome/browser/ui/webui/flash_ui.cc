@@ -135,7 +135,7 @@ class FlashDOMHandler : public WebUIMessageHandler,
 };
 
 FlashDOMHandler::FlashDOMHandler()
-    : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+    : weak_ptr_factory_(this),
       crash_list_available_(false),
       page_has_requested_data_(false),
       has_gpu_info_(false),

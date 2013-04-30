@@ -97,7 +97,7 @@ ShellWindow::ShellWindow(Profile* profile,
     : profile_(profile),
       extension_(extension),
       window_type_(WINDOW_TYPE_DEFAULT),
-      ALLOW_THIS_IN_INITIALIZER_LIST(image_loader_ptr_factory_(this)),
+      image_loader_ptr_factory_(this),
       fullscreen_for_window_api_(false),
       fullscreen_for_tab_(false) {
 }

@@ -120,8 +120,7 @@ OmniboxResultView::OmniboxResultView(
       ellipsis_width_(font.GetStringWidth(string16(kEllipsis))),
       mirroring_context_(new MirroringContext()),
       keyword_icon_(new views::ImageView()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          animation_(new ui::SlideAnimation(this))) {
+      animation_(new ui::SlideAnimation(this)) {
   CHECK_GE(model_index, 0);
   if (default_icon_size_ == 0) {
     default_icon_size_ =

@@ -109,15 +109,13 @@ void BrowserActionView::PaintChildren(gfx::Canvas* canvas) {
 BrowserActionButton::BrowserActionButton(const Extension* extension,
                                          Browser* browser,
                                          BrowserActionView::Delegate* delegate)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(
-          MenuButton(this, string16(), NULL, false)),
+    : MenuButton(this, string16(), NULL, false),
       browser_(browser),
       browser_action_(
           extensions::ExtensionActionManager::Get(browser->profile())->
           GetBrowserAction(*extension)),
       extension_(extension),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          icon_factory_(browser->profile(), extension, browser_action_, this)),
+      icon_factory_(browser->profile(), extension, browser_action_, this),
       delegate_(delegate),
       context_menu_(NULL),
       called_registered_extension_command_(false) {
