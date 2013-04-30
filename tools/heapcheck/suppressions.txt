@@ -1873,10 +1873,3 @@
    fun:DiskCacheTestWithCache::InitCache
    fun:DiskCacheBackendTest_SimpleDoom*
 }
-{
-   bug_234754
-   Heapcheck:Leak
-   fun:MessageLoop
-   fun:MessageLoopForIO
-   fun:drive::internal::LocalReaderProxyTest_Read_Test::TestBody
-}
