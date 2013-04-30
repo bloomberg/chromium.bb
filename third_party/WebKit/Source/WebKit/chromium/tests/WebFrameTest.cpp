@@ -101,6 +101,10 @@ class FakeWebFrameClient : public WebFrameClient {
 
 class FakeCompositingWebViewClient : public WebViewClient {
 public:
+    virtual ~FakeCompositingWebViewClient()
+    {
+    }
+
     virtual void initializeLayerTreeView() OVERRIDE
     {
         m_layerTreeView = adoptPtr(Platform::current()->unitTestSupport()->createLayerTreeViewForTesting(WebUnitTestSupport::TestViewTypeUnitTest));
