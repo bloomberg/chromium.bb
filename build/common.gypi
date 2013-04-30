@@ -3545,13 +3545,19 @@
               ['_type=="shared_library" or _type=="loadable_module"', {
                 'ldflags': [
                   '-Wl,-shared,-Bsymbolic',
-                  # crtbegin_so.o should be the last item in ldflags.
-                  '<(android_ndk_lib)/crtbegin_so.o',
                 ],
-                'libraries': [
-                  # crtend_so.o needs to be the last item in libraries.
-                  # Do not add any libraries after this!
-                  '<(android_ndk_lib)/crtend_so.o',
+                'conditions': [
+                  ['android_webview_build==0', {
+                    'ldflags': [
+                      # crtbegin_so.o should be the last item in ldflags.
+                      '<(android_ndk_lib)/crtbegin_so.o',
+                    ],
+                    'libraries': [
+                      # crtend_so.o needs to be the last item in libraries.
+                      # Do not add any libraries after this!
+                      '<(android_ndk_lib)/crtend_so.o',
+                    ],
+                  }],
                 ],
               }],
             ],
