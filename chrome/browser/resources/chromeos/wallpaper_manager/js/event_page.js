@@ -29,46 +29,17 @@ SurpriseWallpaper.getInstance = function() {
  */
 SurpriseWallpaper.prototype.tryChangeWallpaper = function() {
   var self = this;
+  var onFailure = function() {
+    self.retryLater_();
+    self.fallbackToLocalRss_();
+  };
   // Try to fetch newest rss as document from server first. If any error occurs,
   // proceed with local copy of rss.
-  this.fetchURL_(Constants.WallpaperRssURL, 'document', function(xhr) {
-    self.saveToLocalStorage(Constants.AccessRssKey,
+  WallpaperUtil.fetchURL(Constants.WallpaperRssURL, 'document', function(xhr) {
+    WallpaperUtil.saveToLocalStorage(Constants.AccessRssKey,
         new XMLSerializer().serializeToString(xhr.responseXML));
     self.updateSurpriseWallpaper(xhr.responseXML);
-  }, this.fallbackToLocalRss_.bind(this));
-};
-
-/**
- * Downloads resources from url. Calls onSuccess and opt_onFailure accordingly.
- * @param {string} url The url address where we should fetch resources.
- * @param {string} type The response type of XMLHttprequest.
- * @param {function} onSuccess The success callback. It must be called with
- *     current XMLHttprequest object.
- * @param {function=} opt_onFailure The failure callback.
- * @private
- */
-SurpriseWallpaper.prototype.fetchURL_ = function(url, type, onSuccess,
-                                                 opt_onFailure) {
-  var xhr = new XMLHttpRequest();
-  var self = this;
-  try {
-    xhr.addEventListener('loadend', function(e) {
-      if (this.status == 200) {
-        onSuccess(this);
-      } else {
-        self.retryLater_();
-        if (opt_onFailure)
-          opt_onFailure();
-      }
-    });
-    xhr.open('GET', url, true);
-    xhr.responseType = type;
-    xhr.send(null);
-  } catch (e) {
-    this.retryLater_();
-    if (opt_onFailure)
-      opt_onFailure();
-  }
+  }, onFailure);
 };
 
 /**
@@ -99,17 +70,6 @@ SurpriseWallpaper.prototype.fallbackToLocalRss_ = function() {
 };
 
 /**
- * Saves value to local storage that associates with key.
- * @param {string} key The key that associates with value.
- * @param {string} value The value to save to local storage.
- */
-SurpriseWallpaper.prototype.saveToLocalStorage = function(key, value) {
-  var items = {};
-  items[key] = value;
-  Constants.WallpaperLocalStorage.set(items);
-};
-
-/**
  * Starts to change wallpaper. Called after rss is fetched.
  * @param {Document=} opt_rss The fetched rss document. If opt_rss is null, uses
  *     a random wallpaper.
@@ -131,9 +91,13 @@ SurpriseWallpaper.prototype.updateSurpriseWallpaper = function(opt_rss) {
       var regions = regionsString.split(', ');
       if (enableDate <= date && disableDate > date &&
           regions.indexOf(navigator.language) != -1) {
+        var self = this;
         this.setWallpaperFromRssItem_(item,
                                       function() {},
-                                      this.updateRandomWallpaper_.bind(this));
+                                      function() {
+                                        self.retryLater_();
+                                        self.updateRandomWallpaper_();
+                                      });
         return;
       }
     }
@@ -174,31 +138,12 @@ SurpriseWallpaper.prototype.setRandomWallpaper_ = function(dateString) {
       var index = Math.floor(Math.random() * manifest.wallpaper_list.length);
       var wallpaper = manifest.wallpaper_list[index];
       var wallpaperURL = wallpaper.base_url + Constants.HighResolutionSuffix;
-      chrome.wallpaperPrivate.setWallpaperIfExists(wallpaperURL,
-          wallpaper.default_layout,
-          Constants.WallpaperSourceEnum.Online,
-          function(exists) {
-        if (exists) {
-          self.saveToLocalStorage(
-              Constants.AccessLastSurpriseWallpaperChangedDate, dateString);
-          return;
-        }
-
-        self.fetchURL_(wallpaperURL, 'arraybuffer', function(xhr) {
-          if (xhr.response != null) {
-            chrome.wallpaperPrivate.setWallpaper(
-                xhr.response,
-                wallpaper.default_layout,
-                wallpaperURL,
-                function() {
-              self.saveToLocalStorage(
-                  Constants.AccessLastSurpriseWallpaperChangedDate, dateString);
-            });
-          } else {
-            self.retryLater_();
-          }
-        });
-      });
+      var onSuccess = function() {
+        WallpaperUtil.saveToLocalStorage(
+            Constants.AccessLastSurpriseWallpaperChangedDate, dateString);
+      }
+      WallpaperUtil.setOnlineWallpaper(wallpaperURL, wallpaper.default_layout,
+          onSuccess, self.retryLater_.bind(self));
     }
   });
 };
@@ -218,60 +163,35 @@ SurpriseWallpaper.prototype.setWallpaperFromRssItem_ = function(item,
   var layout = item.getElementsByTagNameNS(
         Constants.WallpaperNameSpaceURI, 'layout')[0].textContent;
   var self = this;
-  this.fetchURL_(url, 'arraybuffer', function(xhr) {
+  WallpaperUtil.fetchURL(url, 'arraybuffer', function(xhr) {
     if (xhr.response != null) {
       chrome.wallpaperPrivate.setCustomWallpaper(xhr.response, layout, false,
                                                  'surprise_wallpaper',
                                                  onSuccess);
     } else {
       onFailure();
-      self.retryLater_();
     }
   }, onFailure);
 };
 
 /**
- * Disables the wallpaper surprise me feature.
- * @param {function} onSuccess Success callback.
- * @param {function} onFailure Failure callback.
+ * Disables the wallpaper surprise me feature. Clear all alarms and states.
  */
-SurpriseWallpaper.prototype.disableSurpriseMe = function(onSuccess, onFailure) {
-  var items = {};
-  items[Constants.AccessSurpriseMeEnabledKey] = false;
-  var self = this;
-  Constants.WallpaperLocalStorage.set(items, function() {
-    if (chrome.runtime.lastError == null) {
-      chrome.alarms.clearAll();
-      // Makes last changed date invalid.
-      self.saveToLocalStorage(Constants.AccessLastSurpriseWallpaperChangedDate,
-                              '');
-      onSuccess();
-    } else {
-      onFailure();
-    }
-  });
+SurpriseWallpaper.prototype.disable = function() {
+  chrome.alarms.clearAll();
+  // Makes last changed date invalid.
+  WallpaperUtil.saveToLocalStorage(
+      Constants.AccessLastSurpriseWallpaperChangedDate, '');
 };
 
 /**
- * Enables the wallpaper surprise me feature. Changes current wallpaper and sets
- * up an alarm to schedule next change around midnight.
- * @param {function} onSuccess Success callback.
- * @param {function} onFailure Failure callback.
+ * Changes current wallpaper and sets up an alarm to schedule next change around
+ * midnight.
  */
-SurpriseWallpaper.prototype.enableSurpriseMe = function(onSuccess, onFailure) {
-  var self = this;
-  var items = {};
-  items[Constants.AccessSurpriseMeEnabledKey] = true;
-  Constants.WallpaperLocalStorage.set(items, function() {
-    if (chrome.runtime.lastError == null) {
-      var nextUpdate = self.nextUpdateTime(new Date());
-      chrome.alarms.create({when: nextUpdate});
-      self.tryChangeWallpaper();
-      onSuccess();
-    } else {
-      onFailure();
-    }
-  });
+SurpriseWallpaper.prototype.next = function() {
+  var nextUpdate = this.nextUpdateTime(new Date());
+  chrome.alarms.create({when: nextUpdate});
+  this.tryChangeWallpaper();
 };
 
 /**
@@ -309,8 +229,16 @@ chrome.app.runtime.onLaunched.addListener(function() {
   });
 });
 
+chrome.storage.onChanged.addListener(function(changes, namespace) {
+  if (changes[Constants.AccessSurpriseMeEnabledKey]) {
+    if (changes[Constants.AccessSurpriseMeEnabledKey].newValue) {
+      SurpriseWallpaper.getInstance().next();
+    } else {
+      SurpriseWallpaper.getInstance().disable();
+    }
+  }
+});
+
 chrome.alarms.onAlarm.addListener(function() {
-  var nextUpdate = SurpriseWallpaper.getInstance().nextUpdateTime(new Date());
-  chrome.alarms.create({when: nextUpdate});
-  SurpriseWallpaper.getInstance().tryChangeWallpaper();
+  SurpriseWallpaper.getInstance().next();
 });

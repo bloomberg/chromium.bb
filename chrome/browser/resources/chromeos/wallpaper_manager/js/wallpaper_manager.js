@@ -23,9 +23,7 @@ function WallpaperManager(dialogDom) {
   this.customWallpaperData_ = null;
   this.currentWallpaper_ = null;
   this.wallpaperRequest_ = null;
-  this.backgroundPage_ = null;
   this.wallpaperDirs_ = WallpaperDirectories.getInstance();
-  this.fetchBackgroundPage_();
   this.fetchManifest_();
 }
 
@@ -81,16 +79,6 @@ function WallpaperManager(dialogDom) {
       loadTimeData.data = strings;
       if (callback)
         callback();
-    });
-  };
-
-  /**
-   * Fetches the background page of the app.
-   */
-  WallpaperManager.prototype.fetchBackgroundPage_ = function() {
-    var self = this;
-    chrome.runtime.getBackgroundPage(function(backgroundPage) {
-      self.backgroundPage_ = backgroundPage;
     });
   };
 
@@ -178,52 +166,19 @@ function WallpaperManager(dialogDom) {
   };
 
   /**
-   * Checks if the backgroud page is fetched and starts task to fetch it if not.
-   * @param {function} callback The callback function after successfully fetched
-   *     background page.
-   * @return {boolean} True if background page has been fetched.
-   */
-  WallpaperManager.prototype.backgroundPageFetched_ = function(callback) {
-    var self = this;
-    if (!this.backgroundPage_) {
-      chrome.runtime.getBackgroundPage(function(backgroundPage) {
-        if (!backgroundPage) {
-          // This should never happen.
-          console.error('Failed to get background page for wallpaper picker.');
-          return;
-        }
-        self.backgroundPage_ = backgroundPage;
-        callback();
-      });
-      return false;
-    }
-    return true;
-  };
-
-  /**
    * Sets manifest loaded from server. Called after manifest is successfully
    * loaded.
    * @param {object} manifest The parsed manifest file.
    */
   WallpaperManager.prototype.onLoadManifestSuccess_ = function(manifest) {
-    // Background page should have already been set at this point. Adding a
-    // check here to make it extra safe.
-    if (!this.backgroundPageFetched_(this.onLoadManifestSuccess_.bind(this)))
-      return;
-
     this.manifest_ = manifest;
-    var items = {};
-    items[Constants.AccessManifestKey] = manifest;
-    Constants.WallpaperLocalStorage.set(items, function() {});
+    WallpaperUtil.saveToLocalStorage(Constants.AccessManifestKey, manifest);
     this.initDom_();
   };
 
   // Sets manifest to previously saved object if any and shows connection error.
   // Called after manifest failed to load.
   WallpaperManager.prototype.onLoadManifestFailed_ = function() {
-    if (!this.backgroundPageFetched_(this.onLoadManifestFailed_.bind(this)))
-      return;
-
     var accessManifestKey = Constants.AccessManifestKey;
     var self = this;
     Constants.WallpaperLocalStorage.get(accessManifestKey, function(items) {
@@ -235,34 +190,29 @@ function WallpaperManager(dialogDom) {
   };
 
   /**
-   * Toggle surprise me feature of wallpaper picker.
+   * Toggle surprise me feature of wallpaper picker. It fires an storage
+   * onChanged event. Event handler for that event is in event_page.js.
    * @private
    */
   WallpaperManager.prototype.toggleSurpriseMe_ = function() {
     var checkbox = $('surprise-me').querySelector('#checkbox');
-    if (checkbox.classList.contains('checked')) {
-      checkbox.classList.remove('checked');
-      this.backgroundPage_.SurpriseWallpaper.getInstance().disableSurpriseMe(
-          function() {
-            // Disables thumbnails grid and category selection list.
-            $('categories-list').disabled = false;
-            $('wallpaper-grid').disabled = false;
-          }, function() {
+    var shouldEnable = !checkbox.classList.contains('checked');
+    WallpaperUtil.saveToLocalStorage(Constants.AccessSurpriseMeEnabledKey,
+                                     shouldEnable,
+                                     function() {
+      if (chrome.runtime.lastError == null) {
+          if (shouldEnable) {
             checkbox.classList.add('checked');
-            // TODO(bshe): show error message to user.
-          });
-    } else {
-      checkbox.classList.add('checked');
-      this.backgroundPage_.SurpriseWallpaper.getInstance().enableSurpriseMe(
-          function() {
-            // Disables thumbnails grid and category selection list.
-            $('categories-list').disabled = true;
-            $('wallpaper-grid').disabled = true;
-          }, function() {
+          } else {
             checkbox.classList.remove('checked');
-            // TODO(bshe): show error message to user.
-      });
-    }
+          }
+          $('categories-list').disabled = shouldEnable;
+          $('wallpaper-grid').disabled = shouldEnable;
+        } else {
+          // TODO(bshe): show error message to user.
+          console.error('Failed to save surprise me option to chrome storage.');
+        }
+    });
   };
 
   /**
@@ -287,7 +237,9 @@ function WallpaperManager(dialogDom) {
       Constants.WallpaperLocalStorage.get(Constants.AccessSurpriseMeEnabledKey,
                                           function(items) {
         if (items[Constants.AccessSurpriseMeEnabledKey]) {
-          self.toggleSurpriseMe_();
+          $('surprise-me').querySelector('#checkbox').classList.add('checked');
+          $('categories-list').disabled = true;
+          $('wallpaper-grid').disabled = true;
         }
       });
 
@@ -547,28 +499,23 @@ function WallpaperManager(dialogDom) {
             self.wallpaperRequest_.abort();
 
           self.wallpaperRequest_ = new XMLHttpRequest();
-          self.wallpaperRequest_.open('GET', wallpaperURL, true);
-          self.wallpaperRequest_.responseType = 'arraybuffer';
           self.progressManager_.reset(self.wallpaperRequest_, selectedGridItem);
-          self.wallpaperRequest_.send(null);
-          self.wallpaperRequest_.addEventListener('load', function(e) {
-            if (self.wallpaperRequest_.status === 200) {
-              var image = self.wallpaperRequest_.response;
-              chrome.wallpaperPrivate.setWallpaper(
-                  image,
-                  selectedItem.layout,
-                  wallpaperURL,
-                  self.onFinished_.bind(self, selectedGridItem, selectedItem));
-              self.currentWallpaper_ = wallpaperURL;
-            } else {
-              self.progressManager_.hideProgressBar(selectedGridItem);
-              self.showError_(str('downloadFailed'));
-            }
+
+          var onSuccess = function(xhr) {
+            var image = xhr.response;
+            chrome.wallpaperPrivate.setWallpaper(image, selectedItem.layout,
+                wallpaperURL,
+                self.onFinished_.bind(self, selectedGridItem, selectedItem));
+            self.currentWallpaper_ = wallpaperURL;
             self.wallpaperRequest_ = null;
-          });
-          self.wallpaperRequest_.addEventListener('error', function() {
+          };
+          var onFailure = function() {
+            self.progressManager_.hideProgressBar(selectedGridItem);
             self.showError_(str('downloadFailed'));
-          });
+            self.wallpaperRequest_ = null;
+          };
+          WallpaperUtil.fetchURL(wallpaperURL, 'arraybuffer', onSuccess,
+                                 onFailure, self.wallpaperRequest_);
         });
         break;
       default:
@@ -782,9 +729,8 @@ function WallpaperManager(dialogDom) {
                 self.wallpaperGrid_.selectedItem = wallpaperInfo;
                 self.wallpaperGrid_.activeItem = wallpaperInfo;
                 self.currentWallpaper_ = fileName;
-                var items = {};
-                items[self.currentWallpaper_] = layout;
-                Constants.WallpaperLocalStorage.set(items, function() {});
+                WallpaperUtil.saveToLocalStorage(self.currentWallpaper_,
+                                                 layout);
               };
 
               fileWriter.onerror = errorHandler;
@@ -921,9 +867,7 @@ function WallpaperManager(dialogDom) {
         self.removeCustomWallpaper(fileName);
         $('set-wallpaper-layout').disabled = true;
       } else {
-        var items = {};
-        items[self.currentWallpaper_] = layout;
-        Constants.WallpaperLocalStorage.set(items, function() {});
+        WallpaperUtil.saveToLocalStorage(self.currentWallpaper_, layout);
       }
     });
   };

@@ -23,6 +23,7 @@
     "background": {
       "scripts": [
         "js/constants.js",
+        "js/util.js",
         "js/event_page.js"
       ]
     }

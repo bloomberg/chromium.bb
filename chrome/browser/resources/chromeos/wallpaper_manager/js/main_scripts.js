@@ -24,6 +24,7 @@
 //<include src="../../../../../../ui/webui/resources/js/cr/ui/menu_button.js"/>
 //<include src="../../../../../../ui/webui/resources/js/cr/ui/context_menu_handler.js"/>
 //<include src="constants.js"/>
+//<include src="util.js"/>
 //<include src="progress_manager.js"/>
 //<include src="wallpaper_directories.js"/>
 //<include src="wallpaper_images_grid.js"/>
