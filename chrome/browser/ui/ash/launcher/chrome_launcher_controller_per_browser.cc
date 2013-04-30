@@ -880,7 +880,7 @@ void ChromeLauncherControllerPerBrowser::OnBrowserShortcutClicked(
   ash::wm::ActivateWindow(window);
 }
 
-void ChromeLauncherControllerPerBrowser::ItemClicked(
+void ChromeLauncherControllerPerBrowser::ItemSelected(
     const ash::LauncherItem& item,
     const ui::Event& event) {
   DCHECK(HasItemController(item.id));

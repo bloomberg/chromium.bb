@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/window.h"
+#include "ui/views/corewm/window_animations.h"
 
 using extensions::Extension;
 
@@ -84,17 +85,7 @@ void AppShortcutLauncherItemController::Activate() {
     Launch(ui::EF_NONE);
     return;
   }
-  Browser* browser = chrome::FindBrowserWithWebContents(content);
-  TabStripModel* tab_strip = browser->tab_strip_model();
-  int index = tab_strip->GetIndexOfWebContents(content);
-  DCHECK_NE(TabStripModel::kNoTab, index);
-
-  int old_index = tab_strip->active_index();
-  if (index != old_index)
-    tab_strip->ActivateTabAt(index, false);
-  app_controller_->ActivateWindowOrMinimizeIfActive(
-      browser->window(),
-      index == old_index && GetRunningApplications().size() == 1);
+  ActivateContent(content);
 }
 
 void AppShortcutLauncherItemController::Close() {
@@ -113,6 +104,12 @@ void AppShortcutLauncherItemController::Close() {
 }
 
 void AppShortcutLauncherItemController::Clicked(const ui::Event& event) {
+  // In case of a keyboard event, we were called by a hotkey. In that case we
+  // activate the next item in line if an item of our list is already active.
+  if (event.type() == ui::ET_KEY_RELEASED) {
+    if (AdvanceToNextApp())
+      return;
+  }
   Activate();
 }
 
@@ -132,8 +129,7 @@ AppShortcutLauncherItemController::GetApplicationList() {
   // Add the application name to the menu.
   items.push_back(new ChromeLauncherAppMenuItem(GetTitle(), NULL, false));
 
-  std::vector<content::WebContents*> content_list =
-      GetRunningApplications();
+  std::vector<content::WebContents*> content_list = GetRunningApplications();
 
   for (size_t i = 0; i < content_list.size(); i++) {
     content::WebContents* web_contents = content_list[i];
@@ -171,7 +167,7 @@ AppShortcutLauncherItemController::GetRunningApplications() {
        it != ash_browser_list->end(); ++it) {
     Browser* browser = *it;
     TabStripModel* tab_strip = browser->tab_strip_model();
-    for (int index = 0; index  < tab_strip->count(); index++) {
+    for (int index = 0; index < tab_strip->count(); index++) {
       content::WebContents* web_contents = tab_strip->GetWebContentsAt(index);
       if (WebContentMatchesApp(extension, refocus_pattern, web_contents))
         items.push_back(web_contents);
@@ -205,7 +201,7 @@ content::WebContents* AppShortcutLauncherItemController::GetLRUApplication() {
     TabStripModel* tab_strip = browser->tab_strip_model();
     // We start to enumerate from the active index.
     int active_index = tab_strip->active_index();
-    for (int index = 0; index  < tab_strip->count(); index++) {
+    for (int index = 0; index < tab_strip->count(); index++) {
       content::WebContents* web_contents = tab_strip->GetWebContentsAt(
           (index + active_index) % tab_strip->count());
       if (WebContentMatchesApp(extension, refocus_pattern, web_contents))
@@ -231,4 +227,46 @@ bool AppShortcutLauncherItemController::WebContentMatchesApp(
            extension->web_extent().MatchesURL(tab_url)) ||
           launcher_controller()->GetPerAppInterface()->
              IsWebContentHandledByApplication(web_contents, app_id()));
+}
+
+void AppShortcutLauncherItemController::ActivateContent(
+    content::WebContents* content) {
+  Browser* browser = chrome::FindBrowserWithWebContents(content);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+  int index = tab_strip->GetIndexOfWebContents(content);
+  DCHECK_NE(TabStripModel::kNoTab, index);
+
+  int old_index = tab_strip->active_index();
+  if (index != old_index)
+    tab_strip->ActivateTabAt(index, false);
+  app_controller_->ActivateWindowOrMinimizeIfActive(browser->window(),
+      index == old_index && GetRunningApplications().size() == 1);
+}
+
+bool AppShortcutLauncherItemController::AdvanceToNextApp() {
+  std::vector<content::WebContents*> items = GetRunningApplications();
+  if (items.size() >= 1) {
+    Browser* browser = chrome::FindBrowserWithWindow(
+        ash::wm::GetActiveWindow());
+    if (browser) {
+      TabStripModel* tab_strip = browser->tab_strip_model();
+      content::WebContents* active = tab_strip->GetWebContentsAt(
+          tab_strip->active_index());
+      std::vector<content::WebContents*>::const_iterator i(
+          std::find(items.begin(), items.end(), active));
+      if (i != items.end()) {
+        if (items.size() == 1) {
+          // If there is only a single item available, we animate it upon key
+          // action.
+          AnimateWindow(browser->window()->GetNativeWindow(),
+              views::corewm::WINDOW_ANIMATION_TYPE_BOUNCE);
+        } else {
+          int index = (static_cast<int>(i - items.begin()) + 1) % items.size();
+          ActivateContent(items[index]);
+        }
+        return true;
+      }
+    }
+  }
+  return false;
 }

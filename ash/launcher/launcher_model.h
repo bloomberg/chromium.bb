@@ -45,7 +45,7 @@ class ASH_EXPORT LauncherModel {
   void Set(int index, const LauncherItem& item);
 
   // Returns the index of the item by id.
-  int ItemIndexByID(int id) const;
+  int ItemIndexByID(LauncherID id) const;
 
   // Returns the index of the first panel or the index where the first panel
   // would go if there are no panels.

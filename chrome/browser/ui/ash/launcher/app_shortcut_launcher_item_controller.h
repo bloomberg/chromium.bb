@@ -63,6 +63,13 @@ class AppShortcutLauncherItemController : public LauncherItemController {
                             const URLPattern& refocus_pattern,
                             content::WebContents* web_contents);
 
+  // Activate the browser with the given |content| and show the associated tab.
+  void ActivateContent(content::WebContents* content);
+
+  // Advance to the next item if an owned item is already active. The function
+  // will return true if it has sucessfully advanced.
+  bool AdvanceToNextApp();
+
   GURL refocus_url_;
   ChromeLauncherControllerPerApp* app_controller_;
 

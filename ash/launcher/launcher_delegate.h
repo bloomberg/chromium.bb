@@ -49,9 +49,11 @@ class ASH_EXPORT LauncherDelegate {
   // Invoked when the user clicks on a window entry in the launcher.
   // |event| is the click event. The |event| is dispatched by a view
   // and has an instance of |views::View| as the event target
-  // but not |aura::Window|.
-  virtual void ItemClicked(const LauncherItem& item,
-                           const ui::Event& event) = 0;
+  // but not |aura::Window|. If the |event| is of type KeyEvent, it is assumed
+  // that this was triggered by keyboard action (Alt+<number>) and special
+  // handling might happen (PerApp launcher).
+  virtual void ItemSelected(const LauncherItem& item,
+                            const ui::Event& event) = 0;
 
   // Returns the resource id of the image to show on the browser shortcut
   // button.
@@ -96,6 +98,9 @@ class ASH_EXPORT LauncherDelegate {
   // Callback used to inform the delegate that a specific launcher no longer
   // exists.
   virtual void OnLauncherDestroyed(Launcher* launcher) = 0;
+
+  // True if the running launcher is the per application launcher.
+  virtual bool IsPerAppLauncher() = 0;
 };
 
 }  // namespace ash

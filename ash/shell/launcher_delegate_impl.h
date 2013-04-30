@@ -26,7 +26,7 @@ class LauncherDelegateImpl : public ash::LauncherDelegate {
 
   // LauncherDelegate overrides:
   virtual void OnBrowserShortcutClicked(int event_flags) OVERRIDE;
-  virtual void ItemClicked(const ash::LauncherItem& item,
+  virtual void ItemSelected(const ash::LauncherItem& item,
                            const ui::Event& event) OVERRIDE;
   virtual int GetBrowserShortcutResourceId() OVERRIDE;
   virtual base::string16 GetTitle(const ash::LauncherItem& item) OVERRIDE;
@@ -41,6 +41,7 @@ class LauncherDelegateImpl : public ash::LauncherDelegate {
   virtual bool ShouldShowTooltip(const LauncherItem& item) OVERRIDE;
   virtual void OnLauncherCreated(Launcher* launcher) OVERRIDE;
   virtual void OnLauncherDestroyed(Launcher* launcher) OVERRIDE;
+  virtual bool IsPerAppLauncher() OVERRIDE;
 
  private:
   // Used to update Launcher. Owned by main.

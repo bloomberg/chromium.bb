@@ -31,3 +31,9 @@ ChromeLauncherController::~ChromeLauncherController() {
   if (instance_ == this)
     instance_ = NULL;
 }
+
+bool ChromeLauncherController::IsPerAppLauncher() {
+  if (!instance_)
+    return false;
+  return instance_->GetPerAppInterface() != NULL;
+}

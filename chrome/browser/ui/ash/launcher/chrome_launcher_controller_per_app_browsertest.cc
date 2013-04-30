@@ -545,7 +545,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest, WindowActivation) {
   EXPECT_TRUE(ash::wm::IsActiveWindow(window1->GetNativeWindow()));
   EXPECT_FALSE(ash::wm::IsActiveWindow(window1b->GetNativeWindow()));
   launcher_->ActivateLauncherItem(launcher_model()->ItemIndexByID(item_id1));
-  EXPECT_TRUE(ash::wm::IsActiveWindow(window1->GetNativeWindow()));
+  EXPECT_TRUE(ash::wm::IsActiveWindow(window1b->GetNativeWindow()));
 
   // Activate the second app again
   launcher_->ActivateLauncherItem(launcher_model()->ItemIndexByID(item_id2));
@@ -555,9 +555,9 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest, WindowActivation) {
 
   // Activate the first app again
   launcher_->ActivateLauncherItem(launcher_model()->ItemIndexByID(item_id1));
-  EXPECT_TRUE(ash::wm::IsActiveWindow(window1->GetNativeWindow()));
+  EXPECT_TRUE(ash::wm::IsActiveWindow(window1b->GetNativeWindow()));
   EXPECT_FALSE(ash::wm::IsActiveWindow(window2->GetNativeWindow()));
-  EXPECT_FALSE(ash::wm::IsActiveWindow(window1b->GetNativeWindow()));
+  EXPECT_FALSE(ash::wm::IsActiveWindow(window1->GetNativeWindow()));
 
   // Close second app.
   CloseShellWindow(window2);
@@ -1174,4 +1174,95 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTestNoDefaultBrowser,
 
   EXPECT_EQ(browsers, NumberOfDetectedLauncherBrowsers(false));
   EXPECT_EQ(++tabs, NumberOfDetectedLauncherBrowsers(true));
+}
+
+// Check that the keyboard activation of a launcher item tabs properly through
+// the items at hand.
+IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTest, AltNumberTabsTabbing) {
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  ChromeLauncherController* controller =
+      static_cast<ChromeLauncherController*>(launcher_->delegate());
+
+  ash::LauncherID shortcut_id = CreateShortcut("app");
+  controller->SetRefocusURLPatternForTest(
+      shortcut_id, GURL("http://www.example.com/path/*"));
+  std::string url = "http://www.example.com/path/bla";
+
+  int shortcut_index = model_->ItemIndexByID(shortcut_id);
+
+  // Create an application handled browser tab.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(url),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  content::WebContents* content1 = tab_strip->GetActiveWebContents();
+
+  // Create some other browser tab.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL("http://www.test.com"),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  content::WebContents* content1a = tab_strip->GetActiveWebContents();
+
+  // Make sure that the active tab is now our handled tab.
+  EXPECT_NE(content1a, content1);
+
+  // The active tab should still be the unnamed tab. Then we switch and reach
+  // the first app and stay there.
+  EXPECT_EQ(content1a, tab_strip->GetActiveWebContents());
+  launcher_->ActivateLauncherItem(shortcut_index);
+  EXPECT_EQ(content1, tab_strip->GetActiveWebContents());
+  launcher_->ActivateLauncherItem(shortcut_index);
+  EXPECT_EQ(content1, tab_strip->GetActiveWebContents());
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(url),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  content::WebContents* content2 = tab_strip->GetActiveWebContents();
+
+  EXPECT_EQ(content2, browser()->tab_strip_model()->GetActiveWebContents());
+  launcher_->ActivateLauncherItem(shortcut_index);
+  EXPECT_EQ(content1, browser()->tab_strip_model()->GetActiveWebContents());
+  launcher_->ActivateLauncherItem(shortcut_index);
+  EXPECT_EQ(content2, browser()->tab_strip_model()->GetActiveWebContents());
+}
+
+// Check that the keyboard activation of a launcher item tabs properly through
+// the items at hand.
+IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest,
+                       AltNumberAppsTabbing) {
+  // First run app.
+  const Extension* extension1 = LoadAndLaunchPlatformApp("launch");
+  BaseWindow* window1 = CreateShellWindow(extension1)->GetBaseWindow();
+  const ash::LauncherItem& item1 = GetLastLauncherItem();
+  ash::LauncherID app_id = item1.id;
+  int app_index = launcher_model()->ItemIndexByID(app_id);
+
+  EXPECT_EQ(ash::TYPE_PLATFORM_APP, item1.type);
+  EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
+
+  const Extension* extension2 = LoadAndLaunchPlatformApp("launch_2");
+  BaseWindow* window2 = CreateShellWindow(extension2)->GetBaseWindow();
+
+  // By now the browser should be active. Issue Alt keystrokes several times to
+  // see that we stay on that application.
+  EXPECT_TRUE(window2->IsActive());
+  launcher_->ActivateLauncherItem(app_index);
+  EXPECT_TRUE(window1->IsActive());
+  launcher_->ActivateLauncherItem(app_index);
+  EXPECT_TRUE(window1->IsActive());
+
+  BaseWindow* window1a = CreateShellWindow(extension1)->GetBaseWindow();
+
+  EXPECT_TRUE(window1a->IsActive());
+  EXPECT_FALSE(window1->IsActive());
+  launcher_->ActivateLauncherItem(app_index);
+  EXPECT_TRUE(window1->IsActive());
+  launcher_->ActivateLauncherItem(app_index);
+  EXPECT_TRUE(window1a->IsActive());
 }

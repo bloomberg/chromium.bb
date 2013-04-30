@@ -263,7 +263,7 @@ class ChromeLauncherController
                                                 bool allow_minimize) = 0;
   // ash::LauncherDelegate overrides:
   virtual void OnBrowserShortcutClicked(int event_flags) OVERRIDE = 0;
-  virtual void ItemClicked(const ash::LauncherItem& item,
+  virtual void ItemSelected(const ash::LauncherItem& item,
                            const ui::Event& event) OVERRIDE = 0;
   virtual int GetBrowserShortcutResourceId() OVERRIDE = 0;
   virtual string16 GetTitle(const ash::LauncherItem& item) OVERRIDE = 0;
@@ -275,6 +275,7 @@ class ChromeLauncherController
   virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE = 0;
   virtual bool IsDraggable(const ash::LauncherItem& item) OVERRIDE = 0;
   virtual bool ShouldShowTooltip(const ash::LauncherItem& item) OVERRIDE = 0;
+  virtual bool IsPerAppLauncher() OVERRIDE;
 
   // extensions::AppIconLoader overrides:
   virtual void SetAppImage(const std::string& app_id,

@@ -15,6 +15,7 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/views/corewm/window_animations.h"
 
 namespace {
 
@@ -155,7 +156,15 @@ void ShellWindowLauncherItemController::Clicked(const ui::Event& event) {
       shell_windows_.size() == 1) {
     ShellWindow* window_to_show = last_active_shell_window_ ?
         last_active_shell_window_ : shell_windows_.front();
-    ShowAndActivateOrMinimize(window_to_show);
+    // If the event was triggered by a keystroke, we try to advance to the next
+    // item if the window we are trying to activate is already active.
+    if (shell_windows_.size() >= 1 &&
+        window_to_show->GetBaseWindow()->IsActive() &&
+        event.type() == ui::ET_KEY_RELEASED) {
+      ActivateOrAdvanceToNextShellWindow(window_to_show);
+    } else {
+      ShowAndActivateOrMinimize(window_to_show);
+    }
   } else {
     // TODO(stevenjb): Deprecate
     if (!last_active_shell_window_ ||
@@ -225,4 +234,26 @@ void ShellWindowLauncherItemController::ShowAndActivateOrMinimize(
   launcher_controller()->ActivateWindowOrMinimizeIfActive(
       shell_window->GetBaseWindow(),
       GetApplicationList().size() == 2);
+}
+
+void ShellWindowLauncherItemController::ActivateOrAdvanceToNextShellWindow(
+    ShellWindow* window_to_show) {
+  ShellWindowList::iterator i(
+      std::find(shell_windows_.begin(),
+                shell_windows_.end(),
+                window_to_show));
+  if (i != shell_windows_.end()) {
+    if (++i != shell_windows_.end())
+      window_to_show = *i;
+    else
+      window_to_show = shell_windows_.front();
+  }
+  if (window_to_show->GetBaseWindow()->IsActive()) {
+    // Coming here, only a single window is active. For keyboard activations
+    // the window gets animated.
+    AnimateWindow(window_to_show->GetNativeWindow(),
+                  views::corewm::WINDOW_ANIMATION_TYPE_BOUNCE);
+  } else {
+    ShowAndActivateOrMinimize(window_to_show);
+  }
 }

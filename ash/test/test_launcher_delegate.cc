@@ -66,7 +66,7 @@ void TestLauncherDelegate::OnWillRemoveWindow(aura::Window* window) {
 void TestLauncherDelegate::OnBrowserShortcutClicked(int event_flags) {
 }
 
-void TestLauncherDelegate::ItemClicked(const ash::LauncherItem& item,
+void TestLauncherDelegate::ItemSelected(const ash::LauncherItem& item,
                                        const ui::Event& event) {
   aura::Window* window = GetWindowByID(item.id);
   if (window->type() == aura::client::WINDOW_TYPE_PANEL)
@@ -125,6 +125,10 @@ void TestLauncherDelegate::OnLauncherCreated(Launcher* launcher) {
 }
 
 void TestLauncherDelegate::OnLauncherDestroyed(Launcher* launcher) {
+}
+
+bool TestLauncherDelegate::IsPerAppLauncher() {
+  return true;
 }
 
 }  // namespace test

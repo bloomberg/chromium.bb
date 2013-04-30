@@ -918,7 +918,7 @@ void ChromeLauncherControllerPerApp::OnBrowserShortcutClicked(
                                    GetBrowserApplicationList(0).size() == 2);
 }
 
-void ChromeLauncherControllerPerApp::ItemClicked(const ash::LauncherItem& item,
+void ChromeLauncherControllerPerApp::ItemSelected(const ash::LauncherItem& item,
                                                  const ui::Event& event) {
   DCHECK(HasItemController(item.id));
   id_to_item_controller_map_[item.id]->Clicked(event);

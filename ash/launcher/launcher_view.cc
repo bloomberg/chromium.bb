@@ -1323,7 +1323,7 @@ void LauncherView::ButtonPressed(views::Button* sender,
       // Fallthrough
     case TYPE_TABBED:
     case TYPE_APP_PANEL:
-      delegate_->ItemClicked(model_->items()[view_index], event);
+      delegate_->ItemSelected(model_->items()[view_index], event);
       break;
 
     case TYPE_APP_LIST:

@@ -82,6 +82,10 @@ class ShellWindowLauncherItemController : public LauncherItemController,
 
   void ShowAndActivateOrMinimize(ShellWindow* shell_window);
 
+  // Activate the given |window_to_show|, or - if already selected - advance to
+  // the next window of similar type.
+  void ActivateOrAdvanceToNextShellWindow(ShellWindow* window_to_show);
+
   // List of associated shell windows
   ShellWindowList shell_windows_;
 

@@ -104,11 +104,13 @@ void Launcher::UpdateIconPositionForWindow(aura::Window* window) {
 void Launcher::ActivateLauncherItem(int index) {
   const ash::LauncherItems& items =
       launcher_view_->model()->items();
-  ui::MouseEvent event(ui::ET_MOUSE_PRESSED,
-                       gfx::Point(),
-                       gfx::Point(),
-                       ui::EF_NONE);
-  delegate_->ItemClicked(items[index], event);
+  // We pass in a keyboard event which will then trigger a switch to the
+  // next item if the current one is already active.
+  ui::KeyEvent event(ui::ET_KEY_RELEASED,
+                     ui::VKEY_UNKNOWN,  // The actual key gets ignored.
+                     ui::EF_NONE,
+                     false);
+  delegate_->ItemSelected(items[index], event);
 }
 
 void Launcher::CycleWindowLinear(CycleDirection direction) {
@@ -171,9 +173,10 @@ void Launcher::SwitchToWindow(int window_index) {
   // found (which is true when indexes_left is -1) or b.) the last item was
   // requested (which is true when index was passed in as a negative number).
   if (found_index >= 0 && (indexes_left == -1 || window_index < 0) &&
-      (items[found_index].status == ash::STATUS_RUNNING ||
-       items[found_index].status == ash::STATUS_CLOSED)) {
-    // Then set this one as active.
+      (delegate_->IsPerAppLauncher() ||
+       (items[found_index].status == ash::STATUS_RUNNING ||
+        items[found_index].status == ash::STATUS_CLOSED))) {
+    // Then set this one as active (or advance to the next item of its kind).
     ActivateLauncherItem(found_index);
   }
 }

@@ -36,7 +36,7 @@ class TestLauncherDelegate : public LauncherDelegate,
 
   // LauncherDelegate implementation.
   virtual void OnBrowserShortcutClicked(int event_flags) OVERRIDE;
-  virtual void ItemClicked(const LauncherItem& item,
+  virtual void ItemSelected(const LauncherItem& item,
                            const ui::Event& event) OVERRIDE;
   virtual int GetBrowserShortcutResourceId() OVERRIDE;
   virtual base::string16 GetTitle(const LauncherItem& item) OVERRIDE;
@@ -50,6 +50,7 @@ class TestLauncherDelegate : public LauncherDelegate,
   virtual bool ShouldShowTooltip(const LauncherItem& item) OVERRIDE;
   virtual void OnLauncherCreated(Launcher* launcher) OVERRIDE;
   virtual void OnLauncherDestroyed(Launcher* launcher) OVERRIDE;
+  virtual bool IsPerAppLauncher() OVERRIDE;
 
  private:
   typedef std::map<aura::Window*, ash::LauncherID> WindowToID;

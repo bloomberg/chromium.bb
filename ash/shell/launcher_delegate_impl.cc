@@ -29,7 +29,7 @@ void LauncherDelegateImpl::OnBrowserShortcutClicked(int event_flags) {
   ash::shell::ToplevelWindow::CreateToplevelWindow(create_params);
 }
 
-void LauncherDelegateImpl::ItemClicked(const ash::LauncherItem& item,
+void LauncherDelegateImpl::ItemSelected(const ash::LauncherItem& item,
                                        const ui::Event& event) {
   aura::Window* window = watcher_->GetWindowByID(item.id);
   if (window->type() == aura::client::WINDOW_TYPE_PANEL)
@@ -74,6 +74,10 @@ void LauncherDelegateImpl::OnLauncherCreated(Launcher* launcher) {
 }
 
 void LauncherDelegateImpl::OnLauncherDestroyed(Launcher* launcher) {
+}
+
+bool LauncherDelegateImpl::IsPerAppLauncher() {
+  return false;
 }
 
 }  // namespace shell
