@@ -551,6 +551,9 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     // The PDF being printed contains only the pages that the user selected,
     // so ignore the page range and print all pages.
     settings->Remove(printing::kSettingPageRange, NULL);
+    // Remove selection only flag for the same reason.
+    settings->Remove(printing::kSettingShouldPrintSelectionOnly, NULL);
+
     // Set ID to know whether printing is for preview.
     settings->SetInteger(printing::kPreviewUIID,
                          print_preview_ui->GetIDForPrintPreviewUI());
