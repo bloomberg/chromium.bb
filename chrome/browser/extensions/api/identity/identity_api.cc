@@ -48,6 +48,7 @@ const char kUserRejected[] = "The user did not approve access.";
 const char kUserNotSignedIn[] = "The user is not signed in.";
 const char kInteractionRequired[] = "User interaction required.";
 const char kInvalidRedirect[] = "Did not redirect to the right URL.";
+const char kOffTheRecord[] = "Identity API is disabled in incognito windows.";
 
 const int kCachedIssueAdviceTTLSeconds = 1;
 }  // namespace identity_constants
@@ -72,6 +73,11 @@ IdentityGetAuthTokenFunction::IdentityGetAuthTokenFunction()
 IdentityGetAuthTokenFunction::~IdentityGetAuthTokenFunction() {}
 
 bool IdentityGetAuthTokenFunction::RunImpl() {
+  if (profile()->IsOffTheRecord()) {
+    error_ = identity_constants::kOffTheRecord;
+    return false;
+  }
+
   scoped_ptr<GetAuthToken::Params> params(GetAuthToken::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   bool interactive = params->details.get() &&
@@ -357,6 +363,11 @@ IdentityRemoveCachedAuthTokenFunction::
 }
 
 bool IdentityRemoveCachedAuthTokenFunction::RunImpl() {
+  if (profile()->IsOffTheRecord()) {
+    error_ = identity_constants::kOffTheRecord;
+    return false;
+  }
+
   scoped_ptr<RemoveCachedAuthToken::Params> params(
       RemoveCachedAuthToken::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -370,6 +381,11 @@ IdentityLaunchWebAuthFlowFunction::IdentityLaunchWebAuthFlowFunction() {}
 IdentityLaunchWebAuthFlowFunction::~IdentityLaunchWebAuthFlowFunction() {}
 
 bool IdentityLaunchWebAuthFlowFunction::RunImpl() {
+  if (profile()->IsOffTheRecord()) {
+    error_ = identity_constants::kOffTheRecord;
+    return false;
+  }
+
   scoped_ptr<LaunchWebAuthFlow::Params> params(
       LaunchWebAuthFlow::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());

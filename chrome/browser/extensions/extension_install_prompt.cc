@@ -646,7 +646,12 @@ void ExtensionInstallPrompt::FetchOAuthIssueAdviceIfNeeded() {
   }
 
   Profile* profile = install_ui_->profile();
+  // The token service can be NULL for incognito profiles.
   TokenService* token_service = TokenServiceFactory::GetForProfile(profile);
+  if (!token_service) {
+    ShowConfirmation();
+    return;
+  }
 
   token_flow_.reset(new OAuth2MintTokenFlow(
       profile->GetRequestContext(),
