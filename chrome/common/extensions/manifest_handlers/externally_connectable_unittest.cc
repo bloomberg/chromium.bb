@@ -5,6 +5,7 @@
 #include <algorithm>
 
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/manifest_handlers/externally_connectable.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "extensions/common/error_utils.h"
@@ -18,11 +19,17 @@ namespace extensions {
 namespace errors = externally_connectable_errors;
 
 class ExternallyConnectableTest : public ExtensionManifestTest {
+ public:
+  ExternallyConnectableTest() : channel_(chrome::VersionInfo::CHANNEL_DEV) {}
+
  protected:
   virtual void SetUp() OVERRIDE {
     ExtensionManifestTest::SetUp();
     (new ExternallyConnectableHandler)->Register();
   }
+
+ private:
+  Feature::ScopedCurrentChannel channel_;
 };
 
 TEST_F(ExternallyConnectableTest, IDsAndMatches) {
