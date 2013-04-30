@@ -270,11 +270,21 @@ void MessageLoop::RemoveDestructionObserver(
 }
 
 void MessageLoop::PostTask(
-    const tracked_objects::Location& from_here, const Closure& task) {
+    const tracked_objects::Location& from_here,
+    const Closure& task) {
   DCHECK(!task.is_null()) << from_here.ToString();
   PendingTask pending_task(
       from_here, task, CalculateDelayedRuntime(TimeDelta()), true);
-  AddToIncomingQueue(&pending_task);
+  AddToIncomingQueue(&pending_task, false);
+}
+
+bool MessageLoop::TryPostTask(
+    const tracked_objects::Location& from_here,
+    const Closure& task) {
+  DCHECK(!task.is_null()) << from_here.ToString();
+  PendingTask pending_task(
+      from_here, task, CalculateDelayedRuntime(TimeDelta()), true);
+  return AddToIncomingQueue(&pending_task, true);
 }
 
 void MessageLoop::PostDelayedTask(
@@ -284,7 +294,7 @@ void MessageLoop::PostDelayedTask(
   DCHECK(!task.is_null()) << from_here.ToString();
   PendingTask pending_task(
       from_here, task, CalculateDelayedRuntime(delay), true);
-  AddToIncomingQueue(&pending_task);
+  AddToIncomingQueue(&pending_task, false);
 }
 
 void MessageLoop::PostNonNestableTask(
@@ -293,7 +303,7 @@ void MessageLoop::PostNonNestableTask(
   DCHECK(!task.is_null()) << from_here.ToString();
   PendingTask pending_task(
       from_here, task, CalculateDelayedRuntime(TimeDelta()), false);
-  AddToIncomingQueue(&pending_task);
+  AddToIncomingQueue(&pending_task, false);
 }
 
 void MessageLoop::PostNonNestableDelayedTask(
@@ -303,7 +313,7 @@ void MessageLoop::PostNonNestableDelayedTask(
   DCHECK(!task.is_null()) << from_here.ToString();
   PendingTask pending_task(
       from_here, task, CalculateDelayedRuntime(delay), false);
-  AddToIncomingQueue(&pending_task);
+  AddToIncomingQueue(&pending_task, false);
 }
 
 void MessageLoop::Run() {
@@ -586,15 +596,23 @@ TimeTicks MessageLoop::CalculateDelayedRuntime(TimeDelta delay) {
 }
 
 // Possibly called on a background thread!
-void MessageLoop::AddToIncomingQueue(PendingTask* pending_task) {
+bool MessageLoop::AddToIncomingQueue(PendingTask* pending_task,
+                                     bool use_try_lock) {
   // Warning: Don't try to short-circuit, and handle this thread's tasks more
   // directly, as it could starve handling of foreign threads.  Put every task
   // into this queue.
 
   scoped_refptr<MessagePump> pump;
   {
-    AutoLock locked(incoming_queue_lock_);
-
+    if (use_try_lock) {
+      if (!incoming_queue_lock_.Try()) {
+        pending_task->task.Reset();
+        return false;
+      }
+    } else {
+      incoming_queue_lock_.Acquire();
+    }
+    AutoLock locked(incoming_queue_lock_, AutoLock::AlreadyAcquired());
     // Initialize the sequence number. The sequence number is used for delayed
     // tasks (to faciliate FIFO sorting when two tasks have the same
     // delayed_run_time value) and for identifying the task in about:tracing.
@@ -607,7 +625,7 @@ void MessageLoop::AddToIncomingQueue(PendingTask* pending_task) {
     incoming_queue_.push(*pending_task);
     pending_task->task.Reset();
     if (!was_empty)
-      return;  // Someone else should have started the sub-pump.
+      return true;  // Someone else should have started the sub-pump.
 
     pump = pump_;
   }
@@ -617,6 +635,7 @@ void MessageLoop::AddToIncomingQueue(PendingTask* pending_task) {
   // ScheduleWork outside of incoming_queue_lock_.
 
   pump->ScheduleWork();
+  return true;
 }
 
 //------------------------------------------------------------------------------

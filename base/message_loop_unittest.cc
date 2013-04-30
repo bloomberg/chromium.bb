@@ -13,6 +13,7 @@
 #include "base/pending_task.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
@@ -24,6 +25,19 @@
 #endif
 
 namespace base {
+
+class MessageLoopLockTest {
+ public:
+  static void LockWaitUnLock(MessageLoop* loop,
+                             base::WaitableEvent* caller_wait,
+                             base::WaitableEvent* caller_signal) {
+
+    loop->incoming_queue_lock_.Acquire();
+    caller_wait->Signal();
+    caller_signal->Wait();
+    loop->incoming_queue_lock_.Release();
+  }
+};
 
 // TODO(darin): Platform-specific MessageLoop tests should be grouped together
 // to avoid chopping this file up with so many #ifdefs.
@@ -93,8 +107,29 @@ void RunTest_PostTask(MessageLoop::Type message_loop_type) {
       &Foo::Test1Int, foo.get(), 100));
   MessageLoop::current()->PostTask(FROM_HERE, Bind(
       &Foo::Test2Ptr, foo.get(), &a, &c));
-  MessageLoop::current()->PostTask(FROM_HERE, Bind(
-      &Foo::Test2Mixed, foo.get(), a, &d));
+
+  // TryPost with no contention. It must succeed.
+  EXPECT_TRUE(MessageLoop::current()->TryPostTask(FROM_HERE, Bind(
+      &Foo::Test2Mixed, foo.get(), a, &d)));
+
+  // TryPost with simulated contention. It must fail. We wait for a helper
+  // thread to lock the queue, we TryPost on this thread and finally we
+  // signal the helper to unlock and exit.
+  WaitableEvent wait(true, false);
+  WaitableEvent signal(true, false);
+  Thread thread("RunTest_PostTask_helper");
+  thread.Start();
+  thread.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&MessageLoopLockTest::LockWaitUnLock,
+      MessageLoop::current(),
+      &wait,
+      &signal));
+
+  wait.Wait();
+  EXPECT_FALSE(MessageLoop::current()->TryPostTask(FROM_HERE, Bind(
+      &Foo::Test2Mixed, foo.get(), a, &d)));
+  signal.Signal();
 
   // After all tests, post a message that will shut down the message loop
   MessageLoop::current()->PostTask(FROM_HERE, Bind(
