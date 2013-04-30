@@ -179,7 +179,7 @@ bool MappedFile::Initialize(base::PlatformFile file) {
 
   if (base::GetPlatformFileInfo(file, &file_info)) {
     if (file_info.size <=
-        static_cast<int64>(std::numeric_limits<size_t>::max())) {
+        static_cast<int64>(std::numeric_limits<DWORD>::max())) {
       mapping_ = CreateFileMapping(file, NULL, PAGE_READWRITE, 0,
                                    static_cast<DWORD>(file_info.size), NULL);
       if (mapping_ != NULL) {
@@ -194,7 +194,7 @@ bool MappedFile::Initialize(base::PlatformFile file) {
         PLOG(DFATAL) << "CreateFileMapping failed";
       }
     } else {
-      LOG(DFATAL) << "Files larger than " << std::numeric_limits<size_t>::max()
+      LOG(DFATAL) << "Files larger than " << std::numeric_limits<DWORD>::max()
                   << " are not supported.";
     }
   } else {

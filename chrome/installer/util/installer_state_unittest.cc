@@ -496,15 +496,7 @@ TEST_F(InstallerStateTest, IsFileInUse) {
   EXPECT_FALSE(MockInstallerState::IsFileInUse(temp_file));
 }
 
-// TODO(jschuh): crbug.com/167707 need to fix Win64 pe_image issues due to
-// calling upgrade_test::GenerateSpecificPEFileVersion
-#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
-#define MAYBE_RemoveOldVersionDirs DISABLED_RemoveOldVersionDirs
-#else
-#define MAYBE_RemoveOldVersionDirs RemoveOldVersionDirs
-#endif
-
-TEST_F(InstallerStateTest, MAYBE_RemoveOldVersionDirs) {
+TEST_F(InstallerStateTest, RemoveOldVersionDirs) {
   MockInstallerState installer_state;
   installer_state.set_target_path(test_dir_.path());
   EXPECT_EQ(test_dir_.path().value(), installer_state.target_path().value());
