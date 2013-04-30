@@ -36,13 +36,13 @@
 #include "core/platform/graphics/ImageSource.h"
 #include "core/platform/graphics/IntSize.h"
 #include "core/platform/graphics/LayoutSize.h"
-#include "core/rendering/RenderBoxModelObject.h"
+#include "core/rendering/RenderObject.h"
 #include <wtf/HashMap.h>
 
 namespace WebCore {
 
 typedef HashMap<const void*, LayoutSize> LayerSizeMap;
-typedef HashMap<RenderBoxModelObject*, LayerSizeMap> ObjectLayerSizeMap;
+typedef HashMap<RenderObject*, LayerSizeMap> ObjectLayerSizeMap;
 
 class ImageQualityController {
     WTF_MAKE_NONCOPYABLE(ImageQualityController); WTF_MAKE_FAST_ALLOCATED;
@@ -51,16 +51,16 @@ public:
 
     static ImageQualityController* imageQualityController();
 
-    static void remove(RenderBoxModelObject*);
+    static void remove(RenderObject*);
 
-    bool shouldPaintAtLowQuality(GraphicsContext*, RenderBoxModelObject*, Image*, const void* layer, const LayoutSize&);
+    bool shouldPaintAtLowQuality(GraphicsContext*, RenderObject*, Image*, const void* layer, const LayoutSize&);
 
 private:
     ImageQualityController();
 
-    void removeLayer(RenderBoxModelObject*, LayerSizeMap* innerMap, const void* layer);
-    void set(RenderBoxModelObject*, LayerSizeMap* innerMap, const void* layer, const LayoutSize&);
-    void objectDestroyed(RenderBoxModelObject*);
+    void removeLayer(RenderObject*, LayerSizeMap* innerMap, const void* layer);
+    void set(RenderObject*, LayerSizeMap* innerMap, const void* layer, const LayoutSize&);
+    void objectDestroyed(RenderObject*);
     bool isEmpty() { return m_objectLayerSizeMap.isEmpty(); }
 
     void highQualityRepaintTimerFired(Timer<ImageQualityController>*);

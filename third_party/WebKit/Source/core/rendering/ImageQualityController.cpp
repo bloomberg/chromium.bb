@@ -52,7 +52,7 @@ ImageQualityController* ImageQualityController::imageQualityController()
     return gImageQualityController;
 }
 
-void ImageQualityController::remove(RenderBoxModelObject* renderer)
+void ImageQualityController::remove(RenderObject* renderer)
 {
     if (gImageQualityController) {
         gImageQualityController->objectDestroyed(renderer);
@@ -76,7 +76,7 @@ ImageQualityController::ImageQualityController()
 {
 }
 
-void ImageQualityController::removeLayer(RenderBoxModelObject* object, LayerSizeMap* innerMap, const void* layer)
+void ImageQualityController::removeLayer(RenderObject* object, LayerSizeMap* innerMap, const void* layer)
 {
     if (innerMap) {
         innerMap->remove(layer);
@@ -85,7 +85,7 @@ void ImageQualityController::removeLayer(RenderBoxModelObject* object, LayerSize
     }
 }
 
-void ImageQualityController::set(RenderBoxModelObject* object, LayerSizeMap* innerMap, const void* layer, const LayoutSize& size)
+void ImageQualityController::set(RenderObject* object, LayerSizeMap* innerMap, const void* layer, const LayoutSize& size)
 {
     if (innerMap)
         innerMap->set(layer, size);
@@ -96,7 +96,7 @@ void ImageQualityController::set(RenderBoxModelObject* object, LayerSizeMap* inn
     }
 }
 
-void ImageQualityController::objectDestroyed(RenderBoxModelObject* object)
+void ImageQualityController::objectDestroyed(RenderObject* object)
 {
     m_objectLayerSizeMap.remove(object);
     if (m_objectLayerSizeMap.isEmpty()) {
@@ -130,7 +130,7 @@ void ImageQualityController::restartTimer()
     m_timer.startOneShot(cLowQualityTimeThreshold);
 }
 
-bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, RenderBoxModelObject* object, Image* image, const void *layer, const LayoutSize& layoutSize)
+bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, RenderObject* object, Image* image, const void *layer, const LayoutSize& layoutSize)
 {
     // If the image is not a bitmap image, then none of this is relevant and we just paint at high
     // quality.

@@ -32,6 +32,7 @@
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/rendering/ImageQualityController.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/PointerEventsHitRules.h"
 #include "core/rendering/RenderImageResource.h"
@@ -58,6 +59,7 @@ RenderSVGImage::RenderSVGImage(SVGImageElement* impl)
 
 RenderSVGImage::~RenderSVGImage()
 {
+    ImageQualityController::remove(this);
     m_imageResource->shutdown();
 }
 
@@ -153,7 +155,11 @@ void RenderSVGImage::paintForeground(PaintInfo& paintInfo)
     SVGImageElement* imageElement = static_cast<SVGImageElement*>(node());
     imageElement->preserveAspectRatio().transformRect(destRect, srcRect);
 
-    paintInfo.context->drawImage(image.get(), ColorSpaceDeviceRGB, destRect, srcRect);
+    bool useLowQualityScaling = false;
+    if (style()->svgStyle()->bufferedRendering() != BR_STATIC)
+        useLowQualityScaling = ImageQualityController::imageQualityController()->shouldPaintAtLowQuality(paintInfo.context, this, image.get(), image.get(), LayoutSize(destRect.size()));
+
+    paintInfo.context->drawImage(image.get(), style()->colorSpace(), destRect, srcRect, CompositeSourceOver, DoNotRespectImageOrientation, useLowQualityScaling);
 }
 
 void RenderSVGImage::invalidateBufferedForeground()
