@@ -1222,9 +1222,16 @@ class PreCQLauncherStage(SyncStage):
     list of disjoint transactions and send each one to a separate Pre-CQ
     trybot.
 
-    Non-manifest changes are not used here because they don't need to be
-    verified in the Pre-CQ.
+    Non-manifest changes are just submitted here because they don't need to be
+    verified by either the Pre-CQ or CQ.
     """
+    # Submit non-manifest changes if we can.
+    try:
+      pool.SubmitNonManifestChanges()
+    except validation_pool.FailedToSubmitAllChangesException as e:
+      cros_build_lib.Warning(str(e))
+
+    # Launch trybots for manifest changes.
     for plan in self.GetDisjointTransactionsToTest(pool, changes):
       self.LaunchTrybot(pool, plan)
 
