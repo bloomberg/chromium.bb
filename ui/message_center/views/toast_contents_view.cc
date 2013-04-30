@@ -24,8 +24,11 @@
 namespace message_center {
 namespace {
 
-// The width of a toast before animated revealed and after closing.
+// The width of a toast before animated reveal and after closing.
 const int kClosedToastWidth = 5;
+
+// FadeIn/Out look a bit better if they are slightly longer then default slide.
+const int kFadeInOutDuration = 200;
 
 }  // namespace.
 
@@ -59,6 +62,9 @@ ToastContentsView::ToastContentsView(
     ResetTimeout(notification->priority());
     StartTimer();
   }
+
+  fade_animation_.reset(new ui::SlideAnimation(this));
+  fade_animation_->SetSlideDuration(kFadeInOutDuration);
 }
 
 // This is destroyed when the toast window closes.
@@ -69,6 +75,7 @@ views::Widget* ToastContentsView::CreateWidget(gfx::NativeView parent) {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_POPUP);
   params.keep_on_top = true;
+  params.transparent = true;
   if (parent)
     params.parent = parent;
   else
@@ -130,7 +137,7 @@ void ToastContentsView::RevealWithAnimation(gfx::Point origin) {
   gfx::Rect stable_bounds(origin_, preferred_size_);
 
   SetBoundsInstantly(GetClosedToastBounds(stable_bounds));
-  GetWidget()->Show();
+  StartFadeIn();
   SetBoundsWithAnimation(stable_bounds);
 }
 
@@ -142,7 +149,7 @@ void ToastContentsView::CloseWithAnimation() {
   if (collection_)
     collection_->RemoveToast(this);
   message_center_->MarkSinglePopupAsShown(id(), false);
-  SetBoundsWithAnimation(GetClosedToastBounds(bounds()));
+  StartFadeOut();
 }
 
 void ToastContentsView::SetBoundsInstantly(gfx::Rect new_bounds) {
@@ -177,8 +184,30 @@ void ToastContentsView::SetBoundsWithAnimation(gfx::Rect new_bounds) {
     bounds_animation_->Stop();
 
   bounds_animation_.reset(new ui::SlideAnimation(this));
-  closing_animation_ = (is_closing_ ? bounds_animation_.get() : NULL);
   bounds_animation_->Show();
+}
+
+void ToastContentsView::StartFadeIn() {
+  // The decrement is done in OnBoundsAnimationEndedOrCancelled callback.
+  if (collection_)
+    collection_->IncrementDeferCounter();
+  fade_animation_->Stop();
+
+  GetWidget()->SetOpacity(0);
+  GetWidget()->Show();
+  fade_animation_->Reset(0);
+  fade_animation_->Show();
+}
+
+  void ToastContentsView::StartFadeOut() {
+    // The decrement is done in OnBoundsAnimationEndedOrCancelled callback.
+    if (collection_)
+      collection_->IncrementDeferCounter();
+  fade_animation_->Stop();
+
+  closing_animation_ = (is_closing_ ? fade_animation_.get() : NULL);
+  fade_animation_->Reset(1);
+  fade_animation_->Hide();
 }
 
 void ToastContentsView::OnBoundsAnimationEndedOrCancelled(
@@ -196,6 +225,10 @@ void ToastContentsView::AnimationProgressed(const ui::Animation* animation) {
     gfx::Rect current(animation->CurrentValueBetween(
         animated_bounds_start_, animated_bounds_end_));
     GetWidget()->SetBounds(current);
+  } else if (animation == fade_animation_.get()) {
+    unsigned char opacity =
+        static_cast<unsigned char>(fade_animation_->GetCurrentValue() * 255);
+    GetWidget()->SetOpacity(opacity);
   }
 }
 

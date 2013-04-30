@@ -93,6 +93,8 @@ class ToastContentsView : public views::WidgetDelegateView,
   // in reveal/closing animations.
   gfx::Rect GetClosedToastBounds(gfx::Rect bounds);
 
+  void StartFadeIn();
+  void StartFadeOut();  // Will call Widget::Close() when animation ends.
   void OnBoundsAnimationEndedOrCancelled(const ui::Animation* animation);
 
   base::WeakPtr<MessagePopupCollection> collection_;
@@ -109,6 +111,8 @@ class ToastContentsView : public views::WidgetDelegateView,
 
 
   scoped_ptr<ui::SlideAnimation> bounds_animation_;
+  scoped_ptr<ui::SlideAnimation> fade_animation_;
+
   bool is_animating_bounds_;
   gfx::Rect animated_bounds_start_;
   gfx::Rect animated_bounds_end_;
