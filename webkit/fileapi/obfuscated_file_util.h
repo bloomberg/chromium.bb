@@ -241,6 +241,13 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE ObfuscatedFileUtil
       FileSystemType type,
       base::FilePath* local_path);
 
+  base::PlatformFileError CreateOrOpenInternal(
+      FileSystemOperationContext* context,
+      const FileSystemURL& url,
+      int file_flags,
+      base::PlatformFile* file_handle,
+      bool* created);
+
   typedef std::map<std::string, FileSystemDirectoryDatabase*> DirectoryMap;
   DirectoryMap directories_;
   scoped_ptr<FileSystemOriginDatabase> origin_database_;

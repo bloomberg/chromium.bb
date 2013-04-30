@@ -261,80 +261,15 @@ PlatformFileError ObfuscatedFileUtil::CreateOrOpen(
     FileSystemOperationContext* context,
     const FileSystemURL& url, int file_flags,
     PlatformFile* file_handle, bool* created) {
-  DCHECK(!(file_flags & (base::PLATFORM_FILE_DELETE_ON_CLOSE |
-        base::PLATFORM_FILE_HIDDEN | base::PLATFORM_FILE_EXCLUSIVE_READ |
-        base::PLATFORM_FILE_EXCLUSIVE_WRITE)));
-  FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
-      url.origin(), url.type(), true);
-  if (!db)
-    return base::PLATFORM_FILE_ERROR_FAILED;
-  FileId file_id;
-  if (!db->GetFileWithPath(url.path(), &file_id)) {
-    // The file doesn't exist.
-    if (!(file_flags & (base::PLATFORM_FILE_CREATE |
-        base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_OPEN_ALWAYS)))
-      return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-    FileId parent_id;
-    if (!db->GetFileWithPath(VirtualPath::DirName(url.path()),
-                             &parent_id))
-      return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-    FileInfo file_info;
-    InitFileInfo(&file_info, parent_id,
-                 VirtualPath::BaseName(url.path()).value());
-
-    int64 growth = UsageForPath(file_info.name.size());
-    if (!AllocateQuota(context, growth))
-      return base::PLATFORM_FILE_ERROR_NO_SPACE;
-    PlatformFileError error = CreateFile(
-        context, base::FilePath(),
-        url.origin(), url.type(), &file_info,
-        file_flags, file_handle);
-    if (created && base::PLATFORM_FILE_OK == error) {
-      *created = true;
-      UpdateUsage(context, url, growth);
-      context->change_observers()->Notify(
-          &FileChangeObserver::OnCreateFile, MakeTuple(url));
-    }
-    return error;
-  }
-
-  if (file_flags & base::PLATFORM_FILE_CREATE)
-    return base::PLATFORM_FILE_ERROR_EXISTS;
-
-  base::PlatformFileInfo platform_file_info;
-  base::FilePath local_path;
-  FileInfo file_info;
-  base::PlatformFileError error = GetFileInfoInternal(
-      db, context, url.origin(), url.type(), file_id,
-      &file_info, &platform_file_info, &local_path);
-  if (error != base::PLATFORM_FILE_OK)
-    return error;
-  if (file_info.is_directory())
-    return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
-
-  int64 delta = 0;
-  if (file_flags & (base::PLATFORM_FILE_CREATE_ALWAYS |
-                    base::PLATFORM_FILE_OPEN_TRUNCATED)) {
-    // The file exists and we're truncating.
-    delta = -platform_file_info.size;
-    AllocateQuota(context, delta);
-  }
-
-  error = NativeFileUtil::CreateOrOpen(
-      local_path, file_flags, file_handle, created);
-  if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND) {
-    // TODO(tzik): Also invalidate on-memory usage cache in UsageTracker.
-    // TODO(tzik): Delete database entry after ensuring the file lost.
-    InvalidateUsageCache(context, url.origin(), url.type());
-    LOG(WARNING) << "Lost a backing file.";
-    error = base::PLATFORM_FILE_ERROR_FAILED;
-  }
-
-  // If truncating we need to update the usage.
-  if (error == base::PLATFORM_FILE_OK && delta) {
-    UpdateUsage(context, url, delta);
-    context->change_observers()->Notify(
-        &FileChangeObserver::OnModifyFile, MakeTuple(url));
+  PlatformFileError error = CreateOrOpenInternal(context, url, file_flags,
+                                                 file_handle, created);
+  if (*file_handle != base::kInvalidPlatformFileValue &&
+      file_flags & base::PLATFORM_FILE_WRITE &&
+      context->quota_limit_type() == quota::kQuotaLimitTypeUnlimited) {
+    DCHECK_EQ(base::PLATFORM_FILE_OK, error);
+    DCHECK_EQ(kFileSystemTypePersistent, url.type());
+    context->file_system_context()->GetQuotaUtil(url.type())->
+        StickyInvalidateUsageCache(url.origin(), url.type());
   }
   return error;
 }
@@ -1335,6 +1270,88 @@ PlatformFileError ObfuscatedFileUtil::GenerateNewLocalPath(
   *local_path =
       new_local_path.AppendASCII(base::StringPrintf("%08" PRId64, number));
   return base::PLATFORM_FILE_OK;
+}
+
+PlatformFileError ObfuscatedFileUtil::CreateOrOpenInternal(
+    FileSystemOperationContext* context,
+    const FileSystemURL& url, int file_flags,
+    PlatformFile* file_handle, bool* created) {
+  DCHECK(!(file_flags & (base::PLATFORM_FILE_DELETE_ON_CLOSE |
+        base::PLATFORM_FILE_HIDDEN | base::PLATFORM_FILE_EXCLUSIVE_READ |
+        base::PLATFORM_FILE_EXCLUSIVE_WRITE)));
+  FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
+      url.origin(), url.type(), true);
+  if (!db)
+    return base::PLATFORM_FILE_ERROR_FAILED;
+  FileId file_id;
+  if (!db->GetFileWithPath(url.path(), &file_id)) {
+    // The file doesn't exist.
+    if (!(file_flags & (base::PLATFORM_FILE_CREATE |
+        base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_OPEN_ALWAYS)))
+      return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    FileId parent_id;
+    if (!db->GetFileWithPath(VirtualPath::DirName(url.path()),
+                             &parent_id))
+      return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    FileInfo file_info;
+    InitFileInfo(&file_info, parent_id,
+                 VirtualPath::BaseName(url.path()).value());
+
+    int64 growth = UsageForPath(file_info.name.size());
+    if (!AllocateQuota(context, growth))
+      return base::PLATFORM_FILE_ERROR_NO_SPACE;
+    PlatformFileError error = CreateFile(
+        context, base::FilePath(),
+        url.origin(), url.type(), &file_info,
+        file_flags, file_handle);
+    if (created && base::PLATFORM_FILE_OK == error) {
+      *created = true;
+      UpdateUsage(context, url, growth);
+      context->change_observers()->Notify(
+          &FileChangeObserver::OnCreateFile, MakeTuple(url));
+    }
+    return error;
+  }
+
+  if (file_flags & base::PLATFORM_FILE_CREATE)
+    return base::PLATFORM_FILE_ERROR_EXISTS;
+
+  base::PlatformFileInfo platform_file_info;
+  base::FilePath local_path;
+  FileInfo file_info;
+  base::PlatformFileError error = GetFileInfoInternal(
+      db, context, url.origin(), url.type(), file_id,
+      &file_info, &platform_file_info, &local_path);
+  if (error != base::PLATFORM_FILE_OK)
+    return error;
+  if (file_info.is_directory())
+    return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
+
+  int64 delta = 0;
+  if (file_flags & (base::PLATFORM_FILE_CREATE_ALWAYS |
+                    base::PLATFORM_FILE_OPEN_TRUNCATED)) {
+    // The file exists and we're truncating.
+    delta = -platform_file_info.size;
+    AllocateQuota(context, delta);
+  }
+
+  error = NativeFileUtil::CreateOrOpen(
+      local_path, file_flags, file_handle, created);
+  if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND) {
+    // TODO(tzik): Also invalidate on-memory usage cache in UsageTracker.
+    // TODO(tzik): Delete database entry after ensuring the file lost.
+    InvalidateUsageCache(context, url.origin(), url.type());
+    LOG(WARNING) << "Lost a backing file.";
+    error = base::PLATFORM_FILE_ERROR_FAILED;
+  }
+
+  // If truncating we need to update the usage.
+  if (error == base::PLATFORM_FILE_OK && delta) {
+    UpdateUsage(context, url, delta);
+    context->change_observers()->Notify(
+        &FileChangeObserver::OnModifyFile, MakeTuple(url));
+  }
+  return error;
 }
 
 }  // namespace fileapi
