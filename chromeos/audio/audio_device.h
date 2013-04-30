@@ -15,12 +15,15 @@
 
 namespace chromeos {
 
+// Ordered from the highest priority to the lowest.
 enum AudioDeviceType {
-  AUDIO_TYPE_INTERNAL,
   AUDIO_TYPE_HEADPHONE,
+  AUDIO_TYPE_MIC,
   AUDIO_TYPE_USB,
   AUDIO_TYPE_BLUETOOTH,
   AUDIO_TYPE_HDMI,
+  AUDIO_TYPE_INTERNAL_SPEAKER,
+  AUDIO_TYPE_INTERNAL_MIC,
   AUDIO_TYPE_OTHER,
 };
 
@@ -29,7 +32,9 @@ struct CHROMEOS_EXPORT AudioDevice {
   uint64 id;
   base::string16 display_name;
   AudioDeviceType type;
+  uint8 priority;
   bool active;
+  uint64 plugged_time;
 
   AudioDevice();
   explicit AudioDevice(const AudioNode& node);
@@ -37,6 +42,27 @@ struct CHROMEOS_EXPORT AudioDevice {
 };
 
 typedef std::vector<AudioDevice> AudioDeviceList;
+
+struct AudioDeviceCompare {
+  // Rules used to discern which device is higher,
+  // 1.) Device Type:
+  //       [Headphones/USB/Bluetooh > HDMI > Internal Speakers]
+  //       [External Mic/USB Mic/Bluetooth > Internal Mic]
+  // 2.) Device Plugged in Time:
+  //       [Later > Earlier]
+  bool operator()(const chromeos::AudioDevice& a,
+                  const chromeos::AudioDevice& b) const {
+    if (a.priority < b.priority) {
+      return true;
+    } else if (b.priority < a.priority) {
+      return false;
+    } else if (a.plugged_time < b.plugged_time) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+};
 
 }  // namespace chromeos
 

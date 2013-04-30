@@ -27,6 +27,7 @@ CHROMEOS_EXPORT extern const char kDisableQuickofficeComponentApp[];
 CHROMEOS_EXPORT extern const char kDisableOnlineEULA[];
 CHROMEOS_EXPORT extern const char kDisableOOBEBlockingUpdate[];
 CHROMEOS_EXPORT extern const char kDisableStubEthernet[];
+CHROMEOS_EXPORT extern const char kEnableChromeAudioSwitching[];
 CHROMEOS_EXPORT extern const char kEnableExperimentalBluetooth[];
 CHROMEOS_EXPORT extern const char kDisableNewNetworkChangeNotifier[];
 CHROMEOS_EXPORT extern const char kEnableScreensaverExtensions[];

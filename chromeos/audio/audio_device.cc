@@ -6,36 +6,71 @@
 
 #include "base/format_macros.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 
 namespace {
 
+// Get the priority for a particular device type. The priority returned
+// will be between 0 to 3, the higher number meaning a higher priority.
+uint8 GetDevicePriority(chromeos::AudioDeviceType type) {
+  switch (type) {
+    // Fall through.
+    case chromeos::AUDIO_TYPE_HEADPHONE:
+    case chromeos::AUDIO_TYPE_MIC:
+    case chromeos::AUDIO_TYPE_USB:
+    case chromeos::AUDIO_TYPE_BLUETOOTH:
+      return 3;
+    case chromeos::AUDIO_TYPE_HDMI:
+      return 2;
+      // Fall through.
+    case chromeos::AUDIO_TYPE_INTERNAL_SPEAKER:
+    case chromeos::AUDIO_TYPE_INTERNAL_MIC:
+      return 1;
+      // Fall through.
+    case chromeos::AUDIO_TYPE_OTHER:
+    default:
+      return 0;
+  }
+}
+
 std::string GetTypeString(chromeos::AudioDeviceType type) {
-  if (type == chromeos::AUDIO_TYPE_INTERNAL)
-    return "INTERNAL";
-  else if (type == chromeos::AUDIO_TYPE_HEADPHONE)
-    return "HEADPHONE";
-  else if (type == chromeos::AUDIO_TYPE_USB)
-    return "USB";
-  else if (type == chromeos::AUDIO_TYPE_BLUETOOTH)
-    return "BLUETOOTH";
-  else if (type == chromeos::AUDIO_TYPE_HDMI)
-    return "HDMI";
-  else
-    return "OTHER";
+  switch (type) {
+    case chromeos::AUDIO_TYPE_HEADPHONE:
+      return "HEADPHONE";
+    case chromeos::AUDIO_TYPE_MIC:
+      return "MIC";
+    case chromeos::AUDIO_TYPE_USB:
+      return "USB";
+    case chromeos::AUDIO_TYPE_BLUETOOTH:
+      return "BLUETOOTH";
+    case chromeos::AUDIO_TYPE_HDMI:
+      return "HDMI";
+    case chromeos::AUDIO_TYPE_INTERNAL_SPEAKER:
+      return "INTERNAL_SPEAKER";
+    case chromeos::AUDIO_TYPE_INTERNAL_MIC:
+      return "INTERNAL_MIC";
+    case chromeos::AUDIO_TYPE_OTHER:
+    default:
+      return "OTHER";
+  }
 }
 
 chromeos::AudioDeviceType GetAudioType(const std::string& node_type) {
-  if (node_type.find("INTERNAL_") != std::string::npos)
-    return chromeos::AUDIO_TYPE_INTERNAL;
-  else if (node_type.find("HEADPHONE") != std::string::npos)
+  if (node_type.find("HEADPHONE") != std::string::npos)
     return chromeos::AUDIO_TYPE_HEADPHONE;
+  else if (node_type.find("MIC") != std::string::npos)
+    return chromeos::AUDIO_TYPE_MIC;
   else if (node_type.find("USB") != std::string::npos)
     return chromeos::AUDIO_TYPE_USB;
   else if (node_type.find("BLUETOOTH") != std::string::npos)
     return chromeos::AUDIO_TYPE_BLUETOOTH;
   else if (node_type.find("HDMI") != std::string::npos)
     return chromeos::AUDIO_TYPE_HDMI;
+  else if (node_type.find("INTERNAL_SPEAKER") != std::string::npos)
+    return chromeos::AUDIO_TYPE_INTERNAL_SPEAKER;
+  else if (node_type.find("INTERNAL_MIC") != std::string::npos)
+    return chromeos::AUDIO_TYPE_INTERNAL_MIC;
   else
     return chromeos::AUDIO_TYPE_OTHER;
 }
@@ -47,7 +82,9 @@ namespace chromeos {
 AudioDevice::AudioDevice()
     : is_input(false),
       id(0),
-      active(false) {
+      priority(0),
+      active(false),
+      plugged_time(0) {
 }
 
 AudioDevice::AudioDevice(const AudioNode& node) {
@@ -58,7 +95,9 @@ AudioDevice::AudioDevice(const AudioNode& node) {
     display_name = UTF8ToUTF16(node.name);
   else
     display_name = UTF8ToUTF16(node.device_name);
+  priority = GetDevicePriority(type);
   active = node.active;
+  plugged_time = node.plugged_time;
 }
 
 std::string AudioDevice::ToString() const {
@@ -67,8 +106,8 @@ std::string AudioDevice::ToString() const {
                       "is_input = %s ",
                       is_input ? "true" : "false");
   base::StringAppendF(&result,
-                      "id = %"PRIu64" ",
-                      id);
+                      "id = %s ",
+                      base::Uint64ToString(id).c_str());
   base::StringAppendF(&result,
                       "display_name = %s ",
                       UTF16ToUTF8(display_name).c_str());
@@ -78,6 +117,9 @@ std::string AudioDevice::ToString() const {
   base::StringAppendF(&result,
                       "active = %s ",
                       active ? "true" : "false");
+  base::StringAppendF(&result,
+                      "plugged_time= %s ",
+                      base::Uint64ToString(plugged_time).c_str());
 
   return result;
 }

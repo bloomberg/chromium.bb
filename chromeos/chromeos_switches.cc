@@ -32,6 +32,9 @@ const char kDisableOOBEBlockingUpdate[] =
 // Disables fake ethernet network in the stub implementations.
 const char kDisableStubEthernet[] = "disable-stub-ethernet";
 
+// Enable switching between audio devices in Chrome instead of cras.
+const char kEnableChromeAudioSwitching[] = "enable-chrome-audio-switching";
+
 // Enable experimental Bluetooth features.
 const char kEnableExperimentalBluetooth[] = "enable-experimental-bluetooth";
 

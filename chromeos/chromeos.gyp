@@ -36,6 +36,8 @@
         'audio/audio_pref_handler.h',
         'audio/cras_audio_handler.cc',
         'audio/cras_audio_handler.h',
+        'audio/cras_audio_switch_handler.cc',
+        'audio/cras_audio_switch_handler.h',
         'attestation/attestation_constants.cc',
         'attestation/attestation_constants.h',
         'attestation/attestation_flow.cc',

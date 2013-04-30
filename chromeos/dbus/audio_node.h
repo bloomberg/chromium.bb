@@ -13,6 +13,7 @@
 
 namespace chromeos {
 
+// Structure to hold AudioNode data received from cras.
 struct CHROMEOS_EXPORT AudioNode {
   bool is_input;
   uint64 id;
@@ -20,6 +21,8 @@ struct CHROMEOS_EXPORT AudioNode {
   std::string type;
   std::string name;
   bool active;
+  // Time that the node was plugged in.
+  uint64 plugged_time;
 
   AudioNode();
   std::string ToString() const;

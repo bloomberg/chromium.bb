@@ -6,13 +6,15 @@
 
 #include "base/format_macros.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 
 namespace chromeos {
 
 AudioNode::AudioNode()
     : is_input(false),
       id(0),
-      active(false) {
+      active(false),
+      plugged_time(0) {
 }
 
 std::string AudioNode::ToString() const {
@@ -21,8 +23,8 @@ std::string AudioNode::ToString() const {
                       "is_input = %s ",
                       is_input ? "true" : "false");
   base::StringAppendF(&result,
-                      "id = %"PRIu64" ",
-                      id);
+                      "id = %s ",
+                      base::Uint64ToString(id).c_str());
   base::StringAppendF(&result,
                       "device_name = %s ",
                       device_name.c_str());
@@ -35,6 +37,9 @@ std::string AudioNode::ToString() const {
   base::StringAppendF(&result,
                       "active = %s ",
                       active ? "true" : "false");
+  base::StringAppendF(&result,
+                      "plugged_time= %s ",
+                      base::Uint64ToString(plugged_time).c_str());
 
   return result;
 }

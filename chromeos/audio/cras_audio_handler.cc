@@ -323,11 +323,11 @@ void CrasAudioHandler::HandleGetNodes(const chromeos::AudioNodeList& node_list,
     audio_devices_.push_back(device);
     if (!has_alternative_input_ &&
         device.is_input &&
-        device.type != AUDIO_TYPE_INTERNAL) {
+        device.type != AUDIO_TYPE_INTERNAL_MIC) {
       has_alternative_input_ = true;
     } else if (!has_alternative_output_ &&
                !device.is_input &&
-               device.type != AUDIO_TYPE_INTERNAL) {
+               device.type != AUDIO_TYPE_INTERNAL_SPEAKER) {
       has_alternative_output_ = true;
     }
   }

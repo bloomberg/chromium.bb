@@ -31,10 +31,10 @@ class CHROMEOS_EXPORT CrasAudioClient {
     // Called when audio output device volume changed to new value of |volume|.
     virtual void OutputVolumeChanged(int volume);
 
-    // Called whne audio output mute state changed to new state of |mute_on|.
+    // Called when audio output mute state changed to new state of |mute_on|.
     virtual void OutputMuteChanged(bool mute_on);
 
-    // Called when audio input gain changeg to new value of |gain|.
+    // Called when audio input gain changes to new value of |gain|.
     virtual void InputGainChanged(int gain);
 
     // Called when audio input mute state changed to new state of |mute_on|.
@@ -90,10 +90,10 @@ class CHROMEOS_EXPORT CrasAudioClient {
   // Sets input mute state to |mute_on| value.
   virtual void SetInputMute(bool mute_on) = 0;
 
-  // Sets the active output noe to |node_id|.
+  // Sets the active output node to |node_id|.
   virtual void SetActiveOutputNode(uint64 node_id) = 0;
 
-  // Sets the active input noe to |node_id|.
+  // Sets the active input node to |node_id|.
   virtual void SetActiveInputNode(uint64 node_id) = 0;
 
   // Creates the instance.

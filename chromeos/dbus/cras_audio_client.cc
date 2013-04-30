@@ -361,6 +361,9 @@ class CrasAudioClientImpl : public CrasAudioClient {
       } else if (key == cras::kActiveProperty) {
         if (!value_reader.PopBool(&node->active))
           return false;
+      } else if (key == cras::kPluggedTimeProperty) {
+        if (!value_reader.PopUint64(&node->plugged_time))
+          return false;
       }
     }
 
