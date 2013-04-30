@@ -108,7 +108,8 @@ TEST_F(DriveFileSyncServiceTest, DeleteOriginDirectory) {
   std::string origin_dir_resource_id = "uninstalledappresourceid";
   fake_sync_client()->PushRemoteChange(
       "parent_id", "parent_title",
-      "uninstall_me_folder", origin_dir_resource_id, "resource_md5", false);
+      "uninstall_me_folder", origin_dir_resource_id, "resource_md5",
+      SYNC_FILE_TYPE_FILE, false);
 
   // Add meta_data entry so GURL->resourse_id mapping is there.
   const GURL origin_gurl("chrome-extension://uninstallme");

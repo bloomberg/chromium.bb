@@ -82,7 +82,14 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     return SyncEvent(
         "SyncEvent: Add or Update remote file [" + title + "]",
         base::Bind(&DriveFileSyncServiceSyncTest::AddOrUpdateResource,
-                   base::Unretained(this), title));
+                   base::Unretained(this), title, SYNC_FILE_TYPE_FILE));
+  }
+
+  SyncEvent CreateRemoteDirectoryAddEvent(const std::string& title) {
+    return SyncEvent(
+        "SyncEvent: Add remote directory [" + title + "]",
+        base::Bind(&DriveFileSyncServiceSyncTest::AddOrUpdateResource,
+                   base::Unretained(this), title, SYNC_FILE_TYPE_DIRECTORY));
   }
 
   SyncEvent CreateRemoteFileDeleteEvent(const std::string& title) {
@@ -184,7 +191,8 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
-  void AddOrUpdateResource(const std::string& title) {
+  void AddOrUpdateResource(const std::string& title,
+                           SyncFileType type) {
     typedef ResourceIdByTitle::iterator iterator;
     std::pair<iterator, bool> inserted =
         resources_.insert(std::make_pair(title, std::string()));
@@ -197,7 +205,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     fake_sync_client_->PushRemoteChange(
         kParentResourceId, kAppId, title, resource_id,
         base::StringPrintf("%" PRIx64, base::RandUint64()),
-        false /* deleted */);
+        type, false /* deleted */);
     message_loop_.RunUntilIdle();
   }
 
@@ -209,7 +217,8 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     resources_.erase(found);
     fake_sync_client_->PushRemoteChange(
         kParentResourceId, kAppId,
-        title, resource_id, std::string(), true /* deleted */);
+        title, resource_id, std::string(),
+        SYNC_FILE_TYPE_UNKNOWN, true /* deleted */);
     message_loop_.RunUntilIdle();
   }
 
@@ -391,6 +400,23 @@ TEST_F(DriveFileSyncServiceSyncTest, RelaunchTestWithSquashedDeletion) {
     CreateFetchEvent(),
     CreateProcessRemoteChangeEvent(),
     CreateRelaunchEvent(),
+  };
+  RunTest(CreateTestCase(sync_event));
+}
+
+TEST_F(DriveFileSyncServiceSyncTest, CreateDirectoryTest) {
+  std::string kDir = "dir title";
+  SyncEvent sync_event[] = {
+    CreateRemoteDirectoryAddEvent(kDir),
+  };
+  RunTest(CreateTestCase(sync_event));
+}
+
+TEST_F(DriveFileSyncServiceSyncTest, DeleteDirectoryTest) {
+  std::string kDir = "dir title";
+  SyncEvent sync_event[] = {
+    CreateRemoteDirectoryAddEvent(kDir),
+    CreateRemoteFileDeleteEvent(kDir),
   };
   RunTest(CreateTestCase(sync_event));
 }

@@ -38,7 +38,8 @@ struct FakeDriveFileSyncClient::ChangeStampComparator {
 };
 
 FakeDriveFileSyncClient::RemoteResource::RemoteResource()
-    : deleted(false),
+    : type(SYNC_FILE_TYPE_UNKNOWN),
+      deleted(false),
       changestamp(0) {
 }
 
@@ -48,6 +49,7 @@ FakeDriveFileSyncClient::RemoteResource::RemoteResource(
     const std::string& title,
     const std::string& resource_id,
     const std::string& md5_checksum,
+    SyncFileType type,
     bool deleted,
     int64 changestamp)
     : parent_resource_id(parent_resource_id),
@@ -55,6 +57,7 @@ FakeDriveFileSyncClient::RemoteResource::RemoteResource(
       title(title),
       resource_id(resource_id),
       md5_checksum(md5_checksum),
+      type(type),
       deleted(deleted),
       changestamp(changestamp) {
 }
@@ -217,6 +220,7 @@ void FakeDriveFileSyncClient::DeleteFile(
                    deleted_directory.title,
                    deleted_directory.resource_id,
                    deleted_directory.md5_checksum,
+                   SYNC_FILE_TYPE_UNKNOWN,
                    true /* deleted */);
 
   error = google_apis::HTTP_SUCCESS;
@@ -241,10 +245,11 @@ void FakeDriveFileSyncClient::PushRemoteChange(
     const std::string& title,
     const std::string& resource_id,
     const std::string& md5,
+    SyncFileType type,
     bool deleted) {
   remote_resources_[resource_id] = RemoteResource(
       parent_resource_id, parent_title, title, resource_id,
-      md5, deleted, ++largest_changestamp_);
+      md5, type, deleted, ++largest_changestamp_);
 }
 
 scoped_ptr<google_apis::ResourceEntry>

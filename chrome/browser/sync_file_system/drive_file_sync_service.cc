@@ -1451,20 +1451,32 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
 
   switch (operation) {
     case REMOTE_SYNC_OPERATION_ADD_FILE:
+    case REMOTE_SYNC_OPERATION_ADD_DIRECTORY:
       param->sync_action = SYNC_ACTION_ADDED;
+      break;
+    case REMOTE_SYNC_OPERATION_UPDATE_FILE:
+      param->sync_action = SYNC_ACTION_UPDATED;
+      break;
+    case REMOTE_SYNC_OPERATION_DELETE_FILE:
+    case REMOTE_SYNC_OPERATION_DELETE_DIRECTORY:
+      param->sync_action = SYNC_ACTION_DELETED;
+      break;
+    case REMOTE_SYNC_OPERATION_NONE:
+    case REMOTE_SYNC_OPERATION_DELETE_METADATA:
+      param->sync_action = SYNC_ACTION_NONE;
+      break;
+    default:
+      break;
+  }
+
+  switch (operation) {
+    case REMOTE_SYNC_OPERATION_ADD_FILE:
+    case REMOTE_SYNC_OPERATION_UPDATE_FILE:
       DownloadForRemoteSync(param.Pass());
       return;
     case REMOTE_SYNC_OPERATION_ADD_DIRECTORY:
-      // TODO(nhiroki): support directory operations (http://crbug.com/161442).
-      NOTIMPLEMENTED();
-      AbortRemoteSync(param.Pass(), SYNC_STATUS_FAILED);
-      return;
-    case REMOTE_SYNC_OPERATION_UPDATE_FILE:
-      param->sync_action = SYNC_ACTION_UPDATED;
-      DownloadForRemoteSync(param.Pass());
-      return;
+    case REMOTE_SYNC_OPERATION_DELETE_DIRECTORY:
     case REMOTE_SYNC_OPERATION_DELETE_FILE: {
-      param->sync_action = SYNC_ACTION_DELETED;
       const FileChange& file_change = remote_file_change;
       remote_change_processor_->ApplyRemoteChange(
           file_change, base::FilePath(), url,
@@ -1472,13 +1484,7 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
                      base::Passed(&param)));
       return;
     }
-    case REMOTE_SYNC_OPERATION_DELETE_DIRECTORY:
-      // TODO(nhiroki): support directory operations (http://crbug.com/161442).
-      NOTIMPLEMENTED();
-      AbortRemoteSync(param.Pass(), SYNC_STATUS_FAILED);
-      return;
     case REMOTE_SYNC_OPERATION_NONE:
-      param->sync_action = SYNC_ACTION_NONE;
       CompleteRemoteSync(param.Pass(), SYNC_STATUS_OK);
       return;
     case REMOTE_SYNC_OPERATION_CONFLICT:
@@ -1494,11 +1500,21 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
       metadata_store_->UpdateEntry(
           url, drive_metadata, base::Bind(&EmptyStatusCallback));
       param->sync_action = SYNC_ACTION_ADDED;
-      DownloadForRemoteSync(param.Pass());
+      if (param->remote_change.change.file_type() == SYNC_FILE_TYPE_FILE) {
+        DownloadForRemoteSync(param.Pass());
+        return;
+      }
+
+      // |remote_change_processor| should replace any existing file or directory
+      // on ApplyRemoteChange call.
+      const FileChange& file_change = remote_file_change;
+      remote_change_processor_->ApplyRemoteChange(
+          file_change, base::FilePath(), url,
+          base::Bind(&DriveFileSyncService::DidApplyRemoteChange, AsWeakPtr(),
+                     base::Passed(&param)));
       return;
     }
     case REMOTE_SYNC_OPERATION_DELETE_METADATA:
-      param->sync_action = SYNC_ACTION_NONE;
       if (missing_db_entry)
         CompleteRemoteSync(param.Pass(), SYNC_STATUS_OK);
       else
@@ -1767,9 +1783,12 @@ void DriveFileSyncService::ResolveConflictToLocalForRemoteSync(
   const FileSystemURL& url = param->remote_change.url;
   param->sync_action = SYNC_ACTION_NONE;
   param->clear_local_changes = false;
+
+  // Re-add a fake local change to resolve it later in next LocalSync.
+  SyncFileType local_file_type = param->local_metadata.file_type;
   remote_change_processor_->RecordFakeLocalChange(
       url,
-      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE, SYNC_FILE_TYPE_FILE),
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE, local_file_type),
       base::Bind(&DriveFileSyncService::DidResolveConflictToLocalChange,
                  AsWeakPtr(), base::Passed(&param)));
 }

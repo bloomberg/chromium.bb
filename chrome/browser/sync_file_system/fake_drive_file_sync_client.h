@@ -12,6 +12,7 @@
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_client_interface.h"
+#include "webkit/fileapi/syncable/sync_file_type.h"
 
 class GURL;
 class Profile;
@@ -31,6 +32,7 @@ class FakeDriveFileSyncClient
     std::string title;
     std::string resource_id;
     std::string md5_checksum;
+    SyncFileType type;
     bool deleted;
     int64 changestamp;
 
@@ -40,6 +42,7 @@ class FakeDriveFileSyncClient
                    const std::string& title,
                    const std::string& resource_id,
                    const std::string& md5_checksum,
+                   SyncFileType type,
                    bool deleted,
                    int64 changestamp);
     ~RemoteResource();
@@ -113,6 +116,7 @@ class FakeDriveFileSyncClient
                         const std::string& title,
                         const std::string& resource_id,
                         const std::string& md5,
+                        SyncFileType type,
                         bool deleted);
 
   const RemoteResourceByResourceId& remote_resources() const {

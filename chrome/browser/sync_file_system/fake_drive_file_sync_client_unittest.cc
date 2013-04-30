@@ -58,19 +58,19 @@ TEST(FakeDriveFileSyncClientTest, ChangeSquashTest) {
 
   sync_client.PushRemoteChange(
       kParentResourceId, kParentTitle,
-      kTitle1, kResourceId1, kMD5_1, false /* deleted */);
+      kTitle1, kResourceId1, kMD5_1, SYNC_FILE_TYPE_FILE, false /* deleted */);
   sync_client.PushRemoteChange(
       kParentResourceId, kParentTitle,
-      kTitle1, kResourceId1, kMD5_1, false /* deleted */);
+      kTitle1, kResourceId1, kMD5_1, SYNC_FILE_TYPE_FILE, false /* deleted */);
   sync_client.PushRemoteChange(
       kParentResourceId, kParentTitle,
-      kTitle1, kResourceId1, kMD5_1, true /* deleted */);
+      kTitle1, kResourceId1, kMD5_1, SYNC_FILE_TYPE_FILE, true /* deleted */);
   sync_client.PushRemoteChange(
       kParentResourceId, kParentTitle,
-      kTitle2, kResourceId2, kMD5_2, false /* deleted */);
+      kTitle2, kResourceId2, kMD5_2, SYNC_FILE_TYPE_FILE, false /* deleted */);
   sync_client.PushRemoteChange(
       kParentResourceId, kParentTitle,
-      kTitle3, kResourceId2, kMD5_3, false /* deleted */);
+      kTitle3, kResourceId2, kMD5_3, SYNC_FILE_TYPE_FILE, false /* deleted */);
 
   google_apis::GDataErrorCode error;
   std::string md5;
@@ -103,7 +103,8 @@ TEST(FakeDriveFileSyncClientTest, DeleteFile) {
   std::string resource_id = "resource_id_to_be_deleted";
   sync_client.PushRemoteChange(
       "parent_id", "parent_title",
-      "resource_title", resource_id, "resource_md5", false /* deleted */);
+      "resource_title", resource_id, "resource_md5",
+      SYNC_FILE_TYPE_FILE, false /* deleted */);
 
   google_apis::GDataErrorCode error = google_apis::HTTP_NOT_FOUND;
   sync_client.DeleteFile(
