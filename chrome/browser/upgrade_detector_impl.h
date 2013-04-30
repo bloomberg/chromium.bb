@@ -7,6 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/timer.h"
+#include "chrome/browser/net/network_time_tracker.h"
 #include "chrome/browser/upgrade_detector.h"
 
 template <typename T> struct DefaultSingletonTraits;
@@ -67,6 +68,9 @@ class UpgradeDetectorImpl : public UpgradeDetector {
 
   // The date the binaries were built.
   base::Time build_date_;
+
+  // Tracker for getting network time.
+  NetworkTimeTracker network_time_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(UpgradeDetectorImpl);
 };

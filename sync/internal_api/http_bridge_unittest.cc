@@ -55,7 +55,8 @@ class SyncHttpBridgeTest : public testing::Test {
     HttpBridge* bridge = new HttpBridge(
         new HttpBridge::RequestContextGetter(
             fake_default_request_context_getter_,
-            "user agent"));
+            "user agent"),
+        NetworkTimeUpdateCallback());
     return bridge;
   }
 
@@ -121,7 +122,8 @@ class ShuntedHttpBridge : public HttpBridge {
                     SyncHttpBridgeTest* test, bool never_finishes)
       : HttpBridge(
           new HttpBridge::RequestContextGetter(
-              baseline_context_getter, "user agent")),
+              baseline_context_getter, "user agent"),
+          NetworkTimeUpdateCallback()),
         test_(test), never_finishes_(never_finishes) { }
  protected:
   virtual void MakeAsynchronousPost() OVERRIDE {

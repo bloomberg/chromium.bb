@@ -186,6 +186,8 @@
         'base/network_config_watcher_mac.h',
         'base/network_delegate.cc',
         'base/network_delegate.h',
+        'base/network_time_notifier.cc',
+        'base/network_time_notifier.h',
         'base/nss_memio.c',
         'base/nss_memio.h',
         'base/openssl_private_key_store.h',

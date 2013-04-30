@@ -17,6 +17,7 @@
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/proto/trials_seed.pb.h"
+#include "chrome/browser/net/network_time_tracker.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/pref_names.h"
@@ -217,11 +218,6 @@ void VariationsService::StartRepeatedVariationsSeedFetch() {
   request_scheduler_->Start();
 }
 
-bool VariationsService::GetNetworkTime(base::Time* network_time,
-                                       base::TimeDelta* uncertainty) const {
-  return network_time_tracker_.GetNetworkTime(network_time, uncertainty);
-}
-
 // static
 GURL VariationsService::GetVariationsServerURL(PrefService* local_state) {
   std::string server_url_string(CommandLine::ForCurrentProcess()->
@@ -329,7 +325,7 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
     DCHECK(success || response_date.is_null());
 
     if (!response_date.is_null()) {
-      network_time_tracker_.UpdateNetworkTime(
+      NetworkTimeTracker::BuildNotifierUpdateCallback().Run(
           response_date,
           base::TimeDelta::FromMilliseconds(kServerTimeResolutionMs),
           latency);

@@ -21,6 +21,7 @@
 #include "base/tracked_objects.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/net/network_time_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
@@ -391,11 +392,14 @@ SyncBackendHost::~SyncBackendHost() {
 namespace {
 
 scoped_ptr<syncer::HttpPostProviderFactory> MakeHttpBridgeFactory(
-    const scoped_refptr<net::URLRequestContextGetter>& getter) {
+    const scoped_refptr<net::URLRequestContextGetter>& getter,
+    const NetworkTimeTracker::UpdateCallback& update_callback) {
   chrome::VersionInfo version_info;
   return scoped_ptr<syncer::HttpPostProviderFactory>(
       new syncer::HttpBridgeFactory(
-          getter, DeviceInfo::MakeUserAgentForSyncApi(version_info)));
+          getter,
+          DeviceInfo::MakeUserAgentForSyncApi(version_info),
+          update_callback));
 }
 
 }  // namespace
@@ -449,7 +453,8 @@ void SyncBackendHost::Initialize(
       event_handler,
       sync_service_url,
       base::Bind(&MakeHttpBridgeFactory,
-                 make_scoped_refptr(profile_->GetRequestContext())),
+                 make_scoped_refptr(profile_->GetRequestContext()),
+                 NetworkTimeTracker::BuildNotifierUpdateCallback()),
       credentials,
       android_invalidator_bridge_.get(),
       &invalidator_factory_,

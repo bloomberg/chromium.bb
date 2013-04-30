@@ -8,12 +8,14 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/network_time_notifier.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -35,6 +37,15 @@ class URLFetcher;
 
 namespace syncer {
 
+// Callback for updating the network time.
+// Params:
+// const base::Time& network_time - the new network time.
+// const base::TimeDelta& resolution - how precise the reading is.
+// const base::TimeDelta& latency - the http request's latency.
+typedef base::Callback<void(const base::Time&,
+                            const base::TimeDelta&,
+                            const base::TimeDelta&)> NetworkTimeUpdateCallback;
+
 // A bridge between the syncer and Chromium HTTP layers.
 // Provides a way for the sync backend to use Chromium directly for HTTP
 // requests rather than depending on a third party provider (e.g libcurl).
@@ -46,8 +57,6 @@ class SYNC_EXPORT_PRIVATE HttpBridge
       public HttpPostProviderInterface,
       public net::URLFetcherDelegate {
  public:
-  friend class SyncHttpBridgeTest;
-
   // A request context used for HTTP requests bridged from the sync backend.
   // A bridged RequestContext has a dedicated in-memory cookie store and does
   // not use a cache. Thus the same type can be used for incognito mode.
@@ -102,7 +111,8 @@ class SYNC_EXPORT_PRIVATE HttpBridge
     DISALLOW_COPY_AND_ASSIGN(RequestContextGetter);
   };
 
-  explicit HttpBridge(RequestContextGetter* context);
+  HttpBridge(RequestContextGetter* context,
+             const NetworkTimeUpdateCallback& network_time_update_callback);
 
   // HttpPostProvider implementation.
   virtual void SetExtraRequestHeaders(const char* headers) OVERRIDE;
@@ -136,6 +146,7 @@ class SYNC_EXPORT_PRIVATE HttpBridge
   virtual void MakeAsynchronousPost();
 
  private:
+  friend class SyncHttpBridgeTest;
   friend class ::HttpBridgeTest;
 
   // Called on the IO loop to issue the network request. The extra level
@@ -148,6 +159,8 @@ class SYNC_EXPORT_PRIVATE HttpBridge
   // callbacks coming from the IO thread en route to finally destroying the
   // fetcher.
   void DestroyURLFetcherOnIOThread(net::URLFetcher* fetcher);
+
+  void UpdateNetworkTime();
 
   // Gets a customized net::URLRequestContext for bridged requests. See
   // RequestContext definition for details.
@@ -185,6 +198,11 @@ class SYNC_EXPORT_PRIVATE HttpBridge
     // deleted on. We must manually delete url_poster_ on the IO loop.
     net::URLFetcher* url_poster;
 
+    // Start and finish time of request. Set immediately before sending
+    // request and after receiving response.
+    base::Time start_time;
+    base::Time end_time;
+
     // Used to support 'Abort' functionality.
     bool aborted;
 
@@ -204,6 +222,9 @@ class SYNC_EXPORT_PRIVATE HttpBridge
   mutable base::Lock fetch_state_lock_;
   URLFetchState fetch_state_;
 
+  // Callback for updating network time.
+  NetworkTimeUpdateCallback network_time_update_callback_;
+
   DISALLOW_COPY_AND_ASSIGN(HttpBridge);
 };
 
@@ -211,7 +232,8 @@ class SYNC_EXPORT HttpBridgeFactory : public HttpPostProviderFactory {
  public:
   HttpBridgeFactory(
       net::URLRequestContextGetter* baseline_context_getter,
-      const std::string& user_agent);
+      const std::string& user_agent,
+      const NetworkTimeUpdateCallback& network_time_update_callback);
   virtual ~HttpBridgeFactory();
 
   // HttpPostProviderFactory:
@@ -225,6 +247,8 @@ class SYNC_EXPORT HttpBridgeFactory : public HttpPostProviderFactory {
 
   const scoped_refptr<HttpBridge::RequestContextGetter>
       request_context_getter_;
+
+  NetworkTimeUpdateCallback network_time_update_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpBridgeFactory);
 };

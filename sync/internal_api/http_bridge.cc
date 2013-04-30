@@ -58,16 +58,20 @@ HttpBridge::RequestContextGetter::GetNetworkTaskRunner() const {
 
 HttpBridgeFactory::HttpBridgeFactory(
     net::URLRequestContextGetter* baseline_context_getter,
-    const std::string& user_agent)
+    const std::string& user_agent,
+    const NetworkTimeUpdateCallback& network_time_update_callback)
     : request_context_getter_(
         new HttpBridge::RequestContextGetter(
-            baseline_context_getter, user_agent)) {}
+            baseline_context_getter, user_agent)),
+      network_time_update_callback_(network_time_update_callback) {
+}
 
 HttpBridgeFactory::~HttpBridgeFactory() {
 }
 
 HttpPostProviderInterface* HttpBridgeFactory::Create() {
-  HttpBridge* http = new HttpBridge(request_context_getter_);
+  HttpBridge* http = new HttpBridge(request_context_getter_,
+                                    network_time_update_callback_);
   http->AddRef();
   return http;
 }
@@ -130,12 +134,15 @@ HttpBridge::URLFetchState::URLFetchState() : url_poster(NULL),
                                              error_code(-1) {}
 HttpBridge::URLFetchState::~URLFetchState() {}
 
-HttpBridge::HttpBridge(HttpBridge::RequestContextGetter* context_getter)
+HttpBridge::HttpBridge(
+    HttpBridge::RequestContextGetter* context_getter,
+    const NetworkTimeUpdateCallback& network_time_update_callback)
     : context_getter_for_request_(context_getter),
       network_task_runner_(
           context_getter_for_request_->GetNetworkTaskRunner()),
       created_on_loop_(MessageLoop::current()),
-      http_post_completed_(false, false) {
+      http_post_completed_(false, false),
+      network_time_update_callback_(network_time_update_callback) {
 }
 
 HttpBridge::~HttpBridge() {
@@ -225,6 +232,7 @@ void HttpBridge::MakeAsynchronousPost() {
   fetch_state_.url_poster->SetUploadData(content_type_, request_content_);
   fetch_state_.url_poster->SetExtraRequestHeaders(extra_headers_);
   fetch_state_.url_poster->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES);
+  fetch_state_.start_time = base::Time::Now();
   fetch_state_.url_poster->Start();
 }
 
@@ -285,6 +293,7 @@ void HttpBridge::OnURLFetchComplete(const net::URLFetcher* source) {
   if (fetch_state_.aborted)
     return;
 
+  fetch_state_.end_time = base::Time::Now();
   fetch_state_.request_completed = true;
   fetch_state_.request_succeeded =
       (net::URLRequestStatus::SUCCESS == source->GetStatus().status());
@@ -299,6 +308,7 @@ void HttpBridge::OnURLFetchComplete(const net::URLFetcher* source) {
 
   source->GetResponseAsString(&fetch_state_.response_content);
   fetch_state_.response_headers = source->GetResponseHeaders();
+  UpdateNetworkTime();
 
   // End of the line for url_poster_. It lives only on the IO loop.
   // We defer deletion because we're inside a callback from a component of the
@@ -314,6 +324,24 @@ void HttpBridge::OnURLFetchComplete(const net::URLFetcher* source) {
 net::URLRequestContextGetter* HttpBridge::GetRequestContextGetterForTest()
     const {
   return context_getter_for_request_;
+}
+
+void HttpBridge::UpdateNetworkTime() {
+  std::string sane_time_str;
+  if (!fetch_state_.request_succeeded || fetch_state_.start_time.is_null() ||
+      fetch_state_.end_time < fetch_state_.start_time ||
+      !fetch_state_.response_headers->EnumerateHeader(NULL, "Sane-Time-Millis",
+                                                      &sane_time_str)) {
+    return;
+  }
+
+  int64 sane_time_ms = 0;
+  if (base::StringToInt64(sane_time_str, &sane_time_ms)) {
+    network_time_update_callback_.Run(
+        base::Time::FromJsTime(sane_time_ms),
+        base::TimeDelta::FromMilliseconds(1),
+        fetch_state_.end_time - fetch_state_.start_time);
+  }
 }
 
 }  // namespace syncer
