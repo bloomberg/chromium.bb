@@ -2679,6 +2679,12 @@ crbug.com/169374 transforms/3d/point-mapping/3d-point-mapping-coplanar.html [ Im
 crbug.com/169374 transforms/3d/point-mapping/3d-point-mapping-overlapping.html [ ImageOnlyFailure ]
 crbug.com/169374 transitions/default-timing-function.html [ ImageOnlyFailure ]
 
+# Needs rebaselines once bots cyclce.
+crbug.com/234652 fast/css/getComputedStyle/getComputedStyle-margin-percentage.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/234652 fast/css/percentage-non-integer.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/234652 svg/wicd/rightsizing-grid.xhtml [ Pass Failure ImageOnlyFailure ]
+crbug.com/234652 svg/wicd/test-rightsizing-b.xhtml [ Pass Failure ImageOnlyFailure ]
+
 # started failing in r149321/r149322
 crbug.com/236555 fast/forms/calendar-picker/week-picker-key-operations.html [ Failure ]
 
