@@ -441,7 +441,7 @@ static bool EnterSandbox(sandbox::SetuidSandboxClient* setuid_sandbox,
 
   PreSandboxInit();
   SkFontConfigInterface::SetGlobal(
-      new FontConfigIPC(Zygote::kMagicSandboxIPCDescriptor)))->unref();
+      new FontConfigIPC(Zygote::kMagicSandboxIPCDescriptor))->unref();
   return true;
 }
 
