@@ -253,8 +253,6 @@ onwaiting
 onwebkitanimationstart
 onwebkitanimationiteration
 onwebkitanimationend
-onwebkitbeginfullscreen
-onwebkitendfullscreen
 onwebkitfullscreenchange
 onwebkitfullscreenerror
 onwebkitkeyadded

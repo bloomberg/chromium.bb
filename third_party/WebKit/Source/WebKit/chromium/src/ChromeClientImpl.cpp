@@ -959,16 +959,6 @@ ChromeClient::CompositingTriggerFlags ChromeClientImpl::allowedCompositingTrigge
     return flags;
 }
 
-void ChromeClientImpl::enterFullscreenForNode(Node* node)
-{
-    ASSERT_NOT_REACHED();
-}
-
-void ChromeClientImpl::exitFullscreenForNode(Node* node)
-{
-    ASSERT_NOT_REACHED();
-}
-
 void ChromeClientImpl::enterFullScreenForElement(Element* element)
 {
     m_webView->enterFullScreenForElement(element);

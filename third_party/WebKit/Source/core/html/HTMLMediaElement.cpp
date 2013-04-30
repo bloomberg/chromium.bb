@@ -254,7 +254,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* docum
     , m_sentEndEvent(false)
     , m_pausedInternal(false)
     , m_sendProgressEvents(true)
-    , m_isFullscreen(false)
     , m_closedCaptionsVisible(false)
     , m_dispatchingCanPlayEvent(false)
     , m_loadInitiatedByUserGesture(false)
@@ -428,10 +427,6 @@ void HTMLMediaElement::parseAttribute(const QualifiedName& name, const AtomicStr
         setAttributeEventListener(eventNames().volumechangeEvent, createAttributeEventListener(this, name, value));
     else if (name == onwaitingAttr)
         setAttributeEventListener(eventNames().waitingEvent, createAttributeEventListener(this, name, value));
-    else if (name == onwebkitbeginfullscreenAttr)
-        setAttributeEventListener(eventNames().webkitbeginfullscreenEvent, createAttributeEventListener(this, name, value));
-    else if (name == onwebkitendfullscreenAttr)
-        setAttributeEventListener(eventNames().webkitendfullscreenEvent, createAttributeEventListener(this, name, value));
     else
         HTMLElement::parseAttribute(name, value);
 }
@@ -491,8 +486,6 @@ void HTMLMediaElement::removedFrom(ContainerNode* insertionPoint)
         configureMediaControls();
         if (m_networkState > NETWORK_EMPTY)
             pause();
-        if (m_isFullscreen)
-            exitFullscreen();
     }
 
     HTMLElement::removedFrom(insertionPoint);
@@ -3696,8 +3689,6 @@ bool HTMLMediaElement::canSuspend() const
 void HTMLMediaElement::stop()
 {
     LOG(Media, "HTMLMediaElement::stop");
-    if (m_isFullscreen)
-        exitFullscreen();
 
     m_inActiveDocument = false;
     userCancelledLoad();
@@ -3767,52 +3758,23 @@ void HTMLMediaElement::setTextTrackRepresentation(TextTrackRepresentation* repre
 
 bool HTMLMediaElement::isFullscreen() const
 {
-    if (m_isFullscreen)
-        return true;
-
-    if (document()->webkitIsFullScreen() && document()->webkitCurrentFullScreenElement() == this)
-        return true;
-
-    return false;
+    return document()->webkitIsFullScreen() && document()->webkitCurrentFullScreenElement() == this;
 }
 
 void HTMLMediaElement::enterFullscreen()
 {
     LOG(Media, "HTMLMediaElement::enterFullscreen");
 
-    if (document() && document()->settings() && document()->settings()->fullScreenEnabled()) {
+    if (document()->settings() && document()->settings()->fullScreenEnabled())
         document()->requestFullScreenForElement(this, 0, Document::ExemptIFrameAllowFullScreenRequirement);
-        return;
-    }
-
-    ASSERT(!m_isFullscreen);
-    m_isFullscreen = true;
-    if (hasMediaControls())
-        mediaControls()->enteredFullscreen();
-    if (document() && document()->page()) {
-        document()->page()->chrome()->client()->enterFullscreenForNode(this);
-        scheduleEvent(eventNames().webkitbeginfullscreenEvent);
-    }
 }
 
 void HTMLMediaElement::exitFullscreen()
 {
     LOG(Media, "HTMLMediaElement::exitFullscreen");
 
-    if (document() && document()->settings() && document()->settings()->fullScreenEnabled()) {
-        if (document()->webkitIsFullScreen() && document()->webkitCurrentFullScreenElement() == this)
-            document()->webkitCancelFullScreen();
-        return;
-    }
-
-    ASSERT(m_isFullscreen);
-    m_isFullscreen = false;
-    if (hasMediaControls())
-        mediaControls()->exitedFullscreen();
-    if (document() && document()->page()) {
-        document()->page()->chrome()->client()->exitFullscreenForNode(this);
-        scheduleEvent(eventNames().webkitendfullscreenEvent);
-    }
+    if (document()->settings() && document()->settings()->fullScreenEnabled() && isFullscreen())
+        document()->webkitCancelFullScreen();
 }
 
 void HTMLMediaElement::didBecomeFullscreenElement()

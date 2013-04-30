@@ -249,9 +249,6 @@ public:
     // Returns a bitfield indicating conditions that can trigger the compositor.
     virtual CompositingTriggerFlags allowedCompositingTriggers() const { return static_cast<CompositingTriggerFlags>(AllTriggers); }
 
-    virtual void enterFullscreenForNode(Node*) { }
-    virtual void exitFullscreenForNode(Node*) { }
-
     virtual void enterFullScreenForElement(Element*) { }
     virtual void exitFullScreenForElement(Element*) { }
     virtual void setRootFullScreenLayer(GraphicsLayer*) { }

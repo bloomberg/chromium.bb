@@ -611,7 +611,6 @@ private:
     // support progress events so setting m_sendProgressEvents disables them 
     bool m_sendProgressEvents : 1;
 
-    bool m_isFullscreen : 1;
     bool m_closedCaptionsVisible : 1;
 
     bool m_dispatchingCanPlayEvent : 1;
