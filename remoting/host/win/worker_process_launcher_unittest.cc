@@ -144,7 +144,7 @@ class WorkerProcessLauncherTest : public testing::Test {
   void QuitMainMessageLoop();
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_refptr<AutoThreadTaskRunner> task_runner_;
 
   // Receives messages sent to the worker process.
@@ -176,12 +176,10 @@ class WorkerProcessLauncherTest : public testing::Test {
   bool permanent_error_;
 };
 
-
 WorkerProcessLauncherTest::WorkerProcessLauncherTest()
-    : message_loop_(MessageLoop::TYPE_IO),
+    : message_loop_(base::MessageLoop::TYPE_IO),
       client_pid_(GetCurrentProcessId()),
-      permanent_error_(false) {
-}
+      permanent_error_(false) {}
 
 WorkerProcessLauncherTest::~WorkerProcessLauncherTest() {
 }
@@ -330,7 +328,7 @@ void WorkerProcessLauncherTest::StopWorker() {
 }
 
 void WorkerProcessLauncherTest::QuitMainMessageLoop() {
-  message_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 TEST_F(WorkerProcessLauncherTest, Start) {

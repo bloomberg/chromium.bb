@@ -26,16 +26,16 @@ FakeSocket::FakeSocket()
       read_pending_(false),
       read_buffer_size_(0),
       input_pos_(0),
-      message_loop_(MessageLoop::current()),
+      message_loop_(base::MessageLoop::current()),
       weak_factory_(this) {
 }
 
 FakeSocket::~FakeSocket() {
-  EXPECT_EQ(message_loop_, MessageLoop::current());
+  EXPECT_EQ(message_loop_, base::MessageLoop::current());
 }
 
 void FakeSocket::AppendInputData(const std::vector<char>& data) {
-  EXPECT_EQ(message_loop_, MessageLoop::current());
+  EXPECT_EQ(message_loop_, base::MessageLoop::current());
   input_data_.insert(input_data_.end(), data.begin(), data.end());
   // Complete pending read if any.
   if (read_pending_) {
@@ -52,14 +52,14 @@ void FakeSocket::AppendInputData(const std::vector<char>& data) {
 }
 
 void FakeSocket::PairWith(FakeSocket* peer_socket) {
-  EXPECT_EQ(message_loop_, MessageLoop::current());
+  EXPECT_EQ(message_loop_, base::MessageLoop::current());
   peer_socket_ = peer_socket->weak_factory_.GetWeakPtr();
   peer_socket->peer_socket_ = weak_factory_.GetWeakPtr();
 }
 
 int FakeSocket::Read(net::IOBuffer* buf, int buf_len,
                      const net::CompletionCallback& callback) {
-  EXPECT_EQ(message_loop_, MessageLoop::current());
+  EXPECT_EQ(message_loop_, base::MessageLoop::current());
 
   if (next_read_error_ != net::OK) {
     int r = next_read_error_;
@@ -84,7 +84,7 @@ int FakeSocket::Read(net::IOBuffer* buf, int buf_len,
 
 int FakeSocket::Write(net::IOBuffer* buf, int buf_len,
                       const net::CompletionCallback& callback) {
-  EXPECT_EQ(message_loop_, MessageLoop::current());
+  EXPECT_EQ(message_loop_, base::MessageLoop::current());
   EXPECT_FALSE(write_pending_);
 
   if (write_limit_ > 0)
@@ -144,7 +144,7 @@ bool FakeSocket::SetSendBufferSize(int32 size) {
 }
 
 int FakeSocket::Connect(const net::CompletionCallback& callback) {
-  EXPECT_EQ(message_loop_, MessageLoop::current());
+  EXPECT_EQ(message_loop_, base::MessageLoop::current());
   return net::OK;
 }
 
@@ -153,7 +153,7 @@ void FakeSocket::Disconnect() {
 }
 
 bool FakeSocket::IsConnected() const {
-  EXPECT_EQ(message_loop_, MessageLoop::current());
+  EXPECT_EQ(message_loop_, base::MessageLoop::current());
   return true;
 }
 
@@ -174,7 +174,7 @@ int FakeSocket::GetLocalAddress(net::IPEndPoint* address) const {
 }
 
 const net::BoundNetLog& FakeSocket::NetLog() const {
-  EXPECT_EQ(message_loop_, MessageLoop::current());
+  EXPECT_EQ(message_loop_, base::MessageLoop::current());
   return net_log_;
 }
 
@@ -212,15 +212,15 @@ bool FakeSocket::GetSSLInfo(net::SSLInfo* ssl_info) {
 FakeUdpSocket::FakeUdpSocket()
     : read_pending_(false),
       input_pos_(0),
-      message_loop_(MessageLoop::current()) {
+      message_loop_(base::MessageLoop::current()) {
 }
 
 FakeUdpSocket::~FakeUdpSocket() {
-  EXPECT_EQ(message_loop_, MessageLoop::current());
+  EXPECT_EQ(message_loop_, base::MessageLoop::current());
 }
 
 void FakeUdpSocket::AppendInputPacket(const char* data, int data_size) {
-  EXPECT_EQ(message_loop_, MessageLoop::current());
+  EXPECT_EQ(message_loop_, base::MessageLoop::current());
   input_packets_.push_back(std::string());
   input_packets_.back().assign(data, data + data_size);
 
@@ -237,7 +237,7 @@ void FakeUdpSocket::AppendInputPacket(const char* data, int data_size) {
 
 int FakeUdpSocket::Read(net::IOBuffer* buf, int buf_len,
                         const net::CompletionCallback& callback) {
-  EXPECT_EQ(message_loop_, MessageLoop::current());
+  EXPECT_EQ(message_loop_, base::MessageLoop::current());
   if (input_pos_ < static_cast<int>(input_packets_.size())) {
     int result = std::min(
         buf_len, static_cast<int>(input_packets_[input_pos_].size()));
@@ -255,7 +255,7 @@ int FakeUdpSocket::Read(net::IOBuffer* buf, int buf_len,
 
 int FakeUdpSocket::Write(net::IOBuffer* buf, int buf_len,
                          const net::CompletionCallback& callback) {
-  EXPECT_EQ(message_loop_, MessageLoop::current());
+  EXPECT_EQ(message_loop_, base::MessageLoop::current());
   written_packets_.push_back(std::string());
   written_packets_.back().assign(buf->data(), buf->data() + buf_len);
   return buf_len;
@@ -274,7 +274,7 @@ FakeSession::FakeSession()
     : event_handler_(NULL),
       candidate_config_(CandidateSessionConfig::CreateDefault()),
       config_(SessionConfig::ForTest()),
-      message_loop_(MessageLoop::current()),
+      message_loop_(base::MessageLoop::current()),
       async_creation_(false),
       jid_(kTestJid),
       error_(OK),

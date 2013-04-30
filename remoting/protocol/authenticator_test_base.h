@@ -52,7 +52,7 @@ class AuthenticatorTestBase : public testing::Test {
   void OnClientConnected(net::Error error,
                          scoped_ptr<net::StreamSocket> socket);
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   scoped_refptr<RsaKeyPair> key_pair_;
   std::string host_public_key_;

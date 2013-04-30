@@ -213,10 +213,13 @@ void LocalInputMonitorLinux::Core::StartOnInputThread() {
 
   // Register OnFileCanReadWithoutBlocking() to be called every time there is
   // something to read from |x_record_display_|.
-  MessageLoopForIO* message_loop = MessageLoopForIO::current();
-  int result = message_loop->WatchFileDescriptor(
-      ConnectionNumber(x_record_display_), true, MessageLoopForIO::WATCH_READ,
-      &controller_, this);
+  base::MessageLoopForIO* message_loop = base::MessageLoopForIO::current();
+  int result =
+      message_loop->WatchFileDescriptor(ConnectionNumber(x_record_display_),
+                                        true,
+                                        base::MessageLoopForIO::WATCH_READ,
+                                        &controller_,
+                                        this);
   if (!result) {
     LOG(ERROR) << "Failed to create X record task.";
     return;

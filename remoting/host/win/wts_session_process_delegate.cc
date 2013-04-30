@@ -436,7 +436,7 @@ void WtsSessionProcessDelegate::Core::InitializeJob() {
   }
 
   // Register to receive job notifications via the I/O thread's completion port.
-  if (!MessageLoopForIO::current()->RegisterJobObject(job, this)) {
+  if (!base::MessageLoopForIO::current()->RegisterJobObject(job, this)) {
     LOG_GETLASTERROR(ERROR)
         << "Failed to associate the job object with a completion port";
     return;

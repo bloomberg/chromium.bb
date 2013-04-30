@@ -39,9 +39,9 @@ int WINAPI WinMain(HINSTANCE instance_handle, HINSTANCE prev_instance_handle,
   base::AtExitManager exit_manager;
 
   // Provide message loops and threads for the URLRequestContextGetter.
-  MessageLoop message_loop(MessageLoop::TYPE_UI);
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
   base::Thread io_thread("IO thread");
-  base::Thread::Options io_thread_options(MessageLoop::TYPE_IO, 0);
+  base::Thread::Options io_thread_options(base::MessageLoop::TYPE_IO, 0);
   io_thread.StartWithOptions(io_thread_options);
 
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_(

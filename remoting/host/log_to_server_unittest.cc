@@ -24,7 +24,7 @@ namespace remoting {
 namespace {
 
 ACTION_P(QuitMainMessageLoop, message_loop) {
-  message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 const char kJabberClientNamespace[] = "jabber:client";
@@ -136,7 +136,7 @@ class LogToServerTest : public testing::Test {
   }
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   MockSignalStrategy signal_strategy_;
   scoped_ptr<LogToServer> log_to_server_;

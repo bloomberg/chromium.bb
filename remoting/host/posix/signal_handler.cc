@@ -91,10 +91,13 @@ bool RegisterSignalHandler(int signal_number, const SignalHandler& handler) {
       LOG(ERROR) << "Could not create signal pipe: " << errno;
       return false;
     }
-    MessageLoopForIO* message_loop = MessageLoopForIO::current();
-    result = message_loop->WatchFileDescriptor(
-        pipe_fd[0], true, MessageLoopForIO::WATCH_READ,
-        &g_signal_listener->controller, g_signal_listener);
+    base::MessageLoopForIO* message_loop = base::MessageLoopForIO::current();
+    result =
+        message_loop->WatchFileDescriptor(pipe_fd[0],
+                                          true,
+                                          base::MessageLoopForIO::WATCH_READ,
+                                          &g_signal_listener->controller,
+                                          g_signal_listener);
     if (!result) {
       LOG(ERROR) << "Failed to create signal detector task.";
       close(pipe_fd[0]);

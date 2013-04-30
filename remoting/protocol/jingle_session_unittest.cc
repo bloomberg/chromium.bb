@@ -49,7 +49,8 @@ const int kMessages = 100;
 const char kChannelName[] = "test_channel";
 
 void QuitCurrentThread() {
-  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::MessageLoop::QuitClosure());
 }
 
 ACTION(QuitThread) {
@@ -88,7 +89,7 @@ class MockStreamChannelCallback {
 class JingleSessionTest : public testing::Test {
  public:
   JingleSessionTest() {
-    message_loop_.reset(new MessageLoopForIO());
+    message_loop_.reset(new base::MessageLoopForIO());
   }
 
   // Helper method that handles OnIncomingSession().
@@ -256,7 +257,7 @@ class JingleSessionTest : public testing::Test {
         .Times(AtLeast(1));
   }
 
-  scoped_ptr<MessageLoopForIO> message_loop_;
+  scoped_ptr<base::MessageLoopForIO> message_loop_;
 
   scoped_ptr<FakeSignalStrategy> host_signal_strategy_;
   scoped_ptr<FakeSignalStrategy> client_signal_strategy_;

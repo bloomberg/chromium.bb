@@ -154,7 +154,7 @@ class IpcDesktopEnvironmentTest : public testing::Test {
   void OnDesktopAttached(IPC::PlatformFileForTransit desktop_pipe);
 
   // The main message loop.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   // Runs until |desktop_session_proxy_| is connected to the desktop.
   scoped_ptr<base::RunLoop> setup_run_loop_;
@@ -206,7 +206,7 @@ class IpcDesktopEnvironmentTest : public testing::Test {
 };
 
 IpcDesktopEnvironmentTest::IpcDesktopEnvironmentTest()
-    : message_loop_(MessageLoop::TYPE_UI),
+    : message_loop_(base::MessageLoop::TYPE_UI),
       client_jid_("user@domain/rest-of-jid"),
       clipboard_stub_(NULL),
       remote_input_injector_(NULL),
@@ -222,8 +222,8 @@ void IpcDesktopEnvironmentTest::SetUp() {
   task_runner_ = new AutoThreadTaskRunner(
       message_loop_.message_loop_proxy(), main_run_loop_.QuitClosure());
 
-  io_task_runner_ = AutoThread::CreateWithType("IPC thread", task_runner_,
-                                               MessageLoop::TYPE_IO);
+  io_task_runner_ = AutoThread::CreateWithType(
+      "IPC thread", task_runner_, base::MessageLoop::TYPE_IO);
 
   setup_run_loop_.reset(new base::RunLoop());
 

@@ -104,8 +104,8 @@ const char kApplicationName[] = "chromoting";
 // linux.
 const char kAudioPipeSwitchName[] = "audio-pipe-name";
 
-void QuitMessageLoop(MessageLoop* message_loop) {
-  message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+void QuitMessageLoop(base::MessageLoop* message_loop) {
+  message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 }  // namespace
@@ -1135,11 +1135,10 @@ int HostProcessMain() {
   net::EnableSSLServerSockets();
 
   // Create the main message loop and start helper threads.
-  MessageLoop message_loop(MessageLoop::TYPE_UI);
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
   scoped_ptr<ChromotingHostContext> context =
-      ChromotingHostContext::Create(
-          new AutoThreadTaskRunner(message_loop.message_loop_proxy(),
-                                   MessageLoop::QuitClosure()));
+      ChromotingHostContext::Create(new AutoThreadTaskRunner(
+          message_loop.message_loop_proxy(), base::MessageLoop::QuitClosure()));
   if (!context)
     return kInitializationFailed;
 

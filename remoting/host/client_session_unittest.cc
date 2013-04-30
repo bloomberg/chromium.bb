@@ -90,7 +90,7 @@ class ClientSessionTest : public testing::Test {
   void QuitMainMessageLoop();
 
   // Message loop passed to |client_session_| to perform all functions on.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   // ClientSession instance under test.
   scoped_ptr<ClientSession> client_session_;
@@ -217,7 +217,7 @@ void ClientSessionTest::ConnectClientSession() {
 }
 
 void ClientSessionTest::QuitMainMessageLoop() {
-  message_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 MATCHER_P2(EqualsClipboardEvent, m, d, "") {

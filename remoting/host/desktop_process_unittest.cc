@@ -144,7 +144,7 @@ class DesktopProcessTest : public testing::Test {
   MockDaemonListener daemon_listener_;
 
   // Runs the daemon's end of the channel.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   scoped_refptr<AutoThreadTaskRunner> io_task_runner_;
 
@@ -155,10 +155,8 @@ class DesktopProcessTest : public testing::Test {
   MockNetworkListener network_listener_;
 };
 
-
 DesktopProcessTest::DesktopProcessTest()
-    : message_loop_(MessageLoop::TYPE_UI) {
-}
+    : message_loop_(base::MessageLoop::TYPE_UI) {}
 
 DesktopProcessTest::~DesktopProcessTest() {
 }
@@ -246,8 +244,8 @@ void DesktopProcessTest::RunDesktopProcess() {
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner = new AutoThreadTaskRunner(
       message_loop_.message_loop_proxy(), quit_ui_task_runner);
 
-  io_task_runner_ = AutoThread::CreateWithType("IPC thread", ui_task_runner,
-                                               MessageLoop::TYPE_IO);
+  io_task_runner_ = AutoThread::CreateWithType(
+      "IPC thread", ui_task_runner, base::MessageLoop::TYPE_IO);
 
   std::string channel_name = IPC::Channel::GenerateUniqueRandomChannelID();
   daemon_channel_.reset(new IPC::ChannelProxy(

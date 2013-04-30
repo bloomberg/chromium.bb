@@ -37,7 +37,7 @@ class ChromiumSocketFactoryTest : public testing::Test,
   }
 
  protected:
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   base::RunLoop run_loop_;
 
   scoped_ptr<talk_base::PacketSocketFactory> socket_factory_;

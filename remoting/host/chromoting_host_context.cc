@@ -18,22 +18,24 @@ ChromotingHostContext::ChromotingHostContext(
 #if defined(OS_WIN)
   // On Windows the AudioCapturer requires COM, so we run a single-threaded
   // apartment, which requires a UI thread.
-  audio_task_runner_ = AutoThread::CreateWithLoopAndComInitTypes(
-      "ChromotingAudioThread", ui_task_runner_, MessageLoop::TYPE_UI,
-      AutoThread::COM_INIT_STA);
+  audio_task_runner_ =
+      AutoThread::CreateWithLoopAndComInitTypes("ChromotingAudioThread",
+                                                ui_task_runner_,
+                                                base::MessageLoop::TYPE_UI,
+                                                AutoThread::COM_INIT_STA);
 #else // !defined(OS_WIN)
   audio_task_runner_ = AutoThread::CreateWithType(
-      "ChromotingAudioThread", ui_task_runner_, MessageLoop::TYPE_IO);
-#endif // !defined(OS_WIN)
+      "ChromotingAudioThread", ui_task_runner_, base::MessageLoop::TYPE_IO);
+#endif  // !defined(OS_WIN)
 
   file_task_runner_ = AutoThread::CreateWithType(
-      "ChromotingFileThread", ui_task_runner_, MessageLoop::TYPE_IO);
+      "ChromotingFileThread", ui_task_runner_, base::MessageLoop::TYPE_IO);
   input_task_runner_ = AutoThread::CreateWithType(
-      "ChromotingInputThread", ui_task_runner_, MessageLoop::TYPE_IO);
+      "ChromotingInputThread", ui_task_runner_, base::MessageLoop::TYPE_IO);
   network_task_runner_ = AutoThread::CreateWithType(
-      "ChromotingNetworkThread", ui_task_runner_, MessageLoop::TYPE_IO);
-  video_capture_task_runner_ = AutoThread::Create(
-      "ChromotingCaptureThread", ui_task_runner_);
+      "ChromotingNetworkThread", ui_task_runner_, base::MessageLoop::TYPE_IO);
+  video_capture_task_runner_ =
+      AutoThread::Create("ChromotingCaptureThread", ui_task_runner_);
   video_encode_task_runner_ = AutoThread::Create(
       "ChromotingEncodeThread", ui_task_runner_);
 

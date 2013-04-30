@@ -49,7 +49,7 @@ class ConfigFileWatcherTest : public testing::Test {
   void StopWatcher();
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   base::RunLoop run_loop_;
 
   ConfigFileWatcherDelegate delegate_;
@@ -61,9 +61,8 @@ class ConfigFileWatcherTest : public testing::Test {
   scoped_ptr<ConfigFileWatcher> watcher_;
 };
 
-
 ConfigFileWatcherTest::ConfigFileWatcherTest()
-    : message_loop_(MessageLoop::TYPE_UI) {
+    : message_loop_(base::MessageLoop::TYPE_UI) {
 }
 
 ConfigFileWatcherTest::~ConfigFileWatcherTest() {
@@ -79,8 +78,8 @@ void ConfigFileWatcherTest::SetUp() {
       message_loop_.message_loop_proxy(), run_loop_.QuitClosure());
 
   scoped_refptr<AutoThreadTaskRunner> io_task_runner =
-      AutoThread::CreateWithType("IPC thread", task_runner,
-                                 MessageLoop::TYPE_IO);
+      AutoThread::CreateWithType(
+          "IPC thread", task_runner, base::MessageLoop::TYPE_IO);
 
   // Create an instance of the config watcher.
   watcher_.reset(

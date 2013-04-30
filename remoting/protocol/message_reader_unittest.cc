@@ -98,7 +98,7 @@ class MessageReaderTest : public testing::Test {
     callback_.OnMessage(done_callback);
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_ptr<MessageReader> reader_;
   FakeSocket socket_;
   MockMessageReceivedCallback callback_;

@@ -140,7 +140,7 @@ void RdpClient::Core::Connect(const SkISize& screen_size) {
     return;
   }
 
-  DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
+  DCHECK_EQ(base::MessageLoop::current()->type(), base::MessageLoop::TYPE_UI);
   DCHECK(!rdp_client_window_);
   DCHECK(!self_);
 

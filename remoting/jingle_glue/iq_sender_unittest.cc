@@ -78,7 +78,7 @@ class IqSenderTest : public testing::Test {
     delete sent_stanza;
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   MockSignalStrategy signal_strategy_;
   scoped_ptr<IqSender> sender_;
   MockCallback callback_;
@@ -113,7 +113,7 @@ TEST_F(IqSenderTest, Timeout) {
   request_->SetTimeout(base::TimeDelta::FromMilliseconds(2));
 
   EXPECT_CALL(callback_, OnReply(request_.get(), NULL))
-      .WillOnce(InvokeWithoutArgs(&message_loop_, &MessageLoop::Quit));
+      .WillOnce(InvokeWithoutArgs(&message_loop_, &base::MessageLoop::Quit));
   message_loop_.Run();
 }
 

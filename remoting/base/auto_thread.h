@@ -35,7 +35,7 @@ class AutoThread : base::PlatformThread::Delegate {
   static scoped_refptr<AutoThreadTaskRunner> CreateWithType(
       const char* name,
       scoped_refptr<AutoThreadTaskRunner> joiner,
-      MessageLoop::Type type);
+      base::MessageLoop::Type type);
   static scoped_refptr<AutoThreadTaskRunner> Create(
       const char* name,
       scoped_refptr<AutoThreadTaskRunner> joiner);
@@ -47,7 +47,7 @@ class AutoThread : base::PlatformThread::Delegate {
   static scoped_refptr<AutoThreadTaskRunner> CreateWithLoopAndComInitTypes(
       const char* name,
       scoped_refptr<AutoThreadTaskRunner> joiner,
-      MessageLoop::Type loop_type,
+      base::MessageLoop::Type loop_type,
       ComInitType com_init_type);
 #endif
 
@@ -67,7 +67,8 @@ class AutoThread : base::PlatformThread::Delegate {
   //
   // NOTE: You must not call this MessageLoop's Quit method directly.  The
   // thread will exit when no references to the TaskRunner remain.
-  scoped_refptr<AutoThreadTaskRunner> StartWithType(MessageLoop::Type type);
+  scoped_refptr<AutoThreadTaskRunner> StartWithType(
+      base::MessageLoop::Type type);
 
 #if defined(OS_WIN)
   // Configures the thread to initialize the specified COM apartment type.

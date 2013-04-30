@@ -33,7 +33,8 @@ const char kTestChannelName2[] = "test2";
 
 
 void QuitCurrentThread() {
-  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::MessageLoop::QuitClosure());
 }
 
 class MockSocketCallback {
@@ -125,7 +126,7 @@ class ChannelMultiplexerTest : public testing::Test {
     return result;
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   FakeSession host_session_;
   FakeSession client_session_;

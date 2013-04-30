@@ -30,7 +30,7 @@ ACTION_P(QuitThreadOnCounter, counter) {
   --(*counter);
   EXPECT_GE(*counter, 0);
   if (*counter == 0)
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
 }
 
 }  // namespace
@@ -119,8 +119,9 @@ void AuthenticatorTestBase::RunChannelAuth(bool expected_fail) {
   // Ensure that .Run() does not run unbounded if the callbacks are never
   // called.
   base::Timer shutdown_timer(false, false);
-  shutdown_timer.Start(FROM_HERE, TestTimeouts::action_timeout(),
-                       MessageLoop::QuitClosure());
+  shutdown_timer.Start(FROM_HERE,
+                       TestTimeouts::action_timeout(),
+                       base::MessageLoop::QuitClosure());
   message_loop_.Run();
   shutdown_timer.Stop();
 

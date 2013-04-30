@@ -82,7 +82,7 @@ class HeartbeatSenderTest
   void ValidateHeartbeatStanza(XmlElement* stanza,
                                const char* expectedSequenceId);
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   MockSignalStrategy signal_strategy_;
   std::set<SignalStrategy::Listener*> signal_strategy_listeners_;
   scoped_refptr<RsaKeyPair> key_pair_;

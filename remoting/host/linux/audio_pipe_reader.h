@@ -25,7 +25,7 @@ struct AudioPipeReaderTraits;
 // all registered observers.
 class AudioPipeReader
   : public base::RefCountedThreadSafe<AudioPipeReader, AudioPipeReaderTraits>,
-      public MessageLoopForIO::Watcher {
+      public base::MessageLoopForIO::Watcher {
  public:
   class StreamObserver {
    public:
@@ -77,7 +77,7 @@ class AudioPipeReader
   // Bytes left from the previous read.
   std::string left_over_bytes_;
 
-  MessageLoopForIO::FileDescriptorWatcher file_descriptor_watcher_;
+  base::MessageLoopForIO::FileDescriptorWatcher file_descriptor_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioPipeReader);
 };

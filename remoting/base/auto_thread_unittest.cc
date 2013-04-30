@@ -67,8 +67,9 @@ class AutoThreadTest : public testing::Test {
     // references created in tests are gone.  We also post a delayed quit
     // task to |message_loop_| so the test will not hang on failure.
     main_task_runner_ = NULL;
-    message_loop_.PostDelayedTask(
-        FROM_HERE, MessageLoop::QuitClosure(), base::TimeDelta::FromSeconds(5));
+    message_loop_.PostDelayedTask(FROM_HERE,
+                                  base::MessageLoop::QuitClosure(),
+                                  base::TimeDelta::FromSeconds(5));
     message_loop_.Run();
   }
 
@@ -87,10 +88,10 @@ class AutoThreadTest : public testing::Test {
  protected:
   void QuitMainMessageLoop() {
     message_loop_quit_correctly_ = true;
-    message_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   bool message_loop_quit_correctly_;
   scoped_refptr<AutoThreadTaskRunner> main_task_runner_;
 };
@@ -145,9 +146,10 @@ TEST_F(AutoThreadTest, ThreadDependency) {
 #if defined(OS_WIN)
 TEST_F(AutoThreadTest, ThreadWithComMta) {
   scoped_refptr<base::TaskRunner> task_runner =
-      AutoThread::CreateWithLoopAndComInitTypes(
-          kThreadName, main_task_runner_, MessageLoop::TYPE_DEFAULT,
-          AutoThread::COM_INIT_MTA);
+      AutoThread::CreateWithLoopAndComInitTypes(kThreadName,
+                                                main_task_runner_,
+                                                base::MessageLoop::TYPE_DEFAULT,
+                                                AutoThread::COM_INIT_MTA);
   EXPECT_TRUE(task_runner.get());
 
   // Post a task to query the COM apartment type.
@@ -170,9 +172,10 @@ TEST_F(AutoThreadTest, ThreadWithComMta) {
 
 TEST_F(AutoThreadTest, ThreadWithComSta) {
   scoped_refptr<base::TaskRunner> task_runner =
-      AutoThread::CreateWithLoopAndComInitTypes(
-          kThreadName, main_task_runner_, MessageLoop::TYPE_UI,
-          AutoThread::COM_INIT_STA);
+      AutoThread::CreateWithLoopAndComInitTypes(kThreadName,
+                                                main_task_runner_,
+                                                base::MessageLoop::TYPE_UI,
+                                                AutoThread::COM_INIT_STA);
   EXPECT_TRUE(task_runner.get());
 
   // Post a task to query the COM apartment type.

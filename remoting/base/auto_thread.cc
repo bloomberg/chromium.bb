@@ -40,7 +40,7 @@ scoped_ptr<base::win::ScopedCOMInitializer> CreateComInitializer(
 // from within StartWithType.
 struct AutoThread::StartupData {
   // Fields describing the desired thread behaviour.
-  MessageLoop::Type loop_type;
+  base::MessageLoop::Type loop_type;
 
   // Used to receive the AutoThreadTaskRunner for the thread.
   scoped_refptr<AutoThreadTaskRunner> task_runner;
@@ -48,16 +48,15 @@ struct AutoThread::StartupData {
   // Used to synchronize thread startup.
   base::WaitableEvent event;
 
-  explicit StartupData(MessageLoop::Type type)
-    : loop_type(type),
-      event(false, false) {}
+  explicit StartupData(base::MessageLoop::Type type)
+      : loop_type(type), event(false, false) {}
 };
 
 // static
 scoped_refptr<AutoThreadTaskRunner> AutoThread::CreateWithType(
     const char* name,
     scoped_refptr<AutoThreadTaskRunner> joiner,
-    MessageLoop::Type type) {
+    base::MessageLoop::Type type) {
   AutoThread* thread = new AutoThread(name, joiner);
   scoped_refptr<AutoThreadTaskRunner> task_runner = thread->StartWithType(type);
   if (!task_runner)
@@ -68,7 +67,7 @@ scoped_refptr<AutoThreadTaskRunner> AutoThread::CreateWithType(
 // static
 scoped_refptr<AutoThreadTaskRunner> AutoThread::Create(
     const char* name, scoped_refptr<AutoThreadTaskRunner> joiner) {
-  return CreateWithType(name, joiner, MessageLoop::TYPE_DEFAULT);
+  return CreateWithType(name, joiner, base::MessageLoop::TYPE_DEFAULT);
 }
 
 #if defined(OS_WIN)
@@ -76,7 +75,7 @@ scoped_refptr<AutoThreadTaskRunner> AutoThread::Create(
 scoped_refptr<AutoThreadTaskRunner> AutoThread::CreateWithLoopAndComInitTypes(
     const char* name,
     scoped_refptr<AutoThreadTaskRunner> joiner,
-    MessageLoop::Type loop_type,
+    base::MessageLoop::Type loop_type,
     ComInitType com_init_type) {
   AutoThread* thread = new AutoThread(name, joiner);
   thread->SetComInitType(com_init_type);
@@ -118,11 +117,11 @@ AutoThread::~AutoThread() {
   }
 }
 
-scoped_refptr<AutoThreadTaskRunner>
-AutoThread::StartWithType(MessageLoop::Type type) {
+scoped_refptr<AutoThreadTaskRunner> AutoThread::StartWithType(
+    base::MessageLoop::Type type) {
   DCHECK(!thread_);
 #if defined(OS_WIN)
-  DCHECK(com_init_type_ != COM_INIT_STA || type == MessageLoop::TYPE_UI);
+  DCHECK(com_init_type_ != COM_INIT_STA || type == base::MessageLoop::TYPE_UI);
 #endif
 
   StartupData startup_data(type);
@@ -165,7 +164,7 @@ void AutoThread::QuitThread(
     return;
   }
 
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
   was_quit_properly_ = true;
 
   if (joiner_) {
@@ -180,7 +179,7 @@ void AutoThread::JoinAndDeleteThread() {
 
 void AutoThread::ThreadMain() {
   // The message loop for this thread.
-  MessageLoop message_loop(startup_data_->loop_type);
+  base::MessageLoop message_loop(startup_data_->loop_type);
 
   // Complete the initialization of our AutoThread object.
   base::PlatformThread::SetName(name_.c_str());

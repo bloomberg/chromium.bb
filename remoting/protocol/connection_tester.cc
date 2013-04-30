@@ -18,7 +18,7 @@ StreamConnectionTester::StreamConnectionTester(net::StreamSocket* client_socket,
                                                net::StreamSocket* host_socket,
                                                int message_size,
                                                int message_count)
-    : message_loop_(MessageLoop::current()),
+    : message_loop_(base::MessageLoop::current()),
       host_socket_(host_socket),
       client_socket_(client_socket),
       message_size_(message_size),
@@ -52,7 +52,7 @@ void StreamConnectionTester::CheckResults() {
 
 void StreamConnectionTester::Done() {
   done_ = true;
-  message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  message_loop_->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 void StreamConnectionTester::InitBuffers() {
@@ -130,7 +130,7 @@ DatagramConnectionTester::DatagramConnectionTester(net::Socket* client_socket,
                                                    int message_size,
                                                    int message_count,
                                                    int delay_ms)
-    : message_loop_(MessageLoop::current()),
+    : message_loop_(base::MessageLoop::current()),
       host_socket_(host_socket),
       client_socket_(client_socket),
       message_size_(message_size),
@@ -167,7 +167,7 @@ void DatagramConnectionTester::CheckResults() {
 
 void DatagramConnectionTester::Done() {
   done_ = true;
-  message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  message_loop_->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 void DatagramConnectionTester::DoWrite() {

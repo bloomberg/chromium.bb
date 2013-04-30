@@ -94,7 +94,7 @@ class RdpClientTest : public testing::Test {
 
   // The UI message loop used by RdpClient. The loop is stopped once there is no
   // more references to |task_runner_|.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   base::RunLoop run_loop_;
   scoped_refptr<AutoThreadTaskRunner> task_runner_;
 
@@ -105,7 +105,8 @@ class RdpClientTest : public testing::Test {
   scoped_ptr<RdpClient> rdp_client_;
 };
 
-RdpClientTest::RdpClientTest() : message_loop_(MessageLoop::TYPE_UI) {
+RdpClientTest::RdpClientTest()
+    : message_loop_(base::MessageLoop::TYPE_UI) {
 }
 
 RdpClientTest::~RdpClientTest() {

@@ -17,7 +17,7 @@ namespace remoting {
 
 // This code is expected to be called on the desktop thread only.
 class ClipboardX11 : public Clipboard,
-                     public MessageLoopForIO::Watcher {
+                     public base::MessageLoopForIO::Watcher {
  public:
   ClipboardX11();
   virtual ~ClipboardX11();
@@ -48,7 +48,7 @@ class ClipboardX11 : public Clipboard,
   Display* display_;
 
   // Watcher used to handle X11 events from |display_|.
-  MessageLoopForIO::FileDescriptorWatcher x_connection_watcher_;
+  base::MessageLoopForIO::FileDescriptorWatcher x_connection_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardX11);
 };
@@ -75,9 +75,12 @@ void ClipboardX11::Start(
                            base::Bind(&ClipboardX11::OnClipboardChanged,
                                       base::Unretained(this)));
 
-  MessageLoopForIO::current()->WatchFileDescriptor(
-      ConnectionNumber(display_), true, MessageLoopForIO::WATCH_READ,
-      &x_connection_watcher_, this);
+  base::MessageLoopForIO::current()->WatchFileDescriptor(
+      ConnectionNumber(display_),
+      true,
+      base::MessageLoopForIO::WATCH_READ,
+      &x_connection_watcher_,
+      this);
   PumpXEvents();
 }
 

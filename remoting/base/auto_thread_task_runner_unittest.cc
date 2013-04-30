@@ -20,10 +20,9 @@ namespace remoting {
 
 TEST(AutoThreadTaskRunnerTest, StartAndStop) {
   // Create a task runner.
-  MessageLoop message_loop;
-  scoped_refptr<AutoThreadTaskRunner> task_runner =
-      new AutoThreadTaskRunner(
-          message_loop.message_loop_proxy(), MessageLoop::QuitClosure());
+  base::MessageLoop message_loop;
+  scoped_refptr<AutoThreadTaskRunner> task_runner = new AutoThreadTaskRunner(
+      message_loop.message_loop_proxy(), base::MessageLoop::QuitClosure());
 
   // Post a task to make sure it is executed.
   bool success = false;

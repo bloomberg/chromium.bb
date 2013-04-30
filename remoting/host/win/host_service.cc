@@ -276,8 +276,8 @@ void HostService::CreateLauncher(
     scoped_refptr<AutoThreadTaskRunner> task_runner) {
   // Launch the I/O thread.
   scoped_refptr<AutoThreadTaskRunner> io_task_runner =
-      AutoThread::CreateWithType(kIoThreadName, task_runner,
-                                 MessageLoop::TYPE_IO);
+      AutoThread::CreateWithType(
+          kIoThreadName, task_runner, base::MessageLoop::TYPE_IO);
   if (!io_task_runner) {
     LOG(FATAL) << "Failed to start the I/O thread";
     return;
@@ -330,7 +330,7 @@ int HostService::RunAsService() {
 }
 
 void HostService::RunAsServiceImpl() {
-  MessageLoop message_loop(MessageLoop::TYPE_UI);
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
   base::RunLoop run_loop;
   main_task_runner_ = message_loop.message_loop_proxy();
 
@@ -384,7 +384,7 @@ void HostService::RunAsServiceImpl() {
 }
 
 int HostService::RunInConsole() {
-  MessageLoop message_loop(MessageLoop::TYPE_UI);
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
   base::RunLoop run_loop;
   main_task_runner_ = message_loop.message_loop_proxy();
 

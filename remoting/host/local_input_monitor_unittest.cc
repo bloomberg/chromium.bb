@@ -24,9 +24,11 @@ using testing::ReturnRef;
 namespace {
 
 #if defined(OS_WIN)
-const MessageLoop::Type kDesiredMessageLoopType = MessageLoop::TYPE_UI;
+const base::MessageLoop::Type kDesiredMessageLoopType =
+    base::MessageLoop::TYPE_UI;
 #else  // !defined(OS_WIN)
-const MessageLoop::Type kDesiredMessageLoopType = MessageLoop::TYPE_IO;
+const base::MessageLoop::Type kDesiredMessageLoopType =
+    base::MessageLoop::TYPE_IO;
 #endif  // !defined(OS_WIN)
 
 }  // namespace
@@ -37,7 +39,7 @@ class LocalInputMonitorTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE;
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   base::RunLoop run_loop_;
   scoped_refptr<AutoThreadTaskRunner> task_runner_;
 

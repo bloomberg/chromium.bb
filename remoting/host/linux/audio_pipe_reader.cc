@@ -170,9 +170,12 @@ void AudioPipeReader::DoCapture() {
 
 void AudioPipeReader::WaitForPipeReadable() {
   timer_.Stop();
-  MessageLoopForIO::current()->WatchFileDescriptor(
-      pipe_fd_, false, MessageLoopForIO::WATCH_READ,
-      &file_descriptor_watcher_, this);
+  base::MessageLoopForIO::current()->WatchFileDescriptor(
+      pipe_fd_,
+      false,
+      base::MessageLoopForIO::WATCH_READ,
+      &file_descriptor_watcher_,
+      this);
 }
 
 // static

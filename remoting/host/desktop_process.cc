@@ -31,7 +31,7 @@ DesktopProcess::DesktopProcess(
       input_task_runner_(input_task_runner),
       daemon_channel_name_(daemon_channel_name) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
+  DCHECK_EQ(base::MessageLoop::current()->type(), base::MessageLoop::TYPE_UI);
 }
 
 DesktopProcess::~DesktopProcess() {
@@ -102,18 +102,20 @@ bool DesktopProcess::Start(
 #if defined(OS_WIN)
   // On Windows the AudioCapturer requires COM, so we run a single-threaded
   // apartment, which requires a UI thread.
-  audio_task_runner = AutoThread::CreateWithLoopAndComInitTypes(
-      "ChromotingAudioThread", caller_task_runner_, MessageLoop::TYPE_UI,
-      AutoThread::COM_INIT_STA);
+  audio_task_runner =
+      AutoThread::CreateWithLoopAndComInitTypes("ChromotingAudioThread",
+                                                caller_task_runner_,
+                                                base::MessageLoop::TYPE_UI,
+                                                AutoThread::COM_INIT_STA);
 #else // !defined(OS_WIN)
   audio_task_runner = AutoThread::CreateWithType(
-      "ChromotingAudioThread", caller_task_runner_, MessageLoop::TYPE_IO);
-#endif // !defined(OS_WIN)
+      "ChromotingAudioThread", caller_task_runner_, base::MessageLoop::TYPE_IO);
+#endif  // !defined(OS_WIN)
 
   // Launch the I/O thread.
   scoped_refptr<AutoThreadTaskRunner> io_task_runner =
-      AutoThread::CreateWithType("I/O thread", caller_task_runner_,
-                                 MessageLoop::TYPE_IO);
+      AutoThread::CreateWithType(
+          "I/O thread", caller_task_runner_, base::MessageLoop::TYPE_IO);
 
   // Launch the video capture thread.
   scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner =

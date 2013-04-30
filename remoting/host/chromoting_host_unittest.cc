@@ -50,8 +50,8 @@ namespace remoting {
 
 namespace {
 
-void PostQuitTask(MessageLoop* message_loop) {
-  message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+void PostQuitTask(base::MessageLoop* message_loop) {
+  message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 // Run the task and delete it afterwards. This action is used to deal with
@@ -398,7 +398,7 @@ class ChromotingHostTest : public testing::Test {
   }
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner_;
   MockConnectionToClientEventHandler handler_;
   MockSignalStrategy signal_strategy_;

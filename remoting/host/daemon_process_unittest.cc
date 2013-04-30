@@ -145,16 +145,14 @@ class DaemonProcessTest : public testing::Test {
   }
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   scoped_ptr<MockDaemonProcess> daemon_process_;
   int terminal_id_;
 };
 
-
 DaemonProcessTest::DaemonProcessTest()
-    : message_loop_(MessageLoop::TYPE_IO),
-      terminal_id_(0) {
+    : message_loop_(base::MessageLoop::TYPE_IO), terminal_id_(0) {
 }
 
 DaemonProcessTest::~DaemonProcessTest() {
@@ -209,7 +207,7 @@ void DaemonProcessTest::DeleteDaemonProcess() {
 }
 
 void DaemonProcessTest::QuitMessageLoop() {
-  message_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 void DaemonProcessTest::StartDaemonProcess() {

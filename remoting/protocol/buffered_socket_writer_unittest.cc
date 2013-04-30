@@ -29,14 +29,16 @@ class BufferedSocketWriterTest : public testing::Test {
   }
 
   void OnDone() {
-    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
   }
 
   void DestroyWriterAndQuit() {
     written_data_ = socket_->written_data();
     writer_.reset();
     socket_.reset();
-    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
   }
 
   void Unexpected() {
@@ -94,7 +96,7 @@ class BufferedSocketWriterTest : public testing::Test {
                         test_buffer_2_->size()));
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_ptr<FakeSocket> socket_;
   scoped_ptr<BufferedSocketWriter> writer_;
   scoped_refptr<net::IOBufferWithSize> test_buffer_;

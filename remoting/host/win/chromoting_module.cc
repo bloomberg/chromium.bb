@@ -116,7 +116,7 @@ bool ChromotingModule::Run() {
   }
 
   // Arrange to run |message_loop| until no components depend on it.
-  MessageLoop message_loop(MessageLoop::TYPE_UI);
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
   base::RunLoop run_loop;
   g_module_task_runner.Get() = new AutoThreadTaskRunner(
       message_loop.message_loop_proxy(), run_loop.QuitClosure());

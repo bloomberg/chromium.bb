@@ -69,7 +69,7 @@ class RegisterSupportHostRequestTest : public testing::Test {
         .WillRepeatedly(Return(kTestJid));
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   MockSignalStrategy signal_strategy_;
   ObserverList<SignalStrategy::Listener, true> signal_strategy_listeners_;
   scoped_refptr<RsaKeyPair> key_pair_;

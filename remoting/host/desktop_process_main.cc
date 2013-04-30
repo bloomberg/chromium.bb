@@ -31,7 +31,7 @@ int DesktopProcessMain() {
   if (channel_name.empty())
     return kUsageExitCode;
 
-  MessageLoop message_loop(MessageLoop::TYPE_UI);
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
   base::RunLoop run_loop;
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner =
       new AutoThreadTaskRunner(message_loop.message_loop_proxy(),
@@ -39,8 +39,8 @@ int DesktopProcessMain() {
 
   // Launch the input thread.
   scoped_refptr<AutoThreadTaskRunner> input_task_runner =
-      AutoThread::CreateWithType("Input thread", ui_task_runner,
-                                 MessageLoop::TYPE_IO);
+      AutoThread::CreateWithType(
+          "Input thread", ui_task_runner, base::MessageLoop::TYPE_IO);
 
   DesktopProcess desktop_process(ui_task_runner,
                                  input_task_runner,

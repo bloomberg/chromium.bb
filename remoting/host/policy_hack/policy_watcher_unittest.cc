@@ -92,7 +92,7 @@ class PolicyWatcherTest : public testing::Test {
   }
 
   static const char* kHostDomain;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   MockPolicyCallback mock_policy_callback_;
   PolicyWatcher::PolicyCallback policy_callback_;

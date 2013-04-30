@@ -83,7 +83,7 @@ class VideoSchedulerTest : public testing::Test {
   void OnCaptureFrame();
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   base::RunLoop run_loop_;
   scoped_refptr<AutoThreadTaskRunner> task_runner_;
   scoped_refptr<VideoScheduler> scheduler_;
