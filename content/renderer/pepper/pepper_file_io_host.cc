@@ -85,7 +85,7 @@ PepperFileIOHost::PepperFileIOHost(RendererPpapiHost* host,
       file_system_type_(PP_FILESYSTEMTYPE_INVALID),
       quota_policy_(quota::kQuotaLimitTypeUnknown),
       is_running_in_process_(host->IsRunningInProcess()),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
   // TODO(victorhsieh): eliminate plugin_delegate_ as it's no longer needed.
   webkit::ppapi::PluginInstance* plugin_instance =
       webkit::ppapi::HostGlobals::Get()->GetInstance(instance);

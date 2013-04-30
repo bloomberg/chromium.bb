@@ -383,9 +383,9 @@ RenderProcessHostImpl::RenderProcessHostImpl(
           pending_views_(0),
           visible_widgets_(0),
           backgrounded_(true),
-          ALLOW_THIS_IN_INITIALIZER_LIST(cached_dibs_cleaner_(
-                FROM_HERE, base::TimeDelta::FromSeconds(5),
-                this, &RenderProcessHostImpl::ClearTransportDIBCache)),
+          cached_dibs_cleaner_(
+              FROM_HERE, base::TimeDelta::FromSeconds(5),
+              this, &RenderProcessHostImpl::ClearTransportDIBCache),
           is_initialized_(false),
           id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
           browser_context_(browser_context),

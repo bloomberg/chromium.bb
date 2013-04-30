@@ -121,7 +121,7 @@ CompositorImpl::CompositorImpl(Compositor::Client* client)
       window_(NULL),
       surface_id_(0),
       client_(client),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
   DCHECK(client);
 }
 

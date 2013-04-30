@@ -63,10 +63,8 @@ void DeleteOnWebKitThread(T* obj) {
 IndexedDBDispatcherHost::IndexedDBDispatcherHost(
     int ipc_process_id, IndexedDBContextImpl* indexed_db_context)
     : indexed_db_context_(indexed_db_context),
-      ALLOW_THIS_IN_INITIALIZER_LIST(database_dispatcher_host_(
-          new DatabaseDispatcherHost(this))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(cursor_dispatcher_host_(
-          new CursorDispatcherHost(this))),
+      database_dispatcher_host_(new DatabaseDispatcherHost(this)),
+      cursor_dispatcher_host_(new CursorDispatcherHost(this)),
       ipc_process_id_(ipc_process_id) {
   DCHECK(indexed_db_context_.get());
 }

@@ -20,7 +20,7 @@ PepperPrintingHost::PepperPrintingHost(
     scoped_ptr<PepperPrintSettingsManager> print_settings_manager)
     : ResourceHost(host, instance, resource),
       print_settings_manager_(print_settings_manager.Pass()),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
 }
 
 PepperPrintingHost::~PepperPrintingHost() {

@@ -76,7 +76,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
     : host_(widget_host),
       is_layer_attached_(true),
       content_view_core_(NULL),
-      ime_adapter_android_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      ime_adapter_android_(this),
       cached_background_color_(SK_ColorWHITE),
       texture_id_in_layer_(0) {
   if (CompositorImpl::UsesDirectGL()) {

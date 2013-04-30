@@ -281,13 +281,13 @@ WebContentsImpl::WebContentsImpl(
     BrowserContext* browser_context,
     WebContentsImpl* opener)
     : delegate_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(controller_(this, browser_context)),
+      controller_(this, browser_context),
       render_view_host_delegate_view_(NULL),
       opener_(opener),
 #if defined(OS_WIN) && defined(USE_AURA)
       accessible_parent_(NULL),
 #endif
-      ALLOW_THIS_IN_INITIALIZER_LIST(render_manager_(this, this, this)),
+      render_manager_(this, this, this),
       is_loading_(false),
       crashed_status_(base::TERMINATION_STATUS_STILL_RUNNING),
       crashed_error_code_(0),

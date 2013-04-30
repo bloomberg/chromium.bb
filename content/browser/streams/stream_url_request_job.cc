@@ -37,7 +37,7 @@ StreamURLRequestJob::StreamURLRequestJob(
     net::NetworkDelegate* network_delegate,
     scoped_refptr<Stream> stream)
     : net::URLRequestJob(request, network_delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       stream_(stream),
       headers_set_(false),
       pending_buffer_size_(0),

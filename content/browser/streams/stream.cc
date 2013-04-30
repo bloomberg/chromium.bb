@@ -33,7 +33,7 @@ Stream::Stream(StreamRegistry* registry,
       read_observer_(NULL),
       write_observer_(write_observer),
       stream_handle_(NULL),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(this) {
   CreateByteStream(base::MessageLoopProxy::current(),
                    base::MessageLoopProxy::current(),
                    kDeferSizeThreshold,

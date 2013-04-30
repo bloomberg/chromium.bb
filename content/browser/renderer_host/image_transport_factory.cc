@@ -372,7 +372,7 @@ class GpuProcessTransportFactory
       public ImageTransportFactory {
  public:
   GpuProcessTransportFactory()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)) {
+      : callback_factory_(this) {
     output_surface_proxy_ = new BrowserCompositorOutputSurfaceProxy();
   }
 

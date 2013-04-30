@@ -26,7 +26,7 @@ PepperTrueTypeFontHost::PepperTrueTypeFontHost(
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       renderer_ppapi_host_(host),
       font_(PepperTrueTypeFont::Create(desc)),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
 }
 
 PepperTrueTypeFontHost::~PepperTrueTypeFontHost() {

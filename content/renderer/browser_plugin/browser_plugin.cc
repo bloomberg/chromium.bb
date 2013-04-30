@@ -146,8 +146,7 @@ BrowserPlugin::BrowserPlugin(
       current_nav_entry_index_(0),
       nav_entry_count_(0),
       compositing_enabled_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
 }
 
 BrowserPlugin::~BrowserPlugin() {

@@ -173,7 +173,7 @@ base::TimeDelta ProviderImpl::PollingThread::SamplingInterval() const {
 ProviderImpl::ProviderImpl(DataFetcherFactory factory)
     : creator_loop_(MessageLoop::current()),
       factory_(factory),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       polling_thread_(NULL) {
 }
 

@@ -89,7 +89,7 @@ PpapiThread::PpapiThread(const CommandLine& command_line, bool is_broker)
       local_pp_module_(
           base::RandInt(0, std::numeric_limits<PP_Module>::max())),
       next_plugin_dispatcher_id_(1),
-      ALLOW_THIS_IN_INITIALIZER_LIST(dispatcher_message_listener_(this)) {
+      dispatcher_message_listener_(this) {
   ppapi::proxy::PluginGlobals* globals = ppapi::proxy::PluginGlobals::Get();
   globals->set_plugin_proxy_delegate(this);
   globals->set_command_line(

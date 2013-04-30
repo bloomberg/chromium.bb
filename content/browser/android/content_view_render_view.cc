@@ -31,7 +31,7 @@ bool ContentViewRenderView::RegisterContentViewRenderView(JNIEnv* env) {
 
 ContentViewRenderView::ContentViewRenderView()
     : scheduled_composite_(false),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
 }
 
 ContentViewRenderView::~ContentViewRenderView() {

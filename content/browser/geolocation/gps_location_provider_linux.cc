@@ -216,7 +216,7 @@ GpsLocationProviderLinux::GpsLocationProviderLinux(LibGpsFactory libgps_factory)
       poll_period_moving_millis_(kPollPeriodMovingMillis),
       poll_period_stationary_millis_(kPollPeriodStationaryMillis),
       libgps_factory_(libgps_factory),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   DCHECK(libgps_factory_);
 }
 

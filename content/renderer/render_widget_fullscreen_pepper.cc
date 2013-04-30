@@ -368,7 +368,7 @@ RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
       plugin_(plugin),
       layer_(NULL),
       mouse_lock_dispatcher_(new FullscreenMouseLockDispatcher(
-          ALLOW_THIS_IN_INITIALIZER_LIST(this))) {
+          this)) {
 }
 
 RenderWidgetFullscreenPepper::~RenderWidgetFullscreenPepper() {

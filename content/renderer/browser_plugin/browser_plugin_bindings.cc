@@ -815,7 +815,7 @@ BrowserPluginBindings::BrowserPluginNPObject::~BrowserPluginNPObject() {
 BrowserPluginBindings::BrowserPluginBindings(BrowserPlugin* instance)
     : instance_(instance),
       np_object_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   NPObject* obj =
       WebBindings::createObject(NULL, &browser_plugin_message_class);
   np_object_ = static_cast<BrowserPluginBindings::BrowserPluginNPObject*>(obj);

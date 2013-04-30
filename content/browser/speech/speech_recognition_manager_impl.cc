@@ -60,7 +60,7 @@ SpeechRecognitionManagerImpl::SpeechRecognitionManagerImpl()
       is_dispatching_event_(false),
       delegate_(GetContentClient()->browser()->
                     GetSpeechRecognitionManagerDelegate()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   DCHECK(!g_speech_recognition_manager_impl);
   g_speech_recognition_manager_impl = this;
 }

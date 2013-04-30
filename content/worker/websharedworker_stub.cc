@@ -23,7 +23,7 @@ WebSharedWorkerStub::WebSharedWorkerStub(
     const WorkerAppCacheInitInfo& appcache_init_info)
     : route_id_(route_id),
       appcache_init_info_(appcache_init_info),
-      ALLOW_THIS_IN_INITIALIZER_LIST(client_(route_id, this)),
+      client_(route_id, this),
       name_(name),
       started_(false),
       worker_devtools_agent_(NULL) {

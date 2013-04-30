@@ -20,7 +20,7 @@ LoadProgressTracker::LoadProgressTracker(RenderViewImpl* render_view)
     : render_view_(render_view),
       tracked_frame_(NULL),
       progress_(0.0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 LoadProgressTracker::~LoadProgressTracker() {

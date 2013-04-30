@@ -38,7 +38,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
         kOriginB("http://host:8000"),
         kOriginOther("http://other"),
         usage_(0),
-        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+        weak_factory_(this),
         message_loop_(MessageLoop::TYPE_IO),
         db_thread_(BrowserThread::DB, &message_loop_),
         webkit_thread_(BrowserThread::WEBKIT_DEPRECATED, &message_loop_),

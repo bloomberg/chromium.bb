@@ -20,9 +20,8 @@ namespace {
 class TestClosureCallback {
  public:
   TestClosureCallback()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
-            base::Bind(&TestClosureCallback::StopWaiting,
-                       base::Unretained(this)))) {
+      : callback_(base::Bind(
+          &TestClosureCallback::StopWaiting, base::Unretained(this))) {
   }
 
   void WaitForResult() {

@@ -37,8 +37,7 @@ PepperVideoCaptureHost::PepperVideoCaptureHost(RendererPpapiHost* host,
       renderer_ppapi_host_(host),
       buffer_count_hint_(0),
       status_(PP_VIDEO_CAPTURE_STATUS_STOPPED),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          enumeration_helper_(this, this, PP_DEVICETYPE_DEV_VIDEOCAPTURE)) {
+      enumeration_helper_(this, this, PP_DEVICETYPE_DEV_VIDEOCAPTURE) {
 }
 
 PepperVideoCaptureHost::~PepperVideoCaptureHost() {

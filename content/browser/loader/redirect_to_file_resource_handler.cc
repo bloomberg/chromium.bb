@@ -58,7 +58,7 @@ RedirectToFileResourceHandler::RedirectToFileResourceHandler(
     int process_id,
     ResourceDispatcherHostImpl* host)
     : LayeredResourceHandler(next_handler.Pass()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       host_(host),
       process_id_(process_id),
       request_id_(-1),

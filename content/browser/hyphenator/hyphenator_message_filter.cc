@@ -31,7 +31,7 @@ HyphenatorMessageFilter::HyphenatorMessageFilter(
     RenderProcessHost* render_process_host)
     : render_process_host_(render_process_host),
       dictionary_file_(base::kInvalidPlatformFileValue),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
 }
 
 HyphenatorMessageFilter::~HyphenatorMessageFilter() {

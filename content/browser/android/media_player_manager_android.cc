@@ -24,7 +24,7 @@ namespace content {
 MediaPlayerManagerAndroid::MediaPlayerManagerAndroid(
     RenderViewHost* render_view_host)
     : RenderViewHostObserver(render_view_host),
-      ALLOW_THIS_IN_INITIALIZER_LIST(video_view_(this)),
+      video_view_(this),
       fullscreen_player_id_(-1),
       web_contents_(WebContents::FromRenderViewHost(render_view_host)) {
 }

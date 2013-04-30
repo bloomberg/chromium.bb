@@ -46,7 +46,7 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
         referrer_encoding_(referrer_encoding),
         web_contents_(web_contents),
         download_item_(NULL),
-        ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+        weak_ptr_factory_(this) {
     DCHECK(on_completed_loop_);
     DCHECK(!on_completed_.is_null());
     DCHECK(web_contents_);
@@ -157,7 +157,7 @@ DragDownloadFile::DragDownloadFile(const base::FilePath& file_path,
       drag_message_loop_(MessageLoop::current()),
       state_(INITIALIZED),
       drag_ui_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   drag_ui_ = new DragDownloadFileUI(
       url,
       referrer,

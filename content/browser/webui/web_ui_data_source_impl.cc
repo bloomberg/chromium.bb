@@ -73,7 +73,7 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
 WebUIDataSourceImpl::WebUIDataSourceImpl(const std::string& source_name)
     : URLDataSourceImpl(
           source_name,
-          new InternalDataSource(ALLOW_THIS_IN_INITIALIZER_LIST(this))),
+          new InternalDataSource(this)),
       source_name_(source_name),
       default_resource_(-1),
       json_js_format_v2_(false),

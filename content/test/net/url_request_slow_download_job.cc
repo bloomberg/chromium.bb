@@ -102,7 +102,7 @@ URLRequestSlowDownloadJob::URLRequestSlowDownloadJob(
       should_error_download_(false),
       should_finish_download_(false),
       buffer_size_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 void URLRequestSlowDownloadJob::StartAsync() {

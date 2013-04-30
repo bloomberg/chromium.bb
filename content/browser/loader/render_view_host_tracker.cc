@@ -15,9 +15,9 @@
 namespace content {
 
 RenderViewHostTracker::RenderViewHostTracker()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(rvh_created_callback_(
+    : rvh_created_callback_(
           base::Bind(&RenderViewHostTracker::RenderViewHostCreated,
-                     base::Unretained(this)))) {
+                     base::Unretained(this))) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   RenderViewHost::AddCreatedCallback(rvh_created_callback_);
 }

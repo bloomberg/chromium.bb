@@ -128,7 +128,7 @@ BrowserPluginGuest::BrowserPluginGuest(
     BrowserPluginGuest* opener,
     bool has_render_view)
     : WebContentsObserver(web_contents),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      weak_ptr_factory_(this),
       embedder_web_contents_(NULL),
       instance_id_(instance_id),
       damage_buffer_sequence_id_(0),

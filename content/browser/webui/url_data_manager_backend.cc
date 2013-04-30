@@ -214,7 +214,7 @@ URLRequestChromeJob::URLRequestChromeJob(net::URLRequest* request,
       deny_xframe_options_(true),
       is_incognito_(is_incognito),
       backend_(backend),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   DCHECK(backend);
 }
 

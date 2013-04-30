@@ -16,7 +16,7 @@ AppCacheDispatcherHost::AppCacheDispatcherHost(
     ChromeAppCacheService* appcache_service,
     int process_id)
     : appcache_service_(appcache_service),
-      ALLOW_THIS_IN_INITIALIZER_LIST(frontend_proxy_(this)),
+      frontend_proxy_(this),
       process_id_(process_id) {
 }
 

@@ -50,7 +50,7 @@ DownloadFileImpl::DownloadFileImpl(
           bytes_seen_(0),
           bound_net_log_(bound_net_log),
           observer_(observer),
-          weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+          weak_factory_(this),
           power_save_blocker_(power_save_blocker.Pass()) {
 }
 

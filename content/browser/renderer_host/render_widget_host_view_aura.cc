@@ -621,7 +621,7 @@ class RenderWidgetHostViewAura::ResizeLock {
 
 RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
     : host_(RenderWidgetHostImpl::From(host)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
+      window_(new aura::Window(this)),
       in_shutdown_(false),
       is_fullscreen_(false),
       popup_parent_host_view_(NULL),

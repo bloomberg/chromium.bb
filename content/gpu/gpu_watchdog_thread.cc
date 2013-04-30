@@ -32,8 +32,8 @@ GpuWatchdogThread::GpuWatchdogThread(int timeout)
       watched_thread_handle_(0),
       arm_cpu_time_(),
 #endif
-      ALLOW_THIS_IN_INITIALIZER_LIST(task_observer_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      task_observer_(this),
+      weak_factory_(this) {
   DCHECK(timeout >= 0);
 
 #if defined(OS_WIN)

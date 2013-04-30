@@ -18,7 +18,7 @@ namespace content {
 
 ChildHistogramMessageFilter::ChildHistogramMessageFilter()
     : channel_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(histogram_snapshot_manager_(this)) {
+      histogram_snapshot_manager_(this) {
 }
 
 ChildHistogramMessageFilter::~ChildHistogramMessageFilter() {

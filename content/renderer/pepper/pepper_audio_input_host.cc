@@ -44,8 +44,7 @@ PepperAudioInputHost::PepperAudioInputHost(
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       renderer_ppapi_host_(host),
       audio_input_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          enumeration_helper_(this, this, PP_DEVICETYPE_DEV_AUDIOCAPTURE)) {
+      enumeration_helper_(this, this, PP_DEVICETYPE_DEV_AUDIOCAPTURE) {
 }
 
 PepperAudioInputHost::~PepperAudioInputHost() {

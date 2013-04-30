@@ -24,9 +24,9 @@ P2PSocketHostTcpServer::P2PSocketHostTcpServer(
     IPC::Sender* message_sender, int id)
     : P2PSocketHost(message_sender, id),
       socket_(new net::TCPServerSocket(NULL, net::NetLog::Source())),
-      ALLOW_THIS_IN_INITIALIZER_LIST(accept_callback_(
+      accept_callback_(
           base::Bind(&P2PSocketHostTcpServer::OnAccepted,
-                     base::Unretained(this)))) {
+                     base::Unretained(this))) {
 }
 
 P2PSocketHostTcpServer::~P2PSocketHostTcpServer() {

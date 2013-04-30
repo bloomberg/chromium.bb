@@ -82,7 +82,7 @@ class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
 }  // namespace
 
 ChildThread::ChildThread()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(channel_connected_factory_(this)) {
+    : channel_connected_factory_(this) {
   channel_name_ = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kProcessChannelID);
   Init();
@@ -90,7 +90,7 @@ ChildThread::ChildThread()
 
 ChildThread::ChildThread(const std::string& channel_name)
     : channel_name_(channel_name),
-      ALLOW_THIS_IN_INITIALIZER_LIST(channel_connected_factory_(this)) {
+      channel_connected_factory_(this) {
   Init();
 }
 

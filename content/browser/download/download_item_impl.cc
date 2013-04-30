@@ -131,7 +131,7 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
       opened_(opened),
       delegate_delayed_complete_(false),
       bound_net_log_(bound_net_log),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   delegate_->Attach();
   DCHECK_NE(IN_PROGRESS_INTERNAL, state_);
   Init(false /* not actively downloading */, SRC_HISTORY_IMPORT);
@@ -180,7 +180,7 @@ DownloadItemImpl::DownloadItemImpl(
       opened_(false),
       delegate_delayed_complete_(false),
       bound_net_log_(bound_net_log),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   delegate_->Attach();
   Init(true /* actively downloading */, SRC_ACTIVE_DOWNLOAD);
 
@@ -235,7 +235,7 @@ DownloadItemImpl::DownloadItemImpl(
       opened_(false),
       delegate_delayed_complete_(false),
       bound_net_log_(bound_net_log),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   delegate_->Attach();
   Init(true /* actively downloading */, SRC_SAVE_PAGE_AS);
 }

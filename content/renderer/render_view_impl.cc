@@ -639,7 +639,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       cached_is_main_frame_pinned_to_right_(false),
       cached_has_main_frame_horizontal_scrollbar_(false),
       cached_has_main_frame_vertical_scrollbar_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)),
+      cookie_jar_(this),
       notification_provider_(NULL),
       geolocation_dispatcher_(NULL),
       input_tag_speech_dispatcher_(NULL),
@@ -663,8 +663,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
 #endif
       enumeration_completion_id_(0),
 #if defined(OS_ANDROID)
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          load_progress_tracker_(new LoadProgressTracker(this))),
+      load_progress_tracker_(new LoadProgressTracker(this)),
 #endif
       session_storage_namespace_id_(params->session_storage_namespace_id),
       decrement_shared_popup_at_destruction_(false),

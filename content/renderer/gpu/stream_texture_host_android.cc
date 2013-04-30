@@ -16,7 +16,7 @@ StreamTextureHost::StreamTextureHost(GpuChannelHost* channel)
       stream_id_(0),
       listener_(NULL),
       channel_(channel),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   DCHECK(channel);
 }
 

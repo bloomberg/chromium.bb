@@ -35,7 +35,7 @@ PepperInProcessRouter::PepperInProcessRouter(
     : host_impl_(host_impl),
       pending_message_id_(0),
       reply_result_(false),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
   dummy_browser_channel_.reset(
       new Channel(base::Bind(&PepperInProcessRouter::DummySendTo,
                              base::Unretained(this))));

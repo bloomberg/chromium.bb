@@ -37,8 +37,7 @@ WebStorageAreaImpl* WebStorageAreaImpl::FromConnectionId(int id) {
 
 WebStorageAreaImpl::WebStorageAreaImpl(
     int64 namespace_id, const GURL& origin)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(
-          connection_id_(g_all_areas_map.Pointer()->Add(this))),
+    : connection_id_(g_all_areas_map.Pointer()->Add(this)),
       cached_area_(dispatcher()->
           OpenCachedArea(connection_id_, namespace_id, origin)) {
 }

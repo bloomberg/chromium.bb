@@ -19,7 +19,7 @@ class DummyListenSocket : public StreamListenSocket,
                           public StreamListenSocket::Delegate {
  public:
   DummyListenSocket()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(StreamListenSocket(0, this)) {}
+      : StreamListenSocket(0, this) {}
 
   // StreamListenSocket::Delegate "implementation"
   virtual void DidAccept(StreamListenSocket* server,

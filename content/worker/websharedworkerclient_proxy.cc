@@ -44,7 +44,7 @@ WebSharedWorkerClientProxy::WebSharedWorkerClientProxy(
     : route_id_(route_id),
       appcache_host_id_(0),
       stub_(stub),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       devtools_agent_(NULL) {
 }
 

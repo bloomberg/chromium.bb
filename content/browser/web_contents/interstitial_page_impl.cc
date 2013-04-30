@@ -148,11 +148,10 @@ InterstitialPageImpl::InterstitialPageImpl(WebContents* web_contents,
       should_revert_web_contents_title_(false),
       web_contents_was_loading_(false),
       resource_dispatcher_host_notified_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(rvh_delegate_view_(
-          new InterstitialPageRVHDelegateView(this))),
+      rvh_delegate_view_(new InterstitialPageRVHDelegateView(this)),
       create_view_(true),
       delegate_(delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   InitInterstitialPageMap();
   // It would be inconsistent to create an interstitial with no new navigation
   // (which is the case when the interstitial was triggered by a sub-resource on

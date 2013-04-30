@@ -22,7 +22,7 @@ DevToolsBrowserTarget::DevToolsBrowserTarget(
       http_server_(http_server),
       connection_id_(connection_id),
       handlers_deleter_(&handlers_),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 DevToolsBrowserTarget::~DevToolsBrowserTarget() {

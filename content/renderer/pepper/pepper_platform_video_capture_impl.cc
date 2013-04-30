@@ -21,9 +21,8 @@ PepperPlatformVideoCaptureImpl::PepperPlatformVideoCaptureImpl(
     : plugin_delegate_(plugin_delegate),
       device_id_(device_id),
       session_id_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          handler_proxy_(new media::VideoCaptureHandlerProxy(
-              this, base::MessageLoopProxy::current()))),
+      handler_proxy_(new media::VideoCaptureHandlerProxy(
+          this, base::MessageLoopProxy::current())),
       handler_(handler),
       video_capture_(NULL),
       unbalanced_start_(false) {

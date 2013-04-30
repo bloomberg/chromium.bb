@@ -81,7 +81,7 @@ PepperDirectoryReaderHost::PepperDirectoryReaderHost(
     PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       renderer_ppapi_host_(host),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
 }
 
 PepperDirectoryReaderHost::~PepperDirectoryReaderHost() {

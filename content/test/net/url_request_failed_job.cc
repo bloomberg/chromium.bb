@@ -46,7 +46,7 @@ URLRequestFailedJob::URLRequestFailedJob(net::URLRequest* request,
                                          int net_error)
     : net::URLRequestJob(request, network_delegate),
       net_error_(net_error),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
+      weak_factory_(this) {}
 
 URLRequestFailedJob::~URLRequestFailedJob() {}
 

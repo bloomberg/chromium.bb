@@ -60,7 +60,7 @@ class QuotaDispatcherHost::QueryUsageAndQuotaDispatcher
       QuotaDispatcherHost* dispatcher_host,
       int request_id)
       : RequestDispatcher(dispatcher_host, request_id),
-        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+        weak_factory_(this) {}
   virtual ~QueryUsageAndQuotaDispatcher() {}
 
   void QueryStorageUsageAndQuota(const GURL& origin, StorageType type) {
@@ -104,7 +104,7 @@ class QuotaDispatcherHost::RequestQuotaDispatcher
         current_quota_(0),
         requested_quota_(requested_quota),
         render_view_id_(render_view_id),
-        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+        weak_factory_(this) {}
   virtual ~RequestQuotaDispatcher() {}
 
   void Start() {

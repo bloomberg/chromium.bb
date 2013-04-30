@@ -14,7 +14,7 @@ IpcNetworkManager::IpcNetworkManager(P2PSocketDispatcher* socket_dispatcher)
     : socket_dispatcher_(socket_dispatcher),
       start_count_(0),
       network_list_received_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   socket_dispatcher_->AddNetworkListObserver(this);
 }
 

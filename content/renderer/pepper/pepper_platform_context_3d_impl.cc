@@ -24,7 +24,7 @@ PlatformContext3DImpl::PlatformContext3DImpl()
     : parent_texture_id_(0),
       has_alpha_(false),
       command_buffer_(NULL),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(this) {
 }
 
 PlatformContext3DImpl::~PlatformContext3DImpl() {

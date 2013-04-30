@@ -206,7 +206,7 @@ MediaResourceGetterImpl::MediaResourceGetterImpl(
     int renderer_id, int routing_id)
     : browser_context_(browser_context),
       file_system_context_(file_system_context),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_this_(this)),
+      weak_this_(this),
       renderer_id_(renderer_id),
       routing_id_(routing_id) {
 }

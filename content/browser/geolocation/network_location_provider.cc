@@ -114,7 +114,7 @@ NetworkLocationProvider::NetworkLocationProvider(
       access_token_(access_token),
       is_permission_granted_(false),
       is_new_data_available_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   // Create the position cache.
   position_cache_.reset(new PositionCache());
 

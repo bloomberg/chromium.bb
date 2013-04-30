@@ -28,10 +28,9 @@ class ViewHttpCacheJob : public net::URLRequestJob {
                    net::NetworkDelegate* network_delegate)
       : net::URLRequestJob(request, network_delegate),
         core_(new Core),
-        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
-        ALLOW_THIS_IN_INITIALIZER_LIST(
-            callback_(base::Bind(&ViewHttpCacheJob::OnStartCompleted,
-                                 base::Unretained(this)))) {
+        weak_factory_(this),
+        callback_(base::Bind(&ViewHttpCacheJob::OnStartCompleted,
+                             base::Unretained(this))) {
   }
 
   // net::URLRequestJob implementation.
@@ -53,8 +52,7 @@ class ViewHttpCacheJob : public net::URLRequestJob {
    public:
     Core()
         : data_offset_(0),
-          ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
-              base::Bind(&Core::OnIOComplete, this))) {
+          callback_(base::Bind(&Core::OnIOComplete, this)) {
     }
 
     int Start(const net::URLRequest& request, const base::Closure& callback);

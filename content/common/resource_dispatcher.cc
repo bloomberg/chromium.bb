@@ -256,7 +256,7 @@ void IPCResourceLoaderBridge::SyncLoad(SyncLoadResponse* response) {
 
 ResourceDispatcher::ResourceDispatcher(IPC::Sender* sender)
     : message_sender_(sender),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       delegate_(NULL) {
 }
 

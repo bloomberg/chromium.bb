@@ -102,7 +102,7 @@ bool WebAccessibilityNotificationToAccessibilityNotification(
 RendererAccessibilityComplete::RendererAccessibilityComplete(
     RenderViewImpl* render_view)
     : RendererAccessibility(render_view),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       browser_root_(NULL),
       last_scroll_offset_(gfx::Size()),
       ack_pending_(false) {

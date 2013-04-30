@@ -213,13 +213,12 @@ NavigationControllerImpl::NavigationControllerImpl(
       transient_entry_index_(-1),
       web_contents_(web_contents),
       max_restored_page_id_(-1),
-      ALLOW_THIS_IN_INITIALIZER_LIST(ssl_manager_(this)),
+      ssl_manager_(this),
       needs_reload_(false),
       is_initial_navigation_(true),
       pending_reload_(NO_RELOAD),
       get_timestamp_callback_(base::Bind(&base::Time::Now)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          screenshot_manager_(new WebContentsScreenshotManager(this))) {
+      screenshot_manager_(new WebContentsScreenshotManager(this)) {
   DCHECK(browser_context_);
 }
 

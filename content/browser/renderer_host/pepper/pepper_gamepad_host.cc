@@ -23,7 +23,7 @@ PepperGamepadHost::PepperGamepadHost(BrowserPpapiHost* host,
       browser_ppapi_host_(host),
       gamepad_service_(GamepadService::GetInstance()),
       is_started_(false),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
 }
 
 PepperGamepadHost::PepperGamepadHost(GamepadService* gamepad_service,
@@ -34,7 +34,7 @@ PepperGamepadHost::PepperGamepadHost(GamepadService* gamepad_service,
       browser_ppapi_host_(host),
       gamepad_service_(gamepad_service),
       is_started_(false),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
 }
 
 PepperGamepadHost::~PepperGamepadHost() {

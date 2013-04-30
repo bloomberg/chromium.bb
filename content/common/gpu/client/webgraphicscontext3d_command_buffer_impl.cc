@@ -146,7 +146,7 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
       cached_width_(0),
       cached_height_(0),
       bound_fbo_(0),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      weak_ptr_factory_(this),
       initialized_(false),
       parent_(NULL),
       parent_texture_id_(0),
