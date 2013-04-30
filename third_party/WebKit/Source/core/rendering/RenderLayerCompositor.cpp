@@ -980,7 +980,7 @@ void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vect
     // have been processed. computeCompositingRequirements() will already have done the repaint if necessary.
 
     // Used for gathering UMA data about the effect on memory usage of promoting all layers
-    // that have a webkit-transition on opacity or transform.
+    // that have a webkit-transition on opacity or transform and intersect the viewport.
     static double pixelsWithoutPromotingAllTransitions = 0.0;
     static double pixelsAddedByPromotingAllTransitions = 0.0;
 
@@ -1018,8 +1018,9 @@ void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vect
 
         pixelsWithoutPromotingAllTransitions += layer->size().height() * layer->size().width();
     } else {
-        if (layer->renderer()->style()->transitionForProperty(CSSPropertyOpacity) ||
-            layer->renderer()->style()->transitionForProperty(CSSPropertyWebkitTransform))
+        if ((layer->renderer()->style()->transitionForProperty(CSSPropertyOpacity) ||
+             layer->renderer()->style()->transitionForProperty(CSSPropertyWebkitTransform)) &&
+            m_renderView->viewRect().intersects(layer->absoluteBoundingBox()))
             pixelsAddedByPromotingAllTransitions += layer->size().height() * layer->size().width();
     }
 
