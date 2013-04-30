@@ -768,21 +768,6 @@ cr.define('options', function() {
       if (selectedIndex >= 0) {
         var selection = languagesSelect.options[selectedIndex];
         $('language-options-list').addLanguage(String(selection.value));
-        if (cr.isChromeOS) {
-          var inputMethodIds =
-              this.languageCodeToInputMethodIdsMap_[selection.value];
-          // Enable the first input method for the language added.
-          if (inputMethodIds && inputMethodIds[0] &&
-              // Don't add the input method it's already present. This can
-              // happen if the same input method is shared among multiple
-              // languages (ex. English US keyboard is used for English US and
-              // Filipino).
-              this.preloadEngines_.indexOf(inputMethodIds[0]) == -1) {
-            this.preloadEngines_.push(inputMethodIds[0]);
-            this.updateCheckboxesFromPreloadEngines_();
-            this.savePreloadEnginesPref_();
-          }
-        }
         OptionsPage.closeOverlay();
       }
     },
