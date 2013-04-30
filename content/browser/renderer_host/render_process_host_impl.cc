@@ -866,7 +866,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableSandboxLogging,
 #endif
     switches::kEnableSeccompSandbox,
-    switches::kEnableSoftwareCompositingGLAdapter,
+    switches::kEnableSoftwareCompositing,
     switches::kEnableStatsTable,
     switches::kEnableThreadedCompositing,
     switches::kEnableCompositingForFixedPosition,

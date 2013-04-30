@@ -89,6 +89,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
                             std::string* gl_renderer,
                             std::string* gl_version) OVERRIDE;
   virtual void DisableHardwareAcceleration() OVERRIDE;
+  virtual void EnableSoftwareCompositing() OVERRIDE;
 
   // This collects preliminary GPU info, load GpuBlacklist, and compute the
   // preliminary blacklisted features; it should only be called at browser
@@ -273,8 +274,11 @@ class CONTENT_EXPORT GpuDataManagerImpl
   ListValue log_messages_;
   mutable base::Lock log_messages_lock_;
 
-  bool use_swiftshader_;
+  // TODO(skaslev) Remove this after all legacy s/w rendering paths are removed.
+  // Then use_software_compositor_ will be implicitly always true.
+  bool use_software_compositor_;
 
+  bool use_swiftshader_;
   base::FilePath swiftshader_path_;
 
   // Current card force-blacklisted due to GPU crashes, or disabled through
