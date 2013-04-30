@@ -981,11 +981,6 @@
         },{ # OS!="mac"
           'sources/': [['exclude', 'Mac\\.(cpp|mm?)$']]
         }],
-        ['gcc_version == 42', {
-          # Due to a bug in gcc 4.2.1 (the current version on hardy), we get
-          # warnings about uninitialized this.
-          'cflags': ['-Wno-uninitialized'],
-        }],
         ['OS == "android" and target_arch == "ia32" and gcc_version == 46', {
           # Due to a bug in gcc 4.6 in android NDK, we get warnings about uninitialized variable.
           'cflags': ['-Wno-uninitialized'],
@@ -1037,11 +1032,6 @@
         # on link time code generation builds.
         ['OS=="win" and buildtype=="Official"', {
           'msvs_shard': 19,
-        }],
-        ['gcc_version == 42', {
-          # Due to a bug in gcc 4.2.1 (the current version on hardy), we get
-          # warnings about uninitialized this.
-          'cflags': ['-Wno-uninitialized'],
         }],
         ['OS != "linux"', {
           'sources/': [
