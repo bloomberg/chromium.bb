@@ -2217,7 +2217,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheGetKey) {
   GetKey();
 }
 
-TEST_F(DiskCacheEntryTest, DISABLED_SimpleCacheGetTimes) {
+TEST_F(DiskCacheEntryTest, SimpleCacheGetTimes) {
   SetSimpleCacheMode();
   InitCache();
   GetTimes();

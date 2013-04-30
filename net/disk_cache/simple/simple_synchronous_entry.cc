@@ -203,7 +203,7 @@ void SimpleSynchronousEntry::WriteData(
     data_size_[index] = offset + buf_len;
   }
 
-  last_modified_ = Time::Now();
+  last_used_ = last_modified_ = Time::Now();
   *out_result = buf_len;
 }
 
@@ -290,7 +290,6 @@ SimpleSynchronousEntry::SimpleSynchronousEntry(
       initialized_(false) {
   COMPILE_ASSERT(arraysize(data_size_) == arraysize(files_),
                  array_sizes_must_be_equal);
-  std::memset(data_size_, 0, sizeof(data_size_));
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
     files_[i] = kInvalidPlatformFileValue;
   }
@@ -331,23 +330,22 @@ bool SimpleSynchronousEntry::OpenOrCreateFiles(bool create) {
     last_modified_ = last_used_ = Time::Now();
     for (int i = 0; i < kSimpleEntryFileCount; ++i)
       data_size_[i] = 0;
-    return true;
-  }
-
-  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
-    PlatformFileInfo file_info;
-    bool success = GetPlatformFileInfo(files_[i], &file_info);
-    if (!success) {
-      DLOG(WARNING) << "Could not get platform file info.";
-      continue;
-    }
-    last_used_ = std::max(last_used_, file_info.last_accessed);
-    last_modified_ = std::max(last_modified_, file_info.last_modified);
-    data_size_[i] = GetDataSizeFromKeyAndFileSize(key_, file_info.size);
-    if (data_size_[i] < 0) {
-      // This entry can't possibly be valid, as it does not enough space to
-      // store a valid SimpleFileEOF record.
-      return false;
+  } else {
+    for (int i = 0; i < kSimpleEntryFileCount; ++i) {
+      PlatformFileInfo file_info;
+      bool success = GetPlatformFileInfo(files_[i], &file_info);
+      if (!success) {
+        DLOG(WARNING) << "Could not get platform file info.";
+        continue;
+      }
+      last_used_ = std::max(last_used_, file_info.last_accessed);
+      last_modified_ = std::max(last_modified_, file_info.last_modified);
+      data_size_[i] = GetDataSizeFromKeyAndFileSize(key_, file_info.size);
+      if (data_size_[i] < 0) {
+        // This entry can't possibly be valid, as it does not enough space to
+        // store a valid SimpleFileEOF record.
+        return false;
+      }
     }
   }
 
