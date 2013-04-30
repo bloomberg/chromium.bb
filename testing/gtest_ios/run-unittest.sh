@@ -19,7 +19,7 @@ export -n SHELLOPTS
 readonly ScriptDir=$(dirname "$(echo ${0} | sed -e "s,^\([^/]\),$(pwd)/\1,")")
 readonly ScriptName=$(basename "${0}")
 readonly ThisScript="${ScriptDir}/${ScriptName}"
-readonly SimExecutable="${BUILD_DIR}/${CONFIGURATION}/iossim"
+readonly SimExecutable="${BUILD_DIR}/ninja-iossim/${CONFIGURATION}/iossim"
 
 # Helper to print a line formatted for Xcodes build output parser.
 XcodeNote() {
