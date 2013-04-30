@@ -212,7 +212,7 @@ void LocalFileSyncContext::ApplyRemoteChange(
         case SYNC_FILE_TYPE_FILE: {
           DCHECK(!local_path.empty());
           base::FilePath dir_path =
-              fileapi::VirtualPath::DirName(url.virtual_path());
+              fileapi::VirtualPath::DirName(url.path());
           if (dir_path.empty() ||
               fileapi::VirtualPath::DirName(dir_path) == dir_path) {
             // Copying into the root directory.
@@ -220,7 +220,8 @@ void LocalFileSyncContext::ApplyRemoteChange(
           } else {
             FileSystemURL dir_url =
                 file_system_context->CreateCrackedFileSystemURL(
-                    url.origin(), url.mount_type(), dir_path);
+                    url.origin(), url.mount_type(),
+                    fileapi::VirtualPath::DirName(url.virtual_path()));
             operation->CreateDirectory(
                 dir_url, false /* exclusive */, true /* recursive */,
                 base::Bind(&LocalFileSyncContext::DidCreateDirectoryForCopyIn,
