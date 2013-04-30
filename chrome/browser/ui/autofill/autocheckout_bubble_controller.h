@@ -21,16 +21,19 @@ class AutocheckoutBubbleController {
  public:
   // |anchor_rect| is the anchor for the bubble UI. It is the bounds of an
   // input element in viewport space. |native_window| is the parent view of the
-  // bubble. |callback| is invoked if the bubble is accepted. It brings up the
-  // requestAutocomplete dialog to collect user input for Autocheckout.
+  // bubble. |is_google_user| is whether or not the user is logged into or has
+  // been logged into accounts.google.com. |callback| is invoked if the bubble
+  // is accepted. It brings up the requestAutocomplete dialog to collect user
+  // input for Autocheckout.
   AutocheckoutBubbleController(const gfx::RectF& anchor_rect,
                                const gfx::NativeWindow& native_window,
+                               bool  is_google_user,
                                const base::Callback<void(bool)>& callback);
   ~AutocheckoutBubbleController();
 
   static int AcceptTextID();
   static int CancelTextID();
-  static int PromptTextID();
+  int PromptTextID();
 
   void BubbleAccepted();
   void BubbleCanceled();
@@ -57,6 +60,10 @@ class AutocheckoutBubbleController {
 
   // |native_window| is the parent window of the bubble.
   gfx::NativeWindow native_window_;
+
+  // Whether or not the user has or is logged into accounts.google.com. Used to
+  // vary the messaging on the bubble.
+  bool is_google_user_;
 
   // |callback_| is invoked if the bubble is accepted.
   base::Callback<void(bool)> callback_;

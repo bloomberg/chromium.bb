@@ -7,9 +7,11 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
+#include "base/threading/thread_checker.h"
 #include "components/autofill/browser/autocheckout_page_meta_data.h"
 #include "components/autofill/common/autocheckout_status.h"
 
@@ -21,6 +23,10 @@ struct SSLStatus;
 
 namespace gfx {
 class RectF;
+}
+
+namespace net {
+class URLRequestContextGetter;
 }
 
 namespace autofill {
@@ -57,9 +63,8 @@ class AutocheckoutManager {
 
   // Causes the Autocheckout bubble to be displayed if the user hasn't seen it
   // yet for the current page. |frame_url| is the page where Autocheckout is
-  // being initiated. |ssl_status| is the SSL status of the page. |native_view|
-  // is the parent view of the bubble. |bounding_box| is the bounding box of the
-  // input field in focus.
+  // being initiated. |ssl_status| is the SSL status of the page. |bounding_box|
+  // is the bounding box of the input field in focus.
   virtual void MaybeShowAutocheckoutBubble(const GURL& frame_url,
                                            const content::SSLStatus& ssl_status,
                                            const gfx::RectF& bounding_box);
@@ -85,6 +90,15 @@ class AutocheckoutManager {
   void set_metric_logger(scoped_ptr<AutofillMetrics> metric_logger);
 
  private:
+  // Shows the Autocheckout bubble. Must be called on the UI thread. |frame_url|
+  // is the page where Autocheckout is being initiated. |ssl_status| is the SSL
+  // status of the page. |bounding_box| is the bounding box of the input field
+  // in focus. |cookies| is any Google Account cookies.
+  void ShowAutocheckoutBubble(const GURL& frame_url,
+                              const content::SSLStatus& ssl_status,
+                              const gfx::RectF& bounding_box,
+                              const std::string& cookies);
+
   // Whether or not the current page is the start of a multipage Autofill flow.
   bool IsStartOfAutofillableFlow() const;
 
@@ -135,6 +149,8 @@ class AutocheckoutManager {
   std::string google_transaction_id_;
 
   base::WeakPtrFactory<AutocheckoutManager> weak_ptr_factory_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocheckoutManager);
 };

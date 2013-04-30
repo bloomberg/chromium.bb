@@ -47,11 +47,11 @@ void AutocheckoutBubbleViews::Init() {
   // Add the message label to the first row.
   views::ColumnSet* cs = layout->AddColumnSet(1);
   views::Label* message_label = new views::Label(
-      l10n_util::GetStringUTF16(AutocheckoutBubbleController::PromptTextID()));
+      l10n_util::GetStringUTF16(controller_->PromptTextID()));
 
   // Maximum width for the message field in pixels. The message text will be
   // wrapped when its width is wider than this.
-  const int kMaxMessageWidth = 400;
+  const int kMaxMessageWidth = 300;
 
   int message_width =
       std::min(kMaxMessageWidth, message_label->GetPreferredSize().width());

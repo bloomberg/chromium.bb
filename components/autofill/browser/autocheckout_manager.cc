@@ -20,10 +20,16 @@
 #include "components/autofill/common/form_data.h"
 #include "components/autofill/common/form_field_data.h"
 #include "components/autofill/common/web_element_descriptor.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/ssl_status.h"
 #include "googleurl/src/gurl.h"
+#include "net/cookies/cookie_options.h"
+#include "net/cookies/cookie_store.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "ui/gfx/rect.h"
 
 using content::RenderViewHost;
@@ -33,6 +39,8 @@ using content::WebContents;
 namespace autofill {
 
 namespace {
+
+const char kGoogleAccountsUrl[] = "https://accounts.google.com/";
 
 // Build FormFieldData based on the supplied |autocomplete_attribute|. Will
 // fill rest of properties with default values.
@@ -86,6 +94,41 @@ AutofillMetrics::AutocheckoutBuyFlowMetric AutocheckoutStatusToUmaMetric(
 
   NOTREACHED();
   return AutofillMetrics::NUM_AUTOCHECKOUT_BUY_FLOW_METRICS;
+}
+
+// Callback for retrieving Google Account cookies. |callback| is passed the
+// retrieved cookies and posted back to the UI thread. |cookies| is any Google
+// Account cookies.
+void GetGoogleCookiesCallback(
+    const base::Callback<void(const std::string&)>& callback,
+    const std::string& cookies) {
+  content::BrowserThread::PostTask(content::BrowserThread::UI,
+                                   FROM_HERE,
+                                   base::Bind(callback, cookies));
+}
+
+// Gets Google Account cookies. Must be called on the IO thread.
+// |request_context_getter| is a getter for the current request context.
+// |callback| is called when retrieving cookies is completed.
+void GetGoogleCookies(
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    const base::Callback<void(const std::string&)>& callback) {
+  net::URLRequestContext* url_request_context =
+      request_context_getter->GetURLRequestContext();
+  if (!url_request_context)
+    return;
+
+  net::CookieStore* cookie_store = url_request_context->cookie_store();
+
+  base::Callback<void(const std::string&)> cookie_callback = base::Bind(
+      &GetGoogleCookiesCallback,
+      callback);
+
+  net::CookieOptions cookie_options;
+  cookie_options.set_include_httponly();
+  cookie_store->GetCookiesWithOptionsAsync(GURL(kGoogleAccountsUrl),
+                                           cookie_options,
+                                           cookie_callback);
 }
 
 const char kTransactionIdNotSet[] = "transaction id not set";
@@ -221,16 +264,33 @@ void AutocheckoutManager::MaybeShowAutocheckoutBubble(
       !IsStartOfAutofillableFlow())
     return;
 
-  base::Callback<void(bool)> callback = base::Bind(
-      &AutocheckoutManager::MaybeShowAutocheckoutDialog,
+  base::Callback<void(const std::string&)> callback = base::Bind(
+      &AutocheckoutManager::ShowAutocheckoutBubble,
       weak_ptr_factory_.GetWeakPtr(),
       frame_url,
-      ssl_status);
-  autofill_manager_->delegate()->ShowAutocheckoutBubble(
-      bounding_box,
-      callback);
-  is_autocheckout_bubble_showing_ = true;
-  autocheckout_offered_ = true;
+      ssl_status,
+      bounding_box);
+
+  content::WebContents* web_contents = autofill_manager_->GetWebContents();
+  if (!web_contents)
+    return;
+
+  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
+  if(!browser_context)
+    return;
+
+  scoped_refptr<net::URLRequestContextGetter> request_context =
+      scoped_refptr<net::URLRequestContextGetter>(
+          browser_context->GetRequestContext());
+
+  if (!request_context)
+    return;
+
+  base::Closure task = base::Bind(&GetGoogleCookies, request_context, callback);
+
+  content::BrowserThread::PostTask(content::BrowserThread::IO,
+                                   FROM_HERE,
+                                   task);
 }
 
 void AutocheckoutManager::set_metric_logger(
@@ -248,11 +308,32 @@ void AutocheckoutManager::MaybeShowAutocheckoutDialog(
 
   FormData form = BuildAutocheckoutFormData();
   form.ssl_status = ssl_status;
+
   base::Callback<void(const FormStructure*, const std::string&)> callback =
       base::Bind(&AutocheckoutManager::ReturnAutocheckoutData,
                  weak_ptr_factory_.GetWeakPtr());
   autofill_manager_->ShowRequestAutocompleteDialog(
       form, frame_url, DIALOG_TYPE_AUTOCHECKOUT, callback);
+}
+
+void AutocheckoutManager::ShowAutocheckoutBubble(
+    const GURL& frame_url,
+    const content::SSLStatus& ssl_status,
+    const gfx::RectF& bounding_box,
+    const std::string& cookies) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  base::Callback<void(bool)> callback = base::Bind(
+      &AutocheckoutManager::MaybeShowAutocheckoutDialog,
+      weak_ptr_factory_.GetWeakPtr(),
+      frame_url,
+      ssl_status);
+  autofill_manager_->delegate()->ShowAutocheckoutBubble(
+      bounding_box,
+      cookies.find("LSID") != std::string::npos,
+      callback);
+  is_autocheckout_bubble_showing_ = true;
+  autocheckout_offered_ = true;
 }
 
 bool AutocheckoutManager::IsStartOfAutofillableFlow() const {

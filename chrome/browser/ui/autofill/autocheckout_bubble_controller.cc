@@ -13,9 +13,11 @@ namespace autofill {
 AutocheckoutBubbleController::AutocheckoutBubbleController(
     const gfx::RectF& anchor_rect,
     const gfx::NativeWindow& native_window,
+    bool is_google_user,
     const base::Callback<void(bool)>& callback)
     : anchor_rect_(gfx::ToEnclosingRect(anchor_rect)),
       native_window_(native_window),
+      is_google_user_(is_google_user),
       callback_(callback),
       metric_logger_(new AutofillMetrics),
       had_user_interaction_(false) {}
@@ -32,9 +34,9 @@ int AutocheckoutBubbleController::CancelTextID() {
   return IDS_AUTOCHECKOUT_BUBBLE_CANCEL;
 }
 
-// static
 int AutocheckoutBubbleController::PromptTextID() {
-  return IDS_AUTOCHECKOUT_BUBBLE_PROMPT;
+  return is_google_user_ ? IDS_AUTOCHECKOUT_BUBBLE_PROMPT_SIGNED_IN :
+                           IDS_AUTOCHECKOUT_BUBBLE_PROMPT_NOT_SIGNED_IN;
 }
 
 void AutocheckoutBubbleController::BubbleAccepted() {

@@ -48,6 +48,7 @@ class TabAutofillManagerDelegate
       const base::Closure& save_card_callback) OVERRIDE;
   virtual void ShowAutocheckoutBubble(
       const gfx::RectF& bounds,
+      bool is_google_user,
       const base::Callback<void(bool)>& callback) OVERRIDE;
   virtual void HideAutocheckoutBubble() OVERRIDE;
   virtual void ShowRequestAutocompleteDialog(

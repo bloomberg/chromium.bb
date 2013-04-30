@@ -86,6 +86,7 @@ void TabAutofillManagerDelegate::ConfirmSaveCreditCard(
 
 void TabAutofillManagerDelegate::ShowAutocheckoutBubble(
     const gfx::RectF& bounding_box,
+    bool is_google_user,
     const base::Callback<void(bool)>& callback) {
 #if !defined(TOOLKIT_VIEWS)
   callback.Run(false);
@@ -103,6 +104,7 @@ void TabAutofillManagerDelegate::ShowAutocheckoutBubble(
           new AutocheckoutBubbleController(
               anchor,
               web_contents_->GetView()->GetTopLevelNativeWindow(),
+              is_google_user,
               callback)));
   autocheckout_bubble_->ShowBubble();
 #endif  // #if !defined(TOOLKIT_VIEWS)

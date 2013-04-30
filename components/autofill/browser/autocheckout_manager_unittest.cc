@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_utils.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -247,6 +248,7 @@ class MockAutofillManagerDelegate : public TestAutofillManagerDelegate {
 
   virtual void ShowAutocheckoutBubble(
       const gfx::RectF& bounds,
+      bool is_google_user,
       const base::Callback<void(bool)>& callback) OVERRIDE {
     autocheckout_bubble_shown_ = true;
     callback.Run(true);
@@ -505,6 +507,8 @@ TEST_F(AutocheckoutManagerTest, OnFormsSeenTest) {
   autocheckout_manager_->MaybeShowAutocheckoutBubble(frame_url,
                                                      ssl_status,
                                                      bounding_box);
+  content::RunAllPendingInMessageLoop(BrowserThread::IO);
+
   EXPECT_TRUE(autocheckout_manager_->autocheckout_offered());
   // OnFormsSeen resets whether or not the bubble was shown.
   autocheckout_manager_->OnFormsSeen();
@@ -537,6 +541,7 @@ TEST_F(AutocheckoutManagerTest, MaybeShowAutocheckoutBubbleTest) {
   autocheckout_manager_->MaybeShowAutocheckoutBubble(frame_url,
                                                      ssl_status,
                                                      bounding_box);
+  content::RunAllPendingInMessageLoop(BrowserThread::IO);
   EXPECT_TRUE(autocheckout_manager_->autocheckout_offered());
   EXPECT_TRUE(autofill_manager_delegate_->autocheckout_bubble_shown());
 
@@ -549,6 +554,7 @@ TEST_F(AutocheckoutManagerTest, MaybeShowAutocheckoutBubbleTest) {
   autocheckout_manager_->MaybeShowAutocheckoutBubble(frame_url,
                                                      ssl_status,
                                                      bounding_box);
+  content::RunAllPendingInMessageLoop(BrowserThread::IO);
   EXPECT_TRUE(autocheckout_manager_->autocheckout_offered());
   EXPECT_FALSE(autofill_manager_delegate_->autocheckout_bubble_shown());
   EXPECT_FALSE(autofill_manager_delegate_->request_autocomplete_dialog_open());

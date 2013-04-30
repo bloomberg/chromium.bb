@@ -87,10 +87,12 @@ class AutofillManagerDelegate {
       const base::Closure& save_card_callback) = 0;
 
   // Causes the Autocheckout bubble UI to be displayed. |bounding_box| is the
-  // anchor for the bubble. |native_view| is the parent view of the bubble.
-  // |callback| is run if the bubble is accepted.
+  // anchor for the bubble. |is_google_user| is whether or not the user is
+  // logged into or has been logged into accounts.google.com. |callback| is run
+  // if the bubble is accepted.
   virtual void ShowAutocheckoutBubble(
       const gfx::RectF& bounding_box,
+      bool is_google_user,
       const base::Callback<void(bool)>& callback) = 0;
 
   // Causes the dialog for request autocomplete feature to be shown.

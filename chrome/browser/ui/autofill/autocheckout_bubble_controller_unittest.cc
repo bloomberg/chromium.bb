@@ -66,6 +66,7 @@ class TestAutocheckoutBubbleController :
       const base::Callback<void(bool)>& callback)
       : AutocheckoutBubbleController(gfx::RectF(),
                                      gfx::NativeWindow(),
+                                     true /* is_google_user */,
                                      callback) {
     set_metric_logger(new TestAutofillMetrics);
   }
