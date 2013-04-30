@@ -234,8 +234,13 @@ class ShellUtil {
   // Registry path that stores url associations on Vista.
   static const wchar_t* kRegVistaUrlPrefs;
 
-  // File extensions that Chrome registers itself for.
-  static const wchar_t* kFileAssociations[];
+  // File extensions that Chrome registers itself as the default handler
+  // for when the user makes Chrome the default browser.
+  static const wchar_t* kDefaultFileAssociations[];
+
+  // File extensions that Chrome registers itself as being capable of
+  // handling.
+  static const wchar_t* kPotentialFileAssociations[];
 
   // Protocols that Chrome registers itself as the default handler for
   // when the user makes Chrome the default browser.

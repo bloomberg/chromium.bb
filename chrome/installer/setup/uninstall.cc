@@ -704,8 +704,9 @@ void RemoveFiletypeRegistration(const InstallerState& installer_state,
       !base::win::RegKey(HKEY_LOCAL_MACHINE, (classes_path + prog_id).c_str(),
                          KEY_QUERY_VALUE).Valid()) {
     InstallUtil::ValueEquals prog_id_pred(prog_id);
-    for (const wchar_t* const* filetype = &ShellUtil::kFileAssociations[0];
-         *filetype != NULL; ++filetype) {
+    for (const wchar_t* const* filetype =
+         &ShellUtil::kPotentialFileAssociations[0]; *filetype != NULL;
+         ++filetype) {
       if (InstallUtil::DeleteRegistryValueIf(
               root, (classes_path + *filetype).c_str(), NULL,
               prog_id_pred) == InstallUtil::DELETED) {
@@ -836,10 +837,10 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
   string16 file_assoc_key;
   string16 open_with_list_key;
   string16 open_with_progids_key;
-  for (int i = 0; ShellUtil::kFileAssociations[i] != NULL; ++i) {
+  for (int i = 0; ShellUtil::kPotentialFileAssociations[i] != NULL; ++i) {
     file_assoc_key.assign(ShellUtil::kRegClasses);
     file_assoc_key.push_back(base::FilePath::kSeparators[0]);
-    file_assoc_key.append(ShellUtil::kFileAssociations[i]);
+    file_assoc_key.append(ShellUtil::kPotentialFileAssociations[i]);
     file_assoc_key.push_back(base::FilePath::kSeparators[0]);
 
     open_with_list_key.assign(file_assoc_key);

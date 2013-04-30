@@ -399,10 +399,10 @@ class RegistryEntry {
         L"StartMenuInternet", reg_app_name));
 
     const string16 html_prog_id(GetBrowserProgId(suffix));
-    for (int i = 0; ShellUtil::kFileAssociations[i] != NULL; i++) {
+    for (int i = 0; ShellUtil::kPotentialFileAssociations[i] != NULL; i++) {
       entries->push_back(new RegistryEntry(
           capabilities + L"\\FileAssociations",
-          ShellUtil::kFileAssociations[i], html_prog_id));
+          ShellUtil::kPotentialFileAssociations[i], html_prog_id));
     }
     for (int i = 0; ShellUtil::kPotentialProtocolAssociations[i] != NULL;
         i++) {
@@ -432,10 +432,10 @@ class RegistryEntry {
         ShellUtil::kAppPathsRegistryPathName, chrome_path.DirName().value()));
 
     const string16 html_prog_id(GetBrowserProgId(suffix));
-    for (int i = 0; ShellUtil::kFileAssociations[i] != NULL; i++) {
+    for (int i = 0; ShellUtil::kPotentialFileAssociations[i] != NULL; i++) {
       string16 key(ShellUtil::kRegClasses);
       key.push_back(base::FilePath::kSeparators[0]);
-      key.append(ShellUtil::kFileAssociations[i]);
+      key.append(ShellUtil::kPotentialFileAssociations[i]);
       key.push_back(base::FilePath::kSeparators[0]);
       key.append(ShellUtil::kRegOpenWithProgids);
       entries->push_back(new RegistryEntry(key, html_prog_id, string16()));
@@ -489,10 +489,10 @@ class RegistryEntry {
       ScopedVector<RegistryEntry>* entries) {
     // File extension associations.
     string16 html_prog_id(GetBrowserProgId(suffix));
-    for (int i = 0; ShellUtil::kFileAssociations[i] != NULL; i++) {
+    for (int i = 0; ShellUtil::kDefaultFileAssociations[i] != NULL; i++) {
       string16 ext_key(ShellUtil::kRegClasses);
       ext_key.push_back(base::FilePath::kSeparators[0]);
-      ext_key.append(ShellUtil::kFileAssociations[i]);
+      ext_key.append(ShellUtil::kDefaultFileAssociations[i]);
       entries->push_back(new RegistryEntry(ext_key, html_prog_id));
     }
 
@@ -1220,8 +1220,10 @@ const wchar_t* ShellUtil::kChromeHTMLProgId = L"ChromiumHTM";
 const wchar_t* ShellUtil::kChromeHTMLProgIdDesc = L"Chromium HTML Document";
 #endif
 
-const wchar_t* ShellUtil::kFileAssociations[] = {L".htm", L".html", L".shtml",
-    L".xht", L".xhtml", NULL};
+const wchar_t* ShellUtil::kDefaultFileAssociations[] = {L".htm", L".html",
+    L".shtml", L".xht", L".xhtml", NULL};
+const wchar_t* ShellUtil::kPotentialFileAssociations[] = {L".htm", L".html",
+    L".shtml", L".xht", L".xhtml", L".webp", NULL};
 const wchar_t* ShellUtil::kBrowserProtocolAssociations[] = {L"ftp", L"http",
     L"https", NULL};
 const wchar_t* ShellUtil::kPotentialProtocolAssociations[] = {L"ftp", L"http",
@@ -1597,13 +1599,14 @@ bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
         }
       }
 
-      for (int i = 0; ShellUtil::kFileAssociations[i] != NULL; i++) {
+      for (int i = 0; ShellUtil::kDefaultFileAssociations[i] != NULL; i++) {
         hr = pAAR->SetAppAsDefault(app_name.c_str(),
-            ShellUtil::kFileAssociations[i], AT_FILEEXTENSION);
+            ShellUtil::kDefaultFileAssociations[i], AT_FILEEXTENSION);
         if (!SUCCEEDED(hr)) {
           ret = false;
           LOG(ERROR) << "Failed to register as default for file extension "
-                     << ShellUtil::kFileAssociations[i] << " (" << hr << ")";
+                     << ShellUtil::kDefaultFileAssociations[i]
+                     << " (" << hr << ")";
         }
       }
     }
