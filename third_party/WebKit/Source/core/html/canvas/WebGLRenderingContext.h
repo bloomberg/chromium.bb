@@ -341,11 +341,6 @@ public:
 
     void destroyGraphicsContext3D();
     void markContextChanged();
-    void cleanupAfterGraphicsCall(bool changed)
-    {
-        if (changed)
-            markContextChanged();
-    }
 
     // Query if the GL implementation is NPOT strict.
     bool isGLES2NPOTStrict() { return m_isGLES2NPOTStrict; }
