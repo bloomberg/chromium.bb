@@ -21,6 +21,7 @@ class FilePath;
 }
 
 namespace gfx {
+class ImageFamily;
 class Size;
 }
 class SkBitmap;
@@ -60,6 +61,20 @@ class UI_EXPORT IconUtil {
  public:
   // The size of the large icon entries in .ico files on Windows Vista+.
   static const int kLargeIconSize = 256;
+  // The size of icons in the medium icons view on Windows Vista+. This is the
+  // maximum size Windows will display an icon that does not have a 256x256
+  // image, even at the large or extra large icons views.
+  static const int kMediumIconSize = 48;
+
+  // The dimensions for icon images in Windows icon files. All sizes are square;
+  // that is, the value 48 means a 48x48 pixel image. Sizes are listed in
+  // ascending order.
+  static const int kIconDimensions[];
+
+  // The number of elements in kIconDimensions.
+  static const size_t kNumIconDimensions;
+  // The number of elements in kIconDimensions <= kMediumIconSize.
+  static const size_t kNumIconDimensionsUpToMediumSize;
 
   // Given an SkBitmap object, the function converts the bitmap to a Windows
   // icon and returns the corresponding HICON handle. If the function cannot
@@ -99,18 +114,20 @@ class UI_EXPORT IconUtil {
 
   // Creates Windows .ico file at |icon_path|. The icon file is created with
   // multiple BMP representations at varying predefined dimensions (by resizing
-  // |bitmap|) because Windows uses different image sizes when loading icons,
-  // depending on where the icon is drawn (ALT+TAB window, desktop shortcut,
-  // Quick Launch, etc.).
+  // an appropriately sized image from |image_family|) because Windows uses
+  // different image sizes when loading icons, depending on where the icon is
+  // drawn (ALT+TAB window, desktop shortcut, Quick Launch, etc.).
   //
-  // To create an icon file containing a 256x256 PNG entry, which is used by
-  // Vista+ for high res icons, specify a non-empty 256x256 SkBitmap for the
-  // |large_bitmap| parameter.
+  // If |image_family| contains an image larger than 48x48, the resulting icon
+  // will contain all sizes up to 256x256. The 256x256 image will be stored in
+  // PNG format inside the .ico file. If not, the resulting icon will contain
+  // all sizes up to 48x48.
   //
-  // The function returns true on success and false otherwise.
-  static bool CreateIconFileFromSkBitmap(const SkBitmap& bitmap,
-                                         const SkBitmap& large_bitmap,
-                                         const base::FilePath& icon_path);
+  // The function returns true on success and false otherwise. Returns false if
+  // |image_family| is empty.
+  static bool CreateIconFileFromImageFamily(
+      const gfx::ImageFamily& image_family,
+      const base::FilePath& icon_path);
 
   // Creates a cursor of the specified size from the DIB passed in.
   // Returns the cursor on success or NULL on failure.
@@ -181,14 +198,11 @@ class UI_EXPORT IconUtil {
   };
 #pragma pack(pop)
 
-  FRIEND_TEST_ALL_PREFIXES(IconUtilTest, TestCreateIconFileWithLargeBitmap);
+  friend class IconUtilTest;
 
   // Used for indicating that the .ico contains an icon (rather than a cursor)
   // image. This value is set in the |idType| field of the ICONDIR structure.
   static const int kResourceTypeIcon = 1;
-
-  // The dimensions of the icon images we insert into the .ico file.
-  static const int icon_dimensions_[];
 
   // Returns true if any pixel in the given pixels buffer has an non-zero alpha.
   static bool PixelsHaveAlpha(const uint32* pixels, size_t num_pixels);
@@ -202,6 +216,9 @@ class UI_EXPORT IconUtil {
   // structures within the icon data buffer, this function sets the image
   // information (dimensions, color depth, etc.) in the icon structures and
   // also copies the underlying icon image into the appropriate location.
+  // The width and height of |bitmap| must be < 256.
+  // (Note that the 256x256 icon is treated specially, as a PNG, and should not
+  // use this method.)
   //
   // The function will set the data pointed to by |image_byte_count| with the
   // number of image bytes written to the buffer. Note that the number of bytes
@@ -219,11 +236,6 @@ class UI_EXPORT IconUtil {
   static void CopySkBitmapBitsIntoIconBuffer(const SkBitmap& bitmap,
                                              unsigned char* buffer,
                                              size_t buffer_size);
-
-  // Given a single bitmap, this function creates a set of bitmaps with
-  // specific dimensions by resizing the given bitmap to the appropriate sizes.
-  static void CreateResizedBitmapSet(const SkBitmap& bitmap_to_resize,
-                                     std::vector<SkBitmap>* bitmaps);
 
   // Given a set of bitmaps with varying dimensions, this function computes
   // the amount of memory needed in order to store the bitmaps as image icons

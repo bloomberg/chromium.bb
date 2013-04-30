@@ -14,6 +14,7 @@
 
 namespace gfx {
 class ImageSkia;
+class Size;
 
 // A collection of images at different sizes. The images should be different
 // representations of the same basic concept (for example, an icon) at various
@@ -110,6 +111,15 @@ class UI_EXPORT ImageFamily {
   // to the requested size. If none exists, returns the largest image of that
   // aspect ratio. If there are no images in the family, returns NULL.
   const gfx::Image* GetBest(int width, int height) const;
+
+  // Gets the best image to use in a rectangle of |size|.
+  // Gets an image at the same aspect ratio as |size.width()|:|size.height()|,
+  // if possible, or if not, the closest aspect ratio. Among images of that
+  // aspect ratio, returns the smallest image with both its width and height
+  // bigger or equal to the requested size. If none exists, returns the largest
+  // image of that aspect ratio. If there are no images in the family, returns
+  // NULL.
+  const gfx::Image* GetBest(const gfx::Size& size) const;
 
  private:
   // An <aspect ratio, DIP width> pair.

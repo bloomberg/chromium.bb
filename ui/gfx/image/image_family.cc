@@ -101,6 +101,10 @@ float ImageFamily::GetClosestAspect(float desired_aspect) const {
   }
 }
 
+const gfx::Image* ImageFamily::GetBest(const gfx::Size& size) const {
+  return GetBest(size.width(), size.height());
+}
+
 const gfx::Image* ImageFamily::GetWithExactAspect(float aspect,
                                                   int width) const {
   // Find the two images of given aspect ratio on either side of |width|.

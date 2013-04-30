@@ -12,6 +12,7 @@
 #include "base/md5.h"
 #include "base/path_service.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
@@ -29,22 +30,31 @@ const base::FilePath::CharType kIconChecksumFileExt[] =
     FILE_PATH_LITERAL(".ico.md5");
 
 // Width and height of icons exported to .ico files.
-// TODO(mgiuca): Remove when icon_util has the capability to save all icon
-// sizes, not just a single particular size.
-const int kIconExportSize = 32;
 
-// Calculates image checksum using MD5.
-void GetImageCheckSum(const SkBitmap& image, base::MD5Digest* digest) {
+// Calculates checksum of an icon family using MD5.
+// The checksum is derived from all of the icons in the family.
+void GetImageCheckSum(const gfx::ImageFamily& image, base::MD5Digest* digest) {
   DCHECK(digest);
+  base::MD5Context md5_context;
+  base::MD5Init(&md5_context);
 
-  SkAutoLockPixels image_lock(image);
-  MD5Sum(image.getPixels(), image.getSize(), digest);
+  for (gfx::ImageFamily::const_iterator it = image.begin(); it != image.end();
+       ++it) {
+    SkBitmap bitmap = it->AsBitmap();
+
+    SkAutoLockPixels image_lock(bitmap);
+    base::StringPiece image_data(
+        reinterpret_cast<const char*>(bitmap.getPixels()), bitmap.getSize());
+    base::MD5Update(&md5_context, image_data);
+  }
+
+  base::MD5Final(digest, &md5_context);
 }
 
 // Saves |image| as an |icon_file| with the checksum.
 bool SaveIconWithCheckSum(const base::FilePath& icon_file,
-                          const SkBitmap& image) {
-  if (!IconUtil::CreateIconFileFromSkBitmap(image, SkBitmap(), icon_file))
+                          const gfx::ImageFamily& image) {
+  if (!IconUtil::CreateIconFileFromImageFamily(image, icon_file))
     return false;
 
   base::MD5Digest digest;
@@ -57,7 +67,8 @@ bool SaveIconWithCheckSum(const base::FilePath& icon_file,
 }
 
 // Returns true if |icon_file| is missing or different from |image|.
-bool ShouldUpdateIcon(const base::FilePath& icon_file, const SkBitmap& image) {
+bool ShouldUpdateIcon(const base::FilePath& icon_file,
+                      const gfx::ImageFamily& image) {
   base::FilePath checksum_file(
       icon_file.ReplaceExtension(kIconChecksumFileExt));
 
@@ -129,12 +140,8 @@ namespace internals {
 // is up to date or successfully updated.
 bool CheckAndSaveIcon(const base::FilePath& icon_file,
                       const gfx::ImageFamily& image) {
-  // TODO(mgiuca): Save an icon with all icon sizes, not just an icon at a
-  // hard-coded fixed size. http://crbug.com/163864.
-  const gfx::Image* icon = image.GetBest(kIconExportSize, kIconExportSize);
-  SkBitmap bitmap = icon ? icon->AsBitmap() : SkBitmap();
-  if (ShouldUpdateIcon(icon_file, bitmap)) {
-    if (SaveIconWithCheckSum(icon_file, bitmap)) {
+  if (ShouldUpdateIcon(icon_file, image)) {
+    if (SaveIconWithCheckSum(icon_file, image)) {
       // Refresh shell's icon cache. This call is quite disruptive as user would
       // see explorer rebuilding the icon cache. It would be great that we find
       // a better way to achieve this.

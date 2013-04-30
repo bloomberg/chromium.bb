@@ -36,6 +36,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_family.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
 
@@ -148,19 +149,20 @@ base::FilePath CreateChromeDesktopShortcutIconForProfile(
   if (!app_icon_bitmap.get())
     return base::FilePath();
 
-  const SkBitmap badged_bitmap = BadgeIcon(*app_icon_bitmap,
-                                           avatar_bitmap_1x, 1);
+  gfx::ImageFamily badged_bitmaps;
+  badged_bitmaps.Add(gfx::Image::CreateFrom1xBitmap(
+      BadgeIcon(*app_icon_bitmap, avatar_bitmap_1x, 1)));
 
-  SkBitmap large_badged_bitmap;
   app_icon_bitmap = GetAppIconForSize(IconUtil::kLargeIconSize);
-  if (app_icon_bitmap.get())
-    large_badged_bitmap = BadgeIcon(*app_icon_bitmap, avatar_bitmap_2x, 2);
+  if (app_icon_bitmap.get()) {
+    badged_bitmaps.Add(gfx::Image::CreateFrom1xBitmap(
+        BadgeIcon(*app_icon_bitmap, avatar_bitmap_2x, 2)));
+  }
 
   // Finally, write the .ico file containing this new bitmap.
   const base::FilePath icon_path =
       profile_path.AppendASCII(profiles::internal::kProfileIconFileName);
-  if (!IconUtil::CreateIconFileFromSkBitmap(badged_bitmap, large_badged_bitmap,
-                                            icon_path))
+  if (!IconUtil::CreateIconFileFromImageFamily(badged_bitmaps, icon_path))
     return base::FilePath();
 
   return icon_path;

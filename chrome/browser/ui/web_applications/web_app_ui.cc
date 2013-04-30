@@ -40,6 +40,7 @@
 #if defined(OS_WIN)
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
+#include "ui/gfx/icon_util.h"
 #endif
 
 using content::BrowserThread;
@@ -50,12 +51,18 @@ namespace {
 
 #if defined(OS_MACOSX)
 const int kDesiredSizes[] = {16, 32, 128, 256, 512};
+const size_t kNumDesiredSizes = arraysize(kDesiredSizes);
 #elif defined(OS_LINUX)
 // Linux supports icons of any size. FreeDesktop Icon Theme Specification states
 // that "Minimally you should install a 48x48 icon in the hicolor theme."
 const int kDesiredSizes[] = {16, 32, 48, 128, 256, 512};
+const size_t kNumDesiredSizes = arraysize(kDesiredSizes);
+#elif defined(OS_WIN)
+const int* kDesiredSizes = IconUtil::kIconDimensions;
+const size_t kNumDesiredSizes = IconUtil::kNumIconDimensions;
 #else
 const int kDesiredSizes[] = {32};
+const size_t kNumDesiredSizes = arraysize(kDesiredSizes);
 #endif
 
 #if defined(OS_WIN)
@@ -330,7 +337,7 @@ void OnImageLoaded(ShellIntegration::ShortcutInfo shortcut_info,
   if (image.IsEmpty()) {
     gfx::Image default_icon =
         ResourceBundle::GetSharedInstance().GetImageNamed(IDR_APP_DEFAULT_ICON);
-    int size = kDesiredSizes[arraysize(kDesiredSizes) - 1];
+    int size = kDesiredSizes[kNumDesiredSizes - 1];
     SkBitmap bmp = skia::ImageOperations::Resize(
           *default_icon.ToSkBitmap(), skia::ImageOperations::RESIZE_BEST,
           size, size);
@@ -430,7 +437,7 @@ void UpdateShortcutInfoAndIconForApp(
   // TODO(mgiuca): Have ImageLoader build the ImageFamily directly
   // (http://crbug.com/230184).
   std::vector<extensions::ImageLoader::ImageRepresentation> info_list;
-  for (size_t i = 0; i < arraysize(kDesiredSizes); ++i) {
+  for (size_t i = 0; i < kNumDesiredSizes; ++i) {
     int size = kDesiredSizes[i];
     extensions::ExtensionResource resource =
         extensions::IconsInfo::GetIconResource(
@@ -445,7 +452,7 @@ void UpdateShortcutInfoAndIconForApp(
   }
 
   if (info_list.empty()) {
-    size_t i = arraysize(kDesiredSizes) - 1;
+    size_t i = kNumDesiredSizes - 1;
     int size = kDesiredSizes[i];
 
     // If there is no icon at the desired sizes, we will resize what we can get.

@@ -47,6 +47,7 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/icon_util.h"
+#include "ui/gfx/image/image_family.h"
 
 using content::BrowserThread;
 
@@ -236,7 +237,9 @@ bool CreateIconFile(const SkBitmap& bitmap,
 
   // Create an icon file from the favicon attached to the given |page|, and
   // save it as the temporary file.
-  if (!IconUtil::CreateIconFileFromSkBitmap(bitmap, SkBitmap(), path))
+  gfx::ImageFamily image_family;
+  image_family.Add(gfx::Image::CreateFrom1xBitmap(bitmap));
+  if (!IconUtil::CreateIconFileFromImageFamily(image_family, path))
     return false;
 
   // Add this icon file to the list and return its absolute path.
