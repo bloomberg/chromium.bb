@@ -720,7 +720,7 @@ base::HistogramBase* ChromiumEnv::GetRetryTimeHistogram(MethodID method) const {
 
 base::HistogramBase* ChromiumEnv::GetMethodIOErrorHistogram() const {
   std::string uma_name(name_);
-  uma_name.append("IOError");
+  uma_name.append(".IOError");
   return base::LinearHistogram::FactoryGet(uma_name, 1, kNumEntries,
       kNumEntries + 1, base::Histogram::kUmaTargetedHistogramFlag);
 }
