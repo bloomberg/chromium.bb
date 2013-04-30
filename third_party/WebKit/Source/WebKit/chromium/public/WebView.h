@@ -349,6 +349,9 @@ public:
         const WebPoint& clientPoint, const WebPoint& screenPoint,
         int keyModifiers) = 0;
 
+    // Retrieves a list of spelling markers.
+    virtual void spellingMarkers(WebVector<uint32_t>* markers) = 0;
+
 
     // Support for resource loading initiated by plugins -------------------
 

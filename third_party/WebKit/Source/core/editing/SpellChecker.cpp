@@ -46,12 +46,19 @@
 
 namespace WebCore {
 
-SpellCheckRequest::SpellCheckRequest(PassRefPtr<Range> checkingRange, PassRefPtr<Range> paragraphRange, const String& text, TextCheckingTypeMask mask, TextCheckingProcessType processType)
+SpellCheckRequest::SpellCheckRequest(
+        PassRefPtr<Range> checkingRange,
+        PassRefPtr<Range> paragraphRange,
+        const String& text,
+        TextCheckingTypeMask mask,
+        TextCheckingProcessType processType,
+        const Vector<uint32_t>& documentMarkersInRange,
+        const Vector<unsigned>& documentMarkerOffsets)
     : m_checker(0)
     , m_checkingRange(checkingRange)
     , m_paragraphRange(paragraphRange)
     , m_rootEditableElement(m_checkingRange->startContainer()->rootEditableElement())
-    , m_requestData(unrequestedTextCheckingSequence, text, mask, processType)
+    , m_requestData(unrequestedTextCheckingSequence, text, mask, processType, documentMarkersInRange, documentMarkerOffsets)
 {
 }
 
@@ -69,7 +76,15 @@ PassRefPtr<SpellCheckRequest> SpellCheckRequest::create(TextCheckingTypeMask tex
     if (!text.length())
         return PassRefPtr<SpellCheckRequest>();
 
-    return adoptRef(new SpellCheckRequest(checkingRange, paragraphRange, text, textCheckingOptions, processType));
+    const Vector<DocumentMarker*>& markers = checkingRange->ownerDocument()->markers()->markersInRange(checkingRange.get(), DocumentMarker::Spelling | DocumentMarker::Grammar);
+    Vector<uint32_t> hashes(markers.size());
+    Vector<unsigned> offsets(markers.size());
+    for (size_t i = 0; i < markers.size(); i++) {
+        hashes[i] = markers[i]->hash();
+        offsets[i] = markers[i]->startOffset();
+    }
+
+    return adoptRef(new SpellCheckRequest(checkingRange, paragraphRange, text, textCheckingOptions, processType, hashes, offsets));
 }
 
 const TextCheckingRequestData& SpellCheckRequest::data() const

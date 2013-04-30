@@ -106,7 +106,11 @@ void SpellCheckClient::checkTextOfParagraph(const WebString& text, WebTextChecki
     webResults->assign(results);
 }
 
-void SpellCheckClient::requestCheckingOfText(const WebString& text, WebTextCheckingCompletion* completion)
+void SpellCheckClient::requestCheckingOfText(
+        const WebString& text,
+        const WebVector<uint32_t>& markers,
+        const WebVector<unsigned>& markerOffsets,
+        WebTextCheckingCompletion* completion)
 {
     if (text.isEmpty()) {
         if (completion)

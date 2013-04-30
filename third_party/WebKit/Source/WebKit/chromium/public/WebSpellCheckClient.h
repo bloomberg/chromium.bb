@@ -62,7 +62,10 @@ public:
 
     // Requests asynchronous spelling and grammar checking, whose result should be
     // returned by passed completion object.
-    virtual void requestCheckingOfText(const WebString&, WebTextCheckingCompletion*) { }
+    virtual void requestCheckingOfText(const WebString& textToCheck,
+                                       const WebVector<uint32_t>& markersInText,
+                                       const WebVector<unsigned>& markerOffsets,
+                                       WebTextCheckingCompletion* completionCallback) { }
 
     // Computes an auto-corrected replacement for a misspelled word. If no
     // replacement is found, then an empty string is returned.

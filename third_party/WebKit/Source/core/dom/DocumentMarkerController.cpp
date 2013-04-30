@@ -59,6 +59,15 @@ void DocumentMarkerController::detach()
     m_markers.clear();
 }
 
+void DocumentMarkerController::addMarker(Range* range, DocumentMarker::MarkerType type, const String& description, uint32_t hash)
+{
+    // Use a TextIterator to visit the potentially multiple nodes the range covers.
+    for (TextIterator markedText(range); !markedText.atEnd(); markedText.advance()) {
+        RefPtr<Range> textPiece = markedText.range();
+        addMarker(textPiece->startContainer(), DocumentMarker(type, textPiece->startOffset(), textPiece->endOffset(), description, hash));
+    }
+}
+
 void DocumentMarkerController::addMarker(Range* range, DocumentMarker::MarkerType type, const String& description)
 {
     // Use a TextIterator to visit the potentially multiple nodes the range covers.
@@ -350,6 +359,16 @@ Vector<DocumentMarker> DocumentMarkerController::markersForNode(Node* node)
     for (size_t i = 0; i < list->size(); ++i)
         result.append(list->at(i));
 
+    return result;
+}
+
+Vector<DocumentMarker*> DocumentMarkerController::markers()
+{
+    Vector<DocumentMarker*> result;
+    for (MarkerMap::iterator i = m_markers.begin(); i != m_markers.end(); ++i) {
+        for (size_t j = 0; j < i->value->size(); ++j)
+            result.append(&(i->value->at(j)));
+    }
     return result;
 }
 

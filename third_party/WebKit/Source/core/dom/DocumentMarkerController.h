@@ -50,6 +50,7 @@ public:
     void detach();
     void addMarker(Range*, DocumentMarker::MarkerType);
     void addMarker(Range*, DocumentMarker::MarkerType, const String& description);
+    void addMarker(Range*, DocumentMarker::MarkerType, const String& description, uint32_t hash);
     void addMarkerToNode(Node*, unsigned startOffset, unsigned length, DocumentMarker::MarkerType);
     void addMarkerToNode(Node*, unsigned startOffset, unsigned length, DocumentMarker::MarkerType, PassRefPtr<DocumentMarkerDetails>);
     void addTextMatchMarker(const Range*, bool activeMatch);
@@ -76,6 +77,7 @@ public:
     Vector<DocumentMarker*> markersFor(Node*, DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
     Vector<DocumentMarker*> markersInRange(Range*, DocumentMarker::MarkerTypes);
     Vector<DocumentMarker> markersForNode(Node*);
+    Vector<DocumentMarker*> markers();
     Vector<IntRect> renderedRectsForMarkers(DocumentMarker::MarkerType);
     void clearDescriptionOnMarkersIntersectingRange(Range*, DocumentMarker::MarkerTypes);
 

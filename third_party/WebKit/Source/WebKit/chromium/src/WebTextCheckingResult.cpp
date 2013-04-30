@@ -44,6 +44,7 @@ WebTextCheckingResult::operator TextCheckingResult() const
     result.location = location;
     result.length = length;
     result.replacement = replacement;
+    result.hash = hash;
     if (result.type == TextCheckingTypeGrammar) {
         GrammarDetail detail;
         detail.location = 0;

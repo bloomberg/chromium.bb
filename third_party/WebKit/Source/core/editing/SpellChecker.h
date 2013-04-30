@@ -62,7 +62,7 @@ public:
     virtual void didCancel() OVERRIDE;
 
 private:
-    SpellCheckRequest(PassRefPtr<Range> checkingRange, PassRefPtr<Range> paragraphRange, const String&, TextCheckingTypeMask, TextCheckingProcessType);
+    SpellCheckRequest(PassRefPtr<Range> checkingRange, PassRefPtr<Range> paragraphRange, const String&, TextCheckingTypeMask, TextCheckingProcessType, const Vector<uint32_t>& documentMarkersInRange, const Vector<unsigned>& documentMarkerOffsets);
 
     SpellChecker* m_checker;
     RefPtr<Range> m_checkingRange;

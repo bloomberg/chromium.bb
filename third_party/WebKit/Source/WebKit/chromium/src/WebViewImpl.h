@@ -279,6 +279,7 @@ public:
         const WebPoint& clientPoint,
         const WebPoint& screenPoint,
         int keyModifiers);
+    virtual void spellingMarkers(WebVector<uint32_t>* markers);
     virtual unsigned long createUniqueIdentifierForRequest();
     virtual void inspectElementAt(const WebPoint& point);
     virtual WebString inspectorSettings() const;

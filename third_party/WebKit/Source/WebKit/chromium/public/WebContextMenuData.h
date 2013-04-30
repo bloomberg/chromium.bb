@@ -120,6 +120,9 @@ struct WebContextMenuData {
     // The editable (possibily) misspelled word.
     WebString misspelledWord;
 
+    // The identifier of the misspelling.
+    uint32_t misspellingHash;
+
     // If misspelledWord is not empty, holds suggestions from the dictionary.
     WebVector<WebString> dictionarySuggestions;
 

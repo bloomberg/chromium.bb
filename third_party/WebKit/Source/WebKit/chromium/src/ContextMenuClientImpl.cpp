@@ -312,6 +312,7 @@ PassOwnPtr<WebCore::ContextMenu> ContextMenuClientImpl::customizeMenu(PassOwnPtr
         if (selectedFrame->settings() && selectedFrame->settings()->asynchronousSpellCheckingEnabled()) {
             DocumentMarker marker;
             data.misspelledWord = selectMisspellingAsync(selectedFrame, marker);
+            data.misspellingHash = marker.hash();
             if (marker.description().length()) {
                 Vector<String> suggestions;
                 marker.description().split('\n', suggestions);

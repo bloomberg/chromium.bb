@@ -98,12 +98,18 @@ inline DocumentMarkerTextMatch* toDocumentMarkerTextMatch(DocumentMarkerDetails*
 
 
 DocumentMarker::DocumentMarker() 
-    : m_type(Spelling), m_startOffset(0), m_endOffset(0)
+    : m_type(Spelling)
+    , m_startOffset(0)
+    , m_endOffset(0)
+    , m_hash(0)
 {
 }
 
 DocumentMarker::DocumentMarker(MarkerType type, unsigned startOffset, unsigned endOffset)
-    : m_type(type), m_startOffset(startOffset), m_endOffset(endOffset)
+    : m_type(type)
+    , m_startOffset(startOffset)
+    , m_endOffset(endOffset)
+    , m_hash(0)
 {
 }
 
@@ -112,6 +118,16 @@ DocumentMarker::DocumentMarker(MarkerType type, unsigned startOffset, unsigned e
     , m_startOffset(startOffset)
     , m_endOffset(endOffset)
     , m_details(description.isEmpty() ? 0 : DocumentMarkerDescription::create(description))
+    , m_hash(0)
+{
+}
+
+DocumentMarker::DocumentMarker(MarkerType type, unsigned startOffset, unsigned endOffset, const String& description, uint32_t hash)
+    : m_type(type)
+    , m_startOffset(startOffset)
+    , m_endOffset(endOffset)
+    , m_details(description.isEmpty() ? 0 : DocumentMarkerDescription::create(description))
+    , m_hash(hash)
 {
 }
 
@@ -120,6 +136,7 @@ DocumentMarker::DocumentMarker(unsigned startOffset, unsigned endOffset, bool ac
     , m_startOffset(startOffset)
     , m_endOffset(endOffset)
     , m_details(DocumentMarkerTextMatch::instanceFor(activeMatch))
+    , m_hash(0)
 {
 }
 
@@ -128,6 +145,7 @@ DocumentMarker::DocumentMarker(MarkerType type, unsigned startOffset, unsigned e
     , m_startOffset(startOffset)
     , m_endOffset(endOffset)
     , m_details(details)
+    , m_hash(0)
 {
 }
 

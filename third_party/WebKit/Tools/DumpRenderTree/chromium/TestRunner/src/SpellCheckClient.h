@@ -52,7 +52,10 @@ public:
     // WebKit::WebSpellCheckClient implementation.
     virtual void spellCheck(const WebKit::WebString&, int& offset, int& length, WebKit::WebVector<WebKit::WebString>* optionalSuggestions);
     virtual void checkTextOfParagraph(const WebKit::WebString&, WebKit::WebTextCheckingTypeMask, WebKit::WebVector<WebKit::WebTextCheckingResult>*);
-    virtual void requestCheckingOfText(const WebKit::WebString&, WebKit::WebTextCheckingCompletion*);
+    virtual void requestCheckingOfText(const WebKit::WebString&,
+                                       const WebKit::WebVector<uint32_t>&,
+                                       const WebKit::WebVector<unsigned>&,
+                                       WebKit::WebTextCheckingCompletion*);
     virtual WebKit::WebString autoCorrectWord(const WebKit::WebString&);
 
 private:

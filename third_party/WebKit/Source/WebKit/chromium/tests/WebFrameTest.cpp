@@ -2567,20 +2567,21 @@ TEST_F(WebFrameTest, MoveCaretSelectionTowardsWindowPointWithNoSelection)
 
 class SpellCheckClient : public WebSpellCheckClient {
 public:
-    SpellCheckClient() : m_numberOfTimesChecked(0) { }
+    explicit SpellCheckClient(uint32_t hash = 0) : m_numberOfTimesChecked(0), m_hash(hash) { }
     virtual ~SpellCheckClient() { }
-    virtual void requestCheckingOfText(const WebKit::WebString&, WebKit::WebTextCheckingCompletion* completion) OVERRIDE
+    virtual void requestCheckingOfText(const WebKit::WebString&, const WebKit::WebVector<uint32_t>&, const WebKit::WebVector<unsigned>&, WebKit::WebTextCheckingCompletion* completion) OVERRIDE
     {
         ++m_numberOfTimesChecked;
         Vector<WebTextCheckingResult> results;
         const int misspellingStartOffset = 1;
         const int misspellingLength = 8;
-        results.append(WebTextCheckingResult(WebTextCheckingTypeSpelling, misspellingStartOffset, misspellingLength, WebString()));
+        results.append(WebTextCheckingResult(WebTextCheckingTypeSpelling, misspellingStartOffset, misspellingLength, WebString(), m_hash));
         completion->didFinishCheckingText(results);
     }
     int numberOfTimesChecked() const { return m_numberOfTimesChecked; }
 private:
     int m_numberOfTimesChecked;
+    uint32_t m_hash;
 };
 
 TEST_F(WebFrameTest, ReplaceMisspelledRange)
@@ -2594,9 +2595,9 @@ TEST_F(WebFrameTest, ReplaceMisspelledRange)
     Document* document = frame->frame()->document();
     Element* element = document->getElementById("data");
 
-    frame->frame()->settings()->setAsynchronousSpellCheckingEnabled(true);
-    frame->frame()->settings()->setUnifiedTextCheckerEnabled(true);
-    frame->frame()->settings()->setEditingBehaviorType(WebCore::EditingWindowsBehavior);
+    m_webView->settings()->setAsynchronousSpellCheckingEnabled(true);
+    m_webView->settings()->setUnifiedTextCheckerEnabled(true);
+    m_webView->settings()->setEditingBehavior(WebSettings::EditingBehaviorWin);
 
     element->focus();
     document->execCommand("InsertText", false, "_wellcome_.");
@@ -2627,9 +2628,9 @@ TEST_F(WebFrameTest, RemoveSpellingMarkers)
     Document* document = frame->frame()->document();
     Element* element = document->getElementById("data");
 
-    frame->frame()->settings()->setAsynchronousSpellCheckingEnabled(true);
-    frame->frame()->settings()->setUnifiedTextCheckerEnabled(true);
-    frame->frame()->settings()->setEditingBehaviorType(WebCore::EditingWindowsBehavior);
+    m_webView->settings()->setAsynchronousSpellCheckingEnabled(true);
+    m_webView->settings()->setUnifiedTextCheckerEnabled(true);
+    m_webView->settings()->setEditingBehavior(WebSettings::EditingBehaviorWin);
 
     element->focus();
     document->execCommand("InsertText", false, "_wellcome_.");
@@ -2642,6 +2643,34 @@ TEST_F(WebFrameTest, RemoveSpellingMarkers)
     RefPtr<Range> selectionRange = frame->frame()->selection()->toNormalizedRange();
 
     EXPECT_EQ(0U, document->markers()->markersInRange(selectionRange.get(), DocumentMarker::Spelling).size());
+
+    m_webView->close();
+    m_webView = 0;
+}
+
+TEST_F(WebFrameTest, MarkerHashIdentifiers) {
+    registerMockedHttpURLLoad("spell.html");
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "spell.html");
+
+    static const uint32_t kHash = 42;
+    SpellCheckClient spellcheck(kHash);
+    m_webView->setSpellCheckClient(&spellcheck);
+
+    WebFrameImpl* frame = static_cast<WebFrameImpl*>(m_webView->mainFrame());
+    Document* document = frame->frame()->document();
+    Element* element = document->getElementById("data");
+
+    m_webView->settings()->setAsynchronousSpellCheckingEnabled(true);
+    m_webView->settings()->setUnifiedTextCheckerEnabled(true);
+    m_webView->settings()->setEditingBehavior(WebSettings::EditingBehaviorWin);
+
+    element->focus();
+    document->execCommand("InsertText", false, "wellcome.");
+
+    WebVector<uint32_t> documentMarkers;
+    m_webView->spellingMarkers(&documentMarkers);
+    EXPECT_EQ(1U, documentMarkers.size());
+    EXPECT_EQ(kHash, documentMarkers[0]);
 
     m_webView->close();
     m_webView = 0;

@@ -742,8 +742,10 @@ void EditorClientImpl::checkSpellingOfString(const UChar* text, int length,
 void EditorClientImpl::requestCheckingOfString(WTF::PassRefPtr<WebCore::TextCheckingRequest> request)
 {
     if (m_webView->spellCheckClient()) {
-        String text = request->data().text();
-        m_webView->spellCheckClient()->requestCheckingOfText(text, new WebTextCheckingCompletionImpl(request));
+        const String& text = request->data().text();
+        const Vector<uint32_t>& markers = request->data().markers();
+        const Vector<unsigned>& markerOffsets = request->data().offsets();
+        m_webView->spellCheckClient()->requestCheckingOfText(text, markers, markerOffsets, new WebTextCheckingCompletionImpl(request));
     }
 }
 

@@ -75,6 +75,7 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/css/StyleResolver.h"
 #include "core/dom/Document.h"
+#include "core/dom/DocumentMarkerController.h"
 #include "core/dom/KeyboardEvent.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/Text.h"
@@ -3338,6 +3339,17 @@ void WebViewImpl::dragTargetDrop(const WebPoint& clientPoint,
 
     m_dragOperation = WebDragOperationNone;
     m_currentDragData = 0;
+}
+
+void WebViewImpl::spellingMarkers(WebVector<uint32_t>* markers)
+{
+    Vector<uint32_t> result;
+    for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
+        const Vector<DocumentMarker*>& documentMarkers = frame->document()->markers()->markers();
+        for (size_t i = 0; i < documentMarkers.size(); ++i)
+            result.append(documentMarkers[i]->hash());
+    }
+    markers->assign(result);
 }
 
 WebDragOperation WebViewImpl::dragTargetDragEnterOrOver(const WebPoint& clientPoint, const WebPoint& screenPoint, DragAction dragAction, int keyModifiers)

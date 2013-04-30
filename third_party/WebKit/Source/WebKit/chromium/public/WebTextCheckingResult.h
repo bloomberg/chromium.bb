@@ -47,14 +47,16 @@ struct WebTextCheckingResult {
         : type(WebTextCheckingTypeSpelling)
         , location(0)
         , length(0)
+        , hash(0)
     {
     }
 
-    WebTextCheckingResult(WebTextCheckingType type, int location, int length, const WebString& replacement = WebString())
+    WebTextCheckingResult(WebTextCheckingType type, int location, int length, const WebString& replacement = WebString(), uint32_t hash = 0)
         : type(type)
         , location(location)
         , length(length)
         , replacement(replacement)
+        , hash(hash)
     {
     }
 
@@ -66,6 +68,7 @@ struct WebTextCheckingResult {
     int location;
     int length;
     WebString replacement;
+    uint32_t hash;
 };
 
 } // namespace WebKit

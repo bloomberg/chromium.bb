@@ -95,12 +95,14 @@ public:
     DocumentMarker();
     DocumentMarker(MarkerType, unsigned startOffset, unsigned endOffset);
     DocumentMarker(MarkerType, unsigned startOffset, unsigned endOffset, const String& description);
+    DocumentMarker(MarkerType, unsigned startOffset, unsigned endOffset, const String& description, uint32_t hash);
     DocumentMarker(unsigned startOffset, unsigned endOffset, bool activeMatch);
     DocumentMarker(MarkerType, unsigned startOffset, unsigned endOffset, PassRefPtr<DocumentMarkerDetails>);
 
     MarkerType type() const { return m_type; }
     unsigned startOffset() const { return m_startOffset; }
     unsigned endOffset() const { return m_endOffset; }
+    uint32_t hash() const { return m_hash; }
 
     const String& description() const;
     bool activeMatch() const;
@@ -130,6 +132,7 @@ private:
     unsigned m_startOffset;
     unsigned m_endOffset;
     RefPtr<DocumentMarkerDetails> m_details;
+    uint32_t m_hash;
 };
 
 inline DocumentMarkerDetails* DocumentMarker::details() const

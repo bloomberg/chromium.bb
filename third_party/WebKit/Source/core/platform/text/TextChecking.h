@@ -71,6 +71,7 @@ struct TextCheckingResult {
     int length;
     Vector<GrammarDetail> details;
     String replacement;
+    uint32_t hash;
 };
 
 const int unrequestedTextCheckingSequence = -1;
@@ -83,23 +84,29 @@ public:
         , m_mask(TextCheckingTypeNone)
         , m_processType(TextCheckingProcessIncremental)
     { }
-    TextCheckingRequestData(int sequence, const String& text, TextCheckingTypeMask mask, TextCheckingProcessType processType)
+    TextCheckingRequestData(int sequence, const String& text, TextCheckingTypeMask mask, TextCheckingProcessType processType, const Vector<uint32_t>& markers, const Vector<unsigned>& offsets)
         : m_sequence(sequence)
         , m_text(text)
         , m_mask(mask)
         , m_processType(processType)
+        , m_markers(markers)
+        , m_offsets(offsets)
     { }
 
     int sequence() const { return m_sequence; }
     String text() const { return m_text; }
     TextCheckingTypeMask mask() const { return m_mask; }
     TextCheckingProcessType processType() const { return m_processType; }
+    const Vector<uint32_t>& markers() const { return m_markers; }
+    const Vector<unsigned>& offsets() const { return m_offsets; }
 
 private:
     int m_sequence;
     String m_text;
     TextCheckingTypeMask m_mask;
     TextCheckingProcessType m_processType;
+    Vector<uint32_t> m_markers;
+    Vector<unsigned> m_offsets;
 };
 
 class TextCheckingRequest : public RefCounted<TextCheckingRequest> {
