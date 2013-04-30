@@ -36,9 +36,10 @@ class Writer(object):
     # Subclasses should override.
     class_name = None
     defaults = None
+    default_parameters = None
 
     def __init__(self, in_file_path):
-        self.in_file = InFile.load_from_path(in_file_path, self.defaults)
+        self.in_file = InFile.load_from_path(in_file_path, self.defaults, self.default_parameters)
 
     # Subclasses should override.
     def generate_header(self):

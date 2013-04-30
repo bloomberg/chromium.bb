@@ -48,24 +48,51 @@ import os
 #
 # Parsing produces an array of dictionaries:
 # [ { 'name' : 'name1', 'arg' :' value', arg2=['value2', 'value3'] }
+
+def _is_comment(line):
+    return line.startswith("//") or line.startswith("#")
+
 class InFile(object):
-    def __init__(self, lines, defaults):
-        lines = map(str.strip, lines)
-        lines = filter(lambda line: line and not line.startswith("//"), lines)
-        self.name_dictionaries = [self._parse_line(line, defaults) for line in lines]
+    def __init__(self, lines, defaults, default_parameters):
+        self.name_dictionaries = []
+        self.parameters = copy.deepcopy(default_parameters if default_parameters else {})
+        self._defaults = defaults
+        self._parse(map(str.strip, lines))
 
     @classmethod
-    def load_from_path(self, path, defaults):
+    def load_from_path(self, path, defaults, default_parameters):
         with open(os.path.abspath(path)) as in_file:
-            return InFile(in_file.readlines(), defaults)
+            return InFile(in_file.readlines(), defaults, default_parameters)
 
     def _is_sequence(self, arg):
         return (not hasattr(arg, "strip")
                 and hasattr(arg, "__getitem__")
                 or hasattr(arg, "__iter__"))
 
-    def _parse_line(self, line, defaults):
-        args = copy.deepcopy(defaults)
+    def _parse(self, lines):
+        parsing_parameters = True
+        for line in lines:
+            if _is_comment(line):
+                continue
+            if not line:
+                parsing_parameters = False
+                continue
+            if parsing_parameters:
+                self._parse_parameter(line)
+            else:
+                self.name_dictionaries.append(self._parse_line(line))
+
+    def _parse_parameter(self, line):
+        if '=' in line:
+            name, value = line.split('=')
+        else:
+            name, value = line, True
+        if not name in self.parameters:
+            self._fatal("Unknown parameter: '%s' in line:\n%s\nKnown parameters: %s" % (name, line, self.parameters.keys()))
+        self.parameters[name] = value
+
+    def _parse_line(self, line):
+        args = copy.deepcopy(self._defaults)
         parts = line.split(' ')
         args['name'] = parts[0]
         # re-join the rest of the line and split on ','
@@ -78,12 +105,15 @@ class InFile(object):
                 arg_name, arg_value = arg_string.split('=')
             else:
                 arg_name, arg_value = arg_string, True
-            if arg_name not in defaults:
-                # FIXME: This should probably raise instead of exit(1)
-                print "Unknown argument: '%s' in line:\n%s\nKnown arguments: %s" % (arg_name, line, defaults.keys())
-                exit(1)
+            if arg_name not in self._defaults:
+                self._fatal("Unknown argument: '%s' in line:\n%s\nKnown arguments: %s" % (arg_name, line, self._defaults.keys()))
             if self._is_sequence(args[arg_name]):
                 args[arg_name].append(arg_value)
             else:
                 args[arg_name] = arg_value
         return args
+
+    def _fatal(self, message):
+        # FIXME: This should probably raise instead of exit(1)
+        print message
+        exit(1)

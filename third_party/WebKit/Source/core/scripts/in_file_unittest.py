@@ -42,12 +42,36 @@ name2
             'arg': None,
             'arg2': [],
         }
-        in_file = InFile(lines, defaults)
+        in_file = InFile(lines, defaults, None)
         expected_values = [
             {'name': 'name1', 'arg': 'value', 'arg2': ['value2', 'value3']},
             {'name': 'name2', 'arg': None, 'arg2': []},
         ]
         self.assertEquals(in_file.name_dictionaries, expected_values)
+
+    def test_with_parameters(self):
+        contents = """namespace=TestNamespace
+fruit
+
+name1 arg=value, arg2=value2, arg2=value3
+name2
+"""
+        lines = contents.split("\n")
+        defaults = {
+            'arg': None,
+            'arg2': [],
+        }
+        default_parameters = {
+            'namespace': '',
+            'fruit': False,
+        }
+        in_file = InFile(lines, defaults, default_parameters)
+        expected_parameters = {
+            'namespace': 'TestNamespace',
+            'fruit': True,
+        }
+        self.assertEquals(in_file.parameters, expected_parameters)
+
 
 if __name__ == "__main__":
     unittest.main()
