@@ -60,7 +60,7 @@ class OrphanedTestServerFilter : public base::ProcessFilter {
 bool ReadData(int fd, ssize_t bytes_max, uint8* buffer,
               base::TimeDelta* remaining_time) {
   ssize_t bytes_read = 0;
-  base::Time previous_time = base::Time::Now();
+  base::TimeTicks previous_time = base::TimeTicks::Now();
   while (bytes_read < bytes_max) {
     struct pollfd poll_fds[1];
 
@@ -79,7 +79,7 @@ bool ReadData(int fd, ssize_t bytes_max, uint8* buffer,
       return false;
     }
 
-    base::Time current_time = base::Time::Now();
+    base::TimeTicks current_time = base::TimeTicks::Now();
     base::TimeDelta elapsed_time_cycle = current_time - previous_time;
     DCHECK_GE(elapsed_time_cycle.InMilliseconds(), 0);
     *remaining_time -= elapsed_time_cycle;
