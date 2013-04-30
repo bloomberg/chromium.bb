@@ -2673,6 +2673,12 @@ crbug.com/234758 [ Debug ] fast/workers/worker-document-leak.html [ Pass Timeout
 crbug.com/234758 webaudio/audiobuffersource-multi-channels.html [ Pass Crash ]
 crbug.com/234758 [ Debug ] virtual/gpu/fast/canvas/canvas-strokePath-gradient-shadow.html [ Pass Timeout ]
 
+crbug.com/169374 compositing/backface-visibility/backface-visibility-non3d.html [ ImageOnlyFailure ]
+crbug.com/169374 compositing/culling/tile-occlusion-boundaries.html [ ImageOnlyFailure ]
+crbug.com/169374 transforms/3d/point-mapping/3d-point-mapping-coplanar.html [ ImageOnlyFailure ]
+crbug.com/169374 transforms/3d/point-mapping/3d-point-mapping-overlapping.html [ ImageOnlyFailure ]
+crbug.com/169374 transitions/default-timing-function.html [ ImageOnlyFailure ]
+
 # started failing in r149321/r149322
 crbug.com/236555 fast/forms/calendar-picker/week-picker-key-operations.html [ Failure ]
 
