@@ -780,6 +780,14 @@ bool AcceleratorController::PerformAction(int action,
       }
       break;
     }
+    case TOGGLE_FULLSCREEN: {
+      if (key_code == ui::VKEY_MEDIA_LAUNCH_APP2) {
+        shell->delegate()->RecordUserMetricsAction(
+            UMA_ACCEL_FULLSCREEN_F4);
+      }
+      shell->delegate()->ToggleFullscreen();
+      return true;
+    }
     case TOGGLE_MAXIMIZED: {
       if (key_code == ui::VKEY_MEDIA_LAUNCH_APP2) {
         shell->delegate()->RecordUserMetricsAction(
