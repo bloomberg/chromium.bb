@@ -408,6 +408,7 @@ class BrowserView : public BrowserWindow,
   virtual void OnWidgetMove() OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
+  virtual void GetAccessiblePanes(std::vector<View*>* panes) OVERRIDE;
 
   // Overridden from views::WidgetObserver:
   virtual void OnWidgetActivationChanged(views::Widget* widget,

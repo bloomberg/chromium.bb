@@ -82,10 +82,6 @@ void TestShellDelegate::OpenMobileSetup(const std::string& service_path) {
 void TestShellDelegate::RestoreTab() {
 }
 
-bool TestShellDelegate::RotatePaneFocus(Shell::Direction direction) {
-  return true;
-}
-
 void TestShellDelegate::ShowKeyboardOverlay() {
 }
 

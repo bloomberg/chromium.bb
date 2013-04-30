@@ -121,17 +121,14 @@ bool HandleToggleSpokenFeedback() {
 #endif  // defined(OS_CHROMEOS)
 
 bool HandleRotatePaneFocus(Shell::Direction direction) {
-  if (!Shell::GetInstance()->delegate()->RotatePaneFocus(direction)) {
-    // No browser window is available. Focus the launcher.
-    Shell* shell = Shell::GetInstance();
-    switch (direction) {
-      case Shell::FORWARD:
-        shell->focus_cycler()->RotateFocus(internal::FocusCycler::FORWARD);
-        break;
-      case Shell::BACKWARD:
-        shell->focus_cycler()->RotateFocus(internal::FocusCycler::BACKWARD);
-        break;
-    }
+  Shell* shell = Shell::GetInstance();
+  switch (direction) {
+    case Shell::FORWARD:
+      shell->focus_cycler()->RotateFocus(internal::FocusCycler::FORWARD);
+      break;
+    case Shell::BACKWARD:
+      shell->focus_cycler()->RotateFocus(internal::FocusCycler::BACKWARD);
+      break;
   }
   return true;
 }

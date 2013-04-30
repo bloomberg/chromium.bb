@@ -119,10 +119,6 @@ void ShellDelegateImpl::OpenMobileSetup(const std::string& service_path) {
 void ShellDelegateImpl::RestoreTab() {
 }
 
-bool ShellDelegateImpl::RotatePaneFocus(Shell::Direction direction) {
-  return true;
-}
-
 void ShellDelegateImpl::ShowKeyboardOverlay() {
 }
 

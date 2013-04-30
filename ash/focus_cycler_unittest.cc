@@ -15,8 +15,11 @@
 #include "ash/wm/window_util.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/shell_factory.h"
+#include "ui/aura/root_window.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
+#include "ui/views/accessible_pane_view.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/widget/widget.h"
 
@@ -33,6 +36,31 @@ internal::StatusAreaWidgetDelegate* GetStatusAreaWidgetDelegate(
   return static_cast<internal::StatusAreaWidgetDelegate*>(
       widget->GetContentsView());
 }
+
+class PanedWidgetDelegate : public views::WidgetDelegate {
+ public:
+  PanedWidgetDelegate(views::Widget* widget) : widget_(widget) {}
+
+  void SetAccessiblePanes(const std::vector<views::View*>& panes) {
+    accessible_panes_ = panes;
+  }
+
+  // views::WidgetDelegate.
+  virtual void GetAccessiblePanes(std::vector<views::View*>* panes) {
+    std::copy(accessible_panes_.begin(), accessible_panes_.end(),
+              std::back_inserter(*panes));
+  }
+  virtual views::Widget* GetWidget() OVERRIDE {
+    return widget_;
+  };
+  virtual const views::Widget* GetWidget() const OVERRIDE {
+    return widget_;
+  }
+
+ private:
+  views::Widget* widget_;
+  std::vector<views::View*> accessible_panes_;
+};
 
 }  // namespace
 
@@ -259,6 +287,114 @@ TEST_F(FocusCyclerTest, Shelf_CycleFocusBackwardInvisible) {
   // Cycle focus to the browser.
   focus_cycler()->RotateFocus(FocusCycler::BACKWARD);
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
+}
+
+TEST_F(FocusCyclerTest, CycleFocusThroughWindowWithPanes) {
+  ASSERT_TRUE(CreateTray());
+
+  InstallFocusCycleOnShelf();
+
+  scoped_ptr<views::Widget> browser_widget(new views::Widget);
+  PanedWidgetDelegate* test_widget_delegate =
+      new PanedWidgetDelegate(browser_widget.get());
+  views::Widget::InitParams widget_params(
+      views::Widget::InitParams::TYPE_WINDOW);
+  widget_params.context = CurrentContext();
+  widget_params.delegate = test_widget_delegate;
+  widget_params.ownership =
+      views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  browser_widget->Init(widget_params);
+  browser_widget->Show();
+
+  aura::Window* browser_window = browser_widget->GetNativeView();
+
+  views::View* root_view = browser_widget->GetRootView();
+
+  views::AccessiblePaneView* pane1 = new views::AccessiblePaneView();
+  root_view->AddChildView(pane1);
+
+  views::View* view1 = new views::View;
+  view1->set_focusable(true);
+  pane1->AddChildView(view1);
+
+  views::View* view2 = new views::View;
+  view2->set_focusable(true);
+  pane1->AddChildView(view2);
+
+  views::AccessiblePaneView* pane2 = new views::AccessiblePaneView();
+  root_view->AddChildView(pane2);
+
+  views::View* view3 = new views::View;
+  view3->set_focusable(true);
+  pane2->AddChildView(view3);
+
+  views::View* view4 = new views::View;
+  view4->set_focusable(true);
+  pane2->AddChildView(view4);
+
+  std::vector<views::View*> panes;
+  panes.push_back(pane1);
+  panes.push_back(pane2);
+
+  test_widget_delegate->SetAccessiblePanes(panes);
+
+  views::FocusManager* focus_manager = browser_widget->GetFocusManager();
+
+  // Cycle focus to the status area.
+  focus_cycler()->RotateFocus(FocusCycler::FORWARD);
+  EXPECT_TRUE(tray()->GetWidget()->IsActive());
+
+  // Cycle focus to the shelf.
+  focus_cycler()->RotateFocus(FocusCycler::FORWARD);
+  EXPECT_TRUE(shelf_widget()->IsActive());
+
+  // Cycle focus to the first pane in the browser.
+  focus_cycler()->RotateFocus(FocusCycler::FORWARD);
+  EXPECT_TRUE(wm::IsActiveWindow(browser_window));
+  EXPECT_EQ(focus_manager->GetFocusedView(), view1);
+
+  // Cycle focus to the second pane in the browser.
+  focus_cycler()->RotateFocus(FocusCycler::FORWARD);
+  EXPECT_TRUE(wm::IsActiveWindow(browser_window));
+  EXPECT_EQ(focus_manager->GetFocusedView(), view3);
+
+  // Cycle focus back to the status area.
+  focus_cycler()->RotateFocus(FocusCycler::FORWARD);
+  EXPECT_TRUE(tray()->GetWidget()->IsActive());
+
+  // Reverse direction - back to the second pane in the browser.
+  focus_cycler()->RotateFocus(FocusCycler::BACKWARD);
+  EXPECT_TRUE(wm::IsActiveWindow(browser_window));
+  EXPECT_EQ(focus_manager->GetFocusedView(), view3);
+
+  // Back to the first pane in the browser.
+  focus_cycler()->RotateFocus(FocusCycler::BACKWARD);
+  EXPECT_TRUE(wm::IsActiveWindow(browser_window));
+  EXPECT_EQ(focus_manager->GetFocusedView(), view1);
+
+  // Back to the shelf.
+  focus_cycler()->RotateFocus(FocusCycler::BACKWARD);
+  EXPECT_TRUE(shelf_widget()->IsActive());
+
+  // Back to the status area.
+  focus_cycler()->RotateFocus(FocusCycler::BACKWARD);
+  EXPECT_TRUE(tray()->GetWidget()->IsActive());
+
+  // Pressing "Escape" while on the status area should
+  // deactivate it, and activate the browser window.
+  aura::RootWindow* root = Shell::GetPrimaryRootWindow();
+  aura::test::EventGenerator event_generator(root, root);
+  event_generator.PressKey(ui::VKEY_ESCAPE, 0);
+  EXPECT_TRUE(wm::IsActiveWindow(browser_window));
+  EXPECT_EQ(focus_manager->GetFocusedView(), view1);
+
+  // Similarly, pressing "Escape" while on the shelf.
+  // should do the same thing.
+  focus_cycler()->RotateFocus(FocusCycler::BACKWARD);
+  EXPECT_TRUE(shelf_widget()->IsActive());
+  event_generator.PressKey(ui::VKEY_ESCAPE, 0);
+  EXPECT_TRUE(wm::IsActiveWindow(browser_window));
+  EXPECT_EQ(focus_manager->GetFocusedView(), view1);
 }
 
 }  // namespace test

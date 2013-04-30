@@ -22,6 +22,8 @@ class BrowserView;
 class BrowserFrameAura : public views::NativeWidgetAura,
                          public NativeBrowserFrame {
  public:
+  static const char kWindowName[];
+
   BrowserFrameAura(BrowserFrame* browser_frame, BrowserView* browser_view);
 
   BrowserView* browser_view() const { return browser_view_; }

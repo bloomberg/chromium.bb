@@ -211,6 +211,10 @@ void AccessiblePaneView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_PANE;
 }
 
+void AccessiblePaneView::RequestFocus() {
+  SetPaneFocusAndFocusDefault();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // FocusChangeListener overrides:
 

@@ -392,7 +392,6 @@
             'browser/chromeos/login/screen_locker_tester.cc',
             'browser/chromeos/login/screen_locker_tester.h',
             'browser/chromeos/login/wallpaper_manager_browsertest.cc',
-            'browser/chromeos/system/ash_focus_cycle_browsertest.cc',
             'test/data/chromeos/service_login.html',
           ],
           'sources!': [

@@ -19,6 +19,7 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace views {
 
@@ -152,6 +153,64 @@ void FocusManager::AdvanceFocus(bool reverse) {
 void FocusManager::ClearNativeFocus() {
   // Keep the top root window focused so we get keyboard events.
   widget_->ClearNativeFocus();
+}
+
+bool FocusManager::RotatePaneFocus(Direction direction,
+                                   FocusCycleWrappingBehavior wrap) {
+  // Get the list of all accessible panes.
+  std::vector<View*> panes;
+  widget_->widget_delegate()->GetAccessiblePanes(&panes);
+
+  // Count the number of panes and set the default index if no pane
+  // is initially focused.
+  int count = static_cast<int>(panes.size());
+  if (count == 0)
+    return false;
+
+  // Initialize |index| to an appropriate starting index if nothing is
+  // focused initially.
+  int index = direction == kBackward ? 0 : count - 1;
+
+  // Check to see if a pane already has focus and update the index accordingly.
+  const views::View* focused_view = GetFocusedView();
+  if (focused_view) {
+    for (int i = 0; i < count; i++) {
+      if (panes[i] && panes[i]->Contains(focused_view)) {
+        index = i;
+        break;
+      }
+    }
+  }
+
+  // Rotate focus.
+  int start_index = index;
+  for (;;) {
+    if (direction == kBackward)
+      index--;
+    else
+      index++;
+
+    if (wrap == kNoWrap && (index >= count || index < 0))
+      return false;
+    index = (index + count) % count;
+
+    // Ensure that we don't loop more than once.
+    if (index == start_index)
+      break;
+
+    views::View* pane = panes[index];
+    DCHECK(pane);
+
+    if (!pane->visible())
+      continue;
+
+    pane->RequestFocus();
+    focused_view = GetFocusedView();
+    if (pane == focused_view || pane->Contains(focused_view))
+      return true;
+  }
+
+  return false;
 }
 
 View* FocusManager::GetNextFocusableView(View* original_starting_view,

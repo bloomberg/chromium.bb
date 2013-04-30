@@ -91,12 +91,15 @@ class BrowserFrameAura::WindowPropertyWatcher : public aura::WindowObserver {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrameAura, public:
 
+// static
+const char BrowserFrameAura::kWindowName[] = "BrowserFrameAura";
+
 BrowserFrameAura::BrowserFrameAura(BrowserFrame* browser_frame,
                                    BrowserView* browser_view)
     : views::NativeWidgetAura(browser_frame),
       browser_view_(browser_view),
       window_property_watcher_(new WindowPropertyWatcher(this, browser_frame)) {
-  GetNativeWindow()->SetName("BrowserFrameAura");
+  GetNativeWindow()->SetName(kWindowName);
   GetNativeWindow()->AddObserver(window_property_watcher_.get());
 #if defined(USE_ASH)
   bool gets_own_workspace = false;

@@ -40,6 +40,8 @@ class ShelfWidget;
 
 class ASH_EXPORT Launcher {
  public:
+  static const char kNativeViewName[];
+
   Launcher(LauncherModel* launcher_model,
            LauncherDelegate* launcher_delegate,
            ShelfWidget* shelf_widget);

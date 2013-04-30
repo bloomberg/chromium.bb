@@ -1034,75 +1034,10 @@ void BrowserView::FocusAppMenu() {
 }
 
 void BrowserView::RotatePaneFocus(bool forwards) {
-  // This gets called when the user presses F6 (forwards) or Shift+F6
-  // (backwards) to rotate to the next pane. Here, our "panes" are the
-  // tab contents and each of our accessible toolbars, infobars, downloads
-  // shelf, etc.  When a pane has focus, all of its controls are accessible
-  // in the tab traversal, and the tab traversal is "trapped" within that pane.
-  //
-  // Get a vector of all panes in the order we want them to be focused,
-  // with NULL to represent the tab contents getting focus. If one of these
-  // is currently invisible or has no focusable children it will be
-  // automatically skipped.
-  std::vector<views::AccessiblePaneView*> accessible_panes;
-  GetAccessiblePanes(&accessible_panes);
-  int pane_count = static_cast<int>(accessible_panes.size());
-  int special_index = -1;
-
-  std::vector<views::View*> accessible_views(
-      accessible_panes.begin(), accessible_panes.end());
-  accessible_views.push_back(GetTabContentsContainerView());
-  if (devtools_container_->visible())
-    accessible_views.push_back(devtools_container_);
-  int count = static_cast<int>(accessible_views.size());
-
-  // Figure out which view (if any) currently has the focus.
-  const views::View* focused_view = GetFocusManager()->GetFocusedView();
-  int index = -1;
-  if (focused_view) {
-    for (int i = 0; i < count; ++i) {
-      if (accessible_views[i] == focused_view ||
-          accessible_views[i]->Contains(focused_view)) {
-        index = i;
-        break;
-      }
-    }
-  }
-
-  // If the focus isn't currently in a pane, save the focus so we
-  // can restore it if the user presses Escape.
-  if (focused_view && index >= pane_count)
-    GetFocusManager()->StoreFocusedView(true);
-
-#if defined(OS_CHROMEOS) && defined(USE_AURA)
-  // Add the special panes to the rotation.
-  special_index = count;
-  ++count;
-#endif
-
-  // Try to focus the next pane; if SetPaneFocusAndFocusDefault returns
-  // false it means the pane didn't have any focusable controls, so skip
-  // it and try the next one.
-  for (;;) {
-    if (forwards)
-      index = (index + 1) % count;
-    else
-      index = ((index - 1) + count) % count;
-
-    if (index == special_index) {
-#if defined(USE_ASH)
-      ash::Shell::GetInstance()->RotateFocus(
-          forwards ? ash::Shell::FORWARD : ash::Shell::BACKWARD);
-#endif
-      break;
-    } else if (index < pane_count) {
-      if (accessible_panes[index]->SetPaneFocusAndFocusDefault())
-        break;
-    } else {
-      accessible_views[index]->RequestFocus();
-      break;
-    }
-  }
+  GetWidget()->GetFocusManager()->RotatePaneFocus(
+      forwards ?
+          views::FocusManager::kForward : views::FocusManager::kBackward,
+      views::FocusManager::kWrap);
 }
 
 void BrowserView::DestroyBrowser() {
@@ -1802,6 +1737,23 @@ const views::Widget* BrowserView::GetWidget() const {
   return View::GetWidget();
 }
 
+void BrowserView::GetAccessiblePanes(std::vector<views::View*>* panes) {
+  // This should be in the order of pane traversal of the panes using F6
+  // (Windows) or Ctrl+Back/Forward (Chrome OS).  If one of these is
+  // invisible or has no focusable children, it will be automatically
+  // skipped.
+  panes->push_back(toolbar_);
+  if (bookmark_bar_view_.get())
+    panes->push_back(bookmark_bar_view_.get());
+  if (infobar_container_)
+    panes->push_back(infobar_container_);
+  if (download_shelf_.get())
+    panes->push_back(download_shelf_.get());
+  panes->push_back(GetTabContentsContainerView());
+  if (devtools_container_->visible())
+    panes->push_back(devtools_container_);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, views::ClientView overrides:
 
@@ -1916,20 +1868,6 @@ bool BrowserView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, private
-
-void BrowserView::GetAccessiblePanes(
-    std::vector<views::AccessiblePaneView*>* panes) {
-  // This should be in the order of pane traversal of the panes using F6.
-  // If one of these is invisible or has no focusable children, it will be
-  // automatically skipped.
-  panes->push_back(toolbar_);
-  if (bookmark_bar_view_.get())
-    panes->push_back(bookmark_bar_view_.get());
-  if (infobar_container_)
-    panes->push_back(infobar_container_);
-  if (download_shelf_.get())
-    panes->push_back(download_shelf_.get());
-}
 
 SkColor BrowserView::GetInfoBarSeparatorColor() const {
   // NOTE: Keep this in sync with ToolbarView::OnPaint()!

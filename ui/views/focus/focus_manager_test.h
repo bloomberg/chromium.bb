@@ -31,6 +31,7 @@ class FocusManagerTest : public ViewsTestBase,
   virtual View* GetContentsView() OVERRIDE;
   virtual Widget* GetWidget() OVERRIDE;
   virtual const Widget* GetWidget() const OVERRIDE;
+  virtual void GetAccessiblePanes(std::vector<View*>* panes) OVERRIDE;
 
  protected:
   // Called after the Widget is initialized and the content view is added.
@@ -39,6 +40,9 @@ class FocusManagerTest : public ViewsTestBase,
 
   void AddFocusChangeListener(FocusChangeListener* listener);
   void AddWidgetFocusChangeListener(WidgetFocusChangeListener* listener);
+
+  // For testing FocusManager::RotatePaneFocus().
+  void SetAccessiblePanes(const std::vector<View*>& panes);
 
 #if defined(OS_WIN) && !defined(USE_AURA)
   // Mocks activating/deactivating the window.
@@ -53,6 +57,7 @@ class FocusManagerTest : public ViewsTestBase,
   View* contents_view_;
   FocusChangeListener* focus_change_listener_;
   WidgetFocusChangeListener* widget_focus_change_listener_;
+  std::vector<View*> accessible_panes_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusManagerTest);
 };

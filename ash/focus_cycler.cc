@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/wm/window_cycle_controller.h"
+#include "ash/wm/window_util.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/window.h"
 #include "ui/views/accessible_pane_view.h"
@@ -35,6 +36,19 @@ void FocusCycler::AddWidget(views::Widget* widget) {
 }
 
 void FocusCycler::RotateFocus(Direction direction) {
+  aura::Window* window = ash::wm::GetActiveWindow();
+  if (window) {
+    views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+    // First try to rotate focus within the active widget. If that succeeds,
+    // we're done.
+    if (widget && widget->GetFocusManager()->RotatePaneFocus(
+            direction == BACKWARD ?
+                views::FocusManager::kBackward : views::FocusManager::kForward,
+            views::FocusManager::kNoWrap)) {
+      return;
+    }
+  }
+
   const bool has_window = HasFocusableWindow();
   int index = 0;
   int count = static_cast<int>(widgets_.size());
@@ -61,12 +75,23 @@ void FocusCycler::RotateFocus(Direction direction) {
       break;
 
     if (index == browser_index) {
-      // Activate the first window.
-      WindowCycleController::Direction window_direction =
-          direction == FORWARD ? WindowCycleController::FORWARD :
-                                 WindowCycleController::BACKWARD;
+      // Activate the most recently active browser window.
       ash::Shell::GetInstance()->window_cycle_controller()->HandleCycleWindow(
-          window_direction, false);
+          WindowCycleController::FORWARD, false);
+
+      // Rotate pane focus within that window.
+      aura::Window* window = ash::wm::GetActiveWindow();
+      if (!window)
+        break;
+      views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+      if (!widget)
+        break;
+      views::FocusManager* focus_manager = widget->GetFocusManager();
+      focus_manager->ClearFocus();
+      focus_manager->RotatePaneFocus(
+          direction == BACKWARD ?
+              views::FocusManager::kBackward : views::FocusManager::kForward,
+          views::FocusManager::kWrap);
       break;
     } else {
       if (FocusWidget(widgets_[index]))

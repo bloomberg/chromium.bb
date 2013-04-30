@@ -136,6 +136,17 @@ class VIEWS_EXPORT FocusManager {
     kReasonDirectFocusChange
   };
 
+  // TODO: use Direction in place of bool reverse throughout.
+  enum Direction {
+    kForward,
+    kBackward
+  };
+
+  enum FocusCycleWrappingBehavior {
+    kWrap,
+    kNoWrap
+  };
+
   FocusManager(Widget* widget, FocusManagerDelegate* delegate);
   virtual ~FocusManager();
 
@@ -266,6 +277,15 @@ class VIEWS_EXPORT FocusManager {
 
   // Clears the native view having the focus.
   virtual void ClearNativeFocus();
+
+  // Focuses the next keyboard-accessible pane, taken from the list of
+  // views returned by WidgetDelegate::GetAccessiblePanes(). If there are
+  // no panes, the widget's root view is treated as a single pane.
+  // A keyboard-accessible pane should subclass from AccessiblePaneView in
+  // order to trap keyboard focus within that pane. If |wrap| is kWrap,
+  // it keeps cycling within this widget, otherwise it returns false after
+  // reaching the last pane so that focus can cycle to another widget.
+  bool RotatePaneFocus(Direction direction, FocusCycleWrappingBehavior wrap);
 
   // Convenience method that returns true if the passed |key_event| should
   // trigger tab traversal (if it is a TAB key press with or without SHIFT

@@ -168,26 +168,6 @@ void ChromeShellDelegate::RestoreTab() {
   }
 }
 
-bool ChromeShellDelegate::RotatePaneFocus(ash::Shell::Direction direction) {
-  aura::Window* window = ash::wm::GetActiveWindow();
-  if (!window)
-    return false;
-
-  Browser* browser = chrome::FindBrowserWithWindow(window);
-  if (!browser)
-    return false;
-
-  switch (direction) {
-    case ash::Shell::FORWARD:
-      chrome::FocusNextPane(browser);
-      break;
-    case ash::Shell::BACKWARD:
-      chrome::FocusPreviousPane(browser);
-      break;
-  }
-  return true;
-}
-
 void ChromeShellDelegate::ShowTaskManager() {
   chrome::OpenTaskManager(NULL, false);
 }

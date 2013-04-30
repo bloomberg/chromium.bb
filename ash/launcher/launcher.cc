@@ -38,6 +38,8 @@
 
 namespace ash {
 
+const char Launcher::kNativeViewName[] = "LauncherView";
+
 Launcher::Launcher(LauncherModel* launcher_model,
                    LauncherDelegate* launcher_delegate,
                    ShelfWidget* shelf_widget)
@@ -49,7 +51,7 @@ Launcher::Launcher(LauncherModel* launcher_model,
       launcher_model, delegate_, shelf_widget_->shelf_layout_manager());
   launcher_view_->Init();
   shelf_widget_->GetContentsView()->AddChildView(launcher_view_);
-  shelf_widget_->GetNativeView()->SetName("LauncherView");
+  shelf_widget_->GetNativeView()->SetName(kNativeViewName);
   shelf_widget_->GetNativeView()->SetProperty(
       internal::kStayInSameRootWindowKey, true);
   delegate_->OnLauncherCreated(this);

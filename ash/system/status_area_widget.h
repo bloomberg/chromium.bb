@@ -22,6 +22,8 @@ class StatusAreaWidgetDelegate;
 
 class ASH_EXPORT StatusAreaWidget : public views::Widget {
  public:
+  static const char kNativeViewName[];
+
   explicit StatusAreaWidget(aura::Window* status_container);
   virtual ~StatusAreaWidget();
 

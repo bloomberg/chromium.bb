@@ -45,6 +45,7 @@ class VIEWS_EXPORT AccessiblePaneView : public View,
       OVERRIDE;
   virtual void SetVisible(bool flag) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void RequestFocus() OVERRIDE;
 
   // Overridden from FocusChangeListener:
   virtual void OnWillChangeFocus(View* focused_before,

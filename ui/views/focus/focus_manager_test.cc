@@ -4,6 +4,8 @@
 
 #include "ui/views/focus/focus_manager_test.h"
 
+#include <algorithm>
+
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
 
@@ -70,6 +72,11 @@ const Widget* FocusManagerTest::GetWidget() const {
   return contents_view_->GetWidget();
 }
 
+void FocusManagerTest::GetAccessiblePanes(std::vector<View*>* panes) {
+  std::copy(accessible_panes_.begin(), accessible_panes_.end(),
+            std::back_inserter(*panes));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // FocusManagerTest, protected:
 
@@ -87,6 +94,10 @@ void FocusManagerTest::AddWidgetFocusChangeListener(
   ASSERT_FALSE(widget_focus_change_listener_);
   widget_focus_change_listener_ = listener;
   WidgetFocusManager::GetInstance()->AddFocusChangeListener(listener);
+}
+
+void FocusManagerTest::SetAccessiblePanes(const std::vector<View*>& panes) {
+  accessible_panes_ = panes;
 }
 
 #if defined(OS_WIN) && !defined(USE_AURA)

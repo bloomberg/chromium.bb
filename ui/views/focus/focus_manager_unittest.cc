@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/views/accessible_pane_view.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/accelerator_handler.h"
@@ -644,6 +645,78 @@ TEST_F(FocusManagerTest, FocusInAboutToRequestFocusFromTabTraversal) {
   v3->RequestFocus();
   GetWidget()->GetFocusManager()->AdvanceFocus(true);
   EXPECT_TRUE(v1->HasFocus());
+}
+
+TEST_F(FocusManagerTest, RotatePaneFocus) {
+  views::AccessiblePaneView* pane1 = new AccessiblePaneView();
+  GetContentsView()->AddChildView(pane1);
+
+  views::View* v1 = new View;
+  v1->set_focusable(true);
+  pane1->AddChildView(v1);
+
+  views::View* v2 = new View;
+  v2->set_focusable(true);
+  pane1->AddChildView(v2);
+
+  views::AccessiblePaneView* pane2 = new AccessiblePaneView();
+  GetContentsView()->AddChildView(pane2);
+
+  views::View* v3 = new View;
+  v3->set_focusable(true);
+  pane2->AddChildView(v3);
+
+  views::View* v4 = new View;
+  v4->set_focusable(true);
+  pane2->AddChildView(v4);
+
+  std::vector<views::View*> panes;
+  panes.push_back(pane1);
+  panes.push_back(pane2);
+  SetAccessiblePanes(panes);
+
+  FocusManager* focus_manager = GetWidget()->GetFocusManager();
+
+  // Advance forwards. Focus should stay trapped within each pane.
+  EXPECT_TRUE(focus_manager->RotatePaneFocus(
+      FocusManager::kForward, FocusManager::kWrap));
+  EXPECT_EQ(v1, focus_manager->GetFocusedView());
+  focus_manager->AdvanceFocus(false);
+  EXPECT_EQ(v2, focus_manager->GetFocusedView());
+  focus_manager->AdvanceFocus(false);
+  EXPECT_EQ(v1, focus_manager->GetFocusedView());
+
+  EXPECT_TRUE(focus_manager->RotatePaneFocus(
+      FocusManager::kForward, FocusManager::kWrap));
+  EXPECT_EQ(v3, focus_manager->GetFocusedView());
+  focus_manager->AdvanceFocus(false);
+  EXPECT_EQ(v4, focus_manager->GetFocusedView());
+  focus_manager->AdvanceFocus(false);
+  EXPECT_EQ(v3, focus_manager->GetFocusedView());
+
+  EXPECT_TRUE(focus_manager->RotatePaneFocus(
+      FocusManager::kForward, FocusManager::kWrap));
+  EXPECT_EQ(v1, focus_manager->GetFocusedView());
+
+  // Advance backwards.
+  EXPECT_TRUE(focus_manager->RotatePaneFocus(
+      FocusManager::kBackward, FocusManager::kWrap));
+  EXPECT_EQ(v3, focus_manager->GetFocusedView());
+
+  EXPECT_TRUE(focus_manager->RotatePaneFocus(
+      FocusManager::kBackward, FocusManager::kWrap));
+  EXPECT_EQ(v1, focus_manager->GetFocusedView());
+
+  // Advance without wrap. When it gets to the end of the list of
+  // panes, RotatePaneFocus should return false but the current
+  // focused view shouldn't change.
+  EXPECT_TRUE(focus_manager->RotatePaneFocus(
+      FocusManager::kForward, FocusManager::kNoWrap));
+  EXPECT_EQ(v3, focus_manager->GetFocusedView());
+
+  EXPECT_FALSE(focus_manager->RotatePaneFocus(
+      FocusManager::kForward, FocusManager::kNoWrap));
+  EXPECT_EQ(v3, focus_manager->GetFocusedView());
 }
 
 }  // namespace views
