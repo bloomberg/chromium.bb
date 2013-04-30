@@ -333,8 +333,10 @@ jboolean AutofillDialogViewAndroid::EditingComplete(JNIEnv* env,
 
 void AutofillDialogViewAndroid::EditingCancel(JNIEnv* env,
                                               jobject obj,
-                                              jint section) {
-  controller_->EditCancelledForSection(static_cast<DialogSection>(section));
+                                              jint jsection) {
+  const DialogSection section = static_cast<DialogSection>(jsection);
+  controller_->EditCancelledForSection(section);
+  UpdateSection(section);
 }
 
 ScopedJavaLocalRef<jstring> AutofillDialogViewAndroid::ValidateField(
