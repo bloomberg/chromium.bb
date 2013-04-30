@@ -76,7 +76,7 @@ class BenchmarkingWrapper : public v8::Extension {
     char name[256];
     name[0] = 'c';
     name[1] = ':';
-    args[0]->ToString()->WriteAscii(&name[2], 0, sizeof(name) - 3);
+    args[0]->ToString()->WriteUtf8(&name[2], sizeof(name) - 3);
 
     int counter = base::StatsTable::current()->GetCounterValue(name);
     return v8::Integer::New(counter);

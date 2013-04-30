@@ -372,7 +372,7 @@ class GpuBenchmarkingWrapper : public v8::Extension {
       name_filter = "";
     } else {
       char filter[256];
-      args[0]->ToString()->WriteAscii(filter, 0, sizeof(filter)-1);
+      args[0]->ToString()->WriteUtf8(filter, sizeof(filter)-1);
       name_filter = std::string(filter);
     }
 
