@@ -540,8 +540,8 @@
         'browser/first_run/upgrade_util_win.cc',
         'browser/first_run/upgrade_util_win.h',
         'browser/fullscreen.h',
-        'browser/fullscreen_ash.cc',
         'browser/fullscreen_aura.cc',
+        'browser/fullscreen_chromeos.cc',
         'browser/fullscreen_gtk.cc',
         'browser/fullscreen_mac.mm',
         'browser/fullscreen_win.cc',
@@ -2529,7 +2529,6 @@
               'sources/': [
                 ['exclude', '^browser/automation/automation_provider_aura.cc'],
                 ['exclude', '^browser/background/background_mode_manager_aura.cc'],
-                ['exclude', '^browser/fullscreen_ash.cc'],
                 ['exclude', '^browser/lifetime/application_lifetime_win.cc'],
               ],
               'dependencies': [

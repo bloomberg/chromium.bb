@@ -372,31 +372,34 @@ TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
               session_modal_widget->GetNativeView()));
 }
 
-// Ensure a workspace with two windows reports immersive mode even if only
-// one has the property set.
-TEST_F(RootWindowControllerTest, ImmersiveMode) {
+// Test that GetFullscreenWindow() returns a fullscreen window only if the
+// fullscreen window is in the active workspace.
+TEST_F(RootWindowControllerTest, GetFullscreenWindow) {
   UpdateDisplay("600x600");
   internal::RootWindowController* controller =
       Shell::GetInstance()->GetPrimaryRootWindowController();
 
-  // Open a maximized window.
-  Widget* w1 = CreateTestWidget(gfx::Rect(0, 1, 250, 251));
+  Widget* w1 = CreateTestWidget(gfx::Rect(0, 0, 100, 100));
   w1->Maximize();
+  Widget* w2 = CreateTestWidget(gfx::Rect(0, 0, 100, 100));
+  w2->SetFullscreen(true);
+  // |w3| is a transient child of |w2|.
+  Widget* w3 = Widget::CreateWindowWithParentAndBounds(NULL,
+      w2->GetNativeWindow(), gfx::Rect(0, 0, 100, 100));
 
-  // Immersive mode off by default.
-  EXPECT_FALSE(controller->IsImmersiveMode());
+  // Test that GetFullscreenWindow() finds the fullscreen window when one of
+  // its transient children is active.
+  w3->Activate();
+  EXPECT_EQ(w2->GetNativeWindow(), controller->GetFullscreenWindow());
 
-  // Enter immersive mode.
-  w1->GetNativeWindow()->SetProperty(ash::internal::kImmersiveModeKey, true);
-  EXPECT_TRUE(controller->IsImmersiveMode());
+  // Activate the maximized window's workspace. GetFullscreenWindow() should
+  // fail because the fullscreen window's workspace is no longer active.
+  w1->Activate();
+  EXPECT_FALSE(controller->GetFullscreenWindow());
 
-  // Add a child, like a print window.  Still in immersive mode.
-  Widget* w2 =
-      Widget::CreateWindowWithParentAndBounds(NULL,
-                                              w1->GetNativeWindow(),
-                                              gfx::Rect(0, 1, 150, 151));
-  w2->Show();
-  EXPECT_TRUE(controller->IsImmersiveMode());
+  // If the fullscreen window is active, GetFullscreenWindow() should find it.
+  w2->Activate();
+  EXPECT_EQ(w2->GetNativeWindow(), controller->GetFullscreenWindow());
 }
 
 }  // namespace test

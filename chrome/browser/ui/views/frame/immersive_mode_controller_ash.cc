@@ -8,10 +8,13 @@
 #include "ash/shell.h"
 #include "ash/wm/window_properties.h"
 #include "base/command_line.h"
+#include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/notification_service.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
@@ -317,12 +320,6 @@ class ImmersiveModeControllerAsh::WindowObserver : public aura::WindowObserver {
       }
       return;
     }
-    using ash::internal::kImmersiveModeKey;
-    if (key == kImmersiveModeKey) {
-      // Another component has toggled immersive mode.
-      controller_->SetEnabled(window->GetProperty(kImmersiveModeKey));
-      return;
-    }
   }
 
  private:
@@ -335,10 +332,11 @@ class ImmersiveModeControllerAsh::WindowObserver : public aura::WindowObserver {
 
 ImmersiveModeControllerAsh::ImmersiveModeControllerAsh()
     : browser_view_(NULL),
+      observers_enabled_(false),
       enabled_(false),
       reveal_state_(CLOSED),
       revealed_lock_count_(0),
-      hide_tab_indicators_(false),
+      tab_indicator_visibility_(TAB_INDICATORS_HIDE),
       native_window_(NULL),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
@@ -377,11 +375,12 @@ void ImmersiveModeControllerAsh::Init(BrowserView* browser_view) {
   // window pointer so |this| can stop observing during destruction.
   native_window_ = browser_view_->GetNativeWindow();
   DCHECK(native_window_);
-  EnableWindowObservers(true);
 
   // Optionally allow the tab indicators to be hidden.
-  hide_tab_indicators_ = CommandLine::ForCurrentProcess()->
-      HasSwitch(ash::switches::kAshImmersiveHideTabIndicators);
+  if (CommandLine::ForCurrentProcess()->
+          HasSwitch(ash::switches::kAshImmersiveHideTabIndicators)) {
+    tab_indicator_visibility_ = TAB_INDICATORS_FORCE_HIDE;
+  }
 
   anchored_widget_manager_.reset(new AnchoredWidgetManager(this));
 }
@@ -391,6 +390,11 @@ void ImmersiveModeControllerAsh::SetEnabled(bool enabled) {
   if (enabled_ == enabled)
     return;
   enabled_ = enabled;
+
+  // Delay the initialization of the window observers till the first call to
+  // SetEnabled(true) because FullscreenController is not yet initialized when
+  // Init() is called.
+  EnableWindowObservers(true);
 
   if (enabled_) {
     // Animate enabling immersive mode by sliding out the top-of-window views.
@@ -428,13 +432,7 @@ void ImmersiveModeControllerAsh::SetEnabled(bool enabled) {
   // Don't need explicit layout because we're inside a fullscreen transition
   // and it blocks layout calls.
 
-  // This causes a no-op call to SetEnabled() since enabled_ is already set.
-  native_window_->SetProperty(ash::internal::kImmersiveModeKey, enabled_);
-  // Ash on Windows may not have a shell.
-  if (ash::Shell::HasInstance()) {
-    // Shelf auto-hides in immersive mode.
-    ash::Shell::GetInstance()->UpdateShelfVisibility();
-  }
+  UpdateUseMinimalChrome(LAYOUT_NO);
 }
 
 bool ImmersiveModeControllerAsh::IsEnabled() const {
@@ -442,7 +440,7 @@ bool ImmersiveModeControllerAsh::IsEnabled() const {
 }
 
 bool ImmersiveModeControllerAsh::ShouldHideTabIndicators() const {
-  return hide_tab_indicators_;
+  return tab_indicator_visibility_ != TAB_INDICATORS_SHOW;
 }
 
 bool ImmersiveModeControllerAsh::ShouldHideTopViews() const {
@@ -483,6 +481,15 @@ void ImmersiveModeControllerAsh::OnTopContainerBoundsChanged() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Observers:
+
+void ImmersiveModeControllerAsh::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_FULLSCREEN_CHANGED, type);
+  if (enabled_)
+    UpdateUseMinimalChrome(LAYOUT_YES);
+}
 
 void ImmersiveModeControllerAsh::OnMouseEvent(ui::MouseEvent* event) {
   if (!enabled_)
@@ -567,8 +574,12 @@ void ImmersiveModeControllerAsh::OnImplicitAnimationsCompleted() {
 ////////////////////////////////////////////////////////////////////////////////
 // Testing interface:
 
-void ImmersiveModeControllerAsh::SetHideTabIndicatorsForTest(bool hide) {
-  hide_tab_indicators_ = hide;
+void ImmersiveModeControllerAsh::SetForceHideTabIndicatorsForTest(bool force) {
+  if (force)
+    tab_indicator_visibility_ = TAB_INDICATORS_FORCE_HIDE;
+  else if (tab_indicator_visibility_ == TAB_INDICATORS_FORCE_HIDE)
+    tab_indicator_visibility_ = TAB_INDICATORS_HIDE;
+  UpdateUseMinimalChrome(LAYOUT_YES);
 }
 
 void ImmersiveModeControllerAsh::StartRevealForTest(bool hovered) {
@@ -586,8 +597,12 @@ void ImmersiveModeControllerAsh::SetMouseHoveredForTest(bool hovered) {
 // private:
 
 void ImmersiveModeControllerAsh::EnableWindowObservers(bool enable) {
+  if (observers_enabled_ == enable)
+    return;
+  observers_enabled_ = enable;
+
   if (!native_window_) {
-    DCHECK(!enable) << "ImmersiveModeControllerAsh not initialized";
+    NOTREACHED() << "ImmersiveModeControllerAsh not initialized";
     return;
   }
 
@@ -609,6 +624,20 @@ void ImmersiveModeControllerAsh::EnableWindowObservers(bool enable) {
 
   // The window observer adds and removes itself from the native window.
   window_observer_.reset(enable ? new WindowObserver(this) : NULL);
+
+  if (enable) {
+    registrar_.Add(
+        this,
+        chrome::NOTIFICATION_FULLSCREEN_CHANGED,
+        content::Source<FullscreenController>(
+            browser_view_->browser()->fullscreen_controller()));
+  } else {
+    registrar_.Remove(
+        this,
+        chrome::NOTIFICATION_FULLSCREEN_CHANGED,
+        content::Source<FullscreenController>(
+            browser_view_->browser()->fullscreen_controller()));
+  }
 
   if (!enable)
     StopObservingImplicitAnimations();
@@ -683,6 +712,35 @@ void ImmersiveModeControllerAsh::UpdateFocusRevealedLock() {
       focus_revealed_lock_.reset(GetRevealedLock(ANIMATE_REVEAL_YES));
   } else {
     focus_revealed_lock_.reset();
+  }
+}
+
+void ImmersiveModeControllerAsh::UpdateUseMinimalChrome(Layout layout) {
+  bool in_tab_fullscreen = browser_view_->browser()->fullscreen_controller()->
+      IsFullscreenForTabOrPending();
+  bool use_minimal_chrome = !in_tab_fullscreen && enabled_;
+  native_window_->SetProperty(ash::internal::kFullscreenUsesMinimalChromeKey,
+                              use_minimal_chrome);
+
+  TabIndicatorVisibility previous_tab_indicator_visibility =
+      tab_indicator_visibility_;
+  if (tab_indicator_visibility_ != TAB_INDICATORS_FORCE_HIDE) {
+    tab_indicator_visibility_ = use_minimal_chrome ?
+        TAB_INDICATORS_SHOW : TAB_INDICATORS_HIDE;
+  }
+
+  // Ash on Windows may not have a shell.
+  if (ash::Shell::HasInstance()) {
+    // When using minimal chrome, the shelf is auto-hidden. The auto-hidden
+    // shelf displays a 3px 'light bar' when it is closed.
+    ash::Shell::GetInstance()->UpdateShelfVisibility();
+  }
+
+  if (tab_indicator_visibility_ != previous_tab_indicator_visibility) {
+    // If the top-of-window views are revealed or animating, the change will
+    // take effect with the layout once the top-of-window views are closed.
+    if (layout == LAYOUT_YES && reveal_state_ == CLOSED)
+      LayoutBrowserView(true);
   }
 }
 

@@ -7,16 +7,15 @@
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_types.h"
+#include "ash/test/ash_test_base.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_per_browser.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/root_window.h"
 
 class TestChromeLauncherControllerPerBrowser :
@@ -32,7 +31,7 @@ class TestChromeLauncherControllerPerBrowser :
   DISALLOW_COPY_AND_ASSIGN(TestChromeLauncherControllerPerBrowser);
 };
 
-class LauncherContextMenuTest : public ChromeRenderViewHostTestHarness {
+class LauncherContextMenuTest : public ash::test::AshTestBase {
  protected:
   static bool IsItemPresentInMenu(LauncherContextMenu* menu, int command_id) {
     DCHECK(menu);
@@ -40,11 +39,12 @@ class LauncherContextMenuTest : public ChromeRenderViewHostTestHarness {
   }
 
   LauncherContextMenuTest()
-      : ChromeRenderViewHostTestHarness(),
-        browser_thread_(content::BrowserThread::UI, &message_loop_) {}
+      : ash::test::AshTestBase(),
+        profile_(new TestingProfile()),
+        browser_thread_(content::BrowserThread::UI, message_loop()) {}
 
   virtual void SetUp() OVERRIDE {
-    ChromeRenderViewHostTestHarness::SetUp();
+    ash::test::AshTestBase::SetUp();
     controller_.reset(
         new TestChromeLauncherControllerPerBrowser(profile(),
                                                    &launcher_model_));
@@ -52,7 +52,7 @@ class LauncherContextMenuTest : public ChromeRenderViewHostTestHarness {
 
   virtual void TearDown() OVERRIDE {
     controller_.reset(NULL);
-    ChromeRenderViewHostTestHarness::TearDown();
+    ash::test::AshTestBase::TearDown();
   }
 
   LauncherContextMenu* CreateLauncherContextMenu(
@@ -60,10 +60,13 @@ class LauncherContextMenuTest : public ChromeRenderViewHostTestHarness {
     ash::LauncherItem item;
     item.id = 1;  // dummy id
     item.type = launcher_item_type;
-    return new LauncherContextMenu(controller_.get(), &item, root_window());
+    return new LauncherContextMenu(controller_.get(), &item, CurrentContext());
   }
 
+  Profile* profile() { return profile_.get(); }
+
  private:
+  scoped_ptr<TestingProfile> profile_;
   content::TestBrowserThread browser_thread_;
   ash::LauncherModel launcher_model_;
   scoped_ptr<ChromeLauncherController> controller_;

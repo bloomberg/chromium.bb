@@ -8,6 +8,8 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 
 #include "base/timer.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/events/event_handler.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/focus/focus_manager.h"
@@ -32,6 +34,7 @@ class View;
 }
 
 class ImmersiveModeControllerAsh : public ImmersiveModeController,
+                                   public content::NotificationObserver,
                                    public ui::EventHandler,
                                    public ui::ImplicitAnimationObserver,
                                    public views::FocusChangeListener,
@@ -65,6 +68,11 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   virtual void UnanchorWidgetFromTopContainer(views::Widget* widget) OVERRIDE;
   virtual void OnTopContainerBoundsChanged() OVERRIDE;
 
+  // content::NotificationObserver override:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   // ui::EventHandler overrides:
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
 
@@ -83,7 +91,7 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   virtual void OnImplicitAnimationsCompleted() OVERRIDE;
 
   // Testing interface.
-  void SetHideTabIndicatorsForTest(bool hide);
+  void SetForceHideTabIndicatorsForTest(bool force);
   void StartRevealForTest(bool hovered);
   void SetMouseHoveredForTest(bool hovered);
 
@@ -93,11 +101,20 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
     ANIMATE_SLOW,
     ANIMATE_FAST,
   };
+  enum Layout {
+    LAYOUT_YES,
+    LAYOUT_NO
+  };
   enum RevealState {
     CLOSED,          // Top container only showing tabstrip, y = 0.
     SLIDING_OPEN,    // All views showing, y animating from -height to 0.
     REVEALED,        // All views showing, y = 0.
     SLIDING_CLOSED,  // All views showing, y animating from 0 to -height.
+  };
+  enum TabIndicatorVisibility {
+    TAB_INDICATORS_FORCE_HIDE,
+    TAB_INDICATORS_HIDE,
+    TAB_INDICATORS_SHOW
   };
 
   // Enables or disables observers for mouse move, focus, and window restore.
@@ -114,6 +131,11 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   // Update |focus_revealed_lock_| based on the currently active view and the
   // currently active widget.
   void UpdateFocusRevealedLock();
+
+  // Updates whether fullscreen uses any chrome at all. When using minimal
+  // chrome, a 'light bar' is permanently visible for the launcher and possibly
+  // for the tabstrip.
+  void UpdateUseMinimalChrome(Layout layout);
 
   // Returns the animation duration given |animate|.
   int GetAnimationDuration(Animate animate) const;
@@ -156,6 +178,9 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   // Browser view holding the views to be shown and hidden. Not owned.
   BrowserView* browser_view_;
 
+  // True if the window observers are enabled.
+  bool observers_enabled_;
+
   // True when in immersive mode.
   bool enabled_;
 
@@ -164,9 +189,9 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
 
   int revealed_lock_count_;
 
-  // True if the miniature "tab indicators" should be hidden in the main browser
-  // view when immersive mode is enabled.
-  bool hide_tab_indicators_;
+  // The visibility of the miniature "tab indicators" in the main browser view
+  // when immersive mode is enabled and the top-of-window views are closed.
+  TabIndicatorVisibility tab_indicator_visibility_;
 
   // Timer to track cursor being held at the top.
   base::OneShotTimer<ImmersiveModeController> top_timer_;
@@ -189,6 +214,8 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   // Manages widgets which are anchored to the top-of-window views.
   class AnchoredWidgetManager;
   scoped_ptr<AnchoredWidgetManager> anchored_widget_manager_;
+
+  content::NotificationRegistrar registrar_;
 
   base::WeakPtrFactory<ImmersiveModeControllerAsh> weak_ptr_factory_;
 

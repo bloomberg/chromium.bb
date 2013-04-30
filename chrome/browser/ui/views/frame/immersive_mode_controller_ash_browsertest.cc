@@ -18,6 +18,8 @@
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#include "chrome/browser/ui/fullscreen/fullscreen_controller_test.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -163,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest, ImmersiveMode) {
 
   // When hiding the tab indicators, content is at the top of the browser view
   // both before and during reveal.
-  controller->SetHideTabIndicatorsForTest(true);
+  controller->SetForceHideTabIndicatorsForTest(true);
   chrome::ToggleFullscreenMode(browser());
   ASSERT_TRUE(browser_view->IsFullscreen());
   EXPECT_FALSE(browser_view->IsTabStripVisible());
@@ -178,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest, ImmersiveMode) {
             GetRectInWidget(contents_view).y());
   chrome::ToggleFullscreenMode(browser());
   ASSERT_FALSE(browser_view->IsFullscreen());
-  controller->SetHideTabIndicatorsForTest(false);
+  controller->SetForceHideTabIndicatorsForTest(false);
 
   // Reveal ends when the mouse moves out of the reveal view.
   chrome::ToggleFullscreenMode(browser());
@@ -610,13 +612,72 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest, ImmersiveShelf) {
   ASSERT_FALSE(browser_view->IsFullscreen());
   ASSERT_FALSE(immersive_controller->IsEnabled());
   EXPECT_EQ(ash::SHELF_AUTO_HIDE, shelf->visibility_state());
+}
 
-  // Setting the window property directly toggles immersive mode.
-  aura::Window* window = browser_view->GetWidget()->GetNativeWindow();
-  window->SetProperty(ash::internal::kImmersiveModeKey, true);
-  EXPECT_TRUE(immersive_controller->IsEnabled());
-  window->SetProperty(ash::internal::kImmersiveModeKey, false);
-  EXPECT_FALSE(immersive_controller->IsEnabled());
+// Test how being simultaneously in tab fullscreen and immersive fullscreen
+// affects the shelf visibility and whether the tab indicators are hidden.
+IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest,
+                       TabAndBrowserFullscreen) {
+  ui::ScopedAnimationDurationScaleMode zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+  ASSERT_TRUE(chrome::UseImmersiveFullscreen());
+
+  BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
+  ash::internal::ShelfLayoutManager* shelf =
+      ash::Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
+  ImmersiveModeControllerAsh* controller =
+      static_cast<ImmersiveModeControllerAsh*>(
+          browser_view->immersive_mode_controller());
+
+  controller->SetForceHideTabIndicatorsForTest(false);
+
+  // The shelf should start out as visible.
+  ASSERT_EQ(ash::SHELF_VISIBLE, shelf->visibility_state());
+
+  // 1) Test that entering tab fullscreen from immersive mode hides the tab
+  // indicators and the shelf.
+  chrome::ToggleFullscreenMode(browser());
+  ASSERT_TRUE(controller->IsEnabled());
+  EXPECT_EQ(ash::SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_FALSE(controller->ShouldHideTabIndicators());
+
+  // The shelf visibility and the tab indicator visibility are updated as a
+  // result of NOTIFICATION_FULLSCREEN_CHANGED which is asynchronous. Wait for
+  // the notification before testing visibility.
+  scoped_ptr<FullscreenNotificationObserver> waiter(
+      new FullscreenNotificationObserver());
+
+  browser()->fullscreen_controller()->ToggleFullscreenModeForTab(
+      browser_view->GetActiveWebContents(), true);
+  waiter->Wait();
+  ASSERT_TRUE(controller->IsEnabled());
+  EXPECT_EQ(ash::SHELF_HIDDEN, shelf->visibility_state());
+  EXPECT_TRUE(controller->ShouldHideTabIndicators());
+
+  // 2) Test that exiting tab fullscreen shows the tab indicators and autohides
+  // the shelf.
+  waiter.reset(new FullscreenNotificationObserver());
+  browser()->fullscreen_controller()->ToggleFullscreenModeForTab(
+      browser_view->GetActiveWebContents(), false);
+  waiter->Wait();
+  ASSERT_TRUE(controller->IsEnabled());
+  EXPECT_EQ(ash::SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_FALSE(controller->ShouldHideTabIndicators());
+
+  // 3) Test that exiting tab fullscreen and immersive fullscreen
+  // simultaneously correctly updates the shelf visibility and whether the tab
+  // indicators should be hidden.
+  waiter.reset(new FullscreenNotificationObserver());
+  browser()->fullscreen_controller()->ToggleFullscreenModeForTab(
+      browser_view->GetActiveWebContents(), true);
+  waiter->Wait();
+  waiter.reset(new FullscreenNotificationObserver());
+  chrome::ToggleFullscreenMode(browser());
+  waiter->Wait();
+
+  ASSERT_FALSE(controller->IsEnabled());
+  EXPECT_EQ(ash::SHELF_VISIBLE, shelf->visibility_state());
+  EXPECT_TRUE(controller->ShouldHideTabIndicators());
 }
 
 #endif  // defined(OS_CHROMEOS)

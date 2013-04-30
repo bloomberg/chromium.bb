@@ -169,9 +169,10 @@ class ASH_EXPORT RootWindowController {
   // Force the shelf to query for it's current visibility state.
   void UpdateShelfVisibility();
 
-  // Returns true if the active workspace is in immersive mode. Exposed here
-  // so clients of Ash don't need to know the details of workspace management.
-  bool IsImmersiveMode() const;
+  // Returns the window, if any, which is in fullscreen mode in the active
+  // workspace. Exposed here so clients of Ash don't need to know the details
+  // of workspace management.
+  aura::Window* GetFullscreenWindow() const;
 
  private:
   // Creates each of the special window containers that holds windows of various

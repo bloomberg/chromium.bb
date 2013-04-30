@@ -35,6 +35,7 @@
 #include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/command_line.h"
 #include "base/time.h"
@@ -445,14 +446,14 @@ void RootWindowController::UpdateShelfVisibility() {
   shelf_->shelf_layout_manager()->UpdateVisibilityState();
 }
 
-bool RootWindowController::IsImmersiveMode() const {
+aura::Window* RootWindowController::GetFullscreenWindow() const {
   aura::Window* container = workspace_controller_->GetActiveWorkspaceWindow();
   for (size_t i = 0; i < container->children().size(); ++i) {
     aura::Window* child = container->children()[i];
-    if (child->IsVisible() && child->GetProperty(kImmersiveModeKey))
-      return true;
+    if (ash::wm::IsWindowFullscreen(child))
+      return child;
   }
-  return false;
+  return NULL;
 }
 
 void RootWindowController::InitKeyboard() {

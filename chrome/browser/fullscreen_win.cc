@@ -11,7 +11,7 @@
 #include "base/win/windows_version.h"
 
 #if defined(USE_ASH)
-#include "ash/wm/window_util.h"
+#include "ash/root_window_controller.h"
 #include "chrome/browser/ui/host_desktop.h"
 #endif
 
@@ -102,8 +102,11 @@ static bool IsFullScreenConsoleMode() {
 
 bool IsFullScreenMode() {
 #if defined(USE_ASH)
-  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
-    return ash::wm::IsActiveWindowFullscreen();
+  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH) {
+    ash::internal::RootWindowController* controller =
+        ash::internal::RootWindowController::ForActiveRootWindow();
+    return controller && controller->GetFullscreenWindow();
+  }
 #endif
   return IsPlatformFullScreenMode() ||
          IsFullScreenWindowMode() ||

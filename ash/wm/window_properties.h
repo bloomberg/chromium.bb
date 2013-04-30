@@ -38,6 +38,12 @@ extern const aura::WindowProperty<bool>* const kContinueDragAfterReparent;
 ASH_EXPORT extern const aura::WindowProperty<bool>* const
     kCyclingThroughWorkspacesKey;
 
+// A property key to indicate whether there is any chrome at all that cannot be
+// hidden when the window is fullscreen. This is unrelated to whether the full
+// chrome can be revealed by hovering the mouse at the top of the screen.
+ASH_EXPORT extern const aura::WindowProperty<bool>* const
+    kFullscreenUsesMinimalChromeKey;
+
 // A property key to disable the frame painter policy for solo windows.
 // It is only available for root windows.
 ASH_EXPORT extern const aura::WindowProperty<bool>* const
@@ -47,9 +53,6 @@ ASH_EXPORT extern const aura::WindowProperty<bool>* const
 // darkening the shelf.
 extern const aura::WindowProperty<bool>* const
     kIgnoredByShelfKey;
-
-// True if this is a browser window in immersive mode.
-ASH_EXPORT extern const aura::WindowProperty<bool>* const kImmersiveModeKey;
 
 // True if this window is an attached panel.
 ASH_EXPORT extern const aura::WindowProperty<bool>* const kPanelAttachedKey;
