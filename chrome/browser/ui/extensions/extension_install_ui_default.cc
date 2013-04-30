@@ -168,7 +168,7 @@ void ExtensionInstallUI::OpenAppInstalledUI(Profile* profile,
 
 // static
 void ExtensionInstallUI::DisableFailureUIForTests() {
-  disable_failure_ui_for_tests = true;
+  disable_failure_ui_for_tests_ = true;
 }
 
 // static
@@ -254,7 +254,7 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
 void ExtensionInstallUIDefault::OnInstallFailure(
     const extensions::CrxInstallerError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (disable_failure_ui_for_tests || skip_post_install_ui_)
+  if (disable_failure_ui_for_tests_ || skip_post_install_ui_)
     return;
 
   Browser* browser = chrome::FindLastActiveWithProfile(profile_,
