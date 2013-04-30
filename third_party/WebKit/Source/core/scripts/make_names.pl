@@ -843,7 +843,6 @@ print F <<END
 #include "RuntimeEnabledFeatures.h"
 #include "Settings.h"
 
-#include "CustomElementDefinition.h"
 #include "CustomElementRegistry.h"
 
 namespace WebCore {
@@ -899,8 +898,7 @@ print F <<END
         return 0;
 
     if (document->registry()) {
-        if (RefPtr<CustomElementDefinition> definition = document->registry()->find(nullQName(), qName)) {
-            RefPtr<Element> element = definition->createElement();
+        if (RefPtr<Element> element = document->registry()->tryToCreateCustomTagElement(qName)) {
             ASSERT(element->is$parameters{namespace}Element());
             return static_pointer_cast<$parameters{namespace}Element>(element.release());
         }

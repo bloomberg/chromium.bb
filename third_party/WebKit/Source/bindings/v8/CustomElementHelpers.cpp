@@ -32,8 +32,8 @@
 
 #include "bindings/v8/CustomElementHelpers.h"
 
+#include "HTMLNames.h"
 #include "V8CustomElementConstructor.h"
-#include "V8Document.h"
 #include "V8HTMLElementWrapperFactory.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"

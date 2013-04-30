@@ -53,7 +53,6 @@
 #include "core/dom/Comment.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/CustomElementConstructor.h"
-#include "core/dom/CustomElementDefinition.h"
 #include "core/dom/CustomElementRegistry.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/DOMNamedFlowCollection.h"
@@ -775,12 +774,21 @@ PassRefPtr<Element> Document::createElement(const AtomicString& localName, const
         return 0;
     }
 
-    if (m_registry) {
-        if (PassRefPtr<Element> created = m_registry->createElement(QualifiedName(nullAtom, localName, xhtmlNamespaceURI), typeExtension))
-            return created;
+    RefPtr<Element> element;
+
+    if (m_registry)
+        element = m_registry->tryToCreateCustomTagElement(QualifiedName(nullAtom, localName, xhtmlNamespaceURI));
+
+    if (!element)
+        element = createElement(localName, ec);
+
+    if (!typeExtension.isNull()) {
+        setTypeExtension(element.get(), typeExtension);
+        if (m_registry)
+            m_registry->didGiveTypeExtension(element.get());
     }
 
-    return setTypeExtension(createElement(localName, ec), typeExtension);
+    return element;
 }
 
 PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, const String& qualifiedName, const AtomicString& typeExtension, ExceptionCode& ec)
@@ -795,12 +803,21 @@ PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, 
         return 0;
     }
 
-    if (m_registry) {
-        if (PassRefPtr<Element> created = m_registry->createElement(qName, typeExtension))
-            return created;
+    RefPtr<Element> element;
+
+    if (m_registry)
+        element = m_registry->tryToCreateCustomTagElement(qName);
+
+    if (!element)
+        element = createElementNS(namespaceURI, qualifiedName, ec);
+
+    if (!typeExtension.isNull()) {
+        setTypeExtension(element.get(), typeExtension);
+        if (m_registry)
+            m_registry->didGiveTypeExtension(element.get());
     }
 
-    return setTypeExtension(createElementNS(namespaceURI, qualifiedName, ec), typeExtension);
+    return element;
 }
 
 PassRefPtr<CustomElementConstructor> Document::registerElement(WebCore::ScriptState* state, const AtomicString& name, ExceptionCode& ec)
@@ -818,13 +835,6 @@ PassRefPtr<CustomElementConstructor> Document::registerElement(WebCore::ScriptSt
     if (!m_registry)
         m_registry = adoptRef(new CustomElementRegistry(this));
     return m_registry->registerElement(state, name, options, ec);
-}
-
-void Document::didCreateCustomElement(Element* element)
-{
-    // m_registry is cleared Document::dispose() and can be null here.
-    if (m_registry)
-        m_registry->didCreateElement(element);
 }
 
 PassRefPtr<DocumentFragment> Document::createDocumentFragment()

@@ -32,64 +32,24 @@
 
 #include "core/dom/CustomElementDefinition.h"
 
-#include "HTMLNames.h"
 #include "bindings/v8/CustomElementHelpers.h"
-#include "core/dom/Document.h"
-#include "core/html/HTMLElement.h"
 #include <wtf/Assertions.h>
-
-#if ENABLE(SVG)
-#include "SVGNames.h"
-#include "core/svg/SVGElement.h"
-#endif
 
 namespace WebCore {
 
-PassRefPtr<CustomElementDefinition> CustomElementDefinition::create(ScriptState* state, Document* document, const QualifiedName& typeName, const QualifiedName& localName, const ScriptValue& prototype)
+PassRefPtr<CustomElementDefinition> CustomElementDefinition::create(ScriptState* state, const QualifiedName& typeName, const QualifiedName& localName, const ScriptValue& prototype)
 {
     ASSERT(CustomElementHelpers::isValidPrototypeParameter(prototype, state));
     ASSERT(localName == typeName || localName == *CustomElementHelpers::findLocalName(prototype));
-    RefPtr<CustomElementDefinition> created = adoptRef(new CustomElementDefinition(document, typeName, localName, prototype));
+    RefPtr<CustomElementDefinition> created = adoptRef(new CustomElementDefinition(typeName, localName, prototype));
     return created.release();
 }
 
-CustomElementDefinition::CustomElementDefinition(Document* document, const QualifiedName& typeName, const QualifiedName& localName, const ScriptValue& prototype)
-    : ContextDestructionObserver(document)
-    , m_prototype(prototype)
+CustomElementDefinition::CustomElementDefinition(const QualifiedName& typeName, const QualifiedName& localName, const ScriptValue& prototype)
+    : m_prototype(prototype)
     , m_typeName(typeName)
     , m_localName(localName)
 {
-}
-
-PassRefPtr<Element> CustomElementDefinition::createElement()
-{
-    RefPtr<Element> element = createElementInternal();
-    if (!element)
-        return 0;
-    document()->didCreateCustomElement(element.get());
-    return element.release();
-}
-
-PassRefPtr<Element> CustomElementDefinition::createElementInternal()
-{
-    if (!document())
-        return 0;
-    if (m_localName != m_typeName)
-        return setTypeExtension(document()->createElement(m_localName, document()), m_typeName.localName());
-    if (HTMLNames::xhtmlNamespaceURI == m_typeName.namespaceURI())
-        return HTMLElement::create(m_typeName, document());
-#if ENABLE(SVG)
-    if (SVGNames::svgNamespaceURI == m_typeName.namespaceURI())
-        return SVGElement::create(m_typeName, document());
-#endif
-    return Element::create(m_typeName, document());
-}
-
-PassRefPtr<Element> setTypeExtension(PassRefPtr<Element> element, const AtomicString& typeExtension)
-{
-    if (!typeExtension.isEmpty())
-        element->setAttribute(HTMLNames::isAttr, typeExtension);
-    return element;
 }
 
 }

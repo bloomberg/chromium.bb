@@ -33,17 +33,19 @@
 #include "core/dom/CustomElementRegistry.h"
 
 #include "HTMLNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/CustomElementHelpers.h"
 #include "bindings/v8/Dictionary.h"
+#include "bindings/v8/ScriptValue.h"
 #include "core/dom/CustomElementDefinition.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/html/HTMLUnknownElement.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/html/HTMLElement.h"
 #include <wtf/HashSet.h>
 
 #if ENABLE(SVG)
 #include "SVGNames.h"
+#include "core/svg/SVGElement.h"
 #endif
 
 namespace WebCore {
@@ -55,6 +57,13 @@ CustomElementInvocation::CustomElementInvocation(PassRefPtr<Element> element)
 
 CustomElementInvocation::~CustomElementInvocation()
 {
+}
+
+void setTypeExtension(Element* element, const AtomicString& typeExtension)
+{
+    ASSERT(element);
+    if (!typeExtension.isEmpty())
+        element->setAttribute(HTMLNames::isAttr, typeExtension);
 }
 
 CustomElementRegistry::CustomElementRegistry(Document* document)
@@ -146,7 +155,7 @@ PassRefPtr<CustomElementConstructor> CustomElementRegistry::registerElement(Scri
         return 0;
     }
 
-    RefPtr<CustomElementDefinition> definition = CustomElementDefinition::create(state, document(), typeName, localNameToUse, prototypeValue);
+    RefPtr<CustomElementDefinition> definition = CustomElementDefinition::create(state, typeName, localNameToUse, prototypeValue);
 
     RefPtr<CustomElementConstructor> constructor = CustomElementConstructor::create(document(), definition->typeName(), definition->localName());
     if (!CustomElementHelpers::initializeConstructorWrapper(constructor.get(), prototypeValue, state)) {
@@ -184,23 +193,34 @@ PassRefPtr<CustomElementDefinition> CustomElementRegistry::find(const QualifiedN
     return it->value;
 }
 
-PassRefPtr<Element> CustomElementRegistry::createElement(const QualifiedName& localName, const AtomicString& typeExtension) const
+PassRefPtr<Element> CustomElementRegistry::tryToCreateCustomTagElement(const QualifiedName& localName)
 {
-    const QualifiedName& typeName = QualifiedName(nullAtom, typeExtension, localName.namespaceURI());
-    if (RefPtr<CustomElementDefinition> definition = find(typeName, localName)) {
-        RefPtr<Element> created = definition->createElement();
-        if (!typeName.localName().isEmpty() && localName != typeName)
-            return setTypeExtension(created, typeExtension);
-        return created.release();
-    }
+    if (!document() || !isValidName(localName.localName()))
+        return 0;
 
-    return 0;
+    RefPtr<Element> element;
+
+    if (HTMLNames::xhtmlNamespaceURI == localName.namespaceURI())
+        element = HTMLElement::create(localName, document());
+#if ENABLE(SVG)
+    else if (SVGNames::svgNamespaceURI == localName.namespaceURI())
+        element = SVGElement::create(localName, document());
+#endif
+    else
+        element = Element::create(localName, document());
+
+    if (RefPtr<CustomElementDefinition> definition = find(nullQName(), localName))
+        didCreateElement(element.get());
+    else
+        return 0;
+
+    return element.release();
 }
 
 void CustomElementRegistry::didGiveTypeExtension(Element* element)
 {
     RefPtr<CustomElementDefinition> definition = findFor(element);
-    if (!definition || !definition->isExtended())
+    if (!definition || !definition->isTypeExtension())
         return;
     activate(CustomElementInvocation(element));
 }

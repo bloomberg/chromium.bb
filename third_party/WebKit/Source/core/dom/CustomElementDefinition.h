@@ -32,43 +32,32 @@
 #define CustomElementDefinition_h
 
 #include "bindings/v8/ScriptValue.h"
-#include "core/dom/ContextDestructionObserver.h"
-#include "core/dom/Document.h"
 #include "core/dom/QualifiedName.h"
 #include <wtf/Forward.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
-#include <wtf/text/AtomicString.h>
 
 namespace WebCore {
 
-class CustomElementConstructor;
-class Document;
-class Element;
 class ScriptState;
 
-PassRefPtr<Element> setTypeExtension(PassRefPtr<Element>, const AtomicString& typeExtension);
-
-class CustomElementDefinition : public RefCounted<CustomElementDefinition> , public ContextDestructionObserver {
+class CustomElementDefinition : public RefCounted<CustomElementDefinition> {
 public:
-    static PassRefPtr<CustomElementDefinition> create(ScriptState*, Document*, const QualifiedName& typeName, const QualifiedName& localName, const ScriptValue& prototype);
+    static PassRefPtr<CustomElementDefinition> create(ScriptState*, const QualifiedName& typeName, const QualifiedName& localName, const ScriptValue& prototype);
 
     virtual ~CustomElementDefinition() {}
 
-    Document* document() const { return static_cast<Document*>(m_scriptExecutionContext); }
     const QualifiedName& typeName() const { return m_typeName; }
     const QualifiedName& localName() const { return m_localName; }
-    bool isExtended() const { return m_typeName != m_localName; }
+    bool isTypeExtension() const { return m_typeName != m_localName; }
 
     const ScriptValue& prototype() { return m_prototype; }
-    PassRefPtr<Element> createElement();
 
 private:
-    CustomElementDefinition(Document*, const QualifiedName& typeName, const QualifiedName& localName, const ScriptValue& prototype);
-
-    PassRefPtr<Element> createElementInternal();
+    CustomElementDefinition(const QualifiedName& typeName, const QualifiedName& localName, const ScriptValue& prototype);
 
     ScriptValue m_prototype;
+
     QualifiedName m_typeName;
     QualifiedName m_localName;
 };

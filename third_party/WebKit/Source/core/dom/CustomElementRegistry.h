@@ -31,28 +31,26 @@
 #ifndef CustomElementRegistry_h
 #define CustomElementRegistry_h
 
-#include "bindings/v8/ScriptValue.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/dom/ContextDestructionObserver.h"
+#include "core/dom/CustomElementConstructor.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/QualifiedName.h"
-#include "core/platform/Supplementable.h"
 #include <wtf/HashSet.h>
 #include <wtf/ListHashSet.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>
+#include <wtf/text/AtomicString.h>
 #include <wtf/text/AtomicStringHash.h>
 
 namespace WebCore {
 
-class CustomElementConstructor;
 class CustomElementDefinition;
 class Dictionary;
 class Document;
 class Element;
-class ScriptExecutionContext;
-class QualifiedName;
 
 class CustomElementInvocation {
 public:
@@ -65,7 +63,9 @@ private:
     RefPtr<Element> m_element;
 };
 
-class CustomElementRegistry : public RefCounted<CustomElementRegistry> , public ContextDestructionObserver {
+void setTypeExtension(Element*, const AtomicString& typeExtension);
+
+class CustomElementRegistry : public RefCounted<CustomElementRegistry>, public ContextDestructionObserver {
     WTF_MAKE_NONCOPYABLE(CustomElementRegistry); WTF_MAKE_FAST_ALLOCATED;
 public:
     class CallbackDeliveryScope {
@@ -80,13 +80,14 @@ public:
     PassRefPtr<CustomElementConstructor> registerElement(WebCore::ScriptState*, const AtomicString& name, const Dictionary& options, ExceptionCode&);
     PassRefPtr<CustomElementDefinition> findFor(Element*) const;
     PassRefPtr<CustomElementDefinition> find(const QualifiedName& elementName, const QualifiedName& localName) const;
-    PassRefPtr<Element> createElement(const QualifiedName& localName, const AtomicString& typeExtension) const;
+
+    PassRefPtr<Element> tryToCreateCustomTagElement(const QualifiedName& localName);
 
     Document* document() const;
 
     void didGiveTypeExtension(Element*);
-    void didCreateElement(Element*);
 
+    static bool isValidName(const AtomicString&);
     static void deliverAllLifecycleCallbacks();
     static void deliverAllLifecycleCallbacksIfNeeded();
 
@@ -95,12 +96,12 @@ private:
     typedef HashSet<AtomicString> NameSet;
     typedef ListHashSet<CustomElementRegistry*> InstanceSet;
 
-    static bool isValidName(const AtomicString&);
     static InstanceSet& activeCustomElementRegistries();
-
     void activate(const CustomElementInvocation&);
     void deactivate();
     void deliverLifecycleCallbacks();
+
+    void didCreateElement(Element*);
 
     DefinitionMap m_definitions;
     NameSet m_names;
