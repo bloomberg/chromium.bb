@@ -40,13 +40,8 @@ my $preprocessor;
 my $defines = "";
 my $verbose = 0;
 my $dependentIdlFiles = "";
-my $sourceRoot = "";
 
 my $codeGenerator = 0;
-
-# Cache of IDL file pathnames.
-my $idlFiles;
-my $cachedInterfaces = {};
 
 # Default constructor
 sub new
@@ -60,8 +55,6 @@ sub new
     $preprocessor = shift;
     $verbose = shift;
     $dependentIdlFiles = shift;
-
-    $sourceRoot = getcwd();
 
     bless($reference, $object);
     return $reference;
@@ -77,7 +70,7 @@ sub ProcessDocument
     require $ifaceName . ".pm";
 
     # Dynamically load external code generation perl module
-    $codeGenerator = $ifaceName->new($object, $idlDocument);
+    $codeGenerator = $ifaceName->new($object, $idlDocument, $useDirectories, $preprocessor, $defines, $verbose, $dependentIdlFiles);
     unless (defined($codeGenerator)) {
         my $interfaces = $idlDocument->interfaces;
         foreach my $interface (@$interfaces) {
@@ -92,72 +85,6 @@ sub ProcessDocument
         $codeGenerator->GenerateInterface($interface, $defines);
         $codeGenerator->WriteData($interface, $useOutputDir, $useOutputHeadersDir);
     }
-}
-
-sub IDLFileForInterface
-{
-    my $interfaceName = shift;
-
-    unless ($idlFiles) {
-        my @directories = map { $_ = "$sourceRoot/$_" if -d "$sourceRoot/$_"; $_ } @$useDirectories;
-        push(@directories, ".");
-
-        $idlFiles = { };
-        foreach my $idlFile (@$dependentIdlFiles) {
-            $idlFiles->{fileparse(basename($idlFile), ".idl")} = $idlFile;
-        }
-
-        my $wanted = sub {
-            $idlFiles->{$1} = $File::Find::name if /^([A-Z].*)\.idl$/;
-            $File::Find::prune = 1 if /^\../;
-        };
-        find($wanted, @directories);
-    }
-
-    return $idlFiles->{$interfaceName};
-}
-
-sub HeaderFileForInterface
-{
-    my $object = shift;
-    my $interfaceName = shift;
-
-    my $idlFilename = IDLFileForInterface($interfaceName)
-        or die("Could NOT find IDL file for interface \"$interfaceName\" $!\n");
-
-    $idlFilename = "bindings/" . File::Spec->abs2rel($idlFilename, $sourceRoot);
-    $idlFilename =~ s/idl$/h/;
-    return $idlFilename;
-}
-
-sub ParseInterface
-{
-    my ($object, $interfaceName) = @_;
-
-    return undef if $interfaceName eq 'Object';
-
-    if (exists $cachedInterfaces->{$interfaceName}) {
-        return $cachedInterfaces->{$interfaceName};
-    }
-
-    # Step #1: Find the IDL file associated with 'interface'
-    my $filename = IDLFileForInterface($interfaceName)
-        or die("Could NOT find IDL file for interface \"$interfaceName\" $!\n");
-
-    print "  |  |>  Parsing parent IDL \"$filename\" for interface \"$interfaceName\"\n" if $verbose;
-
-    # Step #2: Parse the found IDL file (in quiet mode).
-    my $parser = IDLParser->new(1);
-    my $document = $parser->Parse($filename, $defines, $preprocessor);
-
-    foreach my $interface (@{$document->interfaces}) {
-        if ($interface->name eq $interfaceName) {
-            $cachedInterfaces->{$interfaceName} = $interface;
-            return $interface;
-        }
-    }
-
-    die("Could NOT find interface definition for $interfaceName in $filename");
 }
 
 1;

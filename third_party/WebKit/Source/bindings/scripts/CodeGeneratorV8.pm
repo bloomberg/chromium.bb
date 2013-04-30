@@ -28,9 +28,23 @@
 package CodeGeneratorV8;
 
 use strict;
+use Cwd;
+use File::Basename;
+use File::Find;
+use File::Spec;
 
 my $codeGenerator;
 my $idlDocument;
+my $useDirectories;
+my $preprocessor;
+my $defines;
+my $verbose;
+my $dependentIdlFiles;
+my $sourceRoot;
+
+# Cache of IDL file pathnames.
+my $idlFiles;
+my $cachedInterfaces = {};
 
 my @headerContent = ();
 my @implContentHeader = ();
@@ -122,9 +136,81 @@ sub new
 
     $codeGenerator = shift;
     $idlDocument = shift;
+    $useDirectories = shift;
+    $preprocessor = shift;
+    $defines = shift;
+    $verbose = shift;
+    $dependentIdlFiles = shift;
+    $sourceRoot = getcwd();
 
     bless($reference, $object);
     return $reference;
+}
+
+
+sub IDLFileForInterface
+{
+    my $interfaceName = shift;
+
+    unless ($idlFiles) {
+        my @directories = map { $_ = "$sourceRoot/$_" if -d "$sourceRoot/$_"; $_ } @$useDirectories;
+        push(@directories, ".");
+
+        $idlFiles = { };
+        foreach my $idlFile (@$dependentIdlFiles) {
+            $idlFiles->{fileparse(basename($idlFile), ".idl")} = $idlFile;
+        }
+
+        my $wanted = sub {
+            $idlFiles->{$1} = $File::Find::name if /^([A-Z].*)\.idl$/;
+            $File::Find::prune = 1 if /^\../;
+        };
+        find($wanted, @directories);
+    }
+
+    return $idlFiles->{$interfaceName};
+}
+
+sub HeaderFileForInterface
+{
+    my $interfaceName = shift;
+
+    my $idlFilename = IDLFileForInterface($interfaceName)
+        or die("Could NOT find IDL file for interface \"$interfaceName\" $!\n");
+
+    $idlFilename = "bindings/" . File::Spec->abs2rel($idlFilename, $sourceRoot);
+    $idlFilename =~ s/idl$/h/;
+    return $idlFilename;
+}
+
+sub ParseInterface
+{
+    my $interfaceName = shift;
+
+    return undef if $interfaceName eq 'Object';
+
+    if (exists $cachedInterfaces->{$interfaceName}) {
+        return $cachedInterfaces->{$interfaceName};
+    }
+
+    # Step #1: Find the IDL file associated with 'interface'
+    my $filename = IDLFileForInterface($interfaceName)
+        or die("Could NOT find IDL file for interface \"$interfaceName\" $!\n");
+
+    print "  |  |>  Parsing parent IDL \"$filename\" for interface \"$interfaceName\"\n" if $verbose;
+
+    # Step #2: Parse the found IDL file (in quiet mode).
+    my $parser = IDLParser->new(1);
+    my $document = $parser->Parse($filename, $defines, $preprocessor);
+
+    foreach my $interface (@{$document->interfaces}) {
+        if ($interface->name eq $interfaceName) {
+            $cachedInterfaces->{$interfaceName} = $interface;
+            return $interface;
+        }
+    }
+
+    die("Could NOT find interface definition for $interfaceName in $filename");
 }
 
 sub GenerateInterface
@@ -175,7 +261,7 @@ sub AddToHeaderIncludes
 sub AddInterfaceToImplIncludes
 {
     my $interface = shift;
-    my $include = $codeGenerator->HeaderFileForInterface($interface);
+    my $include = HeaderFileForInterface($interface);
 
     AddToImplIncludes($include);
 }
@@ -772,7 +858,7 @@ sub GetHeaderClassInclude
     }
     return "wtf/${v8InterfaceName}.h" if IsTypedArrayType($v8InterfaceName);
     return "" if (SkipIncludeHeader($v8InterfaceName));
-    return $codeGenerator->HeaderFileForInterface($v8InterfaceName);
+    return HeaderFileForInterface($v8InterfaceName);
 }
 
 sub GenerateHeaderCustomInternalFieldIndices
@@ -3868,7 +3954,7 @@ sub GenerateCallbackHeader
     push(@unsortedIncludes, "#include \"bindings/v8/ActiveDOMCallback.h\"");
     push(@unsortedIncludes, "#include \"bindings/v8/DOMWrapperWorld.h\"");
     push(@unsortedIncludes, "#include \"bindings/v8/ScopedPersistent.h\"");
-    my $interfaceHeader = $codeGenerator->HeaderFileForInterface($interfaceName);
+    my $interfaceHeader = HeaderFileForInterface($interfaceName);
     push(@unsortedIncludes, "#include \"$interfaceHeader\"");
     push(@unsortedIncludes, "#include <v8.h>");
     push(@unsortedIncludes, "#include <wtf/Forward.h>");
@@ -4039,7 +4125,7 @@ sub BaseInterfaceName
     my $interface = shift;
 
     while (@{$interface->parents}) {
-        $interface = $codeGenerator->ParseInterface(@{$interface->parents}[0]);
+        $interface = ParseInterface(@{$interface->parents}[0]);
     }
 
     return $interface->name;
@@ -4988,7 +5074,7 @@ sub ForAllParents
 
         for (@{$currentInterface->parents}) {
             my $interfaceName = $_;
-            my $parentInterface = $codeGenerator->ParseInterface($interfaceName);
+            my $parentInterface = ParseInterface($interfaceName);
 
             if ($beforeRecursion) {
                 &$beforeRecursion($parentInterface) eq 'prune' and next;
