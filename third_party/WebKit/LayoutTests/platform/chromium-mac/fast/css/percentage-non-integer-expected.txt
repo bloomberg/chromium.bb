@@ -29,7 +29,7 @@ layer at (0,0) size 800x585
         RenderBlock {DIV} at (0,44) size 910x4
           RenderBlock {DIV} at (0,0) size 101x4 [bgcolor=#0000007F]
         RenderBlock {DIV} at (0,48) size 910x4
-          RenderBlock {DIV} at (0,0) size 101x4 [bgcolor=#0000007F]
+          RenderBlock {DIV} at (0,0) size 102x4 [bgcolor=#0000007F]
         RenderBlock {DIV} at (0,52) size 900x4
           RenderBlock {DIV} at (0,0) size 101x4 [bgcolor=#0000007F]
         RenderBlock {DIV} at (0,56) size 890x4
