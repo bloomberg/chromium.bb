@@ -101,6 +101,14 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_SYNC_ENABLE_SYNC));
   localized_strings.SetString("bookmarkstitle",
       l10n_util::GetStringUTF16(IDS_ACCNAME_BOOKMARKS));
+  localized_strings.SetString("incognito_document_title",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_INCOGNITO_TITLE));
+  localized_strings.SetString("most_visited_document_title",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_MOST_VISITED_TITLE));
+  localized_strings.SetString("bookmarks_document_title",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_BOOKMARKS_TITLE));
+  localized_strings.SetString("open_tabs_document_title",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_OTHER_SESSIONS_TITLE));
 
   webui::SetFontAndTextDirection(&localized_strings);
 

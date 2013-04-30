@@ -24,6 +24,14 @@ void NewTabPageReadyHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("NTPUnexpectedNavigation", base::Bind(
       &NewTabPageReadyHandler::HandleNewTabPageUnexpectedNavigation,
       base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("notifyNTPTitleLoaded", base::Bind(
+      &NewTabPageReadyHandler::HandleNewTabPageTitleLoaded,
+      base::Unretained(this)));
+}
+
+void NewTabPageReadyHandler::HandleNewTabPageTitleLoaded(
+    const ListValue* args) {
+  web_ui()->OverrideTitle(string16());
 }
 
 void NewTabPageReadyHandler::HandleNewTabPageReady(

@@ -28,6 +28,9 @@ class NewTabPageReadyHandler : public content::WebUIMessageHandler {
   // Callback for "NTPUnexpectedNavigation".
   void HandleNewTabPageUnexpectedNavigation(const base::ListValue* args);
 
+  // Callback for "notifyNTPTitleLoaded".
+  void HandleNewTabPageTitleLoaded(const base::ListValue* args);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(NewTabPageReadyHandler);
 };

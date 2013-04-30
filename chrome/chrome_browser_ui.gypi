@@ -2053,7 +2053,6 @@
         'browser/ui/webui/ntp/new_tab_ui.h',
         'browser/ui/webui/ntp/ntp_login_handler.cc',
         'browser/ui/webui/ntp/ntp_login_handler.h',
-        'browser/ui/webui/ntp/ntp_resource_cache_android.cc',
         'browser/ui/webui/ntp/ntp_resource_cache.cc',
         'browser/ui/webui/ntp/ntp_resource_cache.h',
         'browser/ui/webui/ntp/ntp_resource_cache_factory.cc',
@@ -2630,6 +2629,7 @@
             'browser/ui/webui/ntp/android/partner_bookmarks_shim.h',
             'browser/ui/webui/ntp/android/promo_handler.cc',
             'browser/ui/webui/ntp/android/promo_handler.h',
+            'browser/ui/webui/ntp/android/ntp_resource_cache_android.cc',
           ],
           'sources!': [
             # Android uses native UI for sync setup.

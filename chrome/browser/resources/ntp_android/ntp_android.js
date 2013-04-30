@@ -183,6 +183,12 @@ cr.define('ntp', function() {
   var finishedLoadingNotificationSent_ = false;
 
   /**
+   * Whether the page title has been loaded.
+   * @type {boolean}
+   */
+  var titleLoadedStatus_ = false;
+
+  /**
    * Whether the NTP is in incognito mode or not.
    * @type {boolean}
    */
@@ -465,6 +471,13 @@ cr.define('ntp', function() {
 
     if (!bookmarkShortcutMode)
       window.addEventListener('contextmenu', contextMenuHandler);
+  }
+
+  function sendNTPTitleLoadedNotification() {
+    if (!titleLoadedStatus_) {
+      titleLoadedStatus_ = true;
+      chrome.send('notifyNTPTitleLoaded');
+    }
   }
 
   /**
@@ -2111,6 +2124,14 @@ cr.define('ntp', function() {
     currentPaneIndex = paneIndex;
 
     document.body.scrollTop = 0;
+
+    var panelPrefix = sectionPrefixes[paneIndex];
+    var title = templateData[panelPrefix + '_document_title'];
+    if (!title)
+      title = templateData['title'];
+    document.title = title;
+
+    sendNTPTitleLoadedNotification();
 
     // TODO (dtrainor): Could potentially add logic to reset the bookmark state
     // if they are moving to that pane.  This logic was in there before, but

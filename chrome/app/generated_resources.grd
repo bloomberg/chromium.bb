@@ -11314,6 +11314,22 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
           New Tab
         </message>
       </if>
+      <message name="IDS_NEW_TAB_MOST_VISITED_TITLE"
+               desc="The page title for the 'Most Visited' navigation control on the New Tab Page.">
+        New Tab - Most Visited
+      </message>
+      <message name="IDS_NEW_TAB_INCOGNITO_TITLE"
+               desc="The page title for the 'Incognito' navigation control on the New Tab Page.">
+        New Tab - Incognito
+      </message>
+      <message name="IDS_NEW_TAB_BOOKMARKS_TITLE"
+               desc="The page title for the 'Bookmarks' navigation control on the New Tab Page.">
+        New Tab - Bookmarks
+      </message>
+      <message name="IDS_NEW_TAB_OTHER_SESSIONS_TITLE"
+               desc="The page title for the 'Other Sessions' navigation control on the New Tab Page.">
+        New Tab - Other Devices
+      </message>
       <message name="IDS_NEW_TAB_MOST_VISITED"
                desc="The name for the 'Most Visited' navigation control on the New Tab Page.">
         Most visited
