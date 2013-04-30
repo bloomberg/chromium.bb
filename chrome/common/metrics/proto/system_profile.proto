@@ -78,7 +78,7 @@ message SystemProfileProto {
   }
   optional OS os = 5;
 
-  // Next tag for Hardware: 14
+  // Next tag for Hardware: 13
   // Information on the user's hardware.
   message Hardware {
     // The CPU architecture (x86, PowerPC, x86_64, ...)
@@ -203,7 +203,7 @@ message SystemProfileProto {
       }
       repeated PairedDevice paired_device = 3;
     }
-    optional Bluetooth bluetooth = 13;
+    optional Bluetooth bluetooth = 11;
   }
   optional Hardware hardware = 6;
 
