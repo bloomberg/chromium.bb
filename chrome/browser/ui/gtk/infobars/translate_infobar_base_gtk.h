@@ -48,6 +48,15 @@ class TranslateInfoBarBase : public InfoBarGtk {
   TranslateInfoBarDelegate* GetDelegate();
 
  private:
+  // To be able to map from language id <-> entry in the combo box, we
+  // store the language id in the combo box data model in addition to the
+  // displayed name.
+  enum {
+    LANGUAGE_COMBO_COLUMN_ID,
+    LANGUAGE_COMBO_COLUMN_NAME,
+    LANGUAGE_COMBO_COLUMN_COUNT
+  };
+
   CHROMEGTK_CALLBACK_0(TranslateInfoBarBase, void, OnOptionsClicked);
 
   // A percentage to average the normal page action background with the error
