@@ -410,7 +410,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
 };
 
 // http://crbug.com/176122: This test is flaky on Windows.
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 #define MAYBE_Shim DISABLED_Shim
 #else
 #define MAYBE_Shim Shim
