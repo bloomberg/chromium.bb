@@ -207,9 +207,6 @@
  * sqlite3_result_null() does not cause the default to be generate.
  * Handling it ourselves seems hard, unfortunately.
  */
-/* TODO(shess): Account for the reserved region on pages (value from
- * offset 20 in the database header).
- */
 
 #include <assert.h>
 #include <ctype.h>
@@ -405,7 +402,7 @@ static int GetPager(sqlite3 *db, const char *zName,
   }
 
   *pPager = sqlite3BtreePager(pBt);
-  *pnPageSize = sqlite3BtreeGetPageSize(pBt);
+  *pnPageSize = sqlite3BtreeGetPageSize(pBt) - sqlite3BtreeGetReserve(pBt);
   return SQLITE_OK;
 }
 
@@ -847,7 +844,6 @@ static int overflowMaybeCreate(DbPage *pPage, unsigned nPageSize,
    * 1.5 of http://www.sqlite.org/fileformat2.html .  maxLocal and
    * minLocal to match naming in btree.c.
    */
-  /* TODO(shess): Account for reserved space. */
   const unsigned maxLocal = nPageSize - 35;
   const unsigned minLocal = ((nPageSize-12)*32/255)-23;  /* m */
 
