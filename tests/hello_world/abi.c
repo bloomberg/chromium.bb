@@ -5,9 +5,13 @@
  */
 
 /*
- * Check ABI compliance, this is especially important for PNaCl
+ * Check ABI compliance, this is especially important for PNaCl.
+ * This test should cover at least all the types that appear in
+ * the core IRT interface (src/untrusted/irt/irt.h) as well as
+ * the base types.
  */
 
+#include <dirent.h>
 #include <setjmp.h>
 #include <stdarg.h>
 #include <stddef.h>
@@ -74,7 +78,6 @@ int CheckSizes(void) {
   CHECK_SIZEOF(blksize_t, 4);
   CHECK_SIZEOF(blkcnt_t, 4);
 
-
   CHECK_SIZEOF(off_t, 8);
   CHECK_SIZEOF(size_t, 4);
   CHECK_SIZEOF(fpos_t, 4);
@@ -83,9 +86,12 @@ int CheckSizes(void) {
   CHECK_SIZEOF(struct timezone, 8);
   CHECK_SIZEOF(suseconds_t, 4);
   CHECK_SIZEOF(clock_t, 4);
+  CHECK_SIZEOF(clockid_t, 4);
+  CHECK_SIZEOF(struct timeval, 16);
   CHECK_SIZEOF(struct timespec, 16);
 
   CHECK_SIZEOF(struct stat, 104);
+  CHECK_SIZEOF(struct dirent, 280);
 
   CHECK_SIZEOF(struct NaClAbiNaClImcMsgHdr, 20);
 
@@ -122,6 +128,11 @@ int CheckAlignment(void) {
   CHECK_ALIGNMENT(Pointer, 4);
   CHECK_ALIGNMENT(FunctionPointer, 4);
   CHECK_ALIGNMENT(long_long, 8);
+
+  CHECK_ALIGNMENT(struct stat, 8);
+  CHECK_ALIGNMENT(struct dirent, 8);
+  CHECK_ALIGNMENT(struct timeval, 8);
+  CHECK_ALIGNMENT(struct timespec, 8);
 
   CHECK_ALIGNMENT(va_list, 4);
 #ifdef PNACL_ABI_TEST
