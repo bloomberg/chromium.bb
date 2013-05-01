@@ -73,7 +73,7 @@ BreadcrumbsController.prototype.update = function(rootPath, path) {
     // the Drive entries not in "My Drive". It is hidden as this path is not
     // meaningful for the user.
     // TODO(haruki): Show "Shared with me" as a crumb for shared-with-me entry.
-    if (i > 0 &&
+    if (i == 0 &&
         path === RootDirectory.DRIVE + '/' + DriveSubRootDirectory.OTHER)
       continue;
 
