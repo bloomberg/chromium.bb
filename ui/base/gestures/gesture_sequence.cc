@@ -420,15 +420,15 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
       break;
     case GST_PENDING_SYNTHETIC_CLICK_SECOND_PRESSED:
       PrependTapCancelGestureEvent(point, gestures.get());
-      // fall through
-    case GST_SCROLL_SECOND_PRESSED:
       if (IsSecondTouchDownCloseEnoughForTwoFingerTap()) {
         TwoFingerTouchDown(event, point, gestures.get());
         set_state(GS_PENDING_TWO_FINGER_TAP);
-      } else {
-        PinchStart(event, point, gestures.get());
-        set_state(GS_PINCH);
+        break;
       }
+      // fall through
+    case GST_SCROLL_SECOND_PRESSED:
+      PinchStart(event, point, gestures.get());
+      set_state(GS_PINCH);
       break;
     case GST_PENDING_TWO_FINGER_TAP_FIRST_RELEASED:
     case GST_PENDING_TWO_FINGER_TAP_SECOND_RELEASED:

@@ -2097,11 +2097,11 @@ TEST_F(GestureRecognizerTest, PinchScrollWithPreventDefaultedRelease) {
   delegate->Reset();
   delegate->ReceivedAck();
   EXPECT_TRUE(delegate->begin());
-  EXPECT_FALSE(delegate->pinch_begin());
+  EXPECT_TRUE(delegate->pinch_begin());
 
   delegate->Reset();
   delegate->ReceivedAck();
-  EXPECT_TRUE(delegate->pinch_begin());
+  EXPECT_TRUE(delegate->pinch_update());
 
   // Ack the first release. Although the release is processed, it should still
   // generate a pinch-end event.
@@ -2370,6 +2370,43 @@ TEST_F(GestureRecognizerTest, TwoFingerTapChangesToPinch) {
     EXPECT_FALSE(delegate->two_finger_tap());
     EXPECT_TRUE(delegate->pinch_end());
   }
+}
+
+TEST_F(GestureRecognizerTest, NoTwoFingerTapWhenFirstFingerHasScrolled) {
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  const int kWindowWidth = 123;
+  const int kWindowHeight = 45;
+  const int kTouchId1 = 2;
+  const int kTouchId2 = 3;
+  TimedEvents tes;
+
+  gfx::Rect bounds(100, 200, kWindowWidth, kWindowHeight);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, root_window()));
+
+  delegate->Reset();
+  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
+                        kTouchId1, tes.Now());
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  tes.SendScrollEvent(root_window(), 130, 230, kTouchId1, delegate.get());
+
+  delegate->Reset();
+  ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(130, 201),
+                        kTouchId2, tes.Now());
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+
+  EXPECT_TRUE(delegate->pinch_begin());
+
+  // Make sure there is enough delay before the touch is released so that it
+  // is recognized as a tap.
+  delegate->Reset();
+  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
+                         kTouchId2, tes.LeapForward(50));
+
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  EXPECT_FALSE(delegate->two_finger_tap());
+  EXPECT_TRUE(delegate->pinch_end());
 }
 
 TEST_F(GestureRecognizerTest, MultiFingerSwipe) {
