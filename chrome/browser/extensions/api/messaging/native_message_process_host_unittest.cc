@@ -215,8 +215,7 @@ TEST_F(NativeMessagingTest, SingleSendMessageWrite) {
 // Test send message with a real client. The client just echo's back the text
 // it received.
 TEST_F(NativeMessagingTest, EchoConnect) {
-  base::ScopedTempDir temp_dir;
-  base::FilePath manifest_path = temp_dir.path().AppendASCII(
+  base::FilePath manifest_path = temp_dir_.path().AppendASCII(
       std::string(kTestNativeMessagingHostName) + ".json");
   ASSERT_NO_FATAL_FAILURE(CreateTestNativeHostManifest(manifest_path));
 
