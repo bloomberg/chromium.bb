@@ -510,4 +510,14 @@ bool WebRuntimeFeatures::areExperimentalCanvasFeaturesEnabled()
     return RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled();
 }
 
+void WebRuntimeFeatures::enableSpeechSynthesis(bool enable)
+{
+    RuntimeEnabledFeatures::setSpeechSynthesisEnabled(enable);
+}
+
+bool WebRuntimeFeatures::isSpeechSynthesisEnabled()
+{
+    return RuntimeEnabledFeatures::speechSynthesisEnabled();
+}
+
 } // namespace WebKit

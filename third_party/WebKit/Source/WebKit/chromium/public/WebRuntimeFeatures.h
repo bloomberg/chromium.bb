@@ -179,6 +179,9 @@ public:
     WEBKIT_EXPORT static void enableExperimentalCanvasFeatures(bool);
     WEBKIT_EXPORT static bool areExperimentalCanvasFeaturesEnabled();
 
+    WEBKIT_EXPORT static void enableSpeechSynthesis(bool);
+    WEBKIT_EXPORT static bool isSpeechSynthesisEnabled();
+
 private:
     WebRuntimeFeatures();
 };
