@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 # Run build_server so that files needed by tests are copied to the local
 # third_party directory.
 import build_server
@@ -15,8 +17,9 @@ import sys
 import time
 import unittest
 
-from handler import Handler
+from cron_servlet import CronServlet
 from local_renderer import LocalRenderer
+from render_servlet import AlwaysOnline
 from test_util import DisableLogging
 
 # Arguments set up if __main__ specifies them.
@@ -51,10 +54,13 @@ class IntegrationTest(unittest.TestCase):
     print('Running cron...')
     start_time = time.time()
     try:
-      render_content, render_status, _ = self._renderer.Render('/cron/stable')
-      self.assertEqual(200, render_status)
-      self.assertEqual('Success', render_content)
+      logging_info = logging.info
+      logging.info = print
+      response = self._renderer.Render('/stable', servlet=CronServlet)
+      self.assertEqual(200, response.status)
+      self.assertEqual('Success', response.content.ToString())
     finally:
+      logging.info = logging_info
       print('Took %s seconds' % (time.time() - start_time))
 
     public_files = _GetPublicFiles()
@@ -63,22 +69,23 @@ class IntegrationTest(unittest.TestCase):
     start_time = time.time()
     try:
       for path, content in _GetPublicFiles().iteritems():
-        def check_result(render_content, render_status, _):
-          self.assertEqual(200, render_status,
-              'Got %s when rendering %s' % (render_status, path))
+        def check_result(response):
+          self.assertEqual(200, response.status,
+              'Got %s when rendering %s' % (response.status, path))
           # This is reaaaaally rough since usually these will be tiny templates
           # that render large files. At least it'll catch zero-length responses.
-          self.assertTrue(len(render_content) >= len(content),
-              'Content was "%s" when rendering %s' % (render_content, path))
-        check_result(*self._renderer.Render(path))
+          self.assertTrue(len(response.content) >= len(content),
+              'Content was "%s" when rendering %s' % (response.content, path))
+        check_result(self._renderer.Render(path))
         # Samples are internationalized, test some locales.
         if path.endswith('/samples.html'):
           for lang in ['en-US', 'es', 'ar']:
-            check_result(*self._renderer.Render(
+            check_result(self._renderer.Render(
                 path, headers={'Accept-Language': '%s;q=0.8' % lang}))
     finally:
       print('Took %s seconds' % (time.time() - start_time))
 
+  @AlwaysOnline
   def testExplicitFiles(self):
     '''Tests just the files in _EXPLICIT_TEST_FILES.
     '''
@@ -88,18 +95,17 @@ class IntegrationTest(unittest.TestCase):
       print('Rendering %s...' % filename)
       start_time = time.time()
       try:
-        render_content, render_status, _ = self._renderer.Render(
-            filename, always_online=True)
-        self.assertEqual(200, render_status)
-        self.assertTrue(render_content != '')
+        response = self._renderer.Render(filename)
+        self.assertEqual(200, response.status)
+        self.assertTrue(response.content != '')
       finally:
         print('Took %s seconds' % (time.time() - start_time))
 
   @DisableLogging('warning')
+  @AlwaysOnline
   def testFileNotFound(self):
-    render_content, render_status, _ = self._renderer.Render(
-        '/extensions/notfound.html', always_online=True)
-    self.assertEqual(404, render_status)
+    response = self._renderer.Render('/extensions/notfound.html')
+    self.assertEqual(404, response.status)
 
 if __name__ == '__main__':
   parser = optparse.OptionParser()

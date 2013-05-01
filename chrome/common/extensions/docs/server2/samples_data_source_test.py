@@ -9,9 +9,7 @@ import sys
 import unittest
 
 from samples_data_source import SamplesDataSource
-
-class _FakeRequest(object):
-  pass
+from servlet import Request
 
 class SamplesDataSourceTest(unittest.TestCase):
   def setUp(self):
@@ -27,7 +25,7 @@ class SamplesDataSourceTest(unittest.TestCase):
     return json.loads(self._ReadLocalFile(key))
 
   def testFilterSamples(self):
-    sds = SamplesDataSource({}, {}, 'fake_path', _FakeRequest())
+    sds = SamplesDataSource({}, {}, 'fake_path', Request('/', {}))
     sds.get = self._FakeGet
     self.assertEquals(json.loads(self._ReadLocalFile('expected.json')),
                       sds.FilterSamples('samples.json', 'bobaloo'))

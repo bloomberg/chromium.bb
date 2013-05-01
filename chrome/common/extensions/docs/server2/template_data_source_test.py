@@ -16,9 +16,7 @@ from reference_resolver import ReferenceResolver
 from template_data_source import TemplateDataSource
 from test_util import DisableLogging
 from third_party.handlebar import Handlebar
-
-class _FakeRequest(object):
-  pass
+from servlet import Request
 
 class _FakeFactory(object):
   def __init__(self, input_dict=None):
@@ -62,7 +60,8 @@ class TemplateDataSourceTest(unittest.TestCase):
         ObjectStoreCreator.TestFactory())
     @DisableLogging('error')  # "was never set" error
     def create_from_factory(factory):
-      return factory.Create(_FakeRequest(), 'extensions/foo')
+      path = 'extensions/foo'
+      return factory.Create(Request(path, {}), path)
     return create_from_factory(TemplateDataSource.Factory(
         'fake_channel',
         api_data_factory,

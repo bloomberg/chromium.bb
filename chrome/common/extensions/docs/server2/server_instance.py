@@ -35,10 +35,6 @@ from third_party.json_schema_compiler.memoize import memoize
 from third_party.json_schema_compiler.model import UnixName
 import url_constants
 
-def _IsBinaryMimetype(mimetype):
-  return any(mimetype.startswith(prefix)
-             for prefix in ['audio', 'image', 'video'])
-
 def _IsSamplesDisabled():
   return IsDevServer()
 
@@ -213,45 +209,3 @@ class ServerInstance(object):
         self.compiled_fs_factory)
 
     self.content_cache = self.compiled_fs_factory.GetOrCreateIdentity()
-
-  def _FetchStaticResource(self, path, response):
-    """Fetch a resource in the 'static' directory.
-    """
-    mimetype = mimetypes.guess_type(path)[0] or 'text/plain'
-    result = self.content_cache.GetFromFile(
-        svn_constants.DOCS_PATH + '/' + path,
-        binary=_IsBinaryMimetype(mimetype))
-    response.headers['content-type'] = mimetype
-    return result
-
-  def Get(self, path, request, response):
-    templates = self.template_data_source_factory.Create(request, path)
-
-    content = None
-    try:
-      if fnmatch(path, 'extensions/examples/*.zip'):
-        content = self.example_zipper.Create(
-            path[len('extensions/'):-len('.zip')])
-        response.headers['content-type'] = 'application/zip'
-      elif path.startswith('extensions/examples/'):
-        mimetype = mimetypes.guess_type(path)[0] or 'text/plain'
-        content = self.content_cache.GetFromFile(
-            '%s/%s' % (svn_constants.DOCS_PATH, path[len('extensions/'):]),
-            binary=_IsBinaryMimetype(mimetype))
-        response.headers['content-type'] = 'text/plain'
-      elif path.startswith('static/'):
-        content = self._FetchStaticResource(path, response)
-      elif path.endswith('.html'):
-        content = templates.Render(path)
-    except FileNotFoundError as e:
-      logging.warning(traceback.format_exc())
-
-    response.headers['x-frame-options'] = 'sameorigin'
-    if content is None:
-      response.set_status(404);
-      response.out.write(templates.Render('404'))
-    else:
-      if not content:
-        logging.error('%s had empty content' % path)
-      response.headers['cache-control'] = 'max-age=300'
-      response.out.write(content)
