@@ -8,7 +8,6 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -30,41 +29,47 @@ enum FilePickerResult {
   FILE_PICKER_MAX,
 };
 
-// Record how the File Picker was used during a download. This UMA is only
-// recorded for profiles that do not always prompt for save locations on
-// downloads.
-void RecordFilePickerResult(const base::FilePath& suggested_path,
-                            const base::FilePath& actual_path) {
-  FilePickerResult result;
-  if (suggested_path == actual_path)
-    result = FILE_PICKER_SAME;
-  else if (actual_path.empty())
-    result = FILE_PICKER_CANCEL;
-  else if (suggested_path.DirName() != actual_path.DirName())
-    result = FILE_PICKER_DIFFERENT_DIR;
-  else
-    result = FILE_PICKER_DIFFERENT_NAME;
-
+// Record how the File Chooser was used during a download. Only record this
+// for profiles that do not always prompt for save locations on downloads.
+void RecordFilePickerResult(DownloadManager* manager,
+                            FilePickerResult result) {
+  if (!manager)
+    return;
+  const DownloadPrefs* prefs = DownloadPrefs::FromDownloadManager(manager);
+  if (!prefs)
+    return;
+  if (prefs->PromptForDownload())
+    return;
   UMA_HISTOGRAM_ENUMERATION("Download.FilePickerResult",
                             result,
                             FILE_PICKER_MAX);
 }
 
+FilePickerResult ComparePaths(const base::FilePath& suggested_path,
+                              const base::FilePath& actual_path) {
+  if (suggested_path == actual_path)
+    return FILE_PICKER_SAME;
+  if (suggested_path.DirName() != actual_path.DirName())
+    return FILE_PICKER_DIFFERENT_DIR;
+  return FILE_PICKER_DIFFERENT_NAME;
+}
+
 }  // namespace
 
-DownloadFilePicker::DownloadFilePicker(
+DownloadFilePicker::DownloadFilePicker() : download_id_(0) {
+}
+
+void DownloadFilePicker::Init(
+    DownloadManager* download_manager,
     DownloadItem* item,
     const base::FilePath& suggested_path,
-    const FileSelectedCallback& callback)
-    : suggested_path_(suggested_path),
-      file_selected_callback_(callback),
-      should_record_file_picker_result_(false) {
-  const DownloadPrefs* prefs =
-      DownloadPrefs::FromBrowserContext(item->GetBrowserContext());
-  DCHECK(prefs);
-  // Only record UMA if we aren't prompting the user for all downloads.
-  should_record_file_picker_result_ = !prefs->PromptForDownload();
+    const ChromeDownloadManagerDelegate::FileSelectedCallback& callback) {
+  download_manager_ = download_manager;
+  download_id_ = item->GetId();
+  file_selected_callback_ = callback;
+  InitSuggestedPath(item, suggested_path);
 
+  DCHECK(download_manager_);
   WebContents* web_contents = item->GetWebContents();
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_contents));
@@ -94,29 +99,32 @@ DownloadFilePicker::DownloadFilePicker(
 DownloadFilePicker::~DownloadFilePicker() {
 }
 
+void DownloadFilePicker::InitSuggestedPath(
+    DownloadItem* item,
+    const base::FilePath& suggested_path) {
+  set_suggested_path(suggested_path);
+}
+
 void DownloadFilePicker::OnFileSelected(const base::FilePath& path) {
-  if (should_record_file_picker_result_)
-    RecordFilePickerResult(suggested_path_, path);
   file_selected_callback_.Run(path);
   delete this;
+}
+
+void DownloadFilePicker::RecordFileSelected(const base::FilePath& path) {
+  FilePickerResult result = ComparePaths(suggested_path_, path);
+  RecordFilePickerResult(download_manager_, result);
 }
 
 void DownloadFilePicker::FileSelected(const base::FilePath& path,
                                       int index,
                                       void* params) {
+  RecordFileSelected(path);
   OnFileSelected(path);
   // Deletes |this|
 }
 
 void DownloadFilePicker::FileSelectionCanceled(void* params) {
+  RecordFilePickerResult(download_manager_, FILE_PICKER_CANCEL);
   OnFileSelected(base::FilePath());
   // Deletes |this|
-}
-
-// static
-void DownloadFilePicker::ShowFilePicker(DownloadItem* item,
-                                        const base::FilePath& suggested_path,
-                                        const FileSelectedCallback& callback) {
-  new DownloadFilePicker(item, suggested_path, callback);
-  // DownloadFilePicker deletes itself.
 }

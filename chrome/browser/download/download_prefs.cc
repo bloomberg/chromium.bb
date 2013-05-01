@@ -153,13 +153,8 @@ bool DownloadPrefs::IsAutoOpenUsed() const {
   return !auto_open_.empty();
 }
 
-bool DownloadPrefs::IsAutoOpenEnabledBasedOnExtension(
-    const base::FilePath& path) const {
-  base::FilePath::StringType extension = path.Extension();
-  if (extension.empty())
-    return false;
-  DCHECK(extension[0] == base::FilePath::kExtensionSeparator);
-  extension.erase(0, 1);
+bool DownloadPrefs::IsAutoOpenEnabledForExtension(
+    const base::FilePath::StringType& extension) const {
   return auto_open_.find(extension) != auto_open_.end();
 }
 

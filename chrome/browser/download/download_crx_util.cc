@@ -125,12 +125,8 @@ bool IsExtensionDownload(const DownloadItem& download_item) {
 }
 
 bool OffStoreInstallAllowedByPrefs(Profile* profile, const DownloadItem& item) {
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      profile)->extension_service();
-  if (!service)
-    return false;
-
-  extensions::ExtensionPrefs* prefs = service->extension_prefs();
+  extensions::ExtensionPrefs* prefs = extensions::ExtensionSystem::Get(
+      profile)->extension_service()->extension_prefs();
   CHECK(prefs);
 
   extensions::URLPatternSet url_patterns = prefs->GetAllowedInstallSites();
