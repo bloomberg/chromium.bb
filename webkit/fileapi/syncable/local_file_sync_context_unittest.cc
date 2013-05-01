@@ -576,14 +576,26 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate) {
                               change, base::FilePath(), kDir,
                               SYNC_FILE_TYPE_UNKNOWN));
 
-  // This should not happen, but calling ApplyRemoteChange
-  // with wrong file type will result in error.
-  change = FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                      SYNC_FILE_TYPE_FILE);
-  EXPECT_NE(SYNC_STATUS_OK,
+  // Calling ApplyRemoteChange with different file type should be handled as
+  // overwrite.
+  change =
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE, SYNC_FILE_TYPE_FILE);
+  EXPECT_EQ(SYNC_STATUS_OK,
             ApplyRemoteChange(file_system.file_system_context(),
-                              change, kFilePath1, kDir,
+                              change,
+                              kFilePath1,
+                              kDir,
                               SYNC_FILE_TYPE_DIRECTORY));
+  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.FileExists(kDir));
+
+  change = FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                      SYNC_FILE_TYPE_DIRECTORY);
+  EXPECT_EQ(SYNC_STATUS_OK,
+            ApplyRemoteChange(file_system.file_system_context(),
+                              change,
+                              kFilePath1,
+                              kDir,
+                              SYNC_FILE_TYPE_FILE));
 
   // Creating a file/directory must have increased the usage more than
   // the size of kTestFileData2.

@@ -203,45 +203,82 @@ void LocalFileSyncContext::ApplyRemoteChange(
   LocalFileSystemOperation* operation = CreateFileSystemOperationForSync(
       file_system_context);
   DCHECK(operation);
-  FileSystemOperation::StatusCallback operation_callback =
-      base::Bind(&LocalFileSyncContext::DidApplyRemoteChange,
-                 this, url, callback);
-  switch (change.change()) {
-    case FileChange::FILE_CHANGE_ADD_OR_UPDATE:
-      switch (change.file_type()) {
-        case SYNC_FILE_TYPE_FILE: {
-          DCHECK(!local_path.empty());
-          base::FilePath dir_path =
-              fileapi::VirtualPath::DirName(url.path());
-          if (dir_path.empty() ||
-              fileapi::VirtualPath::DirName(dir_path) == dir_path) {
-            // Copying into the root directory.
-            operation->CopyInForeignFile(local_path, url, operation_callback);
-          } else {
-            FileSystemURL dir_url =
-                file_system_context->CreateCrackedFileSystemURL(
-                    url.origin(), url.mount_type(),
-                    fileapi::VirtualPath::DirName(url.virtual_path()));
-            operation->CreateDirectory(
-                dir_url, false /* exclusive */, true /* recursive */,
-                base::Bind(&LocalFileSyncContext::DidCreateDirectoryForCopyIn,
-                           this, make_scoped_refptr(file_system_context),
-                           local_path, url, operation_callback));
-          }
-          break;
-        }
-        case SYNC_FILE_TYPE_DIRECTORY:
-          operation->CreateDirectory(
-              url, false /* exclusive */, true /* recursive */,
-              operation_callback);
-          break;
-        case SYNC_FILE_TYPE_UNKNOWN:
-          NOTREACHED() << "File type unknown for ADD_OR_UPDATE change";
+
+  FileSystemOperation::StatusCallback operation_callback;
+  if (change.change() == FileChange::FILE_CHANGE_ADD_OR_UPDATE) {
+    operation_callback = base::Bind(
+        &LocalFileSyncContext::DidRemoveExistingEntryForApplyRemoteChange,
+        this,
+        make_scoped_refptr(file_system_context),
+        change,
+        local_path,
+        url,
+        callback);
+  } else {
+    DCHECK_EQ(FileChange::FILE_CHANGE_DELETE, change.change());
+    operation_callback = base::Bind(
+        &LocalFileSyncContext::DidApplyRemoteChange, this, url, callback);
+  }
+  operation->Remove(url, true /* recursive */, operation_callback);
+}
+
+void LocalFileSyncContext::DidRemoveExistingEntryForApplyRemoteChange(
+    FileSystemContext* file_system_context,
+    const FileChange& change,
+    const base::FilePath& local_path,
+    const FileSystemURL& url,
+    const SyncStatusCallback& callback,
+    base::PlatformFileError error) {
+  // Remove() may fail if the target entry does not exist (which is ok),
+  // so we ignore |error| here.
+
+  if (!sync_status()) {
+    callback.Run(SYNC_FILE_ERROR_ABORT);
+    return;
+  }
+
+  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(!sync_status()->IsWritable(url));
+  DCHECK(!sync_status()->IsWriting(url));
+  LocalFileSystemOperation* operation =
+      CreateFileSystemOperationForSync(file_system_context);
+  DCHECK(operation);
+  FileSystemOperation::StatusCallback operation_callback = base::Bind(
+      &LocalFileSyncContext::DidApplyRemoteChange, this, url, callback);
+
+  DCHECK_EQ(FileChange::FILE_CHANGE_ADD_OR_UPDATE, change.change());
+  switch (change.file_type()) {
+    case SYNC_FILE_TYPE_FILE: {
+      DCHECK(!local_path.empty());
+      base::FilePath dir_path = fileapi::VirtualPath::DirName(url.path());
+      if (dir_path.empty() ||
+          fileapi::VirtualPath::DirName(dir_path) == dir_path) {
+        // Copying into the root directory.
+        operation->CopyInForeignFile(local_path, url, operation_callback);
+      } else {
+        FileSystemURL dir_url = file_system_context->CreateCrackedFileSystemURL(
+            url.origin(),
+            url.mount_type(),
+            fileapi::VirtualPath::DirName(url.virtual_path()));
+        operation->CreateDirectory(
+            dir_url,
+            false /* exclusive */,
+            true /* recursive */,
+            base::Bind(&LocalFileSyncContext::DidCreateDirectoryForCopyIn,
+                       this,
+                       make_scoped_refptr(file_system_context),
+                       local_path,
+                       url,
+                       operation_callback));
       }
       break;
-    case FileChange::FILE_CHANGE_DELETE:
-      operation->Remove(url, true /* recursive */, operation_callback);
+    }
+    case SYNC_FILE_TYPE_DIRECTORY:
+      operation->CreateDirectory(
+          url, false /* exclusive */, true /* recursive */, operation_callback);
       break;
+    case SYNC_FILE_TYPE_UNKNOWN:
+      NOTREACHED() << "File type unknown for ADD_OR_UPDATE change";
   }
 }
 

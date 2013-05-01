@@ -233,6 +233,14 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   // Helper routine for ClearSyncFlagForURL.
   void EnableWritingOnIOThread(const fileapi::FileSystemURL& url);
 
+  void DidRemoveExistingEntryForApplyRemoteChange(
+      fileapi::FileSystemContext* file_system_context,
+      const FileChange& change,
+      const base::FilePath& local_path,
+      const fileapi::FileSystemURL& url,
+      const SyncStatusCallback& callback,
+      base::PlatformFileError error);
+
   // Callback routine for ApplyRemoteChange.
   void DidApplyRemoteChange(
       const fileapi::FileSystemURL& url,
