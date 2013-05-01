@@ -343,6 +343,9 @@ def main(argv):
         change_report.new_files + change_report.modified_files,
         sysroot_autotest_path)
     RemoveTestPackages(stale_packages, sysroot_autotest_path)
+    osutils.SafeUnlink(os.path.join(sysroot_autotest_path, 'packages.checksum'))
+    osutils.SafeUnlink(os.path.join(sysroot_autotest_path, 'packages',
+                                    'packages.checksum'))
 
   if args.pretend:
     logging.info('The following message is pretend only. No filesystem '
