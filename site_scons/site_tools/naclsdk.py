@@ -430,7 +430,6 @@ def PNaClGetNNaClEnv(env):
   # clear the bitcode bit, and then reload naclsdk.py
   native_env = env.Clone()
   native_env.ClearBits('bitcode')
-  native_env.SetBits('native_code')
   if env.Bit('built_elsewhere'):
     _StubOutEnvToolsForBuiltElsewhere(env)
   else:

@@ -87,7 +87,7 @@ else:
     sources += SRCS_NEWLIB_SHARED
   else:
     sources += SRCS_NEWLIB_STATIC
-    if env.Bit('target_arm') and env.Bit('native_code'):
+    if env.Bit('target_arm') and not env.Bit('bitcode'):
       sources.append('aeabi_read_tp.S')
 
 # Do not make a shared version of libnacl.

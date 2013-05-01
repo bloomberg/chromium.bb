@@ -286,11 +286,6 @@ def SCons(context, mode=None, platform=None, parallel=False, browser_test=False,
       '-j%d' % jobs,
       '--mode='+','.join(mode),
       'platform='+platform,
-      # native_code=1 is to defeat the default of bitcode=1
-      # when platform=arm and has no effect for other platforms.
-      # TODO(mcgrathr): Eventually just make the scons default
-      # consistently bitcode=0 and require bitcode=1 for pnacl-arm.
-      'native_code=1',
       ])
   if context['clang']: cmd.append('--clang')
   if context['asan']: cmd.append('--asan')

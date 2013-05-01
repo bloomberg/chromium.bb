@@ -233,9 +233,6 @@ def BitFromArgument(env, name, default, desc, arg_name=None):
 # NOTE This function must be called after all modifications of ARGUMENTS have
 # been performed. See: ExpandArguments
 def SetUpArgumentBits(env):
-  BitFromArgument(env, 'native_code', default=False,
-                  desc='We are building with native-code tools (even for ARM)')
-
   BitFromArgument(env, 'bitcode', default=False,
     desc='We are building bitcode')
 
@@ -1186,15 +1183,6 @@ def MakeArchSpecificEnv():
     env.SetBits('target_arm')
 
   env.Replace(BUILD_ISA_NAME=env.GetPlatform())
-
-  if env.Bit('target_arm') or env.Bit('target_mips32'):
-    if not env.Bit('native_code'):
-      # This is a silent default on ARM and MIPS.
-      env.SetBits('bitcode')
-
-  # If it's not bitcode, it's native code.
-  if not env.Bit('bitcode'):
-    env.SetBits('native_code')
 
   # Determine where the object files go
   env.Replace(BUILD_TARGET_NAME=platform)
@@ -3395,7 +3383,6 @@ nacl_irt_env.ClearBits('pnacl_shared_newlib')
 nacl_irt_env.ClearBits('bitcode')
 nacl_irt_env.ClearBits('pnacl_generate_pexe')
 nacl_irt_env.ClearBits('use_sandboxed_translator')
-nacl_irt_env.SetBits('native_code')
 nacl_irt_env.Tool('naclsdk')
 # These are unfortunately clobbered by running Tool, which
 # we needed to do to get the destination directory reset.
