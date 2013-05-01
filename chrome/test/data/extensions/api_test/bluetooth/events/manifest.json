@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "Test Bluetooth OnAdapterStateChanged Event",
+  "name": "Test Bluetooth Events",
   "version": "1.0",
-  "description": "Tests Bluetooth OnAdapterStateChanged Event",
+  "description": "Tests Bluetooth Events",
   "app": {
     "background": {
       "scripts": ["runtest.js"]

@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "device/bluetooth/bluetooth_device.h"
-#include "device/bluetooth/bluetooth_profile.h"
 
 namespace device {
 
@@ -61,30 +60,20 @@ class BluetoothAddProfileFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetooth.addProfile", BLUETOOTH_ADDPROFILE)
 
-  BluetoothAddProfileFunction();
+  virtual bool RunImpl() OVERRIDE;
 
  protected:
   virtual ~BluetoothAddProfileFunction() {}
-  virtual bool RunImpl() OVERRIDE;
-
-  virtual void RegisterProfile(
-      const device::BluetoothProfile::Options& options,
-      const device::BluetoothProfile::ProfileCallback& callback);
-
- private:
-  void OnProfileRegistered(device::BluetoothProfile* bluetooth_profile);
-
-  std::string uuid_;
 };
 
-class BluetoothRemoveProfileFunction : public SyncExtensionFunction {
+class BluetoothRemoveProfileFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetooth.removeProfile",
                              BLUETOOTH_REMOVEPROFILE)
+  virtual bool RunImpl() OVERRIDE;
 
  protected:
   virtual ~BluetoothRemoveProfileFunction() {}
-  virtual bool RunImpl() OVERRIDE;
 };
 
 class BluetoothGetProfilesFunction : public BluetoothExtensionFunction {

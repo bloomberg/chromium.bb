@@ -59,8 +59,8 @@ void BluetoothProfileMac::Unregister() {
 }
 
 void BluetoothProfileMac::SetConnectionCallback(
-    const ConnectionCallback& callback) {
-  connection_callback_ = callback;
+    const SocketCallback& callback) {
+  socket_callback_ = callback;
 }
 
 bool BluetoothProfileMac::Connect(IOBluetoothDevice* device) {
@@ -70,8 +70,7 @@ bool BluetoothProfileMac::Connect(IOBluetoothDevice* device) {
     scoped_refptr<BluetoothSocket> socket(
         BluetoothSocketMac::CreateBluetoothSocket(record));
     if (socket.get() != NULL) {
-      BluetoothDeviceMac device_mac(device);
-      connection_callback_.Run(&device_mac, socket);
+      socket_callback_.Run(socket);
       return true;
     }
   }

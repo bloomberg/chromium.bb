@@ -17,13 +17,6 @@
 
 class Profile;
 
-namespace device {
-
-class BluetoothDevice;
-class BluetoothProfile;
-
-}  // namespace device
-
 namespace extensions {
 
 class ExtensionBluetoothEventRouter
@@ -54,20 +47,6 @@ class ExtensionBluetoothEventRouter
   // the socket was found and released, false otherwise.
   bool ReleaseSocket(int id);
 
-  // Add the BluetoothProfile |bluetooth_profile| for use by the extension
-  // system. This class will hold onto the profile for its lifetime, or until
-  // RemoveProfile is called for the profile.
-  void AddProfile(const std::string& uuid,
-                  device::BluetoothProfile* bluetooth_profile);
-
-  // Unregister the BluetoothProfile corersponding to |uuid| and release the
-  // object from this class.
-  void RemoveProfile(const std::string& uuid);
-
-  // Returns true if the BluetoothProfile corresponding to |uuid| is already
-  // registered.
-  bool HasProfile(const std::string& uuid) const;
-
   // Get the BluetoothSocket corresponding to |id|.
   scoped_refptr<device::BluetoothSocket> GetSocket(int id);
 
@@ -83,13 +62,6 @@ class ExtensionBluetoothEventRouter
   void DispatchDeviceEvent(
       const char* event_name,
       const extensions::api::bluetooth::Device& device);
-
-  // Dispatch an event that takes a connection socket as a parameter to the
-  // extension that registered the profile that the socket has connected to.
-  void DispatchConnectionEvent(const std::string& extension_id,
-                               const std::string& uuid,
-                               const device::BluetoothDevice* device,
-                               scoped_refptr<device::BluetoothSocket> socket);
 
   // Override from device::BluetoothAdapter::Observer
   virtual void AdapterPresentChanged(device::BluetoothAdapter* adapter,
@@ -130,10 +102,6 @@ class ExtensionBluetoothEventRouter
   typedef ScopedVector<extensions::api::bluetooth::Device>
       DeviceList;
   DeviceList discovered_devices_;
-
-  // A map that maps uuids to the BluetoothProfile objects.
-  typedef std::map<std::string, device::BluetoothProfile*> BluetoothProfileMap;
-  BluetoothProfileMap bluetooth_profile_map_;
 
   base::WeakPtrFactory<ExtensionBluetoothEventRouter> weak_ptr_factory_;
 
