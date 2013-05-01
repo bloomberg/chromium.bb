@@ -251,31 +251,6 @@ TEST_F(GlueSerializeTest, BadMessagesTest) {
   }
 }
 
-TEST_F(GlueSerializeTest, RemoveFormData) {
-  const WebHistoryItem& item1 = MakeHistoryItem(true, true);
-  std::string serialized_item = webkit_glue::HistoryItemToString(item1);
-  serialized_item =
-      webkit_glue::RemoveFormDataFromHistoryState(serialized_item);
-  const WebHistoryItem& item2 =
-      webkit_glue::HistoryItemFromString(serialized_item);
-
-  ASSERT_FALSE(item1.isNull());
-  ASSERT_FALSE(item2.isNull());
-
-  HistoryItemExpectBaseDataEqual(item1, item2,
-                                 webkit_glue::HistoryItemCurrentVersion());
-  HistoryItemExpectChildrenEqual(item1, item2);
-
-  // Form data was removed, but the identifier was kept.
-  const WebHTTPBody& body1 = item1.httpBody();
-  const WebHTTPBody& body2 = item2.httpBody();
-  EXPECT_FALSE(body1.isNull());
-  EXPECT_FALSE(body2.isNull());
-  EXPECT_GT(body1.elementCount(), 0U);
-  EXPECT_EQ(0U, body2.elementCount());
-  EXPECT_EQ(body1.identifier(), body2.identifier());
-}
-
 TEST_F(GlueSerializeTest, FilePathsFromHistoryState) {
   WebHistoryItem item = MakeHistoryItem(false, true);
 

@@ -38,10 +38,6 @@ WEBKIT_GLUE_EXPORT void HistoryItemToVersionedString(
     std::string* serialized_item);
 WEBKIT_GLUE_EXPORT int HistoryItemCurrentVersion();
 
-// Removes any form data state from the history state string |content_state|.
-WEBKIT_GLUE_EXPORT std::string RemoveFormDataFromHistoryState(
-    const std::string& content_state);
-
 // Removes form data containing passwords from the history state string
 // |content_state|.
 WEBKIT_GLUE_EXPORT std::string RemovePasswordDataFromHistoryState(

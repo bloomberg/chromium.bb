@@ -564,19 +564,6 @@ int HistoryItemCurrentVersion() {
   return kVersion;
 }
 
-std::string RemoveFormDataFromHistoryState(const std::string& content_state) {
-  // TODO(darin): We should avoid using the WebKit API here, so that we do not
-  // need to have WebKit initialized before calling this method.
-  const WebHistoryItem& item =
-      HistoryItemFromString(content_state, NEVER_INCLUDE_FORM_DATA, true);
-  if (item.isNull()) {
-    // Couldn't parse the string, return an empty string.
-    return std::string();
-  }
-
-  return HistoryItemToString(item);
-}
-
 std::string RemovePasswordDataFromHistoryState(
     const std::string& content_state) {
   // TODO(darin): We should avoid using the WebKit API here, so that we do not
