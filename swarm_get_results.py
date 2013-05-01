@@ -10,7 +10,6 @@ that name.
 import json
 import logging
 import optparse
-import re
 import sys
 import threading
 import time
@@ -22,9 +21,6 @@ import urllib
 #import fix_encoding
 
 import run_isolated
-
-SHARD_LINE = re.compile(
-    r'^Note: This is test shard ([0-9]+) of ([0-9]+)\.$', re.MULTILINE)
 
 
 class Failure(Exception):
@@ -104,18 +100,16 @@ def retrieve_results(base_url, test_key, timeout, should_stop):
       return {}
 
 
-def yield_results(swarm_base_url, shard_count, test_keys, timeout, max_threads):
+def yield_results(swarm_base_url, test_keys, timeout, max_threads):
   """Yields swarm test results from the swarm server as (index, result).
 
-  If shard_count < len(test_keys), it will return as soon as all the shards
-  under shard_count are retrieved. It may return duplicate if they are returned
-  before the slowest shard.
+  Duplicate shards are ignored, the first one to complete is returned.
 
   max_threads is optional and is used to limit the number of parallel fetches
   done. Since in general the number of test_keys is in the range <=10, it's not
   worth normally to limit the number threads. Mostly used for testing purposes.
   """
-  shards_remaining = range(shard_count)
+  shards_remaining = range(len(test_keys))
   number_threads = (
       min(max_threads, len(test_keys)) if max_threads else len(test_keys))
   should_stop = Bit()
@@ -128,16 +122,17 @@ def yield_results(swarm_base_url, shard_count, test_keys, timeout, max_threads):
       while shards_remaining and results_remaining:
         result = pool.get_one_result()
         results_remaining -= 1
-        if result:
-          # TODO(maruel): Quite adhoc. Should look at result['shard_index']
-          # instead once Swarm returns this information.
-          match = SHARD_LINE.search(result['output'])
-          shard_index = int(match.group(1)) - 1 if match else 0
-          if shard_index in shards_remaining:
-            shards_remaining.remove(shard_index)
-            yield shard_index, result
-          else:
-            logging.warning('Ignoring duplicate shard index %d', shard_index)
+        if not result:
+          # Failed to retrieve one key.
+          continue
+        shard_index = result['config_instance_index']
+        if shard_index in shards_remaining:
+          shards_remaining.remove(shard_index)
+          yield shard_index, result
+        else:
+          logging.warning('Ignoring duplicate shard index %d', shard_index)
+          # Pop the last entry, there's no such shard.
+          shards_remaining.pop()
     finally:
       # Done, kill the remaining threads.
       should_stop.set()
@@ -160,14 +155,10 @@ def parse_args():
       default=run_isolated.URL_OPEN_TIMEOUT,
       help='Timeout to wait for result, set to 0 for no timeout; default: '
            '%default s')
-  # TODO(csharp): Change default to 0 once all callers have been updated to
-  # pass in --shards.
+  # TODO(maruel): Remove once the masters have been updated.
   parser.add_option(
       '-s', '--shards',
-      default=-1,
-      type=int,
-      help='Specify the number of shards that the test was split into '
-           '(i.e. how many shards should be retrieved from swarm.')
+      help=optparse.SUPPRESS_HELP)
 
   (options, args) = parser.parse_args()
   if not args:
@@ -191,7 +182,7 @@ def main():
   options.shards = len(test_keys) if options.shards == -1 else options.shards
   exit_code = None
   for _index, output in yield_results(
-      options.url, options.shards, test_keys, options.timeout, None):
+      options.url, test_keys, options.timeout, None):
     print(
         '%s/%s: %s' % (
             output['machine_id'], output['machine_tag'], output['exit_codes']))

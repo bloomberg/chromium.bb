@@ -102,8 +102,9 @@ TEST_SHARD_OUTPUT_2 = SWARM_SHARD_OUTPUT % TEST_SHARD_2
 TEST_SHARD_OUTPUT_3 = SWARM_SHARD_OUTPUT % TEST_SHARD_3
 
 
-def gen_data(shard_output, exit_codes):
+def gen_data(index, shard_output, exit_codes):
   return {
+    u'config_instance_index': index,
     u'exit_codes': unicode(exit_codes),
     u'machine_id': u'host',
     u'machine_tag': u'localhost',
@@ -111,9 +112,14 @@ def gen_data(shard_output, exit_codes):
   }
 
 
-def generate_url_response(shard_output, exit_codes):
+def gen_yielded_data(index, shard_output, exit_codes):
+  """Returns an entry as it would be yielded by yield_results()."""
+  return index, gen_data(index, shard_output, exit_codes)
+
+
+def generate_url_response(index, shard_output, exit_codes):
   url_response = urllib2.addinfourl(
-      StringIO.StringIO(json.dumps(gen_data(shard_output, exit_codes))),
+      StringIO.StringIO(json.dumps(gen_data(index, shard_output, exit_codes))),
       'mock message',
       'host')
   url_response.code = 200
@@ -121,14 +127,14 @@ def generate_url_response(shard_output, exit_codes):
   return url_response
 
 
-def get_swarm_results(shard_count, keys):
+def get_swarm_results(keys):
   """Simplifies the call to yield_results().
 
   The timeout is hard-coded to 10 seconds.
   """
   return list(
       swarm_get_results.yield_results(
-          'http://host:9001', shard_count, keys, 10., None))
+          'http://host:9001', keys, 10., None))
 
 
 class TestCase(auto_stub.TestCase):
@@ -199,7 +205,7 @@ class TestGetSwarmResults(TestCase):
       (
         'http://host:9001/get_result?r=key1',
         {'retry_404': False, 'retry_50x': False},
-        generate_url_response(SWARM_OUTPUT_SUCCESS, '0, 0'),
+        generate_url_response(0, SWARM_OUTPUT_SUCCESS, '0, 0'),
       ),
       (
         'http://host:9001/cleanup_results',
@@ -207,8 +213,8 @@ class TestGetSwarmResults(TestCase):
         StringIO.StringIO(''),
       ),
     ]
-    expected = [(0, gen_data(SWARM_OUTPUT_SUCCESS, '0, 0'))]
-    actual = get_swarm_results(1, ['key1'])
+    expected = [gen_yielded_data(0, SWARM_OUTPUT_SUCCESS, '0, 0')]
+    actual = get_swarm_results(['key1'])
     self.assertEqual(expected, actual)
 
   def test_failure(self):
@@ -216,7 +222,7 @@ class TestGetSwarmResults(TestCase):
       (
         'http://host:9001/get_result?r=key1',
         {'retry_404': False, 'retry_50x': False},
-        generate_url_response(SWARM_OUTPUT_FAILURE, '0, 1'),
+        generate_url_response(0, SWARM_OUTPUT_FAILURE, '0, 1'),
       ),
       (
         'http://host:9001/cleanup_results',
@@ -224,8 +230,8 @@ class TestGetSwarmResults(TestCase):
         StringIO.StringIO(''),
       ),
     ]
-    expected = [(0, gen_data(SWARM_OUTPUT_FAILURE, '0, 1'))]
-    actual = get_swarm_results(1, ['key1'])
+    expected = [gen_yielded_data(0, SWARM_OUTPUT_FAILURE, '0, 1')]
+    actual = get_swarm_results(['key1'])
     self.assertEqual(expected, actual)
 
   def test_no_test_output(self):
@@ -233,7 +239,7 @@ class TestGetSwarmResults(TestCase):
       (
         'http://host:9001/get_result?r=key1',
         {'retry_404': False, 'retry_50x': False},
-        generate_url_response(SWARM_OUTPUT_WITH_NO_TEST_OUTPUT, '0, 0'),
+        generate_url_response(0, SWARM_OUTPUT_WITH_NO_TEST_OUTPUT, '0, 0'),
       ),
       (
         'http://host:9001/cleanup_results',
@@ -241,12 +247,12 @@ class TestGetSwarmResults(TestCase):
         StringIO.StringIO(''),
       ),
     ]
-    expected = [(0, gen_data(SWARM_OUTPUT_WITH_NO_TEST_OUTPUT, '0, 0'))]
-    actual = get_swarm_results(1, ['key1'])
+    expected = [gen_yielded_data(0, SWARM_OUTPUT_WITH_NO_TEST_OUTPUT, '0, 0')]
+    actual = get_swarm_results(['key1'])
     self.assertEqual(expected, actual)
 
   def test_no_keys(self):
-    actual = get_swarm_results(1, [])
+    actual = get_swarm_results([])
     self.assertEqual([], actual)
 
   def test_url_errors(self):
@@ -292,7 +298,7 @@ class TestGetSwarmResults(TestCase):
         None,
       ),
     ]
-    actual = get_swarm_results(1, ['key1'])
+    actual = get_swarm_results(['key1'])
     self.assertEqual([], actual)
     self.assertTrue(all(not v for v in now.itervalues()), now)
 
@@ -301,7 +307,7 @@ class TestGetSwarmResults(TestCase):
       (
         'http://host:9001/get_result?r=key1',
         {'retry_404': False, 'retry_50x': False},
-        generate_url_response(SWARM_OUTPUT_SUCCESS, '0, 0'),
+        generate_url_response(0, SWARM_OUTPUT_SUCCESS, '0, 0'),
       ),
       (
         'http://host:9001/cleanup_results',
@@ -311,7 +317,7 @@ class TestGetSwarmResults(TestCase):
       (
         'http://host:9001/get_result?r=key1-repeat',
         {'retry_404': False, 'retry_50x': False},
-        generate_url_response(SWARM_OUTPUT_SUCCESS, '0, 0'),
+        generate_url_response(0, SWARM_OUTPUT_SUCCESS, '0, 0'),
       ),
       (
         'http://host:9001/cleanup_results',
@@ -319,8 +325,8 @@ class TestGetSwarmResults(TestCase):
         StringIO.StringIO(''),
       ),
     ]
-    expected = [(0, gen_data(SWARM_OUTPUT_SUCCESS, '0, 0'))]
-    actual = get_swarm_results(1, ['key1', 'key1-repeat'])
+    expected = [gen_yielded_data(0, SWARM_OUTPUT_SUCCESS, '0, 0')]
+    actual = get_swarm_results(['key1', 'key1-repeat'])
     self.assertEqual(expected, actual)
 
   def test_one_shard_repeated(self):
@@ -329,7 +335,7 @@ class TestGetSwarmResults(TestCase):
       (
         'http://host:9001/get_result?r=key1',
         {'retry_404': False, 'retry_50x': False},
-        generate_url_response(TEST_SHARD_OUTPUT_1, '0, 0'),
+        generate_url_response(0, TEST_SHARD_OUTPUT_1, '0, 0'),
       ),
       (
         'http://host:9001/cleanup_results',
@@ -339,7 +345,7 @@ class TestGetSwarmResults(TestCase):
       (
         'http://host:9001/get_result?r=key1-repeat',
         {'retry_404': False, 'retry_50x': False},
-        generate_url_response(TEST_SHARD_OUTPUT_1, '0, 0'),
+        generate_url_response(0, TEST_SHARD_OUTPUT_1, '0, 0'),
       ),
       (
         'http://host:9001/cleanup_results',
@@ -349,7 +355,7 @@ class TestGetSwarmResults(TestCase):
       (
         'http://host:9001/get_result?r=key2',
         {'retry_404': False, 'retry_50x': False},
-        generate_url_response(TEST_SHARD_OUTPUT_2, '0, 0'),
+        generate_url_response(1, TEST_SHARD_OUTPUT_2, '0, 0'),
       ),
       (
         'http://host:9001/cleanup_results',
@@ -359,7 +365,7 @@ class TestGetSwarmResults(TestCase):
       (
         'http://host:9001/get_result?r=key3',
         {'retry_404': False, 'retry_50x': False},
-        generate_url_response(TEST_SHARD_OUTPUT_3, '0, 0'),
+        generate_url_response(2, TEST_SHARD_OUTPUT_3, '0, 0'),
       ),
       (
         'http://host:9001/cleanup_results',
@@ -368,11 +374,11 @@ class TestGetSwarmResults(TestCase):
       ),
     ]
     expected = [
-      (0, gen_data(TEST_SHARD_OUTPUT_1, '0, 0')),
-      (1, gen_data(TEST_SHARD_OUTPUT_2, '0, 0')),
-      (2, gen_data(TEST_SHARD_OUTPUT_3, '0, 0')),
+      gen_yielded_data(0, TEST_SHARD_OUTPUT_1, '0, 0'),
+      gen_yielded_data(1, TEST_SHARD_OUTPUT_2, '0, 0'),
+      gen_yielded_data(2, TEST_SHARD_OUTPUT_3, '0, 0'),
     ]
-    actual = get_swarm_results(3, ['key1', 'key1-repeat', 'key2', 'key3'])
+    actual = get_swarm_results(['key1', 'key1-repeat', 'key2', 'key3'])
     self.assertEqual(expected, sorted(actual))
 
 
