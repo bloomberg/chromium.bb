@@ -24,6 +24,7 @@ bool ActionAppliesToSaveToWallet(RequiredAction action) {
 
 bool ActionAppliesToWalletItems(RequiredAction action) {
   return action == SETUP_WALLET ||
+         action == CHOOSE_ANOTHER_INSTRUMENT_OR_ADDRESS ||
          action == ACCEPT_TOS ||
          action == GAIA_AUTH ||
          action == REQUIRE_PHONE_NUMBER ||

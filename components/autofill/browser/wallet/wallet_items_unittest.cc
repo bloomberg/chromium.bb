@@ -201,6 +201,7 @@ const char kWalletItemsWithRequiredActions[] =
     "  \"required_action\":"
     "  ["
     "    \"  setup_wallet\","
+    "    \" CHOOse_ANother_INSTRUMENT_OR_ADDRESS\","
     "    \"AcCePt_ToS  \","
     "    \"  \\tGAIA_auth   \\n\\r\","
     "    \"UPDATE_expiration_date\","
@@ -469,6 +470,7 @@ TEST_F(WalletItemsTest, CreateWalletItemsWithRequiredActions) {
 
   std::vector<RequiredAction> required_actions;
   required_actions.push_back(SETUP_WALLET);
+  required_actions.push_back(CHOOSE_ANOTHER_INSTRUMENT_OR_ADDRESS);
   required_actions.push_back(ACCEPT_TOS);
   required_actions.push_back(GAIA_AUTH);
   required_actions.push_back(UPDATE_EXPIRATION_DATE);
