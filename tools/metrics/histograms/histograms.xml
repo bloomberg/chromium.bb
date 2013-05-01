@@ -4484,6 +4484,338 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Platform.AsvGroup">
+  <summary>
+    Chrome OS (ARM Chromebooks using Exynos 5250 only) Adaptive Support Voltage
+    Group, recorded once per bootup.  Indicates which &quot;bin&quot; the SoC is
+    part of, which sets the voltage that different rails on the system will run
+    at. The values 0-11 are valid.  A value of 12 indicates an error parsing
+    dmesg and should be investigated.  See also Platform.LotIdEnum.
+  </summary>
+</histogram>
+
+<histogram name="Platform.BootSectorsRead">
+  <summary>
+    Chrome OS number of disk sectors read at boot from kernel start to
+    login-prompt-ready.
+  </summary>
+</histogram>
+
+<histogram name="Platform.BootSectorsWritten">
+  <summary>
+    Chrome OS number of disk sectors written at boot from kernel start to
+    login-prompt-ready.
+  </summary>
+</histogram>
+
+<histogram name="Platform.CompressedSwapSize" units="MB">
+  <summary>
+    Chrome OS size of allocated swap area in megabytes (before compression)
+  </summary>
+</histogram>
+
+<histogram name="Platform.CpuUsage" units="%">
+  <summary>
+    Peak total (single core) CPU usage for the last sample interval.  The sample
+    interval may vary from seconds to several minutes.
+  </summary>
+</histogram>
+
+<histogram name="Platform.CrOSEvent" enum="CrosEventEnum">
+  <summary>
+    Generic event of interest from Chrome OS.  Intended mainly to help assess
+    the frequency of rare error conditions.
+  </summary>
+</histogram>
+
+<histogram name="Platform.DiskUsageCache" units="KB">
+  <summary>KB in use in the /cache filesystem tree. Logged once a day.</summary>
+</histogram>
+
+<histogram name="Platform.DiskUsageChronos" units="KB">
+  <summary>
+    Chrome OS KB in use in the /home/chronos filesystem tree. Logged once a day
+    during log file cleanup.
+  </summary>
+</histogram>
+
+<histogram name="Platform.DiskUsageData" units="KB">
+  <summary>KB in use in the /data filesystem tree. Logged once a day.</summary>
+</histogram>
+
+<histogram name="Platform.DiskUsageVar" units="KB">
+  <summary>
+    Chrome OS KB in use in the /var filesystem tree. Logged once a day during
+    log file cleanup.
+  </summary>
+</histogram>
+
+<histogram name="Platform.IntelMaxMicroArchitecture"
+    enum="IntelMaxMicroArchitecture">
+  <summary>
+    The maximum supported micro-architecture on an Intel platform.  This value
+    is logged at program start time.
+  </summary>
+</histogram>
+
+<histogram name="Platform.LotIdEnum" enum="Exynos5250LotIdEnum">
+  <summary>
+    Chrome OS (ARM Chromebooks using Exynos 5250 only) indication about whether
+    we're part of a special lot ID.  Special lot IDs are groups of chips that
+    have special case handling in the kernel for the Adaptive Support Voltage
+    code (the normal logic doesn't work).  See also Platform.AsvGroup.  Note
+    that fused devices are never part of a special lot (currently) and only some
+    unfused lots are &quot;special&quot;.
+  </summary>
+</histogram>
+
+<histogram name="Platform.MeminfoActive">
+  <summary>Chrome OS size of active memory as % of total memory.</summary>
+</histogram>
+
+<histogram name="Platform.MeminfoActiveAnon">
+  <summary>
+    Chrome OS active anonymous memory (data segments) as % of total memory.
+  </summary>
+</histogram>
+
+<histogram name="Platform.MeminfoActiveFile">
+  <summary>
+    Chrome OS active file-backed memory (executables, ...) as % of total memory.
+  </summary>
+</histogram>
+
+<histogram name="Platform.MeminfoAnonPages">
+  <summary>Chrome OS size of anonymous memory as % of total memory.</summary>
+</histogram>
+
+<histogram name="Platform.MeminfoBuffers">
+  <summary>Chrome OS size of buffer cache as % of total memory.</summary>
+</histogram>
+
+<histogram name="Platform.MeminfoCached">
+  <summary>
+    Chrome OS: size of file-backed memory minus swap and buffer cache, as % of
+    total memory.
+  </summary>
+</histogram>
+
+<histogram name="Platform.MeminfoInactive">
+  <summary>Chrome OS size of inactive memory as % of total memory.</summary>
+</histogram>
+
+<histogram name="Platform.MeminfoInactiveAnon">
+  <summary>
+    Chrome OS inactive anonymous memory (data segments) as % of total memory.
+  </summary>
+</histogram>
+
+<histogram name="Platform.MeminfoInactiveFile">
+  <summary>Chrome OS inactive file-backed memory as % of total memory.</summary>
+</histogram>
+
+<histogram name="Platform.MeminfoMapped">
+  <summary>Chrome OS size of mapped memory as % of total memory.</summary>
+</histogram>
+
+<histogram name="Platform.MeminfoMemFree">
+  <summary>Chrome OS size of free memory as % of total memory.</summary>
+</histogram>
+
+<histogram name="Platform.MeminfoShmem">
+  <summary>Chrome OS size of shared memory in Kbytes.</summary>
+</histogram>
+
+<histogram name="Platform.MeminfoSlab">
+  <summary>Chrome OS size of slab memory in Kbytes.</summary>
+</histogram>
+
+<histogram name="Platform.MeminfoSwapUsed" units="kB">
+  <summary>
+    Chrome OS amount of swapped-out memory in Kbytes.  These, and all other
+    MEMINFO stats, are snapshotted every 30s.
+  </summary>
+</histogram>
+
+<histogram name="Platform.MeminfoSwapUsedPercent" units="percent">
+  <summary>
+    Chrome OS amount of swapped-out memory as % of total RAM.  These, and all
+    other MEMINFO stats, are snapshotted every 30s.
+  </summary>
+</histogram>
+
+<histogram name="Platform.MeminfoUnevictable">
+  <summary>
+    Chrome OS unevictable memory (ramfs, SHM_LOCKED, mlocked) in Kbytes.
+  </summary>
+</histogram>
+
+<histogram name="Platform.MemoryBandwidth.ReadWrite" units="MB/s">
+  <summary>
+    Peak memory bandwith (read and write) usage during the last sample interval.
+    The sample interval may vary from seconds to several minutes.
+  </summary>
+</histogram>
+
+<histogram name="Platform.MemuseAnon0">
+  <summary>
+    Chrome OS total anonymous memory (active + inactive) as % of total memory 1
+    minute after boot.
+  </summary>
+</histogram>
+
+<histogram name="Platform.MemuseAnon1">
+  <summary>
+    Chrome OS total anonymous memory (active + inactive) as % of total memory 5
+    minutes after boot.
+  </summary>
+</histogram>
+
+<histogram name="Platform.MemuseAnon2">
+  <summary>
+    Chrome OS total anonymous memory (active + inactive) as % of total memory 30
+    minutes after boot.
+  </summary>
+</histogram>
+
+<histogram name="Platform.MemuseAnon3">
+  <summary>
+    Chrome OS total anonymous memory (active + inactive) as % of total memory
+    150 minutes after boot.
+  </summary>
+</histogram>
+
+<histogram name="Platform.MemuseAnon4">
+  <summary>
+    Chrome OS total anonymous memory (active + inactive) as % of total memory
+    750 minutes after boot.
+  </summary>
+</histogram>
+
+<histogram name="Platform.PageFaultsLong" units="page faults/second">
+  <summary>
+    Page faults per second averaged over 30s interval, sampled continuously.
+  </summary>
+</histogram>
+
+<histogram name="Platform.PageFaultsShort" units="page faults/second">
+  <summary>
+    Page faults per second averaged over 1s interval, sampled every 30s.
+  </summary>
+</histogram>
+
+<histogram name="Platform.ReadSectorsLong">
+  <summary>
+    Number of disk sectors per second read by Chrome OS in a long interval
+    (currently 30s)
+  </summary>
+</histogram>
+
+<histogram name="Platform.ReadSectorsShort">
+  <summary>
+    Number of disk sectors per second read by Chrome OS in a short interval
+    (currently 1s, sampled every 30s)
+  </summary>
+</histogram>
+
+<histogram name="Platform.SmartTransferErrors">
+  <summary>Disk communication errors (SMART 199), sent at boot.</summary>
+</histogram>
+
+<histogram name="Platform.SmartUncorrectableErrors">
+  <summary>Uncorrectable disk errors (SMART 187), sent at boot.</summary>
+</histogram>
+
+<histogram name="Platform.StatefulUsage" units="%">
+  <summary>Chrome OS stateful partition usage level.</summary>
+</histogram>
+
+<histogram name="Platform.Temperature.Junction" units="Celsius">
+  <summary>
+    Peak junction temperature for the last sample interval, read from TSEN on
+    the SoC.  The sample interval may vary from seconds to several minutes.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Temperature.Sensor00" units="Celsius">
+  <summary>
+    Temperature reading at sensor 0 (I2C_CPU-Die) taken every 30s.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Temperature.Sensor01" units="Celsius">
+  <summary>
+    Temperature reading at sensor 1 (I2C_CPU-Object) taken every 30s.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Temperature.Sensor02" units="Celsius">
+  <summary>
+    Temperature reading at sensor 2 (I2C_PCH-Die) taken every 30s.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Temperature.Sensor03" units="Celsius">
+  <summary>
+    Temperature reading at sensor 3 (I2C_PCH-Object) taken every 30s.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Temperature.Sensor04" units="Celsius">
+  <summary>
+    Temperature reading at sensor 4 (I2C_DDR-Die) taken every 30s.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Temperature.Sensor05" units="Celsius">
+  <summary>
+    Temperature reading at sensor 5 (I2C_DDR-Object) taken every 30s.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Temperature.Sensor06" units="Celsius">
+  <summary>
+    Temperature reading at sensor 6 (Charger-Die), taken every 30s.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Temperature.Sensor07" units="Celsius">
+  <summary>
+    Temperature reading at sensor 7 (Charger-Object) taken every 30s.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Temperature.Sensor08" units="Celsius">
+  <summary>
+    Temperature reading at sensor 8 (ECInternal) taken every 30s.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Temperature.Sensor09" units="Celsius">
+  <summary>Temperature reading at sensor 9 (PECI) taken every 30s.</summary>
+</histogram>
+
+<histogram name="Platform.TPMForcedReboot" units="reboots">
+  <summary>
+    Each sample is the number of consecutive reboots performed while attempting
+    to clear a TPM (Trusted Platform Module) error.
+  </summary>
+</histogram>
+
+<histogram name="Platform.WriteSectorsLong">
+  <summary>
+    Number of disk sectors per second written by Chrome OS in a long interval
+    (currently 30s)
+  </summary>
+</histogram>
+
+<histogram name="Platform.WriteSectorsShort">
+  <summary>
+    Number of disk sectors per second written by Chrome OS in a short interval
+    (currently 1s, sampled every 30s)
+  </summary>
+</histogram>
+
 <histogram name="PlatformFile.UnknownCreateFileErrors" units="code">
   <summary>
     Errors returned by CreateFile on windows that PlatformFileError doesn't yet
@@ -4618,6 +4950,336 @@ other types of suffix sets.
 
 <histogram name="Plugin.PpapiPluginLoadResult" enum="PluginLoadResult">
   <summary>The result from an attempt to load a PPAPI plugin.</summary>
+</histogram>
+
+<histogram name="Power.BacklightLevelOnAC" units="%">
+  <summary>
+    The level of the backlight as a percentage when the user is on AC.
+  </summary>
+</histogram>
+
+<histogram name="Power.BacklightLevelOnBattery" units="%">
+  <summary>
+    The level of the backlight as a percentage when the user is on battery.
+  </summary>
+</histogram>
+
+<histogram name="Power.BatteryChargeHealth" units="%">
+  <summary>
+    Chrome OS battery charge health percentage.  Sampled once when device starts
+    charging.
+  </summary>
+</histogram>
+
+<histogram name="Power.BatteryDischargeRate">
+  <summary>
+    Chrome OS battery discharge rate in mW sampled when the device runs on
+    battery.
+  </summary>
+</histogram>
+
+<histogram name="Power.BatteryInfoSample" enum="BatteryInfoSampleResult">
+  <summary>
+    Counts the number of times we have read the battery status from sysfs and if
+    it gave us sensible values.
+  </summary>
+</histogram>
+
+<histogram name="Power.BatteryRemainingAtEndOfSessionOnAC" units="%">
+  <summary>
+    Chrome OS remaining battery charge as percent of the maximum battery charge,
+    sampled at the end of a user session when the device is on AC.
+  </summary>
+</histogram>
+
+<histogram name="Power.BatteryRemainingAtEndOfSessionOnBattery" units="%">
+  <summary>
+    Chrome OS remaining battery charge as percent of the maximum battery charge,
+    sampled at the end of a user session when the device is on battery.
+  </summary>
+</histogram>
+
+<histogram name="Power.BatteryRemainingAtStartOfSessionOnAC" units="%">
+  <summary>
+    Chrome OS remaining battery charge as percent of the maximum battery charge,
+    sampled at the start of a user session when the device is on AC.
+  </summary>
+</histogram>
+
+<histogram name="Power.BatteryRemainingAtStartOfSessionOnBattery" units="%">
+  <summary>
+    Chrome OS remaining battery charge as percent of the maximum battery charge,
+    sampled at the start of a user session when the device is on battery.
+  </summary>
+</histogram>
+
+<histogram name="Power.BatteryRemainingCharge" units="%">
+  <obsolete>
+    Deprecated as of 03/2012, no longer being generated by powerd.
+  </obsolete>
+  <summary>
+    Chrome OS remaining battery charge as percent of the maximum battery charge
+    sampled when the device runs on battery.
+  </summary>
+</histogram>
+
+<histogram name="Power.BatteryRemainingWhenChargeStarts" units="%">
+  <summary>
+    Chrome OS remaining battery charge as percent of the maximum battery charge,
+    sampled when charging starts.
+  </summary>
+</histogram>
+
+<histogram name="Power.BatteryTimeToEmpty" units="minutes">
+  <obsolete>
+    Deprecated as of 03/2012, no longer being generated by powerd.
+  </obsolete>
+  <summary>
+    Chrome OS remaining time to empty battery in minutes sampled when the device
+    runs on battery.
+  </summary>
+</histogram>
+
+<histogram name="Power.BitfixChunks">
+  <summary>
+    Chrome OS (Snow RO firmware 2695.90.0 only) number of 8K chunks that were
+    fixed (memory corruption corrected) for each suspend/resume cycle.  Expect 0
+    around 97% of the time and a non-zero value around 3% of the time.
+  </summary>
+</histogram>
+
+<histogram name="Power.BitfixFixes">
+  <summary>
+    Chrome OS (Snow RO firmware 2695.90.0 only) number of 4-byte words that were
+    fixed (memory corruption corrected) for each suspend/resume cycle.  Expect 0
+    around 97% of the time and a non-zero value around 3% of the time.  Would be
+    exactly equal to Power.BitfixChunks if there were only one corrupted word in
+    each chunk but is sometimes several times higher.
+  </summary>
+</histogram>
+
+<histogram name="Power.BrightnessAdjustOnAC" enum="PowerBrightnessAdjust">
+  <summary>
+    Number of times the user has adjusted brightness up and down while running
+    on battery power.
+  </summary>
+</histogram>
+
+<histogram name="Power.BrightnessAdjustOnBattery" enum="PowerBrightnessAdjust">
+  <summary>
+    Number of times the user has adjusted brightness up and down while running
+    on AC power.
+  </summary>
+</histogram>
+
+<histogram name="Power.FirmwareResumeTimeOnAC" units="milliseconds">
+  <summary>
+    The time that the firmware took to resume the Chrome OS device from
+    suspend-to-RAM state when running on AC at pre-suspend time.
+  </summary>
+</histogram>
+
+<histogram name="Power.FirmwareResumeTimeOnBattery" units="milliseconds">
+  <summary>
+    The time that the firmware took to resume the Chrome OS device from
+    suspend-to-RAM state when running on battery at pre-suspend time.
+  </summary>
+</histogram>
+
+<histogram name="Power.IdleTimeAfterDimOnAC" units="milliseconds">
+  <summary>
+    Chrome OS user idle time since the screen dimmed sampled when the user
+    becomes active again if the device runs on AC.
+  </summary>
+</histogram>
+
+<histogram name="Power.IdleTimeAfterDimOnBattery" units="milliseconds">
+  <summary>
+    Chrome OS user idle time since the screen dimmed sampled when the user
+    becomes active again if the device runs on battery.
+  </summary>
+</histogram>
+
+<histogram name="Power.IdleTimeAfterScreenOffOnAC" units="milliseconds">
+  <summary>
+    Chrome OS user idle time since the screen turned off sampled when the user
+    becomes active again if the device runs on AC.
+  </summary>
+</histogram>
+
+<histogram name="Power.IdleTimeAfterScreenOffOnBattery" units="milliseconds">
+  <summary>
+    Chrome OS user idle time since the screen turned off sampled when the user
+    becomes active again if the device runs on battery.
+  </summary>
+</histogram>
+
+<histogram name="Power.IdleTimeOnAC" units="milliseconds">
+  <summary>
+    Chrome OS user idle time sampled when the user becomes active again if the
+    device runs on AC.
+  </summary>
+</histogram>
+
+<histogram name="Power.IdleTimeOnBattery" units="milliseconds">
+  <summary>
+    Chrome OS user idle time sampled when the user becomes active again if the
+    device runs on battery.
+  </summary>
+</histogram>
+
+<histogram name="Power.KernelResumeTimeOnAC" units="milliseconds">
+  <summary>
+    The time that the kernel took to resume the Chrome OS device from
+    suspend-to-RAM state when running on AC at pre-suspend time.
+  </summary>
+</histogram>
+
+<histogram name="Power.KernelResumeTimeOnBattery" units="milliseconds">
+  <summary>
+    The time that the kernel took to resume the Chrome OS device from
+    suspend-to-RAM state when running on battery at pre-suspend time.
+  </summary>
+</histogram>
+
+<histogram name="Power.KernelSuspendTimeOnAC" units="milliseconds">
+  <summary>
+    The time that the kernel took to suspend-to-RAM the Chrome OS device when
+    running on AC.
+  </summary>
+</histogram>
+
+<histogram name="Power.KernelSuspendTimeOnBattery" units="milliseconds">
+  <summary>
+    The time that the kernel took to suspend-to-RAM the Chrome OS device when
+    running on battery.
+  </summary>
+</histogram>
+
+<histogram name="Power.LengthOfSession" units="seconds">
+  <summary>
+    The length of time, in seconds, that a user spent in a single session.
+    Values for this metric are clamped to 12 hours, so the last bucket should be
+    considered to be including all metrics above 12 hours.
+  </summary>
+</histogram>
+
+<histogram name="Power.MilliConsumptionPerHourIosOnActive">
+  <summary>
+    The average power consumption, measured in milli-units per hour, when sync
+    invalidator listens to on_application_active events. Values for this metric
+    are per session, i.e. from battery level at application entering foreground
+    to returning to background, and normalized to an hourly average consumption.
+    This is an iOS only measurement. Due to how iOS reports battery levels, it
+    is likely to see many readings of 0.
+  </summary>
+</histogram>
+
+<histogram name="Power.MilliConsumptionPerHourOthers">
+  <summary>
+    The average power consumption, measured in milli-units per hour, for other
+    sync invalidator methods. Values for this metric are per session, i.e. from
+    battery level at application entering foreground to returning to background,
+    and normalized to an hourly average consumption. This is an iOS only
+    measurement. Due to how iOS reports battery levels, it is likely to see many
+    readings of 0.
+  </summary>
+</histogram>
+
+<histogram name="Power.MilliConsumptionPerHourP2P">
+  <summary>
+    The average power consumption, measured in milli-units per hour, when sync
+    invalidator uses peer-to-peer notifications. Values for this metric are per
+    session, i.e. from battery level at application entering foreground to
+    returning to background, and normalized to an hourly average consumption.
+    This is an iOS only measurement. Due to how iOS reports battery levels, it
+    is likely to see many readings of 0.
+  </summary>
+</histogram>
+
+<histogram name="Power.MilliConsumptionPerHourServer">
+  <summary>
+    The average power consumption, measured in milli-units per hour, when sync
+    invalidator uses server-based non-blocking invalidator. Values for this
+    metric are per session, i.e. from battery level at application entering
+    foreground to returning to background, and normalized to an hourly average
+    consumption. This is an iOS only measurement. Due to how iOS reports battery
+    levels, it is likely to see many readings of 0.
+  </summary>
+</histogram>
+
+<histogram name="Power.NumberOfAlsAdjustmentsPerSession">
+  <summary>
+    The number of times that the Automatic Light Sensor (ALS) adjusted the
+    brightness during a session.  Values for this metric are clamped to 10k
+    count, so the last bucket should be considered to be including all metrics
+    above 10k.
+  </summary>
+</histogram>
+
+<histogram name="Power.NumberOfSessionsPerCharge">
+  <summary>
+    The number of user sessions that occured since the last time that the device
+    was charged. Values for this metric are clamped at 10k, so the last bucket
+    should be considered to include all metrics about 10k.
+  </summary>
+</histogram>
+
+<histogram name="Power.RetrySuspendCount">
+  <summary>
+    The number of times Chrome OS retried suspend due to previous failure.
+  </summary>
+</histogram>
+
+<histogram name="Power.SuspendStatus" enum="SuspendStatus">
+  <summary>
+    ChromeOS suspend status - either success, failure, or cancelled.
+  </summary>
+</histogram>
+
+<histogram name="Power.ThermalAbortedFanTurnOn" units="%">
+  <summary>
+    The percentage of aborted fan attempts out of total fan attempts per
+    session, where an abort is due to hysteresis.  This value is computed from
+    boot and sent when powerd starts and then every 15 minutes afterwards.
+  </summary>
+</histogram>
+
+<histogram name="Power.ThermalMultipleFanTurnOn" units="%">
+  <summary>
+    The percentage of fan trip point passes that are more than one trip point.
+    This value is computed from boot and sent when powerd starts and then every
+    15 minutes afterwards.
+  </summary>
+</histogram>
+
+<histogram name="Power.TimeInSuspendAtBoot" units="minutes">
+  <summary>
+    Chrome OS time in minutes spent in suspend-to-RAM mode sampled at boot
+    (i.e., the device most likely ran out of battery while in suspend).
+  </summary>
+</histogram>
+
+<histogram name="Power.TimeInSuspendAtResume" units="minutes">
+  <summary>
+    Chrome OS time in minutes spent in suspend-to-RAM mode sampled at resume.
+  </summary>
+</histogram>
+
+<histogram name="Power.UserBrightnessAdjustmentsPerSessionOnAC">
+  <summary>
+    The number of times that the user adjusted the brightness during a session
+    when on AC. Values for this metric are clamped to 10k count, so the last
+    bucket should be considered to be including all metrics above 10k.
+  </summary>
+</histogram>
+
+<histogram name="Power.UserBrightnessAdjustmentsPerSessionOnBattery">
+  <summary>
+    The number of times that the user adjusted the brightness during a session
+    when on battery. Values for this metric are clamped to 10k count, so the
+    last bucket should be considered to be including all metrics above 10k.
+  </summary>
 </histogram>
 
 <histogram name="Prerender.FinalStatus" enum="PrerenderFinalStatus">
@@ -6554,6 +7216,12 @@ other types of suffix sets.
   <int value="2" label="Failure"/>
 </enum>
 
+<enum name="BatteryInfoSampleResult" type="int">
+  <int value="0" label="Read"/>
+  <int value="1" label="Good"/>
+  <int value="2" label="Bad"/>
+</enum>
+
 <enum name="BluetoothPairingMethod" type="int">
   <int value="0" label="No user interaction required"/>
   <int value="1" label="PIN Code requested from user"/>
@@ -6781,6 +7449,10 @@ other types of suffix sets.
   <int value="8" label="Ext4"/>
   <int value="9" label="ISO9660"/>
   <int value="10" label="UDF"/>
+</enum>
+
+<enum name="CrosEventEnum" type="int">
+  <int value="0" label="ModemManagerCommandSendFailure"/>
 </enum>
 
 <enum name="DomainBoundCerts.GetCertResult" type="int">
@@ -7695,6 +8367,13 @@ other types of suffix sets.
   <int value="5" label="Close (no action)"/>
 </enum>
 
+<enum name="Exynos5250LotIdEnum" type="int">
+  <int value="0" label="Fused device"/>
+  <int value="1" label="Generic unfused device"/>
+  <int value="2" label="Unfused; lot ID NZVPU"/>
+  <int value="3" label="Unfused; lot ID NZVR7"/>
+</enum>
+
 <enum name="FallbackSSLVersion" type="int">
   <int value="0" label="FALLBACK_NONE">SSL version fallback did not occur.</int>
   <int value="1" label="FALLBACK_SSL3">Fell back on SSL 3.0.</int>
@@ -8318,6 +8997,17 @@ other types of suffix sets.
   <int value="2" label="Transaction()"/>
   <int value="3" label="DeleteDatabase()"/>
   <int value="4" label="Open()"/>
+</enum>
+
+<enum name="IntelMaxMicroArchitecture" type="int">
+  <int value="0" label="Pentium"/>
+  <int value="1" label="SSE"/>
+  <int value="2" label="SSE2"/>
+  <int value="3" label="SSE3"/>
+  <int value="4" label="SSSE3"/>
+  <int value="5" label="SSE4.1"/>
+  <int value="6" label="SSE4.3"/>
+  <int value="7" label="AVX"/>
 </enum>
 
 <enum name="IPV6ProbeResult" type="int">
@@ -9024,6 +9714,12 @@ other types of suffix sets.
   <int value="5" label="5"/>
 </enum>
 
+<enum name="PowerBrightnessAdjust" type="int">
+  <int value="0" label="Brightness Down"/>
+  <int value="1" label="Brightness Up"/>
+  <int value="2" label="Brightness Absolute"/>
+</enum>
+
 <enum name="PreconnectMotivation" type="int">
   <int value="0" label="MOUSE_OVER_MOTIVATED"/>
   <int value="1" label="PAGE_SCAN_MOTIVATED"/>
@@ -9578,6 +10274,13 @@ other types of suffix sets.
     Error in stat while mmapping file
   </int>
   <int value="20" label="SQLITE_IOERR_SHMLOCK">Unused</int>
+</enum>
+
+<enum name="SuspendStatus" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failure"/>
+  <int value="2" label="Cancelled"/>
+  <int value="3" label="Attempted"/>
 </enum>
 
 <enum name="TabSwitchedToForegroundLaunchedWithURL" type="int">
