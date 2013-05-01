@@ -27,9 +27,9 @@ _TEST_DATA = {
 }
 
 def _CreateFactory():
-  return CompiledFileSystem.Factory(TestFileSystem(deepcopy(_TEST_DATA)),
-                                    ObjectStoreCreator.Factory('3-0', 'test'),
-                                    store_type=TestObjectStore)
+  return CompiledFileSystem.Factory(
+      TestFileSystem(deepcopy(_TEST_DATA)),
+      ObjectStoreCreator.TestFactory(version='3-0', branch='test'))
 
 class CompiledFileSystemTest(unittest.TestCase):
   def testIdentityNamespace(self):

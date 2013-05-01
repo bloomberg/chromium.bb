@@ -123,9 +123,20 @@ class TestFileSystem(FileSystem):
       self._global_stat += 1
 
   def CheckAndReset(self, stat_count=0, read_count=0):
+    '''Returns a tuple (success, error). Use in tests like:
+    self.assertTrue(*object_store.CheckAndReset(...))
+    '''
+    errors = []
+    for desc, expected, actual in (
+        ('read_count', read_count, self._read_count),
+        ('stat_count', stat_count, self._stat_count)):
+      if actual != expected:
+        errors.append('%s: expected %s got %s' % (desc, expected, actual))
     try:
-      return (self._read_count == read_count and
-              self._stat_count == stat_count)
+      return (len(errors) == 0, ', '.join(errors))
     finally:
-      self._read_count = 0
-      self._stat_count = 0
+      self.Reset()
+
+  def Reset(self):
+    self._read_count = 0
+    self._stat_count = 0

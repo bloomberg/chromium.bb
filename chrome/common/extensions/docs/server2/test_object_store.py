@@ -11,9 +11,9 @@ class TestObjectStore(ObjectStore):
   Use CheckAndReset to assert how many times Get/Set/Del have been called. Get
   is a special case; it is only incremented once the future has had Get called.
   '''
-  def __init__(self, namespace, init=None):
+  def __init__(self, namespace, init=None, **optargs):
     self.namespace = namespace
-    self._store = init or {}
+    self._store = {} if init is None else init
     self._get_count = 0
     self._set_count = 0
     self._del_count = 0
@@ -53,7 +53,7 @@ class TestObjectStore(ObjectStore):
       if actual != expected:
         errors.append('%s: expected %s got %s' % (desc, expected, actual))
     try:
-      return (len(errors) == 0, ','.join(errors))
+      return (len(errors) == 0, ', '.join(errors))
     finally:
       self.Reset()
 

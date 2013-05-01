@@ -26,6 +26,9 @@ class StatInfo(object):
     return '{version: %s, child_versions: %s}' % (self.version,
                                                   self.child_versions)
 
+  def __repr__(self):
+    return str(self)
+
 def ToUnicode(data):
   '''Returns the str |data| as a unicode object. It's expected to be utf8, but
   there are also latin-1 encodings in there for some reason. Fall back to that.

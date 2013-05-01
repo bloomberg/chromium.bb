@@ -12,15 +12,10 @@ class CompiledFileSystem(object):
   """
   class Factory(object):
     """A class to build a CompiledFileSystem backed by |file_system|.
-    Set an explicit |store_type| for tests.
     """
-    def __init__(self,
-                 file_system,
-                 object_store_creator_factory,
-                 store_type=None):
+    def __init__(self, file_system, object_store_creator_factory):
       self._file_system = file_system
       self._object_store_creator_factory = object_store_creator_factory
-      self._store_type = store_type
       self._identity_instance = None
 
     def Create(self, populate_function, cls, category=None):
@@ -49,8 +44,7 @@ class CompiledFileSystem(object):
 
     def _Create(self, populate_function, full_name):
       object_store_creator = self._object_store_creator_factory.Create(
-          CompiledFileSystem,
-          store_type=self._store_type)
+          CompiledFileSystem)
       return CompiledFileSystem(
           self._file_system,
           populate_function,

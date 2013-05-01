@@ -61,7 +61,8 @@ class ServerInstance(object):
         channel,
         object_store_creator_factory,
         CachingFileSystem(OfflineFileSystem(SubversionFileSystem),
-                          object_store_creator_factory),
+                          object_store_creator_factory,
+                          use_existing_values=True),
         # TODO(kalman): convert GithubFileSystem to be wrappable in a
         # CachingFileSystem so that it can be replaced with an
         # OfflineFileSystem. Currently GFS doesn't set the child versions of
@@ -90,8 +91,7 @@ class ServerInstance(object):
                                  url_constants.VIEWVC_URL)
 
     object_store_creator_factory = ObjectStoreCreator.Factory(GetAppVersion(),
-                                                              branch,
-                                                              start_empty=True)
+                                                              branch)
 
     svn_file_system = CachingFileSystem(
         SubversionFileSystem(AppEngineUrlFetcher(svn_url),
