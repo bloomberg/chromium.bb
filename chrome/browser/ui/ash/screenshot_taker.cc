@@ -18,7 +18,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -27,6 +26,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "grit/ash_strings.h"
 #include "grit/theme_resources.h"
+#include "grit/ui_strings.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -37,6 +37,8 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #endif
 
 namespace {
@@ -316,12 +318,9 @@ bool ScreenshotTaker::CanTakeScreenshot() {
           kScreenshotMinimumIntervalInMS);
 }
 
-void ScreenshotTaker::ShowNotification(
+Notification* ScreenshotTaker::CreateNotification(
     ScreenshotTakerObserver::Result screenshot_result,
     const base::FilePath& screenshot_path) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-#if defined(OS_CHROMEOS)
-  // TODO(sschmitz): make this work for Windows.
   const std::string notification_id(kNotificationId);
   // We cancel a previous screenshot notification, if any, to ensure we get
   // a fresh notification pop-up.
@@ -329,7 +328,7 @@ void ScreenshotTaker::ShowNotification(
   const string16 replace_id(UTF8ToUTF16(notification_id));
   bool success =
       (screenshot_result == ScreenshotTakerObserver::SCREENSHOT_SUCCESS);
-  Notification notification(
+  return new Notification(
       GURL(kNotificationOriginUrl),
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_SCREENSHOT_NOTIFICATION_ICON),
@@ -342,13 +341,26 @@ void ScreenshotTaker::ShowNotification(
           IDS_ASH_SCREENSHOT_NOTIFICATION_TEXT_SUCCESS :
           IDS_ASH_SCREENSHOT_NOTIFICATION_TEXT_FAIL),
       WebKit::WebTextDirectionDefault,
-      string16(),
+      l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_SCREENSHOT_NAME),
       replace_id,
       new ScreenshotTakerNotificationDelegate(success, screenshot_path));
-  g_browser_process->notification_ui_manager()->Add(notification,
-                                                    GetProfile());
-#endif
+}
 
+void ScreenshotTaker::ShowNotification(
+    ScreenshotTakerObserver::Result screenshot_result,
+    const base::FilePath& screenshot_path) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+#if defined(OS_CHROMEOS)
+  // TODO(sschmitz): make this work for Windows.
+  DesktopNotificationService* const service =
+      DesktopNotificationServiceFactory::GetForProfile(GetProfile());
+  if (service->IsSystemComponentEnabled(message_center::Notifier::SCREENSHOT)) {
+    scoped_ptr<Notification> notification(
+        CreateNotification(screenshot_result, screenshot_path));
+    g_browser_process->notification_ui_manager()->Add(*notification,
+                                                      GetProfile());
+  }
+#endif
   FOR_EACH_OBSERVER(ScreenshotTakerObserver, observers_,
                     OnScreenshotCompleted(screenshot_result, screenshot_path));
 }

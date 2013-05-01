@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time.h"
+#include "chrome/browser/notifications/notification.h"
 
 class Profile;
 
@@ -74,6 +75,10 @@ class ScreenshotTaker : public ash::ScreenshotDelegate {
   void SetScreenshotDirectoryForTest(const base::FilePath& directory);
   void SetScreenshotBasenameForTest(const std::string& basename);
   void SetScreenshotProfileForTest(Profile* profile);
+
+  Notification* CreateNotification(
+      ScreenshotTakerObserver::Result screenshot_result,
+      const base::FilePath& screenshot_path);
 
   base::WeakPtrFactory<ScreenshotTaker> factory_;
 

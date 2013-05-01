@@ -30,6 +30,12 @@ struct MESSAGE_CENTER_EXPORT Notifier {
   enum NotifierType {
     APPLICATION,
     WEB_PAGE,
+    SYSTEM_COMPONENT,
+  };
+
+  enum SystemComponentNotifierType {
+    NONE,
+    SCREENSHOT,
   };
 
   // Constructor for APPLICATION type.
@@ -37,6 +43,10 @@ struct MESSAGE_CENTER_EXPORT Notifier {
 
   // Constructor for WEB_PAGE type.
   Notifier(const GURL& url, const string16& name, bool enabled);
+
+  // Constructor for SYSTEM_COMPONENT type.
+  Notifier(SystemComponentNotifierType type,
+           const string16& name, bool enabled);
 
   ~Notifier();
 
@@ -46,6 +56,9 @@ struct MESSAGE_CENTER_EXPORT Notifier {
   // The URL pattern of the notifer.
   GURL url;
 
+  // The type of system component notifier.
+  SystemComponentNotifierType system_component_type;
+
   // The human-readable name of the notifier such like the extension name.
   // It can be empty.
   string16 name;
@@ -53,7 +66,7 @@ struct MESSAGE_CENTER_EXPORT Notifier {
   // True if the source is allowed to send notifications. True is default.
   bool enabled;
 
-  // The type of notifier: Chrome app or URL pattern.
+  // The type of notifier: Chrome app, URL pattern, or System component.
   NotifierType type;
 
   // The icon image of the notifier. The extension icon or favicon.
@@ -62,6 +75,11 @@ struct MESSAGE_CENTER_EXPORT Notifier {
  private:
   DISALLOW_COPY_AND_ASSIGN(Notifier);
 };
+
+MESSAGE_CENTER_EXPORT std::string ToString(
+    Notifier::SystemComponentNotifierType type);
+MESSAGE_CENTER_EXPORT Notifier::SystemComponentNotifierType
+    ParseSystemComponentName(const std::string& name);
 
 // A class used by NotifierSettingsView to integrate with a setting system
 // for the clients of this module.

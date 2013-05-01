@@ -18,6 +18,10 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "grit/theme_resources.h"
+#include "grit/ui_strings.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center_constants.h"
 
@@ -87,13 +91,12 @@ void MessageCenterSettingsController::GetNotifierList(
       continue;
     }
 
-    notifiers->push_back(new Notifier(
+    notifiers->push_back(new message_center::Notifier(
         extension->id(),
         UTF8ToUTF16(extension->name()),
         notification_service->IsExtensionEnabled(extension->id())));
     app_icon_loader_->FetchImage(extension->id());
   }
-
   if (comparator)
     std::sort(notifiers->begin(), notifiers->end(), *comparator);
   else
@@ -117,7 +120,7 @@ void MessageCenterSettingsController::GetNotifierList(
     std::string url_pattern = iter->primary_pattern.ToString();
     string16 name = UTF8ToUTF16(url_pattern);
     GURL url(url_pattern);
-    notifiers->push_back(new Notifier(
+    notifiers->push_back(new message_center::Notifier(
         url,
         name,
         notification_service->GetContentSetting(url) == CONTENT_SETTING_ALLOW));
@@ -134,7 +137,18 @@ void MessageCenterSettingsController::GetNotifierList(
                    base::Unretained(this), url),
         favicon_tracker_.get());
   }
-
+  const string16 screenshot_name =
+      l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_SCREENSHOT_NAME);
+  message_center::Notifier* const screenshot_notifier =
+      new message_center::Notifier(
+          message_center::Notifier::SCREENSHOT,
+          screenshot_name,
+          notification_service->IsSystemComponentEnabled(
+              message_center::Notifier::SCREENSHOT));
+  screenshot_notifier->icon =
+      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+          IDR_SCREENSHOT_NOTIFICATION_ICON);
+  notifiers->push_back(screenshot_notifier);
   if (comparator) {
     std::sort(notifiers->begin() + app_count, notifiers->end(), *comparator);
   } else {
@@ -182,6 +196,10 @@ void MessageCenterSettingsController::SetNotifierEnabled(
       }
       break;
     }
+    case message_center::Notifier::SYSTEM_COMPONENT:
+      notification_service->SetSystemComponentEnabled(
+          notifier.system_component_type, enabled);
+      break;
   }
 }
 

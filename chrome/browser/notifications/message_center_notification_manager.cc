@@ -20,8 +20,10 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/message_center_tray.h"
+#include "ui/message_center/notifier_settings.h"
 
 MessageCenterNotificationManager::MessageCenterNotificationManager(
     message_center::MessageCenter* message_center)
@@ -187,7 +189,16 @@ void MessageCenterNotificationManager::DisableNotificationsFromSource(
   DesktopNotificationService* service =
       DesktopNotificationServiceFactory::GetForProfile(
           profile_notification->profile());
-  service->DenyPermission(profile_notification->notification().origin_url());
+  if (profile_notification->notification().origin_url().scheme() ==
+      chrome::kChromeUIScheme) {
+    const std::string name =
+        profile_notification->notification().origin_url().host();
+    const message_center::Notifier::SystemComponentNotifierType type =
+        message_center::ParseSystemComponentName(name);
+    service->SetSystemComponentEnabled(type, false);
+  } else {
+    service->DenyPermission(profile_notification->notification().origin_url());
+  }
 }
 
 void MessageCenterNotificationManager::ShowSettings(
@@ -416,7 +427,6 @@ void
 MessageCenterNotificationManager::ProfileNotification::OnDownloadsCompleted() {
   notification_.DoneRendering();
 }
-
 
 std::string
     MessageCenterNotificationManager::ProfileNotification::GetExtensionId() {

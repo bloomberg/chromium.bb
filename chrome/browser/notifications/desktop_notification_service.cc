@@ -43,6 +43,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/message_center/notifier_settings.h"
 #include "ui/webui/web_ui_util.h"
 
 using content::BrowserThread;
@@ -63,6 +64,36 @@ bool UsesTextNotifications() {
   return
       g_browser_process->notification_ui_manager()->DelegatesToMessageCenter();
 #endif
+}
+
+void ToggleListPrefItem(PrefService* prefs, const char* key,
+                        const std::string& item, bool flag) {
+  ListPrefUpdate update(prefs, key);
+  base::ListValue* const list = update.Get();
+  if (flag) {
+    // AppendIfNotPresent will delete |adding_value| when the same value
+    // already exists.
+    base::StringValue* const adding_value = new base::StringValue(item);
+    list->AppendIfNotPresent(adding_value);
+  } else {
+    base::StringValue removed_value(item);
+    list->Remove(removed_value, NULL);
+  }
+}
+
+void CopySetFromPrefToMemory(PrefService* prefs, const char* key,
+                             std::set<std::string>* dst) {
+  dst->clear();
+  const base::ListValue* pref_list = prefs->GetList(key);
+  for (size_t i = 0; i < pref_list->GetSize(); ++i) {
+    std::string element;
+    if (!pref_list->GetString(i, &element) && element.empty()) {
+      LOG(WARNING) << i << "-th element is not a string for "
+                   << key;
+      continue;
+    }
+    dst->insert(element);
+  }
 }
 
 }  // namespace
@@ -211,6 +242,8 @@ void DesktopNotificationService::RegisterUserPrefs(
 #if defined(OS_CHROMEOS) || defined(ENABLE_MESSAGE_CENTER)
   registry->RegisterListPref(prefs::kMessageCenterDisabledExtensionIds,
                              PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterListPref(prefs::kMessageCenterDisabledSystemComponentIds,
+                             PrefRegistrySyncable::SYNCABLE_PREF);
 #endif
 }
 
@@ -331,11 +364,18 @@ DesktopNotificationService::DesktopNotificationService(
       ui_manager_(ui_manager) {
 #if defined(ENABLE_MESSAGE_CENTER)
   OnDisabledExtensionIdsChanged();
+  OnDisabledSystemComponentIdsChanged();
   disabled_extension_id_pref_.Init(
       prefs::kMessageCenterDisabledExtensionIds,
       profile_->GetPrefs(),
       base::Bind(
           &DesktopNotificationService::OnDisabledExtensionIdsChanged,
+          base::Unretained(this)));
+  disabled_system_component_id_pref_.Init(
+      prefs::kMessageCenterDisabledSystemComponentIds,
+      profile_->GetPrefs(),
+      base::Bind(
+          &DesktopNotificationService::OnDisabledSystemComponentIdsChanged,
           base::Unretained(this)));
 #endif
 }
@@ -539,34 +579,44 @@ void DesktopNotificationService::SetExtensionEnabled(
     const std::string& id, bool enabled) {
   // Do not touch |disabled_extension_ids_|. It will be updated at
   // OnDisabledExtensionIdsChanged() which will be called when the pref changes.
-  ListPrefUpdate update(profile_->GetPrefs(),
-                        prefs::kMessageCenterDisabledExtensionIds);
-  base::ListValue* disabled_extension_ids = update.Get();
-  if (enabled) {
-    base::StringValue removed_value(id);
-    disabled_extension_ids->Remove(removed_value, NULL);
-  } else {
-    // AppendIfNotPresent will delete |adding_value| when the same value
-    // already exists.
-    base::StringValue* adding_value = new base::StringValue(id);
-    disabled_extension_ids->AppendIfNotPresent(adding_value);
-  }
+  ToggleListPrefItem(
+      profile_->GetPrefs(),
+      prefs::kMessageCenterDisabledExtensionIds,
+      id,
+      !enabled);
 }
 
 void DesktopNotificationService::OnDisabledExtensionIdsChanged() {
-  disabled_extension_ids_.clear();
-  const base::ListValue* pref_list = profile_->GetPrefs()->GetList(
-      prefs::kMessageCenterDisabledExtensionIds);
-  for (size_t i = 0; i < pref_list->GetSize(); ++i) {
-    std::string disabled_id;
-    if (!pref_list->GetString(i, &disabled_id) && disabled_id.empty()) {
-      LOG(WARNING) << i << "-th element is not a string for "
-                   << prefs::kMessageCenterDisabledExtensionIds;
-      continue;
-    }
-    disabled_extension_ids_.insert(disabled_id);
-  }
+  CopySetFromPrefToMemory(profile_->GetPrefs(),
+                          prefs::kMessageCenterDisabledExtensionIds,
+                          &disabled_extension_ids_);
 }
+
+#if defined(ENABLE_MESSAGE_CENTER)
+bool DesktopNotificationService::IsSystemComponentEnabled(
+    message_center::Notifier::SystemComponentNotifierType type) {
+  return disabled_system_component_ids_.find(message_center::ToString(type)) ==
+         disabled_system_component_ids_.end();
+}
+
+void DesktopNotificationService::SetSystemComponentEnabled(
+    message_center::Notifier::SystemComponentNotifierType type, bool enabled) {
+  // Do not touch |disabled_extension_ids_|. It will be updated at
+  // OnDisabledExtensionIdsChanged() which will be called when the pref changes.
+  ToggleListPrefItem(
+      profile_->GetPrefs(),
+      prefs::kMessageCenterDisabledSystemComponentIds,
+      message_center::ToString(type),
+      !enabled);
+}
+
+void DesktopNotificationService::OnDisabledSystemComponentIdsChanged() {
+  disabled_extension_ids_.clear();
+  CopySetFromPrefToMemory(profile_->GetPrefs(),
+                          prefs::kMessageCenterDisabledSystemComponentIds,
+                          &disabled_system_component_ids_);
+}
+#endif
 
 WebKit::WebNotificationPresenter::Permission
     DesktopNotificationService::HasPermission(const GURL& origin) {

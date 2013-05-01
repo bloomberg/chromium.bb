@@ -1233,6 +1233,11 @@ const char kDefaultManagedModeFilteringBehavior[] =
 const char kMessageCenterDisabledExtensionIds[] =
     "message_center.disabled_extension_ids";
 
+// List pref containing the system component ids which are not allowed to send
+// notifications to the message center.
+const char kMessageCenterDisabledSystemComponentIds[] =
+    "message_center.disabled_system_component_ids";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 
