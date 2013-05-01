@@ -407,15 +407,9 @@ DirectoryItem.prototype.updateSubDirectories = function(
  * @private
  */
 DirectoryItem.prototype.redrawSubDirectoryList_ = function(recursive) {
-  var entries = this.entries_.
-      sort(function(a, b) {
-        return a.name.toLowerCase() > b.name.toLowerCase();
-      }).
-      filter(this.fileFilter_.filter.bind(this.fileFilter_));
-
   DirectoryTreeUtil.updateSubElementsFromList(
       this,
-      function(i) { return entries[i]; },
+      function(i) { return this.entries_[i]; }.bind(this),
       this.directoryModel_,
       recursive);
 };
