@@ -121,6 +121,9 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Returns the bubble anchor alignment based on |shelf_alignment_|.
   views::TrayBubbleView::AnchorAlignment GetAnchorAlignment() const;
 
+  // Updates the view visual based on the visibility of the bubble.
+  void SetBubbleVisible(bool visible);
+
   StatusAreaWidget* status_area_widget() {
     return status_area_widget_;
   }
@@ -157,6 +160,8 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
 
   internal::BackgroundAnimator hide_background_animator_;
   internal::BackgroundAnimator hover_background_animator_;
+  bool hovered_;
+  bool pressed_;
   scoped_ptr<TrayWidgetObserver> widget_observer_;
   scoped_ptr<TrayEventFilter> tray_event_filter_;
 

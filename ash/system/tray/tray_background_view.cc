@@ -27,8 +27,9 @@
 
 namespace {
 
-const SkColor kTrayBackgroundAlpha = 100;
-const SkColor kTrayBackgroundHoverAlpha = 150;
+const int kTrayBackgroundAlpha = 100;
+const int kTrayBackgroundHoverAlpha = 150;
+const SkColor kTrayBackgroundPressedColor = SkColorSetRGB(66, 129, 244);
 
 // Adjust the size of TrayContainer with additional padding.
 const int kTrayContainerVerticalPaddingBottomAlignment  = 1;
@@ -71,10 +72,15 @@ class TrayBackgroundView::TrayWidgetObserver : public views::WidgetObserver {
 
 class TrayBackground : public views::Background {
  public:
-  TrayBackground() : alpha_(kTrayBackgroundAlpha) {}
+  TrayBackground() {
+    set_alpha(kTrayBackgroundAlpha);
+  }
+
   virtual ~TrayBackground() {}
 
-  void set_alpha(int alpha) { alpha_ = alpha; }
+  SkColor color() { return color_; }
+  void set_color(SkColor color) { color_ = color; }
+  void set_alpha(int alpha) { color_ = SkColorSetARGB(alpha, 0, 0, 0); }
 
  private:
   // Overridden from views::Background.
@@ -82,7 +88,7 @@ class TrayBackground : public views::Background {
     SkPaint paint;
     paint.setAntiAlias(true);
     paint.setStyle(SkPaint::kFill_Style);
-    paint.setColor(SkColorSetARGB(alpha_, 0, 0, 0));
+    paint.setColor(color_);
     SkPath path;
     gfx::Rect bounds(view->GetLocalBounds());
     SkScalar radius = SkIntToScalar(kTrayRoundedBorderRadius);
@@ -90,7 +96,7 @@ class TrayBackground : public views::Background {
     canvas->DrawPath(path, paint);
   }
 
-  int alpha_;
+  SkColor color_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBackground);
 };
@@ -169,6 +175,8 @@ TrayBackgroundView::TrayBackgroundView(
       hide_background_animator_(this, 0, kTrayBackgroundAlpha),
       hover_background_animator_(
           this, 0, kTrayBackgroundHoverAlpha - kTrayBackgroundAlpha),
+      hovered_(false),
+      pressed_(false),
       widget_observer_(new TrayWidgetObserver(this)) {
   set_notify_enter_exit_on_child(true);
 
@@ -193,11 +201,23 @@ void TrayBackgroundView::Initialize() {
 }
 
 void TrayBackgroundView::OnMouseEntered(const ui::MouseEvent& event) {
+  hovered_ = true;
+  if (!background_)
+    return;
+  if (pressed_)
+    return;
+
   hover_background_animator_.SetPaintsBackground(true,
       internal::BackgroundAnimator::CHANGE_ANIMATE);
 }
 
 void TrayBackgroundView::OnMouseExited(const ui::MouseEvent& event) {
+  hovered_ = false;
+  if (!background_)
+    return;
+  if (pressed_)
+    return;
+
   hover_background_animator_.SetPaintsBackground(false,
       internal::BackgroundAnimator::CHANGE_ANIMATE);
 }
@@ -231,10 +251,13 @@ bool TrayBackgroundView::PerformAction(const ui::Event& event) {
 }
 
 void TrayBackgroundView::UpdateBackground(int alpha) {
-  if (background_) {
-    background_->set_alpha(hide_background_animator_.alpha() +
-                           hover_background_animator_.alpha());
-  }
+  if (!background_)
+    return;
+  if (pressed_)
+    return;
+
+  background_->set_alpha(hide_background_animator_.alpha() +
+                         hover_background_animator_.alpha());
   SchedulePaint();
 }
 
@@ -376,6 +399,21 @@ TrayBubbleView::AnchorAlignment TrayBackgroundView::GetAnchorAlignment() const {
   }
   NOTREACHED();
   return TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM;
+}
+
+void TrayBackgroundView::SetBubbleVisible(bool visible) {
+  pressed_ = visible;
+  if (!background_)
+    return;
+
+  // Do not change gradually, changing color between grey and blue is weird.
+  if (pressed_)
+    background_->set_color(kTrayBackgroundPressedColor);
+  else if (hovered_)
+    background_->set_alpha(kTrayBackgroundHoverAlpha);
+  else
+    background_->set_alpha(kTrayBackgroundAlpha);
+  SchedulePaint();
 }
 
 void TrayBackgroundView::UpdateBubbleViewArrow(

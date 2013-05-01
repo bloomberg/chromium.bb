@@ -14,9 +14,10 @@
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_views.h"
-#include "base/strings/string_number_conversions.h"
+#include "base/i18n/number_formatting.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_resources.h"
+#include "grit/ash_strings.h"
 #include "grit/ui_strings.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -30,7 +31,8 @@
 #include "ui/message_center/views/message_popup_bubble.h"
 #include "ui/message_center/views/message_popup_collection.h"
 #include "ui/views/bubble/tray_bubble_view.h"
-#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
@@ -52,9 +54,7 @@ namespace ash {
 namespace internal {
 namespace {
 
-// The text cannot be placed in the middle of the button vertically. This
-// constant is used to modify the vertical position of the text.
-const int kUnreadLabelBottomOffset = 6;
+const int kWebNotificationIconSize = 31;
 
 }
 
@@ -95,62 +95,72 @@ class WebNotificationBubbleWrapper {
   DISALLOW_COPY_AND_ASSIGN(WebNotificationBubbleWrapper);
 };
 
-class WebNotificationButton : public views::ImageButton {
+class WebNotificationButton : public views::CustomButton {
  public:
   WebNotificationButton(views::ButtonListener* listener)
-      : views::ImageButton(listener),
-        unread_label_(NULL) {
+      : views::CustomButton(listener),
+        is_bubble_visible_(false),
+        unread_count_(0) {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+
+    icon_ = new views::ImageView();
+    icon_->SetImage(rb.GetImageSkiaNamed(
+        IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_ICON));
+    AddChildView(icon_);
+
+    unread_label_ = new views::Label();
+    SetupLabelForTray(unread_label_);
+    AddChildView(unread_label_);
+    unread_label_->SetVisible(false);
+  }
+
+  void SetBubbleVisible(bool visible) {
+    if (visible == is_bubble_visible_)
+      return;
+
+    is_bubble_visible_ = visible;
+    UpdateIconVisibility();
   }
 
   void SetUnreadCount(int unread_count) {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    if (unread_count == 0) {
-      SetImage(views::CustomButton::STATE_NORMAL, rb.GetImageSkiaNamed(
-          IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_INACTIVE_NORMAL));
-      SetImage(views::CustomButton::STATE_HOVERED, rb.GetImageSkiaNamed(
-          IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_INACTIVE_HOVER));
-      SetImage(views::CustomButton::STATE_PRESSED, rb.GetImageSkiaNamed(
-          IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_INACTIVE_PRESSED));
-
-      if (unread_label_) {
-        delete unread_label_;
-        unread_label_ = NULL;
-      }
-    } else {
-      SetImage(views::CustomButton::STATE_NORMAL, rb.GetImageSkiaNamed(
-          IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_ACTIVE_NORMAL));
-      SetImage(views::CustomButton::STATE_HOVERED, rb.GetImageSkiaNamed(
-          IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_ACTIVE_HOVER));
-      SetImage(views::CustomButton::STATE_PRESSED, rb.GetImageSkiaNamed(
-          IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_ACTIVE_PRESSED));
-
-      string16 text((unread_count > 9) ?
-                    UTF8ToUTF16("9+") : base::IntToString16(unread_count));
-      if (unread_label_) {
-        unread_label_->SetText(text);
-      } else {
-        unread_label_ = new views::Label(text);
-        SetupLabelForTray(unread_label_);
-        AddChildView(unread_label_);
-      }
-    }
-    InvalidateLayout();
-    SchedulePaint();
+    // base::FormatNumber doesn't convert to arabic numeric characters.
+    // TODO(mukai): use ICU to support conversion for such locales.
+    unread_count_ = unread_count;
+    unread_label_->SetText((unread_count > 9) ?
+        l10n_util::GetStringUTF16(IDS_ASH_NOTIFICATION_UNREAD_COUNT_NINE_PLUS) :
+        base::FormatNumber(unread_count));
+    UpdateIconVisibility();
   }
 
  protected:
   // Overridden from views::ImageButton:
   virtual void Layout() OVERRIDE {
-    views::ImageButton::Layout();
-    if (unread_label_) {
-      gfx::Rect parent_bounds(bounds());
-      parent_bounds.set_height(
-          parent_bounds.height() - kUnreadLabelBottomOffset);
-      unread_label_->SetBoundsRect(parent_bounds);
-    }
+    views::CustomButton::Layout();
+    icon_->SetBoundsRect(bounds());
+    unread_label_->SetBoundsRect(bounds());
+  }
+
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
+    return gfx::Size(kWebNotificationIconSize, kWebNotificationIconSize);
   }
 
  private:
+  void UpdateIconVisibility() {
+    if (!is_bubble_visible_ && unread_count_ > 0) {
+      icon_->SetVisible(false);
+      unread_label_->SetVisible(true);
+    } else {
+      icon_->SetVisible(true);
+      unread_label_->SetVisible(false);
+    }
+    InvalidateLayout();
+    SchedulePaint();
+  }
+
+  bool is_bubble_visible_;
+  int unread_count_;
+
+  views::ImageView* icon_;
   views::Label* unread_label_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationButton);
@@ -167,6 +177,8 @@ WebNotificationTray::WebNotificationTray(
   button_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON);
   tray_container()->AddChildView(button_);
+  SetContentsBackground();
+  tray_container()->set_border(NULL);
   SetVisible(false);
   message_center_tray_.reset(new message_center::MessageCenterTray(
       this,
@@ -220,9 +232,11 @@ bool WebNotificationTray::ShowMessageCenter() {
   message_center_bubble->SetMaxHeight(max_height);
   message_center_bubble_.reset(
       new internal::WebNotificationBubbleWrapper(this, message_center_bubble));
+  SetBubbleVisible(true);
 
   status_area_widget()->SetHideSystemNotifications(true);
   GetShelfLayoutManager()->UpdateAutoHideState();
+  button_->SetBubbleVisible(true);
   return true;
 }
 
@@ -230,9 +244,11 @@ void WebNotificationTray::HideMessageCenter() {
   if (!message_center_bubble())
     return;
   message_center_bubble_.reset();
+  SetBubbleVisible(false);
   show_message_center_on_unlock_ = false;
   status_area_widget()->SetHideSystemNotifications(false);
   GetShelfLayoutManager()->UpdateAutoHideState();
+  button_->SetBubbleVisible(false);
 }
 
 void WebNotificationTray::SetHidePopupBubble(bool hide) {
@@ -361,6 +377,7 @@ void WebNotificationTray::SetShelfAlignment(ShelfAlignment alignment) {
   if (alignment == shelf_alignment())
     return;
   internal::TrayBackgroundView::SetShelfAlignment(alignment);
+  tray_container()->set_border(NULL);
   // Destroy any existing bubble so that it will be rebuilt correctly.
   message_center_tray_->HideMessageCenterBubble();
   message_center_tray_->HidePopupBubble();

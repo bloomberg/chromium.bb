@@ -76,13 +76,13 @@ TEST_F(ShelfWidgetTest, TestAlignment) {
     SCOPED_TRACE("Single Right");
     TestLauncherAlignment(Shell::GetPrimaryRootWindow(),
                           SHELF_ALIGNMENT_RIGHT,
-                          "0,0 348x400");
+                          "0,0 352x400");
   }
   {
     SCOPED_TRACE("Single Left");
     TestLauncherAlignment(Shell::GetPrimaryRootWindow(),
                           SHELF_ALIGNMENT_LEFT,
-                          "52,0 348x400");
+                          "48,0 352x400");
   }
   UpdateDisplay("300x300,500x500");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
@@ -96,13 +96,13 @@ TEST_F(ShelfWidgetTest, TestAlignment) {
     SCOPED_TRACE("Primary Right");
     TestLauncherAlignment(root_windows[0],
                           SHELF_ALIGNMENT_RIGHT,
-                          "0,0 248x300");
+                          "0,0 252x300");
   }
   {
     SCOPED_TRACE("Primary Left");
     TestLauncherAlignment(root_windows[0],
                           SHELF_ALIGNMENT_LEFT,
-                          "52,0 248x300");
+                          "48,0 252x300");
   }
   if (Shell::IsLauncherPerDisplayEnabled()) {
     {
@@ -115,13 +115,13 @@ TEST_F(ShelfWidgetTest, TestAlignment) {
       SCOPED_TRACE("Secondary Right");
       TestLauncherAlignment(root_windows[1],
                             SHELF_ALIGNMENT_RIGHT,
-                            "300,0 448x500");
+                            "300,0 452x500");
     }
     {
       SCOPED_TRACE("Secondary Left");
       TestLauncherAlignment(root_windows[1],
                             SHELF_ALIGNMENT_LEFT,
-                            "352,0 448x500");
+                            "348,0 452x500");
     }
   }
 }
