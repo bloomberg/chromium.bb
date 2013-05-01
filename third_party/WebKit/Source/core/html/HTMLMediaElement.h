@@ -30,7 +30,6 @@
 #include "core/dom/GenericEventQueue.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/MediaControllerInterface.h"
-#include "core/page/MediaCanStartListener.h"
 #include "core/platform/graphics/MediaPlayer.h"
 
 #include "core/html/track/TextTrack.h"
@@ -66,7 +65,7 @@ typedef Vector<CueInterval> CueList;
 // But it can't be until the Chromium WebMediaPlayerClientImpl class is fixed so it
 // no longer depends on typecasting a MediaPlayerClient to an HTMLMediaElement.
 
-class HTMLMediaElement : public HTMLElement, public MediaPlayerClient, public MediaPlayerSupportsTypeClient, private MediaCanStartListener, public ActiveDOMObject, public MediaControllerInterface
+class HTMLMediaElement : public HTMLElement, public MediaPlayerClient, public MediaPlayerSupportsTypeClient, public ActiveDOMObject, public MediaControllerInterface
     , private TextTrackClient
 #if USE(PLATFORM_TEXT_TRACK_MENU)
     , public PlatformTextTrackMenuClient
@@ -505,8 +504,6 @@ private:
 
     void setPlaybackRateInternal(double);
 
-    virtual void mediaCanStart();
-
     void setShouldDelayLoadEvent(bool);
     void invalidateCachedTime();
     void refreshCachedTime() const;
@@ -590,7 +587,6 @@ private:
     PendingActionFlags m_pendingActionFlags;
 
     bool m_playing : 1;
-    bool m_isWaitingUntilMediaCanStart : 1;
     bool m_shouldDelayLoadEvent : 1;
     bool m_haveFiredLoadedData : 1;
     bool m_inActiveDocument : 1;

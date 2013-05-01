@@ -143,7 +143,6 @@
 #include "core/page/FrameTree.h"
 #include "core/page/FrameView.h"
 #include "core/page/History.h"
-#include "core/page/MediaCanStartListener.h"
 #include "core/page/MouseEventWithHitTestResults.h"
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
@@ -4635,28 +4634,6 @@ void Document::enqueuePopstateEvent(PassRefPtr<SerializedScriptValue> stateObjec
     dispatchWindowEvent(PopStateEvent::create(stateObject, domWindow() ? domWindow()->history() : 0));
 }
 
-void Document::addMediaCanStartListener(MediaCanStartListener* listener)
-{
-    ASSERT(!m_mediaCanStartListeners.contains(listener));
-    m_mediaCanStartListeners.add(listener);
-}
-
-void Document::removeMediaCanStartListener(MediaCanStartListener* listener)
-{
-    ASSERT(m_mediaCanStartListeners.contains(listener));
-    m_mediaCanStartListeners.remove(listener);
-}
-
-MediaCanStartListener* Document::takeAnyMediaCanStartListener()
-{
-    HashSet<MediaCanStartListener*>::iterator slot = m_mediaCanStartListeners.begin();
-    if (slot == m_mediaCanStartListeners.end())
-        return 0;
-    MediaCanStartListener* listener = *slot;
-    m_mediaCanStartListeners.remove(slot);
-    return listener;
-}
-
 bool Document::fullScreenIsAllowedForElement(Element* element) const
 {
     ASSERT(element);
@@ -5573,7 +5550,6 @@ void Document::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_iconURLs, "iconURLs");
     info.addMember(m_elementsByAccessKey, "elementsByAccessKey");
     info.addMember(m_eventQueue, "eventQueue");
-    info.addMember(m_mediaCanStartListeners, "mediaCanStartListeners");
     info.addMember(m_pendingTasks, "pendingTasks");
     info.addMember(m_prerenderer, "prerenderer");
     info.addMember(m_listsInvalidatedAtDocument, "listsInvalidatedAtDocument");

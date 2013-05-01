@@ -116,7 +116,6 @@ class LiveNodeListBase;
 class DOMWrapperWorld;
 class JSNode;
 class Locale;
-class MediaCanStartListener;
 class MediaQueryList;
 class MediaQueryMatcher;
 class MouseEventWithHitTestResults;
@@ -971,10 +970,6 @@ public:
     void enqueuePopstateEvent(PassRefPtr<SerializedScriptValue> stateObject);
     virtual DocumentEventQueue* eventQueue() const { return m_eventQueue.get(); }
 
-    void addMediaCanStartListener(MediaCanStartListener*);
-    void removeMediaCanStartListener(MediaCanStartListener*);
-    MediaCanStartListener* takeAnyMediaCanStartListener();
-
     const QualifiedName& idAttributeName() const { return m_idAttributeName; }
     
     bool webkitIsFullScreen() const { return m_fullScreenElement.get(); }
@@ -1373,8 +1368,6 @@ private:
     RefPtr<DocumentEventQueue> m_eventQueue;
 
     WeakPtrFactory<Document> m_weakFactory;
-
-    HashSet<MediaCanStartListener*> m_mediaCanStartListeners;
 
     QualifiedName m_idAttributeName;
 

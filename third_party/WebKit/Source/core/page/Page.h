@@ -63,7 +63,6 @@ class HaltablePlugin;
 class HistoryItem;
 class InspectorClient;
 class InspectorController;
-class MediaCanStartListener;
 class Node;
 class PageConsole;
 class PageGroup;
@@ -131,9 +130,6 @@ public:
 
     static void refreshPlugins(bool reload);
     PluginData* pluginData() const;
-
-    void setCanStartMedia(bool);
-    bool canStartMedia() const { return m_canStartMedia; }
 
     EditorClient* editorClient() const { return m_editorClient; }
     PlugInClient* plugInClient() const { return m_plugInClient; }
@@ -269,8 +265,6 @@ private:
     void checkSubframeCountConsistency() const;
 #endif
 
-    MediaCanStartListener* takeAnyMediaCanStartListener();
-
     void setTimerAlignmentInterval(double);
 
     OwnPtr<Chrome> m_chrome;
@@ -318,8 +312,6 @@ private:
     mutable time_t m_userStyleSheetModificationTime;
 
     RefPtr<PageGroup> m_group;
-
-    bool m_canStartMedia;
 
     RefPtr<StorageNamespace> m_sessionStorage;
 

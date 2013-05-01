@@ -156,7 +156,6 @@ InternalSettings::InternalSettings(Page* page)
 void InternalSettings::resetToConsistentState()
 {
     page()->setPageScaleFactor(1, IntPoint(0, 0));
-    page()->setCanStartMedia(true);
 
     m_backup.restoreTo(settings());
     m_backup = Backup(settings());
@@ -295,12 +294,6 @@ bool InternalSettings::cssVariablesEnabled(ExceptionCode& ec)
 {
     InternalSettingsGuardForSettingsReturn(false);
     return settings()->cssVariablesEnabled();
-}
-
-void InternalSettings::setCanStartMedia(bool enabled, ExceptionCode& ec)
-{
-    InternalSettingsGuardForSettings();
-    m_page->setCanStartMedia(enabled);
 }
 
 void InternalSettings::setEditingBehavior(const String& editingBehavior, ExceptionCode& ec)

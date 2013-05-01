@@ -54,7 +54,6 @@
 #include "core/page/Frame.h"
 #include "core/page/FrameTree.h"
 #include "core/page/FrameView.h"
-#include "core/page/MediaCanStartListener.h"
 #include "core/page/Navigator.h"
 #include "core/page/PageConsole.h"
 #include "core/page/PageGroup.h"
@@ -142,7 +141,6 @@ Page::Page(PageClients& pageClients)
     , m_didLoadUserStyleSheet(false)
     , m_userStyleSheetModificationTime(0)
     , m_group(0)
-    , m_canStartMedia(true)
     , m_timerAlignmentInterval(DOMTimer::visiblePageAlignmentInterval())
     , m_isInWindow(true)
     , m_visibilityState(PageVisibilityStateVisible)
@@ -417,30 +415,6 @@ PluginData* Page::pluginData() const
     if (!m_pluginData)
         m_pluginData = PluginData::create(this);
     return m_pluginData.get();
-}
-
-inline MediaCanStartListener* Page::takeAnyMediaCanStartListener()
-{
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext()) {
-        if (MediaCanStartListener* listener = frame->document()->takeAnyMediaCanStartListener())
-            return listener;
-    }
-    return 0;
-}
-
-void Page::setCanStartMedia(bool canStartMedia)
-{
-    if (m_canStartMedia == canStartMedia)
-        return;
-
-    m_canStartMedia = canStartMedia;
-
-    while (m_canStartMedia) {
-        MediaCanStartListener* listener = takeAnyMediaCanStartListener();
-        if (!listener)
-            break;
-        listener->mediaCanStart();
-    }
 }
 
 static Frame* incrementFrame(Frame* curr, bool forward, bool wrapFlag)

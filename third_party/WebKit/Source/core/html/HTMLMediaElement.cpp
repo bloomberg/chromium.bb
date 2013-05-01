@@ -242,7 +242,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* docum
     , m_fragmentEndTime(MediaPlayer::invalidTime())
     , m_pendingActionFlags(0)
     , m_playing(false)
-    , m_isWaitingUntilMediaCanStart(false)
     , m_shouldDelayLoadEvent(false)
     , m_haveFiredLoadedData(false)
     , m_inActiveDocument(true)
@@ -287,8 +286,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* docum
 HTMLMediaElement::~HTMLMediaElement()
 {
     LOG(Media, "HTMLMediaElement::~HTMLMediaElement");
-    if (m_isWaitingUntilMediaCanStart)
-        document()->removeMediaCanStartListener(this);
     setShouldDelayLoadEvent(false);
     document()->unregisterForCaptionPreferencesChangedCallbacks(this);
     if (m_textTracks)
@@ -315,12 +312,6 @@ HTMLMediaElement::~HTMLMediaElement()
 
 void HTMLMediaElement::didMoveToNewDocument(Document* oldDocument)
 {
-    if (m_isWaitingUntilMediaCanStart) {
-        if (oldDocument)
-            oldDocument->removeMediaCanStartListener(this);
-        document()->addMediaCanStartListener(this);
-    }
-
     if (m_shouldDelayLoadEvent) {
         if (oldDocument)
             oldDocument->decrementLoadEventDelayCount();
@@ -704,17 +695,6 @@ void HTMLMediaElement::loadInternal()
     // us catch those bugs more quickly without needing all the branches to align to actually
     // trigger the event.
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
-
-    // If we can't start a load right away, start it later.
-    Page* page = document()->page();
-    if (pageConsentRequiredForLoad() && page && !page->canStartMedia()) {
-        setShouldDelayLoadEvent(false);
-        if (m_isWaitingUntilMediaCanStart)
-            return;
-        document()->addMediaCanStartListener(this);
-        m_isWaitingUntilMediaCanStart = true;
-        return;
-    }
 
     // Once the page has allowed an element to load media, it is free to load at will. This allows a
     // playlist that starts in a foreground tab to continue automatically if the tab is subsequently
@@ -3878,15 +3858,6 @@ unsigned HTMLMediaElement::webkitVideoDecodedByteCount() const
     if (!m_player)
         return 0;
     return m_player->videoDecodedByteCount();
-}
-
-void HTMLMediaElement::mediaCanStart()
-{
-    LOG(Media, "HTMLMediaElement::mediaCanStart");
-
-    ASSERT(m_isWaitingUntilMediaCanStart);
-    m_isWaitingUntilMediaCanStart = false;
-    loadInternal();
 }
 
 bool HTMLMediaElement::isURLAttribute(const Attribute& attribute) const

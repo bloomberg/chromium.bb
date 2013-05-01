@@ -45,7 +45,6 @@
     [RaisesException] void setCSSExclusionsEnabled(boolean enabled);
     [RaisesException] void setCSSVariablesEnabled(boolean enabled);
     [RaisesException] boolean cssVariablesEnabled();
-    [RaisesException] void setCanStartMedia(boolean enabled);
     [RaisesException] void setEditingBehavior(DOMString behavior);
     [RaisesException] void setDialogElementEnabled(boolean enabled);
     [RaisesException] void setLazyLayoutEnabled(boolean enabled);

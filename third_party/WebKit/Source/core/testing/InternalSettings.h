@@ -104,7 +104,6 @@ public:
     void setCSSExclusionsEnabled(bool enabled, ExceptionCode&);
     void setCSSVariablesEnabled(bool enabled, ExceptionCode&);
     bool cssVariablesEnabled(ExceptionCode&);
-    void setCanStartMedia(bool, ExceptionCode&);
     void setEditingBehavior(const String&, ExceptionCode&);
     void setDialogElementEnabled(bool, ExceptionCode&);
     void setLazyLayoutEnabled(bool, ExceptionCode&);
