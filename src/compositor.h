@@ -175,6 +175,7 @@ struct weston_output {
 	struct weston_output_zoom zoom;
 	int dirty;
 	struct wl_signal frame_signal;
+	struct wl_signal destroy_signal;
 	uint32_t frame_time;
 	int disable_planes;
 

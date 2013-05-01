@@ -2906,6 +2906,8 @@ weston_output_destroy(struct weston_output *output)
 {
 	struct weston_compositor *c = output->compositor;
 
+	wl_signal_emit(&output->destroy_signal, output);
+
 	pixman_region32_fini(&output->region);
 	pixman_region32_fini(&output->previous_damage);
 	output->compositor->output_id_pool &= ~(1 << output->id);
@@ -3064,6 +3066,7 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	weston_output_damage(output);
 
 	wl_signal_init(&output->frame_signal);
+	wl_signal_init(&output->destroy_signal);
 	wl_list_init(&output->animation_list);
 	wl_list_init(&output->resource_list);
 
