@@ -149,9 +149,10 @@ class ScrollManager {
   ~ScrollManager() {}
 
   // Looking at this finger and the previous ones within a small window
-  // and returns true iff the pressure is changing so quickly that we
-  // expect it's arriving on the pad or departing.
-  bool PressureChangingSignificantly(
+  // and returns true iff this finger is stationary and the pressure is
+  // changing so quickly that we expect it's arriving on the pad or
+  // departing.
+  bool StationaryFingerPressureChangingSignificantly(
       const HardwareStateBuffer& state_buffer,
       const FingerState& current) const;
 
@@ -198,6 +199,10 @@ class ScrollManager {
   // Try to look over a period up to this length of time when looking for large
   // pressure change.
   DoubleProperty max_pressure_change_duration_;
+  // A fast-swiping finger may generate rapidly changing pressure and we should
+  // not report a high pressure change in this case.  This is the maximum
+  // speed [mm/s] for which we may consider a finger stationary.
+  DoubleProperty max_stationary_speed_;
 
   // y| V  /
   //  |   /  D   _-

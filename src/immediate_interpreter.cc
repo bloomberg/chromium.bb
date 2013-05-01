@@ -364,6 +364,7 @@ ScrollManager::ScrollManager(PropRegistry* prop_reg)
       max_pressure_change_duration_(prop_reg,
                                     "Max Pressure Change Duration",
                                     0.016),
+      max_stationary_speed_(prop_reg, "Max Finger Stationary Speed", 0.0),
       vertical_scroll_snap_slope_(prop_reg, "Vertical Scroll Snap Slope",
                                   tanf(DegToRad(50.0))),  // 50 deg. from horiz.
       horizontal_scroll_snap_slope_(prop_reg, "Horizontal Scroll Snap Slope",
@@ -377,7 +378,7 @@ ScrollManager::ScrollManager(PropRegistry* prop_reg)
                                   10.0) {
 }
 
-bool ScrollManager::PressureChangingSignificantly(
+bool ScrollManager::StationaryFingerPressureChangingSignificantly(
     const HardwareStateBuffer& state_buffer,
     const FingerState& current) const {
   bool pressure_is_increasing = false;
@@ -421,6 +422,18 @@ bool ScrollManager::PressureChangingSignificantly(
     duration = now - state_buffer.Get(1)->timestamp;
   }
 
+  if (max_stationary_speed_.val_ != 0.0) {
+    // If finger moves too fast, we don't consider it stationary.
+    float dist_sq = (current.position_x - prev->position_x) *
+                    (current.position_x - prev->position_x) +
+                    (current.position_y - prev->position_y) *
+                    (current.position_y - prev->position_y);
+    float dist_sq_thresh = duration *
+        max_stationary_speed_.val_ * max_stationary_speed_.val_;
+    if (dist_sq > dist_sq_thresh)
+      return false;
+  }
+
   float dp_thresh = duration *
       (prev_result_high_pressure_change_ ?
        max_pressure_change_hysteresis_.val_ :
@@ -449,7 +462,7 @@ bool ScrollManager::ComputeScroll(
     if (!prev)
       return false;
     high_pressure_change = high_pressure_change ||
-        PressureChangingSignificantly(state_buffer, *fs);
+        StationaryFingerPressureChangingSignificantly(state_buffer, *fs);
     float local_dx = fs->position_x - prev->position_x;
     if (fs->flags & GESTURES_FINGER_WARP_X_NON_MOVE)
       local_dx = 0.0;
@@ -2187,7 +2200,8 @@ void ImmediateInterpreter::FillResultGesture(
       if (current->flags & GESTURES_FINGER_MERGE)
         return;
       bool high_pressure_change =
-        scroll_manager_.PressureChangingSignificantly(state_buffer_, *current);
+        scroll_manager_.StationaryFingerPressureChangingSignificantly(
+            state_buffer_, *current);
       if (high_pressure_change) {
         scroll_manager_.prev_result_high_pressure_change_ = true;
         return;
