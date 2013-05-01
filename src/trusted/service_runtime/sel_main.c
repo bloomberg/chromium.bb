@@ -356,7 +356,12 @@ int NaClSelLdrMain(int argc, char **argv) {
         break;
       /* case 'r':  with 'h' and 'w' above */
       case 's':
-        nap->validator_stub_out_mode = 1;
+        if (nap->validator->stubout_mode_implemented) {
+          nap->validator_stub_out_mode = 1;
+        } else {
+           NaClLog(LOG_WARNING,
+                   "stub_out_mode is not supported, disabled\n");
+        }
         break;
       case 'S':
         handle_signals = 1;
@@ -375,13 +380,19 @@ int NaClSelLdrMain(int argc, char **argv) {
         break;
 #endif
       case 'Z':
-        NaClLog(LOG_WARNING, "Enabling Fixed-Feature CPU Mode\n");
-        nap->fixed_feature_cpu_mode = 1;
-        if (!nap->validator->FixCPUFeatures(nap->cpu_features)) {
-          NaClLog(LOG_ERROR,
-                  "This CPU lacks features required by "
-                  "fixed-function CPU mode.\n");
-          exit(1);
+        if (nap->validator->readonly_text_implemented) {
+          NaClLog(LOG_WARNING, "Enabling Fixed-Feature CPU Mode\n");
+          nap->fixed_feature_cpu_mode = 1;
+          if (!nap->validator->FixCPUFeatures(nap->cpu_features)) {
+            NaClLog(LOG_ERROR,
+                    "This CPU lacks features required by "
+                    "fixed-function CPU mode.\n");
+            exit(1);
+          }
+        } else {
+           NaClLog(LOG_ERROR,
+                   "fixed_feature_cpu_mode is not supported\n");
+           exit(1);
         }
         break;
       default:

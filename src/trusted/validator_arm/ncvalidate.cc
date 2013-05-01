@@ -12,6 +12,7 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/cpu_features/arch/arm/cpu_arm.h"
 #include "native_client/src/trusted/validator_arm/model.h"
@@ -168,6 +169,9 @@ static NaClValidationStatus ApplyValidatorArm(
 }
 
 static struct NaClValidatorInterface validator = {
+  FALSE, /* Optional stubout_mode is not implemented.            */
+  FALSE, /* Optional readonly_text mode is not implemented.      */
+  TRUE,  /* Optional code replacement functions are implemented. */
   ApplyValidatorArm,
   ValidatorCopyArm,
   ValidatorCodeReplacementArm,

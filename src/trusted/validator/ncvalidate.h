@@ -127,6 +127,15 @@ typedef int (*NaClCPUFeaturesFixFunc)(NaClCPUFeatures *f);
 
 /* The full set of validator APIs. */
 struct NaClValidatorInterface {
+  /* Meta-information for early diagnosis. We assume that at least basic
+   * validation is always supported: otherwise NaCl is pretty useless.
+   */
+  /* Optional stubout_mode. */
+  int stubout_mode_implemented;
+  /* Optional readonly_text mode. */
+  int readonly_text_implemented;
+  /* Functions for code replacement.  */
+  int code_replacement;
   /* Validation API. */
   NaClValidateFunc Validate;
   NaClCopyCodeFunc CopyCode;

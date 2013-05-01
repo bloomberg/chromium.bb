@@ -48,12 +48,12 @@ static Bool FixUpSectionCheckStatus(NaClValidationStatus status) {
   return FALSE;
 }
 
-static Bool FixUpSection(uintptr_t load_address,
+static Bool FixUpSection(const struct NaClValidatorInterface *validator,
+                         uintptr_t load_address,
                          unsigned char *code,
                          size_t code_size) {
   Bool result;
   NaClValidationStatus status;
-  const struct NaClValidatorInterface *validator = NaClCreateValidator();
   NaClCPUFeatures *cpu_features = malloc(validator->CPUFeatureSize);
   if (cpu_features == NULL) {
     fprintf(stderr, "Unable to create memory for CPU features\n");
@@ -93,7 +93,9 @@ static void CheckBounds(unsigned char *data, size_t data_size,
   CHECK((unsigned char *) ptr + inside_size <= data + data_size);
 }
 
-static Bool FixUpELF32(unsigned char *data, size_t data_size) {
+static Bool FixUpELF32(const struct NaClValidatorInterface *validator,
+                       unsigned char *data,
+                       size_t data_size) {
   Elf32_Ehdr *header;
   int index;
   Bool fixed = TRUE;  /* until proven otherwise. */
@@ -110,8 +112,10 @@ static Bool FixUpELF32(unsigned char *data, size_t data_size) {
     if ((section->sh_flags & SHF_EXECINSTR) != 0) {
       CheckBounds(data, data_size,
                   data + section->sh_offset, section->sh_size);
-      if (!FixUpSection(section->sh_addr,
-                        data + section->sh_offset, section->sh_size)) {
+      if (!FixUpSection(validator,
+                        section->sh_addr,
+                        data + section->sh_offset,
+                        section->sh_size)) {
         fixed = FALSE;
       }
     }
@@ -120,7 +124,9 @@ static Bool FixUpELF32(unsigned char *data, size_t data_size) {
 }
 
 #if NACL_TARGET_SUBARCH == 64
-static Bool FixUpELF64(unsigned char *data, size_t data_size) {
+static Bool FixUpELF64(const struct NaClValidatorInterface *validator,
+                       unsigned char *data,
+                       size_t data_size) {
   Elf64_Ehdr *header;
   int index;
   Bool fixed = TRUE;  /* until proven otherwise. */
@@ -137,8 +143,10 @@ static Bool FixUpELF64(unsigned char *data, size_t data_size) {
     if ((section->sh_flags & SHF_EXECINSTR) != 0) {
       CheckBounds(data, data_size,
                   data + section->sh_offset, section->sh_size);
-      if (!FixUpSection(section->sh_addr,
-                        data + section->sh_offset, section->sh_size)) {
+      if (!FixUpSection(validator,
+                        section->sh_addr,
+                        data + section->sh_offset,
+                        section->sh_size)) {
         fixed = FALSE;
       }
     }
@@ -147,15 +155,19 @@ static Bool FixUpELF64(unsigned char *data, size_t data_size) {
 }
 #endif
 
-static Bool FixUpELF(unsigned char *data, size_t data_size) {
+static Bool FixUpELF(const struct NaClValidatorInterface *validator,
+                     unsigned char *data,
+                     size_t data_size) {
 #if NACL_TARGET_SUBARCH == 64
   if (data_size > EI_CLASS && data[EI_CLASS] == ELFCLASS64)
-    return FixUpELF64(data, data_size);
+    return FixUpELF64(validator, data, data_size);
 #endif
-  return FixUpELF32(data, data_size);
+  return FixUpELF32(validator, data, data_size);
 }
 
-static Bool FixUpELFFile(const char *input_file, const char *output_file) {
+static Bool FixUpELFFile(const struct NaClValidatorInterface *validator,
+                         const char *input_file,
+                         const char *output_file) {
   FILE *fp;
   size_t file_size;
   unsigned char *data;
@@ -186,7 +198,7 @@ static Bool FixUpELFFile(const char *input_file, const char *output_file) {
   }
   fclose(fp);
 
-  if (!FixUpELF(data, file_size)) return FALSE;
+  if (!FixUpELF(validator, data, file_size)) return FALSE;
 
   fp = fopen(output_file, "wb");
   if (fp == NULL) {
@@ -205,10 +217,17 @@ static Bool FixUpELFFile(const char *input_file, const char *output_file) {
 
 int main(int argc, const char *argv[]) {
   /* Be sure to redirect validator error messages to stderr. */
+  const struct NaClValidatorInterface *validator;
   struct GioFile err;
   GioFileRefCtor(&err, stderr);
   NaClLogPreInitSetGio((struct Gio*) &err);
   NaClLogModuleInit();
+  validator = NaClCreateValidator();
+  if (!validator->stubout_mode_implemented) {
+    fprintf(stderr,
+            "This platform does not support stubout mode.");
+    return 1;
+  }
   if (argc != 4 || strcmp(argv[2], "-o") != 0) {
     fprintf(stderr, "Usage: %s <input-file> -o <output-file>\n\n", argv[0]);
     fprintf(stderr,
@@ -218,5 +237,5 @@ int main(int argc, const char *argv[]) {
     return 1;
   }
   GioFileDtor((struct Gio*) &err);
-  return FixUpELFFile(argv[1], argv[3]) ? 0 : 1;
+  return FixUpELFFile(validator, argv[1], argv[3]) ? 0 : 1;
 }

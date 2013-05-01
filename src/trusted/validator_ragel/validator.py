@@ -101,8 +101,8 @@ def Init(validator_dll):
       CALLBACK_TYPE,  # callback
       ctypes.c_void_p,  # callback data
   ]
-  ValidateChunkIA32_.restype = ctypes.c_uint32  # Bool
-  ValidateChunkAMD64_.restype = ctypes.c_uint32  # Bool
+  ValidateChunkIA32_.restype = ctypes.c_bool  # Bool
+  ValidateChunkAMD64_.restype = ctypes.c_bool  # Bool
 
 
 def ValidateChunk(

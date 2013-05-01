@@ -5,6 +5,17 @@
 
 Import('env')
 
+if 'TRUSTED_ENV' not in env:
+  Return()
+
+# Even if stubout mode is not supported sel_ldr still must run valid .nexes.
+hello_world_nexe = env.File('${STAGING_DIR}/hello_world${PROGSUFFIX}')
+node = env.CommandSelLdrTestNacl(
+    'hello_world_stub_out_run.out', hello_world_nexe,
+    sel_ldr_flags=['-s'])
+env.AddNodeToTestSuite(
+    node, ['small_tests'], 'run_valid_nexe_with_stubout_test')
+
 # Do not run these tests with pexes, assuming they are portable, since
 # they use inline assembler.
 if env.Bit('bitcode') and env.Bit('pnacl_generate_pexe'):
@@ -24,14 +35,12 @@ if env.Bit('bitcode') and env.Bit('nacl_pic'):
 if env.Bit('build_arm'):
   Return()
 
-if 'TRUSTED_ENV' not in env:
-  Return()
-
 stubout_tool = env['TRUSTED_ENV'].File(
     '${STAGING_DIR}/${PROGPREFIX}ncval_stubout${PROGSUFFIX}')
 
 partly_invalid_nexe = env.ComponentProgram('partly_invalid', 'partly_invalid.c',
                                            EXTRA_LIBS=['${NONIRT_LIBS}'])
+
 
 # R-DFA does not support stubout mode but we need to create at least file
 # partly_invalid.nexe used in PPAPI tests thus we first create a rule for

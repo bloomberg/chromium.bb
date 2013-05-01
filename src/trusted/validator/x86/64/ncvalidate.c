@@ -227,6 +227,9 @@ static NaClValidationStatus ApplyValidatorCopy_x86_64(
 }
 
 static const struct NaClValidatorInterface validator = {
+  TRUE, /* Optional stubout_mode is implemented.                */
+  TRUE, /* Optional readonly_text is implemented.               */
+  TRUE, /* Optional code replacement functions are implemented. */
   ApplyValidator_x86_64,
   ApplyValidatorCopy_x86_64,
   ApplyValidatorCodeReplacement_x86_64,

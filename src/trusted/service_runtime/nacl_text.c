@@ -769,6 +769,13 @@ int32_t NaClSysDyncodeModify(struct NaClAppThread *natp,
   int32_t                     retval = -NACL_ABI_EINVAL;
   struct NaClDynamicRegion    *region;
 
+  if (!nap->validator->code_replacement) {
+    NaClLog(LOG_WARNING,
+            "NaClSysDyncodeModify: "
+            "Dynamic code modification is not supported\n");
+    return -NACL_ABI_ENOSYS;
+  }
+
   if (!nap->enable_dyncode_syscalls) {
     NaClLog(LOG_WARNING,
             "NaClSysDyncodeModify: Dynamic code syscalls are disabled\n");

@@ -223,6 +223,9 @@ static NaClValidationStatus ValidatorCodeReplacement_x86_64(
 }
 
 static const struct NaClValidatorInterface validator = {
+  FALSE, /* Optional stubout_mode is not implemented.            */
+  TRUE,  /* Optional readonly_text mode is implemented.          */
+  TRUE,  /* Optional code replacement functions are implemented. */
   ApplyDfaValidator_x86_64,
   ValidatorCodeCopy_x86_64,
   ValidatorCodeReplacement_x86_64,
