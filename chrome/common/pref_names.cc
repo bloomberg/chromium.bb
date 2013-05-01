@@ -973,6 +973,10 @@ const char kExtensionsUIDeveloperMode[] = "extensions.ui.developer_mode";
 // actions toolbar.
 const char kExtensionToolbarSize[] = "extensions.toolbarsize";
 
+// A preference that tracks browser action toolbar configuration. This is a list
+// object stored in the Preferences file. The extensions are stored by ID.
+const char kExtensionToolbar[] = "extensions.toolbar";
+
 // Dictionary pref that tracks which command belongs to which
 // extension + named command pair.
 const char kExtensionCommands[] = "extensions.commands";

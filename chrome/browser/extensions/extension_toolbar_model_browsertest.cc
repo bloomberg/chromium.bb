@@ -347,3 +347,34 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, Uninstall) {
   EXPECT_STREQ(idA.c_str(), ExtensionAt(0)->id().c_str());
   EXPECT_STREQ(idB.c_str(), ExtensionAt(1)->id().c_str());
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, ReorderOnPrefChange) {
+  // Load three extensions with browser action.
+  base::FilePath extension_a_path(test_data_dir_.AppendASCII("api_test")
+                                                .AppendASCII("browser_action")
+                                                .AppendASCII("basics"));
+  ASSERT_TRUE(LoadExtension(extension_a_path));
+  base::FilePath extension_b_path(test_data_dir_.AppendASCII("api_test")
+                                                .AppendASCII("browser_action")
+                                                .AppendASCII("popup"));
+  ASSERT_TRUE(LoadExtension(extension_b_path));
+  base::FilePath extension_c_path(test_data_dir_.AppendASCII("api_test")
+                                                .AppendASCII("browser_action")
+                                                .AppendASCII("remove_popup"));
+  ASSERT_TRUE(LoadExtension(extension_c_path));
+  std::string id_a = ExtensionAt(0)->id();
+  std::string id_b = ExtensionAt(1)->id();
+  std::string id_c = ExtensionAt(2)->id();
+
+  // Change value of toolbar preference.
+  extensions::ExtensionIdList new_order;
+  new_order.push_back(id_c);
+  new_order.push_back(id_b);
+  extensions::ExtensionSystem::Get(browser()->profile())
+      ->extension_prefs()->SetToolbarOrder(new_order);
+
+  // Verify order is changed.
+  EXPECT_EQ(id_c, ExtensionAt(0)->id());
+  EXPECT_EQ(id_b, ExtensionAt(1)->id());
+  EXPECT_EQ(id_a, ExtensionAt(2)->id());
+}

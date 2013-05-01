@@ -98,10 +98,6 @@ const char kDeprecatedPrefDisableReason[] = "disable_reason";
 // A bitmask of all the reasons an extension is disabled.
 const char kPrefDisableReasons[] = "disable_reasons";
 
-// A preference that tracks browser action toolbar configuration. This is a list
-// object stored in the Preferences file. The extensions are stored by ID.
-const char kExtensionToolbar[] = "extensions.toolbar";
-
 // The key for a serialized Time value indicating the start of the day (from the
 // server's perspective) an extension last included a "ping" parameter during
 // its update check.
@@ -1367,11 +1363,11 @@ bool ExtensionPrefs::IsExtensionDisabled(
 }
 
 ExtensionIdList ExtensionPrefs::GetToolbarOrder() {
-  return GetExtensionPrefAsVector(kExtensionToolbar);
+  return GetExtensionPrefAsVector(prefs::kExtensionToolbar);
 }
 
 void ExtensionPrefs::SetToolbarOrder(const ExtensionIdList& extension_ids) {
-  SetExtensionPrefFromVector(kExtensionToolbar, extension_ids);
+  SetExtensionPrefFromVector(prefs::kExtensionToolbar, extension_ids);
 }
 
 void ExtensionPrefs::OnExtensionInstalled(
@@ -2102,8 +2098,8 @@ bool ExtensionPrefs::NeedsStorageGarbageCollection() {
 void ExtensionPrefs::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(kExtensionsPref,
                                    PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(kExtensionToolbar,
-                             PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(prefs::kExtensionToolbar,
+                             PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterIntegerPref(prefs::kExtensionToolbarSize,
                                 -1,  // default value
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);

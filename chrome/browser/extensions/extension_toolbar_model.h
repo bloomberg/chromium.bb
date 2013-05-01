@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "content/public/browser/notification_observer.h"
@@ -82,6 +83,8 @@ class ExtensionToolbarModel : public content::NotificationObserver {
   int IncognitoIndexToOriginal(int incognito_index);
   int OriginalIndexToIncognito(int original_index);
 
+  void OnExtensionToolbarPrefChange();
+
  private:
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -92,7 +95,7 @@ class ExtensionToolbarModel : public content::NotificationObserver {
   // from the extension service and their saved order from the pref service
   // and constructs |toolbar_items_| from these data.
   void InitializeExtensionList();
-  void Populate();
+  void Populate(const extensions::ExtensionIdList& positions);
 
   // Fills |list| with extensions based on provided |order|.
   void FillExtensionList(const extensions::ExtensionIdList& order);
@@ -130,6 +133,12 @@ class ExtensionToolbarModel : public content::NotificationObserver {
   int visible_icon_count_;
 
   content::NotificationRegistrar registrar_;
+
+  // For observing change of toolbar order preference by external entity (sync).
+  PrefChangeRegistrar pref_change_registrar_;
+  base::Closure pref_change_callback_;
+
+  base::WeakPtrFactory<ExtensionToolbarModel> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionToolbarModel);
 };
