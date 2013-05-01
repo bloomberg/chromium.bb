@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_CACHE_METADATA_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_CACHE_METADATA_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_CACHE_METADATA_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_CACHE_METADATA_H_
 
 #include <map>
 #include <string>
@@ -22,34 +22,34 @@ class SequencedTaskRunner;
 
 namespace drive {
 
-class CacheEntry;
+class FileCacheEntry;
 
 // Callback for Iterate().
 typedef base::Callback<void(const std::string& resource_id,
-                            const CacheEntry& cache_entry)>
+                            const FileCacheEntry& cache_entry)>
     CacheIterateCallback;
 
-// CacheMetadata is interface to maintain metadata of FileCache's cached
+// FileCacheMetadata is interface to maintain metadata of FileCache's cached
 // files. This class only manages metadata. File operations are done by
 // FileCache.
 // All member access including ctor and dtor must be made on the blocking pool.
-class CacheMetadata {
+class FileCacheMetadata {
  public:
-  // A map table of cache file's resource id to its CacheEntry* entry.
-  typedef std::map<std::string, CacheEntry> CacheMap;
+  // A map table of cache file's resource id to its FileCacheEntry* entry.
+  typedef std::map<std::string, FileCacheEntry> CacheMap;
 
   // Database path.
   static const base::FilePath::CharType* kCacheMetadataDBPath;
 
-  virtual ~CacheMetadata();
+  virtual ~FileCacheMetadata();
 
-  // Creates CacheMetadata instance.
-  static scoped_ptr<CacheMetadata> CreateCacheMetadata(
+  // Creates FileCacheMetadata instance.
+  static scoped_ptr<FileCacheMetadata> CreateCacheMetadata(
       base::SequencedTaskRunner* blocking_task_runner);
 
-  // Creates CacheMetadata instance. This uses FakeCacheMetadata,
-  // which is an in-memory implementation and faster than CacheMetadataDB.
-  static scoped_ptr<CacheMetadata> CreateCacheMetadataForTesting(
+  // Creates FileCacheMetadata instance. This uses FakeCacheMetadata,
+  // which is an in-memory implementation and faster than FileCacheMetadataDB.
+  static scoped_ptr<FileCacheMetadata> CreateCacheMetadataForTesting(
       base::SequencedTaskRunner* blocking_task_runner);
 
   // Initialize the cache metadata store. Returns true on success.
@@ -57,7 +57,7 @@ class CacheMetadata {
   // Adds a new cache entry corresponding to |resource_id| if it doesn't
   // exist, otherwise update the existing entry.
   virtual void AddOrUpdateCacheEntry(const std::string& resource_id,
-                                     const CacheEntry& cache_entry) = 0;
+                                     const FileCacheEntry& cache_entry) = 0;
 
   // Removes entry corresponding to |resource_id| from cache map.
   virtual void RemoveCacheEntry(const std::string& resource_id) = 0;
@@ -69,7 +69,7 @@ class CacheMetadata {
   // extension and hence no md5.
   virtual bool GetCacheEntry(const std::string& resource_id,
                              const std::string& md5,
-                             CacheEntry* entry) = 0;
+                             FileCacheEntry* entry) = 0;
 
   // Removes temporary files (files in CACHE_TYPE_TMP) from the cache map.
   virtual void RemoveTemporaryFiles() = 0;
@@ -79,7 +79,7 @@ class CacheMetadata {
   virtual void Iterate(const CacheIterateCallback& callback) = 0;
 
  protected:
-  explicit CacheMetadata(base::SequencedTaskRunner* blocking_task_runner);
+  explicit FileCacheMetadata(base::SequencedTaskRunner* blocking_task_runner);
 
   // Checks whether the current thread is on the right sequenced worker pool
   // with the right sequence ID. If not, DCHECK will fail.
@@ -88,9 +88,9 @@ class CacheMetadata {
  private:
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(CacheMetadata);
+  DISALLOW_COPY_AND_ASSIGN(FileCacheMetadata);
 };
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_CACHE_METADATA_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FILE_CACHE_METADATA_H_

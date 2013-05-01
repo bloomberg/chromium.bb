@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/cache_metadata.h"
+#include "chrome/browser/chromeos/drive/file_cache_metadata.h"
 
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -14,9 +14,9 @@
 
 namespace drive {
 
-class CacheMetadataTest : public testing::Test {
+class FileCacheMetadataTest : public testing::Test {
  public:
-  CacheMetadataTest() {}
+  FileCacheMetadataTest() {}
 
   virtual void SetUp() OVERRIDE {
     // Create cache directories.
@@ -33,9 +33,9 @@ class CacheMetadataTest : public testing::Test {
     metadata_.reset();
   }
 
-  // Sets up the CacheMetadata object.
+  // Sets up the FileCacheMetadata object.
   void SetUpCacheMetadata() {
-    metadata_ = CacheMetadata::CreateCacheMetadata(NULL);
+    metadata_ = FileCacheMetadata::CreateCacheMetadata(NULL);
     ASSERT_TRUE(metadata_->Initialize(cache_paths_));
   }
 
@@ -90,40 +90,40 @@ class CacheMetadataTest : public testing::Test {
 
  protected:
   // Helper function to insert an item with key |resource_id| into |cache_map|.
-  // |md5| and |cache_state| are used to create the value CacheEntry.
-  void InsertIntoMap(CacheMetadata::CacheMap* cache_map,
+  // |md5| and |cache_state| are used to create the value FileCacheEntry.
+  void InsertIntoMap(FileCacheMetadata::CacheMap* cache_map,
                      const std::string& resource_id,
-                     const CacheEntry& cache_entry) {
+                     const FileCacheEntry& cache_entry) {
     cache_map->insert(std::make_pair(
         resource_id, cache_entry));
   }
 
   // Adds all entries in |cache_map| to the metadata storage.
-  void AddAllMapEntries(const CacheMetadata::CacheMap& cache_map) {
-    for (CacheMetadata::CacheMap::const_iterator iter = cache_map.begin();
+  void AddAllMapEntries(const FileCacheMetadata::CacheMap& cache_map) {
+    for (FileCacheMetadata::CacheMap::const_iterator iter = cache_map.begin();
          iter != cache_map.end(); ++iter) {
       metadata_->AddOrUpdateCacheEntry(iter->first, iter->second);
     }
   }
 
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<CacheMetadata> metadata_;
+  scoped_ptr<FileCacheMetadata> metadata_;
   std::vector<base::FilePath> cache_paths_;
   base::FilePath persistent_directory_;
   base::FilePath tmp_directory_;
   base::FilePath outgoing_directory_;
 };
 
-// Test all the methods of CacheMetadata except for
+// Test all the methods of FileCacheMetadata except for
 // RemoveTemporaryFiles.
-TEST_F(CacheMetadataTest, CacheTest) {
+TEST_F(FileCacheMetadataTest, CacheTest) {
   SetUpCacheMetadata();
 
   // Save an initial entry.
   std::string test_resource_id("test_resource_id");
   std::string test_file_md5("test_file_md5");
   {
-    CacheEntry new_cache_entry;
+    FileCacheEntry new_cache_entry;
     new_cache_entry.set_md5(test_file_md5);
     new_cache_entry.set_is_present(true);
     new_cache_entry.set_is_persistent(true);
@@ -131,7 +131,7 @@ TEST_F(CacheMetadataTest, CacheTest) {
   }
 
   // Test that the entry can be retrieved.
-  CacheEntry cache_entry;
+  FileCacheEntry cache_entry;
   ASSERT_TRUE(metadata_->GetCacheEntry(
       test_resource_id, test_file_md5, &cache_entry));
   EXPECT_EQ(test_file_md5, cache_entry.md5());
@@ -154,7 +154,7 @@ TEST_F(CacheMetadataTest, CacheTest) {
   // Update all attributes.
   test_file_md5 = "test_file_md5_2";
   {
-    CacheEntry updated_cache_entry;
+    FileCacheEntry updated_cache_entry;
     updated_cache_entry.set_md5(test_file_md5);
     updated_cache_entry.set_is_pinned(true);
     metadata_->AddOrUpdateCacheEntry(test_resource_id, updated_cache_entry);
@@ -174,7 +174,7 @@ TEST_F(CacheMetadataTest, CacheTest) {
   // Test dirty cache.
   test_file_md5 = "test_file_md5_3";
   {
-    CacheEntry new_cache_entry;
+    FileCacheEntry new_cache_entry;
     new_cache_entry.set_md5(test_file_md5);
     new_cache_entry.set_is_dirty(true);
     metadata_->AddOrUpdateCacheEntry(test_resource_id, new_cache_entry);
@@ -205,7 +205,7 @@ TEST_F(CacheMetadataTest, CacheTest) {
   test_resource_id = "test_resource_id_2";
   test_file_md5 = "test_file_md5_4";
   {
-    CacheEntry new_cache_entry;
+    FileCacheEntry new_cache_entry;
     new_cache_entry.set_md5(test_file_md5);
     new_cache_entry.set_is_present(true);
     metadata_->AddOrUpdateCacheEntry(test_resource_id, new_cache_entry);
@@ -218,14 +218,14 @@ TEST_F(CacheMetadataTest, CacheTest) {
   EXPECT_TRUE(cache_entry.is_present());
 }
 
-TEST_F(CacheMetadataTest, CorruptDB) {
+TEST_F(FileCacheMetadataTest, CorruptDB) {
   using file_util::PathExists;
   using file_util::IsLink;
   SetUpCacheWithVariousFiles();
 
   const base::FilePath db_path =
       cache_paths_[FileCache::CACHE_TYPE_META].Append(
-          CacheMetadata::kCacheMetadataDBPath);
+          FileCacheMetadata::kCacheMetadataDBPath);
 
   // Write a bogus file.
   std::string text("Hello world");
@@ -243,7 +243,7 @@ TEST_F(CacheMetadataTest, CorruptDB) {
   // Check contents in "persistent" directory.
   //
   // "id_foo" is moved to temporary directory.
-  CacheEntry cache_entry;
+  FileCacheEntry cache_entry;
   ASSERT_TRUE(metadata_->GetCacheEntry("id_foo", "md5foo", &cache_entry));
   EXPECT_EQ("md5foo", cache_entry.md5());
   EXPECT_FALSE(cache_entry.is_persistent());
@@ -303,33 +303,33 @@ TEST_F(CacheMetadataTest, CorruptDB) {
   EXPECT_FALSE(metadata_->GetCacheEntry("id_not_symlink", "", &cache_entry));
 }
 
-// Test CacheMetadata::RemoveTemporaryFiles.
-TEST_F(CacheMetadataTest, RemoveTemporaryFiles) {
+// Test FileCacheMetadata::RemoveTemporaryFiles.
+TEST_F(FileCacheMetadataTest, RemoveTemporaryFiles) {
   SetUpCacheMetadata();
 
-  CacheMetadata::CacheMap cache_map;
+  FileCacheMetadata::CacheMap cache_map;
   {
-    CacheEntry cache_entry;
+    FileCacheEntry cache_entry;
     cache_entry.set_md5("<md5>");
     cache_entry.set_is_present(true);
     InsertIntoMap(&cache_map, "<resource_id_1>", cache_entry);
   }
   {
-    CacheEntry cache_entry;
+    FileCacheEntry cache_entry;
     cache_entry.set_md5("<md5>");
     cache_entry.set_is_present(true);
     cache_entry.set_is_persistent(true);
     InsertIntoMap(&cache_map, "<resource_id_2>", cache_entry);
   }
   {
-    CacheEntry cache_entry;
+    FileCacheEntry cache_entry;
     cache_entry.set_md5("<md5>");
     cache_entry.set_is_present(true);
     cache_entry.set_is_persistent(true);
     InsertIntoMap(&cache_map, "<resource_id_3>", cache_entry);
   }
   {
-    CacheEntry cache_entry;
+    FileCacheEntry cache_entry;
     cache_entry.set_md5("<md5>");
     cache_entry.set_is_present(true);
     InsertIntoMap(&cache_map, "<resource_id_4>", cache_entry);
@@ -338,7 +338,7 @@ TEST_F(CacheMetadataTest, RemoveTemporaryFiles) {
   AddAllMapEntries(cache_map);
   metadata_->RemoveTemporaryFiles();
   // resource 1 and 4 should be gone, as these are temporary.
-  CacheEntry cache_entry;
+  FileCacheEntry cache_entry;
   EXPECT_FALSE(metadata_->GetCacheEntry("<resource_id_1>", "", &cache_entry));
   EXPECT_TRUE(metadata_->GetCacheEntry("<resource_id_2>", "", &cache_entry));
   EXPECT_TRUE(metadata_->GetCacheEntry("<resource_id_3>", "", &cache_entry));
@@ -346,15 +346,15 @@ TEST_F(CacheMetadataTest, RemoveTemporaryFiles) {
 }
 
 // Don't use TEST_F, as we don't want SetUp() and TearDown() for this test.
-TEST(CacheMetadataExtraTest, CannotOpenDB) {
+TEST(FileCacheMetadataExtraTest, CannotOpenDB) {
   // Create nonexistent cache paths, so the initialization fails due to the
   // failure of opening the DB.
   std::vector<base::FilePath> cache_paths =
       FileCache::GetCachePaths(
           base::FilePath::FromUTF8Unsafe("/somewhere/nonexistent"));
 
-  scoped_ptr<CacheMetadata> metadata =
-      CacheMetadata::CreateCacheMetadata(NULL);
+  scoped_ptr<FileCacheMetadata> metadata =
+      FileCacheMetadata::CreateCacheMetadata(NULL);
   EXPECT_FALSE(metadata->Initialize(cache_paths));
 }
 

@@ -11,12 +11,12 @@
 
 namespace drive {
 
-class CacheEntry;
+class FileCacheEntry;
 class ChangeListLoader;
 
 namespace test_util {
 
-// This is a bitmask of cache states in CacheEntry. Used only in tests.
+// This is a bitmask of cache states in FileCacheEntry. Used only in tests.
 enum TestFileCacheState {
   TEST_CACHE_STATE_NONE       = 0,
   TEST_CACHE_STATE_PINNED     = 1 << 0,
@@ -27,11 +27,11 @@ enum TestFileCacheState {
 };
 
 // Converts |cache_state| which is a bit mask of TestFileCacheState, to a
-// CacheEntry.
-CacheEntry ToCacheEntry(int cache_state);
+// FileCacheEntry.
+FileCacheEntry ToCacheEntry(int cache_state);
 
 // Returns true if the cache state of the given two cache entries are equal.
-bool CacheStatesEqual(const CacheEntry& a, const CacheEntry& b);
+bool CacheStatesEqual(const FileCacheEntry& a, const FileCacheEntry& b);
 
 // Loads a test json file as root ("/drive") element from a test file stored
 // under chrome/test/data/chromeos. Returns true on success.

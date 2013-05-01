@@ -11,13 +11,13 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
-#include "chrome/browser/chromeos/drive/cache_observer.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
+#include "chrome/browser/chromeos/drive/file_cache_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_observer.h"
 
 namespace drive {
 
-class CacheEntry;
+class FileCacheEntry;
 class DriveEntryProto;
 class DriveFileSystemInterface;
 class FileCache;
@@ -36,7 +36,7 @@ class FileCache;
 // client resumes fetching operations next time the user logs in, based on
 // the states left in the cache.
 class SyncClient : public FileSystemObserver,
-                   public CacheObserver {
+                   public FileCacheObserver {
  public:
   // Types of sync tasks.
   enum SyncType {
@@ -102,11 +102,11 @@ class SyncClient : public FileSystemObserver,
 
   // Called when the resource ID of a pinned file is obtained.
   void OnGetResourceIdOfExistingPinnedFile(const std::string& resource_id,
-                                           const CacheEntry& cache_entry);
+                                           const FileCacheEntry& cache_entry);
 
   // Called when a file entry is obtained.
   void OnGetEntryInfoByResourceId(const std::string& resource_id,
-                                  const CacheEntry& cache_entry,
+                                  const FileCacheEntry& cache_entry,
                                   FileError error,
                                   const base::FilePath& file_path,
                                   scoped_ptr<DriveEntryProto> entry_proto);
@@ -115,7 +115,7 @@ class SyncClient : public FileSystemObserver,
   void OnGetCacheEntry(const std::string& resource_id,
                        const std::string& latest_md5,
                        bool success,
-                       const CacheEntry& cache_entry);
+                       const FileCacheEntry& cache_entry);
 
   // Called when an existing cache entry and the local files are removed.
   void OnRemove(const std::string& resource_id, FileError error);

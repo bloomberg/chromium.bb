@@ -12,9 +12,9 @@
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
-#include "chrome/browser/chromeos/drive/cache_metadata.h"
-#include "chrome/browser/chromeos/drive/cache_observer.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/file_cache_metadata.h"
+#include "chrome/browser/chromeos/drive/file_cache_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -170,7 +170,7 @@ void RunGetFileFromCacheCallback(
 // Runs callback with pointers dereferenced.
 // Used to implement GetCacheEntry().
 void RunGetCacheEntryCallback(const GetCacheEntryCallback& callback,
-                              CacheEntry* cache_entry,
+                              FileCacheEntry* cache_entry,
                               bool success) {
   DCHECK(cache_entry);
   DCHECK(!callback.is_null());
@@ -243,12 +243,12 @@ bool FileCache::IsUnderFileCacheDirectory(const base::FilePath& path) const {
   return cache_root_path_ == path || cache_root_path_.IsParent(path);
 }
 
-void FileCache::AddObserver(CacheObserver* observer) {
+void FileCache::AddObserver(FileCacheObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.AddObserver(observer);
 }
 
-void FileCache::RemoveObserver(CacheObserver* observer) {
+void FileCache::RemoveObserver(FileCacheObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.RemoveObserver(observer);
 }
@@ -259,7 +259,7 @@ void FileCache::GetCacheEntry(const std::string& resource_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  CacheEntry* cache_entry = new CacheEntry;
+  FileCacheEntry* cache_entry = new FileCacheEntry;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
       FROM_HERE,
@@ -493,7 +493,7 @@ bool FileCache::InitializeOnBlockingPool() {
   if (!InitCachePaths(cache_paths_))
     return false;
 
-  metadata_ = CacheMetadata::CreateCacheMetadata(
+  metadata_ = FileCacheMetadata::CreateCacheMetadata(
       blocking_task_runner_);
   return metadata_->Initialize(cache_paths_);
 }
@@ -502,7 +502,7 @@ void FileCache::InitializeOnBlockingPoolForTesting() {
   AssertOnSequencedWorkerPool();
 
   InitCachePaths(cache_paths_);
-  metadata_ = CacheMetadata::CreateCacheMetadataForTesting(
+  metadata_ = FileCacheMetadata::CreateCacheMetadataForTesting(
       blocking_task_runner_);
   metadata_->Initialize(cache_paths_);
 }
@@ -514,7 +514,7 @@ void FileCache::DestroyOnBlockingPool() {
 
 bool FileCache::GetCacheEntryOnBlockingPool(const std::string& resource_id,
                                             const std::string& md5,
-                                            CacheEntry* entry) {
+                                            FileCacheEntry* entry) {
   DCHECK(entry);
   AssertOnSequencedWorkerPool();
   return metadata_->GetCacheEntry(resource_id, md5, entry);
@@ -553,7 +553,7 @@ scoped_ptr<FileCache::GetFileResult> FileCache::GetFileOnBlockingPool(
 
   scoped_ptr<GetFileResult> result(new GetFileResult);
 
-  CacheEntry cache_entry;
+  FileCacheEntry cache_entry;
   if (!GetCacheEntryOnBlockingPool(resource_id, md5, &cache_entry) ||
       !cache_entry.is_present()) {
     result->first = FILE_ERROR_NOT_FOUND;
@@ -597,7 +597,7 @@ FileError FileCache::StoreOnBlockingPool(
   CacheSubDirectoryType sub_dir_type = CACHE_TYPE_TMP;
 
   // If file was previously pinned, store it in persistent dir.
-  CacheEntry cache_entry;
+  FileCacheEntry cache_entry;
   if (GetCacheEntryOnBlockingPool(resource_id, std::string(), &cache_entry)) {
     // File exists in cache.
     // If file is dirty or mounted, return error.
@@ -665,7 +665,7 @@ FileError FileCache::PinOnBlockingPool(const std::string& resource_id,
   AssertOnSequencedWorkerPool();
 
   bool is_persistent = true;
-  CacheEntry cache_entry;
+  FileCacheEntry cache_entry;
   if (!GetCacheEntryOnBlockingPool(resource_id, md5, &cache_entry)) {
     // The file will be first downloaded in 'tmp', then moved to 'persistent'.
     is_persistent = false;
@@ -709,7 +709,7 @@ FileError FileCache::UnpinOnBlockingPool(const std::string& resource_id,
   AssertOnSequencedWorkerPool();
 
   // Unpinning a file means its entry must exist in cache.
-  CacheEntry cache_entry;
+  FileCacheEntry cache_entry;
   if (!GetCacheEntryOnBlockingPool(resource_id, md5, &cache_entry)) {
     LOG(WARNING) << "Can't unpin a file that wasn't pinned or cached: res_id="
                  << resource_id
@@ -765,7 +765,7 @@ scoped_ptr<FileCache::GetFileResult> FileCache::MarkAsMountedOnBlockingPool(
   scoped_ptr<GetFileResult> result(new GetFileResult);
 
   // Get cache entry associated with the resource_id and md5
-  CacheEntry cache_entry;
+  FileCacheEntry cache_entry;
   if (!GetCacheEntryOnBlockingPool(resource_id, md5, &cache_entry)) {
     result->first = FILE_ERROR_NOT_FOUND;
     return result.Pass();
@@ -816,7 +816,7 @@ FileError FileCache::MarkAsUnmountedOnBlockingPool(
   DCHECK_EQ(util::kMountedArchiveFileExtension, extra_extension);
 
   // Get cache entry associated with the resource_id and md5
-  CacheEntry cache_entry;
+  FileCacheEntry cache_entry;
   if (!GetCacheEntryOnBlockingPool(resource_id, md5, &cache_entry))
     return FILE_ERROR_NOT_FOUND;
 
@@ -858,7 +858,7 @@ FileError FileCache::MarkDirtyOnBlockingPool(
 
   // Marking a file dirty means its entry and actual file blob must exist in
   // cache.
-  CacheEntry cache_entry;
+  FileCacheEntry cache_entry;
   if (!GetCacheEntryOnBlockingPool(resource_id, std::string(), &cache_entry) ||
       !cache_entry.is_present()) {
     LOG(WARNING) << "Can't mark dirty a file that wasn't cached: res_id="
@@ -926,7 +926,7 @@ FileError FileCache::CommitDirtyOnBlockingPool(
 
   // Committing a file dirty means its entry and actual file blob must exist in
   // cache.
-  CacheEntry cache_entry;
+  FileCacheEntry cache_entry;
   if (!GetCacheEntryOnBlockingPool(resource_id, std::string(), &cache_entry) ||
       !cache_entry.is_present()) {
     LOG(WARNING) << "Can't commit dirty a file that wasn't cached: res_id="
@@ -971,7 +971,7 @@ FileError FileCache::ClearDirtyOnBlockingPool(
 
   // |md5| is the new .<md5> extension to rename the file to.
   // So, search for entry in cache without comparing md5.
-  CacheEntry cache_entry;
+  FileCacheEntry cache_entry;
 
   // Clearing a dirty file means its entry and actual file blob must exist in
   // cache.
@@ -1037,7 +1037,7 @@ FileError FileCache::RemoveOnBlockingPool(
   // MD5 is not passed into RemoveCacheEntry because we would delete all
   // cache files corresponding to <resource_id> regardless of the md5.
   // So, search for entry in cache without taking md5 into account.
-  CacheEntry cache_entry;
+  FileCacheEntry cache_entry;
 
   // If entry doesn't exist or is dirty or mounted in cache, nothing to do.
   const bool entry_found =
@@ -1109,7 +1109,7 @@ void FileCache::OnPinned(const std::string& resource_id,
   callback.Run(error);
 
   if (error == FILE_ERROR_OK)
-    FOR_EACH_OBSERVER(CacheObserver,
+    FOR_EACH_OBSERVER(FileCacheObserver,
                       observers_,
                       OnCachePinned(resource_id, md5));
 }
@@ -1124,7 +1124,7 @@ void FileCache::OnUnpinned(const std::string& resource_id,
   callback.Run(error);
 
   if (error == FILE_ERROR_OK)
-    FOR_EACH_OBSERVER(CacheObserver,
+    FOR_EACH_OBSERVER(FileCacheObserver,
                       observers_,
                       OnCacheUnpinned(resource_id, md5));
 
@@ -1147,7 +1147,7 @@ void FileCache::OnCommitDirty(const std::string& resource_id,
   callback.Run(error);
 
   if (error == FILE_ERROR_OK)
-    FOR_EACH_OBSERVER(CacheObserver,
+    FOR_EACH_OBSERVER(FileCacheObserver,
                       observers_,
                       OnCacheCommitted(resource_id));
 }
@@ -1210,7 +1210,7 @@ bool FileCache::CreateCacheDirectories(
 
 // static
 FileCache::CacheSubDirectoryType FileCache::GetSubDirectoryType(
-    const CacheEntry& cache_entry) {
+    const FileCacheEntry& cache_entry) {
   return cache_entry.is_persistent() ? CACHE_TYPE_PERSISTENT : CACHE_TYPE_TMP;
 }
 

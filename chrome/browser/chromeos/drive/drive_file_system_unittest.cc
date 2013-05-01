@@ -23,8 +23,8 @@
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
-#include "chrome/browser/chromeos/drive/mock_cache_observer.h"
 #include "chrome/browser/chromeos/drive/mock_directory_change_observer.h"
+#include "chrome/browser/chromeos/drive/mock_file_cache_observer.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/fake_drive_service.h"
@@ -279,7 +279,7 @@ class DriveFileSystemTest : public testing::Test {
   // Helper function to call GetCacheEntry from origin thread.
   bool GetCacheEntryFromOriginThread(const std::string& resource_id,
                                      const std::string& md5,
-                                     CacheEntry* cache_entry) {
+                                     FileCacheEntry* cache_entry) {
     bool result = false;
     cache_->GetCacheEntry(resource_id, md5,
                           google_apis::test_util::CreateCopyResultCallback(
@@ -291,7 +291,7 @@ class DriveFileSystemTest : public testing::Test {
   // Returns true if the cache entry exists for the given resource ID and MD5.
   bool CacheEntryExists(const std::string& resource_id,
                         const std::string& md5) {
-    CacheEntry cache_entry;
+    FileCacheEntry cache_entry;
     return GetCacheEntryFromOriginThread(resource_id, md5, &cache_entry);
   }
 
@@ -2106,7 +2106,7 @@ TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
   EXPECT_TRUE(file_util::ReadFileToString(opened_file_path, &cache_file_data));
   EXPECT_EQ(kExpectedContent, cache_file_data);
 
-  CacheEntry cache_entry;
+  FileCacheEntry cache_entry;
   EXPECT_TRUE(GetCacheEntryFromOriginThread(file_resource_id, file_md5,
                                             &cache_entry));
   EXPECT_TRUE(cache_entry.is_present());
@@ -2201,7 +2201,7 @@ TEST_F(DriveFileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   bool success = false;
-  CacheEntry cache_entry;
+  FileCacheEntry cache_entry;
   cache_->GetCacheEntry(
       entry->resource_id(),
       entry->file_specific_info().file_md5(),

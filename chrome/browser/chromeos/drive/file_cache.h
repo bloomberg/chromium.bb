@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/drive/cache_metadata.h"
+#include "chrome/browser/chromeos/drive/file_cache_metadata.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 
 class Profile;
@@ -26,9 +26,9 @@ class SequencedTaskRunner;
 
 namespace drive {
 
-class CacheEntry;
-class CacheMetadata;
-class CacheObserver;
+class FileCacheEntry;
+class FileCacheMetadata;
+class FileCacheObserver;
 
 // Callback for GetFileFromCache.
 typedef base::Callback<void(FileError error,
@@ -39,7 +39,7 @@ typedef base::Callback<void(FileError error,
 // |success| indicates if the operation was successful.
 // |cache_entry| is the obtained cache entry. On failure, |cache_state| is
 // set to TEST_CACHE_STATE_NONE.
-typedef base::Callback<void(bool success, const CacheEntry& cache_entry)>
+typedef base::Callback<void(bool success, const FileCacheEntry& cache_entry)>
     GetCacheEntryCallback;
 
 // Callback for RequestInitialize.
@@ -109,10 +109,10 @@ class FileCache {
   bool IsUnderFileCacheDirectory(const base::FilePath& path) const;
 
   // Adds observer.
-  void AddObserver(CacheObserver* observer);
+  void AddObserver(FileCacheObserver* observer);
 
   // Removes observer.
-  void RemoveObserver(CacheObserver* observer);
+  void RemoveObserver(FileCacheObserver* observer);
 
   // Gets the cache entry for file corresponding to |resource_id| and |md5|
   // and runs |callback| with true and the entry found if entry exists in cache
@@ -258,7 +258,7 @@ class FileCache {
 
   // Returns the type of the sub directory where the cache file is stored.
   static CacheSubDirectoryType GetSubDirectoryType(
-      const CacheEntry& cache_entry);
+      const FileCacheEntry& cache_entry);
 
  private:
   friend class FileCacheTest;
@@ -301,7 +301,7 @@ class FileCache {
   // See also GetCacheEntry().
   bool GetCacheEntryOnBlockingPool(const std::string& resource_id,
                                    const std::string& md5,
-                                   CacheEntry* entry);
+                                   FileCacheEntry* entry);
 
   // Used to implement Iterate().
   void IterateOnBlockingPool(const CacheIterateCallback& iteration_callback);
@@ -383,10 +383,10 @@ class FileCache {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   // The cache state data. This member must be access only on the blocking pool.
-  scoped_ptr<CacheMetadata> metadata_;
+  scoped_ptr<FileCacheMetadata> metadata_;
 
   // List of observers, this member must be accessed on UI thread.
-  ObserverList<CacheObserver> observers_;
+  ObserverList<FileCacheObserver> observers_;
 
   FreeDiskSpaceGetterInterface* free_disk_space_getter_;  // Not owned.
 

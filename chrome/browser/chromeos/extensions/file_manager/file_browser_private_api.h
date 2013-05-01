@@ -34,7 +34,7 @@ class FileSystemURL;
 }
 
 namespace drive {
-class CacheEntry;
+class FileCacheEntry;
 class DriveWebAppsRegistry;
 struct DriveWebAppInfo;
 struct SearchResultInfo;
@@ -518,7 +518,7 @@ class GetDriveFilePropertiesFunction : public FileBrowserFunction {
                      scoped_ptr<drive::DriveEntryProto> entry);
 
   void CacheStateReceived(bool success,
-                          const drive::CacheEntry& cache_entry);
+                          const drive::FileCacheEntry& cache_entry);
 
   void CompleteGetFileProperties(drive::FileError error);
 

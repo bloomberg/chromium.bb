@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/drive/mock_cache_observer.h"
+#include "chrome/browser/chromeos/drive/mock_file_cache_observer.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "content/public/test/test_browser_thread.h"
@@ -68,9 +68,9 @@ struct PathToVerify {
 
 // Copies results from Iterate().
 void OnIterate(std::vector<std::string>* out_resource_ids,
-               std::vector<CacheEntry>* out_cache_entries,
+               std::vector<FileCacheEntry>* out_cache_entries,
                const std::string& resource_id,
-               const CacheEntry& cache_entry) {
+               const FileCacheEntry& cache_entry) {
   out_resource_ids->push_back(resource_id);
   out_cache_entries->push_back(cache_entry);
 }
@@ -238,7 +238,7 @@ class FileCacheTest : public testing::Test {
     EXPECT_EQ(expected_error_, error);
 
     // Verify cache map.
-    CacheEntry cache_entry;
+    FileCacheEntry cache_entry;
     const bool cache_entry_found =
         GetCacheEntryFromOriginThread(resource_id, md5, &cache_entry);
     if (cache_entry_found)
@@ -483,7 +483,7 @@ class FileCacheTest : public testing::Test {
     EXPECT_EQ(expected_error_, error);
 
     // Verify cache map.
-    CacheEntry cache_entry;
+    FileCacheEntry cache_entry;
     const bool cache_entry_found =
         GetCacheEntryFromOriginThread(resource_id, md5, &cache_entry);
     if (test_util::ToCacheEntry(expected_cache_state_).is_present() ||
@@ -547,7 +547,7 @@ class FileCacheTest : public testing::Test {
   // Helper function to call GetCacheEntry from origin thread.
   bool GetCacheEntryFromOriginThread(const std::string& resource_id,
                                      const std::string& md5,
-                                     CacheEntry* cache_entry) {
+                                     FileCacheEntry* cache_entry) {
     bool result = false;
     cache_->GetCacheEntry(resource_id, md5,
                           google_apis::test_util::CreateCopyResultCallback(
@@ -559,7 +559,7 @@ class FileCacheTest : public testing::Test {
   // Returns true if the cache entry exists for the given resource ID and MD5.
   bool CacheEntryExists(const std::string& resource_id,
                         const std::string& md5) {
-    CacheEntry cache_entry;
+    FileCacheEntry cache_entry;
     return GetCacheEntryFromOriginThread(resource_id, md5, &cache_entry);
   }
 
@@ -1244,7 +1244,7 @@ TEST_F(FileCacheTest, Iterate) {
   PrepareTestCacheResources();
 
   std::vector<std::string> resource_ids;
-  std::vector<CacheEntry> cache_entries;
+  std::vector<FileCacheEntry> cache_entries;
   bool completed = false;
   cache_->Iterate(
       base::Bind(&OnIterate, &resource_ids, &cache_entries),

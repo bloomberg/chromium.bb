@@ -1061,7 +1061,7 @@ void DriveFileSystem::GetResolvedFileByPathAfterGetCacheEntryForCancel(
     const std::string& resource_id,
     const std::string& md5,
     bool success,
-    const CacheEntry& cache_entry) {
+    const FileCacheEntry& cache_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // TODO(hshi): http://crbug.com/127138 notify when file properties change.
   // This allows file manager to clear the "Available offline" checkbox.
@@ -1722,7 +1722,7 @@ void DriveFileSystem::CheckLocalModificationAndRunAfterGetCacheEntry(
     scoped_ptr<DriveEntryProto> entry_proto,
     const GetEntryInfoCallback& callback,
     bool success,
-    const CacheEntry& cache_entry) {
+    const FileCacheEntry& cache_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
