@@ -145,14 +145,22 @@ struct IDRGtkMapping {
 
 // The image resources that will be tinted by the 'button' tint value.
 const int kOtherToolbarButtonIDs[] = {
-  IDR_TOOLS, IDR_TOOLS_H, IDR_TOOLS_P,
-
-  // TODO(erg): The rest of these need to have some sort of injection done.
-  IDR_LOCATIONBG_C, IDR_LOCATIONBG_L, IDR_LOCATIONBG_R,
-  IDR_BROWSER_ACTIONS_OVERFLOW, IDR_BROWSER_ACTIONS_OVERFLOW_H,
+  IDR_TOOLS,
+  IDR_TOOLS_H,
+  IDR_TOOLS_P,
+  IDR_BROWSER_ACTIONS_OVERFLOW,
+  IDR_BROWSER_ACTIONS_OVERFLOW_H,
   IDR_BROWSER_ACTIONS_OVERFLOW_P,
-  IDR_MENU_DROPARROW,
-  IDR_THROBBER, IDR_THROBBER_WAITING, IDR_THROBBER_LIGHT,
+  IDR_THROBBER,
+  IDR_THROBBER_WAITING,
+  IDR_THROBBER_LIGHT,
+
+  // TODO(erg): The dropdown arrow should be tinted because we're injecting
+  // various background GTK colors, but the code that accesses them needs to be
+  // modified so that they ask their ui::ThemeProvider instead of the
+  // ResourceBundle. (i.e. in a light on dark theme, the dropdown arrow will be
+  // dark on dark)
+  IDR_MENU_DROPARROW
 };
 
 bool IsOverridableImage(int id) {
