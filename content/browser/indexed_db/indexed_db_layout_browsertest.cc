@@ -24,8 +24,7 @@ namespace {
 static const char* kBasicTests[] = {
   "basics.html",
   "basics-shared-workers.html",
-  // Failing on Precise bot (crbug.com/145592).
-  // "basics-workers.html",
+  "basics-workers.html",
   "database-basics.html",
   "factory-basics.html",
   "index-basics.html",
@@ -45,6 +44,7 @@ static const char* kComplexTests[] = {
 static const char* kIndexTests[] = {
   "deleteIndex.html",
   // Flaky: http://crbug.com/123685
+  // Flaky: http://crbug.com/127244
   // "index-basics-workers.html",
   "index-count.html",
   "index-cursor.html",
