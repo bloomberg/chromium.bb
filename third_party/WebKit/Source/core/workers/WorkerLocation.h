@@ -27,7 +27,6 @@
 #ifndef WorkerLocation_h
 #define WorkerLocation_h
 
-#include "bindings/v8/ScriptWrappable.h"
 #include "core/platform/KURL.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
@@ -36,7 +35,7 @@
 
 namespace WebCore {
 
-  class WorkerLocation : public RefCounted<WorkerLocation>, public ScriptWrappable {
+    class WorkerLocation : public RefCounted<WorkerLocation> {
     public:
         static PassRefPtr<WorkerLocation> create(const KURL& url)
         {
@@ -59,10 +58,7 @@ namespace WebCore {
         String toString() const { return href(); }
 
     private:
-        explicit WorkerLocation(const KURL& url) : m_url(url)
-        {
-            ScriptWrappable::init(this);
-        }
+        explicit WorkerLocation(const KURL& url) : m_url(url) { }
 
         KURL m_url;
     };
