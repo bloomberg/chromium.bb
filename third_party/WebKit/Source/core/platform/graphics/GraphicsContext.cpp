@@ -56,8 +56,9 @@ using namespace std;
 namespace WebCore {
 
 GraphicsContext::GraphicsContext(SkCanvas* canvas)
-    : m_updatingControlTints(false)
-    , m_transparencyCount(0)
+    : m_transparencyCount(0)
+    , m_useHighResMarker(false)
+    , m_updatingControlTints(false)
 {
     if (canvas) {
         m_data = adoptPtr(new PlatformContextSkia(canvas));
@@ -701,8 +702,7 @@ void GraphicsContext::drawLineForDocumentMarker(const FloatPoint& pt, float widt
     if (paintingDisabled())
         return;
 
-    int deviceScaleFactor = SkScalarRoundToInt(WebCoreFloatToSkScalar(platformContext()->deviceScaleFactor()));
-    ASSERT(deviceScaleFactor == 1 || deviceScaleFactor == 2);
+    int deviceScaleFactor = m_useHighResMarker ? 2 : 1;
 
     // Create the pattern we'll use to draw the underline.
     int index = style == DocumentMarkerGrammarLineStyle ? 1 : 0;
@@ -1565,14 +1565,9 @@ bool GraphicsContext::isCompatibleWithBuffer(ImageBuffer* buffer) const
     return scalesMatch(getCTM(), bufferContext->getCTM()) && isAcceleratedContext() == bufferContext->isAcceleratedContext();
 }
 
-void GraphicsContext::platformApplyDeviceScaleFactor(float)
-{
-}
-
 void GraphicsContext::applyDeviceScaleFactor(float deviceScaleFactor)
 {
     scale(FloatSize(deviceScaleFactor, deviceScaleFactor));
-    platformApplyDeviceScaleFactor(deviceScaleFactor);
 }
 
 void GraphicsContext::addCornerArc(SkPath* path, const SkRect& rect, const IntSize& size, int startAngle)

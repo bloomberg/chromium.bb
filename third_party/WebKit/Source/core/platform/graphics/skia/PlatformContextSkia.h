@@ -179,9 +179,6 @@ public:
     bool isAccelerated() const { return m_accelerated; }
     void setAccelerated(bool accelerated) { m_accelerated = accelerated; }
 
-    float deviceScaleFactor() const { return m_deviceScaleFactor; }
-    void setDeviceScaleFactor(float scale) { m_deviceScaleFactor = scale; }
-
     void setTrackOpaqueRegion(bool track) { m_trackOpaqueRegion = track; }
 
     // This will be an empty region unless tracking is enabled.
@@ -283,7 +280,7 @@ private:
     bool m_printing;
     bool m_accelerated;
     bool m_drawingToImageBuffer;
-    float m_deviceScaleFactor;
+
 };
 
 inline void PlatformContextSkia::realizeSave(SkCanvas::SaveFlags flags)

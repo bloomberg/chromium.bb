@@ -199,6 +199,10 @@ namespace WebCore {
         void setShouldSubpixelQuantizeFonts(bool);
         bool shouldSubpixelQuantizeFonts() const;
 
+        // Change the way document markers are rendered.
+        // Any deviceScaleFactor higher than 1.5 is enough to justify setting this flag.
+        void setUseHighResMarkers(bool isHighRes) { m_useHighResMarker = isHighRes; }
+
         const GraphicsContextState& state() const;
 
         bool isAcceleratedContext() const;
@@ -347,7 +351,6 @@ namespace WebCore {
         // This function applies the device scale factor to the context, making the context capable of
         // acting as a base-level context for a HiDPI environment.
         void applyDeviceScaleFactor(float);
-        void platformApplyDeviceScaleFactor(float);
 
         bool shouldIncludeChildWindows() const { return false; }
 
@@ -391,8 +394,13 @@ namespace WebCore {
 
         GraphicsContextState m_state;
         Vector<GraphicsContextState> m_stack;
-        bool m_updatingControlTints;
         unsigned m_transparencyCount;
+
+        // Are we on a high DPI display? If so, spelling and grammer markers are larger.
+        bool m_useHighResMarker;
+
+        // FIXME: Make this go away: crbug.com/236892
+        bool m_updatingControlTints;
     };
 
     class GraphicsContextStateSaver {

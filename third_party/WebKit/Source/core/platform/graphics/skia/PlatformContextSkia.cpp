@@ -71,7 +71,6 @@ PlatformContextSkia::PlatformContextSkia(SkCanvas* canvas)
     , m_printing(false)
     , m_accelerated(false)
     , m_drawingToImageBuffer(false)
-    , m_deviceScaleFactor(1)
 {
     m_stateStack.append(PlatformContextSkiaState());
     m_state = &m_stateStack.last();

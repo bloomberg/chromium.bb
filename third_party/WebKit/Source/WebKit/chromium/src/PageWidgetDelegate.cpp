@@ -88,7 +88,7 @@ void PageWidgetDelegate::paint(Page* page, PageOverlayList* overlays, WebCanvas*
     GraphicsContext& gc = builder.context();
     gc.setShouldSmoothFonts(background == Opaque);
     gc.applyDeviceScaleFactor(page->deviceScaleFactor());
-    gc.platformContext()->setDeviceScaleFactor(page->deviceScaleFactor());
+    gc.setUseHighResMarkers(page->deviceScaleFactor() > 1.5f);
     IntRect dirtyRect(rect);
     gc.save();
     FrameView* view = mainFrameView(page);
