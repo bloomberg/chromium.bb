@@ -16,7 +16,7 @@
  */
 
 #include "native_client/src/include/nacl_base.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_exception.h"
+#include "native_client/src/include/nacl/nacl_exception.h"
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
   #if NACL_BUILD_SUBARCH == 32

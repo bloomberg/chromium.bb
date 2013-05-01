@@ -20,7 +20,7 @@
 #endif  /* __GLIBC__ */
 
 #include "native_client/src/include/portability.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_exception.h"
+#include "native_client/src/include/nacl/nacl_exception.h"
 #include "native_client/src/untrusted/irt/irt.h"
 
 

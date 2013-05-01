@@ -10,7 +10,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_exception.h"
+#include "native_client/src/include/nacl/nacl_exception.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_test_crash.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 

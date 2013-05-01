@@ -5,8 +5,6 @@ include_rules = [
   "+native_client/src/third_party/valgrind",
   # TODO(bradnelson): move this to src/shared ?
   "+native_client/src/trusted/weak_ref",
-  # TODO(bradnelson): remove this once there is a stable exception ABI.
-  "+native_client/src/trusted/service_runtime/include/sys/nacl_exception.h",
   # For nacl/syscall_bindings_trampoline.h and a couple of tests:
   "+native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h",
   "+native_client/src/trusted/service_runtime/nacl_config.h",

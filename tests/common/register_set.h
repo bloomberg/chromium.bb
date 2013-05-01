@@ -7,10 +7,10 @@
 #ifndef NATIVE_CLIENT_TESTS_COMMON_REGISTER_SET_H_
 #define NATIVE_CLIENT_TESTS_COMMON_REGISTER_SET_H_
 
+#include "native_client/src/include/nacl/nacl_exception.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_exception.h"
 
 /*
  * ASM_WITH_REGS(regs, asm_code) executes asm_code with most registers
