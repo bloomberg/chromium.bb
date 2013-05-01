@@ -61,10 +61,6 @@ NonCompositedContentHost::~NonCompositedContentHost()
 {
 }
 
-WebCore::Color NonCompositedContentHost::backgroundColor() const {
-    return m_graphicsLayer->platformLayer()->backgroundColor();
-}
-
 void NonCompositedContentHost::setBackgroundColor(const WebCore::Color& color)
 {
     m_graphicsLayer->platformLayer()->setBackgroundColor(color.rgb());
