@@ -79,9 +79,11 @@ struct MediaStreamRequest;
 // A BrowserPluginGuest can also create a new unattached guest via
 // CreateNewWindow. The newly created guest will live in the same partition,
 // which means it can share storage and can script this guest.
-class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
-                                          public WebContentsDelegate,
-                                          public WebContentsObserver {
+class CONTENT_EXPORT BrowserPluginGuest
+    : public NotificationObserver,
+      public WebContentsDelegate,
+      public WebContentsObserver,
+      public base::SupportsWeakPtr<BrowserPluginGuest> {
  public:
   typedef base::Callback<void(bool)> GeolocationCallback;
   virtual ~BrowserPluginGuest();
@@ -182,6 +184,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
                            const std::string& request_method,
                            const base::Callback<void(bool)>& callback) OVERRIDE;
   virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
+  virtual void HandleKeyboardEvent(
+      WebContents* source,
+      const NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void WebContentsCreated(WebContents* source_contents,
                                   int64 source_frame_id,
                                   const string16& frame_name,
@@ -303,6 +308,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
                           const WebDropData& drop_data,
                           WebKit::WebDragOperationsMask drag_mask,
                           const gfx::Point& location);
+  // Instructs the guest to execute an edit command decoded in the embedder.
+  void OnExecuteEditCommand(int instance_id,
+                            const std::string& command);
   // If possible, navigate the guest to |relative_index| entries away from the
   // current navigation entry.
   virtual void OnGo(int instance_id, int relative_index);
@@ -440,7 +448,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
 
   typedef std::map<BrowserPluginGuest*, std::string> PendingWindowMap;
   PendingWindowMap pending_new_windows_;
-  BrowserPluginGuest* opener_;
+  base::WeakPtr<BrowserPluginGuest> opener_;
   // A counter to generate a unique request id for a permission request.
   // We only need the ids to be unique for a given BrowserPluginGuest.
   int next_permission_request_id_;

@@ -1255,6 +1255,13 @@ void RenderWidgetHostImpl::GetWebScreenInfo(WebKit::WebScreenInfo* result) {
     RenderWidgetHostViewPort::GetDefaultScreenInfo(result);
 }
 
+const NativeWebKeyboardEvent*
+    RenderWidgetHostImpl::GetLastKeyboardEvent() const {
+  if (key_queue_.empty())
+    return NULL;
+  return &key_queue_.front();
+}
+
 void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
   WebKit::WebScreenInfo screen_info;
   GetWebScreenInfo(&screen_info);

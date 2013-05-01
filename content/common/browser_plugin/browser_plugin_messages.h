@@ -146,6 +146,12 @@ IPC_STRUCT_END()
 IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_AllocateInstanceID,
                     int /* request_id */)
 
+// This message is sent from BrowserPlugin to BrowserPluginGuest to issue an
+// edit command.
+IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_ExecuteEditCommand,
+                     int /* instance_id */,
+                     std::string /* command */)
+
 // This message is sent to the browser process to enable or disable autosize
 // mode.
 IPC_MESSAGE_ROUTED3(

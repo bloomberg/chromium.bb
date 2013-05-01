@@ -42,6 +42,7 @@
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/surface/transport_dib.h"
 #include "webkit/glue/resource_type.h"
 #include "webkit/glue/webdropdata.h"
@@ -113,6 +114,7 @@ class BrowserPluginGuest::EmbedderRenderViewHostObserver
   // RenderViewHostObserver:
   virtual void RenderViewHostDestroyed(
       RenderViewHost* render_view_host) OVERRIDE {
+    browser_plugin_guest_->embedder_web_contents_ = NULL;
     browser_plugin_guest_->Destroy();
   }
 
@@ -138,7 +140,6 @@ BrowserPluginGuest::BrowserPluginGuest(
       mouse_locked_(false),
       pending_lock_request_(false),
       embedder_visible_(true),
-      opener_(NULL),
       next_permission_request_id_(0) {
   DCHECK(web_contents);
   web_contents->SetDelegate(this);
@@ -199,6 +200,8 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
                         OnCompositorFrameACK)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_DragStatusUpdate,
                         OnDragStatusUpdate)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ExecuteEditCommand,
+                        OnExecuteEditCommand)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Go, OnGo)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_HandleInputEvent,
                         OnHandleInputEvent)
@@ -385,6 +388,22 @@ bool BrowserPluginGuest::HandleContextMenu(
   return true;
 }
 
+void BrowserPluginGuest::HandleKeyboardEvent(
+    WebContents* source,
+    const NativeWebKeyboardEvent& event) {
+  if (!attached())
+    return;
+
+  // Send the unhandled keyboard events back to the embedder to reprocess them.
+  // TODO(fsamuel): This introduces the possibility of out-of-order keyboard
+  // events because the guest may be arbitrarily delayed when responding to
+  // keyboard events. In that time, the embedder may have received and processed
+  // additional key events. This needs to be fixed as soon as possible.
+  // See http://crbug.com/229882.
+  embedder_web_contents_->GetDelegate()->HandleKeyboardEvent(
+      web_contents(), event);
+}
+
 void BrowserPluginGuest::WebContentsCreated(WebContents* source_contents,
                                             int64 source_frame_id,
                                             const string16& frame_name,
@@ -393,7 +412,7 @@ void BrowserPluginGuest::WebContentsCreated(WebContents* source_contents,
   WebContentsImpl* new_contents_impl =
       static_cast<WebContentsImpl*>(new_contents);
   BrowserPluginGuest* guest = new_contents_impl->GetBrowserPluginGuest();
-  guest->opener_ = this;
+  guest->opener_ = AsWeakPtr();
   guest->name_ = UTF16ToUTF8(frame_name);
   // Take ownership of the new guest until it is attached to the embedder's DOM
   // tree to avoid leaking a guest if this guest is destroyed before attaching
@@ -694,6 +713,7 @@ bool BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(
     case BrowserPluginHostMsg_BuffersSwappedACK::ID:
     case BrowserPluginHostMsg_CompositorFrameACK::ID:
     case BrowserPluginHostMsg_DragStatusUpdate::ID:
+    case BrowserPluginHostMsg_ExecuteEditCommand::ID:
     case BrowserPluginHostMsg_Go::ID:
     case BrowserPluginHostMsg_HandleInputEvent::ID:
     case BrowserPluginHostMsg_LockMouse_ACK::ID:
@@ -831,6 +851,11 @@ void BrowserPluginGuest::OnDragStatusUpdate(int instance_id,
   }
 }
 
+void BrowserPluginGuest::OnExecuteEditCommand(int instance_id,
+                                              const std::string& name) {
+  Send(new InputMsg_ExecuteEditCommand(routing_id(), name, std::string()));
+}
+
 void BrowserPluginGuest::OnGo(int instance_id, int relative_index) {
   GetWebContents()->GetController().GoToOffset(relative_index);
 }
@@ -866,12 +891,12 @@ void BrowserPluginGuest::OnHandleInputEvent(
   }
 
   if (WebKit::WebInputEvent::isKeyboardEventType(event->type)) {
-    NativeWebKeyboardEvent keyboard_event;
-    const WebKit::WebKeyboardEvent* original_event =
-        static_cast<const WebKit::WebKeyboardEvent*>(event);
-    memcpy(&keyboard_event, original_event, sizeof(WebKit::WebKeyboardEvent));
-    if (keyboard_event.type == WebKit::WebInputEvent::KeyDown)
-      keyboard_event.type = WebKit::WebInputEvent::RawKeyDown;
+    RenderViewHostImpl* embedder_rvh = static_cast<RenderViewHostImpl*>(
+        embedder_web_contents_->GetRenderViewHost());
+    if (!embedder_rvh->GetLastKeyboardEvent())
+      return;
+    NativeWebKeyboardEvent keyboard_event(
+        *embedder_rvh->GetLastKeyboardEvent());
     guest_rvh->ForwardKeyboardEvent(keyboard_event);
     return;
   }

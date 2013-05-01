@@ -157,6 +157,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
       const gfx::Rect& src_subrect,
       const base::Callback<void(bool, const SkBitmap&)>& callback) OVERRIDE;
 
+  const NativeWebKeyboardEvent* GetLastKeyboardEvent() const;
+
   // Notification that the screen info has changed.
   void NotifyScreenInfoChanged();
 

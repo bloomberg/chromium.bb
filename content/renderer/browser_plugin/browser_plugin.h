@@ -203,6 +203,7 @@ class CONTENT_EXPORT BrowserPlugin :
       const WebKit::WebURL& url,
       void* notify_data,
       const WebKit::WebURLError& error) OVERRIDE;
+  virtual bool executeEditCommand(const WebKit::WebString& name) OVERRIDE;
 
   // MouseLockDispatcher::LockTarget implementation.
   virtual void OnLockMouseACK(bool succeeded) OVERRIDE;

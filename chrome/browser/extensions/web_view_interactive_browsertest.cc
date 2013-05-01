@@ -46,7 +46,7 @@ class WebViewInteractiveTest
   }
 
   gfx::NativeWindow GetPlatformAppWindow() {
-    extensions::ShellWindowRegistry::ShellWindowSet shell_windows =
+    const extensions::ShellWindowRegistry::ShellWindowSet& shell_windows =
         extensions::ShellWindowRegistry::Get(
             browser()->profile())->shell_windows();
     return (*shell_windows.begin())->GetNativeWindow();
@@ -56,6 +56,19 @@ class WebViewInteractiveTest
     ASSERT_EQ(1U, GetShellWindowCount());
     ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
         GetPlatformAppWindow(), key, false, false, false, false));
+  }
+
+  void SendCopyKeyPressToPlatformApp() {
+    ASSERT_EQ(1U, GetShellWindowCount());
+#if defined(OS_MACOSX)
+    // Send Cmd+C on MacOSX.
+    ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+        GetPlatformAppWindow(), ui::VKEY_C, false, false, false, true));
+#else
+    // Send Ctrl+C on Windows and Linux/ChromeOS.
+    ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+        GetPlatformAppWindow(), ui::VKEY_C, true, false, false, false));
+#endif
   }
 
   void SendMouseEvent(ui_controls::MouseButton button,
@@ -207,4 +220,21 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DISABLED_Focus) {
   ASSERT_TRUE(StartTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/focus"))
       << message_;
+}
+
+// Tests that guests receive edit commands and respond appropriately.
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, EditCommands) {
+  SetupTest("web_view/edit_commands",
+            "files/extensions/platform_apps/web_view/edit_commands/guest.html");
+
+  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
+      GetPlatformAppWindow()));
+
+  // Flush any pending events to make sure we start with a clean slate.
+  content::RunAllPendingInMessageLoop();
+
+  ExtensionTestMessageListener copy_listener("copy", false);
+  SendCopyKeyPressToPlatformApp();
+  // Wait for the guest to receive a 'copy' edit command.
+  ASSERT_TRUE(copy_listener.WaitUntilSatisfied());
 }
