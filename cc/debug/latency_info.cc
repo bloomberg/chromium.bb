@@ -57,5 +57,5 @@ void LatencyInfo::Clear() {
   latency_components.clear();
 }
 
-} // namespace cc
+}  // namespace cc
 

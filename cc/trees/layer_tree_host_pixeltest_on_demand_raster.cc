@@ -58,7 +58,8 @@ class LayerTreeHostOnDemandRasterPixelTest : public LayerTreePixelTest {
 
 class BlueYellowLayerClient : public ContentLayerClient {
  public:
-  BlueYellowLayerClient(gfx::Rect layer_rect) : layer_rect_(layer_rect) { }
+  explicit BlueYellowLayerClient(gfx::Rect layer_rect)
+      : layer_rect_(layer_rect) {}
 
   virtual void DidChangeLayerCanUseLCDText() OVERRIDE { }
 

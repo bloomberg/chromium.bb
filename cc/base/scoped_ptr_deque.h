@@ -33,7 +33,7 @@ class ScopedPtrDeque {
   // to methods on the ScopedPtrDeque class to appear in the deque.
   class iterator : public std::deque<T*>::iterator {
    public:
-    iterator(const typename std::deque<T*>::iterator& other)
+    explicit iterator(const typename std::deque<T*>::iterator& other)
         : std::deque<T*>::iterator(other) {}
     T* const& operator*() { return std::deque<T*>::iterator::operator*(); }
   };

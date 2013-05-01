@@ -90,7 +90,7 @@ void AcceleratedTextureCopier::CopyTexture(Parameters parameters) {
     if (!blit_program_->initialized())
       blit_program_->Initialize(context_, using_bind_uniforms_);
 
-    // TODO(danakj: Use EXT_framebuffer_blit if available.
+    // TODO(danakj): Use EXT_framebuffer_blit if available.
     GLC(context_, context_->useProgram(blit_program_->program()));
   }
 

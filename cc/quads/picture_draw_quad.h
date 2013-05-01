@@ -57,6 +57,6 @@ class CC_EXPORT PictureDrawQuad : public ContentDrawQuadBase {
   PictureDrawQuad();
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_QUADS_PICTURE_DRAW_QUAD_H_

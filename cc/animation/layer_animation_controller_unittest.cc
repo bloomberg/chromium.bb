@@ -501,7 +501,7 @@ TEST(LayerAnimationControllerTest,
 // Tests animations that are waiting for a synchronized start time do not
 // finish.
 TEST(LayerAnimationControllerTest,
-     AnimationsWaitingForStartTimeDoNotFinishIfTheyWaitLongerToStartThanTheirDuration) {
+     AnimationsWaitingForStartTimeDoNotFinishIfTheyOutwaitTheirFinish) {
   scoped_ptr<AnimationEventsVector> events(
       make_scoped_ptr(new AnimationEventsVector));
   FakeLayerAnimationValueObserver dummy;

@@ -73,7 +73,6 @@ class PrioritizedResourceTest : public testing::Test {
 
   void ResourceManagerAssertInvariants(
       PrioritizedResourceManager* resource_manager) {
-
 #ifndef NDEBUG
     DebugScopedSetImplThreadAndMainThreadBlocked
     impl_thread_and_main_thread_blocked(&proxy_);

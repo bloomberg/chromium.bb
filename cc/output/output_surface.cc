@@ -24,22 +24,19 @@ using std::vector;
 
 namespace cc {
 
-class OutputSurfaceCallbacks :
-  public WebKit::WebGraphicsContext3D::WebGraphicsSwapBuffersCompleteCallbackCHROMIUM,
-  public WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback {
+class OutputSurfaceCallbacks
+    : public WebKit::WebGraphicsContext3D::
+        WebGraphicsSwapBuffersCompleteCallbackCHROMIUM,
+      public WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback {
  public:
-   explicit OutputSurfaceCallbacks(OutputSurfaceClient* client)
-     : client_(client) {}
+  explicit OutputSurfaceCallbacks(OutputSurfaceClient* client)
+      : client_(client) {}
 
-   // WK:WGC3D::WGSwapBuffersCompleteCallbackCHROMIUM implementation.
-   virtual void onSwapBuffersComplete() {
-     client_->OnSwapBuffersComplete();
-   }
+  // WK:WGC3D::WGSwapBuffersCompleteCallbackCHROMIUM implementation.
+  virtual void onSwapBuffersComplete() { client_->OnSwapBuffersComplete(); }
 
-   // WK:WGC3D::WGContextLostCallback implementation.
-   virtual void onContextLost() {
-     client_->DidLoseOutputSurface();
-   }
+  // WK:WGC3D::WGContextLostCallback implementation.
+  virtual void onContextLost() { client_->DidLoseOutputSurface(); }
 
  private:
   OutputSurfaceClient* client_;

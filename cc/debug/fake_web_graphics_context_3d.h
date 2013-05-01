@@ -5,6 +5,8 @@
 #ifndef CC_DEBUG_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_
 #define CC_DEBUG_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "cc/base/cc_export.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"

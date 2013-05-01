@@ -19,7 +19,7 @@ class CC_EXPORT Region {
  public:
   Region();
   Region(const Region& region);
-  Region(gfx::Rect rect);
+  Region(gfx::Rect rect);  // NOLINT(runtime/explicit)
   ~Region();
 
   const Region& operator=(gfx::Rect rect);
@@ -56,7 +56,7 @@ class CC_EXPORT Region {
   class CC_EXPORT Iterator {
    public:
     Iterator();
-    Iterator(const Region& region);
+    explicit Iterator(const Region& region);
     ~Iterator();
 
     gfx::Rect rect() const {

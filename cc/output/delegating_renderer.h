@@ -15,8 +15,7 @@ namespace cc {
 class OutputSurface;
 class ResourceProvider;
 
-class CC_EXPORT DelegatingRenderer :
-    public Renderer {
+class CC_EXPORT DelegatingRenderer : public Renderer {
  public:
   static scoped_ptr<DelegatingRenderer> Create(
       RendererClient* client,

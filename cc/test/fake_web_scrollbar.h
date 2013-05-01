@@ -28,7 +28,8 @@ class FakeWebScrollbar : public WebKit::WebScrollbar {
   virtual int totalSize() const OVERRIDE;
   virtual bool isScrollViewScrollbar() const OVERRIDE;
   virtual bool isScrollableAreaActive() const OVERRIDE;
-  virtual void getTickmarks(WebKit::WebVector<WebKit::WebRect>& tickmarks) const
+  virtual void getTickmarks(
+      WebKit::WebVector<WebKit::WebRect>& tickmarks /* NOLINT */) const
       OVERRIDE {}
   virtual ScrollbarControlSize controlSize() const OVERRIDE;
   virtual ScrollbarPart pressedPart() const OVERRIDE;

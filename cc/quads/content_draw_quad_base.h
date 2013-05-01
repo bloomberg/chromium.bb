@@ -43,6 +43,6 @@ class CC_EXPORT ContentDrawQuadBase : public DrawQuad {
   virtual ~ContentDrawQuadBase();
 };
 
-}
+}  // namespace cc
 
 #endif  // CC_QUADS_CONTENT_DRAW_QUAD_BASE_H_

@@ -89,8 +89,8 @@ class CC_EXPORT ScrollbarLayerImpl : public ScrollbarLayerImplBase {
     virtual int totalSize() const;
     virtual bool isScrollViewScrollbar() const;
     virtual bool isScrollableAreaActive() const;
-    virtual void getTickmarks(WebKit::WebVector<WebKit::WebRect>& tickmarks)
-        const;
+    virtual void getTickmarks(
+        WebKit::WebVector<WebKit::WebRect>& tickmarks /* NOLINT */) const;
     virtual WebScrollbar::ScrollbarControlSize controlSize() const;
     virtual WebScrollbar::ScrollbarPart pressedPart() const;
     virtual WebScrollbar::ScrollbarPart hoveredPart() const;

@@ -127,13 +127,12 @@ PrioritizedResource::Backing::Backing(unsigned id,
       priority_at_last_priority_update_(PriorityCalculator::LowestPriority()),
       was_above_priority_cutoff_at_last_priority_update_(false),
       in_drawing_impl_tree_(false),
-      resource_has_been_deleted_(false)
-#ifndef NDEBUG
-      ,
-      resource_provider_(resource_provider)
+#ifdef NDEBUG
+      resource_has_been_deleted_(false) {}
+#else
+      resource_has_been_deleted_(false),
+      resource_provider_(resource_provider) {}
 #endif
-      {
-}
 
 PrioritizedResource::Backing::~Backing() {
   DCHECK(!owner_);

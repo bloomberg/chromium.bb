@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_LAYER_POSITION_CONSTRAINT_H_
-#define CC_LAYER_POSITION_CONSTRAINT_H_
+#ifndef CC_LAYERS_LAYER_POSITION_CONSTRAINT_H_
+#define CC_LAYERS_LAYER_POSITION_CONSTRAINT_H_
 
 #include "cc/base/cc_export.h"
 
@@ -35,4 +35,4 @@ class CC_EXPORT LayerPositionConstraint {
 
 }  // namespace cc
 
-#endif  // CC_LAYER_POSITION_CONSTRAINT_H_
+#endif  // CC_LAYERS_LAYER_POSITION_CONSTRAINT_H_

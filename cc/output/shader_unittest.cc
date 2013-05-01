@@ -43,4 +43,4 @@ TEST(ShaderTest, HighpThresholds) {
             TexCoordPrecisionRequired(&context, threshold_min, bigSize));
 }
 
-}
+}  // namespace cc

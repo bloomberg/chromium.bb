@@ -644,7 +644,7 @@ TEST_F(LayerTest, PushPropertiesCausesSurfacePropertyChangedForOpacity) {
 }
 
 TEST_F(LayerTest,
-       PushPropertiesDoesNotCauseSurfacePropertyChangedDuringImplOnlyTransformAnimation) {
+       PushPropsDoesntCauseSurfacePropertyChangedDuringImplOnlyTransformAnim) {
   scoped_refptr<Layer> test_layer = Layer::Create();
   scoped_ptr<LayerImpl> impl_layer =
       LayerImpl::Create(host_impl_.active_tree(), 1);
@@ -682,7 +682,7 @@ TEST_F(LayerTest,
 }
 
 TEST_F(LayerTest,
-       PushPropertiesDoesNotCauseSurfacePropertyChangedDuringImplOnlyOpacityAnimation) {
+       PushPropsDoesntCauseSurfacePropertyChangedDuringImplOnlyOpacityAnim) {
   scoped_refptr<Layer> test_layer = Layer::Create();
   scoped_ptr<LayerImpl> impl_layer =
       LayerImpl::Create(host_impl_.active_tree(), 1);
