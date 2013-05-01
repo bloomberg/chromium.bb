@@ -20,7 +20,7 @@ Status CreateLoggers(const Capabilities& capabilities,
         return Status(kUnknownError,
                       "logging level must be a string for log type: " + type);
       }
-      if ("profiler" == type) {
+      if ("performance" == type) {
         std::vector<std::string> domains;
         domains.push_back("Network");
         domains.push_back("Page");

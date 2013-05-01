@@ -13,13 +13,13 @@
 TEST(Logging, CreatePerformanceLogger) {
   Capabilities capabilities;
   capabilities.logging_prefs.reset(new base::DictionaryValue());
-  capabilities.logging_prefs->SetString("profiler", "INFO");
+  capabilities.logging_prefs->SetString("performance", "INFO");
 
   ScopedVector<DevToolsEventLogger> loggers;
   Status status = CreateLoggers(capabilities, &loggers);
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ(1u, loggers.size());
-  ASSERT_STREQ("profiler", loggers[0]->GetLogType().c_str());
+  ASSERT_STREQ("performance", loggers[0]->GetLogType().c_str());
 }
 
 TEST(Logging, InvalidLogType) {
