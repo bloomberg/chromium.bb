@@ -15,8 +15,7 @@ FileReader::FileReader(const extensions::ExtensionResource& resource,
                        const Callback& callback)
     : resource_(resource),
       callback_(callback),
-      origin_loop_(MessageLoop::current()) {
-}
+      origin_loop_(base::MessageLoop::current()) {}
 
 void FileReader::Start() {
   BrowserThread::PostTask(

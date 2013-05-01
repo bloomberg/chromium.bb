@@ -25,7 +25,7 @@ class FileReaderTest : public testing::Test {
     file_thread_.Start();
   }
  private:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread file_thread_;
 };
 
@@ -45,7 +45,7 @@ class Receiver {
   void DidReadFile(bool success, const std::string& data) {
     succeeded_ = success;
     data_ = data;
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   bool succeeded_;
@@ -69,7 +69,7 @@ void RunBasicTest(const char* filename) {
       new FileReader(resource, receiver.NewCallback()));
   file_reader->Start();
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_TRUE(receiver.succeeded());
   EXPECT_EQ(file_contents, receiver.data());
@@ -97,7 +97,7 @@ TEST_F(FileReaderTest, NonExistantFile) {
       new FileReader(resource, receiver.NewCallback()));
   file_reader->Start();
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_FALSE(receiver.succeeded());
 }
