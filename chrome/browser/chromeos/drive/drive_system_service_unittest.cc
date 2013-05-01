@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
 
 #include "base/message_loop.h"
-#include "chrome/browser/chromeos/drive/mock_drive_file_system.h"
+#include "chrome/browser/chromeos/drive/mock_file_system.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/google_apis/dummy_drive_service.h"
 #include "chrome/test/base/testing_profile.h"
@@ -24,7 +24,7 @@ class DriveSystemServiceTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile);
-    file_system_ = new MockDriveFileSystem;
+    file_system_ = new MockFileSystem;
     system_service_ = new DriveSystemService(profile_.get(),
                                              new google_apis::DummyDriveService,
                                              base::FilePath(),
@@ -44,7 +44,7 @@ class DriveSystemServiceTest : public testing::Test {
 
   scoped_ptr<TestingProfile> profile_;
 
-  MockDriveFileSystem* file_system_;
+  MockFileSystem* file_system_;
   DriveSystemService* system_service_;
 };
 

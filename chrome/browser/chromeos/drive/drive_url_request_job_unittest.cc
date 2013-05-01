@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/drive/drive_file_stream_reader.h"
-#include "chrome/browser/chromeos/drive/fake_drive_file_system.h"
+#include "chrome/browser/chromeos/drive/fake_file_system.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/google_apis/fake_drive_service.h"
 #include "chrome/browser/google_apis/task_util.h"
@@ -28,7 +28,7 @@ namespace {
 class TestURLRequestJobFactory : public net::URLRequestJobFactory {
  public:
   TestURLRequestJobFactory(
-      const DriveURLRequestJob::DriveFileSystemGetter& file_system_getter)
+      const DriveURLRequestJob::FileSystemGetter& file_system_getter)
       : file_system_getter_(file_system_getter) {
   }
 
@@ -53,7 +53,7 @@ class TestURLRequestJobFactory : public net::URLRequestJobFactory {
   }
 
  private:
-  const DriveURLRequestJob::DriveFileSystemGetter file_system_getter_;
+  const DriveURLRequestJob::FileSystemGetter file_system_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(TestURLRequestJobFactory);
 };
@@ -102,7 +102,7 @@ class DriveURLRequestJobTest : public testing::Test {
 
     test_network_delegate_.reset(new net::TestNetworkDelegate);
     test_url_request_job_factory_.reset(new TestURLRequestJobFactory(
-        base::Bind(&DriveURLRequestJobTest::GetDriveFileSystem,
+        base::Bind(&DriveURLRequestJobTest::GetFileSystem,
                    base::Unretained(this))));
     url_request_context_.reset(new net::URLRequestContext());
     url_request_context_->set_job_factory(test_url_request_job_factory_.get());
@@ -135,19 +135,19 @@ class DriveURLRequestJobTest : public testing::Test {
     ASSERT_TRUE(fake_drive_service_->LoadAppListForDriveApi(
         "chromeos/drive/applist.json"));
 
-    // Initialize FakeDriveFileSystem.
-    fake_drive_file_system_.reset(
-        new test_util::FakeDriveFileSystem(fake_drive_service_.get()));
-    ASSERT_TRUE(fake_drive_file_system_->InitializeForTesting());
+    // Initialize FakeFileSystem.
+    fake_file_system_.reset(
+        new test_util::FakeFileSystem(fake_drive_service_.get()));
+    ASSERT_TRUE(fake_file_system_->InitializeForTesting());
   }
 
   void TearDownOnUIThread() {
-    fake_drive_file_system_.reset();
+    fake_file_system_.reset();
     fake_drive_service_.reset();
   }
 
-  DriveFileSystemInterface* GetDriveFileSystem() {
-    return fake_drive_file_system_.get();
+  DriveFileSystemInterface* GetFileSystem() {
+    return fake_file_system_.get();
   }
 
   std::string ReadDriveFileSync(const base::FilePath& file_path) {
@@ -155,7 +155,7 @@ class DriveURLRequestJobTest : public testing::Test {
     const int kBufferSize = 100;
     scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
     scoped_ptr<DriveFileStreamReader> reader(new DriveFileStreamReader(
-        base::Bind(&DriveURLRequestJobTest::GetDriveFileSystem,
+        base::Bind(&DriveURLRequestJobTest::GetFileSystem,
                    base::Unretained(this))));
 
     FileError error = FILE_ERROR_FAILED;
@@ -185,7 +185,7 @@ class DriveURLRequestJobTest : public testing::Test {
   content::TestBrowserThread io_thread_;
 
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
-  scoped_ptr<test_util::FakeDriveFileSystem> fake_drive_file_system_;
+  scoped_ptr<test_util::FakeFileSystem> fake_file_system_;
 
   scoped_ptr<net::TestNetworkDelegate> test_network_delegate_;
   scoped_ptr<TestURLRequestJobFactory> test_url_request_job_factory_;
@@ -232,7 +232,7 @@ TEST_F(DriveURLRequestJobTest, RegularFile) {
   }
 
   // For the second time, the locally cached file should be used.
-  // The caching emulation is done by FakeDriveFileSystem.
+  // The caching emulation is done by FakeFileSystem.
   {
     test_delegate_.reset(new TestDelegate);
     net::URLRequest request(

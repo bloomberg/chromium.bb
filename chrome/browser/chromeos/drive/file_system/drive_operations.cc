@@ -28,7 +28,7 @@ DriveOperations::~DriveOperations() {
 
 void DriveOperations::Init(
     JobScheduler* job_scheduler,
-    DriveFileSystemInterface* drive_file_system,
+    DriveFileSystemInterface* file_system,
     FileCache* cache,
     internal::ResourceMetadata* metadata,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
@@ -36,7 +36,7 @@ void DriveOperations::Init(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   copy_operation_.reset(new file_system::CopyOperation(job_scheduler,
-                                                       drive_file_system,
+                                                       file_system,
                                                        metadata,
                                                        blocking_task_runner,
                                                        observer));
@@ -46,7 +46,7 @@ void DriveOperations::Init(
                                    observer));
   create_file_operation_.reset(
       new file_system::CreateFileOperation(job_scheduler,
-                                           drive_file_system,
+                                           file_system,
                                            metadata,
                                            blocking_task_runner));
   move_operation_.reset(new file_system::MoveOperation(job_scheduler,

@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/drive/mock_drive_file_system.h"
+#include "chrome/browser/chromeos/drive/mock_file_system.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "content/public/test/test_browser_thread.h"
@@ -53,7 +53,7 @@ class SyncClientTest : public testing::Test {
  public:
   SyncClientTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        mock_file_system_(new StrictMock<MockDriveFileSystem>) {
+        mock_file_system_(new StrictMock<MockFileSystem>) {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -152,7 +152,7 @@ class SyncClientTest : public testing::Test {
     EXPECT_EQ(FILE_ERROR_OK, error);
   }
 
-  // Sets the expectation for MockDriveFileSystem::GetFileByResourceId(),
+  // Sets the expectation for MockFileSystem::GetFileByResourceId(),
   // that simulates successful retrieval of a file for the given resource ID.
   void SetExpectationForGetFileByResourceId(const std::string& resource_id) {
     EXPECT_CALL(*mock_file_system_,
@@ -165,7 +165,7 @@ class SyncClientTest : public testing::Test {
                 REGULAR_FILE));
   }
 
-  // Sets the expectation for MockDriveFileSystem::UpdateFileByResourceId(),
+  // Sets the expectation for MockFileSystem::UpdateFileByResourceId(),
   // that simulates successful uploading of a file for the given resource ID.
   void SetExpectationForUpdateFileByResourceId(
       const std::string& resource_id) {
@@ -174,7 +174,7 @@ class SyncClientTest : public testing::Test {
         .WillOnce(MockUpdateFileByResourceId(FILE_ERROR_OK));
   }
 
-  // Sets the expectation for MockDriveFileSystem::GetFileInfoByResourceId(),
+  // Sets the expectation for MockFileSystem::GetFileInfoByResourceId(),
   // that simulates successful retrieval of file info for the given resource
   // ID.
   //
@@ -214,7 +214,7 @@ class SyncClientTest : public testing::Test {
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<StrictMock<MockDriveFileSystem> > mock_file_system_;
+  scoped_ptr<StrictMock<MockFileSystem> > mock_file_system_;
   scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
   scoped_ptr<SyncClient> sync_client_;
 };
@@ -273,13 +273,13 @@ TEST_F(SyncClientTest, Deduplication) {
 }
 
 TEST_F(SyncClientTest, ExistingPinnedFiles) {
-  // Set the expectation so that the MockDriveFileSystem returns "new_md5"
+  // Set the expectation so that the MockFileSystem returns "new_md5"
   // for "resource_id_fetched". This simulates that the file is updated on
   // the server side, and the new MD5 is obtained from the server (i.e. the
   // local cache file is stale).
   SetExpectationForGetFileInfoByResourceId("resource_id_fetched",
                                            "new_md5");
-  // Set the expectation so that the MockDriveFileSystem returns "some_md5"
+  // Set the expectation so that the MockFileSystem returns "some_md5"
   // for "resource_id_dirty". The MD5 on the server is always different from
   // the MD5 of a dirty file, which is set to "local". We should not collect
   // this by StartCheckingExistingPinnedFiles().

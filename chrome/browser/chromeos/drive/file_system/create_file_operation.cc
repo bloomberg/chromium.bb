@@ -26,11 +26,11 @@ const char kMimeTypeOctetStream[] = "application/octet-stream";
 
 CreateFileOperation::CreateFileOperation(
     JobScheduler* job_scheduler,
-    DriveFileSystemInterface* drive_file_system,
+    DriveFileSystemInterface* file_system,
     internal::ResourceMetadata* metadata,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
     : job_scheduler_(job_scheduler),
-      drive_file_system_(drive_file_system),
+      file_system_(file_system),
       metadata_(metadata),
       blocking_task_runner_(blocking_task_runner),
       weak_ptr_factory_(this) {
@@ -143,9 +143,9 @@ void CreateFileOperation::CreateFileAfterUpload(
   DCHECK(!callback.is_null());
 
   if (error == google_apis::HTTP_SUCCESS && resource_entry) {
-    drive_file_system_->AddUploadedFile(resource_entry.Pass(),
-                                        local_path,
-                                        callback);
+    file_system_->AddUploadedFile(resource_entry.Pass(),
+                                  local_path,
+                                  callback);
   } else {
     callback.Run(util::GDataToFileError(error));
   }

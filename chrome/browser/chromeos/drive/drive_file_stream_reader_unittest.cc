@@ -10,7 +10,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/message_loop.h"
-#include "chrome/browser/chromeos/drive/fake_drive_file_system.h"
+#include "chrome/browser/chromeos/drive/fake_file_system.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/google_apis/fake_drive_service.h"
@@ -321,22 +321,22 @@ class DriveFileStreamReaderTest : public ::testing::Test {
     fake_drive_service_->LoadAppListForDriveApi("chromeos/drive/applist.json");
 
     // Create a testee instance.
-    fake_drive_file_system_.reset(
-        new test_util::FakeDriveFileSystem(fake_drive_service_.get()));
-    fake_drive_file_system_->Initialize();
+    fake_file_system_.reset(
+        new test_util::FakeFileSystem(fake_drive_service_.get()));
+    fake_file_system_->Initialize();
   }
 
   void TearDownOnUIThread() {
-    fake_drive_file_system_.reset();
+    fake_file_system_.reset();
     fake_drive_service_.reset();
   }
 
-  DriveFileSystemInterface* GetDriveFileSystem() {
-    return fake_drive_file_system_.get();
+  DriveFileSystemInterface* GetFileSystem() {
+    return fake_file_system_.get();
   }
 
-  DriveFileStreamReader::DriveFileSystemGetter GetDriveFileSystemGetter() {
-    return base::Bind(&DriveFileStreamReaderTest::GetDriveFileSystem,
+  DriveFileStreamReader::FileSystemGetter GetFileSystemGetter() {
+    return base::Bind(&DriveFileStreamReaderTest::GetFileSystem,
                       base::Unretained(this));
   }
 
@@ -345,7 +345,7 @@ class DriveFileStreamReaderTest : public ::testing::Test {
   content::TestBrowserThread io_thread_;
 
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
-  scoped_ptr<test_util::FakeDriveFileSystem> fake_drive_file_system_;
+  scoped_ptr<test_util::FakeFileSystem> fake_file_system_;
 };
 
 TEST_F(DriveFileStreamReaderTest, Read) {
@@ -358,7 +358,7 @@ TEST_F(DriveFileStreamReaderTest, Read) {
   // Create the reader, and initialize it.
   // In this case, the file is not yet locally cached.
   scoped_ptr<DriveFileStreamReader> reader(
-      new DriveFileStreamReader(GetDriveFileSystemGetter()));
+      new DriveFileStreamReader(GetFileSystemGetter()));
 
   EXPECT_FALSE(reader->IsInitialized());
 
@@ -390,7 +390,7 @@ TEST_F(DriveFileStreamReaderTest, Read) {
   // Create second instance and initialize it.
   // In this case, the file should be cached one.
   reader.reset(
-      new DriveFileStreamReader(GetDriveFileSystemGetter()));
+      new DriveFileStreamReader(GetFileSystemGetter()));
   EXPECT_FALSE(reader->IsInitialized());
 
   error = FILE_ERROR_FAILED;

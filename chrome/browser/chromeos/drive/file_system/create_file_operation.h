@@ -36,7 +36,7 @@ class CreateFileOperation {
  public:
   CreateFileOperation(
       JobScheduler* job_scheduler,
-      DriveFileSystemInterface* drive_file_system,
+      DriveFileSystemInterface* file_system,
       internal::ResourceMetadata* metadata,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
   ~CreateFileOperation();
@@ -70,7 +70,7 @@ class CreateFileOperation {
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
   JobScheduler* job_scheduler_;
-  DriveFileSystemInterface* drive_file_system_;
+  DriveFileSystemInterface* file_system_;
   internal::ResourceMetadata* metadata_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 

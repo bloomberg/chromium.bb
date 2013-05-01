@@ -205,7 +205,7 @@ namespace {
 // is available. If not, the |completion_callback| is invoked with
 // FILE_ERROR_FAILED.
 void GetFileContentByPathOnUIThread(
-    const DriveFileStreamReader::DriveFileSystemGetter& file_system_getter,
+    const DriveFileStreamReader::FileSystemGetter& file_system_getter,
     const base::FilePath& drive_file_path,
     const GetFileContentInitializedCallback& initialized_callback,
     const google_apis::GetContentCallback& get_content_callback,
@@ -226,7 +226,7 @@ void GetFileContentByPathOnUIThread(
 
 // Helper to run DriveFileSystemInterface::GetFileContentByPath on UI thread.
 void GetFileContentByPath(
-    const DriveFileStreamReader::DriveFileSystemGetter& file_system_getter,
+    const DriveFileStreamReader::FileSystemGetter& file_system_getter,
     const base::FilePath& drive_file_path,
     const GetFileContentInitializedCallback& initialized_callback,
     const google_apis::GetContentCallback& get_content_callback,
@@ -247,8 +247,8 @@ void GetFileContentByPath(
 }  // namespace
 
 DriveFileStreamReader::DriveFileStreamReader(
-    const DriveFileSystemGetter& drive_file_system_getter)
-    : drive_file_system_getter_(drive_file_system_getter),
+    const FileSystemGetter& file_system_getter)
+    : file_system_getter_(file_system_getter),
       weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
@@ -268,7 +268,7 @@ void DriveFileStreamReader::Initialize(
   DCHECK(!callback.is_null());
 
   GetFileContentByPath(
-      drive_file_system_getter_,
+      file_system_getter_,
       drive_file_path,
       base::Bind(&DriveFileStreamReader
                      ::InitializeAfterGetFileContentByPathInitialized,

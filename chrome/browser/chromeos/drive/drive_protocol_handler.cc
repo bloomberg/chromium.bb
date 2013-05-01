@@ -20,7 +20,7 @@ namespace drive {
 namespace {
 
 // Helper function to get DriveFileSystemInterface from Profile.
-DriveFileSystemInterface* GetDriveFileSystem(void* profile_id) {
+DriveFileSystemInterface* GetFileSystem(void* profile_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // |profile_id| needs to be checked with ProfileManager::IsValidProfile
@@ -47,7 +47,7 @@ net::URLRequestJob* DriveProtocolHandler::MaybeCreateJob(
     net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
   DVLOG(1) << "Handling url: " << request->url().spec();
   return new DriveURLRequestJob(
-      base::Bind(&GetDriveFileSystem, profile_id_), request, network_delegate);
+      base::Bind(&GetFileSystem, profile_id_), request, network_delegate);
 }
 
 }  // namespace drive

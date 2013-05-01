@@ -8,7 +8,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/file_write_helper.h"
-#include "chrome/browser/chromeos/drive/mock_drive_file_system.h"
+#include "chrome/browser/chromeos/drive/mock_file_system.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
@@ -71,7 +71,7 @@ class DownloadHandlerTest : public testing::Test {
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   scoped_refptr<content::MockDownloadManager> download_manager_;
-  MockDriveFileSystem file_system_;
+  MockFileSystem file_system_;
   scoped_ptr<FileWriteHelper> file_write_helper_;
   scoped_ptr<DownloadHandler> download_handler_;
   content::MockDownloadItem download_item_;

@@ -38,7 +38,7 @@ class DriveOperations {
 
   // Allocates the operation objects and initializes the operation pointers.
   void Init(JobScheduler* job_scheduler,
-            DriveFileSystemInterface* drive_file_system,
+            DriveFileSystemInterface* file_system,
             FileCache* cache,
             internal::ResourceMetadata* metadata,
             scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,

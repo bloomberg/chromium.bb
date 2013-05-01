@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/fake_drive_file_system.h"
+#include "chrome/browser/chromeos/drive/fake_file_system.h"
 
 #include "base/file_util.h"
 #include "base/message_loop.h"
@@ -16,9 +16,9 @@
 namespace drive {
 namespace test_util {
 
-class FakeDriveFileSystemTest : public ::testing::Test {
+class FakeFileSystemTest : public ::testing::Test {
  protected:
-  FakeDriveFileSystemTest()
+  FakeFileSystemTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_) {
   }
 
@@ -32,24 +32,24 @@ class FakeDriveFileSystemTest : public ::testing::Test {
     fake_drive_service_->LoadAppListForDriveApi("chromeos/drive/applist.json");
 
     // Create a testee instance.
-    fake_drive_file_system_.reset(
-        new FakeDriveFileSystem(fake_drive_service_.get()));
-    ASSERT_TRUE(fake_drive_file_system_->InitializeForTesting());
+    fake_file_system_.reset(
+        new FakeFileSystem(fake_drive_service_.get()));
+    ASSERT_TRUE(fake_file_system_->InitializeForTesting());
   }
 
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
 
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
-  scoped_ptr<FakeDriveFileSystem> fake_drive_file_system_;
+  scoped_ptr<FakeFileSystem> fake_file_system_;
 };
 
-TEST_F(FakeDriveFileSystemTest, GetEntryInfoByResourceId) {
+TEST_F(FakeFileSystemTest, GetEntryInfoByResourceId) {
   FileError error = FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProto> entry;
   base::FilePath file_path;
 
-  fake_drive_file_system_->GetEntryInfoByResourceId(
+  fake_file_system_->GetEntryInfoByResourceId(
       "folder:sub_dir_folder_resource_id",
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &entry));
@@ -63,7 +63,7 @@ TEST_F(FakeDriveFileSystemTest, GetEntryInfoByResourceId) {
   EXPECT_TRUE(entry);  // Just make sure something is returned.
 }
 
-TEST_F(FakeDriveFileSystemTest,
+TEST_F(FakeFileSystemTest,
        GetEntryInfoByResourceId_PathCompatibleWithGetEntryInfoByPath) {
   const std::string document_resource_id = "document:5_document_resource_id";
 
@@ -72,7 +72,7 @@ TEST_F(FakeDriveFileSystemTest,
   base::FilePath file_path;
 
   // Get entry info by resource id.
-  fake_drive_file_system_->GetEntryInfoByResourceId(
+  fake_file_system_->GetEntryInfoByResourceId(
       document_resource_id,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &entry));
@@ -85,7 +85,7 @@ TEST_F(FakeDriveFileSystemTest,
   // Get entry info by path given by GetEntryInfoByResourceId.
   error = FILE_ERROR_FAILED;
   entry.reset();
-  fake_drive_file_system_->GetEntryInfoByPath(
+  fake_file_system_->GetEntryInfoByPath(
       file_path,
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   google_apis::test_util::RunBlockingPoolTask();
@@ -95,7 +95,7 @@ TEST_F(FakeDriveFileSystemTest,
   EXPECT_EQ(document_resource_id, entry->resource_id());
 }
 
-TEST_F(FakeDriveFileSystemTest, GetFileContentByPath) {
+TEST_F(FakeFileSystemTest, GetFileContentByPath) {
   FileError initialize_error = FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProto> entry_proto;
   base::FilePath cache_file_path;
@@ -107,7 +107,7 @@ TEST_F(FakeDriveFileSystemTest, GetFileContentByPath) {
       util::GetDriveMyDriveRootPath().AppendASCII("File 1.txt");
 
   // For the first time, the file should be downloaded from the service.
-  fake_drive_file_system_->GetFileContentByPath(
+  fake_file_system_->GetFileContentByPath(
       kDriveFile,
       google_apis::test_util::CreateCopyResultCallback(
           &initialize_error, &entry_proto, &cache_file_path, &cancel_download),
@@ -133,7 +133,7 @@ TEST_F(FakeDriveFileSystemTest, GetFileContentByPath) {
   completion_error = FILE_ERROR_FAILED;
 
   // For the second time, the cache file should be found.
-  fake_drive_file_system_->GetFileContentByPath(
+  fake_file_system_->GetFileContentByPath(
       kDriveFile,
       google_apis::test_util::CreateCopyResultCallback(
           &initialize_error, &entry_proto, &cache_file_path, &cancel_download),
@@ -158,7 +158,7 @@ TEST_F(FakeDriveFileSystemTest, GetFileContentByPath) {
   EXPECT_EQ(content, cache_file_content);
 }
 
-TEST_F(FakeDriveFileSystemTest, GetFileContentByPath_Directory) {
+TEST_F(FakeFileSystemTest, GetFileContentByPath_Directory) {
   FileError initialize_error = FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProto> entry_proto;
   base::FilePath cache_file_path;
@@ -166,7 +166,7 @@ TEST_F(FakeDriveFileSystemTest, GetFileContentByPath_Directory) {
   FileError completion_error = FILE_ERROR_FAILED;
   base::Closure cancel_download;
 
-  fake_drive_file_system_->GetFileContentByPath(
+  fake_file_system_->GetFileContentByPath(
       util::GetDriveMyDriveRootPath(),
       google_apis::test_util::CreateCopyResultCallback(
           &initialize_error, &entry_proto, &cache_file_path, &cancel_download),
@@ -177,10 +177,10 @@ TEST_F(FakeDriveFileSystemTest, GetFileContentByPath_Directory) {
   EXPECT_EQ(FILE_ERROR_NOT_A_FILE, completion_error);
 }
 
-TEST_F(FakeDriveFileSystemTest, GetEntryInfoByPath) {
+TEST_F(FakeFileSystemTest, GetEntryInfoByPath) {
   FileError error = FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProto> entry;
-  fake_drive_file_system_->GetEntryInfoByPath(
+  fake_file_system_->GetEntryInfoByPath(
       util::GetDriveMyDriveRootPath().AppendASCII(
           "Directory 1/Sub Directory Folder"),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
@@ -191,10 +191,10 @@ TEST_F(FakeDriveFileSystemTest, GetEntryInfoByPath) {
   EXPECT_EQ("folder:sub_dir_folder_resource_id", entry->resource_id());
 }
 
-TEST_F(FakeDriveFileSystemTest, GetEntryInfoByPath_Root) {
+TEST_F(FakeFileSystemTest, GetEntryInfoByPath_Root) {
   FileError error = FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProto> entry;
-  fake_drive_file_system_->GetEntryInfoByPath(
+  fake_file_system_->GetEntryInfoByPath(
       util::GetDriveMyDriveRootPath(),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   google_apis::test_util::RunBlockingPoolTask();
@@ -206,10 +206,10 @@ TEST_F(FakeDriveFileSystemTest, GetEntryInfoByPath_Root) {
   EXPECT_EQ(util::kDriveMyDriveRootDirName, entry->title());
 }
 
-TEST_F(FakeDriveFileSystemTest, GetEntryInfoByPath_Invalid) {
+TEST_F(FakeFileSystemTest, GetEntryInfoByPath_Invalid) {
   FileError error = FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProto> entry;
-  fake_drive_file_system_->GetEntryInfoByPath(
+  fake_file_system_->GetEntryInfoByPath(
       util::GetDriveMyDriveRootPath().AppendASCII("Invalid File Name"),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   google_apis::test_util::RunBlockingPoolTask();

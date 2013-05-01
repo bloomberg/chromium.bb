@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/fake_drive_file_system.h"
+#include "chrome/browser/chromeos/drive/fake_file_system.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -23,38 +23,38 @@ namespace test_util {
 
 using content::BrowserThread;
 
-FakeDriveFileSystem::FakeDriveFileSystem(
+FakeFileSystem::FakeFileSystem(
     google_apis::DriveServiceInterface* drive_service)
     : drive_service_(drive_service),
       weak_ptr_factory_(this) {
 }
 
-FakeDriveFileSystem::~FakeDriveFileSystem() {
+FakeFileSystem::~FakeFileSystem() {
 }
 
-bool FakeDriveFileSystem::InitializeForTesting() {
+bool FakeFileSystem::InitializeForTesting() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return cache_dir_.CreateUniqueTempDir();
 }
 
-void FakeDriveFileSystem::Initialize() {
+void FakeFileSystem::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   InitializeForTesting();
 }
 
-void FakeDriveFileSystem::AddObserver(FileSystemObserver* observer) {
+void FakeFileSystem::AddObserver(FileSystemObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::RemoveObserver(FileSystemObserver* observer) {
+void FakeFileSystem::RemoveObserver(FileSystemObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::CheckForUpdates() {
+void FakeFileSystem::CheckForUpdates() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::GetEntryInfoByResourceId(
+void FakeFileSystem::GetEntryInfoByResourceId(
     const std::string& resource_id,
     const GetEntryInfoWithFilePathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -62,53 +62,53 @@ void FakeDriveFileSystem::GetEntryInfoByResourceId(
   drive_service_->GetResourceEntry(
       resource_id,
       base::Bind(
-          &FakeDriveFileSystem::GetEntryInfoByResourceIdAfterGetResourceEntry,
+          &FakeFileSystem::GetEntryInfoByResourceIdAfterGetResourceEntry,
           weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-void FakeDriveFileSystem::TransferFileFromRemoteToLocal(
+void FakeFileSystem::TransferFileFromRemoteToLocal(
     const base::FilePath& remote_src_file_path,
     const base::FilePath& local_dest_file_path,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::TransferFileFromLocalToRemote(
+void FakeFileSystem::TransferFileFromLocalToRemote(
     const base::FilePath& local_src_file_path,
     const base::FilePath& remote_dest_file_path,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::OpenFile(const base::FilePath& file_path,
-                                   const OpenFileCallback& callback) {
+void FakeFileSystem::OpenFile(const base::FilePath& file_path,
+                              const OpenFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::CloseFile(const base::FilePath& file_path,
-                                    const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-}
-
-void FakeDriveFileSystem::Copy(const base::FilePath& src_file_path,
-                               const base::FilePath& dest_file_path,
+void FakeFileSystem::CloseFile(const base::FilePath& file_path,
                                const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::Move(const base::FilePath& src_file_path,
-                               const base::FilePath& dest_file_path,
-                               const FileOperationCallback& callback) {
+void FakeFileSystem::Copy(const base::FilePath& src_file_path,
+                          const base::FilePath& dest_file_path,
+                          const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::Remove(const base::FilePath& file_path,
-                                 bool is_recursive,
-                                 const FileOperationCallback& callback) {
+void FakeFileSystem::Move(const base::FilePath& src_file_path,
+                          const base::FilePath& dest_file_path,
+                          const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::CreateDirectory(
+void FakeFileSystem::Remove(const base::FilePath& file_path,
+                            bool is_recursive,
+                            const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
+void FakeFileSystem::CreateDirectory(
     const base::FilePath& directory_path,
     bool is_exclusive,
     bool is_recursive,
@@ -116,28 +116,28 @@ void FakeDriveFileSystem::CreateDirectory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::CreateFile(const base::FilePath& file_path,
-                                     bool is_exclusive,
-                                     const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-}
-
-void FakeDriveFileSystem::Pin(const base::FilePath& file_path,
-                              const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-}
-
-void FakeDriveFileSystem::Unpin(const base::FilePath& file_path,
+void FakeFileSystem::CreateFile(const base::FilePath& file_path,
+                                bool is_exclusive,
                                 const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::GetFileByPath(const base::FilePath& file_path,
-                                        const GetFileCallback& callback) {
+void FakeFileSystem::Pin(const base::FilePath& file_path,
+                         const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::GetFileByResourceId(
+void FakeFileSystem::Unpin(const base::FilePath& file_path,
+                           const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
+void FakeFileSystem::GetFileByPath(const base::FilePath& file_path,
+                                   const GetFileCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
+void FakeFileSystem::GetFileByResourceId(
     const std::string& resource_id,
     const DriveClientContext& context,
     const GetFileCallback& get_file_callback,
@@ -145,7 +145,7 @@ void FakeDriveFileSystem::GetFileByResourceId(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::GetFileContentByPath(
+void FakeFileSystem::GetFileContentByPath(
     const base::FilePath& file_path,
     const GetFileContentInitializedCallback& initialized_callback,
     const google_apis::GetContentCallback& get_content_callback,
@@ -154,20 +154,20 @@ void FakeDriveFileSystem::GetFileContentByPath(
 
   GetEntryInfoByPath(
       file_path,
-      base::Bind(&FakeDriveFileSystem::GetFileContentByPathAfterGetEntryInfo,
+      base::Bind(&FakeFileSystem::GetFileContentByPathAfterGetEntryInfo,
                  weak_ptr_factory_.GetWeakPtr(),
                  file_path, initialized_callback, get_content_callback,
                  completion_callback));
 }
 
-void FakeDriveFileSystem::UpdateFileByResourceId(
+void FakeFileSystem::UpdateFileByResourceId(
     const std::string& resource_id,
     const DriveClientContext& context,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::GetEntryInfoByPath(
+void FakeFileSystem::GetEntryInfoByPath(
     const base::FilePath& file_path,
     const GetEntryInfoCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -179,7 +179,7 @@ void FakeDriveFileSystem::GetEntryInfoByPath(
     // Specialized for the root entry.
     drive_service_->GetAboutResource(
         base::Bind(
-            &FakeDriveFileSystem::GetEntryInfoByPathAfterGetAboutResource,
+            &FakeFileSystem::GetEntryInfoByPathAfterGetAboutResource,
             weak_ptr_factory_.GetWeakPtr(), callback));
     return;
   }
@@ -187,29 +187,29 @@ void FakeDriveFileSystem::GetEntryInfoByPath(
   GetEntryInfoByPath(
       file_path.DirName(),
       base::Bind(
-          &FakeDriveFileSystem::GetEntryInfoByPathAfterGetParentEntryInfo,
+          &FakeFileSystem::GetEntryInfoByPathAfterGetParentEntryInfo,
           weak_ptr_factory_.GetWeakPtr(), file_path.BaseName(), callback));
 }
 
-void FakeDriveFileSystem::ReadDirectoryByPath(
+void FakeFileSystem::ReadDirectoryByPath(
     const base::FilePath& file_path,
     const ReadDirectoryWithSettingCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::RefreshDirectory(
+void FakeFileSystem::RefreshDirectory(
     const base::FilePath& file_path,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::Search(const std::string& search_query,
-                                 const GURL& next_feed,
-                                 const SearchCallback& callback) {
+void FakeFileSystem::Search(const std::string& search_query,
+                            const GURL& next_feed,
+                            const SearchCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::SearchMetadata(
+void FakeFileSystem::SearchMetadata(
     const std::string& query,
     int options,
     int at_most_num_matches,
@@ -217,63 +217,63 @@ void FakeDriveFileSystem::SearchMetadata(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::GetAvailableSpace(
+void FakeFileSystem::GetAvailableSpace(
     const GetAvailableSpaceCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::AddUploadedFile(
+void FakeFileSystem::AddUploadedFile(
     scoped_ptr<google_apis::ResourceEntry> doc_entry,
     const base::FilePath& file_content_path,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::GetMetadata(
+void FakeFileSystem::GetMetadata(
     const GetFilesystemMetadataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::MarkCacheFileAsMounted(
+void FakeFileSystem::MarkCacheFileAsMounted(
     const base::FilePath& drive_file_path,
     const OpenFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::MarkCacheFileAsUnmounted(
+void FakeFileSystem::MarkCacheFileAsUnmounted(
     const base::FilePath& cache_file_path,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::GetCacheEntryByResourceId(
+void FakeFileSystem::GetCacheEntryByResourceId(
     const std::string& resource_id,
     const std::string& md5,
     const GetCacheEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::IterateCache(
+void FakeFileSystem::IterateCache(
     const CacheIterateCallback& iteration_callback,
     const base::Closure& completion_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::Reload() {
+void FakeFileSystem::Reload() {
 }
 
 // Implementation of GetFilePath.
-void FakeDriveFileSystem::GetFilePath(const std::string& resource_id,
-                                      const GetFilePathCallback& callback) {
+void FakeFileSystem::GetFilePath(const std::string& resource_id,
+                                 const GetFilePathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   drive_service_->GetAboutResource(
       base::Bind(
-          &FakeDriveFileSystem::GetFilePathAfterGetAboutResource,
+          &FakeFileSystem::GetFilePathAfterGetAboutResource,
           weak_ptr_factory_.GetWeakPtr(), resource_id, callback));
 }
 
-void FakeDriveFileSystem::GetFilePathAfterGetAboutResource(
+void FakeFileSystem::GetFilePathAfterGetAboutResource(
     const std::string& resource_id,
     const GetFilePathCallback& callback,
     google_apis::GDataErrorCode error,
@@ -288,7 +288,7 @@ void FakeDriveFileSystem::GetFilePathAfterGetAboutResource(
                       base::FilePath(), callback);
 }
 
-void FakeDriveFileSystem::GetFilePathInternal(
+void FakeFileSystem::GetFilePathInternal(
     const std::string& root_resource_id,
     const std::string& resource_id,
     const base::FilePath& file_path,
@@ -304,12 +304,12 @@ void FakeDriveFileSystem::GetFilePathInternal(
   drive_service_->GetResourceEntry(
       resource_id,
       base::Bind(
-          &FakeDriveFileSystem::GetFilePathAfterGetResourceEntry,
+          &FakeFileSystem::GetFilePathAfterGetResourceEntry,
           weak_ptr_factory_.GetWeakPtr(),
           root_resource_id, file_path, callback));
 }
 
-void FakeDriveFileSystem::GetFilePathAfterGetResourceEntry(
+void FakeFileSystem::GetFilePathAfterGetResourceEntry(
     const std::string& root_resource_id,
     const base::FilePath& remaining_file_path,
     const GetFilePathCallback& callback,
@@ -332,7 +332,7 @@ void FakeDriveFileSystem::GetFilePathAfterGetResourceEntry(
 }
 
 // Implementation of GetEntryInfoByResourceId.
-void FakeDriveFileSystem::GetEntryInfoByResourceIdAfterGetResourceEntry(
+void FakeFileSystem::GetEntryInfoByResourceIdAfterGetResourceEntry(
     const GetEntryInfoWithFilePathCallback& callback,
     google_apis::GDataErrorCode error_in,
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {
@@ -352,12 +352,12 @@ void FakeDriveFileSystem::GetEntryInfoByResourceIdAfterGetResourceEntry(
   GetFilePath(
       parent_resource_id,
       base::Bind(
-          &FakeDriveFileSystem::GetEntryInfoByResourceIdAfterGetFilePath,
+          &FakeFileSystem::GetEntryInfoByResourceIdAfterGetFilePath,
           weak_ptr_factory_.GetWeakPtr(),
           callback, error, base::Passed(&entry_proto)));
 }
 
-void FakeDriveFileSystem::GetEntryInfoByResourceIdAfterGetFilePath(
+void FakeFileSystem::GetEntryInfoByResourceIdAfterGetFilePath(
     const GetEntryInfoWithFilePathCallback& callback,
     FileError error,
     scoped_ptr<DriveEntryProto> entry_proto,
@@ -369,7 +369,7 @@ void FakeDriveFileSystem::GetEntryInfoByResourceIdAfterGetFilePath(
 }
 
 // Implementation of GetFileContentByPath.
-void FakeDriveFileSystem::GetFileContentByPathAfterGetEntryInfo(
+void FakeFileSystem::GetFileContentByPathAfterGetEntryInfo(
     const base::FilePath& file_path,
     const GetFileContentInitializedCallback& initialized_callback,
     const google_apis::GetContentCallback& get_content_callback,
@@ -408,14 +408,14 @@ void FakeDriveFileSystem::GetFileContentByPathAfterGetEntryInfo(
       file_path,
       cache_path,
       download_url,
-      base::Bind(&FakeDriveFileSystem::GetFileContentByPathAfterDownloadFile,
+      base::Bind(&FakeFileSystem::GetFileContentByPathAfterDownloadFile,
                  weak_ptr_factory_.GetWeakPtr(),
                  completion_callback),
       get_content_callback,
       google_apis::ProgressCallback());
 }
 
-void FakeDriveFileSystem::GetFileContentByPathAfterDownloadFile(
+void FakeFileSystem::GetFileContentByPathAfterDownloadFile(
     const FileOperationCallback& completion_callback,
     google_apis::GDataErrorCode gdata_error,
     const base::FilePath& temp_file) {
@@ -424,7 +424,7 @@ void FakeDriveFileSystem::GetFileContentByPathAfterDownloadFile(
 }
 
 // Implementation of GetEntryInfoByPath.
-void FakeDriveFileSystem::GetEntryInfoByPathAfterGetAboutResource(
+void FakeFileSystem::GetEntryInfoByPathAfterGetAboutResource(
     const GetEntryInfoCallback& callback,
     google_apis::GDataErrorCode gdata_error,
     scoped_ptr<google_apis::AboutResource> about_resource) {
@@ -444,7 +444,7 @@ void FakeDriveFileSystem::GetEntryInfoByPathAfterGetAboutResource(
   callback.Run(error, root.Pass());
 }
 
-void FakeDriveFileSystem::GetEntryInfoByPathAfterGetParentEntryInfo(
+void FakeFileSystem::GetEntryInfoByPathAfterGetParentEntryInfo(
     const base::FilePath& base_name,
     const GetEntryInfoCallback& callback,
     FileError error,
@@ -460,11 +460,11 @@ void FakeDriveFileSystem::GetEntryInfoByPathAfterGetParentEntryInfo(
   drive_service_->GetResourceListInDirectory(
       parent_entry_proto->resource_id(),
       base::Bind(
-          &FakeDriveFileSystem::GetEntryInfoByPathAfterGetResourceList,
+          &FakeFileSystem::GetEntryInfoByPathAfterGetResourceList,
           weak_ptr_factory_.GetWeakPtr(), base_name, callback));
 }
 
-void FakeDriveFileSystem::GetEntryInfoByPathAfterGetResourceList(
+void FakeFileSystem::GetEntryInfoByPathAfterGetResourceList(
     const base::FilePath& base_name,
     const GetEntryInfoCallback& callback,
     google_apis::GDataErrorCode gdata_error,

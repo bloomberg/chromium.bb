@@ -39,7 +39,7 @@ class OperationObserver;
 class CopyOperation {
  public:
   CopyOperation(JobScheduler* job_scheduler,
-                DriveFileSystemInterface* drive_file_system,
+                DriveFileSystemInterface* file_system,
                 internal::ResourceMetadata* metadata,
                 scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
                 OperationObserver* observer);
@@ -198,7 +198,7 @@ class CopyOperation {
                                  const std::string& resource_id);
 
   JobScheduler* job_scheduler_;
-  DriveFileSystemInterface* drive_file_system_;
+  DriveFileSystemInterface* file_system_;
   internal::ResourceMetadata* metadata_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;

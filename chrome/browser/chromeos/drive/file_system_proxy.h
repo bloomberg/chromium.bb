@@ -101,10 +101,10 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
 
   // Helper method to call methods of DriveFilesSystem. This method aborts
   // method calls in case DetachFromFileSystem() has been called.
-  void CallDriveFileSystemMethodOnUIThread(const base::Closure& method_call);
+  void CallFileSystemMethodOnUIThread(const base::Closure& method_call);
 
-  // Used to implement CallDriveFileSystemMethodOnUIThread.
-  void CallDriveFileSystemMethodOnUIThreadInternal(
+  // Used to implement CallFileSystemMethodOnUIThread.
+  void CallFileSystemMethodOnUIThreadInternal(
       const base::Closure& method_call);
 
   // Helper callback for relaying reply for status callbacks to the

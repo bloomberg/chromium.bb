@@ -37,9 +37,9 @@ class DriveURLRequestJob : public net::URLRequestJob {
   // injecting point for testing.
   // Note that the callback will be copied between threads (IO and UI), and
   // will be called on UI thread.
-  typedef base::Callback<DriveFileSystemInterface*()> DriveFileSystemGetter;
+  typedef base::Callback<DriveFileSystemInterface*()> FileSystemGetter;
 
-  DriveURLRequestJob(const DriveFileSystemGetter& file_system_getter,
+  DriveURLRequestJob(const FileSystemGetter& file_system_getter,
                      net::URLRequest* request,
                      net::NetworkDelegate* network_delegate);
 
@@ -64,7 +64,7 @@ class DriveURLRequestJob : public net::URLRequestJob {
   // Called when DriveFileStreamReader::Read is completed.
   void OnReadCompleted(int read_result);
 
-  const DriveFileSystemGetter file_system_getter_;
+  const FileSystemGetter file_system_getter_;
 
   scoped_ptr<DriveFileStreamReader> stream_reader_;
   scoped_ptr<DriveEntryProto> entry_;

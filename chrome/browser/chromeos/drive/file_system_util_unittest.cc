@@ -20,7 +20,7 @@
 namespace drive {
 namespace util {
 
-TEST(DriveFileSystemUtilTest, FilePathToDriveURL) {
+TEST(FileSystemUtilTest, FilePathToDriveURL) {
   base::FilePath path;
 
   // Path with alphabets and numbers.
@@ -45,7 +45,7 @@ TEST(DriveFileSystemUtilTest, FilePathToDriveURL) {
   EXPECT_EQ(path, DriveURLToFilePath(FilePathToDriveURL(path)));
 }
 
-TEST(DriveFileSystemUtilTest, IsUnderDriveMountPoint) {
+TEST(FileSystemUtilTest, IsUnderDriveMountPoint) {
   EXPECT_FALSE(IsUnderDriveMountPoint(
       base::FilePath::FromUTF8Unsafe("/wherever/foo.txt")));
   EXPECT_FALSE(IsUnderDriveMountPoint(
@@ -63,7 +63,7 @@ TEST(DriveFileSystemUtilTest, IsUnderDriveMountPoint) {
       base::FilePath::FromUTF8Unsafe("/special/drive/subdir/foo.txt")));
 }
 
-TEST(DriveFileSystemUtilTest, ExtractDrivePath) {
+TEST(FileSystemUtilTest, ExtractDrivePath) {
   EXPECT_EQ(base::FilePath(),
             ExtractDrivePath(
                 base::FilePath::FromUTF8Unsafe("/wherever/foo.txt")));
@@ -85,7 +85,7 @@ TEST(DriveFileSystemUtilTest, ExtractDrivePath) {
                 "/special/drive/subdir/foo.txt")));
 }
 
-TEST(DriveFileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
+TEST(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
   // Set up file system context for testing.
   base::ScopedTempDir temp_dir_;
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -153,7 +153,7 @@ TEST(DriveFileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
           isolated_id + "/" + isolated_name))));
 }
 
-TEST(DriveFileSystemUtilTest, EscapeUnescapeCacheFileName) {
+TEST(FileSystemUtilTest, EscapeUnescapeCacheFileName) {
   const std::string kUnescapedFileName(
       "tmp:`~!@#$%^&*()-_=+[{|]}\\\\;\',<.>/?");
   const std::string kEscapedFileName(
@@ -162,14 +162,14 @@ TEST(DriveFileSystemUtilTest, EscapeUnescapeCacheFileName) {
   EXPECT_EQ(kUnescapedFileName, UnescapeCacheFileName(kEscapedFileName));
 }
 
-TEST(DriveFileSystemUtilTest, EscapeUtf8FileName) {
+TEST(FileSystemUtilTest, EscapeUtf8FileName) {
   EXPECT_EQ("", EscapeUtf8FileName(""));
   EXPECT_EQ("foo", EscapeUtf8FileName("foo"));
   EXPECT_EQ("foo\xE2\x88\x95zzz", EscapeUtf8FileName("foo/zzz"));
   EXPECT_EQ("\xE2\x88\x95\xE2\x88\x95\xE2\x88\x95", EscapeUtf8FileName("///"));
 }
 
-TEST(DriveFileSystemUtilTest, ExtractResourceIdFromUrl) {
+TEST(FileSystemUtilTest, ExtractResourceIdFromUrl) {
   EXPECT_EQ("file:2_file_resource_id", ExtractResourceIdFromUrl(
       GURL("https://file1_link_self/file:2_file_resource_id")));
   // %3A should be unescaped.
@@ -180,7 +180,7 @@ TEST(DriveFileSystemUtilTest, ExtractResourceIdFromUrl) {
   EXPECT_EQ("", ExtractResourceIdFromUrl(GURL("https://www.example.com/")));
 }
 
-TEST(DriveFileSystemUtilTest, ParseCacheFilePath) {
+TEST(FileSystemUtilTest, ParseCacheFilePath) {
   std::string resource_id, md5, extra_extension;
   ParseCacheFilePath(
       base::FilePath::FromUTF8Unsafe(
@@ -213,7 +213,7 @@ TEST(DriveFileSystemUtilTest, ParseCacheFilePath) {
   EXPECT_EQ(extra_extension, "");
 }
 
-TEST(DriveFileSystemUtilTest, NeedsNamespaceMigration) {
+TEST(FileSystemUtilTest, NeedsNamespaceMigration) {
   // Not Drive cases.
   EXPECT_FALSE(NeedsNamespaceMigration(
       base::FilePath::FromUTF8Unsafe("/Downloads")));
@@ -247,7 +247,7 @@ TEST(DriveFileSystemUtilTest, NeedsNamespaceMigration) {
       base::FilePath::FromUTF8Unsafe("/special/drive/root/root/dir1")));
 }
 
-TEST(DriveFileSystemUtilTest, ConvertToMyDriveNamespace) {
+TEST(FileSystemUtilTest, ConvertToMyDriveNamespace) {
   // Migration cases.
   EXPECT_EQ(base::FilePath::FromUTF8Unsafe("/special/drive/root"),
             drive::util::ConvertToMyDriveNamespace(
@@ -258,7 +258,7 @@ TEST(DriveFileSystemUtilTest, ConvertToMyDriveNamespace) {
                 base::FilePath::FromUTF8Unsafe("/special/drive/dir1")));
 }
 
-TEST(DriveFileSystemUtilTest, IsSpecialResourceId) {
+TEST(FileSystemUtilTest, IsSpecialResourceId) {
   EXPECT_FALSE(util::IsSpecialResourceId("abc"));
   EXPECT_FALSE(util::IsSpecialResourceId("file:123"));
   EXPECT_FALSE(util::IsSpecialResourceId("folder:root"));

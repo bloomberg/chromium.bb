@@ -193,7 +193,7 @@ void FileSystemProxy::GetFileInfo(
     return;
   }
 
-  CallDriveFileSystemMethodOnUIThread(
+  CallFileSystemMethodOnUIThread(
       base::Bind(&DriveFileSystemInterface::GetEntryInfoByPath,
                  base::Unretained(file_system_),
                  file_path,
@@ -219,7 +219,7 @@ void FileSystemProxy::Copy(
     return;
   }
 
-  CallDriveFileSystemMethodOnUIThread(
+  CallFileSystemMethodOnUIThread(
       base::Bind(&DriveFileSystemInterface::Copy,
                  base::Unretained(file_system_),
                  src_file_path,
@@ -245,7 +245,7 @@ void FileSystemProxy::Move(
     return;
   }
 
-  CallDriveFileSystemMethodOnUIThread(
+  CallFileSystemMethodOnUIThread(
       base::Bind(&DriveFileSystemInterface::Move,
                  base::Unretained(file_system_),
                  src_file_path,
@@ -272,7 +272,7 @@ void FileSystemProxy::ReadDirectory(
     return;
   }
 
-  CallDriveFileSystemMethodOnUIThread(
+  CallFileSystemMethodOnUIThread(
       base::Bind(&DriveFileSystemInterface::ReadDirectoryByPath,
                  base::Unretained(file_system_),
                  file_path,
@@ -296,7 +296,7 @@ void FileSystemProxy::Remove(
     return;
   }
 
-  CallDriveFileSystemMethodOnUIThread(
+  CallFileSystemMethodOnUIThread(
       base::Bind(&DriveFileSystemInterface::Remove,
                  base::Unretained(file_system_),
                  file_path,
@@ -322,7 +322,7 @@ void FileSystemProxy::CreateDirectory(
     return;
   }
 
-  CallDriveFileSystemMethodOnUIThread(
+  CallFileSystemMethodOnUIThread(
       base::Bind(&DriveFileSystemInterface::CreateDirectory,
                  base::Unretained(file_system_),
                  file_path,
@@ -348,7 +348,7 @@ void FileSystemProxy::CreateFile(
     return;
   }
 
-  CallDriveFileSystemMethodOnUIThread(
+  CallFileSystemMethodOnUIThread(
       base::Bind(&DriveFileSystemInterface::CreateFile,
                  base::Unretained(file_system_),
                  file_path,
@@ -383,7 +383,7 @@ void FileSystemProxy::Truncate(
   // TODO(kinaba): http://crbug.com/132780.
   // Optimize the cases for small |length|, at least for |length| == 0.
   // CreateWritableSnapshotFile downloads the whole content unnecessarily.
-  CallDriveFileSystemMethodOnUIThread(
+  CallFileSystemMethodOnUIThread(
       base::Bind(&DriveFileSystemInterface::OpenFile,
                  base::Unretained(file_system_),
                  file_path,
@@ -452,7 +452,7 @@ void FileSystemProxy::OnCreateFileForOpen(
   }
 
   // Open created (or existing) file for writing.
-  CallDriveFileSystemMethodOnUIThread(
+  CallFileSystemMethodOnUIThread(
       base::Bind(&DriveFileSystemInterface::OpenFile,
                  base::Unretained(file_system_),
                  file_path,
@@ -499,7 +499,7 @@ void FileSystemProxy::DidTruncate(
 
   // Truncation finished. We must close the file no matter |truncate_result|
   // indicates an error or not.
-  CallDriveFileSystemMethodOnUIThread(
+  CallFileSystemMethodOnUIThread(
       base::Bind(&DriveFileSystemInterface::CloseFile,
                  base::Unretained(file_system_),
                  virtual_path,
@@ -548,7 +548,7 @@ void FileSystemProxy::OpenFile(
         (file_flags & base::PLATFORM_FILE_WRITE) ||
         (file_flags & base::PLATFORM_FILE_EXCLUSIVE_WRITE)) {
       // Open existing file for writing.
-      CallDriveFileSystemMethodOnUIThread(
+      CallFileSystemMethodOnUIThread(
           base::Bind(&DriveFileSystemInterface::OpenFile,
                      base::Unretained(file_system_),
                      file_path,
@@ -560,7 +560,7 @@ void FileSystemProxy::OpenFile(
                                     callback))));
     } else {
       // Read-only file open.
-      CallDriveFileSystemMethodOnUIThread(
+      CallFileSystemMethodOnUIThread(
           base::Bind(&DriveFileSystemInterface::GetFileByPath,
                      base::Unretained(file_system_),
                      file_path,
@@ -573,7 +573,7 @@ void FileSystemProxy::OpenFile(
   } else if ((file_flags & base::PLATFORM_FILE_CREATE) ||
              (file_flags & base::PLATFORM_FILE_CREATE_ALWAYS)) {
     // Open existing file for writing.
-    CallDriveFileSystemMethodOnUIThread(
+    CallFileSystemMethodOnUIThread(
         base::Bind(&DriveFileSystemInterface::CreateFile,
                    base::Unretained(file_system_),
                    file_path,
@@ -601,7 +601,7 @@ void FileSystemProxy::NotifyCloseFile(const FileSystemURL& url) {
   if (!ValidateUrl(url, &file_path))
     return;
 
-  CallDriveFileSystemMethodOnUIThread(
+  CallFileSystemMethodOnUIThread(
       base::Bind(&DriveFileSystemInterface::CloseFile,
                  base::Unretained(file_system_),
                  file_path,
@@ -641,7 +641,7 @@ void FileSystemProxy::CreateSnapshotFile(
     return;
   }
 
-  CallDriveFileSystemMethodOnUIThread(
+  CallFileSystemMethodOnUIThread(
       base::Bind(&DriveFileSystemInterface::GetEntryInfoByPath,
                  base::Unretained(file_system_),
                  file_path,
@@ -670,7 +670,7 @@ void FileSystemProxy::OnGetEntryInfoByPath(
   base::PlatformFileInfo file_info;
   util::ConvertProtoToPlatformFileInfo(entry_proto->file_info(), &file_info);
 
-  CallDriveFileSystemMethodOnUIThread(
+  CallFileSystemMethodOnUIThread(
       base::Bind(&DriveFileSystemInterface::GetFileByPath,
                  base::Unretained(file_system_),
                  entry_path,
@@ -696,7 +696,7 @@ void FileSystemProxy::CreateWritableSnapshotFile(
     return;
   }
 
-  CallDriveFileSystemMethodOnUIThread(
+  CallFileSystemMethodOnUIThread(
       base::Bind(&DriveFileSystemInterface::OpenFile,
                  base::Unretained(file_system_),
                  file_path,
@@ -720,19 +720,19 @@ bool FileSystemProxy::ValidateUrl(
   return !file_path->empty();
 }
 
-void FileSystemProxy::CallDriveFileSystemMethodOnUIThread(
+void FileSystemProxy::CallFileSystemMethodOnUIThread(
     const base::Closure& method_call) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(
-          &FileSystemProxy::CallDriveFileSystemMethodOnUIThreadInternal,
+          &FileSystemProxy::CallFileSystemMethodOnUIThreadInternal,
           this,
           method_call));
 }
 
-void FileSystemProxy::CallDriveFileSystemMethodOnUIThreadInternal(
+void FileSystemProxy::CallFileSystemMethodOnUIThreadInternal(
     const base::Closure& method_call) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // If |file_system_| is NULL, it means the file system has already shut down.
@@ -826,7 +826,7 @@ void FileSystemProxy::CloseWritableSnapshotFile(
     const base::FilePath& local_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  CallDriveFileSystemMethodOnUIThread(
+  CallFileSystemMethodOnUIThread(
       base::Bind(&DriveFileSystemInterface::CloseFile,
                  base::Unretained(file_system_),
                  virtual_path,

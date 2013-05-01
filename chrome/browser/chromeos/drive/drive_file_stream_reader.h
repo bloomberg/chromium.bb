@@ -116,7 +116,7 @@ class DriveFileStreamReader {
   // injecting point for testing.
   // Note that the callback will be copied between threads (IO and UI), and
   // will be called on UI thread.
-  typedef base::Callback<DriveFileSystemInterface*()> DriveFileSystemGetter;
+  typedef base::Callback<DriveFileSystemInterface*()> FileSystemGetter;
 
   // Callback to return the result of Initialize().
   typedef base::Callback<void(FileError error,
@@ -124,7 +124,7 @@ class DriveFileStreamReader {
       InitializeCompletionCallback;
 
   explicit DriveFileStreamReader(
-      const DriveFileSystemGetter& drive_file_system_getter);
+      const FileSystemGetter& file_system_getter);
   ~DriveFileStreamReader();
 
   // Returns true if the reader is initialized.
@@ -174,7 +174,7 @@ class DriveFileStreamReader {
       const InitializeCompletionCallback& callback,
       FileError error);
 
-  const DriveFileSystemGetter drive_file_system_getter_;
+  const FileSystemGetter file_system_getter_;
   scoped_ptr<internal::ReaderProxy> reader_proxy_;
 
   // This should remain the last member so it'll be destroyed first and

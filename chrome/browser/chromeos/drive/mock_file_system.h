@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_MOCK_DRIVE_FILE_SYSTEM_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_MOCK_DRIVE_FILE_SYSTEM_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_MOCK_FILE_SYSTEM_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_MOCK_FILE_SYSTEM_H_
 
 #include <string>
 
@@ -15,10 +15,10 @@ namespace drive {
 class FileSystemObserver;
 
 // Mock for DriveFileSystemInterface.
-class MockDriveFileSystem : public DriveFileSystemInterface {
+class MockFileSystem : public DriveFileSystemInterface {
  public:
-  MockDriveFileSystem();
-  virtual ~MockDriveFileSystem();
+  MockFileSystem();
+  virtual ~MockFileSystem();
 
   // DriveFileSystemInterface overrides.
   MOCK_METHOD0(Initialize, void());
@@ -124,4 +124,4 @@ class MockDriveFileSystem : public DriveFileSystemInterface {
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_MOCK_DRIVE_FILE_SYSTEM_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_MOCK_FILE_SYSTEM_H_

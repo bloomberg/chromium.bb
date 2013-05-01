@@ -44,7 +44,7 @@ std::string FixupMimeType(const std::string& type) {
 }  // namespace
 
 DriveURLRequestJob::DriveURLRequestJob(
-    const DriveFileSystemGetter& file_system_getter,
+    const FileSystemGetter& file_system_getter,
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate)
     : net::URLRequestJob(request, network_delegate),

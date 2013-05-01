@@ -75,12 +75,12 @@ struct CopyOperation::StartFileUploadParams {
 
 CopyOperation::CopyOperation(
     JobScheduler* job_scheduler,
-    DriveFileSystemInterface* drive_file_system,
+    DriveFileSystemInterface* file_system,
     internal::ResourceMetadata* metadata,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     OperationObserver* observer)
   : job_scheduler_(job_scheduler),
-    drive_file_system_(drive_file_system),
+    file_system_(file_system),
     metadata_(metadata),
     blocking_task_runner_(blocking_task_runner),
     observer_(observer),
@@ -117,7 +117,7 @@ void CopyOperation::TransferFileFromRemoteToLocal(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  drive_file_system_->GetFileByPath(
+  file_system_->GetFileByPath(
       remote_src_file_path,
       base::Bind(&CopyOperation::OnGetFileCompleteForTransferFile,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -298,7 +298,7 @@ void CopyOperation::CopyAfterGetEntryInfoPair(
   // TODO(kochi): Reimplement this once the server API supports
   // copying of regular files directly on the server side. crbug.com/138273
   const base::FilePath& src_file_path = result->first.path;
-  drive_file_system_->GetFileByPath(
+  file_system_->GetFileByPath(
       src_file_path,
       base::Bind(&CopyOperation::OnGetFileCompleteForCopy,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -380,9 +380,9 @@ void CopyOperation::OnTransferCompleted(
   DCHECK(!callback.is_null());
 
   if (error == google_apis::HTTP_SUCCESS && resource_entry.get()) {
-    drive_file_system_->AddUploadedFile(resource_entry.Pass(),
-                                        file_path,
-                                        callback);
+    file_system_->AddUploadedFile(resource_entry.Pass(),
+                                  file_path,
+                                  callback);
   } else {
     callback.Run(util::GDataToFileError(error));
   }

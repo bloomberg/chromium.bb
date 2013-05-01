@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FAKE_DRIVE_FILE_SYSTEM_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_FAKE_DRIVE_FILE_SYSTEM_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FAKE_FILE_SYSTEM_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_FAKE_FILE_SYSTEM_H_
 
 #include <string>
 
@@ -36,11 +36,11 @@ namespace test_util {
 // of interactions to the FakeDriveService may be bigger than the real
 // implementation.
 // Currently most methods are empty (not implemented).
-class FakeDriveFileSystem : public DriveFileSystemInterface {
+class FakeFileSystem : public DriveFileSystemInterface {
  public:
-  explicit FakeDriveFileSystem(
+  explicit FakeFileSystem(
       google_apis::DriveServiceInterface* drive_service);
-  virtual ~FakeDriveFileSystem();
+  virtual ~FakeFileSystem();
 
   // Initialization for testing. This can be called instead of Initialize
   // for testing purpose. Returns true for success.
@@ -210,7 +210,7 @@ class FakeDriveFileSystem : public DriveFileSystemInterface {
   // 2-2) Then, gets the resource list by restricting the parent with its id.
   // 2-3) Search the results based on title, and return the DriveEntryProto.
   // Note that adding suffix (e.g. " (2)") for files sharing a same name is
-  // not supported in FakeDriveFileSystem. Thus, even if the server has
+  // not supported in FakeFileSystem. Thus, even if the server has
   // files sharing the same name under a directory, the second (or later)
   // file cannot be taken with the suffixed name.
   void GetEntryInfoByPathAfterGetAboutResource(
@@ -233,12 +233,12 @@ class FakeDriveFileSystem : public DriveFileSystemInterface {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<FakeDriveFileSystem> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeFileSystem> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeDriveFileSystem);
+  DISALLOW_COPY_AND_ASSIGN(FakeFileSystem);
 };
 
 }  // namespace test_util
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FAKE_DRIVE_FILE_SYSTEM_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FAKE_FILE_SYSTEM_H_
