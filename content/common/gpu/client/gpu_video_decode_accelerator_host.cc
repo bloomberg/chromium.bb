@@ -38,8 +38,10 @@ GpuVideoDecodeAcceleratorHost::GpuVideoDecodeAcceleratorHost(
 void GpuVideoDecodeAcceleratorHost::OnChannelError() {
   DLOG(ERROR) << "GpuVideoDecodeAcceleratorHost::OnChannelError()";
   OnErrorNotification(PLATFORM_FAILURE);
-  channel_->RemoveRoute(decoder_route_id_);
-  channel_ = NULL;
+  if (channel_) {
+    channel_->RemoveRoute(decoder_route_id_);
+    channel_ = NULL;
+  }
 }
 
 bool GpuVideoDecodeAcceleratorHost::OnMessageReceived(const IPC::Message& msg) {

@@ -636,7 +636,7 @@ IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderMsg_Flush)
 IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderMsg_Reset)
 
 // Send destroy request to the decoder.
-IPC_SYNC_MESSAGE_ROUTED0_0(AcceleratedVideoDecoderMsg_Destroy)
+IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderMsg_Destroy)
 
 //------------------------------------------------------------------------------
 // Accelerated Video Decoder Host Messages
