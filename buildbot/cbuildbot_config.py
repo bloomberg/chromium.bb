@@ -1284,7 +1284,6 @@ _arm_release = _release.derive(arm)
 
 _arm_release.add_config('daisy-release',
   boards=['daisy'],
-  hw_tests=HWTestConfig.DefaultList(num=4),
   critical_for_chrome=True,
 )
 
