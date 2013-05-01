@@ -1054,14 +1054,16 @@ void DriveFileSyncService::ApplyLocalChangeInternal(
           local_file_path,
           PathToTitle(url.path()),
           base::Bind(&DriveFileSyncService::DidUploadNewFileForLocalSync,
-                    AsWeakPtr(), base::Passed(&param)));
+                     AsWeakPtr(), base::Passed(&param)));
       return;
     case LOCAL_SYNC_OPERATION_ADD_DIRECTORY:
-      // TODO(nhiroki): support directory operations (http://crbug.com/161442).
-      NOTREACHED();
-      FinalizeLocalSync(param->token.Pass(),
-                        param->callback,
-                        SYNC_STATUS_FAILED);
+      DCHECK(IsSyncDirectoryOperationEnabled());
+      sync_client_->CreateDirectory(
+          origin_resource_id,
+          PathToTitle(url.path()),
+          base::Bind(&DriveFileSyncService::DidCreateDirectoryForLocalSync,
+                     AsWeakPtr(), base::Passed(&param)));
+      return;
     case LOCAL_SYNC_OPERATION_UPDATE_FILE:
       DCHECK(param->has_drive_metadata);
       sync_client_->UploadExistingFile(
@@ -1080,11 +1082,16 @@ void DriveFileSyncService::ApplyLocalChangeInternal(
                      AsWeakPtr(), base::Passed(&param)));
       return;
     case LOCAL_SYNC_OPERATION_DELETE_DIRECTORY:
-      // TODO(nhiroki): support directory operations (http://crbug.com/161442).
-      NOTREACHED();
-      FinalizeLocalSync(param->token.Pass(),
-                        param->callback,
-                        SYNC_STATUS_FAILED);
+      DCHECK(IsSyncDirectoryOperationEnabled());
+      DCHECK(param->has_drive_metadata);
+      // This does not handle recursive directory deletion
+      // (which should not happen other than after a restart).
+      sync_client_->DeleteFile(
+          drive_metadata.resource_id(),
+          std::string(),  // empty etag
+          base::Bind(&DriveFileSyncService::DidDeleteFileForLocalSync,
+                     AsWeakPtr(), base::Passed(&param)));
+      return;
     case LOCAL_SYNC_OPERATION_NONE_CONFLICTED:
       // The file is already conflicted.
       HandleConflictForLocalSync(param.Pass());
@@ -1101,16 +1108,17 @@ void DriveFileSyncService::ApplyLocalChangeInternal(
       FinalizeLocalSync(param->token.Pass(),
                         param->callback,
                         SYNC_STATUS_FAILED);
-    case LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE: {
+      return;
+    case LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE:
       ResolveConflictToRemoteForLocalSync(param.Pass());
       return;
-    }
     case LOCAL_SYNC_OPERATION_DELETE_METADATA:
-      // TODO(nhiroki): support directory operations (http://crbug.com/161442).
-      NOTREACHED();
-      FinalizeLocalSync(param->token.Pass(),
-                        param->callback,
-                        SYNC_STATUS_FAILED);
+      metadata_store_->DeleteEntry(
+          url,
+          base::Bind(&DriveFileSyncService::DidApplyLocalChange,
+                     AsWeakPtr(), base::Passed(&param),
+                     google_apis::HTTP_SUCCESS));
+      return;
     case LOCAL_SYNC_OPERATION_FAIL: {
       FinalizeLocalSync(param->token.Pass(), callback, SYNC_STATUS_FAILED);
       return;
@@ -1185,6 +1193,49 @@ void DriveFileSyncService::DidUploadNewFileForLocalSync(
       HandleConflictForLocalSync(param.Pass());
       return;
 
+    default:
+      FinalizeLocalSync(param->token.Pass(), param->callback,
+                        GDataErrorCodeToSyncStatusCodeWrapper(error));
+  }
+}
+
+void DriveFileSyncService::DidCreateDirectoryForLocalSync(
+    scoped_ptr<ApplyLocalChangeParam> param,
+    google_apis::GDataErrorCode error,
+    const std::string& resource_id) {
+  DCHECK(param);
+  const FileSystemURL& url = param->url;
+  switch (error) {
+    case google_apis::HTTP_SUCCESS:
+      // There are two cases when the server returns HTTP_SUCCESS:
+      // 1. There were duplicates and a directory is left (this is true
+      //    success but not created).
+      // 2. There were duplicates and a file is left (this could be really
+      //    undesirable conflict).
+      //
+      // For now we don't handle the latter since the former has a higher chance
+      // than the latter.
+      //
+      // TODO(kinuko): Handle the latter case (http://crbug.com/237090).
+
+      // Fall-through
+    case google_apis::HTTP_CREATED: {
+      param->drive_metadata.set_resource_id(resource_id);
+      param->drive_metadata.set_md5_checksum(std::string());
+      param->drive_metadata.set_conflicted(false);
+      param->drive_metadata.set_to_be_fetched(false);
+      param->drive_metadata.set_type(DriveMetadata::RESOURCE_TYPE_FOLDER);
+      const DriveMetadata& metadata = param->drive_metadata;
+      metadata_store_->UpdateEntry(
+          url, metadata,
+          base::Bind(&DriveFileSyncService::DidApplyLocalChange,
+                     AsWeakPtr(), base::Passed(&param), error));
+      NotifyObserversFileStatusChanged(url,
+                                       SYNC_FILE_STATUS_SYNCED,
+                                       SYNC_ACTION_ADDED,
+                                       SYNC_DIRECTION_LOCAL_TO_REMOTE);
+      return;
+    }
     default:
       FinalizeLocalSync(param->token.Pass(), param->callback,
                         GDataErrorCodeToSyncStatusCodeWrapper(error));

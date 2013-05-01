@@ -239,6 +239,10 @@ class DriveFileSyncService
       google_apis::GDataErrorCode error,
       const std::string& resource_id,
       const std::string& file_md5);
+  void DidCreateDirectoryForLocalSync(
+      scoped_ptr<ApplyLocalChangeParam> param,
+      google_apis::GDataErrorCode error,
+      const std::string& resource_id);
   void DidUploadExistingFileForLocalSync(
       scoped_ptr<ApplyLocalChangeParam> param,
       google_apis::GDataErrorCode error,
