@@ -1276,7 +1276,7 @@ ErrorCode BaselinePolicy(Sandbox *sandbox, int sysno) {
   return sandbox->Trap(CrashSIGSYS_Handler, NULL);
 }
 
-// x86_64/i386.
+// Main policy for x86_64/i386. Extended by ArmMaliGpuProcessPolicy.
 ErrorCode GpuProcessPolicy(Sandbox *sandbox, int sysno,
                            void *broker_process) {
   switch(sysno) {
@@ -1284,6 +1284,7 @@ ErrorCode GpuProcessPolicy(Sandbox *sandbox, int sysno,
     case __NR_sched_getaffinity:
     case __NR_sched_setaffinity:
       return ErrorCode(ErrorCode::ERR_ALLOWED);
+    case __NR_access:
     case __NR_open:
     case __NR_openat:
       return sandbox->Trap(GpuSIGSYS_Handler, broker_process);
@@ -1307,6 +1308,7 @@ ErrorCode GpuBrokerProcessPolicy(Sandbox *sandbox, int sysno, void *aux) {
   // "aux" would typically be NULL, when called from
   // "EnableGpuBrokerPolicyCallBack"
   switch(sysno) {
+    case __NR_access:
     case __NR_open:
     case __NR_openat:
       return ErrorCode(ErrorCode::ERR_ALLOWED);
@@ -1315,11 +1317,10 @@ ErrorCode GpuBrokerProcessPolicy(Sandbox *sandbox, int sysno, void *aux) {
   }
 }
 
-// ARM Mali GPU process sandbox.
+// ARM Mali GPU process sandbox, inheriting from GpuProcessPolicy.
 ErrorCode ArmMaliGpuProcessPolicy(Sandbox *sandbox, int sysno,
                                   void *broker_process) {
   switch(sysno) {
-    case __NR_ioctl:
 #if defined(__arm__)
     // ARM GPU sandbox is started earlier so we need to allow networking
     // in the sandbox.
@@ -1331,22 +1332,14 @@ ErrorCode ArmMaliGpuProcessPolicy(Sandbox *sandbox, int sysno,
     case __NR_socketpair:
     case __NR_sysinfo:
     case __NR_uname:
-#endif  // defined(__arm__)
       return ErrorCode(ErrorCode::ERR_ALLOWED);
-    case __NR_access:
-    case __NR_open:
-    case __NR_openat:
-      return sandbox->Trap(GpuSIGSYS_Handler, broker_process);
+#endif  // defined(__arm__)
     default:
-#if defined(__arm__)
-      if (IsSystemVSharedMemory(sysno))
-        return ErrorCode(EACCES);
-#endif
-      if (IsAdvancedScheduler(sysno) || IsEventFd(sysno))
+      if (IsAdvancedScheduler(sysno))
         return ErrorCode(ErrorCode::ERR_ALLOWED);
 
-      // Default on the baseline policy.
-      return BaselinePolicy(sandbox, sysno);
+      // Default to the generic GPU policy.
+      return GpuProcessPolicy(sandbox, sysno, broker_process);
   }
 }
 
