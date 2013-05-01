@@ -32,7 +32,6 @@
 
 #include "modules/websockets/MainThreadWebSocketChannel.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
@@ -107,8 +106,6 @@ void MainThreadWebSocketChannel::connect(const KURL& url, const String& protocol
     m_handshake = adoptPtr(new WebSocketHandshake(url, protocol, m_document));
     m_handshake->reset();
     m_handshake->addExtensionProcessor(m_deflateFramer.createExtensionProcessor());
-    if (RuntimeEnabledFeatures::experimentalWebSocketEnabled())
-        m_handshake->addExtensionProcessor(m_perMessageDeflate.createExtensionProcessor());
     if (m_identifier)
         InspectorInstrumentation::didCreateWebSocket(m_document, m_identifier, url, m_document->url(), protocol);
     ref();
@@ -225,7 +222,6 @@ void MainThreadWebSocketChannel::fail(const String& reason)
     if (!m_buffer.isEmpty())
         skipBuffer(m_buffer.size()); // Save memory.
     m_deflateFramer.didFail();
-    m_perMessageDeflate.didFail();
     m_hasContinuousFrame = false;
     m_continuousFrameData.clear();
     if (!m_didFailOfClientAlreadyRun) {
@@ -538,10 +534,6 @@ bool MainThreadWebSocketChannel::processFrame()
         fail(inflateResult->failureReason());
         return false;
     }
-    if (!m_perMessageDeflate.inflate(frame)) {
-        fail(m_perMessageDeflate.failureReason());
-        return false;
-    }
 
     // Validate the frame data.
     if (WebSocketFrame::isReservedOpCode(frame.opCode)) {
@@ -549,8 +541,8 @@ bool MainThreadWebSocketChannel::processFrame()
         return false;
     }
 
-    if (frame.compress || frame.reserved2 || frame.reserved3) {
-        fail("One or more reserved bits are on: reserved1 = " + String::number(frame.compress) + ", reserved2 = " + String::number(frame.reserved2) + ", reserved3 = " + String::number(frame.reserved3));
+    if (frame.reserved2 || frame.reserved3) {
+        fail("One or more reserved bits are on: reserved2 = " + String::number(frame.reserved2) + ", reserved3 = " + String::number(frame.reserved3));
         return false;
     }
 
@@ -698,7 +690,6 @@ bool MainThreadWebSocketChannel::processFrame()
         break;
     }
 
-    m_perMessageDeflate.resetInflateBuffer();
     return !m_buffer.isEmpty();
 }
 
@@ -809,7 +800,7 @@ bool MainThreadWebSocketChannel::sendFrame(WebSocketFrame::OpCode opCode, const 
     ASSERT(m_handle);
     ASSERT(!m_suspended);
 
-    WebSocketFrame frame(opCode, data, dataLength, WebSocketFrame::Final | WebSocketFrame::Masked);
+    WebSocketFrame frame(opCode, true, false, true, data, dataLength);
     InspectorInstrumentation::didSendWebSocketFrame(m_document, m_identifier, frame);
 
     OwnPtr<DeflateResultHolder> deflateResult = m_deflateFramer.deflate(frame);
@@ -818,15 +809,9 @@ bool MainThreadWebSocketChannel::sendFrame(WebSocketFrame::OpCode opCode, const 
         return false;
     }
 
-    if (!m_perMessageDeflate.deflate(frame)) {
-        fail(m_perMessageDeflate.failureReason());
-        return false;
-    }
-
     Vector<char> frameData;
     frame.makeFrameData(frameData);
 
-    m_perMessageDeflate.resetDeflateBuffer();
     return m_handle->send(frameData.data(), frameData.size());
 }
 

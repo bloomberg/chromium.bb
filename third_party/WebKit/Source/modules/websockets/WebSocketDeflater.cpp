@@ -85,18 +85,15 @@ bool WebSocketDeflater::addBytes(const char* data, size_t length)
     if (!length)
         return false;
 
-    // The estimation by deflateBound is not accurate if the zlib has some remaining input of the last compression.
     size_t maxLength = deflateBound(m_stream.get(), length);
-    do {
-        size_t writePosition = m_buffer.size();
-        m_buffer.grow(writePosition + maxLength);
-        setStreamParameter(m_stream.get(), data, length, m_buffer.data() + writePosition, maxLength);
-        int result = deflate(m_stream.get(), Z_NO_FLUSH);
-        if (result != Z_OK)
-            return false;
-        m_buffer.shrink(writePosition + maxLength - m_stream->avail_out);
-        maxLength *= 2;
-    } while (m_stream->avail_in > 0);
+    size_t writePosition = m_buffer.size();
+    m_buffer.grow(writePosition + maxLength);
+    setStreamParameter(m_stream.get(), data, length, m_buffer.data() + writePosition, maxLength);
+    int result = deflate(m_stream.get(), Z_NO_FLUSH);
+    if (result != Z_OK || m_stream->avail_in > 0)
+        return false;
+
+    m_buffer.shrink(writePosition + maxLength - m_stream->avail_out);
     return true;
 }
 
@@ -126,11 +123,6 @@ void WebSocketDeflater::reset()
     m_buffer.clear();
     if (m_contextTakeOverMode == DoNotTakeOverContext)
         deflateReset(m_stream.get());
-}
-
-void WebSocketDeflater::softReset()
-{
-    m_buffer.clear();
 }
 
 PassOwnPtr<WebSocketInflater> WebSocketInflater::create(int windowBits)

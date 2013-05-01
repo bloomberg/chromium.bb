@@ -195,8 +195,10 @@ void WebSocketDeflateFramer::resetDeflateContext()
 PassOwnPtr<InflateResultHolder> WebSocketDeflateFramer::inflate(WebSocketFrame& frame)
 {
     OwnPtr<InflateResultHolder> result = InflateResultHolder::create(this);
-    if (!enabled())
+    if (!enabled() && frame.compress) {
+        result->fail("Compressed bit must be 0 if no negotiated deflate-frame extension");
         return result.release();
+    }
     if (!frame.compress)
         return result.release();
     if (!WebSocketFrame::isNonControlOpCode(frame.opCode)) {

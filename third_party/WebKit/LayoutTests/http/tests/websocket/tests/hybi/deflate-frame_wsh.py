@@ -49,9 +49,6 @@ def web_socket_do_extra_handshake(request):
     processor = _get_deflate_frame_extension_processor(request)
     if not processor:
         return
-    # Avoid extension conflict.
-    request.ws_extension_processors = [processor]
-
     r = request.ws_resource.split('?', 1)
     if len(r) == 1:
         return

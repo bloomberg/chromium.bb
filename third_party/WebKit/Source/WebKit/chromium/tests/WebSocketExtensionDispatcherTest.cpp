@@ -178,4 +178,34 @@ TEST_F(WebSocketExtensionDispatcherTest, TestInvalid)
     }
 }
 
+// Tests for the most complex example at http://tools.ietf.org/html/draft-ietf-hybi-permessage-compression-01#section-3.1
+TEST_F(WebSocketExtensionDispatcherTest, TestPerMessageCompressExample)
+{
+    addMockProcessor("permessage-compress");
+    addMockProcessor("bar");
+    EXPECT_TRUE(m_extensions.processHeaderValue("permessage-compress; method=\"foo; x=\\\"Hello World\\\", bar\""));
+    EXPECT_EQ(1U, m_parsedExtensionTokens.size());
+    EXPECT_EQ("permessage-compress", m_parsedExtensionTokens[0]);
+    String methodParameter = m_parsedParameters[0].find("method")->value;
+    EXPECT_EQ("foo; x=\"Hello World\", bar", methodParameter);
+
+    CString methodValue = methodParameter.ascii();
+    WebSocketExtensionParser parser(methodValue.data(), methodValue.data() + methodValue.length());
+
+    String token1;
+    HashMap<String, String> parameters1;
+    EXPECT_TRUE(parser.parseExtension(token1, parameters1));
+    EXPECT_EQ("foo", token1);
+    EXPECT_EQ(1, parameters1.size());
+    HashMap<String, String>::iterator xparameter = parameters1.find("x");
+    EXPECT_EQ("x", xparameter->key);
+    EXPECT_EQ("Hello World", xparameter->value);
+
+    String token2;
+    HashMap<String, String> parameters2;
+    EXPECT_TRUE(parser.parseExtension(token2, parameters2));
+    EXPECT_EQ("bar", token2);
+    EXPECT_EQ(0, parameters2.size());
+}
+
 }
