@@ -2645,4 +2645,7 @@ crbug.com/236992 [ Debug ] css3/filters/filter-property-computed-style.html [ Sl
 crbug.com/236992 [ Debug ] css3/flexbox/position-absolute-children.html [ Slow ]
 crbug.com/236992 [ Debug ] fast/css/css-selector-deeply-nested.html [ Slow ]
 
+# Needs rebaseline
+crbug.com/236931 [ Mac ] fast/block/margin-collapse/block-inside-inline/025.html [ Failure ]
+
 crbug.com/237083 [ MountainLion ] ietestcenter/css3/grid/grid-column-003.htm [ ImageOnlyFailure ]
