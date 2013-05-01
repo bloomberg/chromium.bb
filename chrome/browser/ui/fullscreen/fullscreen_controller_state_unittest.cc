@@ -231,6 +231,7 @@ class FullscreenControllerStateUnitTest : public BrowserWithTestWindowTest,
 
   // FullscreenControllerStateTest:
   virtual void SetUp() OVERRIDE;
+  virtual BrowserWindow* CreateBrowserWindow() OVERRIDE;
   virtual void ChangeWindowFullscreenState() OVERRIDE;
   virtual const char* GetWindowStateString() OVERRIDE;
   virtual void VerifyWindowState() OVERRIDE;
@@ -247,10 +248,13 @@ FullscreenControllerStateUnitTest::FullscreenControllerStateUnitTest ()
 }
 
 void FullscreenControllerStateUnitTest::SetUp() {
-  window_ = new FullscreenControllerTestWindow();
-  set_window(window_);  // BrowserWithTestWindowTest takes ownership.
   BrowserWithTestWindowTest::SetUp();
   window_->set_browser(browser());
+}
+
+BrowserWindow* FullscreenControllerStateUnitTest::CreateBrowserWindow() {
+  window_ = new FullscreenControllerTestWindow();
+  return window_;  // BrowserWithTestWindowTest takes ownership.
 }
 
 void FullscreenControllerStateUnitTest::ChangeWindowFullscreenState() {

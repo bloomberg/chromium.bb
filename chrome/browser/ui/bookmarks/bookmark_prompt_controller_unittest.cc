@@ -62,7 +62,6 @@ class BookmarkPromptControllerTest : public BrowserWithTestWindowTest {
   };
 
   virtual void SetUp() OVERRIDE {
-    set_window(new MyTestBrowserWindow);
     TestingBrowserProcess::GetGlobal()->
         SetBookmarkPromptController(new BookmarkPromptController);
     BrowserWithTestWindowTest::SetUp();
@@ -80,6 +79,10 @@ class BookmarkPromptControllerTest : public BrowserWithTestWindowTest {
     static_cast<TestingProfile*>(browser()->profile())->
         DestroyHistoryService();
     BrowserWithTestWindowTest::TearDown();
+  }
+
+  virtual BrowserWindow* CreateBrowserWindow() OVERRIDE {
+    return new MyTestBrowserWindow;
   }
 
   base::FieldTrialList field_trial_list_;

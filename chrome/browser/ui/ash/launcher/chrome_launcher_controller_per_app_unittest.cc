@@ -133,8 +133,8 @@ class TestAppIconLoaderImpl : public extensions::AppIconLoader {
 class ChromeLauncherControllerPerAppTest : public BrowserWithTestWindowTest {
  protected:
   ChromeLauncherControllerPerAppTest()
-      : BrowserWithTestWindowTest(chrome::HOST_DESKTOP_TYPE_ASH),
-        extension_service_(NULL) {
+      : extension_service_(NULL) {
+    SetHostDesktopType(chrome::HOST_DESKTOP_TYPE_ASH);
   }
 
   virtual ~ChromeLauncherControllerPerAppTest() {

@@ -21,6 +21,10 @@
 #include "ui/aura/test/aura_test_helper.h"
 #endif
 
+#if defined(USE_ASH)
+#include "ash/test/ash_test_helper.h"
+#endif
+
 using content::BrowserThread;
 using content::NavigationController;
 using content::RenderViewHost;
@@ -37,63 +41,64 @@ BrowserWithTestWindowTest::BrowserWithTestWindowTest()
   db_thread_.Start();
 }
 
-BrowserWithTestWindowTest::BrowserWithTestWindowTest(
-    chrome::HostDesktopType host_desktop_type)
-    : ui_thread_(BrowserThread::UI, message_loop()),
-      db_thread_(BrowserThread::DB),
-      file_thread_(BrowserThread::FILE, message_loop()),
-      file_user_blocking_thread_(
-          BrowserThread::FILE_USER_BLOCKING, message_loop()),
-      host_desktop_type_(host_desktop_type) {
-  db_thread_.Start();
+BrowserWithTestWindowTest::~BrowserWithTestWindowTest() {
+  db_thread_.Stop();
+}
+
+void BrowserWithTestWindowTest::SetHostDesktopType(
+    chrome::HostDesktopType host_desktop_type) {
+  DCHECK(!window_);
+  host_desktop_type_ = host_desktop_type;
 }
 
 void BrowserWithTestWindowTest::SetUp() {
   testing::Test::SetUp();
+#if defined(OS_CHROMEOS)
+  // TODO(jamescook): Windows Ash support. This will require refactoring
+  // AshTestHelper and AuraTestHelper so they can be used at the same time,
+  // perhaps by AshTestHelper owning an AuraTestHelper.
+  ash_test_helper_.reset(new ash::test::AshTestHelper(&ui_loop_));
+  ash_test_helper_->SetUp();
+#elif defined(USE_AURA)
+  aura_test_helper_.reset(new aura::test::AuraTestHelper(&ui_loop_));
+  aura_test_helper_->SetUp();
+#endif  // USE_AURA
 
-  set_profile(CreateProfile());
-
-  // Allow subclasses to specify a |window_| in their SetUp().
-  if (!window_.get())
-    window_.reset(new TestBrowserWindow);
+  // Subclasses can provide their own Profile.
+  profile_.reset(CreateProfile());
+  // Subclasses can provide their own test BrowserWindow. If they return NULL
+  // then Browser will create the a production BrowserWindow and the subclass
+  // is responsible for cleaning it up (usually by NativeWidget destruction).
+  window_.reset(CreateBrowserWindow());
 
   Browser::CreateParams params(profile(), host_desktop_type_);
   params.window = window_.get();
   browser_.reset(new Browser(params));
-#if defined(USE_AURA)
-  aura_test_helper_.reset(new aura::test::AuraTestHelper(&ui_loop_));
-  aura_test_helper_->SetUp();
-#endif  // USE_AURA
 }
 
 void BrowserWithTestWindowTest::TearDown() {
-  testing::Test::TearDown();
-#if defined(USE_AURA)
-  aura_test_helper_->TearDown();
-#endif
-}
-
-BrowserWithTestWindowTest::~BrowserWithTestWindowTest() {
-  // A Task is leaked if we don't destroy everything, then run the message
-  // loop.
-  DestroyBrowserAndProfile();
-
-  // Schedule another task on the DB thread to notify us that it's safe to
-  // carry on with the test.
+  // Some tests end up posting tasks to the DB thread that must be completed
+  // before the profile can be destroyed and the test safely shut down.
   base::WaitableEvent done(false, false);
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
       base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
-  db_thread_.Stop();
+
+  // Reset the profile here because some profile keyed services (like the
+  // audio service) depend on test stubs that the helpers below will remove.
+  DestroyBrowserAndProfile();
+
+#if defined(OS_CHROMEOS)
+  ash_test_helper_->TearDown();
+#elif defined(USE_AURA)
+  aura_test_helper_->TearDown();
+#endif
+  testing::Test::TearDown();
+
+  // A Task is leaked if we don't destroy everything, then run the message
+  // loop.
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   MessageLoop::current()->Run();
-}
-
-void BrowserWithTestWindowTest::set_profile(TestingProfile* profile) {
-  if (profile_.get() != NULL)
-    ProfileDestroyer::DestroyProfileWhenAppropriate(profile_.release());
-
-  profile_.reset(profile);
 }
 
 void BrowserWithTestWindowTest::AddTab(Browser* browser, const GURL& url) {
@@ -186,4 +191,8 @@ void BrowserWithTestWindowTest::DestroyBrowserAndProfile() {
 
 TestingProfile* BrowserWithTestWindowTest::CreateProfile() {
   return new TestingProfile();
+}
+
+BrowserWindow* BrowserWithTestWindowTest::CreateBrowserWindow() {
+  return new TestBrowserWindow();
 }

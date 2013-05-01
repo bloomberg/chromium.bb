@@ -245,7 +245,7 @@ class ProfileSyncServiceSessionTest
     // some of the ref counted objects in the profile depend on their
     // destruction on the io thread.
     DestroyBrowserAndProfile();
-    set_profile(NULL);
+    ASSERT_FALSE(profile());
 
     // Pump messages posted by the sync core thread (which may end up
     // posting on the IO thread).

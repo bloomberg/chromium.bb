@@ -19,8 +19,8 @@ namespace {
 class BrowserIteratorTestWithInitialWindowInAsh
     : public BrowserWithTestWindowTest {
  public:
-  BrowserIteratorTestWithInitialWindowInAsh()
-      : BrowserWithTestWindowTest(chrome::HOST_DESKTOP_TYPE_ASH) {
+  BrowserIteratorTestWithInitialWindowInAsh() {
+    SetHostDesktopType(chrome::HOST_DESKTOP_TYPE_ASH);
   }
 };
 

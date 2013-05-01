@@ -557,7 +557,9 @@ bool BrowserView::ShouldShowAvatar() const {
     return true;
   if (ManagedMode::IsInManagedMode())
     return true;
-
+  // Tests may not have a profile manager.
+  if (!g_browser_process->profile_manager())
+    return false;
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   if (cache.GetIndexOfProfileWithPath(browser_->profile()->GetPath()) ==

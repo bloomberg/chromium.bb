@@ -205,10 +205,8 @@ class BrowserCommandControllerFullscreenTest
   virtual ~BrowserCommandControllerFullscreenTest() {}
 
   // BrowserWithTestWindowTest overrides:
-  virtual void SetUp() {
-    // Must be set before base SetUp() is called.
-    set_window(new FullscreenTestBrowserWindow);
-    BrowserWithTestWindowTest::SetUp();
+  virtual BrowserWindow* CreateBrowserWindow() OVERRIDE {
+    return new FullscreenTestBrowserWindow;
   }
 
  private:

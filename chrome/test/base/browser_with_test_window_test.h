@@ -27,6 +27,14 @@
 
 class GURL;
 
+#if defined(USE_ASH)
+namespace ash {
+namespace test {
+class AshTestHelper;
+}
+}
+#endif
+
 #if defined(USE_AURA)
 namespace aura {
 namespace test {
@@ -67,21 +75,17 @@ class BrowserWithTestWindowTest : public testing::Test {
   // Creates a BrowserWithTestWindowTest for which the initial window will be
   // created on the native desktop.
   BrowserWithTestWindowTest();
-
-  // Creates a BrowserWithTestWindowTest for which the initial window will be
-  // created on the desktop of type |host_desktop_type|.
-  explicit BrowserWithTestWindowTest(chrome::HostDesktopType host_desktop_type);
-
   virtual ~BrowserWithTestWindowTest();
+
+  // Sets the desktop on which the initial window will be created. Must be
+  // called before SetUp().
+  void SetHostDesktopType(chrome::HostDesktopType host_desktop_type);
 
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
  protected:
   BrowserWindow* window() const { return window_.get(); }
-  void set_window(BrowserWindow* window) {
-    window_.reset(window);
-  }
 
   Browser* browser() const { return browser_.get(); }
   void set_browser(Browser* browser) {
@@ -92,9 +96,8 @@ class BrowserWithTestWindowTest : public testing::Test {
   }
 
   TestingProfile* profile() const { return profile_.get(); }
-  void set_profile(TestingProfile* profile);
 
-  MessageLoop* message_loop() { return &ui_loop_; }
+  MessageLoopForUI* message_loop() { return &ui_loop_; }
 
   // Adds a tab to |browser| with the given URL and commits the load.
   // This is a convenience function. The new tab will be added at index 0.
@@ -120,13 +123,16 @@ class BrowserWithTestWindowTest : public testing::Test {
       const GURL& url,
       const string16& title);
 
- protected:
   // Destroys the browser, window, and profile created by this class. This is
   // invoked from the destructor.
   void DestroyBrowserAndProfile();
 
   // Creates the profile used by this test. The caller owns the return value.
   virtual TestingProfile* CreateProfile();
+
+  // Creates the BrowserWindow used by this test. The caller owns the return
+  // value. Can return NULL to use the default window created by Browser.
+  virtual BrowserWindow* CreateBrowserWindow();
 
  private:
   // We need to create a MessageLoop, otherwise a bunch of things fails.
@@ -151,6 +157,9 @@ class BrowserWithTestWindowTest : public testing::Test {
   // RenderViewHostTester.
   content::RenderViewHostTestEnabler rvh_test_enabler_;
 
+#if defined(USE_ASH)
+  scoped_ptr<ash::test::AshTestHelper> ash_test_helper_;
+#endif
 #if defined(USE_AURA)
   scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
 #endif

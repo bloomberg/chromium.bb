@@ -250,6 +250,7 @@ bool AvatarMenuModel::ShouldShowAvatarMenu() {
     return true;
   }
   return ProfileManager::IsMultipleProfilesEnabled() &&
+      g_browser_process->profile_manager() &&
       g_browser_process->profile_manager()->GetNumberOfProfiles() > 1;
 }
 
