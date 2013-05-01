@@ -1213,6 +1213,7 @@ crbug.com/69594 http/tests/appcache/different-https-origin-resource-main.html
 
 crbug.com/76550 [ Win Debug ] fast/dom/Window/window-function-frame-getter-precedence.html [ Slow ]
 crbug.com/76550 [ Lion SnowLeopard Debug ] fast/dom/Window/window-function-frame-getter-precedence.html [ Timeout ]
+crbug.com/76550 [ Linux Debug ] fast/dom/Window/window-function-frame-getter-precedence.html [ Timeout Pass ]
 
 # New in WebKit r81404. Text orientation is wrong and emphasis marks are wrong.
 crbug.com/76616 [ Win ] fast/text/emphasis-combined-text.html [ Failure ]
