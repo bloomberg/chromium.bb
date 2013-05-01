@@ -37,20 +37,9 @@ class LinuxSandbox {
   static LinuxSandbox* GetInstance();
 
   // Do some initialization that can only be done before any of the sandboxes
-  // is enabled.
-  //
-  // There are two versions of this function. One takes a process_type
-  // as an argument, the other doesn't.
-  // It may be necessary to call PreinitializeSandboxBegin before knowing the
-  // process type (this is for instance the case with the Zygote).
-  // In that case, it is crucial that PreinitializeSandboxFinish() gets
-  // called for every child process.
-  // TODO(markus, jln) we know this is not always done at the moment
-  // (crbug.com/139877).
-  void PreinitializeSandbox(const std::string& process_type);
-  // These should be called together.
-  void PreinitializeSandboxBegin();
-  void PreinitializeSandboxFinish(const std::string& process_type);
+  // are enabled. If using the setuid sandbox, this should be called manually
+  // before the setuid sandbox is engaged.
+  void PreinitializeSandbox();
 
   // Initialize the sandbox with the given pre-built configuration. Currently
   // seccomp-bpf and address space limitations (the setuid sandbox works
@@ -58,14 +47,15 @@ class LinuxSandbox {
   // LinuxSandbox singleton if it doesn't already exist.
   static bool InitializeSandbox();
 
-  // Returns the Status of the renderers' sandbox. Can only be queried if we
-  // went through PreinitializeSandbox() or PreinitializeSandboxBegin(). This
-  // is a bitmask and uses the constants defined in "enum LinuxSandboxStatus".
-  // Since we need to provide the status before the sandboxes are actually
-  // started, this returns what will actually happen once the various Start*
-  // functions are called from inside a renderer.
+  // Returns the Status of the renderers' sandbox. Can only be queried after
+  // going through PreinitializeSandbox(). This is a bitmask and uses the
+  // constants defined in "enum LinuxSandboxStatus". Since the status needs to
+  // be provided before the sandboxes are actually started, this returns what
+  // will actually happen once the various Start* functions are called from
+  // inside a renderer.
   int GetStatus() const;
-  // Is the current process single threaded?
+  // Returns true if the current process is single-threaded or if the number
+  // of threads cannot be determined.
   bool IsSingleThreaded() const;
   // Did we start Seccomp BPF?
   bool seccomp_bpf_started() const;
@@ -77,7 +67,7 @@ class LinuxSandbox {
   sandbox::SetuidSandboxClient* setuid_sandbox_client() const;
 
   // Check the policy and eventually start the seccomp-bpf sandbox. This should
-  // never be called with threads started. If we detect that thread have
+  // never be called with threads started. If we detect that threads have
   // started we will crash.
   bool StartSeccompBpf(const std::string& process_type);
 
@@ -90,10 +80,16 @@ class LinuxSandbox {
 
   // We must have been pre_initialized_ before using this.
   bool seccomp_bpf_supported() const;
+  // The last part of the initialization is to make sure any temporary "hole"
+  // in the sandbox is closed. For now, this consists of closing proc_fd_.
+  void SealSandbox();
 
+  // A file descriptor to /proc. It's dangerous to have it around as it could
+  // allow for sandbox bypasses. It needs to be closed before we consider
+  // ourselves sandboxed.
   int proc_fd_;
   bool seccomp_bpf_started_;
-  // Have we been through PreinitializeSandbox or PreinitializeSandboxBegin?
+  // Did PreinitializeSandbox() run?
   bool pre_initialized_;
   bool seccomp_bpf_supported_;  // Accurate if pre_initialized_.
   scoped_ptr<sandbox::SetuidSandboxClient> setuid_sandbox_client_;

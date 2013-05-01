@@ -436,9 +436,6 @@ base::ProcessId Zygote::ReadArgsAndFork(const Pickle& pickle,
   if (!child_pid) {
     // This is the child process.
 
-    // At this point, we finally know our process type.
-    LinuxSandbox::GetInstance()->PreinitializeSandboxFinish(process_type);
-
     close(kBrowserDescriptor);  // Our socket from the browser.
     if (UsingSUIDSandbox())
       close(kZygoteIdFd);  // Another socket from the browser.

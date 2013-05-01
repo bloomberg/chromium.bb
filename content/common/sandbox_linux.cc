@@ -10,6 +10,8 @@
 
 #include <limits>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -80,7 +82,7 @@ LinuxSandbox* LinuxSandbox::GetInstance() {
 extern "C" void __sanitizer_sandbox_on_notify(void *reserved);
 #endif
 
-void LinuxSandbox::PreinitializeSandboxBegin() {
+void LinuxSandbox::PreinitializeSandbox() {
   CHECK(!pre_initialized_);
   seccomp_bpf_supported_ = false;
 #if defined(ADDRESS_SANITIZER) && defined(OS_LINUX)
@@ -88,9 +90,14 @@ void LinuxSandbox::PreinitializeSandboxBegin() {
   // This should not fork, not launch threads, not open a directory.
   __sanitizer_sandbox_on_notify(/*reserved*/NULL);
 #endif
+
+#if !defined(NDEBUG)
+  // Open proc_fd_ only in Debug mode so that forgetting to close it doesn't
+  // produce a sandbox escape in Release mode.
+  proc_fd_ = open("/proc", O_DIRECTORY | O_RDONLY);
+  CHECK(proc_fd_ >= 0);
+#endif  // !defined(NDEBUG)
   // We "pre-warm" the code that detects supports for seccomp BPF.
-  // TODO(jln): Use proc_fd_ here once we're comfortable it does not create
-  // an additional security risk.
   if (SandboxSeccompBpf::IsSeccompBpfDesired()) {
     if (!SandboxSeccompBpf::SupportsSandbox()) {
       VLOG(1) << "Lacking support for seccomp-bpf sandbox.";
@@ -101,25 +108,13 @@ void LinuxSandbox::PreinitializeSandboxBegin() {
   pre_initialized_ = true;
 }
 
-// Once we finally know our process type, we can cleanup proc_fd_.
-void LinuxSandbox::PreinitializeSandboxFinish(
-    const std::string& process_type) {
-  CHECK(pre_initialized_);
-  // TODO(jln): move this to InitializeSandbox.
-  if (proc_fd_ >= 0) {
-    CHECK_EQ(HANDLE_EINTR(close(proc_fd_)), 0);
-    proc_fd_ = -1;
-  }
-}
-
-void LinuxSandbox::PreinitializeSandbox(const std::string& process_type) {
-  PreinitializeSandboxBegin();
-  PreinitializeSandboxFinish(process_type);
-}
-
 bool LinuxSandbox::InitializeSandbox() {
   bool seccomp_bpf_started = false;
   LinuxSandbox* linux_sandbox = LinuxSandbox::GetInstance();
+  // We need to make absolutely sure that our sandbox is "sealed" before
+  // InitializeSandbox does exit.
+  base::ScopedClosureRunner sandbox_sealer(
+      base::Bind(&LinuxSandbox::SealSandbox, base::Unretained(linux_sandbox)));
   const std::string process_type =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessType);
@@ -129,8 +124,10 @@ bool LinuxSandbox::InitializeSandbox() {
   if (!linux_sandbox->IsSingleThreaded()) {
     std::string error_message = "InitializeSandbox() called with multiple "
                                 "threads in process " + process_type;
-    // TODO(jln): change this into a CHECK() once we are more comfortable it
-    // does not trigger.
+    // The GPU process is allowed to call InitializeSandbox() with threads for
+    // now, because it loads third party libraries.
+    if (process_type != switches::kGpuProcess)
+      DCHECK(false) << error_message;
     LOG(ERROR) << error_message;
     return false;
   }
@@ -165,23 +162,39 @@ int LinuxSandbox::GetStatus() const {
   return sandbox_flags;
 }
 
+// Threads are counted via /proc/self/task. This is a little hairy because of
+// PID namespaces and existing sandboxes, so "self" must really be used instead
+// of using the pid.
 bool LinuxSandbox::IsSingleThreaded() const {
-  // TODO(jln): re-implement this properly and use our proc_fd_ if available.
-  // Possibly racy, but it's ok because this is more of a debug check to catch
-  // new threaded situations arising during development.
-  file_util::FileEnumerator en(base::FilePath("/proc/self/task"), false,
-      file_util::FileEnumerator::FILES |
-      file_util::FileEnumerator::DIRECTORIES);
-  bool found_file = false;
-  while (!en.Next().empty()) {
-    if (found_file)
-      return false;  // Found a second match.
-    found_file = true;
+  struct stat task_stat;
+  int fstat_ret;
+  if (proc_fd_ >= 0) {
+    // If a handle to /proc is available, use it. This allows to bypass file
+    // system restrictions.
+    fstat_ret = fstatat(proc_fd_, "self/task/", &task_stat, 0);
+  } else {
+    // Otherwise, make an attempt to access the file system directly.
+    fstat_ret = fstatat(AT_FDCWD, "/proc/self/task/", &task_stat, 0);
+  }
+  // In Debug mode, it's mandatory to be able to count threads to catch bugs.
+#if !defined(NDEBUG)
+  // Using DCHECK here would be incorrect. DCHECK can be enabled in non
+  // official release mode.
+  CHECK_EQ(0, fstat_ret) << "Could not count threads, the sandbox was not "
+                         << "pre-initialized properly.";
+#endif  // !defined(NDEBUG)
+  if (fstat_ret) {
+    // Pretend to be monothreaded if it can't be determined (for instance the
+    // setuid sandbox is already engaged but no proc_fd_ is available).
+    return true;
   }
 
-  // We pass the test if we found 0 files becase the setuid sandbox will
-  // prevent /proc access in some contexts.
-  return true;
+  // At least "..", "." and the current thread should be present.
+  CHECK_LE(3UL, task_stat.st_nlink);
+  // Counting threads via /proc/self/task could be racy. For the purpose of
+  // determining if the current proces is monothreaded it works: if at any
+  // time it becomes monothreaded, it'll stay so.
+  return task_stat.st_nlink == 3;
 }
 
 bool LinuxSandbox::seccomp_bpf_started() const {
@@ -197,7 +210,7 @@ sandbox::SetuidSandboxClient*
 bool LinuxSandbox::StartSeccompBpf(const std::string& process_type) {
   CHECK(!seccomp_bpf_started_);
   if (!pre_initialized_)
-    PreinitializeSandbox(process_type);
+    PreinitializeSandbox();
   if (seccomp_bpf_supported())
     seccomp_bpf_started_ = SandboxSeccompBpf::StartSandbox(process_type);
 
@@ -247,6 +260,14 @@ bool LinuxSandbox::LimitAddressSpace(const std::string& process_type) {
 #else
   return false;
 #endif  // !defined(ADDRESS_SANITIZER)
+}
+
+void LinuxSandbox::SealSandbox() {
+  if (proc_fd_ >= 0) {
+    int ret = HANDLE_EINTR(close(proc_fd_));
+    CHECK_EQ(0, ret);
+    proc_fd_ = -1;
+  }
 }
 
 }  // namespace content

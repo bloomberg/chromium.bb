@@ -456,10 +456,7 @@ bool ZygoteMain(const MainFunctionParams& params,
 
   LinuxSandbox* linux_sandbox = LinuxSandbox::GetInstance();
   // This will pre-initialize the various sandboxes that need it.
-  // There need to be a corresponding call to PreinitializeSandboxFinish()
-  // for each new process, this will be done in the Zygote child, once we know
-  // our process type.
-  linux_sandbox->PreinitializeSandboxBegin();
+  linux_sandbox->PreinitializeSandbox();
 
   sandbox::SetuidSandboxClient* setuid_sandbox =
       linux_sandbox->setuid_sandbox_client();
