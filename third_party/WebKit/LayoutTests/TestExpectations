@@ -403,20 +403,14 @@ crbug.com/35387 [ Mac ] plugins/reentrant-update-widget-positions.html [ Timeout
 crbug.com/38392 [ Mac ] plugins/resize-from-plugin.html [ Failure ]
 # Times out after http://trac.webkit.org/changeset/62739/
 crbug.com/48550 plugins/return-negative-one-from-write.html [ Skip ]
-crbug.com/38353 http/tests/plugins/plugin-document-has-focus.html [ Timeout ]
 
 # Tests differences from switching to webkit.org's test netscape plugin rather
 # than chromium's old forked copy.
 crbug.com/108833 [ Win ] plugins/geturlnotify-during-document-teardown.html [ Crash ]
 webkit.org/b/48655 [ Debug ] plugins/js-from-destroy.html [ Crash ]
 
-# Requires testRunner.dispatchPendingLoadRequests
-crbug.com/33211 http/tests/loading/deleted-host-in-resource-load-delegate-callback.html [ Timeout ]
-
 # HTML5 DB layout tests
 crbug.com/27697 storage/websql/hash-change-with-xhr.html
-
-crbug.com/78376 http/tests/media/video-play-stall-seek.html [ Timeout ]
 
 # canplaythrough event is sent too early.
 # Test is intentionally SLOW as we're waiting for a connection timeout.
@@ -878,9 +872,6 @@ webkit.org/b/111031 fast/history/visited-link-background-color.html [ ImageOnlyF
 # Tests that work with KURL, but fail with GURL
 webkit.org/b/71758 fast/url/invalid-urls-utf8.html [ Failure ]
 
-# New testRunner function added at r57993
-crbug.com/42696 http/tests/xmlhttprequest/cross-origin-authorization-with-embedder.html [ Timeout ]
-
 # Many of these are skipped on the Mac platform
 webkit.org/b/45991 canvas/philip/tests/2d.drawImage.broken.html [ Failure ]
 webkit.org/b/45991 virtual/gpu/canvas/philip/tests/2d.drawImage.broken.html [ Failure ]
@@ -992,11 +983,6 @@ webkit.org/b/45737 [ Win Linux Release ] fast/frames/frame-limit.html [ Slow ]
 webkit.org/b/60092 [ Debug ] fast/forms/select-set-length-with-mutation-remove.html [ Pass Timeout ]
 webkit.org/b/60093 [ Linux Debug ] http/tests/incremental/slow-utf8-text.pl [ Slow ]
 
-webkit.org/b/91432 fast/canvas/webgl/read-pixels-test.html [ Timeout ]
-webkit.org/b/91432 virtual/gpu/fast/canvas/webgl/read-pixels-test.html [ Timeout ]
-webkit.org/b/91432 fast/canvas/webgl/framebuffer-bindings-unaffected-on-resize.html [ Timeout ]
-webkit.org/b/91432 virtual/gpu/fast/canvas/webgl/framebuffer-bindings-unaffected-on-resize.html [ Timeout ]
-
 # These three failures are due to Mesa bugs
 webkit.org/b/91431 fast/canvas/webgl/framebuffer-object-attachment.html [ Failure ]
 webkit.org/b/91431 fast/canvas/webgl/gl-uniform-arrays.html [ Failure ]
@@ -1053,9 +1039,6 @@ crbug.com/61739 [ Debug ] animations/suspend-resume-animation-events.html [ Fail
 # New tests added with http://trac.webkit.org/changeset/72472 and further.
 # See https://bugs.webkit.org/show_bug.cgi?id=51982 for more info.
 crbug.com/63921 fast/canvas/canvas-fillPath-shadow.html [ Failure ]
-
-# FIXME: Need to add tooling support for V8 bugs.
-code.google.com/p/v8/issues/detail?id=953 fast/regex/pcre-test-1.html [ Timeout ]
 
 # HTML extensions to String.prototype should throw an error if the `this` object
 # is not coercible (i.e. `null` or `undefined`)
@@ -1147,9 +1130,6 @@ webkit.org/b/52061 [ Debug ] transitions/change-values-during-transition.html [ 
 # New test added in r75720
 crbug.com/69571 plugins/destroy-on-setwindow.html [ Crash ]
 
-# Failing after r75768, times out after r89503
-crbug.com/69639 webkit.org/b/63227 http/tests/loading/cross-origin-XHR-willLoadRequest.html [ Timeout ]
-
 crbug.com/75238 [ Win ] fast/text/large-text-composed-char.html [ Failure ]
 
 # Added by http://trac.webkit.org/changeset/76548
@@ -1218,11 +1198,6 @@ crbug.com/76550 [ Lion SnowLeopard Debug ] fast/dom/Window/window-function-frame
 crbug.com/76616 [ Win ] fast/text/emphasis-combined-text.html [ Failure ]
 crbug.com/76616 [ SnowLeopard ] fast/text/emphasis-combined-text.html [ ImageOnlyFailure ]
 
-# Has been timing out, initiated at:
-# Webkit patches in range [r81976, r81981]
-# Chromium patches in range [r79428, r79442]
-crbug.com/77468 fast/forms/file/input-file-directory-upload.html [ Timeout ]
-
 # Regression since r82001.
 crbug.com/77619 [ SnowLeopard ] plugins/plugin-javascript-access.html [ Failure ]
 
@@ -1280,8 +1255,6 @@ webkit.org/b/60135 [ SnowLeopard ] fast/text/international/thai-line-breaks.html
 webkit.org/b/60135 [ SnowLeopard ] fast/text/international/thai-baht-space.html [ Failure ]
 webkit.org/b/78544 [ Linux ] fast/text/international/thai-baht-space.html [ ImageOnlyFailure ]
 
-webkit.org/b/59673 http/tests/history/cross-origin-replace-history-object-child.html [ Timeout ]
-
 webkit.org/b/60112 fast/css/epub-properties.html [ Failure ]
 
 webkit.org/b/60136 [ Win ] http/tests/xmlviewer/dumpAsText/xmlviewer.xml [ Failure Pass ]
@@ -1295,9 +1268,6 @@ crbug.com/137938 [ Mac ] fast/url/ipv6.html [ Failure ]
 crbug.com/82281 fast/xpath/xpath-iterator-result-should-mark-its-nodeset.html [ Failure Timeout ]
 crbug.com/82281 fast/xpath/xpath-other-nodeset-result-should-mark-its-nodeset.html [ Failure ]
 crbug.com/82281 fast/xpath/xpath-snapshot-result-should-mark-its-nodeset.html [ Failure ]
-
-# New test added at r86467, doesn't pass.
-webkit.org/b/60822 plugins/get-url-with-javascript-url.html [ Timeout ]
 
 # New test added at r86476, crashes.
 webkit.org/b/60822 plugins/get-url-notify-with-url-that-fails-to-load.html [ Crash ]
@@ -1379,7 +1349,6 @@ webkit.org/b/66417 [ MountainLion Lion ] fast/text/midword-break-before-surrogat
 webkit.org/b/66419 http/tests/misc/authentication-redirect-1/authentication-sent-to-redirect-cross-origin.html [ Failure Timeout ]
 webkit.org/b/66419 http/tests/misc/authentication-redirect-2/authentication-sent-to-redirect-same-origin.html [ Failure Timeout ]
 webkit.org/b/66419 http/tests/misc/authentication-redirect-3/authentication-sent-to-redirect-same-origin-with-location-credentials.html [ Failure Timeout ]
-webkit.org/b/66419 http/tests/loading/authentication-after-redirect-stores-wrong-credentials/authentication-after-redirect-stores-wrong-credentials.html [ Timeout ]
 
 webkit.org/b/66974 [ Debug ] fast/events/keydown-1.html [ Pass Timeout ]
 
@@ -1557,8 +1526,6 @@ crbug.com/113063 [ Debug ] storage/indexeddb/basics-workers.html [ Crash Pass ]
 
 webkit.org/b/79224 [ Win ] fast/canvas/webgl/tex-image-with-format-and-type.html [ Failure Pass ]
 webkit.org/b/79224 [ Win ] virtual/gpu/fast/canvas/webgl/tex-image-with-format-and-type.html [ Failure Pass ]
-
-webkit.org/b/79642 fast/loader/subresource-willSendRequest-null.html [ Timeout ]
 
 webkit.org/b/79702 fast/regex/lastIndex.html [ Failure ]
 webkit.org/b/79703 fast/regex/overflow.html [ Failure ]
@@ -1843,7 +1810,6 @@ webkit.org/b/88833 [ Debug ] media/video-played-collapse.html [ Failure Pass ]
 
 webkit.org/b/88833 [ Win Debug ] media/track/track-kind.html [ Pass Timeout ]
 webkit.org/b/88833 http/tests/media/video-play-progress.html [ Pass Timeout ]
-webkit.org/b/88833 media/track/track-prefer-captions.html [ Timeout ]
 
 webkit.org/b/88832 [ XP ] http/tests/xmlhttprequest/origin-exact-matching.html [ Pass Timeout ]
 
@@ -1934,8 +1900,6 @@ webkit.org/b/101670 media/track/track-user-preferences.html [ Skip ]
 
 webkit.org/b/92938 compositing/layer-creation/animation-overlap-with-children.html [ Failure Pass ]
 webkit.org/b/92938 virtual/softwarecompositing/layer-creation/animation-overlap-with-children.html [ Failure Pass ]
-
-webkit.org/b/92941 accessibility/loading-iframe-updates-axtree.html [ Timeout ]
 
 # Tests added by bug 76270. According to bug 92968, they should be skipped in Chromium.
 webkit.org/b/92968 http/tests/appcache/abort-cache-onchecking-manifest-404.html
