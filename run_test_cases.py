@@ -523,6 +523,9 @@ def filter_bad_tests(tests, disabled, fails, flaky):
     return a.startswith(prefix) or b.startswith(prefix)
 
   def valid(test):
+    if not '.' in test:
+      logging.error('Ignoring unknown test %s', test)
+      return False
     fixture, case = test.split('.', 1)
     if not disabled and starts_with(fixture, case, 'DISABLED_'):
       return False
@@ -540,6 +543,9 @@ def chromium_valid(test, pre, manual):
   def starts_with(a, b, prefix):
     return a.startswith(prefix) or b.startswith(prefix)
 
+  if not '.' in test:
+    logging.error('Ignoring unknown test %s', test)
+    return False
   fixture, case = test.split('.', 1)
   if not pre and starts_with(fixture, case, 'PRE_'):
     return False
