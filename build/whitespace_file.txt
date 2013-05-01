@@ -87,3 +87,5 @@ zing!
 who?
 
 He blinked slowly, once.
+
+twice.
