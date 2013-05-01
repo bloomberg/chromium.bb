@@ -288,8 +288,6 @@ public:
     bool usesFirstLineRules() const { return m_ruleSets.features().usesFirstLineRules; }
     bool usesBeforeAfterRules() const { return m_ruleSets.features().usesBeforeAfterRules; }
 
-    static bool createTransformOperations(CSSValue* inValue, RenderStyle* inStyle, RenderStyle* rootStyle, TransformOperations& outOperations);
-
     void invalidateMatchedPropertiesCache();
 
     bool createFilterOperations(CSSValue* inValue, RenderStyle* inStyle, RenderStyle* rootStyle, FilterOperations& outOperations);

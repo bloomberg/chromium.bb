@@ -687,6 +687,8 @@
             'css/StyleSheetContents.h',
             'css/StyleSheetList.cpp',
             'css/StyleSheetList.h',
+            'css/TransformBuilder.cpp',
+            'css/TransformBuilder.h',
             'css/ViewportStyleResolver.cpp',
             'css/ViewportStyleResolver.h',
             'css/WebKitCSSArrayFunctionValue.cpp',
