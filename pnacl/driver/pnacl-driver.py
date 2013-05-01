@@ -20,6 +20,10 @@ EXTRA_ENV = {
   'ALLOW_NATIVE'   : '0',  # Allow native objects (.S,.s,.o) to be in the
                            # linker line for .pexe or .pso generation.
                            # It doesn't normally make sense to do this.
+
+  'ALLOW_CXX_EXCEPTIONS': '0', # Allow exception handling. This should not be
+                               # used for stable ABI pexes.
+
   'FORCE_INTERMEDIATE_LL': '0',
                           # Produce an intermediate .ll file
                           # Useful for debugging.
@@ -132,8 +136,10 @@ EXTRA_ENV = {
   #             and into pnacl-translate.
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2423
   'LD_ARGS_newlib_static':
-    '-l:crt1.x ' +
-    '-l:crti.bc -l:crtbegin.bc ${ld_inputs} ' +
+    '${ALLOW_CXX_EXCEPTIONS ? -l:crt1_for_eh.x : -l:crt1.x} ' +
+    '-l:crti.bc -l:crtbegin.bc '
+    '${!ALLOW_CXX_EXCEPTIONS ? -l:unwind_stubs.bc} ' +
+    '${ld_inputs} ' +
     '--start-group ${STDLIBS} --end-group',
 
   'LD_ARGS_newlib_shared':
@@ -161,7 +167,6 @@ EXTRA_ENV = {
   # Enabled/disabled by -pthreads
   'LIBPTHREAD': '${PTHREAD ? -lpthread}',
   'PNACL_ABI' : '-l:pnacl_abi.bc',
-
 
   # IS_CXX is set by pnacl-clang and pnacl-clang++ programmatically
   'CC' : '${IS_CXX ? ${CLANGXX} : ${CLANG}}',
@@ -194,6 +199,10 @@ def AddBPrefix(prefix):
   if pathtools.isdir(include_dir):
     env.append('ISYSTEM_USER', include_dir)
 
+def AddAllowCXXExceptions(*args):
+  env.set('ALLOW_CXX_EXCEPTIONS', '1')
+  AddLDFlag(*args)
+
 stdin_count = 0
 def AddInputFileStdin():
   global stdin_count
@@ -219,13 +228,13 @@ def HandleDashX(arg):
   SetForcedFileType(GCCTypeToFileType(arg))
 
 CustomPatterns = [
-  ( '--driver=(.+)',             "env.set('CC', pathtools.normalize($0))\n"),
-  ( '--pnacl-allow-native',      "env.set('ALLOW_NATIVE', '1')"),
-  ( '--pnacl-allow-translate',   "env.set('ALLOW_TRANSLATE', '1')"),
-  ( '--pnacl-frontend-triple=(.+)',   "env.set('FRONTEND_TRIPLE', $0)"),
-  ( '(--pnacl-allow-exceptions)', AddLDFlag),
-  ( '(--pnacl-disable-abi-check)', AddLDFlag),
-  ( '(--pnacl-disable-pass=.+)', AddLDFlag),
+  ( '--driver=(.+)',                "env.set('CC', pathtools.normalize($0))\n"),
+  ( '--pnacl-allow-native',         "env.set('ALLOW_NATIVE', '1')"),
+  ( '--pnacl-allow-translate',      "env.set('ALLOW_TRANSLATE', '1')"),
+  ( '--pnacl-frontend-triple=(.+)', "env.set('FRONTEND_TRIPLE', $0)"),
+  ( '(--pnacl-allow-exceptions)',   AddAllowCXXExceptions),
+  ( '(--pnacl-disable-abi-check)',  AddLDFlag),
+  ( '(--pnacl-disable-pass=.+)',    AddLDFlag),
 ]
 
 GCCPatterns = [

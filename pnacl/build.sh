@@ -252,7 +252,7 @@ SBTC_ARCHES_LLVM=$(get-sbtc-llvm-arches)
 
 
 # Current milestones in each repo
-readonly GOLD_REV=cd15b5f3d124
+readonly GOLD_REV=05972fcedd1f
 
 # Repositories
 # NOTE: this is essentially another binutils repo but a much more
@@ -2886,9 +2886,13 @@ libs-support-newlib-crt1() {
   setup-biased-bitcode-env ${arch}
   mkdir -p "${INSTALL_LIB_NEWLIB}"
   spushd "${PNACL_SUPPORT}"
-  # Install crt1.x (linker script).
-  StepBanner "LIBS-SUPPORT-NEWLIB" "Install crt1.x (linker script)"
+
+  StepBanner "LIBS-SUPPORT-NEWLIB" \
+             "Install crt1.x & crt1_for_eh.x (linker scripts)"
+  # Two versions of crt1.x exist, for different scenarios (with and without EH).
+  # See: https://code.google.com/p/nativeclient/issues/detail?id=3069
   cp crt1.x "${INSTALL_LIB_NEWLIB}"/crt1.x
+  cp crt1_for_eh.x "${INSTALL_LIB_NEWLIB}"/crt1_for_eh.x
   spopd
 }
 
@@ -2912,6 +2916,11 @@ libs-support-bitcode() {
   ${cc_cmd} -c crtbegin.c -o "${build_dir}"/crtbeginS.bc \
             -DSHARED
 
+  # Install unwind_stubs.bc (stubs for _Unwind_* functions when libgcc_eh
+  # is not included in the native link).
+  StepBanner "LIBS-SUPPORT" "Install ${arch} unwind_stubs.bc"
+  ${cc_cmd} -c unwind_stubs.c -o "${build_dir}"/unwind_stubs.bc
+
   # Install pnacl_abi.bc
   # (NOTE: This does a trivial bitcode link to set the right metadata)
   StepBanner "LIBS-SUPPORT" "Install ${arch} pnacl_abi.bc (stub pso)"
@@ -2922,7 +2931,7 @@ libs-support-bitcode() {
 
   # Install to actual lib directories.
   spushd "${build_dir}"
-  local files="crti.bc crtbegin.bc crtbeginS.bc pnacl_abi.bc"
+  local files="crti.bc crtbegin.bc crtbeginS.bc pnacl_abi.bc unwind_stubs.bc"
   if [ ${libmode} == "newlib" ]; then
     mkdir -p "${INSTALL_LIB_NEWLIB}"
     cp -f ${files} "${INSTALL_LIB_NEWLIB}"
@@ -2951,7 +2960,13 @@ libs-support-native() {
   #       c.f.: https://sites.google.com/a/google.com/nativeclient/project-pnacl/c-exception-handling
   # Compile crtbegin.o / crtend.o
   StepBanner "${label}" "Install crtbegin.o / crtend.o"
+
+  # Build two versions of crtbegin: one that relies on later linking with
+  # libgcc_eh and one that doesn't.
+  # See: https://code.google.com/p/nativeclient/issues/detail?id=3069
   ${cc_cmd} -c crtbegin.c -o "${destdir}"/crtbegin.o
+  ${cc_cmd} -c crtbegin.c -DLINKING_WITH_LIBGCC_EH \
+            -o "${destdir}"/crtbegin_for_eh.o
   ${cc_cmd} -c crtend.c -o "${destdir}"/crtend.o
 
   # Compile crtbeginS.o / crtendS.o

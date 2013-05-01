@@ -24,6 +24,9 @@ EXTRA_ENV = {
   # Determine if we should build nexes compatible with the IRT
   'USE_IRT' : '1',
 
+  # Allow C++ exception handling in the pexe.
+  'ALLOW_CXX_EXCEPTIONS' : '0',
+
   # Use the IRT shim by default. This can be disabled with an explicit
   # flag (--noirtshim) or via -nostdlib.
   'USE_IRT_SHIM'  : '${!SHARED ? 1 : 0}',
@@ -57,7 +60,10 @@ EXTRA_ENV = {
 
   'LD_ARGS_ENTRY': '--entry=__pnacl_start',
 
-  'CRTBEGIN' : '${SHARED ? -l:crtbeginS.o : -l:crtbegin.o}',
+  # TODO(eliben): remove SHARED stuff altogether
+  'STATIC_CRTBEGIN' : '${ALLOW_CXX_EXCEPTIONS ? ' +
+                      '-l:crtbegin_for_eh.o : -l:crtbegin.o}',
+  'CRTBEGIN' : '${SHARED ? -l:crtbeginS.o : ${STATIC_CRTBEGIN}}',
   'CRTEND'   : '${SHARED ? -l:crtendS.o : -l:crtend.o}',
   # static and dynamic newlib images link against the static libgcc_eh
   'LIBGCC_EH': '${STATIC || NEWLIB_SHARED_EXPERIMENT && !SHARED ? ' +
@@ -81,7 +87,8 @@ EXTRA_ENV = {
     '${STATIC ? --end-group} ' +
     '${CRTEND}',
 
-  'DEFAULTLIBS': '${LIBGCC_EH} -l:libgcc.a ${MISC_LIBS}',
+  'DEFAULTLIBS': '${ALLOW_CXX_EXCEPTIONS ? ' +
+                 '${LIBGCC_EH}} -l:libgcc.a ${MISC_LIBS}',
 
   'MISC_LIBS':
     # TODO(pdox):
@@ -211,11 +218,9 @@ TranslatorPatterns = [
   ( '--noirtshim',     "env.set('USE_IRT_SHIM', '0')"),
   ( '--newlib-shared-experiment',  "env.set('NEWLIB_SHARED_EXPERIMENT', '1')"),
 
-  # TODO(eliben): make this actually link appropriate objects for EH
-  # This is temporary to teach pnacl-translate not to fail on the bots when this
-  # flag is encountered; preparation for a subsequent CL where the scons scripts
-  # will actually pass this flag to pnacl-translate for some tests.
-  ( '--pnacl-allow-exceptions', ""),
+  # Allowing C++ exception handling causes a specific set of native objects to
+  # get linked into the nexe.
+  ( '--pnacl-allow-exceptions', "env.set('ALLOW_CXX_EXCEPTIONS', '1')"),
 
   # Toggle the use of ELF-stubs / bitcode metadata, which represent real .so
   # files in the final native link.
@@ -424,6 +429,8 @@ def RequiresNonStandardLDCommandline(inputs, infile):
     return ('No bitcode input: %s' % str(infile), True)
   if not env.getbool('STDLIB'):
     return ('NOSTDLIB', True)
+  if env.getbool('ALLOW_CXX_EXCEPTIONS'):
+    return ('ALLOW_CXX_EXCEPTIONS', True)
   if not env.getbool('USE_IRT'):
     return ('USE_IRT false when normally true', True)
   if (not env.getbool('SHARED') and

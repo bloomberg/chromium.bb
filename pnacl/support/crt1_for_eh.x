@@ -5,7 +5,10 @@
  */
 
 /*
- * This is a dummy linker script used as crt1.o when not linking with libgcc_eh.
+ * This is a dummy linker script used as crt1.o when linking with libgcc_eh.
+ * It should not be used for creating stable bitcode pexes, which are not
+ * supposed to export the symbol for libgcc_eh.
+ *
  * The actual startup code is just the _start function defined in a library.
  * We provide this file for two purposes:
  * 1. To keep with the traditional linking sequence that puts crt1.o first.
@@ -17,3 +20,9 @@
  */
 
 EXTERN ( main exit _exit )
+
+/*
+ * We're linking with libgcc_eh, so these symbols have to be exported from
+ * the C library contained in the pexe, since libgcc_eh needs them.
+ */
+EXTERN ( malloc free strlen abort )

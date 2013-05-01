@@ -38,15 +38,20 @@ struct object {
 };
 
 /*
- * __[de]register_frame_info() are provided by libgcc_eh
+ * __[de]register_frame_info() are provided by libgcc_eh. When not linking
+ * with libgcc_eh, dummy implementations are provided.
  * See: gcc/unwind-dw2-fde.c
- * GCC uses weak linkage to make this library optional, but
- * we always link it in.
  */
 
 /* @IGNORE_LINES_FOR_CODE_HYGIENE[2] */
+#ifdef LINKING_WITH_LIBGCC_EH
 extern void __register_frame_info(void *begin, struct object *ob);
 extern void __deregister_frame_info(const void *begin);
+#else /* not LINKING_WITH_LIBGCC_EH */
+void __register_frame_info(void *begin, struct object *ob) {}
+void __deregister_frame_info(const void *begin) {}
+#endif /* LINKING_WITH_LIBGCC_EH */
+
 
 /*
  * Exception handling frames are aggregated into a single section called

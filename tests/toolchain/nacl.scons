@@ -226,6 +226,7 @@ for tag, env_to_try in ENVIRONMENTS_TO_TRY:
     # C++ exceptions are not currently supported in PNaCl's ABI.
     if exc_env.Bit('bitcode'):
       exc_env.Append(LINKFLAGS=['--pnacl-allow-exceptions'])
+      exc_env.Append(TRANSLATEFLAGS=['--pnacl-allow-exceptions'])
     name = src.split('.')[0] + '_' + tag
     nobj = exc_env.ComponentObject(name + '.o', src)
     nexe = exc_env.ComponentProgram(name, nobj, EXTRA_LIBS=['${NONIRT_LIBS}'])
