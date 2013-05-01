@@ -7550,6 +7550,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_MOBILE_NO_CONNECTION_HEADER" desc="Mobile page header when the network portal is not reachable due to no connection">
           Connect to Wi-Fi to begin
         </message>
+        <message name="IDS_MOBILE_INVALID_DEVICE_INFO_HEADER" desc="Mobile page header when the user tries to access mobile portal for a device with an invalid MDN">
+          Please come back later
+        </message>
       </if>
 
       <!-- chrome://flash strings -->

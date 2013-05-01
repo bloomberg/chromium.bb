@@ -258,6 +258,8 @@ void MobileSetupUIHTMLSource::StartDataRequest(
                     l10n_util::GetStringUTF16(IDS_MOBILE_COMPLETED_TEXT));
   strings.SetString("portal_unreachable_header",
                     l10n_util::GetStringUTF16(IDS_MOBILE_NO_CONNECTION_HEADER));
+  strings.SetString("invalid_device_info_header",
+      l10n_util::GetStringUTF16(IDS_MOBILE_INVALID_DEVICE_INFO_HEADER));
   strings.SetString("title", l10n_util::GetStringUTF16(IDS_MOBILE_SETUP_TITLE));
   strings.SetString("close_button",
                     l10n_util::GetStringUTF16(IDS_CLOSE));

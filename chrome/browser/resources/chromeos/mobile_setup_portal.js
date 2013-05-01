@@ -9,11 +9,19 @@ cr.define('mobile', function() {
       'chrome-extension://iadeocfgjdjdmpenejdbfeaocpbikmab/';
   var REDIRECT_POST_PAGE_URL = EXTENSION_BASE_URL + 'redirect.html?autoPost=1';
   var PORTAL_OFFLINE_PAGE_URL = EXTENSION_BASE_URL + 'portal_offline.html';
+  var INVALID_DEVICE_INFO_PAGE_URL =
+      EXTENSION_BASE_URL + 'invalid_device_info.html';
 
   var NetworkState = {
     UNKNOWN: 0,
     PORTAL_REACHABLE: 1,
-    PORTAL_UNREACHABLE: 2,
+    PORTAL_UNREACHABLE: 2
+  };
+
+  var CarrierPageType = {
+    NOT_SET: 0,
+    PORTAL_OFFLINE: 1,
+    INVALID_DEVICE_INFO: 2
   };
 
   var localStrings = new LocalStrings();
@@ -24,16 +32,13 @@ cr.define('mobile', function() {
     this.spinnerInt_ = -1;
     this.networkState_ = NetworkState.UNKNOWN;
     this.portalFrameSet_ = false;
+    this.carrierPageType_ = CarrierPageType.NOT_SET;
   }
 
   cr.addSingletonGetter(PortalImpl);
 
   PortalImpl.prototype = {
     initialize: function() {
-      $('carrierPage').contentWindow.location.href = PORTAL_OFFLINE_PAGE_URL;
-      $('statusHeader').textContent =
-          localStrings.getString('portal_unreachable_header');
-
       // Get network device info for which portal should be opened.
       // For LTE networks, this will also start observing network connection
       // state and raise |updatePortalReachability| messages when the portal
@@ -61,20 +66,58 @@ cr.define('mobile', function() {
       if (!this.deviceInfo_ || this.networkState_ == NetworkState.UNKNOWN)
         return;
 
-      if (this.networkState_ == NetworkState.PORTAL_REACHABLE) {
-        // If the portal is reachable, set and show portalFrame; and hide system
+      if (!this.isDeviceInfoValid_()) {
+        // If the device info is not valid, hide portalFrame and show system
+        // status displaying 'invalid device info' page.
+        this.setCarrierPage_(CarrierPageType.INVALID_DEVICE_INFO);
+        $('portalFrame').hidden = true;
+        $('systemStatus').hidden = false;
+      } else if (this.networkState_ != NetworkState.PORTAL_REACHABLE) {
+        // If the portal is not reachable, hide portalFrame and show system
         // status displaying 'offline portal' page.
+        this.setCarrierPage_(CarrierPageType.PORTAL_OFFLINE);
+        $('portalFrame').hidden = true;
+        $('systemStatus').hidden = false;
+     } else {
+        // If the portal is reachable and device info is valid, set and show
+        // portalFrame; and hide system status displaying 'offline portal' page.
         this.setPortalFrameIfNeeded_(this.deviceInfo_);
         $('portalFrame').hidden = false;
         $('systemStatus').hidden = true;
         this.stopSpinner_();
-      } else {
-        // If the portal is not reachable, hide portalFrame and show system
-        // status displaying 'offline portal' page.
-        $('portalFrame').hidden = true;
-        $('systemStatus').hidden = false;
-        this.startSpinner_();
       }
+    },
+
+    setCarrierPage_: function(type) {
+      // The page is already set, nothing to do.
+      if (type == this.carrierPageType_)
+        return;
+
+      switch (type) {
+        case CarrierPageType.PORTAL_OFFLINE:
+          $('carrierPage').contentWindow.location.href =
+              PORTAL_OFFLINE_PAGE_URL;
+          $('statusHeader').textContent =
+              localStrings.getString('portal_unreachable_header');
+          this.startSpinner_();
+          break;
+        case CarrierPageType.INVALID_DEVICE_INFO:
+          $('carrierPage').contentWindow.location.href =
+              INVALID_DEVICE_INFO_PAGE_URL;
+          $('statusHeader').textContent =
+              localStrings.getString('invalid_device_info_header');
+          this.stopSpinner_();
+          break;
+        case CarrierPageType.NOT_SET:
+          $('carrierPage').contentWindow.location.href = 'about:blank';
+          $('statusHeader').textContent = '';
+          this.stopSpinner_();
+          break;
+        default:
+          break;
+      }
+
+      this.carrierPageType_ = type;
     },
 
     setPortalFrameIfNeeded_: function(deviceInfo) {
@@ -92,6 +135,12 @@ cr.define('mobile', function() {
       this.portalFrameSet_ = true;
     },
 
+    isDeviceInfoValid_: function() {
+      // Device info is valid if it has mdn which doesn't contain only '0's.
+      return this.deviceInfo_ && this.deviceInfo_.MDN &&
+          this.deviceInfo_.MDN.match('[^0]');
+    },
+
     startSpinner_: function() {
       this.stopSpinner_();
       this.spinnerInt_ = setInterval(this.drawProgress_.bind(this), 100);
@@ -102,6 +151,9 @@ cr.define('mobile', function() {
         clearInterval(this.spinnerInt_);
         this.spinnerInt_ = -1;
       }
+      // Clear the spinner canvas.
+      var ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
     },
 
     drawProgress_: function() {
