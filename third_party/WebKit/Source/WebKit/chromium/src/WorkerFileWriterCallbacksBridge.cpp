@@ -52,6 +52,10 @@ void WorkerFileWriterCallbacksBridge::notifyStop()
 {
     ASSERT(m_workerContext->isContextThread());
     m_clientOnWorkerThread = 0;
+    {
+        MutexLocker locker(m_loaderProxyMutex);
+        m_proxy = 0;
+    }
 }
 
 void WorkerFileWriterCallbacksBridge::postWriteToMainThread(long long position, const KURL& data)
@@ -203,8 +207,11 @@ void WorkerFileWriterCallbacksBridge::dispatchTaskToMainThread(PassOwnPtr<Script
 void WorkerFileWriterCallbacksBridge::dispatchTaskToWorkerThread(PassOwnPtr<ScriptExecutionContext::Task> task)
 {
     ASSERT(isMainThread());
-    m_proxy->postTaskForModeToWorkerContext(
-        createCallbackTask(&runTaskOnWorkerThread, this, task), m_mode);
+
+    MutexLocker locker(m_loaderProxyMutex);
+    if (m_proxy)
+        m_proxy->postTaskForModeToWorkerContext(
+            createCallbackTask(&runTaskOnWorkerThread, this, task), m_mode);
 }
 
 bool WorkerFileWriterCallbacksBridge::waitForOperationToComplete()

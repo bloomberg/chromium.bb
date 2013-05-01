@@ -139,6 +139,9 @@ private:
     // Used from the main thread to post tasks to the context thread.
     WebCore::WorkerLoaderProxy* m_proxy;
 
+    // Mutex for proxy.
+    Mutex m_loaderProxyMutex;
+
     // Used on the context thread, only to check that we're running on the context thread.
     WebCore::ScriptExecutionContext* m_workerContext;
 
