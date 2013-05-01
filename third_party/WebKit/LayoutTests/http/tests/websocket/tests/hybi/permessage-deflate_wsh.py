@@ -1,4 +1,4 @@
-# Copyright 2012, Google Inc.  All rights reserved.
+# Copyright 2013, Google Inc.  All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -28,7 +28,7 @@
 
 
 import urlparse
-from mod_pywebsocket.extensions import DeflateFrameExtensionProcessor
+from mod_pywebsocket.extensions import PerMessageDeflateExtensionProcessor
 from mod_pywebsocket.extensions import ExtensionProcessorInterface
 from mod_pywebsocket.common import ExtensionParameter
 
@@ -36,37 +36,40 @@ from mod_pywebsocket.common import ExtensionParameter
 _GOODBYE_MESSAGE = u'Goodbye'
 _ENABLE_MESSAGE = u'EnableCompression'
 _DISABLE_MESSAGE = u'DisableCompression'
+_bfinal = False
 
 
-def _get_deflate_frame_extension_processor(request):
+def _get_permessage_deflate_extension_processor(request):
     for extension_processor in request.ws_extension_processors:
-        if isinstance(extension_processor, DeflateFrameExtensionProcessor):
+        if isinstance(extension_processor, PerMessageDeflateExtensionProcessor):
             return extension_processor
     return None
 
 
 def web_socket_do_extra_handshake(request):
-    processor = _get_deflate_frame_extension_processor(request)
+    global _bfinal
+    processor = _get_permessage_deflate_extension_processor(request)
+    # Remove extension processors other than PerMessageDeflateProcessor
+    # to avoid conflict.
+    request.ws_extension_processors = [processor]
     if not processor:
         return
-    # Avoid extension conflict.
-    request.ws_extension_processors = [processor]
-
     r = request.ws_resource.split('?', 1)
     if len(r) == 1:
         return
     parameters = urlparse.parse_qs(r[1], keep_blank_values=True)
-    if 'max_window_bits' in parameters:
-        window_bits = int(parameters['max_window_bits'][0])
-        processor.set_response_window_bits(window_bits)
-    if 'no_context_takeover' in parameters:
-        processor.set_response_no_context_takeover(True)
+    if 'c2s_max_window_bits' in parameters:
+        window_bits = int(parameters['c2s_max_window_bits'][0])
+        processor.set_c2s_max_window_bits(window_bits)
+    if 'c2s_no_context_takeover' in parameters:
+        processor.set_c2s_no_context_takeover(True)
     if 'set_bfinal' in parameters:
-        processor.set_bfinal(True)
+        _bfinal = True
 
 
 def web_socket_transfer_data(request):
-    processor = _get_deflate_frame_extension_processor(request)
+    processor = _get_permessage_deflate_extension_processor(request)
+    processor.set_bfinal(_bfinal)
     while True:
         line = request.ws_stream.receive_message()
         if line is None:

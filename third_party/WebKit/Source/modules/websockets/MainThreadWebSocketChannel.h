@@ -39,6 +39,7 @@
 #include "modules/websockets/WebSocketDeflateFramer.h"
 #include "modules/websockets/WebSocketFrame.h"
 #include "modules/websockets/WebSocketHandshake.h"
+#include "modules/websockets/WebSocketPerMessageDeflate.h"
 #include "wtf/Deque.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
@@ -199,6 +200,7 @@ private:
     BlobLoaderStatus m_blobLoaderStatus;
 
     ScriptCallFrame m_callFrameAtConnection;
+    WebSocketPerMessageDeflate m_perMessageDeflate;
     WebSocketDeflateFramer m_deflateFramer;
 };
 

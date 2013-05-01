@@ -67,6 +67,7 @@ struct WEBTESTRUNNER_EXPORT WebPreferences {
     bool experimentalCSSRegionsEnabled;
     bool experimentalCSSExclusionsEnabled;
     bool experimentalCSSGridLayoutEnabled;
+    bool experimentalWebSocketEnabled;
     bool javaEnabled;
     bool javaScriptCanAccessClipboard;
     bool javaScriptCanOpenWindowsAutomatically;

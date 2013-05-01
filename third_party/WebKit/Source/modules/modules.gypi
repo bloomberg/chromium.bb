@@ -644,6 +644,8 @@
       'websockets/WebSocketHandshakeRequest.h',
       'websockets/WebSocketHandshakeResponse.cpp',
       'websockets/WebSocketHandshakeResponse.h',
+      'websockets/WebSocketPerMessageDeflate.cpp',
+      'websockets/WebSocketPerMessageDeflate.h',
       'websockets/WorkerThreadableWebSocketChannel.cpp',
       'websockets/WorkerThreadableWebSocketChannel.h',
     ],
