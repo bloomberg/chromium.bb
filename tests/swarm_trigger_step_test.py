@@ -15,73 +15,75 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 import swarm_trigger_step
 
-FILE_NAME = "test.isolated"
-FILE_HASH = hashlib.sha1(FILE_NAME).hexdigest()
-TEST_NAME = "unit_tests"
-CLEANUP_SCRIPT_NAME = 'swarm_cleanup.py'
+FILE_NAME = u'test.isolated'
+FILE_HASH = unicode(hashlib.sha1(FILE_NAME).hexdigest())
+TEST_NAME = u'unit_tests'
+CLEANUP_SCRIPT_NAME = u'swarm_cleanup.py'
 
 
 class Options(object):
-  def __init__(self, working_dir="swarm_tests", shards=1,
-               os_image='win32', swarm_url='http://localhost:8080',
-               data_server='http://localhost:8081'):
+  def __init__(self, working_dir=u'swarm_tests', shards=1,
+               os_image='win32', swarm_url=u'http://localhost:8080',
+               data_server=u'http://localhost:8081'):
     self.working_dir = working_dir
     self.shards = shards
     self.os_image = os_image
     self.swarm_url = swarm_url
     self.data_server = data_server
+    self.verbose = False
 
 
 def GenerateExpectedJSON(options):
   platform_mapping =  {
-    'cygwin': 'Windows',
-    'darwin': 'Mac',
-    'linux2': 'Linux',
-    'win32': 'Windows'
+    'cygwin': u'Windows',
+    'darwin': u'Mac',
+    'linux2': u'Linux',
+    'win32': u'Windows'
   }
 
   retrieval_url = options.data_server + '/content/retrieve/'
 
   expected = {
-    'test_case_name': TEST_NAME,
-    'data': [[retrieval_url + 'default/', 'swarm_data.zip']],
-    'tests' : [
+    u'cleanup': u'root',
+    u'configurations': [
       {
-        'action': [
-          'python', swarm_trigger_step.RUN_TEST_NAME,
-          '--hash', FILE_HASH,
-          '--remote', retrieval_url + 'default-gzip/',
-          '-v',
+        u'config_name': platform_mapping[options.os_image],
+        u'dimensions': {
+          u'os': platform_mapping[options.os_image],
+          u'vlan': u'm4',
+        },
+        u'min_instances': options.shards,
+      },
+    ],
+    u'data': [[retrieval_url + u'default/', u'swarm_data.zip']],
+    u'env_vars': {},
+    u'restart_on_failure': True,
+    u'test_case_name': TEST_NAME,
+    u'tests' : [
+      {
+        u'action': [
+          u'python', unicode(swarm_trigger_step.RUN_TEST_NAME),
+          u'--hash', FILE_HASH,
+          u'--remote', retrieval_url + u'default-gzip/',
         ],
-        'test_name': 'Run Test',
-        'time_out': 600,
+        u'decorate_output': False,
+        u'test_name': u'Run Test',
+        u'time_out': 600,
       },
       {
-        'action' : [
-            'python', CLEANUP_SCRIPT_NAME,
+        u'action' : [
+            u'python', CLEANUP_SCRIPT_NAME,
         ],
-        'test_name': 'Clean Up',
-        'time_out': 600,
+        u'decorate_output': False,
+        u'test_name': u'Clean Up',
+        u'time_out': 600,
       }
     ],
-    'env_vars': {},
-    'configurations': [
-      {
-        'min_instances': options.shards,
-        'config_name': platform_mapping[options.os_image],
-        'dimensions': {
-          'os': platform_mapping[options.os_image],
-          'vlan': 'm4',
-        },
-      },
-    ],
-    'working_dir': options.working_dir,
-    'restart_on_failure': True,
-    'cleanup': 'root',
+    u'working_dir': options.working_dir,
   }
   if options.shards > 1:
-    expected['env_vars']['GTEST_SHARD_INDEX'] = '%(instance_index)s'
-    expected['env_vars']['GTEST_TOTAL_SHARDS'] = '%(num_instances)s'
+    expected[u'env_vars'][u'GTEST_SHARD_INDEX'] = u'%(instance_index)s'
+    expected[u'env_vars'][u'GTEST_TOTAL_SHARDS'] = u'%(num_instances)s'
   return expected
 
 
@@ -170,4 +172,6 @@ class ManifestTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
+  if '-v' in sys.argv:
+    unittest.TestCase.maxDiff = None
   unittest.main()

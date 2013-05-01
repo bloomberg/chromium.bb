@@ -59,6 +59,7 @@ class Manifest(object):
     self.manifest_hash = manifest_hash
     self.test_filter = test_filter
     self.shards = shards
+    self.verbose = bool(switches.verbose)
 
     self.tasks = []
     self.target_platform = platform_mapping[switches.os_image]
@@ -83,11 +84,15 @@ class Manifest(object):
 
   def add_task(self, task_name, actions, time_out=600):
     """Appends a new task to the swarm manifest file."""
-    self.tasks.append({
-          'test_name': task_name,
+    # See swarming/src/common/test_request_message.py TestObject constructor for
+    # the valid flags.
+    self.tasks.append(
+        {
           'action': actions,
-          'time_out': time_out
-    })
+          'decorate_output': self.verbose,
+          'test_name': task_name,
+          'time_out': time_out,
+        })
 
   def zip(self):
     """Zip up all the files necessary to run a shard."""
@@ -135,10 +140,14 @@ class Manifest(object):
 
   def to_json(self):
     """Export the current configuration into a swarm-readable manifest file"""
-    self.add_task(
-        'Run Test',
-        ['python', RUN_TEST_NAME, '--hash', self.manifest_hash,
-         '--remote', self.data_server_retrieval.rstrip('/') + '-gzip/', '-v'])
+    cmd = [
+      'python', RUN_TEST_NAME,
+      '--hash', self.manifest_hash,
+      '--remote', self.data_server_retrieval.rstrip('/') + '-gzip/',
+    ]
+    if self.verbose:
+      cmd.append('--verbose')
+    self.add_task('Run Test', cmd)
 
     # Clean up
     self.add_task('Clean Up', ['python', CLEANUP_SCRIPT_NAME])
@@ -191,7 +200,11 @@ class Manifest(object):
 
 def ProcessManifest(file_sha1, test_name, shards, test_filter, options):
   """Process the manifest file and send off the swarm test request."""
-  manifest = Manifest(file_sha1, test_name, shards, test_filter, options)
+  try:
+    manifest = Manifest(file_sha1, test_name, shards, test_filter, options)
+  except ValueError as e:
+    print >> sys.stderr, 'Unable to process %s: %s' % (test_name, e)
+    return 1
 
   # Zip up relevent files
   print "Zipping up files..."
@@ -255,18 +268,13 @@ def main():
   try:
     # Send off the hash swarm test requests.
     for (file_sha1, test_name, shards, testfilter) in options.run_from_hash:
-      try:
-        highest_exit_code = max(highest_exit_code,
-                                ProcessManifest(
-                                    file_sha1,
-                                    options.test_name_prefix + test_name,
-                                    int(shards),
-                                    testfilter,
-                                    options))
-      except ValueError:
-        print('Unable to process %s because integer not given for shard count' %
-              test_name)
-        highest_exit_code = max(1, highest_exit_code)
+      exit_code = ProcessManifest(
+          file_sha1,
+          options.test_name_prefix + test_name,
+          int(shards),
+          testfilter,
+          options)
+      highest_exit_code = max(highest_exit_code, exit_code)
   except Failure as e:
     print >> sys.stderr, e.args[0]
     highest_exit_code = max(1, highest_exit_code)

@@ -19,7 +19,9 @@ import tempfile
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-def run(cmd):
+def run(cmd, verbose):
+  if verbose:
+    cmd = cmd + ['--verbose']
   print('Running: %s' % ' '.join(cmd))
   cmd = [sys.executable, os.path.join(ROOT_DIR, '..', cmd[0])] + cmd[1:]
   if sys.platform != 'win32':
@@ -41,9 +43,6 @@ def main():
   options, args = parser.parse_args()
   if args:
     parser.error('Unsupported argument %s' % args)
-  if options.verbose:
-    os.environ['ISOLATE_DEBUG'] = '1'
-
   prefix = getpass.getuser() + '-' + datetime.datetime.now().isoformat() + '-'
 
   try:
@@ -63,7 +62,8 @@ def main():
           '--isolate', os.path.join(ROOT_DIR, 'hello_world.isolate'),
           '--isolated', isolated,
           '--outdir', options.isolate_server,
-        ])
+        ],
+        options.verbose)
 
     # Note that swarm_trigger_and_get_results.py could be used to run and get
     # results as a single call.
@@ -80,8 +80,9 @@ def main():
           'hello_world',
           # Number of shards.
           '1',
-          '',
-        ])
+          '*',
+        ],
+        options.verbose)
 
     print('\nGetting results')
     run(
@@ -89,7 +90,8 @@ def main():
           'swarm_get_results.py',
           '--url', options.swarm_server,
           prefix + 'hello_world',
-        ])
+        ],
+        options.verbose)
   finally:
     shutil.rmtree(tempdir)
   return 0
