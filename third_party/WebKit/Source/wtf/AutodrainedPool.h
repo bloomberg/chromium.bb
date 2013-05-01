@@ -38,10 +38,10 @@ namespace WTF {
 class AutodrainedPool {
     WTF_MAKE_NONCOPYABLE(AutodrainedPool);
 public:
-    WTF_EXPORT_PRIVATE explicit AutodrainedPool(int iterationLimit = 1);
-    WTF_EXPORT_PRIVATE ~AutodrainedPool();
+    explicit AutodrainedPool(int iterationLimit = 1);
+    ~AutodrainedPool();
     
-    WTF_EXPORT_PRIVATE void cycle();
+    void cycle();
     
 private:
 #if OS(DARWIN)

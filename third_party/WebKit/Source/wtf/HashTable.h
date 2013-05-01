@@ -73,8 +73,8 @@ namespace WTF {
         static int numCollisions;
         static int collisionGraph[4096];
 
-        WTF_EXPORT_PRIVATE static void recordCollisionAtCount(int count);
-        WTF_EXPORT_PRIVATE static void dumpStats();
+        static void recordCollisionAtCount(int count);
+        static void dumpStats();
     };
 
 #endif

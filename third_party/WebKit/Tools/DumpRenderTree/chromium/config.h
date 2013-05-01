@@ -32,7 +32,6 @@
 #define config_h
 
 #include <wtf/Platform.h>
-#include <wtf/ExportMacros.h>
 
 #if OS(WINDOWS) && !COMPILER(GCC)
 // Allow 'this' to be used in base member initializer list.

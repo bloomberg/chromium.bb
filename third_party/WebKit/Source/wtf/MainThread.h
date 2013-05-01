@@ -38,14 +38,14 @@ typedef uint32_t ThreadIdentifier;
 typedef void MainThreadFunction(void*);
 
 // Must be called from the main thread.
-WTF_EXPORT_PRIVATE void initializeMainThread();
+void initializeMainThread();
 
-WTF_EXPORT_PRIVATE void callOnMainThread(MainThreadFunction*, void* context);
+void callOnMainThread(MainThreadFunction*, void* context);
 
 template<typename> class Function;
-WTF_EXPORT_PRIVATE void callOnMainThread(const Function<void ()>&);
+void callOnMainThread(const Function<void ()>&);
     
-WTF_EXPORT_PRIVATE bool isMainThread();
+bool isMainThread();
 
 } // namespace WTF
 

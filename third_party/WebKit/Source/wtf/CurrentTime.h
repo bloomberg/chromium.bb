@@ -39,7 +39,7 @@ namespace WTF {
 // Returns the current UTC time in seconds, counted from January 1, 1970.
 // Precision varies depending on platform but is usually as good or better
 // than a millisecond.
-WTF_EXPORT_PRIVATE double currentTime();
+double currentTime();
 
 // Same thing, in milliseconds.
 inline double currentTimeMS()
@@ -49,7 +49,7 @@ inline double currentTimeMS()
 
 // Provides a monotonically increasing time in seconds since an arbitrary point in the past.
 // On unsupported platforms, this function only guarantees the result will be non-decreasing.
-WTF_EXPORT_PRIVATE double monotonicallyIncreasingTime();
+double monotonicallyIncreasingTime();
 
 } // namespace WTF
 

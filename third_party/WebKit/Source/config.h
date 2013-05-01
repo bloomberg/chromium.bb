@@ -21,8 +21,6 @@
 
 #include <wtf/Platform.h>
 
-#include <wtf/ExportMacros.h>
-
 #ifdef __APPLE__
 #define HAVE_FUNC_USLEEP 1
 #endif /* __APPLE__ */

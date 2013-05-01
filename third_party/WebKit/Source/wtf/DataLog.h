@@ -34,11 +34,11 @@
 
 namespace WTF {
 
-WTF_EXPORT_PRIVATE FilePrintStream& dataFile();
+FilePrintStream& dataFile();
 
-WTF_EXPORT_PRIVATE void dataLogFV(const char* format, va_list) WTF_ATTRIBUTE_PRINTF(1, 0);
-WTF_EXPORT_PRIVATE void dataLogF(const char* format, ...) WTF_ATTRIBUTE_PRINTF(1, 2);
-WTF_EXPORT_PRIVATE void dataLogFString(const char*);
+void dataLogFV(const char* format, va_list) WTF_ATTRIBUTE_PRINTF(1, 0);
+void dataLogF(const char* format, ...) WTF_ATTRIBUTE_PRINTF(1, 2);
+void dataLogFString(const char*);
 
 template<typename T>
 void dataLog(const T& value)

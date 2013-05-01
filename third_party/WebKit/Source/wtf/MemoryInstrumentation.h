@@ -95,8 +95,8 @@ public:
 
 class MemoryInstrumentation {
 public:
-    WTF_EXPORT_PRIVATE explicit MemoryInstrumentation(MemoryInstrumentationClient*);
-    WTF_EXPORT_PRIVATE virtual ~MemoryInstrumentation();
+    explicit MemoryInstrumentation(MemoryInstrumentationClient*);
+    virtual ~MemoryInstrumentation();
 
     template <typename T> void addRootObject(const T& t, MemoryObjectType objectType = 0)
     {
@@ -145,11 +145,11 @@ public:
 protected:
     class WrapperBase {
     public:
-        WTF_EXPORT_PRIVATE WrapperBase(MemoryObjectType, const void* pointer);
+        WrapperBase(MemoryObjectType, const void* pointer);
         virtual ~WrapperBase() { }
-        WTF_EXPORT_PRIVATE void process(MemoryInstrumentation*);
-        WTF_EXPORT_PRIVATE void processPointer(MemoryInstrumentation*, bool isRoot);
-        WTF_EXPORT_PRIVATE void processRootObjectRef(MemoryInstrumentation*);
+        void process(MemoryInstrumentation*);
+        void processPointer(MemoryInstrumentation*, bool isRoot);
+        void processRootObjectRef(MemoryInstrumentation*);
 
     protected:
         virtual void callReportMemoryUsage(MemoryObjectInfo*) = 0;
@@ -169,12 +169,12 @@ private:
     bool visited(const void* pointer) { return m_client->visited(pointer); }
     bool checkCountedObject(const void* pointer) { return m_client->checkCountedObject(pointer); }
 
-    WTF_EXPORT_PRIVATE void reportEdge(const void* target, const char* edgeName, MemberType);
+    void reportEdge(const void* target, const char* edgeName, MemberType);
 
     virtual void deferObject(PassOwnPtr<WrapperBase>) = 0;
     virtual void processDeferredObjects() = 0;
 
-    WTF_EXPORT_PRIVATE static MemoryObjectType getObjectType(MemoryObjectInfo*);
+    static MemoryObjectType getObjectType(MemoryObjectInfo*);
 
     friend class MemoryObjectInfo;
     friend class MemoryClassInfo;
@@ -198,7 +198,7 @@ private:
         countObjectSize(buffer, ownerObjectType, size);
         reportLinkToBuffer(buffer, ownerObjectType, size, className, edgeName);
     }
-    WTF_EXPORT_PRIVATE void reportLinkToBuffer(const void* buffer, MemoryObjectType ownerObjectType, size_t, const char* nodeName, const char* edgeName);
+    void reportLinkToBuffer(const void* buffer, MemoryObjectType ownerObjectType, size_t, const char* nodeName, const char* edgeName);
 
     template<typename T>
     struct MemberTypeTraits { // Default ReferenceMember implementation.
@@ -266,17 +266,17 @@ public:
             m_memoryInstrumentation->addObject(member, m_memoryObjectInfo, edgeName, memberType);
     }
 
-    WTF_EXPORT_PRIVATE void addRawBuffer(const void* buffer, size_t, const char* className = 0, const char* edgeName = 0);
-    WTF_EXPORT_PRIVATE void addPrivateBuffer(size_t, MemoryObjectType ownerObjectType = 0, const char* className = 0, const char* edgeName = 0);
-    WTF_EXPORT_PRIVATE void setCustomAllocation(bool);
+    void addRawBuffer(const void* buffer, size_t, const char* className = 0, const char* edgeName = 0);
+    void addPrivateBuffer(size_t, MemoryObjectType ownerObjectType = 0, const char* className = 0, const char* edgeName = 0);
+    void setCustomAllocation(bool);
 
     void addWeakPointer(void*) { }
     template<typename M> void ignoreMember(const M&) { }
 
-    WTF_EXPORT_PRIVATE static void callReportObjectInfo(MemoryObjectInfo*, const void* pointer, const char* stringWithClassName, MemoryObjectType, size_t actualSize);
+    static void callReportObjectInfo(MemoryObjectInfo*, const void* pointer, const char* stringWithClassName, MemoryObjectType, size_t actualSize);
 
 private:
-    WTF_EXPORT_PRIVATE void init(const void* pointer, const char* stringWithClassName, MemoryObjectType, size_t actualSize);
+    void init(const void* pointer, const char* stringWithClassName, MemoryObjectType, size_t actualSize);
 
     MemoryObjectInfo* m_memoryObjectInfo;
     MemoryInstrumentation* m_memoryInstrumentation;

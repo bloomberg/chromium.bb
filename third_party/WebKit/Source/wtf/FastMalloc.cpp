@@ -183,7 +183,7 @@ namespace WTF {
 
 namespace Internal {
 #if !ENABLE(WTF_MALLOC_VALIDATION)
-WTF_EXPORT_PRIVATE void fastMallocMatchFailed(void*);
+void fastMallocMatchFailed(void*);
 #else
 COMPILE_ASSERT(((sizeof(ValidationHeader) % sizeof(AllocAlignmentInteger)) == 0), ValidationHeader_must_produce_correct_alignment);
 #endif
@@ -409,7 +409,7 @@ size_t fastMallocSize(const void* p)
 #if OS(DARWIN)
 // This symbol is present in the JavaScriptCore exports file even when FastMalloc is disabled.
 // It will never be used in this case, so it's type and value are less interesting than its presence.
-extern "C" WTF_EXPORT_PRIVATE const int jscore_fastmalloc_introspection = 0;
+extern "C"  const int jscore_fastmalloc_introspection = 0;
 #endif
 
 #else // FORCE_SYSTEM_MALLOC

@@ -75,12 +75,12 @@ typedef void* PlatformCondition;
 class Mutex {
     WTF_MAKE_NONCOPYABLE(Mutex); WTF_MAKE_FAST_ALLOCATED;
 public:
-    WTF_EXPORT_PRIVATE Mutex();
-    WTF_EXPORT_PRIVATE ~Mutex();
+    Mutex();
+    ~Mutex();
 
-    WTF_EXPORT_PRIVATE void lock();
-    WTF_EXPORT_PRIVATE bool tryLock();
-    WTF_EXPORT_PRIVATE void unlock();
+    void lock();
+    bool tryLock();
+    void unlock();
 
 public:
     PlatformMutex& impl() { return m_mutex; }
@@ -110,15 +110,15 @@ private:
 class ThreadCondition {
     WTF_MAKE_NONCOPYABLE(ThreadCondition);
 public:
-    WTF_EXPORT_PRIVATE ThreadCondition();
-    WTF_EXPORT_PRIVATE ~ThreadCondition();
+    ThreadCondition();
+    ~ThreadCondition();
     
-    WTF_EXPORT_PRIVATE void wait(Mutex& mutex);
+    void wait(Mutex&);
     // Returns true if the condition was signaled before absoluteTime, false if the absoluteTime was reached or is in the past.
     // The absoluteTime is in seconds, starting on January 1, 1970. The time is assumed to use the same time zone as WTF::currentTime().
-    WTF_EXPORT_PRIVATE bool timedWait(Mutex&, double absoluteTime);
-    WTF_EXPORT_PRIVATE void signal();
-    WTF_EXPORT_PRIVATE void broadcast();
+    bool timedWait(Mutex&, double absoluteTime);
+    void signal();
+    void broadcast();
     
 private:
     PlatformCondition m_condition;
@@ -127,7 +127,7 @@ private:
 #if OS(WINDOWS)
 // The absoluteTime is in seconds, starting on January 1, 1970. The time is assumed to use the same time zone as WTF::currentTime().
 // Returns an interval in milliseconds suitable for passing to one of the Win32 wait functions (e.g., ::WaitForSingleObject).
-WTF_EXPORT_PRIVATE DWORD absoluteTimeToWaitTimeoutInterval(double absoluteTime);
+DWORD absoluteTimeToWaitTimeoutInterval(double absoluteTime);
 #endif
 
 } // namespace WTF

@@ -33,24 +33,24 @@ extern Mutex* s_dtoaP5Mutex;
 
 typedef char DtoaBuffer[80];
 
-WTF_EXPORT_PRIVATE void dtoa(DtoaBuffer result, double dd, bool& sign, int& exponent, unsigned& precision);
-WTF_EXPORT_PRIVATE void dtoaRoundSF(DtoaBuffer result, double dd, int ndigits, bool& sign, int& exponent, unsigned& precision);
-WTF_EXPORT_PRIVATE void dtoaRoundDP(DtoaBuffer result, double dd, int ndigits, bool& sign, int& exponent, unsigned& precision);
+void dtoa(DtoaBuffer result, double dd, bool& sign, int& exponent, unsigned& precision);
+void dtoaRoundSF(DtoaBuffer result, double dd, int ndigits, bool& sign, int& exponent, unsigned& precision);
+void dtoaRoundDP(DtoaBuffer result, double dd, int ndigits, bool& sign, int& exponent, unsigned& precision);
 
 // Size = 80 for sizeof(DtoaBuffer) + some sign bits, decimal point, 'e', exponent digits.
 const unsigned NumberToStringBufferLength = 96;
 typedef char NumberToStringBuffer[NumberToStringBufferLength];
 typedef LChar NumberToLStringBuffer[NumberToStringBufferLength];
 
-WTF_EXPORT_PRIVATE const char* numberToString(double, NumberToStringBuffer);
-WTF_EXPORT_PRIVATE const char* numberToFixedPrecisionString(double, unsigned significantFigures, NumberToStringBuffer, bool truncateTrailingZeros = false);
-WTF_EXPORT_PRIVATE const char* numberToFixedWidthString(double, unsigned decimalPlaces, NumberToStringBuffer);
+const char* numberToString(double, NumberToStringBuffer);
+const char* numberToFixedPrecisionString(double, unsigned significantFigures, NumberToStringBuffer, bool truncateTrailingZeros = false);
+const char* numberToFixedWidthString(double, unsigned decimalPlaces, NumberToStringBuffer);
 
 double parseDouble(const LChar* string, size_t length, size_t& parsedLength);
 double parseDouble(const UChar* string, size_t length, size_t& parsedLength);
 
 namespace Internal {
-    WTF_EXPORT_PRIVATE double parseDoubleFromLongString(const UChar* string, size_t length, size_t& parsedLength);
+    double parseDoubleFromLongString(const UChar* string, size_t length, size_t& parsedLength);
 }
 
 inline double parseDouble(const LChar* string, size_t length, size_t& parsedLength)

@@ -47,9 +47,9 @@ typedef decltype(nullptr) nullptr_t;
 #else
 
 namespace std {
-class WTF_EXPORT_PRIVATE nullptr_t { };
+class nullptr_t { };
 }
-extern WTF_EXPORT_PRIVATE std::nullptr_t nullptr;
+extern std::nullptr_t nullptr;
 
 #endif
 

@@ -44,16 +44,16 @@ enum Base64DecodePolicy {
     Base64IgnoreInvalidCharacters
 };
 
-WTF_EXPORT_PRIVATE void base64Encode(const char*, unsigned, Vector<char>&, Base64EncodePolicy = Base64DoNotInsertLFs);
-WTF_EXPORT_PRIVATE void base64Encode(const Vector<char>&, Vector<char>&, Base64EncodePolicy = Base64DoNotInsertLFs);
-WTF_EXPORT_PRIVATE void base64Encode(const CString&, Vector<char>&, Base64EncodePolicy = Base64DoNotInsertLFs);
-WTF_EXPORT_PRIVATE String base64Encode(const char*, unsigned, Base64EncodePolicy = Base64DoNotInsertLFs);
-WTF_EXPORT_PRIVATE String base64Encode(const Vector<char>&, Base64EncodePolicy = Base64DoNotInsertLFs);
-WTF_EXPORT_PRIVATE String base64Encode(const CString&, Base64EncodePolicy = Base64DoNotInsertLFs);
+void base64Encode(const char*, unsigned, Vector<char>&, Base64EncodePolicy = Base64DoNotInsertLFs);
+void base64Encode(const Vector<char>&, Vector<char>&, Base64EncodePolicy = Base64DoNotInsertLFs);
+void base64Encode(const CString&, Vector<char>&, Base64EncodePolicy = Base64DoNotInsertLFs);
+String base64Encode(const char*, unsigned, Base64EncodePolicy = Base64DoNotInsertLFs);
+String base64Encode(const Vector<char>&, Base64EncodePolicy = Base64DoNotInsertLFs);
+String base64Encode(const CString&, Base64EncodePolicy = Base64DoNotInsertLFs);
 
-WTF_EXPORT_PRIVATE bool base64Decode(const String&, Vector<char>&, Base64DecodePolicy = Base64FailOnInvalidCharacter);
-WTF_EXPORT_PRIVATE bool base64Decode(const Vector<char>&, Vector<char>&, Base64DecodePolicy = Base64FailOnInvalidCharacter);
-WTF_EXPORT_PRIVATE bool base64Decode(const char*, unsigned, Vector<char>&, Base64DecodePolicy = Base64FailOnInvalidCharacter);
+bool base64Decode(const String&, Vector<char>&, Base64DecodePolicy = Base64FailOnInvalidCharacter);
+bool base64Decode(const Vector<char>&, Vector<char>&, Base64DecodePolicy = Base64FailOnInvalidCharacter);
+bool base64Decode(const char*, unsigned, Vector<char>&, Base64DecodePolicy = Base64FailOnInvalidCharacter);
 
 inline void base64Encode(const Vector<char>& in, Vector<char>& out, Base64EncodePolicy policy)
 {

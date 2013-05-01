@@ -62,21 +62,21 @@ namespace Unicode {
     // to the replacement character; otherwise (when the flag is set to strict)
     // they constitute an error.
 
-    WTF_EXPORT_PRIVATE ConversionResult convertUTF8ToUTF16(
+    ConversionResult convertUTF8ToUTF16(
                     const char** sourceStart, const char* sourceEnd, 
                     UChar** targetStart, UChar* targetEnd, bool* isSourceAllASCII = 0, bool strict = true);
 
-    WTF_EXPORT_PRIVATE ConversionResult convertLatin1ToUTF8(
+    ConversionResult convertLatin1ToUTF8(
                     const LChar** sourceStart, const LChar* sourceEnd, 
                     char** targetStart, char* targetEnd);
 
-    WTF_EXPORT_PRIVATE ConversionResult convertUTF16ToUTF8(
+    ConversionResult convertUTF16ToUTF8(
                     const UChar** sourceStart, const UChar* sourceEnd, 
                     char** targetStart, char* targetEnd, bool strict = true);
 
-    WTF_EXPORT_PRIVATE unsigned calculateStringHashAndLengthFromUTF8MaskingTop8Bits(const char* data, const char* dataEnd, unsigned& dataLength, unsigned& utf16Length);
+    unsigned calculateStringHashAndLengthFromUTF8MaskingTop8Bits(const char* data, const char* dataEnd, unsigned& dataLength, unsigned& utf16Length);
 
-    WTF_EXPORT_PRIVATE bool equalUTF16WithUTF8(const UChar* a, const UChar* aEnd, const char* b, const char* bEnd);
+    bool equalUTF16WithUTF8(const UChar* a, const UChar* aEnd, const char* b, const char* bEnd);
 
 } // namespace Unicode
 } // namespace WTF

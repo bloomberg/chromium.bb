@@ -26,7 +26,6 @@
 #ifndef StackStats_h
 #define StackStats_h
 
-#include "ExportMacros.h"
 #include "ThreadingPrimitives.h"
 
 
@@ -101,8 +100,8 @@ public:
 
     class LayoutCheckPoint {
     public:
-        WTF_EXPORT_PRIVATE LayoutCheckPoint();
-        WTF_EXPORT_PRIVATE ~LayoutCheckPoint();
+        LayoutCheckPoint();
+        ~LayoutCheckPoint();
 
     private:
         LayoutCheckPoint* m_prev;

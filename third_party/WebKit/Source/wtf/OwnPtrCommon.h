@@ -48,13 +48,13 @@ namespace WTF {
     }
 
 #if OS(WINDOWS)
-    WTF_EXPORT_PRIVATE void deleteOwnedPtr(HBITMAP);
-    WTF_EXPORT_PRIVATE void deleteOwnedPtr(HBRUSH);
-    WTF_EXPORT_PRIVATE void deleteOwnedPtr(HDC);
-    WTF_EXPORT_PRIVATE void deleteOwnedPtr(HFONT);
-    WTF_EXPORT_PRIVATE void deleteOwnedPtr(HPALETTE);
-    WTF_EXPORT_PRIVATE void deleteOwnedPtr(HPEN);
-    WTF_EXPORT_PRIVATE void deleteOwnedPtr(HRGN);
+    void deleteOwnedPtr(HBITMAP);
+    void deleteOwnedPtr(HBRUSH);
+    void deleteOwnedPtr(HDC);
+    void deleteOwnedPtr(HFONT);
+    void deleteOwnedPtr(HPALETTE);
+    void deleteOwnedPtr(HPEN);
+    void deleteOwnedPtr(HRGN);
 #endif
 
 } // namespace WTF

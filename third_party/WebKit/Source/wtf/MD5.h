@@ -37,16 +37,16 @@ namespace WTF {
 
 class MD5 {
 public:
-    WTF_EXPORT_PRIVATE MD5();
+    MD5();
 
     void addBytes(const Vector<uint8_t>& input)
     {
         addBytes(input.data(), input.size());
     }
-    WTF_EXPORT_PRIVATE void addBytes(const uint8_t* input, size_t length);
+    void addBytes(const uint8_t* input, size_t length);
 
     // checksum has a side effect of resetting the state of the object.
-    WTF_EXPORT_PRIVATE void checksum(Vector<uint8_t, 16>&);
+    void checksum(Vector<uint8_t, 16>&);
 
 private:
     uint32_t m_buf[4];

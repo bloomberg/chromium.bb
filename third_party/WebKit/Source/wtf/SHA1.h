@@ -38,7 +38,7 @@ namespace WTF {
 
 class SHA1 {
 public:
-    WTF_EXPORT_PRIVATE SHA1();
+    SHA1();
 
     void addBytes(const Vector<uint8_t>& input)
     {
@@ -54,16 +54,16 @@ public:
         ASSERT(input.length() == strlen(string));
         addBytes(reinterpret_cast<const uint8_t*>(string), input.length());
     }
-    WTF_EXPORT_PRIVATE void addBytes(const uint8_t* input, size_t length);
+    void addBytes(const uint8_t* input, size_t length);
 
     // computeHash has a side effect of resetting the state of the object.
-    WTF_EXPORT_PRIVATE void computeHash(Vector<uint8_t, 20>&);
+    void computeHash(Vector<uint8_t, 20>&);
     
     // Get a hex hash from the digest. Pass a limit less than 40 if you want a shorter digest.
-    WTF_EXPORT_PRIVATE static CString hexDigest(const Vector<uint8_t, 20>&);
+    static CString hexDigest(const Vector<uint8_t, 20>&);
     
     // Compute the hex digest directly. Pass a limit less than 40 if you want a shorter digest.
-    WTF_EXPORT_PRIVATE CString computeHexDigest();
+    CString computeHexDigest();
     
 private:
     void finalize();

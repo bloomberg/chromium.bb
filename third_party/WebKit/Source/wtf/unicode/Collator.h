@@ -45,13 +45,13 @@ namespace WTF {
     public:
         enum Result { Equal = 0, Greater = 1, Less = -1 };
 
-        WTF_EXPORT_PRIVATE Collator(const char* locale); // Parsing is lenient; e.g. language identifiers (such as "en-US") are accepted, too.
-        WTF_EXPORT_PRIVATE ~Collator();
-        WTF_EXPORT_PRIVATE void setOrderLowerFirst(bool);
+        Collator(const char* locale); // Parsing is lenient; e.g. language identifiers (such as "en-US") are accepted, too.
+        ~Collator();
+        void setOrderLowerFirst(bool);
 
         static PassOwnPtr<Collator> userDefault();
 
-        WTF_EXPORT_PRIVATE Result collate(const ::UChar*, size_t, const ::UChar*, size_t) const;
+        Result collate(const ::UChar*, size_t, const ::UChar*, size_t) const;
 
     private:
 #if !UCONFIG_NO_COLLATION

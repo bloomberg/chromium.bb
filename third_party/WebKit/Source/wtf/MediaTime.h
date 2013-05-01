@@ -35,7 +35,7 @@
 
 namespace WTF {
 
-class WTF_EXPORT_PRIVATE MediaTime {
+class MediaTime {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     enum {
@@ -90,7 +90,7 @@ public:
     const int64_t& timeValue() const { return m_timeValue; }
     const int32_t& timeScale() const { return m_timeScale; }
 
-    friend WTF_EXPORT_PRIVATE MediaTime abs(const MediaTime& rhs);
+    friend MediaTime abs(const MediaTime& rhs);
 private:
     static const int32_t DefaultTimeScale = 6000;
     static const int32_t MaximumTimeScale;
@@ -102,7 +102,7 @@ private:
     uint32_t m_timeFlags;
 };
 
-WTF_EXPORT_PRIVATE extern MediaTime abs(const MediaTime& rhs);
+extern MediaTime abs(const MediaTime& rhs);
 }
 
 using WTF::MediaTime;

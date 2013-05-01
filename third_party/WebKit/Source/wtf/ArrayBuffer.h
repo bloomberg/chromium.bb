@@ -113,7 +113,7 @@ public:
     void addView(ArrayBufferView*);
     void removeView(ArrayBufferView*);
 
-    WTF_EXPORT_PRIVATE bool transfer(ArrayBufferContents&, Vector<RefPtr<ArrayBufferView> >& neuteredViews);
+    bool transfer(ArrayBufferContents&, Vector<RefPtr<ArrayBufferView> >& neuteredViews);
     bool isNeutered() { return !m_contents.m_data; }
 
     bool hasDeallocationObserver() { return m_contents.m_deallocationObserver; }

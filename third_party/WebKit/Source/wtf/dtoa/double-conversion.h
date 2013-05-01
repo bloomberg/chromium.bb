@@ -364,7 +364,7 @@ namespace double_conversion {
         // Performs the conversion.
         // The output parameter 'processed_characters_count' is set to the number
         // of characters that have been processed to read the number.
-        WTF_EXPORT_PRIVATE static double StringToDouble(const char* buffer, size_t length, size_t* processed_characters_count);
+        static double StringToDouble(const char* buffer, size_t length, size_t* processed_characters_count);
         
     private:
         DISALLOW_IMPLICIT_CONSTRUCTORS(StringToDoubleConverter);

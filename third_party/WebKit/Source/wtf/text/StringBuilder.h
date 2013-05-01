@@ -45,8 +45,8 @@ public:
     {
     }
 
-    WTF_EXPORT_PRIVATE void append(const UChar*, unsigned);
-    WTF_EXPORT_PRIVATE void append(const LChar*, unsigned);
+    void append(const UChar*, unsigned);
+    void append(const LChar*, unsigned);
 
     ALWAYS_INLINE void append(const char* characters, unsigned length) { append(reinterpret_cast<const LChar*>(characters), length); }
 
@@ -154,12 +154,12 @@ public:
     template<unsigned charactersCount>
     ALWAYS_INLINE void appendLiteral(const char (&characters)[charactersCount]) { append(characters, charactersCount - 1); }
 
-    WTF_EXPORT_PRIVATE void appendNumber(int);
-    WTF_EXPORT_PRIVATE void appendNumber(unsigned int);
-    WTF_EXPORT_PRIVATE void appendNumber(long);
-    WTF_EXPORT_PRIVATE void appendNumber(unsigned long);
-    WTF_EXPORT_PRIVATE void appendNumber(long long);
-    WTF_EXPORT_PRIVATE void appendNumber(unsigned long long);
+    void appendNumber(int);
+    void appendNumber(unsigned);
+    void appendNumber(long);
+    void appendNumber(unsigned long);
+    void appendNumber(long long);
+    void appendNumber(unsigned long long);
 
     String toString()
     {
@@ -202,18 +202,18 @@ public:
 
     bool isEmpty() const { return !m_length; }
 
-    WTF_EXPORT_PRIVATE void reserveCapacity(unsigned newCapacity);
+    void reserveCapacity(unsigned newCapacity);
 
     unsigned capacity() const
     {
         return m_buffer ? m_buffer->length() : m_length;
     }
 
-    WTF_EXPORT_PRIVATE void resize(unsigned newSize);
+    void resize(unsigned newSize);
 
-    WTF_EXPORT_PRIVATE bool canShrink() const;
+    bool canShrink() const;
 
-    WTF_EXPORT_PRIVATE void shrinkToFit();
+    void shrinkToFit();
 
     UChar operator[](unsigned i) const
     {
@@ -294,7 +294,7 @@ private:
     CharType* appendUninitializedSlow(unsigned length);
     template <typename CharType>
     ALWAYS_INLINE CharType * getBufferCharacters();
-    WTF_EXPORT_PRIVATE void reifyString() const;
+    void reifyString() const;
 
     mutable String m_string;  // Pointers first: crbug.com/232031
     RefPtr<StringImpl> m_buffer;

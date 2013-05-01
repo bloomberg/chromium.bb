@@ -29,13 +29,13 @@
 namespace WTF {
 
     // These functions call CRASH() if an allocation fails.
-    WTF_EXPORT_PRIVATE void* fastMalloc(size_t);
-    WTF_EXPORT_PRIVATE void* fastZeroedMalloc(size_t);
-    WTF_EXPORT_PRIVATE void* fastCalloc(size_t numElements, size_t elementSize);
-    WTF_EXPORT_PRIVATE void* fastRealloc(void*, size_t);
-    WTF_EXPORT_PRIVATE char* fastStrDup(const char*);
-    WTF_EXPORT_PRIVATE size_t fastMallocSize(const void*);
-    WTF_EXPORT_PRIVATE size_t fastMallocGoodSize(size_t);
+    void* fastMalloc(size_t);
+    void* fastZeroedMalloc(size_t);
+    void* fastCalloc(size_t numElements, size_t elementSize);
+    void* fastRealloc(void*, size_t);
+    char* fastStrDup(const char*);
+    size_t fastMallocSize(const void*);
+    size_t fastMallocGoodSize(size_t);
 
     struct TryMallocReturnValue {
         TryMallocReturnValue(void* data)
@@ -69,26 +69,26 @@ namespace WTF {
         return returnValue;
     }
 
-    WTF_EXPORT_PRIVATE TryMallocReturnValue tryFastMalloc(size_t n);
+    TryMallocReturnValue tryFastMalloc(size_t n);
     TryMallocReturnValue tryFastZeroedMalloc(size_t n);
-    WTF_EXPORT_PRIVATE TryMallocReturnValue tryFastCalloc(size_t n_elements, size_t element_size);
-    WTF_EXPORT_PRIVATE TryMallocReturnValue tryFastRealloc(void* p, size_t n);
+    TryMallocReturnValue tryFastCalloc(size_t n_elements, size_t element_size);
+    TryMallocReturnValue tryFastRealloc(void* p, size_t n);
 
-    WTF_EXPORT_PRIVATE void fastFree(void*);
+    void fastFree(void*);
 
 #ifndef NDEBUG    
-    WTF_EXPORT_PRIVATE void fastMallocForbid();
-    WTF_EXPORT_PRIVATE void fastMallocAllow();
+    void fastMallocForbid();
+    void fastMallocAllow();
 #endif
 
-    WTF_EXPORT_PRIVATE void releaseFastMallocFreeMemory();
+    void releaseFastMallocFreeMemory();
     
     struct FastMallocStatistics {
         size_t reservedVMBytes;
         size_t committedVMBytes;
         size_t freeListBytes;
     };
-    WTF_EXPORT_PRIVATE FastMallocStatistics fastMallocStatistics();
+    FastMallocStatistics fastMallocStatistics();
 
     // This defines a type which holds an unsigned integer and is the same
     // size as the minimally aligned memory allocation.

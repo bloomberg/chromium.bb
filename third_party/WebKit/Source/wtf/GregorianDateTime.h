@@ -70,7 +70,7 @@ public:
     inline void setUtcOffset(int utcOffset) { m_utcOffset = utcOffset; }
     inline void setIsDST(int isDST) { m_isDST = isDST; }
 
-    WTF_EXPORT_PRIVATE void setToCurrentLocalTime();
+    void setToCurrentLocalTime();
 
     operator tm() const
     {
