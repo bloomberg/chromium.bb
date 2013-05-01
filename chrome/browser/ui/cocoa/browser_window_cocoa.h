@@ -101,6 +101,7 @@ class BrowserWindowCocoa :
   virtual void ShowOneClickSigninBubble(
       OneClickSigninBubbleType type,
       const string16& email,
+      const string16& error_message,
       const StartSyncCallback& start_sync_callback) OVERRIDE;
 #endif
   virtual bool IsDownloadShelfVisible() const OVERRIDE;

@@ -232,8 +232,9 @@ class BrowserWindow : public BaseWindow {
   virtual void ShowOneClickSigninBubble(
       OneClickSigninBubbleType type,
       const string16& email,
+      const string16& error_message,
       const StartSyncCallback& start_sync_callback) = 0;
-#endif
+  #endif
 
   // Whether or not the shelf view is visible.
   virtual bool IsDownloadShelfVisible() const = 0;

@@ -976,6 +976,7 @@ void BrowserWindowGtk::ShowChromeToMobileBubble() {
 void BrowserWindowGtk::ShowOneClickSigninBubble(
     OneClickSigninBubbleType type,
     const string16& email,
+    const string16& error_message,
     const StartSyncCallback& start_sync_callback) {
   new OneClickSigninBubbleGtk(this, type, email, start_sync_callback);
 }

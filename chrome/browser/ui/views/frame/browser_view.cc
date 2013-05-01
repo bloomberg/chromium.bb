@@ -1130,9 +1130,10 @@ void BrowserView::ShowChromeToMobileBubble() {
 void BrowserView::ShowOneClickSigninBubble(
     OneClickSigninBubbleType type,
     const string16& email,
+    const string16& error_message,
     const StartSyncCallback& start_sync_callback) {
-  OneClickSigninBubbleView::ShowBubble(type, email, toolbar_,
-                                       start_sync_callback);
+  OneClickSigninBubbleView::ShowBubble(type, email, error_message,
+                                       toolbar_, start_sync_callback);
 }
 #endif
 

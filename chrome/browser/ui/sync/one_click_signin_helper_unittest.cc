@@ -276,35 +276,6 @@ void OneClickSigninHelperTest::CreateSigninManager(
   }
 }
 
-OneClickSigninHelper* OneClickSigninHelperTest::SetupHelperForSignin() {
-  CreateSigninManager(false, "");
-  EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
-        WillRepeatedly(Return(true));
-
-  CreateProfileSyncServiceMock();
-
-  content::WebContents* contents = web_contents();
-
-  OneClickSigninHelper::CreateForWebContents(contents);
-  OneClickSigninHelper* helper =
-      OneClickSigninHelper::FromWebContents(contents);
-
-  GURL continueUrl(
-      "https://www.google.com/intl/en-US/chrome/blank.html?source=1");
-  OneClickSigninHelper::ShowInfoBarUIThread(
-      "session_index", "user@gmail.com",
-      OneClickSigninHelper::AUTO_ACCEPT_EXPLICIT,
-      SyncPromoUI::SOURCE_NTP_LINK,
-      continueUrl, process()->GetID(), rvh()->GetRoutingID());
-
-  SubmitGAIAPassword(helper);
-
-  NavigateAndCommit(continueUrl);
-  helper->DidStopLoading(rvh());
-  helper->OnStateChanged();
-  return helper;
-}
-
 void OneClickSigninHelperTest::EnableOneClick(bool enable) {
   PrefService* pref_service = Profile::FromBrowserContext(
       browser_context_.get())->GetPrefs();
@@ -681,7 +652,7 @@ TEST_F(OneClickSigninHelperTest, ShowInfoBarUIThreadIncognito) {
 }
 
 // If Chrome signin is triggered from a webstore install, and user chooses to
-// config sync, then Chrome should redirect immidiately to sync settings page,
+// config sync, then Chrome should redirect immediately to sync settings page,
 // and upon successful setup, redirect back to webstore.
 TEST_F(OneClickSigninHelperTest, SigninFromWebstoreWithConfigSyncfirst) {
   CreateSigninManager(false, std::string());
@@ -711,37 +682,6 @@ TEST_F(OneClickSigninHelperTest, SigninFromWebstoreWithConfigSyncfirst) {
   helper->OnStateChanged();
   EXPECT_EQ(GURL(continueUrl), contents->GetURL());
   EXPECT_EQ("user@gmail.com", signin_manager_->GetAuthenticatedUsername());
-}
-
-TEST_F(OneClickSigninHelperTest, ShowSigninBubbleAfterSigninComplete) {
-  OneClickSigninHelper* helper = SetupHelperForSignin();
-  PrefService* pref_service = profile_->GetPrefs();
-  EXPECT_EQ(pref_service->GetBoolean(prefs::kSyncPromoShowNTPBubble), false);
-  helper->SigninSuccess();
-  EXPECT_EQ(pref_service->GetBoolean(prefs::kSyncPromoShowNTPBubble), true);
-}
-
-TEST_F(OneClickSigninHelperTest, SigninCancelled) {
-  OneClickSigninHelper* helper = SetupHelperForSignin();
-
-  PrefService* pref_service = profile_->GetPrefs();
-  EXPECT_EQ(pref_service->GetBoolean(prefs::kSyncPromoShowNTPBubble), false);
-  GoogleServiceAuthError error(GoogleServiceAuthError::REQUEST_CANCELED);
-  helper->SigninFailed(error);
-  // Should not show the NTP bubble on user cancellation.
-  EXPECT_EQ(pref_service->GetBoolean(prefs::kSyncPromoShowNTPBubble), false);
-}
-
-TEST_F(OneClickSigninHelperTest, SigninFailed) {
-  OneClickSigninHelper* helper = SetupHelperForSignin();
-
-  PrefService* pref_service = profile_->GetPrefs();
-  EXPECT_EQ(pref_service->GetBoolean(prefs::kSyncPromoShowNTPBubble), false);
-  GoogleServiceAuthError error(
-      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  helper->SigninFailed(error);
-  // Should show the NTP bubble with an error.
-  EXPECT_EQ(pref_service->GetBoolean(prefs::kSyncPromoShowNTPBubble), true);
 }
 
 // I/O thread tests

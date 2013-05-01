@@ -191,7 +191,7 @@ class OneClickSigninHelper
 
   void RedirectToNtpOrAppsPage(bool show_bubble);
   void RedirectToSignin();
-  void RedirectOnSigninComplete(bool show_bubble);
+  void ShowSyncConfirmationBubble(bool show_bubble);
 
   // Clear all data member of the helper, except for the error.
   void CleanTransientState();

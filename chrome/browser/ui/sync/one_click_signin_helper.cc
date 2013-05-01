@@ -402,7 +402,6 @@ class CurrentHistoryCleaner : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(CurrentHistoryCleaner);
 };
 
-
 CurrentHistoryCleaner::CurrentHistoryCleaner(content::WebContents* contents)
     : WebContentsObserver(contents) {
   content::NavigationController& nc = web_contents()->GetController();
@@ -786,6 +785,7 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
       (auto_accept != AUTO_ACCEPT_EXPLICIT &&
           helper->auto_accept_ != AUTO_ACCEPT_EXPLICIT) ?
           CAN_OFFER_FOR_INTERSTITAL_ONLY : CAN_OFFER_FOR_ALL;
+
   std::string error_message;
 
   if (!web_contents || !CanOffer(web_contents, can_offer_for, email,
@@ -826,19 +826,30 @@ void OneClickSigninHelper::RemoveCurrentHistoryItem(
   new CurrentHistoryCleaner(web_contents);  // will self-destruct when finished
 }
 
+void OneClickSigninHelper::ShowSyncConfirmationBubble(bool show_bubble) {
+  if (show_bubble) {
+    content::WebContents* contents = web_contents();
+    Profile* profile =
+        Profile::FromBrowserContext(contents->GetBrowserContext());
+    Browser* browser = chrome::FindBrowserWithWebContents(contents);
+
+    browser->window()->ShowOneClickSigninBubble(
+        BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE,
+        string16(), /* no SAML email */
+        UTF8ToUTF16(error_message_),
+        base::Bind(&StartSync,
+                   StartSyncArgs(profile, browser, AUTO_ACCEPT_ACCEPTED,
+                                 session_index_, email_, password_,
+                                 false)));
+  }
+  error_message_.clear();
+}
+
 void OneClickSigninHelper::RedirectToNtpOrAppsPage(bool show_bubble) {
   VLOG(1) << "OneClickSigninHelper::RedirectToNtpOrAppsPage";
 
-  // Redirect to NTP/Apps page with sign in bubble visible.
+  // Redirect to NTP/Apps page and display a confirmation bubble
   content::WebContents* contents = web_contents();
-  Profile* profile =
-      Profile::FromBrowserContext(contents->GetBrowserContext());
-  PrefService* pref_service = profile->GetPrefs();
-  if (show_bubble) {
-    pref_service->SetBoolean(prefs::kSyncPromoShowNTPBubble, true);
-    pref_service->SetString(prefs::kSyncPromoErrorMessage, error_message_);
-  }
-
   GURL url(chrome::IsInstantExtendedAPIEnabled() ?
            chrome::kChromeUIAppsURL : chrome::kChromeUINewTabURL);
   content::OpenURLParams params(url,
@@ -848,7 +859,7 @@ void OneClickSigninHelper::RedirectToNtpOrAppsPage(bool show_bubble) {
                                 false);
   contents->OpenURL(params);
 
-  error_message_.clear();
+  ShowSyncConfirmationBubble(show_bubble);
 }
 
 void OneClickSigninHelper::RedirectToSignin() {
@@ -1084,6 +1095,7 @@ void OneClickSigninHelper::DidStopLoading(
       browser->window()->ShowOneClickSigninBubble(
           bubble_type,
           UTF8ToUTF16(email_),
+          string16(), /* no error message to display */
           base::Bind(&StartSync,
                      StartSyncArgs(profile, browser, auto_accept_,
                                    session_index_, email_, password_,
@@ -1124,6 +1136,7 @@ void OneClickSigninHelper::DidStopLoading(
         browser->window()->ShowOneClickSigninBubble(
             BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_SAML_MODAL_DIALOG,
             UTF8ToUTF16(email_),
+            string16(), /* no error message to display */
             base::Bind(&StartSync,
                        StartSyncArgs(profile, browser, auto_accept_,
                                      session_index_, email_, password_,
@@ -1240,15 +1253,11 @@ void OneClickSigninHelper::SigninFailed(const GoogleServiceAuthError& error) {
         break;
     }
   }
-  RedirectOnSigninComplete(display_bubble);
+  ShowSyncConfirmationBubble(display_bubble);
+  signin_tracker_.reset();
 }
 
 void OneClickSigninHelper::SigninSuccess() {
-  RedirectOnSigninComplete(true);
-}
-
-void OneClickSigninHelper::RedirectOnSigninComplete(bool show_bubble) {
-  // Show the result in the sign-in bubble if desired.
-  RedirectToNtpOrAppsPage(show_bubble);
+  ShowSyncConfirmationBubble(true);
   signin_tracker_.reset();
 }
