@@ -9,7 +9,9 @@ vars = {
     'webkit_url':
          'https://chromium.googlesource.com/chromium/blink.git',
     'git_url':
-         'https://chromium.googlesource.com'
+         'https://chromium.googlesource.com',
+    'webkit_rev':
+         '@cf9701816bed6697e860675739ab174525bb553a'
 }
 
 deps = {
@@ -33,6 +35,8 @@ deps = {
         Var('git_url') + '/external/googlemock.git@6b1759c3816d574bddde3e1725c51a811c8870e7',
     'src/testing/gtest':
         Var('git_url') + '/external/googletest.git@a6772271f71672e889776bfe49ec4efd9da036df',
+    'src/third_party/WebKit':
+        Var('webkit_url') + Var('webkit_rev'),
     'src/third_party/accessibility-developer-tools':
         Var('git_url') + '/external/accessibility-developer-tools.git@ad5df9a5341d38778658c90e4aa241c4ebe4e8aa',
     'src/third_party/angle':
