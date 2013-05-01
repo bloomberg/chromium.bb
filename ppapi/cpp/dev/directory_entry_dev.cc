@@ -6,6 +6,7 @@
 
 #include <string.h>
 
+#include "ppapi/cpp/logging.h"
 #include "ppapi/cpp/module.h"
 
 namespace pp {
@@ -42,4 +43,34 @@ DirectoryEntry_Dev& DirectoryEntry_Dev::operator=(
   return *this;
 }
 
+namespace internal {
+
+DirectoryEntryArrayOutputAdapterWithStorage::
+    DirectoryEntryArrayOutputAdapterWithStorage() {
+  set_output(&temp_storage_);
+}
+
+DirectoryEntryArrayOutputAdapterWithStorage::
+    ~DirectoryEntryArrayOutputAdapterWithStorage() {
+  if (!temp_storage_.empty()) {
+    // An easy way to release the resource references held by |temp_storage_|.
+    // A destructor for PP_DirectoryEntry_Dev will release them.
+    output();
+  }
+}
+
+std::vector<DirectoryEntry_Dev>&
+    DirectoryEntryArrayOutputAdapterWithStorage::output() {
+  PP_DCHECK(output_storage_.empty());
+  typedef std::vector<PP_DirectoryEntry_Dev> Entries;
+  for (Entries::iterator it = temp_storage_.begin();
+       it != temp_storage_.end();
+       ++it) {
+    output_storage_.push_back(DirectoryEntry_Dev(PASS_REF, *it));
+  }
+  temp_storage_.clear();
+  return output_storage_;
+}
+
+}  // namespace internal
 }  // namespace pp

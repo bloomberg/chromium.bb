@@ -17,11 +17,10 @@
 #include "ppapi/cpp/var_array_buffer.h"
 
 namespace pp {
+namespace ext {
 
 template <class T>
-class CompletionCallbackWithOutput;
-
-namespace ext {
+class ExtCompletionCallbackWithOutput;
 
 template <class T>
 class Optional;
@@ -53,7 +52,7 @@ class SocketType_Dev {
 
 typedef VarDictionary_Dev CreateOptions_Dev;
 
-class CreateInfo_Dev : public internal::OutputObjectBase {
+class CreateInfo_Dev {
  public:
   CreateInfo_Dev();
   ~CreateInfo_Dev();
@@ -67,7 +66,7 @@ class CreateInfo_Dev : public internal::OutputObjectBase {
   DictField<int32_t> socket_id;
 };
 
-class AcceptInfo_Dev : public internal::OutputObjectBase {
+class AcceptInfo_Dev {
  public:
   AcceptInfo_Dev();
   ~AcceptInfo_Dev();
@@ -83,7 +82,7 @@ class AcceptInfo_Dev : public internal::OutputObjectBase {
   OptionalDictField<int32_t> socket_id;
 };
 
-class ReadInfo_Dev : public internal::OutputObjectBase {
+class ReadInfo_Dev {
  public:
   ReadInfo_Dev();
   ~ReadInfo_Dev();
@@ -99,7 +98,7 @@ class ReadInfo_Dev : public internal::OutputObjectBase {
   DictField<VarArrayBuffer> data;
 };
 
-class WriteInfo_Dev : public internal::OutputObjectBase {
+class WriteInfo_Dev {
  public:
   WriteInfo_Dev();
   ~WriteInfo_Dev();
@@ -113,7 +112,7 @@ class WriteInfo_Dev : public internal::OutputObjectBase {
   DictField<int32_t> bytes_written;
 };
 
-class RecvFromInfo_Dev : public internal::OutputObjectBase {
+class RecvFromInfo_Dev {
  public:
   RecvFromInfo_Dev();
   ~RecvFromInfo_Dev();
@@ -133,7 +132,7 @@ class RecvFromInfo_Dev : public internal::OutputObjectBase {
   DictField<int32_t> port;
 };
 
-class SocketInfo_Dev : public internal::OutputObjectBase {
+class SocketInfo_Dev {
  public:
   SocketInfo_Dev();
   ~SocketInfo_Dev();
@@ -157,7 +156,7 @@ class SocketInfo_Dev : public internal::OutputObjectBase {
   OptionalDictField<int32_t> local_port;
 };
 
-class NetworkInterface_Dev : public internal::OutputObjectBase {
+class NetworkInterface_Dev {
  public:
   NetworkInterface_Dev();
   ~NetworkInterface_Dev();
@@ -179,56 +178,77 @@ class Socket_Dev {
   explicit Socket_Dev(const InstanceHandle& instance);
   ~Socket_Dev();
 
+  typedef ExtCompletionCallbackWithOutput<CreateInfo_Dev> CreateCallback;
   int32_t Create(const SocketType_Dev& type,
                  const Optional<CreateOptions_Dev>& options,
-                 const CompletionCallbackWithOutput<CreateInfo_Dev>& callback);
+                 const CreateCallback& callback);
+
   void Destroy(int32_t socket_id);
-  // TODO(yzshen): Support more powerful traits.
-  //int32_t Connect(int32_t socket_id,
-  //                const std::string& hostname,
-  //                int32_t port,
-  //                const CompletionCallbackWithOutput<int32_t>& callback);
-  //int32_t Bind(int32_t socket_id,
-  //             const std::string& address,
-  //             int32_t port,
-  //             const CompletionCallbackWithOutput<int32_t>& callback);
+
+  typedef ExtCompletionCallbackWithOutput<int32_t> ConnectCallback;
+  int32_t Connect(int32_t socket_id,
+                  const std::string& hostname,
+                  int32_t port,
+                  const ConnectCallback& callback);
+
+  typedef ExtCompletionCallbackWithOutput<int32_t> BindCallback;
+  int32_t Bind(int32_t socket_id,
+               const std::string& address,
+               int32_t port,
+               const BindCallback& callback);
+
   void Disconnect(int32_t socket_id);
+
+  typedef ExtCompletionCallbackWithOutput<ReadInfo_Dev> ReadCallback;
   int32_t Read(int32_t socket_id,
                const Optional<int32_t>& buffer_size,
-               const CompletionCallbackWithOutput<ReadInfo_Dev>& callback);
+               const ReadCallback& callback);
+
+  typedef ExtCompletionCallbackWithOutput<WriteInfo_Dev> WriteCallback;
   int32_t Write(int32_t socket_id,
                 const VarArrayBuffer& data,
-                const CompletionCallbackWithOutput<WriteInfo_Dev>& callback);
-  int32_t RecvFrom(
-      int32_t socket_id,
-      const Optional<int32_t>& buffer_size,
-      const CompletionCallbackWithOutput<RecvFromInfo_Dev>& callback);
+                const WriteCallback& callback);
+
+  typedef ExtCompletionCallbackWithOutput<RecvFromInfo_Dev> RecvFromCallback;
+  int32_t RecvFrom(int32_t socket_id,
+                   const Optional<int32_t>& buffer_size,
+                   const RecvFromCallback& callback);
+
+  typedef ExtCompletionCallbackWithOutput<WriteInfo_Dev> SendToCallback;
   int32_t SendTo(int32_t socket_id,
                  const VarArrayBuffer& data,
                  const std::string& address,
                  int32_t port,
-                 const CompletionCallbackWithOutput<WriteInfo_Dev>& callback);
-  // TODO(yzshen): Support more powerful traits.
-  //int32_t Listen(int32_t socket_id,
-  //               const std::string& address,
-  //               int32_t port,
-  //               const Optional<int32_t>& backlog,
-  //               const CompletionCallbackWithOutput<int32_t>& callback);
-  int32_t Accept(int32_t socket_id,
-                 const CompletionCallbackWithOutput<AcceptInfo_Dev>& callback);
-  // TODO(yzshen): Support more powerful traits.
-  //int32_t SetKeepAlive(int32_t socket_id,
-  //                     bool enable,
-  //                     const Optional<int32_t>& delay,
-  //                     const CompletionCallbackWithOutput<bool>& callback);
-  //int32_t SetNoDelay(int32_t socket_id,
-  //                   bool no_delay,
-  //                   const CompletionCallbackWithOutput<bool>& callback);
+                 const SendToCallback& callback);
+
+  typedef ExtCompletionCallbackWithOutput<int32_t> ListenCallback;
+  int32_t Listen(int32_t socket_id,
+                 const std::string& address,
+                 int32_t port,
+                 const Optional<int32_t>& backlog,
+                 const ListenCallback& callback);
+
+  typedef ExtCompletionCallbackWithOutput<AcceptInfo_Dev> AcceptCallback;
+  int32_t Accept(int32_t socket_id, const AcceptCallback& callback);
+
+  typedef ExtCompletionCallbackWithOutput<bool> SetKeepAliveCallback;
+  int32_t SetKeepAlive(int32_t socket_id,
+                       bool enable,
+                       const Optional<int32_t>& delay,
+                       const SetKeepAliveCallback& callback);
+
+  typedef ExtCompletionCallbackWithOutput<bool> SetNoDelayCallback;
+  int32_t SetNoDelay(int32_t socket_id,
+                     bool no_delay,
+                     const SetNoDelayCallback& callback);
+
+  typedef ExtCompletionCallbackWithOutput<SocketInfo_Dev> GetInfoCallback;
   int32_t GetInfo(int32_t socket_id,
-                  const CompletionCallbackWithOutput<SocketInfo_Dev>& callback);
-  int32_t GetNetworkList(
-      const CompletionCallbackWithOutput<std::vector<NetworkInterface_Dev> >&
-          callback);
+                  const GetInfoCallback& callback);
+
+  typedef ExtCompletionCallbackWithOutput<std::vector<NetworkInterface_Dev> >
+      GetNetworkListCallback;
+  int32_t GetNetworkList(const GetNetworkListCallback& callback);
 
  private:
   InstanceHandle instance_;

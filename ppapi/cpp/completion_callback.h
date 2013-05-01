@@ -7,18 +7,14 @@
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/cpp/extensions/ext_output_traits.h"
 #include "ppapi/cpp/logging.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/output_traits.h"
 
-struct PP_ArrayOutput;
-
 /// @file
 /// This file defines the API to create and run a callback.
 namespace pp {
-
-template<typename T> class AsyncArrayOutputAdapter;
-template<typename T> class AsyncResourceArrayOutputAdapter;
 
 /// This API enables you to implement and receive callbacks when
 /// Pepper operations complete asynchronously.
@@ -159,6 +155,50 @@ class CompletionCallback {
   PP_CompletionCallback cc_;
 };
 
+namespace internal {
+
+/// The base class of [Ext]CompletionCallbackWithOutput.
+///
+/// The template parameter Traits determines the storage type
+/// (OutputStorageType), the output parameter type used by the browser
+/// (APIArgType), and how to map OutputStorageType to APIArgType.
+template <typename T, typename Traits>
+class CompletionCallbackWithOutputBase : public CompletionCallback {
+ public:
+  typedef typename Traits::StorageType OutputStorageType;
+  typedef typename Traits::APIArgType APIArgType;
+  typedef Traits TraitsType;
+
+  explicit CompletionCallbackWithOutputBase(OutputStorageType* output)
+      : CompletionCallback(),
+        output_(output) {
+  }
+
+  CompletionCallbackWithOutputBase(PP_CompletionCallback_Func func,
+                                   void* user_data,
+                                   OutputStorageType* output)
+      : CompletionCallback(func, user_data),
+        output_(output) {
+  }
+
+  CompletionCallbackWithOutputBase(PP_CompletionCallback_Func func,
+                                   void* user_data,
+                                   int32_t flags,
+                                   OutputStorageType* output)
+      : CompletionCallback(func, user_data, flags),
+        output_(output) {
+  }
+
+  APIArgType output() const {
+    return Traits::StorageToAPIArg(*output_);
+  }
+
+ private:
+  OutputStorageType* output_;
+};
+
+}  // namespace internal
+
 /// A CompletionCallbackWithOutput defines a completion callback that
 /// additionally stores a pointer to some output data. Some C++ wrappers
 /// take a CompletionCallbackWithOutput when the browser is returning a
@@ -175,36 +215,37 @@ class CompletionCallback {
 /// it just stores a pointer to it. C++ wrapper objects that accept a
 /// CompletionCallbackWithOutput will retrieve this pointer and pass it to
 /// the browser as the output parameter.
-template<typename T>
-class CompletionCallbackWithOutput : public CompletionCallback {
+template <typename T>
+class CompletionCallbackWithOutput
+    : public internal::CompletionCallbackWithOutputBase<
+        T, internal::CallbackOutputTraits<T> > {
  public:
-  /// The type that will actually be stored in the completion callback. In the
-  /// common case, this will be equal to the template parameter (for example,
-  /// CompletionCallbackWithOutput<int> would obviously take an int*. However,
-  /// resources are passed as PP_Resource, vars as PP_Var, and arrays as our
-  /// special ArrayOutputAdapter object. The CallbackOutputTraits defines
-  /// specializations for all of these cases.
-  typedef typename internal::CallbackOutputTraits<T>::StorageType
-      OutputStorageType;
-  typedef typename internal::CallbackOutputTraits<T>::APIArgType
-      APIArgType;
+  typedef internal::CompletionCallbackWithOutputBase<
+      T, internal::CallbackOutputTraits<T> > BaseType;
 
   /// The default constructor will create a blocking
-  /// <code>CompletionCallback</code> that references the given output
+  /// <code>CompletionCallbackWithOutput</code> that references the given output
   /// data.
   ///
   /// @param[in] output A pointer to the data associated with the callback. The
   /// caller must ensure that this pointer outlives the completion callback.
+  /// In the common case, <code>OutputStorageType</code> will be equal to the
+  /// template parameter T (for example,
+  /// <code>CompletionCallbackWithOutput<int></code> would obviously take an
+  /// int*. However, resources are passed as PP_Resource, vars as PP_Var, and
+  /// arrays as our special ArrayOutputAdapter object.
+  /// <code>internal::CallbackOutputTraits</code> defines specializations for
+  /// all of these cases.
   ///
   /// <strong>Note:</strong> Blocking completion callbacks are only allowed from
-  /// from background threads.
-  CompletionCallbackWithOutput(OutputStorageType* output)
-      : CompletionCallback(),
-        output_(output) {
+  /// background threads.
+  explicit CompletionCallbackWithOutput(
+      typename BaseType::OutputStorageType* output)
+      : BaseType(output) {
   }
 
-  /// A constructor for creating a <code>CompletionCallback</code> that
-  /// references the given output data.
+  /// A constructor for creating a <code>CompletionCallbackWithOutput</code>
+  /// that references the given output data.
   ///
   /// @param[in] func The function to be called on completion.
   /// @param[in] user_data The user data to be passed to the callback function.
@@ -214,13 +255,12 @@ class CompletionCallbackWithOutput : public CompletionCallback {
   /// caller must ensure that this pointer outlives the completion callback.
   CompletionCallbackWithOutput(PP_CompletionCallback_Func func,
                                void* user_data,
-                               OutputStorageType* output)
-      : CompletionCallback(func, user_data),
-        output_(output) {
+                               typename BaseType::OutputStorageType* output)
+      : BaseType(func, user_data, output) {
   }
 
-  /// A constructor for creating a <code>CompletionCallback</code> that
-  /// references the given output data.
+  /// A constructor for creating a <code>CompletionCallbackWithOutput</code>
+  /// that references the given output data.
   ///
   /// @param[in] func The function to be called on completion.
   ///
@@ -237,18 +277,81 @@ class CompletionCallbackWithOutput : public CompletionCallback {
   CompletionCallbackWithOutput(PP_CompletionCallback_Func func,
                                void* user_data,
                                int32_t flags,
-                               OutputStorageType* output)
-      : CompletionCallback(func, user_data, flags),
-        output_(output) {
+                               typename BaseType::OutputStorageType* output)
+      : BaseType(func, user_data, flags, output) {
   }
-
-  APIArgType output() const {
-    return internal::CallbackOutputTraits<T>::StorageToAPIArg(*output_);
-  }
-
- private:
-  OutputStorageType* output_;
 };
+
+namespace ext {
+
+/// ExtCompletionCallbackWithOutput is similar to CompletionCallbackWithOutput,
+/// but used by APIs within the pp::ext namespace. Usually it is used with the
+/// CompletionCallbackFactory's NewExtCallbackWithOutput.
+template <typename T>
+class ExtCompletionCallbackWithOutput
+    : public ::pp::internal::CompletionCallbackWithOutputBase<
+        T, internal::ExtCallbackOutputTraits<T> > {
+ public:
+  typedef ::pp::internal::CompletionCallbackWithOutputBase<
+      T, internal::ExtCallbackOutputTraits<T> > BaseType;
+
+  /// The default constructor will create a blocking
+  /// <code>ExtCompletionCallbackWithOutput</code> that references the given
+  /// output data.
+  ///
+  /// @param[in] output A pointer to the data associated with the callback. The
+  /// caller must ensure that this pointer outlives the completion callback.
+  /// <code>OutputStorageType</code> is either
+  /// <code>ext::internal::ArrayVarOutputAdapterWithStorage<U></code> (if the
+  /// template parameter T is of the form std::vector<U>) or
+  /// <code>ext::internal::VarOutputAdapterWithStorage<T></code> (otherwise).
+  ///
+  /// <strong>Note:</strong> Blocking completion callbacks are only allowed from
+  /// background threads.
+  explicit ExtCompletionCallbackWithOutput(
+      typename BaseType::OutputStorageType* output)
+      : BaseType(output) {
+  }
+
+  /// A constructor for creating an <code>ExtCompletionCallbackWithOutput</code>
+  /// that references the given output data.
+  ///
+  /// @param[in] func The function to be called on completion.
+  /// @param[in] user_data The user data to be passed to the callback function.
+  /// This is optional and is typically used to help track state in case of
+  /// multiple pending callbacks.
+  /// @param[in] output A pointer to the data associated with the callback. The
+  /// caller must ensure that this pointer outlives the completion callback.
+  ExtCompletionCallbackWithOutput(PP_CompletionCallback_Func func,
+                                  void* user_data,
+                                  typename BaseType::OutputStorageType* output)
+      : BaseType(func, user_data, output) {
+  }
+
+  /// A constructor for creating an <code>ExtCompletionCallbackWithOutput</code>
+  /// that references the given output data.
+  ///
+  /// @param[in] func The function to be called on completion.
+  ///
+  /// @param[in] user_data The user data to be passed to the callback function.
+  /// This is optional and is typically used to help track state in case of
+  /// multiple pending callbacks.
+  ///
+  /// @param[in] flags Bit field combination of
+  /// <code>PP_CompletionCallback_Flag</code> flags used to control how
+  /// non-NULL callbacks are scheduled by asynchronous methods.
+  ///
+  /// @param[in] output A pointer to the data associated with the callback. The
+  /// caller must ensure that this pointer outlives the completion callback.
+  ExtCompletionCallbackWithOutput(PP_CompletionCallback_Func func,
+                                  void* user_data,
+                                  int32_t flags,
+                                  typename BaseType::OutputStorageType* output)
+      : BaseType(func, user_data, flags, output) {
+  }
+};
+
+}  // namespace ext
 
 /// BlockUntilComplete() is used in place of an actual completion callback
 /// to request blocking behavior. If specified, the calling thread will block

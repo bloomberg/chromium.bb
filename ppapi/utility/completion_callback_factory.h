@@ -185,6 +185,10 @@ template <typename T> struct TypeUnwrapper<const T&> {
 /// is to accept your output argument as a non-const reference and to swap()
 /// the argument with a vector of your own to store it. This means you don't
 /// have to copy the buffer to consume it.
+///
+/// NewExtCallbackWithOutput is similar to NewCallbackWithOutput. It creates
+/// ext::ExtCompletionCallbackWithOutput instances which are used by APIs within
+/// the pp::ext namespace.
 template <typename T, typename ThreadTraits = ThreadSafeThreadTraits>
 class CompletionCallbackFactory {
  public:
@@ -279,7 +283,7 @@ class CompletionCallbackFactory {
 
   /// NewCallbackWithOutput() allocates a new, single-use
   /// <code>CompletionCallback</code> where the browser will pass an additional
-  /// parameter comtaining the result of the request. The
+  /// parameter containing the result of the request. The
   /// <code>CompletionCallback</code> must be run in order for the memory
   /// allocated by the methods to be freed.
   ///
@@ -291,9 +295,33 @@ class CompletionCallbackFactory {
   CompletionCallbackWithOutput<
       typename internal::TypeUnwrapper<Output>::StorageType>
   NewCallbackWithOutput(void (T::*method)(int32_t, Output)) {
-    return NewCallbackWithOutputHelper(new DispatcherWithOutput0<
-        typename internal::TypeUnwrapper<Output>::StorageType,
-        void (T::*)(int32_t, Output)>(method));
+    typedef typename internal::TypeUnwrapper<Output>::StorageType
+        OutputStorageType;
+    typedef CompletionCallbackWithOutput<OutputStorageType> CallbackType;
+    typedef DispatcherWithOutput0<
+        typename CallbackType::TraitsType,
+        OutputStorageType,
+        void (T::*)(int32_t, Output)> DispatcherType;
+    return NewCallbackWithOutputHelper<CallbackType>(
+        new DispatcherType(method));
+  }
+
+  /// Similar to NewCallbackWithOutput(), but returns an
+  /// <code>ext::ExtCompletionCallbackWithOutput</code>.
+  template <typename Output>
+  ext::ExtCompletionCallbackWithOutput<
+      typename internal::TypeUnwrapper<Output>::StorageType>
+  NewExtCallbackWithOutput(void (T::*method)(int32_t, Output)) {
+    typedef typename internal::TypeUnwrapper<Output>::StorageType
+        OutputStorageType;
+    typedef ext::ExtCompletionCallbackWithOutput<OutputStorageType>
+        CallbackType;
+    typedef DispatcherWithOutput0<
+        typename CallbackType::TraitsType,
+        OutputStorageType,
+        void (T::*)(int32_t, Output)> DispatcherType;
+    return NewCallbackWithOutputHelper<CallbackType>(
+        new DispatcherType(method));
   }
 
   /// NewCallback() allocates a new, single-use <code>CompletionCallback</code>.
@@ -337,7 +365,7 @@ class CompletionCallbackFactory {
 
   /// NewCallbackWithOutput() allocates a new, single-use
   /// <code>CompletionCallback</code> where the browser will pass an additional
-  /// parameter comtaining the result of the request. The
+  /// parameter containing the result of the request. The
   /// <code>CompletionCallback</code> must be run in order for the memory
   /// allocated by the methods to be freed.
   ///
@@ -353,10 +381,36 @@ class CompletionCallbackFactory {
       typename internal::TypeUnwrapper<Output>::StorageType>
   NewCallbackWithOutput(void (T::*method)(int32_t, Output, A),
                         const A& a) {
-    return NewCallbackWithOutputHelper(new DispatcherWithOutput1<
-        typename internal::TypeUnwrapper<Output>::StorageType,
+    typedef typename internal::TypeUnwrapper<Output>::StorageType
+        OutputStorageType;
+    typedef CompletionCallbackWithOutput<OutputStorageType> CallbackType;
+    typedef DispatcherWithOutput1<
+        typename CallbackType::TraitsType,
+        OutputStorageType,
         void (T::*)(int32_t, Output, A),
-        typename internal::TypeUnwrapper<A>::StorageType>(method, a));
+        typename internal::TypeUnwrapper<A>::StorageType> DispatcherType;
+    return NewCallbackWithOutputHelper<CallbackType>(
+        new DispatcherType(method, a));
+  }
+
+  /// Similar to NewCallbackWithOutput(), but returns an
+  /// <code>ext::ExtCompletionCallbackWithOutput</code>.
+  template <typename Output, typename A>
+  ext::ExtCompletionCallbackWithOutput<
+      typename internal::TypeUnwrapper<Output>::StorageType>
+  NewExtCallbackWithOutput(void (T::*method)(int32_t, Output, A),
+                           const A& a) {
+    typedef typename internal::TypeUnwrapper<Output>::StorageType
+        OutputStorageType;
+    typedef ext::ExtCompletionCallbackWithOutput<OutputStorageType>
+        CallbackType;
+    typedef DispatcherWithOutput1<
+        typename CallbackType::TraitsType,
+        OutputStorageType,
+        void (T::*)(int32_t, Output, A),
+        typename internal::TypeUnwrapper<A>::StorageType> DispatcherType;
+    return NewCallbackWithOutputHelper<CallbackType>(
+        new DispatcherType(method, a));
   }
 
   /// NewCallback() allocates a new, single-use
@@ -407,7 +461,7 @@ class CompletionCallbackFactory {
 
   /// NewCallbackWithOutput() allocates a new, single-use
   /// <code>CompletionCallback</code> where the browser will pass an additional
-  /// parameter comtaining the result of the request. The
+  /// parameter containing the result of the request. The
   /// <code>CompletionCallback</code> must be run in order for the memory
   /// allocated by the methods to be freed.
   ///
@@ -427,11 +481,39 @@ class CompletionCallbackFactory {
   NewCallbackWithOutput(void (T::*method)(int32_t, Output, A, B),
                         const A& a,
                         const B& b) {
-    return NewCallbackWithOutputHelper(new DispatcherWithOutput2<
-        typename internal::TypeUnwrapper<Output>::StorageType,
+    typedef typename internal::TypeUnwrapper<Output>::StorageType
+        OutputStorageType;
+    typedef CompletionCallbackWithOutput<OutputStorageType> CallbackType;
+    typedef DispatcherWithOutput2<
+        typename CallbackType::TraitsType,
+        OutputStorageType,
         void (T::*)(int32_t, Output, A, B),
         typename internal::TypeUnwrapper<A>::StorageType,
-        typename internal::TypeUnwrapper<B>::StorageType>(method, a, b));
+        typename internal::TypeUnwrapper<B>::StorageType> DispatcherType;
+    return NewCallbackWithOutputHelper<CallbackType>(
+        new DispatcherType(method, a, b));
+  }
+
+  /// Similar to NewCallbackWithOutput(), but returns an
+  /// <code>ext::ExtCompletionCallbackWithOutput</code>.
+  template <typename Output, typename A, typename B>
+  ext::ExtCompletionCallbackWithOutput<
+      typename internal::TypeUnwrapper<Output>::StorageType>
+  NewExtCallbackWithOutput(void (T::*method)(int32_t, Output, A, B),
+                           const A& a,
+                           const B& b) {
+    typedef typename internal::TypeUnwrapper<Output>::StorageType
+        OutputStorageType;
+    typedef ext::ExtCompletionCallbackWithOutput<OutputStorageType>
+        CallbackType;
+    typedef DispatcherWithOutput2<
+        typename CallbackType::TraitsType,
+        OutputStorageType,
+        void (T::*)(int32_t, Output, A, B),
+        typename internal::TypeUnwrapper<A>::StorageType,
+        typename internal::TypeUnwrapper<B>::StorageType> DispatcherType;
+    return NewCallbackWithOutputHelper<CallbackType>(
+        new DispatcherType(method, a, b));
   }
 
   /// NewCallback() allocates a new, single-use
@@ -493,7 +575,7 @@ class CompletionCallbackFactory {
 
   /// NewCallbackWithOutput() allocates a new, single-use
   /// <code>CompletionCallback</code> where the browser will pass an additional
-  /// parameter comtaining the result of the request. The
+  /// parameter containing the result of the request. The
   /// <code>CompletionCallback</code> must be run in order for the memory
   /// allocated by the methods to be freed.
   ///
@@ -516,12 +598,42 @@ class CompletionCallbackFactory {
                         const A& a,
                         const B& b,
                         const C& c) {
-    return NewCallbackWithOutputHelper(new DispatcherWithOutput3<
-        typename internal::TypeUnwrapper<Output>::StorageType,
+    typedef typename internal::TypeUnwrapper<Output>::StorageType
+        OutputStorageType;
+    typedef CompletionCallbackWithOutput<OutputStorageType> CallbackType;
+    typedef DispatcherWithOutput3<
+        typename CallbackType::TraitsType,
+        OutputStorageType,
         void (T::*)(int32_t, Output, A, B, C),
         typename internal::TypeUnwrapper<A>::StorageType,
         typename internal::TypeUnwrapper<B>::StorageType,
-        typename internal::TypeUnwrapper<C>::StorageType>(method, a, b, c));
+        typename internal::TypeUnwrapper<C>::StorageType> DispatcherType;
+    return NewCallbackWithOutputHelper<CallbackType>(
+        new DispatcherType(method, a, b, c));
+  }
+
+  /// Similar to NewCallbackWithOutput(), but returns an
+  /// <code>ext::ExtCompletionCallbackWithOutput</code>.
+  template <typename Output, typename A, typename B, typename C>
+  ext::ExtCompletionCallbackWithOutput<
+      typename internal::TypeUnwrapper<Output>::StorageType>
+  NewExtCallbackWithOutput(void (T::*method)(int32_t, Output, A, B, C),
+                           const A& a,
+                           const B& b,
+                           const C& c) {
+    typedef typename internal::TypeUnwrapper<Output>::StorageType
+        OutputStorageType;
+    typedef ext::ExtCompletionCallbackWithOutput<OutputStorageType>
+        CallbackType;
+    typedef DispatcherWithOutput3<
+        typename CallbackType::TraitsType,
+        OutputStorageType,
+        void (T::*)(int32_t, Output, A, B, C),
+        typename internal::TypeUnwrapper<A>::StorageType,
+        typename internal::TypeUnwrapper<B>::StorageType,
+        typename internal::TypeUnwrapper<C>::StorageType> DispatcherType;
+    return NewCallbackWithOutputHelper<CallbackType>(
+        new DispatcherType(method, a, b, c));
   }
 
  private:
@@ -608,11 +720,10 @@ class CompletionCallbackFactory {
     Method method_;
   };
 
-  template <typename Output, typename Method>
+  template <typename Traits, typename Output, typename Method>
   class DispatcherWithOutput0 {
    public:
     typedef Output OutputType;
-    typedef internal::CallbackOutputTraits<Output> Traits;
 
     DispatcherWithOutput0()
         : method_(NULL),
@@ -659,11 +770,10 @@ class CompletionCallbackFactory {
     A a_;
   };
 
-  template <typename Output, typename Method, typename A>
+  template <typename Traits, typename Output, typename Method, typename A>
   class DispatcherWithOutput1 {
    public:
     typedef Output OutputType;
-    typedef internal::CallbackOutputTraits<Output> Traits;
 
     DispatcherWithOutput1()
         : method_(NULL),
@@ -716,11 +826,14 @@ class CompletionCallbackFactory {
     B b_;
   };
 
-  template <typename Output, typename Method, typename A, typename B>
+  template <typename Traits,
+            typename Output,
+            typename Method,
+            typename A,
+            typename B>
   class DispatcherWithOutput2 {
    public:
     typedef Output OutputType;
-    typedef internal::CallbackOutputTraits<Output> Traits;
 
     DispatcherWithOutput2()
         : method_(NULL),
@@ -779,12 +892,15 @@ class CompletionCallbackFactory {
     C c_;
   };
 
-  template <typename Output, typename Method, typename A, typename B,
+  template <typename Traits,
+            typename Output,
+            typename Method,
+            typename A,
+            typename B,
             typename C>
   class DispatcherWithOutput3 {
    public:
     typedef Output OutputType;
-    typedef internal::CallbackOutputTraits<Output> Traits;
 
     DispatcherWithOutput3()
         : method_(NULL),
@@ -849,20 +965,17 @@ class CompletionCallbackFactory {
   }
 
   // Takes ownership of the dispatcher pointer, which should be heap allocated.
-  template <typename Dispatcher> CompletionCallbackWithOutput<
-      typename internal::TypeUnwrapper<
-          typename Dispatcher::OutputType>::StorageType>
-  NewCallbackWithOutputHelper(Dispatcher* dispatcher) {
+  template <typename Callback, typename Dispatcher>
+  Callback NewCallbackWithOutputHelper(Dispatcher* dispatcher) {
     typename ThreadTraits::AutoLock lock(lock_);
 
     PP_DCHECK(object_);  // Expects a non-null object!
     CallbackData<Dispatcher>* data =
         new CallbackData<Dispatcher>(back_pointer_, dispatcher);
 
-    return CompletionCallbackWithOutput<typename Dispatcher::OutputType>(
-        &CallbackData<Dispatcher>::Thunk,
-        data,
-        data->dispatcher()->output());
+    return Callback(&CallbackData<Dispatcher>::Thunk,
+                    data,
+                    data->dispatcher()->output());
   }
 
   // Disallowed:

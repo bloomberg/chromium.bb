@@ -9,8 +9,6 @@
 
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/cpp/array_output.h"
-#include "ppapi/cpp/dev/directory_entry_dev.h"
-#include "ppapi/cpp/extensions/ext_output_traits.h"
 #include "ppapi/cpp/resource.h"
 
 /// @file
@@ -118,20 +116,16 @@ struct ResourceCallbackOutputTraits {
 };
 
 // The general templatized base class for all CallbackOutputTraits. This class
-// covers resources, extensions API output objects and POD (ints, structs, etc.)
-// by inheriting from the appropriate base class depending on whether the given
-// type derives from pp::Resource or ext::internal::OutputObjectBase. This trick
-// allows us to do this once rather than writing specializations for every
-// object type.
+// covers both resources and POD (ints, structs, etc.) by inheriting from the
+// appropriate base class depending on whether the given type derives from
+// pp::Resource. This trick allows us to do this once rather than writing
+// specializations for every resource object type.
 template<typename T>
 struct CallbackOutputTraits
-    : public InheritIf<ResourceCallbackOutputTraits<T>,
-                       IsBaseOf<Resource, T>::value>,
-      public InheritIf<ext::internal::ExtensionsCallbackOutputTraits<T>,
-                       IsBaseOf<ext::internal::OutputObjectBase, T>::value>,
-      public InheritIf<GenericCallbackOutputTraits<T>,
-                       !IsBaseOf<Resource, T>::value &&
-                       !IsBaseOf<ext::internal::OutputObjectBase, T>::value> {
+    : public InheritIf<GenericCallbackOutputTraits<T>,
+                       !IsBaseOf<Resource, T>::value>,
+      public InheritIf<ResourceCallbackOutputTraits<T>,
+                       IsBaseOf<Resource, T>::value> {
 };
 
 // A specialization of CallbackOutputTraits for pp::Var output parameters.
@@ -204,21 +198,17 @@ struct ResourceVectorCallbackOutputTraits {
   }
 };
 
-// Specialization of CallbackOutputTraits for vectors. This struct covers arrays
-// of resources, extensions API output objects and POD (ints, structs, etc.) by
-// inheriting from the appropriate base class depending on whether the given
-// type derives from pp::Resource or ext::internal::OutputObjectBase. This trick
-// allows us to do this once rather than writing specializations for every
-// object type.
+// Specialization of CallbackOutputTraits for vectors. This struct covers both
+// arrays of resources and arrays of POD (ints, structs, etc.) by inheriting
+// from the appropriate base class depending on whether the given type derives
+// from pp::Resource. This trick allows us to do this once rather than writing
+// specializations for every resource object type.
 template<typename T>
 struct CallbackOutputTraits< std::vector<T> >
-    : public InheritIf<ResourceVectorCallbackOutputTraits<T>,
-                       IsBaseOf<Resource, T>::value>,
-      public InheritIf<ext::internal::ExtensionsVectorCallbackOutputTraits<T>,
-                       IsBaseOf<ext::internal::OutputObjectBase, T>::value>,
-      public InheritIf<GenericVectorCallbackOutputTraits<T>,
-                       !IsBaseOf<Resource, T>::value &&
-                       !IsBaseOf<ext::internal::OutputObjectBase, T>::value> {
+    : public InheritIf<GenericVectorCallbackOutputTraits<T>,
+                       !IsBaseOf<Resource, T>::value>,
+      public InheritIf<ResourceVectorCallbackOutputTraits<T>,
+                       IsBaseOf<Resource, T>::value> {
 };
 
 // A specialization of CallbackOutputTraits to provide the callback system
@@ -241,24 +231,6 @@ struct CallbackOutputTraits< std::vector<pp::Var> > {
 
   // Retrieves the underlying vector that can be passed to the plugin.
   static inline std::vector<pp::Var>& StorageToPluginArg(StorageType& t) {
-    return t.output();
-  }
-};
-
-// A specialization of CallbackOutputTraits to provide the callback system the
-// information on how to handle vectors of pp::DirectoryEntry_Dev. This converts
-// PP_DirectoryEntry_Dev to pp::DirectoryEntry_Dev when passing to the plugin.
-template<>
-struct CallbackOutputTraits< std::vector<pp::DirectoryEntry_Dev> > {
-  typedef PP_ArrayOutput APIArgType;
-  typedef DirectoryEntryArrayOutputAdapterWithStorage StorageType;
-
-  static inline APIArgType StorageToAPIArg(StorageType& t) {
-    return t.pp_array_output();
-  }
-
-  static inline std::vector<pp::DirectoryEntry_Dev>& StorageToPluginArg(
-      StorageType& t) {
     return t.output();
   }
 };

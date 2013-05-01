@@ -18,18 +18,6 @@ namespace pp {
 namespace ext {
 namespace internal {
 
-// Base class for all those types within the pp::ext namespace that are used
-// with CompletionCallbackWithOutput. This class doesn't do anything itself,
-// but it affects the behavior of CallbackOutputTraits for all its subclasses.
-//
-// TODO(yzshen): Within pp::ext, basic types such as std::string or double may
-// be used with CompletionCallbackWithOutput as well. This approach doesn't
-// work for them. One way is to refactor CallbackOutputTraits to consider not
-// only the output C++ object type, but also the output parameter type that the
-// C interface uses. And then we can remove this class.
-class OutputObjectBase {
-};
-
 template <class T>
 class VarOutputAdapterWithStorage {
  public:
@@ -59,8 +47,15 @@ class VarOutputAdapterWithStorage {
       const VarOutputAdapterWithStorage<T>&);
 };
 
+// ExtCallbackOutputTraits is used with ExtCompletionCallbackWithOutput. Unlike
+// pp::internal::CallbackOutputTraits, it always uses PP_Var* as output
+// parameter type to interact with the browser.
+//
+// For example, CompletionCallbackWithOutput<double> (using
+// pp::internal::CallbackOutputTraits) uses double* as the output parameter
+// type; while ExtCompletionCallbackWithOutput<double> uses PP_Var*.
 template <class T>
-struct ExtensionsCallbackOutputTraits {
+struct ExtCallbackOutputTraits {
   typedef PP_Var* APIArgType;
   typedef VarOutputAdapterWithStorage<T> StorageType;
 
@@ -121,7 +116,7 @@ class ArrayVarOutputAdapterWithStorage {
 };
 
 template <class T>
-struct ExtensionsVectorCallbackOutputTraits {
+struct ExtCallbackOutputTraits< std::vector<T> > {
   typedef PP_Var* APIArgType;
   typedef ArrayVarOutputAdapterWithStorage<T> StorageType;
 

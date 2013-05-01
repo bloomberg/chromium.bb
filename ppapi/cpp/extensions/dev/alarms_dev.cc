@@ -117,9 +117,8 @@ void Alarms_Dev::Create(const Optional<std::string>& name,
       alarm_info_var.pp_var());
 }
 
-int32_t Alarms_Dev::Get(
-    const Optional<std::string>& name,
-    const CompletionCallbackWithOutput<Alarm_Dev>& callback) {
+int32_t Alarms_Dev::Get(const Optional<std::string>& name,
+                        const GetCallback& callback) {
   if (!has_interface<PPB_Ext_Alarms_Dev_0_1>())
     return callback.MayForce(PP_ERROR_NOINTERFACE);
 
@@ -132,8 +131,7 @@ int32_t Alarms_Dev::Get(
       callback.pp_completion_callback());
 }
 
-int32_t Alarms_Dev::GetAll(
-    const CompletionCallbackWithOutput<std::vector<Alarm_Dev> >& callback) {
+int32_t Alarms_Dev::GetAll(const GetAllCallback& callback) {
   if (!has_interface<PPB_Ext_Alarms_Dev_0_1>())
     return callback.MayForce(PP_ERROR_NOINTERFACE);
 
