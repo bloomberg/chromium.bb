@@ -444,8 +444,11 @@ bool StylePropertySet::removePropertiesInSet(const CSSPropertyID* set, unsigned 
 int StylePropertySet::findPropertyIndex(CSSPropertyID propertyID) const
 {
     for (int n = propertyCount() - 1 ; n >= 0; --n) {
-        if (propertyID == propertyAt(n).id())
+        if (propertyID == propertyAt(n).id()) {
+            // Only enabled properties should be part of the style.
+            ASSERT(RuntimeCSSEnabled::isCSSPropertyEnabled(propertyID));
             return n;
+        }
     }
     return -1;
 }
