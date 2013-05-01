@@ -37,6 +37,8 @@ Error MapSystemError(int os_error) {
     case WSA_IO_INCOMPLETE:
     case WSAEDISCON:
       return ERR_CONNECTION_CLOSED;
+    case WSAEISCONN:
+      return ERR_SOCKET_IS_CONNECTED;
     case WSAEHOSTUNREACH:
     case WSAENETUNREACH:
       return ERR_ADDRESS_UNREACHABLE;

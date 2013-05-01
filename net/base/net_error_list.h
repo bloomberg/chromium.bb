@@ -91,6 +91,9 @@ NET_ERROR(NETWORK_CHANGED, -21)
 // administrator.
 NET_ERROR(BLOCKED_BY_ADMINISTRATOR, -22)
 
+// The socket is already connected.
+NET_ERROR(SOCKET_IS_CONNECTED, -23)
+
 // A connection was closed (corresponding to a TCP FIN).
 NET_ERROR(CONNECTION_CLOSED, -100)
 

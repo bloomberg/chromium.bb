@@ -522,7 +522,7 @@ int UDPSocketLibevent::SetSocketOptions() {
 int UDPSocketLibevent::DoBind(const IPEndPoint& address) {
   SockaddrStorage storage;
   if (!address.ToSockAddr(storage.addr, &storage.addr_len))
-    return ERR_UNEXPECTED;
+    return ERR_ADDRESS_INVALID;
   int rv = bind(socket_, storage.addr, storage.addr_len);
   return rv < 0 ? MapSystemError(errno) : rv;
 }
@@ -617,7 +617,7 @@ int UDPSocketLibevent::LeaveGroup(const IPAddressNumber& group_address) const {
 int UDPSocketLibevent::SetMulticastTimeToLive(int time_to_live) {
   DCHECK(CalledOnValidThread());
   if (is_connected())
-    return ERR_UNEXPECTED;
+    return ERR_SOCKET_IS_CONNECTED;
 
   if (time_to_live < 0 || time_to_live > 255)
     return ERR_INVALID_ARGUMENT;
@@ -628,7 +628,7 @@ int UDPSocketLibevent::SetMulticastTimeToLive(int time_to_live) {
 int UDPSocketLibevent::SetMulticastLoopbackMode(bool loopback) {
   DCHECK(CalledOnValidThread());
   if (is_connected())
-    return ERR_UNEXPECTED;
+    return ERR_SOCKET_IS_CONNECTED;
 
   if (loopback)
     socket_options_ |= SOCKET_OPTION_MULTICAST_LOOP;

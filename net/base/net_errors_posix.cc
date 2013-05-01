@@ -51,6 +51,8 @@ Error MapSystemError(int os_error) {
       return ERR_MSG_TOO_BIG;
     case ENOTCONN:
       return ERR_SOCKET_NOT_CONNECTED;
+    case EISCONN:
+      return ERR_SOCKET_IS_CONNECTED;
     case EINVAL:
       return ERR_INVALID_ARGUMENT;
     case EADDRINUSE:
