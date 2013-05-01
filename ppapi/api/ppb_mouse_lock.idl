@@ -8,6 +8,8 @@
  * locking the target of mouse events to a specific module instance.
  */
 
+[generate_thunk]
+
 label Chrome {
   M16 = 1.0
 };
