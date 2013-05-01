@@ -8,6 +8,7 @@
 #include "grit/ui_strings.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/path.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
@@ -35,13 +36,16 @@ struct Circle {
 };
 
 // Creates a widget to host SelectionHandleView.
-views::Widget* CreateTouchSelectionPopupWidget(gfx::NativeView context) {
+views::Widget* CreateTouchSelectionPopupWidget(
+    gfx::NativeView context,
+    views::WidgetDelegate* widget_delegate) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_TOOLTIP);
   params.can_activate = false;
   params.transparent = true;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.context = context;
+  params.delegate = widget_delegate;
   widget->Init(params);
 #if defined(USE_AURA)
   SetShadowType(widget->GetNativeView(), views::corewm::SHADOW_TYPE_NONE);
@@ -77,13 +81,14 @@ gfx::Rect GetHandleBoundsFromCursor(const gfx::Rect& cursor) {
 namespace views {
 
 // A View that displays the text selection handle.
-class TouchSelectionControllerImpl::EditingHandleView : public View {
+class TouchSelectionControllerImpl::EditingHandleView
+    : public views::WidgetDelegateView {
  public:
   explicit EditingHandleView(TouchSelectionControllerImpl* controller,
                              gfx::NativeView context)
       : controller_(controller),
         cursor_height_(0) {
-    widget_.reset(CreateTouchSelectionPopupWidget(context));
+    widget_.reset(CreateTouchSelectionPopupWidget(context, this));
     widget_->SetContentsView(this);
     widget_->SetAlwaysOnTop(true);
 
@@ -96,7 +101,22 @@ class TouchSelectionControllerImpl::EditingHandleView : public View {
 
   int cursor_height() const { return cursor_height_; }
 
-  // Overridden from View:
+  // Overridden from views::WidgetDelegateView:
+  virtual bool WidgetHasHitTestMask() const OVERRIDE {
+    return true;
+  }
+
+  virtual void GetWidgetHitTestMask(gfx::Path* mask) const OVERRIDE {
+    mask->addCircle(SkIntToScalar(kSelectionHandleRadius),
+                    SkIntToScalar(kSelectionHandleRadius + cursor_height_),
+                    SkIntToScalar(kSelectionHandleRadius));
+  }
+
+  virtual void DeleteDelegate() OVERRIDE {
+    // We are owned and deleted by TouchSelectionController.
+  }
+
+  // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     Circle circle = {kSelectionHandleRadius, gfx::Point(kSelectionHandleRadius,
                      kSelectionHandleRadius + cursor_height_),

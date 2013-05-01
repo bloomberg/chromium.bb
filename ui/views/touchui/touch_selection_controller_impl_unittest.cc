@@ -15,6 +15,11 @@
 #include "ui/views/touchui/touch_selection_controller_impl.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/test/event_generator.h"
+#include "ui/aura/window.h"
+#endif
+
 namespace views {
 
 class TouchSelectionControllerImplTest : public ViewsTestBase {
@@ -51,8 +56,10 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
 
     textfield_view_ = static_cast<NativeTextfieldViews*>(
         textfield_->GetNativeWrapperForTesting());
+    textfield_->SetBoundsRect(params.bounds);
     textfield_view_->SetBoundsRect(params.bounds);
     textfield_->set_id(1);
+    widget_->Show();
 
     DCHECK(textfield_view_);
     textfield_->RequestFocus();
@@ -402,5 +409,31 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
   EXPECT_EQ(WideToUTF16(L"c\x05e1"), textfield_->GetSelectedText());
   VERIFY_HANDLE_POSITIONS(false);
 }
+
+#if defined(USE_AURA)
+TEST_F(TouchSelectionControllerImplTest,
+       DoubleTapInTextfieldWithCursorHandleShouldSelectWord) {
+  CreateTextfield();
+  textfield_->SetText(ASCIIToUTF16("some text"));
+  aura::test::EventGenerator generator(
+      textfield_->GetWidget()->GetNativeView()->GetRootWindow());
+
+  // Tap the textfield to invoke touch selection.
+  generator.GestureTapAt(gfx::Point(10, 10));
+
+  // Cursor handle should be visible.
+  EXPECT_FALSE(textfield_->HasSelection());
+  VERIFY_HANDLE_POSITIONS(false);
+
+  // Double tap on the cursor handle position. We want to check that the cursor
+  // handle is not eating the event and that the event is falling through to the
+  // textfield.
+  gfx::Point cursor_pos = GetCursorHandlePosition();
+  generator.GestureTapAt(cursor_pos);
+  generator.GestureTapAt(cursor_pos);
+  EXPECT_TRUE(textfield_->HasSelection());
+  VERIFY_HANDLE_POSITIONS(false);
+}
+#endif
 
 }  // namespace views
