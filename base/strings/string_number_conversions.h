@@ -50,7 +50,9 @@ BASE_EXPORT std::string DoubleToString(double value);
 // Perform a best-effort conversion of the input string to a numeric type,
 // setting |*output| to the result of the conversion.  Returns true for
 // "perfect" conversions; returns false in the following cases:
-//  - Overflow/underflow.  |*output| will be set to the maximum value supported
+//  - Overflow. |*output| will be set to the maximum value supported
+//    by the data type.
+//  - Underflow. |*output| will be set to the minimum value supported
 //    by the data type.
 //  - Trailing characters in the string after parsing the number.  |*output|
 //    will be set to the value of the number that was parsed.
