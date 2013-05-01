@@ -2583,7 +2583,6 @@
         'host/server_log_entry_unittest.cc',
         'host/setup/oauth_helper_unittest.cc',
         'host/setup/pin_validator_unittest.cc',
-        'host/token_validator_factory_impl_unittest.cc',
         'host/video_scheduler_unittest.cc',
         'host/win/message_window_unittest.cc',
         'host/win/rdp_client_unittest.cc',

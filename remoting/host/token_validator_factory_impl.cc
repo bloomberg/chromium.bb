@@ -73,7 +73,7 @@ class TokenValidatorImpl
             key_pair_->SignMessage(token), true) +
         "&grant_type=authorization_code";
     request_.reset(net::URLFetcher::Create(
-        0, token_validation_url_, net::URLFetcher::POST, this));
+        token_validation_url_, net::URLFetcher::POST, this));
     request_->SetUploadData("application/x-www-form-urlencoded", post_body);
     request_->SetRequestContext(request_context_getter_);
     request_->Start();
@@ -91,8 +91,8 @@ class TokenValidatorImpl
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE {
     DCHECK_EQ(request_.get(), source);
     std::string shared_token = ProcessResponse();
-    request_.reset();
     on_token_validated_.Run(shared_token);
+    request_.reset();
   }
 
  private:
@@ -113,23 +113,17 @@ class TokenValidatorImpl
 
   std::string ProcessResponse() {
     // Verify that we got a successful response.
-    net::URLRequestStatus status = request_->GetStatus();
-    if (!status.is_success()) {
-      LOG(ERROR) << "Error validating token, status=" << status.status()
-                 << " err=" << status.error();
-      return std::string();
-    }
-
     int response = request_->GetResponseCode();
+    net::URLRequestStatus status = request_->GetStatus();
     std::string data;
-    request_->GetResponseAsString(&data);
-    if (response != 200) {
+    if (!status.is_success() || response != 200) {
       LOG(ERROR)
           << "Error " << response << " validating token: '" << data << "'";
       return std::string();
     }
 
     // Decode the JSON data from the response.
+    request_->GetResponseAsString(&data);
     scoped_ptr<base::Value> value(base::JSONReader::Read(data));
     DictionaryValue* dict;
     if (!value.get() || value->GetType() != base::Value::TYPE_DICTIONARY ||
