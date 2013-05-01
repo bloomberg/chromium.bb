@@ -252,6 +252,7 @@ CSSParserContext::CSSParserContext(CSSParserMode mode, const KURL& baseURL)
     , isCSSGridLayoutEnabled(false)
     , isCSSVariablesEnabled(false)
     , needsSiteSpecificQuirks(false)
+    , m_document(0)
 {
 }
 
@@ -267,6 +268,7 @@ CSSParserContext::CSSParserContext(Document* document, const KURL& baseURL, cons
     , isCSSGridLayoutEnabled(document->cssGridLayoutEnabled())
     , isCSSVariablesEnabled(document->settings() ? document->settings()->cssVariablesEnabled() : false)
     , needsSiteSpecificQuirks(document->settings() ? document->settings()->needsSiteSpecificQuirks() : false)
+    , m_document(document)
 {
 }
 
@@ -1291,6 +1293,8 @@ bool CSSParser::parseValue(StylePropertySet* declaration, CSSPropertyID property
 {
     // FIXME: Check RuntimeCSSEnabled::isPropertyEnabled or isValueEnabledForProperty.
 
+    UseCounter::count(m_context.m_document.get(), propertyID);
+
     setStyleSheet(contextStyleSheet);
 
     setupParser("@-internal-value{", string, "} ");
@@ -1745,6 +1749,8 @@ void CSSParser::addExpandedPropertyForValue(CSSPropertyID propId, PassRefPtr<CSS
 
 bool CSSParser::parseValue(CSSPropertyID propId, bool important)
 {
+    UseCounter::count(m_context.m_document.get(), propId);
+
     if (!m_valueList)
         return false;
 
@@ -11521,13 +11527,6 @@ static CSSPropertyID cssPropertyID(const CharacterType* propertyName, unsigned l
     const char* name = buffer;
     const Property* hashTableEntry = findProperty(name, length);
     const CSSPropertyID propertyID = hashTableEntry ? static_cast<CSSPropertyID>(hashTableEntry->id) : CSSPropertyInvalid;
-
-    static const int cssPropertyHistogramSize = numCSSProperties;
-    if (hasPrefix(buffer, length, "-webkit-") && propertyID != CSSPropertyInvalid) {
-        int histogramValue = propertyID - firstCSSProperty;
-        ASSERT(0 <= histogramValue && histogramValue < cssPropertyHistogramSize);
-        HistogramSupport::histogramEnumeration("CSS.PrefixUsage", histogramValue, cssPropertyHistogramSize);
-    }
 
     return propertyID;
 }

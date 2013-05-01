@@ -31,11 +31,10 @@
 #ifndef CSSParserMode_h
 #define CSSParserMode_h
 
+#include "core/dom/Document.h"
 #include "core/platform/KURL.h"
 
 namespace WebCore {
-
-class Document;
 
 enum CSSParserMode {
     CSSQuirksMode,
@@ -71,6 +70,7 @@ public:
     bool isCSSGridLayoutEnabled;
     bool isCSSVariablesEnabled;
     bool needsSiteSpecificQuirks;
+    RefPtr<Document> m_document;
 };
 
 bool operator==(const CSSParserContext&, const CSSParserContext&);
