@@ -372,9 +372,6 @@ const char kEnableSSLCachedInfo[]  = "enable-ssl-cached-info";
 // is denied by the sandbox.
 const char kEnableSandboxLogging[]          = "enable-sandbox-logging";
 
-// Enable the seccomp sandbox (Linux only)
-const char kEnableSeccompSandbox[]          = "enable-seccomp-sandbox";
-
 // Enable spatial navigation
 const char kEnableSpatialNavigation[]       = "enable-spatial-navigation";
 

@@ -102,7 +102,6 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
     switches::kVModule,
     switches::kRegisterPepperPlugins,
     switches::kDisableSeccompFilterSandbox,
-    switches::kEnableSeccompSandbox,
 
     // Zygote process needs to know what resources to have loaded when it
     // becomes a renderer process.
