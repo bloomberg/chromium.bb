@@ -328,7 +328,6 @@ std::string SimpleFeature::GetAvailabilityMessage(
           "'%s' is not allowed for specified extension ID.",
           name().c_str());
     case INVALID_URL:
-      CHECK(url.is_valid());
       return base::StringPrintf("'%s' is not allowed on %s.",
                                 name().c_str(), url.spec().c_str());
     case INVALID_TYPE: {
