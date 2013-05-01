@@ -1575,9 +1575,15 @@ class PreCQLauncherStageTest(AbstractStageTest):
   def ConstructStage(self):
     return stages.PreCQLauncherStage(self.options, self.build_config)
 
-  def testSimple(self):
-    self.PatchObject(gerrit.GerritHelper, 'Query', return_value=[MockPatch()])
+  def testSimple(self, tree_open=True):
+    self.PatchObject(cros_build_lib, 'TreeOpen', return_value=tree_open,
+                     autospec=True)
+    self.PatchObject(gerrit.GerritHelper, 'Query', return_value=[MockPatch()],
+                     autospec=True)
     self.RunStage()
+
+  def testClosedTree(self):
+    self.testSimple(tree_open=False)
 
 
 if __name__ == '__main__':

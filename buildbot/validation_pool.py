@@ -1047,6 +1047,7 @@ class ValidationPool(object):
       # Only master configurations should call this method.
       pool = ValidationPool(overlays, repo.directory, build_number,
                             builder_name, True, dryrun)
+
       # Iterate through changes from all gerrit instances we care about.
       for helper in cls.GetGerritHelpersForOverlays(overlays):
         raw_changes = helper.Query(changes_query, sort='lastUpdated')
@@ -1272,11 +1273,13 @@ class ValidationPool(object):
   # than patch resolution/applying needs to use .change_id from patch objects.
   # Basically all code from this point forward.
 
-  def _SubmitChanges(self, changes):
+  def _SubmitChanges(self, changes, check_tree_open=True):
     """Submits given changes to Gerrit.
 
     Args:
       changes: GerritPatch's to submit.
+      check_tree_open: Whether to check that the tree is open before submitting
+        changes. If this is False, TreeIsClosedException will never be raised.
 
     Raises:
       TreeIsClosedException: if the tree is closed.
@@ -1289,7 +1292,7 @@ class ValidationPool(object):
     # We use the default timeout here as while we want some robustness against
     # the tree status being red i.e. flakiness, we don't want to wait too long
     # as validation can become stale.
-    if not self.dryrun and not cros_build_lib.TreeOpen(
+    if check_tree_open and not self.dryrun and not cros_build_lib.TreeOpen(
         self.STATUS_URL, self.SLEEP_TIMEOUT):
       raise TreeIsClosedException()
 
@@ -1318,17 +1321,26 @@ class ValidationPool(object):
 
     _RunCommand(cmd, self.dryrun)
 
-  def SubmitNonManifestChanges(self):
+  def SubmitNonManifestChanges(self, check_tree_open=True):
     """Commits changes to Gerrit from Pool that aren't part of the checkout.
+
+    Args:
+      check_tree_open: Whether to check that the tree is open before submitting
+        changes. If this is False, TreeIsClosedException will never be raised.
 
     Raises:
       TreeIsClosedException: if the tree is closed.
       FailedToSubmitAllChangesException: if we can't submit a change.
     """
-    self._SubmitChanges(self.non_manifest_changes)
+    self._SubmitChanges(self.non_manifest_changes,
+                        check_tree_open=check_tree_open)
 
-  def SubmitPool(self):
+  def SubmitPool(self, check_tree_open=True):
     """Commits changes to Gerrit from Pool.  This is only called by a master.
+
+    Args:
+      check_tree_open: Whether to check that the tree is open before submitting
+        changes. If this is False, TreeIsClosedException will never be raised.
 
     Raises:
       TreeIsClosedException: if the tree is closed.
@@ -1337,10 +1349,10 @@ class ValidationPool(object):
     # Note that _SubmitChanges can throw an exception if it can't
     # submit all changes; in that particular case, don't mark the inflight
     # failures patches as failed in gerrit- some may apply next time we do
-    # a CQ run (since the# submit state has changed, we have no way of
+    # a CQ run (since the submit state has changed, we have no way of
     # knowing).  They *likely* will still fail, but this approach tries
     # to minimize wasting the developers time.
-    self._SubmitChanges(self.changes)
+    self._SubmitChanges(self.changes, check_tree_open=check_tree_open)
     if self.changes_that_failed_to_apply_earlier:
       self._HandleApplyFailure(self.changes_that_failed_to_apply_earlier)
 
