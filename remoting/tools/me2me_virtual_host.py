@@ -269,13 +269,19 @@ class Desktop:
       return False
 
     try:
-      pulse_config = open(os.path.join(pulse_path, "default.pa"), "w")
-      pulse_config.write("load-module module-native-protocol-unix\n")
-      pulse_config.write(
+      pulse_config = open(os.path.join(pulse_path, "daemon.conf"), "w")
+      pulse_config.write("default-sample-format = s16le\n")
+      pulse_config.write("default-sample-rate = 48000\n")
+      pulse_config.write("default-sample-channels = 2\n")
+      pulse_config.close()
+
+      pulse_script = open(os.path.join(pulse_path, "default.pa"), "w")
+      pulse_script.write("load-module module-native-protocol-unix\n")
+      pulse_script.write(
           ("load-module module-pipe-sink sink_name=%s file=\"%s\" " +
            "rate=48000 channels=2 format=s16le\n") %
           (sink_name, pipe_name))
-      pulse_config.close()
+      pulse_script.close()
     except IOError, e:
       logging.error("Failed to write pulseaudio config: " + str(e))
       return False
