@@ -238,3 +238,9 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, EditCommands) {
   // Wait for the guest to receive a 'copy' edit command.
   ASSERT_TRUE(copy_listener.WaitUntilSatisfied());
 }
+
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow) {
+  ASSERT_TRUE(StartTestServer());  // For serving guest pages.
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/newwindow"))
+      << message_;
+}

@@ -126,7 +126,9 @@ class BrowserPluginGuest::EmbedderRenderViewHostObserver
 
 BrowserPluginGuest::BrowserPluginGuest(
     int instance_id,
-    WebContentsImpl* web_contents)
+    WebContentsImpl* web_contents,
+    BrowserPluginGuest* opener,
+    bool has_render_view)
     : WebContentsObserver(web_contents),
       weak_ptr_factory_(this),
       embedder_web_contents_(NULL),
@@ -140,9 +142,12 @@ BrowserPluginGuest::BrowserPluginGuest(
       mouse_locked_(false),
       pending_lock_request_(false),
       embedder_visible_(true),
-      next_permission_request_id_(0) {
+      next_permission_request_id_(0),
+      has_render_view_(has_render_view) {
   DCHECK(web_contents);
   web_contents->SetDelegate(this);
+  if (opener)
+    opener_ = opener->AsWeakPtr();
   GetWebContents()->GetBrowserPluginGuestManager()->AddGuest(instance_id_,
                                                              GetWebContents());
 }
@@ -288,6 +293,8 @@ void BrowserPluginGuest::Initialize(
   if (!params.src.empty())
     OnNavigateGuest(instance_id_, params.src);
 
+  has_render_view_ = true;
+
   GetContentClient()->browser()->GuestWebContentsCreated(
       GetWebContents(), embedder_web_contents_);
 }
@@ -302,7 +309,19 @@ BrowserPluginGuest* BrowserPluginGuest::Create(
   RecordAction(UserMetricsAction("BrowserPlugin.Guest.Create"));
   if (factory_)
     return factory_->CreateBrowserPluginGuest(instance_id, web_contents);
-  return new BrowserPluginGuest(instance_id, web_contents);
+  return new BrowserPluginGuest(instance_id, web_contents, NULL, false);
+}
+
+// static
+BrowserPluginGuest* BrowserPluginGuest::CreateWithOpener(
+    int instance_id,
+    WebContentsImpl* web_contents,
+    BrowserPluginGuest* opener,
+    bool has_render_view) {
+  return new BrowserPluginGuest(instance_id,
+                                web_contents,
+                                opener,
+                                has_render_view);
 }
 
 RenderWidgetHostView* BrowserPluginGuest::GetEmbedderRenderWidgetHostView() {
@@ -404,6 +423,29 @@ void BrowserPluginGuest::HandleKeyboardEvent(
       web_contents(), event);
 }
 
+WebContents* BrowserPluginGuest::OpenURLFromTab(WebContents* source,
+                                                const OpenURLParams& params) {
+  // If the guest wishes to navigate away prior to attachment then we save the
+  // navigation to perform upon attachment. Navigation initializes a lot of
+  // state that assumes an embedder exists, such as RenderWidgetHostViewGuest.
+  // Navigation also resumes resource loading which we don't want to allow
+  // until attachment.
+  if (!attached()) {
+    PendingWindowMap::iterator it = opener()->pending_new_windows_.find(this);
+    if (it == opener()->pending_new_windows_.end())
+      return NULL;
+    const TargetURL& old_target_url = it->second;
+    TargetURL new_target_url(params.url);
+    new_target_url.changed = new_target_url.url != old_target_url.url;
+    it->second = new_target_url;
+    return NULL;
+  }
+  // This can happen for cross-site redirects.
+  source->GetController().LoadURL(
+        params.url, params.referrer, params.transition, std::string());
+  return source;
+}
+
 void BrowserPluginGuest::WebContentsCreated(WebContents* source_contents,
                                             int64 source_frame_id,
                                             const string16& frame_name,
@@ -417,7 +459,7 @@ void BrowserPluginGuest::WebContentsCreated(WebContents* source_contents,
   // Take ownership of the new guest until it is attached to the embedder's DOM
   // tree to avoid leaking a guest if this guest is destroyed before attaching
   // the new guest.
-  pending_new_windows_.insert(make_pair(guest, target_url.spec()));
+  pending_new_windows_.insert(std::make_pair(guest, TargetURL(target_url)));
 }
 
 void BrowserPluginGuest::RendererUnresponsive(WebContents* source) {
@@ -502,14 +544,14 @@ void BrowserPluginGuest::RequestNewWindowPermission(
   PendingWindowMap::iterator it = pending_new_windows_.find(guest);
   if (it == pending_new_windows_.end())
     return;
-  const std::string& target_url = it->second;
+  const TargetURL& target_url = it->second;
   base::DictionaryValue request_info;
   request_info.Set(browser_plugin::kInitialHeight,
                    base::Value::CreateIntegerValue(initial_bounds.height()));
   request_info.Set(browser_plugin::kInitialWidth,
                    base::Value::CreateIntegerValue(initial_bounds.width()));
   request_info.Set(browser_plugin::kTargetURL,
-                   base::Value::CreateStringValue(target_url));
+                   base::Value::CreateStringValue(target_url.url.spec()));
   request_info.Set(browser_plugin::kWindowID,
                    base::Value::CreateIntegerValue(guest->instance_id()));
   request_info.Set(browser_plugin::kWindowOpenDisposition,
@@ -772,18 +814,30 @@ void BrowserPluginGuest::Attach(
   params.persist_storage = false;
   params.src.clear();
 
-  const std::string target_url = opener()->pending_new_windows_[this];
-  if (!GetWebContents()->opener()) {
-    // For guests that have a suppressed opener, we navigate now.
-    // Navigation triggers the creation of a RenderWidgetHostViewGuest so
-    // we don't need to create one manually.
-    params.src = target_url;
-  } else {
-    // Ensure that the newly attached guest gets a RenderWidgetHostViewGuest.
+  // If a RenderView has already been created for this new window, then we need
+  // to initialize the browser-side state now so that the RenderViewHostManager
+  // does not create a new RenderView on navigation.
+  if (has_render_view_) {
+    static_cast<RenderViewHostImpl*>(
+        GetWebContents()->GetRenderViewHost())->Init();
     WebContentsViewGuest* new_view =
         static_cast<WebContentsViewGuest*>(GetWebContents()->GetView());
     new_view->CreateViewForWidget(web_contents()->GetRenderViewHost());
   }
+
+  // We need to do a navigation here if the target URL has changed between
+  // the time the WebContents was created and the time it was attached.
+  // We also need to do an initial navigation if a RenderView was never
+  // created for the new window in cases where there is no referrer.
+  PendingWindowMap::iterator it = opener()->pending_new_windows_.find(this);
+  if (it != opener()->pending_new_windows_.end()) {
+    const TargetURL& target_url = it->second;
+    if (target_url.changed || !has_render_view_)
+      params.src = it->second.url.spec();
+  } else {
+    NOTREACHED();
+  }
+
   // Once a new guest is attached to the DOM of the embedder page, then the
   // lifetime of the new guest is no longer managed by the opener guest.
   opener()->pending_new_windows_.erase(this);
@@ -795,14 +849,6 @@ void BrowserPluginGuest::Attach(
     params.name.clear();
 
   Initialize(embedder_web_contents, params);
-
-  // We initialize the RenderViewHost after a BrowserPlugin has been attached
-  // to it and is ready to receive pixels. Until a RenderViewHost is
-  // initialized, it will not allow any resize requests.
-  if (!GetWebContents()->GetRenderViewHost()->IsRenderViewLive()) {
-    static_cast<RenderViewHostImpl*>(
-        GetWebContents()->GetRenderViewHost())->Init();
-  }
 
   // Inform the embedder of the guest's information.
   // We pull the partition information from the site's URL, which is of the form

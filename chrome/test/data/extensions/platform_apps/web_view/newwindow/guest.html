@@ -6,10 +6,6 @@
 <html>
   <head>
     <script type="text/javascript">
-      // A guest that requests a new window.
-      // Notifies the embedder about the result of the request (success/fail)
-      // via post message. Note that the embedder has to initiate a postMessage
-      // first so that guest has a reference to the embedder's window.
 
       // The window reference of the embedder to send post message reply.
       var embedderWindowChannel = null;
@@ -18,19 +14,10 @@
         embedderWindowChannel.postMessage(JSON.stringify(msg_array), '*');
       };
 
-      var startTest = function(url, frameName) {
-        window.open(url, frameName);
-      };
-
       var onPostMessageReceived = function(e) {
         embedderWindowChannel = e.source;
         var data = JSON.parse(e.data);
-        if (data[0] == 'open-window') {
-          var url = data[1];
-          var frameName = data[2];
-          // Start the test once we have |embedderWindowChannel|.
-          startTest(url, frameName);
-        } else if (data[0] == 'get-frame-name') {
+        if (data[0] == 'get-frame-name') {
           var testName = data[1];
           notifyEmbedder(['get-frame-name', testName, window.name]);
         }
@@ -40,6 +27,6 @@
     </script>
   </head>
   <body>
-    <div>This is a guest that requests a new window.</div>
+    <div>This is a guest in a new webview.</div>
   </body>
 </html>
