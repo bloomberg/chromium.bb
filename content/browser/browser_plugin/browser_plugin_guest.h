@@ -42,7 +42,7 @@
 #include "ui/surface/transport_dib.h"
 
 struct BrowserPluginHostMsg_AutoSize_Params;
-struct BrowserPluginHostMsg_CreateGuest_Params;
+struct BrowserPluginHostMsg_Attach_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
 struct ViewHostMsg_CreateWindow_Params;
 #if defined(OS_MACOSX)
@@ -107,7 +107,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   bool OnMessageReceivedFromEmbedder(const IPC::Message& message);
 
   void Initialize(WebContentsImpl* embedder_web_contents,
-                  const BrowserPluginHostMsg_CreateGuest_Params& params);
+                  const BrowserPluginHostMsg_Attach_Params& params);
 
   void set_guest_hang_timeout_for_testing(const base::TimeDelta& timeout) {
     guest_hang_timeout_ = timeout;
@@ -220,7 +220,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   // to an embedder implies that this guest's lifetime is no longer managed
   // by its opener, and it can begin loading resources.
   void Attach(WebContentsImpl* embedder_web_contents,
-              BrowserPluginHostMsg_CreateGuest_Params params);
+              BrowserPluginHostMsg_Attach_Params params);
 
   // Requests geolocation permission through Embedder JavaScript API.
   void AskEmbedderForGeolocationPermission(int bridge_id,

@@ -151,9 +151,12 @@ class CONTENT_EXPORT BrowserPlugin :
   // Called by browser plugin binding.
   void OnEmbedderDecidedPermission(int request_id, bool allow);
 
-  // Sets the instance ID of the BrowserPlugin and requests a guest from the
-  // browser process.
-  void SetInstanceID(int instance_id, bool new_guest);
+  // Attaches this BrowserPlugin to a guest with the provided |instance_id|.
+  // If the |instance_id| is not yet associated with a guest, a new guest
+  // will be created. If the |instance_id| has not yet been allocated or the
+  // embedder is not permitted access to that particular guest, then the
+  // embedder will be killed.
+  void Attach(int instance_id);
 
   // Notify the plugin about a compositor commit so that frame ACKs could be
   // sent, if needed.
@@ -293,10 +296,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // given the provided |params|.
   bool UsesPendingDamageBuffer(
       const BrowserPluginMsg_UpdateRect_Params& params);
-
-  // Sets the instance ID of the BrowserPlugin and requests a guest from the
-  // browser process.
-  void SetInstanceID(int instance_id);
 
   void AddPermissionRequestToMap(int request_id,
                                  BrowserPluginPermissionType type);

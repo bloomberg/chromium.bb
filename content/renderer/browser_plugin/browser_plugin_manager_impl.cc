@@ -81,7 +81,7 @@ void BrowserPluginManagerImpl::OnAllocateInstanceIDACK(
       pending_allocate_instance_id_requests_.Lookup(request_id);
   pending_allocate_instance_id_requests_.Remove(request_id);
   if (plugin)
-    plugin->SetInstanceID(instance_id, true /* new_guest */);
+    plugin->Attach(instance_id);
 }
 
 void BrowserPluginManagerImpl::OnPluginAtPositionRequest(

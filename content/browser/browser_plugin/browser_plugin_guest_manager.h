@@ -14,7 +14,7 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_message.h"
 
-struct BrowserPluginHostMsg_CreateGuest_Params;
+struct BrowserPluginHostMsg_Attach_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
 class GURL;
 
@@ -58,18 +58,26 @@ class CONTENT_EXPORT BrowserPluginGuestManager :
   BrowserPluginGuest* CreateGuest(
       SiteInstance* embedder_site_instance,
       int instance_id,
-      const BrowserPluginHostMsg_CreateGuest_Params& params);
+      const BrowserPluginHostMsg_Attach_Params& params);
 
-  // Returns a BrowserPluginGuest given an instance ID. Returns NULL if the
-  // guest wasn't found.  If the guest doesn't belong to the given embedder,
-  // then NULL is returned and the embedder is killed.
+  // Returns a BrowserPluginGuest given an |instance_id|. Returns NULL if the
+  // guest wasn't found.  If the embedder is not permitted to access the given
+  // |instance_id|, the embedder is killed, and NULL is returned.
   BrowserPluginGuest* GetGuestByInstanceID(
       int instance_id,
       int embedder_render_process_id) const;
 
   // Adds a new |guest_web_contents| to the embedder (overridable in test).
   virtual void AddGuest(int instance_id, WebContentsImpl* guest_web_contents);
+
+  // Removes the guest with the given |instance_id| from this
+  // BrowserPluginGuestManager.
   void RemoveGuest(int instance_id);
+
+  // Returns whether the specified embedder is permitted to access the given
+  // |instance_id|, and kills the embedder if not.
+  bool CanEmbedderAccessInstanceIDMaybeKill(int embedder_render_process_id,
+                                            int instance_id) const;
 
   void OnMessageReceived(const IPC::Message& message, int render_process_id);
 
@@ -78,9 +86,19 @@ class CONTENT_EXPORT BrowserPluginGuestManager :
 
   BrowserPluginGuestManager();
 
-  // Returns whether the given embedder process is allowed to access |guest|.
+  // Returns whether the given embedder process is allowed to access the
+  // provided |guest|.
   static bool CanEmbedderAccessGuest(int embedder_render_process_id,
                                      BrowserPluginGuest* guest);
+
+  // Returns whether the given embedder process is allowed to use the provided
+  // |instance_id| or access the guest associated with the |instance_id|. If the
+  // embedder can, the method returns true. If the guest does not exist but the
+  // embedder can use that |instance_id|, then it returns true. If the embedder
+  // is not permitted to use that instance ID or access the associated guest,
+  // then it returns false.
+  bool CanEmbedderAccessInstanceID(int embedder_render_process_id,
+                                   int instance_id) const;
 
   // Returns an existing SiteInstance if the current profile has a guest of the
   // given |guest_site|.

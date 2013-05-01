@@ -62,7 +62,6 @@ bool BrowserPluginEmbedder::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_AllocateInstanceID,
                         OnAllocateInstanceID)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Attach, OnAttach)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_CreateGuest, OnCreateGuest)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_PluginAtPositionResponse,
                         OnPluginAtPositionResponse)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -97,18 +96,21 @@ void BrowserPluginEmbedder::OnAllocateInstanceID(int request_id) {
 
 void BrowserPluginEmbedder::OnAttach(
     int instance_id,
-    const BrowserPluginHostMsg_CreateGuest_Params& params) {
+    const BrowserPluginHostMsg_Attach_Params& params) {
+  if (!GetBrowserPluginGuestManager()->CanEmbedderAccessInstanceIDMaybeKill(
+          web_contents()->GetRenderProcessHost()->GetID(), instance_id))
+    return;
+
   BrowserPluginGuest* guest =
       GetBrowserPluginGuestManager()->GetGuestByInstanceID(
           instance_id, web_contents()->GetRenderProcessHost()->GetID());
-  if (guest)
-    guest->Attach(static_cast<WebContentsImpl*>(web_contents()), params);
-}
 
-void BrowserPluginEmbedder::OnCreateGuest(
-    int instance_id,
-    const BrowserPluginHostMsg_CreateGuest_Params& params) {
-  BrowserPluginGuest* guest = GetBrowserPluginGuestManager()->CreateGuest(
+  if (guest) {
+    guest->Attach(static_cast<WebContentsImpl*>(web_contents()), params);
+    return;
+  }
+
+  guest = GetBrowserPluginGuestManager()->CreateGuest(
       web_contents()->GetSiteInstance(), instance_id, params);
   if (guest)
     guest->Initialize(static_cast<WebContentsImpl*>(web_contents()), params);

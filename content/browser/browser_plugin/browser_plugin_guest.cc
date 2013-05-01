@@ -224,7 +224,7 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
 
 void BrowserPluginGuest::Initialize(
     WebContentsImpl* embedder_web_contents,
-    const BrowserPluginHostMsg_CreateGuest_Params& params) {
+    const BrowserPluginHostMsg_Attach_Params& params) {
   focused_ = params.focused;
   guest_visible_ = params.visible;
   if (!params.name.empty())
@@ -743,7 +743,15 @@ bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
 
 void BrowserPluginGuest::Attach(
     WebContentsImpl* embedder_web_contents,
-    BrowserPluginHostMsg_CreateGuest_Params params) {
+    BrowserPluginHostMsg_Attach_Params params) {
+  if (attached())
+    return;
+
+  // Clear parameters that get inherited from the opener.
+  params.storage_partition_id.clear();
+  params.persist_storage = false;
+  params.src.clear();
+
   const std::string target_url = opener()->pending_new_windows_[this];
   if (!GetWebContents()->opener()) {
     // For guests that have a suppressed opener, we navigate now.

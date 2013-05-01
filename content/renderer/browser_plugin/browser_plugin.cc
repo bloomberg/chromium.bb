@@ -342,7 +342,7 @@ bool BrowserPlugin::ParseSrcAttribute(std::string* error_message) {
     // prevents BrowserPlugin from allocating more than one instance ID.
     // Upon receiving an instance ID from the browser process, we continue
     // the process of navigation by populating the
-    // BrowserPluginHostMsg_CreateGuest_Params with the current state of
+    // BrowserPluginHostMsg_Attach_Params with the current state of
     // BrowserPlugin and sending a BrowserPluginHostMsg_CreateGuest to the
     // browser process in order to create a new guest.
     if (before_first_navigation_) {
@@ -424,33 +424,25 @@ bool BrowserPlugin::UsesPendingDamageBuffer(
   return damage_buffer_sequence_id_ == params.damage_buffer_sequence_id;
 }
 
-void BrowserPlugin::SetInstanceID(int instance_id, bool new_guest) {
+void BrowserPlugin::Attach(int instance_id) {
   CHECK(instance_id != browser_plugin::kInstanceIDNone);
   before_first_navigation_ = false;
   instance_id_ = instance_id;
   browser_plugin_manager()->AddBrowserPlugin(instance_id, this);
 
-  BrowserPluginHostMsg_CreateGuest_Params create_guest_params;
+  BrowserPluginHostMsg_Attach_Params create_guest_params;
   create_guest_params.focused = ShouldGuestBeFocused();
   create_guest_params.visible = visible_;
   create_guest_params.name = GetNameAttribute();
-  GetDamageBufferWithSizeParams(&create_guest_params.auto_size_params,
-                                &create_guest_params.resize_guest_params);
-
-  if (!new_guest) {
-    browser_plugin_manager()->Send(
-        new BrowserPluginHostMsg_Attach(render_view_routing_id_,
-                                        instance_id_, create_guest_params));
-    return;
-  }
-
   create_guest_params.storage_partition_id = storage_partition_id_;
   create_guest_params.persist_storage = persist_storage_;
   create_guest_params.src = GetSrcAttribute();
+  GetDamageBufferWithSizeParams(&create_guest_params.auto_size_params,
+                                &create_guest_params.resize_guest_params);
+
   browser_plugin_manager()->Send(
-      new BrowserPluginHostMsg_CreateGuest(render_view_routing_id_,
-                                           instance_id_,
-                                           create_guest_params));
+      new BrowserPluginHostMsg_Attach(render_view_routing_id_,
+                                      instance_id_, create_guest_params));
 }
 
 void BrowserPlugin::DidCommitCompositorFrame() {
@@ -856,11 +848,11 @@ bool BrowserPlugin::AttachWindowTo(const WebKit::WebNode& node, int window_id) {
   // If the BrowserPlugin already has a guest attached to it then we probably
   // shouldn't allow attaching a different guest.
   // TODO(fsamuel): We may wish to support reattaching guests in the future:
-  // http://crbug.com/156219
+  // http://crbug.com/156219.
   if (browser_plugin->HasGuest())
     return false;
 
-  browser_plugin->SetInstanceID(window_id, false);
+  browser_plugin->Attach(window_id);
   return true;
 }
 

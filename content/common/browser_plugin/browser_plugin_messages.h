@@ -60,7 +60,7 @@ IPC_STRUCT_BEGIN(BrowserPluginHostMsg_ResizeGuest_Params)
   IPC_STRUCT_MEMBER(bool, repaint)
 IPC_STRUCT_END()
 
-IPC_STRUCT_BEGIN(BrowserPluginHostMsg_CreateGuest_Params)
+IPC_STRUCT_BEGIN(BrowserPluginHostMsg_Attach_Params)
   IPC_STRUCT_MEMBER(std::string, storage_partition_id)
   IPC_STRUCT_MEMBER(bool, persist_storage)
   IPC_STRUCT_MEMBER(bool, focused)
@@ -154,21 +154,14 @@ IPC_MESSAGE_ROUTED3(
     BrowserPluginHostMsg_AutoSize_Params /* auto_size_params */,
     BrowserPluginHostMsg_ResizeGuest_Params /* resize_guest_params */)
 
-
-// This message is sent to the browser process to create the browser plugin
-// embedder and helper. It is sent once prior to sending the first
-// BrowserPluginHostMsg_NavigateGuest message.
-IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_CreateGuest,
-                    int /* instance_id */,
-                    BrowserPluginHostMsg_CreateGuest_Params /* params */)
-
 // This message is sent to the browser process to indicate that a BrowserPlugin
 // has taken ownership of the lifetime of the guest of the given |instance_id|.
-// |params| is the size information of the BrowserPlugin taking ownership of
-// the guest.
+// |params| is the state of the BrowserPlugin taking ownership of
+// the guest. If a guest doesn't already exist with the given |instance_id|,
+// a new one will be created.
 IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_Attach,
                     int /* instance_id */,
-                    BrowserPluginHostMsg_CreateGuest_Params /* params */)
+                    BrowserPluginHostMsg_Attach_Params /* params */)
 
 // Tells the browser process to terminate the guest associated with the
 // browser plugin associated with the provided |instance_id|.
