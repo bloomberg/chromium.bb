@@ -360,6 +360,13 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kGDIPresentChoices)
   },
   {
+    "enable-experimental-canvas-features",
+    IDS_FLAGS_ENABLE_EXPERIMENTAL_CANVAS_FEATURES_NAME,
+    IDS_FLAGS_ENABLE_EXPERIMENTAL_CANVAS_FEATURES_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableExperimentalCanvasFeatures)
+  },
+  {
     "disable-accelerated-2d-canvas",
     IDS_FLAGS_DISABLE_ACCELERATED_2D_CANVAS_NAME,
     IDS_FLAGS_DISABLE_ACCELERATED_2D_CANVAS_DESCRIPTION,

@@ -44,6 +44,10 @@ const char kDisableAccelerated2dCanvas[]    = "disable-accelerated-2d-canvas";
 // Disable antialiasing on 2d canvas.
 const char kDisable2dCanvasAntialiasing[]   = "disable-canvas-aa";
 
+// Enable experimental canvas features, e.g. canvas 2D context attributes
+const char kEnableExperimentalCanvasFeatures[]
+                                        = "enable-experimental-canvas-features";
+
 // Disables accelerated compositing.
 const char kDisableAcceleratedCompositing[] = "disable-accelerated-compositing";
 

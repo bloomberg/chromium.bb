@@ -796,6 +796,9 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableExperimentalWebSocket(
       command_line.HasSwitch(switches::kEnableExperimentalWebSocket));
 
+  WebRuntimeFeatures::enableExperimentalCanvasFeatures(
+      command_line.HasSwitch(switches::kEnableExperimentalCanvasFeatures));
+
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, WebKitInitialized());
 
   devtools_agent_message_filter_ = new DevToolsAgentFilter();

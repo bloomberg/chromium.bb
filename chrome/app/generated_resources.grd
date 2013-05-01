@@ -6384,6 +6384,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_FORCE_ACCELERATED_OVERFLOW_SCROLL_MODE_DESCRIPTION" desc="Description of the 'Accelerated overflow scroll mode' lab.">
         When possible, puts the scrolling contents of an overflow scrolling element onto a composited layer for faster scrolling.
       </message>
+      <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_CANVAS_FEATURES_NAME" desc="Name of the 'Enable experimental canvas features' lab.">
+        Enable experimental canvas features
+      </message>
+      <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_CANVAS_FEATURES_DESCRIPTION" desc="Description of the 'Enable experimental canvas features' lab.">
+        Enables the use of experimental canvas features which are still in development.
+      </message>
       <message name="IDS_FLAGS_DISABLE_ACCELERATED_2D_CANVAS_NAME" desc="Name of the 'Disable accelerated 2D canvas' lab.">
         Disable accelerated 2D canvas
       </message>
