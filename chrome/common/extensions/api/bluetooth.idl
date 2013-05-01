@@ -82,8 +82,8 @@ namespace bluetooth {
     // The remote Bluetooth device associated with this socket.
     Device device;
 
-    // The remote Bluetooth service associated with this socket.
-    DOMString serviceUuid;
+    // The remote Bluetooth profile associated with this socket.
+    Profile profile;
 
     // An identifier for this socket that should be used with the
     // read/write/disconnect methods.

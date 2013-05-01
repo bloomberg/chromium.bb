@@ -12,8 +12,10 @@
 
 namespace device {
 
+class BluetoothDevice;
 class BluetoothProfileMac;
 class BluetoothSocket;
+class MockBluetoothProfile;
 
 // BluetoothProfile represents an implementation of either a client or server
 // of a particular specified profile (aka service or protocol in other
@@ -92,11 +94,14 @@ class BluetoothProfile {
   // The socket will be closed when all references are released; none of the
   // BluetoothProfile, or BluetoothAdapter or BluetoothDevice objects are
   // guaranteed to hold a reference so this may outlive all of them.
-  typedef base::Callback<void(scoped_refptr<BluetoothSocket>)> SocketCallback;
-  virtual void SetConnectionCallback(const SocketCallback& callback) = 0;
+  typedef base::Callback<void(
+      const BluetoothDevice*,
+      scoped_refptr<BluetoothSocket>)> ConnectionCallback;
+  virtual void SetConnectionCallback(const ConnectionCallback& callback) = 0;
 
  private:
   friend class BluetoothProfileMac;
+  friend class MockBluetoothProfile;
 
   BluetoothProfile();
   virtual ~BluetoothProfile();

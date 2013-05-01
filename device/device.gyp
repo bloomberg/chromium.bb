@@ -110,6 +110,8 @@
         'bluetooth/test/mock_bluetooth_adapter.h',
         'bluetooth/test/mock_bluetooth_device.cc',
         'bluetooth/test/mock_bluetooth_device.h',
+        'bluetooth/test/mock_bluetooth_profile.cc',
+        'bluetooth/test/mock_bluetooth_profile.h',
         'bluetooth/test/mock_bluetooth_socket.cc',
         'bluetooth/test/mock_bluetooth_socket.h',
       ],
