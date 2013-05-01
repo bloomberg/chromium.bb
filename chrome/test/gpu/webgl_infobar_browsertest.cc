@@ -65,15 +65,7 @@ class WebGLInfobarTest : public InProcessBrowserTest {
   base::FilePath gpu_test_dir_;
 };
 
-// Test cannot run on ASAN because it is intentionally crashing the gpu
-// process.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_ContextLossRaisesInfobar DISABLED_ContextLossRaisesInfobar
-#else
-#define MAYBE_ContextLossRaisesInfobar ContextLossRaisesInfobar
-#endif
-
-IN_PROC_BROWSER_TEST_F(WebGLInfobarTest, MAYBE_ContextLossRaisesInfobar) {
+IN_PROC_BROWSER_TEST_F(WebGLInfobarTest, ContextLossRaisesInfobar) {
   if (GPUTestBotConfig::CurrentConfigMatches("XP"))
     return;
 
@@ -98,15 +90,7 @@ IN_PROC_BROWSER_TEST_F(WebGLInfobarTest, MAYBE_ContextLossRaisesInfobar) {
                     infobar_count());
 }
 
-// Test cannot run on ASAN because it is intentionally crashing the gpu
-// process.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_ContextLossInfobarReload DISABLED_ContextLossInfobarReload
-#else
-#define MAYBE_ContextLossInfobarReload ContextLossInfobarReload
-#endif
-
-IN_PROC_BROWSER_TEST_F(WebGLInfobarTest, MAYBE_ContextLossInfobarReload) {
+IN_PROC_BROWSER_TEST_F(WebGLInfobarTest, ContextLossInfobarReload) {
   if (GPUTestBotConfig::CurrentConfigMatches("XP"))
     return;
 
