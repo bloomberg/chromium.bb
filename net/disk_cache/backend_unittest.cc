@@ -597,7 +597,6 @@ TEST_F(DiskCacheBackendTest, NewEvictionLoad) {
 }
 
 TEST_F(DiskCacheBackendTest, MemoryOnlyLoad) {
-  // Work with a tiny index table (16 entries)
   SetMaxSize(0x100000);
   SetMemoryOnlyMode();
   BackendLoad();
@@ -2829,7 +2828,7 @@ void DiskCacheBackendTest::TracingBackendBasics() {
   same_entry = NULL;
 }
 
-TEST_F(DiskCacheBackendTest, TracingBackendBasicsWithBackendImpl) {
+TEST_F(DiskCacheBackendTest, TracingBackendBasics) {
   TracingBackendBasics();
 }
 
@@ -2837,7 +2836,51 @@ TEST_F(DiskCacheBackendTest, TracingBackendBasicsWithBackendImpl) {
 // different file system guarantees from Windows.
 #if !defined(OS_WIN)
 
-TEST_F(DiskCacheBackendTest, TracingBackendBasicsWithSimpleBackend) {
+TEST_F(DiskCacheBackendTest, SimpleCacheBasics) {
+  SetSimpleCacheMode();
+  BackendBasics();
+}
+
+TEST_F(DiskCacheBackendTest, SimpleCacheKeying) {
+  SetSimpleCacheMode();
+  BackendKeying();
+}
+
+
+TEST_F(DiskCacheBackendTest, DISABLED_SimpleCacheSetSize) {
+  SetSimpleCacheMode();
+  BackendSetSize();
+}
+
+// MacOS has a default open file limit of 256 files, which is incompatible with
+// this simple cache test.
+#if defined(OS_MACOSX)
+#define MAYBE_SimpleCacheLoad DISABLED_SimpleCacheLoad
+#else
+#define MAYBE_SimpleCacheLoad SimpleCacheLoad
+#endif
+TEST_F(DiskCacheBackendTest, MAYBE_SimpleCacheLoad) {
+  SetMaxSize(0x100000);
+  SetSimpleCacheMode();
+  BackendLoad();
+}
+
+TEST_F(DiskCacheBackendTest, SimpleDoomRecent) {
+  SetSimpleCacheMode();
+  BackendDoomRecent();
+}
+
+TEST_F(DiskCacheBackendTest, SimpleDoomBetween) {
+  SetSimpleCacheMode();
+  BackendDoomBetween();
+}
+
+TEST_F(DiskCacheBackendTest, SimpleCacheDoomAll) {
+  SetSimpleCacheMode();
+  BackendDoomAll();
+}
+
+TEST_F(DiskCacheBackendTest, SimpleCacheTracingBackendBasics) {
   SetSimpleCacheMode();
   TracingBackendBasics();
   // TODO(pasko): implement integrity checking on the Simple Backend.
@@ -2898,27 +2941,6 @@ TEST_F(DiskCacheBackendTest, SimpleCacheOpenBadFile) {
       file_util::WriteFile(entry_file1_path, reinterpret_cast<char*>(&header),
                            sizeof(header)));
   ASSERT_EQ(net::ERR_FAILED, OpenEntry(key, &entry));
-}
-
-TEST_F(DiskCacheBackendTest, SimpleDoomRecent) {
-  SetSimpleCacheMode();
-  BackendDoomRecent();
-}
-
-TEST_F(DiskCacheBackendTest, SimpleDoomBetween) {
-  SetSimpleCacheMode();
-  BackendDoomBetween();
-}
-
-TEST_F(DiskCacheBackendTest, SimpleCacheDoomAll) {
-  SetSimpleCacheMode();
-  BackendDoomAll();
-}
-
-// TODO(pasko): Write operation should fail fast in attempt to go over the size.
-TEST_F(DiskCacheBackendTest, DISABLED_SimpleCacheSetSize) {
-  SetSimpleCacheMode();
-  BackendSetSize();
 }
 
 // Tests that the Simple Cache Backend fails to initialize with non-matching

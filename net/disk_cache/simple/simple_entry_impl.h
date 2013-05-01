@@ -108,7 +108,7 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
 
   virtual ~SimpleEntryImpl();
 
-  // Sets entry o STATE_UNINITIALIZED.
+  // Sets entry to STATE_UNINITIALIZED.
   void MakeUninitialized();
 
   // Return this entry to a user of the API in |out_entry|. Increments the user
@@ -159,6 +159,7 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
       const CompletionCallback& completion_callback,
       const base::TimeTicks& start_time,
       scoped_ptr<SimpleSynchronousEntry*> in_sync_entry,
+      scoped_ptr<int> in_result,
       Entry** out_entry);
 
   // Called after we've closed and written the EOF record to our entry. Until

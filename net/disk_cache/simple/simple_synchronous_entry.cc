@@ -28,6 +28,7 @@ using base::GetPlatformFileInfo;
 using base::PlatformFileError;
 using base::PlatformFileInfo;
 using base::PLATFORM_FILE_CREATE;
+using base::PLATFORM_FILE_ERROR_EXISTS;
 using base::PLATFORM_FILE_OK;
 using base::PLATFORM_FILE_OPEN;
 using base::PLATFORM_FILE_READ;
@@ -64,12 +65,13 @@ void SimpleSynchronousEntry::OpenEntry(
     const FilePath& path,
     const std::string& key,
     const uint64 entry_hash,
-    SimpleSynchronousEntry** out_entry) {
+    SimpleSynchronousEntry** out_entry,
+    int* out_result) {
   DCHECK_EQ(entry_hash, simple_util::GetEntryHashKey(key));
   SimpleSynchronousEntry* sync_entry = new SimpleSynchronousEntry(path, key,
                                                                   entry_hash);
-  int rv = sync_entry->InitializeForOpen();
-  if (rv != net::OK) {
+  *out_result = sync_entry->InitializeForOpen();
+  if (*out_result != net::OK) {
     sync_entry->Doom();
     delete sync_entry;
     *out_entry = NULL;
@@ -83,17 +85,16 @@ void SimpleSynchronousEntry::CreateEntry(
     const FilePath& path,
     const std::string& key,
     const uint64 entry_hash,
-    SimpleSynchronousEntry** out_entry) {
+    SimpleSynchronousEntry** out_entry,
+    int* out_result) {
   DCHECK_EQ(entry_hash, GetEntryHashKey(key));
   SimpleSynchronousEntry* sync_entry = new SimpleSynchronousEntry(path, key,
                                                                   entry_hash);
-  int rv = sync_entry->InitializeForCreate();
-  if (rv != net::OK) {
-    if (rv != net::ERR_FILE_EXISTS) {
+  *out_result = sync_entry->InitializeForCreate();
+  if (*out_result != net::OK) {
+    if (*out_result != net::ERR_FILE_EXISTS)
       sync_entry->Doom();
-    }
     delete sync_entry;
-    *out_entry = NULL;
     return;
   }
   *out_entry = sync_entry;

@@ -345,11 +345,12 @@ void SimpleEntryImpl::OpenEntryInternal(Entry** out_entry,
   typedef SimpleSynchronousEntry* PointerToSimpleSynchronousEntry;
   scoped_ptr<PointerToSimpleSynchronousEntry> sync_entry(
       new PointerToSimpleSynchronousEntry());
+  scoped_ptr<int> result(new int());
   Closure task = base::Bind(&SimpleSynchronousEntry::OpenEntry, path_, key_,
-                            entry_hash_, sync_entry.get());
+                            entry_hash_, sync_entry.get(), result.get());
   Closure reply = base::Bind(&SimpleEntryImpl::CreationOperationComplete, this,
                              callback, start_time, base::Passed(&sync_entry),
-                             out_entry);
+                             base::Passed(&result), out_entry);
   WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
 }
 
@@ -383,11 +384,12 @@ void SimpleEntryImpl::CreateEntryInternal(Entry** out_entry,
   typedef SimpleSynchronousEntry* PointerToSimpleSynchronousEntry;
   scoped_ptr<PointerToSimpleSynchronousEntry> sync_entry(
       new PointerToSimpleSynchronousEntry());
+  scoped_ptr<int> result(new int());
   Closure task = base::Bind(&SimpleSynchronousEntry::CreateEntry, path_, key_,
-                            entry_hash_, sync_entry.get());
+                            entry_hash_, sync_entry.get(), result.get());
   Closure reply = base::Bind(&SimpleEntryImpl::CreationOperationComplete, this,
                              callback, start_time, base::Passed(&sync_entry),
-                             out_entry);
+                             base::Passed(&result), out_entry);
   WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
 }
 
@@ -487,19 +489,22 @@ void SimpleEntryImpl::CreationOperationComplete(
     const CompletionCallback& completion_callback,
     const base::TimeTicks& start_time,
     scoped_ptr<SimpleSynchronousEntry*> in_sync_entry,
+    scoped_ptr<int> in_result,
     Entry** out_entry) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK_EQ(state_, STATE_IO_PENDING);
   DCHECK(in_sync_entry);
+  DCHECK(in_result);
 
   ScopedOperationRunner operation_runner(this);
 
-  bool creation_failed = !*in_sync_entry;
-  UMA_HISTOGRAM_BOOLEAN("SimpleCache.EntryCreationResult", creation_failed);
-  if (creation_failed) {
-    completion_callback.Run(net::ERR_FAILED);
-    MarkAsDoomed();
+  UMA_HISTOGRAM_BOOLEAN(
+      "SimpleCache.EntryCreationResult", *in_result == net::OK);
+  if (*in_result != net::OK) {
+    if (*in_result!= net::ERR_FILE_EXISTS)
+      MarkAsDoomed();
     MakeUninitialized();
+    completion_callback.Run(net::ERR_FAILED);
     return;
   }
   state_ = STATE_READY;

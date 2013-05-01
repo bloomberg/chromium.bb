@@ -40,13 +40,15 @@ class SimpleSynchronousEntry {
       const base::FilePath& path,
       const std::string& key,
       uint64 entry_hash,
-      SimpleSynchronousEntry** out_entry);
+      SimpleSynchronousEntry** out_entry,
+      int* out_result);
 
   static void CreateEntry(
       const base::FilePath& path,
       const std::string& key,
       uint64 entry_hash,
-      SimpleSynchronousEntry** out_entry);
+      SimpleSynchronousEntry** out_entry,
+      int* out_result);
 
   // Deletes an entry without first Opening it. Does not check if there is
   // already an Entry object in memory holding the open files. Be careful! This
