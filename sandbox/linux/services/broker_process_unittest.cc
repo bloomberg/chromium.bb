@@ -386,6 +386,14 @@ void TestOpenComplexFlags(bool fast_check_in_client) {
   // Important: use F_GETFD, not F_GETFL. The O_CLOEXEC flag in F_GETFL
   // is actually not used by the kernel.
   ASSERT_TRUE(FD_CLOEXEC & ret);
+
+  // There is buggy userland code that can check for O_CLOEXEC with fcntl(2)
+  // even though it doesn't mean anything. We need to support this case.
+  // See crbug.com/237283.
+  ret = fcntl(fd, F_GETFL);
+  ASSERT_NE(-1, ret);
+  ASSERT_TRUE(O_CLOEXEC & ret);
+
   ASSERT_EQ(0, close(fd));
 
   fd = open_broker.Open(kCpuInfo, O_RDONLY | O_NONBLOCK);

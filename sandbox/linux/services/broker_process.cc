@@ -34,15 +34,18 @@ static const size_t kMaxMessageLength = 4096;
 // Some flags are local to the current process and cannot be sent over a Unix
 // socket. They need special treatment from the client.
 // O_CLOEXEC is tricky because in theory another thread could call execve()
-// before special treatment is made on the client. Thankfully it can be solved
-// by contract, as callers to Open() are typically sandboxed.
+// before special treatment is made on the client, so a client needs to call
+// recvmsg(2) with MSG_CMSG_CLOEXEC.
 // To make things worse, there are two CLOEXEC related flags, FD_CLOEXEC (see
 // F_GETFD in fcntl(2)) and O_CLOEXEC (see F_GETFL in fcntl(2)). O_CLOEXEC
 // doesn't affect the semantics on execve(), it's merely a note that the
 // descriptor was originally opened with O_CLOEXEC as a flag. And it is sent
 // over unix sockets just fine, so a receiver that would (incorrectly) look at
 // O_CLOEXEC instead of FD_CLOEXEC may be tricked in thinking that the file
-// descriptor will be closed on execve().
+// descriptor will or won't be closed on execve().
+// Since we have to account for buggy userland (see crbug.com/237283), we will
+// open(2) the file with O_CLOEXEC in the broker process if necessary, in
+// addition to calling recvmsg(2) with MSG_CMSG_CLOEXEC.
 static const int kCurrentProcessOpenFlagsMask = O_CLOEXEC;
 
 // Check whether |requested_filename| is in |allowed_file_names|.
@@ -89,7 +92,11 @@ bool IsAllowedOpenFlags(int flags) {
   // Some flags affect the behavior of the current process. We don't support
   // them and don't allow them for now.
   if (flags & kCurrentProcessOpenFlagsMask) {
-    return false;
+    // We make an exception for O_CLOEXEC. Buggy userland could check for
+    // O_CLOEXEC and the only way to set it is to originally open with this
+    // flag. See the comment around kCurrentProcessOpenFlagsMask.
+    if (!(flags & O_CLOEXEC))
+      return false;
   }
 
   // Now check that all the flags are known to us.
@@ -206,7 +213,6 @@ int BrokerProcess::PathAndFlagsSyscall(enum IPCCommands syscall_type,
     // this code if other flags are added.
     RAW_CHECK(kCurrentProcessOpenFlagsMask == O_CLOEXEC);
     recvmsg_flags |= MSG_CMSG_CLOEXEC;
-    flags &= ~O_CLOEXEC;
   }
 
   // There is no point in forwarding a request that we know will be denied.
