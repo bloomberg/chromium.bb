@@ -119,9 +119,6 @@ void FEImage::applySoftware()
     setResultColorSpace(ColorSpaceDeviceRGB);
 
     if (renderer) {
-        const AffineTransform& absoluteTransform = filter()->absoluteTransform();
-        resultImage->context()->concatCTM(absoluteTransform);
-
         SVGElement* contextNode = toSVGElement(renderer->node());
         if (contextNode->isSVGStyledElement() && toSVGStyledElement(contextNode)->hasRelativeLengths()) {
             SVGLengthContext lengthContext(contextNode);
@@ -132,6 +129,9 @@ void FEImage::applySoftware()
             // Build up a transformation that maps from the viewport space to the filter primitive subregion.
             if (lengthContext.determineViewport(width, height))
                 resultImage->context()->concatCTM(makeMapBetweenRects(FloatRect(0, 0, width, height), destRect));
+        } else {
+            const AffineTransform& absoluteTransform = filter()->absoluteTransform();
+            resultImage->context()->concatCTM(absoluteTransform);
         }
 
         AffineTransform contentTransformation;
