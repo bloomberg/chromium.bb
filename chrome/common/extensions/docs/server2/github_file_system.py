@@ -22,11 +22,17 @@ def _MakeBlobstoreKey(version):
   return ZIP_KEY + '.' + str(version)
 
 class _AsyncFetchFutureZip(object):
-  def __init__(self, fetcher, blobstore, key_to_set, key_to_delete=None):
+  def __init__(self,
+               fetcher,
+               username,
+               password,
+               blobstore,
+               key_to_set,
+               key_to_delete=None):
     self._fetcher = fetcher
     self._fetch = fetcher.FetchAsync(ZIP_KEY,
-                                     username=USERNAME,
-                                     password=PASSWORD)
+                                     username=username,
+                                     password=password)
     self._blobstore = blobstore
     self._key_to_set = key_to_set
     self._key_to_delete = key_to_delete
@@ -62,10 +68,21 @@ class GithubFileSystem(FileSystem):
   """FileSystem implementation which fetches resources from github.
   """
   def __init__(self, fetcher, blobstore):
+    # The password store is the same for all branches and versions.
+    password_store = (ObjectStoreCreator.GlobalFactory()
+        .Create(GithubFileSystem).Create(category='password'))
+    if USERNAME is None:
+      password_data = password_store.GetMulti(('username', 'password')).Get()
+      self._username, self._password = (password_data.get('username'),
+                                        password_data.get('password'))
+    else:
+      password_store.SetMulti({'username': USERNAME, 'password': PASSWORD})
+      self._username, self._password = (USERNAME, PASSWORD)
+
     self._fetcher = fetcher
+    self._blobstore = blobstore
     self._stat_object_store = (ObjectStoreCreator.SharedFactory(GetAppVersion())
         .Create(GithubFileSystem).Create())
-    self._blobstore = blobstore
     self._version = None
     self._GetZip(self.Stat(ZIP_KEY).version)
 
@@ -83,6 +100,8 @@ class GithubFileSystem(FileSystem):
     else:
       self._zip_file = Future(
           delegate=_AsyncFetchFutureZip(self._fetcher,
+                                        self._username,
+                                        self._password,
                                         self._blobstore,
                                         version,
                                         key_to_delete=self._version))

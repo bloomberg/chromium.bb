@@ -31,24 +31,31 @@ if __name__ == '__main__':
       print 'usage: update_server.py <path_to_appcfg.py> <appcfg_options>'
       exit(1)
 
-  build_server.main()
-  server2_path = os.path.dirname(sys.argv[0])
-  username = raw_input('Username for server2 github account: ')
-  password = getpass.getpass()
-  with open('github_file_system.py') as f:
-    contents = f.read()
-  if 'USERNAME = None' not in contents:
-    print 'Error: Can\'t find "USERNAME = None" in github_file_system.py.'
-    exit(1)
-  if 'PASSWORD = None' not in contents:
-    print 'Error: Can\'t find "PASSWORD = None" in github_file_system.py.'
-    exit(1)
-  try:
-    with open('github_file_system.py', 'w+') as f:
-      f.write(
-          contents.replace('PASSWORD = None', 'PASSWORD = \'%s\'' % password)
-                  .replace('USERNAME = None', 'USERNAME = \'%s\'' % username))
+  def run_appcfg():
+    server2_path = os.path.dirname(sys.argv[0])
     subprocess.call([appcfg_path, 'update', server2_path] + additional_args)
-  finally:
-    with open('github_file_system.py', 'w+') as f:
-      f.write(contents)
+
+  build_server.main()
+  username = raw_input(
+      'Update github username/password? New username (empty to use existing): ')
+  if username:
+    password = getpass.getpass()
+    with open('github_file_system.py') as f:
+      contents = f.read()
+    if 'USERNAME = None' not in contents:
+      print 'Error: Can\'t find "USERNAME = None" in github_file_system.py.'
+      exit(1)
+    if 'PASSWORD = None' not in contents:
+      print 'Error: Can\'t find "PASSWORD = None" in github_file_system.py.'
+      exit(1)
+    try:
+      with open('github_file_system.py', 'w+') as f:
+        f.write(
+            contents.replace('PASSWORD = None', 'PASSWORD = \'%s\'' % password)
+                    .replace('USERNAME = None', 'USERNAME = \'%s\'' % username))
+        run_appcfg()
+    finally:
+      with open('github_file_system.py', 'w+') as f:
+        f.write(contents)
+  else:
+    run_appcfg()

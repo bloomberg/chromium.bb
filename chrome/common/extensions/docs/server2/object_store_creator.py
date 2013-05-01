@@ -29,7 +29,19 @@ class ObjectStoreCreator(object):
     '''A |Factory| for creating object stores shared across branches.
     '''
     def __init__(self, app_version):
+      # TODO(kalman): Pass in (app_version, None) here.
       self._factory = ObjectStoreCreator.Factory(app_version, 'shared')
+
+    def Create(self, cls, store_type=None):
+      return self._factory.Create(cls, store_type=store_type)
+
+  class GlobalFactory(object):
+    '''A |Factory| for creating object stores shared across all branches and
+    app versions.
+    '''
+    def __init__(self):
+      # TODO(kalman): Pass in (None, None) here.
+      self._factory = ObjectStoreCreator.Factory('all', 'shared')
 
     def Create(self, cls, store_type=None):
       return self._factory.Create(cls, store_type=store_type)
@@ -38,6 +50,7 @@ class ObjectStoreCreator(object):
     '''A |Factory| for creating object stores for tests, with fake defaults.
     '''
     def __init__(self,
+                 # TODO(kalman): make these version=None and branch=None.
                  version='test-version',
                  branch='test-branch',
                  store_type=TestObjectStore):
