@@ -22,6 +22,10 @@ void EventTarget::AddPreTargetHandler(EventHandler* handler) {
   pre_target_list_.push_back(handler);
 }
 
+void EventTarget::PrependPreTargetHandler(EventHandler* handler) {
+  pre_target_list_.insert(pre_target_list_.begin(), handler);
+}
+
 void EventTarget::RemovePreTargetHandler(EventHandler* handler) {
   EventHandlerList::iterator find =
       std::find(pre_target_list_.begin(),

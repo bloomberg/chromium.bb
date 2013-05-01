@@ -58,6 +58,10 @@ class UI_EXPORT EventTarget : public EventHandler {
   // explicitly removed from the target before the handler is destroyed. The
   // EventTarget does not take ownership of the handler.
   void AddPreTargetHandler(EventHandler* handler);
+
+  // Same as AddPreTargetHandler except that the |handler| is added to the front
+  // of the list so it is the first one to receive events.
+  void PrependPreTargetHandler(EventHandler* handler);
   void RemovePreTargetHandler(EventHandler* handler);
 
   // Adds a handler to receive events after the target. The handler must be

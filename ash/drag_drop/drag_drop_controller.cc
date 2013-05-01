@@ -226,6 +226,12 @@ int DragDropController::StartDragAndDrop(
   if (cancel_animation_)
     cancel_animation_->End();
 
+  // Become the first event handler since we should get first shot at handling
+  // any events during the drag drop session.
+  Shell::GetInstance()->RemovePreTargetHandler(this);
+  Shell::GetInstance()->PrependPreTargetHandler(this);
+
+
 #if !defined(OS_MACOSX)
   if (should_block_during_drag_drop_) {
     base::RunLoop run_loop(aura::Env::GetInstance()->GetDispatcher());
