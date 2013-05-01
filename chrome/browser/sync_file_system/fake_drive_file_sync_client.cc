@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/message_loop_proxy.h"
+#include "chrome/browser/google_apis/drive_entry_kinds.h"
 
 namespace sync_file_system {
 
@@ -272,6 +273,18 @@ FakeDriveFileSyncClient::CreateResourceEntry(
   entry->set_file_md5(resource.md5_checksum);
   entry->set_deleted(resource.deleted);
   entry->set_changestamp(resource.changestamp);
+
+  switch (resource.type) {
+    case SYNC_FILE_TYPE_FILE:
+      entry->set_kind(google_apis::ENTRY_KIND_FILE);
+      break;
+    case SYNC_FILE_TYPE_DIRECTORY:
+      entry->set_kind(google_apis::ENTRY_KIND_FOLDER);
+      break;
+    case SYNC_FILE_TYPE_UNKNOWN:
+      entry->set_kind(google_apis::ENTRY_KIND_UNKNOWN);
+      break;
+  }
 
   return entry.Pass();
 }

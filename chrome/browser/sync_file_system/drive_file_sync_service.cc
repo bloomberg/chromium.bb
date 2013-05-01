@@ -74,12 +74,6 @@ void DidHandleUnregisteredOrigin(const GURL& origin, SyncStatusCode status) {
   }
 }
 
-FileChange CreateFileChange(bool is_deleted) {
-  if (is_deleted)
-    return FileChange(FileChange::FILE_CHANGE_DELETE, SYNC_FILE_TYPE_UNKNOWN);
-  return FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE, SYNC_FILE_TYPE_FILE);
-}
-
 std::string PathToTitle(const base::FilePath& path) {
   if (!IsSyncDirectoryOperationEnabled())
     return path.AsUTF8Unsafe();
@@ -829,10 +823,12 @@ void DriveFileSyncService::DidInitializeMetadataStore(
   typedef DriveMetadataStore::URLAndResourceIdList::const_iterator iterator;
   for (iterator itr = to_be_fetched_files.begin();
        itr != to_be_fetched_files.end(); ++itr) {
-    DriveMetadata metadata;
     const FileSystemURL& url = itr->first;
     const std::string& resource_id = itr->second;
-    AppendFetchChange(url.origin(), url.path(), resource_id);
+
+    // TODO(tzik): Set SYNC_FILE_TYPE_DIRECTORY if the resource is a directory.
+    SyncFileType file_type = SYNC_FILE_TYPE_FILE;
+    AppendFetchChange(url.origin(), url.path(), resource_id, file_type);
   }
 
   if (!sync_root_resource_id().empty())
@@ -1141,8 +1137,13 @@ void DriveFileSyncService::DidResolveConflictToRemoteChange(
   DCHECK(param->has_drive_metadata);
   if (status != SYNC_STATUS_OK)
     FinalizeLocalSync(param->token.Pass(), param->callback, status);
+
+  SyncFileType file_type = SYNC_FILE_TYPE_FILE;
+  if (param->drive_metadata.type() == DriveMetadata::RESOURCE_TYPE_FOLDER)
+    file_type = SYNC_FILE_TYPE_DIRECTORY;
   AppendFetchChange(param->url.origin(), param->url.path(),
-                    param->drive_metadata.resource_id());
+                    param->drive_metadata.resource_id(),
+                    file_type);
   FinalizeLocalSync(param->token.Pass(), param->callback, status);
 }
 
@@ -1362,6 +1363,7 @@ void DriveFileSyncService::ResolveConflictToRemoteForLocalSync(
   DCHECK(!drive_metadata.resource_id().empty());
   drive_metadata.set_conflicted(false);
   drive_metadata.set_to_be_fetched(true);
+
   param->has_drive_metadata = true;
   metadata_store_->UpdateEntry(
       url, drive_metadata,
@@ -1618,6 +1620,12 @@ void DriveFileSyncService::DidApplyRemoteChange(
   const DriveMetadata& drive_metadata = param->drive_metadata;
   param->drive_metadata.set_resource_id(param->remote_change.resource_id);
   param->drive_metadata.set_conflicted(false);
+  if (param->remote_change.change.IsFile()) {
+    param->drive_metadata.set_type(DriveMetadata::RESOURCE_TYPE_FILE);
+  } else {
+    DCHECK(IsSyncDirectoryOperationEnabled());
+    param->drive_metadata.set_type(DriveMetadata::RESOURCE_TYPE_FOLDER);
+  }
 
   metadata_store_->UpdateEntry(
       url, drive_metadata,
@@ -1788,21 +1796,29 @@ bool DriveFileSyncService::AppendRemoteChange(
     const google_apis::ResourceEntry& entry,
     int64 changestamp,
     RemoteSyncType sync_type) {
-  // TODO(tzik): Normalize the path here.
   base::FilePath path = TitleToPath(entry.title());
-  if (entry.is_folder())
+
+  if (!entry.is_folder() && !entry.is_file() && !entry.deleted())
     return false;
+
+  if (entry.is_folder() && !IsSyncDirectoryOperationEnabled())
+    return false;
+
+  SyncFileType file_type = entry.is_file() ?
+      SYNC_FILE_TYPE_FILE : SYNC_FILE_TYPE_DIRECTORY;
+
   return AppendRemoteChangeInternal(
       origin, path, entry.deleted(),
       entry.resource_id(), changestamp,
       entry.deleted() ? std::string() : entry.file_md5(),
-      entry.updated_time(), sync_type);
+      entry.updated_time(), file_type, sync_type);
 }
 
 bool DriveFileSyncService::AppendFetchChange(
     const GURL& origin,
     const base::FilePath& path,
-    const std::string& resource_id) {
+    const std::string& resource_id,
+    SyncFileType type) {
   return AppendRemoteChangeInternal(
       origin, path,
       false,  // is_deleted
@@ -1810,6 +1826,7 @@ bool DriveFileSyncService::AppendFetchChange(
       0,  // changestamp
       std::string(),  // remote_file_md5
       base::Time(),  // updated_time
+      type,
       REMOTE_SYNC_TYPE_FETCH);
 }
 
@@ -1821,6 +1838,7 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
     int64 changestamp,
     const std::string& remote_file_md5,
     const base::Time& updated_time,
+    SyncFileType file_type,
     RemoteSyncType sync_type) {
   fileapi::FileSystemURL url(
       CreateSyncableFileSystemURL(origin, kServiceName, path));
@@ -1868,29 +1886,32 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
       remote_resource_id != local_resource_id)
     return false;
 
-  // Drop any change if the change is for deletion and local resource id is
-  // empty.
-  if (is_deleted && local_resource_id.empty())
-    return false;
-
-  FileChange file_change(CreateFileChange(is_deleted));
-
   if (is_deleted) {
+    // Drop any change if the change is for deletion and local resource id is
+    // empty.
+    if (local_resource_id.empty())
+      return false;
+
     // Determine a file type of the deleted change by local metadata.
     if (!remote_resource_id.empty() &&
         !local_resource_id.empty() &&
         remote_resource_id == local_resource_id) {
-      DCHECK_EQ(DriveMetadata::RESOURCE_TYPE_FILE, metadata.type());
-      file_change = FileChange(FileChange::FILE_CHANGE_DELETE,
-                               SYNC_FILE_TYPE_FILE);
+      DCHECK(IsSyncDirectoryOperationEnabled() ||
+             DriveMetadata::RESOURCE_TYPE_FILE == metadata.type());
+      file_type = metadata.type() == DriveMetadata::RESOURCE_TYPE_FILE ?
+          SYNC_FILE_TYPE_FILE : SYNC_FILE_TYPE_DIRECTORY;
+    }
+
+    if (has_db_entry) {
+      metadata.set_resource_id(std::string());
+      metadata_store_->UpdateEntry(url, metadata,
+                                   base::Bind(&EmptyStatusCallback));
     }
   }
 
-  if (is_deleted && has_db_entry) {
-    metadata.set_resource_id(std::string());
-    metadata_store_->UpdateEntry(url, metadata,
-                                 base::Bind(&EmptyStatusCallback));
-  }
+  FileChange file_change(is_deleted ? FileChange::FILE_CHANGE_DELETE
+                                    : FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                         file_type);
 
   // Do not return in this block. These changes should be done together.
   {

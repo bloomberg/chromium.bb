@@ -452,6 +452,7 @@ class DriveFileSyncServiceMockTest : public testing::Test {
     return sync_service_->AppendRemoteChangeInternal(
         origin, path, is_deleted, resource_id,
         changestamp, remote_file_md5, base::Time(),
+        SYNC_FILE_TYPE_FILE,
         DriveFileSyncService::REMOTE_SYNC_TYPE_INCREMENTAL);
   }
 
@@ -616,7 +617,7 @@ TEST_F(DriveFileSyncServiceMockTest, BatchSyncOnInitialization) {
   Sequence change_queue_seq;
   EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(0))
       .InSequence(change_queue_seq);
-  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(3))
+  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(1))
       .Times(AnyNumber())
       .InSequence(change_queue_seq);
 
@@ -645,7 +646,7 @@ TEST_F(DriveFileSyncServiceMockTest, BatchSyncOnInitialization) {
   // 4 pending remote changes are from listing_files_in_directory as batch sync
   // changes.
   VerifySizeOfRegisteredOrigins(1u, 1u, 0u);
-  EXPECT_EQ(3u, pending_changes().size());
+  EXPECT_EQ(1u, pending_changes().size());
 }
 
 TEST_F(DriveFileSyncServiceMockTest, RegisterNewOrigin) {
@@ -744,7 +745,7 @@ TEST_F(DriveFileSyncServiceMockTest, RegisterExistingOrigin) {
   VerifySizeOfRegisteredOrigins(1u, 0u, 0u);
 
   // |listing_files_in_directory| contains 4 items to sync.
-  EXPECT_EQ(3u, pending_changes().size());
+  EXPECT_EQ(1u, pending_changes().size());
 }
 
 TEST_F(DriveFileSyncServiceMockTest, UnregisterOrigin) {
@@ -780,7 +781,7 @@ TEST_F(DriveFileSyncServiceMockTest, UnregisterOrigin) {
   message_loop()->RunUntilIdle();
 
   VerifySizeOfRegisteredOrigins(1u, 1u, 0u);
-  EXPECT_EQ(3u, pending_changes().size());
+  EXPECT_EQ(1u, pending_changes().size());
 
   bool done = false;
   sync_service()->UnregisterOriginForTrackingChanges(

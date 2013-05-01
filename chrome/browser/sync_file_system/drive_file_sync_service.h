@@ -359,7 +359,8 @@ class DriveFileSyncService
                           RemoteSyncType sync_type);
   bool AppendFetchChange(const GURL& origin,
                          const base::FilePath& path,
-                         const std::string& resource_id);
+                         const std::string& resource_id,
+                         SyncFileType file_type);
   bool AppendRemoteChangeInternal(const GURL& origin,
                                   const base::FilePath& path,
                                   bool is_deleted,
@@ -367,6 +368,7 @@ class DriveFileSyncService
                                   int64 changestamp,
                                   const std::string& remote_file_md5,
                                   const base::Time& updated_time,
+                                  SyncFileType file_type,
                                   RemoteSyncType sync_type);
   void RemoveRemoteChange(const fileapi::FileSystemURL& url);
   void RemoveRemoteChangesForOrigin(const GURL& origin);
