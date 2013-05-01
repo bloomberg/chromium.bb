@@ -229,10 +229,9 @@ class AudioRendererImplTest : public ::testing::Test {
     uint32 frames_read = renderer_->FillBuffer(
         buffer.get(), requested_frames, 0);
 
-    if (frames_read > 0 && muted) {
-      *muted = (buffer[0] == kMutedAudio);
-    }
-    return (frames_read == requested_frames);
+    if (muted)
+      *muted = frames_read < 1 || buffer[0] == kMutedAudio;
+    return frames_read == requested_frames;
   }
 
   // Attempts to consume all data available from the renderer.  Returns the
@@ -440,12 +439,9 @@ TEST_F(AudioRendererImplTest, Underflow) {
   renderer_->ResumeAfterUnderflow(false);
 
   // Verify after resuming that we're still not getting data.
-  //
-  // NOTE: FillBuffer() satisfies the read but returns muted audio, which
-  // is crazy http://crbug.com/106600
   bool muted = false;
   EXPECT_EQ(0u, bytes_buffered());
-  EXPECT_TRUE(ConsumeBufferedData(kDataSize, &muted));
+  EXPECT_FALSE(ConsumeBufferedData(kDataSize, &muted));
   EXPECT_TRUE(muted);
 
   // Deliver data, we should get non-muted audio.
@@ -480,12 +476,9 @@ TEST_F(AudioRendererImplTest, Underflow_EndOfStream) {
   WaitForPendingRead();
 
   // Verify we're getting muted audio during underflow.
-  //
-  // NOTE: FillBuffer() satisfies the read but returns muted audio, which
-  // is crazy http://crbug.com/106600
   bool muted = false;
   EXPECT_EQ(kDataSize, bytes_buffered());
-  EXPECT_TRUE(ConsumeBufferedData(kDataSize, &muted));
+  EXPECT_FALSE(ConsumeBufferedData(kDataSize, &muted));
   EXPECT_TRUE(muted);
 
   // Now deliver end of stream, we should get our little bit of data back.
@@ -497,7 +490,7 @@ TEST_F(AudioRendererImplTest, Underflow_EndOfStream) {
   // Attempt to read to make sure we're truly at the end of stream.
   AdvanceTime(time_until_ended);
   EXPECT_FALSE(ConsumeBufferedData(kDataSize, &muted));
-  EXPECT_FALSE(muted);
+  EXPECT_TRUE(muted);
   WaitForEnded();
 }
 
@@ -520,7 +513,7 @@ TEST_F(AudioRendererImplTest, Underflow_ResumeFromCallback) {
   // Verify after resuming that we're still not getting data.
   bool muted = false;
   EXPECT_EQ(0u, bytes_buffered());
-  EXPECT_TRUE(ConsumeBufferedData(kDataSize, &muted));
+  EXPECT_FALSE(ConsumeBufferedData(kDataSize, &muted));
   EXPECT_TRUE(muted);
 
   // Deliver data, we should get non-muted audio.

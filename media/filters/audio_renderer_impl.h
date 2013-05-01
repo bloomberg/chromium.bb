@@ -221,6 +221,9 @@ class MEDIA_EXPORT AudioRendererImpl
   };
   State state_;
 
+  // Keep track of whether or not the sink is playing.
+  bool sink_playing_;
+
   // Keep track of our outstanding read to |decoder_|.
   bool pending_read_;
 
