@@ -68,6 +68,8 @@ class FaviconSource : public content::URLDataSource {
   // |type| is the type of icon this FaviconSource will provide.
   FaviconSource(Profile* profile, IconType type);
 
+  virtual ~FaviconSource();
+
   // content::URLDataSource implementation.
   virtual std::string GetSource() const OVERRIDE;
   virtual void StartDataRequest(
@@ -84,18 +86,16 @@ class FaviconSource : public content::URLDataSource {
   struct IconRequest {
     IconRequest();
     IconRequest(const content::URLDataSource::GotDataCallback& cb,
-                const std::string& path,
+                const GURL& path,
                 int size,
                 ui::ScaleFactor scale);
     ~IconRequest();
 
     content::URLDataSource::GotDataCallback callback;
-    std::string request_path;
+    GURL request_path;
     int size_in_dip;
     ui::ScaleFactor scale_factor;
   };
-
-  virtual ~FaviconSource();
 
   // Called when the favicon data is missing to perform additional checks to
   // locate the resource.
@@ -106,6 +106,9 @@ class FaviconSource : public content::URLDataSource {
   Profile* profile_;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(FaviconSourceTest, InstantParsing);
+  FRIEND_TEST_ALL_PREFIXES(FaviconSourceTest, Parsing);
+
   // Defines the allowed pixel sizes for requested favicons.
   enum IconSize {
     SIZE_16,
@@ -113,6 +116,14 @@ class FaviconSource : public content::URLDataSource {
     SIZE_64,
     NUM_SIZES
   };
+
+  // Parses |raw_path|, which should be in the format described at the top of
+  // the file. Returns true if |raw_path| could be parsed.
+  bool ParsePath(const std::string& raw_path,
+                 bool* is_icon_url,
+                 GURL* url,
+                 int* size_in_dip,
+                 ui::ScaleFactor* scale_factor) const;
 
   // Called when favicon data is available from the history backend.
   void OnFaviconDataAvailable(
