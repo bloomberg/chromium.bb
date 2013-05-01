@@ -13,51 +13,16 @@ if sys.version_info < (2, 6, 0):
   sys.exit(1)
 
 import buildbot_common
-import build_sdk
+import build_projects
 import build_utils
 import easy_template
-import generate_make
+import parse_dsc
 
-sys.path.append(os.path.join(build_sdk.SDK_SRC_DIR, 'tools'))
+from build_paths import SDK_SRC_DIR, OUT_DIR, SDK_EXAMPLE_DIR
+
+sys.path.append(os.path.join(SDK_SRC_DIR, 'tools'))
 import getos
 import oshelpers
-
-# HACK: A few examples don't work properly as a packaged app right now.
-EXAMPLE_LIST = [
-#  'debugging',
-  'dlopen',
-  'file_histogram',
-  'file_io',
-  'gamepad',
-  'geturl',
-  'hello_nacl_io',
-  'hello_world_stdio',
-  'hello_world',
-  'hello_world_gles',
-#  'hello_world_instance3d',
-  'hello_world_interactive',
-  'input_events',
-  'load_progress',
-#  'mouselock',
-  'pi_generator',
-  'sine_synth',
-  'websocket',
-]
-
-
-def GenerateMake(outdir, toolchains):
-  args = ['--dstroot=%s' % outdir, '--master', '--config=Release',
-          '--first-valid-toolchain']
-  for toolchain in toolchains:
-    args.append('--' + toolchain)
-
-  for example in EXAMPLE_LIST:
-    dsc = os.path.join(build_sdk.SDK_EXAMPLE_DIR, example, 'example.dsc')
-    args.append(dsc)
-
-  print "Generating Makefiles: %s" % str(args)
-  if generate_make.main(args):
-    buildbot_common.ErrorExit('Failed to build examples.')
 
 
 def RemoveBuildCruft(outdir):
@@ -112,15 +77,32 @@ def main(args):
   toolchains = ['newlib', 'glibc']
 
   pepper_ver = str(int(build_utils.ChromeMajorVersion()))
-  pepperdir = os.path.join(build_sdk.OUT_DIR, 'pepper_' + pepper_ver)
-  app_dir = os.path.join(build_sdk.OUT_DIR, 'naclsdk_app')
+  pepperdir = os.path.join(OUT_DIR, 'pepper_' + pepper_ver)
+  app_dir = os.path.join(OUT_DIR, 'naclsdk_app')
   app_examples_dir = os.path.join(app_dir, 'examples')
-  sdk_resources_dir = os.path.join(build_sdk.SDK_EXAMPLE_DIR, 'resources')
+  sdk_resources_dir = os.path.join(SDK_EXAMPLE_DIR, 'resources')
   platform = getos.GetPlatform()
 
   buildbot_common.RemoveDir(app_dir)
   buildbot_common.MakeDir(app_dir)
-  GenerateMake(app_dir, toolchains)
+
+  # Add some dummy directories so build_projects doesn't complain...
+  buildbot_common.MakeDir(os.path.join(app_dir, 'tools'))
+  buildbot_common.MakeDir(os.path.join(app_dir, 'toolchain'))
+
+  config = 'Release'
+
+  filters = {}
+  filters['DISABLE_PACKAGE'] = False
+  filters['EXPERIMENTAL'] = False
+  filters['TOOLS'] = toolchains
+  filters['DEST'] = ['examples/api', 'examples/getting_started',
+                     'examples/demo', 'examples/tutorial']
+  tree = parse_dsc.LoadProjectTree(SDK_SRC_DIR, filters=filters)
+  build_projects.UpdateHelpers(app_dir, platform, clobber=True)
+  build_projects.UpdateProjects(app_dir, platform, tree, clobber=False,
+                                toolchains=toolchains, configs=[config],
+                                first_toolchain=True)
 
   easy_template.RunTemplateFile(
       os.path.join(sdk_resources_dir, 'manifest.json.template'),
@@ -131,8 +113,9 @@ def main(args):
                              os.path.join(app_examples_dir, filename))
 
   os.environ['NACL_SDK_ROOT'] = pepperdir
-  build_sdk.BuildStepMakeAll(app_dir, platform, 'examples', 'Build Examples',
-      False, False, 'Release')
+
+  build_projects.BuildProjects(app_dir, platform, tree, deps=True, clean=False,
+                               config=config)
 
   RemoveBuildCruft(app_dir)
   StripNexes(app_dir, platform, pepperdir)

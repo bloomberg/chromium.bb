@@ -11,6 +11,7 @@ import sys
 # 'KEY' : ( <TYPE>, [Accepted Values], <Required?>)
 DSC_FORMAT = {
     'DISABLE': (bool, [True, False], False),
+    'DISABLE_PACKAGE': (bool, [True, False], False),
     'TOOLS' : (list, ['newlib:arm', 'newlib:x64', 'newlib:x86', 'newlib',
                       'glibc', 'pnacl', 'win', 'linux'], True),
     'CONFIGS' : (list, ['Debug', 'Release'], False),
@@ -45,7 +46,7 @@ DSC_FORMAT = {
     'DATA': (list, '', False),
     'TITLE': (str, '', False),
     'GROUP': (str, '', False),
-    'EXPERIMENTAL': (bool, [True, False], False)
+    'EXPERIMENTAL': (bool, [True, False], False),
 }
 
 def IgnoreMsgFunc(test):

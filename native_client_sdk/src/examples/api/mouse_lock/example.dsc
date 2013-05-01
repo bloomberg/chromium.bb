@@ -1,4 +1,5 @@
 {
+  'DISABLE_PACKAGE': True,
   'TOOLS': ['newlib', 'glibc', 'pnacl', 'win', 'linux'],
   'TARGETS': [
     {

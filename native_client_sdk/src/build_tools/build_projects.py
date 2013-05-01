@@ -69,7 +69,7 @@ def UpdateHelpers(pepperdir, platform, clobber=False):
 
 
 def UpdateProjects(pepperdir, platform, project_tree, toolchains,
-                   clobber=False, configs=None):
+                   clobber=False, configs=None, first_toolchain=False):
   if configs is None:
     configs = ['Debug', 'Release']
   if not os.path.exists(os.path.join(pepperdir, 'tools')):
@@ -106,7 +106,9 @@ def UpdateProjects(pepperdir, platform, project_tree, toolchains,
     # Generate individual projects
     for desc in projects:
       srcroot = os.path.dirname(desc['FILEPATH'])
-      generate_make.ProcessProject(srcroot, pepperdir, desc, toolchains)
+      generate_make.ProcessProject(srcroot, pepperdir, desc, toolchains,
+                                   configs=configs,
+                                   first_toolchain=first_toolchain)
 
       if branch.startswith('examples'):
         landing_page.AddDesc(desc)

@@ -4,9 +4,9 @@
 
 var itrMax = 1000;
 var itrCount = 0;
-var itrSend = new Float64Array(itr_max);
-var itrNaCl = new Float64Array(itr_max);
-var itrRecv = new Float64Array(itr_max);
+var itrSend = new Float64Array(itrMax);
+var itrNaCl = new Float64Array(itrMax);
+var itrRecv = new Float64Array(itrMax);
 var delay = 0;
 
 function attachListeners() {
@@ -60,7 +60,7 @@ function handleMessage(message_event) {
       computeMS += itrRecv[i] - itrSend[i];
     }
 
-    SetStats(naclMS, computeMS, itrRecv[itrMax - 1] - itrSend[0]);
+    setStats(naclMS, computeMS, itrRecv[itrMax - 1] - itrSend[0]);
   } else {
     itrSend[itrCount] = (new Date()).getTime();
     common.naclModule.postMessage(delay);
