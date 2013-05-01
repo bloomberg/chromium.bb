@@ -10,7 +10,6 @@ that name.
 import json
 import logging
 import optparse
-import Queue
 import re
 import sys
 import threading
@@ -80,7 +79,7 @@ def retrieve_results(base_url, test_key, timeout, should_stop):
   while True:
     if timeout and (now() - start) >= timeout:
       logging.warning('retrieve_results(%s) timed out', base_url)
-      return None
+      return {}
     # Do retries ourselve.
     response = run_isolated.url_open(
         result_url, retry_404=False, retry_50x=False)
@@ -92,7 +91,7 @@ def retrieve_results(base_url, test_key, timeout, should_stop):
         run_isolated.HttpService.sleep_before_retry(1, remaining)
     else:
       try:
-        data = json.load(response)
+        data = json.load(response) or {}
       except (ValueError, TypeError):
         logging.warning(
             'Received corrupted data for test_key %s. Retrying.', test_key)
@@ -102,56 +101,46 @@ def retrieve_results(base_url, test_key, timeout, should_stop):
           run_isolated.url_open('%s/cleanup_results' % base_url, data=params)
           return data
     if should_stop.get():
-      return None
+      return {}
 
 
-def yield_results(swarm_base_url, shard_count, test_keys, timeout):
+def yield_results(swarm_base_url, shard_count, test_keys, timeout, max_threads):
   """Yields swarm test results from the swarm server as (index, result).
 
   If shard_count < len(test_keys), it will return as soon as all the shards
   under shard_count are retrieved. It may return duplicate if they are returned
   before the slowest shard.
+
+  max_threads is optional and is used to limit the number of parallel fetches
+  done. Since in general the number of test_keys is in the range <=10, it's not
+  worth normally to limit the number threads. Mostly used for testing purposes.
   """
   shards_remaining = range(shard_count)
-  results = Queue.Queue()
-  threads = []
+  number_threads = (
+      min(max_threads, len(test_keys)) if max_threads else len(test_keys))
   should_stop = Bit()
-  def append(k):
-    """Swallows exceptions."""
-    try:
-      r = retrieve_results(swarm_base_url, k, timeout, should_stop)
-    except Exception as e:
-      logging.exception('Dang')
-      r = e
-    results.put(r)
-  for test_key in test_keys:
-    t = threading.Thread(target=append, args=(test_key,))
-    t.daemon = True
-    t.start()
-    threads.append(t)
-
   results_remaining = len(test_keys)
-  try:
-    while shards_remaining and results_remaining:
-      # Retrieve the number of shard count, even if lower than test_keys.
-      result = results.get()
-      results_remaining -= 1
-      if isinstance(result, Exception):
-        raise result
-      if result:
-        # TODO(maruel): Quite adhoc.
-        match = SHARD_LINE.search(result['output'])
-        shard_index = int(match.group(1)) - 1 if match else 0
-        if shard_index in shards_remaining:
-          shards_remaining.remove(shard_index)
-          yield shard_index, result
-        else:
-          logging.warning('Ignoring duplicate shard index %d', shard_index)
-  finally:
-    # Done, kill the remaining threads.
-    should_stop.set()
-    for t in threads:
-      t.join()
+  with run_isolated.ThreadPool(number_threads, number_threads, 0) as pool:
+    try:
+      for test_key in test_keys:
+        pool.add_task(
+            0, retrieve_results, swarm_base_url, test_key, timeout, should_stop)
+      while shards_remaining and results_remaining:
+        result = pool.get_one_result()
+        results_remaining -= 1
+        if result:
+          # TODO(maruel): Quite adhoc. Should look at result['shard_index']
+          # instead once Swarm returns this information.
+          match = SHARD_LINE.search(result['output'])
+          shard_index = int(match.group(1)) - 1 if match else 0
+          if shard_index in shards_remaining:
+            shards_remaining.remove(shard_index)
+            yield shard_index, result
+          else:
+            logging.warning('Ignoring duplicate shard index %d', shard_index)
+    finally:
+      # Done, kill the remaining threads.
+      should_stop.set()
 
 
 def parse_args():
@@ -202,7 +191,7 @@ def main():
   options.shards = len(test_keys) if options.shards == -1 else options.shards
   exit_code = None
   for _index, output in yield_results(
-      options.url, options.shards, test_keys, options.timeout):
+      options.url, options.shards, test_keys, options.timeout, None):
     print(
         '%s/%s: %s' % (
             output['machine_id'], output['machine_tag'], output['exit_codes']))

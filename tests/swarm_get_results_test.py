@@ -128,7 +128,7 @@ def get_swarm_results(shard_count, keys):
   """
   return list(
       swarm_get_results.yield_results(
-          'http://host:9001', shard_count, keys, 10.))
+          'http://host:9001', shard_count, keys, 10., None))
 
 
 class TestCase(auto_stub.TestCase):
