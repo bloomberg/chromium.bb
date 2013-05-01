@@ -58,6 +58,10 @@
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
+#if defined(OS_ANDROID)
+#include "content/renderer/android/synchronous_compositor_output_surface.h"
+#endif
+
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
@@ -580,6 +584,16 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface() {
       CreateGraphicsContext3D(attributes);
   if (!context)
     return scoped_ptr<cc::OutputSurface>();
+
+#if defined(OS_ANDROID)
+  if (command_line.HasSwitch(switches::kEnableSynchronousRendererCompositor)) {
+    // TODO(joth): Move above the |context| creation step above when the
+    // SynchronousCompositor no longer depends on externally created context.
+    return scoped_ptr<cc::OutputSurface>(
+        new SynchronousCompositorOutputSurface(routing_id(),
+                                               context));
+  }
+#endif
 
   bool composite_to_mailbox =
       command_line.HasSwitch(cc::switches::kCompositeToMailbox);

@@ -1,0 +1,6 @@
+# While the SynchronousCompositor API is in active development include
+# all the following owners in any changes under this path.
+
+jamesr@chromium.org
+joth@chromium.org
+mkosiba@chromium.org

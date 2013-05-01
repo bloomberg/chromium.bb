@@ -1,0 +1,8 @@
+include_rules = [
+  # In order to meet synchronous renderer requirements we need to make direct
+  # calls from android_webview/browser/in_process into some APIs that logically
+  # live in the renderer side.
+  "+android_webview/renderer/aw_content_renderer_client.h",
+  "+content/public/renderer/android",
+  # Include joth@chromium.org on the review for any additions to this file.
+]
