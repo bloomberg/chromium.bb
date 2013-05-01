@@ -34,6 +34,7 @@
 #include "extensions/common/constants.h"
 #include "webkit/blob/scoped_file.h"
 #include "webkit/fileapi/file_system_url.h"
+#include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/syncable/sync_file_metadata.h"
 #include "webkit/fileapi/syncable/sync_file_type.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
@@ -77,6 +78,21 @@ FileChange CreateFileChange(bool is_deleted) {
   if (is_deleted)
     return FileChange(FileChange::FILE_CHANGE_DELETE, SYNC_FILE_TYPE_UNKNOWN);
   return FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE, SYNC_FILE_TYPE_FILE);
+}
+
+std::string PathToTitle(const base::FilePath& path) {
+  if (!IsSyncDirectoryOperationEnabled())
+    return path.AsUTF8Unsafe();
+
+  return fileapi::FilePathToString(
+      base::FilePath(fileapi::VirtualPath::GetNormalizedFilePath(path)));
+}
+
+base::FilePath TitleToPath(const std::string& title) {
+  if (!IsSyncDirectoryOperationEnabled())
+    return base::FilePath::FromUTF8Unsafe(title);
+
+  return fileapi::StringToFilePath(title).NormalizePathSeparators();
 }
 
 }  // namespace
@@ -1023,7 +1039,7 @@ void DriveFileSyncService::ApplyLocalChangeInternal(
       sync_client_->UploadNewFile(
           origin_resource_id,
           local_file_path,
-          url.path().AsUTF8Unsafe(),
+          PathToTitle(url.path()),
           base::Bind(&DriveFileSyncService::DidUploadNewFileForLocalSync,
                     AsWeakPtr(), base::Passed(&param)));
       return;
@@ -1249,7 +1265,7 @@ void DriveFileSyncService::DidUploadExistingFileForLocalSync(
       sync_client_->UploadNewFile(
           metadata_store_->GetResourceIdForOrigin(url.origin()),
           local_file_path,
-          url.path().AsUTF8Unsafe(),
+          PathToTitle(url.path()),
           base::Bind(&DriveFileSyncService::DidUploadNewFileForLocalSync,
                      AsWeakPtr(), base::Passed(&param)));
       return;
@@ -1808,7 +1824,7 @@ bool DriveFileSyncService::AppendRemoteChange(
     int64 changestamp,
     RemoteSyncType sync_type) {
   // TODO(tzik): Normalize the path here.
-  base::FilePath path = base::FilePath::FromUTF8Unsafe(entry.title());
+  base::FilePath path = TitleToPath(entry.title());
   if (entry.is_folder())
     return false;
   return AppendRemoteChangeInternal(
