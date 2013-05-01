@@ -74,16 +74,11 @@ public class TraceEvent {
             try {
                 Class<?> traceClass = Class.forName("android.os.Trace");
                 long traceTagView = traceClass.getField("TRACE_TAG_VIEW").getLong(null);
-                String propertyTraceTagEnableFlags = (String) traceClass.getField(
-                        "PROPERTY_TRACE_TAG_ENABLEFLAGS").get(null);
-
-                Class<?> systemPropertiesClass = Class.forName("android.os.SystemProperties");
-                Method systemPropertiesGetLongMethod = systemPropertiesClass.getDeclaredMethod(
-                        "getLong", String.class, Long.TYPE);
-                long enabledFlags = (Long) systemPropertiesGetLongMethod.invoke(
-                        null, propertyTraceTagEnableFlags, 0);
-                Log.d("TraceEvent", "New enabled flags: " + enabledFlags);
-                if ((enabledFlags & traceTagView) != 0) {
+                Method isTagEnabledMethod = traceClass.getDeclaredMethod(
+                        "isTagEnabled", Long.TYPE);
+                Boolean viewTagEnabled = (Boolean) isTagEnabledMethod.invoke(null, traceTagView);
+                Log.d("TraceEvent", "View tag enabled: " + viewTagEnabled.booleanValue());
+                if (viewTagEnabled.booleanValue()) {
                     nativeStartATrace();
                     enabled = true;
                 } else {
