@@ -208,6 +208,14 @@ class PPAPI_SHARED_EXPORT Resource : public base::RefCounted<Resource> {
   // Logs a message to the console from this resource.
   void Log(PP_LogLevel level, const std::string& message);
 
+  // Removes the resource from the ResourceTracker's tables. This normally
+  // happens as part of Resource destruction, but if a subclass destructor
+  // has a risk of re-entering destruction via the ResourceTracker, it can
+  // call this explicitly to get rid of the table entry before continuing
+  // with the destruction. If the resource is not in the ResourceTracker's
+  // tables, silently does nothing. See http://crbug.com/159429.
+  void RemoveFromResourceTracker();
+
   // Notifications for subclasses.
   virtual void LastPluginRefWasDeleted() {}
   virtual void InstanceWasDeleted() {}
