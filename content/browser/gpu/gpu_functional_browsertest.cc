@@ -117,8 +117,13 @@ IN_PROC_BROWSER_TEST_F(GpuFunctionalTest, MANUAL_Test3dCss) {
   VerifyGPUProcessOnPage("functional_3d_css.html", true);
 }
 
+// TestGpuWithVideo is failing on all platforms
+// http://crbug.com/237208
+#define MANUAL_TestGpuWithVideo DISABLED_MANUAL_TestGpuWithVideo
+
 // Verify that gpu process is started when viewing video.
 IN_PROC_BROWSER_TEST_F(GpuFunctionalTest, MANUAL_TestGpuWithVideo) {
   VerifyGPUProcessOnPage("functional_color2.ogv", false);
 }
+
 } // namespace content
