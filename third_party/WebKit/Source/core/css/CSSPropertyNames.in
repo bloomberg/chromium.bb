@@ -102,9 +102,6 @@ content
 counter-increment
 counter-reset
 cursor
-#if defined(ENABLE_CURSOR_VISIBILITY) && ENABLE_CURSOR_VISIBILITY
--webkit-cursor-visibility
-#endif
 empty-cells
 float
 font-stretch

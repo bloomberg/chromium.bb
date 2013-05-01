@@ -2003,13 +2003,6 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         break;
     }
 
-#if ENABLE(CURSOR_VISIBILITY)
-    case CSSPropertyWebkitCursorVisibility:
-        if (id == CSSValueAuto || id == CSSValueAutoHide)
-            validPrimitive = true;
-        break;
-#endif
-
     case CSSPropertyBackgroundAttachment:
 #if ENABLE(CSS_COMPOSITING)
     case CSSPropertyBackgroundBlendMode:

@@ -158,9 +158,6 @@ protected:
                 && (_text_transform == other._text_transform)
                 && (_text_decorations == other._text_decorations)
                 && (_cursor_style == other._cursor_style)
-#if ENABLE(CURSOR_VISIBILITY)
-                && (m_cursorVisibility == other.m_cursorVisibility)
-#endif
                 && (_direction == other._direction)
                 && (_white_space == other._white_space)
                 && (_border_collapse == other._border_collapse)
@@ -183,9 +180,6 @@ protected:
         unsigned _text_transform : 2; // ETextTransform
         unsigned _text_decorations : ETextDecorationBits;
         unsigned _cursor_style : 6; // ECursor
-#if ENABLE(CURSOR_VISIBILITY)
-        unsigned m_cursorVisibility : 1; // CursorVisibility
-#endif
         unsigned _direction : 1; // TextDirection
         unsigned _white_space : 3; // EWhiteSpace
         // 32 bits
@@ -291,9 +285,6 @@ protected:
         inherited_flags._text_transform = initialTextTransform();
         inherited_flags._text_decorations = initialTextDecoration();
         inherited_flags._cursor_style = initialCursor();
-#if ENABLE(CURSOR_VISIBILITY)
-        inherited_flags.m_cursorVisibility = initialCursorVisibility();
-#endif
         inherited_flags._direction = initialDirection();
         inherited_flags._white_space = initialWhiteSpace();
         inherited_flags._border_collapse = initialBorderCollapse();
@@ -699,10 +690,6 @@ public:
     Length paddingEnd() const { return surround->padding.end(writingMode(), direction()); }
 
     ECursor cursor() const { return static_cast<ECursor>(inherited_flags._cursor_style); }
-#if ENABLE(CURSOR_VISIBILITY)
-    CursorVisibility cursorVisibility() const { return static_cast<CursorVisibility>(inherited_flags.m_cursorVisibility); }
-#endif
-
     CursorList* cursors() const { return rareInheritedData->cursorData.get(); }
 
     EInsideLink insideLink() const { return static_cast<EInsideLink>(inherited_flags._insideLink); }
@@ -1162,10 +1149,6 @@ public:
     void setCursorList(PassRefPtr<CursorList>);
     void clearCursorList();
 
-#if ENABLE(CURSOR_VISIBILITY)
-    void setCursorVisibility(CursorVisibility c) { inherited_flags.m_cursorVisibility = c; }
-#endif
-
     void setInsideLink(EInsideLink insideLink) { inherited_flags._insideLink = insideLink; }
     void setIsLink(bool b) { noninherited_flags.setIsLink(b); }
 
@@ -1520,9 +1503,6 @@ public:
     static short initialHorizontalBorderSpacing() { return 0; }
     static short initialVerticalBorderSpacing() { return 0; }
     static ECursor initialCursor() { return CURSOR_AUTO; }
-#if ENABLE(CURSOR_VISIBILITY)
-    static CursorVisibility initialCursorVisibility() { return CursorVisibilityAuto; }
-#endif
     static Color initialColor() { return Color::black; }
     static StyleImage* initialListStyleImage() { return 0; }
     static unsigned initialBorderWidth() { return 3; }

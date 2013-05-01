@@ -112,7 +112,7 @@ public:
         HTMLMarqueeElement,
         CSSOverflowMarquee,
         Reflection,
-        CursorVisibility,
+        CursorVisibility, // Removed, was -webkit-cursor-visibility.
         StorageInfo,
         XFrameOptions,
         XFrameOptionsSameOrigin,

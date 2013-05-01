@@ -254,9 +254,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitColumnRuleWidth,
     CSSPropertyWebkitColumnSpan,
     CSSPropertyWebkitColumnWidth,
-#if ENABLE(CURSOR_VISIBILITY)
-    CSSPropertyWebkitCursorVisibility,
-#endif
     CSSPropertyWebkitFilter,
     CSSPropertyWebkitAlignContent,
     CSSPropertyWebkitAlignItems,
@@ -1834,10 +1831,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             }
             return value.release();
         }
-#if ENABLE(CURSOR_VISIBILITY)
-        case CSSPropertyWebkitCursorVisibility:
-            return cssValuePool().createValue(style->cursorVisibility());
-#endif
         case CSSPropertyDirection:
             return cssValuePool().createValue(style->direction());
         case CSSPropertyDisplay:

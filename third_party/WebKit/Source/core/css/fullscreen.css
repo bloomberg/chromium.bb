@@ -31,10 +31,6 @@ video:-webkit-full-screen, audio:-webkit-full-screen {
     display: block !important;
 }
 
-:-webkit-full-screen video:hover {
-    -webkit-cursor-visibility:auto-hide;
-}
-
 img:-webkit-full-screen {
     width: auto;
     height: 100%;
