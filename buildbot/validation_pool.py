@@ -816,6 +816,8 @@ class ValidationPool(object):
   MAX_TIMEOUT = 60 * 60 * 4
   SLEEP_TIMEOUT = 30
   STATUS_URL = 'https://chromiumos-status.appspot.com/current?format=json'
+  STATUS_PASSED = manifest_version.BuilderStatus.STATUS_PASSED
+  STATUS_FAILED = manifest_version.BuilderStatus.STATUS_FAILED
 
   # The grace period (in seconds) before we reject a patch due to dependency
   # errors.
@@ -1414,9 +1416,9 @@ class ValidationPool(object):
     """Handler that is called when the Pre-CQ successfully verifies a change."""
     msg = '%(queue)s successfully verified your change in %(build_log)s .'
     for change in self.changes:
-      self._SendNotification(change, msg)
-      status = manifest_version.BuilderStatus.STATUS_PASSED
-      self.UpdatePreCQStatus(change, status)
+      if self.GetPreCQStatus(change) != self.STATUS_PASSED:
+        self._SendNotification(change, msg)
+        self.UpdatePreCQStatus(change, self.STATUS_PASSED)
 
   def _HandleCouldNotSubmit(self, change):
     """Handler that is called when Paladin can't submit a change.
@@ -1566,19 +1568,24 @@ class ValidationPool(object):
       messages: A list of build failure messages from supporting builders.
           These must be ValidationFailedMessage objects.
     """
+    changes = []
+    for change in self.changes:
+      # Ignore changes that were already verified.
+      if self.pre_cq and self.GetPreCQStatus(change) == self.STATUS_PASSED:
+        continue
+      changes.append(change)
 
     # First, calculate which changes are likely at fault for the failure.
-    suspects = self._FindSuspects(self.changes, messages)
+    suspects = self._FindSuspects(changes, messages)
 
     # Send out failure notifications for each change.
-    for change in self.changes:
+    for change in changes:
       msg = self._CreateValidationFailureMessage(self.pre_cq, change, suspects,
                                                  messages)
       self._SendNotification(change, '%(details)s', details=msg)
       if change in suspects:
         if self.pre_cq:
-          status = manifest_version.BuilderStatus.STATUS_FAILED
-          self.UpdatePreCQStatus(change, status)
+          self.UpdatePreCQStatus(change, self.STATUS_FAILED)
         self._helper_pool.ForChange(change).RemoveCommitReady(
             change, dryrun=self.dryrun)
 
@@ -1627,6 +1634,8 @@ class ValidationPool(object):
     Args:
       change: GerritPatch instance to operate upon.
     """
+    if self.pre_cq and self.GetPreCQStatus(change) == self.STATUS_PASSED:
+      return
     msg = ('%(queue)s has picked up your change. '
            'You can follow along at %(build_log)s .')
     self._SendNotification(change, msg)
