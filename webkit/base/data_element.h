@@ -5,6 +5,7 @@
 #ifndef WEBKIT_BASE_DATA_ELEMENT_H_
 #define WEBKIT_BASE_DATA_ELEMENT_H_
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -34,11 +35,24 @@ class WEBKIT_BASE_EXPORT DataElement {
   Type type() const { return type_; }
   const char* bytes() const { return bytes_ ? bytes_ : &buf_[0]; }
   const base::FilePath& path() const { return path_; }
-  const GURL& url() const { return url_; }
+  const GURL& filesystem_url() const { return filesystem_url_; }
+
+  // TODO(michaeln): crbug/174200, fully switch to using string uuids.
+  // Note: Identifying blobs by url is being deprecated, but while
+  // transitioning, there's a little of both going on in the project.
+  const std::string& blob_uuid() const { return blob_uuid_; }
+  const GURL& blob_url() const { return blob_url_; }
   uint64 offset() const { return offset_; }
   uint64 length() const { return length_; }
   const base::Time& expected_modification_time() const {
     return expected_modification_time_;
+  }
+
+  // TODO(michaeln): fixup callers to use filesytem_url() and blob_uuid().
+  const GURL& url() const {
+    if (type_ == TYPE_FILE_FILESYSTEM)
+      return filesystem_url_;
+    return blob_url_;
   }
 
   // Sets TYPE_BYTES data. This copies the given data into the element.
@@ -65,6 +79,9 @@ class WEBKIT_BASE_EXPORT DataElement {
   void SetToBlobUrl(const GURL& blob_url) {
     SetToBlobUrlRange(blob_url, 0, kuint64max);
   }
+  void SetToBlob(const std::string& uuid) {
+    SetToBlobRange(uuid, 0, kuint64max);
+  }
 
   // Sets TYPE_FILE data with range.
   void SetToFilePathRange(const base::FilePath& path,
@@ -74,6 +91,8 @@ class WEBKIT_BASE_EXPORT DataElement {
   // Sets TYPE_BLOB data with range.
   void SetToBlobUrlRange(const GURL& blob_url,
                          uint64 offset, uint64 length);
+  void SetToBlobRange(const std::string& blob_uuid,
+                      uint64 offset, uint64 length);
 
   // Sets TYPE_FILE_FILESYSTEM with range.
   void SetToFileSystemUrlRange(const GURL& filesystem_url,
@@ -85,7 +104,9 @@ class WEBKIT_BASE_EXPORT DataElement {
   std::vector<char> buf_;  // For TYPE_BYTES.
   const char* bytes_;  // For TYPE_BYTES.
   base::FilePath path_;  // For TYPE_FILE.
-  GURL url_;  // For TYPE_BLOB or TYPE_FILE_FILESYSTEM.
+  GURL filesystem_url_;  // For TYPE_FILE_FILESYSTEM.
+  GURL blob_url_;
+  std::string blob_uuid_;
   uint64 offset_;
   uint64 length_;
   base::Time expected_modification_time_;
@@ -104,8 +125,10 @@ inline bool operator==(const DataElement& a, const DataElement& b) {
       return a.path() == b.path() &&
              a.expected_modification_time() == b.expected_modification_time();
     case DataElement::TYPE_BLOB:
+      return a.blob_uuid().empty() ? (a.blob_url() == b.blob_url())
+                                   : (a.blob_uuid() == b.blob_uuid());
     case DataElement::TYPE_FILE_FILESYSTEM:
-      return a.url() == b.url();
+      return a.filesystem_url() == b.filesystem_url();
     case DataElement::TYPE_UNKNOWN:
       NOTREACHED();
       return false;

@@ -5,6 +5,7 @@
 #ifndef WEBKIT_BLOB_BLOB_DATA_H_
 #define WEBKIT_BLOB_BLOB_DATA_H_
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -22,7 +23,9 @@ class WEBKIT_STORAGE_EXPORT BlobData : public base::RefCounted<BlobData> {
  public:
   typedef webkit_base::DataElement Item;
 
+  // TODO(michaeln): remove the empty ctor when we fully transition to uuids.
   BlobData();
+  explicit BlobData(const std::string& uuid);
 
   void AppendData(const std::string& data) {
     AppendData(data.c_str(), data.size());
@@ -33,7 +36,10 @@ class WEBKIT_STORAGE_EXPORT BlobData : public base::RefCounted<BlobData> {
   void AppendFile(const base::FilePath& file_path, uint64 offset, uint64 length,
                   const base::Time& expected_modification_time);
 
+  // Note: Identifying blobs by url is being deprecated, but while transitioning
+  // there's a little of both going on in the project.
   void AppendBlob(const GURL& blob_url, uint64 offset, uint64 length);
+  void AppendBlob(const std::string& uuid, uint64 offset, uint64 length);
 
   void AppendFileSystemFile(const GURL& url, uint64 offset, uint64 length,
                             const base::Time& expected_modification_time);
@@ -42,8 +48,8 @@ class WEBKIT_STORAGE_EXPORT BlobData : public base::RefCounted<BlobData> {
     shareable_files_.push_back(reference);
   }
 
+  const std::string& uuid() const { return uuid_; }
   const std::vector<Item>& items() const { return items_; }
-
   const std::string& content_type() const { return content_type_; }
   void set_content_type(const std::string& content_type) {
     content_type_ = content_type;
@@ -62,6 +68,7 @@ class WEBKIT_STORAGE_EXPORT BlobData : public base::RefCounted<BlobData> {
   friend class base::RefCounted<BlobData>;
   virtual ~BlobData();
 
+  std::string uuid_;
   std::string content_type_;
   std::string content_disposition_;
   std::vector<Item> items_;

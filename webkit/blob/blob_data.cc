@@ -12,6 +12,9 @@
 namespace webkit_blob {
 
 BlobData::BlobData() {}
+BlobData::BlobData(const std::string& uuid)
+    : uuid_(uuid) {
+}
 
 BlobData::~BlobData() {}
 
@@ -31,9 +34,16 @@ void BlobData::AppendFile(const base::FilePath& file_path,
 }
 
 void BlobData::AppendBlob(const GURL& blob_url, uint64 offset, uint64 length) {
-  DCHECK(length > 0);
+  DCHECK_GT(length, 0ul);
   items_.push_back(Item());
   items_.back().SetToBlobUrlRange(blob_url, offset, length);
+}
+
+void BlobData::AppendBlob(const std::string& uuid,
+                          uint64 offset, uint64 length) {
+  DCHECK_GT(length, 0ul);
+  items_.push_back(Item());
+  items_.back().SetToBlobRange(uuid, offset, length);
 }
 
 void BlobData::AppendFileSystemFile(
