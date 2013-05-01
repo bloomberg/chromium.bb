@@ -558,10 +558,8 @@
     attribute XMLHttpRequestExceptionConstructor XMLHttpRequestException;
     attribute XSLTProcessorConstructor XSLTProcessor; // Usable with the new operator
 
-#if defined(ENABLE_CHANNEL_MESSAGING) && ENABLE_CHANNEL_MESSAGING
     attribute MessagePortConstructor MessagePort;
     attribute MessageChannelConstructor MessageChannel; // Usable with the new operator
-#endif
 
     attribute DOMPluginConstructor Plugin;
     attribute DOMPluginArrayConstructor PluginArray;

@@ -60,9 +60,7 @@
     attribute MessageEventConstructor MessageEvent;
     attribute WorkerLocationConstructor WorkerLocation;
 
-#if defined(ENABLE_CHANNEL_MESSAGING) && ENABLE_CHANNEL_MESSAGING
     attribute MessageChannelConstructor MessageChannel;
-#endif
     attribute EventSourceConstructor EventSource;
     attribute XMLHttpRequestConstructor XMLHttpRequest;
 
