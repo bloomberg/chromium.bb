@@ -417,7 +417,6 @@ public:
     ShadowRoot* shadowRoot() const;
 
     bool hasAuthorShadowRoot() const { return shadowRoot(); }
-    virtual void willAddAuthorShadowRoot() { }
 
     ShadowRoot* userAgentShadowRoot() const;
     ShadowRoot* ensureUserAgentShadowRoot();
@@ -566,9 +565,9 @@ public:
     };
     
     void webkitRequestFullScreen(unsigned short flags);
-    virtual bool containsFullScreenElement() const;
-    virtual void setContainsFullScreenElement(bool);
-    virtual void setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(bool);
+    bool containsFullScreenElement() const;
+    void setContainsFullScreenElement(bool);
+    void setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(bool);
 
     // W3C API
     void webkitRequestFullscreen();
@@ -578,7 +577,7 @@ public:
 
     void webkitRequestPointerLock();
 
-    virtual bool isSpellCheckingEnabled() const;
+    bool isSpellCheckingEnabled() const;
 
     PassRefPtr<RenderStyle> styleForRenderer();
 
