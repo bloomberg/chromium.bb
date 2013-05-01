@@ -11,6 +11,7 @@
     </messages>
   </release>
   <translations>
+    <file lang="am" path="translations/android_ui_strings_am.xtb" />
     <file lang="ar" path="translations/android_ui_strings_ar.xtb" />
     <file lang="bg" path="translations/android_ui_strings_bg.xtb" />
     <file lang="ca" path="translations/android_ui_strings_ca.xtb" />
@@ -46,6 +47,7 @@
     <file lang="sl" path="translations/android_ui_strings_sl.xtb" />
     <file lang="sr" path="translations/android_ui_strings_sr.xtb" />
     <file lang="sv" path="translations/android_ui_strings_sv.xtb" />
+    <file lang="sw" path="translations/android_ui_strings_sw.xtb" />
     <file lang="th" path="translations/android_ui_strings_th.xtb" />
     <file lang="tr" path="translations/android_ui_strings_tr.xtb" />
     <file lang="uk" path="translations/android_ui_strings_uk.xtb" />
@@ -54,6 +56,7 @@
     <file lang="zh-TW" path="translations/android_ui_strings_zh-TW.xtb" />
   </translations>
   <outputs>
+    <output filename="values-am/android_ui_strings.xml" lang="am" type="android" />
     <output filename="values-ar/android_ui_strings.xml" lang="ar" type="android" />
     <output filename="values-bg/android_ui_strings.xml" lang="bg" type="android" />
     <output filename="values-ca/android_ui_strings.xml" lang="ca" type="android" />
@@ -90,6 +93,7 @@
     <output filename="values-sl/android_ui_strings.xml" lang="sl" type="android" />
     <output filename="values-sr/android_ui_strings.xml" lang="sr" type="android" />
     <output filename="values-sv/android_ui_strings.xml" lang="sv" type="android" />
+    <output filename="values-sw/android_ui_strings.xml" lang="sw" type="android" />
     <output filename="values-th/android_ui_strings.xml" lang="th" type="android" />
     <output filename="values-tr/android_ui_strings.xml" lang="tr" type="android" />
     <output filename="values-uk/android_ui_strings.xml" lang="uk" type="android" />
