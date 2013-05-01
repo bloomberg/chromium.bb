@@ -91,6 +91,7 @@ const char kFileKind[] = "drive#file";
 const char kTitle[] = "title";
 const char kMimeType[] = "mimeType";
 const char kCreatedDate[] = "createdDate";
+const char kModifiedDate[] = "modifiedDate";
 const char kModifiedByMeDate[] = "modifiedByMeDate";
 const char kLastViewedByMeDate[] = "lastViewedByMeDate";
 const char kSharedWithMeDate[] = "sharedWithMeDate";
@@ -529,6 +530,10 @@ void FileResource::RegisterJSONConverter(
   converter->RegisterCustomField<base::Time>(
       kCreatedDate,
       &FileResource::created_date_,
+      &util::GetTimeFromString);
+  converter->RegisterCustomField<base::Time>(
+      kModifiedDate,
+      &FileResource::modified_date_,
       &util::GetTimeFromString);
   converter->RegisterCustomField<base::Time>(
       kModifiedByMeDate,

@@ -30,7 +30,7 @@ class ResourceMetadataStorage {
  public:
   // This should be incremented when incompatibility change is made to DB
   // format.
-  static const int kDBVersion = 4;
+  static const int kDBVersion = 5;
 
   explicit ResourceMetadataStorage(const base::FilePath& directory_path);
   virtual ~ResourceMetadataStorage();

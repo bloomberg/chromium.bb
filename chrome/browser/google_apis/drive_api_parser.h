@@ -495,6 +495,9 @@ class FileResource {
   // Returns created time of this file.
   const base::Time& created_date() const { return created_date_; }
 
+  // Returns modified time of this file.
+  const base::Time& modified_date() const { return modified_date_; }
+
   // Returns modification time by the user.
   const base::Time& modified_by_me_date() const { return modified_by_me_date_; }
 
@@ -609,6 +612,7 @@ class FileResource {
   std::string mime_type_;
   FileLabels labels_;
   base::Time created_date_;
+  base::Time modified_date_;
   base::Time modified_by_me_date_;
   base::Time last_viewed_by_me_date_;
   base::Time shared_with_me_date_;

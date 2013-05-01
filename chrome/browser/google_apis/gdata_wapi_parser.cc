@@ -760,7 +760,7 @@ scoped_ptr<ResourceEntry> ResourceEntry::CreateFromFileResource(
     entry->links_.push_back(link);
   }
   // entry->categories_
-  entry->updated_time_ = file.modified_by_me_date();
+  entry->updated_time_ = file.modified_date();
   entry->last_viewed_time_ = file.last_viewed_by_me_date();
 
   entry->FillRemainingFields();

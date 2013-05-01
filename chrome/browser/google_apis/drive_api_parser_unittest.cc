@@ -286,6 +286,7 @@ TEST(DriveAPIParserTest, FileListParser) {
   base::Time modified_time;
   ASSERT_TRUE(
       util::GetTimeFromString("2012-07-27T05:43:20.269Z", &modified_time));
+  EXPECT_EQ(modified_time, file1.modified_date());
   EXPECT_EQ(modified_time, file1.modified_by_me_date());
 
   ASSERT_EQ(1U, file1.parents().size());
