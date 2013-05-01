@@ -14,6 +14,7 @@
 #include "chromeos/dbus/bluetooth_device_client.h"
 #include "chromeos/dbus/bluetooth_manager_client.h"
 #include "chromeos/dbus/bluetooth_property.h"
+#include "chromeos/dbus/fake_old_bluetooth_adapter_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -735,182 +736,6 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
   DISALLOW_COPY_AND_ASSIGN(BluetoothAdapterClientImpl);
 };
 
-// The BluetoothAdapterClient implementation used on Linux desktop, which does
-// nothing.
-class BluetoothAdapterClientStubImpl : public BluetoothAdapterClient {
- public:
-  struct Properties : public BluetoothAdapterClient::Properties {
-    explicit Properties(const PropertyChangedCallback& callback)
-        : BluetoothAdapterClient::Properties(NULL, callback) {
-    }
-
-    virtual ~Properties() {
-    }
-
-    virtual void Get(dbus::PropertyBase* property,
-                     dbus::PropertySet::GetCallback callback) OVERRIDE {
-      VLOG(1) << "Get " << property->name();
-      callback.Run(false);
-    }
-
-    virtual void GetAll() OVERRIDE {
-      VLOG(1) << "GetAll";
-    }
-
-    virtual void Set(dbus::PropertyBase *property,
-                     dbus::PropertySet::SetCallback callback) OVERRIDE {
-      VLOG(1) << "Set " << property->name();
-      if (property->name() == "Powered") {
-        property->ReplaceValueWithSetValue();
-        callback.Run(true);
-      } else {
-        callback.Run(false);
-      }
-    }
-  };
-
-  BluetoothAdapterClientStubImpl() {
-    properties_.reset(new Properties(base::Bind(
-        &BluetoothAdapterClientStubImpl::OnPropertyChanged,
-        base::Unretained(this))));
-
-    properties_->address.ReplaceValue("hci0");
-    properties_->name.ReplaceValue("Fake Adapter");
-    properties_->pairable.ReplaceValue(true);
-
-    std::vector<dbus::ObjectPath> devices;
-    devices.push_back(dbus::ObjectPath("/fake/hci0/dev0"));
-    properties_->devices.ReplaceValue(devices);
-  }
-
-  // BluetoothAdapterClient override.
-  virtual void AddObserver(Observer* observer) OVERRIDE {
-    observers_.AddObserver(observer);
-  }
-
-  // BluetoothAdapterClient override.
-  virtual void RemoveObserver(Observer* observer) OVERRIDE {
-    observers_.RemoveObserver(observer);
-  }
-
-  // BluetoothAdapterClient override.
-  virtual Properties* GetProperties(const dbus::ObjectPath& object_path)
-      OVERRIDE {
-    VLOG(1) << "GetProperties: " << object_path.value();
-    if (object_path.value() == "/fake/hci0")
-      return properties_.get();
-    else
-      return NULL;
-  }
-
-  // BluetoothAdapterClient override.
-  virtual void RequestSession(const dbus::ObjectPath& object_path,
-                              const AdapterCallback& callback) OVERRIDE {
-    VLOG(1) << "RequestSession: " << object_path.value();
-    callback.Run(object_path, false);
-  }
-
-  // BluetoothAdapterClient override.
-  virtual void ReleaseSession(const dbus::ObjectPath& object_path,
-                              const AdapterCallback& callback) OVERRIDE {
-    VLOG(1) << "ReleaseSession: " << object_path.value();
-    callback.Run(object_path, false);
-  }
-
-  // BluetoothAdapterClient override.
-  virtual void StartDiscovery(const dbus::ObjectPath& object_path,
-                              const AdapterCallback& callback) OVERRIDE {
-    VLOG(1) << "StartDiscovery: " << object_path.value();
-    callback.Run(object_path, false);
-  }
-
-  // BluetoothAdapterClient override.
-  virtual void StopDiscovery(const dbus::ObjectPath& object_path,
-                             const AdapterCallback& callback) OVERRIDE {
-    VLOG(1) << "StopDiscovery: " << object_path.value();
-    callback.Run(object_path, false);
-  }
-
-  // BluetoothAdapterClient override.
-  virtual void FindDevice(const dbus::ObjectPath& object_path,
-                          const std::string& address,
-                          const DeviceCallback& callback) OVERRIDE {
-    VLOG(1) << "FindDevice: " << object_path.value() << " " << address;
-    callback.Run(dbus::ObjectPath(), false);
-  }
-
-  // BluetoothAdapterClient override.
-  virtual void CreateDevice(const dbus::ObjectPath& object_path,
-                            const std::string& address,
-                            const CreateDeviceCallback& callback,
-                            const CreateDeviceErrorCallback& error_callback)
-      OVERRIDE {
-    VLOG(1) << "CreateDevice: " << object_path.value() << " " << address;
-    error_callback.Run("", "");
-  }
-
-  // BluetoothAdapterClient override.
-  virtual void CreatePairedDevice(
-      const dbus::ObjectPath& object_path, const std::string& address,
-      const dbus::ObjectPath& agent_path, const std::string& capability,
-      const CreateDeviceCallback& callback,
-      const CreateDeviceErrorCallback& error_callback) OVERRIDE {
-    VLOG(1) << "CreatePairedDevice: " << object_path.value() << " " << address
-            << " " << agent_path.value() << " " << capability;
-    error_callback.Run("", "");
-  }
-
-  // BluetoothAdapterClient override.
-  virtual void CancelDeviceCreation(const dbus::ObjectPath& object_path,
-                                    const std::string& address,
-                                    const AdapterCallback& callback) OVERRIDE {
-    VLOG(1) << "CancelDeviceCreation: " << object_path.value()
-            << " " << address;
-    callback.Run(object_path, false);
-  }
-
-  // BluetoothAdapterClient override.
-  virtual void RemoveDevice(const dbus::ObjectPath& object_path,
-                            const dbus::ObjectPath& device_path,
-                            const AdapterCallback& callback) OVERRIDE {
-    VLOG(1) << "RemoveDevice: " << object_path.value()
-            << " " << device_path.value();
-    callback.Run(object_path, false);
-  }
-
-  // BluetoothAdapterClient override.
-  virtual void RegisterAgent(const dbus::ObjectPath& object_path,
-                             const dbus::ObjectPath& agent_path,
-                             const std::string& capability,
-                             const AdapterCallback& callback) OVERRIDE {
-    VLOG(1) << "RegisterAgent: " << object_path.value()
-            << " " << agent_path.value();
-    callback.Run(object_path, false);
-  }
-
-  // BluetoothAdapterClient override.
-  virtual void UnregisterAgent(const dbus::ObjectPath& object_path,
-                               const dbus::ObjectPath& agent_path,
-                               const AdapterCallback& callback) OVERRIDE {
-    VLOG(1) << "UnregisterAgent: " << object_path.value()
-            << " " << agent_path.value();
-    callback.Run(object_path, false);
-  }
-
- private:
-  void OnPropertyChanged(const std::string& property_name) {
-    FOR_EACH_OBSERVER(BluetoothAdapterClient::Observer, observers_,
-                      AdapterPropertyChanged(dbus::ObjectPath("/fake/hci0"),
-                                             property_name));
-  }
-
-  // List of observers interested in event notifications from us.
-  ObserverList<Observer> observers_;
-
-  // Static properties we return.
-  scoped_ptr<Properties> properties_;
-};
-
 BluetoothAdapterClient::BluetoothAdapterClient() {
 }
 
@@ -924,7 +749,7 @@ BluetoothAdapterClient* BluetoothAdapterClient::Create(
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new BluetoothAdapterClientImpl(bus, manager_client);
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new BluetoothAdapterClientStubImpl();
+  return new FakeOldBluetoothAdapterClient();
 }
 
 }  // namespace chromeos

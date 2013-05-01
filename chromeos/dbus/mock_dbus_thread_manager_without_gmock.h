@@ -26,6 +26,9 @@ class FakeBluetoothInputClient;
 class FakeBluetoothProfileManagerClient;
 class FakeCrosDisksClient;
 class FakeCryptohomeClient;
+class FakeOldBluetoothAdapterClient;
+class FakeOldBluetoothDeviceClient;
+class FakeOldBluetoothManagerClient;
 class FakeShillManagerClient;
 class FakeImageBurnerClient;
 class FakeSystemClockClient;
@@ -164,6 +167,7 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
   }
 
  private:
+  // These fake_bluetooth_*_client_ are for ExperimentalBluetooth*Client.
   scoped_ptr<FakeBluetoothAdapterClient> fake_bluetooth_adapter_client_;
   scoped_ptr<FakeBluetoothAgentManagerClient>
       fake_bluetooth_agent_manager_client_;
@@ -176,6 +180,12 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
   scoped_ptr<FakeImageBurnerClient> fake_image_burner_client_;
   scoped_ptr<FakeShillManagerClient> fake_shill_manager_client_;
   scoped_ptr<FakeSystemClockClient> fake_system_clock_client_;
+
+  // These fake_old_bluetooth_*_client_ are for old Bluetooth*Client.
+  // Will be removed once http://crbug.com/221813 is resolved.
+  scoped_ptr<FakeOldBluetoothManagerClient> fake_old_bluetooth_manager_client_;
+  scoped_ptr<FakeOldBluetoothAdapterClient> fake_old_bluetooth_adapter_client_;
+  scoped_ptr<FakeOldBluetoothDeviceClient> fake_old_bluetooth_device_client_;
 
   scoped_ptr<MockIBusClient> mock_ibus_client_;
   scoped_ptr<MockIBusConfigClient> mock_ibus_config_client_;

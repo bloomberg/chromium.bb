@@ -13,6 +13,9 @@
 #include "chromeos/dbus/fake_cros_disks_client.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/dbus/fake_image_burner_client.h"
+#include "chromeos/dbus/fake_old_bluetooth_adapter_client.h"
+#include "chromeos/dbus/fake_old_bluetooth_device_client.h"
+#include "chromeos/dbus/fake_old_bluetooth_manager_client.h"
 #include "chromeos/dbus/fake_shill_manager_client.h"
 #include "chromeos/dbus/fake_system_clock_client.h"
 #include "chromeos/dbus/ibus/mock_ibus_client.h"
@@ -36,6 +39,9 @@ MockDBusThreadManagerWithoutGMock::MockDBusThreadManagerWithoutGMock()
     fake_image_burner_client_(new FakeImageBurnerClient),
     fake_shill_manager_client_(new FakeShillManagerClient),
     fake_system_clock_client_(new FakeSystemClockClient),
+    fake_old_bluetooth_manager_client_(new FakeOldBluetoothManagerClient),
+    fake_old_bluetooth_adapter_client_(new FakeOldBluetoothAdapterClient),
+    fake_old_bluetooth_device_client_(new FakeOldBluetoothDeviceClient),
     mock_ibus_client_(new MockIBusClient),
     mock_ibus_config_client_(new MockIBusConfigClient),
     mock_ibus_input_context_client_(new MockIBusInputContextClient),
@@ -79,14 +85,12 @@ dbus::Bus* MockDBusThreadManagerWithoutGMock::GetIBusBus() {
 
 BluetoothAdapterClient*
     MockDBusThreadManagerWithoutGMock::GetBluetoothAdapterClient() {
-  NOTIMPLEMENTED();
-  return NULL;
+  return fake_old_bluetooth_adapter_client_.get();
 }
 
 BluetoothDeviceClient*
     MockDBusThreadManagerWithoutGMock::GetBluetoothDeviceClient() {
-  NOTIMPLEMENTED();
-  return NULL;
+  return fake_old_bluetooth_device_client_.get();
 }
 
 BluetoothInputClient*
@@ -97,8 +101,7 @@ BluetoothInputClient*
 
 BluetoothManagerClient*
     MockDBusThreadManagerWithoutGMock::GetBluetoothManagerClient() {
-  NOTIMPLEMENTED();
-  return NULL;
+  return fake_old_bluetooth_manager_client_.get();
 }
 
 BluetoothNodeClient*

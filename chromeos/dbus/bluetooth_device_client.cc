@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "chromeos/dbus/bluetooth_adapter_client.h"
 #include "chromeos/dbus/bluetooth_property.h"
+#include "chromeos/dbus/fake_old_bluetooth_device_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -463,131 +464,6 @@ class BluetoothDeviceClientImpl: public BluetoothDeviceClient,
   DISALLOW_COPY_AND_ASSIGN(BluetoothDeviceClientImpl);
 };
 
-// The BluetoothDeviceClient implementation used on Linux desktop, which does
-// nothing.
-class BluetoothDeviceClientStubImpl : public BluetoothDeviceClient {
- public:
-  struct Properties : public BluetoothDeviceClient::Properties {
-    explicit Properties(const PropertyChangedCallback& callback)
-        : BluetoothDeviceClient::Properties(NULL, callback) {
-    }
-
-    virtual ~Properties() {
-    }
-
-    virtual void Get(dbus::PropertyBase* property,
-                     dbus::PropertySet::GetCallback callback) OVERRIDE {
-      VLOG(1) << "Get " << property->name();
-      callback.Run(false);
-    }
-
-    virtual void GetAll() OVERRIDE {
-      VLOG(1) << "GetAll";
-    }
-
-    virtual void Set(dbus::PropertyBase *property,
-                     dbus::PropertySet::SetCallback callback) OVERRIDE {
-      VLOG(1) << "Set " << property->name();
-      callback.Run(false);
-    }
-  };
-
-  BluetoothDeviceClientStubImpl() {
-    dbus::ObjectPath dev0("/fake/hci0/dev0");
-
-    Properties* properties = new Properties(base::Bind(
-        &BluetoothDeviceClientStubImpl::OnPropertyChanged,
-        base::Unretained(this),
-        dev0));
-    properties->address.ReplaceValue("00:11:22:33:44:55");
-    properties->name.ReplaceValue("Fake Device");
-    properties->paired.ReplaceValue(true);
-    properties->trusted.ReplaceValue(true);
-
-    properties_map_[dev0] = properties;
-  }
-
-  virtual ~BluetoothDeviceClientStubImpl() {
-    // Clean up Properties structures
-    STLDeleteValues(&properties_map_);
-  }
-
-  // BluetoothDeviceClient override.
-  virtual void AddObserver(Observer* observer) OVERRIDE {
-    observers_.AddObserver(observer);
-  }
-
-  // BluetoothDeviceClient override.
-  virtual void RemoveObserver(Observer* observer) OVERRIDE {
-    observers_.RemoveObserver(observer);
-  }
-
-  // BluetoothDeviceClient override.
-  virtual Properties* GetProperties(const dbus::ObjectPath& object_path)
-      OVERRIDE {
-    VLOG(1) << "GetProperties: " << object_path.value();
-    PropertiesMap::iterator iter = properties_map_.find(object_path);
-    if (iter != properties_map_.end())
-      return iter->second;
-    return NULL;
-  }
-
-  // BluetoothDeviceClient override.
-  virtual void DiscoverServices(const dbus::ObjectPath& object_path,
-                                const std::string& pattern,
-                                const ServicesCallback& callback) OVERRIDE {
-    VLOG(1) << "DiscoverServices: " << object_path.value() << " " << pattern;
-
-    ServiceMap services;
-    callback.Run(object_path, services, false);
-  }
-
-  // BluetoothDeviceClient override.
-  virtual void CancelDiscovery(const dbus::ObjectPath& object_path,
-                               const DeviceCallback& callback) OVERRIDE {
-    VLOG(1) << "CancelDiscovery: " << object_path.value();
-    callback.Run(object_path, false);
-  }
-
-  // BluetoothDeviceClient override.
-  virtual void Disconnect(const dbus::ObjectPath& object_path,
-                          const DeviceCallback& callback) OVERRIDE {
-    VLOG(1) << "Disconnect: " << object_path.value();
-    callback.Run(object_path, false);
-  }
-
-  // BluetoothDeviceClient override.
-  virtual void CreateNode(const dbus::ObjectPath& object_path,
-                          const std::string& uuid,
-                          const NodeCallback& callback) OVERRIDE {
-    VLOG(1) << "CreateNode: " << object_path.value() << " " << uuid;
-    callback.Run(dbus::ObjectPath(), false);
-  }
-
-  // BluetoothDeviceClient override.
-  virtual void RemoveNode(const dbus::ObjectPath& object_path,
-                          const dbus::ObjectPath& node_path,
-                          const DeviceCallback& callback) OVERRIDE {
-    VLOG(1) << "RemoveNode: " << object_path.value()
-            << " " << node_path.value();
-    callback.Run(object_path, false);
-  }
-
- private:
-  void OnPropertyChanged(dbus::ObjectPath object_path,
-                         const std::string& property_name) {
-    FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
-                      DevicePropertyChanged(object_path, property_name));
-  }
-
-  // List of observers interested in event notifications from us.
-  ObserverList<Observer> observers_;
-
-  // Static properties we typedef.
-  typedef std::map<const dbus::ObjectPath, Properties *> PropertiesMap;
-  PropertiesMap properties_map_;
-};
-
 BluetoothDeviceClient::BluetoothDeviceClient() {
 }
 
@@ -601,7 +477,7 @@ BluetoothDeviceClient* BluetoothDeviceClient::Create(
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new BluetoothDeviceClientImpl(bus, adapter_client);
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new BluetoothDeviceClientStubImpl();
+  return new FakeOldBluetoothDeviceClient();
 }
 
 }  // namespace chromeos
