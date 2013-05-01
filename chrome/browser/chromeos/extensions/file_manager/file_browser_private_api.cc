@@ -363,9 +363,14 @@ void LogDefaultTask(const std::set<std::string>& mime_types,
 void DoNothingWithBool(bool /* success */) {
 }
 
-void FillDriveFilePropertiesValue(
+void FillDriveEntryPropertiesValue(
     const drive::DriveEntryProto& entry_proto,
     DictionaryValue* property_dict) {
+  property_dict->SetBoolean("sharedWithMe", entry_proto.shared_with_me());
+
+  if (!entry_proto.has_file_specific_info())
+    return;
+
   const drive::DriveFileSpecificInfo& file_specific_info =
       entry_proto.file_specific_info();
 
@@ -565,7 +570,7 @@ FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
   registry->RegisterFunction<GetSizeStatsFunction>();
   registry->RegisterFunction<FormatDeviceFunction>();
   registry->RegisterFunction<ViewFilesFunction>();
-  registry->RegisterFunction<GetDriveFilePropertiesFunction>();
+  registry->RegisterFunction<GetDriveEntryPropertiesFunction>();
   registry->RegisterFunction<PinDriveFileFunction>();
   registry->RegisterFunction<GetFileLocationsFunction>();
   registry->RegisterFunction<GetDriveFilesFunction>();
@@ -2305,13 +2310,13 @@ bool FileDialogStringsFunction::RunImpl() {
   return true;
 }
 
-GetDriveFilePropertiesFunction::GetDriveFilePropertiesFunction() {
+GetDriveEntryPropertiesFunction::GetDriveEntryPropertiesFunction() {
 }
 
-GetDriveFilePropertiesFunction::~GetDriveFilePropertiesFunction() {
+GetDriveEntryPropertiesFunction::~GetDriveEntryPropertiesFunction() {
 }
 
-bool GetDriveFilePropertiesFunction::RunImpl() {
+bool GetDriveEntryPropertiesFunction::RunImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   std::string file_url_str;
@@ -2335,17 +2340,14 @@ bool GetDriveFilePropertiesFunction::RunImpl() {
 
   system_service->file_system()->GetEntryInfoByPath(
       file_path_,
-      base::Bind(&GetDriveFilePropertiesFunction::OnGetFileInfo, this));
+      base::Bind(&GetDriveEntryPropertiesFunction::OnGetFileInfo, this));
   return true;
 }
 
-void GetDriveFilePropertiesFunction::OnGetFileInfo(
+void GetDriveEntryPropertiesFunction::OnGetFileInfo(
     drive::FileError error,
     scoped_ptr<drive::DriveEntryProto> entry) {
   DCHECK(properties_);
-
-  if (entry.get() && !entry->has_file_specific_info())
-    error = drive::FILE_ERROR_NOT_FOUND;
 
   if (error != drive::FILE_ERROR_OK) {
     CompleteGetFileProperties(error);
@@ -2353,10 +2355,7 @@ void GetDriveFilePropertiesFunction::OnGetFileInfo(
   }
   DCHECK(entry);
 
-  const drive::DriveFileSpecificInfo& file_specific_info =
-      entry->file_specific_info();
-
-  FillDriveFilePropertiesValue(*entry, properties_.get());
+  FillDriveEntryPropertiesValue(*entry, properties_.get());
 
   drive::DriveSystemService* system_service =
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
@@ -2365,6 +2364,16 @@ void GetDriveFilePropertiesFunction::OnGetFileInfo(
     CompleteGetFileProperties(drive::FILE_ERROR_FAILED);
     return;
   }
+
+  // The properties meaningful for directories are already filled in
+  // FillDriveEntryPropertiesValue().
+  if (entry.get() && !entry->has_file_specific_info()) {
+    CompleteGetFileProperties(error);
+    return;
+  }
+
+  const drive::DriveFileSpecificInfo& file_specific_info =
+      entry->file_specific_info();
 
   // Get drive WebApps that can accept this file.
   ScopedVector<drive::DriveWebAppInfo> web_apps;
@@ -2405,10 +2414,10 @@ void GetDriveFilePropertiesFunction::OnGetFileInfo(
   system_service->file_system()->GetCacheEntryByResourceId(
       entry->resource_id(),
       file_specific_info.file_md5(),
-      base::Bind(&GetDriveFilePropertiesFunction::CacheStateReceived, this));
+      base::Bind(&GetDriveEntryPropertiesFunction::CacheStateReceived, this));
 }
 
-void GetDriveFilePropertiesFunction::CacheStateReceived(
+void GetDriveEntryPropertiesFunction::CacheStateReceived(
     bool /* success */,
     const drive::FileCacheEntry& cache_entry) {
   // In case of an error (i.e. success is false), cache_entry.is_*() all
@@ -2420,7 +2429,7 @@ void GetDriveFilePropertiesFunction::CacheStateReceived(
   CompleteGetFileProperties(drive::FILE_ERROR_OK);
 }
 
-void GetDriveFilePropertiesFunction::CompleteGetFileProperties(
+void GetDriveEntryPropertiesFunction::CompleteGetFileProperties(
     drive::FileError error) {
   if (error != drive::FILE_ERROR_OK)
     properties_->SetInteger("errorCode", error);

@@ -497,18 +497,18 @@ class FileDialogStringsFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-// Retrieves property information for a file and returns it as a dictionary.
+// Retrieves property information for an entry and returns it as a dictionary.
 // On error, returns a dictionary with the key "error" set to the error number
 // (drive::FileError).
-class GetDriveFilePropertiesFunction : public FileBrowserFunction {
+class GetDriveEntryPropertiesFunction : public FileBrowserFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getDriveFileProperties",
+  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getDriveEntryProperties",
                              FILEBROWSERPRIVATE_GETDRIVEFILEPROPERTIES)
 
-  GetDriveFilePropertiesFunction();
+  GetDriveEntryPropertiesFunction();
 
  protected:
-  virtual ~GetDriveFilePropertiesFunction();
+  virtual ~GetDriveEntryPropertiesFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;

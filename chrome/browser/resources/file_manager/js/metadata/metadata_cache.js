@@ -799,9 +799,10 @@ DriveProvider.prototype.callApi_ = function() {
   var self = this;
 
   var task = function(url, callback) {
-    chrome.fileBrowserPrivate.getDriveFileProperties(url, function(properties) {
-      callback(self.convert_(properties, url));
-    });
+    chrome.fileBrowserPrivate.getDriveEntryProperties(url,
+        function(properties) {
+          callback(self.convert_(properties, url));
+        });
   };
 
   for (var i = 0; i < urls.length; i++)
@@ -809,7 +810,7 @@ DriveProvider.prototype.callApi_ = function() {
 };
 
 /**
- * @param {DriveFileProperties} data Drive file properties.
+ * @param {DriveEntryProperties} data Drive entry properties.
  * @param {string} url File url.
  * @return {boolean} True if the file is available offline.
  */
@@ -825,7 +826,7 @@ DriveProvider.isAvailableOffline = function(data, url) {
 };
 
 /**
- * @param {DriveFileProperties} data Drive file properties.
+ * @param {DriveEntryProperties} data Drive entry properties.
  * @return {boolean} True if opening the file does not require downloading it
  *    via a metered connection.
  */
@@ -852,7 +853,8 @@ DriveProvider.prototype.convert_ = function(data, url) {
     contentUrl: (data.contentUrl || '').replace(/\?.*$/gi, ''),
     editUrl: data.editUrl || '',
     driveApps: data.driveApps || [],
-    contentMimeType: data.contentMimeType || ''
+    contentMimeType: data.contentMimeType || '',
+    sharedWithMe: data.sharedWithMe
   };
 
   if (!data.isPresent) {

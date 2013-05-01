@@ -85,7 +85,7 @@
         }
       },
       {
-        "id": "DriveFileProperties",
+        "id": "DriveEntryProperties",
         "type": "object",
         "description": "Drive file properties.",
         "properties": {
@@ -149,6 +149,11 @@
             "type": "string",
             "optional": true,
             "description": "Drive MIME type for this file."
+          },
+          "sharedWithMe": {
+            "type": "boolean",
+            "optional": true,
+            "description": "True if the entry is labeled as shared-with-me."
           }
         }
       },
@@ -659,7 +664,7 @@
         ]
       },
       {
-        "name": "getDriveFileProperties",
+        "name": "getDriveEntryProperties",
         "description": "Requests Drive file properties for a file",
         "parameters": [
           {
@@ -673,8 +678,8 @@
             "parameters": [
               {
                 "name" : "fileProperties",
-                "$ref": "DriveFileProperties",
-                "description": "A dictionary containing properties of the requested file."
+                "$ref": "DriveEntryProperties",
+                "description": "A dictionary containing properties of the requested entry."
               }
             ]
           }
