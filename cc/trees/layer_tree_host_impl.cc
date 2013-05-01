@@ -1891,6 +1891,8 @@ void LayerTreeHostImpl::AnimateTopControls(base::TimeTicks time) {
     return;
   gfx::Vector2dF scroll = top_controls_manager_->Animate(time);
   UpdateMaxScrollOffset();
+  if (RootScrollLayer()->TotalScrollOffset().y() == 0.f)
+    return;
   RootScrollLayer()->ScrollBy(gfx::ScaleVector2d(
       scroll, 1.f / active_tree_->total_page_scale_factor()));
 }
