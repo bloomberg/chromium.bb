@@ -617,8 +617,12 @@ void InstantController::HandleAutocompleteResults(
       result.type = UTF8ToUTF16(AutocompleteMatch::TypeToString(match->type));
       result.description = match->description;
       result.destination_url = UTF8ToUTF16(match->destination_url.spec());
-      if (from_search_provider)
+
+      // Setting the search_query field tells the Instant page to treat the
+      // suggestion as a query.
+      if (AutocompleteMatch::IsSearchType(match->type))
         result.search_query = match->contents;
+
       result.transition = match->transition;
       result.relevance = match->relevance;
       DVLOG(1) << "    " << result.relevance << " " << result.type << " "

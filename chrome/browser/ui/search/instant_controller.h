@@ -203,6 +203,8 @@ class InstantController : public InstantPage::Delegate,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(InstantTest, OmniboxFocusLoadsInstant);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
+                           SearchQueryNotDisplayedForNavsuggest);
   FRIEND_TEST_ALL_PREFIXES(InstantTest, SetWithTemplateURL);
   FRIEND_TEST_ALL_PREFIXES(InstantTest, NonInstantSearchProvider);
   FRIEND_TEST_ALL_PREFIXES(InstantTest, InstantOverlayRefresh);

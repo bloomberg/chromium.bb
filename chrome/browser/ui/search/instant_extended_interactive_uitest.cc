@@ -7,6 +7,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
@@ -37,6 +38,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
@@ -829,6 +831,66 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ProcessIsolation) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIAboutURL));
   EXPECT_FALSE(instant_service->IsInstantProcess(
       active_tab->GetRenderProcessHost()->GetID()));
+}
+
+// Test that a search query will not be displayed for navsuggest queries.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
+                       SearchQueryNotDisplayedForNavsuggest) {
+  // Use only the local overlay.
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableLocalOnlyInstantExtendedAPI);
+  ASSERT_TRUE(chrome::IsLocalOnlyInstantExtendedAPIEnabled());
+
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+
+  // The second argument indicates to use only the local overlay and NTP.
+  instant()->SetInstantEnabled(true, true);
+
+  // Focus omnibox and confirm overlay isn't shown.
+  FocusOmniboxAndWaitForInstantOverlaySupport();
+
+  // Typing in the omnibox should show the overlay.
+  SetOmniboxText("face");
+
+  content::WebContents* overlay = instant()->GetOverlayContents();
+
+  // Add a navsuggest suggestion.
+  instant()->SetSuggestions(
+      overlay,
+      std::vector<InstantSuggestion>(
+          1,
+          InstantSuggestion(ASCIIToUTF16("http://facemash.com/"),
+                            INSTANT_COMPLETE_NOW,
+                            INSTANT_SUGGESTION_URL,
+                            ASCIIToUTF16("face"))));
+
+  while (!omnibox()->model()->autocomplete_controller()->done()) {
+    content::WindowedNotificationObserver autocomplete_observer(
+        chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
+        content::NotificationService::AllSources());
+    autocomplete_observer.Wait();
+  }
+
+  EXPECT_TRUE(ExecuteScript(
+      "var sorted = chrome.embeddedSearch.searchBox.nativeSuggestions.sort("
+          "function (a,b) {"
+            "return b.rankingData.relevance - a.rankingData.relevance;"
+          "});"));
+
+  int suggestions_count = -1;
+  EXPECT_TRUE(GetIntFromJS(
+      overlay, "sorted.length", &suggestions_count));
+  ASSERT_GT(suggestions_count, 0);
+
+  std::string type;
+  EXPECT_TRUE(
+      GetStringFromJS(overlay, "sorted[0].type", &type));
+  ASSERT_EQ("navsuggest", type);
+
+  bool is_search;
+  EXPECT_TRUE(GetBoolFromJS(
+      overlay, "!!sorted[0].is_search", &is_search));
+  EXPECT_FALSE(is_search);
 }
 
 // Verification of fix for BUG=176365.  Ensure that each Instant WebContents in
