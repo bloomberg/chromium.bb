@@ -445,6 +445,13 @@ void ResourceProvider::Flush() {
     context3d->flush();
 }
 
+void ResourceProvider::Finish() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  WebGraphicsContext3D* context3d = output_surface_->context3d();
+  if (context3d)
+    context3d->finish();
+}
+
 bool ResourceProvider::ShallowFlushIfSupported() {
   DCHECK(thread_checker_.CalledOnValidThread());
   WebGraphicsContext3D* context3d = output_surface_->context3d();

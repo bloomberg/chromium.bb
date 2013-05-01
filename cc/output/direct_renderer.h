@@ -6,6 +6,7 @@
 #define CC_OUTPUT_DIRECT_RENDERER_H_
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/renderer.h"
 #include "cc/resources/resource_provider.h"
@@ -109,8 +110,12 @@ class CC_EXPORT DirectRenderer : public Renderer {
   virtual bool FlippedFramebuffer() const = 0;
   virtual void EnsureScissorTestEnabled() = 0;
   virtual void EnsureScissorTestDisabled() = 0;
-  virtual void CopyCurrentRenderPassToBitmap(DrawingFrame* frame,
-                                             SkBitmap* bitmap) = 0;
+
+  typedef base::Callback<void(scoped_ptr<SkBitmap>)>
+      CopyRenderPassCallback;
+  virtual void CopyCurrentRenderPassToBitmap(
+      DrawingFrame* frame,
+      const CopyRenderPassCallback& callback) = 0;
 
   ScopedPtrHashMap<RenderPass::Id, CachedResource> render_pass_textures_;
   ResourceProvider* resource_provider_;

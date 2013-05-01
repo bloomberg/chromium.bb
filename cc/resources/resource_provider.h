@@ -127,6 +127,10 @@ class CC_EXPORT ResourceProvider {
   // respect to other contexts.
   void Flush();
 
+  // Finish all context operations, causing any pending callbacks to be
+  // scheduled.
+  void Finish();
+
   // Only flush the command buffer if supported.
   // Returns true if the shallow flush occurred, false otherwise.
   bool ShallowFlushIfSupported();

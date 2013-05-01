@@ -5,7 +5,9 @@
 #ifndef CC_OUTPUT_GL_RENDERER_H_
 #define CC_OUTPUT_GL_RENDERER_H_
 
+#include "base/cancelable_callback.h"
 #include "cc/base/cc_export.h"
+#include "cc/base/scoped_ptr_vector.h"
 #include "cc/output/direct_renderer.h"
 #include "cc/output/gl_renderer_draw_cache.h"
 #include "cc/output/renderer.h"
@@ -19,6 +21,8 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsMemoryAllocation.h"
 #include "ui/gfx/quad_f.h"
+
+class SkBitmap;
 
 namespace cc {
 
@@ -87,6 +91,8 @@ class CC_EXPORT GLRenderer
     return shared_geometry_.get();
   }
 
+  void GetFramebufferPixelsAsync(gfx::Rect rect,
+                                 CopyRenderPassCallback callback);
   bool GetFramebufferTexture(ScopedResource* resource, gfx::Rect device_rect);
   void ReleaseRenderPassTextures();
 
@@ -103,8 +109,9 @@ class CC_EXPORT GLRenderer
   virtual bool FlippedFramebuffer() const OVERRIDE;
   virtual void EnsureScissorTestEnabled() OVERRIDE;
   virtual void EnsureScissorTestDisabled() OVERRIDE;
-  virtual void CopyCurrentRenderPassToBitmap(DrawingFrame* frame,
-                                             SkBitmap* bitmap) OVERRIDE;
+  virtual void CopyCurrentRenderPassToBitmap(
+      DrawingFrame* frame,
+      const CopyRenderPassCallback& callback) OVERRIDE;
   virtual void FinishDrawingQuadList() OVERRIDE;
 
  private:
@@ -178,6 +185,23 @@ class CC_EXPORT GLRenderer
 
   bool InitializeSharedObjects();
   void CleanupSharedObjects();
+
+  typedef base::Callback<void(bool success)>
+      AsyncGetFramebufferPixelsCleanupCallback;
+  void DoGetFramebufferPixels(
+      uint8* pixels,
+      gfx::Rect rect,
+      const AsyncGetFramebufferPixelsCleanupCallback& cleanup_callback);
+  void FinishedReadback(
+      const AsyncGetFramebufferPixelsCleanupCallback& cleanup_callback,
+      unsigned source_buffer,
+      uint8_t* dest_pixels,
+      gfx::Size size);
+  void PassOnSkBitmap(
+      scoped_ptr<SkBitmap> bitmap,
+      scoped_ptr<SkAutoLockPixels> lock,
+      const CopyRenderPassCallback& callback,
+      bool success);
 
   // WebKit::
   // WebGraphicsContext3D::WebGraphicsMemoryAllocationChangedCallbackCHROMIUM
@@ -377,6 +401,9 @@ class CC_EXPORT GLRenderer
   unsigned program_shadow_;
   TexturedQuadDrawCache draw_cache_;
   int highp_threshold_min_;
+
+  struct PendingAsyncReadPixels;
+  ScopedPtrVector<PendingAsyncReadPixels> pending_async_read_pixels_;
 
   scoped_ptr<ResourceProvider::ScopedWriteLockGL> current_framebuffer_lock_;
 

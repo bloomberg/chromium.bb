@@ -58,8 +58,9 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   virtual bool FlippedFramebuffer() const OVERRIDE;
   virtual void EnsureScissorTestEnabled() OVERRIDE;
   virtual void EnsureScissorTestDisabled() OVERRIDE;
-  virtual void CopyCurrentRenderPassToBitmap(DrawingFrame* frame,
-                                             SkBitmap* bitmap) OVERRIDE;
+  virtual void CopyCurrentRenderPassToBitmap(
+      DrawingFrame* frame,
+      const CopyRenderPassCallback& callback) OVERRIDE;
 
  private:
   SoftwareRenderer(

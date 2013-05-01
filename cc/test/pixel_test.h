@@ -39,7 +39,7 @@ class PixelTest : public testing::Test {
   void SetUpSoftwareRenderer();
 
  private:
-  void ReadbackResult(scoped_ptr<SkBitmap> bitmap);
+  void ReadbackResult(base::Closure quit_run_loop, scoped_ptr<SkBitmap> bitmap);
 
   bool PixelsMatchReference(const base::FilePath& ref_file,
                             const PixelComparator& comparator);

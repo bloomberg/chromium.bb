@@ -193,18 +193,13 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order) {
       root_render_pass->damage_rect : root_render_pass->output_rect;
   frame.root_damage_rect.Intersect(gfx::Rect(ViewportSize()));
 
-  std::vector<base::Closure> copy_callbacks;
-
   BeginDrawingFrame(&frame);
   for (size_t i = 0; i < render_passes_in_draw_order->size(); ++i) {
     DrawRenderPass(&frame, render_passes_in_draw_order->at(i));
 
     const RenderPass* pass = frame.current_render_pass;
-    for (size_t i = 0; i < pass->copy_callbacks.size(); ++i) {
-      scoped_ptr<SkBitmap> bitmap(new SkBitmap);
-      CopyCurrentRenderPassToBitmap(&frame, bitmap.get());
-      pass->copy_callbacks[i].Run(bitmap.Pass());
-    }
+    for (size_t i = 0; i < pass->copy_callbacks.size(); ++i)
+      CopyCurrentRenderPassToBitmap(&frame, pass->copy_callbacks[i]);
   }
   FinishDrawingFrame(&frame);
 

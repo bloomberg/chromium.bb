@@ -2583,6 +2583,18 @@ class LayerTreeHostTestAsyncReadback : public LayerTreeHostTest {
   }
 
   virtual void DidCommitAndDrawFrame() {
+    WaitForCallback();
+  }
+
+  void WaitForCallback() {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &LayerTreeHostTestAsyncReadback::NextStep,
+            base::Unretained(this)));
+  }
+
+  void NextStep() {
     int frame = layer_tree_host()->commit_number();
     switch (frame) {
       case 1:
@@ -2592,11 +2604,11 @@ class LayerTreeHostTestAsyncReadback : public LayerTreeHostTest {
         EXPECT_EQ(0u, callbacks_.size());
         break;
       case 2:
-        // Flush the message loops and make sure the callbacks run.
-        layer_tree_host()->SetNeedsCommit();
-        break;
-      case 3:
-        ASSERT_EQ(1u, callbacks_.size());
+        if (callbacks_.size() < 1u) {
+          WaitForCallback();
+          return;
+        }
+        EXPECT_EQ(1u, callbacks_.size());
         EXPECT_EQ(gfx::Size(10, 10).ToString(), callbacks_[0].ToString());
 
         child->RequestCopyAsBitmap(base::Bind(
@@ -2610,12 +2622,12 @@ class LayerTreeHostTestAsyncReadback : public LayerTreeHostTest {
             base::Unretained(this)));
         EXPECT_EQ(1u, callbacks_.size());
         break;
-      case 4:
-        // Flush the message loops and make sure the callbacks run.
-        layer_tree_host()->SetNeedsCommit();
-        break;
-      case 5:
-        ASSERT_EQ(4u, callbacks_.size());
+      case 3:
+        if (callbacks_.size() < 4u) {
+          WaitForCallback();
+          return;
+        }
+        EXPECT_EQ(4u, callbacks_.size());
         // The child was copied to a bitmap and passed back twice.
         EXPECT_EQ(gfx::Size(10, 10).ToString(), callbacks_[1].ToString());
         EXPECT_EQ(gfx::Size(10, 10).ToString(), callbacks_[2].ToString());
@@ -2632,7 +2644,9 @@ class LayerTreeHostTestAsyncReadback : public LayerTreeHostTest {
     callbacks_.push_back(gfx::Size(bitmap->width(), bitmap->height()));
   }
 
-  virtual void AfterTest() {}
+  virtual void AfterTest() {
+    EXPECT_EQ(4u, callbacks_.size());
+  }
 
   virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE {
     if (use_gl_renderer_)

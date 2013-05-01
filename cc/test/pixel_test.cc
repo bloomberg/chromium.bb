@@ -5,6 +5,7 @@
 #include "cc/test/pixel_test.h"
 
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/gl_renderer.h"
 #include "cc/output/output_surface.h"
@@ -60,19 +61,27 @@ PixelTest::~PixelTest() {}
 bool PixelTest::RunPixelTest(RenderPassList* pass_list,
                              const base::FilePath& ref_file,
                              const PixelComparator& comparator) {
+  base::RunLoop run_loop;
+
   pass_list->back()->copy_callbacks.push_back(
-      base::Bind(&PixelTest::ReadbackResult, base::Unretained(this)));
+      base::Bind(&PixelTest::ReadbackResult,
+                 base::Unretained(this),
+                 run_loop.QuitClosure()));
 
   renderer_->DecideRenderPassAllocationsForFrame(*pass_list);
   renderer_->DrawFrame(pass_list);
 
-  // TODO(danakj): When the glReadPixels is async, wait for it to finish.
+  // Wait for the readback to complete.
+  resource_provider_->Finish();
+  run_loop.Run();
 
   return PixelsMatchReference(ref_file, comparator);
 }
 
-void PixelTest::ReadbackResult(scoped_ptr<SkBitmap> bitmap) {
+void PixelTest::ReadbackResult(base::Closure quit_run_loop,
+                               scoped_ptr<SkBitmap> bitmap) {
   result_bitmap_ = bitmap.Pass();
+  quit_run_loop.Run();
 }
 
 bool PixelTest::PixelsMatchReference(const base::FilePath& ref_file,

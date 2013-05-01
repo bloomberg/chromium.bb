@@ -162,6 +162,7 @@ class ThreadProxy : public Proxy,
   void InitializeRendererOnImplThread(CompletionEvent* completion,
                                       bool* initialize_succeeded,
                                       RendererCapabilities* capabilities);
+  void FinishGLOnImplThread(CompletionEvent* completion);
   void LayerTreeHostClosedOnImplThread(CompletionEvent* completion);
   void ManageTilesOnImplThread();
   void AcquireLayerTexturesForMainThreadOnImplThread(

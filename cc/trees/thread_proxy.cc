@@ -547,7 +547,20 @@ void ThreadProxy::Stop() {
   DCHECK(IsMainThread());
   DCHECK(started_);
 
-  // Synchronously deletes the impl.
+  // Synchronously finishes pending GL operations and deletes the impl.
+  // The two steps are done as separate post tasks, so that tasks posted
+  // by the GL implementation due to the Finish can be executed by the
+  // renderer before shutting it down.
+  {
+    DebugScopedSetMainThreadBlocked main_thread_blocked(this);
+
+    CompletionEvent completion;
+    Proxy::ImplThread()->PostTask(
+        base::Bind(&ThreadProxy::FinishGLOnImplThread,
+                   impl_thread_weak_ptr_,
+                   &completion));
+    completion.Wait();
+  }
   {
     DebugScopedSetMainThreadBlocked main_thread_blocked(this);
 
@@ -1154,6 +1167,14 @@ void ThreadProxy::InitializeRendererOnImplThread(
     scheduler_on_impl_thread_->SetMaxFramesPending(max_frames_pending);
   }
 
+  completion->Signal();
+}
+
+void ThreadProxy::FinishGLOnImplThread(CompletionEvent* completion) {
+  TRACE_EVENT0("cc", "ThreadProxy::FinishGLOnImplThread");
+  DCHECK(IsImplThread());
+  if (layer_tree_host_impl_->resource_provider())
+    layer_tree_host_impl_->resource_provider()->Finish();
   completion->Signal();
 }
 

@@ -404,13 +404,18 @@ void SoftwareRenderer::DrawUnsupportedQuad(const DrawingFrame* frame,
                             current_paint_);
 }
 
-void SoftwareRenderer::CopyCurrentRenderPassToBitmap(DrawingFrame* frame,
-                                                     SkBitmap* bitmap) {
+void SoftwareRenderer::CopyCurrentRenderPassToBitmap(
+    DrawingFrame* frame,
+    const CopyRenderPassCallback& callback) {
   gfx::Size render_pass_size = frame->current_render_pass->output_rect.size();
+
+  scoped_ptr<SkBitmap> bitmap(new SkBitmap);
   bitmap->setConfig(SkBitmap::kARGB_8888_Config,
                     render_pass_size.width(),
                     render_pass_size.height());
-  current_canvas_->readPixels(bitmap, 0, 0);
+  current_canvas_->readPixels(bitmap.get(), 0, 0);
+
+  callback.Run(bitmap.Pass());
 }
 
 void SoftwareRenderer::GetFramebufferPixels(void* pixels, gfx::Rect rect) {

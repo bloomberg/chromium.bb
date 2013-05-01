@@ -11,6 +11,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
+#include "cc/base/scoped_ptr_hash_map.h"
 #include "cc/debug/fake_web_graphics_context_3d.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
@@ -38,7 +39,6 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   virtual WebKit::WGC3Denum getGraphicsResetStatusARB();
 
   virtual void attachShader(WebKit::WebGLId program, WebKit::WebGLId shader);
-  virtual void bindBuffer(WebKit::WGC3Denum target, WebKit::WebGLId buffer);
   virtual void bindFramebuffer(
       WebKit::WGC3Denum target, WebKit::WebGLId framebuffer);
   virtual void bindRenderbuffer(
@@ -105,6 +105,23 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   virtual void loseContextCHROMIUM(WebKit::WGC3Denum current,
                                    WebKit::WGC3Denum other);
 
+  // Takes ownership of the |callback|.
+  virtual void signalSyncPoint(unsigned sync_point,
+                               WebGraphicsSyncPointCallback* callback);
+
+  virtual void prepareTexture();
+  virtual void finish();
+  virtual void flush();
+
+  virtual void bindBuffer(WebKit::WGC3Denum target, WebKit::WebGLId buffer);
+  virtual void bufferData(WebKit::WGC3Denum target,
+                          WebKit::WGC3Dsizeiptr size,
+                          const void* data,
+                          WebKit::WGC3Denum usage);
+  virtual void* mapBufferCHROMIUM(WebKit::WGC3Denum target,
+                                  WebKit::WGC3Denum access);
+  virtual WebKit::WGC3Dboolean unmapBufferCHROMIUM(WebKit::WGC3Denum target);
+
   // When set, MakeCurrent() will fail after this many times.
   void set_times_make_current_succeeds(int times) {
     times_make_current_succeeds_ = times;
@@ -142,12 +159,17 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   static const WebKit::WebGLId kExternalTextureId;
   virtual WebKit::WebGLId NextTextureId();
 
+  virtual WebKit::WebGLId NextBufferId();
+
  protected:
   TestWebGraphicsContext3D();
   TestWebGraphicsContext3D(
       const WebKit::WebGraphicsContext3D::Attributes& attributes);
 
+  void CallAllSyncPointCallbacks();
+
   unsigned context_id_;
+  unsigned next_buffer_id_;
   unsigned next_texture_id_;
   Attributes attributes_;
   bool have_extension_io_surface_;
@@ -157,12 +179,26 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   int times_end_query_succeeds_;
   bool context_lost_;
   WebGraphicsContextLostCallback* context_lost_callback_;
+  std::vector<WebGraphicsSyncPointCallback*> sync_point_callbacks_;
   std::vector<WebKit::WebGLId> textures_;
   base::hash_set<WebKit::WebGLId> used_textures_;
   std::vector<WebKit::WebGraphicsContext3D*> shared_contexts_;
   int max_texture_size_;
   int width_;
   int height_;
+
+  struct Buffer {
+    Buffer();
+    ~Buffer();
+
+    WebKit::WGC3Denum target;
+    scoped_ptr<uint8[]> pixels;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Buffer);
+  };
+  ScopedPtrHashMap<unsigned, Buffer> buffers_;
+  unsigned bound_buffer_;
 };
 
 }  // namespace cc

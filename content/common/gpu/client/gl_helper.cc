@@ -555,7 +555,7 @@ void GLHelper::CopyTextureToImpl::CropScaleReadbackAndCleanTexture(
                        GL_STREAM_READ);
 
   context_->readPixels(0, 0, size.width(), size.height(),
-                       GL_RGBA, GL_UNSIGNED_BYTE, 0);
+                       GL_RGBA, GL_UNSIGNED_BYTE, NULL);
   context_->bindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, 0);
   context_->GetCommandBufferProxy()->SignalSyncPoint(
       context_->insertSyncPoint(),
