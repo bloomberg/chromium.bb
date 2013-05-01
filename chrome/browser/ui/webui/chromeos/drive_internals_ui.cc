@@ -14,6 +14,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
+#include "chrome/browser/chromeos/drive/debug_info_collector.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
@@ -216,7 +217,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   void UpdateGCacheContentsSection();
   void UpdateFileSystemContentsSection();
   void UpdateLocalStorageUsageSection();
-  void UpdateCacheContentsSection(drive::FileCache* cache);
+  void UpdateCacheContentsSection();
   void UpdateEventLogSection();
 
   // Called when GetGCacheContents() is complete.
@@ -234,7 +235,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
                              bool hide_hosted_documents,
                              scoped_ptr<drive::DriveEntryProtoVector> entries);
 
-  // Called as the iterator for FileCache::Iterate().
+  // Called as the iterator for DebugInfoCollector::IterateFileCache().
   void UpdateCacheEntry(const std::string& resource_id,
                         const drive::FileCacheEntry& cache_entry);
 
@@ -251,11 +252,11 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::AppList> app_list);
 
-  // Callback for DriveFilesystem::GetMetadata for local update.
+  // Callback for DebugInfoCollector::GetMetadata for local update.
   void OnGetFilesystemMetadataForLocal(
       const drive::FileSystemMetadata& metadata);
 
-  // Callback for DriveFilesystem::GetMetadata for local update.
+  // Callback for DebugInfoCollector::GetMetadata for delta update.
   void OnGetFilesystemMetadataForDeltaUpdate(
       const drive::FileSystemMetadata& metadata);
 
@@ -363,8 +364,6 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   google_apis::DriveServiceInterface* drive_service =
       system_service->drive_service();
   DCHECK(drive_service);
-  drive::FileCache* cache = system_service->cache();
-  DCHECK(cache);
 
   UpdateDriveRelatedFlagsSection();
   UpdateDriveRelatedPreferencesSection();
@@ -375,7 +374,7 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   UpdateDeltaUpdateStatusSection();
   UpdateInFlightOperationsSection(system_service->job_list());
   UpdateGCacheContentsSection();
-  UpdateCacheContentsSection(cache);
+  UpdateCacheContentsSection();
   UpdateLocalStorageUsageSection();
 
   // When the drive-internals page is reloaded by the reload key, the page
@@ -467,7 +466,7 @@ void DriveInternalsWebUIHandler::UpdateLocalMetadataSection(
     google_apis::DriveServiceInterface* drive_service) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GetSystemService()->file_system()->GetMetadata(
+  GetSystemService()->debug_info_collector()->GetMetadata(
       base::Bind(&DriveInternalsWebUIHandler::OnGetFilesystemMetadataForLocal,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -505,7 +504,7 @@ void DriveInternalsWebUIHandler::ListFileEntries(const base::ListValue* args) {
 void DriveInternalsWebUIHandler::UpdateDeltaUpdateStatusSection() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GetSystemService()->file_system()->GetMetadata(
+  GetSystemService()->debug_info_collector()->GetMetadata(
       base::Bind(
           &DriveInternalsWebUIHandler::OnGetFilesystemMetadataForDeltaUpdate,
           weak_ptr_factory_.GetWeakPtr()));
@@ -616,11 +615,11 @@ void DriveInternalsWebUIHandler::UpdateLocalStorageUsageSection() {
   }
 }
 
-void DriveInternalsWebUIHandler::UpdateCacheContentsSection(
-    drive::FileCache* cache) {
-  cache->Iterate(base::Bind(&DriveInternalsWebUIHandler::UpdateCacheEntry,
-                            weak_ptr_factory_.GetWeakPtr()),
-                 base::Bind(&base::DoNothing));
+void DriveInternalsWebUIHandler::UpdateCacheContentsSection() {
+  GetSystemService()->debug_info_collector()->IterateFileCache(
+      base::Bind(&DriveInternalsWebUIHandler::UpdateCacheEntry,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&base::DoNothing));
 }
 
 void DriveInternalsWebUIHandler::UpdateEventLogSection() {

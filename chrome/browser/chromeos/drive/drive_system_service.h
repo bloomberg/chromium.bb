@@ -30,6 +30,7 @@ class DriveServiceInterface;
 
 namespace drive {
 
+class DebugInfoCollector;
 class DownloadHandler;
 class DriveFileSystemInterface;
 class DriveWebAppsRegistry;
@@ -98,6 +99,9 @@ class DriveSystemService
   }
 
   FileCache* cache() { return cache_.get(); }
+  DebugInfoCollector* debug_info_collector() {
+    return debug_info_collector_.get();
+  }
   DriveFileSystemInterface* file_system() { return file_system_.get(); }
   FileWriteHelper* file_write_helper() { return file_write_helper_.get(); }
   DownloadHandler* download_handler() { return download_handler_.get(); }
@@ -167,6 +171,7 @@ class DriveSystemService
   scoped_ptr<SyncClient> sync_client_;
   scoped_ptr<StaleCacheFilesRemover> stale_cache_files_remover_;
   scoped_refptr<FileSystemProxy> file_system_proxy_;
+  scoped_ptr<DebugInfoCollector> debug_info_collector_;
 
   ObserverList<DriveSystemServiceObserver> observers_;
 

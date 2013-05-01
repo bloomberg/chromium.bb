@@ -216,6 +216,8 @@
         'browser/chromeos/drive/change_list_loader_observer.h',
         'browser/chromeos/drive/change_list_processor.cc',
         'browser/chromeos/drive/change_list_processor.h',
+        'browser/chromeos/drive/debug_info_collector.cc',
+        'browser/chromeos/drive/debug_info_collector.h',
         'browser/chromeos/drive/download_handler.cc',
         'browser/chromeos/drive/download_handler.h',
         'browser/chromeos/drive/drive_file_stream_reader.cc',

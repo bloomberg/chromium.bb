@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/drive/debug_info_collector.h"
 #include "chrome/browser/chromeos/drive/download_handler.h"
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
@@ -150,6 +151,7 @@ DriveSystemService::DriveSystemService(
   sync_client_.reset(new SyncClient(file_system(), cache()));
   stale_cache_files_remover_.reset(new StaleCacheFilesRemover(file_system(),
                                                               cache()));
+  debug_info_collector_.reset(new DebugInfoCollector(file_system(), cache()));
 }
 
 DriveSystemService::~DriveSystemService() {
