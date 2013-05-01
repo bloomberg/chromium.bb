@@ -1526,6 +1526,7 @@ void TaskManager::OpenAboutMemory(chrome::HostDesktopType desktop_type) {
   chrome::NavigateParams params(browser, GURL(chrome::kChromeUIMemoryURL),
                                 content::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
+  params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   chrome::Navigate(&params);
 }
 
