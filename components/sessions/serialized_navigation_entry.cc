@@ -9,6 +9,7 @@
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "sync/protocol/session_specifics.pb.h"
 #include "sync/util/time.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebReferrerPolicy.h"
 #include "webkit/glue/glue_serialize.h"

@@ -6,6 +6,7 @@
 #define COMPONENTS_SESSIONS_SERIALIZED_NAVIGATION_ENTRY_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -15,7 +16,6 @@
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
 #include "googleurl/src/gurl.h"
-#include "sync/protocol/session_specifics.pb.h"
 
 class Pickle;
 class PickleIterator;
@@ -23,6 +23,10 @@ class PickleIterator;
 namespace content {
 class BrowserContext;
 class NavigationEntry;
+}
+
+namespace sync_pb {
+class TabNavigation;
 }
 
 namespace sessions {
