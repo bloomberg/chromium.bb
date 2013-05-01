@@ -42,7 +42,7 @@ Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle &channel_handle,
       peer_pid_(base::kNullProcessId),
       waiting_connect_(mode & MODE_SERVER_FLAG),
       processing_incoming_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       client_secret_(0),
       validate_client_(false) {
   CreatePipe(channel_handle, mode);

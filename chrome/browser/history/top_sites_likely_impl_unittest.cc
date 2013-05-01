@@ -74,7 +74,7 @@ class WaitForHistoryTask : public HistoryDBTask {
 class TopSitesQuerier {
  public:
   TopSitesQuerier()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      : weak_ptr_factory_(this),
         number_of_callbacks_(0),
         waiting_(false) {}
 

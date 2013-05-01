@@ -40,7 +40,7 @@ class WebDatabaseService::BackendDelegate :
 WebDatabaseService::WebDatabaseService(
     const base::FilePath& path)
     : path_(path),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(this) {
   // WebDatabaseService should be instantiated on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // WebDatabaseService requires DB thread if instantiated.

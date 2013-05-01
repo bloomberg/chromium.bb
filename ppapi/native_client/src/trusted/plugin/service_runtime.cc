@@ -107,7 +107,7 @@ void PluginReverseInterface::Log(nacl::string message) {
   plugin::WeakRefCallOnMainThread(
       anchor_,
       0,  /* delay in ms */
-      ALLOW_THIS_IN_INITIALIZER_LIST(this),
+      this,
       &plugin::PluginReverseInterface::Log_MainThreadContinuation,
       continuation);
 }
@@ -119,7 +119,7 @@ void PluginReverseInterface::DoPostMessage(nacl::string message) {
   plugin::WeakRefCallOnMainThread(
       anchor_,
       0,  /* delay in ms */
-      ALLOW_THIS_IN_INITIALIZER_LIST(this),
+      this,
       &plugin::PluginReverseInterface::PostMessage_MainThreadContinuation,
       continuation);
 }
@@ -573,7 +573,7 @@ int64_t PluginReverseInterface::RequestQuotaForWrite(
   plugin::WeakRefCallOnMainThread(
       anchor_,
       0,  /* delay in ms */
-      ALLOW_THIS_IN_INITIALIZER_LIST(this),
+      this,
       &plugin::PluginReverseInterface::QuotaRequest_MainThreadContinuation,
       continuation);
   // Wait for the main thread to request quota and signal completion.

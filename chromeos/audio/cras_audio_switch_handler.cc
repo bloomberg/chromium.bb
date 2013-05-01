@@ -43,7 +43,7 @@ CrasAudioSwitchHandler* CrasAudioSwitchHandler::Get() {
 
 CrasAudioSwitchHandler::CrasAudioSwitchHandler()
     : muted_device_id_(0),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(this) {
   chromeos::DBusThreadManager::Get()->GetCrasAudioClient()->AddObserver(this);
   GetNodes();
 }
