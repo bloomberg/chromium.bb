@@ -387,6 +387,9 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
       0 != (prot & NACL_ABI_PROT_WRITE)) {
     return (uintptr_t) -NACL_ABI_EACCES;
   }
+  if (NACL_ABI_O_WRONLY == (desc_flags & NACL_ABI_O_ACCMODE)) {
+    return (uintptr_t) -NACL_ABI_EACCES;
+  }
   if (NACL_ABI_PROT_NONE == prot) {
     flProtect = PAGE_NOACCESS;
     flags |= NACL_ABI_MAP_ANONYMOUS;

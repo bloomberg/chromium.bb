@@ -108,21 +108,54 @@ struct NaClDescIoDesc *NaClDescIoDescMake(struct NaClHostDesc *nhdp) {
   return ndp;
 }
 
+/*
+ * DEPRECATED, here for backwards compatibility.  See header file for
+ * details.
+ */
 struct NaClDesc *NaClDescIoDescMakeFromHandle(NaClHandle handle) {
+  return NaClDescIoDescFromHandleAllocCtor(handle, NACL_ABI_O_RDWR);
+}
+
+struct NaClDesc *NaClDescIoDescFromHandleAllocCtor(NaClHandle handle,
+                                                   int flags) {
   int posix_d;
   struct NaClHostDesc *nhdp;
   struct NaClDescIoDesc *desc;
 
 #if NACL_WINDOWS
-  posix_d = _open_osfhandle((intptr_t) handle, _O_RDWR | _O_BINARY);
-  if (-1 == posix_d)
+  int win_flags = 0;
+
+  switch (flags & NACL_ABI_O_ACCMODE) {
+    case NACL_ABI_O_RDONLY:
+      win_flags = _O_RDONLY | _O_BINARY;
+      break;
+    case NACL_ABI_O_WRONLY:
+      win_flags = _O_WRONLY | _O_BINARY;
+      break;
+    case NACL_ABI_O_RDWR:
+      win_flags = _O_RDWR | _O_BINARY;
+      break;
+  }
+  if (0 == win_flags) {
     return NULL;
+  }
+  posix_d = _open_osfhandle((intptr_t) handle, win_flags);
+  if (-1 == posix_d) {
+    return NULL;
+  }
 #else
   posix_d = handle;
 #endif
-  nhdp = NaClHostDescPosixMake(posix_d, NACL_ABI_O_RDWR);
-  if (NULL == nhdp)
+  nhdp = NaClHostDescPosixMake(posix_d, flags);
+  if (NULL == nhdp) {
+    /*
+     * BUG: In Windows, we leak posix_d representation in the POSIX
+     * layer, since caller will continue to own |handle| on a failure
+     * return, but we cannot close |posix_d| without implicitly
+     * invoking CloseHandle on |handle|.
+     */
     return NULL;
+  }
   desc = NaClDescIoDescMake(nhdp);
   return &desc->base;
 }
@@ -184,10 +217,8 @@ static uintptr_t NaClDescIoDescMap(struct NaClDesc         *vself,
                            prot,
                            flags,
                            offset);
-  if (NACL_MAP_FAILED == (void *) status) {
-    return -NACL_ABI_E_MOVE_ADDRESS_SPACE;
-  }
-  return (uintptr_t) start_addr;
+  NaClLog(4, "NaClDescIoDescMap returning %"NACL_PRIxPTR"\n", status);
+  return status;
 }
 
 uintptr_t NaClDescIoDescMapAnon(struct NaClDescEffector *effp,

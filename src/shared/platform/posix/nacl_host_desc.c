@@ -219,6 +219,10 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
   return (uintptr_t) map_addr;
 }
 
+int NaClHostDescUnmapUnsafe(void *start_addr, size_t len) {
+  return (0 == munmap(start_addr, len)) ? 0 : -errno;
+}
+
 static int NaClHostDescCtor(struct NaClHostDesc  *d,
                             int fd,
                             int flags) {

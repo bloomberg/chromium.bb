@@ -3,6 +3,21 @@
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
+import atexit
+import os
+import tempfile
+import shutil
+import sys
+
+def MakeTempDir():
+  temporary_dir = tempfile.mkdtemp()
+  def Cleanup():
+    try:
+      shutil.rmtree(temporary_dir)
+    except OSError:
+      pass
+  atexit.register(Cleanup)
+  return temporary_dir
 
 Import('env')
 
@@ -83,7 +98,6 @@ nacl_desc_quota_test_exe = env.ComponentProgram('nacl_desc_quota_test',
                                                             'platform',
                                                             'gio',])
 
-import tempfile
 temp_path = tempfile.mktemp()  # test program unlinks
 
 node = env.CommandTest('nacl_desc_quota_test.out',
@@ -104,6 +118,19 @@ node = env.CommandTest('metadata_test.out',
                        command=[metadata_test_exe, metadata_test_exe])
 
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_metadata_test')
+
+alloc_ctor_test_exe = env.ComponentProgram('nacl_desc_io_alloc_ctor_test',
+                                           ['nacl_desc_io_alloc_ctor_test.c'],
+                                           EXTRA_LIBS=['nrd_xfer',
+                                                       'nacl_base',
+                                                       'imc',
+                                                       'platform'])
+
+node = env.CommandTest('nacl_desc_io_alloc_ctor_test.out',
+                       command=[alloc_ctor_test_exe, '-t', MakeTempDir()])
+
+env.AddNodeToTestSuite(node, ['small_tests'],
+                       'run_nacl_desc_io_alloc_ctor_test')
 
 
 # TODO: add comment
