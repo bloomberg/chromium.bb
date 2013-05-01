@@ -6,15 +6,19 @@
 
 #include <android/bitmap.h>
 
+#include "android_webview/browser/in_process_renderer/in_process_view_renderer.h"
+#include "android_webview/common/aw_switches.h"
 #include "android_webview/common/renderer_picture_map.h"
 #include "android_webview/public/browser/draw_gl.h"
 #include "android_webview/public/browser/draw_sw.h"
 #include "base/android/jni_android.h"
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "cc/layers/layer.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -117,6 +121,11 @@ class BrowserViewRendererImpl::UserData : public content::WebContents::Data {
 BrowserViewRendererImpl* BrowserViewRendererImpl::Create(
     BrowserViewRenderer::Client* client,
     JavaHelper* java_helper) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kMergeUIAndRendererCompositorThreads)) {
+    return new InProcessViewRenderer(client, java_helper);
+  }
+
   return new BrowserViewRendererImpl(client, java_helper);
 }
 
@@ -124,6 +133,15 @@ BrowserViewRendererImpl* BrowserViewRendererImpl::Create(
 BrowserViewRendererImpl* BrowserViewRendererImpl::FromWebContents(
     content::WebContents* contents) {
   return UserData::GetInstance(contents);
+}
+
+// static
+BrowserViewRendererImpl* BrowserViewRendererImpl::FromId(int render_process_id,
+                                                         int render_view_id) {
+  const content::RenderViewHost* rvh =
+      content::RenderViewHost::FromID(render_process_id, render_view_id);
+  if (!rvh) return NULL;
+  return FromWebContents(content::WebContents::FromRenderViewHost(rvh));
 }
 
 BrowserViewRendererImpl::BrowserViewRendererImpl(
@@ -162,6 +180,11 @@ BrowserViewRendererImpl::BrowserViewRendererImpl(
 
 BrowserViewRendererImpl::~BrowserViewRendererImpl() {
   SetContents(NULL);
+}
+
+void BrowserViewRendererImpl::BindSynchronousCompositor(
+    content::SynchronousCompositor* compositor) {
+  NOTREACHED();  // Must be handled by the InProcessViewRenderer
 }
 
 // static
@@ -364,6 +387,8 @@ bool BrowserViewRendererImpl::DrawSW(jobject java_canvas,
 }
 
 ScopedJavaLocalRef<jobject> BrowserViewRendererImpl::CapturePicture() {
+  // TODO(joth): reimplement this in terms of a call to RenderPicture (vitual
+  // method) passing in a recordingt canvas, rather than using the picture map.
   skia::RefPtr<SkPicture> picture = GetLastCapturedPicture();
   if (!picture || !g_sw_draw_functions)
     return ScopedJavaLocalRef<jobject>();

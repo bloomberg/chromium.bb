@@ -66,6 +66,8 @@
     'renderer/android/email_detector.h',
     'renderer/android/phone_number_detector.cc',
     'renderer/android/phone_number_detector.h',
+    'renderer/android/synchronous_compositor_output_surface.cc',
+    'renderer/android/synchronous_compositor_output_surface.h',
     'renderer/device_orientation_dispatcher.cc',
     'renderer/device_orientation_dispatcher.h',
     'renderer/devtools/devtools_agent.cc',
