@@ -22,7 +22,7 @@ class APIListDataSource(object):
     def __init__(self, compiled_fs_factory, api_path, public_path):
       self._compiled_fs = compiled_fs_factory.Create(self._ListAPIs,
                                                      APIListDataSource)
-      self._identity_fs = compiled_fs_factory.GetOrCreateIdentity()
+      self._identity_fs = compiled_fs_factory.CreateIdentity(APIListDataSource)
       def Normalize(string):
         return string if string.endswith('/') else (string + '/')
       self._api_path = Normalize(api_path)

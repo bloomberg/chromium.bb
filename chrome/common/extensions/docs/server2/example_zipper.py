@@ -16,7 +16,7 @@ class ExampleZipper(object):
     self._base_path = base_path.rstrip('/')
     # Use an IdentityFileSystem here so that it shares a cache with the samples
     # data source. Otherwise we'd need to fetch the zip files from the cron job.
-    self._file_cache = compiled_fs_factory.GetOrCreateIdentity()
+    self._file_cache = compiled_fs_factory.CreateIdentity(ExampleZipper)
     self._zip_cache = compiled_fs_factory.Create(self._MakeZipFile,
                                                  ExampleZipper)
 

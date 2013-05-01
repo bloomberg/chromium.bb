@@ -14,7 +14,7 @@ class PathCanonicalizer(object):
   '''
   def __init__(self, channel, compiled_fs_factory):
     self._channel = channel
-    self._identity_fs = compiled_fs_factory.GetOrCreateIdentity()
+    self._identity_fs = compiled_fs_factory.CreateIdentity(PathCanonicalizer)
 
   def Canonicalize(self, path):
     starts_with_channel, path_without_channel = (False, path)

@@ -34,15 +34,12 @@ def _CreateFactory():
 class CompiledFileSystemTest(unittest.TestCase):
   def testIdentityNamespace(self):
     factory = _CreateFactory()
-    compiled_fs = factory.GetOrCreateIdentity()
-    self.assertEqual('3-0/CompiledFileSystem@test/id/file',
+    compiled_fs = factory.CreateIdentity(CompiledFileSystemTest)
+    self.assertEqual('3-0/CompiledFileSystem@test/CompiledFileSystemTest/file',
                      compiled_fs._file_object_store.namespace)
-    compiled_fs = factory.GetOrCreateIdentity()  # should be the same
-    self.assertEqual('3-0/CompiledFileSystem@test/id/list',
-                     compiled_fs._list_object_store.namespace)
 
   def testIdentityFromFile(self):
-    compiled_fs = _CreateFactory().GetOrCreateIdentity()
+    compiled_fs = _CreateFactory().CreateIdentity(CompiledFileSystemTest)
     self.assertEqual('404.html contents', compiled_fs.GetFromFile('404.html'))
     self.assertEqual('a11y.html contents',
                      compiled_fs.GetFromFile('apps/a11y.html'))
@@ -50,7 +47,7 @@ class CompiledFileSystemTest(unittest.TestCase):
                      compiled_fs.GetFromFile('/apps/fakedir/file.html'))
 
   def testIdentityFromFileListing(self):
-    compiled_fs = _CreateFactory().GetOrCreateIdentity()
+    compiled_fs = _CreateFactory().CreateIdentity(CompiledFileSystemTest)
     self.assertEqual(set(('404.html',
                           'apps/a11y.html',
                           'apps/about_apps.html',
@@ -90,7 +87,7 @@ class CompiledFileSystemTest(unittest.TestCase):
                      compiled_fs.GetFromFile('/apps/fakedir/file.html'))
 
   def testCaching(self):
-    compiled_fs = _CreateFactory().GetOrCreateIdentity()
+    compiled_fs = _CreateFactory().CreateIdentity(CompiledFileSystemTest)
     self.assertEqual('404.html contents', compiled_fs.GetFromFile('404.html'))
     self.assertEqual(set(('file.html',)),
                      set(compiled_fs.GetFromFileListing('apps/fakedir')))
@@ -107,7 +104,7 @@ class CompiledFileSystemTest(unittest.TestCase):
                      set(compiled_fs.GetFromFileListing('apps/fakedir')))
 
   def testFailures(self):
-    compiled_fs = _CreateFactory().GetOrCreateIdentity()
+    compiled_fs = _CreateFactory().CreateIdentity(CompiledFileSystemTest)
     self.assertRaises(FileNotFoundError, compiled_fs.GetFromFile, '405.html')
     # TODO(kalman): would be nice to test this fails since apps/ is a dir.
     compiled_fs.GetFromFile('apps/')

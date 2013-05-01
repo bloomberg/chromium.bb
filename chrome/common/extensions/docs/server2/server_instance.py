@@ -208,4 +208,4 @@ class ServerInstance(object):
         channel,
         self.compiled_fs_factory)
 
-    self.content_cache = self.compiled_fs_factory.GetOrCreateIdentity()
+    self.content_cache = self.compiled_fs_factory.CreateIdentity(ServerInstance)
