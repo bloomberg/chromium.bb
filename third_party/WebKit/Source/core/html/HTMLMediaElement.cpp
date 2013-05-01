@@ -3597,13 +3597,13 @@ void HTMLMediaElement::userCancelledLoad()
 {
     LOG(Media, "HTMLMediaElement::userCancelledLoad");
 
-    if (m_networkState == NETWORK_EMPTY || m_completelyLoaded)
-        return;
-
     // If the media data fetching process is aborted by the user:
 
     // 1 - The user agent should cancel the fetching process.
     clearMediaPlayer(-1);
+
+    if (m_networkState == NETWORK_EMPTY || m_completelyLoaded)
+        return;
 
     // 2 - Set the error attribute to a new MediaError object whose code attribute is set to MEDIA_ERR_ABORTED.
     m_error = MediaError::create(MediaError::MEDIA_ERR_ABORTED);
