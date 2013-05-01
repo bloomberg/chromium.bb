@@ -73,26 +73,33 @@ Importer* CreateImporterByType(ImporterType type) {
 
 void LogImporterUseToMetrics(const std::string& metric_postfix,
                              ImporterType type) {
-  ImporterTypeMetrics metrics_type;
+  ImporterTypeMetrics metrics_type = IMPORTER_METRICS_UNKNOWN;
   switch (type) {
     case TYPE_UNKNOWN:
       metrics_type = IMPORTER_METRICS_UNKNOWN;
+      break;
 #if defined(OS_WIN)
     case TYPE_IE:
       metrics_type = IMPORTER_METRICS_IE;
+      break;
 #endif
     case TYPE_FIREFOX2:
       metrics_type = IMPORTER_METRICS_FIREFOX2;
+      break;
     case TYPE_FIREFOX3:
       metrics_type = IMPORTER_METRICS_FIREFOX3;
+      break;
 #if defined(OS_MACOSX)
     case TYPE_SAFARI:
       metrics_type = IMPORTER_METRICS_SAFARI;
+      break;
 #endif
     case TYPE_GOOGLE_TOOLBAR5:
       metrics_type = IMPORTER_METRICS_GOOGLE_TOOLBAR5;
+      break;
     case TYPE_BOOKMARKS_FILE:
       metrics_type = IMPORTER_METRICS_BOOKMARKS_FILE;
+      break;
   }
 
   // Note: This leaks memory, which is the expected behavior as the factory
