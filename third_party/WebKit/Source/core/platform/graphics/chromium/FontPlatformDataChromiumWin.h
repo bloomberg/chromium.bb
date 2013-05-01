@@ -52,7 +52,7 @@ namespace WebCore {
 // Return a typeface associated with the hfont, and return its size and
 // lfQuality from the hfont's LOGFONT. The caller is now an owner of the
 // typeface.
-SkTypeface* CreateTypefaceFromHFont(HFONT, int* size, int* lfQuality);
+SkTypeface* CreateTypefaceFromHFont(HFONT, int* size, int* paintTextFlags);
 
 class FontDescription;
 
@@ -79,7 +79,7 @@ public:
     HFONT hfont() const { return m_font ? m_font->hfont() : 0; }
     float size() const { return m_size; }
     SkTypeface* typeface() const { return m_typeface; }
-    int lfQuality() const { return m_lfQuality; }
+    int paintTextFlags() const { return m_paintTextFlags; }
 
     FontOrientation orientation() const { return m_orientation; }
     void setOrientation(FontOrientation orientation) { m_orientation = orientation; }
@@ -149,7 +149,7 @@ private:
     FontOrientation m_orientation;
 
     SkTypeface* m_typeface; // cached from m_font
-    int m_lfQuality; // cached from m_font
+    int m_paintTextFlags; // cached from m_font
 
     mutable SCRIPT_CACHE m_scriptCache;
     mutable SCRIPT_FONTPROPERTIES* m_scriptFontProperties;

@@ -35,6 +35,7 @@
 #include <windows.h>
 #include <mlang.h>
 #include <objidl.h>
+#include "SkPaint.h"
 #include "SkTypeface_win.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/FontCache.h"
@@ -46,7 +47,53 @@
 
 namespace WebCore {
 
-SkTypeface* CreateTypefaceFromHFont(HFONT hfont, int* size, int* lfQuality)
+// Lookup the current system settings for font smoothing.
+// We cache these values for performance, but if the browser has a way to be
+// notified when these change, we could re-query them at that time.
+static uint32_t getDefaultGDITextFlags()
+{
+    static bool gInited;
+    static uint32_t gFlags;
+    if (!gInited) {
+        BOOL enabled;
+        gFlags = 0;
+        if (SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &enabled, 0) && enabled) {
+            gFlags |= SkPaint::kAntiAlias_Flag;
+
+            UINT smoothType;
+            if (SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &smoothType, 0)) {
+                if (FE_FONTSMOOTHINGCLEARTYPE == smoothType)
+                    gFlags |= SkPaint::kLCDRenderText_Flag;
+            }
+        }
+        gInited = true;
+    }
+    return gFlags;
+}
+
+static int computePaintTextFlags(const LOGFONT& lf)
+{
+    int textFlags = 0;
+    switch (lf.lfQuality) {
+    case NONANTIALIASED_QUALITY:
+        textFlags = 0;
+        break;
+    case ANTIALIASED_QUALITY:
+        textFlags = SkPaint::kAntiAlias_Flag;
+        break;
+    case CLEARTYPE_QUALITY:
+        textFlags = (SkPaint::kAntiAlias_Flag | SkPaint::kLCDRenderText_Flag);
+        break;
+    default:
+        textFlags = getDefaultGDITextFlags();
+        break;
+    }
+
+    // only allow features that SystemParametersInfo allows
+    return textFlags & getDefaultGDITextFlags();
+}
+
+SkTypeface* CreateTypefaceFromHFont(HFONT hfont, int* size, int* paintTextFlags)
 {
     LOGFONT info;
     GetObject(hfont, sizeof(info), &info);
@@ -56,8 +103,8 @@ SkTypeface* CreateTypefaceFromHFont(HFONT hfont, int* size, int* lfQuality)
             height = -height;
         *size = height;
     }
-    if (lfQuality)
-        *lfQuality = info.lfQuality;
+    if (paintTextFlags)
+        *paintTextFlags = computePaintTextFlags(info);
     return SkCreateTypefaceFromLOGFONT(info);
 }
 
@@ -68,7 +115,7 @@ FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
     , m_scriptCache(0)
     , m_scriptFontProperties(0)
     , m_typeface(0)
-    , m_lfQuality(DEFAULT_QUALITY)
+    , m_paintTextFlags(0)
 {
 }
 
@@ -79,7 +126,7 @@ FontPlatformData::FontPlatformData()
     , m_scriptCache(0)
     , m_scriptFontProperties(0)
     , m_typeface(0)
-    , m_lfQuality(DEFAULT_QUALITY)
+    , m_paintTextFlags(0)
 {
 }
 
@@ -89,7 +136,7 @@ FontPlatformData::FontPlatformData(HFONT font, float size, FontOrientation orien
     , m_orientation(orientation)
     , m_scriptCache(0)
     , m_scriptFontProperties(0)
-    , m_typeface(CreateTypefaceFromHFont(font, 0, &m_lfQuality))
+    , m_typeface(CreateTypefaceFromHFont(font, 0, &m_paintTextFlags))
 {
 }
 
@@ -101,7 +148,7 @@ FontPlatformData::FontPlatformData(float size, bool bold, bool oblique)
     , m_scriptCache(0)
     , m_scriptFontProperties(0)
     , m_typeface(0)
-    , m_lfQuality(DEFAULT_QUALITY)
+    , m_paintTextFlags(0)
 {
 }
 
@@ -112,7 +159,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& data)
     , m_scriptCache(0)
     , m_scriptFontProperties(0)
     , m_typeface(data.m_typeface)
-    , m_lfQuality(data.m_lfQuality)
+    , m_paintTextFlags(data.m_paintTextFlags)
 {
     SkSafeRef(m_typeface);
 }
@@ -124,7 +171,7 @@ FontPlatformData& FontPlatformData::operator=(const FontPlatformData& data)
         m_size = data.m_size;
         m_orientation = data.m_orientation;
         SkRefCnt_SafeAssign(m_typeface, data.m_typeface);
-        m_lfQuality = data.m_lfQuality;
+        m_paintTextFlags = data.m_paintTextFlags;
 
         // The following fields will get re-computed if necessary.
         ScriptFreeCache(&m_scriptCache);

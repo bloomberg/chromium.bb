@@ -83,56 +83,12 @@ static void skiaDrawText(PlatformContextSkia* context,
     }
 }
 
-// Lookup the current system settings for font smoothing.
-// We cache these values for performance, but if the browser has away to be
-// notified when these change, we could re-query them at that time.
-static uint32_t getDefaultGDITextFlags()
-{
-    static bool gInited;
-    static uint32_t gFlags;
-    if (!gInited) {
-        BOOL enabled;
-        gFlags = 0;
-        if (SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &enabled, 0) && enabled) {
-            gFlags |= SkPaint::kAntiAlias_Flag;
-
-            UINT smoothType;
-            if (SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &smoothType, 0)) {
-                if (FE_FONTSMOOTHINGCLEARTYPE == smoothType)
-                    gFlags |= SkPaint::kLCDRenderText_Flag;
-            }
-        }
-        gInited = true;
-    }
-    return gFlags;
-}
-
 static void setupPaintForFont(SkPaint* paint, PlatformContextSkia* pcs,
-                              SkTypeface* face, float size, int quality)
+                              SkTypeface* face, float size, uint32_t textFlags)
 {
     paint->setTextSize(SkFloatToScalar(size));
     paint->setTypeface(face);
 
-    // turn quality into text flags
-    uint32_t textFlags;
-    switch (quality) {
-    case NONANTIALIASED_QUALITY:
-        textFlags = 0;
-        break;
-    case ANTIALIASED_QUALITY:
-        textFlags = SkPaint::kAntiAlias_Flag;
-        break;
-    case CLEARTYPE_QUALITY:
-        textFlags = (SkPaint::kAntiAlias_Flag | SkPaint::kLCDRenderText_Flag);
-        break;
-    default:
-        textFlags = getDefaultGDITextFlags();
-        break;
-    }
-    // only allow features that SystemParametersInfo allows
-    textFlags &= getDefaultGDITextFlags();
-
-    // do this check after our switch on lfQuality
     if (!pcs->couldUseLCDRenderedText()) {
         textFlags &= ~SkPaint::kLCDRenderText_Flag;
         // If we *just* clear our request for LCD, then GDI seems to
@@ -156,7 +112,7 @@ static void setupPaintForFont(SkPaint* paint, PlatformContextSkia* pcs,
 }
 
 static void paintSkiaText(GraphicsContext* context, HFONT hfont,
-                          SkTypeface* face, float size, int quality,
+                          SkTypeface* face, float size, uint32_t textFlags,
                           int numGlyphs,
                           const WORD* glyphs,
                           const int* advances,
@@ -173,7 +129,7 @@ static void paintSkiaText(GraphicsContext* context, HFONT hfont,
     SkPaint paint;
     platformContext->setupPaintForFilling(&paint);
     paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-    setupPaintForFont(&paint, platformContext, face, size, quality);
+    setupPaintForFont(&paint, platformContext, face, size, textFlags);
 
     bool didFill = false;
 
@@ -190,7 +146,7 @@ static void paintSkiaText(GraphicsContext* context, HFONT hfont,
         paint.reset();
         platformContext->setupPaintForStroking(&paint, 0, 0);
         paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-        setupPaintForFont(&paint, platformContext, face, size, quality);
+        setupPaintForFont(&paint, platformContext, face, size, textFlags);
 
         if (didFill) {
             // If there is a shadow and we filled above, there will already be
@@ -219,7 +175,7 @@ void paintSkiaText(GraphicsContext* context,
                    const GOFFSET* offsets,
                    const SkPoint* origin)
 {
-    paintSkiaText(context, data.hfont(), data.typeface(), data.size(), data.lfQuality(),
+    paintSkiaText(context, data.hfont(), data.typeface(), data.size(), data.paintTextFlags(),
                   numGlyphs, glyphs, advances, offsets, origin);
 }
 
@@ -232,11 +188,11 @@ void paintSkiaText(GraphicsContext* context,
                    const SkPoint* origin)
 {
     int size;
-    int quality;
-    SkTypeface* face = CreateTypefaceFromHFont(hfont, &size, &quality);
+    int paintTextFlags;
+    SkTypeface* face = CreateTypefaceFromHFont(hfont, &size, &paintTextFlags);
     SkAutoUnref aur(face);
 
-    paintSkiaText(context, hfont, face, size, quality, numGlyphs, glyphs, advances, offsets, origin);
+    paintSkiaText(context, hfont, face, size, paintTextFlags, numGlyphs, glyphs, advances, offsets, origin);
 }
 
 }  // namespace WebCore
