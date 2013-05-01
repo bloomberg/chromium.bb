@@ -6,17 +6,20 @@
 
 namespace cc {
 
+void FakeProxy::SetLayerTreeHost(LayerTreeHost* host) {
+  layer_tree_host_ = host;
+}
+
 bool FakeProxy::CompositeAndReadback(void* pixels, gfx::Rect rect) {
   return true;
 }
 
 bool FakeProxy::IsStarted() const { return true; }
 
-bool FakeProxy::InitializeOutputSurface() { return true; }
-
-bool FakeProxy::InitializeRenderer() { return true; }
-
-bool FakeProxy::RecreateOutputSurface() { return true; }
+void FakeProxy::CreateAndInitializeOutputSurface() {
+  DCHECK(layer_tree_host_);
+  layer_tree_host_->OnCreateAndInitializeOutputSurfaceAttempted(true);
+}
 
 const RendererCapabilities& FakeProxy::GetRendererCapabilities() const {
   return capabilities_;

@@ -287,8 +287,6 @@ class ScrollbarLayerTestMaxTextureSize : public LayerTreeTest {
   void SetScrollbarBounds(gfx::Size bounds) { bounds_ = bounds; }
 
   virtual void BeginTest() OVERRIDE {
-    layer_tree_host()->InitializeRendererIfNeeded();
-
     scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::Create());
     scrollbar_layer_ =
         ScrollbarLayer::Create(scrollbar.Pass(),
@@ -370,7 +368,7 @@ class ScrollbarLayerTestResourceCreation : public testing::Test {
     layer_tree_root->AddChild(content_layer);
     layer_tree_root->AddChild(scrollbar_layer);
 
-    layer_tree_host_->InitializeRendererIfNeeded();
+    layer_tree_host_->InitializeOutputSurfaceIfNeeded();
     layer_tree_host_->contents_texture_manager()->
         SetMaxMemoryLimitBytes(1024 * 1024);
     layer_tree_host_->SetRootLayer(layer_tree_root);

@@ -257,8 +257,8 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient {
     test_hooks_->DidRecreateOutputSurface(succeeded);
   }
 
-  virtual void WillRetryRecreateOutputSurface() OVERRIDE {
-    test_hooks_->WillRetryRecreateOutputSurface();
+  virtual void DidFailToInitializeOutputSurface() OVERRIDE {
+    test_hooks_->DidFailToInitializeOutputSurface();
   }
 
   virtual scoped_ptr<InputHandlerClient> CreateInputHandlerClient() OVERRIDE {

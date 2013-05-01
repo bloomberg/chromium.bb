@@ -60,7 +60,7 @@ class TiledLayerTest : public testing::Test {
                                              scoped_ptr<Thread>(NULL));
     proxy_ = layer_tree_host_->proxy();
     resource_manager_ = PrioritizedResourceManager::Create(proxy_);
-    layer_tree_host_->InitializeRendererIfNeeded();
+    layer_tree_host_->InitializeOutputSurfaceIfNeeded();
     layer_tree_host_->SetRootLayer(Layer::Create());
 
     DebugScopedSetImplThreadAndMainThreadBlocked
