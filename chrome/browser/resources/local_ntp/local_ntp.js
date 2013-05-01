@@ -691,6 +691,13 @@ var nextRequestId = 0;
 var lastInputValue = '';
 
 /**
+ * True if updateSuggestions() was deferred due to suggestion iframes not being
+ * ready and false otherwise.
+ * @type {boolean}
+ */
+var updateSuggestionsWasDeferred = false;
+
+/**
  * @param {Object} suggestion A suggestion.
  * @param {boolean} inVerbatimMode Are we in verbatim mode?
  * @return {boolean} True if the suggestion should be selected.
@@ -717,6 +724,13 @@ function getDispositionFromClickButton(button) {
   return WindowOpenDisposition.CURRENT_TAB;
 }
 
+/**
+ * @return {boolean} True if all suggestion iframes are ready.
+ */
+function suggestionIframesReady() {
+  return iframePool.ready() && $(IDS.SUGGESTION_LOADER).loaded;
+}
+
 
 /**
  * Manages a pool of chrome-search suggestion result iframes.
@@ -732,6 +746,13 @@ IframePool.prototype = {
    * @private
    */
   iframes_: [],
+
+  /**
+   * Number of iframes pending load.
+   * @type {number}
+   * @private
+   */
+  pendingCount_: 0,
 
   /**
    * Initializes the pool with blank result template iframes, positioned off
@@ -752,9 +773,22 @@ IframePool.prototype = {
         if (activeBox)
           activeBox.unhover(e.currentTarget.id);
       }, false);
+      this.pendingCount_++;
+      var self = this;
+      iframe.onload = function() {
+        self.pendingCount_--;
+        callDeferredUpdateSuggestions();
+      };
       document.body.appendChild(iframe);
       this.iframes_.push(iframe);
     }
+  },
+
+  /**
+   * @return {boolean} True if all suggestion iframes are loaded.
+   */
+  ready: function() {
+    return this.pendingCount_ == 0;
   },
 
   /**
@@ -1191,6 +1225,10 @@ function hideActiveSuggestions() {
  * Updates suggestions in response to a onchange or onnativesuggestions call.
  */
 function updateSuggestions() {
+  updateSuggestionsWasDeferred = !suggestionIframesReady();
+  // Suggestion iframes aren't loaded, so the page can't show suggestions yet.
+  if (updateSuggestionsWasDeferred)
+    return;
   if (pendingBox)
     pendingBox.destroy();
   pendingBox = null;
@@ -1225,6 +1263,15 @@ function updateSuggestions() {
   }
 
   lastInputValue = inputValue;
+}
+
+/**
+ * Calls updateSuggestions() if it was deferred until suggestion iframes loaded
+ * and they have now all loaded.
+ */
+function callDeferredUpdateSuggestions() {
+  if (updateSuggestionsWasDeferred && suggestionIframesReady())
+    updateSuggestions();
 }
 
 /**
@@ -1378,6 +1425,11 @@ function getEmbeddedSearchApiHandle() {
 function init() {
   iframePool = new IframePool();
   iframePool.init();
+  $(IDS.SUGGESTION_LOADER).onload = function() {
+    $(IDS.SUGGESTION_LOADER).loaded = true;
+    callDeferredUpdateSuggestions();
+  };
+
   topMarginElement = $(IDS.TOP_MARGIN);
   tilesContainer = $(IDS.TILES);
   notification = $(IDS.NOTIFICATION);
