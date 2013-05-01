@@ -33,9 +33,10 @@ class AutofillPopupView;
 class AutofillPopupControllerImpl : public AutofillPopupController,
                                     public content::KeyboardListener {
  public:
-  // Creates a new |AutofillPopupControllerImpl|. |previous| will be invalidated
-  // by this call.
-  static base::WeakPtr<AutofillPopupControllerImpl> Create(
+  // Creates a new |AutofillPopupControllerImpl|, or reuses |previous| if
+  // the construction arguments are the same. |previous| may be invalidated by
+  // this call.
+  static base::WeakPtr<AutofillPopupControllerImpl> GetOrCreate(
       base::WeakPtr<AutofillPopupControllerImpl> previous,
       base::WeakPtr<AutofillPopupDelegate> delegate,
       gfx::NativeView container_view,
@@ -61,6 +62,8 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
  protected:
   FRIEND_TEST_ALL_PREFIXES(AutofillExternalDelegateBrowserTest,
                            CloseWidgetAndNoLeaking);
+  FRIEND_TEST_ALL_PREFIXES(AutofillPopupControllerUnitTest,
+                           ProperlyResetController);
 
   AutofillPopupControllerImpl(base::WeakPtr<AutofillPopupDelegate> delegate,
                               gfx::NativeView container_view,
@@ -118,6 +121,13 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   // Returns true if the popup still has non-options entries to show the user.
   bool HasSuggestions();
 
+  // Set the Autofill entry values. Exposed to allow tests to set these values
+  // without showing the popup.
+  void SetValues(const std::vector<string16>& names,
+                 const std::vector<string16>& subtexts,
+                 const std::vector<string16>& icons,
+                 const std::vector<int>& identifier);
+
   AutofillPopupView* view() { return view_; }
 
   // |view_| pass throughs (virtual for testing).
@@ -141,6 +151,10 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   base::WeakPtr<AutofillPopupControllerImpl> GetWeakPtr();
 
  private:
+  // Clear the internal state of the controller. This is needed to ensure that
+  // when the popup is reused it doesn't leak values between uses.
+  void ClearState();
+
   const gfx::Rect RoundedElementBounds() const;
 #if !defined(OS_ANDROID)
   // Calculates and sets the bounds of the popup, including placing it properly

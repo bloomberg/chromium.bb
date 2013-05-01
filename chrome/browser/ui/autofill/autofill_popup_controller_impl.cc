@@ -68,12 +68,19 @@ const DataResource kDataResources[] = {
 }  // namespace
 
 // static
-WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::Create(
+WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetOrCreate(
     WeakPtr<AutofillPopupControllerImpl> previous,
     WeakPtr<AutofillPopupDelegate> delegate,
     gfx::NativeView container_view,
     const gfx::RectF& element_bounds) {
   DCHECK(!previous || previous->delegate_ == delegate);
+
+  if (previous &&
+      previous->container_view() == container_view &&
+      previous->element_bounds() == element_bounds) {
+    previous->ClearState();
+    return previous;
+  }
 
   if (previous)
     previous->Hide();
@@ -91,8 +98,8 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
       delegate_(delegate),
       container_view_(container_view),
       element_bounds_(element_bounds),
-      selected_line_(kNoSelection),
       weak_ptr_factory_(this) {
+  ClearState();
 #if !defined(OS_ANDROID)
   subtext_font_ = name_font_.DeriveFont(kLabelFontSizeDelta);
   warning_font_ = name_font_.DeriveFont(0, gfx::Font::ITALIC);
@@ -106,11 +113,7 @@ void AutofillPopupControllerImpl::Show(
     const std::vector<string16>& subtexts,
     const std::vector<string16>& icons,
     const std::vector<int>& identifiers) {
-  names_ = names;
-  full_names_ = names;
-  subtexts_ = subtexts;
-  icons_ = icons;
-  identifiers_ = identifiers;
+  SetValues(names, subtexts, icons, identifiers);
 
 #if !defined(OS_ANDROID)
   // Android displays the long text with ellipsis using the view attributes.
@@ -166,8 +169,6 @@ void AutofillPopupControllerImpl::Show(
 }
 
 void AutofillPopupControllerImpl::Hide() {
-  SetSelectedLine(kNoSelection);
-
   if (delegate_)
     delegate_->OnPopupHidden(this);
 
@@ -460,6 +461,18 @@ bool AutofillPopupControllerImpl::HasSuggestions() {
        identifiers_[0] == WebAutofillClient::MenuItemIDDataListEntry);
 }
 
+void AutofillPopupControllerImpl::SetValues(
+    const std::vector<string16>& names,
+    const std::vector<string16>& subtexts,
+    const std::vector<string16>& icons,
+    const std::vector<int>& identifiers) {
+  names_ = names;
+  full_names_ = names;
+  subtexts_ = subtexts;
+  icons_ = icons;
+  identifiers_ = identifiers;
+}
+
 void AutofillPopupControllerImpl::ShowView() {
   view_->Show();
 }
@@ -553,6 +566,21 @@ void AutofillPopupControllerImpl::UpdatePopupBounds() {
 
 WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
+}
+
+void AutofillPopupControllerImpl::ClearState() {
+  // Don't clear view_, because otherwise the popup will have to get regenerated
+  // and this will cause flickering.
+
+  popup_bounds_ = gfx::Rect();
+
+  names_.clear();
+  subtexts_.clear();
+  icons_.clear();
+  identifiers_.clear();
+  full_names_.clear();
+
+  selected_line_ = kNoSelection;
 }
 
 const gfx::Rect AutofillPopupControllerImpl::RoundedElementBounds() const {
