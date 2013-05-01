@@ -1518,39 +1518,39 @@ class ValidationPool(object):
         message = message[:max_error_len] + '... (truncated)'
       msg.append(message)
 
-    if not pre_cq:
-      # Create a list of changes other than this one that might be guilty.
-      # Limit the number of suspects to 20 so that the list of suspects isn't
-      # ridiculously long.
-      max_suspects = 20
-      other_suspects = suspects - set([change])
-      if len(other_suspects) < max_suspects:
-        other_suspects_str = ', '.join(sorted(
-            'CL:%s' % x.gerrit_number_str for x in other_suspects))
+    # Create a list of changes other than this one that might be guilty.
+    # Limit the number of suspects to 20 so that the list of suspects isn't
+    # ridiculously long.
+    max_suspects = 20
+    other_suspects = suspects - set([change])
+    if len(other_suspects) < max_suspects:
+      other_suspects_str = ', '.join(sorted(
+          'CL:%s' % x.gerrit_number_str for x in other_suspects))
+    else:
+      other_suspects_str = ('%d other changes. See the blamelist for more '
+                            'details.' % (len(other_suspects),))
+
+    if change in suspects:
+      if other_suspects_str:
+        msg.append('Your change may have caused this failure. There are '
+                   'also other changes that may be at fault: %s'
+                   % other_suspects_str)
       else:
-        other_suspects_str = ('%d other changes. See the blamelist for more '
-                              'details.' % (len(other_suspects),))
+        msg.append('This failure was probably caused by your change.')
 
-
-      if change in suspects:
-        if other_suspects_str:
-          msg.append('Your change may have caused this failure. There are '
-                     'also other changes that may be at fault: %s'
-                     % other_suspects_str)
-        else:
-          msg.append('This failure was probably caused by your change.')
-
-        msg.append('Please check whether the failure is your fault. If your '
-                   'change is not at fault, you may mark it as ready again.')
+      msg.append('Please check whether the failure is your fault. If your '
+                 'change is not at fault, you may mark it as ready again.')
+    else:
+      if len(suspects) == 1:
+        msg.append('This failure was probably caused by %s'
+                   % other_suspects_str)
       else:
-        if len(suspects) == 1:
-          msg.append('This failure was probably caused by %s'
-                     % other_suspects_str)
-        else:
-          msg.append('One of the following changes is probably at fault: %s'
-                     % other_suspects_str)
+        msg.append('One of the following changes is probably at fault: %s'
+                   % other_suspects_str)
+
+      if not pre_cq:
         msg.insert(
-            0, 'NOTE: %(queue)s will retry your change automatically.')
+            0, 'NOTE: The Commit Queue will retry your change automatically.')
 
     return '\n\n'.join(msg)
 
