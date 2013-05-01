@@ -23,7 +23,8 @@ class BluetoothProfileMac : public BluetoothProfile {
  public:
   // BluetoothProfile override.
   virtual void Unregister() OVERRIDE;
-  virtual void SetConnectionCallback(const SocketCallback& callback) OVERRIDE;
+  virtual void SetConnectionCallback(
+      const ConnectionCallback& callback) OVERRIDE;
 
   // Makes an outgoing connection to |device|.
   // This method runs |socket_callback_| with the socket and returns true if the
@@ -38,7 +39,7 @@ class BluetoothProfileMac : public BluetoothProfile {
 
   const std::string uuid_;
   const std::string name_;
-  SocketCallback socket_callback_;
+  ConnectionCallback connection_callback_;
 };
 
 }  // namespace device

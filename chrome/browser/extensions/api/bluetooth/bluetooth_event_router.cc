@@ -20,6 +20,7 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/bluetooth_profile.h"
 #include "device/bluetooth/bluetooth_socket.h"
 
 namespace extensions {
@@ -43,6 +44,12 @@ ExtensionBluetoothEventRouter::~ExtensionBluetoothEventRouter() {
   DLOG_IF(WARNING, socket_map_.size() != 0)
       << "Bluetooth sockets are still open.";
   socket_map_.clear();
+
+  for (BluetoothProfileMap::iterator iter = bluetooth_profile_map_.begin();
+       iter != bluetooth_profile_map_.end();
+       ++iter) {
+    iter->second->Unregister();
+  }
 }
 
 bool ExtensionBluetoothEventRouter::IsBluetoothSupported() const {
@@ -92,6 +99,26 @@ bool ExtensionBluetoothEventRouter::ReleaseSocket(int id) {
   return true;
 }
 
+void ExtensionBluetoothEventRouter::AddProfile(
+    const std::string& uuid,
+    device::BluetoothProfile* bluetooth_profile) {
+  DCHECK(!HasProfile(uuid));
+  bluetooth_profile_map_[uuid] = bluetooth_profile;
+}
+
+void ExtensionBluetoothEventRouter::RemoveProfile(const std::string& uuid) {
+  BluetoothProfileMap::iterator iter = bluetooth_profile_map_.find(uuid);
+  if (iter != bluetooth_profile_map_.end()) {
+    device::BluetoothProfile* bluetooth_profile = iter->second;
+    bluetooth_profile_map_.erase(iter);
+    bluetooth_profile->Unregister();
+  }
+}
+
+bool ExtensionBluetoothEventRouter::HasProfile(const std::string& uuid) const {
+  return bluetooth_profile_map_.find(uuid) != bluetooth_profile_map_.end();
+}
+
 scoped_refptr<device::BluetoothSocket>
 ExtensionBluetoothEventRouter::GetSocket(int id) {
   SocketMap::iterator socket_entry = socket_map_.find(id);
@@ -129,6 +156,28 @@ void ExtensionBluetoothEventRouter::DispatchDeviceEvent(
   args->Append(device.ToValue().release());
   scoped_ptr<Event> event(new Event(event_name, args.Pass()));
   ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(event.Pass());
+}
+
+void ExtensionBluetoothEventRouter::DispatchConnectionEvent(
+    const std::string& extension_id,
+    const std::string& uuid,
+    const device::BluetoothDevice* device,
+    scoped_refptr<device::BluetoothSocket> socket) {
+  if (!HasProfile(uuid))
+    return;
+
+  int socket_id = RegisterSocket(socket);
+  api::bluetooth::Socket result_socket;
+  api::bluetooth::BluetoothDeviceToApiDevice(*device, &result_socket.device);
+  result_socket.profile.uuid = uuid;
+  result_socket.id = socket_id;
+
+  scoped_ptr<ListValue> args(new ListValue());
+  args->Append(result_socket.ToValue().release());
+  scoped_ptr<Event> event(new Event(
+      extensions::event_names::kBluetoothOnConnection, args.Pass()));
+  ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
+      extension_id, event.Pass());
 }
 
 void ExtensionBluetoothEventRouter::AdapterPresentChanged(

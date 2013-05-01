@@ -1,0 +1,12 @@
+{
+  "manifest_version": 2,
+  "name": "Test Bluetooth OnConnection Event",
+  "version": "1.0",
+  "description": "Tests Bluetooth OnConnection Event",
+  "app": {
+    "background": {
+      "scripts": ["runtest.js"]
+    }
+  },
+  "permissions": ["bluetooth"]
+}

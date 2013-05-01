@@ -20,6 +20,7 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_out_of_band_pairing_data.h"
+#include "device/bluetooth/bluetooth_profile.h"
 #include "device/bluetooth/bluetooth_service_record.h"
 #include "device/bluetooth/bluetooth_socket.h"
 #include "device/bluetooth/bluetooth_utils.h"
@@ -50,6 +51,10 @@ const char kInvalidDevice[] = "Invalid device";
 const char kInvalidUuid[] = "Invalid UUID";
 const char kPlatformNotSupported[] =
     "This operation is not supported on your platform";
+const char kProfileAlreadyRegistered[] =
+    "This profile has already been registered";
+const char kProfileNotFound[] = "Profile not found: invalid uuid";
+const char kProfileRegistrationFailed[] = "Profile registration failed";
 const char kServiceDiscoveryFailed[] = "Service discovery failed";
 const char kSocketNotFoundError[] = "Socket not found: invalid socket id";
 const char kStartDiscoveryFailed[] = "Starting discovery failed";
@@ -107,16 +112,106 @@ void BluetoothAPI::OnListenerRemoved(const EventListenerInfo& details) {
 
 namespace api {
 
-// TOOD(youngki): Implement.
+BluetoothAddProfileFunction::BluetoothAddProfileFunction() {
+}
+
 bool BluetoothAddProfileFunction::RunImpl() {
-  return false;
+  scoped_ptr<AddProfile::Params> params(AddProfile::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
+
+  if (!BluetoothDevice::IsUUIDValid(params->profile.uuid)) {
+    SetError(kInvalidUuid);
+    return false;
+  }
+
+  uuid_ = device::bluetooth_utils::CanonicalUuid(params->profile.uuid);
+
+  if (GetEventRouter(profile())->HasProfile(uuid_)) {
+    SetError(kProfileAlreadyRegistered);
+    return false;
+  }
+
+  device::BluetoothProfile::Options options;
+  if (params->profile.name.get())
+    options.name = *params->profile.name.get();
+  if (params->profile.channel.get())
+    options.channel = *params->profile.channel.get();
+  if (params->profile.psm.get())
+    options.psm = *params->profile.psm.get();
+  if (params->profile.require_authentication.get()) {
+    options.require_authentication =
+        *params->profile.require_authentication.get();
+  }
+  if (params->profile.require_authorization.get()) {
+    options.require_authorization =
+        *params->profile.require_authorization.get();
+  }
+  if (params->profile.auto_connect.get())
+    options.auto_connect = *params->profile.auto_connect.get();
+  if (params->profile.version.get())
+    options.version = *params->profile.version.get();
+  if (params->profile.features.get())
+    options.features = *params->profile.features.get();
+
+  RegisterProfile(
+      options,
+      base::Bind(&BluetoothAddProfileFunction::OnProfileRegistered, this));
+
+  return true;
+}
+
+void BluetoothAddProfileFunction::RegisterProfile(
+    const device::BluetoothProfile::Options& options,
+    const device::BluetoothProfile::ProfileCallback& callback) {
+  device::BluetoothProfile::Register(uuid_, options, callback);
+}
+
+void BluetoothAddProfileFunction::OnProfileRegistered(
+    device::BluetoothProfile* bluetooth_profile) {
+  if (!bluetooth_profile) {
+    SetError(kProfileRegistrationFailed);
+    SendResponse(false);
+    return;
+  }
+
+  if (GetEventRouter(profile())->HasProfile(uuid_)) {
+    bluetooth_profile->Unregister();
+    SetError(kProfileAlreadyRegistered);
+    SendResponse(false);
+    return;
+  }
+
+  bluetooth_profile->SetConnectionCallback(
+      base::Bind(&ExtensionBluetoothEventRouter::DispatchConnectionEvent,
+                 base::Unretained(GetEventRouter(profile())),
+                 extension_id(),
+                 uuid_));
+  GetEventRouter(profile())->AddProfile(uuid_, bluetooth_profile);
+  SendResponse(true);
+}
+
+bool BluetoothRemoveProfileFunction::RunImpl() {
+  scoped_ptr<RemoveProfile::Params> params(
+      RemoveProfile::Params::Create(*args_));
+
+  if (!BluetoothDevice::IsUUIDValid(params->profile.uuid)) {
+    SetError(kInvalidUuid);
+    return false;
+  }
+
+  std::string uuid =
+      device::bluetooth_utils::CanonicalUuid(params->profile.uuid);
+
+  if (!GetEventRouter(profile())->HasProfile(uuid)) {
+    SetError(kProfileNotFound);
+    return false;
+  }
+
+  GetEventRouter(profile())->RemoveProfile(uuid);
+  return true;
 }
 
 // TODO(youngki): Implement.
-bool BluetoothRemoveProfileFunction::RunImpl() {
-  return false;
-}
-
 bool BluetoothGetProfilesFunction::DoWork(
     scoped_refptr<device::BluetoothAdapter> adapter) {
   scoped_ptr<GetProfiles::Params> params(GetProfiles::Params::Create(*args_));
@@ -273,7 +368,7 @@ void BluetoothConnectFunction::ConnectToServiceCallback(
 
     bluetooth::Socket result_socket;
     bluetooth::BluetoothDeviceToApiDevice(*device, &result_socket.device);
-    result_socket.service_uuid = service_uuid;
+    result_socket.profile.uuid = service_uuid;
     result_socket.id = socket_id;
     SetResult(result_socket.ToValue().release());
     SendResponse(true);
