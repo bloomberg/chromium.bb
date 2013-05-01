@@ -88,6 +88,7 @@
       "why": "productivity, top google properties",
       "credentials": "google",
       "wait_for_element_with_selector": "div[class~=\"navForward\"]",
+      "post_navigate_javascript_to_execute": "(function() { var elem = document.createElement('meta');elem.name='viewport';elem.content='initial-scale=1';document.body.appendChild(elem); })();",
       "wait_seconds": 2,
       "smoothness": {
         "action": "scroll",
