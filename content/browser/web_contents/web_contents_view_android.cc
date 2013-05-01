@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "content/browser/android/content_view_core_impl.h"
-#include "content/browser/android/media_player_manager_android.h"
+#include "content/browser/android/media_player_manager_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"

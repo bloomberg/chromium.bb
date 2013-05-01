@@ -7,7 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "content/browser/android/media_player_manager_android.h"
+#include "content/browser/android/media_player_manager_impl.h"
 #include "content/common/android/surface_texture_peer.h"
 #include "content/public/common/content_switches.h"
 #include "jni/ContentVideoView_jni.h"
@@ -22,7 +22,7 @@ bool ContentVideoView::RegisterContentVideoView(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-ContentVideoView::ContentVideoView(MediaPlayerManagerAndroid* manager)
+ContentVideoView::ContentVideoView(MediaPlayerManagerImpl* manager)
     : manager_(manager) {
 }
 

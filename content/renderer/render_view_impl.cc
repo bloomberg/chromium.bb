@@ -224,7 +224,6 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHitTestResult.h"
 #include "ui/gfx/rect_f.h"
-#include "webkit/media/android/media_player_bridge_manager_impl.h"
 #include "webkit/media/android/webmediaplayer_android.h"
 #include "webkit/media/android/webmediaplayer_manager_android.h"
 #elif defined(OS_WIN)

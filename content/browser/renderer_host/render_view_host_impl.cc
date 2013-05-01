@@ -76,7 +76,7 @@
 #elif defined(OS_MACOSX)
 #include "content/browser/renderer_host/popup_menu_helper_mac.h"
 #elif defined(OS_ANDROID)
-#include "content/browser/android/media_player_manager_android.h"
+#include "content/browser/android/media_player_manager_impl.h"
 #endif
 
 using base::TimeDelta;
@@ -195,7 +195,7 @@ RenderViewHostImpl::RenderViewHostImpl(
     g_created_callbacks.Get().at(i).Run(this);
 
 #if defined(OS_ANDROID)
-  media_player_manager_ = new MediaPlayerManagerAndroid(this);
+  media_player_manager_ = new MediaPlayerManagerImpl(this);
 #endif
 }
 

@@ -66,7 +66,7 @@ struct Referrer;
 struct ShowDesktopNotificationHostMsgParams;
 
 #if defined(OS_ANDROID)
-class MediaPlayerManagerAndroid;
+class MediaPlayerManagerImpl;
 #endif
 
 #if defined(COMPILER_MSVC)
@@ -378,7 +378,7 @@ class CONTENT_EXPORT RenderViewHostImpl
 #endif
 
 #if defined(OS_ANDROID)
-  MediaPlayerManagerAndroid* media_player_manager() {
+  MediaPlayerManagerImpl* media_player_manager() {
     return media_player_manager_;
   }
 
@@ -672,7 +672,7 @@ class CONTENT_EXPORT RenderViewHostImpl
 #if defined(OS_ANDROID)
   // Manages all the android mediaplayer objects and handling IPCs for video.
   // This class inherits from RenderViewHostObserver.
-  MediaPlayerManagerAndroid* media_player_manager_;
+  MediaPlayerManagerImpl* media_player_manager_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostImpl);

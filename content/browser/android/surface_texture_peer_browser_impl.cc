@@ -4,7 +4,7 @@
 
 #include "content/browser/android/surface_texture_peer_browser_impl.h"
 
-#include "content/browser/android/media_player_manager_android.h"
+#include "content/browser/android/media_player_manager_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"

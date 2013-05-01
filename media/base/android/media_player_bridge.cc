@@ -11,7 +11,7 @@
 #include "base/message_loop_proxy.h"
 #include "jni/MediaPlayerBridge_jni.h"
 #include "jni/MediaPlayer_jni.h"
-#include "media/base/android/media_player_bridge_manager.h"
+#include "media/base/android/media_player_manager.h"
 #include "media/base/android/media_resource_getter.h"
 
 using base::android::ConvertUTF8ToJavaString;
@@ -36,9 +36,8 @@ MediaPlayerBridge* MediaPlayerBridge::Create(
     const GURL& url,
     bool is_media_source,
     const GURL& first_party_for_cookies,
-    MediaResourceGetter* resource_getter,
     bool hide_url_log,
-    MediaPlayerBridgeManager* manager,
+    MediaPlayerManager* manager,
     const MediaErrorCB& media_error_cb,
     const VideoSizeChangedCB& video_size_changed_cb,
     const BufferingUpdateCB& buffering_update_cb,
@@ -52,7 +51,6 @@ MediaPlayerBridge* MediaPlayerBridge::Create(
       player_id,
       url,
       first_party_for_cookies,
-      resource_getter,
       hide_url_log,
       manager,
       media_error_cb,
@@ -70,9 +68,8 @@ MediaPlayerBridge::MediaPlayerBridge(
     int player_id,
     const GURL& url,
     const GURL& first_party_for_cookies,
-    MediaResourceGetter* resource_getter,
     bool hide_url_log,
-    MediaPlayerBridgeManager* manager,
+    MediaPlayerManager* manager,
     const MediaErrorCB& media_error_cb,
     const VideoSizeChangedCB& video_size_changed_cb,
     const BufferingUpdateCB& buffering_update_cb,
@@ -102,7 +99,6 @@ MediaPlayerBridge::MediaPlayerBridge(
       can_seek_forward_(true),
       can_seek_backward_(true),
       manager_(manager),
-      resource_getter_(resource_getter),
       weak_this_(this),
       listener_(base::MessageLoopProxy::current(),
                 weak_this_.GetWeakPtr()) {
@@ -120,14 +116,17 @@ void MediaPlayerBridge::Initialize() {
     return;
   }
 
+  media::MediaResourceGetter* resource_getter =
+      manager_->GetMediaResourceGetter();
+
   if (url_.SchemeIsFileSystem()) {
     cookies_.clear();
-    resource_getter_->GetPlatformPathFromFileSystemURL(url_, base::Bind(
+    resource_getter->GetPlatformPathFromFileSystemURL(url_, base::Bind(
         &MediaPlayerBridge::ExtractMediaMetadata, weak_this_.GetWeakPtr()));
     return;
   }
 
-  resource_getter_->GetCookies(url_, first_party_for_cookies_, base::Bind(
+  resource_getter->GetCookies(url_, first_party_for_cookies_, base::Bind(
       &MediaPlayerBridge::OnCookiesRetrieved, weak_this_.GetWeakPtr()));
 }
 
@@ -172,8 +171,9 @@ void MediaPlayerBridge::Prepare() {
   if (j_media_player_.is_null())
     CreateMediaPlayer();
   if (url_.SchemeIsFileSystem()) {
-    resource_getter_->GetPlatformPathFromFileSystemURL(url_, base::Bind(
-        &MediaPlayerBridge::SetDataSource, weak_this_.GetWeakPtr()));
+    manager_->GetMediaResourceGetter()->GetPlatformPathFromFileSystemURL(
+        url_, base::Bind(&MediaPlayerBridge::SetDataSource,
+                         weak_this_.GetWeakPtr()));
   } else {
     SetDataSource(url_.spec());
   }
@@ -211,7 +211,7 @@ void MediaPlayerBridge::OnCookiesRetrieved(const std::string& cookies) {
 }
 
 void MediaPlayerBridge::ExtractMediaMetadata(const std::string& url) {
-  resource_getter_->ExtractMediaMetadata(
+  manager_->GetMediaResourceGetter()->ExtractMediaMetadata(
       url, cookies_, base::Bind(&MediaPlayerBridge::OnMediaMetadataExtracted,
                                 weak_this_.GetWeakPtr()));
 }

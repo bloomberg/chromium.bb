@@ -97,7 +97,6 @@ class ResourceFetcher;
 
 #if defined(OS_ANDROID)
 namespace webkit_media {
-class MediaPlayerBridgeManagerImpl;
 class WebMediaPlayerManagerAndroid;
 }
 #endif
@@ -1431,10 +1430,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   // The media player manager for managing all the media players on this view.
   scoped_ptr<webkit_media::WebMediaPlayerManagerAndroid> media_player_manager_;
-
-  // Resource manager for all the android media player objects if they are
-  // created in the renderer process.
-  scoped_ptr<webkit_media::MediaPlayerBridgeManagerImpl> media_bridge_manager_;
 
   // A date/time picker object for date and time related input elements.
   scoped_ptr<RendererDateTimePicker> date_time_picker_client_;

@@ -24,8 +24,7 @@
 
 namespace media {
 
-class MediaResourceGetter;
-class MediaPlayerBridgeManager;
+class MediaPlayerManager;
 
 // This class serves as a bridge for native code to call java functions inside
 // android mediaplayer class. For more information on android mediaplayer, check
@@ -84,9 +83,8 @@ class MEDIA_EXPORT MediaPlayerBridge {
       const GURL& url,
       bool is_media_source,
       const GURL& first_party_for_cookies,
-      MediaResourceGetter* resource_getter,
       bool hide_url_log,
-      MediaPlayerBridgeManager* manager,
+      MediaPlayerManager* manager,
 #if defined(GOOGLE_TV)
       const ReadFromDemuxerCB read_from_demuxer_cb,
 #endif
@@ -107,9 +105,8 @@ class MEDIA_EXPORT MediaPlayerBridge {
   MediaPlayerBridge(int player_id,
                     const GURL& url,
                     const GURL& first_party_for_cookies,
-                    MediaResourceGetter* resource_getter,
                     bool hide_url_log,
-                    MediaPlayerBridgeManager* manager,
+                    MediaPlayerManager* manager,
                     const MediaErrorCB& media_error_cb,
                     const VideoSizeChangedCB& video_size_changed_cb,
                     const BufferingUpdateCB& buffering_update_cb,
@@ -264,10 +261,7 @@ class MEDIA_EXPORT MediaPlayerBridge {
   std::string cookies_;
 
   // Resource manager for all the media players.
-  MediaPlayerBridgeManager* manager_;
-
-  // Object for retrieving resources for this media player.
-  scoped_ptr<MediaResourceGetter> resource_getter_;
+  MediaPlayerManager* manager_;
 
   // Java MediaPlayer instance.
   base::android::ScopedJavaGlobalRef<jobject> j_media_player_;

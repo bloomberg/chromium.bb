@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/android/media_player_manager_android.h"
+#include "content/browser/android/media_player_manager_impl.h"
 
 #include "base/bind.h"
 #include "content/browser/android/media_resource_getter_impl.h"
@@ -21,7 +21,7 @@ static const int kMediaPlayerThreshold = 1;
 
 namespace content {
 
-MediaPlayerManagerAndroid::MediaPlayerManagerAndroid(
+MediaPlayerManagerImpl::MediaPlayerManagerImpl(
     RenderViewHost* render_view_host)
     : RenderViewHostObserver(render_view_host),
       video_view_(this),
@@ -29,11 +29,11 @@ MediaPlayerManagerAndroid::MediaPlayerManagerAndroid(
       web_contents_(WebContents::FromRenderViewHost(render_view_host)) {
 }
 
-MediaPlayerManagerAndroid::~MediaPlayerManagerAndroid() {}
+MediaPlayerManagerImpl::~MediaPlayerManagerImpl() {}
 
-bool MediaPlayerManagerAndroid::OnMessageReceived(const IPC::Message& msg) {
+bool MediaPlayerManagerImpl::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(MediaPlayerManagerAndroid, msg)
+  IPC_BEGIN_MESSAGE_MAP(MediaPlayerManagerImpl, msg)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_EnterFullscreen, OnEnterFullscreen)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_ExitFullscreen, OnExitFullscreen)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_MediaPlayerInitialize, OnInitialize)
@@ -60,7 +60,7 @@ bool MediaPlayerManagerAndroid::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void MediaPlayerManagerAndroid::FullscreenPlayerPlay() {
+void MediaPlayerManagerImpl::FullscreenPlayerPlay() {
   MediaPlayerBridge* player = GetFullscreenPlayer();
   if (player) {
     player->Start();
@@ -69,7 +69,7 @@ void MediaPlayerManagerAndroid::FullscreenPlayerPlay() {
   }
 }
 
-void MediaPlayerManagerAndroid::FullscreenPlayerPause() {
+void MediaPlayerManagerImpl::FullscreenPlayerPause() {
   MediaPlayerBridge* player = GetFullscreenPlayer();
   if (player) {
     player->Pause();
@@ -78,13 +78,13 @@ void MediaPlayerManagerAndroid::FullscreenPlayerPause() {
   }
 }
 
-void MediaPlayerManagerAndroid::FullscreenPlayerSeek(int msec) {
+void MediaPlayerManagerImpl::FullscreenPlayerSeek(int msec) {
   MediaPlayerBridge* player = GetFullscreenPlayer();
   if (player)
     player->SeekTo(base::TimeDelta::FromMilliseconds(msec));
 }
 
-void MediaPlayerManagerAndroid::ExitFullscreen(bool release_media_player) {
+void MediaPlayerManagerImpl::ExitFullscreen(bool release_media_player) {
   Send(new MediaPlayerMsg_DidExitFullscreen(
       routing_id(), fullscreen_player_id_));
   MediaPlayerBridge* player = GetFullscreenPlayer();
@@ -97,7 +97,7 @@ void MediaPlayerManagerAndroid::ExitFullscreen(bool release_media_player) {
     player->SetVideoSurface(NULL);
 }
 
-void MediaPlayerManagerAndroid::SetVideoSurface(jobject surface) {
+void MediaPlayerManagerImpl::SetVideoSurface(jobject surface) {
   MediaPlayerBridge* player = GetFullscreenPlayer();
   if (player) {
     player->SetVideoSurface(surface);
@@ -106,7 +106,7 @@ void MediaPlayerManagerAndroid::SetVideoSurface(jobject surface) {
   }
 }
 
-void MediaPlayerManagerAndroid::OnInitialize(
+void MediaPlayerManagerImpl::OnInitialize(
     int player_id, const GURL& url,
     bool is_media_source,
     const GURL& first_party_for_cookies) {
@@ -119,62 +119,69 @@ void MediaPlayerManagerAndroid::OnInitialize(
   }
 
   RenderProcessHost* host = render_view_host()->GetProcess();
-  BrowserContext* context = host->GetBrowserContext();
-  StoragePartition* partition = host->GetStoragePartition();
-  fileapi::FileSystemContext* file_system_context =
-      partition ? partition->GetFileSystemContext() : NULL;
   players_.push_back(media::MediaPlayerBridge::Create(
       player_id, url, is_media_source, first_party_for_cookies,
-      new MediaResourceGetterImpl(context, file_system_context, host->GetID(),
-                                  routing_id()),
-      context->IsOffTheRecord(), this,
+      host->GetBrowserContext()->IsOffTheRecord(), this,
 #if defined(GOOGLE_TV)
-      base::Bind(&MediaPlayerManagerAndroid::OnReadFromDemuxer,
+      base::Bind(&MediaPlayerManagerImpl::OnReadFromDemuxer,
                  base::Unretained(this)),
 #endif
-      base::Bind(&MediaPlayerManagerAndroid::OnError, base::Unretained(this)),
-      base::Bind(&MediaPlayerManagerAndroid::OnVideoSizeChanged,
+      base::Bind(&MediaPlayerManagerImpl::OnError, base::Unretained(this)),
+      base::Bind(&MediaPlayerManagerImpl::OnVideoSizeChanged,
                  base::Unretained(this)),
-      base::Bind(&MediaPlayerManagerAndroid::OnBufferingUpdate,
+      base::Bind(&MediaPlayerManagerImpl::OnBufferingUpdate,
                  base::Unretained(this)),
-      base::Bind(&MediaPlayerManagerAndroid::OnMediaMetadataChanged,
+      base::Bind(&MediaPlayerManagerImpl::OnMediaMetadataChanged,
                  base::Unretained(this)),
-      base::Bind(&MediaPlayerManagerAndroid::OnPlaybackComplete,
+      base::Bind(&MediaPlayerManagerImpl::OnPlaybackComplete,
                  base::Unretained(this)),
-      base::Bind(&MediaPlayerManagerAndroid::OnSeekComplete,
+      base::Bind(&MediaPlayerManagerImpl::OnSeekComplete,
                  base::Unretained(this)),
-      base::Bind(&MediaPlayerManagerAndroid::OnTimeUpdate,
+      base::Bind(&MediaPlayerManagerImpl::OnTimeUpdate,
                  base::Unretained(this)),
-      base::Bind(&MediaPlayerManagerAndroid::OnMediaInterrupted,
+      base::Bind(&MediaPlayerManagerImpl::OnMediaInterrupted,
                  base::Unretained(this))));
 }
 
-void MediaPlayerManagerAndroid::OnStart(int player_id) {
+media::MediaResourceGetter* MediaPlayerManagerImpl::GetMediaResourceGetter() {
+  if (!media_resource_getter_.get()) {
+    RenderProcessHost* host = render_view_host()->GetProcess();
+    BrowserContext* context = host->GetBrowserContext();
+    StoragePartition* partition = host->GetStoragePartition();
+    fileapi::FileSystemContext* file_system_context =
+        partition ? partition->GetFileSystemContext() : NULL;
+    media_resource_getter_.reset(new MediaResourceGetterImpl(
+        context, file_system_context, host->GetID(), routing_id()));
+  }
+  return media_resource_getter_.get();
+}
+
+void MediaPlayerManagerImpl::OnStart(int player_id) {
   MediaPlayerBridge* player = GetPlayer(player_id);
   if (player)
     player->Start();
 }
 
-void MediaPlayerManagerAndroid::OnSeek(int player_id, base::TimeDelta time) {
+void MediaPlayerManagerImpl::OnSeek(int player_id, base::TimeDelta time) {
   MediaPlayerBridge* player = GetPlayer(player_id);
   if (player)
     player->SeekTo(time);
 }
 
-void MediaPlayerManagerAndroid::OnPause(int player_id) {
+void MediaPlayerManagerImpl::OnPause(int player_id) {
   MediaPlayerBridge* player = GetPlayer(player_id);
   if (player)
     player->Pause();
 }
 
-void MediaPlayerManagerAndroid::OnEnterFullscreen(int player_id) {
+void MediaPlayerManagerImpl::OnEnterFullscreen(int player_id) {
   DCHECK_EQ(fullscreen_player_id_, -1);
 
   fullscreen_player_id_ = player_id;
   video_view_.CreateContentVideoView();
 }
 
-void MediaPlayerManagerAndroid::OnExitFullscreen(int player_id) {
+void MediaPlayerManagerImpl::OnExitFullscreen(int player_id) {
   if (fullscreen_player_id_ == player_id) {
     MediaPlayerBridge* player = GetPlayer(player_id);
     if (player)
@@ -184,7 +191,7 @@ void MediaPlayerManagerAndroid::OnExitFullscreen(int player_id) {
   }
 }
 
-void MediaPlayerManagerAndroid::OnReleaseResources(int player_id) {
+void MediaPlayerManagerImpl::OnReleaseResources(int player_id) {
   MediaPlayerBridge* player = GetPlayer(player_id);
   // Don't release the fullscreen player when tab visibility changes,
   // it will be released when user hit the back/home button or when
@@ -193,7 +200,7 @@ void MediaPlayerManagerAndroid::OnReleaseResources(int player_id) {
     player->Release();
 }
 
-void MediaPlayerManagerAndroid::OnDestroyPlayer(int player_id) {
+void MediaPlayerManagerImpl::OnDestroyPlayer(int player_id) {
   for (ScopedVector<MediaPlayerBridge>::iterator it = players_.begin();
       it != players_.end(); ++it) {
     if ((*it)->player_id() == player_id) {
@@ -205,7 +212,7 @@ void MediaPlayerManagerAndroid::OnDestroyPlayer(int player_id) {
     fullscreen_player_id_ = -1;
 }
 
-void MediaPlayerManagerAndroid::DestroyAllMediaPlayers() {
+void MediaPlayerManagerImpl::DestroyAllMediaPlayers() {
   players_.clear();
   if (fullscreen_player_id_ != -1) {
     video_view_.DestroyContentVideoView();
@@ -214,20 +221,20 @@ void MediaPlayerManagerAndroid::DestroyAllMediaPlayers() {
 }
 
 #if defined(GOOGLE_TV)
-void MediaPlayerManagerAndroid::AttachExternalVideoSurface(int player_id,
+void MediaPlayerManagerImpl::AttachExternalVideoSurface(int player_id,
                                                            jobject surface) {
   MediaPlayerBridge* player = GetPlayer(player_id);
   if (player)
     player->SetVideoSurface(surface);
 }
 
-void MediaPlayerManagerAndroid::DetachExternalVideoSurface(int player_id) {
+void MediaPlayerManagerImpl::DetachExternalVideoSurface(int player_id) {
   MediaPlayerBridge* player = GetPlayer(player_id);
   if (player)
     player->SetVideoSurface(NULL);
 }
 
-void MediaPlayerManagerAndroid::OnRequestExternalSurface(int player_id) {
+void MediaPlayerManagerImpl::OnRequestExternalSurface(int player_id) {
   if (!web_contents_)
     return;
 
@@ -237,7 +244,7 @@ void MediaPlayerManagerAndroid::OnRequestExternalSurface(int player_id) {
     view->RequestExternalVideoSurface(player_id);
 }
 
-void MediaPlayerManagerAndroid::OnNotifyGeometryChange(int player_id,
+void MediaPlayerManagerImpl::OnNotifyGeometryChange(int player_id,
                                                        const gfx::RectF& rect) {
   if (!web_contents_)
     return;
@@ -248,7 +255,7 @@ void MediaPlayerManagerAndroid::OnNotifyGeometryChange(int player_id,
     view->NotifyGeometryChange(player_id, rect);
 }
 
-void MediaPlayerManagerAndroid::OnDemuxerReady(
+void MediaPlayerManagerImpl::OnDemuxerReady(
     int player_id,
     const media::MediaPlayerHostMsg_DemuxerReady_Params& params) {
   MediaPlayerBridge* player = GetPlayer(player_id);
@@ -256,7 +263,7 @@ void MediaPlayerManagerAndroid::OnDemuxerReady(
     player->DemuxerReady(params);
 }
 
-void MediaPlayerManagerAndroid::OnReadFromDemuxerAck(
+void MediaPlayerManagerImpl::OnReadFromDemuxerAck(
     int player_id,
     const media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params) {
   MediaPlayerBridge* player = GetPlayer(player_id);
@@ -265,7 +272,7 @@ void MediaPlayerManagerAndroid::OnReadFromDemuxerAck(
 }
 #endif
 
-MediaPlayerBridge* MediaPlayerManagerAndroid::GetPlayer(int player_id) {
+MediaPlayerBridge* MediaPlayerManagerImpl::GetPlayer(int player_id) {
   for (ScopedVector<MediaPlayerBridge>::iterator it = players_.begin();
       it != players_.end(); ++it) {
     if ((*it)->player_id() == player_id)
@@ -274,11 +281,11 @@ MediaPlayerBridge* MediaPlayerManagerAndroid::GetPlayer(int player_id) {
   return NULL;
 }
 
-MediaPlayerBridge* MediaPlayerManagerAndroid::GetFullscreenPlayer() {
+MediaPlayerBridge* MediaPlayerManagerImpl::GetFullscreenPlayer() {
   return GetPlayer(fullscreen_player_id_);
 }
 
-void MediaPlayerManagerAndroid::OnMediaMetadataChanged(
+void MediaPlayerManagerImpl::OnMediaMetadataChanged(
     int player_id, base::TimeDelta duration, int width, int height,
     bool success) {
   Send(new MediaPlayerMsg_MediaMetadataChanged(
@@ -287,19 +294,19 @@ void MediaPlayerManagerAndroid::OnMediaMetadataChanged(
     video_view_.UpdateMediaMetadata();
 }
 
-void MediaPlayerManagerAndroid::OnPlaybackComplete(int player_id) {
+void MediaPlayerManagerImpl::OnPlaybackComplete(int player_id) {
   Send(new MediaPlayerMsg_MediaPlaybackCompleted(routing_id(), player_id));
   if (fullscreen_player_id_ != -1)
     video_view_.OnPlaybackComplete();
 }
 
-void MediaPlayerManagerAndroid::OnMediaInterrupted(int player_id) {
+void MediaPlayerManagerImpl::OnMediaInterrupted(int player_id) {
   // Tell WebKit that the audio should be paused, then release all resources
   Send(new MediaPlayerMsg_DidMediaPlayerPause(routing_id(), player_id));
   OnReleaseResources(player_id);
 }
 
-void MediaPlayerManagerAndroid::OnBufferingUpdate(
+void MediaPlayerManagerImpl::OnBufferingUpdate(
     int player_id, int percentage) {
   Send(new MediaPlayerMsg_MediaBufferingUpdate(
       routing_id(), player_id, percentage));
@@ -307,19 +314,19 @@ void MediaPlayerManagerAndroid::OnBufferingUpdate(
     video_view_.OnBufferingUpdate(percentage);
 }
 
-void MediaPlayerManagerAndroid::OnSeekComplete(int player_id,
+void MediaPlayerManagerImpl::OnSeekComplete(int player_id,
                                                base::TimeDelta current_time) {
   Send(new MediaPlayerMsg_MediaSeekCompleted(
       routing_id(), player_id, current_time));
 }
 
-void MediaPlayerManagerAndroid::OnError(int player_id, int error) {
+void MediaPlayerManagerImpl::OnError(int player_id, int error) {
   Send(new MediaPlayerMsg_MediaError(routing_id(), player_id, error));
   if (fullscreen_player_id_ != -1)
     video_view_.OnMediaPlayerError(error);
 }
 
-void MediaPlayerManagerAndroid::OnVideoSizeChanged(
+void MediaPlayerManagerImpl::OnVideoSizeChanged(
     int player_id, int width, int height) {
   Send(new MediaPlayerMsg_MediaVideoSizeChanged(routing_id(), player_id,
       width, height));
@@ -327,21 +334,21 @@ void MediaPlayerManagerAndroid::OnVideoSizeChanged(
     video_view_.OnVideoSizeChanged(width, height);
 }
 
-void MediaPlayerManagerAndroid::OnTimeUpdate(int player_id,
+void MediaPlayerManagerImpl::OnTimeUpdate(int player_id,
                                              base::TimeDelta current_time) {
   Send(new MediaPlayerMsg_MediaTimeUpdate(
       routing_id(), player_id, current_time));
 }
 
 #if defined(GOOGLE_TV)
-void MediaPlayerManagerAndroid::OnReadFromDemuxer(
+void MediaPlayerManagerImpl::OnReadFromDemuxer(
     int player_id, media::DemuxerStream::Type type, bool seek_done) {
   Send(new MediaPlayerMsg_ReadFromDemuxer(
       routing_id(), player_id, type, seek_done));
 }
 #endif
 
-void MediaPlayerManagerAndroid::RequestMediaResources(
+void MediaPlayerManagerImpl::RequestMediaResources(
     MediaPlayerBridge* player) {
   if (player == NULL)
     return;
@@ -373,7 +380,7 @@ void MediaPlayerManagerAndroid::RequestMediaResources(
   }
 }
 
-void MediaPlayerManagerAndroid::ReleaseMediaResources(
+void MediaPlayerManagerImpl::ReleaseMediaResources(
     MediaPlayerBridge* player) {
   // Nothing needs to be done.
 }

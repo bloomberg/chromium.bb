@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ANDROID_MEDIA_PLAYER_MANAGER_ANDROID_H_
-#define CONTENT_BROWSER_ANDROID_MEDIA_PLAYER_MANAGER_ANDROID_H_
+#ifndef CONTENT_BROWSER_ANDROID_MEDIA_PLAYER_MANAGER_IMPL_H_
+#define CONTENT_BROWSER_ANDROID_MEDIA_PLAYER_MANAGER_IMPL_H_
 
 #include <map>
 
@@ -18,7 +18,7 @@
 #include "media/base/android/demuxer_stream_player_params.h"
 #endif
 #include "media/base/android/media_player_bridge.h"
-#include "media/base/android/media_player_bridge_manager.h"
+#include "media/base/android/media_player_manager.h"
 #include "ui/gfx/rect_f.h"
 
 namespace content {
@@ -30,13 +30,13 @@ class WebContents;
 // them to corresponding MediaPlayerBridge object. Callbacks from
 // MediaPlayerBridge objects are converted to IPCs and then sent to the
 // render process.
-class MediaPlayerManagerAndroid
+class MediaPlayerManagerImpl
     : public RenderViewHostObserver,
-      public media::MediaPlayerBridgeManager {
+      public media::MediaPlayerManager {
  public:
-  // Create a MediaPlayerManagerAndroid object for the |render_view_host|.
-  explicit MediaPlayerManagerAndroid(RenderViewHost* render_view_host);
-  virtual ~MediaPlayerManagerAndroid();
+  // Create a MediaPlayerManagerImpl object for the |render_view_host|.
+  explicit MediaPlayerManagerImpl(RenderViewHost* render_view_host);
+  virtual ~MediaPlayerManagerImpl();
 
   // RenderViewHostObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -71,6 +71,7 @@ class MediaPlayerManagerAndroid
   // media::MediaPlayerBridgeManager overrides.
   virtual void RequestMediaResources(media::MediaPlayerBridge* player) OVERRIDE;
   virtual void ReleaseMediaResources(media::MediaPlayerBridge* player) OVERRIDE;
+  virtual media::MediaResourceGetter* GetMediaResourceGetter() OVERRIDE;
 
   // Release all the players managed by this object.
   void DestroyAllMediaPlayers();
@@ -117,9 +118,12 @@ class MediaPlayerManagerAndroid
 
   WebContents* web_contents_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaPlayerManagerAndroid);
+  // Object for retrieving resources media players.
+  scoped_ptr<media::MediaResourceGetter> media_resource_getter_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaPlayerManagerImpl);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_ANDROID_MEDIA_PLAYER_MANAGER_ANDROID_H_
+#endif  // CONTENT_BROWSER_ANDROID_MEDIA_PLAYER_MANAGER_IMPL_H_

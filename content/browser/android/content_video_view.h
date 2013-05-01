@@ -15,17 +15,17 @@
 
 namespace content {
 
-class MediaPlayerManagerAndroid;
+class MediaPlayerManagerImpl;
 
 // Native mirror of ContentVideoView.java. This class is responsible for
 // creating the Java video view and pass all the player status change to
 // it. It accepts media control from Java class, and forwards it to
-// MediaPlayerManagerAndroid.
+// MediaPlayerManagerImpl.
 class ContentVideoView {
  public:
   // Construct a ContentVideoView object. The |manager| will handle all the
   // playback controls from the Java class.
-  explicit ContentVideoView(MediaPlayerManagerAndroid* manager);
+  explicit ContentVideoView(MediaPlayerManagerImpl* manager);
   ~ContentVideoView();
 
   static bool RegisterContentVideoView(JNIEnv* env);
@@ -66,7 +66,7 @@ class ContentVideoView {
  private:
   // Object that manages the fullscreen media player. It is responsible for
   // handling all the playback controls.
-  MediaPlayerManagerAndroid* manager_;
+  MediaPlayerManagerImpl* manager_;
 
   // Reference to the Java object.
   base::android::ScopedJavaGlobalRef<jobject> j_content_video_view_;

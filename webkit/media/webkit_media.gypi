@@ -45,8 +45,6 @@
       ],
       'sources': [
         'android/audio_decoder_android.cc',
-        'android/media_player_bridge_manager_impl.cc',
-        'android/media_player_bridge_manager_impl.h',
         'android/stream_texture_factory_android.h',
         'android/webmediaplayer_android.cc',
         'android/webmediaplayer_android.h',
