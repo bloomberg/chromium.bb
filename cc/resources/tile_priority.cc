@@ -96,7 +96,6 @@ scoped_ptr<base::Value> TileResolutionAsValue(
 
 scoped_ptr<base::Value> TilePriority::AsValue() const {
   scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
-  state->SetBoolean("is_live", is_live);
   state->Set("resolution", TileResolutionAsValue(resolution).release());
   state->Set("time_to_visible_in_seconds",
              MathUtil::AsValueSafely(time_to_visible_in_seconds).release());

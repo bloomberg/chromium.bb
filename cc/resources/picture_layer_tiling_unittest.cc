@@ -450,8 +450,7 @@ TEST(PictureLayerTilingTest, EmptyStartingRect) {
 }
 
 static void TileExists(bool exists, Tile* tile, gfx::Rect geometry_rect) {
-  EXPECT_EQ(exists, tile != NULL && tile->priority(ACTIVE_TREE).is_live) <<
-      geometry_rect.ToString();
+  EXPECT_EQ(exists, tile != NULL) << geometry_rect.ToString();
 }
 
 TEST_F(PictureLayerTilingIteratorTest, TilesExist) {
@@ -573,10 +572,9 @@ static void TilesIntersectingRectExist(gfx::Rect rect,
                                        Tile* tile,
                                        gfx::Rect geometry_rect) {
   bool expected_exists = rect.Intersects(geometry_rect);
-  EXPECT_EQ(expected_exists,
-            tile != NULL && tile->priority(ACTIVE_TREE).is_live) <<
-      "Rects intersecting " << rect.ToString() << " should exist. " <<
-      "Current tile rect is " << geometry_rect.ToString();
+  EXPECT_EQ(expected_exists, tile != NULL)
+      << "Rects intersecting " << rect.ToString() << " should exist. "
+      << "Current tile rect is " << geometry_rect.ToString();
 }
 
 TEST_F(PictureLayerTilingIteratorTest,
@@ -611,7 +609,7 @@ TEST_F(PictureLayerTilingIteratorTest,
 static void CountExistingTiles(int *count,
                                Tile* tile,
                                gfx::Rect geometry_rect) {
-  if (tile != NULL && tile->priority(ACTIVE_TREE).is_live)
+  if (tile != NULL)
     ++(*count);
 }
 
@@ -621,7 +619,6 @@ TEST_F(PictureLayerTilingIteratorTest,
   Initialize(gfx::Size(100, 100), 1.f, layer_bounds);
   VerifyTilesExactlyCoverRect(1.f, gfx::Rect(layer_bounds));
   VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, false));
-
 
   tiling_->UpdateTilePriorities(
       ACTIVE_TREE,
@@ -646,6 +643,7 @@ TEST_F(PictureLayerTilingIteratorTest,
   // If we're making a rect the size of one tile, it can only overlap up to 4
   // tiles depending on its position.
   EXPECT_LE(num_tiles, 4);
+  VerifyTiles(1.f, gfx::Rect(), base::Bind(&TileExists, false));
 }
 
 }  // namespace

@@ -176,9 +176,7 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   GlobalStateThatImpactsTilePriority global_state_;
 
   typedef std::vector<Tile*> TileVector;
-  typedef std::set<Tile*> TileSet;
-  TileSet all_tiles_;
-  TileVector live_or_allocated_tiles_;
+  TileVector tiles_;
   TileVector tiles_that_need_to_be_rasterized_;
 
   typedef base::hash_map<uint32_t, skia::LazyPixelRef*> PixelRefMap;

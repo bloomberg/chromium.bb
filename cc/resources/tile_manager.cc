@@ -47,9 +47,6 @@ const int kMaxNumPendingTasksPerThread = 40;
 // Determine bin based on three categories of tiles: things we need now,
 // things we need soon, and eventually.
 inline TileManagerBin BinFromTilePriority(const TilePriority& prio) {
-  if (!prio.is_live)
-    return NEVER_BIN;
-
   // The amount of time for which we want to have prepainting coverage.
   const float kPrepaintingWindowTimeSeconds = 1.0f;
   const float kBackflingGuardDistancePixels = 314.0f;
@@ -145,8 +142,7 @@ TileManager::~TileManager() {
   raster_worker_pool_->Shutdown();
   AbortPendingTileUploads();
   DCHECK_EQ(0u, tiles_with_pending_upload_.size());
-  DCHECK_EQ(0u, all_tiles_.size());
-  DCHECK_EQ(0u, live_or_allocated_tiles_.size());
+  DCHECK_EQ(0u, tiles_.size());
 }
 
 void TileManager::SetGlobalState(
@@ -159,7 +155,8 @@ void TileManager::SetGlobalState(
 }
 
 void TileManager::RegisterTile(Tile* tile) {
-  all_tiles_.insert(tile);
+  DCHECK(std::find(tiles_.begin(), tiles_.end(), tile) == tiles_.end());
+  tiles_.push_back(tile);
   ScheduleManageTiles();
 }
 
@@ -171,17 +168,9 @@ void TileManager::UnregisterTile(Tile* tile) {
       break;
     }
   }
-  for (TileVector::iterator it = live_or_allocated_tiles_.begin();
-       it != live_or_allocated_tiles_.end(); it++) {
-    if (*it == tile) {
-      live_or_allocated_tiles_.erase(it);
-      break;
-    }
-  }
-  TileSet::iterator it = all_tiles_.find(tile);
-  DCHECK(it != all_tiles_.end());
+  DCHECK(std::find(tiles_.begin(), tiles_.end(), tile) != tiles_.end());
   FreeResourcesForTile(tile);
-  all_tiles_.erase(it);
+  tiles_.erase(std::remove(tiles_.begin(), tiles_.end(), tile));
 }
 
 class BinComparator {
@@ -242,10 +231,10 @@ void TileManager::AssignBinsToTiles() {
     bin_map[NEVER_BIN] = NEVER_BIN;
   }
 
-  live_or_allocated_tiles_.clear();
   // For each tree, bin into different categories of tiles.
-  for (TileSet::iterator it = all_tiles_.begin();
-       it != all_tiles_.end(); ++it) {
+  for (TileVector::iterator it = tiles_.begin();
+       it != tiles_.end();
+       ++it) {
     Tile* tile = *it;
     ManagedTileState& mts = tile->managed_state();
 
@@ -283,33 +272,22 @@ void TileManager::AssignBinsToTiles() {
 
     for (int i = 0; i < NUM_BIN_PRIORITIES; ++i)
       mts.bin[i] = bin_map[mts.bin[i]];
-
-    if ((tile->drawing_info().memory_state_ == CAN_USE_MEMORY ||
-        tile->drawing_info().memory_state_ == NOT_ALLOWED_TO_USE_MEMORY) &&
-        !tile->priority(ACTIVE_TREE).is_live &&
-        !tile->priority(PENDING_TREE).is_live)
-      continue;
-
-    live_or_allocated_tiles_.push_back(tile);
   }
 
-  TRACE_COUNTER_ID1("cc", "LiveOrAllocatedTileCount", this,
-                    live_or_allocated_tiles_.size());
+  TRACE_COUNTER_ID1("cc", "TileCount", this, tiles_.size());
 }
 
 void TileManager::SortTiles() {
   TRACE_EVENT0("cc", "TileManager::SortTiles");
-  TRACE_COUNTER_ID1(
-      "cc", "LiveTileCount", this, live_or_allocated_tiles_.size());
+  TRACE_COUNTER_ID1("cc", "TileCount", this, tiles_.size());
 
   // Sort by bin, resolution and time until needed.
-  std::sort(live_or_allocated_tiles_.begin(),
-            live_or_allocated_tiles_.end(), BinComparator());
+  std::sort(tiles_.begin(), tiles_.end(), BinComparator());
 }
 
 void TileManager::ManageTiles() {
   TRACE_EVENT0("cc", "TileManager::ManageTiles");
-  TRACE_COUNTER_ID1("cc", "TileCount", this, all_tiles_.size());
+  TRACE_COUNTER_ID1("cc", "TileCount", this, tiles_.size());
 
   manage_tiles_pending_ = false;
   ++manage_tiles_call_count_;
@@ -400,8 +378,10 @@ void TileManager::GetMemoryStats(
   *memory_required_bytes = 0;
   *memory_nice_to_have_bytes = 0;
   *memory_used_bytes = 0;
-  for (size_t i = 0; i < live_or_allocated_tiles_.size(); i++) {
-    const Tile* tile = live_or_allocated_tiles_[i];
+  for (TileVector::const_iterator it = tiles_.begin();
+       it != tiles_.end();
+       ++it) {
+    const Tile* tile = *it;
     if (!tile->drawing_info().requires_resource())
       continue;
 
@@ -418,7 +398,7 @@ void TileManager::GetMemoryStats(
 
 scoped_ptr<base::Value> TileManager::BasicStateAsValue() const {
   scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
-  state->SetInteger("tile_count", all_tiles_.size());
+  state->SetInteger("tile_count", tiles_.size());
   state->Set("global_state", global_state_.AsValue().release());
   state->Set("memory_requirements", GetMemoryRequirementsAsValue().release());
   return state.PassAs<base::Value>();
@@ -426,8 +406,8 @@ scoped_ptr<base::Value> TileManager::BasicStateAsValue() const {
 
 scoped_ptr<base::Value> TileManager::AllTilesAsValue() const {
   scoped_ptr<base::ListValue> state(new base::ListValue());
-  for (TileSet::const_iterator it = all_tiles_.begin();
-       it != all_tiles_.end();
+  for (TileVector::const_iterator it = tiles_.begin();
+       it != tiles_.end();
        it++) {
     state->Append((*it)->AsValue().release());
   }
@@ -473,9 +453,10 @@ void TileManager::AssignGpuMemoryToTiles() {
   // above we move all tiles currently waiting for raster to idle state.
   // Some memory cannot be released. We figure out how much in this
   // loop as well.
-  for (TileVector::iterator it = live_or_allocated_tiles_.begin();
-       it != live_or_allocated_tiles_.end(); ++it) {
-    Tile* tile = *it;
+  for (TileVector::const_iterator it = tiles_.begin();
+       it != tiles_.end();
+       ++it) {
+    const Tile* tile = *it;
     if (tile->drawing_info().memory_state_ == USING_UNRELEASABLE_MEMORY)
       unreleasable_bytes += tile->bytes_consumed_if_allocated();
   }
@@ -490,8 +471,8 @@ void TileManager::AssignGpuMemoryToTiles() {
   size_t bytes_left = bytes_allocatable;
   size_t bytes_oom_in_now_bin_on_pending_tree = 0;
   TileVector tiles_requiring_memory_but_oomed;
-  for (TileVector::iterator it = live_or_allocated_tiles_.begin();
-       it != live_or_allocated_tiles_.end();
+  for (TileVector::iterator it = tiles_.begin();
+       it != tiles_.end();
        ++it) {
     Tile* tile = *it;
     ManagedTileState& mts = tile->managed_state();
@@ -529,12 +510,11 @@ void TileManager::AssignGpuMemoryToTiles() {
     }
   }
 
-  // In OOM situation, we iterate all_tiles_, remove the memory for active tree
+  // In OOM situation, we iterate tiles_, remove the memory for active tree
   // and not the now bin. And give them to bytes_oom_in_now_bin_on_pending_tree
   if (!tiles_requiring_memory_but_oomed.empty()) {
     size_t bytes_freed = 0;
-    for (TileSet::iterator it = all_tiles_.begin();
-         it != all_tiles_.end(); ++it) {
+    for (TileVector::iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
       Tile* tile = *it;
       ManagedTileState& mts = tile->managed_state();
       ManagedTileState::DrawingInfo& drawing_info = tile->drawing_info();

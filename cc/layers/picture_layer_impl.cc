@@ -592,17 +592,8 @@ bool PictureLayerImpl::AreVisibleResourcesReady() const {
       if (should_force_uploads && *iter)
         layer_tree_impl()->tile_manager()->ForceTileUploadToComplete(*iter);
 
-      bool tile_ready = false;
       // A null tile (i.e. no recording) is considered "ready".
-      if (!*iter) {
-        tile_ready = true;
-      } else if (iter->drawing_info().IsReadyToDraw()) {
-        tile_ready = true;
-      } else if (!iter->priority(PENDING_TREE).is_live) {
-        NOTREACHED() << "All tiles considered for activation should be live";
-        tile_ready = true;
-      }
-      if (tile_ready)
+      if (!*iter || iter->drawing_info().IsReadyToDraw())
         missing_region.Subtract(iter.geometry_rect());
     }
   }
