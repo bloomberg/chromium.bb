@@ -21,10 +21,6 @@
 
 #include <wtf/Platform.h>
 
-#ifdef __APPLE__
-#define HAVE_FUNC_USLEEP 1
-#endif /* __APPLE__ */
-
 #if OS(WINDOWS)
 
 // If we don't define these, they get defined in windef.h.
