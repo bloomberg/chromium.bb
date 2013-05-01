@@ -467,7 +467,8 @@ bool AudioSampleEntry::Parse(BoxReader* reader) {
     }
   }
 
-  RCHECK(reader->ReadChild(&esds));
+  // ESDS is not valid in case of EAC3.
+  RCHECK(reader->MaybeReadChild(&esds));
   return true;
 }
 

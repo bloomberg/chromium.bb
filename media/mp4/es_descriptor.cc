@@ -31,6 +31,11 @@ namespace media {
 
 namespace mp4 {
 
+// static
+bool ESDescriptor::IsAAC(uint8 object_type) {
+  return object_type == kISO_14496_3 || object_type == kISO_13818_7_AAC_LC;
+}
+
 ESDescriptor::ESDescriptor()
     : object_type_(kForbidden) {
 }

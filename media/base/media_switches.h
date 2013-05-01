@@ -46,6 +46,8 @@ MEDIA_EXPORT extern const char kEnableVp9Playback[];
 
 MEDIA_EXPORT extern const char kEnableVp8AlphaPlayback[];
 
+MEDIA_EXPORT extern const char kEnableEac3Playback[];
+
 #if defined(OS_WIN)
 MEDIA_EXPORT extern const char kWaveOutBuffers[];
 #endif

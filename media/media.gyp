@@ -881,6 +881,11 @@
             'media_sse',
           ],
         }],
+        ['google_tv == 1', {
+          'defines': [
+            'ENABLE_EAC3_PLAYBACK',
+          ],
+        }],
       ],
       'target_conditions': [
         ['OS == "ios"', {

@@ -197,7 +197,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
       const AudioSampleEntry& entry = samp_descr.audio_entries[desc_idx];
       const AAC& aac = entry.esds.aac;
 
-      if (!(entry.format == FOURCC_MP4A ||
+      if (!(entry.format == FOURCC_MP4A || entry.format == FOURCC_EAC3 ||
             (entry.format == FOURCC_ENCA &&
              entry.sinf.format.format == FOURCC_MP4A))) {
         MEDIA_LOG(log_cb_) << "Unsupported audio format 0x"
@@ -205,8 +205,11 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
         return false;
       }
 
-      int audio_type = entry.esds.object_type;
+      uint8 audio_type = entry.esds.object_type;
       DVLOG(1) << "audio_type " << std::hex << audio_type;
+      if (audio_type == kForbidden && entry.format == FOURCC_EAC3) {
+        audio_type = kEAC3;
+      }
       if (audio_object_types_.find(audio_type) == audio_object_types_.end()) {
         MEDIA_LOG(log_cb_) << "audio object type 0x" << std::hex << audio_type
                            << " does not match what is specified in the"
@@ -214,9 +217,20 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
         return false;
       }
 
+      AudioCodec codec = kUnknownAudioCodec;
+      ChannelLayout channel_layout = CHANNEL_LAYOUT_NONE;
+      int sample_per_second = 0;
       // Check if it is MPEG4 AAC defined in ISO 14496 Part 3 or
       // supported MPEG2 AAC varients.
-      if (audio_type != kISO_14496_3 && audio_type != kISO_13818_7_AAC_LC) {
+      if (ESDescriptor::IsAAC(audio_type)) {
+        codec = kCodecAAC;
+        channel_layout = aac.GetChannelLayout(has_sbr_);
+        sample_per_second = aac.GetOutputSamplesPerSecond(has_sbr_);
+      } else if (audio_type == kEAC3) {
+        codec = kCodecEAC3;
+        channel_layout = GuessChannelLayout(entry.channelcount);
+        sample_per_second = entry.samplerate;
+      } else {
         MEDIA_LOG(log_cb_) << "Unsupported audio object type 0x" << std::hex
                            << audio_type << " in esds.";
         return false;
@@ -236,9 +250,9 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
 
       is_audio_track_encrypted_ = entry.sinf.info.track_encryption.is_encrypted;
       DVLOG(1) << "is_audio_track_encrypted_: " << is_audio_track_encrypted_;
-      audio_config.Initialize(kCodecAAC, sample_format,
-                              aac.GetChannelLayout(has_sbr_),
-                              aac.GetOutputSamplesPerSecond(has_sbr_),
+      audio_config.Initialize(codec, sample_format,
+                              channel_layout,
+                              sample_per_second,
                               NULL, 0, is_audio_track_encrypted_, false);
       has_audio_ = true;
       audio_track_id_ = track->header.track_id;
@@ -455,7 +469,8 @@ bool MP4StreamParser::EnqueueSample(BufferQueue* audio_buffers,
   }
 
   if (audio) {
-    if (!PrepareAACBuffer(runs_->audio_description().esds.aac,
+    if (ESDescriptor::IsAAC(runs_->audio_description().esds.object_type) &&
+        !PrepareAACBuffer(runs_->audio_description().esds.aac,
                           &frame_buf, &subsamples)) {
       MEDIA_LOG(log_cb_) << "Failed to prepare AAC sample for decode";
       *err = true;
