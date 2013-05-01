@@ -25,6 +25,7 @@ struct NaClExceptionFrame {
 # endif
 #endif
   struct NaClExceptionContext context;
+  struct NaClExceptionPortableContext portable;
 };
 
 #endif

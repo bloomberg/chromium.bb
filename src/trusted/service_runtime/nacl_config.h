@@ -179,6 +179,7 @@
 # define NACL_X86_DIRECTION_FLAG (1 << 10)
 
 # if NACL_BUILD_SUBARCH == 32
+#  define NACL_ELF_E_MACHINE      EM_386
 /*
  * The untrusted stack looks like this on x86-32:
  *   esp-0x0: syscall args pushed by untrusted code before calling trampoline
@@ -202,6 +203,7 @@
 #  define NACL_STACK_RED_ZONE     (0)
 
 # elif NACL_BUILD_SUBARCH == 64
+#  define NACL_ELF_E_MACHINE      EM_X86_64
 /*
  * The untrusted stack looks like this on x86-64:
  *   rsp-0x08: 8 byte return address pushed by untrusted code's call
@@ -228,6 +230,7 @@
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 # include "native_client/src/include/arm_sandbox.h"
 
+# define NACL_ELF_E_MACHINE       EM_ARM
 # define NACL_BLOCK_SHIFT         (4)
 
 # if defined(NACL_TARGET_ARM_THUMB2_MODE)
@@ -282,6 +285,7 @@
 # undef  NACL_KERN_STACK_SIZE        // Mips needs 128k pthread stack size
 # define NACL_KERN_STACK_SIZE        (128 << 10)
 
+# define NACL_ELF_E_MACHINE          EM_MIPS
 # define NACL_BLOCK_SHIFT            4
 
 # define NACL_NOOP_OPCODE        0x00000000  /* nop */

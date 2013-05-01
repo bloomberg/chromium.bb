@@ -31,7 +31,7 @@
 
 
 static pthread_key_t g_CrashStackKey;
-static struct nacl_irt_dev_exception_handling g_ExceptionHandling;
+static struct nacl_irt_exception_handling g_ExceptionHandling;
 static int g_ExceptionHandlingEnabled = 0;
 
 
@@ -150,12 +150,13 @@ static uintptr_t FrameLocArgs(uintptr_t fp) {
 #endif
 }
 
-static void StackWalk(FILE *core, struct NaClExceptionContext *context) {
+static void StackWalk(FILE *core,
+                      struct NaClExceptionPortableContext *pcontext) {
   uintptr_t next;
   uintptr_t i;
   int first = 1;
-  uintptr_t prog_ctr = context->prog_ctr;
-  uintptr_t frame_ptr = context->frame_ptr;
+  uintptr_t prog_ctr = pcontext->prog_ctr;
+  uintptr_t frame_ptr = pcontext->frame_ptr;
   uintptr_t args_start;
 
   fprintf(core, "\"frames\": [\n");
@@ -212,13 +213,15 @@ void CrashHandler(struct NaClExceptionContext *context) {
   PrintSegments(core);
   fprintf(core, "],\n");
 
+  struct NaClExceptionPortableContext *pcontext =
+      nacl_exception_context_get_portable(context);
   fprintf(core, "\"handler\": {\n");
-  fprintf(core, "\"prog_ctr\": %"NACL_PRIuPTR",\n", context->prog_ctr);
-  fprintf(core, "\"stack_ptr\": %"NACL_PRIuPTR",\n", context->stack_ptr);
-  fprintf(core, "\"frame_ptr\": %"NACL_PRIuPTR"\n", context->frame_ptr);
+  fprintf(core, "\"prog_ctr\": %"NACL_PRIuPTR",\n", pcontext->prog_ctr);
+  fprintf(core, "\"stack_ptr\": %"NACL_PRIuPTR",\n", pcontext->stack_ptr);
+  fprintf(core, "\"frame_ptr\": %"NACL_PRIuPTR"\n", pcontext->frame_ptr);
   fprintf(core, "},\n");
 
-  StackWalk(core, context);
+  StackWalk(core, pcontext);
 
   fprintf(core, "}\n");
 
@@ -237,7 +240,7 @@ int NaClCrashDumpInit(void) {
   int result;
 
   assert(g_ExceptionHandlingEnabled == 0);
-  if (nacl_interface_query(NACL_IRT_DEV_EXCEPTION_HANDLING_v0_1,
+  if (nacl_interface_query(NACL_IRT_EXCEPTION_HANDLING_v0_1,
                            &g_ExceptionHandling,
                            sizeof(g_ExceptionHandling)) == 0) {
     return 0;

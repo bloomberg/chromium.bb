@@ -159,10 +159,73 @@ typedef struct NaClUserRegisterStateUnknown NaClUserRegisterState;
 #endif
 
 struct NaClExceptionContext {
+  /*
+   * |size| is the total size of the exception context saved on the
+   * stack, starting from the start of NaClExceptionContext.  This is
+   * intended to allow the full NaClExceptionContext to be copied,
+   * e.g. serialized to a file.  It is not intended to be used to
+   * determine which specific fields appear in the data, unlike
+   * |portable_context_size| and |regs_size|.
+   */
+  uint32_t size;
+
+  /*
+   * |portable_context_offset| is the offset of a
+   * NaClExceptionPortableContext, relative to the start of
+   * NaClExceptionContext.
+   */
+  uint32_t portable_context_offset;
+  /*
+   * |portable_context_size| is the size of
+   * NaClExceptionPortableContext in bytes.  This allows a handler to
+   * detect the presence of new fields added to the end of
+   * NaClExceptionPortableContext.
+   */
+  uint32_t portable_context_size;
+
+  /*
+   * |arch| is the architecture of |regs|, using ELF e_machine values:
+   * EM_386, EM_X86_64, EM_ARM, EM_MIPS, etc.
+   */
+  uint32_t arch;
+  /*
+   * |regs_size| is the size of |regs| in bytes.  This allows a
+   * handler to detect the presence of new fields added to the end of
+   * NaClUserRegisterState.
+   */
+  uint32_t regs_size;
+
+  /*
+   * These fields are reserved for possible future extensions and are
+   * currently set to zero.
+   */
+  uint32_t reserved[11];
+
+  /*
+   * |regs| is architecture-specific register state, of size
+   * |regs_size|, for architecture |arch|.
+   */
+  NaClUserRegisterState regs;
+};
+
+struct NaClExceptionPortableContext {
+  /*
+   * This is a relatively portable subset of the register state
+   * reported via NaClUserRegisterState, but reported here in a
+   * portable struct layout and with the code/stack addresses relative
+   * to untrusted address space (so truncated to 32 bits on x86-64).
+   */
   uint32_t prog_ctr;
   uint32_t stack_ptr;
   uint32_t frame_ptr;
-  NaClUserRegisterState regs;
 };
+
+#if defined(__native_client__)
+static inline struct NaClExceptionPortableContext *
+nacl_exception_context_get_portable(struct NaClExceptionContext *context) {
+  return (struct NaClExceptionPortableContext *)
+         ((uintptr_t) context + context->portable_context_offset);
+}
+#endif
 
 #endif /* __NATIVE_CLIENT_SRC_SERVICE_RUNTIME_INCLUDE_SYS_NACL_EXCEPTION_H__ */

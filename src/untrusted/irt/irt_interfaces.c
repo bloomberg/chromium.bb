@@ -39,8 +39,8 @@ static const struct nacl_interface_table irt_interfaces[] = {
   { NACL_IRT_CLOCK_v0_1, &nacl_irt_clock, sizeof(nacl_irt_clock) },
   { NACL_IRT_DEV_GETPID_v0_1, &nacl_irt_dev_getpid,
     sizeof(nacl_irt_dev_getpid) },
-  { NACL_IRT_DEV_EXCEPTION_HANDLING_v0_1, &nacl_irt_dev_exception_handling,
-    sizeof(nacl_irt_dev_exception_handling) },
+  { NACL_IRT_EXCEPTION_HANDLING_v0_1, &nacl_irt_exception_handling,
+    sizeof(nacl_irt_exception_handling) },
   { NACL_IRT_DEV_LIST_MAPPINGS_v0_1, &nacl_irt_dev_list_mappings,
     sizeof(nacl_irt_dev_list_mappings) },
 };

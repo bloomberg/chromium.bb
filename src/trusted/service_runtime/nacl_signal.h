@@ -39,6 +39,7 @@ EXTERN_C_BEGIN
 
 struct NaClApp;
 struct NaClAppThread;
+struct NaClExceptionFrame;
 
 /*
  * TODO(halyavin): These signal numbers are part of an external ABI
@@ -172,9 +173,9 @@ void NaClSignalHandleUntrusted(int signal_number,
 void NaClSignalHandlerInitPlatform(void);
 void NaClSignalHandlerFiniPlatform(void);
 
-void NaClUserRegisterStateFromSignalContext(
-    volatile NaClUserRegisterState *dest,
-    const struct NaClSignalContext *src);
+void NaClSignalSetUpExceptionFrame(volatile struct NaClExceptionFrame *frame,
+                                   const struct NaClSignalContext *regs,
+                                   uint32_t context_user_addr);
 
 #if NACL_OSX
 

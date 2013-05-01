@@ -189,14 +189,10 @@ struct nacl_irt_dev_getpid {
   int (*getpid)(int *pid);
 };
 
-/*
- * NOTE: This is a 'dev' interface which is NOT stable.
- * In the future, requests for this interface will fail.
- */
-#define NACL_IRT_DEV_EXCEPTION_HANDLING_v0_1 \
-  "nacl-irt-dev-exception-handling-0.1"
+#define NACL_IRT_EXCEPTION_HANDLING_v0_1 \
+  "nacl-irt-exception-handling-0.1"
 typedef void (*NaClExceptionHandler)(struct NaClExceptionContext *context);
-struct nacl_irt_dev_exception_handling {
+struct nacl_irt_exception_handling {
   int (*exception_handler)(NaClExceptionHandler handler,
                            NaClExceptionHandler *old_handler);
   int (*exception_stack)(void *stack, size_t size);

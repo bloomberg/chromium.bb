@@ -202,12 +202,6 @@ static int DispatchToUntrustedHandler(struct NaClAppThread *natp,
   volatile struct NaClExceptionFrame *frame;
   uint32_t new_stack_ptr;
   uintptr_t context_user_addr;
-  /*
-   * Returning from the exception handler is not possible, so to avoid
-   * any confusion that might arise from jumping to an uninitialised
-   * address, we set the return address to zero.
-   */
-  const uint32_t kReturnAddr = 0;
 
   if (!NaClSignalCheckSandboxInvariants(regs, natp)) {
     return 0;
@@ -242,29 +236,27 @@ static int DispatchToUntrustedHandler(struct NaClAppThread *natp,
                                                context);
 
   frame = (struct NaClExceptionFrame *) frame_addr;
-  frame->context.prog_ctr = (uint32_t) regs->prog_ctr;
-  frame->context.stack_ptr = (uint32_t) regs->stack_ptr;
-  NaClUserRegisterStateFromSignalContext(&frame->context.regs, regs);
+  NaClSignalSetUpExceptionFrame(frame, regs, context_user_addr);
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
-  frame->context_ptr = context_user_addr;
-  frame->context.frame_ptr = regs->ebp;
   regs->prog_ctr = nap->exception_handler;
   regs->stack_ptr = new_stack_ptr;
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
-  frame->context.frame_ptr = regs->rbp;
   regs->rdi = context_user_addr; /* Argument 1 */
   regs->prog_ctr = NaClUserToSys(nap, nap->exception_handler);
   regs->stack_ptr = NaClUserToSys(nap, new_stack_ptr);
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
-  frame->context.frame_ptr = regs->r11;
-  regs->lr = kReturnAddr;
+  /*
+   * Returning from the exception handler is not possible, so to avoid
+   * any confusion that might arise from jumping to an uninitialised
+   * address, we set the return address to zero.
+   */
+  regs->lr = 0;
   regs->r0 = context_user_addr;  /* Argument 1 */
   regs->prog_ctr = NaClUserToSys(nap, nap->exception_handler);
   regs->stack_ptr = NaClUserToSys(nap, new_stack_ptr);
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
-  frame->context.frame_ptr = regs->frame_ptr;
-  regs->return_addr = kReturnAddr;
+  regs->return_addr = 0;
   regs->a0 = context_user_addr;
   regs->prog_ctr = NaClUserToSys(nap, nap->exception_handler);
   regs->stack_ptr = NaClUserToSys(nap, new_stack_ptr);
@@ -278,7 +270,6 @@ static int DispatchToUntrustedHandler(struct NaClAppThread *natp,
 #endif
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
-  frame->return_addr = kReturnAddr;
   regs->flags &= ~NACL_X86_DIRECTION_FLAG;
 #endif
 

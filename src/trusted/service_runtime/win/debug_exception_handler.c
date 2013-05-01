@@ -505,24 +505,9 @@ static BOOL HandleException(const struct StartupInfo *startup_info,
     return FALSE;
   }
 
-  new_stack.return_addr = 0;
   context_user_addr = exception_stack +
       offsetof(struct NaClExceptionFrame, context);
-#if NACL_BUILD_SUBARCH == 32
-  new_stack.context_ptr = context_user_addr;
-  new_stack.context.prog_ctr = context.Eip;
-  new_stack.context.stack_ptr = context.Esp;
-  new_stack.context.frame_ptr = context.Ebp;
-#else
-  /*
-   * Explicit downcast of %rip, %rsp, and %rbp required as we're truncating
-   * values for portability.
-   */
-  new_stack.context.prog_ctr = (uint32_t) context.Rip;
-  new_stack.context.stack_ptr = (uint32_t) context.Rsp;
-  new_stack.context.frame_ptr = (uint32_t) context.Rbp;
-#endif
-  NaClUserRegisterStateFromSignalContext(&new_stack.context.regs, &sig_context);
+  NaClSignalSetUpExceptionFrame(&new_stack, &sig_context, context_user_addr);
   if (!WRITE_MEM(process_handle,
                  (struct NaClExceptionFrame *) (app_copy.mem_start
                                                 + exception_stack),

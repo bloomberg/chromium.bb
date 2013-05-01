@@ -14,6 +14,7 @@
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
+#include "native_client/src/trusted/service_runtime/nacl_exception.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
@@ -253,7 +254,7 @@ void NaClSignalHandlerFini(void) {
   NaClSignalHandlerFiniPlatform();
 }
 
-void NaClUserRegisterStateFromSignalContext(
+static void NaClUserRegisterStateFromSignalContext(
     volatile NaClUserRegisterState *dest,
     const struct NaClSignalContext *src) {
 #define COPY_REG(reg) dest->reg = src->reg
@@ -343,4 +344,63 @@ void NaClUserRegisterStateFromSignalContext(
 # error Unsupported architecture
 #endif
 #undef COPY_REG
+}
+
+/*
+ * The |frame| argument is volatile because this function writes
+ * directly into untrusted address space on Linux.
+ */
+void NaClSignalSetUpExceptionFrame(volatile struct NaClExceptionFrame *frame,
+                                   const struct NaClSignalContext *regs,
+                                   uint32_t context_user_addr) {
+  unsigned i;
+
+  /*
+   * Use the end of frame->portable for the size, avoiding padding
+   * added after it within NaClExceptionFrame.
+   */
+  frame->context.size =
+      (uint32_t) ((uintptr_t) (&frame->portable + 1) -
+                  (uintptr_t) &frame->context);
+  frame->context.portable_context_offset =
+      (uint32_t) ((uintptr_t) &frame->portable -
+                  (uintptr_t) &frame->context);
+  frame->context.portable_context_size = sizeof(frame->portable);
+  frame->context.arch = NACL_ELF_E_MACHINE;
+  frame->context.regs_size = sizeof(frame->context.regs);
+
+  /* Avoid memset() here because |frame| is volatile. */
+  for (i = 0; i < NACL_ARRAY_SIZE(frame->context.reserved); i++) {
+    frame->context.reserved[i] = 0;
+  }
+
+  NaClUserRegisterStateFromSignalContext(&frame->context.regs, regs);
+
+  frame->portable.prog_ctr = (uint32_t) regs->prog_ctr;
+  frame->portable.stack_ptr = (uint32_t) regs->stack_ptr;
+
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
+  frame->context_ptr = context_user_addr;
+  frame->portable.frame_ptr = (uint32_t) regs->ebp;
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
+  UNREFERENCED_PARAMETER(context_user_addr);
+  frame->portable.frame_ptr = (uint32_t) regs->rbp;
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+  UNREFERENCED_PARAMETER(context_user_addr);
+  frame->portable.frame_ptr = regs->r11;
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+  UNREFERENCED_PARAMETER(context_user_addr);
+  frame->portable.frame_ptr = regs->frame_ptr;
+#else
+# error Unsupported architecture
+#endif
+
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
+  /*
+   * Returning from the exception handler is not possible, so to avoid
+   * any confusion that might arise from jumping to an uninitialised
+   * address, we set the return address to zero.
+   */
+  frame->return_addr = 0;
+#endif
 }

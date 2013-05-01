@@ -102,7 +102,6 @@ static void FireDebugStubEvent(int pipe_fd) {
 #if NACL_BUILD_SUBARCH == 32
 
 #define NATIVE_x86_THREAD_STATE x86_THREAD_STATE32
-#define X86_REG_BP(regs)    ((regs)->uts.ts32.__ebp)
 #define X86_REG_SP(regs)    ((regs)->uts.ts32.__esp)
 #define X86_REG_IP(regs)    ((regs)->uts.ts32.__eip)
 #define X86_REG_FLAGS(regs) ((regs)->uts.ts32.__eflags)
@@ -110,7 +109,6 @@ static void FireDebugStubEvent(int pipe_fd) {
 #elif NACL_BUILD_SUBARCH == 64
 
 #define NATIVE_x86_THREAD_STATE x86_THREAD_STATE64
-#define X86_REG_BP(regs)    ((regs)->uts.ts64.__rbp)
 #define X86_REG_SP(regs)    ((regs)->uts.ts64.__rsp)
 #define X86_REG_IP(regs)    ((regs)->uts.ts64.__rip)
 #define X86_REG_FLAGS(regs) ((regs)->uts.ts64.__rflags)
@@ -292,15 +290,9 @@ static enum HandleExceptionResult HandleException(mach_port_t thread_port,
   }
 
   /* Set up the stack frame for the handler invocation. */
-  frame.return_addr = 0;
-  frame.context.prog_ctr = X86_REG_IP(regs);
-  frame.context.stack_ptr = X86_REG_SP(regs);
-  frame.context.frame_ptr = X86_REG_BP(regs);
-  NaClUserRegisterStateFromSignalContext(&frame.context.regs, &sig_context);
-#if NACL_BUILD_SUBARCH == 32
-  frame.context_ptr = frame_addr_user +
-                      offsetof(struct NaClExceptionFrame, context);
-#endif
+  NaClSignalSetUpExceptionFrame(
+      &frame, &sig_context,
+      frame_addr_user + offsetof(struct NaClExceptionFrame, context));
 
   /*
    * Write the stack frame into untrusted address space.  We do not

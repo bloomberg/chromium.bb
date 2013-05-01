@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "native_client/src/include/elf_constants.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_exception.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
@@ -22,7 +23,16 @@
 
 typedef void (*handler_func_t)(struct NaClExceptionContext *context);
 
-char stack[4096];
+/*
+ * This is used for calculating the size of the exception stack frame
+ * when alignment is taken into account.
+ */
+struct CombinedContext {
+  struct NaClExceptionContext c1;
+  struct NaClExceptionPortableContext c2;
+};
+
+char stack[0x10000];
 
 struct NaClSignalContext g_regs_at_crash;
 jmp_buf g_jmp_buf;
@@ -103,19 +113,30 @@ REGS_SAVER_FUNC_NOPROTO(exception_handler, exception_handler_wrapped);
 void exception_handler_wrapped(struct NaClSignalContext *entry_regs) {
   struct NaClExceptionContext *context =
       (struct NaClExceptionContext *) RegsGetArg1(entry_regs);
+  struct NaClExceptionPortableContext *portable =
+      nacl_exception_context_get_portable(context);
 
   printf("handler called\n");
 
-  assert(context->stack_ptr == (uint32_t) g_regs_at_crash.stack_ptr);
-  assert(context->prog_ctr == (uintptr_t) prog_ctr_at_crash);
+  assert(context->size == (uintptr_t) (portable + 1) - (uintptr_t) context);
+  assert(context->portable_context_size ==
+         sizeof(struct NaClExceptionPortableContext));
+  assert(context->regs_size == sizeof(NaClUserRegisterState));
+
+  assert(portable->stack_ptr == (uint32_t) g_regs_at_crash.stack_ptr);
+  assert(portable->prog_ctr == (uintptr_t) prog_ctr_at_crash);
 #if defined(__i386__)
-  assert(context->frame_ptr == g_regs_at_crash.ebp);
+  assert(portable->frame_ptr == g_regs_at_crash.ebp);
+  assert(context->arch == EM_386);
 #elif defined(__x86_64__)
-  assert(context->frame_ptr == (uint32_t) g_regs_at_crash.rbp);
+  assert(portable->frame_ptr == (uint32_t) g_regs_at_crash.rbp);
+  assert(context->arch == EM_X86_64);
 #elif defined(__arm__)
-  assert(context->frame_ptr == g_regs_at_crash.r11);
+  assert(portable->frame_ptr == g_regs_at_crash.r11);
+  assert(context->arch == EM_ARM);
 #elif defined(__mips__)
-  assert(context->frame_ptr == g_regs_at_crash.frame_ptr);
+  assert(portable->frame_ptr == g_regs_at_crash.frame_ptr);
+  assert(context->arch == EM_MIPS);
 #else
 # error Unsupported architecture
 #endif
@@ -133,7 +154,7 @@ void exception_handler_wrapped(struct NaClSignalContext *entry_regs) {
   char local_var;
   if (g_registered_stack == NULL) {
     /* Check that our current stack is just below the saved stack pointer. */
-    stack_top = (char *) context->stack_ptr - kRedZoneSize;
+    stack_top = (char *) portable->stack_ptr - kRedZoneSize;
     assert(stack_top - kMaxStackFrameSize < &local_var);
     assert(&local_var < stack_top);
   } else {
@@ -147,7 +168,7 @@ void exception_handler_wrapped(struct NaClSignalContext *entry_regs) {
   uintptr_t frame_base = entry_regs->stack_ptr + kReturnAddrSize;
   assert(frame_base % STACK_ALIGNMENT == 0);
   char *frame_top = (char *) (frame_base + kArgSizeOnStack +
-                              sizeof(struct NaClExceptionContext));
+                              sizeof(struct CombinedContext));
   /* Check that no more than the stack alignment size is wasted. */
   assert(stack_top - STACK_ALIGNMENT < frame_top);
   assert(frame_top <= stack_top);
@@ -320,14 +341,6 @@ void test_unsetting_x86_direction_flag(void) {
   }
   /* Clear the jmp_buf to prevent it from being reused accidentally. */
   memset(g_jmp_buf, 0, sizeof(g_jmp_buf));
-}
-
-void frame_ptr_exception_handler(struct NaClExceptionContext *context) {
-  assert(context->frame_ptr == 0x12345678);
-  /* Return from exception handler. */
-  int rc = NACL_SYSCALL(exception_clear_flag)();
-  assert(rc == 0);
-  longjmp(g_jmp_buf, 1);
 }
 
 #endif

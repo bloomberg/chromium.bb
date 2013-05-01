@@ -27,7 +27,7 @@
       'irt_blockhook.c',
       'irt_clock.c',
       'irt_dev_getpid.c',
-      'irt_dev_exception_handling.c',
+      'irt_exception_handling.c',
       'irt_dev_list_mappings.c',
       'irt_nameservice.c',
       'irt_random.c',
