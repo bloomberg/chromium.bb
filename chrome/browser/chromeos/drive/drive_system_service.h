@@ -31,9 +31,9 @@ class DriveServiceInterface;
 namespace drive {
 
 class DownloadHandler;
-class DriveCache;
 class DriveFileSystemInterface;
 class DriveWebAppsRegistry;
+class FileCache;
 class FileSystemProxy;
 class FileWriteHelper;
 class JobListInterface;
@@ -97,7 +97,7 @@ class DriveSystemService
     return drive_service_.get();
   }
 
-  DriveCache* cache() { return cache_.get(); }
+  FileCache* cache() { return cache_.get(); }
   DriveFileSystemInterface* file_system() { return file_system_.get(); }
   FileWriteHelper* file_write_helper() { return file_write_helper_.get(); }
   DownloadHandler* download_handler() { return download_handler_.get(); }
@@ -155,7 +155,7 @@ class DriveSystemService
   bool drive_disabled_;
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  scoped_ptr<DriveCache, util::DestroyHelper> cache_;
+  scoped_ptr<FileCache, util::DestroyHelper> cache_;
   scoped_ptr<google_apis::DriveServiceInterface> drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<DriveWebAppsRegistry> webapps_registry_;

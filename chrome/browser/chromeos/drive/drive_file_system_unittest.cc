@@ -143,7 +143,7 @@ class DriveFileSystemTest : public testing::Test {
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
-    cache_.reset(new DriveCache(DriveCache::GetCacheRootPath(profile_.get()),
+    cache_.reset(new FileCache(FileCache::GetCacheRootPath(profile_.get()),
                                 blocking_task_runner_,
                                 fake_free_disk_space_getter_.get()));
 
@@ -162,7 +162,7 @@ class DriveFileSystemTest : public testing::Test {
 
   void SetUpResourceMetadataAndFileSystem() {
     resource_metadata_.reset(new internal::ResourceMetadata(
-        cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META),
+        cache_->GetCacheDirectoryPath(FileCache::CACHE_TYPE_META),
         blocking_task_runner_));
 
     file_system_.reset(new DriveFileSystem(profile_.get(),
@@ -316,7 +316,7 @@ class DriveFileSystemTest : public testing::Test {
         fake_drive_service_->GetRootResourceId();
     scoped_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
         resource_metadata(new internal::ResourceMetadata(
-            cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META),
+            cache_->GetCacheDirectoryPath(FileCache::CACHE_TYPE_META),
             blocking_task_runner_));
 
     FileError error = FILE_ERROR_FAILED;
@@ -446,7 +446,7 @@ class DriveFileSystemTest : public testing::Test {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<TestingProfile> profile_;
 
-  scoped_ptr<DriveCache, test_util::DestroyHelperForTests> cache_;
+  scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
   scoped_ptr<DriveFileSystem> file_system_;
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
@@ -1617,7 +1617,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
 
   FileError error = FILE_ERROR_FAILED;
   cache_->Store("<resource_id>", "<md5>", tmp_file,
-                DriveCache::FILE_OPERATION_COPY,
+                FileCache::FILE_OPERATION_COPY,
                 google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -1680,7 +1680,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromCache) {
                 entry_proto->file_specific_info().file_md5(),
                 google_apis::test_util::GetTestFilePath(
                     "chromeos/gdata/root_feed.json"),
-                DriveCache::FILE_OPERATION_COPY,
+                FileCache::FILE_OPERATION_COPY,
                 google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -1844,7 +1844,7 @@ TEST_F(DriveFileSystemTest, GetFileByResourceId_FromCache) {
                 entry_proto->file_specific_info().file_md5(),
                 google_apis::test_util::GetTestFilePath(
                     "chromeos/gdata/root_feed.json"),
-                DriveCache::FILE_OPERATION_COPY,
+                FileCache::FILE_OPERATION_COPY,
                 google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -1892,7 +1892,7 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {
                 // Anything works.
                 google_apis::test_util::GetTestFilePath(
                     "chromeos/gdata/root_feed.json"),
-                DriveCache::FILE_OPERATION_COPY,
+                FileCache::FILE_OPERATION_COPY,
                 google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -2187,7 +2187,7 @@ TEST_F(DriveFileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
                 entry->file_specific_info().file_md5(),
                 google_apis::test_util::GetTestFilePath(
                     "chromeos/gdata/root_feed.json"),
-                DriveCache::FILE_OPERATION_COPY,
+                FileCache::FILE_OPERATION_COPY,
                 google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   ASSERT_EQ(FILE_ERROR_OK, error);

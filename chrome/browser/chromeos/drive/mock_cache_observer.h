@@ -12,7 +12,7 @@
 
 namespace drive {
 
-// Mock for DriveCache::Observer.
+// Mock for FileCache::Observer.
 class MockCacheObserver : public CacheObserver {
  public:
   MockCacheObserver();

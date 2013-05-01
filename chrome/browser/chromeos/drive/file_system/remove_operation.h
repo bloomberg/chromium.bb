@@ -22,9 +22,9 @@ namespace google_apis {
 
 namespace drive {
 
-class DriveCache;
 class DriveEntryProto;
 class DriveFileSystem;
+class FileCache;
 class JobScheduler;
 
 namespace file_system {
@@ -37,7 +37,7 @@ class OperationObserver;
 class RemoveOperation {
  public:
   RemoveOperation(JobScheduler* job_scheduler,
-                  DriveCache* cache,
+                  FileCache* cache,
                   internal::ResourceMetadata* metadata,
                   OperationObserver* observer);
   virtual ~RemoveOperation();
@@ -73,7 +73,7 @@ class RemoveOperation {
       const base::FilePath& directory_path);
 
   JobScheduler* job_scheduler_;
-  DriveCache* cache_;
+  FileCache* cache_;
   internal::ResourceMetadata* metadata_;
   OperationObserver* observer_;
 

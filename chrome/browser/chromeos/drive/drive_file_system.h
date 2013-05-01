@@ -52,7 +52,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
                         public file_system::OperationObserver {
  public:
   DriveFileSystem(Profile* profile,
-                  DriveCache* cache,
+                  FileCache* cache,
                   google_apis::DriveServiceInterface* drive_service,
                   JobScheduler* scheduler,
                   DriveWebAppsRegistry* webapps_registry,
@@ -467,7 +467,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   Profile* profile_;
 
   // Sub components owned by DriveSystemService.
-  DriveCache* cache_;
+  FileCache* cache_;
   google_apis::DriveServiceInterface* drive_service_;
   JobScheduler* scheduler_;
   DriveWebAppsRegistry* webapps_registry_;

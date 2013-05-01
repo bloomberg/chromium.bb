@@ -29,9 +29,9 @@ typedef base::Callback<void(const std::string& resource_id,
                             const CacheEntry& cache_entry)>
     CacheIterateCallback;
 
-// CacheMetadata is interface to maintain metadata of DriveCache's cached
+// CacheMetadata is interface to maintain metadata of FileCache's cached
 // files. This class only manages metadata. File operations are done by
-// DriveCache.
+// FileCache.
 // All member access including ctor and dtor must be made on the blocking pool.
 class CacheMetadata {
  public:

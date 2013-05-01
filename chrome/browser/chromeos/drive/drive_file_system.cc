@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/change_list_processor.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_cache.h"
+#include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
@@ -214,7 +214,7 @@ struct DriveFileSystem::AddUploadedFileParams {
 
 DriveFileSystem::DriveFileSystem(
     Profile* profile,
-    DriveCache* cache,
+    FileCache* cache,
     google_apis::DriveServiceInterface* drive_service,
     JobScheduler* scheduler,
     DriveWebAppsRegistry* webapps_registry,
@@ -829,7 +829,7 @@ void DriveFileSystem::GetResolvedFileByPath(
         FROM_HERE,
         base::Bind(&CreateDocumentJsonFileOnBlockingPool,
                    cache_->GetCacheDirectoryPath(
-                       DriveCache::CACHE_TYPE_TMP_DOCUMENTS),
+                       FileCache::CACHE_TYPE_TMP_DOCUMENTS),
                    GURL(entry_proto_ptr->file_specific_info().alternate_url()),
                    entry_proto_ptr->resource_id(),
                    temp_file_path),
@@ -976,7 +976,7 @@ void DriveFileSystem::GetResolvedFileByPathAfterFreeDiskSpace(
 
   // We have enough disk space. Create download destination file.
   const base::FilePath temp_download_directory =
-      cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_TMP_DOWNLOADS);
+      cache_->GetCacheDirectoryPath(FileCache::CACHE_TYPE_TMP_DOWNLOADS);
   base::FilePath* file_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
@@ -1050,7 +1050,7 @@ void DriveFileSystem::GetResolvedFileByPathAfterDownloadFile(
   cache_->Store(entry->resource_id(),
                 entry->file_specific_info().file_md5(),
                 downloaded_file_path,
-                DriveCache::FILE_OPERATION_MOVE,
+                FileCache::FILE_OPERATION_MOVE,
                 base::Bind(&DriveFileSystem::GetResolvedFileByPathAfterStore,
                            weak_ptr_factory_.GetWeakPtr(),
                            base::Passed(&params),
@@ -1378,7 +1378,7 @@ void DriveFileSystem::AddUploadedFileToCache(
   cache_->Store(params.resource_id,
                 params.md5,
                 params.file_content_path,
-                DriveCache::FILE_OPERATION_COPY,
+                FileCache::FILE_OPERATION_COPY,
                 base::Bind(&IgnoreError, params.callback));
 }
 
@@ -1434,7 +1434,7 @@ void DriveFileSystem::MarkCacheFileAsUnmounted(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (!cache_->IsUnderDriveCacheDirectory(cache_file_path)) {
+  if (!cache_->IsUnderFileCacheDirectory(cache_file_path)) {
     callback.Run(FILE_ERROR_FAILED);
     return;
   }

@@ -18,9 +18,9 @@
 namespace drive {
 
 class CacheEntry;
-class DriveCache;
 class DriveEntryProto;
 class DriveFileSystemInterface;
+class FileCache;
 
 // The SyncClient is used to synchronize pinned files on Drive and the
 // cache on the local drive. The sync client works as follows.
@@ -44,14 +44,14 @@ class SyncClient : public FileSystemObserver,
     UPLOAD,  // Upload a file to the Drive server.
   };
 
-  SyncClient(DriveFileSystemInterface* file_system, DriveCache* cache);
+  SyncClient(DriveFileSystemInterface* file_system, FileCache* cache);
   virtual ~SyncClient();
 
   // DriveFileSystemInterface::Observer overrides.
   virtual void OnInitialLoadFinished() OVERRIDE;
   virtual void OnFeedFromServerLoaded() OVERRIDE;
 
-  // DriveCache::Observer overrides.
+  // FileCache::Observer overrides.
   virtual void OnCachePinned(const std::string& resource_id,
                              const std::string& md5) OVERRIDE;
   virtual void OnCacheUnpinned(const std::string& resource_id,
@@ -137,7 +137,7 @@ class SyncClient : public FileSystemObserver,
                             FileError error);
 
   DriveFileSystemInterface* file_system_;  // Owned by DriveSystemService.
-  DriveCache* cache_;  // Owned by DriveSystemService.
+  FileCache* cache_;  // Owned by DriveSystemService.
 
   // List of the resource ids of resources which have a fetch task created.
   std::set<std::string> fetch_list_;

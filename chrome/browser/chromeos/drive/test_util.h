@@ -17,7 +17,7 @@ class ChangeListLoader;
 namespace test_util {
 
 // This is a bitmask of cache states in CacheEntry. Used only in tests.
-enum TestDriveCacheState {
+enum TestFileCacheState {
   TEST_CACHE_STATE_NONE       = 0,
   TEST_CACHE_STATE_PINNED     = 1 << 0,
   TEST_CACHE_STATE_PRESENT    = 1 << 1,
@@ -26,7 +26,7 @@ enum TestDriveCacheState {
   TEST_CACHE_STATE_PERSISTENT = 1 << 4,
 };
 
-// Converts |cache_state| which is a bit mask of TestDriveCacheState, to a
+// Converts |cache_state| which is a bit mask of TestFileCacheState, to a
 // CacheEntry.
 CacheEntry ToCacheEntry(int cache_state);
 

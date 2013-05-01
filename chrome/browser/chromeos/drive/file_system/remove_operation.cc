@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
 
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_cache.h"
+#include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
@@ -24,7 +24,7 @@ void EmptyFileOperationCallback(FileError error) {}
 
 RemoveOperation::RemoveOperation(
     JobScheduler* job_scheduler,
-    DriveCache* cache,
+    FileCache* cache,
     internal::ResourceMetadata* metadata,
     OperationObserver* observer)
   : job_scheduler_(job_scheduler),

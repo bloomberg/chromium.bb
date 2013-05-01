@@ -44,7 +44,7 @@ void RunGetChildDirectoriesCallbackWithResult(
 }
 
 // Returns true if enough disk space is avilable for DB operation.
-// TODO(hashimoto): Merge this with DriveCache's FreeDiskSpaceGetterInterface.
+// TODO(hashimoto): Merge this with FileCache's FreeDiskSpaceGetterInterface.
 bool EnoughDiskSpaceIsAvailableForDBOperation(const base::FilePath& path) {
   const int64 kRequiredDiskSpaceInMB = 128;  // 128 MB seems to be large enough.
   return base::SysInfo::AmountOfFreeDiskSpace(path) >=

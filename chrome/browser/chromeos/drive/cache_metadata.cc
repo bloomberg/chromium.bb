@@ -9,7 +9,7 @@
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_cache.h"
+#include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
@@ -31,10 +31,10 @@ typedef std::map<std::string, base::FilePath> ResourceIdToFilePathMap;
 // Returns true if |file_path| is a valid symbolic link as |sub_dir_type|.
 // Otherwise, returns false with the reason.
 bool IsValidSymbolicLink(const base::FilePath& file_path,
-                         DriveCache::CacheSubDirectoryType sub_dir_type,
+                         FileCache::CacheSubDirectoryType sub_dir_type,
                          const std::vector<base::FilePath>& cache_paths,
                          std::string* reason) {
-  DCHECK_EQ(DriveCache::CACHE_TYPE_OUTGOING, sub_dir_type);
+  DCHECK_EQ(FileCache::CACHE_TYPE_OUTGOING, sub_dir_type);
 
   base::FilePath destination;
   if (!file_util::ReadSymbolicLink(file_path, &destination)) {
@@ -48,7 +48,7 @@ bool IsValidSymbolicLink(const base::FilePath& file_path,
   }
 
   // The destination file should be in the persistent directory.
-  if (!cache_paths[DriveCache::CACHE_TYPE_PERSISTENT].IsParent(destination)) {
+  if (!cache_paths[FileCache::CACHE_TYPE_PERSISTENT].IsParent(destination)) {
     *reason = "pointing to a file outside of persistent directory";
     return false;
   }
@@ -63,7 +63,7 @@ bool IsValidSymbolicLink(const base::FilePath& file_path,
 // ResourceIdToFilePathMap, if these are processed properly.
 void ScanCacheDirectory(
     const std::vector<base::FilePath>& cache_paths,
-    DriveCache::CacheSubDirectoryType sub_dir_type,
+    FileCache::CacheSubDirectoryType sub_dir_type,
     CacheMetadata::CacheMap* cache_map,
     ResourceIdToFilePathMap* processed_file_map) {
   DCHECK(cache_map);
@@ -86,7 +86,7 @@ void ScanCacheDirectory(
     // Determine cache state.
     CacheEntry cache_entry;
     cache_entry.set_md5(md5);
-    if (sub_dir_type == DriveCache::CACHE_TYPE_OUTGOING) {
+    if (sub_dir_type == FileCache::CACHE_TYPE_OUTGOING) {
       std::string reason;
       if (!IsValidSymbolicLink(current, sub_dir_type, cache_paths, &reason)) {
         LOG(WARNING) << "Removing an invalid symlink: " << current.value()
@@ -109,9 +109,9 @@ void ScanCacheDirectory(
 
       processed_file_map->insert(std::make_pair(resource_id, current));
       continue;
-    } else if (sub_dir_type == DriveCache::CACHE_TYPE_PERSISTENT ||
-               sub_dir_type == DriveCache::CACHE_TYPE_TMP) {
-      if (sub_dir_type == DriveCache::CACHE_TYPE_PERSISTENT)
+    } else if (sub_dir_type == FileCache::CACHE_TYPE_PERSISTENT ||
+               sub_dir_type == FileCache::CACHE_TYPE_TMP) {
+      if (sub_dir_type == FileCache::CACHE_TYPE_PERSISTENT)
         cache_entry.set_is_persistent(true);
 
       if (file_util::IsLink(current)) {
@@ -124,7 +124,7 @@ void ScanCacheDirectory(
         // Mounted archives in cache should be unmounted upon logout/shutdown.
         // But if we encounter a mounted file at start, delete it and create an
         // entry with not PRESENT state.
-        DCHECK(sub_dir_type == DriveCache::CACHE_TYPE_PERSISTENT);
+        DCHECK(sub_dir_type == FileCache::CACHE_TYPE_PERSISTENT);
         file_util::Delete(current, false);
       } else {
         // The cache file is present.
@@ -133,7 +133,7 @@ void ScanCacheDirectory(
         // Adds the dirty bit if |md5| indicates that the file is dirty, and
         // the file is in the persistent directory.
         if (md5 == util::kLocallyModifiedFileExtension) {
-          if (sub_dir_type == DriveCache::CACHE_TYPE_PERSISTENT) {
+          if (sub_dir_type == FileCache::CACHE_TYPE_PERSISTENT) {
             cache_entry.set_is_dirty(true);
           } else {
             LOG(WARNING) << "Removing a dirty file in tmp directory: "
@@ -161,12 +161,12 @@ void ScanCachePaths(const std::vector<base::FilePath>& cache_paths,
   // corresponding entries for cache map.
   ResourceIdToFilePathMap persistent_file_map;
   ScanCacheDirectory(cache_paths,
-                     DriveCache::CACHE_TYPE_PERSISTENT,
+                     FileCache::CACHE_TYPE_PERSISTENT,
                      cache_map,
                      &persistent_file_map);
   ResourceIdToFilePathMap tmp_file_map;
   ScanCacheDirectory(cache_paths,
-                     DriveCache::CACHE_TYPE_TMP,
+                     FileCache::CACHE_TYPE_TMP,
                      cache_map,
                      &tmp_file_map);
 
@@ -174,7 +174,7 @@ void ScanCachePaths(const std::vector<base::FilePath>& cache_paths,
   // properly (i.e. symlinks created in outgoing directory).
   ResourceIdToFilePathMap outgoing_file_map;
   ScanCacheDirectory(cache_paths,
-                     DriveCache::CACHE_TYPE_OUTGOING,
+                     FileCache::CACHE_TYPE_OUTGOING,
                      cache_map,
                      &outgoing_file_map);
 
@@ -195,7 +195,7 @@ void ScanCachePaths(const std::vector<base::FilePath>& cache_paths,
       if (!is_dirty && !is_committed) {
         // If the file is not dirty nor committed, move to temporary directory.
         base::FilePath new_file_path =
-            cache_paths[DriveCache::CACHE_TYPE_TMP].Append(
+            cache_paths[FileCache::CACHE_TYPE_TMP].Append(
                 file_path.BaseName());
         DLOG(WARNING) << "Moving: " << file_path.value()
                       << " to: " << new_file_path.value();
@@ -400,7 +400,7 @@ bool CacheMetadataDB::Initialize(
   AssertOnSequencedWorkerPool();
 
   const base::FilePath db_path =
-      cache_paths[DriveCache::CACHE_TYPE_META].Append(
+      cache_paths[FileCache::CACHE_TYPE_META].Append(
           kCacheMetadataDBPath);
   DVLOG(1) << "db path=" << db_path.value();
 

@@ -9,9 +9,9 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/download_handler.h"
-#include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system.h"
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
+#include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_proxy.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/file_write_helper.h"
@@ -124,16 +124,16 @@ DriveSystemService::DriveSystemService(
         GetDriveUserAgent()));
   }
   scheduler_.reset(new JobScheduler(profile_, drive_service_.get()));
-  cache_.reset(new DriveCache(!test_cache_root.empty() ? test_cache_root :
-                              DriveCache::GetCacheRootPath(profile),
-                              blocking_task_runner_,
-                              NULL /* free_disk_space_getter */));
+  cache_.reset(new FileCache(!test_cache_root.empty() ? test_cache_root :
+                             FileCache::GetCacheRootPath(profile),
+                             blocking_task_runner_,
+                             NULL /* free_disk_space_getter */));
   webapps_registry_.reset(new DriveWebAppsRegistry);
 
-  // We can call DriveCache::GetCacheDirectoryPath safely even before the cache
+  // We can call FileCache::GetCacheDirectoryPath safely even before the cache
   // gets initialized.
   resource_metadata_.reset(new internal::ResourceMetadata(
-      cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META),
+      cache_->GetCacheDirectoryPath(FileCache::CACHE_TYPE_META),
       blocking_task_runner_));
 
   file_system_.reset(test_file_system ? test_file_system :
@@ -334,7 +334,7 @@ void DriveSystemService::InitializeAfterResourceMetadataInitialized(
         BrowserContext::GetDownloadManager(profile_) : NULL;
   download_handler_->Initialize(
       download_manager,
-      cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_TMP_DOWNLOADS));
+      cache_->GetCacheDirectoryPath(FileCache::CACHE_TYPE_TMP_DOWNLOADS));
 
   // Register for Google Drive invalidation notifications.
   google_apis::DriveNotificationManager* drive_notification_manager =

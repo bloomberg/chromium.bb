@@ -20,8 +20,8 @@ class FilePath;
 
 namespace drive {
 
-class DriveCache;
 class DriveEntryProto;
+class FileCache;
 class JobScheduler;
 
 namespace file_system {
@@ -33,7 +33,7 @@ class OperationObserver;
 // metadata to reflect the new state.
 class UpdateOperation {
  public:
-  UpdateOperation(DriveCache* cache,
+  UpdateOperation(FileCache* cache,
                   internal::ResourceMetadata* metadata,
                   JobScheduler* scheduler,
                   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
@@ -65,7 +65,7 @@ class UpdateOperation {
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Part of UpdateFileByResourceId().
-  // Called when DriveCache::GetFileOnUIThread() is completed for
+  // Called when FileCache::GetFileOnUIThread() is completed for
   // UpdateFileByResourceId().
   // |callback| must not be null.
   void OnGetFileCompleteForUpdateFile(
@@ -94,7 +94,7 @@ class UpdateOperation {
                               const base::FilePath& drive_file_path,
                               scoped_ptr<DriveEntryProto> entry_proto);
 
-  DriveCache* cache_;
+  FileCache* cache_;
   internal::ResourceMetadata* metadata_;
   JobScheduler* scheduler_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

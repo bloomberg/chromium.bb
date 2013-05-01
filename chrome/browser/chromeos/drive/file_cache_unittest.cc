@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/drive_cache.h"
+#include "chrome/browser/chromeos/drive/file_cache.h"
 
 #include <string>
 #include <vector>
@@ -82,13 +82,13 @@ void OnIterateCompleted(bool* out_is_called) {
 
 }  // namespace
 
-class DriveCacheTest : public testing::Test {
+class FileCacheTest : public testing::Test {
  protected:
-  DriveCacheTest()
+  FileCacheTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         expected_error_(FILE_ERROR_OK),
         expected_cache_state_(0),
-        expected_sub_dir_type_(DriveCache::CACHE_TYPE_META),
+        expected_sub_dir_type_(FileCache::CACHE_TYPE_META),
         expected_success_(true),
         expect_outgoing_symlink_(false) {
   }
@@ -101,7 +101,7 @@ class DriveCacheTest : public testing::Test {
         content::BrowserThread::GetBlockingPool();
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
-    cache_.reset(new DriveCache(temp_dir_.path(),
+    cache_.reset(new FileCache(temp_dir_.path(),
                                 blocking_task_runner_,
                                 fake_free_disk_space_getter_.get()));
 
@@ -135,7 +135,7 @@ class DriveCacheTest : public testing::Test {
             resource.resource_id,
             resource.md5,
             source_path,
-            DriveCache::FILE_OPERATION_COPY,
+            FileCache::FILE_OPERATION_COPY,
             google_apis::test_util::CreateCopyResultCallback(&error));
         google_apis::test_util::RunBlockingPoolTask();
         EXPECT_EQ(FILE_ERROR_OK, error);
@@ -207,14 +207,14 @@ class DriveCacheTest : public testing::Test {
       const base::FilePath& source_path,
       FileError expected_error,
       int expected_cache_state,
-      DriveCache::CacheSubDirectoryType expected_sub_dir_type) {
+      FileCache::CacheSubDirectoryType expected_sub_dir_type) {
     expected_error_ = expected_error;
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
 
     FileError error = FILE_ERROR_OK;
     cache_->Store(resource_id, md5, source_path,
-                  DriveCache::FILE_OPERATION_COPY,
+                  FileCache::FILE_OPERATION_COPY,
                   google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
     VerifyCacheFileState(error, resource_id, md5);
@@ -250,16 +250,16 @@ class DriveCacheTest : public testing::Test {
     std::vector<PathToVerify> paths_to_verify;
     paths_to_verify.push_back(  // Index 0: CACHE_TYPE_TMP.
         PathToVerify(cache_->GetCacheFilePath(resource_id, "*",
-                     DriveCache::CACHE_TYPE_TMP,
-                     DriveCache::CACHED_FILE_FROM_SERVER), base::FilePath()));
+                     FileCache::CACHE_TYPE_TMP,
+                     FileCache::CACHED_FILE_FROM_SERVER), base::FilePath()));
     paths_to_verify.push_back(  // Index 1: CACHE_TYPE_PERSISTENT.
         PathToVerify(cache_->GetCacheFilePath(resource_id, "*",
-                     DriveCache::CACHE_TYPE_PERSISTENT,
-                     DriveCache::CACHED_FILE_FROM_SERVER), base::FilePath()));
+                     FileCache::CACHE_TYPE_PERSISTENT,
+                     FileCache::CACHED_FILE_FROM_SERVER), base::FilePath()));
     paths_to_verify.push_back(  // Index 2: CACHE_TYPE_OUTGOING.
         PathToVerify(cache_->GetCacheFilePath(resource_id, "",
-                     DriveCache::CACHE_TYPE_OUTGOING,
-                     DriveCache::CACHED_FILE_FROM_SERVER), base::FilePath()));
+                     FileCache::CACHE_TYPE_OUTGOING,
+                     FileCache::CACHED_FILE_FROM_SERVER), base::FilePath()));
     if (!cache_entry_found) {
       for (size_t i = 0; i < paths_to_verify.size(); ++i) {
         file_util::FileEnumerator enumerator(
@@ -280,15 +280,15 @@ class DriveCacheTest : public testing::Test {
       paths_to_verify[1].expected_existing_path =
           GetCacheFilePath(resource_id,
                            std::string(),
-                           DriveCache::CACHE_TYPE_PERSISTENT,
-                           DriveCache::CACHED_FILE_LOCALLY_MODIFIED);
+                           FileCache::CACHE_TYPE_PERSISTENT,
+                           FileCache::CACHED_FILE_LOCALLY_MODIFIED);
 
       // Change expected_existing_path of CACHE_TYPE_OUTGOING (index 2).
       paths_to_verify[2].expected_existing_path =
           GetCacheFilePath(resource_id,
                            std::string(),
-                           DriveCache::CACHE_TYPE_OUTGOING,
-                           DriveCache::CACHED_FILE_FROM_SERVER);
+                           FileCache::CACHE_TYPE_OUTGOING,
+                           FileCache::CACHED_FILE_FROM_SERVER);
 
       for (size_t i = 0; i < paths_to_verify.size(); ++i) {
         const struct PathToVerify& verify = paths_to_verify[i];
@@ -316,7 +316,7 @@ class DriveCacheTest : public testing::Test {
       const std::string& md5,
       FileError expected_error,
       int expected_cache_state,
-      DriveCache::CacheSubDirectoryType expected_sub_dir_type) {
+      FileCache::CacheSubDirectoryType expected_sub_dir_type) {
     expected_error_ = expected_error;
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
@@ -333,7 +333,7 @@ class DriveCacheTest : public testing::Test {
       const std::string& md5,
       FileError expected_error,
       int expected_cache_state,
-      DriveCache::CacheSubDirectoryType expected_sub_dir_type) {
+      FileCache::CacheSubDirectoryType expected_sub_dir_type) {
     expected_error_ = expected_error;
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
@@ -349,7 +349,7 @@ class DriveCacheTest : public testing::Test {
                      const std::string& md5,
                      FileError expected_error,
                      int expected_cache_state,
-                     DriveCache::CacheSubDirectoryType expected_sub_dir_type) {
+                     FileCache::CacheSubDirectoryType expected_sub_dir_type) {
     expected_error_ = expected_error;
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
@@ -385,7 +385,7 @@ class DriveCacheTest : public testing::Test {
       const std::string& md5,
       FileError expected_error,
       int expected_cache_state,
-      DriveCache::CacheSubDirectoryType expected_sub_dir_type) {
+      FileCache::CacheSubDirectoryType expected_sub_dir_type) {
     expected_error_ = expected_error;
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
@@ -404,7 +404,7 @@ class DriveCacheTest : public testing::Test {
       const std::string& md5,
       FileError expected_error,
       int expected_cache_state,
-      DriveCache::CacheSubDirectoryType expected_sub_dir_type) {
+      FileCache::CacheSubDirectoryType expected_sub_dir_type) {
     expected_error_ = expected_error;
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
@@ -423,7 +423,7 @@ class DriveCacheTest : public testing::Test {
       const std::string& md5,
       FileError expected_error,
       int expected_cache_state,
-      DriveCache::CacheSubDirectoryType expected_sub_dir_type) {
+      FileCache::CacheSubDirectoryType expected_sub_dir_type) {
     expected_error_ = expected_error;
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
@@ -441,7 +441,7 @@ class DriveCacheTest : public testing::Test {
               cache_->GetCacheFilePath(resource_id,
                                        md5,
                                        expected_sub_dir_type_,
-                                       DriveCache::CACHED_FILE_MOUNTED));
+                                       FileCache::CACHED_FILE_MOUNTED));
   }
 
   void TestMarkAsUnmounted(
@@ -450,7 +450,7 @@ class DriveCacheTest : public testing::Test {
       const base::FilePath& file_path,
       FileError expected_error,
       int expected_cache_state,
-      DriveCache::CacheSubDirectoryType expected_sub_dir_type) {
+      FileCache::CacheSubDirectoryType expected_sub_dir_type) {
     expected_error_ = expected_error;
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
@@ -474,7 +474,7 @@ class DriveCacheTest : public testing::Test {
               cache_->GetCacheFilePath(resource_id,
                                        md5,
                                        expected_sub_dir_type_,
-                                       DriveCache::CACHED_FILE_FROM_SERVER));
+                                       FileCache::CACHED_FILE_FROM_SERVER));
   }
 
   void VerifyCacheFileState(FileError error,
@@ -493,7 +493,7 @@ class DriveCacheTest : public testing::Test {
           test_util::ToCacheEntry(expected_cache_state_),
           cache_entry));
       EXPECT_EQ(expected_sub_dir_type_,
-                DriveCache::GetSubDirectoryType(cache_entry));
+                FileCache::GetSubDirectoryType(cache_entry));
     } else {
       EXPECT_FALSE(cache_entry_found);
     }
@@ -504,11 +504,11 @@ class DriveCacheTest : public testing::Test {
         md5,
         test_util::ToCacheEntry(expected_cache_state_).is_pinned() ||
         test_util::ToCacheEntry(expected_cache_state_).is_dirty() ?
-                DriveCache::CACHE_TYPE_PERSISTENT :
-                DriveCache::CACHE_TYPE_TMP,
+                FileCache::CACHE_TYPE_PERSISTENT :
+                FileCache::CACHE_TYPE_TMP,
         test_util::ToCacheEntry(expected_cache_state_).is_dirty() ?
-            DriveCache::CACHED_FILE_LOCALLY_MODIFIED :
-            DriveCache::CACHED_FILE_FROM_SERVER);
+            FileCache::CACHED_FILE_LOCALLY_MODIFIED :
+            FileCache::CACHED_FILE_FROM_SERVER);
     bool exists = file_util::PathExists(dest_path);
     if (test_util::ToCacheEntry(expected_cache_state_).is_present())
       EXPECT_TRUE(exists);
@@ -519,8 +519,8 @@ class DriveCacheTest : public testing::Test {
     base::FilePath symlink_path = cache_->GetCacheFilePath(
         resource_id,
         std::string(),
-        DriveCache::CACHE_TYPE_OUTGOING,
-        DriveCache::CACHED_FILE_FROM_SERVER);
+        FileCache::CACHE_TYPE_OUTGOING,
+        FileCache::CACHED_FILE_FROM_SERVER);
     // Check that outgoing symlink exists, without dereferencing to target path.
     exists = file_util::IsLink(symlink_path);
     if (expect_outgoing_symlink_ &&
@@ -538,8 +538,8 @@ class DriveCacheTest : public testing::Test {
 
   base::FilePath GetCacheFilePath(const std::string& resource_id,
                             const std::string& md5,
-                            DriveCache::CacheSubDirectoryType sub_dir_type,
-                            DriveCache::CachedFileOrigin file_origin) {
+                            FileCache::CacheSubDirectoryType sub_dir_type,
+                            FileCache::CachedFileOrigin file_origin) {
     return cache_->GetCacheFilePath(resource_id, md5, sub_dir_type,
                                     file_origin);
   }
@@ -569,10 +569,10 @@ class DriveCacheTest : public testing::Test {
     base::FilePath actual_path = cache_->GetCacheFilePath(
         resource_id,
         md5,
-        DriveCache::CACHE_TYPE_TMP,
-        DriveCache::CACHED_FILE_FROM_SERVER);
+        FileCache::CACHE_TYPE_TMP,
+        FileCache::CACHED_FILE_FROM_SERVER);
     base::FilePath expected_path =
-        cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_TMP);
+        cache_->GetCacheDirectoryPath(FileCache::CACHE_TYPE_TMP);
     expected_path = expected_path.Append(
         base::FilePath::FromUTF8Unsafe(expected_filename));
     EXPECT_EQ(expected_path, actual_path);
@@ -595,9 +595,9 @@ class DriveCacheTest : public testing::Test {
     base::FilePath path = GetCacheFilePath(
         resource_id, "*",
         (test_util::ToCacheEntry(expected_cache_state_).is_pinned() ?
-         DriveCache::CACHE_TYPE_PERSISTENT :
-         DriveCache::CACHE_TYPE_TMP),
-        DriveCache::CACHED_FILE_FROM_SERVER);
+         FileCache::CACHE_TYPE_PERSISTENT :
+         FileCache::CACHE_TYPE_TMP),
+        FileCache::CACHED_FILE_FROM_SERVER);
     file_util::FileEnumerator enumerator(path.DirName(), false,
                                          file_util::FileEnumerator::FILES,
                                          path.BaseName().value());
@@ -618,19 +618,19 @@ class DriveCacheTest : public testing::Test {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   base::ScopedTempDir temp_dir_;
 
-  scoped_ptr<DriveCache, test_util::DestroyHelperForTests> cache_;
+  scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
   scoped_ptr<StrictMock<MockCacheObserver> > mock_cache_observer_;
 
   FileError expected_error_;
   int expected_cache_state_;
-  DriveCache::CacheSubDirectoryType expected_sub_dir_type_;
+  FileCache::CacheSubDirectoryType expected_sub_dir_type_;
   bool expected_success_;
   bool expect_outgoing_symlink_;
   std::string expected_file_extension_;
 };
 
-TEST_F(DriveCacheTest, GetCacheFilePath) {
+TEST_F(FileCacheTest, GetCacheFilePath) {
   // Use alphanumeric characters for resource id.
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -648,7 +648,7 @@ TEST_F(DriveCacheTest, GetCacheFilePath) {
       base::FilePath::kExtensionSeparator + escaped_md5);
 }
 
-TEST_F(DriveCacheTest, StoreToCacheSimple) {
+TEST_F(FileCacheTest, StoreToCacheSimple) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
@@ -659,13 +659,13 @@ TEST_F(DriveCacheTest, StoreToCacheSimple) {
       resource_id, md5,
       google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
       FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PRESENT,
-      DriveCache::CACHE_TYPE_TMP);
+      FileCache::CACHE_TYPE_TMP);
 
   // Store a non-existent file to the same |resource_id| and |md5|.
   TestStoreToCache(resource_id, md5, base::FilePath("./non_existent.json"),
                    FILE_ERROR_FAILED,
                    test_util::TEST_CACHE_STATE_PRESENT,
-                   DriveCache::CACHE_TYPE_TMP);
+                   FileCache::CACHE_TYPE_TMP);
 
   // Store a different existing file to the same |resource_id| but different
   // |md5|.
@@ -675,14 +675,14 @@ TEST_F(DriveCacheTest, StoreToCacheSimple) {
       google_apis::test_util::GetTestFilePath(
           "chromeos/gdata/empty_feed.json"),
       FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PRESENT,
-      DriveCache::CACHE_TYPE_TMP);
+      FileCache::CACHE_TYPE_TMP);
 
   // Verify that there's only one file with name <resource_id>, i.e. previously
   // cached file with the different md5 should be deleted.
   EXPECT_EQ(1U, CountCacheFiles(resource_id, md5));
 }
 
-TEST_F(DriveCacheTest, GetFromCacheSimple) {
+TEST_F(FileCacheTest, GetFromCacheSimple) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
@@ -692,7 +692,7 @@ TEST_F(DriveCacheTest, GetFromCacheSimple) {
       resource_id, md5,
       google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
       FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PRESENT,
-      DriveCache::CACHE_TYPE_TMP);
+      FileCache::CACHE_TYPE_TMP);
 
   // Then try to get the existing file from cache.
   TestGetFileFromCacheByResourceIdAndMd5(
@@ -710,7 +710,7 @@ TEST_F(DriveCacheTest, GetFromCacheSimple) {
       resource_id, md5, FILE_ERROR_NOT_FOUND, md5);
 }
 
-TEST_F(DriveCacheTest, RemoveFromCacheSimple) {
+TEST_F(FileCacheTest, RemoveFromCacheSimple) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   // Use alphanumeric characters for resource id.
@@ -721,7 +721,7 @@ TEST_F(DriveCacheTest, RemoveFromCacheSimple) {
       resource_id, md5,
       google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
       FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PRESENT,
-      DriveCache::CACHE_TYPE_TMP);
+      FileCache::CACHE_TYPE_TMP);
 
   // Then try to remove existing file from cache.
   TestRemoveFromCache(resource_id, FILE_ERROR_OK);
@@ -733,12 +733,12 @@ TEST_F(DriveCacheTest, RemoveFromCacheSimple) {
       resource_id, md5,
       google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
       FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PRESENT,
-      DriveCache::CACHE_TYPE_TMP);
+      FileCache::CACHE_TYPE_TMP);
 
   TestRemoveFromCache(resource_id, FILE_ERROR_OK);
 }
 
-TEST_F(DriveCacheTest, PinAndUnpin) {
+TEST_F(FileCacheTest, PinAndUnpin) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
@@ -752,26 +752,26 @@ TEST_F(DriveCacheTest, PinAndUnpin) {
       resource_id, md5,
       google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
       FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PRESENT,
-      DriveCache::CACHE_TYPE_TMP);
+      FileCache::CACHE_TYPE_TMP);
 
   // Pin the existing file in cache.
   TestPin(resource_id, md5, FILE_ERROR_OK,
           test_util::TEST_CACHE_STATE_PRESENT |
           test_util::TEST_CACHE_STATE_PINNED |
           test_util::TEST_CACHE_STATE_PERSISTENT,
-          DriveCache::CACHE_TYPE_PERSISTENT);
+          FileCache::CACHE_TYPE_PERSISTENT);
 
   // Unpin the existing file in cache.
   TestUnpin(resource_id, md5, FILE_ERROR_OK,
             test_util::TEST_CACHE_STATE_PRESENT,
-            DriveCache::CACHE_TYPE_TMP);
+            FileCache::CACHE_TYPE_TMP);
 
   // Pin back the same existing file in cache.
   TestPin(resource_id, md5, FILE_ERROR_OK,
           test_util::TEST_CACHE_STATE_PRESENT |
           test_util::TEST_CACHE_STATE_PINNED |
           test_util::TEST_CACHE_STATE_PERSISTENT,
-          DriveCache::CACHE_TYPE_PERSISTENT);
+          FileCache::CACHE_TYPE_PERSISTENT);
 
   // Pin a non-existent file in cache.
   resource_id = "document:1a2b";
@@ -781,12 +781,12 @@ TEST_F(DriveCacheTest, PinAndUnpin) {
 
   TestPin(resource_id, md5, FILE_ERROR_OK,
           test_util::TEST_CACHE_STATE_PINNED,
-          DriveCache::CACHE_TYPE_TMP);
+          FileCache::CACHE_TYPE_TMP);
 
   // Unpin the previously pinned non-existent file in cache.
   TestUnpin(resource_id, md5, FILE_ERROR_OK,
             test_util::TEST_CACHE_STATE_NONE,
-            DriveCache::CACHE_TYPE_TMP);
+            FileCache::CACHE_TYPE_TMP);
 
   // Unpin a file that doesn't exist in cache and is not pinned, i.e. cache
   // has zero knowledge of the file.
@@ -797,10 +797,10 @@ TEST_F(DriveCacheTest, PinAndUnpin) {
 
   TestUnpin(resource_id, md5, FILE_ERROR_NOT_FOUND,
             test_util::TEST_CACHE_STATE_NONE,
-            DriveCache::CACHE_TYPE_TMP /* non-applicable */);
+            FileCache::CACHE_TYPE_TMP /* non-applicable */);
 }
 
-TEST_F(DriveCacheTest, StoreToCachePinned) {
+TEST_F(FileCacheTest, StoreToCachePinned) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
@@ -810,7 +810,7 @@ TEST_F(DriveCacheTest, StoreToCachePinned) {
   // Pin a non-existent file.
   TestPin(resource_id, md5, FILE_ERROR_OK,
           test_util::TEST_CACHE_STATE_PINNED,
-          DriveCache::CACHE_TYPE_TMP);
+          FileCache::CACHE_TYPE_TMP);
 
   // Store an existing file to a previously pinned file.
   TestStoreToCache(
@@ -820,7 +820,7 @@ TEST_F(DriveCacheTest, StoreToCachePinned) {
       test_util::TEST_CACHE_STATE_PRESENT |
       test_util::TEST_CACHE_STATE_PINNED |
       test_util::TEST_CACHE_STATE_PERSISTENT,
-      DriveCache::CACHE_TYPE_PERSISTENT);
+      FileCache::CACHE_TYPE_PERSISTENT);
 
   // Store a non-existent file to a previously pinned and stored file.
   TestStoreToCache(resource_id, md5, base::FilePath("./non_existent.json"),
@@ -828,10 +828,10 @@ TEST_F(DriveCacheTest, StoreToCachePinned) {
                    test_util::TEST_CACHE_STATE_PRESENT |
                    test_util::TEST_CACHE_STATE_PINNED |
                    test_util::TEST_CACHE_STATE_PERSISTENT,
-                   DriveCache::CACHE_TYPE_PERSISTENT);
+                   FileCache::CACHE_TYPE_PERSISTENT);
 }
 
-TEST_F(DriveCacheTest, GetFromCachePinned) {
+TEST_F(FileCacheTest, GetFromCachePinned) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
@@ -841,7 +841,7 @@ TEST_F(DriveCacheTest, GetFromCachePinned) {
   // Pin a non-existent file.
   TestPin(resource_id, md5, FILE_ERROR_OK,
           test_util::TEST_CACHE_STATE_PINNED,
-          DriveCache::CACHE_TYPE_TMP);
+          FileCache::CACHE_TYPE_TMP);
 
   // Get the non-existent pinned file from cache.
   TestGetFileFromCacheByResourceIdAndMd5(
@@ -855,14 +855,14 @@ TEST_F(DriveCacheTest, GetFromCachePinned) {
       test_util::TEST_CACHE_STATE_PRESENT |
       test_util::TEST_CACHE_STATE_PINNED |
       test_util::TEST_CACHE_STATE_PERSISTENT,
-      DriveCache::CACHE_TYPE_PERSISTENT);
+      FileCache::CACHE_TYPE_PERSISTENT);
 
   // Get the previously pinned and stored file from cache.
   TestGetFileFromCacheByResourceIdAndMd5(
       resource_id, md5, FILE_ERROR_OK, md5);
 }
 
-TEST_F(DriveCacheTest, RemoveFromCachePinned) {
+TEST_F(FileCacheTest, RemoveFromCachePinned) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   // Use alphanumeric characters for resource_id.
@@ -875,12 +875,12 @@ TEST_F(DriveCacheTest, RemoveFromCachePinned) {
       resource_id, md5,
       google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
       FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PRESENT,
-      DriveCache::CACHE_TYPE_TMP);
+      FileCache::CACHE_TYPE_TMP);
   TestPin(resource_id, md5, FILE_ERROR_OK,
           test_util::TEST_CACHE_STATE_PRESENT |
           test_util::TEST_CACHE_STATE_PINNED |
           test_util::TEST_CACHE_STATE_PERSISTENT,
-          DriveCache::CACHE_TYPE_PERSISTENT);
+          FileCache::CACHE_TYPE_PERSISTENT);
 
   // Remove |resource_id| from cache.
   TestRemoveFromCache(resource_id, FILE_ERROR_OK);
@@ -894,17 +894,17 @@ TEST_F(DriveCacheTest, RemoveFromCachePinned) {
       resource_id, md5,
       google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
       FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PRESENT,
-      DriveCache::CACHE_TYPE_TMP);
+      FileCache::CACHE_TYPE_TMP);
   TestPin(resource_id, md5, FILE_ERROR_OK,
           test_util::TEST_CACHE_STATE_PRESENT |
           test_util::TEST_CACHE_STATE_PINNED |
           test_util::TEST_CACHE_STATE_PERSISTENT,
-          DriveCache::CACHE_TYPE_PERSISTENT);
+          FileCache::CACHE_TYPE_PERSISTENT);
 
   TestRemoveFromCache(resource_id, FILE_ERROR_OK);
 }
 
-TEST_F(DriveCacheTest, DirtyCacheSimple) {
+TEST_F(FileCacheTest, DirtyCacheSimple) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
@@ -916,29 +916,29 @@ TEST_F(DriveCacheTest, DirtyCacheSimple) {
       resource_id, md5,
       google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
       FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PRESENT,
-      DriveCache::CACHE_TYPE_TMP);
+      FileCache::CACHE_TYPE_TMP);
 
   // Mark the file dirty.
   TestMarkDirty(resource_id, md5, FILE_ERROR_OK,
                 test_util::TEST_CACHE_STATE_PRESENT |
                 test_util::TEST_CACHE_STATE_DIRTY |
                 test_util::TEST_CACHE_STATE_PERSISTENT,
-                DriveCache::CACHE_TYPE_PERSISTENT);
+                FileCache::CACHE_TYPE_PERSISTENT);
 
   // Commit the file dirty.
   TestCommitDirty(resource_id, md5, FILE_ERROR_OK,
                   test_util::TEST_CACHE_STATE_PRESENT |
                   test_util::TEST_CACHE_STATE_DIRTY |
                   test_util::TEST_CACHE_STATE_PERSISTENT,
-                  DriveCache::CACHE_TYPE_PERSISTENT);
+                  FileCache::CACHE_TYPE_PERSISTENT);
 
   // Clear dirty state of the file.
   TestClearDirty(resource_id, md5, FILE_ERROR_OK,
                  test_util::TEST_CACHE_STATE_PRESENT,
-                 DriveCache::CACHE_TYPE_TMP);
+                 FileCache::CACHE_TYPE_TMP);
 }
 
-TEST_F(DriveCacheTest, DirtyCachePinned) {
+TEST_F(FileCacheTest, DirtyCachePinned) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
@@ -951,12 +951,12 @@ TEST_F(DriveCacheTest, DirtyCachePinned) {
       resource_id, md5,
       google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
       FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PRESENT,
-      DriveCache::CACHE_TYPE_TMP);
+      FileCache::CACHE_TYPE_TMP);
   TestPin(resource_id, md5, FILE_ERROR_OK,
           test_util::TEST_CACHE_STATE_PRESENT |
           test_util::TEST_CACHE_STATE_PINNED |
           test_util::TEST_CACHE_STATE_PERSISTENT,
-          DriveCache::CACHE_TYPE_PERSISTENT);
+          FileCache::CACHE_TYPE_PERSISTENT);
 
   // Mark the file dirty.
   TestMarkDirty(resource_id, md5, FILE_ERROR_OK,
@@ -964,7 +964,7 @@ TEST_F(DriveCacheTest, DirtyCachePinned) {
                 test_util::TEST_CACHE_STATE_DIRTY |
                 test_util::TEST_CACHE_STATE_PINNED |
                 test_util::TEST_CACHE_STATE_PERSISTENT,
-                DriveCache::CACHE_TYPE_PERSISTENT);
+                FileCache::CACHE_TYPE_PERSISTENT);
 
   // Commit the file dirty.
   TestCommitDirty(resource_id, md5, FILE_ERROR_OK,
@@ -972,18 +972,18 @@ TEST_F(DriveCacheTest, DirtyCachePinned) {
                   test_util::TEST_CACHE_STATE_DIRTY |
                   test_util::TEST_CACHE_STATE_PINNED |
                   test_util::TEST_CACHE_STATE_PERSISTENT,
-                  DriveCache::CACHE_TYPE_PERSISTENT);
+                  FileCache::CACHE_TYPE_PERSISTENT);
 
   // Clear dirty state of the file.
   TestClearDirty(resource_id, md5, FILE_ERROR_OK,
                  test_util::TEST_CACHE_STATE_PRESENT |
                  test_util::TEST_CACHE_STATE_PINNED |
                  test_util::TEST_CACHE_STATE_PERSISTENT,
-                 DriveCache::CACHE_TYPE_PERSISTENT);
+                 FileCache::CACHE_TYPE_PERSISTENT);
 }
 
 // Test is disabled because it is flaky (http://crbug.com/134146)
-TEST_F(DriveCacheTest, PinAndUnpinDirtyCache) {
+TEST_F(FileCacheTest, PinAndUnpinDirtyCache) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
@@ -997,12 +997,12 @@ TEST_F(DriveCacheTest, PinAndUnpinDirtyCache) {
       resource_id, md5,
       google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
       FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PRESENT,
-      DriveCache::CACHE_TYPE_TMP);
+      FileCache::CACHE_TYPE_TMP);
   TestMarkDirty(resource_id, md5, FILE_ERROR_OK,
                 test_util::TEST_CACHE_STATE_PRESENT |
                 test_util::TEST_CACHE_STATE_DIRTY |
                 test_util::TEST_CACHE_STATE_PERSISTENT,
-                DriveCache::CACHE_TYPE_PERSISTENT);
+                FileCache::CACHE_TYPE_PERSISTENT);
 
   // Verifies dirty file exists.
   base::FilePath dirty_path;
@@ -1020,7 +1020,7 @@ TEST_F(DriveCacheTest, PinAndUnpinDirtyCache) {
           test_util::TEST_CACHE_STATE_DIRTY |
           test_util::TEST_CACHE_STATE_PINNED |
           test_util::TEST_CACHE_STATE_PERSISTENT,
-          DriveCache::CACHE_TYPE_PERSISTENT);
+          FileCache::CACHE_TYPE_PERSISTENT);
 
   // Verify dirty file still exist at the same pathname.
   EXPECT_TRUE(file_util::PathExists(dirty_path));
@@ -1030,13 +1030,13 @@ TEST_F(DriveCacheTest, PinAndUnpinDirtyCache) {
             test_util::TEST_CACHE_STATE_PRESENT |
             test_util::TEST_CACHE_STATE_DIRTY |
             test_util::TEST_CACHE_STATE_PERSISTENT,
-            DriveCache::CACHE_TYPE_PERSISTENT);
+            FileCache::CACHE_TYPE_PERSISTENT);
 
   // Verify dirty file still exist at the same pathname.
   EXPECT_TRUE(file_util::PathExists(dirty_path));
 }
 
-TEST_F(DriveCacheTest, DirtyCacheRepetitive) {
+TEST_F(FileCacheTest, DirtyCacheRepetitive) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
@@ -1048,35 +1048,35 @@ TEST_F(DriveCacheTest, DirtyCacheRepetitive) {
       resource_id, md5,
       google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
       FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PRESENT,
-      DriveCache::CACHE_TYPE_TMP);
+      FileCache::CACHE_TYPE_TMP);
 
   // Mark the file dirty.
   TestMarkDirty(resource_id, md5, FILE_ERROR_OK,
                 test_util::TEST_CACHE_STATE_PRESENT |
                 test_util::TEST_CACHE_STATE_DIRTY |
                 test_util::TEST_CACHE_STATE_PERSISTENT,
-                DriveCache::CACHE_TYPE_PERSISTENT);
+                FileCache::CACHE_TYPE_PERSISTENT);
 
   // Again, mark the file dirty.  Nothing should change.
   TestMarkDirty(resource_id, md5, FILE_ERROR_OK,
                 test_util::TEST_CACHE_STATE_PRESENT |
                 test_util::TEST_CACHE_STATE_DIRTY |
                 test_util::TEST_CACHE_STATE_PERSISTENT,
-                DriveCache::CACHE_TYPE_PERSISTENT);
+                FileCache::CACHE_TYPE_PERSISTENT);
 
   // Commit the file dirty.  Outgoing symlink should be created.
   TestCommitDirty(resource_id, md5, FILE_ERROR_OK,
                   test_util::TEST_CACHE_STATE_PRESENT |
                   test_util::TEST_CACHE_STATE_DIRTY |
                   test_util::TEST_CACHE_STATE_PERSISTENT,
-                  DriveCache::CACHE_TYPE_PERSISTENT);
+                  FileCache::CACHE_TYPE_PERSISTENT);
 
   // Again, commit the file dirty.  Nothing should change.
   TestCommitDirty(resource_id, md5, FILE_ERROR_OK,
                   test_util::TEST_CACHE_STATE_PRESENT |
                   test_util::TEST_CACHE_STATE_DIRTY |
                   test_util::TEST_CACHE_STATE_PERSISTENT,
-                  DriveCache::CACHE_TYPE_PERSISTENT);
+                  FileCache::CACHE_TYPE_PERSISTENT);
 
   // Mark the file dirty again after it's being committed.  Outgoing symlink
   // should be deleted.
@@ -1084,27 +1084,27 @@ TEST_F(DriveCacheTest, DirtyCacheRepetitive) {
                 test_util::TEST_CACHE_STATE_PRESENT |
                 test_util::TEST_CACHE_STATE_DIRTY |
                 test_util::TEST_CACHE_STATE_PERSISTENT,
-                DriveCache::CACHE_TYPE_PERSISTENT);
+                FileCache::CACHE_TYPE_PERSISTENT);
 
   // Commit the file dirty.  Outgoing symlink should be created again.
   TestCommitDirty(resource_id, md5, FILE_ERROR_OK,
                   test_util::TEST_CACHE_STATE_PRESENT |
                   test_util::TEST_CACHE_STATE_DIRTY |
                   test_util::TEST_CACHE_STATE_PERSISTENT,
-                  DriveCache::CACHE_TYPE_PERSISTENT);
+                  FileCache::CACHE_TYPE_PERSISTENT);
 
   // Clear dirty state of the file.
   TestClearDirty(resource_id, md5, FILE_ERROR_OK,
                  test_util::TEST_CACHE_STATE_PRESENT,
-                 DriveCache::CACHE_TYPE_TMP);
+                 FileCache::CACHE_TYPE_TMP);
 
   // Again, clear dirty state of the file, which is no longer dirty.
   TestClearDirty(resource_id, md5, FILE_ERROR_INVALID_OPERATION,
                  test_util::TEST_CACHE_STATE_PRESENT,
-                 DriveCache::CACHE_TYPE_TMP);
+                 FileCache::CACHE_TYPE_TMP);
 }
 
-TEST_F(DriveCacheTest, DirtyCacheInvalid) {
+TEST_F(FileCacheTest, DirtyCacheInvalid) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
@@ -1113,34 +1113,34 @@ TEST_F(DriveCacheTest, DirtyCacheInvalid) {
   // Mark a non-existent file dirty.
   TestMarkDirty(resource_id, md5, FILE_ERROR_NOT_FOUND,
                 test_util::TEST_CACHE_STATE_NONE,
-                DriveCache::CACHE_TYPE_TMP);
+                FileCache::CACHE_TYPE_TMP);
 
   // Commit a non-existent file dirty.
   TestCommitDirty(resource_id, md5, FILE_ERROR_NOT_FOUND,
                   test_util::TEST_CACHE_STATE_NONE,
-                  DriveCache::CACHE_TYPE_TMP);
+                  FileCache::CACHE_TYPE_TMP);
 
   // Clear dirty state of a non-existent file.
   TestClearDirty(resource_id, md5, FILE_ERROR_NOT_FOUND,
                  test_util::TEST_CACHE_STATE_NONE,
-                 DriveCache::CACHE_TYPE_TMP);
+                 FileCache::CACHE_TYPE_TMP);
 
   // Store a file to cache.
   TestStoreToCache(
       resource_id, md5,
       google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
       FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PRESENT,
-      DriveCache::CACHE_TYPE_TMP);
+      FileCache::CACHE_TYPE_TMP);
 
   // Commit a non-dirty existing file dirty.
   TestCommitDirty(resource_id, md5, FILE_ERROR_INVALID_OPERATION,
                  test_util::TEST_CACHE_STATE_PRESENT,
-                 DriveCache::CACHE_TYPE_TMP);
+                 FileCache::CACHE_TYPE_TMP);
 
   // Clear dirty state of a non-dirty existing file.
   TestClearDirty(resource_id, md5, FILE_ERROR_INVALID_OPERATION,
                  test_util::TEST_CACHE_STATE_PRESENT,
-                 DriveCache::CACHE_TYPE_TMP);
+                 FileCache::CACHE_TYPE_TMP);
 
   // Mark an existing file dirty, then store a new file to the same resource id
   // but different md5, which should fail.
@@ -1148,7 +1148,7 @@ TEST_F(DriveCacheTest, DirtyCacheInvalid) {
                 test_util::TEST_CACHE_STATE_PRESENT |
                 test_util::TEST_CACHE_STATE_DIRTY |
                 test_util::TEST_CACHE_STATE_PERSISTENT,
-                DriveCache::CACHE_TYPE_PERSISTENT);
+                FileCache::CACHE_TYPE_PERSISTENT);
   md5 = "new_md5";
   TestStoreToCache(
       resource_id, md5,
@@ -1158,10 +1158,10 @@ TEST_F(DriveCacheTest, DirtyCacheInvalid) {
       test_util::TEST_CACHE_STATE_PRESENT |
       test_util::TEST_CACHE_STATE_DIRTY |
       test_util::TEST_CACHE_STATE_PERSISTENT,
-      DriveCache::CACHE_TYPE_PERSISTENT);
+      FileCache::CACHE_TYPE_PERSISTENT);
 }
 
-TEST_F(DriveCacheTest, RemoveFromDirtyCache) {
+TEST_F(FileCacheTest, RemoveFromDirtyCache) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
@@ -1174,31 +1174,31 @@ TEST_F(DriveCacheTest, RemoveFromDirtyCache) {
       resource_id, md5,
       google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
       FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PRESENT,
-      DriveCache::CACHE_TYPE_TMP);
+      FileCache::CACHE_TYPE_TMP);
   TestPin(resource_id, md5, FILE_ERROR_OK,
           test_util::TEST_CACHE_STATE_PRESENT |
           test_util::TEST_CACHE_STATE_PINNED |
           test_util::TEST_CACHE_STATE_PERSISTENT,
-          DriveCache::CACHE_TYPE_PERSISTENT);
+          FileCache::CACHE_TYPE_PERSISTENT);
   TestMarkDirty(resource_id, md5, FILE_ERROR_OK,
                 test_util::TEST_CACHE_STATE_PRESENT |
                 test_util::TEST_CACHE_STATE_PINNED |
                 test_util::TEST_CACHE_STATE_DIRTY |
                 test_util::TEST_CACHE_STATE_PERSISTENT,
-                DriveCache::CACHE_TYPE_PERSISTENT);
+                FileCache::CACHE_TYPE_PERSISTENT);
   TestCommitDirty(resource_id, md5, FILE_ERROR_OK,
                   test_util::TEST_CACHE_STATE_PRESENT |
                   test_util::TEST_CACHE_STATE_PINNED |
                   test_util::TEST_CACHE_STATE_DIRTY |
                   test_util::TEST_CACHE_STATE_PERSISTENT,
-                  DriveCache::CACHE_TYPE_PERSISTENT);
+                  FileCache::CACHE_TYPE_PERSISTENT);
 
   // Try to remove the file.  Since file is dirty, it and the corresponding
   // pinned and outgoing symlinks should not be removed.
   TestRemoveFromCache(resource_id, FILE_ERROR_OK);
 }
 
-TEST_F(DriveCacheTest, MountUnmount) {
+TEST_F(FileCacheTest, MountUnmount) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
@@ -1209,7 +1209,7 @@ TEST_F(DriveCacheTest, MountUnmount) {
       resource_id, md5,
       google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
       FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PRESENT,
-      DriveCache::CACHE_TYPE_TMP);
+      FileCache::CACHE_TYPE_TMP);
 
   // Mark the file mounted.
   TestMarkAsMounted(resource_id,
@@ -1218,7 +1218,7 @@ TEST_F(DriveCacheTest, MountUnmount) {
                     test_util::TEST_CACHE_STATE_PRESENT |
                     test_util::TEST_CACHE_STATE_MOUNTED |
                     test_util::TEST_CACHE_STATE_PERSISTENT,
-                    DriveCache::CACHE_TYPE_PERSISTENT);
+                    FileCache::CACHE_TYPE_PERSISTENT);
   EXPECT_TRUE(CacheEntryExists(resource_id, md5));
 
   // Clear mounted state of the file.
@@ -1233,14 +1233,14 @@ TEST_F(DriveCacheTest, MountUnmount) {
   TestMarkAsUnmounted(resource_id, md5, file_path,
                       FILE_ERROR_OK,
                       test_util::TEST_CACHE_STATE_PRESENT,
-                      DriveCache::CACHE_TYPE_TMP);
+                      FileCache::CACHE_TYPE_TMP);
   EXPECT_TRUE(CacheEntryExists(resource_id, md5));
 
   // Try to remove the file.
   TestRemoveFromCache(resource_id, FILE_ERROR_OK);
 }
 
-TEST_F(DriveCacheTest, Iterate) {
+TEST_F(FileCacheTest, Iterate) {
   PrepareTestCacheResources();
 
   std::vector<std::string> resource_ids;
@@ -1266,7 +1266,7 @@ TEST_F(DriveCacheTest, Iterate) {
 }
 
 
-TEST_F(DriveCacheTest, ClearAll) {
+TEST_F(FileCacheTest, ClearAll) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
@@ -1277,7 +1277,7 @@ TEST_F(DriveCacheTest, ClearAll) {
       resource_id, md5,
       google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
       FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PRESENT,
-      DriveCache::CACHE_TYPE_TMP);
+      FileCache::CACHE_TYPE_TMP);
 
   // Verify that there's only one cached file.
   EXPECT_EQ(1U, CountCacheFiles(resource_id, md5));
@@ -1294,7 +1294,7 @@ TEST_F(DriveCacheTest, ClearAll) {
   EXPECT_EQ(0U, CountCacheFiles(resource_id, md5));
 }
 
-TEST_F(DriveCacheTest, StoreToCacheNoSpace) {
+TEST_F(FileCacheTest, StoreToCacheNoSpace) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(0);
 
   std::string resource_id("pdf:1a2b");
@@ -1306,14 +1306,14 @@ TEST_F(DriveCacheTest, StoreToCacheNoSpace) {
       google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
       FILE_ERROR_NO_SPACE,
       test_util::TEST_CACHE_STATE_NONE,
-      DriveCache::CACHE_TYPE_TMP);
+      FileCache::CACHE_TYPE_TMP);
 
   // Verify that there's no files added.
   EXPECT_EQ(0U, CountCacheFiles(resource_id, md5));
 }
 
 // Don't use TEST_F, as we don't want SetUp() and TearDown() for this test.
-TEST(DriveCacheExtraTest, InitializationFailure) {
+TEST(FileCacheExtraTest, InitializationFailure) {
   MessageLoopForUI message_loop;
   content::TestBrowserThread ui_thread(content::BrowserThread::UI,
                                        &message_loop);
@@ -1322,7 +1322,7 @@ TEST(DriveCacheExtraTest, InitializationFailure) {
       content::BrowserThread::GetBlockingPool();
 
   // Set the cache root to a non existent path, so the initialization fails.
-  scoped_ptr<DriveCache, test_util::DestroyHelperForTests> cache(new DriveCache(
+  scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache(new FileCache(
       base::FilePath::FromUTF8Unsafe("/somewhere/nonexistent/blah/blah"),
       pool->GetSequencedTaskRunner(pool->GetSequenceToken()),
       NULL /* free_disk_space_getter */));
@@ -1334,7 +1334,7 @@ TEST(DriveCacheExtraTest, InitializationFailure) {
   EXPECT_FALSE(success);
 }
 
-TEST_F(DriveCacheTest, UpdatePinnedCache) {
+TEST_F(FileCacheTest, UpdatePinnedCache) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   std::string resource_id("pdf:1a2b");
@@ -1347,7 +1347,7 @@ TEST_F(DriveCacheTest, UpdatePinnedCache) {
       google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
       FILE_ERROR_OK,
       test_util::TEST_CACHE_STATE_PRESENT,
-      DriveCache::CACHE_TYPE_TMP);
+      FileCache::CACHE_TYPE_TMP);
 
   // Pin the file.
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
@@ -1357,7 +1357,7 @@ TEST_F(DriveCacheTest, UpdatePinnedCache) {
       test_util::TEST_CACHE_STATE_PRESENT |
       test_util::TEST_CACHE_STATE_PINNED |
       test_util::TEST_CACHE_STATE_PERSISTENT,
-      DriveCache::CACHE_TYPE_PERSISTENT);
+      FileCache::CACHE_TYPE_PERSISTENT);
 
   // Store the file with a modified content and md5. It should stay pinned.
   TestStoreToCache(
@@ -1367,7 +1367,7 @@ TEST_F(DriveCacheTest, UpdatePinnedCache) {
       test_util::TEST_CACHE_STATE_PRESENT |
       test_util::TEST_CACHE_STATE_PINNED |
       test_util::TEST_CACHE_STATE_PERSISTENT,
-      DriveCache::CACHE_TYPE_PERSISTENT);
+      FileCache::CACHE_TYPE_PERSISTENT);
 }
 
 }   // namespace drive

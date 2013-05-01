@@ -15,9 +15,9 @@
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/google_apis/auth_service.h"
@@ -216,7 +216,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   void UpdateGCacheContentsSection();
   void UpdateFileSystemContentsSection();
   void UpdateLocalStorageUsageSection();
-  void UpdateCacheContentsSection(drive::DriveCache* cache);
+  void UpdateCacheContentsSection(drive::FileCache* cache);
   void UpdateEventLogSection();
 
   // Called when GetGCacheContents() is complete.
@@ -234,7 +234,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
                              bool hide_hosted_documents,
                              scoped_ptr<drive::DriveEntryProtoVector> entries);
 
-  // Called as the iterator for DriveCache::Iterate().
+  // Called as the iterator for FileCache::Iterate().
   void UpdateCacheEntry(const std::string& resource_id,
                         const drive::CacheEntry& cache_entry);
 
@@ -363,7 +363,7 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   google_apis::DriveServiceInterface* drive_service =
       system_service->drive_service();
   DCHECK(drive_service);
-  drive::DriveCache* cache = system_service->cache();
+  drive::FileCache* cache = system_service->cache();
   DCHECK(cache);
 
   UpdateDriveRelatedFlagsSection();
@@ -561,7 +561,7 @@ void DriveInternalsWebUIHandler::UpdateGCacheContentsSection() {
   // Start updating the GCache contents section.
   Profile* profile = Profile::FromWebUI(web_ui());
   const base::FilePath root_path =
-      drive::DriveCache::GetCacheRootPath(profile);
+      drive::FileCache::GetCacheRootPath(profile);
   base::ListValue* gcache_contents = new ListValue;
   base::DictionaryValue* gcache_summary = new DictionaryValue;
   BrowserThread::PostBlockingPoolTaskAndReply(
@@ -617,7 +617,7 @@ void DriveInternalsWebUIHandler::UpdateLocalStorageUsageSection() {
 }
 
 void DriveInternalsWebUIHandler::UpdateCacheContentsSection(
-    drive::DriveCache* cache) {
+    drive::FileCache* cache) {
   cache->Iterate(base::Bind(&DriveInternalsWebUIHandler::UpdateCacheEntry,
                             weak_ptr_factory_.GetWeakPtr()),
                  base::Bind(&base::DoNothing));

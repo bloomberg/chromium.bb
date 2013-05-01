@@ -7,7 +7,7 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_cache.h"
+#include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,12 +21,12 @@ class CacheMetadataTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     // Create cache directories.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    cache_paths_ = DriveCache::GetCachePaths(temp_dir_.path());
-    ASSERT_TRUE(DriveCache::CreateCacheDirectories(cache_paths_));
+    cache_paths_ = FileCache::GetCachePaths(temp_dir_.path());
+    ASSERT_TRUE(FileCache::CreateCacheDirectories(cache_paths_));
 
-    persistent_directory_ = cache_paths_[DriveCache::CACHE_TYPE_PERSISTENT];
-    tmp_directory_ = cache_paths_[DriveCache::CACHE_TYPE_TMP];
-    outgoing_directory_ = cache_paths_[DriveCache::CACHE_TYPE_OUTGOING];
+    persistent_directory_ = cache_paths_[FileCache::CACHE_TYPE_PERSISTENT];
+    tmp_directory_ = cache_paths_[FileCache::CACHE_TYPE_TMP];
+    outgoing_directory_ = cache_paths_[FileCache::CACHE_TYPE_OUTGOING];
   }
 
   virtual void TearDown() OVERRIDE {
@@ -224,7 +224,7 @@ TEST_F(CacheMetadataTest, CorruptDB) {
   SetUpCacheWithVariousFiles();
 
   const base::FilePath db_path =
-      cache_paths_[DriveCache::CACHE_TYPE_META].Append(
+      cache_paths_[FileCache::CACHE_TYPE_META].Append(
           CacheMetadata::kCacheMetadataDBPath);
 
   // Write a bogus file.
@@ -257,8 +257,8 @@ TEST_F(CacheMetadataTest, CorruptDB) {
   // "id_bar" is present and dirty.
   ASSERT_TRUE(metadata_->GetCacheEntry("id_bar", "", &cache_entry));
   EXPECT_EQ("local", cache_entry.md5());
-  EXPECT_EQ(DriveCache::CACHE_TYPE_PERSISTENT,
-            DriveCache::GetSubDirectoryType(cache_entry));
+  EXPECT_EQ(FileCache::CACHE_TYPE_PERSISTENT,
+            FileCache::GetSubDirectoryType(cache_entry));
   EXPECT_TRUE(test_util::CacheStatesEqual(
       test_util::ToCacheEntry(test_util::TEST_CACHE_STATE_PRESENT |
                               test_util::TEST_CACHE_STATE_DIRTY |
@@ -280,8 +280,8 @@ TEST_F(CacheMetadataTest, CorruptDB) {
   // "id_qux" is just present in tmp directory.
   ASSERT_TRUE(metadata_->GetCacheEntry("id_qux", "md5qux", &cache_entry));
   EXPECT_EQ("md5qux", cache_entry.md5());
-  EXPECT_EQ(DriveCache::CACHE_TYPE_TMP,
-            DriveCache::GetSubDirectoryType(cache_entry));
+  EXPECT_EQ(FileCache::CACHE_TYPE_TMP,
+            FileCache::GetSubDirectoryType(cache_entry));
   EXPECT_TRUE(test_util::CacheStatesEqual(
       test_util::ToCacheEntry(test_util::TEST_CACHE_STATE_PRESENT),
       cache_entry));
@@ -350,7 +350,7 @@ TEST(CacheMetadataExtraTest, CannotOpenDB) {
   // Create nonexistent cache paths, so the initialization fails due to the
   // failure of opening the DB.
   std::vector<base::FilePath> cache_paths =
-      DriveCache::GetCachePaths(
+      FileCache::GetCachePaths(
           base::FilePath::FromUTF8Unsafe("/somewhere/nonexistent"));
 
   scoped_ptr<CacheMetadata> metadata =

@@ -54,14 +54,14 @@ class StaleCacheFilesRemoverTest : public testing::Test {
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
-    cache_.reset(new DriveCache(DriveCache::GetCacheRootPath(profile_.get()),
+    cache_.reset(new FileCache(FileCache::GetCacheRootPath(profile_.get()),
                                 blocking_task_runner_,
                                 fake_free_disk_space_getter_.get()));
 
     drive_webapps_registry_.reset(new DriveWebAppsRegistry);
 
     resource_metadata_.reset(new internal::ResourceMetadata(
-        cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META),
+        cache_->GetCacheDirectoryPath(FileCache::CACHE_TYPE_META),
         blocking_task_runner_));
 
     file_system_.reset(new DriveFileSystem(profile_.get(),
@@ -100,7 +100,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<DriveCache, test_util::DestroyHelperForTests> cache_;
+  scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
   scoped_ptr<DriveFileSystem> file_system_;
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
@@ -121,7 +121,7 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
 
   // Create a stale cache file.
   FileError error = FILE_ERROR_OK;
-  cache_->Store(resource_id, md5, dummy_file, DriveCache::FILE_OPERATION_COPY,
+  cache_->Store(resource_id, md5, dummy_file, FileCache::FILE_OPERATION_COPY,
                 google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);

@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system.h"
+#include "chrome/browser/chromeos/drive/file_cache.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -29,7 +29,7 @@ void EmitErrorLog(const std::string& resource_id,
 
 StaleCacheFilesRemover::StaleCacheFilesRemover(
     DriveFileSystemInterface* file_system,
-    DriveCache* cache)
+    FileCache* cache)
     : cache_(cache),
       file_system_(file_system),
       weak_ptr_factory_(this) {

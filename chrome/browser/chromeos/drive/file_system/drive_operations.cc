@@ -29,7 +29,7 @@ DriveOperations::~DriveOperations() {
 void DriveOperations::Init(
     JobScheduler* job_scheduler,
     DriveFileSystemInterface* drive_file_system,
-    DriveCache* cache,
+    FileCache* cache,
     internal::ResourceMetadata* metadata,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     OperationObserver* observer) {

@@ -9,7 +9,7 @@
 
 namespace drive {
 
-// Interface for classes that need to observe events from DriveCache.
+// Interface for classes that need to observe events from FileCache.
 // All events are notified on UI thread.
 class CacheObserver {
  public:

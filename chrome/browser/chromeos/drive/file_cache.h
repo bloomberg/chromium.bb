@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_CACHE_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_CACHE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_CACHE_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_CACHE_H_
 
 #include <string>
 #include <vector>
@@ -56,14 +56,14 @@ class FreeDiskSpaceGetterInterface {
   virtual int64 AmountOfFreeDiskSpace() = 0;
 };
 
-// DriveCache is used to maintain cache states of DriveFileSystem.
+// FileCache is used to maintain cache states of DriveFileSystem.
 //
 // All non-static public member functions, unless mentioned otherwise (see
 // GetCacheFilePath() for example), should be called from the UI thread.
-class DriveCache {
+class FileCache {
  public:
   // Enum defining GCache subdirectory location.
-  // This indexes into |DriveCache::cache_paths_| vector.
+  // This indexes into |FileCache::cache_paths_| vector.
   enum CacheSubDirectoryType {
     CACHE_TYPE_META = 0,       // Downloaded feeds.
     CACHE_TYPE_OUTGOING,       // Symlinks to files in persistent or tmp dir to
@@ -91,7 +91,7 @@ class DriveCache {
   //
   // |free_disk_space_getter| is used to inject a custom free disk space
   // getter for testing. NULL must be passed for production code.
-  DriveCache(const base::FilePath& cache_root_path,
+  FileCache(const base::FilePath& cache_root_path,
              base::SequencedTaskRunner* blocking_task_runner,
              FreeDiskSpaceGetterInterface* free_disk_space_getter);
 
@@ -106,7 +106,7 @@ class DriveCache {
   // <user_profile_dir>/GCache/v1
   //
   // Can be called on any thread.
-  bool IsUnderDriveCacheDirectory(const base::FilePath& path) const;
+  bool IsUnderFileCacheDirectory(const base::FilePath& path) const;
 
   // Adds observer.
   void AddObserver(CacheObserver* observer);
@@ -261,7 +261,7 @@ class DriveCache {
       const CacheEntry& cache_entry);
 
  private:
-  friend class DriveCacheTest;
+  friend class FileCacheTest;
 
   typedef std::pair<FileError, base::FilePath> GetFileResult;
 
@@ -272,7 +272,7 @@ class DriveCache {
     CACHED_FILE_MOUNTED,
   };
 
-  virtual ~DriveCache();
+  virtual ~FileCache();
 
   // Returns absolute path of the file if it were cached or to be cached.
   //
@@ -378,7 +378,7 @@ class DriveCache {
   // The root directory of the cache (i.e. <user_profile_dir>/GCache/v1).
   const base::FilePath cache_root_path_;
   // Paths for all subdirectories of GCache, one for each
-  // DriveCache::CacheSubDirectoryType enum.
+  // FileCache::CacheSubDirectoryType enum.
   const std::vector<base::FilePath> cache_paths_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
@@ -392,8 +392,8 @@ class DriveCache {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<DriveCache> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(DriveCache);
+  base::WeakPtrFactory<FileCache> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(FileCache);
 };
 
 // The minimum free space to keep. DriveFileSystem::GetFileByPath() returns
@@ -406,4 +406,4 @@ const int64 kMinFreeSpace = 512 * 1LL << 20;
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_CACHE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FILE_CACHE_H_

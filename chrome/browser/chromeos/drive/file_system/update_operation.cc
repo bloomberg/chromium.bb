@@ -6,7 +6,7 @@
 
 #include "base/file_util.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_cache.h"
+#include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
@@ -19,7 +19,7 @@ namespace drive {
 namespace file_system {
 
 UpdateOperation::UpdateOperation(
-    DriveCache* cache,
+    FileCache* cache,
     internal::ResourceMetadata* metadata,
     JobScheduler* scheduler,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
