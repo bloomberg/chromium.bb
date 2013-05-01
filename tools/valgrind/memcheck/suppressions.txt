@@ -1620,7 +1620,16 @@
    ...
    fun:wk_png_write_find_filter
    fun:wk_png_write_row
-   fun:_ZN14webkit_support12_*DoLibpngWrite*
+}
+{
+   bug_30704g
+   Memcheck:Param
+   write(buf)
+   obj:*libpthread*
+   fun:_ZN9file_util19WriteFileDescriptorE*
+   fun:_ZN9file_util9WriteFileE*
+   fun:*SaveScreenshotInternalE*4base8Callback*
+   fun:*SaveScreenshotE*4base8Callback*
 }
 {
    bug_87232
