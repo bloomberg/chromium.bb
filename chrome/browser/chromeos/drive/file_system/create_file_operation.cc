@@ -118,13 +118,9 @@ void CreateFileOperation::CreateFileAfterGetMimeType(
     bool got_content_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Now, everything was set up. Let's create a brand new file on the server.
-  // For now, it is implemented by uploading an empty file (/dev/null).
-  // TODO(kinaba): http://crbug.com/135143. Implement in a nicer way.
-  job_scheduler_->UploadNewFile(
+  job_scheduler_->CreateFile(
       parent_resource_id,
       file_path,
-      base::FilePath(util::kSymLinkToDevNull),
       file_path.BaseName().value(),
       got_content_type ? *content_type : kMimeTypeOctetStream,
       DriveClientContext(USER_INITIATED),

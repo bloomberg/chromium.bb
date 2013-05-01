@@ -46,6 +46,8 @@ std::string JobTypeToString(JobType type) {
       return "TYPE_UPLOAD_NEW_FILE";
     case TYPE_UPLOAD_EXISTING_FILE:
       return "TYPE_UPLOAD_EXISTING_FILE";
+    case TYPE_CREATE_FILE:
+      return "TYPE_CREATE_FILE";
   }
   NOTREACHED();
   return "(unknown job type)";

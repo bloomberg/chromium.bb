@@ -33,6 +33,7 @@ enum JobType {
   TYPE_DOWNLOAD_FILE,
   TYPE_UPLOAD_NEW_FILE,
   TYPE_UPLOAD_EXISTING_FILE,
+  TYPE_CREATE_FILE,
 };
 
 // Returns the string representation of |type|.

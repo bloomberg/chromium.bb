@@ -380,6 +380,26 @@ void JobScheduler::UploadExistingFile(
   StartNewJob(new_job.Pass(), TYPE_UPLOAD_EXISTING_FILE);
 }
 
+void JobScheduler::CreateFile(
+    const std::string& parent_resource_id,
+    const base::FilePath& drive_file_path,
+    const std::string& title,
+    const std::string& content_type,
+    const DriveClientContext& context,
+    const google_apis::UploadCompletionCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  scoped_ptr<QueueEntry> new_job(new QueueEntry);
+  new_job->resource_id = parent_resource_id;
+  new_job->drive_file_path = drive_file_path;
+  new_job->title = title;
+  new_job->content_type = content_type;
+  new_job->upload_completion_callback = callback;
+  new_job->context = context;
+
+  StartNewJob(new_job.Pass(), TYPE_CREATE_FILE);
+}
+
 JobID JobScheduler::StartNewJob(scoped_ptr<QueueEntry> job, JobType type) {
   // job_info is owned by job_map_ and released when it is removed in OnJobDone.
   JobInfo* job_info = new JobInfo(type);
@@ -630,6 +650,22 @@ void JobScheduler::DoJobLoop(QueueType queue_type) {
           base::Bind(&JobScheduler::UpdateProgress,
                      weak_ptr_factory_.GetWeakPtr(),
                      job_info->job_id));
+    }
+    break;
+
+    case TYPE_CREATE_FILE: {
+      // For now, creation is implemented by uploading an empty file /dev/null.
+      // TODO(kinaba): http://crbug.com/135143. Implement in a nicer way.
+      uploader_->UploadNewFile(
+          entry->resource_id,
+          entry->drive_file_path,
+          base::FilePath(util::kSymLinkToDevNull),
+          entry->title,
+          entry->content_type,
+          base::Bind(&JobScheduler::OnUploadCompletionJobDone,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::Passed(&queue_entry)),
+          google_apis::ProgressCallback());
     }
     break;
 
@@ -936,6 +972,7 @@ JobScheduler::QueueType JobScheduler::GetJobQueueType(JobType type) {
     case TYPE_ADD_RESOURCE_TO_DIRECTORY:
     case TYPE_REMOVE_RESOURCE_FROM_DIRECTORY:
     case TYPE_ADD_NEW_DIRECTORY:
+    case TYPE_CREATE_FILE:
       return METADATA_QUEUE;
 
     case TYPE_DOWNLOAD_FILE:

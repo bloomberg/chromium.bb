@@ -144,6 +144,14 @@ class JobScheduler
       const DriveClientContext& context,
       const google_apis::UploadCompletionCallback& upload_completion_callback);
 
+  // Adds a CreateFile operation to the queue.
+  void CreateFile(const std::string& parent_resource_id,
+                  const base::FilePath& drive_file_path,
+                  const std::string& title,
+                  const std::string& content_type,
+                  const DriveClientContext& context,
+                  const google_apis::UploadCompletionCallback& callback);
+
  private:
   friend class JobSchedulerTest;
 
