@@ -20,6 +20,7 @@
 #include "chrome/browser/sync_file_system/drive_file_sync_client_interface.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/local_change_processor.h"
+#include "chrome/browser/sync_file_system/local_sync_operation_resolver.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
 #include "webkit/fileapi/syncable/file_change.h"
 #include "webkit/fileapi/syncable/sync_action.h"
@@ -187,17 +188,6 @@ class DriveFileSyncService
     TASK_TYPE_DATABASE,
   };
 
-  enum LocalSyncOperationType {
-    LOCAL_SYNC_OPERATION_ADD,
-    LOCAL_SYNC_OPERATION_UPDATE,
-    LOCAL_SYNC_OPERATION_DELETE,
-    LOCAL_SYNC_OPERATION_NONE,
-    LOCAL_SYNC_OPERATION_NONE_CONFLICTED,
-    LOCAL_SYNC_OPERATION_CONFLICT,
-    LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
-    LOCAL_SYNC_OPERATION_FAIL,
-  };
-
   typedef base::Callback<void(const base::Time& time,
                               SyncStatusCode status)> UpdatedTimeCallback;
   typedef base::Callback<
@@ -231,13 +221,8 @@ class DriveFileSyncService
   // param->drive_metadata fields.
   void ApplyLocalChangeInternal(
       scoped_ptr<ApplyLocalChangeParam> param,
-      LocalSyncOperationType operation,
       SyncStatusCode status,
       const std::string& resource_id);
-  LocalSyncOperationType ResolveLocalSyncOperationType(
-      const FileChange& local_file_change,
-      const fileapi::FileSystemURL& url,
-      ApplyLocalChangeParam* param);
   void DidApplyLocalChange(
       scoped_ptr<ApplyLocalChangeParam> param,
       const google_apis::GDataErrorCode error,
