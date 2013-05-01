@@ -293,7 +293,7 @@ void FlashDOMHandler::MaybeRespondToPage() {
 
   // Crash information.
   AddPair(list, string16(), "--- Crash data ---");
-  bool crash_reporting_enabled = CrashesUI::CrashReportingEnabled();
+  bool crash_reporting_enabled = CrashesUI::CrashReportingUIEnabled();
   if (crash_reporting_enabled) {
     std::vector<CrashUploadList::CrashInfo> crashes;
     upload_list_->GetUploadedCrashes(10, &crashes);

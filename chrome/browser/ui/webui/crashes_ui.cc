@@ -112,7 +112,7 @@ void CrashesDOMHandler::RegisterMessages() {
 }
 
 void CrashesDOMHandler::HandleRequestCrashes(const ListValue* args) {
-  if (!CrashesUI::CrashReportingEnabled() || list_available_)
+  if (!CrashesUI::CrashReportingUIEnabled() || list_available_)
     UpdateUI();
   else
     js_request_pending_ = true;
@@ -125,7 +125,7 @@ void CrashesDOMHandler::OnCrashListAvailable() {
 }
 
 void CrashesDOMHandler::UpdateUI() {
-  bool crash_reporting_enabled = CrashesUI::CrashReportingEnabled();
+  bool crash_reporting_enabled = CrashesUI::CrashReportingUIEnabled();
   ListValue crash_list;
 
   if (crash_reporting_enabled) {
@@ -175,15 +175,22 @@ base::RefCountedMemory* CrashesUI::GetFaviconResourceBytes(
 }
 
 // static
-bool CrashesUI::CrashReportingEnabled() {
-#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
-  PrefService* prefs = g_browser_process->local_state();
-  return prefs->GetBoolean(prefs::kMetricsReportingEnabled);
-#elif defined(GOOGLE_CHROME_BUILD) && defined(OS_CHROMEOS)
+bool CrashesUI::CrashReportingUIEnabled() {
+#if defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_CHROMEOS)
   bool reporting_enabled = false;
   chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
                                             &reporting_enabled);
   return reporting_enabled;
+#elif defined(OS_ANDROID)
+  // Android has it's own setings for metrics / crash uploading.
+  // Crashes are uploaded depending on connection availablity
+  // varies from time to time. Lets just show this page all the time.
+  return true;
+#else
+  PrefService* prefs = g_browser_process->local_state();
+  return prefs->GetBoolean(prefs::kMetricsReportingEnabled);
+#endif
 #else
   return false;
 #endif
