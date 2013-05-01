@@ -242,7 +242,7 @@ Node::InsertionNotificationRequest SVGSMILElement::insertedInto(ContainerNode* r
         return InsertionDone;
 
     // Verify we are not in <use> instance tree.
-    ASSERT(!isInShadowTree());
+    ASSERT(!isInShadowTree() || !parentOrShadowHostElement() || !parentOrShadowHostElement()->isSVGElement());
 
     setAttributeName(constructQualifiedName(this, fastGetAttribute(SVGNames::attributeNameAttr)));
     SVGSVGElement* owner = ownerSVGElement();
