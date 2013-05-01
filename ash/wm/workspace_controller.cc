@@ -62,7 +62,8 @@ void WorkspaceController::OnWindowActivated(aura::Window* gained_active,
 void WorkspaceController::OnAttemptToReactivateWindow(
     aura::Window* request_active,
     aura::Window* actual_active) {
-  if (ash::Shell::GetInstance()->IsSystemModalWindowOpen()) {
+  if (ash::Shell::GetInstance()->IsSystemModalWindowOpen() &&
+      viewport_->Contains(request_active)) {
     // While a system model dialog is showing requests to activate a window
     // other than that of the modal dialog fail. Outside of this function we
     // only switch the active workspace when activation changes. That prevents
