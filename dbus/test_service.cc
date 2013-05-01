@@ -46,7 +46,7 @@ TestService::~TestService() {
 
 bool TestService::StartService() {
   base::Thread::Options thread_options;
-  thread_options.message_loop_type = MessageLoop::TYPE_IO;
+  thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
   return StartWithOptions(thread_options);
 }
 
@@ -153,7 +153,7 @@ void TestService::OnExported(const std::string& interface_name,
     on_all_methods_exported_.Signal();
 }
 
-void TestService::Run(MessageLoop* message_loop) {
+void TestService::Run(base::MessageLoop* message_loop) {
   Bus::Options bus_options;
   bus_options.bus_type = Bus::SESSION;
   bus_options.connection_type = Bus::PRIVATE;

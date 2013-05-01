@@ -87,11 +87,11 @@ TEST(BusTest, GetObjectProxyIgnoreUnknownService) {
 
 TEST(BusTest, RemoveObjectProxy) {
   // Setup the current thread's MessageLoop.
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
 
   // Start the D-Bus thread.
   base::Thread::Options thread_options;
-  thread_options.message_loop_type = MessageLoop::TYPE_IO;
+  thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
   base::Thread dbus_thread("D-Bus thread");
   dbus_thread.StartWithOptions(thread_options);
 
@@ -171,7 +171,7 @@ TEST(BusTest, GetExportedObject) {
 TEST(BusTest, UnregisterExportedObject) {
   // Start the D-Bus thread.
   base::Thread::Options thread_options;
-  thread_options.message_loop_type = MessageLoop::TYPE_IO;
+  thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
   base::Thread dbus_thread("D-Bus thread");
   dbus_thread.StartWithOptions(thread_options);
 
@@ -221,7 +221,7 @@ TEST(BusTest, ShutdownAndBlock) {
 TEST(BusTest, ShutdownAndBlockWithDBusThread) {
   // Start the D-Bus thread.
   base::Thread::Options thread_options;
-  thread_options.message_loop_type = MessageLoop::TYPE_IO;
+  thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
   base::Thread dbus_thread("D-Bus thread");
   dbus_thread.StartWithOptions(thread_options);
 

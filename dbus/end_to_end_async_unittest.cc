@@ -41,7 +41,7 @@ class EndToEndAsyncTest : public testing::Test {
     // Start the D-Bus thread.
     dbus_thread_.reset(new base::Thread("D-Bus Thread"));
     base::Thread::Options thread_options;
-    thread_options.message_loop_type = MessageLoop::TYPE_IO;
+    thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
     ASSERT_TRUE(dbus_thread_->StartWithOptions(thread_options));
 
     // Start the test service, using the D-Bus thread.
@@ -253,7 +253,7 @@ class EndToEndAsyncTest : public testing::Test {
     message_loop_.Run();
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   std::vector<std::string> response_strings_;
   std::vector<std::string> error_names_;
   scoped_ptr<base::Thread> dbus_thread_;
@@ -537,7 +537,7 @@ TEST_F(EndToEndAsyncTest, EmptyResponseCallback) {
                             dbus::ObjectProxy::EmptyResponseCallback());
   // Post a delayed task to quit the message loop.
   message_loop_.PostDelayedTask(FROM_HERE,
-                                MessageLoop::QuitClosure(),
+                                base::MessageLoop::QuitClosure(),
                                 TestTimeouts::tiny_timeout());
   message_loop_.Run();
   // We cannot tell if the empty callback is called, but at least we can

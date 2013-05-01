@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
 
   base::Thread* dbus_thread = new base::Thread("D-Bus Thread");
   base::Thread::Options thread_options;
-  thread_options.message_loop_type = MessageLoop::TYPE_IO;
+  thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
   CHECK(dbus_thread->StartWithOptions(thread_options));
 
   dbus::TestService::Options options;

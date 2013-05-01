@@ -50,23 +50,19 @@ class Watch : public base::MessagePumpLibevent::Watcher {
     const int file_descriptor = dbus_watch_get_unix_fd(raw_watch_);
     const int flags = dbus_watch_get_flags(raw_watch_);
 
-    MessageLoopForIO::Mode mode = MessageLoopForIO::WATCH_READ;
+    base::MessageLoopForIO::Mode mode = base::MessageLoopForIO::WATCH_READ;
     if ((flags & DBUS_WATCH_READABLE) && (flags & DBUS_WATCH_WRITABLE))
-      mode = MessageLoopForIO::WATCH_READ_WRITE;
+      mode = base::MessageLoopForIO::WATCH_READ_WRITE;
     else if (flags & DBUS_WATCH_READABLE)
-      mode = MessageLoopForIO::WATCH_READ;
+      mode = base::MessageLoopForIO::WATCH_READ;
     else if (flags & DBUS_WATCH_WRITABLE)
-      mode = MessageLoopForIO::WATCH_WRITE;
+      mode = base::MessageLoopForIO::WATCH_WRITE;
     else
       NOTREACHED();
 
     const bool persistent = true;  // Watch persistently.
-    const bool success = MessageLoopForIO::current()->WatchFileDescriptor(
-        file_descriptor,
-        persistent,
-        mode,
-        &file_descriptor_watcher_,
-        this);
+    const bool success = base::MessageLoopForIO::current()->WatchFileDescriptor(
+        file_descriptor, persistent, mode, &file_descriptor_watcher_, this);
     CHECK(success) << "Unable to allocate memory";
   }
 
@@ -196,8 +192,8 @@ Bus::Bus(const Options& options)
   dbus_threads_init_default();
   // The origin message loop is unnecessary if the client uses synchronous
   // functions only.
-  if (MessageLoop::current())
-    origin_task_runner_ =  MessageLoop::current()->message_loop_proxy();
+  if (base::MessageLoop::current())
+    origin_task_runner_ = base::MessageLoop::current()->message_loop_proxy();
 }
 
 Bus::~Bus() {
