@@ -112,8 +112,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
       float width;
       if (*iter && iter->drawing_info().IsReadyToDraw()) {
         ManagedTileState::DrawingInfo::Mode mode = iter->drawing_info().mode();
-        if (mode == ManagedTileState::DrawingInfo::SOLID_COLOR_MODE ||
-            mode == ManagedTileState::DrawingInfo::TRANSPARENT_MODE) {
+        if (mode == ManagedTileState::DrawingInfo::SOLID_COLOR_MODE) {
           color = DebugColors::SolidColorTileBorderColor();
           width = DebugColors::SolidColorTileBorderWidth(layer_tree_impl());
         } else if (mode == ManagedTileState::DrawingInfo::PICTURE_PILE_MODE) {
@@ -238,8 +237,6 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
         quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
         break;
       }
-      case ManagedTileState::DrawingInfo::TRANSPARENT_MODE:
-        break;
       default:
         NOTREACHED();
     }

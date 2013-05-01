@@ -161,11 +161,10 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
       skia::LazyPixelRef* pixel_ref,
       RenderingStatsInstrumentation* stats_instrumentation);
 
-  static void RecordSolidColorPredictorResults(const SkColor* actual_colors,
+  static void RecordSolidColorPredictorResults(const SkPMColor* actual_colors,
                                                size_t color_count,
                                                bool is_predicted_solid,
-                                               SkColor predicted_color,
-                                               bool is_predicted_transparent);
+                                               SkPMColor predicted_color);
 
   TileManagerClient* client_;
   scoped_ptr<ResourcePool> resource_pool_;

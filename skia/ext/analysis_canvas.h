@@ -30,8 +30,8 @@ class SK_API AnalysisCanvas : public SkCanvas {
   AnalysisCanvas(AnalysisDevice*);
   virtual ~AnalysisCanvas();
 
+  // Returns true when a SkColor can be used to represent result.
   bool getColorIfSolid(SkColor* color) const;
-  bool isTransparent() const;
   bool hasText() const;
   void consumeLazyPixelRefs(LazyPixelRefList* pixelRefs);
 
@@ -69,7 +69,6 @@ class SK_API AnalysisDevice : public SkDevice {
   virtual ~AnalysisDevice();
 
   bool getColorIfSolid(SkColor* color) const;
-  bool isTransparent() const;
   bool hasText() const;
   void consumeLazyPixelRefs(LazyPixelRefList* pixelRefs);
 

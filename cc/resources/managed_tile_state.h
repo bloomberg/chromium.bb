@@ -31,7 +31,6 @@ class CC_EXPORT ManagedTileState {
       enum Mode {
         RESOURCE_MODE,
         SOLID_COLOR_MODE,
-        TRANSPARENT_MODE,
         PICTURE_PILE_MODE,
         NUM_MODES
       };
@@ -84,11 +83,6 @@ class CC_EXPORT ManagedTileState {
         mode_ = RESOURCE_MODE;
         if (memory_state_ == NOT_ALLOWED_TO_USE_MEMORY)
           memory_state_ = CAN_USE_MEMORY;
-      }
-
-      void set_transparent() {
-        mode_ = TRANSPARENT_MODE;
-        memory_state_ = NOT_ALLOWED_TO_USE_MEMORY;
       }
 
       void set_solid_color(const SkColor& color) {

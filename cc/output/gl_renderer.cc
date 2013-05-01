@@ -5,6 +5,7 @@
 #include "cc/output/gl_renderer.h"
 
 #include <algorithm>
+#include <limits>
 #include <set>
 #include <string>
 #include <vector>
@@ -1113,6 +1114,14 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
   SetBlendEnabled(quad->ShouldDrawWithBlending());
   gfx::Rect tile_rect = quad->visible_rect;
 
+  SkColor color = quad->color;
+  float opacity = quad->opacity();
+  float alpha = (SkColorGetA(color) * (1.0f / 255.0f)) * opacity;
+
+  // Early out if alpha is small enough that quad doesn't contribute to output.
+  if (alpha < std::numeric_limits<float>::epsilon())
+    return;
+
   gfx::Transform device_transform =
       frame->window_matrix * frame->projection_matrix * quad->quadTransform();
   device_transform.FlattenTo2d();
@@ -1130,10 +1139,6 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
   else
     SolidColorUniformLocation(GetSolidColorProgram(), &uniforms);
   SetUseProgram(uniforms.program);
-
-  SkColor color = quad->color;
-  float opacity = quad->opacity();
-  float alpha = (SkColorGetA(color) * (1.0f / 255.0f)) * opacity;
 
   GLC(Context(),
       Context()->uniform4f(uniforms.color_location,

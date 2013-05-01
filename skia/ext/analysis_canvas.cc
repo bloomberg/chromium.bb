@@ -85,13 +85,15 @@ AnalysisDevice::~AnalysisDevice() {
 }
 
 bool AnalysisDevice::getColorIfSolid(SkColor* color) const {
-  if (isSolidColor_)
+  if (isTransparent_) {
+    *color = SK_ColorTRANSPARENT;
+    return true;
+  }
+  if (isSolidColor_) {
     *color = color_;
-  return isSolidColor_;
-}
-
-bool AnalysisDevice::isTransparent() const {
-  return isTransparent_;
+    return true;
+  }
+  return false;
 }
 
 bool AnalysisDevice::hasText() const {
@@ -346,10 +348,6 @@ AnalysisCanvas::~AnalysisCanvas() {
 
 bool AnalysisCanvas::getColorIfSolid(SkColor* color) const {
   return (static_cast<AnalysisDevice*>(getDevice()))->getColorIfSolid(color);
-}
-
-bool AnalysisCanvas::isTransparent() const {
-  return (static_cast<AnalysisDevice*>(getDevice()))->isTransparent();
 }
 
 bool AnalysisCanvas::hasText() const {

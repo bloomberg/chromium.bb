@@ -67,7 +67,6 @@ bool ManagedTileState::DrawingInfo::IsReadyToDraw() const {
               (memory_state_ == USING_UNRELEASABLE_MEMORY && forced_upload_)) &&
              resource_->id();
     case SOLID_COLOR_MODE:
-    case TRANSPARENT_MODE:
     case PICTURE_PILE_MODE:
       return true;
     default:
@@ -94,8 +93,10 @@ scoped_ptr<base::Value> ManagedTileState::AsValue() const {
   state->Set("distance_to_visible_in_pixels",
       MathUtil::AsValueSafely(distance_to_visible_in_pixels).release());
   state->SetBoolean("is_picture_pile_analyzed", picture_pile_analyzed);
-  state->SetBoolean("is_transparent", picture_pile_analysis.is_transparent);
   state->SetBoolean("is_solid_color", picture_pile_analysis.is_solid_color);
+  state->SetBoolean("is_transparent",
+                    picture_pile_analysis.is_solid_color &&
+                    !SkColorGetA(picture_pile_analysis.solid_color));
   return state.PassAs<base::Value>();
 }
 

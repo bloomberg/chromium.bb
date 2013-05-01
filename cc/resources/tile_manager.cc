@@ -639,19 +639,13 @@ void TileManager::AnalyzeTile(Tile* tile) {
         &managed_tile_state.picture_pile_analysis);
     managed_tile_state.picture_pile_analysis.is_solid_color &=
         use_color_estimator_;
-    managed_tile_state.picture_pile_analysis.is_transparent &=
-        use_color_estimator_;
     managed_tile_state.picture_pile_analyzed = true;
     managed_tile_state.need_to_gather_pixel_refs = false;
     managed_tile_state.pending_pixel_refs.swap(
         managed_tile_state.picture_pile_analysis.lazy_pixel_refs);
-
     if (managed_tile_state.picture_pile_analysis.is_solid_color) {
       tile->drawing_info().set_solid_color(
-        managed_tile_state.picture_pile_analysis.solid_color);
-      DidFinishTileInitialization(tile);
-    } else if (managed_tile_state.picture_pile_analysis.is_transparent) {
-      tile->drawing_info().set_transparent();
+          managed_tile_state.picture_pile_analysis.solid_color);
       DidFinishTileInitialization(tile);
     }
   }
@@ -893,11 +887,10 @@ void TileManager::RunRasterTask(
                 static_cast<size_t>(bitmap.width() * bitmap.bytesPerPixel()));
 
       RecordSolidColorPredictorResults(
-          reinterpret_cast<SkColor*>(bitmap.getPixels()),
+          reinterpret_cast<SkPMColor*>(bitmap.getPixels()),
           bitmap.getSize() / bitmap.bytesPerPixel(),
           analysis.is_solid_color,
-          analysis.solid_color,
-          analysis.is_transparent);
+          SkPreMultiplyColor(analysis.solid_color));
     }
   } else {
     picture_pile->Raster(&canvas, rect, contents_scale, NULL);
@@ -906,53 +899,36 @@ void TileManager::RunRasterTask(
 
 // static
 void TileManager::RecordSolidColorPredictorResults(
-    const SkColor* actual_colors,
+    const SkPMColor* actual_colors,
     size_t color_count,
     bool is_predicted_solid,
-    SkColor predicted_color,
-    bool is_predicted_transparent) {
+    SkPMColor predicted_color) {
   DCHECK_GT(color_count, 0u);
 
   bool is_actually_solid = true;
-  bool is_transparent = true;
 
-  SkColor actual_color = *actual_colors;
+  SkPMColor actual_color = *actual_colors;
   for (unsigned int i = 0; i < color_count; ++i) {
-    SkColor current_color = actual_colors[i];
-    if (current_color != actual_color ||
-        SkColorGetA(current_color) != 255)
-      is_actually_solid = false;
+    SkPMColor current_color = actual_colors[i];
+    if (current_color == actual_color)
+      continue;
 
-    if (SkColorGetA(current_color) != 0)
-      is_transparent = false;
-
-    if (!is_actually_solid && !is_transparent)
-      break;
+    is_actually_solid = false;
+    break;
   }
 
-  if (is_predicted_solid && !is_actually_solid)
-    HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.WrongActualNotSolid", true);
-  else if (is_predicted_solid &&
-           is_actually_solid &&
-           predicted_color != actual_color)
-    HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.WrongColor", true);
-  else if (!is_predicted_solid && is_actually_solid)
-    HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.WrongActualSolid", true);
-
-  bool correct_guess = (is_predicted_solid && is_actually_solid &&
-                        predicted_color == actual_color) ||
-                       (!is_predicted_solid && !is_actually_solid);
-  HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.Accuracy", correct_guess);
-
-  if (correct_guess)
-    HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.IsCorrectSolid",
-                          is_predicted_solid);
-
-  if (is_predicted_transparent)
-    HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.PredictedTransparentIsActually",
-                      is_transparent);
-  HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.IsActuallyTransparent",
-                    is_transparent);
+  HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.WrongActualNotSolid",
+                    is_predicted_solid && !is_actually_solid);
+  HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.WrongActualSolid",
+                    !is_predicted_solid && is_actually_solid);
+  HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.WrongColor",
+                    is_predicted_solid && predicted_color != actual_color);
+  HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.Accuracy",
+                    is_predicted_solid == is_actually_solid &&
+                    (!is_predicted_solid || predicted_color == actual_color));
+  HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.IsCorrectSolid",
+                    is_predicted_solid == is_actually_solid &&
+                    (is_predicted_solid && predicted_color == actual_color));
 }
 
 // static
