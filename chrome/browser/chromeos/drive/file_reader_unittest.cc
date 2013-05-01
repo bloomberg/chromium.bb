@@ -13,8 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/rand_util.h"
-#include "base/sequenced_task_runner.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -65,23 +64,19 @@ class DriveFileReaderTest : public ::testing::Test {
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    worker_pool_ = new base::SequencedWorkerPool(1, "FileReaderTest");
-    file_reader_.reset(new FileReader(
-        worker_pool_->GetSequencedTaskRunner(
-            worker_pool_->GetSequenceToken())));
+    worker_thread_.reset(new base::Thread("DriveFileReaderTest"));
+    ASSERT_TRUE(worker_thread_->Start());
+    file_reader_.reset(new FileReader(worker_thread_->message_loop_proxy()));
   }
 
   virtual void TearDown() OVERRIDE {
     file_reader_.reset();
-
-    // Wait that the file close operation is completed.
-    worker_pool_->FlushForTesting();
-    worker_pool_ = NULL;
+    worker_thread_.reset();
   }
 
   MessageLoop message_loop_;
   base::ScopedTempDir temp_dir_;
-  scoped_refptr<base::SequencedWorkerPool> worker_pool_;
+  scoped_ptr<base::Thread> worker_thread_;
   scoped_ptr<FileReader> file_reader_;
 };
 
