@@ -44,6 +44,7 @@
 #include "core/platform/text/TextCheckerClient.h"
 #include "modules/device_orientation/DeviceMotionClient.h"
 
+#include <public/WebScreenInfo.h>
 #include <v8.h>
 
 /*
@@ -136,7 +137,7 @@ public:
 
     virtual IntPoint screenToRootView(const IntPoint& p) const OVERRIDE { return p; }
     virtual IntRect rootViewToScreen(const IntRect& r) const OVERRIDE { return r; }
-    virtual PlatformPageClient platformPageClient() const { return 0; }
+    virtual WebKit::WebScreenInfo screenInfo() const OVERRIDE { return WebKit::WebScreenInfo(); }
     virtual void contentsSizeChanged(Frame*, const IntSize&) const { }
 
     virtual void scrollbarsModeDidChange() const { }

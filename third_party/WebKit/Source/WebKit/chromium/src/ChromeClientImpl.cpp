@@ -543,6 +543,11 @@ IntRect ChromeClientImpl::rootViewToScreen(const IntRect& rect) const
     return screenRect;
 }
 
+WebScreenInfo ChromeClientImpl::screenInfo() const
+{
+    return m_webView->client() ? m_webView->client()->screenInfo() : WebScreenInfo();
+}
+
 void ChromeClientImpl::contentsSizeChanged(Frame* frame, const IntSize& size) const
 {
     m_webView->didChangeContentsSize();
@@ -905,11 +910,6 @@ void ChromeClientImpl::postAccessibilityNotification(AccessibilityObject* obj, A
     // Alert assistive technology about the accessibility object notification.
     if (obj)
         m_webView->client()->postAccessibilityNotification(WebAccessibilityObject(obj), toWebAccessibilityNotification(notification));
-}
-
-WebKit::WebScreenInfo ChromeClientImpl::screenInfo()
-{
-    return m_webView->client()->screenInfo();
 }
 
 bool ChromeClientImpl::paintCustomOverhangArea(GraphicsContext* context, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect)

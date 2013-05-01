@@ -48,6 +48,7 @@
 #include "core/rendering/RenderObject.h"
 #include "core/storage/StorageNamespace.h"
 #include "modules/geolocation/Geolocation.h"
+#include <public/WebScreenInfo.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 #include <wtf/text/StringBuilder.h>
@@ -105,9 +106,9 @@ IntRect Chrome::rootViewToScreen(const IntRect& rect) const
     return m_client->rootViewToScreen(rect);
 }
 
-PlatformPageClient Chrome::platformPageClient() const
+WebKit::WebScreenInfo Chrome::screenInfo() const
 {
-    return m_client->platformPageClient();
+    return m_client->screenInfo();
 }
 
 void Chrome::contentsSizeChanged(Frame* frame, const IntSize& size) const

@@ -33,65 +33,60 @@
 
 #include "core/platform/HostWindow.h"
 #include "core/platform/ScrollView.h"
-#include "core/platform/Widget.h"
-#include "core/platform/chromium/PageClientChromium.h"
 #include "core/platform/graphics/FloatRect.h"
 #include <public/Platform.h>
 #include <public/WebScreenInfo.h>
 
 namespace WebCore {
 
-static PlatformPageClient toPlatformPageClient(Widget* widget)
+static HostWindow* toHostWindow(Widget* widget)
 {
     if (!widget)
         return 0;
     ScrollView* root = widget->root();
     if (!root)
         return 0;
-    HostWindow* hostWindow = root->hostWindow();
-    if (!hostWindow)
-        return 0;
-    return hostWindow->platformPageClient();
+    return root->hostWindow();
 }
 
 int screenDepth(Widget* widget)
 {
-    PlatformPageClient client = toPlatformPageClient(widget);
-    if (!client)
+    HostWindow* hostWindow = toHostWindow(widget);
+    if (!hostWindow)
         return 0;
-    return client->screenInfo().depth;
+    return hostWindow->screenInfo().depth;
 }
 
 int screenDepthPerComponent(Widget* widget)
 {
-    PlatformPageClient client = toPlatformPageClient(widget);
-    if (!client)
+    HostWindow* hostWindow = toHostWindow(widget);
+    if (!hostWindow)
         return 0;
-    return client->screenInfo().depthPerComponent;
+    return hostWindow->screenInfo().depthPerComponent;
 }
 
 bool screenIsMonochrome(Widget* widget)
 {
-    PlatformPageClient client = toPlatformPageClient(widget);
-    if (!client)
+    HostWindow* hostWindow = toHostWindow(widget);
+    if (!hostWindow)
         return false;
-    return client->screenInfo().isMonochrome;
+    return hostWindow->screenInfo().isMonochrome;
 }
 
 FloatRect screenRect(Widget* widget)
 {
-    PlatformPageClient client = toPlatformPageClient(widget);
-    if (!client)
+    HostWindow* hostWindow = toHostWindow(widget);
+    if (!hostWindow)
         return FloatRect();
-    return IntRect(client->screenInfo().rect);
+    return IntRect(hostWindow->screenInfo().rect);
 }
 
 FloatRect screenAvailableRect(Widget* widget)
 {
-    PlatformPageClient client = toPlatformPageClient(widget);
-    if (!client)
+    HostWindow* hostWindow = toHostWindow(widget);
+    if (!hostWindow)
         return FloatRect();
-    return IntRect(client->screenInfo().availableRect);
+    return IntRect(hostWindow->screenInfo().availableRect);
 }
 
 void screenColorProfile(ColorProfile& toProfile)

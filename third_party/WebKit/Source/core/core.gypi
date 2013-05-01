@@ -2623,7 +2623,6 @@
             'platform/chromium/LocalizedStringsChromium.cpp',
             'platform/chromium/MemoryUsageSupportChromium.cpp',
             'platform/chromium/MIMETypeRegistryChromium.cpp',
-            'platform/chromium/PageClientChromium.h',
             'platform/chromium/PasteboardChromium.cpp',
             'platform/chromium/PlatformKeyboardEventChromium.cpp',
             'platform/chromium/PlatformScreenChromium.cpp',

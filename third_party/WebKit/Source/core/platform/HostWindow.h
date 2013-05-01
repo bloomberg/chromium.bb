@@ -26,11 +26,18 @@
 #ifndef HostWindow_h
 #define HostWindow_h
 
-#include "core/platform/Widget.h"
+#include "wtf/FastAllocBase.h"
+#include "wtf/Noncopyable.h"
+
+namespace WebKit {
+struct WebScreenInfo;
+}
 
 namespace WebCore {
-
 class Cursor;
+class IntPoint;
+class IntRect;
+class IntSize;
 
 class HostWindow {
     WTF_MAKE_NONCOPYABLE(HostWindow); WTF_MAKE_FAST_ALLOCATED;
@@ -51,9 +58,8 @@ public:
     virtual IntPoint screenToRootView(const IntPoint&) const = 0;
     virtual IntRect rootViewToScreen(const IntRect&) const = 0;
 
-    // Method for retrieving the native client of the page.
-    virtual PlatformPageClient platformPageClient() const = 0;
-    
+    virtual WebKit::WebScreenInfo screenInfo() const = 0;
+
     // To notify WebKit of scrollbar mode changes.
     virtual void scrollbarsModeDidChange() const = 0;
 

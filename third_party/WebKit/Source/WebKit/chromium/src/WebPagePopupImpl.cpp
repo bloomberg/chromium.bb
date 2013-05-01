@@ -58,7 +58,7 @@ namespace WebKit {
 
 #if ENABLE(PAGE_POPUP)
 
-class PagePopupChromeClient : public EmptyChromeClient, public WebCore::PageClientChromium {
+class PagePopupChromeClient : public EmptyChromeClient {
     WTF_MAKE_NONCOPYABLE(PagePopupChromeClient);
     WTF_MAKE_FAST_ALLOCATED;
 
@@ -118,6 +118,11 @@ private:
         m_popup->widgetClient()->scheduleAnimation();
     }
 
+    virtual WebScreenInfo screenInfo() const OVERRIDE
+    {
+        return m_popup->m_webView->client() ? m_popup->m_webView->client()->screenInfo() : WebScreenInfo();
+    }
+
     virtual void* webView() const OVERRIDE
     {
         return m_popup->m_webView;
@@ -126,11 +131,6 @@ private:
     virtual FloatSize minimumWindowSize() const OVERRIDE
     {
         return FloatSize(0, 0);
-    }
-
-    virtual PlatformPageClient platformPageClient() const OVERRIDE
-    {
-        return PlatformPageClient(this);
     }
 
     virtual void setCursor(const WebCore::Cursor& cursor) OVERRIDE
@@ -142,12 +142,6 @@ private:
     virtual void needTouchEvents(bool needsTouchEvents) OVERRIDE
     {
         m_popup->widgetClient()->hasTouchEventHandlers(needsTouchEvents);
-    }
-
-    // PageClientChromium methods:
-    virtual WebKit::WebScreenInfo screenInfo() OVERRIDE
-    {
-        return m_popup->m_webView->client()->screenInfo();
     }
 
     WebPagePopupImpl* m_popup;

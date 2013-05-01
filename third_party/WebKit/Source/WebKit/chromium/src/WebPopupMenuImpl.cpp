@@ -375,6 +375,11 @@ IntRect WebPopupMenuImpl::rootViewToScreen(const IntRect& rect) const
     return IntRect();
 }
 
+WebScreenInfo WebPopupMenuImpl::screenInfo() const
+{
+    return WebScreenInfo();
+}
+
 void WebPopupMenuImpl::scrollbarsModeDidChange() const
 {
     // Nothing to be done since we have no concept of different scrollbar modes.

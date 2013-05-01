@@ -121,7 +121,7 @@ public:
         const WebCore::IntRect& clipRect) OVERRIDE;
     virtual WebCore::IntPoint screenToRootView(const WebCore::IntPoint&) const OVERRIDE;
     virtual WebCore::IntRect rootViewToScreen(const WebCore::IntRect&) const OVERRIDE;
-    virtual PlatformPageClient platformPageClient() const OVERRIDE { return 0; }
+    virtual WebScreenInfo screenInfo() const OVERRIDE;
     virtual void scrollbarsModeDidChange() const OVERRIDE;
     virtual void setCursor(const WebCore::Cursor&) OVERRIDE;
     virtual void setCursorHiddenUntilMouseMoves(bool) OVERRIDE;

@@ -31,6 +31,7 @@
 #include "core/dom/Element.h"
 #include "core/page/FrameView.h"
 #include "core/rendering/RenderObject.h"
+#include <public/WebRect.h>
 #include <public/WebString.h>
 
 using namespace WebCore;
