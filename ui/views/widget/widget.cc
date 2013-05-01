@@ -944,7 +944,8 @@ bool Widget::SetInitialFocus() {
   if (!focus_on_creation_) {
     // If not focusing the window now, tell the focus manager which view to
     // focus when the window is restored.
-    focus_manager_->SetStoredFocusView(v);
+    if (v)
+      focus_manager_->SetStoredFocusView(v);
     return true;
   }
   if (v)

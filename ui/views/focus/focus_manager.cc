@@ -322,6 +322,10 @@ void FocusManager::SetFocusedViewWithReason(
   focused_view_ = view;
   if (old_focused_view)
     old_focused_view->Blur();
+  // Also make |focused_view_| the stored focus view. This way the stored focus
+  // view is remembered if focus changes are requested prior to a show or while
+  // hidden.
+  SetStoredFocusView(focused_view_);
   if (focused_view_)
     focused_view_->Focus();
 
@@ -330,8 +334,12 @@ void FocusManager::SetFocusedViewWithReason(
 }
 
 void FocusManager::ClearFocus() {
+  // SetFocusedView(NULL) is going to clear out the stored view to. We need to
+  // persist it in this case.
+  views::View* focused_view = GetStoredFocusView();
   SetFocusedView(NULL);
   ClearNativeFocus();
+  SetStoredFocusView(focused_view);
 }
 
 void FocusManager::StoreFocusedView(bool clear_native_focus) {
@@ -357,14 +365,7 @@ void FocusManager::StoreFocusedView(bool clear_native_focus) {
 }
 
 bool FocusManager::RestoreFocusedView() {
-  ViewStorage* view_storage = ViewStorage::GetInstance();
-  if (!view_storage) {
-    // This should never happen but bug 981648 seems to indicate it could.
-    NOTREACHED();
-    return false;
-  }
-
-  View* view = view_storage->RetrieveView(stored_focused_view_storage_id_);
+  View* view = GetStoredFocusView();
   if (view) {
     if (ContainsView(view)) {
       if (!view->IsFocusable() && view->IsAccessibilityFocusable()) {
@@ -404,6 +405,17 @@ void FocusManager::SetStoredFocusView(View* focus_view) {
     return;
 
   view_storage->StoreView(stored_focused_view_storage_id_, focus_view);
+}
+
+View* FocusManager::GetStoredFocusView() {
+  ViewStorage* view_storage = ViewStorage::GetInstance();
+  if (!view_storage) {
+    // This should never happen but bug 981648 seems to indicate it could.
+    NOTREACHED();
+    return NULL;
+  }
+
+  return view_storage->RetrieveView(stored_focused_view_storage_id_);
 }
 
 void FocusManager::ClearStoredFocusedView() {

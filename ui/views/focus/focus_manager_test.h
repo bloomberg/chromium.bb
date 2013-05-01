@@ -14,8 +14,7 @@ namespace views {
 
 class FocusChangeListener;
 
-class FocusManagerTest : public ViewsTestBase,
-                         public WidgetDelegate {
+class FocusManagerTest : public ViewsTestBase, public WidgetDelegate {
  public:
   FocusManagerTest();
   virtual ~FocusManagerTest();

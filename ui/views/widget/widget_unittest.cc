@@ -1187,7 +1187,9 @@ TEST_F(WidgetTest, KeyboardInputEvent) {
 }
 
 // Verifies bubbles result in a focus lost when shown.
-TEST_F(WidgetTest, FocusChangesOnBubble) {
+// TODO(msw): this tests relies on focus, it needs to be in
+// interactive_ui_tests.
+TEST_F(WidgetTest, DISABLED_FocusChangesOnBubble) {
   // Create a widget, show and activate it and focus the contents view.
   View* contents_view = new View;
   contents_view->set_focusable(true);

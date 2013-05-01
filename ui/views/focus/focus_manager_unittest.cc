@@ -719,4 +719,25 @@ TEST_F(FocusManagerTest, RotatePaneFocus) {
   EXPECT_EQ(v3, focus_manager->GetFocusedView());
 }
 
+// Verifies the stored focus view tracks the focused view.
+TEST_F(FocusManagerTest, ImplicitlyStoresFocus) {
+  views::View* v1 = new View;
+  v1->set_focusable(true);
+  GetContentsView()->AddChildView(v1);
+
+  views::View* v2 = new View;
+  v2->set_focusable(true);
+  GetContentsView()->AddChildView(v2);
+
+  // Verify a focus request on |v1| implicitly updates the stored focus view.
+  v1->RequestFocus();
+  EXPECT_TRUE(v1->HasFocus());
+  EXPECT_EQ(v1, GetWidget()->GetFocusManager()->GetStoredFocusView());
+
+  // Verify a focus request on |v2| implicitly updates the stored focus view.
+  v2->RequestFocus();
+  EXPECT_TRUE(v2->HasFocus());
+  EXPECT_EQ(v2, GetWidget()->GetFocusManager()->GetStoredFocusView());
+}
+
 }  // namespace views

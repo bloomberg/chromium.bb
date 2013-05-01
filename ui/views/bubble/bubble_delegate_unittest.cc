@@ -162,7 +162,8 @@ TEST_F(BubbleDelegateTest, ResetAnchorWidget) {
   EXPECT_TRUE(bubble_observer.widget_closed());
 }
 
-TEST_F(BubbleDelegateTest, InitiallyFocusedView) {
+// TODO(msw): test relies on focus and belongs in interactive_ui_tests.
+TEST_F(BubbleDelegateTest, DISABLED_InitiallyFocusedView) {
   // Create the anchor and parent widgets.
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;

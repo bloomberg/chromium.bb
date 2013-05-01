@@ -33,7 +33,19 @@
 #include "ui/aura/test/aura_test_helper.h"
 #endif
 
-#if defined(TOOLKIT_VIEWS)
+namespace {
+
+// The expected initial focus count.
+#if defined(OS_WIN) && !defined(USE_AURA)
+// On windows (non-aura) this code triggers activating the window. Activating
+// the window triggers clearing the focus then resetting it. This results in an
+// additional focus change.
+const int kInitialFocusCount = 2;
+#else
+const int kInitialFocusCount = 1;
+#endif
+
+}  // namespace
 
 class AccessibilityViewsDelegate : public views::TestViewsDelegate {
  public:
@@ -264,7 +276,7 @@ TEST_F(AccessibilityEventRouterViewsTest, TestToolbarContext) {
   MessageLoop::current()->RunUntilIdle();
 
   // Test that we got the event with the expected name and context.
-  EXPECT_EQ(1, focus_event_count_);
+  EXPECT_EQ(kInitialFocusCount, focus_event_count_);
   EXPECT_EQ(kButtonNameASCII, last_control_name_);
   EXPECT_EQ(kToolbarNameASCII, last_control_context_);
 
@@ -298,7 +310,7 @@ TEST_F(AccessibilityEventRouterViewsTest, TestAlertContext) {
   MessageLoop::current()->RunUntilIdle();
 
   // Test that we got the event with the expected name and context.
-  EXPECT_EQ(1, focus_event_count_);
+  EXPECT_EQ(kInitialFocusCount, focus_event_count_);
   EXPECT_EQ(kButtonNameASCII, last_control_name_);
   EXPECT_EQ(kAlertTextASCII, last_control_context_);
 
@@ -338,7 +350,7 @@ TEST_F(AccessibilityEventRouterViewsTest, StateChangeAfterNotification) {
   // Process anything in the event loop. Now we should get the notification,
   // and it should give us the new control name, not the old one.
   MessageLoop::current()->RunUntilIdle();
-  EXPECT_EQ(1, focus_event_count_);
+  EXPECT_EQ(kInitialFocusCount, focus_event_count_);
   EXPECT_EQ(kNewNameASCII, last_control_name_);
 
   window->CloseNow();
@@ -380,5 +392,3 @@ TEST_F(AccessibilityEventRouterViewsTest, NotificationOnDeletedObject) {
 
   window->CloseNow();
 }
-
-#endif  // defined(TOOLKIT_VIEWS)

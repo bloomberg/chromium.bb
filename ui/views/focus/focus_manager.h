@@ -202,6 +202,10 @@ class VIEWS_EXPORT FocusManager {
   // focus being set.
   void SetStoredFocusView(View* view);
 
+  // Returns the View that either currently has focus, or if no view has focus
+  // the view that last had focus.
+  View* GetStoredFocusView();
+
   // Clears the stored focused view.
   void ClearStoredFocusedView();
 

@@ -500,6 +500,17 @@ void NativeWidgetWin::SaveFocusOnDeactivate() {
 }
 
 void NativeWidgetWin::RestoreFocusOnActivate() {
+  // Mysteriously, this only appears to be needed support restoration of focus
+  // to a child hwnd when restoring its top level window from the minimized
+  // state. If we don't do this, then ::SetFocus() to that child HWND returns
+  // ERROR_INVALID_PARAMETER, despite both HWNDs being of the same thread.
+  // See http://crbug.com/125976 and
+  // chrome/browser/ui/views/native_widget_win_interactive_uitest.cc .
+  {
+    // Since this is a synthetic reset, we don't need to tell anyone about it.
+    AutoNativeNotificationDisabler disabler;
+    GetWidget()->GetFocusManager()->ClearFocus();
+  }
   RestoreFocusOnEnable();
 }
 
