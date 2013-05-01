@@ -545,6 +545,27 @@ drm_output_render(struct drm_output *output, pixman_region32_t *damage)
 }
 
 static void
+drm_output_set_gamma(struct weston_output *output_base,
+		     uint16_t size, uint16_t *r, uint16_t *g, uint16_t *b)
+{
+	int rc;
+	struct drm_output *output = (struct drm_output *) output_base;
+	struct drm_compositor *compositor = (struct drm_compositor *) output->base.compositor;
+
+	/* check */
+	if (output_base->gamma_size != size)
+		return;
+	if (!output->original_crtc)
+		return;
+
+	rc = drmModeCrtcSetGamma(compositor->drm.fd,
+				 output->crtc_id,
+				 size, r, g, b);
+	if (rc)
+		weston_log("set gamma failed: %m\n");
+}
+
+static void
 drm_output_repaint(struct weston_output *output_base,
 		   pixman_region32_t *damage)
 {
@@ -1798,6 +1819,9 @@ create_output_for_connector(struct drm_compositor *ec,
 	output->base.assign_planes = drm_assign_planes;
 	output->base.set_dpms = drm_set_dpms;
 	output->base.switch_mode = drm_output_switch_mode;
+
+	output->base.gamma_size = output->original_crtc->gamma_size;
+	output->base.set_gamma = drm_output_set_gamma;
 
 	weston_plane_init(&output->cursor_plane, 0, 0);
 	weston_plane_init(&output->fb_plane, 0, 0);

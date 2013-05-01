@@ -198,6 +198,13 @@ struct weston_output {
 	uint32_t backlight_current;
 	void (*set_backlight)(struct weston_output *output, uint32_t value);
 	void (*set_dpms)(struct weston_output *output, enum dpms_enum level);
+
+	uint16_t gamma_size;
+	void (*set_gamma)(struct weston_output *output,
+			  uint16_t size,
+			  uint16_t *r,
+			  uint16_t *g,
+			  uint16_t *b);
 };
 
 struct weston_xkb_info {
