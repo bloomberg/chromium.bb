@@ -353,7 +353,6 @@
 
 #if OS(DARWIN)
 #define WTF_USE_CF 1
-#define WTF_USE_WK_SCROLLBAR_PAINTER 1
 
 /* We can't override the global operator new and delete on OS(DARWIN) because
  * some object are allocated by WebKit and deallocated by the embedder. */
@@ -378,14 +377,9 @@
 #define HAVE_MMAP 1   
 #define HAVE_SIGNAL_H 1
 #define HAVE_STRINGS_H 1
-#define HAVE_SYS_PARAM_H 1
 #define HAVE_SYS_TIME_H 1 
 #define WTF_USE_PTHREADS 1
 #endif /* OS(UNIX) */
-
-#if OS(UNIX) && !OS(ANDROID)
-#define HAVE_LANGINFO_H 1
-#endif
 
 #if (OS(FREEBSD) || OS(OPENBSD)) && !defined(__GLIBC__)
 #define HAVE_PTHREAD_NP_H 1
@@ -410,13 +404,10 @@
 #endif
 
 #if OS(DARWIN)
-#define HAVE_MERGESORT 1
 #define HAVE_SYS_TIMEB_H 1
-#define WTF_USE_ACCELERATE 1
 #define HAVE_DISPATCH_H 1
 #define HAVE_MADV_FREE 1
 #define HAVE_PTHREAD_SETNAME_NP 1
-#define HAVE_HOSTED_CORE_ANIMATION 1
 #define HAVE_MADV_FREE_REUSE 1
 #endif /* OS(DARWIN) */
 
@@ -425,12 +416,6 @@
 #define HAVE_ALIGNED_MALLOC 1
 #define HAVE_ISDEBUGGERPRESENT 1
 #define HAVE_VIRTUALALLOC 1
-#endif
-
-/* FIXME: When all platforms' compositors can compute their own filter outsets, we should remove this define. 
-   https://bugs.webkit.org/show_bug.cgi?id=112830 */
-#if USE(CG)
-#define HAVE_COMPOSITOR_FILTER_OUTSETS 1
 #endif
 
 #if !defined(ENABLE_THREADING_LIBDISPATCH) && HAVE(DISPATCH_H)
