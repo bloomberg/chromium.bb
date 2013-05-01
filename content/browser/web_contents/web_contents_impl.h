@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/process.h"
+#include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/web_contents/navigation_controller_impl.h"
@@ -171,6 +172,10 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Invoked before a form repost warning is shown.
   void NotifyBeforeFormRepostWarningShow();
+
+  FrameTreeNode* GetFrameTreeRootForTesting() {
+    return frame_tree_root_.get();
+  }
 
   // WebContents ------------------------------------------------------
   virtual WebContentsDelegate* GetDelegate() OVERRIDE;
@@ -476,6 +481,7 @@ class CONTENT_EXPORT WebContentsImpl
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest,
                            CrossSiteCantPreemptAfterUnload);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, PendingContents);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, FrameTreeShape);
   FRIEND_TEST_ALL_PREFIXES(FormStructureBrowserTest, HTMLFiles);
   FRIEND_TEST_ALL_PREFIXES(NavigationControllerTest, HistoryNavigate);
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostManagerTest, PageDoesBackAndReload);
@@ -576,7 +582,10 @@ class CONTENT_EXPORT WebContentsImpl
                           const std::vector<SkBitmap>& bitmaps);
   void OnUpdateFaviconURL(int32 page_id,
                           const std::vector<FaviconURL>& candidates);
-  void OnFrameDetached(int64 frame_id);
+  void OnFrameAttached(int64 parent_frame_id,
+                       int64 frame_id,
+                       const std::string& frame_name);
+  void OnFrameDetached(int64 parent_frame_id, int64 frame_id);
 
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished
@@ -685,6 +694,8 @@ class CONTENT_EXPORT WebContentsImpl
 
   RenderViewHostImpl* GetRenderViewHostImpl();
 
+  FrameTreeNode* FindFrameTreeNodeByID(int64 frame_id);
+
   // Removes browser plugin embedder if there is one.
   void RemoveBrowserPluginEmbedder();
 
@@ -787,6 +798,9 @@ class CONTENT_EXPORT WebContentsImpl
 
   // True if this is a secure page which displayed insecure content.
   bool displayed_insecure_content_;
+
+  // The frame tree structure of the current page.
+  scoped_ptr<FrameTreeNode> frame_tree_root_;
 
   // Data for misc internal state ----------------------------------------------
 

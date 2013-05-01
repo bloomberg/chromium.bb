@@ -2172,8 +2172,17 @@ IPC_MESSAGE_CONTROL3(ViewHostMsg_DidLose3DContext,
                      content::ThreeDAPIType /* context_type */,
                      int /* arb_robustness_status_code */)
 
-// Notifies the browser that the frame with the given id was detached.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_FrameDetached,
+// This message is sent when a frame is added to the DOM.
+IPC_MESSAGE_ROUTED3(ViewHostMsg_FrameAttached,
+                    int64 /* parent_frame_id*/,
+                    int64 /* frame_id */,
+                    std::string /* frame_name */)
+
+// Notifies the browser that the frame with the given id was detached. The
+// |parent_frame_id| is -1 for the top level frame, otherwise the id of the
+// immediate parent of the detached frame.
+IPC_MESSAGE_ROUTED2(ViewHostMsg_FrameDetached,
+                    int64 /* parent_frame_id */,
                     int64 /* frame_id */)
 
 // Notifies the browser that document has parsed the body. This is used by the

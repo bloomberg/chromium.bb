@@ -4,6 +4,7 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance_impl.h"
@@ -2048,6 +2049,84 @@ TEST_F(WebContentsImplTest, PendingContents) {
   int route_id = other_contents->GetRenderViewHost()->GetRoutingID();
   other_contents.reset();
   EXPECT_EQ(NULL, contents()->GetCreatedWindow(route_id));
+}
+
+// This test asserts the shape of the frame tree is correct, based on incoming
+// frame attached/detached messages.
+TEST_F(WebContentsImplTest, FrameTreeShape) {
+  std::string no_children_node("no children node");
+  std::string deep_subtree("node with deep subtree");
+
+  // The initial navigation will create a frame_tree_root_ node with the top
+  // level frame id. Simulate that by just creating it here.
+  contents()->frame_tree_root_.reset(
+      new FrameTreeNode(5, std::string("top-level")));
+
+  // Let's send a series of messages for frame attached and build the
+  // frame tree.
+  contents()->OnFrameAttached(5, 14, std::string());
+  contents()->OnFrameAttached(5, 15, std::string());
+  contents()->OnFrameAttached(5, 16, std::string());
+
+  contents()->OnFrameAttached(14, 244, std::string());
+  contents()->OnFrameAttached(14, 245, std::string());
+
+  contents()->OnFrameAttached(15, 255, no_children_node);
+
+  contents()->OnFrameAttached(16, 264, std::string());
+  contents()->OnFrameAttached(16, 265, std::string());
+  contents()->OnFrameAttached(16, 266, std::string());
+  contents()->OnFrameAttached(16, 267, deep_subtree);
+  contents()->OnFrameAttached(16, 268, std::string());
+
+  contents()->OnFrameAttached(267, 365, std::string());
+  contents()->OnFrameAttached(365, 455, std::string());
+  contents()->OnFrameAttached(455, 555, std::string());
+  contents()->OnFrameAttached(555, 655, std::string());
+
+  // Now, verify the tree structure is as expected.
+  FrameTreeNode* root = contents()->frame_tree_root_.get();
+  EXPECT_EQ(5, root->frame_id());
+  EXPECT_EQ(3UL, root->child_count());
+
+  EXPECT_EQ(2UL, root->child_at(0)->child_count());
+  EXPECT_EQ(0UL, root->child_at(0)->child_at(0)->child_count());
+  EXPECT_EQ(0UL, root->child_at(0)->child_at(1)->child_count());
+
+  EXPECT_EQ(1UL, root->child_at(1)->child_count());
+  EXPECT_EQ(0UL, root->child_at(1)->child_at(0)->child_count());
+  EXPECT_STREQ(no_children_node.c_str(),
+      root->child_at(1)->child_at(0)->frame_name().c_str());
+
+  EXPECT_EQ(5UL, root->child_at(2)->child_count());
+  EXPECT_EQ(0UL, root->child_at(2)->child_at(0)->child_count());
+  EXPECT_EQ(0UL, root->child_at(2)->child_at(1)->child_count());
+  EXPECT_EQ(0UL, root->child_at(2)->child_at(2)->child_count());
+  EXPECT_EQ(1UL, root->child_at(2)->child_at(3)->child_count());
+  EXPECT_STREQ(deep_subtree.c_str(),
+      root->child_at(2)->child_at(3)->frame_name().c_str());
+  EXPECT_EQ(0UL, root->child_at(2)->child_at(4)->child_count());
+
+  FrameTreeNode* deep_tree = root->child_at(2)->child_at(3)->child_at(0);
+  EXPECT_EQ(365, deep_tree->frame_id());
+  EXPECT_EQ(1UL, deep_tree->child_count());
+  EXPECT_EQ(455, deep_tree->child_at(0)->frame_id());
+  EXPECT_EQ(1UL, deep_tree->child_at(0)->child_count());
+  EXPECT_EQ(555, deep_tree->child_at(0)->child_at(0)->frame_id());
+  EXPECT_EQ(1UL, deep_tree->child_at(0)->child_at(0)->child_count());
+  EXPECT_EQ(655, deep_tree->child_at(0)->child_at(0)->child_at(0)->frame_id());
+  EXPECT_EQ(0UL,
+      deep_tree->child_at(0)->child_at(0)->child_at(0)->child_count());
+
+  // Test removing of nodes.
+  contents()->OnFrameDetached(555, 655);
+  EXPECT_EQ(0UL, deep_tree->child_at(0)->child_at(0)->child_count());
+
+  contents()->OnFrameDetached(16, 265);
+  EXPECT_EQ(4UL, root->child_at(2)->child_count());
+
+  contents()->OnFrameDetached(5, 15);
+  EXPECT_EQ(2UL, root->child_count());
 }
 
 }  // namespace content
