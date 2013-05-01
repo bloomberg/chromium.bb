@@ -361,6 +361,7 @@ void TileManager::AbortPendingTileUploads() {
         tile->drawing_info().resource_->id());
     resource_pool_->resource_provider()->ReleasePixelBuffer(
         tile->drawing_info().resource_->id());
+    tile->drawing_info().memory_state_ = USING_RELEASABLE_MEMORY;
 
     FreeResourcesForTile(tile);
 

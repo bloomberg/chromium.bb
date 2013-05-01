@@ -316,6 +316,7 @@ WorkerPool::~WorkerPool() {
 
 void WorkerPool::Shutdown() {
   inner_->Shutdown();
+  inner_->CollectCompletedTasks();
   DispatchCompletionCallbacks();
 }
 

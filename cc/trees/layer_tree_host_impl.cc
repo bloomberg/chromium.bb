@@ -925,23 +925,29 @@ void LayerTreeHostImpl::EnforceManagedMemoryPolicy(
   }
   client_->SendManagedMemoryStats();
 
-  if (tile_manager_) {
-    GlobalStateThatImpactsTilePriority new_state(tile_manager_->GlobalState());
-    new_state.memory_limit_in_bytes = visible_ ?
-                                      policy.bytes_limit_when_visible :
-                                      policy.bytes_limit_when_not_visible;
-    // TODO(reveman): We should avoid keeping around unused resources if
-    // possible. crbug.com/224475
-    new_state.unused_memory_limit_in_bytes = static_cast<size_t>(
-        (static_cast<int64>(new_state.memory_limit_in_bytes) *
-         settings_.max_unused_resource_memory_percentage) / 100);
-    new_state.memory_limit_policy =
-        ManagedMemoryPolicy::PriorityCutoffToTileMemoryLimitPolicy(
-            visible_ ?
-            policy.priority_cutoff_when_visible :
-            policy.priority_cutoff_when_not_visible);
-    tile_manager_->SetGlobalState(new_state);
-  }
+  UpdateTileManagerMemoryPolicy(policy);
+}
+
+void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
+    const ManagedMemoryPolicy& policy) {
+  if (!tile_manager_)
+    return;
+
+  GlobalStateThatImpactsTilePriority new_state(tile_manager_->GlobalState());
+  new_state.memory_limit_in_bytes = visible_ ?
+                                    policy.bytes_limit_when_visible :
+                                    policy.bytes_limit_when_not_visible;
+  // TODO(reveman): We should avoid keeping around unused resources if
+  // possible. crbug.com/224475
+  new_state.unused_memory_limit_in_bytes = static_cast<size_t>(
+      (static_cast<int64>(new_state.memory_limit_in_bytes) *
+       settings_.max_unused_resource_memory_percentage) / 100);
+  new_state.memory_limit_policy =
+      ManagedMemoryPolicy::PriorityCutoffToTileMemoryLimitPolicy(
+          visible_ ?
+          policy.priority_cutoff_when_visible :
+          policy.priority_cutoff_when_not_visible);
+  tile_manager_->SetGlobalState(new_state);
 }
 
 bool LayerTreeHostImpl::HasImplThread() const {
@@ -1376,6 +1382,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
                                         settings_.use_color_estimator,
                                         settings_.prediction_benchmarking,
                                         rendering_stats_instrumentation_));
+    UpdateTileManagerMemoryPolicy(managed_memory_policy_);
   }
 
   if (output_surface->capabilities().has_parent_compositor) {

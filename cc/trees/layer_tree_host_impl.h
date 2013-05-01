@@ -395,6 +395,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
       LayerImpl* root_draw_layer,
       const LayerImplList& render_surface_layer_list);
 
+  void UpdateTileManagerMemoryPolicy(const ManagedMemoryPolicy& policy);
+
   // Returns false if the frame should not be displayed. This function should
   // only be called from PrepareToDraw, as DidDrawAllLayers must be called
   // if this helper function is called.
