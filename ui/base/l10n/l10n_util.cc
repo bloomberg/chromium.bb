@@ -15,6 +15,7 @@
 #include "base/i18n/file_util_icu.h"
 #include "base/i18n/rtl.h"
 #include "base/i18n/string_compare.h"
+#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
@@ -359,6 +360,46 @@ std::string GetCanonicalLocale(const std::string& locale) {
   return base::i18n::GetCanonicalLocale(locale.c_str());
 }
 #endif
+
+struct AvailableLocalesTraits :
+    base::DefaultLazyInstanceTraits<std::vector<std::string> > {
+  static std::vector<std::string>* New(void* instance) {
+    std::vector<std::string>* locales =
+        base::DefaultLazyInstanceTraits<std::vector<std::string> >::New(
+            instance);
+    int num_locales = uloc_countAvailable();
+    for (int i = 0; i < num_locales; ++i) {
+      std::string locale_name = uloc_getAvailable(i);
+      // Filter out the names that have aliases.
+      if (IsDuplicateName(locale_name))
+        continue;
+      // Filter out locales for which we have only partially populated data
+      // and to which Chrome is not localized.
+      if (IsLocalePartiallyPopulated(locale_name))
+        continue;
+      if (!l10n_util::IsLocaleSupportedByOS(locale_name))
+        continue;
+      // Normalize underscores to hyphens because that's what our locale files
+      // use.
+      std::replace(locale_name.begin(), locale_name.end(), '_', '-');
+
+      // Map the Chinese locale names over to zh-CN and zh-TW.
+      if (LowerCaseEqualsASCII(locale_name, "zh-hans")) {
+        locale_name = "zh-CN";
+      } else if (LowerCaseEqualsASCII(locale_name, "zh-hant")) {
+        locale_name = "zh-TW";
+      }
+      locales->push_back(locale_name);
+    }
+
+    // Manually add 'es-419' to the list. See the comment in IsDuplicateName().
+    locales->push_back("es-419");
+    return locales;
+  }
+};
+
+base::LazyInstance<std::vector<std::string>, AvailableLocalesTraits >
+    g_available_locales = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -796,37 +837,7 @@ void SortStrings16(const std::string& locale,
 }
 
 const std::vector<std::string>& GetAvailableLocales() {
-  CR_DEFINE_STATIC_LOCAL(std::vector<std::string>, locales, ());
-  if (locales.empty()) {
-    int num_locales = uloc_countAvailable();
-    for (int i = 0; i < num_locales; ++i) {
-      std::string locale_name = uloc_getAvailable(i);
-      // Filter out the names that have aliases.
-      if (IsDuplicateName(locale_name))
-        continue;
-      // Filter out locales for which we have only partially populated data
-      // and to which Chrome is not localized.
-      if (IsLocalePartiallyPopulated(locale_name))
-        continue;
-      if (!IsLocaleSupportedByOS(locale_name))
-        continue;
-      // Normalize underscores to hyphens because that's what our locale files
-      // use.
-      std::replace(locale_name.begin(), locale_name.end(), '_', '-');
-
-      // Map the Chinese locale names over to zh-CN and zh-TW.
-      if (LowerCaseEqualsASCII(locale_name, "zh-hans")) {
-        locale_name = "zh-CN";
-      } else if (LowerCaseEqualsASCII(locale_name, "zh-hant")) {
-        locale_name = "zh-TW";
-      }
-      locales.push_back(locale_name);
-    }
-
-    // Manually add 'es-419' to the list. See the comment in IsDuplicateName().
-    locales.push_back("es-419");
-  }
-  return locales;
+  return g_available_locales.Get();
 }
 
 void GetAcceptLanguagesForLocale(const std::string& display_locale,
