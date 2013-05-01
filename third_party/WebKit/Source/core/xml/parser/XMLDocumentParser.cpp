@@ -83,9 +83,9 @@ using namespace HTMLNames;
 // FIXME: HTMLConstructionSite has a limit of 512, should these match?
 static const unsigned maxXMLTreeDepth = 5000;
 
-static inline String toString(const xmlChar* string, size_t size)
+static inline String toString(const xmlChar* string, size_t length)
 {
-    return String::fromUTF8(reinterpret_cast<const char*>(string), size);
+    return String::fromUTF8(reinterpret_cast<const char*>(string), length);
 }
 
 static inline String toString(const xmlChar* string)
@@ -93,9 +93,9 @@ static inline String toString(const xmlChar* string)
     return String::fromUTF8(reinterpret_cast<const char*>(string));
 }
 
-static inline AtomicString toAtomicString(const xmlChar* string, size_t size)
+static inline AtomicString toAtomicString(const xmlChar* string, size_t length)
 {
-    return AtomicString::fromUTF8(reinterpret_cast<const char*>(string), size);
+    return AtomicString::fromUTF8(reinterpret_cast<const char*>(string), length);
 }
 
 static inline AtomicString toAtomicString(const xmlChar* string)
@@ -103,138 +103,181 @@ static inline AtomicString toAtomicString(const xmlChar* string)
     return AtomicString::fromUTF8(reinterpret_cast<const char*>(string));
 }
 
-struct PendingStartElementNSCallback : public XMLDocumentParser::PendingCallback {
+class PendingStartElementNSCallback FINAL : public XMLDocumentParser::PendingCallback {
+public:
+    PendingStartElementNSCallback(const AtomicString& localName, const AtomicString& prefix, const AtomicString& uri,
+        int namespaceCount, const xmlChar** namespaces, int attributeCount, int defaultedCount, const xmlChar** attributes)
+        : m_localName(localName)
+        , m_prefix(prefix)
+        , m_uri(uri)
+        , m_namespaceCount(namespaceCount)
+        , m_attributeCount(attributeCount)
+        , m_defaultedCount(defaultedCount)
+    {
+        m_namespaces = static_cast<xmlChar**>(xmlMalloc(sizeof(xmlChar*) * namespaceCount * 2));
+        for (int i = 0; i < namespaceCount * 2 ; i++)
+            m_namespaces[i] = xmlStrdup(namespaces[i]);
+        m_attributes = static_cast<xmlChar**>(xmlMalloc(sizeof(xmlChar*) * attributeCount * 5));
+        for (int i = 0; i < attributeCount; i++) {
+            // Each attribute has 5 elements in the array:
+            // name, prefix, uri, value and an end pointer.
+            for (int j = 0; j < 3; j++)
+                m_attributes[i * 5 + j] = xmlStrdup(attributes[i * 5 + j]);
+            int length = attributes[i * 5 + 4] - attributes[i * 5 + 3];
+            m_attributes[i * 5 + 3] = xmlStrndup(attributes[i * 5 + 3], length);
+            m_attributes[i * 5 + 4] = m_attributes[i * 5 + 3] + length;
+        }
+    }
+
     virtual ~PendingStartElementNSCallback()
     {
-        xmlFree(xmlLocalName);
-        xmlFree(xmlPrefix);
-        xmlFree(xmlURI);
-        for (int i = 0; i < nb_namespaces * 2; i++)
-            xmlFree(namespaces[i]);
-        xmlFree(namespaces);
-        for (int i = 0; i < nb_attributes; i++)
+        for (int i = 0; i < m_namespaceCount * 2; i++)
+            xmlFree(m_namespaces[i]);
+        xmlFree(m_namespaces);
+        for (int i = 0; i < m_attributeCount; i++)
             for (int j = 0; j < 4; j++)
-                xmlFree(attributes[i * 5 + j]);
-        xmlFree(attributes);
+                xmlFree(m_attributes[i * 5 + j]);
+        xmlFree(m_attributes);
     }
 
-    virtual void call(XMLDocumentParser* parser)
+    virtual void call(XMLDocumentParser* parser) OVERRIDE
     {
-        parser->startElementNs(xmlLocalName, xmlPrefix, xmlURI,
-                                  nb_namespaces, const_cast<const xmlChar**>(namespaces),
-                                  nb_attributes, nb_defaulted, const_cast<const xmlChar**>(attributes));
+        parser->startElementNs(m_localName, m_prefix, m_uri,
+                                  m_namespaceCount, const_cast<const xmlChar**>(m_namespaces),
+                                  m_attributeCount, m_defaultedCount, const_cast<const xmlChar**>(m_attributes));
     }
 
-    xmlChar* xmlLocalName;
-    xmlChar* xmlPrefix;
-    xmlChar* xmlURI;
-    int nb_namespaces;
-    xmlChar** namespaces;
-    int nb_attributes;
-    int nb_defaulted;
-    xmlChar** attributes;
+private:
+    AtomicString m_localName;
+    AtomicString m_prefix;
+    AtomicString m_uri;
+    int m_namespaceCount;
+    xmlChar** m_namespaces;
+    int m_attributeCount;
+    int m_defaultedCount;
+    xmlChar** m_attributes;
 };
 
-struct PendingEndElementNSCallback : public XMLDocumentParser::PendingCallback {
-    virtual void call(XMLDocumentParser* parser)
+class PendingEndElementNSCallback FINAL : public XMLDocumentParser::PendingCallback {
+public:
+    virtual void call(XMLDocumentParser* parser) OVERRIDE
     {
         parser->endElementNs();
     }
 };
 
-struct PendingCharactersCallback : public XMLDocumentParser::PendingCallback {
+class PendingCharactersCallback FINAL : public XMLDocumentParser::PendingCallback {
+public:
+    PendingCharactersCallback(const xmlChar* chars, int length)
+        : m_chars(xmlStrndup(chars, length))
+        , m_length(length)
+    {
+    }
+
     virtual ~PendingCharactersCallback()
     {
-        xmlFree(s);
+        xmlFree(m_chars);
     }
 
-    virtual void call(XMLDocumentParser* parser)
+    virtual void call(XMLDocumentParser* parser) OVERRIDE
     {
-        parser->characters(s, len);
+        parser->characters(m_chars, m_length);
     }
 
-    xmlChar* s;
-    int len;
+private:
+    xmlChar* m_chars;
+    int m_length;
 };
 
-struct PendingProcessingInstructionCallback : public XMLDocumentParser::PendingCallback {
-    virtual ~PendingProcessingInstructionCallback()
+class PendingProcessingInstructionCallback FINAL : public XMLDocumentParser::PendingCallback {
+public:
+    PendingProcessingInstructionCallback(const String& target, const String& data)
+        : m_target(target)
+        , m_data(data)
     {
-        xmlFree(target);
-        xmlFree(data);
     }
 
-    virtual void call(XMLDocumentParser* parser)
+    virtual void call(XMLDocumentParser* parser) OVERRIDE
     {
-        parser->processingInstruction(target, data);
+        parser->processingInstruction(m_target, m_data);
     }
 
-    xmlChar* target;
-    xmlChar* data;
+private:
+    String m_target;
+    String m_data;
 };
 
-struct PendingCDATABlockCallback : public XMLDocumentParser::PendingCallback {
-    virtual ~PendingCDATABlockCallback()
+class PendingCDATABlockCallback FINAL : public XMLDocumentParser::PendingCallback {
+public:
+    explicit PendingCDATABlockCallback(const String& text) : m_text(text) { }
+
+    virtual void call(XMLDocumentParser* parser) OVERRIDE
     {
-        xmlFree(s);
+        parser->cdataBlock(m_text);
     }
 
-    virtual void call(XMLDocumentParser* parser)
-    {
-        parser->cdataBlock(s, len);
-    }
-
-    xmlChar* s;
-    int len;
+private:
+    String m_text;
 };
 
-struct PendingCommentCallback : public XMLDocumentParser::PendingCallback {
-    virtual ~PendingCommentCallback()
+class PendingCommentCallback FINAL : public XMLDocumentParser::PendingCallback {
+public:
+    explicit PendingCommentCallback(const String& text) : m_text(text) { }
+
+    virtual void call(XMLDocumentParser* parser) OVERRIDE
     {
-        xmlFree(s);
+        parser->comment(m_text);
     }
 
-    virtual void call(XMLDocumentParser* parser)
-    {
-        parser->comment(s);
-    }
-
-    xmlChar* s;
+private:
+    String m_text;
 };
 
-struct PendingInternalSubsetCallback : public XMLDocumentParser::PendingCallback {
-    virtual ~PendingInternalSubsetCallback()
+class PendingInternalSubsetCallback FINAL : public XMLDocumentParser::PendingCallback {
+public:
+    PendingInternalSubsetCallback(const String& name, const String& externalID, const String& systemID)
+        : m_name(name)
+        , m_externalID(externalID)
+        , m_systemID(systemID)
     {
-        xmlFree(name);
-        xmlFree(externalID);
-        xmlFree(systemID);
     }
 
-    virtual void call(XMLDocumentParser* parser)
+    virtual void call(XMLDocumentParser* parser) OVERRIDE
     {
-        parser->internalSubset(name, externalID, systemID);
+        parser->internalSubset(m_name, m_externalID, m_systemID);
     }
 
-    xmlChar* name;
-    xmlChar* externalID;
-    xmlChar* systemID;
+private:
+    String m_name;
+    String m_externalID;
+    String m_systemID;
 };
 
-struct PendingErrorCallback: public XMLDocumentParser::PendingCallback {
+class PendingErrorCallback FINAL : public XMLDocumentParser::PendingCallback {
+public:
+    PendingErrorCallback(XMLErrors::ErrorType type, const xmlChar* message, OrdinalNumber lineNumber, OrdinalNumber columnNumber)
+        : m_type(type)
+        , m_message(xmlStrdup(message))
+        , m_lineNumber(lineNumber)
+        , m_columnNumber(columnNumber)
+    {
+    }
+
     virtual ~PendingErrorCallback()
     {
-        xmlFree(message);
+        xmlFree(m_message);
     }
 
-    virtual void call(XMLDocumentParser* parser)
+    virtual void call(XMLDocumentParser* parser) OVERRIDE
     {
-        parser->handleError(type, reinterpret_cast<char*>(message), TextPosition(lineNumber, columnNumber));
+        parser->handleError(m_type, reinterpret_cast<char*>(m_message), TextPosition(m_lineNumber, m_columnNumber));
     }
 
-    XMLErrors::ErrorType type;
-    xmlChar* message;
-    OrdinalNumber lineNumber;
-    OrdinalNumber columnNumber;
+private:
+    XMLErrors::ErrorType m_type;
+    xmlChar* m_message;
+    OrdinalNumber m_lineNumber;
+    OrdinalNumber m_columnNumber;
 };
 
 void XMLDocumentParser::pushCurrentNode(ContainerNode* n)
@@ -303,9 +346,9 @@ void XMLDocumentParser::append(PassRefPtr<StringImpl> inputSource)
     ImageLoader::dispatchPendingBeforeLoadEvents();
 }
 
-void XMLDocumentParser::handleError(XMLErrors::ErrorType type, const char* m, TextPosition position)
+void XMLDocumentParser::handleError(XMLErrors::ErrorType type, const char* formattedMessage, TextPosition position)
 {
-    m_xmlErrors.handleError(type, m, position);
+    m_xmlErrors.handleError(type, formattedMessage, position);
     if (type != XMLErrors::warning)
         m_sawError = true;
     if (type == XMLErrors::fatal)
@@ -459,104 +502,6 @@ bool XMLDocumentParser::parseDocumentFragment(const String& chunk, DocumentFragm
     // and can cause crashes in the fragment case.
     parser->detach(); // Allows ~DocumentParser to assert it was detached before destruction.
     return wellFormed; // appendFragmentSource()'s wellFormed is more permissive than wellFormed().
-}
-
-void XMLDocumentParser::appendStartElementNSCallback(const xmlChar* xmlLocalName, const xmlChar* xmlPrefix, const xmlChar* xmlURI, int nb_namespaces,
-                                  const xmlChar** namespaces, int nb_attributes, int nb_defaulted, const xmlChar** attributes)
-{
-    OwnPtr<PendingStartElementNSCallback> callback = adoptPtr(new PendingStartElementNSCallback);
-
-    callback->xmlLocalName = xmlStrdup(xmlLocalName);
-    callback->xmlPrefix = xmlStrdup(xmlPrefix);
-    callback->xmlURI = xmlStrdup(xmlURI);
-    callback->nb_namespaces = nb_namespaces;
-    callback->namespaces = static_cast<xmlChar**>(xmlMalloc(sizeof(xmlChar*) * nb_namespaces * 2));
-    for (int i = 0; i < nb_namespaces * 2 ; i++)
-        callback->namespaces[i] = xmlStrdup(namespaces[i]);
-    callback->nb_attributes = nb_attributes;
-    callback->nb_defaulted = nb_defaulted;
-    callback->attributes = static_cast<xmlChar**>(xmlMalloc(sizeof(xmlChar*) * nb_attributes * 5));
-    for (int i = 0; i < nb_attributes; i++) {
-        // Each attribute has 5 elements in the array:
-        // name, prefix, uri, value and an end pointer.
-
-        for (int j = 0; j < 3; j++)
-            callback->attributes[i * 5 + j] = xmlStrdup(attributes[i * 5 + j]);
-
-        int len = attributes[i * 5 + 4] - attributes[i * 5 + 3];
-
-        callback->attributes[i * 5 + 3] = xmlStrndup(attributes[i * 5 + 3], len);
-        callback->attributes[i * 5 + 4] = callback->attributes[i * 5 + 3] + len;
-    }
-
-    m_pendingCallbacks.append(callback.release());
-}
-
-void XMLDocumentParser::appendEndElementNSCallback()
-{
-    m_pendingCallbacks.append(adoptPtr(new PendingEndElementNSCallback));
-}
-
-void XMLDocumentParser::appendCharactersCallback(const xmlChar* s, int len)
-{
-    OwnPtr<PendingCharactersCallback> callback = adoptPtr(new PendingCharactersCallback);
-
-    callback->s = xmlStrndup(s, len);
-    callback->len = len;
-
-    m_pendingCallbacks.append(callback.release());
-}
-
-void XMLDocumentParser::appendProcessingInstructionCallback(const xmlChar* target, const xmlChar* data)
-{
-    OwnPtr<PendingProcessingInstructionCallback> callback = adoptPtr(new PendingProcessingInstructionCallback);
-
-    callback->target = xmlStrdup(target);
-    callback->data = xmlStrdup(data);
-
-    m_pendingCallbacks.append(callback.release());
-}
-
-void XMLDocumentParser::appendCDATABlockCallback(const xmlChar* s, int len)
-{
-    OwnPtr<PendingCDATABlockCallback> callback = adoptPtr(new PendingCDATABlockCallback);
-
-    callback->s = xmlStrndup(s, len);
-    callback->len = len;
-
-    m_pendingCallbacks.append(callback.release());
-}
-
-void XMLDocumentParser::appendCommentCallback(const xmlChar* s)
-{
-    OwnPtr<PendingCommentCallback> callback = adoptPtr(new PendingCommentCallback);
-
-    callback->s = xmlStrdup(s);
-
-    m_pendingCallbacks.append(callback.release());
-}
-
-void XMLDocumentParser::appendInternalSubsetCallback(const xmlChar* name, const xmlChar* externalID, const xmlChar* systemID)
-{
-    OwnPtr<PendingInternalSubsetCallback> callback = adoptPtr(new PendingInternalSubsetCallback);
-
-    callback->name = xmlStrdup(name);
-    callback->externalID = xmlStrdup(externalID);
-    callback->systemID = xmlStrdup(systemID);
-
-    m_pendingCallbacks.append(callback.release());
-}
-
-void XMLDocumentParser::appendErrorCallback(XMLErrors::ErrorType type, const xmlChar* message, OrdinalNumber lineNumber, OrdinalNumber columnNumber)
-{
-    OwnPtr<PendingErrorCallback> callback = adoptPtr(new PendingErrorCallback);
-
-    callback->message = xmlStrdup(message);
-    callback->type = type;
-    callback->lineNumber = lineNumber;
-    callback->columnNumber = columnNumber;
-
-    m_pendingCallbacks.append(callback.release());
 }
 
 static int globalDescriptor = 0;
@@ -944,35 +889,32 @@ static inline void handleElementAttributes(Vector<Attribute>& prefixedAttributes
     }
 }
 
-void XMLDocumentParser::startElementNs(const xmlChar* xmlLocalName, const xmlChar* xmlPrefix, const xmlChar* xmlURI, int nb_namespaces,
+void XMLDocumentParser::startElementNs(const AtomicString& localName, const AtomicString& prefix, const AtomicString& uri, int nb_namespaces,
                                   const xmlChar** libxmlNamespaces, int nb_attributes, int nb_defaulted, const xmlChar** libxmlAttributes)
 {
     if (isStopped())
         return;
 
     if (m_parserPaused) {
-        appendStartElementNSCallback(xmlLocalName, xmlPrefix, xmlURI, nb_namespaces, libxmlNamespaces,
-                                                         nb_attributes, nb_defaulted, libxmlAttributes);
+        m_pendingCallbacks.append(adoptPtr(new PendingStartElementNSCallback(localName, prefix, uri, nb_namespaces, libxmlNamespaces,
+            nb_attributes, nb_defaulted, libxmlAttributes)));
         return;
     }
 
     exitText();
 
-    AtomicString localName = toAtomicString(xmlLocalName);
-    AtomicString uri = toAtomicString(xmlURI);
-    AtomicString prefix = toAtomicString(xmlPrefix);
-
-    if (m_parsingFragment && uri.isNull()) {
+    AtomicString adjustedURI = uri;
+    if (m_parsingFragment && adjustedURI.isNull()) {
         if (!prefix.isNull())
-            uri = m_prefixToNamespaceMap.get(prefix);
+            adjustedURI = m_prefixToNamespaceMap.get(prefix);
         else
-            uri = m_defaultNamespaceURI;
+            adjustedURI = m_defaultNamespaceURI;
     }
 
     bool isFirstElement = !m_sawFirstElement;
     m_sawFirstElement = true;
 
-    QualifiedName qName(prefix, localName, uri);
+    QualifiedName qName(prefix, localName, adjustedURI);
     RefPtr<Element> newElement = m_currentNode->document()->createElement(qName, true);
     if (!newElement) {
         stopParsing();
@@ -1025,7 +967,7 @@ void XMLDocumentParser::endElementNs()
         return;
 
     if (m_parserPaused) {
-        appendEndElementNSCallback();
+        m_pendingCallbacks.append(adoptPtr(new PendingEndElementNSCallback()));
         return;
     }
 
@@ -1093,19 +1035,19 @@ void XMLDocumentParser::endElementNs()
     popCurrentNode();
 }
 
-void XMLDocumentParser::characters(const xmlChar* s, int len)
+void XMLDocumentParser::characters(const xmlChar* chars, int length)
 {
     if (isStopped())
         return;
 
     if (m_parserPaused) {
-        appendCharactersCallback(s, len);
+        m_pendingCallbacks.append(adoptPtr(new PendingCharactersCallback(chars, length)));
         return;
     }
 
     if (!m_leafTextNode)
         enterText();
-    m_bufferedText.append(s, len);
+    m_bufferedText.append(chars, length);
 }
 
 void XMLDocumentParser::error(XMLErrors::ErrorType type, const char* message, va_list args)
@@ -1114,31 +1056,33 @@ void XMLDocumentParser::error(XMLErrors::ErrorType type, const char* message, va
         return;
 
 #if HAVE(VASPRINTF)
-    char* m;
-    if (vasprintf(&m, message, args) == -1)
+    char* formattedMessage;
+    if (vasprintf(&formattedMessage, message, args) == -1)
         return;
 #else
-    char m[1024];
-    vsnprintf(m, sizeof(m) - 1, message, args);
+    char formattedMessage[1024];
+    vsnprintf(formattedMessage, sizeof(formattedMessage) - 1, message, args);
 #endif
 
-    if (m_parserPaused)
-        appendErrorCallback(type, reinterpret_cast<const xmlChar*>(m), lineNumber(), columnNumber());
-    else
-        handleError(type, m, textPosition());
+    if (m_parserPaused) {
+        m_pendingCallbacks.append(adoptPtr(new PendingErrorCallback(type, reinterpret_cast<const xmlChar*>(formattedMessage), lineNumber(), columnNumber())));
+        return;
+    }
+
+    handleError(type, formattedMessage, textPosition());
 
 #if HAVE(VASPRINTF)
-    free(m);
+    free(formattedMessage);
 #endif
 }
 
-void XMLDocumentParser::processingInstruction(const xmlChar* target, const xmlChar* data)
+void XMLDocumentParser::processingInstruction(const String& target, const String& data)
 {
     if (isStopped())
         return;
 
     if (m_parserPaused) {
-        appendProcessingInstructionCallback(target, data);
+        m_pendingCallbacks.append(adoptPtr(new PendingProcessingInstructionCallback(target ,data)));
         return;
     }
 
@@ -1146,8 +1090,7 @@ void XMLDocumentParser::processingInstruction(const xmlChar* target, const xmlCh
 
     // ### handle exceptions
     ExceptionCode ec = 0;
-    RefPtr<ProcessingInstruction> pi = m_currentNode->document()->createProcessingInstruction(
-        toString(target), toString(data), ec);
+    RefPtr<ProcessingInstruction> pi = m_currentNode->document()->createProcessingInstruction(target, data, ec);
     if (ec)
         return;
 
@@ -1166,37 +1109,37 @@ void XMLDocumentParser::processingInstruction(const xmlChar* target, const xmlCh
         stopParsing();
 }
 
-void XMLDocumentParser::cdataBlock(const xmlChar* s, int len)
+void XMLDocumentParser::cdataBlock(const String& text)
 {
     if (isStopped())
         return;
 
     if (m_parserPaused) {
-        appendCDATABlockCallback(s, len);
+        m_pendingCallbacks.append(adoptPtr(new PendingCDATABlockCallback(text)));
         return;
     }
 
     exitText();
 
-    RefPtr<CDATASection> newNode = CDATASection::create(m_currentNode->document(), toString(s, len));
+    RefPtr<CDATASection> newNode = CDATASection::create(m_currentNode->document(), text);
     m_currentNode->parserAppendChild(newNode.get());
     if (m_view && !newNode->attached())
         newNode->attach();
 }
 
-void XMLDocumentParser::comment(const xmlChar* s)
+void XMLDocumentParser::comment(const String& text)
 {
     if (isStopped())
         return;
 
     if (m_parserPaused) {
-        appendCommentCallback(s);
+        m_pendingCallbacks.append(adoptPtr(new PendingCommentCallback(text)));
         return;
     }
 
     exitText();
 
-    RefPtr<Comment> newNode = Comment::create(m_currentNode->document(), toString(s));
+    RefPtr<Comment> newNode = Comment::create(m_currentNode->document(), text);
     m_currentNode->parserAppendChild(newNode.get());
     if (m_view && !newNode->attached())
         newNode->attach();
@@ -1209,7 +1152,7 @@ enum StandaloneInfo {
     StandaloneYes
 };
 
-void XMLDocumentParser::startDocument(const xmlChar* version, const xmlChar* encoding, int standalone)
+void XMLDocumentParser::startDocument(const String& version, const String& encoding, int standalone)
 {
     StandaloneInfo standaloneInfo = (StandaloneInfo)standalone;
     if (standaloneInfo == NoXMlDeclaration) {
@@ -1217,12 +1160,12 @@ void XMLDocumentParser::startDocument(const xmlChar* version, const xmlChar* enc
         return;
     }
 
-    if (version)
-        document()->setXMLVersion(toString(version), ASSERT_NO_EXCEPTION);
+    if (!version.isNull())
+        document()->setXMLVersion(version, ASSERT_NO_EXCEPTION);
     if (standalone != StandaloneUnspecified)
         document()->setXMLStandalone(standaloneInfo == StandaloneYes, ASSERT_NO_EXCEPTION);
-    if (encoding)
-        document()->setXMLEncoding(toString(encoding));
+    if (!encoding.isNull())
+        document()->setXMLEncoding(encoding);
     document()->setHasXMLDeclaration(true);
 }
 
@@ -1231,18 +1174,18 @@ void XMLDocumentParser::endDocument()
     exitText();
 }
 
-void XMLDocumentParser::internalSubset(const xmlChar* name, const xmlChar* externalID, const xmlChar* systemID)
+void XMLDocumentParser::internalSubset(const String& name, const String& externalID, const String& systemID)
 {
     if (isStopped())
         return;
 
     if (m_parserPaused) {
-        appendInternalSubsetCallback(name, externalID, systemID);
+        m_pendingCallbacks.append(adoptPtr(new PendingInternalSubsetCallback(name, externalID, systemID)));
         return;
     }
 
     if (document())
-        document()->parserAppendChild(DocumentType::create(document(), toString(name), toString(externalID), toString(systemID)));
+        document()->parserAppendChild(DocumentType::create(document(), name, externalID, systemID));
 }
 
 static inline XMLDocumentParser* getParser(void* closure)
@@ -1251,9 +1194,9 @@ static inline XMLDocumentParser* getParser(void* closure)
     return static_cast<XMLDocumentParser*>(ctxt->_private);
 }
 
-static void startElementNsHandler(void* closure, const xmlChar* localname, const xmlChar* prefix, const xmlChar* uri, int nb_namespaces, const xmlChar** namespaces, int nb_attributes, int nb_defaulted, const xmlChar** libxmlAttributes)
+static void startElementNsHandler(void* closure, const xmlChar* localName, const xmlChar* prefix, const xmlChar* uri, int nb_namespaces, const xmlChar** namespaces, int nb_attributes, int nb_defaulted, const xmlChar** libxmlAttributes)
 {
-    getParser(closure)->startElementNs(localname, prefix, uri, nb_namespaces, namespaces, nb_attributes, nb_defaulted, libxmlAttributes);
+    getParser(closure)->startElementNs(toAtomicString(localName), toAtomicString(prefix), toAtomicString(uri), nb_namespaces, namespaces, nb_attributes, nb_defaulted, libxmlAttributes);
 }
 
 static void endElementNsHandler(void* closure, const xmlChar*, const xmlChar*, const xmlChar*)
@@ -1261,24 +1204,24 @@ static void endElementNsHandler(void* closure, const xmlChar*, const xmlChar*, c
     getParser(closure)->endElementNs();
 }
 
-static void charactersHandler(void* closure, const xmlChar* s, int len)
+static void charactersHandler(void* closure, const xmlChar* chars, int length)
 {
-    getParser(closure)->characters(s, len);
+    getParser(closure)->characters(chars, length);
 }
 
 static void processingInstructionHandler(void* closure, const xmlChar* target, const xmlChar* data)
 {
-    getParser(closure)->processingInstruction(target, data);
+    getParser(closure)->processingInstruction(toString(target), toString(data));
 }
 
-static void cdataBlockHandler(void* closure, const xmlChar* s, int len)
+static void cdataBlockHandler(void* closure, const xmlChar* text, int length)
 {
-    getParser(closure)->cdataBlock(s, len);
+    getParser(closure)->cdataBlock(toString(text, length));
 }
 
-static void commentHandler(void* closure, const xmlChar* comment)
+static void commentHandler(void* closure, const xmlChar* text)
 {
-    getParser(closure)->comment(comment);
+    getParser(closure)->comment(toString(text));
 }
 
 WTF_ATTRIBUTE_PRINTF(2, 3)
@@ -1381,7 +1324,7 @@ static void startDocumentHandler(void* closure)
 {
     xmlParserCtxt* ctxt = static_cast<xmlParserCtxt*>(closure);
     switchToUTF16(ctxt);
-    getParser(closure)->startDocument(ctxt->version, ctxt->encoding, ctxt->standalone);
+    getParser(closure)->startDocument(toString(ctxt->version), toString(ctxt->encoding), ctxt->standalone);
     xmlSAX2StartDocument(closure);
 }
 
@@ -1393,7 +1336,7 @@ static void endDocumentHandler(void* closure)
 
 static void internalSubsetHandler(void* closure, const xmlChar* name, const xmlChar* externalID, const xmlChar* systemID)
 {
-    getParser(closure)->internalSubset(name, externalID, systemID);
+    getParser(closure)->internalSubset(toString(name), toString(externalID), toString(systemID));
     xmlSAX2InternalSubset(closure, name, externalID, systemID);
 }
 

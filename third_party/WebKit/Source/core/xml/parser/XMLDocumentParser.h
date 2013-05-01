@@ -92,7 +92,8 @@ class Text;
 
         static bool supportsXMLVersion(const String&);
 
-        struct PendingCallback {
+        class PendingCallback {
+        public:
             virtual ~PendingCallback() { }
             virtual void call(XMLDocumentParser*) = 0;
         };
@@ -124,15 +125,15 @@ class Text;
     public:
         // callbacks from parser SAX
         void error(XMLErrors::ErrorType, const char* message, va_list args) WTF_ATTRIBUTE_PRINTF(3, 0);
-        void startElementNs(const xmlChar* xmlLocalName, const xmlChar* xmlPrefix, const xmlChar* xmlURI, int nb_namespaces,
+        void startElementNs(const AtomicString& localName, const AtomicString& prefix, const AtomicString& uri, int nb_namespaces,
                             const xmlChar** namespaces, int nb_attributes, int nb_defaulted, const xmlChar** libxmlAttributes);
         void endElementNs();
-        void characters(const xmlChar* s, int len);
-        void processingInstruction(const xmlChar* target, const xmlChar* data);
-        void cdataBlock(const xmlChar* s, int len);
-        void comment(const xmlChar* s);
-        void startDocument(const xmlChar* version, const xmlChar* encoding, int standalone);
-        void internalSubset(const xmlChar* name, const xmlChar* externalID, const xmlChar* systemID);
+        void characters(const xmlChar* chars, int length);
+        void processingInstruction(const String& target, const String& data);
+        void cdataBlock(const String&);
+        void comment(const String&);
+        void startDocument(const String& version, const String& encoding, int standalone);
+        void internalSubset(const String& name, const String& externalID, const String& systemID);
         void endDocument();
 
     private:
@@ -149,16 +150,6 @@ class Text;
 
         void doWrite(const String&);
         void doEnd();
-
-        void appendStartElementNSCallback(const xmlChar* xmlLocalName, const xmlChar* xmlPrefix, const xmlChar* xmlURI, int nb_namespaces,
-                                      const xmlChar** namespaces, int nb_attributes, int nb_defaulted, const xmlChar** attributes);
-        void appendEndElementNSCallback();
-        void appendCharactersCallback(const xmlChar* s, int len);
-        void appendProcessingInstructionCallback(const xmlChar* target, const xmlChar* data);
-        void appendCDATABlockCallback(const xmlChar* s, int len);
-        void appendCommentCallback(const xmlChar* s);
-        void appendInternalSubsetCallback(const xmlChar* name, const xmlChar* externalID, const xmlChar* systemID);
-        void appendErrorCallback(XMLErrors::ErrorType type, const xmlChar* message, OrdinalNumber lineNumber, OrdinalNumber columnNumber);
 
         FrameView* m_view;
 
