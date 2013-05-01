@@ -299,12 +299,6 @@ void SyncableFileSystemOperation::OpenFile(
   delete this;
 }
 
-void SyncableFileSystemOperation::NotifyCloseFile(
-    const FileSystemURL& url) {
-  NOTREACHED();
-  delete this;
-}
-
 void SyncableFileSystemOperation::Cancel(
     const StatusCallback& cancel_callback) {
   DCHECK(CalledOnValidThread());

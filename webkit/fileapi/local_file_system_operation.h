@@ -83,7 +83,6 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
                         int file_flags,
                         base::ProcessHandle peer_handle,
                         const OpenFileCallback& callback) OVERRIDE;
-  virtual void NotifyCloseFile(const FileSystemURL& url) OVERRIDE;
   virtual void Cancel(const StatusCallback& cancel_callback) OVERRIDE;
   virtual LocalFileSystemOperation* AsLocalFileSystemOperation() OVERRIDE;
   virtual void CreateSnapshotFile(

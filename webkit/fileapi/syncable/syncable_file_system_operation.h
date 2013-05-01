@@ -71,7 +71,6 @@ class WEBKIT_STORAGE_EXPORT SyncableFileSystemOperation
                         int file_flags,
                         base::ProcessHandle peer_handle,
                         const OpenFileCallback& callback) OVERRIDE;
-  virtual void NotifyCloseFile(const fileapi::FileSystemURL& url) OVERRIDE;
   virtual void Cancel(const StatusCallback& cancel_callback) OVERRIDE;
   virtual void CreateSnapshotFile(
       const fileapi::FileSystemURL& path,
