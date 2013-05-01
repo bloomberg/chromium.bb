@@ -171,7 +171,7 @@ void GestureRecognizerImpl::TransferEventsTo(GestureConsumer* current_consumer,
     }
   }
 
-  // Transer events from |current_consumer| to |new_consumer|.
+  // Transfer events from |current_consumer| to |new_consumer|.
   if (current_consumer && new_consumer) {
     TransferTouchIdToConsumerMap(current_consumer, new_consumer,
                                  &touch_id_target_);

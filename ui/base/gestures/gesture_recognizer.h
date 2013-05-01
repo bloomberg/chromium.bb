@@ -49,9 +49,13 @@ class UI_EXPORT GestureRecognizer {
   // of |location|, returns the target of the nearest active touch.
   virtual GestureConsumer* GetTargetForLocation(const gfx::Point& location) = 0;
 
-  // Makes |new_consumer| the target for events previously targetting
-  // |current_consumer|. All other targets are cancelled. If |new_consumer| is
-  // NULL, all targets are cancelled.
+  // Makes |new_consumer| the target for events previously targeting
+  // |current_consumer|. All other targets are canceled.
+  // The caller is responsible for updating the state of the consumers to
+  // be aware of this transfer of control (there are no ENTERED/EXITED events).
+  // If |new_consumer| is NULL, all events are canceled.
+  // If |old_consumer| is NULL, all events not already targeting |new_consumer|
+  // are canceled.
   virtual void TransferEventsTo(GestureConsumer* current_consumer,
                                 GestureConsumer* new_consumer) = 0;
 

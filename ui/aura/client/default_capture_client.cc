@@ -22,7 +22,9 @@ DefaultCaptureClient::~DefaultCaptureClient() {
 void DefaultCaptureClient::SetCapture(Window* window) {
   if (capture_window_ == window)
     return;
-  root_window_->gesture_recognizer()->TransferEventsTo(capture_window_, window);
+  if (window)
+    root_window_->gesture_recognizer()->
+        TransferEventsTo(capture_window_, window);
 
   Window* old_capture_window = capture_window_;
   capture_window_ = window;

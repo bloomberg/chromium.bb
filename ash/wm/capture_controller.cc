@@ -32,13 +32,21 @@ void CaptureController::SetCapture(aura::Window* new_capture_window) {
   DCHECK(!capture_window_ || capture_window_->GetRootWindow());
 
   aura::Window* old_capture_window = capture_window_;
-
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  for (Shell::RootWindowList::iterator iter = root_windows.begin();
-       iter != root_windows.end(); ++iter) {
-    aura::RootWindow* root_window = *iter;
-    root_window->gesture_recognizer()->
-        TransferEventsTo(old_capture_window, new_capture_window);
+
+  // If we're actually starting capture, then cancel any touches/gestures
+  // that aren't already locked to the new window, and transfer any on the
+  // old capture window to the new one.  When capture is released we have no
+  // distinction between the touches/gestures that were in the window all
+  // along (and so shouldn't be canceled) and those that got moved, so
+  // just leave them all where they are.
+  if (new_capture_window) {
+    for (Shell::RootWindowList::iterator iter = root_windows.begin();
+         iter != root_windows.end(); ++iter) {
+      aura::RootWindow* root_window = *iter;
+      root_window->gesture_recognizer()->
+          TransferEventsTo(old_capture_window, new_capture_window);
+    }
   }
 
   capture_window_ = new_capture_window;
