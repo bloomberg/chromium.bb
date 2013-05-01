@@ -80,10 +80,13 @@ void AutofillDialogViewAndroid::UpdateNotificationArea() {
         env,
         notification_array.obj(),
         i,
+        static_cast<int>(notifications[i].type()),
         static_cast<int>(notifications[i].GetBackgroundColor()),
         static_cast<int>(notifications[i].GetTextColor()),
         notifications[i].HasArrow(),
         notifications[i].HasCheckbox(),
+        notifications[i].checked(),
+        notifications[i].interactive(),
         text.obj());
   }
 
@@ -179,7 +182,6 @@ void AutofillDialogViewAndroid::ModelChanged() {
   Java_AutofillDialogGlue_modelChanged(
       env, java_object_.obj(),
       controller_->ShouldShowSpinner());
-  UpdateSaveLocallyCheckBox();
   UpdateSection(SECTION_EMAIL);
   UpdateSection(SECTION_CC);
   UpdateSection(SECTION_BILLING);
@@ -288,6 +290,16 @@ void AutofillDialogViewAndroid::AccountSelected(JNIEnv* env, jobject obj,
     return;
 
   model->ActivatedAt(index);
+}
+
+void AutofillDialogViewAndroid::NotificationCheckboxStateChanged(
+    JNIEnv* env,
+    jobject obj,
+    jint type,
+    jboolean checked) {
+  controller_->NotificationCheckboxStateChanged(
+      static_cast<DialogNotification::Type>(type),
+      static_cast<bool>(checked));
 }
 
 void AutofillDialogViewAndroid::EditingStart(JNIEnv* env, jobject obj,
@@ -437,7 +449,6 @@ bool AutofillDialogViewAndroid::ValidateSection(
 }
 
 void AutofillDialogViewAndroid::UpdateSaveLocallyCheckBox() {
-  // TODO(aruslan) : Call this when at least one section is being edited.
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_AutofillDialogGlue_updateSaveLocallyCheckBox(
       env, java_object_.obj(), controller_->ShouldOfferToSaveInChrome());
@@ -524,6 +535,8 @@ void AutofillDialogViewAndroid::UpdateOrFillSectionToJava(
                                         checkedItem,
                                         clobber_inputs,
                                         field_type_to_always_clobber);
+
+  UpdateSaveLocallyCheckBox();
 }
 
 void AutofillDialogViewAndroid::GetUserInputImpl(

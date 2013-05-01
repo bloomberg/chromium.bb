@@ -20,6 +20,8 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.Spinner;
@@ -65,6 +67,13 @@ public class AutofillDialog extends AlertDialog
          * @param index Index of the selected account.
          */
         public void accountSelected(int index);
+
+        /**
+         * Called when a checkbox in the notification area has changed its state.
+         * @param type Notification type.
+         * @param checked Whether the checkbox is checked.
+         */
+        public void notificationCheckboxStateChanged(int type, boolean checked);
 
         /**
          * Informs AutofillDialog controller that the view is starting editing.
@@ -188,6 +197,7 @@ public class AutofillDialog extends AlertDialog
         mContentView.setAutofillDialog(this);
 
         getSaveLocallyCheckBox().setText(mDelegate.getSaveLocallyText());
+        getSaveLocallyCheckBox().setChecked(true);
 
         String[] labels = new String[AutofillDialogConstants.NUM_SECTIONS];
         for (int i = 0; i < AutofillDialogConstants.NUM_SECTIONS; i++) {
@@ -414,10 +424,11 @@ public class AutofillDialog extends AlertDialog
      */
     public void updateNotificationArea(AutofillDialogNotification[] notifications) {
         // Clear all the previous notifications
-        CheckBox checkBox = ((CheckBox) findViewById(R.id.top_notification));
+        CheckBox checkBox = ((CheckBox) findViewById(R.id.top_checkbox_notification));
+        checkBox.setOnCheckedChangeListener(null);
         checkBox.setVisibility(View.GONE);
         ViewGroup notificationsContainer =
-                ((ViewGroup) findViewById(R.id.bottom_notifications));
+                ((ViewGroup) findViewById(R.id.top_notifications));
         notificationsContainer.removeAllViews();
 
         // Add new notifications
@@ -427,7 +438,16 @@ public class AutofillDialog extends AlertDialog
                 checkBox.setBackgroundColor(notification.mBackgroundColor);
                 checkBox.setTextColor(notification.mTextColor);
                 checkBox.setText(notification.mText);
+                checkBox.setEnabled(notification.mInteractive);
+                checkBox.setChecked(notification.mChecked);
                 checkBox.setVisibility(View.VISIBLE);
+                final int type = notification.mType;
+                checkBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton view, boolean checked) {
+                        mDelegate.notificationCheckboxStateChanged(type, checked);
+                    }
+                });
             } else {
                 TextView notificationView = new TextView(getContext());
                 notificationView.setBackgroundColor(notification.mBackgroundColor);

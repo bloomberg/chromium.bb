@@ -42,6 +42,10 @@ class AutofillDialogViewAndroid : public AutofillDialogView {
   // Java to C++ calls
   void ItemSelected(JNIEnv* env, jobject obj, jint section, jint index);
   void AccountSelected(JNIEnv* env, jobject obj, jint index);
+  void NotificationCheckboxStateChanged(JNIEnv* env,
+                                        jobject obj,
+                                        jint type,
+                                        jboolean checked);
   void EditingStart(JNIEnv* env, jobject obj, jint section);
   jboolean EditingComplete(JNIEnv* env, jobject obj, jint section);
   void EditingCancel(JNIEnv* env, jobject obj, jint section);

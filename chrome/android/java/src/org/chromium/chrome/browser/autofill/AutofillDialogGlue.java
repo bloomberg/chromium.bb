@@ -179,6 +179,11 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
     }
 
     @Override
+    public void notificationCheckboxStateChanged(int type, boolean checked) {
+        nativeNotificationCheckboxStateChanged(mNativeDialogPopup, type, checked);
+    }
+
+    @Override
     public void editingStart(int section) {
         nativeEditingStart(mNativeDialogPopup, section);
     }
@@ -347,10 +352,11 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
 
     @CalledByNative
     private static void addToAutofillDialogNotificationArray(AutofillDialogNotification[] array,
-            int index, int backgroundColor, int textColor, boolean hasArrow, boolean hasCheckbox,
+            int index, int type, int backgroundColor, int textColor,
+            boolean hasArrow, boolean hasCheckbox, boolean isChecked, boolean isInteractive,
             String text) {
-        array[index] = new AutofillDialogNotification(backgroundColor, textColor, hasArrow,
-                hasCheckbox, text);
+        array[index] = new AutofillDialogNotification(type, backgroundColor, textColor,
+                hasArrow, hasCheckbox, isChecked, isInteractive, text);
     }
 
     // Calls from Java to C++ AutofillDialogViewAndroid --------------------------------------------
@@ -358,6 +364,8 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
     private native void nativeItemSelected(int nativeAutofillDialogViewAndroid, int section,
             int index);
     private native void nativeAccountSelected(int nativeAutofillDialogViewAndroid, int index);
+    private native void nativeNotificationCheckboxStateChanged(
+            int nativeAutofillDialogViewAndroid, int type, boolean checked);
     private native void nativeContinueAutomaticSignin(
             int nativeAutofillDialogViewAndroid,
             String accountName, String sid, String lsid);
