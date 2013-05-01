@@ -75,6 +75,14 @@ GpuMemoryManager::GpuMemoryManager(
   bytes_minimum_per_client_ = 64 * 1024 * 1024;
 #endif
 
+  // On Android, always discard everything that is nonvisible.
+  // On Mac, use as little memory as possible to avoid stability issues.
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
+  allow_nonvisible_memory_ = false;
+#else
+  allow_nonvisible_memory_ = true;
+#endif
+
   if (command_line->HasSwitch(switches::kForceGpuMemAvailableMb)) {
     base::StringToUint64(
         command_line->GetSwitchValueASCII(switches::kForceGpuMemAvailableMb),
@@ -634,10 +642,9 @@ void GpuMemoryManager::ComputeNonvisibleSurfacesAllocations() {
         bytes_available_total - bytes_allocated_visible);
   }
 
-  // On Android, always discard everything that is nonvisible.
-#if defined(OS_ANDROID)
-  bytes_available_nonvisible = 0;
-#endif
+  // Clamp the amount of memory available to non-visible clients.
+  if (!allow_nonvisible_memory_)
+    bytes_available_nonvisible = 0;
 
   // Determine which now-visible clients should keep their contents when
   // they are made nonvisible.

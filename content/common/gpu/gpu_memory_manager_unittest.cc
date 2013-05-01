@@ -716,9 +716,8 @@ TEST_F(GpuMemoryManagerTest, BackgroundMru) {
   memmgr_.TestingSetMinimumClientAllocation(8);
 
   uint64 bytes_when_not_visible_expected = 6u;
-#if defined (OS_ANDROID)
-  bytes_when_not_visible_expected = 0;
-#endif
+  if (!memmgr_.allow_nonvisible_memory_)
+    bytes_when_not_visible_expected = 0;
 
   FakeClient stub1(&memmgr_, GenerateUniqueSurfaceId(), true);
   FakeClient stub2(&memmgr_, GenerateUniqueSurfaceId(), true);
@@ -772,9 +771,8 @@ TEST_F(GpuMemoryManagerTest, BackgroundDiscardPersistent) {
   memmgr_.TestingSetMinimumClientAllocation(8);
 
   uint64 bytes_when_not_visible_expected = 10ul;
-#if defined (OS_ANDROID)
-  bytes_when_not_visible_expected = 0;
-#endif
+  if (!memmgr_.allow_nonvisible_memory_)
+    bytes_when_not_visible_expected = 0;
 
   FakeClient stub1(&memmgr_, GenerateUniqueSurfaceId(), true);
   FakeClient stub2(&memmgr_, GenerateUniqueSurfaceId(), true);
