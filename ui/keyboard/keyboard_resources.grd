@@ -14,6 +14,7 @@
   </outputs>
   <release seq="1">
     <includes>
+      <include name="IDR_KEYBOARD_API_ADAPTER_JS" file="resources/api_adapter.js" type="BINDATA" />
       <include name="IDR_KEYBOARD_COMMON_JS" file="resources/common.js" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_CHEVRON" file="resources/images/chevron.svg" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_DEL" file="resources/images/del.svg" type="BINDATA" />
@@ -28,10 +29,9 @@
       <include name="IDR_KEYBOARD_MAIN_CSS" file="resources/main.css" type="BINDATA" />
       <include name="IDR_KEYBOARD_MAIN_JS" file="resources/main.js" type="BINDATA" />
       <include name="IDR_KEYBOARD_MANIFEST" file="resources/manifest.json" type="BINDATA" />
-      <include name="IDR_KEYBOARD_SEND_KEY_EVENT_JS" file="resources/send_key_event.js" type="BINDATA" />
+      <include name="IDR_KEYBOARD_WEBUI_API_ADAPTER_JS" file="resources/webui/api_adapter.js" type="BINDATA" />
       <include name="IDR_KEYBOARD_WEBUI_LAYOUT_US_JS" file="resources/webui/layout_us.js" type="BINDATA" />
       <include name="IDR_KEYBOARD_WEBUI_MAIN_CSS" file="resources/webui/main.css" type="BINDATA" />
-      <include name="IDR_KEYBOARD_WEBUI_SEND_KEY_EVENT_JS" file="resources/webui/send_key_event.js" type="BINDATA" />
     </includes>
   </release>
 </grit>

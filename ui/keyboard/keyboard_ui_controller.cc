@@ -35,8 +35,7 @@ content::WebUIDataSource* CreateKeyboardUIDataSource() {
   // These files are specific to the WebUI version
   source->AddResourcePath("layout_us.js", IDR_KEYBOARD_WEBUI_LAYOUT_US_JS);
   source->AddResourcePath("main.css", IDR_KEYBOARD_WEBUI_MAIN_CSS);
-  source->AddResourcePath("send_key_event.js",
-      IDR_KEYBOARD_WEBUI_SEND_KEY_EVENT_JS);
+  source->AddResourcePath("api_adapter.js", IDR_KEYBOARD_WEBUI_API_ADAPTER_JS);
 
   return source;
 }

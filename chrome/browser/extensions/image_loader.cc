@@ -175,6 +175,7 @@ bool ImageLoader::IsComponentExtensionResource(
     {"settings_app/settings_app_icon_48.png", IDR_SETTINGS_APP_ICON_48},
 #endif
 #if defined(USE_AURA)
+    {"keyboard/api_adapter.js", IDR_KEYBOARD_API_ADAPTER_JS},
     {"keyboard/common.js", IDR_KEYBOARD_COMMON_JS},
     {"keyboard/images/chevron.svg", IDR_KEYBOARD_IMAGES_CHEVRON},
     {"keyboard/images/del.svg", IDR_KEYBOARD_IMAGES_DEL},
@@ -188,7 +189,6 @@ bool ImageLoader::IsComponentExtensionResource(
     {"keyboard/layout_us.js", IDR_KEYBOARD_LAYOUT_US_JS},
     {"keyboard/main.css", IDR_KEYBOARD_MAIN_CSS},
     {"keyboard/main.js", IDR_KEYBOARD_MAIN_JS},
-    {"keyboard/send_key_event.js", IDR_KEYBOARD_SEND_KEY_EVENT_JS},
 #endif
   };
   static const size_t kExtraComponentExtensionResourcesSize =
