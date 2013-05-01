@@ -116,7 +116,7 @@ ModelAssociationManager::ModelAssociationManager(
       controllers_(controllers),
       result_processor_(processor),
       debug_info_listener_(debug_info_listener),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(this) {
 
   // Ensure all data type controllers are stopped.
   for (DataTypeController::TypeMap::const_iterator it = controllers_->begin();

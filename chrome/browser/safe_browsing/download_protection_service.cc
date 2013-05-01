@@ -290,7 +290,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
         pingback_enabled_(service_->enabled()),
         finished_(false),
         type_(ClientDownloadRequest::WIN_EXECUTABLE),
-        ALLOW_THIS_IN_INITIALIZER_LIST(weakptr_factory_(this)),
+        weakptr_factory_(this),
         start_time_(base::TimeTicks::Now()) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     item_->AddObserver(this);

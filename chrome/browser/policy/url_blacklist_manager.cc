@@ -300,9 +300,9 @@ bool URLBlacklist::FilterTakesPrecedence(const FilterComponents& lhs,
 }
 
 URLBlacklistManager::URLBlacklistManager(PrefService* pref_service)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(ui_weak_ptr_factory_(this)),
+    : ui_weak_ptr_factory_(this),
       pref_service_(pref_service),
-      ALLOW_THIS_IN_INITIALIZER_LIST(io_weak_ptr_factory_(this)),
+      io_weak_ptr_factory_(this),
       blacklist_(new URLBlacklist) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

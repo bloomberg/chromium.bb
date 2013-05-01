@@ -26,7 +26,7 @@ using content::BrowserThread;
 FakeDriveFileSystem::FakeDriveFileSystem(
     google_apis::DriveServiceInterface* drive_service)
     : drive_service_(drive_service),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
 }
 
 FakeDriveFileSystem::~FakeDriveFileSystem() {

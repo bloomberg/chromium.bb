@@ -275,7 +275,7 @@ DeleteDirectiveHandler::DeleteDirectiveTask::ProcessTimeRangeDeleteDirectives(
 }
 
 DeleteDirectiveHandler::DeleteDirectiveHandler()
-    : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+    : weak_ptr_factory_(this) {}
 
 DeleteDirectiveHandler::~DeleteDirectiveHandler() {
   weak_ptr_factory_.InvalidateWeakPtrs();

@@ -79,7 +79,7 @@ namespace chromeos {
 
 ScreensaverController::ScreensaverController()
     : threshold_(base::TimeDelta::FromMinutes(kScreensaverTimeoutMinutes)),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(this) {
   // Register for extension changes.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::NotificationService::AllSources());

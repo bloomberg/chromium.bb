@@ -49,7 +49,7 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
       device_mode_(DEVICE_MODE_NOT_SET),
       enrollment_step_(STEP_PENDING),
       lockbox_init_duration_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   CHECK(!client_->is_registered());
   CHECK_EQ(DM_STATUS_SUCCESS, client_->status());
   store_->AddObserver(this);

@@ -65,7 +65,7 @@ static const int kCacheStatsDelayMS = 2000;
 class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
  public:
   RendererResourceDelegate()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      : weak_factory_(this) {
   }
 
   virtual webkit_glue::ResourceLoaderBridge::Peer* OnRequestComplete(

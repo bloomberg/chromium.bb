@@ -133,7 +133,7 @@ GalleryWatchManager::GalleryFilePathWatcher::GalleryFilePathWatcher(
     : event_router_(event_router),
       gallery_id_(gallery_id),
       on_destroyed_callback_(on_destroyed_callback),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   gallery_path_ = path;
   AddExtension(extension_id);

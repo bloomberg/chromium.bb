@@ -55,7 +55,7 @@ PepperFlashBrowserHost::PepperFlashBrowserHost(
     PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       host_(host),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
   int unused;
   host->GetRenderViewIDsForInstance(instance, &render_process_id_, &unused);
 }

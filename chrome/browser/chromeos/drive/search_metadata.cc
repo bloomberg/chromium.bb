@@ -114,7 +114,7 @@ class SearchMetadataHelper {
       at_most_num_matches_(at_most_num_matches),
       callback_(callback),
       results_(new MetadataSearchResultVector),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
     DCHECK_LE(0, at_most_num_matches);
   }
 

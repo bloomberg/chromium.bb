@@ -142,7 +142,7 @@ ResourceMetadata::ResourceMetadata(
     : data_directory_path_(data_directory_path),
       blocking_task_runner_(blocking_task_runner),
       storage_(new ResourceMetadataStorage(data_directory_path)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 

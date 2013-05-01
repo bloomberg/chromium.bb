@@ -248,15 +248,14 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public policy::CloudPolicyStore::Observer {
  public:
   SystemTrayDelegate()
-      : ui_weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(
-            new base::WeakPtrFactory<SystemTrayDelegate>(this))),
-        network_icon_(ALLOW_THIS_IN_INITIALIZER_LIST(
-                      new NetworkMenuIcon(this, NetworkMenuIcon::MENU_MODE))),
-        network_icon_dark_(ALLOW_THIS_IN_INITIALIZER_LIST(
-                      new NetworkMenuIcon(this, NetworkMenuIcon::MENU_MODE))),
-        network_icon_vpn_(ALLOW_THIS_IN_INITIALIZER_LIST(
-                      new NetworkMenuIcon(this, NetworkMenuIcon::MENU_MODE))),
-        network_menu_(ALLOW_THIS_IN_INITIALIZER_LIST(new NetworkMenu(this))),
+      : ui_weak_ptr_factory_(
+            new base::WeakPtrFactory<SystemTrayDelegate>(this)),
+        network_icon_(new NetworkMenuIcon(this, NetworkMenuIcon::MENU_MODE)),
+        network_icon_dark_(
+            new NetworkMenuIcon(this, NetworkMenuIcon::MENU_MODE)),
+        network_icon_vpn_(
+            new NetworkMenuIcon(this, NetworkMenuIcon::MENU_MODE)),
+        network_menu_(new NetworkMenu(this)),
         clock_type_(base::k24HourClock),
         search_key_mapped_to_(input_method::kSearchKey),
         screen_locked_(false),

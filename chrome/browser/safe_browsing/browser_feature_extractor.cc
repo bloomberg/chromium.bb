@@ -133,7 +133,7 @@ BrowserFeatureExtractor::BrowserFeatureExtractor(
     ClientSideDetectionService* service)
     : tab_(tab),
       service_(service),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   DCHECK(tab);
 }
 

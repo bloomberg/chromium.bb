@@ -11,7 +11,7 @@
 
 
 MetricsNetworkObserver::MetricsNetworkObserver()
-    : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+    : weak_ptr_factory_(this),
       connection_type_is_ambiguous_(false),
       wifi_phy_layer_protocol_is_ambiguous_(false),
       wifi_phy_layer_protocol_(net::WIFI_PHY_LAYER_PROTOCOL_UNKNOWN) {

@@ -29,8 +29,7 @@ class ProxyResolverImpl : public ProxyResolverInterface {
   class Request {
    public:
     explicit Request(const std::string& source_url)
-        : ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
-            base::Bind(&Request::OnCompletion, base::Unretained(this)))),
+        : callback_(base::Bind(&Request::OnCompletion, base::Unretained(this))),
           source_url_(source_url) {
     }
 

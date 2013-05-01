@@ -225,7 +225,7 @@ void CloudPolicyClientRegistrationHelper::OnClientError(
 UserPolicySigninService::UserPolicySigninService(
     Profile* profile)
     : profile_(profile),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   if (profile_->GetPrefs()->GetBoolean(prefs::kDisableCloudPolicyOnSignin) ||
       ProfileManager::IsImportProcess(*cmd_line)) {

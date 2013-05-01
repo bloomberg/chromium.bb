@@ -28,7 +28,7 @@ namespace chromeos {
 DebugDaemonLogSource::DebugDaemonLogSource()
     : response_(new SystemLogsResponse()),
       num_pending_requests_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {}
+      weak_ptr_factory_(this) {}
 
 DebugDaemonLogSource::~DebugDaemonLogSource() {}
 

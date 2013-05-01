@@ -35,7 +35,7 @@ DownloadRequestLimiter::TabDownloadState::TabDownloadState(
       host_(host),
       status_(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD),
       download_count_(0),
-      factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      factory_(this) {
   content::Source<NavigationController> notification_source(
       &contents->GetController());
   content::Source<content::WebContents> web_contents_source(contents);
@@ -130,7 +130,7 @@ DownloadRequestLimiter::TabDownloadState::TabDownloadState()
     : host_(NULL),
       status_(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD),
       download_count_(0),
-      factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      factory_(this) {
 }
 
 void DownloadRequestLimiter::TabDownloadState::Observe(
@@ -210,7 +210,7 @@ void DownloadRequestLimiter::TabDownloadState::NotifyCallbacks(bool allow) {
 // DownloadRequestLimiter ------------------------------------------------------
 
 DownloadRequestLimiter::DownloadRequestLimiter()
-    : factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+    : factory_(this) {
 }
 
 DownloadRequestLimiter::~DownloadRequestLimiter() {

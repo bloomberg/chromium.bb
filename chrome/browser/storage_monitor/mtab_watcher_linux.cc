@@ -36,7 +36,7 @@ MtabWatcherLinux::MtabWatcherLinux(const base::FilePath& mtab_path,
                                    base::WeakPtr<Delegate> delegate)
     : mtab_path_(mtab_path),
       delegate_(delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   bool ret = file_watcher_.Watch(
       mtab_path_, false,

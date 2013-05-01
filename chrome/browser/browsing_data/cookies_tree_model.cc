@@ -857,8 +857,7 @@ CookiesTreeModel::CookiesTreeModel(
     LocalDataContainer* data_container,
     ExtensionSpecialStoragePolicy* special_storage_policy,
     bool group_by_cookie_source)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(ui::TreeNodeModel<CookieTreeNode>(
-          new CookieTreeRootNode(this))),
+    : ui::TreeNodeModel<CookieTreeNode>(new CookieTreeRootNode(this)),
       data_container_(data_container),
       special_storage_policy_(special_storage_policy),
       group_by_cookie_source_(group_by_cookie_source),

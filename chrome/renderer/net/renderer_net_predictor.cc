@@ -24,7 +24,7 @@ static const size_t kMAX_SUBMISSION_PER_TASK = 30;
 
 RendererNetPredictor::RendererNetPredictor()
     : c_string_queue_(1000),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   Reset();
 }
 

@@ -87,11 +87,11 @@ class CertLibraryImpl
       certificates_requested_(false),
       certificates_loaded_(false),
       key_store_loaded_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(certs_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(user_certs_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(server_certs_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(server_ca_certs_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      certs_(this),
+      user_certs_(this),
+      server_certs_(this),
+      server_ca_certs_(this),
+      weak_ptr_factory_(this) {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     net::CertDatabase::GetInstance()->AddObserver(this);
   }
@@ -444,7 +444,7 @@ class CertLibraryImplStub : public CertLibrary {
  public:
   CertLibraryImplStub()
       : token_name_("StubToken"),
-        ALLOW_THIS_IN_INITIALIZER_LIST(cert_list_(this)) {
+        cert_list_(this) {
   }
   virtual ~CertLibraryImplStub() {}
 

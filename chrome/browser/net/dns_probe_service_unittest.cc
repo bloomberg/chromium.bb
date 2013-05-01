@@ -23,7 +23,7 @@ class MockDnsProbeJob : public DnsProbeJob {
  public:
   MockDnsProbeJob(const CallbackType& callback,
                   DnsProbeJob::Result result)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      : weak_factory_(this) {
     MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&MockDnsProbeJob::CallCallback,

@@ -353,8 +353,7 @@ SystemRequestContextLeakChecker::~SystemRequestContextLeakChecker() {
 }
 
 IOThread::Globals::Globals()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(
-        system_request_context_leak_checker(this)),
+    : system_request_context_leak_checker(this),
       ignore_certificate_errors(false),
       http_pipelining_enabled(false),
       testing_fixed_http_port(0),
@@ -376,7 +375,7 @@ IOThread::IOThread(
       globals_(NULL),
       sdch_manager_(NULL),
       is_spdy_disabled_by_policy_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
   net::ProxyResolverV8::RememberDefaultIsolate();
 #endif

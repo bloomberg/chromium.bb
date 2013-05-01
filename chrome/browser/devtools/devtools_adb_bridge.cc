@@ -608,7 +608,7 @@ DevToolsAdbBridge::RefCountedAdbThread::~RefCountedAdbThread() {
 DevToolsAdbBridge::DevToolsAdbBridge(Profile* profile)
     : profile_(profile),
       adb_thread_(RefCountedAdbThread::GetInstance()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       has_message_loop_(adb_thread_->message_loop() != NULL) {
 }
 

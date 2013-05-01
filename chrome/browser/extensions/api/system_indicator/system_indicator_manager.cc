@@ -57,8 +57,7 @@ ExtensionIndicatorIcon::ExtensionIndicatorIcon(const Extension* extension,
       status_tray_(status_tray),
       icon_(status_icon),
       profile_(profile),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          icon_factory_(profile, extension, action, this)) {
+      icon_factory_(profile, extension, action, this) {
   icon_->AddObserver(this);
   OnIconUpdated();
 }

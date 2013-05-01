@@ -168,7 +168,7 @@ void EventRouter::DispatchEvent(IPC::Sender* ipc_sender,
 
 EventRouter::EventRouter(Profile* profile, ExtensionPrefs* extension_prefs)
     : profile_(profile),
-      listeners_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      listeners_(this),
       activity_log_(ActivityLog::GetInstance(profile)),
       dispatch_chrome_updated_event_(false) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,

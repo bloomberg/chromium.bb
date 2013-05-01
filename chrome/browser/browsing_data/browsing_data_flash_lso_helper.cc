@@ -54,7 +54,7 @@ class BrowsingDataFlashLSOHelperImpl
 
 BrowsingDataFlashLSOHelperImpl::BrowsingDataFlashLSOHelperImpl(
     content::BrowserContext* browser_context)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(settings_manager_(this, browser_context)),
+    : settings_manager_(this, browser_context),
       get_sites_with_data_request_id_(0u) {
 }
 

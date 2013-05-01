@@ -73,7 +73,7 @@ TranslateHelper::TranslateHelper(content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
       translation_pending_(false),
       page_id_(-1),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_method_factory_(this)) {
+      weak_method_factory_(this) {
 }
 
 TranslateHelper::~TranslateHelper() {

@@ -40,7 +40,7 @@ LocallyManagedUserLoginFlow::LocallyManagedUserLoginFlow(
     const std::string& user_id)
     : ExtendedUserFlow(user_id),
       data_loaded_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 LocallyManagedUserLoginFlow::~LocallyManagedUserLoginFlow() {}

@@ -97,9 +97,8 @@ WebKit::WebURLError NetErrorToWebURLError(int net_error) {
 
 NetErrorHelper::NetErrorHelper(RenderView* render_view)
     : RenderViewObserver(render_view),
-      ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(base::Bind(
-          &NetErrorHelper::TrackerCallback,
-          base::Unretained(this)))),
+      tracker_(base::Bind(&NetErrorHelper::TrackerCallback,
+                          base::Unretained(this))),
       dns_error_page_state_(NetErrorTracker::DNS_ERROR_PAGE_NONE),
       updated_error_page_(false),
       is_failed_post_(false) {

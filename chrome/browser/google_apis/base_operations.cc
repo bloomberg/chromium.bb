@@ -99,7 +99,7 @@ UrlFetchOperationBase::UrlFetchOperationBase(
       re_authenticate_count_(0),
       started_(false),
       save_temp_file_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -112,7 +112,7 @@ UrlFetchOperationBase::UrlFetchOperationBase(
       re_authenticate_count_(0),
       started_(false),
       save_temp_file_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -313,7 +313,7 @@ GetDataOperation::GetDataOperation(
     const GetDataCallback& callback)
     : UrlFetchOperationBase(registry, url_request_context_getter),
       callback_(callback),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   DCHECK(!callback_.is_null());
 }
 
@@ -472,7 +472,7 @@ UploadRangeOperationBase::UploadRangeOperationBase(
       drive_file_path_(drive_file_path),
       upload_url_(upload_url),
       last_chunk_completed_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
 }
 
 UploadRangeOperationBase::~UploadRangeOperationBase() {}

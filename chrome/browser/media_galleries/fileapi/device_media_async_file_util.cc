@@ -275,7 +275,7 @@ bool DeviceMediaAsyncFileUtil::CreateSnapshotFile(
 DeviceMediaAsyncFileUtil::DeviceMediaAsyncFileUtil(
     const base::FilePath& profile_path)
     : profile_path_(profile_path),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
 }
 
 void DeviceMediaAsyncFileUtil::OnDidGetFileInfo(

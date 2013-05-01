@@ -257,7 +257,7 @@ void ChromeToMobileService::RegisterUserPrefs(PrefRegistrySyncable* registry) {
 }
 
 ChromeToMobileService::ChromeToMobileService(Profile* profile)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+    : weak_ptr_factory_(this),
       profile_(profile),
       sync_invalidation_enabled_(false) {
   // TODO(msw): Unit tests do not provide profiles; see http://crbug.com/122183

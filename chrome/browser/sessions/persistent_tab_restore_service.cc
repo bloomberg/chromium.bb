@@ -892,8 +892,7 @@ PersistentTabRestoreService::PersistentTabRestoreService(
     Profile* profile,
     TimeFactory* time_factory)
     : delegate_(new Delegate(profile)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          helper_(this, delegate_.get(), profile, time_factory)) {
+      helper_(this, delegate_.get(), profile, time_factory) {
   delegate_->set_tab_restore_service_helper(&helper_);
 }
 

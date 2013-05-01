@@ -549,7 +549,7 @@ class SSLChan : public MessageLoopForIO::Watcher {
         outbound_stream_(WebSocketProxy::kBufferLimit),
         read_pipe_(read_pipe),
         write_pipe_(write_pipe),
-        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+        weak_factory_(this) {
     if (!SetNonBlock(read_pipe_) || !SetNonBlock(write_pipe_)) {
       Shut(net::ERR_UNEXPECTED);
       return;

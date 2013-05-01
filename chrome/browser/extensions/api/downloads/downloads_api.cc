@@ -1201,7 +1201,7 @@ ExtensionDownloadsEventRouter::ExtensionDownloadsEventRouter(
     Profile* profile,
     DownloadManager* manager)
     : profile_(profile),
-      ALLOW_THIS_IN_INITIALIZER_LIST(notifier_(manager, this)) {
+      notifier_(manager, this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_);
   extensions::EventRouter* router = extensions::ExtensionSystem::Get(profile_)->

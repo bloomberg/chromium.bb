@@ -110,7 +110,7 @@ class ProfileSyncServicePreferenceTest
 
  protected:
   ProfileSyncServicePreferenceTest()
-      : debug_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      : debug_ptr_factory_(this),
         example_url0_("http://example.com/0"),
         example_url1_("http://example.com/1"),
         example_url2_("http://example.com/2"),
@@ -265,10 +265,9 @@ class AddPreferenceEntriesHelper {
  public:
   AddPreferenceEntriesHelper(ProfileSyncServicePreferenceTest* test,
                              const PreferenceValues& entries)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
-            base::Bind(
-                &AddPreferenceEntriesHelper::AddPreferenceEntriesCallback,
-                base::Unretained(this), test, entries))),
+      : callback_(base::Bind(
+            &AddPreferenceEntriesHelper::AddPreferenceEntriesCallback,
+            base::Unretained(this), test, entries)),
         success_(false) {
   }
 

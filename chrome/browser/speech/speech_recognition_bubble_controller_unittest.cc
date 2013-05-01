@@ -83,8 +83,7 @@ class SpeechRecognitionBubbleControllerTest
         cancel_clicked_(false),
         try_again_clicked_(false),
         focus_changed_(false),
-        controller_(ALLOW_THIS_IN_INITIALIZER_LIST(
-            new SpeechRecognitionBubbleController(this))) {
+        controller_(new SpeechRecognitionBubbleController(this)) {
     EXPECT_EQ(NULL, test_fixture_);
     test_fixture_ = this;
   }

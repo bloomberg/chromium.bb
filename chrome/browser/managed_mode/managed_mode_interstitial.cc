@@ -33,7 +33,7 @@ ManagedModeInterstitial::ManagedModeInterstitial(
     const base::Callback<void(bool)>& callback)
     : web_contents_(web_contents),
       url_(url),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      weak_ptr_factory_(this),
       callback_(callback) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());

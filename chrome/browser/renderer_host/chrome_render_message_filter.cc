@@ -134,7 +134,7 @@ ChromeRenderMessageFilter::ChromeRenderMessageFilter(
       extension_info_map_(
           extensions::ExtensionSystem::Get(profile)->info_map()),
       cookie_settings_(CookieSettings::Factory::GetForProfile(profile)),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(this) {
 }
 
 ChromeRenderMessageFilter::~ChromeRenderMessageFilter() {

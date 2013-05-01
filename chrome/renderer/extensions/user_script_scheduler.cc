@@ -41,7 +41,7 @@ namespace extensions {
 
 UserScriptScheduler::UserScriptScheduler(WebFrame* frame,
                                          Dispatcher* dispatcher)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+    : weak_factory_(this),
       frame_(frame),
       current_location_(UserScript::UNDEFINED),
       has_run_idle_(false),

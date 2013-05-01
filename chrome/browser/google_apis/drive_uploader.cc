@@ -135,7 +135,7 @@ struct DriveUploader::UploadFileInfo {
 
 DriveUploader::DriveUploader(DriveServiceInterface* drive_service)
     : drive_service_(drive_service),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   base::SequencedWorkerPool* blocking_pool = BrowserThread::GetBlockingPool();
   blocking_task_runner_ = blocking_pool->GetSequencedTaskRunner(
       blocking_pool->GetSequenceToken());

@@ -25,7 +25,7 @@ DeviceLocalAccountPolicyStore::DeviceLocalAccountPolicyStore(
     : account_id_(account_id),
       session_manager_client_(session_manager_client),
       device_settings_service_(device_settings_service),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
+      weak_factory_(this) {}
 
 DeviceLocalAccountPolicyStore::~DeviceLocalAccountPolicyStore() {}
 

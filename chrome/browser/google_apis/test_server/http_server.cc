@@ -55,7 +55,7 @@ HttpServer::HttpServer(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_thread)
     : io_thread_(io_thread),
       port_(-1),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
   DCHECK(io_thread_);
   DCHECK(thread_checker_.CalledOnValidThread());
 }

@@ -200,7 +200,7 @@ BookmarkModelAssociator::BookmarkModelAssociator(
       user_share_(user_share),
       unrecoverable_error_handler_(unrecoverable_error_handler),
       expect_mobile_bookmarks_folder_(expect_mobile_bookmarks_folder),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(bookmark_model_);
   DCHECK(user_share_);

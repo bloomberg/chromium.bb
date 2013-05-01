@@ -190,7 +190,7 @@ bool FlattenPropertyList(const IBusPropertyList& ibus_prop_list,
 }  // namespace
 
 IBusControllerImpl::IBusControllerImpl()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+    : weak_ptr_factory_(this) {
   IBusDaemonController::GetInstance()->AddObserver(this);
 }
 

@@ -80,10 +80,8 @@ TabHelper::ScriptExecutionObserver::~ScriptExecutionObserver() {
 TabHelper::TabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       extension_app_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          extension_function_dispatcher_(
-              Profile::FromBrowserContext(web_contents->GetBrowserContext()),
-              this)),
+      extension_function_dispatcher_(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()), this),
       pending_web_app_action_(NONE),
       script_executor_(new ScriptExecutor(web_contents,
                                           &script_execution_observers_)),
@@ -91,7 +89,7 @@ TabHelper::TabHelper(content::WebContents* web_contents)
           ExtensionSystem::Get(
               Profile::FromBrowserContext(web_contents->GetBrowserContext()))->
           rules_registry_service()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(image_loader_ptr_factory_(this)) {
+      image_loader_ptr_factory_(this) {
   // The ActiveTabPermissionManager requires a session ID; ensure this
   // WebContents has one.
   SessionTabHelper::CreateForWebContents(web_contents);

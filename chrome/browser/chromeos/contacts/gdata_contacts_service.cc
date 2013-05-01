@@ -453,7 +453,7 @@ class GDataContactsService::DownloadContactsRequest {
         photo_download_failed_(false),
         num_photo_download_404_errors_(0),
         total_photo_bytes_(0),
-        ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+        weak_ptr_factory_(this) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(service_);
     DCHECK(runner_);

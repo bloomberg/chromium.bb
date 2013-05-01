@@ -87,7 +87,7 @@ CopyOperation::CopyOperation(
     move_operation_(new MoveOperation(job_scheduler,
                                       metadata,
                                       observer)),
-    weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+    weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 

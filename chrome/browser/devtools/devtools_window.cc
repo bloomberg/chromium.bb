@@ -310,7 +310,7 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
       dock_side_(dock_side),
       is_loaded_(false),
       action_on_load_(DEVTOOLS_TOGGLE_ACTION_SHOW),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       width_(-1),
       height_(-1),
       dock_side_before_minimized_(dock_side) {

@@ -22,10 +22,10 @@ PepperFlashDeviceIDHost::PepperFlashDeviceIDHost(BrowserPpapiHost* host,
                                                  PP_Instance instance,
                                                  PP_Resource resource)
     : ppapi::host::ResourceHost(host->GetPpapiHost(), instance, resource),
-      factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      factory_(this),
       browser_ppapi_host_(host),
       in_progress_(false),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)){
+      weak_factory_(this){
   fetcher_ = new DeviceIDFetcher(
       base::Bind(&PepperFlashDeviceIDHost::GotDeviceID,
                  weak_factory_.GetWeakPtr()), instance);

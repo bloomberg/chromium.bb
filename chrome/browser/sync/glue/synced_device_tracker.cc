@@ -28,7 +28,7 @@ std::string DeviceInfoLookupString(const std::string& cache_guid) {
 SyncedDeviceTracker::SyncedDeviceTracker(syncer::UserShare* user_share,
                                          const std::string& cache_guid)
   : ChangeProcessor(NULL),
-    ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+    weak_factory_(this),
     user_share_(user_share),
     cache_guid_(cache_guid),
     local_device_info_tag_(DeviceInfoLookupString(cache_guid)) {

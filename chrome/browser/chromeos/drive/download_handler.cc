@@ -99,7 +99,7 @@ DownloadHandler::DownloadHandler(
     DriveFileSystemInterface* file_system)
     : file_write_helper_(file_write_helper),
       file_system_(file_system),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
 }
 
 DownloadHandler::~DownloadHandler() {

@@ -427,7 +427,7 @@ SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew()
       download_store_(NULL),
       csd_whitelist_store_(NULL),
       download_whitelist_store_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(reset_factory_(this)),
+      reset_factory_(this),
       corruption_detected_(false),
       change_detected_(false) {
   DCHECK(browse_store_.get());
@@ -449,7 +449,7 @@ SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew(
       csd_whitelist_store_(csd_whitelist_store),
       download_whitelist_store_(download_whitelist_store),
       extension_blacklist_store_(extension_blacklist_store),
-      ALLOW_THIS_IN_INITIALIZER_LIST(reset_factory_(this)),
+      reset_factory_(this),
       corruption_detected_(false) {
   DCHECK(browse_store_.get());
 }

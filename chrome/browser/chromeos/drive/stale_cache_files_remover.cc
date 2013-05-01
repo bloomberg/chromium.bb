@@ -32,7 +32,7 @@ StaleCacheFilesRemover::StaleCacheFilesRemover(
     DriveCache* cache)
     : cache_(cache),
       file_system_(file_system),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   file_system_->AddObserver(this);
 }
 

@@ -42,7 +42,7 @@ UserImageScreen::UserImageScreen(ScreenObserver* screen_observer,
                                  UserImageScreenActor* actor)
     : WizardScreen(screen_observer),
       actor_(actor),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       accept_photo_after_decoding_(false),
       selected_image_(User::kInvalidImageIndex),
       profile_picture_enabled_(false),

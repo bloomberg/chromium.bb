@@ -29,7 +29,7 @@ class SyncBrowserThreadModelWorkerTest : public testing::Test {
       did_do_work_(false),
       db_thread_(BrowserThread::DB),
       io_thread_(BrowserThread::IO, &io_loop_),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
+      weak_factory_(this) {}
 
   bool did_do_work() { return did_do_work_; }
   BrowserThreadModelWorker* worker() { return worker_.get(); }

@@ -185,7 +185,7 @@ ExpireHistoryBackend::ExpireHistoryBackend(
       archived_db_(NULL),
       thumb_db_(NULL),
       text_db_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       bookmark_service_(bookmark_service) {
 }
 

@@ -276,8 +276,7 @@ ProfileManager::ProfileManager(const base::FilePath& user_data_dir)
       will_import_(false),
       profile_shortcut_manager_(NULL),
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          browser_list_observer_(this)),
+      browser_list_observer_(this),
 #endif
       closing_all_browsers_(false) {
 #if defined(OS_CHROMEOS)

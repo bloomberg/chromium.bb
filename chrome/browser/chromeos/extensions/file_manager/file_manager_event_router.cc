@@ -300,7 +300,7 @@ FileManagerEventRouter::FileManagerEventRouter(
     : notifications_(new FileManagerNotifications(profile)),
       pref_change_registrar_(new PrefChangeRegistrar),
       profile_(profile),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   file_watcher_callback_ =
@@ -987,7 +987,7 @@ FileManagerEventRouter::FileWatcherExtensions::FileWatcherExtensions(
       virtual_path_(virtual_path),
       ref_count_(0),
       is_remote_file_system_(is_remote_file_system),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   AddExtension(extension_id);

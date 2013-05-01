@@ -55,7 +55,7 @@ NetworkChangeNotifierNetworkLibrary::NetworkChangeNotifierNetworkLibrary()
       has_active_network_(false),
       connection_state_(chromeos::STATE_UNKNOWN),
       connection_type_(CONNECTION_NONE),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   BrowserThread::PostDelayedTask(
          BrowserThread::UI, FROM_HERE,
          base::Bind(

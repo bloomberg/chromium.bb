@@ -163,7 +163,7 @@ AuthService::AuthService(
     : profile_(NULL),
       url_request_context_getter_(url_request_context_getter),
       scopes_(scopes),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 

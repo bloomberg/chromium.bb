@@ -63,7 +63,7 @@ class AudioServiceImpl : public AudioService,
 
 AudioServiceImpl::AudioServiceImpl()
     : cras_audio_client_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   if (chromeos::DBusThreadManager::IsInitialized() &&
       chromeos::DBusThreadManager::Get()) {
     cras_audio_client_ =

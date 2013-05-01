@@ -41,7 +41,7 @@ PepperFlashRendererHost::PepperFlashRendererHost(
     PP_Instance instance,
     PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      weak_factory_(this),
       host_(host) {
 }
 

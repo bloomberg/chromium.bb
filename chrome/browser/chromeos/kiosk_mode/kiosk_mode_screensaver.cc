@@ -134,7 +134,7 @@ void ScreensaverUnpackerClient::NotifyAppPackOfDamagedFile() {
 }  // namespace
 
 KioskModeScreensaver::KioskModeScreensaver()
-    : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+    : weak_ptr_factory_(this) {
   chromeos::KioskModeSettings* kiosk_mode_settings =
       chromeos::KioskModeSettings::Get();
 

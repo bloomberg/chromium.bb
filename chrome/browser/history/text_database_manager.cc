@@ -89,7 +89,7 @@ TextDatabaseManager::TextDatabaseManager(const base::FilePath& dir,
       transaction_nesting_(0),
       db_cache_(DBCache::NO_AUTO_EVICT),
       present_databases_loaded_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       history_publisher_(NULL) {
 }
 

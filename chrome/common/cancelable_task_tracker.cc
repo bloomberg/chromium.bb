@@ -58,7 +58,7 @@ void RunOrPostToTaskRunner(TaskRunner* task_runner, const Closure& closure) {
 const CancelableTaskTracker::TaskId CancelableTaskTracker::kBadTaskId = 0;
 
 CancelableTaskTracker::CancelableTaskTracker()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+    : weak_factory_(this),
       next_id_(1) {}
 
 CancelableTaskTracker::~CancelableTaskTracker() {

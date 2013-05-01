@@ -197,7 +197,7 @@ ComponentCloudPolicyService::ComponentCloudPolicyService(
       client_(NULL),
       store_(store),
       is_initialized_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   store_->AddObserver(this);
 
   // TODO(joaodasilva): this can't currently live on the blocking pool because

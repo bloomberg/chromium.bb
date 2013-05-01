@@ -40,7 +40,7 @@ GoogleURLTracker::GoogleURLTracker(
       infobar_creator_(base::Bind(&GoogleURLTrackerInfoBarDelegate::Create)),
       google_url_(mode == UNIT_TEST_MODE ? kDefaultGoogleHomepage :
           profile->GetPrefs()->GetString(prefs::kLastKnownGoogleURL)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      weak_ptr_factory_(this),
       fetcher_id_(0),
       in_startup_sleep_(true),
       already_fetched_(false),

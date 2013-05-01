@@ -39,7 +39,7 @@ uint32 WriteDataChunkIntoSnapshotFileOnFileThread(
 
 MTPReadFileWorker::MTPReadFileWorker(const std::string& device_handle)
     : device_handle_(device_handle),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!device_handle_.empty());
 }

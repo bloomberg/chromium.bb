@@ -11,7 +11,7 @@
 using base::Histogram;
 
 MetricsServiceBase::MetricsServiceBase()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(histogram_snapshot_manager_(this)) {
+    : histogram_snapshot_manager_(this) {
 }
 
 MetricsServiceBase::~MetricsServiceBase() {

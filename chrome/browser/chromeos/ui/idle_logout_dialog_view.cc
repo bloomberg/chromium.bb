@@ -97,7 +97,7 @@ string16 IdleLogoutDialogView::GetWindowTitle() const {
 // IdleLogoutDialog private methods
 IdleLogoutDialogView::IdleLogoutDialogView()
     : restart_label_(NULL),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(this) {
   if (!IdleLogoutDialogView::provider_)
     IdleLogoutDialogView::provider_ = new IdleLogoutSettingsProvider();
 }

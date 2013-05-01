@@ -112,7 +112,7 @@ UpdateScreen::UpdateScreen(
       ignore_idle_status_(true),
       actor_(actor),
       is_first_portal_notification_(true),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   DCHECK(actor_);
   if (actor_)
     actor_->SetDelegate(this);

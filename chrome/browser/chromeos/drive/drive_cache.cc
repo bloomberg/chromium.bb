@@ -186,7 +186,7 @@ DriveCache::DriveCache(const base::FilePath& cache_root_path,
       cache_paths_(GetCachePaths(cache_root_path_)),
       blocking_task_runner_(blocking_task_runner),
       free_disk_space_getter_(free_disk_space_getter),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   DCHECK(blocking_task_runner_);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }

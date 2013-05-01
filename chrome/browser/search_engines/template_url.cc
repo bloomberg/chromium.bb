@@ -749,10 +749,10 @@ void TemplateURLData::SetURL(const std::string& url) {
 TemplateURL::TemplateURL(Profile* profile, const TemplateURLData& data)
     : profile_(profile),
       data_(data),
-      url_ref_(ALLOW_THIS_IN_INITIALIZER_LIST(this), TemplateURLRef::SEARCH),
-      suggestions_url_ref_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
+      url_ref_(this, TemplateURLRef::SEARCH),
+      suggestions_url_ref_(this,
                            TemplateURLRef::SUGGEST),
-      instant_url_ref_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
+      instant_url_ref_(this,
                        TemplateURLRef::INSTANT) {
   SetPrepopulateId(data_.prepopulate_id);
 

@@ -59,7 +59,7 @@ SyncClient::SyncClient(DriveFileSystemInterface* file_system,
     : file_system_(file_system),
       cache_(cache),
       delay_(base::TimeDelta::FromSeconds(kDelaySeconds)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(file_system);
   DCHECK(cache);

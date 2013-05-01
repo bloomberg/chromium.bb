@@ -189,7 +189,7 @@ DevToolsFileHelper::DevToolsFileHelper(WebContents* web_contents,
                                        Profile* profile)
     : web_contents_(web_contents),
       profile_(profile),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 DevToolsFileHelper::~DevToolsFileHelper() {

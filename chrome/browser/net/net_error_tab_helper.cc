@@ -153,10 +153,9 @@ void NetErrorTabHelper::DidFinishLoad(
 
 NetErrorTabHelper::NetErrorTabHelper(WebContents* contents)
     : WebContentsObserver(contents),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(
-          base::Bind(&NetErrorTabHelper::TrackerCallback,
-                     weak_factory_.GetWeakPtr()))),
+      weak_factory_(this),
+      tracker_(base::Bind(&NetErrorTabHelper::TrackerCallback,
+                          weak_factory_.GetWeakPtr())),
       dns_error_page_state_(NetErrorTracker::DNS_ERROR_PAGE_NONE),
       dns_probe_state_(DNS_PROBE_NONE),
       enabled_by_trial_(GetEnabledByTrial()) {

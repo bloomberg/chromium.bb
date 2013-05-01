@@ -476,8 +476,8 @@ MetricsService::MetricsService()
       low_entropy_source_(kLowEntropySourceNotSet),
       idle_since_last_transmission_(false),
       next_window_id_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(self_ptr_factory_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(state_saver_factory_(this)),
+      self_ptr_factory_(this),
+      state_saver_factory_(this),
       waiting_for_asynchronous_reporting_step_(false),
       entropy_source_returned_(LAST_ENTROPY_NONE) {
   DCHECK(IsSingleThreaded());

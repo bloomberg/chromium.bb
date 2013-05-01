@@ -498,7 +498,7 @@ void TranslateManager::OnURLFetchComplete(const net::URLFetcher* source) {
 }
 
 TranslateManager::TranslateManager()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_method_factory_(this)),
+    : weak_method_factory_(this),
       translate_script_expiration_delay_(
           base::TimeDelta::FromDays(kTranslateScriptExpirationDelayDays)) {
   notification_registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,

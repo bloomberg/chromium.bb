@@ -18,7 +18,7 @@ namespace contacts {
 
 ContactManagerStub::ContactManagerStub(Profile* profile)
     : profile_(profile),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
 }
 
 ContactManagerStub::~ContactManagerStub() {}

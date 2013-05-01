@@ -25,7 +25,7 @@ ExpectCanceledFetcher::ExpectCanceledFetcher(
     net::URLFetcher::RequestType request_type,
     net::URLFetcherDelegate* d)
     : net::TestURLFetcher(0, url, d),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 ExpectCanceledFetcher::~ExpectCanceledFetcher() {

@@ -208,7 +208,7 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
 // sync integration unit tests depend on being able to create more than one
 // history thread.
 HistoryService::HistoryService()
-    : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+    : weak_ptr_factory_(this),
       thread_(new base::Thread(kHistoryThreadName)),
       profile_(NULL),
       backend_loaded_(false),
@@ -219,11 +219,11 @@ HistoryService::HistoryService()
 }
 
 HistoryService::HistoryService(Profile* profile)
-    : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+    : weak_ptr_factory_(this),
       thread_(new base::Thread(kHistoryThreadName)),
       profile_(profile),
       visitedlink_master_(new components::VisitedLinkMaster(
-          profile, ALLOW_THIS_IN_INITIALIZER_LIST(this), true)),
+          profile, this, true)),
       backend_loaded_(false),
       current_backend_id_(-1),
       bookmark_service_(NULL),

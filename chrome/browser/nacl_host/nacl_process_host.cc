@@ -201,14 +201,14 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
       debug_exception_handler_requested_(false),
 #endif
       internal_(new NaClInternal()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       enable_exception_handling_(true),
       enable_debug_stub_(false),
       uses_irt_(uses_irt),
       enable_dyncode_syscalls_(enable_dyncode_syscalls),
       off_the_record_(off_the_record),
       profile_directory_(profile_directory),
-      ALLOW_THIS_IN_INITIALIZER_LIST(ipc_plugin_listener_(this)),
+      ipc_plugin_listener_(this),
       render_view_id_(render_view_id) {
   process_.reset(content::BrowserChildProcessHost::Create(
       PROCESS_TYPE_NACL_LOADER, this));

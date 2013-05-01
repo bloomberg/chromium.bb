@@ -591,7 +591,7 @@ DeviceManagementService::DeviceManagementService(
     const std::string& server_url)
     : server_url_(server_url),
       initialized_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
 }
 
 void DeviceManagementService::StartJob(DeviceManagementRequestJobImpl* job) {

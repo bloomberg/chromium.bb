@@ -13,7 +13,7 @@
 namespace extensions {
 
 TopSitesGetFunction::TopSitesGetFunction()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {}
+    : weak_ptr_factory_(this) {}
 
 TopSitesGetFunction::~TopSitesGetFunction() {}
 

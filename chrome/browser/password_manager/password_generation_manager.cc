@@ -29,7 +29,7 @@ PasswordGenerationManager::PasswordGenerationManager(
     content::WebContents* contents)
     : content::WebContentsObserver(contents),
       enabled_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   RegisterWithSyncService();
 }
 

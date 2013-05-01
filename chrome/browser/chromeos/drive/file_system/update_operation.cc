@@ -29,7 +29,7 @@ UpdateOperation::UpdateOperation(
       scheduler_(scheduler),
       blocking_task_runner_(blocking_task_runner),
       observer_(observer),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 

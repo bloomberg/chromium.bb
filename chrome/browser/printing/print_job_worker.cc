@@ -51,7 +51,7 @@ void NotificationCallback(PrintJobWorkerOwner* print_job,
 PrintJobWorker::PrintJobWorker(PrintJobWorkerOwner* owner)
     : Thread("Printing_Worker"),
       owner_(owner),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   // The object is created in the IO thread.
   DCHECK_EQ(owner_->message_loop(), MessageLoop::current());
 

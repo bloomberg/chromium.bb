@@ -344,21 +344,21 @@ ExtensionService::ExtensionService(Profile* profile,
       extension_prefs_(extension_prefs),
       blacklist_(blacklist),
       settings_frontend_(extensions::SettingsFrontend::Create(profile)),
-      pending_extension_manager_(*ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      pending_extension_manager_(*this),
       install_directory_(install_directory),
       extensions_enabled_(extensions_enabled),
       show_extensions_prompts_(true),
       install_updates_when_idle_(true),
       ready_(false),
-      toolbar_model_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      toolbar_model_(this),
       menu_manager_(profile),
       event_routers_initialized_(false),
       update_once_all_providers_are_ready_(false),
       browser_terminating_(false),
       installs_delayed_(false),
       is_first_run_(false),
-      app_sync_bundle_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      extension_sync_bundle_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      app_sync_bundle_(this),
+      extension_sync_bundle_(this) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Figure out if extension installation should be enabled.

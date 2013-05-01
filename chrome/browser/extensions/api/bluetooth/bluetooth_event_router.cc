@@ -31,7 +31,7 @@ ExtensionBluetoothEventRouter::ExtensionBluetoothEventRouter(Profile* profile)
       adapter_(NULL),
       num_event_listeners_(0),
       next_socket_id_(1),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   DCHECK(profile_);
 }
 

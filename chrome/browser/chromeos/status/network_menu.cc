@@ -907,7 +907,7 @@ int MoreMenuModel::GetCommandIdAt(int index) const {
 NetworkMenu::NetworkMenu(Delegate* delegate)
     : delegate_(delegate),
       refreshing_menu_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_pointer_factory_(this)) {
+      weak_pointer_factory_(this) {
   main_menu_model_.reset(new MainMenuModel(weak_pointer_factory_.GetWeakPtr()));
 }
 

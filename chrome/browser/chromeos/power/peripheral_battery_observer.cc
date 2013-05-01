@@ -96,8 +96,8 @@ class PeripheralBatteryNotificationDelegate : public NotificationDelegate {
 
 PeripheralBatteryObserver::PeripheralBatteryObserver()
     : testing_clock_(NULL),
-      weakptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(
-          new base::WeakPtrFactory<PeripheralBatteryObserver>(this))) {
+      weakptr_factory_(
+          new base::WeakPtrFactory<PeripheralBatteryObserver>(this)) {
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
   device::BluetoothAdapterFactory::GetAdapter(
       base::Bind(&PeripheralBatteryObserver::InitializeOnBluetoothReady,

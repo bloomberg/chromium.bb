@@ -127,7 +127,7 @@ class MediaStreamCaptureIndicator::WebContentsDeviceUsage
         video_ref_count_(0),
         mirroring_ref_count_(0),
         screen_capture_ref_count_(0),
-        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+        weak_factory_(this) {
   }
 
   bool IsCapturingAudio() const { return audio_ref_count_ > 0; }

@@ -37,7 +37,7 @@ NetworkLibraryImplStub::NetworkLibraryImplStub()
       pin_required_(false),
       pin_entered_(false),
       network_priority_order_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_pointer_factory_(this)) {
+      weak_pointer_factory_(this) {
   // Emulate default setting of the CheckPortalList when OOBE is done.
   if (IsEthernetEnabled())
     check_portal_list_ = "ethernet,wifi,cellular";

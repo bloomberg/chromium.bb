@@ -1581,7 +1581,7 @@ int TaskManager::GetBackgroundPageCount() {
 }
 
 TaskManager::TaskManager()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(model_(new TaskManagerModel(this))) {
+    : model_(new TaskManagerModel(this)) {
 }
 
 TaskManager::~TaskManager() {

@@ -22,7 +22,7 @@ using content::PluginService;
 
 PluginStatusPrefSetter::PluginStatusPrefSetter()
     : profile_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(factory_(this)) {}
+      factory_(this) {}
 
 PluginStatusPrefSetter::~PluginStatusPrefSetter() {
 }

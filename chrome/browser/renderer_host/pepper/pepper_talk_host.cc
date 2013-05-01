@@ -65,7 +65,7 @@ PepperTalkHost::PepperTalkHost(content::BrowserPpapiHost* host,
                                PP_Instance instance,
                                PP_Resource resource)
     : ppapi::host::ResourceHost(host->GetPpapiHost(), instance, resource),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      weak_factory_(this),
       browser_ppapi_host_(host) {
 }
 

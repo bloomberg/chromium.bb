@@ -34,7 +34,7 @@ WebResourceService::WebResourceService(
       last_update_time_pref_name_(last_update_time_pref_name),
       start_fetch_delay_ms_(start_fetch_delay_ms),
       cache_update_delay_ms_(cache_update_delay_ms),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   resource_request_allowed_notifier_.Init(this);
   DCHECK(prefs);
 }

@@ -44,7 +44,7 @@ const char* kReportingFlags[] = {
 VersionInfoUpdater::VersionInfoUpdater(Delegate* delegate)
     : cros_settings_(chromeos::CrosSettings::Get()),
       delegate_(delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_pointer_factory_(this)) {
+      weak_pointer_factory_(this) {
 }
 
 VersionInfoUpdater::~VersionInfoUpdater() {

@@ -178,7 +178,7 @@ MTPDeviceDelegateImplLinux::MTPDeviceDelegateImplLinux(
     : init_state_(UNINITIALIZED),
       task_in_progress_(false),
       device_path_(device_location),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   DCHECK(!device_path_.empty());
   RemoveChars(device_location, kRootPath, &storage_name_);

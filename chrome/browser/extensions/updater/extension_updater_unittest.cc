@@ -211,7 +211,7 @@ class MockService : public TestExtensionService {
  public:
   explicit MockService(TestExtensionPrefs* prefs)
       : prefs_(prefs),
-        pending_extension_manager_(ALLOW_THIS_IN_INITIALIZER_LIST(*this)),
+        pending_extension_manager_(*this),
         blacklist_(prefs_->prefs()) {
     profile_.CreateRequestContext();
   }

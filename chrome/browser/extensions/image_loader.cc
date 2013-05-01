@@ -147,7 +147,7 @@ ImageLoader::LoadResult::~LoadResult() {
 // ImageLoader
 
 ImageLoader::ImageLoader()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+    : weak_ptr_factory_(this) {
 }
 
 ImageLoader::~ImageLoader() {

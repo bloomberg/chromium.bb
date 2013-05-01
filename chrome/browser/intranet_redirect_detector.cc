@@ -26,7 +26,7 @@ const size_t IntranetRedirectDetector::kNumCharsInHostnames = 10;
 IntranetRedirectDetector::IntranetRedirectDetector()
     : redirect_origin_(g_browser_process->local_state()->GetString(
           prefs::kLastKnownIntranetRedirectOrigin)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       in_sleep_(true) {
   // Because this function can be called during startup, when kicking off a URL
   // fetch can eat up 20 ms of time, we delay seven seconds, which is hopefully

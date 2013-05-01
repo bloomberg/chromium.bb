@@ -81,7 +81,7 @@ class AppPackExternalLoader
 
 AppPackUpdater::AppPackUpdater(net::URLRequestContextGetter* request_context,
                                EnterpriseInstallAttributes* install_attributes)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+    : weak_ptr_factory_(this),
       initialized_(false),
       created_extension_loader_(false),
       request_context_(request_context),

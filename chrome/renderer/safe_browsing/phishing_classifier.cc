@@ -41,7 +41,7 @@ PhishingClassifier::PhishingClassifier(content::RenderView* render_view,
     : render_view_(render_view),
       scorer_(NULL),
       clock_(clock),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   Clear();
 }
 

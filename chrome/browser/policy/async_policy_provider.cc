@@ -18,7 +18,7 @@ namespace policy {
 
 AsyncPolicyProvider::AsyncPolicyProvider(scoped_ptr<AsyncPolicyLoader> loader)
     : loader_(loader.release()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   // Make an immediate synchronous load on startup.
   OnLoaderReloaded(loader_->InitialLoad());
 }

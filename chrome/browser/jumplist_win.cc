@@ -462,7 +462,7 @@ bool UpdateJumpList(const wchar_t* app_id,
 }  // namespace
 
 JumpList::JumpList()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+    : weak_ptr_factory_(this),
       profile_(NULL),
       task_id_(CancelableTaskTracker::kBadTaskId) {
 }

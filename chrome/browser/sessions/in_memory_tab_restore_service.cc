@@ -11,8 +11,7 @@
 InMemoryTabRestoreService::InMemoryTabRestoreService(
     Profile* profile,
     TabRestoreService::TimeFactory* time_factory)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(
-        helper_(this, NULL, profile, time_factory)) {
+    : helper_(this, NULL, profile, time_factory) {
 }
 
 InMemoryTabRestoreService::~InMemoryTabRestoreService() {}

@@ -32,7 +32,7 @@ const int64 kDownloadShowDelayInSeconds = 2;
 DownloadShelf::DownloadShelf()
     : should_show_on_unhide_(false),
       is_hidden_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
 }
 
 DownloadShelf::~DownloadShelf() {

@@ -19,7 +19,7 @@ DeviceCloudPolicyStoreChromeOS::DeviceCloudPolicyStoreChromeOS(
     EnterpriseInstallAttributes* install_attributes)
     : device_settings_service_(device_settings_service),
       install_attributes_(install_attributes),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   device_settings_service_->AddObserver(this);
 }
 

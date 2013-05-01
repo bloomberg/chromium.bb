@@ -15,7 +15,7 @@
 
 SdchDictionaryFetcher::SdchDictionaryFetcher(
     net::URLRequestContextGetter* context)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+    : weak_factory_(this),
       task_is_pending_(false),
       context_(context) {
   DCHECK(CalledOnValidThread());

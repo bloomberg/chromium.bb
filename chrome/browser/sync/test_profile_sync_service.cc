@@ -45,7 +45,7 @@ SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
     syncer::StorageOption storage_option)
     : browser_sync::SyncBackendHost(
         profile->GetDebugName(), profile, sync_prefs, invalidator_storage),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      weak_ptr_factory_(this),
       id_factory_(id_factory),
       callback_(callback),
       fail_initial_download_(fail_initial_download),

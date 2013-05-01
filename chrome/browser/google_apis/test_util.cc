@@ -203,9 +203,8 @@ void AppendProgressCallbackResult(std::vector<ProgressInfo>* progress_values,
 }
 
 TestGetContentCallback::TestGetContentCallback()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
-          base::Bind(&TestGetContentCallback::OnGetContent,
-                     base::Unretained(this)))) {
+    : callback_(base::Bind(&TestGetContentCallback::OnGetContent,
+                           base::Unretained(this))) {
 }
 
 TestGetContentCallback::~TestGetContentCallback() {

@@ -87,7 +87,7 @@ DeviceStatusCollector::DeviceStatusCollector(
       duration_for_last_reported_day_(0),
       geolocation_update_in_progress_(false),
       statistics_provider_(provider),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       location_update_requester_(location_update_requester),
       report_version_info_(false),
       report_activity_times_(false),

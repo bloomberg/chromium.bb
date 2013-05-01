@@ -24,7 +24,7 @@ using content::WebContents;
 
 OptionsMenuModel::OptionsMenuModel(
     TranslateInfoBarDelegate* translate_delegate)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
+    : ui::SimpleMenuModel(this),
       translate_infobar_delegate_(translate_delegate) {
   string16 original_language = translate_delegate->language_name_at(
       translate_delegate->original_language_index());

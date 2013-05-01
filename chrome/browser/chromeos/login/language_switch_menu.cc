@@ -55,7 +55,7 @@ void NotifyLocaleChanged(aura::Window* window) {
 namespace chromeos {
 
 LanguageSwitchMenu::LanguageSwitchMenu()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(menu_(new views::MenuItemView(this))),
+    : menu_(new views::MenuItemView(this)),
       menu_runner_(new views::MenuRunner(menu_)) {
 }
 

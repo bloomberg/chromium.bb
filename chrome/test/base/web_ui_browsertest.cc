@@ -100,9 +100,9 @@ class WebUIJsInjectionReadyObserver {
   explicit WebUIJsInjectionReadyObserver(
       content::JsInjectionReadyObserver* observer)
       : injection_observer_(observer),
-        ALLOW_THIS_IN_INITIALIZER_LIST(rvh_callback_(
+        rvh_callback_(
             base::Bind(&WebUIJsInjectionReadyObserver::RenderViewHostCreated,
-                       base::Unretained(this)))) {
+                       base::Unretained(this))) {
     content::RenderViewHost::AddCreatedCallback(rvh_callback_);
   }
 

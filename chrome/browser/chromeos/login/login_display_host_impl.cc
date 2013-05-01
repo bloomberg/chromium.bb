@@ -153,7 +153,7 @@ LoginDisplayHost* LoginDisplayHostImpl::default_host_ = NULL;
 
 LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
     : background_bounds_(background_bounds),
-      ALLOW_THIS_IN_INITIALIZER_LIST(pointer_factory_(this)),
+      pointer_factory_(this),
       shutting_down_(false),
       oobe_progress_bar_visible_(false),
       session_starting_(false),

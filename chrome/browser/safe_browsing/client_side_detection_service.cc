@@ -70,7 +70,7 @@ ClientSideDetectionService::CacheState::CacheState(bool phish, base::Time time)
 ClientSideDetectionService::ClientSideDetectionService(
     net::URLRequestContextGetter* request_context_getter)
     : enabled_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       request_context_getter_(request_context_getter) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());

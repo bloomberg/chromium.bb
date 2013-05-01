@@ -153,7 +153,7 @@ class MockWebDataServiceWrapperSyncable : public MockWebDataServiceWrapper {
 class SyncAutofillDataTypeControllerTest : public testing::Test {
  public:
   SyncAutofillDataTypeControllerTest()
-      : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      : weak_ptr_factory_(this),
         ui_thread_(BrowserThread::UI, &message_loop_),
         db_thread_(BrowserThread::DB),
         last_start_result_(DataTypeController::OK) {}

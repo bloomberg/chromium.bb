@@ -46,7 +46,7 @@ static SkBitmap ApplyPadding(const SkBitmap& source,
 
 ExtensionIconManager::ExtensionIconManager()
     : monochrome_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this))  {
+      weak_ptr_factory_(this)  {
 }
 
 ExtensionIconManager::~ExtensionIconManager() {

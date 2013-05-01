@@ -931,7 +931,7 @@ void PepperFlashSettingsManager::Core::OnClearSiteDataResult(
 PepperFlashSettingsManager::PepperFlashSettingsManager(
     Client* client,
     content::BrowserContext* browser_context)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+    : weak_ptr_factory_(this),
       client_(client),
       browser_context_(browser_context),
       next_request_id_(1) {

@@ -224,7 +224,7 @@ BurnManager::BurnManager(
       state_machine_(new StateMachine()),
       url_request_context_getter_(context_getter),
       bytes_image_download_progress_last_reported_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   NetworkStateHandler::Get()->AddObserver(this);
   base::WeakPtr<BurnManager> weak_ptr(weak_ptr_factory_.GetWeakPtr());
   device_handler_.SetCallbacks(

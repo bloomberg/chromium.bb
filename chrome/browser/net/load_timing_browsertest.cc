@@ -121,7 +121,7 @@ class MockUrlRequestJobWithTiming : public net::URLRequestFileJob {
                               const TimingDeltas& load_timing_deltas)
       : net::URLRequestFileJob(request, network_delegate, path),
         load_timing_deltas_(load_timing_deltas),
-        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+        weak_factory_(this) {
   }
 
   // net::URLRequestFileJob implementation:

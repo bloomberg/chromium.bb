@@ -45,9 +45,8 @@ class ProcessSingletonLinuxTest : public testing::Test {
     explicit TestableProcessSingleton(const base::FilePath& user_data_dir)
         : ProcessSingleton(
             user_data_dir,
-            base::Bind(
-                &TestableProcessSingleton::NotificationCallback,
-                ALLOW_THIS_IN_INITIALIZER_LIST(base::Unretained(this)))) {}
+            base::Bind(&TestableProcessSingleton::NotificationCallback,
+                       base::Unretained(this))) {}
 
 
     std::vector<CommandLine::StringVector> callback_command_lines_;

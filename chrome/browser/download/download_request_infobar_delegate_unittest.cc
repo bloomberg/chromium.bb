@@ -41,7 +41,7 @@ class MockTabDownloadState : public DownloadRequestLimiter::TabDownloadState {
 };
 
 MockTabDownloadState::MockTabDownloadState()
-    : factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+    : factory_(this),
       infobar_(DownloadRequestInfoBarDelegate::Create(factory_.GetWeakPtr())),
       responded_(false),
       accepted_(false) {}

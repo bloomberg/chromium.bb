@@ -49,7 +49,7 @@ DriveURLRequestJob::DriveURLRequestJob(
     net::NetworkDelegate* network_delegate)
     : net::URLRequestJob(request, network_delegate),
       file_system_getter_(file_system_getter),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
 }
 
 void DriveURLRequestJob::Start() {

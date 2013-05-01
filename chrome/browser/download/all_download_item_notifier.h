@@ -20,10 +20,8 @@
 //  public:
 //   DownloadSystemConsumer(content::DownloadManager* original_manager,
 //            content::DownloadManager* incognito_manager)
-//     : ALLOW_THIS_IN_INITIALIZATION_LIST(original_notifier_(
-//           original_manager, this)),
-//       ALLOW_THIS_IN_INITIALIZATION_LIST(incognito_notifier_(
-//           incognito_manager, this)) {
+//     : original_notifier_(original_manager, this),
+//       incognito_notifier_(incognito_manager, this) {
 //   }
 //
 //   virtual void OnDownloadUpdated(
@@ -34,9 +32,8 @@
 //   AllDownloadItemNotifier incognito_notifier_;
 // };
 
-class AllDownloadItemNotifier
-  : public content::DownloadManager::Observer,
-    public content::DownloadItem::Observer {
+class AllDownloadItemNotifier : public content::DownloadManager::Observer,
+                                public content::DownloadItem::Observer {
  public:
   // All of the methods take the DownloadManager so that subclasses can observe
   // multiple managers at once and easily distinguish which manager a given item

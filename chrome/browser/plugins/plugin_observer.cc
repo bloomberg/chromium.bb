@@ -174,7 +174,7 @@ class PluginObserver::PluginPlaceholderHost : public PluginInstallerObserver {
 
 PluginObserver::PluginObserver(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
 }
 
 PluginObserver::~PluginObserver() {

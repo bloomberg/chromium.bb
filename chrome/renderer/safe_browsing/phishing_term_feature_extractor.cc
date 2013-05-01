@@ -102,7 +102,7 @@ PhishingTermFeatureExtractor::PhishingTermFeatureExtractor(
       murmurhash3_seed_(murmurhash3_seed),
       negative_word_cache_(kMaxNegativeWordCacheSize),
       clock_(clock),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   Clear();
 }
 

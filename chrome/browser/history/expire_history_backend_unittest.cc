@@ -60,7 +60,7 @@ class ExpireHistoryTest : public testing::Test,
       : bookmark_model_(NULL),
         ui_thread_(BrowserThread::UI, &message_loop_),
         db_thread_(BrowserThread::DB, &message_loop_),
-        ALLOW_THIS_IN_INITIALIZER_LIST(expirer_(this, &bookmark_model_)),
+        expirer_(this, &bookmark_model_),
         now_(Time::Now()) {
   }
 

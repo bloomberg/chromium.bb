@@ -219,7 +219,7 @@ FaviconCacheObserver::~FaviconCacheObserver() {}
 
 FaviconCache::FaviconCache(Profile* profile, int max_sync_favicon_limit)
     : profile_(profile),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      weak_ptr_factory_(this),
       legacy_delegate_(NULL),
       max_sync_favicon_limit_(max_sync_favicon_limit) {
   notification_registrar_.Add(this,

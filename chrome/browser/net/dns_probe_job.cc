@@ -101,7 +101,7 @@ DnsProbeJobImpl::DnsProbeJobImpl(scoped_ptr<DnsClient> dns_client,
       bad_running_(false),
       good_result_(QUERY_UNKNOWN),
       bad_result_(QUERY_UNKNOWN),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   DCHECK(dns_client_.get());
   DCHECK(dns_client_->GetConfig());
 

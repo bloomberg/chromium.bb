@@ -53,7 +53,7 @@ CaptivePortalTabReloader::CaptivePortalTabReloader(
       slow_ssl_load_time_(
           base::TimeDelta::FromSeconds(kDefaultSlowSSLTimeSeconds)),
       open_login_tab_callback_(open_login_tab_callback),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 CaptivePortalTabReloader::~CaptivePortalTabReloader() {

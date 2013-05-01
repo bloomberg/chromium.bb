@@ -28,7 +28,7 @@ const int kReloadIntervalSeconds = 15 * 60;
 }  // namespace
 
 AsyncPolicyLoader::AsyncPolicyLoader()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
+    : weak_factory_(this) {}
 
 AsyncPolicyLoader::~AsyncPolicyLoader() {}
 

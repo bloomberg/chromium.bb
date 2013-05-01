@@ -112,7 +112,7 @@ NetworkStats::NetworkStats()
       sending_complete_(false),
       current_test_(START_PACKET_TEST),
       next_test_(TEST_TYPE_MAX),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 NetworkStats::~NetworkStats() {

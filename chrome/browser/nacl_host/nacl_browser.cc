@@ -106,7 +106,7 @@ void LogCacheSet(ValidationCacheStatus status) {
 }  // namespace
 
 NaClBrowser::NaClBrowser()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+    : weak_factory_(this),
       irt_platform_file_(base::kInvalidPlatformFileValue),
       irt_filepath_(),
       irt_state_(NaClResourceUninitialized),

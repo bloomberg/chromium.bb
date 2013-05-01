@@ -63,7 +63,7 @@ BrowsingDataQuotaHelperImpl::BrowsingDataQuotaHelperImpl(
       is_fetching_(false),
       ui_thread_(ui_thread),
       io_thread_(io_thread),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
   DCHECK(quota_manager);
 }
 

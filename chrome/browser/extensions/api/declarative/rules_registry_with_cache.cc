@@ -79,8 +79,7 @@ RulesRegistryWithCache::RulesRegistryWithCache(
     scoped_ptr<RuleStorageOnUI>* ui_part)
     : RulesRegistry(owner_thread, event_name),
       ready_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_((profile) ? this
-                                                                 : NULL)),
+      weak_ptr_factory_((profile) ? this : NULL),
       storage_on_ui_((profile
                           ? (new RuleStorageOnUI(profile,
                                                  GetDeclarativeRuleStorageKey(
@@ -277,7 +276,7 @@ RulesRegistryWithCache::RuleStorageOnUI::RuleStorageOnUI(
       registry_(registry),
       rules_registry_thread_(rules_registry_thread),
       ready_state_(NOT_READY),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {}
+      weak_ptr_factory_(this) {}
 
 RulesRegistryWithCache::RuleStorageOnUI::~RuleStorageOnUI() {}
 

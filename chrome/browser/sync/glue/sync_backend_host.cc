@@ -349,7 +349,7 @@ SyncBackendHost::SyncBackendHost(
     Profile* profile,
     const base::WeakPtr<SyncPrefs>& sync_prefs,
     const base::WeakPtr<InvalidatorStorage>& invalidator_storage)
-    : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+    : weak_ptr_factory_(this),
       sync_thread_("Chrome_SyncThread"),
       frontend_loop_(MessageLoop::current()),
       profile_(profile),
@@ -368,7 +368,7 @@ SyncBackendHost::SyncBackendHost(
 }
 
 SyncBackendHost::SyncBackendHost(Profile* profile)
-    : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+    : weak_ptr_factory_(this),
       sync_thread_("Chrome_SyncThread"),
       frontend_loop_(MessageLoop::current()),
       profile_(profile),

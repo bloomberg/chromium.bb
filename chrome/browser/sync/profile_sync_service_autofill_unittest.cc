@@ -446,7 +446,7 @@ class ProfileSyncServiceAutofillTest
 
  protected:
   ProfileSyncServiceAutofillTest()
-   : debug_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+   : debug_ptr_factory_(this) {
   }
   virtual ~ProfileSyncServiceAutofillTest() {
   }
@@ -730,9 +730,8 @@ class AddAutofillHelper {
  public:
   AddAutofillHelper(ProfileSyncServiceAutofillTest* test,
                     const std::vector<T>& entries)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
-          base::Bind(&AddAutofillHelper::AddAutofillCallback,
-                     base::Unretained(this), test, entries))),
+      : callback_(base::Bind(&AddAutofillHelper::AddAutofillCallback,
+                             base::Unretained(this), test, entries)),
         success_(false) {
   }
 

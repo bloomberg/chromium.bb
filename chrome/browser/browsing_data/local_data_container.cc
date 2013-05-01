@@ -37,7 +37,7 @@ LocalDataContainer::LocalDataContainer(
       server_bound_cert_helper_(server_bound_cert_helper),
       flash_lso_helper_(flash_lso_helper),
       model_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {}
+      weak_ptr_factory_(this) {}
 
 LocalDataContainer::~LocalDataContainer() {}
 

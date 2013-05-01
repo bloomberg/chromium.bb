@@ -31,7 +31,7 @@ RemoveOperation::RemoveOperation(
     cache_(cache),
     metadata_(metadata),
     observer_(observer),
-    weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+    weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 

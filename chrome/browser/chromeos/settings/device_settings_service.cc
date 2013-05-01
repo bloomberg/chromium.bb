@@ -73,7 +73,7 @@ DeviceSettingsService* DeviceSettingsService::Get() {
 
 DeviceSettingsService::DeviceSettingsService()
     : session_manager_client_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       store_status_(STORE_SUCCESS),
       load_retries_left_(kMaxLoadRetries) {
 }

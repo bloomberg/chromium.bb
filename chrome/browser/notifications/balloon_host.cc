@@ -38,8 +38,7 @@ BalloonHost::BalloonHost(Balloon* balloon)
       initialized_(false),
       should_notify_on_disconnect_(false),
       enable_web_ui_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          extension_function_dispatcher_(balloon_->profile(), this)) {
+      extension_function_dispatcher_(balloon_->profile(), this) {
   site_instance_ = SiteInstance::CreateForURL(
       balloon_->profile(), balloon_->notification().content_url());
 }

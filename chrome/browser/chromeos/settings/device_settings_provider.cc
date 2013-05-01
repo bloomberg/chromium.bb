@@ -92,7 +92,7 @@ DeviceSettingsProvider::DeviceSettingsProvider(
       device_settings_service_(device_settings_service),
       trusted_status_(TEMPORARILY_UNTRUSTED),
       ownership_status_(device_settings_service_->GetOwnershipStatus()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(store_callback_factory_(this)) {
+      store_callback_factory_(this) {
   device_settings_service_->AddObserver(this);
 
   if (!UpdateFromService()) {

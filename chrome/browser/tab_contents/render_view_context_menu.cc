@@ -396,12 +396,12 @@ RenderViewContextMenu::RenderViewContextMenu(
     : params_(params),
       source_web_contents_(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
-      ALLOW_THIS_IN_INITIALIZER_LIST(menu_model_(this)),
+      menu_model_(this),
       extension_items_(profile_, this, &menu_model_,
                     base::Bind(MenuItemMatchesParams, params_)),
       external_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(speech_input_submenu_model_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(protocol_handler_submenu_model_(this)),
+      speech_input_submenu_model_(this),
+      protocol_handler_submenu_model_(this),
       protocol_handler_registry_(
           ProtocolHandlerRegistryFactory::GetForProfile(profile_)) {
 }

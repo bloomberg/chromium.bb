@@ -47,7 +47,7 @@ PrinterJobHandler::PrinterJobHandler(
       job_check_pending_(false),
       printer_update_pending_(true),
       task_in_progress_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
 }
 
 bool PrinterJobHandler::Initialize() {

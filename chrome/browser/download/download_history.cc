@@ -176,14 +176,13 @@ bool DownloadHistory::IsPersisted(content::DownloadItem* item) {
   return data && data->is_persisted();
 }
 
-DownloadHistory::DownloadHistory(
-    content::DownloadManager* manager,
-    scoped_ptr<HistoryAdapter> history)
-  : ALLOW_THIS_IN_INITIALIZER_LIST(notifier_(manager, this)),
+DownloadHistory::DownloadHistory(content::DownloadManager* manager,
+                                 scoped_ptr<HistoryAdapter> history)
+  : notifier_(manager, this),
     history_(history.Pass()),
     loading_db_handle_(history::DownloadDatabase::kUninitializedHandle),
     history_size_(0),
-    ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+    weak_ptr_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   content::DownloadManager::DownloadVector items;
   notifier_.GetManager()->GetAllDownloads(&items);

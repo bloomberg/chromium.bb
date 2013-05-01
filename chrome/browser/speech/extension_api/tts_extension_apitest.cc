@@ -30,7 +30,7 @@ using ::testing::_;
 class MockTtsPlatformImpl : public TtsPlatformImpl {
  public:
   MockTtsPlatformImpl()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(ptr_factory_(this)) {}
+      : ptr_factory_(this) {}
 
   virtual bool PlatformImplAvailable() {
     return true;

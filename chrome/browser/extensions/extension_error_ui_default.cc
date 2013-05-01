@@ -15,8 +15,7 @@ ExtensionErrorUIDefault::ExtensionErrorUIDefault(
     ExtensionService* extension_service)
     : ExtensionErrorUI(extension_service),
       browser_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(global_error_(
-          new ExtensionGlobalError(this))) {
+      global_error_(new ExtensionGlobalError(this)) {
 }
 
 ExtensionErrorUIDefault::~ExtensionErrorUIDefault() {

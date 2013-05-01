@@ -38,10 +38,10 @@ DataTypeManagerImpl::DataTypeManagerImpl(
       state_(DataTypeManager::STOPPED),
       needs_reconfigure_(false),
       last_configure_reason_(syncer::CONFIGURE_REASON_UNKNOWN),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      weak_ptr_factory_(this),
       model_association_manager_(debug_info_listener,
                                  controllers,
-                                 ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+                                 this),
       observer_(observer),
       failed_datatypes_handler_(failed_datatypes_handler) {
   DCHECK(configurer_);

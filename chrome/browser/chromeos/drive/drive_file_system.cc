@@ -229,7 +229,7 @@ DriveFileSystem::DriveFileSystem(
       last_update_check_error_(FILE_ERROR_OK),
       hide_hosted_docs_(false),
       blocking_task_runner_(blocking_task_runner),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   // Should be created from the file browser extension API on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }

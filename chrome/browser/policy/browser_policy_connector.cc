@@ -110,7 +110,7 @@ ConfigurationPolicyProvider* g_testing_provider = NULL;
 BrowserPolicyConnector::BrowserPolicyConnector()
     : is_initialized_(false),
       local_state_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   // GetPolicyService() must be ready after the constructor is done.
   // The connector is created very early during startup, when the browser
   // threads aren't running yet; initialize components that need local_state,

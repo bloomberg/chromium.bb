@@ -55,7 +55,7 @@ const char kUpdateMetadataKey[] = "__chrome_update_metadata__";
 }  // namespace
 
 ContactDatabase::ContactDatabase()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+    : weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   task_runner_ = pool->GetSequencedTaskRunner(pool->GetSequenceToken());

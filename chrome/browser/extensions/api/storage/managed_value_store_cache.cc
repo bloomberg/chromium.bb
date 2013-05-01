@@ -103,7 +103,7 @@ ManagedValueStoreCache::ManagedValueStoreCache(
     Profile* profile,
     const scoped_refptr<SettingsStorageFactory>& factory,
     const scoped_refptr<SettingsObserverList>& observers)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+    : weak_factory_(this),
       weak_this_on_ui_(weak_factory_.GetWeakPtr()),
       profile_(profile),
       event_router_(ExtensionSystem::Get(profile)->event_router()),

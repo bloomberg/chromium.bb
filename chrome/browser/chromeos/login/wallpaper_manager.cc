@@ -118,10 +118,9 @@ WallpaperManager* WallpaperManager::Get() {
 WallpaperManager::WallpaperManager()
     : no_observers_(true),
       loaded_wallpapers_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(wallpaper_loader_(
-          new UserImageLoader(ImageDecoder::ROBUST_JPEG_CODEC))),
+      wallpaper_loader_(new UserImageLoader(ImageDecoder::ROBUST_JPEG_CODEC)),
       should_cache_wallpaper_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   RestartTimer();
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_USER_CHANGED,

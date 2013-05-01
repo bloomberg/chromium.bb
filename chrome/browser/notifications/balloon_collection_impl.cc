@@ -41,7 +41,7 @@ const int kVerticalSpacingBetweenBalloonAndPanel = 5;
 
 BalloonCollectionImpl::BalloonCollectionImpl()
 #if USE_OFFSETS
-    : ALLOW_THIS_IN_INITIALIZER_LIST(reposition_factory_(this)),
+    : reposition_factory_(this),
       added_as_message_loop_observer_(false)
 #endif
 {

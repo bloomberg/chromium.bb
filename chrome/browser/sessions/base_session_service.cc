@@ -76,7 +76,7 @@ BaseSessionService::BaseSessionService(SessionType type,
                                        Profile* profile,
                                        const base::FilePath& path)
     : profile_(profile),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       pending_reset_(false),
       commands_since_reset_(0) {
   if (profile) {

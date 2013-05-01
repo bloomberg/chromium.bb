@@ -48,7 +48,7 @@ EnrollmentScreen::EnrollmentScreen(
       can_exit_enrollment_(true),
       enrollment_failed_once_(false),
       lockbox_init_duration_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   // Init the TPM if it has not been done until now (in debug build we might
   // have not done that yet).
   DBusThreadManager::Get()->GetCryptohomeClient()->TpmCanAttemptOwnership(

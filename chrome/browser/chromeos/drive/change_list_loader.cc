@@ -33,7 +33,7 @@ ChangeListLoader::ChangeListLoader(
       webapps_registry_(webapps_registry),
       last_known_remote_changestamp_(0),
       loaded_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
 }
 
 ChangeListLoader::~ChangeListLoader() {

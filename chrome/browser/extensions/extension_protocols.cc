@@ -86,7 +86,7 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
       : net::URLRequestSimpleJob(request, network_delegate),
         filename_(filename),
         resource_id_(resource_id),
-        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+        weak_factory_(this) {
     response_info_.headers = BuildHttpHeaders(content_security_policy,
                                               send_cors_header);
   }
@@ -215,7 +215,7 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
       // TODO(tc): Move all of these files into resources.pak so we don't break
       // when updating on Linux.
       resource_(extension_id, directory_path, relative_path),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
       response_info_.headers = BuildHttpHeaders(content_security_policy,
                                                 send_cors_header);
   }

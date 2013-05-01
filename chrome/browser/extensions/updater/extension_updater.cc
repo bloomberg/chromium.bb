@@ -133,7 +133,7 @@ ExtensionUpdater::ExtensionUpdater(ExtensionServiceInterface* service,
                                    Blacklist* blacklist,
                                    int frequency_seconds)
     : alive_(false),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      weak_ptr_factory_(this),
       service_(service), frequency_seconds_(frequency_seconds),
       will_check_soon_(false), extension_prefs_(extension_prefs),
       prefs_(prefs), profile_(profile), blacklist_(blacklist),

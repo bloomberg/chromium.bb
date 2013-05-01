@@ -580,7 +580,7 @@ VirtualNetwork::VirtualNetwork(const std::string& service_path)
       // Assume PSK and user passphrase are not available initially
       psk_passphrase_required_(true),
       user_passphrase_required_(true),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_pointer_factory_(this)) {
+      weak_pointer_factory_(this) {
 }
 
 VirtualNetwork::~VirtualNetwork() {}
@@ -1012,7 +1012,7 @@ WifiNetwork::WifiNetwork(const std::string& service_path)
       eap_phase_2_auth_(EAP_PHASE_2_AUTH_AUTO),
       eap_use_system_cas_(true),
       eap_save_credentials_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_pointer_factory_(this)) {
+      weak_pointer_factory_(this) {
 }
 
 WifiNetwork::~WifiNetwork() {}

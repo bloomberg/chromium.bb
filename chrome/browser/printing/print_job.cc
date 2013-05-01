@@ -39,8 +39,8 @@ PrintJob::PrintJob()
       is_canceling_(false),
       is_stopping_(false),
       is_stopped_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(quit_factory_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      quit_factory_(this),
+      weak_ptr_factory_(this) {
   DCHECK(ui_message_loop_);
   // This is normally a UI message loop, but in unit tests, the message loop is
   // of the 'default' type.

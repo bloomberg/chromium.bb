@@ -90,8 +90,7 @@ PromoResourceService::PromoResourceService()
                          prefs::kNtpPromoResourceCacheUpdate,
                          kStartResourceFetchDelay,
                          GetCacheUpdateDelay()),
-                         ALLOW_THIS_IN_INITIALIZER_LIST(
-                             weak_ptr_factory_(this)) {
+                         weak_ptr_factory_(this) {
   ScheduleNotificationOnInit();
 }
 

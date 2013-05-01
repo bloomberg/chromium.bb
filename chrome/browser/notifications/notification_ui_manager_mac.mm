@@ -120,8 +120,7 @@ NotificationUIManager* NotificationUIManager::Create(PrefService* local_state) {
 
 NotificationUIManagerMac::NotificationUIManagerMac(PrefService* local_state)
     : BalloonNotificationUIManager(local_state),
-      delegate_(ALLOW_THIS_IN_INITIALIZER_LIST(
-          [[NotificationCenterDelegate alloc] initWithManager:this])) {
+      delegate_([[NotificationCenterDelegate alloc] initWithManager:this]) {
   DCHECK(!GetNotificationCenter().delegate);
   GetNotificationCenter().delegate = delegate_.get();
 }

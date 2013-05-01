@@ -29,7 +29,7 @@ PolicyServiceImpl::PolicyChangeInfo::~PolicyChangeInfo() {
 typedef PolicyServiceImpl::Providers::const_iterator Iterator;
 
 PolicyServiceImpl::PolicyServiceImpl(const Providers& providers)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+    : weak_ptr_factory_(this) {
   for (int domain = 0; domain < POLICY_DOMAIN_SIZE; ++domain)
     initialization_complete_[domain] = true;
   providers_ = providers;

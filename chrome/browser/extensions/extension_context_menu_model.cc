@@ -31,11 +31,10 @@ using content::Referrer;
 using content::WebContents;
 using extensions::Extension;
 
-ExtensionContextMenuModel::ExtensionContextMenuModel(
-    const Extension* extension,
-    Browser* browser,
-    PopupDelegate* delegate)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(SimpleMenuModel(this)),
+ExtensionContextMenuModel::ExtensionContextMenuModel(const Extension* extension,
+                                                     Browser* browser,
+                                                     PopupDelegate* delegate)
+    : SimpleMenuModel(this),
       extension_id_(extension->id()),
       browser_(browser),
       profile_(browser->profile()),
@@ -49,10 +48,9 @@ ExtensionContextMenuModel::ExtensionContextMenuModel(
   }
 }
 
-ExtensionContextMenuModel::ExtensionContextMenuModel(
-    const Extension* extension,
-    Browser* browser)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(SimpleMenuModel(this)),
+ExtensionContextMenuModel::ExtensionContextMenuModel(const Extension* extension,
+                                                     Browser* browser)
+    : SimpleMenuModel(this),
       extension_id_(extension->id()),
       browser_(browser),
       profile_(browser->profile()),

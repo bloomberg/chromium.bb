@@ -37,7 +37,7 @@ using content::BrowserThread;
 
 CloudPrintProxyService::CloudPrintProxyService(Profile* profile)
     : profile_(profile),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       enforcing_connector_policy_(false) {
 }
 

@@ -23,7 +23,7 @@ namespace chromeos {
 SystemLogsFetcher::SystemLogsFetcher()
     : response_(new SystemLogsResponse),
       num_pending_requests_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   // Debug Daemon data source.
   data_sources_.push_back(new DebugDaemonLogSource());
 

@@ -86,8 +86,8 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
     content::WebContents* web_contents,
     TemplateURLFetcherCallbacks* callbacks,
     ProviderType provider_type)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(url_fetcher_(net::URLFetcher::Create(
-          osdd_url, net::URLFetcher::GET, this))),
+    : url_fetcher_(net::URLFetcher::Create(
+          osdd_url, net::URLFetcher::GET, this)),
       fetcher_(fetcher),
       keyword_(keyword),
       osdd_url_(osdd_url),

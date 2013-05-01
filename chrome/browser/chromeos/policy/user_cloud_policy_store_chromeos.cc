@@ -103,7 +103,7 @@ class LegacyPolicyCacheLoader : public UserPolicyTokenLoader::Delegate,
 LegacyPolicyCacheLoader::LegacyPolicyCacheLoader(
     const base::FilePath& token_cache_file,
     const base::FilePath& policy_cache_file)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+    : weak_factory_(this),
       has_policy_(false),
       status_(CloudPolicyStore::STATUS_OK) {
   token_loader_ = new UserPolicyTokenLoader(weak_factory_.GetWeakPtr(),
@@ -173,7 +173,7 @@ UserCloudPolicyStoreChromeOS::UserCloudPolicyStoreChromeOS(
       session_manager_client_(session_manager_client),
       username_(username),
       user_policy_key_dir_(user_policy_key_dir),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       legacy_cache_dir_(legacy_token_cache_file.DirName()),
       legacy_loader_(new LegacyPolicyCacheLoader(legacy_token_cache_file,
                                                  legacy_policy_cache_file)),

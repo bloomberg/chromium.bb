@@ -94,7 +94,7 @@ void* UserDataKey() {
 AutocompleteSyncableService::AutocompleteSyncableService(
     AutofillWebDataService* web_data_service)
     : web_data_service_(web_data_service),
-      ALLOW_THIS_IN_INITIALIZER_LIST(scoped_observer_(this)),
+      scoped_observer_(this),
       cull_expired_entries_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   DCHECK(web_data_service_);
@@ -122,7 +122,7 @@ AutocompleteSyncableService* AutocompleteSyncableService::FromWebDataService(
 
 AutocompleteSyncableService::AutocompleteSyncableService()
     : web_data_service_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(scoped_observer_(this)),
+      scoped_observer_(this),
       cull_expired_entries_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 }

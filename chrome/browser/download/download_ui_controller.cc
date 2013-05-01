@@ -103,7 +103,7 @@ DownloadUIController::Delegate::~Delegate() {
 
 DownloadUIController::DownloadUIController(content::DownloadManager* manager,
                                            scoped_ptr<Delegate> delegate)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(download_notifier_(manager, this)),
+    : download_notifier_(manager, this),
       delegate_(delegate.Pass()) {
   if (!delegate_) {
 #if defined(OS_ANDROID)

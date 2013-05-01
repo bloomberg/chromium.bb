@@ -52,7 +52,7 @@ AutofillProfileSyncableService::AutofillProfileSyncableService(
     const std::string& app_locale)
     : web_data_service_(web_data_service),
       app_locale_(app_locale),
-      ALLOW_THIS_IN_INITIALIZER_LIST(scoped_observer_(this)) {
+      scoped_observer_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   DCHECK(web_data_service_);
 
@@ -82,7 +82,7 @@ AutofillProfileSyncableService::FromWebDataService(
 
 AutofillProfileSyncableService::AutofillProfileSyncableService()
     : web_data_service_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(scoped_observer_(this)) {
+      scoped_observer_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 }
 

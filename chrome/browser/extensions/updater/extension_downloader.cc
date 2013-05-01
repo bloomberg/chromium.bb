@@ -171,7 +171,7 @@ ExtensionDownloader::ExtensionDownloader(
     net::URLRequestContextGetter* request_context)
     : delegate_(delegate),
       request_context_(request_context),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      weak_ptr_factory_(this),
       manifests_queue_(&kDefaultBackoffPolicy,
           base::Bind(&ExtensionDownloader::CreateManifestFetcher,
                      base::Unretained(this))),

@@ -54,8 +54,8 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
 #if !defined(OS_IOS)
         proxy_request_context_(proxy_request_context),
 #endif
-        ALLOW_THIS_IN_INITIALIZER_LIST(storage_(this)),
-        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
+        storage_(this),
+        weak_factory_(this) {}
 
   virtual ~ExperimentURLRequestContext() {}
 
@@ -307,7 +307,7 @@ class ConnectionTester::TestRunner : public net::URLRequest::Delegate {
   TestRunner(ConnectionTester* tester, net::NetLog* net_log)
       : tester_(tester),
         net_log_(net_log),
-        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
+        weak_factory_(this) {}
 
   // Finish running |experiment| once a ProxyConfigService has been created.
   // In the case of a FirefoxProxyConfigService, this will be called back

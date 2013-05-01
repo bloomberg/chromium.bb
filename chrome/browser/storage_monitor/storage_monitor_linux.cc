@@ -268,7 +268,7 @@ StorageMonitor::EjectStatus EjectPathOnFileThread(
 StorageMonitorLinux::StorageMonitorLinux(const base::FilePath& path)
     : mtab_path_(path),
       get_device_info_callback_(base::Bind(&GetDeviceInfo)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(thestig) Do not do this here. Do it in TestingBrowserProcess when

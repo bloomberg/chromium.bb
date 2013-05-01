@@ -19,7 +19,7 @@ ScreenManager::ScreenManager(ScreenFactory* factory,
     : factory_(factory),
       display_(oobe_display),
       flow_(initial_flow),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   js_is_ready_ = display_->IsJSReady(
       base::Bind(&ScreenManager::OnDisplayIsReady, weak_factory_.GetWeakPtr()));
 

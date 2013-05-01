@@ -339,7 +339,7 @@ ProfileImpl::ProfileImpl(
                                 base::Unretained(this))),
       path_(path),
       pref_registry_(new PrefRegistrySyncable),
-      ALLOW_THIS_IN_INITIALIZER_LIST(io_data_(this)),
+      io_data_(this),
       host_content_settings_map_(NULL),
       last_session_exit_type_(EXIT_NORMAL),
       start_time_(Time::Now()),

@@ -687,7 +687,7 @@ ProcessSingleton::ProcessSingleton(
     const NotificationCallback& notification_callback)
     : notification_callback_(notification_callback),
       current_pid_(base::GetCurrentProcId()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(watcher_(new LinuxWatcher(this))) {
+      watcher_(new LinuxWatcher(this)) {
   socket_path_ = user_data_dir.Append(chrome::kSingletonSocketFilename);
   lock_path_ = user_data_dir.Append(chrome::kSingletonLockFilename);
   cookie_path_ = user_data_dir.Append(chrome::kSingletonCookieFilename);

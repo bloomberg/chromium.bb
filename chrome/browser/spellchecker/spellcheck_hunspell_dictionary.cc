@@ -165,7 +165,7 @@ SpellcheckHunspellDictionary::SpellcheckHunspellDictionary(
     : language_(language),
       use_platform_spellchecker_(false),
       request_context_getter_(request_context_getter),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      weak_ptr_factory_(this),
       spellcheck_service_(spellcheck_service),
       download_status_(DOWNLOAD_NONE),
       dictionary_file_(new DictionaryFile) {

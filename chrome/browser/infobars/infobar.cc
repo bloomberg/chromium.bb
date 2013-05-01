@@ -43,7 +43,7 @@ InfoBar::InfoBar(InfoBarService* owner, InfoBarDelegate* delegate)
     : owner_(owner),
       delegate_(delegate),
       container_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)),
+      animation_(this),
       arrow_height_(0),
       arrow_target_height_(kDefaultArrowTargetHeight),
       arrow_half_width_(0),

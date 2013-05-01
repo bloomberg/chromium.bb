@@ -479,7 +479,7 @@ PortableDeviceWatcherWin::DeviceStorageObject::DeviceStorageObject(
 PortableDeviceWatcherWin::PortableDeviceWatcherWin()
     : notifications_(NULL),
       storage_notifications_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
 }
 
 PortableDeviceWatcherWin::~PortableDeviceWatcherWin() {

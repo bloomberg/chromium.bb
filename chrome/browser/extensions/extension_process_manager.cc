@@ -136,7 +136,7 @@ ExtensionProcessManager* ExtensionProcessManager::Create(Profile* profile) {
 
 ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
   : site_instance_(SiteInstance::Create(profile)),
-    weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+    weak_ptr_factory_(this),
     devtools_callback_(base::Bind(
         &ExtensionProcessManager::OnDevToolsStateChanged,
         base::Unretained(this))) {

@@ -90,7 +90,7 @@ class ExtensionHost::ProcessCreationQueue {
   friend struct DefaultSingletonTraits<ProcessCreationQueue>;
   ProcessCreationQueue()
       : pending_create_(false),
-        ALLOW_THIS_IN_INITIALIZER_LIST(ptr_factory_(this)) { }
+        ptr_factory_(this) {}
 
   // Queue up a delayed task to process the next ExtensionHost in the queue.
   void PostTask() {
@@ -136,8 +136,7 @@ ExtensionHost::ExtensionHost(const Extension* extension,
       did_stop_loading_(false),
       document_element_available_(false),
       initial_url_(url),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          extension_function_dispatcher_(profile_, this)),
+      extension_function_dispatcher_(profile_, this),
       extension_host_type_(host_type),
       associated_web_contents_(NULL) {
   host_contents_.reset(WebContents::Create(

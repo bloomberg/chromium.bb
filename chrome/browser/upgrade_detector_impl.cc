@@ -132,7 +132,7 @@ void DetectUpdatability(const base::Closure& callback_task,
 }  // namespace
 
 UpgradeDetectorImpl::UpgradeDetectorImpl()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+    : weak_factory_(this),
       is_unstable_channel_(false),
       build_date_(base::GetBuildTime()) {
   CommandLine command_line(*CommandLine::ForCurrentProcess());

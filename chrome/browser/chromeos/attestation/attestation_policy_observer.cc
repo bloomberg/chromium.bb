@@ -90,7 +90,7 @@ AttestationPolicyObserver::AttestationPolicyObserver(
       policy_client_(policy_client),
       cryptohome_client_(NULL),
       attestation_flow_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   cros_settings_->AddSettingsObserver(kDeviceAttestationEnabled, this);
   Start();
@@ -104,7 +104,7 @@ AttestationPolicyObserver::AttestationPolicyObserver(
       policy_client_(policy_client),
       cryptohome_client_(cryptohome_client),
       attestation_flow_(attestation_flow),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   cros_settings_->AddSettingsObserver(kDeviceAttestationEnabled, this);
   Start();

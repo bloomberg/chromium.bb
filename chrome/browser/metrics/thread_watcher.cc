@@ -143,7 +143,7 @@ ThreadWatcher::ThreadWatcher(const WatchingParams& params)
       unresponsive_threshold_(params.unresponsive_threshold),
       crash_on_hang_(params.crash_on_hang),
       live_threads_threshold_(params.live_threads_threshold),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
   Initialize();
 }

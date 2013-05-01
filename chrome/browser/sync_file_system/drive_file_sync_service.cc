@@ -267,7 +267,7 @@ DriveFileSyncService::DriveFileSyncService(Profile* profile)
       may_have_unfetched_changes_(false),
       remote_change_processor_(NULL),
       conflict_resolution_(kDefaultPolicy),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
   temporary_file_dir_ =
       profile->GetPath().Append(kSyncFileSystemDir).Append(kTempDirName);
   token_.reset(new TaskToken(AsWeakPtr()));
@@ -647,7 +647,7 @@ DriveFileSyncService::DriveFileSyncService(
       may_have_unfetched_changes_(false),
       remote_change_processor_(NULL),
       conflict_resolution_(kDefaultPolicy),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
   DCHECK(profile);
   temporary_file_dir_ = base_dir.Append(kTempDirName);
 

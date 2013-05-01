@@ -38,7 +38,7 @@ ContactManager::ContactManager()
     : profile_observers_deleter_(&profile_observers_),
       contact_store_factory_(new GoogleContactStoreFactory),
       contact_stores_deleter_(&contact_stores_),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!g_instance);
   g_instance = this;

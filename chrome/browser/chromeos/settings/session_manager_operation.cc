@@ -27,7 +27,7 @@ namespace chromeos {
 
 SessionManagerOperation::SessionManagerOperation(const Callback& callback)
     : session_manager_client_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       callback_(callback),
       force_key_load_(false),
       is_loading_(false) {}
@@ -200,7 +200,7 @@ StoreSettingsOperation::StoreSettingsOperation(
     scoped_ptr<em::PolicyFetchResponse> policy)
     : SessionManagerOperation(callback),
       policy_(policy.Pass()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
+      weak_factory_(this) {}
 
 StoreSettingsOperation::~StoreSettingsOperation() {}
 
@@ -225,7 +225,7 @@ SignAndStoreSettingsOperation::SignAndStoreSettingsOperation(
     : SessionManagerOperation(callback),
       new_settings_(new_settings.Pass()),
       username_(username),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   DCHECK(new_settings_.get());
 }
 

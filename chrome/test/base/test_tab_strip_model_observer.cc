@@ -40,9 +40,9 @@ TestTabStripModelObserver::TestTabStripModelObserver(
     content::JsInjectionReadyObserver* js_injection_ready_observer)
     : TestNavigationObserver(1),
       tab_strip_model_(tab_strip_model),
-      ALLOW_THIS_IN_INITIALIZER_LIST(rvh_created_callback_(
+      rvh_created_callback_(
           base::Bind(&TestTabStripModelObserver::RenderViewHostCreated,
-                     base::Unretained(this)))),
+                     base::Unretained(this))),
       injection_observer_(js_injection_ready_observer) {
   content::RenderViewHost::AddCreatedCallback(rvh_created_callback_);
   tab_strip_model_->AddObserver(this);

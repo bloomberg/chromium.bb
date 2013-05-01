@@ -125,7 +125,7 @@ MTPDeviceDelegateImplMac::MTPDeviceDelegateImplMac(
     : device_id_(device_id),
       root_path_(synthetic_path),
       received_all_files_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 
   // Make a synthetic entry for the root of the filesystem.
   base::PlatformFileInfo info;

@@ -26,7 +26,7 @@ void EmitDebugLogForCloseFile(const base::FilePath& file_path,
 
 FileWriteHelper::FileWriteHelper(DriveFileSystemInterface* file_system)
     : file_system_(file_system),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   // Must be created in DriveSystemService.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }

@@ -35,7 +35,7 @@ SpellcheckService::EventType g_status_type =
 
 SpellcheckService::SpellcheckService(Profile* profile)
     : profile_(profile),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PrefService* prefs = profile_->GetPrefs();
   pref_change_registrar_.Init(prefs);

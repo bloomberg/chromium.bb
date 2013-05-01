@@ -102,7 +102,7 @@ GoogleContactStore::GoogleContactStore(
           base::TimeDelta::FromSeconds(kUpdateFailureInitialRetrySec)),
       is_online_(true),
       should_update_when_online_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
   is_online_ = !net::NetworkChangeNotifier::IsOffline();

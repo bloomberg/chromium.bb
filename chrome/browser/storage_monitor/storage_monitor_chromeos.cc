@@ -117,7 +117,7 @@ using content::BrowserThread;
 using chrome::StorageInfo;
 
 StorageMonitorCros::StorageMonitorCros()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+    : weak_ptr_factory_(this) {
   // TODO(thestig) Do not do this here. Do it in TestingBrowserProcess when
   // BrowserProcess owns StorageMonitor.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {

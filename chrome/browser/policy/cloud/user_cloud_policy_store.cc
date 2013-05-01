@@ -94,7 +94,7 @@ void StorePolicyToDiskOnFileThread(const base::FilePath& path,
 
 UserCloudPolicyStore::UserCloudPolicyStore(Profile* profile,
                                            const base::FilePath& path)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+    : weak_factory_(this),
       profile_(profile),
       backing_file_path_(path) {
 }

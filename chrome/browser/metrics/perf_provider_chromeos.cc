@@ -69,7 +69,7 @@ class WindowedIncognitoObserver : public chrome::BrowserListObserver {
 
 PerfProvider::PerfProvider()
       : state_(READY_TO_COLLECT),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   ScheduleCollection();
 }
 

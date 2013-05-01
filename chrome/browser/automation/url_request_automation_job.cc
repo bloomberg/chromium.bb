@@ -106,7 +106,7 @@ URLRequestAutomationJob::URLRequestAutomationJob(
       request_id_(request_id),
       is_pending_(is_pending),
       upload_size_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   DVLOG(1) << "URLRequestAutomationJob create. Count: " << ++instance_count_;
   DCHECK(message_filter_ != NULL);
 

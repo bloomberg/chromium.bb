@@ -24,9 +24,8 @@ const ErrorType ERROR_DNS = NetErrorTracker::ERROR_DNS;
 class NetErrorTrackerTest : public testing::Test {
  public:
   NetErrorTrackerTest()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(
-            base::Bind(&NetErrorTrackerTest::TrackerCallback,
-                       base::Unretained(this)))),
+      : tracker_(base::Bind(&NetErrorTrackerTest::TrackerCallback,
+                            base::Unretained(this))),
         callback_state_(NetErrorTracker::DNS_ERROR_PAGE_NONE),
         callback_count_(0) {
   }

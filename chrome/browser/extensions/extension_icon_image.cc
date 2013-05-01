@@ -144,7 +144,7 @@ IconImage::IconImage(
           default_icon,
           skia::ImageOperations::RESIZE_BEST,
           gfx::Size(resource_size_in_dip, resource_size_in_dip))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   gfx::Size resource_size(resource_size_in_dip, resource_size_in_dip);
   source_ = new Source(this, resource_size);
   image_skia_ = gfx::ImageSkia(source_, resource_size);

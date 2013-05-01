@@ -42,7 +42,7 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
     bool force_same_tab_navigation)
     : start_mode_(start_mode),
       force_same_tab_navigation_(force_same_tab_navigation),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_pointer_factory_(this)) {
+      weak_pointer_factory_(this) {
   DCHECK(profile);
   Initialize(profile, browser);
 

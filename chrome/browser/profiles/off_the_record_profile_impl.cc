@@ -86,7 +86,7 @@ void NotifyOTRProfileDestroyedOnIOThread(void* original_profile,
 OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
     : profile_(real_profile),
       prefs_(PrefServiceSyncable::IncognitoFromProfile(real_profile)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(io_data_(this)),
+      io_data_(this),
       start_time_(Time::Now()),
       zoom_callback_(base::Bind(&OffTheRecordProfileImpl::OnZoomLevelChanged,
                                 base::Unretained(this))) {

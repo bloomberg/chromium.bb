@@ -51,7 +51,7 @@ namespace chromeos {
 LoginPerformer* LoginPerformer::default_performer_ = NULL;
 
 LoginPerformer::LoginPerformer(Delegate* delegate)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(online_attempt_host_(this)),
+    : online_attempt_host_(this),
       last_login_failure_(LoginFailure::LoginFailureNone()),
       delegate_(delegate),
       password_changed_(false),
@@ -59,7 +59,7 @@ LoginPerformer::LoginPerformer(Delegate* delegate)
       screen_lock_requested_(false),
       initial_online_auth_pending_(false),
       auth_mode_(AUTH_MODE_INTERNAL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   DCHECK(default_performer_ == NULL)
       << "LoginPerformer should have only one instance.";
   default_performer_ = this;

@@ -56,7 +56,7 @@ JobScheduler::JobScheduler(
       drive_service_(drive_service),
       uploader_(new google_apis::DriveUploader(drive_service)),
       profile_(profile),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   for (int i = 0; i < NUM_QUEUES; ++i) {
     jobs_running_[i] = 0;

@@ -28,7 +28,7 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
         io_thread_(BrowserThread::IO, &message_loop_),
         fetching_completed_(true),
         quota_(-1),
-        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+        weak_factory_(this) {}
 
   virtual ~BrowsingDataQuotaHelperTest() {}
 
