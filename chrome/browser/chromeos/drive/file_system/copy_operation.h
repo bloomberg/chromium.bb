@@ -75,6 +75,10 @@ class CopyOperation {
       const base::FilePath& remote_dest_file_path,
       const FileOperationCallback& callback);
 
+ private:
+  // Struct used for StartFileUpload().
+  struct StartFileUploadParams;
+
   // Initiates transfer of |local_file_path| to |remote_dest_file_path|.
   // |local_file_path| must be a regular file (i.e. not a hosted document) from
   // the local file system, |remote_dest_file_path| is the virtual destination
@@ -82,13 +86,9 @@ class CopyOperation {
   //
   // Must be called from *UI* thread. |callback| is run on the calling thread.
   // |callback| must not be null.
-  virtual void TransferRegularFile(const base::FilePath& local_file_path,
-                                   const base::FilePath& remote_dest_file_path,
-                                   const FileOperationCallback& callback);
-
- private:
-  // Struct used for StartFileUpload().
-  struct StartFileUploadParams;
+  void TransferRegularFile(const base::FilePath& local_file_path,
+                           const base::FilePath& remote_dest_file_path,
+                           const FileOperationCallback& callback);
 
   // Invoked upon completion of GetFileByPath initiated by
   // TransferFileFromRemoteToLocal. If GetFileByPath reports no error, calls

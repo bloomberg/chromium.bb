@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/create_directory_operation.h"
+#include "chrome/browser/chromeos/drive/file_system/create_file_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/move_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/update_operation.h"
@@ -43,6 +44,11 @@ void DriveOperations::Init(
       new CreateDirectoryOperation(job_scheduler,
                                    metadata,
                                    observer));
+  create_file_operation_.reset(
+      new file_system::CreateFileOperation(job_scheduler,
+                                           drive_file_system,
+                                           metadata,
+                                           blocking_task_runner));
   move_operation_.reset(new file_system::MoveOperation(job_scheduler,
                                                        metadata,
                                                        observer));
@@ -102,18 +108,6 @@ void DriveOperations::TransferFileFromLocalToRemote(
                                                  callback);
 }
 
-void DriveOperations::TransferRegularFile(
-    const base::FilePath& local_src_file_path,
-    const base::FilePath& remote_dest_file_path,
-    const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  copy_operation_->TransferRegularFile(local_src_file_path,
-                                       remote_dest_file_path,
-                                       callback);
-}
-
 void DriveOperations::CreateDirectory(
     const base::FilePath& directory_path,
     bool is_exclusive,
@@ -124,6 +118,15 @@ void DriveOperations::CreateDirectory(
 
   create_directory_operation_->CreateDirectory(
       directory_path, is_exclusive, is_recursive, callback);
+}
+
+void DriveOperations::CreateFile(const base::FilePath& remote_file_path,
+                                 bool is_exclusive,
+                                 const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  create_file_operation_->CreateFile(remote_file_path, is_exclusive, callback);
 }
 
 void DriveOperations::Move(const base::FilePath& src_file_path,

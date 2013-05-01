@@ -24,6 +24,7 @@ namespace file_system {
 
 class CopyOperation;
 class CreateDirectoryOperation;
+class CreateFileOperation;
 class MoveOperation;
 class OperationObserver;
 class RemoveOperation;
@@ -56,6 +57,12 @@ class DriveOperations {
                        bool is_recursive,
                        const FileOperationCallback& callback);
 
+  // Wrapper function for create_file_operation_.
+  // |callback| must not be null.
+  void CreateFile(const base::FilePath& remote_file_path,
+                  bool is_exclusive,
+                  const FileOperationCallback& callback);
+
   // Wrapper function for copy_operation_.
   // |callback| must not be null.
   void Copy(const base::FilePath& src_file_path,
@@ -74,12 +81,6 @@ class DriveOperations {
       const base::FilePath& local_src_file_path,
       const base::FilePath& remote_dest_file_path,
       const FileOperationCallback& callback);
-
-  // Wrapper function for copy_operation_.
-  // |callback| must not be null.
-  void TransferRegularFile(const base::FilePath& local_src_file_path,
-                           const base::FilePath& remote_dest_file_path,
-                           const FileOperationCallback& callback);
 
   // Wrapper function for move_operation_.
   // |callback| must not be null.
@@ -102,6 +103,7 @@ class DriveOperations {
  private:
   scoped_ptr<CopyOperation> copy_operation_;
   scoped_ptr<CreateDirectoryOperation> create_directory_operation_;
+  scoped_ptr<CreateFileOperation> create_file_operation_;
   scoped_ptr<MoveOperation> move_operation_;
   scoped_ptr<RemoveOperation> remove_operation_;
   scoped_ptr<UpdateOperation> update_operation_;

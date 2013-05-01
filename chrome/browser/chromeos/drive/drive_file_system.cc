@@ -433,55 +433,7 @@ void DriveFileSystem::CreateFile(const base::FilePath& file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // First, checks the existence of a file at |file_path|.
-  resource_metadata_->GetEntryInfoByPath(
-      file_path,
-      base::Bind(&DriveFileSystem::OnGetEntryInfoForCreateFile,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 file_path,
-                 is_exclusive,
-                 callback));
-}
-
-void DriveFileSystem::OnGetEntryInfoForCreateFile(
-    const base::FilePath& file_path,
-    bool is_exclusive,
-    const FileOperationCallback& callback,
-    FileError result,
-    scoped_ptr<DriveEntryProto> entry_proto) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  // The |file_path| is invalid. It is an error.
-  if (result != FILE_ERROR_NOT_FOUND &&
-      result != FILE_ERROR_OK) {
-    callback.Run(result);
-    return;
-  }
-
-  // An entry already exists at |file_path|.
-  if (result == FILE_ERROR_OK) {
-    DCHECK(entry_proto.get());
-    // If an exclusive mode is requested, or the entry is not a regular file,
-    // it is an error.
-    if (is_exclusive ||
-        entry_proto->file_info().is_directory() ||
-        entry_proto->file_specific_info().is_hosted_document()) {
-      callback.Run(FILE_ERROR_EXISTS);
-      return;
-    }
-
-    // Otherwise nothing more to do. Succeeded.
-    callback.Run(FILE_ERROR_OK);
-    return;
-  }
-
-  // No entry found at |file_path|. Let's create a brand new file.
-  // For now, it is implemented by uploading an empty file (/dev/null).
-  // TODO(kinaba): http://crbug.com/135143. Implement in a nicer way.
-  drive_operations_.TransferRegularFile(base::FilePath(util::kSymLinkToDevNull),
-                                        file_path,
-                                        callback);
+  drive_operations_.CreateFile(file_path, is_exclusive, callback);
 }
 
 void DriveFileSystem::Pin(const base::FilePath& file_path,

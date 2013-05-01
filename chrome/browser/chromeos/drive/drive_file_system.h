@@ -217,19 +217,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                 const FileOperationCallback& callback,
                                 FileError load_error);
 
-  // Invoked during the process of CreateFile.
-  // First, FindEntryByPathAsync is called and the result is returned
-  // to OnGetEntryInfoForCreateFile. By using the information, CreateFile deals
-  // with the cases when an entry already existed at the path. If there was no
-  // entry, a new empty file is uploaded, and when it finishes
-  // DidUploadForCreateBrandNewFile does the final clean up.
-  // |callback| must not be null.
-  void OnGetEntryInfoForCreateFile(const base::FilePath& file_path,
-                                   bool is_exclusive,
-                                   const FileOperationCallback& callback,
-                                   FileError result,
-                                   scoped_ptr<DriveEntryProto> entry_proto);
-
   // Used to implement Pin().
   void PinAfterGetEntryInfoByPath(const FileOperationCallback& callback,
                                   FileError error,
