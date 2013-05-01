@@ -13,6 +13,7 @@ import android.view.ViewConfiguration;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentSettings;
 import org.chromium.content.browser.ContentViewCore;
@@ -220,8 +221,12 @@ public class ContentViewZoomTest extends AwTestBase {
         assertFalse(isMultiTouchZoomSupportedOnUiThread());
     }
 
+    /*
     @SmallTest
     @Feature({"AndroidWebView"})
+    This test is flaky. See crbug.com/153522.
+    */
+    @DisabledTest
     public void testZoomControls() throws Throwable {
         AwSettings webSettings = getAwSettingsOnUiThread(mAwContents);
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
