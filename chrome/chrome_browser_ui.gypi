@@ -377,6 +377,8 @@
         'browser/ui/cocoa/autofill/autofill_popup_view_cocoa.mm',
         'browser/ui/cocoa/autofill/autofill_sign_in_container.h',
         'browser/ui/cocoa/autofill/autofill_sign_in_container.mm',
+        'browser/ui/cocoa/autofill/autofill_textfield.h',
+        'browser/ui/cocoa/autofill/autofill_textfield.mm',
         'browser/ui/cocoa/autofill/down_arrow_popup_menu_cell.h',
         'browser/ui/cocoa/autofill/down_arrow_popup_menu_cell.mm',
         'browser/ui/cocoa/background_gradient_view.h',

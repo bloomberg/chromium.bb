@@ -1276,6 +1276,7 @@
         'browser/ui/cocoa/applescript/bookmark_item_applescript_unittest.mm',
         'browser/ui/cocoa/autofill/autofill_account_chooser_unittest.mm',
         'browser/ui/cocoa/autofill/autofill_main_container_unittest.mm',
+        'browser/ui/cocoa/autofill/autofill_textfield_unittest.mm',
         'browser/ui/cocoa/autofill/autofill_sign_in_container_unittest.mm',
         'browser/ui/cocoa/autofill/down_arrow_popup_menu_cell_unittest.mm',
         'browser/ui/cocoa/background_gradient_view_unittest.mm',
