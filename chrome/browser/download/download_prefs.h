@@ -49,8 +49,9 @@ class DownloadPrefs {
   // for auto-open.
   bool IsAutoOpenUsed() const;
 
-  bool IsAutoOpenEnabledForExtension(
-      const base::FilePath::StringType& extension) const;
+  // Returns true if |path| should be opened automatically based on
+  // |path.Extension()|.
+  bool IsAutoOpenEnabledBasedOnExtension(const base::FilePath& path) const;
 
   // Enables auto-open based on file extension. Returns true on success.
   // TODO(phajdan.jr): Add WARN_UNUSED_RESULT here.
