@@ -266,63 +266,6 @@ void ExtensionAPI::LoadSchema(const std::string& name,
                HasUnprivilegedChild(schema, "properties")) {
       partially_unprivileged_apis_.insert(schema_namespace);
     }
-
-    bool uses_feature_system = false;
-    schema->GetBoolean("uses_feature_system", &uses_feature_system);
-
-    if (!uses_feature_system) {
-      // Populate |url_matching_apis_|.
-      ListValue* matches = NULL;
-      if (schema->GetList("matches", &matches)) {
-        URLPatternSet pattern_set;
-        for (size_t i = 0; i < matches->GetSize(); ++i) {
-          std::string pattern;
-          CHECK(matches->GetString(i, &pattern));
-          pattern_set.AddPattern(
-              URLPattern(UserScript::ValidUserScriptSchemes(), pattern));
-        }
-        url_matching_apis_[schema_namespace] = pattern_set;
-      }
-      continue;
-    }
-
-    // Populate feature maps.
-    // TODO(aa): Consider not storing features that can never run on the current
-    // machine (e.g., because of platform restrictions).
-    SimpleFeature* feature = new SimpleFeature();
-    feature->set_name(schema_namespace);
-    feature->Parse(schema);
-
-    FeatureMap* schema_features = new FeatureMap();
-    CHECK(features_.insert(
-        std::make_pair(schema_namespace,
-                       make_linked_ptr(schema_features))).second);
-    CHECK(schema_features->insert(
-        std::make_pair("", make_linked_ptr(feature))).second);
-
-    for (size_t i = 0; i < arraysize(kChildKinds); ++i) {
-      ListValue* child_list = NULL;
-      schema->GetList(kChildKinds[i], &child_list);
-      if (!child_list)
-        continue;
-
-      for (size_t j = 0; j < child_list->GetSize(); ++j) {
-        DictionaryValue* child = NULL;
-        CHECK(child_list->GetDictionary(j, &child));
-
-        scoped_ptr<SimpleFeature> child_feature(new SimpleFeature(*feature));
-        child_feature->Parse(child);
-        if (child_feature->Equals(*feature))
-          continue;  // no need to store no-op features
-
-        std::string child_name;
-        CHECK(child->GetString("name", &child_name));
-        child_feature->set_name(schema_namespace + "." + child_name);
-        CHECK(schema_features->insert(
-            std::make_pair(child_name,
-                           make_linked_ptr(child_feature.release()))).second);
-      }
-    }
   }
 }
 
@@ -565,11 +508,7 @@ bool ExtensionAPI::IsNonFeatureAPIAvailable(const std::string& name,
       break;
 
     case Feature::WEB_PAGE_CONTEXT:
-      if (!url_matching_apis_.count(name))
-        return false;
-      CHECK(url.is_valid());
-      // Availablility is determined by the url.
-      return url_matching_apis_[name].MatchesURL(url);
+      return false;
   }
 
   return true;
@@ -610,8 +549,7 @@ std::string ExtensionAPI::GetAPINameFromFullName(const std::string& full_name,
                                                  std::string* child_name) {
   std::string api_name_candidate = full_name;
   while (true) {
-    if (features_.find(api_name_candidate) != features_.end() ||
-        schemas_.find(api_name_candidate) != schemas_.end() ||
+    if (schemas_.find(api_name_candidate) != schemas_.end() ||
         unloaded_schemas_.find(api_name_candidate) != unloaded_schemas_.end()) {
       std::string result = api_name_candidate;
 

@@ -153,13 +153,6 @@ class ExtensionAPI {
   // APIs that are not entirely unprivileged, but have unprivileged components.
   std::set<std::string> partially_unprivileged_apis_;
 
-  // APIs that have URL matching permissions.
-  std::map<std::string, URLPatternSet> url_matching_apis_;
-
-  typedef std::map<std::string, linked_ptr<Feature> > FeatureMap;
-  typedef std::map<std::string, linked_ptr<FeatureMap> > APIFeatureMap;
-  APIFeatureMap features_;
-
   // FeatureProviders used for resolving dependencies.
   typedef std::map<std::string, FeatureProvider*> FeatureProviderMap;
   FeatureProviderMap dependency_providers_;
