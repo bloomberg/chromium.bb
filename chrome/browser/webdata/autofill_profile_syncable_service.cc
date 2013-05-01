@@ -439,8 +439,9 @@ AutofillProfileSyncableService::CreateOrUpdateProfile(
     }
   } else {
     // New profile synced.
+    // TODO(isherman): Read the origin from |autofill_specifics|.
     AutofillProfile* new_profile(
-        new AutofillProfile(autofill_specifics.guid()));
+        new AutofillProfile(autofill_specifics.guid(), std::string()));
     OverwriteProfileWithServerData(
         autofill_specifics, new_profile, app_locale_);
 
@@ -504,7 +505,7 @@ void AutofillProfileSyncableService::ActOnChange(
       break;
     }
     case AutofillProfileChange::REMOVE: {
-      AutofillProfile empty_profile(change.key());
+      AutofillProfile empty_profile(change.key(), std::string());
       new_changes.push_back(
           syncer::SyncChange(FROM_HERE,
                              syncer::SyncChange::ACTION_DELETE,

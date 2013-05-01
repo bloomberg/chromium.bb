@@ -284,6 +284,90 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveCreditCards) {
   EXPECT_EQ(credit_card2, *results3[1]);
 }
 
+TEST_F(PersonalDataManagerTest, UpdateUnverifiedProfilesAndCreditCards) {
+  // Start with unverified data.
+  AutofillProfile profile;
+  profile.set_origin("https://www.example.com/");
+  test::SetProfileInfo(&profile,
+      "Marion", "Mitchell", "Morrison",
+      "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
+      "91601", "US", "12345678910");
+  EXPECT_FALSE(profile.IsVerified());
+
+  CreditCard credit_card;
+  credit_card.set_origin("https://www.example.com/");
+  test::SetCreditCardInfo(&credit_card,
+      "John Dillinger", "423456789012" /* Visa */, "01", "2010");
+  EXPECT_FALSE(credit_card.IsVerified());
+
+  // Add the data to the database.
+  personal_data_->AddProfile(profile);
+  personal_data_->AddCreditCard(credit_card);
+
+  // Verify that the web database has been updated and the notification sent.
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
+  MessageLoop::current()->Run();
+
+  const std::vector<AutofillProfile*>& profiles1 =
+      personal_data_->GetProfiles();
+  const std::vector<CreditCard*>& cards1 = personal_data_->credit_cards();
+  ASSERT_EQ(1U, profiles1.size());
+  ASSERT_EQ(1U, cards1.size());
+  EXPECT_EQ(0, profile.Compare(*profiles1[0]));
+  EXPECT_EQ(0, credit_card.Compare(*cards1[0]));
+
+  // Try to update with just the origin changed.
+  AutofillProfile original_profile(profile);
+  CreditCard original_credit_card(credit_card);
+  profile.set_origin("Chrome settings");
+  credit_card.set_origin("Chrome settings");
+
+  EXPECT_TRUE(profile.IsVerified());
+  EXPECT_TRUE(credit_card.IsVerified());
+
+  personal_data_->UpdateProfile(profile);
+  personal_data_->UpdateCreditCard(credit_card);
+
+  // Note: No refresh, as no update is expected.
+
+  const std::vector<AutofillProfile*>& profiles2 =
+      personal_data_->GetProfiles();
+  const std::vector<CreditCard*>& cards2 = personal_data_->credit_cards();
+  ASSERT_EQ(1U, profiles2.size());
+  ASSERT_EQ(1U, cards2.size());
+  EXPECT_NE(profile.origin(), profiles2[0]->origin());
+  EXPECT_NE(credit_card.origin(), cards2[0]->origin());
+  // TODO(isherman): Verify that the origins match once they are saved and read
+  // from the database.  http://crbug.com/170401
+  // EXPECT_EQ(original_profile.origin(), profiles2[0]->origin());
+  // EXPECT_EQ(original_credit_card.origin(), cards2[0]->origin());
+
+  // Try to update with data changed as well.
+  profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("John"));
+  credit_card.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Joe"));
+
+  personal_data_->UpdateProfile(profile);
+  personal_data_->UpdateCreditCard(credit_card);
+
+  // Verify that the web database has been updated and the notification sent.
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
+  MessageLoop::current()->Run();
+
+  const std::vector<AutofillProfile*>& profiles3 =
+      personal_data_->GetProfiles();
+  const std::vector<CreditCard*>& cards3 = personal_data_->credit_cards();
+  ASSERT_EQ(1U, profiles3.size());
+  ASSERT_EQ(1U, cards3.size());
+  EXPECT_EQ(0, profile.Compare(*profiles3[0]));
+  EXPECT_EQ(0, credit_card.Compare(*cards3[0]));
+  // TODO(isherman): Verify that the origins match once they are saved and read
+  // from the database.  http://crbug.com/170401
+  // EXPECT_EQ(profile.origin(), profiles3[0]->origin());
+  // EXPECT_EQ(credit_card.origin(), cards3[0]->origin());
+}
+
 TEST_F(PersonalDataManagerTest, AddProfilesAndCreditCards) {
   AutofillProfile profile0;
   test::SetProfileInfo(&profile0,
@@ -485,11 +569,12 @@ TEST_F(PersonalDataManagerTest, Refresh) {
   wds->RemoveAutofillProfile(profile1.guid());
   wds->RemoveAutofillProfile(profile2.guid());
 
-  // Before telling the PDM to refresh, simulate an edit to one of the profiles
-  // via a SetProfile update (this would happen if the Autofill window was
-  // open with a previous snapshot of the profiles, and something [e.g. sync]
-  // removed a profile from the browser.  In this edge case, we will end up
-  // in a consistent state by dropping the write).
+  // Before telling the PDM to refresh, simulate an edit to one of the deleted
+  // profiles via a SetProfile update (this would happen if the Autofill window
+  // was open with a previous snapshot of the profiles, and something
+  // [e.g. sync] removed a profile from the browser.  In this edge case, we will
+  // end up in a consistent state by dropping the write).
+  profile0.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Mar"));
   profile2.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Jo"));
   personal_data_->UpdateProfile(profile0);
   personal_data_->AddProfile(profile1);
@@ -1297,7 +1382,9 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithInsufficientAddress) {
                                               &imported_credit_card));
   ASSERT_FALSE(imported_credit_card);
 
-  // Note: no refresh here.
+  // Since no refresh is expected, reload the data from the database to make
+  // sure no changes were written out.
+  ResetPersonalDataManager();
 
   const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
   ASSERT_EQ(0U, profiles.size());
@@ -1485,7 +1572,9 @@ TEST_F(PersonalDataManagerTest, AggregateInvalidCreditCard) {
                                               &imported_credit_card));
   ASSERT_FALSE(imported_credit_card);
 
-  // Note: no refresh here.
+  // Since no refresh is expected, reload the data from the database to make
+  // sure no changes were written out.
+  ResetPersonalDataManager();
 
   const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
   ASSERT_EQ(1U, results2.size());
@@ -1617,7 +1706,9 @@ TEST_F(PersonalDataManagerTest, AggregateEmptyCreditCardWithConflict) {
                                               &imported_credit_card));
   EXPECT_FALSE(imported_credit_card);
 
-  // Note: no refresh here.
+  // Since no refresh is expected, reload the data from the database to make
+  // sure no changes were written out.
+  ResetPersonalDataManager();
 
   // No change is expected.
   CreditCard expected2;
@@ -1683,10 +1774,9 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInNew) {
                                              &imported_credit_card));
   EXPECT_FALSE(imported_credit_card);
 
-  // Wait for the refresh, which in this case is a no-op.
-  EXPECT_CALL(personal_data_observer_,
-              OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  // Since no refresh is expected, reload the data from the database to make
+  // sure no changes were written out.
+  ResetPersonalDataManager();
 
   // No change is expected.
   CreditCard expected2;
@@ -1712,7 +1802,9 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInNew) {
                                               &imported_credit_card));
   ASSERT_FALSE(imported_credit_card);
 
-  // Note: no refresh here.
+  // Since no refresh is expected, reload the data from the database to make
+  // sure no changes were written out.
+  ResetPersonalDataManager();
 
   // No change is expected.
   CreditCard expected3;
@@ -1720,7 +1812,7 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInNew) {
       "Biggie Smalls", "4111111111111111", "01", "2011");
   const std::vector<CreditCard*>& results3 = personal_data_->credit_cards();
   ASSERT_EQ(1U, results3.size());
-  EXPECT_EQ(0, expected3.Compare(*results2[0]));
+  EXPECT_EQ(0, expected3.Compare(*results3[0]));
 }
 
 TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInOld) {
@@ -1818,15 +1910,129 @@ TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithSeparators) {
                                              &imported_credit_card));
   EXPECT_FALSE(imported_credit_card);
 
-  // Wait for the refresh, which in this case is a no-op.
-  EXPECT_CALL(personal_data_observer_,
-              OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  // Since no refresh is expected, reload the data from the database to make
+  // sure no changes were written out.
+  ResetPersonalDataManager();
 
   // Expect that no new card is saved.
   const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, saved_credit_card.Compare(*results2[0]));
+}
+
+// Ensure that if a verified profile already exists, aggregated profiles cannot
+// modify it in any way.
+// TODO(isherman): Enable this test once origins are saved and read from the
+// database.  http://crbug.com/170401
+TEST_F(PersonalDataManagerTest,
+       DISABLED_AggregateExistingVerifiedProfileWithConflict) {
+  // Start with a verified profile.
+  AutofillProfile profile;
+  profile.set_origin("Chrome settings");
+  test::SetProfileInfo(&profile,
+      "Marion", "Mitchell", "Morrison",
+      "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
+      "91601", "US", "12345678910");
+  EXPECT_TRUE(profile.IsVerified());
+
+  // Add the profile to the database.
+  personal_data_->AddProfile(profile);
+
+  // Verify that the web database has been updated and the notification sent.
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
+  MessageLoop::current()->Run();
+
+  // Simulate a form submission with conflicting info.
+  FormData form;
+  FormFieldData field;
+  test::CreateTestFormField(
+      "First name:", "first_name", "Marion", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField(
+      "Last name:", "last_name", "Morrison", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField(
+      "Email:", "email", "other.email@example.com", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField(
+      "Address:", "address1", "123 Zoo St.", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("City:", "city", "Hollywood", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("State:", "state", "CA", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Zip:", "zip", "91601", "text", &field);
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form, std::string());
+  form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
+  const CreditCard* imported_credit_card;
+  EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
+                                             &imported_credit_card));
+  EXPECT_FALSE(imported_credit_card);
+
+  // Wait for the refresh, which in this case is a no-op.
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
+  MessageLoop::current()->Run();
+
+  // Expect that no new profile is saved.
+  const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
+  ASSERT_EQ(1U, results.size());
+  EXPECT_EQ(0, profile.Compare(*results[0]));
+}
+
+// Ensure that if a verified credit card already exists, aggregated credit cards
+// cannot modify it in any way.
+// TODO(isherman): Enable this test once origins are saved and read from the
+// database.  http://crbug.com/170401
+TEST_F(PersonalDataManagerTest,
+       DISABLED_AggregateExistingVerifiedCreditCardWithConflict) {
+  // Start with a verified credit card.
+  CreditCard credit_card;
+  credit_card.set_origin("Chrome settings");
+  test::SetCreditCardInfo(&credit_card,
+      "Biggie Smalls", "4111 1111 1111 1111" /* Visa */, "01", "2011");
+  EXPECT_TRUE(credit_card.IsVerified());
+
+  // Add the credit card to the database.
+  personal_data_->AddCreditCard(credit_card);
+
+  // Verify that the web database has been updated and the notification sent.
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
+  MessageLoop::current()->Run();
+
+  // Simulate a form submission with conflicting expiration year.
+  FormData form;
+  FormFieldData field;
+  test::CreateTestFormField(
+      "Name on card:", "name_on_card", "Biggie Smalls", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField(
+      "Card Number:", "card_number", "4111 1111 1111 1111", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Exp Month:", "exp_month", "01", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Exp Year:", "exp_year", "2012", "text", &field);
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form, std::string());
+  form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
+  const CreditCard* imported_credit_card;
+  EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
+                                             &imported_credit_card));
+  ASSERT_FALSE(imported_credit_card);
+
+  // Since no refresh is expected, reload the data from the database to make
+  // sure no changes were written out.
+  ResetPersonalDataManager();
+
+  // Expect that the saved credit card is not modified.
+  const std::vector<CreditCard*>& results = personal_data_->credit_cards();
+  ASSERT_EQ(1U, results.size());
+  EXPECT_EQ(0, credit_card.Compare(*results[0]));
 }
 
 TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {

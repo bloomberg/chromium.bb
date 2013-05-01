@@ -29,6 +29,9 @@
 // unique guid or else things break.
 const char kAndroidMeContactA[] = "9A9E1C06-7A3B-48FA-AA4F-135CA6FC25D9";
 
+// The origin string for all profiles loaded from the Android contacts list.
+const char kAndroidContactsOrigin[] = "Android Contacts";
+
 namespace {
 
 // Takes misc. address information strings from Android API and collapses
@@ -58,7 +61,8 @@ AuxiliaryProfilesAndroid::~AuxiliaryProfilesAndroid() {
 }
 
 scoped_ptr<AutofillProfile> AuxiliaryProfilesAndroid::LoadContactsProfile() {
-  scoped_ptr<AutofillProfile> profile(new AutofillProfile(kAndroidMeContactA));
+  scoped_ptr<AutofillProfile> profile(
+      new AutofillProfile(kAndroidMeContactA, kAndroidContactsOrigin));
   LoadName(profile.get());
   LoadEmailAddress(profile.get());
   LoadPhoneNumbers(profile.get());

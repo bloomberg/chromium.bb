@@ -541,6 +541,8 @@ TEST(AutofillProfileTest, AssignmentOperator) {
                        "marion@me.xyz", "Fox", "123 Zoo St.", "unit 5",
                        "Hollywood", "CA", "91601", "US",
                        "12345678910");
+  a.set_guid(base::GenerateGUID());
+  a.set_origin("origin");
   b = a;
   EXPECT_TRUE(a == b);
 
@@ -557,6 +559,8 @@ TEST(AutofillProfileTest, Copy) {
                        "marion@me.xyz", "Fox", "123 Zoo St.", "unit 5",
                        "Hollywood", "CA", "91601", "US",
                        "12345678910");
+  a.set_guid(base::GenerateGUID());
+  a.set_origin("origin");
   AutofillProfile b(a);
   EXPECT_TRUE(a == b);
 }
@@ -570,6 +574,11 @@ TEST(AutofillProfileTest, Compare) {
   // GUIDs don't count.
   a.set_guid(base::GenerateGUID());
   b.set_guid(base::GenerateGUID());
+  EXPECT_EQ(0, a.Compare(b));
+
+  // Origins don't count.
+  a.set_origin("apple");
+  b.set_origin("banana");
   EXPECT_EQ(0, a.Compare(b));
 
   // Different values produce non-zero results.

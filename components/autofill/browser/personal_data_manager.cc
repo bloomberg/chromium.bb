@@ -332,10 +332,13 @@ bool PersonalDataManager::ImportFormData(
     for (std::vector<CreditCard*>::const_iterator iter = credit_cards_.begin();
          iter != credit_cards_.end();
          ++iter) {
-      if ((*iter)->UpdateFromImportedCard(*local_imported_credit_card.get(),
-                                          app_locale_)) {
+      // Make a local copy so that the data in |credit_cards_| isn't modified
+      // directly by the UpdateFromImportedCard() call.
+      CreditCard card = **iter;
+      if (card.UpdateFromImportedCard(*local_imported_credit_card.get(),
+                                      app_locale_)) {
         merged_credit_card = true;
-        UpdateCreditCard(**iter);
+        UpdateCreditCard(card);
         local_imported_credit_card.reset();
         break;
       }
@@ -388,7 +391,12 @@ void PersonalDataManager::UpdateProfile(const AutofillProfile& profile) {
   if (browser_context_->IsOffTheRecord())
     return;
 
-  if (!FindByGUID<AutofillProfile>(web_profiles_, profile.guid()))
+  AutofillProfile* existing_profile = GetProfileByGUID(profile.guid());
+  if (!existing_profile)
+    return;
+
+  // Don't overwrite the origin for a profile that is already stored.
+  if (existing_profile->Compare(profile) == 0)
     return;
 
   if (profile.IsEmpty(app_locale_)) {
@@ -449,7 +457,12 @@ void PersonalDataManager::UpdateCreditCard(const CreditCard& credit_card) {
   if (browser_context_->IsOffTheRecord())
     return;
 
-  if (!FindByGUID<CreditCard>(credit_cards_, credit_card.guid()))
+  CreditCard* existing_credit_card = GetCreditCardByGUID(credit_card.guid());
+  if (!existing_credit_card)
+    return;
+
+  // Don't overwrite the origin for a credit card that is already stored.
+  if (existing_credit_card->Compare(credit_card) == 0)
     return;
 
   if (credit_card.IsEmpty(app_locale_)) {
@@ -725,7 +738,12 @@ bool PersonalDataManager::MergeProfile(
           StringToLowerASCII((*iter)->PrimaryValue()) ==
               StringToLowerASCII(profile.PrimaryValue())) {
         merged = true;
-        (*iter)->OverwriteWithOrAddTo(profile, app_locale);
+
+        // Automatically aggregated profiles should never overwrite explicitly
+        // user-entered ones.  If one would, just drop it.
+        DCHECK(!profile.IsVerified());
+        if (!(*iter)->IsVerified())
+          (*iter)->OverwriteWithOrAddTo(profile, app_locale);
       }
     }
     merged_profiles->push_back(**iter);

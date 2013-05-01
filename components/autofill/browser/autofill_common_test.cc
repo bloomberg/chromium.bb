@@ -36,7 +36,7 @@ inline void check_and_set(
 }
 
 AutofillProfile GetFullProfile() {
-  AutofillProfile profile(base::GenerateGUID());
+  AutofillProfile profile(base::GenerateGUID(), "http://www.example.com/");
   SetProfileInfo(&profile,
                  "John",
                  "H.",
@@ -53,7 +53,7 @@ AutofillProfile GetFullProfile() {
 }
 
 AutofillProfile GetFullProfile2() {
-  AutofillProfile profile(base::GenerateGUID());
+  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
   SetProfileInfo(&profile,
                  "Jane",
                  "A.",

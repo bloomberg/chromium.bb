@@ -222,22 +222,23 @@ struct CaseInsensitiveStringEquals
 
 }  // namespace
 
-AutofillProfile::AutofillProfile(const std::string& guid)
-    : AutofillDataModel(guid),
+AutofillProfile::AutofillProfile(const std::string& guid,
+                                 const std::string& origin)
+    : AutofillDataModel(guid, origin),
       name_(1),
       email_(1),
       home_number_(1, PhoneNumber(this)) {
 }
 
 AutofillProfile::AutofillProfile()
-    : AutofillDataModel(base::GenerateGUID()),
+    : AutofillDataModel(base::GenerateGUID(), std::string()),
       name_(1),
       email_(1),
       home_number_(1, PhoneNumber(this)) {
 }
 
 AutofillProfile::AutofillProfile(const AutofillProfile& profile)
-    : AutofillDataModel(std::string()) {
+    : AutofillDataModel(std::string(), std::string()) {
   operator=(profile);
 }
 
@@ -249,6 +250,7 @@ AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
     return *this;
 
   set_guid(profile.guid());
+  set_origin(profile.origin());
 
   label_ = profile.label_;
   name_ = profile.name_;
@@ -454,7 +456,9 @@ int AutofillProfile::Compare(const AutofillProfile& profile) const {
 }
 
 bool AutofillProfile::operator==(const AutofillProfile& profile) const {
-  return guid() == profile.guid() && Compare(profile) == 0;
+  return guid() == profile.guid() &&
+         origin() == profile.origin() &&
+         Compare(profile) == 0;
 }
 
 bool AutofillProfile::operator!=(const AutofillProfile& profile) const {
@@ -830,6 +834,8 @@ std::ostream& operator<<(std::ostream& os, const AutofillProfile& profile) {
       << UTF16ToUTF8(profile.Label())
       << " "
       << profile.guid()
+      << " "
+      << profile.origin()
       << " "
       << UTF16ToUTF8(MultiString(profile, NAME_FIRST))
       << " "

@@ -25,10 +25,13 @@ using autofill::AutofillProfileChange;
 using content::BrowserThread;
 
 // Some guids for testing.
-std::string kGuid1 = "EDC609ED-7EEE-4F27-B00C-423242A9C44B";
-std::string kGuid2 = "EDC609ED-7EEE-4F27-B00C-423242A9C44C";
-std::string kGuid3 = "EDC609ED-7EEE-4F27-B00C-423242A9C44D";
-std::string kGuid4 = "EDC609ED-7EEE-4F27-B00C-423242A9C44E";
+const char kGuid1[] = "EDC609ED-7EEE-4F27-B00C-423242A9C44B";
+const char kGuid2[] = "EDC609ED-7EEE-4F27-B00C-423242A9C44C";
+const char kGuid3[] = "EDC609ED-7EEE-4F27-B00C-423242A9C44D";
+const char kGuid4[] = "EDC609ED-7EEE-4F27-B00C-423242A9C44E";
+const char kHttpOrigin[] = "http://www.example.com/";
+const char kHttpsOrigin[] = "https://www.example.com/";
+const char kSettingsOrigin[] = "Chrome settings";
 
 class MockAutofillProfileSyncableService
     : public AutofillProfileSyncableService {
@@ -122,27 +125,33 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeDataAndStartSyncing) {
   std::string guid_present2 = kGuid2;
   std::string guid_synced1 = kGuid3;
   std::string guid_synced2 = kGuid4;
+  std::string origin_present1 = kHttpOrigin;
+  std::string origin_present2 = std::string();
+  std::string origin_synced1 = kHttpsOrigin;
+  std::string origin_synced2 = kSettingsOrigin;
 
-  profiles_from_web_db.push_back(new AutofillProfile(guid_present1));
+  profiles_from_web_db.push_back(
+      new AutofillProfile(guid_present1, origin_present1));
   profiles_from_web_db.back()->SetRawInfo(
       autofill::NAME_FIRST, UTF8ToUTF16("John"));
   profiles_from_web_db.back()->SetRawInfo(
       autofill::ADDRESS_HOME_LINE1, UTF8ToUTF16("1 1st st"));
-  profiles_from_web_db.push_back(new AutofillProfile(guid_present2));
+  profiles_from_web_db.push_back(
+      new AutofillProfile(guid_present2, origin_present2));
   profiles_from_web_db.back()->SetRawInfo(
       autofill::NAME_FIRST, UTF8ToUTF16("Tom"));
   profiles_from_web_db.back()->SetRawInfo(
       autofill::ADDRESS_HOME_LINE1, UTF8ToUTF16("2 2nd st"));
 
   syncer::SyncDataList data_list;
-  AutofillProfile profile1(guid_synced1);
+  AutofillProfile profile1(guid_synced1, origin_synced1);
   profile1.SetRawInfo(autofill::NAME_FIRST, UTF8ToUTF16("Jane"));
   data_list.push_back(autofill_syncable_service_.CreateData(profile1));
-  AutofillProfile profile2(guid_synced2);
+  AutofillProfile profile2(guid_synced2, origin_synced2);
   profile2.SetRawInfo(autofill::NAME_FIRST, UTF8ToUTF16("Harry"));
   data_list.push_back(autofill_syncable_service_.CreateData(profile2));
   // This one will have the name updated.
-  AutofillProfile profile3(guid_present2);
+  AutofillProfile profile3(guid_present2, origin_synced2);
   profile3.SetRawInfo(autofill::NAME_FIRST, UTF8ToUTF16("Tom Doe"));
   data_list.push_back(autofill_syncable_service_.CreateData(profile3));
 
@@ -185,10 +194,12 @@ TEST_F(AutofillProfileSyncableServiceTest, GetAllSyncData) {
   std::string guid_present1 = kGuid1;
   std::string guid_present2 = kGuid2;
 
-  profiles_from_web_db.push_back(new AutofillProfile(guid_present1));
+  profiles_from_web_db.push_back(
+      new AutofillProfile(guid_present1, kHttpOrigin));
   profiles_from_web_db.back()->SetRawInfo(
       autofill::NAME_FIRST, UTF8ToUTF16("John"));
-  profiles_from_web_db.push_back(new AutofillProfile(guid_present2));
+  profiles_from_web_db.push_back(
+      new AutofillProfile(guid_present2, kHttpsOrigin));
   profiles_from_web_db.back()->SetRawInfo(
       autofill::NAME_FIRST, UTF8ToUTF16("Jane"));
 
@@ -217,11 +228,14 @@ TEST_F(AutofillProfileSyncableServiceTest, GetAllSyncData) {
   syncer::SyncDataList data =
       autofill_syncable_service_.GetAllSyncData(syncer::AUTOFILL_PROFILE);
 
-  EXPECT_EQ(2U, data.size());
-  EXPECT_EQ(guid_present1, data.front().GetSpecifics()
-      .autofill_profile().guid());
-  EXPECT_EQ(guid_present2, data.back().GetSpecifics()
-                               .autofill_profile().guid());
+  ASSERT_EQ(2U, data.size());
+  EXPECT_EQ(guid_present1, data[0].GetSpecifics().autofill_profile().guid());
+  EXPECT_EQ(guid_present2, data[1].GetSpecifics().autofill_profile().guid());
+  // TODO(isherman): Verify that the origins match once they are saved and read
+  // from the database.  http://crbug.com/170401
+  // EXPECT_EQ(kHttpOrigin, data[0].GetSpecifics().autofill_profile().origin());
+  // EXPECT_EQ(kHttpsOrigin,
+  //           data[1].GetSpecifics().autofill_profile().origin());
 }
 
 TEST_F(AutofillProfileSyncableServiceTest, ProcessSyncChanges) {
@@ -230,13 +244,13 @@ TEST_F(AutofillProfileSyncableServiceTest, ProcessSyncChanges) {
   std::string guid_synced = kGuid2;
 
   syncer::SyncChangeList change_list;
-  AutofillProfile profile(guid_synced);
+  AutofillProfile profile(guid_synced, kHttpOrigin);
   profile.SetRawInfo(autofill::NAME_FIRST, UTF8ToUTF16("Jane"));
   change_list.push_back(
       syncer::SyncChange(FROM_HERE,
                          syncer::SyncChange::ACTION_ADD,
                          AutofillProfileSyncableService::CreateData(profile)));
-  AutofillProfile empty_profile(guid_present);
+  AutofillProfile empty_profile(guid_present, kHttpsOrigin);
   change_list.push_back(
       syncer::SyncChange(
           FROM_HERE,
@@ -260,7 +274,7 @@ TEST_F(AutofillProfileSyncableServiceTest, ProcessSyncChanges) {
 }
 
 TEST_F(AutofillProfileSyncableServiceTest, ActOnChange) {
-  AutofillProfile profile(kGuid1);
+  AutofillProfile profile(kGuid1, std::string());
   profile.SetRawInfo(autofill::NAME_FIRST, UTF8ToUTF16("Jane"));
   AutofillProfileChange change1(AutofillProfileChange::ADD, kGuid1, &profile);
   AutofillProfileChange change2(AutofillProfileChange::REMOVE, kGuid2, NULL);
@@ -276,7 +290,7 @@ TEST_F(AutofillProfileSyncableServiceTest, ActOnChange) {
 }
 
 TEST_F(AutofillProfileSyncableServiceTest, UpdateField) {
-  AutofillProfile profile(kGuid1);
+  AutofillProfile profile(kGuid1, kSettingsOrigin);
   std::string company1 = "A Company";
   std::string company2 = "Another Company";
   profile.SetRawInfo(autofill::COMPANY_NAME, UTF8ToUTF16(company1));
@@ -292,7 +306,7 @@ TEST_F(AutofillProfileSyncableServiceTest, UpdateField) {
 }
 
 TEST_F(AutofillProfileSyncableServiceTest, UpdateMultivaluedField) {
-  AutofillProfile profile(kGuid1);
+  AutofillProfile profile(kGuid1, kHttpsOrigin);
 
   std::vector<string16> values;
   values.push_back(UTF8ToUTF16("1@1.com"));
@@ -326,7 +340,7 @@ TEST_F(AutofillProfileSyncableServiceTest, UpdateMultivaluedField) {
 }
 
 TEST_F(AutofillProfileSyncableServiceTest, MergeProfile) {
-  AutofillProfile profile1(kGuid1);
+  AutofillProfile profile1(kGuid1, kHttpOrigin);
   profile1.SetRawInfo(
       autofill::ADDRESS_HOME_LINE1, UTF8ToUTF16("111 First St."));
 
@@ -335,7 +349,7 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeProfile) {
   values.push_back(UTF8ToUTF16("2@1.com"));
   profile1.SetRawMultiInfo(autofill::EMAIL_ADDRESS, values);
 
-  AutofillProfile profile2(kGuid2);
+  AutofillProfile profile2(kGuid2, std::string());
   profile2.SetRawInfo(
       autofill::ADDRESS_HOME_LINE1, UTF8ToUTF16("111 First St."));
 
@@ -383,7 +397,7 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeProfile) {
   ASSERT_EQ(values.size(), 1U);
   EXPECT_EQ(values[0], UTF8ToUTF16("650234567"));
 
-  AutofillProfile profile3(kGuid3);
+  AutofillProfile profile3(kGuid3, kHttpOrigin);
   profile3.SetRawInfo(
       autofill::ADDRESS_HOME_LINE1, UTF8ToUTF16("111 First St."));
 

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/guid.h"
 #include "base/utf_string_conversions.h"
 #include "components/autofill/browser/autofill_common_test.h"
 #include "components/autofill/browser/credit_card.h"
@@ -112,12 +113,48 @@ TEST(CreditCardTest, AssignmentOperator) {
 
   // Result of assignment should be logically equal to the original profile.
   test::SetCreditCardInfo(&a, "John Dillinger", "123456789012", "01", "2010");
+  a.set_guid(base::GenerateGUID());
+  a.set_origin("origin");
   b = a;
   EXPECT_TRUE(a == b);
 
   // Assignment to self should not change the profile value.
   a = a;
   EXPECT_TRUE(a == b);
+}
+
+TEST(CreditCardTest, Copy) {
+  CreditCard a;
+
+  // Clone should be logically equal to the original.
+  test::SetCreditCardInfo(&a, "John Dillinger", "123456789012", "01", "2010");
+  a.set_guid(base::GenerateGUID());
+  a.set_origin("origin");
+  CreditCard b(a);
+  EXPECT_TRUE(a == b);
+}
+
+TEST(CreditCardTest, Compare) {
+  CreditCard a, b;
+
+  // Empty cards are the same.
+  EXPECT_EQ(0, a.Compare(b));
+
+  // GUIDs don't count.
+  a.set_guid(base::GenerateGUID());
+  b.set_guid(base::GenerateGUID());
+  EXPECT_EQ(0, a.Compare(b));
+
+  // Origins don't count.
+  a.set_origin("apple");
+  b.set_origin("banana");
+  EXPECT_EQ(0, a.Compare(b));
+
+  // Different values produce non-zero results.
+  test::SetCreditCardInfo(&a, "Jimmy", NULL, NULL, NULL);
+  test::SetCreditCardInfo(&b, "Ringo", NULL, NULL, NULL);
+  EXPECT_GT(0, a.Compare(b));
+  EXPECT_LT(0, b.Compare(a));
 }
 
 TEST(CreditCardTest, IsComplete) {

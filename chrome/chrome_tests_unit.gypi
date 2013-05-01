@@ -1700,6 +1700,7 @@
         '../components/autofill/browser/autocheckout_page_meta_data_unittest.cc',
         '../components/autofill/browser/autocomplete_history_manager_unittest.cc',
         '../components/autofill/browser/autofill_country_unittest.cc',
+        '../components/autofill/browser/autofill_data_model_unittest.cc',
         '../components/autofill/browser/autofill_download_unittest.cc',
         '../components/autofill/browser/autofill_download_url_unittest.cc',
         '../components/autofill/browser/autofill_external_delegate_unittest.cc',

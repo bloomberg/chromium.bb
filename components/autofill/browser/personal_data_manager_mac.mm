@@ -25,6 +25,8 @@
 namespace autofill {
 namespace {
 
+const char kAddressBookOrigin[] = "OS X Address Book";
+
 // This implementation makes use of the Address Book API.  Profiles are
 // generated that correspond to addresses in the "me" card that reside in the
 // user's Address Book.  The caller passes a vector of profiles into the
@@ -119,7 +121,8 @@ void AuxiliaryProfilesImpl::GetAddressBookMeCard(
     guid += base::StringPrintf(kAddressGUIDFormat.c_str(), i);
     DCHECK_EQ(kGUIDLength, guid.size());
 
-    scoped_ptr<AutofillProfile> profile(new AutofillProfile(guid));
+    scoped_ptr<AutofillProfile> profile(
+        new AutofillProfile(guid, kAddressBookOrigin));
     DCHECK(base::IsValidGUID(profile->guid()));
 
     // Fill in name and company information.

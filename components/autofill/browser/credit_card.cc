@@ -193,22 +193,22 @@ bool ConvertMonth(const base::string16& month,
 
 }  // namespace
 
-CreditCard::CreditCard(const std::string& guid)
-    : AutofillDataModel(guid),
+CreditCard::CreditCard(const std::string& guid, const std::string& origin)
+    : AutofillDataModel(guid, origin),
       type_(kGenericCard),
       expiration_month_(0),
       expiration_year_(0) {
 }
 
 CreditCard::CreditCard()
-    : AutofillDataModel(base::GenerateGUID()),
+    : AutofillDataModel(base::GenerateGUID(), std::string()),
       type_(kGenericCard),
       expiration_month_(0),
       expiration_year_(0) {
 }
 
 CreditCard::CreditCard(const CreditCard& credit_card)
-    : AutofillDataModel(std::string()) {
+    : AutofillDataModel(std::string(), std::string()) {
   operator=(credit_card);
 }
 
@@ -487,6 +487,7 @@ void CreditCard::operator=(const CreditCard& credit_card) {
   expiration_year_ = credit_card.expiration_year_;
 
   set_guid(credit_card.guid());
+  set_origin(credit_card.origin());
 }
 
 bool CreditCard::UpdateFromImportedCard(const CreditCard& imported_card,
@@ -495,6 +496,10 @@ bool CreditCard::UpdateFromImportedCard(const CreditCard& imported_card,
           imported_card.GetInfo(CREDIT_CARD_NUMBER, app_locale)) {
     return false;
   }
+
+  DCHECK(!imported_card.IsVerified());
+  if (this->IsVerified())
+    return true;
 
   // Note that the card number is intentionally not updated, so as to preserve
   // any formatting (i.e. separator characters).  Since the card number is not
@@ -552,7 +557,9 @@ int CreditCard::Compare(const CreditCard& credit_card) const {
 }
 
 bool CreditCard::operator==(const CreditCard& credit_card) const {
-  return guid() == credit_card.guid() && Compare(credit_card) == 0;
+  return guid() == credit_card.guid() &&
+         origin() == credit_card.origin() &&
+         Compare(credit_card) == 0;
 }
 
 bool CreditCard::operator!=(const CreditCard& credit_card) const {
@@ -654,6 +661,8 @@ std::ostream& operator<<(std::ostream& os, const CreditCard& credit_card) {
       << UTF16ToUTF8(credit_card.Label())
       << " "
       << credit_card.guid()
+      << " "
+      << credit_card.origin()
       << " "
       << UTF16ToUTF8(credit_card.GetRawInfo(CREDIT_CARD_NAME))
       << " "

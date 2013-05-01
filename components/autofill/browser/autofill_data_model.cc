@@ -14,6 +14,7 @@
 #include "components/autofill/browser/state_names.h"
 #include "components/autofill/browser/validation.h"
 #include "components/autofill/common/form_field_data.h"
+#include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -120,7 +121,10 @@ bool FillCreditCardTypeSelectControl(const base::string16& value,
 
 }  // namespace
 
-AutofillDataModel::AutofillDataModel(const std::string& guid) : guid_(guid) {}
+AutofillDataModel::AutofillDataModel(const std::string& guid,
+                                     const std::string& origin)
+    : guid_(guid),
+      origin_(origin) {}
 AutofillDataModel::~AutofillDataModel() {}
 
 void AutofillDataModel::FillSelectControl(AutofillFieldType type,
@@ -177,6 +181,10 @@ bool AutofillDataModel::FillCountrySelectControl(
     const std::string& app_locale,
     FormFieldData* field_data) const {
   return false;
+}
+
+bool AutofillDataModel::IsVerified() const {
+  return !origin_.empty() && !GURL(origin_).is_valid();
 }
 
 }  // namespace autofill

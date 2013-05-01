@@ -21,7 +21,7 @@ struct FormFieldData;
 // A form group that stores credit card information.
 class CreditCard : public AutofillDataModel {
  public:
-  explicit CreditCard(const std::string& guid);
+  CreditCard(const std::string& guid, const std::string& origin);
 
   // For use in STL containers.
   CreditCard();
@@ -78,9 +78,10 @@ class CreditCard : public AutofillDataModel {
   // For use in STL containers.
   void operator=(const CreditCard& credit_card);
 
-  // If the card numbers for |this| and |imported_card| match, overwrites |this|
-  // card's data with the data in |credit_card| and returns true.  Otherwise,
-  // returns false.
+  // If the card numbers for |this| and |imported_card| match, and merging the
+  // two wouldn't result in unverified data overwriting verified data,
+  // overwrites |this| card's data with the data in |credit_card|.
+  // Returns true if the card numbers match, false otherwise.
   bool UpdateFromImportedCard(const CreditCard& imported_card,
                               const std::string& app_locale) WARN_UNUSED_RESULT;
 
@@ -88,8 +89,8 @@ class CreditCard : public AutofillDataModel {
   // or < 0, or > 0 if it is different.  The implied ordering can be used for
   // culling duplicates.  The ordering is based on collation order of the
   // textual contents of the fields.
-  // GUIDs, labels, and unique IDs are not compared, only the values of the
-  // credit cards themselves.
+  // GUIDs, origins, labels, and unique IDs are not compared, only the values of
+  // the credit cards themselves.
   int Compare(const CreditCard& credit_card) const;
 
   // Used by tests.

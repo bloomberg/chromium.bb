@@ -38,6 +38,8 @@ using autofill::PersonalDataManager;
 
 namespace {
 
+const char kSettingsOrigin[] = "Chrome settings";
+
 // Sets data related to the country <select>.
 void SetCountryData(DictionaryValue* localized_strings) {
   std::string default_country_code = AutofillCountry::CountryCodeForLocale(
@@ -510,7 +512,7 @@ void AutofillOptionsHandler::SetAddress(const ListValue* args) {
     return;
   }
 
-  AutofillProfile profile(guid);
+  AutofillProfile profile(guid, kSettingsOrigin);
 
   std::string country_code;
   string16 value;
@@ -564,7 +566,7 @@ void AutofillOptionsHandler::SetCreditCard(const ListValue* args) {
     return;
   }
 
-  CreditCard credit_card(guid);
+  CreditCard credit_card(guid, kSettingsOrigin);
 
   string16 value;
   if (args->GetString(1, &value))

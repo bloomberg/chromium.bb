@@ -31,7 +31,7 @@ struct FormFieldData;
 // to the requested form group type.
 class AutofillProfile : public AutofillDataModel {
  public:
-  explicit AutofillProfile(const std::string& guid);
+  AutofillProfile(const std::string& guid, const std::string& origin);
 
   // For use in STL containers.
   AutofillProfile();
@@ -89,11 +89,13 @@ class AutofillProfile : public AutofillDataModel {
   // or < 0, or > 0 if it is different.  The implied ordering can be used for
   // culling duplicates.  The ordering is based on collation order of the
   // textual contents of the fields.
-  // GUIDs are not compared, only the values of the contents themselves.
-  // Full profile comparision, comparison includes multi-valued fields.
+  // GUIDs and origins are not compared, only the values of the contents
+  // themselves.  Full profile comparision, comparison includes multi-valued
+  // fields.
   int Compare(const AutofillProfile& profile) const;
 
-  // Equality operators compare GUIDs and the contents in the comparison.
+  // Equality operators compare GUIDs, origins, and the contents in the
+  // comparison.
   bool operator==(const AutofillProfile& profile) const;
   virtual bool operator!=(const AutofillProfile& profile) const;
 

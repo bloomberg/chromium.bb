@@ -38,6 +38,7 @@ namespace {
 
 const char kFakeEmail[] = "user@example.com";
 const char* kFieldsFromPage[] = { "email", "cc-number" };
+const char kSettingsOrigin[] = "Chrome settings";
 
 using content::BrowserThread;
 
@@ -369,7 +370,7 @@ TEST_F(AutofillDialogControllerTest, AutofillProfiles) {
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(2);
 
   // Empty profiles are ignored.
-  AutofillProfile empty_profile(base::GenerateGUID());
+  AutofillProfile empty_profile(base::GenerateGUID(), kSettingsOrigin);
   empty_profile.SetRawInfo(NAME_FULL, ASCIIToUTF16("John Doe"));
   controller()->GetTestingManager()->AddTestingProfile(&empty_profile);
   shipping_model = controller()->MenuModelForSection(SECTION_SHIPPING);
@@ -377,6 +378,7 @@ TEST_F(AutofillDialogControllerTest, AutofillProfiles) {
 
   // A full profile should be picked up.
   AutofillProfile full_profile(test::GetFullProfile());
+  full_profile.set_origin(kSettingsOrigin);
   full_profile.SetRawInfo(ADDRESS_HOME_LINE2, string16());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
   shipping_model = controller()->MenuModelForSection(SECTION_SHIPPING);
