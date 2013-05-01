@@ -141,7 +141,7 @@ def KillChromes():
   if util.IsWindows():
     cmd = ['taskkill', '/F', '/IM']
   else:
-    cmd = ['pkill', '-9']
+    cmd = ['killall', '-9']
   cmd.append(chrome_map[util.GetPlatformName()])
   util.RunCommand(cmd)
 
