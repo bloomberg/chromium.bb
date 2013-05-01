@@ -538,6 +538,11 @@ void LocalFileSyncContext::TryPrepareForLocalSync(
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(urls);
 
+  if (shutdown_on_ui_) {
+    callback.Run(SYNC_STATUS_ABORT, LocalFileSyncInfo());
+    return;
+  }
+
   if (urls->empty()) {
     callback.Run(SYNC_STATUS_NO_CHANGE_TO_SYNC,
                  LocalFileSyncInfo());
@@ -635,6 +640,10 @@ void LocalFileSyncContext::DidGetWritingStatusForSync(
 void LocalFileSyncContext::EnableWritingOnIOThread(
     const FileSystemURL& url) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  if (!sync_status()) {
+    // The service might have been shut down.
+    return;
+  }
   sync_status()->EndSyncing(url);
   // Since a sync has finished the number of changes must have been updated.
   origins_with_pending_changes_.insert(url.origin());
