@@ -557,6 +557,20 @@ int SpdySession::CreateStream(const SpdyStreamRequest& request,
     return ERR_SPDY_PROTOCOL_ERROR;
   }
 
+  DCHECK(connection_->socket());
+  DCHECK(connection_->socket()->IsConnected());
+  if (connection_->socket()) {
+    UMA_HISTOGRAM_BOOLEAN("Net.SpdySession.CreateStreamWithSocketConnected",
+                          connection_->socket()->IsConnected());
+    if (!connection_->socket()->IsConnected()) {
+      CloseSessionOnError(
+          ERR_CONNECTION_CLOSED,
+          true,
+          "Tried to create SPDY stream for a closed socket connection.");
+      return ERR_CONNECTION_CLOSED;
+    }
+  }
+
   const std::string& path = request.url().PathForRequest();
   *stream = new SpdyStream(this, path, request.priority(),
                            stream_initial_send_window_size_,
