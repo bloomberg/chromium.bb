@@ -32,6 +32,8 @@ using namespace std;
 namespace WebCore {
 
 // Constants for hybi-10 frame format.
+// These are bitmasks for frame composition / decomposition.
+// Do not mistake these constants for the flags given to the WebSocketFrame constructor.
 const unsigned char finalBit = 0x80;
 const unsigned char compressBit = 0x40;
 const unsigned char reserved2Bit = 0x20;
@@ -171,13 +173,25 @@ void WebSocketFrame::makeFrameData(Vector<char>& frameData)
     appendFramePayload(*this, frameData);
 }
 
-WebSocketFrame::WebSocketFrame(OpCode opCode, bool final, bool compress, bool masked, const char* payload, size_t payloadLength)
-    : opCode(opCode)
-    , final(final)
-    , compress(compress)
+WebSocketFrame::WebSocketFrame()
+    : opCode(OpCodeInvalid)
+    , final(false)
+    , compress(false)
     , reserved2(false)
     , reserved3(false)
-    , masked(masked)
+    , masked(false)
+    , payload(0)
+    , payloadLength(0)
+{
+}
+
+WebSocketFrame::WebSocketFrame(OpCode opCode, const char* payload, size_t payloadLength, Flags flags)
+    : opCode(opCode)
+    , final(flags & Final)
+    , compress(flags & Compress)
+    , reserved2(flags & Reserved2)
+    , reserved3(flags & Reserved3)
+    , masked(flags & Masked)
     , payload(payload)
     , payloadLength(payloadLength)
 {
