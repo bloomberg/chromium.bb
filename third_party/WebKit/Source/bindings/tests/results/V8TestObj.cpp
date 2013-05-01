@@ -4430,6 +4430,8 @@ bool V8TestObj::HasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8::Isolate* 
 void V8TestObj::installPerContextProperties(v8::Handle<v8::Object> instance, TestObj* impl, v8::Isolate* isolate)
 {
     v8::Local<v8::Object> proto = v8::Local<v8::Object>::Cast(instance->GetPrototype());
+    // When building QtWebkit with V8 this variable is unused when none of the features are enabled.
+    UNUSED_PARAM(proto);
     if (ContextFeatures::enabledPerContextAttr1Enabled(impl->document())) {
         static const V8DOMConfiguration::BatchedAttribute attrData =\
         // Attribute 'enabledPerContextAttr1' (Type: 'attribute' ExtAttr: 'EnabledPerContext')

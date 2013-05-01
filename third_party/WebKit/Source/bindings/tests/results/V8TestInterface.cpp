@@ -270,126 +270,6 @@ static void supplementalNodeAttrSetterCallback(v8::Local<v8::String> name, v8::L
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static v8::Handle<v8::Value> Node13AttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
-{
-    TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    return toV8Fast(TestPartialInterface::node13(imp), info, imp);
-}
-
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
-
-#if ENABLE(Condition11) || ENABLE(Condition12)
-
-static v8::Handle<v8::Value> Node13AttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
-{
-    return TestInterfaceV8Internal::Node13AttrGetter(name, info);
-}
-
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
-
-#if ENABLE(Condition11) || ENABLE(Condition12)
-
-static void Node13AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
-{
-    TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
-    TestPartialInterface::setNode13(imp, WTF::getPtr(v));
-    return;
-}
-
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
-
-#if ENABLE(Condition11) || ENABLE(Condition12)
-
-static void Node13AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
-{
-    TestInterfaceV8Internal::Node13AttrSetter(name, value, info);
-}
-
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
-
-#if ENABLE(Condition11) || ENABLE(Condition12)
-
-static v8::Handle<v8::Value> Node14AttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
-{
-    TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    return toV8Fast(TestPartialInterface::node14(imp), info, imp);
-}
-
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
-
-#if ENABLE(Condition11) || ENABLE(Condition12)
-
-static v8::Handle<v8::Value> Node14AttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
-{
-    return TestInterfaceV8Internal::Node14AttrGetter(name, info);
-}
-
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
-
-#if ENABLE(Condition11) || ENABLE(Condition12)
-
-static void Node14AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
-{
-    TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
-    TestPartialInterface::setNode14(imp, WTF::getPtr(v));
-    return;
-}
-
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
-
-#if ENABLE(Condition11) || ENABLE(Condition12)
-
-static void Node14AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
-{
-    TestInterfaceV8Internal::Node14AttrSetter(name, value, info);
-}
-
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
-
-#if ENABLE(Condition11) || ENABLE(Condition12)
-
-static v8::Handle<v8::Value> Node15AttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
-{
-    TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    return toV8Fast(TestPartialInterface::node15(imp), info, imp);
-}
-
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
-
-#if ENABLE(Condition11) || ENABLE(Condition12)
-
-static v8::Handle<v8::Value> Node15AttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
-{
-    return TestInterfaceV8Internal::Node15AttrGetter(name, info);
-}
-
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
-
-#if ENABLE(Condition11) || ENABLE(Condition12)
-
-static void Node15AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
-{
-    TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
-    TestPartialInterface::setNode15(imp, WTF::getPtr(v));
-    return;
-}
-
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
-
-#if ENABLE(Condition11) || ENABLE(Condition12)
-
-static void Node15AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
-{
-    TestInterfaceV8Internal::Node15AttrSetter(name, value, info);
-}
-
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
-
-#if ENABLE(Condition11) || ENABLE(Condition12)
-
 static v8::Handle<v8::Value> supplementalMethod1Method(const v8::Arguments& args)
 {
     TestInterface* imp = V8TestInterface::toNative(args.Holder());
@@ -572,16 +452,6 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8:
     UNUSED_PARAM(instance); // In some cases, it will not be used.
     UNUSED_PARAM(proto); // In some cases, it will not be used.
 
-#if ENABLE(Condition11) || ENABLE(Condition12)
-    if (RuntimeEnabledFeatures::condition13Enabled()) {
-        static const V8DOMConfiguration::BatchedAttribute attrData =\
-        // Attribute 'Node13' (Type: 'attribute' ExtAttr: 'EnabledAtRuntime Conditional ImplementedBy')
-        {"Node13", TestInterfaceV8Internal::Node13AttrGetterCallback, TestInterfaceV8Internal::Node13AttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
-        V8DOMConfiguration::configureAttribute(instance, proto, attrData, isolate, currentWorldType);
-    }
-
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
-
     // Custom Signature 'supplementalMethod2'
     const int supplementalMethod2Argc = 2;
     v8::Handle<v8::FunctionTemplate> supplementalMethod2Argv[supplementalMethod2Argc] = { v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObj::info, currentWorldType) };
@@ -623,29 +493,6 @@ bool V8TestInterface::HasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8::Iso
     return V8PerIsolateData::from(isolate)->hasInstance(&info, value, MainWorld)
         || V8PerIsolateData::from(isolate)->hasInstance(&info, value, IsolatedWorld)
         || V8PerIsolateData::from(isolate)->hasInstance(&info, value, WorkerWorld);
-}
-
-void V8TestInterface::installPerContextProperties(v8::Handle<v8::Object> instance, TestInterface* impl, v8::Isolate* isolate)
-{
-    v8::Local<v8::Object> proto = v8::Local<v8::Object>::Cast(instance->GetPrototype());
-
-#if ENABLE(Condition11) || ENABLE(Condition12)
-    if (ContextFeatures::condition14Enabled(impl->document())) {
-        static const V8DOMConfiguration::BatchedAttribute attrData =\
-        // Attribute 'Node14' (Type: 'attribute' ExtAttr: 'EnabledPerContext Conditional ImplementedBy')
-        {"Node14", TestInterfaceV8Internal::Node14AttrGetterCallback, TestInterfaceV8Internal::Node14AttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
-        V8DOMConfiguration::configureAttribute(instance, proto, attrData, isolate);
-    }
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
-
-#if ENABLE(Condition11) || ENABLE(Condition12)
-    if (ContextFeatures::condition16Enabled(impl->document()) && RuntimeEnabledFeatures::condition15Enabled()) {
-        static const V8DOMConfiguration::BatchedAttribute attrData =\
-        // Attribute 'Node15' (Type: 'attribute' ExtAttr: 'EnabledPerContext EnabledAtRuntime Conditional ImplementedBy')
-        {"Node15", TestInterfaceV8Internal::Node15AttrGetterCallback, TestInterfaceV8Internal::Node15AttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
-        V8DOMConfiguration::configureAttribute(instance, proto, attrData, isolate);
-    }
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
 }
 
 ActiveDOMObject* V8TestInterface::toActiveDOMObject(v8::Handle<v8::Object> object)
