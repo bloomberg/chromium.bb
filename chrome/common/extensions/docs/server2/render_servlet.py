@@ -81,8 +81,8 @@ class RenderServlet(Servlet):
 
     canonical_path = server_instance.path_canonicalizer.Canonicalize(path)
     if path != canonical_path:
-      return self.Redirect(canonical_path if channel is None else
-                           '%s/%s' % (channel, canonical_path))
+      return Response.Redirect(canonical_path if channel is None else
+                               '%s/%s' % (channel, canonical_path))
 
     templates = server_instance.template_data_source_factory.Create(
         self._request, path)
