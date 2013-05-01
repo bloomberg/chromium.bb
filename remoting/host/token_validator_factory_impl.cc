@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/string_util.h"
 #include "base/values.h"
 #include "crypto/random.h"
 #include "googleurl/src/gurl.h"
@@ -73,7 +74,7 @@ class TokenValidatorImpl
             key_pair_->SignMessage(token), true) +
         "&grant_type=authorization_code";
     request_.reset(net::URLFetcher::Create(
-        token_validation_url_, net::URLFetcher::POST, this));
+        0, token_validation_url_, net::URLFetcher::POST, this));
     request_->SetUploadData("application/x-www-form-urlencoded", post_body);
     request_->SetRequestContext(request_context_getter_);
     request_->Start();
@@ -91,8 +92,8 @@ class TokenValidatorImpl
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE {
     DCHECK_EQ(request_.get(), source);
     std::string shared_token = ProcessResponse();
-    on_token_validated_.Run(shared_token);
     request_.reset();
+    on_token_validated_.Run(shared_token);
   }
 
  private:
@@ -103,8 +104,8 @@ class TokenValidatorImpl
 
   static std::string CreateScope(const std::string& local_jid,
                                  const std::string& remote_jid) {
-    char nonce_bytes[kNonceLength];
-    crypto::RandBytes(nonce_bytes, kNonceLength);
+    std::string nonce_bytes;
+    crypto::RandBytes(WriteInto(&nonce_bytes, kNonceLength + 1), kNonceLength);
     std::string nonce;
     bool success = base::Base64Encode(nonce_bytes, &nonce);
     DCHECK(success);
@@ -113,17 +114,23 @@ class TokenValidatorImpl
 
   std::string ProcessResponse() {
     // Verify that we got a successful response.
-    int response = request_->GetResponseCode();
     net::URLRequestStatus status = request_->GetStatus();
+    if (!status.is_success()) {
+      LOG(ERROR) << "Error validating token, status=" << status.status()
+                 << " err=" << status.error();
+      return std::string();
+    }
+
+    int response = request_->GetResponseCode();
     std::string data;
-    if (!status.is_success() || response != 200) {
+    request_->GetResponseAsString(&data);
+    if (response != 200) {
       LOG(ERROR)
           << "Error " << response << " validating token: '" << data << "'";
       return std::string();
     }
 
     // Decode the JSON data from the response.
-    request_->GetResponseAsString(&data);
     scoped_ptr<base::Value> value(base::JSONReader::Read(data));
     DictionaryValue* dict;
     if (!value.get() || value->GetType() != base::Value::TYPE_DICTIONARY ||
