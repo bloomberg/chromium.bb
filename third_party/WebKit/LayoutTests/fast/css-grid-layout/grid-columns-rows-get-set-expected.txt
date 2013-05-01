@@ -64,6 +64,8 @@ PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns') is '
 PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows') is 'minmax(-webkit-max-content, -webkit-min-content)'
 PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns') is '3600fr'
 PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows') is '154fr'
+PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns') is '3.1459fr'
+PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows') is '2.718fr'
 PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns') is '3fr'
 PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows') is '4fr'
 
@@ -76,8 +78,7 @@ PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns') is '
 PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows') is 'none'
 PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns') is 'none'
 PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows') is 'none'
-We are failing the following test due to crbug.com/235629
-FAIL getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns') should be none. Was 2fr.
+PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns') is 'none'
 PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows') is 'none'
 PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns') is 'none'
 PASS getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows') is 'none'

@@ -194,6 +194,7 @@ static inline bool isCSSTokenAString(int yytype)
 %token <number> DPPX
 %token <number> DPI
 %token <number> DPCM
+%token <number> FR
 
 %token <string> URI
 %token <string> FUNCTION
@@ -1728,6 +1729,7 @@ unary_term:
   | DPPX { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_DPPX; }
   | DPI { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_DPI; }
   | DPCM { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_DPCM; }
+  | FR { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_FR; }
   ;
 
 function:

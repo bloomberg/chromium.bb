@@ -155,6 +155,14 @@ element.style.webkitGridRows = "154fR";
 shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns')", "'3600fr'");
 shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows')", "'154fr'");
 
+// Float values are allowed.
+element = document.createElement("div");
+document.body.appendChild(element);
+element.style.webkitGridColumns = "3.1459fr";
+element.style.webkitGridRows = "2.718fr";
+shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns')", "'3.1459fr'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows')", "'2.718fr'");
+
 // A leading '+' is allowed.
 element = document.createElement("div");
 document.body.appendChild(element);
@@ -204,13 +212,12 @@ element = document.createElement("div");
 document.body.appendChild(element);
 element.style.webkitGridColumns = "-2fr";
 element.style.webkitGridRows = "3ffr";
-debug("We are failing the following test due to crbug.com/235629");
 shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns')", "'none'");
 shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows')", "'none'");
 
 element = document.createElement("div");
 document.body.appendChild(element);
-element.style.webkitGridColumns = "2.0fr";
+element.style.webkitGridColumns = "-2.05fr";
 element.style.webkitGridRows = "+-3fr";
 shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns')", "'none'");
 shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows')", "'none'");
@@ -224,12 +231,12 @@ shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows')", 
 
 element = document.createElement("div");
 document.body.appendChild(element);
-element.style.webkitGridColumns = "fr";
+element.style.webkitGridColumns = ".0000fr";
 element.style.webkitGridRows = "13 fr"; // A dimension doesn't allow spaces between the number and the unit.
 shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns')", "'none'");
 shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows')", "'none'");
 
-element.style.webkitGridColumns = "7.0fr";
+element.style.webkitGridColumns = "7.-fr";
 element.style.webkitGridRows = "-8,0fr";
 shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-columns')", "'none'");
 shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-rows')", "'none'");

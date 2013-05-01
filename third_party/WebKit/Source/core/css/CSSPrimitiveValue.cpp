@@ -91,6 +91,7 @@ static inline bool isValidCSSUnitTypeForDoubleConversion(CSSPrimitiveValue::Unit
     case CSSPrimitiveValue::CSS_VH:
     case CSSPrimitiveValue::CSS_VMIN:
     case CSSPrimitiveValue::CSS_VMAX:
+    case CSSPrimitiveValue::CSS_FR:
         return true;
     case CSSPrimitiveValue::CSS_ATTR:
     case CSSPrimitiveValue::CSS_COUNTER:
@@ -420,6 +421,7 @@ void CSSPrimitiveValue::cleanup()
     case CSS_DPPX:
     case CSS_DPI:
     case CSS_DPCM:
+    case CSS_FR:
     case CSS_IDENT:
     case CSS_RGBCOLOR:
     case CSS_DIMENSION:

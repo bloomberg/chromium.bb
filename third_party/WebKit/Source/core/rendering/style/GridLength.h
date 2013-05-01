@@ -60,8 +60,8 @@ public:
     const Length& length() const { ASSERT(isLength()); return m_length; }
     Length& length() { ASSERT(isLength()); return m_length; }
 
-    unsigned flex() const { ASSERT(isFlex()); return m_flex; }
-    void setFlex(unsigned flex)
+    double flex() const { ASSERT(isFlex()); return m_flex; }
+    void setFlex(double flex)
     {
         m_type = FlexType;
         m_flex = flex;
@@ -76,7 +76,7 @@ private:
     // Ideally we would put the 2 following fields in a union, but Length has a constructor,
     // a destructor and a copy assignment which isn't allowed.
     Length m_length;
-    unsigned m_flex;
+    double m_flex;
     enum GridLengthType {
         LengthType,
         FlexType

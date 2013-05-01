@@ -98,6 +98,7 @@ public:
         CSS_DPPX = 30,
         CSS_DPI = 31,
         CSS_DPCM = 32,
+        CSS_FR = 33,
         CSS_PAIR = 100, // We envision this being exposed as a means of getting computed style values for pairs (border-spacing/radius, background-position, etc.)
         CSS_UNICODE_RANGE = 102,
 
@@ -184,7 +185,7 @@ public:
     bool isDotsPerCentimeter() const { return primitiveType() == CSS_DPCM; }
     bool isVariableName() const { return primitiveType() == CSS_VARIABLE_NAME; }
     bool isViewportPercentageLength() const { return m_primitiveUnitType >= CSS_VW && m_primitiveUnitType <= CSS_VMAX; }
-    bool isDimension() const { return primitiveType() == CSS_DIMENSION; }
+    bool isFlex() const { return primitiveType() == CSS_FR; }
 
     static PassRefPtr<CSSPrimitiveValue> createIdentifier(int identifier) { return adoptRef(new CSSPrimitiveValue(identifier)); }
     static PassRefPtr<CSSPrimitiveValue> createColor(unsigned rgbValue) { return adoptRef(new CSSPrimitiveValue(rgbValue)); }
