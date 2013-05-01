@@ -165,15 +165,20 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableUserMediaScreenCapturing) ||
       IsOriginWhitelistedForScreenCapture(request.security_origin);
-  // Deny request automatically in the following cases:
-  //  1. Screen capturing is not enabled via command line switch.
-  //  2. Audio capture was requested (it's not supported yet).
-  //  3. Request from a page that was not loaded from a secure origin or
-  //     extension.
-  if (screen_capture_enabled &&
-      request.audio_type == content::MEDIA_NO_SERVICE &&
-      (request.security_origin.SchemeIsSecure() ||
-       request.security_origin.SchemeIs(extensions::kExtensionScheme))) {
+
+  bool origin_is_secure =
+      request.security_origin.SchemeIsSecure() ||
+      request.security_origin.SchemeIs(extensions::kExtensionScheme) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAllowHttpScreenCapture);
+
+  // Approve request only when the following conditions are met:
+  //  1. Screen capturing is enabled via command line switch or white-listed for
+  //     the given origin.
+  //  2. Request comes from a page with a secure origin or from an extension.
+  //  3. Audio capture was not requested (it's not supported yet).
+  if (screen_capture_enabled && origin_is_secure &&
+      request.audio_type == content::MEDIA_NO_SERVICE) {
     string16 application_name = UTF8ToUTF16(request.security_origin.spec());
     chrome::MessageBoxResult result = chrome::ShowMessageBox(
         NULL,
