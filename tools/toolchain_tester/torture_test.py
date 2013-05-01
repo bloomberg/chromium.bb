@@ -85,9 +85,9 @@ def standard_tests(context, config, exclude, extra_args):
              '--config=' + config,
              '--append=CFLAGS:-std=gnu89']
   command.extend(extra_args)
-  print command
   command.extend(glob.glob(os.path.join(TEST_PATH_C, '*c')))
   command.extend(glob.glob(os.path.join(TEST_PATH_C, 'ieee', '*c')))
+  print command
   try:
     return buildbot_lib.Command(context, command)
   except buildbot_lib.StepFailed:
@@ -109,12 +109,12 @@ def eh_tests(context, config, exclude, extra_args):
   except buildbot_lib.StepFailed:
     return 1
 
-def run_torture(context, compiler, platform, extra_args):
+def run_torture(status, compiler, platform, extra_args):
   if platform not in ('x86-32', 'x86-64', 'arm'):
     print 'Unknown platform:', platform
-  prereqs_scons(context, platform)
+  prereqs_scons(status.context, platform)
   if compiler == 'pnacl':
-    prereqs_pnacl(context)
+    prereqs_pnacl(status.context)
 
   config_map = { 'pnacl': 'llvm_pnacl',
                  'naclgcc': 'nacl_gcc',
@@ -123,19 +123,22 @@ def run_torture(context, compiler, platform, extra_args):
   failures = []
   for optmode in ['O0', 'O3']:
     # TODO: support an option like -k? For now, always keep going
-    retcode = eh_tests(context,
-                        '_'.join((config_map[compiler], platform, optmode)),
-                        'known_eh_failures_' + compiler + '.txt', extra_args)
+    retcode = eh_tests(status.context,
+                      '_'.join((config_map[compiler], platform, optmode)),
+                      'known_eh_failures_' + compiler + '.txt', extra_args)
     if retcode:
       failures.append(optmode + ' eh')
-    retcode = standard_tests(context,
-                   '_'.join((config_map[compiler], platform, optmode)),
-                   'known_failures_' + compiler + '.txt', extra_args)
+
+    retcode = standard_tests(
+        status.context,
+        '_'.join((config_map[compiler], platform, optmode)),
+        'known_failures_' + compiler + '.txt', extra_args)
     if retcode:
       failures.append(optmode + ' standard')
   if len(failures) > 0:
     print 'There were failed steps in modes:', failures
-  return retcode
+    return 1
+  return 0
 
 #TODO: move this to buildbot_lib and factor wrt ParseStandardCommandLine?
 def setup_buildbot_context(context):
@@ -149,6 +152,7 @@ def setup_buildbot_context(context):
 def main():
   context = buildbot_lib.BuildContext()
   setup_buildbot_context(context)
+  status = buildbot_lib.BuildStatus(context)
 
   # TODO(dschuff): it's a pain to pass through unknown arguments with optparse,
   # but if we add more, or once we have argparse (python2.7) everywhere, switch.
@@ -171,7 +175,7 @@ def main():
     install_tests(context)
     tester_argv.remove('--bot')
 
-  return run_torture(context, compiler, platform, tester_argv)
+  return run_torture(status, compiler, platform, tester_argv)
 
 if __name__ == '__main__':
   sys.exit(main())
