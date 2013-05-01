@@ -830,10 +830,26 @@ TEST_F(TextfieldViewsModelTest, CompositionTextTest) {
   ui::CompositionText composition;
   composition.text = ASCIIToUTF16("678");
   composition.underlines.push_back(ui::CompositionUnderline(0, 3, 0, false));
-  composition.selection = ui::Range(2, 3);
+
+  // Cursor should be at the end of composition when characters are just typed.
+  composition.selection = ui::Range(3, 3);
   model.SetCompositionText(composition);
   EXPECT_TRUE(model.HasCompositionText());
   EXPECT_FALSE(model.HasSelection());
+
+  // Cancel composition
+  model.CancelCompositionText();
+  composition_text_confirmed_or_cleared_ = false;
+
+  // Restart composition with targeting "67" in "678".
+  composition.selection = ui::Range(0, 2);
+  composition.underlines.clear();
+  composition.underlines.push_back(ui::CompositionUnderline(0, 2, 0, true));
+  composition.underlines.push_back(ui::CompositionUnderline(2, 3, 0, false));
+  model.SetCompositionText(composition);
+  EXPECT_TRUE(model.HasCompositionText());
+  EXPECT_TRUE(model.HasSelection());
+  EXPECT_EQ(ui::Range(5, 7), model.render_text()->selection());
 
   model.GetTextRange(&range);
   EXPECT_EQ(10U, range.end());
@@ -843,7 +859,7 @@ TEST_F(TextfieldViewsModelTest, CompositionTextTest) {
   EXPECT_EQ(ui::Range(5, 8), range);
   // composition text
   EXPECT_STR_EQ("456", model.GetTextFromRange(ui::Range(3, 6)));
-  EXPECT_EQ(ui::Range(8, 8), model.render_text()->selection());
+  EXPECT_EQ(ui::Range(5, 7), model.render_text()->selection());
 
   EXPECT_FALSE(composition_text_confirmed_or_cleared_);
   model.CancelCompositionText();
@@ -1438,7 +1454,7 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_CompositionText) {
   EXPECT_TRUE(model.Undo());  // set composition should forget undone edit.
   model.SetCompositionText(composition);
   EXPECT_TRUE(model.HasCompositionText());
-  EXPECT_FALSE(model.HasSelection());
+  EXPECT_TRUE(model.HasSelection());
   EXPECT_STR_EQ("ABCDEabc", model.GetText());
 
   // Accepting composition

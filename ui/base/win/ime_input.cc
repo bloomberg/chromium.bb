@@ -54,13 +54,6 @@ void GetCompositionTargetRange(HIMC imm_context, int* target_start,
         if (!IsTargetAttribute(attribute_data[end]))
           break;
       }
-      if (start == attribute_size) {
-        // This composition clause does not contain any target clauses,
-        // i.e. this clauses is an input clause.
-        // We treat the whole composition as a target clause.
-        start = 0;
-        end = attribute_size;
-      }
     }
     *target_start = start;
     *target_end = end;

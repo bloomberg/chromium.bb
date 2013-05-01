@@ -577,7 +577,18 @@ void TextfieldViewsModel::SetCompositionText(
   render_text_->SetText(new_text.insert(cursor, composition.text));
   ui::Range range(cursor, cursor + composition.text.length());
   render_text_->SetCompositionRange(range);
-  render_text_->SetCursorPosition(cursor + composition.selection.end());
+  if (composition.selection.is_empty()) {
+    // There is likely to be no target segment. Interpret the selection as a
+    // cursor position.
+    render_text_->SetCursorPosition(cursor + composition.selection.end());
+  } else {
+    // It is OK to normalize the |composition.selection| because this selection
+    // is artificial and it can always be interpreted as a selection from min
+    // to max.
+    render_text_->SelectRange(
+        ui::Range(cursor + composition.selection.GetMin(),
+                  cursor + composition.selection.GetMax()));
+  }
 }
 
 void TextfieldViewsModel::ConfirmCompositionText() {
