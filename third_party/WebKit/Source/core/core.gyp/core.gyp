@@ -61,7 +61,15 @@
 
   'target_defaults': {
     'variables': {
-      'optimize': 'max',
+     # Temporarily turn down optimizations due to problems in the official
+     # Chrome build. See http://crbug.com/236217.
+     'optimize': 'size',
+    },
+
+    'msvs_settings': {
+      'VCCLCompilerTool': {
+        'AdditionalOptions': ['/bigobj'],
+      },
     },
   },
 
