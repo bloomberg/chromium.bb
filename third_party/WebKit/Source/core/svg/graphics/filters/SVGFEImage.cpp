@@ -36,7 +36,6 @@
 #include "core/svg/SVGPreserveAspectRatio.h"
 #include "core/svg/SVGStyledElement.h"
 #include "core/svg/SVGURIReference.h"
-#include "core/svg/graphics/filters/SVGFilter.h"
 
 namespace WebCore {
 
@@ -68,15 +67,13 @@ PassRefPtr<FEImage> FEImage::createWithIRIReference(Filter* filter, Document* do
 
 void FEImage::determineAbsolutePaintRect()
 {
-    SVGFilter* svgFilter = static_cast<SVGFilter*>(filter());
-
-    FloatRect paintRect = svgFilter->absoluteTransform().mapRect(filterPrimitiveSubregion());
+    FloatRect paintRect = filter()->absoluteTransform().mapRect(filterPrimitiveSubregion());
     FloatRect srcRect;
     if (m_image) {
         srcRect.setSize(m_image->size());
         m_preserveAspectRatio.transformRect(paintRect, srcRect);
     } else if (RenderObject* renderer = referencedRenderer())
-        srcRect = svgFilter->absoluteTransform().mapRect(renderer->repaintRectInLocalCoordinates());
+        srcRect = filter()->absoluteTransform().mapRect(renderer->repaintRectInLocalCoordinates());
 
     if (clipsToBounds())
         paintRect.intersect(maxEffectRect());
@@ -105,12 +102,11 @@ void FEImage::applySoftware()
     if (!resultImage)
         return;
 
-    SVGFilter* svgFilter = static_cast<SVGFilter*>(filter());
-    FloatRect destRect = svgFilter->absoluteTransform().mapRect(filterPrimitiveSubregion());
+    FloatRect destRect = filter()->absoluteTransform().mapRect(filterPrimitiveSubregion());
 
     FloatRect srcRect;
     if (renderer)
-        srcRect = svgFilter->absoluteTransform().mapRect(renderer->repaintRectInLocalCoordinates());
+        srcRect = filter()->absoluteTransform().mapRect(renderer->repaintRectInLocalCoordinates());
     else {
         srcRect = FloatRect(FloatPoint(), m_image->size());
         m_preserveAspectRatio.transformRect(destRect, srcRect);
@@ -123,7 +119,7 @@ void FEImage::applySoftware()
     setResultColorSpace(ColorSpaceDeviceRGB);
 
     if (renderer) {
-        const AffineTransform& absoluteTransform = svgFilter->absoluteTransform();
+        const AffineTransform& absoluteTransform = filter()->absoluteTransform();
         resultImage->context()->concatCTM(absoluteTransform);
 
         SVGElement* contextNode = toSVGElement(renderer->node());

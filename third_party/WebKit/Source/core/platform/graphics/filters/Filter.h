@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2009 Dirk Schulze <krit@webkit.org>
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -31,7 +32,7 @@ class FilterEffect;
 
 class Filter : public RefCounted<Filter> {
 public:
-    Filter() : m_renderingMode(Unaccelerated) { }
+    Filter(const AffineTransform& absoluteTransform) : m_absoluteTransform(absoluteTransform), m_renderingMode(Unaccelerated) { }
     virtual ~Filter() { }
 
     void setSourceImage(PassOwnPtr<ImageBuffer> sourceImage) { m_sourceImage = sourceImage; }
@@ -39,6 +40,9 @@ public:
 
     FloatSize filterResolution() const { return m_filterResolution; }
     void setFilterResolution(const FloatSize& filterResolution) { m_filterResolution = filterResolution; }
+
+    const AffineTransform& absoluteTransform() const { return m_absoluteTransform; }
+    FloatPoint mapAbsolutePointToLocalPoint(const FloatPoint& point) const { return m_absoluteTransform.inverse().mapPoint(point); }
 
     RenderingMode renderingMode() const { return m_renderingMode; }
     void setRenderingMode(RenderingMode renderingMode) { m_renderingMode = renderingMode; }
@@ -49,12 +53,12 @@ public:
     virtual FloatRect sourceImageRect() const = 0;
     virtual FloatRect filterRegion() const = 0;
     
-    virtual FloatPoint mapAbsolutePointToLocalPoint(const FloatPoint&) const { return FloatPoint(); }
 
 private:
     OwnPtr<ImageBuffer> m_sourceImage;
     FloatSize m_filterResolution;
     RenderingMode m_renderingMode;
+    AffineTransform m_absoluteTransform;
 };
 
 } // namespace WebCore
