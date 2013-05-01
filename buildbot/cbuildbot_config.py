@@ -851,8 +851,18 @@ chrome_perf = chrome_info.derive(
   useflags=official['useflags'] + ['-chrome_debug'],
 )
 
+chrome_perf.add_config('daisy-chrome-perf',
+  boards=['daisy'],
+  trybot_list=True,
+)
+
 chrome_perf.add_config('lumpy-chrome-perf',
   boards=['lumpy'],
+  trybot_list=True,
+)
+
+chrome_perf.add_config('parrot-chrome-perf',
+  boards=['parrot'],
   trybot_list=True,
 )
 
