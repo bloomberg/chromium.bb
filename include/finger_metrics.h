@@ -46,7 +46,8 @@ extern Vector2 Add(const Vector2& left, const Vector2& right);
 extern Vector2 Sub(const Vector2& left, const Vector2& right);
 extern float Dot(const Vector2& left, const Vector2& right);
 
-struct MetricsProperties {
+class MetricsProperties {
+ public:
   MetricsProperties(PropRegistry* prop_reg);
 
   // Maximum distance [mm] two fingers may be separated and still be eligible

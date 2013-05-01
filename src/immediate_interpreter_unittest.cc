@@ -1973,9 +1973,11 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
 
   // Algorithmically add a resting thumb to a copy of all above cases
   const size_t hwsgs_full_size = arraysize(hwsgs) + kT5R2TestFirstIndex;
-  HWStateGs hwsgs_full[hwsgs_full_size];
-  std::copy(hwsgs, hwsgs + arraysize(hwsgs), hwsgs_full);
-  std::copy(hwsgs, hwsgs + kT5R2TestFirstIndex, hwsgs_full + arraysize(hwsgs));
+  std::vector<HWStateGs> hwsgs_full;
+  hwsgs_full.reserve(hwsgs_full_size);
+  std::copy(hwsgs, hwsgs + arraysize(hwsgs), hwsgs_full.begin());
+  std::copy(hwsgs, hwsgs + kT5R2TestFirstIndex,
+            hwsgs_full.begin() + arraysize(hwsgs));
 
   std::vector<std::vector<FingerState> > thumb_fs(arraysize(hwsgs));
   const FingerState& fs_thumb = fs[18];

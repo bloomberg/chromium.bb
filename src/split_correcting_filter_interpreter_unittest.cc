@@ -245,7 +245,8 @@ TEST(SplitCorrectingFilterInterpreterTest, DistFromPointToLineTest) {
     { 1.0, 1.0, 2.0, 1.0, 2.0, 2.0, 1.0 },
     { 1.0, 1.0, 2.0, 0.0, 2.0, 1.0, sqrtf(0.5) },
     { 1.0, 1.0, 2.0, 1.0, 4.0, 2.0, 1.0 },
-    { 0.0, 0.0, 4.0 * cosf(theta), 4.0 * sinf(theta), 5.0, 0.0, 3.0 },
+    { 0.0, 0.0, static_cast<float>(4.0 * cosf(theta)),
+      static_cast<float>(4.0 * sinf(theta)), 5.0, 0.0, 3.0 },
   };
 
   // For each of the input tests, these are a variety of transforms we apply.
