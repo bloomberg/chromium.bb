@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/history/top_sites_impl.h"
+#include "chrome/browser/history/top_sites_likely_impl.h"
 
 #include <algorithm>
 #include <set>
@@ -53,7 +53,7 @@ namespace {
 
 void RunOrPostGetMostVisitedURLsCallback(
     base::TaskRunner* task_runner,
-    const TopSitesImpl::GetMostVisitedURLsCallback& callback,
+    const TopSitesLikelyImpl::GetMostVisitedURLsCallback& callback,
     const MostVisitedURLList& urls) {
   if (task_runner->RunsTasksOnCurrentThread())
     callback.Run(urls);
@@ -86,7 +86,7 @@ namespace {
 // HistoryDBTask used during migration of thumbnails from history to top sites.
 // When run on the history thread it collects the top sites and the
 // corresponding thumbnails. When run back on the ui thread it calls into
-// TopSitesImpl::FinishHistoryMigration.
+// TopSitesLikelyImpl::FinishHistoryMigration.
 class LoadThumbnailsFromHistoryTask : public HistoryDBTask {
  public:
   LoadThumbnailsFromHistoryTask(TopSites* top_sites,
@@ -147,7 +147,7 @@ class LoadThumbnailsFromHistoryTask : public HistoryDBTask {
 
 }  // namespace
 
-TopSitesImpl::TopSitesImpl(Profile* profile)
+TopSitesLikelyImpl::TopSitesLikelyImpl(Profile* profile)
     : backend_(NULL),
       cache_(new TopSitesCache()),
       thread_safe_cache_(new TopSitesCache()),
@@ -174,13 +174,13 @@ TopSitesImpl::TopSitesImpl(Profile* profile)
   }
 }
 
-void TopSitesImpl::Init(const base::FilePath& db_name) {
+void TopSitesLikelyImpl::Init(const base::FilePath& db_name) {
   // Create the backend here, rather than in the constructor, so that
   // unit tests that do not need the backend can run without a problem.
   backend_ = new TopSitesBackend;
   backend_->Init(db_name);
   backend_->GetMostVisitedThumbnails(
-      base::Bind(&TopSitesImpl::OnGotMostVisitedThumbnails,
+      base::Bind(&TopSitesLikelyImpl::OnGotMostVisitedThumbnails,
                  base::Unretained(this)),
       &cancelable_task_tracker_);
 
@@ -195,7 +195,7 @@ void TopSitesImpl::Init(const base::FilePath& db_name) {
   }
 }
 
-bool TopSitesImpl::SetPageThumbnail(const GURL& url,
+bool TopSitesLikelyImpl::SetPageThumbnail(const GURL& url,
                                     const gfx::Image& thumbnail,
                                     const ThumbnailScore& score) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -234,7 +234,7 @@ bool TopSitesImpl::SetPageThumbnail(const GURL& url,
 }
 
 // WARNING: this function may be invoked on any thread.
-void TopSitesImpl::GetMostVisitedURLs(
+void TopSitesLikelyImpl::GetMostVisitedURLs(
     const GetMostVisitedURLsCallback& callback) {
   MostVisitedURLList filtered_urls;
   {
@@ -253,7 +253,7 @@ void TopSitesImpl::GetMostVisitedURLs(
   callback.Run(filtered_urls);
 }
 
-bool TopSitesImpl::GetPageThumbnail(
+bool TopSitesLikelyImpl::GetPageThumbnail(
     const GURL& url, scoped_refptr<base::RefCountedMemory>* bytes) {
   // WARNING: this may be invoked on any thread.
   {
@@ -276,14 +276,14 @@ bool TopSitesImpl::GetPageThumbnail(
   return false;
 }
 
-bool TopSitesImpl::GetPageThumbnailScore(const GURL& url,
+bool TopSitesLikelyImpl::GetPageThumbnailScore(const GURL& url,
                                          ThumbnailScore* score) {
   // WARNING: this may be invoked on any thread.
   base::AutoLock lock(lock_);
   return thread_safe_cache_->GetPageThumbnailScore(url, score);
 }
 
-bool TopSitesImpl::GetTemporaryPageThumbnailScore(const GURL& url,
+bool TopSitesLikelyImpl::GetTemporaryPageThumbnailScore(const GURL& url,
                                                   ThumbnailScore* score) {
   for (TempImages::iterator i = temp_images_.begin(); i != temp_images_.end();
        ++i) {
@@ -305,7 +305,7 @@ static int IndexOf(const MostVisitedURLList& urls, const GURL& url) {
   return -1;
 }
 
-void TopSitesImpl::MigrateFromHistory() {
+void TopSitesLikelyImpl::MigrateFromHistory() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (history_state_ != HISTORY_LOADING) {
@@ -322,7 +322,8 @@ void TopSitesImpl::MigrateFromHistory() {
           &history_consumer_);
 }
 
-void TopSitesImpl::FinishHistoryMigration(const ThumbnailMigration& data) {
+void TopSitesLikelyImpl::FinishHistoryMigration(
+    const ThumbnailMigration& data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(history_state_, HISTORY_MIGRATING);
 
@@ -349,12 +350,12 @@ void TopSitesImpl::FinishHistoryMigration(const ThumbnailMigration& data) {
   // that notifies us when done. When done we'll know everything was written and
   // we can tell history to finish its part of migration.
   backend_->DoEmptyRequest(
-      base::Bind(&TopSitesImpl::OnHistoryMigrationWrittenToDisk,
+      base::Bind(&TopSitesLikelyImpl::OnHistoryMigrationWrittenToDisk,
                  base::Unretained(this)),
       &cancelable_task_tracker_);
 }
 
-void TopSitesImpl::HistoryLoaded() {
+void TopSitesLikelyImpl::HistoryLoaded() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (history_state_ != HISTORY_MIGRATING) {
@@ -371,7 +372,7 @@ void TopSitesImpl::HistoryLoaded() {
   // else case can happen if history is unloaded, then loaded again.
 }
 
-void TopSitesImpl::SyncWithHistory() {
+void TopSitesLikelyImpl::SyncWithHistory() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (loaded_ && temp_images_.size()) {
     // If we have temporary thumbnails it means there isn't much data, and most
@@ -384,13 +385,13 @@ void TopSitesImpl::SyncWithHistory() {
   }
 }
 
-bool TopSitesImpl::HasBlacklistedItems() const {
+bool TopSitesLikelyImpl::HasBlacklistedItems() const {
   const DictionaryValue* blacklist =
       profile_->GetPrefs()->GetDictionary(prefs::kNtpMostVisitedURLsBlacklist);
   return blacklist && !blacklist->empty();
 }
 
-void TopSitesImpl::AddBlacklistedURL(const GURL& url) {
+void TopSitesLikelyImpl::AddBlacklistedURL(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   Value* dummy = Value::CreateNullValue();
@@ -405,7 +406,7 @@ void TopSitesImpl::AddBlacklistedURL(const GURL& url) {
   NotifyTopSitesChanged();
 }
 
-void TopSitesImpl::RemoveBlacklistedURL(const GURL& url) {
+void TopSitesLikelyImpl::RemoveBlacklistedURL(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   {
     DictionaryPrefUpdate update(profile_->GetPrefs(),
@@ -417,14 +418,14 @@ void TopSitesImpl::RemoveBlacklistedURL(const GURL& url) {
   NotifyTopSitesChanged();
 }
 
-bool TopSitesImpl::IsBlacklisted(const GURL& url) {
+bool TopSitesLikelyImpl::IsBlacklisted(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const DictionaryValue* blacklist =
       profile_->GetPrefs()->GetDictionary(prefs::kNtpMostVisitedURLsBlacklist);
   return blacklist && blacklist->HasKey(GetURLHash(url));
 }
 
-void TopSitesImpl::ClearBlacklistedURLs() {
+void TopSitesLikelyImpl::ClearBlacklistedURLs() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   {
     DictionaryPrefUpdate update(profile_->GetPrefs(),
@@ -436,7 +437,7 @@ void TopSitesImpl::ClearBlacklistedURLs() {
   NotifyTopSitesChanged();
 }
 
-void TopSitesImpl::Shutdown() {
+void TopSitesLikelyImpl::Shutdown() {
   profile_ = NULL;
   // Cancel all requests so that the service doesn't callback to us after we've
   // invoked Shutdown (this could happen if we have a pending request and
@@ -446,7 +447,7 @@ void TopSitesImpl::Shutdown() {
 }
 
 // static
-void TopSitesImpl::DiffMostVisited(const MostVisitedURLList& old_list,
+void TopSitesLikelyImpl::DiffMostVisited(const MostVisitedURLList& old_list,
                                    const MostVisitedURLList& new_list,
                                    TopSitesDelta* delta) {
   // Add all the old URLs for quick lookup. This maps URLs to the corresponding
@@ -487,7 +488,8 @@ void TopSitesImpl::DiffMostVisited(const MostVisitedURLList& old_list,
   }
 }
 
-CancelableRequestProvider::Handle TopSitesImpl::StartQueryForMostVisited() {
+CancelableRequestProvider::Handle
+    TopSitesLikelyImpl::StartQueryForMostVisited() {
   DCHECK(loaded_);
   if (!profile_)
     return 0;
@@ -500,24 +502,24 @@ CancelableRequestProvider::Handle TopSitesImpl::StartQueryForMostVisited() {
         num_results_to_request_from_history(),
         kDaysOfHistory,
         &history_consumer_,
-        base::Bind(&TopSitesImpl::OnTopSitesAvailableFromHistory,
+        base::Bind(&TopSitesLikelyImpl::OnTopSitesAvailableFromHistory,
                    base::Unretained(this)));
   }
   return 0;
 }
 
-bool TopSitesImpl::IsKnownURL(const GURL& url) {
+bool TopSitesLikelyImpl::IsKnownURL(const GURL& url) {
   return loaded_ && cache_->IsKnownURL(url);
 }
 
-bool TopSitesImpl::IsFull() {
+bool TopSitesLikelyImpl::IsFull() {
   return loaded_ && cache_->top_sites().size() >= kTopSitesNumber;
 }
 
-TopSitesImpl::~TopSitesImpl() {
+TopSitesLikelyImpl::~TopSitesLikelyImpl() {
 }
 
-bool TopSitesImpl::SetPageThumbnailNoDB(
+bool TopSitesLikelyImpl::SetPageThumbnailNoDB(
     const GURL& url,
     const base::RefCountedBytes* thumbnail_data,
     const ThumbnailScore& score) {
@@ -547,7 +549,7 @@ bool TopSitesImpl::SetPageThumbnailNoDB(
   return true;
 }
 
-bool TopSitesImpl::SetPageThumbnailEncoded(
+bool TopSitesLikelyImpl::SetPageThumbnailEncoded(
     const GURL& url,
     const base::RefCountedBytes* thumbnail,
     const ThumbnailScore& score) {
@@ -567,7 +569,7 @@ bool TopSitesImpl::SetPageThumbnailEncoded(
 }
 
 // static
-bool TopSitesImpl::EncodeBitmap(const gfx::Image& bitmap,
+bool TopSitesLikelyImpl::EncodeBitmap(const gfx::Image& bitmap,
                                 scoped_refptr<base::RefCountedBytes>* bytes) {
   if (bitmap.IsEmpty())
     return false;
@@ -583,7 +585,7 @@ bool TopSitesImpl::EncodeBitmap(const gfx::Image& bitmap,
   return true;
 }
 
-void TopSitesImpl::RemoveTemporaryThumbnailByURL(const GURL& url) {
+void TopSitesLikelyImpl::RemoveTemporaryThumbnailByURL(const GURL& url) {
   for (TempImages::iterator i = temp_images_.begin(); i != temp_images_.end();
        ++i) {
     if (i->first == url) {
@@ -593,7 +595,7 @@ void TopSitesImpl::RemoveTemporaryThumbnailByURL(const GURL& url) {
   }
 }
 
-void TopSitesImpl::AddTemporaryThumbnail(const GURL& url,
+void TopSitesLikelyImpl::AddTemporaryThumbnail(const GURL& url,
                                          const base::RefCountedBytes* thumbnail,
                                          const ThumbnailScore& score) {
   if (temp_images_.size() == kMaxTempTopImages)
@@ -606,13 +608,14 @@ void TopSitesImpl::AddTemporaryThumbnail(const GURL& url,
   temp_images_.push_back(image);
 }
 
-void TopSitesImpl::TimerFired() {
+void TopSitesLikelyImpl::TimerFired() {
   StartQueryForMostVisited();
 }
 
 // static
-int TopSitesImpl::GetRedirectDistanceForURL(const MostVisitedURL& most_visited,
-                                            const GURL& url) {
+int TopSitesLikelyImpl::GetRedirectDistanceForURL(
+    const MostVisitedURL& most_visited,
+    const GURL& url) {
   for (size_t i = 0; i < most_visited.redirects.size(); i++) {
     if (most_visited.redirects[i] == url)
       return static_cast<int>(most_visited.redirects.size() - i - 1);
@@ -621,7 +624,7 @@ int TopSitesImpl::GetRedirectDistanceForURL(const MostVisitedURL& most_visited,
   return 0;
 }
 
-MostVisitedURLList TopSitesImpl::GetPrepopulatePages() {
+MostVisitedURLList TopSitesLikelyImpl::GetPrepopulatePages() {
   MostVisitedURLList urls;
   urls.resize(arraysize(kPrepopulatedPages));
   for (size_t i = 0; i < urls.size(); ++i) {
@@ -633,11 +636,11 @@ MostVisitedURLList TopSitesImpl::GetPrepopulatePages() {
   return urls;
 }
 
-bool TopSitesImpl::loaded() const {
+bool TopSitesLikelyImpl::loaded() const {
   return loaded_;
 }
 
-bool TopSitesImpl::AddPrepopulatedPages(MostVisitedURLList* urls) {
+bool TopSitesLikelyImpl::AddPrepopulatedPages(MostVisitedURLList* urls) {
   bool added = false;
   MostVisitedURLList prepopulate_urls = GetPrepopulatePages();
   for (size_t i = 0; i < prepopulate_urls.size(); ++i) {
@@ -650,7 +653,7 @@ bool TopSitesImpl::AddPrepopulatedPages(MostVisitedURLList* urls) {
   return added;
 }
 
-void TopSitesImpl::ApplyBlacklist(const MostVisitedURLList& urls,
+void TopSitesLikelyImpl::ApplyBlacklist(const MostVisitedURLList& urls,
                                   MostVisitedURLList* out) {
   for (size_t i = 0; i < urls.size() && i < kTopSitesNumber; ++i) {
     if (!IsBlacklisted(urls[i].url))
@@ -658,17 +661,17 @@ void TopSitesImpl::ApplyBlacklist(const MostVisitedURLList& urls,
   }
 }
 
-std::string TopSitesImpl::GetURLString(const GURL& url) {
+std::string TopSitesLikelyImpl::GetURLString(const GURL& url) {
   return cache_->GetCanonicalURL(url).spec();
 }
 
-std::string TopSitesImpl::GetURLHash(const GURL& url) {
+std::string TopSitesLikelyImpl::GetURLHash(const GURL& url) {
   // We don't use canonical URLs here to be able to blacklist only one of
   // the two 'duplicate' sites, e.g. 'gmail.com' and 'mail.google.com'.
   return base::MD5String(url.spec());
 }
 
-base::TimeDelta TopSitesImpl::GetUpdateDelay() {
+base::TimeDelta TopSitesLikelyImpl::GetUpdateDelay() {
   if (cache_->top_sites().size() <= arraysize(kPrepopulatedPages))
     return base::TimeDelta::FromSeconds(30);
 
@@ -678,7 +681,7 @@ base::TimeDelta TopSitesImpl::GetUpdateDelay() {
   return base::TimeDelta::FromMinutes(minutes);
 }
 
-void TopSitesImpl::Observe(int type,
+void TopSitesLikelyImpl::Observe(int type,
                            const content::NotificationSource& source,
                            const content::NotificationDetails& details) {
   if (!loaded_)
@@ -728,7 +731,7 @@ void TopSitesImpl::Observe(int type,
   }
 }
 
-void TopSitesImpl::SetTopSites(const MostVisitedURLList& new_top_sites) {
+void TopSitesLikelyImpl::SetTopSites(const MostVisitedURLList& new_top_sites) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   MostVisitedURLList top_sites(new_top_sites);
@@ -779,7 +782,7 @@ void TopSitesImpl::SetTopSites(const MostVisitedURLList& new_top_sites) {
   RestartQueryForTopSitesTimer(GetUpdateDelay());
 }
 
-int TopSitesImpl::num_results_to_request_from_history() const {
+int TopSitesLikelyImpl::num_results_to_request_from_history() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const DictionaryValue* blacklist =
@@ -787,7 +790,7 @@ int TopSitesImpl::num_results_to_request_from_history() const {
   return kTopSitesNumber + (blacklist ? blacklist->size() : 0);
 }
 
-void TopSitesImpl::MoveStateToLoaded() {
+void TopSitesLikelyImpl::MoveStateToLoaded() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   MostVisitedURLList filtered_urls;
@@ -816,26 +819,26 @@ void TopSitesImpl::MoveStateToLoaded() {
       content::Details<TopSites>(this));
 }
 
-void TopSitesImpl::ResetThreadSafeCache() {
+void TopSitesLikelyImpl::ResetThreadSafeCache() {
   base::AutoLock lock(lock_);
   MostVisitedURLList cached;
   ApplyBlacklist(cache_->top_sites(), &cached);
   thread_safe_cache_->SetTopSites(cached);
 }
 
-void TopSitesImpl::ResetThreadSafeImageCache() {
+void TopSitesLikelyImpl::ResetThreadSafeImageCache() {
   base::AutoLock lock(lock_);
   thread_safe_cache_->SetThumbnails(cache_->images());
 }
 
-void TopSitesImpl::NotifyTopSitesChanged() {
+void TopSitesLikelyImpl::NotifyTopSitesChanged() {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TOP_SITES_CHANGED,
       content::Source<TopSites>(this),
       content::NotificationService::NoDetails());
 }
 
-void TopSitesImpl::RestartQueryForTopSitesTimer(base::TimeDelta delta) {
+void TopSitesLikelyImpl::RestartQueryForTopSitesTimer(base::TimeDelta delta) {
   if (timer_.IsRunning() && ((timer_start_time_ + timer_.GetCurrentDelay()) <
                              (base::TimeTicks::Now() + delta))) {
     return;
@@ -843,10 +846,10 @@ void TopSitesImpl::RestartQueryForTopSitesTimer(base::TimeDelta delta) {
 
   timer_start_time_ = base::TimeTicks::Now();
   timer_.Stop();
-  timer_.Start(FROM_HERE, delta, this, &TopSitesImpl::TimerFired);
+  timer_.Start(FROM_HERE, delta, this, &TopSitesLikelyImpl::TimerFired);
 }
 
-void TopSitesImpl::OnHistoryMigrationWrittenToDisk() {
+void TopSitesLikelyImpl::OnHistoryMigrationWrittenToDisk() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!profile_)
@@ -858,7 +861,7 @@ void TopSitesImpl::OnHistoryMigrationWrittenToDisk() {
     history->OnTopSitesReady();
 }
 
-void TopSitesImpl::OnGotMostVisitedThumbnails(
+void TopSitesLikelyImpl::OnGotMostVisitedThumbnails(
     const scoped_refptr<MostVisitedThumbnails>& thumbnails,
     const bool* need_history_migration) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -896,7 +899,7 @@ void TopSitesImpl::OnGotMostVisitedThumbnails(
   }
 }
 
-void TopSitesImpl::OnTopSitesAvailableFromHistory(
+void TopSitesLikelyImpl::OnTopSitesAvailableFromHistory(
     CancelableRequestProvider::Handle handle,
     MostVisitedURLList pages) {
   SetTopSites(pages);
@@ -904,7 +907,7 @@ void TopSitesImpl::OnTopSitesAvailableFromHistory(
   // Used only in testing.
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TOP_SITES_UPDATED,
-      content::Source<TopSitesImpl>(this),
+      content::Source<TopSitesLikelyImpl>(this),
       content::Details<CancelableRequestProvider::Handle>(&handle));
 }
 
