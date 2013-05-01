@@ -122,7 +122,8 @@ void ToastContentsView::StartTimer() {
   timer_->Start(FROM_HERE,
                 timeout_to_close,
                 base::Bind(&ToastContentsView::CloseWithAnimation,
-                           base::Unretained(this)));
+                           base::Unretained(this),
+                           true));
 }
 
 void ToastContentsView::RevealWithAnimation(gfx::Point origin) {
@@ -141,14 +142,15 @@ void ToastContentsView::RevealWithAnimation(gfx::Point origin) {
   SetBoundsWithAnimation(stable_bounds);
 }
 
-void ToastContentsView::CloseWithAnimation() {
+void ToastContentsView::CloseWithAnimation(bool mark_as_shown) {
   if (is_closing_)
     return;
   is_closing_ = true;
   timer_.reset();
   if (collection_)
     collection_->RemoveToast(this);
-  message_center_->MarkSinglePopupAsShown(id(), false);
+  if (mark_as_shown)
+    message_center_->MarkSinglePopupAsShown(id(), false);
   StartFadeOut();
 }
 

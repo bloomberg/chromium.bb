@@ -124,7 +124,7 @@ void MessagePopupCollection::CloseAllWidgets() {
   for (Toasts::iterator iter = toasts_.begin(); iter != toasts_.end();) {
     // the toast can be removed from toasts_ during CloseWithAnimation().
     Toasts::iterator curiter = iter++;
-    (*curiter)->CloseWithAnimation();
+    (*curiter)->CloseWithAnimation(true);
   }
   DCHECK(toasts_.empty());
 }
@@ -149,10 +149,18 @@ gfx::Point MessagePopupCollection::GetWorkAreaBottomRight() {
 
 void MessagePopupCollection::RepositionWidgets() {
   int bottom = GetWorkAreaBottomRight().y() - kToastMargin;
-  for (Toasts::iterator iter = toasts_.begin(); iter != toasts_.end(); ++iter) {
-    gfx::Rect bounds((*iter)->bounds());
+  for (Toasts::iterator iter = toasts_.begin(); iter != toasts_.end();) {
+    Toasts::iterator curr = iter++;
+    gfx::Rect bounds((*curr)->bounds());
     bounds.set_y(bottom - bounds.height());
-    (*iter)->SetBoundsWithAnimation(bounds);
+    // The notification may scrolls the top boundary of the screen due to image
+    // load and such notifications should disappear. Do not call
+    // CloseWithAnimation, we don't want to show the closing animation, and we
+    // don't want to mark such notifications as shown. See crbug.com/233424
+    if (bounds.y() >= 0)
+      (*curr)->SetBoundsWithAnimation(bounds);
+    else
+      (*curr)->CloseWithAnimation(false);
     bottom -= bounds.height() + kToastMargin;
   }
 }
@@ -208,7 +216,7 @@ void MessagePopupCollection::OnNotificationRemoved(
     return;
 
   target_top_edge_ = (*iter)->bounds().y();
-  (*iter)->CloseWithAnimation();
+  (*iter)->CloseWithAnimation(true);
   if (by_user) {
     RepositionWidgetsWithTarget();
     // [Re] start a timeout after which the toasts re-position to their
@@ -269,7 +277,7 @@ void MessagePopupCollection::OnNotificationUpdated(
   // the popup notification list but still remains in the full notification
   // list. In that case the widget for the notification has to be closed here.
   if (!updated)
-    (*toast_iter)->CloseWithAnimation();
+    (*toast_iter)->CloseWithAnimation(true);
 
   if (user_is_closing_toasts_by_clicking_)
     RepositionWidgetsWithTarget();

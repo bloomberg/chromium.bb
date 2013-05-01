@@ -56,7 +56,7 @@ class ToastContentsView : public views::WidgetDelegateView,
   void RevealWithAnimation(gfx::Point origin);
   // Disconnectes the toast from the rest of the system immediately and start
   // an animation. Once animation finishes, closes the widget.
-  void CloseWithAnimation();
+  void CloseWithAnimation(bool mark_as_shown);
 
   void SetBoundsInstantly(gfx::Rect new_bounds);
   void SetBoundsWithAnimation(gfx::Rect new_bounds);
