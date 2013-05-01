@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
+#include "chrome/browser/google_apis/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
@@ -77,7 +78,7 @@ class FileCacheMetadataTest : public testing::Test {
   // Create a file at |file_path|.
   void CreateFile(const base::FilePath& file_path) {
     const std::string kFoo = "foo";
-    ASSERT_TRUE(file_util::WriteFile(file_path, kFoo.data(), kFoo.size()))
+    ASSERT_TRUE(google_apis::test_util::WriteStringToFile(file_path, kFoo))
         << ": " << file_path.value();
   }
 
@@ -228,8 +229,8 @@ TEST_F(FileCacheMetadataTest, CorruptDB) {
           FileCacheMetadata::kCacheMetadataDBPath);
 
   // Write a bogus file.
-  std::string text("Hello world");
-  file_util::WriteFile(db_path, text.c_str(), text.length());
+  ASSERT_TRUE(
+      google_apis::test_util::WriteStringToFile(db_path, "Hello world"));
 
   // Some files are removed during cache initialization. Make sure these
   // exist beforehand.

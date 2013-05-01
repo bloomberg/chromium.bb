@@ -94,9 +94,7 @@ class SyncClientTest : public testing::Test {
     base::FilePath temp_file;
     EXPECT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
                                                     &temp_file));
-    const std::string content = "hello";
-    EXPECT_EQ(static_cast<int>(content.size()),
-              file_util::WriteFile(temp_file, content.data(), content.size()));
+    ASSERT_TRUE(google_apis::test_util::WriteStringToFile(temp_file, "hello"));
 
     // Prepare 3 pinned-but-not-present files.
     FileError error = FILE_ERROR_OK;

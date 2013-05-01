@@ -67,6 +67,21 @@ base::FilePath GetTestFilePath(const std::string& relative_path);
 // testing, running at the specified port number.
 GURL GetBaseUrlForTesting(int port);
 
+// Writes the |content| to the file at |file_path|. Returns true on success,
+// otherwise false.
+bool WriteStringToFile(const base::FilePath& file_path,
+                       const std::string& content);
+
+// Creates a |size| byte file. The file is filled with random bytes so that
+// the test assertions can identify correct portion/position of the file is
+// used.
+// Returns true on success with the created file's |path| and |data|, otherwise
+// false.
+bool CreateFileOfSpecifiedSize(const base::FilePath& temp_dir,
+                               size_t size,
+                               base::FilePath* path,
+                               std::string* data);
+
 // Loads a test JSON file as a base::Value, from a test file stored under
 // chrome/test/data.
 scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path);

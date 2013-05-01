@@ -14,6 +14,7 @@
 #include "base/message_loop.h"
 #include "base/rand_util.h"
 #include "base/threading/thread.h"
+#include "chrome/browser/google_apis/test_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,14 +46,6 @@ int ReadAllData(FileReader* file_reader, std::string* out_content) {
 
   *out_content = content;
   return net::OK;
-}
-
-// Writes the |content| to the file at |file_path|. Returns true on success,
-// otherwise false.
-bool WriteStringToFile(
-    const base::FilePath& file_path, const std::string& content) {
-  int result = file_util::WriteFile(file_path, content.data(), content.size());
-  return content.size() == static_cast<size_t>(result);
 }
 
 }  // namespace
@@ -90,15 +83,13 @@ TEST_F(DriveFileReaderTest, NonExistingFile) {
 }
 
 TEST_F(DriveFileReaderTest, FullRead) {
-  const base::FilePath kTestFile =
-      temp_dir_.path().AppendASCII("test_file.txt");
-
-  // Generate random content.
-  std::string expected_content = base::RandBytesAsString(1024);
-  ASSERT_TRUE(WriteStringToFile(kTestFile, expected_content));
+  base::FilePath test_file;
+  std::string expected_content;
+  ASSERT_TRUE(google_apis::test_util::CreateFileOfSpecifiedSize(
+      temp_dir_.path(), 1024, &test_file, &expected_content));
 
   net::TestCompletionCallback callback;
-  file_reader_->Open(kTestFile, 0, callback.callback());
+  file_reader_->Open(test_file, 0, callback.callback());
   ASSERT_EQ(net::OK, callback.WaitForResult());
 
   std::string content;
@@ -107,19 +98,17 @@ TEST_F(DriveFileReaderTest, FullRead) {
 }
 
 TEST_F(DriveFileReaderTest, OpenWithOffset) {
-  const base::FilePath kTestFile =
-      temp_dir_.path().AppendASCII("test_file.txt");
-
-  // Generate random content.
-  std::string expected_content = base::RandBytesAsString(1024);
-  ASSERT_TRUE(WriteStringToFile(kTestFile, expected_content));
+  base::FilePath test_file;
+  std::string expected_content;
+  ASSERT_TRUE(google_apis::test_util::CreateFileOfSpecifiedSize(
+      temp_dir_.path(), 1024, &test_file, &expected_content));
 
   size_t offset = expected_content.size() / 2;
   expected_content.erase(0, offset);
 
   net::TestCompletionCallback callback;
   file_reader_->Open(
-      kTestFile, static_cast<int64>(offset), callback.callback());
+      test_file, static_cast<int64>(offset), callback.callback());
   ASSERT_EQ(net::OK, callback.WaitForResult());
 
   std::string content;

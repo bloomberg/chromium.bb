@@ -142,10 +142,7 @@ void MockDriveService::DownloadFileStub(
     const ProgressCallback& progress_callback) {
   GDataErrorCode error = HTTP_SUCCESS;
   if (file_data_.get()) {
-    int file_data_size = static_cast<int>(file_data_->size());
-    ASSERT_EQ(file_data_size,
-              file_util::WriteFile(local_tmp_path, file_data_->data(),
-                                   file_data_size));
+    ASSERT_TRUE(test_util::WriteStringToFile(local_tmp_path, *file_data_));
   }
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,

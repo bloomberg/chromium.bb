@@ -36,22 +36,6 @@ const char kTestUploadURL[] = "http://test/upload_location";
 const int64 kUploadChunkSize = 512 * 1024;
 const char kTestETag[] = "test_etag";
 
-// Creates a |size| byte file and returns its |path|. The file is filled with
-// random bytes so that the test assertions can identify correct
-// portion of the file is being sent.
-bool CreateFileOfSpecifiedSize(const base::FilePath& temp_dir,
-                               size_t size,
-                               base::FilePath* path,
-                               std::string* data) {
-  data->resize(size);
-  for (size_t i = 0; i < size; ++i)
-    (*data)[i] = static_cast<char>(rand() % 256);  // NOLINT
-  if (!file_util::CreateTemporaryFileInDir(temp_dir, path))
-    return false;
-  return file_util::WriteFile(*path, data->c_str(), static_cast<int>(size)) ==
-      static_cast<int>(size);
-}
-
 // Mock DriveService that verifies if the uploaded content matches the preset
 // expectation.
 class MockDriveServiceWithUploadExpectation : public DummyDriveService {
@@ -297,8 +281,8 @@ class DriveUploaderTest : public testing::Test {
 TEST_F(DriveUploaderTest, UploadExisting0KB) {
   base::FilePath local_path;
   std::string data;
-  ASSERT_TRUE(CreateFileOfSpecifiedSize(temp_dir_.path(), 0,
-                                        &local_path, &data));
+  ASSERT_TRUE(test_util::CreateFileOfSpecifiedSize(
+      temp_dir_.path(), 0, &local_path, &data));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   base::FilePath drive_path;
@@ -334,8 +318,8 @@ TEST_F(DriveUploaderTest, UploadExisting0KB) {
 TEST_F(DriveUploaderTest, UploadExisting512KB) {
   base::FilePath local_path;
   std::string data;
-  ASSERT_TRUE(CreateFileOfSpecifiedSize(temp_dir_.path(), 512 * 1024,
-                                        &local_path, &data));
+  ASSERT_TRUE(test_util::CreateFileOfSpecifiedSize(
+      temp_dir_.path(), 512 * 1024, &local_path, &data));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   base::FilePath drive_path;
@@ -373,8 +357,8 @@ TEST_F(DriveUploaderTest, UploadExisting512KB) {
 TEST_F(DriveUploaderTest, UploadExisting1234KB) {
   base::FilePath local_path;
   std::string data;
-  ASSERT_TRUE(CreateFileOfSpecifiedSize(temp_dir_.path(), 1234 * 1024,
-                                        &local_path, &data));
+  ASSERT_TRUE(test_util::CreateFileOfSpecifiedSize(
+      temp_dir_.path(), 1234 * 1024, &local_path, &data));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   base::FilePath drive_path;
@@ -417,8 +401,8 @@ TEST_F(DriveUploaderTest, UploadExisting1234KB) {
 TEST_F(DriveUploaderTest, UploadNew1234KB) {
   base::FilePath local_path;
   std::string data;
-  ASSERT_TRUE(CreateFileOfSpecifiedSize(temp_dir_.path(), 1234 * 1024,
-                                        &local_path, &data));
+  ASSERT_TRUE(test_util::CreateFileOfSpecifiedSize(
+      temp_dir_.path(), 1234 * 1024, &local_path, &data));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   base::FilePath drive_path;
@@ -451,8 +435,8 @@ TEST_F(DriveUploaderTest, UploadNew1234KB) {
 TEST_F(DriveUploaderTest, InitiateUploadFail) {
   base::FilePath local_path;
   std::string data;
-  ASSERT_TRUE(CreateFileOfSpecifiedSize(temp_dir_.path(), 512 * 1024,
-                                        &local_path, &data));
+  ASSERT_TRUE(test_util::CreateFileOfSpecifiedSize(
+      temp_dir_.path(), 512 * 1024, &local_path, &data));
 
   GDataErrorCode error = HTTP_SUCCESS;
   base::FilePath drive_path;
@@ -478,8 +462,8 @@ TEST_F(DriveUploaderTest, InitiateUploadFail) {
 TEST_F(DriveUploaderTest, InitiateUploadNoConflict) {
   base::FilePath local_path;
   std::string data;
-  ASSERT_TRUE(CreateFileOfSpecifiedSize(temp_dir_.path(), 512 * 1024,
-                                        &local_path, &data));
+  ASSERT_TRUE(test_util::CreateFileOfSpecifiedSize(
+      temp_dir_.path(), 512 * 1024, &local_path, &data));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   base::FilePath drive_path;
@@ -505,8 +489,8 @@ TEST_F(DriveUploaderTest, InitiateUploadNoConflict) {
 TEST_F(DriveUploaderTest, InitiateUploadConflict) {
   base::FilePath local_path;
   std::string data;
-  ASSERT_TRUE(CreateFileOfSpecifiedSize(temp_dir_.path(), 512 * 1024,
-                                        &local_path, &data));
+  ASSERT_TRUE(test_util::CreateFileOfSpecifiedSize(
+      temp_dir_.path(), 512 * 1024, &local_path, &data));
   const std::string kDestinationETag("destination_etag");
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -533,8 +517,8 @@ TEST_F(DriveUploaderTest, InitiateUploadConflict) {
 TEST_F(DriveUploaderTest, ResumeUploadFail) {
   base::FilePath local_path;
   std::string data;
-  ASSERT_TRUE(CreateFileOfSpecifiedSize(temp_dir_.path(), 512 * 1024,
-                                        &local_path, &data));
+  ASSERT_TRUE(test_util::CreateFileOfSpecifiedSize(
+      temp_dir_.path(), 512 * 1024, &local_path, &data));
 
   GDataErrorCode error = HTTP_SUCCESS;
   base::FilePath drive_path;

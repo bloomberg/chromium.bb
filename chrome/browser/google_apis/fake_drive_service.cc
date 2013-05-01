@@ -528,10 +528,7 @@ void FakeDriveService::DownloadFile(
       }
     }
 
-    if (static_cast<int>(content.size()) ==
-        file_util::WriteFile(local_cache_path,
-                             content.data(),
-                             content.size())) {
+    if (test_util::WriteStringToFile(local_cache_path, content)) {
       if (!progress_callback.is_null()) {
         // See also the comment in ResumeUpload(). For testing that clients
         // can handle the case progress_callback is called multiple times,

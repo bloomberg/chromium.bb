@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/pending_task.h"
+#include "base/rand_util.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
@@ -88,6 +89,29 @@ void RunBlockingPoolTask() {
 void RunAndQuit(const base::Closure& closure) {
   closure.Run();
   MessageLoop::current()->Quit();
+}
+
+bool WriteStringToFile(const base::FilePath& file_path,
+                       const std::string& content) {
+  int result = file_util::WriteFile(file_path, content.data(), content.size());
+  return content.size() == static_cast<size_t>(result);
+}
+
+bool CreateFileOfSpecifiedSize(const base::FilePath& temp_dir,
+                               size_t size,
+                               base::FilePath* path,
+                               std::string* data) {
+  if (!file_util::CreateTemporaryFileInDir(temp_dir, path))
+    return false;
+
+  if (size == 0) {
+    // Note: RandBytesAsString doesn't support generating an empty string.
+    data->clear();
+    return true;
+  }
+
+  *data = base::RandBytesAsString(size);
+  return WriteStringToFile(*path, *data);
 }
 
 scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path) {

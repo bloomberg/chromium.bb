@@ -905,8 +905,8 @@ TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_RegularFile) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   const base::FilePath local_src_file_path =
       temp_dir.path().AppendASCII("local.txt");
-  const std::string kContent = "hello";
-  file_util::WriteFile(local_src_file_path, kContent.data(), kContent.size());
+  ASSERT_TRUE(
+      google_apis::test_util::WriteStringToFile(local_src_file_path, "hello"));
 
   // Confirm that the remote file does not exist.
   const base::FilePath remote_dest_file_path(
@@ -939,10 +939,10 @@ TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_HostedDocument) {
   const std::string kEditUrl =
       "https://3_document_self_link/document:5_document_resource_id";
   const std::string kResourceId = "document:5_document_resource_id";
-  const std::string kContent =
+  ASSERT_TRUE(google_apis::test_util::WriteStringToFile(
+      local_src_file_path,
       base::StringPrintf("{\"url\": \"%s\", \"resource_id\": \"%s\"}",
-                         kEditUrl.c_str(), kResourceId.c_str());
-  file_util::WriteFile(local_src_file_path, kContent.data(), kContent.size());
+                         kEditUrl.c_str(), kResourceId.c_str())));
 
   // Confirm that the remote file does not exist.
   const base::FilePath remote_dest_file_path(FILE_PATH_LITERAL(
@@ -1612,8 +1612,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   const base::FilePath tmp_file =
       temp_dir.path().AppendASCII("something.txt");
-  ASSERT_EQ(file_size,
-            file_util::WriteFile(tmp_file, content.data(), content.size()));
+  ASSERT_TRUE(google_apis::test_util::WriteStringToFile(tmp_file, content));
 
   FileError error = FILE_ERROR_FAILED;
   cache_->Store("<resource_id>", "<md5>", tmp_file,

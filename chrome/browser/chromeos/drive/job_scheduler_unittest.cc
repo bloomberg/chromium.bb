@@ -844,7 +844,7 @@ TEST_F(JobSchedulerTest, JobInfoProgress) {
 
   // Upload job.
   path = temp_dir.path().AppendASCII("new_file.txt");
-  file_util::WriteFile(path, "Hello", 5);
+  ASSERT_TRUE(google_apis::test_util::WriteStringToFile(path, "Hello"));
   google_apis::GDataErrorCode upload_error =
       google_apis::GDATA_OTHER_ERROR;
   scoped_ptr<google_apis::ResourceEntry> entry;
