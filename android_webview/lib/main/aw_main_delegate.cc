@@ -5,7 +5,6 @@
 #include "android_webview/lib/main/aw_main_delegate.h"
 
 #include "android_webview/browser/aw_content_browser_client.h"
-#include "android_webview/browser/in_process_renderer/in_process_renderer_client.h"
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/lib/aw_browser_dependency_factory_impl.h"
 #include "android_webview/native/aw_geolocation_permission_context.h"
@@ -30,13 +29,9 @@ AwMainDelegate::~AwMainDelegate() {
 bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   content::SetContentClient(&content_client_);
 
-  CommandLine* cl = CommandLine::ForCurrentProcess();
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
   // Set the command line to enable synchronous API compatibility.
-  if (cl->HasSwitch(switches::kMergeUIAndRendererCompositorThreads)) {
-    cl->AppendSwitch(switches::kEnableSynchronousRendererCompositor);
-  } else {
-    cl->AppendSwitch(switches::kEnableWebViewSynchronousAPIs);
-  }
+  command_line->AppendSwitch(switches::kEnableWebViewSynchronousAPIs);
 
   return false;
 }
@@ -80,18 +75,33 @@ content::ContentBrowserClient*
   return content_browser_client_.get();
 }
 
+namespace {
+bool UIAndRendererCompositorThreadsMerged() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kMergeUIAndRendererCompositorThreads);
+}
+
+MessageLoop* GetRendererCompositorThreadOverrideLoop() {
+  if (!UIAndRendererCompositorThreadsMerged())
+    return NULL;
+
+  base::MessageLoop* rv = content::BrowserThread::UnsafeGetMessageLoopForThread(
+      content::BrowserThread::UI);
+  DCHECK(rv);
+  return rv;
+}
+}
+
 content::ContentRendererClient*
     AwMainDelegate::CreateContentRendererClient() {
-  // None of this makes sense for multiprocess.
-  DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess));
-  // During transition period allow running in either threading mode; eventually
-  // only the compositor/UI thread merge mode will be supported.
-  const bool merge_threads =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kMergeUIAndRendererCompositorThreads);
+  // Compositor input handling will be performed by the renderer host
+  // when UI and compositor threads are merged, so we disable client compositor
+  // input handling in this case.
+  const bool enable_client_compositor_input_handling =
+      !UIAndRendererCompositorThreadsMerged();
   content_renderer_client_.reset(
-      merge_threads ? new InProcessRendererClient() :
-                      new AwContentRendererClient());
+      new AwContentRendererClient(&GetRendererCompositorThreadOverrideLoop,
+                                  enable_client_compositor_input_handling));
   return content_renderer_client_.get();
 }
 

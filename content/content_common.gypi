@@ -22,8 +22,6 @@
     '../base/base.gyp:base',
   ],
   'sources': [
-    'public/common/android/synchronous_compositor_client.h',
-    'public/common/android/synchronous_compositor.h',
     'public/common/bindings_policy.h',
     'public/common/child_process_host.h',
     'public/common/child_process_host_delegate.cc',
