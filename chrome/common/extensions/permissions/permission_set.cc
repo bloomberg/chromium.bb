@@ -9,9 +9,11 @@
 #include <string>
 
 #include "chrome/common/extensions/permissions/permissions_info.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
+#include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -239,7 +241,15 @@ bool PermissionSet::HasAnyAccessToAPI(
 
 std::set<std::string>
     PermissionSet::GetDistinctHostsForDisplay() const {
-  return GetDistinctHosts(effective_hosts_, true, true);
+  URLPatternSet hosts_displayed_as_url;
+  // Filters out every URL pattern that matches chrome:// scheme.
+  for (URLPatternSet::const_iterator i = effective_hosts_.begin();
+       i != effective_hosts_.end(); ++i) {
+    if (i->scheme() != chrome::kChromeUIScheme) {
+      hosts_displayed_as_url.AddPattern(*i);
+    }
+  }
+  return GetDistinctHosts(hosts_displayed_as_url, true, true);
 }
 
 PermissionMessages PermissionSet::GetPermissionMessages(
@@ -261,6 +271,18 @@ PermissionMessages PermissionSet::GetPermissionMessages(
           PermissionMessage::kHostsAll,
           l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS)));
     } else {
+      for (URLPatternSet::const_iterator i = effective_hosts_.begin();
+           i != effective_hosts_.end(); ++i) {
+        if (i->scheme() == chrome::kChromeUIScheme) {
+          // chrome://favicon is the only URL for chrome:// scheme that we
+          // want to support. We want to deprecate the "chrome" scheme.
+          // We should not add any additional "host" here.
+          CHECK(GURL(chrome::kChromeUIFaviconURL).host() == i->host());
+          messages.push_back(PermissionMessage(
+              PermissionMessage::kFavicon,
+              l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_FAVICON)));
+        }
+      }
       std::set<std::string> hosts = GetDistinctHostsForDisplay();
       if (!hosts.empty())
         messages.push_back(PermissionMessage::CreateFromHostList(hosts));
