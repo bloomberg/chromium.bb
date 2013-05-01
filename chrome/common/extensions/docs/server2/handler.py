@@ -5,6 +5,7 @@
 from appengine_wrappers import webapp
 from cron_servlet import CronServlet
 from render_servlet import RenderServlet
+from servlet import Request
 
 _SERVLETS = {
   'cron': CronServlet,
@@ -76,7 +77,7 @@ class Handler(webapp.RequestHandler):
       servlet_path = path
       servlet = RenderServlet
 
-    servlet_response = servlet(servlet_path, request.headers).Get()
+    servlet_response = servlet(Request(servlet_path, request.headers)).Get()
 
     response.out.write(servlet_response.content.ToString())
     response.headers.update(servlet_response.headers)

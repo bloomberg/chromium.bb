@@ -122,7 +122,7 @@ class RenderServlet(Servlet):
       logging.error('%s had empty content' % path)
 
     headers.update({
-      'content_type': content_type,
-      'cache_control': 'max-age=300',
+      'content-type': content_type,
+      'cache-control': 'max-age=300',
     })
     return Response.Ok(content, headers=headers)
