@@ -129,14 +129,13 @@ public:
     // These methods are used for platform scrollbars to give :hover feedback.  They will not get called
     // when the mouse went down in a scrollbar, since it is assumed the scrollbar will start
     // grabbing all events in that case anyway.
-    bool mouseMoved(const PlatformMouseEvent&);
+    void mouseMoved(const PlatformMouseEvent&);
     void mouseEntered();
-    bool mouseExited();
+    void mouseExited();
 
     // Used by some platform scrollbars to know when they've been released from capture.
-    bool mouseUp(const PlatformMouseEvent&);
-
-    bool mouseDown(const PlatformMouseEvent&);
+    void mouseUp(const PlatformMouseEvent&);
+    void mouseDown(const PlatformMouseEvent&);
 
     ScrollbarTheme* theme() const { return m_theme; }
 

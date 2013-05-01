@@ -389,7 +389,7 @@ bool Scrollbar::gestureEvent(const PlatformGestureEvent& evt)
     return handled;
 }
 
-bool Scrollbar::mouseMoved(const PlatformMouseEvent& evt)
+void Scrollbar::mouseMoved(const PlatformMouseEvent& evt)
 {
     if (m_pressedPart == ThumbPart) {
         if (theme()->shouldSnapBackToDragOrigin(this, evt)) {
@@ -400,7 +400,7 @@ bool Scrollbar::mouseMoved(const PlatformMouseEvent& evt)
                       convertFromContainingWindow(evt.position()).x() :
                       convertFromContainingWindow(evt.position()).y(), theme()->shouldDragDocumentInsteadOfThumb(this, evt));
         }
-        return true;
+        return;
     }
 
     if (m_pressedPart != NoPart)
@@ -425,7 +425,7 @@ bool Scrollbar::mouseMoved(const PlatformMouseEvent& evt)
         setHoveredPart(part);
     } 
 
-    return true;
+    return;
 }
 
 void Scrollbar::mouseEntered()
@@ -434,15 +434,14 @@ void Scrollbar::mouseEntered()
         m_scrollableArea->mouseEnteredScrollbar(this);
 }
 
-bool Scrollbar::mouseExited()
+void Scrollbar::mouseExited()
 {
     if (m_scrollableArea)
         m_scrollableArea->mouseExitedScrollbar(this);
     setHoveredPart(NoPart);
-    return true;
 }
 
-bool Scrollbar::mouseUp(const PlatformMouseEvent& mouseEvent)
+void Scrollbar::mouseUp(const PlatformMouseEvent& mouseEvent)
 {
     setPressedPart(NoPart);
     m_pressedPos = 0;
@@ -459,15 +458,13 @@ bool Scrollbar::mouseUp(const PlatformMouseEvent& mouseEvent)
 
     if (parent() && parent()->isFrameView())
         toFrameView(parent())->frame()->eventHandler()->setMousePressed(false);
-
-    return true;
 }
 
-bool Scrollbar::mouseDown(const PlatformMouseEvent& evt)
+void Scrollbar::mouseDown(const PlatformMouseEvent& evt)
 {
     // Early exit for right click
     if (evt.button() == RightButton)
-        return true; // FIXME: Handled as context menu by Qt right now.  Should just avoid even calling this method on a right click though.
+        return;
 
     setPressedPart(theme()->hitTest(this, evt.position()));
     int pressedPos = (orientation() == HorizontalScrollbar ? convertFromContainingWindow(evt.position()).x() : convertFromContainingWindow(evt.position()).y());
@@ -482,14 +479,13 @@ bool Scrollbar::mouseDown(const PlatformMouseEvent& evt)
         // will be from the current pixel position of the thumb to the new desired position for the thumb.
         m_pressedPos = theme()->trackPosition(this) + theme()->thumbPosition(this) + thumbLen / 2;
         moveThumb(desiredPos);
-        return true;
+        return;
     } else if (m_pressedPart == ThumbPart)
         m_dragOrigin = m_currentPos;
     
     m_pressedPos = pressedPos;
 
     autoscrollPressedPart(theme()->initialAutoscrollTimerDelay());
-    return true;
 }
 
 void Scrollbar::setFrameRect(const IntRect& rect)

@@ -1582,8 +1582,10 @@ bool EventHandler::handleMouseMoveEvent(const PlatformMouseEvent& mouseEvent, Hi
         return !dispatchMouseEvent(eventNames().mousemoveEvent, m_frameSetBeingResized.get(), false, 0, mouseEvent, false);
 
     // Send events right to a scrollbar if the mouse is pressed.
-    if (m_lastScrollbarUnderMouse && m_mousePressed)
-        return m_lastScrollbarUnderMouse->mouseMoved(mouseEvent);
+    if (m_lastScrollbarUnderMouse && m_mousePressed) {
+        m_lastScrollbarUnderMouse->mouseMoved(mouseEvent);
+        return true;
+    }
 
     HitTestRequest::HitTestRequestType hitType = HitTestRequest::Move | HitTestRequest::DisallowShadowContent;
     if (m_mousePressed)
@@ -3589,7 +3591,8 @@ bool EventHandler::passMousePressEventToScrollbar(MouseEventWithHitTestResults& 
     if (!scrollbar || !scrollbar->enabled())
         return false;
     setFrameWasScrolledByUser();
-    return scrollbar->mouseDown(mev.event());
+    scrollbar->mouseDown(mev.event());
+    return true;
 }
 
 // If scrollbar (under mouse) is different from last, send a mouse exited. Set

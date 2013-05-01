@@ -296,7 +296,8 @@ bool WebPluginScrollbarImpl::onMouseUp(const WebInputEvent& event)
     if (m_scrollbar->pressedPart() == WebCore::NoPart)
         return false;
 
-    return m_scrollbar->mouseUp(PlatformMouseEventBuilder(m_scrollbar.get(), mouseup));
+    m_scrollbar->mouseUp(PlatformMouseEventBuilder(m_scrollbar.get(), mouseup));
+    return true;
 }
 
 bool WebPluginScrollbarImpl::onMouseMove(const WebInputEvent& event)
@@ -306,7 +307,8 @@ bool WebPluginScrollbarImpl::onMouseMove(const WebInputEvent& event)
         || m_scrollbar->pressedPart() != WebCore::NoPart) {
         mousemove.x -= m_scrollbar->x();
         mousemove.y -= m_scrollbar->y();
-        return m_scrollbar->mouseMoved(PlatformMouseEventBuilder(m_scrollbar.get(), mousemove));
+        m_scrollbar->mouseMoved(PlatformMouseEventBuilder(m_scrollbar.get(), mousemove));
+        return true;
     }
 
     if (m_scrollbar->hoveredPart() != WebCore::NoPart && !m_scrollbar->isOverlayScrollbar())
