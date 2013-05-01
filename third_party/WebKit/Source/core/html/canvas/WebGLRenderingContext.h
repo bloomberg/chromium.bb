@@ -506,6 +506,9 @@ public:
     OwnPtr<WebGLCompressedTextureS3TC> m_webglCompressedTextureS3TC;
     OwnPtr<WebGLDepthTexture> m_webglDepthTexture;
 
+    // Errors raised by synthesizeGLError() while the context is lost.
+    Vector<GC3Denum> lost_context_errors_;
+
     // Helpers for getParameter and others
     WebGLGetInfo getBooleanParameter(GC3Denum);
     WebGLGetInfo getBooleanArrayParameter(GC3Denum);
