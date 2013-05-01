@@ -53,6 +53,7 @@ class CONTENT_EXPORT BrowserPluginManager
   void AddBrowserPlugin(int instance_id, BrowserPlugin* browser_plugin);
   void RemoveBrowserPlugin(int instance_id);
   BrowserPlugin* GetBrowserPlugin(int instance_id) const;
+  void UpdateDeviceScaleFactor(float device_scale_factor);
   void UpdateFocusState();
   RenderViewImpl* render_view() const { return render_view_; }
 

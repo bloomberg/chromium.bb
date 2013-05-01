@@ -116,6 +116,10 @@ class CONTENT_EXPORT BrowserPlugin :
   // Indicates whether the guest should be focused.
   bool ShouldGuestBeFocused() const;
 
+  // Embedder's device scale factor changed, we need to update the guest
+  // renderer.
+  void UpdateDeviceScaleFactor(float device_scale_factor);
+
   // Tells the BrowserPlugin to tell the guest to navigate to the previous
   // navigation entry in the navigation history.
   void Back();
@@ -379,6 +383,7 @@ class CONTENT_EXPORT BrowserPlugin :
   uint32 damage_buffer_sequence_id_;
   bool resize_ack_received_;
   gfx::Rect plugin_rect_;
+  float last_device_scale_factor_;
   // Bitmap for crashed plugin. Lazily initialized, non-owning pointer.
   SkBitmap* sad_guest_;
   bool guest_crashed_;

@@ -111,6 +111,7 @@ BrowserPlugin::BrowserPlugin(
       container_(NULL),
       damage_buffer_sequence_id_(0),
       resize_ack_received_(true),
+      last_device_scale_factor_(1.0f),
       sad_guest_(NULL),
       guest_crashed_(false),
       auto_size_ack_pending_(false),
@@ -123,7 +124,7 @@ BrowserPlugin::BrowserPlugin(
       visible_(true),
       size_changed_in_flight_(false),
       before_first_navigation_(true),
-      browser_plugin_manager_(render_view->browser_plugin_manager()),
+      browser_plugin_manager_(render_view->GetBrowserPluginManager()),
       current_nav_entry_index_(0),
       nav_entry_count_(0),
       compositing_enabled_(false),
@@ -678,7 +679,8 @@ void BrowserPlugin::OnUpdateRect(
 
   if ((!auto_size && (width() != params.view_size.width() ||
                       height() != params.view_size.height())) ||
-      (auto_size && (!InAutoSizeBounds(params.view_size)))) {
+      (auto_size && (!InAutoSizeBounds(params.view_size))) ||
+      GetDeviceScaleFactor() != params.scale_factor) {
     // We are HW accelerated, render widget does not expect an ack,
     // but we still need to update the size.
     if (!params.needs_ack) {
@@ -902,6 +904,18 @@ float BrowserPlugin::GetDeviceScaleFactor() const {
   if (!render_view_)
     return 1.0f;
   return render_view_->GetWebView()->deviceScaleFactor();
+}
+
+void BrowserPlugin::UpdateDeviceScaleFactor(float device_scale_factor) {
+  if (last_device_scale_factor_ == device_scale_factor || !resize_ack_received_)
+    return;
+
+  BrowserPluginHostMsg_ResizeGuest_Params params;
+  PopulateResizeGuestParameters(&params, gfx::Size(width(), height()));
+  browser_plugin_manager()->Send(new BrowserPluginHostMsg_ResizeGuest(
+      render_view_routing_id_,
+      instance_id_,
+      params));
 }
 
 void BrowserPlugin::TriggerEvent(const std::string& event_name,
@@ -1312,6 +1326,10 @@ void BrowserPlugin::PopulateResizeGuestParameters(
     const gfx::Size& view_size) {
   params->view_size = view_size;
   params->scale_factor = GetDeviceScaleFactor();
+  if (last_device_scale_factor_ != params->scale_factor){
+    params->repaint = true;
+    last_device_scale_factor_ = params->scale_factor;
+  }
 
   // In HW compositing mode, we do not need a damage buffer.
   if (compositing_enabled_)

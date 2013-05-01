@@ -443,6 +443,7 @@ class CONTENT_EXPORT BrowserPluginGuest
   size_t damage_buffer_size_;
   gfx::Size damage_view_size_;
   float damage_buffer_scale_factor_;
+  float guest_device_scale_factor_;
   gfx::Rect guest_window_rect_;
   gfx::Rect guest_screen_rect_;
   base::TimeDelta guest_hang_timeout_;

@@ -263,7 +263,7 @@ class CONTENT_EXPORT RenderViewImpl
 #endif
 
   // Lazily initialize this view's BrowserPluginManager and return it.
-  BrowserPluginManager* browser_plugin_manager();
+  BrowserPluginManager* GetBrowserPluginManager();
 
   // Functions to add and remove observers for this object.
   void AddObserver(RenderViewObserver* observer);

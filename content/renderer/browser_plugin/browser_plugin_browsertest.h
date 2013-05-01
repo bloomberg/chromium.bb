@@ -31,7 +31,7 @@ class BrowserPluginTest : public RenderViewTest {
   virtual void TearDown() OVERRIDE;
   MockBrowserPluginManager* browser_plugin_manager() const {
     return static_cast<MockBrowserPluginManager*>(
-        static_cast<RenderViewImpl*>(view_)->browser_plugin_manager());
+        static_cast<RenderViewImpl*>(view_)->GetBrowserPluginManager());
   }
   std::string ExecuteScriptAndReturnString(const std::string& script);
   int ExecuteScriptAndReturnInt(const std::string& script);

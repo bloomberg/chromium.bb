@@ -350,7 +350,10 @@ void RenderWidgetHostViewGuest::UnlockMouse() {
 }
 
 void RenderWidgetHostViewGuest::GetScreenInfo(WebKit::WebScreenInfo* results) {
-  platform_view_->GetScreenInfo(results);
+  RenderWidgetHostViewPort* embedder_view =
+      static_cast<RenderWidgetHostViewPort*>(
+          guest_->GetEmbedderRenderWidgetHostView());
+  embedder_view->GetScreenInfo(results);
 }
 
 void RenderWidgetHostViewGuest::OnAccessibilityNotifications(

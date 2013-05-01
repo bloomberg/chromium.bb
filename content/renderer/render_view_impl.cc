@@ -2637,7 +2637,7 @@ WebPlugin* RenderViewImpl::createPlugin(WebFrame* frame,
 
 #if defined(ENABLE_PLUGINS)
   if (UTF16ToASCII(params.mimeType) == kBrowserPluginMimeType) {
-    return browser_plugin_manager()->CreateBrowserPlugin(this, frame, params);
+    return GetBrowserPluginManager()->CreateBrowserPlugin(this, frame, params);
   }
 
   webkit::WebPluginInfo info;
@@ -4045,7 +4045,7 @@ void RenderViewImpl::CheckPreferredSize() {
                                                       preferred_size_));
 }
 
-BrowserPluginManager* RenderViewImpl::browser_plugin_manager() {
+BrowserPluginManager* RenderViewImpl::GetBrowserPluginManager() {
   if (!browser_plugin_manager_)
     browser_plugin_manager_ = BrowserPluginManager::Create(this);
   return browser_plugin_manager_;
@@ -5885,7 +5885,7 @@ void RenderViewImpl::OnSetFocus(bool enable) {
   pepper_helper_->OnSetFocus(enable);
   // Notify all BrowserPlugins of the RenderView's focus state.
   if (browser_plugin_manager_)
-    browser_plugin_manager()->UpdateFocusState();
+    browser_plugin_manager_->UpdateFocusState();
 }
 
 void RenderViewImpl::PpapiPluginFocusChanged() {
@@ -6028,6 +6028,9 @@ void RenderViewImpl::SetDeviceScaleFactor(float device_scale_factor) {
   }
   if (auto_resize_mode_)
     AutoResizeCompositor();
+
+  if (browser_plugin_manager_)
+    browser_plugin_manager_->UpdateDeviceScaleFactor(device_scale_factor_);
 }
 
 ui::TextInputType RenderViewImpl::GetTextInputType() {

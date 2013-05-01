@@ -136,6 +136,7 @@ BrowserPluginGuest::BrowserPluginGuest(
       damage_buffer_sequence_id_(0),
       damage_buffer_size_(0),
       damage_buffer_scale_factor_(1.0f),
+      guest_device_scale_factor_(1.0f),
       guest_hang_timeout_(
           base::TimeDelta::FromMilliseconds(kHungRendererDelayMs)),
       focused_(false),
@@ -1034,11 +1035,19 @@ void BrowserPluginGuest::OnResizeGuest(
     RenderWidgetHostImpl* render_widget_host =
         RenderWidgetHostImpl::From(GetWebContents()->GetRenderViewHost());
     render_widget_host->ResetSizeAndRepaintPendingFlags();
+
+    if (guest_device_scale_factor_ != params.scale_factor) {
+      guest_device_scale_factor_ = params.scale_factor;
+      render_widget_host->NotifyScreenInfoChanged();
+    }
   }
+  // Invalid damage buffer means we are in HW compositing mode,
+  // so just resize the WebContents and repaint if needed.
   if (!base::SharedMemory::IsHandleValid(params.damage_buffer_handle)) {
-    // Invalid damage buffer, so just resize the WebContents.
     if (!params.view_size.IsEmpty())
       GetWebContents()->GetView()->SizeContents(params.view_size);
+    if (params.repaint)
+      Send(new ViewMsg_Repaint(routing_id(), params.view_size));
     return;
   }
   SetDamageBuffer(params);
