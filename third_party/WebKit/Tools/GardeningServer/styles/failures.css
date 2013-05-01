@@ -64,6 +64,7 @@ ul.failures {
 
     ul.failures>li {
         display: -webkit-box;
+        position: relative;
     }
 
     ul.failures>li label {

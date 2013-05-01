@@ -40,6 +40,7 @@ ol.notifications ul {
 
 ol.notifications>li {
     display: -webkit-box;
+    position: relative;
     width: 100%;
     padding: 10px;
     box-sizing: border-box;
