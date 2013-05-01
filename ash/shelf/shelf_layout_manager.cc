@@ -17,6 +17,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/wm/gestures/shelf_gesture_handler.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_properties.h"
@@ -63,7 +64,10 @@ bool IsDraggingTrayEnabled() {
 }  // namespace
 
 // static
-const int ShelfLayoutManager::kWorkspaceAreaBottomInset = 2;
+const int ShelfLayoutManager::kWorkspaceAreaVisibleInset = 2;
+
+// static
+const int ShelfLayoutManager::kWorkspaceAreaAutoHideInset = 5;
 
 // static
 const int ShelfLayoutManager::kAutoHideSize = 3;
@@ -81,10 +85,12 @@ class ShelfLayoutManager::AutoHideEventFilter : public ui::EventHandler {
 
   // Overridden from ui::EventHandler:
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  private:
   ShelfLayoutManager* shelf_;
   bool in_mouse_drag_;
+  ShelfGestureHandler gesture_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoHideEventFilter);
 };
@@ -111,6 +117,12 @@ void ShelfLayoutManager::AutoHideEventFilter::OnMouseEvent(
   if (event->type() == ui::ET_MOUSE_MOVED)
     shelf_->UpdateAutoHideState();
   return;
+}
+
+void ShelfLayoutManager::AutoHideEventFilter::OnGestureEvent(
+    ui::GestureEvent* event) {
+  if (gesture_handler_.ProcessGestureEvent(*event))
+    event->StopPropagation();
 }
 
 // ShelfLayoutManager:UpdateShelfObserver --------------------------------------
@@ -882,33 +894,23 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
 }
 
 void ShelfLayoutManager::UpdateHitTestBounds() {
-  gfx::Insets insets;
-  // Only modify the hit test when the shelf is visible, so we don't mess with
-  // hover hit testing in the auto-hide state.
+  gfx::Insets mouse_insets;
+  gfx::Insets touch_insets;
   if (state_.visibility_state == SHELF_VISIBLE) {
     // Let clicks at the very top of the launcher through so windows can be
     // resized with the bottom-right corner and bottom edge.
-    switch (alignment_) {
-      case SHELF_ALIGNMENT_BOTTOM:
-        insets.Set(kWorkspaceAreaBottomInset, 0, 0, 0);
-        break;
-      case SHELF_ALIGNMENT_LEFT:
-        insets.Set(0, 0, 0, kWorkspaceAreaBottomInset);
-        break;
-      case SHELF_ALIGNMENT_RIGHT:
-        insets.Set(0, kWorkspaceAreaBottomInset, 0, 0);
-        break;
-      case SHELF_ALIGNMENT_TOP:
-        insets.Set(0, 0, kWorkspaceAreaBottomInset, 0);
-        break;
-    }
+    mouse_insets = GetInsetsForAlignment(kWorkspaceAreaVisibleInset);
+  } else if (state_.visibility_state == SHELF_AUTO_HIDE) {
+    // Extend the touch hit target out a bit to allow users to drag shelf out
+    // while hidden.
+    touch_insets = GetInsetsForAlignment(-kWorkspaceAreaAutoHideInset);
   }
-  if (shelf_ && shelf_->GetNativeWindow()) {
-    shelf_->GetNativeWindow()->SetHitTestBoundsOverrideOuter(
-        insets, 1);
-  }
-  shelf_->status_area_widget()->GetNativeWindow()->
-      SetHitTestBoundsOverrideOuter(insets, 1);
+
+    if (shelf_ && shelf_->GetNativeWindow())
+      shelf_->GetNativeWindow()->SetHitTestBoundsOverrideOuter(mouse_insets,
+                                                               touch_insets);
+    shelf_->status_area_widget()->GetNativeWindow()->
+        SetHitTestBoundsOverrideOuter(mouse_insets, touch_insets);
 }
 
 bool ShelfLayoutManager::IsShelfWindow(aura::Window* window) {
@@ -937,6 +939,21 @@ void ShelfLayoutManager::OnKeyboardBoundsChanging(
     const gfx::Rect& keyboard_bounds) {
   keyboard_bounds_ = keyboard_bounds;
   OnWindowResized();
+}
+
+gfx::Insets ShelfLayoutManager::GetInsetsForAlignment(int distance) const {
+  switch (alignment_) {
+    case SHELF_ALIGNMENT_BOTTOM:
+      return gfx::Insets(distance, 0, 0, 0);
+    case SHELF_ALIGNMENT_LEFT:
+      return gfx::Insets(0, 0, 0, distance);
+    case SHELF_ALIGNMENT_RIGHT:
+      return gfx::Insets(0, distance, 0, 0);
+    case SHELF_ALIGNMENT_TOP:
+      return gfx::Insets(0, 0, distance, 0);
+  }
+  NOTREACHED();
+  return gfx::Insets();
 }
 
 }  // namespace internal

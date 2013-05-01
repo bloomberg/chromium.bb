@@ -497,7 +497,8 @@ TEST_F(WindowTest, HitTest) {
   EXPECT_FALSE(w1.HitTest(gfx::Point(-1, -1)));
 
   // We can expand the bounds slightly to track events outside our border.
-  w1.SetHitTestBoundsOverrideOuter(gfx::Insets(-1, -1, -1, -1), 5);
+  w1.SetHitTestBoundsOverrideOuter(gfx::Insets(-1, -1, -1, -1),
+                                   gfx::Insets(-5, -5, -5, -5));
   EXPECT_TRUE(w1.HitTest(gfx::Point(-1, -1)));
   EXPECT_FALSE(w1.HitTest(gfx::Point(-2, -2)));
 

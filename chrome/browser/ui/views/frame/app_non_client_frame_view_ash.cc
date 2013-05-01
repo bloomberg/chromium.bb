@@ -204,7 +204,8 @@ AppNonClientFrameViewAsh::AppNonClientFrameViewAsh(
   aura::Window* window = control_widget_->GetNativeView();
   window->SetName(kControlWindowName);
   // Need to exclude the shadow from the active control area.
-  window->SetHitTestBoundsOverrideOuter(control_view_->GetShadowInsets(), 1);
+  window->SetHitTestBoundsOverrideOuter(control_view_->GetShadowInsets(),
+                                        control_view_->GetShadowInsets());
   gfx::Rect control_bounds = GetControlBounds();
   window->SetBounds(control_bounds);
   control_widget_->Show();

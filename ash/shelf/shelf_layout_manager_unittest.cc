@@ -1051,6 +1051,38 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_GestureDrag) {
   EXPECT_EQ(shelf_hidden.ToString(),
             GetShelfWidget()->GetWindowBoundsInScreen().ToString());
 
+  // Swipe up in extended hit region to show it.
+  gfx::Point extended_start = gfx::Point(
+      (GetShelfWidget()->GetWindowBoundsInScreen().x() +
+       GetShelfWidget()->GetWindowBoundsInScreen().right())/2,
+      GetShelfWidget()->GetWindowBoundsInScreen().y() - 1);
+  end.set_y(extended_start.y() - 100);
+  generator.GestureScrollSequenceWithCallback(extended_start, end,
+      base::TimeDelta::FromMilliseconds(10), kNumScrollSteps,
+      base::Bind(&ShelfDragCallback::ProcessScroll,
+                 base::Unretained(&handler)));
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+  EXPECT_EQ(bounds_shelf.ToString(), window->bounds().ToString());
+  EXPECT_EQ(GetShelfWidget()->GetDimmerBoundsForTest(),
+            GetShelfWidget()->GetWindowBoundsInScreen());
+  EXPECT_EQ(shelf_shown.ToString(),
+            GetShelfWidget()->GetWindowBoundsInScreen().ToString());
+
+  // Swipe down again to hide.
+  end.set_y(start.y() + 100);
+  generator.GestureScrollSequenceWithCallback(start, end,
+      base::TimeDelta::FromMilliseconds(10), kNumScrollSteps,
+      base::Bind(&ShelfDragCallback::ProcessScroll,
+                 base::Unretained(&handler)));
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+  EXPECT_EQ(GetShelfWidget()->GetDimmerBoundsForTest(), gfx::Rect());
+  EXPECT_EQ(bounds_noshelf.ToString(), window->bounds().ToString());
+  EXPECT_EQ(shelf_hidden.ToString(),
+            GetShelfWidget()->GetWindowBoundsInScreen().ToString());
+
   // Make the window fullscreen.
   widget->SetFullscreen(true);
   gfx::Rect bounds_fullscreen = window->bounds();

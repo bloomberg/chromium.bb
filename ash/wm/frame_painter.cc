@@ -227,15 +227,16 @@ void FramePainter::Init(views::Widget* frame,
       rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_RIGHT).ToImageSkia();
 
   window_ = frame->GetNativeWindow();
-  // Ensure we get resize cursors for a few pixels outside our bounds.
-  window_->SetHitTestBoundsOverrideOuter(
-      gfx::Insets(-kResizeOutsideBoundsSize, -kResizeOutsideBoundsSize,
-                  -kResizeOutsideBoundsSize, -kResizeOutsideBoundsSize),
+  gfx::Insets mouse_insets = gfx::Insets(-kResizeOutsideBoundsSize,
+                                         -kResizeOutsideBoundsSize,
+                                         -kResizeOutsideBoundsSize,
+                                         -kResizeOutsideBoundsSize);
+  gfx::Insets touch_insets = mouse_insets.Scale(
       kResizeOutsideBoundsScaleForTouch);
+  // Ensure we get resize cursors for a few pixels outside our bounds.
+  window_->SetHitTestBoundsOverrideOuter(mouse_insets, touch_insets);
   // Ensure we get resize cursors just inside our bounds as well.
-  window_->set_hit_test_bounds_override_inner(
-      gfx::Insets(kResizeInsideBoundsSize, kResizeInsideBoundsSize,
-                  kResizeInsideBoundsSize, kResizeInsideBoundsSize));
+  window_->set_hit_test_bounds_override_inner(mouse_insets);
 
   // Watch for maximize/restore/fullscreen state changes.  Observer removes
   // itself in OnWindowDestroying() below, or in the destructor if we go away

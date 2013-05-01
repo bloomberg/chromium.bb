@@ -72,9 +72,13 @@ class ASH_EXPORT ShelfLayoutManager :
         ShelfAutoHideBehavior new_behavior) {}
   };
 
-  // We reserve a small area at the bottom of the workspace area to ensure that
-  // the bottom-of-window resize handle can be hit.
-  static const int kWorkspaceAreaBottomInset;
+  // We reserve a small area on the edge of the workspace area to ensure that
+  // the resize handle at the edge of the window can be hit.
+  static const int kWorkspaceAreaVisibleInset;
+
+  // When autohidden we extend the touch hit target onto the screen so that the
+  // user can drag the shelf out.
+  static const int kWorkspaceAreaAutoHideInset;
 
   // Size of the shelf when auto-hidden.
   static const int kAutoHideSize;
@@ -289,6 +293,9 @@ class ASH_EXPORT ShelfLayoutManager :
   // Overridden from keyboard::KeyboardControllerObserver:
   virtual void OnKeyboardBoundsChanging(
       const gfx::Rect& keyboard_bounds) OVERRIDE;
+
+  // Generates insets for inward edge based on the current shelf alignment.
+  gfx::Insets GetInsetsForAlignment(int distance) const;
 
   // The RootWindow is cached so that we don't invoke Shell::GetInstance() from
   // our destructor. We avoid that as at the time we're deleted Shell is being

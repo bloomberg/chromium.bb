@@ -112,13 +112,14 @@ void ShellWindowFrameView::Init(views::Widget* frame) {
   aura::Window* window = frame->GetNativeWindow();
 #if defined(USE_ASH)
   if (chrome::IsNativeWindowInAsh(window)) {
-    // Ensure we get resize cursors for a few pixels outside our bounds.
-    window->SetHitTestBoundsOverrideOuter(
-        gfx::Insets(-ash::kResizeOutsideBoundsSize,
-                    -ash::kResizeOutsideBoundsSize,
-                    -ash::kResizeOutsideBoundsSize,
-                    -ash::kResizeOutsideBoundsSize),
+    gfx::Insets mouse_insets = gfx::Insets(-ash::kResizeOutsideBoundsSize,
+                                           -ash::kResizeOutsideBoundsSize,
+                                           -ash::kResizeOutsideBoundsSize,
+                                           -ash::kResizeOutsideBoundsSize);
+    gfx::Insets touch_insets = mouse_insets.Scale(
         ash::kResizeOutsideBoundsScaleForTouch);
+    // Ensure we get resize cursors for a few pixels outside our bounds.
+    window->SetHitTestBoundsOverrideOuter(mouse_insets, touch_insets);
 
     // If the window is in ash, the inside area used for resizing will be
     // smaller due to the fact that outside area is also used for resizing.

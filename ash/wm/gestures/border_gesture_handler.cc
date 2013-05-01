@@ -19,16 +19,6 @@
 
 namespace ash {
 namespace internal {
-namespace {
-
-// How far from the edge of the display a gesture can start and be considered an
-// edge gesture.
-const int kBottomEdgeThreshold = 10;
-const int kLeftEdgeThreshold = 10;
-const int kRightEdgeThreshold = 10;
-const int kTopEdgeThreshold = 10;
-
-}  // namespace
 
 BorderGestureHandler::BorderGestureHandler()
     : orientation_(BORDER_SCROLL_ORIENTATION_UNSET) {
@@ -123,13 +113,13 @@ bool BorderGestureHandler::HandleBorderGestureEnd(
 void BorderGestureHandler::GestureStartInTargetArea(
     const gfx::Rect& screen,
     const ui::GestureEvent& event) {
-  if (event.y() > screen.bottom() - kBottomEdgeThreshold)
+  if (event.y() > screen.bottom())
     start_location_[BORDER_LOCATION_BOTTOM] = 1;
-  if (event.x() < screen.x() + kLeftEdgeThreshold)
+  if (event.x() < screen.x())
     start_location_[BORDER_LOCATION_LEFT] = 1;
-  if (event.y() < screen.y() + kTopEdgeThreshold)
+  if (event.y() < screen.y())
     start_location_[BORDER_LOCATION_TOP] = 1;
-  if (event.x() > screen.right() - kRightEdgeThreshold)
+  if (event.x() > screen.right())
     start_location_[BORDER_LOCATION_RIGHT] = 1;
 }
 
