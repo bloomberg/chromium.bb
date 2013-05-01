@@ -212,6 +212,12 @@ void PpapiHost::OnHostMsgResourceDestroyed(PP_Resource resource) {
     NOTREACHED();
     return;
   }
+  // Invoking the HostResource destructor might result in looking up the
+  // PP_Resource in resources_. std::map is not well specified as to whether the
+  // element will be there or not. Therefore, we delay destruction of the
+  // HostResource until after we've made sure the map no longer contains
+  // |resource|.
+  linked_ptr<ResourceHost> delete_at_end_of_scope(found->second);
   resources_.erase(found);
 }
 
