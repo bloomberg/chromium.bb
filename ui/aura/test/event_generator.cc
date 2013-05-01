@@ -145,12 +145,23 @@ void EventGenerator::ReleaseRightButton() {
   ReleaseButton(ui::EF_RIGHT_MOUSE_BUTTON);
 }
 
-void EventGenerator::MoveMouseTo(const gfx::Point& point, int count) {
+void EventGenerator::MoveMouseToInHost(const gfx::Point& point_in_host) {
+  const ui::EventType event_type = (flags_ & ui::EF_LEFT_MOUSE_BUTTON) ?
+      ui::ET_MOUSE_DRAGGED : ui::ET_MOUSE_MOVED;
+  ui::MouseEvent mouseev(event_type, point_in_host, point_in_host, flags_);
+  Dispatch(&mouseev);
+
+  current_location_ = point_in_host;
+  current_root_window_->ConvertPointFromHost(&current_location_);
+}
+
+void EventGenerator::MoveMouseTo(const gfx::Point& point_in_screen,
+                                 int count) {
   DCHECK_GT(count, 0);
   const ui::EventType event_type = (flags_ & ui::EF_LEFT_MOUSE_BUTTON) ?
       ui::ET_MOUSE_DRAGGED : ui::ET_MOUSE_MOVED;
 
-  gfx::Vector2dF diff(point - current_location_);
+  gfx::Vector2dF diff(point_in_screen - current_location_);
   for (float i = 1; i <= count; i++) {
     gfx::Vector2dF step(diff);
     step.Scale(i / count);
@@ -161,7 +172,7 @@ void EventGenerator::MoveMouseTo(const gfx::Point& point, int count) {
     ui::MouseEvent mouseev(event_type, move_point, move_point, flags_);
     Dispatch(&mouseev);
   }
-  current_location_ = point;
+  current_location_ = point_in_screen;
 }
 
 void EventGenerator::MoveMouseRelativeTo(const Window* window,

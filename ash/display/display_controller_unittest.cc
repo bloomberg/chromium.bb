@@ -181,14 +181,6 @@ float GetStoredUIScale(int64 id) {
   return Shell::GetInstance()->display_manager()->GetDisplayInfo(id).ui_scale();
 }
 
-void MoveMouseToInHostCoord(aura::RootWindow* root_window,
-                            int host_x,
-                            int host_y) {
-  gfx::Point move_point(host_x, host_y);
-  ui::MouseEvent mouseev(ui::ET_MOUSE_MOVED, move_point, move_point, 0);
-  root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouseev);
-}
-
 }  // namespace
 
 typedef test::AshTestBase DisplayControllerTest;
@@ -715,7 +707,7 @@ TEST_F(DisplayControllerTest, MAYBE_OverscanInsets) {
             ScreenAsh::GetSecondaryDisplay().bounds().ToString());
 
   aura::test::EventGenerator generator(root_windows[0]);
-  generator.MoveMouseTo(20, 25);
+  generator.MoveMouseToInHost(20, 25);
   EXPECT_EQ("5,15", event_handler.GetLocationAndReset());
 
   display_controller->ClearCustomOverscanInsets(display1.id());
@@ -723,7 +715,7 @@ TEST_F(DisplayControllerTest, MAYBE_OverscanInsets) {
   EXPECT_EQ("120,0 150x200",
             ScreenAsh::GetSecondaryDisplay().bounds().ToString());
 
-  generator.MoveMouseTo(30, 20);
+  generator.MoveMouseToInHost(30, 20);
   EXPECT_EQ("30,20", event_handler.GetLocationAndReset());
 
   Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
@@ -762,7 +754,7 @@ TEST_F(DisplayControllerTest, MAYBE_Rotate) {
   EXPECT_EQ("150x200", root_windows[1]->bounds().size().ToString());
   EXPECT_EQ("120,0 150x200",
             ScreenAsh::GetSecondaryDisplay().bounds().ToString());
-  generator1.MoveMouseTo(50, 40);
+  generator1.MoveMouseToInHost(50, 40);
   EXPECT_EQ("50,40", event_handler.GetLocationAndReset());
   EXPECT_EQ(gfx::Display::ROTATE_0, GetStoredRotation(display1.id()));
   EXPECT_EQ(gfx::Display::ROTATE_0, GetStoredRotation(display2_id));
@@ -773,7 +765,7 @@ TEST_F(DisplayControllerTest, MAYBE_Rotate) {
   EXPECT_EQ("150x200", root_windows[1]->bounds().size().ToString());
   EXPECT_EQ("200,0 150x200",
             ScreenAsh::GetSecondaryDisplay().bounds().ToString());
-  generator1.MoveMouseTo(50, 40);
+  generator1.MoveMouseToInHost(50, 40);
   EXPECT_EQ("40,69", event_handler.GetLocationAndReset());
   EXPECT_EQ(gfx::Display::ROTATE_90, GetStoredRotation(display1.id()));
   EXPECT_EQ(gfx::Display::ROTATE_0, GetStoredRotation(display2_id));
@@ -793,7 +785,7 @@ TEST_F(DisplayControllerTest, MAYBE_Rotate) {
   EXPECT_EQ(gfx::Display::ROTATE_270, GetStoredRotation(display2_id));
 
   aura::test::EventGenerator generator2(root_windows[1]);
-  generator2.MoveMouseTo(50, 40);
+  generator2.MoveMouseToInHost(50, 40);
   EXPECT_EQ("179,25", event_handler.GetLocationAndReset());
   display_manager->SetDisplayRotation(display1.id(),
                                       gfx::Display::ROTATE_180);
@@ -806,7 +798,7 @@ TEST_F(DisplayControllerTest, MAYBE_Rotate) {
   EXPECT_EQ(gfx::Display::ROTATE_180, GetStoredRotation(display1.id()));
   EXPECT_EQ(gfx::Display::ROTATE_270, GetStoredRotation(display2_id));
 
-  generator1.MoveMouseTo(50, 40);
+  generator1.MoveMouseToInHost(50, 40);
   EXPECT_EQ("69,159", event_handler.GetLocationAndReset());
 
   Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
@@ -830,7 +822,7 @@ TEST_F(DisplayControllerTest, MAYBE_ScaleRootWindow) {
   EXPECT_EQ(1.0f, GetStoredUIScale(display2.id()));
 
   aura::test::EventGenerator generator(root_windows[0]);
-  generator.MoveMouseTo(599, 200);
+  generator.MoveMouseToInHost(599, 200);
   EXPECT_EQ("449,150", event_handler.GetLocationAndReset());
 
   internal::DisplayManager* display_manager =
@@ -888,13 +880,14 @@ TEST_F(DisplayControllerTest, MAYBE_ConvertHostToRootCoords) {
   EXPECT_EQ("0,0 300x450", root_windows[0]->bounds().ToString());
   EXPECT_EQ(1.5f, GetStoredUIScale(display1.id()));
 
-  MoveMouseToInHostCoord(root_windows[0], 0, 0);
+  aura::test::EventGenerator generator(root_windows[0]);
+  generator.MoveMouseToInHost(0, 0);
   EXPECT_EQ("0,449", event_handler.GetLocationAndReset());
-  MoveMouseToInHostCoord(root_windows[0], 599, 0);
+  generator.MoveMouseToInHost(599, 0);
   EXPECT_EQ("0,0", event_handler.GetLocationAndReset());
-  MoveMouseToInHostCoord(root_windows[0], 599, 399);
+  generator.MoveMouseToInHost(599, 399);
   EXPECT_EQ("299,0", event_handler.GetLocationAndReset());
-  MoveMouseToInHostCoord(root_windows[0], 0, 399);
+  generator.MoveMouseToInHost(0, 399);
   EXPECT_EQ("299,449", event_handler.GetLocationAndReset());
 
   UpdateDisplay("600x400*2/u@1.5");
@@ -904,13 +897,13 @@ TEST_F(DisplayControllerTest, MAYBE_ConvertHostToRootCoords) {
   EXPECT_EQ("0,0 450x300", root_windows[0]->bounds().ToString());
   EXPECT_EQ(1.5f, GetStoredUIScale(display1.id()));
 
-  MoveMouseToInHostCoord(root_windows[0], 0, 0);
+  generator.MoveMouseToInHost(0, 0);
   EXPECT_EQ("449,299", event_handler.GetLocationAndReset());
-  MoveMouseToInHostCoord(root_windows[0], 599, 0);
+  generator.MoveMouseToInHost(599, 0);
   EXPECT_EQ("0,299", event_handler.GetLocationAndReset());
-  MoveMouseToInHostCoord(root_windows[0], 599, 399);
+  generator.MoveMouseToInHost(599, 399);
   EXPECT_EQ("0,0", event_handler.GetLocationAndReset());
-  MoveMouseToInHostCoord(root_windows[0], 0, 399);
+  generator.MoveMouseToInHost(0, 399);
   EXPECT_EQ("449,0", event_handler.GetLocationAndReset());
 
   UpdateDisplay("600x400*2/l@1.5");
@@ -920,13 +913,13 @@ TEST_F(DisplayControllerTest, MAYBE_ConvertHostToRootCoords) {
   EXPECT_EQ("0,0 300x450", root_windows[0]->bounds().ToString());
   EXPECT_EQ(1.5f, GetStoredUIScale(display1.id()));
 
-  MoveMouseToInHostCoord(root_windows[0], 0, 0);
+  generator.MoveMouseToInHost(0, 0);
   EXPECT_EQ("299,0", event_handler.GetLocationAndReset());
-  MoveMouseToInHostCoord(root_windows[0], 599, 0);
+  generator.MoveMouseToInHost(599, 0);
   EXPECT_EQ("299,449", event_handler.GetLocationAndReset());
-  MoveMouseToInHostCoord(root_windows[0], 599, 399);
+  generator.MoveMouseToInHost(599, 399);
   EXPECT_EQ("0,449", event_handler.GetLocationAndReset());
-  MoveMouseToInHostCoord(root_windows[0], 0, 399);
+  generator.MoveMouseToInHost(0, 399);
   EXPECT_EQ("0,0", event_handler.GetLocationAndReset());
 
   Shell::GetInstance()->RemovePreTargetHandler(&event_handler);

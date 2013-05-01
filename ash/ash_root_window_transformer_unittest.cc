@@ -115,14 +115,6 @@ float GetStoredUIScale(int64 id) {
   return Shell::GetInstance()->display_manager()->GetDisplayInfo(id).ui_scale();
 }
 
-void MoveMouseToInHostCoord(aura::RootWindow* root_window,
-                            int host_x,
-                            int host_y) {
-  gfx::Point move_point(host_x, host_y);
-  ui::MouseEvent mouseev(ui::ET_MOUSE_MOVED, move_point, move_point, 0);
-  root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouseev);
-}
-
 }  // namespace
 
 typedef test::AshTestBase AshRootWindowTransformerTest;
@@ -167,7 +159,7 @@ TEST_F(AshRootWindowTransformerTest, MAYBE_RotateAndMagnify) {
   EXPECT_EQ("150x200", root_windows[1]->bounds().size().ToString());
   EXPECT_EQ("120,0 150x200",
             ScreenAsh::GetSecondaryDisplay().bounds().ToString());
-  generator1.MoveMouseTo(40, 80);
+  generator1.MoveMouseToInHost(40, 80);
   EXPECT_EQ("50,90", event_handler.GetLocationAndReset());
   EXPECT_EQ("50,90",
             aura::Env::GetInstance()->last_mouse_location().ToString());
@@ -178,7 +170,7 @@ TEST_F(AshRootWindowTransformerTest, MAYBE_RotateAndMagnify) {
   display_manager->SetDisplayRotation(display1.id(),
                                       gfx::Display::ROTATE_90);
   // Move the cursor to the center of the first root window.
-  generator1.MoveMouseTo(59, 100);
+  generator1.MoveMouseToInHost(59, 100);
 
   magnifier->SetEnabled(true);
   EXPECT_EQ(2.0f, magnifier->GetScale());
@@ -186,7 +178,7 @@ TEST_F(AshRootWindowTransformerTest, MAYBE_RotateAndMagnify) {
   EXPECT_EQ("150x200", root_windows[1]->bounds().size().ToString());
   EXPECT_EQ("200,0 150x200",
             ScreenAsh::GetSecondaryDisplay().bounds().ToString());
-  generator1.MoveMouseTo(39, 120);
+  generator1.MoveMouseToInHost(39, 120);
   EXPECT_EQ("110,70", event_handler.GetLocationAndReset());
   EXPECT_EQ("110,70",
             aura::Env::GetInstance()->last_mouse_location().ToString());
@@ -202,14 +194,14 @@ TEST_F(AshRootWindowTransformerTest, MAYBE_RotateAndMagnify) {
   display_manager->SetDisplayRotation(display2_id,
                                       gfx::Display::ROTATE_270);
   // Move the cursor to the center of the second root window.
-  generator2.MoveMouseTo(151, 199);
+  generator2.MoveMouseToInHost(151, 199);
 
   magnifier->SetEnabled(true);
   EXPECT_EQ("200x120", root_windows[0]->bounds().size().ToString());
   EXPECT_EQ("200x150", root_windows[1]->bounds().size().ToString());
   EXPECT_EQ("50,120 200x150",
             ScreenAsh::GetSecondaryDisplay().bounds().ToString());
-  generator2.MoveMouseTo(172, 219);
+  generator2.MoveMouseToInHost(172, 219);
   EXPECT_EQ("95,80", event_handler.GetLocationAndReset());
   EXPECT_EQ("169,175",
             aura::Env::GetInstance()->last_mouse_location().ToString());
@@ -220,7 +212,7 @@ TEST_F(AshRootWindowTransformerTest, MAYBE_RotateAndMagnify) {
   display_manager->SetDisplayRotation(display1.id(),
                                       gfx::Display::ROTATE_180);
   // Move the cursor to the center of the first root window.
-  generator1.MoveMouseTo(59, 99);
+  generator1.MoveMouseToInHost(59, 99);
 
   magnifier->SetEnabled(true);
   EXPECT_EQ("120x200", root_windows[0]->bounds().size().ToString());
@@ -228,7 +220,7 @@ TEST_F(AshRootWindowTransformerTest, MAYBE_RotateAndMagnify) {
   // Dislay must share at least 100, so the x's offset becomes 20.
   EXPECT_EQ("20,200 200x150",
             ScreenAsh::GetSecondaryDisplay().bounds().ToString());
-  generator1.MoveMouseTo(39, 59);
+  generator1.MoveMouseToInHost(39, 59);
   EXPECT_EQ("70,120", event_handler.GetLocationAndReset());
   EXPECT_EQ(gfx::Display::ROTATE_180, GetStoredRotation(display1.id()));
   EXPECT_EQ(gfx::Display::ROTATE_270, GetStoredRotation(display2_id));
@@ -259,7 +251,7 @@ TEST_F(AshRootWindowTransformerTest, MAYBE_ScaleAndMagnify) {
   EXPECT_EQ(1.0f, GetStoredUIScale(display2.id()));
 
   aura::test::EventGenerator generator(root_windows[0]);
-  generator.MoveMouseTo(500, 200);
+  generator.MoveMouseToInHost(500, 200);
   EXPECT_EQ("299,150", event_handler.GetLocationAndReset());
   magnifier->SetEnabled(false);
 
@@ -331,18 +323,19 @@ TEST_F(AshRootWindowTransformerTest, MAYBE_ConvertHostToRootCoords) {
   EXPECT_EQ("0,0 300x450", root_windows[0]->bounds().ToString());
   EXPECT_EQ(1.5f, GetStoredUIScale(display1.id()));
 
-  MoveMouseToInHostCoord(root_windows[0], 300, 200);
+  aura::test::EventGenerator generator(root_windows[0]);
+  generator.MoveMouseToInHost(300, 200);
   magnifier->SetEnabled(true);
   EXPECT_EQ("150,224", event_handler.GetLocationAndReset());
   EXPECT_FLOAT_EQ(2.0f, magnifier->GetScale());
 
-  MoveMouseToInHostCoord(root_windows[0], 300, 200);
+  generator.MoveMouseToInHost(300, 200);
   EXPECT_EQ("150,224", event_handler.GetLocationAndReset());
-  MoveMouseToInHostCoord(root_windows[0], 200, 300);
+  generator.MoveMouseToInHost(200, 300);
   EXPECT_EQ("187,261", event_handler.GetLocationAndReset());
-  MoveMouseToInHostCoord(root_windows[0], 100, 400);
+  generator.MoveMouseToInHost(100, 400);
   EXPECT_EQ("237,299", event_handler.GetLocationAndReset());
-  MoveMouseToInHostCoord(root_windows[0], 0, 0);
+  generator.MoveMouseToInHost(0, 0);
   EXPECT_EQ("137,348", event_handler.GetLocationAndReset());
 
   magnifier->SetEnabled(false);
@@ -356,18 +349,18 @@ TEST_F(AshRootWindowTransformerTest, MAYBE_ConvertHostToRootCoords) {
   EXPECT_EQ("0,0 450x300", root_windows[0]->bounds().ToString());
   EXPECT_EQ(1.5f, GetStoredUIScale(display1.id()));
 
-  MoveMouseToInHostCoord(root_windows[0], 300, 200);
+  generator.MoveMouseToInHost(300, 200);
   magnifier->SetEnabled(true);
   EXPECT_EQ("224,149", event_handler.GetLocationAndReset());
   EXPECT_FLOAT_EQ(2.0f, magnifier->GetScale());
 
-  MoveMouseToInHostCoord(root_windows[0], 300, 200);
+  generator.MoveMouseToInHost(300, 200);
   EXPECT_EQ("224,148", event_handler.GetLocationAndReset());
-  MoveMouseToInHostCoord(root_windows[0], 200, 300);
+  generator.MoveMouseToInHost(200, 300);
   EXPECT_EQ("261,111", event_handler.GetLocationAndReset());
-  MoveMouseToInHostCoord(root_windows[0], 100, 400);
+  generator.MoveMouseToInHost(100, 400);
   EXPECT_EQ("299,60", event_handler.GetLocationAndReset());
-  MoveMouseToInHostCoord(root_windows[0], 0, 0);
+  generator.MoveMouseToInHost(0, 0);
   EXPECT_EQ("348,159", event_handler.GetLocationAndReset());
 
   magnifier->SetEnabled(false);
@@ -381,18 +374,18 @@ TEST_F(AshRootWindowTransformerTest, MAYBE_ConvertHostToRootCoords) {
   EXPECT_EQ("0,0 300x450", root_windows[0]->bounds().ToString());
   EXPECT_EQ(1.5f, GetStoredUIScale(display1.id()));
 
-  MoveMouseToInHostCoord(root_windows[0], 300, 200);
+  generator.MoveMouseToInHost(300, 200);
   magnifier->SetEnabled(true);
   EXPECT_EQ("149,225", event_handler.GetLocationAndReset());
   EXPECT_FLOAT_EQ(2.0f, magnifier->GetScale());
 
-  MoveMouseToInHostCoord(root_windows[0], 300, 200);
+  generator.MoveMouseToInHost(300, 200);
   EXPECT_EQ("148,224", event_handler.GetLocationAndReset());
-  MoveMouseToInHostCoord(root_windows[0], 200, 300);
+  generator.MoveMouseToInHost(200, 300);
   EXPECT_EQ("111,187", event_handler.GetLocationAndReset());
-  MoveMouseToInHostCoord(root_windows[0], 100, 400);
+  generator.MoveMouseToInHost(100, 400);
   EXPECT_EQ("60,149", event_handler.GetLocationAndReset());
-  MoveMouseToInHostCoord(root_windows[0], 0, 0);
+  generator.MoveMouseToInHost(0, 0);
   EXPECT_EQ("159,99", event_handler.GetLocationAndReset());
 
   magnifier->SetEnabled(false);

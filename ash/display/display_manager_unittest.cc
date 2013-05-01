@@ -13,6 +13,7 @@
 #include "base/stringprintf.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/display.h"
@@ -557,8 +558,10 @@ TEST_F(DisplayManagerTest, EnsurePointerInDisplays) {
 
   aura::Env* env = aura::Env::GetInstance();
 
+  aura::test::EventGenerator generator(root_windows[0]);
+
   // Set the initial position.
-  root_windows[0]->MoveCursorTo(gfx::Point(350, 150));
+  generator.MoveMouseToInHost(350, 150);
   EXPECT_EQ("350,150", env->last_mouse_location().ToString());
 
   // A mouse pointer will be inside 2nd display.
@@ -581,7 +584,7 @@ TEST_F(DisplayManagerTest, EnsurePointerInDisplays) {
   EXPECT_EQ("150,150", env->last_mouse_location().ToString());
 
   // Move the mouse pointer to the bottom of 1st display.
-  root_windows[0]->MoveCursorTo(gfx::Point(150, 290));
+  generator.MoveMouseToInHost(150, 290);
   EXPECT_EQ("150,290", env->last_mouse_location().ToString());
 
   // The mouse pointer is outside and closest display is 1st one.
@@ -796,14 +799,17 @@ TEST_F(DisplayManagerTest, MAYBE_UpdateMouseCursorAfterRotateZoom) {
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   aura::Env* env = aura::Env::GetInstance();
 
+  aura::test::EventGenerator generator1(root_windows[0]);
+  aura::test::EventGenerator generator2(root_windows[1]);
+
   // Test on 1st display.
-  root_windows[0]->MoveCursorTo(gfx::Point(150, 50));
+  generator1.MoveMouseToInHost(150, 50);
   EXPECT_EQ("150,50", env->last_mouse_location().ToString());
   UpdateDisplay("300x200/r,200x150");
   EXPECT_EQ("50,149", env->last_mouse_location().ToString());
 
   // Test on 2nd display.
-  root_windows[1]->MoveCursorTo(gfx::Point(50, 100));
+  generator2.MoveMouseToInHost(50, 100);
   EXPECT_EQ("250,100", env->last_mouse_location().ToString());
   UpdateDisplay("300x200/r,200x150/l");
   EXPECT_EQ("249,50", env->last_mouse_location().ToString());
@@ -812,14 +818,14 @@ TEST_F(DisplayManagerTest, MAYBE_UpdateMouseCursorAfterRotateZoom) {
   UpdateDisplay("600x400*2,400x300");
 
   // Test on 1st display.
-  root_windows[0]->MoveCursorTo(gfx::Point(100, 150));
+  generator1.MoveMouseToInHost(200, 300);
   EXPECT_EQ("100,150", env->last_mouse_location().ToString());
   UpdateDisplay("600x400*2@1.5,400x300");
   EXPECT_EQ("150,225", env->last_mouse_location().ToString());
 
   // Test on 2nd display.
   UpdateDisplay("600x400,400x300*2");
-  root_windows[1]->MoveCursorTo(gfx::Point(100, 50));
+  generator2.MoveMouseToInHost(200, 100);
   EXPECT_EQ("700,50", env->last_mouse_location().ToString());
   UpdateDisplay("600x400,400x300*2@1.5");
   EXPECT_EQ("750,75", env->last_mouse_location().ToString());

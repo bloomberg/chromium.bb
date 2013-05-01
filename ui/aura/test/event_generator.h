@@ -111,10 +111,18 @@ class EventGenerator {
   // Generates a right button release event.
   void ReleaseRightButton();
 
-  // Generates events to move mouse to be the given |point|.
-  void MoveMouseTo(const gfx::Point& point, int count);
-  void MoveMouseTo(const gfx::Point& point) {
-    MoveMouseTo(point, 1);
+  // Generates events to move mouse to be the given |point| in the
+  // |current_root_window_|'s host window coordinates.
+  void MoveMouseToInHost(const gfx::Point& point_in_host);
+  void MoveMouseToInHost(int x, int y) {
+    MoveMouseToInHost(gfx::Point(x, y));
+  }
+
+  // Generates events to move mouse to be the given |point| in screen
+  // coordinates.
+  void MoveMouseTo(const gfx::Point& point_in_screen, int count);
+  void MoveMouseTo(const gfx::Point& point_in_screen) {
+    MoveMouseTo(point_in_screen, 1);
   }
   void MoveMouseTo(int x, int y) {
     MoveMouseTo(gfx::Point(x, y));
