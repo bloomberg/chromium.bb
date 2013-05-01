@@ -3391,17 +3391,11 @@ nacl_env.AddMethod(RawSyscallObjects)
 nacl_irt_env.ClearBits('nacl_glibc')
 nacl_irt_env.ClearBits('nacl_pic')
 nacl_irt_env.ClearBits('pnacl_shared_newlib')
-# For x86 systems we build the IRT using the nnacl TC even when
-# the pnacl TC is used otherwise
-if nacl_irt_env.Bit('target_x86_64') or nacl_irt_env.Bit('target_x86_32'):
-  nacl_irt_env.ClearBits('bitcode')
-  nacl_irt_env.SetBits('native_code')
-# The irt is not subject to the pexe constraint!
-if nacl_irt_env.Bit('pnacl_generate_pexe'):
-  # do not build the irt using the the pexe step
-  nacl_irt_env.ClearBits('pnacl_generate_pexe')
-# do not build the irt using the sandboxed translator
+# We build the IRT using the nnacl TC even when the pnacl TC is used otherwise.
+nacl_irt_env.ClearBits('bitcode')
+nacl_irt_env.ClearBits('pnacl_generate_pexe')
 nacl_irt_env.ClearBits('use_sandboxed_translator')
+nacl_irt_env.SetBits('native_code')
 nacl_irt_env.Tool('naclsdk')
 # These are unfortunately clobbered by running Tool, which
 # we needed to do to get the destination directory reset.
@@ -3415,32 +3409,11 @@ FixWindowsAssembler(nacl_irt_env)
 # Make it find the libraries it builds, rather than the SDK ones.
 nacl_irt_env.Replace(LIBPATH='${LIB_DIR}')
 
-if nacl_irt_env.Bit('bitcode'):
-  nacl_irt_env.AddBiasForPNaCl()
-  nacl_irt_env.Append(LINKFLAGS=['-static'])
-
-  # Use biased bitcode to ensure proper native calling conventions
-  # We do not actually build the IRT with pnacl on x86 currently but this is
-  # here just for testing
-  if nacl_irt_env.Bit('target_arm'):
-    nacl_irt_env.Append(
-        CCFLAGS=['--pnacl-frontend-triple=armv7-unknown-nacl-gnueabi',
-                 '-mfloat-abi=hard'])
-  elif nacl_irt_env.Bit('target_x86_32'):
-    nacl_irt_env.Append(CCFLAGS=['--pnacl-frontend-triple=i686-unknown-nacl'])
-  elif nacl_irt_env.Bit('target_x86_64'):
-    nacl_irt_env.Append(CCFLAGS=['--pnacl-frontend-triple=x86_64-unknown-nacl'])
-
-
 # All IRT code must avoid direct use of the TLS ABI register, which
 # is reserved for user TLS.  Instead, ensure all TLS accesses use a
 # call to __nacl_read_tp, which the IRT code overrides to segregate
 # IRT-private TLS from user TLS.
-if nacl_irt_env.Bit('bitcode'):
-  nacl_irt_env.Append(LINKFLAGS=['--pnacl-allow-native', '-Wt,-mtls-use-call'])
-  if nacl_irt_env.Bit('target_arm'):
-    nacl_irt_env.Append(LINKFLAGS=['-Wl,--pnacl-irt-link'])
-elif nacl_irt_env.Bit('target_arm'):
+if nacl_irt_env.Bit('target_arm'):
   nacl_irt_env.Append(CCFLAGS=['-mtp=soft'])
 else:
   nacl_irt_env.Append(CCFLAGS=['-mtls-use-call'])
@@ -3449,9 +3422,7 @@ else:
 # to generate unwind tables explicitly. This is the default behavior on x86-64
 # and when compiling C++ with exceptions enabled, the change is for the benefit
 # of x86-32 C.
-# TODO(eaeltsin): enable unwind tables for ARM
-if not nacl_irt_env.Bit('target_arm'):
-  nacl_irt_env.Append(CCFLAGS=['-fasynchronous-unwind-tables'])
+nacl_irt_env.Append(CCFLAGS=['-fasynchronous-unwind-tables'])
 
 # TODO(mcgrathr): Clean up uses of these methods.
 def AddLibraryDummy(env, nodes):

@@ -798,6 +798,8 @@ def generate(env):
         temp_root = _GetNaClSdkRoot(temp_env, sdk_mode, psdk_mode)
         _SetEnvForNativeSdk(temp_env, temp_root)
         env.Replace(GDB=temp_env['GDB'])
+    elif env.Bit('built_elsewhere'):
+      _StubOutEnvToolsForBuiltElsewhere(env)
     else:
       _SetEnvForNativeSdk(env, root)
 
