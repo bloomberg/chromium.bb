@@ -58,7 +58,18 @@ cr.define('options', function() {
       $('bluetooth-unpaired-devices-list').addEventListener('change',
                                                             function() {
         var item = $('bluetooth-unpaired-devices-list').selectedItem;
-        var disabled = !item || item.paired || item.connected;
+        // The "bluetooth-add-device-apply-button" should be enabled for devices
+        // that can be paired or remembered. Devices not supporting pairing will
+        // be just remembered and later reported as "item.paired" = true. The
+        // button should be disabled in any other case:
+        // * No item is selected (item is undefined).
+        // * Paired devices (item.paired is true) are already paired and a new
+        //   pairing attempt will fail. Paired devices could appear in this list
+        //   shortly after the pairing initiated in another window finishes.
+        // * "Connecting" devices (item.connecting is true) are in the process
+        //   of a pairing or connection. Another attempt to pair before the
+        //   ongoing pair finishes will fail, so the button should be disabled.
+        var disabled = !item || item.paired || item.connecting;
         $('bluetooth-add-device-apply-button').disabled = disabled;
       });
     },
