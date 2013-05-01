@@ -34,9 +34,6 @@ class OperationRunner;
 class DriveAPIService : public DriveServiceInterface,
                         public AuthServiceObserver {
  public:
-  // Instance is usually created by DriveSystemServiceFactory and owned by
-  // DriveFileSystem.
-  //
   // |url_request_context_getter| is used to initialize URLFetcher.
   // |base_url| is used to generate URLs for communication with the drive API.
   // |wapi_base_url| is used to generate URLs for communication with

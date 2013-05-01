@@ -19,8 +19,8 @@
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/drive/drive_file_system.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/file_system.h"
 #include "chrome/browser/chromeos/drive/file_system_observer.h"
 #include "chrome/browser/chromeos/extensions/file_manager/drive_test_util.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -509,7 +509,7 @@ class DriveTestVolume : public TestVolume,
       MessageLoop::current()->Quit();
   }
 
-  // Notifies DriveFileSystem that the contents in FakeDriveService are
+  // Notifies FileSystem that the contents in FakeDriveService are
   // changed, hence the new contents should be fetched.
   void CheckForUpdates() {
     if (system_service_ && system_service_->file_system()) {

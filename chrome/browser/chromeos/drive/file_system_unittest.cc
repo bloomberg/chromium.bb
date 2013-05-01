@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/drive_file_system.h"
+#include "chrome/browser/chromeos/drive/file_system.h"
 
 #include <string>
 #include <vector>
@@ -50,7 +50,7 @@ struct SearchResultPair {
   const bool is_directory;
 };
 
-// Callback to DriveFileSystem::Search used in ContentSearch tests.
+// Callback to FileSystem::Search used in ContentSearch tests.
 // Verifies returned vector of results and next feed url.
 void DriveSearchCallback(
     MessageLoop* message_loop,
@@ -144,8 +144,8 @@ class DriveFileSystemTest : public testing::Test {
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
     cache_.reset(new FileCache(FileCache::GetCacheRootPath(profile_.get()),
-                                blocking_task_runner_,
-                                fake_free_disk_space_getter_.get()));
+                               blocking_task_runner_,
+                               fake_free_disk_space_getter_.get()));
 
     drive_webapps_registry_.reset(new DriveWebAppsRegistry);
 
@@ -165,13 +165,13 @@ class DriveFileSystemTest : public testing::Test {
         cache_->GetCacheDirectoryPath(FileCache::CACHE_TYPE_META),
         blocking_task_runner_));
 
-    file_system_.reset(new DriveFileSystem(profile_.get(),
-                                           cache_.get(),
-                                           fake_drive_service_.get(),
-                                           scheduler_.get(),
-                                           drive_webapps_registry_.get(),
-                                           resource_metadata_.get(),
-                                           blocking_task_runner_));
+    file_system_.reset(new FileSystem(profile_.get(),
+                                      cache_.get(),
+                                      fake_drive_service_.get(),
+                                      scheduler_.get(),
+                                      drive_webapps_registry_.get(),
+                                      resource_metadata_.get(),
+                                      blocking_task_runner_));
     file_system_->AddObserver(mock_directory_observer_.get());
     file_system_->Initialize();
 
@@ -447,7 +447,7 @@ class DriveFileSystemTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
 
   scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
-  scoped_ptr<DriveFileSystem> file_system_;
+  scoped_ptr<FileSystem> file_system_;
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<DriveWebAppsRegistry> drive_webapps_registry_;
@@ -1808,11 +1808,11 @@ TEST_F(DriveFileSystemTest, GetFileContentByPath) {
     FileError completion_error = FILE_ERROR_FAILED;
 
     file_system_->GetFileContentByPath(
-      file_in_root,
-      google_apis::test_util::CreateCopyResultCallback(
-          &initialized_error, &entry_proto, &local_path, &cancel_download),
-      base::Bind(&AppendContent, &content_buffer),
-      google_apis::test_util::CreateCopyResultCallback(&completion_error));
+        file_in_root,
+        google_apis::test_util::CreateCopyResultCallback(
+            &initialized_error, &entry_proto, &local_path, &cancel_download),
+        base::Bind(&AppendContent, &content_buffer),
+        google_apis::test_util::CreateCopyResultCallback(&completion_error));
     google_apis::test_util::RunBlockingPoolTask();
 
     // Try second download. In this case, the file should be cached, so
@@ -1969,7 +1969,8 @@ TEST_F(DriveFileSystemTest, ContentSearch) {
     { "drive/root/Directory 2 excludeDir-test", true },
   };
 
-  SearchCallback callback = base::Bind(&DriveSearchCallback,
+  SearchCallback callback = base::Bind(
+      &DriveSearchCallback,
       &message_loop_,
       kExpectedResults, ARRAYSIZE_UNSAFE(kExpectedResults),
       GURL());
@@ -2005,7 +2006,8 @@ TEST_F(DriveFileSystemTest, ContentSearchWithNewEntry) {
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(_))
       .Times(AtLeast(1));
 
-  SearchCallback callback = base::Bind(&DriveSearchCallback,
+  SearchCallback callback = base::Bind(
+      &DriveSearchCallback,
       &message_loop_,
       kExpectedResults, ARRAYSIZE_UNSAFE(kExpectedResults),
       GURL());
@@ -2021,8 +2023,12 @@ TEST_F(DriveFileSystemTest, ContentSearchEmptyResult) {
 
   const SearchResultPair* expected_results = NULL;
 
-  SearchCallback callback = base::Bind(&DriveSearchCallback,
-      &message_loop_, expected_results, 0u, GURL());
+  SearchCallback callback = base::Bind(
+      &DriveSearchCallback,
+      &message_loop_,
+      expected_results,
+      0u,
+      GURL());
 
   file_system_->Search("\"no-match query\"", GURL(), callback);
   message_loop_.Run();  // Wait to get our result.
@@ -2045,7 +2051,7 @@ TEST_F(DriveFileSystemTest, RefreshDirectory) {
 
   // We'll notify the directory change to the observer.
   EXPECT_CALL(*mock_directory_observer_,
-      OnDirectoryChanged(Eq(util::GetDriveMyDriveRootPath()))).Times(1);
+              OnDirectoryChanged(Eq(util::GetDriveMyDriveRootPath()))).Times(1);
 
   FileError error = FILE_ERROR_FAILED;
   file_system_->RefreshDirectory(
@@ -2251,31 +2257,40 @@ TEST_F(DriveFileSystemTest, CreateFile) {
 
   // Create fails if is_exclusive = true and a file exists.
   FileError error = FILE_ERROR_FAILED;
-  file_system_->CreateFile(kExistingFile, true /* is_exclusive */,
+  file_system_->CreateFile(
+      kExistingFile,
+      true /* is_exclusive */,
       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_EXISTS, error);
 
   // Create succeeds if is_exclusive = false and a file exists.
-  file_system_->CreateFile(kExistingFile, false /* is_exclusive */,
+  file_system_->CreateFile(
+      kExistingFile,
+      false /* is_exclusive */,
       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Create fails if a directory existed even when is_exclusive = false.
-  file_system_->CreateFile(kExistingDirectory, false /* is_exclusive */,
+  file_system_->CreateFile(
+      kExistingDirectory,
+      false /* is_exclusive */,
       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_EXISTS, error);
 
   // Create succeeds if no entry exists.
-  file_system_->CreateFile(kNonExistingFile, true /* is_exclusive */,
+  file_system_->CreateFile(
+      kNonExistingFile,
+      true /* is_exclusive */,
       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Create fails if the parent directory does not exist.
-  file_system_->CreateFile(kFileInNonExistingDirectory, false,
+  file_system_->CreateFile(
+      kFileInNonExistingDirectory, false,
       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_A_DIRECTORY, error);

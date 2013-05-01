@@ -9,9 +9,9 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/download_handler.h"
-#include "chrome/browser/chromeos/drive/drive_file_system.h"
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
+#include "chrome/browser/chromeos/drive/file_system.h"
 #include "chrome/browser/chromeos/drive/file_system_proxy.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/file_write_helper.h"
@@ -137,13 +137,13 @@ DriveSystemService::DriveSystemService(
       blocking_task_runner_));
 
   file_system_.reset(test_file_system ? test_file_system :
-                     new DriveFileSystem(profile_,
-                                         cache(),
-                                         drive_service_.get(),
-                                         scheduler_.get(),
-                                         webapps_registry(),
-                                         resource_metadata_.get(),
-                                         blocking_task_runner_));
+                     new FileSystem(profile_,
+                                    cache(),
+                                    drive_service_.get(),
+                                    scheduler_.get(),
+                                    webapps_registry(),
+                                    resource_metadata_.get(),
+                                    blocking_task_runner_));
   file_write_helper_.reset(new FileWriteHelper(file_system()));
   download_handler_.reset(new DownloadHandler(file_write_helper(),
                                               file_system()));

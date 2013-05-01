@@ -24,7 +24,7 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
  public:
   using fileapi::RemoteFileSystemProxyInterface::OpenFileCallback;
 
-  // |file_system| is the DriveFileSystem instance owned by DriveSystemService.
+  // |file_system| is the FileSystem instance owned by DriveSystemService.
   explicit FileSystemProxy(DriveFileSystemInterface* file_system);
 
   // Detaches this instance from |file_system_|.

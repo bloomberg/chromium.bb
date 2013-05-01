@@ -62,7 +62,7 @@ DictionaryValue* DiskToDictionaryValue(
   return result;
 }
 
-// Used as a callback for DriveFileSystem::MarkCacheFileAsUnmounted().
+// Used as a callback for FileSystem::MarkCacheFileAsUnmounted().
 void OnMarkAsUnmounted(drive::FileError error) {
   // Do nothing.
 }

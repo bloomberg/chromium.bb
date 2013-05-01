@@ -11,7 +11,7 @@
 
 namespace drive {
 
-// Metadata of DriveFileSystem. Used by DriveFileSystem::GetMetadata().
+// Metadata of FileSystem. Used by FileSystem::GetMetadata().
 struct FileSystemMetadata {
   FileSystemMetadata();
   ~FileSystemMetadata();

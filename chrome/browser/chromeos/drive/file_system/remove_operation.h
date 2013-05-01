@@ -23,7 +23,7 @@ namespace google_apis {
 namespace drive {
 
 class DriveEntryProto;
-class DriveFileSystem;
+class FileSystem;
 class FileCache;
 class JobScheduler;
 

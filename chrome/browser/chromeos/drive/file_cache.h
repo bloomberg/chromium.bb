@@ -56,7 +56,7 @@ class FreeDiskSpaceGetterInterface {
   virtual int64 AmountOfFreeDiskSpace() = 0;
 };
 
-// FileCache is used to maintain cache states of DriveFileSystem.
+// FileCache is used to maintain cache states of FileSystem.
 //
 // All non-static public member functions, unless mentioned otherwise (see
 // GetCacheFilePath() for example), should be called from the UI thread.
@@ -396,7 +396,7 @@ class FileCache {
   DISALLOW_COPY_AND_ASSIGN(FileCache);
 };
 
-// The minimum free space to keep. DriveFileSystem::GetFileByPath() returns
+// The minimum free space to keep. FileSystem::GetFileByPath() returns
 // GDATA_FILE_ERROR_NO_SPACE if the available space is smaller than
 // this value.
 //

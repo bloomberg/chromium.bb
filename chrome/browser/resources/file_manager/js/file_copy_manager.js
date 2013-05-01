@@ -879,9 +879,9 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
       return;
     }
 
-    // TODO(benchan): DriveFileSystem has not implemented directory copy,
+    // TODO(benchan): drive::FileSystem has not implemented directory copy,
     // and thus we only call FileEntry.copyTo() for files. Revisit this
-    // code when DriveFileSystem supports directory copy.
+    // code when drive::FileSystem supports directory copy.
     if (sourceEntry.isFile && (task.sourceOnDrive || task.targetOnDrive)) {
       var sourceFileUrl = sourceEntry.toURL();
       var targetFileUrl = targetDirEntry.toURL() + '/' +
@@ -987,7 +987,7 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
         }
       };
 
-      // TODO(benchan): Until DriveFileSystem supports FileWriter, we use the
+      // TODO(benchan): Until drive::FileSystem supports FileWriter, we use the
       // transferFile API to copy files into or out from a drive file system.
       onStartTransfer();
       chrome.fileBrowserPrivate.transferFile(

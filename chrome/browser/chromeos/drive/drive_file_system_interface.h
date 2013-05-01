@@ -155,7 +155,7 @@ enum SearchMetadataOptions {
 };
 
 // Drive file system abstraction layer.
-// The interface is defined to make DriveFileSystem mockable.
+// The interface is defined to make FileSystem mockable.
 class DriveFileSystemInterface {
  public:
   virtual ~DriveFileSystemInterface() {}

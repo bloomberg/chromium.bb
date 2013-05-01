@@ -9,9 +9,9 @@
 #include "base/message_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_file_system.h"
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
+#include "chrome/browser/chromeos/drive/file_system.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/stale_cache_files_remover.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
@@ -64,13 +64,13 @@ class StaleCacheFilesRemoverTest : public testing::Test {
         cache_->GetCacheDirectoryPath(FileCache::CACHE_TYPE_META),
         blocking_task_runner_));
 
-    file_system_.reset(new DriveFileSystem(profile_.get(),
-                                           cache_.get(),
-                                           fake_drive_service_.get(),
-                                           scheduler_.get(),
-                                           drive_webapps_registry_.get(),
-                                           resource_metadata_.get(),
-                                           blocking_task_runner_));
+    file_system_.reset(new FileSystem(profile_.get(),
+                                      cache_.get(),
+                                      fake_drive_service_.get(),
+                                      scheduler_.get(),
+                                      drive_webapps_registry_.get(),
+                                      resource_metadata_.get(),
+                                      blocking_task_runner_));
 
     file_system_->Initialize();
     cache_->RequestInitializeForTesting();
@@ -101,7 +101,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
-  scoped_ptr<DriveFileSystem> file_system_;
+  scoped_ptr<FileSystem> file_system_;
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<DriveWebAppsRegistry> drive_webapps_registry_;

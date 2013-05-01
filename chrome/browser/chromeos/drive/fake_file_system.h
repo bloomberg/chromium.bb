@@ -30,7 +30,7 @@ class FileSystemObserver;
 
 namespace test_util {
 
-// This class implements a fake DriveFileSystem which acts like a real Drive
+// This class implements a fake FileSystem which acts like a real Drive
 // file system with FakeDriveService, for testing purpose.
 // Note that this class doesn't support "caching" at the moment, so the number
 // of interactions to the FakeDriveService may be bigger than the real

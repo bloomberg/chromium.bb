@@ -588,7 +588,7 @@ class GetDriveFilesFunction : public FileBrowserFunction {
   // response if the queue is empty.
   void GetFileOrSendResponse();
 
-  // Called by DriveFileSystem::GetFile(). Pops the file from
+  // Called by FileSystem::GetFile(). Pops the file from
   // |remaining_drive_paths_|, and calls GetFileOrSendResponse().
   void OnFileReady(drive::FileError error,
                    const base::FilePath& local_path,
@@ -629,7 +629,7 @@ class TransferFileFunction : public FileBrowserFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  // Helper callback for handling response from DriveFileSystem::TransferFile().
+  // Helper callback for handling response from FileSystem::TransferFile().
   void OnTransferCompleted(drive::FileError error);
 };
 

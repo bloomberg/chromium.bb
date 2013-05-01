@@ -105,7 +105,7 @@ const base::FilePath& GetSpecialRemoteRootPath();
 // Returns the gdata file resource url formatted as "drive:<path>"
 GURL FilePathToDriveURL(const base::FilePath& path);
 
-// Converts a drive: URL back to a path that can be passed to DriveFileSystem.
+// Converts a drive: URL back to a path that can be passed to FileSystem.
 base::FilePath DriveURLToFilePath(const GURL& url);
 
 // Overwrites |url| with a Drive URL when appropriate.

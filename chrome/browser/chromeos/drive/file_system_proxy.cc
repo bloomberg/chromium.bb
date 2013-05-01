@@ -115,7 +115,7 @@ void CallSnapshotFileCallback(
   callback.Run(error, final_file_info, local_path, file_ref);
 }
 
-// Emits debug log when DriveFileSystem::CloseFile() is complete.
+// Emits debug log when FileSystem::CloseFile() is complete.
 void EmitDebugLogForCloseFile(const base::FilePath& local_path,
                               FileError file_error) {
   DVLOG(1) << "Closed: " << local_path.AsUTF8Unsafe() << ": " << file_error;

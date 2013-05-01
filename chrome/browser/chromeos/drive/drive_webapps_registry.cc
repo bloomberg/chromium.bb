@@ -70,7 +70,7 @@ DriveWebAppInfo::DriveWebAppInfo(
 DriveWebAppInfo::~DriveWebAppInfo() {
 }
 
-// DriveFileSystem::WebAppFileSelector struct implementation.
+// FileSystem::WebAppFileSelector struct implementation.
 
 DriveWebAppsRegistry::WebAppFileSelector::WebAppFileSelector(
     const GURL& product_link,

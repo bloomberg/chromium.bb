@@ -13,7 +13,7 @@ namespace drive {
 
 namespace {
 
-// Emits debug log when DriveFileSystem::CloseFile() is complete.
+// Emits debug log when FileSystem::CloseFile() is complete.
 void EmitDebugLogForCloseFile(const base::FilePath& file_path,
                               FileError file_error) {
   if (file_error != FILE_ERROR_OK) {

@@ -37,9 +37,6 @@ class OperationRunner;
 class GDataWapiService : public DriveServiceInterface,
                          public AuthServiceObserver {
  public:
-  // Instance is usually created by DriveSystemServiceFactory and owned by
-  // DriveFileSystem.
-  //
   // |url_request_context_getter| is used to initialize URLFetcher.
   // |base_url| is used to generate URLs for communicating with the WAPI
   // |custom_user_agent| is used for the User-Agent header in HTTP

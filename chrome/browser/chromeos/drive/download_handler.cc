@@ -142,12 +142,12 @@ void DownloadHandler::SubstituteDriveDownloadPath(
   if (util::IsUnderDriveMountPoint(drive_path)) {
     // Can't access drive if the directory does not exist on Drive.
     // We set off a chain of callbacks as follows:
-    // DriveFileSystem::GetEntryInfoByPath
-    //   OnEntryFound calls DriveFileSystem::CreateDirectory (if necessary)
+    // FileSystem::GetEntryInfoByPath
+    //   OnEntryFound calls FileSystem::CreateDirectory (if necessary)
     //     OnCreateDirectory calls SubstituteDriveDownloadPathInternal
     const base::FilePath drive_dir_path =
         util::ExtractDrivePath(drive_path.DirName());
-    // Ensure the directory exists. This also forces DriveFileSystem to
+    // Ensure the directory exists. This also forces FileSystem to
     // initialize DriveRootDirectory.
     file_system_->GetEntryInfoByPath(
         drive_dir_path,

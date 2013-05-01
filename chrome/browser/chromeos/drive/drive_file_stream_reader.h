@@ -108,7 +108,7 @@ class NetworkReaderProxy : public ReaderProxy {
 class DriveFileSystemInterface;
 class DriveEntryProto;
 
-// The stream reader for a file in DriveFileSystem. Instances of this class
+// The stream reader for a file in FileSystem. Instances of this class
 // should live on IO thread.
 class DriveFileStreamReader {
  public:

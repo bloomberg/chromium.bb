@@ -1223,9 +1223,9 @@ DialogType.isModal = function(type) {
     }
 
     // TODO(benchan): Currently, there is no FileWatcher emulation for
-    // DriveFileSystem, so we need to manually trigger the directory rescan
+    // drive::FileSystem, so we need to manually trigger the directory rescan
     // after paste operations complete. Remove this once we emulate file
-    // watching functionalities in DriveFileSystem.
+    // watching functionalities in drive::FileSystem.
     if (this.isOnDrive()) {
       if (event.reason == 'SUCCESS' || event.reason == 'ERROR' ||
           event.reason == 'CANCELLED') {

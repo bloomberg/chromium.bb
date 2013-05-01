@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_SYSTEM_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_SYSTEM_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_H_
 
 #include <string>
 #include <vector>
@@ -47,20 +47,20 @@ class ResourceMetadata;
 }  // namespace internal
 
 // The production implementation of DriveFileSystemInterface.
-class DriveFileSystem : public DriveFileSystemInterface,
-                        public ChangeListLoaderObserver,
-                        public file_system::OperationObserver {
+class FileSystem : public DriveFileSystemInterface,
+                   public ChangeListLoaderObserver,
+                   public file_system::OperationObserver {
  public:
-  DriveFileSystem(Profile* profile,
-                  FileCache* cache,
-                  google_apis::DriveServiceInterface* drive_service,
-                  JobScheduler* scheduler,
-                  DriveWebAppsRegistry* webapps_registry,
-                  internal::ResourceMetadata* resource_metadata,
-                  base::SequencedTaskRunner* blocking_task_runner);
-  virtual ~DriveFileSystem();
+  FileSystem(Profile* profile,
+             FileCache* cache,
+             google_apis::DriveServiceInterface* drive_service,
+             JobScheduler* scheduler,
+             DriveWebAppsRegistry* webapps_registry,
+             internal::ResourceMetadata* resource_metadata,
+             base::SequencedTaskRunner* blocking_task_runner);
+  virtual ~FileSystem();
 
-  // DriveFileSystem overrides.
+  // FileSystemInterface overrides.
   virtual void Initialize() OVERRIDE;
   virtual void AddObserver(FileSystemObserver* observer) OVERRIDE;
   virtual void RemoveObserver(FileSystemObserver* observer) OVERRIDE;
@@ -139,8 +139,9 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                const FileOperationCallback& callback) OVERRIDE;
   virtual void GetMetadata(
       const GetFilesystemMetadataCallback& callback) OVERRIDE;
-  virtual void MarkCacheFileAsMounted(const base::FilePath& drive_file_path,
-                                    const OpenFileCallback& callback) OVERRIDE;
+  virtual void MarkCacheFileAsMounted(
+      const base::FilePath& drive_file_path,
+      const OpenFileCallback& callback) OVERRIDE;
   virtual void MarkCacheFileAsUnmounted(
       const base::FilePath& cache_file_path,
       const FileOperationCallback& callback) OVERRIDE;
@@ -463,7 +464,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Cancels the job with |id| in the scheduler.
   void CancelJobInScheduler(JobID id);
 
-  // The profile hosts the DriveFileSystem via DriveSystemService.
+  // The profile hosts the FileSystem via DriveSystemService.
   Profile* profile_;
 
   // Sub components owned by DriveSystemService.
@@ -501,11 +502,11 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<DriveFileSystem> weak_ptr_factory_;
+  base::WeakPtrFactory<FileSystem> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(DriveFileSystem);
+  DISALLOW_COPY_AND_ASSIGN(FileSystem);
 };
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_SYSTEM_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_H_
