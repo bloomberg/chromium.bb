@@ -211,7 +211,7 @@ class CONTENT_EXPORT RenderViewImpl
   static RenderViewImpl* Create(
       int32 opener_id,
       const RendererPreferences& renderer_prefs,
-      const webkit_glue::WebPreferences& webkit_prefs,
+      const WebPreferences& webkit_prefs,
       SharedRenderViewCounter* counter,
       int32 routing_id,
       int32 surface_id,
@@ -240,7 +240,7 @@ class CONTENT_EXPORT RenderViewImpl
 
   int history_list_offset() const { return history_list_offset_; }
 
-  const webkit_glue::WebPreferences& webkit_preferences() const {
+  const WebPreferences& webkit_preferences() const {
     return webkit_preferences_;
   }
 
@@ -690,9 +690,8 @@ class CONTENT_EXPORT RenderViewImpl
   virtual int GetRoutingID() const OVERRIDE;
   virtual int GetPageId() const OVERRIDE;
   virtual gfx::Size GetSize() const OVERRIDE;
-  virtual webkit_glue::WebPreferences& GetWebkitPreferences() OVERRIDE;
-  virtual void SetWebkitPreferences(
-      const webkit_glue::WebPreferences& preferences) OVERRIDE;
+  virtual WebPreferences& GetWebkitPreferences() OVERRIDE;
+  virtual void SetWebkitPreferences(const WebPreferences& preferences) OVERRIDE;
   virtual WebKit::WebView* GetWebView() OVERRIDE;
   virtual WebKit::WebNode GetFocusedNode() const OVERRIDE;
   virtual WebKit::WebNode GetContextMenuNode() const OVERRIDE;
@@ -1028,7 +1027,7 @@ class CONTENT_EXPORT RenderViewImpl
   void OnThemeChanged();
   void OnUpdateTargetURLAck();
   void OnUpdateTimezone();
-  void OnUpdateWebPreferences(const webkit_glue::WebPreferences& prefs);
+  void OnUpdateWebPreferences(const WebPreferences& prefs);
 
   void OnZoom(PageZoom zoom);
   void OnZoomFactor(PageZoom zoom, int zoom_center_x, int zoom_center_y);
@@ -1187,7 +1186,7 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Settings ------------------------------------------------------------------
 
-  webkit_glue::WebPreferences webkit_preferences_;
+  WebPreferences webkit_preferences_;
   RendererPreferences renderer_preferences_;
 
   HostZoomLevels host_zoom_levels_;

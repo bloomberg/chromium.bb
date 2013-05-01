@@ -17,12 +17,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
+struct WebPreferences;
+
 namespace WebKit {
 class WebMouseEvent;
-}
-
-namespace webkit_glue {
-struct WebPreferences;
 }
 
 namespace webkit {
@@ -59,7 +57,7 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
   // only used for navigation and never actually resolved.
   WEBKIT_PLUGINS_EXPORT static WebViewPlugin* Create(
       Delegate* delegate,
-      const webkit_glue::WebPreferences& preferences,
+      const WebPreferences& preferences,
       const std::string& html_data,
       const GURL& url);
 

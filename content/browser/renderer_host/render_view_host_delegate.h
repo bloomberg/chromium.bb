@@ -27,10 +27,7 @@ struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
 struct ViewHostMsg_FrameNavigate_Params;
 struct ViewMsg_PostMessage_Params;
-
-namespace webkit_glue {
 struct WebPreferences;
-}
 
 namespace base {
 class ListValue;
@@ -278,7 +275,7 @@ class CONTENT_EXPORT RenderViewHostDelegate {
 
   // Returns a WebPreferences object that will be used by the renderer
   // associated with the owning render view host.
-  virtual webkit_glue::WebPreferences GetWebkitPrefs();
+  virtual WebPreferences GetWebkitPrefs();
 
   // Notification the user has made a gesture while focus was on the
   // page. This is used to avoid uninitiated user downloads (aka carpet

@@ -35,7 +35,6 @@
 #endif
 
 using content::WebContents;
-using webkit_glue::WebPreferences;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PrefsTabHelper);
 
@@ -376,7 +375,7 @@ void OverrideFontFamily(WebPreferences* prefs,
                         const std::string& generic_family,
                         const std::string& script,
                         const std::string& pref_value) {
-  WebPreferences::ScriptFontFamilyMap* map = NULL;
+  webkit_glue::ScriptFontFamilyMap* map = NULL;
   if (generic_family == "standard")
     map = &prefs->standard_font_family_map;
   else if (generic_family == "fixed")

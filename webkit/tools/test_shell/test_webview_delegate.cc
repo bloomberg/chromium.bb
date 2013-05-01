@@ -131,7 +131,6 @@ using WebKit::WebWindowFeatures;
 using WebKit::WebWorker;
 using WebKit::WebVector;
 using WebKit::WebView;
-using webkit_glue::WebPreferences;
 
 namespace {
 
@@ -201,20 +200,20 @@ std::string TestWebViewDelegate::GetResourceDescription(uint32 identifier) {
 void TestWebViewDelegate::SetUserStyleSheetEnabled(bool is_enabled) {
   WebPreferences* prefs = shell_->GetWebPreferences();
   prefs->user_style_sheet_enabled = is_enabled;
-  prefs->Apply(shell_->webView());
+  webkit_glue::ApplyWebPreferences(*prefs, shell_->webView());
 }
 
 void TestWebViewDelegate::SetUserStyleSheetLocation(const GURL& location) {
   WebPreferences* prefs = shell_->GetWebPreferences();
   prefs->user_style_sheet_enabled = true;
   prefs->user_style_sheet_location = location;
-  prefs->Apply(shell_->webView());
+  webkit_glue::ApplyWebPreferences(*prefs, shell_->webView());
 }
 
 void TestWebViewDelegate::SetAuthorAndUserStylesEnabled(bool is_enabled) {
   WebPreferences* prefs = shell_->GetWebPreferences();
   prefs->author_and_user_styles_enabled = is_enabled;
-  prefs->Apply(shell_->webView());
+  webkit_glue::ApplyWebPreferences(*prefs, shell_->webView());
 }
 
 // WebViewClient -------------------------------------------------------------

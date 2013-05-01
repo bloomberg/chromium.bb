@@ -83,7 +83,6 @@ using WebKit::WebURLRequest;
 using WebKit::WebTestingSupport;
 using WebKit::WebVector;
 using WebKit::WebView;
-using WebTestRunner::WebPreferences;
 using WebTestRunner::WebTask;
 using WebTestRunner::WebTestInterfaces;
 using WebTestRunner::WebTestProxyBase;
@@ -299,12 +298,12 @@ WebURL WebKitTestRunner::rewriteLayoutTestsURL(const std::string& utf8_url) {
   return WebURL(GURL(new_url));
 }
 
-WebPreferences* WebKitTestRunner::preferences() {
+WebTestRunner::WebPreferences* WebKitTestRunner::preferences() {
   return &prefs_;
 }
 
 void WebKitTestRunner::applyPreferences() {
-  webkit_glue::WebPreferences prefs = render_view()->GetWebkitPreferences();
+  WebPreferences prefs = render_view()->GetWebkitPreferences();
   ExportLayoutTestSpecificPreferences(prefs_, &prefs);
   render_view()->SetWebkitPreferences(prefs);
   Send(new ShellViewHostMsg_OverridePreferences(routing_id(), prefs));

@@ -33,10 +33,7 @@
 
 class CommandLine;
 class GURL;
-
-namespace webkit_glue {
 struct WebPreferences;
-};
 
 namespace content {
 
@@ -115,7 +112,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
   void AppendPluginCommandLine(CommandLine* command_line) const;
 
   // Update WebPreferences for renderer based on blacklisting decisions.
-  void UpdateRendererWebPrefs(webkit_glue::WebPreferences* prefs) const;
+  void UpdateRendererWebPrefs(WebPreferences* prefs) const;
 
   GpuSwitchingOption GetGpuSwitchingOption() const;
 

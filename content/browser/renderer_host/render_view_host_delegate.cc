@@ -37,8 +37,8 @@ WebContents* RenderViewHostDelegate::GetAsWebContents() {
   return NULL;
 }
 
-webkit_glue::WebPreferences RenderViewHostDelegate::GetWebkitPrefs() {
-  return webkit_glue::WebPreferences();
+WebPreferences RenderViewHostDelegate::GetWebkitPrefs() {
+  return WebPreferences();
 }
 
 bool RenderViewHostDelegate::IsFullscreenForCurrentTab() const {

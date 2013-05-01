@@ -26,7 +26,6 @@ using base::android::GetClass;
 using base::android::GetFieldID;
 using base::android::GetMethodIDFromClassName;
 using base::android::ScopedJavaLocalRef;
-using webkit_glue::WebPreferences;
 
 namespace android_webview {
 
@@ -233,37 +232,37 @@ void AwSettings::UpdateWebkitPreferences(JNIEnv* env, jobject obj) {
   ScopedJavaLocalRef<jstring> str(
       env, static_cast<jstring>(
           env->GetObjectField(obj, field_ids_->standard_fond_family)));
-  prefs.standard_font_family_map[WebPreferences::kCommonScript] =
+  prefs.standard_font_family_map[webkit_glue::kCommonScript] =
       ConvertJavaStringToUTF16(str);
 
   str.Reset(
       env, static_cast<jstring>(
           env->GetObjectField(obj, field_ids_->fixed_font_family)));
-  prefs.fixed_font_family_map[WebPreferences::kCommonScript] =
+  prefs.fixed_font_family_map[webkit_glue::kCommonScript] =
       ConvertJavaStringToUTF16(str);
 
   str.Reset(
       env, static_cast<jstring>(
           env->GetObjectField(obj, field_ids_->sans_serif_font_family)));
-  prefs.sans_serif_font_family_map[WebPreferences::kCommonScript] =
+  prefs.sans_serif_font_family_map[webkit_glue::kCommonScript] =
       ConvertJavaStringToUTF16(str);
 
   str.Reset(
       env, static_cast<jstring>(
           env->GetObjectField(obj, field_ids_->serif_font_family)));
-  prefs.serif_font_family_map[WebPreferences::kCommonScript] =
+  prefs.serif_font_family_map[webkit_glue::kCommonScript] =
       ConvertJavaStringToUTF16(str);
 
   str.Reset(
       env, static_cast<jstring>(
           env->GetObjectField(obj, field_ids_->cursive_font_family)));
-  prefs.cursive_font_family_map[WebPreferences::kCommonScript] =
+  prefs.cursive_font_family_map[webkit_glue::kCommonScript] =
       ConvertJavaStringToUTF16(str);
 
   str.Reset(
       env, static_cast<jstring>(
           env->GetObjectField(obj, field_ids_->fantasy_font_family)));
-  prefs.fantasy_font_family_map[WebPreferences::kCommonScript] =
+  prefs.fantasy_font_family_map[webkit_glue::kCommonScript] =
       ConvertJavaStringToUTF16(str);
 
   str.Reset(

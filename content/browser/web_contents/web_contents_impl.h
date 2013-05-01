@@ -91,7 +91,7 @@ class CONTENT_EXPORT WebContentsImpl
       int guest_instance_id);
 
   // Returns the content specific prefs for the given RVH.
-  static webkit_glue::WebPreferences GetWebkitPrefs(
+  static WebPreferences GetWebkitPrefs(
       RenderViewHost* rvh, const GURL& url);
 
   // Creates a swapped out RenderView. This is used by the browser plugin to
@@ -370,7 +370,7 @@ class CONTENT_EXPORT WebContentsImpl
                                    const string16& source_id) OVERRIDE;
   virtual RendererPreferences GetRendererPrefs(
       BrowserContext* browser_context) const OVERRIDE;
-  virtual webkit_glue::WebPreferences GetWebkitPrefs() OVERRIDE;
+  virtual WebPreferences GetWebkitPrefs() OVERRIDE;
   virtual void OnUserGesture() OVERRIDE;
   virtual void OnIgnoredUIEvent() OVERRIDE;
   virtual void RendererUnresponsive(RenderViewHost* render_view_host,

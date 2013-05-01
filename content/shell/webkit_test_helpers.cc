@@ -12,20 +12,18 @@
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebPreferences.h"
 #include "webkit/glue/webpreferences.h"
 
-using WebTestRunner::WebPreferences;
-
 namespace content {
 
-void ExportLayoutTestSpecificPreferences(const WebPreferences& from,
-                                         webkit_glue::WebPreferences* to) {
+void ExportLayoutTestSpecificPreferences(
+    const WebTestRunner::WebPreferences& from,
+    WebPreferences* to) {
   to->allow_universal_access_from_file_urls =
       from.allowUniversalAccessFromFileURLs;
   to->dom_paste_enabled = from.DOMPasteAllowed;
   to->javascript_can_access_clipboard = from.javaScriptCanAccessClipboard;
   to->xss_auditor_enabled = from.XSSAuditorEnabled;
-  to->editing_behavior =
-      static_cast<webkit_glue::WebPreferences::EditingBehavior>(
-          from.editingBehavior);
+  to->editing_behavior = static_cast<webkit_glue::EditingBehavior>(
+      from.editingBehavior);
   to->default_font_size = from.defaultFontSize;
   to->minimum_font_size = from.minimumFontSize;
   to->default_encoding = from.defaultTextEncodingName.utf8().data();
@@ -58,16 +56,16 @@ void ExportLayoutTestSpecificPreferences(const WebPreferences& from,
 // Applies settings that differ between layout tests and regular mode. Some
 // of the defaults are controlled via command line flags which are
 // automatically set for layout tests.
-void ApplyLayoutTestDefaultPreferences(webkit_glue::WebPreferences* prefs) {
+void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs) {
   CommandLine& command_line = *CommandLine::ForCurrentProcess();
   prefs->allow_universal_access_from_file_urls = true;
   prefs->dom_paste_enabled = true;
   prefs->javascript_can_access_clipboard = true;
   prefs->xss_auditor_enabled = false;
 #if defined(OS_MACOSX)
-  prefs->editing_behavior = webkit_glue::WebPreferences::EDITING_BEHAVIOR_MAC;
+  prefs->editing_behavior = webkit_glue::EDITING_BEHAVIOR_MAC;
 #else
-  prefs->editing_behavior = webkit_glue::WebPreferences::EDITING_BEHAVIOR_WIN;
+  prefs->editing_behavior = webkit_glue::EDITING_BEHAVIOR_WIN;
 #endif
   prefs->java_enabled = false;
   prefs->application_cache_enabled = true;
@@ -78,26 +76,26 @@ void ApplyLayoutTestDefaultPreferences(webkit_glue::WebPreferences* prefs) {
   prefs->webgl_errors_to_console_enabled = false;
   string16 serif;
 #if defined(OS_MACOSX)
-  prefs->cursive_font_family_map[webkit_glue::WebPreferences::kCommonScript] =
+  prefs->cursive_font_family_map[webkit_glue::kCommonScript] =
       ASCIIToUTF16("Apple Chancery");
-  prefs->fantasy_font_family_map[webkit_glue::WebPreferences::kCommonScript] =
+  prefs->fantasy_font_family_map[webkit_glue::kCommonScript] =
       ASCIIToUTF16("Papyrus");
   serif = ASCIIToUTF16("Times");
 #else
-  prefs->cursive_font_family_map[webkit_glue::WebPreferences::kCommonScript] =
+  prefs->cursive_font_family_map[webkit_glue::kCommonScript] =
       ASCIIToUTF16("Comic Sans MS");
-  prefs->fantasy_font_family_map[webkit_glue::WebPreferences::kCommonScript] =
+  prefs->fantasy_font_family_map[webkit_glue::kCommonScript] =
       ASCIIToUTF16("Impact");
   serif = ASCIIToUTF16("times new roman");
 #endif
-  prefs->serif_font_family_map[webkit_glue::WebPreferences::kCommonScript] =
+  prefs->serif_font_family_map[webkit_glue::kCommonScript] =
       serif;
-  prefs->standard_font_family_map[webkit_glue::WebPreferences::kCommonScript] =
+  prefs->standard_font_family_map[webkit_glue::kCommonScript] =
       serif;
-  prefs->fixed_font_family_map[webkit_glue::WebPreferences::kCommonScript] =
+  prefs->fixed_font_family_map[webkit_glue::kCommonScript] =
       ASCIIToUTF16("Courier");
   prefs->sans_serif_font_family_map[
-      webkit_glue::WebPreferences::kCommonScript] = ASCIIToUTF16("Helvetica");
+      webkit_glue::kCommonScript] = ASCIIToUTF16("Helvetica");
   prefs->minimum_logical_font_size = 9;
   prefs->asynchronous_spell_checking_enabled = false;
   prefs->user_style_sheet_enabled = true;

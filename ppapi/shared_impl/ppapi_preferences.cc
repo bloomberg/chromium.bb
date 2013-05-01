@@ -15,7 +15,7 @@ Preferences::Preferences()
       is_stage3d_baseline_supported(false) {
 }
 
-Preferences::Preferences(const webkit_glue::WebPreferences& prefs)
+Preferences::Preferences(const WebPreferences& prefs)
     : standard_font_family_map(prefs.standard_font_family_map),
       fixed_font_family_map(prefs.fixed_font_family_map),
       serif_font_family_map(prefs.serif_font_family_map),

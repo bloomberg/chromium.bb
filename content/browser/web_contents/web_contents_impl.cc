@@ -141,8 +141,6 @@
 //   the user goes back.  The process only stays live if another tab is using
 //   it, but if so, the existing frame relationships will be maintained.
 
-using webkit_glue::WebPreferences;
-
 namespace content {
 namespace {
 

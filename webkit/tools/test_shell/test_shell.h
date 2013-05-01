@@ -31,10 +31,6 @@ class ScopedOleInitializer;
 }
 #endif
 
-namespace webkit_glue {
-struct WebPreferences;
-}
-
 class GURL;
 class TestNavigationEntry;
 class TestNavigationController;
@@ -42,6 +38,7 @@ class TestNotificationPresenter;
 class TestShellDevToolsAgent;
 class TestShellDevToolsClient;
 class TestWebViewDelegate;
+struct WebPreferences;
 
 namespace WebKit {
 class WebDeviceOrientationClientMock;
@@ -206,7 +203,7 @@ public:
     static void SetAccelerated2dCanvasEnabled(bool enabled);
     static void SetAcceleratedCompositingEnabled(bool enabled);
 
-    static webkit_glue::WebPreferences* GetWebPreferences();
+    static WebPreferences* GetWebPreferences();
 
     // Some layout tests hardcode a file:///tmp/LayoutTests URL.  We get around
     // this by substituting "tmp" with the path to the LayoutTests parent dir.
@@ -395,7 +392,7 @@ private:
     bool allow_scripts_;
 
     // The preferences for the test shell.
-    static webkit_glue::WebPreferences* web_prefs_;
+    static WebPreferences* web_prefs_;
 
 #if defined(OS_WIN)
     // Used by the watchdog to know when it's finished.

@@ -92,7 +92,7 @@ class WebKitTestController : public base::NonThreadSafe,
 
   void SetTempPath(const base::FilePath& temp_path);
   void RendererUnresponsive();
-  void OverrideWebkitPrefs(webkit_glue::WebPreferences* prefs);
+  void OverrideWebkitPrefs(WebPreferences* prefs);
   void OpenURL(const GURL& url);
   void TestFinishedInSecondaryWindow();
 
@@ -129,7 +129,7 @@ class WebKitTestController : public base::NonThreadSafe,
   void OnImageDump(const std::string& actual_pixel_hash, const SkBitmap& image);
   void OnTextDump(const std::string& dump);
   void OnPrintMessage(const std::string& message);
-  void OnOverridePreferences(const webkit_glue::WebPreferences& prefs);
+  void OnOverridePreferences(const WebPreferences& prefs);
   void OnTestFinished(bool did_timeout);
   void OnShowDevTools();
   void OnCloseDevTools();
@@ -169,7 +169,7 @@ class WebKitTestController : public base::NonThreadSafe,
   // True if the WebPreferences of newly created RenderViewHost should be
   // overridden with prefs_.
   bool should_override_prefs_;
-  webkit_glue::WebPreferences prefs_;
+  WebPreferences prefs_;
 
   base::CancelableClosure watchdog_;
 

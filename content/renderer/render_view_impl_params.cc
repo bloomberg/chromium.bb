@@ -9,7 +9,7 @@ namespace content {
 RenderViewImplParams::RenderViewImplParams(
     int32 opener_id,
     const RendererPreferences& renderer_prefs,
-    const webkit_glue::WebPreferences& webkit_prefs,
+    const WebPreferences& webkit_prefs,
     SharedRenderViewCounter* counter,
     int32 routing_id,
     int32 surface_id,

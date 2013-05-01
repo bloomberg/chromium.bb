@@ -26,7 +26,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WebKitPrefsBackgroundPage) {
       extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
   extensions::ExtensionHost* host =
       FindHostWithPath(manager, "/backgroundpage.html", 1);
-  webkit_glue::WebPreferences prefs =
+  WebPreferences prefs =
       host->render_view_host()->GetWebkitPreferences();
   ASSERT_FALSE(prefs.accelerated_compositing_enabled);
 }

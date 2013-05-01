@@ -22,7 +22,7 @@ using WebKit::WebView;
 WebViewHost* WebViewHost::Create(GtkWidget* parent_view,
                                  TestWebViewDelegate* delegate,
                                  WebDevToolsAgentClient* dev_tools_client,
-                                 const webkit_glue::WebPreferences& prefs) {
+                                 const WebPreferences& prefs) {
   WebViewHost* host = new WebViewHost();
 
   host->view_ = WebWidgetHost::CreateWidget(parent_view, host);
@@ -30,7 +30,7 @@ WebViewHost* WebViewHost::Create(GtkWidget* parent_view,
 
   host->webwidget_ = WebView::create(delegate);
   host->webview()->setDevToolsAgentClient(dev_tools_client);
-  prefs.Apply(host->webview());
+  webkit_glue::ApplyWebPreferences(prefs, host->webview());
   host->webview()->settings()->setExperimentalCSSGridLayoutEnabled(true);
   host->webview()->initializeMainFrame(delegate);
   host->webwidget_->layout();

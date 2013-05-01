@@ -204,9 +204,9 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void Zoom(PageZoom zoom) OVERRIDE;
   virtual void SyncRendererPrefs() OVERRIDE;
   virtual void ToggleSpeechInput() OVERRIDE;
-  virtual webkit_glue::WebPreferences GetWebkitPreferences() OVERRIDE;
+  virtual WebPreferences GetWebkitPreferences() OVERRIDE;
   virtual void UpdateWebkitPreferences(
-      const webkit_glue::WebPreferences& prefs) OVERRIDE;
+      const WebPreferences& prefs) OVERRIDE;
   virtual void NotifyTimezoneChange() OVERRIDE;
 
 #if defined(OS_ANDROID)

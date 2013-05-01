@@ -121,7 +121,7 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
 void ShellContentBrowserClient::OverrideWebkitPrefs(
     RenderViewHost* render_view_host,
     const GURL& url,
-    webkit_glue::WebPreferences* prefs) {
+    WebPreferences* prefs) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return;
   WebKitTestController::Get()->OverrideWebkitPrefs(prefs);

@@ -7,19 +7,17 @@
 
 #include "extensions/common/view_type.h"
 
+struct WebPreferences;
+
 namespace extensions {
 class Extension;
-}
-
-namespace webkit_glue {
-struct WebPreferences;
 }
 
 namespace extension_webkit_preferences {
 
 void SetPreferences(const extensions::Extension* extension,
                     extensions::ViewType render_view_type,
-                    webkit_glue::WebPreferences* webkit_prefs);
+                    WebPreferences* webkit_prefs);
 
 }  // namespace extension_webkit_preferences
 

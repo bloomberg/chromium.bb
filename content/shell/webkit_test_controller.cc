@@ -235,8 +235,7 @@ bool WebKitTestController::PrepareForLayoutTest(
     main_window_->web_contents()->GetRenderViewHost()->WasResized();
     RenderViewHost* render_view_host =
         main_window_->web_contents()->GetRenderViewHost();
-    webkit_glue::WebPreferences prefs =
-        render_view_host->GetWebkitPreferences();
+    WebPreferences prefs = render_view_host->GetWebkitPreferences();
     OverrideWebkitPrefs(&prefs);
     render_view_host->UpdateWebkitPreferences(prefs);
     SendTestConfiguration();
@@ -271,7 +270,7 @@ bool WebKitTestController::ResetAfterLayoutTest() {
   enable_pixel_dumping_ = false;
   expected_pixel_hash_.clear();
   test_url_ = GURL();
-  prefs_ = webkit_glue::WebPreferences();
+  prefs_ = WebPreferences();
   should_override_prefs_ = false;
   watchdog_.Cancel();
   return true;
@@ -286,8 +285,7 @@ void WebKitTestController::RendererUnresponsive() {
   LOG(WARNING) << "renderer unresponsive";
 }
 
-void WebKitTestController::OverrideWebkitPrefs(
-    webkit_glue::WebPreferences* prefs) {
+void WebKitTestController::OverrideWebkitPrefs(WebPreferences* prefs) {
   if (should_override_prefs_) {
     *prefs = prefs_;
   } else {
@@ -533,8 +531,7 @@ void WebKitTestController::OnPrintMessage(const std::string& message) {
   printer_->AddMessageRaw(message);
 }
 
-void WebKitTestController::OnOverridePreferences(
-    const webkit_glue::WebPreferences& prefs) {
+void WebKitTestController::OnOverridePreferences(const WebPreferences& prefs) {
   should_override_prefs_ = true;
   prefs_ = prefs;
 }

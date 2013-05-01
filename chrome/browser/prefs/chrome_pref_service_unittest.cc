@@ -177,7 +177,7 @@ class ChromePrefServiceWebKitPrefs : public ChromeRenderViewHostTestHarness {
 // Tests to see that webkit preferences are properly loaded and copied over
 // to a WebPreferences object.
 TEST_F(ChromePrefServiceWebKitPrefs, PrefsCopied) {
-  webkit_glue::WebPreferences webkit_prefs =
+  WebPreferences webkit_prefs =
       WebContentsTester::For(web_contents())->TestGetWebkitPrefs();
 
   // These values have been overridden by the profile preferences.

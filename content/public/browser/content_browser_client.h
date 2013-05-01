@@ -30,6 +30,7 @@
 
 class CommandLine;
 class GURL;
+struct WebPreferences;
 
 namespace base {
 class FilePath;
@@ -64,10 +65,6 @@ class SelectFilePolicy;
 
 namespace fileapi {
 class FileSystemMountPointProvider;
-}
-
-namespace webkit_glue {
-struct WebPreferences;
 }
 
 namespace content {
@@ -444,7 +441,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // to the embedder to update it if it wants.
   virtual void OverrideWebkitPrefs(RenderViewHost* render_view_host,
                                    const GURL& url,
-                                   webkit_glue::WebPreferences* prefs) {}
+                                   WebPreferences* prefs) {}
 
   // Inspector setting was changed and should be persisted.
   virtual void UpdateInspectorSetting(RenderViewHost* rvh,

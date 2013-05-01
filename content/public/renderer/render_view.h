@@ -15,10 +15,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 class SkPicture;
-
-namespace webkit_glue {
 struct WebPreferences;
-}
 
 namespace WebKit {
 class WebFrame;
@@ -73,12 +70,11 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   virtual gfx::Size GetSize() const = 0;
 
   // Gets WebKit related preferences associated with this view.
-  virtual webkit_glue::WebPreferences& GetWebkitPreferences() = 0;
+  virtual WebPreferences& GetWebkitPreferences() = 0;
 
   // Overrides the WebKit related preferences associated with this view. Note
   // that the browser process may update the preferences at any time.
-  virtual void SetWebkitPreferences(
-      const webkit_glue::WebPreferences& preferences) = 0;
+  virtual void SetWebkitPreferences(const WebPreferences& preferences) = 0;
 
   // Returns the associated WebView. May return NULL when the view is closing.
   virtual WebKit::WebView* GetWebView() = 0;

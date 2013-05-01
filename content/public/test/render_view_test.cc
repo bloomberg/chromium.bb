@@ -167,7 +167,7 @@ void RenderViewTest::SetUp() {
   RenderViewImpl* view = RenderViewImpl::Create(
       kOpenerId,
       RendererPreferences(),
-      webkit_glue::WebPreferences(),
+      WebPreferences(),
       new SharedRenderViewCounter(0),
       kRouteId,
       kSurfaceId,

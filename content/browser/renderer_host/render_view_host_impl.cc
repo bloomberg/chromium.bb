@@ -1745,7 +1745,7 @@ void RenderViewHostImpl::ExitFullscreen() {
   WasResized();
 }
 
-webkit_glue::WebPreferences RenderViewHostImpl::GetWebkitPreferences() {
+WebPreferences RenderViewHostImpl::GetWebkitPreferences() {
   return delegate_->GetWebkitPrefs();
 }
 
@@ -1771,8 +1771,7 @@ void RenderViewHostImpl::SetAccessibilityOtherCallbackForTesting(
   accessibility_other_callback_ = callback;
 }
 
-void RenderViewHostImpl::UpdateWebkitPreferences(
-    const webkit_glue::WebPreferences& prefs) {
+void RenderViewHostImpl::UpdateWebkitPreferences(const WebPreferences& prefs) {
   Send(new ViewMsg_UpdateWebPreferences(GetRoutingID(), prefs));
 }
 

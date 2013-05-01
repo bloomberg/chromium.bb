@@ -189,7 +189,6 @@ using content::WebContents;
 using extensions::APIPermission;
 using extensions::Extension;
 using extensions::Manifest;
-using webkit_glue::WebPreferences;
 
 namespace {
 
@@ -397,7 +396,7 @@ bool CertMatchesFilter(const net::X509Certificate& cert,
 // Fills |map| with the per-script font prefs under path |map_name|.
 void FillFontFamilyMap(const PrefService* prefs,
                        const char* map_name,
-                       WebPreferences::ScriptFontFamilyMap* map) {
+                       webkit_glue::ScriptFontFamilyMap* map) {
   for (size_t i = 0; i < prefs::kWebKitScriptsForFontFamilyMapsLength; ++i) {
     const char* script = prefs::kWebKitScriptsForFontFamilyMaps[i];
     std::string pref_name = base::StringPrintf("%s.%s", map_name, script);

@@ -44,9 +44,9 @@ namespace {
 const char kCommonScript[] = "Zyyy";
 
 string16 GetFontFromMap(
-    const webkit_glue::WebPreferences::ScriptFontFamilyMap& map,
+    const webkit_glue::ScriptFontFamilyMap& map,
     const std::string& script) {
-  webkit_glue::WebPreferences::ScriptFontFamilyMap::const_iterator it =
+  webkit_glue::ScriptFontFamilyMap::const_iterator it =
       map.find(script);
   if (it != map.end())
     return it->second;

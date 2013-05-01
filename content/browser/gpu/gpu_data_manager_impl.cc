@@ -535,8 +535,7 @@ void GpuDataManagerImpl::AppendPluginCommandLine(
 #endif
 }
 
-void GpuDataManagerImpl::UpdateRendererWebPrefs(
-    webkit_glue::WebPreferences* prefs) const {
+void GpuDataManagerImpl::UpdateRendererWebPrefs(WebPreferences* prefs) const {
   DCHECK(prefs);
 
   if (IsFeatureBlacklisted(GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING))

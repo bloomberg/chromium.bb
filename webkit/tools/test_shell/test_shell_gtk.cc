@@ -157,7 +157,7 @@ void TestShell::InitializeTestShell(bool layout_test_mode,
   layout_test_mode_ = layout_test_mode;
   allow_external_pages_ = allow_external_pages;
 
-  web_prefs_ = new webkit_glue::WebPreferences;
+  web_prefs_ = new WebPreferences;
 
   base::FilePath data_path;
   PathService::Get(base::DIR_EXE, &data_path);

@@ -327,7 +327,6 @@ using base::TimeDelta;
 
 using webkit_glue::AltErrorPageResourceFetcher;
 using webkit_glue::ResourceFetcher;
-using webkit_glue::WebPreferences;
 using webkit_glue::WebURLResponseExtraDataImpl;
 
 #if defined(OS_ANDROID)
@@ -741,7 +740,7 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   webview()->settings()->setAcceleratedCompositingForFixedPositionEnabled(
       ShouldUseFixedPositionCompositing(device_scale_factor_));
 
-  webkit_preferences_.Apply(webview());
+  webkit_glue::ApplyWebPreferences(webkit_preferences_, webview());
   webview()->initializeMainFrame(this);
 
   if (switches::IsTouchDragDropEnabled())
@@ -1977,7 +1976,7 @@ WebView* RenderViewImpl::createView(
 
   WebUserGestureIndicator::consumeUserGesture();
 
-  webkit_glue::WebPreferences transferred_preferences = webkit_preferences_;
+  WebPreferences transferred_preferences = webkit_preferences_;
 
   // Unless accelerated compositing has been explicitly disabled from the
   // command line (e.g. via the blacklist or about:flags) re-enable it for
@@ -5200,7 +5199,7 @@ void RenderViewImpl::OnDragSourceSystemDragEnded() {
 
 void RenderViewImpl::OnUpdateWebPreferences(const WebPreferences& prefs) {
   webkit_preferences_ = prefs;
-  webkit_preferences_.Apply(webview());
+  webkit_glue::ApplyWebPreferences(webkit_preferences_, webview());
 }
 
 void RenderViewImpl::OnUpdateTimezone() {

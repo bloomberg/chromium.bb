@@ -8,6 +8,7 @@
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/render_view_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/glue/webpreferences.h"
 
 #include <Cocoa/Cocoa.h>
 #include <Carbon/Carbon.h>  // for the kVK_* constants.
@@ -83,7 +84,7 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   );
   #undef HTML
 
-  webkit_glue::WebPreferences prefs;
+  WebPreferences prefs;
   prefs.enable_scroll_animator = false;
 
   RenderViewImpl* view = static_cast<RenderViewImpl*>(view_);
