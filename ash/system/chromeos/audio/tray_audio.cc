@@ -57,8 +57,15 @@ const int kNoAudioDeviceIcon = -1;
 const int kVolumeLevels = 4;
 
 bool UseNewAudioHandler() {
-  return CommandLine::ForCurrentProcess()->
-      HasSwitch(ash::switches::kAshEnableNewAudioHandler);
+  return !CommandLine::ForCurrentProcess()->
+      HasSwitch(ash::switches::kAshDisableNewAudioHandler);
+}
+
+// Returns true if we should show the audio device switching UI.
+bool ShowAudioDeviceMenu() {
+  return UseNewAudioHandler() &&
+      CommandLine::ForCurrentProcess()->
+          HasSwitch(ash::switches::kAshEnableAudioDeviceMenu);
 }
 
 bool IsAudioMuted() {
@@ -241,7 +248,7 @@ class VolumeView : public ActionableView,
  private:
   // Updates bar_, device_type_ icon, and more_ buttons.
   void UpdateDeviceTypeAndMore() {
-    if (!UseNewAudioHandler() || !is_default_view_) {
+    if (!ShowAudioDeviceMenu() || !is_default_view_) {
       more_->SetVisible(false);
       bar_->SetVisible(false);
       device_type_->SetVisible(false);
@@ -504,7 +511,7 @@ views::View* TrayAudio::CreateDefaultView(user::LoginStatus status) {
 }
 
 views::View* TrayAudio::CreateDetailedView(user::LoginStatus status) {
-  if (!UseNewAudioHandler() || pop_up_volume_view_) {
+  if (!ShowAudioDeviceMenu() || pop_up_volume_view_) {
     volume_view_ = new tray::VolumeView(this, false);
     return volume_view_;
   } else {

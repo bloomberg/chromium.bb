@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "chromeos/audio/audio_pref_handler.h"
+#include "chromeos/audio/mock_cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
 using std::max;
@@ -60,6 +61,12 @@ void CrasAudioHandler::Initialize(
     scoped_refptr<AudioPrefHandler> audio_pref_handler) {
   CHECK(!g_cras_audio_handler);
   g_cras_audio_handler = new CrasAudioHandler(audio_pref_handler);
+}
+
+// static
+void CrasAudioHandler::InitializeForTesting() {
+  CHECK(!g_cras_audio_handler);
+  g_cras_audio_handler = new MockCrasAudioHandler();
 }
 
 // static
@@ -123,6 +130,14 @@ bool CrasAudioHandler::GetActiveOutputDevice(AudioDevice* device) const {
   }
   NOTREACHED() << "Can't find active output audio device";
   return false;
+}
+
+bool CrasAudioHandler::has_alternative_input() const {
+  return has_alternative_input_;
+}
+
+bool CrasAudioHandler::has_alternative_output() const {
+  return has_alternative_output_;
 }
 
 void CrasAudioHandler::SetOutputVolumePercent(int volume_percent) {
@@ -191,16 +206,28 @@ CrasAudioHandler::CrasAudioHandler(
       has_alternative_output_(false),
       output_mute_locked_(false),
       input_mute_locked_(false) {
+  if (!audio_pref_handler)
+    return;
+  // If the DBusThreadManager or the CrasAudioClient aren't available, there
+  // isn't much we can do. This should only happen when running tests.
+  if (!chromeos::DBusThreadManager::IsInitialized() ||
+      !chromeos::DBusThreadManager::Get() ||
+      !chromeos::DBusThreadManager::Get()->GetCrasAudioClient())
+    return;
   chromeos::DBusThreadManager::Get()->GetCrasAudioClient()->AddObserver(this);
-  DCHECK(audio_pref_handler_.get());
   audio_pref_handler_->AddAudioPrefObserver(this);
   SetupInitialAudioState();
 }
 
 CrasAudioHandler::~CrasAudioHandler() {
+  if (!chromeos::DBusThreadManager::IsInitialized() ||
+      !chromeos::DBusThreadManager::Get() ||
+      !chromeos::DBusThreadManager::Get()->GetCrasAudioClient())
+    return;
   chromeos::DBusThreadManager::Get()->GetCrasAudioClient()->
       RemoveObserver(this);
-  audio_pref_handler_->RemoveAudioPrefObserver(this);
+  if (audio_pref_handler_)
+    audio_pref_handler_->RemoveAudioPrefObserver(this);
   audio_pref_handler_ = NULL;
 }
 

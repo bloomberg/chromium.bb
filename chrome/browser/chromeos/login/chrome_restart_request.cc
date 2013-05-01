@@ -128,8 +128,9 @@ std::string DeriveCommandLine(const GURL& start_url,
       ::switches::kV,
       ash::switches::kAshTouchHud,
       ash::switches::kAuraLegacyPowerButton,
+      ash::switches::kAshDisableNewAudioHandler,
       ash::switches::kAshDisableNewNetworkStatusArea,
-      ash::switches::kAshEnableNewAudioHandler,
+      ash::switches::kAshEnableAudioDeviceMenu,
       // Please keep these in alphabetical order. Non-UI Compositor switches
       // here should also be added to
       // content/browser/renderer_host/render_process_host_impl.cc.

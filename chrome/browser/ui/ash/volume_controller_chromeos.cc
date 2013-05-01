@@ -145,6 +145,6 @@ void VolumeController::OnOutputMuteChanged() {
 }
 
 bool VolumeController::UseNewAudioHandler() const {
-  return CommandLine::ForCurrentProcess()->
-      HasSwitch(ash::switches::kAshEnableNewAudioHandler);
+  return !CommandLine::ForCurrentProcess()->
+      HasSwitch(ash::switches::kAshDisableNewAudioHandler);
 }

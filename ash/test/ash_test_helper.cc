@@ -45,6 +45,10 @@ AshTestHelper::~AshTestHelper() {
 }
 
 void AshTestHelper::SetUp() {
+  // TODO(jennyz): Create mock or test AudioHandler so we can instantiate
+  // an ash::Shell with the new CrasAudioHandler. crbug.com/233266
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      ash::switches::kAshDisableNewAudioHandler);
   // TODO(jamescook): Can we do this without changing command line?
   // Use the origin (1,1) so that it doesn't over
   // lap with the native mouse cursor.

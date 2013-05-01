@@ -54,6 +54,9 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Sets the global instance. Must be called before any calls to Get().
   static void Initialize(scoped_refptr<AudioPrefHandler> audio_pref_handler);
 
+  // Sets the global instance for testing.
+  static void InitializeForTesting();
+
   // Destroys the global instance.
   static void Shutdown();
 
@@ -64,59 +67,60 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   static CrasAudioHandler* Get();
 
   // Adds an audio observer.
-  void AddAudioObserver(AudioObserver* observer);
+  virtual void AddAudioObserver(AudioObserver* observer);
 
   // Removes an audio observer.
-  void RemoveAudioObserver(AudioObserver* observer);
+  virtual void RemoveAudioObserver(AudioObserver* observer);
 
   // Returns true if audio output is muted.
-  bool IsOutputMuted();
+  virtual bool IsOutputMuted();
 
   // Returns true if audio input is muted.
-  bool IsInputMuted();
+  virtual bool IsInputMuted();
 
   // Gets volume level in 0-100% range, 0 being pure silence.
-  int GetOutputVolumePercent();
+  virtual int GetOutputVolumePercent();
 
   // Returns node_id of the active output node.
-  uint64 GetActiveOutputNode() const;
+  virtual uint64 GetActiveOutputNode() const;
 
   // Returns the node_id of the active input node.
-  uint64 GetActiveInputNode() const;
+  virtual uint64 GetActiveInputNode() const;
 
   // Gets the audio devices back in |device_list|.
-  void GetAudioDevices(AudioDeviceList* device_list) const;
+  virtual void GetAudioDevices(AudioDeviceList* device_list) const;
 
-  bool GetActiveOutputDevice(AudioDevice* device) const;
+  virtual bool GetActiveOutputDevice(AudioDevice* device) const;
 
   // Whether there is alternative input/output audio device.
-  bool has_alternative_input() const { return has_alternative_input_; }
-  bool has_alternative_output() const { return has_alternative_output_; }
+  virtual bool has_alternative_input() const;
+  virtual bool has_alternative_output() const;
 
   // Sets volume level from 0-100%. If less than kMuteThresholdPercent, then
   // mutes the sound. If it was muted, and |volume_percent| is larger than
   // the threshold, then the sound is unmuted.
-  void SetOutputVolumePercent(int volume_percent);
+  virtual void SetOutputVolumePercent(int volume_percent);
 
   // Adjusts volume up (positive percentage) or down (negative percentage).
-  void AdjustOutputVolumeByPercent(int adjust_by_percent);
+  virtual void AdjustOutputVolumeByPercent(int adjust_by_percent);
 
   // Mutes or unmutes audio output device.
-  void SetOutputMute(bool mute_on);
+  virtual void SetOutputMute(bool mute_on);
 
   // Mutes or unmutes audio input device.
-  void SetInputMute(bool mute_on);
+  virtual void SetInputMute(bool mute_on);
 
   // Sets the active audio output node to the node with |node_id|.
-  void SetActiveOutputNode(uint64 node_id);
+  virtual void SetActiveOutputNode(uint64 node_id);
 
   // Sets the active audio input node to the node with |node_id|.
-  void SetActiveInputNode(uint64 node_id);
+  virtual void SetActiveInputNode(uint64 node_id);
 
- private:
+ protected:
   explicit CrasAudioHandler(scoped_refptr<AudioPrefHandler> audio_pref_handler);
   virtual ~CrasAudioHandler();
 
+ private:
   // Overriden from CrasAudioHandler::Observer.
   virtual void AudioClientRestarted() OVERRIDE;
   virtual void OutputVolumeChanged(int volume) OVERRIDE;

@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/ash_switches.h"
+#include "base/command_line.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/audio/audio_mixer.h"
@@ -82,6 +85,8 @@ class VolumeControllerTest : public InProcessBrowserTest {
   VolumeControllerTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
+    volume_controller_.reset(new VolumeController());
+
     // First we should shutdown the default audio handler.
     chromeos::AudioHandler::Shutdown();
     audio_mixer_ = new MockAudioMixer;
@@ -94,31 +99,36 @@ class VolumeControllerTest : public InProcessBrowserTest {
     audio_mixer_ = NULL;
   }
 
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    // TODO(rkc,jennyz): Remove this once we remove the old Audio Handler.
+    command_line->AppendSwitch(ash::switches::kAshDisableNewAudioHandler);
+  }
+
  protected:
   void SetVolumePercent(double percent) {
-    volume_controller_.SetVolumePercent(percent);
+    volume_controller_->SetVolumePercent(percent);
   }
 
   void VolumeMute() {
-    volume_controller_.HandleVolumeMute(ui::Accelerator());
+    volume_controller_->HandleVolumeMute(ui::Accelerator());
   }
 
   void VolumeUnmute() {
-    volume_controller_.SetAudioMuted(false);
+    volume_controller_->SetAudioMuted(false);
   }
 
   void VolumeUp() {
-    volume_controller_.HandleVolumeUp(ui::Accelerator());
+    volume_controller_->HandleVolumeUp(ui::Accelerator());
   }
 
   void VolumeDown() {
-    volume_controller_.HandleVolumeDown(ui::Accelerator());
+    volume_controller_->HandleVolumeDown(ui::Accelerator());
   }
 
   MockAudioMixer* audio_mixer() { return audio_mixer_; }
 
  private:
-  VolumeController volume_controller_;
+  scoped_ptr<VolumeController> volume_controller_;
   MockAudioMixer* audio_mixer_;
 
   DISALLOW_COPY_AND_ASSIGN(VolumeControllerTest);

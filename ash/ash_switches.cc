@@ -51,6 +51,9 @@ const char kAshDisableDisplayChangeLimiter[] =
 // Disables creating a launcher per display.
 const char kAshDisableLauncherPerDisplay[] = "ash-disable-launcher-per-display";
 
+// Disable the new cras audio handler.
+const char kAshDisableNewAudioHandler[] = "ash-disable-new-audio-handler";
+
 // If present new lock animations are enabled.
 const char kAshDisableNewLockAnimations[] = "ash-disable-new-lock-animations";
 
@@ -71,15 +74,17 @@ const char kAshDisableImmersiveFullscreen[] =
 // Disables ui scaling.
 const char kAshDisableUIScaling[] = "ash-disable-ui-scaling";
 
+// Extend the status tray volume item to allow the user to choose an audio
+// input and output device.
+const char kAshEnableAudioDeviceMenu[] =
+    "ash-enable-audio-device-menu";
+
 // Enable advanced gestures (e.g. for window management).
 const char kAshEnableAdvancedGestures[] = "ash-enable-advanced-gestures";
 
 // Always enable brightness control. Used by machines that don't report their
 // main monitor as internal.
 const char kAshEnableBrightnessControl[] = "ash-enable-brightness-control";
-
-// Enable the new audio handler.
-const char kAshEnableNewAudioHandler[] = "ash-enable-new-audio-handler";
 
 // Enable immersive fullscreen mode, regardless of default setting.
 const char kAshEnableImmersiveFullscreen[] = "ash-enable-immersive-fullscreen";

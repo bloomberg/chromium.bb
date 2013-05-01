@@ -273,6 +273,11 @@ void RunAutoLaunchKioskApp() {
       EmitLoginPromptVisible();
 }
 
+bool UseNewAudioHandler() {
+  return !CommandLine::ForCurrentProcess()->
+      HasSwitch(ash::switches::kAshDisableNewAudioHandler);
+}
+
 }  // namespace
 
 namespace internal {
@@ -478,11 +483,9 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kEnableChromeAudioSwitching))
     CrasAudioSwitchHandler::Initialize();
-
-  if (CommandLine::ForCurrentProcess()->
-          HasSwitch(ash::switches::kAshEnableNewAudioHandler)) {
-   CrasAudioHandler::Initialize(
-       AudioPrefHandler::Create(g_browser_process->local_state()));
+  if (UseNewAudioHandler()) {
+    CrasAudioHandler::Initialize(
+        AudioPrefHandler::Create(g_browser_process->local_state()));
   } else {
    AudioHandler::Initialize(
        AudioPrefHandler::Create(g_browser_process->local_state()));
@@ -794,8 +797,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // even if Initialize() wasn't called.
   SystemKeyEventListener::Shutdown();
   imageburner::BurnManager::Shutdown();
-  if (CommandLine::ForCurrentProcess()->
-          HasSwitch(ash::switches::kAshEnableNewAudioHandler)) {
+  if (UseNewAudioHandler()) {
     CrasAudioHandler::Shutdown();
   } else {
     AudioHandler::Shutdown();

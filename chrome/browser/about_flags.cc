@@ -1188,11 +1188,18 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(ash::switches::kAshDisableNewNetworkStatusArea),
   },
   {
-    "ash-enable-new-audio-handler",
+    "ash-enable-new-audio-handler2",
     IDS_FLAGS_ASH_ENABLE_NEW_AUDIO_HANDLER_NAME,
     IDS_FLAGS_ASH_ENABLE_NEW_AUDIO_HANDLER_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(ash::switches::kAshEnableNewAudioHandler)
+    ENABLE_DISABLE_VALUE_TYPE("", ash::switches::kAshDisableNewAudioHandler)
+  },
+  {
+    "ash-audio-device-menu",
+    IDS_FLAGS_ASH_AUDIO_DEVICE_MENU_NAME,
+    IDS_FLAGS_ASH_AUDIO_DEVICE_MENU_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(ash::switches::kAshEnableAudioDeviceMenu)
   },
   {
     "enable-carrier-switching",
