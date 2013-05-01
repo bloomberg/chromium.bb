@@ -85,7 +85,6 @@ ContextMenuController::ContextMenuController(Page* page, ContextMenuClient* clie
 
 ContextMenuController::~ContextMenuController()
 {
-    m_client->contextMenuDestroyed();
 }
 
 PassOwnPtr<ContextMenuController> ContextMenuController::create(Page* page, ContextMenuClient* client)
@@ -183,10 +182,8 @@ void ContextMenuController::contextMenuItemSelected(const ContextMenuItem* item)
 {
     ASSERT(item->type() == ActionType || item->type() == CheckableActionType);
 
-    if (item->action() >= ContextMenuItemBaseApplicationTag) {
-        m_client->contextMenuItemSelected(item, m_contextMenu.get());
+    if (item->action() >= ContextMenuItemBaseApplicationTag)
         return;
-    }
 
     if (item->action() >= ContextMenuItemBaseCustomTag) {
         ASSERT(m_menuProvider);
@@ -203,8 +200,6 @@ void ContextMenuController::contextMenuItemSelected(const ContextMenuItem* item)
         openNewWindow(m_hitTestResult.absoluteLinkURL(), frame);
         break;
     case ContextMenuItemTagDownloadLinkToDisk:
-        // FIXME: Some day we should be able to do this from within WebCore.
-        m_client->downloadURL(m_hitTestResult.absoluteLinkURL());
         break;
     case ContextMenuItemTagCopyLinkToClipboard:
         frame->editor()->copyURL(m_hitTestResult.absoluteLinkURL(), m_hitTestResult.textContent());
@@ -213,8 +208,6 @@ void ContextMenuController::contextMenuItemSelected(const ContextMenuItem* item)
         openNewWindow(m_hitTestResult.absoluteImageURL(), frame);
         break;
     case ContextMenuItemTagDownloadImageToDisk:
-        // FIXME: Some day we should be able to do this from within WebCore.
-        m_client->downloadURL(m_hitTestResult.absoluteImageURL());
         break;
     case ContextMenuItemTagCopyImageToClipboard:
         // FIXME: The Pasteboard class is not written yet
@@ -292,11 +285,8 @@ void ContextMenuController::contextMenuItemSelected(const ContextMenuItem* item)
         frame->editor()->learnSpelling();
         break;
     case ContextMenuItemTagSearchWeb:
-        m_client->searchWithGoogle(frame);
         break;
     case ContextMenuItemTagLookUpInDictionary:
-        // FIXME: Some day we may be able to do this from within WebCore.
-        m_client->lookUpInDictionary(frame);
         break;
     case ContextMenuItemTagOpenLink:
         if (Frame* targetFrame = m_hitTestResult.targetFrame())
@@ -320,18 +310,9 @@ void ContextMenuController::contextMenuItemSelected(const ContextMenuItem* item)
         // We actually never enable this because CSS does not have a way to specify an outline font,
         // which may make this difficult to implement. Maybe a special case of text-shadow?
         break;
-    case ContextMenuItemTagStartSpeaking: {
-        RefPtr<Range> selectedRange = frame->selection()->toNormalizedRange();
-        if (!selectedRange || selectedRange->collapsed(IGNORE_EXCEPTION)) {
-            Document* document = m_hitTestResult.innerNonSharedNode()->document();
-            selectedRange = document->createRange();
-            selectedRange->selectNode(document->documentElement(), IGNORE_EXCEPTION);
-        }
-        m_client->speak(plainText(selectedRange.get()));
+    case ContextMenuItemTagStartSpeaking:
         break;
-    }
     case ContextMenuItemTagStopSpeaking:
-        m_client->stopSpeaking();
         break;
     case ContextMenuItemTagDefaultDirection:
         frame->editor()->setBaseWritingDirection(NaturalWritingDirection);
@@ -925,16 +906,5 @@ void ContextMenuController::checkOrEnableIfNeeded(ContextMenuItem& item) const
     item.setChecked(shouldCheck);
     item.setEnabled(shouldEnable);
 }
-
-#if USE(ACCESSIBILITY_CONTEXT_MENUS)
-void ContextMenuController::showContextMenuAt(Frame* frame, const IntPoint& clickPoint)
-{
-    // Simulate a click in the middle of the accessibility object.
-    PlatformMouseEvent mouseEvent(clickPoint, clickPoint, RightButton, PlatformEvent::MousePressed, 1, false, false, false, false, currentTime());
-    bool handled = frame->eventHandler()->sendContextMenuEvent(mouseEvent);
-    if (handled && client())
-        client()->showContextMenu();
-}
-#endif
 
 } // namespace WebCore

@@ -168,7 +168,6 @@ public:
     virtual void contentsSizeChanged(Frame*, const IntSize&) const = 0;
     virtual void deviceOrPageScaleFactorChanged() const { }
     virtual void layoutUpdated(Frame*) const { }
-    virtual void scrollRectIntoView(const IntRect&) const { }; // Currently only Mac has a non empty implementation.
 
     // didProgrammaticallyScroll should be called whenever a Frame is programmatically scrolled.
     virtual void didProgrammaticallyScroll(Frame*, const IntPoint& newScrollPosition) const { }

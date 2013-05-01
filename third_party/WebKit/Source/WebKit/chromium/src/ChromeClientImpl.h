@@ -124,8 +124,6 @@ public:
     virtual void deviceOrPageScaleFactorChanged() const;
     virtual void didProgrammaticallyScroll(WebCore::Frame*, const WebCore::IntPoint&) const;
     virtual void layoutUpdated(WebCore::Frame*) const;
-    virtual void scrollRectIntoView(
-        const WebCore::IntRect&) const { }
     virtual void scrollbarsModeDidChange() const;
     virtual void mouseDidMoveOverElement(
         const WebCore::HitTestResult& result, unsigned modifierFlags);

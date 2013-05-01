@@ -166,8 +166,6 @@ public:
     virtual void setCursor(const Cursor&) OVERRIDE { }
     virtual void setCursorHiddenUntilMouseMoves(bool) OVERRIDE { }
 
-    virtual void scrollRectIntoView(const IntRect&) const OVERRIDE { }
-
     virtual void attachRootGraphicsLayer(Frame*, GraphicsLayer*) OVERRIDE { }
     virtual void scheduleCompositingLayerFlush() OVERRIDE { }
 
@@ -398,21 +396,7 @@ class EmptyContextMenuClient : public ContextMenuClient {
 public:
     EmptyContextMenuClient() { }
     virtual ~EmptyContextMenuClient() {  }
-    virtual void contextMenuDestroyed() OVERRIDE { }
-
     virtual PassOwnPtr<ContextMenu> customizeMenu(PassOwnPtr<ContextMenu>) OVERRIDE;
-    virtual void contextMenuItemSelected(const ContextMenuItem*, const ContextMenu*) OVERRIDE { }
-
-    virtual void downloadURL(const KURL&) OVERRIDE { }
-    virtual void searchWithGoogle(const Frame*) OVERRIDE { }
-    virtual void lookUpInDictionary(Frame*) OVERRIDE { }
-    virtual bool isSpeaking() OVERRIDE { return false; }
-    virtual void speak(const String&) OVERRIDE { }
-    virtual void stopSpeaking() OVERRIDE { }
-
-#if USE(ACCESSIBILITY_CONTEXT_MENUS)
-    virtual void showContextMenu() OVERRIDE { }
-#endif
 };
 
 class EmptyDragClient : public DragClient {

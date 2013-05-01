@@ -735,10 +735,6 @@ bool RenderBox::canAutoscroll() const
         return true;
 
     // Check for a box that represents the top level of a web page.
-    // This can be scrolled by calling Chrome::scrollRectIntoView.
-    // This only has an effect on the Mac platform in applications
-    // that put web views into scrolling containers, such as Mac OS X Mail.
-    // The code for this is in RenderLayer::scrollRectToVisible.
     if (node() != document())
         return false;
     Frame* frame = this->frame();

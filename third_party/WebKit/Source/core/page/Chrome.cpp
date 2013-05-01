@@ -121,11 +121,6 @@ void Chrome::layoutUpdated(Frame* frame) const
     m_client->layoutUpdated(frame);
 }
 
-void Chrome::scrollRectIntoView(const IntRect& rect) const
-{
-    m_client->scrollRectIntoView(rect);
-}
-
 void Chrome::scrollbarsModeDidChange() const
 {
     m_client->scrollbarsModeDidChange();

@@ -2360,18 +2360,7 @@ void RenderLayer::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignm
             } else {
                 LayoutRect viewRect = frameView->visibleContentRect();
                 LayoutRect r = getRectToExpose(viewRect, rect, alignX, alignY);
-                
                 frameView->setScrollPosition(roundedIntPoint(r.location()));
-
-                // This is the outermost view of a web page, so after scrolling this view we
-                // scroll its container by calling Page::scrollRectIntoView.
-                // This only has an effect on the Mac platform in applications
-                // that put web views into scrolling containers, such as Mac OS X Mail.
-                // The canAutoscroll function in EventHandler also knows about this.
-                if (Frame* frame = frameView->frame()) {
-                    if (Page* page = frame->page())
-                        page->chrome()->scrollRectIntoView(pixelSnappedIntRect(rect));
-                }
             }
         }
     }
