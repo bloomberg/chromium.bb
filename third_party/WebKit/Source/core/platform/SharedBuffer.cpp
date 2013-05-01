@@ -115,9 +115,6 @@ PassRefPtr<SharedBuffer> SharedBuffer::adoptPurgeableBuffer(PassOwnPtr<Purgeable
 
 unsigned SharedBuffer::size() const
 {
-    if (hasPlatformData())
-        return platformDataSize();
-    
     if (m_purgeableBuffer)
         return m_purgeableBuffer->size();
     
@@ -129,17 +126,11 @@ void SharedBuffer::createPurgeableBuffer() const
     if (m_purgeableBuffer)
         return;
 
-    if (hasPlatformData())
-        return;
-
     m_purgeableBuffer = PurgeableBuffer::create(buffer().data(), m_size);
 }
 
 const char* SharedBuffer::data() const
 {
-    if (hasPlatformData())
-        return platformData();
-
     if (m_purgeableBuffer)
         return m_purgeableBuffer->data();
     
@@ -162,8 +153,6 @@ void SharedBuffer::append(const char* data, unsigned length)
     if (!length)
         return;
 
-    maybeTransferPlatformData();
-    
     unsigned positionInSegment = offsetInSegment(m_size - m_buffer.size());
     m_size += length;
 
@@ -205,8 +194,6 @@ void SharedBuffer::append(const Vector<char>& data)
 
 void SharedBuffer::clear()
 {
-    clearPlatformData();
-    
     for (unsigned i = 0; i < m_segments.size(); ++i)
         freeSegment(m_segments[i]);
 
@@ -220,7 +207,7 @@ void SharedBuffer::clear()
 PassRefPtr<SharedBuffer> SharedBuffer::copy() const
 {
     RefPtr<SharedBuffer> clone(adoptRef(new SharedBuffer));
-    if (m_purgeableBuffer || hasPlatformData()) {
+    if (m_purgeableBuffer) {
         clone->append(data(), size());
         return clone;
     }
@@ -276,7 +263,7 @@ unsigned SharedBuffer::getSomeData(const char*& someData, unsigned position) con
         return 0;
     }
 
-    if (hasPlatformData() || m_purgeableBuffer) {
+    if (m_purgeableBuffer) {
         ASSERT_WITH_SECURITY_IMPLICATION(position < size());
         someData = data() + position;
         return totalSize - position;
@@ -304,37 +291,6 @@ unsigned SharedBuffer::getSomeData(const char*& someData, unsigned position) con
     ASSERT_NOT_REACHED();
     return 0;
 }
-
-#if !USE(CF)
-
-inline void SharedBuffer::clearPlatformData()
-{
-}
-
-inline void SharedBuffer::maybeTransferPlatformData()
-{
-}
-
-inline bool SharedBuffer::hasPlatformData() const
-{
-    return false;
-}
-
-inline const char* SharedBuffer::platformData() const
-{
-    ASSERT_NOT_REACHED();
-
-    return 0;
-}
-
-inline unsigned SharedBuffer::platformDataSize() const
-{
-    ASSERT_NOT_REACHED();
-    
-    return 0;
-}
-
-#endif
 
 PassRefPtr<SharedBuffer> utf8Buffer(const String& string)
 {

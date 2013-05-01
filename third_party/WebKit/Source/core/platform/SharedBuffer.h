@@ -33,10 +33,6 @@
 #include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
 
-#if USE(CF)
-#include <wtf/RetainPtr.h>
-#endif
-
 namespace WebCore {
     
 class PurgeableBuffer;
@@ -55,11 +51,6 @@ public:
     static PassRefPtr<SharedBuffer> adoptPurgeableBuffer(PassOwnPtr<PurgeableBuffer>);
     
     ~SharedBuffer();
-    
-#if USE(CF)
-    CFDataRef createCFData();
-    static PassRefPtr<SharedBuffer> wrapCFData(CFDataRef);
-#endif
 
     // Calling this function will force internal segmented buffers
     // to be merged into a flat buffer. Use getSomeData() whenever possible
@@ -68,7 +59,6 @@ public:
 
     unsigned size() const;
 
-
     bool isEmpty() const { return !size(); }
 
     void append(SharedBuffer*);
@@ -76,8 +66,6 @@ public:
     void append(const Vector<char>&);
 
     void clear();
-    const char* platformData() const;
-    unsigned platformDataSize() const;
 
     PassRefPtr<SharedBuffer> copy() const;
     
@@ -104,7 +92,6 @@ public:
 
     void createPurgeableBuffer() const;
 
-    void tryReplaceContentsWithPlatformBuffer(SharedBuffer*);
 
 private:
     SharedBuffer();
@@ -119,18 +106,10 @@ private:
     // memory, which can be a source of bugs.
     const Vector<char>& buffer() const;
 
-    void clearPlatformData();
-    void maybeTransferPlatformData();
-    bool hasPlatformData() const;
-    
     unsigned m_size;
     mutable Vector<char> m_buffer;
     mutable Vector<char*> m_segments;
     mutable OwnPtr<PurgeableBuffer> m_purgeableBuffer;
-#if USE(CF)
-    explicit SharedBuffer(CFDataRef);
-    RetainPtr<CFDataRef> m_cfData;
-#endif
 };
 
 PassRefPtr<SharedBuffer> utf8Buffer(const String&);

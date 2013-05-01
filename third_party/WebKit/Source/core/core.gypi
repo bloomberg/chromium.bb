@@ -2584,7 +2584,6 @@
             'platform/audio/mac/FFTFrameMac.cpp',
             'platform/audio/mkl/FFTFrameMKL.cpp',
             'platform/audio/ipp/FFTFrameIPP.cpp',
-            'platform/cf/SharedBufferCF.cpp',
             'platform/chromium/ChromiumDataObject.cpp',
             'platform/chromium/ChromiumDataObject.h',
             'platform/chromium/ChromiumDataObjectItem.cpp',

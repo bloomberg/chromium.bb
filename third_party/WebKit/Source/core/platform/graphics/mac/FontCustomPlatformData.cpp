@@ -96,7 +96,7 @@ FontCustomPlatformData* createFontCustomPlatformData(SharedBuffer* buffer)
 
     RetainPtr<CGFontRef> cgFontRef;
 
-    RetainPtr<CFDataRef> bufferData(AdoptCF, buffer->createCFData());
+    RetainPtr<CFDataRef> bufferData(AdoptCF, CFDataCreate(0, reinterpret_cast<const UInt8*>(buffer->data()), buffer->size()));
     RetainPtr<CGDataProviderRef> dataProvider(AdoptCF, CGDataProviderCreateWithCFData(bufferData.get()));
 
     cgFontRef.adoptCF(CGFontCreateWithDataProvider(dataProvider.get()));
