@@ -510,6 +510,7 @@
         '../webkit/media/crypto/key_systems_unittest.cc',
         '../webkit/media/test_response_generator.cc',
         '../webkit/media/test_response_generator.h',
+        '../webkit/media/webaudiosourceprovider_impl_unittest.cc',
         '../webkit/mocks/mock_weburlloader.cc',
         '../webkit/mocks/mock_weburlloader.h',
         '../webkit/plugins/npapi/plugin_lib_unittest.cc',

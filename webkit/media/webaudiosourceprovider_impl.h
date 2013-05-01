@@ -24,10 +24,7 @@ namespace webkit_media {
 // periodically call provideInput() to render a certain number of audio
 // sample-frames using the sink's RenderCallback to get the data.
 //
-// THREAD SAFETY:
-// It is assumed that the callers to setClient() and provideInput()
-// implement appropriate locking for thread safety when making
-// these calls.  This happens in WebKit.
+// All calls are protected by a lock.
 class WebAudioSourceProviderImpl
     : public WebKit::WebAudioSourceProvider,
       public media::AudioRendererSink {
@@ -54,12 +51,13 @@ class WebAudioSourceProviderImpl
 
  private:
   // Set to true when Initialize() is called.
-  bool is_initialized_;
   int channels_;
   int sample_rate_;
+  double volume_;
 
-  // Tracks if |sink_| has been instructed to consume audio.
-  bool is_running_;
+  // Tracks the current playback state.
+  enum PlaybackState { kStopped, kStarted, kPlaying };
+  PlaybackState state_;
 
   // Where audio comes from.
   media::AudioRendererSink::RenderCallback* renderer_;
@@ -70,6 +68,7 @@ class WebAudioSourceProviderImpl
   // Where audio ends up unless overridden by |client_|.
   base::Lock sink_lock_;
   scoped_refptr<media::AudioRendererSink> sink_;
+  scoped_ptr<media::AudioBus> bus_wrapper_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebAudioSourceProviderImpl);
 };
