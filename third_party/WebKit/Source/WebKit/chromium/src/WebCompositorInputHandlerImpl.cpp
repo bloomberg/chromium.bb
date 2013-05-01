@@ -218,7 +218,18 @@ WebCompositorInputHandlerImpl::EventDisposition WebCompositorInputHandlerImpl::h
 
 WebCompositorInputHandlerImpl::EventDisposition WebCompositorInputHandlerImpl::handleGestureFling(const WebGestureEvent& gestureEvent)
 {
-    WebInputHandlerClient::ScrollStatus scrollStatus = m_inputHandlerClient->scrollBegin(WebPoint(gestureEvent.x, gestureEvent.y), WebInputHandlerClient::ScrollInputTypeNonBubblingGesture);
+    WebInputHandlerClient::ScrollStatus scrollStatus;
+
+    if (gestureEvent.sourceDevice == WebGestureEvent::Touchpad) {
+        scrollStatus = m_inputHandlerClient->scrollBegin(WebPoint(gestureEvent.x, gestureEvent.y), WebInputHandlerClient::ScrollInputTypeNonBubblingGesture);
+    } else {
+        if (!m_gestureScrollOnImplThread) {
+            scrollStatus = WebInputHandlerClient::ScrollStatusOnMainThread;
+        } else {
+            scrollStatus = m_inputHandlerClient->flingScrollBegin();
+        }
+    }
+
     switch (scrollStatus) {
     case WebInputHandlerClient::ScrollStatusStarted: {
         if (gestureEvent.sourceDevice == WebGestureEvent::Touchpad)
