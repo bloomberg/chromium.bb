@@ -31,28 +31,30 @@ namespace remoting {
 // TODO(hclam): Move this value to CaptureScheduler.
 static const int kMaxPendingCaptures = 2;
 
-// static
-scoped_refptr<VideoScheduler> VideoScheduler::Create(
+VideoScheduler::VideoScheduler(
     scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
     scoped_ptr<media::ScreenCapturer> capturer,
     scoped_ptr<VideoEncoder> encoder,
     protocol::CursorShapeStub* cursor_stub,
-    protocol::VideoStub* video_stub) {
-  DCHECK(network_task_runner->BelongsToCurrentThread());
-  DCHECK(capturer);
-  DCHECK(encoder);
-  DCHECK(cursor_stub);
-  DCHECK(video_stub);
-
-  scoped_refptr<VideoScheduler> scheduler = new VideoScheduler(
-      capture_task_runner, encode_task_runner, network_task_runner,
-      capturer.Pass(), encoder.Pass(), cursor_stub, video_stub);
-  capture_task_runner->PostTask(
-      FROM_HERE, base::Bind(&VideoScheduler::StartOnCaptureThread, scheduler));
-
-  return scheduler;
+    protocol::VideoStub* video_stub)
+    : capture_task_runner_(capture_task_runner),
+      encode_task_runner_(encode_task_runner),
+      network_task_runner_(network_task_runner),
+      capturer_(capturer.Pass()),
+      encoder_(encoder.Pass()),
+      cursor_stub_(cursor_stub),
+      video_stub_(video_stub),
+      pending_captures_(0),
+      did_skip_frame_(false),
+      is_paused_(false),
+      sequence_number_(0) {
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
+  DCHECK(capturer_);
+  DCHECK(encoder_);
+  DCHECK(cursor_stub_);
+  DCHECK(video_stub_);
 }
 
 // Public methods --------------------------------------------------------------
@@ -102,6 +104,13 @@ void VideoScheduler::OnCursorShapeChanged(
                             base::Passed(&cursor_proto)));
 }
 
+void VideoScheduler::Start() {
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
+
+  capture_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VideoScheduler::StartOnCaptureThread, this));
+}
+
 void VideoScheduler::Stop() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
@@ -125,7 +134,7 @@ void VideoScheduler::Pause(bool pause) {
     is_paused_ = pause;
 
     // Restart captures if we're resuming and there are none scheduled.
-    if (!is_paused_ && !capture_timer_->IsRunning())
+    if (!is_paused_ && capture_timer_ && !capture_timer_->IsRunning())
       CaptureNextFrame();
   }
 }
@@ -144,27 +153,6 @@ void VideoScheduler::UpdateSequenceNumber(int64 sequence_number) {
 
 // Private methods -----------------------------------------------------------
 
-VideoScheduler::VideoScheduler(
-    scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-    scoped_ptr<media::ScreenCapturer> capturer,
-    scoped_ptr<VideoEncoder> encoder,
-    protocol::CursorShapeStub* cursor_stub,
-    protocol::VideoStub* video_stub)
-    : capture_task_runner_(capture_task_runner),
-      encode_task_runner_(encode_task_runner),
-      network_task_runner_(network_task_runner),
-      capturer_(capturer.Pass()),
-      encoder_(encoder.Pass()),
-      cursor_stub_(cursor_stub),
-      video_stub_(video_stub),
-      pending_captures_(0),
-      did_skip_frame_(false),
-      is_paused_(false),
-      sequence_number_(0) {
-}
-
 VideoScheduler::~VideoScheduler() {
 }
 
@@ -172,6 +160,7 @@ VideoScheduler::~VideoScheduler() {
 
 void VideoScheduler::StartOnCaptureThread() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
+  DCHECK(!capture_timer_);
 
   // Start the capturer and let it notify us if cursor shape changes.
   capturer_->Start(this);

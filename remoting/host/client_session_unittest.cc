@@ -239,7 +239,8 @@ TEST_F(ClientSessionTest, ClipboardStubFilter) {
   clipboard_event3.set_data("c");
 
   Expectation authenticated =
-      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
+      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
+          .WillOnce(Return(true));
   EXPECT_CALL(*input_injector_, StartPtr(_))
       .After(authenticated);
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_))
@@ -317,7 +318,8 @@ TEST_F(ClientSessionTest, InputStubFilter) {
   mouse_event3.set_y(301);
 
   Expectation authenticated =
-      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
+      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
+          .WillOnce(Return(true));
   EXPECT_CALL(*input_injector_, StartPtr(_))
       .After(authenticated);
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_))
@@ -371,7 +373,8 @@ TEST_F(ClientSessionTest, LocalInputTest) {
   mouse_event3.set_y(301);
 
   Expectation authenticated =
-      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
+      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
+          .WillOnce(Return(true));
   EXPECT_CALL(*input_injector_, StartPtr(_))
       .After(authenticated);
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_))
@@ -427,7 +430,8 @@ TEST_F(ClientSessionTest, RestoreEventState) {
   mousedown.set_button_down(true);
 
   Expectation authenticated =
-      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
+      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
+          .WillOnce(Return(true));
   EXPECT_CALL(*input_injector_, StartPtr(_))
       .After(authenticated);
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_))
@@ -469,7 +473,8 @@ TEST_F(ClientSessionTest, RestoreEventState) {
 
 TEST_F(ClientSessionTest, ClampMouseEvents) {
   Expectation authenticated =
-      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
+      EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
+          .WillOnce(Return(true));
   EXPECT_CALL(*input_injector_, StartPtr(_))
       .After(authenticated);
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_))

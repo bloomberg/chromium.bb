@@ -148,7 +148,7 @@ void ChromotingHost::SetMaximumSessionDuration(
 
 ////////////////////////////////////////////////////////////////////////////
 // protocol::ClientSession::EventHandler implementation.
-void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
+bool ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
   DCHECK(CalledOnValidThread());
 
   login_backoff_.Reset();
@@ -176,9 +176,7 @@ void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
                     OnClientAuthenticated(jid));
   authenticating_client_ = false;
 
-  if (reject_authenticating_client_) {
-    client->DisconnectSession();
-  }
+  return !reject_authenticating_client_;
 }
 
 void ChromotingHost::OnSessionChannelsConnected(ClientSession* client) {

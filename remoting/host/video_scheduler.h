@@ -80,7 +80,7 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
   // supplied TaskRunners.  Video and cursor shape updates will be pumped to
   // |video_stub| and |client_stub|, which must remain valid until Stop() is
   // called. |capturer| is used to capture frames.
-  static scoped_refptr<VideoScheduler> Create(
+  VideoScheduler(
       scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
@@ -94,6 +94,9 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
       scoped_refptr<media::ScreenCaptureData> capture_data) OVERRIDE;
   virtual void OnCursorShapeChanged(
       scoped_ptr<media::MouseCursorShape> cursor_shape) OVERRIDE;
+
+  // Starts scheduling frame captures.
+  void Start();
 
   // Stop scheduling frame captures. This object cannot be re-used once
   // it has been stopped.
@@ -109,15 +112,6 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
 
  private:
   friend class base::RefCountedThreadSafe<VideoScheduler>;
-
-  VideoScheduler(
-      scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-      scoped_ptr<media::ScreenCapturer> capturer,
-      scoped_ptr<VideoEncoder> encoder,
-      protocol::CursorShapeStub* cursor_stub,
-      protocol::VideoStub* video_stub);
   virtual ~VideoScheduler();
 
   // Capturer thread ----------------------------------------------------------

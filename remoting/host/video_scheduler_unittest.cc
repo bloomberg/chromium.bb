@@ -117,7 +117,7 @@ void VideoSchedulerTest::SetUp() {
 
 void VideoSchedulerTest::StartVideoScheduler(
     scoped_ptr<media::ScreenCapturer> capturer) {
-  scheduler_ = VideoScheduler::Create(
+  scheduler_ = new VideoScheduler(
       task_runner_, // Capture
       task_runner_, // Encode
       task_runner_, // Network
@@ -125,6 +125,7 @@ void VideoSchedulerTest::StartVideoScheduler(
       scoped_ptr<VideoEncoder>(encoder_),
       &client_stub_,
       &video_stub_);
+  scheduler_->Start();
 }
 
 void VideoSchedulerTest::StopVideoScheduler() {
