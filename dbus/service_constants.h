@@ -707,6 +707,7 @@ const char kLinkMonitorResponseTimeProperty[] = "LinkMonitorResponseTime";
 const char kProviderRequiresRoamingProperty[] =
     "Cellular.ProviderRequiresRoaming";
 const char kReceiveByteCountProperty[] = "ReceiveByteCount";
+const char kSIMOperatorIdProperty[] = "Cellular.SIMOperatorID";
 const char kSIMPresentProperty[] = "Cellular.SIMPresent";
 const char kSupportedCarriersProperty[] = "Cellular.SupportedCarriers";
 const char kTransmitByteCountProperty[] = "TransmitByteCount";
