@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process.h"
 #include "build/build_config.h"
+#include "ipc/ipc_sync_channel.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/ppb_console.h"
@@ -22,6 +23,10 @@
 #include "ppapi/shared_impl/ppb_view_shared.h"
 #include "ppapi/shared_impl/singleton_resource_id.h"
 #include "ppapi/shared_impl/tracked_callback.h"
+
+namespace IPC {
+class SyncMessageFilter;
+}
 
 namespace ppapi {
 
@@ -184,6 +189,8 @@ class PPAPI_PROXY_EXPORT PluginDispatcher
       const ppapi::proxy::ResourceMessageReplyParams& reply_params,
       const IPC::Message& nested_msg);
 
+  virtual bool SendMessage(IPC::Message* msg);
+
   PluginDelegate* plugin_delegate_;
 
   // Contains all the plugin interfaces we've queried. The mapped value will
@@ -206,6 +213,9 @@ class PPAPI_PROXY_EXPORT PluginDispatcher
   // Set to true when the instances associated with this dispatcher are
   // incognito mode.
   bool incognito_;
+
+  // A filter for sending messages from threads other than the main thread.
+  scoped_refptr<IPC::SyncMessageFilter> sync_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginDispatcher);
 };
