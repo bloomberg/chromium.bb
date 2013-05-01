@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <dwmapi.h>
 #include <sstream>
 
 #include "apps/pref_names.h"
@@ -688,6 +689,17 @@ void AppListController::PopulateViewFromProfile(Profile* profile) {
     LONG_PTR ex_styles = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
     ex_styles |= WS_EX_TOOLWINDOW;
     SetWindowLongPtr(hwnd, GWL_EXSTYLE, ex_styles);
+  }
+
+  if (base::win::GetVersion() > base::win::VERSION_VISTA) {
+    // Disable aero peek. Without this, hovering over the taskbar popup puts
+    // Windows into a mode for switching between windows in the same
+    // application. The app list has just one window, so it is just distracting.
+    BOOL disable_value = TRUE;
+    ::DwmSetWindowAttribute(hwnd,
+                            DWMWA_DISALLOW_PEEK,
+                            &disable_value,
+                            sizeof(disable_value));
   }
 
   ui::win::SetAppIdForWindow(GetAppModelId(), hwnd);
