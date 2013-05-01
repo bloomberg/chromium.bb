@@ -36,7 +36,6 @@ typedef struct {
   HandleFunc function;
 } FuncNameMapping;
 
-
 static PP_Instance g_instance = 0;
 static PPB_GetInterface get_browser_interface = NULL;
 static PPB_Messaging* ppb_messaging_interface = NULL;
@@ -78,7 +77,7 @@ char* VprintfToNewString(const char* format, va_list args) {
 
   va_copy(args_copy, args);
   length = vsnprintf(NULL, 0, format, args);
-  buffer = (char*)malloc(length + 1);  /* +1 for NULL-terminator. */
+  buffer = (char*)malloc(length + 1); /* +1 for NULL-terminator. */
   result = vsnprintf(&buffer[0], length + 1, format, args_copy);
   assert(result == length);
   return buffer;
@@ -180,7 +179,7 @@ static size_t ParseMessage(char* message,
     return num_params;
   }
 
-  *separator = 0;  /* NULL-terminate function. */
+  *separator = 0; /* NULL-terminate function. */
 
   while (separator && num_params < max_params) {
     param_start = separator + 1;
@@ -237,13 +236,15 @@ static void HandleMessage(char* message) {
     /* Error. */
     struct PP_Var var;
     if (output != NULL) {
-      var = PrintfToVar(
-          "Error: Function \"%s\" returned error %d. "
-          "Additional output: %s", function_name, result, output);
+      var = PrintfToVar("Error: Function \"%s\" returned error %d. "
+                        "Additional output: %s",
+                        function_name,
+                        result,
+                        output);
       free(output);
     } else {
-      var = PrintfToVar("Error: Function \"%s\" returned error %d.",
-                        function_name, result);
+      var = PrintfToVar(
+          "Error: Function \"%s\" returned error %d.", function_name, result);
     }
 
     /* Post the error to JavaScript, so the user can see it. */
@@ -269,26 +270,30 @@ void* HandleMessageThread(void* user_data) {
   }
 }
 
-
 static PP_Bool Instance_DidCreate(PP_Instance instance,
                                   uint32_t argc,
                                   const char* argn[],
                                   const char* argv[]) {
   g_instance = instance;
   nacl_io_init_ppapi(instance, get_browser_interface);
-  mount(
-      "",  /* source */
-      "/persistent",  /* target */
-      "html5fs",  /* filesystemtype */
-      0,  /* mountflags */
-      "type=PERSISTENT,expected_size=1048576");  /* data */
 
-  mount(
-      "",  /* source. Use relative URL */
-      "/http",  /* target */
-      "httpfs",  /* filesystemtype */
-      0,  /* mountflags */
-      "");  /* data */
+  // By default, nacl_io mounts / to pass through to the original NaCl
+  // filesystem (which doesn't do much). Let's remount it to a memfs
+  // filesystem.
+  umount("/");
+  mount("", "/", "memfs", 0, "");
+
+  mount("",                                       /* source */
+        "/persistent",                            /* target */
+        "html5fs",                                /* filesystemtype */
+        0,                                        /* mountflags */
+        "type=PERSISTENT,expected_size=1048576"); /* data */
+
+  mount("",       /* source. Use relative URL */
+        "/http",  /* target */
+        "httpfs", /* filesystemtype */
+        0,        /* mountflags */
+        "");      /* data */
 
   pthread_create(&g_handle_message_thread, NULL, &HandleMessageThread, NULL);
   InitializeMessageQueue();
@@ -296,17 +301,12 @@ static PP_Bool Instance_DidCreate(PP_Instance instance,
   return PP_TRUE;
 }
 
-
-static void Instance_DidDestroy(PP_Instance instance) {
-}
+static void Instance_DidDestroy(PP_Instance instance) {}
 
 static void Instance_DidChangeView(PP_Instance instance,
-                                   PP_Resource view_resource) {
-}
+                                   PP_Resource view_resource) {}
 
-static void Instance_DidChangeFocus(PP_Instance instance,
-                                    PP_Bool has_focus) {
-}
+static void Instance_DidChangeFocus(PP_Instance instance, PP_Bool has_focus) {}
 
 static PP_Bool Instance_HandleDocumentLoad(PP_Instance instance,
                                            PP_Resource url_loader) {
@@ -321,8 +321,7 @@ static void Messaging_HandleMessage(PP_Instance instance,
   if (!EnqueueMessage(strdup(buffer))) {
     struct PP_Var var;
     var = PrintfToVar(
-        "Warning: dropped message \"%s\" because the queue was full.",
-        message);
+        "Warning: dropped message \"%s\" because the queue was full.", message);
     ppb_messaging_interface->PostMessage(g_instance, var);
   }
 }
@@ -335,7 +334,6 @@ PP_EXPORT int32_t PPP_InitializeModule(PP_Module a_module_id,
   ppb_var_interface = (PPB_Var*)(get_browser(PPB_VAR_INTERFACE));
   return PP_OK;
 }
-
 
 PP_EXPORT const void* PPP_GetInterface(const char* interface_name) {
   if (strcmp(interface_name, PPP_INSTANCE_INTERFACE) == 0) {
@@ -356,6 +354,4 @@ PP_EXPORT const void* PPP_GetInterface(const char* interface_name) {
   return NULL;
 }
 
-
-PP_EXPORT void PPP_ShutdownModule() {
-}
+PP_EXPORT void PPP_ShutdownModule() {}
