@@ -1924,6 +1924,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, EditSearchEngines) {
   EXPECT_FALSE(omnibox_view->model()->popup_model()->IsOpen());
 }
 
+#if !defined(TOOLKIT_GTK)
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BeginningShownAfterBlur) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
@@ -1945,3 +1946,4 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BeginningShownAfterBlur) {
   ASSERT_EQ(0U, start);
   ASSERT_EQ(0U, end);
 }
+#endif  // !defined(TOOLKIT_GTK)
