@@ -34,8 +34,8 @@ AudioRendererMixer::~AudioRendererMixer() {
   DCHECK_EQ(mixer_inputs_.size(), 0U);
 }
 
-void AudioRendererMixer::AddMixerInput(
-    const scoped_refptr<AudioRendererMixerInput>& input) {
+void AudioRendererMixer::AddMixerInput(AudioConverter::InputCallback* input,
+                                       const base::Closure& error_cb) {
   base::AutoLock auto_lock(mixer_inputs_lock_);
 
   if (!playing_) {
@@ -44,15 +44,18 @@ void AudioRendererMixer::AddMixerInput(
     audio_sink_->Play();
   }
 
-  mixer_inputs_.push_back(input);
+  DCHECK(mixer_inputs_.find(input) == mixer_inputs_.end());
+  mixer_inputs_[input] = error_cb;
   audio_converter_.AddInput(input);
 }
 
 void AudioRendererMixer::RemoveMixerInput(
-    const scoped_refptr<AudioRendererMixerInput>& input) {
+    AudioConverter::InputCallback* input) {
   base::AutoLock auto_lock(mixer_inputs_lock_);
   audio_converter_.RemoveInput(input);
-  mixer_inputs_.remove(input);
+
+  DCHECK(mixer_inputs_.find(input) != mixer_inputs_.end());
+  mixer_inputs_.erase(input);
 }
 
 int AudioRendererMixer::Render(AudioBus* audio_bus,
@@ -70,13 +73,8 @@ int AudioRendererMixer::Render(AudioBus* audio_bus,
     playing_ = false;
   }
 
-  // Set the delay information for each mixer input.
-  for (AudioRendererMixerInputSet::iterator it = mixer_inputs_.begin();
-       it != mixer_inputs_.end(); ++it) {
-    (*it)->set_audio_delay_milliseconds(audio_delay_milliseconds);
-  }
-
-  audio_converter_.Convert(audio_bus);
+  audio_converter_.ConvertWithDelay(
+      base::TimeDelta::FromMilliseconds(audio_delay_milliseconds), audio_bus);
   return audio_bus->frames();
 }
 
@@ -86,7 +84,7 @@ void AudioRendererMixer::OnRenderError() {
   // Call each mixer input and signal an error.
   for (AudioRendererMixerInputSet::iterator it = mixer_inputs_.begin();
        it != mixer_inputs_.end(); ++it) {
-    (*it)->OnRenderError();
+    it->second.Run();
   }
 }
 

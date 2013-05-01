@@ -35,11 +35,6 @@ class MEDIA_EXPORT AudioRendererMixerInput
   virtual void Initialize(const AudioParameters& params,
                           AudioRendererSink::RenderCallback* renderer) OVERRIDE;
 
-  // Called by AudioRendererMixer when new delay information is available.
-  void set_audio_delay_milliseconds(int audio_delay_milliseconds) {
-    current_audio_delay_milliseconds_ = audio_delay_milliseconds;
-  }
-
   // Called by AudioRendererMixer when an error occurs.
   void OnRenderError();
 
@@ -72,8 +67,8 @@ class MEDIA_EXPORT AudioRendererMixerInput
   // Source of audio data which is provided to the mixer.
   AudioRendererSink::RenderCallback* callback_;
 
-  // The current audio delay as last provided by AudioRendererMixer.
-  int current_audio_delay_milliseconds_;
+  // Error callback for handing to AudioRendererMixer.
+  base::Closure error_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererMixerInput);
 };

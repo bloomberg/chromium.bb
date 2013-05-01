@@ -50,6 +50,17 @@ class CONTENT_EXPORT AudioRendererMixerManager {
   // the returned input.
   media::AudioRendererMixerInput* CreateInput(int source_render_view_id);
 
+  // Returns a mixer instance based on AudioParameters; an existing one if one
+  // with the provided AudioParameters exists or a new one if not.
+  media::AudioRendererMixer* GetMixer(int source_render_view_id,
+                                      const media::AudioParameters& params);
+
+  // Remove a mixer instance given a mixer if the only other reference is held
+  // by AudioRendererMixerManager.  Every AudioRendererMixer owner must call
+  // this method when it's done with a mixer.
+  void RemoveMixer(int source_render_view_id,
+                   const media::AudioParameters& params);
+
  private:
   friend class AudioRendererMixerManagerTest;
 
@@ -68,17 +79,6 @@ class CONTENT_EXPORT AudioRendererMixerManager {
 
   // Overrides the AudioRendererSink implementation for unit testing.
   void SetAudioRendererSinkForTesting(media::AudioRendererSink* sink);
-
-  // Returns a mixer instance based on AudioParameters; an existing one if one
-  // with the provided AudioParameters exists or a new one if not.
-  media::AudioRendererMixer* GetMixer(int source_render_view_id,
-                                      const media::AudioParameters& params);
-
-  // Remove a mixer instance given a mixer if the only other reference is held
-  // by AudioRendererMixerManager.  Every AudioRendererMixer owner must call
-  // this method when it's done with a mixer.
-  void RemoveMixer(int source_render_view_id,
-                   const media::AudioParameters& params);
 
   // Active mixers.
   AudioRendererMixerMap mixers_;

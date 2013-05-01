@@ -4,6 +4,7 @@
 
 #include "media/base/audio_renderer_mixer_input.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "media/base/audio_renderer_mixer.h"
 
@@ -18,7 +19,8 @@ AudioRendererMixerInput::AudioRendererMixerInput(
       remove_mixer_cb_(remove_mixer_cb),
       mixer_(NULL),
       callback_(NULL),
-      current_audio_delay_milliseconds_(0) {
+      error_cb_(base::Bind(
+          &AudioRendererMixerInput::OnRenderError, base::Unretained(this))) {
 }
 
 AudioRendererMixerInput::~AudioRendererMixerInput() {
@@ -58,7 +60,7 @@ void AudioRendererMixerInput::Play() {
   if (playing_)
     return;
 
-  mixer_->AddMixerInput(this);
+  mixer_->AddMixerInput(this, error_cb_);
   playing_ = true;
 }
 
@@ -80,8 +82,7 @@ bool AudioRendererMixerInput::SetVolume(double volume) {
 double AudioRendererMixerInput::ProvideInput(AudioBus* audio_bus,
                                              base::TimeDelta buffer_delay) {
   int frames_filled = callback_->Render(
-      audio_bus,
-      current_audio_delay_milliseconds_ + buffer_delay.InMilliseconds());
+      audio_bus, static_cast<int>(buffer_delay.InMillisecondsF() + 0.5));
 
   // AudioConverter expects unfilled frames to be zeroed.
   if (frames_filled < audio_bus->frames()) {

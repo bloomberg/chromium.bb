@@ -5,19 +5,18 @@
 #ifndef MEDIA_BASE_AUDIO_RENDERER_MIXER_H_
 #define MEDIA_BASE_AUDIO_RENDERER_MIXER_H_
 
-#include <list>
+#include <map>
 
 #include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "media/base/audio_converter.h"
-#include "media/base/audio_renderer_mixer_input.h"
 #include "media/base/audio_renderer_sink.h"
 
 namespace media {
 
-// Mixes a set of AudioRendererMixerInputs into a single output stream which is
-// funneled into a single shared AudioRendererSink; saving a bundle on renderer
-// side resources.
+// Mixes a set of AudioConverter::InputCallbacks into a single output stream
+// which is funneled into a single shared AudioRendererSink; saving a bundle
+// on renderer side resources.
 class MEDIA_EXPORT AudioRendererMixer
     : NON_EXPORTED_BASE(public AudioRendererSink::RenderCallback) {
  public:
@@ -27,8 +26,9 @@ class MEDIA_EXPORT AudioRendererMixer
   virtual ~AudioRendererMixer();
 
   // Add or remove a mixer input from mixing; called by AudioRendererMixerInput.
-  void AddMixerInput(const scoped_refptr<AudioRendererMixerInput>& input);
-  void RemoveMixerInput(const scoped_refptr<AudioRendererMixerInput>& input);
+  void AddMixerInput(AudioConverter::InputCallback* input,
+                     const base::Closure& error_cb);
+  void RemoveMixerInput(AudioConverter::InputCallback* input);
 
   void set_pause_delay_for_testing(base::TimeDelta delay) {
     pause_delay_ = delay;
@@ -45,7 +45,7 @@ class MEDIA_EXPORT AudioRendererMixer
 
   // Set of mixer inputs to be mixed by this mixer.  Access is thread-safe
   // through |mixer_inputs_lock_|.
-  typedef std::list<scoped_refptr<AudioRendererMixerInput> >
+  typedef std::map<AudioConverter::InputCallback*, base::Closure>
       AudioRendererMixerInputSet;
   AudioRendererMixerInputSet mixer_inputs_;
   base::Lock mixer_inputs_lock_;

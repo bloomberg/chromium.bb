@@ -56,10 +56,6 @@ class AudioRendererMixerInputTest : public testing::Test {
     return mixer_input_->ProvideInput(audio_bus_.get(), base::TimeDelta());
   }
 
-  int GetAudioDelayMilliseconds() {
-    return mixer_input_->current_audio_delay_milliseconds_;
-  }
-
   MOCK_METHOD1(RemoveMixer, void(const AudioParameters&));
 
  protected:

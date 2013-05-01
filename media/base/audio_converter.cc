@@ -117,7 +117,10 @@ void AudioConverter::Reset() {
     resampler_->Flush();
 }
 
-void AudioConverter::Convert(AudioBus* dest) {
+void AudioConverter::ConvertWithDelay(const base::TimeDelta& initial_delay,
+                                      AudioBus* dest) {
+  initial_delay_ = initial_delay;
+
   if (transform_inputs_.empty()) {
     dest->Zero();
     return;
@@ -150,6 +153,10 @@ void AudioConverter::Convert(AudioBus* dest) {
   }
 }
 
+void AudioConverter::Convert(AudioBus* dest) {
+  ConvertWithDelay(base::TimeDelta::FromMilliseconds(0), dest);
+}
+
 void AudioConverter::SourceCallback(int fifo_frame_delay, AudioBus* dest) {
   bool needs_downmix = channel_mixer_ && downmix_early_;
 
@@ -174,7 +181,7 @@ void AudioConverter::SourceCallback(int fifo_frame_delay, AudioBus* dest) {
   DCHECK_EQ(temp_dest->channels(), mixer_input_audio_bus_->channels());
 
   // Calculate the buffer delay for this callback.
-  base::TimeDelta buffer_delay;
+  base::TimeDelta buffer_delay = initial_delay_;
   if (resampler_) {
     buffer_delay += base::TimeDelta::FromMicroseconds(
         resampler_frame_delay_ * output_frame_duration_.InMicroseconds());

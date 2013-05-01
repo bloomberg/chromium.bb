@@ -74,8 +74,10 @@ class MEDIA_EXPORT AudioConverter {
   ~AudioConverter();
 
   // Converts audio from all inputs into the |dest|.  |dest| must be sized for
-  // data matching the output AudioParameters provided during construction.
+  // data matching the output AudioParameters provided during construction.  If
+  // an |initial_delay| is specified, it will be propagated to each input.
   void Convert(AudioBus* dest);
+  void ConvertWithDelay(const base::TimeDelta& initial_delay, AudioBus* dest);
 
   // Adds or removes an input from the converter.  RemoveInput() will call
   // Reset() if no inputs remain after the specified input is removed.
@@ -120,6 +122,7 @@ class MEDIA_EXPORT AudioConverter {
   // Used to calculate buffer delay information for InputCallbacks.
   base::TimeDelta input_frame_duration_;
   base::TimeDelta output_frame_duration_;
+  base::TimeDelta initial_delay_;
   int resampler_frame_delay_;
 
   // Number of channels of input audio data.  Set during construction via the
