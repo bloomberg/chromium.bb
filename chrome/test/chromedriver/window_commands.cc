@@ -292,8 +292,7 @@ Status ExecuteGetTitle(
       "    return document.URL;"
       "}";
   base::ListValue args;
-  return web_view->CallFunction(
-      session->GetCurrentFrameId(), kGetTitleScript, args, value);
+  return web_view->CallFunction(std::string(), kGetTitleScript, args, value);
 }
 
 Status ExecuteGetPageSource(
