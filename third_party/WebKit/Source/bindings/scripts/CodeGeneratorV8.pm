@@ -3619,19 +3619,18 @@ END
 
     # Setup the enable-at-runtime attrs if we have them
     foreach my $runtime_attr (@enabledAtRuntimeAttributes) {
-        if (not grep { $_ eq $runtime_attr } @enabledPerContextAttributes) {
-            my $enable_function = GetRuntimeEnableFunctionName($runtime_attr->signature);
-            my $conditionalString = GenerateConditionalString($runtime_attr->signature);
-            $code .= "\n#if ${conditionalString}\n" if $conditionalString;
-            $code .= "    if (${enable_function}()) {\n";
-            $code .= "        static const V8DOMConfiguration::BatchedAttribute attrData =\\\n";
-            $code .= GenerateSingleBatchedAttribute($interfaceName, $runtime_attr, ";", "    ");
-            $code .= <<END;
+        next if grep { $_ eq $runtime_attr } @enabledPerContextAttributes;
+        my $enable_function = GetRuntimeEnableFunctionName($runtime_attr->signature);
+        my $conditionalString = GenerateConditionalString($runtime_attr->signature);
+        $code .= "\n#if ${conditionalString}\n" if $conditionalString;
+        $code .= "    if (${enable_function}()) {\n";
+        $code .= "        static const V8DOMConfiguration::BatchedAttribute attrData =\\\n";
+        $code .= GenerateSingleBatchedAttribute($interfaceName, $runtime_attr, ";", "    ");
+        $code .= <<END;
         V8DOMConfiguration::configureAttribute(instance, proto, attrData, isolate, currentWorldType);
     }
 END
-            $code .= "\n#endif // ${conditionalString}\n" if $conditionalString;
-        }
+        $code .= "\n#endif // ${conditionalString}\n" if $conditionalString;
     }
 
     # Setup the enable-at-runtime constants if we have them
