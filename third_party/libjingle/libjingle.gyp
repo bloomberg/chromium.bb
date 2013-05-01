@@ -627,6 +627,10 @@
             ],
           },
           'sources': [
+            'overrides/init_webrtc.cc',
+            'overrides/init_webrtc.h',
+            'overrides/talk/media/webrtc/webrtcexport.h',
+
             '<(libjingle_source)/talk/app/webrtc/audiotrack.cc',
             '<(libjingle_source)/talk/app/webrtc/audiotrack.h',
             '<(libjingle_source)/talk/app/webrtc/datachannel.cc',
@@ -642,12 +646,12 @@
             '<(libjingle_source)/talk/app/webrtc/localaudiosource.h',
             '<(libjingle_source)/talk/app/webrtc/localvideosource.cc',
             '<(libjingle_source)/talk/app/webrtc/localvideosource.h',
+            '<(libjingle_source)/talk/app/webrtc/mediaconstraintsinterface.cc',
+            '<(libjingle_source)/talk/app/webrtc/mediaconstraintsinterface.h',
             '<(libjingle_source)/talk/app/webrtc/mediastream.cc',
             '<(libjingle_source)/talk/app/webrtc/mediastream.h',
             '<(libjingle_source)/talk/app/webrtc/mediastreamhandler.cc',
             '<(libjingle_source)/talk/app/webrtc/mediastreamhandler.h',
-            '<(libjingle_source)/talk/app/webrtc/mediaconstraintsinterface.cc',
-            '<(libjingle_source)/talk/app/webrtc/mediaconstraintsinterface.h',
             '<(libjingle_source)/talk/app/webrtc/mediastreaminterface.h',
             '<(libjingle_source)/talk/app/webrtc/mediastreamprovider.h',
             '<(libjingle_source)/talk/app/webrtc/mediastreamproxy.h',
@@ -757,18 +761,10 @@
           ],
           'conditions': [
             ['libpeer_allocator_shim==1 and '
-             'libpeer_target_type=="shared_library" and '
-             'component!="shared_library"', {
+             'libpeer_target_type!="static_library" and OS!="mac"', {
               'sources': [
                 'overrides/allocator_shim/allocator_stub.cc',
-              ],
-              'sources/': [
-                # |allocator_stub.cc| will include this file directly to ensure
-                # that the stub code gets included with whatever depends on
-                # peerconnectionfactory, also includes the stub code.  If we
-                # don't do that, the linker is free to discard the stub code
-                # since it by itself does not have any dependencies.
-                ['exclude', '<(libjingle_source)/talk/app/webrtc/peerconnectionfactory.cc'],
+                'overrides/allocator_shim/allocator_stub.h',
               ],
             }],
             ['enabled_libjingle_device_manager==1', {
@@ -852,7 +848,7 @@
             '<(DEPTH)/third_party/webrtc/modules/modules.gyp:video_render_module',
             'libjingle',
           ],
-        },  # target libpeerconnection
+        },  # target libjingle_webrtc
         {
           'target_name': 'libpeerconnection',
           'type': '<(libpeer_target_type)',
@@ -869,22 +865,25 @@
             '<@(libjingle_peerconnection_additional_deps)',
             'libjingle_webrtc',
           ],
-          'export_dependent_settings': [
-            '<(DEPTH)/third_party/libjingle/libjingle.gyp:libjingle_webrtc',
-          ],
           'conditions': [
             ['libpeer_allocator_shim==1 and '
-             'libpeer_target_type=="shared_library" and '
-             'component!="shared_library"', {
+             'libpeer_target_type!="static_library"', {
               'sources': [
-                'overrides/allocator_shim/allocator_proxy.cc',
+                'overrides/initialize_module.cc',
+              ],
+              'conditions': [
+                ['OS!="mac"', {
+                  'sources': [
+                    'overrides/allocator_shim/allocator_proxy.cc',
+                  ],
+                }],
               ],
             }],
-            ['"<(libpeer_target_type)"=="shared_library"', {
+            ['"<(libpeer_target_type)"!="static_library"', {
               # Used to control symbol export/import.
               'defines': [ 'LIBPEERCONNECTION_IMPLEMENTATION=1' ],
             }],
-            ['OS=="win" and "<(libpeer_target_type)"=="shared_library"', {
+            ['OS=="win" and "<(libpeer_target_type)"!="static_library"', {
               'link_settings': {
                 'libraries': [
                   '-lsecur32.lib',
@@ -893,17 +892,30 @@
                 ],
               },
             }],
-            ['OS=="mac" and libpeer_target_type=="shared_library"', {
-              'xcode_settings': {
-                'DYLIB_INSTALL_NAME_BASE': '@loader_path/Libraries',
-              },
+            ['OS!="win" and "<(libpeer_target_type)"!="static_library"', {
+              'cflags': [
+                # For compatibility with how we export symbols from this
+                # target on Windows.  This also prevents the linker from
+                # picking up symbols from this target that should be linked
+                # in from other libjingle libs.
+                '-fvisibility=hidden',
+              ],
+            }],
+            ['OS=="mac" and libpeer_target_type!="static_library"', {
               'product_dir': '<(PRODUCT_DIR)/Libraries',
+              'product_name': 'libpeerconnection',
             }],
             ['OS=="android"', {
               'standalone_static_library': 1,
             }],
+            ['OS=="linux" and libpeer_target_type!="static_library"', {
+              # The installer and various tools depend on finding the .so
+              # in this directory and not lib.target as will otherwise be
+              # the case with make builds.
+              'product_dir': '<(PRODUCT_DIR)/lib',
+            }],
           ],
-        },  # target peerconnection
+        },  # target libpeerconnection
       ],
     }],
   ],

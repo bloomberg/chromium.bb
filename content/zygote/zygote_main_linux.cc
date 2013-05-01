@@ -40,6 +40,7 @@
 #include "sandbox/linux/services/libc_urandom_override.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
 #include "third_party/icu/public/i18n/unicode/timezone.h"
+#include "third_party/libjingle/overrides/init_webrtc.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
 
 #if defined(OS_LINUX)
@@ -280,6 +281,9 @@ static void PreSandboxInit() {
 #if defined(ENABLE_PLUGINS)
   // Ensure access to the Pepper plugins before the sandbox is turned on.
   PepperPluginRegistry::PreloadModules();
+#endif
+#if defined(ENABLE_WEBRTC)
+  InitializeWebRtcModule();
 #endif
 }
 

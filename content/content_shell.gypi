@@ -498,11 +498,11 @@
                 'libpeer_target_type%': 'static_library',
               },
               'conditions': [
-                ['libpeer_target_type=="shared_library"', {
+                ['libpeer_target_type!="static_library"', {
                   'copies': [{
                    'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Libraries',
                    'files': [
-                      '<(PRODUCT_DIR)/Libraries/libpeerconnection.dylib',
+                      '<(PRODUCT_DIR)/Libraries/libpeerconnection.so',
                     ],
                   }],
                 }],

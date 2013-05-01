@@ -30,6 +30,7 @@
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
+#include "third_party/libjingle/overrides/init_webrtc.h"
 #include "ui/base/ui_base_switches.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/ppapi/ppapi_interface_factory.h"
@@ -187,6 +188,13 @@ int RendererMain(const MainFunctionParams& parameters) {
 #if defined(ENABLE_PLUGINS)
   // Load pepper plugins before engaging the sandbox.
   PepperPluginRegistry::GetInstance();
+#endif
+#if defined(ENABLE_WEBRTC)
+  // Initialize WebRTC before engaging the sandbox.
+  // NOTE: On linux, this call could already have been made from
+  // zygote_main_linux.cc.  However, calling multiple times from the same thread
+  // is OK.
+  InitializeWebRtcModule();
 #endif
 
   {

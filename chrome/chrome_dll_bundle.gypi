@@ -289,11 +289,11 @@
         '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_200_percent.pak',
       ],
     }],
-    ['enable_webrtc==1 and libpeer_target_type=="shared_library"', {
+    ['enable_webrtc==1 and libpeer_target_type!="static_library"', {
       'copies': [{
        'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Libraries',
        'files': [
-          '<(PRODUCT_DIR)/Libraries/libpeerconnection.dylib',
+          '<(PRODUCT_DIR)/Libraries/libpeerconnection.so',
         ],
       }],
     }],

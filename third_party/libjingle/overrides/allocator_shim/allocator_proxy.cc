@@ -2,37 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <new>
+#include "allocator_shim/allocator_stub.h"
 
-#include "talk/base/basictypes.h"
-
-typedef void* (*AllocateFunction)(std::size_t);
-typedef void (*DellocateFunction)(void*);
-
-#ifndef LIBPEERCONNECTION_IMPLEMENTATION
+#if !defined(LIBPEERCONNECTION_IMPLEMENTATION) || defined(LIBPEERCONNECTION_LIB)
 #error "Only compile the allocator proxy with the shared_library implementation"
 #endif
 
-#ifdef WIN32
-#define ALLOC_EXPORT __declspec(dllexport)
-#else
-#define ALLOC_EXPORT __attribute__((visibility("default")))
+#if defined(OS_MACOSX)
+#error "The allocator proxy isn't supported (or needed) on mac."
 #endif
 
-static AllocateFunction g_alloc = NULL;
-static DellocateFunction g_dealloc = NULL;
-
-// This function will be called by the client code to initialize the allocator
-// routines (see allocator_stub.cc).
-ALLOC_EXPORT
-bool SetProxyAllocator(AllocateFunction alloc, DellocateFunction dealloc) {
-  g_alloc = alloc;
-  g_dealloc = dealloc;
-  return true;
-}
+extern AllocateFunction g_alloc;
+extern DellocateFunction g_dealloc;
 
 // Override the global new/delete routines and proxy them over to the allocator
-// routines handed to us via SetProxyAllocator.
+// routines handed to us via InitializeModule.
 
 void* operator new(std::size_t n) throw() {
   return g_alloc(n);
