@@ -2885,7 +2885,7 @@ libs-support-newlib-crt1() {
   local arch=$1
   setup-biased-bitcode-env ${arch}
   mkdir -p "${INSTALL_LIB_NEWLIB}"
-  spushd "${PNACL_SUPPORT}"
+  spushd "${PNACL_SUPPORT}/bitcode"
 
   StepBanner "LIBS-SUPPORT-NEWLIB" \
              "Install crt1.x & crt1_for_eh.x (linker scripts)"
