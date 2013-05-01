@@ -2,8 +2,43 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#tabpanel-prefs p {
+body {
+  color: #333;
+}
+
+h2 {
+  font-size: 110%;
+}
+
+tabpanel > div {
+  display: -webkit-flex;
+}
+
+tabpanel > div > div {
+  -webkit-flex: 1;
+}
+
+.dump {
   font-family: monospace;
   text-wrap: unrestricted;
   white-space: pre-wrap;
+}
+
+#prefs ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+#prefs ul li {
+  width: 100%;
+}
+
+#prefs ul li button {
+  background-color: transparent;
+  border-style: solid;
+  border-width: 1px;
+  color: #666;
+  cursor: pointer;
+  font-size: 110%;
+  margin-left: 1em;
 }

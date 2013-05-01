@@ -5,7 +5,11 @@
 #include "chrome/browser/ui/webui/translate_internals/translate_internals_ui.h"
 
 #include <string>
+#include <vector>
 
+#include "base/memory/scoped_ptr.h"
+#include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/translate_internals/translate_internals_handler.h"
 #include "chrome/common/url_constants.h"
@@ -21,12 +25,41 @@ using content::WebContents;
 
 namespace {
 
+// Sets the languages to |dict|. Each key is a language code and each value is
+// a language name in the locale.
+void GetLanguages(base::DictionaryValue* dict) {
+  DCHECK(dict);
+
+  const std::string app_locale = g_browser_process->GetApplicationLocale();
+  std::vector<std::string> language_codes;
+  l10n_util::GetAcceptLanguagesForLocale(app_locale, &language_codes);
+
+  for (std::vector<std::string>::iterator it = language_codes.begin();
+       it != language_codes.end(); ++it) {
+    const std::string& lang_code = *it;
+    string16 lang_name =
+        l10n_util::GetDisplayNameForLocale(lang_code, app_locale, false);
+    dict->SetString(lang_code, lang_name);
+  }
+}
+
 content::WebUIDataSource* CreateTranslateInternalsHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUITranslateInternalsHost);
   source->SetDefaultResource(IDR_TRANSLATE_INTERNALS_TRANSLATE_INTERNALS_HTML);
+  source->SetJsonPath("strings.js");
   source->AddResourcePath("translate_internals.js",
                           IDR_TRANSLATE_INTERNALS_TRANSLATE_INTERNALS_JS);
+
+  base::DictionaryValue langs;
+  GetLanguages(&langs);
+  for (base::DictionaryValue::Iterator it(langs); !it.IsAtEnd(); it.Advance()) {
+    std::string key = "language-" + it.key();
+    std::string value;
+    it.value().GetAsString(&value);
+    source->AddString(key, value);
+  }
+
   return source;
 }
 
