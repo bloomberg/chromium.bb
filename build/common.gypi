@@ -83,32 +83,35 @@
         # based on 'buildtype' (i.e. we don't care about saving symbols for
         # non-Official builds).
         'buildtype%': 'Dev',
+
+        'conditions': [
+          # Compute the architecture that we're building for. Default to the
+          # architecture that we're building on.
+          ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+            # This handles the Linux platforms we generally deal with. Anything
+            # else gets passed through, which probably won't work very well;
+            # such hosts should pass an explicit target_arch to gyp.
+            #
+            # NOTE: currently only nacl is generating gyp files on an arm board.
+            #    The arm.* -> arm substitution in chrome's common.gypi isn't
+            #    appropriate in that context as we actually use target_arch==arm
+            #    to me x86 -> arm cross compile. When actually running on an arm
+            #    board, we'll generate ia32 for now, so that the generation
+            #    succeeds.
+            'target_arch%':
+              '<!(uname -m | sed -e "s/i.86/ia32/;s/x86_64/x64/;s/amd64/x64/;s/arm.*/ia32/")'
+          }, {  # OS!="linux"
+            'target_arch%': 'ia32',
+          }],
+        ]
       },
+      # These come from the above variable scope.
       'nacl_standalone%': '<(nacl_standalone)',
-      # Define branding and buildtype on the basis of their settings within the
-      # variables sub-dict above, unless overridden.
+      'target_arch%': '<(target_arch)',
       'branding%': '<(branding)',
       'buildtype%': '<(buildtype)',
-      # Compute the architecture that we're building for. Default to the
-      # architecture that we're building on.
-      'conditions': [
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
-          # This handles the Linux platforms we generally deal with. Anything
-          # else gets passed through, which probably won't work very well; such
-          # hosts should pass an explicit target_arch to gyp.
-          #
-          # NOTE: currently only nacl is generating gyp files on an arm board.
-          #     The arm.* -> arm substitution in chrome's common.gypi isn't
-          #     appropriate in that context as we actually use target_arch==arm
-          #     to me x86 -> arm cross compile. When actually running on an arm
-          #     board, we'll generate ia32 for now, so that the generation
-          #     succeeds.
-          'target_arch%':
-            '<!(uname -m | sed -e "s/i.86/ia32/;s/x86_64/x64/;s/amd64/x64/;s/arm.*/ia32/")'
-        }, {  # OS!="linux"
-          'target_arch%': 'ia32',
-        }],
 
+      'conditions': [
         # The system root for cross-compiles. Default: none.
         # If we are building in chrome we want to rely on chrome's default, which
         # means we can't set a default here.
@@ -125,10 +128,11 @@
     'target_arch%': '<(target_arch)',
     'sysroot%': '<(sysroot)',
     'nacl_standalone%': '<(nacl_standalone)',
-    'nacl_strict_warnings%': 1,
     'branding%': '<(branding)',
     'buildtype%': '<(buildtype)',
     'component%': '<(component)',
+
+    'nacl_strict_warnings%': 1,
     'nacl_validator_ragel%': 1,
 
     'linux2%': 0,

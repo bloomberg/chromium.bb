@@ -68,7 +68,7 @@
         '-lplatform',
         '-lgio',
         '-lm',
-        '-Wl,--section-start,.rodata=<(NACL_IRT_DATA_START)',
+        '-Wl,<(NACL_RODATA_FLAG)=<(NACL_IRT_DATA_START)',
         '-Wl,-Ttext-segment=<(NACL_IRT_TEXT_START)',
       ],
       'conditions': [
@@ -99,7 +99,7 @@
       'sources': ['<@(irt_sources)', '<@(irt_browser)'],
       'include_dirs': ['../../../../ppapi'],
       'conditions': [
-        ['target_arch == "x64" or target_arch == "ia32"', {
+        ['target_arch=="x64" or target_arch=="ia32"', {
           'link_flags': [
              '-r',
              '-nostartfiles',
