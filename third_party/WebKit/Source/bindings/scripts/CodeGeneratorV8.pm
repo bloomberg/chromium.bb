@@ -3412,10 +3412,13 @@ END
 
         if ($interfaceName eq "DOMWindow" && $attribute->signature->extendedAttributes->{"Unforgeable"}) {
             push(@disallowsShadowing, $attribute);
-        } elsif ($attribute->signature->extendedAttributes->{"EnabledAtRuntime"}) {
-            push(@enabledAtRuntimeAttributes, $attribute);
-        } elsif ($attribute->signature->extendedAttributes->{"EnabledPerContext"}) {
-            push(@enabledPerContextAttributes, $attribute);
+        } elsif ($attribute->signature->extendedAttributes->{"EnabledAtRuntime"} || $attribute->signature->extendedAttributes->{"EnabledPerContext"}) {
+            if ($attribute->signature->extendedAttributes->{"EnabledPerContext"}) {
+                push(@enabledPerContextAttributes, $attribute);
+            }
+            if ($attribute->signature->extendedAttributes->{"EnabledAtRuntime"}) {
+                push(@enabledAtRuntimeAttributes, $attribute);
+            }
         } else {
             push(@normalAttributes, $attribute);
         }
@@ -3616,6 +3619,7 @@ END
 
     # Setup the enable-at-runtime attrs if we have them
     foreach my $runtime_attr (@enabledAtRuntimeAttributes) {
+        next if grep { $_ eq $runtime_attr } @enabledPerContextAttributes;
         my $enable_function = GetRuntimeEnableFunctionName($runtime_attr->signature);
         my $conditionalString = GenerateConditionalString($runtime_attr->signature);
         $code .= "\n#if ${conditionalString}\n" if $conditionalString;
@@ -3748,8 +3752,6 @@ END
 void ${v8InterfaceName}::installPerContextProperties(v8::Handle<v8::Object> instance, ${nativeType}* impl, v8::Isolate* isolate)
 {
     v8::Local<v8::Object> proto = v8::Local<v8::Object>::Cast(instance->GetPrototype());
-    // When building QtWebkit with V8 this variable is unused when none of the features are enabled.
-    UNUSED_PARAM(proto);
 END
 
         # Setup the enable-by-settings attrs if we have them
@@ -3757,7 +3759,13 @@ END
             my $enableFunction = GetContextEnableFunction($runtimeAttr->signature);
             my $conditionalString = GenerateConditionalString($runtimeAttr->signature);
             $code .= "\n#if ${conditionalString}\n" if $conditionalString;
-            $code .= "    if (${enableFunction}(impl->document())) {\n";
+            if (grep { $_ eq $runtimeAttr } @enabledAtRuntimeAttributes) {
+                my $runtimeEnableFunction = GetRuntimeEnableFunctionName($runtimeAttr->signature);
+                $code .= "    if (${enableFunction}(impl->document()) && ${runtimeEnableFunction}()) {\n";
+            } else {
+                $code .= "    if (${enableFunction}(impl->document())) {\n";
+            }
+
             $code .= "        static const V8DOMConfiguration::BatchedAttribute attrData =\\\n";
             $code .= GenerateSingleBatchedAttribute($interfaceName, $runtimeAttr, ";", "    ");
             $code .= <<END;
