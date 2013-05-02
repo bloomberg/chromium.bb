@@ -57,7 +57,7 @@ class WebSocketStreamHandleImpl::Context
                               const char*,
                               int) OVERRIDE;
   virtual void DidClose(WebSocketStreamHandle*) OVERRIDE;
-  virtual void DidFail(WebSocketStreamHandle*, int, const string16&);
+  virtual void DidFail(WebSocketStreamHandle*, int, const string16&) OVERRIDE;
 
  private:
   friend class base::RefCounted<Context>;
