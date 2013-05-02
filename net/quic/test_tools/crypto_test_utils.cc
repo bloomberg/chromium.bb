@@ -45,11 +45,12 @@ class CryptoFramerVisitor : public CryptoFramerVisitorInterface {
       : error_(false) {
   }
 
-  void OnError(CryptoFramer* framer) {
+  virtual void OnError(CryptoFramer* framer) OVERRIDE {
     error_ = true;
   }
 
-  void OnHandshakeMessage(const CryptoHandshakeMessage& message) {
+  virtual void OnHandshakeMessage(
+      const CryptoHandshakeMessage& message) OVERRIDE {
     messages_.push_back(message);
   }
 

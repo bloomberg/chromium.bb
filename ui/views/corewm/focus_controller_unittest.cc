@@ -547,7 +547,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     ActivateWindowById(1);
     EXPECT_EQ(1, GetFocusedWindowId());
   }
-  virtual void ShiftFocusOnActivationDueToHide() {
+  virtual void ShiftFocusOnActivationDueToHide() OVERRIDE {
     // Similar to ShiftFocusOnActivation except the activation change is
     // triggered by hiding the active window.
     ActivateWindowById(1);

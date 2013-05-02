@@ -51,7 +51,7 @@ class FakeDevToolsClient : public StubDevToolsClient {
     listener_ = listener;
   }
 
-  const std::string& GetId() OVERRIDE {
+  virtual const std::string& GetId() OVERRIDE {
     return id_;
   }
 

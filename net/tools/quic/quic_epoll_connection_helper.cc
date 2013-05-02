@@ -26,7 +26,7 @@ class RetransmissionAlarm : public EpollAlarm {
       : connection_(connection) {
   }
 
-  virtual int64 OnAlarm() {
+  virtual int64 OnAlarm() OVERRIDE {
     EpollAlarm::OnAlarm();
     // This is safe because this code is Google3 specific, and the
     // Google3 QuicTime's epoch is the unix epoch.
@@ -46,7 +46,7 @@ class SendAlarm : public EpollAlarm {
       : connection_(connection) {
   }
 
-  virtual int64 OnAlarm() {
+  virtual int64 OnAlarm() OVERRIDE {
     EpollAlarm::OnAlarm();
     connection_->OnCanWrite();
     // Never reschedule the alarm, since OnCanWrite does that.
@@ -64,7 +64,7 @@ class TimeoutAlarm : public EpollAlarm {
       : connection_(connection) {
   }
 
-  virtual int64 OnAlarm() {
+  virtual int64 OnAlarm() OVERRIDE {
     EpollAlarm::OnAlarm();
     connection_->CheckForTimeout();
     // Never reschedule the alarm, since CheckForTimeout does that.
@@ -82,7 +82,7 @@ class AckAlarm : public EpollAlarm {
       : connection_(connection) {
   }
 
-  virtual int64 OnAlarm() {
+  virtual int64 OnAlarm() OVERRIDE {
     EpollAlarm::OnAlarm();
     connection_->SendAck();
     return 0;

@@ -4,6 +4,7 @@
 
 #include "components/autofill/browser/autofill_data_model.h"
 
+#include "base/compiler_specific.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
@@ -18,16 +19,17 @@ class TestAutofillDataModel : public AutofillDataModel {
   virtual ~TestAutofillDataModel() {}
 
  private:
-  virtual base::string16 GetRawInfo(AutofillFieldType type) const {
+  virtual base::string16 GetRawInfo(AutofillFieldType type) const OVERRIDE {
     return base::string16();
   }
   virtual void SetRawInfo(AutofillFieldType type,
-                          const base::string16& value) {}
-  virtual void GetSupportedTypes(FieldTypeSet* supported_types) const {}
+                          const base::string16& value) OVERRIDE {}
+  virtual void GetSupportedTypes(
+      FieldTypeSet* supported_types) const OVERRIDE {}
   virtual void FillFormField(const AutofillField& field,
                              size_t variant,
                              const std::string& app_locale,
-                             FormFieldData* field_data) const {}
+                             FormFieldData* field_data) const OVERRIDE {}
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDataModel);
 };

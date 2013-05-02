@@ -113,15 +113,15 @@ class ObjectManagerTest
 
 protected:
   // Called when an object is added.
-  void ObjectAdded(const dbus::ObjectPath& object_path,
-                   const std::string& interface_name) OVERRIDE {
+ virtual void ObjectAdded(const dbus::ObjectPath& object_path,
+                          const std::string& interface_name) OVERRIDE {
     added_objects_.push_back(std::make_pair(object_path, interface_name));
     message_loop_.Quit();
   }
 
   // Called when an object is removed.
-  void ObjectRemoved(const dbus::ObjectPath& object_path,
-                     const std::string& interface_name) OVERRIDE {
+  virtual void ObjectRemoved(const dbus::ObjectPath& object_path,
+                             const std::string& interface_name) OVERRIDE {
     removed_objects_.push_back(std::make_pair(object_path, interface_name));
     message_loop_.Quit();
   }

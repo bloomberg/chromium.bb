@@ -2357,7 +2357,7 @@ class LayerTreeHostTestUninvertibleTransformDoesNotBlockActivation
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void TreeActivatedOnThread(LayerTreeHostImpl* host_impl) {
+  virtual void TreeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     EndTest();
   }
 
@@ -2577,7 +2577,7 @@ class LayerTreeHostTestAsyncReadback : public LayerTreeHostTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void DidCommitAndDrawFrame() {
+  virtual void DidCommitAndDrawFrame() OVERRIDE {
     WaitForCallback();
   }
 
@@ -2639,7 +2639,7 @@ class LayerTreeHostTestAsyncReadback : public LayerTreeHostTest {
     callbacks_.push_back(gfx::Size(bitmap->width(), bitmap->height()));
   }
 
-  virtual void AfterTest() {
+  virtual void AfterTest() OVERRIDE {
     EXPECT_EQ(4u, callbacks_.size());
   }
 
@@ -2700,7 +2700,7 @@ class LayerTreeHostTestAsyncReadbackLayerDestroyed : public LayerTreeHostTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void DidCommit() {
+  virtual void DidCommit() OVERRIDE {
     int frame = layer_tree_host()->commit_number();
     switch (frame) {
       case 1:
@@ -2755,7 +2755,7 @@ class LayerTreeHostTestAsyncReadbackLayerDestroyed : public LayerTreeHostTest {
     ++callback_count_;
   }
 
-  virtual void AfterTest() {}
+  virtual void AfterTest() OVERRIDE {}
 
   int callback_count_;
   FakeContentLayerClient client_;

@@ -24,7 +24,7 @@ class DeleteSessionsAlarm : public EpollAlarm {
       : dispatcher_(dispatcher) {
   }
 
-  virtual int64 OnAlarm() {
+  virtual int64 OnAlarm() OVERRIDE {
     EpollAlarm::OnAlarm();
     dispatcher_->DeleteSessions();
     return 0;

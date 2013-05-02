@@ -1746,7 +1746,7 @@ class WidgetDeleterView : public View {
   WidgetDeleterView() : View() {}
 
   // Overridden from View.
-  bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
     delete GetWidget();
     return true;
   }

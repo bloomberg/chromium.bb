@@ -54,9 +54,7 @@ class TestOAuth2TokenService : public OAuth2TokenService {
   }
 
  protected:
-  std::string GetRefreshToken() OVERRIDE {
-    return refresh_token_;
-  }
+  virtual std::string GetRefreshToken() OVERRIDE { return refresh_token_; }
 
  private:
   std::string refresh_token_;

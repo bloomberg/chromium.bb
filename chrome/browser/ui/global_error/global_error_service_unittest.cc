@@ -74,7 +74,7 @@ class MenuError : public BaseError {
         severity_(severity) {
   }
 
-  virtual Severity GetSeverity() { return severity_; }
+  virtual Severity GetSeverity() OVERRIDE { return severity_; }
 
   virtual bool HasMenuItem() OVERRIDE { return true; }
   virtual int MenuItemCommandID() OVERRIDE { return command_id_; }

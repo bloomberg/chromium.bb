@@ -26,37 +26,45 @@ namespace {
 class CachingBalsaVisitor : public BalsaVisitorInterface {
  public:
   CachingBalsaVisitor() : done_framing_(false) {}
-  virtual void ProcessBodyData(const char* input, size_t size) {
+  virtual void ProcessBodyData(const char* input, size_t size) OVERRIDE {
     AppendToBody(input, size);
   }
   virtual void ProcessTrailers(const BalsaHeaders& trailer) {
     LOG(DFATAL) << "Trailers not supported.";
   }
-  virtual void MessageDone() {
+  virtual void MessageDone() OVERRIDE {
     done_framing_ = true;
   }
-  virtual void HandleHeaderError(BalsaFrame* framer) { UnhandledError(); }
-  virtual void HandleHeaderWarning(BalsaFrame* framer) { UnhandledError(); }
+  virtual void HandleHeaderError(BalsaFrame* framer) OVERRIDE {
+    UnhandledError();
+  }
+  virtual void HandleHeaderWarning(BalsaFrame* framer) OVERRIDE {
+    UnhandledError();
+  }
   virtual void HandleTrailerError(BalsaFrame* framer) { UnhandledError(); }
   virtual void HandleTrailerWarning(BalsaFrame* framer) { UnhandledError(); }
-  virtual void HandleChunkingError(BalsaFrame* framer) { UnhandledError(); }
-  virtual void HandleBodyError(BalsaFrame* framer) { UnhandledError(); }
+  virtual void HandleChunkingError(BalsaFrame* framer) OVERRIDE {
+    UnhandledError();
+  }
+  virtual void HandleBodyError(BalsaFrame* framer) OVERRIDE {
+    UnhandledError();
+  }
   void UnhandledError() {
     LOG(DFATAL) << "Unhandled error framing HTTP.";
   }
-  virtual void ProcessBodyInput(const char*, size_t) {}
-  virtual void ProcessHeaderInput(const char*, size_t) {}
-  virtual void ProcessTrailerInput(const char*, size_t) {}
-  virtual void ProcessHeaders(const net::BalsaHeaders&) {}
+  virtual void ProcessBodyInput(const char*, size_t) OVERRIDE {}
+  virtual void ProcessHeaderInput(const char*, size_t) OVERRIDE {}
+  virtual void ProcessTrailerInput(const char*, size_t) OVERRIDE {}
+  virtual void ProcessHeaders(const net::BalsaHeaders&) OVERRIDE {}
   virtual void ProcessRequestFirstLine(
       const char*, size_t, const char*, size_t,
-      const char*, size_t, const char*, size_t) {}
+      const char*, size_t, const char*, size_t) OVERRIDE {}
   virtual void ProcessResponseFirstLine(
       const char*, size_t, const char*,
-      size_t, const char*, size_t, const char*, size_t) {}
-  virtual void ProcessChunkLength(size_t) {}
-  virtual void ProcessChunkExtensions(const char*, size_t) {}
-  virtual void HeaderDone() {}
+      size_t, const char*, size_t, const char*, size_t) OVERRIDE {}
+  virtual void ProcessChunkLength(size_t) OVERRIDE {}
+  virtual void ProcessChunkExtensions(const char*, size_t) OVERRIDE {}
+  virtual void HeaderDone() OVERRIDE {}
 
   void AppendToBody(const char* input, size_t size) {
     body_.append(input, size);

@@ -32,7 +32,7 @@ class BrowserProcessDetails : public MemoryDetails {
   typedef base::Callback<void(const ProcessData&)> DataCallback;
   explicit BrowserProcessDetails(const DataCallback& callback)
       : callback_(callback) {}
-  virtual void OnDetailsAvailable() {
+  virtual void OnDetailsAvailable() OVERRIDE {
     const std::vector<ProcessData>& browser_processes = processes();
     callback_.Run(browser_processes[0]);
   }

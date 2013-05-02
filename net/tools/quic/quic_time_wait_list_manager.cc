@@ -37,7 +37,7 @@ class GuidCleanUpAlarm : public EpollAlarm {
       : time_wait_list_manager_(time_wait_list_manager) {
   }
 
-  virtual int64 OnAlarm() {
+  virtual int64 OnAlarm() OVERRIDE {
     EpollAlarm::OnAlarm();
     time_wait_list_manager_->CleanUpOldGuids();
     // Let the time wait manager register the alarm at appropriate time.

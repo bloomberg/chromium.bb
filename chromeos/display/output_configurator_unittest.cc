@@ -155,10 +155,12 @@ class TestDelegate : public OutputConfigurator::Delegate {
   virtual void CreateFrameBuffer(
       int width,
       int height,
-      const std::vector<OutputConfigurator::CrtcConfig>& configs) {
-    AppendAction(GetFramebufferAction(width, height,
-        configs.size() >= 1 ? configs[0].crtc : 0,
-        configs.size() >= 2 ? configs[1].crtc : 0));
+      const std::vector<OutputConfigurator::CrtcConfig>& configs) OVERRIDE {
+    AppendAction(
+        GetFramebufferAction(width,
+                             height,
+                             configs.size() >= 1 ? configs[0].crtc : 0,
+                             configs.size() >= 2 ? configs[1].crtc : 0));
   }
   virtual void ConfigureCTM(
       int touch_device_id,
@@ -201,7 +203,7 @@ class TestDelegate : public OutputConfigurator::Delegate {
 class TestStateController : public OutputConfigurator::StateController {
  public:
   TestStateController() : state_(STATE_DUAL_EXTENDED) {}
-  ~TestStateController() {}
+  virtual ~TestStateController() {}
 
   void set_state(OutputState state) { state_ = state; }
 

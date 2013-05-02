@@ -28,7 +28,7 @@ class InterArrivalSenderTest : public ::testing::Test {
     receive_clock_.AdvanceTime(one_ms_);
   }
 
-  ~InterArrivalSenderTest() {
+  virtual ~InterArrivalSenderTest() {
     STLDeleteValues(&sent_packets_);
   }
 

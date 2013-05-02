@@ -232,24 +232,25 @@ class TraceBufferDiscardsEvents : public TraceBuffer {
  public:
   virtual ~TraceBufferDiscardsEvents() { }
 
-  virtual void AddEvent(const TraceEvent& event) { }
-  virtual bool HasMoreEvents() const { return false; }
+  virtual void AddEvent(const TraceEvent& event) OVERRIDE {}
+  virtual bool HasMoreEvents() const OVERRIDE { return false; }
 
-  virtual const TraceEvent& NextEvent() {
+  virtual const TraceEvent& NextEvent() OVERRIDE {
     NOTREACHED();
     return *static_cast<TraceEvent*>(NULL);
   }
 
-  virtual bool IsFull() const { return false; }
+  virtual bool IsFull() const OVERRIDE { return false; }
 
-  virtual size_t CountEnabledByName(const unsigned char* category,
-                                    const std::string& event_name) const {
+  virtual size_t CountEnabledByName(
+      const unsigned char* category,
+      const std::string& event_name) const OVERRIDE {
     return 0;
   }
 
-  virtual size_t Size() const { return 0; }
+  virtual size_t Size() const OVERRIDE { return 0; }
 
-  virtual const TraceEvent& GetEventAt(size_t index) const {
+  virtual const TraceEvent& GetEventAt(size_t index) const OVERRIDE {
     NOTREACHED();
     return *static_cast<TraceEvent*>(NULL);
   }

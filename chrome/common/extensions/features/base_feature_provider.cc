@@ -32,11 +32,11 @@ class LazyFeatureProvider : public FeatureProvider {
         resource_id_(resource_id) {
   }
 
-  virtual Feature* GetFeature(const std::string& name) {
+  virtual Feature* GetFeature(const std::string& name) OVERRIDE {
     return GetBaseFeatureProvider()->GetFeature(name);
   }
 
-  virtual std::set<std::string> GetAllFeatureNames() {
+  virtual std::set<std::string> GetAllFeatureNames() OVERRIDE {
     return GetBaseFeatureProvider()->GetAllFeatureNames();
   }
 

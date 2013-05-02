@@ -123,7 +123,7 @@ class ExtensionCrashRecoveryTestBase : public ExtensionBrowserTest {
 class MessageCenterExtensionCrashRecoveryTest
     : public ExtensionCrashRecoveryTestBase {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionCrashRecoveryTestBase::SetUpCommandLine(command_line);
     command_line->AppendSwitch(
         message_center::switches::kEnableRichNotifications);

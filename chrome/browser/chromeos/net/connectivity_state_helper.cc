@@ -65,7 +65,8 @@ class ConnectivityStateHelperNetworkLibrary
   virtual void RequestScan() const OVERRIDE;
 
   // NetworkLibrary::NetworkManagerObserver overrides.
-  virtual void OnNetworkManagerChanged(NetworkLibrary* network_library);
+  virtual void OnNetworkManagerChanged(
+      NetworkLibrary* network_library) OVERRIDE;
 
  private:
   NetworkLibrary* network_library_;

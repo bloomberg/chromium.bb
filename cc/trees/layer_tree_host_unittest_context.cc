@@ -1374,7 +1374,7 @@ class LayerTreeHostTestCannotCreateIfCannotCreateOutputSurface
       : FakeLayerTreeHostClient(FakeLayerTreeHostClient::DIRECT_3D) {}
 
   // FakeLayerTreeHostClient
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface() {
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE {
     return scoped_ptr<OutputSurface>();
   }
 

@@ -17,7 +17,7 @@ class InterArrivalStateMachineTest : public ::testing::Test {
   InterArrivalStateMachineTest() {
   }
 
-  void SetUp() {
+  virtual void SetUp() {
     state_machine_.reset(new InterArrivalStateMachine(&clock_));
   }
 

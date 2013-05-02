@@ -342,15 +342,15 @@ class ImageRepGdk : public ImageRep {
     }
   }
 
-  virtual int Width() const {
+  virtual int Width() const OVERRIDE {
     return gdk_pixbuf_get_width(pixbuf_);
   }
 
-  virtual int Height() const {
+  virtual int Height() const OVERRIDE {
     return gdk_pixbuf_get_height(pixbuf_);
   }
 
-  virtual gfx::Size Size() const {
+  virtual gfx::Size Size() const OVERRIDE {
     return gfx::Size(Width(), Height());
   }
 
@@ -376,15 +376,15 @@ class ImageRepCairo : public ImageRep {
     delete cairo_cache_;
   }
 
-  virtual int Width() const {
+  virtual int Width() const OVERRIDE {
     return cairo_cache_->Width();
   }
 
-  virtual int Height() const {
+  virtual int Height() const OVERRIDE {
     return cairo_cache_->Height();
   }
 
-  virtual gfx::Size Size() const {
+  virtual gfx::Size Size() const OVERRIDE {
     return gfx::Size(Width(), Height());
   }
 

@@ -18,7 +18,7 @@ class InterArrivalBitrateRampUpTest : public ::testing::Test {
         hundred_ms_(QuicTime::Delta::FromMilliseconds(100)),
         bitrate_ramp_up_(&clock_) {
   }
-  void SetUp() {
+  virtual void SetUp() {
     clock_.AdvanceTime(one_ms_);
   }
   const QuicTime::Delta one_ms_;

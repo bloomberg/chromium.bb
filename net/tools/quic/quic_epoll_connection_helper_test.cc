@@ -33,12 +33,12 @@ const bool kHasData = true;
 
 class TestConnectionHelper : public QuicEpollConnectionHelper {
  public:
-    TestConnectionHelper(int fd, EpollServer* eps)
-        : QuicEpollConnectionHelper(fd, eps) {
-    }
+  TestConnectionHelper(int fd, EpollServer* eps)
+      : QuicEpollConnectionHelper(fd, eps) {
+  }
 
   virtual int WritePacketToWire(const QuicEncryptedPacket& packet,
-                                int* error) {
+                                int* error) OVERRIDE {
     QuicFramer framer(kQuicVersion1,
                       QuicDecrypter::Create(kNULL),
                       QuicEncrypter::Create(kNULL),

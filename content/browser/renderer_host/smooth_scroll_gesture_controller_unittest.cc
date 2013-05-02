@@ -91,8 +91,7 @@ class SmoothScrollGestureControllerTest : public testing::Test {
  public:
   SmoothScrollGestureControllerTest() : process_(NULL) {
   }
-  ~SmoothScrollGestureControllerTest() {
-  }
+  virtual ~SmoothScrollGestureControllerTest() {}
 
  protected:
   // testing::Test implementation:

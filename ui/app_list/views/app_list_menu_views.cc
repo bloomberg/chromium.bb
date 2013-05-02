@@ -94,9 +94,9 @@ class AppListMenuModelAdapter : public views::MenuModelAdapter {
   virtual ~AppListMenuModelAdapter() {}
 
   // Overridden from views::MenuModelAdapter:
-  MenuItemView* AppendMenuItem(MenuItemView* menu,
-                               ui::MenuModel* model,
-                               int index) OVERRIDE {
+  virtual MenuItemView* AppendMenuItem(MenuItemView* menu,
+                                       ui::MenuModel* model,
+                                       int index) OVERRIDE {
     if (!delegate_)
       return NULL;
 

@@ -1526,8 +1526,27 @@
         'grit_defines': ['-D', 'use_concatenated_impulse_responses'],
       }],
       ['clang_use_chrome_plugins==1 and OS!="win"', {
-        'clang_chrome_plugins_flags': [
-          '<!@(<(DEPTH)/tools/clang/scripts/plugin_flags.sh)'
+        'variables': {
+          'clang_chrome_plugins_flags': [
+            '<!@(<(DEPTH)/tools/clang/scripts/plugin_flags.sh)'
+          ],
+        },
+        'conditions': [
+          ['OS=="linux" and chromeos==0', {
+            'clang_chrome_plugins_flags': [
+              '<@(clang_chrome_plugins_flags)'
+            ],
+          }, {
+            # TODO(rsleevi): http://crbug.com/115047 - This warning is only
+            # enabled for Linux for now. Disable everywhere else.
+            'clang_chrome_plugins_flags': [
+              '<@(clang_chrome_plugins_flags)',
+              '-Xclang',
+              '-plugin-arg-find-bad-constructs',
+              '-Xclang',
+              'skip-virtuals-in-implementations',
+            ],
+          }]
         ],
       }],
 

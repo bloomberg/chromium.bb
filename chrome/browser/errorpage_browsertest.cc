@@ -255,7 +255,7 @@ class AddressUnreachableProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   AddressUnreachableProtocolHandler() {}
-  ~AddressUnreachableProtocolHandler() {}
+  virtual ~AddressUnreachableProtocolHandler() {}
 
   // net::URLRequestJobFactory::ProtocolHandler:
   virtual net::URLRequestJob* MaybeCreateJob(

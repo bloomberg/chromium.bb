@@ -102,11 +102,12 @@ class MessageCenterChangeObserver
       const std::string& notification_id) OVERRIDE {
     OnMessageCenterChanged();
   }
-  virtual void OnNotificationRemoved(
-      const std::string& notification_id, bool by_user) {
+  virtual void OnNotificationRemoved(const std::string& notification_id,
+                                     bool by_user) OVERRIDE {
     OnMessageCenterChanged();
   }
-  virtual void OnNotificationUpdated(const std::string& notification_id) {
+  virtual void OnNotificationUpdated(
+      const std::string& notification_id) OVERRIDE {
     OnMessageCenterChanged();
   }
 

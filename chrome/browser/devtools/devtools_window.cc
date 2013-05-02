@@ -138,26 +138,24 @@ class DevToolsConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
         message_(message) {
   }
 
-  virtual string16 GetMessageText() const {
-    return message_;
-  }
+  virtual string16 GetMessageText() const OVERRIDE { return message_; }
 
-  virtual bool Accept() {
+  virtual bool Accept() OVERRIDE {
     callback_.Run(true);
     callback_.Reset();
     return true;
   }
 
-  virtual bool Cancel() {
+  virtual bool Cancel() OVERRIDE {
     callback_.Run(false);
     callback_.Reset();
     return true;
   }
 
-  string16 GetButtonLabel(InfoBarButton button) const {
-    return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
-        IDS_DEV_TOOLS_CONFIRM_ALLOW_BUTTON :
-        IDS_DEV_TOOLS_CONFIRM_DENY_BUTTON);
+  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE {
+    return l10n_util::GetStringUTF16((button == BUTTON_OK)
+                                         ? IDS_DEV_TOOLS_CONFIRM_ALLOW_BUTTON
+                                         : IDS_DEV_TOOLS_CONFIRM_DENY_BUTTON);
   }
 
  private:

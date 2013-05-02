@@ -20,7 +20,7 @@ class FakePicturePileImpl : public PicturePileImpl {
   }
 
  protected:
-  ~FakePicturePileImpl() {}
+  virtual ~FakePicturePileImpl() {}
 };
 
 class TilePriorityForEventualBin : public TilePriority {

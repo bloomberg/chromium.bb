@@ -69,7 +69,7 @@ class LauncherFaviconLoaderBrowsertest
   virtual ~LauncherFaviconLoaderBrowsertest() {
   }
 
-  virtual void SetUpOnMainThread() {
+  virtual void SetUpOnMainThread() OVERRIDE {
     WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     contents_observer_.reset(new ContentsObserver(web_contents));

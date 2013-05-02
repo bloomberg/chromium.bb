@@ -1714,7 +1714,7 @@ class BookmarkBarViewTest21 : public BookmarkBarViewEventTestBase {
  protected:
   // Move the mouse to the empty folder on the bookmark bar and press the
   // left mouse button.
-  virtual void DoTestOnMessageLoop() {
+  virtual void DoTestOnMessageLoop() OVERRIDE {
     views::TextButton* button = GetBookmarkButton(5);
     ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,

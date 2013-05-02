@@ -536,7 +536,7 @@ class ResourceDispatcherHostTest : public testing::Test,
         this, browser_context_->GetResourceContext());
   }
 
-  ~ResourceDispatcherHostTest() {
+  virtual ~ResourceDispatcherHostTest() {
     for (std::set<int>::iterator it = child_ids_.begin();
          it != child_ids_.end(); ++it) {
       host_.CancelRequestsForProcess(*it);

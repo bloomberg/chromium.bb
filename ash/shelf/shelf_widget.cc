@@ -71,13 +71,13 @@ class DimmerView : public views::View,
   }
 
   // ash::internal::BackgroundAnimatorDelegate overrides:
-  virtual void UpdateBackground(int alpha) {
+  virtual void UpdateBackground(int alpha) OVERRIDE {
     alpha_ = alpha;
     SchedulePaint();
   }
 
   // views::View overrides:
-  void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
 
   // A function to test the current alpha used.
   int get_dimming_alpha_for_test() { return alpha_; }
@@ -87,7 +87,7 @@ class DimmerView : public views::View,
   class DimmerEventFilter : public ui::EventHandler {
    public:
     explicit DimmerEventFilter(DimmerView* owner);
-    ~DimmerEventFilter();
+    virtual ~DimmerEventFilter();
 
     // Overridden from ui::EventHandler:
     virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;

@@ -18,7 +18,7 @@ namespace content {
 
 class DomOperationsTests : public ContentBrowserTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kSingleProcess);
 #if defined(OS_WIN) && defined(USE_AURA)
     // Don't want to try to create a GPU process.

@@ -66,7 +66,7 @@ class ServerThread : public base::SimpleThread {
   virtual ~ServerThread() {
   }
 
-  virtual void Run() {
+  virtual void Run() OVERRIDE {
     server_.Listen(address_);
 
     port_lock_.Acquire();

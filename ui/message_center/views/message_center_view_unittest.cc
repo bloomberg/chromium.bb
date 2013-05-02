@@ -40,9 +40,9 @@ class MockNotificationView : public NotificationView {
                                 int view_id);
   virtual ~MockNotificationView();
 
-  virtual gfx::Size GetPreferredSize();
-  virtual int GetHeightForWidth(int w);
-  virtual void Layout();
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual int GetHeightForWidth(int w) OVERRIDE;
+  virtual void Layout() OVERRIDE;
 
   int get_id() { return id_; };
 
@@ -104,7 +104,7 @@ class MessageCenterViewTest : public testing::Test,
   int GetNotificationCount();
   int GetCallCount(CallType type);
 
-  void RegisterCall(int receiver_id, CallType type);
+  virtual void RegisterCall(int receiver_id, CallType type) OVERRIDE;
 
   void LogBounds(int depth, views::View* view);
 

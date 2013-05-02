@@ -448,31 +448,31 @@ class CertLibraryImplStub : public CertLibrary {
   }
   virtual ~CertLibraryImplStub() {}
 
-  virtual void AddObserver(Observer* observer) {}
-  virtual void RemoveObserver(Observer* observer) {}
-  virtual void LoadKeyStore() {}
-  virtual bool CertificatesLoading() const {
+  virtual void AddObserver(Observer* observer) OVERRIDE {}
+  virtual void RemoveObserver(Observer* observer) OVERRIDE {}
+  virtual void LoadKeyStore() OVERRIDE {}
+  virtual bool CertificatesLoading() const OVERRIDE {
     return false;
   }
-  virtual bool CertificatesLoaded() const {
+  virtual bool CertificatesLoaded() const OVERRIDE {
     return true;
   }
-  virtual bool IsHardwareBacked() const {
+  virtual bool IsHardwareBacked() const OVERRIDE {
     return false;
   }
-  virtual const std::string& GetTpmTokenName() const {
+  virtual const std::string& GetTpmTokenName() const OVERRIDE {
     return token_name_;
   }
-  virtual const CertList& GetCertificates() const {
+  virtual const CertList& GetCertificates() const OVERRIDE {
     return cert_list_;
   }
-  virtual const CertList& GetUserCertificates() const {
+  virtual const CertList& GetUserCertificates() const OVERRIDE {
     return cert_list_;
   }
-  virtual const CertList& GetServerCertificates() const {
+  virtual const CertList& GetServerCertificates() const OVERRIDE {
     return cert_list_;
   }
-  virtual const CertList& GetCACertificates() const {
+  virtual const CertList& GetCACertificates() const OVERRIDE {
     return cert_list_;
   }
 

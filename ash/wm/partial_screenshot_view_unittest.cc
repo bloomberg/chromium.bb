@@ -17,14 +17,14 @@ class FakeScreenshotDelegate : public ScreenshotDelegate {
  public:
   FakeScreenshotDelegate() : screenshot_count_(0) {}
 
-  void HandleTakeScreenshotForAllRootWindows() OVERRIDE {}
-  void HandleTakePartialScreenshot(aura::Window* window,
-                                   const gfx::Rect& rect) OVERRIDE {
+  virtual void HandleTakeScreenshotForAllRootWindows() OVERRIDE {}
+  virtual void HandleTakePartialScreenshot(aura::Window* window,
+                                           const gfx::Rect& rect) OVERRIDE {
     rect_ = rect;
     screenshot_count_++;
   }
 
-  bool CanTakeScreenshot() OVERRIDE {
+  virtual bool CanTakeScreenshot() OVERRIDE {
     return true;
   }
 

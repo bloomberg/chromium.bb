@@ -28,7 +28,7 @@ class ComponentExtensionIMEManagerTest :
         on_initialized_callcount_(0) {
   }
 
-  void SetUp() {
+  virtual void SetUp() {
     ime_list_.clear();
 
     ComponentExtensionIME ext1;
@@ -129,7 +129,7 @@ class ComponentExtensionIMEManagerTest :
 
   }
 
-  void TearDown() {
+  virtual void TearDown() {
     EXPECT_EQ(1, on_initialized_callcount_);
     component_ext_mgr_->RemoveObserver(this);
   }
@@ -140,7 +140,7 @@ class ComponentExtensionIMEManagerTest :
   std::vector<ComponentExtensionIME> ime_list_;
 
  private:
-  void OnInitialized() {
+  virtual void OnInitialized() OVERRIDE {
     ++on_initialized_callcount_;
   }
 

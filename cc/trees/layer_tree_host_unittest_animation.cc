@@ -708,7 +708,7 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
 
   virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
                                      LayerTreeHostImpl::FrameData* frame_data,
-                                     bool result) {
+                                     bool result) OVERRIDE {
     if (added_animations_ < 2)
       return result;
     // Act like there is checkerboard when the second animation wants to draw.

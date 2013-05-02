@@ -109,8 +109,7 @@ class QuicDispatcherTest : public ::testing::Test {
         session2_(NULL) {
   }
 
-  ~QuicDispatcherTest() {
-  }
+  virtual ~QuicDispatcherTest() {}
 
   MockConnection* connection1() {
     return reinterpret_cast<MockConnection*>(session1_->connection());
@@ -238,7 +237,7 @@ TEST_F(QuicDispatcherTest, TimeWaitListManager) {
 
 class WriteBlockedListTest : public QuicDispatcherTest {
  public:
-  void SetUp() {
+  virtual void SetUp() {
     IPEndPoint addr(Loopback4(), 1);
 
     EXPECT_CALL(dispatcher_, CreateQuicSession(_, addr, _, &eps_))

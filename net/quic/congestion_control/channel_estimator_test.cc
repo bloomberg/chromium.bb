@@ -12,7 +12,7 @@ namespace test {
 
 class ChannelEstimatorTest : public ::testing::Test {
  protected:
-  void SetUp() {
+  virtual void SetUp() {
     srand(1234);
     packet_size_ = 1200;
     sequence_number_ = 1;

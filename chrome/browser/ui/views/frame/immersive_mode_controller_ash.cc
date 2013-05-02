@@ -92,7 +92,7 @@ class RevealedLockAsh : public ImmersiveRevealedLock {
     controller_->LockRevealedState(animate_reveal);
   }
 
-  ~RevealedLockAsh() {
+  virtual ~RevealedLockAsh() {
     if (controller_)
       controller_->UnlockRevealedState();
   }

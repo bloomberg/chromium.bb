@@ -96,7 +96,7 @@ class LauncherButtonAnimation : public ui::AnimationDelegate {
   }
 
   // ui::AnimationDelegate
-  void AnimationProgressed(const ui::Animation* animation) {
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
     if (animation != &animation_)
       return;
     if (!animation_.is_animating())
@@ -126,7 +126,7 @@ class LauncherButton::BarView : public views::ImageView,
         show_attention_(false) {
   }
 
-  ~BarView() {
+  virtual ~BarView() {
     if (show_attention_)
       LauncherButtonAnimation::GetInstance()->RemoveObserver(this);
   }

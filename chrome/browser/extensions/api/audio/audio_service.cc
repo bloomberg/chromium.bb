@@ -12,11 +12,11 @@ class AudioServiceImpl : public AudioService {
   virtual ~AudioServiceImpl() {}
 
   // Called by listeners to this service to add/remove themselves as observers.
-  virtual void AddObserver(Observer* observer);
-  virtual void RemoveObserver(Observer* observer);
+  virtual void AddObserver(Observer* observer) OVERRIDE;
+  virtual void RemoveObserver(Observer* observer) OVERRIDE;
 
   // Start to query audio device information.
-  virtual void StartGetInfo(const GetInfoCallback& callback);
+  virtual void StartGetInfo(const GetInfoCallback& callback) OVERRIDE;
 };
 
 void AudioServiceImpl::AddObserver(Observer* observer) {

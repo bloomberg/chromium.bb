@@ -78,13 +78,13 @@ class TestEncrypter : public QuicEncrypter {
   virtual bool Encrypt(StringPiece nonce,
                        StringPiece associated_data,
                        StringPiece plaintext,
-                       unsigned char* output) {
+                       unsigned char* output) OVERRIDE {
     CHECK(false) << "Not implemented";
     return false;
   }
   virtual QuicData* EncryptPacket(QuicPacketSequenceNumber sequence_number,
                                   StringPiece associated_data,
-                                  StringPiece plaintext) {
+                                  StringPiece plaintext) OVERRIDE {
     sequence_number_ = sequence_number;
     associated_data_ = associated_data.as_string();
     plaintext_ = plaintext.as_string();
@@ -126,13 +126,13 @@ class TestDecrypter : public QuicDecrypter {
                        StringPiece associated_data,
                        StringPiece ciphertext,
                        unsigned char* output,
-                       size_t* output_length) {
+                       size_t* output_length) OVERRIDE {
     CHECK(false) << "Not implemented";
     return false;
   }
   virtual QuicData* DecryptPacket(QuicPacketSequenceNumber sequence_number,
                                   StringPiece associated_data,
-                                  StringPiece ciphertext) {
+                                  StringPiece ciphertext) OVERRIDE {
     sequence_number_ = sequence_number;
     associated_data_ = associated_data.as_string();
     ciphertext_ = ciphertext.as_string();
