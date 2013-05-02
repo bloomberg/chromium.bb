@@ -67,7 +67,7 @@ public:
         // the holder.
         if ((!DOMWrapperWorld::isolatedWorldsExist() && !canExistInWorker(object)) || holderContainsWrapper(container, holder)) {
             if (ScriptWrappable::wrapperCanBeStoredInObject(object))
-                return ScriptWrappable::getWrapperFromObject(object);
+                return ScriptWrappable::getUnsafeWrapperFromObject(object).handle();
             return mainWorldStore()->m_wrapperMap.get(object);
         }
         return current(container.GetIsolate())->get(object);
@@ -78,7 +78,7 @@ public:
     {
         if (ScriptWrappable::wrapperCanBeStoredInObject(object) && !canExistInWorker(object)) {
             if (LIKELY(!DOMWrapperWorld::isolatedWorldsExist()))
-                return ScriptWrappable::getWrapperFromObject(object);
+                return ScriptWrappable::getUnsafeWrapperFromObject(object).handle();
         }
         return current(isolate)->get(object);
     }
@@ -87,7 +87,7 @@ public:
     static v8::Handle<v8::Object> getWrapperForMainWorld(T* object)
     {
         if (ScriptWrappable::wrapperCanBeStoredInObject(object))
-            return ScriptWrappable::getWrapperFromObject(object);
+            return ScriptWrappable::getUnsafeWrapperFromObject(object).handle();
         return mainWorldStore()->get(object);
     }
 
@@ -107,7 +107,7 @@ public:
     inline v8::Handle<v8::Object> get(T* object)
     {
         if (ScriptWrappable::wrapperCanBeStoredInObject(object) && m_type == MainWorld)
-            return ScriptWrappable::getWrapperFromObject(object);
+            return ScriptWrappable::getUnsafeWrapperFromObject(object).handle();
         return m_wrapperMap.get(object);
     }
 
@@ -141,8 +141,8 @@ private:
     static bool holderContainsWrapper(const HolderContainer& container, ScriptWrappable* wrappable)
     {
         // Verify our assumptions about the main world.
-        ASSERT(wrappable->wrapper().IsEmpty() || container.Holder() != wrappable->wrapper() || current(v8::Isolate::GetCurrent())->m_type == MainWorld);
-        return container.Holder() == wrappable->wrapper();
+        ASSERT(wrappable->unsafePersistent().handle().IsEmpty() || container.Holder() != wrappable->unsafePersistent().handle() || current(v8::Isolate::GetCurrent())->m_type == MainWorld);
+        return container.Holder() == wrappable->unsafePersistent().handle();
     }
 
     WrapperWorldType m_type;

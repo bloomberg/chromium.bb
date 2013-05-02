@@ -44,7 +44,12 @@ namespace WebCore {
 // FIXME: assert that GC doesn't happen during the lifetime of UnsafePersistent.
 template<typename T> class UnsafePersistent {
 public:
+    UnsafePersistent() : m_value(0) { }
     UnsafePersistent(T* value) : m_value(value) { }
+    UnsafePersistent(v8::Persistent<T>& handle)
+    {
+        m_value = *reinterpret_cast<T**>(&handle);
+    }
 
     // The end result is generally unsafe to use, see the class level comment
     // for when it's safe to use.
@@ -57,6 +62,17 @@ public:
     T* value() const
     {
         return m_value;
+    }
+
+    // FIXME: This is unsafe and this function will be removed. If you really
+    // need a persistent handle (which you shouldn't), use copyTo. Calls to this
+    // function will be replaced with constructing a local handle, once we have
+    // an efficient way for doing so.
+    v8::Handle<v8::Object> handle()
+    {
+        v8::Persistent<v8::Object> handle;
+        copyTo(&handle);
+        return handle;
     }
 
 private:
