@@ -10,14 +10,16 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/message_loop.h"
+#include "base/sequenced_task_runner.h"
+#include "base/threading/thread.h"
 #include "chrome/browser/chromeos/drive/fake_file_system.h"
+#include "chrome/browser/chromeos/drive/file_reader.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/google_apis/fake_drive_service.h"
 #include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "content/public/test/test_browser_thread.h"
-#include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -37,62 +39,65 @@ void IncrementCallback(int* num_called) {
 
 }  // namespace
 
-TEST(LocalReaderProxyTest, Read) {
+class ReaderProxyTest : public ::testing::Test {
+ protected:
+  ReaderProxyTest() : io_thread_(BrowserThread::IO, &message_loop_) {
+  }
+
+  virtual void SetUp() OVERRIDE {
+    worker_thread_.reset(new base::Thread("ReaderProxyTest"));
+    ASSERT_TRUE(worker_thread_->Start());
+  }
+
+  virtual void TearDown() OVERRIDE {
+    worker_thread_.reset();
+  }
+
+  MessageLoopForIO message_loop_;
+  content::TestBrowserThread io_thread_;
+
+  scoped_ptr<base::Thread> worker_thread_;
+};
+
+TEST_F(ReaderProxyTest, LocalReaderProxy_Read) {
   // Prepare the test content.
   const base::FilePath kTestFile(
       google_apis::test_util::GetTestFilePath("chromeos/drive/applist.json"));
   std::string expected_content;
   ASSERT_TRUE(file_util::ReadFileToString(kTestFile, &expected_content));
 
-  // The LocalReaderProxy should live on IO thread.
-  MessageLoopForIO io_loop;
-  content::TestBrowserThread io_thread(BrowserThread::IO, &io_loop);
+  // Open the file first.
+  scoped_ptr<util::FileReader> file_reader(
+      new util::FileReader(worker_thread_->message_loop_proxy()));
+  net::TestCompletionCallback callback;
+  file_reader->Open(kTestFile, 0, callback.callback());
+  ASSERT_EQ(net::OK, callback.WaitForResult());
 
-  {
-    // Open the file first.
-    scoped_ptr<net::FileStream> file_stream(new net::FileStream(NULL));
-    net::TestCompletionCallback callback;
-    int result = file_stream->Open(
-        google_apis::test_util::GetTestFilePath("chromeos/drive/applist.json"),
-        base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ |
-        base::PLATFORM_FILE_ASYNC,
-        callback.callback());
-    ASSERT_EQ(net::OK, callback.GetResult(result));
+  // Test instance.
+  LocalReaderProxy proxy(file_reader.Pass());
 
-    // Test instance.
-    LocalReaderProxy proxy(file_stream.Pass());
+  // Prepare the buffer, whose size is smaller than the whole data size.
+  const int kBufferSize = 10;
+  ASSERT_LE(static_cast<size_t>(kBufferSize), expected_content.size());
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
 
-    // Prepare the buffer, whose size is smaller than the whole data size.
-    const int kBufferSize = 10;
-    ASSERT_LE(static_cast<size_t>(kBufferSize), expected_content.size());
-    scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
+  // Read repeatedly, until it is finished.
+  std::string concatenated_content;
+  while (concatenated_content.size() < expected_content.size()) {
+    int result = proxy.Read(buffer.get(), kBufferSize, callback.callback());
+    result = callback.GetResult(result);
 
-    // Read repeatedly, until it is finished.
-    std::string concatenated_content;
-    while (concatenated_content.size() < expected_content.size()) {
-      result = proxy.Read(buffer.get(), kBufferSize, callback.callback());
-      result = callback.GetResult(result);
-
-      // The read content size should be smaller than the buffer size.
-      ASSERT_GT(result, 0);
-      ASSERT_LE(result, kBufferSize);
-      concatenated_content.append(buffer->data(), result);
-    }
-
-    // Make sure the read contant is as same as the file.
-    EXPECT_EQ(expected_content, concatenated_content);
+    // The read content size should be smaller than the buffer size.
+    ASSERT_GT(result, 0);
+    ASSERT_LE(result, kBufferSize);
+    concatenated_content.append(buffer->data(), result);
   }
 
-  // For graceful shutdown, we wait for that the FileStream used above is
-  // actually closed.
-  test_util::WaitForFileStreamClosed();
+  // Make sure the read contant is as same as the file.
+  EXPECT_EQ(expected_content, concatenated_content);
 }
 
-TEST(NetworkReaderProxyTest, EmptyFile) {
-  // The NetworkReaderProxy should live on IO thread.
-  MessageLoopForIO io_loop;
-  content::TestBrowserThread io_thread(BrowserThread::IO, &io_loop);
-
+TEST_F(ReaderProxyTest, NetworkReaderProxy_EmptyFile) {
   NetworkReaderProxy proxy(0, 0, base::Bind(&base::DoNothing));
 
   net::TestCompletionCallback callback;
@@ -104,11 +109,7 @@ TEST(NetworkReaderProxyTest, EmptyFile) {
   EXPECT_EQ(0, result);
 }
 
-TEST(NetworkReaderProxyTest, Read) {
-  // The NetworkReaderProxy should live on IO thread.
-  MessageLoopForIO io_loop;
-  content::TestBrowserThread io_thread(BrowserThread::IO, &io_loop);
-
+TEST_F(ReaderProxyTest, NetworkReaderProxyTest_Read) {
   NetworkReaderProxy proxy(0, 10, base::Bind(&base::DoNothing));
 
   net::TestCompletionCallback callback;
@@ -153,11 +154,7 @@ TEST(NetworkReaderProxyTest, Read) {
   EXPECT_EQ(0, result);
 }
 
-TEST(NetworkReaderProxyTest, ReadWithLimit) {
-  // The NetworkReaderProxy should live on IO thread.
-  MessageLoopForIO io_loop;
-  content::TestBrowserThread io_thread(BrowserThread::IO, &io_loop);
-
+TEST_F(ReaderProxyTest, NetworkReaderProxy_ReadWithLimit) {
   NetworkReaderProxy proxy(10, 10, base::Bind(&base::DoNothing));
 
   net::TestCompletionCallback callback;
@@ -206,11 +203,7 @@ TEST(NetworkReaderProxyTest, ReadWithLimit) {
   EXPECT_EQ(0, result);
 }
 
-TEST(NetworkReaderProxyTest, ErrorWithPendingCallback) {
-  // The NetworkReaderProxy should live on IO thread.
-  MessageLoopForIO io_loop;
-  content::TestBrowserThread io_thread(BrowserThread::IO, &io_loop);
-
+TEST_F(ReaderProxyTest, NetworkReaderProxy_ErrorWithPendingCallback) {
   NetworkReaderProxy proxy(0, 10, base::Bind(&base::DoNothing));
 
   net::TestCompletionCallback callback;
@@ -231,11 +224,7 @@ TEST(NetworkReaderProxyTest, ErrorWithPendingCallback) {
             proxy.Read(buffer.get(), kBufferSize, callback.callback()));
 }
 
-TEST(NetworkReaderProxyTest, ErrorWithPendingData) {
-  // The NetworkReaderProxy should live on IO thread.
-  MessageLoopForIO io_loop;
-  content::TestBrowserThread io_thread(BrowserThread::IO, &io_loop);
-
+TEST_F(ReaderProxyTest, NetworkReaderProxy_ErrorWithPendingData) {
   NetworkReaderProxy proxy(0, 10, base::Bind(&base::DoNothing));
 
   net::TestCompletionCallback callback;
@@ -255,11 +244,7 @@ TEST(NetworkReaderProxyTest, ErrorWithPendingData) {
             proxy.Read(buffer.get(), kBufferSize, callback.callback()));
 }
 
-TEST(NetworkReaderProxyTest, CancelJob) {
-  // The NetworkReaderProxy should live on IO thread.
-  MessageLoopForIO io_loop;
-  content::TestBrowserThread io_thread(BrowserThread::IO, &io_loop);
-
+TEST_F(ReaderProxyTest, NetworkReaderProxy_CancelJob) {
   int num_called = 0;
   {
     NetworkReaderProxy proxy(
@@ -292,6 +277,9 @@ class DriveFileStreamReaderTest : public ::testing::Test {
   virtual void SetUp() OVERRIDE {
     ui_thread_.Start();
 
+    worker_thread_.reset(new base::Thread("DriveFileStreamReaderTest"));
+    ASSERT_TRUE(worker_thread_->Start());
+
     BrowserThread::PostTaskAndReply(
         BrowserThread::UI,
         FROM_HERE,
@@ -309,6 +297,8 @@ class DriveFileStreamReaderTest : public ::testing::Test {
                    base::Unretained(this)),
         base::MessageLoop::QuitClosure());
     message_loop_.Run();
+
+    worker_thread_.reset();
   }
 
   void SetUpOnUIThread() {
@@ -344,6 +334,8 @@ class DriveFileStreamReaderTest : public ::testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
 
+  scoped_ptr<base::Thread> worker_thread_;
+
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
   scoped_ptr<test_util::FakeFileSystem> fake_file_system_;
 };
@@ -357,9 +349,10 @@ TEST_F(DriveFileStreamReaderTest, Read) {
 
   // Create the reader, and initialize it.
   // In this case, the file is not yet locally cached.
-  scoped_ptr<DriveFileStreamReader> reader(
-      new DriveFileStreamReader(GetFileSystemGetter()));
 
+  scoped_ptr<DriveFileStreamReader> reader(new DriveFileStreamReader(
+      GetFileSystemGetter(),
+      worker_thread_->message_loop_proxy()));
   EXPECT_FALSE(reader->IsInitialized());
 
   FileError error = FILE_ERROR_FAILED;
@@ -390,7 +383,8 @@ TEST_F(DriveFileStreamReaderTest, Read) {
   // Create second instance and initialize it.
   // In this case, the file should be cached one.
   reader.reset(
-      new DriveFileStreamReader(GetFileSystemGetter()));
+      new DriveFileStreamReader(GetFileSystemGetter(),
+                                worker_thread_->message_loop_proxy()));
   EXPECT_FALSE(reader->IsInitialized());
 
   error = FILE_ERROR_FAILED;

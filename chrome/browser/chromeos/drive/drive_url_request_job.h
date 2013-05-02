@@ -9,10 +9,15 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "net/url_request/url_request_job.h"
+
+namespace base {
+class SequencedTaskRunner;
+}  // namespace
 
 namespace net {
 class IOBuffer;
@@ -29,7 +34,8 @@ class ResourceEntry;
 // DriveURLRequesetJob is the gateway between network-level drive:...
 // requests for drive resources and DriveFileSytem.  It exposes content URLs
 // formatted as drive:<drive-file-path>.
-// The methods should be run on IO thread.
+// The methods should be run on IO thread, and the operations to communicate
+// with a locally cached file will run on |file_task_runner|.
 class DriveURLRequestJob : public net::URLRequestJob {
  public:
 
@@ -40,6 +46,7 @@ class DriveURLRequestJob : public net::URLRequestJob {
   typedef base::Callback<FileSystemInterface*()> FileSystemGetter;
 
   DriveURLRequestJob(const FileSystemGetter& file_system_getter,
+                     base::SequencedTaskRunner* file_task_runner,
                      net::URLRequest* request,
                      net::NetworkDelegate* network_delegate);
 
@@ -65,6 +72,7 @@ class DriveURLRequestJob : public net::URLRequestJob {
   void OnReadCompleted(int read_result);
 
   const FileSystemGetter file_system_getter_;
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   scoped_ptr<DriveFileStreamReader> stream_reader_;
   scoped_ptr<ResourceEntry> entry_;

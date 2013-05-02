@@ -54,11 +54,6 @@ struct DestroyHelperForTests {
   }
 };
 
-// Waits for the on-going task to close a FileStream.
-// This works when the number of closing task is only one. See also
-// the comments in .cc file.
-void WaitForFileStreamClosed();
-
 }  // namespace test_util
 }  // namespace drive
 

@@ -5,7 +5,11 @@
 #include "chrome/browser/chromeos/drive/drive_url_request_job.h"
 
 #include "base/bind.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/sequenced_task_runner.h"
+#include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread.h"
 #include "chrome/browser/chromeos/drive/drive_file_stream_reader.h"
 #include "chrome/browser/chromeos/drive/fake_file_system.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -28,8 +32,10 @@ namespace {
 class TestURLRequestJobFactory : public net::URLRequestJobFactory {
  public:
   TestURLRequestJobFactory(
-      const DriveURLRequestJob::FileSystemGetter& file_system_getter)
-      : file_system_getter_(file_system_getter) {
+      const DriveURLRequestJob::FileSystemGetter& file_system_getter,
+      base::SequencedTaskRunner* sequenced_task_runner)
+      : file_system_getter_(file_system_getter),
+        sequenced_task_runner_(sequenced_task_runner) {
   }
 
   virtual ~TestURLRequestJobFactory() {}
@@ -40,6 +46,7 @@ class TestURLRequestJobFactory : public net::URLRequestJobFactory {
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE {
     return new DriveURLRequestJob(file_system_getter_,
+                                  sequenced_task_runner_.get(),
                                   request,
                                   network_delegate);
   }
@@ -54,6 +61,7 @@ class TestURLRequestJobFactory : public net::URLRequestJobFactory {
 
  private:
   const DriveURLRequestJob::FileSystemGetter file_system_getter_;
+  scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TestURLRequestJobFactory);
 };
@@ -100,10 +108,14 @@ class DriveURLRequestJobTest : public testing::Test {
         base::MessageLoop::QuitClosure());
     message_loop_.Run();
 
+    scoped_refptr<base::SequencedWorkerPool> blocking_pool =
+        BrowserThread::GetBlockingPool();
     test_network_delegate_.reset(new net::TestNetworkDelegate);
     test_url_request_job_factory_.reset(new TestURLRequestJobFactory(
         base::Bind(&DriveURLRequestJobTest::GetFileSystem,
-                   base::Unretained(this))));
+                   base::Unretained(this)),
+        blocking_pool->GetSequencedTaskRunner(
+            blocking_pool->GetSequenceToken())));
     url_request_context_.reset(new net::URLRequestContext());
     url_request_context_->set_job_factory(test_url_request_job_factory_.get());
     url_request_context_->set_network_delegate(test_network_delegate_.get());
@@ -150,14 +162,17 @@ class DriveURLRequestJobTest : public testing::Test {
     return fake_file_system_.get();
   }
 
-  std::string ReadDriveFileSync(const base::FilePath& file_path) {
-    net::TestCompletionCallback callback;
-    const int kBufferSize = 100;
-    scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
+  bool ReadDriveFileSync(
+      const base::FilePath& file_path, std::string* out_content) {
+    scoped_ptr<base::Thread> worker_thread(
+        new base::Thread("ReadDriveFileSync"));
+    if (!worker_thread->Start())
+      return false;
+
     scoped_ptr<DriveFileStreamReader> reader(new DriveFileStreamReader(
         base::Bind(&DriveURLRequestJobTest::GetFileSystem,
-                   base::Unretained(this))));
-
+                   base::Unretained(this)),
+        worker_thread->message_loop_proxy()));
     FileError error = FILE_ERROR_FAILED;
     scoped_ptr<ResourceEntry> entry;
     reader->Initialize(
@@ -167,17 +182,34 @@ class DriveURLRequestJobTest : public testing::Test {
             google_apis::test_util::CreateCopyResultCallback(
                 &error, &entry)));
     message_loop_.Run();
+    if (error != FILE_ERROR_OK)
+      return false;
 
     // Read data from the reader.
     size_t content_size = entry->file_info().size();
     std::string content;
+    const int kBufferSize = 100;
+    scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
     while (content.size() < content_size) {
+      net::TestCompletionCallback callback;
       int result = reader->Read(buffer.get(), kBufferSize, callback.callback());
       result = callback.GetResult(result);
+      if (result < 0) {
+        // An error is found.
+        return false;
+      }
+      if (result == 0) {
+        // EOF is found.
+        break;
+      }
       content.append(buffer->data(), result);
     }
 
-    return content;
+    if (content_size != content.size())
+      return false;
+
+    *out_content = content;
+    return true;
   }
 
   MessageLoopForIO message_loop_;
@@ -225,10 +257,12 @@ TEST_F(DriveURLRequestJobTest, RegularFile) {
     std::string mime_type;
     request.GetMimeType(&mime_type);
     EXPECT_EQ("audio/mpeg", mime_type);
+
     // Reading file must be done after |request| runs, otherwise
     // it'll create a local cache file, and we cannot test correctly.
-    EXPECT_EQ(ReadDriveFileSync(kTestFilePath),
-              test_delegate_->data_received());
+    std::string expected_data;
+    ASSERT_TRUE(ReadDriveFileSync(kTestFilePath, &expected_data));
+    EXPECT_EQ(expected_data, test_delegate_->data_received());
   }
 
   // For the second time, the locally cached file should be used.
@@ -246,8 +280,10 @@ TEST_F(DriveURLRequestJobTest, RegularFile) {
     std::string mime_type;
     request.GetMimeType(&mime_type);
     EXPECT_EQ("audio/mpeg", mime_type);
-    EXPECT_EQ(ReadDriveFileSync(kTestFilePath),
-              test_delegate_->data_received());
+
+    std::string expected_data;
+    ASSERT_TRUE(ReadDriveFileSync(kTestFilePath, &expected_data));
+    EXPECT_EQ(expected_data, test_delegate_->data_received());
   }
 }
 

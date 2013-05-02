@@ -9,11 +9,12 @@
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/file_reader.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/google_apis/task_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
@@ -55,10 +56,10 @@ int ReadInternal(ScopedVector<std::string>* pending_data,
 
 }  // namespace
 
-LocalReaderProxy::LocalReaderProxy(scoped_ptr<net::FileStream> file_stream)
-    : file_stream_(file_stream.Pass()) {
+LocalReaderProxy::LocalReaderProxy(scoped_ptr<util::FileReader> file_reader)
+    : file_reader_(file_reader.Pass()) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(file_stream_);
+  DCHECK(file_reader_);
 }
 
 LocalReaderProxy::~LocalReaderProxy() {
@@ -67,8 +68,9 @@ LocalReaderProxy::~LocalReaderProxy() {
 int LocalReaderProxy::Read(net::IOBuffer* buffer, int buffer_length,
                            const net::CompletionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(file_stream_);
-  return file_stream_->Read(buffer, buffer_length, callback);
+  DCHECK(file_reader_);
+  file_reader_->Read(buffer, buffer_length, callback);
+  return net::ERR_IO_PENDING;
 }
 
 void LocalReaderProxy::OnGetContent(scoped_ptr<std::string> data) {
@@ -247,8 +249,10 @@ void GetFileContentByPath(
 }  // namespace
 
 DriveFileStreamReader::DriveFileStreamReader(
-    const FileSystemGetter& file_system_getter)
+    const FileSystemGetter& file_system_getter,
+    base::SequencedTaskRunner* file_task_runner)
     : file_system_getter_(file_system_getter),
+      file_task_runner_(file_task_runner),
       weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
@@ -319,33 +323,24 @@ void DriveFileStreamReader::InitializeAfterGetFileContentByPathInitialized(
   }
 
   // Otherwise, open the stream for file.
-  scoped_ptr<net::FileStream> file_stream(new net::FileStream(NULL));
-  net::FileStream* file_stream_ptr = file_stream.get();
-  net::CompletionCallback open_completion_callback = base::Bind(
-      &DriveFileStreamReader::InitializeAfterLocalFileOpen,
-      weak_ptr_factory_.GetWeakPtr(),
-      callback,
-      base::Passed(&entry),
-      base::Passed(&file_stream));
-  int result = file_stream_ptr->Open(
+  scoped_ptr<util::FileReader> file_reader(
+      new util::FileReader(file_task_runner_));
+  util::FileReader* file_reader_ptr = file_reader.get();
+  file_reader_ptr->Open(
       local_cache_file_path,
-      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ |
-      base::PLATFORM_FILE_ASYNC,
-      open_completion_callback);
-
-  if (result == net::ERR_IO_PENDING) {
-    // If the result ERR_IO_PENDING, the callback will be invoked later.
-    // Do nothing here.
-    return;
-  }
-
-  open_completion_callback.Run(result);
+      0,
+      base::Bind(
+          &DriveFileStreamReader::InitializeAfterLocalFileOpen,
+          weak_ptr_factory_.GetWeakPtr(),
+          callback,
+          base::Passed(&entry),
+          base::Passed(&file_reader)));
 }
 
 void DriveFileStreamReader::InitializeAfterLocalFileOpen(
     const InitializeCompletionCallback& callback,
     scoped_ptr<ResourceEntry> entry,
-    scoped_ptr<net::FileStream> file_stream,
+    scoped_ptr<util::FileReader> file_reader,
     int open_result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -354,7 +349,7 @@ void DriveFileStreamReader::InitializeAfterLocalFileOpen(
     return;
   }
 
-  reader_proxy_.reset(new internal::LocalReaderProxy(file_stream.Pass()));
+  reader_proxy_.reset(new internal::LocalReaderProxy(file_reader.Pass()));
   callback.Run(FILE_ERROR_OK, entry.Pass());
 }
 

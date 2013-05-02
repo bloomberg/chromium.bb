@@ -9,18 +9,26 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "net/base/completion_callback.h"
 
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
+
 namespace net {
-class FileStream;
 class IOBuffer;
 }  // namespace net
 
 namespace drive {
+namespace util {
+class FileReader;
+}  // namespace util
+
 namespace internal {
 
 // An interface to dispatch the reading operation. If the file is locally
@@ -44,9 +52,9 @@ class ReaderProxy {
 // The read operation implementation for the locally cached files.
 class LocalReaderProxy : public ReaderProxy {
  public:
-  // The |file_stream| should be the instance which is already opened.
+  // The |file_reader| should be the instance which is already opened.
   // This class takes its ownership.
-  explicit LocalReaderProxy(scoped_ptr<net::FileStream> file_stream);
+  explicit LocalReaderProxy(scoped_ptr<util::FileReader> file_reader);
   virtual ~LocalReaderProxy();
 
   // ReaderProxy overrides.
@@ -56,7 +64,7 @@ class LocalReaderProxy : public ReaderProxy {
   virtual void OnCompleted(FileError error) OVERRIDE;
 
  private:
-  scoped_ptr<net::FileStream> file_stream_;
+  scoped_ptr<util::FileReader> file_reader_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalReaderProxy);
 };
@@ -110,6 +118,8 @@ class ResourceEntry;
 
 // The stream reader for a file in FileSystem. Instances of this class
 // should live on IO thread.
+// Operations to communicate with a locally cached file will run on
+// |file_task_runner| specified by the constructor.
 class DriveFileStreamReader {
  public:
   // Callback to return the FileSystemInterface instance. This is an
@@ -123,8 +133,8 @@ class DriveFileStreamReader {
                               scoped_ptr<ResourceEntry> entry)>
       InitializeCompletionCallback;
 
-  explicit DriveFileStreamReader(
-      const FileSystemGetter& file_system_getter);
+  DriveFileStreamReader(const FileSystemGetter& file_system_getter,
+                        base::SequencedTaskRunner* file_task_runner);
   ~DriveFileStreamReader();
 
   // Returns true if the reader is initialized.
@@ -162,7 +172,7 @@ class DriveFileStreamReader {
   void InitializeAfterLocalFileOpen(
       const InitializeCompletionCallback& callback,
       scoped_ptr<ResourceEntry> entry,
-      scoped_ptr<net::FileStream> file_stream,
+      scoped_ptr<util::FileReader> file_reader,
       int open_result);
 
   // Called when the data is received from the server.
@@ -175,6 +185,7 @@ class DriveFileStreamReader {
       FileError error);
 
   const FileSystemGetter file_system_getter_;
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
   scoped_ptr<internal::ReaderProxy> reader_proxy_;
 
   // This should remain the last member so it'll be destroyed first and

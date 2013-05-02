@@ -45,10 +45,12 @@ std::string FixupMimeType(const std::string& type) {
 
 DriveURLRequestJob::DriveURLRequestJob(
     const FileSystemGetter& file_system_getter,
+    base::SequencedTaskRunner* file_task_runner,
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate)
     : net::URLRequestJob(request, network_delegate),
       file_system_getter_(file_system_getter),
+      file_task_runner_(file_task_runner),
       weak_ptr_factory_(this) {
 }
 
@@ -75,7 +77,8 @@ void DriveURLRequestJob::Start() {
   }
 
   // Initialize the stream reader.
-  stream_reader_.reset(new DriveFileStreamReader(file_system_getter_));
+  stream_reader_.reset(
+      new DriveFileStreamReader(file_system_getter_, file_task_runner_));
   stream_reader_->Initialize(
       drive_file_path,
       base::Bind(&DriveURLRequestJob::OnDriveFileStreamReaderInitialized,

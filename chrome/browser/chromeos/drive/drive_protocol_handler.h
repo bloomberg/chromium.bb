@@ -6,7 +6,12 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_PROTOCOL_HANDLER_H_
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "net/url_request/url_request_job_factory.h"
+
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
 
 namespace drive {
 
@@ -23,6 +28,9 @@ class DriveProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
  private:
   // The profile for processing Drive accesses. Should not be NULL.
   void* profile_id_;
+
+  // The task runner for operations to communicate with a locally cached file.
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveProtocolHandler);
 };
