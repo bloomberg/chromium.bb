@@ -752,12 +752,12 @@ DialogType.isModal = function(type) {
 
     if (!util.platform.newUI()) {
       this.breadcrumbs_ = new BreadcrumbsController(
-           dom.querySelector('#dir-breadcrumbs'));
+          dom.querySelector('#dir-breadcrumbs'), this.metadataCache_);
       this.breadcrumbs_.addEventListener(
            'pathclick', this.onBreadcrumbClick_.bind(this));
     }
     this.searchBreadcrumbs_ = new BreadcrumbsController(
-         dom.querySelector('#search-breadcrumbs'));
+         dom.querySelector('#search-breadcrumbs'), this.metadataCache_);
     this.searchBreadcrumbs_.addEventListener(
          'pathclick', this.onBreadcrumbClick_.bind(this));
     this.searchBreadcrumbs_.setHideLast(true);
