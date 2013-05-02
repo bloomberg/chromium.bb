@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/two_phase_uploader.h"
 
+#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/task_runner.h"
 #include "net/base/net_errors.h"
@@ -134,6 +135,8 @@ void TwoPhaseUploader::UploadFile() {
   url_fetcher_->SetRequestContext(url_request_context_getter_);
   url_fetcher_->SetUploadFilePath(kUploadContentType,
                                   file_path_,
+                                  0,
+                                  kuint64max,
                                   file_task_runner_);
   url_fetcher_->Start();
 }

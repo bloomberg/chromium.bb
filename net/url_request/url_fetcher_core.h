@@ -65,6 +65,8 @@ class URLFetcherCore
                      const std::string& upload_content);
   void SetUploadFilePath(const std::string& upload_content_type,
                          const base::FilePath& file_path,
+                         uint64 range_offset,
+                         uint64 range_length,
                          scoped_refptr<base::TaskRunner> file_task_runner);
   void SetChunkedUpload(const std::string& upload_content_type);
   // Adds a block of data to be uploaded in a POST body. This can only be
@@ -245,6 +247,10 @@ class URLFetcherCore
   bool upload_content_set_;          // SetUploadData has been called
   std::string upload_content_;       // HTTP POST payload
   base::FilePath upload_file_path_;  // Path to file containing POST payload
+  uint64 upload_range_offset_;       // Offset from the beginning of the file
+                                     // to be uploaded.
+  uint64 upload_range_length_;       // The length of the part of file to be
+                                     // uploaded.
   std::string upload_content_type_;  // MIME type of POST payload
   std::string referrer_;             // HTTP Referer header value
   bool is_chunked_upload_;           // True if using chunked transfer encoding

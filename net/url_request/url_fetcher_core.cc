@@ -78,6 +78,8 @@ URLFetcherCore::URLFetcherCore(URLFetcher* fetcher,
       url_request_data_key_(NULL),
       was_fetched_via_proxy_(false),
       upload_content_set_(false),
+      upload_range_offset_(0),
+      upload_range_length_(0),
       is_chunked_upload_(false),
       was_cancelled_(false),
       file_writer_(NULL),
@@ -145,16 +147,22 @@ void URLFetcherCore::SetUploadData(const std::string& upload_content_type,
 void URLFetcherCore::SetUploadFilePath(
     const std::string& upload_content_type,
     const base::FilePath& file_path,
+    uint64 range_offset,
+    uint64 range_length,
     scoped_refptr<base::TaskRunner> file_task_runner) {
   DCHECK(!is_chunked_upload_);
   DCHECK(!upload_content_set_);
   DCHECK(upload_content_.empty());
   DCHECK(upload_file_path_.empty());
+  DCHECK_EQ(upload_range_offset_, 0ULL);
+  DCHECK_EQ(upload_range_length_, 0ULL);
   DCHECK(upload_content_type_.empty());
   DCHECK(!upload_content_type.empty());
 
   upload_content_type_ = upload_content_type;
   upload_file_path_ = file_path;
+  upload_range_offset_ = range_offset;
+  upload_range_length_ = range_length;
   upload_file_task_runner_ = file_task_runner;
   upload_content_set_ = true;
 }
@@ -569,7 +577,9 @@ void URLFetcherCore::StartURLRequest() {
         scoped_ptr<UploadElementReader> reader(new UploadFileElementReader(
             upload_file_task_runner_,
             upload_file_path_,
-            0, kuint64max, base::Time()));
+            upload_range_offset_,
+            upload_range_length_,
+            base::Time()));
         request_->set_upload(make_scoped_ptr(
             UploadDataStream::CreateWithReader(reader.Pass(), 0)));
       }

@@ -4,6 +4,7 @@
 
 #include "net/url_request/url_fetcher_impl.h"
 
+#include <algorithm>
 #include <string>
 
 #include "base/bind.h"
@@ -243,6 +244,11 @@ class URLFetcherPostFileTest : public URLFetcherTest {
  public:
   URLFetcherPostFileTest();
 
+  void SetUploadRange(uint64 range_offset, uint64 range_length) {
+    range_offset_ = range_offset;
+    range_length_ = range_length;
+  }
+
   // URLFetcherTest:
   virtual void CreateFetcher(const GURL& url) OVERRIDE;
 
@@ -251,6 +257,8 @@ class URLFetcherPostFileTest : public URLFetcherTest {
 
  private:
   base::FilePath path_;
+  uint64 range_offset_;
+  uint64 range_length_;
 };
 
 // Version of URLFetcherTest that does a POST instead with empty upload body
@@ -524,7 +532,9 @@ void URLFetcherPostTest::OnURLFetchComplete(const URLFetcher* source) {
   URLFetcherTest::OnURLFetchComplete(source);
 }
 
-URLFetcherPostFileTest::URLFetcherPostFileTest() {
+URLFetcherPostFileTest::URLFetcherPostFileTest()
+    : range_offset_(0),
+      range_length_(kuint64max) {
   PathService::Get(base::DIR_SOURCE_ROOT, &path_);
   path_ = path_.Append(FILE_PATH_LITERAL("net"));
   path_ = path_.Append(FILE_PATH_LITERAL("data"));
@@ -538,19 +548,22 @@ void URLFetcherPostFileTest::CreateFetcher(const GURL& url) {
       io_message_loop_proxy(), request_context()));
   fetcher_->SetUploadFilePath("application/x-www-form-urlencoded",
                               path_,
+                              range_offset_,
+                              range_length_,
                               base::MessageLoopProxy::current());
   fetcher_->Start();
 }
 
 void URLFetcherPostFileTest::OnURLFetchComplete(const URLFetcher* source) {
-  int64 size = 0;
-  ASSERT_EQ(true, file_util::GetFileSize(path_, &size));
-  scoped_ptr<char[]> expected(new char[size]);
-  ASSERT_EQ(size, file_util::ReadFile(path_, expected.get(), size));
+  std::string expected;
+  ASSERT_TRUE(file_util::ReadFileToString(path_, &expected));
+  ASSERT_LE(range_offset_, expected.size());
+  uint64 expected_size =
+      std::min(range_length_, expected.size() - range_offset_);
 
   std::string data;
   EXPECT_TRUE(source->GetResponseAsString(&data));
-  EXPECT_EQ(std::string(&expected[0], size), data);
+  EXPECT_EQ(expected.substr(range_offset_, expected_size), data);
   URLFetcherTest::OnURLFetchComplete(source);
 }
 
@@ -1058,6 +1071,18 @@ TEST_F(URLFetcherPostFileTest, Basic) {
                          TestServer::kLocalhost,
                          base::FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
+
+  CreateFetcher(test_server.GetURL("echo"));
+  MessageLoop::current()->Run();
+}
+
+TEST_F(URLFetcherPostFileTest, Range) {
+  TestServer test_server(TestServer::TYPE_HTTP,
+                         TestServer::kLocalhost,
+                         base::FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
+
+  SetUploadRange(30, 100);
 
   CreateFetcher(test_server.GetURL("echo"));
   MessageLoop::current()->Run();

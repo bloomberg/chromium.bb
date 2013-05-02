@@ -40,6 +40,8 @@ class NET_EXPORT_PRIVATE URLFetcherImpl : public URLFetcher {
   virtual void SetUploadFilePath(
       const std::string& upload_content_type,
       const base::FilePath& file_path,
+      uint64 range_offset,
+      uint64 range_length,
       scoped_refptr<base::TaskRunner> file_task_runner) OVERRIDE;
   virtual void SetChunkedUpload(
       const std::string& upload_content_type) OVERRIDE;
