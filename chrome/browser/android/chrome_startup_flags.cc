@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/common/content_switches.h"
 #include "media/base/media_switches.h"
 
 namespace {
@@ -41,7 +42,9 @@ void SetChromeSpecificCommandLineFlags() {
   SetCommandLineSwitchASCII(
       switches::kPrerenderFromOmnibox,
       switches::kPrerenderFromOmniboxSwitchValueEnabled);
-#if !defined(GOOGLE_TV)
+#if defined(GOOGLE_TV)
+  SetCommandLineSwitch(switches::kPpapiInProcess);
+#else
   SetCommandLineSwitch(switches::kDisableEncryptedMedia);
 #endif
 }
