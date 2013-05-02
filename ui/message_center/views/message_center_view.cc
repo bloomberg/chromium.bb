@@ -8,6 +8,7 @@
 
 #include "base/stl_util.h"
 #include "grit/ui_strings.h"
+#include "ui/base/animation/slide_animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -443,7 +444,10 @@ void RichMessageListView::RemoveNotificationAt(int i) {
   if (GetContentsBounds().IsEmpty()) {
     delete child;
   } else {
-    deleting_views_.insert(child);
+    if (child->layer())
+      deleting_views_.insert(child);
+    else
+      delete child;
     DoUpdateIfPossible();
   }
 }
@@ -519,6 +523,13 @@ void RichMessageListView::ResetRepositionSession() {
 
 void RichMessageListView::OnBoundsAnimatorProgressed(
     views::BoundsAnimator* animator) {
+  DCHECK_EQ(animator_.get(), animator);
+  for (std::set<views::View*>::iterator iter = deleted_when_done_.begin();
+       iter != deleted_when_done_.end(); ++iter) {
+    const ui::SlideAnimation* animation = animator->GetAnimationForView(*iter);
+    if (animation)
+      (*iter)->layer()->SetOpacity(animation->CurrentValueBetween(1.0, 0.0));
+  }
 }
 
 void RichMessageListView::OnBoundsAnimatorDone(
@@ -603,9 +614,9 @@ void RichMessageListView::AnimateChild(views::View* child,
     animator_->AnimateViewTo(
         child, gfx::Rect(child_area.x(), top, child_area.width(), height));
   } else if (deleting_views_.find(child) != deleting_views_.end()) {
-    gfx::Rect target = child->bounds();
-    target.set_x(child_area.right());
-    animator_->AnimateViewTo(child, target);
+    DCHECK(child->layer());
+    // No moves, but animate to fade-out.
+    animator_->AnimateViewTo(child, child->bounds());
     deleted_when_done_.insert(child);
   } else {
     gfx::Rect target(child_area.x(), top, child_area.width(), height);
