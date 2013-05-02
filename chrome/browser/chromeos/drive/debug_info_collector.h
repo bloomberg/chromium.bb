@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 
 namespace drive {
 
@@ -17,7 +17,7 @@ namespace drive {
 // All the method should be called on UI thread.
 class DebugInfoCollector {
  public:
-  DebugInfoCollector(DriveFileSystemInterface* file_system,
+  DebugInfoCollector(FileSystemInterface* file_system,
                      FileCache* file_cache);
   ~DebugInfoCollector();
 
@@ -32,7 +32,7 @@ class DebugInfoCollector {
   void GetMetadata(const GetFilesystemMetadataCallback& callback);
 
  private:
-  DriveFileSystemInterface* file_system_;  // Not owned.
+  FileSystemInterface* file_system_;  // Not owned.
   FileCache* file_cache_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(DebugInfoCollector);

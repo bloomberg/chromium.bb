@@ -8,8 +8,8 @@
 #include "base/file_util.h"
 #include "base/supports_user_data.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/file_write_helper.h"
 #include "content/public/browser/browser_thread.h"
@@ -96,7 +96,7 @@ bool IsPersistedDriveDownload(const base::FilePath& drive_tmp_download_path,
 
 DownloadHandler::DownloadHandler(
     FileWriteHelper* file_write_helper,
-    DriveFileSystemInterface* file_system)
+    FileSystemInterface* file_system)
     : file_write_helper_(file_write_helper),
       file_system_(file_system),
       weak_ptr_factory_(this) {

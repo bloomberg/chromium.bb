@@ -25,9 +25,9 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/search_metadata.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_handler.h"
@@ -1521,7 +1521,7 @@ bool AddMountFunction::RunImpl() {
       if (drive::util::IsUnderDriveMountPoint(path)) {
         drive::DriveSystemService* system_service =
             drive::DriveSystemServiceFactory::GetForProfile(profile_);
-        drive::DriveFileSystemInterface* file_system =
+        drive::FileSystemInterface* file_system =
             system_service ? system_service->file_system() : NULL;
         if (!file_system) {
           SendResponse(false);
@@ -1701,7 +1701,7 @@ bool GetSizeStatsFunction::RunImpl() {
       return true;
     }
 
-    drive::DriveFileSystemInterface* file_system =
+    drive::FileSystemInterface* file_system =
         system_service->file_system();
 
     file_system->GetAvailableSpace(
@@ -2454,7 +2454,7 @@ bool PinDriveFileFunction::RunImpl() {
 
   drive::DriveSystemService* system_service =
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
-  drive::DriveFileSystemInterface* file_system =
+  drive::FileSystemInterface* file_system =
       system_service ? system_service->file_system() : NULL;
   if (!file_system)  // |file_system| is NULL if Drive is disabled.
     return false;

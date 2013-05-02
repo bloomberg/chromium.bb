@@ -22,7 +22,7 @@ class ResourceEntry;
 namespace drive {
 
 class DriveEntryProto;
-class DriveFileSystemInterface;
+class FileSystemInterface;
 class JobScheduler;
 
 namespace file_system {
@@ -31,12 +31,12 @@ namespace file_system {
 // sending the request to the drive API, then updating the local state and
 // metadata to reflect the new state.
 //
-// TODO(kinaba): crbug.com/236771 remove dependency to DriveFileSystemInterface.
+// TODO(kinaba): crbug.com/236771 remove dependency to FileSystemInterface.
 class CreateFileOperation {
  public:
   CreateFileOperation(
       JobScheduler* job_scheduler,
-      DriveFileSystemInterface* file_system,
+      FileSystemInterface* file_system,
       internal::ResourceMetadata* metadata,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
   ~CreateFileOperation();
@@ -70,7 +70,7 @@ class CreateFileOperation {
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
   JobScheduler* job_scheduler_;
-  DriveFileSystemInterface* file_system_;
+  FileSystemInterface* file_system_;
   internal::ResourceMetadata* metadata_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 

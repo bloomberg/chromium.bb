@@ -24,7 +24,7 @@ namespace drive {
 
 class DriveEntryProto;
 class DriveFileStreamReader;
-class DriveFileSystemInterface;
+class FileSystemInterface;
 
 // DriveURLRequesetJob is the gateway between network-level drive:...
 // requests for drive resources and DriveFileSytem.  It exposes content URLs
@@ -33,11 +33,11 @@ class DriveFileSystemInterface;
 class DriveURLRequestJob : public net::URLRequestJob {
  public:
 
-  // Callback to return the DriveFileSystemInterface instance. This is an
+  // Callback to return the FileSystemInterface instance. This is an
   // injecting point for testing.
   // Note that the callback will be copied between threads (IO and UI), and
   // will be called on UI thread.
-  typedef base::Callback<DriveFileSystemInterface*()> FileSystemGetter;
+  typedef base::Callback<FileSystemInterface*()> FileSystemGetter;
 
   DriveURLRequestJob(const FileSystemGetter& file_system_getter,
                      net::URLRequest* request,

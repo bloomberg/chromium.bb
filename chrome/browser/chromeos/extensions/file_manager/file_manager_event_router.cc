@@ -11,8 +11,8 @@
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_notifications.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
@@ -543,7 +543,7 @@ void FileManagerEventRouter::OnMountEvent(
         (error_code == chromeos::MOUNT_ERROR_NONE)) {
       DriveSystemService* system_service =
           DriveSystemServiceFactory::GetForProfile(profile_);
-      drive::DriveFileSystemInterface* file_system =
+      drive::FileSystemInterface* file_system =
           system_service ? system_service->file_system() : NULL;
       if (file_system) {
         file_system->MarkCacheFileAsUnmounted(

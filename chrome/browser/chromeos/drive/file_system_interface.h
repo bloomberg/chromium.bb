@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_SYSTEM_INTERFACE_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_SYSTEM_INTERFACE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_INTERFACE_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_INTERFACE_H_
 
 #include <string>
 #include <vector>
@@ -156,9 +156,9 @@ enum SearchMetadataOptions {
 
 // Drive file system abstraction layer.
 // The interface is defined to make FileSystem mockable.
-class DriveFileSystemInterface {
+class FileSystemInterface {
  public:
-  virtual ~DriveFileSystemInterface() {}
+  virtual ~FileSystemInterface() {}
 
   // Initializes the object. This function should be called before any
   // other functions.
@@ -470,4 +470,4 @@ class DriveFileSystemInterface {
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_SYSTEM_INTERFACE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_INTERFACE_H_

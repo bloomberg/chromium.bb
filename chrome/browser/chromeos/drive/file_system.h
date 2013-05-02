@@ -12,9 +12,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/drive/change_list_loader_observer.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system/drive_operations.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
@@ -46,8 +46,8 @@ namespace internal {
 class ResourceMetadata;
 }  // namespace internal
 
-// The production implementation of DriveFileSystemInterface.
-class FileSystem : public DriveFileSystemInterface,
+// The production implementation of FileSystemInterface.
+class FileSystem : public FileSystemInterface,
                    public ChangeListLoaderObserver,
                    public file_system::OperationObserver {
  public:

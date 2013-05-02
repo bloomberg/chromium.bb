@@ -7,7 +7,7 @@
 #include <string>
 
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "content/public/browser/browser_thread.h"
@@ -26,7 +26,7 @@ const char kMimeTypeOctetStream[] = "application/octet-stream";
 
 CreateFileOperation::CreateFileOperation(
     JobScheduler* job_scheduler,
-    DriveFileSystemInterface* file_system,
+    FileSystemInterface* file_system,
     internal::ResourceMetadata* metadata,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
     : job_scheduler_(job_scheduler),

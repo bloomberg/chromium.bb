@@ -146,7 +146,7 @@ class DriveURLRequestJobTest : public testing::Test {
     fake_drive_service_.reset();
   }
 
-  DriveFileSystemInterface* GetFileSystem() {
+  FileSystemInterface* GetFileSystem() {
     return fake_file_system_.get();
   }
 

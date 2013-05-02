@@ -11,8 +11,8 @@
 #include "base/callback_forward.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 namespace google_apis {
@@ -36,7 +36,7 @@ namespace test_util {
 // of interactions to the FakeDriveService may be bigger than the real
 // implementation.
 // Currently most methods are empty (not implemented).
-class FakeFileSystem : public DriveFileSystemInterface {
+class FakeFileSystem : public FileSystemInterface {
  public:
   explicit FakeFileSystem(
       google_apis::DriveServiceInterface* drive_service);
@@ -46,7 +46,7 @@ class FakeFileSystem : public DriveFileSystemInterface {
   // for testing purpose. Returns true for success.
   bool InitializeForTesting();
 
-  // DriveFileSystemInterface Overrides.
+  // FileSystemInterface Overrides.
   virtual void Initialize() OVERRIDE;
   virtual void AddObserver(FileSystemObserver* observer) OVERRIDE;
   virtual void RemoveObserver(FileSystemObserver* observer) OVERRIDE;

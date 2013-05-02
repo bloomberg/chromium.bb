@@ -12,8 +12,8 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/google_apis/time_util.h"
@@ -168,7 +168,7 @@ base::FileUtilProxy::Entry DriveEntryProtoToFileUtilProxyEntry(
 // FileSystemProxy class implementation.
 
 FileSystemProxy::FileSystemProxy(
-    DriveFileSystemInterface* file_system)
+    FileSystemInterface* file_system)
     : file_system_(file_system) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -194,7 +194,7 @@ void FileSystemProxy::GetFileInfo(
   }
 
   CallFileSystemMethodOnUIThread(
-      base::Bind(&DriveFileSystemInterface::GetEntryInfoByPath,
+      base::Bind(&FileSystemInterface::GetEntryInfoByPath,
                  base::Unretained(file_system_),
                  file_path,
                  google_apis::CreateRelayCallback(
@@ -220,7 +220,7 @@ void FileSystemProxy::Copy(
   }
 
   CallFileSystemMethodOnUIThread(
-      base::Bind(&DriveFileSystemInterface::Copy,
+      base::Bind(&FileSystemInterface::Copy,
                  base::Unretained(file_system_),
                  src_file_path,
                  dest_file_path,
@@ -246,7 +246,7 @@ void FileSystemProxy::Move(
   }
 
   CallFileSystemMethodOnUIThread(
-      base::Bind(&DriveFileSystemInterface::Move,
+      base::Bind(&FileSystemInterface::Move,
                  base::Unretained(file_system_),
                  src_file_path,
                  dest_file_path,
@@ -273,7 +273,7 @@ void FileSystemProxy::ReadDirectory(
   }
 
   CallFileSystemMethodOnUIThread(
-      base::Bind(&DriveFileSystemInterface::ReadDirectoryByPath,
+      base::Bind(&FileSystemInterface::ReadDirectoryByPath,
                  base::Unretained(file_system_),
                  file_path,
                  google_apis::CreateRelayCallback(
@@ -297,7 +297,7 @@ void FileSystemProxy::Remove(
   }
 
   CallFileSystemMethodOnUIThread(
-      base::Bind(&DriveFileSystemInterface::Remove,
+      base::Bind(&FileSystemInterface::Remove,
                  base::Unretained(file_system_),
                  file_path,
                  recursive,
@@ -323,7 +323,7 @@ void FileSystemProxy::CreateDirectory(
   }
 
   CallFileSystemMethodOnUIThread(
-      base::Bind(&DriveFileSystemInterface::CreateDirectory,
+      base::Bind(&FileSystemInterface::CreateDirectory,
                  base::Unretained(file_system_),
                  file_path,
                  exclusive,
@@ -349,7 +349,7 @@ void FileSystemProxy::CreateFile(
   }
 
   CallFileSystemMethodOnUIThread(
-      base::Bind(&DriveFileSystemInterface::CreateFile,
+      base::Bind(&FileSystemInterface::CreateFile,
                  base::Unretained(file_system_),
                  file_path,
                  exclusive,
@@ -384,7 +384,7 @@ void FileSystemProxy::Truncate(
   // Optimize the cases for small |length|, at least for |length| == 0.
   // CreateWritableSnapshotFile downloads the whole content unnecessarily.
   CallFileSystemMethodOnUIThread(
-      base::Bind(&DriveFileSystemInterface::OpenFile,
+      base::Bind(&FileSystemInterface::OpenFile,
                  base::Unretained(file_system_),
                  file_path,
                  google_apis::CreateRelayCallback(
@@ -453,7 +453,7 @@ void FileSystemProxy::OnCreateFileForOpen(
 
   // Open created (or existing) file for writing.
   CallFileSystemMethodOnUIThread(
-      base::Bind(&DriveFileSystemInterface::OpenFile,
+      base::Bind(&FileSystemInterface::OpenFile,
                  base::Unretained(file_system_),
                  file_path,
                  google_apis::CreateRelayCallback(
@@ -500,7 +500,7 @@ void FileSystemProxy::DidTruncate(
   // Truncation finished. We must close the file no matter |truncate_result|
   // indicates an error or not.
   CallFileSystemMethodOnUIThread(
-      base::Bind(&DriveFileSystemInterface::CloseFile,
+      base::Bind(&FileSystemInterface::CloseFile,
                  base::Unretained(file_system_),
                  virtual_path,
                  google_apis::CreateRelayCallback(
@@ -549,7 +549,7 @@ void FileSystemProxy::OpenFile(
         (file_flags & base::PLATFORM_FILE_EXCLUSIVE_WRITE)) {
       // Open existing file for writing.
       CallFileSystemMethodOnUIThread(
-          base::Bind(&DriveFileSystemInterface::OpenFile,
+          base::Bind(&FileSystemInterface::OpenFile,
                      base::Unretained(file_system_),
                      file_path,
                      google_apis::CreateRelayCallback(
@@ -561,7 +561,7 @@ void FileSystemProxy::OpenFile(
     } else {
       // Read-only file open.
       CallFileSystemMethodOnUIThread(
-          base::Bind(&DriveFileSystemInterface::GetFileByPath,
+          base::Bind(&FileSystemInterface::GetFileByPath,
                      base::Unretained(file_system_),
                      file_path,
                      google_apis::CreateRelayCallback(
@@ -574,7 +574,7 @@ void FileSystemProxy::OpenFile(
              (file_flags & base::PLATFORM_FILE_CREATE_ALWAYS)) {
     // Open existing file for writing.
     CallFileSystemMethodOnUIThread(
-        base::Bind(&DriveFileSystemInterface::CreateFile,
+        base::Bind(&FileSystemInterface::CreateFile,
                    base::Unretained(file_system_),
                    file_path,
                    file_flags & base::PLATFORM_FILE_EXCLUSIVE_WRITE,
@@ -602,7 +602,7 @@ void FileSystemProxy::NotifyCloseFile(const FileSystemURL& url) {
     return;
 
   CallFileSystemMethodOnUIThread(
-      base::Bind(&DriveFileSystemInterface::CloseFile,
+      base::Bind(&FileSystemInterface::CloseFile,
                  base::Unretained(file_system_),
                  file_path,
                  google_apis::CreateRelayCallback(
@@ -642,7 +642,7 @@ void FileSystemProxy::CreateSnapshotFile(
   }
 
   CallFileSystemMethodOnUIThread(
-      base::Bind(&DriveFileSystemInterface::GetEntryInfoByPath,
+      base::Bind(&FileSystemInterface::GetEntryInfoByPath,
                  base::Unretained(file_system_),
                  file_path,
                  google_apis::CreateRelayCallback(
@@ -671,7 +671,7 @@ void FileSystemProxy::OnGetEntryInfoByPath(
   util::ConvertProtoToPlatformFileInfo(entry_proto->file_info(), &file_info);
 
   CallFileSystemMethodOnUIThread(
-      base::Bind(&DriveFileSystemInterface::GetFileByPath,
+      base::Bind(&FileSystemInterface::GetFileByPath,
                  base::Unretained(file_system_),
                  entry_path,
                  google_apis::CreateRelayCallback(
@@ -697,7 +697,7 @@ void FileSystemProxy::CreateWritableSnapshotFile(
   }
 
   CallFileSystemMethodOnUIThread(
-      base::Bind(&DriveFileSystemInterface::OpenFile,
+      base::Bind(&FileSystemInterface::OpenFile,
                  base::Unretained(file_system_),
                  file_path,
                  google_apis::CreateRelayCallback(
@@ -827,7 +827,7 @@ void FileSystemProxy::CloseWritableSnapshotFile(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   CallFileSystemMethodOnUIThread(
-      base::Bind(&DriveFileSystemInterface::CloseFile,
+      base::Bind(&FileSystemInterface::CloseFile,
                  base::Unretained(file_system_),
                  virtual_path,
                  google_apis::CreateRelayCallback(

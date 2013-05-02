@@ -16,8 +16,8 @@
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_write_helper.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -49,7 +49,7 @@ const int kReadOnlyFilePermissions = base::PLATFORM_FILE_OPEN |
                                      base::PLATFORM_FILE_EXCLUSIVE_READ |
                                      base::PLATFORM_FILE_ASYNC;
 
-DriveFileSystemInterface* GetFileSystem(Profile* profile) {
+FileSystemInterface* GetFileSystem(Profile* profile) {
   DriveSystemService* system_service =
       DriveSystemServiceFactory::GetForProfile(profile);
   return system_service ? system_service->file_system() : NULL;
@@ -150,7 +150,7 @@ void MaybeSetDriveURL(Profile* profile, const base::FilePath& path, GURL* url) {
   if (!IsUnderDriveMountPoint(path))
     return;
 
-  DriveFileSystemInterface* file_system = GetFileSystem(profile);
+  FileSystemInterface* file_system = GetFileSystem(profile);
   if (!file_system)
     return;
 
@@ -312,7 +312,7 @@ void EnsureDirectoryExists(Profile* profile,
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!callback.is_null());
   if (IsUnderDriveMountPoint(directory)) {
-    DriveFileSystemInterface* file_system = GetFileSystem(profile);
+    FileSystemInterface* file_system = GetFileSystem(profile);
     DCHECK(file_system);
     file_system->CreateDirectory(
         ExtractDrivePath(directory),

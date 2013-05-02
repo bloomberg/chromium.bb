@@ -32,8 +32,8 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chromeos/login/login_state.h"
 #include "content/public/browser/browser_thread.h"
@@ -196,7 +196,7 @@ void ScreenshotSource::SendScreenshot(
     base::FilePath download_path;
     GetScreenshotDirectory(&download_path);
     if (drive::util::IsUnderDriveMountPoint(download_path)) {
-      drive::DriveFileSystemInterface* file_system =
+      drive::FileSystemInterface* file_system =
           drive::DriveSystemServiceFactory::GetForProfile(
               profile_)->file_system();
       file_system->GetFileByResourceId(

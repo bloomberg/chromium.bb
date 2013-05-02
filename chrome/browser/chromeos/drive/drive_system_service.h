@@ -32,9 +32,9 @@ namespace drive {
 
 class DebugInfoCollector;
 class DownloadHandler;
-class DriveFileSystemInterface;
 class DriveWebAppsRegistry;
 class FileCache;
+class FileSystemInterface;
 class FileSystemProxy;
 class FileWriteHelper;
 class JobListInterface;
@@ -77,7 +77,7 @@ class DriveSystemService
   DriveSystemService(Profile* profile,
                      google_apis::DriveServiceInterface* test_drive_service,
                      const base::FilePath& test_cache_root,
-                     DriveFileSystemInterface* test_file_system);
+                     FileSystemInterface* test_file_system);
   virtual ~DriveSystemService();
 
   // Initializes the object. This function should be called before any
@@ -102,7 +102,7 @@ class DriveSystemService
   DebugInfoCollector* debug_info_collector() {
     return debug_info_collector_.get();
   }
-  DriveFileSystemInterface* file_system() { return file_system_.get(); }
+  FileSystemInterface* file_system() { return file_system_.get(); }
   FileWriteHelper* file_write_helper() { return file_write_helper_.get(); }
   DownloadHandler* download_handler() { return download_handler_.get(); }
   DriveWebAppsRegistry* webapps_registry() { return webapps_registry_.get(); }
@@ -165,7 +165,7 @@ class DriveSystemService
   scoped_ptr<DriveWebAppsRegistry> webapps_registry_;
   scoped_ptr<internal::ResourceMetadata,
              util::DestroyHelper> resource_metadata_;
-  scoped_ptr<DriveFileSystemInterface> file_system_;
+  scoped_ptr<FileSystemInterface> file_system_;
   scoped_ptr<FileWriteHelper> file_write_helper_;
   scoped_ptr<DownloadHandler> download_handler_;
   scoped_ptr<SyncClient> sync_client_;

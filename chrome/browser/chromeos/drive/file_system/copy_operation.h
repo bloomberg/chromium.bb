@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class GURL;
@@ -25,7 +25,7 @@ class ResourceEntry;
 namespace drive {
 
 class DriveEntryProto;
-class DriveFileSystemInterface;
+class FileSystemInterface;
 class JobScheduler;
 
 namespace file_system {
@@ -39,7 +39,7 @@ class OperationObserver;
 class CopyOperation {
  public:
   CopyOperation(JobScheduler* job_scheduler,
-                DriveFileSystemInterface* file_system,
+                FileSystemInterface* file_system,
                 internal::ResourceMetadata* metadata,
                 scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
                 OperationObserver* observer);
@@ -198,7 +198,7 @@ class CopyOperation {
                                  const std::string& resource_id);
 
   JobScheduler* job_scheduler_;
-  DriveFileSystemInterface* file_system_;
+  FileSystemInterface* file_system_;
   internal::ResourceMetadata* metadata_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;

@@ -14,7 +14,7 @@ class FilePath;
 namespace drive {
 
 // Interface for classes that need to observe events from classes implementing
-// DriveFileSystemInterface.
+// FileSystemInterface.
 // All events are notified on UI thread.
 class FileSystemObserver {
  public:

@@ -19,8 +19,8 @@ namespace drive {
 
 namespace {
 
-// Helper function to get DriveFileSystemInterface from Profile.
-DriveFileSystemInterface* GetFileSystem(void* profile_id) {
+// Helper function to get FileSystemInterface from Profile.
+FileSystemInterface* GetFileSystem(void* profile_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // |profile_id| needs to be checked with ProfileManager::IsValidProfile

@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_WRITE_HELPER_H_
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 
 namespace base {
 class FilePath;
@@ -16,10 +16,10 @@ class FilePath;
 namespace drive {
 
 // This class provides higher level operations for writing to Drive files over
-// DriveFileSystemInterface.
+// FileSystemInterface.
 class FileWriteHelper {
  public:
-  explicit FileWriteHelper(DriveFileSystemInterface* file_system);
+  explicit FileWriteHelper(FileSystemInterface* file_system);
   ~FileWriteHelper();
 
   // Prepares a local temporary file path and passes it to |callback| on the
@@ -47,7 +47,7 @@ class FileWriteHelper {
   void PrepareWritableFileAndRunAfterCallback(const base::FilePath& file_path);
 
   // File system owned by DriveSystemService.
-  DriveFileSystemInterface* file_system_;
+  FileSystemInterface* file_system_;
 
   // WeakPtrFactory bound to the UI thread.
   // Note: This should remain the last member so it'll be destroyed and

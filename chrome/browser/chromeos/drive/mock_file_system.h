@@ -7,20 +7,20 @@
 
 #include <string>
 
-#include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace drive {
 
 class FileSystemObserver;
 
-// Mock for DriveFileSystemInterface.
-class MockFileSystem : public DriveFileSystemInterface {
+// Mock for FileSystemInterface.
+class MockFileSystem : public FileSystemInterface {
  public:
   MockFileSystem();
   virtual ~MockFileSystem();
 
-  // DriveFileSystemInterface overrides.
+  // FileSystemInterface overrides.
   MOCK_METHOD0(Initialize, void());
   MOCK_METHOD1(AddObserver, void(FileSystemObserver* observer));
   MOCK_METHOD1(RemoveObserver,

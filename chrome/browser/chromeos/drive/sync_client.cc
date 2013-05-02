@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -54,7 +54,7 @@ void CollectBacklog(std::vector<std::string>* to_fetch,
 
 }  // namespace
 
-SyncClient::SyncClient(DriveFileSystemInterface* file_system,
+SyncClient::SyncClient(FileSystemInterface* file_system,
                        FileCache* cache)
     : file_system_(file_system),
       cache_(cache),

@@ -15,7 +15,7 @@ class FileSystemURL;
 namespace drive {
 
 class DriveEntryProto;
-class DriveFileSystemInterface;
+class FileSystemInterface;
 
 typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 
@@ -25,7 +25,7 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   using fileapi::RemoteFileSystemProxyInterface::OpenFileCallback;
 
   // |file_system| is the FileSystem instance owned by DriveSystemService.
-  explicit FileSystemProxy(DriveFileSystemInterface* file_system);
+  explicit FileSystemProxy(FileSystemInterface* file_system);
 
   // Detaches this instance from |file_system_|.
   // Method calls may result in no-op after calling this method.
@@ -198,7 +198,7 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       base::PlatformFile* platform_file,
       base::PlatformFileError* truncate_result);
 
-  DriveFileSystemInterface* file_system_;
+  FileSystemInterface* file_system_;
 };
 
 }  // namespace chromeos

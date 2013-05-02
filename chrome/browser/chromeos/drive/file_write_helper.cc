@@ -24,7 +24,7 @@ void EmitDebugLogForCloseFile(const base::FilePath& file_path,
 
 }  // namespace
 
-FileWriteHelper::FileWriteHelper(DriveFileSystemInterface* file_system)
+FileWriteHelper::FileWriteHelper(FileSystemInterface* file_system)
     : file_system_(file_system),
       weak_ptr_factory_(this) {
   // Must be created in DriveSystemService.

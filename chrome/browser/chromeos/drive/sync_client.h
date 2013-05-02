@@ -11,15 +11,15 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_cache_observer.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_observer.h"
 
 namespace drive {
 
 class FileCacheEntry;
 class DriveEntryProto;
-class DriveFileSystemInterface;
+class FileSystemInterface;
 class FileCache;
 
 // The SyncClient is used to synchronize pinned files on Drive and the
@@ -44,10 +44,10 @@ class SyncClient : public FileSystemObserver,
     UPLOAD,  // Upload a file to the Drive server.
   };
 
-  SyncClient(DriveFileSystemInterface* file_system, FileCache* cache);
+  SyncClient(FileSystemInterface* file_system, FileCache* cache);
   virtual ~SyncClient();
 
-  // DriveFileSystemInterface::Observer overrides.
+  // FileSystemInterface::Observer overrides.
   virtual void OnInitialLoadFinished() OVERRIDE;
   virtual void OnFeedFromServerLoaded() OVERRIDE;
 
@@ -136,7 +136,7 @@ class SyncClient : public FileSystemObserver,
   void OnUploadFileComplete(const std::string& resource_id,
                             FileError error);
 
-  DriveFileSystemInterface* file_system_;  // Owned by DriveSystemService.
+  FileSystemInterface* file_system_;  // Owned by DriveSystemService.
   FileCache* cache_;  // Owned by DriveSystemService.
 
   // List of the resource ids of resources which have a fetch task created.

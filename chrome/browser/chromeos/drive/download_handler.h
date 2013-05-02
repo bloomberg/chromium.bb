@@ -21,7 +21,7 @@ class DownloadManager;
 namespace drive {
 
 class DriveEntryProto;
-class DriveFileSystemInterface;
+class FileSystemInterface;
 class FileWriteHelper;
 
 // Observes downloads to temporary local drive folder. Schedules these
@@ -29,7 +29,7 @@ class FileWriteHelper;
 class DownloadHandler : public AllDownloadItemNotifier::Observer {
  public:
   DownloadHandler(FileWriteHelper* file_write_helper,
-                  DriveFileSystemInterface* file_system);
+                  FileSystemInterface* file_system);
   virtual ~DownloadHandler();
 
   // Utility method to get DownloadHandler with profile.
@@ -93,7 +93,7 @@ class DownloadHandler : public AllDownloadItemNotifier::Observer {
 
   FileWriteHelper* file_write_helper_;
   // The file system owned by DriveSystemService.
-  DriveFileSystemInterface* file_system_;
+  FileSystemInterface* file_system_;
   // Observe the DownloadManager for new downloads.
   scoped_ptr<AllDownloadItemNotifier> notifier_;
 

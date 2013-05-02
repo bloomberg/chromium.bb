@@ -9,10 +9,10 @@
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system/move_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
@@ -75,7 +75,7 @@ struct CopyOperation::StartFileUploadParams {
 
 CopyOperation::CopyOperation(
     JobScheduler* job_scheduler,
-    DriveFileSystemInterface* file_system,
+    FileSystemInterface* file_system,
     internal::ResourceMetadata* metadata,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     OperationObserver* observer)

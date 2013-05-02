@@ -10,8 +10,8 @@
 #include "base/json/json_writer.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
@@ -60,7 +60,7 @@ bool FileTaskExecutor::ExecuteAndNotify(
   DCHECK(current_index_ == 0);
   if (!system_service || !system_service->file_system())
     return false;
-  DriveFileSystemInterface* file_system = system_service->file_system();
+  FileSystemInterface* file_system = system_service->file_system();
 
   // Reset the index, so we know when we're done.
   current_index_ = raw_paths.size();

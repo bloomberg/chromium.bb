@@ -28,7 +28,7 @@ void EmitErrorLog(const std::string& resource_id,
 }  // namespace
 
 StaleCacheFilesRemover::StaleCacheFilesRemover(
-    DriveFileSystemInterface* file_system,
+    FileSystemInterface* file_system,
     FileCache* cache)
     : cache_(cache),
       file_system_(file_system),

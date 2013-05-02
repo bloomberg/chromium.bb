@@ -16,7 +16,7 @@
 namespace drive{
 
 class FileCacheEntry;
-class DriveFileSystemInterface;
+class FileSystemInterface;
 class FileCache;
 
 // This class removes stale cache files, which are present locally, but no
@@ -24,7 +24,7 @@ class FileCache;
 // server from other devices, or from the web interface.
 class StaleCacheFilesRemover : public FileSystemObserver {
  public:
-  StaleCacheFilesRemover(DriveFileSystemInterface* file_system,
+  StaleCacheFilesRemover(FileSystemInterface* file_system,
                          FileCache* cache);
   virtual ~StaleCacheFilesRemover();
 
@@ -50,7 +50,7 @@ class StaleCacheFilesRemover : public FileSystemObserver {
       scoped_ptr<DriveEntryProto> entry_proto);
 
   FileCache* cache_;  // Not owned.
-  DriveFileSystemInterface* file_system_;  // Not owned.
+  FileSystemInterface* file_system_;  // Not owned.
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

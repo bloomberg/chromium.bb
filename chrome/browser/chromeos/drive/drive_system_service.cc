@@ -101,7 +101,7 @@ DriveSystemService::DriveSystemService(
     Profile* profile,
     google_apis::DriveServiceInterface* test_drive_service,
     const base::FilePath& test_cache_root,
-    DriveFileSystemInterface* test_file_system)
+    FileSystemInterface* test_file_system)
     : profile_(profile),
       drive_disabled_(false),
       weak_ptr_factory_(this) {

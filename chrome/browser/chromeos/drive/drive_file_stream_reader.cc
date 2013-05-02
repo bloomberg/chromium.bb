@@ -10,7 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/google_apis/task_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/file_stream.h"
@@ -201,7 +201,7 @@ void NetworkReaderProxy::OnCompleted(FileError error) {
 
 namespace {
 
-// Calls DriveFileSystemInterface::GetFileContentByPath if the file system
+// Calls FileSystemInterface::GetFileContentByPath if the file system
 // is available. If not, the |completion_callback| is invoked with
 // FILE_ERROR_FAILED.
 void GetFileContentByPathOnUIThread(
@@ -212,7 +212,7 @@ void GetFileContentByPathOnUIThread(
     const FileOperationCallback& completion_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DriveFileSystemInterface* file_system = file_system_getter.Run();
+  FileSystemInterface* file_system = file_system_getter.Run();
   if (!file_system) {
     completion_callback.Run(FILE_ERROR_FAILED);
     return;
@@ -224,7 +224,7 @@ void GetFileContentByPathOnUIThread(
                                     completion_callback);
 }
 
-// Helper to run DriveFileSystemInterface::GetFileContentByPath on UI thread.
+// Helper to run FileSystemInterface::GetFileContentByPath on UI thread.
 void GetFileContentByPath(
     const DriveFileStreamReader::FileSystemGetter& file_system_getter,
     const base::FilePath& drive_file_path,

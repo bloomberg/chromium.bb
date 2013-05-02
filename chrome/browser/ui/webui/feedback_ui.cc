@@ -61,8 +61,8 @@
 #include "base/path_service.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system_logs/system_logs_fetcher.h"
@@ -569,7 +569,7 @@ void FeedbackHandler::RefreshSavedScreenshotsCallback(
 void FeedbackHandler::GetMostRecentScreenshotsDrive(
     const base::FilePath& filepath, std::vector<std::string>* saved_screenshots,
     size_t max_saved, base::Closure callback) {
-  drive::DriveFileSystemInterface* file_system =
+  drive::FileSystemInterface* file_system =
       drive::DriveSystemServiceFactory::GetForProfile(
           Profile::FromWebUI(web_ui()))->file_system();
   file_system->ReadDirectoryByPath(

@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 
 namespace base {
@@ -16,7 +16,7 @@ class FilePath;
 
 namespace drive {
 
-class DriveFileSystemInterface;
+class FileSystemInterface;
 class FileCache;
 class JobScheduler;
 
@@ -38,7 +38,7 @@ class DriveOperations {
 
   // Allocates the operation objects and initializes the operation pointers.
   void Init(JobScheduler* job_scheduler,
-            DriveFileSystemInterface* file_system,
+            FileSystemInterface* file_system,
             FileCache* cache,
             internal::ResourceMetadata* metadata,
             scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,

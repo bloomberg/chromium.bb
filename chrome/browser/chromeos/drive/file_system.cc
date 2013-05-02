@@ -246,7 +246,7 @@ void FileSystem::Initialize() {
 
   // Allocate the drive operation handlers.
   drive_operations_.Init(scheduler_,
-                         this,  // DriveFileSystemInterface
+                         this,  // FileSystemInterface
                          cache_,
                          resource_metadata_,
                          blocking_task_runner_,
