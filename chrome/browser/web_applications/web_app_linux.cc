@@ -18,16 +18,8 @@ bool CreatePlatformShortcuts(
     const ShellIntegration::ShortcutInfo& shortcut_info,
     const ShellIntegration::ShortcutLocations& creation_locations) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-
-  std::string shortcut_template;
-  if (!ShellIntegrationLinux::GetDesktopShortcutTemplate(env.get(),
-                                                         &shortcut_template)) {
-    return false;
-  }
   return ShellIntegrationLinux::CreateDesktopShortcut(
-      shortcut_info, creation_locations, shortcut_template);
+      shortcut_info, creation_locations);
 }
 
 void DeletePlatformShortcuts(

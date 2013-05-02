@@ -246,17 +246,6 @@ std::string QuoteArgForDesktopFileExec(const std::string& arg) {
   return quoted;
 }
 
-// Remove keys from the [Desktop Entry] that would be wrong if copied verbatim
-// into the new .desktop file.
-const char* kDesktopKeysToDelete[] = {
-  "GenericName",
-  "Comment",
-  "MimeType",
-  "X-Ayatana-Desktop-Shortcuts",
-  "StartupWMClass",
-  NULL
-};
-
 const char kDesktopEntry[] = "Desktop Entry";
 
 const char kXdgOpenShebang[] = "#!/usr/bin/env xdg-open";
@@ -264,9 +253,6 @@ const char kXdgOpenShebang[] = "#!/usr/bin/env xdg-open";
 const char kXdgSettings[] = "xdg-settings";
 const char kXdgSettingsDefaultBrowser[] = "default-web-browser";
 const char kXdgSettingsDefaultSchemeHandler[] = "default-url-scheme-handler";
-
-// Regex to match a localized key name such as "Name[en_AU]".
-const char kLocalizedKeyRegex[] = "^[A-Za-z0-9\\-]+\\[[^\\]]*\\]$";
 
 }  // namespace
 
@@ -486,6 +472,14 @@ std::string GetDesktopName(base::Environment* env) {
 #endif
 }
 
+std::string GetIconName() {
+#if defined(GOOGLE_CHROME_BUILD)
+  return "google-chrome";
+#else  // CHROMIUM_BUILD
+  return "chromium-browser";
+#endif
+}
+
 ShellIntegration::ShortcutLocations GetExistingShortcutLocations(
     base::Environment* env,
     const base::FilePath& profile_path,
@@ -574,18 +568,6 @@ bool GetExistingShortcutContents(base::Environment* env,
   return false;
 }
 
-bool GetDesktopShortcutTemplate(base::Environment* env,
-                                std::string* output) {
-  base::FilePath template_filename(GetDesktopName(env));
-  if (GetExistingShortcutContents(env, template_filename, output)) {
-    return true;
-  } else {
-    LOG(ERROR) << "Could not find desktop file " << template_filename.value()
-               << ".";
-    return false;
-  }
-}
-
 base::FilePath GetWebShortcutFilename(const GURL& url) {
   // Use a prefix, because xdg-desktop-menu requires it.
   std::string filename =
@@ -625,7 +607,7 @@ base::FilePath GetExtensionShortcutFilename(const base::FilePath& profile_path,
 }
 
 std::string GetDesktopFileContents(
-    const std::string& template_contents,
+    const base::FilePath& chrome_exe_path,
     const std::string& app_name,
     const GURL& url,
     const std::string& extension_id,
@@ -637,59 +619,14 @@ std::string GetDesktopFileContents(
   // Although not required by the spec, Nautilus on Ubuntu Karmic creates its
   // launchers with an xdg-open shebang. Follow that convention.
   std::string output_buffer = std::string(kXdgOpenShebang) + "\n";
-  // An empty file causes a crash with glib <= 2.32, so special case here.
-  if (template_contents.empty())
-    return output_buffer;
 
   // See http://standards.freedesktop.org/desktop-entry-spec/latest/
-  // http://developer.gnome.org/glib/unstable/glib-Key-value-file-parser.html
   GKeyFile* key_file = g_key_file_new();
-  GError* err = NULL;
-  // Loading the data will strip translations and comments from the desktop
-  // file (which we want to do!)
-  if (!g_key_file_load_from_data(
-          key_file,
-          template_contents.c_str(),
-          template_contents.size(),
-          G_KEY_FILE_NONE,
-          &err)) {
-    LOG(WARNING) << "Unable to read desktop file template: " << err->message;
-    g_error_free(err);
-    g_key_file_free(key_file);
-    return output_buffer;
-  }
 
-  // Remove all sections except for the Desktop Entry
-  gsize length = 0;
-  gchar** groups = g_key_file_get_groups(key_file, &length);
-  for (gsize i = 0; i < length; ++i) {
-    if (strcmp(groups[i], kDesktopEntry) != 0) {
-      g_key_file_remove_group(key_file, groups[i], NULL);
-    }
-  }
-  g_strfreev(groups);
-
-  // Remove keys that we won't need.
-  for (const char** current_key = kDesktopKeysToDelete; *current_key;
-       ++current_key) {
-    g_key_file_remove_key(key_file, kDesktopEntry, *current_key, NULL);
-  }
-  // Remove all localized keys.
-  GRegex* localized_key_regex = g_regex_new(kLocalizedKeyRegex,
-                                            static_cast<GRegexCompileFlags>(0),
-                                            static_cast<GRegexMatchFlags>(0),
-                                            NULL);
-  gchar** keys = g_key_file_get_keys(key_file, kDesktopEntry, NULL, NULL);
-  if (keys != NULL) {
-    for (gchar** keys_ptr = keys; *keys_ptr; ++keys_ptr) {
-      if (g_regex_match(localized_key_regex, *keys_ptr,
-                        static_cast<GRegexMatchFlags>(0), NULL)) {
-        g_key_file_remove_key(key_file, kDesktopEntry, *keys_ptr, NULL);
-      }
-    }
-    g_strfreev(keys);
-  }
-  g_regex_unref(localized_key_regex);
+  // Set keys with fixed values.
+  g_key_file_set_string(key_file, kDesktopEntry, "Version", "1.0");
+  g_key_file_set_string(key_file, kDesktopEntry, "Terminal", "false");
+  g_key_file_set_string(key_file, kDesktopEntry, "Type", "Application");
 
   // Set the "Name" key.
   std::string final_title = UTF16ToUTF8(title);
@@ -704,39 +641,30 @@ std::string GetDesktopFileContents(
   g_key_file_set_string(key_file, kDesktopEntry, "Name", final_title.c_str());
 
   // Set the "Exec" key.
-  char* exec_c_string = g_key_file_get_string(key_file, kDesktopEntry, "Exec",
-                                              NULL);
-  if (exec_c_string) {
-    std::string exec_string(exec_c_string);
-    g_free(exec_c_string);
-    base::StringTokenizer exec_tokenizer(exec_string, " ");
-
-    std::string final_path;
-    while (exec_tokenizer.GetNext() && exec_tokenizer.token() != "%U") {
-      if (!final_path.empty())
-        final_path += " ";
-      final_path += exec_tokenizer.token();
+  std::string final_path = chrome_exe_path.value();
+  CommandLine cmd_line(CommandLine::NO_PROGRAM);
+  cmd_line = ShellIntegration::CommandLineArgsForLauncher(
+      url, extension_id, profile_path);
+  const CommandLine::SwitchMap& switch_map = cmd_line.GetSwitches();
+  for (CommandLine::SwitchMap::const_iterator i = switch_map.begin();
+       i != switch_map.end(); ++i) {
+    if (i->second.empty()) {
+      final_path += " --" + i->first;
+    } else {
+      final_path += " " + QuoteArgForDesktopFileExec("--" + i->first +
+                                                     "=" + i->second);
     }
-    CommandLine cmd_line(CommandLine::NO_PROGRAM);
-    cmd_line = ShellIntegration::CommandLineArgsForLauncher(
-        url, extension_id, profile_path);
-    const CommandLine::SwitchMap& switch_map = cmd_line.GetSwitches();
-    for (CommandLine::SwitchMap::const_iterator i = switch_map.begin();
-         i != switch_map.end(); ++i) {
-      if (i->second.empty()) {
-        final_path += " --" + i->first;
-      } else {
-        final_path += " " + QuoteArgForDesktopFileExec("--" + i->first +
-                                                       "=" + i->second);
-      }
-    }
-
-    g_key_file_set_string(key_file, kDesktopEntry, "Exec", final_path.c_str());
   }
 
+  g_key_file_set_string(key_file, kDesktopEntry, "Exec", final_path.c_str());
+
   // Set the "Icon" key.
-  if (!icon_name.empty())
+  if (!icon_name.empty()) {
     g_key_file_set_string(key_file, kDesktopEntry, "Icon", icon_name.c_str());
+  } else {
+    g_key_file_set_string(key_file, kDesktopEntry, "Icon",
+                          GetIconName().c_str());
+  }
 
   // Set the "NoDisplay" key.
   if (no_display)
@@ -748,7 +676,7 @@ std::string GetDesktopFileContents(
                         wmclass.c_str());
 #endif
 
-  length = 0;
+  gsize length = 0;
   gchar* data_dump = g_key_file_to_data(key_file, &length, NULL);
   if (data_dump) {
     // If strlen(data_dump[0]) == 0, this check will fail.
@@ -768,8 +696,7 @@ std::string GetDesktopFileContents(
 
 bool CreateDesktopShortcut(
     const ShellIntegration::ShortcutInfo& shortcut_info,
-    const ShellIntegration::ShortcutLocations& creation_locations,
-    const std::string& shortcut_template) {
+    const ShellIntegration::ShortcutLocations& creation_locations) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   base::FilePath shortcut_filename;
@@ -795,9 +722,16 @@ bool CreateDesktopShortcut(
 
   bool success = true;
 
+  // Get the path to the Chrome executable.
+  base::FilePath chrome_exe_path;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe_path)) {
+    LOG(WARNING) << "Could not get executable path.";
+    return false;
+  }
+
   if (creation_locations.on_desktop) {
     std::string contents = ShellIntegrationLinux::GetDesktopFileContents(
-        shortcut_template,
+        chrome_exe_path,
         app_name,
         shortcut_info.url,
         shortcut_info.extension_id,
@@ -815,7 +749,7 @@ bool CreateDesktopShortcut(
     // Set NoDisplay=true if hidden but not in_applications_menu. This will hide
     // the application from user-facing menus.
     std::string contents = ShellIntegrationLinux::GetDesktopFileContents(
-        shortcut_template,
+        chrome_exe_path,
         app_name,
         shortcut_info.url,
         shortcut_info.extension_id,

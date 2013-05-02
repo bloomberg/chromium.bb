@@ -7,12 +7,14 @@
 #include <cstdlib>
 #include <map>
 
+#include "base/base_paths.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
+#include "base/test/scoped_path_override.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
@@ -65,43 +67,6 @@ class MockEnvironment : public base::Environment {
   std::map<std::string, std::string> variables_;
 
   DISALLOW_COPY_AND_ASSIGN(MockEnvironment);
-};
-
-// Allows you to change the real environment, but reverts changes upon
-// destruction.
-class ScopedEnvironment {
- public:
-  ScopedEnvironment() {}
-
-  ~ScopedEnvironment() {
-    for (std::map<std::string, std::string>::const_iterator
-         it = old_variables_.begin(); it != old_variables_.end(); ++it) {
-      if (it->second.empty()) {
-        unsetenv(it->first.c_str());
-      } else {
-        setenv(it->first.c_str(), it->second.c_str(), 1);
-      }
-    }
-  }
-
-  void Set(const std::string& name, const std::string& value) {
-    if (!ContainsKey(old_variables_, name)) {
-      const char* value = getenv(name.c_str());
-      if (value != NULL) {
-        old_variables_[name] = value;
-      } else {
-        old_variables_[name] = std::string();
-      }
-    }
-    setenv(name.c_str(), value.c_str(), 1);
-  }
-
- private:
-  // Map from name to original value, or the empty string if there was no
-  // previous value.
-  std::map<std::string, std::string> old_variables_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedEnvironment);
 };
 
 }  // namespace
@@ -323,39 +288,6 @@ TEST(ShellIntegrationTest, GetExistingShortcutContents) {
   }
 }
 
-TEST(ShellIntegrationTest, GetDesktopShortcutTemplate) {
-#if defined(GOOGLE_CHROME_BUILD)
-  const char kTemplateFilename[] = "google-chrome.desktop";
-#else  // CHROMIUM_BUILD
-  const char kTemplateFilename[] = "chromium-browser.desktop";
-#endif
-
-  const char kTestData[] = "a magical testing string";
-
-  MessageLoop message_loop;
-  content::TestBrowserThread file_thread(BrowserThread::FILE, &message_loop);
-
-  // Just do a simple test. The details are covered by
-  // GetExistingShortcutContents test.
-  {
-    base::ScopedTempDir temp_dir;
-    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-
-    MockEnvironment env;
-    env.Set("XDG_DATA_HOME", temp_dir.path().value());
-    ASSERT_TRUE(file_util::CreateDirectory(
-        temp_dir.path().AppendASCII("applications")));
-    ASSERT_TRUE(file_util::WriteFile(
-        temp_dir.path().AppendASCII("applications")
-            .AppendASCII(kTemplateFilename),
-        kTestData, strlen(kTestData)));
-    std::string contents;
-    ASSERT_TRUE(ShellIntegrationLinux::GetDesktopShortcutTemplate(&env,
-                                                                  &contents));
-    EXPECT_EQ(kTestData, contents);
-  }
-}
-
 TEST(ShellIntegrationTest, GetWebShortcutFilename) {
   const struct {
     const base::FilePath::CharType* path;
@@ -380,126 +312,25 @@ TEST(ShellIntegrationTest, GetWebShortcutFilename) {
 }
 
 TEST(ShellIntegrationTest, GetDesktopFileContents) {
+  const base::FilePath kChromeExePath("/opt/google/chrome/google-chrome");
   const struct {
     const char* url;
     const char* title;
     const char* icon_name;
     bool nodisplay;
-    const char* template_contents;
     const char* expected_output;
   } test_cases[] = {
-    // Dumb case.
-    { "ignored", "ignored", "ignored", false, "", "#!/usr/bin/env xdg-open\n" },
-
-    // Invalid desktop file.
-    { "ignored", "ignored", "ignored", false, "[Desktop\n",
-      "#!/usr/bin/env xdg-open\n" },
-
-    // Non-empty file without [Desktop Entry].
-    // This tests a different code path to the above.
-    { "http://gmail.com",
-      "GMail",
-      "chrome-http__gmail.com",
-      false,
-      "\n",
-
-      // The resulting shortcut is not useful, but we just want to make sure
-      // this doesn't crash.
-      "#!/usr/bin/env xdg-open\n"
-      "[Desktop Entry]\n"
-      "Name=GMail\n"
-      "Icon=chrome-http__gmail.com\n"
-#if !defined(USE_AURA)
-      // Aura Chrome does not (yet) set WMClass, so we only expect
-      // StartupWMClass on non-Aura builds.
-      "StartupWMClass=gmail.com\n"
-#endif
-    },
-
     // Real-world case.
     { "http://gmail.com",
       "GMail",
       "chrome-http__gmail.com",
       false,
 
-      "[Desktop Entry]\n"
-      "Version=1.0\n"
-      "Encoding=UTF-8\n"
-      "Name=Google Chrome\n"
-      "GenericName=Web Browser\n"
-      "Comment=The web browser from Google\n"
-      "Exec=/opt/google/chrome/google-chrome %U\n"
-      "Terminal=false\n"
-      "Icon=/opt/google/chrome/product_logo_48.png\n"
-      "Type=Application\n"
-      "Categories=Application;Network;WebBrowser;\n"
-      "MimeType=text/html;text/xml;application/xhtml_xml;\n"
-      "X-Ayatana-Desktop-Shortcuts=NewWindow;\n"
-      "\n"
-      "[NewWindow Shortcut Group]\n"
-      "Name=Open New Window\n"
-      "Exec=/opt/google/chrome/google-chrome\n"
-      "TargetEnvironment=Unity\n",
-
       "#!/usr/bin/env xdg-open\n"
       "[Desktop Entry]\n"
       "Version=1.0\n"
-      "Encoding=UTF-8\n"
-      "Name=GMail\n"
-      "Exec=/opt/google/chrome/google-chrome --app=http://gmail.com/\n"
       "Terminal=false\n"
-      "Icon=chrome-http__gmail.com\n"
       "Type=Application\n"
-      "Categories=Application;Network;WebBrowser;\n"
-#if !defined(USE_AURA)
-      // Aura Chrome does not (yet) set WMClass, so we only expect
-      // StartupWMClass on non-Aura builds.
-      "StartupWMClass=gmail.com\n"
-#endif
-    },
-
-    // Make sure we don't insert duplicate shebangs.
-    { "http://gmail.com",
-      "GMail",
-      "chrome-http__gmail.com",
-      false,
-
-      "#!/some/shebang\n"
-      "[Desktop Entry]\n"
-      "Name=Google Chrome\n"
-      "Exec=/opt/google/chrome/google-chrome %U\n",
-
-      "#!/usr/bin/env xdg-open\n"
-      "[Desktop Entry]\n"
-      "Name=GMail\n"
-      "Exec=/opt/google/chrome/google-chrome --app=http://gmail.com/\n"
-      "Icon=chrome-http__gmail.com\n"
-#if !defined(USE_AURA)
-      // Aura Chrome does not (yet) set WMClass, so we only expect
-      // StartupWMClass on non-Aura builds.
-      "StartupWMClass=gmail.com\n"
-#endif
-    },
-
-    // Make sure i18n-ed names and other fields are removed.
-    { "http://gmail.com",
-      "GMail",
-      "chrome-http__gmail.com",
-      false,
-
-      "[Desktop Entry]\n"
-      "Name=Google Chrome\n"
-      "Name[en_AU]=Google Chrome\n"
-      "Name[pl]=Google Chrome\n"
-      "GenericName=Web Browser\n"
-      "GenericName[en_AU]=Web Browser\n"
-      "GenericName[pl]=Navegador Web\n"
-      "Exec=/opt/google/chrome/google-chrome %U\n"
-      "Comment[en_AU]=Some comment.\n"
-      "Comment[pl]=Jakis komentarz.\n",
-
-      "#!/usr/bin/env xdg-open\n"
-      "[Desktop Entry]\n"
       "Name=GMail\n"
       "Exec=/opt/google/chrome/google-chrome --app=http://gmail.com/\n"
       "Icon=chrome-http__gmail.com\n"
@@ -516,17 +347,14 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "",
       false,
 
-      "[Desktop Entry]\n"
-      "Name=Google Chrome\n"
-      "Exec=/opt/google/chrome/google-chrome %U\n"
-      "Comment[pl]=Jakis komentarz.\n"
-      "Icon=/opt/google/chrome/product_logo_48.png\n",
-
       "#!/usr/bin/env xdg-open\n"
       "[Desktop Entry]\n"
+      "Version=1.0\n"
+      "Terminal=false\n"
+      "Type=Application\n"
       "Name=GMail\n"
       "Exec=/opt/google/chrome/google-chrome --app=http://gmail.com/\n"
-      "Icon=/opt/google/chrome/product_logo_48.png\n"
+      "Icon=chromium-browser\n"
 #if !defined(USE_AURA)
       // Aura Chrome does not (yet) set WMClass, so we only expect
       // StartupWMClass on non-Aura builds.
@@ -540,12 +368,11 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "chrome-http__gmail.com",
       true,
 
-      "[Desktop Entry]\n"
-      "Name=Google Chrome\n"
-      "Exec=/opt/google/chrome/google-chrome %U\n",
-
       "#!/usr/bin/env xdg-open\n"
       "[Desktop Entry]\n"
+      "Version=1.0\n"
+      "Terminal=false\n"
+      "Type=Application\n"
       "Name=GMail\n"
       "Exec=/opt/google/chrome/google-chrome --app=http://gmail.com/\n"
       "Icon=chrome-http__gmail.com\n"
@@ -563,12 +390,11 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "chrome-http__evil.com_evil",
       false,
 
-      "[Desktop Entry]\n"
-      "Name=Google Chrome\n"
-      "Exec=/opt/google/chrome/google-chrome %U\n",
-
       "#!/usr/bin/env xdg-open\n"
       "[Desktop Entry]\n"
+      "Version=1.0\n"
+      "Terminal=false\n"
+      "Type=Application\n"
       "Name=http://evil.com/evil%20--join-the-b0tnet\n"
       "Exec=/opt/google/chrome/google-chrome "
       "--app=http://evil.com/evil%20--join-the-b0tnet\n"
@@ -584,12 +410,11 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "chrome-http__evil.com_evil",
       false,
 
-      "[Desktop Entry]\n"
-      "Name=Google Chrome\n"
-      "Exec=/opt/google/chrome/google-chrome %U\n",
-
       "#!/usr/bin/env xdg-open\n"
       "[Desktop Entry]\n"
+      "Version=1.0\n"
+      "Terminal=false\n"
+      "Type=Application\n"
       "Name=Innocent Title\n"
       "Exec=/opt/google/chrome/google-chrome "
       "\"--app=http://evil.com/evil;%20rm%20-rf%20/;%20%22;%20rm%20"
@@ -610,12 +435,11 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "chrome-http__evil.com_evil",
       false,
 
-      "[Desktop Entry]\n"
-      "Name=Google Chrome\n"
-      "Exec=/opt/google/chrome/google-chrome %U\n",
-
       "#!/usr/bin/env xdg-open\n"
       "[Desktop Entry]\n"
+      "Version=1.0\n"
+      "Terminal=false\n"
+      "Type=Application\n"
       "Name=Innocent Title\n"
       "Exec=/opt/google/chrome/google-chrome "
       "--app=http://evil.com/evil%20%7C%20cat%20%60echo%20ownz0red"
@@ -630,18 +454,12 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
     },
   };
 
-  // Set the language to en_AU. This causes glib to copy the en_AU localized
-  // strings into the shortcut file. (We want to test that they are removed.)
-  ScopedEnvironment env;
-  env.Set("LC_ALL", "en_AU.UTF-8");
-  env.Set("LANGUAGE", "en_AU.UTF-8");
-
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); i++) {
     SCOPED_TRACE(i);
     EXPECT_EQ(
         test_cases[i].expected_output,
         ShellIntegrationLinux::GetDesktopFileContents(
-            test_cases[i].template_contents,
+            kChromeExePath,
             web_app::GenerateApplicationNameFromURL(GURL(test_cases[i].url)),
             GURL(test_cases[i].url),
             std::string(),

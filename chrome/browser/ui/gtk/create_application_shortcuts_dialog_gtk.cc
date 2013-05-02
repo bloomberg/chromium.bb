@@ -234,21 +234,9 @@ void CreateApplicationShortcutsDialogGtk::CreateDesktopShortcut(
     const ShellIntegration::ShortcutInfo& shortcut_info,
     const ShellIntegration::ShortcutLocations& creation_locations) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-
-  std::string shortcut_template;
-  if (ShellIntegrationLinux::GetDesktopShortcutTemplate(env.get(),
-                                                        &shortcut_template)) {
-    ShellIntegrationLinux::CreateDesktopShortcut(shortcut_info,
-                                                 creation_locations,
-                                                 shortcut_template);
-    Release();
-  } else {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&CreateApplicationShortcutsDialogGtk::ShowErrorDialog,
-                   this));
-  }
+  ShellIntegrationLinux::CreateDesktopShortcut(shortcut_info,
+                                               creation_locations);
+  Release();
 }
 
 void CreateApplicationShortcutsDialogGtk::ShowErrorDialog() {
