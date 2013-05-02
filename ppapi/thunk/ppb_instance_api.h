@@ -85,6 +85,7 @@ class PPB_Instance_API {
                                          int32_t index) = 0;
 
   // Fullscreen.
+  virtual PP_Bool IsFullscreen(PP_Instance instance) = 0;
   virtual PP_Bool SetFullscreen(PP_Instance instance,
                                 PP_Bool fullscreen) = 0;
   virtual PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size) = 0;

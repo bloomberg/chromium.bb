@@ -324,6 +324,14 @@ void PPB_Instance_Proxy::SelectedFindResultChanged(PP_Instance instance,
   NOTIMPLEMENTED();  // Not proxied yet.
 }
 
+PP_Bool PPB_Instance_Proxy::IsFullscreen(PP_Instance instance) {
+  InstanceData* data = static_cast<PluginDispatcher*>(dispatcher())->
+      GetInstanceData(instance);
+  if (!data)
+    return PP_FALSE;
+  return PP_FromBool(data->view.is_fullscreen);
+}
+
 PP_Bool PPB_Instance_Proxy::SetFullscreen(PP_Instance instance,
                                           PP_Bool fullscreen) {
   PP_Bool result = PP_FALSE;

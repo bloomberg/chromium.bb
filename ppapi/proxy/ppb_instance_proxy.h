@@ -65,6 +65,7 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                                           PP_Bool final_result) OVERRIDE;
   virtual void SelectedFindResultChanged(PP_Instance instance,
                                          int32_t index) OVERRIDE;
+  virtual PP_Bool IsFullscreen(PP_Instance instance) OVERRIDE;
   virtual PP_Bool SetFullscreen(PP_Instance instance,
                                 PP_Bool fullscreen) OVERRIDE;
   virtual PP_Bool GetScreenSize(PP_Instance instance,

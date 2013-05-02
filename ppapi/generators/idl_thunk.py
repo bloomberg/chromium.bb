@@ -159,8 +159,10 @@ def _GetShortName(interface, filter_suffixes):
   return ''.join(parts)
 
 
-def _IsTypeCheck(interface, node):
+def _IsTypeCheck(interface, node, args):
   """Returns true if node represents a type-checking function."""
+  if len(args) == 0 or args[0][0] != 'PP_Resource':
+    return False
   return node.GetName() == 'Is%s' % _GetShortName(interface, ['Dev', 'Private'])
 
 
@@ -360,7 +362,7 @@ def DefineMember(filenode, node, member, release, include_version, meta):
   rtype, name, arrays, args = cgen.GetComponents(member, release, 'return')
   body = 'VLOG(4) << \"%s::%s()\";\n' % (node.GetName(), member.GetName())
 
-  if _IsTypeCheck(node, member):
+  if _IsTypeCheck(node, member, args):
     body += '%s\n' % _MakeEnterLine(filenode, node, member, args[0], False,
                                     None, meta)
     body += 'return PP_FromBool(enter.succeeded());'

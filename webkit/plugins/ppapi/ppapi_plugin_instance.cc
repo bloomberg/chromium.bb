@@ -2124,6 +2124,10 @@ void PluginInstance::SelectedFindResultChanged(PP_Instance instance,
   delegate_->SelectedFindResultChanged(find_identifier_, index);
 }
 
+PP_Bool PluginInstance::IsFullscreen(PP_Instance instance) {
+  return PP_FromBool(view_data_.is_fullscreen);
+}
+
 PP_Bool PluginInstance::SetFullscreen(PP_Instance instance,
                                       PP_Bool fullscreen) {
   return PP_FromBool(SetFullscreen(PP_ToBool(fullscreen)));

@@ -9,6 +9,8 @@
  * handling transitions of a module instance to and from fullscreen mode.
  */
 
+[generate_thunk]
+
 label Chrome {
   M16 = 1.0
 };
