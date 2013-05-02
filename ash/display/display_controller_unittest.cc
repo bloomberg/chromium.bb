@@ -376,7 +376,13 @@ TEST_F(DisplayControllerTest, InvertLayout) {
             DisplayLayout(DisplayLayout::BOTTOM, -80).Invert().ToString());
 }
 
-TEST_F(DisplayControllerTest, SwapPrimary) {
+// Crashes flakily on win8 aura bots: crbug.com/237642
+#if defined(OS_WIN) && defined(USE_AURA)
+#define MAYBE_SwapPrimary DISABLED_SwapPrimary
+#else
+#define MAYBE_SwapPrimary SwapPrimary
+#endif
+TEST_F(DisplayControllerTest, MAYBE_SwapPrimary) {
   DisplayController* display_controller =
       Shell::GetInstance()->display_controller();
 
@@ -468,7 +474,13 @@ TEST_F(DisplayControllerTest, SwapPrimary) {
   EXPECT_TRUE(primary_root->Contains(launcher_window));
 }
 
-TEST_F(DisplayControllerTest, SwapPrimaryById) {
+// Crashes flakily on win8 aura bots: crbug.com/237642
+#if defined(OS_WIN) && defined(USE_AURA)
+#define MAYBE_SwapPrimaryById DISABLED_SwapPrimaryById
+#else
+#define MAYBE_SwapPrimaryById SwapPrimaryById
+#endif
+TEST_F(DisplayControllerTest, MAYBE_SwapPrimaryById) {
   DisplayController* display_controller =
       Shell::GetInstance()->display_controller();
 
