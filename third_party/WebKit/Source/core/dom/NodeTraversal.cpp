@@ -30,6 +30,50 @@
 namespace WebCore {
 namespace NodeTraversal {
 
+Node* previousIncludingPseudo(const Node* current, const Node* stayWithin)
+{
+    if (current == stayWithin)
+        return 0;
+    if (Node* previous = current->pseudoAwarePreviousSibling()) {
+        while (previous->pseudoAwareLastChild())
+            previous = previous->pseudoAwareLastChild();
+        return previous;
+    }
+    return current->parentNode();
+}
+
+Node* nextIncludingPseudo(const Node* current, const Node* stayWithin)
+{
+    if (Node* next = current->pseudoAwareFirstChild())
+        return next;
+    if (current == stayWithin)
+        return 0;
+    if (Node* next = current->pseudoAwareNextSibling())
+        return next;
+    for (current = current->parentNode(); current; current = current->parentNode()) {
+        if (current == stayWithin)
+            return 0;
+        if (Node* next = current->pseudoAwareNextSibling())
+            return next;
+    }
+    return 0;
+}
+
+Node* nextIncludingPseudoSkippingChildren(const Node* current, const Node* stayWithin)
+{
+    if (current == stayWithin)
+        return 0;
+    if (Node* next = current->pseudoAwareNextSibling())
+        return next;
+    for (current = current->parentNode(); current; current = current->parentNode()) {
+        if (current == stayWithin)
+            return 0;
+        if (Node* next = current->pseudoAwareNextSibling())
+            return next;
+    }
+    return 0;
+}
+
 Node* nextAncestorSibling(const Node* current)
 {
     ASSERT(!current->nextSibling());
