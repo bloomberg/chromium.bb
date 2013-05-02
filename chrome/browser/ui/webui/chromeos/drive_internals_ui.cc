@@ -90,6 +90,10 @@ void GetGCacheContents(const base::FilePath& root_path,
     entry->SetString(
         "last_modified",
         google_apis::util::FormatTimeAsStringLocaltime(last_modified));
+    // Print lower 9 bits in octal format.
+    entry->SetString(
+        "permission",
+        base::StringPrintf("%03o", find_info.stat.st_mode & 0x1ff));
     files[current] = entry;
 
     total_size += size;

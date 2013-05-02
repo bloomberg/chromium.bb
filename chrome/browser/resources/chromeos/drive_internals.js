@@ -51,6 +51,7 @@ function updateGCacheContents(gcacheContents, gcacheSummary) {
     tr.appendChild(createElementFromText('td', path));
     tr.appendChild(createElementFromText('td', entry.size));
     tr.appendChild(createElementFromText('td', entry.last_modified));
+    tr.appendChild(createElementFromText('td', entry.permission));
     tbody.appendChild(tr);
   }
 
