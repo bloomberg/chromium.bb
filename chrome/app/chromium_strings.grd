@@ -688,12 +688,6 @@ Chromium is unable to recover your settings.
           Chromium Captive Portal detector
         </message>
       </if>
-      <message name="IDS_FLAGS_SHOW_APP_LIST_SHORTCUT_NAME" desc="Name for the flag to show the Chromium app list shortcut in the taskbar.">
-        Show Chromium App Launcher.
-      </message>
-      <message name="IDS_FLAGS_SHOW_APP_LIST_SHORTCUT_DESCRIPTION" desc="Description for the flag to show the Chromium app list shortcut in the taskbar.">
-        Show a shortcut to the Chromium App Launcher in the Windows TaskBar.
-      </message>
 
       <!-- Obsolete System info bar -->
       <message name="IDS_SYSTEM_OBSOLETE_MESSAGE" desc="Message shown when your OS is no longer supported. This messages is followed by a 'Learn more' link.">

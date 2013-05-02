@@ -996,7 +996,13 @@ void AppListController::Init(Profile* initial_profile) {
       FROM_HERE,
       base::Bind(&::InitView, initial_profile),
       base::TimeDelta::FromSeconds(kInitWindowDelay));
+
   MigrateAppLauncherEnabledPref();
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableAppList)) {
+    EnableAppList();
+  }
 }
 
 Profile* AppListController::GetCurrentAppListProfile() {
