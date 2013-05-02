@@ -79,9 +79,6 @@ public:
 
     PassRefPtr<CustomElementConstructor> registerElement(WebCore::ScriptState*, const AtomicString& name, const Dictionary& options, ExceptionCode&);
 
-    // FIXME: findFor is dangerous since it consults the "is"
-    // attribute; that should only be consulted at element creation
-    // time.
     PassRefPtr<CustomElementDefinition> findFor(Element*) const;
     PassRefPtr<CustomElementDefinition> findAndCheckNamespace(const AtomicString& type, const AtomicString& namespaceURI) const;
 
