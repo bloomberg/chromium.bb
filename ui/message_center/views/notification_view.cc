@@ -622,8 +622,7 @@ int NotificationView::GetMessageLineLimit(int width) {
     return std::max(kMessageCollapsedLineLimit - title_lines, 0);
   }
 
-  // If there's no title we get an extra line because message lines are shorter.
-  return kMessageCollapsedLineLimit + 1;
+  return kMessageCollapsedLineLimit;
 }
 
 int NotificationView::GetMessageLines(int width, int limit) {
