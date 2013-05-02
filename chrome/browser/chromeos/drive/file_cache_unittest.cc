@@ -220,6 +220,28 @@ class FileCacheTest : public testing::Test {
     VerifyCacheFileState(error, resource_id, md5);
   }
 
+  void TestStoreLocallyModifiedToCache(
+      const std::string& resource_id,
+      const std::string& md5,
+      const base::FilePath& source_path,
+      FileError expected_error,
+      int expected_cache_state,
+      FileCache::CacheSubDirectoryType expected_sub_dir_type,
+      bool expected_outgoing_symlink) {
+    expected_error_ = expected_error;
+    expected_cache_state_ = expected_cache_state;
+    expected_sub_dir_type_ = expected_sub_dir_type;
+    expect_outgoing_symlink_ = expected_outgoing_symlink;
+
+    FileError error = FILE_ERROR_OK;
+    cache_->StoreLocallyModified(
+        resource_id, md5, source_path,
+        FileCache::FILE_OPERATION_COPY,
+        google_apis::test_util::CreateCopyResultCallback(&error));
+    google_apis::test_util::RunBlockingPoolTask();
+    VerifyCacheFileState(error, resource_id, md5);
+  }
+
   void TestRemoveFromCache(const std::string& resource_id,
                            FileError expected_error) {
     expected_error_ = expected_error;
@@ -672,14 +694,31 @@ TEST_F(FileCacheTest, StoreToCacheSimple) {
   md5 = "new_md5";
   TestStoreToCache(
       resource_id, md5,
-      google_apis::test_util::GetTestFilePath(
-          "chromeos/gdata/empty_feed.json"),
+      google_apis::test_util::GetTestFilePath("chromeos/gdata/empty_feed.json"),
       FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PRESENT,
       FileCache::CACHE_TYPE_TMP);
 
   // Verify that there's only one file with name <resource_id>, i.e. previously
   // cached file with the different md5 should be deleted.
   EXPECT_EQ(1U, CountCacheFiles(resource_id, md5));
+}
+
+TEST_F(FileCacheTest, LocallyModifiedSimple) {
+  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
+
+  std::string resource_id("pdf:1a2b");
+  std::string md5("abcdef0123456789");
+
+  const int kDirtyCacheState =
+      test_util::TEST_CACHE_STATE_PRESENT |
+      test_util::TEST_CACHE_STATE_DIRTY |
+      test_util::TEST_CACHE_STATE_PERSISTENT;
+
+  EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(resource_id)).Times(1);
+  TestStoreLocallyModifiedToCache(
+      resource_id, md5,
+      google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
+      FILE_ERROR_OK, kDirtyCacheState, FileCache::CACHE_TYPE_PERSISTENT, true);
 }
 
 TEST_F(FileCacheTest, GetFromCacheSimple) {

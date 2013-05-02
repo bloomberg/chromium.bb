@@ -325,8 +325,29 @@ void FileCache::Store(const std::string& resource_id,
       FROM_HERE,
       base::Bind(&FileCache::StoreOnBlockingPool,
                  base::Unretained(this),
-                 resource_id, md5, source_path, file_operation_type),
+                 resource_id, md5, source_path, file_operation_type,
+                 CACHED_FILE_FROM_SERVER),
       callback);
+}
+
+void FileCache::StoreLocallyModified(
+    const std::string& resource_id,
+    const std::string& md5,
+    const base::FilePath& source_path,
+    FileOperationType file_operation_type,
+    const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&FileCache::StoreOnBlockingPool,
+                 base::Unretained(this),
+                 resource_id, md5, source_path, file_operation_type,
+                 CACHED_FILE_LOCALLY_MODIFIED),
+      base::Bind(&FileCache::OnCommitDirty,
+                 weak_ptr_factory_.GetWeakPtr(), resource_id, callback));
 }
 
 void FileCache::Pin(const std::string& resource_id,
@@ -580,7 +601,8 @@ FileError FileCache::StoreOnBlockingPool(
     const std::string& resource_id,
     const std::string& md5,
     const base::FilePath& source_path,
-    FileOperationType file_operation_type) {
+    FileOperationType file_operation_type,
+    CachedFileOrigin origin) {
   AssertOnSequencedWorkerPool();
 
   int64 file_size = 0;
@@ -593,13 +615,11 @@ FileError FileCache::StoreOnBlockingPool(
   if (!FreeDiskSpaceOnBlockingPoolIfNeededFor(file_size))
     return FILE_ERROR_NO_SPACE;
 
-  base::FilePath symlink_path;
-  CacheSubDirectoryType sub_dir_type = CACHE_TYPE_TMP;
-
-  // If file was previously pinned, store it in persistent dir.
   FileCacheEntry cache_entry;
-  if (GetCacheEntryOnBlockingPool(resource_id, std::string(), &cache_entry)) {
-    // File exists in cache.
+  GetCacheEntryOnBlockingPool(resource_id, std::string(), &cache_entry);
+
+  CacheSubDirectoryType sub_dir_type = CACHE_TYPE_TMP;
+  if (origin == CACHED_FILE_FROM_SERVER) {
     // If file is dirty or mounted, return error.
     if (cache_entry.is_dirty() || cache_entry.is_mounted()) {
       LOG(WARNING) << "Can't store a file to replace a "
@@ -609,12 +629,15 @@ FileError FileCache::StoreOnBlockingPool(
       return FILE_ERROR_IN_USE;
     }
 
+    // If file was previously pinned, store it in persistent dir.
     if (cache_entry.is_pinned())
       sub_dir_type = CACHE_TYPE_PERSISTENT;
+  } else {
+    sub_dir_type = CACHE_TYPE_PERSISTENT;
   }
 
   base::FilePath dest_path = GetCacheFilePath(resource_id, md5, sub_dir_type,
-                                              CACHED_FILE_FROM_SERVER);
+                                              origin);
   bool success = false;
   switch (file_operation_type) {
     case FILE_OPERATION_MOVE:
@@ -654,7 +677,12 @@ FileError FileCache::StoreOnBlockingPool(
     cache_entry.set_md5(md5);
     cache_entry.set_is_present(true);
     cache_entry.set_is_persistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
+    cache_entry.set_is_dirty(origin == CACHED_FILE_LOCALLY_MODIFIED);
     metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
+
+    // If storing a local modification, commit it.
+    if (origin == CACHED_FILE_LOCALLY_MODIFIED)
+      CommitDirtyOnBlockingPool(resource_id, md5);
   }
 
   return success ? FILE_ERROR_OK : FILE_ERROR_FAILED;

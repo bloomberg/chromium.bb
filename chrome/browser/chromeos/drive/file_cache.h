@@ -142,18 +142,23 @@ class FileCache {
                const std::string& md5,
                const GetFileFromCacheCallback& callback);
 
-  // Modifies cache state, which involves the following:
-  // - moves or copies (per |file_operation_type|) |source_path|
-  //   to |dest_path| in the cache dir
-  // - if necessary, creates symlink
-  // - deletes stale cached versions of |resource_id| in
-  // |dest_path|'s directory.
+  // Stores |source_path| as a cache of the remote content of the file
+  // identified by |resource_id| and |md5|.
   // |callback| must not be null.
   void Store(const std::string& resource_id,
              const std::string& md5,
              const base::FilePath& source_path,
              FileOperationType file_operation_type,
              const FileOperationCallback& callback);
+
+  // Stores |source_path| to the cache and mark it as dirty, i.e., needs to be
+  // uploaded to the remove server for syncing.
+  // |callback| must not be null.
+  void StoreLocallyModified(const std::string& resource_id,
+                            const std::string& md5,
+                            const base::FilePath& source_path,
+                            FileOperationType file_operation_type,
+                            const FileOperationCallback& callback);
 
   // Modifies cache state, which involves the following:
   // - moves |source_path| to |dest_path| in persistent dir if
@@ -318,7 +323,8 @@ class FileCache {
   FileError StoreOnBlockingPool(const std::string& resource_id,
                                 const std::string& md5,
                                 const base::FilePath& source_path,
-                                FileOperationType file_operation_type);
+                                FileOperationType file_operation_type,
+                                CachedFileOrigin origin);
 
   // Used to implement Pin.
   FileError PinOnBlockingPool(const std::string& resource_id,
