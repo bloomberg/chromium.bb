@@ -115,6 +115,7 @@ class SearchProvider : public AutocompleteProvider,
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationInline);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationInlineSchemeSubstring);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationInlineDomainClassify);
+  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, RemoveStaleResultsTest);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest, GetDestinationURL);
 
   // The amount of time to wait before sending a new suggest request after
@@ -293,13 +294,18 @@ class SearchProvider : public AutocompleteProvider,
 
   // Clears the current results.
   void ClearResults();
+  static void ClearResults(SuggestResults* suggest_results,
+                           NavigationResults* navigation_results,
+                           int* verbatim_relevance,
+                           bool* has_suggested_relevance);
 
-  // Remove results that cannot inline auto-complete the current input.
+  // Removes non-inlineable results until either the top result can inline
+  // autocomplete the current input or verbatim outscores the top result.
   void RemoveStaleResults();
-  static void RemoveStaleSuggestResults(SuggestResults* list,
-                                        const string16& input);
-  static void RemoveStaleNavigationResults(NavigationResults* list,
-                                           const string16& input);
+  static void RemoveStaleResults(const string16& input,
+                                 int verbatim_relevance,
+                                 SuggestResults* suggest_results,
+                                 NavigationResults* navigation_results);
 
   // If |default_provider_suggestion_| (which was suggested for
   // |previous_input|) is still applicable given the |current_input|, adjusts it

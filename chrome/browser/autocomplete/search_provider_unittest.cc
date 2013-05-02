@@ -91,6 +91,12 @@ class SearchProviderTest : public testing::Test,
   void RunTest(TestData* cases, int num_cases, bool prefer_keyword);
 
  protected:
+  // Needed for AutucompleteFieldTrial::ActivateStaticTrials();
+  static base::FieldTrialList* field_trial_list_;
+
+  // Default value used for testing.
+  static const std::string kNotApplicable;
+
   // Adds a search for |term|, using the engine |t_url| to the history, and
   // returns the URL for that search.
   GURL AddSearchToHistory(TemplateURL* t_url, string16 term, int visit_count);
@@ -154,14 +160,14 @@ class SearchProviderTest : public testing::Test,
   // If true, OnProviderUpdate exits out of the current message loop.
   bool quit_when_done_;
 
-  // Needed for AutucompleteFieldTrial::ActivateStaticTrials();
-  static base::FieldTrialList* field_trial_list_;
-
   DISALLOW_COPY_AND_ASSIGN(SearchProviderTest);
 };
 
 // static
 base::FieldTrialList* SearchProviderTest::field_trial_list_ = NULL;
+
+// static
+const std::string SearchProviderTest::kNotApplicable = "Not Applicable";
 
 // static
 void SearchProviderTest::SetUpTestCase() {
@@ -1034,7 +1040,6 @@ TEST_F(SearchProviderTest, SuggestRelevance) {
 // case to this test, please consider adding it to the tests in
 // KeywordFetcherSuggestRelevance below.
 TEST_F(SearchProviderTest, DefaultFetcherSuggestRelevance) {
-  const std::string kNotApplicable("Not Applicable");
   struct {
     const std::string json;
     const std::string matches[4];
@@ -1219,7 +1224,6 @@ TEST_F(SearchProviderTest, DefaultFetcherSuggestRelevance) {
 // test is added to this TEST_F, please consider if it would be
 // appropriate to add to DefaultFetcherSuggestRelevance as well.
 TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
-  const std::string kNotApplicable("Not Applicable");
   struct {
     const std::string json;
     const struct {
@@ -1649,7 +1653,6 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
 
 // Verifies suggest relevance behavior for URL input.
 TEST_F(SearchProviderTest, DefaultProviderSuggestRelevanceScoringUrlInput) {
-  const std::string kNotApplicable("Not Applicable");
   struct {
     const std::string input;
     const std::string json;
@@ -1971,4 +1974,162 @@ TEST_F(SearchProviderTest, NavigationInlineDomainClassify) {
   EXPECT_EQ(5U, match.contents_class[2].offset);
   EXPECT_EQ(AutocompleteMatch::ACMatchClassification::URL,
             match.contents_class[2].style);
+}
+
+TEST_F(SearchProviderTest, RemoveStaleResultsTest) {
+  // TODO(mpearson): Consider expanding this test to explicit cover
+  // testing staleness for keyword results.
+  struct {
+    const std::string omnibox_input;
+    const int verbatim_relevance;
+    // These cached suggestions should already be sorted.
+    // The particular number 5 as the length of the array is
+    // unimportant; it's merely enough cached results to fully test
+    // the functioning of RemoveStaleResults().
+    struct {
+      const std::string suggestion;
+      const bool is_navigation_result;
+      const int relevance;
+      // |expect_match| is true if this result should survive
+      // RemoveStaleResults() filtering against |omnibox_input| below.
+      const bool expect_match;
+    } results[5];
+  } cases[] = {
+    // Simple case: multiple query suggestions and no navsuggestions.
+    // All query suggestions score less than search-what-you-typed and
+    // thus none should be filtered because none will appear first.
+    { "x", 1300,
+      { { "food", false, 1299, true },
+        { "foobar", false, 1298, true },
+        { "crazy", false, 1297, true },
+        { "friend", false, 1296, true },
+        { kNotApplicable, false, 0, false } } },
+
+    // Similarly simple cases, but the query suggestion appears first.
+    { "f", 1200,
+      { { "food", false, 1299, true },
+        { "foobar", false, 1298, true },
+        { "crazy", false, 1297, true },
+        { "friend", false, 1296, true },
+        { kNotApplicable, false, 0, false } } },
+    { "c", 1200,
+      { { "food", false, 1299, false },
+        { "foobar", false, 1298, false },
+        { "crazy", false, 1297, true },
+        { "friend", false, 1296, true },
+        { kNotApplicable, false, 0, false } } },
+    { "x", 1200,
+      { { "food", false, 1299, false },
+        { "foobar", false, 1298, false },
+        { "crazy", false, 1297, false },
+        { "friend", false, 1296, false },
+        { kNotApplicable, false, 0, false } } },
+
+    // The same sort of cases, just using a mix of queries and navsuggestions.
+    { "x", 1300,
+      { { "http://food.com/", true, 1299, true },
+        { "foobar", false, 1298, true },
+        { "http://crazy.com/", true, 1297, true },
+        { "friend", false, 1296, true },
+        { "http://friend.com/", true, 1295, true } } },
+    { "f", 1200,
+      { { "http://food.com/", true, 1299, true },
+        { "foobar", false, 1298, true },
+        { "http://crazy.com/", true, 1297, true },
+        { "friend", false, 1296, true },
+        { "http://friend.com/", true, 1295, true } } },
+    { "c", 1200,
+      { { "http://food.com/", true, 1299, false },
+        { "foobar", false, 1298, false },
+        { "http://crazy.com/", true, 1297, true },
+        { "friend", false, 1296, true },
+        { "http://friend.com/", true, 1295, true } } },
+    { "x", 1200,
+      { { "http://food.com/", true, 1299, false },
+        { "foobar", false, 1298, false },
+        { "http://crazy.com/", true, 1297, false },
+        { "friend", false, 1296, false },
+        { "http://friend.com/", true, 1295, false } } },
+
+    // Run the three tests immediately above again, just with verbatim
+    // suppressed.  Note that in the last case, all results are filtered.
+    // Because verbatim is also suppressed, SearchProvider will realize
+    // in UpdateMatches() that it needs to restore verbatim to fulfill
+    // its constraints.  This restoration does not happen in
+    // RemoveStaleResults() and hence is not tested here.  This restoration
+    // is tested in the DefaultFetcherSuggestRelevance test.
+    { "f", 0,
+      { { "http://food.com/", true, 1299, true },
+        { "foobar", false, 1298, true },
+        { "http://crazy.com/", true, 1297, true },
+        { "friend", false, 1296, true },
+        { "http://friend.com/", true, 1295, true } } },
+    { "c", 0,
+      { { "http://food.com/", true, 1299, false },
+        { "foobar", false, 1298, false },
+        { "http://crazy.com/", true, 1297, true },
+        { "friend", false, 1296, true },
+        { "http://friend.com/", true, 1295, true } } },
+    { "x", 0,
+      { { "http://food.com/", true, 1299, false },
+        { "foobar", false, 1298, false },
+        { "http://crazy.com/", true, 1297, false },
+        { "friend", false, 1296, false },
+        { "http://friend.com/", true, 1295, false } } },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
+    // Initialize cached results for this test case.
+    provider_->default_verbatim_relevance_ = cases[i].verbatim_relevance;
+    provider_->default_navigation_results_.clear();
+    provider_->default_suggest_results_.clear();
+    for (size_t j = 0; j < ARRAYSIZE_UNSAFE(cases[i].results); ++j) {
+      const std::string& suggestion = cases[i].results[j].suggestion;
+      if (suggestion == kNotApplicable)
+        break;
+      if (cases[i].results[j].is_navigation_result) {
+        provider_->default_navigation_results_.push_back(
+            SearchProvider::NavigationResult(
+                *provider_, GURL(suggestion), string16(),
+                false, cases[i].results[j].relevance));
+      } else {
+        provider_->default_suggest_results_.push_back(
+            SearchProvider::SuggestResult(ASCIIToUTF16(suggestion), false,
+                                          cases[i].results[j].relevance));
+      }
+    }
+
+    provider_->input_ = AutocompleteInput(
+        ASCIIToUTF16(cases[i].omnibox_input), string16::npos, string16(),
+        GURL(), false, false, true, AutocompleteInput::ALL_MATCHES);
+    provider_->RemoveStaleResults();
+
+    // Check cached results.
+    SearchProvider::SuggestResults::const_iterator sug_it =
+        provider_->default_suggest_results_.begin();
+    const SearchProvider::SuggestResults::const_iterator sug_end =
+        provider_->default_suggest_results_.end();
+    SearchProvider::NavigationResults::const_iterator nav_it =
+        provider_->default_navigation_results_.begin();
+    const SearchProvider::NavigationResults::const_iterator nav_end =
+        provider_->default_navigation_results_.end();
+    for (size_t j = 0; j < ARRAYSIZE_UNSAFE(cases[i].results); ++j) {
+      const std::string& suggestion = cases[i].results[j].suggestion;
+      if (suggestion == kNotApplicable)
+        continue;
+      if (!cases[i].results[j].expect_match)
+        continue;
+      if (cases[i].results[j].is_navigation_result) {
+        ASSERT_NE(nav_end, nav_it) << "Failed to find " << suggestion;
+        EXPECT_EQ(suggestion, nav_it->url().spec());
+        ++nav_it;
+      } else {
+        ASSERT_NE(sug_end, sug_it) << "Failed to find " << suggestion;
+        EXPECT_EQ(ASCIIToUTF16(suggestion), sug_it->suggestion());
+        ++sug_it;
+      }
+    }
+    EXPECT_EQ(sug_end, sug_it);
+    EXPECT_EQ(nav_end, nav_it);
+  }
 }

@@ -738,41 +738,96 @@ void SearchProvider::StopSuggest() {
 }
 
 void SearchProvider::ClearResults() {
-  keyword_suggest_results_.clear();
-  default_suggest_results_.clear();
-  keyword_navigation_results_.clear();
-  default_navigation_results_.clear();
-  has_default_suggested_relevance_ = false;
-  has_keyword_suggested_relevance_ = false;
-  default_verbatim_relevance_ = -1;
-  keyword_verbatim_relevance_ = -1;
+  ClearResults(&keyword_suggest_results_, &keyword_navigation_results_,
+               &keyword_verbatim_relevance_, &has_keyword_suggested_relevance_);
+  ClearResults(&default_suggest_results_, &default_navigation_results_,
+               &default_verbatim_relevance_, &has_default_suggested_relevance_);
   have_suggest_results_ = false;
 }
 
+// static
+void SearchProvider::ClearResults(SuggestResults* suggest_results,
+                                  NavigationResults* navigation_results,
+                                  int* verbatim_relevance,
+                                  bool* has_suggested_relevance) {
+  suggest_results->clear();
+  navigation_results->clear();
+  *verbatim_relevance = -1;
+  *has_suggested_relevance = false;
+}
+
 void SearchProvider::RemoveStaleResults() {
-  // Keyword provider results should match |keyword_input_.text()|, unless
-  // the input was just changed to non-keyword mode; in that case, compare
-  // against |input_.text()|.
-  const string16& keyword_input =
-      !keyword_input_.text().empty() ? keyword_input_.text() : input_.text();
-  RemoveStaleSuggestResults(&keyword_suggest_results_, keyword_input);
-  RemoveStaleSuggestResults(&default_suggest_results_, input_.text());
-  RemoveStaleNavigationResults(&keyword_navigation_results_, keyword_input);
-  RemoveStaleNavigationResults(&default_navigation_results_, input_.text());
+  // In theory it would be better to run an algorithm like that in
+  // RemoveStaleResults(...) below that uses all four results lists
+  // and both verbatim scores at once.  However, that will be much
+  // more complicated for little obvious gain.  For code simplicity
+  // and ease in reasoning about the invariants involved, this code
+  // removes stales results from the keyword provider and default
+  // provider independently.
+  RemoveStaleResults(input_.text(), GetVerbatimRelevance(),
+                     &default_suggest_results_, &default_navigation_results_);
+  if (!keyword_input_.text().empty()) {
+    RemoveStaleResults(keyword_input_.text(), GetKeywordVerbatimRelevance(),
+                       &keyword_suggest_results_, &keyword_navigation_results_);
+  } else {
+    // User is either in keyword mode with a blank input or out of
+    // keyword mode entirely.
+    ClearResults(
+        &keyword_suggest_results_, &keyword_navigation_results_,
+        &keyword_verbatim_relevance_, &has_keyword_suggested_relevance_);
+  }
 }
 
 // static
-void SearchProvider::RemoveStaleSuggestResults(SuggestResults* list,
-                                               const string16& input) {
-  for (SuggestResults::iterator i = list->begin(); i < list->end();)
-    i = i->IsInlineable(input) ? (i + 1) : list->erase(i);
-}
-
-// static
-void SearchProvider::RemoveStaleNavigationResults(NavigationResults* list,
-                                                  const string16& input) {
-  for (NavigationResults::iterator i = list->begin(); i < list->end();) {
-    i = i->IsInlineable(input) ? (i + 1) : list->erase(i);
+void SearchProvider::RemoveStaleResults(const string16& input,
+                                        int verbatim_relevance,
+                                        SuggestResults* suggest_results,
+                                        NavigationResults* navigation_results) {
+  DCHECK_GE(verbatim_relevance, 0);
+  // Keep pointers to the head of (the highest scoring elements of)
+  // |suggest_results| and |navigation_results|.  Iterate down the lists
+  // removing non-inlineable results in order of decreasing relevance
+  // scores.  Stop when the highest scoring element among those remaining
+  // is inlineable or the element is less than |verbatim_relevance|.
+  // This allows non-inlineable lower-scoring results to remain
+  // because (i) they are guaranteed to not be inlined and (ii)
+  // letting them remain reduces visual jank.  For instance, as the
+  // user types the mis-spelled query "fpobar" (for foobar), the
+  // suggestion "foobar" will be suggested on every keystroke.  If the
+  // SearchProvider always removes all non-inlineable results, the user will
+  // see visual jitter/jank as the result disappears and re-appears moments
+  // later as the suggest server returns results.
+  SuggestResults::iterator sug_it = suggest_results->begin();
+  NavigationResults::iterator nav_it = navigation_results->begin();
+  while ((sug_it != suggest_results->end()) ||
+         (nav_it != navigation_results->end())) {
+    const int sug_rel =
+        (sug_it != suggest_results->end()) ? sug_it->relevance() : -1;
+    const int nav_rel =
+        (nav_it != navigation_results->end()) ? nav_it->relevance() : -1;
+    if (std::max(sug_rel, nav_rel) < verbatim_relevance)
+      break;
+    if (sug_rel > nav_rel) {
+      // The current top result is a search suggestion.
+      if (sug_it->IsInlineable(input))
+        break;
+      sug_it = suggest_results->erase(sug_it);
+    } else if (sug_rel == nav_rel) {
+      // Have both results and they're tied.
+      const bool sug_inlineable = sug_it->IsInlineable(input);
+      const bool nav_inlineable = nav_it->IsInlineable(input);
+      if (!sug_inlineable)
+        sug_it = suggest_results->erase(sug_it);
+      if (!nav_inlineable)
+        nav_it = navigation_results->erase(nav_it);
+      if (sug_inlineable || nav_inlineable)
+        break;
+    } else {
+      // The current top result is a navigational suggestion.
+      if (nav_it->IsInlineable(input))
+        break;
+      nav_it = navigation_results->erase(nav_it);
+    }
   }
 }
 
@@ -780,21 +835,14 @@ void SearchProvider::AdjustDefaultProviderSuggestion(
     const string16& previous_input,
     const string16& current_input) {
   if (default_provider_suggestion_.type == INSTANT_SUGGESTION_URL) {
-    // Build a list of NavigationResults with only one NavigationResult in it,
-    // initialized with the URL in the navigation suggestion. This allows the
-    // use of RemoveStaleNavigationResults(), which has non-trivial logic to
-    // determine staleness.
-    NavigationResults list;
     // Description and relevance do not matter in the check for staleness.
     NavigationResult result(*this,
                             GURL(default_provider_suggestion_.text),
                             string16(),
                             false,
                             100);
-    list.push_back(result);
-    RemoveStaleNavigationResults(&list, current_input);
     // If navigation suggestion is stale, clear |default_provider_suggestion_|.
-    if (list.empty())
+    if (!result.IsInlineable(current_input))
       default_provider_suggestion_ = InstantSuggestion();
   } else {
     DCHECK(default_provider_suggestion_.type == INSTANT_SUGGESTION_SEARCH);
