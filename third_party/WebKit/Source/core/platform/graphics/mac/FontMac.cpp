@@ -38,10 +38,10 @@
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/skia/PlatformContextSkia.h"
 
-#include "SkCanvas.h"
-#include "SkPaint.h"
-#include "SkTypeface.h"
-#include "SkTypeface_mac.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkTypeface.h"
+#include "third_party/skia/include/ports/SkTypeface_mac.h"
 
 namespace WebCore {
 
@@ -79,7 +79,7 @@ static void setupPaint(SkPaint* paint, const SimpleFontData* fontData, const Fon
     if (font->fontDescription().fontSmoothing() == Antialiased)
         paint->setHinting(SkPaint::kNo_Hinting);
 #endif
-    
+
     if (font->fontDescription().textRenderingMode() == GeometricPrecision)
         paint->setHinting(SkPaint::kNo_Hinting);
 }

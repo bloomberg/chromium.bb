@@ -816,10 +816,6 @@
           'sources/': [
             ['exclude', 'Mac\\.(cpp|mm?)$'],
 
-            # Linux uses FontLinux; Windows uses FontWin. Additionally, FontSkia
-            # is excluded by a rule above if WebKit uses CG instead of Skia.
-            ['exclude', 'platform/graphics/skia/FontSkia\\.cpp$'],
-
             # FIXME: We will eventually compile this too, but for now it's
             # only used on mac.
             ['exclude', 'platform/graphics/FontPlatformData\\.cpp$'],
