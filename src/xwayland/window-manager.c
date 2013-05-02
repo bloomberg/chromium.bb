@@ -648,7 +648,7 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 	xcb_map_request_event_t *map_request =
 		(xcb_map_request_event_t *) event;
 	struct weston_wm_window *window;
-	uint32_t values[1];
+	uint32_t values[3];
 	int x, y, width, height;
 
 	if (our_resource(wm, map_request->window)) {
@@ -667,7 +667,8 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 	weston_wm_window_get_frame_size(window, &width, &height);
 	weston_wm_window_get_child_position(window, &x, &y);
 
-	values[0] =
+	values[0] = wm->screen->black_pixel;
+	values[1] =
 		XCB_EVENT_MASK_KEY_PRESS |
 		XCB_EVENT_MASK_KEY_RELEASE |
 		XCB_EVENT_MASK_BUTTON_PRESS |
@@ -677,18 +678,22 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 		XCB_EVENT_MASK_LEAVE_WINDOW |
 		XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY |
 		XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT;
+	values[2] = wm->colormap;
 
 	window->frame_id = xcb_generate_id(wm->conn);
 	xcb_create_window(wm->conn,
-			  XCB_COPY_FROM_PARENT,
+			  32,
 			  window->frame_id,
 			  wm->screen->root,
 			  0, 0,
 			  width, height,
 			  0,
 			  XCB_WINDOW_CLASS_INPUT_OUTPUT,
-			  wm->screen->root_visual,
-			  XCB_CW_EVENT_MASK, values);
+			  wm->visual_id,
+			  XCB_CW_BORDER_PIXEL |
+			  XCB_CW_EVENT_MASK |
+			  XCB_CW_COLORMAP, values);
+
 	xcb_reparent_window(wm->conn, window->id, window->frame_id, x, y);
 
 	values[0] = 0;
@@ -708,7 +713,7 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 		cairo_xcb_surface_create_with_xrender_format(wm->conn,
 							     wm->screen,
 							     window->frame_id,
-							     &wm->format_rgb,
+							     &wm->format_rgba,
 							     width, height);
 
 	hash_table_insert(wm->window_hash, window->frame_id, window);
@@ -1387,6 +1392,36 @@ weston_wm_handle_event(int fd, uint32_t mask, void *data)
 }
 
 static void
+weston_wm_get_visual_and_colormap(struct weston_wm *wm)
+{
+	xcb_depth_iterator_t d_iter;
+	xcb_visualtype_iterator_t vt_iter;
+	xcb_visualtype_t *visualtype;
+
+	d_iter = xcb_screen_allowed_depths_iterator(wm->screen);
+	visualtype = NULL;
+	while (d_iter.rem > 0) {
+		if (d_iter.data->depth == 32) {
+			vt_iter = xcb_depth_visuals_iterator(d_iter.data);
+			visualtype = vt_iter.data;
+			break;
+		}
+
+		xcb_depth_next(&d_iter);
+	}
+
+	if (visualtype == NULL) {
+		weston_log("no 32 bit visualtype\n");
+		return;
+	}
+
+	wm->visual_id = visualtype->visual_id;
+	wm->colormap = xcb_generate_id(wm->conn);
+	xcb_create_colormap(wm->conn, XCB_COLORMAP_ALLOC_NONE,
+			    wm->colormap, wm->screen->root, wm->visual_id);
+}
+
+static void
 weston_wm_get_resources(struct weston_wm *wm)
 {
 
@@ -1610,6 +1645,7 @@ weston_wm_create(struct weston_xserver *wxs)
 	wl_event_source_check(wm->source);
 
 	weston_wm_get_resources(wm);
+	weston_wm_get_visual_and_colormap(wm);
 
 	values[0] =
 		XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY |

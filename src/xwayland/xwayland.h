@@ -58,6 +58,8 @@ struct weston_wm {
 	xcb_cursor_t *cursors;
 	int last_cursor;
 	xcb_render_pictforminfo_t format_rgb, format_rgba;
+	xcb_visualid_t visual_id;
+	xcb_colormap_t colormap;
 	struct wl_listener activate_listener;
 	struct wl_listener kill_listener;
 
