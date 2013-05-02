@@ -1,0 +1,14 @@
+diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
+--- a/nss/lib/ssl/ssl3con.c	2013-05-01 14:37:22.992813168 -0700
++++ b/nss/lib/ssl/ssl3con.c	2013-05-01 14:43:57.088382323 -0700
+@@ -8657,10 +8657,7 @@ static SECStatus
+ ssl3_SendCertificateStatus(sslSocket *ss)
+ {
+     SECStatus            rv;
+-    CERTCertificateList *certChain;
+     int                  len 		= 0;
+-    int                  i;
+-    SSL3KEAType          certIndex;
+ 
+     SSL_TRC(3, ("%d: SSL3[%d]: send certificate status handshake",
+ 		SSL_GETPID(), ss->fd));

@@ -4,7 +4,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-/* $Id: ssl.h,v 1.59 2012/09/21 21:58:43 wtc%google.com Exp $ */
+/* $Id$ */
 
 #ifndef __ssl_h_
 #define __ssl_h_
@@ -424,6 +424,35 @@ SSL_IMPORT SECStatus SSL_SecurityStatus(PRFileDesc *fd, int *on, char **cipher,
 */
 SSL_IMPORT CERTCertificate *SSL_PeerCertificate(PRFileDesc *fd);
 
+/* SSL_PeerStapledOCSPResponses returns the OCSP responses that were provided
+ * by the TLS server. The return value is a pointer to an internal SECItemArray
+ * that contains the returned OCSP responses; it is only valid until the
+ * callback function that calls SSL_PeerStapledOCSPResponses returns.
+ *
+ * If no OCSP responses were given by the server then the result will be empty.
+ * If there was an error, then the result will be NULL.
+ *
+ * You must set the SSL_ENABLE_OCSP_STAPLING option to enable OCSP stapling.
+ * to be provided by a server.
+ *
+ * libssl does not do any validation of the OCSP response itself; the
+ * authenticate certificate hook is responsible for doing so. The default
+ * authenticate certificate hook, SSL_AuthCertificate, does not implement
+ * any OCSP stapling funtionality, but this may change in future versions.
+ */
+SSL_IMPORT const SECItemArray * SSL_PeerStapledOCSPResponses(PRFileDesc *fd);
+
+/* SSL_SetStapledOCSPResponses stores an array of one or multiple OCSP responses
+ * in the fd's data, which may be sent as part of a server side cert_status
+ * handshake message.
+ * If takeOwnership is false, the function will duplicate the responses.
+ * If takeOwnership is true, the ownership of responses is transfered into the
+ * SSL library, and the caller must stop using it.
+ */
+SSL_IMPORT SECStatus
+SSL_SetStapledOCSPResponses(PRFileDesc *fd, SECItemArray *responses,
+			    PRBool takeOwnership);
+
 /*
 ** Return references to the certificates presented by the SSL peer.
 ** |maxNumCerts| must contain the size of the |certs| array. On successful
@@ -435,23 +464,6 @@ SSL_IMPORT CERTCertificate *SSL_PeerCertificate(PRFileDesc *fd);
 SSL_IMPORT SECStatus SSL_PeerCertificateChain(
 	PRFileDesc *fd, CERTCertificate **certs,
 	unsigned int *numCerts, unsigned int maxNumCerts);
-
-/* SSL_GetStapledOCSPResponse returns the OCSP response that was provided by
- * the TLS server. The resulting data is copied to |out_data|. On entry, |*len|
- * must contain the size of |out_data|. On exit, |*len| will contain the size
- * of the OCSP stapled response. If the stapled response is too large to fit in
- * |out_data| then it will be truncated. If no OCSP response was given by the
- * server then it has zero length.
- *
- * You must set the SSL_ENABLE_OCSP_STAPLING option in order for OCSP responses
- * to be provided by a server.
- *
- * You can call this function during the certificate verification callback or
- * any time afterwards.
- */
-SSL_IMPORT SECStatus SSL_GetStapledOCSPResponse(PRFileDesc *fd,
-						unsigned char *out_data,
-						unsigned int *len);
 
 /*
 ** Authenticate certificate hook. Called when a certificate comes in
@@ -473,6 +485,16 @@ SSL_IMPORT SECStatus SSL_GetStapledOCSPResponse(PRFileDesc *fd,
 ** See the documentation for SSL_AuthCertificateComplete for more information
 ** about the asynchronous behavior that occurs when the authenticate
 ** certificate hook returns SECWouldBlock.
+**
+** RFC 6066 says that clients should send the bad_certificate_status_response
+** alert when they encounter an error processing the stapled OCSP response.
+** libssl does not provide a way for the authenticate certificate hook to
+** indicate that an OCSP error (SEC_ERROR_OCSP_*) that it returns is an error
+** in the stapled OCSP response or an error in some other OCSP response.
+** Further, NSS does not provide a convenient way to control or determine
+** which OCSP response(s) were used to validate a certificate chain.
+** Consequently, the current version of libssl does not ever send the
+** bad_certificate_status_response alert. This may change in future releases.
 */
 typedef SECStatus (PR_CALLBACK *SSLAuthCertificate)(void *arg, PRFileDesc *fd, 
                                                     PRBool checkSig,

@@ -1,7 +1,7 @@
-diff -pu -r a/net/third_party/nss/ssl/ssl3con.c b/net/third_party/nss/ssl/ssl3con.c
---- a/net/third_party/nss/ssl/ssl3con.c	2012-11-09 16:13:22.012407752 -0800
-+++ b/net/third_party/nss/ssl/ssl3con.c	2012-11-09 16:14:14.123162240 -0800
-@@ -10719,6 +10719,68 @@ ssl3_InitSocketPolicy(sslSocket *ss)
+diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
+--- a/nss/lib/ssl/ssl3con.c	2013-04-27 09:39:13.645022181 -0700
++++ b/nss/lib/ssl/ssl3con.c	2013-04-27 09:39:32.395287400 -0700
+@@ -11081,6 +11081,68 @@ ssl3_InitSocketPolicy(sslSocket *ss)
      PORT_Memcpy(ss->cipherSuites, cipherSuites, sizeof cipherSuites);
  }
  
@@ -70,9 +70,9 @@ diff -pu -r a/net/third_party/nss/ssl/ssl3con.c b/net/third_party/nss/ssl/ssl3co
  /* ssl3_config_match_init must have already been called by
   * the caller of this function.
   */
-diff -pu -r a/net/third_party/nss/ssl/ssl.h b/net/third_party/nss/ssl/ssl.h
---- a/net/third_party/nss/ssl/ssl.h	2012-11-09 16:13:22.062408475 -0800
-+++ b/net/third_party/nss/ssl/ssl.h	2012-11-09 16:14:14.123162240 -0800
+diff -pu a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
+--- a/nss/lib/ssl/ssl.h	2013-04-27 09:39:13.645022181 -0700
++++ b/nss/lib/ssl/ssl.h	2013-04-27 09:39:32.395287400 -0700
 @@ -250,6 +250,27 @@ SSL_IMPORT SECStatus SSL_CipherPrefGetDe
  SSL_IMPORT SECStatus SSL_CipherPolicySet(PRInt32 cipher, PRInt32 policy);
  SSL_IMPORT SECStatus SSL_CipherPolicyGet(PRInt32 cipher, PRInt32 *policy);
@@ -101,10 +101,10 @@ diff -pu -r a/net/third_party/nss/ssl/ssl.h b/net/third_party/nss/ssl/ssl.h
  /* SSL Version Range API
  **
  ** This API should be used to control SSL 3.0 & TLS support instead of the
-diff -pu -r a/net/third_party/nss/ssl/sslimpl.h b/net/third_party/nss/ssl/sslimpl.h
---- a/net/third_party/nss/ssl/sslimpl.h	2012-11-09 16:13:22.062408475 -0800
-+++ b/net/third_party/nss/ssl/sslimpl.h	2012-11-09 16:14:14.123162240 -0800
-@@ -1732,6 +1732,11 @@ extern PRBool ssl_GetSessionTicketKeysPK
+diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
+--- a/nss/lib/ssl/sslimpl.h	2013-04-27 09:39:13.645022181 -0700
++++ b/nss/lib/ssl/sslimpl.h	2013-04-27 09:39:32.395287400 -0700
+@@ -1724,6 +1724,11 @@ extern PRBool ssl_GetSessionTicketKeysPK
  extern SECStatus ssl3_ValidateNextProtoNego(const unsigned char* data,
  					    unsigned int length);
  
@@ -116,10 +116,10 @@ diff -pu -r a/net/third_party/nss/ssl/sslimpl.h b/net/third_party/nss/ssl/sslimp
  /* Construct a new NSPR socket for the app to use */
  extern PRFileDesc *ssl_NewPRSocket(sslSocket *ss, PRFileDesc *fd);
  extern void ssl_FreePRSocket(PRFileDesc *fd);
-diff -pu -r a/net/third_party/nss/ssl/sslsock.c b/net/third_party/nss/ssl/sslsock.c
---- a/net/third_party/nss/ssl/sslsock.c	2012-11-09 16:13:22.062408475 -0800
-+++ b/net/third_party/nss/ssl/sslsock.c	2012-11-09 16:14:14.123162240 -0800
-@@ -1354,6 +1354,27 @@ NSS_SetFrancePolicy(void)
+diff -pu a/nss/lib/ssl/sslsock.c b/nss/lib/ssl/sslsock.c
+--- a/nss/lib/ssl/sslsock.c	2013-04-27 09:39:13.655022320 -0700
++++ b/nss/lib/ssl/sslsock.c	2013-04-27 09:39:32.395287400 -0700
+@@ -1360,6 +1360,27 @@ NSS_SetFrancePolicy(void)
      return NSS_SetDomesticPolicy();
  }
  

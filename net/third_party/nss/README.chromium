@@ -1,17 +1,17 @@
 Name: Network Security Services (NSS)
 URL: http://www.mozilla.org/projects/security/pki/nss/
-Version: 3.14
+Version: 3.15 Beta 2
 Security Critical: Yes
 License: MPL 2
 License File: NOT_SHIPPED
 
-This directory includes a copy of NSS's libssl from the CVS repo at:
-  :pserver:anonymous@cvs-mirror.mozilla.org:/cvsroot
+This directory includes a copy of NSS's libssl from the hg repo at:
+  https://hg.mozilla.org/projects/nss
 
 The same module appears in crypto/third_party/nss (and third_party/nss on some
 platforms), so we don't repeat the license file here.
 
-The snapshot was updated to the CVS tag: NSS_3_14_RTM
+The snapshot was updated to the hg tag: NSS_3_15_BETA2
 
 Patches:
 
@@ -33,10 +33,6 @@ Patches:
     patches/peercertchain.patch
     https://bugzilla.mozilla.org/show_bug.cgi?id=731485
 
-  * Add OCSP stapling support
-    patches/ocspstapling.patch
-    https://bugzilla.mozilla.org/show_bug.cgi?id=360420
-
   * Add support for client auth with native crypto APIs on Mac and Windows
     patches/clientauth.patch
     ssl/sslplatf.c
@@ -45,9 +41,6 @@ Patches:
     previous session.
     patches/didhandshakeresume.patch
     https://bugzilla.mozilla.org/show_bug.cgi?id=731798
-
-  * Add a function to restart a handshake after a client certificate request.
-    patches/restartclientauth.patch
 
   * Allow SSL_HandshakeNegotiatedExtension to be called before the handshake
     is finished.
@@ -58,10 +51,8 @@ Patches:
     https://bugzilla.mozilla.org/show_bug.cgi?id=51413
     patches/getrequestedclientcerttypes.patch
 
-  * Enable False Start only when the server supports forward secrecy.
-    patches/falsestartnpn.patch
-    https://bugzilla.mozilla.org/show_bug.cgi?id=810582
-    https://bugzilla.mozilla.org/show_bug.cgi?id=810583
+  * Add a function to restart a handshake after a client certificate request.
+    patches/restartclientauth.patch
 
   * Add support for TLS Channel IDs
     patches/channelid.patch
@@ -69,10 +60,6 @@ Patches:
   * Add support for extracting the tls-unique channel binding value
     patches/tlsunique.patch
     https://bugzilla.mozilla.org/show_bug.cgi?id=563276
-
-  * Don't crash when the SSL keylog file cannot be opened.
-    patches/sslkeylogerror.patch
-    https://bugzilla.mozilla.org/show_bug.cgi?id=810579
 
   * Define the EC_POINT_FORM_UNCOMPRESSED macro. In NSS 3.13.2 the macro
     definition was moved from the internal header ec.h to blapit.h. When
@@ -83,18 +70,30 @@ Patches:
     This change was made in https://chromiumcodereview.appspot.com/10454066.
     patches/secretexporterlocks.patch
 
-  * Implement CBC processing in constant-time to address the "Lucky Thirteen"
-    attack.
+  * Allow the constant-time CBC processing code to be compiled against older
+    NSS that doesn't contain the CBC constant-time changes.
     patches/cbc.patch
-    https://bugzilla.mozilla.org/show_bug.cgi?id=822365
-
-  * Fix a crash in dtls_FreeHandshakeMessages.
-    patches/dtlsinitclist.patch
-    https://bugzilla.mozilla.org/show_bug.cgi?id=822433 (fixed in NSS 3.14.2)
+    https://code.google.com/p/chromium/issues/detail?id=172658#c12
 
   * Define AES_256_KEY_LENGTH if the system blapit.h header doesn't define it.
     Remove this patch when all system NSS packages are NSS 3.12.10 or later.
     patches/aes256keylength.patch
+
+  * Change ssl3_SuiteBOnly to always return PR_TRUE. The softoken in NSS
+    versions older than 3.15 report an EC key size range of 112 bits to 571
+    bits, even when it is compiled to support only the NIST P-256, P-384, and
+    P-521 curves. Remove this patch when all system NSS softoken packages are
+    NSS 3.15 or later.
+    patches/suitebonly.patch
+
+  * Define the SECItemArray type and declare the SECItemArray handling
+    functions, which were added in NSS 3.15. Remove this patch when all system
+    NSS packages are NSS 3.15 or later.
+    patches/secitemarray.patch
+
+  * Remove unused variables in ssl3_SendCertificateStatus.
+    patches/unusedvariables.patch
+    https://bugzilla.mozilla.org/show_bug.cgi?id=866949
 
 Apply the patches to NSS by running the patches/applypatches.sh script.  Read
 the comments at the top of patches/applypatches.sh for instructions.

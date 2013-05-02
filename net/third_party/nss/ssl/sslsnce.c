@@ -4,7 +4,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-/* $Id: sslsnce.c,v 1.63 2012/06/14 19:04:59 wtc%google.com Exp $ */
+/* $Id$ */
 
 /* Note: ssl_FreeSID() in sslnonce.c gets used for both client and server 
  * cache sids!
@@ -2032,7 +2032,7 @@ ssl_GetSessionTicketKeys(unsigned char *keyName, unsigned char *encKey,
     PRBool rv = PR_FALSE;
     PRUint32 now = 0;
     cacheDesc *cache = &globalCache;
-    uint8 ticketMacKey[AES_256_KEY_LENGTH], ticketEncKey[SHA256_LENGTH];
+    uint8 ticketMacKey[SHA256_LENGTH], ticketEncKey[AES_256_KEY_LENGTH];
     uint8 ticketKeyNameSuffixLocal[SESS_TICKET_KEY_VAR_NAME_LEN];
     uint8 *ticketMacKeyPtr, *ticketEncKeyPtr, *ticketKeyNameSuffix;
     PRBool cacheIsEnabled = PR_TRUE;

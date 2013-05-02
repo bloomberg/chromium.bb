@@ -1,6 +1,6 @@
-diff -pu -r a/net/third_party/nss/ssl/sslreveal.c b/net/third_party/nss/ssl/sslreveal.c
---- a/net/third_party/nss/ssl/sslreveal.c	2012-04-25 07:50:12.000000000 -0700
-+++ b/net/third_party/nss/ssl/sslreveal.c	2012-11-09 15:45:44.118267683 -0800
+diff -pu a/nss/lib/ssl/sslreveal.c b/nss/lib/ssl/sslreveal.c
+--- a/nss/lib/ssl/sslreveal.c	2013-04-27 09:17:17.216390477 -0700
++++ b/nss/lib/ssl/sslreveal.c	2013-04-27 09:22:26.910775670 -0700
 @@ -79,7 +79,6 @@ SSL_HandshakeNegotiatedExtension(PRFileD
    /* some decisions derived from SSL_GetChannelInfo */
    sslSocket * sslsocket = NULL;

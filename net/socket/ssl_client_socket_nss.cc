@@ -1855,19 +1855,14 @@ int SSLClientSocketNSS::Core::DoHandshake() {
       // TODO(agl): figure out how to plumb an OCSP response into the Mac
       // system library and update IsOCSPStaplingSupported for Mac.
       if (IsOCSPStaplingSupported()) {
-        unsigned int len = 0;
-        SSL_GetStapledOCSPResponse(nss_fd_, NULL, &len);
-        if (len) {
-          const unsigned int orig_len = len;
-          scoped_ptr<uint8[]> ocsp_response(new uint8[orig_len]);
-          SSL_GetStapledOCSPResponse(nss_fd_, ocsp_response.get(), &len);
-          DCHECK_EQ(orig_len, len);
-
+        const SECItemArray* ocsp_responses =
+            SSL_PeerStapledOCSPResponses(nss_fd_);
+        if (ocsp_responses->len) {
   #if defined(OS_WIN)
           if (nss_handshake_state_.server_cert) {
             CRYPT_DATA_BLOB ocsp_response_blob;
-            ocsp_response_blob.cbData = len;
-            ocsp_response_blob.pbData = ocsp_response.get();
+            ocsp_response_blob.cbData = ocsp_responses->items[0].len;
+            ocsp_response_blob.pbData = ocsp_responses->items[0].data;
             BOOL ok = CertSetCertificateContextProperty(
                 nss_handshake_state_.server_cert->os_cert_handle(),
                 CERT_OCSP_RESPONSE_PROP_ID,
@@ -1881,15 +1876,11 @@ int SSLClientSocketNSS::Core::DoHandshake() {
   #elif defined(USE_NSS)
           CacheOCSPResponseFromSideChannelFunction cache_ocsp_response =
               GetCacheOCSPResponseFromSideChannelFunction();
-          SECItem ocsp_response_item;
-          ocsp_response_item.type = siBuffer;
-          ocsp_response_item.data = ocsp_response.get();
-          ocsp_response_item.len = len;
 
           cache_ocsp_response(
               CERT_GetDefaultCertDB(),
               nss_handshake_state_.server_cert_chain[0], PR_Now(),
-              &ocsp_response_item, NULL);
+              &ocsp_responses->items[0], NULL);
   #endif
         }
       }

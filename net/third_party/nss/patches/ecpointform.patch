@@ -1,6 +1,6 @@
-diff -pu -r a/net/third_party/nss/ssl/ssl3ecc.c b/net/third_party/nss/ssl/ssl3ecc.c
---- a/net/third_party/nss/ssl/ssl3ecc.c	2012-06-10 19:38:30.000000000 -0700
-+++ b/net/third_party/nss/ssl/ssl3ecc.c	2012-11-12 15:57:59.222697369 -0800
+diff -pu a/nss/lib/ssl/ssl3ecc.c b/nss/lib/ssl/ssl3ecc.c
+--- a/nss/lib/ssl/ssl3ecc.c	2013-04-27 09:17:17.216390477 -0700
++++ b/nss/lib/ssl/ssl3ecc.c	2013-04-27 09:40:07.665786293 -0700
 @@ -33,6 +33,15 @@
  
  #ifdef NSS_ENABLE_ECC

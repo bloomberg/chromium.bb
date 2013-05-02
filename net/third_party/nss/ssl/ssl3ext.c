@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /* TLS extension code moved here from ssl3ecc.c */
-/* $Id: ssl3ext.c,v 1.28 2012/09/21 00:28:05 wtc%google.com Exp $ */
+/* $Id$ */
 
 #include "nssrenam.h"
 #include "nss.h"
@@ -65,6 +65,15 @@ static SECStatus ssl3_ClientHandleChannelIDXtn(sslSocket *ss,
     PRUint16 ex_type, SECItem *data);
 static PRInt32 ssl3_ClientSendChannelIDXtn(sslSocket *ss, PRBool append,
     PRUint32 maxBytes);
+static SECStatus ssl3_ServerSendStatusRequestXtn(sslSocket * ss,
+    PRBool      append, PRUint32    maxBytes);
+static SECStatus ssl3_ServerHandleStatusRequestXtn(sslSocket *ss,
+    PRUint16 ex_type, SECItem *data);
+static SECStatus ssl3_ClientHandleStatusRequestXtn(sslSocket *ss,
+                                                  PRUint16 ex_type,
+                                                  SECItem *data);
+static PRInt32 ssl3_ClientSendStatusRequestXtn(sslSocket * ss, PRBool append,
+                                              PRUint32 maxBytes);
 
 /*
  * Write bytes.  Using this function means the SECItem structure
@@ -226,6 +235,7 @@ static const ssl3HelloExtensionHandler clientHelloHandlers[] = {
     { ssl_renegotiation_info_xtn, &ssl3_HandleRenegotiationInfoXtn },
     { ssl_next_proto_nego_xtn,    &ssl3_ServerHandleNextProtoNegoXtn },
     { ssl_use_srtp_xtn,           &ssl3_HandleUseSRTPXtn },
+    { ssl_cert_status_xtn,        &ssl3_ServerHandleStatusRequestXtn },
     { -1, NULL }
 };
 
@@ -702,19 +712,13 @@ loser:
     return -1;
 }
 
-SECStatus
+static SECStatus
 ssl3_ClientHandleStatusRequestXtn(sslSocket *ss, PRUint16 ex_type,
-				  SECItem *data)
+                                 SECItem *data)
 {
-    /* If we didn't request this extension, then the server may not echo it. */
-    if (!ss->opt.enableOCSPStapling)
-	return SECFailure;
-
     /* The echoed extension must be empty. */
     if (data->len != 0)
-	return SECFailure;
-
-    ss->ssl3.hs.may_get_cert_status = PR_TRUE;
+       return SECFailure;
 
     /* Keep track of negotiated extensions. */
     ss->xtnData.negotiated[ss->xtnData.numNegotiated++] = ex_type;
@@ -722,16 +726,43 @@ ssl3_ClientHandleStatusRequestXtn(sslSocket *ss, PRUint16 ex_type,
     return SECSuccess;
 }
 
+static PRInt32
+ssl3_ServerSendStatusRequestXtn(
+			sslSocket * ss,
+			PRBool      append,
+			PRUint32    maxBytes)
+{
+    PRInt32 extension_length;
+    SECStatus rv;
+
+    if (!ss->certStatusArray)
+	return 0;
+
+    extension_length = 2 + 2;
+    if (append && maxBytes >= extension_length) {
+	/* extension_type */
+	rv = ssl3_AppendHandshakeNumber(ss, ssl_cert_status_xtn, 2);
+	if (rv != SECSuccess)
+	    return -1;
+	/* length of extension_data */
+	rv = ssl3_AppendHandshakeNumber(ss, 0, 2);
+	if (rv != SECSuccess)
+	    return -1;
+    }
+
+    return extension_length;
+}
+
 /* ssl3_ClientSendStatusRequestXtn builds the status_request extension on the
  * client side. See RFC 4366 section 3.6. */
-PRInt32
+static PRInt32
 ssl3_ClientSendStatusRequestXtn(sslSocket * ss, PRBool append,
-				PRUint32 maxBytes)
+                               PRUint32 maxBytes)
 {
     PRInt32 extension_length;
 
     if (!ss->opt.enableOCSPStapling)
-	return 0;
+       return 0;
 
     /* extension_type (2-bytes) +
      * length(extension_data) (2-bytes) +
@@ -742,36 +773,36 @@ ssl3_ClientSendStatusRequestXtn(sslSocket * ss, PRBool append,
     extension_length = 9;
 
     if (append && maxBytes >= extension_length) {
-	SECStatus rv;
-	TLSExtensionData *xtnData;
+       SECStatus rv;
+       TLSExtensionData *xtnData;
 
-	/* extension_type */
-	rv = ssl3_AppendHandshakeNumber(ss, ssl_cert_status_xtn, 2);
-	if (rv != SECSuccess)
-	    return -1;
-	rv = ssl3_AppendHandshakeNumber(ss, extension_length - 4, 2);
-	if (rv != SECSuccess)
-	    return -1;
-	rv = ssl3_AppendHandshakeNumber(ss, 1 /* status_type ocsp */, 1);
-	if (rv != SECSuccess)
-	    return -1;
-	/* A zero length responder_id_list means that the responders are
-	 * implicitly known to the server. */
-	rv = ssl3_AppendHandshakeNumber(ss, 0, 2);
-	if (rv != SECSuccess)
-	    return -1;
-	/* A zero length request_extensions means that there are no extensions.
-	 * Specifically, we don't set the id-pkix-ocsp-nonce extension. This
-	 * means that the server can replay a cached OCSP response to us. */
-	rv = ssl3_AppendHandshakeNumber(ss, 0, 2);
-	if (rv != SECSuccess)
-	    return -1;
+       /* extension_type */
+       rv = ssl3_AppendHandshakeNumber(ss, ssl_cert_status_xtn, 2);
+       if (rv != SECSuccess)
+           return -1;
+       rv = ssl3_AppendHandshakeNumber(ss, extension_length - 4, 2);
+       if (rv != SECSuccess)
+           return -1;
+       rv = ssl3_AppendHandshakeNumber(ss, 1 /* status_type ocsp */, 1);
+       if (rv != SECSuccess)
+           return -1;
+       /* A zero length responder_id_list means that the responders are
+        * implicitly known to the server. */
+       rv = ssl3_AppendHandshakeNumber(ss, 0, 2);
+       if (rv != SECSuccess)
+           return -1;
+       /* A zero length request_extensions means that there are no extensions.
+        * Specifically, we don't set the id-pkix-ocsp-nonce extension. This
+        * means that the server can replay a cached OCSP response to us. */
+       rv = ssl3_AppendHandshakeNumber(ss, 0, 2);
+       if (rv != SECSuccess)
+           return -1;
 
-	xtnData = &ss->xtnData;
-	xtnData->advertised[xtnData->numAdvertised++] = ssl_cert_status_xtn;
+       xtnData = &ss->xtnData;
+       xtnData->advertised[xtnData->numAdvertised++] = ssl_cert_status_xtn;
     } else if (maxBytes < extension_length) {
-	PORT_Assert(0);
-	return 0;
+       PORT_Assert(0);
+       return 0;
     }
     return extension_length;
 }
@@ -1212,7 +1243,7 @@ ssl3_ServerHandleSessionTicketXtn(sslSocket *ss, PRUint16 ex_type,
 		&mac_key, &mac_key_length);
 	} else 
 #endif
-    {
+	{
 	    rv = ssl3_GetSessionTicketKeysPKCS11(ss, &aes_key_pkcs11,
 		&mac_key_pkcs11);
 	}
@@ -1250,7 +1281,7 @@ ssl3_ServerHandleSessionTicketXtn(sslSocket *ss, PRUint16 ex_type,
 		goto no_ticket;
 	} else 
 #endif
-    {
+	{
 	    SECItem macParam;
 	    macParam.data = NULL;
 	    macParam.len = 0;
@@ -1314,7 +1345,7 @@ ssl3_ServerHandleSessionTicketXtn(sslSocket *ss, PRUint16 ex_type,
 		goto no_ticket;
 	} else 
 #endif
-    {
+	{
 	    SECItem ivItem;
 	    ivItem.data = enc_session_ticket.iv;
 	    ivItem.len = AES_BLOCK_SIZE;
@@ -1756,6 +1787,22 @@ ssl3_SendRenegotiationInfoXtn(
 	}
     }
     return needed;
+}
+
+static SECStatus
+ssl3_ServerHandleStatusRequestXtn(sslSocket *ss, PRUint16 ex_type,
+				  SECItem *data)
+{
+    SECStatus rv = SECSuccess;
+    PRUint32 len = 0;
+
+    /* remember that we got this extension. */
+    ss->xtnData.negotiated[ss->xtnData.numNegotiated++] = ex_type;
+    PORT_Assert(ss->sec.isServer);
+    /* prepare to send back the appropriate response */
+    rv = ssl3_RegisterServerHelloExtensionSender(ss, ex_type,
+					    ssl3_ServerSendStatusRequestXtn);
+    return rv;
 }
 
 /* This function runs in both the client and server.  */

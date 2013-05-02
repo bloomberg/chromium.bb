@@ -1,7 +1,7 @@
-diff -puN -r a/net/third_party/nss/ssl/ssl3con.c b/net/third_party/nss/ssl/ssl3con.c
---- a/net/third_party/nss/ssl/ssl3con.c	2012-11-09 15:34:12.258133766 -0800
-+++ b/net/third_party/nss/ssl/ssl3con.c	2012-11-09 15:35:08.488958561 -0800
-@@ -2033,6 +2033,9 @@ ssl3_ClientAuthTokenPresent(sslSessionID
+diff -puN a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
+--- a/nss/lib/ssl/ssl3con.c	2013-04-27 09:20:13.658889025 -0700
++++ b/nss/lib/ssl/ssl3con.c	2013-04-27 09:20:50.169405985 -0700
+@@ -2155,6 +2155,9 @@ ssl3_ClientAuthTokenPresent(sslSessionID
      PRBool isPresent = PR_TRUE;
  
      /* we only care if we are doing client auth */
@@ -11,7 +11,7 @@ diff -puN -r a/net/third_party/nss/ssl/ssl3con.c b/net/third_party/nss/ssl/ssl3c
      if (!sid || !sid->u.ssl3.clAuthValid) {
  	return PR_TRUE;
      }
-@@ -5226,24 +5229,33 @@ ssl3_SendCertificateVerify(sslSocket *ss
+@@ -5348,24 +5351,35 @@ ssl3_SendCertificateVerify(sslSocket *ss
      }
  
      isTLS = (PRBool)(ss->ssl3.pwSpec->version > SSL_LIBRARY_VERSION_3_0);
@@ -21,8 +21,10 @@ diff -puN -r a/net/third_party/nss/ssl/ssl3con.c b/net/third_party/nss/ssl/ssl3c
 -	sslSessionID * sid   = ss->sec.ci.sid;
 +    if (ss->ssl3.platformClientKey) {
 +#ifdef NSS_PLATFORM_CLIENT_AUTH
-+	rv = ssl3_PlatformSignHashes(&hashes, ss->ssl3.platformClientKey,
-+				     &buf, isTLS);
++	rv = ssl3_PlatformSignHashes(
++	    &hashes, ss->ssl3.platformClientKey, &buf, isTLS,
++	    CERT_GetCertKeyType(
++		&ss->ssl3.clientCertificate->subjectPublicKeyInfo));
 +	ssl_FreePlatformKey(ss->ssl3.platformClientKey);
 +	ss->ssl3.platformClientKey = (PlatformKey)NULL;
 +#endif /* NSS_PLATFORM_CLIENT_AUTH */
@@ -61,7 +63,7 @@ diff -puN -r a/net/third_party/nss/ssl/ssl3con.c b/net/third_party/nss/ssl/ssl3c
      if (rv != SECSuccess) {
  	goto done;	/* err code was set by ssl3_SignHashes */
      }
-@@ -5311,6 +5323,12 @@ ssl3_HandleServerHello(sslSocket *ss, SS
+@@ -5433,6 +5447,12 @@ ssl3_HandleServerHello(sslSocket *ss, SS
         SECKEY_DestroyPrivateKey(ss->ssl3.clientPrivateKey);
         ss->ssl3.clientPrivateKey = NULL;
      }
@@ -74,7 +76,7 @@ diff -puN -r a/net/third_party/nss/ssl/ssl3con.c b/net/third_party/nss/ssl/ssl3c
  
      temp = ssl3_ConsumeHandshakeNumber(ss, 2, &b, &length);
      if (temp < 0) {
-@@ -5901,6 +5919,10 @@ ssl3_HandleCertificateRequest(sslSocket 
+@@ -6022,6 +6042,10 @@ ssl3_HandleCertificateRequest(sslSocket
      SSL3AlertDescription desc        = illegal_parameter;
      SECItem              cert_types  = {siBuffer, NULL, 0};
      CERTDistNames        ca_list;
@@ -85,7 +87,7 @@ diff -puN -r a/net/third_party/nss/ssl/ssl3con.c b/net/third_party/nss/ssl/ssl3c
  
      SSL_TRC(3, ("%d: SSL3[%d]: handle certificate_request handshake",
  		SSL_GETPID(), ss->fd));
-@@ -5917,6 +5939,7 @@ ssl3_HandleCertificateRequest(sslSocket 
+@@ -6038,6 +6062,7 @@ ssl3_HandleCertificateRequest(sslSocket
      PORT_Assert(ss->ssl3.clientCertChain == NULL);
      PORT_Assert(ss->ssl3.clientCertificate == NULL);
      PORT_Assert(ss->ssl3.clientPrivateKey == NULL);
@@ -93,7 +95,7 @@ diff -puN -r a/net/third_party/nss/ssl/ssl3con.c b/net/third_party/nss/ssl/ssl3c
  
      isTLS = (PRBool)(ss->ssl3.prSpec->version > SSL_LIBRARY_VERSION_3_0);
      rv = ssl3_ConsumeHandshakeVariable(ss, &cert_types, 1, &b, &length);
-@@ -5983,6 +6006,18 @@ ssl3_HandleCertificateRequest(sslSocket 
+@@ -6104,6 +6129,18 @@ ssl3_HandleCertificateRequest(sslSocket
      desc = no_certificate;
      ss->ssl3.hs.ws = wait_hello_done;
  
@@ -109,12 +111,12 @@ diff -puN -r a/net/third_party/nss/ssl/ssl3con.c b/net/third_party/nss/ssl/ssl3c
 +                                        &ss->ssl3.clientPrivateKey);
 +    } else
 +#endif
-     if (ss->getClientAuthData == NULL) {
- 	rv = SECFailure; /* force it to send a no_certificate alert */
+     if (ss->getClientAuthData != NULL) {
+ 	/* XXX Should pass cert_types in this call!! */
+ 	rv = (SECStatus)(*ss->getClientAuthData)(ss->getClientAuthDataArg,
+@@ -6113,12 +6150,52 @@ ssl3_HandleCertificateRequest(sslSocket
      } else {
-@@ -5992,12 +6029,52 @@ ssl3_HandleCertificateRequest(sslSocket 
- 						 &ss->ssl3.clientCertificate,
- 						 &ss->ssl3.clientPrivateKey);
+ 	rv = SECFailure; /* force it to send a no_certificate alert */
      }
 +
      switch (rv) {
@@ -165,7 +167,7 @@ diff -puN -r a/net/third_party/nss/ssl/ssl3con.c b/net/third_party/nss/ssl/ssl3c
          /* check what the callback function returned */
          if ((!ss->ssl3.clientCertificate) || (!ss->ssl3.clientPrivateKey)) {
              /* we are missing either the key or cert */
-@@ -6060,6 +6137,10 @@ loser:
+@@ -6181,6 +6258,10 @@ loser:
  done:
      if (arena != NULL)
      	PORT_FreeArena(arena, PR_FALSE);
@@ -176,7 +178,7 @@ diff -puN -r a/net/third_party/nss/ssl/ssl3con.c b/net/third_party/nss/ssl/ssl3c
      return rv;
  }
  
-@@ -6134,7 +6215,8 @@ ssl3_SendClientSecondRound(sslSocket *ss
+@@ -6262,7 +6343,8 @@ ssl3_SendClientSecondRound(sslSocket *ss
  
      sendClientCert = !ss->ssl3.sendEmptyCert &&
  		     ss->ssl3.clientCertChain  != NULL &&
@@ -186,7 +188,7 @@ diff -puN -r a/net/third_party/nss/ssl/ssl3con.c b/net/third_party/nss/ssl/ssl3c
  
      /* We must wait for the server's certificate to be authenticated before
       * sending the client certificate in order to disclosing the client
-@@ -10446,6 +10528,10 @@ ssl3_DestroySSL3Info(sslSocket *ss)
+@@ -10815,6 +10897,10 @@ ssl3_DestroySSL3Info(sslSocket *ss)
  
      if (ss->ssl3.clientPrivateKey != NULL)
  	SECKEY_DestroyPrivateKey(ss->ssl3.clientPrivateKey);
@@ -197,9 +199,9 @@ diff -puN -r a/net/third_party/nss/ssl/ssl3con.c b/net/third_party/nss/ssl/ssl3c
  
      if (ss->ssl3.peerCertArena != NULL)
  	ssl3_CleanupPeerCerts(ss);
-diff -puN -r a/net/third_party/nss/ssl/ssl3ext.c b/net/third_party/nss/ssl/ssl3ext.c
---- a/net/third_party/nss/ssl/ssl3ext.c	2012-11-09 15:34:12.258133766 -0800
-+++ b/net/third_party/nss/ssl/ssl3ext.c	2012-11-09 15:35:08.488958561 -0800
+diff -puN a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
+--- a/nss/lib/ssl/ssl3ext.c	2013-04-27 09:17:17.216390477 -0700
++++ b/nss/lib/ssl/ssl3ext.c	2013-04-27 09:20:50.169405985 -0700
 @@ -11,8 +11,8 @@
  #include "nssrenam.h"
  #include "nss.h"
@@ -210,10 +212,10 @@ diff -puN -r a/net/third_party/nss/ssl/ssl3ext.c b/net/third_party/nss/ssl/ssl3e
  #include "pk11pub.h"
  #ifdef NO_PKCS11_BYPASS
  #include "blapit.h"
-diff -puN -r a/net/third_party/nss/ssl/sslauth.c b/net/third_party/nss/ssl/sslauth.c
---- a/net/third_party/nss/ssl/sslauth.c	2012-11-09 15:27:15.952019947 -0800
-+++ b/net/third_party/nss/ssl/sslauth.c	2012-11-09 15:35:08.488958561 -0800
-@@ -219,6 +219,28 @@ SSL_GetClientAuthDataHook(PRFileDesc *s,
+diff -puN a/nss/lib/ssl/sslauth.c b/nss/lib/ssl/sslauth.c
+--- a/nss/lib/ssl/sslauth.c	2013-04-27 09:20:36.319209880 -0700
++++ b/nss/lib/ssl/sslauth.c	2013-04-27 09:20:50.359408673 -0700
+@@ -220,6 +220,28 @@ SSL_GetClientAuthDataHook(PRFileDesc *s,
      return SECSuccess;
  }
  
@@ -242,10 +244,10 @@ diff -puN -r a/net/third_party/nss/ssl/sslauth.c b/net/third_party/nss/ssl/sslau
  /* NEED LOCKS IN HERE.  */
  SECStatus 
  SSL_SetPKCS11PinArg(PRFileDesc *s, void *arg)
-diff -puN -r a/net/third_party/nss/ssl/ssl.h b/net/third_party/nss/ssl/ssl.h
---- a/net/third_party/nss/ssl/ssl.h	2012-11-09 15:34:12.258133766 -0800
-+++ b/net/third_party/nss/ssl/ssl.h	2012-11-09 15:35:08.488958561 -0800
-@@ -483,6 +483,48 @@ typedef SECStatus (PR_CALLBACK *SSLGetCl
+diff -puN a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
+--- a/nss/lib/ssl/ssl.h	2013-04-27 09:20:36.319209880 -0700
++++ b/nss/lib/ssl/ssl.h	2013-04-27 09:20:50.409409383 -0700
+@@ -505,6 +505,48 @@ typedef SECStatus (PR_CALLBACK *SSLGetCl
  SSL_IMPORT SECStatus SSL_GetClientAuthDataHook(PRFileDesc *fd, 
  			                       SSLGetClientAuthData f, void *a);
  
@@ -294,10 +296,18 @@ diff -puN -r a/net/third_party/nss/ssl/ssl.h b/net/third_party/nss/ssl/ssl.h
  
  /*
  ** SNI extension processing callback function.
-diff -puN -r a/net/third_party/nss/ssl/sslimpl.h b/net/third_party/nss/ssl/sslimpl.h
---- a/net/third_party/nss/ssl/sslimpl.h	2012-11-09 15:34:12.258133766 -0800
-+++ b/net/third_party/nss/ssl/sslimpl.h	2012-11-09 15:36:42.600338478 -0800
-@@ -32,6 +32,15 @@
+diff -puN a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
+--- a/nss/lib/ssl/sslimpl.h	2013-04-27 09:20:13.658889025 -0700
++++ b/nss/lib/ssl/sslimpl.h	2013-04-27 09:20:50.409409383 -0700
+@@ -21,6 +21,7 @@
+ #include "sslerr.h"
+ #include "ssl3prot.h"
+ #include "hasht.h"
++#include "keythi.h"
+ #include "nssilock.h"
+ #include "pkcs11t.h"
+ #if defined(XP_UNIX) || defined(XP_BEOS)
+@@ -32,6 +33,15 @@
  
  #include "sslt.h" /* for some formerly private types, now public */
  
@@ -313,7 +323,7 @@ diff -puN -r a/net/third_party/nss/ssl/sslimpl.h b/net/third_party/nss/ssl/sslim
  /* to make some of these old enums public without namespace pollution,
  ** it was necessary to prepend ssl_ to the names.
  ** These #defines preserve compatibility with the old code here in libssl.
-@@ -446,6 +455,14 @@ typedef SECStatus (*SSLCompressor)(void 
+@@ -444,6 +454,14 @@ typedef SECStatus (*SSLCompressor)(void
                                     int                  inlen);
  typedef SECStatus (*SSLDestroy)(void *context, PRBool freeit);
  
@@ -328,7 +338,7 @@ diff -puN -r a/net/third_party/nss/ssl/sslimpl.h b/net/third_party/nss/ssl/sslim
  
  
  /*
-@@ -870,6 +887,10 @@ struct ssl3StateStr {
+@@ -862,6 +880,10 @@ struct ssl3StateStr {
  
      CERTCertificate *    clientCertificate;  /* used by client */
      SECKEYPrivateKey *   clientPrivateKey;   /* used by client */
@@ -339,7 +349,7 @@ diff -puN -r a/net/third_party/nss/ssl/sslimpl.h b/net/third_party/nss/ssl/sslim
      CERTCertificateList *clientCertChain;    /* used by client */
      PRBool               sendEmptyCert;      /* used by client */
  
-@@ -1127,6 +1148,10 @@ const unsigned char *  preferredCipher;
+@@ -1119,6 +1141,10 @@ const unsigned char *  preferredCipher;
      void                     *authCertificateArg;
      SSLGetClientAuthData      getClientAuthData;
      void                     *getClientAuthDataArg;
@@ -350,7 +360,7 @@ diff -puN -r a/net/third_party/nss/ssl/sslimpl.h b/net/third_party/nss/ssl/sslim
      SSLSNISocketConfig        sniSocketConfig;
      void                     *sniSocketConfigArg;
      SSLBadCertHandler         handleBadCert;
-@@ -1700,7 +1725,6 @@ extern void ssl_FreePRSocket(PRFileDesc 
+@@ -1691,7 +1717,6 @@ extern void ssl_FreePRSocket(PRFileDesc
   * various ciphers */
  extern int ssl3_config_match_init(sslSocket *);
  
@@ -358,7 +368,7 @@ diff -puN -r a/net/third_party/nss/ssl/sslimpl.h b/net/third_party/nss/ssl/sslim
  /* Create a new ref counted key pair object from two keys. */
  extern ssl3KeyPair * ssl3_NewKeyPair( SECKEYPrivateKey * privKey, 
                                        SECKEYPublicKey * pubKey);
-@@ -1740,6 +1764,26 @@ extern SECStatus ssl_InitSessionCacheLoc
+@@ -1731,6 +1756,26 @@ extern SECStatus ssl_InitSessionCacheLoc
  
  extern SECStatus ssl_FreeSessionCacheLocks(void);
  
@@ -371,7 +381,7 @@ diff -puN -r a/net/third_party/nss/ssl/sslimpl.h b/net/third_party/nss/ssl/sslim
 +// Implement the client CertificateVerify message for SSL3/TLS1.0
 +extern SECStatus ssl3_PlatformSignHashes(SSL3Hashes *hash,
 +                                         PlatformKey key, SECItem *buf,
-+                                         PRBool isTLS);
++                                         PRBool isTLS, KeyType keyType);
 +
 +// Converts a CERTCertList* (A collection of CERTCertificates) into a
 +// CERTCertificateList* (A collection of SECItems), or returns NULL if
@@ -385,10 +395,10 @@ diff -puN -r a/net/third_party/nss/ssl/sslimpl.h b/net/third_party/nss/ssl/sslim
  
  /**************** DTLS-specific functions **************/
  extern void dtls_FreeQueuedMessage(DTLSQueuedMessage *msg);
-diff -puN -r a/net/third_party/nss/ssl/sslplatf.c b/net/third_party/nss/ssl/sslplatf.c
---- a/net/third_party/nss/ssl/sslplatf.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/net/third_party/nss/ssl/sslplatf.c	2012-11-09 15:35:08.498958708 -0800
-@@ -0,0 +1,399 @@
+diff -puN a/nss/lib/ssl/sslplatf.c b/nss/lib/ssl/sslplatf.c
+--- a/nss/lib/ssl/sslplatf.c	1969-12-31 16:00:00.000000000 -0800
++++ b/nss/lib/ssl/sslplatf.c	2013-04-27 09:20:50.409409383 -0700
+@@ -0,0 +1,383 @@
 +/*
 + * Platform specific crypto wrappers
 + *
@@ -501,15 +511,13 @@ diff -puN -r a/net/third_party/nss/ssl/sslplatf.c b/net/third_party/nss/ssl/sslp
 +}
 +
 +SECStatus
-+ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf, 
-+                        PRBool isTLS)
++ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
++                        PRBool isTLS, KeyType keyType)
 +{
 +    SECStatus    rv             = SECFailure;
 +    PRBool       doDerEncode    = PR_FALSE;
 +    SECItem      hashItem;
-+    HCRYPTKEY    hKey           = 0;
 +    DWORD        argLen         = 0;
-+    ALG_ID       keyAlg         = 0;
 +    DWORD        signatureLen   = 0;
 +    ALG_ID       hashAlg        = 0;
 +    HCRYPTHASH   hHash          = 0;
@@ -517,31 +525,16 @@ diff -puN -r a/net/third_party/nss/ssl/sslplatf.c b/net/third_party/nss/ssl/sslp
 +    unsigned int i              = 0;
 +
 +    buf->data = NULL;
-+    if (!CryptGetUserKey(key->hCryptProv, key->dwKeySpec, &hKey)) {
-+        if (GetLastError() == NTE_NO_KEY) {
-+            PORT_SetError(SEC_ERROR_NO_KEY);
-+        } else {
-+            PORT_SetError(SEC_ERROR_INVALID_KEY);
-+        }
-+        goto done;
-+    }
 +
-+    argLen = sizeof(keyAlg);
-+    if (!CryptGetKeyParam(hKey, KP_ALGID, (BYTE*)&keyAlg, &argLen, 0)) {
-+        PORT_SetError(SEC_ERROR_INVALID_KEY);
-+        goto done;
-+    }
-+
-+    switch (keyAlg) {
-+        case CALG_RSA_KEYX:
-+        case CALG_RSA_SIGN:
++    switch (keyType) {
++        case rsaKey:
 +            hashAlg       = CALG_SSL3_SHAMD5;
 +            hashItem.data = hash->md5;
 +            hashItem.len  = sizeof(SSL3Hashes);
 +            break;
-+        case CALG_DSS_SIGN:
-+        case CALG_ECDSA:
-+            if (keyAlg == CALG_ECDSA) {
++        case dsaKey:
++        case ecKey:
++            if (keyType == ecKey) {
 +                doDerEncode = PR_TRUE;
 +            } else {
 +                doDerEncode = isTLS;
@@ -558,7 +551,7 @@ diff -puN -r a/net/third_party/nss/ssl/sslplatf.c b/net/third_party/nss/ssl/sslp
 +
 +    if (!CryptCreateHash(key->hCryptProv, hashAlg, 0, 0, &hHash)) {
 +        PORT_SetError(SSL_ERROR_SIGN_HASHES_FAILURE);
-+        goto done;    
++        goto done;
 +    }
 +    argLen = sizeof(hashLen);
 +    if (!CryptGetHashParam(hHash, HP_HASHSIZE, (BYTE*)&hashLen, &argLen, 0)) {
@@ -614,8 +607,6 @@ diff -puN -r a/net/third_party/nss/ssl/sslplatf.c b/net/third_party/nss/ssl/sslp
 +done:
 +    if (hHash)
 +        CryptDestroyHash(hHash);
-+    if (hKey)
-+        CryptDestroyKey(hKey);
 +    if (rv != SECSuccess && buf->data) {
 +        PORT_Free(buf->data);
 +        buf->data = NULL;
@@ -633,8 +624,8 @@ diff -puN -r a/net/third_party/nss/ssl/sslplatf.c b/net/third_party/nss/ssl/sslp
 +}
 +
 +SECStatus
-+ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf, 
-+                        PRBool isTLS)
++ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
++                        PRBool isTLS, KeyType keyType)
 +{
 +    SECStatus       rv                  = SECFailure;
 +    PRBool          doDerEncode         = PR_FALSE;
@@ -667,7 +658,7 @@ diff -puN -r a/net/third_party/nss/ssl/sslplatf.c b/net/third_party/nss/ssl/sslp
 +     * needed information is readily available on the key itself.
 +     */
 +    signatureLen = (cssmKey->KeyHeader.LogicalKeySizeInBits + 7) / 8;
-+    
++
 +    if (signatureLen == 0) {
 +        PORT_SetError(SEC_ERROR_INVALID_KEY);
 +        goto done;
@@ -678,16 +669,19 @@ diff -puN -r a/net/third_party/nss/ssl/sslplatf.c b/net/third_party/nss/ssl/sslp
 +        goto done;    /* error code was set. */
 +
 +    sigAlg = cssmKey->KeyHeader.AlgorithmId;
-+    switch (sigAlg) {
-+        case CSSM_ALGID_RSA:
++    switch (keyType) {
++        case rsaKey:
++            PORT_Assert(sigAlg == CSSM_ALGID_RSA);
 +            hashData.Data   = hash->md5;
 +            hashData.Length = sizeof(SSL3Hashes);
 +            break;
-+        case CSSM_ALGID_ECDSA:
-+        case CSSM_ALGID_DSA:
-+            if (sigAlg == CSSM_ALGID_ECDSA) {
++        case dsaKey:
++        case ecKey:
++            if (keyType == ecKey) {
++                PORT_Assert(sigAlg == CSSM_ALGID_ECDSA);
 +                doDerEncode = PR_TRUE;
 +            } else {
++                PORT_Assert(sigAlg == CSSM_ALGID_DSA);
 +                doDerEncode = isTLS;
 +            }
 +            hashData.Data   = hash->sha;
@@ -712,7 +706,7 @@ diff -puN -r a/net/third_party/nss/ssl/sslplatf.c b/net/third_party/nss/ssl/sslp
 +
 +    signatureData.Length = signatureLen;
 +    signatureData.Data   = (uint8*)buf->data;
-+    
++
 +    cssmRv = CSSM_CSP_CreateSignatureContext(cspHandle, sigAlg, cssmCreds,
 +                                             cssmKey, &cssmSignature);
 +    if (cssmRv) {
@@ -780,7 +774,7 @@ diff -puN -r a/net/third_party/nss/ssl/sslplatf.c b/net/third_party/nss/ssl/sslp
 +
 +SECStatus
 +ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
-+                        PRBool isTLS)
++                        PRBool isTLS, KeyType keyType)
 +{
 +    PORT_SetError(PR_NOT_IMPLEMENTED_ERROR);
 +    return SECFailure;
@@ -788,10 +782,10 @@ diff -puN -r a/net/third_party/nss/ssl/sslplatf.c b/net/third_party/nss/ssl/sslp
 +#endif
 +
 +#endif /* NSS_PLATFORM_CLIENT_AUTH */
-diff -puN -r a/net/third_party/nss/ssl/sslsock.c b/net/third_party/nss/ssl/sslsock.c
---- a/net/third_party/nss/ssl/sslsock.c	2012-11-09 15:34:12.268133912 -0800
-+++ b/net/third_party/nss/ssl/sslsock.c	2012-11-09 15:35:08.498958708 -0800
-@@ -335,6 +335,10 @@ ssl_DupSocket(sslSocket *os)
+diff -puN a/nss/lib/ssl/sslsock.c b/nss/lib/ssl/sslsock.c
+--- a/nss/lib/ssl/sslsock.c	2013-04-27 09:19:05.777927838 -0700
++++ b/nss/lib/ssl/sslsock.c	2013-04-27 09:20:50.419409524 -0700
+@@ -337,6 +337,10 @@ ssl_DupSocket(sslSocket *os)
  	    ss->authCertificateArg    = os->authCertificateArg;
  	    ss->getClientAuthData     = os->getClientAuthData;
  	    ss->getClientAuthDataArg  = os->getClientAuthDataArg;
@@ -802,7 +796,7 @@ diff -puN -r a/net/third_party/nss/ssl/sslsock.c b/net/third_party/nss/ssl/sslso
              ss->sniSocketConfig       = os->sniSocketConfig;
              ss->sniSocketConfigArg    = os->sniSocketConfigArg;
  	    ss->handleBadCert         = os->handleBadCert;
-@@ -1712,6 +1716,12 @@ SSL_ReconfigFD(PRFileDesc *model, PRFile
+@@ -1725,6 +1729,12 @@ SSL_ReconfigFD(PRFileDesc *model, PRFile
          ss->getClientAuthData     = sm->getClientAuthData;
      if (sm->getClientAuthDataArg)
          ss->getClientAuthDataArg  = sm->getClientAuthDataArg;
@@ -815,7 +809,7 @@ diff -puN -r a/net/third_party/nss/ssl/sslsock.c b/net/third_party/nss/ssl/sslso
      if (sm->sniSocketConfig)
          ss->sniSocketConfig       = sm->sniSocketConfig;
      if (sm->sniSocketConfigArg)
-@@ -2942,6 +2952,10 @@ ssl_NewSocket(PRBool makeLocks, SSLProto
+@@ -2977,6 +2987,10 @@ ssl_NewSocket(PRBool makeLocks, SSLProto
          ss->sniSocketConfig    = NULL;
          ss->sniSocketConfigArg = NULL;
  	ss->getClientAuthData  = NULL;

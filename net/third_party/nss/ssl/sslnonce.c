@@ -4,7 +4,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-/* $Id: sslnonce.c,v 1.27 2012/04/25 14:50:12 gerv%gerv.net Exp $ */
+/* $Id$ */
 
 #include "cert.h"
 #include "pk11pub.h"
@@ -15,7 +15,7 @@
 #include "sslimpl.h"
 #include "sslproto.h"
 #include "nssilock.h"
-#if (defined(XP_UNIX) || defined(XP_WIN) || defined(_WINDOWS) || defined(XP_BEOS)) && !defined(_WIN32_WCE)
+#if defined(XP_UNIX) || defined(XP_WIN) || defined(_WINDOWS) || defined(XP_BEOS)
 #include <time.h>
 #endif
 
@@ -188,6 +188,12 @@ ssl_DestroySID(sslSessionID *sid)
     for (i = 0; i < MAX_PEER_CERT_CHAIN_SIZE && sid->peerCertChain[i]; i++) {
 	CERT_DestroyCertificate(sid->peerCertChain[i]);
     }
+    if (sid->peerCertStatus.len) {
+        SECITEM_FreeArray(&sid->peerCertStatus, PR_FALSE);
+        sid->peerCertStatus.items = NULL;
+        sid->peerCertStatus.len = 0;
+    }
+
     if ( sid->localCert ) {
 	CERT_DestroyCertificate(sid->localCert);
     }
@@ -456,7 +462,7 @@ PRUint32
 ssl_Time(void)
 {
     PRUint32 myTime;
-#if (defined(XP_UNIX) || defined(XP_WIN) || defined(_WINDOWS) || defined(XP_BEOS)) && !defined(_WIN32_WCE)
+#if defined(XP_UNIX) || defined(XP_WIN) || defined(_WINDOWS) || defined(XP_BEOS)
     myTime = time(NULL);	/* accurate until the year 2038. */
 #else
     /* portable, but possibly slower */

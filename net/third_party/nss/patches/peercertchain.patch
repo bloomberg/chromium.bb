@@ -1,7 +1,7 @@
-diff -pu -r a/net/third_party/nss/ssl/sslauth.c b/net/third_party/nss/ssl/sslauth.c
---- a/net/third_party/nss/ssl/sslauth.c	2012-04-25 07:50:12.000000000 -0700
-+++ b/net/third_party/nss/ssl/sslauth.c	2012-11-09 15:22:49.448098805 -0800
-@@ -28,6 +28,41 @@ SSL_PeerCertificate(PRFileDesc *fd)
+diff -pu a/nss/lib/ssl/sslauth.c b/nss/lib/ssl/sslauth.c
+--- a/nss/lib/ssl/sslauth.c	2013-04-27 09:17:17.216390477 -0700
++++ b/nss/lib/ssl/sslauth.c	2013-04-27 09:20:21.318997488 -0700
+@@ -29,6 +29,41 @@ SSL_PeerCertificate(PRFileDesc *fd)
  }
  
  /* NEED LOCKS IN HERE.  */
@@ -43,11 +43,11 @@ diff -pu -r a/net/third_party/nss/ssl/sslauth.c b/net/third_party/nss/ssl/sslaut
  CERTCertificate *
  SSL_LocalCertificate(PRFileDesc *fd)
  {
-diff -pu -r a/net/third_party/nss/ssl/ssl.h b/net/third_party/nss/ssl/ssl.h
---- a/net/third_party/nss/ssl/ssl.h	2012-09-21 14:58:43.000000000 -0700
-+++ b/net/third_party/nss/ssl/ssl.h	2012-11-09 15:22:49.448098805 -0800
-@@ -398,6 +398,18 @@ SSL_IMPORT SECStatus SSL_SecurityStatus(
- SSL_IMPORT CERTCertificate *SSL_PeerCertificate(PRFileDesc *fd);
+diff -pu a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
+--- a/nss/lib/ssl/ssl.h	2013-04-27 09:17:17.216390477 -0700
++++ b/nss/lib/ssl/ssl.h	2013-04-27 09:20:21.318997488 -0700
+@@ -428,6 +428,18 @@ SSL_SetStapledOCSPResponses(PRFileDesc *
+ 			    PRBool takeOwnership);
  
  /*
 +** Return references to the certificates presented by the SSL peer.

@@ -4,12 +4,25 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-/* $Id: sslt.h,v 1.23 2012/06/07 02:06:19 wtc%google.com Exp $ */
+/* $Id$ */
 
 #ifndef __sslt_h_
 #define __sslt_h_
 
 #include "prtypes.h"
+
+/* SECItemArray is added in NSS 3.15.  Define the type if compiling
+** against an older version of NSS.
+*/
+#include "nssutil.h"
+#if NSSUTIL_VMAJOR == 3 && NSSUTIL_VMINOR < 15
+typedef struct SECItemArrayStr SECItemArray;
+
+struct SECItemArrayStr {
+    SECItem *items;
+    unsigned int len;
+};
+#endif  /* NSSUTIL_VMAJOR == 3 && NSSUTIL_VMINOR < 15 */
 
 typedef struct SSL3StatisticsStr {
     /* statistics from ssl3_SendClientHello (sch) */

@@ -10,40 +10,38 @@
 # chromium source tree.
 patches_dir=/Users/wtc/chrome1/src/net/third_party/nss/patches
 
-patch -p5 < $patches_dir/versionskew.patch
+patch -p4 < $patches_dir/versionskew.patch
 
-patch -p5 < $patches_dir/renegoscsv.patch
+patch -p4 < $patches_dir/renegoscsv.patch
 
-patch -p5 < $patches_dir/cachecerts.patch
+patch -p4 < $patches_dir/cachecerts.patch
 
-patch -p5 < $patches_dir/peercertchain.patch
+patch -p4 < $patches_dir/peercertchain.patch
 
-patch -p5 < $patches_dir/ocspstapling.patch
+patch -p4 < $patches_dir/clientauth.patch
 
-patch -p5 < $patches_dir/clientauth.patch
+patch -p4 < $patches_dir/didhandshakeresume.patch
 
-patch -p5 < $patches_dir/didhandshakeresume.patch
+patch -p4 < $patches_dir/negotiatedextension.patch
 
-patch -p5 < $patches_dir/negotiatedextension.patch
+patch -p4 < $patches_dir/getrequestedclientcerttypes.patch
 
-patch -p5 < $patches_dir/getrequestedclientcerttypes.patch
+patch -p4 < $patches_dir/restartclientauth.patch
 
-patch -p5 < $patches_dir/restartclientauth.patch
+patch -p4 < $patches_dir/channelid.patch
 
-patch -p5 < $patches_dir/falsestartnpn.patch
+patch -p4 < $patches_dir/tlsunique.patch
 
-patch -p5 < $patches_dir/channelid.patch
+patch -p4 < $patches_dir/ecpointform.patch
 
-patch -p5 < $patches_dir/tlsunique.patch
+patch -p4 < $patches_dir/secretexporterlocks.patch
 
-patch -p5 < $patches_dir/sslkeylogerror.patch
+patch -p4 < $patches_dir/cbc.patch
 
-patch -p5 < $patches_dir/ecpointform.patch
+patch -p4 < $patches_dir/aes256keylength.patch
 
-patch -p5 < $patches_dir/secretexporterlocks.patch
+patch -p4 < $patches_dir/suitebonly.patch
 
-patch -p6 < $patches_dir/cbc.patch
+patch -p4 < $patches_dir/secitemarray.patch
 
-patch -p5 < $patches_dir/dtlsinitclist.patch
-
-patch -p5 < $patches_dir/aes256keylength.patch
+patch -p4 < $patches_dir/unusedvariables.patch

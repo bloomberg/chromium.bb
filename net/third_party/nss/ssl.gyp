@@ -67,6 +67,7 @@
         'ssl/unix_err.h',
         'ssl/win32err.c',
         'ssl/win32err.h',
+        'ssl/bodge/secitem_array.c',
         'ssl/bodge/secure_memcmp.c',
       ],
       'sources!': [

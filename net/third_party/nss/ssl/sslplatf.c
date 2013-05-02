@@ -110,7 +110,7 @@ ssl_FreePlatformKey(PlatformKey key)
 }
 
 SECStatus
-ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf, 
+ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
                         PRBool isTLS, KeyType keyType)
 {
     SECStatus    rv             = SECFailure;
@@ -150,7 +150,7 @@ ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
 
     if (!CryptCreateHash(key->hCryptProv, hashAlg, 0, 0, &hHash)) {
         PORT_SetError(SSL_ERROR_SIGN_HASHES_FAILURE);
-        goto done;    
+        goto done;
     }
     argLen = sizeof(hashLen);
     if (!CryptGetHashParam(hHash, HP_HASHSIZE, (BYTE*)&hashLen, &argLen, 0)) {
@@ -223,7 +223,7 @@ ssl_FreePlatformKey(PlatformKey key)
 }
 
 SECStatus
-ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf, 
+ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
                         PRBool isTLS, KeyType keyType)
 {
     SECStatus       rv                  = SECFailure;
@@ -257,7 +257,7 @@ ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
      * needed information is readily available on the key itself.
      */
     signatureLen = (cssmKey->KeyHeader.LogicalKeySizeInBits + 7) / 8;
-    
+
     if (signatureLen == 0) {
         PORT_SetError(SEC_ERROR_INVALID_KEY);
         goto done;
@@ -305,7 +305,7 @@ ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
 
     signatureData.Length = signatureLen;
     signatureData.Data   = (uint8*)buf->data;
-    
+
     cssmRv = CSSM_CSP_CreateSignatureContext(cspHandle, sigAlg, cssmCreds,
                                              cssmKey, &cssmSignature);
     if (cssmRv) {

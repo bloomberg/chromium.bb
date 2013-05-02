@@ -5,7 +5,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-/* $Id: sslimpl.h,v 1.108 2012/09/28 01:46:45 wtc%google.com Exp $ */
+/* $Id$ */
 
 #ifndef __sslimpl_h_
 #define __sslimpl_h_
@@ -151,11 +151,9 @@ typedef enum { SSLAppOpRead = 0,
 #define NUM_MIXERS                      9
 
 /* Mask of the 25 named curves we support. */
-#ifndef NSS_ECC_MORE_THAN_SUITE_B
-#define SSL3_SUPPORTED_CURVES_MASK 0x3800000	/* only 3 curves, suite B*/
-#else
-#define SSL3_SUPPORTED_CURVES_MASK 0x3fffffe
-#endif
+#define SSL3_ALL_SUPPORTED_CURVES_MASK 0x3fffffe
+/* only 3 curves, suite B*/
+#define SSL3_SUITE_B_SUPPORTED_CURVES_MASK 0x3800000
 
 #ifndef BPB
 #define BPB 8 /* Bits Per Byte */
@@ -597,6 +595,7 @@ struct sslSessionIDStr {
 
     CERTCertificate *     peerCert;
     CERTCertificate *     peerCertChain[MAX_PEER_CERT_CHAIN_SIZE];
+    SECItemArray          peerCertStatus; /* client only */
     const char *          peerID;     /* client only */
     const char *          urlSvrName; /* client only */
     CERTCertificate *     localCert;
@@ -739,6 +738,7 @@ typedef enum {
     wait_change_cipher, 
     wait_finished,
     wait_server_hello, 
+    wait_certificate_status,
     wait_server_cert, 
     wait_server_key,
     wait_cert_request, 
@@ -814,14 +814,6 @@ const ssl3CipherSuiteDef *suite_def;
     PRBool                isResuming;  /* are we resuming a session */
     PRBool                usedStepDownKey;  /* we did a server key exchange. */
     PRBool                sendingSCSV; /* instead of empty RI */
-    PRBool                may_get_cert_status; /* the server echoed a
-                                                * status_request extension so
-                                                * may send a CertificateStatus
-                                                * handshake message. */
-    SECItem               pending_cert_msg; /* a Certificate message which we
-                                             * save temporarily if we may get
-                                             * a CertificateStatus message */
-    SECItem               cert_status; /* an OCSP response */
     sslBuffer             msgState;    /* current state for handshake messages*/
                                        /* protected by recvBufLock */
     sslBuffer             messages;    /* Accumulated handshake messages */
@@ -1222,6 +1214,7 @@ const unsigned char *  preferredCipher;
     /* Configuration state for server sockets */
     /* server cert and key for each KEA type */
     sslServerCerts        serverCerts[kt_kea_size];
+    SECItemArray *        certStatusArray;
 
     ssl3CipherSuiteCfg cipherSuites[ssl_V3_SUITES_IMPLEMENTED];
     ssl3KeyPair *         ephemeralECDHKeyPair; /* for ECDHE-* handshake */
@@ -1264,6 +1257,15 @@ extern sslSessionIDUncacheFunc ssl_sid_uncache;
 /************************************************************************/
 
 SEC_BEGIN_PROTOS
+
+/* Functions for handling SECItemArrays, added in NSS 3.15 */
+extern SECItemArray *SECITEM_AllocArray(PLArenaPool *arena,
+                                        SECItemArray *array,
+                                        unsigned int len);
+extern SECItemArray *SECITEM_DupArray(PLArenaPool *arena,
+                                      const SECItemArray *from);
+extern void SECITEM_FreeArray(SECItemArray *array, PRBool freeit);
+extern void SECITEM_ZfreeArray(SECItemArray *array, PRBool freeit);
 
 /* Internal initialization and installation of the SSL error tables */
 extern SECStatus ssl_Init(void);
@@ -1542,6 +1544,8 @@ extern void      ssl3_FilterECCipherSuitesByServerCerts(sslSocket *ss);
 extern PRBool    ssl3_IsECCEnabled(sslSocket *ss);
 extern SECStatus ssl3_DisableECCSuites(sslSocket * ss, 
                                        const ssl3CipherSuite * suite);
+extern PRInt32   ssl3_GetSupportedECCCurveMask(sslSocket *ss);
+
 
 /* Macro for finding a curve equivalent in strength to RSA key's */
 #define SSL_RSASTRENGTH_TO_ECSTRENGTH(s) \
@@ -1675,8 +1679,6 @@ extern SECStatus ssl3_HandleSupportedPointFormatsXtn(sslSocket * ss,
 			PRUint16 ex_type, SECItem *data);
 extern SECStatus ssl3_ClientHandleSessionTicketXtn(sslSocket *ss,
 			PRUint16 ex_type, SECItem *data);
-extern SECStatus ssl3_ClientHandleStatusRequestXtn(sslSocket *ss,
-			PRUint16 ex_type, SECItem *data);
 extern SECStatus ssl3_ServerHandleSessionTicketXtn(sslSocket *ss,
 			PRUint16 ex_type, SECItem *data);
 
@@ -1685,8 +1687,6 @@ extern SECStatus ssl3_ServerHandleSessionTicketXtn(sslSocket *ss,
  * that need exposure.
  */
 extern PRInt32 ssl3_SendSessionTicketXtn(sslSocket *ss, PRBool append,
-			PRUint32 maxBytes);
-extern PRInt32 ssl3_ClientSendStatusRequestXtn(sslSocket *ss, PRBool append,
 			PRUint32 maxBytes);
 
 /* ClientHello and ServerHello extension senders.
@@ -1872,8 +1872,6 @@ SEC_END_PROTOS
 
 #if defined(XP_UNIX) || defined(XP_OS2) || defined(XP_BEOS)
 #define SSL_GETPID getpid
-#elif defined(_WIN32_WCE)
-#define SSL_GETPID GetCurrentProcessId
 #elif defined(WIN32)
 extern int __cdecl _getpid(void);
 #define SSL_GETPID _getpid
