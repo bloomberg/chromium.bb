@@ -31,7 +31,6 @@ use FindBin;
 use Getopt::Long;
 
 use lib $FindBin::Bin;
-use webkitdirs;
 use VCSUtils;
 
 sub checkPythonVersion()
