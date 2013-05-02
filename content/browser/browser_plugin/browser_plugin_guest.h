@@ -189,6 +189,7 @@ class CONTENT_EXPORT BrowserPluginGuest
                            int request_id,
                            const std::string& request_method,
                            const base::Callback<void(bool)>& callback) OVERRIDE;
+  virtual void CloseContents(WebContents* source) OVERRIDE;
   virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
   virtual void HandleKeyboardEvent(
       WebContents* source,

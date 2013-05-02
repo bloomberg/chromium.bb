@@ -400,6 +400,10 @@ void BrowserPluginGuest::CanDownload(
                  permission_request_id));
 }
 
+void BrowserPluginGuest::CloseContents(WebContents* source) {
+  SendMessageToEmbedder(new BrowserPluginMsg_Close(instance_id_));
+}
+
 bool BrowserPluginGuest::HandleContextMenu(
     const ContextMenuParams& params) {
   // TODO(fsamuel): We have a do nothing context menu handler for now until

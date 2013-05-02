@@ -66,10 +66,25 @@ embedder.requestFrameName_ =
       chrome.test.assertEq(expectedFrameName, frameName);
       chrome.test.assertEq(expectedFrameName, webview.name);
       chrome.test.assertEq(openerWebview.partition, webview.partition);
+      window.removeEventListener('message', onPostMessageReceived);
       chrome.test.succeed();
     }
   };
   window.addEventListener('message', onPostMessageReceived);
+};
+
+/** @private */
+embedder.requestClose_ = function(webview, testName) {
+  var onWebViewLoadStop = function(e) {
+    webview.contentWindow.postMessage(
+        JSON.stringify(['close', testName]), '*');
+  };
+  webview.addEventListener('loadstop', onWebViewLoadStop);
+  var onWebViewClose = function(e) {
+    webview.removeEventListener('close', onWebViewClose);
+    chrome.test.succeed();
+  };
+  webview.addEventListener('close', onWebViewClose);
 };
 
 /** @private */
@@ -80,14 +95,11 @@ embedder.assertCorrectEvent_ = function(e) {
 
 // Tests begin.
 
-// The embedder has to initiate a post message so that the guest can get a
-// reference to embedder to send the reply back.
-
-var testNewWindow = function(testName,
-                             webViewName,
-                             guestName,
-                             partitionName,
-                             expectedFrameName) {
+var testNewWindowName = function(testName,
+                                 webViewName,
+                                 guestName,
+                                 partitionName,
+                                 expectedFrameName) {
   var webview = embedder.setUpGuest_(partitionName);
 
   var onNewWindow = function(e) {
@@ -118,8 +130,8 @@ embedder.tests.testNewWindowNameTakesPrecedence =
   var guestName = 'bar';
   var partitionName = 'foobar';
   var expectedName = guestName;
-  testNewWindow('testNewWindowNameTakesPrecedence',
-                webViewName, guestName, partitionName, expectedName);
+  testNewWindowName('testNewWindowNameTakesPrecedence',
+                    webViewName, guestName, partitionName, expectedName);
 };
 
 embedder.tests.testWebViewNameTakesPrecedence =
@@ -128,8 +140,8 @@ embedder.tests.testWebViewNameTakesPrecedence =
   var guestName = '';
   var partitionName = 'persist:foobar';
   var expectedName = webViewName;
-  testNewWindow('testWebViewNameTakesPrecedence',
-                webViewName, guestName, partitionName, expectedName);
+  testNewWindowName('testWebViewNameTakesPrecedence',
+                    webViewName, guestName, partitionName, expectedName);
 };
 
 embedder.tests.testNoName = function testNoName() {
@@ -137,17 +149,41 @@ embedder.tests.testNoName = function testNoName() {
   var guestName = '';
   var partitionName = '';
   var expectedName = '';
-  testNewWindow('testNoName',
-                webViewName, guestName, partitionName, expectedName);
+  testNewWindowName('testNoName',
+                    webViewName, guestName, partitionName, expectedName);
 };
 
-embedder.tests.testNewWindowRedirect = function testNewWindowRedirect() {
+embedder.tests.testNewWindowRedirect =
+    function testNewWindowRedirect() {
   var webViewName = 'foo';
   var guestName = '';
   var partitionName = 'persist:foobar';
   var expectedName = webViewName;
-  testNewWindow('testNewWindowRedirect_blank',
-                webViewName, guestName, partitionName, expectedName);
+  testNewWindowName('testNewWindowRedirect_blank',
+                    webViewName, guestName, partitionName, expectedName);
+};
+
+embedder.tests.testNewWindowClose = function testNewWindowClose() {
+  var testName = 'testNewWindowClose';
+  var webview = embedder.setUpGuest_('foobar');
+
+  var onNewWindow = function(e) {
+    chrome.test.log('Embedder notified on newwindow');
+    embedder.assertCorrectEvent_(e);
+
+    var newwebview = document.createElement('webview');
+    document.querySelector('#webview-tag-container').appendChild(newwebview);
+    embedder.requestClose_(newwebview, testName);
+    try {
+      e.window.attach(newwebview);
+    } catch (e) {
+      chrome.test.fail();
+    }
+  };
+  webview.addEventListener('newwindow', onNewWindow);
+
+  // Load a new window with the given name.
+  embedder.setUpNewWindowRequest_(webview, 'guest.html', '', testName);
 };
 
 onload = function() {
@@ -157,7 +193,8 @@ onload = function() {
       embedder.tests.testNewWindowNameTakesPrecedence,
       embedder.tests.testWebViewNameTakesPrecedence,
       embedder.tests.testNoName,
-      embedder.tests.testNewWindowRedirect
+      embedder.tests.testNewWindowRedirect,
+      embedder.tests.testNewWindowClose
     ]);
   });
 };

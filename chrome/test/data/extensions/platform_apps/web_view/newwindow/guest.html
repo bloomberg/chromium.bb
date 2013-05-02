@@ -20,6 +20,8 @@
         if (data[0] == 'get-frame-name') {
           var testName = data[1];
           notifyEmbedder(['get-frame-name', testName, window.name]);
+        } else if (data[0] == 'close') {
+          window.close();
         }
       };
 

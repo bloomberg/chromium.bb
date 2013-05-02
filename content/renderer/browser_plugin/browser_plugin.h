@@ -339,6 +339,7 @@ class CONTENT_EXPORT BrowserPlugin :
                         std::string mailbox_name,
                         int gpu_route_id,
                         int gpu_host_id);
+  void OnClose(int instance_id);
   void OnCompositorFrameSwapped(const IPC::Message& message);
   void OnGuestContentWindowReady(int instance_id,
                                  int content_window_routing_id);
