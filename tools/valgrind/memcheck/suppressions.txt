@@ -7132,10 +7132,3 @@
    fun:_ZN5drive4util10FileReader4OpenERKN4base8FilePathElRKNS2_8CallbackIFviEEE
    fun:_ZN5drive4util*DriveFileReaderTest_*_Test8TestBodyEv
 }
-{
-   bug_236901
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN14TestingProfile20CreateRequestContextEv
-   fun:_ZN6policy34UserCloudPolicyManagerChromeOSTest5SetUpEv
-}

@@ -73,6 +73,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
  protected:
   UserCloudPolicyManagerChromeOSTest()
       : ui_thread_(content::BrowserThread::UI, &loop_),
+        io_thread_(content::BrowserThread::IO, &loop_),
         store_(NULL),
         profile_(NULL),
         signin_profile_(NULL) {}
@@ -130,6 +131,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
       manager_->RemoveObserver(&observer_);
       manager_->Shutdown();
     }
+    signin_profile_->ResetRequestContext();
   }
 
   void CreateManager(bool wait_for_fetch) {
@@ -261,6 +263,8 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
   // Required by the refresh scheduler that's created by the manager.
   MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
+  // Required to cleanup the URLRequestContextGetter of the |signin_profile_|.
+  content::TestBrowserThread io_thread_;
 
   // Convenience policy objects.
   em::PolicyData policy_data_;
