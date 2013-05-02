@@ -43,17 +43,15 @@ unsigned long RtcDataChannelHandler::bufferedAmount() {
 
 bool RtcDataChannelHandler::sendStringData(const WebKit::WebString& data) {
   std::string utf8_buffer = UTF16ToUTF8(data);
-  webrtc::DataBuffer buffer;
-  buffer.binary = false;
-  buffer.data.SetData(utf8_buffer.c_str(), utf8_buffer.length());
-  return channel_->Send(buffer);
+  talk_base::Buffer buffer(utf8_buffer.c_str(), utf8_buffer.length());
+  webrtc::DataBuffer data_buffer(buffer, false);
+  return channel_->Send(data_buffer);
 }
 
 bool RtcDataChannelHandler::sendRawData(const char* data, size_t length) {
-  webrtc::DataBuffer buffer;
-  buffer.data.SetData(data, length);
-  buffer.binary = true;
-  return channel_->Send(buffer);
+  talk_base::Buffer buffer(data, length);
+  webrtc::DataBuffer data_buffer(buffer, true);
+  return channel_->Send(data_buffer);
 }
 
 void RtcDataChannelHandler::close() {

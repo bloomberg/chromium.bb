@@ -314,10 +314,7 @@ void IpcPacketSocket::OnSendComplete() {
 
   if (writable_signal_expected_ &&
       send_packets_pending_ <= kWritableSignalThreshold) {
-    // TODO(sergeyu): Uncomment this line once SignalWritable is added in
-    // talk_base::AsyncPacketSocket.
-    //
-    // SignalWritable(this);
+    SignalReadyToSend(this);
     writable_signal_expected_ = false;
   }
 }
