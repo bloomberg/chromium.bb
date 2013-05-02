@@ -1002,6 +1002,26 @@ other types of suffix sets.
   <summary>Video codec used in HTML5 media.</summary>
 </histogram>
 
+<histogram name="Media.PepperVideoDecoderError" enum="PepperVideoDecodeError">
+  <summary>Counts of video decode errors reported to plugin.</summary>
+</histogram>
+
+<histogram name="Media.PepperVideoDecoderPictureCount">
+  <summary>
+    Number of PictureBuffers/textures requested per hardware decoder creation.
+    This value varies by platform and video. A user visible video may trigger
+    multiple decoder creations (sometimes every 5 seconds) but would normally
+    not hold more than 2 sets of buffers at any given time in memory.
+  </summary>
+</histogram>
+
+<histogram name="Media.PepperVideoDecoderPictureHeight">
+  <summary>
+    Vertical video resolution rounded to the nearest bucket. (Corresponds
+    roughly to the number in 720p.)
+  </summary>
+</histogram>
+
 <histogram name="Media.VAVDAH264.DecoderFailure" enum="VAVDAH264DecoderFailure">
   <summary>
     Error codes reported by video decode using VA-API hardware video decoder.
@@ -9644,6 +9664,21 @@ other types of suffix sets.
   <int value="2" label="South">Scrolled from top towards the bottom</int>
   <int value="3" label="West">Scrolled from right towards left</int>
   <int value="4" label="East">Scrolled from left towards right</int>
+</enum>
+
+<enum name="PepperVideoDecodeError" type="int">
+  <int value="1" label="Illegal state">
+    An operation was attempted during an incompatible decoder state.
+  </int>
+  <int value="2" label="Invalid argument">
+    Invalid argument was passed to an API method.
+  </int>
+  <int value="3" label="Unreadable input">Encoded input is unreadable.</int>
+  <int value="4" label="Platform failure">
+    A failure occurred at the browser layer or lower. Examples of such failures
+    include GPU hardware failures, GPU driver failures, GPU library failures,
+    browser programming errors, and so on.
+  </int>
 </enum>
 
 <enum name="PhotoEditorFileType" type="int">

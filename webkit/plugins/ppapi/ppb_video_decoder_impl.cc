@@ -8,8 +8,10 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "media/video/picture.h"
+#include "media/video/video_decode_accelerator.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/dev/ppb_video_decoder_dev.h"
 #include "ppapi/c/dev/ppp_video_decoder_dev.h"
@@ -30,25 +32,10 @@ using ppapi::thunk::PPB_Buffer_API;
 using ppapi::thunk::PPB_Graphics3D_API;
 using ppapi::thunk::PPB_VideoDecoder_API;
 
-namespace webkit {
-namespace ppapi {
-
-PPB_VideoDecoder_Impl::PPB_VideoDecoder_Impl(PP_Instance instance)
-    : PPB_VideoDecoder_Shared(instance),
-      ppp_videodecoder_(NULL) {
-  PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
-  if (plugin_module) {
-    ppp_videodecoder_ = static_cast<const PPP_VideoDecoder_Dev*>(
-        plugin_module->GetPluginInterface(PPP_VIDEODECODER_DEV_INTERFACE));
-  }
-}
-
-PPB_VideoDecoder_Impl::~PPB_VideoDecoder_Impl() {
-  Destroy();
-}
+namespace {
 
 // Convert PP_VideoDecoder_Profile to media::VideoCodecProfile.
-static media::VideoCodecProfile PPToMediaProfile(
+media::VideoCodecProfile PPToMediaProfile(
     const PP_VideoDecoder_Profile pp_profile) {
   switch (pp_profile) {
     case PP_VIDEODECODER_H264PROFILE_NONE:
@@ -83,6 +70,42 @@ static media::VideoCodecProfile PPToMediaProfile(
     default:
       return media::VIDEO_CODEC_PROFILE_UNKNOWN;
   }
+}
+
+PP_VideoDecodeError_Dev MediaToPPError(
+    media::VideoDecodeAccelerator::Error error) {
+  switch (error) {
+    case media::VideoDecodeAccelerator::ILLEGAL_STATE :
+      return PP_VIDEODECODERERROR_ILLEGAL_STATE;
+    case media::VideoDecodeAccelerator::INVALID_ARGUMENT :
+      return PP_VIDEODECODERERROR_INVALID_ARGUMENT;
+    case media::VideoDecodeAccelerator::UNREADABLE_INPUT :
+      return PP_VIDEODECODERERROR_UNREADABLE_INPUT;
+    case media::VideoDecodeAccelerator::PLATFORM_FAILURE :
+      return PP_VIDEODECODERERROR_PLATFORM_FAILURE;
+    default:
+      NOTREACHED();
+      return PP_VIDEODECODERERROR_ILLEGAL_STATE;
+  }
+}
+
+}  // namespace
+
+namespace webkit {
+namespace ppapi {
+
+PPB_VideoDecoder_Impl::PPB_VideoDecoder_Impl(PP_Instance instance)
+    : PPB_VideoDecoder_Shared(instance),
+      ppp_videodecoder_(NULL) {
+  PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
+  if (plugin_module) {
+    ppp_videodecoder_ = static_cast<const PPP_VideoDecoder_Dev*>(
+        plugin_module->GetPluginInterface(PPP_VIDEODECODER_DEV_INTERFACE));
+  }
+}
+
+PPB_VideoDecoder_Impl::~PPB_VideoDecoder_Impl() {
+  Destroy();
 }
 
 // static
@@ -157,6 +180,8 @@ void PPB_VideoDecoder_Impl::AssignPictureBuffers(
     const PP_PictureBuffer_Dev* buffers) {
   if (!platform_video_decoder_.get())
     return;
+  UMA_HISTOGRAM_COUNTS_100("Media.PepperVideoDecoderPictureCount",
+                           no_of_buffers);
 
   std::vector<media::PictureBuffer> wrapped_buffers;
   for (uint32 i = 0; i < no_of_buffers; i++) {
@@ -167,6 +192,8 @@ void PPB_VideoDecoder_Impl::AssignPictureBuffers(
         gfx::Size(in_buf.size.width, in_buf.size.height),
         in_buf.texture_id);
     wrapped_buffers.push_back(buffer);
+    UMA_HISTOGRAM_COUNTS_10000("Media.PepperVideoDecoderPictureHeight",
+                               in_buf.size.height);
   }
 
   FlushCommandBuffer();
@@ -249,12 +276,11 @@ void PPB_VideoDecoder_Impl::NotifyError(
   if (!ppp_videodecoder_)
     return;
 
-  // TODO(vrk): This is assuming VideoDecodeAccelerator::Error and
-  // PP_VideoDecodeError_Dev have identical enum values. There is no compiler
-  // assert to guarantee this. We either need to add such asserts or
-  // merge these two enums.
-  ppp_videodecoder_->NotifyError(pp_instance(), pp_resource(),
-                                 static_cast<PP_VideoDecodeError_Dev>(error));
+  PP_VideoDecodeError_Dev pp_error = MediaToPPError(error);
+  ppp_videodecoder_->NotifyError(pp_instance(), pp_resource(), pp_error);
+  UMA_HISTOGRAM_ENUMERATION(
+      "Media.PepperVideoDecoderError", error,
+      media::VideoDecodeAccelerator::LARGEST_ERROR_ENUM);
 }
 
 void PPB_VideoDecoder_Impl::NotifyResetDone() {

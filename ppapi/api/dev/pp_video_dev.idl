@@ -97,9 +97,8 @@ struct PP_Picture_Dev {
 };
 
 /**
- * Decoder error codes reported to the plugin.  A reasonable naive
+ * Decoder error codes reported to the plugin. A reasonable naive
  * error handling policy is for the plugin to Destroy() the decoder on error.
- * Note: Keep these in sync with media::VideoDecodeAccelerator::Error.
  */
 [assert_size(4)]
 enum PP_VideoDecodeError_Dev {

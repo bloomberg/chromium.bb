@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/pp_video_dev.idl modified Fri Dec  7 15:33:11 2012. */
+/* From dev/pp_video_dev.idl modified Tue Apr 30 14:58:38 2013. */
 
 #ifndef PPAPI_C_DEV_PP_VIDEO_DEV_H_
 #define PPAPI_C_DEV_PP_VIDEO_DEV_H_
@@ -121,9 +121,8 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_Picture_Dev, 8);
  * @{
  */
 /**
- * Decoder error codes reported to the plugin.  A reasonable naive
+ * Decoder error codes reported to the plugin. A reasonable naive
  * error handling policy is for the plugin to Destroy() the decoder on error.
- * Note: Keep these in sync with media::VideoDecodeAccelerator::Error.
  */
 typedef enum {
   /**
