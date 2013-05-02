@@ -89,10 +89,11 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
                           const fileapi::FileSystemURL& url,
                           const base::Closure& done_callback);
 
-  // A local or remote sync has been finished (either successfully or
-  // with an error). Clears the internal sync flag and enable writing for |url|.
+  // A local or remote sync has been finished with |last_sync_status|.
+  // Clears the internal sync flag and enable writing for |url|.
   // This method must be called on UI thread.
-  void ClearSyncFlagForURL(const fileapi::FileSystemURL& url);
+  void ClearSyncFlagForURL(const fileapi::FileSystemURL& url,
+                           SyncStatusCode last_sync_status);
 
   // Prepares for sync |url| by disabling writes on |url|.
   // If the target |url| is being written and cannot start sync it

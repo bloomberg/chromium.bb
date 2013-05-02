@@ -174,9 +174,10 @@ void LocalFileSyncService::HasPendingLocalChanges(
 }
 
 void LocalFileSyncService::ClearSyncFlagForURL(
-    const FileSystemURL& url) {
+    const FileSystemURL& url,
+    SyncStatusCode status) {
   DCHECK(ContainsKey(origin_to_contexts_, url.origin()));
-  sync_context_->ClearSyncFlagForURL(url);
+  sync_context_->ClearSyncFlagForURL(url, status);
 }
 
 void LocalFileSyncService::GetLocalFileMetadata(

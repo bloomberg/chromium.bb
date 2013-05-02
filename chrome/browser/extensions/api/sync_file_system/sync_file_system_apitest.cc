@@ -11,6 +11,7 @@
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/file_status_observer.h"
 #include "chrome/browser/sync_file_system/local_change_processor.h"
+#include "chrome/browser/sync_file_system/mock_local_change_processor.h"
 #include "chrome/browser/sync_file_system/mock_remote_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
@@ -94,6 +95,11 @@ ACTION_P5(ReturnWithFakeFileAddedStatus,
                             mock_url));
   mock_remote_service->NotifyFileStatusChanged(
       mock_url, sync_direction, sync_file_status, sync_action_taken);
+}
+
+ACTION_P(CallbackArg4With, status) {
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE, base::Bind(arg4, status));
 }
 
 }  // namespace
@@ -184,6 +190,13 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, RequestFileSystem) {
 }
 
 IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, WriteFileThenGetUsage) {
+  ::testing::NiceMock<
+      sync_file_system::MockLocalChangeProcessor> mock_local_change_processor;
+  EXPECT_CALL(*mock_remote_service(), GetLocalChangeProcessor())
+      .WillRepeatedly(Return(&mock_local_change_processor));
+  EXPECT_CALL(mock_local_change_processor, ApplyLocalChange(_, _, _, _, _))
+      .WillRepeatedly(CallbackArg4With(sync_file_system::SYNC_STATUS_OK));
+
   ASSERT_TRUE(RunPlatformAppTest("sync_file_system/write_file_then_get_usage"))
       << message_;
 }

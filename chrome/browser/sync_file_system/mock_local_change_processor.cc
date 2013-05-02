@@ -18,22 +18,9 @@ using ::testing::Return;
 namespace sync_file_system {
 
 MockLocalChangeProcessor::MockLocalChangeProcessor() {
-  ON_CALL(*this, ApplyLocalChange(_, _, _, _, _))
-      .WillByDefault(Invoke(this,
-                            &MockLocalChangeProcessor::ApplyLocalChangeStub));
 }
 
 MockLocalChangeProcessor::~MockLocalChangeProcessor() {
-}
-
-void MockLocalChangeProcessor::ApplyLocalChangeStub(
-    const FileChange& change,
-    const base::FilePath& local_file_path,
-    const SyncFileMetadata& local_file_metadata,
-    const fileapi::FileSystemURL& url,
-    const SyncStatusCallback& callback) {
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
 }
 
 }  // namespace sync_file_system

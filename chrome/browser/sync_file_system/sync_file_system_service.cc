@@ -313,7 +313,7 @@ void SyncFileSystemService::DidProcessRemoteChange(
   if (status != SYNC_STATUS_NO_CHANGE_TO_SYNC &&
       remote_file_service_->GetCurrentState() != REMOTE_SERVICE_DISABLED) {
     DCHECK(url.is_valid());
-    local_file_service_->ClearSyncFlagForURL(url);
+    local_file_service_->ClearSyncFlagForURL(url, status);
   }
 
   if (status == SYNC_STATUS_NO_CHANGE_TO_SYNC) {
@@ -349,7 +349,7 @@ void SyncFileSystemService::DidProcessLocalChange(
   }
 
   DCHECK(url.is_valid());
-  local_file_service_->ClearSyncFlagForURL(url);
+  local_file_service_->ClearSyncFlagForURL(url, status);
 
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, base::Bind(&SyncFileSystemService::MaybeStartSync,
