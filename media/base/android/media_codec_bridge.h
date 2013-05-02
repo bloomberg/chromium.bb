@@ -10,6 +10,8 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/time.h"
+#include "media/base/audio_decoder_config.h"
+#include "media/base/video_decoder_config.h"
 #include "ui/gfx/size.h"
 
 namespace media {
@@ -18,14 +20,10 @@ namespace media {
 // Android MediaCodec class. For more information on Android MediaCodec, check
 // http://developer.android.com/reference/android/media/MediaCodec.html
 // Note: MediaCodec is only available on JB and greater.
+// Use AudioCodecBridge or VideoCodecBridge to create an instance of this
+// object.
 class MediaCodecBridge {
  public:
-  enum Codec {
-    AUDIO_MPEG,
-    VIDEO_H264,
-    VIDEO_VP8,
-  };
-
   enum DequeueBufferInfo {
     INFO_OUTPUT_BUFFERS_CHANGED = -3,
     INFO_OUTPUT_FORMAT_CHANGED = -2,
@@ -38,15 +36,7 @@ class MediaCodecBridge {
   // Returns true if MediaCodec is available on the device.
   static bool IsAvailable();
 
-  explicit MediaCodecBridge(const Codec codec);
-
-  ~MediaCodecBridge();
-
-  // Starts decoding with the given codec params.
-  void StartAudio(
-      const Codec codec, int sample_rate, int channel_count);
-  void StartVideo(
-      const Codec codec, const gfx::Size& size, jobject surface);
+  virtual ~MediaCodecBridge();
 
   // Resets both input and output, all indices previously returned in calls to
   // DequeueInputBuffer() and DequeueOutputBuffer() become invalid.
@@ -95,12 +85,16 @@ class MediaCodecBridge {
   // To access them, use DequeueOutputBuffer() and GetFromOutputBuffer().
   int GetOutputBuffers();
 
- private:
+ protected:
+  explicit MediaCodecBridge(const char* mime);
 
   // Calls start() against the media codec instance. Used in StartXXX() after
   // configuring media codec.
-  void Start();
+  void StartInternal();
 
+  jobject media_codec() { return j_media_codec_.obj(); }
+
+ private:
   // Gets input buffers from media codec and keeps them inside this class.
   // To access them, use DequeueInputBuffer(), PutToInputBuffer() and
   // QueueInputBuffer().
@@ -116,6 +110,24 @@ class MediaCodecBridge {
   base::android::ScopedJavaGlobalRef<jobjectArray> j_output_buffers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaCodecBridge);
+};
+
+class AudioCodecBridge : public MediaCodecBridge {
+ public:
+  explicit AudioCodecBridge(const AudioCodec codec);
+
+  // Start the audio codec bridge.
+  void Start(
+      const AudioCodec codec, int sample_rate, int channel_count);
+};
+
+class VideoCodecBridge : public MediaCodecBridge {
+ public:
+  explicit VideoCodecBridge(const VideoCodec codec);
+
+  // Start the video codec bridge.
+  void Start(
+      const VideoCodec codec, const gfx::Size& size, jobject surface);
 };
 
 }  // namespace media

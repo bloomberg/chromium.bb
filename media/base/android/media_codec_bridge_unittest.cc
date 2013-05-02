@@ -97,17 +97,17 @@ TEST(MediaCodecBridgeTest, Initialize) {
     return;
 
   scoped_ptr<media::MediaCodecBridge> media_codec;
-  media_codec.reset(new MediaCodecBridge(MediaCodecBridge::VIDEO_H264));
+  media_codec.reset(new VideoCodecBridge(kCodecH264));
 }
 
 TEST(MediaCodecBridgeTest, DoNormal) {
   if (!MediaCodecBridge::IsAvailable())
     return;
 
-  scoped_ptr<media::MediaCodecBridge> media_codec;
-  media_codec.reset(new MediaCodecBridge(MediaCodecBridge::AUDIO_MPEG));
+  scoped_ptr<media::AudioCodecBridge> media_codec;
+  media_codec.reset(new AudioCodecBridge(kCodecMP3));
 
-  media_codec->StartAudio(MediaCodecBridge::AUDIO_MPEG, 44100, 2);
+  media_codec->Start(kCodecMP3, 44100, 2);
 
   ASSERT_GT(media_codec->GetOutputBuffers(), 0);
 

@@ -50,7 +50,7 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
     const base::Callback<bool(void)>& make_context_current)
     : client_(client),
       make_context_current_(make_context_current),
-      codec_(media::MediaCodecBridge::VIDEO_H264),
+      codec_(media::kCodecH264),
       state_(NO_ERROR),
       surface_texture_id_(0),
       picturebuffers_requested_(false),
@@ -73,7 +73,7 @@ bool AndroidVideoDecodeAccelerator::Initialize(
     return false;
 
   if (profile == media::VP8PROFILE_MAIN) {
-    codec_ = media::MediaCodecBridge::VIDEO_VP8;
+    codec_ = media::kCodecVP8;
   } else {
     // TODO(dwkang): enable H264 once b/8125974 is fixed.
     LOG(ERROR) << "Unsupported profile: " << profile;
@@ -379,13 +379,13 @@ void AndroidVideoDecodeAccelerator::Flush() {
 void AndroidVideoDecodeAccelerator::ConfigureMediaCodec() {
   DCHECK(surface_texture_.get());
 
-  media_codec_.reset(new media::MediaCodecBridge(codec_));
+  media_codec_.reset(new media::VideoCodecBridge(codec_));
 
   gfx::ScopedJavaSurface surface(surface_texture_.get());
   // VDA does not pass the container indicated resolution in the initialization
   // phase. Here, we set 720p by default.
   // TODO(dwkang): find out a way to remove the following hard-coded value.
-  media_codec_->StartVideo(
+  media_codec_->Start(
       codec_, gfx::Size(1280, 720), surface.j_surface().obj());
   media_codec_->GetOutputBuffers();
 }

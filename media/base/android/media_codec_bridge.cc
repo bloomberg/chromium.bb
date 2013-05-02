@@ -97,12 +97,27 @@ namespace media {
 
 enum { kBufferFlagEndOfStream = 4 };
 
-static const char* CodecToMimeType(const MediaCodecBridge::Codec codec) {
+static const char* AudioCodecToMimeType(const AudioCodec codec) {
   switch (codec) {
-    case MediaCodecBridge::AUDIO_MPEG: return "audio/mpeg";
-    case MediaCodecBridge::VIDEO_H264: return "video/avc";
-    case MediaCodecBridge::VIDEO_VP8: return "video/x-vnd.on2.vp8";
-    default: return NULL;
+    case kCodecMP3:
+      return "audio/mpeg";
+    case kCodecVorbis:
+      return "audio/vorbis";
+    case kCodecAAC:
+      return "audio/mp4a-latm";
+    default:
+      return NULL;
+  }
+}
+
+static const char* VideoCodecToMimeType(const VideoCodec codec) {
+  switch (codec) {
+    case kCodecH264:
+      return "video/avc";
+    case kCodecVP8:
+      return "video/x-vnd.on2.vp8";
+    default:
+      return NULL;
   }
 }
 
@@ -120,14 +135,14 @@ bool MediaCodecBridge::IsAvailable() {
   return base::android::BuildInfo::GetInstance()->sdk_int() >= 16;
 }
 
-MediaCodecBridge::MediaCodecBridge(const Codec codec) {
+MediaCodecBridge::MediaCodecBridge(const char* mime) {
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
   CHECK(g_native_registerer.Pointer()->IsRegistered());
-  DCHECK(CodecToMimeType(codec));
+  DCHECK(mime);
 
   ScopedJavaLocalRef<jstring> j_type =
-      ConvertUTF8ToJavaString(env, CodecToMimeType(codec));
+      ConvertUTF8ToJavaString(env, mime);
 
   ScopedJavaLocalRef<jobject> tmp(
       JNI_MediaCodec::Java_MediaCodec_createDecoderByType(env, j_type.obj()));
@@ -142,43 +157,7 @@ MediaCodecBridge::~MediaCodecBridge() {
   JNI_MediaCodec::Java_MediaCodec_release(env, j_media_codec_.obj());
 }
 
-void MediaCodecBridge::StartAudio(
-    const Codec codec, int sample_rate, int channel_count) {
-  JNIEnv* env = AttachCurrentThread();
-  DCHECK(CodecToMimeType(codec));
-
-  ScopedJavaLocalRef<jstring> j_mime =
-      ConvertUTF8ToJavaString(env, CodecToMimeType(codec));
-  ScopedJavaLocalRef<jobject> j_format(
-      JNI_MediaFormat::Java_MediaFormat_createAudioFormat(
-          env, j_mime.obj(), sample_rate, channel_count));
-  DCHECK(!j_format.is_null());
-
-  JNI_MediaCodec::Java_MediaCodec_configure(
-      env, j_media_codec_.obj(), j_format.obj(), NULL, NULL, 0);
-
-  Start();
-}
-
-void MediaCodecBridge::StartVideo(
-    const Codec codec, const gfx::Size& size, jobject surface) {
-  JNIEnv* env = AttachCurrentThread();
-  DCHECK(CodecToMimeType(codec));
-
-  ScopedJavaLocalRef<jstring> j_mime =
-      ConvertUTF8ToJavaString(env, CodecToMimeType(codec));
-  ScopedJavaLocalRef<jobject> j_format(
-      JNI_MediaFormat::Java_MediaFormat_createVideoFormat(
-          env, j_mime.obj(), size.width(), size.height()));
-  DCHECK(!j_format.is_null());
-
-  JNI_MediaCodec::Java_MediaCodec_configure(
-      env, j_media_codec_.obj(), j_format.obj(), surface, NULL, 0);
-
-  Start();
-}
-
-void MediaCodecBridge::Start() {
+void MediaCodecBridge::StartInternal() {
   JNIEnv* env = AttachCurrentThread();
   JNI_MediaCodec::Java_MediaCodec_start(env, j_media_codec_.obj());
   GetInputBuffers();
@@ -296,6 +275,46 @@ int MediaCodecBridge::GetOutputBuffers() {
           env, j_media_codec_.obj()));
 
   return env->GetArrayLength(j_output_buffers_.obj());
+}
+
+AudioCodecBridge::AudioCodecBridge(const AudioCodec codec)
+    : MediaCodecBridge(AudioCodecToMimeType(codec)) {
+}
+
+void AudioCodecBridge::Start(
+    const AudioCodec codec, int sample_rate, int channel_count) {
+  JNIEnv* env = AttachCurrentThread();
+  DCHECK(AudioCodecToMimeType(codec));
+
+  ScopedJavaLocalRef<jstring> j_mime =
+      ConvertUTF8ToJavaString(env, AudioCodecToMimeType(codec));
+  ScopedJavaLocalRef<jobject> j_format(
+      JNI_MediaFormat::Java_MediaFormat_createAudioFormat(
+          env, j_mime.obj(), sample_rate, channel_count));
+  DCHECK(!j_format.is_null());
+  JNI_MediaCodec::Java_MediaCodec_configure(
+      env, media_codec(), j_format.obj(), NULL, NULL, 0);
+  StartInternal();
+}
+
+VideoCodecBridge::VideoCodecBridge(const VideoCodec codec)
+    : MediaCodecBridge(VideoCodecToMimeType(codec)) {
+}
+
+void VideoCodecBridge::Start(
+    const VideoCodec codec, const gfx::Size& size, jobject surface) {
+  JNIEnv* env = AttachCurrentThread();
+  DCHECK(VideoCodecToMimeType(codec));
+
+  ScopedJavaLocalRef<jstring> j_mime =
+      ConvertUTF8ToJavaString(env, VideoCodecToMimeType(codec));
+  ScopedJavaLocalRef<jobject> j_format(
+      JNI_MediaFormat::Java_MediaFormat_createVideoFormat(
+          env, j_mime.obj(), size.width(), size.height()));
+  DCHECK(!j_format.is_null());
+  JNI_MediaCodec::Java_MediaCodec_configure(
+      env, media_codec(), j_format.obj(), surface, NULL, 0);
+  StartInternal();
 }
 
 }  // namespace media
