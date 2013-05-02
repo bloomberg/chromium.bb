@@ -153,3 +153,12 @@ html[dir=rtl] .step-extra-controls {
   position: relative;
   width: 250px;
 }
+
+html[highlight=strong] #security-info a:focus,
+html[highlight=strong] #eula a:focus,
+html[highlight=strong] .step-extra-controls a:focus,
+html[highlight=strong] .menu-control:focus,
+html[highlight=strong] input[type='button']:focus,
+html[highlight=strong] button:focus {
+  box-shadow: 0 0 23px rgb(77, 144, 254) !important;
+}

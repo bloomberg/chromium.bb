@@ -12,15 +12,17 @@ namespace chromeos {
 
 namespace {
 
-const char kEnterpriseManaged[]    = "enterprise_managed";
-const char kAllowReset[]           = "can_exit_enrollment";
-const char kDeviceRequisition[]    = "device_requisition";
+const char kEnterpriseManaged[]  = "enterprise_managed";
+const char kAllowReset[]         = "can_exit_enrollment";
+const char kDeviceRequisition[]  = "device_requisition";
+const char kKeyboardDrivenOobe[] = "keyboard_driven_oobe";
 
 }  // namespace
 
 KioskOemManifestParser::Manifest::Manifest()
     : enterprise_managed(false),
-      can_exit_enrollment(true) {
+      can_exit_enrollment(true),
+      keyboard_driven_oobe(false) {
 }
 
 bool KioskOemManifestParser::Load(
@@ -41,6 +43,8 @@ bool KioskOemManifestParser::Load(
 
   dict->GetString(kDeviceRequisition,
                   &manifest->device_requisition);
+  dict->GetBoolean(kKeyboardDrivenOobe,
+                   &manifest->keyboard_driven_oobe);
   if (!dict->GetBoolean(kEnterpriseManaged,
                         &manifest->enterprise_managed) ||
       !dict->GetBoolean(kAllowReset,

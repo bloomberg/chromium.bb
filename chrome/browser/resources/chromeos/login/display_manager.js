@@ -27,6 +27,8 @@
 /** @const */ var ACCELERATOR_ENROLLMENT = 'enrollment';
 /** @const */ var ACCELERATOR_VERSION = 'version';
 /** @const */ var ACCELERATOR_RESET = 'reset';
+/** @const */ var ACCELERATOR_LEFT = 'left';
+/** @const */ var ACCELERATOR_RIGHT = 'right';
 
 /* Help topic identifiers. */
 /** @const */ var HELP_TOPIC_ENTERPRISE_REPORTING = 2535613;
@@ -89,6 +91,12 @@ cr.define('cr.ui.login', function() {
     allowToggleVersion_: false,
 
     /**
+     * Whether keyboard navigation flow is enforced.
+     * @type {boolean}
+     */
+    forceKeyboardFlow_: false,
+
+    /**
      * List of parameters to showScreen calls.
      * @type {array}
      */
@@ -111,6 +119,16 @@ cr.define('cr.ui.login', function() {
     },
 
     /**
+     * Forces keyboard based OOBE navigation.
+     * @param {boolean} value True if keyboard navigation flow is forced.
+     */
+    set forceKeyboardFlow(value) {
+      this.forceKeyboardFlow_ = value;
+      if (value)
+        cr.ui.Oobe.initializeKeyboardFlow();
+    },
+
+    /**
      * Shows/hides version labels.
      * @param {boolean} show Whether labels should be visible by default. If
      *     false, visibility can be toggled by ACCELERATOR_VERSION.
@@ -118,6 +136,28 @@ cr.define('cr.ui.login', function() {
     showVersion: function(show) {
       $('version-labels').hidden = !show;
       this.allowToggleVersion_ = !show;
+    },
+
+    /**
+     * Raises tab/shift-tab keyboard events.
+     * @param {HTMLElement} element Element that should receive the event.
+     * @param {string} eventType Keyboard event type.
+     * @param {boolean} shift True if shift should be on.
+     */
+    raiseTabKeyEvent: function(element, eventType, shift) {
+      var event = document.createEvent('KeyboardEvent');
+      event.initKeyboardEvent(
+          eventType,
+          true,  // canBubble
+          true,  // cancelable
+          window,
+          'U+0009',
+          0,  // keyLocation
+          false,  // ctrl
+          false,  // alt
+          shift,  // shift
+          false);  // meta
+      element.dispatchEvent(event);
     },
 
     /**
@@ -154,6 +194,20 @@ cr.define('cr.ui.login', function() {
           chrome.send('toggleResetScreen');
         }
       }
+
+      if (!this.forceKeyboardFlow_)
+        return;
+
+      // Handle special accelerators for keyboard enhanced navigation flow.
+      if (name == ACCELERATOR_LEFT) {
+        this.raiseTabKeyEvent(document.activeElement, 'keydown', true);
+        this.raiseTabKeyEvent(document.activeElement, 'keypress', true);
+        this.raiseTabKeyEvent(document.activeElement, 'keyup', true);
+      } else if (name == ACCELERATOR_RIGHT) {
+        this.raiseTabKeyEvent(document.activeElement, 'keydown', false);
+        this.raiseTabKeyEvent(document.activeElement, 'keypress', false);
+        this.raiseTabKeyEvent(document.activeElement, 'keyup', false);
+     }
     },
 
     /**

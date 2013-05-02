@@ -93,6 +93,14 @@ cr.define('cr.ui', function() {
   };
 
   /**
+   * Enables keyboard driven flow.
+   */
+  Oobe.enableKeyboardFlow = function(value) {
+    // Don't show header bar for OOBE.
+    Oobe.getInstance().forceKeyboardFlow = value;
+  };
+
+  /**
    * Disables signin UI.
    */
   Oobe.disableSigninUI = function() {

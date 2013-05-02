@@ -70,6 +70,10 @@ html[dir=rtl] .dropdown-title {
   outline: none;
 }
 
+html[highlight=strong] .dropdown-title:focus {
+  box-shadow: 0 0 23px rgb(77, 144, 254);
+}
+
 .dropdown-title img {
   margin-top: -1px;
 }

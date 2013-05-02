@@ -25,6 +25,8 @@ class KioskOemManifestParser {
     // Intended purpose of the device. Meant to be pass-through value for
     // enterprise enrollment.
     std::string device_requisition;
+    // True if OOBE flow should be adapted for keyboard flow.
+    bool keyboard_driven_oobe;
   };
 
   // Loads manifest from |kiosk_oem_file|. Returns true if manifest was

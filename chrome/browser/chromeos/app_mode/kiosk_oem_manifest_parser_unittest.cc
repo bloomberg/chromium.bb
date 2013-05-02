@@ -21,6 +21,7 @@ TEST_F(KioskOemManifestParserTest, LoadTest) {
   EXPECT_TRUE(KioskOemManifestParser::Load(kiosk_oem_file, &manifest));
   EXPECT_TRUE(manifest.enterprise_managed);
   EXPECT_FALSE(manifest.can_exit_enrollment);
+  EXPECT_TRUE(manifest.keyboard_driven_oobe);
   EXPECT_EQ(manifest.device_requisition, std::string("test"));
 }
 

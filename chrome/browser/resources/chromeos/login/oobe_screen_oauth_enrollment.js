@@ -187,8 +187,12 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * Cancels enrollment and drops the user back to the login screen.
      */
     cancel: function() {
-      if (!this.isAutoEnrollment_)
+      if (!this.isAutoEnrollment_) {
+        if (this.preventCancellation_)
+          return;
+
         chrome.send('oauthEnrollClose', ['cancel']);
+      }
     },
 
     /**

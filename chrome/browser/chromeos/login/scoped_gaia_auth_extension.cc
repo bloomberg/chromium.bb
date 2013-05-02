@@ -5,10 +5,12 @@
 #include "chrome/browser/chromeos/login/scoped_gaia_auth_extension.h"
 
 #include "base/command_line.h"
+#include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/browser_resources.h"
 
@@ -32,8 +34,19 @@ void LoadGaiaAuthExtension(Profile* profile) {
     component_loader->Add(IDR_GAIA_TEST_AUTH_MANIFEST, auth_extension_path);
     return;
   }
-  component_loader->Add(IDR_GAIA_AUTH_MANIFEST,
-                        base::FilePath(FILE_PATH_LITERAL("gaia_auth")));
+
+  bool force_keyboard_oobe = false;
+  chromeos::system::StatisticsProvider* provider =
+      chromeos::system::StatisticsProvider::GetInstance();
+  provider->GetMachineFlag(chrome::kOemKeyboardDrivenOobeKey,
+                           &force_keyboard_oobe);
+  if (force_keyboard_oobe) {
+    component_loader->Add(IDR_GAIA_AUTH_KEYBOARD_MANIFEST,
+                          base::FilePath(FILE_PATH_LITERAL("gaia_auth")));
+  } else {
+    component_loader->Add(IDR_GAIA_AUTH_MANIFEST,
+                          base::FilePath(FILE_PATH_LITERAL("gaia_auth")));
+  }
 }
 
 void UnloadGaiaAuthExtension(Profile* profile) {

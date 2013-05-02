@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/about_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
@@ -37,6 +38,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/wrong_hwid_screen_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/user_image_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
@@ -340,6 +342,12 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   } else {
     localized_strings->SetString("screenType", "lock");
   }
+
+  bool keyboard_driven_oobe = false;
+  system::StatisticsProvider::GetInstance()->GetMachineFlag(
+      chrome::kOemKeyboardDrivenOobeKey, &keyboard_driven_oobe);
+  localized_strings->SetString("highlightStrength",
+                               keyboard_driven_oobe ? "strong" : "normal");
 }
 
 void OobeUI::InitializeScreenMaps() {

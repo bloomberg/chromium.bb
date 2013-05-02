@@ -257,6 +257,8 @@ void StatisticsProviderImpl::LoadOemManifestFromFile(
       oem_manifest.enterprise_managed;
   machine_flags_[chrome::kOemCanExitEnterpriseEnrollmentKey] =
       oem_manifest.can_exit_enrollment;
+  machine_flags_[chrome::kOemKeyboardDrivenOobeKey] =
+      oem_manifest.keyboard_driven_oobe;
 }
 
 StatisticsProviderImpl* StatisticsProviderImpl::GetInstance() {
