@@ -19,6 +19,7 @@
 #include "chrome/browser/sync_file_system/file_status_observer.h"
 #include "chrome/browser/sync_file_system/local_file_sync_service.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
+#include "chrome/browser/sync_file_system/sync_service_state.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -51,6 +52,8 @@ class SyncFileSystemService
       const std::string& service_name,
       const GURL& app_origin,
       const SyncStatusCallback& callback);
+
+  SyncServiceState GetSyncServiceState();
 
   // Returns the file |url|'s sync status.
   void GetFileSyncStatus(

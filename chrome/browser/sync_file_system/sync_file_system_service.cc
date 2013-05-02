@@ -126,6 +126,10 @@ void SyncFileSystemService::InitializeForApp(
                  AsWeakPtr(), app_origin, callback));
 }
 
+SyncServiceState SyncFileSystemService::GetSyncServiceState() {
+  return RemoteStateToSyncServiceState(remote_file_service_->GetCurrentState());
+}
+
 void SyncFileSystemService::GetFileSyncStatus(
     const FileSystemURL& url, const SyncFileStatusCallback& callback) {
   DCHECK(local_file_service_);
