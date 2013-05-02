@@ -464,7 +464,8 @@ class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
   }
 };
 
-TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
+// Flakily crashes. http://crbug.com/237389
+TEST_F(ContentSettingBubbleModelTest, DISABLED_RPHAllow) {
   StartIOThread();
 
   ProtocolHandlerRegistry registry(profile(), new FakeDelegate());
