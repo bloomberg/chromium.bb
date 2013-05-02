@@ -194,8 +194,9 @@ ExtensionDisabledGlobalError::ExtensionDisabledGlobalError(
 
 ExtensionDisabledGlobalError::~ExtensionDisabledGlobalError() {
   ReleaseMenuCommandID(menu_command_id_);
-  HISTOGRAM_ENUMERATION("Extensions.DisabledUIUserResponse",
-                        user_response_, EXTENSION_DISABLED_UI_BUCKET_BOUNDARY);
+  UMA_HISTOGRAM_ENUMERATION("Extensions.DisabledUIUserResponse",
+                            user_response_,
+                            EXTENSION_DISABLED_UI_BUCKET_BOUNDARY);
 }
 
 GlobalError::Severity ExtensionDisabledGlobalError::GetSeverity() {
