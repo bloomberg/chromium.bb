@@ -38,15 +38,19 @@
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/CustomElementRegistry.h"
+#include "core/dom/Node.h"
+#include "core/html/HTMLElement.h"
+#include "core/html/HTMLUnknownElement.h"
 
 #if ENABLE(SVG)
 #include "V8SVGElementWrapperFactory.h"
 #include "SVGNames.h"
+#include "core/svg/SVGElement.h"
 #endif
 
 namespace WebCore {
 
-v8::Handle<v8::Object> CustomElementHelpers::createWrapper(PassRefPtr<Element> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Object> CustomElementHelpers::createWrapper(PassRefPtr<Element> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate, const CreateWrapperFunction& createTypeExtensionUpgradeCandidateWrapper)
 {
     ASSERT(impl);
 
@@ -62,10 +66,9 @@ v8::Handle<v8::Object> CustomElementHelpers::createWrapper(PassRefPtr<Element> i
 
     CustomElementRegistry* registry = impl->document()->registry();
     RefPtr<CustomElementDefinition> definition = registry->findFor(impl.get());
-    if (!definition) {
-        // FIXME: When can this happen?
-        return v8::Handle<v8::Object>();
-    }
+    if (!definition)
+        return createUpgradeCandidateWrapper(impl, creationContext, isolate, createTypeExtensionUpgradeCandidateWrapper);
+
     v8::Handle<v8::Object> prototype = v8::Handle<v8::Object>::Cast(definition->prototype().v8Value());
 
     WrapperTypeInfo* typeInfo = CustomElementHelpers::findWrapperType(prototype);
@@ -81,6 +84,43 @@ v8::Handle<v8::Object> CustomElementHelpers::createWrapper(PassRefPtr<Element> i
     wrapper->SetPrototype(prototype);
     V8DOMWrapper::associateObjectWithWrapper(impl, typeInfo, wrapper, isolate, WrapperConfiguration::Dependent);
     return wrapper;
+}
+
+v8::Handle<v8::Object> CustomElementHelpers::CreateWrapperFunction::invoke(Element* element, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate) const
+{
+    if (element->isHTMLElement()) {
+        if (m_html)
+            return m_html(toHTMLElement(element), creationContext, isolate);
+        return createV8HTMLFallbackWrapper(toHTMLUnknownElement(toHTMLElement(element)), creationContext, isolate);
+    }
+#if ENABLE(SVG)
+    else if (element->isSVGElement()) {
+        if (m_svg)
+            return m_svg(toSVGElement(element), creationContext, isolate);
+        return createV8SVGFallbackWrapper(toSVGElement(element), creationContext, isolate);
+    }
+#endif
+    ASSERT(0);
+    return v8::Handle<v8::Object>();
+}
+
+v8::Handle<v8::Object> CustomElementHelpers::createUpgradeCandidateWrapper(PassRefPtr<Element> element, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate, const CreateWrapperFunction& createTypeExtensionUpgradeCandidateWrapper)
+{
+    if (CustomElementRegistry::isCustomTagName(element->localName())) {
+        if (element->isHTMLElement())
+            return createV8HTMLDirectWrapper(toHTMLElement(element.get()), creationContext, isolate);
+    #if ENABLE(SVG)
+        else if (element->isSVGElement())
+            return createV8SVGDirectWrapper(toSVGElement(element.get()), creationContext, isolate);
+    #endif
+        else {
+            ASSERT(0);
+            return v8::Handle<v8::Object>();
+        }
+    } else {
+        // It's a type extension
+        return createTypeExtensionUpgradeCandidateWrapper.invoke(element.get(), creationContext, isolate);
+    }
 }
 
 bool CustomElementHelpers::initializeConstructorWrapper(CustomElementConstructor* constructor, const ScriptValue& prototype, ScriptState* state)
@@ -200,6 +240,13 @@ const QualifiedName* CustomElementHelpers::findLocalName(v8::Handle<v8::Object> 
         return svgName;
 #endif
     return 0;
+}
+
+bool CustomElementHelpers::isCustomElement(Element* element)
+{
+    // FIXME: This dynamically consults the "is" attribute; instead a
+    // bit should be marked on elements that are Custom Elements
+    return CustomElementRegistry::isCustomTagName(element->localName()) || CustomElementRegistry::isCustomTagName(element->getAttribute(HTMLNames::isAttr));
 }
 
 void CustomElementHelpers::invokeReadyCallbackIfNeeded(Element* element, v8::Handle<v8::Context> context)

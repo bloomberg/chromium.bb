@@ -775,16 +775,14 @@ PassRefPtr<Element> Document::createElement(const AtomicString& localName, const
 
     RefPtr<Element> element;
 
-    if (m_registry)
-        element = m_registry->tryToCreateCustomTagElement(QualifiedName(nullAtom, localName, xhtmlNamespaceURI));
-
-    if (!element)
+    if (CustomElementRegistry::isCustomTagName(localName))
+        element = ensureCustomElementRegistry()->createCustomTagElement(QualifiedName(nullAtom, localName, xhtmlNamespaceURI));
+    else
         element = createElement(localName, ec);
 
     if (!typeExtension.isNull()) {
         setTypeExtension(element.get(), typeExtension);
-        if (m_registry)
-            m_registry->didGiveTypeExtension(element.get());
+        ensureCustomElementRegistry()->didGiveTypeExtension(element.get());
     }
 
     return element;
@@ -803,17 +801,14 @@ PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, 
     }
 
     RefPtr<Element> element;
-
-    if (m_registry)
-        element = m_registry->tryToCreateCustomTagElement(qName);
-
-    if (!element)
+    if (CustomElementRegistry::isCustomTagName(qName.localName()))
+        element = ensureCustomElementRegistry()->createCustomTagElement(qName);
+    else
         element = createElementNS(namespaceURI, qualifiedName, ec);
 
     if (!typeExtension.isNull()) {
         setTypeExtension(element.get(), typeExtension);
-        if (m_registry)
-            m_registry->didGiveTypeExtension(element.get());
+        ensureCustomElementRegistry()->didGiveTypeExtension(element.get());
     }
 
     return element;
@@ -831,9 +826,16 @@ PassRefPtr<CustomElementConstructor> Document::registerElement(WebCore::ScriptSt
         return 0;
     }
 
-    if (!m_registry)
+    return ensureCustomElementRegistry()->registerElement(state, name, options, ec);
+}
+
+CustomElementRegistry* Document::ensureCustomElementRegistry()
+{
+    if (!m_registry) {
+        ASSERT(isHTMLDocument() || isXHTMLDocument());
         m_registry = adoptRef(new CustomElementRegistry(this));
-    return m_registry->registerElement(state, name, options, ec);
+    }
+    return m_registry.get();
 }
 
 PassRefPtr<DocumentFragment> Document::createDocumentFragment()

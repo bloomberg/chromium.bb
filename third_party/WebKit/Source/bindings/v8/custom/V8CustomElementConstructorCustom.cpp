@@ -32,6 +32,7 @@
 
 #include "V8CustomElementConstructor.h"
 
+#include "V8Element.h"
 #include "bindings/v8/CustomElementHelpers.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/CustomElementConstructor.h"
@@ -52,8 +53,8 @@ v8::Handle<v8::Value> V8CustomElementConstructor::callAsFunctionCallback(const v
         setDOMException(ec, args.GetIsolate());
         return v8Undefined();
     }
-    // FIXME: is args.Holder() the right creation context?
-    return CustomElementHelpers::wrap(element.get(), args.Holder(), args.GetIsolate());
+
+    return toV8(element.get(), args.Holder(), args.GetIsolate());
 }
 
 } // namespace WebCore

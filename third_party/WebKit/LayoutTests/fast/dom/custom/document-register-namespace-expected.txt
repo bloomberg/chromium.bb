@@ -18,10 +18,14 @@ PASS svg3.tagName is 'svg-foo'
 PASS svg3.namespaceURI is 'http://www.w3.org/2000/svg'
 PASS notSVG1.namespaceURI is 'http://www.w3.org/1999/xhtml'
 PASS notSVG1 instanceof CustomSVGElement is false
-PASS notSVG1 instanceof HTMLUnknownElement is true
+PASS notSVG1 instanceof HTMLUnknownElement is false
+PASS notSVG1 instanceof HTMLElement is true
+PASS Object.getPrototypeOf(notSVG1) is HTMLElement.prototype
 PASS notSVG2.namespaceURI is 'http://www.w3.org/1999/xhtml'
 PASS notSVG2 instanceof CustomSVGElement is false
-PASS notSVG2 instanceof HTMLUnknownElement is true
+PASS notSVG2 instanceof HTMLUnknownElement is false
+PASS notSVG2 instanceof HTMLElement is true
+PASS Object.getPrototypeOf(notSVG2) is HTMLElement.prototype
 PASS document.register('xml-foo', { prototype: Object.create(Element.prototype) }) threw exception Error: NamespaceError: DOM Exception 14.
 PASS successfullyParsed is true
 

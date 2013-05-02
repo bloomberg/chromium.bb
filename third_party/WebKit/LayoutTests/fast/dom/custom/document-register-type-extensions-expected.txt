@@ -20,13 +20,15 @@ PASS fooCreated.outerHTML is '<x-foo></x-foo>'
 PASS fooCreated instanceof fooConstructor is true
 PASS barCreated.outerHTML is '<x-bar></x-bar>'
 PASS barCreated instanceof barConstructor is false
-PASS barCreated instanceof HTMLUnknownElement is true
+PASS barCreated instanceof HTMLUnknownElement is false
+PASS barCreated instanceof HTMLElement is true
 PASS bazCreated.outerHTML is '<x-baz></x-baz>'
 PASS bazCreated instanceof bazConstructor is true
 PASS bazCreated instanceof HTMLUnknownElement is false
 PASS quxCreated.outerHTML is '<x-qux></x-qux>'
 PASS quxCreated instanceof quxConstructor is false
-PASS quxCreated instanceof HTMLUnknownElement is true
+PASS quxCreated instanceof HTMLUnknownElement is false
+PASS quxCreated instanceof HTMLElement is true
 PASS divFooCreated.outerHTML is '<div is="x-foo"></div>'
 PASS divFooCreated instanceof fooConstructor is false
 PASS divFooCreated instanceof HTMLDivElement is true
@@ -40,7 +42,8 @@ PASS divBarCreated instanceof HTMLDivElement is true
 PASS fooBarCreated.outerHTML is '<x-foo is="x-bar"></x-foo>'
 PASS fooBarCreated instanceof fooConstructor is true
 PASS barFooCreated.outerHTML is '<x-bar is="x-foo"></x-bar>'
-PASS barFooCreated instanceof HTMLUnknownElement is true
+PASS barFooCreated instanceof HTMLUnknownElement is false
+PASS barFooCreated instanceof HTMLElement is true
 PASS fooCreatedNull.outerHTML is '<x-foo></x-foo>'
 PASS fooCreatedNull instanceof fooConstructor is true
 PASS fooCreatedEmpty.outerHTML is '<x-foo></x-foo>'
@@ -58,7 +61,8 @@ PASS isFormControl(barParsed) is true
 PASS divFooParsed instanceof fooConstructor is false
 PASS divFooParsed instanceof HTMLDivElement is true
 PASS namedBarParsed instanceof barConstructor is false
-PASS namedBarParsed instanceof HTMLUnknownElement is true
+PASS namedBarParsed instanceof HTMLUnknownElement is false
+PASS namedBarParsed instanceof HTMLElement is true
 PASS divBarParsed instanceof barConstructor is false
 PASS divBarParsed instanceof HTMLDivElement is true
 PASS successfullyParsed is true

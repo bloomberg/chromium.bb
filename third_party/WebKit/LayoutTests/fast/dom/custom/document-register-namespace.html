@@ -53,11 +53,15 @@ shouldBe("svg3.namespaceURI", "'http://www.w3.org/2000/svg'");
 var notSVG1 = document.createElement("svg-foo");
 shouldBe("notSVG1.namespaceURI", "'http://www.w3.org/1999/xhtml'");
 shouldBeFalse("notSVG1 instanceof CustomSVGElement");
-shouldBeTrue("notSVG1 instanceof HTMLUnknownElement");
+shouldBeFalse("notSVG1 instanceof HTMLUnknownElement");
+shouldBeTrue("notSVG1 instanceof HTMLElement");
+shouldBe("Object.getPrototypeOf(notSVG1)", "HTMLElement.prototype");
 var notSVG2 = createElementFromHTML("<svg-foo></svg-foo>");
 shouldBe("notSVG2.namespaceURI", "'http://www.w3.org/1999/xhtml'");
 shouldBeFalse("notSVG2 instanceof CustomSVGElement");
-shouldBeTrue("notSVG2 instanceof HTMLUnknownElement");
+shouldBeFalse("notSVG2 instanceof HTMLUnknownElement");
+shouldBeTrue("notSVG2 instanceof HTMLElement");
+shouldBe("Object.getPrototypeOf(notSVG2)", "HTMLElement.prototype");
 
 // Trying to extend something outside HTML or SVG should throw a NAMESPACE_ERR
 shouldThrow(

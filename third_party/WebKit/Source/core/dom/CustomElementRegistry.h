@@ -85,13 +85,14 @@ public:
     PassRefPtr<CustomElementDefinition> findFor(Element*) const;
     PassRefPtr<CustomElementDefinition> findAndCheckNamespace(const AtomicString& type, const AtomicString& namespaceURI) const;
 
-    PassRefPtr<Element> tryToCreateCustomTagElement(const QualifiedName& localName);
+    PassRefPtr<Element> createCustomTagElement(const QualifiedName& localName);
 
     Document* document() const;
 
     void didGiveTypeExtension(Element*);
 
-    static bool isValidName(const AtomicString&);
+    static bool isCustomTagName(const AtomicString& name) { return isValidName(name); }
+
     static void deliverAllLifecycleCallbacks();
     static void deliverAllLifecycleCallbacksIfNeeded();
 
@@ -100,12 +101,14 @@ private:
     typedef HashSet<AtomicString> NameSet;
     typedef ListHashSet<CustomElementRegistry*> InstanceSet;
 
+    static bool isValidName(const AtomicString&);
+
     static InstanceSet& activeCustomElementRegistries();
     void activate(const CustomElementInvocation&);
     void deactivate();
     void deliverLifecycleCallbacks();
 
-    void didCreateElement(Element*);
+    void didCreateCustomTagElement(Element*);
 
     DefinitionMap m_definitions;
     Vector<CustomElementInvocation> m_invocations;

@@ -43,7 +43,9 @@ namespace WebCore {
 
 class CustomElementConstructor;
 class CustomElementInvocation;
+class HTMLElement;
 class QualifiedName;
+class SVGElement;
 class ScriptState;
 
 class CustomElementHelpers {
@@ -60,32 +62,45 @@ public:
 
     static void invokeReadyCallbacksIfNeeded(ScriptExecutionContext*, const Vector<CustomElementInvocation>&);
 
+    typedef v8::Handle<v8::Object> (*CreateSVGWrapperFunction)(SVGElement*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+    typedef v8::Handle<v8::Object> (*CreateHTMLWrapperFunction)(HTMLElement*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+
+    // CustomElementHelpers::wrap is a factory for both HTMLElement
+    // and SVGElement wrappers. CreateWrapperFunction is a type safe
+    // way of passing a wrapping function for specific elements of
+    // either type; it's used as a fallback when creating wrappers for
+    // type extensions.
+    class CreateWrapperFunction {
+    public:
+        explicit CreateWrapperFunction(CreateSVGWrapperFunction svg)
+            : m_svg(svg) { }
+        explicit CreateWrapperFunction(CreateHTMLWrapperFunction html)
+            : m_html(html) { }
+        v8::Handle<v8::Object> invoke(Element*, v8::Handle<v8::Object> creationContext, v8::Isolate*) const;
+    private:
+        CreateSVGWrapperFunction m_svg;
+        CreateHTMLWrapperFunction m_html;
+    };
+
     // You can just use toV8(Node*) to get correct wrapper objects,
     // even for custom elements.  Then generated
     // ElementWrapperFactories call V8CustomElement::wrap() with
     // proper prototype instances accordingly.
-    static v8::Handle<v8::Object> wrap(Element*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+    static v8::Handle<v8::Object> wrap(Element*, v8::Handle<v8::Object> creationContext, v8::Isolate*, const CreateWrapperFunction& createTypeExtensionUpgradeCandidateWrapper);
 
-    static bool hasDefinition(Element*);
+    static bool isCustomElement(Element*);
 
 private:
     static void invokeReadyCallbackIfNeeded(Element*, v8::Handle<v8::Context>);
-    static v8::Handle<v8::Object> createWrapper(PassRefPtr<Element>, v8::Handle<v8::Object>, v8::Isolate*);
+    static v8::Handle<v8::Object> createWrapper(PassRefPtr<Element>, v8::Handle<v8::Object>, v8::Isolate*, const CreateWrapperFunction& createTypeExtensionUpgradeCandidateWrapper);
+    static v8::Handle<v8::Object> createUpgradeCandidateWrapper(PassRefPtr<Element>, v8::Handle<v8::Object> creationContext, v8::Isolate*, const CreateWrapperFunction& createTypeExtensionUpgradeCandidateWrapper);
 };
 
-inline v8::Handle<v8::Object> CustomElementHelpers::wrap(Element* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+inline v8::Handle<v8::Object> CustomElementHelpers::wrap(Element* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate, const CreateWrapperFunction& createWrapper)
 {
     ASSERT(impl);
     ASSERT(DOMDataStore::getWrapper(impl, isolate).IsEmpty());
-    return CustomElementHelpers::createWrapper(impl, creationContext, isolate);
-}
-
-inline bool CustomElementHelpers::hasDefinition(Element* element)
-{
-    CustomElementRegistry* registry = element->document()->registry();
-    if (registry && registry->findFor(element))
-        return 1;
-    return 0;
+    return CustomElementHelpers::createWrapper(impl, creationContext, isolate, createWrapper);
 }
 
 inline bool CustomElementHelpers::isValidPrototypeParameter(const ScriptValue& value, ScriptState* state)

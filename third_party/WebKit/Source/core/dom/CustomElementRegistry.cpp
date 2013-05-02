@@ -206,10 +206,12 @@ PassRefPtr<CustomElementDefinition> CustomElementRegistry::findAndCheckNamespace
     return it->value;
 }
 
-PassRefPtr<Element> CustomElementRegistry::tryToCreateCustomTagElement(const QualifiedName& tagName)
+PassRefPtr<Element> CustomElementRegistry::createCustomTagElement(const QualifiedName& tagName)
 {
-    if (!document() || !isValidName(tagName.localName()))
+    if (!document())
         return 0;
+
+    ASSERT(isCustomTagName(tagName.localName()));
 
     RefPtr<Element> element;
 
@@ -223,10 +225,9 @@ PassRefPtr<Element> CustomElementRegistry::tryToCreateCustomTagElement(const Qua
         element = Element::create(tagName, document());
 
     RefPtr<CustomElementDefinition> definition = findAndCheckNamespace(tagName.localName(), tagName.namespaceURI());
-    if (!definition || definition->isTypeExtension())
-        return 0;
+    if (definition && !definition->isTypeExtension())
+        didCreateCustomTagElement(element.get());
 
-    didCreateElement(element.get());
     return element.release();
 }
 
@@ -238,7 +239,7 @@ void CustomElementRegistry::didGiveTypeExtension(Element* element)
     activate(CustomElementInvocation(element));
 }
 
-void CustomElementRegistry::didCreateElement(Element* element)
+void CustomElementRegistry::didCreateCustomTagElement(Element* element)
 {
     activate(CustomElementInvocation(element));
 }

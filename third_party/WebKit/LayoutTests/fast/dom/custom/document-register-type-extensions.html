@@ -73,7 +73,8 @@ shouldBeTrue("fooCreated instanceof fooConstructor");
 barCreated = document.createElement("x-bar");
 shouldBe("barCreated.outerHTML", "'<x-bar></x-bar>'");
 shouldBeFalse("barCreated instanceof barConstructor");
-shouldBeTrue("barCreated instanceof HTMLUnknownElement");
+shouldBeFalse("barCreated instanceof HTMLUnknownElement");
+shouldBeTrue("barCreated instanceof HTMLElement");
 
 bazCreated = document.createElement("x-baz");
 shouldBe("bazCreated.outerHTML", "'<x-baz></x-baz>'");
@@ -83,7 +84,8 @@ shouldBeFalse("bazCreated instanceof HTMLUnknownElement");
 quxCreated = document.createElement("x-qux");
 shouldBe("quxCreated.outerHTML", "'<x-qux></x-qux>'");
 shouldBeFalse("quxCreated instanceof quxConstructor");
-shouldBeTrue("quxCreated instanceof HTMLUnknownElement");
+shouldBeFalse("quxCreated instanceof HTMLUnknownElement");
+shouldBeTrue("quxCreated instanceof HTMLElement");
 
 //
 // createElement() with type extensions
@@ -111,7 +113,8 @@ shouldBeTrue("fooBarCreated instanceof fooConstructor");
 
 barFooCreated = document.createElement("x-bar", "x-foo");
 shouldBe("barFooCreated.outerHTML", "'<x-bar is=\"x-foo\"></x-bar>'");
-shouldBeTrue("barFooCreated instanceof HTMLUnknownElement");
+shouldBeFalse("barFooCreated instanceof HTMLUnknownElement");
+shouldBeTrue("barFooCreated instanceof HTMLElement");
 
 fooCreatedNull = document.createElement("x-foo", null);
 shouldBe("fooCreatedNull.outerHTML", fooOuterHTML);
@@ -158,7 +161,8 @@ shouldBeTrue("divFooParsed instanceof HTMLDivElement");
 
 namedBarParsed = createElementFromHTML('<x-bar>')
 shouldBeFalse("namedBarParsed instanceof barConstructor");
-shouldBeTrue("namedBarParsed instanceof HTMLUnknownElement");
+shouldBeFalse("namedBarParsed instanceof HTMLUnknownElement");
+shouldBeTrue("namedBarParsed instanceof HTMLElement");
 
 divBarParsed = createElementFromHTML('<div is=x-bar>')
 shouldBeFalse("divBarParsed instanceof barConstructor");

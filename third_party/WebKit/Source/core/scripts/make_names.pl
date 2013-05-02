@@ -897,11 +897,10 @@ print F <<END
     if (!document)
         return 0;
 
-    if (document->registry()) {
-        if (RefPtr<Element> element = document->registry()->tryToCreateCustomTagElement(qName)) {
-            ASSERT(element->is$parameters{namespace}Element());
-            return static_pointer_cast<$parameters{namespace}Element>(element.release());
-        }
+    if (CustomElementRegistry::isCustomTagName(qName.localName())) {
+        RefPtr<Element> element = document->ensureCustomElementRegistry()->createCustomTagElement(qName);
+        ASSERT(element->is$parameters{namespace}Element());
+        return static_pointer_cast<$parameters{namespace}Element>(element.release());
     }
 
     if (!gFunctionMap)
@@ -1153,9 +1152,9 @@ END
     print F <<END
     }
 
-    if (CustomElementHelpers::hasDefinition(element))
-        return CustomElementHelpers::wrap(element, creationContext, isolate);
     Create$parameters{namespace}ElementWrapperFunction createWrapperFunction = map.get(element->localName().impl());
+    if (CustomElementHelpers::isCustomElement(element))
+        return CustomElementHelpers::wrap(element, creationContext, isolate, CustomElementHelpers::CreateWrapperFunction(createWrapperFunction));
     if (createWrapperFunction)
     {
 END
