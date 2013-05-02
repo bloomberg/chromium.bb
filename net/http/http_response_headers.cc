@@ -756,45 +756,49 @@ void HttpResponseHeaders::AddNonCacheableHeaders(HeaderSet* result) const {
   // Add server specified transients.  Any 'cache-control: no-cache="foo,bar"'
   // headers present in the response specify additional headers that we should
   // not store in the cache.
-  const std::string kCacheControl = "cache-control";
-  const std::string kPrefix = "no-cache=\"";
+  const char kCacheControl[] = "cache-control";
+  const char kPrefix[] = "no-cache=\"";
+  const size_t kPrefixLen = sizeof(kPrefix) - 1;
+
   std::string value;
   void* iter = NULL;
   while (EnumerateHeader(&iter, kCacheControl, &value)) {
-    if (value.size() > kPrefix.size() &&
-        value.compare(0, kPrefix.size(), kPrefix) == 0) {
-      // if it doesn't end with a quote, then treat as malformed
-      if (value[value.size()-1] != '\"')
-        continue;
+    // If the value is smaller than the prefix and a terminal quote, skip
+    // it.
+    if (value.size() <= kPrefixLen ||
+        value.compare(0, kPrefixLen, kPrefix) != 0) {
+      continue;
+    }
+    // if it doesn't end with a quote, then treat as malformed
+    if (value[value.size()-1] != '\"')
+      continue;
 
-      // trim off leading and trailing bits
-      size_t len = value.size() - kPrefix.size() - 1;
-      TrimString(value.substr(kPrefix.size(), len), HTTP_LWS, &value);
-
-      size_t begin_pos = 0;
-      for (;;) {
-        // find the end of this header name
-        size_t comma_pos = value.find(',', begin_pos);
-        if (comma_pos == std::string::npos)
-          comma_pos = value.size();
-        size_t end = comma_pos;
-        while (end > begin_pos && strchr(HTTP_LWS, value[end - 1]))
-          end--;
-
-        // assuming the header is not emtpy, lowercase and insert into set
-        if (end > begin_pos) {
-          std::string name = value.substr(begin_pos, end - begin_pos);
-          StringToLowerASCII(&name);
-          result->insert(name);
-        }
-
-        // repeat
-        begin_pos = comma_pos + 1;
-        while (begin_pos < value.size() && strchr(HTTP_LWS, value[begin_pos]))
-          begin_pos++;
-        if (begin_pos >= value.size())
-          break;
+    // process the value as a comma-separated list of items. Each
+    // item can be wrapped by linear white space.
+    std::string::const_iterator item = value.begin() + kPrefixLen;
+    std::string::const_iterator end = value.end() - 1;
+    while (item != end) {
+      // Find the comma to compute the length of the current item,
+      // and the position of the next one.
+      std::string::const_iterator item_next = std::find(item, end, ',');
+      std::string::const_iterator item_end = end;
+      if (item_next != end) {
+        // Skip over comma for next position.
+        item_end = item_next;
+        item_next++;
       }
+      // trim off leading and trailing whitespace in this item.
+      HttpUtil::TrimLWS(&item, &item_end);
+
+      // assuming the header is not empty, lowercase and insert into set
+      if (item_end > item) {
+        std::string name(&*item, item_end - item);
+        StringToLowerASCII(&name);
+        result->insert(name);
+      }
+
+      // Continue to next item.
+      item = item_next;
     }
   }
 }
