@@ -1560,6 +1560,14 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(REGULAR_FILE, file_type);
+
+  // Verify that readable permission is set.
+  int permission = 0;
+  EXPECT_TRUE(file_util::GetPosixFilePermissions(file_path, &permission));
+  EXPECT_EQ(file_util::FILE_PERMISSION_READ_BY_USER |
+            file_util::FILE_PERMISSION_WRITE_BY_USER |
+            file_util::FILE_PERMISSION_READ_BY_GROUP |
+            file_util::FILE_PERMISSION_READ_BY_OTHERS, permission);
 }
 
 TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {

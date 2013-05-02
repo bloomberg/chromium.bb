@@ -107,6 +107,25 @@ void IgnoreError(const FileOperationCallback& callback, FileError error) {
   callback.Run(FILE_ERROR_OK);
 }
 
+// Creates a file with unique name in |dir| and stores the path to |temp_file|.
+// Additionally, sets the permission of the file to allow read access from
+// others and group member users (i.e, "-rw-r--r--").
+// We need this wrapper because Drive cache files may be read from other
+// processes (e.g., cros_disks for mounting zip files).
+//
+// Must be called on the blocking pool.
+bool CreateTemporaryReadableFileInDir(const base::FilePath& dir,
+                                      base::FilePath* temp_file) {
+  if (!file_util::CreateTemporaryFileInDir(dir, temp_file))
+    return false;
+  return file_util::SetPosixFilePermissions(
+      *temp_file,
+      file_util::FILE_PERMISSION_READ_BY_USER |
+      file_util::FILE_PERMISSION_WRITE_BY_USER |
+      file_util::FILE_PERMISSION_READ_BY_GROUP |
+      file_util::FILE_PERMISSION_READ_BY_OTHERS);
+}
+
 }  // namespace
 
 // FileSystem::GetFileCompleteForOpenParams struct implementation.
@@ -985,7 +1004,7 @@ void FileSystem::GetResolvedFileByPathAfterFreeDiskSpace(
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
       FROM_HERE,
-      base::Bind(&file_util::CreateTemporaryFileInDir,
+      base::Bind(&CreateTemporaryReadableFileInDir,
                  temp_download_directory,
                  file_path),
       base::Bind(&FileSystem::GetResolveFileByPathAfterCreateTemporaryFile,
