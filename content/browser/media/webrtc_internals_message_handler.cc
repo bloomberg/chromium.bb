@@ -32,6 +32,14 @@ void WebRTCInternalsMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("getAllStats",
       base::Bind(&WebRTCInternalsMessageHandler::OnGetAllStats,
                  base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback("startRtpRecording",
+      base::Bind(&WebRTCInternalsMessageHandler::OnStartRtpRecording,
+                 base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback("stopRtpRecording",
+      base::Bind(&WebRTCInternalsMessageHandler::OnStopRtpRecording,
+                 base::Unretained(this)));
 }
 
 void WebRTCInternalsMessageHandler::OnGetAllUpdates(
@@ -45,6 +53,16 @@ void WebRTCInternalsMessageHandler::OnGetAllStats(const ListValue* list) {
        !i.IsAtEnd(); i.Advance()) {
     i.GetCurrentValue()->Send(new PeerConnectionTracker_GetAllStats());
   }
+}
+
+void WebRTCInternalsMessageHandler::OnStartRtpRecording(
+    const base::ListValue* list) {
+  WebRTCInternals::GetInstance()->StartRtpRecording();
+}
+
+void WebRTCInternalsMessageHandler::OnStopRtpRecording(
+    const base::ListValue* list) {
+  WebRTCInternals::GetInstance()->StopRtpRecording();
 }
 
 void WebRTCInternalsMessageHandler::OnUpdate(const std::string& command,

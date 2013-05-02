@@ -3,6 +3,11 @@
  * found in the LICENSE file. */
 
 
+.peer-connection-dump-root {
+  font-size: 0.8em;
+  padding-bottom: 3px;
+}
+
 .peer-connection-hidden > *:not(h3) {
   display:none;
 }

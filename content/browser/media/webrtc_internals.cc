@@ -32,7 +32,7 @@ static ListValue* EnsureLogList(DictionaryValue* dict) {
 
 }  // namespace
 
-WebRTCInternals::WebRTCInternals() {
+WebRTCInternals::WebRTCInternals() : is_recording_rtp_(false) {
   registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  NotificationService::AllBrowserContextsAndSources());
 
@@ -47,12 +47,12 @@ WebRTCInternals* WebRTCInternals::GetInstance() {
   return Singleton<WebRTCInternals>::get();
 }
 
-void WebRTCInternals::AddPeerConnection(int render_process_id,
-                                        ProcessId pid,
-                                        int lid,
-                                        const string& url,
-                                        const string& servers,
-                                        const string& constraints) {
+void WebRTCInternals::OnAddPeerConnection(int render_process_id,
+                                          ProcessId pid,
+                                          int lid,
+                                          const string& url,
+                                          const string& servers,
+                                          const string& constraints) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DictionaryValue* dict = new DictionaryValue();
@@ -71,7 +71,7 @@ void WebRTCInternals::AddPeerConnection(int render_process_id,
     SendUpdate("addPeerConnection", dict);
 }
 
-void WebRTCInternals::RemovePeerConnection(ProcessId pid, int lid) {
+void WebRTCInternals::OnRemovePeerConnection(ProcessId pid, int lid) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   for (size_t i = 0; i < peer_connection_data_.GetSize(); ++i) {
     DictionaryValue* dict = NULL;
@@ -97,7 +97,7 @@ void WebRTCInternals::RemovePeerConnection(ProcessId pid, int lid) {
   }
 }
 
-void WebRTCInternals::UpdatePeerConnection(
+void WebRTCInternals::OnUpdatePeerConnection(
     ProcessId pid, int lid, const string& type, const string& value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -138,8 +138,8 @@ void WebRTCInternals::UpdatePeerConnection(
   }
 }
 
-void WebRTCInternals::AddStats(base::ProcessId pid, int lid,
-                               const base::ListValue& value) {
+void WebRTCInternals::OnAddStats(base::ProcessId pid, int lid,
+                                 const base::ListValue& value) {
   if (observers_.size() == 0)
     return;
 
@@ -169,6 +169,20 @@ void WebRTCInternals::RemoveObserver(WebRTCInternalsUIObserver *observer) {
 void WebRTCInternals::SendAllUpdates() {
   if (observers_.size() > 0)
     SendUpdate("updateAllPeerConnections", &peer_connection_data_);
+}
+
+void WebRTCInternals::StartRtpRecording() {
+  if (!is_recording_rtp_) {
+    is_recording_rtp_ = true;
+    // TODO(justinlin): start RTP recording.
+  }
+}
+
+void WebRTCInternals::StopRtpRecording() {
+  if (is_recording_rtp_) {
+    is_recording_rtp_ = false;
+    // TODO(justinlin): stop RTP recording.
+  }
 }
 
 void WebRTCInternals::SendUpdate(const string& command, Value* value) {
@@ -217,6 +231,15 @@ void WebRTCInternals::OnRendererExit(int render_process_id) {
       peer_connection_data_.Remove(i, NULL);
     }
   }
+}
+
+// TODO(justlin): Calls this method as necessary to update the recording status
+// UI.
+void WebRTCInternals::SendRtpRecordingUpdate() {
+  DCHECK(is_recording_rtp_);
+  DictionaryValue update;
+  // TODO(justinlin): Fill in |update| with values as appropriate.
+  SendUpdate("updateDumpStatus", &update);
 }
 
 }  // namespace content

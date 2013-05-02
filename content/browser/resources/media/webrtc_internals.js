@@ -7,14 +7,17 @@ var peerConnectionsListElem = null;
 var ssrcInfoManager = null;
 var peerConnectionUpdateTable = null;
 var statsTable = null;
+var dumpCreator = null;
 
 <include src="ssrc_info_manager.js"/>
 <include src="stats_graph_helper.js"/>
 <include src="stats_table.js"/>
 <include src="peer_connection_update_table.js"/>
+<include src="dump_creator.js"/>
 
 function initialize() {
   peerConnectionsListElem = $('peer-connections-list');
+  dumpCreator = new DumpCreator(peerConnectionsListElem);
   ssrcInfoManager = new SsrcInfoManager();
   peerConnectionUpdateTable = new PeerConnectionUpdateTable();
   statsTable = new StatsTable(ssrcInfoManager);
@@ -157,4 +160,14 @@ function addStats(data) {
     drawSingleReport(peerConnectionElement,
                      report.type, report.id, report.stats);
   }
+}
+
+
+/**
+ * Delegates to dumpCreator to update the recording status.
+ * @param {!Object.<string>} update Key-value pairs describing the status of the
+ *     RTP recording.
+ */
+function updateDumpStatus(update) {
+  dumpCreator.onUpdate(update);
 }

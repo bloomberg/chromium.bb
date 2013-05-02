@@ -40,7 +40,7 @@ PeerConnectionTrackerHost::~PeerConnectionTrackerHost() {
 
 void PeerConnectionTrackerHost::OnAddPeerConnection(
     const PeerConnectionInfo& info) {
-  WebRTCInternals::GetInstance()->AddPeerConnection(
+  WebRTCInternals::GetInstance()->OnAddPeerConnection(
       render_process_id_,
       base::GetProcId(peer_handle()),
       info.lid,
@@ -50,13 +50,13 @@ void PeerConnectionTrackerHost::OnAddPeerConnection(
 }
 
 void PeerConnectionTrackerHost::OnRemovePeerConnection(int lid) {
-  WebRTCInternals::GetInstance()->RemovePeerConnection(
+  WebRTCInternals::GetInstance()->OnRemovePeerConnection(
       base::GetProcId(peer_handle()), lid);
 }
 
 void PeerConnectionTrackerHost::OnUpdatePeerConnection(
     int lid, const std::string& type, const std::string& value) {
-  WebRTCInternals::GetInstance()->UpdatePeerConnection(
+  WebRTCInternals::GetInstance()->OnUpdatePeerConnection(
       base::GetProcId(peer_handle()),
       lid,
       type,
@@ -65,7 +65,7 @@ void PeerConnectionTrackerHost::OnUpdatePeerConnection(
 
 void PeerConnectionTrackerHost::OnAddStats(int lid,
                                            const base::ListValue& value) {
-  WebRTCInternals::GetInstance()->AddStats(
+  WebRTCInternals::GetInstance()->OnAddStats(
       base::GetProcId(peer_handle()), lid, value);
 }
 

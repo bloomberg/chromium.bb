@@ -22,7 +22,7 @@ class WebRTCInternalsUIObserver;
 // forwards the data to WebRTCInternalsUIObserver and
 // sends data collecting commands to the renderers.
 class CONTENT_EXPORT WebRTCInternals : public BrowserChildProcessObserver,
-                                       public NotificationObserver{
+                                       public NotificationObserver {
  public:
   static WebRTCInternals* GetInstance();
 
@@ -34,29 +34,29 @@ class CONTENT_EXPORT WebRTCInternals : public BrowserChildProcessObserver,
   // identify a PeerConnection, |url| is the url of the tab owning the
   // PeerConnection, |servers| is the servers configuration, |constraints| is
   // the media constraints used to initialize the PeerConnection.
-  void AddPeerConnection(int render_process_id,
-                         base::ProcessId pid,
-                         int lid,
-                         const std::string& url,
-                         const std::string& servers,
-                         const std::string& constraints);
+  void OnAddPeerConnection(int render_process_id,
+                           base::ProcessId pid,
+                           int lid,
+                           const std::string& url,
+                           const std::string& servers,
+                           const std::string& constraints);
 
   // This method is called when PeerConnection is destroyed.
   // |pid| is the renderer process id, |lid| is the renderer local id.
-  void RemovePeerConnection(base::ProcessId pid, int lid);
+  void OnRemovePeerConnection(base::ProcessId pid, int lid);
 
   // This method is called when a PeerConnection is updated.
   // |pid| is the renderer process id, |lid| is the renderer local id,
   // |type| is the update type, |value| is the detail of the update.
-  void UpdatePeerConnection(base::ProcessId pid,
-                            int lid,
-                            const std::string& type,
-                            const std::string& value);
+  void OnUpdatePeerConnection(base::ProcessId pid,
+                              int lid,
+                              const std::string& type,
+                              const std::string& value);
 
   // This method is called when results from PeerConnectionInterface::GetStats
   // are available. |pid| is the renderer process id, |lid| is the renderer
   // local id, |value| is the list of stats reports.
-  void AddStats(base::ProcessId pid, int lid, const base::ListValue& value);
+  void OnAddStats(base::ProcessId pid, int lid, const base::ListValue& value);
 
   // Methods for adding or removing WebRTCInternalsUIObserver.
   void AddObserver(WebRTCInternalsUIObserver *observer);
@@ -64,6 +64,10 @@ class CONTENT_EXPORT WebRTCInternals : public BrowserChildProcessObserver,
 
   // Sends all update data to the observers.
   void SendAllUpdates();
+
+  // Tells the renderer processes to start or stop recording RTP packets.
+  void StartRtpRecording();
+  void StopRtpRecording();
 
  private:
   friend struct DefaultSingletonTraits<WebRTCInternals>;
@@ -85,6 +89,8 @@ class CONTENT_EXPORT WebRTCInternals : public BrowserChildProcessObserver,
   // Called when a renderer exits (including crashes).
   void OnRendererExit(int render_process_id);
 
+  void SendRtpRecordingUpdate();
+
   ObserverList<WebRTCInternalsUIObserver> observers_;
 
   // |peer_connection_data_| is a list containing all the PeerConnection
@@ -102,6 +108,8 @@ class CONTENT_EXPORT WebRTCInternals : public BrowserChildProcessObserver,
   base::ListValue peer_connection_data_;
 
   NotificationRegistrar registrar_;
+
+  bool is_recording_rtp_;
 };
 
 }  // namespace content
