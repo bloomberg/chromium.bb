@@ -1136,9 +1136,9 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, FillProfileCrazyCharacters) {
   cards.push_back(card4);
 
   SetCards(&cards);
-  ASSERT_EQ(cards.size(), personal_data_manager()->credit_cards().size());
+  ASSERT_EQ(cards.size(), personal_data_manager()->GetCreditCards().size());
   for (size_t i = 0; i < cards.size(); ++i)
-    ASSERT_EQ(cards[i], *personal_data_manager()->credit_cards()[i]);
+    ASSERT_EQ(cards[i], *personal_data_manager()->GetCreditCards()[i]);
 }
 
 // Test filling in invalid values for profiles are saved as-is. Phone
@@ -1173,8 +1173,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, PrefsStringSavedAsIs) {
   card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("Not_0123-5Checked"));
   SetCard(card);
 
-  ASSERT_EQ(1u, personal_data_manager()->credit_cards().size());
-  ASSERT_EQ(card, *personal_data_manager()->credit_cards()[0]);
+  ASSERT_EQ(1u, personal_data_manager()->GetCreditCards().size());
+  ASSERT_EQ(card, *personal_data_manager()->GetCreditCards()[0]);
 }
 
 // Test credit card info with an invalid number is not aggregated.
@@ -1201,11 +1201,11 @@ IN_PROC_BROWSER_TEST_F(AutofillTest,
   SubmitCreditCard("Bob Smith", "4408 0412 3456 7893", "12", "2014");
   SubmitCreditCard("Jane Doe", "4417-1234-5678-9113", "10", "2013");
 
-  ASSERT_EQ(2u, personal_data_manager()->credit_cards().size());
-  string16 cc1 = personal_data_manager()->credit_cards()[0]->GetRawInfo(
+  ASSERT_EQ(2u, personal_data_manager()->GetCreditCards().size());
+  string16 cc1 = personal_data_manager()->GetCreditCards()[0]->GetRawInfo(
       CREDIT_CARD_NUMBER);
   ASSERT_TRUE(autofill::IsValidCreditCardNumber(cc1));
-  string16 cc2 = personal_data_manager()->credit_cards()[1]->GetRawInfo(
+  string16 cc2 = personal_data_manager()->GetCreditCards()[1]->GetRawInfo(
       CREDIT_CARD_NUMBER);
   ASSERT_TRUE(autofill::IsValidCreditCardNumber(cc2));
 }

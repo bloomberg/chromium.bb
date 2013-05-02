@@ -477,5 +477,5 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, NoCreditCardSync) {
   ASSERT_EQ(1U, GetAllProfiles(0).size());
 
   PersonalDataManager* pdm = GetPersonalDataManager(1);
-  ASSERT_EQ(0U, pdm->credit_cards().size());
+  ASSERT_EQ(0U, pdm->GetCreditCards().size());
 }

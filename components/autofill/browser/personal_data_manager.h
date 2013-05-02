@@ -119,11 +119,11 @@ class PersonalDataManager : public WebDataServiceConsumer,
 
   // This PersonalDataManager owns these profiles and credit cards.  Their
   // lifetime is until the web database is updated with new profile and credit
-  // card information, respectively.  |profiles()| returns both web and
+  // card information, respectively.  |GetProfiles()| returns both web and
   // auxiliary profiles.  |web_profiles()| returns only web profiles.
   virtual const std::vector<AutofillProfile*>& GetProfiles();
   virtual const std::vector<AutofillProfile*>& web_profiles() const;
-  virtual const std::vector<CreditCard*>& credit_cards() const;
+  virtual const std::vector<CreditCard*>& GetCreditCards() const;
 
   // Loads profiles that can suggest data for |type|. |field_contents| is the
   // part the user has already typed. |field_is_autofilled| is true if the field

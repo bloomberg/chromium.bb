@@ -1762,7 +1762,7 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
     }
   } else {
     PersonalDataManager* manager = GetManager();
-    const std::vector<CreditCard*>& cards = manager->credit_cards();
+    const std::vector<CreditCard*>& cards = manager->GetCreditCards();
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     for (size_t i = 0; i < cards.size(); ++i) {
       suggested_cc_.AddKeyedItemWithIcon(

@@ -391,10 +391,10 @@ void AutofillOptionsHandler::LoadAutofillData() {
   web_ui()->CallJavascriptFunction("AutofillOptions.setAddressList", addresses);
 
   ListValue credit_cards;
-  for (std::vector<CreditCard*>::const_iterator i =
-           personal_data_->credit_cards().begin();
-       i != personal_data_->credit_cards().end(); ++i) {
-    const CreditCard* card = *i;
+  const std::vector<CreditCard*>& cards = personal_data_->GetCreditCards();
+  for (std::vector<CreditCard*>::const_iterator iter = cards.begin();
+       iter != cards.end(); ++iter) {
+    const CreditCard* card = *iter;
     // TODO(estade): this should be a dictionary.
     ListValue* entry = new ListValue();
     entry->Append(new StringValue(card->guid()));

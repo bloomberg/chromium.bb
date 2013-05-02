@@ -31,7 +31,7 @@ class TestPersonalDataManager : public PersonalDataManager {
       OVERRIDE;
 
   const AutofillProfile& imported_profile() { return imported_profile_; }
-  virtual const std::vector<CreditCard*>& credit_cards() const OVERRIDE;
+  virtual const std::vector<CreditCard*>& GetCreditCards() const OVERRIDE;
 
  private:
   std::vector<AutofillProfile*> profiles_;

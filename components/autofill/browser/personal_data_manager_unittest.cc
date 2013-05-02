@@ -251,7 +251,7 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveCreditCards) {
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
   MessageLoop::current()->Run();
 
-  const std::vector<CreditCard*>& results1 = personal_data_->credit_cards();
+  const std::vector<CreditCard*>& results1 = personal_data_->GetCreditCards();
   ASSERT_EQ(2U, results1.size());
   EXPECT_EQ(0, credit_card0.Compare(*results1[0]));
   EXPECT_EQ(0, credit_card1.Compare(*results1[1]));
@@ -267,7 +267,7 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveCreditCards) {
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
   MessageLoop::current()->Run();
 
-  const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
+  const std::vector<CreditCard*>& results2 = personal_data_->GetCreditCards();
   ASSERT_EQ(2U, results2.size());
   EXPECT_EQ(credit_card0, *results2[0]);
   EXPECT_EQ(credit_card2, *results2[1]);
@@ -278,7 +278,7 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveCreditCards) {
   ResetPersonalDataManager();
 
   // Verify that we've loaded the credit cards from the web database.
-  const std::vector<CreditCard*>& results3 = personal_data_->credit_cards();
+  const std::vector<CreditCard*>& results3 = personal_data_->GetCreditCards();
   ASSERT_EQ(2U, results3.size());
   EXPECT_EQ(credit_card0, *results3[0]);
   EXPECT_EQ(credit_card2, *results3[1]);
@@ -311,7 +311,7 @@ TEST_F(PersonalDataManagerTest, UpdateUnverifiedProfilesAndCreditCards) {
 
   const std::vector<AutofillProfile*>& profiles1 =
       personal_data_->GetProfiles();
-  const std::vector<CreditCard*>& cards1 = personal_data_->credit_cards();
+  const std::vector<CreditCard*>& cards1 = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, profiles1.size());
   ASSERT_EQ(1U, cards1.size());
   EXPECT_EQ(0, profile.Compare(*profiles1[0]));
@@ -333,7 +333,7 @@ TEST_F(PersonalDataManagerTest, UpdateUnverifiedProfilesAndCreditCards) {
 
   const std::vector<AutofillProfile*>& profiles2 =
       personal_data_->GetProfiles();
-  const std::vector<CreditCard*>& cards2 = personal_data_->credit_cards();
+  const std::vector<CreditCard*>& cards2 = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, profiles2.size());
   ASSERT_EQ(1U, cards2.size());
   EXPECT_NE(profile.origin(), profiles2[0]->origin());
@@ -357,7 +357,7 @@ TEST_F(PersonalDataManagerTest, UpdateUnverifiedProfilesAndCreditCards) {
 
   const std::vector<AutofillProfile*>& profiles3 =
       personal_data_->GetProfiles();
-  const std::vector<CreditCard*>& cards3 = personal_data_->credit_cards();
+  const std::vector<CreditCard*>& cards3 = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, profiles3.size());
   ASSERT_EQ(1U, cards3.size());
   EXPECT_EQ(0, profile.Compare(*profiles3[0]));
@@ -412,7 +412,7 @@ TEST_F(PersonalDataManagerTest, AddProfilesAndCreditCards) {
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
   MessageLoop::current()->Run();
 
-  const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
+  const std::vector<CreditCard*>& results2 = personal_data_->GetCreditCards();
   ASSERT_EQ(2U, results2.size());
   EXPECT_EQ(credit_card0, *results2[0]);
   EXPECT_EQ(credit_card1, *results2[1]);
@@ -501,7 +501,7 @@ TEST_F(PersonalDataManagerTest, SetEmptyCreditCard) {
   ResetPersonalDataManager();
 
   // Verify that we've loaded the credit cards from the web database.
-  const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
+  const std::vector<CreditCard*>& results2 = personal_data_->GetCreditCards();
   ASSERT_EQ(0U, results2.size());
 }
 
@@ -746,8 +746,8 @@ TEST_F(PersonalDataManagerTest, ImportFormDataNotEnoughFilledFields) {
 
   const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
   ASSERT_EQ(0U, profiles.size());
-  const std::vector<CreditCard*>& credit_cards = personal_data_->credit_cards();
-  ASSERT_EQ(0U, credit_cards.size());
+  const std::vector<CreditCard*>& cards = personal_data_->GetCreditCards();
+  ASSERT_EQ(0U, cards.size());
 }
 
 TEST_F(PersonalDataManagerTest, ImportFormMinimumAddressUSA) {
@@ -904,7 +904,7 @@ TEST_F(PersonalDataManagerTest, SetUniqueCreditCardLabels) {
   // database.
   ResetPersonalDataManager();
 
-  const std::vector<CreditCard*>& results = personal_data_->credit_cards();
+  const std::vector<CreditCard*>& results = personal_data_->GetCreditCards();
   ASSERT_EQ(6U, results.size());
   EXPECT_EQ(credit_card0.guid(), results[0]->guid());
   EXPECT_EQ(credit_card1.guid(), results[1]->guid());
@@ -1388,8 +1388,8 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithInsufficientAddress) {
 
   const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
   ASSERT_EQ(0U, profiles.size());
-  const std::vector<CreditCard*>& credit_cards = personal_data_->credit_cards();
-  ASSERT_EQ(0U, credit_cards.size());
+  const std::vector<CreditCard*>& cards = personal_data_->GetCreditCards();
+  ASSERT_EQ(0U, cards.size());
 }
 
 TEST_F(PersonalDataManagerTest, AggregateExistingAuxiliaryProfile) {
@@ -1478,7 +1478,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentCreditCards) {
   CreditCard expected;
   test::SetCreditCardInfo(&expected,
       "Biggie Smalls", "4111111111111111", "01", "2011");
-  const std::vector<CreditCard*>& results = personal_data_->credit_cards();
+  const std::vector<CreditCard*>& results = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(0, expected.Compare(*results[0]));
 
@@ -1510,7 +1510,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentCreditCards) {
 
   CreditCard expected2;
   test::SetCreditCardInfo(&expected2,"", "5500000000000004", "02", "2012");
-  const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
+  const std::vector<CreditCard*>& results2 = personal_data_->GetCreditCards();
   ASSERT_EQ(2U, results2.size());
   EXPECT_EQ(0, expected.Compare(*results2[0]));
   EXPECT_EQ(0, expected2.Compare(*results2[1]));
@@ -1549,7 +1549,7 @@ TEST_F(PersonalDataManagerTest, AggregateInvalidCreditCard) {
   CreditCard expected;
   test::SetCreditCardInfo(&expected,
       "Biggie Smalls", "4111111111111111", "01", "2011");
-  const std::vector<CreditCard*>& results = personal_data_->credit_cards();
+  const std::vector<CreditCard*>& results = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(0, expected.Compare(*results[0]));
 
@@ -1576,7 +1576,7 @@ TEST_F(PersonalDataManagerTest, AggregateInvalidCreditCard) {
   // sure no changes were written out.
   ResetPersonalDataManager();
 
-  const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
+  const std::vector<CreditCard*>& results2 = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected.Compare(*results2[0]));
 }
@@ -1614,7 +1614,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithConflict) {
   CreditCard expected;
   test::SetCreditCardInfo(&expected,
       "Biggie Smalls", "4111111111111111", "01", "2011");
-  const std::vector<CreditCard*>& results = personal_data_->credit_cards();
+  const std::vector<CreditCard*>& results = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(0, expected.Compare(*results[0]));
 
@@ -1648,7 +1648,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithConflict) {
   CreditCard expected2;
   test::SetCreditCardInfo(&expected2,
       "Biggie Smalls", "4111111111111111", "01", "2012");
-  const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
+  const std::vector<CreditCard*>& results2 = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected2.Compare(*results2[0]));
 }
@@ -1686,7 +1686,7 @@ TEST_F(PersonalDataManagerTest, AggregateEmptyCreditCardWithConflict) {
   CreditCard expected;
   test::SetCreditCardInfo(&expected,
       "Biggie Smalls", "4111111111111111", "01", "2011");
-  const std::vector<CreditCard*>& results = personal_data_->credit_cards();
+  const std::vector<CreditCard*>& results = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(0, expected.Compare(*results[0]));
 
@@ -1714,7 +1714,7 @@ TEST_F(PersonalDataManagerTest, AggregateEmptyCreditCardWithConflict) {
   CreditCard expected2;
   test::SetCreditCardInfo(&expected2,
       "Biggie Smalls", "4111111111111111", "01", "2011");
-  const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
+  const std::vector<CreditCard*>& results2 = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected2.Compare(*results2[0]));
 }
@@ -1752,7 +1752,7 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInNew) {
   CreditCard expected;
   test::SetCreditCardInfo(&expected,
       "Biggie Smalls", "4111111111111111", "01", "2011");
-  const std::vector<CreditCard*>& results = personal_data_->credit_cards();
+  const std::vector<CreditCard*>& results = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(0, expected.Compare(*results[0]));
 
@@ -1782,7 +1782,7 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInNew) {
   CreditCard expected2;
   test::SetCreditCardInfo(&expected2,
       "Biggie Smalls", "4111111111111111", "01", "2011");
-  const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
+  const std::vector<CreditCard*>& results2 = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected2.Compare(*results2[0]));
 
@@ -1810,7 +1810,7 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInNew) {
   CreditCard expected3;
   test::SetCreditCardInfo(&expected3,
       "Biggie Smalls", "4111111111111111", "01", "2011");
-  const std::vector<CreditCard*>& results3 = personal_data_->credit_cards();
+  const std::vector<CreditCard*>& results3 = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results3.size());
   EXPECT_EQ(0, expected3.Compare(*results3[0]));
 }
@@ -1828,7 +1828,7 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInOld) {
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
   MessageLoop::current()->Run();
 
-  const std::vector<CreditCard*>& results1 = personal_data_->credit_cards();
+  const std::vector<CreditCard*>& results1 = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results1.size());
   EXPECT_EQ(saved_credit_card, *results1[0]);
 
@@ -1865,7 +1865,7 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInOld) {
   CreditCard expected2;
   test::SetCreditCardInfo(&expected2,
       "Biggie Smalls", "4111111111111111", "01", "2012");
-  const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
+  const std::vector<CreditCard*>& results2 = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected2.Compare(*results2[0]));
 }
@@ -1885,7 +1885,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithSeparators) {
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
   MessageLoop::current()->Run();
 
-  const std::vector<CreditCard*>& results1 = personal_data_->credit_cards();
+  const std::vector<CreditCard*>& results1 = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results1.size());
   EXPECT_EQ(0, saved_credit_card.Compare(*results1[0]));
 
@@ -1915,7 +1915,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithSeparators) {
   ResetPersonalDataManager();
 
   // Expect that no new card is saved.
-  const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
+  const std::vector<CreditCard*>& results2 = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, saved_credit_card.Compare(*results2[0]));
 }
@@ -2030,7 +2030,7 @@ TEST_F(PersonalDataManagerTest,
   ResetPersonalDataManager();
 
   // Expect that the saved credit card is not modified.
-  const std::vector<CreditCard*>& results = personal_data_->credit_cards();
+  const std::vector<CreditCard*>& results = personal_data_->GetCreditCards();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(0, credit_card.Compare(*results[0]));
 }
@@ -2251,7 +2251,7 @@ TEST_F(PersonalDataManagerTest, CaseInsensitiveMultiValueAggregation) {
 
 TEST_F(PersonalDataManagerTest, IncognitoReadOnly) {
   ASSERT_TRUE(personal_data_->GetProfiles().empty());
-  ASSERT_TRUE(personal_data_->credit_cards().empty());
+  ASSERT_TRUE(personal_data_->GetCreditCards().empty());
 
   AutofillProfile steve_jobs;
   test::SetProfileInfo(&steve_jobs, "Steven", "Paul", "Jobs", "sjobs@apple.com",
@@ -2266,7 +2266,7 @@ TEST_F(PersonalDataManagerTest, IncognitoReadOnly) {
 
   ResetPersonalDataManager();
   ASSERT_EQ(1U, personal_data_->GetProfiles().size());
-  ASSERT_EQ(1U, personal_data_->credit_cards().size());
+  ASSERT_EQ(1U, personal_data_->GetCreditCards().size());
 
   // After this point no adds, saves, or updates should take effect.
   MakeProfileIncognito();
@@ -2282,7 +2282,7 @@ TEST_F(PersonalDataManagerTest, IncognitoReadOnly) {
 
   ResetPersonalDataManager();
   EXPECT_EQ(1U, personal_data_->GetProfiles().size());
-  EXPECT_EQ(1U, personal_data_->credit_cards().size());
+  EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
 
   // Saving or creating profiles from imported profiles shouldn't work.
   steve_jobs.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Steve"));
@@ -2295,7 +2295,7 @@ TEST_F(PersonalDataManagerTest, IncognitoReadOnly) {
   EXPECT_EQ(ASCIIToUTF16("Steven"),
             personal_data_->GetProfiles()[0]->GetRawInfo(NAME_FIRST));
   EXPECT_EQ(ASCIIToUTF16("William H. Gates"),
-            personal_data_->credit_cards()[0]->GetRawInfo(CREDIT_CARD_NAME));
+            personal_data_->GetCreditCards()[0]->GetRawInfo(CREDIT_CARD_NAME));
 
   // Updating existing profiles shouldn't work.
   steve_jobs.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Steve"));
@@ -2308,7 +2308,7 @@ TEST_F(PersonalDataManagerTest, IncognitoReadOnly) {
   EXPECT_EQ(ASCIIToUTF16("Steven"),
             personal_data_->GetProfiles()[0]->GetRawInfo(NAME_FIRST));
   EXPECT_EQ(ASCIIToUTF16("William H. Gates"),
-            personal_data_->credit_cards()[0]->GetRawInfo(CREDIT_CARD_NAME));
+            personal_data_->GetCreditCards()[0]->GetRawInfo(CREDIT_CARD_NAME));
 
   // Removing shouldn't work.
   personal_data_->RemoveByGUID(steve_jobs.guid());
@@ -2316,7 +2316,7 @@ TEST_F(PersonalDataManagerTest, IncognitoReadOnly) {
 
   ResetPersonalDataManager();
   EXPECT_EQ(1U, personal_data_->GetProfiles().size());
-  EXPECT_EQ(1U, personal_data_->credit_cards().size());
+  EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
 }
 
 }  // namespace autofill

@@ -507,8 +507,9 @@ void PersonalDataManager::RemoveByGUID(const std::string& guid) {
 }
 
 CreditCard* PersonalDataManager::GetCreditCardByGUID(const std::string& guid) {
-  for (std::vector<CreditCard*>::iterator iter = credit_cards_.begin();
-       iter != credit_cards_.end(); ++iter) {
+  const std::vector<CreditCard*>& credit_cards = GetCreditCards();
+  for (std::vector<CreditCard*>::const_iterator iter = credit_cards.begin();
+       iter != credit_cards.end(); ++iter) {
     if ((*iter)->guid() == guid)
       return *iter;
   }
@@ -554,7 +555,7 @@ const std::vector<AutofillProfile*>& PersonalDataManager::web_profiles() const {
   return web_profiles_.get();
 }
 
-const std::vector<CreditCard*>& PersonalDataManager::credit_cards() const {
+const std::vector<CreditCard*>& PersonalDataManager::GetCreditCards() const {
   return credit_cards_.get();
 }
 
@@ -656,8 +657,9 @@ void PersonalDataManager::GetCreditCardSuggestions(
   icons->clear();
   guid_pairs->clear();
 
-  for (std::vector<CreditCard*>::const_iterator iter = credit_cards().begin();
-       iter != credit_cards().end(); ++iter) {
+  const std::vector<CreditCard*>& credit_cards = GetCreditCards();
+  for (std::vector<CreditCard*>::const_iterator iter = credit_cards.begin();
+       iter != credit_cards.end(); ++iter) {
     CreditCard* credit_card = *iter;
 
     // The value of the stored data for this field type in the |credit_card|.

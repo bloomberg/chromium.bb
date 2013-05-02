@@ -29,7 +29,8 @@ const std::vector<AutofillProfile*>& TestPersonalDataManager::GetProfiles() {
   return profiles_;
 }
 
-const std::vector<CreditCard*>& TestPersonalDataManager::credit_cards() const {
+const std::vector<CreditCard*>& TestPersonalDataManager::
+    GetCreditCards() const {
   return credit_cards_;
 }
 

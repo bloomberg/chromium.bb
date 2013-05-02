@@ -340,7 +340,8 @@ bool AutofillManager::OnFormSubmitted(const FormData& form,
   // Only upload server statistics and UMA metrics if at least some local data
   // is available to use as a baseline.
   const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
-  const std::vector<CreditCard*>& credit_cards = personal_data_->credit_cards();
+  const std::vector<CreditCard*>& credit_cards =
+      personal_data_->GetCreditCards();
   if (!profiles.empty() || !credit_cards.empty()) {
     // Copy the profile and credit card data, so that it can be accessed on a
     // separate thread.
@@ -981,7 +982,7 @@ bool AutofillManager::GetHost(RenderViewHost** host) const {
 
   // No autofill data to return if the profiles are empty.
   if (personal_data_->GetProfiles().empty() &&
-      personal_data_->credit_cards().empty()) {
+      personal_data_->GetCreditCards().empty()) {
     return false;
   }
 

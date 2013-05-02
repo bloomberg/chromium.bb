@@ -54,7 +54,7 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
   jint GetCreditCardCount(JNIEnv* unused_env, jobject unused_obj);
 
   // Returns the credit card as indexed by |index| in the PersonalDataManager's
-  // |credit_cards()| collection.
+  // |GetCreditCards()| collection.
   base::android::ScopedJavaLocalRef<jobject> GetCreditCardByIndex(
       JNIEnv* env,
       jobject unused_obj,
