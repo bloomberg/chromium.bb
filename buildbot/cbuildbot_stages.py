@@ -1526,11 +1526,13 @@ class BuildImageStage(BuildPackagesStage):
           # For non release builds, we are only interested in generating
           # payloads for the purpose of imaging machines. This means we
           # shouldn't generate delta payloads for n-1->n testing.
-          if self._build_config['build_type'] != constants.CANARY_TYPE:
-            commands.GenerateFullPayload(self._build_root, image_path, tempdir)
-          else:
+          # TODO: Add a config flag for generating delta payloads instead.
+          if (self._build_config['build_type'] == constants.CANARY_TYPE and
+              not self._pgo_generate):
             commands.GenerateNPlus1Payloads(
                 self._build_root, self.bot_archive_root, image_path, tempdir)
+          else:
+            commands.GenerateFullPayload(self._build_root, image_path, tempdir)
 
           for payload in os.listdir(tempdir):
             queue.put([os.path.join(tempdir, payload)])
