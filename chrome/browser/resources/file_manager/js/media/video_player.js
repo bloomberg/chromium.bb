@@ -206,12 +206,9 @@ function reload() {
   document.title = decodeURIComponent(src.split('/').pop());
 
   metadataCache.get(src, 'streaming', function(streaming) {
-    if (streaming && streaming.url) {
-      if (!navigator.onLine) {
-        showErrorMessage('GALLERY_VIDEO_OFFLINE');
-        return;
-      }
-      src = streaming.url;
+    if (streaming && !navigator.onLine) {
+      showErrorMessage('GALLERY_VIDEO_OFFLINE');
+      return;
     }
 
     // Detach the previous video element, if exists.

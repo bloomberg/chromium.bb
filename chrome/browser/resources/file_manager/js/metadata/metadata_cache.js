@@ -13,7 +13,7 @@
  *   filesystem: size, modificationTime
  *   internal: presence
  *   drive: pinned, present, hosted, editUrl, contentUrl, availableOffline
- *   streaming: url
+ *   streaming: (no property)
  *
  *   Following are not fetched for non-present drive files.
  *   media: artist, album, title, width, height, imageTransform, etc.
@@ -728,7 +728,7 @@ FilesystemProvider.prototype.fetch = function(url, type, callback, opt_entry) {
  * This provider returns the following objects:
  *     drive: { pinned, hosted, present, dirty, editUrl, contentUrl, driveApps }
  *     thumbnail: { url, transform }
- *     streaming: { url }
+ *     streaming: { }
  * @constructor
  */
 function DriveProvider() {
@@ -874,10 +874,11 @@ DriveProvider.prototype.convert_ = function(data, url) {
       transform: null
     };
   }
-  if (!data.isPresent && ('contentUrl' in data)) {
-    result.streaming = {
-      url: data.contentUrl.replace(/\?.*$/gi, '')
-    };
+  if (!data.isPresent) {
+    // Indicate that the data is not available in local cache.
+    // It used to have a field 'url' for streaming play, but it is
+    // derprecated. See crbug.com/174560.
+    result.streaming = {};
   }
   return result;
 };

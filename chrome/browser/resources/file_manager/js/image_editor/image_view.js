@@ -346,9 +346,7 @@ ImageView.prototype.load = function(url, metadata, effect,
     video.addEventListener('loadedmetadata', onVideoLoadSuccess);
     video.addEventListener('error', onVideoLoadError);
 
-    // Do not try no stream when offline.
-    video.src = (navigator.onLine && metadata.streaming &&
-                 metadata.streaming.url) || url;
+    video.src = url;
     video.load();
     return;
   }
