@@ -1339,8 +1339,7 @@ function createBugHTML(test)
         '[insert platform]\n\n' + test.test + '\n\nProbable cause:\n\n' +
         '[insert probable cause]');
     
-    var component = encodeURIComponent('Tools / Tests');
-    url = 'https://bugs.webkit.org/enter_bug.cgi?assigned_to=webkit-unassigned%40lists.webkit.org&product=WebKit&form_name=enter_bug&component=' + component + '&short_desc=' + title + '&comment=' + description;
+    url = 'https://code.google.com/p/chromium/issues/entry?template=Layout%20Test%20Failure&summary=' + title + '&comment=' + description;
     return '<a href="' + url + '" class="file-bug">FILE BUG</a>';
 }
 
