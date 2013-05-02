@@ -46,8 +46,8 @@
 
 using content::BrowserThread;
 using extensions::app_file_handler_util::FileHandlerForId;
-using extensions::app_file_handler_util::FileHandlerCanHandleFileWithMimeType;
-using extensions::app_file_handler_util::FirstFileHandlerForMimeType;
+using extensions::app_file_handler_util::FileHandlerCanHandleFile;
+using extensions::app_file_handler_util::FirstFileHandlerForFile;
 using extensions::app_file_handler_util::CreateFileEntry;
 using extensions::app_file_handler_util::GrantedFileEntry;
 using extensions::app_file_handler_util::SavedFileEntry;
@@ -205,9 +205,8 @@ class PlatformAppPathLauncher
     if (!handler_id_.empty())
       handler = FileHandlerForId(*extension_, handler_id_);
     else
-      handler = FirstFileHandlerForMimeType(*extension_, mime_type);
-    if (handler &&
-        !FileHandlerCanHandleFileWithMimeType(*handler, mime_type)) {
+      handler = FirstFileHandlerForFile(*extension_, mime_type, file_path_);
+    if (handler && !FileHandlerCanHandleFile(*handler, mime_type, file_path_)) {
       LOG(WARNING) << "Extension does not provide a valid file handler for "
                    << file_path_.value();
       LaunchWithNoLaunchData();

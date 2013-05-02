@@ -46,12 +46,26 @@ bool LoadFileHandler(const std::string& handler_id,
   handler.id = handler_id;
 
   const ListValue* mime_types = NULL;
-  // TODO(benwells): handle file extensions.
-  if (!handler_info.HasKey(keys::kFileHandlerTypes) ||
-      !handler_info.GetList(keys::kFileHandlerTypes, &mime_types) ||
-      mime_types->GetSize() == 0) {
+  if (handler_info.HasKey(keys::kFileHandlerTypes) &&
+      !handler_info.GetList(keys::kFileHandlerTypes, &mime_types)) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
         extension_manifest_errors::kInvalidFileHandlerType, handler_id);
+    return false;
+  }
+
+  const ListValue* file_extensions = NULL;
+  if (handler_info.HasKey(keys::kFileHandlerExtensions) &&
+      !handler_info.GetList(keys::kFileHandlerExtensions, &file_extensions)) {
+    *error = ErrorUtils::FormatErrorMessageUTF16(
+        extension_manifest_errors::kInvalidFileHandlerExtension, handler_id);
+    return false;
+  }
+
+  if ((!mime_types || mime_types->GetSize() == 0) &&
+      (!file_extensions || file_extensions->GetSize() == 0)) {
+    *error = ErrorUtils::FormatErrorMessageUTF16(
+        extension_manifest_errors::kInvalidFileHandlerNoTypeOrExtension,
+        handler_id);
     return false;
   }
 
@@ -61,15 +75,32 @@ bool LoadFileHandler(const std::string& handler_id,
     return false;
   }
 
-  std::string type;
-  for (size_t i = 0; i < mime_types->GetSize(); ++i) {
-    if (!mime_types->GetString(i, &type)) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          extension_manifest_errors::kInvalidFileHandlerTypeElement, handler_id,
-          std::string(base::IntToString(i)));
-      return false;
+  if (mime_types) {
+    std::string type;
+    for (size_t i = 0; i < mime_types->GetSize(); ++i) {
+      if (!mime_types->GetString(i, &type)) {
+        *error = ErrorUtils::FormatErrorMessageUTF16(
+            extension_manifest_errors::kInvalidFileHandlerTypeElement,
+            handler_id,
+            std::string(base::IntToString(i)));
+        return false;
+      }
+      handler.types.insert(type);
     }
-    handler.types.insert(type);
+  }
+
+  if (file_extensions) {
+    std::string file_extension;
+    for (size_t i = 0; i < file_extensions->GetSize(); ++i) {
+      if (!file_extensions->GetString(i, &file_extension)) {
+        *error = ErrorUtils::FormatErrorMessageUTF16(
+            extension_manifest_errors::kInvalidFileHandlerExtensionElement,
+            handler_id,
+            std::string(base::IntToString(i)));
+        return false;
+      }
+      handler.extensions.insert(file_extension);
+    }
   }
 
   file_handlers->push_back(handler);

@@ -24,17 +24,24 @@ namespace app_file_handler_util {
 const FileHandlerInfo* FileHandlerForId(const Extension& app,
                                         const std::string& handler_id);
 
-// Returns the first file handler that can handle the given MIME type, or NULL
-// if is no such handler.
-const FileHandlerInfo* FirstFileHandlerForMimeType(const Extension& app,
-    const std::string& mime_type);
+// Returns the first file handler that can handle the given MIME type or
+// filename, or NULL if is no such handler.
+const FileHandlerInfo* FirstFileHandlerForFile(
+    const Extension& app,
+    const std::string& mime_type,
+    const base::FilePath& path);
 
 std::vector<const FileHandlerInfo*>
 FindFileHandlersForMimeTypes(const Extension& extension,
                              const std::set<std::string>& mime_types);
 
-bool FileHandlerCanHandleFileWithMimeType(const FileHandlerInfo& handler,
-                                          const std::string& mime_type);
+bool FileHandlerCanHandleFile(
+    const FileHandlerInfo& handler,
+    const std::string& mime_type,
+    const base::FilePath& path);
+bool FileHandlerCanHandleFileWithMimeType(
+    const FileHandlerInfo& handler,
+    const std::string& mime_type);
 
 // Represents a file entry that a user has given an extension permission to
 // access. Intended to be persisted to disk (in the Preferences file), so should
