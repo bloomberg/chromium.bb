@@ -8,7 +8,6 @@
 #include "content/common/child_thread.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 
-using WebKit::WebFrame;
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBDatabase;
 using WebKit::WebIDBDatabaseCallbacks;

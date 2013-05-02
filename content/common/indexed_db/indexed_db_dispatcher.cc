@@ -13,14 +13,12 @@
 #include "content/common/indexed_db/proxy_webidbcursor_impl.h"
 #include "content/common/indexed_db/proxy_webidbdatabase_impl.h"
 #include "ipc/ipc_channel.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseCallbacks.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseError.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseException.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyRange.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebIDBDatabaseCallbacks.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebIDBDatabaseError.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebIDBDatabaseException.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebIDBKeyRange.h"
 
 using WebKit::WebData;
-using WebKit::WebFrame;
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBDatabase;
 using WebKit::WebIDBDatabaseCallbacks;

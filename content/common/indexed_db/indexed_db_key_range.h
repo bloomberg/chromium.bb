@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
 #include "content/common/indexed_db/indexed_db_key.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyRange.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebIDBKeyRange.h"
 
 namespace content {
 

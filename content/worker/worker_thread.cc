@@ -18,7 +18,6 @@
 #include "ipc/ipc_sync_channel.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebBlobRegistry.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabase.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "webkit/glue/webkit_glue.h"

@@ -13,10 +13,10 @@
 #include "base/nullable_string16.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_sync_message_filter.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCursor.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabase.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseCallbacks.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebIDBCallbacks.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebIDBCursor.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebIDBDatabase.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebIDBDatabaseCallbacks.h"
 #include "webkit/glue/worker_task_runner.h"
 
 struct IndexedDBDatabaseMetadata;
@@ -27,7 +27,6 @@ struct IndexedDBMsg_CallbacksUpgradeNeeded_Params;
 
 namespace WebKit {
 class WebData;
-class WebFrame;
 }
 
 namespace content {

@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_INDEXED_DB_PROXY_WEBIDBDATABASE_IMPL_H_
 
 #include "base/basictypes.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabase.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebIDBDatabase.h"
 
 namespace WebKit {
 class WebIDBCallbacks;

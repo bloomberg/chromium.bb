@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyPath.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebIDBKeyPath.h"
 
 namespace content {
 
