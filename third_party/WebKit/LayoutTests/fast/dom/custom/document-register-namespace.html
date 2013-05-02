@@ -25,7 +25,6 @@ function createElementFromSVG(svg)
 
 CustomHTMLElement = document.register('html-foo', { prototype: Object.create(HTMLElement.prototype) });
 CustomSVGElement = document.register('svg-foo', { prototype: Object.create(SVGElement.prototype) });
-CustomXMLElement = document.register('xml-foo', { prototype: Object.create(Element.prototype) });
 
 var html1 = new CustomHTMLElement();
 shouldBe("html1.namespaceURI", "'http://www.w3.org/1999/xhtml'");
@@ -60,21 +59,10 @@ shouldBe("notSVG2.namespaceURI", "'http://www.w3.org/1999/xhtml'");
 shouldBeFalse("notSVG2 instanceof CustomSVGElement");
 shouldBeTrue("notSVG2 instanceof HTMLUnknownElement");
 
-var xml1 = new CustomXMLElement();
-shouldBe("xml1.tagName", "'xml-foo'");
-shouldBe("xml1.namespaceURI", "null");
-var xml2 = document.createElementNS(null, "xml-foo");
-shouldBe("xml2.tagName", "'xml-foo'");
-shouldBe("xml2.namespaceURI", "null");
-
-var notXML1 = document.createElement("xml-foo");
-shouldBe("notXML1.namespaceURI", "'http://www.w3.org/1999/xhtml'");
-shouldBeFalse("notXML1 instanceof CustomXMLElement");
-shouldBeTrue("notXML1 instanceof HTMLUnknownElement");
-var notXML2 = createElementFromHTML("<xml-foo></xml-foo>");
-shouldBe("notXML2.namespaceURI", "'http://www.w3.org/1999/xhtml'");
-shouldBeFalse("notXML2 instanceof CustomXMLElement");
-shouldBeTrue("notXML2 instanceof HTMLUnknownElement");
+// Trying to extend something outside HTML or SVG should throw a NAMESPACE_ERR
+shouldThrow(
+    "document.register('xml-foo', { prototype: Object.create(Element.prototype) })",
+    "'Error: NamespaceError: DOM Exception 14'");
 
 </script>
 <script src="../../js/resources/js-test-post.js"></script>

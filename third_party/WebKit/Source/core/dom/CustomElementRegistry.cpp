@@ -141,6 +141,11 @@ PassRefPtr<CustomElementConstructor> CustomElementRegistry::registerElement(Scri
         return 0;
     }
 
+    if (namespaceURI.isNull()) {
+        ec = NAMESPACE_ERR;
+        return 0;
+    }
+
     const QualifiedName* localNameFound = CustomElementHelpers::findLocalName(prototypeValue);
     QualifiedName typeName(nullAtom, lowerName, namespaceURI);
     QualifiedName localNameToUse = localNameFound ? *localNameFound : typeName;
