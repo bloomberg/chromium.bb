@@ -86,60 +86,6 @@ Node* V8GCController::opaqueRootForGC(Node* node, v8::Isolate*)
     return node;
 }
 
-static void gcTree(v8::Isolate* isolate, Node* startNode)
-{
-    Vector<Node*, initialNodeVectorSize> newSpaceNodes;
-
-    // We traverse a DOM tree in the DFS order starting from startNode.
-    // The traversal order does not matter for correctness but does matter for performance.
-    Node* node = startNode;
-    // To make each minor GC time bounded, we might need to give up
-    // traversing at some point for a large DOM tree. That being said,
-    // I could not observe the need even in pathological test cases.
-    do {
-        ASSERT(node);
-        if (!node->wrapper().IsEmpty()) {
-            // FIXME: Remove the special handling for image elements.
-            // The same special handling is in V8GCController::opaqueRootForGC().
-            // Maybe should image elements be active DOM nodes?
-            // See https://code.google.com/p/chromium/issues/detail?id=164882
-            if (!node->isV8CollectableDuringMinorGC() || (node->hasTagName(HTMLNames::imgTag) && static_cast<HTMLImageElement*>(node)->hasPendingActivity())) {
-                // This node is not in the new space of V8. This indicates that
-                // the minor GC cannot anyway judge reachability of this DOM tree.
-                // Thus we give up traversing the DOM tree.
-                return;
-            }
-            node->setV8CollectableDuringMinorGC(false);
-            newSpaceNodes.append(node);
-        }
-        if (node->firstChild()) {
-            node = node->firstChild();
-            continue;
-        }
-        while (!node->nextSibling()) {
-            if (!node->parentNode())
-                break;
-            node = node->parentNode();
-        }
-        if (node->parentNode())
-            node = node->nextSibling();
-    } while (node != startNode);
-
-    // We completed the DOM tree traversal. All wrappers in the DOM tree are
-    // stored in newSpaceNodes and are expected to exist in the new space of V8.
-    // We report those wrappers to V8 as an object group.
-    Node** nodeIterator = newSpaceNodes.begin();
-    Node** const nodeIteratorEnd = newSpaceNodes.end();
-    if (nodeIterator == nodeIteratorEnd)
-        return;
-    v8::UniqueId id(reinterpret_cast<intptr_t>(*(*nodeIterator)->wrapper()));
-    for (; nodeIterator != nodeIteratorEnd; ++nodeIterator) {
-        v8::Persistent<v8::Object> wrapper((*nodeIterator)->wrapper());
-        wrapper.MarkPartiallyDependent(isolate);
-        isolate->SetObjectGroupId(wrapper, id);
-    }
-}
-
 // Regarding a minor GC algorithm for DOM nodes, see this document:
 // https://docs.google.com/a/google.com/presentation/d/1uifwVYGNYTZDoGLyCb7sXa7g49mWNMW2gaWvMN5NLk8/edit#slide=id.p
 class MinorGCWrapperVisitor : public v8::PersistentHandleVisitor {
@@ -175,7 +121,7 @@ public:
         // A minor DOM GC can handle only node wrappers in the main world.
         // Note that node->wrapper().IsEmpty() returns true for nodes that
         // do not have wrappers in the main world.
-        if (!node->wrapper().IsEmpty()) {
+        if (node->containsWrapper()) {
             WrapperTypeInfo* type = toWrapperTypeInfo(wrapper);
             ActiveDOMObject* activeDOMObject = type->toActiveDOMObject(wrapper);
             if (activeDOMObject && activeDOMObject->hasPendingActivity())
@@ -191,13 +137,70 @@ public:
         Node** nodeIteratorEnd = m_nodesInNewSpace.end();
         for (; nodeIterator < nodeIteratorEnd; ++nodeIterator) {
             Node* node = *nodeIterator;
-            ASSERT(!node->wrapper().IsEmpty());
+            ASSERT(node->containsWrapper());
             if (node->isV8CollectableDuringMinorGC()) // This branch is just for performance.
                 gcTree(m_isolate, node);
         }
     }
 
 private:
+    void gcTree(v8::Isolate* isolate, Node* startNode)
+    {
+        Vector<Node*, initialNodeVectorSize> newSpaceNodes;
+
+        // We traverse a DOM tree in the DFS order starting from startNode.
+        // The traversal order does not matter for correctness but does matter for performance.
+        Node* node = startNode;
+        // To make each minor GC time bounded, we might need to give up
+        // traversing at some point for a large DOM tree. That being said,
+        // I could not observe the need even in pathological test cases.
+        do {
+            ASSERT(node);
+            if (node->containsWrapper()) {
+                // FIXME: Remove the special handling for image elements.
+                // The same special handling is in V8GCController::opaqueRootForGC().
+                // Maybe should image elements be active DOM nodes?
+                // See https://code.google.com/p/chromium/issues/detail?id=164882
+                if (!node->isV8CollectableDuringMinorGC() || (node->hasTagName(HTMLNames::imgTag) && static_cast<HTMLImageElement*>(node)->hasPendingActivity())) {
+                    // This node is not in the new space of V8. This indicates that
+                    // the minor GC cannot anyway judge reachability of this DOM tree.
+                    // Thus we give up traversing the DOM tree.
+                    return;
+                }
+                node->setV8CollectableDuringMinorGC(false);
+                newSpaceNodes.append(node);
+            }
+            if (node->firstChild()) {
+                node = node->firstChild();
+                continue;
+            }
+            while (!node->nextSibling()) {
+                if (!node->parentNode())
+                    break;
+                node = node->parentNode();
+            }
+            if (node->parentNode())
+                node = node->nextSibling();
+        } while (node != startNode);
+
+        // We completed the DOM tree traversal. All wrappers in the DOM tree are
+        // stored in newSpaceNodes and are expected to exist in the new space of V8.
+        // We report those wrappers to V8 as an object group.
+        Node** nodeIterator = newSpaceNodes.begin();
+        Node** const nodeIteratorEnd = newSpaceNodes.end();
+        if (nodeIterator == nodeIteratorEnd)
+            return;
+        v8::UniqueId id(reinterpret_cast<intptr_t>((*nodeIterator)->unsafePersistent().value()));
+        for (; nodeIterator != nodeIteratorEnd; ++nodeIterator) {
+            // This is safe because we know that GC won't happen before we
+            // dispose the UnsafePersistent (we're just preparing a GC).
+            v8::Persistent<v8::Object> wrapper;
+            (*nodeIterator)->unsafePersistent().copyTo(&wrapper);
+            wrapper.MarkPartiallyDependent(isolate);
+            isolate->SetObjectGroupId(wrapper, id);
+        }
+    }
+
     Vector<Node*> m_nodesInNewSpace;
     v8::Isolate* m_isolate;
 };

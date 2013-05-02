@@ -31,6 +31,7 @@
 #ifndef ScriptWrappable_h
 #define ScriptWrappable_h
 
+#include "bindings/v8/UnsafePersistent.h"
 #include "bindings/v8/V8Utilities.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
@@ -152,6 +153,14 @@ protected:
     }
 
 private:
+    friend class MinorGCWrapperVisitor; // For calling unsafePersistent.
+
+    UnsafePersistent<v8::Object> unsafePersistent() const
+    {
+        ASSERT(containsWrapper());
+        return UnsafePersistent<v8::Object>(reinterpret_cast<v8::Object*>(maskOrUnmaskValue(m_maskedStorage)));
+    }
+
     inline bool containsWrapper() const { return (m_maskedStorage & 1) == 1; }
     inline bool containsTypeInfo() const { return m_maskedStorage && ((m_maskedStorage & 1) == 0); }
 
