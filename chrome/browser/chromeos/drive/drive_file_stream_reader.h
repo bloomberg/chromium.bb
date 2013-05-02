@@ -54,7 +54,9 @@ class LocalReaderProxy : public ReaderProxy {
  public:
   // The |file_reader| should be the instance which is already opened.
   // This class takes its ownership.
-  explicit LocalReaderProxy(scoped_ptr<util::FileReader> file_reader);
+  // |length| is the number of bytes to be read. It must be equal or
+  // smaller than the remaining data size in the |file_reader|.
+  LocalReaderProxy(scoped_ptr<util::FileReader> file_reader, int64 length);
   virtual ~LocalReaderProxy();
 
   // ReaderProxy overrides.
@@ -66,6 +68,16 @@ class LocalReaderProxy : public ReaderProxy {
  private:
   scoped_ptr<util::FileReader> file_reader_;
 
+  // Callback for the FileReader::Read.
+  void OnReadCompleted(
+      const net::CompletionCallback& callback, int read_result);
+
+  // The number of remaining bytes to be read.
+  int64 remaining_length_;
+
+  // This should remain the last member so it'll be destroyed first and
+  // invalidate its weak pointers before other members are destroyed.
+  base::WeakPtrFactory<LocalReaderProxy> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(LocalReaderProxy);
 };
 

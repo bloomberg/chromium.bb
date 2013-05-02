@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread.h"
@@ -37,14 +38,38 @@ void IncrementCallback(int* num_called) {
   ++*num_called;
 }
 
+// Reads all data from |reader| and copies to |content|. Returns net::Error
+// code.
+int ReadAllData(ReaderProxy* proxy, std::string* content) {
+  const int kBufferSize = 10;
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
+
+  // Read repeatedly, until it is finished.
+  while (true) {
+    net::TestCompletionCallback callback;
+    int result = proxy->Read(buffer.get(), kBufferSize, callback.callback());
+    result = callback.GetResult(result);
+    if (result <= 0) {
+      // An error or EOF is found. Note that net::OK is 0.
+      return result;
+    }
+
+    content->append(buffer->data(), result);
+  }
+}
+
 }  // namespace
 
-class ReaderProxyTest : public ::testing::Test {
+class LocalReaderProxyTest : public ::testing::Test {
  protected:
-  ReaderProxyTest() : io_thread_(BrowserThread::IO, &message_loop_) {
+  LocalReaderProxyTest() : io_thread_(BrowserThread::IO, &message_loop_) {
   }
 
   virtual void SetUp() OVERRIDE {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    ASSERT_TRUE(google_apis::test_util::CreateFileOfSpecifiedSize(
+        temp_dir_.path(), 1024, &file_path_, &file_content_));
+
     worker_thread_.reset(new base::Thread("ReaderProxyTest"));
     ASSERT_TRUE(worker_thread_->Start());
   }
@@ -56,48 +81,61 @@ class ReaderProxyTest : public ::testing::Test {
   MessageLoopForIO message_loop_;
   content::TestBrowserThread io_thread_;
 
+  base::ScopedTempDir temp_dir_;
+  base::FilePath file_path_;
+  std::string file_content_;
+
   scoped_ptr<base::Thread> worker_thread_;
 };
 
-TEST_F(ReaderProxyTest, LocalReaderProxy_Read) {
-  // Prepare the test content.
-  const base::FilePath kTestFile(
-      google_apis::test_util::GetTestFilePath("chromeos/drive/applist.json"));
-  std::string expected_content;
-  ASSERT_TRUE(file_util::ReadFileToString(kTestFile, &expected_content));
+TEST_F(LocalReaderProxyTest, Read) {
+  // Open the file first.
+  scoped_ptr<util::FileReader> file_reader(
+      new util::FileReader(worker_thread_->message_loop_proxy()));
+  net::TestCompletionCallback callback;
+  file_reader->Open(file_path_, 0, callback.callback());
+  ASSERT_EQ(net::OK, callback.WaitForResult());
+
+  // Test instance.
+  LocalReaderProxy proxy(file_reader.Pass(), file_content_.size());
+
+  // Make sure the read contant is as same as the file.
+  std::string content;
+  ASSERT_EQ(net::OK, ReadAllData(&proxy, &content));
+  EXPECT_EQ(file_content_, content);
+}
+
+TEST_F(LocalReaderProxyTest, ReadWithLimit) {
+  // This test case, we only read first half of the file.
+  const std::string expected_content =
+      file_content_.substr(0, file_content_.size() / 2);
 
   // Open the file first.
   scoped_ptr<util::FileReader> file_reader(
       new util::FileReader(worker_thread_->message_loop_proxy()));
   net::TestCompletionCallback callback;
-  file_reader->Open(kTestFile, 0, callback.callback());
+  file_reader->Open(file_path_, 0, callback.callback());
   ASSERT_EQ(net::OK, callback.WaitForResult());
 
   // Test instance.
-  LocalReaderProxy proxy(file_reader.Pass());
-
-  // Prepare the buffer, whose size is smaller than the whole data size.
-  const int kBufferSize = 10;
-  ASSERT_LE(static_cast<size_t>(kBufferSize), expected_content.size());
-  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
-
-  // Read repeatedly, until it is finished.
-  std::string concatenated_content;
-  while (concatenated_content.size() < expected_content.size()) {
-    int result = proxy.Read(buffer.get(), kBufferSize, callback.callback());
-    result = callback.GetResult(result);
-
-    // The read content size should be smaller than the buffer size.
-    ASSERT_GT(result, 0);
-    ASSERT_LE(result, kBufferSize);
-    concatenated_content.append(buffer->data(), result);
-  }
+  LocalReaderProxy proxy(file_reader.Pass(), expected_content.size());
 
   // Make sure the read contant is as same as the file.
-  EXPECT_EQ(expected_content, concatenated_content);
+  std::string content;
+  ASSERT_EQ(net::OK, ReadAllData(&proxy, &content));
+  EXPECT_EQ(expected_content, content);
 }
 
-TEST_F(ReaderProxyTest, NetworkReaderProxy_EmptyFile) {
+class NetworkReaderProxyTest : public ::testing::Test {
+ protected:
+  NetworkReaderProxyTest() : io_thread_(BrowserThread::IO, &message_loop_) {
+  }
+
+  MessageLoopForIO message_loop_;
+  content::TestBrowserThread io_thread_;
+};
+
+TEST_F(NetworkReaderProxyTest, EmptyFile) {
   NetworkReaderProxy proxy(0, 0, base::Bind(&base::DoNothing));
 
   net::TestCompletionCallback callback;
@@ -109,7 +147,7 @@ TEST_F(ReaderProxyTest, NetworkReaderProxy_EmptyFile) {
   EXPECT_EQ(0, result);
 }
 
-TEST_F(ReaderProxyTest, NetworkReaderProxyTest_Read) {
+TEST_F(NetworkReaderProxyTest, Read) {
   NetworkReaderProxy proxy(0, 10, base::Bind(&base::DoNothing));
 
   net::TestCompletionCallback callback;
@@ -154,7 +192,7 @@ TEST_F(ReaderProxyTest, NetworkReaderProxyTest_Read) {
   EXPECT_EQ(0, result);
 }
 
-TEST_F(ReaderProxyTest, NetworkReaderProxy_ReadWithLimit) {
+TEST_F(NetworkReaderProxyTest, ReadWithLimit) {
   NetworkReaderProxy proxy(10, 10, base::Bind(&base::DoNothing));
 
   net::TestCompletionCallback callback;
@@ -203,7 +241,7 @@ TEST_F(ReaderProxyTest, NetworkReaderProxy_ReadWithLimit) {
   EXPECT_EQ(0, result);
 }
 
-TEST_F(ReaderProxyTest, NetworkReaderProxy_ErrorWithPendingCallback) {
+TEST_F(NetworkReaderProxyTest, ErrorWithPendingCallback) {
   NetworkReaderProxy proxy(0, 10, base::Bind(&base::DoNothing));
 
   net::TestCompletionCallback callback;
@@ -224,7 +262,7 @@ TEST_F(ReaderProxyTest, NetworkReaderProxy_ErrorWithPendingCallback) {
             proxy.Read(buffer.get(), kBufferSize, callback.callback()));
 }
 
-TEST_F(ReaderProxyTest, NetworkReaderProxy_ErrorWithPendingData) {
+TEST_F(NetworkReaderProxyTest, ErrorWithPendingData) {
   NetworkReaderProxy proxy(0, 10, base::Bind(&base::DoNothing));
 
   net::TestCompletionCallback callback;
@@ -244,7 +282,7 @@ TEST_F(ReaderProxyTest, NetworkReaderProxy_ErrorWithPendingData) {
             proxy.Read(buffer.get(), kBufferSize, callback.callback()));
 }
 
-TEST_F(ReaderProxyTest, NetworkReaderProxy_CancelJob) {
+TEST_F(NetworkReaderProxyTest, CancelJob) {
   int num_called = 0;
   {
     NetworkReaderProxy proxy(

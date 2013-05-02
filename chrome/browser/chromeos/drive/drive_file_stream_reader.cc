@@ -56,8 +56,11 @@ int ReadInternal(ScopedVector<std::string>* pending_data,
 
 }  // namespace
 
-LocalReaderProxy::LocalReaderProxy(scoped_ptr<util::FileReader> file_reader)
-    : file_reader_(file_reader.Pass()) {
+LocalReaderProxy::LocalReaderProxy(scoped_ptr<util::FileReader> file_reader,
+                                   int64 length)
+    : file_reader_(file_reader.Pass()),
+      remaining_length_(length),
+      weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(file_reader_);
 }
@@ -69,7 +72,15 @@ int LocalReaderProxy::Read(net::IOBuffer* buffer, int buffer_length,
                            const net::CompletionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(file_reader_);
-  file_reader_->Read(buffer, buffer_length, callback);
+
+  if (buffer_length > remaining_length_) {
+    // Here, narrowing is safe.
+    buffer_length = static_cast<int>(remaining_length_);
+  }
+
+  file_reader_->Read(buffer, buffer_length,
+                     base::Bind(&LocalReaderProxy::OnReadCompleted,
+                                weak_ptr_factory_.GetWeakPtr(), callback));
   return net::ERR_IO_PENDING;
 }
 
@@ -82,6 +93,22 @@ void LocalReaderProxy::OnGetContent(scoped_ptr<std::string> data) {
 void LocalReaderProxy::OnCompleted(FileError error) {
   // If this method is called, no network error should be happened.
   DCHECK_EQ(FILE_ERROR_OK, error);
+}
+
+void LocalReaderProxy::OnReadCompleted(const net::CompletionCallback& callback,
+                                       int read_result) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(file_reader_);
+
+  if (read_result >= 0) {
+    // |read_result| bytes data is read.
+    DCHECK_LE(read_result, remaining_length_);
+    remaining_length_ -= read_result;
+  } else {
+    // An error occurs. Close the FileReader.
+    file_reader_.reset();
+  }
+  callback.Run(read_result);
 }
 
 NetworkReaderProxy::NetworkReaderProxy(
@@ -348,8 +375,10 @@ void DriveFileStreamReader::InitializeAfterLocalFileOpen(
     callback.Run(FILE_ERROR_FAILED, scoped_ptr<ResourceEntry>());
     return;
   }
+  DCHECK(entry);
 
-  reader_proxy_.reset(new internal::LocalReaderProxy(file_reader.Pass()));
+  reader_proxy_.reset(new internal::LocalReaderProxy(
+      file_reader.Pass(), entry->file_info().size()));
   callback.Run(FILE_ERROR_OK, entry.Pass());
 }
 
