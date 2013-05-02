@@ -303,11 +303,6 @@ void ProxyLauncher::TerminateBrowser() {
   if (process_ == base::kNullProcessHandle || !automation_proxy_.get())
     return;
 
-#if defined(OS_POSIX)
-  // Remember the list of Chrome processes before killing the browser process.
-  ChromeProcessList processes = GetRunningChromeProcesses(process_id_);
-#endif
-
   base::TimeTicks quit_start = base::TimeTicks::Now();
 
 #if defined(OS_WIN) && !defined(USE_AURA)
@@ -331,18 +326,6 @@ void ProxyLauncher::TerminateBrowser() {
   EXPECT_EQ(0, exit_code);  // Expect a clean shutdown.
 
   browser_quit_time_ = base::TimeTicks::Now() - quit_start;
-
-#if defined(OS_POSIX)
-  // Iterate through the processes that existed prior to killing the browser
-  // process and send a kill to each to pick up any stragglers. We don't do
-  // anything with the return code as this will return -1 if the process doesn't
-  // exist (typical case) and 0 in the case that a process was left lying
-  // around that we need to clean up.
-  for (ChromeProcessList::const_iterator it = processes.begin();
-       it != processes.end(); ++it) {
-    kill(*it, SIGTERM);
-  }
-#endif
 }
 
 void ProxyLauncher::AssertAppNotRunning(const std::string& error_message) {
