@@ -57,8 +57,7 @@ void ObjectBackedNativeHandler::RouteFunction(
   v8::HandleScope handle_scope;
   v8::Context::Scope context_scope(v8_context_.get());
 
-  v8::Persistent<v8::Object> data = v8::Persistent<v8::Object>::New(
-      v8_context_->GetIsolate(), v8::Object::New());
+  v8::Persistent<v8::Object> data(v8_context_->GetIsolate(), v8::Object::New());
   data->Set(v8::String::New(kHandlerFunction),
             v8::External::New(new HandlerFunction(handler_function)));
   router_data_.push_back(data);

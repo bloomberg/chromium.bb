@@ -55,8 +55,8 @@ v8::Handle<v8::Object> V8SchemaRegistry::GetSchema(const std::string& api) {
   v8::Handle<v8::Value> value = v8_value_converter->ToV8Value(schema, context);
   CHECK(!value.IsEmpty());
 
-  v8::Persistent<v8::Object> v8_schema = v8::Persistent<v8::Object>::New(
-      context->GetIsolate(), v8::Handle<v8::Object>::Cast(value));
+  v8::Persistent<v8::Object> v8_schema(context->GetIsolate(),
+                                       v8::Handle<v8::Object>::Cast(value));
   schema_cache_[api] = v8_schema;
   return handle_scope.Close(v8_schema);
 }

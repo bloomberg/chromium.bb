@@ -973,9 +973,8 @@ void BrowserPlugin::PersistRequestObject(
   }
 
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  v8::Persistent<v8::Value> weak_request =
-      v8::Persistent<v8::Value>::New(isolate,
-                                     WebKit::WebBindings::toV8Value(request));
+  v8::Persistent<v8::Value> weak_request(
+      isolate, WebKit::WebBindings::toV8Value(request));
 
   AliveV8PermissionRequestItem* new_item =
       new std::pair<int, base::WeakPtr<BrowserPlugin> >(
