@@ -166,31 +166,41 @@ void DeviceLocalAccountPolicyService::UpdateAccountList(
       device_settings.device_local_accounts().account();
   RepeatedPtrField<em::DeviceLocalAccountInfoProto>::const_iterator entry;
   for (entry = accounts.begin(); entry != accounts.end(); ++entry) {
-    if (entry->has_id()) {
-      // Sanity check for whether this account ID has already been processed.
-      DeviceLocalAccountPolicyBroker*& new_broker =
-          new_policy_brokers[entry->id()];
-      if (new_broker) {
-        LOG(WARNING) << "Duplicate public account " << entry->id();
-        continue;
-      }
+    std::string account_id;
+    if (entry->has_type() &&
+        entry->type() ==
+            em::DeviceLocalAccountInfoProto::ACCOUNT_TYPE_PUBLIC_SESSION) {
+      account_id = entry->account_id();
+    } else if (entry->has_id()) {
+      account_id = entry->id();
+    }
 
-      // Reuse the existing broker if present.
-      DeviceLocalAccountPolicyBroker*& existing_broker =
-          policy_brokers_[entry->id()];
-      new_broker = existing_broker;
-      existing_broker = NULL;
+    if (account_id.empty())
+      continue;
 
-      // Fire up the cloud connection for fetching policy for the account from
-      // the cloud if this is an enterprise-managed device.
-      if (!new_broker || !new_broker->core()->client()) {
-        scoped_ptr<CloudPolicyClient> client(
-            CreateClientForAccount(entry->id()));
-        if (client.get()) {
-          if (!new_broker)
-            new_broker = CreateBroker(entry->id()).release();
-          new_broker->Connect(client.Pass());
-        }
+    // Sanity check for whether this account ID has already been processed.
+    DeviceLocalAccountPolicyBroker*& new_broker =
+        new_policy_brokers[account_id];
+    if (new_broker) {
+      LOG(WARNING) << "Duplicate public account " << account_id;
+      continue;
+    }
+
+    // Reuse the existing broker if present.
+    DeviceLocalAccountPolicyBroker*& existing_broker =
+        policy_brokers_[account_id];
+    new_broker = existing_broker;
+    existing_broker = NULL;
+
+    // Fire up the cloud connection for fetching policy for the account from
+    // the cloud if this is an enterprise-managed device.
+    if (!new_broker || !new_broker->core()->client()) {
+      scoped_ptr<CloudPolicyClient> client(
+          CreateClientForAccount(account_id));
+      if (client.get()) {
+        if (!new_broker)
+          new_broker = CreateBroker(account_id).release();
+        new_broker->Connect(client.Pass());
       }
     }
   }

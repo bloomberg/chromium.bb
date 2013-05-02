@@ -472,8 +472,16 @@ class DeviceLocalAccountTest : public InProcessBrowserTest {
     device_policy.policy_data().set_public_key_version(1);
     em::ChromeDeviceSettingsProto& proto(device_policy.payload());
     proto.mutable_show_user_names()->set_show_user_names(true);
-    proto.mutable_device_local_accounts()->add_account()->set_id(kAccountId1);
-    proto.mutable_device_local_accounts()->add_account()->set_id(kAccountId2);
+    em::DeviceLocalAccountInfoProto* account1 =
+        proto.mutable_device_local_accounts()->add_account();
+    account1->set_account_id(kAccountId1);
+    account1->set_type(
+        em::DeviceLocalAccountInfoProto::ACCOUNT_TYPE_PUBLIC_SESSION);
+    em::DeviceLocalAccountInfoProto* account2 =
+        proto.mutable_device_local_accounts()->add_account();
+    account2->set_account_id(kAccountId2);
+    account2->set_type(
+        em::DeviceLocalAccountInfoProto::ACCOUNT_TYPE_PUBLIC_SESSION);
     device_policy.Build();
     session_manager_client_.set_device_policy(device_policy.GetBlob());
     test_server_.UpdatePolicy(dm_protocol::kChromeDevicePolicyType,
@@ -600,7 +608,11 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DevicePolicyChange) {
   // Update policy to remove kAccountId2.
   em::ChromeDeviceSettingsProto policy;
   policy.mutable_show_user_names()->set_show_user_names(true);
-  policy.mutable_device_local_accounts()->add_account()->set_id(kAccountId1);
+  em::DeviceLocalAccountInfoProto* account1 =
+      policy.mutable_device_local_accounts()->add_account();
+  account1->set_account_id(kAccountId1);
+  account1->set_type(
+      em::DeviceLocalAccountInfoProto::ACCOUNT_TYPE_PUBLIC_SESSION);
 
   test_server_.UpdatePolicy(dm_protocol::kChromeDevicePolicyType, std::string(),
                             policy.SerializeAsString());

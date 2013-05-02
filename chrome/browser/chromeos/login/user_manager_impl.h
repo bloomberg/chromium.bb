@@ -248,6 +248,9 @@ class UserManagerImpl
   // Update the global LoginState.
   void UpdateLoginState();
 
+  // Gets the list of public accounts defined in device settings.
+  void ReadPublicAccounts(base::ListValue* public_accounts);
+
   // Interface to the signed settings store.
   CrosSettings* cros_settings_;
 

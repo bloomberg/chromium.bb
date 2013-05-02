@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 
-#include "base/basictypes.h"
-
 namespace chromeos {
 
 const char kCrosSettingsPrefix[] = "cros.";
@@ -20,10 +18,20 @@ const char kAccountsPrefEphemeralUsersEnabled[] =
     "cros.accounts.ephemeralUsersEnabled";
 const char kAccountsPrefDeviceLocalAccounts[] =
     "cros.accounts.deviceLocalAccounts";
+const char kAccountsPrefDeviceLocalAccountsKeyId[] =
+    "id";
+const char kAccountsPrefDeviceLocalAccountsKeyType[] =
+    "type";
+const char kAccountsPrefDeviceLocalAccountsKeyKioskAppId[] =
+    "kiosk_app_id";
+const char kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL[] =
+    "kiosk_app_id_update_url";
 const char kAccountsPrefDeviceLocalAccountAutoLoginId[] =
     "cros.accounts.deviceLocalAccountAutoLoginId";
 const char kAccountsPrefDeviceLocalAccountAutoLoginDelay[] =
     "cros.accounts.deviceLocalAccountAutoLoginDelay";
+const char kAccountsPrefDeviceLocalAccountAutoLoginBailoutEnabled[] =
+    "cros.accounts.deviceLocalAccountAutoLoginBailoutEnabled";
 
 // Name of signed setting persisted on device, writeable only by owner.
 const char kSettingProxyEverywhere[] = "cros.proxy.everywhere";
@@ -69,6 +77,8 @@ const char kReportDeviceLocation[] = "cros.device_status.report_location";
 // "update-url": URL to check the extension's version and download location
 // "key-checksum": checksum of the extension's CRX public key, encoded in hex.
 const char kAppPack[] = "cros.app_pack";
+const char kAppPackKeyExtensionId[] = "extension-id";
+const char kAppPackKeyUpdateUrl[] = "update-url";
 
 // Values from the ScreenSaver proto. Defines the extension ID of the screen
 // saver extension and the timeout before the screen saver should be started.
@@ -99,23 +109,6 @@ const char kAllowRedeemChromeOsRegistrationOffers[] =
 // start-up.
 const char kStartUpFlags[] = "cros.startup_flags";
 
-// A prefix for all kiosk app setting names.
-const char kKioskAppSettingsPrefix[] = "cros.kiosk.";
-const int kKioskAppSettingsPrefixLength =
-    arraysize(kKioskAppSettingsPrefix) - 1;  // exclude NULL terminator.
-
-// A list of available kiosk application IDs.
-const char kKioskApps[] = "cros.kiosk.apps";
-
-// An app id string of the current auto launch app. Empty string means no auto
-// launch app. Default is empty.
-const char kKioskAutoLaunch[] = "cros.kiosk.auto_launch";
-
-// A boolean pref of whether the app launch bailout shortcut should be disabled.
-// When set to true, the bailout shortcut is disabled. Default is false.
-const char kKioskDisableBailoutShortcut[] =
-    "cros.kiosk.disable_bailout_shortcut";
-
 // A string pref for the restrict parameter to be appended to the Variations URL
 // when pinging the Variations server.
 const char kVariationsRestrictParameter[] =
@@ -123,4 +116,5 @@ const char kVariationsRestrictParameter[] =
 
 // A boolean pref that indicates whether attestation is enabled for the device.
 const char kDeviceAttestationEnabled[] = "cros.device.attestation_enabled";
+
 }  // namespace chromeos

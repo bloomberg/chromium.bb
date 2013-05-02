@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/policy/app_pack_updater.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/policy/policy_map.h"
@@ -122,16 +121,43 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
     const RepeatedPtrField<em::DeviceLocalAccountInfoProto>& accounts =
         container.account();
     if (accounts.size() > 0) {
-      ListValue* account_list = new ListValue();
+      scoped_ptr<base::ListValue> account_list(new base::ListValue());
       RepeatedPtrField<em::DeviceLocalAccountInfoProto>::const_iterator entry;
       for (entry = accounts.begin(); entry != accounts.end(); ++entry) {
-        if (entry->has_id())
-          account_list->AppendString(entry->id());
+        scoped_ptr<base::DictionaryValue> entry_dict(
+            new base::DictionaryValue());
+        if (entry->has_type()) {
+          if (entry->has_account_id()) {
+            entry_dict->SetStringWithoutPathExpansion(
+                chromeos::kAccountsPrefDeviceLocalAccountsKeyId,
+                entry->account_id());
+          }
+          entry_dict->SetIntegerWithoutPathExpansion(
+              chromeos::kAccountsPrefDeviceLocalAccountsKeyType, entry->type());
+          if (entry->kiosk_app().has_app_id()) {
+            entry_dict->SetStringWithoutPathExpansion(
+                chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
+                entry->kiosk_app().app_id());
+          }
+          if (entry->kiosk_app().has_update_url()) {
+            entry_dict->SetStringWithoutPathExpansion(
+                chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL,
+                entry->kiosk_app().update_url());
+          }
+        } else if (entry->has_id()) {
+          // Deprecated public session specification.
+          entry_dict->SetStringWithoutPathExpansion(
+              chromeos::kAccountsPrefDeviceLocalAccountsKeyId, entry->id());
+          entry_dict->SetIntegerWithoutPathExpansion(
+              chromeos::kAccountsPrefDeviceLocalAccountsKeyType,
+              chromeos::DEVICE_LOCAL_ACCOUNT_TYPE_PUBLIC_SESSION);
+        }
+        account_list->Append(entry_dict.release());
       }
       policies->Set(key::kDeviceLocalAccounts,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
-                    account_list);
+                    account_list.release());
     }
     if (container.has_auto_login_id()) {
       policies->Set(key::kDeviceLocalAccountAutoLoginId,
@@ -144,6 +170,13 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
                     DecodeIntegerValue(container.auto_login_delay()));
+    }
+    if (container.has_enable_auto_login_bailout()) {
+      policies->Set(key::kDeviceLocalAccountAutoLoginBailoutEnabled,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateBooleanValue(
+                        container.enable_auto_login_bailout()));
     }
   }
 }
@@ -198,8 +231,8 @@ void DecodeKioskPolicies(const em::ChromeDeviceSettingsProto& policy,
       const em::AppPackEntryProto& entry(container.app_pack(i));
       if (entry.has_extension_id() && entry.has_update_url()) {
         base::DictionaryValue* dict = new base::DictionaryValue();
-        dict->SetString(AppPackUpdater::kExtensionId, entry.extension_id());
-        dict->SetString(AppPackUpdater::kUpdateUrl, entry.update_url());
+        dict->SetString(chromeos::kAppPackKeyExtensionId, entry.extension_id());
+        dict->SetString(chromeos::kAppPackKeyUpdateUrl, entry.update_url());
         app_pack_list->Append(dict);
       }
     }

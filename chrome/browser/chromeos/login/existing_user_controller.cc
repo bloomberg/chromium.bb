@@ -261,6 +261,7 @@ void ExistingUserController::Observe(
     if (host_ != NULL) {
       // Signed settings or user list changed. Notify views and update them.
       UpdateLoginDisplay(chromeos::UserManager::Get()->GetUsers());
+      ConfigurePublicSessionAutoLogin();
       return;
     }
   }
@@ -915,6 +916,12 @@ void ExistingUserController::ConfigurePublicSessionAutoLogin() {
           &public_session_auto_login_username_)) {
     public_session_auto_login_username_.clear();
   }
+
+  const User* user =
+      UserManager::Get()->FindUser(public_session_auto_login_username_);
+  if (!user || user->GetType() != User::USER_TYPE_PUBLIC_ACCOUNT)
+    public_session_auto_login_username_.clear();
+
   if (!cros_settings_->GetInteger(
           kAccountsPrefDeviceLocalAccountAutoLoginDelay,
           &public_session_auto_login_delay_)) {

@@ -12,10 +12,13 @@ namespace chromeos {
 class KioskAppManagerObserver {
  public:
   // Invoked when the app data is changed or loading state is changed.
-  virtual void OnKioskAppDataChanged(const std::string& app_id) = 0;
+  virtual void OnKioskAppDataChanged(const std::string& app_id) {}
 
   // Invoked when failed to load web store data of an app.
-  virtual void OnKioskAppDataLoadFailure(const std::string& app_id) = 0;
+  virtual void OnKioskAppDataLoadFailure(const std::string& app_id) {}
+
+  // Invoked when the Kiosk Apps configuration changes.
+  virtual void OnKioskAppsSettingsChanged() {}
 
  protected:
   virtual ~KioskAppManagerObserver() {}

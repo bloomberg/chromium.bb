@@ -224,15 +224,48 @@ message SystemTimezoneProto {
   optional string timezone = 1;
 }
 
+// Parameters for Kiosk App device-local accounts.
+message KioskAppInfoProto {
+  // Indicates the Kiosk App for the corresponding device-local account. The
+  // string value should be a valid 32-character Chrome App identifier and
+  // specifies the Kiosk App to download and run.
+  optional string app_id = 1;
+
+  // Optional extension update URL to download the Kiosk App package from. If
+  // not specified, the app will be downloaded from the standard Chrome Web
+  // Store update URL.
+  optional string update_url = 2;
+}
+
 // Describes a single device-local account.
 message DeviceLocalAccountInfoProto {
-  // Identifier for the device-local account. Account identifiers loosely follow
-  // the conventions for email addresses as specified by RFC 5322, e.g. local
-  // (user name) and domain parts, separated by the '@' character.
-  // Policy-configured device-local accounts are on the same domain that the
-  // device is enrolled to. In contrast to RFC 5322 (which is more restrictive),
-  // the local part may contain any characters other than '@'.
+  // Deprecated: Account identifier for a public session device-local account.
+  // Old code didn't have the |type| field, so it can't handle new types of
+  // device-local accounts gracefully (i.e. ignoring unsupported types). New
+  // code should instead set type to ACCOUNT_TYPE_PUBLIC_SESSION and write the
+  // identifier to the |account_id| field below. If the |type| field is present,
+  // |deprecated_public_session_id| will be ignored.
+  // TODO(mnissler): Rename this field to indicate it's deprecated.
   optional string id = 1;
+
+  // Identifier for the device-local account. This is an opaque identifier that
+  // is used to distinguish different device-local accounts configured. All
+  // configured accounts on a device must have unique identifiers.
+  optional string account_id = 2;
+
+  // Indicates the type of device-local account.
+  enum AccountType {
+    // A login-less, policy-configured browsing session.
+    ACCOUNT_TYPE_PUBLIC_SESSION = 0;
+    // An account that serves as a container for a single full-screen app.
+    ACCOUNT_TYPE_KIOSK_APP = 1;
+  };
+
+  // The account type.
+  optional AccountType type = 3;
+
+  // Kiosk App parameters, relevant if |type| is ACCOUNT_TYPE_KIOSK_APP.
+  optional KioskAppInfoProto kiosk_app = 4;
 }
 
 message DeviceLocalAccountsProto {
@@ -248,6 +281,12 @@ message DeviceLocalAccountsProto {
   // The amount of time, in milliseconds, that should elapse at the signin
   // screen without user interaction before automatically logging in.
   optional int64 auto_login_delay = 3;
+
+  // Whether the keyboard shortcut to prevent zero-delay auto-login should be
+  // enabled or not. If this keyboard shortcut is engaged, the auto-login will
+  // be delayed by 3 minutes so administrators can log in or make configuration
+  // changes.
+  optional bool enable_auto_login_bailout = 4 [default = true];
 }
 
 message AllowRedeemChromeOsRegistrationOffersProto {

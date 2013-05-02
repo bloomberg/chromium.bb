@@ -12,6 +12,8 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -193,8 +195,21 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, LoadCached) {
                                    KioskAppManager::kKioskDictionaryName);
   dict_update->Set(KioskAppManager::kKeyApps, apps_dict.release());
 
-  // Triggers reload prefs.
-  manager()->RemoveApp("dummy");
+  // Make the app appear in device settings.
+  base::ListValue device_local_accounts;
+  scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
+  entry->SetStringWithoutPathExpansion(
+      kAccountsPrefDeviceLocalAccountsKeyId,
+      "app_1_id");
+  entry->SetIntegerWithoutPathExpansion(
+      kAccountsPrefDeviceLocalAccountsKeyType,
+      DEVICE_LOCAL_ACCOUNT_TYPE_KIOSK_APP);
+  entry->SetStringWithoutPathExpansion(
+      kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
+      "app_1");
+  device_local_accounts.Append(entry.release());
+  CrosSettings::Get()->Set(kAccountsPrefDeviceLocalAccounts,
+                           device_local_accounts);
 
   AppDataLoadWaiter waiter(manager());
   waiter.Wait();

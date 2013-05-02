@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/public/browser/notification_observer.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace chromeos {
@@ -18,7 +18,7 @@ namespace chromeos {
 // screen when app mode is enabled and handles "launchKioskApp" request
 // from the apps menu.
 class KioskAppMenuHandler : public content::WebUIMessageHandler,
-                            public content::NotificationObserver {
+                            public KioskAppManagerObserver {
  public:
   KioskAppMenuHandler();
   virtual ~KioskAppMenuHandler();
@@ -38,10 +38,9 @@ class KioskAppMenuHandler : public content::WebUIMessageHandler,
   void HandleLaunchKioskApps(const base::ListValue* args);
   void HandleCheckKioskAppLaunchError(const base::ListValue* args);
 
-  // content::NotificationObserver overrides:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // KioskAppManagerObserver overrides:
+  virtual void OnKioskAppsSettingsChanged() OVERRIDE;
+  virtual void OnKioskAppDataChanged(const std::string& app_id) OVERRIDE;
 
   bool initialized_;
 

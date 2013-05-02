@@ -31,7 +31,9 @@ cr.define('options', function() {
 
       $('kiosk-disable-bailout-confirm-button').onclick = function(e) {
         OptionsPage.closeOverlay();
-        Preferences.setBooleanPref(el.pref, true);
+        Preferences.setBooleanPref(
+            'cros.accounts.deviceLocalAccountAutoLoginBailoutEnabled',
+            false, true);
       };
       $('kiosk-disable-bailout-cancel-button').onclick = this.handleCancel;
     },

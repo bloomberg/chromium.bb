@@ -857,8 +857,8 @@ void UserManagerImpl::EnsureUsersLoaded() {
   for (std::vector<std::string>::const_iterator it = regular_users.begin();
        it != regular_users.end(); ++it) {
     User* user = NULL;
-    if (gaia::ExtractDomainName(*it) ==
-            UserManager::kLocallyManagedUserDomain) {
+    const std::string domain = gaia::ExtractDomainName(*it);
+    if (domain == UserManager::kLocallyManagedUserDomain) {
       user = User::CreateLocallyManagedUser(*it);
     } else {
       user = User::CreateRegularUser(*it);
@@ -907,12 +907,12 @@ void UserManagerImpl::RetrieveTrustedDevicePolicies() {
   cros_settings_->GetBoolean(kAccountsPrefEphemeralUsersEnabled,
                              &ephemeral_users_enabled_);
   cros_settings_->GetString(kDeviceOwner, &owner_email_);
-  const base::ListValue* public_accounts;
-  cros_settings_->GetList(kAccountsPrefDeviceLocalAccounts, &public_accounts);
+  base::ListValue public_accounts;
+  ReadPublicAccounts(&public_accounts);
 
   EnsureUsersLoaded();
 
-  bool changed = UpdateAndCleanUpPublicAccounts(*public_accounts);
+  bool changed = UpdateAndCleanUpPublicAccounts(public_accounts);
 
   // If ephemeral users are enabled and we are on the login screen, take this
   // opportunity to clean up by removing all regular users except the owner.
@@ -1455,6 +1455,38 @@ void UserManagerImpl::UpdateLoginState() {
     login_user_type = LoginState::LOGGED_IN_USER_REGULAR;
 
   LoginState::Get()->SetLoggedInState(logged_in_state, login_user_type);
+}
+
+void UserManagerImpl::ReadPublicAccounts(base::ListValue* public_accounts) {
+  const base::ListValue* accounts = NULL;
+  if (cros_settings_->GetList(kAccountsPrefDeviceLocalAccounts, &accounts)) {
+    for (base::ListValue::const_iterator entry(accounts->begin());
+         entry != accounts->end(); ++entry) {
+      const base::DictionaryValue* entry_dict = NULL;
+      if (!(*entry)->GetAsDictionary(&entry_dict)) {
+        NOTREACHED();
+        continue;
+      }
+
+      int type = DEVICE_LOCAL_ACCOUNT_TYPE_PUBLIC_SESSION;
+      entry_dict->GetIntegerWithoutPathExpansion(
+          kAccountsPrefDeviceLocalAccountsKeyType, &type);
+      switch (type) {
+        case DEVICE_LOCAL_ACCOUNT_TYPE_PUBLIC_SESSION: {
+          std::string id;
+          if (entry_dict->GetStringWithoutPathExpansion(
+                  kAccountsPrefDeviceLocalAccountsKeyId, &id)) {
+            public_accounts->AppendString(id);
+          }
+          break;
+        }
+        case DEVICE_LOCAL_ACCOUNT_TYPE_KIOSK_APP:
+          // TODO(mnissler, nkostylev, bartfab): Process Kiosk Apps within the
+          // standard login framework: http://crbug.com/234694
+          break;
+      }
+    }
+  }
 }
 
 }  // namespace chromeos

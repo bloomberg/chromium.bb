@@ -132,6 +132,7 @@ class KioskAppManager : public content::NotificationObserver,
   virtual void OnKioskAppDataLoadFailure(const std::string& app_id) OVERRIDE;
 
   ScopedVector<KioskAppData> apps_;
+  std::string auto_launch_app_id_;
   ObserverList<KioskAppManagerObserver, true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskAppManager);

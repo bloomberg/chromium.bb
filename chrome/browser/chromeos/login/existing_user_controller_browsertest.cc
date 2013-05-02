@@ -55,7 +55,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
@@ -63,6 +62,7 @@ using ::testing::Return;
 using ::testing::ReturnNull;
 using ::testing::Sequence;
 using ::testing::WithArg;
+using ::testing::_;
 
 namespace em = enterprise_management;
 
@@ -469,8 +469,11 @@ class ExistingUserControllerPublicSessionTest
 
     // Setup the device policy.
     em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
-    proto.mutable_device_local_accounts()->add_account()->set_id(
-        kAutoLoginUsername);
+    em::DeviceLocalAccountInfoProto* account =
+        proto.mutable_device_local_accounts()->add_account();
+    account->set_account_id(kAutoLoginUsername);
+    account->set_type(
+        em::DeviceLocalAccountInfoProto::ACCOUNT_TYPE_PUBLIC_SESSION);
     RefreshDevicePolicy();
 
     // Setup the device local account policy.

@@ -263,4 +263,27 @@ TEST_F(DeviceSettingsProviderTest, StatsReportingMigration) {
   EXPECT_FALSE(bool_value);
 }
 
+TEST_F(DeviceSettingsProviderTest, LegacyDeviceLocalAccounts) {
+  EXPECT_CALL(*this, SettingChanged(_)).Times(AnyNumber());
+  em::DeviceLocalAccountInfoProto* account =
+      device_policy_.payload().mutable_device_local_accounts()->add_account();
+  account->set_id(policy::PolicyBuilder::kFakeUsername);
+  device_policy_.Build();
+  device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+  ReloadDeviceSettings();
+  Mock::VerifyAndClearExpectations(this);
+
+  // On load, the deprecated spec should have been converted to the new format.
+  base::ListValue expected_accounts;
+  scoped_ptr<base::DictionaryValue> entry_dict(new base::DictionaryValue());
+  entry_dict->SetString(kAccountsPrefDeviceLocalAccountsKeyId,
+                        policy::PolicyBuilder::kFakeUsername);
+  entry_dict->SetInteger(kAccountsPrefDeviceLocalAccountsKeyType,
+                         DEVICE_LOCAL_ACCOUNT_TYPE_PUBLIC_SESSION);
+  expected_accounts.Append(entry_dict.release());
+  const base::Value* actual_accounts =
+      provider_->Get(kAccountsPrefDeviceLocalAccounts);
+  EXPECT_TRUE(base::Value::Equals(&expected_accounts, actual_accounts));
+}
+
 } // namespace chromeos

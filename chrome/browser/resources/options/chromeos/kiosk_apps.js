@@ -40,9 +40,11 @@ cr.define('options', function() {
       $('kiosk-app-id-edit').addEventListener('keypress',
           this.handleAppIdInputKeyPressed_);
 
-      Preferences.getInstance().addEventListener('cros.kiosk.apps',
+      Preferences.getInstance().addEventListener(
+          'cros.accounts.deviceLocalAccounts',
           this.loadAppsIfVisible_.bind(this));
-      Preferences.getInstance().addEventListener('cros.kiosk.auto_launch',
+      Preferences.getInstance().addEventListener(
+          'cros.accounts.deviceLocalAccountAutoLoginId',
           this.loadAppsIfVisible_.bind(this));
     },
 

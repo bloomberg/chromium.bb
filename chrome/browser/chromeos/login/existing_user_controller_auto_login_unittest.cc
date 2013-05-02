@@ -7,6 +7,8 @@
 #include "chrome/browser/chromeos/login/mock_login_display.h"
 #include "chrome/browser/chromeos/login/mock_login_display_host.h"
 #include "chrome/browser/chromeos/login/mock_login_utils.h"
+#include "chrome/browser/chromeos/login/mock_user_manager.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
@@ -16,7 +18,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::AnyNumber;
 using testing::Return;
+using testing::ReturnNull;
 using testing::_;
 
 namespace chromeos {
@@ -37,7 +41,9 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
   ExistingUserControllerAutoLoginTest()
       : message_loop_(MessageLoop::TYPE_UI),
         ui_thread_(content::BrowserThread::UI, &message_loop_),
-        local_state_(TestingBrowserProcess::GetGlobal()) {
+        local_state_(TestingBrowserProcess::GetGlobal()),
+        mock_user_manager_(new MockUserManager()),
+        scoped_user_manager_(mock_user_manager_) {
   }
 
   virtual void SetUp() {
@@ -49,6 +55,15 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
     EXPECT_CALL(*mock_login_display_host_.get(), CreateLoginDisplay(_))
         .Times(1)
         .WillOnce(Return(mock_login_display_));
+
+    EXPECT_CALL(*mock_login_utils_, DelegateDeleted(_)).Times(AnyNumber());
+
+    EXPECT_CALL(*mock_user_manager_, Shutdown()).Times(AnyNumber());
+    EXPECT_CALL(*mock_user_manager_, FindUser(_))
+        .WillRepeatedly(ReturnNull());
+    EXPECT_CALL(*mock_user_manager_, FindUser(kAutoLoginUsername))
+        .WillRepeatedly(Return(
+            mock_user_manager_->CreatePublicAccountUser(kAutoLoginUsername)));
 
     existing_user_controller_.reset(
         new ExistingUserController(mock_login_display_host_.get()));
@@ -125,6 +140,8 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
   // Required by ExistingUserController:
   ScopedDeviceSettingsTestHelper device_settings_test_helper_;
   ScopedTestCrosSettings test_cros_settings_;
+  MockUserManager* mock_user_manager_;
+  ScopedUserManagerEnabler scoped_user_manager_;
 
   // |existing_user_controller_| must be destroyed before
   // |device_settings_test_helper_|.

@@ -12,7 +12,6 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/settings/device_settings_provider.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/settings/kiosk_app_local_settings.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/chromeos/settings/system_settings_provider.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -173,6 +172,16 @@ bool CrosSettings::GetList(const std::string& path,
   return false;
 }
 
+bool CrosSettings::GetDictionary(
+    const std::string& path,
+    const base::DictionaryValue** out_value) const {
+  DCHECK(CalledOnValidThread());
+  const base::Value* value = GetPref(path);
+  if (value)
+    return value->GetAsDictionary(out_value);
+  return false;
+}
+
 bool CrosSettings::FindEmailInList(const std::string& path,
                                    const std::string& email) const {
   DCHECK(CalledOnValidThread());
@@ -303,8 +312,6 @@ CrosSettings::CrosSettings() {
   }
   // System settings are not mocked currently.
   AddSettingsProvider(new SystemSettingsProvider(notify_cb));
-  // Kiosk app settings are not mocked.
-  AddSettingsProvider(new KioskAppLocalSettings(notify_cb));
 }
 
 CrosSettings::~CrosSettings() {

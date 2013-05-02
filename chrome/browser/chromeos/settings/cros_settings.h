@@ -17,6 +17,7 @@
 #include "content/public/browser/notification_observer.h"
 
 namespace base {
+class DictionaryValue;
 class ListValue;
 class Value;
 }
@@ -73,6 +74,8 @@ class CrosSettings : public base::NonThreadSafe {
   bool GetString(const std::string& path, std::string* out_value) const;
   bool GetList(const std::string& path,
                const base::ListValue** out_value) const;
+  bool GetDictionary(const std::string& path,
+                     const base::DictionaryValue** out_value) const;
 
   // Helper function for the whitelist op. Implemented here because we will need
   // this in a few places. The functions searches for |email| in the pref |path|

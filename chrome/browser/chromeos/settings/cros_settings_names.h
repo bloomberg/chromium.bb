@@ -15,8 +15,22 @@ extern const char kAccountsPrefShowUserNamesOnSignIn[];
 extern const char kAccountsPrefUsers[];
 extern const char kAccountsPrefEphemeralUsersEnabled[];
 extern const char kAccountsPrefDeviceLocalAccounts[];
+extern const char kAccountsPrefDeviceLocalAccountsKeyId[];
+extern const char kAccountsPrefDeviceLocalAccountsKeyType[];
+extern const char kAccountsPrefDeviceLocalAccountsKeyKioskAppId[];
+extern const char kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL[];
 extern const char kAccountsPrefDeviceLocalAccountAutoLoginId[];
 extern const char kAccountsPrefDeviceLocalAccountAutoLoginDelay[];
+extern const char kAccountsPrefDeviceLocalAccountAutoLoginBailoutEnabled[];
+
+// This must match DeviceLocalAccountInfoProto.AccountType in
+// chrome_device_policy.proto.
+enum DeviceLocalAccountType {
+  // A login-less, policy-configured browsing session.
+  DEVICE_LOCAL_ACCOUNT_TYPE_PUBLIC_SESSION,
+  // An account that serves as a container for a single full-screen app.
+  DEVICE_LOCAL_ACCOUNT_TYPE_KIOSK_APP,
+};
 
 extern const char kSettingProxyEverywhere[];
 
@@ -38,6 +52,8 @@ extern const char kReportDeviceBootMode[];
 extern const char kReportDeviceLocation[];
 
 extern const char kAppPack[];
+extern const char kAppPackKeyExtensionId[];
+extern const char kAppPackKeyUpdateUrl[];
 
 extern const char kScreenSaverExtensionId[];
 extern const char kScreenSaverTimeout[];
