@@ -96,7 +96,7 @@ void CrossfadeGeneratedImage::draw(GraphicsContext* context, const FloatRect& ds
 
 void CrossfadeGeneratedImage::drawPattern(GraphicsContext* context, const FloatRect& srcRect, const AffineTransform& patternTransform, const FloatPoint& phase, ColorSpace styleColorSpace, CompositeOperator compositeOp, const FloatRect& dstRect, BlendMode)
 {
-    OwnPtr<ImageBuffer> imageBuffer = ImageBuffer::create(m_size, 1, ColorSpaceDeviceRGB, context->isAcceleratedContext() ? Accelerated : Unaccelerated);
+    OwnPtr<ImageBuffer> imageBuffer = ImageBuffer::create(m_size, 1, ColorSpaceDeviceRGB, context->isAccelerated() ? Accelerated : Unaccelerated);
     if (!imageBuffer)
         return;
 

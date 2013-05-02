@@ -85,14 +85,6 @@ public:
 
     SkDevice* createCompatibleDevice(const IntSize&, bool hasAlpha);
 
-    // If false we're rendering to a GraphicsContext for a web page, if true
-    // we're not (as is the case when rendering to a canvas object).
-    // If this is true the contents have not been marked up with the magic
-    // color and all text drawing needs to go to a layer so that the alpha is
-    // correctly updated.
-    void setDrawingToImageBuffer(bool);
-    bool isDrawingToImageBuffer() const;
-
     void save();
     void restore();
 
@@ -164,20 +156,11 @@ public:
     // FIXME: This should be pushed down to GraphicsContext.
     void drawRect(SkRect rect);
 
-    // Returns if the context is a printing context instead of a display
-    // context. Bitmap shouldn't be resampled when printing to keep the best
-    // possible quality.
-    bool printing() const { return m_printing; }
-    void setPrinting(bool p) { m_printing = p; }
-
     // Returns if the context allows rendering of fonts using native platform
     // APIs. If false is returned font rendering is performed using the skia
     // text drawing APIs.
     // if USE(SKIA_TEXT) is enabled, this always returns false
     bool isNativeFontRenderingAllowed();
-
-    bool isAccelerated() const { return m_accelerated; }
-    void setAccelerated(bool accelerated) { m_accelerated = accelerated; }
 
     void setTrackOpaqueRegion(bool track) { m_trackOpaqueRegion = track; }
 
@@ -276,11 +259,6 @@ private:
     // Tracks the region painted opaque via the GraphicsContext.
     OpaqueRegionSkia m_opaqueRegion;
     bool m_trackOpaqueRegion;
-
-    bool m_printing;
-    bool m_accelerated;
-    bool m_drawingToImageBuffer;
-
 };
 
 inline void PlatformContextSkia::realizeSave(SkCanvas::SaveFlags flags)

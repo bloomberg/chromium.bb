@@ -59,6 +59,9 @@ GraphicsContext::GraphicsContext(SkCanvas* canvas)
     : m_transparencyCount(0)
     , m_useHighResMarker(false)
     , m_updatingControlTints(false)
+    , m_accelerated(false)
+    , m_isCertainlyOpaque(true)
+    , m_printing(false)
 {
     if (canvas) {
         m_data = adoptPtr(new PlatformContextSkia(canvas));
@@ -79,11 +82,6 @@ PlatformGraphicsContext* GraphicsContext::platformContext() const
 {
     ASSERT(!paintingDisabled());
     return m_data.get();
-}
-
-bool GraphicsContext::isAcceleratedContext() const
-{
-    return platformContext()->isAccelerated();
 }
 
 void GraphicsContext::save()
@@ -1562,7 +1560,7 @@ bool GraphicsContext::isCompatibleWithBuffer(ImageBuffer* buffer) const
 {
     GraphicsContext* bufferContext = buffer->context();
 
-    return scalesMatch(getCTM(), bufferContext->getCTM()) && isAcceleratedContext() == bufferContext->isAcceleratedContext();
+    return scalesMatch(getCTM(), bufferContext->getCTM()) && m_accelerated == bufferContext->isAccelerated();
 }
 
 void GraphicsContext::applyDeviceScaleFactor(float deviceScaleFactor)

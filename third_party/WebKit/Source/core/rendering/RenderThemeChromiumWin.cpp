@@ -103,7 +103,7 @@ private:
 
     static TransparencyWin::LayerMode getLayerMode(GraphicsContext* context, TransparencyWin::TransformMode transformMode)
     {
-        if (context->platformContext()->isDrawingToImageBuffer()) // Might have transparent background.
+        if (!context->isCertainlyOpaque()) // Might have transparent background.
             return TransparencyWin::WhiteLayer;
         if (context->platformContext()->canvas()->isDrawingToLayer()) // Needs antialiasing help.
             return TransparencyWin::OpaqueCompositeLayer;

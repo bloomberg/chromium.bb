@@ -54,7 +54,7 @@ void OpaqueRectTrackingContentLayerDelegate::paintContents(SkCanvas* canvas, con
     GraphicsContext context(canvas);
     PlatformContextSkia* platformContext = context.platformContext();
     platformContext->setTrackOpaqueRegion(!m_opaque);
-    platformContext->setDrawingToImageBuffer(!m_opaque);
+    context.setCertainlyOpaque(m_opaque);
     context.setShouldSmoothFonts(canPaintLCDText && m_opaque);
 
     // Record transform prior to painting, as all opaque tracking will be

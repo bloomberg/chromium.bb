@@ -68,9 +68,6 @@ PlatformContextSkia::PlatformContextSkia(SkCanvas* canvas)
     : m_canvas(canvas)
     , m_deferredSaveFlags(0)
     , m_trackOpaqueRegion(false)
-    , m_printing(false)
-    , m_accelerated(false)
-    , m_drawingToImageBuffer(false)
 {
     m_stateStack.append(PlatformContextSkiaState());
     m_state = &m_stateStack.last();
@@ -88,19 +85,9 @@ void PlatformContextSkia::setCanvas(SkCanvas* canvas)
     m_canvas = canvas;
 }
 
-void PlatformContextSkia::setDrawingToImageBuffer(bool value)
-{
-    m_drawingToImageBuffer = value;
-}
-
 SkDevice* PlatformContextSkia::createCompatibleDevice(const IntSize& size, bool hasAlpha)
 {
     return m_canvas->createCompatibleDevice(SkBitmap::kARGB_8888_Config, size.width(), size.height(), !hasAlpha);
-}
-
-bool PlatformContextSkia::isDrawingToImageBuffer() const
-{
-    return m_drawingToImageBuffer;
 }
 
 void PlatformContextSkia::save()

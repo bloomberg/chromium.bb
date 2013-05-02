@@ -166,7 +166,7 @@ ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, ColorSpace,
     m_data.m_canvas = canvas.release();
     m_context = adoptPtr(new GraphicsContext(m_data.m_canvas.get()));
     m_context->setShouldSmoothFonts(opacityMode == Opaque);
-    m_context->platformContext()->setAccelerated(renderingMode == Accelerated);
+    m_context->setAccelerated(renderingMode == Accelerated);
     m_context->scale(FloatSize(m_resolutionScale, m_resolutionScale));
 
     // Clear the background transparent or opaque, as required. It would be nice if this wasn't
@@ -277,7 +277,7 @@ void ImageBuffer::drawPattern(GraphicsContext* context, const FloatRect& srcRect
 void ImageBuffer::platformTransformColorSpace(const Vector<int>& lookUpTable)
 {
     // FIXME: Disable color space conversions on accelerated canvases (for now).
-    if (context()->platformContext()->isAccelerated())
+    if (context()->isAccelerated())
         return;
 
     const SkBitmap& bitmap = *context()->platformContext()->bitmap();

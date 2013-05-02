@@ -203,9 +203,23 @@ namespace WebCore {
         // Any deviceScaleFactor higher than 1.5 is enough to justify setting this flag.
         void setUseHighResMarkers(bool isHighRes) { m_useHighResMarker = isHighRes; }
 
+        // If true we are (most likely) rendering to a web page and the
+        // canvas has been prepared with an opaque background. If false,
+        // the canvas may havbe transparency (as is the case when rendering
+        // to a canvas object).
+        void setCertainlyOpaque(bool isOpaque) { m_isCertainlyOpaque = isOpaque; }
+        bool isCertainlyOpaque() const { return m_isCertainlyOpaque; }
+
+        // Returns if the context is a printing context instead of a display
+        // context. Bitmap shouldn't be resampled when printing to keep the best
+        // possible quality.
+        bool printing() const { return m_printing; }
+        void setPrinting(bool printing) { m_printing = printing; }
+
         const GraphicsContextState& state() const;
 
-        bool isAcceleratedContext() const;
+        bool isAccelerated() const { return m_accelerated; }
+        void setAccelerated(bool accelerated) { m_accelerated = accelerated; }
 
         void save();
         void restore();
@@ -398,9 +412,11 @@ namespace WebCore {
 
         // Are we on a high DPI display? If so, spelling and grammer markers are larger.
         bool m_useHighResMarker;
-
         // FIXME: Make this go away: crbug.com/236892
         bool m_updatingControlTints;
+        bool m_accelerated;
+        bool m_isCertainlyOpaque;
+        bool m_printing;
     };
 
     class GraphicsContextStateSaver {

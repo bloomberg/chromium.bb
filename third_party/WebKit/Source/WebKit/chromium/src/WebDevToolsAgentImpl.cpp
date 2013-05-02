@@ -58,7 +58,6 @@
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
 #include "core/rendering/RenderView.h"
-#include "painting/GraphicsContextBuilder.h"
 #include <public/Platform.h>
 #include <public/WebRect.h>
 #include <public/WebString.h>
@@ -617,9 +616,8 @@ void WebDevToolsAgentImpl::paintPageOverlay(WebCanvas* canvas)
 {
     InspectorController* ic = inspectorController();
     if (ic) {
-        GraphicsContextBuilder builder(canvas);
-        GraphicsContext& context = builder.context();
-        context.platformContext()->setDrawingToImageBuffer(true);
+        GraphicsContext context(canvas);
+        context.setCertainlyOpaque(false);
         ic->drawHighlight(context);
     }
 }

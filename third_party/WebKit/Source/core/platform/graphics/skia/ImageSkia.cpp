@@ -352,9 +352,10 @@ static bool hasNon90rotation(PlatformContextSkia* context)
     return !context->getTotalMatrix().rectStaysRect();
 }
 
-static void paintSkBitmap(PlatformContextSkia* platformContext, const NativeImageSkia& bitmap, const SkRect& srcRect, const SkRect& destRect, const SkXfermode::Mode& compOp)
+static void paintSkBitmap(GraphicsContext* graphicsContext, const NativeImageSkia& bitmap, const SkRect& srcRect, const SkRect& destRect, const SkXfermode::Mode& compOp)
 {
     TRACE_EVENT0("skia", "paintSkBitmap");
+    PlatformContextSkia* platformContext = graphicsContext->platformContext();
     SkPaint paint;
     paint.setXfermodeMode(compOp);
     paint.setAlpha(platformContext->getNormalizedAlpha());
@@ -363,9 +364,9 @@ static void paintSkBitmap(PlatformContextSkia* platformContext, const NativeImag
     paint.setAntiAlias(hasNon90rotation(platformContext));
 
     ResamplingMode resampling;
-    if (platformContext->isAccelerated())
+    if (graphicsContext->isAccelerated())
         resampling = RESAMPLE_LINEAR;
-    else if (platformContext->printing())
+    else if (graphicsContext->printing())
         resampling = RESAMPLE_NONE;
     else {
         // Take into account scale applied to the canvas when computing sampling mode (e.g. CSS scale or page scale).
@@ -483,7 +484,7 @@ void Image::drawPattern(GraphicsContext* context,
 
     // Compute the resampling mode.
     ResamplingMode resampling;
-    if (context->platformContext()->isAccelerated() || context->platformContext()->printing())
+    if (context->isAccelerated() || context->printing())
         resampling = RESAMPLE_LINEAR;
     else
         resampling = computeResamplingMode(totalMatrix, *bitmap, normSrcRect.width(), normSrcRect.height(), destBitmapWidth, destBitmapHeight);
@@ -648,11 +649,7 @@ void BitmapImage::draw(GraphicsContext* ctxt, const FloatRect& dstRect, const Fl
         }
     }
 
-    paintSkBitmap(ctxt->platformContext(),
-        *bm,
-        normSrcRect,
-        normDstRect,
-        WebCoreCompositeToSkiaComposite(compositeOp));
+    paintSkBitmap(ctxt, *bm, normSrcRect, normDstRect, WebCoreCompositeToSkiaComposite(compositeOp));
 
     if (ImageObserver* observer = imageObserver())
         observer->didDraw(this);

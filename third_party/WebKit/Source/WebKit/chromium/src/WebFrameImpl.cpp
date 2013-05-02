@@ -1452,7 +1452,7 @@ float WebFrameImpl::printPage(int page, WebCanvas* canvas)
 
     GraphicsContextBuilder builder(canvas);
     GraphicsContext& graphicsContext = builder.context();
-    graphicsContext.platformContext()->setPrinting(true);
+    graphicsContext.setPrinting(true);
     return m_printContext->spoolPage(graphicsContext, page);
 #else
     return 0;
@@ -2080,7 +2080,7 @@ void WebFrameImpl::printPagesWithBoundaries(WebCanvas* canvas, const WebSize& pa
 
     GraphicsContextBuilder builder(canvas);
     GraphicsContext& graphicsContext = builder.context();
-    graphicsContext.platformContext()->setPrinting(true);
+    graphicsContext.setPrinting(true);
 
     m_printContext->spoolAllPagesWithBoundaries(graphicsContext, FloatSize(pageSizeInPixels.width, pageSizeInPixels.height));
 }
