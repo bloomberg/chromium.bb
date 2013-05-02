@@ -17,9 +17,6 @@
 #include "chrome/browser/chromeos/drive/file_cache_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/google_apis/task_util.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_paths_internal.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -27,8 +24,6 @@ using content::BrowserThread;
 namespace drive {
 namespace {
 
-const base::FilePath::CharType kFileCacheVersionDir[] =
-    FILE_PATH_LITERAL("v1");
 const base::FilePath::CharType kFileCacheMetaDir[] = FILE_PATH_LITERAL("meta");
 const base::FilePath::CharType kFileCacheOutgoingDir[] =
     FILE_PATH_LITERAL("outgoing");
@@ -1191,15 +1186,6 @@ bool FileCache::HasEnoughSpaceFor(int64 num_bytes,
   // Subtract this as if this portion does not exist.
   free_space -= kMinFreeSpace;
   return (free_space >= num_bytes);
-}
-
-// static
-base::FilePath FileCache::GetCacheRootPath(Profile* profile) {
-  base::FilePath cache_base_path;
-  chrome::GetUserCacheDirectory(profile->GetPath(), &cache_base_path);
-  base::FilePath cache_root_path =
-      cache_base_path.Append(chrome::kDriveCacheDirname);
-  return cache_root_path.Append(kFileCacheVersionDir);
 }
 
 // static

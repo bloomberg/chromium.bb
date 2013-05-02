@@ -54,9 +54,9 @@ class StaleCacheFilesRemoverTest : public testing::Test {
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
-    cache_.reset(new FileCache(FileCache::GetCacheRootPath(profile_.get()),
-                                blocking_task_runner_,
-                                fake_free_disk_space_getter_.get()));
+    cache_.reset(new FileCache(util::GetCacheRootPath(profile_.get()),
+                               blocking_task_runner_,
+                               fake_free_disk_space_getter_.get()));
 
     drive_webapps_registry_.reset(new DriveWebAppsRegistry);
 

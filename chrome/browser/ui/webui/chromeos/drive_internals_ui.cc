@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/drive/debug_info_collector.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
-#include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/logging.h"
@@ -559,8 +558,7 @@ void DriveInternalsWebUIHandler::UpdateInFlightOperationsSection(
 void DriveInternalsWebUIHandler::UpdateGCacheContentsSection() {
   // Start updating the GCache contents section.
   Profile* profile = Profile::FromWebUI(web_ui());
-  const base::FilePath root_path =
-      drive::FileCache::GetCacheRootPath(profile);
+  const base::FilePath root_path = drive::util::GetCacheRootPath(profile);
   base::ListValue* gcache_contents = new ListValue;
   base::DictionaryValue* gcache_summary = new DictionaryValue;
   BrowserThread::PostBlockingPoolTaskAndReply(

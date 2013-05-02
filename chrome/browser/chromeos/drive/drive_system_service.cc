@@ -126,7 +126,7 @@ DriveSystemService::DriveSystemService(
   }
   scheduler_.reset(new JobScheduler(profile_, drive_service_.get()));
   cache_.reset(new FileCache(!test_cache_root.empty() ? test_cache_root :
-                             FileCache::GetCacheRootPath(profile),
+                             util::GetCacheRootPath(profile),
                              blocking_task_runner_,
                              NULL /* free_disk_space_getter */));
   webapps_registry_.reset(new DriveWebAppsRegistry);

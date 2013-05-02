@@ -148,6 +148,10 @@ std::string EscapeUtf8FileName(const std::string& input);
 // Extracts resource_id out of edit url.
 std::string ExtractResourceIdFromUrl(const GURL& url);
 
+// Gets the cache root path (i.e. <user_profile_dir>/GCache/v1) from the
+// profile.
+base::FilePath GetCacheRootPath(Profile* profile);
+
 // Extracts resource_id, md5, and extra_extension from cache path.
 // Case 1: Pinned and outgoing symlinks only have resource_id.
 // Example: path="/user/GCache/v1/pinned/pdf:a1b2" =>

@@ -19,6 +19,9 @@
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_write_helper.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
@@ -40,6 +43,9 @@ const char kDriveMyDriveMountPointPath[] = "/special/drive/root";
 const base::FilePath::CharType* kDriveMountPointPathComponents[] = {
   "/", "special", "drive"
 };
+
+const base::FilePath::CharType kFileCacheVersionDir[] =
+    FILE_PATH_LITERAL("v1");
 
 const char kSlash[] = "/";
 const char kEscapedSlash[] = "\xE2\x88\x95";
@@ -210,6 +216,14 @@ base::FilePath ExtractDrivePathFromFileSystemUrl(
   if (!url.is_valid() || url.type() != fileapi::kFileSystemTypeDrive)
     return base::FilePath();
   return ExtractDrivePath(url.path());
+}
+
+base::FilePath GetCacheRootPath(Profile* profile) {
+  base::FilePath cache_base_path;
+  chrome::GetUserCacheDirectory(profile->GetPath(), &cache_base_path);
+  base::FilePath cache_root_path =
+      cache_base_path.Append(chrome::kDriveCacheDirname);
+  return cache_root_path.Append(kFileCacheVersionDir);
 }
 
 std::string EscapeCacheFileName(const std::string& filename) {

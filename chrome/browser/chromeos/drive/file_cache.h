@@ -244,11 +244,6 @@ class FileCache {
   // runner to safely delete the object.
   void Destroy();
 
-  // Gets the cache root path (i.e. <user_profile_dir>/GCache/v1) from the
-  // profile.
-  // TODO(satorux): Write a unit test for this.
-  static base::FilePath GetCacheRootPath(Profile* profile);
-
   // Returns file paths for all the cache sub directories under
   // |cache_root_path|.
   static std::vector<base::FilePath> GetCachePaths(

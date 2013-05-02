@@ -8,6 +8,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -178,6 +179,13 @@ TEST(FileSystemUtilTest, ExtractResourceIdFromUrl) {
 
   // The resource ID cannot be extracted, hence empty.
   EXPECT_EQ("", ExtractResourceIdFromUrl(GURL("https://www.example.com/")));
+}
+
+TEST(FileSystemUtilTest, GetCacheRootPath) {
+  TestingProfile profile;
+  base::FilePath profile_path = profile.GetPath();
+  EXPECT_EQ(profile_path.AppendASCII("GCache/v1"),
+            util::GetCacheRootPath(&profile));
 }
 
 TEST(FileSystemUtilTest, ParseCacheFilePath) {
