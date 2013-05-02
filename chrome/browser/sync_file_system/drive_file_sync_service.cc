@@ -48,6 +48,13 @@ namespace {
 const base::FilePath::CharType kTempDirName[] = FILE_PATH_LITERAL("tmp");
 const base::FilePath::CharType kSyncFileSystemDir[] =
     FILE_PATH_LITERAL("Sync FileSystem");
+const base::FilePath::CharType kSyncFileSystemDirDev[] =
+    FILE_PATH_LITERAL("Sync FileSystem Dev");
+
+const base::FilePath::CharType* GetSyncFileSystemDir() {
+  return IsSyncDirectoryOperationEnabled()
+      ? kSyncFileSystemDirDev : kSyncFileSystemDir;
+}
 
 bool CreateTemporaryFile(const base::FilePath& dir_path,
                          webkit_blob::ScopedFile* temp_file) {
@@ -279,14 +286,14 @@ DriveFileSyncService::DriveFileSyncService(Profile* profile)
       conflict_resolution_(kDefaultPolicy),
       weak_factory_(this) {
   temporary_file_dir_ =
-      profile->GetPath().Append(kSyncFileSystemDir).Append(kTempDirName);
+      profile->GetPath().Append(GetSyncFileSystemDir()).Append(kTempDirName);
   token_.reset(new TaskToken(AsWeakPtr()));
 
   sync_client_.reset(new DriveFileSyncClient(profile));
   sync_client_->AddObserver(this);
 
   metadata_store_.reset(new DriveMetadataStore(
-      profile->GetPath().Append(kSyncFileSystemDir),
+      profile->GetPath().Append(GetSyncFileSystemDir()),
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::FILE)));
 
