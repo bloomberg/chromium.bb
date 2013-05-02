@@ -495,7 +495,8 @@ void DriveFileSyncService::ProcessRemoteChange(
 
   const FileSystemURL& url = pending_changes_.begin()->url;
   const GURL& origin = url.origin();
-  const base::FilePath& path = url.path();
+  const base::FilePath::StringType& path =
+      fileapi::VirtualPath::GetNormalizedFilePath(url.path());
   DCHECK(ContainsKey(origin_to_changes_map_, origin));
   PathToChangeMap* path_to_change = &origin_to_changes_map_[origin];
   DCHECK(ContainsKey(*path_to_change, path));
@@ -1903,7 +1904,8 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
   }
 
   PathToChangeMap* path_to_change = &origin_to_changes_map_[origin];
-  PathToChangeMap::iterator found = path_to_change->find(path);
+  PathToChangeMap::iterator found =
+      path_to_change->find(fileapi::VirtualPath::GetNormalizedFilePath(path));
   PendingChangeQueue::iterator overridden_queue_item = pending_changes_.end();
   if (found != path_to_change->end()) {
     if (found->second.changestamp >= changestamp)
@@ -1968,10 +1970,11 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
         pending_changes_.insert(ChangeQueueItem(changestamp, sync_type, url));
     DCHECK(inserted_to_queue.second);
 
-    (*path_to_change)[path] = RemoteChange(
-        changestamp, remote_resource_id, remote_file_md5,
-        updated_time, sync_type, url, file_change,
-        inserted_to_queue.first);
+    (*path_to_change)[fileapi::VirtualPath::GetNormalizedFilePath(path)] =
+        RemoteChange(
+            changestamp, remote_resource_id, remote_file_md5,
+            updated_time, sync_type, url, file_change,
+            inserted_to_queue.first);
   }
 
   DVLOG(3) << "Append remote change: " << path.value()
@@ -1989,7 +1992,8 @@ void DriveFileSyncService::RemoveRemoteChange(
     return;
 
   PathToChangeMap* path_to_change = &found_origin->second;
-  PathToChangeMap::iterator found_change = path_to_change->find(url.path());
+  PathToChangeMap::iterator found_change = path_to_change->find(
+      fileapi::VirtualPath::GetNormalizedFilePath(url.path()));
   if (found_change == path_to_change->end())
     return;
 
@@ -2024,7 +2028,9 @@ bool DriveFileSyncService::GetPendingChangeForFileSystemURL(
   if (found_url == origin_to_changes_map_.end())
     return false;
   const PathToChangeMap& path_to_change = found_url->second;
-  PathToChangeMap::const_iterator found_path = path_to_change.find(url.path());
+  PathToChangeMap::const_iterator found_path =
+      path_to_change.find(fileapi::VirtualPath::GetNormalizedFilePath(
+          url.path()));
   if (found_path == path_to_change.end())
     return false;
   *change = found_path->second;

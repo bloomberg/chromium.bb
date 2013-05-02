@@ -173,7 +173,7 @@ class DriveFileSyncService
 
   // TODO(tzik): Consider using std::pair<base::FilePath, FileType> as the key
   // below to support directories and custom conflict handling.
-  typedef std::map<base::FilePath, RemoteChange> PathToChangeMap;
+  typedef std::map<base::FilePath::StringType, RemoteChange> PathToChangeMap;
   typedef std::map<GURL, PathToChangeMap> OriginToChangesMap;
 
   // Task types; used for task token handling.
