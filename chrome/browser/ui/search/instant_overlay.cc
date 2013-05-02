@@ -41,9 +41,8 @@ InstantOverlay* InstantOverlay::FromWebContents(
 
 InstantOverlay::InstantOverlay(InstantController* controller,
                                const std::string& instant_url)
-    : InstantPage(controller),
+    : InstantPage(controller, instant_url),
       loader_(this),
-      instant_url_(instant_url),
       is_stale_(false),
       is_pointer_down_from_activate_(false) {
 }
@@ -53,7 +52,7 @@ InstantOverlay::~InstantOverlay() {
 
 void InstantOverlay::InitContents(Profile* profile,
                                   const content::WebContents* active_tab) {
-  loader_.Init(GURL(instant_url_), profile, active_tab,
+  loader_.Init(GURL(instant_url()), profile, active_tab,
                base::Bind(&InstantOverlay::HandleStalePage,
                            base::Unretained(this)));
   SetContents(loader_.contents());

@@ -86,7 +86,7 @@ class InstantLoader : public content::NotificationObserver,
 
   // Releases the contents currently held. Must only be called if contents() is
   // not NULL.
-  scoped_ptr<content::WebContents> ReleaseContents() WARN_UNUSED_RESULT;
+  scoped_ptr<content::WebContents> ReleaseContents();
 
  private:
   // Overridden from content::NotificationObserver:

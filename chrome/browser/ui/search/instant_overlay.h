@@ -42,10 +42,7 @@ class InstantOverlay : public InstantPage,
 
   // Releases the overlay WebContents. This should be called when the overlay
   // is committed.
-  scoped_ptr<content::WebContents> ReleaseContents() WARN_UNUSED_RESULT;
-
-  // Returns the URL that we're loading.
-  const std::string& instant_url() const { return instant_url_; }
+  scoped_ptr<content::WebContents> ReleaseContents();
 
   // Returns whether the underlying contents is stale (i.e. was loaded too long
   // ago).
@@ -75,6 +72,7 @@ class InstantOverlay : public InstantPage,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(InstantTest, InstantOverlayRefresh);
+  FRIEND_TEST_ALL_PREFIXES(InstantTest, InstantOverlayRefreshDifferentOrder);
 
   // Helper to access delegate() as an InstantController object.
   InstantController* instant_controller() const {
@@ -103,7 +101,6 @@ class InstantOverlay : public InstantPage,
   void HandleStalePage();
 
   InstantLoader loader_;
-  const std::string instant_url_;
   bool is_stale_;
   bool is_pointer_down_from_activate_;
   history::HistoryAddPageArgs last_navigation_;

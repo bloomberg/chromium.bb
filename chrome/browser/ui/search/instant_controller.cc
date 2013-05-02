@@ -50,24 +50,6 @@ namespace {
 // to avoid the page jumping up/down very fast in response to bounds changes.
 const int kUpdateBoundsDelayMS = 1000;
 
-// The maximum number of times we'll load a non-Instant-supporting search engine
-// before we give up and blacklist it for the rest of the browsing session.
-const int kMaxInstantSupportFailures = 10;
-
-// For reporting events of interest.
-enum InstantControllerEvent {
-  INSTANT_CONTROLLER_EVENT_URL_ADDED_TO_BLACKLIST = 0,
-  INSTANT_CONTROLLER_EVENT_URL_REMOVED_FROM_BLACKLIST = 1,
-  INSTANT_CONTROLLER_EVENT_URL_BLOCKED_BY_BLACKLIST = 2,
-  INSTANT_CONTROLLER_EVENT_MAX = 3,
-};
-
-void RecordEventHistogram(InstantControllerEvent event) {
-  UMA_HISTOGRAM_ENUMERATION("Instant.InstantControllerEvent",
-                            event,
-                            INSTANT_CONTROLLER_EVENT_MAX);
-}
-
 // For reporting Instant extended navigations.
 enum InstantNavigation {
   INSTANT_NAVIGATION_LOCAL_CLICK = 0,
@@ -241,6 +223,14 @@ bool GetURLForMostVisitedItemID(Profile* profile,
   return true;
 }
 
+template <typename T>
+void DeletePageSoon(scoped_ptr<T> page) {
+  if (page->contents())
+    page->ReleaseContents();
+
+  MessageLoop::current()->DeleteSoon(FROM_HERE, page.release());
+}
+
 }  // namespace
 
 InstantController::InstantController(BrowserInstantController* browser,
@@ -347,10 +337,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
     return false;
   }
 
-  // If we have an |instant_tab_| use it, else ensure we have an overlay that is
-  // current or is using the local overlay.
-  if (!instant_tab_ && !(overlay_ && overlay_->IsLocal()) &&
-      !EnsureOverlayIsCurrent(false)) {
+  if (!SetUpInstantPageForUpdate()) {
     HideOverlay();
     return false;
   }
@@ -479,28 +466,11 @@ bool InstantController::Update(const AutocompleteMatch& match,
     search_mode_.mode = SearchMode::MODE_SEARCH_SUGGESTIONS;
 
   if (instant_tab_) {
-    // If we have an |instant_tab_| but it doesn't support Instant yet, sever
-    // the connection to it so we use the overlay instead. This ensures that the
-    // user interaction will be responsive and handles cases where
-    // |instant_tab_| never responds about whether it supports Instant.
-    if (instant_tab_->supports_instant())
-      instant_tab_->Update(user_text, selection_start, selection_end, verbatim);
-    else
-      instant_tab_.reset();
-  }
-
-  if (!instant_tab_) {
+    instant_tab_->Update(user_text, selection_start, selection_end, verbatim);
+  } else {
     if (first_interaction_time_.is_null())
       first_interaction_time_ = base::Time::Now();
     allow_overlay_to_show_search_suggestions_ = true;
-
-    // For extended mode, if the loader is not ready at this point, switch over
-    // to a backup loader.
-    if (extended_enabled_ && !overlay_->supports_instant() &&
-        !overlay_->IsLocal() && browser_->GetActiveWebContents()) {
-      CreateOverlay(chrome::GetLocalInstantURL(browser_->profile()).spec(),
-                    browser_->GetActiveWebContents());
-    }
 
     overlay_->Update(extended_enabled_ ? user_text : full_text,
                      selection_start, selection_end, verbatim);
@@ -525,21 +495,15 @@ scoped_ptr<content::WebContents> InstantController::ReleaseNTPContents() {
 
   LOG_INSTANT_DEBUG_EVENT(this, "ReleaseNTPContents");
 
-  // TODO(jeremycho): Add tests for this logic.
   if (ShouldSwitchToLocalNTP())
-    ResetNTP(false, true);
+    ResetNTP(GetLocalInstantURL());
 
   scoped_ptr<content::WebContents> ntp_contents = ntp_->ReleaseContents();
 
   if (!use_local_page_only_) {
     // Preload a new Instant NTP, unless using the local NTP which is not
     // preloaded to conserve memory.
-    //
-    // Since this corresponds to a user action, give the remote page another
-    // try, even if it's blacklisted. We don't want to blacklist pages for the
-    // duration of a Browser object (for some people, that's effectively
-    // "forever").
-    ResetNTP(true, false);
+    ResetNTP(GetInstantURL());
   } else {
     ntp_.reset();
   }
@@ -646,7 +610,7 @@ void InstantController::OnDefaultSearchProviderChanged() {
   if (ntp_ && extended_enabled_) {
     ntp_.reset();
     if (!use_local_page_only_)
-      ResetNTP(false, false);
+      ResetNTP(GetInstantURL());
   }
 
   // Do not reload the overlay if it's actually the local overlay.
@@ -655,7 +619,7 @@ void InstantController::OnDefaultSearchProviderChanged() {
     if (extended_enabled_ || instant_enabled_) {
       // Try to create another overlay immediately so that it is ready for the
       // next user interaction.
-      EnsureOverlayIsCurrent(false);
+      ResetOverlay(GetInstantURL());
     }
   }
 }
@@ -854,11 +818,11 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
   model_.SetOverlayState(SearchMode(), 0, INSTANT_SIZE_PERCENT);
 
   // Delay deletion as we could've gotten here from an InstantOverlay method.
-  MessageLoop::current()->DeleteSoon(FROM_HERE, overlay_.release());
+  DeletePageSoon(overlay_.Pass());
 
   // Try to create another overlay immediately so that it is ready for the next
   // user interaction.
-  EnsureOverlayIsCurrent(false);
+  ResetOverlay(GetInstantURL());
 
   LOG_INSTANT_DEBUG_EVENT(this, "Committed");
   return true;
@@ -895,14 +859,16 @@ void InstantController::OmniboxFocusChanged(
       instant_tab_->KeyCaptureChanged(is_key_capture_enabled);
   }
 
-  // If focus went from outside the omnibox to the omnibox, preload the default
-  // search engine, in anticipation of the user typing a query. If the reverse
-  // happened, commit or discard the overlay.
-  if (state != OMNIBOX_FOCUS_NONE && old_focus_state == OMNIBOX_FOCUS_NONE) {
-    // On explicit user actions, ignore the Instant blacklist.
-    EnsureOverlayIsCurrent(reason == OMNIBOX_FOCUS_CHANGE_EXPLICIT);
+  if (state == OMNIBOX_FOCUS_VISIBLE && old_focus_state == OMNIBOX_FOCUS_NONE) {
+    // If the user explicitly focused the omnibox, then create the overlay if
+    // it doesn't exist. If we're using a fallback overlay, try loading the
+    // remote overlay again.
+    if (!overlay_ || (overlay_->IsLocal() && !use_local_page_only_))
+      ResetOverlay(GetInstantURL());
   } else if (state == OMNIBOX_FOCUS_NONE &&
              old_focus_state != OMNIBOX_FOCUS_NONE) {
+    // If the focus went from the omnibox to outside the omnibox, commit or
+    // discard the overlay.
     OmniboxLostFocus(view_gaining_focus);
   }
 }
@@ -960,19 +926,18 @@ void InstantController::SetInstantEnabled(bool instant_enabled,
 
   instant_enabled_ = instant_enabled;
   use_local_page_only_ = use_local_page_only;
+
+  // Preload the overlay.
   HideInternal();
   overlay_.reset();
   if (extended_enabled_ || instant_enabled_)
-    EnsureOverlayIsCurrent(false);
-  if (extended_enabled_) {
-    // Preload the Instant NTP. But if we are using the local NTP, delete any
-    // existing preloaded NTP (which we should no longer use) and don't preload
-    // the local one to conserve memory.
-    if (use_local_page_only_)
-      ntp_.reset();
-    else
-      ResetNTP(false, false);
-  }
+    ResetOverlay(GetInstantURL());
+
+  // Preload the Instant NTP unless using the local NTP, to conserve memory.
+  ntp_.reset();
+  if (extended_enabled_ && !use_local_page_only)
+    ResetNTP(GetInstantURL());
+
   if (instant_tab_)
     instant_tab_->SetDisplayInstantResults(instant_enabled_);
 }
@@ -1004,18 +969,14 @@ void InstantController::FocusedOverlayContents() {
 
 void InstantController::ReloadOverlayIfStale() {
   // The local overlay is never stale.
-  if (overlay_ && overlay_->IsLocal())
+  if (overlay_ && (overlay_->IsLocal() || !overlay_->is_stale()))
     return;
 
-  // If the overlay is showing or the omnibox has focus, don't delete the
+  // If the overlay is showing or the omnibox has focus, don't refresh the
   // overlay. It will get refreshed the next time the overlay is hidden or the
   // omnibox loses focus.
-  if ((!overlay_ || overlay_->is_stale()) &&
-      omnibox_focus_state_ == OMNIBOX_FOCUS_NONE &&
-      model_.mode().is_default()) {
-    overlay_.reset();
-    EnsureOverlayIsCurrent(false);
-  }
+  if (omnibox_focus_state_ == OMNIBOX_FOCUS_NONE && model_.mode().is_default())
+    ResetOverlay(GetInstantURL());
 }
 
 void InstantController::OverlayLoadCompletedMainFrame() {
@@ -1078,6 +1039,22 @@ void InstantController::UndoAllMostVisitedDeletions() {
   top_sites->ClearBlacklistedURLs();
 }
 
+Profile* InstantController::profile() const {
+  return browser_->profile();
+}
+
+InstantOverlay* InstantController::overlay() const {
+  return overlay_.get();
+}
+
+InstantTab* InstantController::instant_tab() const {
+  return instant_tab_.get();
+}
+
+InstantNTP* InstantController::ntp() const {
+  return ntp_.get();
+}
+
 void InstantController::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
@@ -1124,10 +1101,8 @@ void InstantController::InstantSupportDetermined(
         content::Source<InstantController>(this),
         content::NotificationService::NoDetails());
   } else if (IsContentsFrom(ntp(), contents)) {
-    if (supports_instant)
-      RemoveFromBlacklist(ntp_->instant_url());
-    else
-      BlacklistAndResetNTP();
+    if (!supports_instant)
+      DeletePageSoon(ntp_.Pass());
 
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_INSTANT_NTP_SUPPORT_DETERMINED,
@@ -1135,10 +1110,10 @@ void InstantController::InstantSupportDetermined(
         content::NotificationService::NoDetails());
 
   } else if (IsContentsFrom(overlay(), contents)) {
-    if (supports_instant)
-      RemoveFromBlacklist(overlay_->instant_url());
-    else
-      BlacklistAndResetOverlay();
+    if (!supports_instant) {
+      HideInternal();
+      DeletePageSoon(overlay_.Pass());
+    }
 
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_INSTANT_OVERLAY_SUPPORT_DETERMINED,
@@ -1149,12 +1124,14 @@ void InstantController::InstantSupportDetermined(
 
 void InstantController::InstantPageRenderViewGone(
     const content::WebContents* contents) {
-  if (IsContentsFrom(overlay(), contents))
-    BlacklistAndResetOverlay();
-  else if (IsContentsFrom(ntp(), contents))
-    BlacklistAndResetNTP();
-  else
+  if (IsContentsFrom(overlay(), contents)) {
+    HideInternal();
+    DeletePageSoon(overlay_.Pass());
+  } else if (IsContentsFrom(ntp(), contents)) {
+    DeletePageSoon(ntp_.Pass());
+  } else {
     NOTREACHED();
+  }
 }
 
 void InstantController::InstantPageAboutToNavigateMainFrame(
@@ -1317,7 +1294,6 @@ void InstantController::OmniboxLostFocus(gfx::NativeView view_gaining_focus) {
   if (model_.mode().is_default()) {
     // If the overlay is not showing at all, recreate it if it's stale.
     ReloadOverlayIfStale();
-    MaybeSwitchToRemoteOverlay();
     return;
   }
 
@@ -1339,56 +1315,127 @@ void InstantController::OmniboxLostFocus(gfx::NativeView view_gaining_focus) {
 #endif
 }
 
-void InstantController::ResetNTP(bool ignore_blacklist, bool use_local_ntp) {
-  std::string instant_url;
-  if (use_local_ntp ||
-      !GetInstantURL(browser_->profile(), ignore_blacklist, &instant_url))
-    instant_url = chrome::GetLocalInstantURL(browser_->profile()).spec();
-  ntp_.reset(new InstantNTP(this, instant_url));
-  ntp_->InitContents(browser_->profile(), browser_->GetActiveWebContents(),
-                     base::Bind(&InstantController::ResetNTP,
-                                base::Unretained(this), false, false));
+std::string InstantController::GetLocalInstantURL() const {
+  return chrome::GetLocalInstantURL(profile()).spec();
 }
 
-bool InstantController::EnsureOverlayIsCurrent(bool ignore_blacklist) {
-  // If there's no active tab, the browser is closing.
-  const content::WebContents* active_tab = browser_->GetActiveWebContents();
-  if (!active_tab)
+std::string InstantController::GetInstantURL() const {
+  if (extended_enabled_ && use_local_page_only_)
+    return GetLocalInstantURL();
+
+  const GURL instant_url = chrome::GetInstantURL(profile(),
+                                                 omnibox_bounds_.x());
+  if (instant_url.is_valid())
+    return instant_url.spec();
+
+  // Only extended mode has a local fallback.
+  return extended_enabled_ ? GetLocalInstantURL() : std::string();
+}
+
+bool InstantController::PageIsCurrent(const InstantPage* page) const {
+
+  const std::string& instant_url = GetInstantURL();
+  if (instant_url.empty() ||
+      !chrome::MatchesOriginAndPath(GURL(page->instant_url()),
+                                    GURL(instant_url)))
     return false;
 
-  Profile* profile = Profile::FromBrowserContext(
-      active_tab->GetBrowserContext());
-  std::string instant_url;
-  if (!GetInstantURL(profile, ignore_blacklist, &instant_url)) {
-    // If we are in extended mode, fallback to the local overlay.
-    if (extended_enabled_)
-      instant_url = chrome::GetLocalInstantURL(browser_->profile()).spec();
-    else
-      return false;
-  }
-
-  if (!overlay_ || overlay_->instant_url() != instant_url)
-    CreateOverlay(instant_url, active_tab);
-
-  return true;
+  return page->supports_instant();
 }
 
-void InstantController::CreateOverlay(const std::string& instant_url,
-                                      const content::WebContents* active_tab) {
-  HideInternal();
-  overlay_.reset(new InstantOverlay(this, instant_url));
-  overlay_->InitContents(browser_->profile(), active_tab);
+void InstantController::ResetNTP(const std::string& instant_url) {
+  // Instant NTP is only used in extended mode so we should always have a
+  // non-empty URL to use.
+  DCHECK(!instant_url.empty());
+  ntp_.reset(new InstantNTP(this, instant_url));
+  ntp_->InitContents(profile(), browser_->GetActiveWebContents(),
+                     base::Bind(&InstantController::ReloadStaleNTP,
+                                base::Unretained(this)));
   LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
-      "CreateOverlay: instant_url='%s'", instant_url.c_str()));
+      "ResetNTP: instant_url='%s'", instant_url.c_str()));
 }
 
-void InstantController::MaybeSwitchToRemoteOverlay() {
-  if (!overlay_ || omnibox_focus_state_ != OMNIBOX_FOCUS_NONE ||
-      !model_.mode().is_default()) {
-    return;
+void InstantController::ReloadStaleNTP() {
+  ResetNTP(GetInstantURL());
+}
+
+bool InstantController::ShouldSwitchToLocalNTP() const {
+  if (!ntp_)
+    return true;
+
+  // Already a local page. Not calling IsLocal() because we want to distinguish
+  // between the Google-specific and generic local NTP.
+  if (extended_enabled_ && ntp_->instant_url() == GetLocalInstantURL())
+    return false;
+
+  if (PageIsCurrent(ntp()))
+    return false;
+
+  // TODO(shishir): This is not completely reliable. Find a better way to detect
+  // startup time.
+  const bool in_startup = !browser_->GetActiveWebContents();
+
+  // The preloaded NTP does not support instant yet. If we're not in startup,
+  // always fall back to the local NTP. If we are in startup, use the local NTP
+  // (unless the finch flag to use the remote NTP is set).
+  return !(in_startup && chrome::ShouldPreferRemoteNTPOnStartup());
+}
+
+void InstantController::ResetOverlay(const std::string& instant_url) {
+  HideInternal();
+  // If there's no active tab, the browser is opening or closing.
+  const content::WebContents* active_tab = browser_->GetActiveWebContents();
+  if (!active_tab || instant_url.empty()) {
+    overlay_.reset();
+  } else {
+    overlay_.reset(new InstantOverlay(this, instant_url));
+    overlay_->InitContents(browser_->profile(), active_tab);
+  }
+  LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
+      "ResetOverlay: instant_url='%s'", instant_url.c_str()));
+}
+
+bool InstantController::ShouldSwitchToLocalOverlay() const {
+  if (!extended_enabled_)
+    return false;
+
+  if (!overlay_)
+    return true;
+
+  if (extended_enabled_ && overlay_->IsLocal())
+    return false;
+
+  return !PageIsCurrent(overlay());
+}
+
+bool InstantController::SetUpInstantPageForUpdate() {
+  if (instant_tab_ && instant_tab_->supports_instant()) {
+    LOG_INSTANT_DEBUG_EVENT(
+        this, "SetUpInstantPageForUpdate: using InstantTab");
+    return true;
   }
 
-  EnsureOverlayIsCurrent(false);
+  if (instant_tab_) {
+    // If we have an |instant_tab_| but it doesn't support Instant yet, sever
+    // the connection to it so we use the overlay instead. This ensures that the
+    // user interaction will be responsive and handles cases where
+    // |instant_tab_| never responds about whether it supports Instant.
+    instant_tab_.reset();
+    LOG_INSTANT_DEBUG_EVENT(
+        this, "SetUpInstantPageForUpdate: reset InstantTab");
+  }
+
+  // Not using |instant_tab_|. Check if overlay is OK to use.
+  if (ShouldSwitchToLocalOverlay()) {
+    ResetOverlay(GetLocalInstantURL());
+    LOG_INSTANT_DEBUG_EVENT(
+        this, "SetUpInstantPageForUpdate: switching to local overlay");
+  } else {
+    LOG_INSTANT_DEBUG_EVENT(
+        this, "SetUpInstantPageForUpdate: using existing overlay");
+  }
+
+  return instant_tab_ || overlay_;
 }
 
 void InstantController::ResetInstantTab() {
@@ -1420,7 +1467,6 @@ void InstantController::ResetInstantTab() {
 void InstantController::HideOverlay() {
   HideInternal();
   ReloadOverlayIfStale();
-  MaybeSwitchToRemoteOverlay();
 }
 
 void InstantController::HideInternal() {
@@ -1510,58 +1556,6 @@ void InstantController::SendPopupBoundsToPage() {
   DCHECK_LE(0, intersection.height());
 
   overlay_->SetPopupBounds(intersection);
-}
-
-bool InstantController::GetInstantURL(Profile* profile,
-                                      bool ignore_blacklist,
-                                      std::string* instant_url) const {
-  if (extended_enabled_ && use_local_page_only_)
-    return false;
-
-  const GURL instant_url_obj = chrome::GetInstantURL(profile,
-                                                     omnibox_bounds_.x());
-  if (!instant_url_obj.is_valid())
-    return false;
-
-  *instant_url = instant_url_obj.spec();
-
-  if (!ignore_blacklist) {
-    std::map<std::string, int>::const_iterator iter =
-        blacklisted_urls_.find(*instant_url);
-    if (iter != blacklisted_urls_.end() &&
-        iter->second > kMaxInstantSupportFailures) {
-      RecordEventHistogram(INSTANT_CONTROLLER_EVENT_URL_BLOCKED_BY_BLACKLIST);
-      LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
-          "GetInstantURL: Instant URL blacklisted: url=%s",
-          instant_url->c_str()));
-      return false;
-    }
-  }
-
-  return true;
-}
-
-void InstantController::BlacklistAndResetNTP() {
-  ++blacklisted_urls_[ntp_->instant_url()];
-  RecordEventHistogram(INSTANT_CONTROLLER_EVENT_URL_ADDED_TO_BLACKLIST);
-  delete ntp_->ReleaseContents().release();
-  MessageLoop::current()->DeleteSoon(FROM_HERE, ntp_.release());
-  ResetNTP(false, false);
-}
-
-void InstantController::BlacklistAndResetOverlay() {
-  ++blacklisted_urls_[overlay_->instant_url()];
-  RecordEventHistogram(INSTANT_CONTROLLER_EVENT_URL_ADDED_TO_BLACKLIST);
-  HideInternal();
-  delete overlay_->ReleaseContents().release();
-  MessageLoop::current()->DeleteSoon(FROM_HERE, overlay_.release());
-  EnsureOverlayIsCurrent(false);
-}
-
-void InstantController::RemoveFromBlacklist(const std::string& url) {
-  if (blacklisted_urls_.erase(url)) {
-    RecordEventHistogram(INSTANT_CONTROLLER_EVENT_URL_REMOVED_FROM_BLACKLIST);
-  }
 }
 
 void InstantController::StartListeningToMostVisitedChanges() {
@@ -1687,34 +1681,6 @@ bool InstantController::FixSuggestion(InstantSuggestion* suggestion) const {
   }
 
   return false;
-}
-
-bool InstantController::ShouldSwitchToLocalNTP() const {
-  if (!ntp_)
-    return true;
-
-  // Don't switch if already using the correct local NTP.
-  if (ntp_->instant_url() == chrome::GetLocalInstantURL(
-          browser_->profile()).spec()) {
-    return false;
-  }
-
-  // If there is no Instant URL or the NTP is stale, switch.
-  std::string instant_url;
-  if (!GetInstantURL(browser_->profile(), false, &instant_url) ||
-      !chrome::MatchesOriginAndPath(GURL(ntp_->instant_url()),
-                                    GURL(instant_url))) {
-    return true;
-  }
-
-  if (ntp_->supports_instant())
-    return false;
-
-  // TODO(shishir): During browser startup, browser_->GetActiveWebContents()
-  // returns NULL. This is not completely reliable. Find a better way to detect
-  // startup time.
-  bool in_startup = !browser_->GetActiveWebContents();
-  return !(in_startup && chrome::ShouldPreferRemoteNTPOnStartup());
 }
 
 bool InstantController::UsingLocalPage() const {

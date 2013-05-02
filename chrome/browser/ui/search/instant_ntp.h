@@ -34,10 +34,7 @@ class InstantNTP : public InstantPage,
 
   // Releases the WebContents for the Instant page.  This should be called when
   // the page is about to be committed.
-  scoped_ptr<content::WebContents> ReleaseContents() WARN_UNUSED_RESULT;
-
-  // Returns the URL that we're loading.
-  const std::string& instant_url() const { return instant_url_; }
+  scoped_ptr<content::WebContents> ReleaseContents();
 
  private:
   // Overriden from InstantLoader::Delegate:
@@ -55,7 +52,6 @@ class InstantNTP : public InstantPage,
   virtual bool ShouldProcessRenderViewGone() OVERRIDE;
 
   InstantLoader loader_;
-  const std::string instant_url_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantNTP);
 };

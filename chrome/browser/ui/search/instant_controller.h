@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_SEARCH_INSTANT_CONTROLLER_H_
 
 #include <list>
-#include <map>
 #include <string>
 #include <utility>
 #include <vector>
@@ -208,6 +207,8 @@ class InstantController : public InstantPage::Delegate,
   FRIEND_TEST_ALL_PREFIXES(InstantTest, SetWithTemplateURL);
   FRIEND_TEST_ALL_PREFIXES(InstantTest, NonInstantSearchProvider);
   FRIEND_TEST_ALL_PREFIXES(InstantTest, InstantOverlayRefresh);
+  FRIEND_TEST_ALL_PREFIXES(InstantTest, InstantOverlayRefreshDifferentOrder);
+  FRIEND_TEST_ALL_PREFIXES(InstantTest, InstantRenderViewGone);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ExtendedModeIsOn);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, MostVisited);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, RestrictedItemReadback);
@@ -224,17 +225,27 @@ class InstantController : public InstantPage::Delegate,
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, PreloadedNTPIsUsedInNewTab);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, PreloadedNTPIsUsedInSameTab);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, PreloadedNTPForWrongProvider);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, PreloadedNTPRenderViewGone);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
+                           PreloadedNTPDoesntSupportInstant);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ProcessIsolation);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, UnrelatedSiteInstance);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ValidatesSuggestions);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
                            OmniboxCommitsWhenShownFullHeight);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, LocalNTPIsNotPreloaded);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, OverlayRenderViewGone);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, OverlayDoesntSupportInstant);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedManualTest,
                            MANUAL_OmniboxFocusLoadsInstant);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedManualTest,
                            MANUAL_BackspaceFromQueryToSelectedUrlAndNavigate);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, OnDefaultSearchProviderChanged);
+
+  Profile* profile() const;
+  InstantOverlay* overlay() const;
+  InstantTab* instant_tab() const;
+  InstantNTP* ntp() const;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
@@ -286,27 +297,42 @@ class InstantController : public InstantPage::Delegate,
   // Helper for OmniboxFocusChanged. Commit or discard the overlay.
   void OmniboxLostFocus(gfx::NativeView view_gaining_focus);
 
-  // Creates a new NTP, using the instant_url property of the default
-  // TemplateURL, or chrome::kChromeSearchLocalNTPURL if |use_local_ntp| is
-  // true. For |ignore_blacklist| look at comments in GetInstantURL().
-  void ResetNTP(bool ignore_blacklist, bool use_local_ntp);
+  // Returns the local Instant URL. (Just a convenience wrapper around
+  // chrome::GetLocalInstantURL.)
+  std::string GetLocalInstantURL() const;
 
-  // Ensures that |overlay_| uses the Instant URL returned by GetInstantURL(),
-  // creating a new overlay if necessary. In extended mode, will fallback to
-  // using the kChromeSearchLocalNtpUrl as the Instant URL in case
-  // GetInstantURL() returns false. Returns true if an Instant URL could be
-  // determined. For |ignore_blacklist| look at comments in GetInstantURL().
-  bool EnsureOverlayIsCurrent(bool ignore_blacklist);
+  // Returns the correct Instant URL to use from the following possibilities:
+  //   o The default search engine's Instant URL
+  //   o The --instant-url command line switch
+  //   o The local page (see GetLocalInstantURL())
+  // Returns empty string if no valid Instant URL is available (this is only
+  // possible in non-extended mode where we don't have a local page fall-back).
+  std::string GetInstantURL() const;
 
-  // Recreates the |overlay_| with |instant_url|. Note that |overlay_| is
-  // deleted in this call.
-  void CreateOverlay(const std::string& instant_url,
-                     const content::WebContents* active_tab);
+  // Returns true if |page| has an up-to-date Instant URL and supports Instant.
+  // Note that local URLs will not pass this check.
+  bool PageIsCurrent(const InstantPage* page) const;
 
-  // If the |overlay_| being used is in fallback mode, it will be switched back
-  // to the remote overlay if the overlay is not showing and the omnibox does
-  // not have focus.
-  void MaybeSwitchToRemoteOverlay();
+  // Recreates |ntp_| using |instant_url|.
+  void ResetNTP(const std::string& instant_url);
+
+  // Reloads a new InstantNTP.  Called when |ntp_| is stale.
+  void ReloadStaleNTP();
+
+  // Returns true if we should switch to using the local NTP.
+  bool ShouldSwitchToLocalNTP() const;
+
+  // Recreates |overlay_| using |instant_url|. |overlay_| will be NULL if
+  // |instant_url| is empty or if there is no active tab.
+  void ResetOverlay(const std::string& instant_url);
+
+  // Returns true if we should switch to using the local overlay.
+  bool ShouldSwitchToLocalOverlay() const;
+
+  // Called from Update() to set up the appropriate page to send user updates
+  // to. May reset |instant_tab_| or switch to a local fallback |overlay_| as
+  // necessary.
+  bool SetUpInstantPageForUpdate();
 
   // If the active tab is an Instant search results page, sets |instant_tab_| to
   // point to it. Else, deletes any existing |instant_tab_|.
@@ -326,26 +352,6 @@ class InstantController : public InstantPage::Delegate,
 
   // Send the omnibox popup bounds to the page.
   void SendPopupBoundsToPage();
-
-  // Returns the default search engine's Instant URL (possibly overridden by
-  // the --instant-url commandline param), if it's not blacklisted already.
-  // Ignores the blacklist if |ignore_blacklist| is true. Returns true if a
-  // valid Instant URL was assigned to |instant_url|; false otherwise.
-  bool GetInstantURL(Profile* profile,
-                     bool ignore_blacklist,
-                     std::string* instant_url) const;
-
-  // Adds the URL for the page to the blacklist. Deletes the contents held and
-  // recreates a new page.
-  void BlacklistAndResetOverlay();
-  void BlacklistAndResetNTP();
-
-  // Removes |url| from the blacklist.
-  void RemoveFromBlacklist(const std::string& url);
-
-  InstantOverlay* overlay() const { return overlay_.get(); }
-  InstantTab* instant_tab() const { return instant_tab_.get(); }
-  InstantNTP* ntp() const { return ntp_.get(); }
 
   // Begin listening to change notifications from TopSites and fire off an
   // initial request for most visited items.
@@ -368,9 +374,6 @@ class InstantController : public InstantPage::Delegate,
   // true if successful. (Note that |suggestion| may be modified even if this
   // returns false.)
   bool FixSuggestion(InstantSuggestion* suggestion) const;
-
-  // Returns true if we should switch to using the local NTP.
-  bool ShouldSwitchToLocalNTP() const;
 
   // Returns true if the local page is being used.
   bool UsingLocalPage() const;
@@ -445,14 +448,6 @@ class InstantController : public InstantPage::Delegate,
 
   // Timer used to update the bounds of the omnibox popup.
   base::OneShotTimer<InstantController> update_bounds_timer_;
-
-  // For each key K => value N, the map says that we found that the search
-  // engine identified by Instant URL K didn't support the Instant API, or
-  // caused RenderView crashes in each of the last N times that we loaded it.
-  // If an Instant URL isn't present in the map at all or has a value 0,
-  // it means that search engine supports the Instant API (or we assume it does,
-  // since we haven't determined it doesn't) and it did not cause a crash.
-  std::map<std::string, int> blacklisted_urls_;
 
   // Search terms extraction (for autocomplete history matches) doesn't work
   // on Instant URLs. So, whenever the user commits an Instant search, we add

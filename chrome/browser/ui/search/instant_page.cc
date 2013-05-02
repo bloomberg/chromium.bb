@@ -104,8 +104,9 @@ void InstantPage::SendMostVisitedItems(
   Send(new ChromeViewMsg_SearchBoxMostVisitedItemsChanged(routing_id(), items));
 }
 
-InstantPage::InstantPage(Delegate* delegate)
+InstantPage::InstantPage(Delegate* delegate, const std::string& instant_url)
     : delegate_(delegate),
+      instant_url_(instant_url),
       supports_instant_(false) {
 }
 

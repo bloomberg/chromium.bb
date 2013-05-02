@@ -9,9 +9,8 @@
 
 InstantNTP::InstantNTP(InstantPage::Delegate* delegate,
                        const std::string& instant_url)
-    : InstantPage(delegate),
-      loader_(this),
-      instant_url_(instant_url) {
+    : InstantPage(delegate, instant_url),
+      loader_(this) {
 }
 
 InstantNTP::~InstantNTP() {
@@ -20,7 +19,7 @@ InstantNTP::~InstantNTP() {
 void InstantNTP::InitContents(Profile* profile,
                               const content::WebContents* active_tab,
                               const base::Closure& on_stale_callback) {
-  loader_.Init(GURL(instant_url_), profile, active_tab, on_stale_callback);
+  loader_.Init(GURL(instant_url()), profile, active_tab, on_stale_callback);
   SetContents(loader_.contents());
   loader_.Load();
 }

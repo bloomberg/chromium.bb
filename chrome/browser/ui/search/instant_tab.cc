@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/search/instant_tab.h"
 
 InstantTab::InstantTab(InstantPage::Delegate* delegate)
-    : InstantPage(delegate) {
+    : InstantPage(delegate, "") {
 }
 
 InstantTab::~InstantTab() {

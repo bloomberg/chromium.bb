@@ -571,11 +571,9 @@ IN_PROC_BROWSER_TEST_F(InstantTest, NonInstantSearchProvider) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
 
   // Focus the omnibox. When the support determination response comes back,
-  // Instant will destroy the non-Instant page, and attempt to recreate it.
-  // We can know this happened by looking at the blacklist.
-  EXPECT_EQ(0, instant()->blacklisted_urls_[instant_url.spec()]);
+  // Instant will destroy the non-Instant page.
   FocusOmniboxAndWaitForInstantOverlaySupport();
-  EXPECT_EQ(1, instant()->blacklisted_urls_[instant_url.spec()]);
+  EXPECT_EQ(NULL, instant()->overlay());
 }
 
 // Test that the renderer doesn't crash if JavaScript is blocked.
@@ -773,6 +771,11 @@ IN_PROC_BROWSER_TEST_F(InstantTest, InstantOverlayRefresh) {
   instant()->OmniboxFocusChanged(OMNIBOX_FOCUS_NONE,
                                  OMNIBOX_FOCUS_CHANGE_EXPLICIT, NULL);
   EXPECT_FALSE(instant()->overlay_->supports_instant());
+}
+
+IN_PROC_BROWSER_TEST_F(InstantTest, InstantOverlayRefreshDifferentOrder) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantOverlaySupport();
 
   // Try with a different ordering.
   ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query"));
@@ -951,7 +954,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionsAreReusable) {
   EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
 }
 
-// Test that the Instant overlay is recreated if it gets destroyed.
+// Test that the Instant overlay is reset if it gets destroyed.
 IN_PROC_BROWSER_TEST_F(InstantTest, InstantRenderViewGone) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantOverlaySupport();
@@ -960,12 +963,9 @@ IN_PROC_BROWSER_TEST_F(InstantTest, InstantRenderViewGone) {
   ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("q"));
   EXPECT_EQ(ASCIIToUTF16("query suggestion"), omnibox()->GetText());
 
-  // Kill the Instant renderer and wait for Instant support again.
-  KillInstantRenderView();
-  FocusOmniboxAndWaitForInstantOverlaySupport();
-
-  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("qu"));
-  EXPECT_EQ(ASCIIToUTF16("query suggestion"), omnibox()->GetText());
+  // Overlay should be reset if the the render view is gone.
+  instant()->InstantPageRenderViewGone(instant()->GetOverlayContents());
+  EXPECT_EQ(NULL, instant()->overlay());
 }
 
 IN_PROC_BROWSER_TEST_F(InstantTest, ProcessIsolation) {
