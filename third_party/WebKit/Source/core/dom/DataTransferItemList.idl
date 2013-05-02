@@ -29,7 +29,6 @@
  */
 
 [
-    CustomDeleteProperty,
     ImplementationLacksVTable
 ] interface DataTransferItemList {
     readonly attribute long length;

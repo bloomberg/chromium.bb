@@ -1048,13 +1048,6 @@ END
 END
 }
 
-my %indexerSpecialCases = (
-    "Storage" => 1,
-    "HTMLAppletElement" => 1,
-    "HTMLEmbedElement" => 1,
-    "HTMLObjectElement" => 1
-);
-
 sub GenerateHeaderNamedAndIndexedPropertyAccessors
 {
     my $interface = shift;
@@ -1065,23 +1058,6 @@ sub GenerateHeaderNamedAndIndexedPropertyAccessors
     my $hasCustomNamedSetter = $interface->extendedAttributes->{"CustomNamedSetter"};
     my $hasCustomDeleters = $interface->extendedAttributes->{"CustomDeleteProperty"};
     my $hasCustomEnumerator = $interface->extendedAttributes->{"CustomEnumerateProperty"};
-    if ($interfaceName eq "HTMLOptionsCollection") {
-        $interfaceName = "HTMLCollection";
-        $hasIndexedGetter = 1;
-        $hasCustomNamedGetter = 1;
-    }
-    if ($interfaceName eq "HTMLAppletElement" || $interfaceName eq "HTMLEmbedElement" || $interfaceName eq "HTMLObjectElement") {
-        $hasCustomNamedGetter = 1;
-    }
-    if ($interfaceName eq "HTMLDocument") {
-        $hasCustomNamedGetter = 0;
-        $hasIndexedGetter = 0;
-    }
-    my $isIndexerSpecialCase = exists $indexerSpecialCases{$interfaceName};
-    if ($isIndexerSpecialCase) {
-        $hasIndexedGetter = 1;
-        $hasCustomIndexedSetter = 1;
-    }
 
     if ($hasIndexedGetter) {
         AddToHeader(<<END);
@@ -3161,36 +3137,20 @@ sub GenerateImplementationIndexedProperty
     my $hasCustomIndexedSetter = $interface->extendedAttributes->{"CustomIndexedSetter"};
     my $hasCustomIndexedGetter = $interface->extendedAttributes->{"CustomIndexedGetter"};
 
-    # FIXME: Investigate and remove this nastinesss. In V8, named property handling and indexer handling are apparently decoupled,
-    # which means that object[X] where X is a number doesn't reach named property indexer. So we need to provide
-    # simplistic, mirrored indexer handling in addition to named property handling.
-    my $isSpecialCase = exists $indexerSpecialCases{$interfaceName};
-    if ($isSpecialCase) {
-        if ($interface->extendedAttributes->{"CustomNamedSetter"}) {
-            $hasCustomIndexedSetter = 1;
-        }
-    }
-
+    my $hasEnumerator = $indexedGetterfunction || $hasCustomIndexedGetter;
     # FIXME: Remove the special cases. Interfaces that have indexedPropertyGetter should have indexedPropertyEnumerator.
-    my $hasEnumerator = !$isSpecialCase && InheritsInterface($interface, "Node");
-
-    # FIXME: Find a way to not have to special-case HTMLOptionsCollection.
-    if ($interfaceName eq "HTMLOptionsCollection") {
-        $hasEnumerator = 1;
-    }
+    $hasEnumerator = 0 if $interfaceName eq "WebKitCSSKeyframesRule";
+    $hasEnumerator = 0 if $interfaceName eq "HTMLAppletElement";
+    $hasEnumerator = 0 if $interfaceName eq "HTMLEmbedElement";
+    $hasEnumerator = 0 if $interfaceName eq "HTMLObjectElement";
+    $hasEnumerator = 0 if $interfaceName eq "DOMWindow";
+    $hasEnumerator = 0 if $interfaceName eq "Storage";
 
     if (!$indexedGetterfunction && !$hasCustomIndexedGetter) {
         return "";
     }
 
     AddToImplIncludes("bindings/v8/V8Collection.h");
-
-    if ($indexedGetterfunction && !$hasCustomIndexedSetter) {
-        $hasEnumerator = 1;
-    }
-    if ($interfaceName eq "WebKitCSSKeyframesRule") {
-        $hasEnumerator = 0;
-    }
 
     my $hasDeleter = $interface->extendedAttributes->{"CustomDeleteProperty"};
     my $setOn = "Instance";
@@ -3201,10 +3161,6 @@ sub GenerateImplementationIndexedProperty
     # on the object.
     if ($interfaceName eq "DOMWindow") {
         $setOn = "Prototype";
-    }
-    # FIXME: Implement V8DataTransferItemList::indexedPropertyDeleter
-    if ($interfaceName eq "DataTransferItemList") {
-        $hasDeleter = 0;
     }
 
     my $code = "";
@@ -3257,11 +3213,6 @@ sub GenerateImplementationNamedPropertyGetter
 
     my $namedGetterFunction = GetNamedGetterFunction($interface);
     my $hasCustomNamedGetter = $interface->extendedAttributes->{"CustomNamedGetter"};
-    # FIXME: make consistent between IDL and implementation. Then remove these special cases.
-    $hasCustomNamedGetter = 1 if $interfaceName eq "HTMLAppletElement";
-    $hasCustomNamedGetter = 1 if $interfaceName eq "HTMLEmbedElement";
-    $hasCustomNamedGetter = 1 if $interfaceName eq "HTMLObjectElement";
-    $hasCustomNamedGetter = 0 if $interfaceName eq "HTMLDocument";
 
     if ($namedGetterFunction && !$hasCustomNamedGetter) {
         my $returnType = $namedGetterFunction->signature->type;

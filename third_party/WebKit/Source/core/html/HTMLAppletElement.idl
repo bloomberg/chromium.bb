@@ -19,8 +19,10 @@
  */
 
 [
+    CustomNamedGetter,
     CustomNamedSetter,
     CustomIndexedGetter,
+    CustomIndexedSetter,
     CustomCall
 ] interface HTMLAppletElement : HTMLElement {
     [Reflect] attribute DOMString align;

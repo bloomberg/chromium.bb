@@ -19,7 +19,6 @@
  */
 
 [
-    CustomNamedGetter,
     CustomToJSObject,
     SkipVTableValidation
 ] interface HTMLDocument : Document {
