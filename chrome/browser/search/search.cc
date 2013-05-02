@@ -59,8 +59,8 @@ const InstantExtendedDefault kInstantExtendedActivationDefault =
 
 const char kLocalOnlyFlagName[] = "local_only";
 
-// Key for specifying local NTP behavior trials.
-const char kLocalNTPFlagName[] = "local_ntp";
+// Key for specifying remote NTP behavior trials.
+const char kUseRemoteNTPOnStartupFlagName[] = "use_remote_ntp_on_startup";
 
 // Constants for the field trial name and group prefix.
 const char kInstantExtendedFieldTrialName[] = "InstantExtended";
@@ -474,12 +474,14 @@ bool IsInstantEnabled(Profile* profile) {
   return GetInstantURL(profile, kDisableStartMargin).is_valid();
 }
 
-bool IsAggressiveLocalNTPFallbackEnabled() {
+bool ShouldPreferRemoteNTPOnStartup() {
   // Check the command-line/about:flags setting first, which should have
   // precedence and allows the trial to not be reported (if it's never queried).
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableInstantExtendedAPI) ||
-      command_line->HasSwitch(switches::kEnableInstantExtendedAPI)) {
+      command_line->HasSwitch(switches::kEnableInstantExtendedAPI) ||
+      command_line->HasSwitch(switches::kEnableLocalOnlyInstantExtendedAPI) ||
+      command_line->HasSwitch(switches::kDisableLocalOnlyInstantExtendedAPI)) {
     return false;
   }
 
@@ -487,9 +489,9 @@ bool IsAggressiveLocalNTPFallbackEnabled() {
   if (GetFieldTrialInfo(
           base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
           &flags, NULL)) {
-    return GetBoolValueForFlagWithDefault(kLocalNTPFlagName, false, flags);
+    return GetBoolValueForFlagWithDefault(kUseRemoteNTPOnStartupFlagName, false,
+                                          flags);
   }
-
   return false;
 }
 

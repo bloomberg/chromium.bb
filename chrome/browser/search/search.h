@@ -116,9 +116,9 @@ GURL GetLocalInstantURL(Profile* profile);
 // lead to an infinite recursion.
 bool IsInstantEnabled(Profile* profile);
 
-// Returns true if the aggressive local NTP fallback is enabled in field
-// trials.
-bool IsAggressiveLocalNTPFallbackEnabled();
+// Returns true if 'use_remote_ntp_on_startup' flag is enabled in field trials
+// to always show the remote NTP on browser startup.
+bool ShouldPreferRemoteNTPOnStartup();
 
 // Returns true if |my_url| matches |other_url|.
 bool MatchesOriginAndPath(const GURL& my_url, const GURL& other_url);

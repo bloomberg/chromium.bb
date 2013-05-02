@@ -1710,13 +1710,11 @@ bool InstantController::ShouldSwitchToLocalNTP() const {
   if (ntp_->supports_instant())
     return false;
 
-  // If this is not window startup, switch.
-  // TODO(shishir): This is not completely reliable. Find a better way to detect
+  // TODO(shishir): During browser startup, browser_->GetActiveWebContents()
+  // returns NULL. This is not completely reliable. Find a better way to detect
   // startup time.
-  if (browser_->GetActiveWebContents())
-    return true;
-
-  return chrome::IsAggressiveLocalNTPFallbackEnabled();
+  bool in_startup = !browser_->GetActiveWebContents();
+  return !(in_startup && chrome::ShouldPreferRemoteNTPOnStartup());
 }
 
 bool InstantController::UsingLocalPage() const {
