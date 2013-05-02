@@ -174,6 +174,9 @@ bool ShellDelegateImpl::ShouldAlwaysShowAccessibilityMenu() const {
   return false;
 }
 
+void ShellDelegateImpl::SilenceSpokenFeedback() const {
+}
+
 app_list::AppListViewDelegate* ShellDelegateImpl::CreateAppListViewDelegate() {
   return ash::shell::CreateAppListViewDelegate();
 }

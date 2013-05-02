@@ -56,6 +56,7 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   virtual bool IsMagnifierEnabled() const OVERRIDE;
   virtual MagnifierType GetMagnifierType() const OVERRIDE;
   virtual bool ShouldAlwaysShowAccessibilityMenu() const OVERRIDE;
+  virtual void SilenceSpokenFeedback() const OVERRIDE;
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual ash::LauncherDelegate* CreateLauncherDelegate(
       ash::LauncherModel* model) OVERRIDE;

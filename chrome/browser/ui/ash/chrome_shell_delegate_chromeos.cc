@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/system/ash_system_tray_delegate.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/ui/ash/caps_lock_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/window_positioner.h"
 #include "chrome/browser/ui/browser.h"
@@ -209,6 +210,10 @@ bool ChromeShellDelegate::ShouldAlwaysShowAccessibilityMenu() const {
   PrefService* user_pref_service = profile->GetPrefs();
   return user_pref_service &&
       user_pref_service->GetBoolean(prefs::kShouldAlwaysShowAccessibilityMenu);
+}
+
+void ChromeShellDelegate::SilenceSpokenFeedback() const {
+  TtsController::GetInstance()->Stop();
 }
 
 ash::SystemTrayDelegate* ChromeShellDelegate::CreateSystemTrayDelegate() {

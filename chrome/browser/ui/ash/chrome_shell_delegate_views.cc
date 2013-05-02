@@ -74,6 +74,9 @@ bool ChromeShellDelegate::ShouldAlwaysShowAccessibilityMenu() const {
   return false;
 }
 
+void ChromeShellDelegate::SilenceSpokenFeedback() const {
+}
+
 ash::SystemTrayDelegate* ChromeShellDelegate::CreateSystemTrayDelegate() {
   return NULL;
 }

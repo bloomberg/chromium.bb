@@ -15,6 +15,8 @@ namespace ash {
 // Please put if/def sections at the end of the bare section and keep the list
 // within each section in alphabetical order.
 enum AcceleratorAction {
+  ACCESSIBLE_FOCUS_NEXT,
+  ACCESSIBLE_FOCUS_PREVIOUS,
   BRIGHTNESS_DOWN,
   BRIGHTNESS_UP,
   CYCLE_BACKWARD_LINEAR,
@@ -71,6 +73,7 @@ enum AcceleratorAction {
   SHOW_OAK,
   SHOW_SYSTEM_TRAY_BUBBLE,
   SHOW_TASK_MANAGER,
+  SILENCE_SPOKEN_FEEDBACK,
   SWAP_PRIMARY_DISPLAY,
   SWITCH_IME,  // Switch to another IME depending on the accelerator.
   TAKE_PARTIAL_SCREENSHOT,

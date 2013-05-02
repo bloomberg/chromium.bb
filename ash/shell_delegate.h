@@ -187,6 +187,9 @@ class ASH_EXPORT ShellDelegate {
   // accessibility features are disabled.
   virtual bool ShouldAlwaysShowAccessibilityMenu() const = 0;
 
+  // Cancel all current and queued speech immediately.
+  virtual void SilenceSpokenFeedback() const = 0;
+
   // Invoked to create an AppListViewDelegate. Shell takes the ownership of
   // the created delegate.
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() = 0;

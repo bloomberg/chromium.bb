@@ -75,8 +75,6 @@ const AcceleratorData kAcceleratorData[] = {
 #if !defined(OS_WIN)
   { true, ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, EXIT },
 #endif
-  { true, ui::VKEY_Z, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-    TOGGLE_SPOKEN_FEEDBACK },
   { true, ui::VKEY_I, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     TOUCH_HUD_MODE_CHANGE },
   { true, ui::VKEY_I, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN,
@@ -158,6 +156,17 @@ const AcceleratorData kAcceleratorData[] = {
   // release builds.
   { true, ui::VKEY_U, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN,
     PRINT_UI_HIERARCHIES },
+
+  // Accessibility: Spoken feedback shortcuts. The first one is to toggle
+  // spoken feedback on or off. The others are only valid when
+  // spoken feedback is enabled.
+  { true, ui::VKEY_Z, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
+    TOGGLE_SPOKEN_FEEDBACK },
+  { true, ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN, SILENCE_SPOKEN_FEEDBACK},
+  { false, ui::VKEY_HOME, ui::EF_SHIFT_DOWN, ACCESSIBLE_FOCUS_PREVIOUS},
+  { false, ui::VKEY_PRIOR, ui::EF_SHIFT_DOWN, ACCESSIBLE_FOCUS_PREVIOUS},
+  { false, ui::VKEY_END, ui::EF_SHIFT_DOWN, ACCESSIBLE_FOCUS_NEXT},
+  { false, ui::VKEY_NEXT, ui::EF_SHIFT_DOWN, ACCESSIBLE_FOCUS_NEXT},
 
   // TODO(yusukes): Handle VKEY_MEDIA_STOP, and
   // VKEY_MEDIA_LAUNCH_MAIL.

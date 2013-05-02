@@ -61,6 +61,7 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/screen.h"
 #include "ui/oak/oak.h"
+#include "ui/views/controls/webview/webview.h"
 #include "ui/views/debug_utils.h"
 #include "ui/views/widget/widget.h"
 
@@ -94,6 +95,34 @@ bool HandleCycleWindowMRU(WindowCycleController::Direction direction,
 void HandleCycleWindowLinear(CycleDirection direction) {
   Shell::GetInstance()->
         window_cycle_controller()->HandleLinearCycleWindow();
+}
+
+bool HandleAccessibleFocusCycle(bool reverse) {
+  if (!Shell::GetInstance()->delegate()->IsSpokenFeedbackEnabled())
+    return false;
+  aura::Window* active_window = ash::wm::GetActiveWindow();
+  if (!active_window)
+    return false;
+  views::Widget* widget =
+      views::Widget::GetWidgetForNativeWindow(active_window);
+  if (!widget)
+    return false;
+  views::FocusManager* focus_manager = widget->GetFocusManager();
+  if (!focus_manager)
+    return false;
+  views::View* view = focus_manager->GetFocusedView();
+  if (view->GetClassName() == views::WebView::kViewClassName)
+    return false;
+
+  focus_manager->AdvanceFocus(reverse);
+  return true;
+}
+
+void HandleSilenceSpokenFeedback() {
+  if (!Shell::GetInstance()->delegate()->IsSpokenFeedbackEnabled())
+    return;
+
+  Shell::GetInstance()->delegate()->SilenceSpokenFeedback();
 }
 
 #if defined(OS_CHROMEOS)
@@ -471,6 +500,10 @@ bool AcceleratorController::PerformAction(int action,
   // function might be called *twice*, via BrowserView::PreHandleKeyboardEvent
   // and BrowserView::HandleKeyboardEvent, for a single accelerator press.
   switch (action) {
+    case ACCESSIBLE_FOCUS_NEXT:
+      return HandleAccessibleFocusCycle(false);
+    case ACCESSIBLE_FOCUS_PREVIOUS:
+      return HandleAccessibleFocusCycle(true);
     case CYCLE_BACKWARD_MRU:
       if (key_code == ui::VKEY_TAB)
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_PREVWINDOW_TAB);
@@ -505,6 +538,9 @@ bool AcceleratorController::PerformAction(int action,
       return HandleFileManager(false /* as_dialog */);
     case OPEN_CROSH:
       return HandleCrosh();
+    case SILENCE_SPOKEN_FEEDBACK:
+      HandleSilenceSpokenFeedback();
+      break;
     case SWAP_PRIMARY_DISPLAY:
       Shell::GetInstance()->display_controller()->SwapPrimaryDisplay();
       return true;
