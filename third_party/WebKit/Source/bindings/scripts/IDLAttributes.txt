@@ -35,7 +35,6 @@ CustomCall
 CustomConstructor
 CustomDeleteProperty
 CustomEnumerateProperty
-CustomGetOwnPropertySlot
 CustomGetter
 CustomIndexedGetter
 CustomIndexedSetter

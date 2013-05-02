@@ -26,9 +26,9 @@
 
 [
     CheckSecurity,
-    CustomGetOwnPropertySlot,
     EventTarget,
     CustomToJSObject,
+    CustomNamedGetter,
     NoWrapperCache,
     CustomIndexedGetter,
     InterfaceName=Window

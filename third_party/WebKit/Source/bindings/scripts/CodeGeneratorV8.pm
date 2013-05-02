@@ -1061,7 +1061,7 @@ sub GenerateHeaderNamedAndIndexedPropertyAccessors
     my $interfaceName = $interface->name;
     my $hasIndexedGetter = GetIndexedGetterFunction($interface) || $interface->extendedAttributes->{"CustomIndexedGetter"};
     my $hasCustomIndexedSetter = $interface->extendedAttributes->{"CustomIndexedSetter"};
-    my $hasCustomNamedGetter = GetNamedGetterFunction($interface) || $interface->extendedAttributes->{"CustomNamedGetter"} || $interface->extendedAttributes->{"CustomGetOwnPropertySlot"};
+    my $hasCustomNamedGetter = GetNamedGetterFunction($interface) || $interface->extendedAttributes->{"CustomNamedGetter"};
     my $hasCustomNamedSetter = $interface->extendedAttributes->{"CustomNamedSetter"};
     my $hasCustomDeleters = $interface->extendedAttributes->{"CustomDeleteProperty"};
     my $hasCustomEnumerator = $interface->extendedAttributes->{"CustomEnumerateProperty"};
@@ -3261,7 +3261,6 @@ sub GenerateImplementationNamedPropertyGetter
     $hasCustomNamedGetter = 1 if $interfaceName eq "HTMLAppletElement";
     $hasCustomNamedGetter = 1 if $interfaceName eq "HTMLEmbedElement";
     $hasCustomNamedGetter = 1 if $interfaceName eq "HTMLObjectElement";
-    $hasCustomNamedGetter = 1 if $interfaceName eq "DOMWindow";
     $hasCustomNamedGetter = 0 if $interfaceName eq "HTMLDocument";
 
     if ($namedGetterFunction && !$hasCustomNamedGetter) {
