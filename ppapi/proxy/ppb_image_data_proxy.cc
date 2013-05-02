@@ -519,6 +519,62 @@ bool PPB_ImageData_Proxy::OnMessageReceived(const IPC::Message& msg) {
 }
 
 #if !defined(OS_NACL)
+// static
+PP_Resource PPB_ImageData_Proxy::CreateImageData(
+    PP_Instance instance,
+    PP_ImageDataFormat format,
+    const PP_Size& size,
+    bool init_to_zero,
+    bool is_nacl_plugin,
+    PP_ImageDataDesc* desc,
+    IPC::PlatformFileForTransit* image_handle,
+    uint32_t* byte_count) {
+  HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return 0;
+
+  thunk::EnterResourceCreation enter(instance);
+  if (enter.failed())
+    return 0;
+
+  PP_Resource result = 0;
+  PP_Bool clear = init_to_zero ? PP_TRUE : PP_FALSE;
+  if (is_nacl_plugin) {
+    result = enter.functions()->CreateImageDataNaCl(
+        instance, static_cast<PP_ImageDataFormat>(format), &size, clear);
+  } else {
+    result = enter.functions()->CreateImageData(
+        instance, static_cast<PP_ImageDataFormat>(format), &size, clear);
+  }
+  if (!result)
+    return 0;
+
+  thunk::EnterResourceNoLock<PPB_ImageData_API> enter_resource(result, false);
+  if (enter_resource.object()->Describe(desc) != PP_TRUE)
+    DVLOG(1) << "CreateImageData failed: could not Describe";
+
+  int local_fd = 0;
+  if (enter_resource.object()->GetSharedMemory(&local_fd, byte_count) != PP_OK)
+    DVLOG(1) << "CreateImageData failed: could not GetSharedMemory";
+
+#if defined(OS_WIN)
+  *image_handle = dispatcher->ShareHandleWithRemote(
+      reinterpret_cast<HANDLE>(static_cast<intptr_t>(local_fd)), false);
+#elif defined(OS_MACOSX) || defined(OS_ANDROID)
+  *image_handle = dispatcher->ShareHandleWithRemote(local_fd, false);
+#elif defined(OS_POSIX)
+  // On X Windows, a non-nacl handle is a SysV shared memory key.
+  if (is_nacl_plugin)
+    *image_handle = dispatcher->ShareHandleWithRemote(local_fd, false);
+  else
+    *image_handle = IPC::PlatformFileForTransit(local_fd, false);
+#else
+  #error Not implemented.
+#endif
+
+  return result;
+}
+
 void PPB_ImageData_Proxy::OnHostMsgCreate(PP_Instance instance,
                                           int32_t format,
                                           const PP_Size& size,
@@ -526,36 +582,29 @@ void PPB_ImageData_Proxy::OnHostMsgCreate(PP_Instance instance,
                                           HostResource* result,
                                           std::string* image_data_desc,
                                           ImageHandle* result_image_handle) {
-  *result_image_handle = ImageData::NullHandle();
-
-  thunk::EnterResourceCreation enter(instance);
-  if (enter.failed())
-    return;
-
-  PP_Resource resource = enter.functions()->CreateImageData(
-      instance, static_cast<PP_ImageDataFormat>(format), &size, init_to_zero);
-  if (!resource)
-    return;
-  result->SetHostResource(instance, resource);
-
-  // Get the description, it's just serialized as a string.
-  thunk::EnterResourceNoLock<PPB_ImageData_API> enter_resource(resource, false);
   PP_ImageDataDesc desc;
-  if (enter_resource.object()->Describe(&desc) == PP_TRUE) {
+  IPC::PlatformFileForTransit image_handle;
+  uint32_t byte_count;
+  PP_Resource resource = CreateImageData(
+                             instance,
+                             static_cast<PP_ImageDataFormat>(format),
+                             size,
+                             true /* init_to_zero */,
+                             false /* is_nacl_plugin */,
+                             &desc, &image_handle, &byte_count);
+  result->SetHostResource(instance, resource);
+  if (resource) {
     image_data_desc->resize(sizeof(PP_ImageDataDesc));
     memcpy(&(*image_data_desc)[0], &desc, sizeof(PP_ImageDataDesc));
-  }
-
-  // Get the shared memory handle.
-  uint32_t byte_count = 0;
-  int32_t handle = 0;
-  if (enter_resource.object()->GetSharedMemory(&handle, &byte_count) == PP_OK) {
-#if defined(OS_WIN)
-    ImageHandle ih = ImageData::HandleFromInt(handle);
-    *result_image_handle = dispatcher()->ShareHandleWithRemote(ih, false);
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
+    *result_image_handle = image_handle;
 #else
-    *result_image_handle = ImageData::HandleFromInt(handle);
-#endif  // defined(OS_WIN)
+    // On X Windows ImageHandle is a SysV shared memory key.
+    *result_image_handle = image_handle.fd;
+#endif
+  } else {
+    image_data_desc->clear();
+    *result_image_handle = ImageData::NullHandle();
   }
 }
 
@@ -567,47 +616,26 @@ void PPB_ImageData_Proxy::OnHostMsgCreateNaCl(
     HostResource* result,
     std::string* image_data_desc,
     ppapi::proxy::SerializedHandle* result_image_handle) {
-  result_image_handle->set_null_shmem();
-  HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
-  if (!dispatcher)
-    return;
-
-  thunk::EnterResourceCreation enter(instance);
-  if (enter.failed())
-    return;
-
-  PP_Resource resource = enter.functions()->CreateImageDataNaCl(
-      instance, static_cast<PP_ImageDataFormat>(format), &size, init_to_zero);
-  if (!resource)
-    return;
-  result->SetHostResource(instance, resource);
-
-  // Get the description, it's just serialized as a string.
-  thunk::EnterResourceNoLock<PPB_ImageData_API> enter_resource(resource, false);
-  if (enter_resource.failed())
-    return;
   PP_ImageDataDesc desc;
-  if (enter_resource.object()->Describe(&desc) == PP_TRUE) {
+  IPC::PlatformFileForTransit image_handle;
+  uint32_t byte_count;
+  PP_Resource resource = CreateImageData(
+                             instance,
+                             static_cast<PP_ImageDataFormat>(format),
+                             size,
+                             true /* init_to_zero */,
+                             true /* is_nacl_plugin */,
+                             &desc, &image_handle, &byte_count);
+
+  result->SetHostResource(instance, resource);
+  if (resource) {
     image_data_desc->resize(sizeof(PP_ImageDataDesc));
     memcpy(&(*image_data_desc)[0], &desc, sizeof(PP_ImageDataDesc));
+    result_image_handle->set_shmem(image_handle, byte_count);
+  } else {
+    image_data_desc->clear();
+    result_image_handle->set_null_shmem();
   }
-  int local_fd;
-  uint32_t byte_count;
-  if (enter_resource.object()->GetSharedMemory(&local_fd, &byte_count) != PP_OK)
-    return;
-  // TODO(dmichael): Change trusted interface to return a PP_FileHandle, those
-  // casts are ugly.
-  base::PlatformFile platform_file =
-#if defined(OS_WIN)
-      reinterpret_cast<HANDLE>(static_cast<intptr_t>(local_fd));
-#elif defined(OS_POSIX)
-      local_fd;
-#else
-  #error Not implemented.
-#endif  // defined(OS_WIN)
-  result_image_handle->set_shmem(
-      dispatcher->ShareHandleWithRemote(platform_file, false),
-      byte_count);
 }
 #endif  // !defined(OS_NACL)
 

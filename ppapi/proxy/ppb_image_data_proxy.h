@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "build/build_config.h"
+#include "ipc/ipc_platform_file.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
@@ -109,6 +110,24 @@ class PPB_ImageData_Proxy : public InterfaceProxy {
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
+
+  // Utility for creating ImageData resources.
+  // This can only be called on the host side of the proxy.
+  // On failure, will return invalid resource (0). On success it will return a
+  // valid resource and the out params will be written.
+  // |desc| contains the result of Describe.
+  // |image_handle| and |byte_count| contain the result of GetSharedMemory.
+  // NOTE: if |init_to_zero| is false, you should write over the entire image
+  // to avoid leaking sensitive data to a less privileged process.
+  PPAPI_PROXY_EXPORT static PP_Resource CreateImageData(
+      PP_Instance instance,
+      PP_ImageDataFormat format,
+      const PP_Size& size,
+      bool init_to_zero,
+      bool is_nacl_plugin,
+      PP_ImageDataDesc* desc,
+      IPC::PlatformFileForTransit* image_handle,
+      uint32_t* byte_count);
 
   static const ApiID kApiID = API_ID_PPB_IMAGE_DATA;
 
