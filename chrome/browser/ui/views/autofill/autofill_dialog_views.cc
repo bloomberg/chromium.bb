@@ -751,6 +751,8 @@ void AutofillDialogViews::UpdateAccountChooser() {
 }
 
 void AutofillDialogViews::UpdateButtonStrip() {
+  button_strip_extra_view_->SetVisible(
+      GetDialogButtons() != ui::DIALOG_BUTTON_NONE);
   save_in_chrome_checkbox_->SetVisible(!(controller_->AutocheckoutIsRunning() ||
                                          controller_->HadAutocheckoutError()));
   autocheckout_progress_bar_view_->SetVisible(
@@ -819,7 +821,7 @@ const content::NavigationController* AutofillDialogViews::ShowSignIn() {
   sign_in_webview_->SetPreferredSize(contents_->GetPreferredSize());
   main_container_->SetVisible(false);
   sign_in_container_->SetVisible(true);
-  GetDialogClientView()->UpdateDialogButtons();
+  UpdateButtonStrip();
   ContentsPreferredSizeChanged();
   return &sign_in_webview_->web_contents()->GetController();
 }
@@ -828,7 +830,7 @@ void AutofillDialogViews::HideSignIn() {
   account_chooser_->SetSignInLinkEnabled(true);
   sign_in_container_->SetVisible(false);
   main_container_->SetVisible(true);
-  GetDialogClientView()->UpdateDialogButtons();
+  UpdateButtonStrip();
   ContentsPreferredSizeChanged();
 }
 
