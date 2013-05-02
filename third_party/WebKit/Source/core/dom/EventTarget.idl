@@ -19,8 +19,8 @@
  */
 
 [
-    CustomToJSObject,
-    NoWrapperCache,
+    CustomToV8,
+    DoNotGenerateWrap,
     EventTarget
 ] interface EventTarget {
     void addEventListener(DOMString type, 

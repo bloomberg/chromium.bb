@@ -27,7 +27,7 @@
 [
     Conditional=SVG,
     
-    SuppressToJSObject,
+    DoNotGenerateToV8,
 ] interface SVGTests {
     readonly attribute SVGStringList requiredFeatures;
     readonly attribute SVGStringList requiredExtensions;

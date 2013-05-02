@@ -27,7 +27,7 @@
 [
     Conditional=SVG,
     
-    SuppressToJSObject,
+    DoNotGenerateToV8,
 ] interface SVGLangSpace {
              attribute DOMString xmllang;
              attribute DOMString xmlspace;

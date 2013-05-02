@@ -25,7 +25,7 @@
 
 [
     Conditional=SVG,
-    SuppressToJSObject,
+    DoNotGenerateToV8,
     ImplementationLacksVTable
 ] interface SVGUnitTypes {
     // Unit Types

@@ -28,7 +28,6 @@ CheckSecurityForNode
 Clamp
 Conditional=*
 Constructor
-RaisesException
 ConstructorTemplate=Event|TypedArray
 Custom
 CustomCall
@@ -42,7 +41,7 @@ CustomIsReachable
 CustomNamedGetter
 CustomNamedSetter
 CustomSetter
-CustomToJSObject
+CustomToV8
 Default=NullString|Undefined
 DeliverCustomElementCallbacks
 DependentLifetime
@@ -52,6 +51,8 @@ DoNotCheckSecurity
 DoNotCheckSecurityOnGetter
 DoNotCheckSecurityOnSetter
 DoNotCheckSignature
+DoNotGenerateToV8
+DoNotGenerateWrap
 EnabledAtRuntime=*
 EnabledPerContext=*
 EnforceRange
@@ -68,7 +69,6 @@ IsIndex
 MasqueradesAsUndefined
 MeasureAs=*
 NamedConstructor=*
-NoWrapperCache
 NotEnumerable
 PerWorldBindings
 RaisesException
@@ -79,7 +79,6 @@ ReturnNewObject
 SetterRaisesException
 SkipVTableValidation
 StrictTypeChecking
-SuppressToJSObject
 TreatNullAs=NullString
 TreatReturnedNullStringAs=Null|Undefined
 TreatUndefinedAs=NullString

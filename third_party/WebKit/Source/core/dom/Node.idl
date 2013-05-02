@@ -20,7 +20,7 @@
 
 // FIXME: Node should inherit EventTarget.
 [
-    CustomToJSObject,
+    CustomToV8,
     EventTarget,
     DependentLifetime
 ] interface Node {

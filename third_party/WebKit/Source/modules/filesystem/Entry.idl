@@ -29,7 +29,7 @@
  */
 
 [
-    CustomToJSObject
+    CustomToV8
 ] interface Entry {
     readonly attribute boolean isFile;
     readonly attribute boolean isDirectory;

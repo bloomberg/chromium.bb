@@ -26,7 +26,7 @@
 
 [
     ConstructorTemplate=TypedArray,
-    CustomToJSObject,
+    CustomToV8,
     DoNotCheckConstants,
     TypedArray=int,
     ImplementationNamespace=WTF

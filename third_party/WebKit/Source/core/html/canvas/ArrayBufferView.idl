@@ -24,7 +24,7 @@
  */
 
 [
-    CustomToJSObject,
+    CustomToV8,
     ImplementationNamespace=WTF
 ] interface ArrayBufferView {
     readonly attribute ArrayBuffer buffer;

@@ -27,9 +27,9 @@
 [
     CheckSecurity,
     EventTarget,
-    CustomToJSObject,
+    CustomToV8,
     CustomNamedGetter,
-    NoWrapperCache,
+    DoNotGenerateWrap,
     CustomIndexedGetter,
     InterfaceName=Window
 ] interface DOMWindow {

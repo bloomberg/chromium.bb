@@ -27,7 +27,7 @@
 [
     ConstructorTemplate=TypedArray,
     CustomIndexedSetter,
-    CustomToJSObject,
+    CustomToV8,
     DoNotCheckConstants,
     TypedArray=double
 ] interface Float64Array : ArrayBufferView {

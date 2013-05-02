@@ -19,7 +19,7 @@
  */
 
 [
-    CustomToJSObject
+    CustomToV8
 ] interface Document : Node {
 
     // DOM Level 1 Core

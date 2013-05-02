@@ -27,7 +27,7 @@
  */
 
 [
-    CustomToJSObject,
+    CustomToV8,
     ImplementationLacksVTable
 ] interface ImageData {
     readonly attribute long width;

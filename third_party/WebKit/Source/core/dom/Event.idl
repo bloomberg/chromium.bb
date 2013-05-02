@@ -20,7 +20,7 @@
 
 // Introduced in DOM Level 2:
 [
-    CustomToJSObject,
+    CustomToV8,
     ConstructorTemplate=Event,
     
     SkipVTableValidation

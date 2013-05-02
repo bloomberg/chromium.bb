@@ -858,8 +858,8 @@ END
 private:
 END
 
-    my $noToV8 = $interface->extendedAttributes->{"SuppressToJSObject"};
-    my $noWrap = $interface->extendedAttributes->{"NoWrapperCache"} || $noToV8;
+    my $noToV8 = $interface->extendedAttributes->{"DoNotGenerateToV8"};
+    my $noWrap = $interface->extendedAttributes->{"DoNotGenerateWrap"} || $noToV8;
     if (!$noWrap) {
         my $createWrapperArgumentType = GetPassRefPtrType($nativeType);
         AddToHeader(<<END);
@@ -879,7 +879,7 @@ public:
 
 END
 
-    my $customWrap = !!($interface->extendedAttributes->{"CustomToJSObject"});
+    my $customWrap = $interface->extendedAttributes->{"CustomToV8"};
     if ($noToV8) {
         die "Can't suppress toV8 for subclass\n" if @parents;
     } elsif ($noWrap) {
@@ -4236,7 +4236,7 @@ sub GenerateToV8Converters
     my $nativeType = shift;
     my $interfaceName = $interface->name;
 
-    if ($interface->extendedAttributes->{"NoWrapperCache"} || $interface->extendedAttributes->{"SuppressToJSObject"}) {
+    if ($interface->extendedAttributes->{"DoNotGenerateWrap"} || $interface->extendedAttributes->{"DoNotGenerateToV8"}) {
         return;
     }
 

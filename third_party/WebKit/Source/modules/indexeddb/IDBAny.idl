@@ -24,8 +24,8 @@
  */
 
 [
-    CustomToJSObject,
-    NoWrapperCache
+    CustomToV8,
+    DoNotGenerateWrap
 ] interface IDBAny {
     // This space is intentionally left blank.
 };

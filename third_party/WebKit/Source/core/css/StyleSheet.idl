@@ -20,7 +20,7 @@
 
 // Introduced in DOM Level 2:
 [
-    CustomToJSObject,
+    CustomToV8,
     GenerateIsReachable=ImplOwnerNodeRoot
 ] interface StyleSheet {
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString        type;

@@ -26,7 +26,7 @@
 
 [
     Conditional=SVG,
-    CustomToJSObject,
+    CustomToV8,
     
     ImplementationLacksVTable
 ] interface SVGPathSeg {

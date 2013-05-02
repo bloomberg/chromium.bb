@@ -26,8 +26,8 @@
 
 [
     EventTarget,
-    CustomToJSObject,
-    NoWrapperCache
+    CustomToV8,
+    DoNotGenerateWrap
 ] interface WorkerContext {
 
     // WorkerGlobalScope
