@@ -199,7 +199,7 @@ class FileSystem : public FileSystemInterface,
                 FileError error);
 
   // Callback for ResourceMetadata::RefreshEntry, from OnSearch.
-  // Adds |drive_file_path| to |results|. When |entry_proto| is not present in
+  // Adds |drive_file_path| to |results|. When |entry| is not present in
   // the local file system snapshot, it is not added to |results|. Instead,
   // CheckForUpdates is called. Runs |callback| with |results| if
   // |should_run_callback| is true.
@@ -208,7 +208,7 @@ class FileSystem : public FileSystemInterface,
                           const base::Closure& callback,
                           FileError error,
                           const base::FilePath& drive_file_path,
-                          scoped_ptr<DriveEntryProto> entry_proto);
+                          scoped_ptr<ResourceEntry> entry);
 
   // Part of CreateDirectory(). Called after ChangeListLoader::LoadIfNeeded()
   // is called and made sure that the resource metadata is loaded.
@@ -221,12 +221,12 @@ class FileSystem : public FileSystemInterface,
   // Used to implement Pin().
   void PinAfterGetEntryInfoByPath(const FileOperationCallback& callback,
                                   FileError error,
-                                  scoped_ptr<DriveEntryProto> entry);
+                                  scoped_ptr<ResourceEntry> entry);
 
   // Used to implement Unpin().
   void UnpinAfterGetEntryInfoByPath(const FileOperationCallback& callback,
                                     FileError error,
-                                    scoped_ptr<DriveEntryProto> entry);
+                                    scoped_ptr<ResourceEntry> entry);
 
   // Invoked upon completion of GetEntryInfoByPath initiated by
   // GetFileByPath. It then continues to invoke GetResolvedFileByPath.
@@ -235,7 +235,7 @@ class FileSystem : public FileSystemInterface,
       const base::FilePath& file_path,
       const GetFileCallback& callback,
       FileError error,
-      scoped_ptr<DriveEntryProto> file_info);
+      scoped_ptr<ResourceEntry> file_info);
 
   // Invoked upon completion of GetEntryInfoByPath initiated by OpenFile.
   // It then continues to invoke GetResolvedFileByPath and proceeds to
@@ -244,7 +244,7 @@ class FileSystem : public FileSystemInterface,
       const base::FilePath& file_path,
       const OpenFileCallback& callback,
       FileError error,
-      scoped_ptr<DriveEntryProto> file_info);
+      scoped_ptr<ResourceEntry> file_info);
 
   // Invoked at the last step of OpenFile. It removes |file_path| from the
   // current set of opened files if |result| is an error, and then invokes the
@@ -263,7 +263,7 @@ class FileSystem : public FileSystemInterface,
   void CloseFileAfterGetEntryInfo(const base::FilePath& file_path,
                                   const FileOperationCallback& callback,
                                   FileError error,
-                                  scoped_ptr<DriveEntryProto> entry_proto);
+                                  scoped_ptr<ResourceEntry> entry);
   void CloseFileFinalize(const base::FilePath& file_path,
                          const FileOperationCallback& callback,
                          FileError result);
@@ -314,14 +314,14 @@ class FileSystem : public FileSystemInterface,
       const base::FilePath& file_path,
       const GetEntryInfoCallback& callback,
       FileError error,
-      scoped_ptr<DriveEntryProto> entry_proto);
+      scoped_ptr<ResourceEntry> entry);
   void GetEntryInfoByPathAfterLoad(const base::FilePath& file_path,
                                    const GetEntryInfoCallback& callback,
                                    FileError error);
   void GetEntryInfoByPathAfterGetEntry2(
       const GetEntryInfoCallback& callback,
       FileError error,
-      scoped_ptr<DriveEntryProto> entry_proto);
+      scoped_ptr<ResourceEntry> entry);
 
   // Part of ReadDirectoryByPath()
   // 1) Called when ResourceMetadata::GetEntryInfoByPath() is complete.
@@ -332,7 +332,7 @@ class FileSystem : public FileSystemInterface,
       const base::FilePath& directory_path,
       const ReadDirectoryWithSettingCallback& callback,
       FileError error,
-      scoped_ptr<DriveEntryProto> entry_proto);
+      scoped_ptr<ResourceEntry> entry);
   void ReadDirectoryByPathAfterLoad(
       const base::FilePath& directory_path,
       const ReadDirectoryWithSettingCallback& callback,
@@ -340,7 +340,7 @@ class FileSystem : public FileSystemInterface,
   void ReadDirectoryByPathAfterRead(
       const ReadDirectoryWithSettingCallback& callback,
       FileError error,
-      scoped_ptr<DriveEntryProtoVector> entries);
+      scoped_ptr<ResourceEntryVector> entries);
 
   // Gets the file at |file_path| from the cache (if found in the cache),
   // or the server (if not found in the cache) after the file info is
@@ -363,7 +363,7 @@ class FileSystem : public FileSystemInterface,
       const GURL& download_url,
       FileError error,
       const base::FilePath& drive_file_path,
-      scoped_ptr<DriveEntryProto> entry_proto);
+      scoped_ptr<ResourceEntry> entry);
   void GetResolvedFileByPathAfterFreeDiskSpace(
       scoped_ptr<GetResolvedFileParams> params,
       const GURL& download_url,
@@ -398,7 +398,7 @@ class FileSystem : public FileSystemInterface,
       const GetEntryInfoWithFilePathCallback& callback,
       FileError error,
       const base::FilePath& file_path,
-      scoped_ptr<DriveEntryProto> entry_proto);
+      scoped_ptr<ResourceEntry> entry);
 
   // Part of GetFileByResourceId(). Called after
   // ResourceMetadata::GetEntryInfoByResourceId() is complete.
@@ -410,7 +410,7 @@ class FileSystem : public FileSystemInterface,
       const google_apis::GetContentCallback& get_content_callback,
       FileError error,
       const base::FilePath& file_path,
-      scoped_ptr<DriveEntryProto> entry_proto);
+      scoped_ptr<ResourceEntry> entry);
 
   // Part of GetFileContentByPath(). Called after
   // ResourceMetadata::GetEntryInfoByPath() is complete.
@@ -422,7 +422,7 @@ class FileSystem : public FileSystemInterface,
       const google_apis::GetContentCallback& get_content_callback,
       const FileOperationCallback& completion_callback,
       FileError error,
-      scoped_ptr<DriveEntryProto> entry_proto);
+      scoped_ptr<ResourceEntry> entry);
 
   // Part of RefreshDirectory(). Called after
   // GetEntryInfoByPath() is complete.
@@ -430,26 +430,26 @@ class FileSystem : public FileSystemInterface,
       const base::FilePath& directory_path,
       const FileOperationCallback& callback,
       FileError error,
-      scoped_ptr<DriveEntryProto> entry_proto);
+      scoped_ptr<ResourceEntry> entry);
 
   // Part of GetEntryByResourceId and GetEntryByPath. Checks whether there is a
   // local dirty cache for the entry, and if there is, replace the
-  // PlatformFileInfo part of the |entry_proto| with the locally modified info.
+  // PlatformFileInfo part of the |entry| with the locally modified info.
   // |callback| must not be null.
-  void CheckLocalModificationAndRun(scoped_ptr<DriveEntryProto> entry_proto,
+  void CheckLocalModificationAndRun(scoped_ptr<ResourceEntry> entry,
                                     const GetEntryInfoCallback& callback);
   void CheckLocalModificationAndRunAfterGetCacheEntry(
-      scoped_ptr<DriveEntryProto> entry_proto,
+      scoped_ptr<ResourceEntry> entry,
       const GetEntryInfoCallback& callback,
       bool success,
       const FileCacheEntry& cache_entry);
   void CheckLocalModificationAndRunAfterGetCacheFile(
-      scoped_ptr<DriveEntryProto> entry_proto,
+      scoped_ptr<ResourceEntry> entry,
       const GetEntryInfoCallback& callback,
       FileError error,
       const base::FilePath& local_cache_path);
   void CheckLocalModificationAndRunAfterGetFileInfo(
-      scoped_ptr<DriveEntryProto> entry_proto,
+      scoped_ptr<ResourceEntry> entry,
       const GetEntryInfoCallback& callback,
       base::PlatformFileInfo* file_info,
       bool get_file_info_result);
@@ -459,7 +459,7 @@ class FileSystem : public FileSystemInterface,
   void MarkCacheFileAsMountedAfterGetEntryInfo(
       const OpenFileCallback& callback,
       FileError error,
-      scoped_ptr<DriveEntryProto> entry_proto);
+      scoped_ptr<ResourceEntry> entry);
 
   // Cancels the job with |id| in the scheduler.
   void CancelJobInScheduler(JobID id);

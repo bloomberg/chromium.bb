@@ -17,10 +17,10 @@
 
 namespace drive {
 
-class FileCacheEntry;
-class DriveEntryProto;
-class FileSystemInterface;
 class FileCache;
+class FileCacheEntry;
+class FileSystemInterface;
+class ResourceEntry;
 
 // The SyncClient is used to synchronize pinned files on Drive and the
 // cache on the local drive. The sync client works as follows.
@@ -109,7 +109,7 @@ class SyncClient : public FileSystemObserver,
                                   const FileCacheEntry& cache_entry,
                                   FileError error,
                                   const base::FilePath& file_path,
-                                  scoped_ptr<DriveEntryProto> entry_proto);
+                                  scoped_ptr<ResourceEntry> entry);
 
   // Called when a cache entry is obtained.
   void OnGetCacheEntry(const std::string& resource_id,

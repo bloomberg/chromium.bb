@@ -14,7 +14,7 @@
 
 namespace drive {
 
-class DriveEntryProto;
+class ResourceEntry;
 
 // This class implements an "executor" class that will execute tasks for
 // third party Drive apps that store data in Drive itself.  To do that, it
@@ -38,7 +38,7 @@ class FileTaskExecutor : public file_handler_util::FileTaskExecutor {
   virtual ~FileTaskExecutor();
 
   void OnFileEntryFetched(FileError error,
-                          scoped_ptr<DriveEntryProto> entry_proto);
+                          scoped_ptr<ResourceEntry> entry);
   void OnAppAuthorized(const std::string& resource_id,
                        google_apis::GDataErrorCode error,
                        const GURL& open_link);

@@ -19,9 +19,9 @@ class FilePath;
 
 namespace drive {
 
-class DriveEntryProto;
 class FileCache;
 class JobScheduler;
+class ResourceEntry;
 
 namespace internal {
 class ResourceMetadata;

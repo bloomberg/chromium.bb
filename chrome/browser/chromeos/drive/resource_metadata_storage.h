@@ -19,10 +19,10 @@ class DB;
 
 namespace drive {
 
-class DriveEntryProto;
+class ResourceEntry;
 class ResourceMetadataHeader;
 
-typedef base::Callback<void(const DriveEntryProto& entry)> IterateCallback;
+typedef base::Callback<void(const ResourceEntry& entry)> IterateCallback;
 
 // Storage for ResourceMetadata which is responsible to manage entry info
 // and child-parent relationships between entries.
@@ -45,10 +45,10 @@ class ResourceMetadataStorage {
   int64 GetLargestChangestamp();
 
   // Puts the entry to this storage.
-  bool PutEntry(const DriveEntryProto& entry);
+  bool PutEntry(const ResourceEntry& entry);
 
   // Returns an entry stored in this storage.
-  scoped_ptr<DriveEntryProto> GetEntry(const std::string& resource_id);
+  scoped_ptr<ResourceEntry> GetEntry(const std::string& resource_id);
 
   // Removes an entry from this storage.
   bool RemoveEntry(const std::string& resource_id);

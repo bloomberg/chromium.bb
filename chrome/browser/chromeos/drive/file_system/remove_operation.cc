@@ -58,7 +58,7 @@ void RemoveOperation::Remove(
 void RemoveOperation::RemoveAfterGetEntryInfo(
     const FileOperationCallback& callback,
     FileError error,
-    scoped_ptr<DriveEntryProto> entry_proto) {
+    scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -66,14 +66,14 @@ void RemoveOperation::RemoveAfterGetEntryInfo(
     callback.Run(error);
     return;
   }
-  DCHECK(entry_proto.get());
+  DCHECK(entry.get());
 
   job_scheduler_->DeleteResource(
-      entry_proto->resource_id(),
+      entry->resource_id(),
       base::Bind(&RemoveOperation::RemoveResourceLocally,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
-                 entry_proto->resource_id()));
+                 entry->resource_id()));
 }
 
 void RemoveOperation::RemoveResourceLocally(

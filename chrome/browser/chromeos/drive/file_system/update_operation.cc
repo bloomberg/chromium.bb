@@ -59,7 +59,7 @@ void UpdateOperation::UpdateFileByEntryInfo(
     const FileOperationCallback& callback,
     FileError error,
     const base::FilePath& drive_file_path,
-    scoped_ptr<DriveEntryProto> entry_proto) {
+    scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -68,29 +68,29 @@ void UpdateOperation::UpdateFileByEntryInfo(
     return;
   }
 
-  DCHECK(entry_proto.get());
-  if (entry_proto->file_info().is_directory()) {
+  DCHECK(entry.get());
+  if (entry->file_info().is_directory()) {
     callback.Run(FILE_ERROR_NOT_FOUND);
     return;
   }
 
   // Extract a pointer before we call Pass() so we can use it below.
-  DriveEntryProto* entry_proto_ptr = entry_proto.get();
-  cache_->GetFile(entry_proto_ptr->resource_id(),
-                  entry_proto_ptr->file_specific_info().file_md5(),
+  ResourceEntry* entry_ptr = entry.get();
+  cache_->GetFile(entry_ptr->resource_id(),
+                  entry_ptr->file_specific_info().file_md5(),
                   base::Bind(&UpdateOperation::OnGetFileCompleteForUpdateFile,
                              weak_ptr_factory_.GetWeakPtr(),
                              context,
                              callback,
                              drive_file_path,
-                             base::Passed(&entry_proto)));
+                             base::Passed(&entry)));
 }
 
 void UpdateOperation::OnGetFileCompleteForUpdateFile(
     DriveClientContext context,
     const FileOperationCallback& callback,
     const base::FilePath& drive_file_path,
-    scoped_ptr<DriveEntryProto> entry_proto,
+    scoped_ptr<ResourceEntry> entry,
     FileError error,
     const base::FilePath& cache_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -102,10 +102,10 @@ void UpdateOperation::OnGetFileCompleteForUpdateFile(
   }
 
   scheduler_->UploadExistingFile(
-      entry_proto->resource_id(),
+      entry->resource_id(),
       drive_file_path,
       cache_file_path,
-      entry_proto->file_specific_info().content_mime_type(),
+      entry->file_specific_info().content_mime_type(),
       "",  // etag
       context,
       base::Bind(&UpdateOperation::OnUpdatedFileUploaded,
@@ -129,7 +129,7 @@ void UpdateOperation::OnUpdatedFileUploaded(
   }
 
   metadata_->RefreshEntry(
-      ConvertResourceEntryToDriveEntryProto(*resource_entry),
+      ConvertToResourceEntry(*resource_entry),
       base::Bind(&UpdateOperation::OnUpdatedFileRefreshed,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
@@ -138,7 +138,7 @@ void UpdateOperation::OnUpdatedFileRefreshed(
     const FileOperationCallback& callback,
     FileError error,
     const base::FilePath& drive_file_path,
-    scoped_ptr<DriveEntryProto> entry_proto) {
+    scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -147,16 +147,16 @@ void UpdateOperation::OnUpdatedFileRefreshed(
     return;
   }
 
-  DCHECK(entry_proto.get());
-  DCHECK(entry_proto->has_resource_id());
-  DCHECK(entry_proto->has_file_specific_info());
-  DCHECK(entry_proto->file_specific_info().has_file_md5());
+  DCHECK(entry.get());
+  DCHECK(entry->has_resource_id());
+  DCHECK(entry->has_file_specific_info());
+  DCHECK(entry->file_specific_info().has_file_md5());
 
   observer_->OnDirectoryChangedByOperation(drive_file_path.DirName());
 
   // Clear the dirty bit if we have updated an existing file.
-  cache_->ClearDirty(entry_proto->resource_id(),
-                     entry_proto->file_specific_info().file_md5(),
+  cache_->ClearDirty(entry->resource_id(),
+                     entry->file_specific_info().file_md5(),
                      callback);
 }
 

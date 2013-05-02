@@ -11,10 +11,10 @@ class ResourceEntry;
 
 namespace drive {
 
-class DriveEntryProto;
+class ResourceEntry;
 
-// Converts a google_apis::ResourceEntry into a DriveEntryProto.
-DriveEntryProto ConvertResourceEntryToDriveEntryProto(
+// Converts a google_apis::ResourceEntry into a drive::ResourceEntry.
+ResourceEntry ConvertToResourceEntry(
     const google_apis::ResourceEntry& resource_entry);
 
 }  // namespace drive

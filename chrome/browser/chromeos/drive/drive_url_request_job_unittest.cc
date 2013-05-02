@@ -159,7 +159,7 @@ class DriveURLRequestJobTest : public testing::Test {
                    base::Unretained(this))));
 
     FileError error = FILE_ERROR_FAILED;
-    scoped_ptr<DriveEntryProto> entry;
+    scoped_ptr<ResourceEntry> entry;
     reader->Initialize(
         file_path,
         google_apis::CreateComposedCallback(

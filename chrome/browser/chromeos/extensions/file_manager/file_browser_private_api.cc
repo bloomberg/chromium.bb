@@ -364,7 +364,7 @@ void DoNothingWithBool(bool /* success */) {
 }
 
 void FillDriveEntryPropertiesValue(
-    const drive::DriveEntryProto& entry_proto,
+    const drive::ResourceEntry& entry_proto,
     DictionaryValue* property_dict) {
   property_dict->SetBoolean("sharedWithMe", entry_proto.shared_with_me());
 
@@ -2346,7 +2346,7 @@ bool GetDriveEntryPropertiesFunction::RunImpl() {
 
 void GetDriveEntryPropertiesFunction::OnGetFileInfo(
     drive::FileError error,
-    scoped_ptr<drive::DriveEntryProto> entry) {
+    scoped_ptr<drive::ResourceEntry> entry) {
   DCHECK(properties_);
 
   if (error != drive::FILE_ERROR_OK) {
@@ -2834,7 +2834,7 @@ void SearchDriveFunction::OnSearch(
     entry->SetString("fileSystemRoot", file_system_url_.spec());
     entry->SetString("fileFullPath", "/" + results->at(i).path.value());
     entry->SetBoolean("fileIsDirectory",
-                      results->at(i).entry_proto.file_info().is_directory());
+                      results->at(i).entry.file_info().is_directory());
     entries->Append(entry);
   }
 
@@ -2933,7 +2933,7 @@ void SearchDriveMetadataFunction::OnSearchMetadata(
     entry->SetString("fileSystemRoot", file_system_url_.spec());
     entry->SetString("fileFullPath", "/" + results->at(i).path.value());
     entry->SetBoolean("fileIsDirectory",
-                      results->at(i).entry_proto.file_info().is_directory());
+                      results->at(i).entry.file_info().is_directory());
 
     result_dict->Set("entry", entry);
     result_dict->SetString("highlightedBaseName",

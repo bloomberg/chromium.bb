@@ -105,8 +105,8 @@ class NetworkReaderProxy : public ReaderProxy {
 
 }  // namespace internal
 
-class DriveEntryProto;
 class FileSystemInterface;
+class ResourceEntry;
 
 // The stream reader for a file in FileSystem. Instances of this class
 // should live on IO thread.
@@ -120,7 +120,7 @@ class DriveFileStreamReader {
 
   // Callback to return the result of Initialize().
   typedef base::Callback<void(FileError error,
-                              scoped_ptr<DriveEntryProto> entry)>
+                              scoped_ptr<ResourceEntry> entry)>
       InitializeCompletionCallback;
 
   explicit DriveFileStreamReader(
@@ -154,14 +154,14 @@ class DriveFileStreamReader {
       const base::FilePath& drive_file_path,
       const InitializeCompletionCallback& callback,
       FileError error,
-      scoped_ptr<DriveEntryProto> entry,
+      scoped_ptr<ResourceEntry> entry,
       const base::FilePath& local_cache_file_path,
       const base::Closure& cancel_download_closure);
 
   // Part of Initialize. Called when the local file open process is done.
   void InitializeAfterLocalFileOpen(
       const InitializeCompletionCallback& callback,
-      scoped_ptr<DriveEntryProto> entry,
+      scoped_ptr<ResourceEntry> entry,
       scoped_ptr<net::FileStream> file_stream,
       int open_result);
 

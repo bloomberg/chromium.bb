@@ -21,9 +21,9 @@ class ResourceEntry;
 
 namespace drive {
 
-class DriveEntryProto;
 class FileSystemInterface;
 class JobScheduler;
+class ResourceEntry;
 
 namespace file_system {
 

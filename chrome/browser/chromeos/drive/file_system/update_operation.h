@@ -20,9 +20,9 @@ class FilePath;
 
 namespace drive {
 
-class DriveEntryProto;
 class FileCache;
 class JobScheduler;
+class ResourceEntry;
 
 namespace file_system {
 
@@ -62,7 +62,7 @@ class UpdateOperation {
       const FileOperationCallback& callback,
       FileError error,
       const base::FilePath& drive_file_path,
-      scoped_ptr<DriveEntryProto> entry_proto);
+      scoped_ptr<ResourceEntry> entry);
 
   // Part of UpdateFileByResourceId().
   // Called when FileCache::GetFileOnUIThread() is completed for
@@ -72,7 +72,7 @@ class UpdateOperation {
       DriveClientContext context,
       const FileOperationCallback& callback,
       const base::FilePath& drive_file_path,
-      scoped_ptr<DriveEntryProto> entry_proto,
+      scoped_ptr<ResourceEntry> entry,
       FileError error,
       const base::FilePath& cache_file_path);
 
@@ -92,7 +92,7 @@ class UpdateOperation {
   void OnUpdatedFileRefreshed(const FileOperationCallback& callback,
                               FileError error,
                               const base::FilePath& drive_file_path,
-                              scoped_ptr<DriveEntryProto> entry_proto);
+                              scoped_ptr<ResourceEntry> entry);
 
   FileCache* cache_;
   internal::ResourceMetadata* metadata_;

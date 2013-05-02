@@ -18,8 +18,8 @@ namespace drive {
 namespace {
 
 // Stores the entry to the map.
-void StoreEntryToMap(std::map<std::string,DriveEntryProto>* out,
-                     const DriveEntryProto& entry) {
+void StoreEntryToMap(std::map<std::string,ResourceEntry>* out,
+                     const ResourceEntry& entry) {
   (*out)[entry.resource_id()] = entry;
 }
 
@@ -86,7 +86,7 @@ TEST_F(ResourceMetadataStorageTest, PutEntry) {
   const std::string name2 = "ABCD";
   const std::string name3 = "EFGH";
 
-  DriveEntryProto entry1;
+  ResourceEntry entry1;
   entry1.set_resource_id(key1);
 
   // key1 not found.
@@ -96,7 +96,7 @@ TEST_F(ResourceMetadataStorageTest, PutEntry) {
   EXPECT_TRUE(storage_->PutEntry(entry1));
 
   // key1 found.
-  scoped_ptr<DriveEntryProto> result;
+  scoped_ptr<ResourceEntry> result;
   result = storage_->GetEntry(key1);
   ASSERT_TRUE(result);
   EXPECT_EQ(key1, result->resource_id());
@@ -105,7 +105,7 @@ TEST_F(ResourceMetadataStorageTest, PutEntry) {
   EXPECT_FALSE(storage_->GetEntry(key2));
 
   // Put entry2 as a child of entry1.
-  DriveEntryProto entry2;
+  ResourceEntry entry2;
   entry2.set_parent_resource_id(key1);
   entry2.set_resource_id(key2);
   entry2.set_base_name(name2);
@@ -116,7 +116,7 @@ TEST_F(ResourceMetadataStorageTest, PutEntry) {
   EXPECT_EQ(key2, storage_->GetChild(key1, name2));
 
   // Put entry3 as a child of entry2.
-  DriveEntryProto entry3;
+  ResourceEntry entry3;
   entry3.set_parent_resource_id(key2);
   entry3.set_resource_id(key3);
   entry3.set_base_name(name3);
@@ -145,8 +145,8 @@ TEST_F(ResourceMetadataStorageTest, PutEntry) {
 
 TEST_F(ResourceMetadataStorageTest, Iterate) {
   // Prepare data.
-  std::vector<DriveEntryProto> entries;
-  DriveEntryProto entry;
+  std::vector<ResourceEntry> entries;
+  ResourceEntry entry;
 
   entry.set_resource_id("entry1");
   entries.push_back(entry);
@@ -161,7 +161,7 @@ TEST_F(ResourceMetadataStorageTest, Iterate) {
     EXPECT_TRUE(storage_->PutEntry(entries[i]));
 
   // Call Iterate and check the result.
-  std::map<std::string, DriveEntryProto> result;
+  std::map<std::string, ResourceEntry> result;
   storage_->Iterate(base::Bind(&StoreEntryToMap, base::Unretained(&result)));
 
   EXPECT_EQ(entries.size(), result.size());
@@ -191,7 +191,7 @@ TEST_F(ResourceMetadataStorageTest, GetChildren) {
 
   // Put parents.
   for (size_t i = 0; i < arraysize(parents_id); ++i) {
-    DriveEntryProto entry;
+    ResourceEntry entry;
     entry.set_resource_id(parents_id[i]);
     EXPECT_TRUE(storage_->PutEntry(entry));
   }
@@ -199,7 +199,7 @@ TEST_F(ResourceMetadataStorageTest, GetChildren) {
   // Put some data.
   for (size_t i = 0; i < children_name_id.size(); ++i) {
     for (size_t j = 0; j < children_name_id[i].size(); ++j) {
-      DriveEntryProto entry;
+      ResourceEntry entry;
       entry.set_parent_resource_id(parents_id[i]);
       entry.set_base_name(children_name_id[i][j].first);
       entry.set_resource_id(children_name_id[i][j].second);
@@ -225,9 +225,9 @@ TEST_F(ResourceMetadataStorageTest, OpenExistingDB) {
   const std::string child_name1 = "WXYZABC";
   const std::string child_id1 = "qwerty";
 
-  DriveEntryProto entry1;
+  ResourceEntry entry1;
   entry1.set_resource_id(parent_id1);
-  DriveEntryProto entry2;
+  ResourceEntry entry2;
   entry2.set_resource_id(child_id1);
   entry2.set_parent_resource_id(parent_id1);
   entry2.set_base_name(child_name1);
@@ -241,7 +241,7 @@ TEST_F(ResourceMetadataStorageTest, OpenExistingDB) {
   ASSERT_TRUE(storage_->Initialize());
 
   // Can read data.
-  scoped_ptr<DriveEntryProto> result;
+  scoped_ptr<ResourceEntry> result;
   result = storage_->GetEntry(parent_id1);
   ASSERT_TRUE(result);
   EXPECT_EQ(parent_id1, result->resource_id());
@@ -259,7 +259,7 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB) {
   const int64 kLargestChangestamp = 1234567890;
   const std::string key1 = "abcd";
 
-  DriveEntryProto entry;
+  ResourceEntry entry;
   entry.set_resource_id(key1);
 
   // Put some data.
@@ -299,7 +299,7 @@ TEST_F(ResourceMetadataStorageTest, CheckValidity) {
   EXPECT_TRUE(CheckValidity());
 
   // Put entry with key1.
-  DriveEntryProto entry;
+  ResourceEntry entry;
   entry.set_resource_id(key1);
   entry.set_base_name(name1);
   EXPECT_TRUE(storage_->PutEntry(entry));

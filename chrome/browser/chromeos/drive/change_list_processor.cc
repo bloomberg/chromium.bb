@@ -39,7 +39,7 @@ ChangeList::ChangeList(const google_apis::ResourceList& resource_list)
 
   entries_.resize(resource_list.entries().size());
   for (size_t i = 0; i < resource_list.entries().size(); ++i) {
-    ConvertResourceEntryToDriveEntryProto(*resource_list.entries()[i]).Swap(
+    ConvertToResourceEntry(*resource_list.entries()[i]).Swap(
         &entries_[i]);
   }
 }
@@ -171,8 +171,8 @@ void ChangeListProcessor::ApplyNextEntryProtoAsync() {
 void ChangeListProcessor::ApplyNextEntryProto() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!entry_proto_map_.empty()) {
-    ApplyNextByIterator(entry_proto_map_.begin());  // Continue.
+  if (!entry_map_.empty()) {
+    ApplyNextByIterator(entry_map_.begin());  // Continue.
   } else {
     // Update the root entry and finish.
     UpdateRootEntry(base::Bind(&ChangeListProcessor::OnComplete,
@@ -180,23 +180,23 @@ void ChangeListProcessor::ApplyNextEntryProto() {
   }
 }
 
-void ChangeListProcessor::ApplyNextByIterator(DriveEntryProtoMap::iterator it) {
+void ChangeListProcessor::ApplyNextByIterator(ResourceEntryMap::iterator it) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DriveEntryProto entry_proto = it->second;
-  DCHECK_EQ(it->first, entry_proto.resource_id());
+  ResourceEntry entry = it->second;
+  DCHECK_EQ(it->first, entry.resource_id());
   // Add the largest changestamp if this entry is a directory.
-  if (entry_proto.file_info().is_directory()) {
-    entry_proto.mutable_directory_specific_info()->set_changestamp(
+  if (entry.file_info().is_directory()) {
+    entry.mutable_directory_specific_info()->set_changestamp(
         largest_changestamp_);
   }
 
   // The parent of this entry may not yet be processed. We need the parent
   // to be rooted in the metadata tree before we can add the child, so process
   // the parent first.
-  DriveEntryProtoMap::iterator parent_it = entry_proto_map_.find(
-      entry_proto.parent_resource_id());
-  if (parent_it != entry_proto_map_.end()) {
+  ResourceEntryMap::iterator parent_it = entry_map_.find(
+      entry.parent_resource_id());
+  if (parent_it != entry_map_.end()) {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(&ChangeListProcessor::ApplyNextByIterator,
@@ -204,54 +204,54 @@ void ChangeListProcessor::ApplyNextByIterator(DriveEntryProtoMap::iterator it) {
                    parent_it));
   } else {
     // Erase the entry so the deleted entry won't be referenced.
-    entry_proto_map_.erase(it);
-    ApplyEntryProto(entry_proto);
+    entry_map_.erase(it);
+    ApplyEntryProto(entry);
   }
 }
 
-void ChangeListProcessor::ApplyEntryProto(const DriveEntryProto& entry_proto) {
+void ChangeListProcessor::ApplyEntryProto(const ResourceEntry& entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Lookup the entry.
   resource_metadata_->GetEntryInfoByResourceId(
-      entry_proto.resource_id(),
+      entry.resource_id(),
       base::Bind(&ChangeListProcessor::ContinueApplyEntryProto,
                  weak_ptr_factory_.GetWeakPtr(),
-                 entry_proto));
+                 entry));
 }
 
 void ChangeListProcessor::ContinueApplyEntryProto(
-    const DriveEntryProto& entry_proto,
+    const ResourceEntry& entry,
     FileError error,
     const base::FilePath& file_path,
-    scoped_ptr<DriveEntryProto> old_entry_proto) {
+    scoped_ptr<ResourceEntry> old_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error == FILE_ERROR_OK) {
-    if (entry_proto.deleted()) {
+    if (entry.deleted()) {
       // Deleted file/directory.
-      RemoveEntryFromParent(entry_proto, file_path);
+      RemoveEntryFromParent(entry, file_path);
     } else {
       // Entry exists and needs to be refreshed.
-      RefreshEntry(entry_proto, file_path);
+      RefreshEntry(entry, file_path);
     }
-  } else if (error == FILE_ERROR_NOT_FOUND && !entry_proto.deleted()) {
+  } else if (error == FILE_ERROR_NOT_FOUND && !entry.deleted()) {
     // Adding a new entry.
-    AddEntry(entry_proto);
+    AddEntry(entry);
   } else {
     // Continue.
     ApplyNextEntryProtoAsync();
   }
 }
 
-void ChangeListProcessor::AddEntry(const DriveEntryProto& entry_proto) {
+void ChangeListProcessor::AddEntry(const ResourceEntry& entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   resource_metadata_->AddEntry(
-      entry_proto,
+      entry,
       base::Bind(&ChangeListProcessor::NotifyForAddEntry,
                  weak_ptr_factory_.GetWeakPtr(),
-                 entry_proto.file_info().is_directory()));
+                 entry.file_info().is_directory()));
 }
 
 void ChangeListProcessor::NotifyForAddEntry(bool is_directory,
@@ -274,37 +274,37 @@ void ChangeListProcessor::NotifyForAddEntry(bool is_directory,
 }
 
 void ChangeListProcessor::RemoveEntryFromParent(
-    const DriveEntryProto& entry_proto,
+    const ResourceEntry& entry,
     const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!file_path.empty());
 
-  if (!entry_proto.file_info().is_directory()) {
+  if (!entry.file_info().is_directory()) {
     // No children if entry is a file.
-    OnGetChildrenForRemove(entry_proto, file_path, std::set<base::FilePath>());
+    OnGetChildrenForRemove(entry, file_path, std::set<base::FilePath>());
   } else {
     // If entry is a directory, notify its children.
     resource_metadata_->GetChildDirectories(
-        entry_proto.resource_id(),
+        entry.resource_id(),
         base::Bind(&ChangeListProcessor::OnGetChildrenForRemove,
                    weak_ptr_factory_.GetWeakPtr(),
-                   entry_proto,
+                   entry,
                    file_path));
   }
 }
 
 void ChangeListProcessor::OnGetChildrenForRemove(
-    const DriveEntryProto& entry_proto,
+    const ResourceEntry& entry,
     const base::FilePath& file_path,
     const std::set<base::FilePath>& child_directories) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!file_path.empty());
 
   resource_metadata_->RemoveEntry(
-      entry_proto.resource_id(),
+      entry.resource_id(),
       base::Bind(&ChangeListProcessor::NotifyForRemoveEntryFromParent,
                  weak_ptr_factory_.GetWeakPtr(),
-                 entry_proto.file_info().is_directory(),
+                 entry.file_info().is_directory(),
                  file_path,
                  child_directories));
 }
@@ -335,12 +335,12 @@ void ChangeListProcessor::NotifyForRemoveEntryFromParent(
   ApplyNextEntryProtoAsync();
 }
 
-void ChangeListProcessor::RefreshEntry(const DriveEntryProto& entry_proto,
+void ChangeListProcessor::RefreshEntry(const ResourceEntry& entry,
                                       const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   resource_metadata_->RefreshEntry(
-      entry_proto,
+      entry,
       base::Bind(&ChangeListProcessor::NotifyForRefreshEntry,
                  weak_ptr_factory_.GetWeakPtr(),
                  file_path));
@@ -350,7 +350,7 @@ void ChangeListProcessor::NotifyForRefreshEntry(
     const base::FilePath& old_file_path,
     FileError error,
     const base::FilePath& file_path,
-    scoped_ptr<DriveEntryProto> entry_proto) {
+    scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DVLOG(1) << "NotifyForRefreshEntry " << file_path.value();
@@ -362,7 +362,7 @@ void ChangeListProcessor::NotifyForRefreshEntry(
     changed_dirs_.insert(file_path.DirName());
 
     // Notify self if entry is a directory.
-    if (entry_proto->file_info().is_directory()) {
+    if (entry->file_info().is_directory()) {
       // Notify new self.
       changed_dirs_.insert(file_path);
       // Notify old self.
@@ -384,7 +384,7 @@ void ChangeListProcessor::FeedToEntryProtoMap(
     ChangeList* change_list = change_lists[i];
 
     // Get upload url from the root feed. Links for all other collections will
-    // be handled in ConvertResourceEntryToDriveEntryProto.
+    // be handled in ConvertToResourceEntry.
     if (i == 0) {
       // The changestamp appears in the first page of the change list.
       // The changestamp does not appear in the full resource list.
@@ -393,29 +393,29 @@ void ChangeListProcessor::FeedToEntryProtoMap(
       DCHECK_GE(change_list->largest_changestamp(), 0);
     }
 
-    std::vector<DriveEntryProto>* entries = change_list->mutable_entries();
+    std::vector<ResourceEntry>* entries = change_list->mutable_entries();
     for (size_t i = 0; i < entries->size(); ++i) {
-      DriveEntryProto* entry_proto = &(*entries)[i];
+      ResourceEntry* entry = &(*entries)[i];
       // Some document entries don't map into files (i.e. sites).
-      if (entry_proto->resource_id().empty())
+      if (entry->resource_id().empty())
         continue;
 
       // Count the number of files.
       if (uma_stats) {
-        if (!entry_proto->file_info().is_directory()) {
+        if (!entry->file_info().is_directory()) {
           uma_stats->IncrementNumFiles(
-              entry_proto->file_specific_info().is_hosted_document());
+              entry->file_specific_info().is_hosted_document());
         }
-        if (entry_proto->shared_with_me())
+        if (entry->shared_with_me())
           uma_stats->IncrementNumSharedWithMeEntries();
       }
 
-      std::pair<DriveEntryProtoMap::iterator, bool> ret = entry_proto_map_.
-          insert(std::make_pair(entry_proto->resource_id(), DriveEntryProto()));
+      std::pair<ResourceEntryMap::iterator, bool> ret = entry_map_.
+          insert(std::make_pair(entry->resource_id(), ResourceEntry()));
       if (ret.second)
-        ret.first->second.Swap(entry_proto);
+        ret.first->second.Swap(entry);
       else
-        LOG(DFATAL) << "Found duplicate file " << entry_proto->base_name();
+        LOG(DFATAL) << "Found duplicate file " << entry->base_name();
     }
   }
 }
@@ -434,13 +434,13 @@ void ChangeListProcessor::UpdateRootEntry(const base::Closure& closure) {
 void ChangeListProcessor::UpdateRootEntryAfterGetEntry(
     const base::Closure& closure,
     FileError error,
-    scoped_ptr<DriveEntryProto> root_proto) {
+    scoped_ptr<ResourceEntry> root_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!closure.is_null());
 
   if (error != FILE_ERROR_OK) {
     // TODO(satorux): Need to trigger recovery if root is corrupt.
-    LOG(WARNING) << "Failed to get the proto for root directory";
+    LOG(WARNING) << "Failed to get the entry for root directory";
     closure.Run();
     return;
   }
@@ -461,7 +461,7 @@ void ChangeListProcessor::UpdateRootEntryAfterRefreshEntry(
     const base::Closure& closure,
     FileError error,
     const base::FilePath& /* root_path */,
-    scoped_ptr<DriveEntryProto> /* root_proto */) {
+    scoped_ptr<ResourceEntry> /* root_proto */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!closure.is_null());
   LOG_IF(WARNING, error != FILE_ERROR_OK) << "Failed to refresh root directory";
@@ -480,7 +480,7 @@ void ChangeListProcessor::OnComplete() {
 void ChangeListProcessor::Clear() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  entry_proto_map_.clear();
+  entry_map_.clear();
   changed_dirs_.clear();
   largest_changestamp_ = 0;
   on_complete_callback_.Reset();

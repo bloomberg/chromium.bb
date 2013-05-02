@@ -42,9 +42,9 @@ ACTION_P(MockUpdateFileByResourceId, error) {
 
 // Action used to set mock expectations for GetFileInfoByResourceId().
 ACTION_P2(MockUpdateFileByResourceId, error, md5) {
-  scoped_ptr<DriveEntryProto> entry_proto(new DriveEntryProto);
-  entry_proto->mutable_file_specific_info()->set_file_md5(md5);
-  arg1.Run(error, base::FilePath(), entry_proto.Pass());
+  scoped_ptr<ResourceEntry> entry(new ResourceEntry);
+  entry->mutable_file_specific_info()->set_file_md5(md5);
+  arg1.Run(error, base::FilePath(), entry.Pass());
 }
 
 }  // namespace
@@ -177,7 +177,7 @@ class SyncClientTest : public testing::Test {
   // ID.
   //
   // This is used for testing StartCheckingExistingPinnedFiles(), hence we
-  // are only interested in the MD5 value in DriveEntryProto.
+  // are only interested in the MD5 value in ResourceEntry.
   void SetExpectationForGetFileInfoByResourceId(
       const std::string& resource_id,
       const std::string& new_md5) {

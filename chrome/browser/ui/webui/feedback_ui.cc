@@ -106,8 +106,8 @@ std::string GetUserEmail() {
     return manager->GetLoggedInUser()->display_email();
 }
 
-bool ScreenshotDriveTimestampComp(const drive::DriveEntryProto& entry1,
-                                  const drive::DriveEntryProto& entry2) {
+bool ScreenshotDriveTimestampComp(const drive::ResourceEntry& entry1,
+                                  const drive::ResourceEntry& entry2) {
   return entry1.file_info().last_modified() >
       entry2.file_info().last_modified();
 }
@@ -117,16 +117,16 @@ void ReadDirectoryCallback(size_t max_saved,
                            base::Closure callback,
                            drive::FileError error,
                            bool hide_hosted_documents,
-                           scoped_ptr<drive::DriveEntryProtoVector> entries) {
+                           scoped_ptr<drive::ResourceEntryVector> entries) {
   if (error != drive::FILE_ERROR_OK) {
     callback.Run();
     return;
   }
 
   size_t max_scan = std::min(kMaxNumScanFiles, entries->size());
-  std::vector<drive::DriveEntryProto> screenshot_entries;
+  std::vector<drive::ResourceEntry> screenshot_entries;
   for (size_t i = 0; i < max_scan; ++i) {
-    const drive::DriveEntryProto& entry = (*entries)[i];
+    const drive::ResourceEntry& entry = (*entries)[i];
     if (StartsWithASCII(entry.base_name(),
                         ScreenshotSource::kScreenshotPrefix, true) &&
         EndsWith(entry.base_name(),
@@ -141,7 +141,7 @@ void ReadDirectoryCallback(size_t max_saved,
                     screenshot_entries.end(),
                     ScreenshotDriveTimestampComp);
   for (size_t i = 0; i < sort_size; ++i) {
-    const drive::DriveEntryProto& entry = screenshot_entries[i];
+    const drive::ResourceEntry& entry = screenshot_entries[i];
     saved_screenshots->push_back(
         std::string(ScreenshotSource::kScreenshotUrlRoot) +
         std::string(ScreenshotSource::kScreenshotSaved) +

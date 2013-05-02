@@ -24,9 +24,9 @@ class ResourceEntry;
 
 namespace drive {
 
-class DriveEntryProto;
 class FileSystemInterface;
 class JobScheduler;
+class ResourceEntry;
 
 namespace file_system {
 
@@ -163,7 +163,7 @@ class CopyOperation {
       const StartFileUploadParams& params,
       const std::string& content_type,
       FileError error,
-      scoped_ptr<DriveEntryProto> entry_proto);
+      scoped_ptr<ResourceEntry> entry);
 
   // Helper function that completes bookkeeping tasks related to
   // completed file transfer.
@@ -181,7 +181,7 @@ class CopyOperation {
       const base::FilePath& remote_dest_file_path,
       const FileOperationCallback& callback,
       FileError error,
-      scoped_ptr<DriveEntryProto> entry_proto);
+      scoped_ptr<ResourceEntry> entry);
 
   // Initiates transfer of |local_file_path| with |resource_id| to
   // |remote_dest_file_path|. |local_file_path| must be a file from the local

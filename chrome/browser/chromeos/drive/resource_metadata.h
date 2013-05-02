@@ -24,12 +24,12 @@ class SequencedTaskRunner;
 
 namespace drive {
 
-class DriveEntryProto;
+class ResourceEntry;
 class ResourceMetadataStorage;
 
-typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
-typedef std::map<std::string /* resource_id */, DriveEntryProto>
-    DriveEntryProtoMap;
+typedef std::vector<ResourceEntry> ResourceEntryVector;
+typedef std::map<std::string /* resource_id */, ResourceEntry>
+    ResourceEntryMap;
 
 // Holds information needed to fetch contents of a directory.
 // This object is copyable.
@@ -69,22 +69,22 @@ typedef base::Callback<void(FileError error,
 // Used to get entry info from the file system.
 // If |error| is not FILE_ERROR_OK, |entry_info| is set to NULL.
 typedef base::Callback<void(FileError error,
-                            scoped_ptr<DriveEntryProto> entry_proto)>
+                            scoped_ptr<ResourceEntry> entry)>
     GetEntryInfoCallback;
 
 typedef base::Callback<void(FileError error,
-                            scoped_ptr<DriveEntryProtoVector> entries)>
+                            scoped_ptr<ResourceEntryVector> entries)>
     ReadDirectoryCallback;
 
 // Used to get entry info from the file system, with the Drive file path.
-// If |error| is not FILE_ERROR_OK, |entry_proto| is set to NULL.
+// If |error| is not FILE_ERROR_OK, |entry| is set to NULL.
 //
-// |drive_file_path| parameter is provided as DriveEntryProto does not contain
+// |drive_file_path| parameter is provided as ResourceEntry does not contain
 // the Drive file path (i.e. only contains the base name without parent
 // directory names).
 typedef base::Callback<void(FileError error,
                             const base::FilePath& drive_file_path,
-                            scoped_ptr<DriveEntryProto> entry_proto)>
+                            scoped_ptr<ResourceEntry> entry)>
     GetEntryInfoWithFilePathCallback;
 
 // Used to get a set of changed directories for feed processing.
@@ -100,7 +100,7 @@ struct EntryInfoResult {
 
   base::FilePath path;
   FileError error;
-  scoped_ptr<DriveEntryProto> proto;
+  scoped_ptr<ResourceEntry> entry;
 };
 
 // The result of GetEntryInfoPairCallback(). Used to get a pair of entries
@@ -144,9 +144,9 @@ class ResourceMetadata {
   void SetLargestChangestamp(int64 value,
                              const FileOperationCallback& callback);
 
-  // Adds |entry_proto| to the metadata tree, based on its parent_resource_id.
+  // Adds |entry| to the metadata tree, based on its parent_resource_id.
   // |callback| must not be null.
-  void AddEntry(const DriveEntryProto& entry_proto,
+  void AddEntry(const ResourceEntry& entry,
                 const FileMoveCallback& callback);
 
   // Moves entry specified by |file_path| to the directory specified by
@@ -191,15 +191,15 @@ class ResourceMetadata {
                                const base::FilePath& second_path,
                                const GetEntryInfoPairCallback& callback);
 
-  // Refreshes a drive entry with the same resource id as |entry_proto|.
-  // |callback| is run with the error, file path and proto of the entry.
+  // Refreshes a drive entry with the same resource id as |entry|.
+  // |callback| is run with the error, file path and the new entry.
   // |callback| must not be null.
-  void RefreshEntry(const DriveEntryProto& entry_proto,
+  void RefreshEntry(const ResourceEntry& entry,
                     const GetEntryInfoWithFilePathCallback& callback);
 
   // Removes all child files of the directory pointed by
   // |directory_fetch_info| and replaces them with
-  // |entry_proto_map|. The changestamp of the directory will be updated per
+  // |entry_map|. The changestamp of the directory will be updated per
   // |directory_fetch_info|. |callback| is called with the directory path.
   // |callback| must not be null.
   //
@@ -208,7 +208,7 @@ class ResourceMetadata {
   // remain as-is, but the new directories should be added with changestamp
   // set to zero, which will be fast fetched.
   void RefreshDirectory(const DirectoryFetchInfo& directory_fetch_info,
-                        const DriveEntryProtoMap& entry_proto_map,
+                        const ResourceEntryMap& entry_map,
                         const FileMoveCallback& callback);
 
   // Recursively get child directories of entry pointed to by |resource_id|.
@@ -245,7 +245,7 @@ class ResourceMetadata {
   FileError SetLargestChangestampOnBlockingPool(int64 value);
 
   // Used to implement AddEntry().
-  FileError AddEntryOnBlockingPool(const DriveEntryProto& entry_proto,
+  FileError AddEntryOnBlockingPool(const ResourceEntry& entry,
                                    base::FilePath* out_file_path);
 
   // Used to implement MoveEntryToDirectory().
@@ -267,26 +267,26 @@ class ResourceMetadata {
   FileError GetEntryInfoByResourceIdOnBlockingPool(
       const std::string& resource_id,
       base::FilePath* out_file_path,
-      DriveEntryProto* out_entry);
+      ResourceEntry* out_entry);
 
   // Used to implement GetEntryInfoByPath().
   FileError GetEntryInfoByPathOnBlockingPool(const base::FilePath& file_path,
-                                             DriveEntryProto* out_entry);
+                                             ResourceEntry* out_entry);
 
   // Used to implement ReadDirectoryByPath().
   FileError ReadDirectoryByPathOnBlockingPool(
       const base::FilePath& file_path,
-      DriveEntryProtoVector* out_entries);
+      ResourceEntryVector* out_entries);
 
   // Used to implement RefreshEntry().
-  FileError RefreshEntryOnBlockingPool(const DriveEntryProto& entry_proto,
+  FileError RefreshEntryOnBlockingPool(const ResourceEntry& entry,
                                        base::FilePath* out_file_path,
-                                       DriveEntryProto* out_entry);
+                                       ResourceEntry* out_entry);
 
   // Used to implement RefreshDirectory().
   FileError RefreshDirectoryOnBlockingPool(
       const DirectoryFetchInfo& directory_fetch_info,
-      const DriveEntryProtoMap& entry_proto_map,
+      const ResourceEntryMap& entry_map,
       base::FilePath* out_file_path);
 
   // Used to implement GetChildDirectories().
@@ -304,7 +304,7 @@ class ResourceMetadata {
       const base::FilePath& second_path,
       const GetEntryInfoPairCallback& callback,
       FileError error,
-      scoped_ptr<DriveEntryProto> entry_proto);
+      scoped_ptr<ResourceEntry> entry);
 
   // Continues with GetIntroInfoPairByPaths after the second DriveEntry has been
   // asynchronously fetched.
@@ -313,16 +313,16 @@ class ResourceMetadata {
       const GetEntryInfoPairCallback& callback,
       scoped_ptr<EntryInfoPairResult> result,
       FileError error,
-      scoped_ptr<DriveEntryProto> entry_proto);
+      scoped_ptr<ResourceEntry> entry);
 
   // Searches for |file_path| synchronously.
-  scoped_ptr<DriveEntryProto> FindEntryByPathSync(
+  scoped_ptr<ResourceEntry> FindEntryByPathSync(
       const base::FilePath& file_path);
 
   // Helper function to get a directory given |resource_id|. |resource_id| can
   // not be empty. Returns NULL if it finds no corresponding entry, or the
   // corresponding entry is not a directory.
-  scoped_ptr<DriveEntryProto> GetDirectory(const std::string& resource_id);
+  scoped_ptr<ResourceEntry> GetDirectory(const std::string& resource_id);
 
   // Returns virtual file path of the entry.
   base::FilePath GetFilePath(const std::string& resource_id);
@@ -335,13 +335,13 @@ class ResourceMetadata {
   // parent if there is. This method will also do name de-duplication to ensure
   // that the exposed presentation path does not have naming conflicts. Two
   // files with the same name "Foo" will be renames to "Foo (1)" and "Foo (2)".
-  bool PutEntryUnderDirectory(const DriveEntryProto& entry);
+  bool PutEntryUnderDirectory(const ResourceEntry& entry);
 
   // Removes the entry and its descendants.
   bool RemoveEntryRecursively(const std::string& resource_id);
 
-  // Converts the children as a vector of DriveEntryProto.
-  scoped_ptr<DriveEntryProtoVector> DirectoryChildrenToProtoVector(
+  // Converts the children as a vector of ResourceEntry.
+  scoped_ptr<ResourceEntryVector> DirectoryChildrenToProtoVector(
       const std::string& directory_resource_id);
 
   const base::FilePath data_directory_path_;

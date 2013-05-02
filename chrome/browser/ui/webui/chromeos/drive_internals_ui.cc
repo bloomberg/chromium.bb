@@ -117,7 +117,7 @@ void GetFreeDiskSpace(const base::FilePath& home_path,
 
 // Formats |entry| into text.
 std::string FormatEntry(const base::FilePath& path,
-                        const drive::DriveEntryProto& entry) {
+                        const drive::ResourceEntry& entry) {
   using base::StringAppendF;
   using google_apis::util::FormatTimeAsString;
 
@@ -227,13 +227,13 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   // Called when GetEntryInfoByPath() is complete.
   void OnGetEntryInfoByPath(const base::FilePath& path,
                             drive::FileError error,
-                            scoped_ptr<drive::DriveEntryProto> entry);
+                            scoped_ptr<drive::ResourceEntry> entry);
 
   // Called when ReadDirectoryByPath() is complete.
   void OnReadDirectoryByPath(const base::FilePath& parent_path,
                              drive::FileError error,
                              bool hide_hosted_documents,
-                             scoped_ptr<drive::DriveEntryProtoVector> entries);
+                             scoped_ptr<drive::ResourceEntryVector> entries);
 
   // Called as the iterator for DebugInfoCollector::IterateFileCache().
   void UpdateCacheEntry(const std::string& resource_id,
@@ -656,7 +656,7 @@ void DriveInternalsWebUIHandler::OnGetGCacheContents(
 void DriveInternalsWebUIHandler::OnGetEntryInfoByPath(
     const base::FilePath& path,
     drive::FileError error,
-    scoped_ptr<drive::DriveEntryProto> entry) {
+    scoped_ptr<drive::ResourceEntry> entry) {
   if (error == drive::FILE_ERROR_OK) {
     DCHECK(entry.get());
     const base::StringValue value(FormatEntry(path, *entry) + "\n");
@@ -668,13 +668,13 @@ void DriveInternalsWebUIHandler::OnReadDirectoryByPath(
     const base::FilePath& parent_path,
     drive::FileError error,
     bool hide_hosted_documents,
-    scoped_ptr<drive::DriveEntryProtoVector> entries) {
+    scoped_ptr<drive::ResourceEntryVector> entries) {
   if (error == drive::FILE_ERROR_OK) {
     DCHECK(entries.get());
 
     std::string file_system_as_text;
     for (size_t i = 0; i < entries->size(); ++i) {
-      const drive::DriveEntryProto& entry = (*entries)[i];
+      const drive::ResourceEntry& entry = (*entries)[i];
       const base::FilePath current_path = parent_path.Append(
           base::FilePath::FromUTF8Unsafe(entry.base_name()));
 

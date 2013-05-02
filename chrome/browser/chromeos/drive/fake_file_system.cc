@@ -321,13 +321,12 @@ void FakeFileSystem::GetFilePathAfterGetResourceEntry(
   DCHECK_EQ(util::GDataToFileError(error_in), FILE_ERROR_OK);
   DCHECK(resource_entry);
 
-  DriveEntryProto entry_proto =
-      ConvertResourceEntryToDriveEntryProto(*resource_entry);
+  ResourceEntry entry = ConvertToResourceEntry(*resource_entry);
   base::FilePath file_path =
-      base::FilePath::FromUTF8Unsafe(entry_proto.base_name()).Append(
+      base::FilePath::FromUTF8Unsafe(entry.base_name()).Append(
           remaining_file_path);
 
-  GetFilePathInternal(root_resource_id, entry_proto.parent_resource_id(),
+  GetFilePathInternal(root_resource_id, entry.parent_resource_id(),
                       file_path, callback);
 }
 
@@ -340,32 +339,32 @@ void FakeFileSystem::GetEntryInfoByResourceIdAfterGetResourceEntry(
 
   FileError error = util::GDataToFileError(error_in);
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, base::FilePath(), scoped_ptr<DriveEntryProto>());
+    callback.Run(error, base::FilePath(), scoped_ptr<ResourceEntry>());
     return;
   }
 
   DCHECK(resource_entry);
-  scoped_ptr<DriveEntryProto> entry_proto(new DriveEntryProto(
-      ConvertResourceEntryToDriveEntryProto(*resource_entry)));
+  scoped_ptr<ResourceEntry> entry(new ResourceEntry(
+      ConvertToResourceEntry(*resource_entry)));
 
-  const std::string parent_resource_id = entry_proto->parent_resource_id();
+  const std::string parent_resource_id = entry->parent_resource_id();
   GetFilePath(
       parent_resource_id,
       base::Bind(
           &FakeFileSystem::GetEntryInfoByResourceIdAfterGetFilePath,
           weak_ptr_factory_.GetWeakPtr(),
-          callback, error, base::Passed(&entry_proto)));
+          callback, error, base::Passed(&entry)));
 }
 
 void FakeFileSystem::GetEntryInfoByResourceIdAfterGetFilePath(
     const GetEntryInfoWithFilePathCallback& callback,
     FileError error,
-    scoped_ptr<DriveEntryProto> entry_proto,
+    scoped_ptr<ResourceEntry> entry,
     const base::FilePath& parent_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::FilePath file_path = parent_file_path.Append(
-      base::FilePath::FromUTF8Unsafe(entry_proto->base_name()));
-  callback.Run(error, file_path, entry_proto.Pass());
+      base::FilePath::FromUTF8Unsafe(entry->base_name()));
+  callback.Run(error, file_path, entry.Pass());
 }
 
 // Implementation of GetFileContentByPath.
@@ -375,34 +374,34 @@ void FakeFileSystem::GetFileContentByPathAfterGetEntryInfo(
     const google_apis::GetContentCallback& get_content_callback,
     const FileOperationCallback& completion_callback,
     FileError error,
-    scoped_ptr<DriveEntryProto> entry_proto) {
+    scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != FILE_ERROR_OK) {
     completion_callback.Run(error);
     return;
   }
-  DCHECK(entry_proto);
+  DCHECK(entry);
 
   // We're only interested in a file.
-  if (entry_proto->file_info().is_directory()) {
+  if (entry->file_info().is_directory()) {
     completion_callback.Run(FILE_ERROR_NOT_A_FILE);
     return;
   }
 
   base::FilePath cache_path =
-      cache_dir_.path().AppendASCII(entry_proto->resource_id());
+      cache_dir_.path().AppendASCII(entry->resource_id());
   if (file_util::PathExists(cache_path)) {
     // Cache file is found.
-    initialized_callback.Run(FILE_ERROR_OK, entry_proto.Pass(), cache_path,
+    initialized_callback.Run(FILE_ERROR_OK, entry.Pass(), cache_path,
                              base::Closure());
     completion_callback.Run(FILE_ERROR_OK);
     return;
   }
 
-  // Copy the URL here before passing |entry_proto| to the callback.
-  const GURL download_url(entry_proto->download_url());
-  initialized_callback.Run(FILE_ERROR_OK, entry_proto.Pass(), base::FilePath(),
+  // Copy the URL here before passing |entry| to the callback.
+  const GURL download_url(entry->download_url());
+  initialized_callback.Run(FILE_ERROR_OK, entry.Pass(), base::FilePath(),
                            base::Bind(&base::DoNothing));
   drive_service_->DownloadFile(
       file_path,
@@ -432,12 +431,12 @@ void FakeFileSystem::GetEntryInfoByPathAfterGetAboutResource(
 
   FileError error = util::GDataToFileError(gdata_error);
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, scoped_ptr<DriveEntryProto>());
+    callback.Run(error, scoped_ptr<ResourceEntry>());
     return;
   }
 
   DCHECK(about_resource);
-  scoped_ptr<DriveEntryProto> root(new DriveEntryProto);
+  scoped_ptr<ResourceEntry> root(new ResourceEntry);
   root->mutable_file_info()->set_is_directory(true);
   root->set_resource_id(about_resource->root_folder_id());
   root->set_title(util::kDriveMyDriveRootDirName);
@@ -448,17 +447,17 @@ void FakeFileSystem::GetEntryInfoByPathAfterGetParentEntryInfo(
     const base::FilePath& base_name,
     const GetEntryInfoCallback& callback,
     FileError error,
-    scoped_ptr<DriveEntryProto> parent_entry_proto) {
+    scoped_ptr<ResourceEntry> parent_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, scoped_ptr<DriveEntryProto>());
+    callback.Run(error, scoped_ptr<ResourceEntry>());
     return;
   }
 
-  DCHECK(parent_entry_proto);
+  DCHECK(parent_entry);
   drive_service_->GetResourceListInDirectory(
-      parent_entry_proto->resource_id(),
+      parent_entry->resource_id(),
       base::Bind(
           &FakeFileSystem::GetEntryInfoByPathAfterGetResourceList,
           weak_ptr_factory_.GetWeakPtr(), base_name, callback));
@@ -473,7 +472,7 @@ void FakeFileSystem::GetEntryInfoByPathAfterGetResourceList(
 
   FileError error = util::GDataToFileError(gdata_error);
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, scoped_ptr<DriveEntryProto>());
+    callback.Run(error, scoped_ptr<ResourceEntry>());
     return;
   }
 
@@ -481,8 +480,8 @@ void FakeFileSystem::GetEntryInfoByPathAfterGetResourceList(
   const ScopedVector<google_apis::ResourceEntry>& entries =
       resource_list->entries();
   for (size_t i = 0; i < entries.size(); ++i) {
-    scoped_ptr<DriveEntryProto> entry(new DriveEntryProto(
-        ConvertResourceEntryToDriveEntryProto(*entries[i])));
+    scoped_ptr<ResourceEntry> entry(new ResourceEntry(
+        ConvertToResourceEntry(*entries[i])));
     if (entry->base_name() == base_name.AsUTF8Unsafe()) {
       // Found the target entry.
       callback.Run(FILE_ERROR_OK, entry.Pass());
@@ -490,7 +489,7 @@ void FakeFileSystem::GetEntryInfoByPathAfterGetResourceList(
     }
   }
 
-  callback.Run(FILE_ERROR_NOT_FOUND, scoped_ptr<DriveEntryProto>());
+  callback.Run(FILE_ERROR_NOT_FOUND, scoped_ptr<ResourceEntry>());
 }
 
 }  // namespace test_util

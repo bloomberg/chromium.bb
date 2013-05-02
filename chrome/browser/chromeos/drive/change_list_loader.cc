@@ -592,7 +592,7 @@ ChangeListLoader::DoLoadGrandRootDirectoryFromServerAfterGetEntryInfoByPath(
     const DirectoryFetchInfo& directory_fetch_info,
     const FileOperationCallback& callback,
     FileError error,
-    scoped_ptr<DriveEntryProto> entry_proto) {
+    scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
   DCHECK_EQ(directory_fetch_info.resource_id(),
@@ -632,15 +632,15 @@ void ChangeListLoader::DoLoadGrandRootDirectoryFromServerAfterGetAboutResource(
 
   // Build entry proto map for grand root directory, which has two entries;
   // "/drive/root" and "/drive/other".
-  DriveEntryProtoMap grand_root_entry_proto_map;
+  ResourceEntryMap grand_root_entry_map;
   const std::string& root_resource_id = about_resource->root_folder_id();
-  grand_root_entry_proto_map[root_resource_id] =
+  grand_root_entry_map[root_resource_id] =
       util::CreateMyDriveRootEntry(root_resource_id);
-  grand_root_entry_proto_map[util::kDriveOtherDirSpecialResourceId] =
+  grand_root_entry_map[util::kDriveOtherDirSpecialResourceId] =
       util::CreateOtherDirEntry();
   resource_metadata_->RefreshDirectory(
       directory_fetch_info,
-      grand_root_entry_proto_map,
+      grand_root_entry_map,
       base::Bind(&ChangeListLoader::DoLoadDirectoryFromServerAfterRefresh,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_fetch_info,
@@ -670,7 +670,7 @@ void ChangeListLoader::DoLoadDirectoryFromServerAfterLoad(
   change_list_processor.FeedToEntryProtoMap(change_lists.Pass(), NULL, NULL);
   resource_metadata_->RefreshDirectory(
       directory_fetch_info,
-      change_list_processor.entry_proto_map(),
+      change_list_processor.entry_map(),
       base::Bind(&ChangeListLoader::DoLoadDirectoryFromServerAfterRefresh,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_fetch_info,

@@ -48,7 +48,7 @@ class SearchMetadataTest : public testing::Test {
   }
 
   void AddEntriesToMetadata() {
-    DriveEntryProto entry;
+    ResourceEntry entry;
 
     AddEntryToMetadata(GetDirectoryEntry(
         util::kDriveMyDriveRootDirName, "root", 100,
@@ -79,11 +79,11 @@ class SearchMetadataTest : public testing::Test {
     AddEntryToMetadata(entry);
   }
 
-  DriveEntryProto GetFileEntry(const std::string& name,
+  ResourceEntry GetFileEntry(const std::string& name,
                                const std::string& resource_id,
                                int64 last_accessed,
                                const std::string& parent_resource_id) {
-    DriveEntryProto entry;
+    ResourceEntry entry;
     entry.set_title(name);
     entry.set_resource_id(resource_id);
     entry.set_parent_resource_id(parent_resource_id);
@@ -91,11 +91,11 @@ class SearchMetadataTest : public testing::Test {
     return entry;
   }
 
-  DriveEntryProto GetDirectoryEntry(const std::string& name,
+  ResourceEntry GetDirectoryEntry(const std::string& name,
                                     const std::string& resource_id,
                                     int64 last_accessed,
                                     const std::string& parent_resource_id) {
-    DriveEntryProto entry;
+    ResourceEntry entry;
     entry.set_title(name);
     entry.set_resource_id(resource_id);
     entry.set_parent_resource_id(parent_resource_id);
@@ -104,7 +104,7 @@ class SearchMetadataTest : public testing::Test {
     return entry;
   }
 
-  void AddEntryToMetadata(const DriveEntryProto& entry) {
+  void AddEntryToMetadata(const ResourceEntry& entry) {
     FileError error = FILE_ERROR_FAILED;
     base::FilePath drive_path;
 
@@ -190,8 +190,8 @@ TEST_F(SearchMetadataTest, SearchMetadata_RegularFiles) {
   ASSERT_EQ(2U, result->size());
 
   // The results should be sorted by the last accessed time in descending order.
-  EXPECT_EQ(6, result->at(0).entry_proto.file_info().last_accessed());
-  EXPECT_EQ(2, result->at(1).entry_proto.file_info().last_accessed());
+  EXPECT_EQ(6, result->at(0).entry.file_info().last_accessed());
+  EXPECT_EQ(2, result->at(1).entry.file_info().last_accessed());
 
   // All base names should contain "File".
   EXPECT_EQ("drive/root/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt",

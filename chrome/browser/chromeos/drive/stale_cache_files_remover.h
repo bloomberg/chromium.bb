@@ -47,7 +47,7 @@ class StaleCacheFilesRemover : public FileSystemObserver {
       const std::string& cache_md5,
       FileError error,
       const base::FilePath& drive_file_path,
-      scoped_ptr<DriveEntryProto> entry_proto);
+      scoped_ptr<ResourceEntry> entry);
 
   FileCache* cache_;  // Not owned.
   FileSystemInterface* file_system_;  // Not owned.

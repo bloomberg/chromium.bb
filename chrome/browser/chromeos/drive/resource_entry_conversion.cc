@@ -33,24 +33,24 @@ bool HasSharedWithMeLabel(const google_apis::ResourceEntry& entry) {
 
 }  // namespace
 
-DriveEntryProto ConvertResourceEntryToDriveEntryProto(
-    const google_apis::ResourceEntry& entry) {
-  DriveEntryProto entry_proto;
+ResourceEntry ConvertToResourceEntry(
+    const google_apis::ResourceEntry& input) {
+  ResourceEntry output;
 
   // For regular files, the 'filename' and 'title' attribute in the metadata
   // may be different (e.g. due to rename). To be consistent with the web
   // interface and other client to use the 'title' attribute, instead of
   // 'filename', as the file name in the local snapshot.
-  entry_proto.set_title(entry.title());
-  entry_proto.set_base_name(util::EscapeUtf8FileName(entry_proto.title()));
+  output.set_title(input.title());
+  output.set_base_name(util::EscapeUtf8FileName(output.title()));
 
-  entry_proto.set_resource_id(entry.resource_id());
-  entry_proto.set_download_url(entry.download_url().spec());
+  output.set_resource_id(input.resource_id());
+  output.set_download_url(input.download_url().spec());
 
   const google_apis::Link* edit_link =
-      entry.GetLinkByType(google_apis::Link::LINK_EDIT);
+      input.GetLinkByType(google_apis::Link::LINK_EDIT);
   if (edit_link)
-    entry_proto.set_edit_url(edit_link->href().spec());
+    output.set_edit_url(edit_link->href().spec());
 
   // Sets parent Resource ID. On drive.google.com, a file can have multiple
   // parents or no parent, but we are forcing a tree-shaped structure (i.e. no
@@ -58,75 +58,75 @@ DriveEntryProto ConvertResourceEntryToDriveEntryProto(
   // used for the entry and if the entry has no parent, we assign a special ID
   // which represents no-parent entries. Tracked in http://crbug.com/158904.
   const google_apis::Link* parent_link =
-      entry.GetLinkByType(google_apis::Link::LINK_PARENT);
+      input.GetLinkByType(google_apis::Link::LINK_PARENT);
   if (parent_link) {
-    entry_proto.set_parent_resource_id(
+    output.set_parent_resource_id(
         util::ExtractResourceIdFromUrl(parent_link->href()));
   }
   // Apply mapping from an empty parent to the special dummy directory.
-  if (entry_proto.parent_resource_id().empty())
-    entry_proto.set_parent_resource_id(util::kDriveOtherDirSpecialResourceId);
+  if (output.parent_resource_id().empty())
+    output.set_parent_resource_id(util::kDriveOtherDirSpecialResourceId);
 
-  entry_proto.set_deleted(entry.deleted());
-  entry_proto.set_shared_with_me(HasSharedWithMeLabel(entry));
+  output.set_deleted(input.deleted());
+  output.set_shared_with_me(HasSharedWithMeLabel(input));
 
-  PlatformFileInfoProto* file_info = entry_proto.mutable_file_info();
+  PlatformFileInfoProto* file_info = output.mutable_file_info();
 
-  file_info->set_last_modified(entry.updated_time().ToInternalValue());
+  file_info->set_last_modified(input.updated_time().ToInternalValue());
   // If the file has never been viewed (last_viewed_time().is_null() == true),
   // then we will set the last_accessed field in the protocol buffer to 0.
-  file_info->set_last_accessed(entry.last_viewed_time().ToInternalValue());
-  file_info->set_creation_time(entry.published_time().ToInternalValue());
+  file_info->set_last_accessed(input.last_viewed_time().ToInternalValue());
+  file_info->set_creation_time(input.published_time().ToInternalValue());
 
-  if (entry.is_file() || entry.is_hosted_document()) {
+  if (input.is_file() || input.is_hosted_document()) {
     DriveFileSpecificInfo* file_specific_info =
-        entry_proto.mutable_file_specific_info();
-    if (entry.is_file()) {
-      file_info->set_size(entry.file_size());
-      file_specific_info->set_file_md5(entry.file_md5());
+        output.mutable_file_specific_info();
+    if (input.is_file()) {
+      file_info->set_size(input.file_size());
+      file_specific_info->set_file_md5(input.file_md5());
 
       // The resumable-edit-media link should only be present for regular
       // files as hosted documents are not uploadable.
-    } else if (entry.is_hosted_document()) {
+    } else if (input.is_hosted_document()) {
       // Attach .g<something> extension to hosted documents so we can special
       // case their handling in UI.
-      // TODO(satorux): Figure out better way how to pass entry info like kind
+      // TODO(satorux): Figure out better way how to pass input info like kind
       // to UI through the File API stack.
-      const std::string document_extension = entry.GetHostedDocumentExtension();
+      const std::string document_extension = input.GetHostedDocumentExtension();
       file_specific_info->set_document_extension(document_extension);
-      entry_proto.set_base_name(
-          util::EscapeUtf8FileName(entry_proto.title() + document_extension));
+      output.set_base_name(
+          util::EscapeUtf8FileName(output.title() + document_extension));
 
       // We don't know the size of hosted docs and it does not matter since
       // is has no effect on the quota.
       file_info->set_size(0);
     }
     file_info->set_is_directory(false);
-    file_specific_info->set_content_mime_type(entry.content_mime_type());
-    file_specific_info->set_is_hosted_document(entry.is_hosted_document());
+    file_specific_info->set_content_mime_type(input.content_mime_type());
+    file_specific_info->set_is_hosted_document(input.is_hosted_document());
 
-    const google_apis::Link* thumbnail_link = entry.GetLinkByType(
+    const google_apis::Link* thumbnail_link = input.GetLinkByType(
         google_apis::Link::LINK_THUMBNAIL);
     if (thumbnail_link)
       file_specific_info->set_thumbnail_url(thumbnail_link->href().spec());
 
-    const google_apis::Link* alternate_link = entry.GetLinkByType(
+    const google_apis::Link* alternate_link = input.GetLinkByType(
         google_apis::Link::LINK_ALTERNATE);
     if (alternate_link)
       file_specific_info->set_alternate_url(alternate_link->href().spec());
 
-    const google_apis::Link* share_link = entry.GetLinkByType(
+    const google_apis::Link* share_link = input.GetLinkByType(
         google_apis::Link::LINK_SHARE);
     if (share_link)
       file_specific_info->set_share_url(share_link->href().spec());
-  } else if (entry.is_folder()) {
+  } else if (input.is_folder()) {
     file_info->set_is_directory(true);
   } else {
     // Some resource entries don't map into files (i.e. sites).
-    return DriveEntryProto();
+    return ResourceEntry();
   }
 
-  return entry_proto;
+  return output;
 }
 
 }  // namespace drive

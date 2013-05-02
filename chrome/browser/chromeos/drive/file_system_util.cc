@@ -93,8 +93,8 @@ bool IsSpecialResourceId(const std::string& resource_id) {
       resource_id == kDriveOtherDirSpecialResourceId;
 }
 
-DriveEntryProto CreateMyDriveRootEntry(const std::string& root_resource_id) {
-  DriveEntryProto mydrive_root;
+ResourceEntry CreateMyDriveRootEntry(const std::string& root_resource_id) {
+  ResourceEntry mydrive_root;
   mydrive_root.mutable_file_info()->set_is_directory(true);
   mydrive_root.set_resource_id(root_resource_id);
   mydrive_root.set_parent_resource_id(util::kDriveGrandRootSpecialResourceId);
@@ -102,8 +102,8 @@ DriveEntryProto CreateMyDriveRootEntry(const std::string& root_resource_id) {
   return mydrive_root;
 }
 
-DriveEntryProto CreateOtherDirEntry() {
-  DriveEntryProto other_dir;
+ResourceEntry CreateOtherDirEntry() {
+  ResourceEntry other_dir;
   other_dir.mutable_file_info()->set_is_directory(true);
   other_dir.set_resource_id(util::kDriveOtherDirSpecialResourceId);
   other_dir.set_parent_resource_id(util::kDriveGrandRootSpecialResourceId);
@@ -349,27 +349,29 @@ FileError GDataToFileError(google_apis::GDataErrorCode status) {
   }
 }
 
-void ConvertProtoToPlatformFileInfo(const PlatformFileInfoProto& proto,
-                                    base::PlatformFileInfo* file_info) {
-  file_info->size = proto.size();
-  file_info->is_directory = proto.is_directory();
-  file_info->is_symbolic_link = proto.is_symbolic_link();
+void ConvertResourceEntryToPlatformFileInfo(
+    const PlatformFileInfoProto& entry,
+    base::PlatformFileInfo* file_info) {
+  file_info->size = entry.size();
+  file_info->is_directory = entry.is_directory();
+  file_info->is_symbolic_link = entry.is_symbolic_link();
   file_info->last_modified = base::Time::FromInternalValue(
-      proto.last_modified());
+      entry.last_modified());
   file_info->last_accessed = base::Time::FromInternalValue(
-      proto.last_accessed());
+      entry.last_accessed());
   file_info->creation_time = base::Time::FromInternalValue(
-      proto.creation_time());
+      entry.creation_time());
 }
 
-void ConvertPlatformFileInfoToProto(const base::PlatformFileInfo& file_info,
-                                    PlatformFileInfoProto* proto) {
-  proto->set_size(file_info.size);
-  proto->set_is_directory(file_info.is_directory);
-  proto->set_is_symbolic_link(file_info.is_symbolic_link);
-  proto->set_last_modified(file_info.last_modified.ToInternalValue());
-  proto->set_last_accessed(file_info.last_accessed.ToInternalValue());
-  proto->set_creation_time(file_info.creation_time.ToInternalValue());
+void ConvertPlatformFileInfoToResourceEntry(
+    const base::PlatformFileInfo& file_info,
+    PlatformFileInfoProto* entry) {
+  entry->set_size(file_info.size);
+  entry->set_is_directory(file_info.is_directory);
+  entry->set_is_symbolic_link(file_info.is_symbolic_link);
+  entry->set_last_modified(file_info.last_modified.ToInternalValue());
+  entry->set_last_accessed(file_info.last_accessed.ToInternalValue());
+  entry->set_creation_time(file_info.creation_time.ToInternalValue());
 }
 
 void EmptyFileOperationCallback(FileError error) {

@@ -224,7 +224,7 @@ class ChangeListLoader {
       const DirectoryFetchInfo& directory_fetch_info,
       const FileOperationCallback& callback,
       FileError error,
-      scoped_ptr<DriveEntryProto> entry_proto);
+      scoped_ptr<ResourceEntry> entry);
 
   // Part of DoLoadDirectoryFromServer() for the grand root ("/drive").
   void DoLoadGrandRootDirectoryFromServerAfterGetAboutResource(

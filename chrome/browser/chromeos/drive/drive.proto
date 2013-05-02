@@ -20,7 +20,7 @@ message PlatformFileInfoProto {
   optional int64 creation_time = 6;
 }
 
-// File specific info, which is a part of DriveEntryProto.
+// File specific info, which is a part of ResourceEntry.
 message DriveFileSpecificInfo {
   // This URL points to a thumbnail image. The thumbnail URL is not permanent
   // as it's not protected by authentication. See crbug.com/127697 for how
@@ -57,7 +57,7 @@ message DriveDirectorySpecificInfo {
 }
 
 // Represents DriveEntry, DriveFile, and DriveDirectory without children.
-message DriveEntryProto {
+message ResourceEntry {
   optional PlatformFileInfoProto file_info = 1;
   optional string base_name = 2;
   optional string title = 3;

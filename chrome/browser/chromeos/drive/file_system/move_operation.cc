@@ -61,19 +61,19 @@ void MoveOperation::MoveAfterGetEntryInfoPair(
     callback.Run(src_dest_info->second.error);
     return;
   }
-  if (!src_dest_info->second.proto->file_info().is_directory()) {
+  if (!src_dest_info->second.entry->file_info().is_directory()) {
     callback.Run(FILE_ERROR_NOT_A_DIRECTORY);
     return;
   }
 
-  const std::string& src_id = src_dest_info->first.proto->resource_id();
+  const std::string& src_id = src_dest_info->first.entry->resource_id();
   const base::FilePath& src_path = src_dest_info->first.path;
   const base::FilePath new_name = dest_file_path.BaseName();
   const bool new_name_has_hosted_extension =
-      src_dest_info->first.proto->has_file_specific_info() &&
-      src_dest_info->first.proto->file_specific_info().is_hosted_document() &&
+      src_dest_info->first.entry->has_file_specific_info() &&
+      src_dest_info->first.entry->file_specific_info().is_hosted_document() &&
       new_name.Extension() ==
-          src_dest_info->first.proto->file_specific_info().document_extension();
+          src_dest_info->first.entry->file_specific_info().document_extension();
 
   Rename(src_id, src_path, new_name, new_name_has_hosted_extension,
          base::Bind(&MoveOperation::MoveAfterRename,
@@ -94,8 +94,8 @@ void MoveOperation::MoveAfterRename(
     return;
   }
 
-  const std::string& src_id = src_dest_info->first.proto->resource_id();
-  const std::string& dest_dir_id = src_dest_info->second.proto->resource_id();
+  const std::string& src_id = src_dest_info->first.entry->resource_id();
+  const std::string& dest_dir_id = src_dest_info->second.entry->resource_id();
   const base::FilePath& dest_dir_path = src_dest_info->second.path;
 
   // The source and the destination directory are the same. Nothing more to do.
@@ -128,8 +128,8 @@ void MoveOperation::MoveAfterAddToDirectory(
   observer_->OnDirectoryChangedByOperation(src_path.DirName());
   observer_->OnDirectoryChangedByOperation(new_path.DirName());
 
-  RemoveFromDirectory(src_dest_info->first.proto->resource_id(),
-                      src_dest_info->first.proto->parent_resource_id(),
+  RemoveFromDirectory(src_dest_info->first.entry->resource_id(),
+                      src_dest_info->first.entry->parent_resource_id(),
                       callback);
 }
 

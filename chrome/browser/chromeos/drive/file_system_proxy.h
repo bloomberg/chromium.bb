@@ -14,10 +14,10 @@ class FileSystemURL;
 
 namespace drive {
 
-class DriveEntryProto;
 class FileSystemInterface;
+class ResourceEntry;
 
-typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
+typedef std::vector<ResourceEntry> ResourceEntryVector;
 
 // Implementation of File API's remote file system proxy for Drive file system.
 class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
@@ -120,7 +120,7 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const fileapi::FileSystemOperation::GetMetadataCallback&
           callback,
       FileError error,
-      scoped_ptr<DriveEntryProto> entry_proto);
+      scoped_ptr<ResourceEntry> entry);
 
   // Helper callback for relaying reply for GetEntryInfoByPath() to the
   // calling thread.
@@ -129,7 +129,7 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const fileapi::FileSystemOperation::SnapshotFileCallback&
           callback,
       FileError error,
-      scoped_ptr<DriveEntryProto> entry_proto);
+      scoped_ptr<ResourceEntry> entry);
 
   // Helper callback for relaying reply for ReadDirectory() to the calling
   // thread.
@@ -138,7 +138,7 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
           callback,
       FileError error,
       bool hide_hosted_documents,
-      scoped_ptr<DriveEntryProtoVector> proto_entries);
+      scoped_ptr<ResourceEntryVector> resource_entries);
 
   // Helper callback for relaying reply for CreateWritableSnapshotFile() to
   // the calling thread.

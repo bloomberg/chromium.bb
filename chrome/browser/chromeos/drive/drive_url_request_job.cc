@@ -148,7 +148,7 @@ DriveURLRequestJob::~DriveURLRequestJob() {
 
 void DriveURLRequestJob::OnDriveFileStreamReaderInitialized(
     FileError error,
-    scoped_ptr<DriveEntryProto> entry) {
+    scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(stream_reader_);
 

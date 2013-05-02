@@ -25,8 +25,8 @@ class ResourceEntry;
 
 namespace drive {
 
-class DriveEntryProto;
 class FileSystemObserver;
+class ResourceEntry;
 
 namespace test_util {
 
@@ -181,12 +181,12 @@ class FakeFileSystem : public FileSystemInterface {
   void GetEntryInfoByResourceIdAfterGetFilePath(
       const GetEntryInfoWithFilePathCallback& callback,
       FileError error,
-      scoped_ptr<DriveEntryProto> entry_proto,
+      scoped_ptr<ResourceEntry> entry,
       const base::FilePath& parent_file_path);
 
   // Helpers of GetFileContentByPath.
   // How the method works:
-  // 1) Gets DriveEntryProto of the path.
+  // 1) Gets ResourceEntry of the path.
   // 2) Look at if there is a cache file or not. If found return it.
   // 3) Otherwise start DownloadFile.
   // 4) Runs the |completion_callback| upon the download completion.
@@ -196,7 +196,7 @@ class FakeFileSystem : public FileSystemInterface {
       const google_apis::GetContentCallback& get_content_callback,
       const FileOperationCallback& completion_callback,
       FileError error,
-      scoped_ptr<DriveEntryProto> entry_proto);
+      scoped_ptr<ResourceEntry> entry);
   void GetFileContentByPathAfterDownloadFile(
       const FileOperationCallback& completion_callback,
       google_apis::GDataErrorCode gdata_error,
@@ -205,10 +205,10 @@ class FakeFileSystem : public FileSystemInterface {
   // Helpers of GetEntryInfoByPath.
   // How the method works:
   // 1) If the path is root, gets AboutResrouce from the drive service
-  //    and create DriveEntryProto.
-  // 2-1) Otherwise, gets the parent's DriveEntryProto by recursive call.
+  //    and create ResourceEntry.
+  // 2-1) Otherwise, gets the parent's ResourceEntry by recursive call.
   // 2-2) Then, gets the resource list by restricting the parent with its id.
-  // 2-3) Search the results based on title, and return the DriveEntryProto.
+  // 2-3) Search the results based on title, and return the ResourceEntry.
   // Note that adding suffix (e.g. " (2)") for files sharing a same name is
   // not supported in FakeFileSystem. Thus, even if the server has
   // files sharing the same name under a directory, the second (or later)
@@ -221,7 +221,7 @@ class FakeFileSystem : public FileSystemInterface {
       const base::FilePath& base_name,
       const GetEntryInfoCallback& callback,
       FileError error,
-      scoped_ptr<DriveEntryProto> parent_entry_proto);
+      scoped_ptr<ResourceEntry> parent_entry);
   void GetEntryInfoByPathAfterGetResourceList(
       const base::FilePath& base_name,
       const GetEntryInfoCallback& callback,

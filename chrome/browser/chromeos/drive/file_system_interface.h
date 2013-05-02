@@ -23,7 +23,7 @@ namespace drive {
 
 class FileSystemObserver;
 
-typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
+typedef std::vector<ResourceEntry> ResourceEntryVector;
 
 // File type on the drive file system can be either a regular file or
 // a hosted document.
@@ -37,28 +37,28 @@ enum DriveFileType {
 // browser.
 struct SearchResultInfo {
   SearchResultInfo(const base::FilePath& path,
-                   const DriveEntryProto& entry_proto)
+                   const ResourceEntry& entry)
       : path(path),
-        entry_proto(entry_proto) {
+        entry(entry) {
   }
 
   base::FilePath path;
-  DriveEntryProto entry_proto;
+  ResourceEntry entry;
 };
 
 // Struct to represent a search result for SearchMetadata().
 struct MetadataSearchResult {
   MetadataSearchResult(const base::FilePath& in_path,
-                       const DriveEntryProto& in_entry_proto,
+                       const ResourceEntry& in_entry,
                        const std::string& in_highlighted_base_name)
       : path(in_path),
-        entry_proto(in_entry_proto),
+        entry(in_entry),
         highlighted_base_name(in_highlighted_base_name) {
   }
 
   // The two members are used to create FileEntry object.
   base::FilePath path;
-  DriveEntryProto entry_proto;
+  ResourceEntry entry;
 
   // The base name to be displayed in the UI. The parts matched the search
   // query are highlighted with <b> tag. Meta characters are escaped like &lt;
@@ -88,7 +88,7 @@ typedef base::Callback<void(FileError error,
 // download job can be cancelled.
 // |cancel_download_closure| must be called on the UI thread.
 typedef base::Callback<void(FileError error,
-                            scoped_ptr<DriveEntryProto> entry_proto,
+                            scoped_ptr<ResourceEntry> entry,
                             const base::FilePath& local_file,
                             const base::Closure& cancel_download_closure)>
     GetFileContentInitializedCallback;
@@ -100,7 +100,7 @@ typedef base::Callback<void(FileError error,
 // |entries| are contents, both files and directories, of the directory.
 typedef base::Callback<void(FileError error,
                             bool hide_hosted_documents,
-                            scoped_ptr<DriveEntryProtoVector> entries)>
+                            scoped_ptr<ResourceEntryVector> entries)>
     ReadDirectoryWithSettingCallback;
 
 // Used to get drive content search results.

@@ -66,7 +66,7 @@ void CreateFileOperation::CreateFileAfterGetEntryInfo(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   FileError error = pair_result->second.error;
-  scoped_ptr<DriveEntryProto> parent(pair_result->first.proto.Pass());
+  scoped_ptr<ResourceEntry> parent(pair_result->first.entry.Pass());
 
   // If parent path is not a directory, it is an error.
   if (!parent || !parent->file_info().is_directory()) {
@@ -76,7 +76,7 @@ void CreateFileOperation::CreateFileAfterGetEntryInfo(
 
   // If an entry already exists at |path|:
   if (error == FILE_ERROR_OK) {
-    scoped_ptr<DriveEntryProto> entry(pair_result->second.proto.Pass());
+    scoped_ptr<ResourceEntry> entry(pair_result->second.entry.Pass());
     // Error if an exclusive mode is requested, or the entry is not a file.
     if (is_exclusive ||
         entry->file_info().is_directory() ||

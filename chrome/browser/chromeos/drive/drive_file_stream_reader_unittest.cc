@@ -363,7 +363,7 @@ TEST_F(DriveFileStreamReaderTest, Read) {
   EXPECT_FALSE(reader->IsInitialized());
 
   FileError error = FILE_ERROR_FAILED;
-  scoped_ptr<DriveEntryProto> entry;
+  scoped_ptr<ResourceEntry> entry;
   reader->Initialize(
       kDriveFile,
       google_apis::CreateComposedCallback(

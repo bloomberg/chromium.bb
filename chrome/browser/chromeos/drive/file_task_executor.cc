@@ -76,7 +76,7 @@ bool FileTaskExecutor::ExecuteAndNotify(
 
 void FileTaskExecutor::OnFileEntryFetched(
     FileError error,
-    scoped_ptr<DriveEntryProto> entry_proto) {
+    scoped_ptr<ResourceEntry> entry) {
   // If we aborted, then this will be zero.
   if (!current_index_)
     return;
@@ -85,7 +85,7 @@ void FileTaskExecutor::OnFileEntryFetched(
       DriveSystemServiceFactory::GetForProfile(profile());
 
   // Here, we are only interested in files.
-  if (entry_proto.get() && !entry_proto->has_file_specific_info())
+  if (entry.get() && !entry->has_file_specific_info())
     error = FILE_ERROR_NOT_FOUND;
 
   if (!system_service || error != FILE_ERROR_OK) {
@@ -95,7 +95,7 @@ void FileTaskExecutor::OnFileEntryFetched(
 
   // The edit URL can be empty for non-editable files (such as files shared with
   // read-only privilege).
-  if (entry_proto->edit_url().empty()) {
+  if (entry->edit_url().empty()) {
     Done(false);
     return;
   }
@@ -107,11 +107,11 @@ void FileTaskExecutor::OnFileEntryFetched(
   // current document entry for this document so we can get the
   // open-with-<app_id> urls from the document entry.
   drive_service->AuthorizeApp(
-      entry_proto->resource_id(),
+      entry->resource_id(),
       extension_id(),  // really app_id
       base::Bind(&FileTaskExecutor::OnAppAuthorized,
                  this,
-                 entry_proto->resource_id()));
+                 entry->resource_id()));
 }
 
 void FileTaskExecutor::OnAppAuthorized(

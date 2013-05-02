@@ -175,7 +175,7 @@ int64 ResourceMetadataStorage::GetLargestChangestamp() {
   return header->largest_changestamp();
 }
 
-bool ResourceMetadataStorage::PutEntry(const DriveEntryProto& entry) {
+bool ResourceMetadataStorage::PutEntry(const ResourceEntry& entry) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!entry.resource_id().empty());
 
@@ -188,7 +188,7 @@ bool ResourceMetadataStorage::PutEntry(const DriveEntryProto& entry) {
   leveldb::WriteBatch batch;
 
   // Remove from the old parent.
-  scoped_ptr<DriveEntryProto> old_entry = GetEntry(entry.resource_id());
+  scoped_ptr<ResourceEntry> old_entry = GetEntry(entry.resource_id());
   if (old_entry && !old_entry->parent_resource_id().empty()) {
     batch.Delete(GetChildEntryKey(old_entry->parent_resource_id(),
                                   old_entry->base_name()));
@@ -208,7 +208,7 @@ bool ResourceMetadataStorage::PutEntry(const DriveEntryProto& entry) {
   return status.ok();
 }
 
-scoped_ptr<DriveEntryProto> ResourceMetadataStorage::GetEntry(
+scoped_ptr<ResourceEntry> ResourceMetadataStorage::GetEntry(
     const std::string& resource_id) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!resource_id.empty());
@@ -218,11 +218,11 @@ scoped_ptr<DriveEntryProto> ResourceMetadataStorage::GetEntry(
                                                     leveldb::Slice(resource_id),
                                                     &serialized_entry);
   if (!status.ok())
-    return scoped_ptr<DriveEntryProto>();
+    return scoped_ptr<ResourceEntry>();
 
-  scoped_ptr<DriveEntryProto> entry(new DriveEntryProto);
+  scoped_ptr<ResourceEntry> entry(new ResourceEntry);
   if (!entry->ParseFromString(serialized_entry))
-    return scoped_ptr<DriveEntryProto>();
+    return scoped_ptr<ResourceEntry>();
   return entry.Pass();
 }
 
@@ -230,7 +230,7 @@ bool ResourceMetadataStorage::RemoveEntry(const std::string& resource_id) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!resource_id.empty());
 
-  scoped_ptr<DriveEntryProto> entry = GetEntry(resource_id);
+  scoped_ptr<ResourceEntry> entry = GetEntry(resource_id);
   if (!entry)
     return false;
 
@@ -262,7 +262,7 @@ void ResourceMetadataStorage::Iterate(const IterateCallback& callback) {
   it->Seek(leveldb::Slice(GetHeaderDBKey()));
   it->Next();
 
-  DriveEntryProto entry;
+  ResourceEntry entry;
   for (; it->Valid(); it->Next()) {
     if (!IsChildEntryKey(it->key()) &&
         entry.ParseFromArray(it->value().data(), it->value().size()))
@@ -370,7 +370,7 @@ bool ResourceMetadataStorage::CheckValidity() {
   // Check all entires.
   size_t num_entries_with_parent = 0;
   size_t num_child_entries = 0;
-  DriveEntryProto entry;
+  ResourceEntry entry;
   std::string serialized_parent_entry;
   std::string child_resource_id;
   for (it->Next(); it->Valid(); it->Next()) {

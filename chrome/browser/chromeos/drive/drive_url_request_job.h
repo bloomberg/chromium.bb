@@ -22,9 +22,9 @@ class URLRequest;
 
 namespace drive {
 
-class DriveEntryProto;
 class DriveFileStreamReader;
 class FileSystemInterface;
+class ResourceEntry;
 
 // DriveURLRequesetJob is the gateway between network-level drive:...
 // requests for drive resources and DriveFileSytem.  It exposes content URLs
@@ -59,7 +59,7 @@ class DriveURLRequestJob : public net::URLRequestJob {
   // Called when the initialization of DriveFileStreamReader is completed.
   void OnDriveFileStreamReaderInitialized(
       FileError error,
-      scoped_ptr<DriveEntryProto> entry);
+      scoped_ptr<ResourceEntry> entry);
 
   // Called when DriveFileStreamReader::Read is completed.
   void OnReadCompleted(int read_result);
@@ -67,7 +67,7 @@ class DriveURLRequestJob : public net::URLRequestJob {
   const FileSystemGetter file_system_getter_;
 
   scoped_ptr<DriveFileStreamReader> stream_reader_;
-  scoped_ptr<DriveEntryProto> entry_;
+  scoped_ptr<ResourceEntry> entry_;
 
   // This should remain the last member so it'll be destroyed first and
   // invalidate its weak pointers before other members are destroyed.

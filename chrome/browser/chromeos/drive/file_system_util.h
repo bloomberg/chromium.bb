@@ -90,11 +90,11 @@ const base::FilePath& GetDriveMountPointPath();
 // implementation and is not supposed to be sent to the server.
 bool IsSpecialResourceId(const std::string& resource_id);
 
-// Returns a DriveEntryProto for "/drive/root" directory.
-DriveEntryProto CreateMyDriveRootEntry(const std::string& root_resource_id);
+// Returns a ResourceEntry for "/drive/root" directory.
+ResourceEntry CreateMyDriveRootEntry(const std::string& root_resource_id);
 
-// Returns a DriveEntryProto for "/drive/other" directory.
-DriveEntryProto CreateOtherDirEntry();
+// Returns a ResourceEntry for "/drive/other" directory.
+ResourceEntry CreateOtherDirEntry();
 
 // Returns the Drive mount path as string.
 const std::string& GetDriveMountPointPathAsString();
@@ -196,13 +196,15 @@ void EnsureDirectoryExists(Profile* profile,
 // Converts GData error code into file platform error code.
 FileError GDataToFileError(google_apis::GDataErrorCode status);
 
-// Converts the proto representation to the platform file.
-void ConvertProtoToPlatformFileInfo(const PlatformFileInfoProto& proto,
-                                    base::PlatformFileInfo* file_info);
+// Converts the resource entry to the platform file.
+void ConvertResourceEntryToPlatformFileInfo(
+    const PlatformFileInfoProto& entry,
+    base::PlatformFileInfo* file_info);
 
-// Converts the platform file info to the proto representation.
-void ConvertPlatformFileInfoToProto(const base::PlatformFileInfo& file_info,
-                                    PlatformFileInfoProto* proto);
+// Converts the platform file info to the resource entry.
+void ConvertPlatformFileInfoToResourceEntry(
+    const base::PlatformFileInfo& file_info,
+    PlatformFileInfoProto* entry);
 
 // Does nothing with |error|. Used with functions taking FileOperationCallback.
 void EmptyFileOperationCallback(FileError error);

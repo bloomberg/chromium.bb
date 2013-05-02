@@ -136,14 +136,14 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
   EXPECT_TRUE(success);
 
   base::FilePath unused;
-  scoped_ptr<DriveEntryProto> entry_proto;
+  scoped_ptr<ResourceEntry> entry;
   file_system_->GetEntryInfoByResourceId(
       resource_id,
       google_apis::test_util::CreateCopyResultCallback(
-          &error, &unused, &entry_proto));
+          &error, &unused, &entry));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
-  EXPECT_FALSE(entry_proto.get());
+  EXPECT_FALSE(entry.get());
 
   // Load a root feed again to kick the StaleCacheFilesRemover.
   file_system_->Reload();

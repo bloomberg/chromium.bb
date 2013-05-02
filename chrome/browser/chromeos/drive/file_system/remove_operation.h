@@ -22,10 +22,10 @@ namespace google_apis {
 
 namespace drive {
 
-class DriveEntryProto;
-class FileSystem;
 class FileCache;
+class FileSystem;
 class JobScheduler;
+class ResourceEntry;
 
 namespace file_system {
 
@@ -55,7 +55,7 @@ class RemoveOperation {
   void RemoveAfterGetEntryInfo(
       const FileOperationCallback& callback,
       FileError error,
-      scoped_ptr<DriveEntryProto> entry_proto);
+      scoped_ptr<ResourceEntry> entry);
 
   // Callback for DriveServiceInterface::DeleteResource. Removes the entry with
   // |resource_id| from the local snapshot of the filesystem and the cache.

@@ -111,7 +111,7 @@ TEST_F(DownloadHandlerTest, SubstituteDriveDownloadPath) {
   google_apis::test_util::RunBlockingPoolTask();
 
   // Return result of GetEntryInfoByPath(), destination directory found.
-  scoped_ptr<DriveEntryProto> entry(new DriveEntryProto);
+  scoped_ptr<ResourceEntry> entry(new ResourceEntry);
   ASSERT_FALSE(get_entry_info_callback_.is_null());
   get_entry_info_callback_.Run(FILE_ERROR_OK, entry.Pass());
   google_apis::test_util::RunBlockingPoolTask();
@@ -137,7 +137,7 @@ TEST_F(DownloadHandlerTest, SubstituteDriveDownloadPathGetEntryFailure) {
   // Return result of GetEntryInfoByPath(), failing for some reason.
   ASSERT_FALSE(get_entry_info_callback_.is_null());
   get_entry_info_callback_.Run(FILE_ERROR_FAILED,
-                              scoped_ptr<DriveEntryProto>());
+                              scoped_ptr<ResourceEntry>());
   google_apis::test_util::RunBlockingPoolTask();
 
   // Check the result.
@@ -159,7 +159,7 @@ TEST_F(DownloadHandlerTest, SubstituteDriveDownloadPathCreateDirectory) {
   // Return result of GetEntryInfoByPath(), destination directory not found.
   ASSERT_FALSE(get_entry_info_callback_.is_null());
   get_entry_info_callback_.Run(FILE_ERROR_NOT_FOUND,
-                              scoped_ptr<DriveEntryProto>());
+                              scoped_ptr<ResourceEntry>());
   google_apis::test_util::RunBlockingPoolTask();
 
   // Return result of CreateDirecotry().
@@ -189,7 +189,7 @@ TEST_F(DownloadHandlerTest,
   // Return result of GetEntryInfoByPath(), destination directory not found.
   ASSERT_FALSE(get_entry_info_callback_.is_null());
   get_entry_info_callback_.Run(FILE_ERROR_NOT_FOUND,
-                              scoped_ptr<DriveEntryProto>());
+                              scoped_ptr<ResourceEntry>());
   google_apis::test_util::RunBlockingPoolTask();
 
   // Return result of CreateDirecotry().
@@ -216,7 +216,7 @@ TEST_F(DownloadHandlerTest, SubstituteDriveDownloadPathForSavePackage) {
   google_apis::test_util::RunBlockingPoolTask();
 
   // Return result of GetEntryInfoByPath(), destination directory found.
-  scoped_ptr<DriveEntryProto> entry(new DriveEntryProto);
+  scoped_ptr<ResourceEntry> entry(new ResourceEntry);
   ASSERT_FALSE(get_entry_info_callback_.is_null());
   get_entry_info_callback_.Run(FILE_ERROR_OK, entry.Pass());
   google_apis::test_util::RunBlockingPoolTask();
@@ -253,7 +253,7 @@ TEST_F(DownloadHandlerTest, CheckForFileExistence) {
 
   // Return result of GetEntryInfoByPath(), file exists.
   {
-    scoped_ptr<DriveEntryProto> entry(new DriveEntryProto);
+    scoped_ptr<ResourceEntry> entry(new ResourceEntry);
     ASSERT_FALSE(get_entry_info_callback_.is_null());
     get_entry_info_callback_.Run(FILE_ERROR_OK, entry.Pass());
   }
@@ -274,7 +274,7 @@ TEST_F(DownloadHandlerTest, CheckForFileExistence) {
   // Return result of GetEntryInfoByPath(), file does not exist.
   ASSERT_FALSE(get_entry_info_callback_.is_null());
   get_entry_info_callback_.Run(FILE_ERROR_NOT_FOUND,
-                               scoped_ptr<DriveEntryProto>());
+                               scoped_ptr<ResourceEntry>());
   google_apis::test_util::RunBlockingPoolTask();
 
   // Check the result.

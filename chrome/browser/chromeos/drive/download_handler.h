@@ -20,9 +20,9 @@ class DownloadManager;
 
 namespace drive {
 
-class DriveEntryProto;
 class FileSystemInterface;
 class FileWriteHelper;
+class ResourceEntry;
 
 // Observes downloads to temporary local drive folder. Schedules these
 // downloads for upload to drive service.
@@ -81,7 +81,7 @@ class DownloadHandler : public AllDownloadItemNotifier::Observer {
   void OnEntryFound(const base::FilePath& drive_dir_path,
                     const SubstituteDriveDownloadPathCallback& callback,
                     FileError error,
-                    scoped_ptr<DriveEntryProto> entry_proto);
+                    scoped_ptr<ResourceEntry> entry);
 
   // Callback for FileSystem::CreateDirectory().
   // Used to implement SubstituteDriveDownloadPath().

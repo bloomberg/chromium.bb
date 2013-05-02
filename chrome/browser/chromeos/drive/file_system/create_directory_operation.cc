@@ -166,7 +166,7 @@ void CreateDirectoryOperation::AddNewDirectory(
   }
 
   metadata_->AddEntry(
-      ConvertResourceEntryToDriveEntryProto(*entry),
+      ConvertToResourceEntry(*entry),
       base::Bind(&CreateDirectoryOperation::ContinueCreateDirectory,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(&params),
@@ -251,7 +251,7 @@ void CreateDirectoryOperation::FindFirstMissingParentDirectoryInternal(
 void CreateDirectoryOperation::ContinueFindFirstMissingParentDirectory(
     scoped_ptr<FindFirstMissingParentDirectoryParams> params,
     FileError error,
-    scoped_ptr<DriveEntryProto> entry_proto) {
+    scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(params.get());
 
@@ -263,13 +263,13 @@ void CreateDirectoryOperation::ContinueFindFirstMissingParentDirectory(
                 params->last_dir_resource_id);
     params->callback.Run(result);
   } else if (error != FILE_ERROR_OK ||
-             !entry_proto->file_info().is_directory()) {
+             !entry->file_info().is_directory()) {
     // Unexpected error, or found a file when we were expecting a directory.
     result.Init(FIND_FIRST_FOUND_INVALID, base::FilePath(), "");
     params->callback.Run(result);
   } else {
     // This parent exists, so recursively look at the next element.
-    params->last_dir_resource_id = entry_proto->resource_id();
+    params->last_dir_resource_id = entry->resource_id();
     params->index++;
     FindFirstMissingParentDirectoryInternal(params.Pass());
   }

@@ -22,8 +22,8 @@ class ResourceEntry;
 
 namespace drive {
 
-class DriveEntryProto;
 class JobScheduler;
+class ResourceEntry;
 
 namespace internal {
 class ResourceMetadata;
@@ -142,7 +142,7 @@ class CreateDirectoryOperation {
   void ContinueFindFirstMissingParentDirectory(
       scoped_ptr<FindFirstMissingParentDirectoryParams> params,
       FileError error,
-      scoped_ptr<DriveEntryProto> entry_proto);
+      scoped_ptr<ResourceEntry> entry);
 
   JobScheduler* job_scheduler_;
   internal::ResourceMetadata* metadata_;

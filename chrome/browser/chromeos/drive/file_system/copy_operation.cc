@@ -20,8 +20,6 @@
 #include "net/base/mime_util.h"
 
 using content::BrowserThread;
-using google_apis::ResourceEntry;
-using google_apis::GDataErrorCode;
 
 namespace drive {
 namespace file_system {
@@ -46,7 +44,8 @@ FileError CopyLocalFileOnBlockingPool(
 std::string GetDocumentResourceIdOnBlockingPool(
     const base::FilePath& local_file_path) {
   std::string result;
-  if (ResourceEntry::HasHostedDocumentExtension(local_file_path)) {
+  if (google_apis::ResourceEntry::HasHostedDocumentExtension(
+          local_file_path)) {
     std::string error;
     DictionaryValue* dict_value = NULL;
     JSONFileValueSerializer serializer(local_file_path);
@@ -212,7 +211,7 @@ void CopyOperation::CopyHostedDocumentToDirectory(
 void CopyOperation::OnCopyHostedDocumentCompleted(
     const base::FilePath& dir_path,
     const FileOperationCallback& callback,
-    GDataErrorCode status,
+    google_apis::GDataErrorCode status,
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -227,7 +226,7 @@ void CopyOperation::OnCopyHostedDocumentCompleted(
   // The entry was added in the root directory on the server, so we should
   // first add it to the root to mirror the state and then move it to the
   // destination directory by MoveEntryFromRootDirectory().
-  metadata_->AddEntry(ConvertResourceEntryToDriveEntryProto(*resource_entry),
+  metadata_->AddEntry(ConvertToResourceEntry(*resource_entry),
                       base::Bind(&CopyOperation::MoveEntryFromRootDirectory,
                                  weak_ptr_factory_.GetWeakPtr(),
                                  dir_path,
@@ -271,8 +270,8 @@ void CopyOperation::CopyAfterGetEntryInfoPair(
     return;
   }
 
-  scoped_ptr<DriveEntryProto> src_file_proto = result->first.proto.Pass();
-  scoped_ptr<DriveEntryProto> dest_parent_proto = result->second.proto.Pass();
+  scoped_ptr<ResourceEntry> src_file_proto = result->first.entry.Pass();
+  scoped_ptr<ResourceEntry> dest_parent_proto = result->second.entry.Pass();
 
   if (!dest_parent_proto->file_info().is_directory()) {
     callback.Run(FILE_ERROR_NOT_A_DIRECTORY);
@@ -345,21 +344,21 @@ void CopyOperation::StartFileUploadAfterGetEntryInfo(
     const StartFileUploadParams& params,
     const std::string& content_type,
     FileError error,
-    scoped_ptr<DriveEntryProto> entry_proto) {
+    scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!params.callback.is_null());
 
-  if (entry_proto.get() && !entry_proto->file_info().is_directory())
+  if (entry.get() && !entry->file_info().is_directory())
     error = FILE_ERROR_NOT_A_DIRECTORY;
 
   if (error != FILE_ERROR_OK) {
     params.callback.Run(error);
     return;
   }
-  DCHECK(entry_proto.get());
+  DCHECK(entry.get());
 
   job_scheduler_->UploadNewFile(
-      entry_proto->resource_id(),
+      entry->resource_id(),
       params.remote_file_path,
       params.local_file_path,
       params.remote_file_path.BaseName().value(),
@@ -375,7 +374,7 @@ void CopyOperation::OnTransferCompleted(
     google_apis::GDataErrorCode error,
     const base::FilePath& drive_path,
     const base::FilePath& file_path,
-    scoped_ptr<ResourceEntry> resource_entry) {
+    scoped_ptr<google_apis::ResourceEntry> resource_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -393,7 +392,7 @@ void CopyOperation::TransferFileFromLocalToRemoteAfterGetEntryInfo(
     const base::FilePath& remote_dest_file_path,
     const FileOperationCallback& callback,
     FileError error,
-    scoped_ptr<DriveEntryProto> entry_proto) {
+    scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -402,8 +401,8 @@ void CopyOperation::TransferFileFromLocalToRemoteAfterGetEntryInfo(
     return;
   }
 
-  DCHECK(entry_proto.get());
-  if (!entry_proto->file_info().is_directory()) {
+  DCHECK(entry.get());
+  if (!entry->file_info().is_directory()) {
     // The parent of |remote_dest_file_path| is not a directory.
     callback.Run(FILE_ERROR_NOT_A_DIRECTORY);
     return;

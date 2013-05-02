@@ -515,7 +515,7 @@ class GetDriveEntryPropertiesFunction : public FileBrowserFunction {
 
  private:
   void OnGetFileInfo(drive::FileError error,
-                     scoped_ptr<drive::DriveEntryProto> entry);
+                     scoped_ptr<drive::ResourceEntry> entry);
 
   void CacheStateReceived(bool success,
                           const drive::FileCacheEntry& cache_entry);

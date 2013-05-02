@@ -295,13 +295,13 @@ void DriveFileStreamReader::InitializeAfterGetFileContentByPathInitialized(
     const base::FilePath& drive_file_path,
     const InitializeCompletionCallback& callback,
     FileError error,
-    scoped_ptr<DriveEntryProto> entry,
+    scoped_ptr<ResourceEntry> entry,
     const base::FilePath& local_cache_file_path,
     const base::Closure& ui_cancel_download_closure) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, scoped_ptr<DriveEntryProto>());
+    callback.Run(error, scoped_ptr<ResourceEntry>());
     return;
   }
   DCHECK(entry);
@@ -344,13 +344,13 @@ void DriveFileStreamReader::InitializeAfterGetFileContentByPathInitialized(
 
 void DriveFileStreamReader::InitializeAfterLocalFileOpen(
     const InitializeCompletionCallback& callback,
-    scoped_ptr<DriveEntryProto> entry,
+    scoped_ptr<ResourceEntry> entry,
     scoped_ptr<net::FileStream> file_stream,
     int open_result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (open_result != net::OK) {
-    callback.Run(FILE_ERROR_FAILED, scoped_ptr<DriveEntryProto>());
+    callback.Run(FILE_ERROR_FAILED, scoped_ptr<ResourceEntry>());
     return;
   }
 
@@ -384,7 +384,7 @@ void DriveFileStreamReader::OnGetFileContentByPathCompletion(
     // or may not be called. This is timing issue, and it is difficult to avoid
     // unfortunately.
     if (error != FILE_ERROR_OK) {
-      callback.Run(error, scoped_ptr<DriveEntryProto>());
+      callback.Run(error, scoped_ptr<ResourceEntry>());
     }
   }
 }

@@ -246,10 +246,10 @@ void SyncClient::OnGetEntryInfoByResourceId(
     const FileCacheEntry& cache_entry,
     FileError error,
     const base::FilePath& /* drive_file_path */,
-    scoped_ptr<DriveEntryProto> entry_proto) {
+    scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (entry_proto.get() && !entry_proto->has_file_specific_info())
+  if (entry.get() && !entry->has_file_specific_info())
     error = FILE_ERROR_NOT_FOUND;
 
   if (error != FILE_ERROR_OK) {
@@ -260,7 +260,7 @@ void SyncClient::OnGetEntryInfoByResourceId(
   // If MD5s don't match, it indicates the local cache file is stale, unless
   // the file is dirty (the MD5 is "local"). We should never re-fetch the
   // file when we have a locally modified version.
-  if (entry_proto->file_specific_info().file_md5() != cache_entry.md5() &&
+  if (entry->file_specific_info().file_md5() != cache_entry.md5() &&
       !cache_entry.is_dirty()) {
     cache_->Remove(resource_id,
                    base::Bind(&SyncClient::OnRemove,

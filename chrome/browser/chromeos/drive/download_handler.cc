@@ -78,7 +78,7 @@ void MoveDownloadedFile(const base::FilePath& downloaded_file,
 void ContinueCheckingForFileExistence(
     const content::CheckForFileExistenceCallback& callback,
     FileError error,
-    scoped_ptr<DriveEntryProto> entry_proto) {
+    scoped_ptr<ResourceEntry> entry) {
   callback.Run(error == FILE_ERROR_OK);
 }
 
@@ -258,7 +258,7 @@ void DownloadHandler::OnEntryFound(
     const base::FilePath& drive_dir_path,
     const SubstituteDriveDownloadPathCallback& callback,
     FileError error,
-    scoped_ptr<DriveEntryProto> entry_proto) {
+    scoped_ptr<ResourceEntry> entry) {
   if (error == FILE_ERROR_NOT_FOUND) {
     // Destination Drive directory doesn't exist, so create it.
     const bool is_exclusive = false, is_recursive = true;

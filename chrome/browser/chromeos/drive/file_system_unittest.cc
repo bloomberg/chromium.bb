@@ -67,7 +67,7 @@ void DriveSearchCallback(
     EXPECT_EQ(base::FilePath(expected_results[i].path),
               results->at(i).path);
     EXPECT_EQ(expected_results[i].is_directory,
-              results->at(i).entry_proto.file_info().is_directory());
+              results->at(i).entry.file_info().is_directory());
   }
 
   EXPECT_EQ(expected_next_feed, next_feed);
@@ -76,7 +76,7 @@ void DriveSearchCallback(
 }
 
 // Counts the number of files (not directories) in |entries|.
-int CountFiles(const DriveEntryProtoVector& entries) {
+int CountFiles(const ResourceEntryVector& entries) {
   int num_files = 0;
   for (size_t i = 0; i < entries.size(); ++i) {
     if (!entries[i].file_info().is_directory())
@@ -89,7 +89,7 @@ int CountFiles(const DriveEntryProtoVector& entries) {
 // quits the current message loop.
 void AsyncInitializationCallback(
     int* counter, int expected_counter, MessageLoop* message_loop,
-    FileError error, scoped_ptr<DriveEntryProto> entry) {
+    FileError error, scoped_ptr<ResourceEntry> entry) {
   if (error != FILE_ERROR_OK || !entry) {
     // If we hit an error case, quit the message loop immediately.
     // Then the expectation in the test case can find it because the actual
@@ -234,24 +234,24 @@ class DriveFileSystemTest : public testing::Test {
   }
 
   // Gets entry info by path synchronously.
-  scoped_ptr<DriveEntryProto> GetEntryInfoByPathSync(
+  scoped_ptr<ResourceEntry> GetEntryInfoByPathSync(
       const base::FilePath& file_path) {
     FileError error = FILE_ERROR_FAILED;
-    scoped_ptr<DriveEntryProto> entry_proto;
+    scoped_ptr<ResourceEntry> entry;
     file_system_->GetEntryInfoByPath(
         file_path,
-        google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
+        google_apis::test_util::CreateCopyResultCallback(&error, &entry));
     google_apis::test_util::RunBlockingPoolTask();
 
-    return entry_proto.Pass();
+    return entry.Pass();
   }
 
   // Gets directory info by path synchronously.
-  scoped_ptr<DriveEntryProtoVector> ReadDirectoryByPathSync(
+  scoped_ptr<ResourceEntryVector> ReadDirectoryByPathSync(
       const base::FilePath& file_path) {
     FileError error = FILE_ERROR_FAILED;
     bool unused_hide_hosted_documents;
-    scoped_ptr<DriveEntryProtoVector> entries;
+    scoped_ptr<ResourceEntryVector> entries;
     file_system_->ReadDirectoryByPath(
         file_path,
         google_apis::test_util::CreateCopyResultCallback(
@@ -268,10 +268,10 @@ class DriveFileSystemTest : public testing::Test {
 
   // Gets the resource ID of |file_path|. Returns an empty string if not found.
   std::string GetResourceIdByPath(const base::FilePath& file_path) {
-    scoped_ptr<DriveEntryProto> entry_proto =
+    scoped_ptr<ResourceEntry> entry =
         GetEntryInfoByPathSync(file_path);
-    if (entry_proto)
-      return entry_proto->resource_id();
+    if (entry)
+      return entry->resource_id();
     else
       return "";
   }
@@ -345,7 +345,7 @@ class DriveFileSystemTest : public testing::Test {
       return false;
 
     // drive/root/File1
-    DriveEntryProto file1;
+    ResourceEntry file1;
     file1.set_title("File1");
     file1.set_resource_id("resource_id:File1");
     file1.set_parent_resource_id(root_resource_id);
@@ -360,7 +360,7 @@ class DriveFileSystemTest : public testing::Test {
       return false;
 
     // drive/root/Dir1
-    DriveEntryProto dir1;
+    ResourceEntry dir1;
     dir1.set_title("Dir1");
     dir1.set_resource_id("resource_id:Dir1");
     dir1.set_parent_resource_id(root_resource_id);
@@ -373,7 +373,7 @@ class DriveFileSystemTest : public testing::Test {
       return false;
 
     // drive/root/Dir1/File2
-    DriveEntryProto file2;
+    ResourceEntry file2;
     file2.set_title("File2");
     file2.set_resource_id("resource_id:File2");
     file2.set_parent_resource_id(dir1.resource_id());
@@ -388,7 +388,7 @@ class DriveFileSystemTest : public testing::Test {
       return false;
 
     // drive/root/Dir1/SubDir2
-    DriveEntryProto dir2;
+    ResourceEntry dir2;
     dir2.set_title("SubDir2");
     dir2.set_resource_id("resource_id:SubDir2");
     dir2.set_parent_resource_id(dir1.resource_id());
@@ -401,7 +401,7 @@ class DriveFileSystemTest : public testing::Test {
       return false;
 
     // drive/root/Dir1/SubDir2/File3
-    DriveEntryProto file3;
+    ResourceEntry file3;
     file3.set_title("File3");
     file3.set_resource_id("resource_id:File3");
     file3.set_parent_resource_id(dir2.resource_id());
@@ -423,7 +423,7 @@ class DriveFileSystemTest : public testing::Test {
 
   // Verifies that |file_path| is a valid JSON file for the hosted document
   // associated with |entry| (i.e. |url| and |resource_id| match).
-  void VerifyHostedDocumentJSONFile(const DriveEntryProto& entry_proto,
+  void VerifyHostedDocumentJSONFile(const ResourceEntry& entry,
                                     const base::FilePath& file_path) {
     std::string error;
     JSONFileValueSerializer serializer(file_path);
@@ -436,9 +436,9 @@ class DriveFileSystemTest : public testing::Test {
     EXPECT_TRUE(dict_value->GetString("url", &edit_url));
     EXPECT_TRUE(dict_value->GetString("resource_id", &resource_id));
 
-    EXPECT_EQ(entry_proto.file_specific_info().alternate_url(),
+    EXPECT_EQ(entry.file_specific_info().alternate_url(),
               edit_url);
-    EXPECT_EQ(entry_proto.resource_id(), resource_id);
+    EXPECT_EQ(entry.resource_id(), resource_id);
   }
 
   MessageLoopForUI message_loop_;
@@ -481,7 +481,7 @@ TEST_F(DriveFileSystemTest, DuplicatedAsyncInitialization) {
 
 TEST_F(DriveFileSystemTest, GetGrandRootEntry) {
   const base::FilePath kFilePath(FILE_PATH_LITERAL("drive"));
-  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
+  scoped_ptr<ResourceEntry> entry = GetEntryInfoByPathSync(kFilePath);
   ASSERT_TRUE(entry);
   EXPECT_EQ(util::kDriveGrandRootSpecialResourceId, entry->resource_id());
 
@@ -492,7 +492,7 @@ TEST_F(DriveFileSystemTest, GetGrandRootEntry) {
 
 TEST_F(DriveFileSystemTest, GetOtherDirEntry) {
   const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/other"));
-  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
+  scoped_ptr<ResourceEntry> entry = GetEntryInfoByPathSync(kFilePath);
   ASSERT_TRUE(entry);
   EXPECT_EQ(util::kDriveOtherDirSpecialResourceId, entry->resource_id());
 
@@ -504,7 +504,7 @@ TEST_F(DriveFileSystemTest, GetOtherDirEntry) {
 
 TEST_F(DriveFileSystemTest, GetMyDriveRoot) {
   const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/root"));
-  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
+  scoped_ptr<ResourceEntry> entry = GetEntryInfoByPathSync(kFilePath);
   ASSERT_TRUE(entry);
   EXPECT_EQ(fake_drive_service_->GetRootResourceId(), entry->resource_id());
 
@@ -520,7 +520,7 @@ TEST_F(DriveFileSystemTest, GetMyDriveRoot) {
 
 TEST_F(DriveFileSystemTest, GetExistingFile) {
   const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/root/File 1.txt"));
-  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
+  scoped_ptr<ResourceEntry> entry = GetEntryInfoByPathSync(kFilePath);
   ASSERT_TRUE(entry);
   EXPECT_EQ("file:2_file_resource_id", entry->resource_id());
 
@@ -531,7 +531,7 @@ TEST_F(DriveFileSystemTest, GetExistingFile) {
 TEST_F(DriveFileSystemTest, GetExistingDocument) {
   const base::FilePath kFilePath(
       FILE_PATH_LITERAL("drive/root/Document 1 excludeDir-test.gdoc"));
-  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
+  scoped_ptr<ResourceEntry> entry = GetEntryInfoByPathSync(kFilePath);
   ASSERT_TRUE(entry);
   EXPECT_EQ("document:5_document_resource_id", entry->resource_id());
 }
@@ -539,14 +539,14 @@ TEST_F(DriveFileSystemTest, GetExistingDocument) {
 TEST_F(DriveFileSystemTest, GetNonExistingFile) {
   const base::FilePath kFilePath(
       FILE_PATH_LITERAL("drive/root/nonexisting.file"));
-  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
+  scoped_ptr<ResourceEntry> entry = GetEntryInfoByPathSync(kFilePath);
   EXPECT_FALSE(entry);
 }
 
 TEST_F(DriveFileSystemTest, GetEncodedFileNames) {
   const base::FilePath kFilePath1(
       FILE_PATH_LITERAL("drive/root/Slash / in file 1.txt"));
-  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath1);
+  scoped_ptr<ResourceEntry> entry = GetEntryInfoByPathSync(kFilePath1);
   ASSERT_FALSE(entry);
 
   const base::FilePath kFilePath2 = base::FilePath::FromUTF8Unsafe(
@@ -565,7 +565,7 @@ TEST_F(DriveFileSystemTest, GetEncodedFileNames) {
 TEST_F(DriveFileSystemTest, GetDuplicateNames) {
   const base::FilePath kFilePath1(
       FILE_PATH_LITERAL("drive/root/Duplicate Name.txt"));
-  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath1);
+  scoped_ptr<ResourceEntry> entry = GetEntryInfoByPathSync(kFilePath1);
   ASSERT_TRUE(entry);
   const std::string resource_id1 = entry->resource_id();
 
@@ -587,7 +587,7 @@ TEST_F(DriveFileSystemTest, GetDuplicateNames) {
 
 TEST_F(DriveFileSystemTest, GetExistingDirectory) {
   const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/root/Directory 1"));
-  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
+  scoped_ptr<ResourceEntry> entry = GetEntryInfoByPathSync(kFilePath);
   ASSERT_TRUE(entry);
   ASSERT_EQ("folder:1_folder_resource_id", entry->resource_id());
 
@@ -600,7 +600,7 @@ TEST_F(DriveFileSystemTest, GetInSubSubdir) {
   const base::FilePath kFilePath(
       FILE_PATH_LITERAL("drive/root/Directory 1/Sub Directory Folder/"
                         "Sub Sub Directory Folder"));
-  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
+  scoped_ptr<ResourceEntry> entry = GetEntryInfoByPathSync(kFilePath);
   ASSERT_TRUE(entry);
   ASSERT_EQ("folder:sub_sub_directory_folder_id", entry->resource_id());
 }
@@ -608,7 +608,7 @@ TEST_F(DriveFileSystemTest, GetInSubSubdir) {
 TEST_F(DriveFileSystemTest, GetOrphanFile) {
   const base::FilePath kFilePath(
       FILE_PATH_LITERAL("drive/other/Orphan File 1.txt"));
-  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
+  scoped_ptr<ResourceEntry> entry = GetEntryInfoByPathSync(kFilePath);
   ASSERT_TRUE(entry);
   EXPECT_EQ("file:1_orphanfile_resource_id", entry->resource_id());
 }
@@ -618,7 +618,7 @@ TEST_F(DriveFileSystemTest, ReadDirectoryByPath_Root) {
       Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
 
   // ReadDirectoryByPath() should kick off the resource list loading.
-  scoped_ptr<DriveEntryProtoVector> entries(
+  scoped_ptr<ResourceEntryVector> entries(
       ReadDirectoryByPathSync(base::FilePath::FromUTF8Unsafe("drive")));
   // The root directory should be read correctly.
   ASSERT_TRUE(entries);
@@ -643,7 +643,7 @@ TEST_F(DriveFileSystemTest, ReadDirectoryByPath_Root) {
 
 TEST_F(DriveFileSystemTest, ReadDirectoryByPath_NonRootDirectory) {
   // ReadDirectoryByPath() should kick off the resource list loading.
-  scoped_ptr<DriveEntryProtoVector> entries(
+  scoped_ptr<ResourceEntryVector> entries(
       ReadDirectoryByPathSync(
           base::FilePath::FromUTF8Unsafe("drive/root/Directory 1")));
   // The non root directory should also be read correctly.
@@ -985,7 +985,7 @@ TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
 
   base::FilePath remote_src_file_path(
       FILE_PATH_LITERAL("drive/root/File 1.txt"));
-  scoped_ptr<DriveEntryProto> file = GetEntryInfoByPathSync(
+  scoped_ptr<ResourceEntry> file = GetEntryInfoByPathSync(
       remote_src_file_path);
   const int64 file_size = file->file_info().size();
 
@@ -1040,10 +1040,10 @@ TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_HostedDocument) {
 
   EXPECT_EQ(FILE_ERROR_OK, error);
 
-  scoped_ptr<DriveEntryProto> entry_proto = GetEntryInfoByPathSync(
+  scoped_ptr<ResourceEntry> entry = GetEntryInfoByPathSync(
       remote_src_file_path);
-  ASSERT_TRUE(entry_proto);
-  VerifyHostedDocumentJSONFile(*entry_proto, local_dest_file_path);
+  ASSERT_TRUE(entry);
+  VerifyHostedDocumentJSONFile(*entry, local_dest_file_path);
 }
 
 TEST_F(DriveFileSystemTest, CopyNotExistingFile) {
@@ -1074,12 +1074,12 @@ TEST_F(DriveFileSystemTest, CopyFileToNonExistingDirectory) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   ASSERT_TRUE(EntryExists(src_file_path));
-  scoped_ptr<DriveEntryProto> src_entry_proto = GetEntryInfoByPathSync(
+  scoped_ptr<ResourceEntry> src_entry = GetEntryInfoByPathSync(
       src_file_path);
-  ASSERT_TRUE(src_entry_proto);
+  ASSERT_TRUE(src_entry);
   std::string src_file_path_resource_id =
-      src_entry_proto->resource_id();
-  EXPECT_FALSE(src_entry_proto->edit_url().empty());
+      src_entry->resource_id();
+  EXPECT_FALSE(src_entry->edit_url().empty());
 
   EXPECT_FALSE(EntryExists(dest_parent_path));
 
@@ -1109,17 +1109,17 @@ TEST_F(DriveFileSystemTest, CopyFileToInvalidPath) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   ASSERT_TRUE(EntryExists(src_file_path));
-  scoped_ptr<DriveEntryProto> src_entry_proto = GetEntryInfoByPathSync(
+  scoped_ptr<ResourceEntry> src_entry = GetEntryInfoByPathSync(
       src_file_path);
-  ASSERT_TRUE(src_entry_proto);
+  ASSERT_TRUE(src_entry);
   std::string src_file_resource_id =
-      src_entry_proto->resource_id();
-  EXPECT_FALSE(src_entry_proto->edit_url().empty());
+      src_entry->resource_id();
+  EXPECT_FALSE(src_entry->edit_url().empty());
 
   ASSERT_TRUE(EntryExists(dest_parent_path));
-  scoped_ptr<DriveEntryProto> dest_entry_proto = GetEntryInfoByPathSync(
+  scoped_ptr<ResourceEntry> dest_entry = GetEntryInfoByPathSync(
       dest_parent_path);
-  ASSERT_TRUE(dest_entry_proto);
+  ASSERT_TRUE(dest_entry);
 
   FileError error = FILE_ERROR_OK;
   file_system_->Copy(
@@ -1147,11 +1147,11 @@ TEST_F(DriveFileSystemTest, RenameFile) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   ASSERT_TRUE(EntryExists(src_file_path));
-  scoped_ptr<DriveEntryProto> src_entry_proto = GetEntryInfoByPathSync(
+  scoped_ptr<ResourceEntry> src_entry = GetEntryInfoByPathSync(
       src_file_path);
-  ASSERT_TRUE(src_entry_proto);
+  ASSERT_TRUE(src_entry);
   std::string src_file_resource_id =
-      src_entry_proto->resource_id();
+      src_entry->resource_id();
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(base::FilePath(FILE_PATH_LITERAL("drive/root/Directory 1")))))
@@ -1179,15 +1179,15 @@ TEST_F(DriveFileSystemTest, MoveFileFromRootToSubDirectory) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   ASSERT_TRUE(EntryExists(src_file_path));
-  scoped_ptr<DriveEntryProto> src_entry_proto = GetEntryInfoByPathSync(
+  scoped_ptr<ResourceEntry> src_entry = GetEntryInfoByPathSync(
       src_file_path);
-  ASSERT_TRUE(src_entry_proto);
+  ASSERT_TRUE(src_entry);
   std::string src_file_resource_id =
-      src_entry_proto->resource_id();
-  EXPECT_FALSE(src_entry_proto->edit_url().empty());
+      src_entry->resource_id();
+  EXPECT_FALSE(src_entry->edit_url().empty());
 
   ASSERT_TRUE(EntryExists(dest_parent_path));
-  scoped_ptr<DriveEntryProto> dest_parent_proto = GetEntryInfoByPathSync(
+  scoped_ptr<ResourceEntry> dest_parent_proto = GetEntryInfoByPathSync(
       dest_parent_path);
   ASSERT_TRUE(dest_parent_proto);
   ASSERT_TRUE(dest_parent_proto->file_info().is_directory());
@@ -1222,15 +1222,15 @@ TEST_F(DriveFileSystemTest, MoveFileFromSubDirectoryToRoot) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   ASSERT_TRUE(EntryExists(src_file_path));
-  scoped_ptr<DriveEntryProto> src_entry_proto = GetEntryInfoByPathSync(
+  scoped_ptr<ResourceEntry> src_entry = GetEntryInfoByPathSync(
       src_file_path);
-  ASSERT_TRUE(src_entry_proto);
+  ASSERT_TRUE(src_entry);
   std::string src_file_resource_id =
-      src_entry_proto->resource_id();
-  EXPECT_FALSE(src_entry_proto->edit_url().empty());
+      src_entry->resource_id();
+  EXPECT_FALSE(src_entry->edit_url().empty());
 
   ASSERT_TRUE(EntryExists(src_parent_path));
-  scoped_ptr<DriveEntryProto> src_parent_proto = GetEntryInfoByPathSync(
+  scoped_ptr<ResourceEntry> src_parent_proto = GetEntryInfoByPathSync(
       src_parent_path);
   ASSERT_TRUE(src_parent_proto);
   ASSERT_TRUE(src_parent_proto->file_info().is_directory());
@@ -1273,22 +1273,22 @@ TEST_F(DriveFileSystemTest, MoveFileBetweenSubDirectories) {
   EXPECT_EQ(FILE_ERROR_OK, AddDirectory(dest_parent_path));
 
   ASSERT_TRUE(EntryExists(src_file_path));
-  scoped_ptr<DriveEntryProto> src_entry_proto = GetEntryInfoByPathSync(
+  scoped_ptr<ResourceEntry> src_entry = GetEntryInfoByPathSync(
       src_file_path);
-  ASSERT_TRUE(src_entry_proto);
+  ASSERT_TRUE(src_entry);
   std::string src_file_resource_id =
-      src_entry_proto->resource_id();
-  EXPECT_FALSE(src_entry_proto->edit_url().empty());
+      src_entry->resource_id();
+  EXPECT_FALSE(src_entry->edit_url().empty());
 
   ASSERT_TRUE(EntryExists(src_parent_path));
-  scoped_ptr<DriveEntryProto> src_parent_proto = GetEntryInfoByPathSync(
+  scoped_ptr<ResourceEntry> src_parent_proto = GetEntryInfoByPathSync(
       src_parent_path);
   ASSERT_TRUE(src_parent_proto);
   ASSERT_TRUE(src_parent_proto->file_info().is_directory());
   EXPECT_FALSE(src_parent_proto->download_url().empty());
 
   ASSERT_TRUE(EntryExists(dest_parent_path));
-  scoped_ptr<DriveEntryProto> dest_parent_proto = GetEntryInfoByPathSync(
+  scoped_ptr<ResourceEntry> dest_parent_proto = GetEntryInfoByPathSync(
       dest_parent_path);
   ASSERT_TRUE(dest_parent_proto);
   ASSERT_TRUE(dest_parent_proto->file_info().is_directory());
@@ -1348,12 +1348,12 @@ TEST_F(DriveFileSystemTest, MoveFileToNonExistingDirectory) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   ASSERT_TRUE(EntryExists(src_file_path));
-  scoped_ptr<DriveEntryProto> src_entry_proto = GetEntryInfoByPathSync(
+  scoped_ptr<ResourceEntry> src_entry = GetEntryInfoByPathSync(
       src_file_path);
-  ASSERT_TRUE(src_entry_proto);
+  ASSERT_TRUE(src_entry);
   std::string src_file_resource_id =
-      src_entry_proto->resource_id();
-  EXPECT_FALSE(src_entry_proto->edit_url().empty());
+      src_entry->resource_id();
+  EXPECT_FALSE(src_entry->edit_url().empty());
 
   EXPECT_FALSE(EntryExists(dest_parent_path));
 
@@ -1381,15 +1381,15 @@ TEST_F(DriveFileSystemTest, MoveFileToInvalidPath) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   ASSERT_TRUE(EntryExists(src_file_path));
-  scoped_ptr<DriveEntryProto> src_entry_proto = GetEntryInfoByPathSync(
+  scoped_ptr<ResourceEntry> src_entry = GetEntryInfoByPathSync(
       src_file_path);
-  ASSERT_TRUE(src_entry_proto);
+  ASSERT_TRUE(src_entry);
   std::string src_file_resource_id =
-      src_entry_proto->resource_id();
-  EXPECT_FALSE(src_entry_proto->edit_url().empty());
+      src_entry->resource_id();
+  EXPECT_FALSE(src_entry->edit_url().empty());
 
   ASSERT_TRUE(EntryExists(dest_parent_path));
-  scoped_ptr<DriveEntryProto> dest_parent_proto = GetEntryInfoByPathSync(
+  scoped_ptr<ResourceEntry> dest_parent_proto = GetEntryInfoByPathSync(
       dest_parent_path);
   ASSERT_TRUE(dest_parent_proto);
 
@@ -1417,18 +1417,18 @@ TEST_F(DriveFileSystemTest, RemoveEntries) {
       FILE_PATH_LITERAL("drive/root/Directory 1/SubDirectory File 1.txt"));
 
   ASSERT_TRUE(EntryExists(file_in_root));
-  scoped_ptr<DriveEntryProto> file_in_root_proto = GetEntryInfoByPathSync(
+  scoped_ptr<ResourceEntry> file_in_root_proto = GetEntryInfoByPathSync(
       file_in_root);
   ASSERT_TRUE(file_in_root_proto);
 
   ASSERT_TRUE(EntryExists(dir_in_root));
-  scoped_ptr<DriveEntryProto> dir_in_root_proto = GetEntryInfoByPathSync(
+  scoped_ptr<ResourceEntry> dir_in_root_proto = GetEntryInfoByPathSync(
       dir_in_root);
   ASSERT_TRUE(dir_in_root_proto);
   ASSERT_TRUE(dir_in_root_proto->file_info().is_directory());
 
   ASSERT_TRUE(EntryExists(file_in_subdir));
-  scoped_ptr<DriveEntryProto> file_in_subdir_proto = GetEntryInfoByPathSync(
+  scoped_ptr<ResourceEntry> file_in_subdir_proto = GetEntryInfoByPathSync(
       file_in_subdir);
   ASSERT_TRUE(file_in_subdir_proto);
 
@@ -1509,7 +1509,7 @@ TEST_F(DriveFileSystemTest, PinAndUnpin) {
   base::FilePath file_path(FILE_PATH_LITERAL("drive/root/File 1.txt"));
 
   // Get the file info.
-  scoped_ptr<DriveEntryProto> entry(GetEntryInfoByPathSync(file_path));
+  scoped_ptr<ResourceEntry> entry(GetEntryInfoByPathSync(file_path));
   ASSERT_TRUE(entry);
 
   // Pin the file.
@@ -1542,8 +1542,8 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
       Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
 
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
-  scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
-  const int64 file_size = entry_proto->file_info().size();
+  scoped_ptr<ResourceEntry> entry(GetEntryInfoByPathSync(file_in_root));
+  const int64 file_size = entry->file_info().size();
 
   // Pretend we have enough space.
   fake_free_disk_space_getter_->set_fake_free_disk_space(
@@ -1566,7 +1566,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
-  scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
+  scoped_ptr<ResourceEntry> entry(GetEntryInfoByPathSync(file_in_root));
 
   // Pretend we have no space at all.
   fake_free_disk_space_getter_->set_fake_free_disk_space(0);
@@ -1592,8 +1592,8 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
       Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
 
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
-  scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
-  const int64 file_size = entry_proto->file_info().size();
+  scoped_ptr<ResourceEntry> entry(GetEntryInfoByPathSync(file_in_root));
+  const int64 file_size = entry->file_info().size();
 
   // Pretend we have no space first (checked before downloading a file),
   // but then start reporting we have space. This is to emulate that
@@ -1641,8 +1641,8 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
-  scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
-  const int64 file_size = entry_proto->file_info().size();
+  scoped_ptr<ResourceEntry> entry(GetEntryInfoByPathSync(file_in_root));
+  const int64 file_size = entry->file_info().size();
 
   // Pretend we have enough space first (checked before downloading a file),
   // but then start reporting we have not enough space. This is to emulate that
@@ -1671,12 +1671,12 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromCache) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
-  scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
+  scoped_ptr<ResourceEntry> entry(GetEntryInfoByPathSync(file_in_root));
 
   // Store something as cached version of this file.
   FileError error = FILE_ERROR_OK;
-  cache_->Store(entry_proto->resource_id(),
-                entry_proto->file_specific_info().file_md5(),
+  cache_->Store(entry->resource_id(),
+                entry->file_specific_info().file_md5(),
                 google_apis::test_util::GetTestFilePath(
                     "chromeos/gdata/root_feed.json"),
                 FileCache::FILE_OPERATION_COPY,
@@ -1701,9 +1701,9 @@ TEST_F(DriveFileSystemTest, GetFileByPath_HostedDocument) {
 
   base::FilePath file_in_root(FILE_PATH_LITERAL(
       "drive/root/Document 1 excludeDir-test.gdoc"));
-  scoped_ptr<DriveEntryProto> src_entry_proto =
+  scoped_ptr<ResourceEntry> src_entry =
       GetEntryInfoByPathSync(file_in_root);
-  ASSERT_TRUE(src_entry_proto);
+  ASSERT_TRUE(src_entry);
 
   FileError error = FILE_ERROR_FAILED;
   base::FilePath file_path;
@@ -1717,8 +1717,8 @@ TEST_F(DriveFileSystemTest, GetFileByPath_HostedDocument) {
   EXPECT_EQ(HOSTED_DOCUMENT, file_type);
   EXPECT_FALSE(file_path.empty());
 
-  ASSERT_TRUE(src_entry_proto);
-  VerifyHostedDocumentJSONFile(*src_entry_proto, file_path);
+  ASSERT_TRUE(src_entry);
+  VerifyHostedDocumentJSONFile(*src_entry, file_path);
 }
 
 TEST_F(DriveFileSystemTest, GetFileByResourceId) {
@@ -1732,14 +1732,14 @@ TEST_F(DriveFileSystemTest, GetFileByResourceId) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
-  scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
+  scoped_ptr<ResourceEntry> entry(GetEntryInfoByPathSync(file_in_root));
 
   FileError error = FILE_ERROR_OK;
   base::FilePath file_path;
   std::string mime_type;
   DriveFileType file_type;
   file_system_->GetFileByResourceId(
-      entry_proto->resource_id(),
+      entry->resource_id(),
       DriveClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &mime_type, &file_type),
@@ -1764,7 +1764,7 @@ TEST_F(DriveFileSystemTest, GetFileContentByPath) {
 
   {
     FileError initialized_error = FILE_ERROR_FAILED;
-    scoped_ptr<DriveEntryProto> entry_proto;
+    scoped_ptr<ResourceEntry> entry;
     base::FilePath local_path;
     base::Closure cancel_download;
 
@@ -1775,7 +1775,7 @@ TEST_F(DriveFileSystemTest, GetFileContentByPath) {
     file_system_->GetFileContentByPath(
         file_in_root,
         google_apis::test_util::CreateCopyResultCallback(
-            &initialized_error, &entry_proto, &local_path, &cancel_download),
+            &initialized_error, &entry, &local_path, &cancel_download),
         base::Bind(&AppendContent, &content_buffer),
         google_apis::test_util::CreateCopyResultCallback(&completion_error));
     google_apis::test_util::RunBlockingPoolTask();
@@ -1783,7 +1783,7 @@ TEST_F(DriveFileSystemTest, GetFileContentByPath) {
     // For the first time, file is downloaded from the remote server.
     // In this case, |local_path| is empty while |cancel_download| is not.
     EXPECT_EQ(FILE_ERROR_OK, initialized_error);
-    ASSERT_TRUE(entry_proto);
+    ASSERT_TRUE(entry);
     ASSERT_TRUE(local_path.empty());
     EXPECT_TRUE(!cancel_download.is_null());
     // Content is available through the second callback arguemnt.
@@ -1791,14 +1791,14 @@ TEST_F(DriveFileSystemTest, GetFileContentByPath) {
     for (size_t i = 0; i < content_buffer.size(); ++i) {
       content_size += content_buffer[i].size();
     }
-    EXPECT_EQ(static_cast<size_t>(entry_proto->file_info().size()),
+    EXPECT_EQ(static_cast<size_t>(entry->file_info().size()),
               content_size);
     EXPECT_EQ(FILE_ERROR_OK, completion_error);
   }
 
   {
     FileError initialized_error = FILE_ERROR_FAILED;
-    scoped_ptr<DriveEntryProto> entry_proto;
+    scoped_ptr<ResourceEntry> entry;
     base::FilePath local_path;
     base::Closure cancel_download;
 
@@ -1809,7 +1809,7 @@ TEST_F(DriveFileSystemTest, GetFileContentByPath) {
     file_system_->GetFileContentByPath(
         file_in_root,
         google_apis::test_util::CreateCopyResultCallback(
-            &initialized_error, &entry_proto, &local_path, &cancel_download),
+            &initialized_error, &entry, &local_path, &cancel_download),
         base::Bind(&AppendContent, &content_buffer),
         google_apis::test_util::CreateCopyResultCallback(&completion_error));
     google_apis::test_util::RunBlockingPoolTask();
@@ -1817,14 +1817,14 @@ TEST_F(DriveFileSystemTest, GetFileContentByPath) {
     // Try second download. In this case, the file should be cached, so
     // |local_path| should not be empty while |cancel_download| is empty.
     EXPECT_EQ(FILE_ERROR_OK, initialized_error);
-    ASSERT_TRUE(entry_proto);
+    ASSERT_TRUE(entry);
     ASSERT_TRUE(!local_path.empty());
     EXPECT_TRUE(cancel_download.is_null());
     // The content is available from the cache file.
     EXPECT_TRUE(content_buffer.empty());
     int64 local_file_size = 0;
     file_util::GetFileSize(local_path, &local_file_size);
-    EXPECT_EQ(entry_proto->file_info().size(), local_file_size);
+    EXPECT_EQ(entry->file_info().size(), local_file_size);
     EXPECT_EQ(FILE_ERROR_OK, completion_error);
   }
 }
@@ -1835,12 +1835,12 @@ TEST_F(DriveFileSystemTest, GetFileByResourceId_FromCache) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
-  scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
+  scoped_ptr<ResourceEntry> entry(GetEntryInfoByPathSync(file_in_root));
 
   // Store something as cached version of this file.
   FileError error = FILE_ERROR_FAILED;
-  cache_->Store(entry_proto->resource_id(),
-                entry_proto->file_specific_info().file_md5(),
+  cache_->Store(entry->resource_id(),
+                entry->file_specific_info().file_md5(),
                 google_apis::test_util::GetTestFilePath(
                     "chromeos/gdata/root_feed.json"),
                 FileCache::FILE_OPERATION_COPY,
@@ -1856,7 +1856,7 @@ TEST_F(DriveFileSystemTest, GetFileByResourceId_FromCache) {
   std::string mime_type;
   DriveFileType file_type;
   file_system_->GetFileByResourceId(
-      entry_proto->resource_id(),
+      entry->resource_id(),
       DriveClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &mime_type, &file_type),
@@ -1916,7 +1916,7 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {
 
   // Check the number of files in the root directory. We'll compare the
   // number after updating a file.
-  scoped_ptr<DriveEntryProtoVector> root_directory_entries(
+  scoped_ptr<ResourceEntryVector> root_directory_entries(
       ReadDirectoryByPathSync(base::FilePath::FromUTF8Unsafe("drive/root")));
   ASSERT_TRUE(root_directory_entries);
   const int num_files_in_root = CountFiles(*root_directory_entries);
@@ -2069,11 +2069,11 @@ TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
       Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
 
   const base::FilePath kFileInRoot(FILE_PATH_LITERAL("drive/root/File 1.txt"));
-  scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(kFileInRoot));
-  const int64 file_size = entry_proto->file_info().size();
+  scoped_ptr<ResourceEntry> entry(GetEntryInfoByPathSync(kFileInRoot));
+  const int64 file_size = entry->file_info().size();
   const std::string& file_resource_id =
-      entry_proto->resource_id();
-  const std::string& file_md5 = entry_proto->file_specific_info().file_md5();
+      entry->resource_id();
+  const std::string& file_md5 = entry->file_specific_info().file_md5();
 
   // A dirty file is created on close.
   EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(file_resource_id))
@@ -2183,7 +2183,7 @@ TEST_F(DriveFileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
-  scoped_ptr<DriveEntryProto> entry(GetEntryInfoByPathSync(file_in_root));
+  scoped_ptr<ResourceEntry> entry(GetEntryInfoByPathSync(file_in_root));
   ASSERT_TRUE(entry);
 
   // Write to cache.

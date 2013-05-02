@@ -152,13 +152,14 @@ void DidCloseFileForTruncate(
 
 }  // namespace
 
-base::FileUtilProxy::Entry DriveEntryProtoToFileUtilProxyEntry(
-    const DriveEntryProto& proto) {
+base::FileUtilProxy::Entry ResourceEntryToFileUtilProxyEntry(
+    const ResourceEntry& resource_entry) {
   base::PlatformFileInfo file_info;
-  util::ConvertProtoToPlatformFileInfo(proto.file_info(), &file_info);
+  util::ConvertResourceEntryToPlatformFileInfo(
+      resource_entry.file_info(), &file_info);
 
   base::FileUtilProxy::Entry entry;
-  entry.name = proto.base_name();
+  entry.name = resource_entry.base_name();
   entry.is_directory = file_info.is_directory;
   entry.size = file_info.size;
   entry.last_modified_time = file_info.last_modified;
@@ -656,10 +657,10 @@ void FileSystemProxy::OnGetEntryInfoByPath(
     const base::FilePath& entry_path,
     const FileSystemOperation::SnapshotFileCallback& callback,
     FileError error,
-    scoped_ptr<DriveEntryProto> entry_proto) {
+    scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (error != FILE_ERROR_OK || !entry_proto.get()) {
+  if (error != FILE_ERROR_OK || !entry.get()) {
     callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND,
                  base::PlatformFileInfo(),
                  base::FilePath(),
@@ -668,7 +669,7 @@ void FileSystemProxy::OnGetEntryInfoByPath(
   }
 
   base::PlatformFileInfo file_info;
-  util::ConvertProtoToPlatformFileInfo(entry_proto->file_info(), &file_info);
+  util::ConvertResourceEntryToPlatformFileInfo(entry->file_info(), &file_info);
 
   CallFileSystemMethodOnUIThread(
       base::Bind(&FileSystemInterface::GetFileByPath,
@@ -750,7 +751,7 @@ void FileSystemProxy::OnGetMetadata(
     const base::FilePath& file_path,
     const FileSystemOperation::GetMetadataCallback& callback,
     FileError error,
-    scoped_ptr<DriveEntryProto> entry_proto) {
+    scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (error != FILE_ERROR_OK) {
@@ -759,10 +760,10 @@ void FileSystemProxy::OnGetMetadata(
                  base::FilePath());
     return;
   }
-  DCHECK(entry_proto.get());
+  DCHECK(entry.get());
 
   base::PlatformFileInfo file_info;
-  util::ConvertProtoToPlatformFileInfo(entry_proto->file_info(), &file_info);
+  util::ConvertResourceEntryToPlatformFileInfo(entry->file_info(), &file_info);
 
   callback.Run(base::PLATFORM_FILE_OK, file_info, file_path);
 }
@@ -772,7 +773,7 @@ void FileSystemProxy::OnReadDirectory(
     callback,
     FileError error,
     bool hide_hosted_documents,
-    scoped_ptr<DriveEntryProtoVector> proto_entries) {
+    scoped_ptr<ResourceEntryVector> resource_entries) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (error != FILE_ERROR_OK) {
@@ -781,18 +782,18 @@ void FileSystemProxy::OnReadDirectory(
                  false);
     return;
   }
-  DCHECK(proto_entries.get());
+  DCHECK(resource_entries.get());
 
   std::vector<base::FileUtilProxy::Entry> entries;
   // Convert Drive files to something File API stack can understand.
-  for (size_t i = 0; i < proto_entries->size(); ++i) {
-    const DriveEntryProto& proto = (*proto_entries)[i];
-    if (proto.has_file_specific_info() &&
-        proto.file_specific_info().is_hosted_document() &&
+  for (size_t i = 0; i < resource_entries->size(); ++i) {
+    const ResourceEntry& resource_entry = (*resource_entries)[i];
+    if (resource_entry.has_file_specific_info() &&
+        resource_entry.file_specific_info().is_hosted_document() &&
         hide_hosted_documents) {
       continue;
     }
-    entries.push_back(DriveEntryProtoToFileUtilProxyEntry(proto));
+    entries.push_back(ResourceEntryToFileUtilProxyEntry(resource_entry));
   }
 
   callback.Run(base::PLATFORM_FILE_OK, entries, false);

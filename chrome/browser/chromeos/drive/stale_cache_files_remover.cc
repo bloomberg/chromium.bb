@@ -68,7 +68,7 @@ void StaleCacheFilesRemover::RemoveCacheIfNecessary(
     const std::string& cache_md5,
     FileError error,
     const base::FilePath& drive_file_path,
-    scoped_ptr<DriveEntryProto> entry_proto) {
+    scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // The entry is not found in the file system.
@@ -78,9 +78,9 @@ void StaleCacheFilesRemover::RemoveCacheIfNecessary(
   }
 
   // The entry is found but the MD5 does not match.
-  DCHECK(entry_proto.get());
-  if (!entry_proto->has_file_specific_info() ||
-      cache_md5 != entry_proto->file_specific_info().file_md5()) {
+  DCHECK(entry.get());
+  if (!entry->has_file_specific_info() ||
+      cache_md5 != entry->file_specific_info().file_md5()) {
     cache_->Remove(resource_id, base::Bind(&EmitErrorLog, resource_id));
     return;
   }

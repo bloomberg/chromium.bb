@@ -21,7 +21,7 @@ namespace {
 
 // Used to sort the result canididates per the last accessed/modified time. The
 // recently accessed/modified files come first.
-bool CompareByTimestamp(const DriveEntryProto& a, const DriveEntryProto& b) {
+bool CompareByTimestamp(const ResourceEntry& a, const ResourceEntry& b) {
   const PlatformFileInfoProto& a_file_info = a.file_info();
   const PlatformFileInfoProto& b_file_info = b.file_info();
 
@@ -37,7 +37,7 @@ bool CompareByTimestamp(const DriveEntryProto& a, const DriveEntryProto& b) {
 struct MetadataSearchResultComparator {
   bool operator()(const MetadataSearchResult* a,
                   const MetadataSearchResult* b) const {
-    return CompareByTimestamp(a->entry_proto, b->entry_proto);
+    return CompareByTimestamp(a->entry, b->entry);
   }
 };
 
@@ -77,7 +77,7 @@ class ScopedPriorityQueue {
 // documents are skipped. If SEARCH_METADATA_EXCLUDE_DIRECTORIES is requested,
 // the directories are skipped. If SEARCH_METADATA_SHARED_WITH_ME is requested,
 // only the entries with shared-with-me label will be tested.
-bool IsEligibleEntry(const DriveEntryProto& entry, int options) {
+bool IsEligibleEntry(const ResourceEntry& entry, int options) {
   if ((options & SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS) &&
       entry.file_specific_info().is_hosted_document())
     return false;
@@ -130,7 +130,7 @@ class SearchMetadataHelper {
 
  private:
   // Adds entry to the result when appropriate.
-  void MaybeAddEntryToResult(const DriveEntryProto& entry) {
+  void MaybeAddEntryToResult(const ResourceEntry& entry) {
     DCHECK_GE(at_most_num_matches_,
               static_cast<int>(result_candidates_.size()));
 
@@ -144,7 +144,7 @@ class SearchMetadataHelper {
 
     // Make space for |entry| when appropriate.
     if (static_cast<int>(result_candidates_.size()) == at_most_num_matches_ &&
-        CompareByTimestamp(entry, result_candidates_.top()->entry_proto))
+        CompareByTimestamp(entry, result_candidates_.top()->entry))
       result_candidates_.pop();
 
     // Add |entry| to the result when appropriate.
@@ -161,7 +161,7 @@ class SearchMetadataHelper {
       return;
     }
     resource_metadata_->GetEntryInfoByResourceId(
-        result_candidates_.top()->entry_proto.resource_id(),
+        result_candidates_.top()->entry.resource_id(),
         base::Bind(&SearchMetadataHelper::ContinuePrepareResults,
                    weak_ptr_factory_.GetWeakPtr()));
   }
@@ -169,7 +169,7 @@ class SearchMetadataHelper {
   // Implements PrepareResults().
   void ContinuePrepareResults(FileError error,
                               const base::FilePath& path,
-                              scoped_ptr<DriveEntryProto> unused_entry) {
+                              scoped_ptr<ResourceEntry> unused_entry) {
     if (error != FILE_ERROR_OK) {
       Finish(error);
       return;

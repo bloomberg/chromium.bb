@@ -471,7 +471,7 @@ class DriveTestVolume : public TestVolume,
     DCHECK(system_service_->file_system());
 
     drive::FileError error = drive::FILE_ERROR_FAILED;
-    scoped_ptr<drive::DriveEntryProto> entry_proto;
+    scoped_ptr<drive::ResourceEntry> entry_proto;
     system_service_->file_system()->GetEntryInfoByPath(
         file_path,
         google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
@@ -532,7 +532,7 @@ class DriveTestVolume : public TestVolume,
     DCHECK(system_service_->file_system());
 
     drive::FileError error = drive::FILE_ERROR_FAILED;
-    scoped_ptr<drive::DriveEntryProto> entry_proto;
+    scoped_ptr<drive::ResourceEntry> entry_proto;
     system_service_->file_system()->GetEntryInfoByPath(
         file_path,
         google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
@@ -549,7 +549,7 @@ class DriveTestVolume : public TestVolume,
     DCHECK(system_service_->file_system());
 
     drive::FileError error = drive::FILE_ERROR_FAILED;
-    scoped_ptr<drive::DriveEntryProto> entry_proto;
+    scoped_ptr<drive::ResourceEntry> entry_proto;
     system_service_->file_system()->GetEntryInfoByPath(
         file_path,
         google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
