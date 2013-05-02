@@ -186,14 +186,25 @@ TEST_F(ManifestTest, RestrictedKeys) {
   EXPECT_TRUE(error.empty());
   EXPECT_TRUE(warnings.empty());
 
-  // Platform apps cannot have a "page_action" key.
+  // "Commands" requires manifest version 2.
+  const base::Value* output = NULL;
+  MutateManifest(
+      &manifest, keys::kCommands, new base::DictionaryValue());
+  EXPECT_FALSE(manifest->HasKey(keys::kCommands));
+  EXPECT_FALSE(manifest->Get(keys::kCommands, &output));
+
+  MutateManifest(
+      &manifest, keys::kManifestVersion, new base::FundamentalValue(2));
+  EXPECT_TRUE(manifest->HasKey(keys::kCommands));
+  EXPECT_TRUE(manifest->Get(keys::kCommands, &output));
+
   MutateManifest(
       &manifest, keys::kPageAction, new base::DictionaryValue());
   AssertType(manifest.get(), Manifest::TYPE_EXTENSION);
-  const base::Value* output = NULL;
   EXPECT_TRUE(manifest->HasKey(keys::kPageAction));
   EXPECT_TRUE(manifest->Get(keys::kPageAction, &output));
 
+  // Platform apps cannot have a "page_action" key.
   MutateManifest(
       &manifest, keys::kPlatformAppBackground, new base::DictionaryValue());
   AssertType(manifest.get(), Manifest::TYPE_PLATFORM_APP);
@@ -202,22 +213,9 @@ TEST_F(ManifestTest, RestrictedKeys) {
   MutateManifest(
       &manifest, keys::kPlatformAppBackground, NULL);
 
-  // "commands" is restricted to manifest_version >= 2.
-  {
-    // ... and dev channel, for now.
-    Feature::ScopedCurrentChannel dev_channel_scope(
-        chrome::VersionInfo::CHANNEL_DEV);
-
-    MutateManifest(
-        &manifest, keys::kCommands, new base::DictionaryValue());
-    EXPECT_FALSE(manifest->HasKey(keys::kCommands));
-    EXPECT_FALSE(manifest->Get(keys::kCommands, &output));
-
-    MutateManifest(
-        &manifest, keys::kManifestVersion, new base::FundamentalValue(2));
-    EXPECT_TRUE(manifest->HasKey(keys::kCommands));
-    EXPECT_TRUE(manifest->Get(keys::kCommands, &output));
-  }
+  // Platform apps also can't have a "Commands" key.
+  EXPECT_FALSE(manifest->HasKey(keys::kCommands));
+  EXPECT_FALSE(manifest->Get(keys::kCommands, &output));
 };
 
 }  // namespace extensions

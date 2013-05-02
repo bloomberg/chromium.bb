@@ -74,7 +74,7 @@
   },
   "commands": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "extension_types": ["extension"],
     "min_manifest_version": 2
   },
   "content_pack": {
