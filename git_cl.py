@@ -65,13 +65,14 @@ def RunCommand(args, error_ok=False, error_message=None, **kwargs):
 
 def RunGit(args, **kwargs):
   """Returns stdout."""
-  return RunCommand(['git'] + args, **kwargs)
+  return RunCommand(['git', '--no-pager'] + args, **kwargs)
 
 
 def RunGitWithCode(args):
   """Returns return code and stdout."""
   try:
-    out, code = subprocess2.communicate(['git'] + args, stdout=subprocess2.PIPE)
+    out, code = subprocess2.communicate(['git', '--no-pager'] + args,
+                                        stdout=subprocess2.PIPE)
     return code, out[0]
   except ValueError:
     # When the subprocess fails, it returns None.  That triggers a ValueError
@@ -228,7 +229,8 @@ def print_stats(similarity, find_copies, args):
     similarity_options = ['-M%s' % similarity]
 
   return subprocess2.call(
-      ['git', 'diff', '--no-ext-diff', '--stat'] + similarity_options + args,
+      ['git', '--no-pager',
+       'diff', '--no-ext-diff', '--stat'] + similarity_options + args,
       env=env)
 
 
@@ -297,7 +299,7 @@ class Settings(object):
       # We don't want to go through all of history, so read a line from the
       # pipe at a time.
       # The -100 is an arbitrary limit so we don't search forever.
-      cmd = ['git', 'log', '-100', '--pretty=medium']
+      cmd = ['git', '--no-pager', 'log', '-100', '--pretty=medium']
       proc = subprocess2.Popen(cmd, stdout=subprocess2.PIPE)
       url = None
       for line in proc.stdout:
@@ -666,11 +668,13 @@ or verify this branch is set up to track another (via the --track argument to
     if not self.GitSanityChecks(upstream_branch):
       DieWithError('\nGit sanity check failure')
 
-    root = RunCommand(['git', 'rev-parse', '--show-cdup']).strip() or '.'
+    root = RunCommand(['git', '--no-pager', 'rev-parse', '--show-cdup']).strip()
+    if not root:
+      root = '.'
     absroot = os.path.abspath(root)
 
     # We use the sha1 of HEAD as a name of this change.
-    name = RunCommand(['git', 'rev-parse', 'HEAD']).strip()
+    name = RunCommand(['git', '--no-pager', 'rev-parse', 'HEAD']).strip()
     # Need to pass a relative path for msysgit.
     try:
       files = scm.GIT.CaptureStatus([root], '.', upstream_branch)
@@ -691,7 +695,8 @@ or verify this branch is set up to track another (via the --track argument to
       # If the change was never uploaded, use the log messages of all commits
       # up to the branch point, as git cl upload will prefill the description
       # with these log messages.
-      description = RunCommand(['git', 'log', '--pretty=format:%s%n%n%b',
+      description = RunCommand(['git', '--no-pager',
+                                'log', '--pretty=format:%s%n%n%b',
                                 '%s...' % (upstream_branch)]).strip()
 
     if not author:
@@ -1708,7 +1713,7 @@ def CMDpatch(parser, args):
   # We use "git apply" to apply the patch instead of "patch" so that we can
   # pick up file adds.
   # The --index flag means: also insert into the index (so we catch adds).
-  cmd = ['git', 'apply', '--index', '-p0']
+  cmd = ['git', '--no-pager', 'apply', '--index', '-p0']
   if options.reject:
     cmd.append('--reject')
   try:
@@ -1734,7 +1739,7 @@ def CMDrebase(parser, args):
   # git svn dcommit.
   # It's the only command that doesn't use parser at all since we just defer
   # execution to git-svn.
-  return subprocess2.call(['git', 'svn', 'rebase'] + args)
+  return subprocess2.call(['git', '--no-pager', 'svn', 'rebase'] + args)
 
 
 def GetTreeStatus():

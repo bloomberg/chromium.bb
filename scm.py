@@ -99,7 +99,8 @@ class GIT(object):
   @staticmethod
   def Capture(args, cwd, **kwargs):
     return subprocess2.check_output(
-        ['git'] + args, cwd=cwd, stderr=subprocess2.PIPE, **kwargs)
+        ['git', '--no-pager'] + args,
+        cwd=cwd, stderr=subprocess2.PIPE, **kwargs)
 
   @staticmethod
   def CaptureStatus(files, cwd, upstream_branch):
