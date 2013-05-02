@@ -1245,7 +1245,7 @@ def BuildRecoveryImage(buildroot, board, image_dir, extra_env):
 
 
 def BuildTarball(buildroot, input_list, tarball_output, cwd=None,
-                 compressed=True):
+                 compressed=True, **kwargs):
   """Tars and zips files and directories from input_list to tarball_output.
 
   Args:
@@ -1254,15 +1254,19 @@ def BuildTarball(buildroot, input_list, tarball_output, cwd=None,
     tarball_output: Path of output tar archive file.
     cwd: Current working directory when tar command is executed.
     compressed: Whether or not the tarball should be compressed with pbzip2.
+    **kwargs: Keyword arguments to pass to CreateTarball.
+
+  Returns:
+    Return value of cros_build_lib.CreateTarball.
   """
   compressor = cros_build_lib.COMP_NONE
   chroot = None
   if compressed:
     compressor = cros_build_lib.COMP_BZIP2
     chroot = os.path.join(buildroot, 'chroot')
-  cros_build_lib.CreateTarball(
+  return cros_build_lib.CreateTarball(
       tarball_output, cwd, compression=compressor, chroot=chroot,
-      inputs=input_list)
+      inputs=input_list, **kwargs)
 
 
 def FindFilesWithPattern(pattern, target='./', cwd=os.curdir):
@@ -1347,7 +1351,19 @@ def BuildFullAutotestTarball(buildroot, board, tarball_dir):
 
   tarball = os.path.join(tarball_dir, 'autotest.tar.bz2')
   cwd = os.path.join(buildroot, 'chroot', 'build', board, 'usr', 'local')
-  BuildTarball(buildroot, ['autotest'], tarball, cwd=cwd)
+  result = BuildTarball(buildroot, ['autotest'], tarball, cwd=cwd,
+                        error_code_ok=True)
+
+  # Emerging the autotest package to the factory test image while this is
+  # running modifies the timestamp on /usr/local/autotest/server by adding a
+  # tmp directory underneath it. When tar spots this, it flags this and returns
+  # status code 1. The tarball is still OK, although there might be a few
+  # unneeded (and garbled) tmp files. If tar fails in a different way, it'll
+  # return an error code other than 1.
+  # TODO: Fix the autotest ebuild. See http://crbug.com/237537
+  if result.returncode not in (0, 1):
+    raise Exception('Autotest tarball creation failed with exit code %s'
+                    % (result.returncode))
 
   return tarball
 
