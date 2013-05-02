@@ -17,7 +17,7 @@ import toolchain_main
 
 GIT_REVISIONS = {
     'binutils': '52fa64ee837cd528f67c50b0677bb0a91f71393d',
-    'gcc': '6029db87c2900b5b658005c4a48a923d46f83441',
+    'gcc': 'ac14772dbe566a06b839ef28595fe80631f5b31d',
     'newlib': '5feee65e182c08a7e89fbffc3223c57e4335420f',
     }
 
@@ -330,6 +330,7 @@ def ConfigureGccCommand(target, extra_args=[]):
           '--disable-shared',
           '--with-newlib',
           '--with-linker-hash-style=gnu',
+          '--enable-linker-build-id',
           '--enable-languages=c,c++,lto',
           'CFLAGS_FOR_TARGET=' + target_cflagstr,
           'CXXFLAGS_FOR_TARGET=' + target_cflagstr,
