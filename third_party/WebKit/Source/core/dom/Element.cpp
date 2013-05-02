@@ -1289,7 +1289,7 @@ void Element::attach()
 
 void Element::unregisterNamedFlowContentNode()
 {
-    if (document()->cssRegionsEnabled() && inNamedFlow() && document()->renderView())
+    if (RuntimeEnabledFeatures::cssRegionsEnabled() && inNamedFlow() && document()->renderView())
         document()->renderView()->flowThreadController()->unregisterNamedFlowContentNode(this);
 }
 
@@ -2528,14 +2528,12 @@ RenderRegion* Element::renderRegion() const
     return 0;
 }
 
-#if ENABLE(CSS_REGIONS)
-
 const AtomicString& Element::webkitRegionOverset() const
 {
     document()->updateLayoutIgnorePendingStylesheets();
 
     DEFINE_STATIC_LOCAL(AtomicString, undefinedState, ("undefined", AtomicString::ConstructFromLiteral));
-    if (!document()->cssRegionsEnabled() || !renderRegion())
+    if (!RuntimeEnabledFeatures::cssRegionsEnabled() || !renderRegion())
         return undefinedState;
 
     switch (renderRegion()->regionState()) {
@@ -2564,7 +2562,7 @@ Vector<RefPtr<Range> > Element::webkitGetRegionFlowRanges() const
     document()->updateLayoutIgnorePendingStylesheets();
 
     Vector<RefPtr<Range> > rangeObjects;
-    if (document()->cssRegionsEnabled() && renderer() && renderer()->isRenderRegion()) {
+    if (RuntimeEnabledFeatures::cssRegionsEnabled() && renderer() && renderer()->isRenderRegion()) {
         RenderRegion* region = toRenderRegion(renderer());
         if (region->isValid())
             region->getRanges(rangeObjects);
@@ -2572,8 +2570,6 @@ Vector<RefPtr<Range> > Element::webkitGetRegionFlowRanges() const
 
     return rangeObjects;
 }
-
-#endif
 
 #ifndef NDEBUG
 bool Element::fastAttributeLookupAllowed(const QualifiedName& name) const

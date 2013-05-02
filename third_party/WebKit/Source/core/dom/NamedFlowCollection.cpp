@@ -30,6 +30,7 @@
 #include "config.h"
 #include "core/dom/NamedFlowCollection.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/dom/DOMNamedFlowCollection.h"
 #include "core/dom/Document.h"
 #include "core/dom/NamedFlow.h"
@@ -43,6 +44,7 @@ namespace WebCore {
 NamedFlowCollection::NamedFlowCollection(Document* document)
     : ContextDestructionObserver(document)
 {
+    ASSERT(RuntimeEnabledFeatures::cssRegionsEnabled());
 }
 
 Vector<RefPtr<NamedFlow> > NamedFlowCollection::namedFlows()

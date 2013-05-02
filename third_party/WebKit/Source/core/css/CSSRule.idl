@@ -40,9 +40,7 @@
 #if defined(ENABLE_CSS_DEVICE_ADAPTATION) && ENABLE_CSS_DEVICE_ADAPTATION
     const unsigned short WEBKIT_VIEWPORT_RULE = 15;
 #endif
-#if defined(ENABLE_CSS_REGIONS) && ENABLE_CSS_REGIONS
-    const unsigned short WEBKIT_REGION_RULE = 16;
-#endif
+    [EnabledAtRuntime=cssRegions] const unsigned short WEBKIT_REGION_RULE = 16;
     const unsigned short WEBKIT_FILTER_RULE = 17;
     const unsigned short HOST_RULE = 1001;
 

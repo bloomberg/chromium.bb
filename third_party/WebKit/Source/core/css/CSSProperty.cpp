@@ -639,14 +639,12 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitTransitionProperty:
     case CSSPropertyWebkitTransitionTimingFunction:
     case CSSPropertyWebkitUserDrag:
-#if ENABLE(CSS_REGIONS)
     case CSSPropertyWebkitFlowInto:
     case CSSPropertyWebkitFlowFrom:
     case CSSPropertyWebkitRegionOverflow:
     case CSSPropertyWebkitRegionBreakAfter:
     case CSSPropertyWebkitRegionBreakBefore:
     case CSSPropertyWebkitRegionBreakInside:
-#endif
     case CSSPropertyWebkitWrap:
     case CSSPropertyWebkitWrapFlow:
     case CSSPropertyWebkitShapeMargin:

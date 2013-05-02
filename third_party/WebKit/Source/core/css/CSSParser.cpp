@@ -247,7 +247,6 @@ CSSParserContext::CSSParserContext(CSSParserMode mode, const KURL& baseURL)
     , isHTMLDocument(false)
     , isCSSCustomFilterEnabled(false)
     , isCSSStickyPositionEnabled(false)
-    , isCSSRegionsEnabled(false)
     , isCSSCompositingEnabled(false)
     , isCSSGridLayoutEnabled(false)
     , isCSSVariablesEnabled(false)
@@ -263,7 +262,6 @@ CSSParserContext::CSSParserContext(Document* document, const KURL& baseURL, cons
     , isHTMLDocument(document->isHTMLDocument())
     , isCSSCustomFilterEnabled(document->settings() ? document->settings()->isCSSCustomFilterEnabled() : false)
     , isCSSStickyPositionEnabled(document->cssStickyPositionEnabled())
-    , isCSSRegionsEnabled(document->cssRegionsEnabled())
     , isCSSCompositingEnabled(document->cssCompositingEnabled())
     , isCSSGridLayoutEnabled(document->cssGridLayoutEnabled())
     , isCSSVariablesEnabled(document->settings() ? document->settings()->cssVariablesEnabled() : false)
@@ -280,7 +278,6 @@ bool operator==(const CSSParserContext& a, const CSSParserContext& b)
         && a.isHTMLDocument == b.isHTMLDocument
         && a.isCSSCustomFilterEnabled == b.isCSSCustomFilterEnabled
         && a.isCSSStickyPositionEnabled == b.isCSSStickyPositionEnabled
-        && a.isCSSRegionsEnabled == b.isCSSRegionsEnabled
         && a.isCSSCompositingEnabled == b.isCSSCompositingEnabled
         && a.isCSSGridLayoutEnabled == b.isCSSGridLayoutEnabled
         && a.isCSSVariablesEnabled == b.isCSSVariablesEnabled
@@ -922,21 +919,19 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         if (valueID == CSSValueExact || valueID == CSSValueEconomy)
             return true;
         break;
-#if ENABLE(CSS_REGIONS)
     case CSSPropertyWebkitRegionBreakAfter:
     case CSSPropertyWebkitRegionBreakBefore:
-        if (parserContext.isCSSRegionsEnabled && (valueID == CSSValueAuto || valueID == CSSValueAlways || valueID == CSSValueAvoid || valueID == CSSValueLeft || valueID == CSSValueRight))
+        if (RuntimeEnabledFeatures::cssRegionsEnabled() && (valueID == CSSValueAuto || valueID == CSSValueAlways || valueID == CSSValueAvoid || valueID == CSSValueLeft || valueID == CSSValueRight))
             return true;
         break;
     case CSSPropertyWebkitRegionBreakInside:
-        if (parserContext.isCSSRegionsEnabled && (valueID == CSSValueAuto || valueID == CSSValueAvoid))
+        if (RuntimeEnabledFeatures::cssRegionsEnabled() && (valueID == CSSValueAuto || valueID == CSSValueAvoid))
             return true;
         break;
     case CSSPropertyWebkitRegionOverflow:
-        if (parserContext.isCSSRegionsEnabled && (valueID == CSSValueAuto || valueID == CSSValueBreak))
+        if (RuntimeEnabledFeatures::cssRegionsEnabled() && (valueID == CSSValueAuto || valueID == CSSValueBreak))
             return true;
         break;
-#endif
     case CSSPropertyWebkitRtlOrdering:
         if (valueID == CSSValueLogical || valueID == CSSValueVisual)
             return true;
@@ -1099,12 +1094,10 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyWebkitOverflowScrolling:
 #endif
     case CSSPropertyWebkitPrintColorAdjust:
-#if ENABLE(CSS_REGIONS)
     case CSSPropertyWebkitRegionBreakAfter:
     case CSSPropertyWebkitRegionBreakBefore:
     case CSSPropertyWebkitRegionBreakInside:
     case CSSPropertyWebkitRegionOverflow:
-#endif
     case CSSPropertyWebkitRtlOrdering:
     case CSSPropertyWebkitRubyPosition:
 #if ENABLE(CSS3_TEXT)
@@ -2427,16 +2420,14 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         else
             validPrimitive = validUnit(value, FTime | FInteger | FNonNeg);
         break;
-#if ENABLE(CSS_REGIONS)
     case CSSPropertyWebkitFlowInto:
-        if (!cssRegionsEnabled())
+        if (!RuntimeEnabledFeatures::cssRegionsEnabled())
             return false;
         return parseFlowThread(propId, important);
     case CSSPropertyWebkitFlowFrom:
-        if (!cssRegionsEnabled())
+        if (!RuntimeEnabledFeatures::cssRegionsEnabled())
             return false;
         return parseRegionThread(propId, important);
-#endif
     case CSSPropertyWebkitTransform:
         if (id == CSSValueNone)
             validPrimitive = true;
@@ -2916,12 +2907,10 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitOverflowScrolling:
 #endif
     case CSSPropertyWebkitPrintColorAdjust:
-#if ENABLE(CSS_REGIONS)
     case CSSPropertyWebkitRegionBreakAfter:
     case CSSPropertyWebkitRegionBreakBefore:
     case CSSPropertyWebkitRegionBreakInside:
     case CSSPropertyWebkitRegionOverflow:
-#endif
     case CSSPropertyWebkitRtlOrdering:
     case CSSPropertyWebkitRubyPosition:
 #if ENABLE(CSS3_TEXT)
@@ -8685,7 +8674,6 @@ PassRefPtr<CSSValueList> CSSParser::parseFilter()
     return list.release();
 }
 
-#if ENABLE(CSS_REGIONS)
 static bool validFlowName(const String& flowName)
 {
     return !(equalIgnoringCase(flowName, "auto")
@@ -8693,12 +8681,6 @@ static bool validFlowName(const String& flowName)
             || equalIgnoringCase(flowName, "inherit")
             || equalIgnoringCase(flowName, "initial")
             || equalIgnoringCase(flowName, "none"));
-}
-#endif
-
-bool CSSParser::cssRegionsEnabled() const
-{
-    return m_context.isCSSRegionsEnabled;
 }
 
 bool CSSParser::cssCompositingEnabled() const
@@ -8711,7 +8693,6 @@ bool CSSParser::cssGridLayoutEnabled() const
     return m_context.isCSSGridLayoutEnabled;
 }
 
-#if ENABLE(CSS_REGIONS)
 bool CSSParser::parseFlowThread(const String& flowName)
 {
     setupParser("@-internal-decls{-webkit-flow-into:", flowName, "}");
@@ -8726,7 +8707,7 @@ bool CSSParser::parseFlowThread(const String& flowName)
 bool CSSParser::parseFlowThread(CSSPropertyID propId, bool important)
 {
     ASSERT(propId == CSSPropertyWebkitFlowInto);
-    ASSERT(cssRegionsEnabled());
+    ASSERT(RuntimeEnabledFeatures::cssRegionsEnabled());
 
     if (m_valueList->size() != 1)
         return false;
@@ -8758,7 +8739,7 @@ bool CSSParser::parseFlowThread(CSSPropertyID propId, bool important)
 bool CSSParser::parseRegionThread(CSSPropertyID propId, bool important)
 {
     ASSERT(propId == CSSPropertyWebkitFlowFrom);
-    ASSERT(cssRegionsEnabled());
+    ASSERT(RuntimeEnabledFeatures::cssRegionsEnabled());
 
     if (m_valueList->size() != 1)
         return false;
@@ -8784,7 +8765,6 @@ bool CSSParser::parseRegionThread(CSSPropertyID propId, bool important)
 
     return true;
 }
-#endif
 
 bool CSSParser::parseTransformOrigin(CSSPropertyID propId, CSSPropertyID& propId1, CSSPropertyID& propId2, CSSPropertyID& propId3, RefPtr<CSSValue>& value, RefPtr<CSSValue>& value2, RefPtr<CSSValue>& value3)
 {
@@ -10249,12 +10229,11 @@ inline void CSSParser::detectAtToken(int length, bool hasEscape)
                 return;
             }
 
-#if ENABLE(CSS_REGIONS)
             if (isASCIIAlphaCaselessEqual(name[14], 'n') && isEqualToCSSIdentifier(name + 2, "webkit-regio")) {
                 m_token = WEBKIT_REGION_RULE_SYM;
                 return;
             }
-#endif
+
             if (isASCIIAlphaCaselessEqual(name[14], 'r') && isEqualToCSSIdentifier(name + 2, "webkit-filte")) {
                 m_token = WEBKIT_FILTER_RULE_SYM;
                 return;
@@ -11219,7 +11198,7 @@ void CSSParser::setReusableRegionSelectorVector(Vector<OwnPtr<CSSParserSelector>
 
 StyleRuleBase* CSSParser::createRegionRule(Vector<OwnPtr<CSSParserSelector> >* regionSelector, RuleList* rules)
 {
-    if (!cssRegionsEnabled() || !regionSelector || !rules) {
+    if (!RuntimeEnabledFeatures::cssRegionsEnabled() || !regionSelector || !rules) {
         endRuleBody(true);
         return 0;
     }

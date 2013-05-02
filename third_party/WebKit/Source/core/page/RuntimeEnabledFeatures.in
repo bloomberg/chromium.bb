@@ -14,7 +14,7 @@ Geolocation default=true
 IndexedDB
 CanvasPath
 CSSExclusions
-CSSRegions condition=CSS_REGIONS
+CSSRegions
 CSSCompositing condition=CSS_COMPOSITING
 FontLoadEvents
 Fullscreen default=true

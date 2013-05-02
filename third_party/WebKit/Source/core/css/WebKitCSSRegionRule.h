@@ -33,8 +33,6 @@
 
 #include "core/css/CSSGroupingRule.h"
 
-#if ENABLE(CSS_REGIONS)
-
 namespace WebCore {
 
 class StyleRuleRegion;
@@ -51,7 +49,5 @@ private:
 };
 
 }
-
-#endif // ENABLE(CSS_REGIONS)
 
 #endif // WebKitCSSRegionRule_h

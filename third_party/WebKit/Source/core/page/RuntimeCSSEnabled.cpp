@@ -45,7 +45,6 @@ static void setCSSPropertiesEnabled(CSSPropertyID* properties, size_t length, bo
 
 static void setPropertySwitchesFromRuntimeFeatures(BoolVector& properties)
 {
-#if ENABLE(CSS_REGIONS)
     CSSPropertyID regionProperites[] = {
         CSSPropertyWebkitFlowInto,
         CSSPropertyWebkitFlowFrom,
@@ -55,7 +54,6 @@ static void setPropertySwitchesFromRuntimeFeatures(BoolVector& properties)
         CSSPropertyWebkitRegionBreakInside
     };
     setCSSPropertiesEnabled(regionProperites, WTF_ARRAY_LENGTH(regionProperites), RuntimeEnabledFeatures::cssRegionsEnabled());
-#endif
     CSSPropertyID exclusionProperties[] = {
         CSSPropertyWebkitWrap,
         CSSPropertyWebkitWrapFlow,

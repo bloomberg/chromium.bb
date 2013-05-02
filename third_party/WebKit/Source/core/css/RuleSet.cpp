@@ -331,14 +331,12 @@ void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const M
                 continue;
             resolver->addKeyframeStyle(static_cast<StyleRuleKeyframes*>(rule));
         }
-#if ENABLE(CSS_REGIONS)
         else if (rule->isRegionRule() && resolver) {
             // FIXME (BUG 72472): We don't add @-webkit-region rules of scoped style sheets for the moment.
             if (scope)
                 continue;
             addRegionRule(static_cast<StyleRuleRegion*>(rule), hasDocumentSecurityOrigin);
         }
-#endif
         else if (rule->isHostRule())
             resolver->addHostRule(static_cast<StyleRuleHost*>(rule), hasDocumentSecurityOrigin, scope);
 #if ENABLE(CSS_DEVICE_ADAPTATION)

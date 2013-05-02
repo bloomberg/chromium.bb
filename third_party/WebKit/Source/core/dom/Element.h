@@ -582,10 +582,8 @@ public:
     PassRefPtr<RenderStyle> styleForRenderer();
 
     RenderRegion* renderRegion() const;
-#if ENABLE(CSS_REGIONS)
     const AtomicString& webkitRegionOverset() const;
     Vector<RefPtr<Range> > webkitGetRegionFlowRanges() const;
-#endif
 
     bool hasID() const;
     bool hasClass() const;

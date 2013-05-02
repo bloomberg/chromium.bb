@@ -1098,11 +1098,6 @@ bool Document::cssStickyPositionEnabled() const
     return settings() && settings()->cssStickyPositionEnabled();
 }
 
-bool Document::cssRegionsEnabled() const
-{
-    return RuntimeEnabledFeatures::cssRegionsEnabled();
-}
-
 bool Document::cssCompositingEnabled() const
 {
     return RuntimeEnabledFeatures::cssCompositingEnabled();
@@ -1113,19 +1108,15 @@ bool Document::cssGridLayoutEnabled() const
     return settings() && settings()->cssGridLayoutEnabled();
 }
 
-#if ENABLE(CSS_REGIONS)
-
 PassRefPtr<DOMNamedFlowCollection> Document::webkitGetNamedFlows()
 {
-    if (!cssRegionsEnabled() || !renderer())
+    if (!RuntimeEnabledFeatures::cssRegionsEnabled() || !renderer())
         return 0;
 
     updateStyleIfNeeded();
 
     return namedFlows()->createCSSOMSnapshot();
 }
-
-#endif
 
 NamedFlowCollection* Document::namedFlows()
 {

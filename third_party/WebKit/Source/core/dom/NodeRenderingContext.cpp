@@ -185,7 +185,7 @@ void NodeRenderingContext::moveToFlowThreadIfNeeded()
 {
     ASSERT(m_node->isElementNode());
     ASSERT(m_style);
-    if (!m_node->document()->cssRegionsEnabled())
+    if (!RuntimeEnabledFeatures::cssRegionsEnabled())
         return;
 
     if (m_style->flowThread().isEmpty())

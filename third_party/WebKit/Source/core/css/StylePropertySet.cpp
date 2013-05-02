@@ -374,11 +374,9 @@ static const CSSPropertyID staticBlockProperties[] = {
     CSSPropertyPageBreakAfter,
     CSSPropertyPageBreakBefore,
     CSSPropertyPageBreakInside,
-#if ENABLE(CSS_REGIONS)
     CSSPropertyWebkitRegionBreakAfter,
     CSSPropertyWebkitRegionBreakBefore,
     CSSPropertyWebkitRegionBreakInside,
-#endif
     CSSPropertyTextAlign,
 #if ENABLE(CSS3_TEXT)
     CSSPropertyWebkitTextAlignLast,

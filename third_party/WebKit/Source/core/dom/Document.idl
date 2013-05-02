@@ -184,7 +184,7 @@
     void webkitExitPointerLock();
     readonly attribute Element webkitPointerLockElement;
 
-    [Conditional=CSS_REGIONS, EnabledAtRuntime=cssRegions] DOMNamedFlowCollection webkitGetNamedFlows();
+    [EnabledAtRuntime=cssRegions] DOMNamedFlowCollection webkitGetNamedFlows();
 
     [EnabledAtRuntime=fontLoadEvents] readonly attribute FontLoader fontloader;
 

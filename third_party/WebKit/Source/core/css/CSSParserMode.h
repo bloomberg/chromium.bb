@@ -65,7 +65,6 @@ public:
     bool isHTMLDocument;
     bool isCSSCustomFilterEnabled;
     bool isCSSStickyPositionEnabled;
-    bool isCSSRegionsEnabled;
     bool isCSSCompositingEnabled;
     bool isCSSGridLayoutEnabled;
     bool isCSSVariablesEnabled;

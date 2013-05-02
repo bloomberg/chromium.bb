@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/rendering/RenderNamedFlowThread.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/NamedFlow.h"
 #include "core/dom/NodeTraversal.h"
@@ -44,7 +45,7 @@ namespace WebCore {
 
 RenderNamedFlowThread* RenderNamedFlowThread::createAnonymous(Document* document, PassRefPtr<NamedFlow> namedFlow)
 {
-    ASSERT(document->cssRegionsEnabled());
+    ASSERT(RuntimeEnabledFeatures::cssRegionsEnabled());
     RenderNamedFlowThread* renderer = new (document->renderArena()) RenderNamedFlowThread(namedFlow);
     renderer->setDocumentForAnonymous(document);
     return renderer;

@@ -266,7 +266,6 @@ public:
     bool parseFontFeatureTag(CSSValueList*);
     bool parseFontFeatureSettings(bool important);
 
-    bool cssRegionsEnabled() const;
     bool cssCompositingEnabled() const;
     bool parseFlowThread(const String& flowName);
     bool parseFlowThread(CSSPropertyID, bool important);

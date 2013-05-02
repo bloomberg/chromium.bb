@@ -22,6 +22,7 @@
 #include "config.h"
 #include "core/css/StyleRule.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/css/CSSCharsetRule.h"
 #include "core/css/CSSFontFaceRule.h"
 #include "core/css/CSSHostRule.h"
@@ -74,11 +75,9 @@ void StyleRuleBase::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     case Media:
         static_cast<const StyleRuleMedia*>(this)->reportDescendantMemoryUsage(memoryObjectInfo);
         return;
-#if ENABLE(CSS_REGIONS)
     case Region:
         static_cast<const StyleRuleRegion*>(this)->reportDescendantMemoryUsage(memoryObjectInfo);
         return;
-#endif
     case Import:
         static_cast<const StyleRuleImport*>(this)->reportDescendantMemoryUsage(memoryObjectInfo);
         return;
@@ -100,9 +99,6 @@ void StyleRuleBase::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     case Unknown:
     case Charset:
     case Keyframe:
-#if !ENABLE(CSS_REGIONS)
-    case Region:
-#endif
         ASSERT_NOT_REACHED();
         return;
     }
@@ -127,11 +123,9 @@ void StyleRuleBase::destroy()
     case Supports:
         delete static_cast<StyleRuleSupports*>(this);
         return;
-#if ENABLE(CSS_REGIONS)
     case Region:
         delete static_cast<StyleRuleRegion*>(this);
         return;
-#endif
     case Import:
         delete static_cast<StyleRuleImport*>(this);
         return;
@@ -152,9 +146,6 @@ void StyleRuleBase::destroy()
     case Unknown:
     case Charset:
     case Keyframe:
-#if !ENABLE(CSS_REGIONS)
-    case Region:
-#endif
         ASSERT_NOT_REACHED();
         return;
     }
@@ -174,10 +165,8 @@ PassRefPtr<StyleRuleBase> StyleRuleBase::copy() const
         return static_cast<const StyleRuleMedia*>(this)->copy();
     case Supports:
         return static_cast<const StyleRuleSupports*>(this)->copy();
-#if ENABLE(CSS_REGIONS)
     case Region:
         return static_cast<const StyleRuleRegion*>(this)->copy();
-#endif
     case Import:
         // FIXME: Copy import rules.
         ASSERT_NOT_REACHED();
@@ -195,9 +184,6 @@ PassRefPtr<StyleRuleBase> StyleRuleBase::copy() const
     case Unknown:
     case Charset:
     case Keyframe:
-#if !ENABLE(CSS_REGIONS)
-    case Region:
-#endif
         ASSERT_NOT_REACHED();
         return 0;
     }
@@ -225,11 +211,9 @@ PassRefPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet
     case Supports:
         rule = CSSSupportsRule::create(static_cast<StyleRuleSupports*>(self), parentSheet);
         break;
-#if ENABLE(CSS_REGIONS)
     case Region:
         rule = WebKitCSSRegionRule::create(static_cast<StyleRuleRegion*>(self), parentSheet);
         break;
-#endif
     case Import:
         rule = CSSImportRule::create(static_cast<StyleRuleImport*>(self), parentSheet);
         break;
@@ -250,9 +234,6 @@ PassRefPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet
     case Unknown:
     case Charset:
     case Keyframe:
-#if !ENABLE(CSS_REGIONS)
-    case Region:
-#endif
         ASSERT_NOT_REACHED();
         return 0;
     }
@@ -437,6 +418,7 @@ StyleRuleSupports::StyleRuleSupports(const StyleRuleSupports& o)
 StyleRuleRegion::StyleRuleRegion(Vector<OwnPtr<CSSParserSelector> >* selectors, Vector<RefPtr<StyleRuleBase> >& adoptRules)
     : StyleRuleGroup(Region, adoptRules)
 {
+    ASSERT(RuntimeEnabledFeatures::cssRegionsEnabled());
     m_selectorList.adoptSelectorVector(*selectors);
 }
 
@@ -444,6 +426,7 @@ StyleRuleRegion::StyleRuleRegion(const StyleRuleRegion& o)
     : StyleRuleGroup(o)
     , m_selectorList(o.m_selectorList)
 {
+    ASSERT(RuntimeEnabledFeatures::cssRegionsEnabled());
 }
 
 void StyleRuleRegion::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const

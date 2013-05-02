@@ -391,14 +391,12 @@ static int mapCSSPropertyIdToCSSSampleId(int id)
     case CSSPropertyWebkitUserDrag: return 337;
     case CSSPropertyWebkitUserModify: return 338;
     case CSSPropertyWebkitUserSelect: return 339;
-#if defined(ENABLE_CSS_REGIONS) && ENABLE_CSS_REGIONS
     case CSSPropertyWebkitFlowInto: return 340;
     case CSSPropertyWebkitFlowFrom: return 341;
     case CSSPropertyWebkitRegionOverflow: return 342;
     case CSSPropertyWebkitRegionBreakAfter: return 343;
     case CSSPropertyWebkitRegionBreakBefore: return 344;
     case CSSPropertyWebkitRegionBreakInside: return 345;
-#endif
     case CSSPropertyWebkitShapeInside: return 346;
     case CSSPropertyWebkitShapeOutside: return 347;
     case CSSPropertyWebkitShapeMargin: return 348;

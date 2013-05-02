@@ -32,18 +32,18 @@
 
 #include "core/css/WebKitCSSRegionRule.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/StyleRule.h"
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/text/StringBuilder.h>
 
-#if ENABLE(CSS_REGIONS)
-
 namespace WebCore {
 WebKitCSSRegionRule::WebKitCSSRegionRule(StyleRuleRegion* regionRule, CSSStyleSheet* parent)
     : CSSGroupingRule(regionRule, parent)
 {
+    ASSERT(RuntimeEnabledFeatures::cssRegionsEnabled());
 }
 
 String WebKitCSSRegionRule::cssText() const
@@ -62,5 +62,3 @@ String WebKitCSSRegionRule::cssText() const
 }
 
 } // namespace WebCore
-
-#endif

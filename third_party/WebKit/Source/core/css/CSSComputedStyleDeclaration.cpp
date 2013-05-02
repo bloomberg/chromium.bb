@@ -337,14 +337,12 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitUserModify,
     CSSPropertyWebkitUserSelect,
     CSSPropertyWebkitWritingMode,
-#if ENABLE(CSS_REGIONS)
     CSSPropertyWebkitFlowInto,
     CSSPropertyWebkitFlowFrom,
     CSSPropertyWebkitRegionOverflow,
     CSSPropertyWebkitRegionBreakAfter,
     CSSPropertyWebkitRegionBreakBefore,
     CSSPropertyWebkitRegionBreakInside,
-#endif
     CSSPropertyWebkitAppRegion,
     CSSPropertyWebkitWrapFlow,
     CSSPropertyWebkitShapeMargin,
@@ -1800,14 +1798,12 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return zoomAdjustedPixelValue(style->columnWidth(), style.get());
         case CSSPropertyTabSize:
             return cssValuePool().createValue(style->tabSize(), CSSPrimitiveValue::CSS_NUMBER);
-#if ENABLE(CSS_REGIONS)
         case CSSPropertyWebkitRegionBreakAfter:
             return cssValuePool().createValue(style->regionBreakAfter());
         case CSSPropertyWebkitRegionBreakBefore:
             return cssValuePool().createValue(style->regionBreakBefore());
         case CSSPropertyWebkitRegionBreakInside:
             return cssValuePool().createValue(style->regionBreakInside());
-#endif
         case CSSPropertyCursor: {
             RefPtr<CSSValueList> list;
             CursorList* cursors = style->cursors();
@@ -2553,7 +2549,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
 #endif
             }
             return cssValuePool().createIdentifierValue(CSSValueNone);
-#if ENABLE(CSS_REGIONS)
         case CSSPropertyWebkitFlowInto:
             if (style->flowThread().isNull())
                 return cssValuePool().createIdentifierValue(CSSValueNone);
@@ -2564,7 +2559,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return cssValuePool().createValue(style->regionThread(), CSSPrimitiveValue::CSS_STRING);
         case CSSPropertyWebkitRegionOverflow:
             return cssValuePool().createValue(style->regionOverflow());
-#endif
         case CSSPropertyWebkitWrapFlow:
             return cssValuePool().createValue(style->wrapFlow());
         case CSSPropertyWebkitShapeMargin:

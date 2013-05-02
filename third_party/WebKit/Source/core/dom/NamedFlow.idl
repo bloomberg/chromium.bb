@@ -28,6 +28,7 @@
  */
 
 [
+    EnabledAtRuntime=cssRegions,
     EventTarget,
     InterfaceName=WebKitNamedFlow,
     GenerateIsReachable=ImplOwnerNodeRoot

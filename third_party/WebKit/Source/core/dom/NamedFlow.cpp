@@ -30,6 +30,7 @@
 #include "config.h"
 #include "core/dom/NamedFlow.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/NamedFlowCollection.h"
 #include "core/dom/ScriptExecutionContext.h"
@@ -45,6 +46,7 @@ NamedFlow::NamedFlow(PassRefPtr<NamedFlowCollection> manager, const AtomicString
     , m_flowManager(manager)
     , m_parentFlowThread(0)
 {
+    ASSERT(RuntimeEnabledFeatures::cssRegionsEnabled());
 }
 
 NamedFlow::~NamedFlow()

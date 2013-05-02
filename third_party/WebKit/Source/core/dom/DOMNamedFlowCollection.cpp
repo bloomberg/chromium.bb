@@ -29,6 +29,7 @@
 #include "config.h"
 #include "core/dom/DOMNamedFlowCollection.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/dom/NamedFlow.h"
 #include "core/dom/NamedFlowCollection.h"
 
@@ -36,6 +37,7 @@ namespace WebCore {
 
 DOMNamedFlowCollection::DOMNamedFlowCollection(const Vector<NamedFlow*>& namedFlows)
 {
+    ASSERT(RuntimeEnabledFeatures::cssRegionsEnabled());
     for (Vector<NamedFlow*>::const_iterator it = namedFlows.begin(); it != namedFlows.end(); ++it)
         m_namedFlows.add(*it);
 }

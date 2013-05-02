@@ -54,9 +54,7 @@ public:
 #if ENABLE(CSS_DEVICE_ADAPTATION)
         WEBKIT_VIEWPORT_RULE = 15,
 #endif
-#if ENABLE(CSS_REGIONS)
         WEBKIT_REGION_RULE = 16,
-#endif
         WEBKIT_FILTER_RULE = 17,
         HOST_RULE = 1001,
     };
