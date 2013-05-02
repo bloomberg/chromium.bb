@@ -193,6 +193,10 @@ SpellcheckHunspellDictionary* SpellcheckService::GetHunspellDictionary() {
   return hunspell_dictionary_.get();
 }
 
+SpellingServiceFeedback* SpellcheckService::GetFeedbackSender() {
+  return &feedback_sender_;
+}
+
 bool SpellcheckService::LoadExternalDictionary(std::string language,
                                                std::string locale,
                                                std::string path,

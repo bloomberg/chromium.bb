@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
 #include "chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h"
+#include "chrome/browser/spellchecker/spelling_service_feedback.h"
 #include "chrome/common/spellcheck_common.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -92,6 +93,9 @@ class SpellcheckService : public ProfileKeyedService,
   // Returns the instance of the Hunspell dictionary.
   SpellcheckHunspellDictionary* GetHunspellDictionary();
 
+  // Returns the instance of the spelling service feedback sender.
+  SpellingServiceFeedback* GetFeedbackSender();
+
   // Load a dictionary from a given path. Format specifies how the dictionary
   // is stored. Return value is true if successful.
   bool LoadExternalDictionary(std::string language,
@@ -153,6 +157,8 @@ class SpellcheckService : public ProfileKeyedService,
   scoped_ptr<SpellcheckCustomDictionary> custom_dictionary_;
 
   scoped_ptr<SpellcheckHunspellDictionary> hunspell_dictionary_;
+
+  SpellingServiceFeedback feedback_sender_;
 
   base::WeakPtrFactory<SpellcheckService> weak_ptr_factory_;
 

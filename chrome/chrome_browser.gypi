@@ -1829,6 +1829,8 @@
         'browser/spellchecker/spellcheck_service.h',
         'browser/spellchecker/spelling_service_client.cc',
         'browser/spellchecker/spelling_service_client.h',
+        'browser/spellchecker/spelling_service_feedback.cc',
+        'browser/spellchecker/spelling_service_feedback.h',
         'browser/spellchecker/word_trimmer.cc',
         'browser/spellchecker/word_trimmer.h',
         'browser/ssl/ssl_add_certificate.cc',

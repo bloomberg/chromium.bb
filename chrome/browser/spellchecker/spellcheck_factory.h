@@ -21,6 +21,8 @@ class SpellcheckServiceFactory : public ProfileKeyedServiceFactory {
   // does not already exist.
   static SpellcheckService* GetForProfile(Profile* profile);
 
+  static SpellcheckService* GetForRenderProcessId(int render_process_id);
+
   // Returns the spell check host. This can return NULL.
   static SpellcheckService* GetForProfileWithoutCreating(Profile* profile);
 

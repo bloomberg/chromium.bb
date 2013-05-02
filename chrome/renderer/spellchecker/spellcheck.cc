@@ -13,10 +13,12 @@
 #include "chrome/common/spellcheck_result.h"
 #include "chrome/renderer/spellchecker/spellcheck_language.h"
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
 using WebKit::WebVector;
 using WebKit::WebTextCheckingResult;
@@ -38,6 +40,30 @@ bool UpdateSpellcheckEnabled::Visit(content::RenderView* render_view) {
   SpellCheckProvider* provider = SpellCheckProvider::Get(render_view);
   DCHECK(provider);
   provider->EnableSpellcheck(enabled_);
+  return true;
+}
+
+class DocumentMarkersCollector : public content::RenderViewVisitor {
+ public:
+  DocumentMarkersCollector() {}
+  virtual ~DocumentMarkersCollector() {}
+  const std::vector<uint32>& markers() const { return markers_; }
+  virtual bool Visit(content::RenderView* render_view) OVERRIDE;
+
+ private:
+  std::vector<uint32> markers_;
+  DISALLOW_COPY_AND_ASSIGN(DocumentMarkersCollector);
+};
+
+bool DocumentMarkersCollector::Visit(content::RenderView* render_view) {
+  if (!render_view || !render_view->GetWebView())
+    return true;
+  WebVector<uint32> markers;
+  // TODO(rouslan): Call spellingMarkers() after Blink DEPS roll:
+  // render_view->GetWebView()->spellingMarkers(&markers);
+  for (size_t i = 0; i < markers.size(); ++i)
+    markers_.push_back(markers[i]);
+  // Visit all render views.
   return true;
 }
 
@@ -96,6 +122,8 @@ bool SpellCheck::OnControlMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(SpellCheckMsg_EnableAutoSpellCorrect,
                         OnEnableAutoSpellCorrect)
     IPC_MESSAGE_HANDLER(SpellCheckMsg_EnableSpellCheck, OnEnableSpellCheck)
+    IPC_MESSAGE_HANDLER(SpellCheckMsg_RequestDocumentMarkers,
+                        OnRequestDocumentMarkers)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -128,6 +156,13 @@ void SpellCheck::OnEnableSpellCheck(bool enable) {
   spellcheck_enabled_ = enable;
   UpdateSpellcheckEnabled updater(enable);
   content::RenderView::ForEach(&updater);
+}
+
+void SpellCheck::OnRequestDocumentMarkers() {
+  DocumentMarkersCollector collector;
+  content::RenderView::ForEach(&collector);
+  content::RenderThread::Get()->Send(
+      new SpellCheckHostMsg_RespondDocumentMarkers(collector.markers()));
 }
 
 // TODO(groby): Make sure we always have a spelling engine, even before Init()

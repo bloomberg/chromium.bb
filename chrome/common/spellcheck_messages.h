@@ -24,7 +24,7 @@ IPC_STRUCT_TRAITS_END()
 // Messages sent from the browser to the renderer.
 
 IPC_MESSAGE_CONTROL1(SpellCheckMsg_EnableSpellCheck,
-                    bool)
+                     bool)
 
 // Passes some initialization params to the renderer's spellchecker. This can
 // be called directly after startup or in (async) response to a
@@ -44,6 +44,15 @@ IPC_MESSAGE_CONTROL2(SpellCheckMsg_CustomDictionaryChanged,
 // Toggle the auto spell correct functionality.
 IPC_MESSAGE_CONTROL1(SpellCheckMsg_EnableAutoSpellCorrect,
                      bool /* enable */)
+
+// Request a list of all document markers in the renderer for spelling service
+// feedback.
+IPC_MESSAGE_CONTROL0(SpellCheckMsg_RequestDocumentMarkers)
+
+// Send a list of document markers in the renderer to the spelling service
+// feedback sender.
+IPC_MESSAGE_CONTROL1(SpellCheckHostMsg_RespondDocumentMarkers,
+                     std::vector<uint32> /* document marker identifiers */)
 
 #if !defined(OS_MACOSX)
 // Sends text-check results from the Spelling service when the service finishes

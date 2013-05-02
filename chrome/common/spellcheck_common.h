@@ -15,6 +15,9 @@ class FilePath;
 namespace chrome {
 namespace spellcheck_common {
 
+// The number of seconds between sending feedback to spelling service.
+static const int kFeedbackIntervalSeconds = 1800;  // 30 minutes
+
 // Max number of dictionary suggestions.
 static const int kMaxSuggestions = 5;
 

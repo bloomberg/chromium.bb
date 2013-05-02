@@ -42,6 +42,8 @@ bool SpellCheckMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnSpellCheckerRequestDictionary)
     IPC_MESSAGE_HANDLER(SpellCheckHostMsg_NotifyChecked,
                         OnNotifyChecked)
+    IPC_MESSAGE_HANDLER(SpellCheckHostMsg_RespondDocumentMarkers,
+                        OnRespondDocumentMarkers)
 #if !defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(SpellCheckHostMsg_CallSpellingService,
                         OnCallSpellingService)
@@ -88,6 +90,15 @@ void SpellCheckMessageFilter::OnNotifyChecked(const string16& word,
   DCHECK(spellcheck_service);
   if (spellcheck_service->GetMetrics())
     spellcheck_service->GetMetrics()->RecordCheckedWordStats(word, misspelled);
+}
+
+void SpellCheckMessageFilter::OnRespondDocumentMarkers(
+    const std::vector<uint32>& markers) {
+  SpellcheckService* spellcheck =
+      SpellcheckServiceFactory::GetForRenderProcessId(render_process_id_);
+  DCHECK(spellcheck);
+  spellcheck->GetFeedbackSender()->OnReceiveDocumentMarkers(render_process_id_,
+                                                            markers);
 }
 
 #if !defined(OS_MACOSX)

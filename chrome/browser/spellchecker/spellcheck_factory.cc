@@ -11,12 +11,26 @@
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
+#include "content/public/browser/render_process_host.h"
 #include "grit/locale_settings.h"
 
 // static
 SpellcheckService* SpellcheckServiceFactory::GetForProfile(Profile* profile) {
   return static_cast<SpellcheckService*>(
       GetInstance()->GetServiceForProfile(profile, true));
+}
+
+// static
+SpellcheckService* SpellcheckServiceFactory::GetForRenderProcessId(
+    int render_process_id) {
+  content::RenderProcessHost* host =
+      content::RenderProcessHost::FromID(render_process_id);
+  if (!host)
+    return NULL;
+  Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
+  if (!profile)
+    return NULL;
+  return GetForProfile(profile);
 }
 
 // static
