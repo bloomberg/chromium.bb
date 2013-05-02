@@ -10,7 +10,8 @@
 <script src="/w3c/webperf/resources/webperftestharness.js"></script>
 <script src="/w3c/webperf/resources/webperftestharnessextension.js"></script>
 <script>
-setup({explicit_done: true});
+setup({explicit_done: true,
+       timeout: 30000});
 
 var background_loaded = false;
 var page_loaded = false;
