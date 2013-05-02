@@ -24,13 +24,16 @@ var DirectoryTreeUtil = {};
  */
 DirectoryTreeUtil.updateChangedDirectoryItem = function(
     changedDirectryPath, currentDirectoryItem) {
+  if (changedDirectryPath === currentDirectoryItem.entry.fullPath) {
+    currentDirectoryItem.updateSubDirectories(false /* recursive */);
+    return;
+  }
+
   for (var i = 0; i < currentDirectoryItem.items.length; i++) {
     var item = currentDirectoryItem.items[i];
-    if (changedDirectryPath === item.entry.fullPath) {
-      item.updateSubDirectories(false /* recursive */);
-      break;
-    } else if (changedDirectryPath.indexOf(item.entry.fullPath) == 0) {
+    if (PathUtil.isParentPath(item.entry.fullPath, changedDirectryPath)) {
       DirectoryTreeUtil.updateChangedDirectoryItem(changedDirectryPath, item);
+      break;
     }
   }
 };
