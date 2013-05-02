@@ -13,15 +13,14 @@
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "cc/base/worker_pool.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/resources/memory_history.h"
 #include "cc/resources/picture_pile_impl.h"
+#include "cc/resources/raster_worker_pool.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/tile_priority.h"
 
 namespace cc {
-class RasterWorkerPool;
 class ResourceProvider;
 class Tile;
 class TileVersion;
@@ -129,7 +128,6 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
     client_->ScheduleManageTiles();
     manage_tiles_pending_ = true;
   }
-  void AnalyzeTile(Tile* tile);
   void GatherPixelRefsForTile(Tile* tile);
   void DispatchImageDecodeTasksForTile(Tile* tile);
   void DispatchOneImageDecodeTask(
@@ -143,6 +141,7 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   void OnRasterTaskCompleted(
       scoped_refptr<Tile> tile,
       scoped_ptr<ResourcePool::Resource> resource,
+      PicturePileImpl::Analysis* analysis,
       int manage_tiles_call_count_when_dispatched);
   void DidFinishTileInitialization(Tile* tile);
   void DidTileTreeBinChange(Tile* tile,
@@ -150,8 +149,20 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
                             WhichTree tree);
   scoped_ptr<Value> GetMemoryRequirementsAsValue() const;
 
+  static void RunAnalyzeAndRasterTask(
+      const RasterWorkerPool::RasterCallback& analyze_task,
+      const RasterWorkerPool::RasterCallback& raster_task,
+      PicturePileImpl* picture_pile);
+  static void RunAnalyzeTask(
+      PicturePileImpl::Analysis* analysis,
+      gfx::Rect rect,
+      float contents_scale,
+      bool use_color_estimator,
+      const RasterTaskMetadata& metadata,
+      PicturePileImpl* picture_pile);
   static void RunRasterTask(
       uint8* buffer,
+      PicturePileImpl::Analysis* analysis,
       gfx::Rect rect,
       float contents_scale,
       const RasterTaskMetadata& metadata,

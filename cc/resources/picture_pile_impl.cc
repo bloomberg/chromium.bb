@@ -263,7 +263,6 @@ void PicturePileImpl::AnalyzeInRect(gfx::Rect content_rect,
 
   analysis->is_solid_color = canvas.getColorIfSolid(&analysis->solid_color);
   analysis->has_text = canvas.hasText();
-  canvas.consumeLazyPixelRefs(&analysis->lazy_pixel_refs);
 }
 
 PicturePileImpl::Analysis::Analysis()

@@ -62,8 +62,6 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
     bool is_solid_color;
     bool has_text;
     SkColor solid_color;
-
-    skia::AnalysisCanvas::LazyPixelRefList lazy_pixel_refs;
   };
 
   void AnalyzeInRect(gfx::Rect content_rect,

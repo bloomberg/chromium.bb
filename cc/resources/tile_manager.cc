@@ -593,18 +593,13 @@ void TileManager::DispatchMoreTasks() {
   TileVector tiles_with_image_decoding_tasks;
 
   // Process all tiles in the need_to_be_rasterized queue:
-  // 1. Analyze the tile and early out if it's solid color or transparent.
-  // 2. Dispatch image decode tasks.
-  // 3. If the image decode isn't done, save the tile for later processing.
-  // 4. Attempt to dispatch a raster task, or break out of the loop.
+  // 1. Dispatch image decode tasks.
+  // 2. If the image decode isn't done, save the tile for later processing.
+  // 3. Attempt to dispatch a raster task, or break out of the loop.
   while (!tiles_that_need_to_be_rasterized_.empty()) {
     Tile* tile = tiles_that_need_to_be_rasterized_.back();
 
-    AnalyzeTile(tile);
-    if (!tile->drawing_info().requires_resource()) {
-      tiles_that_need_to_be_rasterized_.pop_back();
-      continue;
-    }
+    DCHECK(tile->drawing_info().requires_resource());
 
     DispatchImageDecodeTasksForTile(tile);
     if (!tile->managed_state().pending_pixel_refs.empty()) {
@@ -627,27 +622,6 @@ void TileManager::DispatchMoreTasks() {
   if (did_initialize_visible_tile_) {
     did_initialize_visible_tile_ = false;
     client_->DidInitializeVisibleTile();
-  }
-}
-
-void TileManager::AnalyzeTile(Tile* tile) {
-  ManagedTileState& managed_tile_state = tile->managed_state();
-  if (use_color_estimator_ && !managed_tile_state.picture_pile_analyzed) {
-    tile->picture_pile()->AnalyzeInRect(
-        tile->content_rect(),
-        tile->contents_scale(),
-        &managed_tile_state.picture_pile_analysis);
-    managed_tile_state.picture_pile_analysis.is_solid_color &=
-        use_color_estimator_;
-    managed_tile_state.picture_pile_analyzed = true;
-    managed_tile_state.need_to_gather_pixel_refs = false;
-    managed_tile_state.pending_pixel_refs.swap(
-        managed_tile_state.picture_pile_analysis.lazy_pixel_refs);
-    if (managed_tile_state.picture_pile_analysis.is_solid_color) {
-      tile->drawing_info().set_solid_color(
-          managed_tile_state.picture_pile_analysis.solid_color);
-      DidFinishTileInitialization(tile);
-    }
   }
 }
 
@@ -755,6 +729,7 @@ void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
   ResourceProvider::ResourceId resource_id = resource->id();
   uint8* buffer =
       resource_pool_->resource_provider()->MapPixelBuffer(resource_id);
+  PicturePileImpl::Analysis* analysis = new PicturePileImpl::Analysis;
 
   CHECK(buffer);
   // skia requires that our buffer be 4-byte aligned
@@ -762,16 +737,25 @@ void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
 
   raster_worker_pool_->PostRasterTaskAndReply(
       tile->picture_pile(),
-      base::Bind(&TileManager::RunRasterTask,
-                 buffer,
-                 tile->content_rect(),
-                 tile->contents_scale(),
-                 GetRasterTaskMetadata(*tile),
-                 rendering_stats_instrumentation_),
+      base::Bind(&TileManager::RunAnalyzeAndRasterTask,
+                 base::Bind(&TileManager::RunAnalyzeTask,
+                            analysis,
+                            tile->content_rect(),
+                            tile->contents_scale(),
+                            use_color_estimator_,
+                            GetRasterTaskMetadata(*tile)),
+                 base::Bind(&TileManager::RunRasterTask,
+                            buffer,
+                            analysis,
+                            tile->content_rect(),
+                            tile->contents_scale(),
+                            GetRasterTaskMetadata(*tile),
+                            rendering_stats_instrumentation_)),
       base::Bind(&TileManager::OnRasterTaskCompleted,
                  base::Unretained(this),
                  tile,
                  base::Passed(&resource),
+                 base::Owned(analysis),
                  manage_tiles_call_count_));
   pending_tasks_++;
 }
@@ -791,6 +775,7 @@ TileManager::RasterTaskMetadata TileManager::GetRasterTaskMetadata(
 void TileManager::OnRasterTaskCompleted(
     scoped_refptr<Tile> tile,
     scoped_ptr<ResourcePool::Resource> resource,
+    PicturePileImpl::Analysis* analysis,
     int manage_tiles_call_count_when_dispatched) {
   TRACE_EVENT0("cc", "TileManager::OnRasterTaskCompleted");
 
@@ -800,6 +785,18 @@ void TileManager::OnRasterTaskCompleted(
   resource_pool_->resource_provider()->UnmapPixelBuffer(resource->id());
 
   tile->drawing_info().memory_state_ = USING_RELEASABLE_MEMORY;
+
+  ManagedTileState& managed_tile_state = tile->managed_state();
+  managed_tile_state.picture_pile_analysis = *analysis;
+  managed_tile_state.picture_pile_analyzed = true;
+
+  if (analysis->is_solid_color) {
+    tile->drawing_info().set_solid_color(analysis->solid_color);
+    resource_pool_->resource_provider()->ReleasePixelBuffer(resource->id());
+    resource_pool_->ReleaseResource(resource.Pass());
+    DidFinishTileInitialization(tile);
+    return;
+  }
 
   // Tile can be freed after the completion of the raster task. Call
   // AssignGpuMemoryToTiles() to re-assign gpu memory to highest priority
@@ -841,8 +838,51 @@ void TileManager::DidTileTreeBinChange(Tile* tile,
 }
 
 // static
+void TileManager::RunAnalyzeAndRasterTask(
+    const RasterWorkerPool::RasterCallback& analyze_task,
+    const RasterWorkerPool::RasterCallback& raster_task,
+    PicturePileImpl* picture_pile) {
+  analyze_task.Run(picture_pile);
+  raster_task.Run(picture_pile);
+}
+
+// static
+void TileManager::RunAnalyzeTask(
+    PicturePileImpl::Analysis* analysis,
+    gfx::Rect rect,
+    float contents_scale,
+    bool use_color_estimator,
+    const RasterTaskMetadata& metadata,
+    PicturePileImpl* picture_pile) {
+  TRACE_EVENT0("cc", "TileManager::RunAnalyzeTask");
+
+  DCHECK(picture_pile);
+  DCHECK(analysis);
+
+  picture_pile->AnalyzeInRect(rect, contents_scale, analysis);
+  analysis->is_solid_color &= use_color_estimator;
+
+  if (metadata.prediction_benchmarking) {
+    SkDevice device(SkBitmap::kARGB_8888_Config, rect.width(), rect.height());
+    SkCanvas canvas(&device);
+    picture_pile->Raster(&canvas, rect, contents_scale, NULL);
+
+    const SkBitmap bitmap = device.accessBitmap(false);
+    DCHECK_EQ(bitmap.rowBytes(),
+              static_cast<size_t>(bitmap.width() * bitmap.bytesPerPixel()));
+
+    RecordSolidColorPredictorResults(
+        reinterpret_cast<SkPMColor*>(bitmap.getPixels()),
+        bitmap.getSize() / bitmap.bytesPerPixel(),
+        analysis->is_solid_color,
+        SkPreMultiplyColor(analysis->solid_color));
+  }
+}
+
+// static
 void TileManager::RunRasterTask(
     uint8* buffer,
+    PicturePileImpl::Analysis* analysis,
     gfx::Rect rect,
     float contents_scale,
     const RasterTaskMetadata& metadata,
@@ -857,7 +897,11 @@ void TileManager::RunRasterTask(
   devtools_instrumentation::ScopedRasterTask raster_task(metadata.layer_id);
 
   DCHECK(picture_pile);
+  DCHECK(analysis);
   DCHECK(buffer);
+
+  if (analysis->is_solid_color)
+    return;
 
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, rect.width(), rect.height());
@@ -868,33 +912,32 @@ void TileManager::RunRasterTask(
   if (stats_instrumentation->record_rendering_stats()) {
     PicturePileImpl::RasterStats raster_stats;
     picture_pile->Raster(&canvas, rect, contents_scale, &raster_stats);
-    stats_instrumentation->AddRaster(raster_stats.total_rasterize_time,
-                                     raster_stats.best_rasterize_time,
-                                     raster_stats.total_pixels_rasterized,
-                                     metadata.is_tile_in_pending_tree_now_bin);
+    stats_instrumentation->AddRaster(
+        raster_stats.total_rasterize_time,
+        raster_stats.best_rasterize_time,
+        raster_stats.total_pixels_rasterized,
+        metadata.is_tile_in_pending_tree_now_bin);
 
-    HISTOGRAM_CUSTOM_COUNTS("Renderer4.PictureRasterTimeUS",
-                            raster_stats.total_rasterize_time.InMicroseconds(),
-                            0,
-                            100000,
-                            100);
-
-    if (metadata.prediction_benchmarking) {
-      PicturePileImpl::Analysis analysis;
-      picture_pile->AnalyzeInRect(rect, contents_scale, &analysis);
-
-      DCHECK_EQ(bitmap.rowBytes(),
-                static_cast<size_t>(bitmap.width() * bitmap.bytesPerPixel()));
-
-      RecordSolidColorPredictorResults(
-          reinterpret_cast<SkPMColor*>(bitmap.getPixels()),
-          bitmap.getSize() / bitmap.bytesPerPixel(),
-          analysis.is_solid_color,
-          SkPreMultiplyColor(analysis.solid_color));
-    }
+    HISTOGRAM_CUSTOM_COUNTS(
+        "Renderer4.PictureRasterTimeUS",
+        raster_stats.total_rasterize_time.InMicroseconds(),
+        0,
+        100000,
+        100);
   } else {
     picture_pile->Raster(&canvas, rect, contents_scale, NULL);
   }
+}
+
+// static
+void TileManager::RunImageDecodeTask(
+    skia::LazyPixelRef* pixel_ref,
+    RenderingStatsInstrumentation* stats_instrumentation) {
+  TRACE_EVENT0("cc", "TileManager::RunImageDecodeTask");
+  base::TimeTicks start_time = stats_instrumentation->StartRecording();
+  pixel_ref->Decode();
+  base::TimeDelta duration = stats_instrumentation->EndRecording(start_time);
+  stats_instrumentation->AddDeferredImageDecode(duration);
 }
 
 // static
@@ -929,17 +972,6 @@ void TileManager::RecordSolidColorPredictorResults(
   HISTOGRAM_BOOLEAN("Renderer4.ColorPredictor.IsCorrectSolid",
                     is_predicted_solid == is_actually_solid &&
                     (is_predicted_solid && predicted_color == actual_color));
-}
-
-// static
-void TileManager::RunImageDecodeTask(
-    skia::LazyPixelRef* pixel_ref,
-    RenderingStatsInstrumentation* stats_instrumentation) {
-  TRACE_EVENT0("cc", "TileManager::RunImageDecodeTask");
-  base::TimeTicks start_time = stats_instrumentation->StartRecording();
-  pixel_ref->Decode();
-  base::TimeDelta duration = stats_instrumentation->EndRecording(start_time);
-  stats_instrumentation->AddDeferredImageDecode(duration);
 }
 
 }  // namespace cc
