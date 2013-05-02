@@ -34,6 +34,7 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.FrameLayout;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -54,6 +55,7 @@ import org.chromium.content.common.TraceEvent;
 import org.chromium.ui.ViewAndroid;
 import org.chromium.ui.ViewAndroidDelegate;
 import org.chromium.ui.WindowAndroid;
+import org.chromium.ui.gfx.DeviceDisplayInfo;
 
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
@@ -387,18 +389,36 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     public ViewAndroidDelegate getViewAndroidDelegate() {
         return new ViewAndroidDelegate() {
             @Override
-            public void addViewToContainerView(View view) {
-                mContainerView.addView(view);
+            public View acquireAnchorView() {
+                View anchorView = new View(getContext());
+                mContainerView.addView(anchorView);
+                return anchorView;
             }
 
             @Override
-            public void removeViewFromContainerView(View view) {
-                mContainerView.removeView(view);
+            public void setAnchorViewPosition(
+                    View view, float x, float y, float width, float height) {
+                assert(view.getParent() == mContainerView);
+                float scale = (float) DeviceDisplayInfo.create(getContext()).getDIPScale();
+
+                // The anchor view should not go outside the bounds of the ContainerView.
+                int scaledX = Math.round(x * scale);
+                int scaledWidth = Math.round(width * scale);
+                if (scaledWidth + scaledX > mContainerView.getWidth()) {
+                    scaledWidth = mContainerView.getWidth() - scaledX;
+                }
+
+                FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                        scaledWidth, Math.round(height * scale));
+                lp.leftMargin = scaledX;
+                lp.topMargin = (int) mRenderCoordinates.getContentOffsetYPix() +
+                        Math.round(y * scale);
+                view.setLayoutParams(lp);
             }
 
             @Override
-            public int getChildViewOffsetYPix() {
-                return (int) mRenderCoordinates.getContentOffsetYPix();
+            public void releaseAnchorView(View anchorView) {
+                mContainerView.removeView(anchorView);
             }
         };
     }

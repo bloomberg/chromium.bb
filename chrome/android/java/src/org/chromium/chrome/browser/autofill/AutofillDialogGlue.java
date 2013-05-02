@@ -10,6 +10,8 @@ import android.os.Handler;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.chrome.browser.autofill.AutofillDialog.AutofillDialogDelegate;
+import org.chromium.ui.ViewAndroid;
+import org.chromium.ui.ViewAndroidDelegate;
 import org.chromium.ui.WindowAndroid;
 
 /**
@@ -22,12 +24,15 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
     private final AutofillDialog mAutofillDialog;
     private final AutofillDialogAccountHelper mAccountHelper;
     private int mNativeDialogPopup;  // could be 0 after onDestroy().
+    private ViewAndroid mViewAndroid;
 
     public AutofillDialogGlue(int nativeAutofillDialogViewAndroid, WindowAndroid windowAndroid) {
         mNativeDialogPopup = nativeAutofillDialogViewAndroid;
+
         mAccountHelper = new AutofillDialogAccountHelper(this, windowAndroid.getContext());
 
         mAutofillDialog = new AutofillDialog(windowAndroid.getContext(), this);
+        mViewAndroid = new ViewAndroid(windowAndroid, mAutofillDialog);
         mAutofillDialog.show();
     }
 
@@ -196,6 +201,13 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
     @Override
     public void editingCancel(int section) {
         nativeEditingCancel(mNativeDialogPopup, section);
+    }
+
+    @Override
+    public void editedOrActivatedField(int dialogInputPointer, ViewAndroidDelegate delegate,
+            String value, boolean wasEdit) {
+        nativeEditedOrActivatedField(mNativeDialogPopup, dialogInputPointer,
+                mViewAndroid.getNativePointer(), value, wasEdit);
     }
 
     @Override
@@ -372,6 +384,8 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
     private native void nativeEditingStart(int nativeAutofillDialogViewAndroid, int section);
     private native boolean nativeEditingComplete(int nativeAutofillDialogViewAndroid, int section);
     private native void nativeEditingCancel(int nativeAutofillDialogViewAndroid, int section);
+    private native void nativeEditedOrActivatedField(int nativeAutofillDialogViewAndroid,
+            int dialogInputPointer, int viewAndroid, String value, boolean wasEdit);
     private native String nativeValidateField(int nativeAutofillDialogViewAndroid, int fieldType,
             String value);
     private native void nativeValidateSection(int nativeAutofillDialogViewAndroid, int section);

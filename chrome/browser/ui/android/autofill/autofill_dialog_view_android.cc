@@ -22,6 +22,7 @@
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "ui/gfx/rect.h"
 
 namespace autofill {
 
@@ -335,6 +336,20 @@ void AutofillDialogViewAndroid::EditingCancel(JNIEnv* env,
   const DialogSection section = static_cast<DialogSection>(jsection);
   controller_->EditCancelledForSection(section);
   UpdateSection(section);
+}
+
+void AutofillDialogViewAndroid::EditedOrActivatedField(JNIEnv* env,
+                                                       jobject obj,
+                                                       jint detail_input,
+                                                       jint view_android,
+                                                       jstring value,
+                                                       jboolean was_edit) {
+  DetailInput* input = reinterpret_cast<DetailInput*>(detail_input);
+  ui::ViewAndroid* view = reinterpret_cast<ui::ViewAndroid*>(view_android);
+  gfx::Rect rect = gfx::Rect(0, 0, 0, 0);
+  string16 value16 = base::android::ConvertJavaStringToUTF16(
+      env, value);
+  controller_->UserEditedOrActivatedInput(input, view, rect, value16, was_edit);
 }
 
 ScopedJavaLocalRef<jstring> AutofillDialogViewAndroid::ValidateField(
@@ -736,5 +751,4 @@ bool AutofillDialogViewAndroid::CollapseUserDataIntoMenuItem(
   *icon_to_set = icon;
   return true;
 }
-
 }  // namespace autofill

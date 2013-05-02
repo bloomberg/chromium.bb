@@ -1105,8 +1105,10 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
                                         &popup_guids_);
   }
 
-  if (popup_values.empty())
+  if (popup_values.empty()) {
+    HidePopup();
     return;
+  }
 
   // TODO(estade): do we need separators and control rows like 'Clear
   // Form'?

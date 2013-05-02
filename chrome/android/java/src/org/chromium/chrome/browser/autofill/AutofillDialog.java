@@ -8,9 +8,10 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.View.OnFocusChangeListener;
@@ -29,10 +30,9 @@ import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.ViewAndroidDelegate;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * This is the dialog that will act as the java side controller between the
@@ -42,13 +42,16 @@ import java.util.List;
 public class AutofillDialog extends AlertDialog
         implements OnClickListener, OnItemSelectedListener,
                 AutofillDialogContentView.OnItemEditButtonClickedListener,
-                OnFocusChangeListener {
+                OnFocusChangeListener, ViewAndroidDelegate {
     private final AutofillDialogContentView mContentView;
     private final AutofillDialogTitleView mTitleView;
     private final AutofillDialogDelegate mDelegate;
 
     private AutofillDialogField[][] mAutofillSectionFieldData =
             new AutofillDialogField[AutofillDialogConstants.NUM_SECTIONS][];
+    private TextWatcher mCurrentTextWatcher;
+    private int mFocusedFieldNativePointer;
+    private EditText mFocusedField;
 
     /**
      * An interface to handle the interaction with an AutofillDialog object.
@@ -98,6 +101,17 @@ public class AutofillDialog extends AlertDialog
          *                {@link AutofillDialogConstants}.
          */
         public void editingCancel(int section);
+
+        /**
+         * Informs AutofillDialog controller that the user has edited or activate an EditText field.
+         * @param dialogInputPointer The native pointer to the field that was edited or activated.
+         * @param delegate The ViewAndroidDelegate that should be used to attach the AutofillPopup
+         *                 if the AutofillPopup controller has any suggestions.
+         * @param value The current value the focused field.
+         * @param wasEdit True if it is an edit, otherwise False.
+         */
+        public void editedOrActivatedField(int dialogInputPointer, ViewAndroidDelegate delegate,
+                String  value, boolean wasEdit);
 
         /**
          * Requests AutofillDialog controller to validate the specified field. If the field is
@@ -483,6 +497,7 @@ public class AutofillDialog extends AlertDialog
             boolean clobberInputs, int fieldTypeToAlwaysClobber) {
         View currentField;
         String inputValue;
+
         for (int i = 0; i < dialogInputs.length; i++) {
             currentField = findViewById(AutofillDialogUtils.getViewIDForField(
                     section, dialogInputs[i].mFieldType));
@@ -672,36 +687,80 @@ public class AutofillDialog extends AlertDialog
         internalDismiss();
     }
 
+    private void addTextWatcher(EditText view, int nativePointer) {
+        mFocusedFieldNativePointer = nativePointer;
+        if (mCurrentTextWatcher == null) {
+            mCurrentTextWatcher = new TextWatcher() {
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                }
+
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+
+                @Override
+                public void afterTextChanged(Editable editable) {
+                    mDelegate.editedOrActivatedField(mFocusedFieldNativePointer,
+                            AutofillDialog.this, editable.toString(), true);
+                }
+            };
+        }
+        view.addTextChangedListener(mCurrentTextWatcher);
+    }
+
     /**
      * Validates EditText fields in the editing mode when they get unfocused.
      */
     @Override
     public void onFocusChange(View v, boolean hasFocus) {
-        if (hasFocus || !mContentView.isInEditingMode()) return;
+        if (!mContentView.isInEditingMode()) return;
 
         if (!(v instanceof EditText)) return;
         EditText currentfield = (EditText) v;
+        if (!hasFocus) currentfield.removeTextChangedListener(mCurrentTextWatcher);
 
+        mFocusedField = currentfield;
         // Validation is performed when user changes from one EditText view to another.
         int section = mContentView.getCurrentSection();
         AutofillDialogField[] fields = getFieldsForSection(section);
         if (fields == null) return;
 
         int fieldType = AutofillDialogConstants.UNKNOWN_TYPE;
+        int nativePointer = 0;
         for (AutofillDialogField field : fields) {
             View currentView = findViewById(AutofillDialogUtils.getViewIDForField(
                     section, field.mFieldType));
             if (v.equals(currentView)) {
                 fieldType = field.mFieldType;
+                nativePointer = field.mNativePointer;
                 break;
             }
         }
         assert (fieldType != AutofillDialogConstants.UNKNOWN_TYPE);
         if (fieldType == AutofillDialogConstants.UNKNOWN_TYPE) return;
 
+        addTextWatcher(currentfield, nativePointer);
+        mDelegate.editedOrActivatedField(mFocusedFieldNativePointer, this, mFocusedField.toString(),
+                false);
+
+        if (hasFocus) return;
         String errorText = mDelegate.validateField(fieldType, currentfield.getText().toString());
         currentfield.setError(errorText);
         // Entire section is validated if the field is valid.
         if (errorText == null) mDelegate.validateSection(section);
+    }
+
+    @Override
+    public View acquireAnchorView() {
+        return mFocusedField;
+    }
+
+    @Override
+    public void setAnchorViewPosition(View view, float x, float y, float width, float height) {
+    }
+
+    @Override
+    public void releaseAnchorView(View anchorView) {
     }
 }

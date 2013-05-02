@@ -49,6 +49,12 @@ class AutofillDialogViewAndroid : public AutofillDialogView {
   void EditingStart(JNIEnv* env, jobject obj, jint section);
   jboolean EditingComplete(JNIEnv* env, jobject obj, jint section);
   void EditingCancel(JNIEnv* env, jobject obj, jint section);
+  void EditedOrActivatedField(JNIEnv* env,
+                              jobject obj,
+                              jint detail_input,
+                              jint view_android,
+                              jstring value,
+                              jboolean was_edit);
   base::android::ScopedJavaLocalRef<jstring> ValidateField(
       JNIEnv* env, jobject obj, jint type, jstring value);
   void ValidateSection(JNIEnv* env, jobject obj, jint section);
