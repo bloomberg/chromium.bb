@@ -417,15 +417,18 @@ TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
 
 TEST(DrawQuadTest, CopySolidColorDrawQuad) {
   SkColor color = 0x49494949;
+  bool force_anti_aliasing_off = false;
   CREATE_SHARED_STATE();
 
-  CREATE_QUAD_1_NEW(SolidColorDrawQuad, color);
+  CREATE_QUAD_2_NEW(SolidColorDrawQuad, color, force_anti_aliasing_off);
   EXPECT_EQ(DrawQuad::SOLID_COLOR, copy_quad->material);
   EXPECT_EQ(color, copy_quad->color);
+  EXPECT_EQ(force_anti_aliasing_off, copy_quad->force_anti_aliasing_off);
 
-  CREATE_QUAD_1_ALL(SolidColorDrawQuad, color);
+  CREATE_QUAD_2_ALL(SolidColorDrawQuad, color, force_anti_aliasing_off);
   EXPECT_EQ(DrawQuad::SOLID_COLOR, copy_quad->material);
   EXPECT_EQ(color, copy_quad->color);
+  EXPECT_EQ(force_anti_aliasing_off, copy_quad->force_anti_aliasing_off);
 }
 
 TEST(DrawQuadTest, CopyStreamVideoDrawQuad) {
@@ -777,9 +780,10 @@ TEST_F(DrawQuadIteratorTest, RenderPassDrawQuad) {
 
 TEST_F(DrawQuadIteratorTest, SolidColorDrawQuad) {
   SkColor color = 0x49494949;
+  bool force_anti_aliasing_off = false;
 
   CREATE_SHARED_STATE();
-  CREATE_QUAD_1_NEW(SolidColorDrawQuad, color);
+  CREATE_QUAD_2_NEW(SolidColorDrawQuad, color, force_anti_aliasing_off);
   EXPECT_EQ(0, IterateAndCount(quad_new.get()));
 }
 

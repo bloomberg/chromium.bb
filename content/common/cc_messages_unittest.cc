@@ -140,6 +140,7 @@ class CCMessagesTest : public testing::Test {
 
   void Compare(const SolidColorDrawQuad* a, const SolidColorDrawQuad* b) {
     EXPECT_EQ(a->color, b->color);
+    EXPECT_EQ(a->force_anti_aliasing_off, b->force_anti_aliasing_off);
   }
 
   void Compare(const StreamVideoDrawQuad* a, const StreamVideoDrawQuad* b) {
@@ -286,7 +287,7 @@ TEST_F(CCMessagesTest, AllQuads) {
                         arbitrary_rect1,
                         arbitrary_rectf1,
                         arbitrary_filters1,
-                        arbitrary_filter, // TODO(piman): not serialized.
+                        arbitrary_filter,  // TODO(piman): not serialized.
                         arbitrary_filters2);
   scoped_ptr<RenderPassDrawQuad> renderpass_cmp = renderpass_in->Copy(
       renderpass_in->shared_quad_state, renderpass_in->render_pass_id);
@@ -316,7 +317,8 @@ TEST_F(CCMessagesTest, AllQuads) {
                         arbitrary_rect1,
                         arbitrary_rect2,
                         arbitrary_bool1,
-                        arbitrary_color);
+                        arbitrary_color,
+                        arbitrary_bool2);
   scoped_ptr<DrawQuad> solidcolor_cmp = solidcolor_in->Copy(
       solidcolor_in->shared_quad_state);
 

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/hash_tables.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/quad_sink.h"
@@ -312,22 +313,27 @@ void DelegatedRendererLayerImpl::AppendRainbowDebugBorder(
 
     if (!top.IsEmpty()) {
       scoped_ptr<SolidColorDrawQuad> top_quad = SolidColorDrawQuad::Create();
-      top_quad->SetNew(shared_quad_state, top, colors[i % kNumColors]);
+      top_quad->SetNew(shared_quad_state, top, colors[i % kNumColors], false);
       quad_sink->Append(top_quad.PassAs<DrawQuad>(), append_quads_data);
 
       scoped_ptr<SolidColorDrawQuad> bottom_quad = SolidColorDrawQuad::Create();
-      bottom_quad->SetNew(
-          shared_quad_state, bottom, colors[kNumColors - 1 - (i % kNumColors)]);
+      bottom_quad->SetNew(shared_quad_state,
+                          bottom,
+                          colors[kNumColors - 1 - (i % kNumColors)],
+                          false);
       quad_sink->Append(bottom_quad.PassAs<DrawQuad>(), append_quads_data);
     }
     if (!left.IsEmpty()) {
       scoped_ptr<SolidColorDrawQuad> left_quad = SolidColorDrawQuad::Create();
-      left_quad->SetNew(
-          shared_quad_state, left, colors[kNumColors - 1 - (i % kNumColors)]);
+      left_quad->SetNew(shared_quad_state,
+                        left,
+                        colors[kNumColors - 1 - (i % kNumColors)],
+                        false);
       quad_sink->Append(left_quad.PassAs<DrawQuad>(), append_quads_data);
 
       scoped_ptr<SolidColorDrawQuad> right_quad = SolidColorDrawQuad::Create();
-      right_quad->SetNew(shared_quad_state, right, colors[i % kNumColors]);
+      right_quad->SetNew(
+          shared_quad_state, right, colors[i % kNumColors], false);
       quad_sink->Append(right_quad.PassAs<DrawQuad>(), append_quads_data);
     }
   }

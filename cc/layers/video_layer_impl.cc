@@ -260,11 +260,12 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
       DCHECK_EQ(frame_resources_.size(), 0u);
       scoped_ptr<SolidColorDrawQuad> solid_color_draw_quad =
           SolidColorDrawQuad::Create();
+
       // Create a solid color quad with transparent black and force no
-      // blending.
+      // blending / no anti-aliasing.
       solid_color_draw_quad->SetAll(
           shared_quad_state, quad_rect, quad_rect, quad_rect, false,
-          SK_ColorTRANSPARENT);
+          SK_ColorTRANSPARENT, true);
       quad_sink->Append(solid_color_draw_quad.PassAs<DrawQuad>(),
                         append_quads_data);
       break;

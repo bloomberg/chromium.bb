@@ -186,7 +186,8 @@ void ScrollbarLayerImpl::AppendQuads(QuadSink* quad_sink,
     scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
     quad->SetNew(shared_quad_state,
                  quad_rect,
-                 layer_tree_impl()->settings().solid_color_scrollbar_color);
+                 layer_tree_impl()->settings().solid_color_scrollbar_color,
+                 false);
     quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
     return;
   }

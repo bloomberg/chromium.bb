@@ -143,7 +143,8 @@ void TestRenderPass::AppendOneOfEveryQuadType(
       cc::SolidColorDrawQuad::Create();
   solid_color_quad->SetNew(shared_state.get(),
                            rect,
-                           SK_ColorRED);
+                           SK_ColorRED,
+                           false);
   AppendQuad(solid_color_quad.PassAs<DrawQuad>());
 
   scoped_ptr<cc::StreamVideoDrawQuad> stream_video_quad =

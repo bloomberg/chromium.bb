@@ -1119,7 +1119,8 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
   float alpha = (SkColorGetA(color) * (1.0f / 255.0f)) * opacity;
 
   // Early out if alpha is small enough that quad doesn't contribute to output.
-  if (alpha < std::numeric_limits<float>::epsilon())
+  if (alpha < std::numeric_limits<float>::epsilon() &&
+      quad->ShouldDrawWithBlending())
     return;
 
   gfx::Transform device_transform =
@@ -1130,7 +1131,7 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
 
   gfx::QuadF local_quad = gfx::QuadF(gfx::RectF(tile_rect));
   float edge[24];
-  bool use_aa = SetupQuadForAntialiasing(
+  bool use_aa = !quad->force_anti_aliasing_off && SetupQuadForAntialiasing(
       device_transform, quad, &local_quad, edge);
 
   SolidColorProgramUniforms uniforms;

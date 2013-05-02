@@ -36,7 +36,7 @@ SolidColorDrawQuad* AddQuad(TestRenderPass* pass,
       quad_sink.UseSharedQuadState(SharedQuadState::Create());
   shared_state->SetAll(gfx::Transform(), rect.size(), rect, rect, false, 1);
   scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
-  quad->SetNew(shared_state, rect, color);
+  quad->SetNew(shared_state, rect, color, false);
   SolidColorDrawQuad* quad_ptr = quad.get();
   quad_sink.Append(quad.PassAs<DrawQuad>(), &data);
   return quad_ptr;
@@ -51,7 +51,7 @@ SolidColorDrawQuad* AddClippedQuad(TestRenderPass* pass,
       quad_sink.UseSharedQuadState(SharedQuadState::Create());
   shared_state->SetAll(gfx::Transform(), rect.size(), rect, rect, true, 1);
   scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
-  quad->SetNew(shared_state, rect, color);
+  quad->SetNew(shared_state, rect, color, false);
   SolidColorDrawQuad* quad_ptr = quad.get();
   quad_sink.Append(quad.PassAs<DrawQuad>(), &data);
   return quad_ptr;
@@ -67,7 +67,7 @@ SolidColorDrawQuad* AddTransformedQuad(TestRenderPass* pass,
       quad_sink.UseSharedQuadState(SharedQuadState::Create());
   shared_state->SetAll(transform, rect.size(), rect, rect, false, 1);
   scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
-  quad->SetNew(shared_state, rect, color);
+  quad->SetNew(shared_state, rect, color, false);
   SolidColorDrawQuad* quad_ptr = quad.get();
   quad_sink.Append(quad.PassAs<DrawQuad>(), &data);
   return quad_ptr;

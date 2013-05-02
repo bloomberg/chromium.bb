@@ -504,7 +504,7 @@ static void AppendQuadsToFillScreen(
     // Skip the quad culler and just append the quads directly to avoid
     // occlusion checks.
     scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
-    quad->SetNew(shared_quad_state, layer_rect, screen_background_color);
+    quad->SetNew(shared_quad_state, layer_rect, screen_background_color, false);
     quad_culler.Append(quad.PassAs<DrawQuad>(), &append_quads_data);
   }
 }

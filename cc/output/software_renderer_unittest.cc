@@ -100,9 +100,10 @@ TEST_F(SoftwareRendererTest, SolidColorQuad) {
   root_render_pass->SetNew(
       root_render_pass_id, outer_rect, outer_rect, gfx::Transform());
   scoped_ptr<SolidColorDrawQuad> outer_quad = SolidColorDrawQuad::Create();
-  outer_quad->SetNew(shared_quad_state.get(), outer_rect, SK_ColorYELLOW);
+  outer_quad->SetNew(
+      shared_quad_state.get(), outer_rect, SK_ColorYELLOW, false);
   scoped_ptr<SolidColorDrawQuad> inner_quad = SolidColorDrawQuad::Create();
-  inner_quad->SetNew(shared_quad_state.get(), inner_rect, SK_ColorCYAN);
+  inner_quad->SetNew(shared_quad_state.get(), inner_rect, SK_ColorCYAN, false);
   root_render_pass->AppendQuad(inner_quad.PassAs<DrawQuad>());
   root_render_pass->AppendQuad(outer_quad.PassAs<DrawQuad>());
 

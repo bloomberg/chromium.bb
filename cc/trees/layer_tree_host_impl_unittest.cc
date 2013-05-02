@@ -2698,7 +2698,7 @@ class FakeLayerWithQuads : public LayerImpl {
     SkColor gray = SkColorSetRGB(100, 100, 100);
     gfx::Rect quad_rect(content_bounds());
     scoped_ptr<SolidColorDrawQuad> my_quad = SolidColorDrawQuad::Create();
-    my_quad->SetNew(shared_quad_state, quad_rect, gray);
+    my_quad->SetNew(shared_quad_state, quad_rect, gray, false);
     quad_sink->Append(my_quad.PassAs<DrawQuad>(), append_quads_data);
   }
 
@@ -4417,7 +4417,8 @@ static void ConfigureRenderPassTestData(const char* test_script,
         scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
         quad->SetNew(test_data->shared_quad_state.get(),
                      gfx::Rect(0, 0, 10, 10),
-                     SK_ColorWHITE);
+                     SK_ColorWHITE,
+                     false);
 
         render_pass->AppendQuad(quad.PassAs<DrawQuad>());
         current_char++;

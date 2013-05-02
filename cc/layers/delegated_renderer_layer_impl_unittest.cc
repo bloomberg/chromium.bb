@@ -508,11 +508,11 @@ class DelegatedRendererLayerImplTestTransform
 
       scoped_ptr<SolidColorDrawQuad> color_quad;
       color_quad = SolidColorDrawQuad::Create();
-      color_quad->SetNew(shared_quad_state, gfx::Rect(20, 20, 3, 7), 1u);
+      color_quad->SetNew(shared_quad_state, gfx::Rect(20, 20, 3, 7), 1u, false);
       quad_sink.Append(color_quad.PassAs<DrawQuad>(), &data);
 
       color_quad = SolidColorDrawQuad::Create();
-      color_quad->SetNew(shared_quad_state, gfx::Rect(23, 20, 4, 7), 1u);
+      color_quad->SetNew(shared_quad_state, gfx::Rect(23, 20, 4, 7), 1u, false);
       quad_sink.Append(color_quad.PassAs<DrawQuad>(), &data);
     }
 
@@ -558,19 +558,19 @@ class DelegatedRendererLayerImplTestTransform
 
     scoped_ptr<SolidColorDrawQuad> color_quad;
     color_quad = SolidColorDrawQuad::Create();
-    color_quad->SetNew(shared_quad_state, gfx::Rect(0, 0, 10, 10), 1u);
+    color_quad->SetNew(shared_quad_state, gfx::Rect(0, 0, 10, 10), 1u, false);
     quad_sink.Append(color_quad.PassAs<DrawQuad>(), &data);
 
     color_quad = SolidColorDrawQuad::Create();
-    color_quad->SetNew(shared_quad_state, gfx::Rect(0, 10, 10, 10), 2u);
+    color_quad->SetNew(shared_quad_state, gfx::Rect(0, 10, 10, 10), 2u, false);
     quad_sink.Append(color_quad.PassAs<DrawQuad>(), &data);
 
     color_quad = SolidColorDrawQuad::Create();
-    color_quad->SetNew(shared_quad_state, gfx::Rect(10, 0, 10, 10), 3u);
+    color_quad->SetNew(shared_quad_state, gfx::Rect(10, 0, 10, 10), 3u, false);
     quad_sink.Append(color_quad.PassAs<DrawQuad>(), &data);
 
     color_quad = SolidColorDrawQuad::Create();
-    color_quad->SetNew(shared_quad_state, gfx::Rect(10, 10, 10, 10), 4u);
+    color_quad->SetNew(shared_quad_state, gfx::Rect(10, 10, 10, 10), 4u, false);
     quad_sink.Append(color_quad.PassAs<DrawQuad>(), &data);
 
     delegated_renderer_layer->SetFrameDataForRenderPasses(
@@ -905,11 +905,11 @@ class DelegatedRendererLayerImplTestClip
 
       scoped_ptr<SolidColorDrawQuad> color_quad;
       color_quad = SolidColorDrawQuad::Create();
-      color_quad->SetNew(shared_quad_state, gfx::Rect(20, 20, 3, 7), 1u);
+      color_quad->SetNew(shared_quad_state, gfx::Rect(20, 20, 3, 7), 1u, false);
       quad_sink.Append(color_quad.PassAs<DrawQuad>(), &data);
 
       color_quad = SolidColorDrawQuad::Create();
-      color_quad->SetNew(shared_quad_state, gfx::Rect(23, 20, 4, 7), 1u);
+      color_quad->SetNew(shared_quad_state, gfx::Rect(23, 20, 4, 7), 1u, false);
       quad_sink.Append(color_quad.PassAs<DrawQuad>(), &data);
     }
 
@@ -952,19 +952,19 @@ class DelegatedRendererLayerImplTestClip
 
     scoped_ptr<SolidColorDrawQuad> color_quad;
     color_quad = SolidColorDrawQuad::Create();
-    color_quad->SetNew(shared_quad_state, gfx::Rect(0, 0, 10, 10), 1u);
+    color_quad->SetNew(shared_quad_state, gfx::Rect(0, 0, 10, 10), 1u, false);
     quad_sink.Append(color_quad.PassAs<DrawQuad>(), &data);
 
     color_quad = SolidColorDrawQuad::Create();
-    color_quad->SetNew(shared_quad_state, gfx::Rect(0, 10, 10, 10), 2u);
+    color_quad->SetNew(shared_quad_state, gfx::Rect(0, 10, 10, 10), 2u, false);
     quad_sink.Append(color_quad.PassAs<DrawQuad>(), &data);
 
     color_quad = SolidColorDrawQuad::Create();
-    color_quad->SetNew(shared_quad_state, gfx::Rect(10, 0, 10, 10), 3u);
+    color_quad->SetNew(shared_quad_state, gfx::Rect(10, 0, 10, 10), 3u, false);
     quad_sink.Append(color_quad.PassAs<DrawQuad>(), &data);
 
     color_quad = SolidColorDrawQuad::Create();
-    color_quad->SetNew(shared_quad_state, gfx::Rect(10, 10, 10, 10), 4u);
+    color_quad->SetNew(shared_quad_state, gfx::Rect(10, 10, 10, 10), 4u, false);
     quad_sink.Append(color_quad.PassAs<DrawQuad>(), &data);
 
     delegated_renderer_layer->SetFrameDataForRenderPasses(

@@ -181,7 +181,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
           DCHECK_EQ(SkColorGetA(color), 255u);
         }
         scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
-        quad->SetNew(shared_quad_state, geometry_rect, color);
+        quad->SetNew(shared_quad_state, geometry_rect, color, false);
         if (quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data))
           append_quads_data->num_missing_tiles++;
       }
@@ -233,7 +233,8 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
         scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
         quad->SetNew(shared_quad_state,
                      geometry_rect,
-                     drawing_info.get_solid_color());
+                     drawing_info.get_solid_color(),
+                     false);
         quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
         break;
       }
