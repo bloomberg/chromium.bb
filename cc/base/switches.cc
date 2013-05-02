@@ -152,7 +152,12 @@ bool IsImplSidePaintingEnabled() {
   else if (command_line.HasSwitch(cc::switches::kEnableImplSidePainting))
     return true;
 
-#if defined(OS_ANDROID)
+// Check GOOGLE_TV ahead of OS_ANDROID as they are not orthogonal.
+// TODO(jinsukkim): Remove this once the impl-side javascript-driven painting
+//                  performance issue is addressed. (crbug.com/235347)
+#if defined(GOOGLE_TV)
+  return false;
+#elif defined(OS_ANDROID)
   return true;
 #else
   return false;
