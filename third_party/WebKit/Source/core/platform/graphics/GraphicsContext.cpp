@@ -1141,31 +1141,6 @@ void GraphicsContext::fillEllipse(const FloatRect& ellipse)
     platformContext()->drawOval(rect, paint);
 }
 
-void GraphicsContext::strokeArc(const IntRect& r, int startAngle, int angleSpan)
-{
-    if (paintingDisabled())
-        return;
-
-    SkPaint paint;
-    SkRect oval = r;
-    if (strokeStyle() == NoStroke) {
-        // Stroke using the fill color.
-        // TODO(brettw) is this really correct? It seems unreasonable.
-        platformContext()->setupPaintForFilling(&paint);
-        paint.setStyle(SkPaint::kStroke_Style);
-        paint.setStrokeWidth(WebCoreFloatToSkScalar(strokeThickness()));
-    } else
-        platformContext()->setupPaintForStroking(&paint, 0, 0);
-
-    // We do this before converting to scalar, so we don't overflow SkFixed.
-    startAngle = fastMod(startAngle, 360);
-    angleSpan = fastMod(angleSpan, 360);
-
-    SkPath path;
-    path.addArc(oval, SkIntToScalar(-startAngle), SkIntToScalar(-angleSpan));
-    platformContext()->drawPath(path, paint);
-}
-
 void GraphicsContext::strokePath(const Path& pathToStroke)
 {
     if (paintingDisabled() || pathToStroke.isEmpty())
