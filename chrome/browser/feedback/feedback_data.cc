@@ -20,7 +20,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "components/zip/zip.h"
+#include "third_party/zlib/google/zip.h"
 #endif
 
 using content::BrowserThread;

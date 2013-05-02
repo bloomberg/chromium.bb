@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/common/safe_browsing/download_protection_util.h"
-#include "components/zip/zip_reader.h"
+#include "third_party/zlib/google/zip_reader.h"
 
 namespace safe_browsing {
 namespace zip_analyzer {

@@ -10,8 +10,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/webdriver/webdriver_capabilities_parser.h"
 #include "chrome/test/webdriver/webdriver_logging.h"
-#include "components/zip/zip.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/zlib/google/zip.h"
 
 using base::DictionaryValue;
 using base::ListValue;

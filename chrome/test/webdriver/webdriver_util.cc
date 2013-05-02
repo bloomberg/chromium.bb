@@ -20,7 +20,7 @@
 #include "base/third_party/icu/icu_utf.h"
 #include "chrome/common/automation_id.h"
 #include "chrome/test/automation/automation_json_requests.h"
-#include "components/zip/zip.h"
+#include "third_party/zlib/google/zip.h"
 
 using base::DictionaryValue;
 using base::ListValue;

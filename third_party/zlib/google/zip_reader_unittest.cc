@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/zip/zip_reader.h"
+#include "third_party/zlib/google/zip_reader.h"
 
 #include <set>
 #include <string>
@@ -15,9 +15,9 @@
 #include "base/platform_file.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "components/zip/zip_internal.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "third_party/zlib/google/zip_internal.h"
 
 namespace {
 
@@ -75,7 +75,6 @@ class ZipReaderTest : public PlatformTest {
     test_dir_ = temp_dir_.path();
 
     ASSERT_TRUE(GetTestDataDirectory(&test_data_dir_));
-    test_data_dir_ = test_data_dir_.AppendASCII("zip");
 
     test_zip_file_ = test_data_dir_.AppendASCII("test.zip");
     evil_zip_file_ = test_data_dir_.AppendASCII("evil.zip");
@@ -106,7 +105,9 @@ class ZipReaderTest : public PlatformTest {
     EXPECT_TRUE(success);
     if (!success)
       return false;
-    *path = path->AppendASCII("components");
+    *path = path->AppendASCII("third_party");
+    *path = path->AppendASCII("zlib");
+    *path = path->AppendASCII("google");
     *path = path->AppendASCII("test");
     *path = path->AppendASCII("data");
     return true;

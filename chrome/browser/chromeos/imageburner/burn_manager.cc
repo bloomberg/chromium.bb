@@ -13,12 +13,12 @@
 #include "chromeos/dbus/image_burner_client.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "components/zip/zip.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
+#include "third_party/zlib/google/zip.h"
 
 using content::BrowserThread;
 
