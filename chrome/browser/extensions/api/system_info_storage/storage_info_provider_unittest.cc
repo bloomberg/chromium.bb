@@ -78,8 +78,8 @@ class TestStorageObserver : public StorageInfoObserver {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
     for (size_t i = 0; i < testing_data_.size(); ++i) {
       if (testing_data_[i].id == id) {
-        EXPECT_EQ(old_value, testing_data_[i].available_capacity);
-        EXPECT_EQ(new_value, testing_data_[i].available_capacity +
+        EXPECT_DOUBLE_EQ(old_value, testing_data_[i].available_capacity);
+        EXPECT_DOUBLE_EQ(new_value, testing_data_[i].available_capacity +
                   testing_data_[i].change_step);
         // Increase the available capacity with the change step for comparison
         // next time.

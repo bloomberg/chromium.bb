@@ -131,8 +131,9 @@ TEST_F(StorageInfoProviderLinuxTest, QueryInfo) {
     ASSERT_TRUE(ContainsKey(entries, id));
     EXPECT_EQ(entries[id].mnt_path, id);
     EXPECT_EQ(entries[id].type, ToString(info[i]->type));
-    EXPECT_EQ(entries[id].capacity, info[i]->capacity);
-    EXPECT_EQ(entries[id].available_capacity, info[i]->available_capacity);
+    EXPECT_DOUBLE_EQ(entries[id].capacity, info[i]->capacity);
+    EXPECT_DOUBLE_EQ(entries[id].available_capacity,
+                     info[i]->available_capacity);
   }
 }
 
