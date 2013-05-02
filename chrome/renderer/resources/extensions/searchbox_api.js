@@ -108,6 +108,7 @@ if (!chrome.embeddedSearch) {
       native function ShowBars();
       native function HideBars();
       native function GetSuggestionData();
+      native function GetMostVisitedItemData();
 
       function SafeWrapSuggestion(restrictedText) {
         return SafeWrap(restrictedText, 22);
@@ -239,6 +240,12 @@ if (!chrome.embeddedSearch) {
         return GetSuggestionData(restrictedId);
       };
 
+      // This method is restricted to chrome-search://most-visited pages by
+      // checking the invoking context's origin in searchbox_extension.cc.
+      this.getMostVisitedItemData = function(restrictedId) {
+        return GetMostVisitedItemData(restrictedId);
+      };
+
       this.setSuggestions = function(text) {
         SetSuggestions(text);
       };
@@ -322,11 +329,16 @@ if (!chrome.embeddedSearch) {
         for (var i = 0, item; item = mostVisitedItems[i]; ++i) {
           var title = escapeHTML(item.title);
           var domain = escapeHTML(item.domain);
+          // TODO(jered): Delete these Shadow DOM elements once the
+          // Google-provided NTP no longer depends on them.
           item.titleElement = SafeWrapMostVisited(title, 140, item.direction);
           item.domainElement = SafeWrapMostVisited(domain, 123);
-          delete item.title;
-          delete item.domain;
-          delete item.direction;
+          // These properties are private data and should not be returned to
+          // the page. They are only accessible via getMostVisitedItemData().
+          item.url = null;
+          item.title = null;
+          item.domain = null;
+          item.direction = null;
         }
         return mostVisitedItems;
       }

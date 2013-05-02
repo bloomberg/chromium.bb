@@ -163,6 +163,69 @@ v8::Handle<v8::Object> GenerateNativeSuggestion(
   return obj;
 }
 
+// Populates a Javascript MostVisitedItem object from |mv_item|.
+// NOTE: Includes "url", "title" and "domain" which are private data, so should
+// not be returned to the Instant page. These should be erased before returning
+// the object. See GetMostVisitedItemsWrapper() in searchbox_api.js.
+v8::Handle<v8::Object> GenerateMostVisitedItem(
+    InstantRestrictedID restricted_id,
+    const InstantMostVisitedItem &mv_item) {
+  // We set the "dir" attribute of the title, so that in RTL locales, a LTR
+  // title is rendered left-to-right and truncated from the right. For
+  // example, the title of http://msdn.microsoft.com/en-us/default.aspx is
+  // "MSDN: Microsoft developer network". In RTL locales, in the New Tab
+  // page, if the "dir" of this title is not specified, it takes Chrome UI's
+  // directionality. So the title will be truncated as "soft developer
+  // network". Setting the "dir" attribute as "ltr" renders the truncated
+  // title as "MSDN: Microsoft D...". As another example, the title of
+  // http://yahoo.com is "Yahoo!". In RTL locales, in the New Tab page, the
+  // title will be rendered as "!Yahoo" if its "dir" attribute is not set to
+  // "ltr".
+  std::string direction;
+  if (base::i18n::StringContainsStrongRTLChars(mv_item.title))
+    direction = kRTLHtmlTextDirection;
+  else
+    direction = kLTRHtmlTextDirection;
+
+  string16 title = mv_item.title;
+  if (title.empty())
+    title = UTF8ToUTF16(mv_item.url.spec());
+
+  v8::Handle<v8::Object> obj = v8::Object::New();
+  obj->Set(v8::String::New("rid"), v8::Int32::New(restricted_id));
+  obj->Set(v8::String::New("thumbnailUrl"),
+           GenerateThumbnailURL(restricted_id));
+  obj->Set(v8::String::New("faviconUrl"),
+           GenerateFaviconURL(restricted_id));
+  obj->Set(v8::String::New("title"), UTF16ToV8String(title));
+  obj->Set(v8::String::New("domain"), UTF8ToV8String(mv_item.url.host()));
+  obj->Set(v8::String::New("direction"), UTF8ToV8String(direction));
+  obj->Set(v8::String::New("url"), UTF8ToV8String(mv_item.url.spec()));
+  return obj;
+}
+
+// Returns the render view for the current JS context if it matches |origin|,
+// otherwise returns NULL. Used to restrict methods that access suggestions and
+// most visited data to pages with origin chrome-search://most-visited and
+// chrome-search://suggestions.
+content::RenderView* GetRenderViewWithCheckedOrigin(const GURL& origin) {
+  WebKit::WebFrame* webframe = WebKit::WebFrame::frameForCurrentContext();
+  if (!webframe)
+    return NULL;
+  WebKit::WebView* webview = webframe->view();
+  if (!webview)
+    return NULL;  // Can happen during closing.
+  content::RenderView* render_view = content::RenderView::FromWebView(webview);
+  if (!render_view)
+    return NULL;
+
+  GURL url(webframe->document().url());
+  if (url.GetOrigin() != origin.GetOrigin())
+    return NULL;
+
+  return render_view;
+}
+
 }  // namespace
 
 namespace internal {  // for testing.
@@ -508,9 +571,16 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   // event is fired to notify the page.
   static v8::Handle<v8::Value> HideBars(const v8::Arguments& args);
 
-  // Gets the raw data for a suggestion including its content. Only callable
-  // by chrome-search://suggestion pages.
+  // Gets the raw data for a suggestion including its content.
+  // GetRenderViewWithCheckedOrigin() enforces that only code in the origin
+  // chrome-search://suggestion can call this function.
   static v8::Handle<v8::Value> GetSuggestionData(const v8::Arguments& args);
+
+  // Gets the raw data for a most visited item including its raw URL.
+  // GetRenderViewWithCheckedOrigin() enforces that only code in the origin
+  // chrome-search://most-visited can call this function.
+  static v8::Handle<v8::Value> GetMostVisitedItemData(
+    const v8::Arguments& args);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SearchBoxExtensionWrapper);
@@ -593,6 +663,8 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(HideBars);
   if (name->Equals(v8::String::New("GetSuggestionData")))
     return v8::FunctionTemplate::New(GetSuggestionData);
+  if (name->Equals(v8::String::New("GetMostVisitedItemData")))
+    return v8::FunctionTemplate::New(GetMostVisitedItemData);
   return v8::Handle<v8::FunctionTemplate>();
 }
 
@@ -1148,40 +1220,8 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetMostVisitedItems(
   search_box->GetMostVisitedItems(&instant_mv_items);
   v8::Handle<v8::Array> v8_mv_items = v8::Array::New(instant_mv_items.size());
   for (size_t i = 0; i < instant_mv_items.size(); ++i) {
-    // We set the "dir" attribute of the title, so that in RTL locales, a LTR
-    // title is rendered left-to-right and truncated from the right. For
-    // example, the title of http://msdn.microsoft.com/en-us/default.aspx is
-    // "MSDN: Microsoft developer network". In RTL locales, in the New Tab
-    // page, if the "dir" of this title is not specified, it takes Chrome UI's
-    // directionality. So the title will be truncated as "soft developer
-    // network". Setting the "dir" attribute as "ltr" renders the truncated
-    // title as "MSDN: Microsoft D...". As another example, the title of
-    // http://yahoo.com is "Yahoo!". In RTL locales, in the New Tab page, the
-    // title will be rendered as "!Yahoo" if its "dir" attribute is not set to
-    // "ltr".
-    const InstantMostVisitedItem& mv_item = instant_mv_items[i].second;
-    std::string direction;
-    if (base::i18n::StringContainsStrongRTLChars(mv_item.title))
-      direction = kRTLHtmlTextDirection;
-    else
-      direction = kLTRHtmlTextDirection;
-
-    string16 title = mv_item.title;
-    if (title.empty())
-      title = UTF8ToUTF16(mv_item.url.spec());
-
-    InstantRestrictedID restricted_id = instant_mv_items[i].first;
-    v8::Handle<v8::Object> item = v8::Object::New();
-    item->Set(v8::String::New("rid"), v8::Int32::New(restricted_id));
-    item->Set(v8::String::New("thumbnailUrl"),
-              GenerateThumbnailURL(restricted_id));
-    item->Set(v8::String::New("faviconUrl"),
-              GenerateFaviconURL(restricted_id));
-    item->Set(v8::String::New("title"), UTF16ToV8String(title));
-    item->Set(v8::String::New("domain"), UTF8ToV8String(mv_item.url.host()));
-    item->Set(v8::String::New("direction"), UTF8ToV8String(direction));
-
-    v8_mv_items->Set(i, item);
+    v8_mv_items->Set(i, GenerateMostVisitedItem(instant_mv_items[i].first,
+                                                instant_mv_items[i].second));
   }
   return v8_mv_items;
 }
@@ -1292,19 +1332,9 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::HideBars(
 // static
 v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetSuggestionData(
     const v8::Arguments& args) {
-  WebKit::WebFrame* webframe = WebKit::WebFrame::frameForCurrentContext();
-  if (!webframe) return v8::Undefined();
-  WebKit::WebView* webview = webframe->view();
-  if (!webview) return v8::Undefined();  // Can happen during closing.
-  content::RenderView* render_view = content::RenderView::FromWebView(webview);
+  content::RenderView* render_view = GetRenderViewWithCheckedOrigin(
+      GURL(chrome::kChromeSearchSuggestionUrl));
   if (!render_view) return v8::Undefined();
-
-  // If origin does not match, return undefined.
-  GURL url(webframe->document().url());
-  if (!url.SchemeIs(chrome::kChromeSearchScheme) ||
-      url.host() != chrome::kChromeSearchSuggestionHost) {
-    return v8::Undefined();
-  }
 
   // Need an rid argument.
   if (args.Length() < 1 || !args[0]->IsNumber())
@@ -1319,6 +1349,27 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetSuggestionData(
   }
   const string16& query = SearchBox::Get(render_view)->query();
   return GenerateNativeSuggestion(query, restricted_id, result);
+}
+
+// static
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetMostVisitedItemData(
+    const v8::Arguments& args) {
+  content::RenderView* render_view = GetRenderViewWithCheckedOrigin(
+      GURL(chrome::kChromeSearchMostVisitedUrl));
+  if (!render_view) return v8::Undefined();
+
+  // Need an rid argument.
+  if (args.Length() < 1 || !args[0]->IsNumber())
+    return v8::Undefined();
+
+  DVLOG(1) << render_view << " GetMostVisitedItem";
+  InstantRestrictedID restricted_id = args[0]->IntegerValue();
+  InstantMostVisitedItem mv_item;
+  if (!SearchBox::Get(render_view)->GetMostVisitedItemWithID(
+          restricted_id, &mv_item)) {
+    return v8::Undefined();
+  }
+  return GenerateMostVisitedItem(restricted_id, mv_item);
 }
 
 // static
