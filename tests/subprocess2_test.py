@@ -77,7 +77,8 @@ class DefaultsTest(auto_stub.TestCase):
         results.update(kwargs)
         results['args'] = args
       @staticmethod
-      def communicate(input=None, timeout=None):  # pylint: disable=W0622
+      # pylint: disable=W0622
+      def communicate(input=None, timeout=None, nag_timer=None):
         return None, None
     self.mock(subprocess2, 'Popen', fake_Popen)
     return results
@@ -591,7 +592,27 @@ class S2Test(BaseTestCase):
     except Blow:
       self.assertNotEquals(0, proc.returncode)
 
+  def test_nag_timer(self):
+    w = []
+    l = logging.getLogger()
+    class _Filter(logging.Filter):
+      def filter(self, record):
+        if record.levelno == logging.WARNING:
+          w.append(record.getMessage().lstrip())
+        return 0
+    f = _Filter()
+    l.addFilter(f)
+    proc = subprocess2.Popen(
+        self.exe + ['--stdout', '--sleep_first'], stdout=PIPE)
+    res = proc.communicate(nag_timer=3), proc.returncode
+    l.removeFilter(f)
+    self._check_res(res, 'A\nBB\nCCC\n', None, 0)
+    expected = ['No output for 3 seconds from command:', proc.cmd_str,
+                'No output for 6 seconds from command:', proc.cmd_str,
+                'No output for 9 seconds from command:', proc.cmd_str]
+    self.assertEquals(w, expected)
 
+    
 def child_main(args):
   if sys.platform == 'win32':
     # Annoying, make sure the output is not translated on Windows.

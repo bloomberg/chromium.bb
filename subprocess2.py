@@ -175,6 +175,7 @@ class Popen(subprocess.Popen):
     self.stdin_is_void = False
     self.stdout_is_void = False
     self.stderr_is_void = False
+    self.cmd_str = tmp_str
 
     if kwargs.get('stdin') is VOID:
       kwargs['stdin'] = open(os.devnull, 'r')
@@ -190,6 +191,7 @@ class Popen(subprocess.Popen):
 
     self.start = time.time()
     self.timeout = None
+    self.nag_timer = None
     self.shell = kwargs.get('shell', None)
     # Silence pylint on MacOSX
     self.returncode = None
@@ -228,6 +230,8 @@ class Popen(subprocess.Popen):
     # because of memory exhaustion.
     queue = Queue.Queue()
     done = threading.Event()
+    timer = []
+    last_output = [time.time()] * 2
 
     def write_stdin():
       try:
@@ -249,9 +253,27 @@ class Popen(subprocess.Popen):
           data = pipe.read(1)
           if not data:
             break
+          last_output[0] = time.time()
           queue.put((name, data))
       finally:
         queue.put(name)
+
+    def nag_fn():
+      now = time.time()
+      if done.is_set():
+        return
+      if last_output[0] == last_output[1]:
+        logging.warn('  No output for %.0f seconds from command:' % (
+            now - last_output[1]))
+        logging.warn('    %s' % self.cmd_str)
+      # Use 0.1 fudge factor in case:
+      #   now ~= last_output[0] + self.nag_timer
+      sleep_time = self.nag_timer + last_output[0] - now - 0.1
+      while sleep_time < 0:
+        sleep_time += self.nag_timer
+      last_output[1] = last_output[0]
+      timer[0] = threading.Timer(sleep_time, nag_fn)
+      timer[0].start()
 
     def timeout_fn():
       try:
@@ -290,6 +312,10 @@ class Popen(subprocess.Popen):
     for t in threads.itervalues():
       t.start()
 
+    if self.nag_timer:
+      timer.append(threading.Timer(self.nag_timer, nag_fn))
+      timer[0].start()
+
     timed_out = False
     try:
       # This thread needs to be optimized for speed.
@@ -313,6 +339,8 @@ class Popen(subprocess.Popen):
     finally:
       # Stop the threads.
       done.set()
+      if timer:
+        timer[0].cancel()
       if 'wait' in threads:
         # Accelerate things, otherwise it would hang until the child process is
         # done.
@@ -324,16 +352,21 @@ class Popen(subprocess.Popen):
       if timed_out:
         self.returncode = TIMED_OUT
 
-  def communicate(self, input=None, timeout=None): # pylint: disable=W0221,W0622
+  # pylint: disable=W0221,W0622
+  def communicate(self, input=None, timeout=None, nag_timer=None):
     """Adds timeout and callbacks support.
 
     Returns (stdout, stderr) like subprocess.Popen().communicate().
 
     - The process will be killed after |timeout| seconds and returncode set to
       TIMED_OUT.
+    - If the subprocess runs for |nag_timer| seconds without producing terminal
+      output, print a warning to stderr.
     """
     self.timeout = timeout
-    if not self.timeout and not self.stdout_cb and not self.stderr_cb:
+    self.nag_timer = nag_timer
+    if (not self.timeout and not self.nag_timer and
+        not self.stdout_cb and not self.stderr_cb):
       return super(Popen, self).communicate(input)
 
     if self.timeout and self.shell:
@@ -360,13 +393,15 @@ class Popen(subprocess.Popen):
     return (stdout, stderr)
 
 
-def communicate(args, timeout=None, **kwargs):
+def communicate(args, timeout=None, nag_timer=None, **kwargs):
   """Wraps subprocess.Popen().communicate() and add timeout support.
 
   Returns ((stdout, stderr), returncode).
 
   - The process will be killed after |timeout| seconds and returncode set to
     TIMED_OUT.
+  - If the subprocess runs for |nag_timer| seconds without producing terminal
+    output, print a warning to stderr.
   - Automatically passes stdin content as input so do not specify stdin=PIPE.
   """
   stdin = kwargs.pop('stdin', None)
@@ -381,9 +416,9 @@ def communicate(args, timeout=None, **kwargs):
 
   proc = Popen(args, **kwargs)
   if stdin:
-    return proc.communicate(stdin, timeout), proc.returncode
+    return proc.communicate(stdin, timeout, nag_timer), proc.returncode
   else:
-    return proc.communicate(None, timeout), proc.returncode
+    return proc.communicate(None, timeout, nag_timer), proc.returncode
 
 
 def call(args, **kwargs):
