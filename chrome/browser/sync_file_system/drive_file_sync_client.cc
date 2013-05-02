@@ -696,9 +696,10 @@ void DriveFileSyncClient::DidEnsureUniquenessForCreateFile(
       // The duplicated file was deleted successfully.
       DCHECK(entry);
       if (entry->resource_id() != expected_resource_id) {
+        // TODO(kinuko): We should check local vs remote md5 here.
         DVLOG(2) << "Conflict detected on uploading new file";
         callback.Run(google_apis::HTTP_CONFLICT,
-                     std::string(), std::string());
+                     entry->resource_id(), entry->file_md5());
         return;
       }
 

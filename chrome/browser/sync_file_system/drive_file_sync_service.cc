@@ -1252,6 +1252,18 @@ void DriveFileSyncService::DidUploadNewFileForLocalSync(
     }
     case google_apis::HTTP_CONFLICT:
       // File-file conflict is found.
+      // Populates a fake drive_metadata and set has_drive_metadata = true.
+      // In HandleConflictLocalSync:
+      // - If conflict_resolution is manual, we'll change conflicted to true
+      //   and save the metadata.
+      // - Otherwise we'll save the metadata with empty md5 and will start
+      //   over local sync as UploadExistingFile.
+      param->drive_metadata.set_resource_id(resource_id);
+      param->drive_metadata.set_md5_checksum(std::string());
+      param->drive_metadata.set_conflicted(false);
+      param->drive_metadata.set_to_be_fetched(false);
+      param->drive_metadata.set_type(DriveMetadata::RESOURCE_TYPE_FILE);
+      param->has_drive_metadata = true;
       HandleConflictForLocalSync(param.Pass());
       return;
 

@@ -905,7 +905,7 @@ TEST_F(DriveFileSyncClientTest, UploadNewFile_ConflictWithFile) {
 
   // HTTP_CONFLICT error must be returned with empty resource_id.
   EXPECT_TRUE(done);
-  EXPECT_TRUE(resource_id.empty());
+  EXPECT_EQ("file:file_duplicated_resource_id", resource_id);
   EXPECT_EQ(google_apis::HTTP_CONFLICT, error);
 }
 
