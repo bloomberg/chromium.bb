@@ -60,5 +60,6 @@
 
 <script src="../../resources/check-layout.js"></script>
 <script>
-checkLayout(".container");
+// Need to do this onload to make sure all the images have loaded.
+window.onload = function() { checkLayout(".container"); }
 </script>
