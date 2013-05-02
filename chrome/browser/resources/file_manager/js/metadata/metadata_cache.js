@@ -821,8 +821,13 @@ DriveProvider.isAvailableOffline = function(data, url) {
   if (!data.isHosted)
     return false;
 
+  // What's available offline? See the 'Web' column at:
+  // http://support.google.com/drive/bin/answer.py?hl=en&answer=1628467
   var subtype = FileType.getType(url).subtype;
-  return subtype == 'doc' || subtype == 'sheet';
+  return (subtype == 'doc' ||
+          subtype == 'draw' ||
+          subtype == 'sheet' ||
+          subtype == 'slides');
 };
 
 /**
