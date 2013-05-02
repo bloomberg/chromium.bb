@@ -562,6 +562,7 @@
         'rand_util_unittest.cc',
         'safe_numerics_unittest.cc',
         'safe_numerics_unittest.nc',
+        'scoped_clear_errno_unittest.cc',
         'scoped_native_library_unittest.cc',
         'scoped_observer.h',
         'security_unittest.cc',

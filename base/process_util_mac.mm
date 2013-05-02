@@ -32,6 +32,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_mach_port.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/scoped_clear_errno.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
 #include "third_party/apple_apsl/CFBase.h"
@@ -545,25 +546,6 @@ malloc_error_break_t LookUpMallocErrorBreak() {
 
   return reinterpret_cast<malloc_error_break_t>(reference_addr);
 }
-
-// Simple scoper that saves the current value of errno, resets it to 0, and on
-// destruction puts the old value back. This is so that CrMallocErrorBreak can
-// safely test errno free from the effects of other routines.
-class ScopedClearErrno {
- public:
-  ScopedClearErrno() : old_errno_(errno) {
-    errno = 0;
-  }
-  ~ScopedClearErrno() {
-    if (errno == 0)
-      errno = old_errno_;
-  }
-
- private:
-  int old_errno_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedClearErrno);
-};
 
 // Combines ThreadLocalBoolean with AutoReset.  It would be convenient
 // to compose ThreadLocalPointer<bool> with base::AutoReset<bool>, but that

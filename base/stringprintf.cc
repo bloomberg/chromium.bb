@@ -6,6 +6,7 @@
 
 #include <errno.h>
 
+#include "base/scoped_clear_errno.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 
@@ -50,7 +51,7 @@ static void StringAppendVT(StringType* dst,
   GG_VA_COPY(ap_copy, ap);
 
 #if !defined(OS_WIN)
-  errno = 0;
+  ScopedClearErrno clear_errno;
 #endif
   int result = vsnprintfT(stack_buf, arraysize(stack_buf), format, ap_copy);
   va_end(ap_copy);

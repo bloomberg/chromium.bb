@@ -12,6 +12,7 @@
 #include <limits>
 
 #include "base/logging.h"
+#include "base/scoped_clear_errno.h"
 #include "base/third_party/dmg_fp/dmg_fp.h"
 #include "base/utf_string_conversions.h"
 
@@ -450,7 +451,9 @@ bool StringToSizeT(const StringPiece16& input, size_t* output) {
 }
 
 bool StringToDouble(const std::string& input, double* output) {
-  errno = 0;  // Thread-safe?  It is on at least Mac, Linux, and Windows.
+  // Thread-safe?  It is on at least Mac, Linux, and Windows.
+  ScopedClearErrno clear_errno;
+
   char* endptr = NULL;
   *output = dmg_fp::strtod(input.c_str(), &endptr);
 

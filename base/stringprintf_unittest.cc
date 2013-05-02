@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <errno.h>
+
 #include "base/basictypes.h"
 #include "base/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -170,6 +172,16 @@ TEST(StringPrintfTest, PositionalParameters) {
   SStringPrintf(&wout, L"%1$ls %1$ls", L"test");
   EXPECT_STREQ(L"test test", wout.c_str());
 #endif
+}
+
+// Test that StringPrintf and StringAppendV do not change errno.
+TEST(StringPrintfTest, StringPrintfErrno) {
+  errno = 1;
+  EXPECT_EQ("", StringPrintf("%s", ""));
+  EXPECT_EQ(1, errno);
+  std::string out;
+  StringAppendVTestHelper(&out, "%d foo %s", 1, "bar");
+  EXPECT_EQ(1, errno);
 }
 
 }  // namespace base

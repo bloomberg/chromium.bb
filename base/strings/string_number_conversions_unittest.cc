@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <errno.h>
 #include <math.h>
 
 #include <limits>
@@ -449,7 +450,10 @@ TEST(StringNumberConversionsTest, StringToDouble) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     double output;
+    errno = 1;
     EXPECT_EQ(cases[i].success, StringToDouble(cases[i].input, &output));
+    if (cases[i].success)
+      EXPECT_EQ(1, errno) << i;  // confirm that errno is unchanged.
     EXPECT_DOUBLE_EQ(cases[i].output, output);
   }
 
