@@ -451,6 +451,9 @@ string16 AutofillDialogControllerImpl::LegalDocumentsText() {
 }
 
 DialogSignedInState AutofillDialogControllerImpl::SignedInState() const {
+  if (account_chooser_model_.had_wallet_error())
+    return SIGN_IN_DISABLED;
+
   if (signin_helper_ || !wallet_items_)
     return REQUIRES_RESPONSE;
 
@@ -562,6 +565,7 @@ void AutofillDialogControllerImpl::SignedInStateUpdated() {
       break;
 
     case REQUIRES_SIGN_IN:
+    case SIGN_IN_DISABLED:
       // Switch to the local account and refresh the dialog.
       OnWalletSigninError();
       break;
@@ -2098,9 +2102,6 @@ bool AutofillDialogControllerImpl::ShouldSaveDetailsLocally() {
 }
 
 void AutofillDialogControllerImpl::SetIsSubmitting(bool submitting) {
-  if (is_submitting_ == submitting)
-    return;
-
   is_submitting_ = submitting;
 
   if (view_) {

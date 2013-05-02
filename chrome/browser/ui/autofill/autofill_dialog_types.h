@@ -122,6 +122,7 @@ enum DialogSignedInState {
   REQUIRES_SIGN_IN,
   REQUIRES_PASSIVE_SIGN_IN,
   SIGNED_IN,
+  SIGN_IN_DISABLED,
 };
 
 struct SuggestionState {
