@@ -83,14 +83,6 @@ BITSPLATFORM = 64
 
 LINUX_HEADERS = "$(abspath $(dir $(THISMAKEFILE)))/SRC/linux-headers-for-nacl/include"
 HPREFIX = SRC/newlib/newlib/libc/sys/nacl
-NACL_SYS_HEADERS = \
-      "$(HPREFIX)/sys/nacl_imc_api.h" \
-      "$(HPREFIX)/sys/nacl_name_service.h" \
-      "$(HPREFIX)/sys/nacl_syscalls.h"
-NACL_BITS_HEADERS = \
-      "$(HPREFIX)/bits/nacl_imc_api.h" \
-      "$(HPREFIX)/bits/nacl_syscalls.h"
-NACL_MACHINE_HEADERS = "$(HPREFIX)/machine/_types.h"
 
 # No 'uname -o' on OSX
 ifeq ($(shell uname -s), Darwin)
@@ -703,11 +695,8 @@ glibc-adhoc-files: | SRC/glibc
 	install -m 755 -d  $(ARCH_DEST)/lib/ldscripts
 	cp -f SRC/glibc/nacl/dyn-link/ldscripts/* \
 	    $(ARCH_DEST)/lib/ldscripts/
-	mkdir -p $(ARCH_DEST)/include/{sys,machine,bits}
+	mkdir -p $(ARCH_DEST)/include/machine
 	cp -rf $(LINUX_HEADERS)/{asm*,linux} $(ARCH_DEST)/include
-	cp -f $(NACL_BITS_HEADERS) $(ARCH_DEST)/include/bits
-	cp -f $(NACL_SYS_HEADERS) $(ARCH_DEST)/include/sys
-	cp -f $(NACL_MACHINE_HEADERS) $(ARCH_DEST)/include/machine
 ifeq ($(CANNED_REVISION), no)
 	cp ../src/untrusted/include/machine/_default_types.h \
 	    $(ARCH_DEST)/include/machine/_default_types.h
