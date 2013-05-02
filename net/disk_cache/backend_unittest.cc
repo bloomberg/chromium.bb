@@ -2875,7 +2875,8 @@ TEST_F(DiskCacheBackendTest, SimpleDoomBetween) {
   BackendDoomBetween();
 }
 
-TEST_F(DiskCacheBackendTest, SimpleCacheDoomAll) {
+// See http://crbug.com/237450.
+TEST_F(DiskCacheBackendTest, FLAKY_SimpleCacheDoomAll) {
   SetSimpleCacheMode();
   BackendDoomAll();
 }
