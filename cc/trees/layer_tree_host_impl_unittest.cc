@@ -2015,6 +2015,72 @@ TEST_F(LayerTreeHostImplTest, ScrollScaledLayer) {
                  wheel_scroll_delta);
 }
 
+class TestScrollOffsetDelegate : public LayerScrollOffsetDelegate {
+ public:
+  TestScrollOffsetDelegate() {}
+  virtual ~TestScrollOffsetDelegate() {}
+
+  virtual void SetTotalScrollOffset(gfx::Vector2dF new_value) OVERRIDE {
+    last_set_scroll_offset_ = new_value;
+  }
+
+  virtual gfx::Vector2dF GetTotalScrollOffset() OVERRIDE {
+    return getter_return_value_;
+  }
+
+  gfx::Vector2dF last_set_scroll_offset() {
+    return last_set_scroll_offset_;
+  }
+
+  void set_getter_return_value(gfx::Vector2dF value) {
+    getter_return_value_ = value;
+  }
+
+ private:
+  gfx::Vector2dF last_set_scroll_offset_;
+  gfx::Vector2dF getter_return_value_;
+};
+
+TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
+  TestScrollOffsetDelegate scroll_delegate;
+  SetupScrollAndContentsLayers(gfx::Size(100, 100));
+
+  // Setting the delegate results in the current scroll offset being set.
+  gfx::Vector2dF initial_scroll_delta(10, 10);
+  host_impl_->active_tree()->root_layer()->SetScrollOffset(gfx::Vector2d());
+  host_impl_->active_tree()->root_layer()->SetScrollDelta(initial_scroll_delta);
+  host_impl_->SetRootLayerScrollOffsetDelegate(&scroll_delegate);
+  EXPECT_EQ(initial_scroll_delta, scroll_delegate.last_set_scroll_offset());
+
+  // Scrolling should be relative to the offset as returned by the delegate.
+  gfx::Vector2d scroll_delta(0, 10);
+  gfx::Vector2d current_offset(7, 8);
+
+  scroll_delegate.set_getter_return_value(current_offset);
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
+
+  host_impl_->ScrollBy(gfx::Point(), scroll_delta);
+  EXPECT_EQ(current_offset + scroll_delta,
+            scroll_delegate.last_set_scroll_offset());
+
+  current_offset = gfx::Vector2d(42, 41);
+  scroll_delegate.set_getter_return_value(current_offset);
+  host_impl_->ScrollBy(gfx::Point(), scroll_delta);
+  EXPECT_EQ(current_offset + scroll_delta,
+            scroll_delegate.last_set_scroll_offset());
+  host_impl_->ScrollEnd();
+
+  // Un-setting the delegate should propagate the delegate's current offset to
+  // the root scrollable layer.
+  current_offset = gfx::Vector2d(13, 12);
+  scroll_delegate.set_getter_return_value(current_offset);
+  host_impl_->SetRootLayerScrollOffsetDelegate(NULL);
+
+  EXPECT_EQ(current_offset,
+            host_impl_->active_tree()->root_layer()->TotalScrollOffset());
+}
+
 class BlendStateTrackerContext: public TestWebGraphicsContext3D {
  public:
   BlendStateTrackerContext() : blend_(false) {}
