@@ -26,6 +26,7 @@ const char kOriginKeyPrefix[] = "ORIGIN:";
 const char kLastPathKey[] = "LAST_PATH";
 const int64 kMinimumReportIntervalHours = 1;
 const char kInitStatusHistogramLabel[] = "FileSystem.OriginDatabaseInit";
+const char kDatabaseRepairHistogramLabel[] = "FileSystem.OriginDatabaseRepair";
 
 enum InitStatus {
   INIT_STATUS_OK = 0,
@@ -33,6 +34,12 @@ enum InitStatus {
   INIT_STATUS_IO_ERROR,
   INIT_STATUS_UNKNOWN_ERROR,
   INIT_STATUS_MAX
+};
+
+enum RepairResult {
+  DB_REPAIR_SUCCEEDED = 0,
+  DB_REPAIR_FAILED,
+  DB_REPAIR_MAX
 };
 
 std::string OriginToOriginKey(const std::string& origin) {
@@ -95,10 +102,15 @@ bool FileSystemOriginDatabase::Init(RecoveryOption recovery_option) {
       return false;
     case REPAIR_ON_CORRUPTION:
       LOG(WARNING) << "Attempting to repair FileSystemOriginDatabase.";
+
       if (RepairDatabase(path)) {
+        UMA_HISTOGRAM_ENUMERATION(kDatabaseRepairHistogramLabel,
+                                  DB_REPAIR_SUCCEEDED, DB_REPAIR_MAX);
         LOG(WARNING) << "Repairing FileSystemOriginDatabase completed.";
         return true;
       }
+      UMA_HISTOGRAM_ENUMERATION(kDatabaseRepairHistogramLabel,
+                                DB_REPAIR_FAILED, DB_REPAIR_MAX);
       // fall through
     case DELETE_ON_CORRUPTION:
       if (!file_util::Delete(file_system_directory_, true))

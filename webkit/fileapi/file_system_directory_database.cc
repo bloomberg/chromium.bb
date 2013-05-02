@@ -73,6 +73,8 @@ const char kLastFileIdKey[] = "LAST_FILE_ID";
 const char kLastIntegerKey[] = "LAST_INTEGER";
 const int64 kMinimumReportIntervalHours = 1;
 const char kInitStatusHistogramLabel[] = "FileSystem.DirectoryDatabaseInit";
+const char kDatabaseRepairHistogramLabel[] =
+    "FileSystem.DirectoryDatabaseRepair";
 
 enum InitStatus {
   INIT_STATUS_OK = 0,
@@ -80,6 +82,12 @@ enum InitStatus {
   INIT_STATUS_IO_ERROR,
   INIT_STATUS_UNKNOWN_ERROR,
   INIT_STATUS_MAX
+};
+
+enum RepairResult {
+  DB_REPAIR_SUCCEEDED = 0,
+  DB_REPAIR_FAILED,
+  DB_REPAIR_MAX
 };
 
 std::string GetChildLookupKey(
@@ -726,8 +734,13 @@ bool FileSystemDirectoryDatabase::Init(RecoveryOption recovery_option) {
     case REPAIR_ON_CORRUPTION:
       LOG(WARNING) << "Corrupted FileSystemDirectoryDatabase detected."
                    << " Attempting to repair.";
-      if (RepairDatabase(path))
+      if (RepairDatabase(path)) {
+        UMA_HISTOGRAM_ENUMERATION(kDatabaseRepairHistogramLabel,
+                                  DB_REPAIR_SUCCEEDED, DB_REPAIR_MAX);
         return true;
+      }
+      UMA_HISTOGRAM_ENUMERATION(kDatabaseRepairHistogramLabel,
+                                DB_REPAIR_FAILED, DB_REPAIR_MAX);
       LOG(WARNING) << "Failed to repair FileSystemDirectoryDatabase.";
       // fall through
     case DELETE_ON_CORRUPTION:
