@@ -249,7 +249,7 @@ class WidevineCdmComponentInstaller : public ComponentInstaller {
   virtual ~WidevineCdmComponentInstaller() {}
 
   virtual void OnUpdateError(int error) OVERRIDE;
-  virtual bool Install(base::DictionaryValue* manifest,
+  virtual bool Install(const base::DictionaryValue& manifest,
                        const base::FilePath& unpack_path) OVERRIDE;
 
  private:
@@ -266,10 +266,11 @@ void WidevineCdmComponentInstaller::OnUpdateError(int error) {
   NOTREACHED() << "Widevine CDM update error: " << error;
 }
 
-bool WidevineCdmComponentInstaller::Install(base::DictionaryValue* manifest,
-                                            const base::FilePath& unpack_path) {
+bool WidevineCdmComponentInstaller::Install(
+    const base::DictionaryValue& manifest,
+    const base::FilePath& unpack_path) {
   base::Version version;
-  if (!CheckWidevineCdmManifest(*manifest, &version))
+  if (!CheckWidevineCdmManifest(manifest, &version))
     return false;
   if (current_version_.CompareTo(version) > 0)
     return false;

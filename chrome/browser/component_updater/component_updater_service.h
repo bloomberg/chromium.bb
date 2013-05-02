@@ -34,7 +34,7 @@ class ComponentInstaller {
   // and is ready to be installed. |manifest| contains the CRX manifest
   // json dictionary and |unpack_path| contains the temporary directory
   // with all the unpacked CRX files.
-  virtual bool Install(base::DictionaryValue* manifest,
+  virtual bool Install(const base::DictionaryValue& manifest,
                        const base::FilePath& unpack_path) = 0;
 
  protected:

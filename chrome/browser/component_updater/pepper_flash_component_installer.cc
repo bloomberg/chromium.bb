@@ -218,11 +218,11 @@ bool CheckPepperFlashInterfaceString(const std::string& interface_string) {
 
 // Returns true if this browser implements all the interfaces that Flash
 // specifies in its component installer manifest.
-bool CheckPepperFlashInterfaces(base::DictionaryValue* manifest) {
-  base::ListValue* interface_list = NULL;
+bool CheckPepperFlashInterfaces(const base::DictionaryValue& manifest) {
+  const base::ListValue* interface_list = NULL;
 
   // We don't *require* an interface list, apparently.
-  if (!manifest->GetList("x-ppapi-required-interfaces", &interface_list))
+  if (!manifest.GetList("x-ppapi-required-interfaces", &interface_list))
     return true;
 
   for (size_t i = 0; i < interface_list->GetSize(); i++) {
@@ -246,7 +246,7 @@ class PepperFlashComponentInstaller : public ComponentInstaller {
 
   virtual void OnUpdateError(int error) OVERRIDE;
 
-  virtual bool Install(base::DictionaryValue* manifest,
+  virtual bool Install(const base::DictionaryValue& manifest,
                        const base::FilePath& unpack_path) OVERRIDE;
 
  private:
@@ -262,8 +262,9 @@ void PepperFlashComponentInstaller::OnUpdateError(int error) {
   NOTREACHED() << "Pepper Flash update error: " << error;
 }
 
-bool PepperFlashComponentInstaller::Install(base::DictionaryValue* manifest,
-                                            const base::FilePath& unpack_path) {
+bool PepperFlashComponentInstaller::Install(
+    const base::DictionaryValue& manifest,
+    const base::FilePath& unpack_path) {
   Version version;
   if (!CheckPepperFlashManifest(manifest, &version))
     return false;
@@ -290,10 +291,10 @@ bool PepperFlashComponentInstaller::Install(base::DictionaryValue* manifest,
   return true;
 }
 
-bool CheckPepperFlashManifest(base::DictionaryValue* manifest,
+bool CheckPepperFlashManifest(const base::DictionaryValue& manifest,
                               Version* version_out) {
   std::string name;
-  manifest->GetStringASCII("name", &name);
+  manifest.GetStringASCII("name", &name);
   // TODO(viettrungluu): Support WinFlapper for now, while we change the format
   // of the manifest. (Should be safe to remove checks for "WinFlapper" in, say,
   // Nov. 2011.)  crbug.com/98458
@@ -301,7 +302,7 @@ bool CheckPepperFlashManifest(base::DictionaryValue* manifest,
     return false;
 
   std::string proposed_version;
-  manifest->GetStringASCII("version", &proposed_version);
+  manifest.GetStringASCII("version", &proposed_version);
   Version version(proposed_version.c_str());
   if (!version.IsValid())
     return false;
@@ -316,12 +317,12 @@ bool CheckPepperFlashManifest(base::DictionaryValue* manifest,
   }
 
   std::string os;
-  manifest->GetStringASCII("x-ppapi-os", &os);
+  manifest.GetStringASCII("x-ppapi-os", &os);
   if (os != kPepperFlashOperatingSystem)
     return false;
 
   std::string arch;
-  manifest->GetStringASCII("x-ppapi-arch", &arch);
+  manifest.GetStringASCII("x-ppapi-arch", &arch);
   if (arch != kPepperFlashArch)
     return false;
 

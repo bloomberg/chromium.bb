@@ -28,7 +28,7 @@ class PnaclComponentInstaller : public ComponentInstaller {
 
   virtual void OnUpdateError(int error) OVERRIDE;
 
-  virtual bool Install(base::DictionaryValue* manifest,
+  virtual bool Install(const base::DictionaryValue& manifest,
                        const base::FilePath& unpack_path) OVERRIDE;
 
   // Register a PNaCl component for the first time.
@@ -64,7 +64,7 @@ class PnaclComponentInstaller : public ComponentInstaller {
 
 // Returns true if this browser is compatible with the given Pnacl component
 // manifest, with the version specified in the manifest in |version_out|.
-bool CheckPnaclComponentManifest(base::DictionaryValue* manifest,
+bool CheckPnaclComponentManifest(const base::DictionaryValue& manifest,
                                  base::Version* version_out);
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_PNACL_PNACL_COMPONENT_INSTALLER_H_

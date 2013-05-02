@@ -53,7 +53,7 @@ class RecoveryComponentInstaller : public ComponentInstaller {
 
   virtual void OnUpdateError(int error) OVERRIDE;
 
-  virtual bool Install(base::DictionaryValue* manifest,
+  virtual bool Install(const base::DictionaryValue& manifest,
                        const base::FilePath& unpack_path) OVERRIDE;
 
  private:
@@ -95,14 +95,14 @@ void RecoveryComponentInstaller::OnUpdateError(int error) {
   NOTREACHED() << "Recovery component update error: " << error;
 }
 
-bool RecoveryComponentInstaller::Install(base::DictionaryValue* manifest,
+bool RecoveryComponentInstaller::Install(const base::DictionaryValue& manifest,
                                          const base::FilePath& unpack_path) {
   std::string name;
-  manifest->GetStringASCII("name", &name);
+  manifest.GetStringASCII("name", &name);
   if (name != kRecoveryManifestName)
     return false;
   std::string proposed_version;
-  manifest->GetStringASCII("version", &proposed_version);
+  manifest.GetStringASCII("version", &proposed_version);
   Version version(proposed_version.c_str());
   if (!version.IsValid())
     return false;
@@ -115,10 +115,10 @@ bool RecoveryComponentInstaller::Install(base::DictionaryValue* manifest,
   // recovery component itself running from the temp directory.
   CommandLine cmdline(main_file);
   std::string arguments;
-  if (manifest->GetStringASCII("x-recovery-args", &arguments))
+  if (manifest.GetStringASCII("x-recovery-args", &arguments))
     cmdline.AppendArg(arguments);
   std::string add_version;
-  if (manifest->GetStringASCII("x-recovery-add-version", &add_version)) {
+  if (manifest.GetStringASCII("x-recovery-add-version", &add_version)) {
     if (add_version == "yes")
       cmdline.AppendSwitchASCII("version", current_version_.GetString());
   }

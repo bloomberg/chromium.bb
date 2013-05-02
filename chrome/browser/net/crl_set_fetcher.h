@@ -31,7 +31,7 @@ class CRLSetFetcher : public ComponentInstaller,
 
   // ComponentInstaller interface
   virtual void OnUpdateError(int error) OVERRIDE;
-  virtual bool Install(base::DictionaryValue* manifest,
+  virtual bool Install(const base::DictionaryValue& manifest,
                        const base::FilePath& unpack_path) OVERRIDE;
 
  private:

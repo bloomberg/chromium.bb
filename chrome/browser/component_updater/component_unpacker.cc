@@ -160,7 +160,7 @@ ComponentUnpacker::ComponentUnpacker(const std::vector<uint8>& pk_hash,
     error_ = kBadManifest;
     return;
   }
-  if (!installer->Install(manifest.release(), unpack_path_)) {
+  if (!installer->Install(*manifest, unpack_path_)) {
     error_ = kInstallerError;
     return;
   }

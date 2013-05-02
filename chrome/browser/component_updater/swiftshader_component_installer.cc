@@ -101,7 +101,7 @@ class SwiftShaderComponentInstaller : public ComponentInstaller {
 
   virtual void OnUpdateError(int error) OVERRIDE;
 
-  virtual bool Install(base::DictionaryValue* manifest,
+  virtual bool Install(const base::DictionaryValue& manifest,
                        const base::FilePath& unpack_path) OVERRIDE;
 
  private:
@@ -117,14 +117,15 @@ void SwiftShaderComponentInstaller::OnUpdateError(int error) {
   NOTREACHED() << "SwiftShader update error: " << error;
 }
 
-bool SwiftShaderComponentInstaller::Install(base::DictionaryValue* manifest,
-                                            const base::FilePath& unpack_path) {
+bool SwiftShaderComponentInstaller::Install(
+    const base::DictionaryValue& manifest,
+    const base::FilePath& unpack_path) {
   std::string name;
-  manifest->GetStringASCII("name", &name);
+  manifest.GetStringASCII("name", &name);
   if (name != kSwiftShaderManifestName)
     return false;
   std::string proposed_version;
-  manifest->GetStringASCII("version", &proposed_version);
+  manifest.GetStringASCII("version", &proposed_version);
   Version version(proposed_version.c_str());
   if (!version.IsValid())
     return false;

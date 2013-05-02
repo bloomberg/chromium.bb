@@ -19,7 +19,7 @@ void RegisterPepperFlashComponent(ComponentUpdateService* cus);
 
 // Returns true if this browser is compatible with the given Pepper Flash
 // manifest, with the version specified in the manifest in |version_out|.
-bool CheckPepperFlashManifest(base::DictionaryValue* manifest,
+bool CheckPepperFlashManifest(const base::DictionaryValue& manifest,
                               base::Version* version_out);
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_FLASH_COMPONENT_INSTALLER_H_

@@ -142,7 +142,7 @@ void CRLSetFetcher::OnUpdateError(int error) {
                << " from component installer";
 }
 
-bool CRLSetFetcher::Install(base::DictionaryValue* manifest,
+bool CRLSetFetcher::Install(const base::DictionaryValue& manifest,
                             const base::FilePath& unpack_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 

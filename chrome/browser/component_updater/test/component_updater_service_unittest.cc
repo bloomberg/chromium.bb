@@ -144,10 +144,9 @@ class TestInstaller : public ComponentInstaller {
     error_ = error;
   }
 
-  virtual bool Install(base::DictionaryValue* manifest,
+  virtual bool Install(const base::DictionaryValue& manifest,
                        const base::FilePath& unpack_path) OVERRIDE {
     ++install_count_;
-    delete manifest;
     return file_util::Delete(unpack_path, true);
   }
 

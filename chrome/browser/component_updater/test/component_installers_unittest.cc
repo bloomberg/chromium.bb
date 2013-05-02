@@ -72,13 +72,13 @@ TEST(ComponentInstallerTest, MAYBE_PepperFlashCheck) {
 
   JSONFileValueSerializer serializer(manifest);
   std::string error;
-  scoped_ptr<base::Value> root(serializer.Deserialize(NULL, &error));
-  ASSERT_TRUE(root.get() != NULL);
+  scoped_ptr<base::DictionaryValue> root(static_cast<base::DictionaryValue*>(
+      serializer.Deserialize(NULL, &error)));
+  ASSERT_TRUE(root);
   ASSERT_TRUE(root->IsType(base::Value::TYPE_DICTIONARY));
 
   // This checks that the whole manifest is compatible.
   Version version;
-  EXPECT_TRUE(CheckPepperFlashManifest(
-      static_cast<base::DictionaryValue*>(root.get()), &version));
+  EXPECT_TRUE(CheckPepperFlashManifest(*root, &version));
   EXPECT_TRUE(version.IsValid());
 }

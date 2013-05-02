@@ -152,11 +152,11 @@ bool GetLatestPnaclDirectory(PnaclComponentInstaller* pci,
 
 // Read the PNaCl specific manifest.
 base::DictionaryValue* ReadPnaclManifest(const base::FilePath& unpack_path) {
-  base::FilePath manifest = unpack_path.Append(
+  base::FilePath manifest_path = unpack_path.Append(
       FILE_PATH_LITERAL("pnacl_public_pnacl_json"));
-  if (!file_util::PathExists(manifest))
+  if (!file_util::PathExists(manifest_path))
     return NULL;
-  JSONFileValueSerializer serializer(manifest);
+  JSONFileValueSerializer serializer(manifest_path);
   std::string error;
   scoped_ptr<base::Value> root(serializer.Deserialize(NULL, &error));
   if (!root.get())
@@ -168,12 +168,12 @@ base::DictionaryValue* ReadPnaclManifest(const base::FilePath& unpack_path) {
 
 }  // namespace
 
-bool CheckPnaclComponentManifest(base::DictionaryValue* manifest,
-                                 base::DictionaryValue* pnacl_manifest,
+bool CheckPnaclComponentManifest(const base::DictionaryValue& manifest,
+                                 const base::DictionaryValue& pnacl_manifest,
                                  Version* version_out) {
   // Make sure we have the right manifest file.
   std::string name;
-  manifest->GetStringASCII("name", &name);
+  manifest.GetStringASCII("name", &name);
   // For the webstore, we've given different names to each of the
   // architecture specific packages, so only the prefix is the same.
   if (StartsWithASCII(kPnaclManifestNamePrefix, name, false)) {
@@ -184,7 +184,7 @@ bool CheckPnaclComponentManifest(base::DictionaryValue* manifest,
   }
 
   std::string proposed_version;
-  manifest->GetStringASCII("version", &proposed_version);
+  manifest.GetStringASCII("version", &proposed_version);
   Version version(proposed_version.c_str());
   if (!version.IsValid()) {
     LOG(WARNING) << "'version' field in manifest is invalid "
@@ -193,7 +193,7 @@ bool CheckPnaclComponentManifest(base::DictionaryValue* manifest,
   }
 
   std::string arch;
-  pnacl_manifest->GetStringASCII("pnacl-arch", &arch);
+  pnacl_manifest.GetStringASCII("pnacl-arch", &arch);
   if (arch.compare(OmahaQueryParams::getNaclArch()) != 0) {
     LOG(WARNING) << "'pnacl-arch' field in manifest is invalid ("
                  << arch << " vs " << OmahaQueryParams::getNaclArch() << ")";
@@ -264,7 +264,7 @@ bool PathContainsPnacl(const base::FilePath& base_path) {
 
 }  // namespace
 
-bool PnaclComponentInstaller::Install(base::DictionaryValue* manifest,
+bool PnaclComponentInstaller::Install(const base::DictionaryValue& manifest,
                                       const base::FilePath& unpack_path) {
   scoped_ptr<base::DictionaryValue> pnacl_manifest(
       ReadPnaclManifest(unpack_path));
@@ -274,9 +274,7 @@ bool PnaclComponentInstaller::Install(base::DictionaryValue* manifest,
   }
 
   Version version;
-  if (!CheckPnaclComponentManifest(manifest,
-                                   pnacl_manifest.get(),
-                                   &version)) {
+  if (!CheckPnaclComponentManifest(manifest, *pnacl_manifest, &version)) {
     LOG(WARNING) << "CheckPnaclComponentManifest failed, not installing.";
     return false;
   }
