@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_GOOGLE_APIS_DRIVE_NOTIFICATION_MANAGER_H_
 #define CHROME_BROWSER_GOOGLE_APIS_DRIVE_NOTIFICATION_MANAGER_H_
 
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/timer.h"
 #include "chrome/browser/google_apis/drive_notification_observer.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "sync/notifier/invalidation_handler.h"
@@ -42,8 +44,23 @@ class DriveNotificationManager
   bool IsPushNotificationEnabled();
 
  private:
-  void NotifyObserversToUpdate();
+  enum NotificationSource {
+    NOTIFICATION_XMPP,
+    NOTIFICATION_POLLING,
+  };
+
+  // Restarts the polling timer. Used for polling-based notification.
+  void RestartPollingTimer();
+
+  // Notifies the observers that it's time to check for updates.
+  // |source| indicates where the notification comes from.
+  void NotifyObserversToUpdate(NotificationSource source);
+
+  // Registers for Google Drive invalidation notifications through XMPP.
   void RegisterDriveNotifications();
+
+  // Returns a string representation of NotificationSource.
+  static std::string NotificationSourceToString(NotificationSource source);
 
   Profile* profile_;
   ObserverList<DriveNotificationObserver> observers_;
@@ -52,6 +69,14 @@ class DriveNotificationManager
   bool push_notification_registered_;
   // True once the first drive notification is received with OK state.
   bool push_notification_enabled_;
+
+  // The timer is used for polling based notification. XMPP should usually be
+  // used but notification is done per polling when XMPP is not working.
+  base::Timer polling_timer_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<DriveNotificationManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveNotificationManager);
 };

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/google_apis/drive_notification_manager.h"
 
+#include "base/metrics/histogram.h"
 #include "chrome/browser/google_apis/drive_notification_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -12,14 +13,28 @@
 
 namespace google_apis {
 
+namespace {
+
+// The polling interval time is used when XMPP is disabled.
+const int kFastPollingIntervalInSecs = 60;
+
+// The polling interval time is used when XMPP is enabled.  Theoretically
+// polling should be unnecessary if XMPP is enabled, but just in case.
+const int kSlowPollingIntervalInSecs = 300;
+
 // The sync invalidation object ID for Google Drive.
 const char kDriveInvalidationObjectId[] = "CHANGELOG";
+
+}  // namespace
 
 DriveNotificationManager::DriveNotificationManager(Profile* profile)
     : profile_(profile),
       push_notification_registered_(false),
-      push_notification_enabled_(false) {
+      push_notification_enabled_(false),
+      polling_timer_(true /* retain_user_task */, false /* is_repeating */),
+      weak_ptr_factory_(this) {
   RegisterDriveNotifications();
+  RestartPollingTimer();
 }
 
 DriveNotificationManager::~DriveNotificationManager() {}
@@ -64,7 +79,7 @@ void DriveNotificationManager::OnIncomingInvalidation(
       invalidation_map.begin()->first,
       invalidation_map.begin()->second.ack_handle);
 
-  NotifyObserversToUpdate();
+  NotifyObserversToUpdate(NOTIFICATION_XMPP);
 }
 
 void DriveNotificationManager::AddObserver(
@@ -81,17 +96,33 @@ bool DriveNotificationManager::IsPushNotificationEnabled() {
   return push_notification_enabled_;
 }
 
-void DriveNotificationManager::NotifyObserversToUpdate() {
-  FOR_EACH_OBSERVER(DriveNotificationObserver, observers_,
-                    OnNotificationReceived());
+void DriveNotificationManager::RestartPollingTimer() {
+  const int interval_secs = (push_notification_enabled_ ?
+                             kSlowPollingIntervalInSecs :
+                             kFastPollingIntervalInSecs);
+  polling_timer_.Stop();
+  polling_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromSeconds(interval_secs),
+      base::Bind(&DriveNotificationManager::NotifyObserversToUpdate,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 NOTIFICATION_POLLING));
 }
 
-// Register for Google Drive invalidation notifications through XMPP.
+void DriveNotificationManager::NotifyObserversToUpdate(
+    NotificationSource source) {
+  DVLOG(1) << "Notifying observers: " << NotificationSourceToString(source);
+  FOR_EACH_OBSERVER(DriveNotificationObserver, observers_,
+                    OnNotificationReceived());
+
+  // Note that polling_timer_ is not a repeating timer. Restarting manually
+  // here is better as XMPP may be received right before the polling timer is
+  // fired (i.e. we don't notify observers twice in a row).
+  RestartPollingTimer();
+}
+
 void DriveNotificationManager::RegisterDriveNotifications() {
-  // Push notification registration might have already occurred if called from
-  // a different extension.
-  if (push_notification_registered_)
-    return;
+  DCHECK(!push_notification_enabled_);
 
   ProfileSyncService* profile_sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
@@ -106,6 +137,20 @@ void DriveNotificationManager::RegisterDriveNotifications() {
   profile_sync_service->UpdateRegisteredInvalidationIds(this, ids);
   push_notification_registered_ = true;
   OnInvalidatorStateChange(profile_sync_service->GetInvalidatorState());
+}
+
+// static
+std::string DriveNotificationManager::NotificationSourceToString(
+    NotificationSource source) {
+  switch (source) {
+    case NOTIFICATION_XMPP:
+      return "NOTIFICATION_XMPP";
+    case NOTIFICATION_POLLING:
+      return "NOTIFICATION_POLLING";
+  }
+
+  NOTREACHED();
+  return "";
 }
 
 }  // namespace google_apis
