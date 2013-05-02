@@ -31,7 +31,6 @@
 #ifndef DOMWrapperMap_h
 #define DOMWrapperMap_h
 
-#include "bindings/v8/UnsafePersistent.h"
 #include "bindings/v8/V8Utilities.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
@@ -44,7 +43,7 @@ namespace WebCore {
 template<class KeyType>
 class DOMWrapperMap {
 public:
-    typedef HashMap<KeyType*, UnsafePersistent<v8::Object> > MapType;
+    typedef HashMap<KeyType*, v8::Persistent<v8::Object> > MapType;
 
     explicit DOMWrapperMap(v8::Isolate* isolate)
         : m_isolate(isolate)
@@ -53,7 +52,7 @@ public:
 
     v8::Handle<v8::Object> get(KeyType* key)
     {
-        return m_map.get(key).handle();
+        return m_map.get(key);
     }
 
     void set(KeyType* key, v8::Handle<v8::Object> wrapper, const WrapperConfiguration& configuration)
@@ -63,7 +62,7 @@ public:
         v8::Persistent<v8::Object> persistent = v8::Persistent<v8::Object>::New(m_isolate, wrapper);
         configuration.configureWrapper(persistent, m_isolate);
         WeakHandleListener<DOMWrapperMap<KeyType> >::makeWeak(m_isolate, persistent, this);
-        m_map.set(key, UnsafePersistent<v8::Object>(persistent));
+        m_map.set(key, persistent);
     }
 
     void clear()
@@ -73,10 +72,10 @@ public:
             MapType map;
             map.swap(m_map);
             for (typename MapType::iterator it = map.begin(); it != map.end(); ++it) {
-                v8::Persistent<v8::Object> unsafeWrapper;
-                it->value.copyTo(&unsafeWrapper);
-                toWrapperTypeInfo(unsafeWrapper)->derefObject(it->key);
-                unsafeWrapper.Dispose(m_isolate);
+                v8::Persistent<v8::Object> wrapper = it->value;
+                toWrapperTypeInfo(wrapper)->derefObject(it->key);
+                wrapper.Dispose(m_isolate);
+                wrapper.Clear();
             }
         }
     }
