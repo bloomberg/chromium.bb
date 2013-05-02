@@ -1595,23 +1595,9 @@ body[new-ui] #list-container li.table-row {
   display: none;
 }
 
-.task-item {
-  -webkit-box-align: center;
-  -webkit-box-orient: horizontal;
-  display: -webkit-box;
-  padding: 5px 10px 4px;
-  text-align: left;
-}
-
-.task-item > div {
-  overflow: hidden;
-  padding-right: 5px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.task-item > img {
-  -webkit-margin-end: 5px;
+#tasks-menu menuitem:not(.change-default) {
+  background-position: left 10px center;
+  padding-left: 32px;
 }
 
 #preview-lines {

@@ -42,6 +42,7 @@ cr.define('cr.ui', function() {
       if (item.bold) {
         menuitem.style.fontWeight = 'bold';
       }
+      return menuitem;
     },
 
     /**

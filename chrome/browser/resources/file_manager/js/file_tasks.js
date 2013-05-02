@@ -586,9 +586,10 @@ FileTasks.prototype.display_ = function(combobutton) {
     }
 
     combobutton.addSeparator();
-    combobutton.addDropDownItem({
-          label: loadTimeData.getString('CHANGE_DEFAULT_MENU_ITEM')
-        });
+    var changeDefaultMenuItem = combobutton.addDropDownItem({
+        label: loadTimeData.getString('CHANGE_DEFAULT_MENU_ITEM')
+    });
+    changeDefaultMenuItem.classList.add('change-default');
   }
 };
 
