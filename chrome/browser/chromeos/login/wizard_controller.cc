@@ -53,7 +53,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/chromeos_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/browser_thread.h"
@@ -168,9 +167,9 @@ WizardController::WizardController(chromeos::LoginDisplayHost* host,
 
   chromeos::system::StatisticsProvider* provider =
       chromeos::system::StatisticsProvider::GetInstance();
-  provider->GetMachineFlag(chromeos::kOemIsEnterpriseManagedKey,
+  provider->GetMachineFlag(chrome::kOemIsEnterpriseManagedKey,
                            &force_enrollment_);
-  provider->GetMachineFlag(chromeos::kOemCanExitEnterpriseEnrollmentKey,
+  provider->GetMachineFlag(chrome::kOemCanExitEnterpriseEnrollmentKey,
                            &can_exit_enrollment_);
 }
 

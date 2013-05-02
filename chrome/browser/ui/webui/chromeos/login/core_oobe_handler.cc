@@ -13,7 +13,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chromeos/chromeos_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -164,7 +163,7 @@ void CoreOobeHandler::UpdateOobeUIVisibility() {
   bool enable_keyboard_flow = false;
   chromeos::system::StatisticsProvider* provider =
       chromeos::system::StatisticsProvider::GetInstance();
-  provider->GetMachineFlag(chromeos::kOemKeyboardDrivenOobeKey,
+  provider->GetMachineFlag(chrome::kOemKeyboardDrivenOobeKey,
                            &enable_keyboard_flow);
   if (enable_keyboard_flow)
     CallJS("cr.ui.Oobe.enableKeyboardFlow", enable_keyboard_flow);

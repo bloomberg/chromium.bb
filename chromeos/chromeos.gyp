@@ -30,8 +30,6 @@
         'CHROMEOS_IMPLEMENTATION',
       ],
       'sources': [
-        'app_mode/kiosk_oem_manifest_parser.cc',
-        'app_mode/kiosk_oem_manifest_parser.h',
         'audio/audio_device.cc',
         'audio/audio_device.h',
         'audio/audio_pref_observer.h',
@@ -46,8 +44,6 @@
         'attestation/attestation_constants.h',
         'attestation/attestation_flow.cc',
         'attestation/attestation_flow.h',
-        'chromeos_constants.cc',
-        'chromeos_constants.h',
         'chromeos_export.h',
         'chromeos_paths.cc',
         'chromeos_paths.h',
@@ -296,8 +292,6 @@
         'process_proxy/process_proxy.h',
         'process_proxy/process_proxy_registry.cc',
         'process_proxy/process_proxy_registry.h',
-        'system/name_value_pairs_parser.cc',
-        'system/name_value_pairs_parser.h',
       ],
       'conditions': [
         ['use_x11 == 1', {
@@ -472,7 +466,6 @@
       ],
       'sources': [
         'attestation/attestation_flow_unittest.cc',
-        'app_mode/kiosk_oem_manifest_parser_unittest.cc',
         'display/output_configurator_unittest.cc',
         'dbus/blocking_method_caller_unittest.cc',
         'dbus/power_policy_controller_unittest.cc',
@@ -525,7 +518,6 @@
         'network/shill_property_handler_unittest.cc',
         'process_proxy/process_output_watcher_unittest.cc',
         'process_proxy/process_proxy_unittest.cc',
-        'system/name_value_pairs_parser_unittest.cc',
       ],
       'include_dirs': [
         '..',

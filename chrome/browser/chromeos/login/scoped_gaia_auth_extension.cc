@@ -12,7 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chromeos/chromeos_constants.h"
 #include "grit/browser_resources.h"
 
 namespace chromeos {
@@ -39,7 +38,7 @@ void LoadGaiaAuthExtension(Profile* profile) {
   bool force_keyboard_oobe = false;
   chromeos::system::StatisticsProvider* provider =
       chromeos::system::StatisticsProvider::GetInstance();
-  provider->GetMachineFlag(chromeos::kOemKeyboardDrivenOobeKey,
+  provider->GetMachineFlag(chrome::kOemKeyboardDrivenOobeKey,
                            &force_keyboard_oobe);
   if (force_keyboard_oobe) {
     component_loader->Add(IDR_GAIA_AUTH_KEYBOARD_MANIFEST,
