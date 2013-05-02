@@ -81,6 +81,17 @@ static const int kAnchorOffset = 25;
 
 static const wchar_t kTrayClassName[] = L"Shell_TrayWnd";
 
+// Migrate chrome::kAppLauncherIsEnabled pref to
+// chrome::kAppLauncherHasBeenEnabled pref.
+void MigrateAppLauncherEnabledPref() {
+  PrefService* prefs = g_browser_process->local_state();
+  if (prefs->HasPrefPath(apps::prefs::kAppLauncherIsEnabled)) {
+    prefs->SetBoolean(apps::prefs::kAppLauncherHasBeenEnabled,
+                      prefs->GetBoolean(apps::prefs::kAppLauncherIsEnabled));
+    prefs->ClearPref(apps::prefs::kAppLauncherIsEnabled);
+  }
+}
+
 // Icons are added to the resources of the DLL using icon names. The icon index
 // for the app list icon is named IDR_X_APP_LIST or (for official builds)
 // IDR_X_APP_LIST_SXS for Chrome Canary. Creating shortcuts needs to specify a
@@ -985,14 +996,7 @@ void AppListController::Init(Profile* initial_profile) {
       FROM_HERE,
       base::Bind(&::InitView, initial_profile),
       base::TimeDelta::FromSeconds(kInitWindowDelay));
-
-  // Migrate chrome::kAppLauncherIsEnabled pref to
-  // chrome::kAppLauncherHasBeenEnabled pref.
-  if (prefs->FindPreference(apps::prefs::kAppLauncherIsEnabled)) {
-    prefs->SetBoolean(apps::prefs::kAppLauncherHasBeenEnabled,
-                      prefs->GetBoolean(apps::prefs::kAppLauncherIsEnabled));
-    prefs->ClearPref(apps::prefs::kAppLauncherIsEnabled);
-  }
+  MigrateAppLauncherEnabledPref();
 }
 
 Profile* AppListController::GetCurrentAppListProfile() {
