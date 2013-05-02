@@ -28,11 +28,11 @@ modules/indexeddb/IDBRequest
 modules/indexeddb/IDBTransaction
 modules/mediasource/MediaSource
 modules/mediasource/SourceBufferList
-modules/mediastream/MediaStream conditional=MEDIA_STREAM
-modules/mediastream/MediaStreamTrack conditional=MEDIA_STREAM
-modules/mediastream/RTCDataChannel conditional=MEDIA_STREAM
-modules/mediastream/RTCDTMFSender conditional=MEDIA_STREAM
-modules/mediastream/RTCPeerConnection conditional=MEDIA_STREAM
+modules/mediastream/MediaStream
+modules/mediastream/MediaStreamTrack
+modules/mediastream/RTCDataChannel
+modules/mediastream/RTCDTMFSender
+modules/mediastream/RTCPeerConnection
 modules/notifications/Notification conditional=NOTIFICATIONS|LEGACY_NOTIFICATIONS
 modules/speech/SpeechRecognition
 modules/speech/SpeechSynthesisUtterance

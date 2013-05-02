@@ -24,7 +24,6 @@
  */
 
 [
-    Conditional=MEDIA_STREAM,
     ActiveDOMObject,
     EventTarget
 ] interface RTCDTMFSender {

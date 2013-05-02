@@ -31,11 +31,11 @@ WheelEvent
 core/xml/XMLHttpRequestProgressEvent
 modules/webaudio/AudioProcessingEvent conditional=WEB_AUDIO
 modules/webaudio/OfflineAudioCompletionEvent conditional=WEB_AUDIO
-modules/mediastream/MediaStreamEvent conditional=MEDIA_STREAM
-modules/mediastream/MediaStreamTrackEvent conditional=MEDIA_STREAM
-modules/mediastream/RTCIceCandidateEvent conditional=MEDIA_STREAM
-modules/mediastream/RTCDataChannelEvent conditional=MEDIA_STREAM
-modules/mediastream/RTCDTMFToneChangeEvent conditional=MEDIA_STREAM
+modules/mediastream/MediaStreamEvent
+modules/mediastream/MediaStreamTrackEvent
+modules/mediastream/RTCIceCandidateEvent
+modules/mediastream/RTCDataChannelEvent
+modules/mediastream/RTCDTMFToneChangeEvent
 core/page/SpeechInputEvent conditional=INPUT_SPEECH
 modules/speech/SpeechRecognitionError
 modules/speech/SpeechRecognitionEvent

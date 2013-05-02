@@ -24,9 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Conditional=MEDIA_STREAM,
-] partial interface DOMWindow {
+partial interface DOMWindow {
     [EnabledAtRuntime=mediaStream] attribute MediaStreamConstructor webkitMediaStream;
     [EnabledAtRuntime=peerConnection] attribute RTCPeerConnectionConstructor webkitRTCPeerConnection;
     attribute RTCSessionDescriptionConstructor RTCSessionDescription;

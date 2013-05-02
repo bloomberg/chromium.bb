@@ -17,9 +17,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-[
-    Conditional=MEDIA_STREAM,
-] partial interface Navigator {
+partial interface Navigator {
     [EnabledAtRuntime=mediaStream, RaisesException] void webkitGetUserMedia(Dictionary options,
                                                  NavigatorUserMediaSuccessCallback successCallback,
                                                  optional NavigatorUserMediaErrorCallback errorCallback);

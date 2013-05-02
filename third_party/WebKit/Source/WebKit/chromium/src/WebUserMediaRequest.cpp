@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "WebUserMediaRequest.h"
 
 #include "WebDocument.h"
@@ -129,6 +127,3 @@ WebUserMediaRequest::operator UserMediaRequest*() const
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(MEDIA_STREAM)
-

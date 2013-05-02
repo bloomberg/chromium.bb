@@ -25,8 +25,6 @@
 #ifndef RTCStatsRequestImpl_h
 #define RTCStatsRequestImpl_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "core/dom/ActiveDOMObject.h"
 #include "core/platform/mediastream/RTCStatsRequest.h"
 #include "modules/mediastream/RTCStatsResponse.h"
@@ -64,7 +62,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // RTCStatsRequestImpl_h

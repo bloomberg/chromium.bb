@@ -24,8 +24,6 @@
 
 #include "config.h"
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "modules/mediastream/RTCIceCandidateEvent.h"
 
 #include "core/dom/EventNames.h"
@@ -70,6 +68,4 @@ const AtomicString& RTCIceCandidateEvent::interfaceName() const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 

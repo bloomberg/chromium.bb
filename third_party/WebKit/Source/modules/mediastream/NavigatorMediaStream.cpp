@@ -23,8 +23,6 @@
 #include "config.h"
 #include "modules/mediastream/NavigatorMediaStream.h"
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "bindings/v8/Dictionary.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -67,5 +65,3 @@ void NavigatorMediaStream::webkitGetUserMedia(Navigator* navigator, const Dictio
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)

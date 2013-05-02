@@ -29,8 +29,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE_WEBRTC
 #include "WebUserMediaClientMock.h"
 
 #include "MockConstraints.h"
@@ -133,5 +131,3 @@ void WebUserMediaClientMock::cancelUserMediaRequest(const WebUserMediaRequest&)
 }
 
 }
-
-#endif // ENABLE_WEBRTC

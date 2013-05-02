@@ -80,6 +80,7 @@
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
+#include "modules/mediastream/MediaStreamRegistry.h"
 #include "modules/mediasource/MediaSource.h"
 #include "modules/mediasource/MediaSourceRegistry.h"
 #include <wtf/CurrentTime.h>
@@ -100,10 +101,6 @@
 #if ENABLE(WEB_AUDIO)
 #include "core/platform/audio/AudioSourceProvider.h"
 #include "modules/webaudio/MediaElementAudioSourceNode.h"
-#endif
-
-#if ENABLE(MEDIA_STREAM)
-#include "modules/mediastream/MediaStreamRegistry.h"
 #endif
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
@@ -834,10 +831,8 @@ void HTMLMediaElement::loadResource(const KURL& initialURL, ContentType& content
 
     LOG(Media, "HTMLMediaElement::loadResource - m_currentSrc -> %s", urlForLoggingMedia(m_currentSrc).utf8().data());
 
-#if ENABLE(MEDIA_STREAM)
     if (MediaStreamRegistry::registry().lookupMediaStreamDescriptor(url.string()))
-        removeBehaviorRestriction(RequireUserGestureForRateChangeRestriction);
-#endif
+      removeBehaviorRestriction(RequireUserGestureForRateChangeRestriction);
 
     if (m_sendProgressEvents)
         startProgressEventTimer();

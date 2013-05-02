@@ -32,8 +32,6 @@
 #ifndef MediaStreamSourcesQueryClient_h
 #define MediaStreamSourcesQueryClient_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "core/platform/mediastream/MediaStreamSource.h"
 
 namespace WebCore {
@@ -49,7 +47,5 @@ public:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // MediaStreamSourcesQueryClient_h

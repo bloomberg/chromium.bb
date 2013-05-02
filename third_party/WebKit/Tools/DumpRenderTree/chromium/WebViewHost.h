@@ -238,9 +238,7 @@ private:
 
     void updateViewportSize();
 
-#if ENABLE(MEDIA_STREAM)
     webkit_support::TestMediaStreamClient* testMediaStreamClient();
-#endif
 
     // Non-owning pointer. The WebViewHost instance is owned by this TestShell instance.
     TestShell* m_shell;
@@ -272,9 +270,7 @@ private:
 
     OwnPtr<WebKit::WebContextMenuData> m_lastContextMenuData;
 
-#if ENABLE(MEDIA_STREAM)
     OwnPtr<webkit_support::TestMediaStreamClient> m_testMediaStreamClient;
-#endif
 
     OwnPtr<TestNavigationController> m_navigationController;
 

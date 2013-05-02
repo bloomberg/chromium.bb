@@ -24,8 +24,6 @@
 
 #include "config.h"
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "modules/mediastream/RTCStatsResponse.h"
 
 namespace WebCore {
@@ -60,5 +58,3 @@ void RTCStatsResponse::addStatistic(size_t report, String name, String value)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)

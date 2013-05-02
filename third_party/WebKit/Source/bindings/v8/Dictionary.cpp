@@ -55,10 +55,8 @@
 #include "V8TextTrack.h"
 #include "core/html/track/TrackBase.h"
 
-#if ENABLE(MEDIA_STREAM)
 #include "V8MediaStream.h"
 #include "modules/mediastream/MediaStream.h"
-#endif
 
 namespace WebCore {
 
@@ -414,7 +412,6 @@ bool Dictionary::get(const String& key, RefPtr<SpeechRecognitionResultList>& val
     return true;
 }
 
-#if ENABLE(MEDIA_STREAM)
 bool Dictionary::get(const String& key, RefPtr<MediaStream>& value) const
 {
     v8::Local<v8::Value> v8Value;
@@ -426,7 +423,6 @@ bool Dictionary::get(const String& key, RefPtr<MediaStream>& value) const
         value = V8MediaStream::toNative(v8::Handle<v8::Object>::Cast(v8Value));
     return true;
 }
-#endif
 
 bool Dictionary::get(const String& key, RefPtr<EventTarget>& value) const
 {

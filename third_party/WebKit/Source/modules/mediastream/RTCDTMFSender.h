@@ -26,8 +26,6 @@
 #ifndef RTCDTMFSender_h
 #define RTCDTMFSender_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventTarget.h"
 #include "core/platform/Timer.h"
@@ -96,7 +94,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // RTCDTMFSender_h

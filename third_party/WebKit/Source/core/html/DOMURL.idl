@@ -30,9 +30,7 @@
     ImplementationLacksVTable
 ] interface DOMURL {
     [CallWith=ScriptExecutionContext,TreatReturnedNullStringAs=Null] static DOMString createObjectURL(MediaSource? source);
-#if defined(ENABLE_MEDIA_STREAM) && ENABLE_MEDIA_STREAM
     [CallWith=ScriptExecutionContext,TreatReturnedNullStringAs=Null] static DOMString createObjectURL(MediaStream? stream);
-#endif
     [CallWith=ScriptExecutionContext,TreatReturnedNullStringAs=Null] static DOMString createObjectURL(Blob? blob);
     [CallWith=ScriptExecutionContext] static void revokeObjectURL(DOMString url);
 };

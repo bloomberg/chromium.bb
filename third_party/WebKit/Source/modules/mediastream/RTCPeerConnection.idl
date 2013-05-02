@@ -29,7 +29,6 @@
  */
 
 [
-    Conditional=MEDIA_STREAM,
     ActiveDOMObject,
     Constructor(Dictionary rtcIceServers, optional Dictionary mediaConstraints),
     RaisesException,

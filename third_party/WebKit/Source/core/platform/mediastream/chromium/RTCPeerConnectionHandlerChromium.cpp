@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "core/platform/mediastream/chromium/RTCPeerConnectionHandlerChromium.h"
 
 #include "core/platform/mediastream/MediaConstraints.h"
@@ -219,5 +217,3 @@ void RTCPeerConnectionHandlerChromium::didAddRemoteDataChannel(WebKit::WebRTCDat
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)

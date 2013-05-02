@@ -51,13 +51,11 @@
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/platform/MIMETypeRegistry.h"
+#include "core/platform/mediastream/chromium/RTCPeerConnectionHandlerChromium.h"
 #include "core/platform/network/HTTPParsers.h"
 #include "core/platform/network/ResourceHandleInternal.h"
 #include "core/plugins/PluginData.h"
 #include "core/rendering/HitTestResult.h"
-#if ENABLE(MEDIA_STREAM)
-#include "core/platform/mediastream/chromium/RTCPeerConnectionHandlerChromium.h"
-#endif
 #include <v8.h>
 #include "WebAutofillClient.h"
 #include "WebCachedURLRequest.h"
@@ -1343,12 +1341,10 @@ void FrameLoaderClientImpl::dispatchWillOpenSocketStream(SocketStreamHandle* han
     m_webFrame->client()->willOpenSocketStream(SocketStreamHandleInternal::toWebSocketStreamHandle(handle));
 }
 
-#if ENABLE(MEDIA_STREAM)
 void FrameLoaderClientImpl::dispatchWillStartUsingPeerConnectionHandler(RTCPeerConnectionHandler* handler)
 {
     m_webFrame->client()->willStartUsingPeerConnectionHandler(webFrame(), RTCPeerConnectionHandlerChromium::toWebRTCPeerConnectionHandler(handler));
 }
-#endif
 
 void FrameLoaderClientImpl::didRequestAutocomplete(PassRefPtr<FormState> formState)
 {

@@ -31,8 +31,6 @@
 
 #include "config.h"
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "modules/mediastream/UserMediaRequest.h"
 
 #include "bindings/v8/Dictionary.h"
@@ -168,5 +166,3 @@ void UserMediaRequest::contextDestroyed()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)

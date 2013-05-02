@@ -31,8 +31,6 @@
 #ifndef RTCVoidRequestImpl_h
 #define RTCVoidRequestImpl_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "core/dom/ActiveDOMObject.h"
 #include "core/platform/mediastream/RTCVoidRequest.h"
 
@@ -62,8 +60,6 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // RTCVoidRequestImpl_h
 

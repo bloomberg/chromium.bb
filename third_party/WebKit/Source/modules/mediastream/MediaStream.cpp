@@ -26,8 +26,6 @@
 #include "config.h"
 #include "modules/mediastream/MediaStream.h"
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "core/dom/Event.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/platform/mediastream/MediaStreamCenter.h"
@@ -356,5 +354,3 @@ void MediaStream::scheduledEventTimerFired(Timer<MediaStream>*)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)

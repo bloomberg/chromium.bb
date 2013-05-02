@@ -25,8 +25,6 @@
 #ifndef RTCStatsResponseBase_h
 #define RTCStatsResponseBase_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>
@@ -42,8 +40,6 @@ public:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // RTCStatsResponseBase_h
 

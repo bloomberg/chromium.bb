@@ -32,8 +32,6 @@
 #ifndef MediaStreamCenter_h
 #define MediaStreamCenter_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include <wtf/PassRefPtr.h>
 #include <wtf/text/WTFString.h>
 
@@ -65,7 +63,5 @@ protected:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // MediaStreamCenter_h

@@ -62,7 +62,6 @@ void MockPlatform::cryptographicallyRandomValues(unsigned char*, size_t)
     CRASH();
 }
 
-#if ENABLE(MEDIA_STREAM)
 WebMediaStreamCenter* MockPlatform::createMediaStreamCenter(WebMediaStreamCenterClient* client)
 {
     ASSERT(m_interfaces);
@@ -79,4 +78,3 @@ WebRTCPeerConnectionHandler* MockPlatform::createRTCPeerConnectionHandler(WebRTC
 
     return m_interfaces->createWebRTCPeerConnectionHandler(client);
 }
-#endif // ENABLE(MEDIA_STREAM)

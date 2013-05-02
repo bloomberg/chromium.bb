@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "modules/mediastream/RTCDTMFSender.h"
 
 #include "core/dom/ExceptionCode.h"
@@ -176,5 +174,3 @@ void RTCDTMFSender::scheduledEventTimerFired(Timer<RTCDTMFSender>*)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)

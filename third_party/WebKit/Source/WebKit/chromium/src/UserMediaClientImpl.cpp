@@ -29,8 +29,6 @@
  */
 
 #include "config.h"
-#if ENABLE(MEDIA_STREAM)
-
 #include "UserMediaClientImpl.h"
 
 #include "WebUserMediaClient.h"
@@ -69,5 +67,3 @@ void UserMediaClientImpl::cancelUserMediaRequest(UserMediaRequest* request)
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(MEDIA_STREAM)

@@ -28,9 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Conditional=MEDIA_STREAM
-] callback interface RTCSessionDescriptionCallback {
+callback interface RTCSessionDescriptionCallback {
     boolean handleEvent(RTCSessionDescription sdp);
 };
 

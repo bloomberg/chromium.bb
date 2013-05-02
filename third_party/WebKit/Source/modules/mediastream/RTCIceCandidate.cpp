@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "modules/mediastream/RTCIceCandidate.h"
 
 #include "bindings/v8/Dictionary.h"
@@ -94,5 +92,3 @@ RTCIceCandidateDescriptor* RTCIceCandidate::descriptor()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)

@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "core/platform/mediastream/chromium/RTCDTMFSenderHandlerChromium.h"
 
 #include "core/platform/mediastream/RTCDTMFSenderHandlerClient.h"
@@ -80,5 +78,3 @@ void RTCDTMFSenderHandlerChromium::didPlayTone(const WebString& tone) const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)

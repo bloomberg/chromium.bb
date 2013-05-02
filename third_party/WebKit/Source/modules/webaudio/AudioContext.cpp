@@ -36,6 +36,7 @@
 #include "core/platform/audio/FFTFrame.h"
 #include "core/platform/audio/HRTFDatabaseLoader.h"
 #include "core/platform/audio/HRTFPanner.h"
+#include "modules/mediastream/MediaStream.h"
 #include "modules/webaudio/AnalyserNode.h"
 #include "modules/webaudio/AsyncAudioDecoder.h"
 #include "modules/webaudio/AudioBuffer.h"
@@ -53,6 +54,8 @@
 #include "modules/webaudio/DynamicsCompressorNode.h"
 #include "modules/webaudio/GainNode.h"
 #include "modules/webaudio/MediaElementAudioSourceNode.h"
+#include "modules/webaudio/MediaStreamAudioDestinationNode.h"
+#include "modules/webaudio/MediaStreamAudioSourceNode.h"
 #include "modules/webaudio/OfflineAudioCompletionEvent.h"
 #include "modules/webaudio/OfflineAudioDestinationNode.h"
 #include "modules/webaudio/OscillatorNode.h"
@@ -62,12 +65,6 @@
 #include "modules/webaudio/WaveTable.h"
 #include "wtf/MemoryInstrumentationHashSet.h"
 #include "wtf/MemoryInstrumentationVector.h"
-
-#if ENABLE(MEDIA_STREAM)
-#include "modules/mediastream/MediaStream.h"
-#include "modules/webaudio/MediaStreamAudioDestinationNode.h"
-#include "modules/webaudio/MediaStreamAudioSourceNode.h"
-#endif
 
 #if DEBUG_AUDIONODE_REFERENCES
 #include <stdio.h>
@@ -370,7 +367,6 @@ PassRefPtr<MediaElementAudioSourceNode> AudioContext::createMediaElementSource(H
     return node;
 }
 
-#if ENABLE(MEDIA_STREAM)
 PassRefPtr<MediaStreamAudioSourceNode> AudioContext::createMediaStreamSource(MediaStream* mediaStream, ExceptionCode& ec)
 {
     ASSERT(mediaStream);
@@ -412,8 +408,6 @@ PassRefPtr<MediaStreamAudioDestinationNode> AudioContext::createMediaStreamDesti
     // FIXME: The default should probably be stereo instead of mono.
     return MediaStreamAudioDestinationNode::create(this, 1);
 }
-
-#endif
 
 PassRefPtr<ScriptProcessorNode> AudioContext::createScriptProcessor(size_t bufferSize, ExceptionCode& ec)
 {

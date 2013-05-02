@@ -22,9 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Conditional=MEDIA_STREAM
-] interface RTCStatsResponse {
+interface RTCStatsResponse {
     sequence<RTCStatsReport> result();
     getter RTCStatsReport namedItem([Default=Undefined] optional DOMString name);
 };

@@ -40,13 +40,10 @@
 #include "core/platform/network/ResourceRequest.h"
 #include "modules/mediasource/MediaSource.h"
 #include "modules/mediasource/MediaSourceRegistry.h"
-#include <wtf/MainThread.h>
-#include <wtf/PassOwnPtr.h>
-
-#if ENABLE(MEDIA_STREAM)
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
-#endif
+#include <wtf/MainThread.h>
+#include <wtf/PassOwnPtr.h>
 
 namespace WebCore {
 
@@ -68,7 +65,6 @@ String DOMURL::createObjectURL(ScriptExecutionContext* scriptExecutionContext, M
     return publicURL.string();
 }
 
-#if ENABLE(MEDIA_STREAM)
 String DOMURL::createObjectURL(ScriptExecutionContext* scriptExecutionContext, MediaStream* stream)
 {
     if (!scriptExecutionContext || !stream)
@@ -86,7 +82,6 @@ String DOMURL::createObjectURL(ScriptExecutionContext* scriptExecutionContext, M
 
     return publicURL.string();
 }
-#endif
 
 String DOMURL::createObjectURL(ScriptExecutionContext* scriptExecutionContext, Blob* blob)
 {
@@ -122,7 +117,6 @@ void DOMURL::revokeObjectURL(ScriptExecutionContext* scriptExecutionContext, con
         MediaSourceRegistry::registry().unregisterMediaSourceURL(url);
         sourceURLs.remove(url.string());
     }
-#if ENABLE(MEDIA_STREAM)
     HashSet<String>& streamURLs = scriptExecutionContext->publicURLManager().streamURLs();
     if (streamURLs.contains(url.string())) {
         // FIXME: make sure of this assertion below. Raise a spec question if required.
@@ -131,7 +125,6 @@ void DOMURL::revokeObjectURL(ScriptExecutionContext* scriptExecutionContext, con
         MediaStreamRegistry::registry().unregisterMediaStreamURL(url);
         streamURLs.remove(url.string());
     }
-#endif
 }
 
 } // namespace WebCore

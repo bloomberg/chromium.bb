@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "modules/mediastream/MediaConstraintsImpl.h"
 
 #include "bindings/v8/ArrayValue.h"
@@ -157,5 +155,3 @@ bool MediaConstraintsImpl::getOptionalConstraintValue(const String& name, String
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)

@@ -986,13 +986,9 @@ void WebTestProxyBase::showContextMenu(WebFrame*, const WebContextMenuData& cont
 
 WebUserMediaClient* WebTestProxyBase::userMediaClient()
 {
-#if ENABLE_WEBRTC
     if (!m_userMediaClient.get())
         m_userMediaClient.reset(new WebUserMediaClientMock(m_delegate));
     return m_userMediaClient.get();
-#else
-    return 0;
-#endif // ENABLE_WEBRTC
 }
 
 WebMediaPlayer* WebTestProxyBase::createMediaPlayer(WebFrame* frame, const WebURL& url, WebMediaPlayerClient* client)

@@ -25,8 +25,6 @@
 #include "config.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "core/platform/KURL.h"
 #include "modules/mediastream/MediaStream.h"
 #include "wtf/MainThread.h"
@@ -60,5 +58,3 @@ MediaStreamDescriptor* MediaStreamRegistry::lookupMediaStreamDescriptor(const St
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)

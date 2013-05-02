@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "modules/mediastream/RTCSessionDescriptionRequestImpl.h"
 
 #include "core/platform/mediastream/RTCSessionDescriptionDescriptor.h"
@@ -90,5 +88,3 @@ void RTCSessionDescriptionRequestImpl::clear()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)

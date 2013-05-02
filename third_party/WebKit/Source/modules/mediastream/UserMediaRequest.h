@@ -31,8 +31,6 @@
 #ifndef UserMediaRequest_h
 #define UserMediaRequest_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ExceptionBase.h"
 #include "core/platform/mediastream/MediaStreamSource.h"
@@ -90,7 +88,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // UserMediaRequest_h

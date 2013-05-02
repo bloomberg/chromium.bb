@@ -26,8 +26,6 @@
 #ifndef RTCDTMFSenderHandler_h
 #define RTCDTMFSenderHandler_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {
@@ -47,7 +45,5 @@ public:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // RTCDTMFSenderHandler_h

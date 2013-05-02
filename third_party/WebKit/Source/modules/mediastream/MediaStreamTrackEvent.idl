@@ -22,9 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Conditional=MEDIA_STREAM,
-] interface MediaStreamTrackEvent : Event {
+interface MediaStreamTrackEvent : Event {
    readonly attribute MediaStreamTrack track;
 };
 

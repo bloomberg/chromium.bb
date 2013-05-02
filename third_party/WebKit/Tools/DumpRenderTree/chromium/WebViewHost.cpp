@@ -721,11 +721,7 @@ void WebViewHost::captureHistoryForWindow(WebTestProxyBase* proxy, WebVector<Web
 WebMediaPlayer* WebViewHost::createWebMediaPlayer(WebFrame* frame, const WebURL& url, WebMediaPlayerClient* client)
 {
     return webkit_support::CreateMediaPlayer(frame, url, client,
-#if ENABLE(MEDIA_STREAM)
         testMediaStreamClient()
-#else
-        0
-#endif
         );
 }
 
@@ -992,11 +988,9 @@ void WebViewHost::exitFullScreenNow()
     webView()->didExitFullScreen();
 }
 
-#if ENABLE(MEDIA_STREAM)
 webkit_support::TestMediaStreamClient* WebViewHost::testMediaStreamClient()
 {
     if (!m_testMediaStreamClient.get())
         m_testMediaStreamClient = adoptPtr(new webkit_support::TestMediaStreamClient());
     return m_testMediaStreamClient.get();
 }
-#endif

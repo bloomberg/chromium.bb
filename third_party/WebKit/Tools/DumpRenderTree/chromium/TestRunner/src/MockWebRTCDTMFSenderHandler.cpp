@@ -25,7 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE_WEBRTC
 #include "MockWebRTCDTMFSenderHandler.h"
 
 #include "WebTestDelegate.h"
@@ -94,5 +93,3 @@ bool MockWebRTCDTMFSenderHandler::insertDTMF(const WebString& tones, long durati
 }
 
 }
-
-#endif // ENABLE_WEBRTC

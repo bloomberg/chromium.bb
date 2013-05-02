@@ -31,8 +31,6 @@
 #ifndef RTCPeerConnectionHandlerChromium_h
 #define RTCPeerConnectionHandlerChromium_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "core/platform/mediastream/MediaStreamDescriptor.h"
 #include "core/platform/mediastream/RTCPeerConnectionHandler.h"
 #include <public/WebRTCPeerConnectionHandler.h>
@@ -91,7 +89,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // RTCPeerConnectionHandlerChromium_h

@@ -30,8 +30,8 @@ SpeechInput default=true
 ScriptedSpeech
 FileSystem
 JavaScriptI18NAPI condition=JAVASCRIPT_I18N_API
-MediaStream condition=MEDIA_STREAM, default=true
-PeerConnection condition=MEDIA_STREAM, default=true, depends_on=MediaStream
+MediaStream default=true
+PeerConnection default=true, depends_on=MediaStream
 WebkitGetGamepads
 Quota
 MediaSource

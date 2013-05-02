@@ -47,19 +47,15 @@ public:
     void setInterfaces(WebTestRunner::WebTestInterfaces*);
     virtual void cryptographicallyRandomValues(unsigned char* buffer, size_t length) OVERRIDE;
 
-#if ENABLE(MEDIA_STREAM)
     virtual WebKit::WebMediaStreamCenter* createMediaStreamCenter(WebKit::WebMediaStreamCenterClient*) OVERRIDE;
     virtual WebKit::WebRTCPeerConnectionHandler* createRTCPeerConnectionHandler(WebKit::WebRTCPeerConnectionHandlerClient*) OVERRIDE;
-#endif // ENABLE(MEDIA_STREAM)
 
 private:
     MockPlatform();
 
     WebTestRunner::WebTestInterfaces* m_interfaces;
 
-#if ENABLE(MEDIA_STREAM)
     OwnPtr<WebKit::WebMediaStreamCenter> m_mockMediaStreamCenter;
-#endif // ENABLE(MEDIA_STREAM)
 };
 
 #endif // MockPlatform_h

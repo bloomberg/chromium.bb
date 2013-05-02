@@ -31,8 +31,6 @@
 #ifndef RTCPeerConnection_h
 #define RTCPeerConnection_h
 
-#if ENABLE(MEDIA_STREAM)
-
 #include "bindings/v8/Dictionary.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventTarget.h"
@@ -165,7 +163,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(MEDIA_STREAM)
 
 #endif // RTCPeerConnection_h
