@@ -17,11 +17,23 @@ namespace {
 const int kReadBufferSize = 65536;
 
 // Defines set of transient errors. These errors are ignored when we get them
-// from sendto() calls.
+// from sendto() or recvfrom() calls.
+//
+// net::ERR_OUT_OF_MEMORY
+//
+// This is caused by ENOBUFS which means the buffer of the network interface
+// is full.
+//
+// net::ERR_CONNECTION_RESET
+//
+// This is caused by WSAENETRESET or WSAECONNRESET which means the
+// last send resulted in an "ICMP Port Unreachable" message.
 bool IsTransientError(int error) {
   return error == net::ERR_ADDRESS_UNREACHABLE ||
          error == net::ERR_ADDRESS_INVALID ||
-         error == net::ERR_ACCESS_DENIED;
+         error == net::ERR_ACCESS_DENIED ||
+         error == net::ERR_CONNECTION_RESET ||
+         error == net::ERR_OUT_OF_MEMORY;
 }
 
 }  // namespace
