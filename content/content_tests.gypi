@@ -311,7 +311,6 @@
         'browser/loader/resource_scheduler_unittest.cc',
         'browser/mach_broker_mac_unittest.cc',
         'browser/media/media_internals_unittest.cc',
-        'browser/media/webrtc_internals_unittest.cc',
         'browser/net/sqlite_persistent_cookie_store_unittest.cc',
         'browser/notification_service_impl_unittest.cc',
         'browser/plugin_loader_posix_unittest.cc',
@@ -399,7 +398,6 @@
         'renderer/media/audio_renderer_mixer_manager_unittest.cc',
         'renderer/media/video_capture_impl_unittest.cc',
         'renderer/media/video_capture_message_filter_unittest.cc',
-        'renderer/media/webrtc_local_audio_track_unittest.cc',
         'renderer/paint_aggregator_unittest.cc',
         'renderer/pepper/pepper_broker_impl_unittest.cc',
         'renderer/render_thread_impl_unittest.cc',
@@ -588,6 +586,7 @@
         }],
         ['enable_webrtc==1', {
           'sources': [
+            'browser/media/webrtc_internals_unittest.cc',
             'browser/renderer_host/p2p/socket_host_test_utils.h',
             'browser/renderer_host/p2p/socket_host_tcp_unittest.cc',
             'browser/renderer_host/p2p/socket_host_tcp_server_unittest.cc',
@@ -597,6 +596,7 @@
             'renderer/media/media_stream_impl_unittest.cc',
             'renderer/media/rtc_peer_connection_handler_unittest.cc',
             'renderer/media/webrtc_audio_device_unittest.cc',
+            'renderer/media/webrtc_local_audio_track_unittest.cc',
           ],
           'dependencies': [
             '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',
