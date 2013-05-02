@@ -156,6 +156,7 @@ void DisconnectWindowGtk::Start(
   PangoAttribute* text_color = pango_attr_foreground_new(0, 0, 0);
   pango_attr_list_insert(attributes, text_color);
   gtk_label_set_attributes(GTK_LABEL(message_), attributes);
+  pango_attr_list_unref(attributes);
 
   gtk_widget_show_all(disconnect_window_);
 

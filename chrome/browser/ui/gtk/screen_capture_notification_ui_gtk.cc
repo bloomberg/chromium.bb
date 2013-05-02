@@ -129,6 +129,7 @@ void ScreenCaptureNotificationUIGtk::CreateWindow(const string16& title) {
   PangoAttribute* text_color = pango_attr_foreground_new(0, 0, 0);
   pango_attr_list_insert(attributes, text_color);
   gtk_label_set_attributes(GTK_LABEL(message_), attributes);
+  pango_attr_list_unref(attributes);
 
   std::string text = l10n_util::GetStringFUTF8(
       IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_TEXT, title);
