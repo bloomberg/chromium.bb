@@ -63,13 +63,10 @@
 #include "core/rendering/style/ContentData.h"
 #include "core/rendering/style/CounterContent.h"
 #include "core/rendering/style/CursorList.h"
+#include "core/rendering/style/ExclusionShapeValue.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/StyleInheritedData.h"
 #include <wtf/text/StringBuilder.h>
-
-#if ENABLE(CSS_EXCLUSIONS)
-#include "core/rendering/style/ExclusionShapeValue.h"
-#endif
 
 #include "core/css/WebKitCSSArrayFunctionValue.h"
 #include "core/css/WebKitCSSMixFunctionValue.h"
@@ -316,10 +313,8 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitPerspectiveOrigin,
     CSSPropertyWebkitPrintColorAdjust,
     CSSPropertyWebkitRtlOrdering,
-#if ENABLE(CSS_EXCLUSIONS)
     CSSPropertyWebkitShapeInside,
     CSSPropertyWebkitShapeOutside,
-#endif
     CSSPropertyWebkitTapHighlightColor,
     CSSPropertyWebkitTextCombine,
     CSSPropertyWebkitTextDecorationsInEffect,
@@ -351,12 +346,10 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitRegionBreakInside,
 #endif
     CSSPropertyWebkitAppRegion,
-#if ENABLE(CSS_EXCLUSIONS)
     CSSPropertyWebkitWrapFlow,
     CSSPropertyWebkitShapeMargin,
     CSSPropertyWebkitShapePadding,
     CSSPropertyWebkitWrapThrough,
-#endif
 #if ENABLE(SVG)
     CSSPropertyBufferedRendering,
     CSSPropertyClipPath,
@@ -2572,7 +2565,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyWebkitRegionOverflow:
             return cssValuePool().createValue(style->regionOverflow());
 #endif
-#if ENABLE(CSS_EXCLUSIONS)
         case CSSPropertyWebkitWrapFlow:
             return cssValuePool().createValue(style->wrapFlow());
         case CSSPropertyWebkitShapeMargin:
@@ -2593,7 +2585,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return valueForBasicShape(style->shapeOutside()->shape());
         case CSSPropertyWebkitWrapThrough:
             return cssValuePool().createValue(style->wrapThrough());
-#endif
         case CSSPropertyWebkitFilter:
             return valueForFilter(renderer, style.get());
 #if ENABLE(CSS_COMPOSITING)
@@ -2739,9 +2730,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyWebkitTransformOriginX:
         case CSSPropertyWebkitTransformOriginY:
         case CSSPropertyWebkitTransformOriginZ:
-#if ENABLE(CSS_EXCLUSIONS)
         case CSSPropertyWebkitWrap:
-#endif
             break;
 
 #if ENABLE(CSS_DEVICE_ADAPTATION)

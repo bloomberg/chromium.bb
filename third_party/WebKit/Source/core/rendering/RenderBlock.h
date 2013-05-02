@@ -27,20 +27,18 @@
 #include "core/platform/graphics/TextRun.h"
 #include "core/platform/text/TextBreakIterator.h"
 #include "core/rendering/ColumnInfo.h"
+#include "core/rendering/exclusions/ExclusionShapeInsideInfo.h"
 #include "core/rendering/GapRects.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderLineBoxList.h"
 #include "core/rendering/RootInlineBox.h"
+#include "core/rendering/style/ExclusionShapeValue.h"
 #include <wtf/ListHashSet.h>
 #include <wtf/OwnPtr.h>
 
-#if ENABLE(CSS_EXCLUSIONS)
-#include "core/rendering/exclusions/ExclusionShapeInsideInfo.h"
-#include "core/rendering/style/ExclusionShapeValue.h"
-#endif
-
 namespace WebCore {
 
+class BasicShape;
 class BidiContext;
 class InlineIterator;
 class LayoutStateMaintainer;
@@ -53,9 +51,6 @@ struct BidiRun;
 struct PaintInfo;
 class LineInfo;
 class RenderRubyRun;
-#if ENABLE(CSS_EXCLUSIONS)
-class BasicShape;
-#endif
 class TextLayout;
 class WordMeasurement;
 
@@ -445,7 +440,6 @@ public:
     void showLineTreeAndMark(const InlineBox* = 0, const char* = 0, const InlineBox* = 0, const char* = 0, const RenderObject* = 0) const;
 #endif
 
-#if ENABLE(CSS_EXCLUSIONS)
     ExclusionShapeInsideInfo* ensureExclusionShapeInsideInfo()
     {
         if (!m_rareData || !m_rareData->m_shapeInsideInfo)
@@ -464,7 +458,6 @@ public:
     }
     ExclusionShapeInsideInfo* layoutExclusionShapeInsideInfo() const;
     bool allowsExclusionShapeInsideInfoSharing() const { return !isInline() && !isFloating(); }
-#endif
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
     static void reportStaticMembersMemoryUsage(MemoryInstrumentation*);
@@ -582,10 +575,9 @@ protected:
     virtual void checkForPaginationLogicalHeightChange(LayoutUnit& pageLogicalHeight, bool& pageLogicalHeightChanged, bool& hasSpecifiedPageLogicalHeight);
 
 private:
-#if ENABLE(CSS_EXCLUSIONS)
     void computeExclusionShapeSize();
     void updateExclusionShapeInsideInfoAfterStyleChange(const ExclusionShapeValue*, const ExclusionShapeValue* oldExclusionShape);
-#endif
+
     virtual RenderObjectChildList* virtualChildren() OVERRIDE FINAL { return children(); }
     virtual const RenderObjectChildList* virtualChildren() const OVERRIDE FINAL { return children(); }
 
@@ -774,11 +766,9 @@ private:
 
     LayoutUnit xPositionForFloatIncludingMargin(const FloatingObject* child) const
     {
-#if ENABLE(CSS_EXCLUSIONS)
         ExclusionShapeOutsideInfo *shapeOutside = child->renderer()->exclusionShapeOutsideInfo();
         if (shapeOutside)
             return child->x();
-#endif
 
         if (isHorizontalWritingMode())
             return child->x() + child->renderer()->marginLeft();
@@ -788,11 +778,9 @@ private:
         
     LayoutUnit yPositionForFloatIncludingMargin(const FloatingObject* child) const
     {
-#if ENABLE(CSS_EXCLUSIONS)
         ExclusionShapeOutsideInfo *shapeOutside = child->renderer()->exclusionShapeOutsideInfo();
         if (shapeOutside)
             return child->y();
-#endif
 
         if (isHorizontalWritingMode())
             return child->y() + marginBeforeForChild(child->renderer());
@@ -1151,9 +1139,7 @@ protected:
             , m_highValue(highValue)
             , m_offset(offset)
             , m_heightRemaining(heightRemaining)
-#if ENABLE(CSS_EXCLUSIONS)
             , m_last(0)
-#endif
         {
         }
         
@@ -1161,7 +1147,6 @@ protected:
         inline int highValue() const { return m_highValue; }
         void collectIfNeeded(const IntervalType&) const;
 
-#if ENABLE(CSS_EXCLUSIONS)
         // When computing the offset caused by the floats on a given line, if
         // the outermost float on that line has a shape-outside, the inline
         // content that butts up against that float must be positioned using
@@ -1169,7 +1154,6 @@ protected:
         // last float encountered so that the offset can be computed correctly
         // by the code using this adapter.
         const FloatingObject* lastFloat() const { return m_last; }
-#endif
 
     private:
         const RenderBlock* m_renderer;
@@ -1177,14 +1161,12 @@ protected:
         int m_highValue;
         LayoutUnit& m_offset;
         LayoutUnit* m_heightRemaining;
-#if ENABLE(CSS_EXCLUSIONS)
         // This member variable is mutable because the collectIfNeeded method
         // is declared as const, even though it doesn't actually respect that
         // contract. It modifies other member variables via loopholes in the
         // const behavior. Instead of using loopholes, I decided it was better
         // to make the fact that this is modified in a const method explicit.
         mutable const FloatingObject* m_last;
-#endif
     };
 
     void createFloatingObjects();
@@ -1271,9 +1253,7 @@ public:
         RootInlineBox* m_lineGridBox;
 
         RootInlineBox* m_lineBreakToAvoidWidow;
-#if ENABLE(CSS_EXCLUSIONS)
         OwnPtr<ExclusionShapeInsideInfo> m_shapeInsideInfo;
-#endif
         bool m_shouldBreakAtLineToAvoidWidow : 1;
         bool m_discardMarginBefore : 1;
         bool m_discardMarginAfter : 1;

@@ -449,10 +449,8 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
             || rareNonInheritedData->m_gridItem.get() != other->rareNonInheritedData->m_gridItem.get())
             return StyleDifferenceLayout;
 
-#if ENABLE(CSS_EXCLUSIONS)
         if (rareNonInheritedData->m_shapeInside != other->rareNonInheritedData->m_shapeInside)
             return StyleDifferenceLayout;
-#endif
     }
 
     if (rareInheritedData.get() != other->rareInheritedData.get()) {

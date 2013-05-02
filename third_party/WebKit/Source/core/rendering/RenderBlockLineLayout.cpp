@@ -26,6 +26,7 @@
 #include "core/platform/Logging.h"
 #include "core/platform/text/BidiResolver.h"
 #include "core/platform/text/Hyphenation.h"
+#include "core/rendering/exclusions/ExclusionShapeInsideInfo.h"
 #include "core/rendering/InlineIterator.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderArena.h"
@@ -45,10 +46,6 @@
 #include <wtf/StdLibExtras.h>
 #include <wtf/unicode/CharacterNames.h>
 #include <wtf/Vector.h>
-
-#if ENABLE(CSS_EXCLUSIONS)
-#include "core/rendering/exclusions/ExclusionShapeInsideInfo.h"
-#endif
 
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGInlineText.h"
@@ -75,7 +72,6 @@ static LayoutUnit logicalHeightForLine(const RenderBlock* block, bool isFirstLin
     return max<LayoutUnit>(replacedHeight, block->lineHeight(isFirstLine, block->isHorizontalWritingMode() ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes));
 }
 
-#if ENABLE(CSS_EXCLUSIONS)
 ExclusionShapeInsideInfo* RenderBlock::layoutExclusionShapeInsideInfo() const
 {
     ExclusionShapeInsideInfo* shapeInsideInfo = view()->layoutState()->exclusionShapeInsideInfo();
@@ -86,7 +82,6 @@ ExclusionShapeInsideInfo* RenderBlock::layoutExclusionShapeInsideInfo() const
     }
     return shapeInsideInfo;
 }
-#endif
 
 enum IndentTextOrNot { DoNotIndentText, IndentText };
 
@@ -100,18 +95,14 @@ public:
         , m_left(0)
         , m_right(0)
         , m_availableWidth(0)
-#if ENABLE(CSS_EXCLUSIONS)
         , m_segment(0)
-#endif
         , m_isFirstLine(isFirstLine)
         , m_shouldIndentText(shouldIndentText)
     {
         ASSERT(block);
-#if ENABLE(CSS_EXCLUSIONS)
         ExclusionShapeInsideInfo* exclusionShapeInsideInfo = m_block->layoutExclusionShapeInsideInfo();
         if (exclusionShapeInsideInfo)
             m_segment = exclusionShapeInsideInfo->currentSegment();
-#endif
         updateAvailableWidth();
     }
     bool fitsOnLine() const { return currentWidth() <= m_availableWidth; }
@@ -150,9 +141,7 @@ private:
     float m_left;
     float m_right;
     float m_availableWidth;
-#if ENABLE(CSS_EXCLUSIONS)
     const LineSegment* m_segment;
-#endif
     bool m_isFirstLine;
     IndentTextOrNot m_shouldIndentText;
 };
@@ -164,12 +153,10 @@ inline void LineWidth::updateAvailableWidth(LayoutUnit replacedHeight)
     m_left = m_block->logicalLeftOffsetForLine(height, shouldIndentText(), logicalHeight);
     m_right = m_block->logicalRightOffsetForLine(height, shouldIndentText(), logicalHeight);
 
-#if ENABLE(CSS_EXCLUSIONS)
     if (m_segment) {
         m_left = max<float>(m_segment->logicalLeft, m_left);
         m_right = min<float>(m_segment->logicalRight, m_right);
     }
-#endif
 
     computeAvailableWidthFromLeftAndRight();
 }
@@ -180,28 +167,22 @@ inline void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(RenderBlock::Floa
     if (height < m_block->logicalTopForFloat(newFloat) || height >= m_block->logicalBottomForFloat(newFloat))
         return;
 
-#if ENABLE(CSS_EXCLUSIONS)
     ExclusionShapeOutsideInfo* shapeOutsideInfo = newFloat->renderer()->exclusionShapeOutsideInfo();
     if (shapeOutsideInfo)
         shapeOutsideInfo->computeSegmentsForLine(m_block->logicalHeight() - m_block->logicalTopForFloat(newFloat) + shapeOutsideInfo->shapeLogicalTop(), logicalHeightForLine(m_block, m_isFirstLine));
-#endif
 
     if (newFloat->type() == RenderBlock::FloatingObject::FloatLeft) {
         float newLeft = m_block->logicalRightForFloat(newFloat);
-#if ENABLE(CSS_EXCLUSIONS)
         if (shapeOutsideInfo)
             newLeft += shapeOutsideInfo->rightSegmentShapeBoundingBoxDelta();
-#endif
 
         if (shouldIndentText() && m_block->style()->isLeftToRightDirection())
             newLeft += floorToInt(m_block->textIndentOffset());
         m_left = max<float>(m_left, newLeft);
     } else {
         float newRight = m_block->logicalLeftForFloat(newFloat);
-#if ENABLE(CSS_EXCLUSIONS)
         if (shapeOutsideInfo)
             newRight += shapeOutsideInfo->leftSegmentShapeBoundingBoxDelta();
-#endif
 
         if (shouldIndentText() && !m_block->style()->isLeftToRightDirection())
             newRight -= floorToInt(m_block->textIndentOffset());
@@ -639,11 +620,8 @@ RootInlineBox* RenderBlock::constructLine(BidiRunList<BidiRun>& bidiRuns, const 
         // then we need to construct inline boxes as necessary to properly enclose the
         // run's inline box. Segments can only be siblings at the root level, as
         // they are positioned separately.
-#if ENABLE(CSS_EXCLUSIONS)
         bool runStartsSegment = r->m_startsSegment;
-#else
-        bool runStartsSegment = false;
-#endif
+
         if (!parentBox || parentBox->renderer() != r->m_object->parent() || runStartsSegment)
             // Create new inline boxes all the way back to the appropriate insertion point.
             parentBox = createLineBoxes(r->m_object->parent(), lineInfo, box, runStartsSegment);
@@ -885,11 +863,9 @@ static inline void computeExpansionForJustifiedText(BidiRun* firstRun, BidiRun* 
 
     size_t i = 0;
     for (BidiRun* r = firstRun; r; r = r->next()) {
-#if ENABLE(CSS_EXCLUSIONS)
         // This method is called once per segment, do not move past the current segment.
         if (r->m_startsSegment)
             break;
-#endif
         if (!r->m_box || r == trailingSpaceRun)
             continue;
         
@@ -995,7 +971,6 @@ void RenderBlock::computeInlineDirectionPositionsForLine(RootInlineBox* lineBox,
     float availableLogicalWidth;
     updateLogicalInlinePositions(this, lineLogicalLeft, lineLogicalRight, availableLogicalWidth, isFirstLine, shouldIndentText, 0);
     bool needsWordSpacing;
-#if ENABLE(CSS_EXCLUSIONS)
     ExclusionShapeInsideInfo* exclusionShapeInsideInfo = layoutExclusionShapeInsideInfo();
     if (exclusionShapeInsideInfo && exclusionShapeInsideInfo->hasSegments()) {
         BidiRun* segmentStart = firstRun;
@@ -1025,7 +1000,6 @@ void RenderBlock::computeInlineDirectionPositionsForLine(RootInlineBox* lineBox,
         lineBox->endPlacingBoxRangesInInlineDirection(startLogicalLeft, endLogicalRight, minLogicalLeft, maxLogicalRight);
         return;
     }
-#endif
 
     if (firstRun && firstRun->m_object->isReplaced()) {
         RenderBox* renderBox = toRenderBox(firstRun->m_object);
@@ -1052,12 +1026,10 @@ BidiRun* RenderBlock::computeInlineDirectionPositionsForSegment(RootInlineBox* l
 
     BidiRun* r = firstRun;
     for (; r; r = r->next()) {
-#if ENABLE(CSS_EXCLUSIONS)
         // Once we have reached the start of the next segment, we have finished
         // computing the positions for this segment's contents.
         if (r->m_startsSegment)
             break;
-#endif
         if (!r->m_box || r->m_object->isOutOfFlowPositioned() || r->m_box->isLineBreak())
             continue; // Positioned objects are only participating to figure out their
                       // correct static x position.  They have no effect on the width.
@@ -1313,10 +1285,6 @@ static inline void constructBidiRunsForSegment(InlineBidiResolver& topResolver, 
 
 static inline void constructBidiRunsForLine(const RenderBlock* block, InlineBidiResolver& topResolver, BidiRunList<BidiRun>& bidiRuns, const InlineIterator& endOfLine, VisualDirectionOverride override, bool previousLineBrokeCleanly)
 {
-#if !ENABLE(CSS_EXCLUSIONS)
-    UNUSED_PARAM(block);
-    constructBidiRunsForSegment(topResolver, bidiRuns, endOfLine, override, previousLineBrokeCleanly);
-#else
     ExclusionShapeInsideInfo* exclusionShapeInsideInfo = block->layoutExclusionShapeInsideInfo();
     if (!exclusionShapeInsideInfo || !exclusionShapeInsideInfo->hasSegments()) {
         constructBidiRunsForSegment(topResolver, bidiRuns, endOfLine, override, previousLineBrokeCleanly);
@@ -1342,7 +1310,6 @@ static inline void constructBidiRunsForLine(const RenderBlock* block, InlineBidi
         topResolver.setPosition(segmentStart, numberOfIsolateAncestors(segmentStart));
         constructBidiRunsForSegment(topResolver, bidiRuns, segmentEnd, override, previousLineBrokeCleanly);
     }
-#endif
 }
 
 // This function constructs line boxes for all of the text runs in the resolver and computes their position.
@@ -1584,7 +1551,6 @@ void RenderBlock::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, Inlin
 
     LineBreaker lineBreaker(this);
 
-#if ENABLE(CSS_EXCLUSIONS)
     LayoutUnit absoluteLogicalTop;
     ExclusionShapeInsideInfo* exclusionShapeInsideInfo = layoutExclusionShapeInsideInfo();
     if (exclusionShapeInsideInfo) {
@@ -1604,7 +1570,6 @@ void RenderBlock::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, Inlin
         // actual shape when a line is beginning in a new region which has a shape on it. Usecase: shape-inside is applied not on the first, but on either of the following regions in the region chain.
         absoluteLogicalTop = logicalTop() + lineHeight(layoutState.lineInfo().isFirstLine(), isHorizontalWritingMode() ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes);
     }
-#endif
 
     while (!end.atEnd()) {
         // FIXME: Is this check necessary before the first iteration or can it be moved to the end?
@@ -1624,7 +1589,6 @@ void RenderBlock::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, Inlin
         const InlineIterator oldEnd = end;
         bool isNewUBAParagraph = layoutState.lineInfo().previousLineBrokeCleanly();
         FloatingObject* lastFloatFromPreviousLine = (containsFloats()) ? m_floatingObjects->set().last() : 0;
-#if ENABLE(CSS_EXCLUSIONS)
         // FIXME: Bug 95361: It is possible for a line to grow beyond lineHeight, in which
         // case these segments may be incorrect.
         if (layoutState.flowThread())
@@ -1633,7 +1597,6 @@ void RenderBlock::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, Inlin
             LayoutUnit lineTop = logicalHeight() + absoluteLogicalTop;
             exclusionShapeInsideInfo->computeSegmentsForLine(lineTop, lineHeight(layoutState.lineInfo().isFirstLine(), isHorizontalWritingMode() ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes));
         }
-#endif
         WordMeasurements wordMeasurements;
         end = lineBreaker.nextLineBreak(resolver, layoutState.lineInfo(), renderTextInfo, lastFloatFromPreviousLine, consecutiveHyphenatedLines, wordMeasurements);
         renderTextInfo.m_lineBreakIterator.resetPriorContext();
@@ -1648,12 +1611,10 @@ void RenderBlock::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, Inlin
         }
         ASSERT(end != resolver.position());
 
-#if ENABLE(CSS_EXCLUSIONS)
         if (exclusionShapeInsideInfo && wordMeasurements.size() && exclusionShapeInsideInfo->adjustLogicalLineTop(wordMeasurements[0].width)) {
             end = restartLayoutRunsAndFloatsInRange(logicalHeight(), exclusionShapeInsideInfo->logicalLineTop() - absoluteLogicalTop, lastFloatFromPreviousLine, resolver, oldEnd);
             continue;
         }
-#endif
 
         // This is a short-cut for empty lines.
         if (layoutState.lineInfo().isEmpty()) {
@@ -2579,9 +2540,6 @@ void RenderBlock::LineBreaker::reset()
 
 InlineIterator RenderBlock::LineBreaker::nextLineBreak(InlineBidiResolver& resolver, LineInfo& lineInfo, RenderTextInfo& renderTextInfo, FloatingObject* lastFloatFromPreviousLine, unsigned consecutiveHyphenatedLines, WordMeasurements& wordMeasurements)
 {
-#if !ENABLE(CSS_EXCLUSIONS)
-    return nextSegmentBreak(resolver, lineInfo, renderTextInfo, lastFloatFromPreviousLine, consecutiveHyphenatedLines, wordMeasurements);
-#else
     ExclusionShapeInsideInfo* exclusionShapeInsideInfo = m_block->layoutExclusionShapeInsideInfo();
     if (!exclusionShapeInsideInfo || !exclusionShapeInsideInfo->hasSegments())
         return nextSegmentBreak(resolver, lineInfo, renderTextInfo, lastFloatFromPreviousLine, consecutiveHyphenatedLines, wordMeasurements);
@@ -2620,7 +2578,6 @@ InlineIterator RenderBlock::LineBreaker::nextLineBreak(InlineBidiResolver& resol
     }
     resolver.setPositionIgnoringNestedIsolates(oldEnd);
     return end;
-#endif
 }
 
 static inline bool iteratorIsBeyondEndOfRenderCombineText(const InlineIterator& iter, RenderCombineText* renderer)

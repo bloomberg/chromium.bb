@@ -41,9 +41,7 @@ struct BidiRun : BidiCharacterRun {
     {
         // Stored in base class to save space.
         m_hasHyphen = false;
-#if ENABLE(CSS_EXCLUSIONS)
         m_startsSegment = false;
-#endif
     }
 
     void destroy();

@@ -563,12 +563,10 @@ static inline bool isSimpleLengthPropertyID(CSSPropertyID propertyId, bool& acce
     case CSSPropertyWebkitPaddingStart:
         acceptsNegativeNumbers = false;
         return true;
-#if ENABLE(CSS_EXCLUSIONS)
     case CSSPropertyWebkitShapeMargin:
     case CSSPropertyWebkitShapePadding:
         acceptsNegativeNumbers = false;
         return RuntimeEnabledFeatures::cssExclusionsEnabled();
-#endif
     case CSSPropertyBottom:
     case CSSPropertyLeft:
     case CSSPropertyMarginBottom:
@@ -985,7 +983,6 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         if (valueID == CSSValueAuto || valueID == CSSValueNone || valueID == CSSValueText || valueID == CSSValueAll)
             return true;
         break;
-#if ENABLE(CSS_EXCLUSIONS)
     case CSSPropertyWebkitWrapFlow:
         if (!RuntimeEnabledFeatures::cssExclusionsEnabled())
             return false;
@@ -998,7 +995,6 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         if (valueID == CSSValueWrap || valueID == CSSValueNone)
             return true;
         break;
-#endif
     case CSSPropertyWebkitWritingMode:
         if (valueID >= CSSValueHorizontalTb && valueID <= CSSValueHorizontalBt)
             return true;
@@ -1121,10 +1117,8 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyWebkitUserDrag:
     case CSSPropertyWebkitUserModify:
     case CSSPropertyWebkitUserSelect:
-#if ENABLE(CSS_EXCLUSIONS)
     case CSSPropertyWebkitWrapFlow:
     case CSSPropertyWebkitWrapThrough:
-#endif
     case CSSPropertyWebkitWritingMode:
     case CSSPropertyWhiteSpace:
     case CSSPropertyWordBreak:
@@ -2825,7 +2819,6 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         }
 #endif
         break;
-#if ENABLE(CSS_EXCLUSIONS)
     case CSSPropertyWebkitShapeInside:
     case CSSPropertyWebkitShapeOutside:
         if (!RuntimeEnabledFeatures::cssExclusionsEnabled())
@@ -2843,7 +2836,6 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         break;
     case CSSPropertyWebkitWrap:
         return RuntimeEnabledFeatures::cssExclusionsEnabled() && parseShorthand(propId, webkitWrapShorthand(), important);
-#endif
     case CSSPropertyBorderBottomStyle:
     case CSSPropertyBorderCollapse:
     case CSSPropertyBorderLeftStyle:
@@ -2942,10 +2934,8 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitUserDrag:
     case CSSPropertyWebkitUserModify:
     case CSSPropertyWebkitUserSelect:
-#if ENABLE(CSS_EXCLUSIONS)
     case CSSPropertyWebkitWrapFlow:
     case CSSPropertyWebkitWrapThrough:
-#endif
     case CSSPropertyWebkitWritingMode:
     case CSSPropertyWhiteSpace:
     case CSSPropertyWordBreak:

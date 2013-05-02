@@ -30,8 +30,6 @@
 #include "config.h"
 #include "core/rendering/exclusions/ExclusionShapeInsideInfo.h"
 
-#if ENABLE(CSS_EXCLUSIONS)
-
 #include "core/rendering/InlineIterator.h"
 #include "core/rendering/RenderBlock.h"
 
@@ -68,4 +66,3 @@ bool ExclusionShapeInsideInfo::adjustLogicalLineTop(float minSegmentWidth)
 }
 
 }
-#endif

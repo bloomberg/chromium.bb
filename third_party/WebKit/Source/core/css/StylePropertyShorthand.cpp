@@ -470,7 +470,6 @@ const StylePropertyShorthand& webkitTransformOriginShorthand()
     return webkitTransformOriginLonghands;
 }
 
-#if ENABLE(CSS_EXCLUSIONS)
 const StylePropertyShorthand& webkitWrapShorthand()
 {
     static const CSSPropertyID webkitWrapProperties[] = {
@@ -481,7 +480,6 @@ const StylePropertyShorthand& webkitWrapShorthand()
     DEFINE_STATIC_LOCAL(StylePropertyShorthand, webkitWrapLonghands, (webkitWrapProperties, WTF_ARRAY_LENGTH(webkitWrapProperties)));
     return webkitWrapLonghands;
 }
-#endif
 
 // Returns an empty list if the property is not a shorthand
 const StylePropertyShorthand& shorthandForProperty(CSSPropertyID propertyID)
@@ -571,10 +569,8 @@ const StylePropertyShorthand& shorthandForProperty(CSSPropertyID propertyID)
         return webkitTransitionShorthand();
     case CSSPropertyWebkitTransformOrigin:
         return webkitTransformOriginShorthand();
-#if ENABLE(CSS_EXCLUSIONS)
     case CSSPropertyWebkitWrap:
         return webkitWrapShorthand();
-#endif
     default: {
         DEFINE_STATIC_LOCAL(StylePropertyShorthand, emptyShorthand, ());
         return emptyShorthand;

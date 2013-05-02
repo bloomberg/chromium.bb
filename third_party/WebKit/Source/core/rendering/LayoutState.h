@@ -38,9 +38,7 @@ class RenderBlock;
 class RenderBox;
 class RenderObject;
 class RenderFlowThread;
-#if ENABLE(CSS_EXCLUSIONS)
 class ExclusionShapeInsideInfo;
-#endif
 
 class LayoutState {
     WTF_MAKE_NONCOPYABLE(LayoutState);
@@ -56,9 +54,7 @@ public:
         , m_columnInfo(0)
         , m_lineGrid(0)
         , m_next(0)
-#if ENABLE(CSS_EXCLUSIONS)
         , m_exclusionShapeInsideInfo(0)
-#endif
         , m_pageLogicalHeight(0)
 #ifndef NDEBUG
         , m_renderer(0)
@@ -98,9 +94,7 @@ public:
 
     bool needsBlockDirectionLocationSetBeforeLayout() const { return m_lineGrid || (m_isPaginated && m_pageLogicalHeight); }
 
-#if ENABLE(CSS_EXCLUSIONS)
     ExclusionShapeInsideInfo* exclusionShapeInsideInfo() const { return m_exclusionShapeInsideInfo; }
-#endif
 private:
     // The normal operator new is disallowed.
     void* operator new(size_t) throw();
@@ -125,9 +119,7 @@ public:
     // The current line grid that we're snapping to and the offset of the start of the grid.
     RenderBlock* m_lineGrid;
     LayoutState* m_next;
-#if ENABLE(CSS_EXCLUSIONS)
     ExclusionShapeInsideInfo* m_exclusionShapeInsideInfo;
-#endif
 
     // FIXME: Distinguish between the layout clip rect and the paint clip rect which may be larger,
     // e.g., because of composited scrolling.

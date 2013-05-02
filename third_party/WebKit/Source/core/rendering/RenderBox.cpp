@@ -169,9 +169,7 @@ void RenderBox::willBeDestroyed()
 
     RenderBlock::removePercentHeightDescendantIfNeeded(this);
 
-#if ENABLE(CSS_EXCLUSIONS)
     ExclusionShapeOutsideInfo::removeInfo(this);
-#endif
 
     RenderBoxModelObject::willBeDestroyed();
 }
@@ -319,12 +317,9 @@ void RenderBox::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle
         frame()->view()->recalculateScrollbarOverlayStyle();
     }
 
-#if ENABLE(CSS_EXCLUSIONS)
     updateExclusionShapeOutsideInfoAfterStyleChange(style()->shapeOutside(), oldStyle ? oldStyle->shapeOutside() : 0);
-#endif
 }
 
-#if ENABLE(CSS_EXCLUSIONS)
 void RenderBox::updateExclusionShapeOutsideInfoAfterStyleChange(const ExclusionShapeValue* shapeOutside, const ExclusionShapeValue* oldShapeOutside)
 {
     // FIXME: A future optimization would do a deep comparison for equality. (bug 100811)
@@ -337,7 +332,6 @@ void RenderBox::updateExclusionShapeOutsideInfoAfterStyleChange(const ExclusionS
     } else
         ExclusionShapeOutsideInfo::removeInfo(this);
 }
-#endif
 
 void RenderBox::updateFromStyle()
 {

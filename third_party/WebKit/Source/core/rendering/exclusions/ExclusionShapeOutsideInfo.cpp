@@ -28,9 +28,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(CSS_EXCLUSIONS)
-
 #include "core/rendering/exclusions/ExclusionShapeOutsideInfo.h"
 
 #include "core/rendering/RenderBox.h"
@@ -59,4 +56,3 @@ bool ExclusionShapeOutsideInfo::computeSegmentsForLine(LayoutUnit lineTop, Layou
 }
 
 }
-#endif

@@ -400,7 +400,6 @@ z-index
 -webkit-region-break-before
 -webkit-region-break-inside
 #endif
-#if defined(ENABLE_CSS_EXCLUSIONS) && ENABLE_CSS_EXCLUSIONS
 -webkit-shape-inside
 -webkit-shape-outside
 -webkit-shape-margin
@@ -408,7 +407,6 @@ z-index
 -webkit-wrap-flow
 -webkit-wrap-through
 -webkit-wrap
-#endif
 #if defined(ENABLE_CSS_DEVICE_ADAPTATION) && ENABLE_CSS_DEVICE_ADAPTATION
 max-zoom
 min-zoom

@@ -13,7 +13,7 @@ ApplicationCache default=true
 Geolocation default=true
 IndexedDB
 CanvasPath
-CSSExclusions condition=CSS_EXCLUSIONS
+CSSExclusions
 CSSRegions condition=CSS_REGIONS
 CSSCompositing condition=CSS_COMPOSITING
 FontLoadEvents

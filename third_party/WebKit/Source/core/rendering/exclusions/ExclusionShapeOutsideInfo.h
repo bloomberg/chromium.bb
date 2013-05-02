@@ -30,8 +30,6 @@
 #ifndef ExclusionShapeOutsideInfo_h
 #define ExclusionShapeOutsideInfo_h
 
-#if ENABLE(CSS_EXCLUSIONS)
-
 #include "core/platform/graphics/LayoutSize.h"
 #include "core/rendering/exclusions/ExclusionShapeInfo.h"
 
@@ -63,5 +61,4 @@ private:
 };
 
 }
-#endif
 #endif

@@ -30,8 +30,6 @@
 #ifndef ExclusionShapeInsideInfo_h
 #define ExclusionShapeInsideInfo_h
 
-#if ENABLE(CSS_EXCLUSIONS)
-
 #include "core/rendering/exclusions/ExclusionShapeInfo.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>
@@ -111,5 +109,4 @@ private:
 };
 
 }
-#endif
 #endif

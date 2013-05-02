@@ -30,8 +30,6 @@
 #include "config.h"
 #include "core/rendering/exclusions/ExclusionShapeInfo.h"
 
-#if ENABLE(CSS_EXCLUSIONS)
-
 #include "core/rendering/exclusions/ExclusionShape.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderBox.h"
@@ -88,4 +86,3 @@ bool ExclusionShapeInfo<RenderType, shapeGetter, intervalGetter>::computeSegment
 template class ExclusionShapeInfo<RenderBlock, &RenderStyle::resolvedShapeInside, &ExclusionShape::getIncludedIntervals>;
 template class ExclusionShapeInfo<RenderBox, &RenderStyle::shapeOutside, &ExclusionShape::getExcludedIntervals>;
 }
-#endif

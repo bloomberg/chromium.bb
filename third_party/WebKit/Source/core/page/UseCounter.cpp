@@ -399,7 +399,6 @@ static int mapCSSPropertyIdToCSSSampleId(int id)
     case CSSPropertyWebkitRegionBreakBefore: return 344;
     case CSSPropertyWebkitRegionBreakInside: return 345;
 #endif
-#if defined(ENABLE_CSS_EXCLUSIONS) && ENABLE_CSS_EXCLUSIONS
     case CSSPropertyWebkitShapeInside: return 346;
     case CSSPropertyWebkitShapeOutside: return 347;
     case CSSPropertyWebkitShapeMargin: return 348;
@@ -407,7 +406,6 @@ static int mapCSSPropertyIdToCSSSampleId(int id)
     case CSSPropertyWebkitWrapFlow: return 350;
     case CSSPropertyWebkitWrapThrough: return 351;
     case CSSPropertyWebkitWrap: return 352;
-#endif
 #if defined(ENABLE_TOUCH_EVENTS) && ENABLE_TOUCH_EVENTS
     case CSSPropertyWebkitTapHighlightColor: return 353;
 #endif

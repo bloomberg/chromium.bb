@@ -30,8 +30,6 @@
 #ifndef ExclusionShapeInfo_h
 #define ExclusionShapeInfo_h
 
-#if ENABLE(CSS_EXCLUSIONS)
-
 #include "core/platform/LayoutUnit.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/rendering/exclusions/ExclusionShape.h"
@@ -127,5 +125,4 @@ private:
     const RenderType* m_renderer;
 };
 }
-#endif
 #endif

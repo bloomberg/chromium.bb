@@ -524,11 +524,9 @@ public:
     bool hasPaintOffset() const
     {
         bool positioned = isInFlowPositioned();
-#if ENABLE(CSS_EXCLUSIONS)
         // Shape outside on a float can reposition the float in much the
         // same way as relative positioning, so treat it as such.
         positioned = positioned || isFloatingWithShapeOutside();
-#endif
         return positioned;
     }
     bool isRelPositioned() const { return m_bitfields.isRelPositioned(); } // relative positioning

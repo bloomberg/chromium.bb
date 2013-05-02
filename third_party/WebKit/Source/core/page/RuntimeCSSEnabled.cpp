@@ -56,7 +56,6 @@ static void setPropertySwitchesFromRuntimeFeatures(BoolVector& properties)
     };
     setCSSPropertiesEnabled(regionProperites, WTF_ARRAY_LENGTH(regionProperites), RuntimeEnabledFeatures::cssRegionsEnabled());
 #endif
-#if ENABLE(CSS_EXCLUSIONS)
     CSSPropertyID exclusionProperties[] = {
         CSSPropertyWebkitWrap,
         CSSPropertyWebkitWrapFlow,
@@ -67,7 +66,6 @@ static void setPropertySwitchesFromRuntimeFeatures(BoolVector& properties)
         CSSPropertyWebkitShapeOutside,
     };
     setCSSPropertiesEnabled(exclusionProperties, WTF_ARRAY_LENGTH(exclusionProperties), RuntimeEnabledFeatures::cssExclusionsEnabled());
-#endif
 #if ENABLE(CSS_COMPOSITING)
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyBackgroundBlendMode, RuntimeEnabledFeatures::cssCompositingEnabled());
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyWebkitBlendMode, RuntimeEnabledFeatures::cssCompositingEnabled());

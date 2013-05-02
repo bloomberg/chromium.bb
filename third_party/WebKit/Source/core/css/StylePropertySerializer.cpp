@@ -201,13 +201,11 @@ String StylePropertySerializer::asText() const
         case CSSPropertyWebkitTransitionDelay:
             shorthandPropertyID = CSSPropertyWebkitTransition;
             break;
-#if ENABLE(CSS_EXCLUSIONS)
         case CSSPropertyWebkitWrapFlow:
         case CSSPropertyWebkitShapeMargin:
         case CSSPropertyWebkitShapePadding:
             shorthandPropertyID = CSSPropertyWebkitWrap;
             break;
-#endif
         default:
             break;
         }
@@ -385,10 +383,8 @@ String StylePropertySerializer::getPropertyValue(CSSPropertyID propertyID) const
         return getLayeredShorthandValue(webkitTransitionShorthand());
     case CSSPropertyWebkitAnimation:
         return getLayeredShorthandValue(webkitAnimationShorthand());
-#if ENABLE(CSS_EXCLUSIONS)
     case CSSPropertyWebkitWrap:
         return getShorthandValue(webkitWrapShorthand());
-#endif
 #if ENABLE(SVG)
     case CSSPropertyMarker: {
         RefPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(CSSPropertyMarkerStart);

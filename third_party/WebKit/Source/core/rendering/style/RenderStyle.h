@@ -442,9 +442,7 @@ public:
     bool hasPaintOffset() const
     {
         bool paintOffset = hasInFlowPosition();
-#if ENABLE(CSS_EXCLUSIONS)
         paintOffset = paintOffset || (isFloating() && shapeOutside());
-#endif
         return paintOffset;
     }
     bool hasViewportConstrainedPosition() const { return position() == FixedPosition || position() == StickyPosition; }

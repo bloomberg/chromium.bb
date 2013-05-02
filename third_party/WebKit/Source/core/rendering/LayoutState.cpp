@@ -39,9 +39,7 @@ LayoutState::LayoutState(LayoutState* prev, RenderBox* renderer, const LayoutSiz
     : m_columnInfo(columnInfo)
     , m_lineGrid(0)
     , m_next(prev)
-#if ENABLE(CSS_EXCLUSIONS)
     , m_exclusionShapeInsideInfo(0)
-#endif
 #ifndef NDEBUG
     , m_renderer(renderer)
 #endif
@@ -110,14 +108,12 @@ LayoutState::LayoutState(LayoutState* prev, RenderBox* renderer, const LayoutSiz
     if (!m_columnInfo)
         m_columnInfo = m_next->m_columnInfo;
 
-#if ENABLE(CSS_EXCLUSIONS)
     if (renderer->isRenderBlock()) {
         const RenderBlock* renderBlock = toRenderBlock(renderer);
         m_exclusionShapeInsideInfo = renderBlock->exclusionShapeInsideInfo();
         if (!m_exclusionShapeInsideInfo && m_next->m_exclusionShapeInsideInfo && renderBlock->allowsExclusionShapeInsideInfoSharing())
             m_exclusionShapeInsideInfo = m_next->m_exclusionShapeInsideInfo;
     }
-#endif
 
     m_layoutDelta = m_next->m_layoutDelta;
 #if !ASSERT_DISABLED
@@ -148,9 +144,7 @@ LayoutState::LayoutState(RenderObject* root)
     , m_columnInfo(0)
     , m_lineGrid(0)
     , m_next(0)
-#if ENABLE(CSS_EXCLUSIONS)
     , m_exclusionShapeInsideInfo(0)
-#endif
     , m_pageLogicalHeight(0)
 #ifndef NDEBUG
     , m_renderer(root)

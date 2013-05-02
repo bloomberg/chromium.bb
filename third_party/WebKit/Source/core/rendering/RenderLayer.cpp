@@ -5817,9 +5817,7 @@ bool RenderLayer::shouldBeNormalFlowOnly() const
 #endif
             && !isTransparent()
             && !needsCompositedScrolling()
-#if ENABLE(CSS_EXCLUSIONS)
             && !renderer()->isFloatingWithShapeOutside()
-#endif
             ;
 }
 

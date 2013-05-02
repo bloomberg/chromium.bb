@@ -647,7 +647,6 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitRegionBreakBefore:
     case CSSPropertyWebkitRegionBreakInside:
 #endif
-#if ENABLE(CSS_EXCLUSIONS)
     case CSSPropertyWebkitWrap:
     case CSSPropertyWebkitWrapFlow:
     case CSSPropertyWebkitShapeMargin:
@@ -655,7 +654,6 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitShapeInside:
     case CSSPropertyWebkitShapeOutside:
     case CSSPropertyWebkitWrapThrough:
-#endif
 #if ENABLE(SVG)
     case CSSPropertyClipPath:
     case CSSPropertyMask:

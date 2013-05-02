@@ -2672,9 +2672,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     case CSSPropertyWebkitTextStroke:
     case CSSPropertyWebkitTransition:
     case CSSPropertyWebkitTransformOrigin:
-#if ENABLE(CSS_EXCLUSIONS)
     case CSSPropertyWebkitWrap:
-#endif
         ASSERT(isExpandedShorthand(id));
         ASSERT_NOT_REACHED();
         break;
@@ -3262,14 +3260,12 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     case CSSPropertyWebkitUserModify:
     case CSSPropertyWebkitUserSelect:
     case CSSPropertyWebkitClipPath:
-#if ENABLE(CSS_EXCLUSIONS)
     case CSSPropertyWebkitWrapFlow:
     case CSSPropertyWebkitShapeMargin:
     case CSSPropertyWebkitShapePadding:
     case CSSPropertyWebkitWrapThrough:
     case CSSPropertyWebkitShapeInside:
     case CSSPropertyWebkitShapeOutside:
-#endif
     case CSSPropertyWhiteSpace:
     case CSSPropertyWidows:
     case CSSPropertyWidth:
