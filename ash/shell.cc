@@ -419,6 +419,12 @@ bool Shell::IsLauncherPerDisplayEnabled() {
   return !command_line->HasSwitch(switches::kAshDisableLauncherPerDisplay);
 }
 
+// static
+bool Shell::IsForcedMaximizeMode() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(switches::kForcedMaximizeMode);
+}
+
 void Shell::Init() {
   delegate_->PreInit();
 #if defined(OS_CHROMEOS) && defined(USE_X11)

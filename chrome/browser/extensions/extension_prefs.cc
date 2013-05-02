@@ -32,6 +32,9 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(USE_ASH)
+#include "ash/shell.h"
+#endif
 #if defined(OS_WIN)
 #include "win8/util/win8_util.h"
 #endif  // OS_WIN
@@ -1257,13 +1260,18 @@ ExtensionPrefs::LaunchType ExtensionPrefs::GetLaunchType(
   } else {
     result = default_pref_value;
   }
-  #if defined(OS_MACOSX)
+#if (USE_ASH)
+  if (ash::Shell::IsForcedMaximizeMode() &&
+      (result == LAUNCH_FULLSCREEN || result == LAUNCH_WINDOW))
+    result = LAUNCH_REGULAR;
+#endif
+#if defined(OS_MACOSX)
     // App windows are not yet supported on mac.  Pref sync could make
     // the launch type LAUNCH_WINDOW, even if there is no UI to set it
     // on mac.
     if (!extension->is_platform_app() && result == LAUNCH_WINDOW)
       result = LAUNCH_REGULAR;
-  #endif
+#endif
 
 #if defined(OS_WIN)
     // We don't support app windows in Windows 8 single window Metro mode.

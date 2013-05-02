@@ -91,6 +91,9 @@ FrameMaximizeButton::FrameMaximizeButton(views::ButtonListener* listener,
       bubble_appearance_delay_ms_(kBubbleAppearanceDelayMS) {
   // TODO(sky): nuke this. It's temporary while we don't have good images.
   SetImageAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+
+  if (ash::Shell::IsForcedMaximizeMode())
+    views::View::SetVisible(false);
 }
 
 FrameMaximizeButton::~FrameMaximizeButton() {
@@ -304,6 +307,14 @@ void FrameMaximizeButton::OnGestureEvent(ui::GestureEvent* event) {
   }
 
   ImageButton::OnGestureEvent(event);
+}
+
+void FrameMaximizeButton::SetVisible(bool visible) {
+  // In the enforced maximized mode we do not allow to be made visible.
+  if (ash::Shell::IsForcedMaximizeMode())
+    return;
+
+  views::View::SetVisible(visible);
 }
 
 void FrameMaximizeButton::ProcessStartEvent(const ui::LocatedEvent& event) {

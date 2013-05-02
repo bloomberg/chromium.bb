@@ -141,8 +141,11 @@ const char kAuraLegacyPowerButton[] = "aura-legacy-power-button";
 // Force Ash to open its root window on the desktop, even on Windows 8 where
 // it would normally end up in metro.
 const char kForceAshToDesktop[] = "ash-force-desktop";
-;
 #endif
+
+// Enables a mode which enforces all browser & application windows to be created
+// in maximized mode.
+const char kForcedMaximizeMode[] = "forced-maximize-mode";
 
 }  // namespace switches
 }  // namespace ash

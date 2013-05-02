@@ -37,6 +37,10 @@
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
 
+#if defined(USE_ASH)
+#include "ash/shell.h"
+#endif
+
 using extensions::Extension;
 
 namespace {
@@ -559,15 +563,19 @@ ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
       context_menu_model_->AddCheckItemWithStringId(
           LAUNCH_TYPE_PINNED_TAB,
           IDS_APP_CONTEXT_MENU_OPEN_PINNED);
-      context_menu_model_->AddCheckItemWithStringId(
-          LAUNCH_TYPE_WINDOW,
-          IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
-      // Even though the launch type is Full Screen it is more accurately
-      // described as Maximized in Ash.
-      context_menu_model_->AddCheckItemWithStringId(
-          LAUNCH_TYPE_FULLSCREEN,
-          IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED);
-
+#if defined(USE_ASH)
+      if (!ash::Shell::IsForcedMaximizeMode())
+#endif
+      {
+        context_menu_model_->AddCheckItemWithStringId(
+            LAUNCH_TYPE_WINDOW,
+            IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
+        // Even though the launch type is Full Screen it is more accurately
+        // described as Maximized in Ash.
+        context_menu_model_->AddCheckItemWithStringId(
+            LAUNCH_TYPE_FULLSCREEN,
+            IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED);
+      }
       context_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
       context_menu_model_->AddItemWithStringId(OPTIONS,
                                                IDS_NEW_TAB_APP_OPTIONS);

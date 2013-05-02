@@ -1028,6 +1028,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(app_list::switches::kAppListShowAppsOnly),
   },
+  {
+    "forced-maximize-mode",
+    IDS_FLAGS_FORCE_MAXIMIZE_MODE_NAME,
+    IDS_FLAGS_FORCE_MAXIMIZE_MODE_DESCRIPTION,
+    kOsLinux | kOsWin | kOsCrOS,
+    SINGLE_VALUE_TYPE(ash::switches::kForcedMaximizeMode),
+  },
 #endif  // defined(USE_ASH)
 #if defined(OS_CHROMEOS)
   {

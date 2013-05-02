@@ -42,6 +42,8 @@ const int kShadowHeightStretch = -1;
 class AppNonClientFrameViewAsh::ControlView
     : public views::View, public views::ButtonListener {
  public:
+  // TODO(skuhne): If we keep the "always maximized" experiment we might want to
+  // make this function be able to work with a |restore_button_| which is NULL.
   explicit ControlView(AppNonClientFrameViewAsh* owner) :
       owner_(owner),
       close_button_(new views::ImageButton(this)),
@@ -69,6 +71,17 @@ class AppNonClientFrameViewAsh::ControlView
   virtual ~ControlView() {}
 
   virtual void Layout() OVERRIDE {
+    if (ash::Shell::IsForcedMaximizeMode()) {
+      // TODO(skuhne): If this experiment would get persued, it would be better
+      // to check here the |restore_button_|'s visibility. Furthermore we
+      // should change |shadow_| to a new bitmap which can host only a single
+      // button.
+      gfx::Size size = restore_button_->bounds().size();
+      if (size.width()) {
+        size.set_width(0);
+        restore_button_->SetSize(size);
+      }
+    }
     restore_button_->SetPosition(gfx::Point(kShadowStart, 0));
     close_button_->SetPosition(gfx::Point(kShadowStart +
         restore_button_->width() - kButtonOverlap, 0));
@@ -92,7 +105,10 @@ class AppNonClientFrameViewAsh::ControlView
   }
 
   virtual gfx::Size GetPreferredSize() OVERRIDE {
-    return gfx::Size(shadow_->width(),
+    int maximize_button_deduction = ash::Shell::IsForcedMaximizeMode() ?
+        restore_button_->GetPreferredSize().width() : 0;
+
+    return gfx::Size(shadow_->width() - maximize_button_deduction,
                      shadow_->height() + kShadowHeightStretch);
   }
 

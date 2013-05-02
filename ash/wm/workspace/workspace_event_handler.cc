@@ -91,7 +91,8 @@ void WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
 
       if (event->flags() & ui::EF_IS_DOUBLE_CLICK &&
           target->delegate()->GetNonClientComponent(event->location()) ==
-          HTCAPTION) {
+          HTCAPTION &&
+          !ash::Shell::IsForcedMaximizeMode()) {
         bool destroyed = false;
         destroyed_ = &destroyed;
         ash::Shell::GetInstance()->delegate()->RecordUserMetricsAction(

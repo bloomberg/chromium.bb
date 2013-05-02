@@ -55,6 +55,7 @@ ASH_EXPORT extern const char kAuraLegacyPowerButton[];
 #if defined(OS_WIN)
 ASH_EXPORT extern const char kForceAshToDesktop[];
 #endif
+ASH_EXPORT extern const char kForcedMaximizeMode[];
 
 }  // namespace switches
 }  // namespace ash

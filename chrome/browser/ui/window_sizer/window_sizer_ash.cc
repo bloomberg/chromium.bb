@@ -159,6 +159,17 @@ bool WindowSizer::GetBoundsOverrideAsh(gfx::Rect* bounds_in_screen,
   }
   bounds_in_screen->SetRect(0, 0, 0, 0);
 
+  // Experiment: Force the maximize mode for all windows.
+  if (ash::Shell::IsForcedMaximizeMode()) {
+    // Exceptions: Do not maximize popups and do not maximize windowed V1 apps
+    // which explicitly specify a |show_state| (they might be tuned for a
+    // particular resolution / type).
+    bool is_tabbed = browser_ && browser_->is_type_tabbed();
+    bool is_popup = browser_ && browser_->is_type_popup();
+    if (!is_popup && (is_tabbed || *show_state == ui::SHOW_STATE_DEFAULT))
+      *show_state = ui::SHOW_STATE_MAXIMIZED;
+  }
+
   ui::WindowShowState passed_show_state = *show_state;
   if (!GetSavedWindowBounds(bounds_in_screen, show_state))
     GetDefaultWindowBounds(bounds_in_screen);
