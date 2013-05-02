@@ -26,10 +26,12 @@ class WebContents;
   IBOutlet NSButton* closeButton_;
 
   // This is YES if this is the modal sync confirmation dialog.
-  BOOL isModalDialog_;
+  BOOL isSyncDialog_;
 
   // This is YES if the user clicked the Learn More link before another action.
   BOOL clickedLearnMore_;
+
+  scoped_nsobject<NSString> errorMessage_;
 
   // Text fields don't work as well with embedded links as text views, but
   // text views cannot conveniently be created in IB. The xib file contains
@@ -41,15 +43,17 @@ class WebContents;
   content::WebContents* webContents_;
 }
 
-// Initializes the controller from a xib file.
-// |syncCallback| is used to start sync, |webContents| is used to
-// display the Learn More page, and |closeCallback| is called
-// when the view closes.
+// Initializes the controller from a nib file, with an alternate |errorMessage|
+// that can be displayed in the case of an authentication error,
+// |syncCallback| is called to start sync if |isSyncDialog| is YES,
+// |webContents| is used to open the Learn More and Advanced links and
+// |callback| is called when the view is closing.
 - (id)initWithNibName:(NSString*)nibName
           webContents:(content::WebContents*)webContents
          syncCallback:(const BrowserWindow::StartSyncCallback&)syncCallback
         closeCallback:(const base::Closure&)callback
-        isModalDialog:(BOOL)isModalDialog;
+         isSyncDialog:(BOOL)isSyncDialog
+         errorMessage:(NSString*)errorMessage;
 
 // Called before the view is closed.
 - (void)viewWillClose;

@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/one_click_signin_bubble_controller.h"
 
+#include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/one_click_signin_view_controller.h"
@@ -20,14 +21,18 @@ void PerformClose(OneClickSigninBubbleController* controller) {
 @implementation OneClickSigninBubbleController
 
 - (id)initWithBrowserWindowController:(BrowserWindowController*)controller
+                          webContents:(content::WebContents*)webContents
+                         errorMessage:(NSString*)errorMessage
                              callback:(const BrowserWindow::StartSyncCallback&)
-                                          syncCallback {
+                                                                  syncCallback{
   viewController_.reset([[OneClickSigninViewController alloc]
       initWithNibName:@"OneClickSigninBubble"
-          webContents:NULL
+          webContents:webContents
          syncCallback:syncCallback
         closeCallback:base::Bind(PerformClose, self)
-        isModalDialog:NO]);
+         isSyncDialog:NO
+         errorMessage:errorMessage]);
+
   NSWindow* parentWindow = [controller window];
 
   // Set the anchor point to right below the wrench menu.
@@ -52,6 +57,7 @@ void PerformClose(OneClickSigninBubbleController* controller) {
     // -[BaseBubbleController windowWillClose:].
     [self retain];
   }
+
   return self;
 }
 

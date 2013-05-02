@@ -1541,6 +1541,7 @@
         'browser/ui/cocoa/location_bar/location_bar_view_mac_browsertest.mm',
         'browser/ui/cocoa/location_bar/zoom_decoration_browsertest.mm',
         'browser/ui/cocoa/omnibox/omnibox_view_mac_browsertest.mm',
+        'browser/ui/cocoa/one_click_signin_bubble_controller_browsertest.mm',
         'browser/ui/cocoa/one_click_signin_dialog_controller_browsertest.mm',
         'browser/ui/cocoa/ssl_client_certificate_selector_cocoa_browsertest.mm',
         'browser/ui/cocoa/tab_contents/overlayable_contents_controller_browsertest.mm',

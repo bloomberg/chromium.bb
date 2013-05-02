@@ -15,21 +15,27 @@
 @class BrowserWindowController;
 @class OneClickSigninViewController;
 
-// Displays the one-click signin confirmation bubble (after syncing
-// has started).
+// Displays the one-click signin confirmation bubble
 @interface OneClickSigninBubbleController : BaseBubbleController {
   scoped_nsobject<OneClickSigninViewController> viewController_;
+ @private
+   IBOutlet NSTextField* messageTextField_;
 }
 
 @property(readonly, nonatomic) OneClickSigninViewController* viewController;
 
-// Initializes with a browser window controller, under whose wrench
+// Initializes with a browser window |controller|, under whose wrench
 // menu this bubble will be displayed, and callbacks which are called
-// if the user clicks the corresponding link.
+// if the user clicks the corresponding link. |errorMessage| is an
+// alternate message that will be displayed in the case of an authentication
+// error, and |syncCallback| is called to start sync. |webContents| is used
+// to open the Learn More and Advanced links
 //
 // The bubble is not automatically displayed; call showWindow:id to
 // display.  The bubble is auto-released on close.
 - (id)initWithBrowserWindowController:(BrowserWindowController*)controller
+                          webContents:(content::WebContents*)webContents
+                         errorMessage:(NSString*)errorMessage
                              callback:(const BrowserWindow::StartSyncCallback&)
                                           syncCallback;
 

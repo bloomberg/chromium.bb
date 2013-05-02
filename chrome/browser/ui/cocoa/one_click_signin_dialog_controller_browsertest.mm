@@ -14,8 +14,7 @@
 class OneClickSigninDialogControllerTest : public InProcessBrowserTest {
  public:
   OneClickSigninDialogControllerTest()
-    : InProcessBrowserTest(),
-      controller_(NULL),
+    : controller_(NULL),
       sync_mode_(OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS),
       callback_count_(0) {
   }

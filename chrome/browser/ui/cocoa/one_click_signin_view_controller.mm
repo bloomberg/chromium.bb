@@ -37,82 +37,93 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
 
 @implementation OneClickSigninViewController
 
+
 - (id)initWithNibName:(NSString*)nibName
           webContents:(content::WebContents*)webContents
          syncCallback:(const BrowserWindow::StartSyncCallback&)syncCallback
         closeCallback:(const base::Closure&)closeCallback
-        isModalDialog:(BOOL)isModalDialog {
+         isSyncDialog:(BOOL)isSyncDialog
+         errorMessage:(NSString*)errorMessage {
   if ((self = [super initWithNibName:nibName
                               bundle:base::mac::FrameworkBundle()])) {
     webContents_ = webContents;
     startSyncCallback_ = syncCallback;
     closeCallback_ = closeCallback;
-    isModalDialog_ = isModalDialog;
+    isSyncDialog_ = isSyncDialog;
     clickedLearnMore_ = NO;
-    DCHECK(!startSyncCallback_.is_null());
+    errorMessage_.reset([errorMessage retain]);
+    if (isSyncDialog_)
+      DCHECK(!startSyncCallback_.is_null());
   }
   return self;
 }
 
 - (void)viewWillClose {
-  if (!startSyncCallback_.is_null()) {
+  // This is usually called after a click handler has initiated sync
+  // and has reset the callback. However, in the case that we are closing
+  // the window and nothing else has initiated the sync, we must do so here
+  if (isSyncDialog_ && !startSyncCallback_.is_null()) {
     base::ResetAndReturn(&startSyncCallback_).Run(
         OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
   }
 }
 
 - (IBAction)ok:(id)sender {
-  base::ResetAndReturn(&startSyncCallback_).Run(
-      OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
-
-  if (isModalDialog_) {
+  if (isSyncDialog_) {
     OneClickSigninHelper::LogConfirmHistogramValue(
         clickedLearnMore_ ?
             one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE_OK :
             one_click_signin::HISTOGRAM_CONFIRM_OK);
-  }
 
+    base::ResetAndReturn(&startSyncCallback_).Run(
+      OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
+  }
   [self close];
 }
 
 - (IBAction)onClickUndo:(id)sender {
-  base::ResetAndReturn(&startSyncCallback_).Run(
-      OneClickSigninSyncStarter::UNDO_SYNC);
-
-  if (isModalDialog_) {
+  if (isSyncDialog_) {
     OneClickSigninHelper::LogConfirmHistogramValue(
         clickedLearnMore_ ?
             one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE_UNDO :
             one_click_signin::HISTOGRAM_CONFIRM_UNDO);
-  }
 
+    base::ResetAndReturn(&startSyncCallback_).Run(
+      OneClickSigninSyncStarter::UNDO_SYNC);
+
+  }
   [self close];
 }
 
 - (IBAction)onClickAdvancedLink:(id)sender {
-  base::ResetAndReturn(&startSyncCallback_).Run(
-      OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST);
-
-  if (isModalDialog_) {
+  if (isSyncDialog_) {
     OneClickSigninHelper::LogConfirmHistogramValue(
         clickedLearnMore_ ?
             one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE_ADVANCED :
             one_click_signin::HISTOGRAM_CONFIRM_ADVANCED);
+
+    base::ResetAndReturn(&startSyncCallback_).Run(
+        OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST);
+  }
+  else {
+    content::OpenURLParams params(GURL(chrome::kChromeUISettingsURL),
+                                  content::Referrer(), CURRENT_TAB,
+                                  content::PAGE_TRANSITION_LINK, false);
+    webContents_->OpenURL(params);
   }
   [self close];
 }
 
 - (IBAction)onClickClose:(id)sender {
-  base::ResetAndReturn(&startSyncCallback_).Run(
-      OneClickSigninSyncStarter::UNDO_SYNC);
-
-  if (isModalDialog_) {
+  if (isSyncDialog_) {
     OneClickSigninHelper::LogConfirmHistogramValue(
         clickedLearnMore_ ?
             one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE_CLOSE :
             one_click_signin::HISTOGRAM_CONFIRM_CLOSE);
-  }
 
+    base::ResetAndReturn(&startSyncCallback_).Run(
+        OneClickSigninSyncStarter::UNDO_SYNC);
+  }
   [self close];
 }
 
@@ -140,12 +151,15 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
 
   NSSize delta = NSMakeSize(0.0, totalYOffset);
 
+  if (!isSyncDialog_ && [errorMessage_ length] != 0)
+    [messageTextField_ setStringValue:errorMessage_];
+
   // Resize bubble and window to hold the controls.
   [GTMUILocalizerAndLayoutTweaker
       resizeViewWithoutAutoResizingSubViews:[self view]
                                       delta:delta];
 
-  if (isModalDialog_) {
+  if (isSyncDialog_) {
     OneClickSigninHelper::LogConfirmHistogramValue(
         one_click_signin::HISTOGRAM_CONFIRM_SHOWN);
   }
@@ -166,11 +180,23 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
 
   // Set the text.
   NSString* learnMoreText = l10n_util::GetNSStringWithFixup(IDS_LEARN_MORE);
-  NSString* messageText =
-      l10n_util::GetNSStringWithFixup(IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE);
-  messageText = [messageText stringByAppendingString:@" "];
+  NSString* messageText;
+
+  ui::ResourceBundle::FontStyle fontStyle = isSyncDialog_ ?
+      chrome_style::kTextFontStyle : ui::ResourceBundle::SmallFont;
   NSFont* font = ui::ResourceBundle::GetSharedInstance().GetFont(
-      chrome_style::kTextFontStyle).GetNativeFont();
+      fontStyle).GetNativeFont();
+
+  // The non-modal bubble already has a text content and only needs the
+  // Learn More link (in a smaller font).
+  if (isSyncDialog_) {
+    messageText = l10n_util::GetNSStringWithFixup(
+      IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE);
+    messageText = [messageText stringByAppendingString:@" "];
+  } else {
+    messageText = @"";
+  }
+
   NSColor* linkColor =
       gfx::SkColorToCalibratedNSColor(chrome_style::GetLinkColor());
   [informativeTextView_ setMessageAndLink:messageText
@@ -200,15 +226,16 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
 - (BOOL)textView:(NSTextView*)textView
    clickedOnLink:(id)link
          atIndex:(NSUInteger)charIndex {
-
-  if (isModalDialog_ && !clickedLearnMore_) {
+  if (isSyncDialog_ && !clickedLearnMore_) {
     clickedLearnMore_ = YES;
 
     OneClickSigninHelper::LogConfirmHistogramValue(
         one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE);
   }
+  WindowOpenDisposition location = isSyncDialog_ ?
+                                   NEW_WINDOW : NEW_FOREGROUND_TAB;
   content::OpenURLParams params(GURL(chrome::kChromeSyncLearnMoreURL),
-                                content::Referrer(), NEW_WINDOW,
+                                content::Referrer(), location,
                                 content::PAGE_TRANSITION_LINK, false);
   webContents_->OpenURL(params);
   return YES;

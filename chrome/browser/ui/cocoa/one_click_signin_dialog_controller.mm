@@ -20,7 +20,8 @@ OneClickSigninDialogController::OneClickSigninDialogController(
           webContents:web_contents
          syncCallback:sync_callback
         closeCallback:close_callback
-        isModalDialog:YES]);
+         isSyncDialog:YES
+         errorMessage:nil]);
   scoped_nsobject<NSWindow> window([[ConstrainedWindowCustomWindow alloc]
       initWithContentRect:[[view_controller_ view] bounds]]);
   [[window contentView] addSubview:[view_controller_ view]];
