@@ -1202,5 +1202,31 @@ TEST_F(InputMethodManagerImplTest,
   EXPECT_EQ(ext_id2, controller_->change_input_method_id_);
 }
 
+TEST_F(InputMethodManagerImplTest,
+       MigrateOldInputMethodTest) {
+  std::vector<std::string> input_method_ids;
+  input_method_ids.push_back("mozc");
+  input_method_ids.push_back("mozc-jp");
+  input_method_ids.push_back("xkb:us::eng");
+  input_method_ids.push_back("mozc-hangul");
+
+  manager_->MigrateOldInputMethods(&input_method_ids);
+
+  ASSERT_EQ(4U, input_method_ids.size());
+  EXPECT_EQ(input_method_ids.end(),
+            std::find(input_method_ids.begin(), input_method_ids.end(),
+                      "mozc"));
+  EXPECT_EQ(input_method_ids.end(),
+            std::find(input_method_ids.begin(), input_method_ids.end(),
+                      "mozc-jp"));
+  EXPECT_NE(input_method_ids.end(),
+            std::find(input_method_ids.begin(), input_method_ids.end(),
+                      "xkb:us::eng"));
+  EXPECT_NE(input_method_ids.end(),
+            std::find(input_method_ids.begin(), input_method_ids.end(),
+                      "mozc-hangul"));
+
+}
+
 }  // namespace input_method
 }  // namespace chromeos

@@ -36,6 +36,15 @@ bool Contains(const std::vector<std::string>& container,
       container.end();
 }
 
+const struct MigrationInputMethodList {
+  const char* old_input_method;
+  const char* new_input_method;
+} kMigrationInputMethodList[] = {
+  { "mozc", "_comp_ime_fpfbhcjppmaeaijcidgiibchfbnhbeljnacl_mozc_us" },
+  { "mozc-jp", "_comp_ime_fpfbhcjppmaeaijcidgiibchfbnhbeljnacl_mozc_jp" },
+  { "mozc-dv", "_comp_ime_fpfbhcjppmaeaijcidgiibchfbnhbeljnacl_mozc_us" },
+};
+
 }  // namespace
 
 InputMethodManagerImpl::InputMethodManagerImpl(
@@ -225,6 +234,22 @@ bool InputMethodManagerImpl::EnableInputMethods(
   // ChangeInputMethod() picks the first one in |active_input_method_ids_|.
   ChangeInputMethod(current_input_method_.id());
   return true;
+}
+
+bool InputMethodManagerImpl::MigrateOldInputMethods(
+    std::vector<std::string>* input_method_ids) {
+  bool rewritten = false;
+  for (size_t i = 0; i < input_method_ids->size(); ++i) {
+    for (size_t j = 0; j < ARRAYSIZE_UNSAFE(kMigrationInputMethodList); ++j) {
+      if (input_method_ids->at(i) ==
+          kMigrationInputMethodList[j].old_input_method) {
+        input_method_ids->at(i).assign(
+            kMigrationInputMethodList[j].new_input_method);
+        rewritten = true;
+      }
+    }
+  }
+  return rewritten;
 }
 
 bool InputMethodManagerImpl::SetInputMethodConfig(

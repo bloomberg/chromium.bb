@@ -63,6 +63,11 @@ bool MockInputMethodManager::EnableInputMethods(
   return true;
 }
 
+bool MockInputMethodManager::MigrateOldInputMethods(
+    std::vector<std::string>* input_method_ids) {
+  return false;
+}
+
 bool MockInputMethodManager::SetInputMethodConfig(
     const std::string& section,
     const std::string& config_name,

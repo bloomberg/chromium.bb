@@ -36,6 +36,8 @@ class MockInputMethodManager : public InputMethodManager {
                              const std::string& initial_layout) OVERRIDE;
   virtual bool EnableInputMethods(
       const std::vector<std::string>& new_active_input_method_ids) OVERRIDE;
+  virtual bool MigrateOldInputMethods(
+      std::vector<std::string>* input_method_ids) OVERRIDE;
   virtual bool SetInputMethodConfig(
       const std::string& section,
       const std::string& config_name,
