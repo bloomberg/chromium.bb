@@ -29,8 +29,8 @@
 #include <wtf/Forward.h>
 
 namespace WebCore {
-
 class ScriptExecutionContext;
+
 
 class V8TestCallback : public TestCallback, public ActiveDOMCallback {
 public:
