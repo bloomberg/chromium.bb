@@ -667,7 +667,7 @@
 
       # Set this to 1 to enable use of concatenated impulse responses
       # for the HRTF panner in WebAudio.
-      'use_concatenated_impulse_responses': 0,
+      'use_concatenated_impulse_responses': 1,
 
       # Set this to 1 to use the Google-internal file containing
       # official API keys for Google Chrome even in a developer build.
