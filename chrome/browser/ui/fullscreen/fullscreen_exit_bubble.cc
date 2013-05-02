@@ -17,7 +17,7 @@
 
 // NOTE(koz): Linux doesn't use the thick shadowed border, so we add padding
 // here.
-#ifdef LINUX
+#if defined(OS_LINUX)
 const int FullscreenExitBubble::kPaddingPx = 8;
 #else
 const int FullscreenExitBubble::kPaddingPx = 0;
