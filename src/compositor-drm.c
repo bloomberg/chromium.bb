@@ -146,7 +146,6 @@ struct drm_edid {
 struct drm_output {
 	struct weston_output   base;
 
-	char *name;
 	uint32_t crtc_id;
 	int pipe;
 	uint32_t connector_id;
@@ -1072,7 +1071,6 @@ drm_output_destroy(struct weston_output *output_base)
 	weston_output_destroy(&output->base);
 	wl_list_remove(&output->base.link);
 
-	free(output->name);
 	free(output);
 }
 
@@ -1695,7 +1693,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	else
 		type_name = "UNKNOWN";
 	snprintf(name, 32, "%s%d", type_name, connector->connector_type_id);
-	output->name = strdup(name);
+	output->base.name = strdup(name);
 
 	output->crtc_id = resources->crtcs[i];
 	output->pipe = i;
@@ -1730,7 +1728,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	configured = NULL;
 
 	wl_list_for_each(temp, &configured_output_list, link) {
-		if (strcmp(temp->name, output->name) == 0) {
+		if (strcmp(temp->name, output->base.name) == 0) {
 			if (temp->mode)
 				weston_log("%s mode \"%s\" in config\n",
 							temp->name, temp->mode);
@@ -1784,7 +1782,7 @@ create_output_for_connector(struct drm_compositor *ec,
 		output->base.current = &current->base;
 
 	if (output->base.current == NULL) {
-		weston_log("no available modes for %s\n", output->name);
+		weston_log("no available modes for %s\n", output->base.name);
 		goto err_free;
 	}
 
@@ -1834,7 +1832,7 @@ create_output_for_connector(struct drm_compositor *ec,
 				      &ec->base.primary_plane);
 
 	weston_log("Output %s, (connector %d, crtc %d)\n",
-		   output->name, output->connector_id, output->crtc_id);
+		   output->base.name, output->connector_id, output->crtc_id);
 	wl_list_for_each(m, &output->base.mode_list, link)
 		weston_log_continue("  mode %dx%d@%.1f%s%s%s\n",
 				    m->width, m->height, m->refresh / 1000.0,
@@ -1859,7 +1857,6 @@ err_free:
 	drmModeFreeCrtc(output->original_crtc);
 	ec->crtc_allocator &= ~(1 << output->crtc_id);
 	ec->connector_allocator &= ~(1 << output->connector_id);
-	free(output->name);
 	free(output);
 
 	return -1;

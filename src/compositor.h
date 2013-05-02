@@ -156,6 +156,7 @@ enum dpms_enum {
 
 struct weston_output {
 	uint32_t id;
+	char *name;
 
 	void *renderer_state;
 

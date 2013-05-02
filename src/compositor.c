@@ -2908,6 +2908,7 @@ weston_output_destroy(struct weston_output *output)
 
 	wl_signal_emit(&output->destroy_signal, output);
 
+	free(output->name);
 	pixman_region32_fini(&output->region);
 	pixman_region32_fini(&output->previous_damage);
 	output->compositor->output_id_pool &= ~(1 << output->id);
