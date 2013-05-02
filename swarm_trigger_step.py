@@ -60,6 +60,7 @@ class Manifest(object):
     self.test_filter = test_filter
     self.shards = shards
     self.verbose = bool(switches.verbose)
+    self.profile = bool(switches.profile)
 
     self.tasks = []
     self.target_platform = platform_mapping[switches.os_image]
@@ -146,7 +147,8 @@ class Manifest(object):
       '--hash', self.manifest_hash,
       '--remote', self.data_server_retrieval.rstrip('/') + '-gzip/',
     ]
-    if self.verbose:
+    if self.verbose or self.profile:
+      # Have it print the profiling section.
       cmd.append('--verbose')
     self.add_task('Run Test', cmd)
 
@@ -254,6 +256,9 @@ def main():
                     'used multiple times to send multiple hashes.')
   parser.add_option('-v', '--verbose', action='store_true',
                     help='Print verbose logging')
+  parser.add_option('--profile', action='store_true',
+                    default=bool(os.environ.get('ISOLATE_DEBUG')),
+                    help='Have run_isolated.py print profiling info')
   (options, args) = parser.parse_args()
 
   if args:

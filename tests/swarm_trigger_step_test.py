@@ -31,6 +31,7 @@ class Options(object):
     self.swarm_url = swarm_url
     self.data_server = data_server
     self.verbose = False
+    self.profile = False
 
 
 def GenerateExpectedJSON(options):
@@ -84,6 +85,8 @@ def GenerateExpectedJSON(options):
   if options.shards > 1:
     expected[u'env_vars'][u'GTEST_SHARD_INDEX'] = u'%(instance_index)s'
     expected[u'env_vars'][u'GTEST_TOTAL_SHARDS'] = u'%(num_instances)s'
+  if options.profile:
+    expected[u'tests'][0][u'action'].append(u'--verbose')
   return expected
 
 
@@ -146,6 +149,17 @@ class ManifestTest(unittest.TestCase):
        aren't used.
     """
     options = Options(os_image='linux2')
+    manifest = swarm_trigger_step.Manifest(
+        FILE_HASH, TEST_NAME, options.shards, '*', options)
+
+    manifest_json = json.loads(manifest.to_json())
+
+    expected = GenerateExpectedJSON(options)
+    self.assertEqual(expected, manifest_json)
+
+  def test_basic_linux_profile(self):
+    options = Options(os_image='linux2')
+    options.profile = True
     manifest = swarm_trigger_step.Manifest(
         FILE_HASH, TEST_NAME, options.shards, '*', options)
 
