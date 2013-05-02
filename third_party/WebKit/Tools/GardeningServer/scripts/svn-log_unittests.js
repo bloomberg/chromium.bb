@@ -79,32 +79,32 @@ var kExampleCommitDataXML =
     '</log>';
 
 var kExampleCommitDataList = [{
-    "revision": "147744",
-    "title": "Revert 147740 \\"Remove the ENABLE_QUOTA compile-time flag.\\"",
-    "time": "2013-04-06T13:00:08.314281Z",
-    "summary": "Revert 147740 \\"Remove the ENABLE_QUOTA compile-time flag.\\"",
-    "author": "tkent@chromium.org",
-    "reviewer": "eseidel@chromium",
-    "bugID": NaN,
-    "revertedRevision": undefined
+    'revision': '147744',
+    'title': 'Revert 147740 "Remove the ENABLE_QUOTA compile-time flag."',
+    'time': '2013-04-06T13:00:08.314281Z',
+    'summary': 'Revert 147740 "Remove the ENABLE_QUOTA compile-time flag."',
+    'author': 'tkent@chromium.org',
+    'reviewer': 'eseidel@chromium',
+    'bugID': 0,
+    'revertedRevision': undefined
   }, {
-    "revision": "147743",
-    "title": "Update test expectations.",
-    "time": "2013-04-06T12:48:59.078499Z",
-    "summary": "Update test expectations.",
-    "author": "tkent@chromium.org",
-    "reviewer": null,
-    "bugID": 227354,
-    "revertedRevision": undefined
+    'revision': '147743',
+    'title': 'Update test expectations.',
+    'time': '2013-04-06T12:48:59.078499Z',
+    'summary': 'Update test expectations.',
+    'author': 'tkent@chromium.org',
+    'reviewer': null,
+    'bugID': 227354,
+    'revertedRevision': undefined
   }, {
-    "revision": "147742",
-    "title": "Guard <link> beforeload against recursion.",
-    "time": "2013-04-06T12:40:34.111299Z",
-    "summary": "Guard <link> beforeload against recursion.",
-    "author": "gavinp@chromium.org",
-    "reviewer": null,
-    "bugID": 174920,
-    "revertedRevision": undefined
+    'revision': '147742',
+    'title': 'Guard <link> beforeload against recursion.',
+    'time': '2013-04-06T12:40:34.111299Z',
+    'summary': 'Guard <link> beforeload against recursion.',
+    'author': 'gavinp@chromium.org',
+    'reviewer': null,
+    'bugID': 174920,
+    'revertedRevision': undefined
   }];
 
 test("changesetURL", 1, function() {

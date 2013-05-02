@@ -45,7 +45,9 @@ function findReviewer(message)
 function findBugID(message)
 {
     var regexp = /BUG=(\d+)/;
-    return parseInt(findUsingRegExp(message, regexp), 10);
+    var bugID = parseInt(findUsingRegExp(message, regexp), 10);
+    return isNaN(bugID) ? 0 : bugID;
+
 }
 
 function parseCommitMessage(message) {

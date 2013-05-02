@@ -54,7 +54,6 @@ test("ui.onebar", 3, function() {
     onebar = new ui.onebar();
     onebar.attach();
     equal(onebar.innerHTML,
-        '<div><select id="platform-picker"><option>Apple</option><option>Chromium</option><option>GTK</option><option>Qt</option></select></div>' +
         '<ul class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">' +
             '<li class="ui-state-default ui-corner-top ui-tabs-selected ui-state-active"><a href="#unexpected">Unexpected Failures</a></li>' +
             '<li class="ui-state-default ui-corner-top"><a href="#expected">Expected Failures</a></li>' +
@@ -153,7 +152,7 @@ test("StatusArea", 3, function() {
     statusArea.addMessage(id, 'First Message');
     statusArea.addMessage(id, 'Second Message');
     equal(statusArea.outerHTML,
-        '<div class="status processing" style="visibility: visible; ">' +
+        '<div class="status processing" style="visibility: visible;">' +
             '<ul class="actions"><li><button class="action">Close</button></li></ul>' +
             '<progress class="process-text">Processing...</progress>' +
             '<div id="status-content-1" class="status-content">' +
@@ -167,7 +166,7 @@ test("StatusArea", 3, function() {
     secondStatusArea.addMessage(secondId, 'First Message second id');
 
     equal(statusArea.outerHTML,
-        '<div class="status processing" style="visibility: visible; ">' +
+        '<div class="status processing" style="visibility: visible;">' +
             '<ul class="actions"><li><button class="action">Close</button></li></ul>' +
             '<progress class="process-text">Processing...</progress>' +
             '<div id="status-content-1" class="status-content">' +
@@ -183,7 +182,7 @@ test("StatusArea", 3, function() {
     statusArea.addFinalMessage(secondId, 'Final Message 2');
 
     equal(statusArea.outerHTML,
-        '<div class="status" style="visibility: visible; ">' +
+        '<div class="status" style="visibility: visible;">' +
             '<ul class="actions"><li><button class="action">Close</button></li></ul>' +
             '<progress class="process-text">Processing...</progress>' +
             '<div id="status-content-1" class="status-content">' +

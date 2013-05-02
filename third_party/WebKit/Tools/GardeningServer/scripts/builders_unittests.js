@@ -1021,51 +1021,6 @@ test("buildersFailing", 3, function() {
     ]);
 });
 
-test("buildersFailing (Apple)", 3, function() {
-    var simulator = new NetworkSimulator();
-    builders.clearBuildInfoCache();
-
-    config.currentPlatform = 'apple';
-
-    var failingBuildInfoJSON = JSON.parse(JSON.stringify(kExampleBuildInfoJSON));
-    failingBuildInfoJSON.number = 11460;
-    failingBuildInfoJSON.steps[2].results[0] = 1;
-
-    var requestedURLs = [];
-    simulator.get = function(url, callback)
-    {
-        requestedURLs.push(url);
-        simulator.scheduleCallback(function() {
-            if (/\/json\/builders$/.exec(url))
-                callback(kExampleWebKitDotOrgBuilderStatusJSON);
-            else if (/Apple%20Lion%20Release%20WK2%20\(Tests\)/.exec(url))
-                callback(kExampleBuildInfoJSON);
-            else {
-                ok(false, "Unexpected URL: " + url);
-                callback();
-            }
-        });
-    };
-
-    simulator.runTest(function() {
-        builders.buildersFailingNonLayoutTests(function(builderNameList) {
-            deepEqual(builderNameList, {
-                "Apple Lion Release WK2 (Tests)": [
-                    "webkit_gpu_tests"
-                ]
-            });
-        });
-    });
-
-    deepEqual(requestedURLs, [
-        "http://build.webkit.org/json/builders",
-        "http://build.webkit.org/json/builders/Apple%20Lion%20Release%20WK2%20(Tests)/builds/11461"
-    ]);
-
-    config.currentPlatform = 'chromium';
-});
-
-
 test("buildersFailing (run-webkit-tests crash)", 3, function() {
     var simulator = new NetworkSimulator();
     builders.clearBuildInfoCache();
