@@ -5580,6 +5580,7 @@ int Track::Info::Copy(Info& dst) const
 
     dst.type = type;
     dst.number = number;
+    dst.defaultDuration = defaultDuration;
     dst.uid = uid;
     dst.lacing = lacing;
     dst.settings = settings;
@@ -5678,6 +5679,10 @@ bool Track::GetLacing() const
     return m_info.lacing;
 }
 
+unsigned long long Track::GetDefaultDuration() const
+{
+    return m_info.defaultDuration;
+}
 
 long Track::GetFirst(const BlockEntry*& pBlockEntry) const
 {
@@ -6579,6 +6584,7 @@ long Tracks::ParseTrackEntry(
     info.type = 0;
     info.number = 0;
     info.uid = 0;
+    info.defaultDuration = 0;
 
     Track::Settings v;
     v.start = -1;
@@ -6692,6 +6698,15 @@ long Tracks::ParseTrackEntry(
 
             if (status)
                 return status;
+        }
+        else if (id == 0x03E383)  //Default Duration
+        {
+            const long long duration = UnserializeUInt(pReader, pos, size);
+
+            if (duration < 0)
+                return E_FILE_FORMAT_INVALID;
+
+            info.defaultDuration = static_cast<unsigned long long>(duration);
         }
         else if (id == 0x06)  //CodecID
         {

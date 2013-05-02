@@ -354,6 +354,7 @@ public:
     const char* GetCodecId() const;
     const unsigned char* GetCodecPrivate(size_t&) const;
     bool GetLacing() const;
+    unsigned long long GetDefaultDuration() const;
 
     const BlockEntry* GetEOS() const;
 
@@ -377,6 +378,7 @@ public:
         long type;
         long number;
         unsigned long long uid;
+        unsigned long long defaultDuration;
         char* nameAsUTF8;
         char* language;
         char* codecId;
