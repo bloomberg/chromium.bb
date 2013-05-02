@@ -20,7 +20,6 @@
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "cc/base/switches.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_util.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -422,11 +421,6 @@ void GpuDataManagerImpl::AppendRendererCommandLine(
     command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
   if (ShouldUseSwiftShader())
     command_line->AppendSwitch(switches::kDisableFlashFullscreen3d);
-
-  if (card_blacklisted_ && use_software_compositor_) {
-    command_line->AppendSwitch(switches::kEnableSoftwareCompositing);
-    command_line->AppendSwitch(cc::switches::kEnableCompositorFrameMessage);
-  }
 }
 
 void GpuDataManagerImpl::AppendGpuCommandLine(
@@ -575,12 +569,6 @@ void GpuDataManagerImpl::UpdateRendererWebPrefs(WebPreferences* prefs) const {
     prefs->accelerated_compositing_for_3d_transforms_enabled = false;
     prefs->accelerated_compositing_for_plugins_enabled = false;
   }
-
-  if (card_blacklisted_ && use_software_compositor_) {
-    prefs->accelerated_compositing_enabled = true;
-    prefs->accelerated_compositing_for_3d_transforms_enabled = true;
-    prefs->accelerated_compositing_for_animation_enabled = true;
-  }
 }
 
 GpuSwitchingOption GpuDataManagerImpl::GetGpuSwitchingOption() const {
@@ -594,10 +582,6 @@ void GpuDataManagerImpl::DisableHardwareAcceleration() {
 
   for (int i = 0; i < NUMBER_OF_GPU_FEATURE_TYPES; ++i)
     blacklisted_features_.insert(i);
-
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kDisableGpu))
-    command_line->AppendSwitch(switches::kDisableGpu);
 
   EnableSwiftShaderIfNecessary();
   NotifyGpuInfoUpdate();
@@ -701,11 +685,6 @@ GpuDataManagerImpl::GpuDataManagerImpl()
     : complete_gpu_info_already_requested_(false),
       gpu_switching_(GPU_SWITCHING_OPTION_AUTOMATIC),
       observer_list_(new GpuDataManagerObserverList),
-#if defined(USE_AURA)
-      use_software_compositor_(true),
-#else
-      use_software_compositor_(false),
-#endif
       use_swiftshader_(false),
       card_blacklisted_(false),
       update_histograms_(true),
@@ -828,10 +807,6 @@ void GpuDataManagerImpl::EnableSwiftShaderIfNecessary() {
              switches::kDisableSoftwareRasterizer))
       use_swiftshader_ = true;
   }
-}
-
-void GpuDataManagerImpl::EnableSoftwareCompositing() {
-  use_software_compositor_ = true;
 }
 
 std::string GpuDataManagerImpl::GetDomainFromURL(const GURL& url) const {

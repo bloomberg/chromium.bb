@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "content/public/browser/browser_main_runner.h"
-#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/shell/shell_browser_main.h"
@@ -116,12 +115,8 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     command_line.AppendSwitch(switches::kEnableCssShaders);
     command_line.AppendSwitchASCII(switches::kTouchEvents,
                                    switches::kTouchEventsEnabled);
-    if (command_line.HasSwitch(switches::kEnableSoftwareCompositing)) {
-      GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
-      gpu_data_manager->EnableSoftwareCompositing();
-      gpu_data_manager->DisableHardwareAcceleration();
-      command_line.AppendSwitch(switches::kForceCompositingMode);
-    }
+    if (command_line.HasSwitch(switches::kEnableSoftwareCompositing))
+      command_line.AppendSwitch(switches::kEnableSoftwareCompositingGLAdapter);
 
     net::CookieMonster::EnableFileScheme();
     if (!WebKitTestPlatformInitialize()) {
