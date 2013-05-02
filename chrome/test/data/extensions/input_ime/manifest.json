@@ -9,17 +9,24 @@
     "scripts": ["main.js"]
   },
   "input_components": [{
-    "name": "test ime",
+    "name": "IdentityIME",
     "type": "ime",
     "id": "IdentityIME",
     "description": "Works as IME but do nothing",
     "language": "en",
     "layouts": ["us::eng"]
   },{
-    "name": "test ime",
+    "name": "ToUpperIME",
     "type": "ime",
     "id": "ToUpperIME",
     "description": "Convert given key character to upper case.",
+    "language": "en",
+    "layouts": ["us::eng"]
+  },{
+    "name": "EchoBackIME",
+    "type": "ime",
+    "id": "EchoBackIME",
+    "description": "Just echo back called function name to Chrome.",
     "language": "en",
     "layouts": ["us::eng"]
   }]

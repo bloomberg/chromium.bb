@@ -16,7 +16,8 @@ IMEBase.prototype = {
   onInputContextUpdate: function(context) {},
   onKeyEvent: function(context, engine, keyData) { return false; },
   onCandidateClicked: function(candidateID, button) {},
-  onMenuItemActivated: function(name) {}
+  onMenuItemActivated: function(name) {},
+  onSurroundingTextChanged: function(text, focus, anchor) {}
 };
 
 /**
@@ -25,6 +26,50 @@ IMEBase.prototype = {
  **/
 var IdentityIME = function() {};
 IdentityIME.prototype = new IMEBase();
+
+/**
+ * This class echo back called function name to chrome.
+ * @constructor
+ **/
+var EchoBackIME = function() {};
+EchoBackIME.prototype = new IMEBase();
+EchoBackIME.prototype.onActivate = function() {
+  chrome.test.sendMessage('onActivate');
+};
+
+EchoBackIME.prototype.onDeactivated = function() {
+  chrome.test.sendMessage('onDeactivated');
+};
+
+EchoBackIME.prototype.onFocus = function(context) {
+  chrome.test.sendMessage('onFocus');
+};
+
+EchoBackIME.prototype.onBlur = function(contextID) {
+  chrome.test.sendMessage('onBlur');
+};
+
+EchoBackIME.prototype.onInputContextUpdate = function(context) {
+  chrome.test.sendMessage('onInputContextUpdate');
+  console.log('onInputContextUpdate');
+};
+
+EchoBackIME.prototype.onKeyEvent = function(context, engine, keyData) {
+  chrome.test.sendMessage('onKeyEvent');
+  return false;
+};
+
+EchoBackIME.prototype.onCandidateClicked = function(candidateID, button) {
+  chrome.test.sendMessage('onCandidateClicked');
+};
+
+EchoBackIME.prototype.onMenuItemActivated = function(name) {
+  chrome.test.sendMessage('onMenuItemActivated');
+};
+
+EchoBackIME.prototype.onSurroundingTextChanged = function(text, focus, anchor) {
+  chrome.test.sendMessage('onSurroundingTextChanged');
+};
 
 /**
  * This class provides an IME which capitalize given character.
@@ -166,6 +211,16 @@ EngineBridge.prototype = {
   },
 
   /**
+   * Called from chrome.input.ime.onSurroundingTextChanged.
+   * @private
+   * @this EngineBridge
+   **/
+  onSurroundingTextChanged_: function(engineID, object) {
+    this.engineInstance_[engineID].onSurroundingTextChanged(
+        object.text, object.focus, object.anchor);
+  },
+
+  /**
    * Add engine instance for |engineID|.
    * @this EngineBridge
    **/
@@ -189,6 +244,8 @@ EngineBridge.prototype = {
         this.onCandidateClicked_.bind(this));
     chrome.input.ime.onMenuItemActivated.addListener(
         this.onMenuItemActivated_.bind(this));
+    chrome.input.ime.onSurroundingTextChanged.addListener(
+        this.onSurroundingTextChanged_.bind(this));
   }
 };
 
@@ -198,5 +255,7 @@ document.addEventListener('readystatechange', function() {
     engineBridge.Initialize();
     engineBridge.addEngine('IdentityIME', new IdentityIME());
     engineBridge.addEngine('ToUpperIME', new ToUpperIME());
+    engineBridge.addEngine('EchoBackIME', new EchoBackIME());
+    chrome.test.sendMessage('ReadyToUseImeEvent');
   }
 });
