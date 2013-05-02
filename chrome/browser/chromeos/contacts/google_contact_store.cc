@@ -269,9 +269,7 @@ void GoogleContactStore::MergeContacts(
                  base::Time::FromInternalValue((*it)->update_time()));
   }
   VLOG(1) << "Last contact update time is "
-          << (last_contact_update_time_.is_null() ?
-              std::string("null") :
-              google_apis::util::FormatTimeAsString(last_contact_update_time_));
+          << google_apis::util::FormatTimeAsString(last_contact_update_time_);
 
   contacts_.Merge(updated_contacts.Pass(), ContactMap::DROP_DELETED_CONTACTS);
 }

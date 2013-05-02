@@ -1045,7 +1045,12 @@ void FakeDriveService::SetLastModifiedTime(
     return;
   }
 
-  entry->SetString("updated.$t", util::FormatTimeAsString(last_modified_time));
+  if (last_modified_time.is_null()) {
+    entry->Remove("updated.$t", NULL);
+  } else {
+    entry->SetString("updated.$t",
+                     util::FormatTimeAsString(last_modified_time));
+  }
 
   scoped_ptr<ResourceEntry> parsed_entry(
       ResourceEntry::CreateFrom(*entry));

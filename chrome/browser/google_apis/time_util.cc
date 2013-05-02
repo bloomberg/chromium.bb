@@ -17,6 +17,8 @@ namespace util {
 
 namespace {
 
+const char kNullTimeString[] = "null";
+
 bool ParseTimezone(const base::StringPiece& timezone,
                    bool ahead,
                    int* out_offset_to_utc_in_minutes) {
@@ -141,6 +143,9 @@ bool GetTimeFromString(const base::StringPiece& raw_value,
 }
 
 std::string FormatTimeAsString(const base::Time& time) {
+  if (time.is_null())
+    return kNullTimeString;
+
   base::Time::Exploded exploded;
   time.UTCExplode(&exploded);
   return base::StringPrintf(
@@ -150,9 +155,11 @@ std::string FormatTimeAsString(const base::Time& time) {
 }
 
 std::string FormatTimeAsStringLocaltime(const base::Time& time) {
+  if (time.is_null())
+    return kNullTimeString;
+
   base::Time::Exploded exploded;
   time.LocalExplode(&exploded);
-
   return base::StringPrintf(
       "%04d-%02d-%02dT%02d:%02d:%02d.%03d",
       exploded.year, exploded.month, exploded.day_of_month,

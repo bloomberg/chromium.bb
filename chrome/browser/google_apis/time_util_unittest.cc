@@ -101,6 +101,16 @@ TEST(TimeUtilTest, FormatTimeAsString) {
   base::Time::Exploded exploded_time = {2012, 7, 0, 19, 15, 59, 13, 123};
   base::Time time = base::Time::FromUTCExploded(exploded_time);
   EXPECT_EQ("2012-07-19T15:59:13.123Z", FormatTimeAsString(time));
+
+  EXPECT_EQ("null", FormatTimeAsString(base::Time()));
+}
+
+TEST(TimeUtilTest, FormatTimeAsStringLocalTime) {
+  base::Time::Exploded exploded_time = {2012, 7, 0, 19, 15, 59, 13, 123};
+  base::Time time = base::Time::FromLocalExploded(exploded_time);
+  EXPECT_EQ("2012-07-19T15:59:13.123", FormatTimeAsStringLocaltime(time));
+
+  EXPECT_EQ("null", FormatTimeAsStringLocaltime(base::Time()));
 }
 
 }  // namespace util
