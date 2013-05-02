@@ -21,6 +21,11 @@ class Event;
 namespace ash {
 class Launcher;
 
+// When passed to LauncherDelegate::ItemSelected, the browser item will be
+// addressed for switching.
+// TODO(skuhne): Remove this constant once CL 11596003 has landed.
+const LauncherID kAppIdForBrowserSwitching = -1;
+
 // A special menu model which keeps track of an "active" menu item.
 class ASH_EXPORT LauncherMenuModel : public ui::SimpleMenuModel {
  public:

@@ -102,14 +102,29 @@ void Launcher::UpdateIconPositionForWindow(aura::Window* window) {
 }
 
 void Launcher::ActivateLauncherItem(int index) {
-  const ash::LauncherItems& items =
-      launcher_view_->model()->items();
   // We pass in a keyboard event which will then trigger a switch to the
   // next item if the current one is already active.
   ui::KeyEvent event(ui::ET_KEY_RELEASED,
                      ui::VKEY_UNKNOWN,  // The actual key gets ignored.
                      ui::EF_NONE,
                      false);
+  // TODO(skuhne): Remove this temporary fix once M28 is out and CL 11596003
+  // has landed. Note that all unit tests which use this function need to remove
+  // the "kChromeItemOffset" as well.
+  // Note: The index gets only decremented for the per app instance of the
+  // launcher. The old per browser launcher does not get impacted here.
+  if (delegate_->IsPerAppLauncher() && --index <= 0) {
+    LauncherItem item;
+    // Create a fake launcher item with an invalid ID so that
+    // our ChromeLauncherControllerPerApp can handle it accordingly. This is
+    // only a temporary fix until CL 11596003 has landed.
+    item.id = ash::kAppIdForBrowserSwitching;
+    delegate_->ItemSelected(item, event);
+    return;
+  }
+
+  const ash::LauncherItems& items =
+      launcher_view_->model()->items();
   delegate_->ItemSelected(items[index], event);
 }
 

@@ -453,6 +453,9 @@ class ChromeLauncherControllerPerApp
   // Check if the given |web_contents| is in incognito mode.
   bool IsIncognito(content::WebContents* web_contents) const;
 
+  // Activate a browser - or the next one in the list.
+  void ActivateOrAdvanceToNextBrowser();
+
   ash::LauncherModel* model_;
 
   // Profile used for prefs and loading extensions. This is NOT necessarily the

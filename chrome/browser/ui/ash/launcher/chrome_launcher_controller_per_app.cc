@@ -920,6 +920,12 @@ void ChromeLauncherControllerPerApp::OnBrowserShortcutClicked(
 
 void ChromeLauncherControllerPerApp::ItemSelected(const ash::LauncherItem& item,
                                                  const ui::Event& event) {
+  // TODO(skuhne): Remove this temporary fix once M28 is out and CL 11596003
+  // has landed.
+  if (item.id == ash::kAppIdForBrowserSwitching) {
+    ActivateOrAdvanceToNextBrowser();
+    return;
+  }
   DCHECK(HasItemController(item.id));
   id_to_item_controller_map_[item.id]->Clicked(event);
 }
@@ -1654,4 +1660,50 @@ bool ChromeLauncherControllerPerApp::IsIncognito(
   const Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   return profile->IsOffTheRecord() && !profile->IsGuestSession();
+}
+
+void ChromeLauncherControllerPerApp::ActivateOrAdvanceToNextBrowser() {
+  // Create a list of all suitable running browsers.
+  std::vector<Browser*> items;
+  const BrowserList* ash_browser_list =
+      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+  for (BrowserList::const_reverse_iterator it =
+           ash_browser_list->begin_last_active();
+       it != ash_browser_list->end_last_active(); ++it) {
+    if (IsBrowserRepresentedInBrowserList(*it))
+      items.push_back(*it);
+  }
+  // If there are no suitable browsers we create a new one.
+  if (!items.size()) {
+    CreateNewWindow();
+    return;
+  }
+  Browser* browser = chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
+  if (items.size() == 1) {
+    // If there is only one suitable browser, we can either activate it, or
+    // bounce it (if it is already active).
+    if (browser == items[0]) {
+      AnimateWindow(browser->window()->GetNativeWindow(),
+                    views::corewm::WINDOW_ANIMATION_TYPE_BOUNCE);
+      return;
+    }
+    browser = items[0];
+  } else {
+    // If there is more then one suitable browser, we advance to the next if
+    // |current_browser| is already active - or - check the last used browser
+    // if it can be used.
+    std::vector<Browser*>::iterator i =
+        std::find(items.begin(), items.end(), browser);
+    if (i != items.end()) {
+      browser = (++i == items.end()) ? items[0] : *i;
+    } else {
+      browser = chrome::FindTabbedBrowser(
+          GetProfileForNewWindows(), true, chrome::HOST_DESKTOP_TYPE_ASH);
+      if (!browser || !IsBrowserRepresentedInBrowserList(browser))
+        browser = items[0];
+    }
+  }
+  DCHECK(browser);
+  browser->window()->Show();
+  browser->window()->Activate();
 }
