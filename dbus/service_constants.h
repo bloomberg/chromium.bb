@@ -595,7 +595,6 @@ const char kL2tpIpsecPskProperty[] = "L2TPIPsec.PSK";
 const char kL2tpIpsecPskRequiredProperty[] = "L2TPIPsec.PSKRequired";
 const char kL2tpIpsecUserProperty[] = "L2TPIPsec.User";
 const char kL2tpIpsecPasswordProperty[] = "L2TPIPsec.Password";
-const char kL2tpIpsecGroupNameProperty[] = "L2TPIPsec.GroupName";
 // deprecated:
 const char kL2tpIpsecClientCertSlotProp[] = "L2TPIPsec.ClientCertSlot";
 
