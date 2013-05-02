@@ -19,6 +19,20 @@
 namespace autofill {
 namespace wallet {
 
+scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrumentWithId(
+    const std::string& id) {
+  return scoped_ptr<WalletItems::MaskedInstrument>(
+      new WalletItems::MaskedInstrument(ASCIIToUTF16("descriptive_name"),
+                                        WalletItems::MaskedInstrument::UNKNOWN,
+                                        std::vector<base::string16>(),
+                                        ASCIIToUTF16("last_four_digits"),
+                                        12,
+                                        2012,
+                                        GetTestAddress(),
+                                        WalletItems::MaskedInstrument::EXPIRED,
+                                        id));
+}
+
 scoped_ptr<Address> GetTestAddress() {
   return scoped_ptr<Address>(new Address("country_name_code",
                                          ASCIIToUTF16("recipient_name"),
@@ -60,16 +74,11 @@ scoped_ptr<WalletItems::LegalDocument> GetTestLegalDocument() {
 }
 
 scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrument() {
-  return scoped_ptr<WalletItems::MaskedInstrument>(
-      new WalletItems::MaskedInstrument(ASCIIToUTF16("descriptive_name"),
-                                        WalletItems::MaskedInstrument::UNKNOWN,
-                                        std::vector<base::string16>(),
-                                        ASCIIToUTF16("last_four_digits"),
-                                        12,
-                                        2012,
-                                        GetTestAddress(),
-                                        WalletItems::MaskedInstrument::EXPIRED,
-                                        "instrument_id"));
+  return GetTestMaskedInstrumentWithId("default_instrument_id");
+}
+
+scoped_ptr<WalletItems::MaskedInstrument> GetTestNonDefaultMaskedInstrument() {
+  return GetTestMaskedInstrumentWithId("instrument_id");
 }
 
 scoped_ptr<Address> GetTestSaveableAddress() {
@@ -95,7 +104,13 @@ scoped_ptr<Address> GetTestShippingAddress() {
       ASCIIToUTF16("ship_admin_area_name"),
       ASCIIToUTF16("ship_postal_code_number"),
       ASCIIToUTF16("ship_phone_number"),
-      "address_id"));
+      "default_address_id"));
+}
+
+scoped_ptr<Address> GetTestNonDefaultShippingAddress() {
+  scoped_ptr<Address> address = GetTestShippingAddress();
+  address->set_object_id("address_id");
+  return address.Pass();
 }
 
 scoped_ptr<WalletItems> GetTestWalletItems() {

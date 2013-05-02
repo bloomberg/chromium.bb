@@ -434,7 +434,7 @@ TEST_F(FullWalletTest, CreateFullWallet) {
                          "iin",
                          "rest",
                          GetTestAddress(),
-                         GetTestShippingAddress(),
+                         GetTestNonDefaultShippingAddress(),
                          required_actions);
   EXPECT_EQ(full_wallet, *FullWallet::CreateFullWallet(*dict));
 }

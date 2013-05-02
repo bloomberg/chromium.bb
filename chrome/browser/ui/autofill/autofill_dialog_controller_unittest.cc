@@ -439,6 +439,33 @@ TEST_F(AutofillDialogControllerTest, AcceptLegalDocuments) {
   controller()->OnAccept();
 }
 
+// Makes sure the default object IDs are respected.
+TEST_F(AutofillDialogControllerTest, WalletDefaultItems) {
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestNonDefaultMaskedInstrument());
+  wallet_items->AddInstrument(wallet::GetTestNonDefaultMaskedInstrument());
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  wallet_items->AddInstrument(wallet::GetTestNonDefaultMaskedInstrument());
+
+  wallet_items->AddAddress(wallet::GetTestNonDefaultShippingAddress());
+  wallet_items->AddAddress(wallet::GetTestNonDefaultShippingAddress());
+  wallet_items->AddAddress(wallet::GetTestNonDefaultShippingAddress());
+  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+  wallet_items->AddAddress(wallet::GetTestNonDefaultShippingAddress());
+
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  // "add", "manage", and 4 suggestions.
+  EXPECT_EQ(6,
+      controller()->MenuModelForSection(SECTION_CC_BILLING)->GetItemCount());
+  EXPECT_TRUE(controller()->MenuModelForSection(SECTION_CC_BILLING)->
+      IsItemCheckedAt(2));
+  // "use billing", "add", "manage", and 5 suggestions.
+  EXPECT_EQ(8,
+      controller()->MenuModelForSection(SECTION_SHIPPING)->GetItemCount());
+  EXPECT_TRUE(controller()->MenuModelForSection(SECTION_SHIPPING)->
+      IsItemCheckedAt(4));
+}
+
 TEST_F(AutofillDialogControllerTest, SaveAddress) {
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
   EXPECT_CALL(*controller()->GetTestingWalletClient(),

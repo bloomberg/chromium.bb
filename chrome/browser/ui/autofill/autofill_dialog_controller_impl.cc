@@ -1733,24 +1733,33 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
     const std::vector<wallet::Address*>& addresses =
         wallet_items_->addresses();
     for (size_t i = 0; i < addresses.size(); ++i) {
-      // TODO(dbeam): respect the default instrument ID. http://crbug.com/232954
+      std::string key = base::IntToString(i);
       suggested_shipping_.AddKeyedItemWithSublabel(
-          base::IntToString(i),
+          key,
           addresses[i]->DisplayName(),
           addresses[i]->DisplayNameDetail());
 
+      if (addresses[i]->object_id() ==
+              wallet_items_->default_address_id()) {
+        suggested_shipping_.SetCheckedItem(key);
+      }
     }
 
     if (!IsSubmitPausedOn(wallet::VERIFY_CVV)) {
       const std::vector<wallet::WalletItems::MaskedInstrument*>& instruments =
           wallet_items_->instruments();
       for (size_t i = 0; i < instruments.size(); ++i) {
-        // TODO(dbeam): respect the default address ID. http://crbug.com/232954
+        std::string key = base::IntToString(i);
         suggested_cc_billing_.AddKeyedItemWithSublabelAndIcon(
-            base::IntToString(i),
+            key,
             instruments[i]->DisplayName(),
             instruments[i]->DisplayNameDetail(),
             instruments[i]->CardIcon());
+
+        if (instruments[i]->object_id() ==
+                wallet_items_->default_instrument_id()) {
+          suggested_cc_billing_.SetCheckedItem(key);
+        }
       }
 
       // TODO(estade): this should have a URL sublabel.
@@ -1825,13 +1834,14 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
   suggested_shipping_.AddKeyedItem(
       kManageItemsKey,
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_MANAGE_SHIPPING_ADDRESS));
-
-  // Default shipping address is the first suggestion, if one exists. Otherwise
-  // it's the "Use shipping for billing" item.
-  const std::string& first_real_suggestion_item_key =
-      suggested_shipping_.GetItemKeyAt(1);
-  if (IsASuggestionItemKey(first_real_suggestion_item_key))
+  if (!IsPayingWithWallet()) {
+    // When using Autofill, the default option is the first suggestion, if
+    // one exists. Otherwise it's the "Use shipping for billing" item.
+    const std::string& first_real_suggestion_item_key =
+        suggested_shipping_.GetItemKeyAt(1);
+    if (IsASuggestionItemKey(first_real_suggestion_item_key))
       suggested_shipping_.SetCheckedItem(first_real_suggestion_item_key);
+  }
 
   if (view_)
     view_->ModelChanged();
