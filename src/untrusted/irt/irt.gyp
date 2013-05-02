@@ -60,6 +60,9 @@
         'nexe_target': 'irt_core',
         'build_glibc': 0,
         'build_newlib': 1,
+        'extra_args': [
+          '--strip-all',
+        ],
       },
       'sources': ['<@(irt_sources)', '<@(irt_nonbrowser)'],
       'link_flags': [

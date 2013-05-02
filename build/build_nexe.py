@@ -207,6 +207,10 @@ class Builder(object):
     """Helper which returns strip path."""
     return self.GetBinName('strip')
 
+  def GetObjCopy(self):
+    """Helper which returns objcopy path."""
+    return self.GetBinName('objcopy')
+
   def GetPnaclFinalize(self):
     """Helper which returns pnacl-finalize path."""
     assert self.is_pnacl_toolchain
@@ -215,6 +219,34 @@ class Builder(object):
   def BuildAssembleOptions(self, options):
     options = ArgToList(options)
     self.assemble_options = options + ['-I' + name for name in self.inc_paths]
+
+  def DebugName(self):
+    return self.name + '.debug'
+
+  def UntaggedName(self):
+    return self.name + '.untagged'
+
+  def LinkOutputName(self):
+    if (self.is_pnacl_toolchain and self.finalize_pexe or
+        self.strip_all or self.strip_debug):
+      return self.DebugName()
+    else:
+      return self.name
+
+  def ArchiveOutputName(self):
+    if self.strip_debug:
+      return self.DebugName()
+    else:
+      return self.name
+
+  def StripOutputName(self):
+    return self.name
+
+  def TranslateOutputName(self):
+    return self.name
+
+  def Soname(self):
+    return self.name
 
   def BuildCompileOptions(self, options, define_list):
     """Generates compile options, called once by __init__."""
@@ -245,7 +277,7 @@ class Builder(object):
     if self.outtype == 'nso':
       options += ['-Wl,-rpath-link,' + name for name in self.lib_paths]
       options += ['-shared']
-      options += ['-Wl,-soname,' + os.path.basename(self.name)]
+      options += ['-Wl,-soname,' + os.path.basename(self.Soname())]
     self.link_options = options + ['-L' + name for name in self.lib_paths]
 
   def BuildArchiveOptions(self):
@@ -430,7 +462,7 @@ class Builder(object):
 
   def Link(self, srcs):
     """Link these objects with predetermined options and output name."""
-    out = self.name
+    out = self.LinkOutputName()
     self.Log('\nLink %s' % out)
     bin_name = self.GetCXXCompiler()
     MakeDir(os.path.dirname(out))
@@ -449,7 +481,7 @@ class Builder(object):
   # For now, only support translating a pexe, and not .o file(s)
   def Translate(self, src):
     """Translate a pexe to a nexe."""
-    out = self.name
+    out = self.TranslateOutputName()
     self.Log('\nTranslate %s' % out)
     bin_name = self.GetBinName('translate')
     cmd_line = [bin_name, '-arch', self.arch, src, '-o', out]
@@ -462,7 +494,7 @@ class Builder(object):
 
   def Archive(self, srcs):
     """Archive these objects with predetermined options and output name."""
-    out = self.name
+    out = self.ArchiveOutputName()
     self.Log('\nArchive %s' % out)
 
     if '-r' in self.link_options:
@@ -484,30 +516,44 @@ class Builder(object):
       ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
     return out
 
-  def Strip(self, out):
+  def Strip(self, src):
     """Strip the NEXE"""
-    self.Log('\nStrip %s' % out)
+    self.Log('\nStrip %s' % src)
 
-    tmp = out + '.tmp'
-    self.CleanOutput(tmp)
-    os.rename(out, tmp)
-    bin_name = self.GetStrip()
+    out = self.StripOutputName()
+    pre_debug_tagging = self.UntaggedName()
+    self.CleanOutput(out)
+    self.CleanOutput(pre_debug_tagging)
+
+    # Strip from foo.debug to foo.untagged.
+    strip_name = self.GetStrip()
     strip_option = '--strip-all' if self.strip_all else '--strip-debug'
-    cmd_line = [bin_name, strip_option, tmp, '-o', out]
+    cmd_line = [strip_name, strip_option, src, '-o', pre_debug_tagging]
+    err = self.RunWithRetry(cmd_line, pre_debug_tagging)
+    if err:
+      ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
+
+    # Tag with a debug link to foo.debug copying from foo.untagged to foo.
+    objcopy_name = self.GetObjCopy()
+    cmd_line = [objcopy_name, '--add-gnu-debuglink', src,
+                pre_debug_tagging, out]
     err = self.RunWithRetry(cmd_line, out)
     if err:
       ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
+
+    # Drop the untagged intermediate.
+    self.CleanOutput(pre_debug_tagging)
+
     return out
 
-  def Finalize(self, out):
+  def Finalize(self, src):
     """Finalize the PEXE"""
-    self.Log('\nFinalize %s' % out)
+    self.Log('\nFinalize %s' % src)
 
-    tmp = out + '.nonfinal'
-    self.CleanOutput(tmp)
-    os.rename(out, tmp)
+    out = self.StripOutputName()
+    self.CleanOutput(out)
     bin_name = self.GetPnaclFinalize()
-    cmd_line = [bin_name, tmp, '-o', out]
+    cmd_line = [bin_name, src, '-o', out]
     err = self.RunWithRetry(cmd_line, out)
     if err:
       ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
