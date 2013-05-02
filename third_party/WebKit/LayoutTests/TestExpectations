@@ -2700,3 +2700,4 @@ crbug.com/237270 [ Win7 Debug ] svg/custom/invisible-text-after-scrolling.xhtml 
 crbug.com/237270 [ Win7 Debug ] transforms/2d/transform-2d.html [ Pass Timeout ]
 crbug.com/237270 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-composite-alpha.html [ Pass Timeout ]
 crbug.com/237272 [ Win7 Mac Debug ] fast/js/regexp-overflow.html [ Pass Timeout ]
+crbug.com/237414 [ XP ] fast/replaced/preferred-widths.html [ Pass Failure ]
