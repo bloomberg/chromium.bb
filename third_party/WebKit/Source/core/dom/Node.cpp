@@ -2779,12 +2779,6 @@ bool Node::isUserActionElementFocused() const
     return document()->userActionElements().isFocused(this);
 }
 
-void Node::setIsCustomElement()
-{
-    ASSERT(isHTMLElement() || isSVGElement());
-    setFlag(IsCustomElement);
-}
-
 } // namespace WebCore
 
 #ifndef NDEBUG
