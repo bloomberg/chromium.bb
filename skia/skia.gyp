@@ -38,12 +38,12 @@
         # this should likely be moved into src/utils in skia
         '../third_party/skia/src/core/SkFlate.cpp',
 
-        '../third_party/skia/src/images/bmpdecoderhelper.cpp',
-        '../third_party/skia/src/images/bmpdecoderhelper.h',
+        #'../third_party/skia/src/images/bmpdecoderhelper.cpp',
+        #'../third_party/skia/src/images/bmpdecoderhelper.h',
         #'../third_party/skia/src/images/SkFDStream.cpp',
-        '../third_party/skia/src/images/SkImageDecoder.cpp',
-        '../third_party/skia/src/images/SkImageDecoder_FactoryDefault.cpp',
-        '../third_party/skia/src/images/SkImageDecoder_FactoryRegistrar.cpp',
+        #'../third_party/skia/src/images/SkImageDecoder.cpp',
+        #'../third_party/skia/src/images/SkImageDecoder_FactoryDefault.cpp',
+        #'../third_party/skia/src/images/SkImageDecoder_FactoryRegistrar.cpp',
         #'../third_party/skia/src/images/SkImageDecoder_fpdfemb.cpp',
         #'../third_party/skia/src/images/SkImageDecoder_libbmp.cpp',
         #'../third_party/skia/src/images/SkImageDecoder_libgif.cpp',
@@ -146,8 +146,8 @@
 
         '../third_party/skia/include/ports/SkTypeface_win.h',
 
-        '../third_party/skia/include/images/SkImageDecoder.h',
-        '../third_party/skia/include/images/SkImageEncoder.h',
+        #'../third_party/skia/include/images/SkImageDecoder.h',
+        #'../third_party/skia/include/images/SkImageEncoder.h',
         '../third_party/skia/include/images/SkImageRef.h',
         '../third_party/skia/include/images/SkImageRef_GlobalPool.h',
         '../third_party/skia/include/images/SkMovie.h',
