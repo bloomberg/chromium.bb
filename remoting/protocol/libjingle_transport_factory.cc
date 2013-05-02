@@ -81,6 +81,7 @@ class LibjingleStreamTransport : public StreamTransport,
   std::string ice_password_;
 
   scoped_ptr<cricket::P2PTransportChannel> channel_;
+  bool channel_was_writable_;
 
   // We own |socket_| until it is connected.
   scoped_ptr<jingle_glue::PseudoTcpAdapter> socket_;
@@ -96,7 +97,8 @@ LibjingleStreamTransport::LibjingleStreamTransport(
       event_handler_(NULL),
       ice_username_fragment_(
           talk_base::CreateRandomString(cricket::ICE_UFRAG_LENGTH)),
-      ice_password_(talk_base::CreateRandomString(cricket::ICE_PWD_LENGTH)) {
+      ice_password_(talk_base::CreateRandomString(cricket::ICE_PWD_LENGTH)),
+      channel_was_writable_(false) {
 }
 
 LibjingleStreamTransport::~LibjingleStreamTransport() {
@@ -243,7 +245,17 @@ void LibjingleStreamTransport::OnRouteChange(
 
 void LibjingleStreamTransport::OnWritableState(
     cricket::TransportChannel* channel) {
+  DCHECK_EQ(channel, channel_.get());
+
   event_handler_->OnTransportReady(this, channel->writable());
+
+  if (channel->writable()) {
+    channel_was_writable_ = true;
+  } else if (!channel->writable() && channel_was_writable_) {
+    // Restart ICE by resetting ICE password.
+    ice_password_ = talk_base::CreateRandomString(cricket::ICE_PWD_LENGTH);
+    channel_->SetIceCredentials(ice_username_fragment_, ice_password_);
+  }
 }
 
 void LibjingleStreamTransport::OnTcpConnected(int result) {
