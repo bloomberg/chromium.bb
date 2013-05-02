@@ -27,6 +27,6 @@
     Conditional=WEBGL,
     DoNotCheckConstants
 ] interface EXTTextureFilterAnisotropic {
-    const unsigned int TEXTURE_MAX_ANISOTROPY_EXT = 0x84FE;
-    const unsigned int MAX_TEXTURE_MAX_ANISOTROPY_EXT = 0x84FF;
+    const unsigned long TEXTURE_MAX_ANISOTROPY_EXT = 0x84FE;
+    const unsigned long MAX_TEXTURE_MAX_ANISOTROPY_EXT = 0x84FF;
 };

@@ -37,7 +37,7 @@
 
     void copyText(DOMString text);
     [Custom] void inspect(any objectId, any hints);
-    [Custom] any inspectedObject(int num);
+    [Custom] any inspectedObject(long num);
     [Custom] any internalConstructorName(any object);
     [Custom] boolean isHTMLAllCollection(any object);
     [Custom] DOMString type(any object);

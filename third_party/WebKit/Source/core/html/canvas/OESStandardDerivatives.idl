@@ -27,5 +27,5 @@
     Conditional=WEBGL,
     DoNotCheckConstants
 ] interface OESStandardDerivatives {
-    const unsigned int FRAGMENT_SHADER_DERIVATIVE_HINT_OES = 0x8B8B;
+    const unsigned long FRAGMENT_SHADER_DERIVATIVE_HINT_OES = 0x8B8B;
 };
