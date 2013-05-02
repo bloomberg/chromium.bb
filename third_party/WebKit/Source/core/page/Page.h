@@ -232,6 +232,9 @@ public:
     PageVisibilityState visibilityState() const;
     void setVisibilityState(PageVisibilityState, bool);
 
+    bool isCursorVisible() const { return m_isCursorVisible; }
+    void setIsCursorVisible(bool isVisible) { m_isCursorVisible = isVisible; }
+
     void addLayoutMilestones(LayoutMilestones);
     LayoutMilestones layoutMilestones() const { return m_layoutMilestones; }
 
@@ -320,6 +323,8 @@ private:
     bool m_isInWindow;
 
     PageVisibilityState m_visibilityState;
+
+    bool m_isCursorVisible;
 
     LayoutMilestones m_layoutMilestones;
 

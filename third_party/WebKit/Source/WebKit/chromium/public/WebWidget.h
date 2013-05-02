@@ -140,6 +140,9 @@ public:
     // the event has been processed, false otherwise.
     virtual bool handleInputEvent(const WebInputEvent&) { return false; }
 
+    // Called to inform the WebWidget of the mouse cursor's visibility.
+    virtual void setCursorVisibilityState(bool isVisible) { }
+
     // Check whether the given point hits any registered touch event handlers.
     virtual bool hasTouchEventHandlersAt(const WebPoint&) { return true; }
 

@@ -256,6 +256,8 @@ public:
 
     void setPageScaleFactor(float scaleFactor, int x, int y, ExceptionCode&);
 
+    void setIsCursorVisible(Document*, bool, ExceptionCode&);
+
     void webkitWillEnterFullScreenForElement(Document*, Element*);
     void webkitDidEnterFullScreenForElement(Document*, Element*);
     void webkitWillExitFullScreenForElement(Document*, Element*);

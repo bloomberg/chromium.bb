@@ -212,6 +212,8 @@
 
     [RaisesException] void setPageScaleFactor(float scaleFactor, long x, long y);
 
+    [RaisesException] void setIsCursorVisible(Document document, boolean isVisible);
+
     void webkitWillEnterFullScreenForElement(Document document, Element element);
     void webkitDidEnterFullScreenForElement(Document document, Element element);
     void webkitWillExitFullScreenForElement(Document document, Element element);

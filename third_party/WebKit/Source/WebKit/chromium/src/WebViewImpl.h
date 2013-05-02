@@ -151,6 +151,7 @@ public:
     virtual void themeChanged();
     virtual void setNeedsRedraw();
     virtual bool handleInputEvent(const WebInputEvent&);
+    virtual void setCursorVisibilityState(bool isVisible);
     virtual bool hasTouchEventHandlersAt(const WebPoint&);
     virtual WebInputHandler* createInputHandler() OVERRIDE;
     virtual void applyScrollAndScale(const WebSize&, float);

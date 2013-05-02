@@ -1776,6 +1776,15 @@ void Internals::setPageScaleFactor(float scaleFactor, int x, int y, ExceptionCod
     page->setPageScaleFactor(scaleFactor, IntPoint(x, y));
 }
 
+void Internals::setIsCursorVisible(Document* document, bool isVisible, ExceptionCode& ec)
+{
+    if (!document || !document->page()) {
+        ec = INVALID_ACCESS_ERR;
+        return;
+    }
+    document->page()->setIsCursorVisible(isVisible);
+}
+
 void Internals::webkitWillEnterFullScreenForElement(Document* document, Element* element)
 {
     if (!document)

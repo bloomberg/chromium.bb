@@ -2026,6 +2026,12 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
     return PageWidgetDelegate::handleInputEvent(m_page.get(), *this, inputEvent);
 }
 
+void WebViewImpl::setCursorVisibilityState(bool isVisible)
+{
+    if (m_page)
+        m_page->setIsCursorVisible(isVisible);
+}
+
 void WebViewImpl::mouseCaptureLost()
 {
     TRACE_EVENT_ASYNC_END0("webkit", "capturing mouse", this);

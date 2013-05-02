@@ -2852,11 +2852,6 @@ void EventHandler::dispatchFakeMouseMoveEventSoonInQuad(const FloatQuad& quad)
     dispatchFakeMouseMoveEventSoon();
 }
 
-void EventHandler::cancelFakeMouseMoveEvent()
-{
-    m_fakeMouseMoveEventTimer.stop();
-}
-
 void EventHandler::fakeMouseMoveEventTimerFired(Timer<EventHandler>* timer)
 {
     ASSERT_UNUSED(timer, timer == &m_fakeMouseMoveEventTimer);
@@ -2873,6 +2868,10 @@ void EventHandler::fakeMouseMoveEventTimerFired(Timer<EventHandler>* timer)
     if (!m_frame->page() || !m_frame->page()->focusController()->isActive())
         return;
 
+    // Don't dispatch a synthetic mouse move event if the mouse cursor is not visible to the user.
+    if (!isCursorVisible())
+        return;
+
     bool shiftKey;
     bool ctrlKey;
     bool altKey;
@@ -2880,6 +2879,16 @@ void EventHandler::fakeMouseMoveEventTimerFired(Timer<EventHandler>* timer)
     PlatformKeyboardEvent::getCurrentModifierState(shiftKey, ctrlKey, altKey, metaKey);
     PlatformMouseEvent fakeMouseMoveEvent(m_lastKnownMousePosition, m_lastKnownMouseGlobalPosition, NoButton, PlatformEvent::MouseMoved, 0, shiftKey, ctrlKey, altKey, metaKey, currentTime());
     mouseMoved(fakeMouseMoveEvent);
+}
+
+void EventHandler::cancelFakeMouseMoveEvent()
+{
+    m_fakeMouseMoveEventTimer.stop();
+}
+
+bool EventHandler::isCursorVisible() const
+{
+    return m_frame->page()->isCursorVisible();
 }
 
 void EventHandler::setResizingFrameSet(HTMLFrameSetElement* frameSet)

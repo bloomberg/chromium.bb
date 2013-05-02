@@ -234,6 +234,7 @@ private:
 
     void fakeMouseMoveEventTimerFired(Timer<EventHandler>*);
     void cancelFakeMouseMoveEvent();
+    bool isCursorVisible() const;
 
     bool isInsideScrollbar(const IntPoint&) const;
 

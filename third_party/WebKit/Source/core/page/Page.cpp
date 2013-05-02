@@ -144,6 +144,7 @@ Page::Page(PageClients& pageClients)
     , m_timerAlignmentInterval(DOMTimer::visiblePageAlignmentInterval())
     , m_isInWindow(true)
     , m_visibilityState(PageVisibilityStateVisible)
+    , m_isCursorVisible(true)
     , m_layoutMilestones(0)
     , m_isCountingRelevantRepaintedObjects(false)
 #ifndef NDEBUG
