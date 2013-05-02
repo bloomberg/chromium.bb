@@ -169,25 +169,27 @@ class TestCompletionCallback {
   pp::MessageLoop target_loop_;
 };
 
-template <typename OutputT>
-class TestCompletionCallbackWithOutput {
+namespace internal {
+
+template <typename OutputT, typename CallbackT>
+class TestCompletionCallbackWithOutputBase {
  public:
-  explicit TestCompletionCallbackWithOutput(PP_Instance instance) :
-    callback_(instance) {
+  explicit TestCompletionCallbackWithOutputBase(PP_Instance instance)
+      : callback_(instance) {
   }
 
-  TestCompletionCallbackWithOutput(PP_Instance instance, bool force_async) :
-    callback_(instance, force_async) {
+  TestCompletionCallbackWithOutputBase(PP_Instance instance, bool force_async)
+      : callback_(instance, force_async) {
   }
 
-  TestCompletionCallbackWithOutput(PP_Instance instance,
-                                   CallbackType callback_type) :
-    callback_(instance, callback_type) {
+  TestCompletionCallbackWithOutputBase(PP_Instance instance,
+                                       CallbackType callback_type)
+      : callback_(instance, callback_type) {
   }
 
-  pp::CompletionCallbackWithOutput<OutputT> GetCallback();
+  CallbackT GetCallback();
   OutputT output() {
-    return pp::internal::CallbackOutputTraits<OutputT>::StorageToPluginArg(
+    return CallbackT::TraitsType::StorageToPluginArg(
         output_storage_);
   }
 
@@ -206,29 +208,72 @@ class TestCompletionCallbackWithOutput {
 
  private:
   TestCompletionCallback callback_;
-  typename pp::CompletionCallbackWithOutput<OutputT>::OutputStorageType
-      output_storage_;
+  typename CallbackT::OutputStorageType output_storage_;
 };
 
-template <typename OutputT>
-pp::CompletionCallbackWithOutput<OutputT>
-TestCompletionCallbackWithOutput<OutputT>::GetCallback() {
+template <typename OutputT, typename CallbackT>
+CallbackT
+TestCompletionCallbackWithOutputBase<OutputT, CallbackT>::GetCallback() {
   callback_.Reset();
   if (callback_.callback_type() == PP_BLOCKING) {
-    pp::CompletionCallbackWithOutput<OutputT> cc(&output_storage_);
+    CallbackT cc(&output_storage_);
     return cc;
   }
 
   callback_.set_target_loop(pp::MessageLoop::GetCurrent());
-  pp::CompletionCallbackWithOutput<OutputT> cc(
-        &TestCompletionCallback::Handler,
-        this,
-        &output_storage_);
+  CallbackT cc(&TestCompletionCallback::Handler, this, &output_storage_);
   if (callback_.callback_type() == PP_OPTIONAL)
     cc.set_flags(PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
   return cc;
 }
 
+}  // namespace internal
+
+template <typename OutputT>
+class TestCompletionCallbackWithOutput
+    : public internal::TestCompletionCallbackWithOutputBase<
+        OutputT, pp::CompletionCallbackWithOutput<OutputT> > {
+ public:
+  explicit TestCompletionCallbackWithOutput(PP_Instance instance)
+      : BaseType(instance) {
+  }
+
+  TestCompletionCallbackWithOutput(PP_Instance instance, bool force_async)
+      : BaseType(instance, force_async) {
+  }
+
+  TestCompletionCallbackWithOutput(PP_Instance instance,
+                                   CallbackType callback_type)
+      : BaseType(instance, callback_type) {
+  }
+
+ private:
+  typedef internal::TestCompletionCallbackWithOutputBase<
+      OutputT, pp::CompletionCallbackWithOutput<OutputT> > BaseType;
+};
+
+template <typename OutputT>
+class TestExtCompletionCallbackWithOutput
+    : public internal::TestCompletionCallbackWithOutputBase<
+        OutputT, pp::ext::ExtCompletionCallbackWithOutput<OutputT> > {
+ public:
+  explicit TestExtCompletionCallbackWithOutput(PP_Instance instance)
+      : BaseType(instance) {
+  }
+
+  TestExtCompletionCallbackWithOutput(PP_Instance instance, bool force_async)
+      : BaseType(instance, force_async) {
+  }
+
+  TestExtCompletionCallbackWithOutput(PP_Instance instance,
+                                      CallbackType callback_type)
+      : BaseType(instance, callback_type) {
+  }
+
+ private:
+  typedef internal::TestCompletionCallbackWithOutputBase<
+      OutputT, pp::ext::ExtCompletionCallbackWithOutput<OutputT> > BaseType;
+};
 
 // Verifies that the callback didn't record any errors. If the callback is run
 // in an unexpected way (e.g., if it's invoked asynchronously when the call
