@@ -1503,6 +1503,7 @@
         'browser/ui/views/tabs/stacked_tab_strip_layout_unittest.cc',
         'browser/ui/views/tabs/tab_unittest.cc',
         'browser/ui/views/tabs/tab_strip_unittest.cc',
+        'browser/ui/views/validation_message_bubble_delegate_unittest.cc',
         'browser/ui/web_contents_modal_dialog_manager_unittest.cc',
         'browser/ui/website_settings/website_settings_unittest.cc',
         'browser/ui/webui/favicon_source_unittest.cc',

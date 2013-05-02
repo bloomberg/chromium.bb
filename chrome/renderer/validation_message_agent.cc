@@ -12,9 +12,9 @@
 ValidationMessageAgent::ValidationMessageAgent(content::RenderView* render_view)
     : content::RenderViewObserver(render_view)
 {
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(TOOLKIT_VIEWS)
   // TODO(tkent): enable this for other platforms.
-  // crbug.com/235717, crbug.com/235719, crbug.com/235721.
+  // crbug.com/235717, crbug.com/235721.
   render_view->GetWebView()->setValidationMessageClient(this);
 #endif
 }

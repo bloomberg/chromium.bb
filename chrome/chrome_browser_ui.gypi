@@ -1847,6 +1847,8 @@
         'browser/ui/views/outdated_upgrade_bubble_view.cc',
         'browser/ui/views/user_data_dir_dialog_view.cc',
         'browser/ui/views/user_data_dir_dialog_view.h',
+        'browser/ui/views/validation_message_bubble_delegate.h',
+        'browser/ui/views/validation_message_bubble_delegate.cc',
         'browser/ui/views/validation_message_bubble_view.cc',
         'browser/ui/views/web_contents_modal_dialog_manager_views.cc',
         'browser/ui/views/website_settings/permission_selector_view.cc',

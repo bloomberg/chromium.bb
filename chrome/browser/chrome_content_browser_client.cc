@@ -726,10 +726,7 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
       id, profile, context));
   host->GetChannel()->AddFilter(
       new prerender::PrerenderMessageFilter(id, profile));
-#if defined(OS_MACOSX)
-  // TODO(tkent): Enable it for other platforms.
   host->GetChannel()->AddFilter(new ValidationMessageMessageFilter(id));
-#endif
 
   host->Send(new ChromeViewMsg_SetIsIncognitoProcess(
       profile->IsOffTheRecord()));
