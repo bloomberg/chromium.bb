@@ -78,8 +78,12 @@ public:
     ~CustomElementRegistry();
 
     PassRefPtr<CustomElementConstructor> registerElement(WebCore::ScriptState*, const AtomicString& name, const Dictionary& options, ExceptionCode&);
+
+    // FIXME: findFor is dangerous since it consults the "is"
+    // attribute; that should only be consulted at element creation
+    // time.
     PassRefPtr<CustomElementDefinition> findFor(Element*) const;
-    PassRefPtr<CustomElementDefinition> find(const QualifiedName& elementName, const QualifiedName& localName) const;
+    PassRefPtr<CustomElementDefinition> findAndCheckNamespace(const AtomicString& type, const AtomicString& namespaceURI) const;
 
     PassRefPtr<Element> tryToCreateCustomTagElement(const QualifiedName& localName);
 
@@ -92,7 +96,7 @@ public:
     static void deliverAllLifecycleCallbacksIfNeeded();
 
 private:
-    typedef HashMap<std::pair<QualifiedName, QualifiedName>, RefPtr<CustomElementDefinition> > DefinitionMap;
+    typedef HashMap<AtomicString, RefPtr<CustomElementDefinition> > DefinitionMap;
     typedef HashSet<AtomicString> NameSet;
     typedef ListHashSet<CustomElementRegistry*> InstanceSet;
 
@@ -104,7 +108,6 @@ private:
     void didCreateElement(Element*);
 
     DefinitionMap m_definitions;
-    NameSet m_names;
     Vector<CustomElementInvocation> m_invocations;
 };
 

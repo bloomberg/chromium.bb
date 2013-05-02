@@ -43,23 +43,38 @@ class ScriptState;
 
 class CustomElementDefinition : public RefCounted<CustomElementDefinition> {
 public:
-    static PassRefPtr<CustomElementDefinition> create(ScriptState*, const QualifiedName& typeName, const QualifiedName& localName, const ScriptValue& prototype);
+    static PassRefPtr<CustomElementDefinition> create(ScriptState*, const AtomicString& type, const AtomicString& name, const AtomicString& namespaceURI, const ScriptValue& prototype);
 
     virtual ~CustomElementDefinition() {}
 
-    const QualifiedName& typeName() const { return m_typeName; }
-    const QualifiedName& localName() const { return m_localName; }
-    bool isTypeExtension() const { return m_typeName != m_localName; }
+    // This specifies whether the custom element is in the HTML or SVG
+    // namespace.
+    const AtomicString& namespaceURI() const { return m_tag.namespaceURI(); }
+
+    // This uniquely identifies the Custom Element. For custom tags, this
+    // is the tag name and the same as "name". For type extensions, this
+    // is the value of the "is" attribute.
+    const AtomicString& type() const { return m_type; }
+
+    // This is the tag name of the Custom Element.
+    const AtomicString& name() const { return m_tag.localName(); }
+
+    // This is a convenience property derived from "namespaceURI" and
+    // "name". Custom Elements of this kind will have this tag
+    // name. This does not have a prefix.
+    const QualifiedName& tagQName() const { return m_tag; }
+
+    bool isTypeExtension() const { return type() != name(); }
 
     const ScriptValue& prototype() { return m_prototype; }
 
 private:
-    CustomElementDefinition(const QualifiedName& typeName, const QualifiedName& localName, const ScriptValue& prototype);
+    CustomElementDefinition(const AtomicString& type, const AtomicString& name, const AtomicString& namespaceURI, const ScriptValue& prototype);
 
     ScriptValue m_prototype;
 
-    QualifiedName m_typeName;
-    QualifiedName m_localName;
+    AtomicString m_type;
+    QualifiedName m_tag;
 };
 
 }

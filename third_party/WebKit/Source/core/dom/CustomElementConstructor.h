@@ -46,18 +46,17 @@ class Element;
 class CustomElementConstructor: public RefCounted<CustomElementConstructor>, public ContextDestructionObserver
 {
 public:
-    static PassRefPtr<CustomElementConstructor> create(Document* document, const QualifiedName& typeName, const QualifiedName& localName);
+    static PassRefPtr<CustomElementConstructor> create(Document* document, const QualifiedName& tagName, const AtomicString& typeExtension);
     virtual ~CustomElementConstructor() {}
 
     PassRefPtr<Element> createElement(ExceptionCode&);
 
 private:
-    explicit CustomElementConstructor(Document* document, const QualifiedName& type, const QualifiedName& name);
+    explicit CustomElementConstructor(Document* document, const QualifiedName& tag, const AtomicString& typeExtension);
     Document* document() const;
-    bool isForTypeExtension() const { return m_type != m_name; }
 
-    QualifiedName m_type;
-    QualifiedName m_name;
+    QualifiedName m_tag;
+    AtomicString m_typeExtension;
 };
 
 }

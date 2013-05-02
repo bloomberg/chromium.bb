@@ -37,14 +37,14 @@
 
 namespace WebCore {
 
-PassRefPtr<CustomElementConstructor> CustomElementConstructor::create(Document* document, const QualifiedName& typeName, const QualifiedName& localName) {
-    return adoptRef(new CustomElementConstructor(document, typeName, localName));
+PassRefPtr<CustomElementConstructor> CustomElementConstructor::create(Document* document, const QualifiedName& tag, const AtomicString& typeExtension) {
+    return adoptRef(new CustomElementConstructor(document, tag, typeExtension));
 }
 
-CustomElementConstructor::CustomElementConstructor(Document* document, const QualifiedName& type, const QualifiedName& name)
+CustomElementConstructor::CustomElementConstructor(Document* document, const QualifiedName& tag, const AtomicString& typeExtension)
     : ContextDestructionObserver(document)
-    , m_type(type)
-    , m_name(name)
+    , m_tag(tag)
+    , m_typeExtension(typeExtension)
 {
 }
 
@@ -55,9 +55,7 @@ Document* CustomElementConstructor::document() const {
 PassRefPtr<Element> CustomElementConstructor::createElement(ExceptionCode& ec) {
     if (!document())
         return 0;
-    if (isForTypeExtension())
-        return document()->createElementNS(m_name.namespaceURI(), m_name.localName(), m_type.localName(), ec);
-    return document()->createElementNS(m_name.namespaceURI(), m_name.localName(), ec);
+    return document()->createElementNS(m_tag.namespaceURI(), m_tag.localName(), m_typeExtension, ec);
 }
 
 }
