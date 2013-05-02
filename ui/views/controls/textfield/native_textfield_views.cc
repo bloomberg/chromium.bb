@@ -57,6 +57,14 @@ namespace {
 // Default "system" color for text cursor.
 const SkColor kDefaultCursorColor = SK_ColorBLACK;
 
+void ConvertRectToScreen(const views::View* src, gfx::Rect* r) {
+  DCHECK(src);
+
+  gfx::Point new_origin = r->origin();
+  views::View::ConvertPointToScreen(src, &new_origin);
+  r->set_origin(new_origin);
+}
+
 }  // namespace
 
 namespace views {
@@ -935,7 +943,11 @@ bool NativeTextfieldViews::CanComposeInline() const {
 }
 
 gfx::Rect NativeTextfieldViews::GetCaretBounds() {
-  return GetRenderText()->GetUpdatedCursorBounds();
+  // TextInputClient::GetCaretBounds is expected to return a value in screen
+  // coordinates.
+  gfx::Rect rect = GetRenderText()->GetUpdatedCursorBounds();
+  ConvertRectToScreen(this, &rect);
+  return rect;
 }
 
 bool NativeTextfieldViews::GetCompositionCharacterBounds(uint32 index,
@@ -956,10 +968,15 @@ bool NativeTextfieldViews::GetCompositionCharacterBounds(uint32 index,
   gfx::Rect start_cursor = GetRenderText()->GetCursorBounds(start_position,
                                                             false);
   gfx::Rect end_cursor = GetRenderText()->GetCursorBounds(end_position, false);
+
+  // TextInputClient::GetCompositionCharacterBounds is expected to fill |rect|
+  // in screen coordinates and GetCaretBounds returns screen coordinates.
   *rect = gfx::Rect(start_cursor.x(),
                     start_cursor.y(),
                     end_cursor.x() - start_cursor.x(),
                     start_cursor.height());
+  ConvertRectToScreen(this, rect);
+
   return true;
 }
 

@@ -1728,17 +1728,20 @@ TEST_F(NativeTextfieldViewsTest, GetCompositionCharacterBoundsTest) {
   EXPECT_FALSE(client->GetCompositionCharacterBounds(0, &rect));
 
   // Get each character boundary by cursor.
-  gfx::Rect char_rect[char_count];
+  gfx::Rect char_rect_in_screen_coord[char_count];
   gfx::Rect prev_cursor = GetCursorBounds();
   for (uint32 i = 0; i < char_count; ++i) {
     composition.selection = ui::Range(0, i+1);
     client->SetCompositionText(composition);
     EXPECT_TRUE(client->HasCompositionText()) << " i=" << i;
     gfx::Rect cursor_bounds = GetCursorBounds();
-    char_rect[i] = gfx::Rect(prev_cursor.x(),
-                             prev_cursor.y(),
-                             cursor_bounds.x() - prev_cursor.x(),
-                             prev_cursor.height());
+    gfx::Point top_left(prev_cursor.x(), prev_cursor.y());
+    gfx::Point bottom_right(cursor_bounds.x(), prev_cursor.bottom());
+    views::View::ConvertPointToScreen(textfield_view_, &top_left);
+    views::View::ConvertPointToScreen(textfield_view_, &bottom_right);
+    char_rect_in_screen_coord[i].set_origin(top_left);
+    char_rect_in_screen_coord[i].set_width(bottom_right.x() - top_left.x());
+    char_rect_in_screen_coord[i].set_height(bottom_right.y() - top_left.y());
     prev_cursor = cursor_bounds;
   }
 
@@ -1746,7 +1749,7 @@ TEST_F(NativeTextfieldViewsTest, GetCompositionCharacterBoundsTest) {
     gfx::Rect actual_rect;
     EXPECT_TRUE(client->GetCompositionCharacterBounds(i, &actual_rect))
         << " i=" << i;
-    EXPECT_EQ(char_rect[i], actual_rect) << " i=" << i;
+    EXPECT_EQ(char_rect_in_screen_coord[i], actual_rect) << " i=" << i;
   }
 
   // Return false if the index is out of range.

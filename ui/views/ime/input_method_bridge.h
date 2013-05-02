@@ -79,10 +79,6 @@ class InputMethodBridge : public InputMethodBase,
  private:
   void UpdateViewFocusState();
 
-  // Returns a rectangle converted from |rect| from a focused View's coordinate
-  // system to that of the screen.
-  gfx::Rect ConvertRectToFocusedView(const gfx::Rect& rect);
-
   ui::InputMethod* const host_;
 
   const bool shared_input_method_;

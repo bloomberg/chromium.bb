@@ -73,6 +73,7 @@ class InputMethodWin : public InputMethodBase {
 
   LRESULT OnDocumentFeed(RECONVERTSTRING *reconv);
   LRESULT OnReconvertString(RECONVERTSTRING *reconv);
+  LRESULT OnQueryCharPosition(IMECHARPOSITION *char_positon);
 
   // Overridden from InputMethodBase.
   virtual void OnWillChangeFocus(View* focused_before, View* focused) OVERRIDE;

@@ -127,38 +127,22 @@ bool InputMethodBridge::CanComposeInline() const {
   return client ? client->CanComposeInline() : true;
 }
 
-gfx::Rect InputMethodBridge::ConvertRectToFocusedView(const gfx::Rect& rect) {
-  gfx::Point origin = rect.origin();
-  gfx::Point end = gfx::Point(rect.right(), rect.bottom());
-  View::ConvertPointToScreen(GetFocusedView(), &origin);
-  View::ConvertPointToScreen(GetFocusedView(), &end);
-  return gfx::Rect(origin.x(),
-                   origin.y(),
-                   end.x() - origin.x(),
-                   end.y() - origin.y());
-}
-
 gfx::Rect InputMethodBridge::GetCaretBounds() {
   TextInputClient* client = GetTextInputClient();
-  if (!client || !GetFocusedView())
+  if (!client)
     return gfx::Rect();
 
-  const gfx::Rect rect = client->GetCaretBounds();
-  return ConvertRectToFocusedView(rect);
+  return client->GetCaretBounds();
 }
 
 bool InputMethodBridge::GetCompositionCharacterBounds(uint32 index,
                                                       gfx::Rect* rect) {
   DCHECK(rect);
   TextInputClient* client = GetTextInputClient();
-  if (!client || !GetFocusedView())
+  if (!client)
     return false;
 
-  gfx::Rect relative_rect;
-  if (!client->GetCompositionCharacterBounds(index, &relative_rect))
-    return false;
-  *rect = ConvertRectToFocusedView(relative_rect);
-  return true;
+  return client->GetCompositionCharacterBounds(index, rect);
 }
 
 bool InputMethodBridge::HasCompositionText() {

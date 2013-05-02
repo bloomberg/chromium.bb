@@ -15,6 +15,14 @@ namespace {
 
 const int64 kTimeBeforeClearingMS = 1000;
 
+void ConvertRectToScreen(const views::View* src, gfx::Rect* r) {
+  DCHECK(src);
+
+  gfx::Point new_origin = r->origin();
+  views::View::ConvertPointToScreen(src, &new_origin);
+  r->set_origin(new_origin);
+}
+
 }  // namespace
 
 TreeViewSelector::TreeViewSelector(TreeView* tree)
@@ -55,11 +63,17 @@ bool TreeViewSelector::CanComposeInline() const {
 }
 
 gfx::Rect TreeViewSelector::GetCaretBounds() {
-  return gfx::Rect(tree_->GetVisibleBounds().origin(), gfx::Size());
+  gfx::Rect rect(tree_->GetVisibleBounds().origin(), gfx::Size());
+  // TextInputClient::GetCaretBounds is expected to return a value in screen
+  // coordinates.
+  ConvertRectToScreen(tree_, &rect);
+  return rect;
 }
 
 bool TreeViewSelector::GetCompositionCharacterBounds(uint32 index,
                                                      gfx::Rect* rect) {
+  // TextInputClient::GetCompositionCharacterBounds is expected to fill |rect|
+  // in screen coordinates and GetCaretBounds returns screen coordinates.
   *rect = GetCaretBounds();
   return false;
 }
