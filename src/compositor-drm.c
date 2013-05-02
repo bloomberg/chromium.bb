@@ -268,8 +268,7 @@ drm_fb_create_dumb(struct drm_compositor *ec, unsigned width, unsigned height)
 
 	memset(&map_arg, 0, sizeof(map_arg));
 	map_arg.handle = fb->handle;
-	drmIoctl(fb->fd, DRM_IOCTL_MODE_MAP_DUMB, &map_arg);
-
+	ret = drmIoctl(fb->fd, DRM_IOCTL_MODE_MAP_DUMB, &map_arg);
 	if (ret)
 		goto err_add_fb;
 
