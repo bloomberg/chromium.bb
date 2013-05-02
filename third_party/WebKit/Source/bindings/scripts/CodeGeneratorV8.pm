@@ -1555,15 +1555,7 @@ END
         $expression = "static_pointer_cast<SVGAnimatedEnumeration>($expression)" if $returnType eq "SVGAnimatedEnumeration";
     }
 
-    # Special case for readonly or Replaceable attributes (with a few exceptions). This attempts to ensure that JS wrappers don't get
-    # garbage-collected prematurely when their lifetime is strongly tied to their owner. We accomplish this by inserting a reference to
-    # the newly created wrapper into an internal field of the holder object.
-    if ((!InheritsInterface($interface, "Node") && $attrName ne "self" && IsWrapperType($returnType) && (IsReadonly($attribute) || $attribute->signature->extendedAttributes->{"Replaceable"} || $attrName eq "location")
-         && $returnType ne "EventTarget" && $returnType ne "SerializedScriptValue" && $returnType ne "DOMWindow"
-         && $returnType ne "MessagePortArray"
-         && $returnType !~ /SVG/ && $returnType !~ /HTML/ && !IsDOMNodeType($returnType))
-        || $attribute->signature->extendedAttributes->{"CacheAttributeForGC"}) {
-
+    if (ShouldKeepAttributeAlive($interface, $attribute, $returnType)) {
         my $arrayType = GetArrayType($returnType);
         if ($arrayType) {
             if (!SkipIncludeHeader($arrayType)) {
@@ -1669,6 +1661,43 @@ END
     $code .= "}\n\n";  # end of getter
     $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
     AddToImplContentInternals($code);
+}
+
+sub ShouldKeepAttributeAlive
+{
+    my ($interface, $attribute, $returnType) = @_;
+    my $attrName = $attribute->signature->name;
+
+    # FIXME: Rename the IDL attribute to [KeepAttributeAliveForGC].
+    return 1 if $attribute->signature->extendedAttributes->{"CacheAttributeForGC"};
+
+    # Basically, for readonly or replaceable attributes, we have to guarantee
+    # that JS wrappers don't get garbage-collected prematually when their
+    # lifetime is strongly tied to their owner.
+    # FIXME: Remove the "location" hack.
+    return 0 if !IsWrapperType($returnType);
+    return 0 if !IsReadonly($attribute) && !$attribute->signature->extendedAttributes->{"Replaceable"} && $attrName ne "location";
+
+    # However, there are a couple of exceptions.
+
+    # Node lifetime is managed by object grouping.
+    return 0 if InheritsInterface($interface, "Node");
+    return 0 if IsDOMNodeType($returnType);
+
+    # To avoid adding a reference to itself.
+    # FIXME: Introduce [DoNotKeepAttributeAliveForGC] and remove this hack
+    # depending on the attribute name.
+    return 0 if $attrName eq "self";
+
+    # FIXME: Remove these hard-coded hacks.
+    return 0 if $returnType eq "EventTarget";
+    return 0 if $returnType eq "SerializedScriptValue";
+    return 0 if $returnType eq "DOMWindow";
+    return 0 if $returnType eq "MessagePortArray";
+    return 0 if $returnType =~ /SVG/;
+    return 0 if $returnType =~ /HTML/;
+
+    return 1;
 }
 
 sub GenerateReplaceableAttrSetterCallback
