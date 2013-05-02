@@ -433,6 +433,10 @@ extern const char kChromeSearchLocalGoogleNtpUrl[];
 extern const char kChromeSearchSuggestionHost[];
 extern const char kChromeSearchSuggestionUrl[];
 
+// Host and URL for most visited iframes used on the Instant Extended NTP.
+extern const char kChromeSearchMostVisitedHost[];
+extern const char kChromeSearchMostVisitedUrl[];
+
 #if defined(OS_CHROMEOS)
 extern const char kCrosScheme[];
 extern const char kDriveScheme[];

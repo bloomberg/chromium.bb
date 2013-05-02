@@ -514,6 +514,9 @@ const char kChromeSearchLocalGoogleNtpUrl[] =
 const char kChromeSearchSuggestionHost[] = "suggestion";
 const char kChromeSearchSuggestionUrl[] = "chrome-search://suggestion/";
 
+const char kChromeSearchMostVisitedHost[] = "most-visited";
+const char kChromeSearchMostVisitedUrl[] = "chrome-search://most-visited/";
+
 // Google SafeSearch query parameters.
 const char kSafeSearchSafeParameter[] = "safe=active";
 const char kSafeSearchSsuiParameter[] = "ssui=on";
