@@ -108,6 +108,7 @@ static const char kDotJS[] = ".js";
 static const char kDotCSS[] = ".css";
 static const char kDotSWF[] = ".swf";
 static const char kDotHTML[] = ".html";
+static const char kTranslateCaptureText[] = "Translate.CaptureText";
 enum {
   INSECURE_CONTENT_DISPLAY = 0,
   INSECURE_CONTENT_DISPLAY_HOST_GOOGLE,
@@ -697,7 +698,10 @@ void ChromeRenderViewObserver::CapturePageInfo(bool preliminary_capture) {
   // Retrieve the frame's full text (up to kMaxIndexChars), and pass it to the
   // translate helper for language detection and possible translation.
   string16 contents;
+  base::TimeTicks capture_begin_time = base::TimeTicks::Now();
   CaptureText(main_frame, &contents);
+  UMA_HISTOGRAM_TIMES(kTranslateCaptureText,
+                      base::TimeTicks::Now() - capture_begin_time);
   if (translate_helper_)
     translate_helper_->PageCaptured(contents);
 
