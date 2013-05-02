@@ -402,7 +402,6 @@ GCC_CONFIGURE_FLAGS = \
     --disable-libmudflap \
     --disable-libssp \
     --disable-libstdcxx-pch \
-    --enable-linker-build-id \
     --target=$(CROSSARCH) \
     $(GCC_EXTRAS_FLAGS)
 

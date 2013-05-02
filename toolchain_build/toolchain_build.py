@@ -330,7 +330,6 @@ def ConfigureGccCommand(target, extra_args=[]):
           '--disable-shared',
           '--with-newlib',
           '--with-linker-hash-style=gnu',
-          '--enable-linker-build-id',
           '--enable-languages=c,c++,lto',
           'CFLAGS_FOR_TARGET=' + target_cflagstr,
           'CXXFLAGS_FOR_TARGET=' + target_cflagstr,
