@@ -255,6 +255,7 @@ class RenderWidgetHostViewAura
   virtual bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) OVERRIDE;
   virtual void ExtendSelectionAndDelete(size_t before, size_t after) OVERRIDE;
+  virtual void EnsureCaretInRect(const gfx::Rect& rect) OVERRIDE;
 
   // Overridden from gfx::DisplayObserver:
   virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE;
@@ -427,6 +428,9 @@ class RenderWidgetHostViewAura
 
   // Converts |rect| from window coordinate to screen coordinate.
   gfx::Rect ConvertRectToScreen(const gfx::Rect& rect);
+
+  // Converts |rect| from screen coordinate to window coordinate.
+  gfx::Rect ConvertRectFromScreen(const gfx::Rect& rect);
 
   typedef base::Callback<void(bool, const scoped_refptr<ui::Texture>&)>
       BufferPresentedCallback;

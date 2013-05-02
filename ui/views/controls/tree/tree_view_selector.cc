@@ -108,6 +108,9 @@ bool TreeViewSelector::ChangeTextDirectionAndLayoutAlignment(
 void TreeViewSelector::ExtendSelectionAndDelete(size_t before, size_t after) {
 }
 
+void TreeViewSelector::EnsureCaretInRect(const gfx::Rect& rect) {
+}
+
 void TreeViewSelector::OnTextInput(const string16& text) {
   const int row_count = tree_->GetRowCount();
   if (row_count == 0)

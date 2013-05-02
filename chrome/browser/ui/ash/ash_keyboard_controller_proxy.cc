@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/ash_keyboard_controller_proxy.h"
 
+#include "ash/display/display_controller.h"
 #include "ash/shell.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,6 +18,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/ime/text_input_client.h"
 #include "ui/keyboard/keyboard_controller.h"
 
 AshKeyboardControllerProxy::AshKeyboardControllerProxy() {}
@@ -66,4 +68,14 @@ bool AshKeyboardControllerProxy::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void AshKeyboardControllerProxy::OnKeyboardBoundsChanged(
+    const gfx::Rect& keyboard_bounds) {
+  if (keyboard_bounds.IsEmpty())
+    return;
+
+  gfx::Rect showing_area =
+      ash::DisplayController::GetPrimaryDisplay().work_area();
+  GetInputMethod()->GetTextInputClient()->EnsureCaretInRect(showing_area);
 }

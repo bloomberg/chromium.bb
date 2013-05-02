@@ -1193,6 +1193,11 @@ void RenderWidgetHostViewWin::ExtendSelectionAndDelete(
   render_widget_host_->ExtendSelectionAndDelete(before, after);
 }
 
+void RenderWidgetHostViewWin::EnsureCaretInRect(const gfx::Rect& rect) {
+  // TODO(nona): Implement this function.
+  NOTIMPLEMENTED();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewWin, private:
 

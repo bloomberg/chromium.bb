@@ -11,13 +11,14 @@
 namespace aura {
 class Window;
 }
-
 namespace content {
 class BrowserContext;
 class SiteInstance;
 class WebContents;
 }
-
+namespace gfx {
+class Rect;
+}
 namespace ui {
 class InputMethod;
 }
@@ -38,6 +39,10 @@ class KEYBOARD_EXPORT KeyboardControllerProxy {
   // Gets the InputMethod that will provide notifications about changes in the
   // text input context.
   virtual ui::InputMethod* GetInputMethod() = 0;
+
+  // Called after the keyboard bounds or visibility have changed, and after all
+  // KeyboardController::Observer's have been notified.
+  virtual void OnKeyboardBoundsChanged(const gfx::Rect& new_bounds) = 0;
 
  protected:
   // Gets the BrowserContext to use for creating the WebContents hosting the

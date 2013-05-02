@@ -1046,6 +1046,9 @@ void NativeTextfieldViews::ExtendSelectionAndDelete(
   NOTIMPLEMENTED();
 }
 
+void NativeTextfieldViews::EnsureCaretInRect(const gfx::Rect& rect) {
+}
+
 void NativeTextfieldViews::OnCompositionTextConfirmedOrCleared() {
   if (skip_input_method_cancel_composition_)
     return;

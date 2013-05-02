@@ -70,6 +70,7 @@ class TestKeyboardControllerProxy : public KeyboardControllerProxy {
   virtual ui::InputMethod* GetInputMethod() OVERRIDE {
     return input_method_.get();
   }
+  virtual void OnKeyboardBoundsChanged(const gfx::Rect& new_bounds) OVERRIDE {}
 
  private:
   scoped_ptr<aura::Window> window_;
@@ -142,6 +143,7 @@ class TestTextInputClient : public ui::TextInputClient {
   virtual bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) OVERRIDE { return false; }
   virtual void ExtendSelectionAndDelete(size_t before, size_t after) OVERRIDE {}
+  virtual void EnsureCaretInRect(const gfx::Rect& rect) OVERRIDE {}
 
   ui::TextInputType type_;
 

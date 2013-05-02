@@ -131,6 +131,10 @@ class UI_EXPORT TextInputClient {
   // Deletes the current selection plus the specified number of characters
   // before and after the selection or caret.
   virtual void ExtendSelectionAndDelete(size_t before, size_t after) = 0;
+
+  // Ensure the caret is within |rect|.  |rect| is in screen coordinates and
+  // may extend beyond the bounds of this TextInputClient.
+  virtual void EnsureCaretInRect(const gfx::Rect& rect) = 0;
 };
 
 }  // namespace ui

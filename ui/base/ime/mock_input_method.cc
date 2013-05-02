@@ -49,6 +49,7 @@ void MockInputMethod::OnBlur() {
 
 void MockInputMethod::OnTextInputTypeChanged(const TextInputClient* client) {
   FOR_EACH_OBSERVER(Observer, observer_list_, OnTextInputTypeChanged(client));
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnTextInputStateChanged(client));
 }
 
 void MockInputMethod::OnCaretBoundsChanged(const TextInputClient* client) {

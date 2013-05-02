@@ -1913,6 +1913,26 @@ gfx::Rect RenderWidgetHostViewAura::ConvertRectToScreen(const gfx::Rect& rect) {
   return rect;
 }
 
+gfx::Rect RenderWidgetHostViewAura::ConvertRectFromScreen(
+    const gfx::Rect& rect) {
+  gfx::Point origin = rect.origin();
+  gfx::Point end = gfx::Point(rect.right(), rect.bottom());
+
+  aura::RootWindow* root_window = window_->GetRootWindow();
+  if (root_window) {
+    aura::client::ScreenPositionClient* screen_position_client =
+        aura::client::GetScreenPositionClient(root_window);
+    screen_position_client->ConvertPointFromScreen(window_, &origin);
+    screen_position_client->ConvertPointFromScreen(window_, &end);
+    return gfx::Rect(origin.x(),
+                     origin.y(),
+                     end.x() - origin.x(),
+                     end.y() - origin.y());
+  }
+
+  return rect;
+}
+
 gfx::Rect RenderWidgetHostViewAura::GetCaretBounds() {
   const gfx::Rect rect =
       gfx::UnionRects(selection_anchor_rect_, selection_focus_rect_);
@@ -2010,6 +2030,17 @@ void RenderWidgetHostViewAura::ExtendSelectionAndDelete(
     size_t before, size_t after) {
   if (host_)
     host_->ExtendSelectionAndDelete(before, after);
+}
+
+void RenderWidgetHostViewAura::EnsureCaretInRect(const gfx::Rect& rect) {
+  gfx::Rect intersected_rect(
+      gfx::IntersectRects(rect, window_->GetBoundsInScreen()));
+
+  if (intersected_rect.IsEmpty())
+    return;
+
+  host_->ScrollFocusedEditableNodeIntoRect(
+      ConvertRectFromScreen(intersected_rect));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

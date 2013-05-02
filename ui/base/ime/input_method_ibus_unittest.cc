@@ -432,6 +432,7 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
       base::i18n::TextDirection direction) OVERRIDE { return false; }
   virtual void ExtendSelectionAndDelete(size_t before,
                                         size_t after) OVERRIDE { }
+  virtual void EnsureCaretInRect(const gfx::Rect& rect) OVERRIDE { }
 
   bool HasNativeEvent() const {
     base::NativeEvent empty;

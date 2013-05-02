@@ -40,6 +40,9 @@ class DummyKeyboardControllerProxy : public keyboard::KeyboardControllerProxy {
     return Shell::GetInstance()->input_method_filter()->input_method();
   }
 
+  virtual void OnKeyboardBoundsChanged(const gfx::Rect& new_bounds) OVERRIDE {
+  }
+
   DISALLOW_COPY_AND_ASSIGN(DummyKeyboardControllerProxy);
 };
 

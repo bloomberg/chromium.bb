@@ -193,6 +193,8 @@ void KeyboardController::OnTextInputStateChanged(
       container_->Show();
     else
       container_->Hide();
+
+    proxy_->OnKeyboardBoundsChanged(new_bounds);
   }
 
   // TODO(bryeung): whenever the TextInputClient changes we need to notify the

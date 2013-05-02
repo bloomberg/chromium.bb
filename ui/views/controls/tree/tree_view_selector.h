@@ -48,6 +48,7 @@ class VIEWS_EXPORT TreeViewSelector : public ui::TextInputClient {
   virtual bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) OVERRIDE;
   virtual void ExtendSelectionAndDelete(size_t before, size_t after) OVERRIDE;
+  virtual void EnsureCaretInRect(const gfx::Rect& rect) OVERRIDE;
 
  private:
   // Invoked when text is typed. Tries to change the selection appropriately.

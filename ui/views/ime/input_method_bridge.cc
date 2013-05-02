@@ -216,6 +216,12 @@ void InputMethodBridge::ExtendSelectionAndDelete(size_t before, size_t after) {
     client->ExtendSelectionAndDelete(before, after);
 }
 
+void InputMethodBridge::EnsureCaretInRect(const gfx::Rect& rect) {
+  TextInputClient* client = GetTextInputClient();
+  if (client)
+    client->EnsureCaretInRect(rect);
+}
+
 // Overridden from FocusChangeListener.
 void InputMethodBridge::OnWillChangeFocus(View* focused_before, View* focused) {
   ConfirmCompositionText();
