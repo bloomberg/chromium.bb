@@ -16,6 +16,8 @@
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/process_type.h"
+#include "net/base/host_port_pair.h"
+#include "net/http/http_server_properties_impl.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -124,6 +126,7 @@ class ResourceSchedulerTest : public testing::Test {
         ui_thread_(BrowserThread::UI, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_) {
     scheduler_.OnClientCreated(kChildId, kRouteId);
+    context_.set_http_server_properties(&http_server_properties_);
   }
 
   virtual ~ResourceSchedulerTest() {
@@ -201,6 +204,7 @@ class ResourceSchedulerTest : public testing::Test {
   BrowserThreadImpl io_thread_;
   ResourceDispatcherHostImpl rdh_;
   ResourceScheduler scheduler_;
+  net::HttpServerPropertiesImpl http_server_properties_;
   net::TestURLRequestContext context_;
 };
 
@@ -222,6 +226,20 @@ TEST_F(ResourceSchedulerTest, LowBlocksUntilBodyInserted) {
   scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
   scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
   EXPECT_TRUE(high->started());
+  EXPECT_FALSE(low->started());
+  scheduler_.OnWillInsertBody(kChildId, kRouteId);
+  EXPECT_TRUE(low->started());
+}
+
+TEST_F(ResourceSchedulerTest, LowBlocksUntilBodyInsertedExceptSpdy) {
+  http_server_properties_.SetSupportsSpdy(
+      net::HostPortPair("spdyhost", 443), true);
+  scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
+  scoped_ptr<TestRequest> low_spdy(
+      NewRequest("https://spdyhost/high", net::LOWEST));
+  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+  EXPECT_TRUE(high->started());
+  EXPECT_TRUE(low_spdy->started());
   EXPECT_FALSE(low->started());
   scheduler_.OnWillInsertBody(kChildId, kRouteId);
   EXPECT_TRUE(low->started());
