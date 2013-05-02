@@ -85,7 +85,8 @@ index d1f8d1f..67bf660 100644
 @@ -41,16 +27,20 @@
      "storage",
      "clipboardRead",
-     "clipboardWrite",
+-    "clipboardWrite"
++    "clipboardWrite",
 +    "experimental"
    ],
 -  "plugins": [
