@@ -453,7 +453,7 @@ SvgKey.prototype = {
   /** @override */
   makeDOM: function(mode) {
     this.modeElements_[mode] = document.createElement('div');
-    this.modeElements_[mode].className = 'key';
+    this.modeElements_[mode].className = 'key dark';
     this.modeElements_[mode].classList.add(this.className_);
     addContent(this.modeElements_[mode]);
 
@@ -488,7 +488,7 @@ SpecialKey.prototype = {
   /** @override */
   makeDOM: function(mode) {
     this.modeElements_[mode] = document.createElement('div');
-    this.modeElements_[mode].className = 'key';
+    this.modeElements_[mode].className = 'key dark';
     this.modeElements_[mode].classList.add(this.className_);
     addContent(this.modeElements_[mode], this.content_);
 
@@ -517,7 +517,7 @@ ShiftKey.prototype = {
   /** @override */
   makeDOM: function(mode) {
     this.modeElements_[mode] = document.createElement('div');
-    this.modeElements_[mode].className = 'key shift';
+    this.modeElements_[mode].className = 'key shift dark';
     this.modeElements_[mode].classList.add(this.className_);
 
     if (mode == KEY_MODE || mode == SHIFT_MODE) {
@@ -559,7 +559,7 @@ SymbolKey.prototype = {
   /** @override */
   makeDOM: function(mode, height) {
     this.modeElements_[mode] = document.createElement('div');
-    this.modeElements_[mode].className = 'key symbol';
+    this.modeElements_[mode].className = 'key symbol dark';
 
     if (mode == KEY_MODE || mode == SHIFT_MODE) {
       addContent(this.modeElements_[mode], '#123');
@@ -598,7 +598,7 @@ DotComKey.prototype = {
   /** @override */
   makeDOM: function(mode) {
     this.modeElements_[mode] = document.createElement('div');
-    this.modeElements_[mode].className = 'key com';
+    this.modeElements_[mode].className = 'key com dark';
     addContent(this.modeElements_[mode], '.com');
 
     setupKeyEventHandlers(this, this.modeElements_[mode],
@@ -629,7 +629,7 @@ HideKeyboardKey.prototype = {
   /** @override */
   makeDOM: function(mode) {
     this.modeElements_[mode] = document.createElement('div');
-    this.modeElements_[mode].className = 'key hide';
+    this.modeElements_[mode].className = 'key hide dark';
     addContent(this.modeElements_[mode]);
 
     setupKeyEventHandlers(this, this.modeElements_[mode],

@@ -13,6 +13,7 @@
  */
 var KEYS_US = [
   [
+    new SvgKey('tab', 'Tab'),
     new Key(C('q'), C('Q'), C('1'), C('`')),
     new Key(C('w'), C('W'), C('2'), C('~')),
     new Key(C('e'), C('E'), C('3'), C('<', 'LessThan')),
@@ -21,11 +22,12 @@ var KEYS_US = [
     new Key(C('y'), C('Y'), C('6'), C(']')),
     new Key(C('u'), C('U'), C('7'), C('{')),
     new Key(C('i'), C('I'), C('8'), C('}')),
-    new Key(C('o'), C('O'), C('9'), C('\'')),
+    new Key(C('o'), C('O'), C('9'), C('\\')),
     new Key(C('p'), C('P'), C('0'), C('|')),
+    new SvgKey('backspace', 'Backspace', true /* repeat */)
   ],
   [
-    new SvgKey('tab', 'Tab'),
+    new SymbolKey(),
     new Key(C('a'), C('A'), C('!'), C('+')),
     new Key(C('s'), C('S'), C('@'), C('=')),
     new Key(C('d'), C('D'), C('#'), C(' ')),
@@ -33,32 +35,36 @@ var KEYS_US = [
     new Key(C('g'), C('G'), C('%'), C(' ')),
     new Key(C('h'), C('H'), C('^'), C(' ')),
     new Key(C('j'), C('J'), C('&', 'Ampersand'), C(' ')),
-    new Key(C('k'), C('K'), C('*'), C('#')),
+    new Key(C('k'), C('K'), C('*'), C(' ')),
     new Key(C('l'), C('L'), C('('), C(' ')),
+    new Key(C(';'), C('\''), C(')'), C(' ')),
+    new SvgKey('return', 'Enter')
   ],
   [
-    new ShiftKey('left_shift'),
+    new ShiftKey('left-shift'),
     new Key(C('z'), C('Z'), C('/'), C(' ')),
     new Key(C('x'), C('X'), C('-'), C(' ')),
     new Key(C('c'), C('C'), C('\''), C(' ')),
-    new Key(C('v'), C('V'), C('"'), C(' ')),
-    new Key(C('b'), C('B'), C(':'), C('.')),
+    new Key(C('v'), C('V'), C('\"'), C(' ')),
+    new Key(C('b'), C('B'), C(':'), C(' ')),
     new Key(C('n'), C('N'), C(';'), C(' ')),
     new Key(C('m'), C('M'), C('_'), C(' ')),
-    new SvgKey('backspace', 'Backspace', true /* repeat */)
+    new Key(C(','), C('@'), C(','), C(' ')),
+    new Key(C('.'), C('!'), C('.'), C(' ')),
+    new Key(C('?'), C('/'), C('?'), C(' ')),
+    new ShiftKey('right-shift')
   ],
   [
     new MicKey(),
-    new SymbolKey(),
-    new SpecialKey('comma', ',', ','),
+    new DotComKey(),
     new SpecialKey('space', ' ', 'Spacebar'),
-    new SpecialKey('period', '.', '.'),
-    new SvgKey('return', 'Enter')
+    new SpecialKey('at', '@', '@'),
+    new HideKeyboardKey()
   ]
 ];
 
 // Add layout to KEYBOARDS, which is defined in common.js
 KEYBOARDS['us'] = {
   'definition': KEYS_US,
-  'aspect': 2.00,
+  'aspect': 4.50
 };
