@@ -52,6 +52,8 @@ class EntryView : public views::View {
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
+  virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EntryView);
@@ -89,6 +91,14 @@ void EntryView::OnPaintFocusBorder(gfx::Canvas* canvas) {
     canvas->DrawRect(gfx::Rect(2, 1, width() - 4, height() - 3),
                      kFocusBorderColor);
   }
+}
+
+bool EntryView::OnKeyPressed(const ui::KeyEvent& event) {
+  return child_at(0)->OnKeyPressed(event);
+}
+
+bool EntryView::OnKeyReleased(const ui::KeyEvent& event) {
+  return child_at(0)->OnKeyReleased(event);
 }
 
 // The separator line between the title and the scroll view. Currently
