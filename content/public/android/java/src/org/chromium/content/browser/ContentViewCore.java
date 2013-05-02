@@ -184,6 +184,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     private VSyncManager.Provider mVSyncProvider;
     private VSyncManager.Listener mVSyncListener;
     private int mVSyncSubscriberCount;
+    private boolean mVSyncListenerRegistered;
 
     // To avoid IPC delay we use input events to directly trigger a vsync signal in the renderer.
     // When we do this, we also need to avoid sending the real vsync signal for the current
@@ -191,6 +192,11 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     private boolean mDidSignalVSyncUsingInputEvent;
 
     public VSyncManager.Listener getVSyncListener(VSyncManager.Provider vsyncProvider) {
+        if (mVSyncProvider != null && mVSyncListenerRegistered) {
+            mVSyncProvider.unregisterVSyncListener(mVSyncListener);
+            mVSyncListenerRegistered = false;
+        }
+
         mVSyncProvider = vsyncProvider;
         mVSyncListener = new VSyncManager.Listener() {
             @Override
@@ -213,6 +219,13 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
                 }
             }
         };
+
+        if (mVSyncSubscriberCount > 0) {
+            // setVSyncNotificationEnabled(true) is called before getVSyncListener.
+            vsyncProvider.registerVSyncListener(mVSyncListener);
+            mVSyncListenerRegistered = true;
+        }
+
         return mVSyncListener;
     }
 
@@ -222,24 +235,28 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
             mDidSignalVSyncUsingInputEvent = false;
         }
         if (mVSyncProvider != null) {
-            if (mVSyncSubscriberCount == 0 && enabled) {
+            if (!mVSyncListenerRegistered && enabled) {
                 mVSyncProvider.registerVSyncListener(mVSyncListener);
+                mVSyncListenerRegistered = true;
             } else if (mVSyncSubscriberCount == 1 && !enabled) {
+                assert mVSyncListenerRegistered;
                 mVSyncProvider.unregisterVSyncListener(mVSyncListener);
+                mVSyncListenerRegistered = false;
             }
-            mVSyncSubscriberCount += enabled ? 1 : -1;
-            assert mVSyncSubscriberCount >= 0;
         }
+        mVSyncSubscriberCount += enabled ? 1 : -1;
+        assert mVSyncSubscriberCount >= 0;
     }
 
     @CalledByNative
     private void resetVSyncNotification() {
         while (isVSyncNotificationEnabled()) setVSyncNotificationEnabled(false);
         mVSyncSubscriberCount = 0;
+        mVSyncListenerRegistered = false;
     }
 
     private boolean isVSyncNotificationEnabled() {
-        return mVSyncProvider != null && mVSyncSubscriberCount > 0;
+        return mVSyncProvider != null && mVSyncListenerRegistered;
     }
 
     private final Context mContext;
