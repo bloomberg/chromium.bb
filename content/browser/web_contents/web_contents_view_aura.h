@@ -27,7 +27,7 @@ class DropTargetEvent;
 
 namespace content {
 class OverscrollNavigationOverlay;
-class ShadowWindow;
+class ShadowLayerDelegate;
 class TouchEditableImplAura;
 class WebContentsViewDelegate;
 class WebContentsImpl;
@@ -212,10 +212,6 @@ class CONTENT_EXPORT WebContentsViewAura
   // pointers.
   void* current_rvh_for_drag_;
 
-  // The container for the content-window. The doc for ShadowWindow explains its
-  // lifetime and ownership.
-  ShadowWindow* content_container_;
-
   bool overscroll_change_brightness_;
 
   // The overscroll gesture currently in progress.
@@ -228,6 +224,8 @@ class CONTENT_EXPORT WebContentsViewAura
   // This manages the overlay window that shows the screenshot during a history
   // navigation triggered by the overscroll gesture.
   scoped_ptr<OverscrollNavigationOverlay> navigation_overlay_;
+
+  scoped_ptr<ShadowLayerDelegate> overscroll_shadow_;
 
   scoped_ptr<TouchEditableImplAura> touch_editable_;
 

@@ -952,6 +952,8 @@
     'browser/user_metrics.cc',
     'browser/utility_process_host_impl.cc',
     'browser/utility_process_host_impl.h',
+    'browser/web_contents/aura/shadow_layer_delegate.cc',
+    'browser/web_contents/aura/shadow_layer_delegate.h',
     'browser/web_contents/debug_urls.cc',
     'browser/web_contents/debug_urls.h',
     'browser/web_contents/drag_utils_gtk.cc',
