@@ -101,6 +101,23 @@ void SocketStreamDispatcherHost::OnClose(net::SocketStream* socket) {
   DeleteSocketStreamHost(socket_id);
 }
 
+void SocketStreamDispatcherHost::OnError(const net::SocketStream* socket,
+                                         int error) {
+  int socket_id = SocketStreamHost::SocketIdFromSocketStream(socket);
+  DVLOG(1) << "SocketStreamDispatcherHost::OnError socket_id=" << socket_id;
+  if (socket_id == content::kNoSocketId) {
+    LOG(ERROR) << "NoSocketId in OnError";
+    return;
+  }
+  // SocketStream::Delegate::OnError() events are handled as WebSocket error
+  // event when user agent was required to fail WebSocket connection or the
+  // WebSocket connection is closed with prejudice.
+  if (!Send(new SocketStreamMsg_Failed(socket_id, error))) {
+    LOG(ERROR) << "SocketStreamMsg_Failed failed.";
+    DeleteSocketStreamHost(socket_id);
+  }
+}
+
 void SocketStreamDispatcherHost::OnSSLCertificateError(
     net::SocketStream* socket, const net::SSLInfo& ssl_info, bool fatal) {
   int socket_id = SocketStreamHost::SocketIdFromSocketStream(socket);

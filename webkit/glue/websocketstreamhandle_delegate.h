@@ -5,6 +5,8 @@
 #ifndef WEBKIT_GLUE_WEBSOCKETSTREAMHANDLE_DELEGATE_H_
 #define WEBKIT_GLUE_WEBSOCKETSTREAMHANDLE_DELEGATE_H_
 
+#include "base/string16.h"
+
 class GURL;
 
 namespace WebKit {
@@ -29,6 +31,9 @@ class WebSocketStreamHandleDelegate {
   virtual void DidReceiveData(WebKit::WebSocketStreamHandle* handle,
                               const char* data, int len) {}
   virtual void DidClose(WebKit::WebSocketStreamHandle*) {}
+  virtual void DidFail(WebKit::WebSocketStreamHandle* handle,
+                       int error_code,
+                       const string16& error_msg) {}
 
  protected:
   virtual ~WebSocketStreamHandleDelegate() {}

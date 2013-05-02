@@ -43,6 +43,7 @@ class SocketStreamDispatcher : public IPC::Listener {
   void OnSentData(int socket_id, int amount_sent);
   void OnReceivedData(int socket_id, const std::vector<char>& data);
   void OnClosed(int socket_id);
+  void OnFailed(int socket_id, int error_code);
 
   DISALLOW_COPY_AND_ASSIGN(SocketStreamDispatcher);
 };

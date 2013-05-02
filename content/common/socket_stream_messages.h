@@ -73,3 +73,8 @@ IPC_MESSAGE_CONTROL2(SocketStreamMsg_SentData,
 // The Socket Stream is closed.
 IPC_MESSAGE_CONTROL1(SocketStreamMsg_Closed,
                      int /* socket_id */)
+
+// The Socket Stream is failed.
+IPC_MESSAGE_CONTROL2(SocketStreamMsg_Failed,
+                     int /* socket_id */,
+                     int /* error_code */)

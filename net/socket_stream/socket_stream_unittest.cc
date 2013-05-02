@@ -356,7 +356,7 @@ TEST_F(SocketStreamTest, CloseFlushPendingWrite) {
   test_callback.WaitForResult();
 
   const std::vector<SocketStreamEvent>& events = delegate->GetSeenEvents();
-  ASSERT_EQ(8U, events.size());
+  ASSERT_EQ(7U, events.size());
 
   EXPECT_EQ(SocketStreamEvent::EVENT_START_OPEN_CONNECTION,
             events[0].event_type);
@@ -365,9 +365,7 @@ TEST_F(SocketStreamTest, CloseFlushPendingWrite) {
   EXPECT_EQ(SocketStreamEvent::EVENT_RECEIVED_DATA, events[3].event_type);
   EXPECT_EQ(SocketStreamEvent::EVENT_SENT_DATA, events[4].event_type);
   EXPECT_EQ(SocketStreamEvent::EVENT_SENT_DATA, events[5].event_type);
-  EXPECT_EQ(SocketStreamEvent::EVENT_ERROR, events[6].event_type);
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, events[6].error_code);
-  EXPECT_EQ(SocketStreamEvent::EVENT_CLOSE, events[7].event_type);
+  EXPECT_EQ(SocketStreamEvent::EVENT_CLOSE, events[6].event_type);
 }
 
 TEST_F(SocketStreamTest, ExceedMaxPendingSendAllowed) {
@@ -645,7 +643,7 @@ TEST_F(SocketStreamTest, IOPending) {
   EXPECT_EQ(OK, test_callback.WaitForResult());
 
   const std::vector<SocketStreamEvent>& events = delegate->GetSeenEvents();
-  ASSERT_EQ(8U, events.size());
+  ASSERT_EQ(7U, events.size());
 
   EXPECT_EQ(SocketStreamEvent::EVENT_START_OPEN_CONNECTION,
             events[0].event_type);
@@ -654,9 +652,7 @@ TEST_F(SocketStreamTest, IOPending) {
   EXPECT_EQ(SocketStreamEvent::EVENT_RECEIVED_DATA, events[3].event_type);
   EXPECT_EQ(SocketStreamEvent::EVENT_SENT_DATA, events[4].event_type);
   EXPECT_EQ(SocketStreamEvent::EVENT_SENT_DATA, events[5].event_type);
-  EXPECT_EQ(SocketStreamEvent::EVENT_ERROR, events[6].event_type);
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, events[6].error_code);
-  EXPECT_EQ(SocketStreamEvent::EVENT_CLOSE, events[7].event_type);
+  EXPECT_EQ(SocketStreamEvent::EVENT_CLOSE, events[6].event_type);
 }
 
 TEST_F(SocketStreamTest, SwitchToSpdy) {

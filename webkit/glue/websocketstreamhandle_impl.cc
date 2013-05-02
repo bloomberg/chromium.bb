@@ -12,7 +12,9 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string16.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebData.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSocketStreamError.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSocketStreamHandleClient.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
@@ -20,6 +22,7 @@
 #include "webkit/glue/websocketstreamhandle_delegate.h"
 
 using WebKit::WebData;
+using WebKit::WebSocketStreamError;
 using WebKit::WebSocketStreamHandle;
 using WebKit::WebSocketStreamHandleClient;
 using WebKit::WebURL;
@@ -54,6 +57,7 @@ class WebSocketStreamHandleImpl::Context
                               const char*,
                               int) OVERRIDE;
   virtual void DidClose(WebSocketStreamHandle*) OVERRIDE;
+  virtual void DidFail(WebSocketStreamHandle*, int, const string16&);
 
  private:
   friend class base::RefCounted<Context>;
@@ -143,6 +147,18 @@ void WebSocketStreamHandleImpl::Context::DidClose(
     client->didClose(handle);
   }
   Release();
+}
+
+void WebSocketStreamHandleImpl::Context::DidFail(
+    WebSocketStreamHandle* web_handle,
+    int error_code,
+    const string16& error_msg) {
+  VLOG(1) << "DidFail";
+  if (client_) {
+    client_->didFail(
+        handle_,
+        WebSocketStreamError(error_code, error_msg));
+  }
 }
 
 // WebSocketStreamHandleImpl ------------------------------------------------
