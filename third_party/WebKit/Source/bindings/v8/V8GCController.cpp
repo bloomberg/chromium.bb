@@ -47,149 +47,10 @@
 
 namespace WebCore {
 
-class ImplicitConnection {
-public:
-    ImplicitConnection(void* root, v8::Persistent<v8::Object> wrapper)
-        : m_root(root)
-        , m_wrapper(wrapper)
-        , m_rootNode(0)
-    {
-    }
-    ImplicitConnection(Node* root, v8::Persistent<v8::Object> wrapper)
-        : m_root(root)
-        , m_wrapper(wrapper)
-        , m_rootNode(root)
-    {
-    }
-
-    void* root() const { return m_root; }
-    v8::Persistent<v8::Object> wrapper() const { return m_wrapper; }
-
-    PassOwnPtr<RetainedObjectInfo> retainedObjectInfo()
-    {
-        if (!m_rootNode)
-            return nullptr;
-        return adoptPtr(new RetainedDOMInfo(m_rootNode));
-    }
-
-private:
-    void* m_root;
-    v8::Persistent<v8::Object> m_wrapper;
-    Node* m_rootNode;
-};
-
-bool operator<(const ImplicitConnection& left, const ImplicitConnection& right)
-{
-    return left.root() < right.root();
-}
-
-struct ImplicitReference {
-    ImplicitReference(void* parent, v8::Persistent<v8::Object> child)
-        : parent(parent)
-        , child(child)
-    {
-    }
-
-    void* parent;
-    v8::Persistent<v8::Object> child;
-};
-
-bool operator<(const ImplicitReference& left, const ImplicitReference& right)
-{
-    return left.parent < right.parent;
-}
-
-class WrapperGrouper {
-public:
-    WrapperGrouper()
-    {
-        m_liveObjects.append(V8PerIsolateData::current()->ensureLiveRoot());
-    }
-
-    void addObjectWrapperToGroup(void* root, v8::Persistent<v8::Object> wrapper)
-    {
-        m_connections.append(ImplicitConnection(root, wrapper));
-    }
-
-    void addNodeWrapperToGroup(Node* root, v8::Persistent<v8::Object> wrapper)
-    {
-        m_connections.append(ImplicitConnection(root, wrapper));
-    }
-
-    void addImplicitReference(void* parent, v8::Persistent<v8::Object> child)
-    {
-        m_references.append(ImplicitReference(parent, child));
-        m_rootGroupMap.add(parent, v8::Persistent<v8::Object>());
-    }
-
-    void keepAlive(v8::Persistent<v8::Value> wrapper)
-    {
-        m_liveObjects.append(wrapper);
-    }
-
-    void apply()
-    {
-        if (m_liveObjects.size() > 1)
-            v8::V8::AddObjectGroup(m_liveObjects.data(), m_liveObjects.size());
-
-        std::sort(m_connections.begin(), m_connections.end());
-        Vector<v8::Persistent<v8::Value> > group;
-        ImplicitConnection* connectionIterator = m_connections.begin();
-        const ImplicitConnection* connectionIteratorEnd = m_connections.end();
-        while (connectionIterator < connectionIteratorEnd) {
-            void* root = connectionIterator->root();
-            v8::Persistent<v8::Object> groupRepresentativeWrapper = connectionIterator->wrapper();
-            OwnPtr<RetainedObjectInfo> retainedObjectInfo = connectionIterator->retainedObjectInfo();
-
-            do {
-                group.append(connectionIterator->wrapper());
-                ++connectionIterator;
-            } while (connectionIterator < connectionIteratorEnd && root == connectionIterator->root());
-
-            if (group.size() > 1)
-                v8::V8::AddObjectGroup(group.data(), group.size(), retainedObjectInfo.leakPtr());
-
-            HashMap<void*, v8::Persistent<v8::Object> >::iterator iter = m_rootGroupMap.find(root);
-            if (iter != m_rootGroupMap.end())
-                iter->value = groupRepresentativeWrapper;
-
-            group.shrink(0);
-        }
-
-        std::sort(m_references.begin(), m_references.end());
-        const ImplicitReference* referenceIterator = m_references.begin();
-        const ImplicitReference* referenceIteratorEnd = m_references.end();
-        while (referenceIterator < referenceIteratorEnd) {
-            void* parent = referenceIterator->parent;
-            v8::Persistent<v8::Object> parentWrapper = m_rootGroupMap.get(parent);
-            if (parentWrapper.IsEmpty()) {
-                ++referenceIterator;
-                continue;
-            }
-
-            Vector<v8::Persistent<v8::Value> > children;
-            do {
-                children.append(referenceIterator->child);
-                ++referenceIterator;
-            } while (referenceIterator < referenceIteratorEnd && parent == referenceIterator->parent);
-
-            v8::V8::AddImplicitReferences(parentWrapper, children.data(), children.size());
-        }
-    }
-
-private:
-    Vector<v8::Persistent<v8::Value> > m_liveObjects;
-    Vector<ImplicitConnection> m_connections;
-    Vector<ImplicitReference> m_references;
-    HashMap<void*, v8::Persistent<v8::Object> > m_rootGroupMap;
-};
-
 // FIXME: This should use opaque GC roots.
-static void addImplicitReferencesForNodeWithEventListeners(Node* node, v8::Persistent<v8::Object> wrapper)
+static void addReferencesForNodeWithEventListeners(v8::Isolate* isolate, Node* node, const v8::Persistent<v8::Object>& wrapper)
 {
     ASSERT(node->hasEventListeners());
-
-    Vector<v8::Persistent<v8::Value> > listeners;
 
     EventListenerIterator iterator(node);
     while (EventListener* listener = iterator.nextListener()) {
@@ -198,13 +59,9 @@ static void addImplicitReferencesForNodeWithEventListeners(Node* node, v8::Persi
         V8AbstractEventListener* v8listener = static_cast<V8AbstractEventListener*>(listener);
         if (!v8listener->hasExistingListenerObject())
             continue;
-        listeners.append(v8listener->existingListenerObjectPersistentHandle());
+
+        isolate->SetReference(wrapper, v8listener->existingListenerObjectPersistentHandle());
     }
-
-    if (listeners.isEmpty())
-        return;
-
-    v8::V8::AddImplicitReferences(wrapper, listeners.data(), listeners.size());
 }
 
 Node* V8GCController::opaqueRootForGC(Node* node, v8::Isolate*)
@@ -231,7 +88,7 @@ Node* V8GCController::opaqueRootForGC(Node* node, v8::Isolate*)
 
 static void gcTree(v8::Isolate* isolate, Node* startNode)
 {
-    Vector<v8::Persistent<v8::Value>, initialNodeVectorSize> newSpaceWrappers;
+    Vector<Node*, initialNodeVectorSize> newSpaceNodes;
 
     // We traverse a DOM tree in the DFS order starting from startNode.
     // The traversal order does not matter for correctness but does matter for performance.
@@ -253,7 +110,7 @@ static void gcTree(v8::Isolate* isolate, Node* startNode)
                 return;
             }
             node->setV8CollectableDuringMinorGC(false);
-            newSpaceWrappers.append(node->wrapper());
+            newSpaceNodes.append(node);
         }
         if (node->firstChild()) {
             node = node->firstChild();
@@ -269,14 +126,18 @@ static void gcTree(v8::Isolate* isolate, Node* startNode)
     } while (node != startNode);
 
     // We completed the DOM tree traversal. All wrappers in the DOM tree are
-    // stored in newSpaceWrappers and are expected to exist in the new space of V8.
+    // stored in newSpaceNodes and are expected to exist in the new space of V8.
     // We report those wrappers to V8 as an object group.
-    v8::Persistent<v8::Value>* wrapperIterator = newSpaceWrappers.begin();
-    const v8::Persistent<v8::Value>* wrapperIteratorEnd = newSpaceWrappers.end();
-    for (; wrapperIterator != wrapperIteratorEnd; ++wrapperIterator)
-        wrapperIterator->MarkPartiallyDependent(isolate);
-    if (newSpaceWrappers.size() > 0)
-        v8::V8::AddObjectGroup(&newSpaceWrappers[0], newSpaceWrappers.size());
+    Node** nodeIterator = newSpaceNodes.begin();
+    Node** const nodeIteratorEnd = newSpaceNodes.end();
+    if (nodeIterator == nodeIteratorEnd)
+        return;
+    v8::UniqueId id(reinterpret_cast<intptr_t>(*(*nodeIterator)->wrapper()));
+    for (; nodeIterator != nodeIteratorEnd; ++nodeIterator) {
+        v8::Persistent<v8::Object> wrapper((*nodeIterator)->wrapper());
+        wrapper.MarkPartiallyDependent(isolate);
+        isolate->SetObjectGroupId(wrapper, id);
+    }
 }
 
 // Regarding a minor GC algorithm for DOM nodes, see this document:
@@ -343,8 +204,10 @@ private:
 
 class MajorGCWrapperVisitor : public v8::PersistentHandleVisitor {
 public:
-    explicit MajorGCWrapperVisitor(v8::Isolate* isolate)
+    explicit MajorGCWrapperVisitor(v8::Isolate* isolate, bool constructRetainedObjectInfos)
         : m_isolate(isolate)
+        , m_liveRootGroupIdSet(false)
+        , m_constructRetainedObjectInfos(constructRetainedObjectInfos)
     {
     }
 
@@ -370,17 +233,19 @@ public:
             // implementation can't tell the difference.
             MessagePort* port = static_cast<MessagePort*>(object);
             if (port->isEntangled() || port->hasPendingActivity())
-                m_grouper.keepAlive(wrapper);
+                m_isolate->SetObjectGroupId(wrapper, liveRootId());
         } else if (V8MutationObserver::info.equals(type)) {
             // FIXME: Allow opaqueRootForGC to operate on multiple roots and move this logic into V8MutationObserverCustom.
             MutationObserver* observer = static_cast<MutationObserver*>(object);
             HashSet<Node*> observedNodes = observer->getObservedNodes();
-            for (HashSet<Node*>::iterator it = observedNodes.begin(); it != observedNodes.end(); ++it)
-                m_grouper.addImplicitReference(V8GCController::opaqueRootForGC(*it, m_isolate), wrapper);
+            for (HashSet<Node*>::iterator it = observedNodes.begin(); it != observedNodes.end(); ++it) {
+                v8::UniqueId id(reinterpret_cast<intptr_t>(V8GCController::opaqueRootForGC(*it, m_isolate)));
+                m_isolate->SetReferenceFromGroup(id, wrapper);
+            }
         } else {
             ActiveDOMObject* activeDOMObject = type->toActiveDOMObject(wrapper);
             if (activeDOMObject && activeDOMObject->hasPendingActivity())
-                m_grouper.keepAlive(wrapper);
+                m_isolate->SetObjectGroupId(wrapper, liveRootId());
         }
 
         if (classId == v8DOMNodeClassId) {
@@ -391,11 +256,14 @@ public:
             Node* node = static_cast<Node*>(object);
 
             if (node->hasEventListeners())
-                addImplicitReferencesForNodeWithEventListeners(node, wrapper);
-
-            m_grouper.addNodeWrapperToGroup(V8GCController::opaqueRootForGC(node, m_isolate), wrapper);
+                addReferencesForNodeWithEventListeners(m_isolate, node, wrapper);
+            Node* root = V8GCController::opaqueRootForGC(node, m_isolate);
+            m_isolate->SetObjectGroupId(wrapper, v8::UniqueId(reinterpret_cast<intptr_t>(root)));
+            if (m_constructRetainedObjectInfos)
+                m_groupsWhichNeedRetainerInfo.append(root);
         } else if (classId == v8DOMObjectClassId) {
-            m_grouper.addObjectWrapperToGroup(type->opaqueRootForGC(object, wrapper, m_isolate), wrapper);
+            void* root = type->opaqueRootForGC(object, wrapper, m_isolate);
+            m_isolate->SetObjectGroupId(wrapper, v8::UniqueId(reinterpret_cast<intptr_t>(root)));
         } else {
             ASSERT_NOT_REACHED();
         }
@@ -403,12 +271,36 @@ public:
 
     void notifyFinished()
     {
-        m_grouper.apply();
+        if (!m_constructRetainedObjectInfos)
+            return;
+        std::sort(m_groupsWhichNeedRetainerInfo.begin(), m_groupsWhichNeedRetainerInfo.end());
+        Node* alreadyAdded = 0;
+        v8::HeapProfiler* profiler = m_isolate->GetHeapProfiler();
+        for (size_t i = 0; i < m_groupsWhichNeedRetainerInfo.size(); ++i) {
+            Node* root = m_groupsWhichNeedRetainerInfo[i];
+            if (root != alreadyAdded) {
+                profiler->SetRetainedObjectInfo(v8::UniqueId(reinterpret_cast<intptr_t>(root)), new RetainedDOMInfo(root));
+                alreadyAdded = root;
+            }
+        }
     }
 
 private:
-    WrapperGrouper m_grouper;
+    v8::UniqueId liveRootId()
+    {
+        const v8::Persistent<v8::Value>& liveRoot = V8PerIsolateData::from(m_isolate)->ensureLiveRoot();
+        v8::UniqueId id(reinterpret_cast<intptr_t>(*liveRoot));
+        if (!m_liveRootGroupIdSet) {
+            m_isolate->SetObjectGroupId(*liveRoot, id);
+            m_liveRootGroupIdSet = true;
+        }
+        return id;
+    }
+
     v8::Isolate* m_isolate;
+    Vector<Node*> m_groupsWhichNeedRetainerInfo;
+    bool m_liveRootGroupIdSet;
+    bool m_constructRetainedObjectInfos;
 };
 
 void V8GCController::gcPrologue(v8::GCType type, v8::GCCallbackFlags flags)
@@ -417,7 +309,7 @@ void V8GCController::gcPrologue(v8::GCType type, v8::GCCallbackFlags flags)
     if (type == v8::kGCTypeScavenge)
         minorGCPrologue(v8::Isolate::GetCurrent());
     else if (type == v8::kGCTypeMarkSweepCompact)
-        majorGCPrologue();
+        majorGCPrologue(flags & v8::kGCCallbackFlagConstructRetainedObjectInfos);
 }
 
 void V8GCController::minorGCPrologue(v8::Isolate* isolate)
@@ -434,14 +326,14 @@ void V8GCController::minorGCPrologue(v8::Isolate* isolate)
 }
 
 // Create object groups for DOM tree nodes.
-void V8GCController::majorGCPrologue()
+void V8GCController::majorGCPrologue(bool constructRetainedObjectInfos)
 {
     TRACE_EVENT_BEGIN0("v8", "GC");
 
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope;
 
-    MajorGCWrapperVisitor visitor(isolate);
+    MajorGCWrapperVisitor visitor(isolate, constructRetainedObjectInfos);
     v8::V8::VisitHandlesWithClassIds(&visitor);
     visitor.notifyFinished();
 
