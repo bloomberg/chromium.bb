@@ -19,6 +19,7 @@ typedef EnterResource<PPB_InputEvent_API> EnterInputEvent;
 // InputEvent ------------------------------------------------------------------
 
 int32_t RequestInputEvents(PP_Instance instance, uint32_t event_classes) {
+  VLOG(4) << "PPB_InputEvent::RequestInputEvents()";
   EnterInstance enter(instance);
   if (enter.failed())
     return enter.retval();
@@ -27,6 +28,7 @@ int32_t RequestInputEvents(PP_Instance instance, uint32_t event_classes) {
 
 int32_t RequestFilteringInputEvents(PP_Instance instance,
                                     uint32_t event_classes) {
+  VLOG(4) << "PPB_InputEvent::RequestFilteringInputEvents()";
   EnterInstance enter(instance);
   if (enter.failed())
     return enter.retval();
@@ -36,17 +38,20 @@ int32_t RequestFilteringInputEvents(PP_Instance instance,
 
 void ClearInputEventRequest(PP_Instance instance,
                             uint32_t event_classes) {
+  VLOG(4) << "PPB_InputEvent::ClearInputEventRequest()";
   EnterInstance enter(instance);
   if (enter.succeeded())
     enter.functions()->ClearInputEventRequest(instance, event_classes);
 }
 
 PP_Bool IsInputEvent(PP_Resource resource) {
+  VLOG(4) << "PPB_InputEvent::IsInputEvent()";
   EnterInputEvent enter(resource, false);
   return enter.succeeded() ? PP_TRUE : PP_FALSE;
 }
 
 PP_InputEvent_Type GetType(PP_Resource event) {
+  VLOG(4) << "PPB_InputEvent::GetType()";
   EnterInputEvent enter(event, true);
   if (enter.failed())
     return PP_INPUTEVENT_TYPE_UNDEFINED;
@@ -54,6 +59,7 @@ PP_InputEvent_Type GetType(PP_Resource event) {
 }
 
 PP_TimeTicks GetTimeStamp(PP_Resource event) {
+  VLOG(4) << "PPB_InputEvent::GetTimeStamp()";
   EnterInputEvent enter(event, true);
   if (enter.failed())
     return 0.0;
@@ -61,6 +67,7 @@ PP_TimeTicks GetTimeStamp(PP_Resource event) {
 }
 
 uint32_t GetModifiers(PP_Resource event) {
+  VLOG(4) << "PPB_InputEvent::GetModifiers()";
   EnterInputEvent enter(event, true);
   if (enter.failed())
     return 0;
@@ -86,6 +93,7 @@ PP_Resource CreateMouseInputEvent1_0(PP_Instance instance,
                                      PP_InputEvent_MouseButton mouse_button,
                                      const PP_Point* mouse_position,
                                      int32_t click_count) {
+  VLOG(4) << "PPB_MouseInputEvent::Create()";
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
@@ -105,6 +113,7 @@ PP_Resource CreateMouseInputEvent1_1(PP_Instance instance,
                                      const PP_Point* mouse_position,
                                      int32_t click_count,
                                      const PP_Point* mouse_movement) {
+  VLOG(4) << "PPB_MouseInputEvent::Create()";
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
@@ -115,6 +124,7 @@ PP_Resource CreateMouseInputEvent1_1(PP_Instance instance,
 }
 
 PP_Bool IsMouseInputEvent(PP_Resource resource) {
+  VLOG(4) << "PPB_MouseInputEvent::IsMouseInputEvent()";
   if (!IsInputEvent(resource))
     return PP_FALSE;  // Prevent warning log in GetType.
   PP_InputEvent_Type type = GetType(resource);
@@ -127,6 +137,7 @@ PP_Bool IsMouseInputEvent(PP_Resource resource) {
 }
 
 PP_InputEvent_MouseButton GetMouseButton(PP_Resource mouse_event) {
+  VLOG(4) << "PPB_MouseInputEvent::GetButton()";
   EnterInputEvent enter(mouse_event, true);
   if (enter.failed())
     return PP_INPUTEVENT_MOUSEBUTTON_NONE;
@@ -134,6 +145,7 @@ PP_InputEvent_MouseButton GetMouseButton(PP_Resource mouse_event) {
 }
 
 PP_Point GetMousePosition(PP_Resource mouse_event) {
+  VLOG(4) << "PPB_MouseInputEvent::GetPosition()";
   EnterInputEvent enter(mouse_event, true);
   if (enter.failed())
     return PP_MakePoint(0, 0);
@@ -141,6 +153,7 @@ PP_Point GetMousePosition(PP_Resource mouse_event) {
 }
 
 int32_t GetMouseClickCount(PP_Resource mouse_event) {
+  VLOG(4) << "PPB_MouseInputEvent::GetClickCount()";
   EnterInputEvent enter(mouse_event, true);
   if (enter.failed())
     return 0;
@@ -148,6 +161,7 @@ int32_t GetMouseClickCount(PP_Resource mouse_event) {
 }
 
 PP_Point GetMouseMovement(PP_Resource mouse_event) {
+  VLOG(4) << "PPB_MouseInputEvent::GetMovement()";
   EnterInputEvent enter(mouse_event, true);
   if (enter.failed())
     return PP_MakePoint(0, 0);
@@ -179,6 +193,7 @@ PP_Resource CreateWheelInputEvent(PP_Instance instance,
                                   const PP_FloatPoint* wheel_delta,
                                   const PP_FloatPoint* wheel_ticks,
                                   PP_Bool scroll_by_page) {
+  VLOG(4) << "PPB_WheelInputEvent::Create()";
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
@@ -188,6 +203,7 @@ PP_Resource CreateWheelInputEvent(PP_Instance instance,
 }
 
 PP_Bool IsWheelInputEvent(PP_Resource resource) {
+  VLOG(4) << "PPB_WheelInputEvent::IsWheelInputEvent()";
   if (!IsInputEvent(resource))
     return PP_FALSE;  // Prevent warning log in GetType.
   PP_InputEvent_Type type = GetType(resource);
@@ -195,6 +211,7 @@ PP_Bool IsWheelInputEvent(PP_Resource resource) {
 }
 
 PP_FloatPoint GetWheelDelta(PP_Resource wheel_event) {
+  VLOG(4) << "PPB_WheelInputEvent::GetDelta()";
   EnterInputEvent enter(wheel_event, true);
   if (enter.failed())
     return PP_MakeFloatPoint(0.0f, 0.0f);
@@ -202,6 +219,7 @@ PP_FloatPoint GetWheelDelta(PP_Resource wheel_event) {
 }
 
 PP_FloatPoint GetWheelTicks(PP_Resource wheel_event) {
+  VLOG(4) << "PPB_WheelInputEvent::GetTicks()";
   EnterInputEvent enter(wheel_event, true);
   if (enter.failed())
     return PP_MakeFloatPoint(0.0f, 0.0f);
@@ -209,6 +227,7 @@ PP_FloatPoint GetWheelTicks(PP_Resource wheel_event) {
 }
 
 PP_Bool GetWheelScrollByPage(PP_Resource wheel_event) {
+  VLOG(4) << "PPB_WheelInputEvent::GetScrollByPage()";
   EnterInputEvent enter(wheel_event, true);
   if (enter.failed())
     return PP_FALSE;
@@ -231,6 +250,7 @@ PP_Resource CreateKeyboardInputEvent(PP_Instance instance,
                                      uint32_t modifiers,
                                      uint32_t key_code,
                                      struct PP_Var character_text) {
+  VLOG(4) << "PPB_KeyboardInputEvent::Create()";
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
@@ -240,6 +260,7 @@ PP_Resource CreateKeyboardInputEvent(PP_Instance instance,
 }
 
 PP_Bool IsKeyboardInputEvent(PP_Resource resource) {
+  VLOG(4) << "PPB_KeyboardInputEvent::IsKeyboardInputEvent()";
   if (!IsInputEvent(resource))
     return PP_FALSE;  // Prevent warning log in GetType.
   PP_InputEvent_Type type = GetType(resource);
@@ -250,6 +271,7 @@ PP_Bool IsKeyboardInputEvent(PP_Resource resource) {
 }
 
 uint32_t GetKeyCode(PP_Resource key_event) {
+  VLOG(4) << "PPB_KeyboardInputEvent::GetKeyCode()";
   EnterInputEvent enter(key_event, true);
   if (enter.failed())
     return 0;
@@ -257,6 +279,7 @@ uint32_t GetKeyCode(PP_Resource key_event) {
 }
 
 PP_Var GetCharacterText(PP_Resource character_event) {
+  VLOG(4) << "PPB_KeyboardInputEvent::GetCharacterText()";
   EnterInputEvent enter(character_event, true);
   if (enter.failed())
     return PP_MakeUndefined();
@@ -273,6 +296,7 @@ const PPB_KeyboardInputEvent g_ppb_keyboard_input_event_thunk = {
 // _Dev interface.
 
 PP_Bool SetUsbKeyCode(PP_Resource key_event, uint32_t usb_key_code) {
+  VLOG(4) << "PPB_KeyboardInputEvent_Dev::SetUsbKeyCode()";
   EnterInputEvent enter(key_event, true);
   if (enter.failed())
     return PP_FALSE;
@@ -280,6 +304,7 @@ PP_Bool SetUsbKeyCode(PP_Resource key_event, uint32_t usb_key_code) {
 }
 
 uint32_t GetUsbKeyCode(PP_Resource key_event) {
+  VLOG(4) << "PPB_KeyboardInputEvent_Dev::GetUsbKeyCode()";
   EnterInputEvent enter(key_event, true);
   if (enter.failed())
     return 0;
@@ -302,6 +327,7 @@ PP_Resource CreateIMEInputEvent(PP_Instance instance,
                                 int32_t target_segment,
                                 uint32_t selection_start,
                                 uint32_t selection_end) {
+  VLOG(4) << "PPB_IMEInputEvent_Dev::Create()";
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
@@ -314,6 +340,7 @@ PP_Resource CreateIMEInputEvent(PP_Instance instance,
 }
 
 PP_Bool IsIMEInputEvent(PP_Resource resource) {
+  VLOG(4) << "PPB_IMEInputEvent_Dev::IsIMEInputEvent()";
   if (!IsInputEvent(resource))
     return PP_FALSE;  // Prevent warning log in GetType.
   PP_InputEvent_Type type = GetType(resource);
@@ -324,10 +351,12 @@ PP_Bool IsIMEInputEvent(PP_Resource resource) {
 }
 
 PP_Var GetIMEText(PP_Resource ime_event) {
+  VLOG(4) << "PPB_IMEInputEvent_Dev::GetText()";
   return GetCharacterText(ime_event);
 }
 
 uint32_t GetIMESegmentNumber(PP_Resource ime_event) {
+  VLOG(4) << "PPB_IMEInputEvent_Dev::GetSegmentNumber()";
   EnterInputEvent enter(ime_event, true);
   if (enter.failed())
     return 0;
@@ -335,6 +364,7 @@ uint32_t GetIMESegmentNumber(PP_Resource ime_event) {
 }
 
 uint32_t GetIMESegmentOffset(PP_Resource ime_event, uint32_t index) {
+  VLOG(4) << "PPB_IMEInputEvent_Dev::GetSegmentOffset()";
   EnterInputEvent enter(ime_event, true);
   if (enter.failed())
     return 0;
@@ -342,6 +372,7 @@ uint32_t GetIMESegmentOffset(PP_Resource ime_event, uint32_t index) {
 }
 
 int32_t GetIMETargetSegment(PP_Resource ime_event) {
+  VLOG(4) << "PPB_IMEInputEvent_Dev::GetTargetSegment()";
   EnterInputEvent enter(ime_event, true);
   if (enter.failed())
     return -1;
@@ -349,6 +380,7 @@ int32_t GetIMETargetSegment(PP_Resource ime_event) {
 }
 
 void GetIMESelection(PP_Resource ime_event, uint32_t* start, uint32_t* end) {
+  VLOG(4) << "PPB_IMEInputEvent_Dev::GetSelection()";
   EnterInputEvent enter(ime_event, true);
   if (enter.failed()) {
     if (start)
@@ -385,6 +417,7 @@ PP_Resource CreateTouchInputEvent(PP_Instance instance,
                                   PP_InputEvent_Type type,
                                   PP_TimeTicks time_stamp,
                                   uint32_t modifiers) {
+  VLOG(4) << "PPB_TouchInputEvent::Create()";
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
@@ -395,6 +428,7 @@ PP_Resource CreateTouchInputEvent(PP_Instance instance,
 void AddTouchPoint(PP_Resource touch_event,
                    PP_TouchListType list,
                    const PP_TouchPoint* point) {
+  VLOG(4) << "PPB_TouchInputEvent::AddTouchPoint()";
   EnterInputEvent enter(touch_event, true);
   if (enter.failed())
     return;
@@ -402,6 +436,7 @@ void AddTouchPoint(PP_Resource touch_event,
 }
 
 PP_Bool IsTouchInputEvent(PP_Resource resource) {
+  VLOG(4) << "PPB_TouchInputEvent::IsTouchInputEvent()";
   if (!IsInputEvent(resource))
     return PP_FALSE;  // Prevent warning log in GetType.
   PP_InputEvent_Type type = GetType(resource);
@@ -412,6 +447,7 @@ PP_Bool IsTouchInputEvent(PP_Resource resource) {
 }
 
 uint32_t GetTouchCount(PP_Resource touch_event, PP_TouchListType list) {
+  VLOG(4) << "PPB_TouchInputEvent::GetTouchCount()";
   EnterInputEvent enter(touch_event, true);
   if (enter.failed())
     return 0;
@@ -421,6 +457,7 @@ uint32_t GetTouchCount(PP_Resource touch_event, PP_TouchListType list) {
 struct PP_TouchPoint GetTouchByIndex(PP_Resource touch_event,
                                      PP_TouchListType list,
                                      uint32_t index) {
+  VLOG(4) << "PPB_TouchInputEvent::GetTouchByIndex()";
   EnterInputEvent enter(touch_event, true);
   if (enter.failed())
     return PP_MakeTouchPoint();
@@ -430,6 +467,7 @@ struct PP_TouchPoint GetTouchByIndex(PP_Resource touch_event,
 struct PP_TouchPoint GetTouchById(PP_Resource touch_event,
                                   PP_TouchListType list,
                                   uint32_t id) {
+  VLOG(4) << "PPB_TouchInputEvent::GetTouchById()";
   EnterInputEvent enter(touch_event, true);
   if (enter.failed())
     return PP_MakeTouchPoint();
