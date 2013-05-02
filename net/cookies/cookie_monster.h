@@ -106,6 +106,31 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // subtantially more entries in the map.
   typedef std::multimap<std::string, CanonicalCookie*> CookieMap;
   typedef std::pair<CookieMap::iterator, CookieMap::iterator> CookieMapItPair;
+  typedef std::vector<CookieMap::iterator> CookieItVector;
+
+  // Cookie garbage collection thresholds.  Based off of the Mozilla defaults.
+  // When the number of cookies gets to k{Domain,}MaxCookies
+  // purge down to k{Domain,}MaxCookies - k{Domain,}PurgeCookies.
+  // It might seem scary to have a high purge value, but really it's not.
+  // You just make sure that you increase the max to cover the increase
+  // in purge, and we would have been purging the same number of cookies.
+  // We're just going through the garbage collection process less often.
+  // Note that the DOMAIN values are per eTLD+1; see comment for the
+  // CookieMap typedef.  So, e.g., the maximum number of cookies allowed for
+  // google.com and all of its subdomains will be 150-180.
+  //
+  // Any cookies accessed more recently than kSafeFromGlobalPurgeDays will not
+  // be evicted by global garbage collection, even if we have more than
+  // kMaxCookies.  This does not affect domain garbage collection.
+  static const size_t kDomainMaxCookies;
+  static const size_t kDomainPurgeCookies;
+  static const size_t kMaxCookies;
+  static const size_t kPurgeCookies;
+
+  // Quota for cookies with {low, medium, high} priorities within a domain.
+  static const size_t kDomainCookiesQuotaLow;
+  static const size_t kDomainCookiesQuotaMedium;
+  static const size_t kDomainCookiesQuotaHigh;
 
   // The store passed in should not have had Init() called on it yet. This
   // class will take care of initializing it. The backing store is NOT owned by
@@ -255,6 +280,11 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // (i.e. as part of the instance initialization process).
   void SetPersistSessionCookies(bool persist_session_cookies);
 
+  // Enables the new garbage collection algorithm where domain cookie eviction
+  // uses cookie priorities to decide which cookies to purge and which to keep.
+  void SetPriorityAwareGarbageCollection(
+      bool priority_aware_garbage_collection);
+
   // Debugging method to perform various validation checks on the map.
   // Currently just checking that there are no null CanonicalCookie pointers
   // in the map.
@@ -339,28 +369,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
     DELETE_COOKIE_LAST_ENTRY
   };
-
-  // Cookie garbage collection thresholds.  Based off of the Mozilla defaults.
-  // When the number of cookies gets to k{Domain,}MaxCookies
-  // purge down to k{Domain,}MaxCookies - k{Domain,}PurgeCookies.
-  // It might seem scary to have a high purge value, but really it's not.
-  // You just make sure that you increase the max to cover the increase
-  // in purge, and we would have been purging the same amount of cookies.
-  // We're just going through the garbage collection process less often.
-  // Note that the DOMAIN values are per eTLD+1; see comment for the
-  // CookieMap typedef.  So, e.g., the maximum number of cookies allowed for
-  // google.com and all of its subdomains will be 150-180.
-  //
-  // Any cookies accessed more recently than kSafeFromGlobalPurgeDays will not
-  // be evicted by global garbage collection, even if we have more than
-  // kMaxCookies.  This does not affect domain garbage collection.
-  //
-  // Present in .h file to make accessible to tests through FRIEND_TEST.
-  // Actual definitions are in cookie_monster.cc.
-  static const size_t kDomainMaxCookies;
-  static const size_t kDomainPurgeCookies;
-  static const size_t kMaxCookies;
-  static const size_t kPurgeCookies;
 
   // The number of days since last access that cookies will not be subject
   // to global garbage collection.
@@ -538,14 +546,12 @@ class NET_EXPORT CookieMonster : public CookieStore {
                             const CookieMapItPair& itpair,
                             std::vector<CookieMap::iterator>* cookie_its);
 
-  // Helper for GarbageCollect().  Deletes all cookies in the list
-  // that were accessed before |keep_accessed_after|, using DeletionCause
-  // |cause|.  If |keep_accessed_after| is null, deletes all cookies in the
-  // list.  Returns the number of cookies deleted.
-  int GarbageCollectDeleteList(const base::Time& current,
-                               const base::Time& keep_accessed_after,
-                               DeletionCause cause,
-                               std::vector<CookieMap::iterator>& cookie_its);
+  // Helper for GarbageCollect(). Deletes all cookies in the range specified by
+  // [|it_begin|, |it_end|). Returns the number of cookies deleted.
+  int GarbageCollectDeleteRange(const base::Time& current,
+                                DeletionCause cause,
+                                CookieItVector::iterator cookie_its_begin,
+                                CookieItVector::iterator cookie_its_end);
 
   // Find the key (for lookup in cookies_) based on the given domain.
   // See comment on keys before the CookieMap typedef.
@@ -650,6 +656,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   bool keep_expired_cookies_;
   bool persist_session_cookies_;
+  bool priority_aware_garbage_collection_;
 
   // Static setting for whether or not file scheme cookies are allows when
   // a new CookieMonster is created, or the accepted schemes on a CookieMonster

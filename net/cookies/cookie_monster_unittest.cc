@@ -4,7 +4,9 @@
 
 #include "net/cookies/cookie_store_unittest.h"
 
+#include <algorithm>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -14,6 +16,9 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
@@ -357,9 +362,9 @@ class CookieMonsterTest : public CookieStoreTest<CookieMonsterTestTraits> {
     return std::count(str.begin(), str.end(), c);
   }
 
-  void TestHostGarbageCollectHelper(
-      int domain_max_cookies,
-      int domain_purge_cookies) {
+  void TestHostGarbageCollectHelper() {
+    int domain_max_cookies = CookieMonster::kDomainMaxCookies;
+    int domain_purge_cookies = CookieMonster::kDomainPurgeCookies;
     const int more_than_enough_cookies =
         (domain_max_cookies + domain_purge_cookies) * 2;
     // Add a bunch of cookies on a single host, should purge them.
@@ -402,10 +407,157 @@ class CookieMonsterTest : public CookieStoreTest<CookieMonsterTestTraits> {
       std::string cookies_specific = this->GetCookies(cm, url_google_specific);
       int total_cookies = (CountInString(cookies_general, '=') +
                            CountInString(cookies_specific, '='));
-      EXPECT_GE(total_cookies,
-                domain_max_cookies - domain_purge_cookies);
+      EXPECT_GE(total_cookies, domain_max_cookies - domain_purge_cookies);
       EXPECT_LE(total_cookies, domain_max_cookies);
     }
+  }
+
+  CookiePriority CharToPriority(char ch) {
+    switch (ch) {
+      case 'L':
+        return COOKIE_PRIORITY_LOW;
+      case 'M':
+        return COOKIE_PRIORITY_MEDIUM;
+      case 'H':
+        return COOKIE_PRIORITY_HIGH;
+    }
+    NOTREACHED();
+    return COOKIE_PRIORITY_DEFAULT;
+  }
+
+  // Instantiates a CookieMonster, adds multiple cookies (to url_google_) with
+  // priorities specified by |coded_priority_str|, and tests priority-aware
+  // domain cookie eviction.
+  // |coded_priority_str| specifies a run-length-encoded string of priorities.
+  // Example: "2M 3L M 4H" means "MMLLLMHHHH", and speicifies sequential (i.e.,
+  // from least- to most-recently accessed) insertion of 2 medium-priority
+  // cookies, 3 low-priority cookies, 1 medium-priority cookie, and 4
+  // high-priority cookies.
+  // Within each priority, only the least-accessed cookies should be evicted.
+  // Thus, to describe expected suriving cookies, it suffices to specify the
+  // expected population of surviving cookies per priority, i.e.,
+  // |expected_low_count|, |expected_medium_count|, and |expected_high_count|.
+  void TestPriorityCookieCase(CookieMonster* cm,
+                              const std::string& coded_priority_str,
+                              size_t expected_low_count,
+                              size_t expected_medium_count,
+                              size_t expected_high_count) {
+    DeleteAll(cm);
+    int next_cookie_id = 0;
+    std::vector<CookiePriority> priority_list;
+    std::vector<int> id_list[3];  // Indexed by CookiePriority.
+
+    // Parse |coded_priority_str| and add cookies.
+    std::vector<std::string> priority_tok_list;
+    base::SplitString(coded_priority_str, ' ', &priority_tok_list);
+    for (std::vector<std::string>::iterator it = priority_tok_list.begin();
+         it != priority_tok_list.end(); ++it) {
+      size_t len = it->length();
+      DCHECK_NE(len, 0U);
+      // Take last character as priority.
+      CookiePriority priority = CharToPriority((*it)[len - 1]);
+      std::string priority_str = CookiePriorityToString(priority);
+      // The rest of the string (possibly empty) specifies repetition.
+      int rep = 1;
+      if (!it->empty()) {
+        bool result = base::StringToInt(
+            base::StringPiece(it->begin(), it->end() - 1), &rep);
+        DCHECK(result);
+      }
+      for (; rep > 0; --rep, ++next_cookie_id) {
+        std::string cookie = base::StringPrintf(
+            "a%d=b;priority=%s", next_cookie_id, priority_str.c_str());
+        EXPECT_TRUE(SetCookie(cm, url_google_, cookie));
+        priority_list.push_back(priority);
+        id_list[priority].push_back(next_cookie_id);
+      }
+    }
+
+    int num_cookies = static_cast<int>(priority_list.size());
+    std::vector<int> surviving_id_list[3];  // Indexed by CookiePriority.
+
+    // Parse the list of cookies
+    std::string cookie_str = this->GetCookies(cm, url_google_);
+    std::vector<std::string> cookie_tok_list;
+    base::SplitString(cookie_str, ';', &cookie_tok_list);
+    for (std::vector<std::string>::iterator it = cookie_tok_list.begin();
+         it != cookie_tok_list.end(); ++it) {
+      // Assuming *it is "a#=b", so extract and parse "#" portion.
+      int id = -1;
+      bool result = base::StringToInt(
+          base::StringPiece(it->begin() + 1, it->end() - 2), &id);
+      DCHECK(result);
+      DCHECK_GE(id, 0);
+      DCHECK_LT(id, num_cookies);
+      surviving_id_list[priority_list[id]].push_back(id);
+    }
+
+    // Validate each priority.
+    size_t expected_count[3] = {
+      expected_low_count, expected_medium_count, expected_high_count
+    };
+    for (int i = 0; i < 3; ++i) {
+      DCHECK_LE(surviving_id_list[i].size(), id_list[i].size());
+      EXPECT_EQ(expected_count[i], surviving_id_list[i].size());
+      // Verify that the remaining cookies are the most recent among those
+      // with the same priorities.
+      if (expected_count[i] == surviving_id_list[i].size()) {
+        std::sort(surviving_id_list[i].begin(), surviving_id_list[i].end());
+        EXPECT_TRUE(std::equal(surviving_id_list[i].begin(),
+                               surviving_id_list[i].end(),
+                               id_list[i].end() - expected_count[i]));
+      }
+    }
+  }
+
+  void TestPriorityAwareGarbageCollectHelper() {
+    // Hard-coding limits in the test, but use DCHECK_EQ to enforce constraint.
+    DCHECK_EQ(180U, CookieMonster::kDomainMaxCookies);
+    DCHECK_EQ(150U, CookieMonster::kDomainMaxCookies -
+              CookieMonster::kDomainPurgeCookies);
+    DCHECK_EQ(30U, CookieMonster::kDomainCookiesQuotaLow);
+    DCHECK_EQ(50U, CookieMonster::kDomainCookiesQuotaMedium);
+    DCHECK_EQ(70U, CookieMonster::kDomainCookiesQuotaHigh);
+
+    scoped_refptr<CookieMonster> cm(new CookieMonster(NULL, NULL));
+    cm->SetPriorityAwareGarbageCollection(true);
+
+    // Each test case adds 181 cookies, so 31 cookies are evicted.
+    // Cookie same priority, repeated for each priority.
+    TestPriorityCookieCase(cm, "181L", 150U, 0U, 0U);
+    TestPriorityCookieCase(cm, "181M", 0U, 150U, 0U);
+    TestPriorityCookieCase(cm, "181H", 0U, 0U, 150U);
+
+    // Pairwise scenarios.
+    // Round 1 => none; round2 => 31M; round 3 => none.
+    TestPriorityCookieCase(cm, "10H 171M", 0U, 140U, 10U);
+    // Round 1 => 10L; round2 => 21M; round 3 => none.
+    TestPriorityCookieCase(cm, "141M 40L", 30U, 120U, 0U);
+    // Round 1 => none; round2 => none; round 3 => 31H.
+    TestPriorityCookieCase(cm, "101H 80M", 0U, 80U, 70U);
+
+    // For {low, medium} priorities right on quota, different orders.
+    // Round 1 => 1L; round 2 => none, round3 => 30L.
+    TestPriorityCookieCase(cm, "31L 50M 100H", 0U, 50U, 100U);
+    // Round 1 => none; round 2 => 1M, round3 => 30M.
+    TestPriorityCookieCase(cm, "51M 100H 30L", 30U, 20U, 100U);
+    // Round 1 => none; round 2 => none; round3 => 31H.
+    TestPriorityCookieCase(cm, "101H 50M 30L", 30U, 50U, 70U);
+
+    // Round 1 => 10L; round 2 => 10M; round3 => 11H.
+    TestPriorityCookieCase(cm, "81H 60M 40L", 30U, 50U, 70U);
+
+    // More complex scenarios.
+    // Round 1 => 10L; round 2 => 10M; round 3 => 11H.
+    TestPriorityCookieCase(cm, "21H 60M 40L 60H", 30U, 50U, 70U);
+    // Round 1 => 10L; round 2 => 11M, 10L; round 3 => none.
+    TestPriorityCookieCase(cm, "11H 10M 20L 110M 20L 10H", 20U, 109U, 21U);
+    // Round 1 => none; round 2 => none; round 3 => 11L, 10M, 10H.
+    TestPriorityCookieCase(cm, "11L 10M 140H 10M 10L", 10U, 10U, 130U);
+    // Round 1 => none; round 2 => 1M; round 3 => 10L, 10M, 10H.
+    TestPriorityCookieCase(cm, "11M 10H 10L 60M 90H", 0U, 60U, 90U);
+    // Round 1 => none; round 2 => 10L, 21M; round 3 => none.
+    TestPriorityCookieCase(cm, "11M 10H 10L 90M 60H", 0U, 80U, 70U);
   }
 
   // Function for creating a CM with a number of cookies in it,
@@ -561,8 +713,8 @@ class DeferredCookieTaskTest : public CookieMonsterTest {
 
   // Defines a cookie to be returned from PersistentCookieStore::Load
   void DeclareLoadedCookie(const std::string& key,
-                      const std::string& cookie_line,
-                      const base::Time& creation_time) {
+                           const std::string& cookie_line,
+                           const base::Time& creation_time) {
     AddCookieToList(key, cookie_line, creation_time, &loaded_cookies_);
   }
 
@@ -1011,8 +1163,11 @@ TEST_F(CookieMonsterTest, TestLastAccess) {
 }
 
 TEST_F(CookieMonsterTest, TestHostGarbageCollection) {
-  TestHostGarbageCollectHelper(
-      CookieMonster::kDomainMaxCookies, CookieMonster::kDomainPurgeCookies);
+  TestHostGarbageCollectHelper();
+}
+
+TEST_F(CookieMonsterTest, TestPriorityAwareGarbageCollection) {
+  TestPriorityAwareGarbageCollectHelper();
 }
 
 TEST_F(CookieMonsterTest, TestDeleteSingleCookie) {
