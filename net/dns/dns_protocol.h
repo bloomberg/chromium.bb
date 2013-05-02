@@ -103,8 +103,10 @@ static const uint16 kClassIN = 1;
 // http://www.iana.org/assignments/dns-parameters
 static const uint16 kTypeA = 1;
 static const uint16 kTypeCNAME = 5;
+static const uint16 kTypePTR = 12;
 static const uint16 kTypeTXT = 16;
 static const uint16 kTypeAAAA = 28;
+static const uint16 kTypeSRV = 33;
 
 // DNS rcode values.
 static const uint8 kRcodeMask = 0xf;

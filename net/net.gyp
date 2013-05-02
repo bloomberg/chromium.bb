@@ -444,6 +444,10 @@
         'dns/mapped_host_resolver.h',
         'dns/notify_watcher_mac.cc',
         'dns/notify_watcher_mac.h',
+        'dns/record_parsed.cc',
+        'dns/record_parsed.h',
+        'dns/record_rdata.cc',
+        'dns/record_rdata.h',
         'dns/serial_worker.cc',
         'dns/serial_worker.h',
         'dns/single_request_host_resolver.cc',
@@ -1277,6 +1281,14 @@
               'spdy/spdy_websocket_stream.h',
             ],
         }],
+        [ 'enable_mdns != 1', {
+            'sources!' : [
+              'dns/record_parsed.cc',
+              'dns/record_parsed.h',
+              'dns/record_rdata.cc',
+              'dns/record_rdata.h',
+            ]
+        }],
         [ 'OS == "win"', {
             'sources!': [
               'http/http_auth_handler_ntlm_portable.cc',
@@ -1509,6 +1521,8 @@
         'dns/host_resolver_impl_unittest.cc',
         'dns/mapped_host_resolver_unittest.cc',
         'dns/serial_worker_unittest.cc',
+        'dns/record_parsed_unittest.cc',
+        'dns/record_rdata_unittest.cc',
         'dns/single_request_host_resolver_unittest.cc',
         'ftp/ftp_auth_cache_unittest.cc',
         'ftp/ftp_ctrl_response_buffer_unittest.cc',
@@ -1882,6 +1896,13 @@
             ],
           },
         ],
+
+        [ 'enable_mdns != 1', {
+            'sources!' : [
+              'dns/record_parsed_unittest.cc',
+              'dns/record_rdata_unittest.cc',
+            ],
+        }],
         [ 'OS == "win"', {
             'sources!': [
               'dns/dns_config_service_posix_unittest.cc',
