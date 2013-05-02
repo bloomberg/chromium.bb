@@ -902,7 +902,6 @@
               ],
             }],
             ['OS=="mac" and libpeer_target_type!="static_library"', {
-              'product_dir': '<(PRODUCT_DIR)/Libraries',
               'product_name': 'libpeerconnection',
             }],
             ['OS=="android"', {

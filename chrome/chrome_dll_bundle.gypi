@@ -293,7 +293,7 @@
       'copies': [{
        'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Libraries',
        'files': [
-          '<(PRODUCT_DIR)/Libraries/libpeerconnection.so',
+          '<(PRODUCT_DIR)/libpeerconnection.so',
         ],
       }],
     }],
