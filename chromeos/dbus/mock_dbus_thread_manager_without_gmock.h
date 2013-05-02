@@ -29,12 +29,9 @@ class FakeCryptohomeClient;
 class FakeOldBluetoothAdapterClient;
 class FakeOldBluetoothDeviceClient;
 class FakeOldBluetoothManagerClient;
-class FakePowerManagerClient;
-class FakeImageBurnerClient;
-class FakeSessionManagerClient;
 class FakeShillManagerClient;
+class FakeImageBurnerClient;
 class FakeSystemClockClient;
-class FakeUpdateEngineClient;
 class MockIBusClient;
 class MockIBusConfigClient;
 class MockIBusEngineFactoryService;
@@ -181,11 +178,8 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
   scoped_ptr<FakeCrosDisksClient> fake_cros_disks_client_;
   scoped_ptr<FakeCryptohomeClient> fake_cryptohome_client_;
   scoped_ptr<FakeImageBurnerClient> fake_image_burner_client_;
-  scoped_ptr<FakeSessionManagerClient> fake_session_manager_client_;
   scoped_ptr<FakeShillManagerClient> fake_shill_manager_client_;
   scoped_ptr<FakeSystemClockClient> fake_system_clock_client_;
-  scoped_ptr<FakePowerManagerClient> fake_power_manager_client_;
-  scoped_ptr<FakeUpdateEngineClient> fake_update_engine_client_;
 
   // These fake_old_bluetooth_*_client_ are for old Bluetooth*Client.
   // Will be removed once http://crbug.com/221813 is resolved.
@@ -200,7 +194,6 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
   scoped_ptr<MockIBusEngineFactoryService> mock_ibus_engine_factory_service_;
   scoped_ptr<MockIBusPanelService> mock_ibus_panel_service_;
 
-  scoped_ptr<PowerPolicyController> power_policy_controller_;
   dbus::Bus* ibus_bus_;
 
   ObserverList<DBusThreadManagerObserver> observers_;
