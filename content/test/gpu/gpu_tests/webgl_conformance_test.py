@@ -12,34 +12,40 @@ from telemetry.core import util
 src_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', '..')
 conformance_path = os.path.join(src_path, 'third_party', 'webgl_conformance')
 
-conformance_harness_script = r'''
-var testHarness = {};
-testHarness._allTestSucceeded = true;
-testHarness._messages = '';
-testHarness._failures = 0;
-testHarness._finished = false;
+conformance_harness_script = r"""
+  var testHarness = {};
+  testHarness._allTestSucceeded = true;
+  testHarness._messages = '';
+  testHarness._failures = 0;
+  testHarness._finished = false;
 
-testHarness.reportResults = function(success, msg) {
-  testHarness._allTestSucceeded = testHarness._allTestSucceeded && !!success;
-  if(!success) {
-    testHarness._failures++;
-    if(msg) {
-      testHarness._messages += msg + "\n";
+  testHarness.reportResults = function(success, msg) {
+    testHarness._allTestSucceeded = testHarness._allTestSucceeded && !!success;
+    if(!success) {
+      testHarness._failures++;
+      if(msg) {
+        testHarness._messages += msg + "\n";
+      }
     }
-  }
-};
-testHarness.notifyFinished = function() {
-  testHarness._finished = true;
-};
-testHarness.navigateToPage = function(src) {
-  var testFrame = document.getElementById("test-frame");
-  testFrame.src = src;
-};
+  };
+  testHarness.notifyFinished = function() {
+    testHarness._finished = true;
+  };
+  testHarness.navigateToPage = function(src) {
+    var testFrame = document.getElementById("test-frame");
+    testFrame.src = src;
+  };
 
-window.webglTestHarness = testHarness;
-window.parent.webglTestHarness = testHarness;
-console.log("Harness injected.");
-'''
+  window.webglTestHarness = testHarness;
+  window.parent.webglTestHarness = testHarness;
+  console.log("Harness injected.");
+"""
+
+def _DidWebGLTestSucceed(tab):
+  return tab.EvaluateJavaScript('webglTestHarness._allTestSucceeded')
+
+def _WebGLTestMessages(tab):
+  return tab.EvaluateJavaScript('webglTestHarness._messages')
 
 class WebGLConformanceTest(page_test.PageTest):
   def __init__(self):
@@ -52,7 +58,7 @@ class WebGLConformanceTest(page_test.PageTest):
       'description': 'Executes WebGL conformance tests',
       'user_agent_type': 'desktop',
       'serving_dirs': [
-        '../../../third_party/webgl_conformance'
+        '../../../../third_party/webgl_conformance'
       ],
       'pages': []
     }
@@ -61,35 +67,18 @@ class WebGLConformanceTest(page_test.PageTest):
 
     for test in tests:
       pages.append({
-        'url': 'file:///../../../third_party/webgl_conformance/' + test,
-        'script_to_evaluate_on_commit': conformance_harness_script
+        'url': 'file:///../../../../third_party/webgl_conformance/' + test,
+        'script_to_evaluate_on_commit': conformance_harness_script,
+        'wait_for_javascript_expression': 'webglTestHarness._finished'
       })
 
-    return page_set.PageSet.FromDict(page_set_dict)
-
-  def CanRunForPage(self, page):
-    page.base_dir = os.getcwd()
-    return True
+    return page_set.PageSet.FromDict(page_set_dict, __file__)
 
   def ValidatePage(self, page, tab, results):
-    util.WaitFor(lambda: WebGLConformanceTest._CheckTestFinished(tab), 60)
-
-    if WebGLConformanceTest._TestSucceeded(tab):
+    if _DidWebGLTestSucceed(tab):
       results.AddSuccess(page)
     else:
-      results.AddFailure(page, WebGLConformanceTest._TestMessage(tab), None)
-
-  @staticmethod
-  def _CheckTestFinished(tab):
-    return tab.EvaluateJavaScript('webglTestHarness._finished')
-
-  @staticmethod
-  def _TestSucceeded(tab):
-    return tab.EvaluateJavaScript('webglTestHarness._allTestSucceeded')
-
-  @staticmethod
-  def _TestMessage(tab):
-    return tab.EvaluateJavaScript('webglTestHarness._messages')
+      results.AddFailure(page, _WebGLTestMessages(tab), None)
 
   @staticmethod
   def _ParseTests(path, version = None):
