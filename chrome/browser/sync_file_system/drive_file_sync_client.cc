@@ -301,6 +301,14 @@ void DriveFileSyncClient::DidEnsureUniquenessForCreateDirectory(
 
   DCHECK(entry) << "No entry: " << error;
 
+  if (!entry->is_folder()) {
+    // TODO(kinuko): Fix this. http://crbug.com/237090
+    LOG(ERROR) << "A file is left for CreateDirectory due to "
+               << "file-folder conflict!";
+    callback.Run(google_apis::HTTP_CONFLICT, std::string());
+    return;
+  }
+
   if (entry->title() == GetSyncRootDirectoryName())
     EnsureSyncRootIsNotInMyDrive(entry->resource_id());
 

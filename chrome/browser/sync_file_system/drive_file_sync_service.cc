@@ -1207,18 +1207,6 @@ void DriveFileSyncService::DidCreateDirectoryForLocalSync(
   const FileSystemURL& url = param->url;
   switch (error) {
     case google_apis::HTTP_SUCCESS:
-      // There are two cases when the server returns HTTP_SUCCESS:
-      // 1. There were duplicates and a directory is left (this is true
-      //    success but not created).
-      // 2. There were duplicates and a file is left (this could be really
-      //    undesirable conflict).
-      //
-      // For now we don't handle the latter since the former has a higher chance
-      // than the latter.
-      //
-      // TODO(kinuko): Handle the latter case (http://crbug.com/237090).
-
-      // Fall-through
     case google_apis::HTTP_CREATED: {
       param->drive_metadata.set_resource_id(resource_id);
       param->drive_metadata.set_md5_checksum(std::string());
@@ -1236,6 +1224,12 @@ void DriveFileSyncService::DidCreateDirectoryForLocalSync(
                                        SYNC_DIRECTION_LOCAL_TO_REMOTE);
       return;
     }
+
+    case google_apis::HTTP_CONFLICT:
+      // There were conflicts and a file was left.
+      // TODO(kinuko): Handle the latter case (http://crbug.com/237090).
+      // Fall-through
+
     default:
       FinalizeLocalSync(param->token.Pass(), param->callback,
                         GDataErrorCodeToSyncStatusCodeWrapper(error));
