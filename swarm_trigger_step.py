@@ -89,7 +89,8 @@ class Manifest(object):
     self.tasks.append(
         {
           'action': actions,
-          'decorate_output': self.verbose,
+          # TODO(maruel): Check if this is the problem.
+          'decorate_output': self.verbose or True,
           'test_name': task_name,
           'time_out': time_out,
         })
