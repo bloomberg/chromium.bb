@@ -78,6 +78,14 @@ void SearchBoxView::SetModel(SearchBoxModel* model) {
   }
 }
 
+void SearchBoxView::ClearSearch() {
+  search_box_->SetText(string16());
+  // Updates model and fires query changed manually because SetText() above
+  // does not generate ContentsChanged() notification.
+  UpdateModel();
+  NotifyQueryChanged();
+}
+
 gfx::Size SearchBoxView::GetPreferredSize() {
   return gfx::Size(kPreferredWidth, kPreferredHeight);
 }
@@ -143,11 +151,7 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
 
   // Escape with non-empty query text clears the search box.
   if (has_query && key_event.key_code() == ui::VKEY_ESCAPE) {
-    search_box_->SetText(string16());
-    // Updates model and fires query changed manually because SetText above
-    // does not generate ContentsChanged notification.
-    UpdateModel();
-    NotifyQueryChanged();
+    ClearSearch();
     return true;
   }
 
