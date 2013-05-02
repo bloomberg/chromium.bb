@@ -41,8 +41,8 @@ class DriveMetadataStore
   typedef std::map<std::string, GURL> OriginByResourceId;
   typedef std::map<base::FilePath, DriveMetadata> PathToMetadata;
   typedef std::map<GURL, PathToMetadata> MetadataMap;
-  typedef std::vector<std::pair<fileapi::FileSystemURL, std::string> >
-      URLAndResourceIdList;
+  typedef std::vector<std::pair<fileapi::FileSystemURL, DriveMetadata> >
+      URLAndDriveMetadataList;
   typedef base::Callback<void(SyncStatusCode status, bool created)>
       InitializationCallback;
 
@@ -118,7 +118,7 @@ class DriveMetadataStore
       fileapi::FileSystemURLSet* urls) const;
 
   // Returns a set of URLs and Resource IDs for files to be fetched.
-  SyncStatusCode GetToBeFetchedFiles(URLAndResourceIdList* list) const;
+  SyncStatusCode GetToBeFetchedFiles(URLAndDriveMetadataList* list) const;
 
   // Returns resource id for |origin|.
   // This may return an empty string if |origin| is not a batch, incremental

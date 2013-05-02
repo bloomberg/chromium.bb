@@ -841,17 +841,19 @@ void DriveFileSyncService::DidInitializeMetadataStore(
     pending_batch_sync_origins_.insert(itr->first);
   }
 
-  DriveMetadataStore::URLAndResourceIdList to_be_fetched_files;
+  DriveMetadataStore::URLAndDriveMetadataList to_be_fetched_files;
   status = metadata_store_->GetToBeFetchedFiles(&to_be_fetched_files);
   DCHECK_EQ(SYNC_STATUS_OK, status);
-  typedef DriveMetadataStore::URLAndResourceIdList::const_iterator iterator;
+  typedef DriveMetadataStore::URLAndDriveMetadataList::const_iterator iterator;
   for (iterator itr = to_be_fetched_files.begin();
        itr != to_be_fetched_files.end(); ++itr) {
     const FileSystemURL& url = itr->first;
-    const std::string& resource_id = itr->second;
+    const DriveMetadata& metadata = itr->second;
+    const std::string& resource_id = metadata.resource_id();
 
-    // TODO(tzik): Set SYNC_FILE_TYPE_DIRECTORY if the resource is a directory.
     SyncFileType file_type = SYNC_FILE_TYPE_FILE;
+    if (metadata.type() == DriveMetadata::RESOURCE_TYPE_FOLDER)
+      file_type = SYNC_FILE_TYPE_DIRECTORY;
     AppendFetchChange(url.origin(), url.path(), resource_id, file_type);
   }
 

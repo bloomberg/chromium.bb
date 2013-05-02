@@ -400,7 +400,7 @@ TEST_F(DriveMetadataStoreTest, GetConflictURLsTest) {
 TEST_F(DriveMetadataStoreTest, GetToBeFetchedFilessTest) {
   InitializeDatabase();
 
-  DriveMetadataStore::URLAndResourceIdList list;
+  DriveMetadataStore::URLAndDriveMetadataList list;
   EXPECT_EQ(SYNC_STATUS_OK, metadata_store()->GetToBeFetchedFiles(&list));
   EXPECT_TRUE(list.empty());
 

@@ -703,7 +703,7 @@ SyncStatusCode DriveMetadataStore::GetConflictURLs(
 }
 
 SyncStatusCode DriveMetadataStore::GetToBeFetchedFiles(
-    URLAndResourceIdList* list) const {
+    URLAndDriveMetadataList* list) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(SYNC_STATUS_OK, db_status_);
 
@@ -717,7 +717,7 @@ SyncStatusCode DriveMetadataStore::GetToBeFetchedFiles(
       if (itr->second.to_be_fetched()) {
         FileSystemURL url = CreateSyncableFileSystemURL(
             origin_itr->first, kServiceName, itr->first);
-        list->push_back(std::make_pair(url, itr->second.resource_id()));
+        list->push_back(std::make_pair(url, itr->second));
       }
     }
   }
