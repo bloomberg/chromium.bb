@@ -230,12 +230,30 @@ bool BrowserAccessibilityManager::UpdateNodes(
   // In a second pass, call PostInitialize on each one - this must
   // be called after all of each node's children are initialized too.
   for (size_t i = 0; i < nodes.size() && success; i++) {
+    // Note: it's not a bug for nodes[i].id to not be found in the tree.
+    // Consider this example:
+    // Before:
+    // A
+    //   B
+    //     C
+    //   D
+    //     E
+    //       F
+    // After:
+    // A
+    //   B
+    //     C
+    //       F
+    //   D
+    // In this example, F is being reparented. The renderer scans the tree
+    // in order. If can't update "C" to add "F" as a child, when "F" is still
+    // a child of "E". So it first updates "E", to remove "F" as a child.
+    // Later, it ends up deleting "E". So when we get here, "E" was updated as
+    // part of this sequence but it no longer exists in the final tree, so
+    // there's nothing to postinitialize.
     BrowserAccessibility* instance = GetFromRendererID(nodes[i].id);
-    if (instance) {
+    if (instance)
       instance->PostInitialize();
-    } else {
-      success = false;
-    }
   }
 
   if (!success) {
