@@ -24,7 +24,6 @@
  */
 
 [
-        IndexedGetter,
         DoNotCheckConstants,
     ImplementationLacksVTable
 ] interface WebKitCSSFilterValue : CSSValueList {

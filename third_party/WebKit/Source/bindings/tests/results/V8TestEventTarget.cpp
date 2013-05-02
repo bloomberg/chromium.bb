@@ -199,7 +199,7 @@ v8::Handle<v8::Value> V8TestEventTarget::indexedPropertyGetter(uint32_t index, c
     RefPtr<Node> element = collection->item(index);
     if (!element)
         return v8Undefined();
-    return toV8(element.release(), info.Holder(), info.GetIsolate());
+    return toV8Fast(element.release(), info, collection);
 }
 v8::Handle<v8::Value> V8TestEventTarget::namedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
 {

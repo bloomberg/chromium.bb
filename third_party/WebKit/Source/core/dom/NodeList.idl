@@ -20,13 +20,12 @@
 
 [
     CustomIsReachable,
-    IndexedGetter,
     CustomNamedGetter,
     DependentLifetime,
     SkipVTableValidation
 ] interface NodeList {
 
-    Node item([IsIndex,Default=Undefined] optional unsigned long index);
+    getter Node item([IsIndex,Default=Undefined] optional unsigned long index);
 
     readonly attribute unsigned long length;
 

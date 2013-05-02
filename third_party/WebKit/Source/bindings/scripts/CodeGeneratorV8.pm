@@ -431,18 +431,66 @@ sub GetSVGPropertyTypes
     return ($svgPropertyType, $svgListPropertyType, $svgNativeType);
 }
 
+sub MakeDummyFunction
+{
+    my $returnType = shift;
+    my $methodName = shift;
+    my $function = domFunction->new();
+    $function->signature(domSignature->new());
+    $function->signature->type($returnType);
+    $function->signature->name($methodName);
+    $function->signature->extendedAttributes({});
+    return $function;
+}
+
+sub GetIndexedGetterFunction
+{
+    my $interface = shift;
+
+    # FIXME: Expose indexed getter of WebKitCSSMixFunctionValue by removing this special case
+    # because CSSValueList(which is parent of WebKitCSSMixFunctionValue) has indexed property getter.
+    if ($interface->name eq "WebKitCSSMixFunctionValue") {
+        return 0;
+    }
+
+    # FIXME: add getter method to WebKitCSSKeyframesRule.idl or remove special case of WebKitCSSKeyframesRule.idl
+    # Currently return type and method name is hard coded because it can not be obtained from IDL.
+    if ($interface->name eq "WebKitCSSKeyframesRule") {
+        return MakeDummyFunction("WebKitCSSKeyframeRule", "item")
+    }
+
+    return GetSpecialGetterFunctionForType($interface, "unsigned long");
+}
+
 sub GetNamedGetterFunction
 {
     my $interface = shift;
 
-    foreach my $function (@{$interface->functions}) {
-        my $specials = $function->signature->specials;
-        my $getterExists = grep { $_ eq "getter" } @$specials;
-        my $parameters = $function->parameters;
-        if ($getterExists and scalar(@$parameters) == 1 and $parameters->[0]->type eq "DOMString" ) {
-            return $function;
+    return GetSpecialGetterFunctionForType($interface, "DOMString");
+}
+
+sub GetSpecialGetterFunctionForType
+{
+    my $interface = shift;
+    my $type = shift;
+
+    my @interfaces = ($interface);
+    ForAllParents($interface, sub {
+        my $currentInterface = shift;
+        push(@interfaces, $currentInterface);
+    });
+
+    foreach my $currentInterface (@interfaces) {
+        foreach my $function (@{$currentInterface->functions}) {
+            my $specials = $function->signature->specials;
+            my $getterExists = grep { $_ eq "getter" } @$specials;
+            my $parameters = $function->parameters;
+            if ($getterExists and scalar(@$parameters) == 1 and $parameters->[0]->type eq $type ) {
+                return $function;
+            }
         }
     }
+
     return 0;
 }
 
@@ -889,7 +937,7 @@ sub GenerateHeaderNamedAndIndexedPropertyAccessors
 {
     my $interface = shift;
     my $interfaceName = $interface->name;
-    my $hasIndexedGetter = $interface->extendedAttributes->{"IndexedGetter"} || $interface->extendedAttributes->{"CustomIndexedGetter"};
+    my $hasIndexedGetter = GetIndexedGetterFunction($interface) || $interface->extendedAttributes->{"CustomIndexedGetter"};
     my $hasCustomIndexedSetter = $interface->extendedAttributes->{"CustomIndexedSetter"};
     my $hasCustomNamedGetter = GetNamedGetterFunction($interface) || $interface->extendedAttributes->{"CustomNamedGetter"} || $interface->extendedAttributes->{"CustomGetOwnPropertySlot"};
     my $hasCustomNamedSetter = $interface->extendedAttributes->{"CustomNamedSetter"};
@@ -2955,19 +3003,18 @@ END
 sub GenerateImplementationIndexedProperty
 {
     my $interface = shift;
-    my $indexer = shift;
     my $interfaceName = $interface->name;
     my $v8InterfaceName = "V8$interfaceName";
 
+    my $indexedGetterfunction = GetIndexedGetterFunction($interface);
     my $hasCustomIndexedSetter = $interface->extendedAttributes->{"CustomIndexedSetter"};
-    my $hasIndexedGetter = $interface->extendedAttributes->{"IndexedGetter"} || $interface->extendedAttributes->{"CustomIndexedGetter"};
+    my $hasCustomIndexedGetter = $interface->extendedAttributes->{"CustomIndexedGetter"};
 
     # FIXME: Investigate and remove this nastinesss. In V8, named property handling and indexer handling are apparently decoupled,
     # which means that object[X] where X is a number doesn't reach named property indexer. So we need to provide
     # simplistic, mirrored indexer handling in addition to named property handling.
     my $isSpecialCase = exists $indexerSpecialCases{$interfaceName};
     if ($isSpecialCase) {
-        $hasIndexedGetter = 1;
         if ($interface->extendedAttributes->{"CustomNamedSetter"}) {
             $hasCustomIndexedSetter = 1;
         }
@@ -2979,23 +3026,19 @@ sub GenerateImplementationIndexedProperty
     # FIXME: Find a way to not have to special-case HTMLOptionsCollection.
     if ($interfaceName eq "HTMLOptionsCollection") {
         $hasEnumerator = 1;
-        $hasIndexedGetter = 1;
     }
 
-    if (!$hasIndexedGetter) {
+    if (!$indexedGetterfunction && !$hasCustomIndexedGetter) {
         return "";
     }
 
     AddToImplIncludes("bindings/v8/V8Collection.h");
 
-    if (!$indexer) {
-        $indexer = FindSuperMethod($interface, "item");
-    }
-
-    my $indexerType = $indexer ? $indexer->type : 0;
-
-    if ($indexerType && !$hasCustomIndexedSetter) {
+    if ($indexedGetterfunction && !$hasCustomIndexedSetter) {
         $hasEnumerator = 1;
+    }
+    if ($interfaceName eq "WebKitCSSKeyframesRule") {
+        $hasEnumerator = 0;
     }
 
     my $hasDeleter = $interface->extendedAttributes->{"CustomDeleteProperty"};
@@ -3021,26 +3064,21 @@ sub GenerateImplementationIndexedProperty
     $code .= ", nodeCollectionIndexedPropertyEnumerator<${interfaceName}>" if $hasEnumerator;
     $code .= ");\n";
 
-    if($interface->extendedAttributes->{"IndexedGetter"}) {
-        # FIXME: add item() method to WebKitCSSKeyframesRule.idl or remove [IndexedGetter] from WebKitCSSKeyframesRule.idl
-        # Currently indexer type is hard coded because it can not be obtained from IDL.
-        if ($interfaceName eq "WebKitCSSKeyframesRule") {
-            $indexerType = "WebKitCSSKeyframeRule";
-        }
+    if ($indexedGetterfunction && !$hasCustomIndexedGetter) {
+        my $returnType = $indexedGetterfunction->signature->type;
+        my $methodName = $indexedGetterfunction->signature->name;
+        AddToImplIncludes("bindings/v8/V8Collection.h");
         my $jsValue = "";
-        my $nativeType = GetNativeType($indexerType);
+        my $nativeType = GetNativeType($returnType);
         my $isNull = "";
 
-        if (IsRefPtrType($indexerType)) {
+        if (IsRefPtrType($returnType)) {
+            AddToImplIncludes("V8$returnType.h");
             $isNull = "!element";
-            if ($interfaceName eq "WebKitCSSKeyframesRule") {
-                $jsValue = "toV8(element.release(), info.Holder(), info.GetIsolate())";
-            } else {
-                $jsValue = NativeToJSValue($indexer, "element.release()", "info.Holder()", "info.GetIsolate()");
-            }
+            $jsValue = NativeToJSValue($indexedGetterfunction->signature, "element.release()", "info.Holder()", "info.GetIsolate()", "info", "collection", "", "");
         } else {
             $isNull = "element.isNull()";
-            $jsValue = NativeToJSValue($indexer, "element", "info.Holder()", "info.GetIsolate()");
+            $jsValue = NativeToJSValue($indexedGetterfunction->signature, "element", "info.Holder()", "info.GetIsolate()");
         }
 
         AddToImplContent(<<END);
@@ -3048,7 +3086,7 @@ v8::Handle<v8::Value> ${v8InterfaceName}::indexedPropertyGetter(uint32_t index, 
 {
     ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
     ${interfaceName}* collection = toNative(info.Holder());
-    $nativeType element = collection->item(index);
+    $nativeType element = collection->$methodName(index);
     if ($isNull)
         return v8Undefined();
     return $jsValue;
@@ -3066,10 +3104,18 @@ sub GenerateImplementationNamedPropertyGetter
     my $interfaceName = $interface->name;
     my $v8InterfaceName = "V8$interfaceName";
 
-    my $function = GetNamedGetterFunction($interface);
-    if ($function) {
-        my $returnType = $function->signature->type;
-        my $methodName = $function->signature->name;
+    my $namedGetterFunction = GetNamedGetterFunction($interface);
+    my $hasCustomNamedGetter = $interface->extendedAttributes->{"CustomNamedGetter"};
+    # FIXME: make consistent between IDL and implementation. Then remove these special cases.
+    $hasCustomNamedGetter = 1 if $interfaceName eq "HTMLAppletElement";
+    $hasCustomNamedGetter = 1 if $interfaceName eq "HTMLEmbedElement";
+    $hasCustomNamedGetter = 1 if $interfaceName eq "HTMLObjectElement";
+    $hasCustomNamedGetter = 1 if $interfaceName eq "DOMWindow";
+    $hasCustomNamedGetter = 0 if $interfaceName eq "HTMLDocument";
+
+    if ($namedGetterFunction && !$hasCustomNamedGetter) {
+        my $returnType = $namedGetterFunction->signature->type;
+        my $methodName = $namedGetterFunction->signature->name;
         AddToImplIncludes("bindings/v8/V8Collection.h");
         AddToImplIncludes("V8$returnType.h");
         $subCode .= <<END;
@@ -3101,14 +3147,6 @@ v8::Handle<v8::Value> ${v8InterfaceName}::namedPropertyGetter(v8::Local<v8::Stri
 END
         AddToImplContent($code);
     }
-
-    my $hasCustomNamedGetter = $interface->extendedAttributes->{"CustomNamedGetter"};
-    # FIXME: make consistent between IDL and implementation. Then remove these special cases.
-    $hasCustomNamedGetter = 1 if $interfaceName eq "HTMLAppletElement";
-    $hasCustomNamedGetter = 1 if $interfaceName eq "HTMLEmbedElement";
-    $hasCustomNamedGetter = 1 if $interfaceName eq "HTMLObjectElement";
-    $hasCustomNamedGetter = 1 if $interfaceName eq "DOMWindow";
-    $hasCustomNamedGetter = 0 if $interfaceName eq "HTMLDocument";
 
     if ($hasCustomNamedGetter) {
         my $hasCustomNamedSetter = $interface->extendedAttributes->{"CustomNamedSetter"};
@@ -3649,7 +3687,7 @@ END
         $code .= "\n#endif // ${conditionalString}\n" if $conditionalString;
     }
 
-    $code .= GenerateImplementationIndexedProperty($interface, $indexer);
+    $code .= GenerateImplementationIndexedProperty($interface);
     $code .= GenerateImplementationNamedPropertyGetter($interface);
     $code .= GenerateImplementationCustomCall($interface);
     $code .= GenerateImplementationMasqueradesAsUndefined($interface);

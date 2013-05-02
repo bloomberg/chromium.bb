@@ -29,9 +29,8 @@
  */
 
 [
-    IndexedGetter,
     ImplementationLacksVTable
 ] interface EntryArraySync {
     readonly attribute unsigned long length;
-    EntrySync item([IsIndex] unsigned long index);
+    getter EntrySync item([IsIndex] unsigned long index);
 };

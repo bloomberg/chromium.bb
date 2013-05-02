@@ -19,7 +19,6 @@
  */
 
 [
-    IndexedGetter,
     CustomNamedGetter,
     GenerateIsReachable=ImplOwnerNodeRoot,
     DependentLifetime,

@@ -25,11 +25,10 @@
 
 // Introduced in DOM Level 2:
 [
-    IndexedGetter,
     DependentLifetime,
     SkipVTableValidation
 ] interface CSSRuleList {
     readonly attribute unsigned long    length;
-    CSSRule           item([Default=Undefined] optional unsigned long index);
+    getter CSSRule           item([Default=Undefined] optional unsigned long index);
 };
 

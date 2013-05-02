@@ -25,14 +25,13 @@
 
 // Introduced in DOM Level 2:
 [
-    IndexedGetter,
     ImplementationLacksVTable
 ] interface MediaList {
 
              [TreatNullAs=NullString, TreatReturnedNullStringAs=Null, SetterRaisesException] attribute DOMString mediaText;
     readonly attribute unsigned long length;
 
-    [TreatReturnedNullStringAs=Null] DOMString item([Default=Undefined] optional unsigned long index);
+    [TreatReturnedNullStringAs=Null] getter DOMString item([Default=Undefined] optional unsigned long index);
     [RaisesException] void deleteMedium([Default=Undefined] optional DOMString oldMedium);
     [RaisesException] void appendMedium([Default=Undefined] optional DOMString newMedium);
 

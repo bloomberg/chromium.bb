@@ -28,7 +28,6 @@
 
 // Introduced in DOM Level ?:
 [
-    IndexedGetter
 ] interface WebKitCSSKeyframesRule : CSSRule {
 
     [TreatReturnedNullStringAs=Null, TreatNullAs=NullString] attribute DOMString name;

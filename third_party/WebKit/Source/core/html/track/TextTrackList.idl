@@ -25,12 +25,11 @@
 
 [
     EnabledAtRuntime=webkitVideoTrack,
-    IndexedGetter,
     EventTarget,
     GenerateIsReachable=ImplOwnerRoot
 ] interface TextTrackList {
     readonly attribute unsigned long length;
-    TextTrack item(unsigned long index);
+    getter TextTrack item(unsigned long index);
 
     attribute EventListener onaddtrack;
 

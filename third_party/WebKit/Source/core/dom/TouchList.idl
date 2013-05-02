@@ -24,10 +24,9 @@
  */
 
 [
-    IndexedGetter,
     ImplementationLacksVTable
 ] interface TouchList {
     readonly attribute unsigned long length;
 
-    Touch item(unsigned long index);
+    getter Touch item(unsigned long index);
 };
