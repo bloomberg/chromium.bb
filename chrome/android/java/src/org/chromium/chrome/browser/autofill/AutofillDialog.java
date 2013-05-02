@@ -28,6 +28,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.ui.UiUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -393,6 +394,7 @@ public class AutofillDialog extends AlertDialog
     private void changeLayoutTo(int mode) {
         mContentView.changeLayoutTo(mode);
         updateButtons(mode);
+        UiUtils.hideKeyboard(mContentView);
     }
 
     /**
