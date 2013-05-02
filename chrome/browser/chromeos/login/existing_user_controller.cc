@@ -70,19 +70,6 @@ namespace {
 // Major version where we still show GSG as "Release Notes" after the update.
 const long int kReleaseNotesTargetRelease = 19;
 
-// Getting started guide url, will be opened as in app window for each new
-// user who logs on the device.
-// It actually goes to HelpApp and get redirected to our actual server there.
-const char kGetStartedWebUrl[] =
-#if defined(OFFICIAL_BUILD)
-    "chrome-extension://honijodknafkokifofgiaalefdiedpko/gsg.html?oobe=1";
-#else
-    "https://gweb-gettingstartedguide.appspot.com/";
-#endif  // defined(OFFICIAL_BUILD)
-
-// Getting started guide application window size.
-const char kGSGAppWindowSize[] = "820,600";
-
 // URL for account creation.
 const char kCreateAccountURL[] =
     "https://accounts.google.com/NewAccount?service=mail";
@@ -983,7 +970,6 @@ void ExistingUserController::InitializeStartUrls() const {
 
   PrefService* prefs = g_browser_process->local_state();
   const base::ListValue *urls;
-  bool show_getstarted_guide = false;
   if (UserManager::Get()->IsLoggedInAsDemoUser()) {
     if (CrosSettings::Get()->GetList(kStartUpUrls, &urls)) {
       // The retail mode user will get start URLs from a special policy if it is
@@ -1003,8 +989,6 @@ void ExistingUserController::InitializeStartUrls() const {
           StringToLowerASCII(prefs->GetString(prefs::kApplicationLocale));
       std::string vox_url = base::StringPrintf(url, current_locale.c_str());
       start_urls.push_back(vox_url);
-    } else {
-      show_getstarted_guide = true;
     }
   }
 
@@ -1016,16 +1000,8 @@ void ExistingUserController::InitializeStartUrls() const {
     customization->ApplyCustomization();
   }
 
-  if (show_getstarted_guide) {
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kApp, kGetStartedWebUrl);
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kAppWindowSize, kGSGAppWindowSize);
-  } else {
-    // We should not be adding any start URLs if guide
-    // is defined as it launches as a standalone app window.
-    for (size_t i = 0; i < start_urls.size(); ++i)
-      CommandLine::ForCurrentProcess()->AppendArg(start_urls[i]);
+  for (size_t i = 0; i < start_urls.size(); ++i) {
+    CommandLine::ForCurrentProcess()->AppendArg(start_urls[i]);
   }
 }
 
@@ -1069,12 +1045,8 @@ void ExistingUserController::OptionallyShowReleaseNotes(
 
   // Otherwise, trigger on major version change.
   if (current_version.components()[0] > prev_version.components()[0]) {
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kApp, kGetStartedWebUrl);
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kAppWindowSize, kGSGAppWindowSize);
-      prefs->SetString(prefs::kChromeOSReleaseNotesVersion,
-                       current_version.GetString());
+    prefs->SetString(prefs::kChromeOSReleaseNotesVersion,
+                     current_version.GetString());
   }
 }
 
