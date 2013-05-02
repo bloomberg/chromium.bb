@@ -71,6 +71,10 @@ std::string GetDesktopFileContents(const base::FilePath& chrome_exe_path,
                                    const base::FilePath& profile_path,
                                    bool no_display);
 
+// Returns contents for .directory file named |title| with icon |icon_name|. If
+// |icon_name| is empty, will use the Chrome icon.
+std::string GetDirectoryFileContents(const string16& title,
+                                     const std::string& icon_name);
 
 // Create shortcuts on the desktop or in the application menu (as specified by
 // |shortcut_info|), for the web page or extension in |shortcut_info|.

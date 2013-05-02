@@ -173,11 +173,29 @@ void DeleteShortcutOnDesktop(const base::FilePath& shortcut_filename) {
     file_util::Delete(desktop_path.Append(shortcut_filename), false);
 }
 
+// Creates a shortcut with |shortcut_filename| and |contents| in the system
+// applications menu. If |directory_filename| is non-empty, creates a sub-menu
+// with |directory_filename| and |directory_contents|, and stores the shortcut
+// under the sub-menu.
 bool CreateShortcutInApplicationsMenu(const base::FilePath& shortcut_filename,
-                                      const std::string& contents) {
+                                      const std::string& contents,
+                                      const base::FilePath& directory_filename,
+                                      const std::string& directory_contents) {
   base::ScopedTempDir temp_dir;
   if (!temp_dir.CreateUniqueTempDir())
     return false;
+
+  base::FilePath temp_directory_path;
+  if (!directory_filename.empty()) {
+    temp_directory_path = temp_dir.path().Append(directory_filename);
+
+    int bytes_written = file_util::WriteFile(temp_directory_path,
+                                             directory_contents.data(),
+                                             directory_contents.length());
+
+    if (bytes_written != static_cast<int>(directory_contents.length()))
+      return false;
+  }
 
   base::FilePath temp_file_path = temp_dir.path().Append(shortcut_filename);
 
@@ -196,13 +214,18 @@ bool CreateShortcutInApplicationsMenu(const base::FilePath& shortcut_filename,
   argv.push_back("--mode");
   argv.push_back("user");
 
+  // If provided, install the shortcut file inside the given directory.
+  if (!directory_filename.empty())
+    argv.push_back(temp_directory_path.value());
   argv.push_back(temp_file_path.value());
   int exit_code;
   LaunchXdgUtility(argv, &exit_code);
   return exit_code == 0;
 }
 
-void DeleteShortcutInApplicationsMenu(const base::FilePath& shortcut_filename) {
+void DeleteShortcutInApplicationsMenu(
+    const base::FilePath& shortcut_filename,
+    const base::FilePath& directory_filename) {
   std::vector<std::string> argv;
   argv.push_back("xdg-desktop-menu");
   argv.push_back("uninstall");
@@ -213,6 +236,10 @@ void DeleteShortcutInApplicationsMenu(const base::FilePath& shortcut_filename) {
 
   // The file does not need to exist anywhere - xdg-desktop-menu will uninstall
   // items from the menu with a matching name.
+  // If |directory_filename| is supplied, this will also remove the item from
+  // the directory, and remove the directory if it is empty.
+  if (!directory_filename.empty())
+    argv.push_back(directory_filename.value());
   argv.push_back(shortcut_filename.value());
   int exit_code;
   LaunchXdgUtility(argv, &exit_code);
@@ -253,6 +280,8 @@ const char kXdgOpenShebang[] = "#!/usr/bin/env xdg-open";
 const char kXdgSettings[] = "xdg-settings";
 const char kXdgSettingsDefaultBrowser[] = "default-web-browser";
 const char kXdgSettingsDefaultSchemeHandler[] = "default-url-scheme-handler";
+
+const char kDirectoryFilename[] = "chrome-apps.directory";
 
 }  // namespace
 
@@ -694,6 +723,41 @@ std::string GetDesktopFileContents(
   return output_buffer;
 }
 
+std::string GetDirectoryFileContents(const string16& title,
+                                     const std::string& icon_name) {
+  // See http://standards.freedesktop.org/desktop-entry-spec/latest/
+  GKeyFile* key_file = g_key_file_new();
+
+  g_key_file_set_string(key_file, kDesktopEntry, "Version", "1.0");
+  g_key_file_set_string(key_file, kDesktopEntry, "Type", "Directory");
+  std::string final_title = UTF16ToUTF8(title);
+  g_key_file_set_string(key_file, kDesktopEntry, "Name", final_title.c_str());
+  if (!icon_name.empty()) {
+    g_key_file_set_string(key_file, kDesktopEntry, "Icon", icon_name.c_str());
+  } else {
+    g_key_file_set_string(key_file, kDesktopEntry, "Icon",
+                          GetIconName().c_str());
+  }
+
+  gsize length = 0;
+  gchar* data_dump = g_key_file_to_data(key_file, &length, NULL);
+  std::string output_buffer;
+  if (data_dump) {
+    // If strlen(data_dump[0]) == 0, this check will fail.
+    if (data_dump[0] == '\n') {
+      // Older versions of glib produce a leading newline. If this is the case,
+      // remove it to avoid double-newline after the shebang.
+      output_buffer += (data_dump + 1);
+    } else {
+      output_buffer += data_dump;
+    }
+    g_free(data_dump);
+  }
+
+  g_key_file_free(key_file);
+  return output_buffer;
+}
+
 bool CreateDesktopShortcut(
     const ShellIntegration::ShortcutInfo& shortcut_info,
     const ShellIntegration::ShortcutLocations& creation_locations) {
@@ -708,7 +772,7 @@ bool CreateDesktopShortcut(
     if (creation_locations.on_desktop)
       DeleteShortcutOnDesktop(shortcut_filename);
     if (creation_locations.in_applications_menu || creation_locations.hidden)
-      DeleteShortcutInApplicationsMenu(shortcut_filename);
+      DeleteShortcutInApplicationsMenu(shortcut_filename, base::FilePath());
   } else {
     shortcut_filename = GetWebShortcutFilename(shortcut_info.url);
   }
@@ -746,6 +810,13 @@ bool CreateDesktopShortcut(
   // The 'in_applications_menu' and 'hidden' locations are actually the same
   // place ('applications').
   if (creation_locations.in_applications_menu || creation_locations.hidden) {
+    base::FilePath directory_filename;
+    std::string directory_contents;
+    if (!creation_locations.applications_menu_subdir.empty()) {
+      directory_filename = base::FilePath(kDirectoryFilename);
+      directory_contents = ShellIntegrationLinux::GetDirectoryFileContents(
+          creation_locations.applications_menu_subdir, "");
+    }
     // Set NoDisplay=true if hidden but not in_applications_menu. This will hide
     // the application from user-facing menus.
     std::string contents = ShellIntegrationLinux::GetDesktopFileContents(
@@ -758,8 +829,9 @@ bool CreateDesktopShortcut(
         icon_name,
         shortcut_info.profile_path,
         !creation_locations.in_applications_menu);
-    success = CreateShortcutInApplicationsMenu(shortcut_filename, contents) &&
-              success;
+    success = CreateShortcutInApplicationsMenu(
+        shortcut_filename, contents, directory_filename, directory_contents) &&
+        success;
   }
 
   return success;
@@ -774,7 +846,13 @@ void DeleteDesktopShortcuts(const base::FilePath& profile_path,
   DCHECK(!shortcut_filename.empty());
 
   DeleteShortcutOnDesktop(shortcut_filename);
-  DeleteShortcutInApplicationsMenu(shortcut_filename);
+  // Delete shortcuts from |kDirectoryFilename|.
+  // Note that it is possible that shortcuts were not created in the Chrome Apps
+  // directory (depending on the value of |applications_menu_subdir| when they
+  // were created). It doesn't matter: this will still delete the shortcut even
+  // if it isn't in the directory.
+  DeleteShortcutInApplicationsMenu(shortcut_filename,
+                                   base::FilePath(kDirectoryFilename));
 }
 
 }  // namespace ShellIntegrationLinux

@@ -471,4 +471,43 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
   }
 }
 
+TEST(ShellIntegrationTest, GetDirectoryFileContents) {
+  const struct {
+    const char* title;
+    const char* icon_name;
+    const char* expected_output;
+  } test_cases[] = {
+    // Real-world case.
+    { "Chrome Apps",
+      "chrome-apps",
+
+      "[Desktop Entry]\n"
+      "Version=1.0\n"
+      "Type=Directory\n"
+      "Name=Chrome Apps\n"
+      "Icon=chrome-apps\n"
+    },
+
+    // Make sure that empty icons are replaced by the chrome icon.
+    { "Chrome Apps",
+      "",
+
+      "[Desktop Entry]\n"
+      "Version=1.0\n"
+      "Type=Directory\n"
+      "Name=Chrome Apps\n"
+      "Icon=chromium-browser\n"
+    },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); i++) {
+    SCOPED_TRACE(i);
+    EXPECT_EQ(
+        test_cases[i].expected_output,
+        ShellIntegrationLinux::GetDirectoryFileContents(
+            ASCIIToUTF16(test_cases[i].title),
+            test_cases[i].icon_name));
+  }
+}
+
 #endif
