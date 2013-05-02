@@ -52,10 +52,14 @@ GURL GetSyncableFileSystemRootURI(const GURL& origin,
 FileSystemURL CreateSyncableFileSystemURL(const GURL& origin,
                                           const std::string& service_name,
                                           const base::FilePath& path) {
+  // Avoid using FilePath::Append as path may be an absolute path.
+  base::FilePath::StringType virtual_path =
+      base::FilePath::FromUTF8Unsafe(service_name + "/").value() +
+      path.value();
   return ExternalMountPoints::GetSystemInstance()->CreateCrackedFileSystemURL(
       origin,
       fileapi::kFileSystemTypeExternal,
-      base::FilePath::FromUTF8Unsafe(service_name).Append(path));
+      base::FilePath(virtual_path));
 }
 
 bool SerializeSyncableFileSystemURL(const FileSystemURL& url,
