@@ -25,23 +25,12 @@
       'media-galleries-section',
       'network-section',
       'notifications-section',
-      'privacy-section',
       'sync-section',
       'sync-users-section'
     ];
 
     for (var i = 0; i < whitelistedSections.length; i++)
       $(whitelistedSections[i]).hidden = false;
-
-    // Hide irrelevant parts of privacy section.
-    var hiddenPrivacyNodeList = document.querySelectorAll(
-        '#privacy-section > div > .checkbox');
-    for (var i = 0; i < hiddenPrivacyNodeList.length; i++)
-      hiddenPrivacyNodeList[i].hidden = true;
-
-    document.querySelector(
-        '#privacy-section > div > #privacy-explanation').
-            hidden = true;
 
     // Hide Import bookmarks and settings button.
     $('import-data').hidden = true;
