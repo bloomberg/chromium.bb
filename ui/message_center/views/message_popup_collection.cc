@@ -33,8 +33,7 @@ namespace {
 // Timeout between the last user-initiated close of the toast and the moment
 // when normal layout/update of the toast stack continues. If the last toast was
 // just closed, the timeout is shorter.
-const int kUpdateTimeoutOnUserActionMs = 2000;
-const int kUpdateTimeoutOnUserActionEmptyMs = 700;
+const int kMouseExitedDeferTimeoutMs = 200;
 
 const int kToastMargin = kMarginBetweenItems;
 
@@ -45,6 +44,7 @@ MessagePopupCollection::MessagePopupCollection(gfx::NativeView parent,
     : parent_(parent),
       message_center_(message_center),
       defer_counter_(0),
+      latest_toast_entered_(NULL),
       user_is_closing_toasts_by_clicking_(false) {
   DCHECK(message_center_);
   defer_timer_.reset(new base::OneShotTimer<MessagePopupCollection>);
@@ -108,15 +108,38 @@ void MessagePopupCollection::UpdateWidgets() {
   }
 }
 
-void MessagePopupCollection::OnMouseEntered() {
+void MessagePopupCollection::OnMouseEntered(ToastContentsView* toast_entered) {
+  // Sometimes we can get two MouseEntered/MouseExited in a row when animating
+  // toasts.  So we need to keep track of which one is the currently active one.
+  latest_toast_entered_ = toast_entered;
+
   for (Toasts::iterator iter = toasts_.begin(); iter != toasts_.end(); ++iter) {
     (*iter)->SuspendTimer();
   }
+
+  if (user_is_closing_toasts_by_clicking_)
+    defer_timer_->Stop();
 }
 
-void MessagePopupCollection::OnMouseExited() {
-  for (Toasts::iterator iter = toasts_.begin(); iter != toasts_.end(); ++iter) {
-    (*iter)->StartTimer();
+void MessagePopupCollection::OnMouseExited(ToastContentsView* toast_exited) {
+  // If we're exiting a toast after entering a different toast, then ignore
+  // this mouse event.
+  if (toast_exited != latest_toast_entered_)
+    return;
+  latest_toast_entered_ = NULL;
+
+  if (user_is_closing_toasts_by_clicking_) {
+    defer_timer_->Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kMouseExitedDeferTimeoutMs),
+        this,
+        &MessagePopupCollection::OnDeferTimerExpired);
+  } else {
+    for (Toasts::iterator iter = toasts_.begin();
+         iter != toasts_.end();
+         ++iter) {
+      (*iter)->StartTimer();
+    }
   }
 }
 
@@ -230,20 +253,16 @@ void MessagePopupCollection::OnNotificationRemoved(
       user_is_closing_toasts_by_clicking_ = true;
       IncrementDeferCounter();
     }
-    int update_timeout =
-        toasts_.empty() ? kUpdateTimeoutOnUserActionEmptyMs :
-                          kUpdateTimeoutOnUserActionMs;
-    defer_timer_->Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(update_timeout),
-        this,
-        &MessagePopupCollection::OnDeferTimerExpired);
   }
 }
 
 void MessagePopupCollection::OnDeferTimerExpired() {
   user_is_closing_toasts_by_clicking_ = false;
   DecrementDeferCounter();
+
+  for (Toasts::iterator iter = toasts_.begin(); iter != toasts_.end(); ++iter) {
+    (*iter)->StartTimer();
+  }
 }
 
 void MessagePopupCollection::OnNotificationUpdated(

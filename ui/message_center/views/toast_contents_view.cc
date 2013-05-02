@@ -106,7 +106,7 @@ void ToastContentsView::ResetTimeout(int priority) {
 }
 
 void ToastContentsView::SuspendTimer() {
-  if (!timer_.get())
+  if (!timer_.get() || !timer_->IsRunning())
     return;
   timer_->Stop();
   passed_ += base::Time::Now() - start_time_;
@@ -263,12 +263,12 @@ bool ToastContentsView::CanActivate() const {
 // views::View
 void ToastContentsView::OnMouseEntered(const ui::MouseEvent& event) {
   if (collection_)
-    collection_->OnMouseEntered();
+    collection_->OnMouseEntered(this);
 }
 
 void ToastContentsView::OnMouseExited(const ui::MouseEvent& event) {
   if (collection_)
-    collection_->OnMouseExited();
+    collection_->OnMouseExited(this);
 }
 
 void ToastContentsView::Layout() {

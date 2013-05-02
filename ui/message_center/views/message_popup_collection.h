@@ -58,8 +58,10 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   // Called by ToastContentsView when its window is closed.
   void RemoveToast(ToastContentsView* toast);
 
-  void OnMouseEntered();
-  void OnMouseExited();
+  // Since these events are really coming from individual toast widgets,
+  // it helps to be able to keep track of the sender.
+  void OnMouseEntered(ToastContentsView* toast_entered);
+  void OnMouseExited(ToastContentsView* toast_exited);
 
   // Invoked by toasts when they start/finish their animations.
   // While "defer counter" is greater then zero, the popup collection does
@@ -128,6 +130,10 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   gfx::Rect work_area_;
 
   int defer_counter_;
+
+  // This is only used to compare with incoming events, do not assume that
+  // the toast will be valid if this pointer is non-NULL.
+  ToastContentsView* latest_toast_entered_;
 
   // Denotes a mode when user is clicking the Close button of toasts in a
   // sequence, w/o moving the mouse. We reposition the toasts so the next one
