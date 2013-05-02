@@ -913,6 +913,15 @@ TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_RegularFile) {
       FILE_PATH_LITERAL("drive/root/remote.txt"));
   EXPECT_FALSE(EntryExists(remote_dest_file_path));
 
+  // What TransferFileFromLocalToRemote does is to store the local file in
+  // the Drive file cache, and mark it as dirty+committed. Here we test that
+  // the "cache committed" event is indeed fired as a result of this test case.
+  //
+  // In the production environment, SyncClient listens this event and uploads
+  // the file to the remote server in background. This part should be tested in
+  // sync_client_unittest.cc
+  EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(_)).Times(1);
+
   // Transfer the local file to Drive.
   FileError error = FILE_ERROR_FAILED;
   file_system_->TransferFileFromLocalToRemote(

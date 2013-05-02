@@ -11,11 +11,8 @@
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
-class GURL;
-
 namespace base {
 class FilePath;
-class Value;
 }
 
 namespace google_apis {
@@ -24,12 +21,13 @@ class ResourceEntry;
 
 namespace drive {
 
-class FileSystemInterface;
+class FileCache;
 class JobScheduler;
 class ResourceEntry;
 
 namespace file_system {
 
+class CreateFileOperation;
 class MoveOperation;
 class OperationObserver;
 
@@ -41,6 +39,7 @@ class CopyOperation {
   CopyOperation(JobScheduler* job_scheduler,
                 FileSystemInterface* file_system,
                 internal::ResourceMetadata* metadata,
+                FileCache* cache,
                 scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
                 OperationObserver* observer);
   virtual ~CopyOperation();
@@ -76,19 +75,21 @@ class CopyOperation {
       const FileOperationCallback& callback);
 
  private:
-  // Struct used for StartFileUpload().
-  struct StartFileUploadParams;
-
-  // Initiates transfer of |local_file_path| to |remote_dest_file_path|.
-  // |local_file_path| must be a regular file (i.e. not a hosted document) from
-  // the local file system, |remote_dest_file_path| is the virtual destination
-  // path within Drive file system.
-  //
-  // Must be called from *UI* thread. |callback| is run on the calling thread.
-  // |callback| must not be null.
-  void TransferRegularFile(const base::FilePath& local_file_path,
-                           const base::FilePath& remote_dest_file_path,
-                           const FileOperationCallback& callback);
+  // Stores |local_file_path| in cache and mark as dirty so that SyncClient will
+  // upload the content to |remote_dest_file_path|.
+  void ScheduleTransferRegularFile(const base::FilePath& local_file_path,
+                                   const base::FilePath& remote_dest_file_path,
+                                   const FileOperationCallback& callback);
+  void ScheduleTransferRegularFileAfterCreate(
+      const base::FilePath& local_file_path,
+      const base::FilePath& remote_dest_file_path,
+      const FileOperationCallback& callback,
+      FileError error);
+  void ScheduleTransferRegularFileAfterGetEntryInfo(
+      const base::FilePath& local_file_path,
+      const FileOperationCallback& callback,
+      FileError error,
+      scoped_ptr<ResourceEntry> entry);
 
   // Invoked upon completion of GetFileByPath initiated by
   // TransferFileFromRemoteToLocal. If GetFileByPath reports no error, calls
@@ -152,28 +153,6 @@ class CopyOperation {
                                 const std::string& unused_mime_type,
                                 DriveFileType file_type);
 
-  // Kicks off file upload once it receives |content_type|.
-  void StartFileUpload(const StartFileUploadParams& params,
-                       const std::string* content_type,
-                       bool got_content_type);
-
-  // Part of StartFileUpload(). Called after GetEntryInfoByPath()
-  // is complete.
-  void StartFileUploadAfterGetEntryInfo(
-      const StartFileUploadParams& params,
-      const std::string& content_type,
-      FileError error,
-      scoped_ptr<ResourceEntry> entry);
-
-  // Helper function that completes bookkeeping tasks related to
-  // completed file transfer.
-  void OnTransferCompleted(
-      const FileOperationCallback& callback,
-      google_apis::GDataErrorCode error,
-      const base::FilePath& drive_path,
-      const base::FilePath& file_path,
-      scoped_ptr<google_apis::ResourceEntry> resource_entry);
-
   // Part of TransferFileFromLocalToRemote(). Called after
   // GetEntryInfoByPath() is complete.
   void TransferFileFromLocalToRemoteAfterGetEntryInfo(
@@ -200,9 +179,12 @@ class CopyOperation {
   JobScheduler* job_scheduler_;
   FileSystemInterface* file_system_;
   internal::ResourceMetadata* metadata_;
+  FileCache* cache_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;
 
+  // Uploading a new file is internally implemented by creating a dirty file.
+  scoped_ptr<CreateFileOperation> create_file_operation_;
   // Copying a hosted document is internally implemented by using a move.
   scoped_ptr<MoveOperation> move_operation_;
 
