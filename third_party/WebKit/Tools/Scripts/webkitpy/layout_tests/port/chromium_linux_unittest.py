@@ -63,7 +63,7 @@ class ChromiumLinuxPortTest(chromium_port_testcase.ChromiumPortTestCase):
                                  expected_architecture='x86_64')
         self.assert_architecture(file_output='ELF 32-bit LSB executable',
                                  expected_architecture='x86')
-        self.assert_architecture(file_output='ELF 64-bit LSB executable',
+        self.assert_architecture(file_output='ELF 64-bit LSB      executable',
                                  expected_architecture='x86_64')
 
     def test_check_illegal_port_names(self):

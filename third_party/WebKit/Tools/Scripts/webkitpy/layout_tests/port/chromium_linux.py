@@ -27,6 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import logging
+import re
 
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.port import chromium
@@ -64,11 +65,11 @@ class ChromiumLinuxPort(chromium.ChromiumPort):
         file_output = ''
         if filesystem.exists(driver_path):
             # The --dereference flag tells file to follow symlinks
-            file_output = executive.run_command(['file', '--dereference', driver_path], return_stderr=True)
+            file_output = executive.run_command(['file', '--brief', '--dereference', driver_path], return_stderr=True)
 
-        if 'ELF 32-bit LSB executable' in file_output:
+        if re.match(r'ELF 32-bit LSB\s+executable', file_output):
             return 'x86'
-        if 'ELF 64-bit LSB executable' in file_output:
+        if re.match(r'ELF 64-bit LSB\s+executable', file_output):
             return 'x86_64'
         if file_output:
             _log.warning('Could not determine architecture from "file" output: %s' % file_output)
