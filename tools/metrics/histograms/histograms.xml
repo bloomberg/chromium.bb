@@ -6305,6 +6305,35 @@ other types of suffix sets.
   <summary>Time to store the PrefixSet file.</summary>
 </histogram>
 
+<histogram name="SB2.SideEffectFreeWhitelistDatabaseKilobytes" units="KB">
+  <summary>
+    The size of the Side Effect Free Whitelist SaafeBrowsing database file on
+    disk in kilobytes, after an update has occurred.
+  </summary>
+</histogram>
+
+<histogram name="SB2.SideEffectFreeWhitelistPrefixSetKilobytes" units="KB">
+  <summary>
+    The size of the Side Effect Free Whitelist PrefixSet file in kilobytes,
+    after an udpate has occurred.
+  </summary>
+</histogram>
+
+<histogram name="SB2.SideEffectFreeWhitelistPrefixSetLoad" units="ms">
+  <summary>Time to load the Side Effect Free Whitelist PrefixSet file.</summary>
+</histogram>
+
+<histogram name="SB2.SideEffectFreeWhitelistPrefixSetWrite" units="ms">
+  <summary>
+    Time to store the Side Effect Free Whitelist PrefixSet file.
+  </summary>
+</histogram>
+
+<histogram name="SB2.SideEffectFreeWhitelistStatus"
+    enum="SB2SideEffectFreeWhitelistStatus">
+  <summary>The instantiation status of the SideEffectFreeWhitelist.</summary>
+</histogram>
+
 <histogram name="SB2.SubPrefixes">
   <summary>
     The number of sub prefixes stored in the database after the last update.
@@ -9933,10 +9962,19 @@ other types of suffix sets.
   <int value="11" label="DOWNLOAD_DB_UPDATE_FINISH"/>
   <int value="12" label="CSD_DB_UPDATE_BEGIN"/>
   <int value="13" label="CSD_DB_UPDATE_FINISH"/>
-  <int value="14" label="PREFIX_SET_MISSING"/>
-  <int value="15" label="PREFIX_SET_READ"/>
-  <int value="16" label="PREFIX_SET_WRITE"/>
-  <int value="17" label="PREFIX_SET_DELETE"/>
+  <int value="14" label="BROWSE_PREFIX_SET_MISSING"/>
+  <int value="15" label="BROWSE_PREFIX_SET_READ"/>
+  <int value="16" label="BROWSE_PREFIX_SET_WRITE"/>
+  <int value="17" label="BROWSE_PREFIX_SET_DELETE"/>
+  <int value="18" label="EXTENSION_BLACKLIST_UPDATE_BEGIN"/>
+  <int value="19" label="EXTENSION_BLACKLIST_UPDATE_FINISH"/>
+  <int value="20" label="EXTENSION_BLACKLIST_UPDATE_DELETE"/>
+  <int value="21" label="SIDE_EFFECT_FREE_WHITELIST_UPDATE_BEGIN"/>
+  <int value="22" label="SIDE_EFFECT_FREE_WHITELIST_UPDATE_FINISH"/>
+  <int value="23" label="SIDE_EFFECT_FREE_WHITELIST_DELETE"/>
+  <int value="24" label="SIDE_EFFECT_FREE_WHITELIST_PREFIX_SET_READ"/>
+  <int value="25" label="SIDE_EFFECT_FREE_WHITELIST_PREFIX_SET_WRITE"/>
+  <int value="26" label="SIDE_EFFECT_FREE_WHITELIST_PREFIX_SET_DELETE"/>
 </enum>
 
 <enum name="SB2DownloadChecks" type="int">
@@ -10011,6 +10049,11 @@ other types of suffix sets.
   <int value="17" label="MISMATCH_PREFIX_SET_CHECKSUM"/>
   <int value="18" label="MISMATCH_BLOOM_FILTER_CHECKSUM"/>
   <int value="19" label="BLOOM_MISS_PREFIX_HIT"/>
+</enum>
+
+<enum name="SB2SideEffectFreeWhitelistStatus" type="int">
+  <int value="0" label="Enabled"/>
+  <int value="1" label="Disabled"/>
 </enum>
 
 <enum name="SB2UpdateResult" type="int">

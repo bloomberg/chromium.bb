@@ -27,6 +27,9 @@ bool IsLocalPredictorEnabled();
 // Returns true iff the LoggedIn Predictor is enabled.
 bool IsLoggedInPredictorEnabled();
 
+// Returns true iff the side-effect free whitelist is enabled.
+bool IsSideEffectFreeWhitelistEnabled();
+
 }  // namespace prerender
 
 #endif  // CHROME_BROWSER_PRERENDER_PRERENDER_FIELD_TRIAL_H_

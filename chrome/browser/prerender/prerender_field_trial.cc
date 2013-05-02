@@ -33,6 +33,10 @@ const char kLoggedInPredictorTrialName[] = "PrerenderLoggedInPredictor";
 const char kLoggedInPredictorEnabledGroup[] = "Enabled";
 const char kLoggedInPredictorDisabledGroup[] = "Disabled";
 
+const char kSideEffectFreeWhitelistTrialName[] = "SideEffectFreeWhitelist";
+const char kSideEffectFreeWhitelistEnabledGroup[] = "Enabled";
+const char kSideEffectFreeWhitelistDisabledGroup[] = "Disabled";
+
 void SetupPrefetchFieldTrial() {
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
@@ -146,6 +150,7 @@ void SetupPrerenderFieldTrial() {
 
 void ConfigureOmniboxPrerender();
 void ConfigureLoggedInPredictor();
+void ConfigureSideEffectFreeWhitelist();
 
 void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
   enum PrerenderOption {
@@ -203,6 +208,7 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
 
   ConfigureOmniboxPrerender();
   ConfigureLoggedInPredictor();
+  ConfigureSideEffectFreeWhitelist();
 }
 
 void ConfigureOmniboxPrerender() {
@@ -234,6 +240,20 @@ void ConfigureLoggedInPredictor() {
           kLoggedInPredictorTrialName, 100,
           kLoggedInPredictorDisabledGroup, 2013, 12, 31, NULL));
   logged_in_predictor_trial->AppendGroup(kLoggedInPredictorEnabledGroup, 100);
+}
+
+void ConfigureSideEffectFreeWhitelist() {
+  scoped_refptr<FieldTrial> side_effect_free_whitelist_trial(
+      FieldTrialList::FactoryGetFieldTrial(
+          kSideEffectFreeWhitelistTrialName, 100,
+          kSideEffectFreeWhitelistDisabledGroup, 2013, 12, 31, NULL));
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
+      channel == chrome::VersionInfo::CHANNEL_BETA) {
+    return;
+  }
+  side_effect_free_whitelist_trial->AppendGroup(
+      kSideEffectFreeWhitelistEnabledGroup, 100);
 }
 
 bool IsOmniboxEnabled(Profile* profile) {
@@ -272,6 +292,11 @@ bool IsLocalPredictorEnabled() {
 bool IsLoggedInPredictorEnabled() {
   return base::FieldTrialList::FindFullName(kLoggedInPredictorTrialName) ==
       kLoggedInPredictorEnabledGroup;
+}
+
+bool IsSideEffectFreeWhitelistEnabled() {
+  return base::FieldTrialList::FindFullName(kSideEffectFreeWhitelistTrialName)
+      == kSideEffectFreeWhitelistEnabledGroup;
 }
 
 }  // namespace prerender

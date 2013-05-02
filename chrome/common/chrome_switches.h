@@ -323,6 +323,7 @@ extern const char kSbURLPrefix[];
 extern const char kSbDisableAutoUpdate[];
 extern const char kSbDisableDownloadProtection[];
 extern const char kSbDisableExtensionBlacklist[];
+extern const char kSbDisableSideEffectFreeWhitelist[];
 extern const char kScriptBadges[];
 extern const char kScriptBubble[];
 extern const char kSearchInOmniboxHint[];

@@ -1230,6 +1230,10 @@ const char kSbDisableDownloadProtection[] =
 const char kSbDisableExtensionBlacklist[] =
     "safebrowsing-disable-extension-blacklist";
 
+// Disables safebrowsing feature that provides a side-effect free whitelist.
+const char kSbDisableSideEffectFreeWhitelist[] =
+    "safebrowsing-disable-side-effect-free-whitelist";
+
 // Enables or disables extension scripts badges in the location bar.
 const char kScriptBadges[]                  = "script-badges";
 
