@@ -28,6 +28,7 @@
 
 using device::BluetoothAdapter;
 using device::BluetoothDevice;
+using device::BluetoothProfile;
 using device::BluetoothServiceRecord;
 using device::BluetoothSocket;
 
@@ -131,7 +132,7 @@ bool BluetoothAddProfileFunction::RunImpl() {
     return false;
   }
 
-  device::BluetoothProfile::Options options;
+  BluetoothProfile::Options options;
   if (params->profile.name.get())
     options.name = *params->profile.name.get();
   if (params->profile.channel.get())
@@ -161,13 +162,13 @@ bool BluetoothAddProfileFunction::RunImpl() {
 }
 
 void BluetoothAddProfileFunction::RegisterProfile(
-    const device::BluetoothProfile::Options& options,
-    const device::BluetoothProfile::ProfileCallback& callback) {
-  device::BluetoothProfile::Register(uuid_, options, callback);
+    const BluetoothProfile::Options& options,
+    const BluetoothProfile::ProfileCallback& callback) {
+  BluetoothProfile::Register(uuid_, options, callback);
 }
 
 void BluetoothAddProfileFunction::OnProfileRegistered(
-    device::BluetoothProfile* bluetooth_profile) {
+    BluetoothProfile* bluetooth_profile) {
   if (!bluetooth_profile) {
     SetError(kProfileRegistrationFailed);
     SendResponse(false);
@@ -359,23 +360,13 @@ bool BluetoothGetServicesFunction::DoWork(
   return true;
 }
 
-void BluetoothConnectFunction::ConnectToServiceCallback(
-    const BluetoothDevice* device,
-    const std::string& service_uuid,
-    scoped_refptr<BluetoothSocket> socket) {
-  if (socket.get()) {
-    int socket_id = GetEventRouter(profile())->RegisterSocket(socket);
+void BluetoothConnectFunction::OnSuccessCallback() {
+  SendResponse(true);
+}
 
-    bluetooth::Socket result_socket;
-    bluetooth::BluetoothDeviceToApiDevice(*device, &result_socket.device);
-    result_socket.profile.uuid = service_uuid;
-    result_socket.id = socket_id;
-    SetResult(result_socket.ToValue().release());
-    SendResponse(true);
-  } else {
-    SetError(kFailedToConnect);
-    SendResponse(false);
-  }
+void BluetoothConnectFunction::OnErrorCallback() {
+  SetError(kFailedToConnect);
+  SendResponse(false);
 }
 
 bool BluetoothConnectFunction::DoWork(scoped_refptr<BluetoothAdapter> adapter) {
@@ -407,11 +398,18 @@ bool BluetoothConnectFunction::DoWork(scoped_refptr<BluetoothAdapter> adapter) {
   std::string uuid = device::bluetooth_utils::CanonicalUuid(
       options.profile.uuid);
 
-  device->ConnectToService(uuid,
-      base::Bind(&BluetoothConnectFunction::ConnectToServiceCallback,
-                 this,
-                 device,
-                 uuid));
+  BluetoothProfile* bluetooth_profile =
+      GetEventRouter(profile())->GetProfile(uuid);
+  if (!bluetooth_profile) {
+    SetError(kProfileNotFound);
+    SendResponse(false);
+    return false;
+  }
+
+  device->ConnectToProfile(
+      bluetooth_profile,
+      base::Bind(&BluetoothConnectFunction::OnSuccessCallback, this),
+      base::Bind(&BluetoothConnectFunction::OnErrorCallback, this));
 
   return true;
 }

@@ -223,10 +223,9 @@ namespace bluetooth {
 
     // Connect to a service on a device.
     // |options|  : The options for the connection.
-    // |callback| : Called when the connection is established with a Socket
-    //              that can be used to communicate with |device|.
+    // |callback| : Called to indicate success or failure.
     static void connect(ConnectOptions options,
-                        SocketCallback callback);
+                        ResultCallback callback);
 
     // Close a Bluetooth connection.
     // |options|  : The options for this function.

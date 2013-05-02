@@ -68,6 +68,10 @@ class ExtensionBluetoothEventRouter
   // registered.
   bool HasProfile(const std::string& uuid) const;
 
+  // Returns the BluetoothProfile that corresponds to |uuid|. It returns NULL
+  // if the BluetoothProfile with |uuid| does not exist.
+  device::BluetoothProfile* GetProfile(const std::string& uuid) const;
+
   // Get the BluetoothSocket corresponding to |id|.
   scoped_refptr<device::BluetoothSocket> GetSocket(int id);
 

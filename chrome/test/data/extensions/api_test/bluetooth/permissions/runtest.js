@@ -39,12 +39,7 @@ chrome.test.runTests([
 
         chrome.bluetooth.connect(
           {device: kDevice, profile: kProfile},
-          pass(function(bluetoothSocket) {
-            chrome.bluetooth.disconnect(
-              {socket: bluetoothSocket},
-              pass(function(){})
-            );
-          }));
+          pass(function() {}));
       }));
   },
   function permissionDenied() {

@@ -136,6 +136,13 @@ static bool CallClosure(const base::Closure& callback) {
   return true;
 }
 
+static void CallConnectToProfileCallback(
+    BluetoothProfile* profile,
+    const base::Closure& callback,
+    const BluetoothDevice::ErrorCallback& error_callback) {
+  callback.Run();
+}
+
 static void CallDiscoveryCallback(
     const base::Closure& callback,
     const BluetoothAdapter::ErrorCallback& error_callback) {
@@ -152,21 +159,6 @@ static void CallOutOfBandPairingDataCallback(
     const BluetoothAdapter::BluetoothOutOfBandPairingDataCallback& callback,
     const BluetoothAdapter::ErrorCallback& error_callback) {
   callback.Run(GetOutOfBandPairingData());
-}
-
-template <bool Value>
-static void CallProvidesServiceCallback(
-    const std::string& name,
-    const BluetoothDevice::ProvidesServiceCallback& callback) {
-  callback.Run(Value);
-}
-
-static void CallConnectToServiceCallback(
-    const std::string& name,
-    const BluetoothDevice::SocketCallback& callback) {
-  scoped_refptr<device::MockBluetoothSocket> socket =
-      new device::MockBluetoothSocket();
-  callback.Run(socket);
 }
 
 }  // namespace
@@ -594,11 +586,14 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Permissions) {
   PermissionsRequestFunction::SetAutoConfirmForTests(true);
   PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
 
+  event_router()->AddProfile(
+      "00001101-0000-1000-8000-00805f9b34fb", profile1_.get());
+
   EXPECT_CALL(*mock_adapter_, GetDevice(device1_->GetAddress()))
       .WillOnce(testing::Return(device1_.get()));
   EXPECT_CALL(*device1_,
-              ConnectToService(testing::_, testing::_))
-      .WillOnce(testing::Invoke(CallConnectToServiceCallback));
+              ConnectToProfile(testing::_, testing::_, testing::_))
+      .WillOnce(testing::Invoke(CallConnectToProfileCallback));
 
   EXPECT_TRUE(RunExtensionTest("bluetooth/permissions")) << message_;
 }

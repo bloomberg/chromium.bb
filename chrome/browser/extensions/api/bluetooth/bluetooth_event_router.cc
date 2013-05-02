@@ -119,6 +119,15 @@ bool ExtensionBluetoothEventRouter::HasProfile(const std::string& uuid) const {
   return bluetooth_profile_map_.find(uuid) != bluetooth_profile_map_.end();
 }
 
+device::BluetoothProfile* ExtensionBluetoothEventRouter::GetProfile(
+    const std::string& uuid) const {
+  BluetoothProfileMap::const_iterator iter = bluetooth_profile_map_.find(uuid);
+  if (iter != bluetooth_profile_map_.end())
+    return iter->second;
+
+  return NULL;
+}
+
 scoped_refptr<device::BluetoothSocket>
 ExtensionBluetoothEventRouter::GetSocket(int id) {
   SocketMap::iterator socket_entry = socket_map_.find(id);

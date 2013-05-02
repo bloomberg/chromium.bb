@@ -157,10 +157,8 @@ class BluetoothConnectFunction : public BluetoothExtensionFunction {
   virtual bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) OVERRIDE;
 
  private:
-  void ConnectToServiceCallback(
-      const device::BluetoothDevice* device,
-      const std::string& service_uuid,
-      scoped_refptr<device::BluetoothSocket> socket);
+  void OnSuccessCallback();
+  void OnErrorCallback();
 };
 
 class BluetoothDisconnectFunction : public SyncExtensionFunction {
