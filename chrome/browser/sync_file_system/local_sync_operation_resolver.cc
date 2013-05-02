@@ -80,11 +80,11 @@ LocalSyncOperationResolver::ResolveForAddOrUpdateFileInConflict(
     bool has_remote_change,
     const FileChange& remote_file_change) {
   if (!has_remote_change)
-    return LOCAL_SYNC_OPERATION_NONE_CONFLICTED;
+    return LOCAL_SYNC_OPERATION_CONFLICT;
   switch (remote_file_change.change()) {
     case FileChange::FILE_CHANGE_ADD_OR_UPDATE:
       if (remote_file_change.IsFile())
-        return LOCAL_SYNC_OPERATION_NONE_CONFLICTED;
+        return LOCAL_SYNC_OPERATION_CONFLICT;
       return LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE;
     case FileChange::FILE_CHANGE_DELETE:
       return LOCAL_SYNC_OPERATION_RESOLVE_TO_LOCAL;

@@ -189,6 +189,7 @@ class DriveFileSyncService
   };
 
   typedef base::Callback<void(const base::Time& time,
+                              SyncFileType remote_file_type,
                               SyncStatusCode status)> UpdatedTimeCallback;
   typedef base::Callback<
       void(SyncStatusCode status,
@@ -262,12 +263,14 @@ class DriveFileSyncService
   void ResolveConflictForLocalSync(
       scoped_ptr<ApplyLocalChangeParam> param,
       const base::Time& remote_updated_time,
+      SyncFileType remote_file_type,
       SyncStatusCode status);
   void StartOverLocalSync(
       scoped_ptr<ApplyLocalChangeParam> param,
       SyncStatusCode status);
   void ResolveConflictToRemoteForLocalSync(
-      scoped_ptr<ApplyLocalChangeParam> param);
+      scoped_ptr<ApplyLocalChangeParam> param,
+      SyncFileType remote_file_type);
   void DidEnsureOriginRootForUploadNewFile(
       scoped_ptr<ApplyLocalChangeParam> param,
       SyncStatusCode status,
@@ -355,6 +358,7 @@ class DriveFileSyncService
   void HandleConflictForRemoteSync(
       scoped_ptr<ProcessRemoteChangeParam> param,
       const base::Time& remote_updated_time,
+      SyncFileType remote_file_change,
       SyncStatusCode status);
   void ResolveConflictToLocalForRemoteSync(
       scoped_ptr<ProcessRemoteChangeParam> param);

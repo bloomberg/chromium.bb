@@ -96,6 +96,21 @@ base::FilePath TitleToPath(const std::string& title) {
   return fileapi::StringToFilePath(title).NormalizePathSeparators();
 }
 
+DriveMetadata::ResourceType SyncFileTypeToDriveMetadataResourceType(
+    SyncFileType file_type) {
+  DCHECK_NE(SYNC_FILE_TYPE_UNKNOWN, file_type);
+  switch (file_type) {
+    case SYNC_FILE_TYPE_UNKNOWN:
+      return DriveMetadata_ResourceType_RESOURCE_TYPE_FILE;
+    case SYNC_FILE_TYPE_FILE:
+      return DriveMetadata_ResourceType_RESOURCE_TYPE_FILE;
+    case SYNC_FILE_TYPE_DIRECTORY:
+      return DriveMetadata_ResourceType_RESOURCE_TYPE_FOLDER;
+  }
+  NOTREACHED();
+  return DriveMetadata_ResourceType_RESOURCE_TYPE_FILE;
+}
+
 }  // namespace
 
 const char DriveFileSyncService::kServiceName[] = "syncfs";
@@ -1101,10 +1116,6 @@ void DriveFileSyncService::ApplyLocalChangeInternal(
           base::Bind(&DriveFileSyncService::DidDeleteFileForLocalSync,
                      AsWeakPtr(), base::Passed(&param)));
       return;
-    case LOCAL_SYNC_OPERATION_NONE_CONFLICTED:
-      // The file is already conflicted.
-      HandleConflictForLocalSync(param.Pass());
-      return;
     case LOCAL_SYNC_OPERATION_NONE:
       FinalizeLocalSync(param->token.Pass(), callback, SYNC_STATUS_OK);
       return;
@@ -1122,7 +1133,9 @@ void DriveFileSyncService::ApplyLocalChangeInternal(
               base::Passed(&param)));
       return;
     case LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE:
-      ResolveConflictToRemoteForLocalSync(param.Pass());
+      ResolveConflictToRemoteForLocalSync(
+          param.Pass(),
+          remote_change.change.file_type());
       return;
     case LOCAL_SYNC_OPERATION_DELETE_METADATA:
       metadata_store_->DeleteEntry(
@@ -1379,8 +1392,39 @@ void DriveFileSyncService::DidDeleteFileForLocalSync(
 void DriveFileSyncService::HandleConflictForLocalSync(
     scoped_ptr<ApplyLocalChangeParam> param) {
   DCHECK(param);
+  DriveMetadata& drive_metadata = param->drive_metadata;
+  DCHECK(!drive_metadata.resource_id().empty());
+
+  sync_client_->GetResourceEntry(
+      drive_metadata.resource_id(), base::Bind(
+          &DriveFileSyncService::DidGetRemoteFileMetadataForRemoteUpdatedTime,
+          AsWeakPtr(),
+          base::Bind(&DriveFileSyncService::ResolveConflictForLocalSync,
+                     AsWeakPtr(), base::Passed(&param))));
+}
+
+void DriveFileSyncService::ResolveConflictForLocalSync(
+    scoped_ptr<ApplyLocalChangeParam> param,
+    const base::Time& remote_updated_time,
+    SyncFileType remote_file_type,
+    SyncStatusCode status) {
+  DCHECK(param);
   const FileSystemURL& url = param->url;
   DriveMetadata& drive_metadata = param->drive_metadata;
+  SyncFileMetadata& local_metadata = param->local_metadata;
+  if (status != SYNC_STATUS_OK) {
+    FinalizeLocalSync(param->token.Pass(), param->callback, status);
+    return;
+  }
+
+  // Currently we always prioritize directories over files regardless of
+  // conflict resolution policy.
+  DCHECK(param->local_change.IsFile());
+  if (remote_file_type == SYNC_FILE_TYPE_DIRECTORY) {
+    ResolveConflictToRemoteForLocalSync(param.Pass(), SYNC_FILE_TYPE_DIRECTORY);
+    return;
+  }
+
   if (conflict_resolution_ == CONFLICT_RESOLUTION_MANUAL) {
     if (drive_metadata.conflicted()) {
       // It's already conflicting; no need to update metadata.
@@ -1397,29 +1441,8 @@ void DriveFileSyncService::HandleConflictForLocalSync(
 
   DCHECK_EQ(CONFLICT_RESOLUTION_LAST_WRITE_WIN, conflict_resolution_);
 
-  DCHECK(!drive_metadata.resource_id().empty());
-  sync_client_->GetResourceEntry(
-      drive_metadata.resource_id(), base::Bind(
-          &DriveFileSyncService::DidGetRemoteFileMetadataForRemoteUpdatedTime,
-          AsWeakPtr(),
-          base::Bind(&DriveFileSyncService::ResolveConflictForLocalSync,
-                     AsWeakPtr(), base::Passed(&param))));
-}
-
-void DriveFileSyncService::ResolveConflictForLocalSync(
-    scoped_ptr<ApplyLocalChangeParam> param,
-    const base::Time& remote_updated_time,
-    SyncStatusCode status) {
-  DCHECK(param);
-  const FileSystemURL& url = param->url;
-  DriveMetadata& drive_metadata = param->drive_metadata;
-  SyncFileMetadata& local_metadata = param->local_metadata;
-  if (status != SYNC_STATUS_OK) {
-    FinalizeLocalSync(param->token.Pass(), param->callback, status);
-    return;
-  }
-
-  if (local_metadata.last_modified >= remote_updated_time) {
+  if (local_metadata.last_modified >= remote_updated_time ||
+      remote_file_type == SYNC_FILE_TYPE_UNKNOWN) {
     // Local win case.
     DVLOG(1) << "Resolving conflict for local sync:"
              << url.DebugString() << ": LOCAL WIN";
@@ -1433,6 +1456,8 @@ void DriveFileSyncService::ResolveConflictForLocalSync(
     drive_metadata.set_md5_checksum(std::string());
     drive_metadata.set_conflicted(false);
     drive_metadata.set_to_be_fetched(false);
+    drive_metadata.set_type(
+        SyncFileTypeToDriveMetadataResourceType(SYNC_FILE_TYPE_FILE));
     metadata_store_->UpdateEntry(
         url, drive_metadata,
         base::Bind(&DriveFileSyncService::StartOverLocalSync, AsWeakPtr(),
@@ -1442,11 +1467,12 @@ void DriveFileSyncService::ResolveConflictForLocalSync(
   // Remote win case.
   DVLOG(1) << "Resolving conflict for local sync:"
            << url.DebugString() << ": REMOTE WIN";
-  ResolveConflictToRemoteForLocalSync(param.Pass());
+  ResolveConflictToRemoteForLocalSync(param.Pass(), SYNC_FILE_TYPE_FILE);
 }
 
 void DriveFileSyncService::ResolveConflictToRemoteForLocalSync(
-    scoped_ptr<ApplyLocalChangeParam> param) {
+    scoped_ptr<ApplyLocalChangeParam> param,
+    SyncFileType remote_file_type) {
   DCHECK(param);
   const FileSystemURL& url = param->url;
   DriveMetadata& drive_metadata = param->drive_metadata;
@@ -1454,7 +1480,8 @@ void DriveFileSyncService::ResolveConflictToRemoteForLocalSync(
   DCHECK(!drive_metadata.resource_id().empty());
   drive_metadata.set_conflicted(false);
   drive_metadata.set_to_be_fetched(true);
-
+  drive_metadata.set_type(
+      SyncFileTypeToDriveMetadataResourceType(remote_file_type));
   param->has_drive_metadata = true;
   metadata_store_->UpdateEntry(
       url, drive_metadata,
@@ -1562,7 +1589,9 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
       CompleteRemoteSync(param.Pass(), SYNC_STATUS_OK);
       return;
     case REMOTE_SYNC_OPERATION_CONFLICT:
-      HandleConflictForRemoteSync(param.Pass(), base::Time(), SYNC_STATUS_OK);
+      HandleConflictForRemoteSync(param.Pass(), base::Time(),
+                                  remote_file_change.file_type(),
+                                  SYNC_STATUS_OK);
       return;
     case REMOTE_SYNC_OPERATION_RESOLVE_TO_LOCAL:
       ResolveConflictToLocalForRemoteSync(param.Pass());
@@ -1806,6 +1835,7 @@ void DriveFileSyncService::FinalizeRemoteSync(
 void DriveFileSyncService::HandleConflictForRemoteSync(
     scoped_ptr<ProcessRemoteChangeParam> param,
     const base::Time& remote_updated_time,
+    SyncFileType remote_file_type,
     SyncStatusCode status) {
   if (status != SYNC_STATUS_OK) {
     AbortRemoteSync(param.Pass(), status);
@@ -1850,6 +1880,8 @@ void DriveFileSyncService::HandleConflictForRemoteSync(
            << url.DebugString() << ": REMOTE WIN";
   drive_metadata.set_conflicted(false);
   drive_metadata.set_to_be_fetched(false);
+  drive_metadata.set_type(
+      SyncFileTypeToDriveMetadataResourceType(remote_file_type));
   metadata_store_->UpdateEntry(
       url, drive_metadata,
       base::Bind(&DriveFileSyncService::StartOverRemoteSync,
@@ -2113,10 +2145,19 @@ void DriveFileSyncService::DidGetRemoteFileMetadataForRemoteUpdatedTime(
   if (status == SYNC_FILE_ERROR_NOT_FOUND) {
     // Returns with very old (time==0.0) last modified date
     // so that last-write-win policy will just use the other (local) version.
-    callback.Run(base::Time::FromDoubleT(0.0), SYNC_STATUS_OK);
+    callback.Run(base::Time::FromDoubleT(0.0),
+                 SYNC_FILE_TYPE_UNKNOWN, SYNC_STATUS_OK);
     return;
   }
-  callback.Run(entry->updated_time(), status);
+
+  SyncFileType file_type = SYNC_FILE_TYPE_UNKNOWN;
+  if (entry->is_file())
+    file_type = SYNC_FILE_TYPE_FILE;
+  if (entry->is_folder())
+    file_type = SYNC_FILE_TYPE_DIRECTORY;
+
+  // If |file_type| is unknown, just use the other (local) version.
+  callback.Run(entry->updated_time(), file_type, status);
 }
 
 SyncStatusCode DriveFileSyncService::GDataErrorCodeToSyncStatusCodeWrapper(
