@@ -54,6 +54,7 @@ class SyncFileSystemApiTest : public ExtensionApiTest {
 
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
     quota::QuotaManager::kSyncableStorageDefaultHostQuota = real_default_quota_;
+    ExtensionApiTest::TearDownInProcessBrowserTestFixture();
   }
 
   ::testing::NiceMock<MockRemoteFileSyncService>* mock_remote_service() {

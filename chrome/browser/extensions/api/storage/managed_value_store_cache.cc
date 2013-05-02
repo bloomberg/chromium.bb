@@ -19,6 +19,8 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/value_store/value_store_change.h"
 #include "chrome/common/extensions/extension.h"
@@ -94,7 +96,9 @@ void ManagedValueStoreCache::ExtensionTracker::Observe(
       use_storage_set.insert((*it)->id());
   }
 
-  profile_->GetPolicyService()->RegisterPolicyDomain(
+  policy::ProfilePolicyConnector* connector =
+      policy::ProfilePolicyConnectorFactory::GetForProfile(profile_);
+  connector->policy_service()->RegisterPolicyDomain(
       policy::POLICY_DOMAIN_EXTENSIONS,
       use_storage_set);
 }
@@ -116,8 +120,7 @@ ManagedValueStoreCache::ManagedValueStoreCache(
   if (event_router_)
     event_router_->RegisterObserver(this, event_names::kOnSettingsChanged);
 
-  profile_->GetPolicyService()->AddObserver(
-      policy::POLICY_DOMAIN_EXTENSIONS, this);
+  GetPolicyService()->AddObserver(policy::POLICY_DOMAIN_EXTENSIONS, this);
 
   extension_tracker_.reset(new ExtensionTracker(profile_));
 }
@@ -131,8 +134,7 @@ ManagedValueStoreCache::~ManagedValueStoreCache() {
 
 void ManagedValueStoreCache::ShutdownOnUI() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  profile_->GetPolicyService()->RemoveObserver(
-      policy::POLICY_DOMAIN_EXTENSIONS, this);
+  GetPolicyService()->RemoveObserver(policy::POLICY_DOMAIN_EXTENSIONS, this);
   if (event_router_)
     event_router_->UnregisterObserver(this);
   event_router_ = NULL;
@@ -277,7 +279,7 @@ void ManagedValueStoreCache::GetInitialPolicy(
     const base::Closure& continuation) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  policy::PolicyService* policy_service = profile_->GetPolicyService();
+  policy::PolicyService* policy_service = GetPolicyService();
 
   // If initialization of POLICY_DOMAIN_EXTENSIONS isn't complete then all the
   // policies served are empty; let the extension see what's cached in LevelDB
@@ -335,6 +337,12 @@ void ManagedValueStoreCache::CreateStoreWithInitialPolicy(
   // And finally resume from where this process started.
   if (!continuation.is_null())
     continuation.Run();
+}
+
+policy::PolicyService* ManagedValueStoreCache::GetPolicyService() {
+  policy::ProfilePolicyConnector* connector =
+      policy::ProfilePolicyConnectorFactory::GetForProfile(profile_);
+  return connector->policy_service();
 }
 
 }  // namespace extensions

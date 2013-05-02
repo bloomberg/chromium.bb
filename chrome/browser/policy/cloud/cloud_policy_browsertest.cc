@@ -18,6 +18,8 @@
 #include "chrome/browser/policy/cloud/mock_cloud_policy_client.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_service.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/browser/policy/test_utils.h"
 #include "chrome/browser/profiles/profile.h"
@@ -272,7 +274,9 @@ class CloudPolicyTest : public InProcessBrowserTest {
 #endif
 
   PolicyService* GetPolicyService() {
-    return browser()->profile()->GetPolicyService();
+    ProfilePolicyConnector* profile_connector =
+        ProfilePolicyConnectorFactory::GetForProfile(browser()->profile());
+    return profile_connector->policy_service();
   }
 
   void SetServerPolicy(const std::string& policy) {

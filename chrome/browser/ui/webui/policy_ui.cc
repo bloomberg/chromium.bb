@@ -28,6 +28,8 @@
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/policy/policy_types.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/time_format.h"
@@ -575,7 +577,8 @@ void PolicyUIHandler::OnRefreshPoliciesDone() const {
 }
 
 policy::PolicyService* PolicyUIHandler::GetPolicyService() const {
-  return Profile::FromWebUI(web_ui())->GetPolicyService();
+  return policy::ProfilePolicyConnectorFactory::GetForProfile(
+      Profile::FromWebUI(web_ui()))->policy_service();
 }
 
 PolicyUI::PolicyUI(content::WebUI* web_ui) : WebUIController(web_ui) {

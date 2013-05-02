@@ -20,9 +20,7 @@
 #endif
 
 class PrefRegistrySimple;
-class PrefRegistrySyncable;
 class PrefService;
-class Profile;
 
 namespace net {
 class CertTrustAnchorProvider;
@@ -39,7 +37,6 @@ class PolicyStatisticsCollector;
 #if defined(OS_CHROMEOS)
 class AppPackUpdater;
 class DeviceCloudPolicyManagerChromeOS;
-class DeviceLocalAccountPolicyProvider;
 class DeviceLocalAccountPolicyService;
 class EnterpriseInstallAttributes;
 class NetworkConfigurationUpdater;
@@ -100,12 +97,6 @@ class BrowserPolicyConnector {
   // the BrowserPolicyConnector.
   scoped_ptr<PolicyService> CreatePolicyService(
       const std::vector<ConfigurationPolicyProvider*>& additional_providers);
-
-  // Creates a new PolicyService for a Profile.
-  // TODO(joaodasilva): remove this method and use CreatePolicyService()
-  // directly from the ProfilePolicyConnector, by moving this method to that
-  // class once it's introduced.
-  scoped_ptr<PolicyService> CreatePolicyServiceForProfile(Profile* profile);
 
   const ConfigurationPolicyHandlerList* GetHandlerList() const;
 
@@ -169,16 +160,8 @@ class BrowserPolicyConnector {
   // false if the username is empty.
   static bool IsNonEnterpriseUser(const std::string& username);
 
-  // Returns true if |profile| has used certificates installed via policy
-  // to establish a secure connection before. This means that it may have
-  // cached content from an untrusted source.
-  static bool UsedPolicyCertificates(Profile* profile);
-
   // Registers refresh rate prefs.
   static void RegisterPrefs(PrefRegistrySimple* registry);
-
-  // Registers Profile prefs related to policy features.
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
  private:
   // Set the timezone as soon as the policies are available.
@@ -206,8 +189,6 @@ class BrowserPolicyConnector {
   scoped_ptr<DeviceCloudPolicyManagerChromeOS> device_cloud_policy_manager_;
   scoped_ptr<DeviceLocalAccountPolicyService>
       device_local_account_policy_service_;
-  scoped_ptr<DeviceLocalAccountPolicyProvider>
-      device_local_account_policy_provider_;
 
   // This policy provider is used on Chrome OS to feed user policy into the
   // global PolicyService instance. This works by installing the cloud policy

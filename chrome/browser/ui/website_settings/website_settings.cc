@@ -25,6 +25,8 @@
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/browser/ui/website_settings/website_settings_infobar_delegate.h"
@@ -44,10 +46,6 @@
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
-#include "chrome/browser/policy/browser_policy_connector.h"
-#endif
 
 using content::BrowserThread;
 
@@ -261,12 +259,8 @@ void WebsiteSettings::Init(Profile* profile,
       (!net::IsCertStatusError(ssl.cert_status) ||
        net::IsCertStatusMinorError(ssl.cert_status))) {
     // There are no major errors. Check for minor errors.
-    bool used_policy_certificates = false;
-#if defined(ENABLE_CONFIGURATION_POLICY)
-    used_policy_certificates =
-        policy::BrowserPolicyConnector::UsedPolicyCertificates(profile);
-#endif
-    if (used_policy_certificates) {
+    if (policy::ProfilePolicyConnectorFactory::GetForProfile(profile)->
+        UsedPolicyCertificates()) {
       site_identity_status_ = SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT;
       site_identity_details_ =
           l10n_util::GetStringFUTF16(IDS_CERT_POLICY_PROVIDED_CERT_MESSAGE,

@@ -66,6 +66,7 @@
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/plugins/plugin_prefs_factory.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
 #include "chrome/browser/predictors/predictor_database_factory.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
@@ -354,6 +355,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
 #if defined(ENABLE_PLUGINS)
   PluginPrefsFactory::GetInstance();
 #endif
+  policy::ProfilePolicyConnectorFactory::GetInstance();
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #if defined(OS_CHROMEOS)
   policy::UserCloudPolicyManagerFactoryChromeOS::GetInstance();

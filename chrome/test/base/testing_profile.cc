@@ -39,6 +39,8 @@
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -71,6 +73,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
+#include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_service_impl.h"
 #else
 #include "chrome/browser/policy/policy_service_stub.h"
@@ -281,6 +284,11 @@ void TestingProfile::Init() {
 
   if (!file_util::PathExists(profile_path_))
     file_util::CreateDirectory(profile_path_);
+
+  // TODO(joaodasilva): remove this once this PKS isn't created in ProfileImpl
+  // anymore, after converting the PrefService to a PKS. Until then it must
+  // be associated with a TestingProfile too.
+  CreateProfilePolicyConnector();
 
   extensions::ExtensionSystemFactory::GetInstance()->SetTestingFactory(
       this, extensions::TestExtensionSystem::Build);
@@ -536,29 +544,29 @@ net::CookieMonster* TestingProfile::GetCookieMonster() {
       GetCookieMonster();
 }
 
-policy::ManagedModePolicyProvider*
-TestingProfile::GetManagedModePolicyProvider() {
-  return NULL;
-}
-
-policy::PolicyService* TestingProfile::GetPolicyService() {
-  if (!policy_service_.get()) {
-#if defined(ENABLE_CONFIGURATION_POLICY)
-    policy::PolicyServiceImpl::Providers providers;
-    policy_service_.reset(new policy::PolicyServiceImpl(providers));
-#else
-    policy_service_.reset(new policy::PolicyServiceStub());
-#endif
-  }
-  return policy_service_.get();
-}
-
 void TestingProfile::CreateTestingPrefService() {
   DCHECK(!prefs_.get());
   testing_prefs_ = new TestingPrefServiceSyncable();
   prefs_.reset(testing_prefs_);
   components::UserPrefs::Set(this, prefs_.get());
   chrome::RegisterUserPrefs(testing_prefs_->registry());
+}
+
+void TestingProfile::CreateProfilePolicyConnector() {
+  scoped_ptr<policy::PolicyService> service;
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  std::vector<policy::ConfigurationPolicyProvider*> providers;
+  service.reset(new policy::PolicyServiceImpl(providers));
+#else
+  service.reset(new policy::PolicyServiceStub());
+#endif
+  profile_policy_connector_.reset(
+      new policy::ProfilePolicyConnector(this));
+  profile_policy_connector_->InitForTesting(service.Pass());
+  policy::ProfilePolicyConnectorFactory::GetInstance()->SetServiceForTesting(
+      this, profile_policy_connector_.get());
+  CHECK_EQ(profile_policy_connector_.get(),
+           policy::ProfilePolicyConnectorFactory::GetForProfile(this));
 }
 
 PrefService* TestingProfile::GetPrefs() {

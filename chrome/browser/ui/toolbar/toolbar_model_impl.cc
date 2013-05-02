@@ -12,6 +12,8 @@
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
@@ -33,10 +35,6 @@
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
 #include "ui/base/l10n/l10n_util.h"
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
-#include "chrome/browser/policy/browser_policy_connector.h"
-#endif
 
 using content::NavigationController;
 using content::NavigationEntry;
@@ -71,11 +69,10 @@ ToolbarModel::SecurityLevel ToolbarModelImpl::GetSecurityLevelForWebContents(
       return SECURITY_ERROR;
 
     case content::SECURITY_STYLE_AUTHENTICATED:
-#if defined(ENABLE_CONFIGURATION_POLICY)
-      if (policy::BrowserPolicyConnector::UsedPolicyCertificates(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext())))
+      if (policy::ProfilePolicyConnectorFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()))->
+          UsedPolicyCertificates())
         return SECURITY_POLICY_WARNING;
-#endif
       if (!!(ssl.content_status & SSLStatus::DISPLAYED_INSECURE_CONTENT))
         return SECURITY_WARNING;
       if (net::IsCertStatusError(ssl.cert_status)) {

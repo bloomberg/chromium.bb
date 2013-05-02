@@ -128,7 +128,6 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
-#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
@@ -309,7 +308,6 @@ void RegisterUserPrefs(PrefRegistrySyncable* registry) {
   TranslatePrefs::RegisterUserPrefs(registry);
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  policy::BrowserPolicyConnector::RegisterUserPrefs(registry);
   policy::URLBlacklistManager::RegisterUserPrefs(registry);
 #endif
 

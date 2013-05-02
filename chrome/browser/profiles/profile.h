@@ -64,11 +64,6 @@ namespace net {
 class SSLConfigService;
 }
 
-namespace policy {
-class ManagedModePolicyProvider;
-class PolicyService;
-}
-
 class Profile : public content::BrowserContext {
  public:
   // Profile services are accessed with the following parameter. This parameter
@@ -205,12 +200,6 @@ class Profile : public content::BrowserContext {
   // Accessor. The instance is created upon first access.
   virtual ExtensionSpecialStoragePolicy*
       GetExtensionSpecialStoragePolicy() = 0;
-
-  // Returns the ManagedModePolicyProvider for this profile, if it exists.
-  virtual policy::ManagedModePolicyProvider* GetManagedModePolicyProvider() = 0;
-
-  // Returns the PolicyService that provides policies for this profile.
-  virtual policy::PolicyService* GetPolicyService() = 0;
 
   // Retrieves a pointer to the PrefService that manages the
   // preferences for this user profile.

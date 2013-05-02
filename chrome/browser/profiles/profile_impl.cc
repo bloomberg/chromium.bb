@@ -51,6 +51,8 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
@@ -92,22 +94,6 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
-#include "chrome/browser/policy/browser_policy_connector.h"
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
-#else
-#include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
-#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
-#endif
-#if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/policy/managed_mode_policy_provider.h"
-#endif
-#else
-#include "chrome/browser/policy/policy_service_stub.h"
-#endif  // defined(ENABLE_CONFIGURATION_POLICY)
-
 #if defined(OS_WIN)
 #include "chrome/installer/util/install_util.h"
 #endif
@@ -118,6 +104,16 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
+#endif
+
+#if defined(ENABLE_CONFIGURATION_POLICY)
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
+#else
+#include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
+#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
+#endif
 #endif
 
 using base::Time;
@@ -361,16 +357,10 @@ ProfileImpl::ProfileImpl(
       !command_line->HasSwitch(switches::kDisablePreconnect),
       g_browser_process->profile_manager() == NULL);
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   // If we are creating the profile synchronously, then we should load the
   // policy data immediately.
   bool force_immediate_policy_load = (create_mode == CREATE_MODE_SYNCHRONOUS);
-
-  // TODO(atwilson): Change |cloud_policy_manager_| and
-  // |managed_mode_policy_provider_| to proper ProfileKeyedServices once
-  // PrefServiceSyncable is a ProfileKeyedService (policy must be initialized
-  // before PrefServiceSyncable because PrefServiceSyncable depends on policy
-  // loading to get overridden pref values).
+#if defined(ENABLE_CONFIGURATION_POLICY)
 #if defined(OS_CHROMEOS)
   cloud_policy_manager_ =
       policy::UserCloudPolicyManagerFactoryChromeOS::CreateForProfile(
@@ -380,19 +370,10 @@ ProfileImpl::ProfileImpl(
       policy::UserCloudPolicyManagerFactory::CreateForProfile(
           this, force_immediate_policy_load);
 #endif
-#if defined(ENABLE_MANAGED_USERS)
-  managed_mode_policy_provider_ =
-      policy::ManagedModePolicyProvider::Create(this,
-                                                sequenced_task_runner,
-                                                force_immediate_policy_load);
-  managed_mode_policy_provider_->Init();
 #endif
-  policy::BrowserPolicyConnector* connector =
-      g_browser_process->browser_policy_connector();
-  policy_service_ = connector->CreatePolicyServiceForProfile(this);
-#else
-  policy_service_.reset(new policy::PolicyServiceStub());
-#endif
+  profile_policy_connector_ =
+      policy::ProfilePolicyConnectorFactory::CreateForProfile(
+          this, force_immediate_policy_load, sequenced_task_runner);
 
   DCHECK(create_mode == CREATE_MODE_ASYNCHRONOUS ||
          create_mode == CREATE_MODE_SYNCHRONOUS);
@@ -408,7 +389,7 @@ ProfileImpl::ProfileImpl(
     prefs_.reset(chrome_prefs::CreateProfilePrefs(
         GetPrefFilePath(),
         sequenced_task_runner,
-        policy_service_.get(),
+        profile_policy_connector_->policy_service(),
         new ExtensionPrefStore(
             ExtensionPrefValueMapFactory::GetForProfile(this), false),
         pref_registry_,
@@ -645,17 +626,6 @@ ProfileImpl::~ProfileImpl() {
   if (host_content_settings_map_)
     host_content_settings_map_->ShutdownOnUIThread();
 
-  // TODO(joaodasilva): remove this after introducing a ProfilePolicyConnector.
-#if defined(ENABLE_CONFIGURATION_POLICY)
-#if defined(OS_CHROMEOS)
-  g_browser_process->browser_policy_connector()->SetUserPolicyDelegate(NULL);
-#endif
-#if defined(ENABLE_MANAGED_USERS)
-  if (managed_mode_policy_provider_)
-    managed_mode_policy_provider_->Shutdown();
-#endif
-#endif
-
   // This causes the Preferences file to be written to disk.
   if (prefs_loaded)
     SetExitType(EXIT_NORMAL);
@@ -790,19 +760,6 @@ Profile::ExitType ProfileImpl::GetLastSessionExitType() {
   // it to be set by asking for the prefs.
   GetPrefs();
   return last_session_exit_type_;
-}
-
-policy::ManagedModePolicyProvider* ProfileImpl::GetManagedModePolicyProvider() {
-#if defined(ENABLE_CONFIGURATION_POLICY) && defined(ENABLE_MANAGED_USERS)
-  return managed_mode_policy_provider_.get();
-#else
-  return NULL;
-#endif
-}
-
-policy::PolicyService* ProfileImpl::GetPolicyService() {
-  DCHECK(policy_service_.get());  // Should explicitly be initialized.
-  return policy_service_.get();
 }
 
 PrefService* ProfileImpl::GetPrefs() {

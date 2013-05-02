@@ -27,11 +27,9 @@
 #include "chrome/browser/policy/managed_mode_policy_provider.h"
 #include "chrome/browser/policy/policy_service_impl.h"
 #include "chrome/browser/policy/policy_statistics_collector.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -52,21 +50,16 @@
 #if defined(OS_CHROMEOS)
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/app_pack_updater.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_local_account_policy_provider.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/network_configuration_updater_impl.h"
 #include "chrome/browser/chromeos/policy/network_configuration_updater_impl_cros.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_provider.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -79,9 +72,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/certificate_handler.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
-#else
-#include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
-#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #endif
 
 using content::BrowserThread;
@@ -238,8 +228,6 @@ void BrowserPolicyConnector::Shutdown() {
 
   if (device_cloud_policy_manager_)
     device_cloud_policy_manager_->Shutdown();
-  if (device_local_account_policy_provider_)
-    device_local_account_policy_provider_->Shutdown();
   if (device_local_account_policy_service_)
     device_local_account_policy_service_->Disconnect();
   global_user_cloud_policy_provider_.Shutdown();
@@ -303,67 +291,6 @@ scoped_ptr<PolicyService> BrowserPolicyConnector::CreatePolicyService(
   scoped_ptr<PolicyService> service(new PolicyServiceImpl(providers));
   service->RegisterPolicyDomain(POLICY_DOMAIN_CHROME, std::set<std::string>());
   return service.Pass();
-}
-
-scoped_ptr<PolicyService> BrowserPolicyConnector::CreatePolicyServiceForProfile(
-    Profile* profile) {
-  std::vector<ConfigurationPolicyProvider*> providers;
-
-#if defined(OS_CHROMEOS)
-  UserCloudPolicyManagerChromeOS* cloud_policy_manager =
-      UserCloudPolicyManagerFactoryChromeOS::GetForProfile(profile);
-  if (cloud_policy_manager)
-    providers.push_back(cloud_policy_manager);
-
-  bool is_managed = false;
-  bool is_primary_user = false;
-  if (!chromeos::ProfileHelper::IsSigninProfile(profile) &&
-      device_local_account_policy_service_) {
-    // |user| should never be NULL except for the signin profile.
-    chromeos::UserManager* user_manager = chromeos::UserManager::Get();
-    chromeos::User* user = user_manager->GetActiveUser();
-    CHECK(user);
-    const std::string& username = user->email();
-    // Check if |user| is managed, and if it's a public account.
-    is_managed = GetUserAffiliation(username) == USER_AFFILIATION_MANAGED;
-    is_primary_user =
-        chromeos::UserManager::Get()->GetLoggedInUsers().size() == 1;
-    if (user->GetType() == chromeos::User::USER_TYPE_PUBLIC_ACCOUNT &&
-        is_primary_user) {
-      device_local_account_policy_provider_.reset(
-          new DeviceLocalAccountPolicyProvider(
-              username, device_local_account_policy_service_.get()));
-      device_local_account_policy_provider_->Init();
-    }
-    if (device_local_account_policy_provider_)
-      providers.push_back(device_local_account_policy_provider_.get());
-  }
-
-  if (is_primary_user) {
-    if (cloud_policy_manager) {
-      SetUserPolicyDelegate(cloud_policy_manager);
-    } else if (device_local_account_policy_provider_) {
-      SetUserPolicyDelegate(device_local_account_policy_provider_.get());
-    }
-
-    NetworkConfigurationUpdater* network_updater =
-        GetNetworkConfigurationUpdater();
-    network_updater->set_allow_trusted_certificates_from_policy(is_managed);
-    network_updater->OnUserPolicyInitialized();
-  }
-#else
-  UserCloudPolicyManager* cloud_policy_manager =
-      UserCloudPolicyManagerFactory::GetForProfile(profile);
-  if (cloud_policy_manager)
-    providers.push_back(cloud_policy_manager);
-#endif
-
-#if defined(ENABLE_MANAGED_USERS)
-  if (profile->GetManagedModePolicyProvider())
-    providers.push_back(profile->GetManagedModePolicyProvider());
-#endif
-
-  return CreatePolicyService(providers);
 }
 
 const ConfigurationPolicyHandlerList*
@@ -508,30 +435,12 @@ bool BrowserPolicyConnector::IsNonEnterpriseUser(const std::string& username) {
 }
 
 // static
-bool BrowserPolicyConnector::UsedPolicyCertificates(Profile* profile) {
-#if defined(OS_CHROMEOS)
-  if (profile->GetPrefs()->GetBoolean(prefs::kUsedPolicyCertificatesOnce))
-    return true;
-#endif
-  return false;
-}
-
-// static
 void BrowserPolicyConnector::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kUserPolicyRefreshRate,
                                 kDefaultPolicyRefreshRateMs);
 #if defined(OS_CHROMEOS)
   registry->RegisterIntegerPref(prefs::kDevicePolicyRefreshRate,
                                 kDefaultPolicyRefreshRateMs);
-#endif
-}
-
-// static
-void BrowserPolicyConnector::RegisterUserPrefs(PrefRegistrySyncable* registry) {
-#if defined(OS_CHROMEOS)
-  registry->RegisterBooleanPref(prefs::kUsedPolicyCertificatesOnce,
-                                false,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
 }
 

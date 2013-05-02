@@ -116,6 +116,9 @@ class ManagedValueStoreCache : public ValueStoreCache,
                                     scoped_ptr<policy::PolicyMap> policy,
                                     const base::Closure& continuation);
 
+  // Helper method to get the PolicyService for |profile_|.
+  policy::PolicyService* GetPolicyService();
+
   // Used to create a WeakPtr valid on the UI thread, so that FILE tasks can
   // post back to UI.
   base::WeakPtrFactory<ManagedValueStoreCache> weak_factory_;

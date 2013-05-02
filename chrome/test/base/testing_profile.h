@@ -29,6 +29,10 @@ class CookieMonster;
 class URLRequestContextGetter;
 }
 
+namespace policy {
+class ProfilePolicyConnector;
+}
+
 namespace quota {
 class SpecialStoragePolicy;
 }
@@ -210,10 +214,6 @@ class TestingProfile : public Profile {
   // for more information.
   net::CookieMonster* GetCookieMonster();
 
-  virtual policy::ManagedModePolicyProvider*
-      GetManagedModePolicyProvider() OVERRIDE;
-  virtual policy::PolicyService* GetPolicyService() OVERRIDE;
-
   virtual PrefService* GetPrefs() OVERRIDE;
 
   virtual history::TopSites* GetTopSites() OVERRIDE;
@@ -303,8 +303,9 @@ class TestingProfile : public Profile {
   // Creates a TestingPrefService and associates it with the TestingProfile.
   void CreateTestingPrefService();
 
-  // The policy service. Lazily created as a stub.
-  scoped_ptr<policy::PolicyService> policy_service_;
+  // Creates a ProfilePolicyConnector that the ProfilePolicyConnectorFactory
+  // maps to this profile.
+  void CreateProfilePolicyConnector();
 
   // Internally, this is a TestURLRequestContextGetter that creates a dummy
   // request context. Currently, only the CookieMonster is hooked up.
@@ -345,6 +346,8 @@ class TestingProfile : public Profile {
   ProfileDependencyManager* profile_dependency_manager_;
 
   scoped_ptr<content::MockResourceContext> resource_context_;
+
+  scoped_ptr<policy::ProfilePolicyConnector> profile_policy_connector_;
 
   // Weak pointer to a delegate for indicating that a profile was created.
   Delegate* delegate_;
