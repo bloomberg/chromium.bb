@@ -137,6 +137,12 @@ bool InputMethodEngineIBus::SetComposition(
   preedit_text_.reset(new IBusText());
   preedit_text_->set_text(text);
 
+  preedit_text_->mutable_selection_attributes()->clear();
+  IBusText::SelectionAttribute selection;
+  selection.start_index = selection_start;
+  selection.end_index = selection_end;
+  preedit_text_->mutable_selection_attributes()->push_back(selection);
+
   // TODO: Add support for displaying selected text in the composition string.
   for (std::vector<SegmentInfo>::const_iterator segment = segments.begin();
        segment != segments.end(); ++segment) {
