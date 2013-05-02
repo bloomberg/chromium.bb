@@ -11,6 +11,7 @@
 
 namespace sync_file_system {
 
+class DriveMetadata;
 class FileChange;
 
 enum LocalSyncOperationType {
@@ -33,30 +34,34 @@ class LocalSyncOperationResolver {
       const FileChange& local_file_change,
       bool has_remote_change,
       const FileChange& remote_file_change,
-      bool is_conflicting);
+      DriveMetadata* drive_metadata);
 
  private:
   static LocalSyncOperationType ResolveForAddOrUpdateFile(
       bool has_remote_change,
-      const FileChange& remote_file_change);
+      const FileChange& remote_file_change,
+      SyncFileType remote_file_type_in_metadata);
   static LocalSyncOperationType ResolveForAddOrUpdateFileInConflict(
       bool has_remote_change,
       const FileChange& remote_file_change);
   static LocalSyncOperationType ResolveForAddDirectory(
       bool has_remote_change,
-      const FileChange& remote_file_change);
+      const FileChange& remote_file_change,
+      SyncFileType remote_file_type_in_metadata);
   static LocalSyncOperationType ResolveForAddDirectoryInConflict(
       bool has_remote_change,
       const FileChange& remote_file_change);
   static LocalSyncOperationType ResolveForDeleteFile(
       bool has_remote_change,
-      const FileChange& remote_file_change);
+      const FileChange& remote_file_change,
+      SyncFileType remote_file_type_in_metadata);
   static LocalSyncOperationType ResolveForDeleteFileInConflict(
       bool has_remote_change,
       const FileChange& remote_file_change);
   static LocalSyncOperationType ResolveForDeleteDirectory(
       bool has_remote_change,
-      const FileChange& remote_file_change);
+      const FileChange& remote_file_change,
+      SyncFileType remote_file_type_in_metadata);
   static LocalSyncOperationType ResolveForDeleteDirectoryInConflict(
       bool has_remote_change,
       const FileChange& remote_file_change);

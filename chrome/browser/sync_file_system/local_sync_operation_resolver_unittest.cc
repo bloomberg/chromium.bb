@@ -77,10 +77,12 @@ TEST_F(LocalSyncOperationResolverTest, ResolveForAddOrUpdateFile) {
   std::vector<Input> inputs = CreateInput();
 
   ASSERT_EQ(expected_types.size(), inputs.size());
+  // TODO(nhiroki): Fix inputs so that these tests can cover all cases.
   for (ExpectedTypes::size_type i = 0; i < expected_types.size(); ++i)
     EXPECT_EQ(expected_types[i],
               Resolver::ResolveForAddOrUpdateFile(
-                  inputs[i].has_remote_change, inputs[i].remote_file_change))
+                  inputs[i].has_remote_change, inputs[i].remote_file_change,
+                  SYNC_FILE_TYPE_UNKNOWN))
         << "Case " << i << ": (" << inputs[i].DebugString() << ")";
 }
 
@@ -117,10 +119,12 @@ TEST_F(LocalSyncOperationResolverTest, ResolveForAddDirectory) {
   std::vector<Input> inputs = CreateInput();
 
   ASSERT_EQ(expected_types.size(), inputs.size());
+  // TODO(nhiroki): Fix inputs so that these tests can cover all cases.
   for (ExpectedTypes::size_type i = 0; i < expected_types.size(); ++i)
     EXPECT_EQ(expected_types[i],
               Resolver::ResolveForAddDirectory(
-                  inputs[i].has_remote_change, inputs[i].remote_file_change))
+                  inputs[i].has_remote_change, inputs[i].remote_file_change,
+                  SYNC_FILE_TYPE_UNKNOWN))
         << "Case " << i << ": (" << inputs[i].DebugString() << ")";
 }
 
@@ -146,21 +150,23 @@ TEST_F(LocalSyncOperationResolverTest, ResolveForAddDirectoryInConflict) {
 
 TEST_F(LocalSyncOperationResolverTest, ResolveForDeleteFile) {
   const LocalSyncOperationType kExpectedTypes[] = {
-    LOCAL_SYNC_OPERATION_DELETE_FILE,
+    LOCAL_SYNC_OPERATION_NONE,
     LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
     LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
-    LOCAL_SYNC_OPERATION_NONE,
-    LOCAL_SYNC_OPERATION_NONE,
+    LOCAL_SYNC_OPERATION_DELETE_METADATA,
+    LOCAL_SYNC_OPERATION_DELETE_METADATA,
   };
 
   ExpectedTypes expected_types = CreateList(kExpectedTypes);
   std::vector<Input> inputs = CreateInput();
 
   ASSERT_EQ(expected_types.size(), inputs.size());
+  // TODO(nhiroki): Fix inputs so that these tests can cover all cases.
   for (ExpectedTypes::size_type i = 0; i < expected_types.size(); ++i)
     EXPECT_EQ(expected_types[i],
               Resolver::ResolveForDeleteFile(
-                  inputs[i].has_remote_change, inputs[i].remote_file_change))
+                  inputs[i].has_remote_change, inputs[i].remote_file_change,
+                  SYNC_FILE_TYPE_UNKNOWN))
         << "Case " << i << ": (" << inputs[i].DebugString() << ")";
 }
 
@@ -186,21 +192,23 @@ TEST_F(LocalSyncOperationResolverTest, ResolveForDeleteFileInConflict) {
 
 TEST_F(LocalSyncOperationResolverTest, ResolveForDeleteDirectory) {
   const LocalSyncOperationType kExpectedTypes[] = {
-    LOCAL_SYNC_OPERATION_DELETE_DIRECTORY,
     LOCAL_SYNC_OPERATION_NONE,
-    LOCAL_SYNC_OPERATION_NONE,
-    LOCAL_SYNC_OPERATION_NONE,
-    LOCAL_SYNC_OPERATION_NONE,
+    LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
+    LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
+    LOCAL_SYNC_OPERATION_DELETE_METADATA,
+    LOCAL_SYNC_OPERATION_DELETE_METADATA,
   };
 
   ExpectedTypes expected_types = CreateList(kExpectedTypes);
   std::vector<Input> inputs = CreateInput();
 
   ASSERT_EQ(expected_types.size(), inputs.size());
+  // TODO(nhiroki): Fix inputs so that these tests can cover all cases.
   for (ExpectedTypes::size_type i = 0; i < expected_types.size(); ++i)
     EXPECT_EQ(expected_types[i],
               Resolver::ResolveForDeleteDirectory(
-                  inputs[i].has_remote_change, inputs[i].remote_file_change))
+                  inputs[i].has_remote_change, inputs[i].remote_file_change,
+                  SYNC_FILE_TYPE_UNKNOWN))
         << "Case " << i << ": (" << inputs[i].DebugString() << ")";
 }
 

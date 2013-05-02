@@ -1064,10 +1064,11 @@ void DriveFileSyncService::ApplyLocalChangeInternal(
     param->drive_metadata.set_resource_id(remote_change.resource_id);
 
   LocalSyncOperationType operation =
-      LocalSyncOperationResolver::Resolve(local_file_change,
-                                          has_remote_change,
-                                          remote_change.change,
-                                          drive_metadata.conflicted());
+      LocalSyncOperationResolver::Resolve(
+          local_file_change,
+          has_remote_change,
+          remote_change.change,
+          param->has_drive_metadata ? &drive_metadata : NULL);
 
   DVLOG(1) << "ApplyLocalChange for " << url.DebugString()
            << " local_change:" << local_file_change.DebugString()
