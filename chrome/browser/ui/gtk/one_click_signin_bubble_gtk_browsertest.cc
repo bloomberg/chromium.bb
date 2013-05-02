@@ -24,10 +24,12 @@ class OneClickSigninBubbleGtkTest : public InProcessBrowserTest {
                        weak_ptr_factory_.GetWeakPtr())),
         bubble_(NULL) {}
 
-  virtual OneClickSigninBubbleGtk* MakeBubble() {
+  virtual OneClickSigninBubbleGtk* MakeBubble(
+    BrowserWindow::OneClickSigninBubbleType bubbleType) {
     return new OneClickSigninBubbleGtk(
         static_cast<BrowserWindowGtk*>(browser()->window()),
-        BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE,
+        bubbleType,
+        string16(),
         string16(),
         start_sync_callback_);
   }
@@ -44,37 +46,71 @@ class OneClickSigninBubbleGtkTest : public InProcessBrowserTest {
 
 // Test that the dialog calls the callback if the OK button is clicked.
 // Callback should be called to setup sync with default settings.
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleGtkTest, ShowAndOK) {
+IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleGtkTest, DialogShowAndOK) {
   EXPECT_CALL(*this, OnStartSync(
       OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS)).Times(1);
 
-  MakeBubble()->OnClickOK(NULL);
+  MakeBubble(
+    BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG)->OnClickOK(NULL);
 }
 
 // Test that the dialog calls the callback if the Undo button is
 // clicked. Callback should be called to abort the sync process.
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleGtkTest, ShowAndUndo) {
+IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleGtkTest, DialogShowAndUndo) {
   EXPECT_CALL(*this, OnStartSync(
       OneClickSigninSyncStarter::UNDO_SYNC)).Times(1);
 
-  MakeBubble()->OnClickUndo(NULL);
+  MakeBubble(BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG)
+      ->OnClickUndo(NULL);
 }
 
 // Test that the dialog calls the callback if the advanced link is clicked.
 // Callback should be called to configure sync before starting.
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleGtkTest, ShowAndClickAdvanced) {
+IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleGtkTest, DialogShowAndClickAdvanced){
   EXPECT_CALL(*this,
               OnStartSync(OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST)).
       Times(1);
 
-  MakeBubble()->OnClickAdvancedLink(NULL);
+  MakeBubble(BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG)
+      ->OnClickAdvancedLink(NULL);
 }
 
 // Test that the dialog calls the callback if the bubble is closed.
 // Callback should be called to setup sync with default settings.
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleGtkTest, ShowAndClose) {
+IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleGtkTest, DialogShowAndClose) {
   EXPECT_CALL(*this, OnStartSync(
       OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS)).Times(1);
 
-  MakeBubble()->bubble_->Close();
+  MakeBubble(
+    BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG)->bubble_->Close();
 }
+
+// Test that the bubble does not call the callback if the OK button is clicked.
+IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleGtkTest, BubbleShowAndOK) {
+  EXPECT_CALL(*this, OnStartSync(
+      OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS)).Times(0);
+
+  MakeBubble(
+    BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE)->OnClickOK(NULL);
+}
+
+// Test that the bubble does not call the callback
+// if the advanced link is clicked.
+IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleGtkTest, BubbleShowAndClickAdvanced){
+  EXPECT_CALL(*this, OnStartSync(
+      OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST)).Times(0);
+
+  MakeBubble(BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE)
+      ->OnClickAdvancedLink(NULL);
+}
+
+// Test that the bubble does not call the callback if the bubble is closed.
+IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleGtkTest, BubbleShowAndClose) {
+  EXPECT_CALL(*this, OnStartSync(
+      OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS)).Times(0);
+
+  MakeBubble(
+    BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE)->bubble_->Close();
+}
+
+

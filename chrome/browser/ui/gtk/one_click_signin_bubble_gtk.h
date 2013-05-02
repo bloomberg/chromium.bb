@@ -29,6 +29,7 @@ class OneClickSigninBubbleGtk : public BubbleDelegateGtk {
       BrowserWindowGtk* browser_window_gtk,
       BrowserWindow::OneClickSigninBubbleType type,
       const string16& email,
+      const string16& error_message,
       const BrowserWindow::StartSyncCallback& start_sync_callback);
 
   // BubbleDelegateGtk implementation.
@@ -36,10 +37,15 @@ class OneClickSigninBubbleGtk : public BubbleDelegateGtk {
       BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleGtkTest, ShowAndOK);
-  FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleGtkTest, ShowAndUndo);
-  FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleGtkTest, ShowAndClickAdvanced);
-  FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleGtkTest, ShowAndClose);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleGtkTest, DialogShowAndOK);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleGtkTest, DialogShowAndUndo);
+  FRIEND_TEST_ALL_PREFIXES(
+    OneClickSigninBubbleGtkTest, DialogShowAndClickAdvanced);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleGtkTest, DialogShowAndClose);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleGtkTest, BubbleShowAndOK);
+  FRIEND_TEST_ALL_PREFIXES(
+    OneClickSigninBubbleGtkTest, BubbleShowAndClickAdvanced);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleGtkTest, BubbleShowAndClose);
 
   virtual ~OneClickSigninBubbleGtk();
 
@@ -56,13 +62,16 @@ class OneClickSigninBubbleGtk : public BubbleDelegateGtk {
 
   BubbleGtk* bubble_;
 
+  const string16 email_;
+
+  const string16 error_message_;
+
   // This callback is nulled once its called, so that it is called only once.
   // It will be called when the bubble is closed if it has not been called
   // and nulled earlier.
   BrowserWindow::StartSyncCallback start_sync_callback_;
 
-  bool is_modal_;
-  const string16 email_;
+  bool is_sync_dialog_;
 
   GtkWidget* message_label_;
   GtkWidget* advanced_link_;
