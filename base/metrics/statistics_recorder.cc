@@ -4,6 +4,7 @@
 
 #include "base/metrics/statistics_recorder.h"
 
+#include "base/at_exit.h"
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -302,15 +303,23 @@ StatisticsRecorder::StatisticsRecorder() {
   base::AutoLock auto_lock(*lock_);
   histograms_ = new HistogramMap;
   ranges_ = new RangesMap;
+
+  if (VLOG_IS_ON(1))
+    AtExitManager::RegisterCallback(&DumpHistogramsToVlog, this);
+}
+
+// static
+void StatisticsRecorder::DumpHistogramsToVlog(void* instance) {
+  DCHECK(VLOG_IS_ON(1));
+
+  StatisticsRecorder* me = reinterpret_cast<StatisticsRecorder*>(instance);
+  string output;
+  me->WriteGraph(std::string(), &output);
+  VLOG(1) << output;
 }
 
 StatisticsRecorder::~StatisticsRecorder() {
   DCHECK(histograms_ && ranges_ && lock_);
-  if (dump_on_exit_) {
-    string output;
-    WriteGraph(std::string(), &output);
-    DLOG(INFO) << output;
-  }
 
   // Clean up.
   scoped_ptr<HistogramMap> histograms_deleter;
@@ -334,7 +343,5 @@ StatisticsRecorder::HistogramMap* StatisticsRecorder::histograms_ = NULL;
 StatisticsRecorder::RangesMap* StatisticsRecorder::ranges_ = NULL;
 // static
 base::Lock* StatisticsRecorder::lock_ = NULL;
-// static
-bool StatisticsRecorder::dump_on_exit_ = false;
 
 }  // namespace base

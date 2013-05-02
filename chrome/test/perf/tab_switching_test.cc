@@ -180,7 +180,6 @@ class TabSwitchingUITest : public UIPerfTest {
  private:
   void AddLaunchArguments() {
     launch_arguments_.AppendSwitch(switches::kEnableLogging);
-    launch_arguments_.AppendSwitch(switches::kDumpHistogramsOnExit);
     launch_arguments_.AppendSwitchASCII(switches::kLoggingLevel, "0");
   }
 

@@ -109,8 +109,6 @@ ProxyLauncher::ProxyLauncher()
                             switches::kFullMemoryCrashReport)),
       show_error_dialogs_(CommandLine::ForCurrentProcess()->HasSwitch(
                               switches::kEnableErrorDialogs)),
-      dump_histograms_on_exit_(CommandLine::ForCurrentProcess()->HasSwitch(
-                                   switches::kDumpHistogramsOnExit)),
       enable_dcheck_(CommandLine::ForCurrentProcess()->HasSwitch(
                          switches::kEnableDCHECK)),
       silent_dump_on_dcheck_(CommandLine::ForCurrentProcess()->HasSwitch(
@@ -432,9 +430,6 @@ void ProxyLauncher::PrepareTestCommandline(CommandLine* command_line,
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableErrorDialogs))
     command_line->AppendSwitch(switches::kEnableLogging);
-
-  if (dump_histograms_on_exit_)
-    command_line->AppendSwitch(switches::kDumpHistogramsOnExit);
 
 #ifdef WAIT_FOR_DEBUGGER_ON_OPEN
   command_line->AppendSwitch(switches::kDebugOnStart);

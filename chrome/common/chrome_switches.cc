@@ -456,11 +456,6 @@ const char kDnsLogDetails[]                 = "dns-log-details";
 // Disables prefetching of DNS information.
 const char kDnsPrefetchDisable[]            = "dns-prefetch-disable";
 
-// Dump any accumualted histograms to the log when browser terminates (requires
-// logging to be enabled to really do anything). Used by developers and test
-// scripts.
-const char kDumpHistogramsOnExit[]          = "dump-histograms-on-exit";
-
 // Enables the <adview> tag in packaged apps.
 const char kEnableAdview[]                  = "enable-adview";
 

@@ -186,9 +186,6 @@ class ProxyLauncher {
   // If true, a user is paying attention to the test, so show error dialogs.
   bool show_error_dialogs_;
 
-  // Include histograms in log on exit.
-  bool dump_histograms_on_exit_;
-
   // Enable dchecks in release mode.
   bool enable_dcheck_;
 

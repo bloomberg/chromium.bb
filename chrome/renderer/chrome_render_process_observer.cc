@@ -163,10 +163,6 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
     // TODO(JAR): Need to implement renderer IO msgloop watchdog.
   }
 
-  if (command_line.HasSwitch(switches::kDumpHistogramsOnExit)) {
-    base::StatisticsRecorder::set_dump_on_exit(true);
-  }
-
 #if defined(ENABLE_AUTOFILL_DIALOG)
   WebRuntimeFeatures::enableRequestAutocomplete(
       command_line.HasSwitch(switches::kEnableInteractiveAutocomplete) ||

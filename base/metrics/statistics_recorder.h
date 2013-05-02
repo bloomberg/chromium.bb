@@ -70,10 +70,6 @@ class BASE_EXPORT StatisticsRecorder {
   // safe.  It returns NULL if a matching histogram is not found.
   static HistogramBase* FindHistogram(const std::string& name);
 
-  static bool dump_on_exit() { return dump_on_exit_; }
-
-  static void set_dump_on_exit(bool enable) { dump_on_exit_ = enable; }
-
   // GetSnapshot copies some of the pointers to registered histograms into the
   // caller supplied vector (Histograms).  Only histograms with names matching
   // query are returned. The query must be a substring of histogram name for its
@@ -101,14 +97,13 @@ class BASE_EXPORT StatisticsRecorder {
   StatisticsRecorder();
   ~StatisticsRecorder();
 
+  static void DumpHistogramsToVlog(void* instance);
+
   static HistogramMap* histograms_;
   static RangesMap* ranges_;
 
   // Lock protects access to above maps.
   static base::Lock* lock_;
-
-  // Dump all known histograms to log.
-  static bool dump_on_exit_;
 
   DISALLOW_COPY_AND_ASSIGN(StatisticsRecorder);
 };

@@ -1221,7 +1221,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kDisableBundledPpapiFlash,
       switches::kDisableExtensionsResourceWhitelist,
       switches::kDisableScriptedPrintThrottling,
-      switches::kDumpHistogramsOnExit,
       switches::kEnableAdview,
       switches::kEnableAdviewSrcAttribute,
       switches::kEnableBenchmarking,

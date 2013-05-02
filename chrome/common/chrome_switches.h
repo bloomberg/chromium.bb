@@ -134,7 +134,6 @@ extern const char kDiskCacheDir[];
 extern const char kDiskCacheSize[];
 extern const char kDnsLogDetails[];
 extern const char kDnsPrefetchDisable[];
-extern const char kDumpHistogramsOnExit[];
 extern const char kDisableSyncTabs[];
 extern const char kEasyOffStoreExtensionInstall[];
 extern const char kEnableAdview[];

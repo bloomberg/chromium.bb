@@ -379,9 +379,6 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
     profile->GetNetworkPredictor()->EnablePredictor(false);
   }
 
-  if (command_line_.HasSwitch(switches::kDumpHistogramsOnExit))
-    base::StatisticsRecorder::set_dump_on_exit(true);
-
   AppListService::InitAll(profile);
   if (command_line_.HasSwitch(switches::kShowAppList)) {
     AppListService::Get()->ShowAppList(profile);

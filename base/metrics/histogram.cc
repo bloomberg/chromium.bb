@@ -314,11 +314,6 @@ Histogram::Histogram(const string& name,
 }
 
 Histogram::~Histogram() {
-  if (StatisticsRecorder::dump_on_exit()) {
-    string output;
-    WriteAsciiImpl(true, "\n", &output);
-    DLOG(INFO) << output;
-  }
 }
 
 bool Histogram::PrintEmptyBucket(size_t index) const {
