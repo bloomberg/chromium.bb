@@ -2397,9 +2397,6 @@ webkit.org/b/107328 http/tests/cache/cancel-multiple-post-xhrs.html [ Pass Missi
 
 webkit.org/b/107341 [ Debug ] inspector/profiler/memory-instrumentation-cached-images.html [ Failure ]
 
-# Flaky on most platforms
-webkit.org/b/110873 fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ ImageOnlyFailure Pass ]
-
 webkit.org/b/107962 [ Mac ] http/tests/loading/redirect-methods.html [ Failure ]
 webkit.org/b/107962 [ Linux Release ] http/tests/loading/redirect-methods.html [ Pass Failure ]
 webkit.org/b/107962 [ Win7 ] http/tests/loading/redirect-methods.html [ Slow ]
@@ -2691,5 +2688,9 @@ crbug.com/237270 [ Win7 Debug ] fast/js/regress/nested-function-parsing.html [ P
 crbug.com/237270 [ Win7 Debug ] svg/custom/invisible-text-after-scrolling.xhtml [ Pass Timeout ]
 crbug.com/237270 [ Win7 Debug ] transforms/2d/transform-2d.html [ Pass Timeout ]
 crbug.com/237270 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-composite-alpha.html [ Pass Timeout ]
+crbug.com/237270 [ Win7 Debug ] fast/dom/SelectorAPI/resig-SelectorsAPI-test.xhtml [ Pass Timeout ]
+# was: webkit.org/b/110873 - Flaky on most platforms
+crbug.com/237270 [ Release ] fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ ImageOnlyFailure Pass ]
+crbug.com/237270 [ Debug ] fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ ImageOnlyFailure Pass Timeout ]
 crbug.com/237272 [ Win7 Mac Debug ] fast/js/regexp-overflow.html [ Pass Timeout ]
 crbug.com/237414 [ XP ] fast/replaced/preferred-widths.html [ Pass Failure ]
