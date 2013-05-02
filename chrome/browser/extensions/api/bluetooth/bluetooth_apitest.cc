@@ -109,7 +109,7 @@ class TestBluetoothAddProfileFunction
   // BluetoothAddProfileFunction override.
   virtual void RegisterProfile(
       const device::BluetoothProfile::Options& options,
-      const device::BluetoothProfile::ProfileCallback& callback) {
+      const device::BluetoothProfile::ProfileCallback& callback) OVERRIDE {
     callback.Run(profile_);
   }
 
