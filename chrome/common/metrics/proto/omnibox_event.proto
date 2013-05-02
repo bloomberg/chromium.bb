@@ -99,6 +99,7 @@ message OmniboxEventProto {
     EXTENSION_APPS = 8;    // Custom suggestions from extensions and/or apps
     CONTACT = 9;           // The user's contacts
     BOOKMARK = 10;         // The user's bookmarks
+    ZERO_SUGGEST = 11;     // Suggestions based on the current page
   }
 
   // The result set displayed on the completion popup

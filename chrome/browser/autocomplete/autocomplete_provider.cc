@@ -94,7 +94,7 @@ metrics::OmniboxEventProto_ProviderType AutocompleteProvider::
     case TYPE_SHORTCUTS:
       return metrics::OmniboxEventProto::SHORTCUTS;
     case TYPE_ZERO_SUGGEST:
-      // TODO: Add to OmniboxEventProto::ProviderType.
+      return metrics::OmniboxEventProto::ZERO_SUGGEST;
     default:
       NOTREACHED() << "Unhandled AutocompleteProvider::Type " << type_;
       return metrics::OmniboxEventProto::UNKNOWN_PROVIDER;

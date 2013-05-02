@@ -297,3 +297,19 @@ bool OmniboxFieldTrial::InStopTimerFieldTrialExperimentGroup() {
   return (base::FieldTrialList::FindFullName(kStopTimerFieldTrialName) ==
           kStopTimerExperimentGroupName);
 }
+
+bool OmniboxFieldTrial::InZeroSuggestFieldTrial() {
+  // Make sure that Autocomplete dynamic field trials are activated.  It's OK to
+  // call this method multiple times.
+  ActivateDynamicTrials();
+
+  // Look for group names starting with "EnableZeroSuggest"
+  for (int i = 0; i < kMaxAutocompleteDynamicFieldTrials; ++i) {
+    const std::string& group_name = base::FieldTrialList::FindFullName(
+        DynamicFieldTrialName(i));
+    const char kEnableZeroSuggest[] = "EnableZeroSuggest";
+    if (StartsWithASCII(group_name, kEnableZeroSuggest, true))
+      return true;
+  }
+  return false;
+}

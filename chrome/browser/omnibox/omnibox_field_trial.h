@@ -120,6 +120,14 @@ class OmniboxFieldTrial {
   // they're arriving so late.
   static bool InStopTimerFieldTrialExperimentGroup();
 
+  // ---------------------------------------------------------
+  // For the ZeroSuggestProvider field trial.
+
+  // Returns whether the user is in any field trial where the
+  // ZeroSuggestProvider should be used to get suggestions when the
+  // user clicks on the omnibox but has not typed anything yet.
+  static bool InZeroSuggestFieldTrial();
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(OmniboxFieldTrial);
 };

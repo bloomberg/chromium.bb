@@ -86,3 +86,46 @@ TEST_F(OmniboxFieldTrialTest, GetDisabledProviderTypes) {
     EXPECT_EQ(7, OmniboxFieldTrial::GetDisabledProviderTypes());
   }
 }
+
+// Test if InZeroSuggestFieldTrial() properly parses various field trial
+// group names.
+TEST_F(OmniboxFieldTrialTest, ZeroSuggestFieldTrial) {
+  EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
+
+  {
+    SCOPED_TRACE("Valid group name, unsupported trial name.");
+    ResetFieldTrialList();
+    CreateTestTrial("UnsupportedTrialName", "EnableZeroSuggest");
+    EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
+
+    ResetFieldTrialList();
+    CreateTestTrial("UnsupportedTrialName", "EnableZeroSuggest_Queries");
+    EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
+
+    ResetFieldTrialList();
+    CreateTestTrial("UnsupportedTrialName", "EnableZeroSuggest_URLS");
+    EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
+  }
+
+  {
+    SCOPED_TRACE("Valid trial name, unsupported group name.");
+    ResetFieldTrialList();
+    CreateTestTrial("AutocompleteDynamicTrial_2", "UnrelatedGroup");
+    EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
+  }
+
+  {
+    SCOPED_TRACE("Valid field and group name.");
+    ResetFieldTrialList();
+    CreateTestTrial("AutocompleteDynamicTrial_2", "EnableZeroSuggest");
+    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
+
+    ResetFieldTrialList();
+    CreateTestTrial("AutocompleteDynamicTrial_2", "EnableZeroSuggest_Queries");
+    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
+
+    ResetFieldTrialList();
+    CreateTestTrial("AutocompleteDynamicTrial_3", "EnableZeroSuggest_URLs");
+    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
+  }
+}
