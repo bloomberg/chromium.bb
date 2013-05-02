@@ -2694,3 +2694,5 @@ crbug.com/237270 [ Release ] fast/sub-pixel/transformed-iframe-copy-on-scroll.ht
 crbug.com/237270 [ Debug ] fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ ImageOnlyFailure Pass Timeout ]
 crbug.com/237272 [ Win7 Mac Debug ] fast/js/regexp-overflow.html [ Pass Timeout ]
 crbug.com/237414 [ XP ] fast/replaced/preferred-widths.html [ Pass Failure ]
+crbug.com/237270 [ Win7 Debug ] inspector/profiler/heap-snapshot-comparison-show-all.html [ Crash Pass ]
+crbug.com/237270 [ Win7 Debug ] inspector/profiler/heap-snapshot-summary-sorting-instances.html [ Crash Pass ]
