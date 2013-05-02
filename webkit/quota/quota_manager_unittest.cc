@@ -63,8 +63,19 @@ class QuotaManagerTest : public testing::Test {
   virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     mock_special_storage_policy_ = new MockSpecialStoragePolicy;
+    ResetQuotaManager(false /* is_incognito */);
+  }
+
+  virtual void TearDown() {
+    // Make sure the quota manager cleans up correctly.
+    quota_manager_ = NULL;
+    MessageLoop::current()->RunUntilIdle();
+  }
+
+ protected:
+  void ResetQuotaManager(bool is_incognito) {
     quota_manager_ = new QuotaManager(
-        false /* is_incognito */,
+        is_incognito,
         data_dir_.path(),
         MessageLoopProxy::current(),
         MessageLoopProxy::current(),
@@ -76,13 +87,6 @@ class QuotaManagerTest : public testing::Test {
     additional_callback_count_ = 0;
   }
 
-  virtual void TearDown() {
-    // Make sure the quota manager cleans up correctly.
-    quota_manager_ = NULL;
-    MessageLoop::current()->RunUntilIdle();
-  }
-
- protected:
   MockStorageClient* CreateClient(
       const MockOriginData* mock_data,
       size_t mock_data_size,
@@ -2137,6 +2141,44 @@ TEST_F(QuotaManagerTest, DeleteMultipleClientTypesSingleHost) {
   GetHostUsage("foo.com", kTemp);
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(predelete_foo_tmp - 8 - 4 - 2 - 1, usage());
+}
+
+TEST_F(QuotaManagerTest, GetUsageAndQuota_Incognito) {
+  ResetQuotaManager(true);
+
+  static const MockOriginData kData[] = {
+    { "http://foo.com/", kTemp, 10 },
+    { "http://foo.com/", kPerm, 80 },
+  };
+  RegisterClient(CreateClient(kData, ARRAYSIZE_UNSAFE(kData),
+      QuotaClient::kFileSystem));
+
+  GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kPerm);
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(kQuotaStatusOk, status());
+  EXPECT_EQ(80, usage());
+  EXPECT_EQ(0, quota());
+
+  SetTemporaryGlobalQuota(100);
+  GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kTemp);
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(kQuotaStatusOk, status());
+  EXPECT_EQ(10, usage());
+  EXPECT_LE(std::min(static_cast<int64>(100 / kPerHostTemporaryPortion),
+                     QuotaManager::kIncognitoDefaultQuotaLimit), quota());
+
+  mock_special_storage_policy()->AddUnlimited(GURL("http://foo.com/"));
+  GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kPerm);
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(kQuotaStatusOk, status());
+  EXPECT_EQ(80, usage());
+  EXPECT_EQ(QuotaManager::kIncognitoDefaultQuotaLimit, quota());
+
+  GetUsageAndQuotaForWebApps(GURL("http://foo.com/"), kTemp);
+  MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(kQuotaStatusOk, status());
+  EXPECT_EQ(10, usage());
+  EXPECT_EQ(QuotaManager::kIncognitoDefaultQuotaLimit, quota());
 }
 
 }  // namespace quota

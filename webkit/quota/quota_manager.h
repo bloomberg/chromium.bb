@@ -109,6 +109,8 @@ class WEBKIT_STORAGE_EXPORT QuotaManager
                               int64 /* usage */,
                               int64 /* quota */)>
       GetUsageAndQuotaCallback;
+
+  static const int64 kIncognitoDefaultQuotaLimit;
   static const int64 kNoLimit;
 
   QuotaManager(bool is_incognito,

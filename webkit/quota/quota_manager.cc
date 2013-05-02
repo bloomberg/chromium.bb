@@ -40,7 +40,6 @@ namespace {
 const int64 kMBytes = 1024 * 1024;
 const int kMinutesInMilliSeconds = 60 * 1000;
 
-const int64 kIncognitoDefaultTemporaryQuota = 50 * kMBytes;
 const int64 kReportHistogramInterval = 60 * 60 * 1000;  // 1 hour
 const double kTemporaryQuotaRatioToAvail = 0.5;  // 50%
 
@@ -162,6 +161,11 @@ int64 CallSystemGetAmountOfFreeDiskSpace(const base::FilePath& profile_path) {
 
 }  // anonymous namespace
 
+// Arbitrary for now, but must be reasonably small so that
+// in-memory databases can fit.
+// TODO(kinuko): Refer SysInfo::AmountOfPhysicalMemory() to determine this.
+const int64 QuotaManager::kIncognitoDefaultQuotaLimit = 100 * kMBytes;
+
 const int64 QuotaManager::kNoLimit = kint64max;
 
 const int QuotaManager::kPerHostTemporaryPortion = 5;  // 20%
@@ -203,10 +207,22 @@ int64 CalculateQuotaWithDiskSpace(
 // Callback translators.
 void CallGetUsageAndQuotaCallback(
     const QuotaManager::GetUsageAndQuotaCallback& callback,
+    bool is_incognito,
     bool unlimited,
     bool can_query_disk_size,
     QuotaStatusCode status,
     const QuotaAndUsage& quota_and_usage) {
+  // Incognito case.  Cap the quota by kIncognitoDefaultQuotaLimit, but
+  // no need to refer the actual disk size (because data will be stored
+  // in-memory in incognito mode).
+  if (is_incognito) {
+    int64 quota = unlimited ? QuotaManager::kNoLimit : quota_and_usage.quota;
+    callback.Run(status,
+                 quota_and_usage.usage,
+                 std::min(quota, QuotaManager::kIncognitoDefaultQuotaLimit));
+    return;
+  }
+
   // Regular limited case.
   if (!unlimited) {
     if (can_query_disk_size) {
@@ -222,12 +238,11 @@ void CallGetUsageAndQuotaCallback(
     return;
   }
 
-  int64 usage = quota_and_usage.unlimited_usage;
-
   // Unlimited case: this must be only for apps with unlimitedStorage permission
   // or only when --unlimited-storage flag is given.
   // We assume we can expose the disk size for them and return the available
   // disk space (minus kMinimumPreserveForSystem).
+  int64 usage = quota_and_usage.unlimited_usage;
   callback.Run(status, usage,
                CalculateQuotaWithDiskSpace(
                    quota_and_usage.available_disk_space,
@@ -968,7 +983,9 @@ void QuotaManager::GetUsageAndQuotaForWebApps(
   GetUsageAndQuotaInternal(
       origin, type, false /* global */,
       base::Bind(&CallGetUsageAndQuotaCallback, callback,
-                 IsStorageUnlimited(origin, type), CanQueryDiskSize(origin)));
+                 is_incognito_,
+                 IsStorageUnlimited(origin, type),
+                 CanQueryDiskSize(origin)));
 }
 
 void QuotaManager::GetUsageAndQuota(
@@ -978,7 +995,8 @@ void QuotaManager::GetUsageAndQuota(
 
   if (IsStorageUnlimited(origin, type)) {
     CallGetUsageAndQuotaCallback(
-        callback, false, CanQueryDiskSize(origin),
+        callback, is_incognito_,
+        false /* unlimited */, CanQueryDiskSize(origin),
         kQuotaStatusOk, QuotaAndUsage::CreateForUnlimitedStorage());
     return;
   }
@@ -1054,11 +1072,6 @@ void QuotaManager::DeleteHostData(const std::string& host,
 }
 
 void QuotaManager::GetAvailableSpace(const AvailableSpaceCallback& callback) {
-  if (is_incognito_) {
-    callback.Run(kQuotaStatusOk, kIncognitoDefaultTemporaryQuota);
-    return;
-  }
-
   PostTaskAndReplyWithResult(
       db_thread_,
       FROM_HERE,
