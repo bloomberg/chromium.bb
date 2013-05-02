@@ -736,8 +736,16 @@ void MessageCenterView::OnNotificationRemoved(const std::string& id,
                                               bool by_user) {
   for (size_t i = 0; i < message_views_.size(); ++i) {
     if (message_views_[i]->notification_id() == id) {
-      if (by_user)
+      if (by_user) {
         message_list_view_->SetRepositionTarget(message_views_[i]->bounds());
+        if (message_views_.size() > 1 &&
+            message_views_[i]->IsCloseButtonFocused()) {
+          size_t next_index = i + 1;
+          if (next_index >= message_views_.size())
+            next_index = message_views_.size() - 2;
+          message_views_[next_index]->RequestFocusOnCloseButton();
+        }
+      }
       message_list_view_->RemoveNotificationAt(i);
       message_views_.erase(message_views_.begin() + i);
       NotificationsChanged();

@@ -38,6 +38,9 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   // Returns the insets for the shadow it will have for rich notification.
   static gfx::Insets GetShadowInsets();
 
+  bool IsCloseButtonFocused();
+  void RequestFocusOnCloseButton();
+
   // Overridden from views::View:
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
 

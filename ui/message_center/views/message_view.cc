@@ -331,6 +331,15 @@ gfx::Insets MessageView::GetShadowInsets() {
                      kShadowBlur / 2);
 }
 
+bool MessageView::IsCloseButtonFocused() {
+  views::FocusManager* focus_manager = GetFocusManager();
+  return focus_manager && focus_manager->GetFocusedView() == close_button();
+}
+
+void MessageView::RequestFocusOnCloseButton() {
+  close_button_->RequestFocus();
+}
+
 bool MessageView::OnMousePressed(const ui::MouseEvent& event) {
   if (event.flags() & ui::EF_RIGHT_MOUSE_BUTTON) {
     ShowMenu(event.location());
