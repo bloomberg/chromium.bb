@@ -381,33 +381,6 @@ update-all() {
   hg-update-gold
 }
 
-# TODO(pdox): Remove after completely moved to new git pnacl repository
-# Move hg/ --> pnacl/src
-hg-migrate() {
-  if ! [ -d "${NACL_ROOT}"/hg ] ; then
-    # Nothing to do
-    return 0
-  fi
-  if ! ${PNACL_BUILDBOT} ; then
-    Banner "Migration needed: Repository paths have changed. This step will:" \
-           "   1) Move hg/* to pnacl/src" \
-           "   2) Wipe the old build directories (toolchain/hg-build-*)" \
-           "   3) Wipe the old log directories (toolchain/log)" \
-           "These have moved to pnacl/build and pnacl/build/log respectively." \
-           "If you wish to stop and do the move manually, type N."
-    if ! confirm-yes "Proceed" ; then
-      Fatal "Aborted"
-      exit -1
-    fi
-  fi
-
-  mkdir -p "${TC_SRC}"
-  mv "${NACL_ROOT}"/hg/* "${TC_SRC}"
-  rm -rf "${TOOLCHAIN_ROOT}"/hg-build-*
-  rm -rf "${TOOLCHAIN_ROOT}"/hg-log
-  rmdir "${NACL_ROOT}"/hg
-}
-
 # Convert a path given on the command-line to an absolute path.
 # This takes into account the fact that we changed directories at the
 # beginning of this script. PWD_ON_ENTRY is used to remember the
@@ -3887,7 +3860,5 @@ if [ "$(type -t $1)" != "function" ]; then
   echo "    $0 help"
   exit 1
 fi
-
-hg-migrate
 
 "$@"
