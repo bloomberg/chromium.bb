@@ -1517,6 +1517,38 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_TransientEntryRemoved) {
   EXPECT_TRUE(EndsWith(committed_entry->GetURL().spec(), "#q=query", true));
 }
 
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, RestrictedURLReading) {
+  std::string search_query;
+  bool is_undefined;
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantOverlaySupport();
+
+  // Verify we can read out something ok.
+  const char kOKQuery[] = "santa";
+  SetOmniboxText(kOKQuery);
+  EXPECT_EQ(ASCIIToUTF16(kOKQuery), omnibox()->GetText());
+  // Must always assert the value is defined before trying to read it, as trying
+  // to read undefined values causes the test to hang.
+  EXPECT_TRUE(GetBoolFromJS(instant()->GetOverlayContents(),
+                            "apiHandle.value === undefined",
+                            &is_undefined));
+  ASSERT_FALSE(is_undefined);
+  EXPECT_TRUE(GetStringFromJS(instant()->GetOverlayContents(),
+                              "apiHandle.value",
+                              &search_query));
+  EXPECT_EQ(kOKQuery, search_query);
+
+  // Verify we can't read out something that should be restricted, like a https
+  // url with a path.
+  const char kHTTPSUrlWithPath[] = "https://www.example.com/foobar";
+  SetOmniboxText(kHTTPSUrlWithPath);
+  EXPECT_EQ(ASCIIToUTF16(kHTTPSUrlWithPath), omnibox()->GetText());
+  EXPECT_TRUE(GetBoolFromJS(instant()->GetOverlayContents(),
+                            "apiHandle.value === undefined",
+                            &is_undefined));
+  EXPECT_TRUE(is_undefined);
+}
+
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, RestrictedItemReadback) {
   // Initialize Instant.
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
@@ -1559,11 +1591,12 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, RestrictedItemReadback) {
   stream << "apiHandle.setValue('" << kQueryString << "');";
   EXPECT_TRUE(ExecuteScript(stream.str()));
 
-  std::string result;
+  std::string query_string;
+  bool is_undefined;
   EXPECT_TRUE(GetStringFromJS(instant()->GetOverlayContents(),
                               "apiHandle.value",
-                              &result));
-  EXPECT_EQ(kQueryString, result);
+                              &query_string));
+  EXPECT_EQ(kQueryString, query_string);
 
   // Set the query text to the first restricted autocomplete item.
   int rid = 1;
@@ -1571,11 +1604,12 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, RestrictedItemReadback) {
   stream << "apiHandle.setRestrictedValue(" << rid << ");";
   EXPECT_TRUE(ExecuteScript(stream.str()));
 
-  // Expect that we now receive the empty string when reading the value back.
-  EXPECT_TRUE(GetStringFromJS(instant()->GetOverlayContents(),
-                              "apiHandle.value",
-                              &result));
-  EXPECT_EQ("", result);
+  // Expect that we now receive undefined when reading the value back.
+  EXPECT_TRUE(GetBoolFromJS(
+      instant()->GetOverlayContents(),
+      "apiHandle.value === undefined",
+      &is_undefined));
+  EXPECT_TRUE(is_undefined);
 
   // Now set the query text to a non restricted value and ensure that the
   // visibility has been reset and the string can again be read back.
@@ -1585,8 +1619,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, RestrictedItemReadback) {
 
   EXPECT_TRUE(GetStringFromJS(instant()->GetOverlayContents(),
                               "apiHandle.value",
-                              &result));
-  EXPECT_EQ(kQueryString, result);
+                              &query_string));
+  EXPECT_EQ(kQueryString, query_string);
 }
 
 // Test that autocomplete results are sent to the page only when all the

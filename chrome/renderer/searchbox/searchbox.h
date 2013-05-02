@@ -31,9 +31,10 @@ class SearchBox : public content::RenderViewObserver,
   // Sends ChromeViewHostMsg_SetSuggestion to the browser.
   void SetSuggestions(const std::vector<InstantSuggestion>& suggestions);
 
-  // Clears the current query text, used to ensure that restricted query strings
-  // are not retained.
-  void ClearQuery();
+  // Marks the current query text as restricted, to make sure that it does
+  // not get communicated to the page.  The restricted status lasts until the
+  // query is next changed or cleared.
+  void MarkQueryAsRestricted();
 
   // Sends ChromeViewHostMsg_ShowInstantOverlay to the browser.
   void ShowInstantOverlay(int height, InstantSizeUnits units);
@@ -61,6 +62,7 @@ class SearchBox : public content::RenderViewObserver,
 
   const string16& query() const { return query_; }
   bool verbatim() const { return verbatim_; }
+  bool query_is_restricted() const { return query_is_restricted_; }
   size_t selection_start() const { return selection_start_; }
   size_t selection_end() const { return selection_end_; }
   bool is_key_capture_enabled() const { return is_key_capture_enabled_; }
@@ -146,8 +148,12 @@ class SearchBox : public content::RenderViewObserver,
   // Sets the searchbox values to their initial value.
   void Reset();
 
+  // Sets the query to a new value.
+  void SetQuery(const string16& query, bool verbatim);
+
   string16 query_;
   bool verbatim_;
+  bool query_is_restricted_;
   size_t selection_start_;
   size_t selection_end_;
   int start_margin_;

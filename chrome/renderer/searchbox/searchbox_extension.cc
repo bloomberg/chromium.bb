@@ -13,6 +13,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "content/public/renderer/render_view.h"
+#include "googleurl/src/gurl.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -163,6 +164,56 @@ v8::Handle<v8::Object> GenerateNativeSuggestion(
 }
 
 }  // namespace
+
+namespace internal {  // for testing.
+
+// Returns whether or not the user's input string, |query|,  might contain any
+// sensitive information, based purely on its value and not where it came from.
+// (It may be sensitive for other reasons, like be a URL from the user's
+// browsing history.)
+bool IsSensitiveInput(const string16& query) {
+  const GURL query_as_url(query);
+  if (query_as_url.is_valid()) {
+    // The input can be interpreted as a URL.  Check to see if it is potentially
+    // sensitive.  (Code shamelessly copied from search_provider.cc's
+    // IsQuerySuitableForSuggest function.)
+
+    // First we check the scheme: if this looks like a URL with a scheme that is
+    // not http/https/ftp, we shouldn't send it.  Sending things like file: and
+    // data: is a waste of time and a disclosure of potentially private, local
+    // data.  Other "schemes" may actually be usernames, and we don't want to
+    // send passwords.  If the scheme is OK, we still need to check other cases
+    // below.
+    if (!LowerCaseEqualsASCII(query_as_url.scheme(), chrome::kHttpScheme) &&
+        !LowerCaseEqualsASCII(query_as_url.scheme(), chrome::kHttpsScheme) &&
+        !LowerCaseEqualsASCII(query_as_url.scheme(), chrome::kFtpScheme)) {
+      return true;
+    }
+
+    // Don't send URLs with usernames, queries or refs.  Some of these are
+    // private, and the Suggest server is unlikely to have any useful results
+    // for any of them.  Also don't send URLs with ports, as we may initially
+    // think that a username + password is a host + port (and we don't want to
+    // send usernames/passwords), and even if the port really is a port, the
+    // server is once again unlikely to have and useful results.
+    if (!query_as_url.username().empty() ||
+        !query_as_url.port().empty() ||
+        !query_as_url.query().empty() || !query_as_url.ref().empty()) {
+      return true;
+    }
+
+    // Don't send anything for https except the hostname.  Hostnames are OK
+    // because they are visible when the TCP connection is established, but the
+    // specific path may reveal private information.
+    if (LowerCaseEqualsASCII(query_as_url.scheme(), chrome::kHttpsScheme) &&
+        !query_as_url.path().empty() && query_as_url.path() != "/") {
+      return true;
+    }
+  }
+  return false;
+}
+
+}  // namespace internal
 
 namespace extensions_v8 {
 
@@ -561,10 +612,21 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetQuery(
     const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
+  DVLOG(1) << render_view << " GetQuery request";
 
-  DVLOG(1) << render_view << " GetQuery: '"
-           << SearchBox::Get(render_view)->query() << "'";
-  return UTF16ToV8String(SearchBox::Get(render_view)->query());
+  if (SearchBox::Get(render_view)->query_is_restricted()) {
+    DVLOG(1) << render_view << " Query text marked as restricted.";
+    return v8::Undefined();
+  }
+
+  const string16& query = SearchBox::Get(render_view)->query();
+  if (internal::IsSensitiveInput(query)) {
+    DVLOG(1) << render_view << " Query text is sensitive.";
+    return v8::Undefined();
+  }
+
+  DVLOG(1) << render_view << " GetQuery: '" << query << "'";
+  return UTF16ToV8String(query);
 }
 
 // static
@@ -1048,9 +1110,7 @@ v8::Handle<v8::Value>
   }
 
   search_box->SetSuggestions(suggestions);
-  // Clear the SearchBox's query text explicitly since this is a restricted
-  // value.
-  search_box->ClearQuery();
+  search_box->MarkQueryAsRestricted();
 
   return v8::Undefined();
 }
@@ -1326,6 +1386,7 @@ void SearchBoxExtension::DispatchMostVisitedChanged(
   Dispatch(frame, kDispatchMostVisitedChangedScript);
 }
 
+// static
 void SearchBoxExtension::DispatchBarsHidden(WebKit::WebFrame* frame) {
   Dispatch(frame, kDispatchBarsHiddenEventScript);
 }

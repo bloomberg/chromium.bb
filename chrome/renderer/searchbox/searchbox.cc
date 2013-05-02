@@ -30,6 +30,7 @@ SearchBox::SearchBox(content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
       content::RenderViewObserverTracker<SearchBox>(render_view),
       verbatim_(false),
+      query_is_restricted_(false),
       selection_start_(0),
       selection_end_(0),
       start_margin_(0),
@@ -47,8 +48,7 @@ void SearchBox::SetSuggestions(
     const std::vector<InstantSuggestion>& suggestions) {
   if (!suggestions.empty() &&
       suggestions[0].behavior == INSTANT_COMPLETE_REPLACE) {
-    query_ = suggestions[0].text;
-    verbatim_ = true;
+    SetQuery(suggestions[0].text, true);
     selection_start_ = selection_end_ = query_.size();
   }
   // Explicitly allow empty vector to be sent to the browser.
@@ -56,7 +56,8 @@ void SearchBox::SetSuggestions(
       render_view()->GetRoutingID(), render_view()->GetPageId(), suggestions));
 }
 
-void SearchBox::ClearQuery() {
+void SearchBox::MarkQueryAsRestricted() {
+  query_is_restricted_ = true;
   query_.clear();
 }
 
@@ -190,8 +191,7 @@ void SearchBox::OnChange(const string16& query,
                          bool verbatim,
                          size_t selection_start,
                          size_t selection_end) {
-  query_ = query;
-  verbatim_ = verbatim;
+  SetQuery(query, verbatim);
   selection_start_ = selection_start;
   selection_end_ = selection_end;
 
@@ -219,8 +219,7 @@ void SearchBox::OnSubmit(const string16& query) {
   // omnibox text was a URL, and the user is navigating to it, in which case
   // we shouldn't update the |query_| or associated state.
   if (!query.empty()) {
-    query_ = query;
-    verbatim_ = true;
+    SetQuery(query, true);
     selection_start_ = selection_end_ = query_.size();
   }
 
@@ -235,8 +234,7 @@ void SearchBox::OnSubmit(const string16& query) {
 }
 
 void SearchBox::OnCancel(const string16& query) {
-  query_ = query;
-  verbatim_ = true;
+  SetQuery(query, true);
   selection_start_ = selection_end_ = query_.size();
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
     DVLOG(1) << render_view() << " OnCancel";
@@ -306,8 +304,7 @@ void SearchBox::OnCancelSelection(const string16& query,
                                   bool verbatim,
                                   size_t selection_start,
                                   size_t selection_end) {
-  query_ = query;
-  verbatim_ = verbatim;
+  SetQuery(query, verbatim);
   selection_start_ = selection_start;
   selection_end_ = selection_end;
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
@@ -358,6 +355,7 @@ double SearchBox::GetZoom() const {
 void SearchBox::Reset() {
   query_.clear();
   verbatim_ = false;
+  query_is_restricted_ = false;
   selection_start_ = 0;
   selection_end_ = 0;
   popup_bounds_ = gfx::Rect();
@@ -369,6 +367,12 @@ void SearchBox::Reset() {
   // a new loader is created when it changes; see crbug.com/164662.
   // Also don't reset omnibox_font_ or omnibox_font_size_ since it never
   // changes.
+}
+
+void SearchBox::SetQuery(const string16& query, bool verbatim) {
+  query_ = query;
+  verbatim_ = verbatim;
+  query_is_restricted_ = false;
 }
 
 void SearchBox::OnMostVisitedChanged(
