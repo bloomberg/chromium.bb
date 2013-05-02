@@ -612,6 +612,44 @@ TEST_F(FormAutofillTest, ExtractFormsTooFewFields) {
   EXPECT_EQ(0U, forms.size());
 }
 
+// We should not report additional forms for empty forms.
+TEST_F(FormAutofillTest, ExtractFormsSkippedForms) {
+  LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
+           "  <INPUT type=\"text\" id=\"firstname\" value=\"John\"/>"
+           "  <INPUT type=\"text\" id=\"lastname\" value=\"Smith\"/>"
+           "</FORM>");
+
+  WebFrame* web_frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
+
+  FormCache form_cache;
+  std::vector<FormData> forms;
+  bool has_skipped_forms = form_cache.ExtractFormsAndFormElements(*web_frame,
+                                                               3,
+                                                               &forms,
+                                                               NULL);
+  EXPECT_EQ(0U, forms.size());
+  EXPECT_TRUE(has_skipped_forms);
+}
+
+// We should not report additional forms for empty forms.
+TEST_F(FormAutofillTest, ExtractFormsNoFields) {
+  LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
+           "</FORM>");
+
+  WebFrame* web_frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
+
+  FormCache form_cache;
+  std::vector<FormData> forms;
+  bool has_skipped_forms = form_cache.ExtractFormsAndFormElements(*web_frame,
+                                                               3,
+                                                               &forms,
+                                                               NULL);
+  EXPECT_EQ(0U, forms.size());
+  EXPECT_FALSE(has_skipped_forms);
+}
+
 // We should not extract a form if it has too few fillable fields.
 // Make sure radio and checkbox fields don't count.
 TEST_F(FormAutofillTest, ExtractFormsTooFewFieldsSkipsCheckable) {

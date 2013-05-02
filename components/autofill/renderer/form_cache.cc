@@ -124,7 +124,8 @@ bool FormCache::ExtractFormsAndFormElements(
     // To avoid overly expensive computation, we impose a minimum number of
     // allowable fields.  The corresponding maximum number of allowable fields
     // is imposed by WebFormElementToFormData().
-    if (num_editable_elements < minimum_required_fields) {
+    if (num_editable_elements < minimum_required_fields &&
+        control_elements.size() > 0) {
       has_skipped_forms = true;
       continue;
     }
