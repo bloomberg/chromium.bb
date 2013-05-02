@@ -23,6 +23,7 @@ namespace {
 typedef EnterResource<PPB_FileRef_API> EnterFileRef;
 
 PP_Resource Create(PP_Resource file_system, const char* path) {
+  VLOG(4) << "PPB_FileRef::Create()";
   ppapi::ProxyAutoLock lock;
   EnterResourceNoLock<PPB_FileSystem_API> enter_file_system(file_system, true);
   if (enter_file_system.failed())
@@ -35,11 +36,13 @@ PP_Resource Create(PP_Resource file_system, const char* path) {
 }
 
 PP_Bool IsFileRef(PP_Resource resource) {
+  VLOG(4) << "PPB_FileRef::IsFileRef()";
   EnterFileRef enter(resource, false);
   return PP_FromBool(enter.succeeded());
 }
 
 PP_FileSystemType GetFileSystemType(PP_Resource file_ref) {
+  VLOG(4) << "PPB_FileRef::GetFileSystemType()";
   EnterFileRef enter(file_ref, true);
   if (enter.failed())
     return PP_FILESYSTEMTYPE_INVALID;
@@ -47,6 +50,7 @@ PP_FileSystemType GetFileSystemType(PP_Resource file_ref) {
 }
 
 PP_Var GetName(PP_Resource file_ref) {
+  VLOG(4) << "PPB_FileRef::GetName()";
   EnterFileRef enter(file_ref, true);
   if (enter.failed())
     return PP_MakeUndefined();
@@ -54,6 +58,7 @@ PP_Var GetName(PP_Resource file_ref) {
 }
 
 PP_Var GetPath(PP_Resource file_ref) {
+  VLOG(4) << "PPB_FileRef::GetPath()";
   EnterFileRef enter(file_ref, true);
   if (enter.failed())
     return PP_MakeUndefined();
@@ -61,6 +66,7 @@ PP_Var GetPath(PP_Resource file_ref) {
 }
 
 PP_Resource GetParent(PP_Resource file_ref) {
+  VLOG(4) << "PPB_FileRef::GetParent()";
   EnterFileRef enter(file_ref, true);
   if (enter.failed())
     return 0;
@@ -70,6 +76,7 @@ PP_Resource GetParent(PP_Resource file_ref) {
 int32_t MakeDirectory(PP_Resource directory_ref,
                       PP_Bool make_ancestors,
                       PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_FileRef::MakeDirectory()";
   EnterFileRef enter(directory_ref, callback, true);
   if (enter.failed())
     return enter.retval();
@@ -81,6 +88,7 @@ int32_t Touch(PP_Resource file_ref,
               PP_Time last_access_time,
               PP_Time last_modified_time,
               PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_FileRef::Touch()";
   EnterFileRef enter(file_ref, callback, true);
   if (enter.failed())
     return enter.retval();
@@ -90,6 +98,7 @@ int32_t Touch(PP_Resource file_ref,
 
 int32_t Delete(PP_Resource file_ref,
                PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_FileRef::Delete()";
   EnterFileRef enter(file_ref, callback, true);
   if (enter.failed())
     return enter.retval();
@@ -99,6 +108,7 @@ int32_t Delete(PP_Resource file_ref,
 int32_t Rename(PP_Resource file_ref,
                PP_Resource new_file_ref,
                PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_FileRef::Rename()";
   EnterFileRef enter(file_ref, callback, true);
   if (enter.failed())
     return enter.retval();
@@ -109,6 +119,7 @@ int32_t Rename(PP_Resource file_ref,
 int32_t Query(PP_Resource file_ref,
               PP_FileInfo* info,
               PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_FileRef::Query()";
   EnterFileRef enter(file_ref, callback, true);
   if (enter.failed())
     return enter.retval();
@@ -117,6 +128,7 @@ int32_t Query(PP_Resource file_ref,
 }
 
 PP_Var GetAbsolutePath(PP_Resource file_ref) {
+  VLOG(4) << "PPB_FileRef::GetAbsolutePath";
   EnterFileRef enter(file_ref, true);
   if (enter.failed())
     return PP_MakeUndefined();
