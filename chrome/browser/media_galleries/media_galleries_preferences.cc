@@ -580,9 +580,9 @@ MediaGalleryPrefIdSet MediaGalleriesPreferences::GalleriesForExtension(
     }
   }
 
-  std::vector<MediaGalleryPermission> stored_permissions;
-  extensions::MediaGalleriesPrivateAPI::GetMediaGalleryPermissions(
-      GetExtensionPrefs(), extension.id(), &stored_permissions);
+  std::vector<MediaGalleryPermission> stored_permissions =
+      extensions::MediaGalleriesPrivateAPI::GetMediaGalleryPermissions(
+          GetExtensionPrefs(), extension.id());
   for (std::vector<MediaGalleryPermission>::const_iterator it =
            stored_permissions.begin(); it != stored_permissions.end(); ++it) {
     if (!it->has_permission) {
@@ -672,8 +672,9 @@ void MediaGalleriesPreferences::RegisterUserPrefs(
 
 extensions::ExtensionPrefs*
 MediaGalleriesPreferences::GetExtensionPrefs() const {
-  return extensions::ExtensionSystem::Get(profile_)->extension_service()->
-      extension_prefs();
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  return extension_service->extension_prefs();
 }
 
 }  // namespace chrome

@@ -90,9 +90,9 @@ class MediaGalleriesPermissionsUnittest : public ExtensionPrefsTest {
                                   {&extension3_id_, &extension3_expectation_},
                                   {&extension4_id_, &extension4_expectation_}};
     for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); i++) {
-      std::vector<chrome::MediaGalleryPermission> actual;
+      std::vector<chrome::MediaGalleryPermission> actual =
           MediaGalleriesPrivateAPI::GetMediaGalleryPermissions(
-              prefs(), *test_data[i].id, &actual);
+              prefs(), *test_data[i].id);
       EXPECT_EQ(test_data[i].expectation->size(), actual.size());
       for (size_t permission_entry = 0;
            permission_entry < test_data[i].expectation->size() &&

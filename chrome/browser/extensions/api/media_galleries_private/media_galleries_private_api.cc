@@ -211,21 +211,22 @@ void MediaGalleriesPrivateAPI::UnsetMediaGalleryPermission(
 }
 
 // static
-void MediaGalleriesPrivateAPI::GetMediaGalleryPermissions(
+std::vector<chrome::MediaGalleryPermission>
+MediaGalleriesPrivateAPI::GetMediaGalleryPermissions(
     ExtensionPrefs* prefs,
-    const std::string& extension_id,
-    std::vector<chrome::MediaGalleryPermission>* result) {
-  CHECK(result);
+    const std::string& extension_id) {
+  std::vector<chrome::MediaGalleryPermission> result;
 
   if (!prefs)
-    return;
+    return result;
 
   const ListValue* permissions;
   if (!prefs->ReadPrefAsList(extension_id,
                              kMediaGalleriesPermissions,
                              &permissions)) {
-    return;
+    return result;
   }
+
   for (ListValue::const_iterator iter = permissions->begin();
        iter != permissions->end(); ++iter) {
     DictionaryValue* dict = NULL;
@@ -234,8 +235,10 @@ void MediaGalleriesPrivateAPI::GetMediaGalleryPermissions(
     chrome::MediaGalleryPermission perm;
     if (!GetMediaGalleryPermissionFromDictionary(dict, &perm))
       continue;
-    result->push_back(perm);
+    result.push_back(perm);
   }
+
+  return result;
 }
 
 // static

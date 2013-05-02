@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_MEDIA_GALLERIES_PRIVATE_MEDIA_GALLERIES_PRIVATE_API_H_
 
 #include <string>
+#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/media_galleries_private/gallery_watch_state_tracker.h"
@@ -53,12 +54,11 @@ class MediaGalleriesPrivateAPI : public ProfileKeyedAPI,
       const std::string& extension_id,
       chrome::MediaGalleryPrefId gallery_id);
 
-  // Populate |result| with all media gallery permissions for the extension in
-  // the given |prefs|.
-  static void GetMediaGalleryPermissions(
+  // Return all media gallery permissions for the extension in the given
+  // |prefs|.
+  static std::vector<chrome::MediaGalleryPermission> GetMediaGalleryPermissions(
       ExtensionPrefs* prefs,
-      const std::string& extension_id,
-      std::vector<chrome::MediaGalleryPermission>* result);
+      const std::string& extension_id);
 
   // Remove all the media gallery permissions in |prefs| for the gallery
   // specified by |gallery_id|.
