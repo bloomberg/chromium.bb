@@ -81,6 +81,11 @@ struct NaClUserRegisterStateARM {
   uint32_t r6;
   uint32_t r7;
   uint32_t r8;
+  /*
+   * r9 is reserved for the trusted thread pointer and is not readable
+   * or writable by untrusted code, but we have a placeholder here to
+   * keep the layout uniform.  The value reported here is undefined.
+   */
   uint32_t r9;
   uint32_t r10;
   uint32_t r11;

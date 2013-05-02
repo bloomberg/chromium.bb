@@ -134,6 +134,7 @@ void exception_handler_wrapped(struct NaClSignalContext *entry_regs) {
 #elif defined(__arm__)
   assert(portable->frame_ptr == g_regs_at_crash.r11);
   assert(context->arch == EM_ARM);
+  assert(context->regs.r9 == -1);
 #elif defined(__mips__)
   assert(portable->frame_ptr == g_regs_at_crash.frame_ptr);
   assert(context->arch == EM_MIPS);

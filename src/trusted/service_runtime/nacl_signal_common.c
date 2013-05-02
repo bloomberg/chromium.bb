@@ -298,7 +298,8 @@ static void NaClUserRegisterStateFromSignalContext(
   COPY_REG(r6);
   COPY_REG(r7);
   COPY_REG(r8);
-  COPY_REG(r9);
+  /* Don't leak the address of NaClAppThread by reporting r9's value here. */
+  dest->r9 = -1;
   COPY_REG(r10);
   COPY_REG(r11);
   COPY_REG(r12);
