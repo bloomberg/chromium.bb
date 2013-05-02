@@ -198,9 +198,8 @@ ToolbarModel::SecurityLevel ToolbarModelImpl::GetSecurityLevel() const {
 int ToolbarModelImpl::GetIcon() const {
   SearchTermsType search_terms_type = GetSearchTermsType();
   SecurityLevel security_level = GetSecurityLevel();
-  bool is_secure = security_level == EV_SECURE || security_level == SECURE;
   if (search_terms_type == NORMAL_SEARCH_TERMS ||
-      (search_terms_type == URL_LIKE_SEARCH_TERMS && is_secure))
+      (search_terms_type == URL_LIKE_SEARCH_TERMS && IsSearchPageSecure()))
     return IDR_OMNIBOX_SEARCH;
 
   static int icon_ids[NUM_SECURITY_LEVELS] = {
@@ -280,11 +279,27 @@ ToolbarModel::SearchTermsType ToolbarModelImpl::GetSearchTermsTypeInternal(
   // it look like e.g. Paypal and also navigate the URL to that of a search for
   // "Paypal" -- hopefully, showing an obvious indicator that this is a search
   // will decrease the chances of users falling for the phishing attempt.
-  ToolbarModel::SecurityLevel security_level = GetSecurityLevel();
-  if (AutocompleteMatch::IsSearchType(match.type) &&
-      ((security_level == SECURE) || (security_level == EV_SECURE)))
+  if (AutocompleteMatch::IsSearchType(match.type) && IsSearchPageSecure())
     return NORMAL_SEARCH_TERMS;
 
   return supports_extraction_of_url_like_search_terms_?
       URL_LIKE_SEARCH_TERMS : NO_SEARCH_TERMS;
+}
+
+bool ToolbarModelImpl::IsSearchPageSecure() const {
+  WebContents* web_contents = delegate_->GetActiveWebContents();
+  // This method should only be called for search pages.
+  DCHECK(!chrome::GetSearchTerms(web_contents).empty());
+
+  const NavigationController& nav_controller = web_contents->GetController();
+
+  // If the page is still loading and the security style is unkown then consider
+  // the page secure.
+  if (nav_controller.GetVisibleEntry()->GetSSL().security_style ==
+      content::SECURITY_STYLE_UNKNOWN && nav_controller.GetVisibleEntry() !=
+                                         nav_controller.GetLastCommittedEntry())
+    return true;
+
+  ToolbarModel::SecurityLevel security_level = GetSecurityLevel();
+  return security_level == SECURE || security_level == EV_SECURE;
 }

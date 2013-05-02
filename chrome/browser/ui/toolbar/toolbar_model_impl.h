@@ -66,6 +66,10 @@ class ToolbarModelImpl : public ToolbarModel {
   SearchTermsType GetSearchTermsTypeInternal(
       const string16& search_terms) const;
 
+  // Checks if the search page is secure. Pages which is still loading and
+  // have an unknown security style will also be considered secure.
+  bool IsSearchPageSecure() const;
+
   ToolbarModelDelegate* delegate_;
 
   // Whether the text in the location bar is currently being edited.

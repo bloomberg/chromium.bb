@@ -324,3 +324,37 @@ TEST_F(ToolbarModelTest, ProminentSearchTerm) {
       std::vector<const char*>(&kQueries[0], &kQueries[arraysize(kQueries)]),
       ToolbarModel::URL_LIKE_SEARCH_TERMS);
 }
+
+// Verify that search term type is normal while page is loading.
+TEST_F(ToolbarModelTest, SearchTermSecurityLevel) {
+  chrome::EnableInstantExtendedAPIForTesting();
+  browser()->toolbar_model()->SetSupportsExtractionOfURLLikeSearchTerms(true);
+  ResetDefaultTemplateURL();
+  AddTab(browser(), GURL(chrome::kAboutBlankURL));
+
+  WebContents* contents = browser()->tab_strip_model()->GetWebContentsAt(0);
+  contents->GetController().LoadURL(
+      GURL("https://google.com/search?q=tractor+supply&espv=1"),
+      content::Referrer(),
+      content::PAGE_TRANSITION_LINK,
+      std::string());
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile());
+  int process_id = contents->GetRenderProcessHost()->GetID();
+  instant_service->AddInstantProcess(process_id);
+
+  // While loading search term type should be normal.
+  ToolbarModel* toolbar_model = browser()->toolbar_model();
+  contents->GetController().GetVisibleEntry()->GetSSL().security_style =
+      content::SECURITY_STYLE_UNKNOWN;
+  EXPECT_EQ(ToolbarModel::NORMAL_SEARCH_TERMS,
+            toolbar_model->GetSearchTermsType());
+
+  CommitPendingLoad(&contents->GetController());
+
+  // When done loading search term type should not be normal.
+  contents->GetController().GetVisibleEntry()->GetSSL().security_style =
+      content::SECURITY_STYLE_UNKNOWN;
+  EXPECT_EQ(ToolbarModel::URL_LIKE_SEARCH_TERMS,
+            toolbar_model->GetSearchTermsType());
+}
