@@ -352,12 +352,6 @@
             'WEBCORE_NAVIGATOR_PLATFORM="Win32"',
             '__PRETTY_FUNCTION__=__FUNCTION__',
           ],
-          # This is needed because Event.h in this directory is blocked
-          # by a system header on windows.
-          'include_dirs++': ['../dom'],
-          'direct_dependent_settings': {
-            'include_dirs+++': ['../dom'],
-          },
           # In generated bindings code: 'switch contains default but no case'.
           # Disable c4267 warnings until we fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4065, 4267 ],
@@ -557,9 +551,6 @@
               'WEBCORE_NAVIGATOR_PLATFORM="Win32"',
               '__PRETTY_FUNCTION__=__FUNCTION__',
             ],
-            # This is needed because Event.h in this directory is blocked
-            # by a system header on windows.
-            'include_dirs++': ['../dom'],
           },
         }],
         ['OS in ("linux", "android") and "WTF_USE_WEBAUDIO_IPP=1" in feature_defines', {
@@ -1115,11 +1106,6 @@
               '<(DEPTH)/third_party/apple_webkit',
               '../../WebKit/mac/WebCoreSupport',
             ],
-          },
-        }],
-        ['OS=="win"', {
-          'direct_dependent_settings': {
-            'include_dirs+++': ['../dom'],
           },
         }],
         ['OS=="linux" and "WTF_USE_WEBAUDIO_IPP=1" in feature_defines', {
