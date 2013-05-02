@@ -188,6 +188,7 @@ extern const char kChromeUISuggestionsInternalsHost[];
 extern const char kChromeUISSLClientCertificateSelectorHost[];
 extern const char kChromeUIStatsHost[];
 extern const char kChromeUISyncHost[];
+extern const char kChromeUISyncFileSystemInternalsHost[];
 extern const char kChromeUISyncInternalsHost[];
 extern const char kChromeUISyncPromoHost[];
 extern const char kChromeUISyncResourcesHost[];

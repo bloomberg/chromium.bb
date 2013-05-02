@@ -12,7 +12,7 @@
       'target_name': 'chrome_extra_resources',
       'type': 'none',
       # These resources end up in resources.pak because they are resources
-      # used by internal pages.  Putting them in a spearate pak file makes
+      # used by internal pages.  Putting them in a separate pak file makes
       # it easier for us to reference them internally.
       'actions': [
         {
@@ -86,6 +86,13 @@
                    'browser/devtools/frontend/devtools_discovery_page_resources.grd',
               },
               'includes': [ '../build/grit_action.gypi' ]
+            },
+            {
+              'action_name': 'sync_file_system_internals_resources',
+              'variables': {
+                'grit_grd_file': 'browser/resources/sync_file_system_internals_resources.grd',
+              },
+              'includes': [ '../build/grit_action.gypi' ],
             },
           ],
           'copies': [
