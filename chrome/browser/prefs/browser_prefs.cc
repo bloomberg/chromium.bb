@@ -117,6 +117,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/audio/audio_devices_pref_handler_impl.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/audio/audio_pref_handler_impl.h"
 #include "chrome/browser/chromeos/customization_document.h"
@@ -241,6 +242,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #endif
 
 #if defined(OS_CHROMEOS)
+  chromeos::AudioDevicesPrefHandlerImpl::RegisterPrefs(registry);
   chromeos::AudioPrefHandlerImpl::RegisterPrefs(registry);
   chromeos::DataPromoNotification::RegisterPrefs(registry);
   chromeos::DeviceOAuth2TokenService::RegisterPrefs(registry);

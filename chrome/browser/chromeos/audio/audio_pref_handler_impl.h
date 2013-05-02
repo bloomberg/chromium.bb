@@ -14,6 +14,8 @@ class PrefService;
 
 namespace chromeos {
 
+// TODO(jennyz,rkc): This class will be removed once we remove the old Audio
+// Handler code.
 // Class which implements AudioPrefHandler interface and register audio
 // preferences as well.
 class AudioPrefHandlerImpl : public AudioPrefHandler {

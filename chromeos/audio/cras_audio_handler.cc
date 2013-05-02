@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "chromeos/audio/audio_pref_handler.h"
+#include "chromeos/audio/audio_devices_pref_handler.h"
 #include "chromeos/audio/mock_cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
@@ -58,7 +58,7 @@ void CrasAudioHandler::AudioObserver::OnActiveInputNodeChanged() {
 
 // static
 void CrasAudioHandler::Initialize(
-    scoped_refptr<AudioPrefHandler> audio_pref_handler) {
+    scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler) {
   CHECK(!g_cras_audio_handler);
   g_cras_audio_handler = new CrasAudioHandler(audio_pref_handler);
 }
@@ -128,7 +128,6 @@ bool CrasAudioHandler::GetActiveOutputDevice(AudioDevice* device) const {
       return true;
     }
   }
-  NOTREACHED() << "Can't find active output audio device";
   return false;
 }
 
@@ -156,10 +155,8 @@ void CrasAudioHandler::AdjustOutputVolumeByPercent(int adjust_by_percent) {
 }
 
 void CrasAudioHandler::SetOutputMute(bool mute_on) {
-  if (output_mute_locked_) {
-    NOTREACHED() << "Output mute has been locked";
+  if (output_mute_locked_)
     return;
-  }
 
   chromeos::DBusThreadManager::Get()->GetCrasAudioClient()->
       SetOutputMute(mute_on);
@@ -174,10 +171,8 @@ void CrasAudioHandler::SetOutputMute(bool mute_on) {
 }
 
 void CrasAudioHandler::SetInputMute(bool mute_on) {
-  if (input_mute_locked_) {
-    NOTREACHED() << "Input mute has been locked";
+  if (input_mute_locked_)
     return;
-  }
 
   chromeos::DBusThreadManager::Get()->GetCrasAudioClient()->
       SetInputMute(mute_on);
@@ -194,7 +189,7 @@ void CrasAudioHandler::SetActiveInputNode(uint64 node_id) {
 }
 
 CrasAudioHandler::CrasAudioHandler(
-    scoped_refptr<AudioPrefHandler> audio_pref_handler)
+    scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler)
     : audio_pref_handler_(audio_pref_handler),
       weak_ptr_factory_(this),
       output_mute_on_(false),
@@ -216,7 +211,7 @@ CrasAudioHandler::CrasAudioHandler(
     return;
   chromeos::DBusThreadManager::Get()->GetCrasAudioClient()->AddObserver(this);
   audio_pref_handler_->AddAudioPrefObserver(this);
-  SetupInitialAudioState();
+  GetNodes();
 }
 
 CrasAudioHandler::~CrasAudioHandler() {
@@ -232,7 +227,7 @@ CrasAudioHandler::~CrasAudioHandler() {
 }
 
 void CrasAudioHandler::AudioClientRestarted() {
-  SetupInitialAudioState();
+  GetNodes();
 }
 
 void CrasAudioHandler::OutputVolumeChanged(int volume) {
@@ -271,7 +266,7 @@ void CrasAudioHandler::ActiveOutputNodeChanged(uint64 node_id) {
     return;
 
   active_output_node_id_ = node_id;
-  GetNodes();
+  SetupAudioState();
   FOR_EACH_OBSERVER(AudioObserver, observers_, OnActiveOutputNodeChanged());
 }
 
@@ -280,7 +275,6 @@ void CrasAudioHandler::ActiveInputNodeChanged(uint64 node_id) {
     return;
 
   active_input_node_id_ = node_id;
-  GetNodes();
   FOR_EACH_OBSERVER(AudioObserver, observers_, OnActiveInputNodeChanged());
 }
 
@@ -288,7 +282,7 @@ void CrasAudioHandler::OnAudioPolicyPrefChanged() {
   ApplyAudioPolicy();
 }
 
-void CrasAudioHandler::SetupInitialAudioState() {
+void CrasAudioHandler::SetupAudioState() {
   ApplyAudioPolicy();
 
   // Set the initial audio state to the ones read from audio prefs.
@@ -296,9 +290,6 @@ void CrasAudioHandler::SetupInitialAudioState() {
   output_volume_ = audio_pref_handler_->GetOutputVolumeValue();
   SetOutputVolumeInternal(output_volume_);
   SetOutputMute(output_mute_on_);
-
-  // Get the initial audio data.
-  GetNodes();
 }
 
 void CrasAudioHandler::ApplyAudioPolicy() {
@@ -359,6 +350,7 @@ void CrasAudioHandler::HandleGetNodes(const chromeos::AudioNodeList& node_list,
     }
   }
 
+  SetupAudioState();
   FOR_EACH_OBSERVER(AudioObserver, observers_, OnAudioNodesChanged());
 }
 

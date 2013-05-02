@@ -20,7 +20,7 @@ class PrefService;
 
 namespace chromeos {
 
-class AudioPrefHandler;
+class AudioDevicesPrefHandler;
 
 class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
                                          public AudioPrefObserver {
@@ -52,7 +52,8 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   };
 
   // Sets the global instance. Must be called before any calls to Get().
-  static void Initialize(scoped_refptr<AudioPrefHandler> audio_pref_handler);
+  static void Initialize(
+      scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler);
 
   // Sets the global instance for testing.
   static void InitializeForTesting();
@@ -117,7 +118,8 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   virtual void SetActiveInputNode(uint64 node_id);
 
  protected:
-  explicit CrasAudioHandler(scoped_refptr<AudioPrefHandler> audio_pref_handler);
+  explicit CrasAudioHandler(
+      scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler);
   virtual ~CrasAudioHandler();
 
  private:
@@ -133,9 +135,9 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Overriden from AudioPrefObserver.
   virtual void OnAudioPolicyPrefChanged() OVERRIDE;
 
-  // Sets up the initial audio device state based on audio policy and
-  // audio settings saved in prefs.
-  void SetupInitialAudioState();
+  // Sets up the audio device state based on audio policy and audio settings
+  // saved in prefs.
+  void SetupAudioState();
 
   // Applies the audio muting policies whenever the user logs in or policy
   // change notification is received.
@@ -150,7 +152,7 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Handles dbus callback for GetNodes.
   void HandleGetNodes(const chromeos::AudioNodeList& node_list, bool success);
 
-  scoped_refptr<AudioPrefHandler> audio_pref_handler_;
+  scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler_;
   base::WeakPtrFactory<CrasAudioHandler> weak_ptr_factory_;
   ObserverList<AudioObserver> observers_;
 

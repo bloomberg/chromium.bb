@@ -205,6 +205,8 @@ extern const char kNetworkPredictionEnabled[];
 extern const char kDefaultAppsInstallState[];
 extern const char kHideWebStoreIcon[];
 #if defined(OS_CHROMEOS)
+extern const char kAudioDevicesMute[];
+extern const char kAudioDevicesVolumePercent[];
 extern const char kAudioMute[];
 extern const char kAudioVolumePercent[];
 extern const char kTapToClickEnabled[];

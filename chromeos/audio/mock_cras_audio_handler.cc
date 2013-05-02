@@ -4,7 +4,7 @@
 
 #include "chromeos/audio/mock_cras_audio_handler.h"
 
-#include "chromeos/audio/audio_pref_handler.h"
+#include "chromeos/audio/audio_devices_pref_handler.h"
 
 namespace chromeos {
 

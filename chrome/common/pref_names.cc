@@ -541,12 +541,25 @@ const char kDefaultAppsInstallState[] = "default_apps_install_state";
 const char kHideWebStoreIcon[] = "hide_web_store_icon";
 
 #if defined(OS_CHROMEOS)
+// A dictionary pref to hold the mute setting for all the currently known
+// audio devices.
+const char kAudioDevicesMute[] = "settings.audio.devices.mute";
+
+// A dictionary pref storing the volume settings for all the currently known
+// audio devices.
+const char kAudioDevicesVolumePercent[] =
+    "settings.audio.devices.volume_percent";
+
 // An integer pref to initially mute volume if 1. This pref is ignored if
 // |kAudioOutputAllowed| is set to false, but its value is preserved, therefore
-// when the policy is lifted the original mute state is restored.
+// when the policy is lifted the original mute state is restored.  This setting
+// is here only for migration purposes now. It is being replaced by the
+// |kAudioDevicesMute| setting.
 const char kAudioMute[] = "settings.audio.mute";
 
-// A double pref storing the user-requested volume.
+// A double pref storing the user-requested volume. This setting is here only
+// for migration purposes now. It is being replaced by the
+// |kAudioDevicesVolumePercent| setting.
 const char kAudioVolumePercent[] = "settings.audio.volume_percent";
 
 // A boolean pref set to true if touchpad tap-to-click is enabled.

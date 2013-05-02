@@ -134,6 +134,8 @@
         'browser/chromeos/attestation/attestation_ca_client.h',
         'browser/chromeos/attestation/attestation_policy_observer.cc',
         'browser/chromeos/attestation/attestation_policy_observer.h',
+        'browser/chromeos/audio/audio_devices_pref_handler_impl.cc',
+        'browser/chromeos/audio/audio_devices_pref_handler_impl.h',
         'browser/chromeos/audio/audio_handler.cc',
         'browser/chromeos/audio/audio_handler.h',
         'browser/chromeos/audio/audio_pref_handler_impl.cc',

@@ -91,6 +91,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/audio/audio_devices_pref_handler.h"
 #include "chromeos/audio/audio_pref_handler.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/audio/cras_audio_switch_handler.h"
@@ -485,7 +486,7 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
     CrasAudioSwitchHandler::Initialize();
   if (UseNewAudioHandler()) {
     CrasAudioHandler::Initialize(
-        AudioPrefHandler::Create(g_browser_process->local_state()));
+        AudioDevicesPrefHandler::Create(g_browser_process->local_state()));
   } else {
    AudioHandler::Initialize(
        AudioPrefHandler::Create(g_browser_process->local_state()));
