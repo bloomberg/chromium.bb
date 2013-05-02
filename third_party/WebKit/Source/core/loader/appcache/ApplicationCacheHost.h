@@ -111,21 +111,14 @@ namespace WebCore {
         void selectCacheWithoutManifest();
         void selectCacheWithManifest(const KURL& manifestURL);
 
-        void maybeLoadMainResource(ResourceRequest&, SubstituteData&);
-        void maybeLoadMainResourceForRedirect(ResourceRequest&, SubstituteData&);
-        void maybeLoadFallbackForMainResponse(const ResourceRequest&, const ResourceResponse&);
-        bool maybeLoadFallbackForMainError(const ResourceRequest&, const ResourceError&);
-        void mainResourceDataReceived(const char* data, int length, long long encodedDataLength, bool allAtOnce);
+        void willStartLoadingMainResource(ResourceRequest&);
+        void didReceiveResponseForMainResource(const ResourceResponse&);
+        void mainResourceDataReceived(const char* data, int length);
         void finishedLoadingMainResource();
         void failedLoadingMainResource();
 
-        bool maybeLoadResource(ResourceLoader*, ResourceRequest&, const KURL& originalURL);
-        bool maybeLoadFallbackForRedirect(ResourceLoader*, ResourceRequest&, const ResourceResponse&);
-        bool maybeLoadFallbackForResponse(ResourceLoader*, const ResourceResponse&);
-        bool maybeLoadFallbackForError(ResourceLoader*, const ResourceError&);
-
-        bool maybeLoadSynchronously(ResourceRequest&, ResourceError&, ResourceResponse&, Vector<char>& data);
-        void maybeLoadFallbackSynchronously(const ResourceRequest&, ResourceError&, ResourceResponse&, Vector<char>& data);
+        void willStartLoadingResource(ResourceRequest&);
+        void willStartLoadingSynchronously(ResourceRequest&);
 
         Status status() const;  
         bool update();
@@ -134,8 +127,6 @@ namespace WebCore {
 
         void setDOMApplicationCache(DOMApplicationCache*);
         void notifyDOMApplicationCache(EventID, int progressTotal, int progressDone);
-
-        void stopLoadingInFrame(Frame*);
 
         void stopDeferringEvents(); // Also raises the events that have been queued up.
 

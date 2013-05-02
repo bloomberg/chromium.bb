@@ -209,9 +209,6 @@ void DocumentLoader::setMainDocumentError(const ResourceError& error)
 void DocumentLoader::mainReceivedError(const ResourceError& error)
 {
     ASSERT(!error.isNull());
-    if (m_applicationCacheHost->maybeLoadFallbackForMainError(request(), error))
-        return;
-
     if (m_identifierForLoadWithoutResourceLoader) {
         ASSERT(!mainResourceLoader());
         frameLoader()->client()->dispatchDidFailLoading(this, m_identifierForLoadWithoutResourceLoader, error);
@@ -253,9 +250,6 @@ void DocumentLoader::stopLoading()
 
     // Always cancel multipart loaders
     cancelAll(m_multipartResourceLoaders);
-
-    // Appcache uses ResourceHandle directly, DocumentLoader doesn't count these loads.
-    m_applicationCacheHost->stopLoadingInFrame(m_frame);
     
     clearArchiveResources();
 
@@ -495,37 +489,8 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
     if (redirectResponse.isNull())
         return;
 
-    // We checked application cache for initial URL, now we need to check it for redirected one.
-    ASSERT(!m_substituteData.isValid());
-    m_applicationCacheHost->maybeLoadMainResourceForRedirect(newRequest, m_substituteData);
-    if (m_substituteData.isValid())
-        m_identifierForLoadWithoutResourceLoader = mainResourceLoader()->identifier();
-
-    if (!shouldContinueForNavigationPolicy(newRequest)) {
+    if (!shouldContinueForNavigationPolicy(newRequest))
         stopLoadingForPolicyChange();
-        return;
-    }
-
-    if (!m_substituteData.isValid())
-        return;
-    // A redirect resulted in loading substitute data.
-    ASSERT(timing()->redirectCount());
-
-    // We need to remove our reference to the CachedResource in favor of a SubstituteData load.
-    // This will probably trigger the cancellation of the CachedResource's underlying ResourceLoader, though there is a
-    // small chance that the resource is being loaded by a different Frame, preventing the ResourceLoader from being cancelled.
-    // If the ResourceLoader is indeed cancelled, it would normally send resource load callbacks.
-    // However, from an API perspective, this isn't a cancellation. Therefore, sever our relationship with the network load,
-    // but prevent the ResourceLoader from sending ResourceLoadNotifier callbacks.
-    RefPtr<ResourceLoader> resourceLoader = mainResourceLoader();
-    ASSERT(resourceLoader->shouldSendResourceLoadCallbacks());
-    resourceLoader->setSendCallbackPolicy(DoNotSendCallbacks);
-    if (m_mainResource) {
-        m_mainResource->removeClient(this);
-        m_mainResource = 0;
-    }
-    resourceLoader->setSendCallbackPolicy(SendCallbacks);
-    handleSubstituteDataLoadSoon();
 }
 
 bool DocumentLoader::shouldContinueForResponse() const
@@ -561,7 +526,7 @@ void DocumentLoader::responseReceived(CachedResource* resource, const ResourceRe
     ASSERT_UNUSED(resource, m_mainResource == resource);
     RefPtr<DocumentLoader> protect(this);
 
-    m_applicationCacheHost->maybeLoadFallbackForMainResponse(request(), response);
+    m_applicationCacheHost->didReceiveResponseForMainResource(response);
 
     // The memory cache doesn't understand the application cache or its caching rules. So if a main resource is served
     // from the application cache, ensure we don't save the result for future use. All responses loaded
@@ -739,7 +704,7 @@ void DocumentLoader::dataReceived(CachedResource* resource, const char* data, in
     if (m_identifierForLoadWithoutResourceLoader)
         frameLoader()->notifier()->dispatchDidReceiveData(this, m_identifierForLoadWithoutResourceLoader, data, length, -1);
 
-    m_applicationCacheHost->mainResourceDataReceived(data, length, -1, false);
+    m_applicationCacheHost->mainResourceDataReceived(data, length);
     m_timeOfLastDataReceived = monotonicallyIncreasingTime();
 
     if (!isMultipartReplacingLoad())
@@ -1093,7 +1058,7 @@ void DocumentLoader::startLoadingMainResource()
     if (!m_frame || m_request.isNull())
         return;
 
-    m_applicationCacheHost->maybeLoadMainResource(m_request, m_substituteData);
+    m_applicationCacheHost->willStartLoadingMainResource(m_request);
 
     if (m_substituteData.isValid()) {
         m_identifierForLoadWithoutResourceLoader = createUniqueIdentifier();

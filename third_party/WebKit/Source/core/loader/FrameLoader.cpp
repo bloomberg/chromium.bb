@@ -2285,11 +2285,8 @@ unsigned long FrameLoader::loadResourceSynchronously(const ResourceRequest& requ
 
     if (error.isNull()) {
         ASSERT(!newRequest.isNull());
-        
-        if (!documentLoader()->applicationCacheHost()->maybeLoadSynchronously(newRequest, error, response, data)) {
-            ResourceHandle::loadResourceSynchronously(networkingContext(), newRequest, storedCredentials, error, response, data);
-            documentLoader()->applicationCacheHost()->maybeLoadFallbackSynchronously(newRequest, error, response, data);
-        }
+        documentLoader()->applicationCacheHost()->willStartLoadingSynchronously(newRequest);
+        ResourceHandle::loadResourceSynchronously(networkingContext(), newRequest, storedCredentials, error, response, data);
     }
     int encodedDataLength = response.resourceLoadInfo() ? static_cast<int>(response.resourceLoadInfo()->encodedDataLength) : -1;
     notifier()->sendRemainingDelegateMessages(m_documentLoader.get(), identifier, response, data.data(), data.size(), encodedDataLength, error);

@@ -70,7 +70,7 @@ ApplicationCacheHost::~ApplicationCacheHost()
 {
 }
 
-void ApplicationCacheHost::maybeLoadMainResource(ResourceRequest& request, SubstituteData&)
+void ApplicationCacheHost::willStartLoadingMainResource(ResourceRequest& request)
 {
     // We defer creating the outer host object to avoid spurious creation/destruction
     // around creating empty documents. At this point, we're initiating a main resource
@@ -114,12 +114,7 @@ void ApplicationCacheHost::selectCacheWithManifest(const KURL& manifestURL)
     }
 }
 
-void ApplicationCacheHost::maybeLoadMainResourceForRedirect(ResourceRequest&, SubstituteData&)
-{
-    // N/A to the chromium port
-}
-
-void ApplicationCacheHost::maybeLoadFallbackForMainResponse(const ResourceRequest&, const ResourceResponse& response)
+void ApplicationCacheHost::didReceiveResponseForMainResource(const ResourceResponse& response)
 {
     if (m_internal) {
         WrappedResourceResponse wrapped(response);
@@ -127,13 +122,7 @@ void ApplicationCacheHost::maybeLoadFallbackForMainResponse(const ResourceReques
     }
 }
 
-bool ApplicationCacheHost::maybeLoadFallbackForMainError(const ResourceRequest&, const ResourceError& error)
-{
-    // N/A to the chromium port
-    return false;
-}
-
-void ApplicationCacheHost::mainResourceDataReceived(const char* data, int length, long long, bool)
+void ApplicationCacheHost::mainResourceDataReceived(const char* data, int length)
 {
     if (m_internal)
         m_internal->m_outerHost->didReceiveDataForMainResource(data, length);
@@ -151,46 +140,21 @@ void ApplicationCacheHost::finishedLoadingMainResource()
         m_internal->m_outerHost->didFinishLoadingMainResource(true);
 }
 
-bool ApplicationCacheHost::maybeLoadResource(ResourceLoader*, ResourceRequest& request, const KURL&)
+void ApplicationCacheHost::willStartLoadingResource(ResourceRequest& request)
 {
     // FIXME: look into the purpose of the unused KURL& originalURL parameter
     if (m_internal) {
         WrappedResourceRequest wrapped(request);
         m_internal->m_outerHost->willStartSubResourceRequest(wrapped);
     }
-    return false;
 }
 
-bool ApplicationCacheHost::maybeLoadFallbackForRedirect(ResourceLoader*, ResourceRequest&, const ResourceResponse&)
-{
-    // N/A to the chromium port
-    return false;
-}
-
-bool ApplicationCacheHost::maybeLoadFallbackForResponse(ResourceLoader*, const ResourceResponse&)
-{
-    // N/A to the chromium port
-    return false;
-}
-
-bool ApplicationCacheHost::maybeLoadFallbackForError(ResourceLoader*, const ResourceError&)
-{
-    // N/A to the chromium port
-    return false;
-}
-
-bool ApplicationCacheHost::maybeLoadSynchronously(ResourceRequest& request, ResourceError&, ResourceResponse&, Vector<char>&)
+void ApplicationCacheHost::willStartLoadingSynchronously(ResourceRequest& request)
 {
     if (m_internal) {
         WrappedResourceRequest wrapped(request);
         m_internal->m_outerHost->willStartSubResourceRequest(wrapped);
     }
-    return false;
-}
-
-void ApplicationCacheHost::maybeLoadFallbackSynchronously(const ResourceRequest&, ResourceError&, ResourceResponse&, Vector<char>&)
-{
-    // N/A to the chromium port
 }
 
 void ApplicationCacheHost::setDOMApplicationCache(DOMApplicationCache* domApplicationCache)
@@ -245,11 +209,6 @@ void ApplicationCacheHost::stopDeferringEvents()
     }
     m_deferredEvents.clear();
     m_defersEvents = false;
-}
-
-void ApplicationCacheHost::stopLoadingInFrame(Frame* frame)
-{
-    // N/A to the chromium port
 }
 
 void ApplicationCacheHost::dispatchDOMEvent(EventID id, int total, int done)

@@ -169,8 +169,7 @@ void ResourceLoader::start()
     if (m_documentLoader->scheduleArchiveLoad(this, m_request))
         return;
 
-    if (m_documentLoader->applicationCacheHost()->maybeLoadResource(this, m_request, m_request.url()))
-        return;
+    m_documentLoader->applicationCacheHost()->willStartLoadingResource(m_request);
 
     if (m_defersLoading) {
         m_deferredRequest = m_request;
@@ -305,9 +304,6 @@ ResourceError ResourceLoader::cannotShowURLError()
 
 void ResourceLoader::willSendRequest(ResourceHandle*, ResourceRequest& request, const ResourceResponse& redirectResponse)
 {
-    if (documentLoader()->applicationCacheHost()->maybeLoadFallbackForRedirect(this, request, redirectResponse))
-        return;
-
     // Store the previous URL because we may modify it.
     KURL previousURL = m_request.url();
     RefPtr<ResourceLoader> protect(this);
@@ -358,8 +354,6 @@ void ResourceLoader::didSendData(ResourceHandle*, unsigned long long bytesSent, 
 
 void ResourceLoader::didReceiveResponse(ResourceHandle*, const ResourceResponse& response)
 {
-    if (documentLoader()->applicationCacheHost()->maybeLoadFallbackForResponse(this, response))
-        return;
     ASSERT(!response.isNull());
     ASSERT(m_state == Initialized);
 
@@ -470,8 +464,6 @@ void ResourceLoader::didFinishLoading(ResourceHandle*, double finishTime)
 
 void ResourceLoader::didFail(ResourceHandle*, const ResourceError& error)
 {
-    if (documentLoader()->applicationCacheHost()->maybeLoadFallbackForError(this, error) || m_state != Initialized)
-        return;
     ASSERT(!reachedTerminalState());
     LOG(ResourceLoading, "Failed to load '%s'.\n", m_resource->url().string().latin1().data());
 
