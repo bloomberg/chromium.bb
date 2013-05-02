@@ -45,9 +45,9 @@ static int totalPagesMeasuredCSSSampleId() { return 1; }
 //         https://code.google.com/p/chromium/issues/detail?id=234940
 static int mapCSSPropertyIdToCSSSampleId(int id)
 {
-    CSSPropertyID cssId = static_cast<CSSPropertyID>(id);
+    CSSPropertyID cssPropertyID = convertToCSSPropertyID(id);
 
-    switch (cssId) {
+    switch (cssPropertyID) {
     // Begin at 2, because 1 is reserved for totalPagesMeasuredCSSSampleId.
     case CSSPropertyColor: return 2;
     case CSSPropertyDirection: return 3;
@@ -489,10 +489,12 @@ static int mapCSSPropertyIdToCSSSampleId(int id)
     case CSSPropertyWebkitGridAutoRows: return 417;
     case CSSPropertyWebkitGridAutoColumns: return 418;
 
-    // Add new features above this line. Don't change assigned numbers of each of the items
-    // and do update maximumCSSPropertyId() with maximum value.
+    // Add new features above this line (don't change the assigned numbers of the existing
+    // items) and update maximumCSSSampleId() with the new maximum value.
+
     case CSSPropertyInvalid:
     case CSSPropertyVariable:
+        ASSERT_NOT_REACHED();
         return 0;
     }
 
