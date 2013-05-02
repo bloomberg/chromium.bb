@@ -100,6 +100,7 @@ PlatformFile CreatePlatformFileUnsafe(const FilePath& name,
           *error = PLATFORM_FILE_ERROR_EXISTS;
           break;
         case ERROR_FILE_NOT_FOUND:
+        case ERROR_PATH_NOT_FOUND:
           *error = PLATFORM_FILE_ERROR_NOT_FOUND;
           break;
         case ERROR_ACCESS_DENIED:
@@ -116,6 +117,17 @@ PlatformFile CreatePlatformFileUnsafe(const FilePath& name,
         case ERROR_DISK_FULL:
         case ERROR_DISK_RESOURCES_EXHAUSTED:
           *error = PLATFORM_FILE_ERROR_NO_SPACE;
+          break;
+        case ERROR_USER_MAPPED_FILE:
+          *error = PLATFORM_FILE_ERROR_INVALID_OPERATION;
+          break;
+        case ERROR_NOT_READY:
+        case ERROR_SECTOR_NOT_FOUND:
+        case ERROR_DEV_NOT_EXIST:
+        case ERROR_IO_DEVICE:
+        case ERROR_FILE_CORRUPT:
+        case ERROR_DISK_CORRUPT:
+          *error = PLATFORM_FILE_ERROR_IO;
           break;
         default:
           UMA_HISTOGRAM_SPARSE_SLOWLY("PlatformFile.UnknownCreateFileErrors",

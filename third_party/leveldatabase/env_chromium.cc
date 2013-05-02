@@ -229,6 +229,8 @@ const char* PlatformFileErrorString(const ::base::PlatformFileError& error) {
       return "The file was not empty.";
     case ::base::PLATFORM_FILE_ERROR_INVALID_URL:
       return "Invalid URL.";
+    case ::base::PLATFORM_FILE_ERROR_IO:
+      return "OS or hardware error.";
     case ::base::PLATFORM_FILE_OK:
       return "OK.";
     case ::base::PLATFORM_FILE_ERROR_MAX:
