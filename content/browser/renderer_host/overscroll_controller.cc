@@ -65,6 +65,10 @@ bool OverscrollController::WillDispatchEvent(
     // Consume the event and update overscroll state when in the middle of the
     // overscroll gesture.
     ProcessEventForOverscroll(event);
+
+    if (event.type == WebKit::WebInputEvent::TouchEnd ||
+        event.type == WebKit::WebInputEvent::TouchCancel)
+      return true;
     return false;
   }
 
