@@ -114,6 +114,28 @@ Study_Platform GetCurrentPlatform() {
 #endif
 }
 
+// Returns a string that will be used for the value of the 'osname' URL param
+// to the variations server.
+std::string GetPlatformString() {
+#if defined(OS_WIN)
+  return "win";
+#elif defined(OS_MACOSX)
+  return "mac";
+#elif defined(OS_CHROMEOS)
+  return "chromeos";
+#elif defined(OS_ANDROID)
+  return "android";
+#elif defined(OS_IOS)
+  return "ios";
+#elif defined(OS_LINUX) || defined(OS_BSD) || defined(OS_SOLARIS)
+  // Default BSD and SOLARIS to Linux to not break those builds, although these
+  // platforms are not officially supported by Chrome.
+  return "linux";
+#else
+#error Unknown platform
+#endif
+}
+
 // Converts |date_time| in Study date format to base::Time.
 base::Time ConvertStudyDateToBaseTime(int64 date_time) {
   return base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(date_time);
@@ -225,12 +247,17 @@ GURL VariationsService::GetVariationsServerURL(PrefService* local_state) {
   if (server_url_string.empty())
     server_url_string = kDefaultVariationsServerURL;
   GURL server_url = GURL(server_url_string);
+
   const std::string restrict_param = GetRestrictParameterPref(local_state);
   if (!restrict_param.empty()) {
     server_url = net::AppendOrReplaceQueryParameter(server_url,
                                                     "restrict",
                                                     restrict_param);
   }
+
+  server_url = net::AppendOrReplaceQueryParameter(server_url, "osname",
+                                                  GetPlatformString());
+
   DCHECK(server_url.is_valid());
   return server_url;
 }

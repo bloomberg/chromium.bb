@@ -17,6 +17,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "base/string16.h"
+#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/test/test_file_util.h"
 #include "base/time.h"
@@ -100,6 +101,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/base/url_util.h"
 #include "net/http/http_stream_factory.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
@@ -2074,10 +2076,13 @@ IN_PROC_BROWSER_TEST_F(PolicyVariationsServiceTest, VariationsURLIsValid) {
       chrome_variations::VariationsService::
           GetDefaultVariationsServerURLForTesting();
 
-  // Policy is applied and pref is already updated in local state.
-  EXPECT_EQ(default_variations_url + "?restrict=restricted",
-            chrome_variations::VariationsService::GetVariationsServerURL(
-                g_browser_process->local_state()).spec());
+  const GURL url =
+      chrome_variations::VariationsService::GetVariationsServerURL(
+          g_browser_process->local_state());
+  EXPECT_TRUE(StartsWithASCII(url.spec(), default_variations_url, true));
+  std::string value;
+  EXPECT_TRUE(net::GetValueForKeyInQuery(url, "restrict", &value));
+  EXPECT_EQ("restricted", value);
 }
 #endif
 

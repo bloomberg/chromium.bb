@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/prefs/testing_pref_service.h"
+#include "base/string_util.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/metrics/proto/study.pb.h"
 #include "chrome/browser/metrics/variations/resource_request_allowed_notifier_test_util.h"
@@ -14,6 +15,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/test_browser_thread.h"
+#include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -396,12 +398,16 @@ TEST_F(VariationsServiceTest, VariationsURLIsValid) {
   const std::string default_variations_url =
       VariationsService::GetDefaultVariationsServerURLForTesting();
 
-  EXPECT_EQ(default_variations_url,
-            VariationsService::GetVariationsServerURL(&prefs).spec());
+  std::string value;
+  GURL url = VariationsService::GetVariationsServerURL(&prefs);
+  EXPECT_TRUE(StartsWithASCII(url.spec(), default_variations_url, true));
+  EXPECT_FALSE(net::GetValueForKeyInQuery(url, "restrict", &value));
 
   prefs.SetString(prefs::kVariationsRestrictParameter, "restricted");
-  EXPECT_EQ(default_variations_url + "?restrict=restricted",
-            VariationsService::GetVariationsServerURL(&prefs).spec());
+  url = VariationsService::GetVariationsServerURL(&prefs);
+  EXPECT_TRUE(StartsWithASCII(url.spec(), default_variations_url, true));
+  EXPECT_TRUE(net::GetValueForKeyInQuery(url, "restrict", &value));
+  EXPECT_EQ("restricted", value);
 }
 #else
 class VariationsServiceTestChromeOS : public VariationsServiceTest {
@@ -446,14 +452,28 @@ TEST_F(VariationsServiceTestChromeOS, VariationsURLIsValid) {
   const std::string default_variations_url =
       VariationsService::GetDefaultVariationsServerURLForTesting();
 
-  EXPECT_EQ(default_variations_url,
-            VariationsService::GetVariationsServerURL(&prefs).spec());
+  std::string value;
+  GURL url = VariationsService::GetVariationsServerURL(&prefs);
+  EXPECT_TRUE(StartsWithASCII(url.spec(), default_variations_url, true));
+  EXPECT_FALSE(net::GetValueForKeyInQuery(url, "restrict", &value));
 
   SetVariationsRestrictParameterPolicyValue("restricted");
-  EXPECT_EQ(default_variations_url + "?restrict=restricted",
-            VariationsService::GetVariationsServerURL(&prefs).spec());
+  url = VariationsService::GetVariationsServerURL(&prefs);
+  EXPECT_TRUE(StartsWithASCII(url.spec(), default_variations_url, true));
+  EXPECT_TRUE(net::GetValueForKeyInQuery(url, "restrict", &value));
+  EXPECT_EQ("restricted", value);
 }
 #endif
+
+TEST_F(VariationsServiceTest, VariationsURLHasOSNameParam) {
+  TestingPrefServiceSimple prefs;
+  VariationsService::RegisterPrefs(prefs.registry());
+  const GURL url = VariationsService::GetVariationsServerURL(&prefs);
+
+  std::string value;
+  EXPECT_TRUE(net::GetValueForKeyInQuery(url, "osname", &value));
+  EXPECT_FALSE(value.empty());
+}
 
 TEST_F(VariationsServiceTest, LoadSeed) {
   // Store good seed data to test if loading from prefs works.
