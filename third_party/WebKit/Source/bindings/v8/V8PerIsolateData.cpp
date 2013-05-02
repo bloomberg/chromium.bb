@@ -138,7 +138,7 @@ v8::Persistent<v8::FunctionTemplate> V8PerIsolateData::privateTemplate(WrapperWo
     TemplateMap::iterator result = templates.find(privatePointer);
     if (result != templates.end())
         return result->value;
-    v8::Persistent<v8::FunctionTemplate> newPrivateTemplate = v8::Persistent<v8::FunctionTemplate>::New(m_isolate, v8::FunctionTemplate::New(callback, data, signature, length));
+    v8::Persistent<v8::FunctionTemplate> newPrivateTemplate(m_isolate, v8::FunctionTemplate::New(callback, data, signature, length));
     templates.add(privatePointer, newPrivateTemplate);
     return newPrivateTemplate;
 }

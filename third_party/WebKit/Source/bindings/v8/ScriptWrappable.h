@@ -64,7 +64,7 @@ public:
             m_maskedStorage = 0;
             return;
         }
-        v8::Persistent<v8::Object> persistent = v8::Persistent<v8::Object>::New(isolate, wrapper);
+        v8::Persistent<v8::Object> persistent(isolate, wrapper);
         configuration.configureWrapper(persistent, isolate);
         WeakHandleListener<ScriptWrappable>::makeWeak(isolate, persistent, this);
         m_maskedStorage = maskOrUnmaskValue(reinterpret_cast<uintptr_t>(*persistent));

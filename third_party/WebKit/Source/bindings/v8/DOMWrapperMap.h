@@ -60,7 +60,7 @@ public:
     {
         ASSERT(!m_map.contains(key));
         ASSERT(static_cast<KeyType*>(toNative(wrapper)) == key);
-        v8::Persistent<v8::Object> persistent = v8::Persistent<v8::Object>::New(m_isolate, wrapper);
+        v8::Persistent<v8::Object> persistent(m_isolate, wrapper);
         configuration.configureWrapper(persistent, m_isolate);
         WeakHandleListener<DOMWrapperMap<KeyType> >::makeWeak(m_isolate, persistent, this);
         m_map.set(key, UnsafePersistent<v8::Object>(persistent));

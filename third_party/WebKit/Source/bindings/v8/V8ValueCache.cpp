@@ -93,7 +93,7 @@ v8::Handle<v8::String> StringCache::v8ExternalStringSlow(StringImpl* stringImpl,
     if (newString.IsEmpty())
         return newString;
 
-    v8::Persistent<v8::String> wrapper = v8::Persistent<v8::String>::New(isolate, newString);
+    v8::Persistent<v8::String> wrapper(isolate, newString);
     if (wrapper.IsEmpty())
         return newString;
 

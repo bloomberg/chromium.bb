@@ -104,7 +104,7 @@ v8::Local<v8::Object> V8PerContextData::createWrapperFromCacheSlowCase(WrapperTy
     v8::Local<v8::Function> function = constructorForType(type);
     v8::Local<v8::Object> instance = V8ObjectConstructor::newInstance(function);
     if (!instance.IsEmpty()) {
-        m_wrapperBoilerplates.set(type, v8::Persistent<v8::Object>::New(m_context->GetIsolate(), instance));
+        m_wrapperBoilerplates.set(type, v8::Persistent<v8::Object>(m_context->GetIsolate(), instance));
         return instance->Clone();
     }
     return v8::Local<v8::Object>();

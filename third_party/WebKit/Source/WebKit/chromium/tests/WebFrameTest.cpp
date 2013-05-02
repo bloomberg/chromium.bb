@@ -1484,7 +1484,7 @@ public:
     public:
         Notification(WebFrame* frame, v8::Handle<v8::Context> context, int worldId)
             : frame(frame)
-            , context(v8::Persistent<v8::Context>::New(context->GetIsolate(), context))
+            , context(context->GetIsolate(), context)
             , worldId(worldId)
         {
         }

@@ -46,7 +46,7 @@ v8::Persistent<v8::FunctionTemplate> V8AdaptorFunction::getTemplate(v8::Isolate*
     if (result != data->rawTemplateMap(worldType).end())
         return result->value;
     // The lifetime is of newTemplate is delegated to the TemplateMap thus this won't be leaked.
-    v8::Persistent<v8::FunctionTemplate> newTemplate = v8::Persistent<v8::FunctionTemplate>::New(isolate, v8::FunctionTemplate::New());
+    v8::Persistent<v8::FunctionTemplate> newTemplate(isolate, v8::FunctionTemplate::New());
     data->rawTemplateMap(worldType).add(&info, configureTemplate(newTemplate));
     return newTemplate;
 }
