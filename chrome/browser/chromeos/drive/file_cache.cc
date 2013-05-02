@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/drive/file_cache_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/google_apis/task_util.h"
+#include "chromeos/chromeos_constants.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

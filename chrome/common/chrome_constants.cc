@@ -210,14 +210,6 @@ const base::FilePath::CharType kPepperFlashPluginFilename[] =
 // directory names
 const wchar_t kUserDataDirname[] = L"User Data";
 
-#if defined(OS_CHROMEOS)
-const base::FilePath::CharType kDriveCacheDirname[] = FPL("GCache");
-const char kOemDeviceRequisitionKey[] = "oem_device_requisition";
-const char kOemIsEnterpriseManagedKey[] = "oem_enterprise_managed";
-const char kOemCanExitEnterpriseEnrollmentKey[] = "oem_can_exit_enrollment";
-const char kOemKeyboardDrivenOobeKey[] = "oem_keyboard_driven_oobe";
-#endif  // defined(OS_CHROMEOS)
-
 // We don't enable record mode in the released product because users could
 // potentially be tricked into running a product in record mode without
 // knowing it.  Enable in debug builds.  Playback mode is allowed always,

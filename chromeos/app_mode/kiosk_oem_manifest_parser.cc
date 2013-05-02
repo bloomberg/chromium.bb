@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/app_mode/kiosk_oem_manifest_parser.h"
+#include "chromeos/app_mode/kiosk_oem_manifest_parser.h"
 
 #include "base/json/json_file_value_serializer.h"
 #include "base/stringprintf.h"

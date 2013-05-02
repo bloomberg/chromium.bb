@@ -23,6 +23,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/chromeos_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
 #include "webkit/fileapi/file_system_url.h"
@@ -222,7 +223,7 @@ base::FilePath GetCacheRootPath(Profile* profile) {
   base::FilePath cache_base_path;
   chrome::GetUserCacheDirectory(profile->GetPath(), &cache_base_path);
   base::FilePath cache_root_path =
-      cache_base_path.Append(chrome::kDriveCacheDirname);
+      cache_base_path.Append(chromeos::kDriveCacheDirname);
   return cache_root_path.Append(kFileCacheVersionDir);
 }
 

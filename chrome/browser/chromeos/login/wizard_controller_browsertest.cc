@@ -30,6 +30,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/chromeos_test_utils.h"
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -364,11 +365,11 @@ class WizardControllerKioskFlowTest : public WizardControllerFlowTest {
   // Overridden from InProcessBrowserTest:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     base::FilePath test_data_dir;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+    ASSERT_TRUE(chromeos::test_utils::GetTestDataPath(
+                    "app_mode", "kiosk_manifest", &test_data_dir));
     command_line->AppendSwitchPath(
         switches::kAppOemManifestFile,
-         test_data_dir.Append(FILE_PATH_LITERAL(
-             "chromeos/app_mode/kiosk_manifest/kiosk_manifest.json")));
+        test_data_dir.AppendASCII("kiosk_manifest.json"));
   }
 
  private:
