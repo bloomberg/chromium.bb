@@ -39,7 +39,6 @@ namespace WTF {
     class AtomicString;
     class AtomicStringImpl;
     class CString;
-    class Decoder;
     class Encoder;
     class Float32Array;
     class Float64Array;
@@ -74,7 +73,6 @@ using WTF::AtomicString;
 using WTF::AtomicStringImpl;
 using WTF::CString;
 using WTF::Encoder;
-using WTF::Decoder;
 using WTF::Float32Array;
 using WTF::Float64Array;
 using WTF::Int8Array;
