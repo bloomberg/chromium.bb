@@ -698,24 +698,6 @@ class AndroidMkWriter(object):
     assert spec.get('product_dir') is None # TODO: not supported?
     return os.path.join(path, self.ComputeOutputBasename(spec))
 
-
-  def NormalizeLdFlags(self, ld_flags):
-    """ Clean up ldflags from gyp file.
-    Remove any ldflags that contain android_top_dir.
-
-    Args:
-      ld_flags: ldflags from gyp files.
-
-    Returns:
-      clean ldflags
-    """
-    clean_ldflags = []
-    for flag in ld_flags:
-      if self.android_top_dir in flag:
-        continue
-      clean_ldflags.append(flag)
-    return clean_ldflags
-
   def NormalizeIncludePaths(self, include_paths):
     """ Normalize include_paths.
     Convert absolute paths to relative to the Android top directory;
@@ -820,10 +802,9 @@ class AndroidMkWriter(object):
 
     # LDFLAGS
     ldflags = list(config.get('ldflags', []))
-    static_flags, dynamic_flags = self.ComputeAndroidLibraryModuleNames(
-        ldflags)
-    self.WriteLn('')
-    self.WriteList(self.NormalizeLdFlags(ldflags), 'LOCAL_LDFLAGS')
+    if ldflags:
+      self.WriteLn('')
+      self.WriteList(ldflags, 'LOCAL_LDFLAGS')
 
     # Libraries (i.e. -lfoo)
     libraries = gyp.common.uniquer(spec.get('libraries', []))
@@ -834,12 +815,12 @@ class AndroidMkWriter(object):
     static_link_deps = [x[1] for x in link_deps if x[0] == 'static']
     shared_link_deps = [x[1] for x in link_deps if x[0] == 'shared']
     self.WriteLn('')
-    self.WriteList(static_flags + static_libs + static_link_deps,
+    self.WriteList(static_libs + static_link_deps,
                    'LOCAL_STATIC_LIBRARIES')
     self.WriteLn('# Enable grouping to fix circular references')
     self.WriteLn('LOCAL_GROUP_STATIC_LIBRARIES := true')
     self.WriteLn('')
-    self.WriteList(dynamic_flags + dynamic_libs + shared_link_deps,
+    self.WriteList(dynamic_libs + shared_link_deps,
                    'LOCAL_SHARED_LIBRARIES')
 
 
