@@ -6695,6 +6695,28 @@ other types of suffix sets.
   <summary>Tracks touchpad ThreeFingerSwipe setting on startup.</summary>
 </histogram>
 
+<histogram name="Translate.CaptureText" units="milliseconds">
+  <summary>
+    The time spent capturing plain text from the DOM. This is reported by
+    ChromeRenderViewObserver when a page is loaded completely.
+  </summary>
+</histogram>
+
+<histogram name="Translate.ContentLanguage" enum="TranslateContentLanguage">
+  <summary>
+    A page may provide a Content-Language HTTP header or a META tag. For each
+    page load, measures whether the Content-Language header exists and is valid.
+  </summary>
+</histogram>
+
+<histogram name="Translate.LanguageVerification"
+    enum="TranslateLanguageVerification">
+  <summary>
+    For each page load, measures whether the provided Content-Language header
+    matches the language determined by CLD.
+  </summary>
+</histogram>
+
 <histogram name="Translate.TimeToBeReady" units="milliseconds">
   <summary>
     The time from injecting scripts for Chrome Translate to being ready to
@@ -10367,6 +10389,20 @@ other types of suffix sets.
   <int value="5" label="TP_PRESENT_TP_EXPECTED_RESUME">
     Built-in touchpad detected at resume time on a device with built-in touchpad
   </int>
+</enum>
+
+<enum name="TranslateContentLanguage" type="int">
+  <int value="0" label="No Content-Language"/>
+  <int value="1" label="Valid Content-Language"/>
+  <int value="2" label="Invalid Content-Language"/>
+</enum>
+
+<enum name="TranslateLanguageVerification" type="int">
+  <int value="0" label="CLD is disabled"/>
+  <int value="1" label="No Content-Language"/>
+  <int value="2" label="CLD can not determine a language"/>
+  <int value="3" label="CLD agrees with Content-Language"/>
+  <int value="4" label="CLD disagrees with Content-Language"/>
 </enum>
 
 <enum name="UniformityTrialGroupNotActive" type="int">
