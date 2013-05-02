@@ -13,7 +13,6 @@ import android.view.ViewConfiguration;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentSettings;
 import org.chromium.content.browser.ContentViewCore;
@@ -64,6 +63,15 @@ public class ContentViewZoomTest extends AwTestBase {
             @Override
             public Boolean call() throws Exception {
                 return mContentViewCore.isMultiTouchZoomSupported();
+            }
+        });
+    }
+
+    private int getVisibilityOnUiThread(final View view) throws Throwable {
+        return runTestOnUiThreadAndGetResult(new Callable<Integer>() {
+            @Override
+            public Integer call() throws Exception {
+                return view.getVisibility();
             }
         });
     }
@@ -221,16 +229,16 @@ public class ContentViewZoomTest extends AwTestBase {
         assertFalse(isMultiTouchZoomSupportedOnUiThread());
     }
 
-    /*
     @SmallTest
     @Feature({"AndroidWebView"})
-    This test is flaky. See crbug.com/153522.
-    */
-    @DisabledTest
     public void testZoomControls() throws Throwable {
         AwSettings webSettings = getAwSettingsOnUiThread(mAwContents);
+        int onScaleChangedCallCount = mContentsClient.getOnScaleChangedHelper().getCallCount();
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 getZoomableHtml(), "text/html", false);
+        mContentsClient.getOnScaleChangedHelper().waitForCallback(onScaleChangedCallCount);
+        // It must be possible to zoom in (or zoom out) for zoom controls to be shown
+        assertTrue("Should be able to zoom in", canZoomInOnUiThread());
 
         assertTrue(getContentSettingsOnUiThread(mAwContents).supportZoom());
         getContentSettingsOnUiThread(mAwContents).setBuiltInZoomControls(true);
@@ -246,7 +254,7 @@ public class ContentViewZoomTest extends AwTestBase {
         assertNull(getZoomControlsOnUiThread());
         invokeZoomPickerOnUiThread();
         View zoomControls = getZoomControlsOnUiThread();
-        assertEquals(View.VISIBLE, zoomControls.getVisibility());
+        assertEquals(View.VISIBLE, getVisibilityOnUiThread(zoomControls));
     }
 
     @SmallTest
@@ -265,7 +273,7 @@ public class ContentViewZoomTest extends AwTestBase {
         assertNull(getZoomControlsOnUiThread());
         invokeZoomPickerOnUiThread();
         View zoomControls = getZoomControlsOnUiThread();
-        assertEquals(View.GONE, zoomControls.getVisibility());
+        assertEquals(View.GONE, getVisibilityOnUiThread(zoomControls));
     }
 
     @SmallTest
