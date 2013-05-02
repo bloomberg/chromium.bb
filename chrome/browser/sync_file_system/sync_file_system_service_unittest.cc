@@ -189,8 +189,7 @@ class SyncFileSystemServiceTest : public testing::Test {
       RemoteServiceState state_to_notify,
       SyncStatusCode status_to_return,
       const std::vector<SyncServiceState> expected_states,
-      SyncStatusCode expected_status,
-      int expected_current_state_calls) {
+      SyncStatusCode expected_status) {
     StrictMock<MockSyncEventObserver> event_observer;
     sync_service_->AddSyncEventObserver(&event_observer);
 
@@ -201,12 +200,6 @@ class SyncFileSystemServiceTest : public testing::Test {
         .WillOnce(NotifyStateAndCallback(mock_remote_service(),
                                          state_to_notify,
                                          status_to_return));
-
-    if (expected_current_state_calls > 0) {
-      EXPECT_CALL(*mock_remote_service(), GetCurrentState())
-          .Times(AtLeast(expected_current_state_calls))
-          .WillRepeatedly(Return(REMOTE_SERVICE_OK));
-    }
 
     std::vector<SyncServiceState> actual_states;
     EXPECT_CALL(event_observer, OnSyncStateUpdated(GURL(), _, _))
@@ -267,8 +260,7 @@ TEST_F(SyncFileSystemServiceTest, InitializeForAppSuccess) {
       REMOTE_SERVICE_OK,
       SYNC_STATUS_OK,
       expected_states,
-      SYNC_STATUS_OK,
-      2);
+      SYNC_STATUS_OK);
 }
 
 TEST_F(SyncFileSystemServiceTest, InitializeForAppWithNetworkFailure) {
@@ -282,8 +274,7 @@ TEST_F(SyncFileSystemServiceTest, InitializeForAppWithNetworkFailure) {
       REMOTE_SERVICE_TEMPORARY_UNAVAILABLE,
       SYNC_STATUS_NETWORK_ERROR,
       expected_states,
-      SYNC_STATUS_NETWORK_ERROR,
-      0);
+      SYNC_STATUS_NETWORK_ERROR);
 }
 
 TEST_F(SyncFileSystemServiceTest, InitializeForAppWithError) {
@@ -296,8 +287,7 @@ TEST_F(SyncFileSystemServiceTest, InitializeForAppWithError) {
       REMOTE_SERVICE_DISABLED,
       SYNC_STATUS_FAILED,
       expected_states,
-      SYNC_STATUS_FAILED,
-      0);
+      SYNC_STATUS_FAILED);
 }
 
 TEST_F(SyncFileSystemServiceTest, SimpleLocalSyncFlow) {
@@ -349,7 +339,7 @@ TEST_F(SyncFileSystemServiceTest, SimpleRemoteSyncFlow) {
 
   // We expect a set of method calls for starting a remote sync.
   EXPECT_CALL(*mock_remote_service(), GetCurrentState())
-      .Times(AtLeast(2))
+      .Times(AtLeast(1))
       .WillRepeatedly(Return(REMOTE_SERVICE_OK));
   EXPECT_CALL(*mock_remote_service(), ProcessRemoteChange(_))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));

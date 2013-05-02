@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/timer.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
@@ -94,9 +95,9 @@ class SyncFileSystemService
   // - OnRemoteServiceStateUpdated()
   void MaybeStartSync();
 
-  // Called from MaybeStartSync().
-  void MaybeStartRemoteSync();
-  void MaybeStartLocalSync();
+  // Called from MaybeStartSync(). (Should not be called from others)
+  void StartRemoteSync();
+  void StartLocalSync();
 
   // Callbacks for remote/local sync.
   void DidProcessRemoteChange(SyncStatusCode status,
@@ -165,6 +166,8 @@ class SyncFileSystemService
 
   // Indicates if sync is currently enabled or not.
   bool sync_enabled_;
+
+  base::OneShotTimer<SyncFileSystemService> sync_retry_timer_;
 
   ObserverList<SyncEventObserver> observers_;
 
