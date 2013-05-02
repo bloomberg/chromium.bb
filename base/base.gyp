@@ -144,7 +144,6 @@
             'base_jni_headers',
             'symbolize',
             '../third_party/ashmem/ashmem.gyp:ashmem',
-            '../third_party/icu/icu.gyp:icuuc',
           ],
           'include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)/base',
