@@ -223,6 +223,12 @@ class DriveFileSyncService
       scoped_ptr<ApplyLocalChangeParam> param,
       SyncStatusCode status,
       const std::string& resource_id);
+  void DidDeleteForResolveToLocalForLocalSync(
+      const std::string& origin_resource_id,
+      const base::FilePath& local_file_path,
+      const fileapi::FileSystemURL& url,
+      scoped_ptr<ApplyLocalChangeParam> param,
+      google_apis::GDataErrorCode error);
   void DidApplyLocalChange(
       scoped_ptr<ApplyLocalChangeParam> param,
       const google_apis::GDataErrorCode error,

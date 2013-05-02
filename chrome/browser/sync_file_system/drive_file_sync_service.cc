@@ -1105,11 +1105,14 @@ void DriveFileSyncService::ApplyLocalChangeInternal(
       HandleConflictForLocalSync(param.Pass());
       return;
     case LOCAL_SYNC_OPERATION_RESOLVE_TO_LOCAL:
-      // TODO(nhiroki): support directory operations (http://crbug.com/161442).
-      NOTREACHED();
-      FinalizeLocalSync(param->token.Pass(),
-                        param->callback,
-                        SYNC_STATUS_FAILED);
+      sync_client_->DeleteFile(
+          drive_metadata.resource_id(),
+          drive_metadata.md5_checksum(),
+          base::Bind(
+              &DriveFileSyncService::DidDeleteForResolveToLocalForLocalSync,
+              AsWeakPtr(),
+              origin_resource_id, local_file_path, url,
+              base::Passed(&param)));
       return;
     case LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE:
       ResolveConflictToRemoteForLocalSync(param.Pass());
@@ -1128,6 +1131,40 @@ void DriveFileSyncService::ApplyLocalChangeInternal(
   }
   NOTREACHED();
   FinalizeLocalSync(param->token.Pass(), callback, SYNC_STATUS_FAILED);
+}
+
+void DriveFileSyncService::DidDeleteForResolveToLocalForLocalSync(
+    const std::string& origin_resource_id,
+    const base::FilePath& local_file_path,
+    const fileapi::FileSystemURL& url,
+    scoped_ptr<ApplyLocalChangeParam> param,
+    google_apis::GDataErrorCode error) {
+  if (error != google_apis::HTTP_SUCCESS &&
+      error != google_apis::HTTP_NOT_FOUND) {
+    RemoveRemoteChange(param->url);
+    SyncStatusCode status = GDataErrorCodeToSyncStatusCodeWrapper(error);
+    FinalizeLocalSync(param->token.Pass(), param->callback, status);
+    return;
+  }
+
+  DCHECK_NE(SYNC_FILE_TYPE_UNKNOWN, param->local_metadata.file_type);
+  if (param->local_metadata.file_type == SYNC_FILE_TYPE_FILE) {
+    sync_client_->UploadNewFile(
+        origin_resource_id,
+        local_file_path,
+        PathToTitle(url.path()),
+        base::Bind(&DriveFileSyncService::DidUploadNewFileForLocalSync,
+                   AsWeakPtr(), base::Passed(&param)));
+    return;
+  }
+
+  DCHECK(IsSyncDirectoryOperationEnabled());
+  DCHECK_EQ(SYNC_FILE_TYPE_DIRECTORY, param->local_metadata.file_type);
+  sync_client_->CreateDirectory(
+      origin_resource_id,
+      PathToTitle(url.path()),
+      base::Bind(&DriveFileSyncService::DidCreateDirectoryForLocalSync,
+                 AsWeakPtr(), base::Passed(&param)));
 }
 
 void DriveFileSyncService::DidApplyLocalChange(
