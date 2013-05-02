@@ -135,27 +135,10 @@ void RootView::DispatchScrollEvent(ui::ScrollEvent* event) {
   if (event->handled() || event->type() != ui::ET_SCROLL)
     return;
 
-  // Convert unprocessed scroll events into mouse-wheel events. Note that
-  // wheel events are normally sent to the focused view. However, if the focused
-  // view does not process these wheel events, then dispatch them to the view
-  // under the cursor.
+  // Convert unprocessed scroll events into mouse-wheel events.
   ui::MouseWheelEvent wheel(*event);
-  if (OnMouseWheel(wheel)) {
+  if (OnMouseWheel(wheel))
     event->SetHandled();
-  } else {
-    View* focused_view =
-        GetFocusManager() ? GetFocusManager()->GetFocusedView() : NULL;
-    View* v = GetEventHandlerForPoint(wheel.location());
-    if (v != focused_view) {
-      for (; v && v != this; v = v->parent()) {
-        DispatchEventToTarget(v, &wheel);
-        if (wheel.handled()) {
-          event->SetHandled();
-          break;
-        }
-      }
-    }
-  }
 }
 
 void RootView::DispatchTouchEvent(ui::TouchEvent* event) {
@@ -587,7 +570,7 @@ void RootView::OnMouseExited(const ui::MouseEvent& event) {
 }
 
 bool RootView::OnMouseWheel(const ui::MouseWheelEvent& event) {
-  for (View* v = GetFocusManager() ? GetFocusManager()->GetFocusedView() : NULL;
+  for (View* v = GetEventHandlerForPoint(event.location());
        v && v != this && !event.handled(); v = v->parent())
     DispatchEventToTarget(v, const_cast<ui::MouseWheelEvent*>(&event));
   return event.handled();

@@ -1471,27 +1471,16 @@ TEST_F(WidgetTest, TestWindowVisibilityAfterHide) {
 
 #endif  // !defined(OS_CHROMEOS)
 
-// Tests that wheel events generted from scroll events are targetted to the
+// Tests that wheel events generated from scroll events are targetted to the
 // views under the cursor when the focused view does not processed them.
 TEST_F(WidgetTest, WheelEventsFromScrollEventTarget) {
-  EventCountView* focused_view = new EventCountView;
-  focused_view->set_focusable(true);
-
   EventCountView* cursor_view = new EventCountView;
-
-  focused_view->SetBounds(0, 0, 50, 40);
   cursor_view->SetBounds(60, 0, 50, 40);
 
   Widget* widget = CreateTopLevelPlatformWidget();
-  widget->GetRootView()->AddChildView(focused_view);
   widget->GetRootView()->AddChildView(cursor_view);
 
-  focused_view->RequestFocus();
-  EXPECT_TRUE(focused_view->HasFocus());
-
-  // Generate a scroll event on the cursor view. The focused view will receive a
-  // wheel event, but since it doesn't process the event, the view under the
-  // cursor will receive the wheel event.
+  // Generate a scroll event on the cursor view.
   ui::ScrollEvent scroll(ui::ET_SCROLL,
                          gfx::Point(65, 5),
                          ui::EventTimeForNow(),
@@ -1501,13 +1490,9 @@ TEST_F(WidgetTest, WheelEventsFromScrollEventTarget) {
                          2);
   widget->OnScrollEvent(&scroll);
 
-  EXPECT_EQ(0, focused_view->GetEventCount(ui::ET_SCROLL));
-  EXPECT_EQ(1, focused_view->GetEventCount(ui::ET_MOUSEWHEEL));
-
   EXPECT_EQ(1, cursor_view->GetEventCount(ui::ET_SCROLL));
   EXPECT_EQ(1, cursor_view->GetEventCount(ui::ET_MOUSEWHEEL));
 
-  focused_view->ResetCounts();
   cursor_view->ResetCounts();
 
   ui::ScrollEvent scroll2(ui::ET_SCROLL,
@@ -1518,8 +1503,6 @@ TEST_F(WidgetTest, WheelEventsFromScrollEventTarget) {
                           0, 20,
                           2);
   widget->OnScrollEvent(&scroll2);
-  EXPECT_EQ(1, focused_view->GetEventCount(ui::ET_SCROLL));
-  EXPECT_EQ(1, focused_view->GetEventCount(ui::ET_MOUSEWHEEL));
 
   EXPECT_EQ(0, cursor_view->GetEventCount(ui::ET_SCROLL));
   EXPECT_EQ(0, cursor_view->GetEventCount(ui::ET_MOUSEWHEEL));
