@@ -15,9 +15,7 @@
                   '|LayoutTests/accessibility',
     },
     'animations': {
-      'filepath': 'Source/core/page/animation' \
-                  '|LayoutTests/fast/animation' \
-                  '|LayoutTests/animation',
+      'filepath': 'animation|transition',
     },
     'bindings': {
       'filepath': 'Source/bindings',
