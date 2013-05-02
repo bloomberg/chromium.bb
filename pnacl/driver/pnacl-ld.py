@@ -121,12 +121,16 @@ def AddToBothFlags(*args):
   env.append('LD_FLAGS', *args)
   env.append('LD_FLAGS_NATIVE', *args)
 
+def AddAllowCXXExceptions(*args):
+  env.set('ALLOW_CXX_EXCEPTIONS', '1')
+  env.append('TRANSLATE_FLAGS', *args)
+
 LDPatterns = [
   ( '--pnacl-allow-native', "env.set('ALLOW_NATIVE', '1')"),
   ( '--noirt',              "env.set('USE_IRT', '0')"),
   ( '--pnacl-irt-link', "env.set('IRT_LINK', '1')"),
 
-  ( '--pnacl-allow-exceptions', "env.set('ALLOW_CXX_EXCEPTIONS', '1')"),
+  ( '(--pnacl-allow-exceptions)', AddAllowCXXExceptions),
   ( '--pnacl-disable-abi-check', "env.set('DISABLE_ABI_CHECK', '1')"),
   # "--pnacl-disable-pass" allows an ABI simplification pass to be
   # disabled if it is causing problems.  These passes are generally
@@ -221,7 +225,7 @@ LDPatterns = [
   ( '-O([0-3])',           "env.set('OPT_LEVEL', $0)"),
   ( '-O([0-9]+)',          "env.set('OPT_LEVEL', '3')"),
 
-  ( '(-translate-fast)',   "env.set('TRANSLATE_FLAGS', $0)"),
+  ( '(-translate-fast)',   "env.append('TRANSLATE_FLAGS', $0)"),
 
   ( '-s',                  "env.set('STRIP_MODE', 'all')"),
   ( '--strip-all',         "env.set('STRIP_MODE', 'all')"),
