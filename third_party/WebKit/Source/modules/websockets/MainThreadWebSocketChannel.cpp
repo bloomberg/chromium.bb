@@ -809,7 +809,7 @@ bool MainThreadWebSocketChannel::sendFrame(WebSocketFrame::OpCode opCode, const 
     ASSERT(m_handle);
     ASSERT(!m_suspended);
 
-    WebSocketFrame frame(opCode, true, false, true, data, dataLength);
+    WebSocketFrame frame(opCode, data, dataLength, WebSocketFrame::Final | WebSocketFrame::Masked);
     InspectorInstrumentation::didSendWebSocketFrame(m_document, m_identifier, frame);
 
     OwnPtr<DeflateResultHolder> deflateResult = m_deflateFramer.deflate(frame);

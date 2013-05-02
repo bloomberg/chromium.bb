@@ -59,7 +59,21 @@ struct WebSocketFrame {
     static bool needsExtendedLengthField(size_t payloadLength);
     static ParseFrameResult parseFrame(char* data, size_t dataLength, WebSocketFrame&, const char*& frameEnd, String& errorString); // May modify part of data to unmask the frame.
 
-    WebSocketFrame(OpCode = OpCodeInvalid, bool final = false, bool compress = false, bool masked = false, const char* payload = 0, size_t payloadLength = 0);
+    // Flags for the constructor.
+    // This is not the bitmasks for frame composition / decomposition.
+    enum {
+        EmptyFlags = 0,
+        Final = 1,
+        Reserved1 = 2,
+        Compress = 2,
+        Reserved2 = 4,
+        Reserved3 = 8,
+        Masked = 16,
+    };
+    typedef unsigned Flags;
+    WebSocketFrame();
+    // The Flags parameter shall be a combination of above flags.
+    WebSocketFrame(OpCode, const char* payload, size_t payloadLength, Flags = EmptyFlags);
     void makeFrameData(Vector<char>& frameData);
 
     OpCode opCode;
