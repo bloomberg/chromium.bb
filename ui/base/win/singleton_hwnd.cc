@@ -5,6 +5,7 @@
 #include "ui/base/win/singleton_hwnd.h"
 
 #include "base/memory/singleton.h"
+#include "base/message_loop.h"
 
 namespace ui {
 
@@ -14,12 +15,23 @@ SingletonHwnd* SingletonHwnd::GetInstance() {
 }
 
 void SingletonHwnd::AddObserver(Observer* observer) {
-  if (!hwnd())
+
+  if (!hwnd()) {
+    if (!MessageLoop::current() ||
+        MessageLoop::current()->type() != MessageLoop::TYPE_UI) {
+      // Creating this window in (e.g.) a renderer inhibits shutdown on
+      // Windows. See http://crbug.com/230122 and http://crbug.com/236039.
+      DLOG(ERROR) << "Cannot create windows on non-UI thread!";
+      return;
+    }
     WindowImpl::Init(NULL, gfx::Rect());
+  }
   observer_list_.AddObserver(observer);
 }
 
 void SingletonHwnd::RemoveObserver(Observer* observer) {
+  if (!hwnd())
+    return;
   observer_list_.RemoveObserver(observer);
 }
 

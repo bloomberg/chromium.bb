@@ -27,6 +27,13 @@ bool PowerMonitor::IsBatteryPower() {
 
 PowerMonitor::PowerMessageWindow::PowerMessageWindow()
     : instance_(NULL), message_hwnd_(NULL) {
+  if (MessageLoop::current()->type() != MessageLoop::TYPE_UI) {
+    // Creating this window in (e.g.) a renderer inhibits shutdown on Windows.
+    // See http://crbug.com/230122. TODO(vandebo): http://crbug.com/236031
+    DLOG(ERROR)
+        << "Cannot create windows on non-UI thread, power monitor disabled!";
+    return;
+  }
   WNDCLASSEX window_class;
   base::win::InitializeWindowClass(
       kWindowClassName,
