@@ -1275,9 +1275,7 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
   FillNavigateParamsFromOpenURLParams(&nav_params, params);
   nav_params.source_contents = source;
   nav_params.tabstrip_add_types = TabStripModel::ADD_NONE;
-  // If disposition is set to NEW_WINDOW or the like then window_action will be
-  // promoted to SHOW_WINDOW later--no need to worry about that here.
-  nav_params.window_action = chrome::NavigateParams::NO_ACTION;
+  nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   nav_params.user_gesture = true;
   chrome::Navigate(&nav_params);
 
