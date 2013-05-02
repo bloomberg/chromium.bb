@@ -673,13 +673,8 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
     otp_textfield_ = NULL;
   }
 
-  // This is not currently implemented with no immediate plans to do so.
-  // TODO(stevenjb,kmixter): Remove 'false &&' below if we implement this.
-  // See http://crosbug.com/19252.
-  const bool show_group_name = false && enable_group_name_;
-
   // Group Name label and input.
-  if (show_group_name) {
+  if (enable_group_name_) {
     layout->StartRow(0, column_view_set_id);
     group_name_label_ = new views::Label(l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_GROUP_NAME));

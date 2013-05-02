@@ -711,7 +711,7 @@ void VirtualNetwork::SetL2TPIPsecPSKCredentials(
     SetStringProperty(flimflam::kL2tpIpsecPasswordProperty,
                       user_passphrase, &user_passphrase_);
   }
-  SetStringProperty(flimflam::kL2tpIpsecGroupNameProperty,
+  SetStringProperty(shill::kL2tpIpsecTunnelGroupProperty,
                     group_name, &group_name_);
 }
 
@@ -727,7 +727,7 @@ void VirtualNetwork::SetL2TPIPsecCertCredentials(
     SetStringProperty(flimflam::kL2tpIpsecPasswordProperty,
                       user_passphrase, &user_passphrase_);
   }
-  SetStringProperty(flimflam::kL2tpIpsecGroupNameProperty,
+  SetStringProperty(shill::kL2tpIpsecTunnelGroupProperty,
                     group_name, &group_name_);
 }
 

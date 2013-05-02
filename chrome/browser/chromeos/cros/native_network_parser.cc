@@ -95,7 +95,7 @@ EnumMapper<PropertyIndex>::Pair property_index_table[] = {
     PROPERTY_INDEX_L2TPIPSEC_PSK_REQUIRED },
   { flimflam::kL2tpIpsecPasswordProperty, PROPERTY_INDEX_L2TPIPSEC_PASSWORD },
   { flimflam::kL2tpIpsecUserProperty, PROPERTY_INDEX_L2TPIPSEC_USER },
-  { flimflam::kL2tpIpsecGroupNameProperty,
+  { shill::kL2tpIpsecTunnelGroupProperty,
     PROPERTY_INDEX_L2TPIPSEC_GROUP_NAME },
   { flimflam::kManufacturerProperty, PROPERTY_INDEX_MANUFACTURER },
   { flimflam::kMdnProperty, PROPERTY_INDEX_MDN },
