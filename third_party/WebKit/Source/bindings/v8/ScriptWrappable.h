@@ -57,12 +57,6 @@ public:
         initializeScriptWrappableForInterface(object);
     }
 
-    v8::Handle<v8::Object> wrapper() const
-    {
-        v8::Object* object = containsWrapper() ? reinterpret_cast<v8::Object*>(maskOrUnmaskValue(m_maskedStorage)) : 0;
-        return v8::Handle<v8::Object>(object);
-    }
-
     void setWrapper(v8::Handle<v8::Object> wrapper, v8::Isolate* isolate, const WrapperConfiguration& configuration)
     {
         ASSERT(!containsWrapper());
@@ -82,8 +76,11 @@ public:
         if (containsTypeInfo())
             return reinterpret_cast<const WrapperTypeInfo*>(m_maskedStorage);
 
-        if (containsWrapper())
-            return toWrapperTypeInfo(wrapper());
+        if (containsWrapper()) {
+            v8::Persistent<v8::Object> unsafeWrapper;
+            unsafePersistent().copyTo(&unsafeWrapper);
+            return toWrapperTypeInfo(unsafeWrapper);
+        }
 
         return 0;
     }
@@ -102,17 +99,6 @@ public:
 
     static bool wrapperCanBeStoredInObject(const void*) { return false; }
     static bool wrapperCanBeStoredInObject(const ScriptWrappable*) { return true; }
-
-    static v8::Handle<v8::Object> getWrapperFromObject(void*)
-    {
-        ASSERT_NOT_REACHED();
-        return v8::Handle<v8::Object>();
-    }
-
-    static v8::Handle<v8::Object> getWrapperFromObject(ScriptWrappable* object)
-    {
-        return object->wrapper();
-    }
 
     static void setWrapperInObject(void*, v8::Handle<v8::Object>, v8::Isolate*, const WrapperConfiguration&)
     {
@@ -153,12 +139,25 @@ protected:
     }
 
 private:
-    friend class MinorGCWrapperVisitor; // For calling unsafePersistent.
+    // For calling unsafePersistent and getWrapperFromObject.
+    friend class MinorGCWrapperVisitor;
+    friend class DOMDataStore;
 
     UnsafePersistent<v8::Object> unsafePersistent() const
     {
-        ASSERT(containsWrapper());
-        return UnsafePersistent<v8::Object>(reinterpret_cast<v8::Object*>(maskOrUnmaskValue(m_maskedStorage)));
+        v8::Object* object = containsWrapper() ? reinterpret_cast<v8::Object*>(maskOrUnmaskValue(m_maskedStorage)) : 0;
+        return UnsafePersistent<v8::Object>(object);
+    }
+
+    static UnsafePersistent<v8::Object> getUnsafeWrapperFromObject(void*)
+    {
+        ASSERT_NOT_REACHED();
+        return UnsafePersistent<v8::Object>();
+    }
+
+    static UnsafePersistent<v8::Object> getUnsafeWrapperFromObject(ScriptWrappable* object)
+    {
+        return object->unsafePersistent();
     }
 
     inline bool containsWrapper() const { return (m_maskedStorage & 1) == 1; }

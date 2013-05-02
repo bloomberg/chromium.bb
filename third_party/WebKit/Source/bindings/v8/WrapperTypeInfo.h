@@ -144,7 +144,13 @@ namespace WebCore {
         return object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex);
     }
 
-    inline WrapperTypeInfo* toWrapperTypeInfo(v8::Handle<v8::Object> object)
+    inline WrapperTypeInfo* toWrapperTypeInfo(const v8::Persistent<v8::Object>& object)
+    {
+        ASSERT(object->InternalFieldCount() >= v8DOMWrapperTypeIndex);
+        return static_cast<WrapperTypeInfo*>(object->GetAlignedPointerFromInternalField(v8DOMWrapperTypeIndex));
+    }
+
+    inline WrapperTypeInfo* toWrapperTypeInfo(const v8::Handle<v8::Object>& object)
     {
         ASSERT(object->InternalFieldCount() >= v8DOMWrapperTypeIndex);
         return static_cast<WrapperTypeInfo*>(object->GetAlignedPointerFromInternalField(v8DOMWrapperTypeIndex));
