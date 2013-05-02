@@ -748,6 +748,7 @@
         'browser/extensions/api/socket/tcp_socket_unittest.cc',
         'browser/extensions/api/socket/udp_socket_unittest.cc',
         'browser/extensions/api/streams_private/streams_private_manifest_unittest.cc',
+        'browser/extensions/api/system_info_memory/memory_info_provider_unittest.cc',
         'browser/extensions/api/system_info_storage/storage_info_provider_linux_unittest.cc',
         'browser/extensions/api/system_info_storage/storage_info_provider_unittest.cc',
         'browser/extensions/api/web_navigation/frame_navigation_state_unittest.cc',

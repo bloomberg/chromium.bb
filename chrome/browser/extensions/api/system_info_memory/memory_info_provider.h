@@ -24,6 +24,7 @@ class MemoryInfoProvider
   friend class SystemInfoProvider<
       api::experimental_system_info_memory::MemoryInfo>;
   friend class MockMemoryInfoProviderImpl;
+  friend class TestMemoryInfoProvider;
 
   MemoryInfoProvider();
   virtual ~MemoryInfoProvider();
