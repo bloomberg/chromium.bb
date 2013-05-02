@@ -261,11 +261,22 @@ void PictureLayerImpl::UpdateTilePriorities() {
   if (!tilings_->num_tilings())
     return;
 
-  UpdateLCDTextStatus();
+  double current_frame_time_in_seconds =
+      (layer_tree_impl()->CurrentFrameTimeTicks() -
+       base::TimeTicks()).InSecondsF();
 
-  int current_source_frame_number = layer_tree_impl()->source_frame_number();
-  double current_frame_time = (layer_tree_impl()->CurrentFrameTimeTicks() -
-                               base::TimeTicks()).InSecondsF();
+  bool tiling_needs_update = false;
+  for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
+    if (tilings_->tiling_at(i)->NeedsUpdateForFrameAtTime(
+            current_frame_time_in_seconds)) {
+      tiling_needs_update = true;
+      break;
+    }
+  }
+  if (!tiling_needs_update)
+    return;
+
+  UpdateLCDTextStatus();
 
   gfx::Transform current_screen_space_transform = screen_space_transform();
 
@@ -294,8 +305,7 @@ void PictureLayerImpl::UpdateTilePriorities() {
       contents_scale_x(),
       last_screen_space_transform_,
       current_screen_space_transform,
-      current_source_frame_number,
-      current_frame_time,
+      current_frame_time_in_seconds,
       store_screen_space_quads_on_tiles,
       max_tiles_for_interest_area);
 

@@ -121,12 +121,6 @@ class CC_EXPORT LayerTreeImpl {
     has_transparent_background_ = transparent;
   }
 
-  enum UpdateDrawPropertiesReason {
-    UPDATE_PENDING_TREE,
-    UPDATE_ACTIVE_TREE,
-    UPDATE_ACTIVE_TREE_FOR_DRAW
-  };
-
   void SetPageScaleFactorAndLimits(float page_scale_factor,
       float min_page_scale_factor, float max_page_scale_factor);
   void SetPageScaleDelta(float delta);
@@ -142,8 +136,10 @@ class CC_EXPORT LayerTreeImpl {
   }
   float sent_page_scale_delta() const { return sent_page_scale_delta_; }
 
-  // Updates draw properties and render surface layer list
-  void UpdateDrawProperties(UpdateDrawPropertiesReason reason);
+  // Updates draw properties and render surface layer list, as well as tile
+  // priorities.
+  void UpdateDrawProperties();
+
   void set_needs_update_draw_properties() {
     needs_update_draw_properties_ = true;
   }

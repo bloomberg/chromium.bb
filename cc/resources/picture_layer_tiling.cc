@@ -33,8 +33,6 @@ scoped_ptr<PictureLayerTiling> PictureLayerTiling::Clone(
                                            layer_bounds,
                                            client));
   out->resolution_ = resolution_;
-  out->last_source_frame_number_ = last_source_frame_number_;
-  out->last_impl_frame_time_ = last_impl_frame_time_;
   return out.Pass();
 }
 
@@ -46,8 +44,7 @@ PictureLayerTiling::PictureLayerTiling(float contents_scale,
       resolution_(NON_IDEAL_RESOLUTION),
       client_(client),
       tiling_data_(gfx::Size(), gfx::Size(), true),
-      last_source_frame_number_(0),
-      last_impl_frame_time_(0.0) {
+      last_impl_frame_time_in_seconds_(0.0) {
   gfx::Size content_bounds =
       gfx::ToCeiledSize(gfx::ScaleSize(layer_bounds, contents_scale));
   gfx::Size tile_size = client_->CalculateTileSize(content_bounds);
@@ -295,11 +292,12 @@ void PictureLayerTiling::UpdateTilePriorities(
     float current_layer_contents_scale,
     const gfx::Transform& last_screen_transform,
     const gfx::Transform& current_screen_transform,
-    int current_source_frame_number,
-    double current_frame_time,
+    double current_frame_time_in_seconds,
     bool store_screen_space_quads_on_tiles,
     size_t max_tiles_for_interest_area) {
   if (ContentRect().IsEmpty())
+    return;
+  if (!NeedsUpdateForFrameAtTime(current_frame_time_in_seconds))
     return;
 
   gfx::Rect viewport_in_content_space =
@@ -325,26 +323,12 @@ void PictureLayerTiling::UpdateTilePriorities(
 
   SetLiveTilesRect(interest_rect);
 
-  bool first_update_in_new_source_frame =
-      current_source_frame_number != last_source_frame_number_;
-
-  bool first_update_in_new_impl_frame =
-      current_frame_time != last_impl_frame_time_;
-
-  // In pending tree, this is always called. We update priorities:
-  // - Immediately after a commit (first_update_in_new_source_frame).
-  // - On animation ticks after the first frame in the tree
-  //   (first_update_in_new_impl_frame).
-  // In active tree, this is only called during draw. We update priorities:
-  // - On draw if properties were not already computed by the pending tree
-  //   and activated for the frame (first_update_in_new_impl_frame).
-  if (!first_update_in_new_impl_frame && !first_update_in_new_source_frame)
-    return;
-
-  double time_delta = 0.0;
-  if (last_impl_frame_time_ != 0.0 &&
-      last_layer_bounds == current_layer_bounds)
-    time_delta = current_frame_time - last_impl_frame_time_;
+  double time_delta = 0;
+  if (last_impl_frame_time_in_seconds_ != 0.0 &&
+      last_layer_bounds == current_layer_bounds) {
+    time_delta =
+        current_frame_time_in_seconds - last_impl_frame_time_in_seconds_;
+  }
 
   gfx::Rect view_rect(device_viewport);
   float current_scale = current_layer_contents_scale / contents_scale_;
@@ -437,8 +421,7 @@ void PictureLayerTiling::UpdateTilePriorities(
     }
   }
 
-  last_source_frame_number_ = current_source_frame_number;
-  last_impl_frame_time_ = current_frame_time;
+  last_impl_frame_time_in_seconds_ = current_frame_time_in_seconds;
 }
 
 void PictureLayerTiling::SetLiveTilesRect(

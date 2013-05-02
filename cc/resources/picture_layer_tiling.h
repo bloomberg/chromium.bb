@@ -136,8 +136,7 @@ class CC_EXPORT PictureLayerTiling {
       float current_layer_contents_scale,
       const gfx::Transform& last_screen_transform,
       const gfx::Transform& current_screen_transform,
-      int current_source_frame_number,
-      double current_frame_time,
+      double current_frame_time_in_seconds,
       bool store_screen_space_quads_on_tiles,
       size_t max_tiles_for_interest_area);
 
@@ -145,6 +144,10 @@ class CC_EXPORT PictureLayerTiling {
   // The src_tree priority is reset to the lowest priority possible.  This
   // also updates the pile on each tile to be the current client's pile.
   void DidBecomeActive();
+
+  bool NeedsUpdateForFrameAtTime(double frame_time_in_seconds) {
+    return frame_time_in_seconds != last_impl_frame_time_in_seconds_;
+  }
 
   scoped_ptr<base::Value> AsValue() const;
 
@@ -176,8 +179,7 @@ class CC_EXPORT PictureLayerTiling {
   gfx::Rect live_tiles_rect_;
 
   // State saved for computing velocities based upon finite differences.
-  int last_source_frame_number_;
-  double last_impl_frame_time_;
+  double last_impl_frame_time_in_seconds_;
 
   friend class CoverageIterator;
 

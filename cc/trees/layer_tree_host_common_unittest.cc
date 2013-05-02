@@ -123,15 +123,15 @@ void ExecuteCalculateDrawProperties(LayerImpl* root_layer,
   // We are probably not testing what is intended if the root_layer bounds are
   // empty.
   DCHECK(!root_layer->bounds().IsEmpty());
-  LayerTreeHostCommon::CalculateDrawProperties(root_layer,
-                                               device_viewport_size,
-                                               device_scale_factor,
-                                               page_scale_factor,
-                                               page_scale_application_layer,
-                                               dummy_max_texture_size,
-                                               can_use_lcd_text,
-                                               &dummy_render_surface_layer_list,
-                                               false);
+  LayerTreeHostCommon::CalculateDrawProperties(
+      root_layer,
+      device_viewport_size,
+      device_scale_factor,
+      page_scale_factor,
+      page_scale_application_layer,
+      dummy_max_texture_size,
+      can_use_lcd_text,
+      &dummy_render_surface_layer_list);
 }
 
 template <class LayerType>
@@ -4126,8 +4126,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSingleLayer) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
-                                               &render_surface_layer_list,
-                                               false);
+                                               &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, render_surface_layer_list.size());
@@ -4202,8 +4201,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSingleLayerAndHud) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
-                                               &render_surface_layer_list,
-                                               false);
+                                               &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, render_surface_layer_list.size());
@@ -4270,8 +4268,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForUninvertibleTransform) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
-                                               &render_surface_layer_list,
-                                               false);
+                                               &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, render_surface_layer_list.size());
@@ -4347,8 +4344,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSinglePositionedLayer) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
-                                               &render_surface_layer_list,
-                                               false);
+                                               &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, render_surface_layer_list.size());
@@ -4413,8 +4409,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSingleRotatedLayer) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
-                                               &render_surface_layer_list,
-                                               false);
+                                               &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, render_surface_layer_list.size());
@@ -4492,8 +4487,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSinglePerspectiveLayer) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
-                                               &render_surface_layer_list,
-                                               false);
+                                               &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, render_surface_layer_list.size());
@@ -4582,8 +4576,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSingleLayerWithScaledContents) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
-                                               &render_surface_layer_list,
-                                               false);
+                                               &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
   // The visible content rect for test_layer is actually 100x100, even though
@@ -4683,8 +4676,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForSimpleClippedLayer) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
-                                               &render_surface_layer_list,
-                                               false);
+                                               &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, render_surface_layer_list.size());
@@ -4817,8 +4809,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForMultiClippedRotatedLayer) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
-                                               &render_surface_layer_list,
-                                               false);
+                                               &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
   // The grand_child is expected to create a render surface because it
@@ -4944,8 +4935,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForNonClippingIntermediateLayer) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
-                                               &render_surface_layer_list,
-                                               false);
+                                               &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, render_surface_layer_list.size());
@@ -5062,8 +5052,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForMultipleLayers) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
-                                               &render_surface_layer_list,
-                                               false);
+                                               &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
   ASSERT_TRUE(child1);
@@ -5216,8 +5205,7 @@ TEST(LayerTreeHostCommonTest, HitTestingForMultipleLayerLists) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
-                                               &render_surface_layer_list,
-                                               false);
+                                               &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
   ASSERT_TRUE(child1);
@@ -5334,8 +5322,7 @@ TEST(LayerTreeHostCommonTest, HitCheckingTouchHandlerRegionsForSingleLayer) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
-                                               &render_surface_layer_list,
-                                               false);
+                                               &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, render_surface_layer_list.size());
@@ -5432,8 +5419,7 @@ TEST(LayerTreeHostCommonTest,
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
-                                               &render_surface_layer_list,
-                                               false);
+                                               &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, render_surface_layer_list.size());
@@ -5520,8 +5506,7 @@ TEST(LayerTreeHostCommonTest,
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
-                                               &render_surface_layer_list,
-                                               false);
+                                               &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, render_surface_layer_list.size());
@@ -5626,8 +5611,7 @@ TEST(LayerTreeHostCommonTest,
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
-                                               &render_surface_layer_list,
-                                               false);
+                                               &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
   // The visible content rect for test_layer is actually 100x100, even though
@@ -5739,8 +5723,7 @@ TEST(LayerTreeHostCommonTest,
                                                root.get(),
                                                dummy_max_texture_size,
                                                false,
-                                               &render_surface_layer_list,
-                                               false);
+                                               &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
   // The visible content rect for test_layer is actually 100x100, even though
@@ -5879,8 +5862,7 @@ TEST(LayerTreeHostCommonTest,
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
-                                               &render_surface_layer_list,
-                                               false);
+                                               &render_surface_layer_list);
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, render_surface_layer_list.size());
@@ -7324,8 +7306,7 @@ TEST(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
-                                               &render_surface_layer_list,
-                                               false);
+                                               &render_surface_layer_list);
 
   // We should have one render surface and two layers. The child
   // layer should be included even though it is transparent.

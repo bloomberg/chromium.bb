@@ -41,8 +41,7 @@ void ExecuteCalculateDrawProperties(
                                                NULL,
                                                dummy_max_texture_size,
                                                false,
-                                               &render_surface_layer_list,
-                                               false);
+                                               &render_surface_layer_list);
 }
 
 void ClearDamageForAllSurfaces(LayerImpl* layer) {

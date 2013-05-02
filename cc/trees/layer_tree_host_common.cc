@@ -782,8 +782,7 @@ static void CalculateDrawPropertiesInternal(
     LayerType* page_scale_application_layer,
     bool in_subtree_of_page_scale_application_layer,
     bool subtree_can_use_lcd_text,
-    gfx::Rect* drawable_content_rect_of_subtree,
-    bool update_tile_priorities) {
+    gfx::Rect* drawable_content_rect_of_subtree) {
   // This function computes the new matrix transformations recursively for this
   // layer and all its descendants. It also computes the appropriate render
   // surfaces.
@@ -1282,8 +1281,7 @@ static void CalculateDrawPropertiesInternal(
         page_scale_application_layer,
         in_subtree_of_page_scale_application_layer,
         subtree_can_use_lcd_text,
-        &drawable_content_rect_of_child_subtree,
-        update_tile_priorities);
+        &drawable_content_rect_of_child_subtree);
     if (!drawable_content_rect_of_child_subtree.IsEmpty()) {
       accumulated_drawable_content_rect_of_children.Union(
           drawable_content_rect_of_child_subtree);
@@ -1417,8 +1415,7 @@ static void CalculateDrawPropertiesInternal(
     }
   }
 
-  if (update_tile_priorities)
-    UpdateTilePrioritiesForLayer(layer);
+  UpdateTilePrioritiesForLayer(layer);
 
   // If neither this layer nor any of its children were added, early out.
   if (sorting_start_index == descendants.size())
@@ -1469,7 +1466,6 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   // initial clip rect.
   bool subtree_should_be_clipped = true;
   gfx::Rect device_viewport_rect(device_viewport_size);
-  bool update_tile_priorities = false;
   bool in_subtree_of_page_scale_application_layer = false;
 
   // This function should have received a root layer.
@@ -1495,8 +1491,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
       page_scale_application_layer,
       in_subtree_of_page_scale_application_layer,
       can_use_lcd_text,
-      &total_drawable_content_rect,
-      update_tile_priorities);
+      &total_drawable_content_rect);
 
   // The dummy layer list should not have been used.
   DCHECK_EQ(0u, dummy_layer_list.size());
@@ -1513,8 +1508,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
     LayerImpl* page_scale_application_layer,
     int max_texture_size,
     bool can_use_lcd_text,
-    LayerImplList* render_surface_layer_list,
-    bool update_tile_priorities) {
+    LayerImplList* render_surface_layer_list) {
   gfx::Rect total_drawable_content_rect;
   gfx::Transform identity_matrix;
   gfx::Transform device_scale_transform;
@@ -1553,8 +1547,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
       page_scale_application_layer,
       in_subtree_of_page_scale_application_layer,
       can_use_lcd_text,
-      &total_drawable_content_rect,
-      update_tile_priorities);
+      &total_drawable_content_rect);
 
   // The dummy layer list should not have been used.
   DCHECK_EQ(0u, dummy_layer_list.size());

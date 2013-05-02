@@ -258,8 +258,7 @@ void PictureLayerTilingSet::UpdateTilePriorities(
     float current_layer_contents_scale,
     const gfx::Transform& last_screen_transform,
     const gfx::Transform& current_screen_transform,
-    int current_source_frame_number,
-    double current_frame_time,
+    double current_frame_time_in_seconds,
     bool store_screen_space_quads_on_tiles,
     size_t max_tiles_for_interest_area) {
   gfx::RectF viewport_in_layer_space = gfx::ScaleRect(
@@ -281,8 +280,7 @@ void PictureLayerTilingSet::UpdateTilePriorities(
         current_layer_contents_scale,
         last_screen_transform,
         current_screen_transform,
-        current_source_frame_number,
-        current_frame_time,
+        current_frame_time_in_seconds,
         store_screen_space_quads_on_tiles,
         max_tiles_for_interest_area);
   }

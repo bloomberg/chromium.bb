@@ -104,9 +104,19 @@ class PictureLayerTilingIteratorTest : public testing::Test {
       float rect_scale,
       gfx::Rect rect,
       base::Callback<void(Tile* tile, gfx::Rect geometry_rect)> callback) {
+    VerifyTiles(tiling_.get(),
+                rect_scale,
+                rect,
+                callback);
+  }
+
+  void VerifyTiles(
+      PictureLayerTiling* tiling,
+      float rect_scale,
+      gfx::Rect rect,
+      base::Callback<void(Tile* tile, gfx::Rect geometry_rect)> callback) {
     Region remaining = rect;
-    for (PictureLayerTiling::CoverageIterator iter(
-             tiling_.get(), rect_scale, rect);
+    for (PictureLayerTiling::CoverageIterator iter(tiling, rect_scale, rect);
          iter;
          ++iter) {
       remaining.Subtract(iter.geometry_rect());
@@ -470,7 +480,6 @@ TEST_F(PictureLayerTilingIteratorTest, TilesExist) {
       1.f,  // current contents scale
       gfx::Transform(),  // last screen transform
       gfx::Transform(),  // current screen transform
-      1,  // current frame number
       1.0,  // current frame time
       false,  // store screen space quads on tiles
       10000);  // max tiles in tile manager
@@ -488,7 +497,6 @@ TEST_F(PictureLayerTilingIteratorTest, TilesExist) {
       1.f,  // current contents scale
       gfx::Transform(),  // last screen transform
       gfx::Transform(),  // current screen transform
-      2,  // current frame number
       2.0,  // current frame time
       false,  // store screen space quads on tiles
       10000);  // max tiles in tile manager
@@ -514,7 +522,6 @@ TEST_F(PictureLayerTilingIteratorTest, TilesExistGiantViewport) {
       1.f,  // current contents scale
       gfx::Transform(),  // last screen transform
       gfx::Transform(),  // current screen transform
-      1,  // current frame number
       1.0,  // current frame time
       false,  // store screen space quads on tiles
       10000);  // max tiles in tile manager
@@ -532,7 +539,6 @@ TEST_F(PictureLayerTilingIteratorTest, TilesExistGiantViewport) {
       1.f,  // current contents scale
       gfx::Transform(),  // last screen transform
       gfx::Transform(),  // current screen transform
-      2,  // current frame number
       2.0,  // current frame time
       false,  // store screen space quads on tiles
       10000);  // max tiles in tile manager
@@ -561,8 +567,7 @@ TEST_F(PictureLayerTilingIteratorTest, TilesExistOutsideViewport) {
       1.f,  // current contents scale
       gfx::Transform(),  // last screen transform
       gfx::Transform(),  // current screen transform
-      2,  // current frame number
-      2.0,  // current frame time
+      1.0,  // current frame time
       false,  // store screen space quads on tiles
       10000);  // max tiles in tile manager
   VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, true));
@@ -597,8 +602,7 @@ TEST_F(PictureLayerTilingIteratorTest,
       1.f,  // current contents scale
       gfx::Transform(),  // last screen transform
       gfx::Transform(),  // current screen transform
-      2,  // current frame number
-      2.0,  // current frame time
+      1.0,  // current frame time
       false,  // store screen space quads on tiles
       1);  // max tiles in tile manager
   VerifyTiles(1.f,
@@ -631,8 +635,7 @@ TEST_F(PictureLayerTilingIteratorTest,
       1.f,  // current contents scale
       gfx::Transform(),  // last screen transform
       gfx::Transform(),  // current screen transform
-      2,  // current frame number
-      2.0,  // current frame time
+      1.0,  // current frame time
       false,  // store screen space quads on tiles
       1);  // max tiles in tile manager
 
@@ -644,6 +647,65 @@ TEST_F(PictureLayerTilingIteratorTest,
   // tiles depending on its position.
   EXPECT_LE(num_tiles, 4);
   VerifyTiles(1.f, gfx::Rect(), base::Bind(&TileExists, false));
+}
+
+TEST_F(PictureLayerTilingIteratorTest, Clone) {
+  gfx::Size layer_bounds(1099, 801);
+  Initialize(gfx::Size(100, 100), 1.f, layer_bounds);
+
+  VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, false));
+
+  tiling_->UpdateTilePriorities(
+      PENDING_TREE,
+      layer_bounds,  // device viewport
+      gfx::Rect(layer_bounds),  // viewport in layer space
+      gfx::Rect(layer_bounds),  // visible content rect
+      layer_bounds,  // last layer bounds
+      layer_bounds,  // current layer bounds
+      1.f,  // last contents scale
+      1.f,  // current contents scale
+      gfx::Transform(),  // last screen transform
+      gfx::Transform(),  // current screen transform
+      1.0,  // current frame time
+      false,  // store screen space quads on tiles
+      10000);  // max tiles in tile manager
+  tiling_->set_resolution(HIGH_RESOLUTION);
+
+  // The pending tiling has tiles now.
+  VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, true));
+  EXPECT_EQ(HIGH_RESOLUTION, tiling_->resolution());
+
+  // Clone to the active tiling.
+  scoped_ptr<PictureLayerTiling> active_tiling =
+      tiling_->Clone(layer_bounds, &client_);
+
+  // The active tiling starts with no tiles.
+  VerifyTiles(active_tiling.get(),
+              1.f,
+              gfx::Rect(layer_bounds),
+              base::Bind(&TileExists, false));
+  EXPECT_EQ(HIGH_RESOLUTION, tiling_->resolution());
+
+  // UpdateTilePriorities on the active tiling at the same frame time. The
+  // active tiling should get tiles.
+  active_tiling->UpdateTilePriorities(
+      PENDING_TREE,
+      layer_bounds,  // device viewport
+      gfx::Rect(layer_bounds),  // viewport in layer space
+      gfx::Rect(layer_bounds),  // visible content rect
+      layer_bounds,  // last layer bounds
+      layer_bounds,  // current layer bounds
+      1.f,  // last contents scale
+      1.f,  // current contents scale
+      gfx::Transform(),  // last screen transform
+      gfx::Transform(),  // current screen transform
+      1.0,  // current frame time
+      false,  // store screen space quads on tiles
+      10000);  // max tiles in tile manager
+  VerifyTiles(active_tiling.get(),
+              1.f,
+              gfx::Rect(layer_bounds),
+              base::Bind(&TileExists, true));
 }
 
 }  // namespace

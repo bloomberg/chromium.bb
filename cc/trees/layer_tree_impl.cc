@@ -258,13 +258,7 @@ void LayerTreeImpl::UpdateSolidColorScrollbars() {
   }
 }
 
-struct UpdateTilePrioritiesForLayer {
-  void operator()(LayerImpl *layer) {
-    layer->UpdateTilePriorities();
-  }
-};
-
-void LayerTreeImpl::UpdateDrawProperties(UpdateDrawPropertiesReason reason) {
+void LayerTreeImpl::UpdateDrawProperties() {
   if (IsActiveTree() && RootScrollLayer() && RootClipLayer())
     UpdateRootScrollLayerSizeDelta();
 
@@ -279,13 +273,6 @@ void LayerTreeImpl::UpdateDrawProperties(UpdateDrawPropertiesReason reason) {
     // are present.
     if (RootClipLayer() && layer_tree_host_impl_->top_controls_manager())
       RootClipLayer()->SetMasksToBounds(false);
-  }
-
-  if (!needs_update_draw_properties_) {
-    if (reason == UPDATE_ACTIVE_TREE_FOR_DRAW && root_layer())
-      LayerTreeHostCommon::CallFunctionForSubtree<UpdateTilePrioritiesForLayer>(
-          root_layer());
-    return;
   }
 
   needs_update_draw_properties_ = false;
@@ -303,9 +290,6 @@ void LayerTreeImpl::UpdateDrawProperties(UpdateDrawPropertiesReason reason) {
                  "LayerTreeImpl::UpdateDrawProperties",
                  "IsActive",
                  IsActiveTree());
-    bool update_tile_priorities =
-        reason == UPDATE_PENDING_TREE ||
-        reason == UPDATE_ACTIVE_TREE_FOR_DRAW;
     LayerTreeHostCommon::CalculateDrawProperties(
         root_layer(),
         device_viewport_size(),
@@ -314,12 +298,11 @@ void LayerTreeImpl::UpdateDrawProperties(UpdateDrawPropertiesReason reason) {
         root_scroll_layer_,
         MaxTextureSize(),
         settings().can_use_lcd_text,
-        &render_surface_layer_list_,
-        update_tile_priorities);
+        &render_surface_layer_list_);
   }
 
   DCHECK(!needs_update_draw_properties_) <<
-      "calcDrawProperties should not set_needs_update_draw_properties()";
+      "CalcDrawProperties should not set_needs_update_draw_properties()";
 }
 
 static void ClearRenderSurfacesOnLayerImplRecursive(LayerImpl* current) {

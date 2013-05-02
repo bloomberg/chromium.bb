@@ -47,15 +47,15 @@ void ExecuteCalculateDrawProperties(LayerImpl* root_layer,
   // We are probably not testing what is intended if the root_layer bounds are
   // empty.
   DCHECK(!root_layer->bounds().IsEmpty());
-  LayerTreeHostCommon::CalculateDrawProperties(root_layer,
-                                               device_viewport_size,
-                                               device_scale_factor,
-                                               page_scale_factor,
-                                               page_scale_application_layer,
-                                               dummy_max_texture_size,
-                                               can_use_lcd_text,
-                                               &dummy_render_surface_layer_list,
-                                               false);
+  LayerTreeHostCommon::CalculateDrawProperties(
+      root_layer,
+      device_viewport_size,
+      device_scale_factor,
+      page_scale_factor,
+      page_scale_application_layer,
+      dummy_max_texture_size,
+      can_use_lcd_text,
+      &dummy_render_surface_layer_list);
 }
 
 void ExecuteCalculateDrawProperties(LayerImpl* root_layer) {

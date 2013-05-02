@@ -233,7 +233,7 @@ void LayerTreeHostImpl::CommitComplete() {
   // more lazily when needed prior to drawing.
   if (settings_.impl_side_painting) {
     pending_tree_->set_needs_update_draw_properties();
-    pending_tree_->UpdateDrawProperties(LayerTreeImpl::UPDATE_PENDING_TREE);
+    pending_tree_->UpdateDrawProperties();
   } else {
     active_tree_->set_needs_update_draw_properties();
   }
@@ -879,8 +879,7 @@ bool LayerTreeHostImpl::PrepareToDraw(FrameData* frame,
                                       gfx::Rect device_viewport_damage_rect) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::PrepareToDraw");
 
-  active_tree_->UpdateDrawProperties(
-      LayerTreeImpl::UPDATE_ACTIVE_TREE_FOR_DRAW);
+  active_tree_->UpdateDrawProperties();
 
   frame->render_surface_layer_list = &active_tree_->RenderSurfaceLayerList();
   frame->render_passes.clear();
@@ -1270,7 +1269,7 @@ bool LayerTreeHostImpl::ActivatePendingTreeIfNeeded() {
 
   CHECK(tile_manager_);
 
-  pending_tree_->UpdateDrawProperties(LayerTreeImpl::UPDATE_PENDING_TREE);
+  pending_tree_->UpdateDrawProperties();
 
   TRACE_EVENT_ASYNC_STEP1("cc",
                           "PendingTree", pending_tree_.get(), "activate",
@@ -1465,7 +1464,7 @@ void LayerTreeHostImpl::DidChangeTopControlsPosition() {
 }
 
 bool LayerTreeHostImpl::EnsureRenderSurfaceLayerList() {
-  active_tree_->UpdateDrawProperties(LayerTreeImpl::UPDATE_ACTIVE_TREE);
+  active_tree_->UpdateDrawProperties();
   return !active_tree_->RenderSurfaceLayerList().empty();
 }
 

@@ -43,8 +43,7 @@ class CC_EXPORT LayerTreeHostCommon {
       LayerImpl* page_scale_application_layer,
       int max_texture_size,
       bool can_use_lcd_text,
-      LayerImplList* render_surface_layer_list,
-      bool update_tile_priorities);
+      LayerImplList* render_surface_layer_list);
 
   // Performs hit testing for a given render_surface_layer_list.
   static LayerImpl* FindLayerThatIsHitByPoint(
