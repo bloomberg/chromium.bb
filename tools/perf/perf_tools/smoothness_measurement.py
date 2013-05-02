@@ -18,6 +18,12 @@ class SmoothnessMeasurement(object):
         'window.__renderingStats = new __RenderingStats();'
         'window.__renderingStats.start()')
 
+  def SetNeedsDisplayOnAllLayersAndStart(self):
+    self._tab.ExecuteJavaScript(
+        'chrome.gpuBenchmarking.setNeedsDisplayOnAllLayers();'
+        'window.__renderingStats = new __RenderingStats();'
+        'window.__renderingStats.start()')
+
   def Stop(self):
     self._tab.ExecuteJavaScript('window.__renderingStats.stop()')
 
