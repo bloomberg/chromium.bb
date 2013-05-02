@@ -18,7 +18,7 @@ TaskManagerCommands = {
   },
 
   /**
-   * Sends command to kill a process.
+   * Sends command to open about memory tab.
    */
   openAboutMemory: function() {
     chrome.send('openAboutMemory');
