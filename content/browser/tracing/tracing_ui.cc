@@ -344,7 +344,7 @@ void TracingMessageHandler::LoadTraceFileComplete(string16* contents) {
     rvh->ExecuteJavascriptInWebFrame(string16(), javascript);
   }
   rvh->ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(
-      "tracingController.onLoadTraceFileComplete(JSON.parse(window.traceData));"
+      "tracingController.onLoadTraceFileComplete(window.traceData);"
       "delete window.traceData;"));
 }
 
@@ -425,6 +425,14 @@ void TracingMessageHandler::OnBeginTracing(const base::ListValue* args) {
 void TracingMessageHandler::OnEndTracingAsync(const base::ListValue* list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  // This is really us beginning to end tracing, rather than tracing being truly
+  // over. When this function yields, we expect to get some number of
+  // OnTraceDataCollected callbacks, which will append data to window.traceData.
+  // To set up for this, set window.traceData to the empty string.
+  web_ui()->GetWebContents()->GetRenderViewHost()->
+    ExecuteJavascriptInWebFrame(string16(),
+                                UTF8ToUTF16("window.traceData = '';"));
+
   // TODO(nduca): fix javascript code to make sure trace_enabled_ is always true
   //              here. triggered a false condition by just clicking stop
   //              trace a few times when it was going slow, and maybe switching
@@ -455,7 +463,11 @@ void TracingMessageHandler::OnEndTracingComplete() {
     return;
 #endif
   }
-  web_ui()->CallJavascriptFunction("tracingController.onEndTracingComplete");
+
+  RenderViewHost* rvh = web_ui()->GetWebContents()->GetRenderViewHost();
+  rvh->ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(
+      "tracingController.onEndTracingComplete(window.traceData);"
+      "delete window.traceData;"));
 }
 
 void TracingMessageHandler::OnEndSystemTracingAck(
@@ -474,17 +486,15 @@ void TracingMessageHandler::OnTraceDataCollected(
     const scoped_refptr<base::RefCountedString>& trace_fragment) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::debug::TraceResultBuffer::SimpleOutput output;
-  base::debug::TraceResultBuffer trace_buffer;
-  trace_buffer.SetOutputCallback(output.GetCallback());
-  output.Append("tracingController.onTraceDataCollected(");
-  trace_buffer.Start();
-  trace_buffer.AddFragment(trace_fragment->data());
-  trace_buffer.Finish();
-  output.Append(");");
+  std::string javascript("window.traceData += '");
+  javascript += trace_fragment->data();
+  // Intentionally append a , to the traceData. This technically causes all
+  // traceData that we pass back to JS to end with a comma, but that is actually
+  // something the JS side strips away anyway
+  javascript += ",';";
 
   web_ui()->GetWebContents()->GetRenderViewHost()->
-      ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(output.json_output));
+    ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(javascript));
 }
 
 void TracingMessageHandler::OnTraceBufferPercentFullReply(float percent_full) {
