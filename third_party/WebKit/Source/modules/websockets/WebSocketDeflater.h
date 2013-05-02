@@ -57,6 +57,9 @@ public:
     bool finish();
     const char* data() { return m_buffer.data(); }
     size_t size() const { return m_buffer.size(); }
+    // Reset the deflate result.
+    void softReset();
+    // Reset the deflate result and internal state if the take over mode is DoNotTakeOverContext.
     void reset();
 
 private:
@@ -80,6 +83,7 @@ public:
     bool finish();
     const char* data() { return m_buffer.data(); }
     size_t size() const { return m_buffer.size(); }
+    // Reset the inflate result.
     void reset();
 
 private:
