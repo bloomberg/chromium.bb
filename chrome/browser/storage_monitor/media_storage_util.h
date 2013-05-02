@@ -31,6 +31,8 @@ class MediaStorageUtil {
     MTP_OR_PTP,
     // A Mac ImageCapture device.
     MAC_IMAGE_CAPTURE,
+    // An iTunes library.
+    ITUNES,
   };
 
   typedef std::set<std::string /*device id*/> DeviceIdSet;

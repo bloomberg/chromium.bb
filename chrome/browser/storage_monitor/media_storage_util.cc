@@ -42,6 +42,7 @@ const char kRemovableMassStorageNoDCIMPrefix[] = "nodcim:";
 const char kFixedMassStoragePrefix[] = "path:";
 const char kMtpPtpPrefix[] = "mtp:";
 const char kMacImageCapture[] = "ic:";
+const char kITunes[] = "itunes:";
 
 #if !defined(OS_WIN)
 const char kRootPath[] = "/";
@@ -178,6 +179,8 @@ std::string MediaStorageUtil::MakeDeviceId(Type type,
       return std::string(kMtpPtpPrefix) + unique_id;
     case MAC_IMAGE_CAPTURE:
       return std::string(kMacImageCapture) + unique_id;
+    case ITUNES:
+      return std::string(kITunes) + unique_id;
   }
   NOTREACHED();
   return std::string();
@@ -202,6 +205,8 @@ bool MediaStorageUtil::CrackDeviceId(const std::string& device_id,
     found_type = MTP_OR_PTP;
   } else if (prefix == kMacImageCapture) {
     found_type = MAC_IMAGE_CAPTURE;
+  } else if (prefix == kITunes) {
+    found_type = ITUNES;
   } else {
     NOTREACHED();
     return false;
@@ -234,7 +239,8 @@ bool MediaStorageUtil::IsMassStorageDevice(const std::string& device_id) {
   return CrackDeviceId(device_id, &type, NULL) &&
          (type == REMOVABLE_MASS_STORAGE_WITH_DCIM ||
           type == REMOVABLE_MASS_STORAGE_NO_DCIM ||
-          type == FIXED_MASS_STORAGE);
+          type == FIXED_MASS_STORAGE ||
+          type == ITUNES);
 }
 
 // static
@@ -260,7 +266,7 @@ void MediaStorageUtil::IsDeviceAttached(const std::string& device_id,
     return;
   }
 
-  if (type == FIXED_MASS_STORAGE) {
+  if (type == FIXED_MASS_STORAGE || type == ITUNES) {
     // For this type, the unique_id is the path.
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
@@ -326,6 +332,8 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const base::FilePath& path,
     return true;
   }
 
+  // TODO(vandebo) Check to see if the path points to an iTunes library file.
+
   // On Posix systems, there's one root so any absolute path could be valid.
 #if !defined(OS_POSIX)
   if (!found_device)
@@ -353,7 +361,7 @@ base::FilePath MediaStorageUtil::FindDevicePathById(
   if (!CrackDeviceId(device_id, &type, &unique_id))
     return base::FilePath();
 
-  if (type == FIXED_MASS_STORAGE) {
+  if (type == FIXED_MASS_STORAGE || type == ITUNES) {
     // For this type, the unique_id is the path.
     return base::FilePath::FromUTF8Unsafe(unique_id);
   }

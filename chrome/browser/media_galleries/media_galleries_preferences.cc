@@ -7,7 +7,9 @@
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
+#include "base/string16.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/media_galleries_private/gallery_watch_state_tracker.h"
@@ -15,6 +17,7 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/media_galleries/fileapi/itunes_finder.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -46,6 +49,8 @@ const char kMediaGalleriesPrefsVersionKey[] = "preferencesVersion";
 const char kMediaGalleriesTypeAutoDetectedValue[] = "autoDetected";
 const char kMediaGalleriesTypeUserAddedValue[] = "userAdded";
 const char kMediaGalleriesTypeBlackListedValue[] = "blackListed";
+
+const char kITunesGalleryName[] = "iTunes";
 
 bool GetPrefId(const DictionaryValue& dict, MediaGalleryPrefId* value) {
   std::string string_id;
@@ -204,8 +209,15 @@ base::FilePath MediaGalleryPrefInfo::AbsolutePath() const {
 MediaGalleriesPreferences::GalleryChangeObserver::~GalleryChangeObserver() {}
 
 MediaGalleriesPreferences::MediaGalleriesPreferences(Profile* profile)
-    : profile_(profile) {
+    : weak_factory_(this),
+      profile_(profile) {
   AddDefaultGalleriesIfFreshProfile();
+
+  // Look for optional default galleries every time.
+  itunes::ITunesFinder::FindITunesLibrary(
+      base::Bind(&MediaGalleriesPreferences::OnITunesDeviceID,
+                 weak_factory_.GetWeakPtr()));
+
   InitFromPrefs(false /*no notification*/);
 
   StorageMonitor* monitor = StorageMonitor::GetInstance();
@@ -244,6 +256,12 @@ void MediaGalleriesPreferences::AddDefaultGalleriesIfFreshProfile() {
                          false /*user added*/);
     }
   }
+}
+
+void MediaGalleriesPreferences::OnITunesDeviceID(const std::string& device_id) {
+  DCHECK(!device_id.empty());
+  AddGalleryWithName(device_id, ASCIIToUTF16(kITunesGalleryName),
+                     base::FilePath(), false /*not user added*/);
 }
 
 void MediaGalleriesPreferences::InitFromPrefs(bool notify_observers) {
@@ -631,6 +649,7 @@ void MediaGalleriesPreferences::SetGalleryPermissionForExtension(
 }
 
 void MediaGalleriesPreferences::Shutdown() {
+  weak_factory_.InvalidateWeakPtrs();
   profile_ = NULL;
 }
 

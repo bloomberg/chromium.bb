@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/string16.h"
 #include "base/time.h"
@@ -205,6 +206,9 @@ class MediaGalleriesPreferences : public ProfileKeyedService,
   // Populates the default galleries if this is a fresh profile.
   void AddDefaultGalleriesIfFreshProfile();
 
+  // Try to add an entry for the iTunes 'device'.
+  void OnITunesDeviceID(const std::string& device_id);
+
   // Builds |known_galleries_| from the persistent store.
   // Notifies GalleryChangeObservers if |notify_observers| is true.
   void InitFromPrefs(bool notify_observers);
@@ -225,6 +229,8 @@ class MediaGalleriesPreferences : public ProfileKeyedService,
                                         int prefs_version);
 
   extensions::ExtensionPrefs* GetExtensionPrefs() const;
+
+  base::WeakPtrFactory<MediaGalleriesPreferences> weak_factory_;
 
   // The profile that owns |this|.
   Profile* profile_;
