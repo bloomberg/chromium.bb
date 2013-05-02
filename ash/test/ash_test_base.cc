@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/ash_switches.h"
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
@@ -15,6 +16,7 @@
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/coordinate_conversion.h"
+#include "base/command_line.h"
 #include "content/public/test/web_contents_tester.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -26,6 +28,17 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/screen.h"
+
+#if defined(OS_WIN)
+#include "ash/test/test_metro_viewer_process_host.h"
+#include "base/test/test_process_killer_win.h"
+#include "base/win/metro.h"
+#include "base/win/windows_version.h"
+#include "ui/aura/remote_root_window_host_win.h"
+#include "ui/aura/root_window_host_win.h"
+#include "ui/base/ime/win/tsf_bridge.h"
+#include "win8/test/test_registrar_constants.h"
+#endif
 
 namespace ash {
 namespace test {
@@ -82,14 +95,70 @@ AshTestBase::~AshTestBase() {
 
 void AshTestBase::SetUp() {
   setup_called_ = true;
+  // TODO(jamescook): Can we do this without changing command line?
+  // Use the origin (1,1) so that it doesn't over
+  // lap with the native mouse cursor.
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kAshHostWindowBounds, "1+1-800x600");
+#if defined(OS_WIN)
+  aura::test::SetUsePopupAsRootWindowForTest(true);
+  if (base::win::IsTSFAwareRequired())
+    ui::TSFBridge::Initialize();
+#endif
+
   ash_test_helper_->SetUp();
+
+  Shell::GetPrimaryRootWindow()->Show();
+  Shell::GetPrimaryRootWindow()->ShowRootWindow();
+  // Move the mouse cursor to far away so that native events doesn't
+  // interfere test expectations.
+  Shell::GetPrimaryRootWindow()->MoveCursorTo(gfx::Point(-1000, -1000));
+  ash::Shell::GetInstance()->cursor_manager()->EnableMouseEvents();
+
+#if defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kForceAshToDesktop)) {
+    metro_viewer_host_.reset(new TestMetroViewerProcessHost("viewer"));
+    CHECK(metro_viewer_host_->LaunchViewerAndWaitForConnection(
+        win8::test::kDefaultTestAppUserModelId));
+    aura::RemoteRootWindowHostWin* root_window_host =
+        aura::RemoteRootWindowHostWin::Instance();
+    CHECK(root_window_host != NULL);
+  }
+#endif
 }
 
 void AshTestBase::TearDown() {
   teardown_called_ = true;
   // Flush the message loop to finish pending release tasks.
   RunAllPendingInMessageLoop();
+
+#if defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kForceAshToDesktop)) {
+    // Check that our viewer connection is still established.
+    CHECK(!metro_viewer_host_->closed_unexpectedly());
+  }
+#endif
+
   ash_test_helper_->TearDown();
+
+#if defined(OS_WIN)
+  aura::test::SetUsePopupAsRootWindowForTest(false);
+  // Kill the viewer process if we spun one up.
+  metro_viewer_host_.reset();
+
+  // Clean up any dangling viewer processes as the metro APIs sometimes leave
+  // zombies behind. A default browser process in metro will have the
+  // following command line arg so use that to avoid killing all processes named
+  // win8::test::kDefaultTestExePath.
+  const wchar_t kViewerProcessArgument[] = L"DefaultBrowserServer";
+  base::KillAllNamedProcessesWithArgument(win8::test::kDefaultTestExePath,
+                                          kViewerProcessArgument);
+#endif
+
   event_generator_.reset();
   // Some tests set an internal display id,
   // reset it here, so other tests will continue in a clean environment.

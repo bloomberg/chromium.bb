@@ -8,10 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 
-#if defined(OS_WIN)
-#include "ui/base/win/scoped_ole_initializer.h"
-#endif
-
 namespace aura {
 class RootWindow;
 }  // namespace aura
@@ -27,7 +23,6 @@ class ScopedAnimationDurationScaleMode;
 namespace ash {
 namespace test {
 
-class TestMetroViewerProcessHost;
 class TestShellDelegate;
 
 // A helper class that does common initialization required for Ash. Creates a
@@ -57,10 +52,6 @@ class AshTestHelper {
   base::MessageLoopForUI* message_loop_;  // Not owned.
   TestShellDelegate* test_shell_delegate_;  // Owned by ash::Shell.
   scoped_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
-#if defined(OS_WIN)
-  scoped_ptr<TestMetroViewerProcessHost> metro_viewer_host_;
-  ui::ScopedOleInitializer ole_initializer_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(AshTestHelper);
 };
