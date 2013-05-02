@@ -60,9 +60,15 @@ class ContentSettingsObserver
   bool AllowScriptFromSource(WebKit::WebFrame* frame, bool enabled_per_settings,
                              const WebKit::WebURL& script_url);
   bool AllowStorage(WebKit::WebFrame* frame, bool local);
+
   void DidNotAllowPlugins();
   void DidNotAllowScript();
   void DidNotAllowMixedScript();
+
+  // These two methods are not related to content settings, they are used
+  // for cases when the NPAPI plugins malfunction if used.
+  void BlockNPAPIPlugins();
+  bool AreNPAPIPluginsBlocked() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ContentSettingsObserverTest, WhitelistedSchemes);
@@ -106,6 +112,7 @@ class ContentSettingsObserver
 
   std::set<std::string> temporarily_allowed_plugins_;
   bool is_interstitial_page_;
+  bool npapi_plugins_blocked_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsObserver);
 };

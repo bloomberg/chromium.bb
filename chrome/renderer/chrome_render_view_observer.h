@@ -138,6 +138,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   void OnStartFrameSniffer(const string16& frame_name);
   void OnGetFPS();
   void OnAddStrictSecurityHost(const std::string& host);
+  void OnNPAPINotSupported();
 
   void CapturePageInfoLater(bool preliminary_capture, base::TimeDelta delay);
 

@@ -27,6 +27,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -118,7 +119,6 @@ void ConfirmInstallDialogDelegate::OnlyWeakObserversLeft() {
   Cancel();
 }
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
-
 }  // namespace
 
 // PluginObserver -------------------------------------------------------------
@@ -257,6 +257,31 @@ bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
   return true;
 }
 
+void PluginObserver::AboutToNavigateRenderView(
+    content::RenderViewHost* render_view_host) {
+#if defined(USE_AURA) && defined(OS_WIN)
+  // If the window belongs to the Ash desktop, before we navigate we need
+  // to tell the renderview that NPAPI plugins are not supported so it does
+  // not try to instantiate them. The final decision is actually done in
+  // the IO thread by PluginInfoMessageFilter of this proces,s but it's more
+  // complex to manage a map of Ash views in PluginInfoMessageFilter than
+  // just telling the renderer via IPC.
+  if (!web_contents())
+    return;
+
+  content::WebContentsView* wcv = web_contents()->GetView();
+  if (!wcv)
+    return;
+
+  aura::Window* window = wcv->GetNativeView();
+  if (chrome::GetHostDesktopTypeForNativeView(window) ==
+      chrome::HOST_DESKTOP_TYPE_ASH) {
+    int routing_id = render_view_host->GetRoutingID();
+    render_view_host->Send(new ChromeViewMsg_NPAPINotSupported(routing_id));
+  }
+#endif
+}
+
 void PluginObserver::OnBlockedUnauthorizedPlugin(
     const string16& name,
     const std::string& identifier) {
@@ -366,7 +391,10 @@ void PluginObserver::OnCouldNotLoadPlugin(const base::FilePath& plugin_path) {
 
 void PluginObserver::OnNPAPINotSupported(const std::string& identifier) {
 #if defined(OS_WIN) && defined(ENABLE_PLUGIN_INSTALLATION)
+#if !defined(USE_AURA)
   DCHECK(base::win::IsMetroProcess());
+#endif
+
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   if (profile->IsOffTheRecord())
@@ -390,7 +418,5 @@ void PluginObserver::OnNPAPINotSupported(const std::string& identifier) {
   PluginMetroModeInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents()),
       PluginMetroModeInfoBarDelegate::DESKTOP_MODE_REQUIRED, plugin->name());
-#else
-  NOTREACHED();
 #endif
 }

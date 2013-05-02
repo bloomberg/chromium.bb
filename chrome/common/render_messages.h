@@ -550,6 +550,9 @@ IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_CouldNotLoadPlugin,
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_NPAPINotSupported,
                     std::string /* identifer */)
 
+// Tells the renderer that the NPAPI cannot be used. For example Ash on windows.
+IPC_MESSAGE_ROUTED0(ChromeViewMsg_NPAPINotSupported)
+
 // A message for an external host.
 IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_ForwardMessageToExternalHost,
                     std::string  /* message */,

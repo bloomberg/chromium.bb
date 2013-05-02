@@ -4,8 +4,6 @@
 
 #include "chrome/renderer/chrome_content_renderer_client.h"
 
-#include <string>
-
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -555,6 +553,17 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         frame->document().isPluginDocument()) {
       status_value = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
     }
+
+#if defined(USE_AURA) && defined(OS_WIN)
+    // In Aura for Windows we need to check if we can load NPAPI plugins.
+    // For example, if the render view is in the Ash desktop, we should not.
+    if (status_value == ChromeViewHostMsg_GetPluginInfo_Status::kAllowed &&
+        plugin.type == webkit::WebPluginInfo::PLUGIN_TYPE_NPAPI) {
+        if (observer->AreNPAPIPluginsBlocked())
+          status_value =
+              ChromeViewHostMsg_GetPluginInfo_Status::kNPAPINotSupported;
+    }
+#endif
 
     switch (status_value) {
       case ChromeViewHostMsg_GetPluginInfo_Status::kNotFound: {

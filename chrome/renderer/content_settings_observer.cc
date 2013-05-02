@@ -72,7 +72,8 @@ ContentSettingsObserver::ContentSettingsObserver(
     : content::RenderViewObserver(render_view),
       content::RenderViewObserverTracker<ContentSettingsObserver>(render_view),
       content_setting_rules_(NULL),
-      is_interstitial_page_(false) {
+      is_interstitial_page_(false),
+      npapi_plugins_blocked_(false) {
   ClearBlockedContentSettings();
 }
 
@@ -301,6 +302,14 @@ void ContentSettingsObserver::DidNotAllowScript() {
 
 void ContentSettingsObserver::DidNotAllowMixedScript() {
   DidBlockContentType(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, std::string());
+}
+
+void ContentSettingsObserver::BlockNPAPIPlugins() {
+  npapi_plugins_blocked_ = true;
+}
+
+bool ContentSettingsObserver::AreNPAPIPluginsBlocked() const {
+  return npapi_plugins_blocked_;
 }
 
 void ContentSettingsObserver::OnLoadBlockedPlugins(
