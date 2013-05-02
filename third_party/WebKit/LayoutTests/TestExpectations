@@ -2490,12 +2490,6 @@ webkit.org/b/110876 [ Debug ] html5lib/generated/ [ Skip ]
 # Some of these tests are slow on the webkit.org Linux Release bot as well.
 webkit.org/b/112381 [ Win Linux Release ] html5lib/generated/run-tests16-data.html [ Slow ]
 
-# HALF_FLOAT_OES is not yet working in chromium.
-crbug.com/179503 fast/canvas/webgl/oes-texture-half-float.html [ Failure ]
-crbug.com/179503 virtual/gpu/fast/canvas/webgl/oes-texture-half-float.html [ Failure ]
-crbug.com/179503 fast/canvas/webgl/oes-texture-half-float-not-supported.html [ Timeout ]
-crbug.com/179503 virtual/gpu/fast/canvas/webgl/oes-texture-half-float-not-supported.html [ Timeout ]
-
 # These test are failing since r144519
 webkit.org/b/111462 [ Mac ] fast/events/touch/gesture/touch-gesture-noscroll-body-yhidden.html [ Failure ]
 webkit.org/b/111462 [ Mac ] fast/events/touch/gesture/touch-gesture-noscroll-body-propagated.html [ Failure ]
