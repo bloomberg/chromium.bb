@@ -251,6 +251,7 @@ HEADER_MAP = {
       'nacl/dynamic_annotations.h':
           'src/untrusted/valgrind/dynamic_annotations.h',
       'nacl/nacl_dyncode.h': 'src/untrusted/nacl/nacl_dyncode.h',
+      'nacl/nacl_exception.h': 'src/include/nacl/nacl_exception.h',
       'nacl/nacl_startup.h': 'src/untrusted/nacl/nacl_startup.h',
       'nacl/nacl_thread.h': 'src/untrusted/nacl/nacl_thread.h',
       'pnacl.h': 'src/untrusted/nacl/pnacl.h',
@@ -261,6 +262,7 @@ HEADER_MAP = {
       'nacl/dynamic_annotations.h':
           'src/untrusted/valgrind/dynamic_annotations.h',
       'nacl/nacl_dyncode.h': 'src/untrusted/nacl/nacl_dyncode.h',
+      'nacl/nacl_exception.h': 'src/include/nacl/nacl_exception.h',
       'nacl/nacl_startup.h': 'src/untrusted/nacl/nacl_startup.h',
       'nacl/nacl_thread.h': 'src/untrusted/nacl/nacl_thread.h',
       'pnacl.h': 'src/untrusted/nacl/pnacl.h',

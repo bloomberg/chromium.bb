@@ -106,3 +106,6 @@ endif
 # Specify the NMF to be created with no additional arguments.
 #
 $(eval $(call NMF_RULE,$(TARGET),))
+
+{{post}}
+

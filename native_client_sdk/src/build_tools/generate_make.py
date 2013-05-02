@@ -182,6 +182,7 @@ def ProcessProject(srcroot, dstroot, desc, toolchains, configs=None,
   template_dict = {
     'rel_sdk': '/'.join(['..'] * (len(desc['DEST'].split('/')) + 1)),
     'pre': desc.get('PRE', ''),
+    'post': desc.get('POST', ''),
     'tools': tools,
     'targets': desc['TARGETS'],
   }

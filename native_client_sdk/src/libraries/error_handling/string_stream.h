@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Copyright (c) 2013 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-#ifndef STRING_STREAM_H
-#define STRING_STREAM_H
+#ifndef ERROR_HANDLING_STRING_STREAM_H
+#define ERROR_HANDLING_STRING_STREAM_H
 
 /*
  * Support for a stream stream in 'C', which is appended to via an sprintf-like
@@ -28,4 +28,4 @@ int ssvprintf(sstream_t *sstream, const char *format, va_list args);
 int ssprintf(sstream_t *sstream, const char *format, ...);
 
 
-#endif
+#endif  /* ERROR_HANDLING_STRING_STREAM_H */

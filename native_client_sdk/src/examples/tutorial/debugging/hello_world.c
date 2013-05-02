@@ -25,8 +25,7 @@
 
 #include <pthread.h>
 
-#include "string_stream.h"
-#include "untrusted_crash_dump.h"
+#include "error_handling/error_handling.h"
 
 PPB_Messaging* ppb_messaging_interface = NULL;
 PPB_Var* ppb_var_interface = NULL;
@@ -122,6 +121,14 @@ void PostMessage(const char *str) {
   ppb_core_interface->CallOnMainThread(0, cb, 0);
 }
 
+void DumpJson(const char* json) {
+  char* out = (char*) malloc(strlen(json) + 5);
+  strcpy(out, "TRC: ");
+  strcat(out, json);
+
+  PostMessage(out);
+  free(out);
+}
 
 /**
  * Called when the NaCl module is instantiated on the web page. The identifier
@@ -153,11 +160,16 @@ static PP_Bool Instance_DidCreate(PP_Instance instance,
   g_PPAPIThread = pthread_self();
 
   PostMessage("LOG: DidCreate");
-  if (!NaClCrashDumpInit()) {
-    PostMessage("LOG: Failed to set up crash dump.");
+
+  /* Request exception callbacks with JSON. */
+  EHRequestExceptionsJson(DumpJson);
+
+  /* Report back if the request was honored. */
+  if (!EHHanderInstalled()) {
+    PostMessage("LOG: Stack traces not available, so don't expect them.\n");
   }
   else {
-    PostMessage("LOG: Crash Dump On");
+    PostMessage("LOG: Stack traces are on.");
   }
   pthread_create(&g_NexeThread, NULL, NexeMain, NULL);
   return PP_TRUE;

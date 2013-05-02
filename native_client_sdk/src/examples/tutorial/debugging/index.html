@@ -8,49 +8,73 @@
 <head>
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="-1" />
-  <title>Logging and Stack Trace</title>
+  <title>Logging and Crash Handling</title>
   <script type="text/javascript" src="common.js"></script>
   <script type="text/javascript" src="example.js"></script>
 </head>
-<body data-width="100" data-height="100" data-custom-load="true" {{attrs}}>
-  <h1>Native Client Debugging Example: Generating a Stack Trace.</h1>
-  <h2>How the example works</h2>
-  <p>This example shows how to trap an untrusted exception (such as a illegal
-  memory reference in the NEXE). This debugging technique can only be used
-  for development since it requires several command-line switches, and
-  environment variables. The test works by loading the module and communicating
-  with it through PostMessage. Messages from the module are sent to the Status
-  line and/or the Log window in the page. Four seconds after the module is
-  loaded, the JavaScript on this page sends a 'BOOM' message to the module that
-  causes the module to dereference an illegal location in memory.</p>
-
-  <p>If your setup is correct (you launched Chrome with the appropriate
-  command-line arguments and environment variables), the Log window below
-  should show that the crash dump facilities are turned on. When the crash data
-  arrives from the module, the data is forwarded to the HTTP server, which
-  drives a decoder and sends back a stack trace to the web page.</p>
-
-  <p>If setup incorrectly, the NaCl module may or may not load. If the module
-  loads, it sends a "LOADED" message to the log and crash after four seconds.
-  Since the stack trace facilities are not enables, the script will determine
-  that the module has crashed by detecting a missed heartbeat which the
-  application would normally send.
+<body data-width="0" data-height="0" data-custom-load="true" {{attrs}}>
+ <h1>Logging and Crash Handling</h1>
+  <p> This example illustrates techniques for tracking the state of a NaCl
+  module via PostMessage and status of the module's lastError attribute.
+  Messages from the modules are in the form of
+  <li>"LOG: <data>" which adds the message to the log.</li>
+  <li>"STS: <data>" which updates the status string.</li>
+  <li>"TRC: <data>" which provides a JSON string defining an exception.</li>
+  <h2> Exception API </h2>
+  <p> As of Chrome 28, NativeClient exception handling is possible without
+  requiring special command-line flags.  This feature is not always available
+  so developers should avoid requring it under normal operation.  However it
+  can be a very useful tool for diagnosing crashes, especially in the field.
+  NativeClient provides a library called "error_handling" for registering
+  the exception handler, as well as unwinding the exception context.
+  <br><b>NOTE: The library requires '-fno-omit-frame-pointer' to facilitate
+  unwinding the stack.</b></p>
+  <h2> Trace Walkthrough </h2>
+  <p> First we request the exception handler interface, and use it to register
+  both a handler and an exception stack.  We use a separate stack since we
+  do not know the state of stack for the thread handling the exception.
+  Next, we create a worker thread which will take the exception.  It is
+  recommended that modules do as much work as possible off the main thread. 
+  Failure to do so can block the browser, making the page unresponsive and/or
+  preventing communication with JavaScript.  In addition blocking calls,
+  which can greatly simplify code, are only allowed off the main thread.</p>
+  <p> After two seconds, JavaScript sends a message to the module which will
+  cause it take an exception on the worker thread.  The exception handler
+  unwinds the stack while creating a stringified JSON object containing the
+  stack frame information.  Once unwound, or the buffer is exhausted, the
+  JSON object is sent to JavaScript for processing.
+  <p> The message handler in JavaScript takes the JSON object and uses the
+  arch key to load the appropriate MAP file using an XMLHttpRequest.  It
+  then processes the MAP file and prints out a stack trace using the exception
+  data in the JSON object.</p>
+  <h2> Exception Handling in the Field </h2>
+  <p>
+  For real world applications, it's important to get the crash information
+  back the developer.  In this case, the JSON object could be sent via
+  XMLHttpRequest.  The JSON object can the be processed by the developers
+  QA team to manage bugs in the field.  The handler.py script provided in
+  the example sources shows how the JSON object can be used with the tools
+  to provide a better stack trace.   Simply cut and paste the JSON object
+  to a text file and run the handler.py script on it.
   </p>
-
-  <h2>Running the example</h2>
-  In a terminal window, to automatically start Chrome with the correct
-  environment variables and command-line switches:
-  <ul>
-    <li>Set the CHROME_PATH environment variable to the fully qualified path of
-    your Chrome executable.</li>
-    <li>From the debugging directory type: <b>make RUN</b></li>
-  </ul>
 
   <div id="listener"></div>
   <hr>
   <h2>Status: <code id="statusField">NO-STATUS</code></h2>
-  <h2>Log</h2>
-  <textarea id="log" rows="10" cols="130" readonly="readonly"></textarea>
+  <table>
+   <tr>
+    <td><h2>Log</h2></td>
+    <td><h2>JSON</h2></td>
+   </tr>
+   <tr>
+    <td>
+     <textarea id="log" rows="10" cols="60" readonly="readonly"></textarea>
+    </td>
+    <td>
+     <textarea id="json" rows="10" cols="60" readonly="readonly"></textarea>
+    </td>
+   </tr>
+  </table>
   <br>
   <h2>Stack Trace</h2>
   <textarea id="trace" rows="10" cols="130" readonly="readonly"></textarea>

@@ -1,8 +1,14 @@
+/*
+ * Copyright (c) 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "string_stream.h"
 
+#include "error_handling/string_stream.h"
 
 void ssinit(sstream_t *stream) {
   stream->data = NULL;
@@ -32,6 +38,7 @@ int ssvprintf(sstream_t *stream, const char *format, va_list args) {
   stream->data = outstr;
   vsprintf(&stream->data[stream->length], format, hold);
   stream->length += len;
+
   return len;
 }
 

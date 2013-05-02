@@ -29,18 +29,21 @@ X86_32_CXX?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-g++
 X86_32_LINK?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-g++
 X86_32_LIB?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-ar
 X86_32_STRIP?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-strip
+X86_32_NM?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-nm
 
 X86_64_CC?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-gcc
 X86_64_CXX?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-g++
 X86_64_LINK?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-g++
 X86_64_LIB?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-ar
 X86_64_STRIP?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-strip
+X86_64_NM?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-nm
 
 ARM_CC?=$(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-gcc
 ARM_CXX?=$(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-g++
 ARM_LINK?=$(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-g++
 ARM_LIB?=$(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-ar
 ARM_STRIP?=$(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-strip
+ARM_NM?=$(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-nm
 
 
 # Architecture-specific flags
@@ -232,6 +235,37 @@ endef
 #
 define STRIP_RULE
 $(call STRIP_ALL_RULE,$(1),$(2))
+endef
+
+
+#
+# Strip Macro for each arch (e.g., each arch supported by MAP_RULE).
+#
+# $1 = Target Name
+# $2 = Source Name
+#
+define MAP_ALL_RULE
+$(OUTDIR)/$(1)_x86_32.map : $(OUTDIR)/$(2)_x86_32.nexe
+	$(call LOG,MAP,$$@,$(X86_32_NM) -l $$^ > $$@)
+
+$(OUTDIR)/$(1)_x86_64.map : $(OUTDIR)/$(2)_x86_64.nexe
+	$(call LOG,MAP,$$@,$(X86_64_NM) -l $$^ > $$@)
+
+$(OUTDIR)/$(1)_arm.map : $(OUTDIR)/$(2)_arm.nexe
+	$(call LOG,MAP,$$@,$(ARM_NM) -l $$^ > $$@ )
+
+all: $(OUTDIR)/$(1)_x86_32.map $(OUTDIR)/$(1)_x86_64.map $(OUTDIR)/$(1)_arm.map
+endef
+
+
+#
+# Top-level MAP Generation Macro
+#
+# $1 = Target Basename
+# $2 = Source Basename
+#
+define MAP_RULE
+$(call MAP_ALL_RULE,$(1),$(2))
 endef
 
 
