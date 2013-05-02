@@ -45,17 +45,6 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> V8HTMLSelectElement::indexedPropertyGetter(uint32_t index, const v8::AccessorInfo& info)
-{
-    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
-    HTMLSelectElement* select = V8HTMLSelectElement::toNative(info.Holder());
-    RefPtr<Node> result = select->item(index);
-    if (!result)
-        return v8Undefined();
-
-    return toV8Fast(result.release(), info, select);
-}
-
 v8::Handle<v8::Value> V8HTMLSelectElement::indexedPropertySetter(uint32_t index, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
 {
     HTMLSelectElement* select = V8HTMLSelectElement::toNative(info.Holder());
