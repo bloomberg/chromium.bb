@@ -16,7 +16,9 @@ Background pages to the rescue.
 As the <a href="overview.html#arch">architecture overview</a> explains,
 the background page is an HTML page that runs in the extension process.
 It exists for the lifetime of your extension,
-and only one instance of it at a time is active.
+and only one instance of it at a time is active. (Exception: if your
+extension uses <a href="manifest.html#incognito">incognito</a>
+"split" mode, a second instance is created for incognito windows.)
 </p>
 
 <p>
