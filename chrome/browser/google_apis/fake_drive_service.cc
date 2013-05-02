@@ -96,6 +96,8 @@ FakeDriveService::FakeDriveService()
       default_max_results_(0),
       resource_id_count_(0),
       resource_list_load_count_(0),
+      change_list_load_count_(0),
+      directory_load_count_(0),
       account_metadata_load_count_(0),
       about_resource_load_count_(0),
       offline_(false) {
@@ -225,6 +227,7 @@ void FakeDriveService::GetAllResourceList(
                           std::string(),  // no directory resource id,
                           0,  // start offset
                           default_max_results_,
+                          &resource_list_load_count_,
                           callback);
 }
 
@@ -240,6 +243,7 @@ void FakeDriveService::GetResourceListInDirectory(
                           directory_resource_id,
                           0,  // start offset
                           default_max_results_,
+                          &directory_load_count_,
                           callback);
 }
 
@@ -254,6 +258,7 @@ void FakeDriveService::Search(const std::string& search_query,
                           std::string(),  // no directory resource id,
                           0,  // start offset
                           default_max_results_,
+                          NULL,
                           callback);
 }
 
@@ -272,6 +277,7 @@ void FakeDriveService::SearchByTitle(
                           directory_resource_id,
                           0,  // start offset
                           default_max_results_,
+                          NULL,
                           callback);
 }
 
@@ -285,6 +291,7 @@ void FakeDriveService::GetChangeList(int64 start_changestamp,
                           std::string(),  // no directory resource id,
                           0,  // start offset
                           default_max_results_,
+                          &change_list_load_count_,
                           callback);
 }
 
@@ -328,7 +335,7 @@ void FakeDriveService::ContinueGetResourceList(
 
   GetResourceListInternal(
       start_changestamp, search_query, directory_resource_id,
-      start_offset, max_results, callback);
+      start_offset, max_results, NULL, callback);
 }
 
 void FakeDriveService::GetResourceEntry(
@@ -1252,6 +1259,7 @@ void FakeDriveService::GetResourceListInternal(
     const std::string& directory_resource_id,
     int start_offset,
     int max_results,
+    int* load_counter,
     const GetResourceListCallback& callback) {
   if (offline_) {
     scoped_ptr<ResourceList> null;
@@ -1326,7 +1334,7 @@ void FakeDriveService::GetResourceListInternal(
   if (max_results > 0 && entries->size() > static_cast<size_t>(max_results)) {
     entries->erase(entries->begin() + max_results, entries->end());
     // Adds the next URL.
-    // Here, we embed information which is needed for continueing the
+    // Here, we embed information which is needed for continuing the
     // GetResourceList operation in the next invocation into url query
     // parameters.
     GURL next_url(base::StringPrintf(
@@ -1353,7 +1361,8 @@ void FakeDriveService::GetResourceListInternal(
     resource_list->mutable_links()->push_back(link);
   }
 
-  ++resource_list_load_count_;
+  if (load_counter)
+    *load_counter += 1;
   MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(callback,

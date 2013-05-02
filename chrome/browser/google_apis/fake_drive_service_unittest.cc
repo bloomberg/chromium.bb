@@ -142,7 +142,7 @@ TEST_F(FakeDriveServiceTest, GetResourceListInDirectory_InRootDirectory) {
   ASSERT_TRUE(resource_list);
   // Do some sanity check. There are 8 entries in the root directory.
   EXPECT_EQ(8U, resource_list->entries().size());
-  EXPECT_EQ(1, fake_service_.resource_list_load_count());
+  EXPECT_EQ(1, fake_service_.directory_load_count());
 }
 
 TEST_F(FakeDriveServiceTest, GetResourceListInDirectory_InNonRootDirectory) {
@@ -161,7 +161,7 @@ TEST_F(FakeDriveServiceTest, GetResourceListInDirectory_InNonRootDirectory) {
   // Do some sanity check. There is three entries in 1_folder_resource_id
   // directory.
   EXPECT_EQ(3U, resource_list->entries().size());
-  EXPECT_EQ(1, fake_service_.resource_list_load_count());
+  EXPECT_EQ(1, fake_service_.directory_load_count());
 }
 
 TEST_F(FakeDriveServiceTest, GetResourceListInDirectory_Offline) {
@@ -196,7 +196,6 @@ TEST_F(FakeDriveServiceTest, Search) {
   // Do some sanity check. There are 4 entries that contain "File" in their
   // titles.
   EXPECT_EQ(4U, resource_list->entries().size());
-  EXPECT_EQ(1, fake_service_.resource_list_load_count());
 }
 
 TEST_F(FakeDriveServiceTest, Search_WithAttribute) {
@@ -215,7 +214,6 @@ TEST_F(FakeDriveServiceTest, Search_WithAttribute) {
   // Do some sanity check. There are 4 entries that contain "1.txt" in their
   // titles.
   EXPECT_EQ(4U, resource_list->entries().size());
-  EXPECT_EQ(1, fake_service_.resource_list_load_count());
 }
 
 TEST_F(FakeDriveServiceTest, Search_MultipleQueries) {
@@ -243,7 +241,6 @@ TEST_F(FakeDriveServiceTest, Search_MultipleQueries) {
   ASSERT_TRUE(resource_list);
   // There is 1 entry that contain "Directory 1" in its title.
   EXPECT_EQ(1U, resource_list->entries().size());
-  EXPECT_EQ(2, fake_service_.resource_list_load_count());
 }
 
 TEST_F(FakeDriveServiceTest, Search_Offline) {
@@ -279,7 +276,6 @@ TEST_F(FakeDriveServiceTest, SearchByTitle) {
   // Do some sanity check. There are 2 entries that contain "1.txt" in their
   // titles directly under the root directory.
   EXPECT_EQ(2U, resource_list->entries().size());
-  EXPECT_EQ(1, fake_service_.resource_list_load_count());
 }
 
 TEST_F(FakeDriveServiceTest, SearchByTitle_EmptyDirectoryResourceId) {
@@ -299,7 +295,6 @@ TEST_F(FakeDriveServiceTest, SearchByTitle_EmptyDirectoryResourceId) {
   // Do some sanity check. There are 4 entries that contain "1.txt" in their
   // titles.
   EXPECT_EQ(4U, resource_list->entries().size());
-  EXPECT_EQ(1, fake_service_.resource_list_load_count());
 }
 
 TEST_F(FakeDriveServiceTest, SearchByTitle_Offline) {
@@ -340,7 +335,7 @@ TEST_F(FakeDriveServiceTest, GetChangeList_NoNewEntries) {
   // GetResourceList(), hence there should be no new entries.
   EXPECT_EQ(0U, resource_list->entries().size());
   // It's considered loaded even if the result is empty.
-  EXPECT_EQ(1, fake_service_.resource_list_load_count());
+  EXPECT_EQ(1, fake_service_.change_list_load_count());
 }
 
 TEST_F(FakeDriveServiceTest, GetChangeList_WithNewEntry) {
@@ -368,7 +363,7 @@ TEST_F(FakeDriveServiceTest, GetChangeList_WithNewEntry) {
   // The result should only contain the newly created directory.
   ASSERT_EQ(1U, resource_list->entries().size());
   EXPECT_EQ("new directory", resource_list->entries()[0]->title());
-  EXPECT_EQ(1, fake_service_.resource_list_load_count());
+  EXPECT_EQ(1, fake_service_.change_list_load_count());
 }
 
 TEST_F(FakeDriveServiceTest, GetChangeList_Offline) {
@@ -424,7 +419,7 @@ TEST_F(FakeDriveServiceTest, ContinueGetResourceList_GetAllResourceList) {
   ASSERT_TRUE(resource_list);
 
   EXPECT_EQ(6U, resource_list->entries().size());
-  EXPECT_EQ(2, fake_service_.resource_list_load_count());
+  EXPECT_EQ(1, fake_service_.resource_list_load_count());
 
   // Third page loading.
   next_link = resource_list->GetLinkByType(Link::LINK_NEXT);
@@ -442,7 +437,7 @@ TEST_F(FakeDriveServiceTest, ContinueGetResourceList_GetAllResourceList) {
   ASSERT_TRUE(resource_list);
 
   EXPECT_EQ(2U, resource_list->entries().size());
-  EXPECT_EQ(3, fake_service_.resource_list_load_count());
+  EXPECT_EQ(1, fake_service_.resource_list_load_count());
 }
 
 TEST_F(FakeDriveServiceTest,
@@ -464,7 +459,7 @@ TEST_F(FakeDriveServiceTest,
   // The number of results is 8 entries. Thus, it should split into three
   // chunks: 3, 3, and then 2.
   EXPECT_EQ(3U, resource_list->entries().size());
-  EXPECT_EQ(1, fake_service_.resource_list_load_count());
+  EXPECT_EQ(1, fake_service_.directory_load_count());
 
   // Second page loading.
   const google_apis::Link* next_link =
@@ -484,7 +479,7 @@ TEST_F(FakeDriveServiceTest,
   ASSERT_TRUE(resource_list);
 
   EXPECT_EQ(3U, resource_list->entries().size());
-  EXPECT_EQ(2, fake_service_.resource_list_load_count());
+  EXPECT_EQ(1, fake_service_.directory_load_count());
 
   // Third page loading.
   next_link = resource_list->GetLinkByType(Link::LINK_NEXT);
@@ -502,7 +497,7 @@ TEST_F(FakeDriveServiceTest,
   ASSERT_TRUE(resource_list);
 
   EXPECT_EQ(2U, resource_list->entries().size());
-  EXPECT_EQ(3, fake_service_.resource_list_load_count());
+  EXPECT_EQ(1, fake_service_.directory_load_count());
 }
 
 TEST_F(FakeDriveServiceTest, ContinueGetResourceList_Search) {
@@ -523,7 +518,6 @@ TEST_F(FakeDriveServiceTest, ContinueGetResourceList_Search) {
   // The number of results is 4 entries. Thus, it should split into two
   // chunks: 2, and then 2
   EXPECT_EQ(2U, resource_list->entries().size());
-  EXPECT_EQ(1, fake_service_.resource_list_load_count());
 
   // Second page loading.
   const google_apis::Link* next_link =
@@ -543,7 +537,6 @@ TEST_F(FakeDriveServiceTest, ContinueGetResourceList_Search) {
   ASSERT_TRUE(resource_list);
 
   EXPECT_EQ(2U, resource_list->entries().size());
-  EXPECT_EQ(2, fake_service_.resource_list_load_count());
 }
 
 TEST_F(FakeDriveServiceTest, ContinueGetResourceList_GetChangeList) {
@@ -576,7 +569,7 @@ TEST_F(FakeDriveServiceTest, ContinueGetResourceList_GetChangeList) {
   // The number of results is 5 entries. Thus, it should split into three
   // chunks: 2, 2 and then 1.
   EXPECT_EQ(2U, resource_list->entries().size());
-  EXPECT_EQ(1, fake_service_.resource_list_load_count());
+  EXPECT_EQ(1, fake_service_.change_list_load_count());
 
   // Second page loading.
   const google_apis::Link* next_link =
@@ -596,7 +589,7 @@ TEST_F(FakeDriveServiceTest, ContinueGetResourceList_GetChangeList) {
   ASSERT_TRUE(resource_list);
 
   EXPECT_EQ(2U, resource_list->entries().size());
-  EXPECT_EQ(2, fake_service_.resource_list_load_count());
+  EXPECT_EQ(1, fake_service_.change_list_load_count());
 
   // Third page loading.
   next_link = resource_list->GetLinkByType(Link::LINK_NEXT);
@@ -614,7 +607,7 @@ TEST_F(FakeDriveServiceTest, ContinueGetResourceList_GetChangeList) {
   ASSERT_TRUE(resource_list);
 
   EXPECT_EQ(1U, resource_list->entries().size());
-  EXPECT_EQ(3, fake_service_.resource_list_load_count());
+  EXPECT_EQ(1, fake_service_.change_list_load_count());
 }
 
 TEST_F(FakeDriveServiceTest, GetAccountMetadata) {

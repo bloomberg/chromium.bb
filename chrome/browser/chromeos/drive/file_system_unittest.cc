@@ -888,7 +888,7 @@ TEST_F(DriveFileSystemTest, OfflineCachedFeedLoading) {
 
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(1, fake_drive_service_->about_resource_load_count());
-  EXPECT_EQ(1, fake_drive_service_->resource_list_load_count());
+  EXPECT_EQ(1, fake_drive_service_->change_list_load_count());
 }
 
 TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_RegularFile) {

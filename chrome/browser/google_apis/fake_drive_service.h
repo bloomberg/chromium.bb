@@ -50,8 +50,16 @@ class FakeDriveService : public DriveServiceInterface {
   int64 largest_changestamp() const { return largest_changestamp_; }
 
   // Returns the number of times the resource list is successfully loaded by
-  // GetResourceList().
+  // GetAllResourceList().
   int resource_list_load_count() const { return resource_list_load_count_; }
+
+  // Returns the number of times the resource list is successfully loaded by
+  // GetChangeList().
+  int change_list_load_count() const { return change_list_load_count_; }
+
+  // Returns the number of times the resource list is successfully loaded by
+  // GetResourceListInDirectory().
+  int directory_load_count() const { return directory_load_count_; }
 
   // Returns the number of times the account metadata is successfully loaded
   // by GetAccountMetadata().
@@ -232,11 +240,13 @@ class FakeDriveService : public DriveServiceInterface {
   // This method returns the slice of the all matched entries, and its range
   // is between |start_offset| (inclusive) and |start_offset| + |max_results|
   // (exclusive).
+  // Increments *load_counter by 1 before it returns successfully.
   void GetResourceListInternal(int64 start_changestamp,
                                const std::string& search_query,
                                const std::string& directory_resource_id,
                                int start_offset,
                                int max_results,
+                               int* load_counter,
                                const GetResourceListCallback& callback);
 
   scoped_ptr<base::Value> resource_list_value_;
@@ -246,6 +256,8 @@ class FakeDriveService : public DriveServiceInterface {
   int default_max_results_;
   int resource_id_count_;
   int resource_list_load_count_;
+  int change_list_load_count_;
+  int directory_load_count_;
   int account_metadata_load_count_;
   int about_resource_load_count_;
   bool offline_;
