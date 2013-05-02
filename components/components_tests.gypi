@@ -17,6 +17,8 @@
             'visitedlink/test/visitedlink_unittest.cc',
             'webdata/encryptor/encryptor_password_mac_unittest.cc',
             'webdata/encryptor/encryptor_unittest.cc',
+            'zip/zip_reader_unittest.cc',
+            'zip/zip_unittest.cc',
           ],
           'include_dirs': [
             '..',
@@ -46,6 +48,9 @@
             'visitedlink_browser',
             'visitedlink_renderer',
             '../content/content_resources.gyp:content_resources',
+
+            # Dependencies of zip
+            'zip',
           ],
           'conditions': [
             ['OS == "android" and gtest_target_type == "shared_library"', {
