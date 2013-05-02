@@ -6,6 +6,7 @@
 #define UI_VIEWS_WIN_HWND_UTIL_H_
 
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/rect.h"
 #include "ui/views/views_export.h"
 
 namespace views {
@@ -25,6 +26,8 @@ VIEWS_EXPORT HWND HWNDForNativeView(gfx::NativeView view);
 // Returns the HWND for the specified NativeWindow.
 VIEWS_EXPORT HWND HWNDForNativeWindow(gfx::NativeWindow window);
 
+VIEWS_EXPORT gfx::Rect GetWindowBoundsForClientBounds(
+    View* view, const gfx::Rect& client_bounds);
 }
 
 #endif  // UI_VIEWS_WIN_HWND_UTIL_H_

@@ -84,13 +84,20 @@ JavaScriptAppModalDialog::~JavaScriptAppModalDialog() {
 NativeAppModalDialog* JavaScriptAppModalDialog::CreateNativeDialog() {
   gfx::NativeWindow parent_window =
       web_contents()->GetView()->GetTopLevelNativeWindow();
+
 #if defined(USE_AURA)
+#if defined(OS_WIN)
+  // JS dialogs should always be top-level windows in desktop Aura on Windows.
+  parent_window = NULL;
+#else
   if (!parent_window->GetRootWindow()) {
     // When we are part of a WebContents that isn't actually being displayed on
     // the screen, we can't actually attach to it.
     parent_window = NULL;
   }
-#endif
+#endif  // defined(OS_WIN)
+#endif  // defined(USE_AURA)
+
   return NativeAppModalDialog::CreateNativeJavaScriptPrompt(this,
                                                             parent_window);
 }
