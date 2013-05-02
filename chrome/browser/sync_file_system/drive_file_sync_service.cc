@@ -573,7 +573,8 @@ void DriveFileSyncService::ApplyLocalChange(
     const FileSystemURL& url,
     const SyncStatusCallback& callback) {
   // TODO(nhiroki): support directory operations (http://crbug.com/161442).
-  DCHECK(!local_file_change.IsDirectory());
+  DCHECK(IsSyncDirectoryOperationEnabled() ||
+         !local_file_change.IsDirectory());
 
   scoped_ptr<TaskToken> token(GetToken(
       FROM_HERE, TASK_TYPE_DATABASE, "Apply local change"));
