@@ -79,29 +79,6 @@ public:
         return m_refCount;
     }
 
-    void setMutexForVerifier(Mutex&);
-
-#if HAVE(DISPATCH_H)
-    void setDispatchQueueForVerifier(dispatch_queue_t);
-#endif
-
-    // Turns off verification. Use of this method is discouraged (instead extend
-    // ThreadRestrictionVerifier to verify your case).
-    // NB. It is necessary to call this in the constructor of many objects in
-    // JavaScriptCore, because JavaScriptCore objects may be used from multiple
-    // threads even if the reference counting is done in a racy manner. This is
-    // because a JSC instance may be used from multiple threads so long as all
-    // accesses into that instance are protected by a per-instance lock. It would
-    // be absolutely wrong to prohibit this pattern, and it would be a disastrous
-    // regression to require that the objects within that instance use a thread-
-    // safe version of reference counting.
-    void turnOffVerifier()
-    {
-#if CHECK_REF_COUNTED_LIFECYCLE
-        m_verifier.turnOffVerification();
-#endif
-    }
-
     void relaxAdoptionRequirement()
     {
 #if CHECK_REF_COUNTED_LIFECYCLE
@@ -109,12 +86,6 @@ public:
         ASSERT(m_adoptionIsRequired);
         m_adoptionIsRequired = false;
 #endif
-    }
-
-    // Helper for generating JIT code. Please do not use for non-JIT purposes.
-    const int* addressOfCount() const
-    {
-        return &m_refCount;
     }
 
 protected:
@@ -224,26 +195,6 @@ protected:
     {
     }
 };
-
-#if CHECK_REF_COUNTED_LIFECYCLE
-inline void RefCountedBase::setMutexForVerifier(Mutex& mutex)
-{
-    m_verifier.setMutexMode(mutex);
-}
-#else
-inline void RefCountedBase::setMutexForVerifier(Mutex&) { }
-#endif
-
-#if HAVE(DISPATCH_H)
-#if CHECK_REF_COUNTED_LIFECYCLE
-inline void RefCountedBase::setDispatchQueueForVerifier(dispatch_queue_t queue)
-{
-    m_verifier.setDispatchQueueMode(queue);
-}
-#else
-inline void RefCountedBase::setDispatchQueueForVerifier(dispatch_queue_t) { }
-#endif
-#endif // HAVE(DISPATCH_H)
 
 } // namespace WTF
 
