@@ -417,49 +417,9 @@
               },
             ],
           }],
-          # pnacl ARM build (only used if force_arm_pnacl is set)
-          ['force_arm_pnacl==1 and nexe_target!="" and build_newlib!=0', {
-            'variables': {
-              'tool_name': 'newlib',
-              'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
-              'out_newlib_arm%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_arm.nexe',
-              'objdir_newlib_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)-arm/>(_target_name)',
-              'source_list_newlib_arm%': '<(tool_name)-arm.>(_target_name).source_list.gypcmd',
-             },
-            'actions': [
-              {
-                'action_name': 'build newlib arm nexe (via pnacl)',
-                'msvs_cygwin_shell': 0,
-                'description': 'building >(out_newlib_arm)',
-                'inputs': [
-                  '<(DEPTH)/native_client/build/build_nexe.py',
-                  '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
-                  '>@(extra_deps_newlib_arm)',
-                  '>(source_list_newlib_arm)',
-                  '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl/stamp.prep'
-                ],
-                'outputs': ['>(out_newlib_arm)'],
-                'action': [
-                  '>(python_exe)',
-                  '<(DEPTH)/native_client/build/build_nexe.py',
-                  '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
-                  '>@(extra_args)',
-                  '--arch', 'arm',
-                  '--build', 'newlib_nexe_pnacl',
-                  '--root', '<(DEPTH)',
-                  '--name', '>(out_newlib_arm)',
-                  '--objdir', '>(objdir_newlib_arm)',
-                  '--include-dirs=<(inst_dir)/include ^(include_dirs) >(_include_dirs)',
-                  '--lib-dirs=>(lib_dirs_newlib_arm) ',
-                  '--compile_flags=--pnacl-frontend-triple=armv7-unknown-nacl-gnueabi -mfloat-abi=hard ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
-                  '--defines=^(defines) >(_defines)',
-                  '--link_flags=-arch arm --pnacl-allow-translate --pnacl-allow-native -Wl,--pnacl-irt-link -B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm ^(link_flags) >(_link_flags)',
-                  '--source-list=^|(<(source_list_newlib_arm) ^(_sources) ^(sources))',
-                 ],
-              },
-            ],
-          }],
-          # pnacl ARM library build
+          # pnacl ARM library build using biased bitcode. This is currently
+          # used to build the IRT shim. TODO(dschuff): see if this can be
+          # further simplified, perhaps using re-using the plib build below
           ['force_arm_pnacl==1 and nlib_target!="" and build_newlib!=0', {
             'variables': {
               'tool_name': 'newlib',
