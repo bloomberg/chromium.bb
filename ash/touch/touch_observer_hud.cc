@@ -260,25 +260,16 @@ class TouchLog {
   DISALLOW_COPY_AND_ASSIGN(TouchLog);
 };
 
-class TouchHudCanvas : public views::View, public ui::AnimationDelegate {
+// TouchHudCanvas draws touch traces in |FULLSCREEN| and |REDUCED_SCALE| modes.
+class TouchHudCanvas : public views::View {
  public:
-  TouchHudCanvas(TouchObserverHUD* owner, const TouchLog& touch_log)
-      : owner_(owner),
-        touch_log_(touch_log),
+  explicit TouchHudCanvas(const TouchLog& touch_log)
+      : touch_log_(touch_log),
         scale_(1) {
     SetPaintToLayer(true);
     SetFillsBoundsOpaquely(false);
 
     paint_.setStyle(SkPaint::kFill_Style);
-
-    projection_stroke_paint_.setStyle(SkPaint::kStroke_Style);
-    projection_stroke_paint_.setColor(kProjectionStrokeColor);
-
-    projection_gradient_colors_[0] = kProjectionFillColor;
-    projection_gradient_colors_[1] = kProjectionStrokeColor;
-
-    projection_gradient_pos_[0] = SkFloatToScalar(0.9f);
-    projection_gradient_pos_[1] = SkFloatToScalar(1.0f);
   }
 
   virtual ~TouchHudCanvas() {}
@@ -302,20 +293,11 @@ class TouchHudCanvas : public views::View, public ui::AnimationDelegate {
       StartedTrace(trace_index);
     if (point.type != ui::ET_TOUCH_CANCELLED)
       AddedPointToTrace(trace_index);
-    if (owner_->mode() == TouchObserverHUD::PROJECTION && !trace.active())
-      StartAnimation(trace_index);
-  }
-
-  void StopAnimations() {
-    for (int i = 0; i < kMaxPaths; ++i)
-      fadeouts_[i].reset(NULL);
   }
 
   void Clear() {
     for (int i = 0; i < kMaxPaths; ++i)
       paths_[i].reset();
-    if (owner_->mode() == TouchObserverHUD::PROJECTION)
-      StopAnimations();
 
     SchedulePaint();
   }
@@ -340,92 +322,134 @@ class TouchHudCanvas : public views::View, public ui::AnimationDelegate {
     }
   }
 
-  void StartAnimation(int path_index) {
-    DCHECK(!fadeouts_[path_index].get());
-    fadeouts_[path_index].reset(new ui::LinearAnimation(kFadeoutDurationInMs,
-                                                        kFadeoutFrameRate,
-                                                        this));
-    fadeouts_[path_index]->Start();
-  }
-
   // Overridden from views::View.
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    if (owner_->mode() == TouchObserverHUD::PROJECTION) {
-      for (int i = 0; i < kMaxPaths; ++i) {
-        const TouchTrace& trace = touch_log_.traces()[i];
-        if (!trace.active() && !fadeouts_[i].get())
-          continue;
-        TouchTrace::const_reverse_iterator point = trace.log().rbegin();
-        while (point != trace.log().rend() &&
-            point->type == ui::ET_TOUCH_CANCELLED)
-          point++;
-        DCHECK(point != trace.log().rend());
-        int alpha = kProjectionAlpha;
-        if (fadeouts_[i].get())
-          alpha = static_cast<int>(fadeouts_[i]->CurrentValueBetween(alpha, 0));
-        projection_fill_paint_.setAlpha(alpha);
-        projection_stroke_paint_.setAlpha(alpha);
-        SkShader* shader = SkGradientShader::CreateRadial(
-            SkPoint::Make(SkIntToScalar(point->location.x()),
-                          SkIntToScalar(point->location.y())),
-            SkIntToScalar(kPointRadius),
-            projection_gradient_colors_,
-            projection_gradient_pos_,
-            arraysize(projection_gradient_colors_),
-            SkShader::kMirror_TileMode,
-            NULL);
-        projection_fill_paint_.setShader(shader);
-        shader->unref();
-        canvas->DrawCircle(point->location, SkIntToScalar(kPointRadius),
-                           projection_fill_paint_);
-        canvas->DrawCircle(point->location, SkIntToScalar(kPointRadius),
-                           projection_stroke_paint_);
-      }
-    } else {
-      for (int i = 0; i < kMaxPaths; ++i) {
-        if (paths_[i].countPoints() == 0)
-          continue;
-        paint_.setColor(colors_[i]);
-        canvas->DrawPath(paths_[i], paint_);
-      }
+    for (int i = 0; i < kMaxPaths; ++i) {
+      if (paths_[i].countPoints() == 0)
+        continue;
+      paint_.setColor(colors_[i]);
+      canvas->DrawPath(paths_[i], paint_);
     }
   }
 
-  // Overridden from ui::AnimationDelegate.
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE {
-    for (int i = 0; i < kMaxPaths; ++i)
-      if (fadeouts_[i].get() == animation) {
-        fadeouts_[i].reset(NULL);
-        break;
-      }
-  }
-
-  // Overridden from ui::AnimationDelegate.
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
-    SchedulePaint();
-  }
-
-  // Overridden from ui::AnimationDelegate.
-  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE {
-    AnimationEnded(animation);
-  }
-
-  const TouchObserverHUD* const owner_;
-  const TouchLog& touch_log_;
-
   SkPaint paint_;
-  SkPaint projection_fill_paint_;
-  SkPaint projection_stroke_paint_;
-  SkColor projection_gradient_colors_[2];
-  SkScalar projection_gradient_pos_[2];
 
+  const TouchLog& touch_log_;
   SkPath paths_[kMaxPaths];
-  scoped_ptr<ui::Animation> fadeouts_[kMaxPaths];
   SkColor colors_[kMaxPaths];
 
   int scale_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchHudCanvas);
+};
+
+// TouchPointView draws a single touch point in |PROJECTION| mode. This object
+// manages its own lifetime and deletes itself upon fade-out completion or
+// whenever |Remove()| is explicitly called.
+class TouchPointView : public views::View,
+                       public ui::AnimationDelegate,
+                       public views::WidgetObserver {
+ public:
+  explicit TouchPointView(views::Widget* parent_widget)
+      : circle_center_(kPointRadius + 1, kPointRadius + 1),
+        gradient_center_(SkPoint::Make(kPointRadius + 1,
+                                       kPointRadius + 1)) {
+    SetPaintToLayer(true);
+    SetFillsBoundsOpaquely(false);
+
+    SetSize(gfx::Size(2 * kPointRadius + 2, 2 * kPointRadius + 2));
+
+    stroke_paint_.setStyle(SkPaint::kStroke_Style);
+    stroke_paint_.setColor(kProjectionStrokeColor);
+
+    gradient_colors_[0] = kProjectionFillColor;
+    gradient_colors_[1] = kProjectionStrokeColor;
+
+    gradient_pos_[0] = SkFloatToScalar(0.9f);
+    gradient_pos_[1] = SkFloatToScalar(1.0f);
+
+    parent_widget->GetContentsView()->AddChildView(this);
+
+    parent_widget->AddObserver(this);
+  }
+
+  void UpdateTouch(const ui::TouchEvent& touch) {
+    if (touch.type() == ui::ET_TOUCH_RELEASED ||
+        touch.type() == ui::ET_TOUCH_CANCELLED) {
+      fadeout_.reset(new ui::LinearAnimation(kFadeoutDurationInMs,
+                                             kFadeoutFrameRate,
+                                             this));
+      fadeout_->Start();
+    } else {
+      SetX(touch.root_location().x() - kPointRadius - 1);
+      SetY(touch.root_location().y() - kPointRadius - 1);
+    }
+  }
+
+  void Remove() {
+    delete this;
+  }
+
+ private:
+  virtual ~TouchPointView() {
+    GetWidget()->RemoveObserver(this);
+    parent()->RemoveChildView(this);
+  }
+
+  // Overridden from views::View.
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    int alpha = kProjectionAlpha;
+    if (fadeout_)
+      alpha = static_cast<int>(fadeout_->CurrentValueBetween(alpha, 0));
+    fill_paint_.setAlpha(alpha);
+    stroke_paint_.setAlpha(alpha);
+    SkShader* shader = SkGradientShader::CreateRadial(
+        gradient_center_,
+        SkIntToScalar(kPointRadius),
+        gradient_colors_,
+        gradient_pos_,
+        arraysize(gradient_colors_),
+        SkShader::kMirror_TileMode,
+        NULL);
+    fill_paint_.setShader(shader);
+    shader->unref();
+    canvas->DrawCircle(circle_center_, SkIntToScalar(kPointRadius),
+                       fill_paint_);
+    canvas->DrawCircle(circle_center_, SkIntToScalar(kPointRadius),
+                       stroke_paint_);
+  }
+
+  // Overridden from ui::AnimationDelegate.
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE {
+    DCHECK_EQ(fadeout_.get(), animation);
+    delete this;
+  }
+
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
+    DCHECK_EQ(fadeout_.get(), animation);
+    SchedulePaint();
+  }
+
+  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE {
+    AnimationEnded(animation);
+  }
+
+  // Overridden from views::WidgetObserver.
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE {
+    fadeout_->Stop();
+  }
+
+  const gfx::Point circle_center_;
+  const SkPoint gradient_center_;
+
+  SkPaint fill_paint_;
+  SkPaint stroke_paint_;
+  SkColor gradient_colors_[2];
+  SkScalar gradient_pos_[2];
+
+  scoped_ptr<ui::Animation> fadeout_;
+
+  DISALLOW_COPY_AND_ASSIGN(TouchPointView);
 };
 
 TouchObserverHUD::TouchObserverHUD(aura::RootWindow* initial_root)
@@ -438,7 +462,7 @@ TouchObserverHUD::TouchObserverHUD(aura::RootWindow* initial_root)
 
   views::View* content = new views::View;
 
-  canvas_ = new TouchHudCanvas(this, *touch_log_);
+  canvas_ = new TouchHudCanvas(*touch_log_);
   content->AddChildView(canvas_);
 
   const gfx::Size& display_size = display.size();
@@ -551,20 +575,32 @@ scoped_ptr<ListValue> TouchObserverHUD::GetLogAsList() const {
 void TouchObserverHUD::SetMode(Mode mode) {
   if (mode_ == mode)
     return;
+  // When going out of projection mode, hide all active touch points.
+  if (mode_ == PROJECTION) {
+    for (std::map<int, TouchPointView*>::iterator iter = points_.begin();
+        iter != points_.end(); ++iter)
+      iter->second->Remove();
+    points_.clear();
+  }
   mode_ = mode;
-  canvas_->StopAnimations();
   switch (mode) {
     case FULLSCREEN:
-    case PROJECTION:
       label_container_->SetVisible(false);
+      canvas_->SetVisible(true);
       canvas_->SetScale(1);
       canvas_->SchedulePaint();
       widget_->Show();
       break;
     case REDUCED_SCALE:
       label_container_->SetVisible(true);
+      canvas_->SetVisible(true);
       canvas_->SetScale(kReducedScale);
       canvas_->SchedulePaint();
+      widget_->Show();
+      break;
+    case PROJECTION:
+      label_container_->SetVisible(false);
+      canvas_->SetVisible(false);
       widget_->Show();
       break;
     case INVISIBLE:
@@ -598,6 +634,30 @@ void TouchObserverHUD::OnTouchEvent(ui::TouchEvent* event) {
 
   touch_log_->AddTouchPoint(*event);
   canvas_->TouchPointAdded(event->touch_id());
+
+  if (mode_ == PROJECTION) {
+    if (event->type() == ui::ET_TOUCH_PRESSED) {
+      TouchPointView* point = new TouchPointView(widget_);
+      point->UpdateTouch(*event);
+      std::pair<std::map<int, TouchPointView*>::iterator, bool> result =
+          points_.insert(std::make_pair(event->touch_id(), point));
+      // If a |TouchPointView| is already mapped to the touch id, remove it and
+      // replace it with the new one.
+      if (!result.second) {
+        result.first->second->Remove();
+        result.first->second = point;
+      }
+    } else {
+      std::map<int, TouchPointView*>::iterator iter =
+          points_.find(event->touch_id());
+      if (iter != points_.end()) {
+        iter->second->UpdateTouch(*event);
+        if (event->type() == ui::ET_TOUCH_RELEASED ||
+            event->type() == ui::ET_TOUCH_CANCELLED)
+          points_.erase(iter);
+      }
+    }
+  }
 
   UpdateTouchPointLabel(event->touch_id());
   label_container_->SetSize(label_container_->GetPreferredSize());

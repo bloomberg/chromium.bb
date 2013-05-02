@@ -5,6 +5,8 @@
 #ifndef ASH_TOUCH_TOUCH_OBSERVER_HUD_H_
 #define ASH_TOUCH_TOUCH_OBSERVER_HUD_H_
 
+#include <map>
+
 #include "ash/ash_export.h"
 #include "ash/display/display_controller.h"
 #include "ash/shell.h"
@@ -38,6 +40,7 @@ namespace internal {
 
 class TouchHudCanvas;
 class TouchLog;
+class TouchPointView;
 
 // An event filter which handles system level gesture events. Objects of this
 // class manage their own lifetime.
@@ -117,6 +120,7 @@ class ASH_EXPORT TouchObserverHUD
 
   views::Widget* widget_;
   TouchHudCanvas* canvas_;
+  std::map<int, TouchPointView*> points_;
   views::View* label_container_;
   views::Label* touch_labels_[kMaxTouchPoints];
 
