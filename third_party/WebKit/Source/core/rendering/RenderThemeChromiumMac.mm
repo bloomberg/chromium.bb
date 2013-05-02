@@ -144,6 +144,13 @@ const double progressAnimationNumFrames = 256;
 
 @end
 
+// Forward declare Mac SPIs.
+extern "C" {
+void _NSDrawCarbonThemeBezel(NSRect frame, BOOL enabled, BOOL flipped);
+// Request for public API: rdar://13787640
+void _NSDrawCarbonThemeListBox(NSRect frame, BOOL enabled, BOOL flipped, BOOL always_yes);
+}
+
 namespace WebCore {
 
 using namespace HTMLNames;
@@ -736,9 +743,9 @@ bool RenderThemeChromiumMac::paintTextField(RenderObject* o, const PaintInfo& pa
     // We do not use NSTextFieldCell to draw styled text fields on Lion and SnowLeopard because
     // there are a number of bugs on those platforms that require NSTextFieldCell to be in charge
     // of painting its own background. We need WebCore to paint styled backgrounds, so we'll use
-    // this WebCoreSystemInterface function instead.
+    // this AppKit SPI function instead.
     if (!useNSTextFieldCell) {
-        WKDrawBezeledTextFieldCell(r, isEnabled(o) && !isReadOnlyControl(o));
+        _NSDrawCarbonThemeBezel(r, isEnabled(o) && !isReadOnlyControl(o), YES);
         return false;
     }
 #endif
@@ -773,7 +780,7 @@ bool RenderThemeChromiumMac::paintCapsLockIndicator(RenderObject*, const PaintIn
 bool RenderThemeChromiumMac::paintTextArea(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
     LocalCurrentGraphicsContext localContext(paintInfo.context);
-    WKDrawBezeledTextArea(r, isEnabled(o) && !isReadOnlyControl(o));
+    _NSDrawCarbonThemeListBox(r, isEnabled(o) && !isReadOnlyControl(o), YES, YES);
     return false;
 }
 

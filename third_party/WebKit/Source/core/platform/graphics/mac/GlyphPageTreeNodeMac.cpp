@@ -34,6 +34,12 @@
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/mac/WebCoreSystemInterface.h"
 
+// Forward declare Mac SPIs.
+// Request for public API: rdar://13787589
+extern "C" {
+void CGFontGetGlyphsForUnichars(CGFontRef font, const UniChar chars[], CGGlyph glyphs[], size_t length);
+}
+
 namespace WebCore {
 
 static bool shouldUseCoreText(UChar* buffer, unsigned bufferLength, const SimpleFontData* fontData)
@@ -57,7 +63,7 @@ bool GlyphPage::fill(unsigned offset, unsigned length, UChar* buffer, unsigned b
 
     Vector<CGGlyph, 512> glyphs(bufferLength);
     if (!shouldUseCoreText(buffer, bufferLength, fontData)) {
-        WKGetGlyphsForCharacters(fontData->platformData().cgFont(), buffer, glyphs.data(), bufferLength);
+        CGFontGetGlyphsForUnichars(fontData->platformData().cgFont(), buffer, glyphs.data(), bufferLength);
         for (unsigned i = 0; i < length; ++i) {
             if (!glyphs[i])
                 setGlyphDataForIndex(offset + i, 0, 0);

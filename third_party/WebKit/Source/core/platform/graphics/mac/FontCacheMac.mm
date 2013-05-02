@@ -39,6 +39,11 @@
 #import <wtf/MainThread.h>
 #import <wtf/StdLibExtras.h>
 
+// Forward declare Mac SPIs.
+// Request for public API: rdar://13787490
+extern "C" {
+void CGFontSetShouldUseMulticache(bool enable);
+}
 
 namespace WebCore {
 
@@ -61,7 +66,8 @@ static void fontCacheRegisteredFontsChangedNotificationCallback(CFNotificationCe
 
 void FontCache::platformInit()
 {
-    WKSetUpFontCache();
+    // Note: This may break on future OS releases, per https://bugs.webkit.org/show_bug.cgi?id=102405#c8.
+    CGFontSetShouldUseMulticache(true);
     CFNotificationCenterAddObserver(CFNotificationCenterGetLocalCenter(), this, fontCacheRegisteredFontsChangedNotificationCallback, kCTFontManagerRegisteredFontsChangedNotification, 0, CFNotificationSuspensionBehaviorDeliverImmediately);
 }
 

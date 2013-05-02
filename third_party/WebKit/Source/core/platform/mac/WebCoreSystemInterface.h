@@ -42,27 +42,15 @@ typedef struct _NSRange NSRange;
 
 typedef UInt16 ATSGlyphRef;
 
-#ifdef NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
-typedef struct CGPoint NSPoint;
-typedef struct CGRect NSRect;
-#else
-typedef struct _NSPoint NSPoint;
-typedef struct _NSRect NSRect;
-#endif
-
 OBJC_CLASS NSFont;
 OBJC_CLASS NSString;
 
 extern "C" {
 
-extern void WKDrawBezeledTextFieldCell(NSRect, BOOL enabled);
 extern void WKDrawCapsLockIndicator(CGContextRef, CGRect);
-extern void WKDrawBezeledTextArea(NSRect, BOOL enabled);
 extern NSFont* WKGetFontInLanguageForRange(NSFont*, NSString*, NSRange);
 extern NSFont* WKGetFontInLanguageForCharacter(NSFont*, UniChar);
 extern BOOL WKGetGlyphTransformedAdvances(CGFontRef, NSFont*, CGAffineTransform*, ATSGlyphRef*, CGSize* advance);
-extern void WKSetUpFontCache();
-extern void WKGetGlyphsForCharacters(CGFontRef, const UniChar[], CGGlyph[], size_t);
 extern bool WKGetVerticalGlyphsForCharacters(CTFontRef, const UniChar[], CGGlyph[], size_t);
 extern CTLineRef WKCreateCTLineWithUniCharProvider(const UniChar* (*provide)(CFIndex stringIndex, CFIndex* charCount, CFDictionaryRef* attributes, void*), void (*dispose)(const UniChar* chars, void*), void*);
 
