@@ -16,35 +16,6 @@ namespace extensions {
 
 namespace app_file_handler_util {
 
-namespace {
-
-bool FileHandlerCanHandleFileWithExtension(
-    const FileHandlerInfo& handler,
-    const base::FilePath& path) {
-  for (std::set<std::string>::const_iterator extension =
-       handler.extensions.begin();
-       extension != handler.extensions.end(); ++extension) {
-    if (*extension == "*")
-      return true;
-
-    if (path.MatchesExtension(
-        base::FilePath::kExtensionSeparator +
-        base::FilePath::FromUTF8Unsafe(*extension).value())) {
-      return true;
-    }
-
-    // Also accept files with no extension for handlers that support an
-    // empty extension, i.e. both "foo" and "foo." match.
-    if (extension->empty() &&
-        path.MatchesExtension(base::FilePath::StringType())) {
-      return true;
-    }
-  }
-  return false;
-}
-
-}  // namespace
-
 typedef std::vector<FileHandlerInfo> FileHandlerList;
 
 const FileHandlerInfo* FileHandlerForId(const Extension& app,
@@ -61,18 +32,19 @@ const FileHandlerInfo* FileHandlerForId(const Extension& app,
   return NULL;
 }
 
-const FileHandlerInfo* FirstFileHandlerForFile(
-    const Extension& app,
-    const std::string& mime_type,
-    const base::FilePath& path) {
+const FileHandlerInfo* FirstFileHandlerForMimeType(const Extension& app,
+    const std::string& mime_type) {
   const FileHandlerList* file_handlers = FileHandlers::GetFileHandlers(&app);
   if (!file_handlers)
     return NULL;
 
   for (FileHandlerList::const_iterator i = file_handlers->begin();
        i != file_handlers->end(); i++) {
-    if (FileHandlerCanHandleFile(*i, mime_type, path))
-      return &*i;
+    for (std::set<std::string>::const_iterator t = i->types.begin();
+         t != i->types.end(); t++) {
+      if (net::MatchesMimeType(*t, mime_type))
+        return &*i;
+    }
   }
   return NULL;
 }
@@ -104,17 +76,10 @@ std::vector<const FileHandlerInfo*> FindFileHandlersForMimeTypes(
   return handlers;
 }
 
-bool FileHandlerCanHandleFile(
-    const FileHandlerInfo& handler,
-    const std::string& mime_type,
-    const base::FilePath& path) {
-  return FileHandlerCanHandleFileWithMimeType(handler, mime_type) ||
-      FileHandlerCanHandleFileWithExtension(handler, path);
-}
-
 bool FileHandlerCanHandleFileWithMimeType(
     const FileHandlerInfo& handler,
     const std::string& mime_type) {
+  // TODO(benwells): this should check the file's extension as well.
   for (std::set<std::string>::const_iterator type = handler.types.begin();
        type != handler.types.end(); ++type) {
     if (net::MatchesMimeType(*type, mime_type))
