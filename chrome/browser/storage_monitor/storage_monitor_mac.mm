@@ -210,10 +210,6 @@ void StorageMonitorMac::Init() {
     image_capture_device_manager_.reset(new chrome::ImageCaptureDeviceManager);
     image_capture_device_manager_->SetNotifications(receiver());
   }
-
-  // Fallback. Notifications on attached volumes don't come through reliably.
-  // TODO(gbillock): use NSWorkspace/NSFileManager to do this.
-  MarkInitialized();
 }
 
 void StorageMonitorMac::UpdateDisk(
@@ -222,12 +218,13 @@ void StorageMonitorMac::UpdateDisk(
     UpdateType update_type) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
+  pending_disk_updates_--;
   bool initialization_complete = false;
-  if (!IsInitialized() && pending_disk_updates_-- == 0)
+  if (!IsInitialized() && pending_disk_updates_ == 0)
     initialization_complete = true;
 
   if (info.device_id.empty() || bsd_name.empty()) {
-    if (!IsInitialized() && initialization_complete)
+    if (initialization_complete)
       MarkInitialized();
     return;
   }
@@ -262,7 +259,7 @@ void StorageMonitorMac::UpdateDisk(
 
   // We're not really honestly sure we're done, but this looks the best we
   // can do. Any misses should go out through notifications.
-  if (!IsInitialized() && initialization_complete)
+  if (initialization_complete)
     MarkInitialized();
 }
 
