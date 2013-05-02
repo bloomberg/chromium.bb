@@ -25,6 +25,13 @@ class MockLocalChangeProcessor : public LocalChangeProcessor {
                     const SyncStatusCallback& callback));
 
  private:
+  void ApplyLocalChangeStub(
+      const FileChange& change,
+      const base::FilePath& local_file_path,
+      const SyncFileMetadata& local_file_metadata,
+      const fileapi::FileSystemURL& url,
+      const SyncStatusCallback& callback);
+
   DISALLOW_COPY_AND_ASSIGN(MockLocalChangeProcessor);
 };
 

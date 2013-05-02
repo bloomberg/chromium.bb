@@ -125,20 +125,12 @@ void LocalFileSyncContext::ClearChangesForURL(
   ui_task_runner_->PostTask(FROM_HERE, done_callback);
 }
 
-void LocalFileSyncContext::ClearSyncFlagForURL(
-    const FileSystemURL& url,
-    SyncStatusCode last_sync_status) {
+void LocalFileSyncContext::ClearSyncFlagForURL(const FileSystemURL& url) {
   // This is initially called on UI thread and to be relayed to IO thread.
-  if (!io_task_runner_->RunsTasksOnCurrentThread()) {
-    io_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&LocalFileSyncContext::ClearSyncFlagForURL,
-                  this, url, last_sync_status));
-    return;
-  }
-  if (last_sync_status == SYNC_STATUS_OK)
-    origins_with_pending_changes_.insert(url.origin());
-  EnableWritingOnIOThread(url);
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&LocalFileSyncContext::EnableWritingOnIOThread,
+                 this, url));
 }
 
 void LocalFileSyncContext::PrepareForSync(
@@ -425,8 +417,6 @@ void LocalFileSyncContext::ScheduleNotifyChangesUpdatedOnIOThread() {
 
 void LocalFileSyncContext::NotifyAvailableChangesOnIOThread() {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
-  if (origins_with_pending_changes_.empty())
-    return;
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&LocalFileSyncContext::NotifyAvailableChanges,
@@ -693,6 +683,7 @@ void LocalFileSyncContext::EnableWritingOnIOThread(
   }
   sync_status()->EndSyncing(url);
   // Since a sync has finished the number of changes must have been updated.
+  origins_with_pending_changes_.insert(url.origin());
   ScheduleNotifyChangesUpdatedOnIOThread();
 }
 
