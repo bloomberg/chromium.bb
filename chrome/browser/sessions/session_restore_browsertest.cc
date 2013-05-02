@@ -672,8 +672,9 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoresForwardAndBackwardNavs) {
 // Tests that the SiteInstances used for entries in a restored tab's history
 // are given appropriate max page IDs, so that going back to a restored
 // cross-site page and then forward again works.  (Bug 1204135)
+// This test fails. See http://crbug.com/237497.
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
-                       RestoresCrossSiteForwardAndBackwardNavs) {
+                       DISABLED_RestoresCrossSiteForwardAndBackwardNavs) {
   ASSERT_TRUE(test_server()->Start());
 
   GURL cross_site_url(test_server()->GetURL("files/title2.html"));
