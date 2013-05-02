@@ -38,6 +38,18 @@ namespace {
 // keeps track of the currently open bubble, or NULL if none is open.
 BookmarkBubbleGtk* g_bubble = NULL;
 
+enum {
+  COLUMN_NAME,
+  COLUMN_IS_SEPARATOR,
+  COLUMN_COUNT
+};
+
+gboolean IsSeparator(GtkTreeModel* model, GtkTreeIter* iter, gpointer data) {
+  gboolean is_separator;
+  gtk_tree_model_get(model, iter, COLUMN_IS_SEPARATOR, &is_separator, -1);
+  return is_separator;
+}
+
 }  // namespace
 
 // static
@@ -121,7 +133,6 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWidget* anchor,
   gtk_box_pack_start(GTK_BOX(top), remove_button_,
                      FALSE, FALSE, 0);
 
-  folder_combo_ = gtk_combo_box_new_text();
   InitFolderComboModel();
 
   // Create the edit entry for updating the bookmark name / title.
@@ -259,17 +270,8 @@ void BookmarkBubbleGtk::ApplyEdits() {
           UserMetricsAction("BookmarkBubble_ChangeTitleInBubble"));
     }
 
-    int index = gtk_combo_box_get_active(GTK_COMBO_BOX(folder_combo_));
-
-    // Last index means 'Choose another folder...'
-    if (index < folder_combo_model_->GetItemCount() - 1) {
-      const BookmarkNode* new_parent = folder_combo_model_->GetNodeAt(index);
-      if (new_parent != node->parent()) {
-        content::RecordAction(
-            UserMetricsAction("BookmarkBubble_ChangeParent"));
-        model_->Move(node, new_parent, new_parent->child_count());
-      }
-    }
+    folder_combo_model_->MaybeChangeParent(
+        node, gtk_combo_box_get_active(GTK_COMBO_BOX(folder_combo_)));
   }
 }
 
@@ -309,13 +311,31 @@ void BookmarkBubbleGtk::InitFolderComboModel() {
 
   folder_combo_model_.reset(new RecentlyUsedFoldersComboModel(model_, node));
 
-  // We always have nodes + 1 entries in the combo.  The last entry will be
-  // the 'Select another folder...' entry that opens the bookmark editor.
+  GtkListStore* store = gtk_list_store_new(COLUMN_COUNT,
+                                           G_TYPE_STRING, G_TYPE_BOOLEAN);
+
+  // We always have nodes + 1 entries in the combo. The last entry will be
+  // the 'Choose Another Folder...' entry that opens the Bookmark Editor.
   for (int i = 0; i < folder_combo_model_->GetItemCount(); ++i) {
-    gtk_combo_box_append_text(GTK_COMBO_BOX(folder_combo_),
-        UTF16ToUTF8(folder_combo_model_->GetItemAt(i)).c_str());
+    GtkTreeIter iter;
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter,
+        COLUMN_NAME, UTF16ToUTF8(folder_combo_model_->GetItemAt(i)).c_str(),
+        COLUMN_IS_SEPARATOR, folder_combo_model_->IsItemSeparatorAt(i),
+        -1);
   }
+
+  folder_combo_ = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
 
   gtk_combo_box_set_active(GTK_COMBO_BOX(folder_combo_),
                            folder_combo_model_->GetDefaultIndex());
+  gtk_combo_box_set_row_separator_func(GTK_COMBO_BOX(folder_combo_),
+                                       IsSeparator, NULL, NULL);
+  g_object_unref(store);
+
+  GtkCellRenderer* renderer = gtk_cell_renderer_text_new();
+  gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(folder_combo_), renderer, TRUE);
+  gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(folder_combo_), renderer,
+                                 "text", COLUMN_NAME,
+                                 NULL);
 }

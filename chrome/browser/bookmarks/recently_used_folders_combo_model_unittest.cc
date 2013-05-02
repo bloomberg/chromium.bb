@@ -60,10 +60,9 @@ TEST_F(RecentlyUsedFoldersComboModelTest, NoDups) {
       GetModel()->bookmark_bar_node(), 0, ASCIIToUTF16("a"),
       GURL("http://a"));
   RecentlyUsedFoldersComboModel model(GetModel(), new_node);
-  std::set<const BookmarkNode*> nodes;
+  std::set<string16> items;
   for (int i = 0; i < model.GetItemCount(); ++i) {
-    const BookmarkNode* node = model.GetNodeAt(i);
-    EXPECT_EQ(0u, nodes.count(node));
-    nodes.insert(node);
+    if (!model.IsItemSeparatorAt(i))
+      EXPECT_EQ(0u, items.count(model.GetItemAt(i)));
   }
 }

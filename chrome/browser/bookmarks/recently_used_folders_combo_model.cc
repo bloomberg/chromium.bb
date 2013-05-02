@@ -5,6 +5,7 @@
 #include "chrome/browser/bookmarks/recently_used_folders_combo_model.h"
 
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -15,14 +16,45 @@ const size_t kMaxMRUFolders = 5;
 
 }  // namespace
 
+struct RecentlyUsedFoldersComboModel::Item {
+  enum Type {
+    TYPE_NODE,
+    TYPE_SEPARATOR,
+    TYPE_CHOOSE_ANOTHER_FOLDER
+  };
+
+  Item(const BookmarkNode* node, Type type);
+  ~Item();
+
+  bool operator==(const Item& item) const;
+
+  const BookmarkNode* node;
+  Type type;
+};
+
+RecentlyUsedFoldersComboModel::Item::Item(const BookmarkNode* node,
+                                          Type type)
+    : node(node),
+      type(type) {
+}
+
+RecentlyUsedFoldersComboModel::Item::~Item() {}
+
+bool RecentlyUsedFoldersComboModel::Item::operator==(const Item& item) const {
+  return item.node == node && item.type == type;
+}
+
 RecentlyUsedFoldersComboModel::RecentlyUsedFoldersComboModel(
     BookmarkModel* model,
     const BookmarkNode* node)
-    // Use + 2 to account for bookmark bar and other node.
-    : nodes_(bookmark_utils::GetMostRecentlyModifiedFolders(
-          model, kMaxMRUFolders + 2)),
+    : bookmark_model_(model),
       node_parent_index_(0) {
-  // TODO(sky): bug 1173415 add a separator in the combobox here.
+  // Use + 2 to account for bookmark bar and other node.
+  std::vector<const BookmarkNode*> nodes =
+      bookmark_utils::GetMostRecentlyModifiedFolders(model, kMaxMRUFolders + 2);
+
+  for (size_t i = 0; i < nodes.size(); ++i)
+    items_.push_back(Item(nodes[i], Item::TYPE_NODE));
 
   // We special case the placement of these, so remove them from the list, then
   // fix up the order.
@@ -34,51 +66,81 @@ RecentlyUsedFoldersComboModel::RecentlyUsedFoldersComboModel(
   // Make the parent the first item, unless it's a permanent node, which is
   // added below.
   if (!model->is_permanent_node(node->parent()))
-    nodes_.insert(nodes_.begin(), node->parent());
+    items_.insert(items_.begin(), Item(node->parent(), Item::TYPE_NODE));
 
   // Make sure we only have kMaxMRUFolders in the first chunk.
-  if (nodes_.size() > kMaxMRUFolders)
-    nodes_.erase(nodes_.begin() + kMaxMRUFolders, nodes_.end());
+  if (items_.size() > kMaxMRUFolders)
+    items_.erase(items_.begin() + kMaxMRUFolders, items_.end());
 
   // And put the bookmark bar and other nodes at the end of the list.
-  nodes_.push_back(model->bookmark_bar_node());
-  nodes_.push_back(model->other_node());
+  items_.push_back(Item(model->bookmark_bar_node(), Item::TYPE_NODE));
+  items_.push_back(Item(model->other_node(), Item::TYPE_NODE));
   if (model->mobile_node()->IsVisible())
-    nodes_.push_back(model->mobile_node());
+    items_.push_back(Item(model->mobile_node(), Item::TYPE_NODE));
+#if defined(USE_AURA) || defined(TOOLKIT_GTK)
+  items_.push_back(Item(NULL, Item::TYPE_SEPARATOR));
+#endif
+  items_.push_back(Item(NULL, Item::TYPE_CHOOSE_ANOTHER_FOLDER));
 
-  std::vector<const BookmarkNode*>::iterator it = std::find(nodes_.begin(),
-                                                            nodes_.end(),
-                                                            node->parent());
-  node_parent_index_ = static_cast<int>(it - nodes_.begin());
+  std::vector<Item>::iterator it = std::find(items_.begin(),
+                                             items_.end(),
+                                             Item(node->parent(),
+                                                  Item::TYPE_NODE));
+  node_parent_index_ = static_cast<int>(it - items_.begin());
 }
 
 RecentlyUsedFoldersComboModel::~RecentlyUsedFoldersComboModel() {}
 
 int RecentlyUsedFoldersComboModel::GetItemCount() const {
-  return static_cast<int>(nodes_.size() + 1);
+  return static_cast<int>(items_.size());
 }
 
 string16 RecentlyUsedFoldersComboModel::GetItemAt(int index) {
-  if (index == static_cast<int>(nodes_.size()))
-    return
-       l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER);
-  return nodes_[index]->GetTitle();
+  switch (items_[index].type) {
+    case Item::TYPE_NODE:
+      return items_[index].node->GetTitle();
+    case Item::TYPE_SEPARATOR:
+      return string16();
+    case Item::TYPE_CHOOSE_ANOTHER_FOLDER:
+      return l10n_util::GetStringUTF16(
+          IDS_BOOKMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER);
+  }
+  NOTREACHED();
+  return string16();
+}
+
+bool RecentlyUsedFoldersComboModel::IsItemSeparatorAt(int index) {
+  return items_[index].type == Item::TYPE_SEPARATOR;
 }
 
 int RecentlyUsedFoldersComboModel::GetDefaultIndex() const {
   return node_parent_index_;
 }
 
+void RecentlyUsedFoldersComboModel::MaybeChangeParent(
+    const BookmarkNode* node,
+    int selected_index) {
+  if (items_[selected_index].type != Item::TYPE_NODE)
+    return;
+
+  const BookmarkNode* new_parent = GetNodeAt(selected_index);
+  if (new_parent != node->parent()) {
+    content::RecordAction(
+        content::UserMetricsAction("BookmarkBubble_ChangeParent"));
+    bookmark_model_->Move(node, new_parent, new_parent->child_count());
+  }
+}
+
 const BookmarkNode* RecentlyUsedFoldersComboModel::GetNodeAt(int index) {
-  if (index < 0 || index >= static_cast<int>(nodes_.size()))
+  if (index < 0 || index >= static_cast<int>(items_.size()))
     return NULL;
-  return nodes_[index];
+  return items_[index].node;
 }
 
 void RecentlyUsedFoldersComboModel::RemoveNode(const BookmarkNode* node) {
-  std::vector<const BookmarkNode*>::iterator it = std::find(nodes_.begin(),
-                                                            nodes_.end(),
-                                                            node);
-  if (it != nodes_.end())
-    nodes_.erase(it);
+  std::vector<Item>::iterator it = std::find(items_.begin(),
+                                             items_.end(),
+                                             Item(node, Item::TYPE_NODE));
+  if (it != items_.end())
+    items_.erase(it);
 }

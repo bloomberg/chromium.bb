@@ -15,8 +15,9 @@ class BookmarkModel;
 class BookmarkNode;
 
 // Model for the combobox showing the list of folders to choose from. The
-// list always contains the bookmark bar, other node and parent. The list
-// also contains an extra item that shows the text 'Choose another folder...'.
+// list always contains the Bookmarks Bar, Other Bookmarks and the parent
+// folder. The list also contains an extra item that shows the text
+// "Choose Another Folder...".
 class RecentlyUsedFoldersComboModel : public ui::ComboboxModel {
  public:
   RecentlyUsedFoldersComboModel(BookmarkModel* model, const BookmarkNode* node);
@@ -25,16 +26,24 @@ class RecentlyUsedFoldersComboModel : public ui::ComboboxModel {
   // Overridden from ui::ComboboxModel:
   virtual int GetItemCount() const OVERRIDE;
   virtual string16 GetItemAt(int index) OVERRIDE;
+  virtual bool IsItemSeparatorAt(int index) OVERRIDE;
   virtual int GetDefaultIndex() const OVERRIDE;
 
+  // If necessary this function moves |node| into the corresponding folder for
+  // the given |selected_index|.
+  void MaybeChangeParent(const BookmarkNode* node, int selected_index);
+
+ private:
   // Returns the node at the specified |index|.
   const BookmarkNode* GetNodeAt(int index);
 
- private:
-  // Removes |node| from |nodes_|. Does nothing if |node| is not in |nodes_|.
+  // Removes |node| from |items_|. Does nothing if |node| is not in |items_|.
   void RemoveNode(const BookmarkNode* node);
 
-  std::vector<const BookmarkNode*> nodes_;
+  struct Item;
+  std::vector<Item> items_;
+
+  BookmarkModel* bookmark_model_;
 
   // The index of the original parent folder.
   int node_parent_index_;
