@@ -85,7 +85,7 @@ class RebaselineTest(AbstractRebaseliningCommand):
                 help="Platform to move existing baselines to before rebaselining. This is for bringing up new ports."),
             optparse.make_option("--test", help="Test to rebaseline"),
             ])
-        self._scm_changes = {'add': []}
+        self._scm_changes = {'add': [], 'remove-lines': []}
 
     def _results_url(self, builder_name):
         return self._tool.buildbot_for_builder_name(builder_name).builder_with_name(builder_name).latest_layout_test_results_url()
@@ -140,27 +140,6 @@ class RebaselineTest(AbstractRebaseliningCommand):
     def _add_to_scm(self, path):
         self._scm_changes['add'].append(path)
 
-    def _update_expectations_file(self, builder_name, test_name):
-        port = self._tool.port_factory.get_from_builder_name(builder_name)
-
-        # Since rebaseline-test-internal can be called multiple times in parallel,
-        # we need to ensure that we're not trying to update the expectations file
-        # concurrently as well.
-        # FIXME: We should rework the code to not need this; maybe just download
-        # the files in parallel and rebaseline local files serially?
-        try:
-            path = port.path_to_generic_test_expectations_file()
-            lock = self._tool.make_file_lock(path + '.lock')
-            lock.acquire_lock()
-            expectations = TestExpectations(port, include_overrides=False)
-            for test_configuration in port.all_test_configurations():
-                if test_configuration.version == port.test_configuration().version:
-                    expectationsString = expectations.remove_configuration_from_test(test_name, test_configuration)
-
-            self._tool.filesystem.write_text_file(path, expectationsString)
-        finally:
-            lock.release_lock()
-
     def _test_root(self, test_name):
         return self._tool.filesystem.splitext(test_name)[0]
 
@@ -195,7 +174,7 @@ class RebaselineTest(AbstractRebaseliningCommand):
         self._baseline_suffix_list = options.suffixes.split(',')
         for suffix in self._baseline_suffix_list:
             self._rebaseline_test(options.builder, options.test, options.move_overwritten_baselines_to, suffix, results_url)
-        self._update_expectations_file(options.builder, options.test)
+        self._scm_changes['remove-lines'].append({'builder': options.builder, 'test': options.test})
 
     def execute(self, options, args, tool):
         self._rebaseline_test_and_update_expectations(options)
@@ -325,12 +304,22 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
 
     def _files_to_add(self, command_results):
         files_to_add = set()
+        lines_to_remove = {}
         for output in [result[1].split('\n') for result in command_results]:
             file_added = False
             for line in output:
                 try:
                     if line:
-                        files_to_add.update(json.loads(line)['add'])
+                        parsed_line = json.loads(line)
+                        if 'add' in parsed_line:
+                            files_to_add.update(parsed_line['add'])
+                        if 'remove-lines' in parsed_line:
+                            for line_to_remove in parsed_line['remove-lines']:
+                                test = line_to_remove['test']
+                                builder = line_to_remove['builder']
+                                if test not in lines_to_remove:
+                                    lines_to_remove[test] = []
+                                lines_to_remove[test].append(builder)
                         file_added = True
                 except ValueError:
                     _log.debug('"%s" is not a JSON object, ignoring' % line)
@@ -338,8 +327,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             if not file_added:
                 _log.debug('Could not add file based off output "%s"' % output)
 
-
-        return list(files_to_add)
+        return list(files_to_add), lines_to_remove
 
     def _optimize_baselines(self, test_list, verbose=False):
         # We don't run this in parallel because modifying the SCM in parallel is unreliable.
@@ -358,15 +346,24 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
 
         commands = self._rebaseline_commands(test_list, options)
         command_results = self._tool.executive.run_in_parallel(commands)
-
         log_output = '\n'.join(result[2] for result in command_results).replace('\n\n', '\n')
         for line in log_output.split('\n'):
             if line:
                 print >> sys.stderr, line  # FIXME: Figure out how to log properly.
 
-        files_to_add = self._files_to_add(command_results)
+        files_to_add, lines_to_remove = self._files_to_add(command_results)
         if files_to_add:
             self._tool.scm().add_list(list(files_to_add))
+
+        for test in lines_to_remove:
+            for builder in lines_to_remove[test]:
+                port = self._tool.port_factory.get_from_builder_name(builder)
+                path = port.path_to_generic_test_expectations_file()
+                expectations = TestExpectations(port, include_overrides=False)
+                for test_configuration in port.all_test_configurations():
+                    if test_configuration.version == port.test_configuration().version:
+                        expectationsString = expectations.remove_configuration_from_test(test, test_configuration)
+                self._tool.filesystem.write_text_file(path, expectationsString)
 
         if options.optimize:
             self._optimize_baselines(test_list, options.verbose)
@@ -397,18 +394,6 @@ class RebaselineExpectations(AbstractParallelRebaselineCommand):
             self.no_optimize_option,
             ] + self.platform_options)
         self._test_list = None
-
-    def _update_expectations_files(self, port_name):
-        port = self._tool.port_factory.get(port_name)
-
-        expectations = TestExpectations(port)
-
-        rebaseline_tests = expectations.get_rebaselining_failures()
-        filtered_rebaseline_tests = [test for test in rebaseline_tests if not port.reference_files(test)]
-
-        for path in port.expectations_dict():
-            if self._tool.filesystem.exists(path):
-                self._tool.filesystem.write_text_file(path, expectations.remove_rebaselined_tests(filtered_rebaseline_tests, path))
 
     def _tests_to_rebaseline(self, port):
         tests_to_rebaseline = {}
@@ -443,9 +428,6 @@ class RebaselineExpectations(AbstractParallelRebaselineCommand):
             return
 
         self._rebaseline(options, self._test_list)
-
-        for port_name in port_names:
-            self._update_expectations_files(port_name)
 
 
 class Rebaseline(AbstractParallelRebaselineCommand):

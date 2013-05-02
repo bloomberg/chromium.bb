@@ -60,7 +60,10 @@ class ChromiumPort(Port):
         ('lucid', 'x86_64'),
         # FIXME: Technically this should be 'arm', but adding a third architecture type breaks TestConfigurationConverter.
         # If we need this to be 'arm' in the future, then we first have to fix TestConfigurationConverter.
-        ('icecreamsandwich', 'x86'))
+        # FIXME: Until we have an android bot to do rebaselines, we need to not include it in ALL_SYSTEMS
+        # because otherwise rebaselines won't correclty remove lines from TestExpectations.
+        #('icecreamsandwich', 'x86'),
+        )
 
     ALL_BASELINE_VARIANTS = [
         'chromium-mac-mountainlion', 'chromium-mac-lion', 'chromium-mac-snowleopard',

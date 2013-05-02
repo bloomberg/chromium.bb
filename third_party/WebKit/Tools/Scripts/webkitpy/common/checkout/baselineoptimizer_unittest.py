@@ -122,7 +122,7 @@ class BaselineOptimizerTest(unittest.TestCase):
         self._assertOptimization({
             'LayoutTests/platform/chromium-mac': '1',
             'LayoutTests/platform/chromium-linux': '1',
-            'LayoutTests/platform/chromium-android': '1',
+            'LayoutTests/platform/chromium-linux-x86': '1',
         }, {
             'LayoutTests/platform/chromium-mac': '1',
             'LayoutTests/platform/chromium-linux': '1',
@@ -132,7 +132,7 @@ class BaselineOptimizerTest(unittest.TestCase):
         self._assertOptimization({
             'LayoutTests/platform/chromium-mac-snowleopard': '1',
             'LayoutTests/platform/chromium-win': '1',
-            'LayoutTests/platform/chromium-android': '1',
+            'LayoutTests/platform/chromium-linux-x86': '1',
         }, {
             'LayoutTests/platform/chromium-mac-snowleopard': '1',
             'LayoutTests/platform/chromium-win': '1',

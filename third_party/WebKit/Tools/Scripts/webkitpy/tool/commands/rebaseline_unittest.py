@@ -107,50 +107,6 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
 Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
 """)
 
-    def test_rebaseline_updates_expectations_file(self):
-        self._write(self.lion_expectations_path, "Bug(x) [ Mac ] userscripts/another-test.html [ ImageOnlyFailure ]\nbug(z) [ Linux ] userscripts/another-test.html [ ImageOnlyFailure ]\n")
-        self._write("userscripts/another-test.html", "Dummy test contents")
-
-        self.options.suffixes = 'png,wav,txt'
-        self.command._rebaseline_test_and_update_expectations(self.options)
-
-        self.assertItemsEqual(self.tool.web.urls_fetched,
-            [self.WEB_PREFIX + '/userscripts/another-test-actual.png',
-             self.WEB_PREFIX + '/userscripts/another-test-actual.wav',
-             self.WEB_PREFIX + '/userscripts/another-test-actual.txt'])
-        new_expectations = self._read(self.lion_expectations_path)
-        self.assertMultiLineEqual(new_expectations, "Bug(x) [ MountainLion SnowLeopard ] userscripts/another-test.html [ ImageOnlyFailure ]\nbug(z) [ Linux ] userscripts/another-test.html [ ImageOnlyFailure ]\n")
-
-    def test_rebaseline_updates_expectations_file_all_platforms(self):
-        self._write(self.lion_expectations_path, "Bug(x) userscripts/another-test.html [ ImageOnlyFailure ]\n")
-        self._write("userscripts/another-test.html", "Dummy test contents")
-
-        self.options.suffixes = 'png,wav,txt'
-        self.command._rebaseline_test_and_update_expectations(self.options)
-
-        self.assertItemsEqual(self.tool.web.urls_fetched,
-            [self.WEB_PREFIX + '/userscripts/another-test-actual.png',
-             self.WEB_PREFIX + '/userscripts/another-test-actual.wav',
-             self.WEB_PREFIX + '/userscripts/another-test-actual.txt'])
-        new_expectations = self._read(self.lion_expectations_path)
-        self.assertMultiLineEqual(new_expectations, "Bug(x) [ Android Linux MountainLion SnowLeopard Win ] userscripts/another-test.html [ ImageOnlyFailure ]\n")
-
-    def test_rebaseline_does_not_include_overrides(self):
-        self._write(self.lion_expectations_path, "Bug(x) [ Mac ] userscripts/another-test.html [ ImageOnlyFailure ]\nBug(z) [ Linux ] userscripts/another-test.html [ ImageOnlyFailure ]\n")
-        self._write(self.lion_port.path_from_chromium_base('skia', 'skia_test_expectations.txt'), "Bug(y) [ Mac ] other-test.html [ Failure ]\n")
-        self._write("userscripts/another-test.html", "Dummy test contents")
-
-        self.options.suffixes = 'png,wav,txt'
-        self.command._rebaseline_test_and_update_expectations(self.options)
-
-        self.assertItemsEqual(self.tool.web.urls_fetched,
-            [self.WEB_PREFIX + '/userscripts/another-test-actual.png',
-             self.WEB_PREFIX + '/userscripts/another-test-actual.wav',
-             self.WEB_PREFIX + '/userscripts/another-test-actual.txt'])
-
-        new_expectations = self._read(self.lion_expectations_path)
-        self.assertMultiLineEqual(new_expectations, "Bug(x) [ MountainLion SnowLeopard ] userscripts/another-test.html [ ImageOnlyFailure ]\nBug(z) [ Linux ] userscripts/another-test.html [ ImageOnlyFailure ]\n")
-
     def test_rebaseline_test(self):
         self.command._rebaseline_test("WebKit Linux", "userscripts/another-test.html", None, "txt", self.WEB_PREFIX)
         self.assertItemsEqual(self.tool.web.urls_fetched, [self.WEB_PREFIX + '/userscripts/another-test-actual.txt'])
@@ -233,7 +189,7 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
             builders._exact_matches = old_exact_matches
 
         self.assertMultiLineEqual(self._read(self.tool.filesystem.join(port.layout_tests_dir(), 'platform/test-mac-leopard/failures/expected/image-expected.txt')), 'original snowleopard result')
-        self.assertMultiLineEqual(out, '{"add": []}\n')
+        self.assertMultiLineEqual(out, '{"add": [], "remove-lines": [{"test": "failures/expected/image.html", "builder": "MOCK SnowLeopard"}]}\n')
 
 
 class TestRebaselineJson(_BaseTestCase):
@@ -296,6 +252,46 @@ class TestRebaselineJson(_BaseTestCase):
         self.assertEqual(self.tool.executive.calls,
             [[['echo', 'rebaseline-test-internal', '--suffixes', 'txt,png', '--builder', 'MOCK builder', '--test', 'user-scripts/another-test.html', '--results-directory', '/tmp', '--verbose']]])
 
+class TestRebaselineJsonUpdatesExpectationsFiles(_BaseTestCase):
+    command_constructor = RebaselineJson
+
+    def setUp(self):
+        super(TestRebaselineJsonUpdatesExpectationsFiles, self).setUp()
+        self.tool.executive = MockExecutive2()
+
+        def mock_run_command(args,
+                             cwd=None,
+                             input=None,
+                             error_handler=None,
+                             return_exit_code=False,
+                             return_stderr=True,
+                             decode_output=False,
+                             env=None):
+            return '{"add": [], "remove-lines": [{"test": "userscripts/another-test.html", "builder": "WebKit Mac10.7"}]}\n'
+        self.tool.executive.run_command = mock_run_command
+
+    def test_rebaseline_updates_expectations_file(self):
+        options = MockOptions(optimize=False, verbose=True, move_overwritten_baselines=False, results_directory=None)
+
+        self._write(self.lion_expectations_path, "Bug(x) [ Mac ] userscripts/another-test.html [ ImageOnlyFailure ]\nbug(z) [ Linux ] userscripts/another-test.html [ ImageOnlyFailure ]\n")
+        self._write("userscripts/another-test.html", "Dummy test contents")
+
+        self.command._rebaseline(options,  {"userscripts/another-test.html": {"WebKit Mac10.7": ["txt", "png"]}})
+
+        new_expectations = self._read(self.lion_expectations_path)
+        self.assertMultiLineEqual(new_expectations, "Bug(x) [ MountainLion SnowLeopard ] userscripts/another-test.html [ ImageOnlyFailure ]\nbug(z) [ Linux ] userscripts/another-test.html [ ImageOnlyFailure ]\n")
+
+    def test_rebaseline_updates_expectations_file_all_platforms(self):
+        options = MockOptions(optimize=False, verbose=True, move_overwritten_baselines=False, results_directory=None)
+
+        self._write(self.lion_expectations_path, "Bug(x) userscripts/another-test.html [ ImageOnlyFailure ]\n")
+        self._write("userscripts/another-test.html", "Dummy test contents")
+
+        self.command._rebaseline(options,  {"userscripts/another-test.html": {"WebKit Mac10.7": ["txt", "png"]}})
+
+        new_expectations = self._read(self.lion_expectations_path)
+        self.assertMultiLineEqual(new_expectations, "Bug(x) [ Linux MountainLion SnowLeopard Win ] userscripts/another-test.html [ ImageOnlyFailure ]\n")
+
 
 class TestRebaseline(_BaseTestCase):
     # This command shares most of its logic with RebaselineJson, so these tests just test what is different.
@@ -336,15 +332,6 @@ class TestRebaselineExpectations(_BaseTestCase):
         super(TestRebaselineExpectations, self).setUp()
         self.options = MockOptions(optimize=False, builders=None, suffixes=['txt'], verbose=False, platform=None,
                                    move_overwritten_baselines=False, results_directory=None)
-
-    def test_reftests_not_rebaselined(self):
-        self._write(self.lion_expectations_path, 'Bug(x) userscripts/another-test.html [ Failure Rebaseline ]\n')
-        self._write('userscripts/another-test.html', 'test content')
-        self._write("userscripts/another-test-expected.html", "expected result")
-
-        self.assertDictEqual(self.command._tests_to_rebaseline(self.lion_port), {'userscripts/another-test.html': set(['png', 'txt', 'wav'])})
-        self.command._update_expectations_files(self.lion_port.port_name)
-        self.assertEqual(self._read(self.lion_expectations_path), 'Bug(x) userscripts/another-test.html [ Failure Rebaseline ]\n')
 
     def test_rebaseline_expectations(self):
         self._zero_out_test_expectations()
