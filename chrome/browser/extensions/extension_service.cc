@@ -2423,10 +2423,12 @@ void ExtensionService::FinishDelayedInstallation(
 }
 
 void ExtensionService::FinishInstallation(const Extension* extension) {
+  bool is_update = GetInstalledExtension(extension->id()) != NULL;
+  extensions::InstalledExtensionInfo details(extension, is_update);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_INSTALLED,
       content::Source<Profile>(profile_),
-      content::Details<const Extension>(extension));
+      content::Details<const extensions::InstalledExtensionInfo>(&details));
 
   bool unacknowledged_external = IsUnacknowledgedExternalExtension(extension);
 

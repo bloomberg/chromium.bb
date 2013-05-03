@@ -103,7 +103,8 @@ void ScreensaverController::Observe(
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
       const extensions::Extension* extension =
-          content::Details<const extensions::Extension>(details).ptr();
+          content::Details<const extensions::InstalledExtensionInfo>(details)->
+              extension;
       // Uninstall any previously installed screensaver extensions if a new
       // screensaver extension is installed.
       if (extension->HasAPIPermission(extensions::APIPermission::kScreensaver))

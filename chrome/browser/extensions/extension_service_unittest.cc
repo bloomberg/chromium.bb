@@ -583,6 +583,7 @@ class ExtensionServiceTest
  public:
   ExtensionServiceTest()
       : installed_(NULL),
+        was_update_(false),
         override_external_install_prompt_(
             FeatureSwitch::prompt_for_external_extensions(), false) {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
@@ -621,9 +622,14 @@ class ExtensionServiceTest
         loaded_.erase(i);
         break;
       }
-      case chrome::NOTIFICATION_EXTENSION_INSTALLED:
-        installed_ = content::Details<const Extension>(details).ptr();
+      case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
+        const extensions::InstalledExtensionInfo* installed_info =
+            content::Details<const extensions::InstalledExtensionInfo>(details)
+                .ptr();
+        installed_ = installed_info->extension;
+        was_update_ = installed_info->is_update;
         break;
+      }
 
       default:
         DCHECK(false);
@@ -760,6 +766,9 @@ class ExtensionServiceTest
         ++expected_extensions_count_;
 
       EXPECT_TRUE(installed_) << path.value();
+      // If and only if INSTALL_UPDATED, it should have the is_update flag.
+      EXPECT_EQ(install_state == INSTALL_UPDATED, was_update_)
+          << path.value();
       EXPECT_EQ(0u, errors.size()) << path.value();
 
       if (install_state == INSTALL_WITHOUT_LOAD) {
@@ -784,6 +793,7 @@ class ExtensionServiceTest
     }
 
     installed_ = NULL;
+    was_update_ = false;
     loaded_.clear();
     ExtensionErrorReporter::GetInstance()->ClearErrors();
     return extension;
@@ -1083,6 +1093,7 @@ class ExtensionServiceTest
   extensions::ExtensionList loaded_;
   std::string unloaded_id_;
   const Extension* installed_;
+  bool was_update_;
   FeatureSwitch::ScopedOverride override_external_install_prompt_;
 
  private:
@@ -1645,6 +1656,7 @@ TEST_F(ExtensionServiceTest, InstallUserScript) {
   loop_.RunUntilIdle();
   std::vector<string16> errors = GetErrors();
   EXPECT_TRUE(installed_) << "Nothing was installed.";
+  EXPECT_FALSE(was_update_) << path.value();
   ASSERT_EQ(1u, loaded_.size()) << "Nothing was loaded.";
   EXPECT_EQ(0u, errors.size()) << "There were errors: "
                                << JoinString(errors, ',');
@@ -1652,6 +1664,7 @@ TEST_F(ExtensionServiceTest, InstallUserScript) {
               path.value();
 
   installed_ = NULL;
+  was_update_ = false;
   loaded_.clear();
   ExtensionErrorReporter::GetInstance()->ClearErrors();
 }

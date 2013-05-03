@@ -1296,9 +1296,12 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
       content::NotificationService::AllSources());
   UpdateProviderPolicy(policies);
   observer.Wait();
-  content::Details<const extensions::Extension> details = observer.details();
-  EXPECT_EQ(kGoodCrxId, details->id());
-  EXPECT_EQ(details.ptr(), service->GetExtensionById(kGoodCrxId, true));
+  // Note: Cannot check that the notification details match the expected
+  // exception, since the details object has already been freed prior to
+  // the completion of observer.Wait().
+
+  EXPECT_TRUE(service->GetExtensionById(kGoodCrxId, true));
+
   // The user is not allowed to uninstall force-installed extensions.
   UninstallExtension(kGoodCrxId, false);
 }
@@ -1368,9 +1371,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallSources) {
       content::NotificationService::AllSources());
   PerformClick(1, 0);
   observer.Wait();
-
-  content::Details<const extensions::Extension> details = observer.details();
-  EXPECT_EQ(kAdBlockCrxId, details->id());
+  // Note: Cannot check that the notification details match the expected
+  // exception, since the details object has already been freed prior to
+  // the completion of observer.Wait().
 
   // The first extension shouldn't be present, the second should be there.
   EXPECT_FALSE(extension_service()->GetExtensionById(kGoodCrxId, true));

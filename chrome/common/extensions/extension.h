@@ -697,6 +697,16 @@ struct ExtensionInfo {
   DISALLOW_COPY_AND_ASSIGN(ExtensionInfo);
 };
 
+struct InstalledExtensionInfo {
+  // The extension being installed - this should always be non-NULL.
+  const Extension* extension;
+
+  // True if the extension is being updated; false if it is being installed.
+  bool is_update;
+
+  InstalledExtensionInfo(const Extension* extension, bool is_update);
+};
+
 struct UnloadedExtensionInfo {
   extension_misc::UnloadedExtensionReason reason;
 

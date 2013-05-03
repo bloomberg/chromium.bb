@@ -173,11 +173,11 @@ void CommandService::Observe(
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_INSTALLED:
       AssignInitialKeybindings(
-          content::Details<const Extension>(details).ptr());
+          content::Details<const InstalledExtensionInfo>(details)->extension);
       break;
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED:
       RemoveKeybindingPrefs(
-          content::Details<const Extension>(details).ptr()->id(),
+          content::Details<const Extension>(details)->id(),
           std::string());
       break;
     default:

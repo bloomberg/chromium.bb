@@ -1741,12 +1741,18 @@ ExtensionInfo::ExtensionInfo(const DictionaryValue* manifest,
 
 ExtensionInfo::~ExtensionInfo() {}
 
+InstalledExtensionInfo::InstalledExtensionInfo(
+    const Extension* extension,
+    bool is_update)
+    : extension(extension),
+      is_update(is_update) {}
+
 UnloadedExtensionInfo::UnloadedExtensionInfo(
     const Extension* extension,
     extension_misc::UnloadedExtensionReason reason)
-  : reason(reason),
-    already_disabled(false),
-    extension(extension) {}
+    : reason(reason),
+      already_disabled(false),
+      extension(extension) {}
 
 UpdatedExtensionPermissionsInfo::UpdatedExtensionPermissionsInfo(
     const Extension* extension,

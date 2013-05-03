@@ -83,7 +83,7 @@ class FilteringNotificationObserver : public content::NotificationObserver {
     switch (type) {
       case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
         const Extension* extension =
-            content::Details<const Extension>(details).ptr();
+            content::Details<const InstalledExtensionInfo>(details)->extension;
         if (extension_ids_.count(extension->id()))
           notifications_.push_back(static_cast<chrome::NotificationType>(type));
         break;

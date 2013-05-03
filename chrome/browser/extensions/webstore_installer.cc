@@ -247,7 +247,7 @@ void WebstoreInstaller::Observe(int type,
     case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
       CHECK(profile_->IsSameProfile(content::Source<Profile>(source).ptr()));
       const Extension* extension =
-          content::Details<const Extension>(details).ptr();
+          content::Details<const InstalledExtensionInfo>(details)->extension;
       if (id_ == extension->id())
         ReportSuccess();
       break;

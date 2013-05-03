@@ -658,7 +658,7 @@ void EventRouter::Observe(int type,
     case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
       // Dispatch the onInstalled event.
       const Extension* extension =
-          content::Details<const Extension>(details).ptr();
+          content::Details<const InstalledExtensionInfo>(details)->extension;
 
       // Get the previous version, if this is an upgrade.
       ExtensionService* service =

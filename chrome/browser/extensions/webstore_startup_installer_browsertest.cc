@@ -289,7 +289,9 @@ class CommandLineWebstoreInstall : public WebstoreStartupInstallerTest,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     if (type == chrome::NOTIFICATION_EXTENSION_INSTALLED) {
-      const Extension* extension = content::Details<Extension>(details).ptr();
+      const Extension* extension =
+          content::Details<const extensions::InstalledExtensionInfo>(details)->
+              extension;
       ASSERT_TRUE(extension != NULL);
       EXPECT_EQ(extension->id(), kTestExtensionId);
       saw_install_ = true;

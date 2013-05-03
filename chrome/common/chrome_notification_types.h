@@ -497,8 +497,8 @@ enum NotificationType {
   // Sent when an extension install turns out to not be a theme.
   NOTIFICATION_NO_THEME_DETECTED,
 
-  // Sent when new extensions are installed. The details are an Extension, and
-  // the source is a Profile.
+  // Sent when new extensions are installed, or existing extensions are updated.
+  // The details are an InstalledExtensionInfo, and the source is a Profile.
   NOTIFICATION_EXTENSION_INSTALLED,
 
   // An error occured during extension install. The details are a string with

@@ -34,8 +34,9 @@ void ShortcutManager::Observe(int type,
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
 #if !defined(OS_MACOSX)
-      const Extension* extension = content::Details<const Extension>(
-          details).ptr();
+      const Extension* extension =
+          content::Details<const extensions::InstalledExtensionInfo>(details)->
+              extension;
       if (extension->is_platform_app() &&
           extension->location() != extensions::Manifest::COMPONENT) {
         web_app::UpdateShortcutInfoAndIconForApp(*extension, profile_,

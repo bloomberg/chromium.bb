@@ -451,6 +451,7 @@ void SyncFileSystemService::Observe(
   //
   // (User action)    (Notification type)
   // Install:         INSTALLED.
+  // Update:          INSTALLED.
   // Uninstall:       UNLOADED(UNINSTALL).
   // Launch, Close:   No notification.
   // Enable:          EABLED.
@@ -475,7 +476,9 @@ void SyncFileSystemService::Observe(
 
 void SyncFileSystemService::HandleExtensionInstalled(
     const content::NotificationDetails& details) {
-  content::Details<const extensions::Extension> extension(details);
+  const extensions::Extension* extension =
+      content::Details<const extensions::InstalledExtensionInfo>(details)->
+          extension;
   GURL app_origin =
       extensions::Extension::GetBaseURLFromExtensionId(extension->id());
   DVLOG(1) << "Handle extension notification for INSTALLED: " << app_origin;

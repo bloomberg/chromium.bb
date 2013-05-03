@@ -644,6 +644,7 @@ void ManagementEventRouter::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   const char* event_name = NULL;
+  const Extension* extension = NULL;
   Profile* profile = content::Source<Profile>(source).ptr();
   CHECK(profile);
   CHECK(profile_->IsSameProfile(profile));
@@ -651,33 +652,33 @@ void ManagementEventRouter::Observe(
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_INSTALLED:
       event_name = events::kOnExtensionInstalled;
+      extension =
+          content::Details<const InstalledExtensionInfo>(details)->extension;
       break;
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED:
       event_name = events::kOnExtensionUninstalled;
+      extension = content::Details<const Extension>(details).ptr();
       break;
     case chrome::NOTIFICATION_EXTENSION_LOADED:
       event_name = events::kOnExtensionEnabled;
+      extension = content::Details<const Extension>(details).ptr();
       break;
     case chrome::NOTIFICATION_EXTENSION_UNLOADED:
       event_name = events::kOnExtensionDisabled;
+      extension =
+          content::Details<const UnloadedExtensionInfo>(details)->extension;
       break;
     default:
       NOTREACHED();
       return;
   }
+  DCHECK(event_name);
+  DCHECK(extension);
 
   scoped_ptr<ListValue> args(new ListValue());
   if (event_name == events::kOnExtensionUninstalled) {
-    args->Append(Value::CreateStringValue(
-        content::Details<const Extension>(details).ptr()->id()));
+    args->Append(Value::CreateStringValue(extension->id()));
   } else {
-    const Extension* extension = NULL;
-    if (event_name == events::kOnExtensionDisabled) {
-      extension = content::Details<UnloadedExtensionInfo>(details)->extension;
-    } else {
-      extension = content::Details<const Extension>(details).ptr();
-    }
-    CHECK(extension);
     scoped_ptr<management::ExtensionInfo> info = CreateExtensionInfo(
         *extension, ExtensionSystem::Get(profile));
     args->Append(info->ToValue().release());

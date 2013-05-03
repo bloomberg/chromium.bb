@@ -492,8 +492,10 @@ void PerformanceMonitor::Observe(int type,
                                  const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
-      AddExtensionEvent(EVENT_EXTENSION_INSTALL,
-                        content::Details<Extension>(details).ptr());
+      AddExtensionEvent(
+          EVENT_EXTENSION_INSTALL,
+          content::Details<const extensions::InstalledExtensionInfo>(details)->
+              extension);
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_ENABLED: {

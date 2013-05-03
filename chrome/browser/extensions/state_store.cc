@@ -129,9 +129,13 @@ void StateStore::Observe(int type,
                          const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_INSTALLED:
+      RemoveKeysForExtension(
+          content::Details<const InstalledExtensionInfo>(details)->extension->
+              id());
+      break;
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED:
       RemoveKeysForExtension(
-          content::Details<const Extension>(details).ptr()->id());
+          content::Details<const Extension>(details)->id());
       break;
     case chrome::NOTIFICATION_SESSION_RESTORE_DONE:
     case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME:

@@ -665,7 +665,7 @@ void ExtensionUpdater::Observe(int type,
     }
     case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
       const Extension* extension =
-          content::Details<const Extension>(details).ptr();
+          content::Details<const InstalledExtensionInfo>(details)->extension;
       if (extension)
         throttle_info_.erase(extension->id());
       break;

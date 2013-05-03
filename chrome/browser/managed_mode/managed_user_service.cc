@@ -278,10 +278,16 @@ void ManagedUserService::Observe(int type,
       }
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED:
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
+      // Remove the temporary elevation.
+      const extensions::Extension* extension =
+          content::Details<const extensions::InstalledExtensionInfo>(details)->
+              extension;
+      RemoveElevationForExtension(extension->id());
+      break;
+    }
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
-      // When an extension was installed or uninstalled, remove the temporary
-      // elevation.
+      // Remove the temporary elevation.
       const extensions::Extension* extension =
           content::Details<extensions::Extension>(details).ptr();
       RemoveElevationForExtension(extension->id());

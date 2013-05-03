@@ -41,7 +41,7 @@ class ExtensionFromWebAppTest
                        const content::NotificationDetails& details) OVERRIDE {
     if (type == chrome::NOTIFICATION_EXTENSION_INSTALLED) {
       const Extension* extension =
-          content::Details<const Extension>(details).ptr();
+          content::Details<const InstalledExtensionInfo>(details)->extension;
       if (extension->id() == expected_extension_id_) {
         installed_extension_ = extension;
         MessageLoopForUI::current()->Quit();

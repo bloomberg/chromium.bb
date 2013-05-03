@@ -316,7 +316,8 @@ void PushMessagingAPI::Observe(int type,
   }
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
-      const Extension* extension = content::Details<Extension>(details).ptr();
+      const Extension* extension =
+          content::Details<const InstalledExtensionInfo>(details)->extension;
       if (extension->HasAPIPermission(APIPermission::kPushMessaging)) {
         handler_->SuppressInitialInvalidationsForExtension(extension->id());
       }
