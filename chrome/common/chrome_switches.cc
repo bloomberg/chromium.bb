@@ -992,18 +992,6 @@ const char kNoStartupWindow[]               = "no-startup-window";
 // Autoconfig (PAC) script.
 const char kNumPacThreads[]                 = "num-pac-threads";
 
-// Controls whether to use the fancy new scoring (takes into account
-// word breaks, does better balancing of topicality, recency, etc.) for
-// HistoryQuickProvider.
-const char kOmniboxHistoryQuickProviderNewScoring[] =
-    "omnibox-history-quick-provider-new-scoring";
-// The value the kOmniboxHistoryQuickProviderNewScoring switch may have,
-// as in "--omnibox-history-quick-provider-new-scoring=1".
-// 1 means use new scoring.
-const char kOmniboxHistoryQuickProviderNewScoringEnabled[] = "1";
-// 0 means use old scoring ( == current behavior as of 6/2012).
-const char kOmniboxHistoryQuickProviderNewScoringDisabled[] = "0";
-
 // Controls whether HistoryQuickProvider is allowed to reorder results
 // according to inlineability in order to more aggressively assign/keep
 // high relevance scores.

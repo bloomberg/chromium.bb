@@ -12,7 +12,6 @@
 
 #include <math.h>
 
-#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -666,61 +665,19 @@ float ScoredHistoryMatch::GetFinalRelevancyScore(
 }
 
 void ScoredHistoryMatch::InitializeNewScoringField() {
-  enum NewScoringOption {
-    OLD_SCORING = 0,
-    NEW_SCORING = 1,
-    NEW_SCORING_AUTO_BUT_NOT_IN_FIELD_TRIAL = 2,
-    NEW_SCORING_FIELD_TRIAL_DEFAULT_GROUP = 3,
-    NEW_SCORING_FIELD_TRIAL_EXPERIMENT_GROUP = 4,
-    NUM_OPTIONS = 5
-  };
-  // should always be overwritten
-  NewScoringOption new_scoring_option = NUM_OPTIONS;
-
-  const std::string switch_value = CommandLine::ForCurrentProcess()->
-      GetSwitchValueASCII(switches::kOmniboxHistoryQuickProviderNewScoring);
-  if (switch_value == switches::kOmniboxHistoryQuickProviderNewScoringEnabled) {
-    new_scoring_option = NEW_SCORING;
-    use_new_scoring = true;
-  } else if (switch_value ==
-             switches::kOmniboxHistoryQuickProviderNewScoringDisabled) {
-    new_scoring_option = OLD_SCORING;
-    use_new_scoring = false;
-  } else {
-    // We'll assume any other flag means automatic.
-    // Automatic means eligible for the field trial.
-
-    // For the field trial stuff to work correctly, we must be running
-    // on the same thread as the thread that created the field trial,
-    // which happens via a call to OmniboxFieldTrial::Active in
-    // chrome_browser_main.cc on the main thread.  Let's check this to
-    // be sure.  We check "if we've heard of the UI thread then we'd better
-    // be on it."  The first part is necessary so unit tests pass.  (Many
-    // unit tests don't set up the threading naming system; hence
-    // CurrentlyOn(UI thread) will fail.)
-    DCHECK(!content::BrowserThread::IsWellKnownThread(
-               content::BrowserThread::UI) ||
-           content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    if (OmniboxFieldTrial::InHQPNewScoringFieldTrial()) {
-      if (OmniboxFieldTrial::InHQPNewScoringFieldTrialExperimentGroup()) {
-        new_scoring_option = NEW_SCORING_FIELD_TRIAL_EXPERIMENT_GROUP;
-        use_new_scoring = true;
-      } else {
-        new_scoring_option = NEW_SCORING_FIELD_TRIAL_DEFAULT_GROUP;
-        use_new_scoring = false;
-      }
-    } else {
-      new_scoring_option = NEW_SCORING_AUTO_BUT_NOT_IN_FIELD_TRIAL;
-      use_new_scoring = false;
-    }
-  }
-
-  // Add a beacon to the logs that'll allow us to identify later what
-  // new scoring state a user is in.  Do this by incrementing a bucket in
-  // a histogram, where the bucket represents the user's new scoring state.
-  UMA_HISTOGRAM_ENUMERATION(
-      "Omnibox.HistoryQuickProviderNewScoringFieldTrialBeacon",
-      new_scoring_option, NUM_OPTIONS);
+  // For the field trial stuff to work correctly, we must be running
+  // on the same thread as the thread that created the field trial,
+  // which happens via a call to OmniboxFieldTrial::Active in
+  // chrome_browser_main.cc on the main thread.  Let's check this to
+  // be sure.  We check "if we've heard of the UI thread then we'd better
+  // be on it."  The first part is necessary so unit tests pass.  (Many
+  // unit tests don't set up the threading naming system; hence
+  // CurrentlyOn(UI thread) will fail.)
+  DCHECK(!content::BrowserThread::IsWellKnownThread(
+             content::BrowserThread::UI) ||
+         content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  use_new_scoring = OmniboxFieldTrial::InHQPNewScoringFieldTrial() &&
+      OmniboxFieldTrial::InHQPNewScoringFieldTrialExperimentGroup();
 }
 
 void ScoredHistoryMatch::InitializeAlsoDoHUPLikeScoringFieldAndMaxScoreField() {

@@ -89,16 +89,6 @@ void AddOsStrings(unsigned bitmask, ListValue* list) {
       list->Append(new StringValue(kBitsToOs[i].name));
 }
 
-const Experiment::Choice kOmniboxHistoryQuickProviderNewScoringChoices[] = {
-  { IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_NEW_SCORING_AUTOMATIC, "", "" },
-  { IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_NEW_SCORING_ENABLED,
-    switches::kOmniboxHistoryQuickProviderNewScoring,
-    switches::kOmniboxHistoryQuickProviderNewScoringEnabled },
-  { IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_NEW_SCORING_DISABLED,
-    switches::kOmniboxHistoryQuickProviderNewScoring,
-    switches::kOmniboxHistoryQuickProviderNewScoringDisabled }
-};
-
 const Experiment::Choice
     kOmniboxHistoryQuickProviderReorderForInliningChoices[] = {
   { IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_REORDER_FOR_INLINING_AUTOMATIC,
@@ -639,13 +629,6 @@ const Experiment kExperiments[] = {
     // On by default for the Mac (different implementation in WebKit).
     kOsWin | kOsLinux,
     SINGLE_VALUE_TYPE(switches::kEnableSmoothScrolling)
-  },
-  {
-    "omnibox-history-quick-provider-new-scoring",
-    IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_NEW_SCORING_NAME,
-    IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_NEW_SCORING_DESCRIPTION,
-    kOsAll,
-    MULTI_VALUE_TYPE(kOmniboxHistoryQuickProviderNewScoringChoices)
   },
   {
     "omnibox-history-quick-provider-reorder-for-inlining",
