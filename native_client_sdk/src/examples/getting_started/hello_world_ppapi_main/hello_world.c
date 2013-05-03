@@ -12,7 +12,6 @@
 
 #include "ppapi_main/ppapi_main.h"
 
-
 // The default arguments to PPAPI_MAIN maps:
 //   STDIN -> /dev/stdin
 //   STDOUT -> /dev/stdout
@@ -31,7 +30,7 @@ PPAPI_MAIN_WITH_ARGS("pm_stdout", "/dev/tty", NULL, NULL)
 //   argv[2] = "<VALUE>"
 // Where the embed tag for this module uses KEY=VALUE
 //
-int ppapi_main(int argc, const char *argv[]) {
+int ppapi_main(int argc, const char* argv[]) {
   int index = 1;
 
   // Use PostMessage to send "Hello World" to JavaScript.
@@ -44,7 +43,7 @@ int ppapi_main(int argc, const char *argv[]) {
   // Print the arguments we received from the web page
   printf("NAME: %s\n", argv[0]);
   while (index + 2 < argc) {
-    printf("  ARGS: %s=%s\n", argv[index+0], argv[index+1]);
+    printf("  ARGS: %s=%s\n", argv[index + 0], argv[index + 1]);
     index += 2;
   }
   return 0;

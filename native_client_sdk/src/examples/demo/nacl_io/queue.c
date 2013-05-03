@@ -42,17 +42,13 @@ static int g_queue_size = 0;
  *
  * NOTE: this function assumes g_queue_mutex lock is held.
  * @return non-zero if the queue is empty. */
-static int IsQueueEmpty() {
-  return g_queue_size == 0;
-}
+static int IsQueueEmpty() { return g_queue_size == 0; }
 
 /** Return whether the queue is full.
  *
  * NOTE: this function assumes g_queue_mutex lock is held.
  * @return non-zero if the queue is full. */
-static int IsQueueFull() {
-  return g_queue_size == MAX_QUEUE_SIZE;
-}
+static int IsQueueFull() { return g_queue_size == MAX_QUEUE_SIZE; }
 
 /** Initialize the message queue. */
 void InitializeMessageQueue() {

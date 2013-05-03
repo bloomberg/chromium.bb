@@ -27,4 +27,4 @@ void InitializeMessageQueue();
 int EnqueueMessage(char* message);
 char* DequeueMessage();
 
-#endif  /* QUEUE_H_ */
+#endif /* QUEUE_H_ */

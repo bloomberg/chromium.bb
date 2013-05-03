@@ -49,12 +49,12 @@
 #include <GLES2/gl2.h>
 #include "matrix.h"
 
-GLuint  g_positionLoc;
-GLuint  g_texCoordLoc;
-GLuint  g_colorLoc;
-GLuint  g_MVPLoc;
-GLuint  g_vboID;
-GLuint  g_ibID;
+GLuint g_positionLoc;
+GLuint g_texCoordLoc;
+GLuint g_colorLoc;
+GLuint g_MVPLoc;
+GLuint g_vboID;
+GLuint g_ibID;
 GLubyte g_Indices[36];
 
 GLuint g_programObj;
@@ -70,36 +70,32 @@ float g_fSpinY = 0.0f;
 //----------------------------------------------------------------------------
 // Rendering Assets
 //----------------------------------------------------------------------------
-struct Vertex
-{
+struct Vertex {
   float tu, tv;
   float color[3];
   float loc[3];
 };
 
-Vertex *g_quadVertices = NULL;
-const char *g_TextureData = NULL;
-const char *g_VShaderData = NULL;
-const char *g_FShaderData = NULL;
+Vertex* g_quadVertices = NULL;
+const char* g_TextureData = NULL;
+const char* g_VShaderData = NULL;
+const char* g_FShaderData = NULL;
 
 bool g_Loaded = false;
 bool g_Ready = false;
 
-
 float g_xSpin = 2.0f;
 float g_ySpin = 0.5f;
 
-
-GLuint compileShader(GLenum type, const char *data) {
-  const char *shaderStrings[1];
+GLuint compileShader(GLenum type, const char* data) {
+  const char* shaderStrings[1];
   shaderStrings[0] = data;
 
   GLuint shader = glCreateShader(type);
-  glShaderSource(shader, 1, shaderStrings, NULL );
+  glShaderSource(shader, 1, shaderStrings, NULL);
   glCompileShader(shader);
   return shader;
 }
-
 
 void InitProgram(void) {
   g_vertexShader = compileShader(GL_VERTEX_SHADER, g_VShaderData);
@@ -112,23 +108,27 @@ void InitProgram(void) {
 
   glGenBuffers(1, &g_vboID);
   glBindBuffer(GL_ARRAY_BUFFER, g_vboID);
-  glBufferData(GL_ARRAY_BUFFER, 24 * sizeof(Vertex),
-               (void*)&g_quadVertices[0], GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER,
+               24 * sizeof(Vertex),
+               (void*)&g_quadVertices[0],
+               GL_STATIC_DRAW);
 
   glGenBuffers(1, &g_ibID);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_ibID);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36 * sizeof(char),
-               (void*)&g_Indices[0], GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+               36 * sizeof(char),
+               (void*)&g_Indices[0],
+               GL_STATIC_DRAW);
 
   //
   // Create a texture to test out our fragment shader...
   //
   glGenTextures(1, &g_textureID);
   glBindTexture(GL_TEXTURE_2D, g_textureID);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 128, 128, 0, GL_RGB,
-               GL_UNSIGNED_BYTE, g_TextureData);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 128, 128, 0, GL_RGB, GL_UNSIGNED_BYTE,
+               g_TextureData);
 
   //
   // Locate some parameters by name so we can set them later...
@@ -140,7 +140,6 @@ void InitProgram(void) {
   g_MVPLoc = glGetUniformLocation(g_programObj, "a_MVP");
   printf("Program initialized.\n");
 }
-
 
 void BuildQuad(Vertex* verts, int axis[3], float depth, float color[3]) {
   static float X[4] = { -1.0f, 1.0f, 1.0f, -1.0f };
@@ -157,9 +156,8 @@ void BuildQuad(Vertex* verts, int axis[3], float depth, float color[3]) {
   }
 }
 
-
-Vertex *BuildCube() {
-  Vertex *verts = new Vertex[24];
+Vertex* BuildCube() {
+  Vertex* verts = new Vertex[24];
   for (int i = 0; i < 3; i++) {
     int Faxis[3];
     int Baxis[3];
@@ -177,33 +175,33 @@ Vertex *BuildCube() {
     BuildQuad(&verts[12 + i * 4], Baxis, -1.0f, Bcolor);
   }
 
-  for(int i = 0; i < 6; i++) {
-    g_Indices[i*6 + 0] = 2 + i * 4;
-    g_Indices[i*6 + 1] = 1 + i * 4;
-    g_Indices[i*6 + 2] = 0 + i * 4;
-    g_Indices[i*6 + 3] = 3 + i * 4;
-    g_Indices[i*6 + 4] = 2 + i * 4;
-    g_Indices[i*6 + 5] = 0 + i * 4;
+  for (int i = 0; i < 6; i++) {
+    g_Indices[i * 6 + 0] = 2 + i * 4;
+    g_Indices[i * 6 + 1] = 1 + i * 4;
+    g_Indices[i * 6 + 2] = 0 + i * 4;
+    g_Indices[i * 6 + 3] = 3 + i * 4;
+    g_Indices[i * 6 + 4] = 2 + i * 4;
+    g_Indices[i * 6 + 5] = 0 + i * 4;
   }
   return verts;
 }
 
-
 static float clamp(float val, float min, float max) {
-  if (val < min) return min;
-  if (val > max) return max;
+  if (val < min)
+    return min;
+  if (val > max)
+    return max;
   return val;
 }
 
-
 void ProcessEvent(PPAPIEvent* event) {
   if (event->event_type == PP_INPUTEVENT_TYPE_MOUSEMOVE) {
-    PPAPIMouseEvent* mouse = (PPAPIMouseEvent*) event;
+    PPAPIMouseEvent* mouse = (PPAPIMouseEvent*)event;
     g_ySpin = clamp((float) mouse->delta.x / 2, -4.0, 4.0);
     g_xSpin = clamp((float) mouse->delta.y / 2, -4.0, 4.0);
   }
   if (event->event_type == PP_INPUTEVENT_TYPE_KEYUP) {
-    PPAPIKeyEvent* key = (PPAPIKeyEvent*) event;
+    PPAPIKeyEvent* key = (PPAPIKeyEvent*)event;
     if (key->key_code == 13) {
       PPAPIInstance3D::GetInstance3D()->ToggleFullscreen();
     }
@@ -232,22 +230,26 @@ void PPAPIRender(PP_Resource ctx, uint32_t width, uint32_t height) {
   xRot -= g_xSpin;
   yRot -= g_ySpin;
 
-  if (xRot >= 360.0f) xRot = 0.0;
-  if (xRot <= -360.0f) xRot = 0.0;
+  if (xRot >= 360.0f)
+    xRot = 0.0;
+  if (xRot <= -360.0f)
+    xRot = 0.0;
 
-  if (yRot >= 360.0f) yRot = 0.0;
-  if (yRot <= -360.0f) yRot = 0.0;
+  if (yRot >= 360.0f)
+    yRot = 0.0;
+  if (yRot <= -360.0f)
+    yRot = 0.0;
 
-  glClearColor(0.5,0.5,0.5,1);
+  glClearColor(0.5, 0.5, 0.5, 1);
   glClearDepthf(1.0);
-  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glEnable(GL_DEPTH_TEST);
 
   //set what program to use
-  glUseProgram( g_programObj );
-  glActiveTexture ( GL_TEXTURE0 );
-  glBindTexture ( GL_TEXTURE_2D,g_textureID );
-  glUniform1i ( g_textureLoc, 0 );
+  glUseProgram(g_programObj);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, g_textureID);
+  glUniform1i(g_textureLoc, 0);
 
   //create our perspective matrix
   float mpv[16];
@@ -255,33 +257,44 @@ void PPAPIRender(PP_Resource ctx, uint32_t width, uint32_t height) {
   float rot[16];
 
   identity_matrix(mpv);
-  glhPerspectivef2(&mpv[0], 45.0f, (float) (width) / (float) height, 1, 10);
+  glhPerspectivef2(&mpv[0], 45.0f, (float)(width) / (float) height, 1, 10);
 
   translate_matrix(0, 0, -4.0, trs);
-  rotate_matrix(xRot, yRot , 0.0f ,rot);
+  rotate_matrix(xRot, yRot, 0.0f, rot);
   multiply_matrix(trs, rot, trs);
   multiply_matrix(mpv, trs, mpv);
-  glUniformMatrix4fv(g_MVPLoc, 1, GL_FALSE, (GLfloat*) mpv);
+  glUniformMatrix4fv(g_MVPLoc, 1, GL_FALSE, (GLfloat*)mpv);
 
   //define the attributes of the vertex
   glBindBuffer(GL_ARRAY_BUFFER, g_vboID);
-  glVertexAttribPointer(g_positionLoc, 3, GL_FLOAT, GL_FALSE,
-                        sizeof(Vertex), (void*)offsetof(Vertex,loc));
+  glVertexAttribPointer(g_positionLoc,
+                        3,
+                        GL_FLOAT,
+                        GL_FALSE,
+                        sizeof(Vertex),
+                        (void*)offsetof(Vertex, loc));
   glEnableVertexAttribArray(g_positionLoc);
-  glVertexAttribPointer(g_texCoordLoc, 2, GL_FLOAT, GL_FALSE,
-                        sizeof(Vertex), (void*)offsetof(Vertex,tu));
+  glVertexAttribPointer(g_texCoordLoc,
+                        2,
+                        GL_FLOAT,
+                        GL_FALSE,
+                        sizeof(Vertex),
+                        (void*)offsetof(Vertex, tu));
   glEnableVertexAttribArray(g_texCoordLoc);
-  glVertexAttribPointer(g_colorLoc, 3, GL_FLOAT, GL_FALSE,
-                        sizeof(Vertex), (void*)offsetof(Vertex,color));
+  glVertexAttribPointer(g_colorLoc,
+                        3,
+                        GL_FLOAT,
+                        GL_FALSE,
+                        sizeof(Vertex),
+                        (void*)offsetof(Vertex, color));
   glEnableVertexAttribArray(g_colorLoc);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_ibID);
-  glDrawElements ( GL_TRIANGLES, 36, GL_UNSIGNED_BYTE ,0 );
+  glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, 0);
 }
 
-
-const char *LoadData(const char *url) {
-  char *buf;
+const char* LoadData(const char* url) {
+  char* buf;
   struct stat stat_buf;
 
   int fp = open(url, O_RDONLY);
@@ -289,14 +302,13 @@ const char *LoadData(const char *url) {
 
   int len = static_cast<int>(stat_buf.st_size);
   buf = new char[len + 1];
-  int read_size  = read(fp, buf, len);
+  int read_size = read(fp, buf, len);
   buf[len] = 0;
   return buf;
 }
 
-
 PPAPI_MAIN_USE(PPAPI_CreateInstance3D, PPAPI_MAIN_DEFAULT_ARGS)
-int ppapi_main(int argc, const char *argv[]) {
+int ppapi_main(int argc, const char* argv[]) {
   printf("Started main.\n");
 
   // Mount URL loads to /http
@@ -307,7 +319,7 @@ int ppapi_main(int argc, const char *argv[]) {
   g_FShaderData = LoadData("/http/fragment_shader_es2.frag");
   g_quadVertices = BuildCube();
 
-  fprintf(stderr,"Loaded\n");
+  fprintf(stderr, "Loaded\n");
   g_Loaded = true;
   return 0;
 }

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #include <algorithm>
 #include <GLES2/gl2.h>
 
@@ -12,16 +11,13 @@
 #include "shader_util.h"
 #include "transforms.h"
 
-
 namespace tumbler {
 
 static const size_t kVertexCount = 24;
 static const int kIndexCount = 36;
 
 Cube::Cube(SharedOpenGLContext opengl_context)
-    : opengl_context_(opengl_context),
-      width_(1),
-      height_(1) {
+    : opengl_context_(opengl_context), width_(1), height_(1) {
   eye_[0] = eye_[1] = 0.0f;
   eye_[2] = 2.0f;
   orientation_[0] = 0.0f;
@@ -65,20 +61,12 @@ void Cube::Draw() {
   glBindBuffer(GL_ARRAY_BUFFER, cube_vbos_[0]);
   glUseProgram(shader_program_object_);
   glEnableVertexAttribArray(position_location_);
-  glVertexAttribPointer(position_location_,
-                        3,
-                        GL_FLOAT,
-                        GL_FALSE,
-                        3 * sizeof(GLfloat),
-                        NULL);
+  glVertexAttribPointer(
+      position_location_, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), NULL);
   glEnableVertexAttribArray(color_location_);
   glBindBuffer(GL_ARRAY_BUFFER, cube_vbos_[1]);
-  glVertexAttribPointer(color_location_,
-                        3,
-                        GL_FLOAT,
-                        GL_FALSE,
-                        3 * sizeof(GLfloat),
-                        NULL);
+  glVertexAttribPointer(
+      color_location_, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), NULL);
   glUniformMatrix4fv(mvp_location_, 1, GL_FALSE, mvp_matrix_);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cube_vbos_[2]);
   glDrawElements(GL_TRIANGLES, kIndexCount, GL_UNSIGNED_SHORT, 0);
@@ -88,32 +76,32 @@ void Cube::Draw() {
 
 bool Cube::CreateShaders() {
   const char vertex_shader_src[] =
-    "uniform mat4 u_mvpMatrix;                   \n"
-    "attribute vec4 a_position;                  \n"
-    "attribute vec3 a_color;                     \n"
-    "varying lowp vec4 v_color;                  \n"
-    "void main()                                 \n"
-    "{                                           \n"
-    "   v_color.xyz = a_color;                   \n"
-    "   v_color.w = 1.0;                         \n"
-    "   gl_Position = u_mvpMatrix * a_position;  \n"
-    "}                                           \n";
+      "uniform mat4 u_mvpMatrix;                   \n"
+      "attribute vec4 a_position;                  \n"
+      "attribute vec3 a_color;                     \n"
+      "varying lowp vec4 v_color;                  \n"
+      "void main()                                 \n"
+      "{                                           \n"
+      "   v_color.xyz = a_color;                   \n"
+      "   v_color.w = 1.0;                         \n"
+      "   gl_Position = u_mvpMatrix * a_position;  \n"
+      "}                                           \n";
 
   const char fragment_shader_src[] =
-    "varying lowp vec4 v_color;                   \n"
-    "void main()                                  \n"
-    "{                                            \n"
-    "  gl_FragColor = v_color;                    \n"
-    "}                                            \n";
+      "varying lowp vec4 v_color;                   \n"
+      "void main()                                  \n"
+      "{                                            \n"
+      "  gl_FragColor = v_color;                    \n"
+      "}                                            \n";
 
   // Load the shaders and get a linked program object
   shader_program_object_ =
       shader_util::CreateProgramFromVertexAndFragmentShaders(
-      vertex_shader_src, fragment_shader_src);
+          vertex_shader_src, fragment_shader_src);
   if (shader_program_object_ == 0)
     return false;
-  position_location_ = glGetAttribLocation(shader_program_object_,
-                                           "a_position");
+  position_location_ =
+      glGetAttribLocation(shader_program_object_, "a_position");
   color_location_ = glGetAttribLocation(shader_program_object_, "a_color");
   mvp_location_ = glGetUniformLocation(shader_program_object_, "u_mvpMatrix");
   return true;
@@ -269,4 +257,3 @@ void Cube::ComputeModelViewTransform(GLfloat* model_view) {
 }
 
 }  // namespace tumbler
-

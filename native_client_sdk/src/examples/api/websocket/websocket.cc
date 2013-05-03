@@ -12,8 +12,7 @@
 class WebSocketInstance : public pp::Instance {
  public:
   explicit WebSocketInstance(PP_Instance instance)
-      : pp::Instance(instance),
-        websocket_(NULL) {}
+      : pp::Instance(instance), websocket_(NULL) {}
   virtual ~WebSocketInstance() {}
   virtual void HandleMessage(const pp::Var& var_message);
 
@@ -112,9 +111,7 @@ void WebSocketInstance::OnConnectCompletion(int32_t result) {
 }
 
 void WebSocketInstance::OnCloseCompletion(int32_t result) {
-  PostMessage(pp::Var(PP_OK == result ?
-        "closed" :
-        "abnormally closed"));
+  PostMessage(pp::Var(PP_OK == result ? "closed" : "abnormally closed"));
 }
 
 void WebSocketInstance::OnReceiveCompletion(int32_t result) {
@@ -122,8 +119,7 @@ void WebSocketInstance::OnReceiveCompletion(int32_t result) {
     if (receive_var_.is_array_buffer())
       PostMessage(pp::Var("receive: binary data"));
     else
-      PostMessage(pp::Var(std::string("receive: ") +
-          receive_var_.AsString()));
+      PostMessage(pp::Var(std::string("receive: ") + receive_var_.AsString()));
   }
   Receive();
 }
@@ -158,11 +154,8 @@ class WebSocketModule : public pp::Module {
   }
 };
 
-
 // Implement the required pp::CreateModule function that creates our specific
 // kind of Module.
 namespace pp {
-Module* CreateModule() {
-  return new WebSocketModule();
-}
+Module* CreateModule() { return new WebSocketModule(); }
 }  // namespace pp

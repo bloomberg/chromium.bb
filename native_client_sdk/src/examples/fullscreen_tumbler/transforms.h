@@ -26,7 +26,7 @@ void Frustum(GLfloat* m,
 void LoadIdentity(GLfloat* m);
 
 // |m| <- |a| . |b|.  |m| can point at the same memory as either |a| or |b|.
-void Multiply(GLfloat *m, GLfloat *a, GLfloat* b);
+void Multiply(GLfloat* m, GLfloat* a, GLfloat* b);
 
 // Pre-multiply |m| with a single-point perspective matrix based on the viewing
 // frustum whose view angle is |fovy|.
@@ -42,4 +42,3 @@ void Translate(GLfloat* m, GLfloat tx, GLfloat ty, GLfloat tz);
 }  // namespace transform_4x4
 
 #endif  // EXAMPLES_TUMBLER_TRANSFORMS_H_
-

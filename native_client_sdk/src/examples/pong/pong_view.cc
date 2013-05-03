@@ -27,8 +27,7 @@ PongView::PongView(PongModel* model)
       model_(model),
       graphics_2d_(NULL),
       pixel_buffer_(NULL),
-      needs_erase_(false) {
-}
+      needs_erase_(false) {}
 
 PongView::~PongView() {
   delete graphics_2d_;
@@ -44,8 +43,8 @@ bool PongView::DidChangeView(pp::Instance* instance,
     return true;
 
   delete graphics_2d_;
-  graphics_2d_ = new pp::Graphics2D(instance, new_size,
-                                    true);  // is_always_opaque
+  graphics_2d_ =
+      new pp::Graphics2D(instance, new_size, true);  // is_always_opaque
   if (!instance->BindGraphics(*graphics_2d_)) {
     delete graphics_2d_;
     graphics_2d_ = NULL;
@@ -56,7 +55,8 @@ bool PongView::DidChangeView(pp::Instance* instance,
   // write to this buffer directly, and copy regions of it to the graphics
   // context's backing store to draw to the screen.
   delete pixel_buffer_;
-  pixel_buffer_ = new pp::ImageData(instance, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+  pixel_buffer_ = new pp::ImageData(instance,
+                                    PP_IMAGEDATAFORMAT_BGRA_PREMUL,
                                     new_size,
                                     true);  // init_to_zero
 
@@ -177,9 +177,7 @@ void PongView::DrawPaddle(const PaddleModel& paddle) {
   DrawRect(paddle.rect, kWhite);
 }
 
-void PongView::EraseBall(const BallModel& ball) {
-  DrawRect(ball.rect, kBlack);
-}
+void PongView::EraseBall(const BallModel& ball) { DrawRect(ball.rect, kBlack); }
 
 void PongView::ErasePaddle(const PaddleModel& paddle) {
   DrawRect(paddle.rect, kBlack);

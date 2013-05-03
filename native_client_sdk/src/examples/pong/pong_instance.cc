@@ -55,8 +55,8 @@ bool PongInstance::Init(uint32_t argc, const char* argn[], const char* argv[]) {
 
 void PongInstance::DidChangeView(const pp::View& view) {
   if (!view_->DidChangeView(this, view, is_initial_view_change_)) {
-    PostMessage(pp::Var(
-        "ERROR DidChangeView failed. Could not bind graphics?"));
+    PostMessage(
+        pp::Var("ERROR DidChangeView failed. Could not bind graphics?"));
     return;
   }
 
@@ -106,18 +106,13 @@ void PongInstance::OnScoreChanged() {
   UpdateScoreDisplay();
 }
 
-void PongInstance::OnPlayerScored() {
-  model_->ResetPositions();
-}
+void PongInstance::OnPlayerScored() { model_->ResetPositions(); }
 
-bool PongInstance::IsKeyDown(int key_code) {
-  return key_map_[key_code];
-}
+bool PongInstance::IsKeyDown(int key_code) { return key_map_[key_code]; }
 
 void PongInstance::ScheduleUpdate() {
   pp::Module::Get()->core()->CallOnMainThread(
-      kUpdateInterval,
-      factory_.NewCallback(&PongInstance::UpdateCallback));
+      kUpdateInterval, factory_.NewCallback(&PongInstance::UpdateCallback));
 }
 
 void PongInstance::UpdateCallback(int32_t result) {
@@ -130,13 +125,14 @@ void PongInstance::UpdateCallback(int32_t result) {
   model_->Update(left_move, right_move);
 }
 
-void PongInstance::ResetScore() {
-  model_->SetScore(0, 0);
-}
+void PongInstance::ResetScore() { model_->SetScore(0, 0); }
 
 void PongInstance::UpdateScoreDisplay() {
   char buffer[100];
-  snprintf(&buffer[0], sizeof(buffer), "You %d:  Computer %d",
-      model_->left_score(), model_->right_score());
+  snprintf(&buffer[0],
+           sizeof(buffer),
+           "You %d:  Computer %d",
+           model_->left_score(),
+           model_->right_score());
   PostMessage(pp::Var(buffer));
 }

@@ -37,35 +37,27 @@ PP_Instance g_Instance;
 
 volatile int g_CrashTime = 0;
 
-
-void PostMessage(const char *str);
-
+void PostMessage(const char* str);
 
 void layer5(int x, int y) {
   if (g_CrashTime) {
-    *(volatile int *) x = y;
+    *(volatile int*)x = y;
   }
 }
 
-void layer4(int x) {
-  layer5(x, 1);
-}
+void layer4(int x) { layer5(x, 1); }
 
-void layer3(int a, int b, int c) {
-  layer4(a + b + c);
-}
+void layer3(int a, int b, int c) { layer4(a + b + c); }
 
-void layer2(int i, int j) {
-  layer3(i, j, 7);
-}
+void layer2(int i, int j) { layer3(i, j, 7); }
 
 void layer1(int s, int t) {
-  int *junk = (int*)alloca(sizeof(int)* 1234);
+  int* junk = (int*)alloca(sizeof(int) * 1234);
   junk[0] = s + 5;
   layer2(junk[0], t + 1);
 }
 
-void *NexeMain(void *data) {
+void* NexeMain(void* data) {
   PostMessage("Running Boom thread.");
   while (1) {
     layer1(2, 9);
@@ -87,25 +79,26 @@ static struct PP_Var CStrToVar(const char* str) {
   return PP_MakeUndefined();
 }
 
-
 static void PostCompletionCallback(void* user_data, int32_t result) {
-  const char *str = (const char *) user_data;
+  const char* str = (const char*)user_data;
   ppb_messaging_interface->PostMessage(g_Instance, CStrToVar(str));
   free(user_data);
 }
 
-void PostMessage(const char *str) {
+void PostMessage(const char* str) {
   struct PP_CompletionCallback cb;
 
-  if (NULL == str) return;
-  if (NULL == ppb_messaging_interface) return;
-  if (0 == g_Instance) return;
+  if (NULL == str)
+    return;
+  if (NULL == ppb_messaging_interface)
+    return;
+  if (0 == g_Instance)
+    return;
 
   if (strncmp(str, "ERR:", 4)) {
     fprintf(stderr, "%s\n", str);
     fflush(stderr);
-  }
-  else {
+  } else {
     fprintf(stdout, "%s\n", str);
     fflush(stdout);
   }
@@ -122,14 +115,13 @@ void PostMessage(const char *str) {
 }
 
 void DumpJson(const char* json) {
-  char* out = (char*) malloc(strlen(json) + 5);
+  char* out = (char*)malloc(strlen(json) + 5);
   strcpy(out, "TRC: ");
   strcat(out, json);
 
   PostMessage(out);
   free(out);
 }
-
 /**
  * Called when the NaCl module is instantiated on the web page. The identifier
  * of the new instance will be passed in as the first argument (this value is
@@ -167,14 +159,12 @@ static PP_Bool Instance_DidCreate(PP_Instance instance,
   /* Report back if the request was honored. */
   if (!EHHanderInstalled()) {
     PostMessage("LOG: Stack traces not available, so don't expect them.\n");
-  }
-  else {
+  } else {
     PostMessage("LOG: Stack traces are on.");
   }
   pthread_create(&g_NexeThread, NULL, NexeMain, NULL);
   return PP_TRUE;
 }
-
 
 /**
  * Called when the NaCl module is destroyed. This will always be called,
@@ -183,8 +173,7 @@ static PP_Bool Instance_DidCreate(PP_Instance instance,
  * @param[in] instance The identifier of the instance representing this NaCl
  *     module.
  */
-static void Instance_DidDestroy(PP_Instance instance) {
-}
+static void Instance_DidDestroy(PP_Instance instance) {}
 
 /**
  * Called when the position, the size, or the clip rect of the element in the
@@ -199,8 +188,7 @@ static void Instance_DidDestroy(PP_Instance instance) {
  *     plugin is invisible, @a clip will be (0, 0, 0, 0).
  */
 static void Instance_DidChangeView(PP_Instance instance,
-                                   PP_Resource view_resource) {
-}
+                                   PP_Resource view_resource) {}
 
 /**
  * Notification that the given NaCl module has gained or lost focus.
@@ -219,9 +207,7 @@ static void Instance_DidChangeView(PP_Instance instance,
  * @param[in] has_focus Indicates whether this NaCl module gained or lost
  *     event focus.
  */
-static void Instance_DidChangeFocus(PP_Instance instance,
-                                    PP_Bool has_focus) {
-}
+static void Instance_DidChangeFocus(PP_Instance instance, PP_Bool has_focus) {}
 
 /**
  * Handler that gets called after a full-frame module is instantiated based on
@@ -238,7 +224,6 @@ static PP_Bool Instance_HandleDocumentLoad(PP_Instance instance,
   /* NaCl modules do not need to handle the document load function. */
   return PP_FALSE;
 }
-
 
 /**
  * Handles message from JavaScript.
@@ -267,7 +252,6 @@ PP_EXPORT int32_t PPP_InitializeModule(PP_Module a_module_id,
   return PP_OK;
 }
 
-
 /**
  * Returns an interface pointer for the interface of the given name, or NULL
  * if the interface is not supported.
@@ -294,9 +278,7 @@ PP_EXPORT const void* PPP_GetInterface(const char* interface_name) {
   return NULL;
 }
 
-
 /**
  * Called before the plugin module is unloaded.
  */
-PP_EXPORT void PPP_ShutdownModule() {
-}
+PP_EXPORT void PPP_ShutdownModule() {}

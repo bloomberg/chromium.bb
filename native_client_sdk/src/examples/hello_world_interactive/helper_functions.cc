@@ -8,9 +8,7 @@
 
 namespace hello_world {
 
-int32_t FortyTwo() {
-  return 42;
-}
+int32_t FortyTwo() { return 42; }
 
 std::string ReverseText(const std::string& text) {
   std::string reversed_string(text);
@@ -19,4 +17,3 @@ std::string ReverseText(const std::string& text) {
   return reversed_string;
 }
 }  // namespace hello_world
-

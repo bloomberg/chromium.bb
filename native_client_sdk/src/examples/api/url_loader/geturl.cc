@@ -69,7 +69,6 @@ void GetURLInstance::HandleMessage(const pp::Var& var_message) {
   }
 }
 
-
 // The Module class.  The browser calls the CreateInstance() method to create
 // an instance of you NaCl module on the web page.  The browser creates a new
 // instance for each <embed> tag with type="application/x-nacl".
@@ -90,8 +89,5 @@ class GetURLModule : public pp::Module {
 // is one instance per <embed> tag on the page.  This is the main binding
 // point for your NaCl module with the browser.
 namespace pp {
-Module* CreateModule() {
-  return new GetURLModule();
-}
+Module* CreateModule() { return new GetURLModule(); }
 }  // namespace pp
-

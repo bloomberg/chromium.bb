@@ -11,7 +11,7 @@
 
 namespace shader_util {
 
-GLuint CreateShaderOfType(GLenum type, const char *shader_src) {
+GLuint CreateShaderOfType(GLenum type, const char* shader_src) {
   GLuint shader;
   GLint compiled;
 
@@ -46,7 +46,8 @@ GLuint CreateShaderOfType(GLenum type, const char *shader_src) {
 }
 
 GLuint CreateProgramFromVertexAndFragmentShaders(
-    const char *vertex_shader_src, const char *fragment_shader_src) {
+    const char* vertex_shader_src,
+    const char* fragment_shader_src) {
   GLuint vertex_shader;
   GLuint fragment_shader;
   GLuint program_object;
@@ -96,4 +97,3 @@ GLuint CreateProgramFromVertexAndFragmentShaders(
 }
 
 }  // namespace shader_util
-

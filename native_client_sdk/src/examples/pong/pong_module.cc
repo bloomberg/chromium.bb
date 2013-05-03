@@ -26,7 +26,5 @@ class PongModule : public pp::Module {
 // is one instance per <embed> tag on the page.  This is the main binding
 // point for your NaCl module with the browser.
 namespace pp {
-Module* CreateModule() {
-  return new PongModule();
-}
+Module* CreateModule() { return new PongModule(); }
 }  // namespace pp

@@ -22,7 +22,8 @@ class PongView {
   explicit PongView(PongModel* model);
   ~PongView();
 
-  bool DidChangeView(pp::Instance* instance, const pp::View& view,
+  bool DidChangeView(pp::Instance* instance,
+                     const pp::View& view,
                      bool first_view_change);
   pp::Size GetSize() const;
   void StartDrawLoop();

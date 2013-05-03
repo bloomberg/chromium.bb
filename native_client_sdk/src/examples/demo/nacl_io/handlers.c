@@ -21,7 +21,6 @@
  * File. */
 static FILE* g_OpenFiles[MAX_OPEN_FILES];
 
-
 /**
  * Add the file to the g_OpenFiles map.
  * @param[in] file The file to add to g_OpenFiles.
@@ -76,7 +75,6 @@ static FILE* GetFileFromIndexString(const char* s, int* file_index) {
 
   return GetFileFromMap(result);
 }
-
 
 /**
  * Handle a call to fopen() made by JavaScript.
@@ -159,8 +157,8 @@ int HandleFwrite(int num_params, char** params, char** output) {
   data_len = strlen(data);
 
   if (!file) {
-    *output = PrintfToNewString("Error: Unknown file handle %s.",
-                                file_index_string);
+    *output =
+        PrintfToNewString("Error: Unknown file handle %s.", file_index_string);
     return 2;
   }
 
@@ -172,8 +170,8 @@ int HandleFwrite(int num_params, char** params, char** output) {
     return 3;
   }
 
-  *output = PrintfToNewString("fwrite\1%s\1%d", file_index_string,
-                              bytes_written);
+  *output =
+      PrintfToNewString("fwrite\1%s\1%d", file_index_string, bytes_written);
   return 0;
 }
 
@@ -210,8 +208,8 @@ int HandleFread(int num_params, char** params, char** output) {
   data_len = strtol(params[1], NULL, 10);
 
   if (!file) {
-    *output = PrintfToNewString("Error: Unknown file handle %s.",
-                                file_index_string);
+    *output =
+        PrintfToNewString("Error: Unknown file handle %s.", file_index_string);
     return 2;
   }
 
@@ -268,8 +266,8 @@ int HandleFseek(int num_params, char** params, char** output) {
   whence = strtol(params[2], NULL, 10);
 
   if (!file) {
-    *output = PrintfToNewString("Error: Unknown file handle %s.",
-                                file_index_string);
+    *output =
+        PrintfToNewString("Error: Unknown file handle %s.", file_index_string);
     return 2;
   }
 
@@ -318,8 +316,8 @@ int HandleFclose(int num_params, char** params, char** output) {
   file_index_string = params[0];
   file = GetFileFromIndexString(file_index_string, &file_index);
   if (!file) {
-    *output = PrintfToNewString("Error: Unknown file handle %s.",
-                                file_index_string);
+    *output =
+        PrintfToNewString("Error: Unknown file handle %s.", file_index_string);
     return 2;
   }
 

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #include <pthread.h>
 
 #include "ppapi/c/pp_graphics_3d.h"
@@ -21,8 +20,7 @@ void FlushCallback(void* data, int32_t result) {
 namespace tumbler {
 
 OpenGLContext::OpenGLContext(pp::Instance* instance)
-    : pp::Graphics3DClient(instance),
-      flush_pending_(false) {
+    : pp::Graphics3DClient(instance), flush_pending_(false) {
   pp::Module* module = pp::Module::Get();
   assert(module);
   gles2_interface_ = static_cast<const struct PPB_OpenGLES2*>(
@@ -30,9 +28,7 @@ OpenGLContext::OpenGLContext(pp::Instance* instance)
   assert(gles2_interface_);
 }
 
-OpenGLContext::~OpenGLContext() {
-  glSetCurrentContextPPAPI(0);
-}
+OpenGLContext::~OpenGLContext() { glSetCurrentContextPPAPI(0); }
 
 bool OpenGLContext::MakeContextCurrent(pp::Instance* instance) {
   if (instance == NULL) {
@@ -42,14 +38,14 @@ bool OpenGLContext::MakeContextCurrent(pp::Instance* instance) {
   // Lazily create the Pepper context.
   if (context_.is_null()) {
     int32_t attribs[] = {
-        PP_GRAPHICS3DATTRIB_ALPHA_SIZE, 8,
-        PP_GRAPHICS3DATTRIB_DEPTH_SIZE, 24,
-        PP_GRAPHICS3DATTRIB_STENCIL_SIZE, 8,
-        PP_GRAPHICS3DATTRIB_SAMPLES, 0,
-        PP_GRAPHICS3DATTRIB_SAMPLE_BUFFERS, 0,
-        PP_GRAPHICS3DATTRIB_WIDTH, size_.width(),
-        PP_GRAPHICS3DATTRIB_HEIGHT, size_.height(),
-        PP_GRAPHICS3DATTRIB_NONE
+      PP_GRAPHICS3DATTRIB_ALPHA_SIZE, 8,
+      PP_GRAPHICS3DATTRIB_DEPTH_SIZE, 24,
+      PP_GRAPHICS3DATTRIB_STENCIL_SIZE, 8,
+      PP_GRAPHICS3DATTRIB_SAMPLES, 0,
+      PP_GRAPHICS3DATTRIB_SAMPLE_BUFFERS, 0,
+      PP_GRAPHICS3DATTRIB_WIDTH, size_.width(),
+      PP_GRAPHICS3DATTRIB_HEIGHT, size_.height(),
+      PP_GRAPHICS3DATTRIB_NONE
     };
     context_ = pp::Graphics3D(instance, pp::Graphics3D(), attribs);
     if (context_.is_null()) {
@@ -73,7 +69,6 @@ void OpenGLContext::ResizeContext(const pp::Size& size) {
   }
 }
 
-
 void OpenGLContext::FlushContext() {
   if (flush_pending()) {
     // A flush is pending so do nothing; just drop this flush on the floor.
@@ -83,4 +78,3 @@ void OpenGLContext::FlushContext() {
   context_.SwapBuffers(pp::CompletionCallback(&FlushCallback, this));
 }
 }  // namespace tumbler
-

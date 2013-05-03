@@ -17,10 +17,10 @@ const std::string ScanToken(const std::string& token_string, size_t* pos) {
   if (*pos == std::string::npos) {
     return token;
   }
-  size_t token_start_pos = token_string.find_first_not_of(kWhiteSpaceCharacters,
-                                                          *pos);
-  size_t token_end_pos = token_string.find_first_of(kWhiteSpaceCharacters,
-                                                    token_start_pos);
+  size_t token_start_pos =
+      token_string.find_first_not_of(kWhiteSpaceCharacters, *pos);
+  size_t token_end_pos =
+      token_string.find_first_of(kWhiteSpaceCharacters, token_start_pos);
   if (token_start_pos != std::string::npos) {
     token = token_string.substr(token_start_pos, token_end_pos);
   }
@@ -93,4 +93,3 @@ bool ScriptingBridge::InvokeMethod(const std::string& method) {
 }
 
 }  // namespace tumbler
-

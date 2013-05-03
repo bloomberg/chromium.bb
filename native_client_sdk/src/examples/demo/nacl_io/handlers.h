@@ -17,4 +17,4 @@ int HandleFseek(int num_params, char** params, char** output);
 int HandleFclose(int num_params, char** params, char** output);
 int HandleStat(int num_params, char** params, char** output);
 
-#endif  /* HANDLERS_H_ */
+#endif /* HANDLERS_H_ */

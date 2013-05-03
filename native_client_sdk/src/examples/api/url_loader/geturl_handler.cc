@@ -25,8 +25,7 @@ GetURLHandler* GetURLHandler::Create(pp::Instance* instance,
   return new GetURLHandler(instance, url);
 }
 
-GetURLHandler::GetURLHandler(pp::Instance* instance,
-                             const std::string& url)
+GetURLHandler::GetURLHandler(pp::Instance* instance, const std::string& url)
     : instance_(instance),
       url_(url),
       url_request_(instance),
@@ -39,13 +38,12 @@ GetURLHandler::GetURLHandler(pp::Instance* instance,
 }
 
 GetURLHandler::~GetURLHandler() {
-  delete [] buffer_;
+  delete[] buffer_;
   buffer_ = NULL;
 }
 
 void GetURLHandler::Start() {
-  pp::CompletionCallback cc =
-      cc_factory_.NewCallback(&GetURLHandler::OnOpen);
+  pp::CompletionCallback cc = cc_factory_.NewCallback(&GetURLHandler::OnOpen);
   url_loader_.Open(url_request_, cc);
 }
 
@@ -87,16 +85,15 @@ void GetURLHandler::AppendDataBytes(const char* buffer, int32_t num_bytes) {
   // Note that we do *not* try to minimally increase the amount of allocated
   // memory here by calling url_response_body_.reserve().  Doing so causes a
   // lot of string reallocations that kills performance for large files.
-  url_response_body_.insert(url_response_body_.end(),
-                            buffer,
-                            buffer + num_bytes);
+  url_response_body_.insert(
+      url_response_body_.end(), buffer, buffer + num_bytes);
 }
 
 void GetURLHandler::OnRead(int32_t result) {
   if (result == PP_OK) {
     // Streaming the file is complete, delete the read buffer since it is
     // no longer needed.
-    delete [] buffer_;
+    delete[] buffer_;
     buffer_ = NULL;
     ReportResultAndDie(url_, url_response_body_, true);
   } else if (result > 0) {
@@ -106,9 +103,8 @@ void GetURLHandler::OnRead(int32_t result) {
     ReadBody();
   } else {
     // A read error occurred.
-    ReportResultAndDie(url_,
-                       "pp::URLLoader::ReadResponseBody() result<0",
-                       false);
+    ReportResultAndDie(
+        url_, "pp::URLLoader::ReadResponseBody() result<0", false);
   }
 }
 
@@ -163,4 +159,3 @@ void GetURLHandler::ReportResult(const std::string& fname,
     instance_->PostMessage(var_result);
   }
 }
-

@@ -35,9 +35,7 @@ static const char kMessageArgumentSeparator = ':';
 
 /// This is the module's function that invokes FortyTwo and converts the return
 /// value from an int32_t to a pp::Var for return.
-pp::Var MarshallFortyTwo() {
-  return pp::Var(FortyTwo());
-}
+pp::Var MarshallFortyTwo() { return pp::Var(FortyTwo()); }
 
 /// This function is passed the arg list from the JavaScript call to
 /// @a reverseText.
@@ -105,9 +103,7 @@ void HelloWorldInstance::HandleMessage(const pp::Var& var_message) {
 /// <code>type="application/x-nacl"</code>.
 class HelloWorldModule : public pp::Module {
  public:
-  HelloWorldModule() : pp::Module() {
-    printf("Got here.\n");
-  }
+  HelloWorldModule() : pp::Module() { printf("Got here.\n"); }
   virtual ~HelloWorldModule() {}
 
   /// Create and return a HelloWorldInstance object.
@@ -120,7 +116,6 @@ class HelloWorldModule : public pp::Module {
 };
 }  // namespace hello_world
 
-
 namespace pp {
 /// Factory function called by the browser when the module is first loaded.
 /// The browser keeps a singleton of this module.  It calls the
@@ -129,7 +124,5 @@ namespace pp {
 /// point for your NaCl module with the browser.
 /// @return new HelloWorldModule.
 /// @note The browser is responsible for deleting returned @a Module.
-Module* CreateModule() {
-  return new hello_world::HelloWorldModule();
-}
+Module* CreateModule() { return new hello_world::HelloWorldModule(); }
 }  // namespace pp

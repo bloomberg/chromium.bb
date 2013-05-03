@@ -60,11 +60,12 @@ const float kPaddleSpinDown = 0.8f;
  * @return The left position of the object, in the range [0, region_max -
  *     object_width].
  */
-int GetFractionalPos(int region_min, int region_max,
+int GetFractionalPos(int region_min,
+                     int region_max,
                      int object_width,
                      float fraction) {
   return region_min +
-      static_cast<int>((region_max - object_width - region_min) * fraction);
+         static_cast<int>((region_max - object_width - region_min) * fraction);
 }
 
 /**
@@ -77,22 +78,23 @@ int GetFractionalPos(int region_min, int region_max,
  * @param[in] y_fraction A value in the range [0, 1]. 0 is on the top, 1 is on
  *     the bottom of the court.
  */
-void SetFractionalPosition(const pp::Rect& court, pp::Rect* object,
-                           float x_fraction, float y_fraction) {
-  object->set_x(GetFractionalPos(court.x(), court.right(), object->width(),
-                                 x_fraction));
-  object->set_y(GetFractionalPos(court.y(), court.bottom(), object->height(),
-                                 y_fraction));
+void SetFractionalPosition(const pp::Rect& court,
+                           pp::Rect* object,
+                           float x_fraction,
+                           float y_fraction) {
+  object->set_x(
+      GetFractionalPos(court.x(), court.right(), object->width(), x_fraction));
+  object->set_y(GetFractionalPos(
+      court.y(), court.bottom(), object->height(), y_fraction));
 }
 
 }  // namespace
 
-PaddleModel::PaddleModel()
-    : rect(kPaddleWidth, kPaddleHeight) {
-}
+PaddleModel::PaddleModel() : rect(kPaddleWidth, kPaddleHeight) {}
 
 void PaddleModel::SetPosition(const pp::Rect& court,
-                              float x_fraction, float y_fraction) {
+                              float x_fraction,
+                              float y_fraction) {
   SetFractionalPosition(court, &rect, x_fraction, y_fraction);
 }
 
@@ -131,11 +133,11 @@ PaddleCollision PaddleModel::GetPaddleCollision(float collision_y) const {
 BallModel::BallModel()
     : rect(kBallWidth, kBallHeight),
       dx(kBallUpdateDistance),
-      dy(kBallUpdateDistance) {
-}
+      dy(kBallUpdateDistance) {}
 
 void BallModel::SetPosition(const pp::Rect& court,
-                            float x_fraction, float y_fraction) {
+                            float x_fraction,
+                            float y_fraction) {
   SetFractionalPosition(court, &rect, x_fraction, y_fraction);
 }
 
@@ -192,10 +194,10 @@ float BallModel::GetCourtCollisionTime(const pp::Rect& court) const {
   // When the ball is moving up, only check for collision with the top of the
   // court. Likewise, if the ball is moving down only check for collision with
   // the bottom of the court.
-  float y_collision_t = dy < 0 ?
-      (court.y() - rect.y()) / static_cast<float>(dy) :
-      (court.bottom() - rect.bottom()) / static_cast<float>(dy);
-  
+  float y_collision_t =
+      dy < 0 ? (court.y() - rect.y()) / static_cast<float>(dy)
+             : (court.bottom() - rect.bottom()) / static_cast<float>(dy);
+
   return y_collision_t;
 }
 
@@ -218,14 +220,9 @@ void BallModel::ApplyPaddleCollision(PaddleCollision collision) {
 }
 
 PongModel::PongModel(PongModelDelegate* delegate)
-    : delegate_(delegate),
-      left_score_(0),
-      right_score_(0) {
-}
+    : delegate_(delegate), left_score_(0), right_score_(0) {}
 
-void PongModel::SetCourtSize(const pp::Size& size) {
-  court_.set_size(size);
-}
+void PongModel::SetCourtSize(const pp::Size& size) { court_.set_size(size); }
 
 void PongModel::SetScore(int left_score, int right_score) {
   left_score_ = left_score;

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #include <stdio.h>
 
 #include <cstdlib>
@@ -29,11 +28,9 @@ const char* const kArrayDelimiter = ",";
 
 // Return the value of parameter named |param_name| from |parameters|.  If
 // |param_name| doesn't exist, then return an empty string.
-std::string GetParameterNamed(
-    const std::string& param_name,
-    const tumbler::MethodParameter& parameters) {
-  tumbler::MethodParameter::const_iterator i =
-      parameters.find(param_name);
+std::string GetParameterNamed(const std::string& param_name,
+                              const tumbler::MethodParameter& parameters) {
+  tumbler::MethodParameter::const_iterator i = parameters.find(param_name);
   if (i == parameters.end()) {
     return "";
   }
@@ -51,7 +48,7 @@ std::vector<float> CreateArrayFromJSON(const std::string& json_array) {
   if (array_start_pos == std::string::npos ||
       array_end_pos == std::string::npos)
     return float_array;  // Malformed JSON: missing '[' or ']'.
-  // Pull out the array elements.
+                         // Pull out the array elements.
   size_t token_pos = array_start_pos + 1;
   while (token_pos < array_end_pos) {
     float_array.push_back(strtof(json_array.data() + token_pos, NULL));
@@ -82,14 +79,14 @@ Tumbler::~Tumbler() {
 }
 
 bool Tumbler::Init(uint32_t /* argc */,
-                   const char* /* argn */[],
-                   const char* /* argv */[]) {
+                   const char * /* argn */ [],
+                   const char * /* argv */ []) {
   // Add all the methods to the scripting bridge.
   ScriptingBridge::SharedMethodCallbackExecutor set_orientation_method(
-      new tumbler::MethodCallback<Tumbler>(
-          this, &Tumbler::SetCameraOrientation));
+      new tumbler::MethodCallback<Tumbler>(this,
+                                           &Tumbler::SetCameraOrientation));
   scripting_bridge_.AddMethodNamed("setCameraOrientation",
-                                    set_orientation_method);
+                                   set_orientation_method);
   return true;
 }
 
@@ -161,9 +158,7 @@ void Tumbler::DidChangeView(const pp::View& view) {
   DrawSelf();
 }
 
-void Tumbler::DidChangeFocus(bool focus) {
-  has_focus_ = focus;
-}
+void Tumbler::DidChangeFocus(bool focus) { has_focus_ = focus; }
 
 void Tumbler::DrawSelf() {
   if (cube_ == NULL || opengl_context_ == NULL)
@@ -188,9 +183,8 @@ void Tumbler::HandleKeyDownEvent(const pp::KeyboardInputEvent& key_event) {
   }
 }
 
-void Tumbler::SetCameraOrientation(
-    const tumbler::ScriptingBridge& bridge,
-    const tumbler::MethodParameter& parameters) {
+void Tumbler::SetCameraOrientation(const tumbler::ScriptingBridge& bridge,
+                                   const tumbler::MethodParameter& parameters) {
   // |parameters| is expected to contain one object named "orientation", whose
   // value is a JSON string that represents an array of four floats.
   if (parameters.size() != 1 || cube_ == NULL)
@@ -205,4 +199,3 @@ void Tumbler::SetCameraOrientation(
 }
 
 }  // namespace tumbler
-

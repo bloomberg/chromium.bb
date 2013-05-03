@@ -62,23 +62,15 @@ class OpenGLContext : public pp::Graphics3DClient {
   void ResizeContext(const pp::Size& size);
 
   /// The OpenGL ES 2.0 interface.
-  const struct PPB_OpenGLES2* gles2() const {
-    return gles2_interface_;
-  }
+  const struct PPB_OpenGLES2* gles2() const { return gles2_interface_; }
 
   /// The PP_Resource needed to make GLES2 calls through the Pepper interface.
-  const PP_Resource gl_context() const {
-    return context_.pp_resource();
-  }
+  const PP_Resource gl_context() const { return context_.pp_resource(); }
 
   /// Indicate whether a flush is pending.  This can only be called from the
   /// main thread; it is not thread safe.
-  bool flush_pending() const {
-    return flush_pending_;
-  }
-  void set_flush_pending(bool flag) {
-    flush_pending_ = flag;
-  }
+  bool flush_pending() const { return flush_pending_; }
+  void set_flush_pending(bool flag) { flush_pending_ = flag; }
 
  private:
   pp::Size size_;
@@ -91,5 +83,3 @@ class OpenGLContext : public pp::Graphics3DClient {
 }  // namespace tumbler
 
 #endif  // EXAMPLES_TUMBLER_OPENGL_CONTEXT_H_
-
-

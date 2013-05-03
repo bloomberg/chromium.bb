@@ -9,5 +9,4 @@
 typedef char* (*TYPE_eightball)(void);
 extern "C" const char* Magic8Ball();
 
-#endif  /* EIGHTBALL_H_ */
-
+#endif /* EIGHTBALL_H_ */

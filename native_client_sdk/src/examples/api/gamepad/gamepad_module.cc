@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Native Client Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,5 @@ class GamepadModule : public pp::Module {
 // is one instance per <embed> tag on the page.  This is the main binding
 // point for your NaCl module with the browser.
 namespace pp {
-Module* CreateModule() {
-  return new gamepad::GamepadModule();
-}
+Module* CreateModule() { return new gamepad::GamepadModule(); }
 }  // namespace pp

@@ -57,12 +57,12 @@ static PPB_URLLoader* ppb_urlloader_interface = NULL;
 static PP_Instance g_instance;
 static PP_Resource g_context;
 
-GLuint  g_positionLoc;
-GLuint  g_texCoordLoc;
-GLuint  g_colorLoc;
-GLuint  g_MVPLoc;
-GLuint  g_vboID;
-GLuint  g_ibID;
+GLuint g_positionLoc;
+GLuint g_texCoordLoc;
+GLuint g_colorLoc;
+GLuint g_MVPLoc;
+GLuint g_vboID;
+GLuint g_ibID;
 GLubyte g_Indices[36];
 
 GLuint g_programObj;
@@ -78,24 +78,23 @@ float g_fSpinY = 0.0f;
 //-----------------------------------------------------------------------------
 // Rendering Assets
 //-----------------------------------------------------------------------------
-struct Vertex
-{
+struct Vertex {
   float tu, tv;
   float color[3];
   float loc[3];
 };
 
-Vertex *g_quadVertices = NULL;
-const char *g_TextureData = NULL;
-const char *g_VShaderData = NULL;
-const char *g_FShaderData = NULL;
+Vertex* g_quadVertices = NULL;
+const char* g_TextureData = NULL;
+const char* g_VShaderData = NULL;
+const char* g_FShaderData = NULL;
 int g_LoadCnt = 0;
 
 //-----------------------------------------------------------------------------
 // PROTOTYPES
 //-----------------------------------------------------------------------------
-void PostMessage(const char *fmt, ...);
-char* LoadFile(const char *fileName);
+void PostMessage(const char* fmt, ...);
+char* LoadFile(const char* fileName);
 
 void BuildQuad(Vertex* verts, int axis[3], float depth, float color[3]);
 Vertex* BuildCube(void);
@@ -104,7 +103,6 @@ void InitGL(void);
 void InitProgram(void);
 void Render(void);
 
-
 static struct PP_Var CStrToVar(const char* str) {
   if (ppb_var_interface != NULL) {
     return ppb_var_interface->VarFromUtf8(str, strlen(str));
@@ -112,8 +110,7 @@ static struct PP_Var CStrToVar(const char* str) {
   return PP_MakeUndefined();
 }
 
-
-void PostMessage(const char *fmt, ...) {
+void PostMessage(const char* fmt, ...) {
   va_list args;
   va_start(args, fmt);
 
@@ -141,8 +138,7 @@ void MainLoop(void* foo, int bar) {
   }
 }
 
-void InitGL(void)
-{
+void InitGL(void) {
   int32_t attribs[] = {
     PP_GRAPHICS3DATTRIB_ALPHA_SIZE, 8,
     PP_GRAPHICS3DATTRIB_DEPTH_SIZE, 24,
@@ -154,34 +150,30 @@ void InitGL(void)
     PP_GRAPHICS3DATTRIB_NONE
   };
 
-  g_context =  ppb_g3d_interface->Create(g_instance, 0, attribs);
+  g_context = ppb_g3d_interface->Create(g_instance, 0, attribs);
   int32_t success = ppb_instance_interface->BindGraphics(g_instance, g_context);
-  if (success == PP_FALSE) 
-  {
+  if (success == PP_FALSE) {
     glSetCurrentContextPPAPI(0);
     printf("Failed to set context.\n");
     return;
   }
   glSetCurrentContextPPAPI(g_context);
 
-  glViewport(0,0, 640,480);
-  glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+  glViewport(0, 0, 640, 480);
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 }
 
-
-GLuint compileShader(GLenum type, const char *data) {
-  const char *shaderStrings[1];
+GLuint compileShader(GLenum type, const char* data) {
+  const char* shaderStrings[1];
   shaderStrings[0] = data;
 
   GLuint shader = glCreateShader(type);
-  glShaderSource(shader, 1, shaderStrings, NULL );
+  glShaderSource(shader, 1, shaderStrings, NULL);
   glCompileShader(shader);
   return shader;
 }
 
-
-void InitProgram( void )
-{
+void InitProgram(void) {
   glSetCurrentContextPPAPI(g_context);
 
   g_vertexShader = compileShader(GL_VERTEX_SHADER, g_VShaderData);
@@ -194,12 +186,16 @@ void InitProgram( void )
 
   glGenBuffers(1, &g_vboID);
   glBindBuffer(GL_ARRAY_BUFFER, g_vboID);
-  glBufferData(GL_ARRAY_BUFFER, 24 * sizeof(Vertex), (void*)&g_quadVertices[0],
+  glBufferData(GL_ARRAY_BUFFER,
+               24 * sizeof(Vertex),
+               (void*)&g_quadVertices[0],
                GL_STATIC_DRAW);
 
   glGenBuffers(1, &g_ibID);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_ibID);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36 * sizeof(char), (void*)&g_Indices[0],
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+               36 * sizeof(char),
+               (void*)&g_Indices[0],
                GL_STATIC_DRAW);
 
   //
@@ -207,9 +203,16 @@ void InitProgram( void )
   //
   glGenTextures(1, &g_textureID);
   glBindTexture(GL_TEXTURE_2D, g_textureID);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 128, 128, 0, GL_RGB, GL_UNSIGNED_BYTE,
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexImage2D(GL_TEXTURE_2D,
+               0,
+               GL_RGB,
+               128,
+               128,
+               0,
+               GL_RGB,
+               GL_UNSIGNED_BYTE,
                g_TextureData);
 
   //
@@ -222,7 +225,6 @@ void InitProgram( void )
   g_MVPLoc = glGetUniformLocation(g_programObj, "a_MVP");
 }
 
-
 void BuildQuad(Vertex* verts, int axis[3], float depth, float color[3]) {
   static float X[4] = { -1.0f, 1.0f, 1.0f, -1.0f };
   static float Y[4] = { -1.0f, -1.0f, 1.0f, 1.0f };
@@ -233,14 +235,13 @@ void BuildQuad(Vertex* verts, int axis[3], float depth, float color[3]) {
     verts[i].loc[axis[0]] = X[i] * depth;
     verts[i].loc[axis[1]] = Y[i] * depth;
     verts[i].loc[axis[2]] = depth;
-    for (int j = 0; j < 3; j++) 
+    for (int j = 0; j < 3; j++)
       verts[i].color[j] = color[j] * (Y[i] + 1.0f) / 2.0f;
   }
 }
 
-
-Vertex *BuildCube() {
-  Vertex *verts = new Vertex[24];
+Vertex* BuildCube() {
+  Vertex* verts = new Vertex[24];
   for (int i = 0; i < 3; i++) {
     int Faxis[3];
     int Baxis[3];
@@ -258,38 +259,38 @@ Vertex *BuildCube() {
     BuildQuad(&verts[12 + i * 4], Baxis, -1.0f, Bcolor);
   }
 
-  for(int i = 0; i < 6; i++) {
-    g_Indices[i*6 + 0] = 2 + i * 4;
-    g_Indices[i*6 + 1] = 1 + i * 4;
-    g_Indices[i*6 + 2] = 0 + i * 4;
-    g_Indices[i*6 + 3] = 3 + i * 4;
-    g_Indices[i*6 + 4] = 2 + i * 4;
-    g_Indices[i*6 + 5] = 0 + i * 4;
+  for (int i = 0; i < 6; i++) {
+    g_Indices[i * 6 + 0] = 2 + i * 4;
+    g_Indices[i * 6 + 1] = 1 + i * 4;
+    g_Indices[i * 6 + 2] = 0 + i * 4;
+    g_Indices[i * 6 + 3] = 3 + i * 4;
+    g_Indices[i * 6 + 4] = 2 + i * 4;
+    g_Indices[i * 6 + 5] = 0 + i * 4;
   }
   return verts;
 }
 
-
-void Render( void )
-{
+void Render(void) {
   static float xRot = 0.0;
   static float yRot = 0.0;
 
   xRot += 2.0f;
   yRot += 0.5f;
-  if (xRot >= 360.0f) xRot = 0.0;
-  if (yRot >= 360.0f) yRot = 0.0;
+  if (xRot >= 360.0f)
+    xRot = 0.0;
+  if (yRot >= 360.0f)
+    yRot = 0.0;
 
-  glClearColor(0.5,0.5,0.5,1);
+  glClearColor(0.5, 0.5, 0.5, 1);
   glClearDepthf(1.0);
-  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glEnable(GL_DEPTH_TEST);
 
   //set what program to use
-  glUseProgram( g_programObj );
-  glActiveTexture ( GL_TEXTURE0 );
-  glBindTexture ( GL_TEXTURE_2D,g_textureID );
-  glUniform1i ( g_textureLoc, 0 );
+  glUseProgram(g_programObj);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, g_textureID);
+  glUniform1i(g_textureLoc, 0);
 
   //create our perspective matrix
   float mpv[16];
@@ -297,32 +298,43 @@ void Render( void )
   float rot[16];
 
   identity_matrix(mpv);
-  glhPerspectivef2(&mpv[0], 45.0f, 640.0f / 480.0f,1, 10);
+  glhPerspectivef2(&mpv[0], 45.0f, 640.0f / 480.0f, 1, 10);
 
   translate_matrix(0, 0, -4.0, trs);
-  rotate_matrix(xRot, yRot , 0.0f ,rot);
+  rotate_matrix(xRot, yRot, 0.0f, rot);
   multiply_matrix(trs, rot, trs);
   multiply_matrix(mpv, trs, mpv);
-  glUniformMatrix4fv(g_MVPLoc, 1, GL_FALSE, (GLfloat*) mpv);
+  glUniformMatrix4fv(g_MVPLoc, 1, GL_FALSE, (GLfloat*)mpv);
 
   //define the attributes of the vertex
   glBindBuffer(GL_ARRAY_BUFFER, g_vboID);
-  glVertexAttribPointer(g_positionLoc, 3, GL_FLOAT, GL_FALSE,
-                        sizeof(Vertex), (void*)offsetof(Vertex,loc));
+  glVertexAttribPointer(g_positionLoc,
+                        3,
+                        GL_FLOAT,
+                        GL_FALSE,
+                        sizeof(Vertex),
+                        (void*)offsetof(Vertex, loc));
   glEnableVertexAttribArray(g_positionLoc);
-  glVertexAttribPointer(g_texCoordLoc, 2, GL_FLOAT, GL_FALSE,
-                        sizeof(Vertex), (void*)offsetof(Vertex,tu));
+  glVertexAttribPointer(g_texCoordLoc,
+                        2,
+                        GL_FLOAT,
+                        GL_FALSE,
+                        sizeof(Vertex),
+                        (void*)offsetof(Vertex, tu));
   glEnableVertexAttribArray(g_texCoordLoc);
-  glVertexAttribPointer(g_colorLoc, 3, GL_FLOAT, GL_FALSE,
-                        sizeof(Vertex), (void*)offsetof(Vertex,color));
+  glVertexAttribPointer(g_colorLoc,
+                        3,
+                        GL_FLOAT,
+                        GL_FALSE,
+                        sizeof(Vertex),
+                        (void*)offsetof(Vertex, color));
   glEnableVertexAttribArray(g_colorLoc);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_ibID);
-  glDrawElements ( GL_TRIANGLES, 36, GL_UNSIGNED_BYTE ,0 );
+  glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, 0);
 }
 
-
-typedef void (*OpenCB)(void *dataPtr);
+typedef void (*OpenCB)(void* dataPtr);
 struct OpenRequest {
   PP_Resource loader_;
   PP_Resource request_;
@@ -333,7 +345,6 @@ struct OpenRequest {
   OpenCB cb_;
 };
 
-
 void FreeRequest(OpenRequest* req) {
   if (req) {
     ppb_core_interface->ReleaseResource(req->request_);
@@ -342,9 +353,8 @@ void FreeRequest(OpenRequest* req) {
   }
 }
 
-
 static void URLPartialRead(void* user_data, int mode) {
-  OpenRequest* req = (OpenRequest *) user_data;
+  OpenRequest* req = (OpenRequest*)user_data;
   int64_t total;
   int32_t cnt;
 
@@ -361,8 +371,10 @@ static void URLPartialRead(void* user_data, int mode) {
   cnt = (total > LONG_MAX) ? LONG_MAX : (int32_t) total;
   // If we still have more to do, re-issue the read.
   if (cnt > 0) {
-    int32_t bytes = ppb_urlloader_interface->ReadResponseBody(req->loader_,
-        (void *) &req->buf_[req->avail_], cnt,
+    int32_t bytes = ppb_urlloader_interface->ReadResponseBody(
+        req->loader_,
+        (void*)&req->buf_[req->avail_],
+        cnt,
         PP_MakeCompletionCallback(URLPartialRead, req));
 
     // If the reissue completes immediately, then process it.
@@ -370,17 +382,16 @@ static void URLPartialRead(void* user_data, int mode) {
       URLPartialRead(user_data, bytes);
     }
     return;
-  } 
-  
+  }
+
   // Nothing left, so signal complete.
   req->cb_(req);
   FreeRequest(req);
   printf("Loaded\n");
 }
 
-
 static void URLOpened(void* user_data, int mode) {
-  OpenRequest* req = (OpenRequest *) user_data;
+  OpenRequest* req = (OpenRequest*)user_data;
 
   int64_t cur, total;
   int32_t cnt;
@@ -397,21 +408,25 @@ static void URLOpened(void* user_data, int mode) {
   // Otherwise allocate a buffer with enough space for a terminating
   // NULL in case we need one.
   cnt = (total > LONG_MAX) ? LONG_MAX : (int32_t) total;
-  req->buf_ = (char *) malloc(cnt + 1);
+  req->buf_ = (char*)malloc(cnt + 1);
   req->buf_[cnt] = 0;
   req->size_ = cnt;
-  int32_t bytes = ppb_urlloader_interface->ReadResponseBody(req->loader_,
-      req->buf_, cnt, PP_MakeCompletionCallback(URLPartialRead, req));
+  int32_t bytes = ppb_urlloader_interface->ReadResponseBody(
+      req->loader_,
+      req->buf_,
+      cnt,
+      PP_MakeCompletionCallback(URLPartialRead, req));
 
   // Usually we are pending.
-  if (bytes == PP_OK_COMPLETIONPENDING) return;
+  if (bytes == PP_OK_COMPLETIONPENDING)
+    return;
 
   // But if we did complete the read, then dispatch the handler.
   URLPartialRead(req, bytes);
 }
 
-void LoadURL(PP_Instance inst, const char *url, OpenCB cb, void *data) {
-  OpenRequest* req = (OpenRequest*) malloc(sizeof(OpenRequest));
+void LoadURL(PP_Instance inst, const char* url, OpenCB cb, void* data) {
+  OpenRequest* req = (OpenRequest*)malloc(sizeof(OpenRequest));
   memset(req, 0, sizeof(OpenRequest));
 
   req->loader_ = ppb_urlloader_interface->Create(inst);
@@ -425,15 +440,17 @@ void LoadURL(PP_Instance inst, const char *url, OpenCB cb, void *data) {
     return;
   }
 
-  ppb_urlrequestinfo_interface->SetProperty(req->request_, 
-      PP_URLREQUESTPROPERTY_URL, CStrToVar(url));
-  ppb_urlrequestinfo_interface->SetProperty(req->request_,
-      PP_URLREQUESTPROPERTY_METHOD, CStrToVar("GET"));
-  ppb_urlrequestinfo_interface->SetProperty(req->request_,
-      PP_URLREQUESTPROPERTY_RECORDDOWNLOADPROGRESS, PP_MakeBool(PP_TRUE));
+  ppb_urlrequestinfo_interface->SetProperty(
+      req->request_, PP_URLREQUESTPROPERTY_URL, CStrToVar(url));
+  ppb_urlrequestinfo_interface->SetProperty(
+      req->request_, PP_URLREQUESTPROPERTY_METHOD, CStrToVar("GET"));
+  ppb_urlrequestinfo_interface->SetProperty(
+      req->request_,
+      PP_URLREQUESTPROPERTY_RECORDDOWNLOADPROGRESS,
+      PP_MakeBool(PP_TRUE));
 
-  int val = ppb_urlloader_interface->Open(req->loader_, req->request_, 
-      PP_MakeCompletionCallback(URLOpened, req));
+  int val = ppb_urlloader_interface->Open(
+      req->loader_, req->request_, PP_MakeCompletionCallback(URLOpened, req));
 
   if (val != PP_OK_COMPLETIONPENDING) {
     cb(NULL);
@@ -442,16 +459,15 @@ void LoadURL(PP_Instance inst, const char *url, OpenCB cb, void *data) {
 }
 
 void Loaded(void* data) {
-  OpenRequest *req = (OpenRequest *) data;
+  OpenRequest* req = (OpenRequest*)data;
   if (req && req->buf_) {
-    char **pptr = (char **) req->data_;
+    char** pptr = (char**)req->data_;
     *pptr = req->buf_;
     g_LoadCnt++;
     return;
   }
   PostMessage("Failed to load asset.\n");
 }
-
 
 /**
  * Called when the NaCl module is instantiated on the web page. The identifier
@@ -486,7 +502,6 @@ static PP_Bool Instance_DidCreate(PP_Instance instance,
   g_quadVertices = BuildCube();
   return PP_TRUE;
 }
-
 
 /**
  * Called when the NaCl module is destroyed. This will always be called,
@@ -539,9 +554,7 @@ static void Instance_DidChangeView(PP_Instance instance,
  * @param[in] has_focus Indicates whether this NaCl module gained or lost
  *     event focus.
  */
-static void Instance_DidChangeFocus(PP_Instance instance,
-                                    PP_Bool has_focus) {
-}
+static void Instance_DidChangeFocus(PP_Instance instance, PP_Bool has_focus) {}
 
 /**
  * Handler that gets called after a full-frame module is instantiated based on
@@ -558,7 +571,6 @@ static PP_Bool Instance_HandleDocumentLoad(PP_Instance instance,
   /* NaCl modules do not need to handle the document load function. */
   return PP_FALSE;
 }
-
 
 /**
  * Entry points for the module.
@@ -584,7 +596,6 @@ PP_EXPORT int32_t PPP_InitializeModule(PP_Module a_module_id,
   return PP_OK;
 }
 
-
 /**
  * Returns an interface pointer for the interface of the given name, or NULL
  * if the interface is not supported.
@@ -605,9 +616,7 @@ PP_EXPORT const void* PPP_GetInterface(const char* interface_name) {
   return NULL;
 }
 
-
 /**
  * Called before the plugin module is unloaded.
  */
-PP_EXPORT void PPP_ShutdownModule() {
-}
+PP_EXPORT void PPP_ShutdownModule() {}

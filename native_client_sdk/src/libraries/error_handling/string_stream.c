@@ -9,22 +9,21 @@
 #include <string.h>
 
 #include "error_handling/string_stream.h"
-
-void ssinit(sstream_t *stream) {
+void ssinit(sstream_t* stream) {
   stream->data = NULL;
   stream->length = 0;
 }
 
-void ssfree(sstream_t *stream) {
+void ssfree(sstream_t* stream) {
   free(stream->data);
   stream->data = 0;
   stream->length = 0;
 }
 
-int ssvprintf(sstream_t *stream, const char *format, va_list args) {
+int ssvprintf(sstream_t* stream, const char* format, va_list args) {
   va_list hold;
   int len;
-  char *outstr;
+  char* outstr;
 
   va_copy(hold, args);
   len = vsnprintf(NULL, 0, format, args);
@@ -42,7 +41,7 @@ int ssvprintf(sstream_t *stream, const char *format, va_list args) {
   return len;
 }
 
-int ssprintf(sstream_t *stream, const char *format, ...) {
+int ssprintf(sstream_t* stream, const char* format, ...) {
   int out;
   va_list args;
   va_start(args, format);

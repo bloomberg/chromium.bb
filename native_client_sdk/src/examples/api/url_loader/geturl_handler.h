@@ -34,8 +34,7 @@ class GetURLHandler {
   // Creates instance of GetURLHandler on the heap.
   // GetURLHandler objects shall be created only on the heap (they
   // self-destroy when all data is in).
-  static GetURLHandler* Create(pp::Instance* instance_,
-                               const std::string& url);
+  static GetURLHandler* Create(pp::Instance* instance_, const std::string& url);
   // Initiates page (URL) download.
   void Start();
 
@@ -74,10 +73,10 @@ class GetURLHandler {
                           bool success);
 
   pp::Instance* instance_;  // Weak pointer.
-  std::string url_;  // URL to be downloaded.
+  std::string url_;         // URL to be downloaded.
   pp::URLRequestInfo url_request_;
   pp::URLLoader url_loader_;  // URLLoader provides an API to download URLs.
-  char* buffer_;  // Temporary buffer for reads.
+  char* buffer_;              // Temporary buffer for reads.
   std::string url_response_body_;  // Contains accumulated downloaded data.
   pp::CompletionCallbackFactory<GetURLHandler> cc_factory_;
 
@@ -86,4 +85,3 @@ class GetURLHandler {
 };
 
 #endif  // EXAMPLES_GETURL_GETURL_HANDLER_H_
-

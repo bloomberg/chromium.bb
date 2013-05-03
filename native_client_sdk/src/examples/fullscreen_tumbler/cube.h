@@ -37,13 +37,9 @@ class Cube {
   void Draw();
 
   // Accessor for width and height.  To change these, call Resize.
-  const int width() const {
-    return width_;
-  }
+  const int width() const { return width_; }
 
-  const int height() const {
-    return height_;
-  }
+  const int height() const { return height_; }
 
   // Accessor/mutator for the camera orientation.
   void GetOrientation(std::vector<float>* orientation) const {
@@ -81,9 +77,9 @@ class Cube {
   int width_;
   int height_;
   GLuint shader_program_object_;  // The compiled shaders.
-  GLint position_location_;  // The position attribute location.
-  GLint color_location_;  // The color attribute location.
-  GLint mvp_location_;  // The Model-View-Projection composite matrix.
+  GLint position_location_;       // The position attribute location.
+  GLint color_location_;          // The color attribute location.
+  GLint mvp_location_;            // The Model-View-Projection composite matrix.
   GLuint cube_vbos_[3];
   GLfloat eye_[3];  // The eye point of the virtual camera.
   // The orientation of the virtual camera stored as a quaternion.  The
@@ -96,4 +92,3 @@ class Cube {
 }  // namespace tumbler
 
 #endif  // EXAMPLES_TUMBLER_CUBE_H_
-

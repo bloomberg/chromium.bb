@@ -50,15 +50,12 @@ std::string ModifierToString(uint32_t modifier) {
   return s;
 }
 
-
 std::string KeyEvent::ToString() const {
   std::ostringstream stream;
   stream << "Key event:"
          << " modifier:" << string_event_modifiers()
-         << " key_code:" << key_code_
-         << " time:" << timestamp_
-         << " text:" << text_
-         << "\n";
+         << " key_code:" << key_code_ << " time:" << timestamp_
+         << " text:" << text_ << "\n";
   return stream.str();
 }
 
@@ -67,24 +64,18 @@ std::string MouseEvent::ToString() const {
   stream << "Mouse event:"
          << " modifier:" << string_event_modifiers()
          << " button:" << MouseButtonToString(mouse_button_)
-         << " x:" << x_position_
-         << " y:" << y_position_
-         << " click_count:" << click_count_
-         << " time:" << timestamp_
-         << "\n";
+         << " x:" << x_position_ << " y:" << y_position_
+         << " click_count:" << click_count_ << " time:" << timestamp_ << "\n";
   return stream.str();
 }
 
 std::string WheelEvent::ToString() const {
   std::ostringstream stream;
   stream << "Wheel event:"
-         << " modifier:" << string_event_modifiers()
-         << " deltax:" << delta_x_
-         << " deltay:" << delta_y_
-         << " wheel_ticks_x:" << ticks_x_
+         << " modifier:" << string_event_modifiers() << " deltax:" << delta_x_
+         << " deltay:" << delta_y_ << " wheel_ticks_x:" << ticks_x_
          << " wheel_ticks_y:" << ticks_y_
-         << " scroll_by_page: " << scroll_by_page_
-         << " time:" << timestamp_
+         << " scroll_by_page: " << scroll_by_page_ << " time:" << timestamp_
          << "\n";
   return stream.str();
 }
@@ -101,9 +92,7 @@ std::string MouseEvent::MouseButtonToString(MouseButton button) const {
       return "Right";
     default:
       std::ostringstream stream;
-      stream << "Unrecognized ("
-             << static_cast<int32_t>(button)
-             << ")";
+      stream << "Unrecognized (" << static_cast<int32_t>(button) << ")";
       return stream.str();
   }
 }
@@ -122,15 +111,18 @@ std::string TouchEvent::KindToString(Kind kind) const {
       return "Cancel";
     default:
       std::ostringstream stream;
-      stream << "Unrecognized ("
-             << static_cast<int32_t>(kind)
-             << ")";
+      stream << "Unrecognized (" << static_cast<int32_t>(kind) << ")";
       return stream.str();
   }
 }
 
-void TouchEvent::AddTouch(uint32_t id, float x, float y, float radii_x,
-    float radii_y, float angle, float pressure) {
+void TouchEvent::AddTouch(uint32_t id,
+                          float x,
+                          float y,
+                          float radii_x,
+                          float radii_y,
+                          float angle,
+                          float pressure) {
   Touch touch;
   touch.id = id;
   touch.x = x;
@@ -148,16 +140,15 @@ std::string TouchEvent::ToString() const {
          << " modifier:" << string_event_modifiers();
   for (size_t i = 0; i < touches.size(); ++i) {
     const Touch& touch = touches[i];
-    stream << " x[" << touch.id << "]:" << touch.x
-           << " y[" << touch.id << "]:" << touch.y
-           << " radii_x[" << touch.id << "]:" << touch.radii_x
-           << " radii_y[" << touch.id << "]:" << touch.radii_y
-           << " angle[" << touch.id << "]:" << touch.angle
-           << " pressure[" << touch.id << "]:" << touch.pressure;
+    stream << " x[" << touch.id << "]:" << touch.x << " y[" << touch.id
+           << "]:" << touch.y << " radii_x[" << touch.id
+           << "]:" << touch.radii_x << " radii_y[" << touch.id
+           << "]:" << touch.radii_y << " angle[" << touch.id
+           << "]:" << touch.angle << " pressure[" << touch.id
+           << "]:" << touch.pressure;
   }
   stream << " time:" << timestamp_ << "\n";
   return stream.str();
 }
 
 }  // end namespace
-

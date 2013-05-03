@@ -37,8 +37,7 @@ class MouseLockInstance : public pp::Instance, public pp::MouseLock {
         fullscreen_(this),
         is_context_bound_(false),
         was_fullscreen_(false),
-        background_scanline_(NULL) {
-  }
+        background_scanline_(NULL) {}
   virtual ~MouseLockInstance();
 
   // Called by the browser when the NaCl module is loaded and all ready to go.
@@ -56,8 +55,10 @@ class MouseLockInstance : public pp::Instance, public pp::MouseLock {
 
  private:
   // Return the Cartesian distance between two points.
-  double GetDistance(int point_1_x, int point_1_y,
-                     int point_2_x, int point_2_y) {
+  double GetDistance(int point_1_x,
+                     int point_1_y,
+                     int point_2_x,
+                     int point_2_y) {
     return sqrt(pow(static_cast<double>(point_1_x - point_2_x), 2) +
                 pow(static_cast<double>(point_1_y - point_2_y), 2));
   }

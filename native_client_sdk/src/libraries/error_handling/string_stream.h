@@ -16,16 +16,15 @@
 #include <stdint.h>
 
 typedef struct {
-  char *data;
+  char* data;
   size_t length;
 } sstream_t;
 
-void ssinit(sstream_t *stream);
-void ssfree(sstream_t *stream);
+void ssinit(sstream_t* stream);
+void ssfree(sstream_t* stream);
 
 /* Returns the number of bytes added to the stream. */
-int ssvprintf(sstream_t *sstream, const char *format, va_list args);
-int ssprintf(sstream_t *sstream, const char *format, ...);
-
+int ssvprintf(sstream_t* sstream, const char* format, va_list args);
+int ssprintf(sstream_t* sstream, const char* format, ...);
 
 #endif  /* ERROR_HANDLING_STRING_STREAM_H */

@@ -31,4 +31,3 @@ std::string ReverseText(const std::string& text);
 }  // namespace hello_world
 
 #endif  // EXAMPLES_HELLO_WORLD_HELPER_FUNCTIONS_H_
-

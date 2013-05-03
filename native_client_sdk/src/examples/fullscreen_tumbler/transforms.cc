@@ -31,9 +31,9 @@ void Frustum(GLfloat* m,
   GLfloat delta_z = far_z - near_z;
   GLfloat frustum[16];
 
-  if ((near_z <= 0.0f) || (far_z <= 0.0f) ||
-     (delta_x <= 0.0f) || (delta_y <= 0.0f) || (delta_z <= 0.0f))
-     return;
+  if ((near_z <= 0.0f) || (far_z <= 0.0f) || (delta_x <= 0.0f) ||
+      (delta_y <= 0.0f) || (delta_z <= 0.0f))
+    return;
 
   frustum[0] = 2.0f * near_z / delta_x;
   frustum[1] = frustum[2] = frustum[3] = 0.0f;
@@ -52,7 +52,6 @@ void Frustum(GLfloat* m,
   transform_4x4::Multiply(m, frustum, m);
 }
 
-
 void Perspective(GLfloat* m,
                  GLfloat fovy,
                  GLfloat aspect,
@@ -62,11 +61,11 @@ void Perspective(GLfloat* m,
 
   frustum_h = tanf((fovy * 0.5f) / 180.0f * kPI) * near_z;
   frustum_w = frustum_h * aspect;
-  transform_4x4::Frustum(m, -frustum_w, frustum_w, -frustum_h, frustum_h,
-                         near_z, far_z);
+  transform_4x4::Frustum(
+      m, -frustum_w, frustum_w, -frustum_h, frustum_h, near_z, far_z);
 }
 
-void Multiply(GLfloat *m, GLfloat *a, GLfloat* b) {
+void Multiply(GLfloat* m, GLfloat* a, GLfloat* b) {
   GLfloat tmp[16];
   // tmp = a . b
   GLfloat a0, a1, a2, a3;
@@ -114,4 +113,3 @@ void LoadIdentity(GLfloat* m) {
 }
 
 }  // namespace transform_4x4
-

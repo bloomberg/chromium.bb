@@ -15,7 +15,7 @@
 /// shared object on a worker thread.  We use a worker because dlopen is
 /// a blocking call, which is not allowed on the main thread.
 
-#include <dlfcn.h> 
+#include <dlfcn.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,7 +40,6 @@
 #define STRINGIFY(x) #x
 #define NACL_ARCH_STRING XSTRINGIFY(NACL_ARCH)
 
-
 class DlopenInstance : public pp::Instance {
  public:
   explicit DlopenInstance(PP_Instance instance)
@@ -51,16 +50,17 @@ class DlopenInstance : public pp::Instance {
         reverse_(NULL),
         tid_(NULL) {}
 
-  virtual ~DlopenInstance(){};
+  virtual ~DlopenInstance() {}
+  ;
 
   // Helper function to post a message back to the JS and stdout functions.
-  void logmsg(const char* pStr){
+  void logmsg(const char* pStr) {
     PostMessage(pp::Var(std::string("log:") + pStr));
     fprintf(stdout, pStr);
   }
 
   // Initialize the module, staring a worker thread to load the shared object.
-  virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]){
+  virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]) {
     nacl_io_init_ppapi(pp_instance(),
                        pp::Module::Get()->get_browser_interface());
     // Mount a HTTP mount at /http. All reads from /http/* will read from the
@@ -85,7 +85,7 @@ class DlopenInstance : public pp::Instance {
     eightball_so_ = dlopen("libeightball.so", RTLD_LAZY);
     reverse_so_ = dlopen(reverse_so_path, RTLD_LAZY);
     pp::CompletionCallback cc(LoadDoneCB, this);
-    pp::Module::Get()->core()->CallOnMainThread(IMMEDIATELY, cc , 0);
+    pp::Module::Get()->core()->CallOnMainThread(IMMEDIATELY, cc, 0);
   }
 
   // This function will run on the main thread and use the handle it stored by
@@ -96,11 +96,11 @@ class DlopenInstance : public pp::Instance {
       intptr_t offset = (intptr_t) dlsym(eightball_so_, "Magic8Ball");
       eightball_ = (TYPE_eightball) offset;
       if (NULL == eightball_) {
-          std::string message = "dlsym() returned NULL: ";
-          message += dlerror();
-          message += "\n";
-          logmsg(message.c_str());
-          return;
+        std::string message = "dlsym() returned NULL: ";
+        message += dlerror();
+        message += "\n";
+        logmsg(message.c_str());
+        return;
       }
 
       logmsg("Loaded libeightball.so\n");
@@ -108,16 +108,15 @@ class DlopenInstance : public pp::Instance {
       logmsg("libeightball.so did not load\n");
     }
 
-
     if (reverse_so_ != NULL) {
       intptr_t offset = (intptr_t) dlsym(reverse_so_, "Reverse");
       reverse_ = (TYPE_reverse) offset;
       if (NULL == reverse_) {
-          std::string message = "dlsym() returned NULL: ";
-          message += dlerror();
-          message += "\n";
-          logmsg(message.c_str());
-          return;
+        std::string message = "dlsym() returned NULL: ";
+        message += dlerror();
+        message += "\n";
+        logmsg(message.c_str());
+        return;
       }
       logmsg("Loaded libreverse.so\n");
     } else {
@@ -134,7 +133,7 @@ class DlopenInstance : public pp::Instance {
 
     std::string message = var_message.AsString();
     if (message == "eightball") {
-      if (NULL == eightball_){
+      if (NULL == eightball_) {
         logmsg("Eightball library not loaded\n");
         return;
       }
@@ -167,14 +166,14 @@ class DlopenInstance : public pp::Instance {
     }
   }
 
-  static void* LoadLibrariesOnWorker(void *pInst) {
-    DlopenInstance *inst = static_cast<DlopenInstance *>(pInst);
+  static void* LoadLibrariesOnWorker(void* pInst) {
+    DlopenInstance* inst = static_cast<DlopenInstance*>(pInst);
     inst->LoadLibrary();
     return NULL;
   }
 
-  static void LoadDoneCB(void *pInst, int32_t result) {
-    DlopenInstance *inst = static_cast<DlopenInstance *>(pInst);
+  static void LoadDoneCB(void* pInst, int32_t result) {
+    DlopenInstance* inst = static_cast<DlopenInstance*>(pInst);
     inst->UseLibrary();
   }
 
@@ -184,13 +183,13 @@ class DlopenInstance : public pp::Instance {
   TYPE_eightball eightball_;
   TYPE_reverse reverse_;
   pthread_t tid_;
- };
+};
 
 // The Module class.  The browser calls the CreateInstance() method to create
 // an instance of your NaCl module on the web page.  The browser creates a new
 // instance for each <embed> tag with type="application/x-nacl".
 class dlOpenModule : public pp::Module {
-   public:
+ public:
   dlOpenModule() : pp::Module() {}
   virtual ~dlOpenModule() {}
 
@@ -200,15 +199,11 @@ class dlOpenModule : public pp::Module {
   }
 };
 
-
 // Factory function called by the browser when the module is first loaded.
 // The browser keeps a singleton of this module.  It calls the
 // CreateInstance() method on the object you return to make instances.  There
 // is one instance per <embed> tag on the page.  This is the main binding
 // point for your NaCl module with the browser.
 namespace pp {
-  Module* CreateModule() {
-    return new dlOpenModule();
-  }
+Module* CreateModule() { return new dlOpenModule(); }
 }  // namespace pp
-

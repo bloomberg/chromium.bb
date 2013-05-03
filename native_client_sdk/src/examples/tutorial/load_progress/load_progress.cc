@@ -53,7 +53,6 @@ class LoadProgressModule : public pp::Module {
 };
 }  // namespace load_progress
 
-
 namespace pp {
 /// Factory function called by the browser when the module is first loaded.
 /// The browser keeps a singleton of this module.  It calls the
@@ -62,8 +61,5 @@ namespace pp {
 /// point for your NaCl module with the browser.
 /// @return new LoadProgressModule.
 /// @note The browser is responsible for deleting returned @a Module.
-Module* CreateModule() {
-  return new load_progress::LoadProgressModule();
-}
+Module* CreateModule() { return new load_progress::LoadProgressModule(); }
 }  // namespace pp
-

@@ -16,9 +16,7 @@
 class TumberModule : public pp::Module {
  public:
   TumberModule() : pp::Module() {}
-  virtual ~TumberModule() {
-    glTerminatePPAPI();
-  }
+  virtual ~TumberModule() { glTerminatePPAPI(); }
 
   /// Called by the browser when the module is first loaded and ready to run.
   /// This is called once per module, not once per instance of the module on
@@ -41,8 +39,5 @@ namespace pp {
 /// CreateInstance() method on the object you return to make instances.  There
 /// is one instance per <embed> tag on the page.  This is the main binding
 /// point for your NaCl module with the browser.
-Module* CreateModule() {
-  return new TumberModule();
-}
+Module* CreateModule() { return new TumberModule(); }
 }  // namespace pp
-

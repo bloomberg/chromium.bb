@@ -56,15 +56,13 @@ class FileIoInstance : public pp::Instance {
         callback_factory_(this),
         file_system_(this, PP_FILESYSTEMTYPE_LOCALPERSISTENT),
         file_system_ready_(false),
-        file_thread_(this) {
-  }
+        file_thread_(this) {}
 
-  virtual ~FileIoInstance() {
-    file_thread_.Join();
-  }
+  virtual ~FileIoInstance() { file_thread_.Join(); }
 
-  virtual bool Init(uint32_t /*argc*/, const char* /*argn*/[],
-      const char* /*argv*/[]) {
+  virtual bool Init(uint32_t /*argc*/,
+                    const char * /*argn*/ [],
+                    const char * /*argv*/ []) {
     file_thread_.Start();
     // Open the file system on the file_thread_. Since this is the first
     // operation we perform there, and because we do everything on the
@@ -125,10 +123,8 @@ class FileIoInstance : public pp::Instance {
       // Read the rest of the message as the file text
       reader.ignore(1);  // Eat the delimiter
       std::string file_text = message.substr(reader.tellg());
-      file_thread_.message_loop().PostWork(
-          callback_factory_.NewCallback(&FileIoInstance::Save,
-                                        file_name,
-                                        file_text));
+      file_thread_.message_loop().PostWork(callback_factory_.NewCallback(
+          &FileIoInstance::Save, file_name, file_text));
       return;
     }
 
@@ -140,7 +136,7 @@ class FileIoInstance : public pp::Instance {
   }
 
   void OpenFileSystem(int32_t /* result */) {
-    int32_t rv = file_system_.Open(1024*1024, pp::CompletionCallback());
+    int32_t rv = file_system_.Open(1024 * 1024, pp::CompletionCallback());
     if (rv == PP_OK) {
       file_system_ready_ = true;
       // Notify the user interface that we're ready
@@ -150,7 +146,8 @@ class FileIoInstance : public pp::Instance {
     }
   }
 
-  void Save(int32_t /* result */, const std::string& file_name,
+  void Save(int32_t /* result */,
+            const std::string& file_name,
             const std::string& file_contents) {
     if (!file_system_ready_) {
       ShowErrorMessage("File system is not open", PP_ERROR_FAILED);
@@ -159,10 +156,11 @@ class FileIoInstance : public pp::Instance {
     pp::FileRef ref(file_system_, file_name.c_str());
     pp::FileIO file(this);
 
-    int32_t open_result = file.Open(
-        ref,
-        PP_FILEOPENFLAG_WRITE|PP_FILEOPENFLAG_CREATE|PP_FILEOPENFLAG_TRUNCATE,
-        pp::CompletionCallback());
+    int32_t open_result =
+        file.Open(ref,
+                  PP_FILEOPENFLAG_WRITE | PP_FILEOPENFLAG_CREATE |
+                      PP_FILEOPENFLAG_TRUNCATE,
+                  pp::CompletionCallback());
     if (open_result != PP_OK) {
       ShowErrorMessage("File open for write failed", open_result);
       return;
@@ -207,8 +205,8 @@ class FileIoInstance : public pp::Instance {
     pp::FileRef ref(file_system_, file_name.c_str());
     pp::FileIO file(this);
 
-    int32_t open_result = file.Open(ref, PP_FILEOPENFLAG_READ,
-                                    pp::CompletionCallback());
+    int32_t open_result =
+        file.Open(ref, PP_FILEOPENFLAG_READ, pp::CompletionCallback());
     if (open_result == PP_ERROR_FILENOTFOUND) {
       ShowStatusMessage("File not found");
       return;
@@ -232,7 +230,9 @@ class FileIoInstance : public pp::Instance {
     int64_t offset = 0;
     int32_t bytes_read = 0;
     do {
-      bytes_read = file.Read(offset, &data[offset], data.size() - offset,
+      bytes_read = file.Read(offset,
+                             &data[offset],
+                             data.size() - offset,
                              pp::CompletionCallback());
       if (bytes_read > 0)
         offset += bytes_read;
@@ -304,8 +304,5 @@ namespace pp {
 /// CreateInstance() method on the object you return to make instances.  There
 /// is one instance per <embed> tag on the page.  This is the main binding
 /// point for your NaCl module with the browser.
-Module* CreateModule() {
-  return new FileIoModule();
-}
+Module* CreateModule() { return new FileIoModule(); }
 }  // namespace pp
-

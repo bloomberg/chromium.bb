@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Native Client Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,7 +67,11 @@ void Gamepad::DidChangeView(const pp::View& view) {
   Paint();
 }
 
-void FillRect(pp::ImageData* image, int left, int top, int width, int height,
+void FillRect(pp::ImageData* image,
+              int left,
+              int top,
+              int width,
+              int height,
               uint32_t color) {
   for (int y = std::max(0, top);
        y < std::min(image->size().height() - 1, top + height);

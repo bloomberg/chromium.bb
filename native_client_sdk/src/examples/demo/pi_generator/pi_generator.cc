@@ -46,9 +46,8 @@ class ScopedMutexLock {
     if (mutex_)
       pthread_mutex_unlock(mutex_);
   }
-  bool is_valid() const {
-    return mutex_ != NULL;
-  }
+  bool is_valid() const { return mutex_ != NULL; }
+
  private:
   pthread_mutex_t* mutex_;  // Weak reference.
 };
@@ -64,12 +63,11 @@ class ScopedPixelLock {
     image_owner_->UnlockPixels();
   }
 
-  uint32_t* pixels() const {
-    return pixels_;
-  }
+  uint32_t* pixels() const { return pixels_; }
+
  private:
   PiGenerator* image_owner_;  // Weak reference.
-  uint32_t* pixels_;  // Weak reference.
+  uint32_t* pixels_;          // Weak reference.
 
   ScopedPixelLock();  // Not implemented, do not use.
 };
@@ -124,8 +122,8 @@ void PiGenerator::DidChangeView(const pp::View& view) {
 }
 
 bool PiGenerator::Init(uint32_t argc, const char* argn[], const char* argv[]) {
-  thread_create_result_ = pthread_create(&compute_pi_thread_, NULL, ComputePi,
-                                         this);
+  thread_create_result_ =
+      pthread_create(&compute_pi_thread_, NULL, ComputePi, this);
   return thread_create_result_ == 0;
 }
 

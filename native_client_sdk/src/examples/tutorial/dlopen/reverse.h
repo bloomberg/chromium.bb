@@ -7,6 +7,6 @@
 
 /* Allocate a new string that is the reverse of the given string. */
 typedef char* (*TYPE_reverse)(const char*);
-extern "C" char* Reverse(const char *);
+extern "C" char* Reverse(const char*);
 
-#endif  /* REVERSE_H_ */
+#endif /* REVERSE_H_ */

@@ -19,4 +19,3 @@ typedef std::tr1::shared_ptr<OpenGLContext> SharedOpenGLContext;
 }  // namespace tumbler
 
 #endif  // EXAMPLES_TUMBLER_OPENGL_CONTEXT_PTRS_H_
-

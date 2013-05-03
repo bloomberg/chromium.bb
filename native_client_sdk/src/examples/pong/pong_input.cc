@@ -21,8 +21,7 @@ const int kPaddleAIDeadZone = 20;
 }
 
 PongInputKeyboard::PongInputKeyboard(PongInputKeyboardDelegate* delegate)
-    : delegate_(delegate) {
-}
+    : delegate_(delegate) {}
 
 MoveDirection PongInputKeyboard::GetMove(const PongModel& model,
                                          bool is_left_paddle) {
@@ -38,8 +37,8 @@ MoveDirection PongInputAI::GetMove(const PongModel& model,
                                    bool is_left_paddle) {
   // A highly advanced AI algorithm that moves the paddle toward the y position
   // of the ball.
-  const PaddleModel& paddle = is_left_paddle ? model.left_paddle() :
-                                               model.right_paddle();
+  const PaddleModel& paddle =
+      is_left_paddle ? model.left_paddle() : model.right_paddle();
   int ball_center_y = model.ball().rect.CenterPoint().y();
   int paddle_center_y = paddle.rect.CenterPoint().y();
   int distance_y = labs(paddle_center_y - ball_center_y);

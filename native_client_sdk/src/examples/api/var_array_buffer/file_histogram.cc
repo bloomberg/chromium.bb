@@ -69,10 +69,8 @@ class FileHistogramInstance : public pp::Instance {
       : pp::Instance(instance),
         callback_factory_(this),
         flushing_(false),
-        histogram_() {
-  }
-  virtual ~FileHistogramInstance() {
-  }
+        histogram_() {}
+  virtual ~FileHistogramInstance() {}
 
  private:
   /// Handler for messages coming in from the browser via postMessage().  The
@@ -95,13 +93,11 @@ class FileHistogramInstance : public pp::Instance {
   /// given <code>size</code>.
   pp::ImageData MakeBlankImageData(const pp::Size& size) {
     const bool init_to_zero = false;
-    pp::ImageData image_data = pp::ImageData(this,
-                                             PP_IMAGEDATAFORMAT_BGRA_PREMUL,
-                                             size,
-                                             init_to_zero);
+    pp::ImageData image_data =
+        pp::ImageData(this, PP_IMAGEDATAFORMAT_BGRA_PREMUL, size, init_to_zero);
     uint32_t* image_buffer = static_cast<uint32_t*>(image_data.data());
     for (int i = 0; i < size.GetArea(); ++i)
-       image_buffer[i] = kBlack;
+      image_buffer[i] = kBlack;
     return image_data;
   }
 
@@ -147,8 +143,8 @@ class FileHistogramInstance : public pp::Instance {
     if (size_ != view.GetRect().size()) {
       size_ = view.GetRect().size();
       const bool is_always_opaque = true;
-      graphics_2d_context_ = pp::Graphics2D(this, view.GetRect().size(),
-                                            is_always_opaque);
+      graphics_2d_context_ =
+          pp::Graphics2D(this, view.GetRect().size(), is_always_opaque);
       BindGraphics(graphics_2d_context_);
       // The images in our queue are the wrong size, so we won't paint them.
       // We'll only draw the most recently computed histogram.
@@ -177,9 +173,8 @@ class FileHistogramInstance : public pp::Instance {
   /// <code>paint_queue_</code> to paint later.
   void DrawHistogram() {
     pp::ImageData image_data = MakeBlankImageData(size_);
-    for (int i = 0;
-         i < std::min(static_cast<int>(kHistogramSize),
-                      image_data.size().width());
+    for (int i = 0; i < std::min(static_cast<int>(kHistogramSize),
+                                 image_data.size().width());
          ++i) {
       DrawBar(i, histogram_[i], &image_data);
     }
@@ -231,7 +226,5 @@ namespace pp {
 /// CreateInstance() method on the object you return to make instances.  There
 /// is one instance per <embed> tag on the page.  This is the main binding
 /// point for your NaCl module with the browser.
-Module* CreateModule() {
-  return new FileHistogramModule();
-}
+Module* CreateModule() { return new FileHistogramModule(); }
 }  // namespace pp

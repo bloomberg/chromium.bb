@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-
 namespace event_queue {
 
 // These functions and classes are used to define a non-Pepper set of
@@ -43,9 +42,8 @@ class Event {
   // |modifiers| is an int that uses bit fields to set specific
   // changes, such as the Alt key, specific button, etc.  See
   // ModifierToString() and constants defined in custom_events.cc.
-  explicit Event(uint32_t modifiers)
-    : event_modifiers_(modifiers) {}
-  uint32_t event_modifiers() const {return event_modifiers_;}
+  explicit Event(uint32_t modifiers) : event_modifiers_(modifiers) {}
+  uint32_t event_modifiers() const { return event_modifiers_; }
   std::string string_event_modifiers() const {
     return ModifierToString(event_modifiers_);
   }
@@ -53,8 +51,8 @@ class Event {
   virtual std::string ToString() const = 0;
   virtual ~Event() {}
 
-  private:
-   uint32_t event_modifiers_;
+ private:
+  uint32_t event_modifiers_;
 };
 
 // Class for a keyboard event.
@@ -63,34 +61,44 @@ class KeyEvent : public Event {
   // KeyEvent Constructor. |modifiers| is passed to Event base class.
   // |keycode| is the ASCII value, |time| is a timestamp,
   // |text| is the value as a string.
-  KeyEvent(uint32_t modifiers, uint32_t keycode, double time,
-           std::string text) :
-      Event(modifiers), key_code_(keycode),
-      timestamp_(time), text_(text) {}
+  KeyEvent(uint32_t modifiers, uint32_t keycode, double time, std::string text)
+      : Event(modifiers), key_code_(keycode), timestamp_(time), text_(text) {}
   // Convert the WheelEvent to a string
   virtual std::string ToString() const;
 
  private:
-   uint32_t key_code_;
-   double timestamp_;
-   std::string text_;
+  uint32_t key_code_;
+  double timestamp_;
+  std::string text_;
 };
 
 class MouseEvent : public Event {
  public:
   // Specify a mouse button, with kNone available for initialization.
-  enum MouseButton {kNone, kLeft, kMiddle, kRight};
+  enum MouseButton {
+    kNone,
+    kLeft,
+    kMiddle,
+    kRight
+  };
 
   // MouseEvent Constructor. |modifiers| is passed to Event base class.
   // |button| specifies which button
   // |xpos| and |ypos| give the location,
   // |clicks| is how many times this same |xpos|,|ypos|
   // has been clicked in a row.  |time| is a timestamp,
-  MouseEvent(uint32_t modifiers, MouseButton button, uint32_t xpos,
-             uint32_t ypos, uint32_t clicks, double time)
-      : Event(modifiers), mouse_button_(button),
-        x_position_(xpos), y_position_(ypos),
-        click_count_(clicks), timestamp_(time) {}
+  MouseEvent(uint32_t modifiers,
+             MouseButton button,
+             uint32_t xpos,
+             uint32_t ypos,
+             uint32_t clicks,
+             double time)
+      : Event(modifiers),
+        mouse_button_(button),
+        x_position_(xpos),
+        y_position_(ypos),
+        click_count_(clicks),
+        timestamp_(time) {}
   // Convert the WheelEvent to a string
   virtual std::string ToString() const;
 
@@ -104,19 +112,26 @@ class MouseEvent : public Event {
   std::string MouseButtonToString(MouseButton button) const;
 };
 
-
 class WheelEvent : public Event {
  public:
   // WheelEvent Constructor. |modifiers| is passed to Event base class.
   // |xticks| and |yticks| specify number of mouse wheel ticks.
   // |scroll_by_page| indicates if we have scrolled past the current
   // page.  |time| is a timestamp,
-  WheelEvent(int modifiers, uint32_t dx, uint32_t dy,
-             uint32_t xticks, uint32_t yticks, bool scroll_by_page,
-             float time) :
-      Event(modifiers), delta_x_(dx), delta_y_(dy),
-      ticks_x_(xticks), ticks_y_(yticks),
-      scroll_by_page_(scroll_by_page), timestamp_(time) {}
+  WheelEvent(int modifiers,
+             uint32_t dx,
+             uint32_t dy,
+             uint32_t xticks,
+             uint32_t yticks,
+             bool scroll_by_page,
+             float time)
+      : Event(modifiers),
+        delta_x_(dx),
+        delta_y_(dy),
+        ticks_x_(xticks),
+        ticks_y_(yticks),
+        scroll_by_page_(scroll_by_page),
+        timestamp_(time) {}
   // Convert the WheelEvent to a string
   virtual std::string ToString() const;
 
@@ -129,20 +144,28 @@ class WheelEvent : public Event {
   double timestamp_;
 };
 
-
 class TouchEvent : public Event {
  public:
   // The kind of touch event that occurred.
-  enum Kind { kNone, kStart, kMove, kEnd, kCancel };
+  enum Kind {
+    kNone,
+    kStart,
+    kMove,
+    kEnd,
+    kCancel
+  };
 
   // TouchEvent constructor.
-  TouchEvent(int modifiers, Kind kind, float time) :
-      Event(modifiers),
-      kind_(kind),
-      timestamp_(time) {}
+  TouchEvent(int modifiers, Kind kind, float time)
+      : Event(modifiers), kind_(kind), timestamp_(time) {}
   // Add a changed touch to this touch event.
-  void AddTouch(uint32_t id, float x, float y, float radii_x, float radii_y,
-      float angle, float pressure);
+  void AddTouch(uint32_t id,
+                float x,
+                float y,
+                float radii_x,
+                float radii_y,
+                float angle,
+                float pressure);
   // Convert the TouchEvent to a string
   virtual std::string ToString() const;
 
@@ -163,7 +186,6 @@ class TouchEvent : public Event {
   std::vector<Touch> touches;
   double timestamp_;
 };
-
 
 }  // end namespace
 

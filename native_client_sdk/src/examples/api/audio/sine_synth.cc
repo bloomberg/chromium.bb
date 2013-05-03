@@ -113,16 +113,13 @@ bool SineSynthInstance::Init(uint32_t argc,
                              const char* argn[],
                              const char* argv[]) {
   // Ask the device for an appropriate sample count size.
-  sample_frame_count_ =
-      pp::AudioConfig::RecommendSampleFrameCount(this,
-                                                 PP_AUDIOSAMPLERATE_44100,
-                                                 kSampleFrameCount);
-  audio_ = pp::Audio(this,
-                     pp::AudioConfig(this,
-                                     PP_AUDIOSAMPLERATE_44100,
-                                     sample_frame_count_),
-                     SineWaveCallback,
-                     this);
+  sample_frame_count_ = pp::AudioConfig::RecommendSampleFrameCount(
+      this, PP_AUDIOSAMPLERATE_44100, kSampleFrameCount);
+  audio_ = pp::Audio(
+      this,
+      pp::AudioConfig(this, PP_AUDIOSAMPLERATE_44100, sample_frame_count_),
+      SineWaveCallback,
+      this);
   return true;
 }
 
@@ -178,7 +175,5 @@ class SineSynthModule : public pp::Module {
 // is one instance per <embed> tag on the page.  This is the main binding
 // point for your NaCl module with the browser.
 namespace pp {
-Module* CreateModule() {
-  return new sine_synth::SineSynthModule();
-}
+Module* CreateModule() { return new sine_synth::SineSynthModule(); }
 }  // namespace pp

@@ -22,10 +22,10 @@
 // view.  These values are used to determine which 2D quadrant the needle lies
 // in.
 typedef enum {
-    kLeft = 0,
-    kRight = 1,
-    kUp = 2,
-    kDown = 3
+  kLeft = 0,
+  kRight = 1,
+  kUp = 2,
+  kDown = 3
 } MouseDirection;
 
 namespace {
@@ -45,8 +45,7 @@ MouseLockInstance::~MouseLockInstance() {
 bool MouseLockInstance::Init(uint32_t argc,
                              const char* argn[],
                              const char* argv[]) {
-  RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE |
-                     PP_INPUTEVENT_CLASS_KEYBOARD);
+  RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE | PP_INPUTEVENT_CLASS_KEYBOARD);
   return true;
 }
 
@@ -56,8 +55,8 @@ bool MouseLockInstance::HandleInputEvent(const pp::InputEvent& event) {
       if (mouse_locked_) {
         UnlockMouse();
       } else {
-        LockMouse(callback_factory_.NewCallback(
-            &MouseLockInstance::DidLockMouse));
+        LockMouse(
+            callback_factory_.NewCallback(&MouseLockInstance::DidLockMouse));
       }
       return true;
     }
@@ -123,15 +122,17 @@ void MouseLockInstance::DidChangeView(const pp::View& view) {
 
   if ((size_ == view.GetRect().size()) &&
       (was_fullscreen_ == view.IsFullscreen()) && is_context_bound_) {
-      Log("DidChangeView SKIP %d,%d FULL=%s CTX Bound=%s",
-          view.GetRect().width(), view.GetRect().height(),
-          view.IsFullscreen() ? "true" : "false",
-          is_context_bound_ ? "true" : "false");
+    Log("DidChangeView SKIP %d,%d FULL=%s CTX Bound=%s",
+        view.GetRect().width(),
+        view.GetRect().height(),
+        view.IsFullscreen() ? "true" : "false",
+        is_context_bound_ ? "true" : "false");
     return;
   }
 
   Log("DidChangeView DO %d,%d FULL=%s CTX Bound=%s",
-      view.GetRect().width(), view.GetRect().height(),
+      view.GetRect().width(),
+      view.GetRect().height(),
       view.IsFullscreen() ? "true" : "false",
       is_context_bound_ ? "true" : "false");
 
@@ -181,7 +182,8 @@ void MouseLockInstance::DidLockMouse(int32_t result) {
 }
 
 void MouseLockInstance::DidFlush(int32_t result) {
-  if (result != 0) Log("Flushed failed with error number %d.\n", result);
+  if (result != 0)
+    Log("Flushed failed with error number %d.\n", result);
   waiting_for_flush_completion_ = false;
 }
 
@@ -202,7 +204,6 @@ void MouseLockInstance::Paint() {
   device_context_.Flush(
       callback_factory_.NewCallback(&MouseLockInstance::DidFlush));
 }
-
 
 pp::ImageData MouseLockInstance::PaintImage(const pp::Size& size) {
   pp::ImageData image(this, PP_IMAGEDATAFORMAT_BGRA_PREMUL, size, false);
@@ -252,10 +253,9 @@ void MouseLockInstance::DrawCenterSpot(pp::ImageData* image,
 
   pp::Point left_top(std::max(0, center_x - region_of_interest_radius),
                      std::max(0, center_y - region_of_interest_radius));
-  pp::Point right_bottom(std::min(image->size().width(),
-                                  center_x + region_of_interest_radius),
-                         std::min(image->size().height(),
-                                  center_y + region_of_interest_radius));
+  pp::Point right_bottom(
+      std::min(image->size().width(), center_x + region_of_interest_radius),
+      std::min(image->size().height(), center_y + region_of_interest_radius));
   for (int y = left_top.y(); y < right_bottom.y(); ++y) {
     for (int x = left_top.x(); x < right_bottom.x(); ++x) {
       if (GetDistance(x, y, center_x, center_y) < kCentralSpotRadius) {
@@ -287,42 +287,38 @@ void MouseLockInstance::DrawNeedle(pp::ImageData* image,
   MouseDirection direction = kLeft;
 
   if (abs_mouse_x >= abs_mouse_y) {
-     anchor_1.set_x(center_x);
-     anchor_1.set_y(center_y - kCentralSpotRadius);
-     anchor_2.set_x(center_x);
-     anchor_2.set_y(center_y + kCentralSpotRadius);
-     direction = (mouse_movement_.x() < 0) ? kLeft : kRight;
-     if (direction == kLeft)
-       anchor_1.swap(anchor_2);
+    anchor_1.set_x(center_x);
+    anchor_1.set_y(center_y - kCentralSpotRadius);
+    anchor_2.set_x(center_x);
+    anchor_2.set_y(center_y + kCentralSpotRadius);
+    direction = (mouse_movement_.x() < 0) ? kLeft : kRight;
+    if (direction == kLeft)
+      anchor_1.swap(anchor_2);
   } else {
-     anchor_1.set_x(center_x + kCentralSpotRadius);
-     anchor_1.set_y(center_y);
-     anchor_2.set_x(center_x - kCentralSpotRadius);
-     anchor_2.set_y(center_y);
-     direction = (mouse_movement_.y() < 0) ? kUp : kDown;
-     if (direction == kUp)
-       anchor_1.swap(anchor_2);
+    anchor_1.set_x(center_x + kCentralSpotRadius);
+    anchor_1.set_y(center_y);
+    anchor_2.set_x(center_x - kCentralSpotRadius);
+    anchor_2.set_y(center_y);
+    direction = (mouse_movement_.y() < 0) ? kUp : kDown;
+    if (direction == kUp)
+      anchor_1.swap(anchor_2);
   }
 
   pp::Point left_top(std::max(0, center_x - abs_mouse_x),
                      std::max(0, center_y - abs_mouse_y));
-  pp::Point right_bottom(std::min(image->size().width(),
-                                  center_x + abs_mouse_x),
-                         std::min(image->size().height(),
-                                  center_y + abs_mouse_y));
+  pp::Point right_bottom(
+      std::min(image->size().width(), center_x + abs_mouse_x),
+      std::min(image->size().height(), center_y + abs_mouse_y));
   for (int y = left_top.y(); y < right_bottom.y(); ++y) {
     for (int x = left_top.x(); x < right_bottom.x(); ++x) {
-      bool within_bound_1 =
-          ((y - anchor_1.y()) * (vertex.x() - anchor_1.x())) >
-          ((vertex.y() - anchor_1.y()) * (x - anchor_1.x()));
-      bool within_bound_2 =
-          ((y - anchor_2.y()) * (vertex.x() - anchor_2.x())) <
-          ((vertex.y() - anchor_2.y()) * (x - anchor_2.x()));
-      bool within_bound_3 =
-          (direction == kUp && y < center_y) ||
-          (direction == kDown && y > center_y) ||
-          (direction == kLeft && x < center_x) ||
-          (direction == kRight && x > center_x);
+      bool within_bound_1 = ((y - anchor_1.y()) * (vertex.x() - anchor_1.x())) >
+                            ((vertex.y() - anchor_1.y()) * (x - anchor_1.x()));
+      bool within_bound_2 = ((y - anchor_2.y()) * (vertex.x() - anchor_2.x())) <
+                            ((vertex.y() - anchor_2.y()) * (x - anchor_2.x()));
+      bool within_bound_3 = (direction == kUp && y < center_y) ||
+                            (direction == kDown && y > center_y) ||
+                            (direction == kLeft && x < center_x) ||
+                            (direction == kRight && x > center_x);
 
       if (within_bound_1 && within_bound_2 && within_bound_3) {
         *image->GetAddr32(pp::Point(x, y)) = needle_color;
@@ -331,12 +327,13 @@ void MouseLockInstance::DrawNeedle(pp::ImageData* image,
   }
 }
 
-
 void MouseLockInstance::Log(const char* format, ...) {
-  static PPB_Console* console = (PPB_Console*)
-      pp::Module::Get()->GetBrowserInterface(PPB_CONSOLE_INTERFACE);
+  static PPB_Console* console =
+      (PPB_Console*)pp::Module::Get()->GetBrowserInterface(
+          PPB_CONSOLE_INTERFACE);
 
-  if (NULL == console) return;
+  if (NULL == console)
+    return;
   va_list args;
   va_start(args, format);
   char buf[512];
@@ -366,9 +363,6 @@ class MouseLockModule : public pp::Module {
 namespace pp {
 
 // Factory function for your specialization of the Module object.
-Module* CreateModule() {
-  return new MouseLockModule();
-}
+Module* CreateModule() { return new MouseLockModule(); }
 
 }  // namespace pp
-

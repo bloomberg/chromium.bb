@@ -32,7 +32,7 @@ class ScriptingBridge {
  public:
   // Shared pointer type used in the method map.
   typedef std::tr1::shared_ptr<MethodCallbackExecutor>
-      SharedMethodCallbackExecutor;
+  SharedMethodCallbackExecutor;
 
   virtual ~ScriptingBridge() {}
 
@@ -50,5 +50,5 @@ class ScriptingBridge {
 };
 
 }  // namespace tumbler
-#endif  // EXAMPLES_TUMBLER_SCRIPTING_BRIDGE_H_
 
+#endif  // EXAMPLES_TUMBLER_SCRIPTING_BRIDGE_H_

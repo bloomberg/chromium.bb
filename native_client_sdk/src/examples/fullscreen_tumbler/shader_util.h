@@ -15,16 +15,16 @@ namespace shader_util {
 // GL_FRAGMENT_SHADER.  Returns a non-0 value representing the compiled
 // shader on success, 0 on failure.  The caller is responsible for deleting
 // the returned shader using glDeleteShader().
-GLuint CreateShaderOfType(GLenum type, const char *shader_src);
+GLuint CreateShaderOfType(GLenum type, const char* shader_src);
 
 // Load and compile the vertex and fragment shaders, then link these together
 // into a complete program.  Returns a non-0 value representing the program on,
 // success or 0 on failure.  The caller is responsible for deleting the
 // returned program using glDeleteProgram().
 GLuint CreateProgramFromVertexAndFragmentShaders(
-    const char *vertex_shader_src, const char *fragment_shader_src);
+    const char* vertex_shader_src,
+    const char* fragment_shader_src);
 
 }  // namespace shader_util
 
 #endif  // EXAMPLES_TUMBLER_SHADER_UTIL_H_
-

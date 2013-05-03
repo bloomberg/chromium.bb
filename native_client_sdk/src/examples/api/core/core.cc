@@ -9,7 +9,6 @@
 #include "ppapi/cpp/var.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
-
 /// The Instance class.  One of these exists for each instance of your NaCl
 /// module on the web page.  The browser will ask the Module object to create
 /// a new Instance for each occurrence of the <embed> tag that has these
@@ -21,9 +20,7 @@ class CoreInstance : public pp::Instance {
   /// The constructor creates the plugin-side instance.
   /// @param[in] instance the handle to the browser-side plugin instance.
   explicit CoreInstance(PP_Instance instance)
-      : pp::Instance(instance),
-        callback_factory_(this) {
-  }
+      : pp::Instance(instance), callback_factory_(this) {}
 
  private:
   /// Handler for messages coming in from the browser via postMessage().  The
@@ -36,8 +33,7 @@ class CoreInstance : public pp::Instance {
       // If a delay is requested, issue a callback after delay ms.
       last_receive_time_ = pp::Module::Get()->core()->GetTimeTicks();
       pp::Module::Get()->core()->CallOnMainThread(
-          delay, callback_factory_.NewCallback(&CoreInstance::DelayedPost),
-          0);
+          delay, callback_factory_.NewCallback(&CoreInstance::DelayedPost), 0);
     } else {
       // If no delay is requested, reply immediately with zero time elapsed.
       pp::Var msg(0);
@@ -47,8 +43,7 @@ class CoreInstance : public pp::Instance {
 
   void DelayedPost(int32_t) {
     // Send the time elapsed until the callbacked fired.
-    pp::Var msg(
-        pp::Module::Get()->core()->GetTimeTicks() - last_receive_time_);
+    pp::Var msg(pp::Module::Get()->core()->GetTimeTicks() - last_receive_time_);
     PostMessage(msg);
   }
 
@@ -68,7 +63,5 @@ class CoreModule : public pp::Module {
 };
 
 namespace pp {
-Module* CreateModule() {
-  return new CoreModule();
-}
+Module* CreateModule() { return new CoreModule(); }
 }  // namespace pp
