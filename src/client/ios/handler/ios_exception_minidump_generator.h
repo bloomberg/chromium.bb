@@ -53,6 +53,9 @@ class IosExceptionMinidumpGenerator : public MinidumpGenerator {
   // Get the crashing program counter from the exception.
   uint32_t GetPCFromException();
 
+  // Get the crashing link register from the exception.
+  uint32_t GetLRFromException();
+
   // Write a virtual thread context for the crashing site.
   bool WriteCrashingContext(MDLocationDescriptor *register_location);
 

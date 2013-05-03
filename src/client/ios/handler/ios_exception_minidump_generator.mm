@@ -79,9 +79,8 @@ bool IosExceptionMinidumpGenerator::WriteCrashingContext(
   context_ptr->context_flags = MD_CONTEXT_ARM_FULL;
   context_ptr->iregs[7] = kExpectedFinalFp;  // FP
   context_ptr->iregs[13] = kExpectedFinalSp;  // SP
-  uint32_t pc = GetPCFromException();
-  context_ptr->iregs[14] = pc;  // LR
-  context_ptr->iregs[15] = pc;  // PC
+  context_ptr->iregs[14] = GetLRFromException();  // LR
+  context_ptr->iregs[15] = GetPCFromException();  // PC
   return true;
 #else
   assert(false);
@@ -91,6 +90,10 @@ bool IosExceptionMinidumpGenerator::WriteCrashingContext(
 
 uint32_t IosExceptionMinidumpGenerator::GetPCFromException() {
   return [[return_addresses_ objectAtIndex:0] unsignedIntegerValue];
+}
+
+uint32_t IosExceptionMinidumpGenerator::GetLRFromException() {
+  return [[return_addresses_ objectAtIndex:1] unsignedIntegerValue];
 }
 
 bool IosExceptionMinidumpGenerator::WriteExceptionStream(
@@ -135,14 +138,14 @@ bool IosExceptionMinidumpGenerator::WriteThreadStream(mach_port_t thread_id,
   scoped_array<uint8_t> stack_memory(new uint8_t[size]);
   uint32_t sp = size - 4;
   uint32_t fp = 0;
-  uint32_t lr = [[return_addresses_ lastObject] unsignedIntegerValue];
-  for (int current_frame = frame_count - 2;
-       current_frame >= 0;
+  uint32_t lr = 0;
+  for (int current_frame = frame_count - 1;
+       current_frame > 0;
        --current_frame) {
-    AppendToMemory(stack_memory.get(), sp, fp);
-    sp -= 4;
-    fp = sp;
     AppendToMemory(stack_memory.get(), sp, lr);
+    sp -= 4;
+    AppendToMemory(stack_memory.get(), sp, fp);
+    fp = sp;
     sp -= 4;
     lr = [[return_addresses_ objectAtIndex:current_frame] unsignedIntegerValue];
   }
@@ -150,7 +153,7 @@ bool IosExceptionMinidumpGenerator::WriteThreadStream(mach_port_t thread_id,
     return false;
   assert(sp == kExpectedFinalSp);
   assert(fp == kExpectedFinalFp);
-  assert(lr == GetPCFromException());
+  assert(lr == GetLRFromException());
   thread->stack.start_of_memory_range = sp;
   thread->stack.memory = memory.location();
   memory_blocks_.push_back(thread->stack);
