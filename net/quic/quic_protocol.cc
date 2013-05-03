@@ -274,7 +274,9 @@ StringPiece QuicPacket::Plaintext() const {
                      length() - start_of_encrypted_data);
 }
 
-RetransmittableFrames::RetransmittableFrames() {}
+RetransmittableFrames::RetransmittableFrames()
+    : encryption_level_(NUM_ENCRYPTION_LEVELS) {
+}
 
 RetransmittableFrames::~RetransmittableFrames() {
   for (QuicFrames::iterator it = frames_.begin(); it != frames_.end(); ++it) {
@@ -324,6 +326,10 @@ const QuicFrame& RetransmittableFrames::AddNonStreamFrame(
   DCHECK_NE(frame.type, STREAM_FRAME);
   frames_.push_back(frame);
   return frames_.back();
+}
+
+void RetransmittableFrames::set_encryption_level(EncryptionLevel level) {
+  encryption_level_ = level;
 }
 
 ostream& operator<<(ostream& os, const QuicEncryptedPacket& s) {

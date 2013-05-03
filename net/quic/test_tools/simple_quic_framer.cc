@@ -128,11 +128,7 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
 };
 
 SimpleQuicFramer::SimpleQuicFramer()
-    : framer_(kQuicVersion1,
-              QuicDecrypter::Create(kNULL),
-              QuicEncrypter::Create(kNULL),
-              QuicTime::Zero(),
-              true),
+    : framer_(kQuicVersion1, QuicTime::Zero(), true),
       visitor_(NULL) {
 }
 
@@ -140,7 +136,8 @@ SimpleQuicFramer::~SimpleQuicFramer() {
 }
 
 bool SimpleQuicFramer::ProcessPacket(const QuicPacket& packet) {
-  scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPacket(0, packet));
+  scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPacket(
+      ENCRYPTION_NONE, 0, packet));
   return ProcessPacket(*encrypted);
 }
 

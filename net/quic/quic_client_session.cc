@@ -4,6 +4,7 @@
 
 #include "net/quic/quic_client_session.h"
 
+#include "base/callback_helpers.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
@@ -50,13 +51,14 @@ QuicClientSession::QuicClientSession(
 }
 
 QuicClientSession::~QuicClientSession() {
+  DCHECK(callback_.is_null());
   connection()->set_debug_visitor(NULL);
   net_log_.EndEvent(NetLog::TYPE_QUIC_SESSION);
 }
 
 QuicReliableClientStream* QuicClientSession::CreateOutgoingReliableStream() {
-  if (!crypto_stream_->handshake_complete()) {
-    DLOG(INFO) << "Crypto handshake not complete, no outgoing stream created.";
+  if (!crypto_stream_->encryption_established()) {
+    DLOG(INFO) << "Encryption not active so no outgoing stream created.";
     return NULL;
   }
   if (GetNumOpenStreams() >= get_max_open_streams()) {
@@ -87,7 +89,7 @@ int QuicClientSession::CryptoConnect(const CompletionCallback& callback) {
     return ERR_CONNECTION_FAILED;
   }
 
-  if (IsCryptoHandshakeComplete()) {
+  if (IsEncryptionEstablished()) {
     return OK;
   }
 
@@ -109,10 +111,21 @@ void QuicClientSession::CloseStream(QuicStreamId stream_id) {
   }
 }
 
-void QuicClientSession::OnCryptoHandshakeComplete(QuicErrorCode error) {
+void QuicClientSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
   if (!callback_.is_null()) {
-    callback_.Run(error == QUIC_NO_ERROR ? OK : ERR_UNEXPECTED);
+    // TODO(rtenneti): Currently for all CryptoHandshakeEvent events, callback_
+    // could be called because there are no error events in CryptoHandshakeEvent
+    // enum. If error events are added to CryptoHandshakeEvent, then the
+    // following code needs to changed.
+    base::ResetAndReturn(&callback_).Run(OK);
   }
+}
+
+void QuicClientSession::ConnectionClose(QuicErrorCode error, bool from_peer) {
+  if (!callback_.is_null()) {
+    base::ResetAndReturn(&callback_).Run(error);
+  }
+  QuicSession::ConnectionClose(error, from_peer);
 }
 
 void QuicClientSession::StartReading() {
@@ -137,6 +150,9 @@ void QuicClientSession::StartReading() {
 }
 
 void QuicClientSession::CloseSessionOnError(int error) {
+  if (!callback_.is_null()) {
+    base::ResetAndReturn(&callback_).Run(error);
+  }
   while (!streams()->empty()) {
     ReliableQuicStream* stream = streams()->begin()->second;
     QuicStreamId id = stream->id();

@@ -79,10 +79,9 @@ QuicConnection::QuicConnection(QuicGuid guid,
                                bool is_server)
     : helper_(helper),
       framer_(kQuicVersion1,
-              QuicDecrypter::Create(kNULL),
-              QuicEncrypter::Create(kNULL),
               helper->GetClock()->ApproximateNow(),
               is_server),
+      encryption_level_(ENCRYPTION_NONE),
       clock_(helper->GetClock()),
       random_generator_(helper->GetRandomGenerator()),
       guid_(guid),
@@ -151,7 +150,9 @@ bool QuicConnection::SelectMutualVersion(
 }
 
 void QuicConnection::OnError(QuicFramer* framer) {
-  if (!connected_) {
+  // Packets that we cannot decrypt are dropped.
+  // TODO(rch): add stats to measure this.
+  if (!connected_ || framer->error() == QUIC_DECRYPTION_FAILURE) {
     return;
   }
   SendConnectionClose(framer->error());
@@ -727,7 +728,9 @@ void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
   stats_.bytes_received += packet.length();
   ++stats_.packets_received;
 
-  framer_.ProcessPacket(packet);
+  if (!framer_.ProcessPacket(packet)) {
+    return;
+  }
   MaybeProcessRevivedPacket();
 }
 
@@ -770,7 +773,8 @@ bool QuicConnection::WriteQueuedPackets() {
     // TODO(rch): clean up and close the connection if we really hit this.
     DCHECK_LT(queued_packets_.size(), num_queued_packets);
     num_queued_packets = queued_packets_.size();
-    if (WritePacket(packet_iterator->sequence_number,
+    if (WritePacket(packet_iterator->encryption_level,
+                    packet_iterator->sequence_number,
                     packet_iterator->packet,
                     packet_iterator->retransmittable,
                     NO_FORCE)) {
@@ -883,7 +887,8 @@ void QuicConnection::RetransmitPacket(
          unacked_packets_.rbegin()->first < serialized_packet.sequence_number);
   unacked_packets_.insert(make_pair(serialized_packet.sequence_number,
                                     unacked));
-  SendOrQueuePacket(serialized_packet.sequence_number,
+  SendOrQueuePacket(unacked->encryption_level(),
+                    serialized_packet.sequence_number,
                     serialized_packet.packet,
                     serialized_packet.entropy_hash,
                     HAS_RETRANSMITTABLE_DATA);
@@ -901,7 +906,8 @@ bool QuicConnection::CanWrite(Retransmission retransmission,
   QuicTime::Delta delay = congestion_manager_.TimeUntilSend(
       now, retransmission, retransmittable);
   if (delay.IsInfinite()) {
-    return false;
+    // TODO(pwestin): should be false but trigger other bugs see b/8350327.
+    return true;
   }
 
   // If the scheduler requires a delay, then we can not send this packet now.
@@ -946,7 +952,8 @@ void QuicConnection::MaybeSetupRetransmission(
   // SendStreamData().
 }
 
-bool QuicConnection::WritePacket(QuicPacketSequenceNumber sequence_number,
+bool QuicConnection::WritePacket(EncryptionLevel level,
+                                 QuicPacketSequenceNumber sequence_number,
                                  QuicPacket* packet,
                                  HasRetransmittableData retransmittable,
                                  Force forced) {
@@ -967,7 +974,7 @@ bool QuicConnection::WritePacket(QuicPacketSequenceNumber sequence_number,
   }
 
   scoped_ptr<QuicEncryptedPacket> encrypted(
-      framer_.EncryptPacket(sequence_number, *packet));
+      framer_.EncryptPacket(level, sequence_number, *packet));
   DLOG(INFO) << ENDPOINT << "Sending packet number " << sequence_number
              << " : " << (packet->is_fec_packet() ? "FEC " :
                  (retransmittable == HAS_RETRANSMITTABLE_DATA
@@ -1022,6 +1029,10 @@ bool QuicConnection::OnSerializedPacket(
     DCHECK(unacked_packets_.empty() ||
            unacked_packets_.rbegin()->first <
                serialized_packet.sequence_number);
+    // Retransmitted frames will be sent with the same encryption level as the
+    // original.
+    serialized_packet.retransmittable_frames->set_encryption_level(
+        encryption_level_);
     unacked_packets_.insert(
         make_pair(serialized_packet.sequence_number,
                   serialized_packet.retransmittable_frames));
@@ -1030,7 +1041,8 @@ bool QuicConnection::OnSerializedPacket(
         make_pair(serialized_packet.sequence_number,
                   RetransmissionInfo(serialized_packet.sequence_number)));
   }
-  return SendOrQueuePacket(serialized_packet.sequence_number,
+  return SendOrQueuePacket(encryption_level_,
+                           serialized_packet.sequence_number,
                            serialized_packet.packet,
                            serialized_packet.entropy_hash,
                            serialized_packet.retransmittable_frames != NULL ?
@@ -1038,13 +1050,14 @@ bool QuicConnection::OnSerializedPacket(
                                NO_RETRANSMITTABLE_DATA);
 }
 
-bool QuicConnection::SendOrQueuePacket(QuicPacketSequenceNumber sequence_number,
+bool QuicConnection::SendOrQueuePacket(EncryptionLevel level,
+                                       QuicPacketSequenceNumber sequence_number,
                                        QuicPacket* packet,
                                        QuicPacketEntropyHash entropy_hash,
                                        HasRetransmittableData retransmittable) {
   entropy_manager_.RecordSentPacketEntropyHash(sequence_number, entropy_hash);
-  if (!WritePacket(sequence_number, packet, retransmittable, NO_FORCE)) {
-    queued_packets_.push_back(QueuedPacket(sequence_number, packet,
+  if (!WritePacket(level, sequence_number, packet, retransmittable, NO_FORCE)) {
+    queued_packets_.push_back(QueuedPacket(sequence_number, packet, level,
                                            retransmittable));
     return false;
   }
@@ -1134,16 +1147,35 @@ QuicTime QuicConnection::OnRetransmissionTimeout() {
   return retransmission_timeouts_.top().scheduled_time;
 }
 
-void QuicConnection::ChangeEncrypter(QuicEncrypter* encrypter) {
-  framer_.set_encrypter(encrypter);
+void QuicConnection::SetEncrypter(EncryptionLevel level,
+                                  QuicEncrypter* encrypter) {
+  framer_.SetEncrypter(level, encrypter);
 }
 
-void QuicConnection::PushDecrypter(QuicDecrypter* decrypter) {
-  framer_.push_decrypter(decrypter);
+const QuicEncrypter* QuicConnection::encrypter(EncryptionLevel level) const {
+  return framer_.encrypter(level);
 }
 
-void QuicConnection::PopDecrypter() {
-  framer_.pop_decrypter();
+void QuicConnection::SetDefaultEncryptionLevel(
+    EncryptionLevel level) {
+  encryption_level_ = level;
+}
+
+void QuicConnection::SetDecrypter(QuicDecrypter* decrypter) {
+  framer_.SetDecrypter(decrypter);
+}
+
+void QuicConnection::SetAlternativeDecrypter(QuicDecrypter* decrypter,
+                                             bool latch_once_used) {
+  framer_.SetAlternativeDecrypter(decrypter, latch_once_used);
+}
+
+const QuicDecrypter* QuicConnection::decrypter() const {
+  return framer_.decrypter();
+}
+
+const QuicDecrypter* QuicConnection::alternative_decrypter() const {
+  return framer_.alternative_decrypter();
 }
 
 void QuicConnection::MaybeProcessRevivedPacket() {
@@ -1208,7 +1240,8 @@ void QuicConnection::SendConnectionClosePacket(QuicErrorCode error,
       serialized_packet.sequence_number,
       serialized_packet.entropy_hash);
 
-  WritePacket(serialized_packet.sequence_number,
+  WritePacket(encryption_level_,
+              serialized_packet.sequence_number,
               serialized_packet.packet,
               serialized_packet.retransmittable_frames != NULL ?
                   HAS_RETRANSMITTABLE_DATA : NO_RETRANSMITTABLE_DATA,

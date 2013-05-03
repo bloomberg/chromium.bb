@@ -71,18 +71,14 @@ class QuicStreamFactoryTest : public ::testing::Test {
     feedback.tcp.accumulated_number_of_lost_packets = 0;
     feedback.tcp.receive_window = 16000;
 
-    QuicFramer framer(kQuicVersion1,
-                      QuicDecrypter::Create(kNULL),
-                      QuicEncrypter::Create(kNULL),
-                      QuicTime::Zero(),
-                      false);
+    QuicFramer framer(kQuicVersion1, QuicTime::Zero(), false);
     QuicFrames frames;
     frames.push_back(QuicFrame(&ack));
     frames.push_back(QuicFrame(&feedback));
     scoped_ptr<QuicPacket> packet(
         framer.ConstructFrameDataPacket(header, frames).packet);
-    return scoped_ptr<QuicEncryptedPacket>(
-        framer.EncryptPacket(header.packet_sequence_number, *packet));
+    return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(
+        ENCRYPTION_NONE, header.packet_sequence_number, *packet));
   }
 
   // Returns a newly created packet to send congestion feedback data.
@@ -110,17 +106,13 @@ class QuicStreamFactoryTest : public ::testing::Test {
   scoped_ptr<QuicEncryptedPacket> ConstructPacket(
       const QuicPacketHeader& header,
       const QuicFrame& frame) {
-    QuicFramer framer(kQuicVersion1,
-                      QuicDecrypter::Create(kNULL),
-                      QuicEncrypter::Create(kNULL),
-                      QuicTime::Zero(),
-                      false);
+    QuicFramer framer(kQuicVersion1, QuicTime::Zero(), false);
     QuicFrames frames;
     frames.push_back(frame);
     scoped_ptr<QuicPacket> packet(
         framer.ConstructFrameDataPacket(header, frames).packet);
-    return scoped_ptr<QuicEncryptedPacket>(
-        framer.EncryptPacket(header.packet_sequence_number, *packet));
+    return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(
+        ENCRYPTION_NONE, header.packet_sequence_number, *packet));
   }
 
   MockHostResolver host_resolver_;

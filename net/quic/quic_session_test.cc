@@ -30,7 +30,9 @@ class TestCryptoStream : public QuicCryptoStream {
 
   virtual void OnHandshakeMessage(
       const CryptoHandshakeMessage& message) OVERRIDE {
-    SetHandshakeComplete(QUIC_NO_ERROR);
+    encryption_established_ = true;
+    handshake_confirmed_ = true;
+    session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
   }
 };
 
@@ -115,11 +117,11 @@ class QuicSessionTest : public ::testing::Test {
   set<QuicStreamId> closed_streams_;
 };
 
-TEST_F(QuicSessionTest, IsCryptoHandshakeComplete) {
-  EXPECT_FALSE(session_.IsCryptoHandshakeComplete());
+TEST_F(QuicSessionTest, IsCryptoHandshakeConfirmed) {
+  EXPECT_FALSE(session_.IsCryptoHandshakeConfirmed());
   CryptoHandshakeMessage message;
   session_.crypto_stream_.OnHandshakeMessage(message);
-  EXPECT_TRUE(session_.IsCryptoHandshakeComplete());
+  EXPECT_TRUE(session_.IsCryptoHandshakeConfirmed());
 }
 
 TEST_F(QuicSessionTest, IsClosedStreamDefault) {

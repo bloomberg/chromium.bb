@@ -71,20 +71,20 @@ TEST(CryptoFramerTest, ConstructHandshakeMessage) {
     0x33, 0x77, 0xAA, 0xFF,
     // num entries
     0x03, 0x00,
-    // tag 1
-    0x78, 0x56, 0x34, 0x12,
-    // tag 2
-    0x79, 0x56, 0x34, 0x12,
-    // tag 3
-    0x7A, 0x56, 0x34, 0x12,
-    // len 1
-    0x06, 0x00,
-    // len 2
-    0x05, 0x00,
-    // len 3
-    0x07, 0x00,
     // padding
     0x00, 0x00,
+    // tag 1
+    0x78, 0x56, 0x34, 0x12,
+    // end offset 1
+    0x06, 0x00, 0x00, 0x00,
+    // tag 2
+    0x79, 0x56, 0x34, 0x12,
+    // end offset 2
+    0x0b, 0x00, 0x00, 0x00,
+    // tag 3
+    0x7A, 0x56, 0x34, 0x12,
+    // end offset 3
+    0x12, 0x00, 0x00, 0x00,
     // value 1
     'a',  'b',  'c',  'd',
     'e',  'f',
@@ -115,14 +115,16 @@ TEST(CryptoFramerTest, ConstructHandshakeMessageWithTwoKeys) {
     0x33, 0x77, 0xAA, 0xFF,
     // num entries
     0x02, 0x00,
+    // padding
+    0x00, 0x00,
     // tag 1
     0x78, 0x56, 0x34, 0x12,
+    // end offset 1
+    0x06, 0x00, 0x00, 0x00,
     // tag 2
     0x79, 0x56, 0x34, 0x12,
-    // len 1
-    0x06, 0x00,
-    // len 2
-    0x05, 0x00,
+    // end offset 2
+    0x0b, 0x00, 0x00, 0x00,
     // value 1
     'a',  'b',  'c',  'd',
     'e',  'f',
@@ -150,12 +152,12 @@ TEST(CryptoFramerTest, ConstructHandshakeMessageZeroLength) {
     0x33, 0x77, 0xAA, 0xFF,
     // num entries
     0x01, 0x00,
-    // tag 1
-    0x78, 0x56, 0x34, 0x12,
-    // len 1
-    0x00, 0x00,
     // padding
     0x00, 0x00,
+    // tag 1
+    0x78, 0x56, 0x34, 0x12,
+    // end offset 1
+    0x00, 0x00, 0x00, 0x00,
   };
 
   CryptoFramer framer;
@@ -189,14 +191,16 @@ TEST(CryptoFramerTest, ProcessInput) {
     0x33, 0x77, 0xAA, 0xFF,
     // num entries
     0x02, 0x00,
+    // padding
+    0x00, 0x00,
     // tag 1
     0x78, 0x56, 0x34, 0x12,
+    // end offset 1
+    0x06, 0x00, 0x00, 0x00,
     // tag 2
     0x79, 0x56, 0x34, 0x12,
-    // len 1
-    0x06, 0x00,
-    // len 2
-    0x05, 0x00,
+    // end offset 2
+    0x0b, 0x00, 0x00, 0x00,
     // value 1
     'a',  'b',  'c',  'd',
     'e',  'f',
@@ -226,20 +230,20 @@ TEST(CryptoFramerTest, ProcessInputWithThreeKeys) {
     0x33, 0x77, 0xAA, 0xFF,
     // num entries
     0x03, 0x00,
-    // tag 1
-    0x78, 0x56, 0x34, 0x12,
-    // tag 2
-    0x79, 0x56, 0x34, 0x12,
-    // tag 3
-    0x7A, 0x56, 0x34, 0x12,
-    // len 1
-    0x06, 0x00,
-    // len 2
-    0x05, 0x00,
-    // len 3
-    0x07, 0x00,
     // padding
     0x00, 0x00,
+    // tag 1
+    0x78, 0x56, 0x34, 0x12,
+    // end offset 1
+    0x06, 0x00, 0x00, 0x00,
+    // tag 2
+    0x79, 0x56, 0x34, 0x12,
+    // end offset 2
+    0x0b, 0x00, 0x00, 0x00,
+    // tag 3
+    0x7A, 0x56, 0x34, 0x12,
+    // end offset 3
+    0x12, 0x00, 0x00, 0x00,
     // value 1
     'a',  'b',  'c',  'd',
     'e',  'f',
@@ -273,14 +277,16 @@ TEST(CryptoFramerTest, ProcessInputIncrementally) {
     0x33, 0x77, 0xAA, 0xFF,
     // num entries
     0x02, 0x00,
+    // padding
+    0x00, 0x00,
     // tag 1
     0x78, 0x56, 0x34, 0x12,
+    // end offset 1
+    0x06, 0x00, 0x00, 0x00,
     // tag 2
     0x79, 0x56, 0x34, 0x12,
-    // len 1
-    0x06, 0x00,
-    // len 2
-    0x05, 0x00,
+    // end offset 2
+    0x0b, 0x00, 0x00, 0x00,
     // value 1
     'a',  'b',  'c',  'd',
     'e',  'f',
@@ -311,14 +317,47 @@ TEST(CryptoFramerTest, ProcessInputTagsOutOfOrder) {
     0x33, 0x77, 0xAA, 0xFF,
     // num entries
     0x02, 0x00,
+    // padding
+    0x00, 0x00,
     // tag 1
     0x78, 0x56, 0x34, 0x13,
+    // end offset 1
+    0x01, 0x00, 0x00, 0x00,
     // tag 2
     0x79, 0x56, 0x34, 0x12,
+    // end offset 2
+    0x02, 0x00, 0x00, 0x00,
   };
 
   EXPECT_FALSE(
       framer.ProcessInput(StringPiece(AsChars(input), arraysize(input))));
+  EXPECT_EQ(QUIC_CRYPTO_TAGS_OUT_OF_ORDER, framer.error());
+}
+
+TEST(CryptoFramerTest, ProcessEndOffsetsOutOfOrder) {
+  test::TestCryptoVisitor visitor;
+  CryptoFramer framer;
+  framer.set_visitor(&visitor);
+
+  unsigned char input[] = {
+    // tag
+    0x33, 0x77, 0xAA, 0xFF,
+    // num entries
+    0x02, 0x00,
+    // padding
+    0x00, 0x00,
+    // tag 1
+    0x79, 0x56, 0x34, 0x12,
+    // end offset 1
+    0x01, 0x00, 0x00, 0x00,
+    // tag 2
+    0x78, 0x56, 0x34, 0x13,
+    // end offset 2
+    0x00, 0x00, 0x00, 0x00,
+  };
+
+  EXPECT_FALSE(framer.ProcessInput(StringPiece(AsChars(input),
+                                               arraysize(input))));
   EXPECT_EQ(QUIC_CRYPTO_TAGS_OUT_OF_ORDER, framer.error());
 }
 
@@ -332,10 +371,12 @@ TEST(CryptoFramerTest, ProcessInputTooManyEntries) {
     0x33, 0x77, 0xAA, 0xFF,
     // num entries
     0xA0, 0x00,
+    // padding
+    0x00, 0x00,
   };
 
-  EXPECT_FALSE(
-      framer.ProcessInput(StringPiece(AsChars(input), arraysize(input))));
+  EXPECT_FALSE(framer.ProcessInput(StringPiece(AsChars(input),
+                                               arraysize(input))));
   EXPECT_EQ(QUIC_CRYPTO_TOO_MANY_ENTRIES, framer.error());
 }
 
@@ -349,41 +390,20 @@ TEST(CryptoFramerTest, ProcessInputZeroLength) {
     0x33, 0x77, 0xAA, 0xFF,
     // num entries
     0x02, 0x00,
+    // padding
+    0x00, 0x00,
     // tag 1
     0x78, 0x56, 0x34, 0x12,
+    // end offset 1
+    0x00, 0x00, 0x00, 0x00,
     // tag 2
     0x79, 0x56, 0x34, 0x12,
-    // len 1
-    0x00, 0x00,
-    // len 2
-    0x05, 0x00,
+    // end offset 2
+    0x05, 0x00, 0x00, 0x00,
   };
 
-  EXPECT_TRUE(
-      framer.ProcessInput(StringPiece(AsChars(input), arraysize(input))));
-}
-
-TEST(CryptoFramerTest, ProcessInputInvalidLengthPadding) {
-  test::TestCryptoVisitor visitor;
-  CryptoFramer framer;
-  framer.set_visitor(&visitor);
-
-  unsigned char input[] = {
-    // tag
-    0x33, 0x77, 0xAA, 0xFF,
-    // num entries
-    0x01, 0x00,
-    // tag 1
-    0x78, 0x56, 0x34, 0x12,
-    // len 1
-    0x05, 0x00,
-    // padding
-    0x05, 0x00,
-  };
-
-  EXPECT_FALSE(
-      framer.ProcessInput(StringPiece(AsChars(input), arraysize(input))));
-  EXPECT_EQ(QUIC_CRYPTO_INVALID_VALUE_LENGTH, framer.error());
+  EXPECT_TRUE(framer.ProcessInput(StringPiece(AsChars(input),
+                                              arraysize(input))));
 }
 
 }  // namespace test

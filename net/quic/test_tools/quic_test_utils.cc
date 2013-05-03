@@ -218,6 +218,7 @@ PacketSavingConnection::~PacketSavingConnection() {
 }
 
 bool PacketSavingConnection::SendOrQueuePacket(
+    EncryptionLevel level,
     QuicPacketSequenceNumber sequence_number,
     QuicPacket* packet,
     QuicPacketEntropyHash entropy_hash,
@@ -329,11 +330,7 @@ static QuicPacket* ConstructPacketFromHandshakeMessage(
     bool should_include_version) {
   CryptoFramer crypto_framer;
   scoped_ptr<QuicData> data(crypto_framer.ConstructHandshakeMessage(message));
-  QuicFramer quic_framer(kQuicVersion1,
-                         QuicDecrypter::Create(kNULL),
-                         QuicEncrypter::Create(kNULL),
-                         QuicTime::Zero(),
-                         false);
+  QuicFramer quic_framer(kQuicVersion1, QuicTime::Zero(), false);
 
   QuicPacketHeader header;
   header.public_header.guid = guid;

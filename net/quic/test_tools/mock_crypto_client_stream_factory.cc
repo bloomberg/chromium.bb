@@ -6,11 +6,14 @@
 
 #include "base/lazy_instance.h"
 #include "net/quic/quic_crypto_client_stream.h"
-#include "net/quic/test_tools/mock_crypto_client_stream.h"
 
 using std::string;
 
 namespace net {
+
+MockCryptoClientStreamFactory::MockCryptoClientStreamFactory()
+  : handshake_mode_(MockCryptoClientStream::CONFIRM_HANDSHAKE) {
+}
 
 QuicCryptoClientStream*
 MockCryptoClientStreamFactory::CreateQuicCryptoClientStream(
@@ -19,7 +22,7 @@ MockCryptoClientStreamFactory::CreateQuicCryptoClientStream(
     QuicSession* session,
     QuicCryptoClientConfig* crypto_config) {
   return new MockCryptoClientStream(server_hostname, config, session,
-                                    crypto_config);
+                                    crypto_config, handshake_mode_);
 }
 
 }  // namespace net

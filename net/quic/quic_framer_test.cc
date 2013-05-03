@@ -279,7 +279,9 @@ class QuicFramerTest : public ::testing::Test {
       : encrypter_(new test::TestEncrypter()),
         decrypter_(new test::TestDecrypter()),
         start_(QuicTime::Zero().Add(QuicTime::Delta::FromMicroseconds(0x10))),
-        framer_(kQuicVersion1, decrypter_, encrypter_, start_, true) {
+        framer_(kQuicVersion1, start_, true) {
+    framer_.SetDecrypter(decrypter_);
+    framer_.SetEncrypter(ENCRYPTION_NONE, encrypter_);
     framer_.set_visitor(&visitor_);
     framer_.set_entropy_calculator(&entropy_calculator_);
   }
@@ -2453,7 +2455,7 @@ TEST_F(QuicFramerTest, EncryptPacket) {
       QuicPacket::NewDataPacket(AsChars(packet), arraysize(packet), false,
                                 !kIncludeVersion));
   scoped_ptr<QuicEncryptedPacket> encrypted(
-      framer_.EncryptPacket(sequence_number, *raw));
+      framer_.EncryptPacket(ENCRYPTION_NONE, sequence_number, *raw));
 
   ASSERT_TRUE(encrypted.get() != NULL);
   EXPECT_TRUE(CheckEncryption(sequence_number, raw.get()));
@@ -2488,7 +2490,7 @@ TEST_F(QuicFramerTest, EncryptPacketWithVersionFlag) {
       QuicPacket::NewDataPacket(AsChars(packet), arraysize(packet), false,
                                 kIncludeVersion));
   scoped_ptr<QuicEncryptedPacket> encrypted(
-      framer_.EncryptPacket(sequence_number, *raw));
+      framer_.EncryptPacket(ENCRYPTION_NONE, sequence_number, *raw));
 
   ASSERT_TRUE(encrypted.get() != NULL);
   EXPECT_TRUE(CheckEncryption(sequence_number, raw.get()));
@@ -2549,7 +2551,8 @@ TEST_F(QuicFramerTest, DISABLED_Truncation) {
   ASSERT_TRUE(raw_ack_packet != NULL);
 
   scoped_ptr<QuicEncryptedPacket> ack_packet(
-      framer_.EncryptPacket(header.packet_sequence_number, *raw_ack_packet));
+      framer_.EncryptPacket(ENCRYPTION_NONE, header.packet_sequence_number,
+                            *raw_ack_packet));
 
   // Create a packet with just connection close.
   frames.clear();
@@ -2562,7 +2565,8 @@ TEST_F(QuicFramerTest, DISABLED_Truncation) {
   ASSERT_TRUE(raw_close_packet != NULL);
 
   scoped_ptr<QuicEncryptedPacket> close_packet(
-      framer_.EncryptPacket(header.packet_sequence_number, *raw_close_packet));
+      framer_.EncryptPacket(ENCRYPTION_NONE, header.packet_sequence_number,
+                            *raw_close_packet));
 
   // Now make sure we can turn our ack packet back into an ack frame
   ASSERT_TRUE(framer_.ProcessPacket(*ack_packet));
@@ -2604,7 +2608,8 @@ TEST_F(QuicFramerTest, CleanTruncation) {
   ASSERT_TRUE(raw_ack_packet != NULL);
 
   scoped_ptr<QuicEncryptedPacket> ack_packet(
-      framer_.EncryptPacket(header.packet_sequence_number, *raw_ack_packet));
+      framer_.EncryptPacket(ENCRYPTION_NONE, header.packet_sequence_number,
+                            *raw_ack_packet));
 
   // Create a packet with just connection close.
   frames.clear();
@@ -2617,7 +2622,8 @@ TEST_F(QuicFramerTest, CleanTruncation) {
   ASSERT_TRUE(raw_close_packet != NULL);
 
   scoped_ptr<QuicEncryptedPacket> close_packet(
-      framer_.EncryptPacket(header.packet_sequence_number, *raw_close_packet));
+      framer_.EncryptPacket(ENCRYPTION_NONE, header.packet_sequence_number,
+                            *raw_close_packet));
 
   // Now make sure we can turn our ack packet back into an ack frame
   ASSERT_TRUE(framer_.ProcessPacket(*ack_packet));

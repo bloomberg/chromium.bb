@@ -5,7 +5,8 @@
 #ifndef NET_QUIC_CRYPTO_CRYPTO_FRAMER_H_
 #define NET_QUIC_CRYPTO_CRYPTO_FRAMER_H_
 
-#include <map>
+#include <utility>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -86,8 +87,7 @@ class NET_EXPORT_PRIVATE CryptoFramer {
   enum CryptoFramerState {
     STATE_READING_TAG,
     STATE_READING_NUM_ENTRIES,
-    STATE_READING_KEY_TAGS,
-    STATE_READING_LENGTHS,
+    STATE_READING_TAGS_AND_LENGTHS,
     STATE_READING_VALUES
   };
 
@@ -103,11 +103,9 @@ class NET_EXPORT_PRIVATE CryptoFramer {
   CryptoHandshakeMessage message_;
   // Number of entires in the message currently being parsed.
   uint16 num_entries_;
-  // Vector of tags in the message currently being parsed.
-  CryptoTagVector tags_;
-  // Length of the data associated with each tag in the message currently
-  // being parsed.
-  std::map<CryptoTag, size_t> tag_length_map_;
+  // tags_and_lengths_ contains the tags that are currently being parsed and
+  // their lengths.
+  std::vector<std::pair<CryptoTag, size_t> > tags_and_lengths_;
   // Cumulative length of all values in the message currently being parsed.
   size_t values_len_;
 };

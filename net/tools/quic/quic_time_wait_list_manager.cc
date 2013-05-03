@@ -92,9 +92,7 @@ QuicTimeWaitListManager::QuicTimeWaitListManager(
     QuicPacketWriter* writer,
     EpollServer* epoll_server)
     : framer_(kQuicVersion1,
-              QuicDecrypter::Create(kNULL),
-              QuicEncrypter::Create(kNULL),
-              QuicTime::Zero(),
+              QuicTime::Zero(),  // unused
               true),
       epoll_server_(epoll_server),
       kTimeWaitPeriod_(QuicTime::Delta::FromSeconds(kTimeWaitSeconds)),

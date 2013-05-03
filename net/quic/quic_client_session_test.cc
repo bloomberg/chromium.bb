@@ -86,12 +86,12 @@ TEST_F(QuicClientSessionTest, MaxNumConnections) {
 }
 
 TEST_F(QuicClientSessionTest, GoAwayReceived) {
-  // Initialize crypto before the client session will create a stream.
-  ASSERT_TRUE(session_.CryptoConnect(callback_.callback()));
-  // Simulate the server crypto handshake.
-  CryptoHandshakeMessage server_message;
-  server_message.set_tag(kSHLO);
-  session_.GetCryptoStream()->OnHandshakeMessage(server_message);
+  if (!Aes128GcmEncrypter::IsSupported()) {
+    LOG(INFO) << "AES GCM not supported. Test skipped.";
+    return;
+  }
+
+  CompleteCryptoHandshake();
 
   // After receiving a GoAway, I should no longer be able to create outgoing
   // streams.
@@ -109,11 +109,7 @@ TEST_F(QuicClientSessionTest, Logging) {
 
   // TODO(rch): Add some helper methods to simplify packet creation in tests.
   // Receive a packet, and verify that it was logged.
-  QuicFramer framer(kQuicVersion1,
-                    QuicDecrypter::Create(kNULL),
-                    QuicEncrypter::Create(kNULL),
-                    QuicTime::Zero(),
-                    false);
+  QuicFramer framer(kQuicVersion1, QuicTime::Zero(), false);
   QuicRstStreamFrame frame;
   frame.stream_id = 2;
   frame.error_code = QUIC_STREAM_CONNECTION_ERROR;
@@ -132,7 +128,8 @@ TEST_F(QuicClientSessionTest, Logging) {
   header.fec_group = 0;
   scoped_ptr<QuicPacket> p(
       framer.ConstructFrameDataPacket(header, frames).packet);
-  scoped_ptr<QuicEncryptedPacket> packet(framer.EncryptPacket(1, *p));
+  scoped_ptr<QuicEncryptedPacket> packet(framer.EncryptPacket(
+      ENCRYPTION_NONE, 1, *p));
   IPAddressNumber ip;
   CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));
   IPEndPoint peer_addr = IPEndPoint(ip, 443);

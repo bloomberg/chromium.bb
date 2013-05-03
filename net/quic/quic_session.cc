@@ -190,12 +190,15 @@ void QuicSession::CloseStream(QuicStreamId stream_id) {
   stream->OnClose();
 }
 
-bool QuicSession::IsCryptoHandshakeComplete() {
-  return GetCryptoStream()->handshake_complete();
+bool QuicSession::IsEncryptionEstablished() {
+  return GetCryptoStream()->encryption_established();
 }
 
-void QuicSession::OnCryptoHandshakeComplete(QuicErrorCode error) {
-  // TODO(rch): tear down the connection if error != QUIC_NO_ERROR.
+bool QuicSession::IsCryptoHandshakeConfirmed() {
+  return GetCryptoStream()->handshake_confirmed();
+}
+
+void QuicSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
 }
 
 void QuicSession::ActivateStream(ReliableQuicStream* stream) {

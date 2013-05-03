@@ -4,6 +4,7 @@
 
 #include "net/quic/quic_connection.h"
 
+#include "base/basictypes.h"
 #include "base/bind.h"
 #include "net/base/net_errors.h"
 #include "net/quic/congestion_control/receive_algorithm_interface.h"
@@ -72,6 +73,131 @@ class TestReceiveAlgorithm : public ReceiveAlgorithmInterface {
   DISALLOW_COPY_AND_ASSIGN(TestReceiveAlgorithm);
 };
 
+// TaggingEncrypter appends 16 bytes of |tag| to the end of each message.
+class TaggingEncrypter : public QuicEncrypter {
+ public:
+  explicit TaggingEncrypter(uint8 tag)
+      : tag_(tag) {
+  }
+
+  virtual ~TaggingEncrypter() {}
+
+  // QuicEncrypter interface.
+  virtual bool SetKey(StringPiece key) OVERRIDE { return true; }
+  virtual bool SetNoncePrefix(StringPiece nonce_prefix) OVERRIDE {
+    return true;
+  }
+
+  virtual bool Encrypt(StringPiece nonce,
+                       StringPiece associated_data,
+                       StringPiece plaintext,
+                       unsigned char* output) OVERRIDE {
+    memcpy(output, plaintext.data(), plaintext.size());
+    output += plaintext.size();
+    memset(output, tag_, kTagSize);
+    return true;
+  }
+
+  virtual QuicData* EncryptPacket(QuicPacketSequenceNumber sequence_number,
+                                  StringPiece associated_data,
+                                  StringPiece plaintext) OVERRIDE {
+    const size_t len = plaintext.size() + kTagSize;
+    uint8* buffer = new uint8[len];
+    Encrypt(StringPiece(), associated_data, plaintext, buffer);
+    return new QuicData(reinterpret_cast<char*>(buffer), len, true);
+  }
+
+  virtual size_t GetKeySize() const OVERRIDE { return 0; }
+  virtual size_t GetNoncePrefixSize() const OVERRIDE { return 0; }
+
+  virtual size_t GetMaxPlaintextSize(size_t ciphertext_size) const OVERRIDE {
+    return ciphertext_size - kTagSize;
+  }
+
+  virtual size_t GetCiphertextSize(size_t plaintext_size) const OVERRIDE {
+    return plaintext_size + kTagSize;
+  }
+
+  virtual StringPiece GetKey() const OVERRIDE {
+    return StringPiece();
+  }
+
+  virtual StringPiece GetNoncePrefix() const OVERRIDE {
+    return StringPiece();
+  }
+
+ private:
+  enum {
+    kTagSize = 16,
+  };
+
+  const uint8 tag_;
+};
+
+// TaggingDecrypter ensures that the final 16 bytes of the message all have the
+// same value and then removes them.
+class TaggingDecrypter : public QuicDecrypter {
+ public:
+  virtual ~TaggingDecrypter() {}
+
+  // QuicDecrypter interface
+  virtual bool SetKey(StringPiece key) OVERRIDE { return true; }
+  virtual bool SetNoncePrefix(StringPiece nonce_prefix) OVERRIDE {
+    return true;
+  }
+
+  virtual bool Decrypt(StringPiece nonce,
+                       StringPiece associated_data,
+                       StringPiece ciphertext,
+                       unsigned char* output,
+                       size_t* output_length) OVERRIDE {
+    if (ciphertext.size() < kTagSize) {
+      return false;
+    }
+    if (!CheckTag(ciphertext)) {
+      return false;
+    }
+    *output_length = ciphertext.size() - kTagSize;
+    memcpy(output, ciphertext.data(), *output_length);
+    return true;
+  }
+
+  virtual QuicData* DecryptPacket(QuicPacketSequenceNumber sequence_number,
+                                  StringPiece associated_data,
+                                  StringPiece ciphertext) OVERRIDE {
+    if (ciphertext.size() < kTagSize) {
+      return NULL;
+    }
+    if (!CheckTag(ciphertext)) {
+      return NULL;
+    }
+    const size_t len = ciphertext.size() - kTagSize;
+    uint8* buf = new uint8[len];
+    memcpy(buf, ciphertext.data(), len);
+    return new QuicData(reinterpret_cast<char*>(buf), len,
+                        true /* owns buffer */);
+  }
+
+  virtual StringPiece GetKey() const OVERRIDE { return StringPiece(); }
+  virtual StringPiece GetNoncePrefix() const OVERRIDE { return StringPiece(); }
+
+ private:
+  enum {
+    kTagSize = 16,
+  };
+
+  bool CheckTag(StringPiece ciphertext) {
+    uint8 tag = ciphertext.data()[ciphertext.size()-1];
+    for (size_t i = ciphertext.size() - kTagSize; i < ciphertext.size(); i++) {
+      if (ciphertext.data()[i] != tag) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+};
+
 class TestConnectionHelper : public QuicConnectionHelperInterface {
  public:
   TestConnectionHelper(MockClock* clock, MockRandom* random_generator)
@@ -82,7 +208,8 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
             QuicTime::Delta::FromMilliseconds(1))),
         timeout_alarm_(QuicTime::Zero()),
         blocked_(false),
-        is_server_(true) {
+        is_server_(true),
+        use_tagging_decrypter_(false) {
   }
 
   // QuicConnectionHelperInterface
@@ -98,11 +225,15 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
 
   virtual int WritePacketToWire(const QuicEncryptedPacket& packet,
                                 int* error) OVERRIDE {
-    QuicFramer framer(kQuicVersion1,
-                      QuicDecrypter::Create(kNULL),
-                      QuicEncrypter::Create(kNULL),
-                      QuicTime::Zero(),
-                      is_server_);
+    if (packet.length() >= sizeof(final_bytes_of_last_packet_)) {
+      memcpy(&final_bytes_of_last_packet_, packet.data() + packet.length() - 4,
+             sizeof(final_bytes_of_last_packet_));
+    }
+
+    QuicFramer framer(kQuicVersion1, QuicTime::Zero(), is_server_);
+    if (use_tagging_decrypter_) {
+      framer.SetDecrypter(new TaggingDecrypter);
+    }
     FramerVisitorCapturingFrames visitor;
     framer.set_visitor(&visitor);
     EXPECT_TRUE(framer.ProcessPacket(packet));
@@ -192,6 +323,16 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
 
   void set_is_server(bool is_server) { is_server_ = is_server; }
 
+  // final_bytes_of_last_packet_ returns the last four bytes of the previous
+  // packet as a little-endian, uint32. This is intended to be used with a
+  // TaggingEncrypter so that tests can determine which encrypter was used for
+  // a given packet.
+  uint32 final_bytes_of_last_packet() { return final_bytes_of_last_packet_; }
+
+  void use_tagging_decrypter() {
+    use_tagging_decrypter_ = true;
+  }
+
  private:
   MockClock* clock_;
   MockRandom* random_generator_;
@@ -207,6 +348,8 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
   size_t last_packet_size_;
   bool blocked_;
   bool is_server_;
+  uint32 final_bytes_of_last_packet_;
+  bool use_tagging_decrypter_;
 
   DISALLOW_COPY_AND_ASSIGN(TestConnectionHelper);
 };
@@ -266,11 +409,7 @@ class QuicConnectionTest : public ::testing::Test {
  protected:
   QuicConnectionTest()
       : guid_(42),
-        framer_(kQuicVersion1,
-                QuicDecrypter::Create(kNULL),
-                QuicEncrypter::Create(kNULL),
-                QuicTime::Zero(),
-                false),
+        framer_(kQuicVersion1, QuicTime::Zero(), false),
         creator_(guid_, &framer_, QuicRandom::GetInstance(), false),
         send_algorithm_(new StrictMock<MockSendAlgorithm>),
         helper_(new TestConnectionHelper(&clock_, &random_generator_)),
@@ -309,6 +448,14 @@ class QuicConnectionTest : public ::testing::Test {
     return helper_->last_packet_size();
   }
 
+  uint32 final_bytes_of_last_packet() {
+    return helper_->final_bytes_of_last_packet();
+  }
+
+  void use_tagging_decrypter() {
+    helper_->use_tagging_decrypter();
+  }
+
   void ProcessPacket(QuicPacketSequenceNumber number) {
     EXPECT_CALL(visitor_, OnPacket(_, _, _, _))
         .WillOnce(Return(accept_packet_));
@@ -323,7 +470,8 @@ class QuicConnectionTest : public ::testing::Test {
     SerializedPacket serialized_packet = creator_.SerializeAllFrames(frames);
     scoped_ptr<QuicPacket> packet(serialized_packet.packet);
     scoped_ptr<QuicEncryptedPacket> encrypted(
-        framer_.EncryptPacket(serialized_packet.sequence_number, *packet));
+        framer_.EncryptPacket(ENCRYPTION_NONE,
+                              serialized_packet.sequence_number, *packet));
     connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
     return serialized_packet.entropy_hash;
   }
@@ -345,8 +493,8 @@ class QuicConnectionTest : public ::testing::Test {
                          bool entropy_flag) {
     scoped_ptr<QuicPacket> packet(ConstructDataPacket(number, fec_group,
                                                       entropy_flag));
-    scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPacket(number,
-                                                                    *packet));
+    scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPacket(
+        ENCRYPTION_NONE, number, *packet));
     connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
     return encrypted->length();
   }
@@ -354,8 +502,8 @@ class QuicConnectionTest : public ::testing::Test {
   void ProcessClosePacket(QuicPacketSequenceNumber number,
                           QuicFecGroupNumber fec_group) {
     scoped_ptr<QuicPacket> packet(ConstructClosePacket(number, fec_group));
-    scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPacket(number,
-                                                                    *packet));
+    scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPacket(
+        ENCRYPTION_NONE, number, *packet));
     connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
   }
 
@@ -409,7 +557,7 @@ class QuicConnectionTest : public ::testing::Test {
     scoped_ptr<QuicPacket> fec_packet(
         framer_.ConstructFecPacket(header_, fec_data).packet);
     scoped_ptr<QuicEncryptedPacket> encrypted(
-        framer_.EncryptPacket(number, *fec_packet));
+        framer_.EncryptPacket(ENCRYPTION_NONE, number, *fec_packet));
 
     connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
     return encrypted->length();
@@ -1150,6 +1298,41 @@ TEST_F(QuicConnectionTest, TestRetransmit) {
   EXPECT_EQ(2u, outgoing_ack()->sent_info.least_unacked);
 }
 
+TEST_F(QuicConnectionTest, RetransmitWithSameEncryptionLevel) {
+  const QuicTime::Delta kDefaultRetransmissionTime =
+      QuicTime::Delta::FromMilliseconds(500);
+
+  QuicTime default_retransmission_time = clock_.ApproximateNow().Add(
+      kDefaultRetransmissionTime);
+  use_tagging_decrypter();
+
+  // A TaggingEncrypter puts 16 copies of the given byte (0x01 here) at the end
+  // of the packet. We can test this to check which encrypter was used.
+  connection_.SetEncrypter(ENCRYPTION_NONE, new TaggingEncrypter(0x01));
+  SendStreamDataToPeer(1, "foo", 0, !kFin, NULL);
+  EXPECT_EQ(0x01010101u, final_bytes_of_last_packet());
+
+  connection_.SetEncrypter(ENCRYPTION_INITIAL, new TaggingEncrypter(0x02));
+  connection_.SetDefaultEncryptionLevel(ENCRYPTION_INITIAL);
+  SendStreamDataToPeer(1, "foo", 0, !kFin, NULL);
+  EXPECT_EQ(0x02020202u, final_bytes_of_last_packet());
+
+  EXPECT_EQ(default_retransmission_time, helper_->retransmission_alarm());
+  // Simulate the retransimission alarm firing
+  clock_.AdvanceTime(kDefaultRetransmissionTime);
+  EXPECT_CALL(*send_algorithm_, AbandoningPacket(_, _)).Times(2);
+
+  EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _));
+  connection_.RetransmitPacket(1);
+  // Packet should have been sent with ENCRYPTION_NONE.
+  EXPECT_EQ(0x01010101u, final_bytes_of_last_packet());
+
+  EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _));
+  connection_.RetransmitPacket(2);
+  // Packet should have been sent with ENCRYPTION_INITIAL.
+  EXPECT_EQ(0x02020202u, final_bytes_of_last_packet());
+}
+
 TEST_F(QuicConnectionTest, TestRetransmitOrder) {
   QuicByteCount first_packet_size;
   EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _)).WillOnce(
@@ -1355,7 +1538,7 @@ TEST_F(QuicConnectionTest, SendScheduler) {
                   testing::Return(QuicTime::Delta::Zero()));
   EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _));
   connection_.SendOrQueuePacket(
-      1, packet, kTestEntropyHash, HAS_RETRANSMITTABLE_DATA);
+      ENCRYPTION_NONE, 1, packet, kTestEntropyHash, HAS_RETRANSMITTABLE_DATA);
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
 }
 
@@ -1367,7 +1550,7 @@ TEST_F(QuicConnectionTest, SendSchedulerDelay) {
                   testing::Return(QuicTime::Delta::FromMicroseconds(1)));
   EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, _)).Times(0);
   connection_.SendOrQueuePacket(
-      1, packet, kTestEntropyHash, HAS_RETRANSMITTABLE_DATA);
+      ENCRYPTION_NONE, 1, packet, kTestEntropyHash, HAS_RETRANSMITTABLE_DATA);
   EXPECT_EQ(1u, connection_.NumQueuedPackets());
 }
 
@@ -1378,7 +1561,7 @@ TEST_F(QuicConnectionTest, SendSchedulerForce) {
               TimeUntilSend(_, IS_RETRANSMISSION, _)).Times(0);
   EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _));
   connection_.SendOrQueuePacket(
-      1, packet, kTestEntropyHash, HAS_RETRANSMITTABLE_DATA);
+      ENCRYPTION_NONE, 1, packet, kTestEntropyHash, HAS_RETRANSMITTABLE_DATA);
   // XXX: fixme.  was:  connection_.SendOrQueuePacket(1, packet, kForce);
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
 }
@@ -1391,7 +1574,7 @@ TEST_F(QuicConnectionTest, SendSchedulerEAGAIN) {
                   testing::Return(QuicTime::Delta::Zero()));
   EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, _)).Times(0);
   connection_.SendOrQueuePacket(
-      1, packet, kTestEntropyHash, HAS_RETRANSMITTABLE_DATA);
+      ENCRYPTION_NONE, 1, packet, kTestEntropyHash, HAS_RETRANSMITTABLE_DATA);
   EXPECT_EQ(1u, connection_.NumQueuedPackets());
 }
 
@@ -1402,7 +1585,7 @@ TEST_F(QuicConnectionTest, SendSchedulerDelayThenSend) {
               TimeUntilSend(_, NOT_RETRANSMISSION, _)).WillOnce(
                   testing::Return(QuicTime::Delta::FromMicroseconds(1)));
   connection_.SendOrQueuePacket(
-       1, packet, kTestEntropyHash, HAS_RETRANSMITTABLE_DATA);
+       ENCRYPTION_NONE, 1, packet, kTestEntropyHash, HAS_RETRANSMITTABLE_DATA);
   EXPECT_EQ(1u, connection_.NumQueuedPackets());
 
   // Advance the clock to fire the alarm, and configure the scheduler
@@ -1457,13 +1640,13 @@ TEST_F(QuicConnectionTest, SendSchedulerDelayAndQueue) {
               TimeUntilSend(_, NOT_RETRANSMISSION, _)).WillOnce(
                   testing::Return(QuicTime::Delta::FromMicroseconds(1)));
   connection_.SendOrQueuePacket(
-      1, packet, kTestEntropyHash, HAS_RETRANSMITTABLE_DATA);
+      ENCRYPTION_NONE, 1, packet, kTestEntropyHash, HAS_RETRANSMITTABLE_DATA);
   EXPECT_EQ(1u, connection_.NumQueuedPackets());
 
   // Attempt to send another packet and make sure that it gets queued.
   packet = ConstructDataPacket(2, 0, !kEntropyFlag);
   connection_.SendOrQueuePacket(
-      2, packet, kTestEntropyHash, HAS_RETRANSMITTABLE_DATA);
+      ENCRYPTION_NONE, 2, packet, kTestEntropyHash, HAS_RETRANSMITTABLE_DATA);
   EXPECT_EQ(2u, connection_.NumQueuedPackets());
 }
 
@@ -1473,7 +1656,7 @@ TEST_F(QuicConnectionTest, SendSchedulerDelayThenAckAndSend) {
               TimeUntilSend(_, NOT_RETRANSMISSION, _)).WillOnce(
                   testing::Return(QuicTime::Delta::FromMicroseconds(10)));
   connection_.SendOrQueuePacket(
-      1, packet, kTestEntropyHash, HAS_RETRANSMITTABLE_DATA);
+      ENCRYPTION_NONE, 1, packet, kTestEntropyHash, HAS_RETRANSMITTABLE_DATA);
   EXPECT_EQ(1u, connection_.NumQueuedPackets());
 
   // Now send non-retransmitting information, that we're not going to
@@ -1498,7 +1681,7 @@ TEST_F(QuicConnectionTest, SendSchedulerDelayThenAckAndHold) {
               TimeUntilSend(_, NOT_RETRANSMISSION, _)).WillOnce(
                   testing::Return(QuicTime::Delta::FromMicroseconds(10)));
   connection_.SendOrQueuePacket(
-      1, packet, kTestEntropyHash, HAS_RETRANSMITTABLE_DATA);
+      ENCRYPTION_NONE, 1, packet, kTestEntropyHash, HAS_RETRANSMITTABLE_DATA);
   EXPECT_EQ(1u, connection_.NumQueuedPackets());
 
   // Now send non-retransmitting information, that we're not going to
@@ -1518,7 +1701,7 @@ TEST_F(QuicConnectionTest, SendSchedulerDelayThenOnCanWrite) {
               TimeUntilSend(_, NOT_RETRANSMISSION, _)).WillOnce(
                   testing::Return(QuicTime::Delta::FromMicroseconds(10)));
   connection_.SendOrQueuePacket(
-      1, packet, kTestEntropyHash, HAS_RETRANSMITTABLE_DATA);
+      ENCRYPTION_NONE, 1, packet, kTestEntropyHash, HAS_RETRANSMITTABLE_DATA);
   EXPECT_EQ(1u, connection_.NumQueuedPackets());
 
   // OnCanWrite should not send the packet (because of the delay)
@@ -1570,7 +1753,7 @@ TEST_F(QuicConnectionTest, SendWhenDisconnected) {
   QuicPacket* packet = ConstructDataPacket(1, 0, !kEntropyFlag);
   EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, _)).Times(0);
   connection_.SendOrQueuePacket(
-      1, packet, kTestEntropyHash, HAS_RETRANSMITTABLE_DATA);
+      ENCRYPTION_NONE, 1, packet, kTestEntropyHash, HAS_RETRANSMITTABLE_DATA);
 }
 
 TEST_F(QuicConnectionTest, PublicReset) {
@@ -1689,7 +1872,8 @@ TEST_F(QuicConnectionTest, CheckSentEntropyHash) {
     }
     QuicPacket* packet = ConstructDataPacket(i, 0, entropy_flag);
     connection_.SendOrQueuePacket(
-        i, packet, packet_entropy_hash, HAS_RETRANSMITTABLE_DATA);
+        ENCRYPTION_NONE, i, packet, packet_entropy_hash,
+        HAS_RETRANSMITTABLE_DATA);
 
     if (is_missing)  {
       missing_packets.insert(i);
@@ -1723,7 +1907,8 @@ TEST_F(QuicConnectionTest, SendVersionNegotiationPacket) {
   frames.push_back(frame);
   scoped_ptr<QuicPacket> packet(
       framer_.ConstructFrameDataPacket(header, frames).packet);
-  scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPacket(12, *packet));
+  scoped_ptr<QuicEncryptedPacket> encrypted(
+      framer_.EncryptPacket(ENCRYPTION_NONE, 12, *packet));
 
   QuicFramerPeer::SetVersion(&framer_, kQuicVersion1);
   connection_.set_is_server(true);

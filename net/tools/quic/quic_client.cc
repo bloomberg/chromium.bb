@@ -121,7 +121,7 @@ bool QuicClient::Connect() {
   if (!StartConnect()) {
     return false;
   }
-  while (CryptoHandshakeInProgress()) {
+  while (EncryptionBeingEstablished()) {
     WaitForEvents();
   }
   return session_->connection()->connected();
@@ -141,8 +141,8 @@ bool QuicClient::StartConnect() {
   return session_->CryptoConnect();
 }
 
-bool QuicClient::CryptoHandshakeInProgress() {
-  return !session_->IsCryptoHandshakeComplete() &&
+bool QuicClient::EncryptionBeingEstablished() {
+  return !session_->IsEncryptionEstablished() &&
       session_->connection()->connected();
 }
 

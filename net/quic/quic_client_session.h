@@ -45,7 +45,10 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   virtual QuicReliableClientStream* CreateOutgoingReliableStream() OVERRIDE;
   virtual QuicCryptoClientStream* GetCryptoStream() OVERRIDE;
   virtual void CloseStream(QuicStreamId stream_id) OVERRIDE;
-  virtual void OnCryptoHandshakeComplete(QuicErrorCode error) OVERRIDE;
+  virtual void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) OVERRIDE;
+
+  // QuicConnectionVisitorInterface methods:
+  virtual void ConnectionClose(QuicErrorCode error, bool from_peer) OVERRIDE;
 
   // Performs a crypto handshake with the server.
   int CryptoConnect(const CompletionCallback& callback);

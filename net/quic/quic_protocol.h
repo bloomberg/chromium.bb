@@ -224,6 +224,8 @@ enum QuicErrorCode {
   QUIC_CRYPTO_TOO_MANY_REJECTS,
   // The client rejected the server's certificate chain or signature.
   QUIC_PROOF_INVALID,
+  // A crypto message was received with a duplicate tag.
+  QUIC_CRYPTO_DUPLICATE_TAG,
 
   // No error. Used as bound while iterating.
   QUIC_LAST_ERROR,
@@ -461,6 +463,18 @@ struct NET_EXPORT_PRIVATE QuicGoAwayFrame {
   std::string reason_phrase;
 };
 
+// EncryptionLevel enumerates the stages of encryption that a QUIC connection
+// progresses through. When retransmitting a packet, the encryption level needs
+// to be specified so that it is retransmitted at a level which the peer can
+// understand.
+enum EncryptionLevel {
+  ENCRYPTION_NONE = 0,
+  ENCRYPTION_INITIAL = 1,
+  ENCRYPTION_FORWARD_SECURE = 2,
+
+  NUM_ENCRYPTION_LEVELS,
+};
+
 struct NET_EXPORT_PRIVATE QuicFrame {
   QuicFrame() {}
   explicit QuicFrame(QuicPaddingFrame* padding_frame)
@@ -628,8 +642,14 @@ class NET_EXPORT_PRIVATE RetransmittableFrames {
   const QuicFrame& AddNonStreamFrame(const QuicFrame& frame);
   const QuicFrames& frames() const { return frames_; }
 
+  void set_encryption_level(EncryptionLevel level);
+  EncryptionLevel encryption_level() const {
+    return encryption_level_;
+  }
+
  private:
   QuicFrames frames_;
+  EncryptionLevel encryption_level_;
   // Data referenced by the StringPiece of a QuicStreamFrame.
   std::vector<std::string*> stream_data_;
 

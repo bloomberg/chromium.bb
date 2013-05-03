@@ -75,7 +75,7 @@ const CryptoTag kPROF = TAG('P', 'R', 'O', 'F');  // Proof (signature).
 
 #undef TAG
 
-const size_t kMaxEntries = 16;  // Max number of entries in a message.
+const size_t kMaxEntries = 128;  // Max number of entries in a message.
 
 const size_t kNonceSize = 32;  // Size in bytes of the connection nonce.
 

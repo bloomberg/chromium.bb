@@ -27,8 +27,8 @@ QuicClientSession::~QuicClientSession() {
 }
 
 QuicReliableClientStream* QuicClientSession::CreateOutgoingReliableStream() {
-  if (!crypto_stream_.handshake_complete()) {
-    DLOG(INFO) << "Crypto handshake not complete, no outgoing stream created.";
+  if (!crypto_stream_.encryption_established()) {
+    DLOG(INFO) << "Encryption not active so no outgoing stream created.";
     return NULL;
   }
   if (GetNumOpenStreams() >= get_max_open_streams()) {

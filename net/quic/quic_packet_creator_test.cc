@@ -30,16 +30,8 @@ namespace {
 class QuicPacketCreatorTest : public ::testing::TestWithParam<bool> {
  protected:
   QuicPacketCreatorTest()
-      : server_framer_(kQuicVersion1,
-                       QuicDecrypter::Create(kNULL),
-                       QuicEncrypter::Create(kNULL),
-                       QuicTime::Zero(),
-                       true),
-        client_framer_(kQuicVersion1,
-                       QuicDecrypter::Create(kNULL),
-                       QuicEncrypter::Create(kNULL),
-                       QuicTime::Zero(),
-                       false),
+      : server_framer_(kQuicVersion1, QuicTime::Zero(), true),
+        client_framer_(kQuicVersion1, QuicTime::Zero(), false),
         id_(1),
         sequence_number_(0),
         guid_(2),
@@ -53,7 +45,8 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<bool> {
 
   void ProcessPacket(QuicPacket* packet) {
     scoped_ptr<QuicEncryptedPacket> encrypted(
-        server_framer_.EncryptPacket(sequence_number_, *packet));
+        server_framer_.EncryptPacket(ENCRYPTION_NONE, sequence_number_,
+                                     *packet));
     server_framer_.ProcessPacket(*encrypted);
   }
 

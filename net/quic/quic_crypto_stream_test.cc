@@ -74,7 +74,8 @@ class QuicCryptoStreamTest : public ::testing::Test {
 };
 
 TEST_F(QuicCryptoStreamTest, NotInitiallyConected) {
-  EXPECT_FALSE(stream_.handshake_complete());
+  EXPECT_FALSE(stream_.encryption_established());
+  EXPECT_FALSE(stream_.handshake_confirmed());
 }
 
 TEST_F(QuicCryptoStreamTest, OnErrorClosesConnection) {
@@ -97,7 +98,7 @@ TEST_F(QuicCryptoStreamTest, ProcessData) {
 
 TEST_F(QuicCryptoStreamTest, ProcessBadData) {
   string bad(message_data_->data(), message_data_->length());
-  bad[6] = 0x7F;  // out of order tag
+  bad[8] = 0x7F;  // out of order tag
 
   EXPECT_CALL(*connection_,
               SendConnectionClose(QUIC_CRYPTO_TAGS_OUT_OF_ORDER));

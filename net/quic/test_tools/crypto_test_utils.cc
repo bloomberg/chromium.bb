@@ -110,7 +110,7 @@ void CryptoTestUtils::CommunicateHandshakeMessages(
     PacketSavingConnection* b_conn,
     QuicCryptoStream* b) {
   size_t a_i = 0, b_i = 0;
-  while (!a->handshake_complete()) {
+  while (!a->handshake_confirmed()) {
     ASSERT_GT(a_conn->packets_.size(), a_i);
     LOG(INFO) << "Processing " << a_conn->packets_.size() - a_i
               << " packets a->b";
@@ -218,22 +218,29 @@ string CryptoTestUtils::GetValueForTag(const CryptoHandshakeMessage& message,
 void CryptoTestUtils::CompareClientAndServerKeys(
     QuicCryptoClientStream* client,
     QuicCryptoServerStream* server) {
-  StringPiece client_encrypter_key =
-      client->session()->connection()->encrypter()->GetKey();
-  StringPiece client_encrypter_iv =
-      client->session()->connection()->encrypter()->GetNoncePrefix();
-  StringPiece client_decrypter_key =
-      client->session()->connection()->decrypter()->GetKey();
-  StringPiece client_decrypter_iv =
-      client->session()->connection()->decrypter()->GetNoncePrefix();
-  StringPiece server_encrypter_key =
-      server->session()->connection()->encrypter()->GetKey();
-  StringPiece server_encrypter_iv =
-      server->session()->connection()->encrypter()->GetNoncePrefix();
-  StringPiece server_decrypter_key =
-      server->session()->connection()->decrypter()->GetKey();
-  StringPiece server_decrypter_iv =
-      server->session()->connection()->decrypter()->GetNoncePrefix();
+  const QuicEncrypter* client_encrypter(
+      client->session()->connection()->encrypter(ENCRYPTION_INITIAL));
+  // Normally we would expect the client's INITIAL decrypter to have latched
+  // from the receipt of the server hello. However, when using a
+  // PacketSavingConnection (at the tests do) we don't actually encrypt with
+  // the correct encrypter.
+  // TODO(agl): make the tests more realistic.
+  const QuicDecrypter* client_decrypter(
+      client->session()->connection()->alternative_decrypter());
+  const QuicEncrypter* server_encrypter(
+      server->session()->connection()->encrypter(ENCRYPTION_INITIAL));
+  const QuicDecrypter* server_decrypter(
+      server->session()->connection()->decrypter());
+
+  StringPiece client_encrypter_key = client_encrypter->GetKey();
+  StringPiece client_encrypter_iv = client_encrypter->GetNoncePrefix();
+  StringPiece client_decrypter_key = client_decrypter->GetKey();
+  StringPiece client_decrypter_iv = client_decrypter->GetNoncePrefix();
+  StringPiece server_encrypter_key = server_encrypter->GetKey();
+  StringPiece server_encrypter_iv = server_encrypter->GetNoncePrefix();
+  StringPiece server_decrypter_key = server_decrypter->GetKey();
+  StringPiece server_decrypter_iv = server_decrypter->GetNoncePrefix();
+
   CompareCharArraysWithHexError("client write key",
                                 client_encrypter_key.data(),
                                 client_encrypter_key.length(),

@@ -42,18 +42,19 @@ class NET_EXPORT_PRIVATE QuicCryptoStream
   // TODO(wtc): return a success/failure status.
   void SendHandshakeMessage(const CryptoHandshakeMessage& message);
 
-  bool handshake_complete() { return handshake_complete_; }
+  bool encryption_established() { return encryption_established_; }
+  bool handshake_confirmed() { return handshake_confirmed_; }
 
  protected:
   // Closes the connection
   void CloseConnection(QuicErrorCode error);
   void CloseConnectionWithDetails(QuicErrorCode error, const string& details);
 
-  void SetHandshakeComplete(QuicErrorCode error);
+  bool encryption_established_;
+  bool handshake_confirmed_;
 
  private:
   CryptoFramer crypto_framer_;
-  bool handshake_complete_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoStream);
 };

@@ -345,26 +345,32 @@ class NET_EXPORT_PRIVATE QuicConnection
   // should next fire, or 0 if no retransmission alarm should be set.
   QuicTime OnRetransmissionTimeout();
 
-  // Changes the encrypter used by |framer_| to |encrypter|.  The function
+  // Changes the encrypter used for level |level| to |encrypter|. The function
   // takes ownership of |encrypter|.
-  void ChangeEncrypter(QuicEncrypter* encrypter);
+  void SetEncrypter(EncryptionLevel level, QuicEncrypter* encrypter);
+  const QuicEncrypter* encrypter(EncryptionLevel level) const;
 
-  // Sets the primary decrypter used by |framer_| to |decrypter|.  The current
-  // primary decrypter becomes the backup decrypter.  The function takes
-  // ownership of |decrypter|.
-  //
-  // After the function is called, |framer_| starts to decrypt packets using
-  // |decrypter|.  If the decryption fails, |framer_| falls back on the backup
-  // decrypter.  Eventually |framer_| determines that the backup decrypter is
-  // no longer needed and deletes it.
-  void PushDecrypter(QuicDecrypter* decrypter);
+  // SetDefaultEncryptionLevel sets the encryption level that will be applied
+  // to new packets.
+  void SetDefaultEncryptionLevel(EncryptionLevel level);
 
-  // Deletes the current primary decrypter and promotes the backup decrypter
-  // to be the primary decrypter.
-  void PopDecrypter();
+  // SetDecrypter sets the primary decrypter, replacing any that already exists,
+  // and takes ownership. If an alternative decrypter is in place then the
+  // function DCHECKs. This is intended for cases where one knows that future
+  // packets will be using the new decrypter and the previous decrypter is now
+  // obsolete.
+  void SetDecrypter(QuicDecrypter* decrypter);
 
-  QuicDecrypter* decrypter() const { return framer_.decrypter(); }
-  QuicEncrypter* encrypter() const { return framer_.encrypter(); }
+  // SetAlternativeDecrypter sets a decrypter that may be used to decrypt
+  // future packets and takes ownership of it. If |latch_once_used| is true,
+  // then the first time that the decrypter is successful it will replace the
+  // primary decrypter. Otherwise both decrypters will remain active and the
+  // primary decrypter will be the one last used.
+  void SetAlternativeDecrypter(QuicDecrypter* decrypter,
+                               bool latch_once_used);
+
+  const QuicDecrypter* decrypter() const;
+  const QuicDecrypter* alternative_decrypter() const;
 
  protected:
   // Deletes all missing packets before least unacked. The connection won't
@@ -373,27 +379,29 @@ class NET_EXPORT_PRIVATE QuicConnection
   // |least_unacked| unacked, false otherwise.
   bool DontWaitForPacketsBefore(QuicPacketSequenceNumber least_unacked);
 
-  // Send a packet to the peer. If |sequence_number| is present in the
-  // |retransmission_map_|, then contents of this packet will be retransmitted
-  // with a new sequence number if it's not acked by the peer. Deletes
-  // |packet| via WritePacket call or transfers ownership to QueuedPacket,
-  // ultimately deleted via WritePacket. Also, it updates the entropy map
-  // corresponding to |sequence_number| using |entropy_hash|.
+  // Send a packet to the peer using encryption |level|. If |sequence_number|
+  // is present in the |retransmission_map_|, then contents of this packet will
+  // be retransmitted with a new sequence number if it's not acked by the peer.
+  // Deletes |packet| via WritePacket call or transfers ownership to
+  // QueuedPacket, ultimately deleted via WritePacket. Also, it updates the
+  // entropy map corresponding to |sequence_number| using |entropy_hash|.
   // TODO(wtc): none of the callers check the return value.
-  virtual bool SendOrQueuePacket(QuicPacketSequenceNumber sequence_number,
+  virtual bool SendOrQueuePacket(EncryptionLevel level,
+                                 QuicPacketSequenceNumber sequence_number,
                                  QuicPacket* packet,
                                  QuicPacketEntropyHash entropy_hash,
                                  HasRetransmittableData retransmittable);
 
-  // Writes the given packet to socket with the help of helper. Returns true on
-  // successful write, false otherwise. However, behavior is undefined if
-  // connection is not established or broken. In any circumstances, a return
-  // value of true implies that |packet| has been deleted and should not be
-  // accessed. If |sequence_number| is present in |retransmission_map_| it also
-  // sets up retransmission of the given packet in case of successful write. If
-  // |force| is FORCE, then the packet will be sent immediately and the send
-  // scheduler will not be consulted.
-  bool WritePacket(QuicPacketSequenceNumber sequence_number,
+  // Writes the given packet to socket, encrypted with |level|, with the help
+  // of helper. Returns true on successful write, false otherwise. However,
+  // behavior is undefined if connection is not established or broken. In any
+  // circumstances, a return value of true implies that |packet| has been
+  // deleted and should not be accessed. If |sequence_number| is present in
+  // |retransmission_map_| it also sets up retransmission of the given packet
+  // in case of successful write. If |force| is FORCE, then the packet will be
+  // sent immediately and the send scheduler will not be consulted.
+  bool WritePacket(EncryptionLevel level,
+                   QuicPacketSequenceNumber sequence_number,
                    QuicPacket* packet,
                    HasRetransmittableData retransmittable,
                    Force force);
@@ -420,14 +428,17 @@ class NET_EXPORT_PRIVATE QuicConnection
   struct QueuedPacket {
     QueuedPacket(QuicPacketSequenceNumber sequence_number,
                  QuicPacket* packet,
+                 EncryptionLevel level,
                  HasRetransmittableData retransmittable)
         : sequence_number(sequence_number),
           packet(packet),
+          encryption_level(level),
           retransmittable(retransmittable) {
     }
 
     QuicPacketSequenceNumber sequence_number;
     QuicPacket* packet;
+    const EncryptionLevel encryption_level;
     HasRetransmittableData retransmittable;
   };
 
@@ -498,6 +509,7 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   scoped_ptr<QuicConnectionHelperInterface> helper_;
   QuicFramer framer_;
+  EncryptionLevel encryption_level_;
   const QuicClock* clock_;
   QuicRandom* random_generator_;
 

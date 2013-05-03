@@ -121,18 +121,14 @@ class QuicNetworkTransactionTest : public PlatformTest {
     feedback.tcp.accumulated_number_of_lost_packets = 0;
     feedback.tcp.receive_window = 256000;
 
-    QuicFramer framer(kQuicVersion1,
-                      QuicDecrypter::Create(kNULL),
-                      QuicEncrypter::Create(kNULL),
-                      QuicTime::Zero(),
-                      false);
+    QuicFramer framer(kQuicVersion1, QuicTime::Zero(), false);
     QuicFrames frames;
     frames.push_back(QuicFrame(&ack));
     frames.push_back(QuicFrame(&feedback));
     scoped_ptr<QuicPacket> packet(
         framer.ConstructFrameDataPacket(header, frames).packet);
-    return scoped_ptr<QuicEncryptedPacket>(
-        framer.EncryptPacket(header.packet_sequence_number, *packet));
+    return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(
+        ENCRYPTION_NONE, header.packet_sequence_number, *packet));
   }
 
   std::string GetRequestString(const std::string& method,
@@ -178,17 +174,13 @@ class QuicNetworkTransactionTest : public PlatformTest {
   scoped_ptr<QuicEncryptedPacket> ConstructPacket(
       const QuicPacketHeader& header,
       const QuicFrame& frame) {
-    QuicFramer framer(kQuicVersion1,
-                      QuicDecrypter::Create(kNULL),
-                      QuicEncrypter::Create(kNULL),
-                      QuicTime::Zero(),
-                      false);
+    QuicFramer framer(kQuicVersion1, QuicTime::Zero(), false);
     QuicFrames frames;
     frames.push_back(frame);
     scoped_ptr<QuicPacket> packet(
         framer.ConstructFrameDataPacket(header, frames).packet);
-    return scoped_ptr<QuicEncryptedPacket>(
-        framer.EncryptPacket(header.packet_sequence_number, *packet));
+    return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(
+        ENCRYPTION_NONE, header.packet_sequence_number, *packet));
   }
 
   void InitializeHeader(QuicPacketSequenceNumber sequence_number,
@@ -492,6 +484,70 @@ TEST_F(QuicNetworkTransactionTest, DontUseAlternateProtocolForQuicHttps) {
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   EXPECT_FALSE(response->was_fetched_via_spdy);
 
+  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  EXPECT_EQ("hello!", response_data);
+}
+
+TEST_F(QuicNetworkTransactionTest, ZeroRTT) {
+  HttpStreamFactory::set_use_alternate_protocols(true);
+  HttpStreamFactory::SetNextProtos(QuicNextProtos());
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.google.com/");
+  request.load_flags = 0;
+
+  scoped_ptr<QuicEncryptedPacket> data(
+      ConstructDataPacket(1, true, true, 0, GetRequestString("GET", "/")));
+  scoped_ptr<QuicEncryptedPacket> ack(ConstructAckPacket(1, 0));
+
+  MockWrite quic_writes[] = {
+    MockWrite(SYNCHRONOUS, data->data(), data->length()),
+    MockWrite(SYNCHRONOUS, ack->data(), ack->length()),
+  };
+
+  scoped_ptr<QuicEncryptedPacket> resp(
+      ConstructDataPacket(
+          1, false, true, 0, GetResponseString("200 OK", "hello!")));
+  MockRead quic_reads[] = {
+    MockRead(SYNCHRONOUS, resp->data(), resp->length()),
+    MockRead(ASYNC, OK),  // EOF
+  };
+
+  DelayedSocketData quic_data(
+      1,  // wait for one write to finish before reading.
+      quic_reads, arraysize(quic_reads),
+      quic_writes, arraysize(quic_writes));
+
+  socket_factory_.AddSocketDataProvider(&quic_data);
+
+  TestCompletionCallback callback;
+
+  CreateSession();
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::ZERO_RTT);
+
+  HttpServerProperties* http_server_properties =
+      session_->http_server_properties();
+  http_server_properties->SetAlternateProtocol(
+      HostPortPair("www.google.com", 80), 80, QUIC);
+
+  scoped_ptr<HttpNetworkTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_));
+
+  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_EQ(OK, callback.WaitForResult());
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response != NULL);
+  ASSERT_TRUE(response->headers != NULL);
+  EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+  EXPECT_TRUE(response->was_fetched_via_spdy);
+  EXPECT_TRUE(response->was_npn_negotiated);
+  EXPECT_EQ("quic/1+spdy/3", response->npn_negotiated_protocol);
+
+  std::string response_data;
   ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
   EXPECT_EQ("hello!", response_data);
 }

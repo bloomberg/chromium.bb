@@ -43,10 +43,10 @@ class QuicClient : public EpollCallbackInterface {
   // completes.
   bool StartConnect();
 
-  // Returns true if the crypto handshake is in progress.
-  // Returns false if the handshake is complete or the connection has been
-  // closed.
-  bool CryptoHandshakeInProgress();
+  // Returns true if the crypto handshake has yet to establish encryption.
+  // Returns false if encryption is active (even if the server hasn't confirmed
+  // the handshake) or if the connection has been closed.
+  bool EncryptionBeingEstablished();
 
   // Disconnects from the QUIC server.
   void Disconnect();

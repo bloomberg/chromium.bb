@@ -6,6 +6,7 @@
 
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/crypto_utils.h"
+#include "net/quic/crypto/null_encrypter.h"
 #include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_session.h"
@@ -22,7 +23,6 @@ QuicCryptoClientStream::QuicCryptoClientStream(
       num_client_hellos_(0),
       config_(config),
       crypto_config_(crypto_config),
-      decrypter_pushed_(false),
       server_hostname_(server_hostname) {
 }
 
@@ -118,9 +118,24 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         DLOG(INFO) << "Client Sending: " << out.DebugString();
         SendHandshakeMessage(out);
         // Be prepared to decrypt with the new server write key.
-        session()->connection()->PushDecrypter(
-            crypto_negotiated_params_.decrypter.release());
-        decrypter_pushed_ = true;
+        session()->connection()->SetAlternativeDecrypter(
+            crypto_negotiated_params_.decrypter.release(),
+            true /* latch once used */);
+        // Send subsequent packets under encryption on the assumption that the
+        // server will accept the handshake.
+        session()->connection()->SetEncrypter(
+            ENCRYPTION_INITIAL,
+            crypto_negotiated_params_.encrypter.release());
+        session()->connection()->SetDefaultEncryptionLevel(
+            ENCRYPTION_INITIAL);
+        if (!encryption_established_) {
+          session()->OnCryptoHandshakeEvent(
+              QuicSession::ENCRYPTION_FIRST_ESTABLISHED);
+          encryption_established_ = true;
+        } else {
+          session()->OnCryptoHandshakeEvent(
+              QuicSession::ENCRYPTION_REESTABLISHED);
+        }
         return;
       }
       case STATE_RECV_REJ:
@@ -160,11 +175,9 @@ void QuicCryptoClientStream::DoHandshakeLoop(
             cached->SetProofValid();
           }
         }
-        // Clear any new server write key that we may have set before.
-        if (decrypter_pushed_) {
-          session()->connection()->PopDecrypter();
-          decrypter_pushed_ = false;
-        }
+        // Send the subsequent client hello in plaintext.
+        session()->connection()->SetDefaultEncryptionLevel(
+            ENCRYPTION_NONE);
         next_state_ = STATE_SEND_CHLO;
         break;
       case STATE_RECV_SHLO:
@@ -179,15 +192,10 @@ void QuicCryptoClientStream::DoHandshakeLoop(
                                      "Expected SHLO or REJ");
           return;
         }
-        // Receiving SHLO implies the server must have processed our full
-        // CHLO and is ready to decrypt with the new client write key.  We
-        // can start to encrypt with the new client write key.
-        // TODO(wtc): when we support 0-RTT, we will need to change the
-        // encrypter when we send a full CHLO because we will be sending
-        // application data immediately after.
-        session()->connection()->ChangeEncrypter(
-            crypto_negotiated_params_.encrypter.release());
-        SetHandshakeComplete(QUIC_NO_ERROR);
+        // TODO(agl): enable this once the tests are corrected to permit it.
+        // DCHECK(session()->connection()->alternative_decrypter() == NULL);
+        handshake_confirmed_ = true;
+        session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
         return;
       case STATE_IDLE:
         // This means that the peer sent us a message that we weren't expecting.

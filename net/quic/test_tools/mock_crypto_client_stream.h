@@ -15,10 +15,24 @@ namespace net {
 
 class MockCryptoClientStream : public QuicCryptoClientStream {
  public:
-  MockCryptoClientStream(const string& server_hostname,
-                         const QuicConfig& config,
-                         QuicSession* session,
-                         QuicCryptoClientConfig* crypto_config);
+  // HandshakeMode enumerates the handshake mode MockCryptoClientStream should
+  // mock in CryptoConnect.
+  enum HandshakeMode {
+    // CONFIRM_HANDSHAKE indicates that CryptoConnect will immediately confirm
+    // the handshake and establish encryption.
+    CONFIRM_HANDSHAKE,
+
+    // ZERO_RTT indicates that CryptoConnect will establish encryption but will
+    // not confirm the handshake.
+    ZERO_RTT,
+  };
+
+  MockCryptoClientStream(
+      const string& server_hostname,
+      const QuicConfig& config,
+      QuicSession* session,
+      QuicCryptoClientConfig* crypto_config,
+      HandshakeMode handshake_mode);
   virtual ~MockCryptoClientStream();
 
   // CryptoFramerVisitorInterface implementation.
@@ -27,6 +41,8 @@ class MockCryptoClientStream : public QuicCryptoClientStream {
 
   // QuicCryptoClientStream implementation.
   virtual bool CryptoConnect() OVERRIDE;
+
+  HandshakeMode handshake_mode_;
 };
 
 }  // namespace net

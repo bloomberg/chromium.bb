@@ -118,11 +118,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
         use_closing_stream_(false),
         read_buffer_(new IOBufferWithSize(4096)),
         guid_(2),
-        framer_(kQuicVersion1,
-                QuicDecrypter::Create(kNULL),
-                QuicEncrypter::Create(kNULL),
-                QuicTime::Zero(),
-                false),
+        framer_(kQuicVersion1, QuicTime::Zero(), false),
         creator_(guid_, &framer_, &random_, false) {
     IPAddressNumber ip;
     CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));
@@ -186,7 +182,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
                                          "www.google.com", &crypto_config_,
                                          NULL));
     session_->GetCryptoStream()->CryptoConnect();
-    EXPECT_TRUE(session_->IsCryptoHandshakeComplete());
+    EXPECT_TRUE(session_->IsCryptoHandshakeConfirmed());
     QuicReliableClientStream* stream =
         session_->CreateOutgoingReliableStream();
     stream_.reset(use_closing_stream_ ?
@@ -298,7 +294,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
     frames.push_back(frame);
     scoped_ptr<QuicPacket> packet(
         framer_.ConstructFrameDataPacket(header_, frames).packet);
-    return framer_.EncryptPacket(header.packet_sequence_number, *packet);
+    return framer_.EncryptPacket(
+        ENCRYPTION_NONE, header.packet_sequence_number, *packet);
   }
 
   const QuicGuid guid_;

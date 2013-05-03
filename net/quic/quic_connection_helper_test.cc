@@ -59,11 +59,7 @@ class QuicConnectionHelperTest : public ::testing::Test {
 
   QuicConnectionHelperTest()
       : guid_(2),
-        framer_(kQuicVersion1,
-                QuicDecrypter::Create(kNULL),
-                QuicEncrypter::Create(kNULL),
-                QuicTime::Zero(),
-                false),
+        framer_(kQuicVersion1, QuicTime::Zero(), false),
         net_log_(BoundNetLog()),
         frame_(1, false, 0, kData) {
     Initialize();
@@ -152,7 +148,8 @@ class QuicConnectionHelperTest : public ::testing::Test {
     frames.push_back(QuicFrame(&feedback));
     scoped_ptr<QuicPacket> packet(
         framer_.ConstructFrameDataPacket(header_, frames).packet);
-    return framer_.EncryptPacket(header_.packet_sequence_number, *packet);
+    return framer_.EncryptPacket(
+        ENCRYPTION_NONE, header_.packet_sequence_number, *packet);
   }
 
   // Returns a newly created packet to send a connection close frame.
@@ -200,7 +197,8 @@ class QuicConnectionHelperTest : public ::testing::Test {
     frames.push_back(frame);
     scoped_ptr<QuicPacket> packet(
         framer_.ConstructFrameDataPacket(header_, frames).packet);
-    return framer_.EncryptPacket(header_.packet_sequence_number, *packet);
+    return framer_.EncryptPacket(
+        ENCRYPTION_NONE, header_.packet_sequence_number, *packet);
   }
 
   QuicGuid guid_;
@@ -413,7 +411,8 @@ TEST_F(QuicConnectionHelperTest, SendSchedulerDelayThenSend) {
           testing::Return(QuicTime::Delta::FromMicroseconds(1)));
 
   QuicPacket* packet = ConstructRawDataPacket(1);
-  connection_->SendOrQueuePacket(1, packet, 0, HAS_RETRANSMITTABLE_DATA);
+  connection_->SendOrQueuePacket(
+      ENCRYPTION_NONE, 1, packet, 0, HAS_RETRANSMITTABLE_DATA);
   EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, NOT_RETRANSMISSION));
   EXPECT_EQ(1u, connection_->NumQueuedPackets());
 

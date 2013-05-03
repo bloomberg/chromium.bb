@@ -70,12 +70,6 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   QuicNegotiatedParameters negotiated_params_;
   QuicCryptoNegotiatedParameters crypto_negotiated_params_;
 
-  // decrypter_pushed_ is true if we have installed a QuicDecrypter in the
-  // connection. We need to track this because, in the event of a handshake
-  // failure, we have to remove any previous decrypters as they will have the
-  // wrong keys.
-  bool decrypter_pushed_;
-
   // Client's connection nonce (4-byte timestamp + 28 random bytes)
   std::string nonce_;
   // Server's hostname

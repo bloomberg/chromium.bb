@@ -46,8 +46,6 @@ QuicPacketSequenceNumber ClosestTo(QuicPacketSequenceNumber target,
 }  // namespace
 
 QuicFramer::QuicFramer(QuicVersionTag version,
-                       QuicDecrypter* decrypter,
-                       QuicEncrypter* encrypter,
                        QuicTime creation_time,
                        bool is_server)
     : visitor_(NULL),
@@ -55,11 +53,11 @@ QuicFramer::QuicFramer(QuicVersionTag version,
       error_(QUIC_NO_ERROR),
       last_sequence_number_(0),
       quic_version_(version),
-      decrypter_(decrypter),
-      encrypter_(encrypter),
+      decrypter_(QuicDecrypter::Create(kNULL)),
       is_server_(is_server),
       creation_time_(creation_time) {
   DCHECK(IsSupportedVersion(version));
+  encrypter_[ENCRYPTION_NONE].reset(QuicEncrypter::Create(kNULL));
 }
 
 QuicFramer::~QuicFramer() {}
@@ -1037,27 +1035,47 @@ StringPiece QuicFramer::GetAssociatedDataFromEncryptedPacket(
                          kStartOfHashData);
 }
 
-void QuicFramer::push_decrypter(QuicDecrypter* decrypter) {
-  DCHECK(backup_decrypter_.get() == NULL);
-  backup_decrypter_.reset(decrypter_.release());
+void QuicFramer::SetDecrypter(QuicDecrypter* decrypter) {
+  DCHECK(alternative_decrypter_.get() == NULL);
   decrypter_.reset(decrypter);
 }
 
-void QuicFramer::pop_decrypter() {
-  DCHECK(backup_decrypter_.get() != NULL);
-  decrypter_.reset(backup_decrypter_.release());
+void QuicFramer::SetAlternativeDecrypter(QuicDecrypter* decrypter,
+                                         bool latch_once_used) {
+  alternative_decrypter_.reset(decrypter);
+  alternative_decrypter_latch_ = latch_once_used;
 }
 
-void QuicFramer::set_encrypter(QuicEncrypter* encrypter) {
-  encrypter_.reset(encrypter);
+const QuicDecrypter* QuicFramer::decrypter() const {
+  return decrypter_.get();
+}
+
+const QuicDecrypter* QuicFramer::alternative_decrypter() const {
+  return alternative_decrypter_.get();
+}
+
+void QuicFramer::SetEncrypter(EncryptionLevel level,
+                              QuicEncrypter* encrypter) {
+  DCHECK_GE(level, 0);
+  DCHECK_LT(level, NUM_ENCRYPTION_LEVELS);
+  encrypter_[level].reset(encrypter);
+}
+
+const QuicEncrypter* QuicFramer::encrypter(EncryptionLevel level) const {
+  DCHECK_GE(level, 0);
+  DCHECK_LT(level, NUM_ENCRYPTION_LEVELS);
+  DCHECK(encrypter_[level].get() != NULL);
+  return encrypter_[level].get();
 }
 
 QuicEncryptedPacket* QuicFramer::EncryptPacket(
+    EncryptionLevel level,
     QuicPacketSequenceNumber packet_sequence_number,
     const QuicPacket& packet) {
-  scoped_ptr<QuicData> out(encrypter_->EncryptPacket(packet_sequence_number,
-                                                     packet.AssociatedData(),
-                                                     packet.Plaintext()));
+  DCHECK(encrypter_[level].get() != NULL);
+
+  scoped_ptr<QuicData> out(encrypter_[level]->EncryptPacket(
+      packet_sequence_number, packet.AssociatedData(), packet.Plaintext()));
   if (out.get() == NULL) {
     RaiseError(QUIC_ENCRYPTION_FAILURE);
     return NULL;
@@ -1072,7 +1090,22 @@ QuicEncryptedPacket* QuicFramer::EncryptPacket(
 }
 
 size_t QuicFramer::GetMaxPlaintextSize(size_t ciphertext_size) {
-  return encrypter_->GetMaxPlaintextSize(ciphertext_size);
+  // In order to keep the code simple, we don't have the current encryption
+  // level to hand. At the moment, all AEADs have a tag-length of 16 bytes so
+  // that doesn't matter but we take the minimum plaintext length just to be
+  // safe.
+  size_t min_plaintext_size = ciphertext_size;
+
+  for (int i = ENCRYPTION_NONE; i <= ENCRYPTION_FORWARD_SECURE; i++) {
+    if (encrypter_[i].get() != NULL) {
+      size_t size = encrypter_[i]->GetMaxPlaintextSize(ciphertext_size);
+      if (size < min_plaintext_size) {
+        min_plaintext_size = size;
+      }
+    }
+  }
+
+  return min_plaintext_size;
 }
 
 bool QuicFramer::DecryptPayload(QuicPacketSequenceNumber sequence_number,
@@ -1083,19 +1116,32 @@ bool QuicFramer::DecryptPayload(QuicPacketSequenceNumber sequence_number,
     return false;
   }
   DCHECK(decrypter_.get() != NULL);
+  LOG(INFO) << "Decrypting packet";
   decrypted_.reset(decrypter_->DecryptPacket(
       sequence_number,
       GetAssociatedDataFromEncryptedPacket(packet, version_flag),
       encrypted));
-  if  (decrypted_.get() == NULL && backup_decrypter_.get() != NULL) {
-    decrypted_.reset(backup_decrypter_->DecryptPacket(
+  if  (decrypted_.get() == NULL && alternative_decrypter_.get() != NULL) {
+    LOG(INFO) << "Trying alternative";
+    decrypted_.reset(alternative_decrypter_->DecryptPacket(
         sequence_number,
         GetAssociatedDataFromEncryptedPacket(packet, version_flag),
         encrypted));
+    if (decrypted_.get() != NULL) {
+      LOG(INFO) << "alternative ok";
+      if (alternative_decrypter_latch_) {
+        LOG(INFO) << "  latching";
+        // Switch to the alternative decrypter and latch so that we cannot
+        // switch back.
+        decrypter_.reset(alternative_decrypter_.release());
+      } else {
+        LOG(INFO) << "  swapping";
+        // Switch the alternative decrypter so that we use it first next time.
+        decrypter_.swap(alternative_decrypter_);
+      }
+    }
   }
-  // TODO(wtc): tell the caller or visitor which decrypter was used, so that
-  // they can verify a packet that should be encrypted is encrypted.
-  // TODO(wtc): figure out when it is safe to delete backup_decrypter_.
+
   if  (decrypted_.get() == NULL) {
     return false;
   }

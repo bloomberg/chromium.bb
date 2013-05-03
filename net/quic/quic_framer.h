@@ -151,10 +151,9 @@ class NET_EXPORT_PRIVATE QuicReceivedEntropyHashCalculatorInterface {
 // in order to generate FEC data for subsequently building FEC packets.
 class NET_EXPORT_PRIVATE QuicFramer {
  public:
-  // Constructs a new framer that will own |decrypter| and |encrypter|.
+  // Constructs a new framer that installs a kNULL QuicEncrypter and
+  // QuicDecrypter for level ENCRYPTION_NONE.
   QuicFramer(QuicVersionTag quic_version,
-             QuicDecrypter* decrypter,
-             QuicEncrypter* encrypter,
              QuicTime creation_time,
              bool is_server);
 
@@ -274,15 +273,32 @@ class NET_EXPORT_PRIVATE QuicFramer {
       const QuicPacketPublicHeader& header,
       const QuicVersionTagList& supported_versions);
 
-  QuicDecrypter* decrypter() const { return decrypter_.get(); }
-  void push_decrypter(QuicDecrypter* decrypter);
-  void pop_decrypter();
+  // SetDecrypter sets the primary decrypter, replacing any that already exists,
+  // and takes ownership. If an alternative decrypter is in place then the
+  // function DCHECKs. This is intended for cases where one knows that future
+  // packets will be using the new decrypter and the previous decrypter is not
+  // obsolete.
+  void SetDecrypter(QuicDecrypter* decrypter);
 
-  QuicEncrypter* encrypter() const { return encrypter_.get(); }
-  void set_encrypter(QuicEncrypter* encrypter);
+  // SetAlternativeDecrypter sets a decrypter that may be used to decrypt
+  // future packets and takes ownership of it. If |latch_once_used| is true,
+  // then the first time that the decrypter is successful it will replace the
+  // primary decrypter. Otherwise both decrypters will remain active and the
+  // primary decrypter will be the one last used.
+  void SetAlternativeDecrypter(QuicDecrypter* decrypter,
+                               bool latch_once_used);
+
+  const QuicDecrypter* decrypter() const;
+  const QuicDecrypter* alternative_decrypter() const;
+
+  // Changes the encrypter used for level |level| to |encrypter|. The function
+  // takes ownership of |encrypter|.
+  void SetEncrypter(EncryptionLevel level, QuicEncrypter* encrypter);
+  const QuicEncrypter* encrypter(EncryptionLevel level) const;
 
   // Returns a new encrypted packet, owned by the caller.
-  QuicEncryptedPacket* EncryptPacket(QuicPacketSequenceNumber sequence_number,
+  QuicEncryptedPacket* EncryptPacket(EncryptionLevel level,
+                                     QuicPacketSequenceNumber sequence_number,
                                      const QuicPacket& packet);
 
   // Returns the maximum length of plaintext that can be encrypted
@@ -383,10 +399,14 @@ class NET_EXPORT_PRIVATE QuicFramer {
   QuicVersionTag quic_version_;
   // Primary decrypter used to decrypt packets during parsing.
   scoped_ptr<QuicDecrypter> decrypter_;
-  // Backup decrypter used to decrypt packets during parsing. May be NULL.
-  scoped_ptr<QuicDecrypter> backup_decrypter_;
-  // Encrypter used to encrypt packets via EncryptPacket().
-  scoped_ptr<QuicEncrypter> encrypter_;
+  // Alternative decrypter that can also be used to decrypt packets.
+  scoped_ptr<QuicDecrypter> alternative_decrypter_;
+  // alternative_decrypter_latch_is true if, when |alternative_decrypter_|
+  // successfully decrypts a packet, we should install it as the only
+  // decrypter.
+  bool alternative_decrypter_latch_;
+  // Encrypters used to encrypt packets via EncryptPacket().
+  scoped_ptr<QuicEncrypter> encrypter_[NUM_ENCRYPTION_LEVELS];
   // Tracks if the framer is being used by the entity that received the
   // connection or the entity that initiated it.
   bool is_server_;

@@ -39,11 +39,7 @@ class TestConnectionHelper : public QuicEpollConnectionHelper {
 
   virtual int WritePacketToWire(const QuicEncryptedPacket& packet,
                                 int* error) OVERRIDE {
-    QuicFramer framer(kQuicVersion1,
-                      QuicDecrypter::Create(kNULL),
-                      QuicEncrypter::Create(kNULL),
-                      QuicTime::Zero(),
-                      true);
+    QuicFramer framer(kQuicVersion1, QuicTime::Zero(), true);
     FramerVisitorCapturingFrames visitor;
     framer.set_visitor(&visitor);
     EXPECT_TRUE(framer.ProcessPacket(packet));
@@ -81,11 +77,7 @@ class QuicConnectionHelperTest : public ::testing::Test {
  protected:
   QuicConnectionHelperTest()
       : guid_(42),
-        framer_(kQuicVersion1,
-                QuicDecrypter::Create(kNULL),
-                QuicEncrypter::Create(kNULL),
-                QuicTime::Zero(),
-                false),
+        framer_(kQuicVersion1, QuicTime::Zero(), false),
         send_algorithm_(new testing::StrictMock<MockSendAlgorithm>),
         helper_(new TestConnectionHelper(0, &epoll_server_)),
         connection_(guid_, IPEndPoint(), helper_),
@@ -186,7 +178,7 @@ TEST_F(QuicConnectionHelperTest, SendSchedulerDelayThenSend) {
   EXPECT_CALL(
       *send_algorithm_, TimeUntilSend(_, NOT_RETRANSMISSION, _)).WillOnce(
           testing::Return(QuicTime::Delta::FromMicroseconds(1)));
-  connection_.SendOrQueuePacket(1, packet, 0,
+  connection_.SendOrQueuePacket(ENCRYPTION_NONE, 1, packet, 0,
                                 HAS_RETRANSMITTABLE_DATA);
   EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, NOT_RETRANSMISSION));
   EXPECT_EQ(1u, connection_.NumQueuedPackets());

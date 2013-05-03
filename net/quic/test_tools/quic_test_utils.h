@@ -250,6 +250,7 @@ class PacketSavingConnection : public MockConnection {
   virtual ~PacketSavingConnection();
 
   virtual bool SendOrQueuePacket(
+      EncryptionLevel level,
       QuicPacketSequenceNumber sequence_number,
       QuicPacket* packet,
       QuicPacketEntropyHash entropy_hash,

@@ -10,8 +10,10 @@ MockCryptoClientStream::MockCryptoClientStream(
     const string& server_hostname,
     const QuicConfig& config,
     QuicSession* session,
-    QuicCryptoClientConfig* crypto_config)
-    : QuicCryptoClientStream(server_hostname, config, session, crypto_config) {
+    QuicCryptoClientConfig* crypto_config,
+    HandshakeMode handshake_mode)
+  : QuicCryptoClientStream(server_hostname, config, session, crypto_config),
+    handshake_mode_(handshake_mode) {
 }
 
 MockCryptoClientStream::~MockCryptoClientStream() {
@@ -23,7 +25,17 @@ void MockCryptoClientStream::OnHandshakeMessage(
 }
 
 bool MockCryptoClientStream::CryptoConnect() {
-  SetHandshakeComplete(QUIC_NO_ERROR);
+  if (handshake_mode_ == ZERO_RTT) {
+    encryption_established_ = true;
+    handshake_confirmed_ = false;
+    session()->OnCryptoHandshakeEvent(
+        QuicSession::ENCRYPTION_FIRST_ESTABLISHED);
+    return true;
+  }
+
+  encryption_established_ = true;
+  handshake_confirmed_ = true;
+  session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
   return true;
 }
 

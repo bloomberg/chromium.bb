@@ -27,8 +27,8 @@ QuicCryptoServerStream::~QuicCryptoServerStream() {
 
 void QuicCryptoServerStream::OnHandshakeMessage(
     const CryptoHandshakeMessage& message) {
-  // Do not process handshake messages after the handshake is complete.
-  if (handshake_complete()) {
+  // Do not process handshake messages after the handshake is confirmed.
+  if (handshake_confirmed_) {
     CloseConnection(QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE);
     return;
   }
@@ -62,13 +62,18 @@ void QuicCryptoServerStream::OnHandshakeMessage(
     // write key.
     //
     // NOTE: the SHLO will be encrypted with the new server write key.
-    session()->connection()->ChangeEncrypter(
+    session()->connection()->SetEncrypter(
+        ENCRYPTION_INITIAL,
         crypto_negotiated_params_.encrypter.release());
-    // Be prepared to decrypt with the new client write key, as the client
-    // will start to use it upon receiving the SHLO.
-    session()->connection()->PushDecrypter(
+    session()->connection()->SetDefaultEncryptionLevel(
+        ENCRYPTION_INITIAL);
+    // Set the decrypter immediately so that we no longer accept unencrypted
+    // packets.
+    session()->connection()->SetDecrypter(
         crypto_negotiated_params_.decrypter.release());
-    SetHandshakeComplete(QUIC_NO_ERROR);
+    encryption_established_ = true;
+    handshake_confirmed_ = true;
+    session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
   }
 
   SendHandshakeMessage(reply);

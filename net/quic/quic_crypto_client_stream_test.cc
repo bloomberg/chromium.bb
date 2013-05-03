@@ -98,7 +98,8 @@ TEST_F(QuicCryptoClientStreamTest, NotInitiallyConected) {
     return;
   }
 
-  EXPECT_FALSE(stream_.handshake_complete());
+  EXPECT_FALSE(stream_.encryption_established());
+  EXPECT_FALSE(stream_.handshake_confirmed());
 }
 
 TEST_F(QuicCryptoClientStreamTest, ConnectedAfterSHLO) {
@@ -108,7 +109,8 @@ TEST_F(QuicCryptoClientStreamTest, ConnectedAfterSHLO) {
   }
 
   CompleteCryptoHandshake();
-  EXPECT_TRUE(stream_.handshake_complete());
+  EXPECT_TRUE(stream_.encryption_established());
+  EXPECT_TRUE(stream_.handshake_confirmed());
 }
 
 TEST_F(QuicCryptoClientStreamTest, MessageAfterHandshake) {

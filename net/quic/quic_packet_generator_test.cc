@@ -76,11 +76,7 @@ struct PacketContents {
 class QuicPacketGeneratorTest : public ::testing::Test {
  protected:
   QuicPacketGeneratorTest()
-      : framer_(kQuicVersion1,
-                QuicDecrypter::Create(kNULL),
-                QuicEncrypter::Create(kNULL),
-                QuicTime::Zero(),
-                false),
+      : framer_(kQuicVersion1, QuicTime::Zero(), false),
         creator_(42, &framer_, &random_, false),
         generator_(&delegate_, &creator_),
         packet_(0, NULL, 0, NULL),

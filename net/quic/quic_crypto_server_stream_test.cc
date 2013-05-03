@@ -115,7 +115,8 @@ TEST_F(QuicCryptoServerStreamTest, NotInitiallyConected) {
     return;
   }
 
-  EXPECT_FALSE(stream_.handshake_complete());
+  EXPECT_FALSE(stream_.encryption_established());
+  EXPECT_FALSE(stream_.handshake_confirmed());
 }
 
 TEST_F(QuicCryptoServerStreamTest, ConnectedAfterCHLO) {
@@ -133,7 +134,8 @@ TEST_F(QuicCryptoServerStreamTest, ConnectedAfterCHLO) {
   // have sent the following client hello.
   //   * One to get the server's certificates
   EXPECT_EQ(2, CompleteCryptoHandshake());
-  EXPECT_TRUE(stream_.handshake_complete());
+  EXPECT_TRUE(stream_.encryption_established());
+  EXPECT_TRUE(stream_.handshake_confirmed());
 }
 
 TEST_F(QuicCryptoServerStreamTest, ZeroRTT) {
