@@ -10028,6 +10028,9 @@ other types of suffix sets.
   <int value="9" label="PHISHING_DONT_PROCEED"/>
   <int value="10" label="PHISHING_FORCED_DONT_PROCEED"/>
   <int value="11" label="PHISHING_PROCEED"/>
+  <int value="12" label="MALWARE_SHOW_ADVANCED"/>
+  <int value="13" label="MULTIPLE_SHOW_ADVANCED"/>
+  <int value="14" label="PHISHING_SHOW_ADVANCED"/>
 </enum>
 
 <enum name="SB2PrefixSetEvent" type="int">
