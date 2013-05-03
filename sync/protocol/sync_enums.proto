@@ -114,4 +114,34 @@ message SyncEnums {
     TYPE_PHONE = 6;
     TYPE_TABLET = 7;
   }
+
+  // This is the successor to GetUpdatesSource.  It merges the "normal mode"
+  // values (LOCAL, NOTIFICATION and DATATYPE_REFRESH), which were never really
+  // mutually exclusive to being with, into the GU_TRIGGER value.  It also
+  // drops support for some old values that are not supported by newer clients.
+  //
+  // Mind the gaps: Some values are intentionally unused because we want to
+  // keep the values in sync with GetUpdatesSource as much as possible.  Please
+  // don't add any values < 12 unless there's a good reason for it.
+  //
+  // Introduced in M28.
+  enum GetUpdatesOrigin {
+    UNKNOWN_ORIGIN = 0;  // The source was not set by the caller.
+    PERIODIC = 4;  // The source of the update was periodic polling.
+    NEWLY_SUPPORTED_DATATYPE = 7;   // The client is in configuration mode
+                                    // because it's syncing all datatypes, and
+                                    // support for a new datatype was recently
+                                    // released via a software auto-update.
+    MIGRATION = 8;         // The client is in configuration mode because a
+                           // MIGRATION_DONE error previously returned by the
+                           // server necessitated resynchronization.
+    NEW_CLIENT = 9;        // The client is in configuration mode because the
+                           // user enabled sync for the first time.  Not to be
+                           // confused with FIRST_UPDATE.
+    RECONFIGURATION = 10;  // The client is in configuration mode because the
+                           // user opted to sync a different set of datatypes.
+    GU_TRIGGER = 12; // The client is in 'normal' mode.  It may have several
+                     // reasons for requesting an update.  See the per-type
+                     // GetUpdateTriggers message for more details.
+  }
 }

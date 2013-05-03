@@ -10,6 +10,9 @@ option retain_unknown_fields = true;
 package sync_pb;
 
 message GetUpdatesCallerInfo {
+  // This message was deprecated in M28.  The preferred represenation of this
+  // information is now the GetUpdatesOrigin enum, which is defined in
+  // sync_enums.proto.
   enum GetUpdatesSource {
     UNKNOWN = 0;  // The source was not set by the caller.
     FIRST_UPDATE = 1;  // First request after browser restart.  Not to

@@ -87,6 +87,23 @@ const char* GetUpdatesSourceString(
   return "";
 }
 
+const char* GetUpdatesOriginString(
+    sync_pb::SyncEnums::GetUpdatesOrigin origin) {
+  ASSERT_ENUM_BOUNDS(sync_pb::SyncEnums, GetUpdatesOrigin,
+                     UNKNOWN_ORIGIN, GU_TRIGGER);
+  switch (origin) {
+    ENUM_CASE(sync_pb::SyncEnums, UNKNOWN_ORIGIN);
+    ENUM_CASE(sync_pb::SyncEnums, PERIODIC);
+    ENUM_CASE(sync_pb::SyncEnums, NEWLY_SUPPORTED_DATATYPE);
+    ENUM_CASE(sync_pb::SyncEnums, MIGRATION);
+    ENUM_CASE(sync_pb::SyncEnums, NEW_CLIENT);
+    ENUM_CASE(sync_pb::SyncEnums, RECONFIGURATION);
+    ENUM_CASE(sync_pb::SyncEnums, GU_TRIGGER);
+  }
+  NOTREACHED();
+  return "";
+}
+
 const char* GetResponseTypeString(
     sync_pb::CommitResponse::ResponseType response_type) {
   ASSERT_ENUM_BOUNDS(sync_pb::CommitResponse, ResponseType, SUCCESS,

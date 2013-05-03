@@ -630,6 +630,17 @@ base::DictionaryValue* CommitMessageToValue(
   return value;
 }
 
+base::DictionaryValue* GetUpdateTriggersToValue(
+    const sync_pb::GetUpdateTriggers& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET_STR_REP(notification_hint);
+  SET_BOOL(client_dropped_hints);
+  SET_BOOL(invalidations_out_of_sync);
+  SET_INT64(local_modification_nudges);
+  SET_INT64(datatype_refresh_nudges);
+  return value;
+}
+
 base::DictionaryValue* DataTypeProgressMarkerToValue(
     const sync_pb::DataTypeProgressMarker& proto) {
   base::DictionaryValue* value = new base::DictionaryValue();
@@ -637,6 +648,7 @@ base::DictionaryValue* DataTypeProgressMarkerToValue(
   SET_BYTES(token);
   SET_INT64(timestamp_token_for_migration);
   SET_STR(notification_hint);
+  SET(get_update_triggers, GetUpdateTriggersToValue);
   return value;
 }
 
@@ -658,6 +670,7 @@ base::DictionaryValue* GetUpdatesMessageToValue(
   SET_BOOL(streaming);
   SET_BOOL(need_encryption_key);
   SET_BOOL(create_mobile_bookmarks_folder);
+  SET_ENUM(get_updates_origin, GetUpdatesOriginString);
   return value;
 }
 

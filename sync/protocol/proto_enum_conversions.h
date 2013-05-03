@@ -33,6 +33,9 @@ SYNC_EXPORT_PRIVATE const char* GetPageTransitionRedirectTypeString(
 SYNC_EXPORT const char* GetUpdatesSourceString(
     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source);
 
+SYNC_EXPORT const char* GetUpdatesOriginString(
+    sync_pb::SyncEnums::GetUpdatesOrigin origin);
+
 SYNC_EXPORT_PRIVATE const char* GetResponseTypeString(
     sync_pb::CommitResponse::ResponseType response_type);
 

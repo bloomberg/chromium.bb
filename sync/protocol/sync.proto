@@ -398,6 +398,72 @@ message CommitMessage {
   optional ClientConfigParams config_params = 4;
 };
 
+// This message communicates additional per-type information related to
+// requests with origin GU_TRIGGER.  This message is not relevant when any
+// other origin value is used.
+// Introduced in M28.
+message GetUpdateTriggers {
+  // An opaque-to-the-client string of bytes, received through a notification,
+  // that the server may interpret as a hint about the location of the latest
+  // version of the data for this type.
+  //
+  // Note that this will eventually replace the 'optional' field of the same
+  // name defined in the progress marker, but the client and server should
+  // support both until it's safe to deprecate the old one.
+  //
+  // This field was introduced in M28.
+  repeated string notification_hint = 1;
+
+  // This flag is set if the client was forced to drop hints because the number
+  // of queued hints exceeded its limit.  The oldest hints will be discarded
+  // first.  Introduced in M28.
+  optional bool client_dropped_hints = 2;
+
+  // This flag is set if the invalidation server reports that it may have
+  // dropped some invalidations at some point.  The client will also drop any
+  // locally cached hints that are older than the server-did-drop notification.
+  //
+  // TODO(sync): Determine the format for this.
+  //
+  // optional bool server_dropped_hints = 6;
+
+  // This flag is set when the client suspects that its list of invalidation
+  // hints may be incomplete.  This may be the case if:
+  // - The client is syncing for the first time.
+  // - The client has just restarted and it was unable to keep track of
+  //   invalidations that were received prior to the restart.
+  // - The client's connection to the invalidation server is currently or
+  //   was recently broken.
+  //
+  // It's difficult to provide more details here.  This is implemented by
+  // setting the flag to false whenever anything that might adversely affect
+  // notifications happens (eg. a crash, restart on a platform that doesn't
+  // support invalidation ack-tracking, transient invalidation error) and is
+  // unset only after we've experienced one successful sync cycle while
+  // notifications were enabled.
+  //
+  // This flag was introduced in M28.
+  optional bool invalidations_out_of_sync = 3;
+
+  // This counts the number of times the syncer has been asked to commit
+  // changes for this type since the last successful sync cycle.  The number of
+  // nudges may not be related to the actual number of items modified.  It
+  // often correlates with the number of user actions, but that's not always
+  // the case.
+  // Introduced in M28.
+  optional int64 local_modification_nudges = 4;
+
+  // This counts the number of times the syncer has been explicitly asked to
+  // fetch updates for this type since the last successful sync cycle.  These
+  // explicit refresh requests should be relatively rare on most platforms, and
+  // associated with user actions.  For example, at the time of this writing
+  // the most common (only?) source of refresh requests is when a user opens
+  // the new tab page on a platform that does not support sessions
+  // invalidations.
+  // Introduced in M28.
+  optional int64 datatype_refresh_nudges = 5;
+}
+
 message DataTypeProgressMarker {
   // An integer identifying the data type whose progress is tracked by this
   // marker.  The legitimate values of this field correspond to the protobuf
@@ -438,7 +504,13 @@ message DataTypeProgressMarker {
   // An opaque-to-the-client string of bytes, received through a notification,
   // that the server may interpret as a hint about the location of the latest
   // version of the data for this type.
+  //
+  // Deprecated in M28.  We should use the repeated field version in the
+  // PerClientTypeState instead.
   optional string notification_hint = 4;
+
+  // This field will be included only in GetUpdates with origin GU_TRIGGER.
+  optional GetUpdateTriggers get_update_triggers = 5;
 }
 
 message GetUpdatesMessage {
@@ -452,6 +524,8 @@ message GetUpdatesMessage {
   optional int64 from_timestamp = 1;
 
   // Indicates the reason for the GetUpdatesMessage.
+  // Deprecated in M28.  We should eventually rely on GetUpdatesOrigin instead.
+  // Newer clients will support both systems during the transition period.
   optional GetUpdatesCallerInfo caller_info = 2;
 
   // Indicates whether related folders should be fetched.
@@ -478,6 +552,10 @@ message GetUpdatesMessage {
 
   // Per-datatype progress marker.  If present, the server will ignore
   // the values of requested_types and from_timestamp, using this instead.
+  //
+  // With the exception of certain configuration or initial sync requests, the
+  // client should include one instance of this field for each enabled data
+  // type.
   repeated DataTypeProgressMarker from_progress_marker = 6;
 
   // Indicates whether the response should be sent in chunks.  This may be
@@ -499,6 +577,11 @@ message GetUpdatesMessage {
   // Whether to create the mobile bookmarks folder if it's not
   // already created.  Should be set to true only by mobile clients.
   optional bool create_mobile_bookmarks_folder = 1000 [default = false];
+
+  // This value is an udpated version of the GetUpdatesCallerInfo's
+  // GetUpdatesSource.  It describes the reason for the GetUpdate request.
+  // Introduced in M28.
+  optional SyncEnums.GetUpdatesOrigin get_updates_origin = 9;
 };
 
 message AuthenticateMessage {
