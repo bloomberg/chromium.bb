@@ -6,7 +6,9 @@ import os
 import unittest
 
 from telemetry.core import browser_finder
+from telemetry.core import exceptions
 from telemetry.core import extension_to_load
+from telemetry.core import util
 from telemetry.core.chrome import cros_interface
 from telemetry.core.chrome import cros_util
 from telemetry.test import options_for_unittests
@@ -27,52 +29,53 @@ class CrOSAutoTest(unittest.TestCase):
     return (cryptohomeStatus['mounts'] and
             cryptohomeStatus['mounts'][0]['mounted'])
 
-  def _FilesystemMountedAt(self, path):
-    """Returns the filesystem mounted at |path|"""
-    df_out, _ = self._cri.RunCmdOnDevice(['/bin/df', path])
-    df_ary = df_out.split('\n')
-    if (len(df_ary) == 3):
-      chronos_ary = df_ary[1].split()
-      if chronos_ary:
-        return chronos_ary[0]
-    return None
+  def _CreateBrowser(self, with_autotest_ext):
+    """Finds and creates a browser for tests. if with_autotest_ext is True,
+    also loads the autotest extension"""
+    options = options_for_unittests.GetCopy()
+
+    if with_autotest_ext:
+      extension_path = os.path.join(os.path.dirname(__file__), 'autotest_ext')
+      self._load_extension = extension_to_load.ExtensionToLoad(extension_path,
+                                                               True)
+      options.extensions_to_load = [self._load_extension]
+
+    browser_to_create = browser_finder.FindBrowser(options)
+    self.assertTrue(browser_to_create)
+    return browser_to_create.Create()
+
+  def _GetAutotestExtension(self, browser):
+    """Returns the autotest extension instance"""
+    extension = browser.extensions[self._load_extension]
+    self.assertTrue(extension)
+    return extension
 
   def testCryptohomeMounted(self):
-    options = options_for_unittests.GetCopy()
-    browser_to_create = browser_finder.FindBrowser(options)
-    if not browser_to_create:
-      raise Exception('No browser found, cannot continue test.')
-    with browser_to_create.Create() as b:
+    """Verifies cryptohome mount status for regular and guest user and when
+    logged out"""
+    with self._CreateBrowser(False) as b:
       self.assertEquals(1, len(b.tabs))
       self.assertTrue(b.tabs[0].url)
       self.assertTrue(self._IsCryptohomeMounted())
 
-      chronos_fs = self._FilesystemMountedAt('/home/chronos/user')
+      chronos_fs = self._cri.FilesystemMountedAt('/home/chronos/user')
       self.assertTrue(chronos_fs)
       if self._is_guest:
         self.assertEquals(chronos_fs, 'guestfs')
       else:
         home, _ = self._cri.RunCmdOnDevice(['/usr/sbin/cryptohome-path',
                                             'user', self._email])
-        self.assertEquals(self._FilesystemMountedAt(home.rstrip()),
+        self.assertEquals(self._cri.FilesystemMountedAt(home.rstrip()),
                           chronos_fs)
 
     self.assertFalse(self._IsCryptohomeMounted())
-    self.assertEquals(self._FilesystemMountedAt('/home/chronos/user'),
+    self.assertEquals(self._cri.FilesystemMountedAt('/home/chronos/user'),
                       '/dev/mapper/encstateful')
 
   def testLoginStatus(self):
-    extension_path = os.path.join(os.path.dirname(__file__),
-        'autotest_ext')
-    load_extension = extension_to_load.ExtensionToLoad(extension_path, True)
-
-    options = options_for_unittests.GetCopy()
-    options.extensions_to_load = [load_extension]
-    browser_to_create = browser_finder.FindBrowser(options)
-    self.assertTrue(browser_to_create)
-    with browser_to_create.Create() as b:
-      extension = b.extensions[load_extension]
-      self.assertTrue(extension)
+    """Tests autotestPrivate.loginStatus"""
+    with self._CreateBrowser(True) as b:
+      extension = self._GetAutotestExtension(b)
       extension.ExecuteJavaScript('''
         chrome.autotestPrivate.loginStatus(function(s) {
           window.__autotest_result = s;
@@ -86,4 +89,13 @@ class CrOSAutoTest(unittest.TestCase):
       self.assertEquals(login_status['email'], self._email)
       self.assertFalse(login_status['isScreenLocked'])
 
-
+  def testLogout(self):
+    """Tests autotestPrivate.logout"""
+    with self._CreateBrowser(True) as b:
+      extension = self._GetAutotestExtension(b)
+      try:
+        extension.ExecuteJavaScript('chrome.autotestPrivate.logout();')
+      except (exceptions.BrowserConnectionGoneException,
+              exceptions.BrowserGoneException):
+        pass
+      util.WaitFor(lambda: not self._IsCryptohomeMounted(), 20)
