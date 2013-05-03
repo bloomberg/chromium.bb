@@ -110,10 +110,13 @@ class BluetoothDeviceExperimentalChromeOS
 
   // Internal method to initiate a connection to this device, and methods called
   // by dbus:: on completion of the D-Bus method call.
-  void ConnectInternal(const base::Closure& callback,
+  void ConnectInternal(bool after_pairing,
+                       const base::Closure& callback,
                        const ConnectErrorCallback& error_callback);
-  void OnConnect(const base::Closure& callback);
-  void OnConnectError(const ConnectErrorCallback& error_callback,
+  void OnConnect(bool after_pairing,
+                 const base::Closure& callback);
+  void OnConnectError(bool after_pairing,
+                      const ConnectErrorCallback& error_callback,
                       const std::string& error_name,
                       const std::string& error_message);
 
@@ -169,11 +172,6 @@ class BluetoothDeviceExperimentalChromeOS
   // Run any outstanding pairing callbacks passing |status| as the result of
   // pairing. Returns true if any callbacks were run, false if not.
   bool RunPairingCallbacks(Status status);
-
-  // Record the result of pairing as a UMA histogram metric; |success| should
-  // be true if pairing succeeded, and |false| if not - in which case
-  // |error_code| specifies the reason for failure.
-  void RecordPairingResult(bool success, ConnectErrorCode error_code);
 
   // Return the object path of the device; used by
   // BluetoothAdapterExperimentalChromeOS
