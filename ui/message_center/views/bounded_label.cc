@@ -179,6 +179,7 @@ void InnerBoundedLabel::OnPaint(gfx::Canvas* canvas) {
       wrapped_text_width_ = bounds.width();
       wrapped_text_lines_ = lines;
     }
+    bounds.set_x(GetMirroredXForRect(bounds));
     PaintText(canvas, wrapped_text_, bounds, GetTextFlags());
   }
 }
@@ -200,7 +201,7 @@ int InnerBoundedLabel::GetTextFlags() {
       flags |= gfx::Canvas::FORCE_LTR_DIRECTIONALITY;
   }
 
-  return flags | gfx::Canvas::TEXT_ALIGN_LEFT;
+  return flags;
 }
 
 void InnerBoundedLabel::ClearCaches() {
