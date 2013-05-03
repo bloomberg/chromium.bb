@@ -2,40 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SEARCH_SUGGESTION_SOURCE_H_
-#define CHROME_BROWSER_SEARCH_SUGGESTION_SOURCE_H_
+#ifndef CHROME_BROWSER_SEARCH_IFRAME_SOURCE_H_
+#define CHROME_BROWSER_SEARCH_IFRAME_SOURCE_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "content/public/browser/url_data_source.h"
 
-// Serves HTML for displaying suggestions using iframes, e.g.
-// chrome-search://suggestion/loader.html
-class SuggestionSource : public content::URLDataSource {
+// Base class for URL data sources for chrome-search:// iframed content.
+class IframeSource : public content::URLDataSource {
  public:
-  SuggestionSource();
-  virtual ~SuggestionSource();
+  IframeSource();
+  virtual ~IframeSource();
 
  protected:
-  virtual bool GetOrigin(
-      int process_id,
-      int render_view_id,
-      std::string* origin) const;
-
   // Overridden from content::URLDataSource:
-  virtual std::string GetSource() const OVERRIDE;
-  virtual void StartDataRequest(
-      const std::string& path_and_query,
-      int render_process_id,
-      int render_view_id,
-      const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
   virtual std::string GetMimeType(
       const std::string& path_and_query) const OVERRIDE;
   virtual bool ShouldDenyXFrameOptions() const OVERRIDE;
   virtual bool ShouldServiceRequest(
       const net::URLRequest* request) const OVERRIDE;
 
- private:
+  // Returns whether this source should serve data for a particular path.
+  virtual bool ServesPath(const std::string& path) const = 0;
+
   // Sends unmodified resource bytes.
   void SendResource(
       int resource_id,
@@ -48,7 +38,16 @@ class SuggestionSource : public content::URLDataSource {
       int render_view_id,
       const content::URLDataSource::GotDataCallback& callback);
 
-  DISALLOW_COPY_AND_ASSIGN(SuggestionSource);
+  // This is exposed for testing and should not be overridden.
+  // Sets |origin| to the URL of the render view identified by |process_id| and
+  // |render_view_id|. Returns true if successful and false if not, for example
+  // if the render view does not exist.
+  virtual bool GetOrigin(
+      int process_id,
+      int render_view_id,
+      std::string* origin) const;
+
+  DISALLOW_COPY_AND_ASSIGN(IframeSource);
 };
 
-#endif  // CHROME_BROWSER_SEARCH_SUGGESTION_SOURCE_H_
+#endif  // CHROME_BROWSER_SEARCH_IFRAME_SOURCE_H_
