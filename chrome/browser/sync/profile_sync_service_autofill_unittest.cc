@@ -502,6 +502,7 @@ class ProfileSyncServiceAutofillTest
     ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
         profile_.get(), NULL);
     web_data_service_->ShutdownSyncableService();
+    web_data_service_ = NULL;
     profile_->ResetRequestContext();
     // To prevent a leak, fully release TestURLRequestContext to ensure its
     // destruction on the IO message loop.

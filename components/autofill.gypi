@@ -243,6 +243,8 @@
             'autofill/browser/webdata/autofill_table.cc',
             'autofill/browser/webdata/autofill_table.h',
             'autofill/browser/webdata/autofill_webdata.h',
+            'autofill/browser/webdata/autofill_webdata_backend.cc',
+            'autofill/browser/webdata/autofill_webdata_backend.h',
             'autofill/browser/webdata/autofill_webdata_service.cc',
             'autofill/browser/webdata/autofill_webdata_service.h',
             'autofill/browser/webdata/autofill_webdata_service_observer.h',

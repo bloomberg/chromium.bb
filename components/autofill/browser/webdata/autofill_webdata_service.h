@@ -27,6 +27,7 @@ namespace autofill {
 
 class AutofillChange;
 class AutofillProfile;
+class AutofillWebDataBackend;
 class AutofillWebDataServiceObserverOnDBThread;
 class AutofillWebDataServiceObserverOnUIThread;
 class CreditCard;
@@ -101,42 +102,6 @@ class AutofillWebDataService : public AutofillWebData,
   virtual void ShutdownOnDBThread();
 
  private:
-  WebDatabase::State AddFormElementsImpl(
-      const std::vector<FormFieldData>& fields, WebDatabase* db);
-  scoped_ptr<WDTypedResult> GetFormValuesForElementNameImpl(
-      const base::string16& name, const base::string16& prefix, int limit,
-      WebDatabase* db);
-  WebDatabase::State RemoveFormElementsAddedBetweenImpl(
-      const base::Time& delete_begin, const base::Time& delete_end,
-      WebDatabase* db);
-  WebDatabase::State RemoveExpiredFormElementsImpl(WebDatabase* db);
-  WebDatabase::State RemoveFormValueForElementNameImpl(
-      const base::string16& name, const base::string16& value, WebDatabase* db);
-  WebDatabase::State AddAutofillProfileImpl(
-      const AutofillProfile& profile, WebDatabase* db);
-  WebDatabase::State UpdateAutofillProfileImpl(
-      const AutofillProfile& profile, WebDatabase* db);
-  WebDatabase::State RemoveAutofillProfileImpl(
-      const std::string& guid, WebDatabase* db);
-  scoped_ptr<WDTypedResult> GetAutofillProfilesImpl(WebDatabase* db);
-  WebDatabase::State AddCreditCardImpl(
-      const CreditCard& credit_card, WebDatabase* db);
-  WebDatabase::State UpdateCreditCardImpl(
-      const CreditCard& credit_card, WebDatabase* db);
-  WebDatabase::State RemoveCreditCardImpl(
-      const std::string& guid, WebDatabase* db);
-  scoped_ptr<WDTypedResult> GetCreditCardsImpl(WebDatabase* db);
-  WebDatabase::State RemoveAutofillDataModifiedBetweenImpl(
-      const base::Time& delete_begin, const base::Time& delete_end,
-      WebDatabase* db);
-
-  // Callbacks to ensure that sensitive info is destroyed if request is
-  // cancelled.
-  void DestroyAutofillProfileResult(const WDTypedResult* result);
-  void DestroyAutofillCreditCardResult(const WDTypedResult* result);
-
-  void NotifyAutofillMultipleChangedOnUIThread();
-
   // This makes the destructor public, and thus allows us to aggregate
   // SupportsUserData. It is private by default to prevent incorrect
   // usage in class hierarchies where it is inherited by
@@ -149,13 +114,16 @@ class AutofillWebDataService : public AutofillWebData,
     DISALLOW_COPY_AND_ASSIGN(SupportsUserDataAggregatable);
   };
 
+  void NotifyAutofillMultipleChangedOnUIThread();
+
   // Storage for user data to be accessed only on the DB thread. May
   // be used e.g. for SyncableService subclasses that need to be owned
   // by this object. Is created on first call to |GetDBUserData()|.
   scoped_ptr<SupportsUserDataAggregatable> db_thread_user_data_;
 
-  ObserverList<AutofillWebDataServiceObserverOnDBThread> db_observer_list_;
   ObserverList<AutofillWebDataServiceObserverOnUIThread> ui_observer_list_;
+
+  scoped_refptr<AutofillWebDataBackend> autofill_backend_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillWebDataService);
 };

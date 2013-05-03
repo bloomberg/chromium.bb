@@ -7,6 +7,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/string16.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -20,6 +21,7 @@
 #include "components/autofill/common/form_data.h"
 #include "components/webdata/common/web_data_service_test_util.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
@@ -35,8 +37,7 @@ namespace {
 class MockWebDataService : public AutofillWebDataService {
  public:
   MockWebDataService()
-      : AutofillWebDataService(
-            NULL, WebDataServiceBase::ProfileErrorCallback()) {
+      : AutofillWebDataService() {
     current_mock_web_data_service_ = this;
   }
 
@@ -99,6 +100,7 @@ class AutocompleteHistoryManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   virtual void SetUp() OVERRIDE {
+    db_thread_.Start();
     ChromeRenderViewHostTestHarness::SetUp();
     web_data_service_ = new MockWebDataService();
     WebDataServiceFactory::GetInstance()->SetTestingFactory(
@@ -110,6 +112,7 @@ class AutocompleteHistoryManagerTest : public ChromeRenderViewHostTestHarness {
     autocomplete_manager_.reset();
     web_data_service_ = NULL;
     ChromeRenderViewHostTestHarness::TearDown();
+    content::RunAllPendingInMessageLoop(BrowserThread::DB);
     message_loop_.RunUntilIdle();
 
   }
