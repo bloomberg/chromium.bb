@@ -180,9 +180,12 @@ void BrowserPluginEmbedder::OnPluginAtPositionResponse(
     return;
 
   RenderViewHost* render_view_host;
-  BrowserPluginGuest* guest =
-      GetBrowserPluginGuestManager()->GetGuestByInstanceID(
-          instance_id, web_contents()->GetRenderProcessHost()->GetID());
+  BrowserPluginGuest* guest = NULL;
+  if (instance_id != browser_plugin::kInstanceIDNone) {
+    guest = GetBrowserPluginGuestManager()->GetGuestByInstanceID(
+                instance_id, web_contents()->GetRenderProcessHost()->GetID());
+  }
+
   if (guest)
     render_view_host = guest->GetWebContents()->GetRenderViewHost();
   else  // No plugin, use embedder's RenderViewHost.
