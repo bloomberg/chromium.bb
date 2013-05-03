@@ -30,9 +30,7 @@
 
 typedef const struct __CFDictionary * CFDictionaryRef;
 typedef struct CGSize CGSize;
-typedef struct CGRect CGRect;
 typedef struct CGAffineTransform CGAffineTransform;
-typedef struct CGContext *CGContextRef;
 typedef struct CGFont *CGFontRef;
 typedef unsigned short CGGlyph;
 
@@ -47,7 +45,6 @@ OBJC_CLASS NSString;
 
 extern "C" {
 
-extern void WKDrawCapsLockIndicator(CGContextRef, CGRect);
 extern NSFont* WKGetFontInLanguageForRange(NSFont*, NSString*, NSRange);
 extern NSFont* WKGetFontInLanguageForCharacter(NSFont*, UniChar);
 extern BOOL WKGetGlyphTransformedAdvances(CGFontRef, NSFont*, CGAffineTransform*, ATSGlyphRef*, CGSize* advance);

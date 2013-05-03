@@ -48,7 +48,6 @@
 #import "core/platform/mac/LocalCurrentGraphicsContext.h"
 #import "core/platform/mac/ThemeMac.h"
 #import "core/platform/mac/WebCoreNSCellExtras.h"
-#import "core/platform/mac/WebCoreSystemInterface.h"
 #import "core/rendering/PaintInfo.h"
 #import "core/rendering/RenderLayer.h"
 #import "core/rendering/RenderMedia.h"
@@ -771,8 +770,59 @@ bool RenderThemeChromiumMac::paintCapsLockIndicator(RenderObject*, const PaintIn
     if (paintInfo.context->paintingDisabled())
         return true;
 
+    // This draws the caps lock indicator as it was done by WKDrawCapsLockIndicator.
     LocalCurrentGraphicsContext localContext(paintInfo.context);
-    WKDrawCapsLockIndicator(localContext.cgContext(), r);
+    CGContextRef c = localContext.cgContext();
+    CGMutablePathRef shape = CGPathCreateMutable();
+
+    // To draw the caps lock indicator, draw the shape into a small
+    // square that is then scaled to the size of r.
+    const CGFloat kSquareSize = 17;
+
+    // Create a rounted square shape.
+    CGPathMoveToPoint(shape, NULL, 16.5, 4.5);
+    CGPathAddArc(shape, NULL, 12.5, 12.5, 4, 0,        M_PI_2,   false);
+    CGPathAddArc(shape, NULL, 4.5,  12.5, 4, M_PI_2,   M_PI,     false);
+    CGPathAddArc(shape, NULL, 4.5,  4.5,  4, M_PI,     3*M_PI/2, false);
+    CGPathAddArc(shape, NULL, 12.5, 4.5,  4, 3*M_PI/2, 0,        false);
+
+    // Draw the arrow - note this is drawing in a flipped coordinate system, so the
+    // arrow is pointing down.
+    CGPathMoveToPoint(shape, NULL, 8.5, 2);  // Tip point.
+    CGPathAddLineToPoint(shape, NULL, 4,     7);
+    CGPathAddLineToPoint(shape, NULL, 6.25,  7);
+    CGPathAddLineToPoint(shape, NULL, 6.25,  10.25);
+    CGPathAddLineToPoint(shape, NULL, 10.75, 10.25);
+    CGPathAddLineToPoint(shape, NULL, 10.75, 7);
+    CGPathAddLineToPoint(shape, NULL, 13,    7);
+    CGPathAddLineToPoint(shape, NULL, 8.5,   2);
+
+    // Draw the rectangle that underneath (or above in the flipped system) the arrow.
+    CGPathAddLineToPoint(shape, NULL, 10.75, 12);
+    CGPathAddLineToPoint(shape, NULL, 6.25,  12);
+    CGPathAddLineToPoint(shape, NULL, 6.25,  14.25);
+    CGPathAddLineToPoint(shape, NULL, 10.75, 14.25);
+    CGPathAddLineToPoint(shape, NULL, 10.75, 12);
+
+    // Scale and translate the shape.
+    CGRect cgr = r;
+    CGFloat maxX = CGRectGetMaxX(cgr);
+    CGFloat minY = CGRectGetMinY(cgr);
+    CGFloat heightScale = r.height() / kSquareSize;
+    CGAffineTransform transform = CGAffineTransformMake(
+        heightScale, 0,  // A  B
+        0, heightScale,  // C  D
+        maxX - r.height(), minY);  // Tx Ty
+
+    CGMutablePathRef paintPath = CGPathCreateMutable();
+    CGPathAddPath(paintPath, &transform, shape);
+    CGPathRelease(shape);
+
+    CGContextSetRGBFillColor(c, 0, 0, 0, 0.4);
+    CGContextBeginPath(c);
+    CGContextAddPath(c, paintPath);
+    CGContextFillPath(c);
+    CGPathRelease(paintPath);
 
     return false;
 }
