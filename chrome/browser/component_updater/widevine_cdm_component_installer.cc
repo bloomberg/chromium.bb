@@ -17,9 +17,6 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
-#include "base/stringprintf.h"
-#include "base/strings/string_split.h"
-#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "build/build_config.h"
@@ -27,15 +24,11 @@
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/widevine_cdm_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/pepper_plugin_info.h"
-#include "ppapi/c/private/ppb_pdf.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
-#include "webkit/plugins/plugin_constants.h"
-#include "webkit/plugins/ppapi/plugin_module.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
@@ -126,18 +119,6 @@ bool GetWidevineCdmDirectory(base::FilePath* latest_dir,
 }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE) && !defined(OS_LINUX)
 
-// Returns true if the Pepper |interface_name| is implemented  by this browser.
-// It does not check if the interface is proxied.
-bool SupportsPepperInterface(const char* interface_name) {
-  if (webkit::ppapi::PluginModule::SupportsInterface(interface_name))
-    return true;
-  // The PDF interface is invisible to SupportsInterface() on the browser
-  // process because it is provided using PpapiInterfaceFactoryManager. We need
-  // to check for that as well.
-  // TODO(cpu): make this more sane.
-  return (strcmp(interface_name, PPB_PDF_INTERFACE) == 0);
-}
-
 bool MakeWidevineCdmPluginInfo(const base::FilePath& path,
                                const base::Version& version,
                                content::PepperPluginInfo* plugin_info) {
@@ -176,38 +157,6 @@ void RegisterWidevineCdmWithChrome(const base::FilePath& path,
   PluginService::GetInstance()->RefreshPlugins();
 }
 
-// Returns true if this browser implements one of the interfaces given in
-// |interface_string|, which is a '|'-separated string of interface names.
-bool CheckWidevineCdmInterfaceString(const std::string& interface_string) {
-  std::vector<std::string> interface_names;
-  base::SplitString(interface_string, '|', &interface_names);
-  for (size_t i = 0; i < interface_names.size(); i++) {
-    if (SupportsPepperInterface(interface_names[i].c_str()))
-      return true;
-  }
-  return false;
-}
-
-// Returns true if this browser implements all the interfaces that Widevine CDM
-// specifies in its component installer manifest.
-bool CheckWidevineCdmInterfaces(const base::DictionaryValue& manifest) {
-  const base::ListValue* interface_list = NULL;
-
-  // We don't *require* an interface list, apparently.
-  if (!manifest.GetList("x-ppapi-required-interfaces", &interface_list))
-    return true;
-
-  for (size_t i = 0; i < interface_list->GetSize(); i++) {
-    std::string interface_string;
-    if (!interface_list->GetString(i, &interface_string))
-      return false;
-    if (!CheckWidevineCdmInterfaceString(interface_string))
-      return false;
-  }
-
-  return true;
-}
-
 // Returns true if this browser is compatible with the given Widevine CDM
 // manifest, with the version specified in the manifest in |version_out|.
 bool CheckWidevineCdmManifest(const base::DictionaryValue& manifest,
@@ -224,16 +173,13 @@ bool CheckWidevineCdmManifest(const base::DictionaryValue& manifest,
   if (!version.IsValid())
     return false;
 
-  if (!CheckWidevineCdmInterfaces(manifest))
-    return false;
-
   std::string os;
-  manifest.GetStringASCII("x-ppapi-os", &os);
+  manifest.GetStringASCII("x-widevine-cdm-os", &os);
   if (os != kWidevineCdmOperatingSystem)
     return false;
 
   std::string arch;
-  manifest.GetStringASCII("x-ppapi-arch", &arch);
+  manifest.GetStringASCII("x-widevine-cdm-arch", &arch);
   if (arch != kWidevineCdmArch)
     return false;
 
@@ -287,10 +233,8 @@ bool WidevineCdmComponentInstaller::Install(
   if (!file_util::Move(unpack_path, path))
     return false;
 
-  // Installation is done. Now tell the rest of chrome. Both the path service
-  // and to the plugin service.
+  // Installation is done. Now register the Widevine CDM with chrome.
   current_version_ = version;
-  PathService::Override(chrome::DIR_PEPPER_FLASH_PLUGIN, path);
   path = path.Append(kWidevineCdmPluginFileName);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(&RegisterWidevineCdmWithChrome, path, version));
@@ -300,6 +244,20 @@ bool WidevineCdmComponentInstaller::Install(
 namespace {
 
 #if defined(WIDEVINE_CDM_AVAILABLE) && !defined(OS_LINUX)
+void FinishWidevineCdmUpdateRegistration(ComponentUpdateService* cus,
+                                         const base::Version& version) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CrxComponent widevine_cdm;
+  widevine_cdm.name = "WidevineCdm";
+  widevine_cdm.installer = new WidevineCdmComponentInstaller(version);
+  widevine_cdm.version = version;
+  widevine_cdm.pk_hash.assign(kSha2Hash, &kSha2Hash[sizeof(kSha2Hash)]);
+  if (cus->RegisterComponent(widevine_cdm) != ComponentUpdateService::kOk) {
+    NOTREACHED() << "Widevine CDM component registration failed.";
+    return;
+  }
+}
+
 void StartWidevineCdmUpdateRegistration(ComponentUpdateService* cus) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::FilePath path = GetWidevineCdmBaseDirectory();
@@ -329,19 +287,6 @@ void StartWidevineCdmUpdateRegistration(ComponentUpdateService* cus) {
   for (std::vector<base::FilePath>::iterator iter = older_dirs.begin();
        iter != older_dirs.end(); ++iter) {
     file_util::Delete(*iter, true);
-  }
-}
-
-void FinishWidevineCdmUpdateRegistration(ComponentUpdateService* cus,
-                                         const base::Version& version) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  CrxComponent widevine_cdm;
-  widevine_cdm.name = "WidevineCdm";
-  widevine_cdm.installer = new WidevineCdmComponentInstaller(version);
-  widevine_cdm.version = version;
-  widevine_cdm.pk_hash.assign(kSha2Hash, &kSha2Hash[sizeof(kSha2Hash)]);
-  if (cus->RegisterComponent(widevine_cdm) != ComponentUpdateService::kOk) {
-    NOTREACHED() << "Widevine CDM component registration failed.";
   }
 }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE) && !defined(OS_LINUX)
