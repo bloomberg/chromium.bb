@@ -855,6 +855,14 @@ WebKit::WebHyphenator* RendererWebKitPlatformSupportImpl::hyphenator() {
 
 //------------------------------------------------------------------------------
 
+WebKit::WebSpeechSynthesizer*
+RendererWebKitPlatformSupportImpl::createSpeechSynthesizer(
+    WebKit::WebSpeechSynthesizerClient* client) {
+  return GetContentClient()->renderer()->OverrideSpeechSynthesizer(client);
+}
+
+//------------------------------------------------------------------------------
+
 bool RendererWebKitPlatformSupportImpl::processMemorySizesInBytes(
     size_t* private_bytes, size_t* shared_bytes) {
   content::RenderThread::Get()->Send(

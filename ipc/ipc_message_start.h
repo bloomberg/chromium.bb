@@ -79,6 +79,7 @@ enum IPCMessageStart {
   AppShimMsgStart,
   ValidationMessageMsgStart,
   WebRtcLoggingMsgStart,
+  TtsMsgStart,
   LastIPCMsgStart      // Must come last.
 };
 

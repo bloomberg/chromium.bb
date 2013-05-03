@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_SPEECH_EXTENSION_API_TTS_ENGINE_EXTENSION_API_H_
 #define CHROME_BROWSER_SPEECH_EXTENSION_API_TTS_ENGINE_EXTENSION_API_H_
 
+#include <vector>
+
 #include "base/memory/singleton.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/speech/tts_controller.h"
 
 class Utterance;
 
@@ -24,7 +27,7 @@ extern const char kOnStop[];
 }
 
 // Return a list of all available voices registered by extensions.
-void GetExtensionVoices(Profile* profile, base::ListValue* result_voices);
+void GetExtensionVoices(Profile* profile, std::vector<VoiceData>* out_voices);
 
 // Find the first extension with a tts_voices in its
 // manifest that matches the speech parameters of this utterance.

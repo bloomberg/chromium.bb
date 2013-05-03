@@ -1819,6 +1819,8 @@
         'browser/speech/tts_mac.mm',
         'browser/speech/tts_platform.cc',
         'browser/speech/tts_platform.h',
+        'browser/speech/tts_message_filter.cc',
+        'browser/speech/tts_message_filter.h',
         'browser/speech/tts_win.cc',
         'browser/spellchecker/spellcheck_custom_dictionary.cc',
         'browser/spellchecker/spellcheck_custom_dictionary.h',

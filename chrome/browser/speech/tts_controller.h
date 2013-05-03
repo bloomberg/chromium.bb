@@ -8,16 +8,17 @@
 #include <queue>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "googleurl/src/gurl.h"
 
+class Utterance;
 class TtsPlatformImpl;
 class Profile;
 
 namespace base {
-class ListValue;
 class Value;
 }
 
@@ -33,6 +34,9 @@ enum TtsEventType {
   TTS_EVENT_ERROR
 };
 
+// Returns true if this event type is one that indicates an utterance
+// is finished and can be destroyed.
+bool IsFinalTtsEventType(TtsEventType event_type);
 
 // The continuous parameters that apply to a given utterance.
 struct UtteranceContinuousParameters {
@@ -43,6 +47,27 @@ struct UtteranceContinuousParameters {
   double volume;
 };
 
+// Information about one voice.
+struct VoiceData {
+  VoiceData();
+  ~VoiceData();
+
+  std::string name;
+  std::string lang;
+  std::string gender;
+  std::string extension_id;
+  std::vector<std::string> events;
+};
+
+// Class that wants to receive events on utterances.
+class UtteranceEventDelegate {
+ public:
+  virtual ~UtteranceEventDelegate() {}
+  virtual void OnTtsEvent(Utterance* utterance,
+                          TtsEventType event_type,
+                          int char_index,
+                          const std::string& error_message) = 0;
+};
 
 // One speech utterance.
 class Utterance {
@@ -125,6 +150,11 @@ class Utterance {
     extension_id_ = extension_id;
   }
 
+  UtteranceEventDelegate* event_delegate() const { return event_delegate_; }
+  void set_event_delegate(UtteranceEventDelegate* event_delegate) {
+    event_delegate_ = event_delegate;
+  }
+
   // Getters and setters for internal state.
   Profile* profile() const { return profile_; }
   int id() const { return id_; }
@@ -164,6 +194,11 @@ class Utterance {
   // The URL of the page where the source extension called speak.
   GURL src_url_;
 
+  // The delegate to be called when an utterance event is fired.
+  // Weak reference; it will be cleared after we fire a "final" event
+  // (as determined by IsFinalTtsEventType).
+  UtteranceEventDelegate* event_delegate_;
+
   // The parsed options.
   std::string voice_name_;
   std::string lang_;
@@ -179,7 +214,6 @@ class Utterance {
   // True if this utterance received an event indicating it's done.
   bool finished_;
 };
-
 
 // Singleton class that manages text-to-speech for the TTS and TTS engine
 // extension APIs, maintaining a queue of pending utterances and keeping
@@ -212,7 +246,7 @@ class TtsController {
 
   // Return a list of all available voices, including the native voice,
   // if supported, and all voices registered by extensions.
-  base::ListValue* GetVoices(Profile* profile);
+  void GetVoices(Profile* profile, std::vector<VoiceData>* out_voices);
 
   // Called by TtsExtensionLoaderChromeOs::LoadTtsExtension when it
   // finishes loading the built-in TTS component extension.

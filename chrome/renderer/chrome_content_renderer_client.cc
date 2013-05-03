@@ -68,6 +68,7 @@
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
+#include "chrome/renderer/tts_dispatcher.h"
 #include "chrome/renderer/validation_message_agent.h"
 #include "components/autofill/renderer/autofill_agent.h"
 #include "components/autofill/renderer/password_autofill_agent.h"
@@ -1161,6 +1162,12 @@ void ChromeContentRendererClient::RegisterPPAPIInterfaceFactories(
 #if defined(ENABLE_PLUGINS)
   factory_manager->RegisterFactory(ChromePPAPIInterfaceFactory);
 #endif
+}
+
+WebKit::WebSpeechSynthesizer*
+ChromeContentRendererClient::OverrideSpeechSynthesizer(
+    WebKit::WebSpeechSynthesizerClient* client) {
+  return new TtsDispatcher(client);
 }
 
 bool ChromeContentRendererClient::AllowBrowserPlugin(

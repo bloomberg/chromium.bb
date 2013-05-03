@@ -37,7 +37,7 @@ std::string TrimLanguageCode(std::string lang) {
 }
 }
 
-void GetExtensionVoices(Profile* profile, ListValue* result_voices) {
+void GetExtensionVoices(Profile* profile, std::vector<VoiceData>* out_voices) {
   ExtensionService* service = profile->GetExtensionService();
   DCHECK(service);
   extensions::EventRouter* event_router =
@@ -63,34 +63,29 @@ void GetExtensionVoices(Profile* profile, ListValue* result_voices) {
 
     for (size_t i = 0; i < tts_voices->size(); ++i) {
       const extensions::TtsVoice& voice = tts_voices->at(i);
-      DictionaryValue* result_voice = new DictionaryValue();
-      if (!voice.voice_name.empty())
-        result_voice->SetString(constants::kVoiceNameKey, voice.voice_name);
-      if (!voice.lang.empty())
-        result_voice->SetString(constants::kLangKey, voice.lang);
-      if (!voice.gender.empty())
-        result_voice->SetString(constants::kGenderKey, voice.gender);
-      result_voice->SetString(constants::kExtensionIdKey, extension->id());
 
-      ListValue* event_types = new ListValue();
+      out_voices->push_back(VoiceData());
+      VoiceData& result_voice = out_voices->back();
+
+      result_voice.name = voice.voice_name;
+      result_voice.lang = voice.lang;
+      result_voice.gender = voice.gender;
+      result_voice.extension_id = extension->id();
+
       for (std::set<std::string>::const_iterator iter =
                voice.event_types.begin();
            iter != voice.event_types.end();
            ++iter) {
-        event_types->Append(Value::CreateStringValue(*iter));
+        result_voice.events.push_back(*iter);
       }
+
       // If the extension sends end events, the controller will handle
       // queueing and send interrupted and cancelled events.
       if (voice.event_types.find(constants::kEventTypeEnd) !=
           voice.event_types.end()) {
-        event_types->Append(
-            Value::CreateStringValue(constants::kEventTypeCancelled));
-        event_types->Append(Value::CreateStringValue(
-            constants::kEventTypeInterrupted));
+        result_voice.events.push_back(constants::kEventTypeCancelled);
+        result_voice.events.push_back(constants::kEventTypeInterrupted);
       }
-
-      result_voice->Set(constants::kEventTypesKey, event_types);
-      result_voices->Append(result_voice);
     }
   }
 }
@@ -211,8 +206,8 @@ void ExtensionTtsEngineSpeak(Utterance* utterance,
 
   // Pass through most options to the speech engine, but remove some
   // that are handled internally.
-  DictionaryValue* options = static_cast<DictionaryValue*>(
-      utterance->options()->DeepCopy());
+  scoped_ptr<DictionaryValue> options(static_cast<DictionaryValue*>(
+      utterance->options()->DeepCopy()));
   if (options->HasKey(constants::kRequiredEventTypesKey))
     options->Remove(constants::kRequiredEventTypesKey, NULL);
   if (options->HasKey(constants::kDesiredEventTypesKey))
@@ -226,7 +221,7 @@ void ExtensionTtsEngineSpeak(Utterance* utterance,
   if (options->HasKey(constants::kOnEventKey))
     options->Remove(constants::kOnEventKey, NULL);
 
-  args->Set(1, options);
+  args->Set(1, options.release());
   args->Set(2, Value::CreateIntegerValue(utterance->id()));
 
   scoped_ptr<extensions::Event> event(new extensions::Event(

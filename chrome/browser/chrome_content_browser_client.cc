@@ -66,6 +66,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
+#include "chrome/browser/speech/tts_message_filter.h"
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
 #include "chrome/browser/ssl/ssl_add_certificate.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
@@ -696,6 +697,9 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
   host->GetChannel()->AddFilter(
       new prerender::PrerenderMessageFilter(id, profile));
   host->GetChannel()->AddFilter(new ValidationMessageMessageFilter(id));
+#if !defined(OS_ANDROID)
+  host->GetChannel()->AddFilter(new TtsMessageFilter(id, profile));
+#endif
 
   host->Send(new ChromeViewMsg_SetIsIncognitoProcess(
       profile->IsOffTheRecord()));
@@ -1778,6 +1782,7 @@ void ChromeContentBrowserClient::ResourceDispatcherHostCreated() {
   return g_browser_process->ResourceDispatcherHostCreated();
 }
 
+// TODO(tommi): Rename from Get to Create.
 content::SpeechRecognitionManagerDelegate*
     ChromeContentBrowserClient::GetSpeechRecognitionManagerDelegate() {
 #if defined(ENABLE_INPUT_SPEECH)

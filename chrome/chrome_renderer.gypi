@@ -300,6 +300,8 @@
         'renderer/spellchecker/spelling_engine.h',
         'renderer/static_v8_external_string_resource.cc',
         'renderer/static_v8_external_string_resource.h',
+        'renderer/tts_dispatcher.cc',
+        'renderer/tts_dispatcher.h',
         'renderer/translate/translate_helper.cc',
         'renderer/translate/translate_helper.h',
         'renderer/validation_message_agent.cc',

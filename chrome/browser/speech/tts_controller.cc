@@ -8,9 +8,7 @@
 #include <vector>
 
 #include "base/float_util.h"
-#include "base/json/json_writer.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
@@ -23,39 +21,18 @@
 namespace constants = tts_extension_api_constants;
 
 namespace {
-
 // A value to be used to indicate that there is no char index available.
 const int kInvalidCharIndex = -1;
+}  // namespace
 
-namespace events {
-const char kOnEvent[] = "tts.onEvent";
-};  // namespace events
 
-std::string TtsEventTypeToString(TtsEventType event_type) {
-  switch (event_type) {
-    case TTS_EVENT_START:
-      return constants::kEventTypeStart;
-    case TTS_EVENT_END:
-      return constants::kEventTypeEnd;
-    case TTS_EVENT_WORD:
-      return constants::kEventTypeWord;
-    case TTS_EVENT_SENTENCE:
-      return constants::kEventTypeSentence;
-    case TTS_EVENT_MARKER:
-      return constants::kEventTypeMarker;
-    case TTS_EVENT_INTERRUPTED:
-      return constants::kEventTypeInterrupted;
-    case TTS_EVENT_CANCELLED:
-      return constants::kEventTypeCancelled;
-    case TTS_EVENT_ERROR:
-      return constants::kEventTypeError;
-    default:
-      NOTREACHED();
-      return std::string();
-  }
+bool IsFinalTtsEventType(TtsEventType event_type) {
+  return (event_type == TTS_EVENT_END ||
+          event_type == TTS_EVENT_INTERRUPTED ||
+          event_type == TTS_EVENT_CANCELLED ||
+          event_type == TTS_EVENT_ERROR);
 }
 
-}  // namespace
 
 //
 // UtteranceContinuousParameters
@@ -69,6 +46,16 @@ UtteranceContinuousParameters::UtteranceContinuousParameters()
 
 
 //
+// VoiceData
+//
+
+
+VoiceData::VoiceData() {}
+
+VoiceData::~VoiceData() {}
+
+
+//
 // Utterance
 //
 
@@ -79,6 +66,7 @@ Utterance::Utterance(Profile* profile)
     : profile_(profile),
       id_(next_utterance_id_++),
       src_id_(-1),
+      event_delegate_(NULL),
       can_enqueue_(false),
       char_index_(0),
       finished_(false) {
@@ -92,43 +80,15 @@ Utterance::~Utterance() {
 void Utterance::OnTtsEvent(TtsEventType event_type,
                            int char_index,
                            const std::string& error_message) {
-  std::string event_type_string = TtsEventTypeToString(event_type);
   if (char_index >= 0)
     char_index_ = char_index;
-  if (event_type == TTS_EVENT_END ||
-      event_type == TTS_EVENT_INTERRUPTED ||
-      event_type == TTS_EVENT_CANCELLED ||
-      event_type == TTS_EVENT_ERROR) {
+  if (IsFinalTtsEventType(event_type))
     finished_ = true;
-  }
-  if (desired_event_types_.size() > 0 &&
-      desired_event_types_.find(event_type_string) ==
-      desired_event_types_.end()) {
-    return;
-  }
 
-  if (src_id_ < 0)
-    return;
-
-  DictionaryValue* details = new DictionaryValue();
-  if (char_index != kInvalidCharIndex)
-    details->SetInteger(constants::kCharIndexKey, char_index);
-  details->SetString(constants::kEventTypeKey, event_type_string);
-  if (event_type == TTS_EVENT_ERROR) {
-    details->SetString(constants::kErrorMessageKey, error_message);
-  }
-  details->SetInteger(constants::kSrcIdKey, src_id_);
-  details->SetBoolean(constants::kIsFinalEventKey, finished_);
-
-  scoped_ptr<ListValue> arguments(new ListValue());
-  arguments->Set(0, details);
-
-  scoped_ptr<extensions::Event> event(new extensions::Event(
-      events::kOnEvent, arguments.Pass()));
-  event->restrict_to_profile = profile_;
-  event->event_url = src_url_;
-  extensions::ExtensionSystem::Get(profile_)->event_router()->
-      DispatchEventToExtension(src_extension_id_, event.Pass());
+  if (event_delegate_)
+    event_delegate_->OnTtsEvent(this, event_type, char_index, error_message);
+  if (finished_)
+    event_delegate_ = NULL;
 }
 
 void Utterance::Finish() {
@@ -252,46 +212,35 @@ void TtsController::OnTtsEvent(int utterance_id,
   }
 }
 
-ListValue* TtsController::GetVoices(Profile* profile) {
-  ListValue* result_voices = new ListValue();
+void TtsController::GetVoices(Profile* profile,
+                              std::vector<VoiceData>* out_voices) {
   TtsPlatformImpl* platform_impl = GetPlatformImpl();
   if (platform_impl && platform_impl->PlatformImplAvailable()) {
-    DictionaryValue* result_voice = new DictionaryValue();
-    result_voice->SetString(
-        constants::kVoiceNameKey, constants::kNativeVoiceName);
-    if (!platform_impl->gender().empty())
-      result_voice->SetString(constants::kGenderKey, platform_impl->gender());
-    ListValue* event_types = new ListValue();
+    out_voices->push_back(VoiceData());
+    VoiceData& voice = out_voices->back();
+    voice.name = constants::kNativeVoiceName;
+    voice.gender = platform_impl->gender();
 
     // All platforms must send end events, and cancelled and interrupted
     // events are generated from the controller.
     DCHECK(platform_impl->SendsEvent(TTS_EVENT_END));
-    event_types->Append(Value::CreateStringValue(constants::kEventTypeEnd));
-    event_types->Append(Value::CreateStringValue(
-        constants::kEventTypeCancelled));
-    event_types->Append(Value::CreateStringValue(
-        constants::kEventTypeInterrupted));
+    voice.events.push_back(constants::kEventTypeEnd);
+    voice.events.push_back(constants::kEventTypeCancelled);
+    voice.events.push_back(constants::kEventTypeInterrupted);
 
     if (platform_impl->SendsEvent(TTS_EVENT_START))
-      event_types->Append(Value::CreateStringValue(constants::kEventTypeStart));
+      voice.events.push_back(constants::kEventTypeStart);
     if (platform_impl->SendsEvent(TTS_EVENT_WORD))
-      event_types->Append(Value::CreateStringValue(constants::kEventTypeWord));
+      voice.events.push_back(constants::kEventTypeWord);
     if (platform_impl->SendsEvent(TTS_EVENT_SENTENCE))
-      event_types->Append(Value::CreateStringValue(
-          constants::kEventTypeSentence));
+      voice.events.push_back(constants::kEventTypeSentence);
     if (platform_impl->SendsEvent(TTS_EVENT_MARKER))
-      event_types->Append(Value::CreateStringValue(
-          constants::kEventTypeMarker));
+      voice.events.push_back(constants::kEventTypeMarker);
     if (platform_impl->SendsEvent(TTS_EVENT_ERROR))
-      event_types->Append(Value::CreateStringValue(
-          constants::kEventTypeError));
-    result_voice->Set(constants::kEventTypesKey, event_types);
-    result_voices->Append(result_voice);
+      voice.events.push_back(constants::kEventTypeError);
   }
 
-  GetExtensionVoices(profile, result_voices);
-
-  return result_voices;
+  GetExtensionVoices(profile, out_voices);
 }
 
 bool TtsController::IsSpeaking() {

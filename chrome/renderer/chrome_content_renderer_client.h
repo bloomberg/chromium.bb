@@ -120,6 +120,8 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       WebKit::WebPluginContainer* container) const OVERRIDE;
   virtual void RegisterPPAPIInterfaceFactories(
       webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) OVERRIDE;
+  virtual WebKit::WebSpeechSynthesizer* OverrideSpeechSynthesizer(
+      WebKit::WebSpeechSynthesizerClient* client) OVERRIDE;
 
   // For testing.
   void SetExtensionDispatcher(extensions::Dispatcher* extension_dispatcher);

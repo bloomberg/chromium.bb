@@ -37,6 +37,8 @@ class WebPlugin;
 class WebPluginContainer;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
+class WebSpeechSynthesizer;
+class WebSpeechSynthesizerClient;
 class WebThemeEngine;
 class WebURLRequest;
 struct WebPluginParams;
@@ -157,6 +159,11 @@ class CONTENT_EXPORT ContentRendererClient {
   // Allows the embedder to override the WebThemeEngine used. If it returns NULL
   // the content layer will provide an engine.
   virtual WebKit::WebThemeEngine* OverrideThemeEngine();
+
+  // Allows the embedder to override the WebSpeechSynthesizer used.
+  // If it returns NULL the content layer will provide an engine.
+  virtual WebKit::WebSpeechSynthesizer* OverrideSpeechSynthesizer(
+      WebKit::WebSpeechSynthesizerClient* client);
 
   // Returns true if the renderer process should schedule the idle handler when
   // all widgets are hidden.

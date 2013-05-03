@@ -75,6 +75,11 @@ WebKit::WebThemeEngine* ContentRendererClient::OverrideThemeEngine() {
   return NULL;
 }
 
+WebKit::WebSpeechSynthesizer* ContentRendererClient::OverrideSpeechSynthesizer(
+    WebKit::WebSpeechSynthesizerClient* client) {
+  return NULL;
+}
+
 bool ContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
   return true;
 }

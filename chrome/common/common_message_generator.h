@@ -15,4 +15,5 @@
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "chrome/common/service_messages.h"
 #include "chrome/common/spellcheck_messages.h"
+#include "chrome/common/tts_messages.h"
 #include "chrome/common/validation_message_messages.h"

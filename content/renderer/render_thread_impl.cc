@@ -798,6 +798,9 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableExperimentalCanvasFeatures(
       command_line.HasSwitch(switches::kEnableExperimentalCanvasFeatures));
 
+  WebRuntimeFeatures::enableSpeechSynthesis(
+      command_line.HasSwitch(switches::kEnableSpeechSynthesis));
+
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, WebKitInitialized());
 
   devtools_agent_message_filter_ = new DevToolsAgentFilter();
