@@ -64,10 +64,10 @@ protected:
 
 private:
     virtual String nodeName() const OVERRIDE;
-    virtual PassRefPtr<Node> cloneNode(bool deep) OVERRIDE;
+    virtual PassRefPtr<Node> cloneNode(bool deep) OVERRIDE FINAL;
     virtual bool childTypeAllowed(NodeType) const OVERRIDE;
 
-    virtual PassRefPtr<Text> virtualCreate(const String&);
+    virtual PassRefPtr<Text> cloneWithData(const String&);
 
 #ifndef NDEBUG
     virtual void formatForDebugger(char* buffer, unsigned length) const;

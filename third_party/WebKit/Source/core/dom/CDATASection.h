@@ -36,9 +36,8 @@ private:
 
     virtual String nodeName() const;
     virtual NodeType nodeType() const;
-    virtual PassRefPtr<Node> cloneNode(bool deep);
     virtual bool childTypeAllowed(NodeType) const;
-    virtual PassRefPtr<Text> virtualCreate(const String&);
+    virtual PassRefPtr<Text> cloneWithData(const String&) OVERRIDE;
 };
 
 } // namespace WebCore

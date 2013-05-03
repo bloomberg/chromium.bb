@@ -65,7 +65,7 @@ PassRefPtr<Text> Text::splitText(unsigned offset, ExceptionCode& ec)
     }
 
     String oldStr = data();
-    RefPtr<Text> newText = virtualCreate(oldStr.substring(offset));
+    RefPtr<Text> newText = cloneWithData(oldStr.substring(offset));
     setDataWithoutUpdate(oldStr.substring(0, offset));
 
     dispatchModifiedEvent(oldStr);
@@ -194,7 +194,7 @@ Node::NodeType Text::nodeType() const
 
 PassRefPtr<Node> Text::cloneNode(bool /*deep*/)
 {
-    return create(document(), data());
+    return cloneWithData(data());
 }
 
 bool Text::textRendererIsNeeded(const NodeRenderingContext& context)
@@ -314,7 +314,7 @@ bool Text::childTypeAllowed(NodeType) const
     return false;
 }
 
-PassRefPtr<Text> Text::virtualCreate(const String& data)
+PassRefPtr<Text> Text::cloneWithData(const String& data)
 {
     return create(document(), data);
 }

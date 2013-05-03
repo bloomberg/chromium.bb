@@ -47,17 +47,12 @@ Node::NodeType CDATASection::nodeType() const
     return CDATA_SECTION_NODE;
 }
 
-PassRefPtr<Node> CDATASection::cloneNode(bool /*deep*/)
-{
-    return create(document(), data());
-}
-
 bool CDATASection::childTypeAllowed(NodeType) const
 {
     return false;
 }
 
-PassRefPtr<Text> CDATASection::virtualCreate(const String& data)
+PassRefPtr<Text> CDATASection::cloneWithData(const String& data)
 {
     return create(document(), data);
 }
