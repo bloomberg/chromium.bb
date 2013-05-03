@@ -221,7 +221,7 @@ void PanelStackView::DrawSystemAttention(bool draw_attention) {
     old_window->Close();
   }
 #else
-  widget_->FlashFrame(draw_attention);
+  window_->FlashFrame(draw_attention);
 #endif
 }
 
