@@ -116,6 +116,10 @@ extern const char kOnNetworkListChanged[];
 // Audio
 extern const char kOnAudioDeviceChanged[];
 
+// Runtime.
+extern const char kOnLaunched[];
+extern const char kOnRestarted[];
+
 }  // namespace event_names
 
 }  // namespace extensions

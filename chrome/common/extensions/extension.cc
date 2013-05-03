@@ -973,7 +973,8 @@ bool Extension::is_extension() const {
 }
 
 bool Extension::can_be_incognito_enabled() const {
-  return !is_platform_app();
+  // Only component platform apps are supported in incognito.
+  return !is_platform_app() || location() == Manifest::COMPONENT;
 }
 
 void Extension::AddWebExtentPattern(const URLPattern& pattern) {

@@ -257,4 +257,8 @@ bool ShellWindowRegistry::Factory::ServiceIsNULLWhileTesting() const {
   return false;
 }
 
+bool ShellWindowRegistry::Factory::ServiceRedirectedInIncognito() const {
+  return true;
+}
+
 }  // namespace extensions
