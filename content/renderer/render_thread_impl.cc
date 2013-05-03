@@ -774,6 +774,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
     WebRuntimeFeatures::enableCSSExclusions(true);
     WebRuntimeFeatures::enableExperimentalContentSecurityPolicyFeatures(true);
     WebRuntimeFeatures::enableCSSRegions(true);
+    WebRuntimeFeatures::enableCSSCompositing(true);
     WebRuntimeFeatures::enableDialogElement(true);
     WebRuntimeFeatures::enableFontLoadEvents(true);
   }
