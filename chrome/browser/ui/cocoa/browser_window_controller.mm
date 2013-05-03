@@ -635,7 +635,7 @@ enum {
     if (devtoolsWindow) {
       RenderWidgetHostView* devtoolsView =
           devtoolsWindow->web_contents()->GetRenderWidgetHostView();
-      if (devtoolsView->HasFocus()) {
+      if (devtoolsView && devtoolsView->HasFocus()) {
         devtoolsView->SetActive(true);
         return;
       }
