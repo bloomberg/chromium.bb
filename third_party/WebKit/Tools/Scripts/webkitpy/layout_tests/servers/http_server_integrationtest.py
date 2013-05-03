@@ -26,7 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Integration tests for the new-run-webkit-httpd and new-run-webkit-websocketserver scripts"""
+"""Integration tests for the run-blink-httpd and run-blink-websocketserver scripts"""
 
 # FIXME: Rename this file to something more descriptive.
 
@@ -131,15 +131,15 @@ class BaseTest(unittest.TestCase):
 
 
 class HTTPServerTest(BaseTest):
-    """Tests that new-run-webkit-http must pass."""
+    """Tests that run-blink-http must pass."""
 
     PORTS = (8000, 8080, 8443)
-    SCRIPT_NAME = 'new-run-webkit-httpd'
+    SCRIPT_NAME = 'run-blink-httpd'
 
 
 class WebsocketserverTest(BaseTest):
-    """Tests that new-run-webkit-websocketserver must pass."""
+    """Tests that run-blink-websocketserver must pass."""
 
     # FIXME: test TLS at some point?
     PORTS = (8880, )
-    SCRIPT_NAME = 'new-run-webkit-websocketserver'
+    SCRIPT_NAME = 'run-blink-websocketserver'
