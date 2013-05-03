@@ -814,6 +814,14 @@ scoped_ptr<FileCache::GetFileResult> FileCache::MarkAsMountedOnBlockingPool(
   bool success = MoveFile(unmounted_path, mounted_path);
 
   if (success) {
+    // Ensures the file is readable to cros_disks. See crbug.com/236994.
+    file_util::SetPosixFilePermissions(
+        mounted_path,
+        file_util::FILE_PERMISSION_READ_BY_USER |
+        file_util::FILE_PERMISSION_WRITE_BY_USER |
+        file_util::FILE_PERMISSION_READ_BY_GROUP |
+        file_util::FILE_PERMISSION_READ_BY_OTHERS);
+
     // Now that cache operation is complete, update metadata.
     cache_entry.set_md5(md5);
     cache_entry.set_is_mounted(true);
