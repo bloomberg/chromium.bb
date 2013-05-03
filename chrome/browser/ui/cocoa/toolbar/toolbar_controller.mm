@@ -21,6 +21,7 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -71,7 +72,11 @@ using content::WebContents;
 namespace {
 
 // Height of the toolbar in pixels when the bookmark bar is closed.
-const CGFloat kBaseToolbarHeight = 35.0;
+const CGFloat kBaseToolbarHeightNormal = 35.0;
+
+// Height of the toolbar in pixels when the bookmark bar is if instant extended
+// is enabled.
+const CGFloat kBaseToolbarHeightInstantExtended = 36.0;
 
 // The minimum width of the location bar in pixels.
 const CGFloat kMinimumLocationBarWidth = 100.0;
@@ -216,6 +221,16 @@ class NotificationBridge
 // Now we can hook up bridges that rely on UI objects such as the location
 // bar and button state.
 - (void)awakeFromNib {
+  // Make the location bar taller in instant extended mode. TODO(sail): Move
+  // this to the xib file once this switch is removed.
+  if (chrome::IsInstantExtendedAPIEnabled()) {
+    NSRect toolbarFrame = [[self view] frame];
+    toolbarFrame.size.height += 1;
+    [[self view] setFrame:toolbarFrame];
+    NSRect frame = NSInsetRect([locationBar_ frame], 0, -1);
+    [locationBar_ setFrame:frame];
+  }
+
   [[backButton_ cell] setImageID:IDR_BACK
                   forButtonState:image_button_cell::kDefaultState];
   [[backButton_ cell] setImageID:IDR_BACK_H
@@ -268,6 +283,7 @@ class NotificationBridge
   [homeButton_ setHandleMiddleClick:YES];
 
   [self initCommandStatus:commands_];
+
   locationBarView_.reset(new LocationBarViewMac(locationBar_,
                                                 commands_, toolbarModel_,
                                                 profile_, browser_));
@@ -733,8 +749,13 @@ class NotificationBridge
 
 - (CGFloat)desiredHeightForCompression:(CGFloat)compressByHeight {
   // With no toolbar, just ignore the compression.
-  return hasToolbar_ ? kBaseToolbarHeight - compressByHeight :
-                       NSHeight([locationBar_ frame]);
+  if (!hasToolbar_)
+    return NSHeight([locationBar_ frame]);
+
+  if (chrome::IsInstantExtendedAPIEnabled())
+    return kBaseToolbarHeightInstantExtended - compressByHeight;
+
+  return kBaseToolbarHeightNormal - compressByHeight;
 }
 
 - (void)setDividerOpacity:(CGFloat)opacity {

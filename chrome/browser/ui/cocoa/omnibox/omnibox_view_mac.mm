@@ -963,6 +963,10 @@ void OmniboxViewMac::FocusLocation(bool select_all) {
 
 // static
 NSFont* OmniboxViewMac::GetFieldFont() {
+  // This value should be kept in sync with InstantPage::InitializeFonts.
+  if (chrome::IsInstantExtendedAPIEnabled())
+    return [NSFont fontWithName:@"Helvetica" size:16];
+
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   return rb.GetFont(ResourceBundle::BaseFont).GetNativeFont();
 }

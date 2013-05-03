@@ -49,14 +49,14 @@ void InstantPage::SetOmniboxBounds(const gfx::Rect& bounds) {
 }
 
 void InstantPage::InitializeFonts() {
-  // TODO(sail) Remove this once the Mac omnibox font size is updated.
 #if defined(OS_MACOSX)
-  ui::ResourceBundle::FontStyle font_style = ui::ResourceBundle::BaseFont;
+  // This value should be kept in sync with OmniboxViewMac::GetFieldFont.
+  const gfx::Font omnibox_font("arial", 16);
 #else
-  ui::ResourceBundle::FontStyle font_style = ui::ResourceBundle::MediumFont;
-#endif
   const gfx::Font& omnibox_font =
-      ui::ResourceBundle::GetSharedInstance().GetFont(font_style);
+      ui::ResourceBundle::GetSharedInstance().GetFont(
+          ui::ResourceBundle::MediumFont);
+#endif
   string16 omnibox_font_name = UTF8ToUTF16(omnibox_font.GetFontName());
   size_t omnibox_font_size = omnibox_font.GetFontSize();
   Send(new ChromeViewMsg_SearchBoxFontInformation(
