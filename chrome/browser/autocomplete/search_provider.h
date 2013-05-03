@@ -111,11 +111,11 @@ class SearchProvider : public AutocompleteProvider,
 
  private:
   friend class SearchProviderTest;
-  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, SuggestRelevanceExperiment);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationInline);
-  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationInlineSchemeSubstring);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationInlineDomainClassify);
+  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationInlineSchemeSubstring);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, RemoveStaleResultsTest);
+  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, SuggestRelevanceExperiment);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest, GetDestinationURL);
 
   // The amount of time to wait before sending a new suggest request after
@@ -293,7 +293,7 @@ class SearchProvider : public AutocompleteProvider,
   void StopSuggest();
 
   // Clears the current results.
-  void ClearResults();
+  void ClearAllResults();
   static void ClearResults(SuggestResults* suggest_results,
                            NavigationResults* navigation_results,
                            int* verbatim_relevance,
@@ -301,7 +301,7 @@ class SearchProvider : public AutocompleteProvider,
 
   // Removes non-inlineable results until either the top result can inline
   // autocomplete the current input or verbatim outscores the top result.
-  void RemoveStaleResults();
+  void RemoveAllStaleResults();
   static void RemoveStaleResults(const string16& input,
                                  int verbatim_relevance,
                                  SuggestResults* suggest_results,

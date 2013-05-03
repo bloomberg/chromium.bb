@@ -504,7 +504,7 @@ void SearchProvider::Stop(bool clear_cached_results) {
   default_provider_suggestion_ = InstantSuggestion();
 
   if (clear_cached_results)
-    ClearResults();
+    ClearAllResults();
 }
 
 void SearchProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
@@ -635,7 +635,7 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
 void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
   if (!IsQuerySuitableForSuggest()) {
     StopSuggest();
-    ClearResults();
+    ClearAllResults();
     return;
   }
 
@@ -652,7 +652,7 @@ void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
   StopSuggest();
 
   // Remove existing results that cannot inline autocomplete the new input.
-  RemoveStaleResults();
+  RemoveAllStaleResults();
 
   // We can't start a new query if we're only allowed synchronous results.
   if (input_.matches_requested() != AutocompleteInput::ALL_MATCHES)
@@ -737,7 +737,7 @@ void SearchProvider::StopSuggest() {
   default_fetcher_.reset();
 }
 
-void SearchProvider::ClearResults() {
+void SearchProvider::ClearAllResults() {
   ClearResults(&keyword_suggest_results_, &keyword_navigation_results_,
                &keyword_verbatim_relevance_, &has_keyword_suggested_relevance_);
   ClearResults(&default_suggest_results_, &default_navigation_results_,
@@ -756,7 +756,7 @@ void SearchProvider::ClearResults(SuggestResults* suggest_results,
   *has_suggested_relevance = false;
 }
 
-void SearchProvider::RemoveStaleResults() {
+void SearchProvider::RemoveAllStaleResults() {
   // In theory it would be better to run an algorithm like that in
   // RemoveStaleResults(...) below that uses all four results lists
   // and both verbatim scores at once.  However, that will be much

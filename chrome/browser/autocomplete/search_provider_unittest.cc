@@ -91,7 +91,7 @@ class SearchProviderTest : public testing::Test,
   void RunTest(TestData* cases, int num_cases, bool prefer_keyword);
 
  protected:
-  // Needed for AutucompleteFieldTrial::ActivateStaticTrials();
+  // Needed for AutocompleteFieldTrial::ActivateStaticTrials();
   static base::FieldTrialList* field_trial_list_;
 
   // Default value used for testing.
@@ -1985,13 +1985,13 @@ TEST_F(SearchProviderTest, RemoveStaleResultsTest) {
     // These cached suggestions should already be sorted.
     // The particular number 5 as the length of the array is
     // unimportant; it's merely enough cached results to fully test
-    // the functioning of RemoveStaleResults().
+    // the functioning of RemoveAllStaleResults().
     struct {
       const std::string suggestion;
       const bool is_navigation_result;
       const int relevance;
       // |expect_match| is true if this result should survive
-      // RemoveStaleResults() filtering against |omnibox_input| below.
+      // RemoveAllStaleResults() filtering against |omnibox_input| below.
       const bool expect_match;
     } results[5];
   } cases[] = {
@@ -2056,7 +2056,7 @@ TEST_F(SearchProviderTest, RemoveStaleResultsTest) {
     // Because verbatim is also suppressed, SearchProvider will realize
     // in UpdateMatches() that it needs to restore verbatim to fulfill
     // its constraints.  This restoration does not happen in
-    // RemoveStaleResults() and hence is not tested here.  This restoration
+    // RemoveAllStaleResults() and hence is not tested here.  This restoration
     // is tested in the DefaultFetcherSuggestRelevance test.
     { "f", 0,
       { { "http://food.com/", true, 1299, true },
@@ -2102,7 +2102,7 @@ TEST_F(SearchProviderTest, RemoveStaleResultsTest) {
     provider_->input_ = AutocompleteInput(
         ASCIIToUTF16(cases[i].omnibox_input), string16::npos, string16(),
         GURL(), false, false, true, AutocompleteInput::ALL_MATCHES);
-    provider_->RemoveStaleResults();
+    provider_->RemoveAllStaleResults();
 
     // Check cached results.
     SearchProvider::SuggestResults::const_iterator sug_it =
