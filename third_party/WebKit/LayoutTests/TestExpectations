@@ -2212,6 +2212,8 @@ crbug.com/237414 [ XP ] fast/replaced/preferred-widths.html [ Pass Failure ]
 crbug.com/237270 [ Win7 Debug ] inspector/profiler/heap-snapshot-comparison-show-all.html [ Crash Pass Timeout ]
 crbug.com/237270 [ Win7 Debug ] inspector/profiler/heap-snapshot-summary-sorting-instances.html [ Crash Pass Timeout ]
 
-Bug(ojan) virtual/gpu/canvas/philip/tests/2d.path.arcTo.shape.curve1.html [ Failure ]
-Bug(ojan) virtual/gpu/canvas/philip/tests/2d.path.arcTo.shape.curve2.html [ Failure ]
-Bug(ojan) virtual/softwarecompositing/reflections/reflection-opacity.html [ ImageOnlyFailure ]
+# Gets a "Maximum call stack size exceeded" exception in debug that doesn't happen in release.
+crbug.com/14885 [ Debug ] fast/js/JSON-stringify.html [ Failure ]
+
+# Caused by http://trac.webkit.org/changeset/56394.
+crbug.com/143475 [ Win ] http/tests/xmlhttprequest/xmlhttprequest-50ms-download-dispatch.html [ Failure Pass Timeout ]
