@@ -147,6 +147,8 @@ def get_landmines(target):
     add('Compile on cc_unittests fails due to symbols removed in r185063.')
   if platform() == 'linux' and builder() == 'ninja':
     add('Builders switching from make to ninja will clobber on this.')
+  if platform() == 'mac':
+    add('Switching from bundle to unbundled dylib (issue 14743002).')
 
   return landmines
 

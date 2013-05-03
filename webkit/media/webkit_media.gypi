@@ -233,7 +233,6 @@
         }],
         ['OS == "mac"', {
           'type': 'loadable_module',
-          'mac_bundle': 1,
           'product_extension': 'plugin',
           'xcode_settings': {
             'OTHER_LDFLAGS': [
@@ -241,16 +240,9 @@
               '-Wl,-exported_symbol,_PPP_GetInterface',
               '-Wl,-exported_symbol,_PPP_InitializeModule',
               '-Wl,-exported_symbol,_PPP_ShutdownModule'
-            ]},
-          'copies': [
-            {
-              'destination': '<(PRODUCT_DIR)/clearkeycdmadapter.plugin/Contents/MacOS/',
-              'files': [
-                '<(PRODUCT_DIR)/libclearkeycdm.dylib',
-                '<(PRODUCT_DIR)/ffmpegsumo.so'
-              ]
-            }
-          ]
+            ],
+            'DYLIB_INSTALL_NAME_BASE': '@loader_path',
+          },
         }],
       ],
     }

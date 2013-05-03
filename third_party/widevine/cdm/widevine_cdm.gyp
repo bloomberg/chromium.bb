@@ -75,7 +75,6 @@
             }],
             [ 'OS == "mac" and 0', {
               'type': 'loadable_module',
-              'mac_bundle': 1,
               'product_extension': 'plugin',
               'libraries': [
                 # Copied by widevine_cdm_binaries.
@@ -87,16 +86,9 @@
                   '-Wl,-exported_symbol,_PPP_GetInterface',
                   '-Wl,-exported_symbol,_PPP_InitializeModule',
                   '-Wl,-exported_symbol,_PPP_ShutdownModule'
-                ]},
-              'copies': [
-                {
-                  'destination':
-                      '<(PRODUCT_DIR)/widevinecdmadapter.plugin/Contents/MacOS/',
-                  'files': [
-                    '<(PRODUCT_DIR)/libwidevinecdm.dylib',
-                  ]
-                }
-              ]
+                ],
+                'DYLIB_INSTALL_NAME_BASE': '@loader_path',
+              },
             }],
           ],
         }],
