@@ -108,6 +108,25 @@ void RightAlignedView::ChildPreferredSizeChanged(View* child) {
   Layout();
 }
 
+// A class to change arrow key traversal behavior when it's alive.
+class ScopedArrowKeyTraversal {
+ public:
+  explicit ScopedArrowKeyTraversal(bool new_arrow_key_tranversal_enabled)
+      : previous_arrow_key_traversal_enabled_(
+            views::FocusManager::arrow_key_traversal_enabled()) {
+    views::FocusManager::set_arrow_key_traversal_enabled(
+        new_arrow_key_tranversal_enabled);
+  }
+  ~ScopedArrowKeyTraversal() {
+    views::FocusManager::set_arrow_key_traversal_enabled(
+        previous_arrow_key_traversal_enabled_);
+  }
+
+ private:
+  const bool previous_arrow_key_traversal_enabled_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedArrowKeyTraversal);
+};
+
 }  // namespace
 
 namespace chromeos {
@@ -328,6 +347,10 @@ bool WebUILoginView::HandleContextMenu(
 void WebUILoginView::HandleKeyboardEvent(content::WebContents* source,
                                          const NativeWebKeyboardEvent& event) {
   if (forward_keyboard_event_) {
+    // Disable arrow key traversal because arrow keys are handled via
+    // accelerator when this view has focus.
+    ScopedArrowKeyTraversal arrow_key_traversal(false);
+
     unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
                                                           GetFocusManager());
   }

@@ -5,6 +5,7 @@
 #include "ui/views/focus/focus_manager.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
@@ -24,6 +25,7 @@
 namespace views {
 
 bool FocusManager::shortcut_handling_suspended_ = false;
+bool FocusManager::arrow_key_traversal_enabled_ = false;
 
 FocusManager::FocusManager(Widget* widget, FocusManagerDelegate* delegate)
     : widget_(widget),
@@ -86,6 +88,9 @@ bool FocusManager::OnKeyEvent(const ui::KeyEvent& event) {
       return false;
     }
 #endif
+
+    if (arrow_key_traversal_enabled_ && ProcessArrowKeyTraversal(event))
+      return false;
 
     // Intercept arrow key messages to switch between grouped views.
     if (focused_view_ && focused_view_->GetGroup() != -1 &&
@@ -514,6 +519,23 @@ void FocusManager::AddFocusChangeListener(FocusChangeListener* listener) {
 
 void FocusManager::RemoveFocusChangeListener(FocusChangeListener* listener) {
   focus_change_listeners_.RemoveObserver(listener);
+}
+
+bool FocusManager::ProcessArrowKeyTraversal(const ui::KeyEvent& event) {
+  if (event.IsShiftDown() || event.IsControlDown() || event.IsAltDown())
+    return false;
+
+  const int key_code = event.key_code();
+  if (key_code == ui::VKEY_LEFT || key_code == ui::VKEY_UP) {
+    AdvanceFocus(true);
+    return true;
+  }
+  if (key_code == ui::VKEY_RIGHT || key_code == ui::VKEY_DOWN) {
+    AdvanceFocus(false);
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace views

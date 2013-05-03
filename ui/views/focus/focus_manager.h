@@ -150,7 +150,7 @@ class VIEWS_EXPORT FocusManager {
   FocusManager(Widget* widget, FocusManagerDelegate* delegate);
   virtual ~FocusManager();
 
-  // Processes the passed key event for accelerators and tab traversal.
+  // Processes the passed key event for accelerators and keyboard traversal.
   // Returns false if the event has been consumed and should not be processed
   // further.
   bool OnKeyEvent(const ui::KeyEvent& event);
@@ -296,6 +296,17 @@ class VIEWS_EXPORT FocusManager {
   // pressed).
   static bool IsTabTraversalKeyEvent(const ui::KeyEvent& key_event);
 
+  // Sets whether arrow key traversal is enabled. When enabled, right/down key
+  // behaves like tab and left/up key behaves like shift-tab. Note when this
+  // is enabled, the arrow key movement within grouped views are disabled.
+  static void set_arrow_key_traversal_enabled(bool enabled) {
+    arrow_key_traversal_enabled_ = enabled;
+  }
+  // Returns whether arrow key traversal is enabled.
+  static bool arrow_key_traversal_enabled() {
+    return arrow_key_traversal_enabled_;
+  }
+
  private:
   // Returns the next focusable view.
   View* GetNextFocusableView(View* starting_view, bool reverse, bool dont_loop);
@@ -308,8 +319,15 @@ class VIEWS_EXPORT FocusManager {
                           View* starting_view,
                           bool reverse);
 
+  // Process arrow key traversal. Returns true if the event has been consumed
+  // and should not be processed further.
+  bool ProcessArrowKeyTraversal(const ui::KeyEvent& event);
+
   // Keeps track of whether shortcut handling is currently suspended.
   static bool shortcut_handling_suspended_;
+
+  // Whether arrow key traversal is enabled.
+  static bool arrow_key_traversal_enabled_;
 
   // The top-level Widget this FocusManager is associated with.
   Widget* widget_;

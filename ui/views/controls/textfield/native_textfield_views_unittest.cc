@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -677,6 +678,38 @@ TEST_F(NativeTextfieldViewsTest, OnKeyPressReturnValueTest) {
   SendKeyEvent(ui::VKEY_DOWN);
   EXPECT_TRUE(textfield_->key_received());
   EXPECT_FALSE(textfield_->key_handled());
+  textfield_->clear();
+
+  // Empty Textfield does not handle left/right.
+  textfield_->SetText(string16());
+  SendKeyEvent(ui::VKEY_LEFT);
+  EXPECT_TRUE(textfield_->key_received());
+  EXPECT_FALSE(textfield_->key_handled());
+  textfield_->clear();
+
+  SendKeyEvent(ui::VKEY_RIGHT);
+  EXPECT_TRUE(textfield_->key_received());
+  EXPECT_FALSE(textfield_->key_handled());
+  textfield_->clear();
+
+  // Add a char. Right key should not be handled when cursor is at the end.
+  SendKeyEvent(ui::VKEY_B);
+  SendKeyEvent(ui::VKEY_RIGHT);
+  EXPECT_TRUE(textfield_->key_received());
+  EXPECT_FALSE(textfield_->key_handled());
+  textfield_->clear();
+
+  // First left key is handled to move cursor left to the beginning.
+  SendKeyEvent(ui::VKEY_LEFT);
+  EXPECT_TRUE(textfield_->key_received());
+  EXPECT_TRUE(textfield_->key_handled());
+  textfield_->clear();
+
+  // Now left key should not be handled.
+  SendKeyEvent(ui::VKEY_LEFT);
+  EXPECT_TRUE(textfield_->key_received());
+  EXPECT_FALSE(textfield_->key_handled());
+  textfield_->clear();
 }
 
 TEST_F(NativeTextfieldViewsTest, CursorMovement) {
@@ -1181,7 +1214,7 @@ TEST_F(NativeTextfieldViewsTest, TextInputClientTest) {
 
   EXPECT_TRUE(client->SetSelectionRange(ui::Range(1, 4)));
   EXPECT_TRUE(client->GetSelectionRange(&range));
-  EXPECT_EQ(ui::Range(1,4), range);
+  EXPECT_EQ(ui::Range(1, 4), range);
 
   // This code can't be compiled because of a bug in base::Callback.
 #if 0
@@ -1210,7 +1243,7 @@ TEST_F(NativeTextfieldViewsTest, TextInputClientTest) {
   EXPECT_TRUE(client->HasCompositionText());
   EXPECT_TRUE(client->GetCompositionTextRange(&range));
   EXPECT_STR_EQ("0321456789", textfield_->text());
-  EXPECT_EQ(ui::Range(1,4), range);
+  EXPECT_EQ(ui::Range(1, 4), range);
   EXPECT_EQ(2, on_before_user_action_);
   EXPECT_EQ(2, on_after_user_action_);
 

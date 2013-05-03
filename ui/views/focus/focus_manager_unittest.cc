@@ -740,4 +740,78 @@ TEST_F(FocusManagerTest, ImplicitlyStoresFocus) {
   EXPECT_EQ(v2, GetWidget()->GetFocusManager()->GetStoredFocusView());
 }
 
+namespace  {
+
+class FocusManagerArrowKeyTraversalTest : public FocusManagerTest {
+ public:
+  FocusManagerArrowKeyTraversalTest()
+      : previous_arrow_key_traversal_enabled_(false) {
+  }
+  virtual ~FocusManagerArrowKeyTraversalTest() {}
+
+  // FocusManagerTest overrides:
+  virtual void SetUp() OVERRIDE {
+    FocusManagerTest::SetUp();
+
+    previous_arrow_key_traversal_enabled_ =
+      FocusManager::arrow_key_traversal_enabled();
+  }
+  virtual void TearDown() OVERRIDE {
+    FocusManager::set_arrow_key_traversal_enabled(
+        previous_arrow_key_traversal_enabled_);
+    FocusManagerTest::TearDown();
+  }
+
+ private:
+  bool previous_arrow_key_traversal_enabled_;
+
+  DISALLOW_COPY_AND_ASSIGN(FocusManagerArrowKeyTraversalTest);
+};
+
+}  // namespace
+
+TEST_F(FocusManagerArrowKeyTraversalTest, ArrowKeyTraversal) {
+  FocusManager* focus_manager = GetFocusManager();
+  const ui::KeyEvent left_key(
+      ui::ET_KEY_PRESSED, ui::VKEY_LEFT, ui::EF_NONE, false);
+  const ui::KeyEvent right_key(
+      ui::ET_KEY_PRESSED, ui::VKEY_RIGHT, ui::EF_NONE, false);
+  const ui::KeyEvent up_key(
+      ui::ET_KEY_PRESSED, ui::VKEY_UP, ui::EF_NONE, false);
+  const ui::KeyEvent down_key(
+      ui::ET_KEY_PRESSED, ui::VKEY_DOWN, ui::EF_NONE, false);
+
+  std::vector<views::View*> v;
+  for (size_t i = 0; i < 2; ++i) {
+    views::View* view = new View;
+    view->set_focusable(true);
+    GetContentsView()->AddChildView(view);
+    v.push_back(view);
+  }
+
+  // Arrow key traversal is off and arrow key does not change focus.
+  FocusManager::set_arrow_key_traversal_enabled(false);
+  v[0]->RequestFocus();
+  focus_manager->OnKeyEvent(right_key);
+  EXPECT_EQ(v[0], focus_manager->GetFocusedView());
+  focus_manager->OnKeyEvent(left_key);
+  EXPECT_EQ(v[0], focus_manager->GetFocusedView());
+  focus_manager->OnKeyEvent(down_key);
+  EXPECT_EQ(v[0], focus_manager->GetFocusedView());
+  focus_manager->OnKeyEvent(up_key);
+  EXPECT_EQ(v[0], focus_manager->GetFocusedView());
+
+  // Turn on arrow key traversal.
+  FocusManager::set_arrow_key_traversal_enabled(true);
+  v[0]->RequestFocus();
+  focus_manager->OnKeyEvent(right_key);
+  EXPECT_EQ(v[1], focus_manager->GetFocusedView());
+  focus_manager->OnKeyEvent(left_key);
+  EXPECT_EQ(v[0], focus_manager->GetFocusedView());
+  focus_manager->OnKeyEvent(down_key);
+  EXPECT_EQ(v[1], focus_manager->GetFocusedView());
+  focus_manager->OnKeyEvent(up_key);
+  EXPECT_EQ(v[0], focus_manager->GetFocusedView());
+}
+
 }  // namespace views

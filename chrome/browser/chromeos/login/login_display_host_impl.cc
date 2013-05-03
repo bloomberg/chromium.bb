@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 
+#include <vector>
+
 #include "ash/ash_switches.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
@@ -42,11 +44,13 @@
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
+#include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -72,6 +76,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -256,9 +261,16 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
             << " wait_for_wp_load_: " << waiting_for_wallpaper_load_
             << " wait_for_pods_: " << waiting_for_user_pods_
             << " init_webui_hidden_: " << initialize_webui_hidden_;
+
+  bool keyboard_driven_oobe = false;
+  system::StatisticsProvider::GetInstance()->GetMachineFlag(
+      chrome::kOemKeyboardDrivenOobeKey, &keyboard_driven_oobe);
+  if (keyboard_driven_oobe)
+    views::FocusManager::set_arrow_key_traversal_enabled(true);
 }
 
 LoginDisplayHostImpl::~LoginDisplayHostImpl() {
+  views::FocusManager::set_arrow_key_traversal_enabled(false);
   ResetLoginWindowAndView();
 
   // Let chrome process exit after login/oobe screen if needed.
@@ -486,40 +498,40 @@ void LoginDisplayHostImpl::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED == type) {
-   LOG(INFO) << "Login WebUI >> wp animation done";
-   is_wallpaper_loaded_ = true;
-   ash::Shell::GetInstance()->user_wallpaper_delegate()->
-       OnWallpaperBootAnimationFinished();
-   if (waiting_for_wallpaper_load_) {
-     // StartWizard / StartSignInScreen could be called multiple times through
-     // the lifetime of host.
-     // Make sure that subsequent calls are not postponed.
-     waiting_for_wallpaper_load_ = false;
-     if (initialize_webui_hidden_)
-       ShowWebUI();
-     else
-       StartPostponedWebUI();
-   }
-   registrar_.Remove(this,
-                     chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
-                     content::NotificationService::AllSources());
- } else if (chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE == type ||
-            chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN == type) {
-   LOG(INFO) << "Login WebUI >> WEBUI_VISIBLE";
-   if (waiting_for_user_pods_ && initialize_webui_hidden_) {
-     waiting_for_user_pods_ = false;
-     ShowWebUI();
-   } else if (waiting_for_wallpaper_load_ && initialize_webui_hidden_) {
-     // Reduce time till login UI is shown - show it as soon as possible.
-     waiting_for_wallpaper_load_ = false;
-     ShowWebUI();
-   }
-   registrar_.Remove(this,
-                     chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
-                     content::NotificationService::AllSources());
-   registrar_.Remove(this,
-                     chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
-                     content::NotificationService::AllSources());
+    LOG(INFO) << "Login WebUI >> wp animation done";
+    is_wallpaper_loaded_ = true;
+    ash::Shell::GetInstance()->user_wallpaper_delegate()
+        ->OnWallpaperBootAnimationFinished();
+    if (waiting_for_wallpaper_load_) {
+      // StartWizard / StartSignInScreen could be called multiple times through
+      // the lifetime of host.
+      // Make sure that subsequent calls are not postponed.
+      waiting_for_wallpaper_load_ = false;
+      if (initialize_webui_hidden_)
+        ShowWebUI();
+      else
+        StartPostponedWebUI();
+    }
+    registrar_.Remove(this,
+                      chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
+                      content::NotificationService::AllSources());
+  } else if (chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE == type ||
+             chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN == type) {
+    LOG(INFO) << "Login WebUI >> WEBUI_VISIBLE";
+    if (waiting_for_user_pods_ && initialize_webui_hidden_) {
+      waiting_for_user_pods_ = false;
+      ShowWebUI();
+    } else if (waiting_for_wallpaper_load_ && initialize_webui_hidden_) {
+      // Reduce time till login UI is shown - show it as soon as possible.
+      waiting_for_wallpaper_load_ = false;
+      ShowWebUI();
+    }
+    registrar_.Remove(this,
+                      chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
+                      content::NotificationService::AllSources());
+    registrar_.Remove(this,
+                      chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
+                      content::NotificationService::AllSources());
   } else if (type == chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST) {
     ShutdownDisplayHost(true);
   } else if (type == chrome::NOTIFICATION_BROWSER_OPENED && session_starting_) {

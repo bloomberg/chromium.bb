@@ -1179,18 +1179,20 @@ bool NativeTextfieldViews::HandleKeyEvent(const ui::KeyEvent& key_event) {
           cursor_changed = text_changed = Paste();
         break;
       case ui::VKEY_RIGHT:
-      case ui::VKEY_LEFT:
+      case ui::VKEY_LEFT: {
         // We should ignore the alt-left/right keys because alt key doesn't make
         // any special effects for them and they can be shortcut keys such like
         // forward/back of the browser history.
         if (key_event.IsAltDown())
           break;
+        size_t cursor_position = model_->GetCursorPosition();
         model_->MoveCursor(
             control ? gfx::WORD_BREAK : gfx::CHARACTER_BREAK,
             (key_code == ui::VKEY_RIGHT) ? gfx::CURSOR_RIGHT : gfx::CURSOR_LEFT,
             shift);
-        cursor_changed = true;
+        cursor_changed = model_->GetCursorPosition() != cursor_position;
         break;
+      }
       case ui::VKEY_END:
       case ui::VKEY_HOME:
         if ((key_code == ui::VKEY_HOME) ==
