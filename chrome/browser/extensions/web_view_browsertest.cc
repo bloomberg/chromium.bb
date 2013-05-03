@@ -838,7 +838,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, CloseOnLoadcommit) {
   ASSERT_TRUE(done_test_listener.WaitUntilSatisfied());
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, MediaAccessAPIDeny) {
+// Disabled for being flaky: http://crbug.com/237985
+IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_MediaAccessAPIDeny) {
   ASSERT_TRUE(StartTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTest(
       "platform_apps/web_view/media_access/deny")) << message_;
