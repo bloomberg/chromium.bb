@@ -168,7 +168,7 @@ interface PPB_FileRef {
                  [in] PP_Resource new_file_ref,
                  [in] PP_CompletionCallback callback);
 
-  /*
+  /**
    * Query() queries info about a file or directory. You must have access to
    * read this file or directory if it exists in the external filesystem.
    *
@@ -185,5 +185,22 @@ interface PPB_FileRef {
   int32_t Query([in] PP_Resource file_ref,
                 [out] PP_FileInfo info,
                 [in] PP_CompletionCallback callback);
+
+  /**
+   * ReadDirectoryEntries() reads all entries in a directory.
+   *
+   * @param[in] file_ref A <code>PP_Resource</code> corresponding to a directory
+   * reference.
+   * @param[in] output An output array which will receive
+   * <code>PP_DirectoryEntry</code> objects on success.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to run on
+   * completion.
+   *
+   * @return An int32_t containing an error code from <code>pp_errors.h</code>.
+   */
+  [version=1.1]
+  int32_t ReadDirectoryEntries([in] PP_Resource file_ref,
+                               [in] PP_ArrayOutput output,
+                               [in] PP_CompletionCallback callback);
 };
 

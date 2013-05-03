@@ -22,13 +22,6 @@ BEGIN_INTERFACE(ConsoleInterface, PPB_Console, PPB_CONSOLE_INTERFACE_1_0)
   METHOD3(ConsoleInterface, void, Log, PP_Instance, PP_LogLevel, struct PP_Var)
 END_INTERFACE(ConsoleInterface, PPB_Console)
 
-BEGIN_INTERFACE(DirectoryReaderInterface, PPB_DirectoryReader_Dev,
-                PPB_DIRECTORYREADER_DEV_INTERFACE_0_6)
-  METHOD1(DirectoryReaderInterface, PP_Resource, Create, PP_Resource)
-  METHOD3(DirectoryReaderInterface, int32_t, ReadEntries, PP_Resource,
-          PP_ArrayOutput, PP_CompletionCallback)
-END_INTERFACE(DirectoryReaderInterface, PPB_DirectoryReader_Dev)
-
 BEGIN_INTERFACE(FileIoInterface, PPB_FileIO, PPB_FILEIO_INTERFACE_1_0)
   METHOD1(FileIoInterface, void, Close, PP_Resource)
   METHOD1(FileIoInterface, PP_Resource, Create, PP_Resource)
@@ -52,6 +45,8 @@ BEGIN_INTERFACE(FileRefInterface, PPB_FileRef, PPB_FILEREF_INTERFACE_1_0)
   METHOD1(FileRefInterface, PP_Var, GetName, PP_Resource)
   METHOD3(FileRefInterface, int32_t, MakeDirectory, PP_Resource, PP_Bool,
           PP_CompletionCallback)
+  METHOD3(FileRefInterface, int32_t, ReadDirectoryEntries, PP_Resource,
+          const PP_ArrayOutput&, PP_CompletionCallback)
 END_INTERFACE(FileRefInterface, PPB_FileRef)
 
 BEGIN_INTERFACE(FileSystemInterface, PPB_FileSystem,

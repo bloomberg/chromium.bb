@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/bind_helpers.h"
+#include "base/memory/linked_ptr.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
@@ -16,11 +16,11 @@
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/proxy/proxy_completion_callback_factory.h"
+#include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
 namespace ppapi {
 
-class HostResource;
 struct PPB_FileRef_CreateInfo;
 
 namespace proxy {
@@ -87,6 +87,8 @@ class PPAPI_PROXY_EXPORT PPB_FileRef_Proxy
                   uint32_t callback_id);
   void OnMsgGetAbsolutePath(const HostResource& host_resource,
                             SerializedVarReturnValue result);
+  void OnMsgReadDirectoryEntries(const HostResource& file_ref,
+                                 uint32_t callback_id);
 
   // Host -> Plugin message handlers.
   void OnMsgCallbackComplete(const HostResource& host_resource,
@@ -96,6 +98,20 @@ class PPAPI_PROXY_EXPORT PPB_FileRef_Proxy
                                   const PP_FileInfo& info,
                                   uint32_t callback_id,
                                   int32_t result);
+  void OnMsgReadDirectoryEntriesCallbackComplete(
+      const HostResource& host_resource,
+      const std::vector<ppapi::PPB_FileRef_CreateInfo>& infos,
+      const std::vector<PP_FileType>& file_types,
+      uint32_t callback_id,
+      int32_t result);
+
+  struct HostCallbackParams {
+    HostCallbackParams(const HostResource& host_res, uint32_t cb_id)
+        : host_resource(host_res), callback_id(cb_id) {
+    }
+    HostResource host_resource;
+    uint32_t callback_id;
+  };
 
   void OnCallbackCompleteInHost(int32_t result,
                                 const HostResource& host_resource,
@@ -103,8 +119,13 @@ class PPAPI_PROXY_EXPORT PPB_FileRef_Proxy
   void OnQueryCallbackCompleteInHost(
       int32_t result,
       const HostResource& host_resource,
-      base::internal::OwnedWrapper<PP_FileInfo> info,
+      linked_ptr<PP_FileInfo> info,
       uint32_t callback_id);
+  void OnReadDirectoryEntriesCallbackCompleteInHost(
+      int32_t result,
+      HostCallbackParams params,
+      linked_ptr<std::vector<ppapi::PPB_FileRef_CreateInfo> > files,
+      linked_ptr<std::vector<PP_FileType> > file_types);
 
   ProxyCompletionCallbackFactory<PPB_FileRef_Proxy> callback_factory_;
 

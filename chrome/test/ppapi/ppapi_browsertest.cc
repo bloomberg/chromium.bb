@@ -724,9 +724,6 @@ TEST_PPAPI_NACL(MAYBE_Fullscreen)
 TEST_PPAPI_IN_PROCESS(X509CertificatePrivate)
 TEST_PPAPI_OUT_OF_PROCESS(X509CertificatePrivate)
 
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(DirectoryReader)
-TEST_PPAPI_NACL(DirectoryReader);
-
 // There is no proxy. This is used for PDF metrics reporting, and PDF only
 // runs in process, so there's currently no need for a proxy.
 TEST_PPAPI_IN_PROCESS(UMA)

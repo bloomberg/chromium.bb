@@ -5,7 +5,6 @@
 #ifndef LIBRARIES_NACL_IO_PEPPER_INTERFACE_H_
 #define LIBRARIES_NACL_IO_PEPPER_INTERFACE_H_
 
-#include <ppapi/c/dev/ppb_directory_reader_dev.h>
 #include <ppapi/c/pp_completion_callback.h>
 #include <ppapi/c/pp_file_info.h>
 #include <ppapi/c/pp_instance.h>

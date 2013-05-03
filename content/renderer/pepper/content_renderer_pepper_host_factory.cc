@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "content/renderer/pepper/pepper_audio_input_host.h"
-#include "content/renderer/pepper/pepper_directory_reader_host.h"
 #include "content/renderer/pepper/pepper_file_chooser_host.h"
 #include "content/renderer/pepper/pepper_file_io_host.h"
 #include "content/renderer/pepper/pepper_file_system_host.h"
@@ -83,9 +82,6 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
     switch (message.type()) {
       case PpapiHostMsg_AudioInput_Create::ID:
         return scoped_ptr<ResourceHost>(new PepperAudioInputHost(
-            host_, instance, params.pp_resource()));
-      case PpapiHostMsg_DirectoryReader_Create::ID:
-        return scoped_ptr<ResourceHost>(new PepperDirectoryReaderHost(
             host_, instance, params.pp_resource()));
       case PpapiHostMsg_FileChooser_Create::ID:
         return scoped_ptr<ResourceHost>(new PepperFileChooserHost(

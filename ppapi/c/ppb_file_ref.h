@@ -3,11 +3,12 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_file_ref.idl modified Thu Mar  7 12:02:53 2013. */
+/* From ppb_file_ref.idl modified Thu May  2 16:22:57 2013. */
 
 #ifndef PPAPI_C_PPB_FILE_REF_H_
 #define PPAPI_C_PPB_FILE_REF_H_
 
+#include "ppapi/c/pp_array_output.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_file_info.h"
@@ -178,7 +179,7 @@ struct PPB_FileRef_1_1 {
   int32_t (*Rename)(PP_Resource file_ref,
                     PP_Resource new_file_ref,
                     struct PP_CompletionCallback callback);
-  /*
+  /**
    * Query() queries info about a file or directory. You must have access to
    * read this file or directory if it exists in the external filesystem.
    *
@@ -194,6 +195,21 @@ struct PPB_FileRef_1_1 {
   int32_t (*Query)(PP_Resource file_ref,
                    struct PP_FileInfo* info,
                    struct PP_CompletionCallback callback);
+  /**
+   * ReadDirectoryEntries() reads all entries in a directory.
+   *
+   * @param[in] file_ref A <code>PP_Resource</code> corresponding to a directory
+   * reference.
+   * @param[in] output An output array which will receive
+   * <code>PP_DirectoryEntry</code> objects on success.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to run on
+   * completion.
+   *
+   * @return An int32_t containing an error code from <code>pp_errors.h</code>.
+   */
+  int32_t (*ReadDirectoryEntries)(PP_Resource file_ref,
+                                  struct PP_ArrayOutput output,
+                                  struct PP_CompletionCallback callback);
 };
 
 typedef struct PPB_FileRef_1_1 PPB_FileRef;

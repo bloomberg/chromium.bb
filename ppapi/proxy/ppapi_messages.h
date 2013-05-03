@@ -21,7 +21,6 @@
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/dev/pp_video_capture_dev.h"
 #include "ppapi/c/dev/pp_video_dev.h"
-#include "ppapi/c/dev/ppb_directory_reader_dev.h"
 #include "ppapi/c/dev/ppb_text_input_dev.h"
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
@@ -474,6 +473,14 @@ IPC_MESSAGE_ROUTED4(
     uint32_t /* callback_id */,
     int32_t /* result */)
 
+IPC_MESSAGE_ROUTED5(
+    PpapiMsg_PPBFileRef_ReadDirectoryEntriesCallbackComplete,
+    ppapi::HostResource /* resource */,
+    std::vector<ppapi::PPB_FileRef_CreateInfo> /* files */,
+    std::vector<PP_FileType> /* file_types */,
+    uint32_t /* callback_id */,
+    int32_t /* result */)
+
 // PPB_FileSystem.
 IPC_MESSAGE_ROUTED2(
     PpapiMsg_PPBFileSystem_OpenComplete,
@@ -834,6 +841,9 @@ IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFileRef_Query,
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFileRef_GetAbsolutePath,
                            ppapi::HostResource /* file_ref */,
                            ppapi::proxy::SerializedVar /* result */)
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFileRef_ReadDirectoryEntries,
+                    ppapi::HostResource /* file_ref */,
+                    uint32_t /* callback_id */)
 
 // PPB_Graphics3D.
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBGraphics3D_Create,
@@ -1329,14 +1339,6 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_Broker_Create)
 // The response is contained in the error value of the
 // ResourceMessageReplyParams in the reply message.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Broker_IsAllowed)
-
-// Directory reader.
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_DirectoryReader_Create)
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_DirectoryReader_GetEntries,
-                     ppapi::HostResource /* file_ref_resource */)
-IPC_MESSAGE_CONTROL2(PpapiPluginMsg_DirectoryReader_GetEntriesReply,
-                     std::vector<ppapi::PPB_FileRef_CreateInfo> /* files */,
-                     std::vector<PP_FileType> /* file_types */)
 
 // Extensions common -----------------------------------------------------------
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_ExtensionsCommon_Create)

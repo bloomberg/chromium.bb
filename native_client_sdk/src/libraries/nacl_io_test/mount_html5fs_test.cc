@@ -7,6 +7,7 @@
 #include <string.h>
 #include <gmock/gmock.h>
 #include <ppapi/c/ppb_file_io.h>
+#include <ppapi/c/pp_directory_entry.h>
 #include <ppapi/c/pp_errors.h>
 #include <ppapi/c/pp_instance.h>
 #if defined(WIN32)
@@ -173,19 +174,19 @@ void MountHtml5FsNodeSyncTest::SetUp() {
   InitNode();
 }
 
-void ReadEntriesAction(const PP_ArrayOutput& output) {
+void ReadDirectoryEntriesAction(const PP_ArrayOutput& output) {
   const int fileref_resource_1 = 238;
   const int fileref_resource_2 = 239;
 
-  std::vector<PP_DirectoryEntry_Dev> entries;
-  PP_DirectoryEntry_Dev entry1 = { fileref_resource_1, PP_FILETYPE_REGULAR };
-  PP_DirectoryEntry_Dev entry2 = { fileref_resource_2, PP_FILETYPE_REGULAR };
+  std::vector<PP_DirectoryEntry> entries;
+  PP_DirectoryEntry entry1 = { fileref_resource_1, PP_FILETYPE_REGULAR };
+  PP_DirectoryEntry entry2 = { fileref_resource_2, PP_FILETYPE_REGULAR };
   entries.push_back(entry1);
   entries.push_back(entry2);
 
   void* dest = output.GetDataBuffer(
-      output.user_data, 2, sizeof(PP_DirectoryEntry_Dev));
-  memcpy(dest, &entries[0], sizeof(PP_DirectoryEntry_Dev) * 2);
+      output.user_data, 2, sizeof(PP_DirectoryEntry));
+  memcpy(dest, &entries[0], sizeof(PP_DirectoryEntry) * 2);
 }
 
 class MountHtml5FsNodeAsyncTest : public MountHtml5FsNodeTest {
@@ -404,7 +405,6 @@ TEST_F(MountHtml5FsNodeSyncTest, Truncate) {
 }
 
 TEST_F(MountHtml5FsNodeSyncTest, GetDents) {
-  const int dir_reader_resource = 237;
   const int fileref_resource_1 = 238;
   const int fileref_resource_2 = 239;
 
@@ -421,13 +421,9 @@ TEST_F(MountHtml5FsNodeSyncTest, GetDents) {
   fileref_name_2.value.as_id = fileref_name_id_2;
 
   VarInterfaceMock* var = ppapi_->GetVarInterface();
-  DirectoryReaderInterfaceMock* dir_reader =
-      ppapi_->GetDirectoryReaderInterface();
 
-  EXPECT_CALL(*dir_reader, Create(fileref_resource_))
-      .WillOnce(Return(dir_reader_resource));
-  EXPECT_CALL(*dir_reader, ReadEntries(dir_reader_resource, _, _))
-      .WillOnce(DoAll(WithArgs<1>(Invoke(ReadEntriesAction)),
+  EXPECT_CALL(*fileref_, ReadDirectoryEntries(fileref_resource_, _, _))
+      .WillOnce(DoAll(WithArgs<1>(Invoke(ReadDirectoryEntriesAction)),
                       Return(int32_t(PP_OK))));
 
   EXPECT_CALL(*fileref_, GetName(fileref_resource_1))
@@ -440,7 +436,6 @@ TEST_F(MountHtml5FsNodeSyncTest, GetDents) {
   EXPECT_CALL(*var, VarToUtf8(IsEqualToVar(fileref_name_2), _))
       .WillOnce(Return(fileref_name_cstr_2));
 
-  EXPECT_CALL(*ppapi_, ReleaseResource(dir_reader_resource));
   EXPECT_CALL(*ppapi_, ReleaseResource(fileref_resource_1));
   EXPECT_CALL(*ppapi_, ReleaseResource(fileref_resource_2));
 

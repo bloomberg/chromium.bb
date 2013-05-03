@@ -34,7 +34,7 @@ class FileChooser_Dev : public Resource {
   /// (PP_FILECHOOSERMODE_OPENMULTIPLE). Unlike the HTML5 <input type="file">
   /// tag, a PPB_FileChooser_Dev instance cannot be used to select a directory.
   /// In order to get the list of files in a directory, the
-  /// PPB_DirectoryReader_Dev interface must be used.
+  /// PPB_FileRef::ReadDirectoryEntries interface must be used.
   ///
   /// @param accept_types A comma-separated list of MIME types and file
   /// extensions such as "audio/ *,text/plain,.html" (note there should be

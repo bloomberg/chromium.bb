@@ -17,6 +17,7 @@
 
 namespace pp {
 
+class DirectoryEntry;
 class FileSystem;
 class CompletionCallback;
 template <typename T> class CompletionCallbackWithOutput;
@@ -146,7 +147,6 @@ class FileRef : public Resource {
   /// @return An int32_t containing an error code from <code>pp_errors.h</code>.
   int32_t Rename(const FileRef& new_file_ref, const CompletionCallback& cc);
 
-  ///
   /// Query() queries info about a file or directory. You must have access to
   /// read this file or directory if it exists in the external filesystem.
   ///
@@ -155,6 +155,30 @@ class FileRef : public Resource {
   ///
   /// @return An int32_t containing an error code from <code>pp_errors.h</code>.
   int32_t Query(const CompletionCallbackWithOutput<PP_FileInfo>& callback);
+
+  /// ReadDirectoryEntries() Reads all entries in the directory.
+  ///
+  /// @param[in] cc A <code>CompletionCallbackWithOutput</code> to be called
+  /// upon completion of ReadDirectoryEntries(). On success, the
+  /// directory entries will be passed to the given function.
+  ///
+  /// Normally you would use a CompletionCallbackFactory to allow callbacks to
+  /// be bound to your class. See completion_callback_factory.h for more
+  /// discussion on how to use this. Your callback will generally look like:
+  ///
+  /// @code
+  ///   void OnReadDirectoryEntries(
+  ///       int32_t result,
+  ///       const std::vector<DirectoryEntry>& entries) {
+  ///     if (result == PP_OK)
+  ///       // use entries...
+  ///   }
+  /// @endcode
+  ///
+  /// @return An int32_t containing an error code from <code>pp_errors.h</code>.
+  int32_t ReadDirectoryEntries(
+      const CompletionCallbackWithOutput< std::vector<DirectoryEntry> >&
+          callback);
 };
 
 }  // namespace pp

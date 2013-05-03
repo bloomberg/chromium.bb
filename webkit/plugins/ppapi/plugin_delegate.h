@@ -504,6 +504,9 @@ class PluginDelegate {
       fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
   virtual bool Query(const GURL& path,
                      fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
+  virtual bool ReadDirectoryEntries(
+      const GURL& path,
+      fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
   virtual bool Touch(const GURL& path,
                      const base::Time& last_access_time,
                      const base::Time& last_modified_time,

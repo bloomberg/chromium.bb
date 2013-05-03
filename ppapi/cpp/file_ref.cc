@@ -6,9 +6,9 @@
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/completion_callback.h"
+#include "ppapi/cpp/directory_entry.h"
 #include "ppapi/cpp/file_system.h"
 #include "ppapi/cpp/module_impl.h"
-
 
 namespace pp {
 
@@ -170,5 +170,13 @@ int32_t FileRef::Query(const CompletionCallbackWithOutput<PP_FileInfo>& cc) {
       pp_resource(), cc.output(), cc.pp_completion_callback());
 }
 
+int32_t FileRef::ReadDirectoryEntries(
+    const CompletionCallbackWithOutput<std::vector<DirectoryEntry> >&
+        callback) {
+  if (!has_interface<PPB_FileRef_1_1>())
+    return callback.MayForce(PP_ERROR_NOINTERFACE);
+  return get_interface<PPB_FileRef_1_1>()->ReadDirectoryEntries(
+      pp_resource(), callback.output(), callback.pp_completion_callback());
+}
 
 }  // namespace pp

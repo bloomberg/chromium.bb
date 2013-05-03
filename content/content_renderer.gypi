@@ -182,8 +182,6 @@
     'renderer/pepper/pepper_device_enumeration_event_handler.h',
     'renderer/pepper/pepper_device_enumeration_host_helper.cc',
     'renderer/pepper/pepper_device_enumeration_host_helper.h',
-    'renderer/pepper/pepper_directory_reader_host.cc',
-    'renderer/pepper/pepper_directory_reader_host.h',
     'renderer/pepper/pepper_file_chooser_host.cc',
     'renderer/pepper/pepper_file_chooser_host.h',
     'renderer/pepper/pepper_file_io_host.cc',

@@ -12,7 +12,6 @@
 #include "ppapi/c/dev/ppb_crypto_dev.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/dev/ppb_device_ref_dev.h"
-#include "ppapi/c/dev/ppb_directory_reader_dev.h"
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
 #include "ppapi/c/dev/ppb_find_dev.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
@@ -191,7 +190,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Buffer_Dev_0_4;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Crypto_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_CursorControl_Dev_0_4;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_DeviceRef_Dev_0_1;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_DirectoryReader_Dev_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_5;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Find_Dev_0_3;
@@ -558,6 +556,11 @@ static int32_t Pnacl_M28_PPB_FileRef_Rename(PP_Resource file_ref, PP_Resource ne
 static int32_t Pnacl_M28_PPB_FileRef_Query(PP_Resource file_ref, struct PP_FileInfo* info, struct PP_CompletionCallback* callback) {
   const struct PPB_FileRef_1_1 *iface = Pnacl_WrapperInfo_PPB_FileRef_1_1.real_iface;
   return iface->Query(file_ref, info, *callback);
+}
+
+static int32_t Pnacl_M28_PPB_FileRef_ReadDirectoryEntries(PP_Resource file_ref, struct PP_ArrayOutput* output, struct PP_CompletionCallback* callback) {
+  const struct PPB_FileRef_1_1 *iface = Pnacl_WrapperInfo_PPB_FileRef_1_1.real_iface;
+  return iface->ReadDirectoryEntries(file_ref, *output, *callback);
 }
 
 /* End wrapper methods for PPB_FileRef_1_1 */
@@ -1569,25 +1572,6 @@ static void Pnacl_M18_PPB_DeviceRef_Dev_GetName(struct PP_Var* _struct_result, P
 }
 
 /* End wrapper methods for PPB_DeviceRef_Dev_0_1 */
-
-/* Begin wrapper methods for PPB_DirectoryReader_Dev_0_6 */
-
-static PP_Resource Pnacl_M27_PPB_DirectoryReader_Dev_Create(PP_Resource directory_ref) {
-  const struct PPB_DirectoryReader_Dev_0_6 *iface = Pnacl_WrapperInfo_PPB_DirectoryReader_Dev_0_6.real_iface;
-  return iface->Create(directory_ref);
-}
-
-static PP_Bool Pnacl_M27_PPB_DirectoryReader_Dev_IsDirectoryReader(PP_Resource resource) {
-  const struct PPB_DirectoryReader_Dev_0_6 *iface = Pnacl_WrapperInfo_PPB_DirectoryReader_Dev_0_6.real_iface;
-  return iface->IsDirectoryReader(resource);
-}
-
-static int32_t Pnacl_M27_PPB_DirectoryReader_Dev_ReadEntries(PP_Resource directory_reader, struct PP_ArrayOutput* output, struct PP_CompletionCallback* callback) {
-  const struct PPB_DirectoryReader_Dev_0_6 *iface = Pnacl_WrapperInfo_PPB_DirectoryReader_Dev_0_6.real_iface;
-  return iface->ReadEntries(directory_reader, *output, *callback);
-}
-
-/* End wrapper methods for PPB_DirectoryReader_Dev_0_6 */
 
 /* Begin wrapper methods for PPB_FileChooser_Dev_0_5 */
 
@@ -3694,7 +3678,8 @@ struct PPB_FileRef_1_1 Pnacl_Wrappers_PPB_FileRef_1_1 = {
     .Touch = (int32_t (*)(PP_Resource file_ref, PP_Time last_access_time, PP_Time last_modified_time, struct PP_CompletionCallback callback))&Pnacl_M28_PPB_FileRef_Touch,
     .Delete = (int32_t (*)(PP_Resource file_ref, struct PP_CompletionCallback callback))&Pnacl_M28_PPB_FileRef_Delete,
     .Rename = (int32_t (*)(PP_Resource file_ref, PP_Resource new_file_ref, struct PP_CompletionCallback callback))&Pnacl_M28_PPB_FileRef_Rename,
-    .Query = (int32_t (*)(PP_Resource file_ref, struct PP_FileInfo* info, struct PP_CompletionCallback callback))&Pnacl_M28_PPB_FileRef_Query
+    .Query = (int32_t (*)(PP_Resource file_ref, struct PP_FileInfo* info, struct PP_CompletionCallback callback))&Pnacl_M28_PPB_FileRef_Query,
+    .ReadDirectoryEntries = (int32_t (*)(PP_Resource file_ref, struct PP_ArrayOutput output, struct PP_CompletionCallback callback))&Pnacl_M28_PPB_FileRef_ReadDirectoryEntries
 };
 
 struct PPB_FileSystem_1_0 Pnacl_Wrappers_PPB_FileSystem_1_0 = {
@@ -3997,12 +3982,6 @@ struct PPB_DeviceRef_Dev_0_1 Pnacl_Wrappers_PPB_DeviceRef_Dev_0_1 = {
     .IsDeviceRef = (PP_Bool (*)(PP_Resource resource))&Pnacl_M18_PPB_DeviceRef_Dev_IsDeviceRef,
     .GetType = (PP_DeviceType_Dev (*)(PP_Resource device_ref))&Pnacl_M18_PPB_DeviceRef_Dev_GetType,
     .GetName = (struct PP_Var (*)(PP_Resource device_ref))&Pnacl_M18_PPB_DeviceRef_Dev_GetName
-};
-
-struct PPB_DirectoryReader_Dev_0_6 Pnacl_Wrappers_PPB_DirectoryReader_Dev_0_6 = {
-    .Create = (PP_Resource (*)(PP_Resource directory_ref))&Pnacl_M27_PPB_DirectoryReader_Dev_Create,
-    .IsDirectoryReader = (PP_Bool (*)(PP_Resource resource))&Pnacl_M27_PPB_DirectoryReader_Dev_IsDirectoryReader,
-    .ReadEntries = (int32_t (*)(PP_Resource directory_reader, struct PP_ArrayOutput output, struct PP_CompletionCallback callback))&Pnacl_M27_PPB_DirectoryReader_Dev_ReadEntries
 };
 
 struct PPB_FileChooser_Dev_0_5 Pnacl_Wrappers_PPB_FileChooser_Dev_0_5 = {
@@ -4938,12 +4917,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_DeviceRef_Dev_0_1 = {
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_DirectoryReader_Dev_0_6 = {
-  .iface_macro = PPB_DIRECTORYREADER_DEV_INTERFACE_0_6,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_DirectoryReader_Dev_0_6,
-  .real_iface = NULL
-};
-
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_5 = {
   .iface_macro = PPB_FILECHOOSER_DEV_INTERFACE_0_5,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_FileChooser_Dev_0_5,
@@ -5527,7 +5500,6 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Crypto_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_CursorControl_Dev_0_4,
   &Pnacl_WrapperInfo_PPB_DeviceRef_Dev_0_1,
-  &Pnacl_WrapperInfo_PPB_DirectoryReader_Dev_0_6,
   &Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_5,
   &Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_6,
   &Pnacl_WrapperInfo_PPB_Find_Dev_0_3,

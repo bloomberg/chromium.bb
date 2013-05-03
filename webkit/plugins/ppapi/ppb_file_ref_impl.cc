@@ -93,7 +93,7 @@ void IgnoreCloseCallback(base::PlatformFileError error_code) {
 void GetFileInfoCallback(
     scoped_refptr<base::TaskRunner> task_runner,
     base::PlatformFile file,
-    PP_FileInfo* info,
+    linked_ptr<PP_FileInfo> info,
     scoped_refptr<TrackedCallback> callback,
     base::PlatformFileError error_code,
     const base::PlatformFileInfo& file_info) {
@@ -123,7 +123,7 @@ void GetFileInfoCallback(
 }
 
 void QueryCallback(scoped_refptr<base::TaskRunner> task_runner,
-                   PP_FileInfo* info,
+                   linked_ptr<PP_FileInfo> info,
                    scoped_refptr<TrackedCallback> callback,
                    base::PlatformFileError error_code,
                    base::PassPlatformFile passed_file) {
@@ -249,7 +249,7 @@ int32_t PPB_FileRef_Impl::MakeDirectory(
     return PP_ERROR_FAILED;
   if (!plugin_instance->delegate()->MakeDirectory(
           GetFileSystemURL(), PP_ToBool(make_ancestors),
-          new FileCallbacks(this, callback, NULL)))
+          new FileCallbacks(this, callback)))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;
 }
@@ -267,7 +267,7 @@ int32_t PPB_FileRef_Impl::Touch(PP_Time last_access_time,
           GetFileSystemURL(),
           PPTimeToTime(last_access_time),
           PPTimeToTime(last_modified_time),
-          new FileCallbacks(this, callback, NULL)))
+          new FileCallbacks(this, callback)))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;
 }
@@ -281,7 +281,7 @@ int32_t PPB_FileRef_Impl::Delete(scoped_refptr<TrackedCallback> callback) {
     return PP_ERROR_FAILED;
   if (!plugin_instance->delegate()->Delete(
           GetFileSystemURL(),
-          new FileCallbacks(this, callback, NULL)))
+          new FileCallbacks(this, callback)))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;
 }
@@ -305,7 +305,7 @@ int32_t PPB_FileRef_Impl::Rename(PP_Resource new_pp_file_ref,
     return PP_ERROR_FAILED;
   if (!plugin_instance->delegate()->Rename(
           GetFileSystemURL(), new_file_ref->GetFileSystemURL(),
-          new FileCallbacks(this, callback, NULL)))
+          new FileCallbacks(this, callback)))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;
 }
@@ -371,6 +371,13 @@ bool PPB_FileRef_Impl::HasValidFileSystem() const {
 
 int32_t PPB_FileRef_Impl::Query(PP_FileInfo* info,
                                 scoped_refptr<TrackedCallback> callback) {
+  NOTREACHED();
+  return PP_ERROR_FAILED;
+}
+
+int32_t PPB_FileRef_Impl::QueryInHost(
+    linked_ptr<PP_FileInfo> info,
+    scoped_refptr<TrackedCallback> callback) {
   scoped_refptr<PluginInstance> plugin_instance =
       ResourceHelper::GetPluginInstance(this);
   if (!plugin_instance.get())
@@ -407,6 +414,36 @@ int32_t PPB_FileRef_Impl::Query(PP_FileInfo* info,
       return PP_ERROR_FAILED;
 
   }
+  return PP_OK_COMPLETIONPENDING;
+}
+
+int32_t PPB_FileRef_Impl::ReadDirectoryEntries(
+    const PP_ArrayOutput& output,
+    scoped_refptr<TrackedCallback> callback) {
+  NOTREACHED();
+  return PP_ERROR_FAILED;
+}
+
+int32_t PPB_FileRef_Impl::ReadDirectoryEntriesInHost(
+    linked_ptr<std::vector< ::ppapi::PPB_FileRef_CreateInfo> > files,
+    linked_ptr<std::vector<PP_FileType> > file_types,
+    scoped_refptr<TrackedCallback> callback) {
+  if (!IsValidNonExternalFileSystem())
+    return PP_ERROR_NOACCESS;
+
+  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  if (!plugin_instance)
+    return PP_ERROR_FAILED;
+
+  FileCallbacks::ReadDirectoryEntriesParams params;
+  params.dir_ref = this;
+  params.files = files;
+  params.file_types = file_types;
+
+  if (!plugin_instance->delegate()->ReadDirectoryEntries(
+          GetFileSystemURL(),
+          new FileCallbacks(this, callback, params)))
+    return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;
 }
 

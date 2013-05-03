@@ -194,6 +194,12 @@ bool MockPluginDelegate::Query(
   return false;
 }
 
+bool MockPluginDelegate::ReadDirectoryEntries(
+    const GURL& path,
+    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+  return false;
+}
+
 bool MockPluginDelegate::Touch(
     const GURL& path,
     const base::Time& last_access_time,

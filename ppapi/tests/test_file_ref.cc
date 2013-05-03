@@ -5,13 +5,14 @@
 #include "ppapi/tests/test_file_ref.h"
 
 #include <stdio.h>
+
+#include <sstream>
 #include <vector>
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
-#include "ppapi/cpp/dev/directory_entry_dev.h"
-#include "ppapi/cpp/dev/directory_reader_dev.h"
+#include "ppapi/cpp/directory_entry.h"
 #include "ppapi/cpp/file_io.h"
 #include "ppapi/cpp/file_ref.h"
 #include "ppapi/cpp/file_system.h"
@@ -33,6 +34,8 @@ const char* kParentPath = "/foo/bar";
 const char* kPersFilePath = "/foo/bar/persistent";
 const char* kTempFilePath = "/foo/bar/temporary";
 const char* kTerribleName = "!@#$%^&*()-_=+{}[] ;:'\"|`~\t\n\r\b?";
+
+typedef std::vector<pp::DirectoryEntry> DirEntries;
 
 std::string ReportMismatch(const std::string& method_name,
                            const std::string& returned_result,
@@ -68,6 +71,40 @@ std::string TestFileRef::MakeExternalFileRef(pp::FileRef* file_ref_ext) {
   PASS();
 }
 
+int32_t TestFileRef::DeleteDirectoryRecursively(pp::FileRef* dir) {
+  if (!dir)
+    return PP_ERROR_BADARGUMENT;
+
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+  TestCompletionCallbackWithOutput<DirEntries> output_callback(
+      instance_->pp_instance(), callback_type());
+
+  output_callback.WaitForResult(
+      dir->ReadDirectoryEntries(output_callback.GetCallback()));
+  int32_t rv = output_callback.result();
+  if (rv != PP_OK && rv != PP_ERROR_FILENOTFOUND)
+    return rv;
+
+  DirEntries entries = output_callback.output();
+  for (DirEntries::const_iterator it = entries.begin();
+       it != entries.end();
+       ++it) {
+    pp::FileRef file_ref = it->file_ref();
+    if (it->file_type() == PP_FILETYPE_DIRECTORY) {
+      rv = DeleteDirectoryRecursively(&file_ref);
+      if (rv != PP_OK && rv != PP_ERROR_FILENOTFOUND)
+        return rv;
+    } else {
+      callback.WaitForResult(file_ref.Delete(callback.GetCallback()));
+      rv = callback.result();
+      if (rv != PP_OK && rv != PP_ERROR_FILENOTFOUND)
+        return rv;
+    }
+  }
+  callback.WaitForResult(dir->Delete(callback.GetCallback()));
+  return callback.result();
+}
+
 void TestFileRef::RunTests(const std::string& filter) {
   RUN_CALLBACK_TEST(TestFileRef, Create, filter);
   RUN_CALLBACK_TEST(TestFileRef, GetFileSystemType, filter);
@@ -78,8 +115,13 @@ void TestFileRef::RunTests(const std::string& filter) {
   RUN_CALLBACK_TEST(TestFileRef, QueryAndTouchFile, filter);
   RUN_CALLBACK_TEST(TestFileRef, DeleteFileAndDirectory, filter);
   RUN_CALLBACK_TEST(TestFileRef, RenameFileAndDirectory, filter);
-  RUN_CALLBACK_TEST(TestFileRef, Query, filter);
+  // FileRef::Query is out-of-process only.
+  if (testing_interface_->IsOutOfProcess())
+    RUN_CALLBACK_TEST(TestFileRef, Query, filter);
   RUN_CALLBACK_TEST(TestFileRef, FileNameEscaping, filter);
+  // FileRef::ReadDirectoryEntries is out-of-process only.
+  if (testing_interface_->IsOutOfProcess())
+    RUN_CALLBACK_TEST(TestFileRef, ReadDirectoryEntries, filter);
 }
 
 std::string TestFileRef::TestCreate() {
@@ -588,21 +630,123 @@ std::string TestFileRef::TestFileNameEscaping() {
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
 
-  // DirectoryReader only works out-of-process.
+  // FileRef::ReadDirectoryEntries only works out-of-process.
   if (testing_interface_->IsOutOfProcess()) {
-    TestCompletionCallbackWithOutput< std::vector<pp::DirectoryEntry_Dev> >
+    TestCompletionCallbackWithOutput<DirEntries>
         output_callback(instance_->pp_instance(), callback_type());
-    pp::DirectoryReader_Dev directory_reader(test_dir_ref);
 
     output_callback.WaitForResult(
-        directory_reader.ReadEntries(output_callback.GetCallback()));
+        test_dir_ref.ReadDirectoryEntries(output_callback.GetCallback()));
     CHECK_CALLBACK_BEHAVIOR(output_callback);
     ASSERT_EQ(PP_OK, output_callback.result());
 
-    std::vector<pp::DirectoryEntry_Dev> entries = output_callback.output();
+    DirEntries entries = output_callback.output();
     ASSERT_EQ(1, entries.size());
     ASSERT_EQ(kTerribleName, entries.front().file_ref().GetName().AsString());
   }
+
+  PASS();
+}
+
+std::string TestFileRef::TestReadDirectoryEntries() {
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+  pp::FileSystem file_system(
+      instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
+  callback.WaitForResult(file_system.Open(1024, callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
+
+  // Setup testing directories and files.
+  const char* test_dir_name = "/test_get_next_file";
+  const char* file_prefix = "file_";
+  const char* dir_prefix = "dir_";
+
+  pp::FileRef test_dir(file_system, test_dir_name);
+  int32_t rv = DeleteDirectoryRecursively(&test_dir);
+  ASSERT_TRUE(rv == PP_OK || rv == PP_ERROR_FILENOTFOUND);
+
+  callback.WaitForResult(test_dir.MakeDirectory(callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
+
+  static const int kNumFiles = 3;
+  std::set<std::string> expected_file_names;
+  for (int i = 1; i <= kNumFiles; ++i) {
+    std::ostringstream buffer;
+    buffer << test_dir_name << '/' << file_prefix << i;
+    pp::FileRef file_ref(file_system, buffer.str().c_str());
+
+    pp::FileIO file_io(instance_);
+    callback.WaitForResult(
+        file_io.Open(file_ref, PP_FILEOPENFLAG_CREATE, callback.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(callback);
+    ASSERT_EQ(PP_OK, callback.result());
+
+    expected_file_names.insert(buffer.str());
+  }
+
+  static const int kNumDirectories = 3;
+  std::set<std::string> expected_dir_names;
+  for (int i = 1; i <= kNumDirectories; ++i) {
+    std::ostringstream buffer;
+    buffer << test_dir_name << '/' << dir_prefix << i;
+    pp::FileRef file_ref(file_system, buffer.str().c_str());
+
+    callback.WaitForResult(file_ref.MakeDirectory(callback.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(callback);
+    ASSERT_EQ(PP_OK, callback.result());
+
+    expected_dir_names.insert(buffer.str());
+  }
+
+  // Test that |ReadDirectoryEntries()| is able to fetch all
+  // directories and files that we created.
+  {
+    TestCompletionCallbackWithOutput<DirEntries> output_callback(
+        instance_->pp_instance(), callback_type());
+
+    output_callback.WaitForResult(
+        test_dir.ReadDirectoryEntries(output_callback.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(output_callback);
+    ASSERT_EQ(PP_OK, output_callback.result());
+
+    DirEntries entries = output_callback.output();
+    size_t sum = expected_file_names.size() + expected_dir_names.size();
+    ASSERT_EQ(sum, entries.size());
+
+    for (DirEntries::const_iterator it = entries.begin();
+         it != entries.end(); ++it) {
+      pp::FileRef file_ref = it->file_ref();
+      std::string file_path = file_ref.GetPath().AsString();
+      std::set<std::string>::iterator found =
+          expected_file_names.find(file_path);
+      if (found != expected_file_names.end()) {
+        if (it->file_type() != PP_FILETYPE_REGULAR)
+          return file_path + " should have been a regular file.";
+        expected_file_names.erase(found);
+      } else {
+        found = expected_dir_names.find(file_path);
+        if (found == expected_dir_names.end())
+          return "Unexpected file path: " + file_path;
+        if (it->file_type() != PP_FILETYPE_DIRECTORY)
+          return file_path + " should have been a directory.";
+        expected_dir_names.erase(found);
+      }
+    }
+    ASSERT_TRUE(expected_file_names.empty());
+    ASSERT_TRUE(expected_dir_names.empty());
+  }
+
+  // Test cancellation of asynchronous |ReadDirectoryEntries()|.
+  TestCompletionCallbackWithOutput<DirEntries> output_callback(
+      instance_->pp_instance(), callback_type());
+  {
+    rv = pp::FileRef(file_system, test_dir_name)
+        .ReadDirectoryEntries(output_callback.GetCallback());
+  }
+  output_callback.WaitForAbortResult(rv);
+  CHECK_CALLBACK_BEHAVIOR(output_callback);
+
 
   PASS();
 }

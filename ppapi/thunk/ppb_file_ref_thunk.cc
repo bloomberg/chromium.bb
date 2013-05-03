@@ -127,6 +127,16 @@ int32_t Query(PP_Resource file_ref,
                                                enter.callback()));
 }
 
+int32_t ReadDirectoryEntries(PP_Resource file_ref,
+                             PP_ArrayOutput output,
+                             PP_CompletionCallback callback) {
+  EnterFileRef enter(file_ref, callback, true);
+  if (enter.failed())
+    return enter.retval();
+  return enter.SetResult(enter.object()->ReadDirectoryEntries(
+      output, enter.callback()));
+}
+
 PP_Var GetAbsolutePath(PP_Resource file_ref) {
   VLOG(4) << "PPB_FileRef::GetAbsolutePath";
   EnterFileRef enter(file_ref, true);
@@ -159,7 +169,8 @@ const PPB_FileRef_1_1 g_ppb_file_ref_thunk_1_1 = {
   &Touch,
   &Delete,
   &Rename,
-  &Query
+  &Query,
+  &ReadDirectoryEntries
 };
 
 const PPB_FileRefPrivate g_ppb_file_ref_private_thunk = {

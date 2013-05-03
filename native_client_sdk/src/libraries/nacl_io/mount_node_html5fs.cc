@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <ppapi/c/pp_completion_callback.h>
+#include <ppapi/c/pp_directory_entry.h>
 #include <ppapi/c/pp_errors.h>
 #include <ppapi/c/pp_file_info.h>
 #include <ppapi/c/ppb_file_io.h>
@@ -75,13 +76,6 @@ int MountNodeHtml5Fs::FSync() {
 }
 
 int MountNodeHtml5Fs::GetDents(size_t offs, struct dirent* pdir, size_t size) {
-  // The directory reader interface is a dev interface, if it doesn't exist,
-  // just fail.
-  if (!mount_->ppapi()->GetDirectoryReaderInterface()) {
-    errno = ENOSYS;
-    return -1;
-  }
-
   // If the buffer pointer is invalid, fail
   if (NULL == pdir) {
     errno = EINVAL;
@@ -94,28 +88,19 @@ int MountNodeHtml5Fs::GetDents(size_t offs, struct dirent* pdir, size_t size) {
     return -1;
   }
 
-  ScopedResource directory_reader(
-      mount_->ppapi(),
-      mount_->ppapi()->GetDirectoryReaderInterface()->Create(
-          fileref_resource_));
-  if (!directory_reader.pp_resource()) {
-    errno = ENOSYS;
-    return -1;
-  }
-
   OutputBuffer output_buf = { NULL, 0 };
   PP_ArrayOutput output = { &GetOutputBuffer, &output_buf };
-  int32_t result = mount_->ppapi()->GetDirectoryReaderInterface()->ReadEntries(
-      directory_reader.pp_resource(), output,
-      PP_BlockUntilComplete());
+  int32_t result =
+      mount_->ppapi()->GetFileRefInterface()->ReadDirectoryEntries(
+          fileref_resource_, output, PP_BlockUntilComplete());
   if (result != PP_OK) {
     errno = PPErrorToErrno(result);
     return -1;
   }
 
   std::vector<struct dirent> dirents;
-  PP_DirectoryEntry_Dev* entries =
-      static_cast<PP_DirectoryEntry_Dev*>(output_buf.data);
+  PP_DirectoryEntry* entries =
+      static_cast<PP_DirectoryEntry*>(output_buf.data);
 
   for (int i = 0; i < output_buf.element_count; ++i) {
     PP_Var file_name_var = mount_->ppapi()->GetFileRefInterface()->GetName(

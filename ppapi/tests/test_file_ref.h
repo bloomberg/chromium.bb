@@ -26,6 +26,8 @@ class TestFileRef : public TestCase {
   // Returns "" on success, a different string otherwise.
   std::string MakeExternalFileRef(pp::FileRef* file_ref_ext);
 
+  int32_t DeleteDirectoryRecursively(pp::FileRef* dir);
+
   std::string TestCreate();
   std::string TestGetFileSystemType();
   std::string TestGetName();
@@ -37,6 +39,7 @@ class TestFileRef : public TestCase {
   std::string TestRenameFileAndDirectory();
   std::string TestQuery();
   std::string TestFileNameEscaping();
+  std::string TestReadDirectoryEntries();
 };
 
 #endif  // PAPPI_TESTS_TEST_FILE_REF_H_

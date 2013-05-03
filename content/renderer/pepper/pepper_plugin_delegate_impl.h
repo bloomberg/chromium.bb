@@ -219,6 +219,9 @@ class PepperPluginDelegateImpl
   virtual bool Query(
       const GURL& path,
       fileapi::FileSystemCallbackDispatcher* dispatcher) OVERRIDE;
+  virtual bool ReadDirectoryEntries(
+      const GURL& path,
+      fileapi::FileSystemCallbackDispatcher* dispatcher) OVERRIDE;
   virtual bool Touch(
       const GURL& path,
       const base::Time& last_access_time,

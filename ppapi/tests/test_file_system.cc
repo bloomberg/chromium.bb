@@ -31,7 +31,7 @@ std::string TestFileSystem::TestOpen() {
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
 
-  // Open aborted (see the DirectoryReader test for comments).
+  // Open aborted.
   int32_t rv = 0;
   {
     pp::FileSystem fs(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);

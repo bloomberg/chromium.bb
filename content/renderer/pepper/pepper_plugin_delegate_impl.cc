@@ -1067,6 +1067,14 @@ bool PepperPluginDelegateImpl::Query(
   return file_system_dispatcher->ReadMetadata(path, dispatcher);
 }
 
+bool PepperPluginDelegateImpl::ReadDirectoryEntries(
+    const GURL& path,
+    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+  FileSystemDispatcher* file_system_dispatcher =
+      ChildThread::current()->file_system_dispatcher();
+  return file_system_dispatcher->ReadDirectory(path, dispatcher);
+}
+
 bool PepperPluginDelegateImpl::Touch(
     const GURL& path,
     const base::Time& last_access_time,

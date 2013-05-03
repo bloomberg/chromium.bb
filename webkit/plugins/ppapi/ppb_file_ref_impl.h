@@ -6,8 +6,10 @@
 #define WEBKIT_PLUGINS_PPAPI_PPB_FILE_REF_IMPL_H_
 
 #include <string>
+#include <vector>
 
 #include "base/files/file_path.h"
+#include "base/memory/linked_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/ppb_file_ref.h"
@@ -15,6 +17,7 @@
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/shared_impl/var.h"
 #include "webkit/glue/webkit_glue_export.h"
+#include "webkit/plugins/ppapi/file_callbacks.h"
 
 namespace webkit {
 namespace ppapi {
@@ -59,6 +62,16 @@ class WEBKIT_GLUE_EXPORT PPB_FileRef_Impl
       scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
   virtual int32_t Query(
       PP_FileInfo* info,
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
+  virtual int32_t ReadDirectoryEntries(
+      const PP_ArrayOutput& output,
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
+  virtual int32_t QueryInHost(
+      linked_ptr<PP_FileInfo> info,
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
+  virtual int32_t ReadDirectoryEntriesInHost(
+      linked_ptr<std::vector< ::ppapi::PPB_FileRef_CreateInfo> > files,
+      linked_ptr<std::vector<PP_FileType> > file_types,
       scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
   virtual PP_Var GetAbsolutePath();
 

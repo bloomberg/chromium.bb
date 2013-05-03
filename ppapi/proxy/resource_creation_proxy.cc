@@ -10,7 +10,6 @@
 #include "ppapi/proxy/audio_input_resource.h"
 #include "ppapi/proxy/browser_font_resource_trusted.h"
 #include "ppapi/proxy/connection.h"
-#include "ppapi/proxy/directory_reader_resource.h"
 #include "ppapi/proxy/file_chooser_resource.h"
 #include "ppapi/proxy/file_io_resource.h"
 #include "ppapi/proxy/file_system_resource.h"
@@ -68,13 +67,6 @@ ResourceCreationProxy::~ResourceCreationProxy() {
 // static
 InterfaceProxy* ResourceCreationProxy::Create(Dispatcher* dispatcher) {
   return new ResourceCreationProxy(dispatcher);
-}
-
-PP_Resource ResourceCreationProxy::CreateDirectoryReader(
-    PP_Instance instance,
-    PP_Resource directory_ref) {
-  return (new DirectoryReaderResource(
-      GetConnection(), instance, directory_ref))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateFileIO(PP_Instance instance) {
