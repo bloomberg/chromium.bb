@@ -1172,13 +1172,7 @@ class Port(object):
         """Returns the full path to the apache binary.
 
         This is needed only by ports that use the apache_http_server module."""
-        # The Apache binary path can vary depending on OS and distribution
-        # See http://wiki.apache.org/httpd/DistrosDefaultLayout
-        for path in ["/usr/sbin/httpd", "/usr/sbin/apache2"]:
-            if self._filesystem.exists(path):
-                return path
-        _log.error("Could not find apache. Not installed or unknown path.")
-        return None
+        raise NotImplementedError('Port._path_to_apache')
 
     # FIXME: This belongs on some platform abstraction instead of Port.
     def _is_redhat_based(self):

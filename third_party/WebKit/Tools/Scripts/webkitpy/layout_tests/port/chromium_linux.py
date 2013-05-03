@@ -139,10 +139,13 @@ class ChromiumLinuxPort(chromium.ChromiumPort):
         return 'wdiff is not installed; please install using "sudo apt-get install wdiff"'
 
     def _path_to_apache(self):
-        if self._is_redhat_based():
-            return '/usr/sbin/httpd'
-        else:
-            return '/usr/sbin/apache2'
+        # The Apache binary path can vary depending on OS and distribution
+        # See http://wiki.apache.org/httpd/DistrosDefaultLayout
+        for path in ["/usr/sbin/httpd", "/usr/sbin/apache2"]:
+            if self._filesystem.exists(path):
+                return path
+        _log.error("Could not find apache. Not installed or unknown path.")
+        return None
 
     def _path_to_lighttpd(self):
         return "/usr/sbin/lighttpd"
