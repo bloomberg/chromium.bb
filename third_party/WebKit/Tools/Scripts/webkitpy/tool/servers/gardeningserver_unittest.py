@@ -99,6 +99,21 @@ class GardeningServerTest(unittest.TestCase):
         expected_stdout = '== Begin XML Response ==\nMOCK output of child process\n== End XML Response ==\n'
         self._post_to_path('/svnlog', expected_stderr=expected_stderr, expected_stdout=expected_stdout)
 
+    def test_lastroll(self):
+        expected_stderr = 'MOCK run_command: [\'svn\', \'cat\', \'http://src.chromium.org/chrome/trunk/src/DEPS\'], cwd=None, input=None\n'
+        expected_stdout = '== Begin Response ==\n1\n== End Response ==\n'
+        server = MockServer()
+
+        self.output = ['  "webkit_revision": "3",', 'lol']
+
+        def run_command(args, cwd=None, input=None, **kwargs):
+            print >> sys.stderr, "MOCK run_command: %s, cwd=%s, input=%s" % (args, cwd, input)
+            return self.output.pop(0)
+
+        server.tool.executive.run_command = run_command
+        self._post_to_path('/lastroll', expected_stderr=expected_stderr, expected_stdout='== Begin Response ==\n3\n== End Response ==\n', server=server)
+        self._post_to_path('/lastroll', expected_stderr=expected_stderr, expected_stdout='== Begin Response ==\n0\n== End Response ==\n', server=server)
+
     def disabled_test_rollout(self):
         expected_stderr = "MOCK run_command: ['echo', 'rollout', '--force-clean', '--non-interactive', '2314', 'MOCK rollout reason'], cwd=/mock-checkout\n"
         expected_stdout = "== Begin Response ==\nsuccess\n== End Response ==\n"
