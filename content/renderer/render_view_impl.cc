@@ -535,8 +535,8 @@ static bool ShouldUseFixedPositionCompositing(float device_scale_factor) {
           switches::kEnableHighDpiCompositingForFixedPosition))
     return true;
 
-  // Default, when no switches are specified, is disabled.
-  return false;
+  // Default, when no switch is specified, is to be enabled only for high-DPI.
+  return device_scale_factor > 1.0f;
 }
 
 static FaviconURL::IconType ToFaviconType(WebKit::WebIconURL::Type type) {
