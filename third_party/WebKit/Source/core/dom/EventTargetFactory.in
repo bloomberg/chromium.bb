@@ -38,6 +38,7 @@ modules/speech/SpeechRecognition
 modules/speech/SpeechSynthesisUtterance
 modules/webaudio/AudioContext conditional=WEB_AUDIO
 modules/webaudio/ScriptProcessorNode conditional=WEB_AUDIO
+modules/webmidi/MIDIInput
 modules/webmidi/MIDIPort
 modules/websockets/WebSocket
 WebKitNamedFlow interfaceName=NamedFlow

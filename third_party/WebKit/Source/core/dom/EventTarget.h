@@ -52,7 +52,7 @@ namespace WebCore {
     class IDBDatabase;
     class IDBRequest;
     class IDBTransaction;
-    class ScriptProcessorNode;
+    class MIDIInput;
     class MIDIPort;
     class MediaController;
     class MediaSource;
@@ -63,6 +63,7 @@ namespace WebCore {
     class Notification;
     class SVGElementInstance;
     class ScriptExecutionContext;
+    class ScriptProcessorNode;
     class SharedWorker;
     class SharedWorkerContext;
     class SourceBufferList;
