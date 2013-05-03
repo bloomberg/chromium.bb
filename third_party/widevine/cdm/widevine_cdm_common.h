@@ -33,4 +33,9 @@ const base::FilePath::CharType kWidevineCdmPluginFileName[] =
     FILE_PATH_LITERAL("libwidevinecdmadapter.so");
 #endif
 
+#if defined(OS_MACOSX) || defined(OS_WIN)
+// CDM is installed by the component installer instead of the Chrome installer.
+#define WIDEVINE_CDM_IS_COMPONENT
+#endif
+
 #endif  // WIDEVINE_CDM_WIDEVINE_CDM_COMMON_H_

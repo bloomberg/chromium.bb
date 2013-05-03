@@ -82,7 +82,7 @@ base::FilePath GetWidevineCdmBaseDirectory() {
   return result;
 }
 
-#if defined(WIDEVINE_CDM_AVAILABLE) && !defined(OS_LINUX)
+#if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
 // Widevine CDM plugins have the version encoded in the path itself
 // so we need to enumerate the directories to find the full path.
 // On success, |latest_dir| returns something like:
@@ -117,7 +117,7 @@ bool GetWidevineCdmDirectory(base::FilePath* latest_dir,
   }
   return found;
 }
-#endif  // defined(WIDEVINE_CDM_AVAILABLE) && !defined(OS_LINUX)
+#endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
 
 bool MakeWidevineCdmPluginInfo(const base::FilePath& path,
                                const base::Version& version,
@@ -243,7 +243,7 @@ bool WidevineCdmComponentInstaller::Install(
 
 namespace {
 
-#if defined(WIDEVINE_CDM_AVAILABLE) && !defined(OS_LINUX)
+#if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
 void FinishWidevineCdmUpdateRegistration(ComponentUpdateService* cus,
                                          const base::Version& version) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -289,13 +289,13 @@ void StartWidevineCdmUpdateRegistration(ComponentUpdateService* cus) {
     file_util::Delete(*iter, true);
   }
 }
-#endif  // defined(WIDEVINE_CDM_AVAILABLE) && !defined(OS_LINUX)
+#endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
 
 }  // namespace
 
 void RegisterWidevineCdmComponent(ComponentUpdateService* cus) {
-#if defined(WIDEVINE_CDM_AVAILABLE) && !defined(OS_LINUX)
+#if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                           base::Bind(&StartWidevineCdmUpdateRegistration, cus));
-#endif  // defined(WIDEVINE_CDM_AVAILABLE) && !defined(OS_LINUX)
+#endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
 }

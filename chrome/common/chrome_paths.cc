@@ -355,6 +355,7 @@ bool PathProvider(int key, base::FilePath* result) {
       break;
 #endif
 #if defined(WIDEVINE_CDM_AVAILABLE)
+#if defined(WIDEVINE_CDM_IS_COMPONENT)
     // TODO(xhwang): DIR_WIDEVINE_CDM is used for Win/Mac/Linux and
     // FILE_WIDEVINE_CDM_PLUGIN is used for ChromeOS. Unify them!
     case chrome::DIR_WIDEVINE_CDM:
@@ -362,12 +363,13 @@ bool PathProvider(int key, base::FilePath* result) {
         return false;
       cur = cur.Append(kWidevineCdmBaseDirectory);
       break;
+#endif  // defined(WIDEVINE_CDM_IS_COMPONENT)
     case chrome::FILE_WIDEVINE_CDM_PLUGIN:
       if (!GetInternalPluginsDirectory(&cur))
         return false;
       cur = cur.Append(kWidevineCdmPluginFileName);
       break;
-#endif
+#endif  // defined(WIDEVINE_CDM_AVAILABLE)
     case chrome::FILE_RESOURCES_PACK:
 #if defined(OS_MACOSX) && !defined(OS_IOS)
       if (base::mac::AmIBundled()) {
