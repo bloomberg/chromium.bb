@@ -26,7 +26,6 @@
 #ifndef UseCounter_h
 #define UseCounter_h
 
-#include "CSSPropertyNames.h"
 #include "wtf/BitVector.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
@@ -138,7 +137,6 @@ public:
     // "count" sets the bit for this feature to 1. Repeated calls are ignored.
     static void count(Document*, Feature);
     static void count(DOMWindow*, Feature);
-    static void count(Document*, CSSPropertyID);
 
     // "countDeprecation" sets the bit for this feature to 1, and sends a deprecation
     // warning to the console. Repeated calls are ignored.
@@ -169,17 +167,9 @@ private:
         return true;
     }
 
-    void didCount(CSSPropertyID feature)
-    {
-        ASSERT(feature >= firstCSSProperty);
-        ASSERT(feature <= lastCSSProperty);
-        m_CSSFeatureBits.quickSet(feature);
-    }
-
     void updateMeasurements();
 
     OwnPtr<BitVector> m_countBits;
-    BitVector m_CSSFeatureBits;
 };
 
 } // namespace WebCore
