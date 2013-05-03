@@ -21,16 +21,21 @@ bool UseImmersiveFullscreen() {
   // Kiosk mode needs the whole screen.
   if (command->HasSwitch(switches::kKioskMode))
     return false;
-  // Immersive fullscreen is on by default.
-  return !command->HasSwitch(ash::switches::kAshDisableImmersiveFullscreen);
+  // Immersive fullscreen is off by default. If you change the default you must
+  // change the enable function below and BrowserTest FullscreenBookmarkBar
+  // (which cannot depend on this function due to DEPS).
+  return command->HasSwitch(ash::switches::kAshEnableImmersiveFullscreen);
 #endif
   return false;
 }
 
 // Implemented here so all the code dealing with flags lives in one place.
 void EnableImmersiveFullscreenForTest() {
-  // Immersive fullscreen is on by default. If we turn it off, this function
-  // will need to add kAshEnableImmersiveFullscreen to the command line.
+#if defined(OS_CHROMEOS)
+  // Immersive fullscreen is off by default.
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      ash::switches::kAshEnableImmersiveFullscreen);
+#endif
 }
 
 ImmersiveModeController* CreateImmersiveModeController() {
