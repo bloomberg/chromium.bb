@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
@@ -76,6 +77,12 @@ void MessagePopupCollection::UpdateWidgets() {
   }
 
   gfx::Point base_position = GetWorkAreaBottomRight();
+#if defined(OS_CHROMEOS)
+  // In ChromeOS, RTL UI language mirrors the whole desktop layout, so the toast
+  // widgets should be at the bottom-left instead of bottom right.
+  if (base::i18n::IsRTL())
+    base_position.set_x(work_area_.x() + kToastMargin);
+#endif
   int bottom = toasts_.empty() ?
       base_position.y() : toasts_.back()->origin().y();
   bottom -= kToastMargin;
@@ -100,8 +107,12 @@ void MessagePopupCollection::UpdateWidgets() {
     toast->SetContents(view);
     toasts_.push_back(toast);
 
-    toast->RevealWithAnimation(
-        gfx::Point(base_position.x() - kToastMargin, bottom));
+    gfx::Point origin(base_position.x() - kToastMargin, bottom);
+#if defined(OS_CHROMEOS)
+    if (base::i18n::IsRTL())
+      origin.set_x(base_position.x() + toast->GetPreferredSize().width());
+#endif
+    toast->RevealWithAnimation(origin);
     bottom -= view_height + kToastMargin;
 
     message_center_->DisplayedNotification((*iter)->id());

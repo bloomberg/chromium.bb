@@ -71,6 +71,12 @@ class ToastContentsView : public views::WidgetDelegateView,
   // Computes the size of the toast assuming it will host the given view.
   static gfx::Size GetToastSizeForView(views::View* view);
 
+  // Overridden from views::View:
+  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+
  private:
   // Overridden from ui::AnimationDelegate:
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
@@ -81,12 +87,6 @@ class ToastContentsView : public views::WidgetDelegateView,
   virtual views::View* GetContentsView() OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
   virtual bool CanActivate() const OVERRIDE;
-
-  // Overridden from views::View:
-  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // Given the bounds of a toast on the screen, compute the bouds for that
   // toast in 'closed' state. The 'closed' state is used as origin/destination
