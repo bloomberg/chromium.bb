@@ -338,6 +338,17 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             # FIXME: We should propagate the platform options as well.
             self._run_webkit_patch(['optimize-baselines', '--suffixes', ','.join(all_suffixes), test], verbose)
 
+    def _update_expectations_files(self, lines_to_remove):
+        for test in lines_to_remove:
+            for builder in lines_to_remove[test]:
+                port = self._tool.port_factory.get_from_builder_name(builder)
+                path = port.path_to_generic_test_expectations_file()
+                expectations = TestExpectations(port, include_overrides=False)
+                for test_configuration in port.all_test_configurations():
+                    if test_configuration.version == port.test_configuration().version:
+                        expectationsString = expectations.remove_configuration_from_test(test, test_configuration)
+                self._tool.filesystem.write_text_file(path, expectationsString)
+
     def _rebaseline(self, options, test_list):
         for test, builders_to_check in sorted(test_list.items()):
             _log.info("Rebaselining %s" % test)
@@ -354,16 +365,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         files_to_add, lines_to_remove = self._files_to_add(command_results)
         if files_to_add:
             self._tool.scm().add_list(list(files_to_add))
-
-        for test in lines_to_remove:
-            for builder in lines_to_remove[test]:
-                port = self._tool.port_factory.get_from_builder_name(builder)
-                path = port.path_to_generic_test_expectations_file()
-                expectations = TestExpectations(port, include_overrides=False)
-                for test_configuration in port.all_test_configurations():
-                    if test_configuration.version == port.test_configuration().version:
-                        expectationsString = expectations.remove_configuration_from_test(test, test_configuration)
-                self._tool.filesystem.write_text_file(path, expectationsString)
+        self._update_expectations_files(lines_to_remove)
 
         if options.optimize:
             self._optimize_baselines(test_list, options.verbose)
