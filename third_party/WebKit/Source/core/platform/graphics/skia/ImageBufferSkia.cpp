@@ -250,7 +250,7 @@ bool ImageBuffer::copyToPlatformTexture(GraphicsContext3D& context, Platform3DOb
 
 void ImageBuffer::clip(GraphicsContext* context, const FloatRect& rect) const
 {
-    context->platformContext()->beginLayerClippedToImage(rect, this);
+    context->beginLayerClippedToImage(rect, this);
 }
 
 static bool drawNeedsCopy(GraphicsContext* src, GraphicsContext* dst)
@@ -380,7 +380,7 @@ void ImageBuffer::putByteArray(Multiply multiplied, Uint8ClampedArray* source, c
     else
         config8888 = SkCanvas::kRGBA_Unpremul_Config8888;
 
-    context()->platformContext()->writePixels(srcBitmap, destX, destY, config8888);
+    context()->writePixels(srcBitmap, destX, destY, config8888);
 }
 
 template <typename T>

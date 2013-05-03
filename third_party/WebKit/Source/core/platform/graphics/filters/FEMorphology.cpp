@@ -252,15 +252,14 @@ bool FEMorphology::applySkia()
 
     SkPaint paint;
     GraphicsContext* dstContext = resultImage->context();
-    PlatformContextSkia* platformContext = dstContext->platformContext();
     if (m_type == FEMORPHOLOGY_OPERATOR_DILATE)
         paint.setImageFilter(new SkDilateImageFilter(radiusX, radiusY))->unref();
     else if (m_type == FEMORPHOLOGY_OPERATOR_ERODE)
         paint.setImageFilter(new SkErodeImageFilter(radiusX, radiusY))->unref();
 
-    platformContext->saveLayer(0, &paint);
+    dstContext->saveLayer(0, &paint);
     dstContext->drawImage(image.get(), ColorSpaceDeviceRGB, drawingRegion.location(), CompositeCopy);
-    platformContext->restoreLayer();
+    dstContext->restoreLayer();
     return true;
 }
 

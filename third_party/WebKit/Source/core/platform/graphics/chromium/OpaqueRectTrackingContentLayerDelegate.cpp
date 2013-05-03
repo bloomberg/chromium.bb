@@ -52,8 +52,7 @@ OpaqueRectTrackingContentLayerDelegate::~OpaqueRectTrackingContentLayerDelegate(
 void OpaqueRectTrackingContentLayerDelegate::paintContents(SkCanvas* canvas, const WebRect& clip, bool canPaintLCDText, WebFloatRect& opaque)
 {
     GraphicsContext context(canvas);
-    PlatformContextSkia* platformContext = context.platformContext();
-    platformContext->setTrackOpaqueRegion(!m_opaque);
+    context.setTrackOpaqueRegion(!m_opaque);
     context.setCertainlyOpaque(m_opaque);
     context.setShouldSmoothFonts(canPaintLCDText && m_opaque);
 
@@ -66,7 +65,7 @@ void OpaqueRectTrackingContentLayerDelegate::paintContents(SkCanvas* canvas, con
     // Transform tracked opaque paints back to our layer's content space.
     ASSERT(canvasToContentTransform.isInvertible());
     ASSERT(canvasToContentTransform.preservesAxisAlignment());
-    opaque = canvasToContentTransform.mapRect(platformContext->opaqueRegion().asRect());
+    opaque = canvasToContentTransform.mapRect(context.opaqueRegion().asRect());
 }
 
 }

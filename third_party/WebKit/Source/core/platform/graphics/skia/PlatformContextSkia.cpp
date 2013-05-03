@@ -67,7 +67,6 @@ struct PlatformContextSkia::DeferredSaveState {
 PlatformContextSkia::PlatformContextSkia(SkCanvas* canvas)
     : m_canvas(canvas)
     , m_deferredSaveFlags(0)
-    , m_trackOpaqueRegion(false)
 {
     m_stateStack.append(PlatformContextSkiaState());
     m_state = &m_stateStack.last();
@@ -103,64 +102,6 @@ void PlatformContextSkia::save()
     m_deferredSaveFlags |= SkCanvas::kMatrixClip_SaveFlag;
 }
 
-void PlatformContextSkia::saveLayer(const SkRect* bounds, const SkPaint* paint, SkCanvas::SaveFlags saveFlags)
-{
-    realizeSave(SkCanvas::kMatrixClip_SaveFlag);
-
-    m_canvas->saveLayer(bounds, paint, saveFlags);
-    if (bounds)
-        m_canvas->clipRect(*bounds);
-    if (m_trackOpaqueRegion)
-        m_opaqueRegion.pushCanvasLayer(paint);
-}
-
-void PlatformContextSkia::restoreLayer()
-{
-    m_canvas->restore();
-    if (m_trackOpaqueRegion)
-        m_opaqueRegion.popCanvasLayer(this);
-}
-
-void PlatformContextSkia::beginLayerClippedToImage(const FloatRect& rect,
-                                                   const ImageBuffer* imageBuffer)
-{
-    SkRect bounds = { SkFloatToScalar(rect.x()), SkFloatToScalar(rect.y()),
-                      SkFloatToScalar(rect.maxX()), SkFloatToScalar(rect.maxY()) };
-
-    if (imageBuffer->internalSize().isEmpty()) {
-        clipRect(bounds);
-        return;
-    }
-
-    // Skia doesn't support clipping to an image, so we create a layer. The next
-    // time restore is invoked the layer and |imageBuffer| are combined to
-    // create the resulting image.
-
-    m_state->m_clip = bounds;
-    // Get the absolute coordinates of the stored clipping rectangle to make it
-    // independent of any transform changes.
-    getTotalMatrix().mapRect(&m_state->m_clip);
-
-    SkCanvas::SaveFlags saveFlags = static_cast<SkCanvas::SaveFlags>(SkCanvas::kHasAlphaLayer_SaveFlag | SkCanvas::kFullColorLayer_SaveFlag);
-    saveLayer(&bounds, 0, saveFlags);
-
-    const SkBitmap* bitmap = imageBuffer->context()->platformContext()->bitmap();
-
-    if (m_trackOpaqueRegion) {
-        SkRect opaqueRect = bitmap->isOpaque() ? m_state->m_clip : SkRect::MakeEmpty();
-        m_opaqueRegion.setImageMask(opaqueRect);
-    }
-
-    // Copy off the image as |imageBuffer| may be deleted before restore is invoked.
-    if (bitmap->isImmutable())
-        m_state->m_imageBufferClip = *bitmap;
-    else {
-        // We need to make a deep-copy of the pixels themselves, so they don't
-        // change on us between now and when we want to apply them in restore()
-        bitmap->copyTo(&m_state->m_imageBufferClip, SkBitmap::kARGB_8888_Config);
-    }
-}
-
 void PlatformContextSkia::restore()
 {
     if (!m_state->m_imageBufferClip.empty()) {
@@ -177,13 +118,18 @@ void PlatformContextSkia::restore()
     m_canvas->restoreToCount(savedState.m_restoreCount);
 }
 
+void PlatformContextSkia::setStateClip(SkRect& bounds) { m_state->m_clip = bounds; }
+SkRect& PlatformContextSkia::getStateClip() { return m_state->m_clip; }
+void PlatformContextSkia::setStateImageBufferClip(const SkBitmap* bitmap) { m_state->m_imageBufferClip = *bitmap; }
+SkBitmap* PlatformContextSkia::getStateImageBufferClip() { return &m_state->m_imageBufferClip; }
+
 void PlatformContextSkia::drawRect(SkRect rect)
 {
     SkPaint paint;
     int fillcolorNotTransparent = m_state->m_fillColor & 0xFF000000;
     if (fillcolorNotTransparent) {
         setupPaintForFilling(&paint);
-        drawRect(rect, paint);
+        m_gc->drawRect(rect, paint);
     }
 
     if (m_state->m_strokeStyle != NoStroke
@@ -195,13 +141,13 @@ void PlatformContextSkia::drawRect(SkRect rect)
         paint.setColor(this->effectiveStrokeColor());
 
         SkRect topBorder = { rect.fLeft, rect.fTop, rect.fRight, rect.fTop + 1 };
-        drawRect(topBorder, paint);
+        m_gc->drawRect(topBorder, paint);
         SkRect bottomBorder = { rect.fLeft, rect.fBottom - 1, rect.fRight, rect.fBottom };
-        drawRect(bottomBorder, paint);
+        m_gc->drawRect(bottomBorder, paint);
         SkRect leftBorder = { rect.fLeft, rect.fTop + 1, rect.fLeft + 1, rect.fBottom - 1 };
-        drawRect(leftBorder, paint);
+        m_gc->drawRect(leftBorder, paint);
         SkRect rightBorder = { rect.fRight - 1, rect.fTop + 1, rect.fRight, rect.fBottom - 1 };
-        drawRect(rightBorder, paint);
+        m_gc->drawRect(rightBorder, paint);
     }
 }
 
@@ -451,12 +397,6 @@ void PlatformContextSkia::applyClipFromImage(const SkRect& rect, const SkBitmap&
     m_canvas->resetMatrix();
     m_canvas->drawBitmapRect(imageBuffer, 0, rect, &paint);
     m_canvas->restore();
-}
-
-void PlatformContextSkia::didDrawRect(const SkRect& rect, const SkPaint& paint, const SkBitmap* bitmap)
-{
-    if (m_trackOpaqueRegion)
-        m_opaqueRegion.didDrawRect(this, rect, paint, bitmap);
 }
 
 void PlatformContextSkia::adjustTextRenderMode(SkPaint* paint)

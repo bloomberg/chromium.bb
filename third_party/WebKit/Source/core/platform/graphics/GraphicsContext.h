@@ -37,6 +37,7 @@
 #include "core/platform/graphics/ImageOrientation.h"
 #include "core/platform/graphics/Path.h"
 #include "core/platform/graphics/Pattern.h"
+#include "core/platform/graphics/skia/OpaqueRegionSkia.h"
 
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -221,8 +222,19 @@ namespace WebCore {
         bool isAccelerated() const { return m_accelerated; }
         void setAccelerated(bool accelerated) { m_accelerated = accelerated; }
 
+        // The opaque region is empty until tracking is turned on.
+        // It is never clerared by the context.
+        void setTrackOpaqueRegion(bool track) { m_trackOpaqueRegion = track; }
+        const OpaqueRegionSkia& opaqueRegion() const { return m_opaqueRegion; }
+
+        void setImageInterpolationQuality(InterpolationQuality);
+        InterpolationQuality imageInterpolationQuality() const;
+
         void save();
         void restore();
+
+        void saveLayer(const SkRect* bounds, const SkPaint*, SkCanvas::SaveFlags = SkCanvas::kARGB_ClipLayer_SaveFlag);
+        void restoreLayer();
 
         // These draw methods will do both stroking and filling.
         // FIXME: ...except drawRect(), which fills properly but always strokes
@@ -271,8 +283,22 @@ namespace WebCore {
         void drawImageBuffer(ImageBuffer*, ColorSpace styleColorSpace, const FloatRect& destRect);
         void drawImageBuffer(ImageBuffer*, ColorSpace styleColorSpace, const FloatRect& destRect, const FloatRect& srcRect, CompositeOperator = CompositeSourceOver, BlendMode = BlendModeNormal, bool useLowQualityScale = false);
 
-        void setImageInterpolationQuality(InterpolationQuality);
-        InterpolationQuality imageInterpolationQuality() const;
+        // These methods write to the canvas and modify the opaque region, if tracked.
+        // Also drawLine(const IntPoint& point1, const IntPoint& point2) and fillRoundedRect
+        void writePixels(const SkBitmap&, int x, int y, SkCanvas::Config8888 = SkCanvas::kNative_Premul_Config8888);
+        void drawBitmap(const SkBitmap&, SkScalar, SkScalar, const SkPaint* = 0);
+        void drawBitmapRect(const SkBitmap&, const SkIRect*, const SkRect&, const SkPaint* = 0);
+        void drawOval(const SkRect&, const SkPaint&);
+        void drawPath(const SkPath&, const SkPaint&);
+        // After drawing directly to the context's canvas, use this function to notify the context so
+        // it can track the opaque region.
+        // FIXME: this is still needed only because ImageSkia::paintSkBitmap() may need to notify for a
+        //        smaller rect than the one drawn to, due to its clipping logic.
+        void didDrawRect(const SkRect&, const SkPaint&, const SkBitmap* = 0);
+        void drawRect(const SkRect&, const SkPaint&);
+        void drawPosText(const void* text, size_t byteLength, const SkPoint pos[], const SkPaint&);
+        void drawPosTextH(const void* text, size_t byteLength, const SkScalar xpos[], SkScalar constY, const SkPaint&);
+        void drawTextOnPath(const void* text, size_t byteLength, const SkPath&, const SkMatrix*, const SkPaint&);
 
         void clip(const IntRect&);
         void clip(const FloatRect&);
@@ -309,6 +335,10 @@ namespace WebCore {
         void beginTransparencyLayer(float opacity);
         void endTransparencyLayer();
         bool isInTransparencyLayer() const;
+        // Begins a layer that is clipped to the image |imageBuffer| at the location
+        // |rect|. This layer is implicitly restored when the next restore is invoked.
+        // NOTE: |imageBuffer| may be deleted before the |restore| is invoked.
+        void beginLayerClippedToImage(const FloatRect&, const ImageBuffer*);
 
         bool hasShadow() const;
         void setShadow(const FloatSize&, float blur, const Color&, ColorSpace);
@@ -371,8 +401,8 @@ namespace WebCore {
         static bool supportsTransparencyLayers();
         static void addCornerArc(SkPath*, const SkRect&, const IntSize&, int);
         static void setPathFromConvexPoints(SkPath* path, size_t numPoints, const FloatPoint* points);
-        static void drawOuterPath(PlatformContextSkia* context, const SkPath& path, SkPaint& paint, int width);
-        static void drawInnerPath(PlatformContextSkia* context, const SkPath& path, SkPaint& paint, int width);
+        void drawOuterPath(const SkPath&, SkPaint&, int);
+        void drawInnerPath(const SkPath&, SkPaint&, int);
         static void setRadii(SkVector* radii, IntSize topLeft, IntSize topRight, IntSize bottomRight, IntSize bottomLeft);
 
 #if OS(DARWIN)
@@ -406,6 +436,10 @@ namespace WebCore {
         GraphicsContextState m_state;
         Vector<GraphicsContextState> m_stack;
         unsigned m_transparencyCount;
+
+        // Tracks the region painted opaque via the GraphicsContext.
+        OpaqueRegionSkia m_opaqueRegion;
+        bool m_trackOpaqueRegion;
 
         // Are we on a high DPI display? If so, spelling and grammer markers are larger.
         bool m_useHighResMarker;

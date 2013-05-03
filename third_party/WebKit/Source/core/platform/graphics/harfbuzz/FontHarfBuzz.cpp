@@ -109,10 +109,10 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
                 path.reset();
                 path.moveTo(vPosBegin[i]);
                 path.lineTo(vPosEnd[i]);
-                platformContext->drawTextOnPath(glyphs + i, 2, path, 0, paint);
+                gc->drawTextOnPath(glyphs + i, 2, path, 0, paint);
             }
         } else
-            platformContext->drawPosText(glyphs, numGlyphs << 1, pos, paint);
+            gc->drawPosText(glyphs, numGlyphs << 1, pos, paint);
     }
 
     if ((textMode & TextModeStroke)
@@ -138,10 +138,10 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
                 path.reset();
                 path.moveTo(vPosBegin[i]);
                 path.lineTo(vPosEnd[i]);
-                platformContext->drawTextOnPath(glyphs + i, 2, path, 0, paint);
+                gc->drawTextOnPath(glyphs + i, 2, path, 0, paint);
             }
         } else
-            platformContext->drawPosText(glyphs, numGlyphs << 1, pos, paint);
+            gc->drawPosText(glyphs, numGlyphs << 1, pos, paint);
     }
 }
 

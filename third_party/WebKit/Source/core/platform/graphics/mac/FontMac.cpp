@@ -154,7 +154,7 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
         gc->platformContext()->adjustTextRenderMode(&paint);
         paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
 
-        platformContext->drawPosText(glyphs, numGlyphs * sizeof(uint16_t), pos, paint);
+        gc->drawPosText(glyphs, numGlyphs * sizeof(uint16_t), pos, paint);
     }
 
     if ((textMode & TextModeStroke)
@@ -173,7 +173,7 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
             paint.setLooper(0);
         }
 
-        platformContext->drawPosText(glyphs, numGlyphs * sizeof(uint16_t), pos, paint);
+        gc->drawPosText(glyphs, numGlyphs * sizeof(uint16_t), pos, paint);
     }
     if (font->platformData().orientation() == Vertical)
         platformContext->restore();

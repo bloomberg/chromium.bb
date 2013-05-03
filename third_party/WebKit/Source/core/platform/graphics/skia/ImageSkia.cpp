@@ -291,20 +291,20 @@ static SkBitmap extractScaledImageFragment(const NativeImageSkia& bitmap, const 
 //
 // Note: this code is only used when the canvas transformation is limited to
 // scaling or translation.
-static void drawResampledBitmap(PlatformContextSkia* context, SkPaint& paint, const NativeImageSkia& bitmap, const SkRect& srcRect, const SkRect& destRect)
+static void drawResampledBitmap(GraphicsContext* context, SkPaint& paint, const NativeImageSkia& bitmap, const SkRect& srcRect, const SkRect& destRect)
 {
     TRACE_EVENT0("skia", "drawResampledBitmap");
     // We want to scale |destRect| with transformation in the canvas to obtain
     // the final scale. The final scale is a combination of scale transform
     // in canvas and explicit scaling (srcRect and destRect).
     SkRect screenRect;
-    context->getTotalMatrix().mapRect(&screenRect, destRect);
+    context->platformContext()->getTotalMatrix().mapRect(&screenRect, destRect);
     float realScaleX = screenRect.width() / srcRect.width();
     float realScaleY = screenRect.height() / srcRect.height();
 
     // This part of code limits scaling only to visible portion in the
     SkRect destRectVisibleSubset;
-    ClipRectToCanvas(context, destRect, &destRectVisibleSubset);
+    ClipRectToCanvas(context->platformContext(), destRect, &destRectVisibleSubset);
 
     // ClipRectToCanvas often overshoots, resulting in a larger region than our
     // original destRect. Intersecting gets us back inside.
@@ -334,8 +334,8 @@ static void drawResampledBitmap(PlatformContextSkia* context, SkPaint& paint, co
     // When Skia supports then use this as the source rect to replace 0.
     //
     // scaledSrcRect.offset(-enclosingScaledSrcRect.x(), -enclosingScaledSrcRect.y());
-    context->save();
-    context->clipRect(destRectVisibleSubset);
+    context->platformContext()->save();
+    context->platformContext()->clipRect(destRectVisibleSubset);
 
     // Because the image fragment is generated with an approxmiated scaling
     // factor. This draw will perform a close to 1 scaling.
@@ -344,7 +344,7 @@ static void drawResampledBitmap(PlatformContextSkia* context, SkPaint& paint, co
     // that Skia doesn't produce a difference then we can just blit it directly
     // to enhance performance.
     context->drawBitmapRect(scaledImageFragment, 0, enclosingDestRect, &paint);
-    context->restore();
+    context->platformContext()->restore();
 }
 
 static bool hasNon90rotation(PlatformContextSkia* context)
@@ -352,29 +352,30 @@ static bool hasNon90rotation(PlatformContextSkia* context)
     return !context->getTotalMatrix().rectStaysRect();
 }
 
-static void paintSkBitmap(GraphicsContext* graphicsContext, const NativeImageSkia& bitmap, const SkRect& srcRect, const SkRect& destRect, const SkXfermode::Mode& compOp)
+
+static void paintSkBitmap(GraphicsContext* context, const NativeImageSkia& bitmap, const SkRect& srcRect, const SkRect& destRect, const SkXfermode::Mode& compOp)
 {
     TRACE_EVENT0("skia", "paintSkBitmap");
-    PlatformContextSkia* platformContext = graphicsContext->platformContext();
+    PlatformContextSkia* platformContext = context->platformContext();
     SkPaint paint;
     paint.setXfermodeMode(compOp);
-    paint.setAlpha(platformContext->getNormalizedAlpha());
-    paint.setLooper(platformContext->getDrawLooper());
+    paint.setAlpha(context->platformContext()->getNormalizedAlpha());
+    paint.setLooper(context->platformContext()->getDrawLooper());
     // only antialias if we're rotated or skewed
-    paint.setAntiAlias(hasNon90rotation(platformContext));
+    paint.setAntiAlias(hasNon90rotation(context->platformContext()));
 
     ResamplingMode resampling;
-    if (graphicsContext->isAccelerated())
+    if (context->isAccelerated())
         resampling = RESAMPLE_LINEAR;
-    else if (graphicsContext->printing())
+    else if (context->printing())
         resampling = RESAMPLE_NONE;
     else {
         // Take into account scale applied to the canvas when computing sampling mode (e.g. CSS scale or page scale).
         SkRect destRectTarget = destRect;
-        if (!(platformContext->getTotalMatrix().getType() & (SkMatrix::kAffine_Mask | SkMatrix::kPerspective_Mask)))
-            platformContext->getTotalMatrix().mapRect(&destRectTarget, destRect);
+        if (!(context->platformContext()->getTotalMatrix().getType() & (SkMatrix::kAffine_Mask | SkMatrix::kPerspective_Mask)))
+            context->platformContext()->getTotalMatrix().mapRect(&destRectTarget, destRect);
 
-        resampling = computeResamplingMode(platformContext->getTotalMatrix(), bitmap,
+        resampling = computeResamplingMode(context->platformContext()->getTotalMatrix(), bitmap,
             SkScalarToFloat(srcRect.width()), SkScalarToFloat(srcRect.height()),
             SkScalarToFloat(destRectTarget.width()), SkScalarToFloat(destRectTarget.height()));
     }
@@ -385,10 +386,10 @@ static void paintSkBitmap(GraphicsContext* graphicsContext, const NativeImageSki
         // being returned from computeResamplingMode.
         resampling = RESAMPLE_LINEAR;
     }
-    resampling = limitResamplingMode(platformContext, resampling);
+    resampling = limitResamplingMode(context->platformContext(), resampling);
     paint.setFilterBitmap(resampling == RESAMPLE_LINEAR);
     if (resampling == RESAMPLE_AWESOME)
-        drawResampledBitmap(platformContext, paint, bitmap, srcRect, destRect);
+        drawResampledBitmap(context, paint, bitmap, srcRect, destRect);
     else {
         // No resampling necessary, we can just draw the bitmap. We want to
         // filter it if we decided to do linear interpolation above, or if there
@@ -408,16 +409,16 @@ static void paintSkBitmap(GraphicsContext* graphicsContext, const NativeImageSki
         // to the original destination rectangle.
         // See http://crbug.com/145540.
         if (needsClipping) {
-            platformContext->save();
-            platformContext->clipRect(destRect);
+            context->platformContext()->save();
+            context->platformContext()->clipRect(destRect);
         }
 
-        platformContext->drawBitmapRect(bitmap.bitmap(), &enclosingSrcRect, enclosingDestRect, &paint);
+        context->drawBitmapRect(bitmap.bitmap(), &enclosingSrcRect, enclosingDestRect, &paint);
 
         if (needsClipping)
-            platformContext->restore();
+            context->platformContext()->restore();
     }
-    platformContext->didDrawRect(destRect, paint, &bitmap.bitmap());
+    context->didDrawRect(destRect, paint, &bitmap.bitmap());
 }
 
 // A helper method for translating negative width and height values.
@@ -540,7 +541,7 @@ void Image::drawPattern(GraphicsContext* context,
     paint.setXfermodeMode(WebCoreCompositeToSkiaComposite(compositeOp));
     paint.setFilterBitmap(resampling == RESAMPLE_LINEAR);
 
-    context->platformContext()->drawRect(destRect, paint);
+    context->drawRect(destRect, paint);
 }
 
 // ================================================

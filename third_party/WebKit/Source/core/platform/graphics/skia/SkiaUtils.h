@@ -62,6 +62,12 @@ inline SkScalar WebCoreDoubleToSkScalar(double d)
     return SkDoubleToScalar(std::isfinite(d) ? d : 0);
 }
 
+inline SkRect WebCoreFloatRectToSKRect(const FloatRect& rect)
+{
+    return SkRect::MakeLTRB(SkFloatToScalar(rect.x()), SkFloatToScalar(rect.y()),
+        SkFloatToScalar(rect.maxX()), SkFloatToScalar(rect.maxY()));
+}
+
 // Computes the smallest rectangle that, which when drawn to the given canvas,
 // will cover the same area as the source rectangle. It will clip to the canvas'
 // clip, doing the necessary coordinate transforms.

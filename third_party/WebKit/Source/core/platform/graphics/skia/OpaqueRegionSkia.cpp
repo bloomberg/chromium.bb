@@ -32,6 +32,7 @@
 
 #include "core/platform/graphics/skia/OpaqueRegionSkia.h"
 
+#include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/skia/PlatformContextSkia.h"
 
 #include "SkCanvas.h"
@@ -149,14 +150,14 @@ static inline bool paintIsOpaque(const SkPaint& paint, OpaqueRegionSkia::DrawTyp
 }
 
 // Returns true if there is a rectangular clip, with the result in |deviceClipRect|.
-static inline bool getDeviceClipAsRect(const PlatformContextSkia* context, SkRect& deviceClipRect)
+static inline bool getDeviceClipAsRect(const GraphicsContext* context, SkRect& deviceClipRect)
 {
     // Get the current clip in device coordinate space.
-    if (context->canvas()->getClipType() != SkCanvas::kRect_ClipType)
+    if (context->platformContext()->canvas()->getClipType() != SkCanvas::kRect_ClipType)
         return false;
 
     SkIRect deviceClipIRect;
-    if (context->canvas()->getClipDeviceBounds(&deviceClipIRect))
+    if (context->platformContext()->canvas()->getClipDeviceBounds(&deviceClipIRect))
         deviceClipRect.set(deviceClipIRect);
     else
         deviceClipRect.setEmpty();
@@ -172,7 +173,7 @@ void OpaqueRegionSkia::pushCanvasLayer(const SkPaint* paint)
     m_canvasLayerStack.append(state);
 }
 
-void OpaqueRegionSkia::popCanvasLayer(const PlatformContextSkia* context)
+void OpaqueRegionSkia::popCanvasLayer(const GraphicsContext* context)
 {
     ASSERT(!m_canvasLayerStack.isEmpty());
     if (m_canvasLayerStack.isEmpty())
@@ -198,7 +199,7 @@ void OpaqueRegionSkia::setImageMask(const SkRect& imageOpaqueRect)
     m_canvasLayerStack.last().imageOpaqueRect = imageOpaqueRect;
 }
 
-void OpaqueRegionSkia::didDrawRect(const PlatformContextSkia* context, const SkRect& fillRect, const SkPaint& paint, const SkBitmap* sourceBitmap)
+void OpaqueRegionSkia::didDrawRect(const GraphicsContext* context, const SkRect& fillRect, const SkPaint& paint, const SkBitmap* sourceBitmap)
 {
     // Any stroking may put alpha in pixels even if the filling part does not.
     if (paint.getStyle() != SkPaint::kFill_Style) {
@@ -217,7 +218,7 @@ void OpaqueRegionSkia::didDrawRect(const PlatformContextSkia* context, const SkR
     didDraw(context, fillRect, paint, sourceBitmap, fillsBounds, FillOnly);
 }
 
-void OpaqueRegionSkia::didDrawPath(const PlatformContextSkia* context, const SkPath& path, const SkPaint& paint)
+void OpaqueRegionSkia::didDrawPath(const GraphicsContext* context, const SkPath& path, const SkPaint& paint)
 {
     SkRect rect;
     if (path.isRect(&rect)) {
@@ -235,7 +236,7 @@ void OpaqueRegionSkia::didDrawPath(const PlatformContextSkia* context, const SkP
     }
 }
 
-void OpaqueRegionSkia::didDrawPoints(const PlatformContextSkia* context, SkCanvas::PointMode mode, int numPoints, const SkPoint points[], const SkPaint& paint)
+void OpaqueRegionSkia::didDrawPoints(const GraphicsContext* context, SkCanvas::PointMode mode, int numPoints, const SkPoint points[], const SkPaint& paint)
 {
     if (!numPoints)
         return;
@@ -263,7 +264,7 @@ void OpaqueRegionSkia::didDrawPoints(const PlatformContextSkia* context, SkCanva
     }
 }
 
-void OpaqueRegionSkia::didDrawBounded(const PlatformContextSkia* context, const SkRect& bounds, const SkPaint& paint)
+void OpaqueRegionSkia::didDrawBounded(const GraphicsContext* context, const SkRect& bounds, const SkPaint& paint)
 {
     bool fillsBounds = false;
 
@@ -276,12 +277,12 @@ void OpaqueRegionSkia::didDrawBounded(const PlatformContextSkia* context, const 
     }
 }
 
-void OpaqueRegionSkia::didDraw(const PlatformContextSkia* context, const SkRect& rect, const SkPaint& paint, const SkBitmap* sourceBitmap, bool fillsBounds, DrawType drawType)
+void OpaqueRegionSkia::didDraw(const GraphicsContext* context, const SkRect& rect, const SkPaint& paint, const SkBitmap* sourceBitmap, bool fillsBounds, DrawType drawType)
 {
     SkRect targetRect = rect;
 
     // Apply the transform to device coordinate space.
-    SkMatrix canvasTransform = context->canvas()->getTotalMatrix();
+    SkMatrix canvasTransform = context->platformContext()->canvas()->getTotalMatrix();
     if (!canvasTransform.mapRect(&targetRect))
         fillsBounds = false;
 
@@ -302,7 +303,7 @@ void OpaqueRegionSkia::didDraw(const PlatformContextSkia* context, const SkRect&
         markRectAsNonOpaque(targetRect);
 }
 
-void OpaqueRegionSkia::didDrawUnbounded(const PlatformContextSkia* context, const SkPaint& paint, DrawType drawType)
+void OpaqueRegionSkia::didDrawUnbounded(const GraphicsContext* context, const SkPaint& paint, DrawType drawType)
 {
     bool drawsOpaque = paintIsOpaque(paint, drawType, 0);
     bool preservesOpaque = xfermodePreservesOpaque(paint, drawsOpaque);
@@ -315,7 +316,7 @@ void OpaqueRegionSkia::didDrawUnbounded(const PlatformContextSkia* context, cons
     markRectAsNonOpaque(deviceClipRect);
 }
 
-void OpaqueRegionSkia::applyOpaqueRegionFromLayer(const PlatformContextSkia* context, const SkRect& layerOpaqueRect, const SkPaint& paint)
+void OpaqueRegionSkia::applyOpaqueRegionFromLayer(const GraphicsContext* context, const SkRect& layerOpaqueRect, const SkPaint& paint)
 {
     SkRect deviceClipRect;
     bool deviceClipIsARect = getDeviceClipAsRect(context, deviceClipRect);

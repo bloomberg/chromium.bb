@@ -210,7 +210,7 @@ bool FEDisplacementMap::applySkia()
         typeX, typeY, SkFloatToScalar(m_scale), displSource, colorSource));
     SkPaint paint;
     paint.setImageFilter(displEffect);
-    resultImage->context()->platformContext()->drawBitmap(colorBitmap, 0, 0, &paint);
+    resultImage->context()->drawBitmap(colorBitmap, 0, 0, &paint);
     return true;
 }
 

@@ -40,7 +40,7 @@
 #include "SkRect.h"
 
 namespace WebCore {
-class PlatformContextSkia;
+class GraphicsContext;
 
 // This class is an encapsulation of functionality for PlatformContextSkia, and its methods are mirrored
 // there for the outside world. It tracks paints and computes what area will be opaque.
@@ -53,7 +53,7 @@ public:
     IntRect asRect() const;
 
     void pushCanvasLayer(const SkPaint*);
-    void popCanvasLayer(const PlatformContextSkia*);
+    void popCanvasLayer(const GraphicsContext*);
 
     void setImageMask(const SkRect& imageOpaqueRect);
 
@@ -62,11 +62,11 @@ public:
         FillOrStroke
     };
 
-    void didDrawRect(const PlatformContextSkia*, const SkRect&, const SkPaint&, const SkBitmap* sourceBitmap);
-    void didDrawPath(const PlatformContextSkia*, const SkPath&, const SkPaint&);
-    void didDrawPoints(const PlatformContextSkia*, SkCanvas::PointMode, int numPoints, const SkPoint[], const SkPaint&);
-    void didDrawBounded(const PlatformContextSkia*, const SkRect&, const SkPaint&);
-    void didDrawUnbounded(const PlatformContextSkia*, const SkPaint&, DrawType);
+    void didDrawRect(const GraphicsContext*, const SkRect&, const SkPaint&, const SkBitmap* sourceBitmap);
+    void didDrawPath(const GraphicsContext*, const SkPath&, const SkPaint&);
+    void didDrawPoints(const GraphicsContext*, SkCanvas::PointMode, int numPoints, const SkPoint[], const SkPaint&);
+    void didDrawBounded(const GraphicsContext*, const SkRect&, const SkPaint&);
+    void didDrawUnbounded(const GraphicsContext*, const SkPaint&, DrawType);
 
     struct CanvasLayerState {
         CanvasLayerState()
@@ -85,8 +85,8 @@ public:
     };
 
 private:
-    void didDraw(const PlatformContextSkia*, const SkRect&, const SkPaint&, const SkBitmap* sourceBitmap, bool fillsBounds, DrawType);
-    void applyOpaqueRegionFromLayer(const PlatformContextSkia*, const SkRect& layerOpaqueRect, const SkPaint&);
+    void didDraw(const GraphicsContext*, const SkRect&, const SkPaint&, const SkBitmap* sourceBitmap, bool fillsBounds, DrawType);
+    void applyOpaqueRegionFromLayer(const GraphicsContext*, const SkRect& layerOpaqueRect, const SkPaint&);
     void markRectAsOpaque(const SkRect&);
     void markRectAsNonOpaque(const SkRect&);
     void markAllAsNonOpaque();

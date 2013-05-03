@@ -64,7 +64,6 @@
 #include "core/page/Settings.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/FloatRect.h"
-#include "core/platform/graphics/skia/PlatformContextSkia.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderLayerCompositor.h"
@@ -937,10 +936,9 @@ TEST_F(WebFrameTest, pageScaleFactorScalesPaintClip)
     SkCanvas canvas(bitmap);
 
     WebCore::GraphicsContext context(&canvas);
-    WebCore::PlatformContextSkia* platformContext = context.platformContext();
-    platformContext->setTrackOpaqueRegion(true);
+    context.setTrackOpaqueRegion(true);
 
-    EXPECT_EQ_RECT(WebCore::IntRect(0, 0, 0, 0), platformContext->opaqueRegion().asRect());
+    EXPECT_EQ_RECT(WebCore::IntRect(0, 0, 0, 0), context.opaqueRegion().asRect());
 
     WebCore::FrameView* view = static_cast<WebViewImpl*>(m_webView)->mainFrameImpl()->frameView();
     WebCore::IntRect paintRect(0, 0, 200, 200);
@@ -949,7 +947,7 @@ TEST_F(WebFrameTest, pageScaleFactorScalesPaintClip)
     int viewportWidthMinusScrollbar = 50 - (view->verticalScrollbar()->isOverlayScrollbar() ? 0 : 15);
     int viewportHeightMinusScrollbar = 50 - (view->horizontalScrollbar()->isOverlayScrollbar() ? 0 : 15);
     WebCore::IntRect clippedRect(0, 0, viewportWidthMinusScrollbar * 2, viewportHeightMinusScrollbar * 2);
-    EXPECT_EQ_RECT(clippedRect, platformContext->opaqueRegion().asRect());
+    EXPECT_EQ_RECT(clippedRect, context.opaqueRegion().asRect());
 }
 
 TEST_F(WebFrameTest, pageScaleFactorUpdatesScrollbars)

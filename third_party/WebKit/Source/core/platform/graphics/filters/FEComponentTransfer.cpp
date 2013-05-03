@@ -198,7 +198,7 @@ bool FEComponentTransfer::applySkia()
     SkPaint paint;
     paint.setColorFilter(SkTableColorFilter::CreateARGB(aValues, rValues, gValues, bValues))->unref();
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
-    resultImage->context()->platformContext()->drawBitmap(nativeImage->bitmap(), 0, 0, &paint);
+    resultImage->context()->drawBitmap(nativeImage->bitmap(), 0, 0, &paint);
 
     return true;
 }

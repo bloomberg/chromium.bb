@@ -240,7 +240,7 @@ bool FEBlend::applySkia()
     SkAutoTUnref<SkImageFilter> blend(new SkBlendImageFilter(mode, backgroundSource));
     SkPaint paint;
     paint.setImageFilter(blend);
-    resultImage->context()->platformContext()->drawBitmap(foregroundBitmap, 0, 0, &paint);
+    resultImage->context()->drawBitmap(foregroundBitmap, 0, 0, &paint);
     return true;
 }
 

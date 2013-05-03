@@ -278,7 +278,7 @@ bool FEColorMatrix::applySkia()
     SkPaint paint;
     paint.setColorFilter(filter);
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
-    resultImage->context()->platformContext()->drawBitmap(nativeImage->bitmap(), 0, 0, &paint);
+    resultImage->context()->drawBitmap(nativeImage->bitmap(), 0, 0, &paint);
     return true;
 }
 

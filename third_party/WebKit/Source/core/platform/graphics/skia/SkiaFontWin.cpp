@@ -45,7 +45,7 @@
 
 namespace WebCore {
 
-static void skiaDrawText(PlatformContextSkia* context,
+static void skiaDrawText(GraphicsContext* context,
                          const SkPoint& point,
                          SkPaint* paint,
                          const WORD* glyphs,
@@ -134,7 +134,7 @@ static void paintSkiaText(GraphicsContext* context, HFONT hfont,
     bool didFill = false;
 
     if ((textMode & TextModeFill) && (SkColorGetA(paint.getColor()) || paint.getLooper())) {
-        skiaDrawText(platformContext, *origin, &paint, &glyphs[0], &advances[0], &offsets[0], numGlyphs);
+        skiaDrawText(context, *origin, &paint, &glyphs[0], &advances[0], &offsets[0], numGlyphs);
         didFill = true;
     }
 
@@ -161,7 +161,7 @@ static void paintSkiaText(GraphicsContext* context, HFONT hfont,
             paint.setLooper(0);
         }
 
-        skiaDrawText(platformContext, *origin, &paint, &glyphs[0], &advances[0], &offsets[0], numGlyphs);
+        skiaDrawText(context, *origin, &paint, &glyphs[0], &advances[0], &offsets[0], numGlyphs);
     }
 }
 
