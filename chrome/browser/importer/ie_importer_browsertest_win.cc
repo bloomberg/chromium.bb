@@ -449,8 +449,7 @@ class IEImporterBrowserTest : public InProcessBrowserTest {
   base::win::RegKey temp_hkcu_hive_key_;
 };
 
-// Flaky on all bots. http://crbug.com/237707
-IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest, DISABLED_IEImporter) {
+IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest, IEImporter) {
   // Sets up a favorites folder.
   base::FilePath path = temp_dir_.path().AppendASCII("Favorites");
   CreateDirectory(path.value().c_str(), NULL);
@@ -511,8 +510,9 @@ IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest, DISABLED_IEImporter) {
   ASSERT_TRUE(res == S_OK);
 
   // Starts to import the above settings.
+  // Deletes itself.
   // TODO(gab): Use ExternalProcessImporterHost on Windows.
-  scoped_refptr<ImporterHost> host(new ImporterHost);
+  ImporterHost* host = new ImporterHost;
   TestObserver* observer = new TestObserver();
   host->SetObserver(observer);
 
@@ -535,9 +535,8 @@ IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest, DISABLED_IEImporter) {
   url_history_stg2.Release();
 }
 
-// Flaky on all bots. http://crbug.com/237707
 IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest,
-                       DISABLED_IEImporterMalformedFavoritesRegistry) {
+                       IEImporterMalformedFavoritesRegistry) {
   // Sets up a favorites folder.
   base::FilePath path = temp_dir_.path().AppendASCII("Favorites");
   CreateDirectory(path.value().c_str(), NULL);
@@ -590,8 +589,9 @@ IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest,
                              REG_BINARY));
 
     // Starts to import the above settings.
+    // Deletes itself.
     // TODO(gab): Use ExternalProcessImporterHost on Windows.
-    scoped_refptr<ImporterHost> host(new ImporterHost);
+    ImporterHost* host = new ImporterHost;
     MalformedFavoritesRegistryTestObserver* observer =
         new MalformedFavoritesRegistryTestObserver();
     host->SetObserver(observer);

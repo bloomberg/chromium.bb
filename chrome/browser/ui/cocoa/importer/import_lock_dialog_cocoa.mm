@@ -5,9 +5,9 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/message_loop.h"
-#include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_lock_dialog.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
@@ -19,7 +19,7 @@ using content::UserMetricsAction;
 namespace importer {
 
 void ShowImportLockDialog(gfx::NativeWindow parent,
-                          ImporterHost* importer_host) {
+                          const base::Callback<void(bool)>& callback) {
   scoped_nsobject<NSAlert> lock_alert([[NSAlert alloc] init]);
   [lock_alert addButtonWithTitle:l10n_util::GetNSStringWithFixup(
       IDS_IMPORTER_LOCK_OK)];
@@ -30,10 +30,9 @@ void ShowImportLockDialog(gfx::NativeWindow parent,
   [lock_alert setMessageText:l10n_util::GetNSStringWithFixup(
       IDS_IMPORTER_LOCK_TITLE)];
 
-  bool is_continue = [lock_alert runModal] == NSAlertFirstButtonReturn;
-  MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&ImporterHost::OnImportLockDialogEnd,
-                 importer_host, is_continue));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, [lock_alert runModal] == NSAlertFirstButtonReturn));
   content::RecordAction(UserMetricsAction("ImportLockDialogCocoa_Shown"));
 }
 

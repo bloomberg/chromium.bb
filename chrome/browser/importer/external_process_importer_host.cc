@@ -21,7 +21,7 @@ void ExternalProcessImporterHost::Cancel() {
   cancelled_ = true;
   if (import_process_launched_)
     client_->Cancel();
-  NotifyImportEnded();  // Tells the observer that we're done, and releases us.
+  NotifyImportEnded();  // Tells the observer that we're done, and deletes us.
 }
 
 ExternalProcessImporterHost::~ExternalProcessImporterHost() {}
@@ -40,8 +40,6 @@ void ExternalProcessImporterHost::StartImportSettings(
   source_profile_ = &source_profile;
   items_ = items;
 
-  ImporterHost::AddRef();  // Balanced in ImporterHost::NotifyImportEnded.
-
   CheckForFirefoxLock(source_profile, items);
   CheckForLoadedModels(items);
 
@@ -59,7 +57,8 @@ void ExternalProcessImporterHost::InvokeTaskIfDone() {
   // The ExternalProcessImporterClient created in the next line owns the bridge,
   // and will delete it.
   InProcessImporterBridge* bridge =
-      new InProcessImporterBridge(writer_.get(), this);
+      new InProcessImporterBridge(writer_.get(),
+                                  weak_ptr_factory_.GetWeakPtr());
   client_ = new ExternalProcessImporterClient(this, *source_profile_, items_,
                                               bridge);
   import_process_launched_ = true;

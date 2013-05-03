@@ -83,7 +83,8 @@ class ImportEndedObserver : public importer::ImporterProgressObserver {
 // master preferences. Passes the master preference file path out in
 // master_prefs_path. Returns the pointer to installer::MasterPreferences object
 // if successful; otherwise, returns NULL.
-installer::MasterPreferences* LoadMasterPrefs(base::FilePath* master_prefs_path);
+installer::MasterPreferences* LoadMasterPrefs(
+    base::FilePath* master_prefs_path);
 
 // Copies user preference file to master preference file. Returns true if
 // successful.
@@ -116,7 +117,7 @@ bool IsOrganicFirstRun();
 // This functions has a common implementation for OS_POSIX, and a
 // windows specific implementation.
 bool ImportSettings(Profile* profile,
-                    scoped_refptr<ImporterHost> importer_host,
+                    ImporterHost* importer_host,
                     scoped_refptr<ImporterList> importer_list,
                     int items_to_import);
 

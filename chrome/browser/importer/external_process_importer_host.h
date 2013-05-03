@@ -23,13 +23,11 @@ class ExternalProcessImporterHost : public ImporterHost {
  public:
   ExternalProcessImporterHost();
 
-  // ImporterHost:
-  virtual void Cancel() OVERRIDE;
-
- protected:
-  virtual ~ExternalProcessImporterHost();
+  void Cancel();
 
  private:
+  virtual ~ExternalProcessImporterHost();
+
   // ImporterHost:
   virtual void StartImportSettings(
       const importer::SourceProfile& source_profile,

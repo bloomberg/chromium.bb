@@ -30,8 +30,7 @@
 #if defined(OS_MACOSX) || (defined(OS_WIN) && defined(ARCH_CPU_X86_64))
 #define MAYBE_IMPORTER(x) DISABLED_##x
 #else
-// Flaky on all platforms. http://crbug.com/237707
-#define MAYBE_IMPORTER(x) DISABLED_##x
+#define MAYBE_IMPORTER(x) x
 #endif
 
 namespace {
@@ -438,8 +437,9 @@ class FirefoxProfileImporterBrowserTest : public InProcessBrowserTest {
     if (import_search_plugins)
       items = items | importer::SEARCH_ENGINES;
 
+    // Deletes itself.
     // TODO(gab): Use ExternalProcessImporterHost on both Windows and Linux.
-    scoped_refptr<ImporterHost> host;
+    ImporterHost* host;
 #if defined(OS_MACOSX)
     host = new ExternalProcessImporterHost;
 #else
@@ -483,13 +483,15 @@ IN_PROC_BROWSER_TEST_F(FirefoxProfileImporterBrowserTest,
   source_profile.app_path = app_path_;
   source_profile.source_path = profile_path_;
 
+  // Deletes itself.
   // TODO(gab): Use ExternalProcessImporterHost on both Windows and Linux.
-  scoped_refptr<ImporterHost> host;
+  ImporterHost* host;
 #if defined(OS_MACOSX)
-    host = new ExternalProcessImporterHost;
+  host = new ExternalProcessImporterHost;
 #else
-    host = new ImporterHost;
+  host = new ImporterHost;
 #endif
+
   FirefoxObserver* observer = new FirefoxObserver();
   host->SetObserver(observer);
   host->StartImportSettings(

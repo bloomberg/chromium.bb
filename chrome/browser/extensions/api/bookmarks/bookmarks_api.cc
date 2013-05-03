@@ -976,7 +976,8 @@ void BookmarksImportFunction::FileSelected(const base::FilePath& path,
   // Android does not have support for the standard importers.
   // TODO(jgreenwald): remove ifdef once extensions are no longer built on
   // Android.
-  scoped_refptr<ImporterHost> importer_host(new ImporterHost);
+  // Deletes itself.
+  ImporterHost* importer_host = new ImporterHost;
   importer::SourceProfile source_profile;
   source_profile.importer_type = importer::TYPE_BOOKMARKS_FILE;
   source_profile.source_path = path;

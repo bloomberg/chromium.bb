@@ -5,9 +5,8 @@
 #ifndef CHROME_BROWSER_IMPORTER_IMPORTER_LOCK_DIALOG_H_
 #define CHROME_BROWSER_IMPORTER_IMPORTER_LOCK_DIALOG_H_
 
+#include "base/callback_forward.h"
 #include "ui/gfx/native_widget_types.h"
-
-class ImporterHost;
 
 namespace importer {
 
@@ -15,7 +14,7 @@ namespace importer {
 // warning dialog. After closing the dialog, the ImportHost receives a callback
 // with the message either to skip the import, or to continue the process.
 void ShowImportLockDialog(gfx::NativeWindow parent,
-                          ImporterHost* importer_host);
+                          const base::Callback<void(bool)>& callback);
 
 }  // namespace importer
 

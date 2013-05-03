@@ -296,7 +296,9 @@ int ImportFromBrowser(Profile* profile,
     NOTREACHED();
     return false;
   }
-  scoped_refptr<ImporterHost> importer_host(new ImporterHost);
+
+  // Deletes itself.
+  ImporterHost* importer_host = new ImporterHost;
 
   scoped_refptr<ImporterList> importer_list(new ImporterList(NULL));
   importer_list->DetectSourceProfilesHack();
@@ -414,7 +416,7 @@ void DoPostImportPlatformSpecificTasks() {
 }
 
 bool ImportSettings(Profile* profile,
-                    scoped_refptr<ImporterHost> importer_host,
+                    ImporterHost* importer_host,
                     scoped_refptr<ImporterList> importer_list,
                     int items_to_import) {
   return ImportSettingsWin(

@@ -323,7 +323,8 @@ void TestingAutomationProvider::OnSourceProfilesLoaded() {
     return;
   }
 
-  scoped_refptr<ImporterHost> importer_host(new ImporterHost);
+  // Deletes itself.
+  ImporterHost* importer_host = new ImporterHost;
   importer_host->SetObserver(
       new AutomationProviderImportSettingsObserver(
           this, import_settings_data_.reply_message));

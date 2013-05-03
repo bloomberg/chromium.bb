@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/profile_writer.h"
@@ -29,21 +30,11 @@ class ImporterProgressObserver;
 // This class hosts the importers. It enumerates profiles from other
 // browsers dynamically, and controls the process of importing. When
 // the import process is done, ImporterHost deletes itself.
-class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
-                     public BaseBookmarkModelObserver,
+class ImporterHost : public BaseBookmarkModelObserver,
                      public content::NotificationObserver,
                      public chrome::BrowserListObserver {
  public:
   ImporterHost();
-
-  // ShowWarningDialog() asks user to close the application that is owning the
-  // lock. They can retry or skip the importing process.
-  void ShowWarningDialog();
-
-  // This is called when when user ends the lock dialog by clicking on either
-  // the "Skip" or "Continue" buttons. |is_continue| is true when user clicked
-  // the "Continue" button.
-  void OnImportLockDialogEnd(bool is_continue);
 
   void SetObserver(importer::ImporterProgressObserver* observer);
 
@@ -80,11 +71,17 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
       uint16 items,
       ProfileWriter* writer);
 
-  // Cancels the import process.
-  virtual void Cancel();
-
  protected:
   virtual ~ImporterHost();
+
+  // ShowWarningDialog() asks user to close the application that is owning the
+  // lock. They can retry or skip the importing process.
+  void ShowWarningDialog();
+
+  // This is called when when user ends the lock dialog by clicking on either
+  // the "Skip" or "Continue" buttons. |is_continue| is true when user clicked
+  // the "Continue" button.
+  void OnImportLockDialogEnd(bool is_continue);
 
   // Make sure that Firefox isn't running, if import browser is Firefox. Show
   // to the user a dialog that notifies that is necessary to close Firefox
@@ -98,6 +95,9 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   // process starts, if bookmarks and/or search engines are among the items
   // which are to be imported.
   void CheckForLoadedModels(uint16 items);
+
+  // Vends weak pointers for the importer to call us back.
+  base::WeakPtrFactory<ImporterHost> weak_ptr_factory_;
 
   // Profile we're importing from.
   Profile* profile_;
@@ -147,7 +147,7 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   base::Closure task_;
 
   // The importer used in the task.
-  Importer* importer_;
+  scoped_refptr<Importer> importer_;
 
   // True if UI is not to be shown.
   bool headless_;

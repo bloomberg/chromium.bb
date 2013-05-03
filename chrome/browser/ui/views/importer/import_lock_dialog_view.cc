@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_lock_dialog.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
@@ -27,8 +26,8 @@ static const int kDefaultWindowHeight = 100;
 namespace importer {
 
 void ShowImportLockDialog(gfx::NativeWindow parent,
-                          ImporterHost* importer_host) {
-  ImportLockDialogView::Show(parent, importer_host);
+                          const base::Callback<void(bool)>& callback) {
+  ImportLockDialogView::Show(parent, callback);
   content::RecordAction(UserMetricsAction("ImportLockDialogView_Shown"));
 }
 
@@ -36,13 +35,14 @@ void ShowImportLockDialog(gfx::NativeWindow parent,
 
 // static
 void ImportLockDialogView::Show(gfx::NativeWindow parent,
-                                ImporterHost* importer_host) {
-  views::Widget::CreateWindow(new ImportLockDialogView(importer_host))->Show();
+                                const base::Callback<void(bool)>& callback) {
+  views::Widget::CreateWindow(new ImportLockDialogView(callback))->Show();
 }
 
-ImportLockDialogView::ImportLockDialogView(ImporterHost* importer_host)
+ImportLockDialogView::ImportLockDialogView(
+    const base::Callback<void(bool)>& callback)
     : description_label_(NULL),
-      importer_host_(importer_host) {
+      callback_(callback) {
   description_label_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_IMPORTER_LOCK_TEXT));
   description_label_->SetMultiLine(true);
@@ -86,17 +86,13 @@ string16 ImportLockDialogView::GetWindowTitle() const {
 }
 
 bool ImportLockDialogView::Accept() {
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&ImporterHost::OnImportLockDialogEnd,
-                 importer_host_.get(), true));
+  MessageLoop::current()->PostTask(FROM_HERE,
+                                   base::Bind(callback_, true));
   return true;
 }
 
 bool ImportLockDialogView::Cancel() {
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&ImporterHost::OnImportLockDialogEnd,
-                 importer_host_.get(), false));
+  MessageLoop::current()->PostTask(FROM_HERE,
+                                   base::Bind(callback_, false));
   return true;
 }

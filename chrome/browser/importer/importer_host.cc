@@ -37,11 +37,11 @@
 using content::BrowserThread;
 
 ImporterHost::ImporterHost()
-    : profile_(NULL),
+    : weak_ptr_factory_(this),
+      profile_(NULL),
       waiting_for_bookmarkbar_model_(false),
       installed_bookmark_observer_(false),
       is_source_readable_(true),
-      importer_(NULL),
       headless_(false),
       parent_window_(NULL),
       browser_(NULL),
@@ -50,10 +50,15 @@ ImporterHost::ImporterHost()
 }
 
 void ImporterHost::ShowWarningDialog() {
-  if (headless_)
+  if (headless_) {
     OnImportLockDialogEnd(false);
-  else
-    importer::ShowImportLockDialog(parent_window_, this);
+    return;
+  }
+
+  importer::ShowImportLockDialog(
+      parent_window_,
+      base::Bind(&ImporterHost::OnImportLockDialogEnd,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ImporterHost::OnImportLockDialogEnd(bool is_continue) {
@@ -71,7 +76,7 @@ void ImporterHost::OnImportLockDialogEnd(bool is_continue) {
   } else {
     // User chose to skip the import process. We should reset the |task_| and
     // notify the ImporterHost to finish.
-    task_ = base::Closure();
+    task_.Reset();
     importer_ = NULL;
     NotifyImportEnded();
   }
@@ -97,10 +102,11 @@ void ImporterHost::NotifyImportItemEnded(importer::ImportItem item) {
 }
 
 void ImporterHost::NotifyImportEnded() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   firefox_lock_.reset();  // Release the Firefox profile lock.
   if (observer_)
     observer_->ImportEnded();
-  Release();
+  delete this;
 }
 
 void ImporterHost::StartImportSettings(
@@ -136,10 +142,9 @@ void ImporterHost::StartImportSettings(
     return;
   }
 
-  importer_->AddRef();
-
   scoped_refptr<InProcessImporterBridge> bridge(
-      new InProcessImporterBridge(writer_.get(), this));
+      new InProcessImporterBridge(writer_.get(),
+                                  weak_ptr_factory_.GetWeakPtr()));
   task_ = base::Bind(
       &Importer::StartImport, importer_, source_profile, items, bridge);
 
@@ -150,13 +155,14 @@ void ImporterHost::StartImportSettings(
   // credentials.
   if (source_profile.importer_type == importer::TYPE_GOOGLE_TOOLBAR5) {
     toolbar_importer_utils::IsGoogleGAIACookieInstalled(
-        base::Bind(&ImporterHost::OnGoogleGAIACookieChecked, this), profile_);
+        base::Bind(&ImporterHost::OnGoogleGAIACookieChecked,
+                   weak_ptr_factory_.GetWeakPtr()),
+        profile_);
     is_source_readable_ = false;
   }
 #endif
 
   CheckForLoadedModels(items);
-  AddRef();
   InvokeTaskIfDone();
 }
 
@@ -175,7 +181,8 @@ void ImporterHost::OnGoogleGAIACookieChecked(bool result) {
                                     content::PAGE_TRANSITION_TYPED);
 
     MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        &ImporterHost::OnImportLockDialogEnd, this, false));
+        &ImporterHost::OnImportLockDialogEnd,
+        weak_ptr_factory_.GetWeakPtr(), false));
   } else {
     is_source_readable_ = true;
     InvokeTaskIfDone();
@@ -183,15 +190,8 @@ void ImporterHost::OnGoogleGAIACookieChecked(bool result) {
 #endif
 }
 
-void ImporterHost::Cancel() {
-  if (importer_)
-    importer_->Cancel();
-}
-
 ImporterHost::~ImporterHost() {
   BrowserList::RemoveObserver(this);
-  if (NULL != importer_)
-    importer_->Release();
 
   if (installed_bookmark_observer_) {
     DCHECK(profile_);

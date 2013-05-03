@@ -6,10 +6,9 @@
 #define CHROME_BROWSER_UI_GTK_IMPORTER_IMPORT_LOCK_DIALOG_GTK_H_
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "ui/base/gtk/gtk_signal.h"
-
-class ImporterHost;
 
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkWindow GtkWindow;
@@ -18,10 +17,12 @@ typedef struct _GtkWindow GtkWindow;
 // Firefox before starting the profile import.
 class ImportLockDialogGtk {
  public:
-  static void Show(GtkWindow* parent, ImporterHost* importer_host);
+  static void Show(GtkWindow* parent,
+                   const base::Callback<void(bool)>& callback);
 
  private:
-  ImportLockDialogGtk(GtkWindow* parent, ImporterHost* importer_host);
+  ImportLockDialogGtk(GtkWindow* parent,
+                      const base::Callback<void(bool)>& callback);
   ~ImportLockDialogGtk();
 
   CHROMEGTK_CALLBACK_1(ImportLockDialogGtk, void, OnResponse, int);
@@ -29,8 +30,8 @@ class ImportLockDialogGtk {
   // Import lock dialog.
   GtkWidget* dialog_;
 
-  // Utility class that does the actual import.
-  scoped_refptr<ImporterHost> importer_host_;
+  // Called with the result of the dialog.
+  base::Callback<void(bool)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ImportLockDialogGtk);
 };

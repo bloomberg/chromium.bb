@@ -46,7 +46,7 @@ bool GetFirstRunSentinelFilePath(base::FilePath* path) {
 }
 
 bool ImportSettings(Profile* profile,
-                    scoped_refptr<ImporterHost> importer_host,
+                    ImporterHost* importer_host,
                     scoped_refptr<ImporterList> importer_list,
                     int items_to_import) {
   const importer::SourceProfile& source_profile =

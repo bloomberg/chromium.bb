@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/profile_writer.h"
@@ -19,7 +20,8 @@ class ImporterHost;
 
 class InProcessImporterBridge : public ImporterBridge {
  public:
-  InProcessImporterBridge(ProfileWriter* writer, ImporterHost* host);
+  InProcessImporterBridge(ProfileWriter* writer,
+                          base::WeakPtr<ImporterHost> host);
 
   // Begin ImporterBridge implementation:
   virtual void AddBookmarks(
@@ -57,7 +59,7 @@ class InProcessImporterBridge : public ImporterBridge {
   virtual ~InProcessImporterBridge();
 
   ProfileWriter* const writer_;  // weak
-  ImporterHost* const host_;     // weak
+  const base::WeakPtr<ImporterHost> host_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessImporterBridge);
 };

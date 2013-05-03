@@ -20,10 +20,10 @@
 
 using content::BrowserThread;
 
-InProcessImporterBridge::InProcessImporterBridge(ProfileWriter* writer,
-                                                 ImporterHost* host)
-    : writer_(writer),
-      host_(host) {
+InProcessImporterBridge::InProcessImporterBridge(
+    ProfileWriter* writer,
+    base::WeakPtr<ImporterHost> host) : writer_(writer),
+                                        host_(host) {
 }
 
 void InProcessImporterBridge::AddBookmarks(

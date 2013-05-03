@@ -202,7 +202,9 @@ void ImportFromFile(Profile* profile, const CommandLine& cmdline) {
     NOTREACHED();
     return;
   }
-  scoped_refptr<ImporterHost> importer_host(new ImporterHost);
+
+  // Deletes itself.
+  ImporterHost* importer_host = new ImporterHost;
   importer_host->set_headless();
 
   importer::SourceProfile source_profile;
@@ -648,7 +650,8 @@ void AutoImport(
     int import_items,
     int dont_import_items) {
 #if !defined(USE_AURA)
-  scoped_refptr<ImporterHost> importer_host;
+  // Deletes itself.
+  ImporterHost* importer_host;
   // TODO(csilv,mirandac): Out-of-process import has only been qualified on
   // MacOS X, so we will only use it on that platform since it is required.
   // Remove this conditional logic once oop import is qualified for
