@@ -723,7 +723,8 @@ void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
                             tile->content_rect(),
                             tile->contents_scale(),
                             use_color_estimator_,
-                            GetRasterTaskMetadata(*tile)),
+                            GetRasterTaskMetadata(*tile),
+                            rendering_stats_instrumentation_),
                  base::Bind(&TileManager::RunRasterTask,
                             buffer,
                             analysis,
@@ -833,13 +834,22 @@ void TileManager::RunAnalyzeTask(
     float contents_scale,
     bool use_color_estimator,
     const RasterTaskMetadata& metadata,
+    RenderingStatsInstrumentation* stats_instrumentation,
     PicturePileImpl* picture_pile) {
   TRACE_EVENT0("cc", "TileManager::RunAnalyzeTask");
 
   DCHECK(picture_pile);
   DCHECK(analysis);
+  DCHECK(stats_instrumentation);
 
   picture_pile->AnalyzeInRect(rect, contents_scale, analysis);
+
+  // Record the solid color prediction.
+  UMA_HISTOGRAM_BOOLEAN("Renderer4.SolidColorTilesAnalyzed",
+                        analysis->is_solid_color);
+  stats_instrumentation->AddTileAnalysisResult(analysis->is_solid_color);
+
+  // Clear the flag if we're not using the estimator.
   analysis->is_solid_color &= use_color_estimator;
 
   if (metadata.prediction_benchmarking) {

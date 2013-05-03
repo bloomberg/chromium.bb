@@ -175,4 +175,14 @@ void RenderingStatsInstrumentation::IncrementDeferredImageCacheHitCount() {
   rendering_stats_.total_deferred_image_cache_hit_count++;
 }
 
+void RenderingStatsInstrumentation::AddTileAnalysisResult(bool is_solid_color) {
+  if (!record_rendering_stats_)
+    return;
+
+  base::AutoLock scoped_lock(lock_);
+  rendering_stats_.total_tiles_analyzed++;
+  if (is_solid_color)
+    rendering_stats_.solid_color_tiles_analyzed++;
+}
+
 }  // namespace cc

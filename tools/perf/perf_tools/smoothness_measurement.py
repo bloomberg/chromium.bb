@@ -115,6 +115,19 @@ def CalcImageDecodingResults(rendering_stats_deltas, results):
               totalDeferredImageDecodeTimeInSeconds,
               data_type='unimportant')
 
+def CalcAnalysisResults(rendering_stats_deltas, results):
+  totalTilesAnalyzed = rendering_stats_deltas.get(
+      'totalTilesAnalyzed', 0)
+  solidColorTilesAnalyzed = rendering_stats_deltas.get(
+      'solidColorTilesAnalyzed', 0)
+
+  results.Add('total_tiles_analyzed', 'count',
+              totalTilesAnalyzed,
+              data_type='unimportant')
+  results.Add('solid_color_tiles_analyzed', 'count',
+              solidColorTilesAnalyzed,
+              data_type='unimportant')
+
 class SmoothnessMeasurement(page_measurement.PageMeasurement):
   def __init__(self):
     super(SmoothnessMeasurement, self).__init__('smoothness')
@@ -172,6 +185,7 @@ class SmoothnessMeasurement(page_measurement.PageMeasurement):
     CalcScrollResults(rendering_stats_deltas, results)
     CalcTextureUploadResults(rendering_stats_deltas, results)
     CalcImageDecodingResults(rendering_stats_deltas, results)
+    CalcAnalysisResults(rendering_stats_deltas, results)
 
     if self.options.report_all_results:
       for k, v in rendering_stats_deltas.iteritems():

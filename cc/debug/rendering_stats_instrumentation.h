@@ -59,6 +59,8 @@ class CC_EXPORT RenderingStatsInstrumentation {
 
   void IncrementDeferredImageCacheHitCount();
 
+  void AddTileAnalysisResult(bool is_solid_color);
+
  protected:
   RenderingStatsInstrumentation();
 

@@ -32,6 +32,8 @@ struct CC_EXPORT RenderingStats {
   int64 total_deferred_image_decode_count;
   int64 total_deferred_image_cache_hit_count;
   int64 total_image_gathering_count;
+  int64 total_tiles_analyzed;
+  int64 solid_color_tiles_analyzed;
   base::TimeDelta total_deferred_image_decode_time;
   base::TimeDelta total_image_gathering_time;
   // Note: when adding new members, please remember to update EnumerateFields

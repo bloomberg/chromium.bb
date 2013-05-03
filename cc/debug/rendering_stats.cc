@@ -20,7 +20,9 @@ RenderingStats::RenderingStats()
       num_missing_tiles(0),
       total_deferred_image_decode_count(0),
       total_deferred_image_cache_hit_count(0),
-      total_image_gathering_count(0) {}
+      total_image_gathering_count(0),
+      total_tiles_analyzed(0),
+      solid_color_tiles_analyzed(0) {}
 
 void RenderingStats::EnumerateFields(Enumerator* enumerator) const {
   enumerator->AddInt64("numAnimationFrames", animation_frame_count);
@@ -49,6 +51,9 @@ void RenderingStats::EnumerateFields(Enumerator* enumerator) const {
   enumerator->AddInt64("numMissingTiles", num_missing_tiles);
   enumerator->AddInt64("totalDeferredImageDecodeCount",
                        total_deferred_image_decode_count);
+  enumerator->AddInt64("totalTilesAnalyzed", total_tiles_analyzed);
+  enumerator->AddInt64("solidColorTilesAnalyzed",
+                       solid_color_tiles_analyzed);
   enumerator->AddInt64("totalDeferredImageCacheHitCount",
                        total_deferred_image_cache_hit_count);
   enumerator->AddInt64("totalImageGatheringCount",
@@ -84,6 +89,8 @@ void RenderingStats::Add(const RenderingStats& other) {
   total_image_gathering_count += other.total_image_gathering_count;
   total_deferred_image_decode_time += other.total_deferred_image_decode_time;
   total_image_gathering_time += other.total_image_gathering_time;
+  total_tiles_analyzed += other.total_tiles_analyzed;
+  solid_color_tiles_analyzed += other.solid_color_tiles_analyzed;
 }
 
 }  // namespace cc

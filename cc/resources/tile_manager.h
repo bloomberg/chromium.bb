@@ -158,6 +158,7 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
       float contents_scale,
       bool use_color_estimator,
       const RasterTaskMetadata& metadata,
+      RenderingStatsInstrumentation* stats_instrumentation,
       PicturePileImpl* picture_pile);
   static void RunRasterTask(
       uint8* buffer,
