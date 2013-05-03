@@ -494,7 +494,7 @@ void WebKitPlatformSupportImpl::addTraceEvent(
     unsigned char flags) {
   TRACE_EVENT_API_ADD_TRACE_EVENT(phase, category_group_enabled, name, id,
                                   num_args, arg_names, arg_types,
-                                  arg_values, flags);
+                                  arg_values, NULL, flags);
 }
 
 

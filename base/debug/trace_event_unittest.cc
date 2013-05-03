@@ -1624,6 +1624,69 @@ TEST_F(TraceEventTestFixture, TraceSampling) {
   EXPECT_TRUE(FindNamePhase("Things", "P"));
 }
 
+class MyData : public base::debug::ConvertableToTraceFormat {
+ public:
+  MyData() {}
+  virtual ~MyData() {}
+
+  virtual void AppendAsTraceFormat(std::string* out) const OVERRIDE {
+    out->append("{\"foo\":1}");
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MyData);
+};
+
+TEST_F(TraceEventTestFixture, ConvertableTypes) {
+  ManualTestSetUp();
+  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
+      TraceLog::RECORD_UNTIL_FULL);
+
+  scoped_ptr<MyData> data(new MyData());
+  scoped_ptr<MyData> data1(new MyData());
+  scoped_ptr<MyData> data2(new MyData());
+  TRACE_EVENT1("foo", "bar", "data",
+               data.PassAs<base::debug::ConvertableToTraceFormat>());
+  TRACE_EVENT2("foo", "baz",
+               "data1", data1.PassAs<base::debug::ConvertableToTraceFormat>(),
+               "data2", data2.PassAs<base::debug::ConvertableToTraceFormat>());
+
+  EndTraceAndFlush();
+
+  DictionaryValue* dict = FindNamePhase("bar", "B");
+  ASSERT_TRUE(dict);
+
+  const DictionaryValue* args_dict = NULL;
+  dict->GetDictionary("args", &args_dict);
+  ASSERT_TRUE(args_dict);
+
+  const Value* value = NULL;
+  const DictionaryValue* convertable_dict = NULL;
+  EXPECT_TRUE(args_dict->Get("data", &value));
+  ASSERT_TRUE(value->GetAsDictionary(&convertable_dict));
+
+  int foo_val;
+  EXPECT_TRUE(convertable_dict->GetInteger("foo", &foo_val));
+  EXPECT_EQ(1, foo_val);
+
+  dict = FindNamePhase("baz", "B");
+  ASSERT_TRUE(dict);
+  args_dict = NULL;
+  dict->GetDictionary("args", &args_dict);
+  ASSERT_TRUE(args_dict);
+
+  value = NULL;
+  convertable_dict = NULL;
+  EXPECT_TRUE(args_dict->Get("data1", &value));
+  ASSERT_TRUE(value->GetAsDictionary(&convertable_dict));
+
+  value = NULL;
+  convertable_dict = NULL;
+  EXPECT_TRUE(args_dict->Get("data2", &value));
+  ASSERT_TRUE(value->GetAsDictionary(&convertable_dict));
+}
+
+
 class TraceEventCallbackTest : public TraceEventTestFixture {
  public:
   virtual void SetUp() OVERRIDE {

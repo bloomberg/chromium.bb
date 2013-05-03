@@ -132,6 +132,36 @@
 //                  "arg1", std::string("string will be copied"));
 //
 //
+// Convertable notes:
+// Converting a large data type to a string can be costly. To help with this,
+// the trace framework provides an interface ConvertableToTraceFormat. If you
+// inherit from it and implement the AppendAsTraceFormat method the trace
+// framework will call back to your object to convert a trace output time. This
+// means, if the category for the event is disabled, the conversion will not
+// happen.
+//
+//   class MyData : public base::debug::ConvertableToTraceFormat {
+//    public:
+//     MyData() {}
+//     virtual ~MyData() {}
+//     virtual void AppendAsTraceFormat(std::string* out) const OVERRIDE {
+//       out->append("{\"foo\":1}");
+//     }
+//    private:
+//     DISALLOW_COPY_AND_ASSIGN(MyData);
+//   };
+//
+//   scoped_ptr<MyData> data(new MyData());
+//   TRACE_EVENT1("foo", "bar", "data",
+//                data.PassAs<base::debug::ConvertableToTraceFormat>());
+//
+// The trace framework will take ownership if the passed pointer and it will
+// be free'd when the trace buffer is flushed.
+//
+// Note, we only do the conversion when the buffer is flushed, so the provided
+// data object should not be modified after it's passed to the trace framework.
+//
+//
 // Thread Safety:
 // A thread safe singleton and mutex are used for thread safety. Category
 // enabled flags are used to limit the performance impact when the system
@@ -816,6 +846,7 @@ TRACE_EVENT_API_CLASS_EXPORT extern TRACE_EVENT_API_ATOMIC_WORD g_trace_state2;
 #define TRACE_VALUE_TYPE_POINTER      (static_cast<unsigned char>(5))
 #define TRACE_VALUE_TYPE_STRING       (static_cast<unsigned char>(6))
 #define TRACE_VALUE_TYPE_COPY_STRING  (static_cast<unsigned char>(7))
+#define TRACE_VALUE_TYPE_CONVERTABLE  (static_cast<unsigned char>(8))
 
 // Enum reflecting the scope of an INSTANT event. Must fit within
 // TRACE_EVENT_FLAG_SCOPE_MASK.
@@ -923,9 +954,10 @@ class TraceStringWithCopy {
 #define INTERNAL_DECLARE_SET_TRACE_VALUE(actual_type, \
                                          union_member, \
                                          value_type_id) \
-    static inline void SetTraceValue(actual_type arg, \
-                                     unsigned char* type, \
-                                     unsigned long long* value) { \
+    static inline void SetTraceValue( \
+        actual_type arg, \
+        unsigned char* type, \
+        unsigned long long* value) { \
       TraceValueUnion type_value; \
       type_value.union_member = arg; \
       *type = value_type_id; \
@@ -934,9 +966,10 @@ class TraceStringWithCopy {
 // Simpler form for int types that can be safely casted.
 #define INTERNAL_DECLARE_SET_TRACE_VALUE_INT(actual_type, \
                                              value_type_id) \
-    static inline void SetTraceValue(actual_type arg, \
-                                     unsigned char* type, \
-                                     unsigned long long* value) { \
+    static inline void SetTraceValue( \
+        actual_type arg, \
+        unsigned char* type, \
+        unsigned long long* value) { \
       *type = value_type_id; \
       *value = static_cast<unsigned long long>(arg); \
     }
@@ -986,10 +1019,88 @@ static inline void AddTraceEventWithThreadIdAndTimestamp(
     unsigned long long id,
     int thread_id,
     const base::TimeTicks& timestamp,
+    unsigned char flags,
+    const char* arg1_name,
+    scoped_ptr<base::debug::ConvertableToTraceFormat> arg1_val) {
+  const int num_args = 1;
+  unsigned char arg_types[1] = { TRACE_VALUE_TYPE_CONVERTABLE };
+  scoped_ptr<base::debug::ConvertableToTraceFormat> convertable_values[1];
+  convertable_values[0].reset(arg1_val.release());
+
+  TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(
+      phase, category_group_enabled, name, id, thread_id, timestamp,
+      num_args, &arg1_name, arg_types, NULL, convertable_values, flags);
+}
+
+static inline void AddTraceEvent(
+    char phase,
+    const unsigned char* category_group_enabled,
+    const char* name,
+    unsigned long long id,
+    unsigned char flags,
+    const char* arg1_name,
+    scoped_ptr<base::debug::ConvertableToTraceFormat> arg1_val) {
+  int thread_id = static_cast<int>(base::PlatformThread::CurrentId());
+  base::TimeTicks now = base::TimeTicks::NowFromSystemTraceTime();
+  AddTraceEventWithThreadIdAndTimestamp(phase, category_group_enabled, name, id,
+                                        thread_id, now, flags, arg1_name,
+                                        arg1_val.Pass());
+}
+
+static inline void AddTraceEventWithThreadIdAndTimestamp(
+    char phase,
+    const unsigned char* category_group_enabled,
+    const char* name,
+    unsigned long long id,
+    int thread_id,
+    const base::TimeTicks& timestamp,
+    unsigned char flags,
+    const char* arg1_name,
+    scoped_ptr<base::debug::ConvertableToTraceFormat> arg1_val,
+    const char* arg2_name,
+    scoped_ptr<base::debug::ConvertableToTraceFormat> arg2_val) {
+  const int num_args = 2;
+  const char* arg_names[2] = { arg1_name, arg2_name };
+  unsigned char arg_types[2] =
+      { TRACE_VALUE_TYPE_CONVERTABLE, TRACE_VALUE_TYPE_CONVERTABLE };
+  scoped_ptr<base::debug::ConvertableToTraceFormat> convertable_values[2];
+  convertable_values[0].reset(arg1_val.release());
+  convertable_values[1].reset(arg2_val.release());
+
+  TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(
+      phase, category_group_enabled, name, id, thread_id, timestamp,
+      num_args, arg_names, arg_types, NULL, convertable_values, flags);
+}
+
+static inline void AddTraceEvent(
+    char phase,
+    const unsigned char* category_group_enabled,
+    const char* name,
+    unsigned long long id,
+    unsigned char flags,
+    const char* arg1_name,
+    scoped_ptr<base::debug::ConvertableToTraceFormat> arg1_val,
+    const char* arg2_name,
+    scoped_ptr<base::debug::ConvertableToTraceFormat> arg2_val) {
+  int thread_id = static_cast<int>(base::PlatformThread::CurrentId());
+  base::TimeTicks now = base::TimeTicks::NowFromSystemTraceTime();
+  AddTraceEventWithThreadIdAndTimestamp(phase, category_group_enabled, name, id,
+                                        thread_id, now, flags,
+                                        arg1_name, arg1_val.Pass(),
+                                        arg2_name, arg2_val.Pass());
+}
+
+static inline void AddTraceEventWithThreadIdAndTimestamp(
+    char phase,
+    const unsigned char* category_group_enabled,
+    const char* name,
+    unsigned long long id,
+    int thread_id,
+    const base::TimeTicks& timestamp,
     unsigned char flags) {
   TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(
       phase, category_group_enabled, name, id, thread_id, timestamp,
-      kZeroNumArgs, NULL, NULL, NULL, flags);
+      kZeroNumArgs, NULL, NULL, NULL, NULL, flags);
 }
 
 static inline void AddTraceEvent(char phase,
@@ -1020,7 +1131,7 @@ static inline void AddTraceEventWithThreadIdAndTimestamp(
   SetTraceValue(arg1_val, &arg_types[0], &arg_values[0]);
   TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(
       phase, category_group_enabled, name, id, thread_id, timestamp,
-      num_args, &arg1_name, arg_types, arg_values, flags);
+      num_args, &arg1_name, arg_types, arg_values, NULL, flags);
 }
 
 template<class ARG1_TYPE>
@@ -1059,7 +1170,7 @@ static inline void AddTraceEventWithThreadIdAndTimestamp(
   SetTraceValue(arg2_val, &arg_types[1], &arg_values[1]);
   TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(
       phase, category_group_enabled, name, id, thread_id, timestamp,
-      num_args, arg_names, arg_types, arg_values, flags);
+      num_args, arg_names, arg_types, arg_values, NULL, flags);
 }
 
 template<class ARG1_TYPE, class ARG2_TYPE>
@@ -1105,7 +1216,7 @@ class TRACE_EVENT_API_CLASS_EXPORT TraceEndOnScopeClose {
           TRACE_EVENT_PHASE_END,
           p_data_->category_group_enabled,
           p_data_->name, kNoEventId,
-          kZeroNumArgs, NULL, NULL, NULL,
+          kZeroNumArgs, NULL, NULL, NULL, NULL,
           TRACE_EVENT_FLAG_NONE);
     }
   }
