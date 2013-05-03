@@ -36,6 +36,8 @@ class WebGLRenderingContext;
 class WebGLLoseContext : public WebGLExtension {
 public:
     static PassOwnPtr<WebGLLoseContext> create(WebGLRenderingContext*);
+    static bool supported(WebGLRenderingContext*);
+    static const char* getExtensionName();
 
     virtual ~WebGLLoseContext();
     virtual ExtensionName getName() const;

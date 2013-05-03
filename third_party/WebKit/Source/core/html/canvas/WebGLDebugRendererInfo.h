@@ -39,6 +39,8 @@ public:
     };
 
     static PassOwnPtr<WebGLDebugRendererInfo> create(WebGLRenderingContext*);
+    static bool supported(WebGLRenderingContext*);
+    static const char* getExtensionName();
 
     virtual ~WebGLDebugRendererInfo();
     virtual ExtensionName getName() const;

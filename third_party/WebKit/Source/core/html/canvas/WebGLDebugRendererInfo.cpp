@@ -50,4 +50,14 @@ PassOwnPtr<WebGLDebugRendererInfo> WebGLDebugRendererInfo::create(WebGLRendering
     return adoptPtr(new WebGLDebugRendererInfo(context));
 }
 
+bool WebGLDebugRendererInfo::supported(WebGLRenderingContext*)
+{
+    return true;
+}
+
+const char* WebGLDebugRendererInfo::getExtensionName()
+{
+    return "WEBGL_debug_renderer_info";
+}
+
 } // namespace WebCore

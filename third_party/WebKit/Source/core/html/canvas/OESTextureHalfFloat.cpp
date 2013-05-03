@@ -26,12 +26,14 @@
 #include "config.h"
 
 #include "core/html/canvas/OESTextureHalfFloat.h"
+#include "core/platform/graphics/Extensions3D.h"
 
 namespace WebCore {
 
 OESTextureHalfFloat::OESTextureHalfFloat(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
+    context->graphicsContext3D()->getExtensions()->ensureEnabled("GL_OES_texture_half_float");
 }
 
 OESTextureHalfFloat::~OESTextureHalfFloat()
@@ -46,6 +48,17 @@ WebGLExtension::ExtensionName OESTextureHalfFloat::getName() const
 PassOwnPtr<OESTextureHalfFloat> OESTextureHalfFloat::create(WebGLRenderingContext* context)
 {
     return adoptPtr(new OESTextureHalfFloat(context));
+}
+
+bool OESTextureHalfFloat::supported(WebGLRenderingContext* context)
+{
+    Extensions3D* extensions = context->graphicsContext3D()->getExtensions();
+    return extensions->supports("GL_OES_texture_half_float");
+}
+
+const char* OESTextureHalfFloat::getExtensionName()
+{
+    return "OES_texture_half_float";
 }
 
 } // namespace WebCore

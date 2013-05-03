@@ -34,6 +34,8 @@ namespace WebCore {
 class OESStandardDerivatives : public WebGLExtension {
 public:
     static PassOwnPtr<OESStandardDerivatives> create(WebGLRenderingContext*);
+    static bool supported(WebGLRenderingContext*);
+    static const char* getExtensionName();
 
     virtual ~OESStandardDerivatives();
     virtual ExtensionName getName() const;

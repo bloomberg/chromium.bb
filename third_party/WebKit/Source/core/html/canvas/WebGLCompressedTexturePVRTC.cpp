@@ -61,4 +61,9 @@ bool WebGLCompressedTexturePVRTC::supported(WebGLRenderingContext* context)
     return extensions->supports("GL_IMG_texture_compression_pvrtc");
 }
 
+const char* WebGLCompressedTexturePVRTC::getExtensionName()
+{
+    return "WEBGL_compressed_texture_pvrtc";
+}
+
 } // namespace WebCore

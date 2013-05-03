@@ -359,6 +359,30 @@ public:
     // Adds a compressed texture format.
     void addCompressedTextureFormat(GC3Denum);
 
+    // Template to help getSupportedExtensions
+    template<typename T>
+    void appendIfSupported(Vector<String>& strings, bool prefixed)
+    {
+        if (T::supported(this))
+            strings.append(String(prefixed ? "WEBKIT_" : "") + T::getExtensionName());
+    }
+
+    bool matchesNameWithPrefixes(const String& name, const String& baseName, const char** prefixes);
+
+    // Templates to help getExtension
+    template<typename T>
+    bool getExtensionIfMatch(const String& name, OwnPtr<T>& extensionPtr, const char** prefixes, WebGLExtension*& extension)
+    {
+        if (matchesNameWithPrefixes(name, T::getExtensionName(), prefixes) && (extensionPtr || T::supported(this))) {
+            if (!extensionPtr) {
+                extensionPtr = T::create(this);
+            }
+            extension = extensionPtr.get();
+            return true;
+        }
+        return false;
+    }
+
     PassRefPtr<Image> videoFrameToImage(HTMLVideoElement*, BackingStoreCopy, ExceptionCode&);
 
     RefPtr<GraphicsContext3D> m_context;
@@ -744,9 +768,6 @@ public:
 
     void restoreCurrentFramebuffer();
     void restoreCurrentTexture2D();
-
-    // Check if EXT_draw_buffers extension is supported and if it satisfies the WebGL requirements.
-    bool supportsDrawBuffers();
 
     friend class WebGLStateRestorer;
     friend class WebGLRenderingContextEvictionManager;

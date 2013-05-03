@@ -67,4 +67,9 @@ bool WebGLCompressedTextureS3TC::supported(WebGLRenderingContext* context)
             && extensions->supports("GL_CHROMIUM_texture_compression_dxt5"));
 }
 
+const char* WebGLCompressedTextureS3TC::getExtensionName()
+{
+    return "WEBGL_compressed_texture_s3tc";
+}
+
 } // namespace WebCore

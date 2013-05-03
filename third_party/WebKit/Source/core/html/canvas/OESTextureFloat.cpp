@@ -26,12 +26,14 @@
 #include "config.h"
 
 #include "core/html/canvas/OESTextureFloat.h"
+#include "core/platform/graphics/Extensions3D.h"
 
 namespace WebCore {
 
 OESTextureFloat::OESTextureFloat(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
+    context->graphicsContext3D()->getExtensions()->ensureEnabled("GL_OES_texture_float");
 }
 
 OESTextureFloat::~OESTextureFloat()
@@ -46,6 +48,17 @@ WebGLExtension::ExtensionName OESTextureFloat::getName() const
 PassOwnPtr<OESTextureFloat> OESTextureFloat::create(WebGLRenderingContext* context)
 {
     return adoptPtr(new OESTextureFloat(context));
+}
+
+bool OESTextureFloat::supported(WebGLRenderingContext* context)
+{
+    Extensions3D* extensions = context->graphicsContext3D()->getExtensions();
+    return extensions->supports("GL_OES_texture_float");
+}
+
+const char* OESTextureFloat::getExtensionName()
+{
+    return "OES_texture_float";
 }
 
 } // namespace WebCore

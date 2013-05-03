@@ -34,8 +34,8 @@ namespace WebCore {
 class EXTDrawBuffers : public WebGLExtension {
 public:
     static PassOwnPtr<EXTDrawBuffers> create(WebGLRenderingContext*);
-
     static bool supported(WebGLRenderingContext*);
+    static const char* getExtensionName();
 
     virtual ~EXTDrawBuffers();
     virtual ExtensionName getName() const;

@@ -37,8 +37,8 @@ class WebGLTexture;
 class WebGLCompressedTextureATC : public WebGLExtension {
 public:
     static PassOwnPtr<WebGLCompressedTextureATC> create(WebGLRenderingContext*);
-
     static bool supported(WebGLRenderingContext*);
+    static const char* getExtensionName();
 
     virtual ~WebGLCompressedTextureATC();
     virtual ExtensionName getName() const;

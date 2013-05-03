@@ -60,4 +60,14 @@ void WebGLLoseContext::restoreContext()
     m_context->forceRestoreContext();
 }
 
+bool WebGLLoseContext::supported(WebGLRenderingContext*)
+{
+    return true;
+}
+
+const char* WebGLLoseContext::getExtensionName()
+{
+    return "WEBGL_lose_context";
+}
+
 } // namespace WebCore

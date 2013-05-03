@@ -59,4 +59,9 @@ bool WebGLCompressedTextureATC::supported(WebGLRenderingContext* context)
     return extensions->supports("GL_AMD_compressed_ATC_texture");
 }
 
+const char* WebGLCompressedTextureATC::getExtensionName()
+{
+    return "WEBGL_compressed_texture_atc";
+}
+
 } // namespace WebCore

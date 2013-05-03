@@ -34,6 +34,8 @@ namespace WebCore {
 class OESElementIndexUint : public WebGLExtension {
 public:
     static PassOwnPtr<OESElementIndexUint> create(WebGLRenderingContext*);
+    static bool supported(WebGLRenderingContext*);
+    static const char* getExtensionName();
 
     virtual ~OESElementIndexUint();
     virtual ExtensionName getName() const;

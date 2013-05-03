@@ -34,6 +34,7 @@ namespace WebCore {
 WebGLDepthTexture::WebGLDepthTexture(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
+    context->graphicsContext3D()->getExtensions()->ensureEnabled("GL_CHROMIUM_depth_texture");
 }
 
 WebGLDepthTexture::~WebGLDepthTexture()
@@ -50,12 +51,17 @@ PassOwnPtr<WebGLDepthTexture> WebGLDepthTexture::create(WebGLRenderingContext* c
     return adoptPtr(new WebGLDepthTexture(context));
 }
 
-bool WebGLDepthTexture::supported(GraphicsContext3D* context)
+bool WebGLDepthTexture::supported(WebGLRenderingContext* context)
 {
-    Extensions3D* extensions = context->getExtensions();
+    Extensions3D* extensions = context->graphicsContext3D()->getExtensions();
     return extensions->supports("GL_CHROMIUM_depth_texture")
         || extensions->supports("GL_OES_depth_texture")
         || extensions->supports("GL_ARB_depth_texture");
+}
+
+const char* WebGLDepthTexture::getExtensionName()
+{
+    return "WEBGL_depth_texture";
 }
 
 } // namespace WebCore

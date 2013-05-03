@@ -34,6 +34,8 @@ namespace WebCore {
 class OESTextureFloat : public WebGLExtension {
 public:
     static PassOwnPtr<OESTextureFloat> create(WebGLRenderingContext*);
+    static bool supported(WebGLRenderingContext*);
+    static const char* getExtensionName();
 
     virtual ~OESTextureFloat();
     virtual ExtensionName getName() const;

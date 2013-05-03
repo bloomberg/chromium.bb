@@ -34,8 +34,8 @@ namespace WebCore {
 class WebGLDepthTexture : public WebGLExtension {
 public:
     static PassOwnPtr<WebGLDepthTexture> create(WebGLRenderingContext*);
-
-    static bool supported(GraphicsContext3D*);
+    static bool supported(WebGLRenderingContext*);
+    static const char* getExtensionName();
 
     virtual ~WebGLDepthTexture();
     virtual ExtensionName getName() const;

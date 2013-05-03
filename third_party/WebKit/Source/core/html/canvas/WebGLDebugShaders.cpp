@@ -64,4 +64,15 @@ String WebGLDebugShaders::getTranslatedShaderSource(WebGLShader* shader, Excepti
     return m_context->graphicsContext3D()->getExtensions()->getTranslatedShaderSourceANGLE(shader->object());
 }
 
+bool WebGLDebugShaders::supported(WebGLRenderingContext* context)
+{
+    Extensions3D* extensions = context->graphicsContext3D()->getExtensions();
+    return extensions->supports("GL_ANGLE_translated_shader_source");
+}
+
+const char* WebGLDebugShaders::getExtensionName()
+{
+    return "WEBGL_debug_shaders";
+}
+
 } // namespace WebCore

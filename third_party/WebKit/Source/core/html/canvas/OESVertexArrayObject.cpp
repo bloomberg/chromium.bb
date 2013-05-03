@@ -36,6 +36,7 @@ namespace WebCore {
 OESVertexArrayObject::OESVertexArrayObject(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
+    context->graphicsContext3D()->getExtensions()->ensureEnabled("GL_OES_vertex_array_object");
 }
 
 OESVertexArrayObject::~OESVertexArrayObject()
@@ -106,6 +107,17 @@ void OESVertexArrayObject::bindVertexArrayOES(WebGLVertexArrayObjectOES* arrayOb
         extensions->bindVertexArrayOES(0);
         m_context->setBoundVertexArrayObject(0);
     }
+}
+
+bool OESVertexArrayObject::supported(WebGLRenderingContext* context)
+{
+    Extensions3D* extensions = context->graphicsContext3D()->getExtensions();
+    return extensions->supports("GL_OES_vertex_array_object");
+}
+
+const char* OESVertexArrayObject::getExtensionName()
+{
+    return "OES_vertex_array_object";
 }
 
 } // namespace WebCore

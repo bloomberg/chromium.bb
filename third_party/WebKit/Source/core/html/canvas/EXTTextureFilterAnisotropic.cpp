@@ -26,12 +26,14 @@
 #include "config.h"
 
 #include "core/html/canvas/EXTTextureFilterAnisotropic.h"
+#include "core/platform/graphics/Extensions3D.h"
 
 namespace WebCore {
 
 EXTTextureFilterAnisotropic::EXTTextureFilterAnisotropic(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
+    context->graphicsContext3D()->getExtensions()->ensureEnabled("GL_EXT_texture_filter_anisotropic");
 }
 
 EXTTextureFilterAnisotropic::~EXTTextureFilterAnisotropic()
@@ -46,6 +48,17 @@ WebGLExtension::ExtensionName EXTTextureFilterAnisotropic::getName() const
 PassOwnPtr<EXTTextureFilterAnisotropic> EXTTextureFilterAnisotropic::create(WebGLRenderingContext* context)
 {
     return adoptPtr(new EXTTextureFilterAnisotropic(context));
+}
+
+bool EXTTextureFilterAnisotropic::supported(WebGLRenderingContext* context)
+{
+    Extensions3D* extensions = context->graphicsContext3D()->getExtensions();
+    return extensions->supports("GL_EXT_texture_filter_anisotropic");
+}
+
+const char* EXTTextureFilterAnisotropic::getExtensionName()
+{
+    return "EXT_texture_filter_anisotropic";
 }
 
 } // namespace WebCore
