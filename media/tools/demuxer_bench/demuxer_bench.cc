@@ -18,6 +18,10 @@
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/file_data_source.h"
 
+namespace switches {
+const char kEnableBitstreamConverter[] = "enable-bitstream-converter";
+}  // namespace switches
+
 class DemuxerHostImpl : public media::DemuxerHost {
  public:
   DemuxerHostImpl() {}
@@ -54,7 +58,7 @@ typedef std::vector<media::DemuxerStream* > Streams;
 // present in |demuxer| in as-close-to-monotonically-increasing timestamp order.
 class StreamReader {
  public:
-  explicit StreamReader(media::Demuxer* demuxer);
+  StreamReader(media::Demuxer* demuxer, bool enable_bitstream_converter);
   ~StreamReader();
 
   // Performs a single step read.
@@ -83,7 +87,8 @@ class StreamReader {
   DISALLOW_COPY_AND_ASSIGN(StreamReader);
 };
 
-StreamReader::StreamReader(media::Demuxer* demuxer) {
+StreamReader::StreamReader(media::Demuxer* demuxer,
+                           bool enable_bitstream_converter) {
   media::DemuxerStream* stream =
       demuxer->GetStream(media::DemuxerStream::AUDIO);
   if (stream) {
@@ -99,6 +104,9 @@ StreamReader::StreamReader(media::Demuxer* demuxer) {
     end_of_stream_.push_back(false);
     last_read_timestamp_.push_back(media::kNoTimestamp());
     counts_.push_back(0);
+
+    if (enable_bitstream_converter)
+      stream->EnableBitstreamConverter();
   }
 }
 
@@ -169,7 +177,11 @@ int main(int argc, char** argv) {
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 
   if (cmd_line->GetArgs().empty()) {
-    std::cerr << "Usage: " << argv[0] << " [file]" << std::endl;
+    std::cerr << "Usage: " << argv[0] << " [file]\n\n"
+              << "Options:\n"
+              << "  --" << switches::kEnableBitstreamConverter
+              << " Enables H.264 Annex B bitstream conversion"
+              << std::endl;
     return 1;
   }
 
@@ -178,18 +190,19 @@ int main(int argc, char** argv) {
   base::FilePath file_path(cmd_line->GetArgs()[0]);
 
   // Setup.
-  scoped_ptr<media::FileDataSource> data_source(new media::FileDataSource());
-  CHECK(data_source->Initialize(file_path));
+  media::FileDataSource data_source;
+  CHECK(data_source.Initialize(file_path));
 
   media::FFmpegNeedKeyCB need_key_cb = base::Bind(&NeedKey);
-  scoped_ptr<media::FFmpegDemuxer> demuxer(new media::FFmpegDemuxer(
-      message_loop.message_loop_proxy(), data_source.get(), need_key_cb));
+  media::FFmpegDemuxer demuxer(
+      message_loop.message_loop_proxy(), &data_source, need_key_cb);
 
-  demuxer->Initialize(&demuxer_host, base::Bind(
+  demuxer.Initialize(&demuxer_host, base::Bind(
       &QuitLoopWithStatus, &message_loop));
   message_loop.Run();
 
-  StreamReader stream_reader(demuxer.get());
+  StreamReader stream_reader(
+      &demuxer, cmd_line->HasSwitch(switches::kEnableBitstreamConverter));
 
   // Benchmark.
   base::TimeTicks start = base::TimeTicks::HighResNow();
@@ -216,7 +229,7 @@ int main(int argc, char** argv) {
   }
 
   // Teardown.
-  demuxer->Stop(base::Bind(
+  demuxer.Stop(base::Bind(
       &QuitLoopWithStatus, &message_loop, media::PIPELINE_OK));
   message_loop.Run();
 
