@@ -8,6 +8,13 @@
 #include <string>
 
 #include "chrome/browser/google_apis/test_util.h"
+#include "net/base/completion_callback.h"
+#include "net/base/io_buffer.h"
+#include "net/base/test_completion_callback.h"
+
+namespace net {
+class IOBuffer;
+}  // namespace net
 
 namespace drive {
 
@@ -53,6 +60,24 @@ struct DestroyHelperForTests {
     }
   }
 };
+
+// Reads all the data from |reader| and copies to |content|. Returns net::Error
+// code.
+template<typename Reader>
+int ReadAllData(Reader* reader, std::string* content) {
+  const int kBufferSize = 10;
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
+  while (true) {
+    net::TestCompletionCallback callback;
+    int result = reader->Read(buffer.get(), kBufferSize, callback.callback());
+    result = callback.GetResult(result);
+    if (result <= 0) {
+      // Found an error or EOF. Return it. Note: net::OK is 0.
+      return result;
+    }
+    content->append(buffer->data(), result);
+  }
+}
 
 }  // namespace test_util
 }  // namespace drive

@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/drive/drive_file_stream_reader.h"
 #include "chrome/browser/chromeos/drive/fake_file_system.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/google_apis/fake_drive_service.h"
 #include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/google_apis/test_util.h"
@@ -182,30 +183,15 @@ class DriveURLRequestJobTest : public testing::Test {
             google_apis::test_util::CreateCopyResultCallback(
                 &error, &entry)));
     message_loop_.Run();
-    if (error != FILE_ERROR_OK)
+    if (error != FILE_ERROR_OK || !entry)
       return false;
 
     // Read data from the reader.
-    size_t content_size = entry->file_info().size();
     std::string content;
-    const int kBufferSize = 100;
-    scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
-    while (content.size() < content_size) {
-      net::TestCompletionCallback callback;
-      int result = reader->Read(buffer.get(), kBufferSize, callback.callback());
-      result = callback.GetResult(result);
-      if (result < 0) {
-        // An error is found.
-        return false;
-      }
-      if (result == 0) {
-        // EOF is found.
-        break;
-      }
-      content.append(buffer->data(), result);
-    }
+    if (test_util::ReadAllData(reader.get(), &content) != net::OK)
+      return false;
 
-    if (content_size != content.size())
+    if (static_cast<size_t>(entry->file_info().size()) != content.size())
       return false;
 
     *out_content = content;

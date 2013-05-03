@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
+#include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/chromeos/drive/fake_file_system.h"
@@ -36,26 +37,6 @@ namespace {
 void IncrementCallback(int* num_called) {
   DCHECK(num_called);
   ++*num_called;
-}
-
-// Reads all data from |reader| and copies to |content|. Returns net::Error
-// code.
-int ReadAllData(ReaderProxy* proxy, std::string* content) {
-  const int kBufferSize = 10;
-  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
-
-  // Read repeatedly, until it is finished.
-  while (true) {
-    net::TestCompletionCallback callback;
-    int result = proxy->Read(buffer.get(), kBufferSize, callback.callback());
-    result = callback.GetResult(result);
-    if (result <= 0) {
-      // An error or EOF is found. Note that net::OK is 0.
-      return result;
-    }
-
-    content->append(buffer->data(), result);
-  }
 }
 
 }  // namespace
@@ -101,7 +82,7 @@ TEST_F(LocalReaderProxyTest, Read) {
 
   // Make sure the read contant is as same as the file.
   std::string content;
-  ASSERT_EQ(net::OK, ReadAllData(&proxy, &content));
+  ASSERT_EQ(net::OK, test_util::ReadAllData(&proxy, &content));
   EXPECT_EQ(file_content_, content);
 }
 
@@ -122,7 +103,7 @@ TEST_F(LocalReaderProxyTest, ReadWithLimit) {
 
   // Make sure the read contant is as same as the file.
   std::string content;
-  ASSERT_EQ(net::OK, ReadAllData(&proxy, &content));
+  ASSERT_EQ(net::OK, test_util::ReadAllData(&proxy, &content));
   EXPECT_EQ(expected_content, content);
 }
 
@@ -381,13 +362,8 @@ class DriveFileStreamReaderTest : public ::testing::Test {
 TEST_F(DriveFileStreamReaderTest, Read) {
   const base::FilePath kDriveFile =
       util::GetDriveMyDriveRootPath().AppendASCII("File 1.txt");
-  net::TestCompletionCallback callback;
-  const int kBufferSize = 3;
-  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
-
   // Create the reader, and initialize it.
   // In this case, the file is not yet locally cached.
-
   scoped_ptr<DriveFileStreamReader> reader(new DriveFileStreamReader(
       GetFileSystemGetter(),
       worker_thread_->message_loop_proxy()));
@@ -405,17 +381,11 @@ TEST_F(DriveFileStreamReaderTest, Read) {
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(entry);
   EXPECT_TRUE(reader->IsInitialized());
+  size_t content_size = entry->file_info().size();
 
   // Read data from the reader.
-  size_t content_size = entry->file_info().size();
   std::string first_content;
-  while (first_content.size() < content_size) {
-    int result = reader->Read(buffer.get(), kBufferSize, callback.callback());
-    result = callback.GetResult(result);
-    ASSERT_GT(result, 0);
-    first_content.append(buffer->data(), result);
-  }
-
+  ASSERT_EQ(net::OK, test_util::ReadAllData(reader.get(), &first_content));
   EXPECT_EQ(content_size, first_content.size());
 
   // Create second instance and initialize it.
@@ -439,17 +409,11 @@ TEST_F(DriveFileStreamReaderTest, Read) {
   EXPECT_TRUE(reader->IsInitialized());
 
   // The size should be same.
-  EXPECT_EQ(content_size,
-            static_cast<size_t>(entry->file_info().size()));
+  EXPECT_EQ(content_size, static_cast<size_t>(entry->file_info().size()));
 
   // Read data from the reader, again.
   std::string second_content;
-  while (second_content.size() < content_size) {
-    int result = reader->Read(buffer.get(), kBufferSize, callback.callback());
-    result = callback.GetResult(result);
-    ASSERT_GT(result, 0);
-    second_content.append(buffer->data(), result);
-  }
+  ASSERT_EQ(net::OK, test_util::ReadAllData(reader.get(), &second_content));
 
   // The same content is expected.
   EXPECT_EQ(first_content, second_content);

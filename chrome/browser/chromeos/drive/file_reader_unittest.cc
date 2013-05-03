@@ -14,6 +14,7 @@
 #include "base/message_loop.h"
 #include "base/rand_util.h"
 #include "base/threading/thread.h"
+#include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
@@ -23,30 +24,21 @@ namespace drive {
 namespace util {
 namespace {
 
-// Reads all the contents from |file_reader| and stores into |out_content|.
-// Returns net::Error code.
-int ReadAllData(FileReader* file_reader, std::string* out_content) {
-  const int kBufferSize = 100;
-  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
-
-  std::string content;
-  while (true) {
-    net::TestCompletionCallback callback;
-    file_reader->Read(buffer.get(), kBufferSize, callback.callback());
-    int result = callback.WaitForResult();
-    if (result < 0) {
-      return result;
-    }
-    if (result == 0) {
-      // Quit the loop at EOF.
-      break;
-    }
-    content.append(buffer->data(), result);
+// An adapter to use test_util::ReadAllData.
+class FileReaderAdapter {
+ public:
+  explicit FileReaderAdapter(FileReader* reader) : reader_(reader) {}
+  int Read(net::IOBuffer* buffer,
+           int buffer_length,
+           const net::CompletionCallback& callback) {
+    reader_->Read(buffer, buffer_length, callback);
+    // As FileReader::Read always works asynchronously, return ERR_IO_PENDING.
+    return net::ERR_IO_PENDING;
   }
 
-  *out_content = content;
-  return net::OK;
-}
+ private:
+  FileReader* reader_;
+};
 
 }  // namespace
 
@@ -92,8 +84,9 @@ TEST_F(DriveFileReaderTest, FullRead) {
   file_reader_->Open(test_file, 0, callback.callback());
   ASSERT_EQ(net::OK, callback.WaitForResult());
 
+  FileReaderAdapter adapter(file_reader_.get());
   std::string content;
-  ASSERT_EQ(net::OK, ReadAllData(file_reader_.get(), &content));
+  ASSERT_EQ(net::OK, test_util::ReadAllData(&adapter, &content));
   EXPECT_EQ(expected_content, content);
 }
 
@@ -111,8 +104,9 @@ TEST_F(DriveFileReaderTest, OpenWithOffset) {
       test_file, static_cast<int64>(offset), callback.callback());
   ASSERT_EQ(net::OK, callback.WaitForResult());
 
+  FileReaderAdapter adapter(file_reader_.get());
   std::string content;
-  ASSERT_EQ(net::OK, ReadAllData(file_reader_.get(), &content));
+  ASSERT_EQ(net::OK, test_util::ReadAllData(&adapter, &content));
   EXPECT_EQ(expected_content, content);
 }
 
