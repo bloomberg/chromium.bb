@@ -166,6 +166,12 @@ int HandleFwrite(int num_params, char** params, char** output) {
 
   bytes_written = fwrite(data, 1, data_len, file);
 
+  if (ferror(file)) {
+    *output = PrintfToNewString(
+        "Error: Wrote %d bytes, but ferror() returns true.", bytes_written);
+    return 3;
+  }
+
   *output = PrintfToNewString("fwrite\1%s\1%d", file_index_string,
                               bytes_written);
   return 0;
@@ -212,6 +218,12 @@ int HandleFread(int num_params, char** params, char** output) {
   buffer = (char*)malloc(data_len + 1);
   bytes_read = fread(buffer, 1, data_len, file);
   buffer[bytes_read] = 0;
+
+  if (ferror(file)) {
+    *output = PrintfToNewString(
+        "Error: Read %d bytes, but ferror() returns true.", bytes_read);
+    return 3;
+  }
 
   *output = PrintfToNewString("fread\1%s\1%s", file_index_string, buffer);
   free(buffer);
