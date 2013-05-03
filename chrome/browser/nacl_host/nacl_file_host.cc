@@ -16,6 +16,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
+#include "chrome/common/extensions/manifest_handlers/shared_module_info.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
@@ -23,6 +24,7 @@
 #include "ipc/ipc_platform_file.h"
 
 using content::BrowserThread;
+using extensions::SharedModuleInfo;
 
 namespace {
 
@@ -142,9 +144,31 @@ bool GetExtensionFilePath(
   if (!extension)
     return false;
 
-  // Check that the URL references a resource in the extension.
-  extensions::ExtensionResource resource =
-      extension->GetResource(file_url.path());
+  std::string path = file_url.path();
+  extensions::ExtensionResource resource;
+
+  if (SharedModuleInfo::IsImportedPath(path)) {
+    // Check if this is a valid path that is imported for this extension.
+    std::string new_extension_id;
+    std::string new_relative_path;
+    SharedModuleInfo::ParseImportedPath(path, &new_extension_id,
+                                        &new_relative_path);
+    const extensions::Extension* new_extension =
+        extension_info_map->extensions().GetByID(new_extension_id);
+    if (!new_extension)
+      return false;
+
+    if (!SharedModuleInfo::ImportsExtensionById(extension, new_extension_id) ||
+        !SharedModuleInfo::IsExportAllowed(new_extension, new_relative_path)) {
+      return false;
+    }
+
+    resource = new_extension->GetResource(new_relative_path);
+  } else {
+    // Check that the URL references a resource in the extension.
+    resource = extension->GetResource(path);
+  }
+
   if (resource.empty())
     return false;
 
