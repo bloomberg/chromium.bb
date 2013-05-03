@@ -48,6 +48,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
+#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -1500,13 +1501,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SavingBrowserHistoryDisabled) {
   EXPECT_EQ(url, enumerator2.urls()[0]);
 }
 
-// Flaky on win7: crbug.com/175439.
-#if defined(OS_WIN)
-#define MAYBE_TranslateEnabled DISABLED_TranslateEnabled
-#else
-#define MAYBE_TranslateEnabled TranslateEnabled
-#endif
-IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_TranslateEnabled) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, TranslateEnabled) {
   // Verifies that translate can be forced enabled or disabled by policy.
 
   // Get the InfoBarService, and verify that there are no infobars on startup.
@@ -1528,12 +1523,25 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_TranslateEnabled) {
   // shown below, without polling for infobars for some indeterminate amount
   // of time.
   GURL url = ui_test_utils::GetTestUrl(
-      base::FilePath(), base::FilePath(FILE_PATH_LITERAL("french_page.html")));
+      base::FilePath(),
+      base::FilePath(FILE_PATH_LITERAL("translate/fr_test.html")));
   content::WindowedNotificationObserver language_observer1(
       chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
       content::NotificationService::AllSources());
   ui_test_utils::NavigateToURL(browser(), url);
   language_observer1.Wait();
+
+  // Verify the translation detected for this tab.
+  TranslateTabHelper* translate_tab_helper =
+      TranslateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(translate_tab_helper);
+  LanguageState& language_state = translate_tab_helper->language_state();
+  EXPECT_EQ("fr", language_state.original_language());
+  EXPECT_TRUE(language_state.page_translatable());
+  EXPECT_FALSE(language_state.translation_pending());
+  EXPECT_FALSE(language_state.translation_declined());
+  EXPECT_FALSE(language_state.IsPageTranslated());
+
   // Verify that the translate infobar showed up.
   ASSERT_EQ(1u, infobar_service->infobar_count());
   InfoBarDelegate* infobar_delegate = infobar_service->infobar_at(0);
