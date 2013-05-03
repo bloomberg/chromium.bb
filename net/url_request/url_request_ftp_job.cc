@@ -29,19 +29,21 @@ URLRequestFtpJob::URLRequestFtpJob(
     FtpAuthCache* ftp_auth_cache)
     : URLRequestJob(request, network_delegate),
       priority_(DEFAULT_PRIORITY),
+      proxy_service_(request_->context()->proxy_service()),
       pac_request_(NULL),
       http_response_info_(NULL),
       read_in_progress_(false),
       weak_factory_(this),
       ftp_transaction_factory_(ftp_transaction_factory),
       ftp_auth_cache_(ftp_auth_cache) {
+  DCHECK(proxy_service_);
   DCHECK(ftp_transaction_factory);
   DCHECK(ftp_auth_cache);
 }
 
 URLRequestFtpJob::~URLRequestFtpJob() {
   if (pac_request_)
-    request_->context()->proxy_service()->CancelPacRequest(pac_request_);
+    proxy_service_->CancelPacRequest(pac_request_);
 }
 
 // static
@@ -116,7 +118,8 @@ void URLRequestFtpJob::Start() {
   if (request_->load_flags() & LOAD_BYPASS_PROXY) {
     proxy_info_.UseDirect();
   } else {
-    rv = request_->context()->proxy_service()->ResolveProxy(
+    DCHECK_EQ(request_->context()->proxy_service(), proxy_service_);
+    rv = proxy_service_->ResolveProxy(
         request_->url(),
         &proxy_info_,
         base::Bind(&URLRequestFtpJob::OnResolveProxyComplete,

@@ -9,7 +9,9 @@
 #include "base/run_loop.h"
 #include "googleurl/src/gurl.h"
 #include "net/http/http_transaction_unittest.h"
+#include "net/proxy/mock_proxy_resolver.h"
 #include "net/proxy/proxy_config_service.h"
+#include "net/proxy/proxy_config_service_fixed.h"
 #include "net/socket/socket_test_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -240,6 +242,26 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequest) {
   EXPECT_EQ(0, network_delegate()->error_count());
   EXPECT_FALSE(request_delegate.auth_required_called());
   EXPECT_EQ("test.html", request_delegate.data_received());
+}
+
+// Regression test for http://crbug.com/237526 .
+TEST_F(URLRequestFtpJobTest, FtpProxyRequestOrphanJob) {
+  // Use a PAC URL so that URLRequestFtpJob's |pac_request_| field is non-NULL.
+  request_context()->set_proxy_service(
+      new ProxyService(
+          new ProxyConfigServiceFixed(
+              ProxyConfig::CreateFromCustomPacURL(GURL("http://foo"))),
+          new MockAsyncProxyResolver, NULL));
+
+  TestDelegate request_delegate;
+  URLRequest url_request(GURL("ftp://ftp.example.com/"),
+                         &request_delegate,
+                         request_context(),
+                         network_delegate());
+  url_request.Start();
+
+  // Now |url_request| will be deleted before its completion,
+  // resulting in it being orphaned. It should not crash.
 }
 
 TEST_F(URLRequestFtpJobTest, FtpProxyRequestNeedProxyAuthNoCredentials) {

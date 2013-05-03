@@ -84,6 +84,7 @@ class NET_EXPORT_PRIVATE URLRequestFtpJob : public URLRequestJob {
 
   RequestPriority priority_;
 
+  ProxyService* proxy_service_;
   ProxyInfo proxy_info_;
   ProxyService::PacRequest* pac_request_;
 
