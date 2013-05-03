@@ -354,13 +354,6 @@
             }],
           ],
         },
-        {
-          'target_name': 'test_shell_tests',
-          'type': 'executable',
-          'sources': [
-            'run_all_tests.cc',
-          ],
-        },
       ],
     }],
     ['OS!="android" and OS!="ios"', {

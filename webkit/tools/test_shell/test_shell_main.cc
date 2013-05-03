@@ -125,21 +125,6 @@ int main(int argc, char* argv[]) {
   if (parsed_command_line.HasSwitch(test_shell::kEnableAccelCompositing))
     TestShell::SetAcceleratedCompositingEnabled(true);
 
-  if (parsed_command_line.HasSwitch(test_shell::kMultipleLoads)) {
-    const std::string multiple_loads_str =
-        parsed_command_line.GetSwitchValueASCII(test_shell::kMultipleLoads);
-    int load_count;
-    base::StringToInt(multiple_loads_str, &load_count);
-    if (load_count <= 0) {
-  #ifndef NDEBUG
-      load_count = 2;
-  #else
-      load_count = 5;
-  #endif
-    }
-    TestShell::SetMultipleLoad(load_count);
-  }
-
   bool layout_test_mode = false;
   TestShell::InitLogging(suppress_error_dialogs,
                          layout_test_mode,
@@ -197,15 +182,6 @@ int main(int argc, char* argv[]) {
   if (generic_theme)
     test_shell_webkit_init.SetThemeEngine(&engine);
 #endif
-
-  if (parsed_command_line.HasSwitch(test_shell::kTestShellTimeOut)) {
-    const std::string timeout_str = parsed_command_line.GetSwitchValueASCII(
-        test_shell::kTestShellTimeOut);
-    int timeout_ms;
-    base::StringToInt(timeout_str, &timeout_ms);
-    if (timeout_ms > 0)
-      TestShell::SetFileTestTimeout(timeout_ms);
-  }
 
   // Unless specifically requested otherwise, default to OSMesa for GL.
   if (!parsed_command_line.HasSwitch(switches::kUseGL))

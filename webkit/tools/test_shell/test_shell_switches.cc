@@ -24,19 +24,11 @@ const char kClassicTheme[] = "classic-theme";
 // enabled. This is the default unless --layout-tests is specified.
 const char kUxTheme[] = "ux-theme";
 
-// Optional command line switch that specifies timeout time for page load when
-// running file tests in layout test mode, in ms.
-const char kTestShellTimeOut[] = "time-out-ms";
-
 const char kStartupDialog[] = "testshell-startup-dialog";
 
 // Enable the Windows dialogs for GP faults in the test shell. This allows makes
 // it possible to attach a crashed test shell to a debugger.
 const char kGPFaultErrorBox[] = "gp-fault-error-box";
-
-// Make the test shell load the test URL multiple times. The output dump will
-// only be made from the default last run.
-const char kMultipleLoads[] = "multiple-loads";
 
 // JavaScript flags passed to engine. If multiple loads has been specified this
 // can be a list separated by commas. Each set of flags are passed to the engine

@@ -367,14 +367,6 @@ bool TestShell::Initialize(const GURL& starting_url) {
   return true;
 }
 
-void TestShell::TestFinished() {
-  if(!test_is_pending_)
-    return;
-
-  test_is_pending_ = false;
-  MessageLoop::current()->Quit();
-}
-
 void TestShell::SizeTo(int width, int height) {
   GtkWidget* widget = m_webViewHost->view_handle();
 
@@ -398,34 +390,6 @@ void TestShell::SizeTo(int width, int height) {
   // the resize has gone into WebKit by the time SizeTo() returns.
   // Force the webkit resize to happen now.
   m_webViewHost->Resize(gfx::Size(width, height));
-}
-
-static void AlarmHandler(int signatl) {
-  // If the alarm alarmed, kill the process since we have a really bad hang.
-  puts("\n#TEST_TIMED_OUT\n");
-  puts("#EOF\n");
-  fflush(stdout);
-  TestShell::ShutdownTestShell();
-  exit(0);
-}
-
-void TestShell::WaitTestFinished() {
-  DCHECK(!test_is_pending_) << "cannot be used recursively";
-
-  test_is_pending_ = true;
-
-  // Install an alarm signal handler that will kill us if we time out.
-  signal(SIGALRM, AlarmHandler);
-  alarm(GetLayoutTestTimeoutForWatchDog() / 1000);
-
-  // TestFinished() will post a quit message to break this loop when the page
-  // finishes loading.
-  while (test_is_pending_)
-    MessageLoop::current()->Run();
-
-  // Remove the alarm.
-  alarm(0);
-  signal(SIGALRM, SIG_DFL);
 }
 
 void TestShell::InteractiveSetFocus(WebWidgetHost* host, bool enable) {

@@ -36,20 +36,16 @@ windows_binaries = [#'chrome.exe',
                     #'chrome.dll',
                     'unit_tests.exe',
                     'automated_ui_tests.exe',
-                    'ui_tests.exe',
                     'installer_util_unittests.exe',
                     'ipc_tests.exe',
                     'memory_test.exe',
                     'page_cycler_tests.exe',
                     'perf_tests.exe',
-                    'plugin_tests.exe',
                     'reliability_tests.exe',
                     'security_tests.dll',
                     'startup_tests.exe',
                     'tab_switching_test.exe',
-                    'test_shell_tests.exe',
-                    'test_shell.exe',
-                    'activex_test_control.dll']
+                    'test_shell.exe']
 
 # The list of [tests, args] that will be run.
 # Failing tests have been commented out.
@@ -57,15 +53,12 @@ windows_binaries = [#'chrome.exe',
 windows_tests = [
                  ['unit_tests.exe', ''],
 #                 ['automated_ui_tests.exe', ''],
-                 ['ui_tests.exe', '--no-sandbox'],
                  ['installer_util_unittests.exe', ''],
                  ['ipc_tests.exe', ''],
                  ['page_cycler_tests.exe', '--gtest_filter=*File --no-sandbox'],
-                 ['plugin_tests.exe', '--no-sandbox'],
                  ['reliability_tests.exe', '--no-sandbox'],
                  ['startup_tests.exe', '--no-sandbox'],
                  ['tab_switching_test.exe', '--no-sandbox'],
-                 ['test_shell_tests.exe', '']
                 ]
 
 

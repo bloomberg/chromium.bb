@@ -114,10 +114,6 @@ WindowList* TestShell::window_list_;
 WebPreferences* TestShell::web_prefs_ = NULL;
 bool TestShell::layout_test_mode_ = false;
 bool TestShell::allow_external_pages_ = false;
-int TestShell::file_test_timeout_ms_ = kDefaultFileTestTimeoutMillisecs;
-bool TestShell::test_is_preparing_ = false;
-bool TestShell::test_is_pending_ = false;
-int TestShell::load_count_ = 1;
 std::vector<std::string> TestShell::js_flags_;
 bool TestShell::accelerated_2d_canvas_enabled_ = false;
 bool TestShell::accelerated_compositing_enabled_ = false;
@@ -400,11 +396,6 @@ bool TestShell::RemoveWindowFromList(gfx::NativeWindow window) {
   }
 
   return false;
-}
-
-void TestShell::TestTimedOut() {
-  puts("#TEST_TIMED_OUT\n");
-  TestFinished();
 }
 
 void TestShell::Show(WebNavigationPolicy policy) {

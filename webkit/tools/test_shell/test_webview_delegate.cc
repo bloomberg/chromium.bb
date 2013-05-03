@@ -633,10 +633,6 @@ void TestWebViewDelegate::didCreateDataSource(
 }
 
 void TestWebViewDelegate::didStartProvisionalLoad(WebFrame* frame) {
-  if (!top_loading_frame_) {
-    top_loading_frame_ = frame;
-  }
-
   UpdateAddressBar(frame->view());
 }
 
@@ -647,8 +643,6 @@ void TestWebViewDelegate::didReceiveServerRedirectForProvisionalLoad(
 
 void TestWebViewDelegate::didFailProvisionalLoad(
     WebFrame* frame, const WebURLError& error) {
-  LocationChangeDone(frame);
-
   // Don't display an error page if we're running layout tests, because
   // DumpRenderTree doesn't.
   if (shell_->layout_test_mode())
@@ -705,15 +699,9 @@ void TestWebViewDelegate::didFinishDocumentLoad(WebFrame* frame) {
 void TestWebViewDelegate::didHandleOnloadEvents(WebFrame* frame) {
 }
 
-void TestWebViewDelegate::didFailLoad(
-    WebFrame* frame, const WebURLError& error) {
-  LocationChangeDone(frame);
-}
-
 void TestWebViewDelegate::didFinishLoad(WebFrame* frame) {
   TRACE_EVENT_END_ETW("frame.load", this, frame->document().url().spec());
   UpdateAddressBar(frame->view());
-  LocationChangeDone(frame);
 }
 
 void TestWebViewDelegate::didNavigateWithinPage(
@@ -833,7 +821,6 @@ TestWebViewDelegate::TestWebViewDelegate(TestShell* shell)
       policy_delegate_is_permissive_(false),
       policy_delegate_should_notify_done_(false),
       shell_(shell),
-      top_loading_frame_(NULL),
       page_id_(-1),
       last_page_id_updated_(-1),
       using_fake_rect_(false),
@@ -892,13 +879,6 @@ void TestWebViewDelegate::UpdateAddressBar(WebView* webView) {
     return;
 
   SetAddressBarURL(data_source->request().url());
-}
-
-void TestWebViewDelegate::LocationChangeDone(WebFrame* frame) {
-  if (frame == top_loading_frame_) {
-    top_loading_frame_ = NULL;
-    shell_->TestFinished();
-  }
 }
 
 WebWidgetHost* TestWebViewDelegate::GetWidgetHost() {

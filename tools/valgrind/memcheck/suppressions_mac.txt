@@ -29,16 +29,6 @@
    ...
 }
 {
-   # Mac test_shell_tests.  See http://crbug.com/11134
-   # Doesn't happen on bots, but happens like crazy on the smo
-   # test machine 'caliban'.  Don't delete just because it
-   # doesn't happen on the bots.
-   bug_11134
-   Memcheck:Uninitialized
-   fun:vCMMVectorConvert8BitRGBToRGB
-   fun:_ZNK15CMMConvRGBToRGB7ConvertER8CMM8BitsP14CMMRuntimeInfomm
-}
-{
    # Mac system library bug?  See http://crbug.com/11327
    bug_11327
    Memcheck:Uninitialized

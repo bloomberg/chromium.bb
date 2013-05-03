@@ -207,8 +207,6 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
       WebKit::WebTextDirection direction);
   virtual void didFinishDocumentLoad(WebKit::WebFrame*);
   virtual void didHandleOnloadEvents(WebKit::WebFrame*);
-  virtual void didFailLoad(
-      WebKit::WebFrame*, const WebKit::WebURLError&);
   virtual void didFinishLoad(WebKit::WebFrame*);
   virtual void didNavigateWithinPage(
       WebKit::WebFrame*, bool is_new_navigation);
@@ -259,7 +257,6 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   void Reset();
 
   // Additional accessors
-  WebKit::WebFrame* top_loading_frame() { return top_loading_frame_; }
 #if defined(OS_WIN)
   IDropTarget* drop_delegate() { return drop_delegate_.get(); }
 #endif
@@ -341,11 +338,6 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   // call this function when we really want a message to pop up.
   void ShowJavaScriptAlert(const base::string16& message);
 
-  // In the Mac code, this is called to trigger the end of a test after the
-  // page has finished loading.  From here, we can generate the dump for the
-  // test.
-  void LocationChangeDone(WebKit::WebFrame*);
-
   // Tests that require moving or resizing the main window (via resizeTo() or
   // moveTo()) pass in Chrome even though Chrome disregards move requests for
   // non-popup windows (see TabContents::RequestMove()).  These functions allow
@@ -380,9 +372,6 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
 
   // Non-owning pointer.  The delegate is owned by the host.
   TestShell* shell_;
-
-  // This is non-NULL IFF a load is in progress.
-  WebKit::WebFrame* top_loading_frame_;
 
   // For tracking session history.  See RenderView.
   int page_id_;

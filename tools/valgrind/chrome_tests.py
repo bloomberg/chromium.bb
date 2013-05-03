@@ -323,9 +323,6 @@ class ChromeTests:
   def TestLinuxSandbox(self):
     return self.SimpleTest("sandbox", "sandbox_linux_unittests")
 
-  def TestTestShell(self):
-    return self.SimpleTest("webkit", "test_shell_tests")
-
   def TestUnit(self):
     # http://crbug.com/51716
     # Disabling all unit tests
@@ -409,7 +406,6 @@ class ChromeTests:
     # Now build script_cmd, the run_webkits_tests.py commandline
     # Store each chunk in its own directory so that we can find the data later
     chunk_dir = os.path.join("layout", "chunk_%05d" % chunk_num)
-    test_shell = os.path.join(self._options.build_dir, "test_shell")
     out_dir = os.path.join(path_utils.ScriptDir(), "latest")
     out_dir = os.path.join(out_dir, chunk_dir)
     if os.path.exists(out_dir):
@@ -541,7 +537,6 @@ class ChromeTests:
     "sync": TestSync,            "sync_unit_tests": TestSync,
     "sync_integration_tests": TestSyncIntegration,
     "sync_integration": TestSyncIntegration,
-    "test_shell": TestTestShell, "test_shell_tests": TestTestShell,
     "ui_unit": TestUIUnit,       "ui_unittests": TestUIUnit,
     "unit": TestUnit,            "unit_tests": TestUnit,
     "views": TestViews,          "views_unittests": TestViews,

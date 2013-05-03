@@ -101,7 +101,6 @@ class ChromeTests(object):
       "sql": self.TestSql,              "sql_unittests": self.TestSql,
       "startup": self.TestStartup,      "startup_tests": self.TestStartup,
       "sync": self.TestSync,            "sync_unit_tests": self.TestSync,
-      "test_shell": self.TestTestShell, "test_shell_tests": self.TestTestShell,
       "ui_unit": self.TestUIUnit,       "ui_unittests": self.TestUIUnit,
       "unit": self.TestUnit,            "unit_tests": self.TestUnit,
       "views": self.TestViews,          "views_unittests": self.TestViews,
@@ -308,9 +307,6 @@ class ChromeTests(object):
     logging.info("export STARTUP_TESTS_NUMCYCLES=1");
     return self.SimpleTest("chrome", "startup_tests")
 
-  def TestTestShell(self):
-    return self.SimpleTest("webkit", "test_shell_tests")
-
   def TestUIUnit(self):
     return self.SimpleTest("chrome", "ui_unittests")
 
@@ -341,7 +337,6 @@ class ChromeTests(object):
     # Now build script_cmd, the run_webkits_tests.py commandline
     # Store each chunk in its own directory so that we can find the data later
     chunk_dir = os.path.join("layout", "chunk_%05d" % chunk_num)
-    test_shell = os.path.join(self._options.build_dir, "test_shell")
     out_dir = os.path.join(path_utils.ScriptDir(), "latest")
     out_dir = os.path.join(out_dir, chunk_dir)
     if os.path.exists(out_dir):

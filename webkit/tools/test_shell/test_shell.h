@@ -113,16 +113,6 @@ public:
     void ShowDevTools();
     void CloseDevTools();
 
-    // Called to signal test completion.
-    void TestFinished();
-
-    // Called when a test hits the timeout, but does not cause a hang.  We can
-    // avoid killing TestShell in this case and still dump the test results.
-    void TestTimedOut();
-
-    // Called to block the calling thread until TestFinished is called.
-    void WaitTestFinished();
-
     void Show(WebKit::WebNavigationPolicy policy);
 
     // We use this to avoid relying on Windows focus during layout test mode.
@@ -209,34 +199,11 @@ public:
     // this by substituting "tmp" with the path to the LayoutTests parent dir.
     static std::string RewriteLocalUrl(const std::string& url);
 
-    // Set the timeout for running a test.
-    static void SetFileTestTimeout(int timeout_ms) {
-      file_test_timeout_ms_ = timeout_ms;
-    }
-
-    // Get the timeout for running a test.
-    static int GetLayoutTestTimeout() { return file_test_timeout_ms_; }
-
-    // Get the timeout killing an unresponsive TestShell.
-    // Make it a bit longer than the regular timeout to avoid killing the
-    // TestShell process unless we really need to.
-    static int GetLayoutTestTimeoutForWatchDog() {
-      return (load_count_ * file_test_timeout_ms_) + 1000;
-    }
-
     // Set the JavaScript flags to use. This is a vector as when multiple loads
     // are specified each load can have different flags passed.
     static void SetJavaScriptFlags(std::vector<std::string> js_flags) {
       js_flags_ = js_flags;
     }
-
-    // Set the number of times to load each URL.
-    static void SetMultipleLoad(int load_count) {
-      load_count_ = load_count;
-    }
-
-    // Get the number of times to load each URL.
-    static int GetLoadCount() { return load_count_; }
 
     // Get the JavaScript flags for a specific load
     static std::string GetJSFlagsForLoad(size_t load) {
@@ -244,12 +211,6 @@ public:
         return std::string();
       return js_flags_[load];
     }
-
-#if defined(OS_WIN)
-    // Access to the finished event.  Used by the static WatchDog
-    // thread.
-    HANDLE finished_event() { return finished_event_; }
-#endif
 
     // Have the shell print the StatsTable to stdout on teardown.
     void DumpStatsTableOnExit() { dump_stats_table_on_exit_ = true; }
@@ -343,9 +304,6 @@ private:
     // produce images of the rendered page)
     static bool allow_external_pages_;
 
-    // Default timeout in ms for file page loads when in layout test mode.
-    static int file_test_timeout_ms_;
-
     scoped_ptr<TestNavigationController> navigation_controller_;
     scoped_ptr<TestNotificationPresenter> notification_presenter_;
 
@@ -360,15 +318,6 @@ private:
     scoped_ptr<WebKit::WebGeolocationClientMock> geolocation_client_mock_;
 
     const TestParams* test_params_;
-
-    // True while a test is preparing to run
-    static bool test_is_preparing_;
-
-    // True while a test is running
-    static bool test_is_pending_;
-
-    // Number of times to load each URL.
-    static int load_count_;
 
     // JavaScript flags. Each element in the vector contains a set of flags as
     // a string (e.g. "--xxx --yyy"). Each flag set is used for separate loads
@@ -393,11 +342,6 @@ private:
 
     // The preferences for the test shell.
     static WebPreferences* web_prefs_;
-
-#if defined(OS_WIN)
-    // Used by the watchdog to know when it's finished.
-    HANDLE finished_event_;
-#endif
 
     // Dump the stats table counters on exit.
     bool dump_stats_table_on_exit_;
