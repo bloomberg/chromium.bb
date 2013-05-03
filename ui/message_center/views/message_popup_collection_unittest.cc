@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
 #include "ui/message_center/fake_message_center.h"
+#include "ui/message_center/views/toast_contents_view.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
@@ -40,6 +41,8 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
   }
 
  protected:
+  MessagePopupCollection* collection() { return collection_.get(); }
+
   size_t GetToastCounts() {
     return collection_->toasts_.size();
   }
@@ -47,6 +50,20 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
   bool IsToastShown(const std::string& id) {
     views::Widget* widget = collection_->GetWidgetForTest(id);
     return widget && widget->IsVisible();
+  }
+
+  views::Widget* GetWidget(const std::string& id) {
+    return collection_->GetWidgetForTest(id);
+  }
+
+  ToastContentsView* GetToast(const std::string& id) {
+    for (MessagePopupCollection::Toasts::iterator iter =
+             collection_->toasts_.begin();
+         iter != collection_->toasts_.end(); ++iter) {
+      if ((*iter)->id() == id)
+        return *iter;
+    }
+    return NULL;
   }
 
   std::string AddNotification() {
@@ -98,6 +115,20 @@ TEST_F(MessagePopupCollectionTest, DismissOnClick) {
   EXPECT_EQ(0u, GetToastCounts());
   EXPECT_FALSE(IsToastShown(id1));
   EXPECT_FALSE(IsToastShown(id2));
+}
+
+TEST_F(MessagePopupCollectionTest, ShutdownDuringShowing) {
+  std::string id1 = AddNotification();
+  std::string id2 = AddNotification();
+  WaitForTransitionsDone();
+  EXPECT_EQ(2u, GetToastCounts());
+  EXPECT_TRUE(IsToastShown(id1));
+  EXPECT_TRUE(IsToastShown(id2));
+
+  // Finish without cleanup of notifications, which may cause use-after-free.
+  // See crbug.com/236448
+  GetWidget(id1)->CloseNow();
+  collection()->OnMouseExited(GetToast(id2));
 }
 
 TEST_F(MessagePopupCollectionTest, DefaultPositioning) {

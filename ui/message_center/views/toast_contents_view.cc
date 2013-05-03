@@ -250,6 +250,8 @@ views::View* ToastContentsView::GetContentsView() {
 
 void ToastContentsView::WindowClosing() {
   SuspendTimer();
+  if (!is_closing_ && collection_)
+    collection_->RemoveToast(this);
 }
 
 bool ToastContentsView::CanActivate() const {
