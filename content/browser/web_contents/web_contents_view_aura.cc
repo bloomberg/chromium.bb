@@ -13,6 +13,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
+#include "content/browser/web_contents/aura/image_window_delegate.h"
 #include "content/browser/web_contents/aura/shadow_layer_delegate.h"
 #include "content/browser/web_contents/interstitial_page_impl.h"
 #include "content/browser/web_contents/navigation_entry_impl.h"
@@ -96,12 +97,11 @@ RenderWidgetHostViewAura* ToRenderWidgetHostViewAura(
 // The window delegate for the overscroll window. This redirects trackpad events
 // to the web-contents window. The delegate destroys itself when the window is
 // destroyed.
-class OverscrollWindowDelegate : public aura::WindowDelegate {
+class OverscrollWindowDelegate : public ImageWindowDelegate {
  public:
   OverscrollWindowDelegate(WebContentsImpl* web_contents,
                            OverscrollMode overscroll_mode)
       : web_contents_(web_contents),
-        size_mismatch_(false),
         forward_events_(true) {
     const NavigationControllerImpl& controller = web_contents->GetController();
     const NavigationEntryImpl* entry = NULL;
@@ -112,18 +112,16 @@ class OverscrollWindowDelegate : public aura::WindowDelegate {
       entry = NavigationEntryImpl::FromNavigationEntry(
           controller.GetEntryAtOffset(-1));
     }
-    if (!entry || !entry->screenshot())
-      return;
 
-    std::vector<gfx::ImagePNGRep> image_reps;
-    image_reps.push_back(gfx::ImagePNGRep(entry->screenshot(),
-          ui::GetScaleFactorForNativeView(web_contents_window())));
-    image_ = gfx::Image(image_reps);
-    size_mismatch_ =
-        image_.AsImageSkia().size() != web_contents_window()->bounds().size();
+    gfx::Image image;
+    if (entry && entry->screenshot()) {
+      std::vector<gfx::ImagePNGRep> image_reps;
+      image_reps.push_back(gfx::ImagePNGRep(entry->screenshot(),
+            ui::GetScaleFactorForNativeView(web_contents_window())));
+      image = gfx::Image(image_reps);
+    }
+    SetImage(image);
   }
-
-  bool has_screenshot() const { return !image_.IsEmpty(); }
 
   void stop_forwarding_events() { forward_events_ = false; }
 
@@ -132,74 +130,6 @@ class OverscrollWindowDelegate : public aura::WindowDelegate {
 
   aura::Window* web_contents_window() {
     return web_contents_->GetView()->GetContentNativeView();
-  }
-
-  // aura::WindowDelegate implementation:
-  virtual gfx::Size GetMinimumSize() const OVERRIDE {
-    return gfx::Size();
-  }
-
-  virtual gfx::Size GetMaximumSize() const OVERRIDE {
-    return gfx::Size();
-  }
-
-  virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
-                               const gfx::Rect& new_bounds) OVERRIDE {
-  }
-
-  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE {
-    return gfx::kNullCursor;
-  }
-
-  virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE {
-    return HTNOWHERE;
-  }
-
-  virtual bool ShouldDescendIntoChildForEventHandling(
-      aura::Window* child,
-      const gfx::Point& location) OVERRIDE {
-    return false;
-  }
-
-  virtual bool CanFocus() OVERRIDE {
-    return false;
-  }
-
-  virtual void OnCaptureLost() OVERRIDE {
-  }
-
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    if (image_.IsEmpty()) {
-      canvas->DrawColor(SK_ColorGRAY);
-    } else {
-      if (size_mismatch_)
-        canvas->DrawColor(SK_ColorWHITE);
-      canvas->DrawImageInt(image_.AsImageSkia(), 0, 0);
-    }
-  }
-
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
-  }
-
-  virtual void OnWindowDestroying() OVERRIDE {
-  }
-
-  virtual void OnWindowDestroyed() OVERRIDE {
-    delete this;
-  }
-
-  virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE {
-  }
-
-  virtual bool HasHitTestMask() const OVERRIDE {
-    return false;
-  }
-
-  virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE {
-  }
-
-  virtual scoped_refptr<ui::Texture> CopyTexture() OVERRIDE {
-    return scoped_refptr<ui::Texture>();
   }
 
   // Overridden from ui::EventHandler.
@@ -214,8 +144,6 @@ class OverscrollWindowDelegate : public aura::WindowDelegate {
   }
 
   WebContents* web_contents_;
-  gfx::Image image_;
-  bool size_mismatch_;
 
   // The window is displayed both during the gesture, and after the gesture
   // while the navigation is in progress. During the gesture, it is necessary to
@@ -782,7 +710,7 @@ void WebContentsViewAura::PrepareOverscrollWindow() {
   overscroll_window_->layer()->SetMasksToBounds(false);
   overscroll_window_->SetName("OverscrollOverlay");
 
-  overscroll_change_brightness_ = overscroll_delegate->has_screenshot();
+  overscroll_change_brightness_ = overscroll_delegate->has_image();
   window_->AddChild(overscroll_window_.get());
 
   gfx::Rect bounds = gfx::Rect(window_->bounds().size());
@@ -903,7 +831,7 @@ void WebContentsViewAura::PrepareOverscrollNavigationOverlay() {
   overscroll_window_->SchedulePaintInRect(
       gfx::Rect(overscroll_window_->bounds().size()));
   navigation_overlay_->SetOverlayWindow(overscroll_window_.Pass(),
-                                        delegate->has_screenshot());
+                                        delegate->has_image());
   navigation_overlay_->StartObservingView(ToRenderWidgetHostViewAura(
       web_contents_->GetRenderWidgetHostView()));
 }
