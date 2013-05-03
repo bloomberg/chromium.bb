@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
@@ -15,9 +16,13 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 const char kProductTourBaseURL[] =
     "http://www.google.com/intl/%s/chrome/browser/mobile/tour/android.html";
+
+const char kPrivacyNoticeBaseURL[] =
+    "http://www.google.com/chrome/intl/%s/privacy.html";
 
 WelcomeUI::WelcomeUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
@@ -40,6 +45,14 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui)
   std::string product_tour_url = base::StringPrintf(
       kProductTourBaseURL, locale.c_str());
   html_source->AddString("productTourUrl", product_tour_url);
+
+  std::string privacy_notice_url = base::StringPrintf(
+      kPrivacyNoticeBaseURL, locale.c_str());
+  html_source->AddString("tosHtml",
+      l10n_util::GetStringFUTF16(
+          IDS_FIRSTRUN_TOS_EXPLANATION,
+          ASCIIToUTF16("#terms"),
+          UTF8ToUTF16(privacy_notice_url)));
 
   // Add required resources.
   html_source->SetJsonPath("strings.js");
