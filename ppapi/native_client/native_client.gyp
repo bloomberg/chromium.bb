@@ -114,7 +114,7 @@
               '-lgio',
               '-Wl,--end-group',
               '-lm',
-              '-Wl,--section-start,.rodata=<(NACL_IRT_DATA_START)',
+              '-Wl,<(NACL_RODATA_FLAG)=<(NACL_IRT_DATA_START)',
               '-Wl,-Ttext-segment=<(NACL_IRT_TEXT_START)',
             ],
             'conditions': [
