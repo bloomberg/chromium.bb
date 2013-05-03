@@ -17,6 +17,7 @@ import sys
 REPLACEMENTS = {
   'use_system_bzip2': 'third_party/bzip2/bzip2.gyp',
   'use_system_expat': 'third_party/expat/expat.gyp',
+  'use_system_ffmpeg': 'third_party/ffmpeg/ffmpeg.gyp',
   'use_system_flac': 'third_party/flac/flac.gyp',
   'use_system_harfbuzz': 'third_party/harfbuzz-ng/harfbuzz.gyp',
   'use_system_icu': 'third_party/icu/icu.gyp',
