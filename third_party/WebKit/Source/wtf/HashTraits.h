@@ -138,10 +138,17 @@ namespace WTF {
     };
 
     template<typename P> struct HashTraits<RefPtr<P> > : SimpleClassHashTraits<RefPtr<P> > {
+        static RefPtr<P>& emptyValue()
+        {
+            static RefPtr<P>& null = *(new RefPtr<P>);
+            return null;
+        }
+
         typedef PassRefPtr<P> PassInType;
         static void store(PassRefPtr<P> value, RefPtr<P>& storage) { storage = value; }
 
-        // FIXME: We should change PassOutType to PassRefPtr for better performance.
+        typedef PassRefPtr<P> PassOutType;
+        static PassRefPtr<P> passOut(RefPtr<P>& value) { return value.release(); }
         // FIXME: We should consider changing PeekType to a raw pointer for better performance,
         // but then callers won't need to call get; doing so will require updating many call sites.
     };
