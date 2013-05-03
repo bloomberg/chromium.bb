@@ -385,15 +385,19 @@ function updateNotificationsCards(position) {
 /**
  * Sends a server request to dismiss a card.
  * @param {string} notificationId Unique identifier of the card.
+ * @param {number} dismissalTimeMs Time of the user's dismissal of the card in
+ *     milliseconds since epoch.
  * @param {function(boolean)} callbackBoolean Completion callback with 'success'
  *     parameter.
  */
-function requestCardDismissal(notificationId, callbackBoolean) {
+function requestCardDismissal(
+    notificationId, dismissalTimeMs, callbackBoolean) {
   console.log('requestDismissingCard ' + notificationId + ' from ' +
       NOTIFICATION_CARDS_URL);
   recordEvent(DiagnosticEvent.DISMISS_REQUEST_TOTAL);
   // Send a dismiss request to the server.
-  var requestParameters = 'id=' + notificationId;
+  var requestParameters = 'id=' + notificationId +
+                          '&dismissalAge=' + (Date.now() - dismissalTimeMs);
   var request = new XMLHttpRequest();
   request.responseType = 'text';
   request.onloadend = function(event) {
@@ -444,12 +448,13 @@ function processPendingDismissals(callbackBoolean) {
 
       // Send dismissal for the first card, and if successful, repeat
       // recursively with the rest.
-      var notificationId = items.pendingDismissals[0];
-      requestCardDismissal(notificationId, function(success) {
+      var dismissal = items.pendingDismissals[0];
+      requestCardDismissal(
+          dismissal.notificationId, dismissal.time, function(success) {
         if (success) {
           dismissalsChanged = true;
           items.pendingDismissals.splice(0, 1);
-          items.recentDismissals[notificationId] = Date.now();
+          items.recentDismissals[dismissal.notificationId] = Date.now();
           doProcessDismissals();
         } else {
           onFinish(false);
@@ -532,7 +537,11 @@ function onNotificationClosed(notificationId, byUser) {
 
     tasks.debugSetStepName('onNotificationClosed-get-pendingDismissals');
     storage.get('pendingDismissals', function(items) {
-      items.pendingDismissals.push(notificationId);
+      var dismissal = {
+        notificationId: notificationId,
+        time: Date.now()
+      };
+      items.pendingDismissals.push(dismissal);
       storage.set({pendingDismissals: items.pendingDismissals});
       processPendingDismissals(function(success) { callback(); });
     });
