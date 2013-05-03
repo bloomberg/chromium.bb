@@ -7104,6 +7104,12 @@
    fun:_ZN6crypto12ECPrivateKey25ExportEncryptedPrivateKeyERKSsiPSt6vectorIhSaIhEE
 }
 {
+  bug_237977
+  Memcheck:Leak
+  fun:_Znw*
+  fun:_ZN3net12_GLOBAL__N_150URLRequestFtpJobTest_FtpProxyRequestOrphanJob_Test8TestBodyEv
+}
+{
    bug_235584
    Memcheck:Leak
    fun:_Znw*
