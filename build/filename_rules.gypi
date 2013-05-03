@@ -97,5 +97,10 @@
                     ['exclude', '(^|/)ash/'],
       ]
     }],
+    ['<(use_ozone)==0 or >(nacl_untrusted_build)==1', {
+      'sources/': [ ['exclude', '_ozone(_browsertest|_unittest)?\\.(h|cc)$'],
+                    ['exclude', '(^|/)ozone/'],
+      ]
+    }],
   ]
 }

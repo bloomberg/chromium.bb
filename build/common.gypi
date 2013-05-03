@@ -29,11 +29,15 @@
 
             # Whether or not we are using the embedded messagepump.
             'use_messagepump_linux%': 0,
+
+            # Use a raw surface abstraction.
+            'use_ozone%': 0,
           },
           # Copy conditionally-set variables out one scope.
           'chromeos%': '<(chromeos)',
           'use_aura%': '<(use_aura)',
           'use_ash%': '<(use_ash)',
+          'use_ozone%': '<(use_ozone)',
 
           # Whether or not we are using the /dev/input/event* message pump.
           'use_messagepump_linux%': '<(use_messagepump_linux)',
@@ -98,6 +102,7 @@
         'use_aura%': '<(use_aura)',
         'use_ash%': '<(use_ash)',
         'use_messagepump_linux%': '<(use_messagepump_linux)',
+        'use_ozone%': '<(use_ozone)',
         'use_openssl%': '<(use_openssl)',
         'enable_viewport%': '<(enable_viewport)',
         'enable_hidpi%': '<(enable_hidpi)',
@@ -182,6 +187,7 @@
       'use_aura%': '<(use_aura)',
       'use_ash%': '<(use_ash)',
       'use_messagepump_linux%': '<(use_messagepump_linux)',
+      'use_ozone%': '<(use_ozone)',
       'use_openssl%': '<(use_openssl)',
       'enable_viewport%': '<(enable_viewport)',
       'enable_hidpi%': '<(enable_hidpi)',
@@ -719,6 +725,7 @@
     'os_posix%': '<(os_posix)',
     'use_glib%': '<(use_glib)',
     'use_messagepump_linux%': '<(use_messagepump_linux)',
+    'use_ozone%': '<(use_ozone)',
     'toolkit_uses_gtk%': '<(toolkit_uses_gtk)',
     'use_x11%': '<(use_x11)',
     'use_gnome_keyring%': '<(use_gnome_keyring)',
@@ -1467,6 +1474,9 @@
       ['use_nss==1', {
         'grit_defines': ['-D', 'use_nss'],
       }],
+      ['use_ozone==1', {
+        'grit_defines': ['-D', 'use_ozone'],
+      }],
       ['file_manager_extension==1', {
         'grit_defines': ['-D', 'file_manager_extension'],
       }],
@@ -1855,6 +1865,9 @@
       }],
       ['use_messagepump_linux==1', {
         'defines': ['USE_MESSAGEPUMP_LINUX=1'],
+      }],
+      ['use_ozone==1', {
+        'defines': ['USE_OZONE=1'],
       }],
       ['use_default_render_theme==1', {
         'defines': ['USE_DEFAULT_RENDER_THEME=1'],
