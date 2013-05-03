@@ -58,9 +58,9 @@ void PictureLayerTilingSet::Clone(const PictureLayerTiling* tiling) {
   tilings_.sort(LargestToSmallestScaleFunctor());
 }
 
-void PictureLayerTilingSet::InvalidateTilesWithText() {
+void PictureLayerTilingSet::DestroyAndRecreateTilesWithText() {
   for (size_t i = 0; i < tilings_.size(); ++i)
-    tilings_[i]->InvalidateTilesWithText();
+    tilings_[i]->DestroyAndRecreateTilesWithText();
 }
 
 PictureLayerTiling* PictureLayerTilingSet::AddTiling(float contents_scale) {

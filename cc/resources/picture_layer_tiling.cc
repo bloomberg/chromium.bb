@@ -16,6 +16,10 @@
 
 namespace cc {
 
+bool PictureLayerTilingClient::TileHasText(Tile* tile) {
+  return tile->has_text();
+}
+
 scoped_ptr<PictureLayerTiling> PictureLayerTiling::Create(
     float contents_scale,
     gfx::Size layer_bounds,
@@ -111,10 +115,10 @@ Region PictureLayerTiling::OpaqueRegionInContentRect(
   return opaque_region;
 }
 
-void PictureLayerTiling::InvalidateTilesWithText() {
+void PictureLayerTiling::DestroyAndRecreateTilesWithText() {
   std::vector<TileMapKey> new_tiles;
   for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
-    if (it->second->has_text())
+    if (client_->TileHasText(it->second))
       new_tiles.push_back(it->first);
   }
 

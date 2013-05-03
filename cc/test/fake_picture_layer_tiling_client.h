@@ -34,6 +34,12 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
   virtual const Region* GetInvalidation() OVERRIDE;
   virtual const PictureLayerTiling* GetTwinTiling(
       const PictureLayerTiling* tiling) OVERRIDE;
+  virtual bool TileHasText(Tile* tile) OVERRIDE;
+
+  void set_twin_tiling(PictureLayerTiling* tiling) { twin_tiling_ = tiling; }
+  void set_text_rect(gfx::Rect rect) { text_rect_ = rect; }
+  void set_allow_create_tile(bool allow) { allow_create_tile_ = allow; }
+  void set_invalidation(const Region& region) { invalidation_ = region; }
 
  protected:
   FakeTileManagerClient tile_manager_client_;
@@ -41,6 +47,10 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
   TileManager tile_manager_;
   scoped_refptr<PicturePileImpl> pile_;
   gfx::Size tile_size_;
+  PictureLayerTiling* twin_tiling_;
+  gfx::Rect text_rect_;
+  bool allow_create_tile_;
+  Region invalidation_;
 };
 
 }  // namespace cc

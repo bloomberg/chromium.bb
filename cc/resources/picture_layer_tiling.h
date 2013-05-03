@@ -23,7 +23,7 @@ namespace cc {
 
 class PictureLayerTiling;
 
-class PictureLayerTilingClient {
+class CC_EXPORT PictureLayerTilingClient {
  public:
   // Create a tile at the given content_rect (in the contents scale of the
   // tiling) This might return null if the client cannot create such a tile.
@@ -36,6 +36,9 @@ class PictureLayerTilingClient {
   virtual const Region* GetInvalidation() = 0;
   virtual const PictureLayerTiling* GetTwinTiling(
       const PictureLayerTiling* tiling) = 0;
+
+  // This is on the client so tests can override behaviour.
+  virtual bool TileHasText(Tile* tile);
 
  protected:
   virtual ~PictureLayerTilingClient() {}
@@ -53,7 +56,7 @@ class CC_EXPORT PictureLayerTiling {
   scoped_ptr<PictureLayerTiling> Clone(gfx::Size layer_bounds,
                                        PictureLayerTilingClient* client) const;
   gfx::Size layer_bounds() const { return layer_bounds_; }
-  void InvalidateTilesWithText();
+  void DestroyAndRecreateTilesWithText();
 
   void SetClient(PictureLayerTilingClient* client);
   void set_resolution(TileResolution resolution) { resolution_ = resolution; }

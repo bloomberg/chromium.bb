@@ -29,7 +29,9 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient()
                     false,
                     false,
                     &stats_instrumentation_),
-      pile_(new FakeInfinitePicturePileImpl()) {
+      pile_(new FakeInfinitePicturePileImpl()),
+      twin_tiling_(NULL),
+      allow_create_tile_(true) {
 }
 
 FakePictureLayerTilingClient::~FakePictureLayerTilingClient() {
@@ -38,13 +40,15 @@ FakePictureLayerTilingClient::~FakePictureLayerTilingClient() {
 scoped_refptr<Tile> FakePictureLayerTilingClient::CreateTile(
     PictureLayerTiling*,
     gfx::Rect rect) {
-  return make_scoped_refptr(new Tile(&tile_manager_,
-                                     pile_.get(),
-                                     tile_size_,
-                                     rect,
-                                     gfx::Rect(),
-                                     1,
-                                     0));
+  if (!allow_create_tile_)
+    return NULL;
+  return new Tile(&tile_manager_,
+                  pile_.get(),
+                  tile_size_,
+                  rect,
+                  gfx::Rect(),
+                  1,
+                  0);
 }
 
 void FakePictureLayerTilingClient::SetTileSize(gfx::Size tile_size) {
@@ -57,12 +61,18 @@ gfx::Size FakePictureLayerTilingClient::CalculateTileSize(
 }
 
 const Region* FakePictureLayerTilingClient::GetInvalidation() {
-  return NULL;
+  return &invalidation_;
 }
 
 const PictureLayerTiling* FakePictureLayerTilingClient::GetTwinTiling(
       const PictureLayerTiling* tiling) {
-  return NULL;
+  return twin_tiling_;
+}
+
+bool FakePictureLayerTilingClient::TileHasText(Tile* tile) {
+  if (text_rect_.IsEmpty())
+    return false;
+  return tile->content_rect().Intersects(text_rect_);
 }
 
 }  // namespace cc

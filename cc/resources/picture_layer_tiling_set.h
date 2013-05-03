@@ -28,7 +28,7 @@ class CC_EXPORT PictureLayerTilingSet {
 
   gfx::Size layer_bounds() const { return layer_bounds_; }
 
-  void InvalidateTilesWithText();
+  void DestroyAndRecreateTilesWithText();
 
   PictureLayerTiling* AddTiling(float contents_scale);
   size_t num_tilings() const { return tilings_.size(); }

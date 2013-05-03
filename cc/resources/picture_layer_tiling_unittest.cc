@@ -574,9 +574,11 @@ TEST_F(PictureLayerTilingIteratorTest, TilesExistOutsideViewport) {
 }
 
 static void TilesIntersectingRectExist(gfx::Rect rect,
+                                       bool intersect_exists,
                                        Tile* tile,
                                        gfx::Rect geometry_rect) {
-  bool expected_exists = rect.Intersects(geometry_rect);
+  bool intersects = rect.Intersects(geometry_rect);
+  bool expected_exists = intersect_exists ? intersects : !intersects;
   EXPECT_EQ(expected_exists, tile != NULL)
       << "Rects intersecting " << rect.ToString() << " should exist. "
       << "Current tile rect is " << geometry_rect.ToString();
@@ -607,7 +609,7 @@ TEST_F(PictureLayerTilingIteratorTest,
       1);  // max tiles in tile manager
   VerifyTiles(1.f,
               gfx::Rect(layer_bounds),
-              base::Bind(&TilesIntersectingRectExist, visible_rect));
+              base::Bind(&TilesIntersectingRectExist, visible_rect, true));
 }
 
 static void CountExistingTiles(int *count,
@@ -706,6 +708,179 @@ TEST_F(PictureLayerTilingIteratorTest, Clone) {
               1.f,
               gfx::Rect(layer_bounds),
               base::Bind(&TileExists, true));
+}
+
+TEST_F(PictureLayerTilingIteratorTest, LCDText) {
+  gfx::Size layer_bounds(1099, 801);
+  gfx::Size tile_size(100, 100);
+
+  Initialize(tile_size, 1.f, layer_bounds);
+
+
+  tiling_->UpdateTilePriorities(
+      PENDING_TREE,
+      layer_bounds,  // device viewport
+      gfx::Rect(layer_bounds),  // viewport in layer space
+      gfx::Rect(layer_bounds),  // visible content rect
+      layer_bounds,  // last layer bounds
+      layer_bounds,  // current layer bounds
+      1.f,  // last contents scale
+      1.f,  // current contents scale
+      gfx::Transform(),  // last screen transform
+      gfx::Transform(),  // current screen transform
+      1.0,  // current frame time
+      false,  // store screen space quads on tiles
+      10000);  // max tiles in tile manager
+
+  VerifyTiles(tiling_.get(),
+              1.f,
+              gfx::Rect(layer_bounds),
+              base::Bind(&TileExists, true));
+
+  // Mark tiles in this rect as having text.
+  gfx::Rect text_rect(350, 350, 400, 400);
+  client_.set_text_rect(text_rect);
+
+  // Prevent new tiles from being created.
+  client_.set_allow_create_tile(false);
+
+  client_.set_invalidation(gfx::Rect(layer_bounds));
+  tiling_->DestroyAndRecreateTilesWithText();
+
+  // Tiles touching the text_rect should be gone.
+  VerifyTiles(tiling_.get(),
+              1.f,
+              gfx::Rect(layer_bounds),
+              base::Bind(&TilesIntersectingRectExist, text_rect, false));
+}
+
+TEST_F(PictureLayerTilingIteratorTest, LCDText_CanRecreate) {
+  gfx::Size layer_bounds(1099, 801);
+  gfx::Size tile_size(100, 100);
+
+  Initialize(tile_size, 1.f, layer_bounds);
+
+
+  tiling_->UpdateTilePriorities(
+      PENDING_TREE,
+      layer_bounds,  // device viewport
+      gfx::Rect(layer_bounds),  // viewport in layer space
+      gfx::Rect(layer_bounds),  // visible content rect
+      layer_bounds,  // last layer bounds
+      layer_bounds,  // current layer bounds
+      1.f,  // last contents scale
+      1.f,  // current contents scale
+      gfx::Transform(),  // last screen transform
+      gfx::Transform(),  // current screen transform
+      1.0,  // current frame time
+      false,  // store screen space quads on tiles
+      10000);  // max tiles in tile manager
+
+  VerifyTiles(tiling_.get(),
+              1.f,
+              gfx::Rect(layer_bounds),
+              base::Bind(&TileExists, true));
+
+  // Mark tiles in this rect as having text.
+  gfx::Rect text_rect(350, 350, 400, 400);
+  client_.set_text_rect(text_rect);
+
+  client_.set_invalidation(gfx::Rect(layer_bounds));
+  tiling_->DestroyAndRecreateTilesWithText();
+
+  // Tiles touching the text_rect are recreated.
+  VerifyTiles(tiling_.get(),
+              1.f,
+              gfx::Rect(layer_bounds),
+              base::Bind(&TileExists, true));
+}
+
+TEST_F(PictureLayerTilingIteratorTest, LCDText_WithTwin) {
+  gfx::Size layer_bounds(1099, 801);
+  gfx::Size tile_size(100, 100);
+
+  Initialize(tile_size, 1.f, layer_bounds);
+
+  // Make a twin tiling for |tiling_|.
+  FakePictureLayerTilingClient twin_client;
+  twin_client.SetTileSize(tile_size);
+
+  scoped_ptr<PictureLayerTiling> twin_tiling =
+      tiling_->Clone(layer_bounds, &twin_client);
+  client_.set_twin_tiling(twin_tiling.get());
+
+  VerifyTiles(tiling_.get(),
+              1.f,
+              gfx::Rect(layer_bounds),
+              base::Bind(&TileExists, false));
+  VerifyTiles(twin_tiling.get(),
+              1.f,
+              gfx::Rect(layer_bounds),
+              base::Bind(&TileExists, false));
+
+  tiling_->UpdateTilePriorities(
+      PENDING_TREE,
+      layer_bounds,  // device viewport
+      gfx::Rect(layer_bounds),  // viewport in layer space
+      gfx::Rect(layer_bounds),  // visible content rect
+      layer_bounds,  // last layer bounds
+      layer_bounds,  // current layer bounds
+      1.f,  // last contents scale
+      1.f,  // current contents scale
+      gfx::Transform(),  // last screen transform
+      gfx::Transform(),  // current screen transform
+      1.0,  // current frame time
+      false,  // store screen space quads on tiles
+      10000);  // max tiles in tile manager
+  twin_tiling->UpdateTilePriorities(
+      PENDING_TREE,
+      layer_bounds,  // device viewport
+      gfx::Rect(layer_bounds),  // viewport in layer space
+      gfx::Rect(layer_bounds),  // visible content rect
+      layer_bounds,  // last layer bounds
+      layer_bounds,  // current layer bounds
+      1.f,  // last contents scale
+      1.f,  // current contents scale
+      gfx::Transform(),  // last screen transform
+      gfx::Transform(),  // current screen transform
+      1.0,  // current frame time
+      false,  // store screen space quads on tiles
+      10000);  // max tiles in tile manager
+
+  VerifyTiles(tiling_.get(),
+              1.f,
+              gfx::Rect(layer_bounds),
+              base::Bind(&TileExists, true));
+  VerifyTiles(twin_tiling.get(),
+              1.f,
+              gfx::Rect(layer_bounds),
+              base::Bind(&TileExists, true));
+
+  // Mark tiles in this rect as having text.
+  gfx::Rect text_rect(350, 350, 400, 400);
+  client_.set_text_rect(text_rect);
+
+  // Prevent new tiles from being created by the |tiling_|. It can still
+  // get tiles from its twin.
+  client_.set_allow_create_tile(false);
+
+  client_.set_invalidation(gfx::Rect(layer_bounds));
+  tiling_->DestroyAndRecreateTilesWithText();
+
+  // Tiles touching the text_rect should be gone. Tiles from our twin are
+  // not used because we are invalidated.
+  VerifyTiles(tiling_.get(),
+              1.f,
+              gfx::Rect(layer_bounds),
+              base::Bind(&TilesIntersectingRectExist, text_rect, false));
+  VerifyTiles(twin_tiling.get(),
+              1.f,
+              gfx::Rect(layer_bounds),
+              base::Bind(&TileExists, true));
+
+  // Destroy all tilings before the twin_client.
+  tiling_.reset();
+  twin_tiling.reset();
 }
 
 }  // namespace

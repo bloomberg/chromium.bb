@@ -890,7 +890,7 @@ void PictureLayerImpl::UpdateLCDTextStatus() {
   pending_layer->is_using_lcd_text_ = is_using_lcd_text_;
   pending_layer->pile_ = PicturePileImpl::CreateFromOther(pending_layer->pile_,
                                                           is_using_lcd_text_);
-  pending_layer->tilings_->InvalidateTilesWithText();
+  pending_layer->tilings_->DestroyAndRecreateTilesWithText();
 }
 
 void PictureLayerImpl::ResetRasterScale() {
