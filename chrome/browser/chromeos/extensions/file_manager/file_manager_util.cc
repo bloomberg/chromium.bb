@@ -251,12 +251,10 @@ void InstallCRX(Browser* browser, const base::FilePath& path) {
       extensions::ExtensionSystem::Get(browser->profile())->extension_service();
   CHECK(service);
 
-  content::WebContents* web_contents =
-      browser->tab_strip_model()->GetActiveWebContents();
   scoped_refptr<extensions::CrxInstaller> installer(
       extensions::CrxInstaller::Create(
           service,
-          new ExtensionInstallPrompt(web_contents)));
+          new ExtensionInstallPrompt(browser->profile(), NULL, NULL)));
   installer->set_error_on_unsupported_requirements(true);
   installer->set_is_gallery_install(false);
   installer->set_allow_silent_install(false);
