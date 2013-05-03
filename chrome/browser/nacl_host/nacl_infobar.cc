@@ -41,6 +41,8 @@ class NaClInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
   WebContents* wc_;
+
+  DISALLOW_COPY_AND_ASSIGN(NaClInfoBarDelegate);
 };
 
 // static

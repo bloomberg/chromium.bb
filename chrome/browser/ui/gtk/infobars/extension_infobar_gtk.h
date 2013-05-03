@@ -26,20 +26,18 @@ class ExtensionInfoBarGtk : public InfoBarGtk,
  private:
   virtual ~ExtensionInfoBarGtk();
 
-  // Overridden from InfoBar (through InfoBarGtk):
+  // InfoBarGtk:
   virtual void PlatformSpecificHide(bool animate) OVERRIDE;
-
-  // Overridden from InfoBarGtk:
   virtual void GetTopColor(InfoBarDelegate::Type type,
                            double* r, double* g, double* b) OVERRIDE;
   virtual void GetBottomColor(InfoBarDelegate::Type type,
                               double* r, double* g, double* b) OVERRIDE;
   virtual void InitWidgets() OVERRIDE;
 
-  // Overridden from MenuGtk::Delegate:
+  // MenuGtk::Delegate:
   virtual void StoppedShowing() OVERRIDE;
 
-  // Overridden from ExtensionInfoBarDelegate::DelegateObserver:
+  // ExtensionInfoBarDelegate::DelegateObserver:
   virtual void OnDelegateDeleted() OVERRIDE;
 
   void OnImageLoaded(const gfx::Image& image);

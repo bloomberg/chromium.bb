@@ -7,11 +7,13 @@
 #include "chrome/browser/ui/gtk/event_utils.h"
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
 
+
 // AlternateNavInfoBarDelegate -------------------------------------------------
 
 InfoBar* AlternateNavInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   return new AlternateNavInfoBarGtk(owner, this);
 }
+
 
 // AlternateNavInfoBarGtk ------------------------------------------------------
 

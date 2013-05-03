@@ -40,6 +40,9 @@ using content::OpenURLParams;
 using content::Referrer;
 using content::UserMetricsAction;
 
+
+// PluginInfoBarDelegate ------------------------------------------------------
+
 PluginInfoBarDelegate::PluginInfoBarDelegate(InfoBarService* infobar_service,
                                              const string16& name,
                                              const std::string& identifier)
@@ -79,6 +82,7 @@ gfx::Image* PluginInfoBarDelegate::GetIcon() const {
 string16 PluginInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
+
 
 // UnauthorizedPluginInfoBarDelegate ------------------------------------------
 
@@ -169,7 +173,9 @@ bool UnauthorizedPluginInfoBarDelegate::LinkClicked(
   return PluginInfoBarDelegate::LinkClicked(disposition);
 }
 
+
 #if defined(ENABLE_PLUGIN_INSTALLATION)
+
 // OutdatedPluginInfoBarDelegate ----------------------------------------------
 
 void OutdatedPluginInfoBarDelegate::Create(
@@ -321,6 +327,7 @@ void OutdatedPluginInfoBarDelegate::ReplaceWithInfoBar(
       this, installer(), plugin_metadata_->Clone(), false, message);
 }
 
+
 // PluginInstallerInfoBarDelegate ---------------------------------------------
 
 void PluginInstallerInfoBarDelegate::Create(
@@ -469,8 +476,11 @@ void PluginInstallerInfoBarDelegate::ReplaceWithInfoBar(
   Replace(this, installer(), plugin_metadata_->Clone(), new_install_, message);
 }
 
-// PluginMetroModeInfoBarDelegate ---------------------------------------------
+
 #if defined(OS_WIN)
+
+// PluginMetroModeInfoBarDelegate ---------------------------------------------
+
 // static
 void PluginMetroModeInfoBarDelegate::Create(
     InfoBarService* infobar_service,
@@ -551,5 +561,7 @@ bool PluginMetroModeInfoBarDelegate::LinkClicked(
   web_contents()->OpenURL(params);
   return false;
 }
+
 #endif  // defined(OS_WIN)
+
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)

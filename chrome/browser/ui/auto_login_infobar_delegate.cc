@@ -135,12 +135,13 @@ void AutoLoginRedirector::RedirectToMergeSession(const std::string& token) {
 }  // namepsace
 
 
-// AutoLoginInfoBarDelegate ---------------------------------------------------
-
 // AutoLoginInfoBarDelegate::Params -------------------------------------------
 
 AutoLoginInfoBarDelegate::Params::Params() {}
 AutoLoginInfoBarDelegate::Params::~Params() {}
+
+
+// AutoLoginInfoBarDelegate ---------------------------------------------------
 
 // static
 void AutoLoginInfoBarDelegate::Create(InfoBarService* infobar_service,

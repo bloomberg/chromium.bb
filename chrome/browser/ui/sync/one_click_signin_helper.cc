@@ -77,6 +77,8 @@
 
 namespace {
 
+// StartSyncArgs --------------------------------------------------------------
+
 // Arguments used with StartSync function.  base::Bind() cannot support too
 // many args for performance reasons, so they are packaged up into a struct.
 struct StartSyncArgs {
@@ -86,15 +88,7 @@ struct StartSyncArgs {
                 const std::string& session_index,
                 const std::string& email,
                 const std::string& password,
-                bool force_same_tab_navigation)
-      : profile(profile),
-        browser(browser),
-        auto_accept(auto_accept),
-        session_index(session_index),
-        email(email),
-        password(password),
-        force_same_tab_navigation(force_same_tab_navigation) {
-  }
+                bool force_same_tab_navigation);
 
   Profile* profile;
   Browser* browser;
@@ -104,6 +98,25 @@ struct StartSyncArgs {
   std::string password;
   bool force_same_tab_navigation;
 };
+
+StartSyncArgs::StartSyncArgs(Profile* profile,
+                             Browser* browser,
+                             OneClickSigninHelper::AutoAccept auto_accept,
+                             const std::string& session_index,
+                             const std::string& email,
+                             const std::string& password,
+                             bool force_same_tab_navigation)
+    : profile(profile),
+      browser(browser),
+      auto_accept(auto_accept),
+      session_index(session_index),
+      email(email),
+      password(password),
+      force_same_tab_navigation(force_same_tab_navigation) {
+}
+
+
+// Helpers --------------------------------------------------------------------
 
 // Add a specific email to the list of emails rejected for one-click
 // sign-in, for this profile.
@@ -302,6 +315,9 @@ bool AreWeShowingSignin(GURL url, SyncPromoUI::Source source,
        !email.empty());
 }
 
+
+// ConfirmEmailDialogDelegate -------------------------------------------------
+
 class ConfirmEmailDialogDelegate : public TabModalConfirmDialogDelegate {
  public:
   // Callback indicating action performed by the user.  The argument to the
@@ -320,38 +336,13 @@ class ConfirmEmailDialogDelegate : public TabModalConfirmDialogDelegate {
                              const std::string& email,
                              Callback callback);
 
-  // TabModalConfirmDialogDelegate implementation:
-  virtual string16 GetTitle() OVERRIDE {
-    return l10n_util::GetStringUTF16(
-        IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_TITLE);
-  }
-
-  virtual string16 GetMessage() OVERRIDE {
-    return l10n_util::GetStringFUTF16(
-        IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_MESSAGE,
-        UTF8ToUTF16(last_email_),
-        UTF8ToUTF16(email_));
-  }
-
-  virtual string16 GetAcceptButtonTitle() OVERRIDE {
-    return l10n_util::GetStringUTF16(
-        IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_OK_BUTTON);
-  }
-
-  virtual string16 GetCancelButtonTitle() OVERRIDE {
-    return l10n_util::GetStringUTF16(
-        IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_CANCEL_BUTTON);
-  }
-
-  virtual void OnAccepted() OVERRIDE {
-    base::ResetAndReturn(&callback_).Run(
-        IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_OK_BUTTON);
-  }
-
-  virtual void OnCanceled() OVERRIDE {
-    base::ResetAndReturn(&callback_).Run(
-        IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_CANCEL_BUTTON);
-  }
+  // TabModalConfirmDialogDelegate:
+  virtual string16 GetTitle() OVERRIDE;
+  virtual string16 GetMessage() OVERRIDE;
+  virtual string16 GetAcceptButtonTitle() OVERRIDE;
+  virtual string16 GetCancelButtonTitle() OVERRIDE;
+  virtual void OnAccepted() OVERRIDE;
+  virtual void OnCanceled() OVERRIDE;
 
   std::string last_email_;
   std::string email_;
@@ -382,6 +373,40 @@ ConfirmEmailDialogDelegate::ConfirmEmailDialogDelegate(
     callback_(callback) {
 }
 
+string16 ConfirmEmailDialogDelegate::GetTitle() {
+  return l10n_util::GetStringUTF16(
+      IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_TITLE);
+}
+
+string16 ConfirmEmailDialogDelegate::GetMessage() {
+  return l10n_util::GetStringFUTF16(
+      IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_MESSAGE,
+      UTF8ToUTF16(last_email_),
+      UTF8ToUTF16(email_));
+}
+
+string16 ConfirmEmailDialogDelegate::GetAcceptButtonTitle() {
+  return l10n_util::GetStringUTF16(
+      IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_OK_BUTTON);
+}
+
+string16 ConfirmEmailDialogDelegate::GetCancelButtonTitle() {
+  return l10n_util::GetStringUTF16(
+      IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_CANCEL_BUTTON);
+}
+
+void ConfirmEmailDialogDelegate::OnAccepted() {
+  base::ResetAndReturn(&callback_).Run(
+      IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_OK_BUTTON);
+}
+
+void ConfirmEmailDialogDelegate::OnCanceled() {
+  base::ResetAndReturn(&callback_).Run(
+      IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_CANCEL_BUTTON);
+}
+
+
+// CurrentHistoryCleaner ------------------------------------------------------
 
 // Watch a webcontents and remove URL from the history once loading is complete.
 // We have to delay the cleaning until the new URL has finished loading because
@@ -424,6 +449,9 @@ void CurrentHistoryCleaner::WebContentsDestroyed(
 }
 
 }  // namespace
+
+
+// OneClickSigninHelper -------------------------------------------------------
 
 // static
 const int OneClickSigninHelper::kMaxNavigationsSince = 10;

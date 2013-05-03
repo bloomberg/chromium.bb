@@ -28,6 +28,9 @@ using content::BrowserThread;
 using content::QuotaPermissionContext;
 using content::WebContents;
 
+
+// RequestQuotaInfoBarDelegate ------------------------------------------------
+
 namespace {
 
 // If we requested larger quota than this threshold, show a different
@@ -54,26 +57,12 @@ class RequestQuotaInfoBarDelegate : public ConfirmInfoBarDelegate {
       const GURL& origin_url,
       int64 requested_quota,
       const std::string& display_languages,
-      const PermissionCallback& callback)
-      : ConfirmInfoBarDelegate(infobar_service),
-        context_(context),
-        origin_url_(origin_url),
-        display_languages_(display_languages),
-        requested_quota_(requested_quota),
-        callback_(callback) {}
+      const PermissionCallback& callback);
+  virtual ~RequestQuotaInfoBarDelegate();
 
-  virtual ~RequestQuotaInfoBarDelegate() {
-    if (!callback_.is_null())
-      context_->DispatchCallbackOnIOThread(
-          callback_,
-          QuotaPermissionContext::QUOTA_PERMISSION_RESPONSE_CANCELLED);
-  }
-
+  // ConfirmInfoBarDelegate:
   virtual bool ShouldExpireInternal(
-      const content::LoadCommittedDetails& details)
-      const OVERRIDE {
-    return false;
-  }
+      const content::LoadCommittedDetails& details) const OVERRIDE;
 
   virtual string16 GetMessageText() const OVERRIDE;
   virtual bool Accept() OVERRIDE;
@@ -84,6 +73,7 @@ class RequestQuotaInfoBarDelegate : public ConfirmInfoBarDelegate {
   std::string display_languages_;
   int64 requested_quota_;
   PermissionCallback callback_;
+
   DISALLOW_COPY_AND_ASSIGN(RequestQuotaInfoBarDelegate);
 };
 
@@ -99,6 +89,34 @@ void RequestQuotaInfoBarDelegate::Create(
       new RequestQuotaInfoBarDelegate(infobar_service, context, origin_url,
                                       requested_quota, display_languages,
                                       callback)));
+}
+
+RequestQuotaInfoBarDelegate::RequestQuotaInfoBarDelegate(
+    InfoBarService* infobar_service,
+    ChromeQuotaPermissionContext* context,
+    const GURL& origin_url,
+    int64 requested_quota,
+    const std::string& display_languages,
+    const PermissionCallback& callback)
+    : ConfirmInfoBarDelegate(infobar_service),
+      context_(context),
+      origin_url_(origin_url),
+      display_languages_(display_languages),
+      requested_quota_(requested_quota),
+      callback_(callback) {
+}
+
+RequestQuotaInfoBarDelegate::~RequestQuotaInfoBarDelegate() {
+  if (!callback_.is_null()) {
+    context_->DispatchCallbackOnIOThread(
+        callback_,
+        QuotaPermissionContext::QUOTA_PERMISSION_RESPONSE_CANCELLED);
+  }
+}
+
+bool RequestQuotaInfoBarDelegate::ShouldExpireInternal(
+    const content::LoadCommittedDetails& details) const {
+  return false;
 }
 
 string16 RequestQuotaInfoBarDelegate::GetMessageText() const {
@@ -123,7 +141,10 @@ bool RequestQuotaInfoBarDelegate::Cancel() {
   return true;
 }
 
-}  // anonymous namespace
+}  // namespace
+
+
+// ChromeQuotaPermissionContext -----------------------------------------------
 
 ChromeQuotaPermissionContext::ChromeQuotaPermissionContext() {}
 

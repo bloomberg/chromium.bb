@@ -49,6 +49,9 @@ using extensions::Extension;
 
 namespace {
 
+
+// Helpers --------------------------------------------------------------------
+
 bool disable_failure_ui_for_tests = false;
 
 Browser* FindOrCreateVisibleBrowser(Profile* profile) {
@@ -90,6 +93,9 @@ void OnAppLauncherEnabledCompleted(const extensions::Extension* extension,
   ExtensionInstallUI::OpenAppInstalledUI(profile, extension->id());
 }
 
+
+// ErrorInfobarDelegate -------------------------------------------------------
+
 // Helper class to put up an infobar when installation fails.
 class ErrorInfobarDelegate : public ConfirmInfoBarDelegate {
  public:
@@ -99,34 +105,17 @@ class ErrorInfobarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   ErrorInfobarDelegate(InfoBarService* infobar_service,
-                       const extensions::CrxInstallerError& error)
-      : ConfirmInfoBarDelegate(infobar_service),
-        error_(error) {
-  }
+                       const extensions::CrxInstallerError& error);
 
-  virtual string16 GetMessageText() const OVERRIDE {
-    return error_.message();
-  }
-
-  virtual int GetButtons() const OVERRIDE {
-    return BUTTON_OK;
-  }
-
-  virtual string16 GetLinkText() const OVERRIDE {
-    return error_.type() == extensions::CrxInstallerError::ERROR_OFF_STORE ?
-        l10n_util::GetStringUTF16(IDS_LEARN_MORE) : ASCIIToUTF16("");
-  }
-
-  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE {
-    web_contents()->OpenURL(content::OpenURLParams(
-        GURL("http://support.google.com/chrome_webstore/?p=crx_warning"),
-        content::Referrer(),
-        (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-        content::PAGE_TRANSITION_LINK, false));
-    return false;
-  }
+  // ConfirmInfoBarDelegate:
+  virtual string16 GetMessageText() const OVERRIDE;
+  virtual int GetButtons() const OVERRIDE;
+  virtual string16 GetLinkText() const OVERRIDE;
+  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
   extensions::CrxInstallerError error_;
+
+  DISALLOW_COPY_AND_ASSIGN(ErrorInfobarDelegate);
 };
 
 // static
@@ -136,7 +125,39 @@ void ErrorInfobarDelegate::Create(InfoBarService* infobar_service,
       new ErrorInfobarDelegate(infobar_service, error)));
 }
 
+ErrorInfobarDelegate::ErrorInfobarDelegate(
+    InfoBarService* infobar_service,
+    const extensions::CrxInstallerError& error)
+    : ConfirmInfoBarDelegate(infobar_service),
+      error_(error) {
+}
+
+string16 ErrorInfobarDelegate::GetMessageText() const {
+  return error_.message();
+}
+
+int ErrorInfobarDelegate::GetButtons() const {
+  return BUTTON_OK;
+}
+
+string16 ErrorInfobarDelegate::GetLinkText() const {
+  return error_.type() == extensions::CrxInstallerError::ERROR_OFF_STORE ?
+      l10n_util::GetStringUTF16(IDS_LEARN_MORE) : ASCIIToUTF16("");
+}
+
+bool ErrorInfobarDelegate::LinkClicked(WindowOpenDisposition disposition) {
+  web_contents()->OpenURL(content::OpenURLParams(
+      GURL("http://support.google.com/chrome_webstore/?p=crx_warning"),
+      content::Referrer(),
+      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
+      content::PAGE_TRANSITION_LINK, false));
+  return false;
+}
+
 }  // namespace
+
+
+// ExtensionInstallUI ---------------------------------------------------------
 
 // static
 ExtensionInstallUI* ExtensionInstallUI::Create(Profile* profile) {
@@ -189,6 +210,9 @@ ExtensionInstallPrompt* ExtensionInstallUI::CreateInstallPromptWithProfile(
       chrome::GetActiveDesktop());
   return CreateInstallPromptWithBrowser(browser);
 }
+
+
+// ExtensionInstallUIDefault --------------------------------------------------
 
 ExtensionInstallUIDefault::ExtensionInstallUIDefault(Profile* profile)
     : skip_post_install_ui_(false),

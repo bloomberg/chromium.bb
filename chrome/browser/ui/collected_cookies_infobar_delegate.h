@@ -22,7 +22,7 @@ class CollectedCookiesInfoBarDelegate : public ConfirmInfoBarDelegate {
  private:
   explicit CollectedCookiesInfoBarDelegate(InfoBarService* infobar_service);
 
-  // ConfirmInfoBarDelegate overrides.
+  // ConfirmInfoBarDelegate:
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;

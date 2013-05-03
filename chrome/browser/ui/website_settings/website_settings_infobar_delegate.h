@@ -22,7 +22,7 @@ class WebsiteSettingsInfobarDelegate : public ConfirmInfoBarDelegate {
  private:
   explicit WebsiteSettingsInfobarDelegate(InfoBarService* infobar_service);
 
-  // Overwridden from ConfirmInfoBarDelegate:
+  // ConfirmInfoBarDelegate:
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;

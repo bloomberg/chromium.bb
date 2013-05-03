@@ -41,14 +41,14 @@ class HungPluginTabHelper
  public:
   virtual ~HungPluginTabHelper();
 
-  // content::WebContentsObserver overrides:
+  // content::WebContentsObserver:
   virtual void PluginCrashed(const base::FilePath& plugin_path,
                              base::ProcessId plugin_pid) OVERRIDE;
   virtual void PluginHungStatusChanged(int plugin_child_id,
                                        const base::FilePath& plugin_path,
                                        bool is_hung) OVERRIDE;
 
-  // NotificationObserver overrides.
+  // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;

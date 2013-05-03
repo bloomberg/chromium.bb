@@ -10,7 +10,7 @@
 
 class GoogleLocationSettingsHelper;
 
-class GeolocationInfoBarDelegateAndroid: public GeolocationInfoBarDelegate {
+class GeolocationInfoBarDelegateAndroid : public GeolocationInfoBarDelegate {
  public:
   GeolocationInfoBarDelegateAndroid(
       InfoBarService* infobar_service,
@@ -28,6 +28,7 @@ class GeolocationInfoBarDelegateAndroid: public GeolocationInfoBarDelegate {
 
   scoped_ptr<GoogleLocationSettingsHelper> google_location_settings_helper_;
 
+  DISALLOW_COPY_AND_ASSIGN(GeolocationInfoBarDelegateAndroid);
 };
 
 #endif  // CHROME_BROWSER_GEOLOCATION_GEOLOCATION_INFOBAR_DELEGATE_ANDROID_H_

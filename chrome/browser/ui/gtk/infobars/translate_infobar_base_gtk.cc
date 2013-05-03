@@ -19,7 +19,8 @@
 #include "ui/gfx/canvas.h"
 
 
-// TranslateInfoBarDelegate specific method:
+// TranslateInfoBarDelegate ---------------------------------------------------
+
 InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   TranslateInfoBarBase* infobar = NULL;
   switch (infobar_type_) {
@@ -38,6 +39,9 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   }
   return infobar;
 }
+
+
+// TranslateInfoBarBase -------------------------------------------------------
 
 TranslateInfoBarBase::TranslateInfoBarBase(InfoBarService* owner,
                                            TranslateInfoBarDelegate* delegate)

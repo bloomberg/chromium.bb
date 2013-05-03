@@ -70,7 +70,7 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
 
-  // content::NotificationObserver overrides.
+  // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;

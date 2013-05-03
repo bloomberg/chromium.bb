@@ -39,58 +39,23 @@ using content::WebContents;
 
 namespace {
 
+
+// IFrameLoader ---------------------------------------------------------------
+
 // Used to block until an iframe is loaded via a javascript call.
 // Note: NavigateToURLBlockUntilNavigationsComplete doesn't seem to work for
 // multiple embedded iframes, as notifications seem to be 'batched'. Instead, we
 // load and wait one single frame here by calling a javascript function.
 class IFrameLoader : public content::NotificationObserver {
  public:
-  IFrameLoader(Browser* browser, int iframe_id, const GURL& url)
-      : navigation_completed_(false),
-        javascript_completed_(false) {
-    NavigationController* controller =
-        &browser->tab_strip_model()->GetActiveWebContents()->GetController();
-    registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                   content::Source<NavigationController>(controller));
-    registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
-                   content::NotificationService::AllSources());
-    std::string script = base::StringPrintf(
-        "window.domAutomationController.setAutomationId(0);"
-        "window.domAutomationController.send(addIFrame(%d, \"%s\"));",
-        iframe_id,
-        url.spec().c_str());
-    browser->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost()->
-        ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(script));
-    content::RunMessageLoop();
+  IFrameLoader(Browser* browser, int iframe_id, const GURL& url);
 
-    EXPECT_EQ(base::StringPrintf("\"%d\"", iframe_id), javascript_response_);
-    registrar_.RemoveAll();
-    // Now that we loaded the iframe, let's fetch its src.
-    script = base::StringPrintf(
-        "window.domAutomationController.send(getIFrameSrc(%d))", iframe_id);
-    std::string iframe_src;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        browser->tab_strip_model()->GetActiveWebContents(),
-        script,
-        &iframe_src));
-    iframe_url_ = GURL(iframe_src);
-  }
-
-  GURL iframe_url() const { return iframe_url_; }
-
+  // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
-    if (type == content::NOTIFICATION_LOAD_STOP) {
-      navigation_completed_ = true;
-    } else if (type == content::NOTIFICATION_DOM_OPERATION_RESPONSE) {
-      content::Details<DomOperationNotificationDetails> dom_op_details(details);
-      javascript_response_ = dom_op_details->json;
-      javascript_completed_ = true;
-    }
-    if (javascript_completed_ && navigation_completed_)
-      MessageLoopForUI::current()->Quit();
-  }
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  GURL iframe_url() const { return iframe_url_; }
 
  private:
   content::NotificationRegistrar registrar_;
@@ -109,79 +74,68 @@ class IFrameLoader : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(IFrameLoader);
 };
 
+IFrameLoader::IFrameLoader(Browser* browser, int iframe_id, const GURL& url)
+    : navigation_completed_(false),
+      javascript_completed_(false) {
+  NavigationController* controller =
+      &browser->tab_strip_model()->GetActiveWebContents()->GetController();
+  registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
+                  content::Source<NavigationController>(controller));
+  registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
+                  content::NotificationService::AllSources());
+  std::string script = base::StringPrintf(
+      "window.domAutomationController.setAutomationId(0);"
+      "window.domAutomationController.send(addIFrame(%d, \"%s\"));",
+      iframe_id,
+      url.spec().c_str());
+  browser->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost()->
+      ExecuteJavascriptInWebFrame(string16(), UTF8ToUTF16(script));
+  content::RunMessageLoop();
+
+  EXPECT_EQ(base::StringPrintf("\"%d\"", iframe_id), javascript_response_);
+  registrar_.RemoveAll();
+  // Now that we loaded the iframe, let's fetch its src.
+  script = base::StringPrintf(
+      "window.domAutomationController.send(getIFrameSrc(%d))", iframe_id);
+  std::string iframe_src;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      browser->tab_strip_model()->GetActiveWebContents(),
+      script,
+      &iframe_src));
+  iframe_url_ = GURL(iframe_src);
+}
+
+void IFrameLoader::Observe(int type,
+                           const content::NotificationSource& source,
+                           const content::NotificationDetails& details) {
+  if (type == content::NOTIFICATION_LOAD_STOP) {
+    navigation_completed_ = true;
+  } else if (type == content::NOTIFICATION_DOM_OPERATION_RESPONSE) {
+    content::Details<DomOperationNotificationDetails> dom_op_details(details);
+    javascript_response_ = dom_op_details->json;
+    javascript_completed_ = true;
+  }
+  if (javascript_completed_ && navigation_completed_)
+    MessageLoopForUI::current()->Quit();
+}
+
+
+// GeolocationNotificationObserver --------------------------------------------
+
 class GeolocationNotificationObserver : public content::NotificationObserver {
  public:
   // If |wait_for_infobar| is true, AddWatchAndWaitForNotification will block
   // until the infobar has been displayed; otherwise it will block until the
   // navigation is completed.
-  explicit GeolocationNotificationObserver(bool wait_for_infobar)
-    : wait_for_infobar_(wait_for_infobar),
-      infobar_(NULL),
-      navigation_started_(false),
-      navigation_completed_(false) {
-    registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
-                   content::NotificationService::AllSources());
-    if (wait_for_infobar) {
-      registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
-                     content::NotificationService::AllSources());
-    } else {
-      registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                     content::NotificationService::AllSources());
-      registrar_.Add(this, content::NOTIFICATION_LOAD_START,
-                     content::NotificationService::AllSources());
-      registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                     content::NotificationService::AllSources());
-    }
-  }
+  explicit GeolocationNotificationObserver(bool wait_for_infobar);
 
-  // content::NotificationObserver
+  // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
-    if (type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED) {
-      infobar_ = content::Details<InfoBarAddedDetails>(details).ptr();
-      ASSERT_TRUE(infobar_->GetIcon());
-      ASSERT_TRUE(infobar_->AsConfirmInfoBarDelegate());
-    } else if (type == content::NOTIFICATION_DOM_OPERATION_RESPONSE) {
-      content::Details<DomOperationNotificationDetails> dom_op_details(details);
-      javascript_response_ = dom_op_details->json;
-      LOG(WARNING) << "javascript_response " << javascript_response_;
-    } else if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED ||
-               type == content::NOTIFICATION_LOAD_START) {
-      navigation_started_ = true;
-    } else if (type == content::NOTIFICATION_LOAD_STOP) {
-      if (navigation_started_) {
-        navigation_started_ = false;
-        navigation_completed_ = true;
-      }
-    }
-
-    // We're either waiting for just the inforbar, or for both a javascript
-    // prompt and response.
-    if (wait_for_infobar_ && infobar_)
-      MessageLoopForUI::current()->Quit();
-    else if (navigation_completed_ && !javascript_response_.empty())
-      MessageLoopForUI::current()->Quit();
-  }
+                       const content::NotificationDetails& details) OVERRIDE;
 
   void AddWatchAndWaitForNotification(content::RenderViewHost* render_view_host,
-                                      const std::string& iframe_xpath) {
-    LOG(WARNING) << "will add geolocation watch";
-    std::string script =
-        "window.domAutomationController.setAutomationId(0);"
-        "window.domAutomationController.send(geoStart());";
-    render_view_host->ExecuteJavascriptInWebFrame(UTF8ToUTF16(iframe_xpath),
-                                                  UTF8ToUTF16(script));
-    content::RunMessageLoop();
-    registrar_.RemoveAll();
-    LOG(WARNING) << "got geolocation watch" << javascript_response_;
-    EXPECT_NE("\"0\"", javascript_response_);
-    if (wait_for_infobar_) {
-      EXPECT_TRUE(infobar_);
-    } else {
-      EXPECT_TRUE(navigation_completed_);
-    }
-  }
+                                      const std::string& iframe_xpath);
 
   content::NotificationRegistrar registrar_;
   bool wait_for_infobar_;
@@ -189,7 +143,86 @@ class GeolocationNotificationObserver : public content::NotificationObserver {
   bool navigation_started_;
   bool navigation_completed_;
   std::string javascript_response_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GeolocationNotificationObserver);
 };
+
+GeolocationNotificationObserver::GeolocationNotificationObserver(
+    bool wait_for_infobar)
+    : wait_for_infobar_(wait_for_infobar),
+      infobar_(NULL),
+      navigation_started_(false),
+      navigation_completed_(false) {
+  registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
+                  content::NotificationService::AllSources());
+  if (wait_for_infobar) {
+    registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
+                    content::NotificationService::AllSources());
+  } else {
+    registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+                    content::NotificationService::AllSources());
+    registrar_.Add(this, content::NOTIFICATION_LOAD_START,
+                    content::NotificationService::AllSources());
+    registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
+                    content::NotificationService::AllSources());
+  }
+}
+
+void GeolocationNotificationObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED) {
+    infobar_ = content::Details<InfoBarAddedDetails>(details).ptr();
+    ASSERT_TRUE(infobar_->GetIcon());
+    ASSERT_TRUE(infobar_->AsConfirmInfoBarDelegate());
+  } else if (type == content::NOTIFICATION_DOM_OPERATION_RESPONSE) {
+    content::Details<DomOperationNotificationDetails> dom_op_details(details);
+    javascript_response_ = dom_op_details->json;
+    LOG(WARNING) << "javascript_response " << javascript_response_;
+  } else if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED ||
+              type == content::NOTIFICATION_LOAD_START) {
+    navigation_started_ = true;
+  } else if (type == content::NOTIFICATION_LOAD_STOP) {
+    if (navigation_started_) {
+      navigation_started_ = false;
+      navigation_completed_ = true;
+    }
+  }
+
+  // We're either waiting for just the inforbar, or for both a javascript
+  // prompt and response.
+  if (wait_for_infobar_ && infobar_)
+    MessageLoopForUI::current()->Quit();
+  else if (navigation_completed_ && !javascript_response_.empty())
+    MessageLoopForUI::current()->Quit();
+}
+
+void GeolocationNotificationObserver::AddWatchAndWaitForNotification(
+    content::RenderViewHost* render_view_host,
+    const std::string& iframe_xpath) {
+  LOG(WARNING) << "will add geolocation watch";
+  std::string script =
+      "window.domAutomationController.setAutomationId(0);"
+      "window.domAutomationController.send(geoStart());";
+  render_view_host->ExecuteJavascriptInWebFrame(UTF8ToUTF16(iframe_xpath),
+                                                UTF8ToUTF16(script));
+  content::RunMessageLoop();
+  registrar_.RemoveAll();
+  LOG(WARNING) << "got geolocation watch" << javascript_response_;
+  EXPECT_NE("\"0\"", javascript_response_);
+  if (wait_for_infobar_) {
+    EXPECT_TRUE(infobar_);
+  } else {
+    EXPECT_TRUE(navigation_completed_);
+  }
+}
+
+}  // namespace
+
+
+// GeolocationBrowserTest -----------------------------------------------------
 
 // This is a browser test for Geolocation.
 // It exercises various integration points from javascript <-> browser:
@@ -209,148 +242,23 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
     INITIALIZATION_IFRAMES,
   };
 
-  GeolocationBrowserTest()
-    : infobar_(NULL),
-      current_browser_(NULL),
-      html_for_tests_("files/geolocation/simple.html"),
-      fake_latitude_(1.23),
-      fake_longitude_(4.56),
-      started_test_server_(false) {}
+  GeolocationBrowserTest();
 
-  // InProcessBrowserTest
-  virtual void SetUpOnMainThread() OVERRIDE {
-    ui_test_utils::OverrideGeolocation(fake_latitude_, fake_longitude_);
-  }
+  // InProcessBrowserTest:
+  virtual void SetUpOnMainThread() OVERRIDE;
+  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE;
 
-  // InProcessBrowserTest
-  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
-    LOG(WARNING) << "TearDownInProcessBrowserTestFixture. Test Finished.";
-  }
-
-  bool Initialize(InitializationOptions options) WARN_UNUSED_RESULT {
-    if (!started_test_server_)
-      started_test_server_ = test_server()->Start();
-    EXPECT_TRUE(started_test_server_);
-    if (!started_test_server_)
-      return false;
-
-    current_url_ = test_server()->GetURL(html_for_tests_);
-    LOG(WARNING) << "before navigate";
-    if (options == INITIALIZATION_OFFTHERECORD) {
-      current_browser_ = ui_test_utils::OpenURLOffTheRecord(
-          browser()->profile(), current_url_);
-    } else if (options == INITIALIZATION_NEWTAB) {
-      current_browser_ = browser();
-      chrome::NewTab(current_browser_);
-      ui_test_utils::NavigateToURL(current_browser_, current_url_);
-    } else if (options == INITIALIZATION_IFRAMES) {
-      current_browser_ = browser();
-      ui_test_utils::NavigateToURL(current_browser_, current_url_);
-    } else {
-      current_browser_ = browser();
-      ui_test_utils::NavigateToURL(current_browser_, current_url_);
-    }
-    LOG(WARNING) << "after navigate";
-
-    EXPECT_TRUE(current_browser_);
-    if (!current_browser_)
-      return false;
-
-    return true;
-  }
-
-  void LoadIFrames(int number_iframes) {
-      // Limit to 3 iframes.
-      DCHECK(0 < number_iframes && number_iframes <= 3);
-      iframe_urls_.resize(number_iframes);
-      for (int i = 0; i < number_iframes; ++i) {
-        IFrameLoader loader(current_browser_, i, GURL());
-        iframe_urls_[i] = loader.iframe_url();
-      }
-  }
-
-  void AddGeolocationWatch(bool wait_for_infobar) {
-    GeolocationNotificationObserver notification_observer(wait_for_infobar);
-    notification_observer.AddWatchAndWaitForNotification(
-        current_browser_->tab_strip_model()->GetActiveWebContents()->
-            GetRenderViewHost(),
-        iframe_xpath_);
-    if (wait_for_infobar) {
-      EXPECT_TRUE(notification_observer.infobar_);
-      infobar_ = notification_observer.infobar_;
-    }
-  }
-
-  void CheckGeoposition(double latitude, double longitude) {
-    // Checks we have no error.
-    CheckStringValueFromJavascript("0", "geoGetLastError()");
-    CheckStringValueFromJavascript(base::DoubleToString(latitude),
-                                   "geoGetLastPositionLatitude()");
-    CheckStringValueFromJavascript(base::DoubleToString(longitude),
-                                   "geoGetLastPositionLongitude()");
-  }
-
-  void SetInfobarResponse(const GURL& requesting_url, bool allowed) {
-    WebContents* web_contents =
-        current_browser_->tab_strip_model()->GetActiveWebContents();
-    TabSpecificContentSettings* content_settings =
-        TabSpecificContentSettings::FromWebContents(web_contents);
-    const GeolocationSettingsState& settings_state =
-        content_settings->geolocation_settings_state();
-    size_t state_map_size = settings_state.state_map().size();
-    ASSERT_TRUE(infobar_);
-    LOG(WARNING) << "will set infobar response";
-    {
-      content::WindowedNotificationObserver observer(
-          content::NOTIFICATION_LOAD_STOP,
-          content::Source<NavigationController>(
-              &web_contents->GetController()));
-      if (allowed)
-        infobar_->AsConfirmInfoBarDelegate()->Accept();
-      else
-        infobar_->AsConfirmInfoBarDelegate()->Cancel();
-      observer.Wait();
-    }
-
-    InfoBarService::FromWebContents(web_contents)->RemoveInfoBar(infobar_);
-    LOG(WARNING) << "infobar response set";
-    infobar_ = NULL;
-    EXPECT_GT(settings_state.state_map().size(), state_map_size);
-    GURL requesting_origin = requesting_url.GetOrigin();
-    EXPECT_EQ(1U, settings_state.state_map().count(requesting_origin));
-    ContentSetting expected_setting =
-          allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
-    EXPECT_EQ(expected_setting,
-              settings_state.state_map().find(requesting_origin)->second);
-  }
-
+  bool Initialize(InitializationOptions options) WARN_UNUSED_RESULT;
+  void LoadIFrames(int number_iframes);
+  void AddGeolocationWatch(bool wait_for_infobar);
+  void CheckGeoposition(double latitude, double longitude);
+  void SetInfobarResponse(const GURL& requesting_url, bool allowed);
   void CheckStringValueFromJavascriptForTab(
       const std::string& expected, const std::string& function,
-      WebContents* web_contents) {
-    std::string script = base::StringPrintf(
-        "window.domAutomationController.send(%s)", function.c_str());
-    std::string result;
-    ASSERT_TRUE(content::ExecuteScriptInFrameAndExtractString(
-        web_contents,
-        iframe_xpath_,
-        script,
-        &result));
-    EXPECT_EQ(expected, result);
-  }
-
+      WebContents* web_contents);
   void CheckStringValueFromJavascript(
-      const std::string& expected, const std::string& function) {
-    CheckStringValueFromJavascriptForTab(
-        expected, function,
-        current_browser_->tab_strip_model()->GetActiveWebContents());
-  }
-
-  void NotifyGeoposition(double latitude, double longitude) {
-    fake_latitude_ = latitude;
-    fake_longitude_ = longitude;
-    ui_test_utils::OverrideGeolocation(latitude, longitude);
-    LOG(WARNING) << "MockLocationProvider listeners updated";
-  }
+      const std::string& expected, const std::string& function);
+  void NotifyGeoposition(double latitude, double longitude);
 
   InfoBarDelegate* infobar_;
   Browser* current_browser_;
@@ -368,7 +276,159 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
 
   // TODO(phajdan.jr): Remove after we can ask TestServer whether it is started.
   bool started_test_server_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GeolocationBrowserTest);
 };
+
+GeolocationBrowserTest::GeolocationBrowserTest()
+  : infobar_(NULL),
+    current_browser_(NULL),
+    html_for_tests_("files/geolocation/simple.html"),
+    fake_latitude_(1.23),
+    fake_longitude_(4.56),
+    started_test_server_(false) {}
+
+void GeolocationBrowserTest::SetUpOnMainThread() {
+  ui_test_utils::OverrideGeolocation(fake_latitude_, fake_longitude_);
+}
+
+void GeolocationBrowserTest::TearDownInProcessBrowserTestFixture() {
+  LOG(WARNING) << "TearDownInProcessBrowserTestFixture. Test Finished.";
+}
+
+bool GeolocationBrowserTest::Initialize(InitializationOptions options) {
+  if (!started_test_server_)
+    started_test_server_ = test_server()->Start();
+  EXPECT_TRUE(started_test_server_);
+  if (!started_test_server_)
+    return false;
+
+  current_url_ = test_server()->GetURL(html_for_tests_);
+  LOG(WARNING) << "before navigate";
+  if (options == INITIALIZATION_OFFTHERECORD) {
+    current_browser_ = ui_test_utils::OpenURLOffTheRecord(
+        browser()->profile(), current_url_);
+  } else if (options == INITIALIZATION_NEWTAB) {
+    current_browser_ = browser();
+    chrome::NewTab(current_browser_);
+    ui_test_utils::NavigateToURL(current_browser_, current_url_);
+  } else if (options == INITIALIZATION_IFRAMES) {
+    current_browser_ = browser();
+    ui_test_utils::NavigateToURL(current_browser_, current_url_);
+  } else {
+    current_browser_ = browser();
+    ui_test_utils::NavigateToURL(current_browser_, current_url_);
+  }
+  LOG(WARNING) << "after navigate";
+
+  EXPECT_TRUE(current_browser_);
+  if (!current_browser_)
+    return false;
+
+  return true;
+}
+
+void GeolocationBrowserTest::LoadIFrames(int number_iframes) {
+    // Limit to 3 iframes.
+    DCHECK(0 < number_iframes && number_iframes <= 3);
+    iframe_urls_.resize(number_iframes);
+    for (int i = 0; i < number_iframes; ++i) {
+      IFrameLoader loader(current_browser_, i, GURL());
+      iframe_urls_[i] = loader.iframe_url();
+    }
+}
+
+void GeolocationBrowserTest::AddGeolocationWatch(bool wait_for_infobar) {
+  GeolocationNotificationObserver notification_observer(wait_for_infobar);
+  notification_observer.AddWatchAndWaitForNotification(
+      current_browser_->tab_strip_model()->GetActiveWebContents()->
+          GetRenderViewHost(),
+      iframe_xpath_);
+  if (wait_for_infobar) {
+    EXPECT_TRUE(notification_observer.infobar_);
+    infobar_ = notification_observer.infobar_;
+  }
+}
+
+void GeolocationBrowserTest::CheckGeoposition(double latitude,
+                                              double longitude) {
+  // Checks we have no error.
+  CheckStringValueFromJavascript("0", "geoGetLastError()");
+  CheckStringValueFromJavascript(base::DoubleToString(latitude),
+                                  "geoGetLastPositionLatitude()");
+  CheckStringValueFromJavascript(base::DoubleToString(longitude),
+                                  "geoGetLastPositionLongitude()");
+}
+
+void GeolocationBrowserTest::SetInfobarResponse(const GURL& requesting_url,
+                                                bool allowed) {
+  WebContents* web_contents =
+      current_browser_->tab_strip_model()->GetActiveWebContents();
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
+  const GeolocationSettingsState& settings_state =
+      content_settings->geolocation_settings_state();
+  size_t state_map_size = settings_state.state_map().size();
+  ASSERT_TRUE(infobar_);
+  LOG(WARNING) << "will set infobar response";
+  {
+    content::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::Source<NavigationController>(
+            &web_contents->GetController()));
+    if (allowed)
+      infobar_->AsConfirmInfoBarDelegate()->Accept();
+    else
+      infobar_->AsConfirmInfoBarDelegate()->Cancel();
+    observer.Wait();
+  }
+
+  InfoBarService::FromWebContents(web_contents)->RemoveInfoBar(infobar_);
+  LOG(WARNING) << "infobar response set";
+  infobar_ = NULL;
+  EXPECT_GT(settings_state.state_map().size(), state_map_size);
+  GURL requesting_origin = requesting_url.GetOrigin();
+  EXPECT_EQ(1U, settings_state.state_map().count(requesting_origin));
+  ContentSetting expected_setting =
+        allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
+  EXPECT_EQ(expected_setting,
+            settings_state.state_map().find(requesting_origin)->second);
+}
+
+void GeolocationBrowserTest::CheckStringValueFromJavascriptForTab(
+    const std::string& expected,
+    const std::string& function,
+    WebContents* web_contents) {
+  std::string script = base::StringPrintf(
+      "window.domAutomationController.send(%s)", function.c_str());
+  std::string result;
+  ASSERT_TRUE(content::ExecuteScriptInFrameAndExtractString(
+      web_contents,
+      iframe_xpath_,
+      script,
+      &result));
+  EXPECT_EQ(expected, result);
+}
+
+void GeolocationBrowserTest::CheckStringValueFromJavascript(
+    const std::string& expected,
+    const std::string& function) {
+  CheckStringValueFromJavascriptForTab(
+      expected, function,
+      current_browser_->tab_strip_model()->GetActiveWebContents());
+}
+
+void GeolocationBrowserTest::NotifyGeoposition(double latitude,
+                                               double longitude) {
+  fake_latitude_ = latitude;
+  fake_longitude_ = longitude;
+  ui_test_utils::OverrideGeolocation(latitude, longitude);
+  LOG(WARNING) << "MockLocationProvider listeners updated";
+}
+
+
+// Tests ----------------------------------------------------------------------
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DisplaysPermissionBar) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
@@ -681,5 +741,3 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DISABLED_TabDestroyed) {
           script);
   EXPECT_EQ(result, true);
 }
-
-}  // namespace

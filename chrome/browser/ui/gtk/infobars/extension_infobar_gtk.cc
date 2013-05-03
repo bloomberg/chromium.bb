@@ -28,9 +28,15 @@
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
 
+
+// ExtensionInfoBarDelegate ---------------------------------------------------
+
 InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   return new ExtensionInfoBarGtk(owner, this);
 }
+
+
+// ExtensionInfoBarGtk --------------------------------------------------------
 
 ExtensionInfoBarGtk::ExtensionInfoBarGtk(InfoBarService* owner,
                                          ExtensionInfoBarDelegate* delegate)

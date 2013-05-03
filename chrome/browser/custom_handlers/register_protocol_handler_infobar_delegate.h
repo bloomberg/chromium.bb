@@ -43,6 +43,7 @@ class RegisterProtocolHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // Returns a user-friendly name for the protocol of this protocol handler.
   string16 GetProtocolName(const ProtocolHandler& handler) const;
+
   ProtocolHandlerRegistry* registry_;
   ProtocolHandler handler_;
 

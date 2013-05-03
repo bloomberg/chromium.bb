@@ -26,11 +26,13 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/widget/widget.h"
 
+
 // ExtensionInfoBarDelegate ----------------------------------------------------
 
 InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   return new ExtensionInfoBar(browser_, owner, this);
 }
+
 
 // ExtensionInfoBar ------------------------------------------------------------
 

@@ -68,6 +68,8 @@ class SSLCertResultInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   string16 message_;
   scoped_refptr<net::X509Certificate> cert_;  // The cert we added, if any.
+
+  DISALLOW_COPY_AND_ASSIGN(SSLCertResultInfoBarDelegate);
 };
 
 // static

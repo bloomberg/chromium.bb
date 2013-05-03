@@ -18,7 +18,7 @@ class TranslateMessageInfoBar : public TranslateInfoBarBase {
  private:
   virtual ~TranslateMessageInfoBar();
 
-  // Overridden from TranslateInfoBarBase:
+  // TranslateInfoBarBase:
   virtual void InitWidgets() OVERRIDE;
 
   CHROMEGTK_CALLBACK_0(TranslateMessageInfoBar, void, OnButtonPressed);

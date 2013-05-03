@@ -49,6 +49,9 @@ using content::UserMetricsAction;
 
 namespace {
 
+
+// Helpers --------------------------------------------------------------------
+
 void GoBackToSafety(content::WebContents* web_contents) {
   // For now, just go back one page (the user didn't retreat from that page,
   // so it should be okay).
@@ -74,6 +77,9 @@ void GoBackToSafety(content::WebContents* web_contents) {
 
   web_contents->GetDelegate()->CloseContents(web_contents);
 }
+
+
+// ManagedModeWarningInfobarDelegate ------------------------------------------
 
 class ManagedModeWarningInfobarDelegate : public ConfirmInfoBarDelegate {
  public:
@@ -154,6 +160,9 @@ bool ManagedModeWarningInfobarDelegate::Cancel() {
   NOTREACHED();
   return false;
 }
+
+
+// ManagedModePreviewInfobarDelegate ------------------------------------------
 
 class ManagedModePreviewInfobarDelegate : public ConfirmInfoBarDelegate {
  public:
@@ -248,6 +257,9 @@ bool ManagedModePreviewInfobarDelegate::Cancel() {
 }
 
 }  // namespace
+
+
+// ManagedModeNavigationObserver ----------------------------------------------
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ManagedModeNavigationObserver);
 

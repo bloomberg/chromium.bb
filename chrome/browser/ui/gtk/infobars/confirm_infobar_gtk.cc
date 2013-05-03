@@ -13,11 +13,13 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
 
+
 // ConfirmInfoBarDelegate ------------------------------------------------------
 
 InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   return new ConfirmInfoBarGtk(owner, this);
 }
+
 
 // ConfirmInfoBarGtk -----------------------------------------------------------
 

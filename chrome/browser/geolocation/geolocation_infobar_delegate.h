@@ -59,7 +59,7 @@ class GeolocationInfoBarDelegate : public ConfirmInfoBarDelegate {
   int contents_unique_id_;
   std::string display_languages_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(GeolocationInfoBarDelegate);
+  DISALLOW_COPY_AND_ASSIGN(GeolocationInfoBarDelegate);
 };
 
 #endif  // CHROME_BROWSER_GEOLOCATION_GEOLOCATION_INFOBAR_DELEGATE_H_

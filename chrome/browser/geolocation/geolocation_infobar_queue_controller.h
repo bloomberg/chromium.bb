@@ -49,7 +49,7 @@ class GeolocationInfoBarQueueController : content::NotificationObserver {
                        bool allowed);
 
  protected:
-  // content::NotificationObserver
+  // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
@@ -85,6 +85,8 @@ class GeolocationInfoBarQueueController : content::NotificationObserver {
 
   Profile* const profile_;
   PendingInfoBarRequests pending_infobar_requests_;
+
+  DISALLOW_COPY_AND_ASSIGN(GeolocationInfoBarQueueController);
 };
 
 #endif  // CHROME_BROWSER_GEOLOCATION_GEOLOCATION_INFOBAR_QUEUE_CONTROLLER_H_

@@ -69,6 +69,9 @@ namespace SendCommand = extensions::api::debugger::SendCommand;
 
 class ExtensionDevToolsInfoBarDelegate;
 
+
+// ExtensionDevToolsClientHost ------------------------------------------------
+
 class ExtensionDevToolsClientHost : public DevToolsClientHost,
                                     public content::NotificationObserver {
  public:
@@ -119,6 +122,9 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
   DISALLOW_COPY_AND_ASSIGN(ExtensionDevToolsClientHost);
 };
 
+
+// ExtensionDevToolsInfoBarDelegate -------------------------------------------
+
 class ExtensionDevToolsInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // Creates an extension dev tools delegate and adds it to |infobar_service|.
@@ -150,6 +156,7 @@ class ExtensionDevToolsInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   std::string client_name_;
   ExtensionDevToolsClientHost* client_host_;
+
   DISALLOW_COPY_AND_ASSIGN(ExtensionDevToolsInfoBarDelegate);
 };
 
@@ -223,7 +230,10 @@ bool ExtensionDevToolsInfoBarDelegate::Cancel() {
   return true;
 }
 
+
 namespace {
+
+// Helpers --------------------------------------------------------------------
 
 void CopyDebuggee(Debuggee & dst, const Debuggee& src) {
   if (src.tab_id)
@@ -312,42 +322,62 @@ base::Value* SerializeWorkerInfo(const WorkerService::WorkerInfo& worker) {
   return dictionary;
 }
 
+
+// AttachedClientHosts --------------------------------------------------------
+
 class AttachedClientHosts {
  public:
-  AttachedClientHosts() {}
+  AttachedClientHosts();
 
   // Returns the singleton instance of this class
-  static AttachedClientHosts* GetInstance() {
-    return Singleton<AttachedClientHosts>::get();
-  }
+  static AttachedClientHosts* GetInstance();
 
-  void Add(ExtensionDevToolsClientHost* client_host) {
-    client_hosts_.insert(client_host);
-  }
-
-  void Remove(ExtensionDevToolsClientHost* client_host) {
-    client_hosts_.erase(client_host);
-  }
-
+  void Add(ExtensionDevToolsClientHost* client_host);
+  void Remove(ExtensionDevToolsClientHost* client_host);
   ExtensionDevToolsClientHost* Lookup(DevToolsAgentHost* agent_host,
-                                      const std::string& extension_id) {
-    DevToolsManager* manager = DevToolsManager::GetInstance();
-    for (ClientHostSet::iterator it = client_hosts_.begin();
-         it != client_hosts_.end(); ++it) {
-      ExtensionDevToolsClientHost* client_host = *it;
-      if (manager->GetDevToolsAgentHostFor(client_host) == agent_host &&
-          client_host->extension_id() == extension_id)
-        return client_host;
-    }
-    return NULL;
-  }
+                                      const std::string& extension_id);
 
  private:
   typedef std::set<ExtensionDevToolsClientHost*> ClientHostSet;
   ClientHostSet client_hosts_;
+
+  DISALLOW_COPY_AND_ASSIGN(AttachedClientHosts);
 };
 
+AttachedClientHosts::AttachedClientHosts() {
+}
+
+// static
+AttachedClientHosts* AttachedClientHosts::GetInstance() {
+  return Singleton<AttachedClientHosts>::get();
+}
+
+void AttachedClientHosts::Add(ExtensionDevToolsClientHost* client_host) {
+  client_hosts_.insert(client_host);
+}
+
+void AttachedClientHosts::Remove(ExtensionDevToolsClientHost* client_host) {
+  client_hosts_.erase(client_host);
+}
+
+ExtensionDevToolsClientHost* AttachedClientHosts::Lookup(
+    DevToolsAgentHost* agent_host,
+    const std::string& extension_id) {
+  DevToolsManager* manager = DevToolsManager::GetInstance();
+  for (ClientHostSet::iterator it = client_hosts_.begin();
+       it != client_hosts_.end(); ++it) {
+    ExtensionDevToolsClientHost* client_host = *it;
+    if (manager->GetDevToolsAgentHostFor(client_host) == agent_host &&
+        client_host->extension_id() == extension_id)
+      return client_host;
+  }
+  return NULL;
+}
+
 }  // namespace
+
+
+// ExtensionDevToolsClientHost ------------------------------------------------
 
 ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
     Profile* profile,
@@ -516,6 +546,9 @@ void ExtensionDevToolsClientHost::DispatchOnInspectorFrontend(
   }
 }
 
+
+// DebuggerFunction -----------------------------------------------------------
+
 DebuggerFunction::DebuggerFunction()
     : client_host_(0) {
 }
@@ -587,6 +620,9 @@ bool DebuggerFunction::InitClientHost() {
   return true;
 }
 
+
+// DebuggerAttachFunction -----------------------------------------------------
+
 DebuggerAttachFunction::DebuggerAttachFunction() {}
 
 DebuggerAttachFunction::~DebuggerAttachFunction() {}
@@ -638,6 +674,9 @@ bool DebuggerAttachFunction::RunImpl() {
   return true;
 }
 
+
+// DebuggerDetachFunction -----------------------------------------------------
+
 DebuggerDetachFunction::DebuggerDetachFunction() {}
 
 DebuggerDetachFunction::~DebuggerDetachFunction() {}
@@ -654,6 +693,9 @@ bool DebuggerDetachFunction::RunImpl() {
   SendResponse(true);
   return true;
 }
+
+
+// DebuggerSendCommandFunction ------------------------------------------------
 
 DebuggerSendCommandFunction::DebuggerSendCommandFunction() {}
 
@@ -689,6 +731,9 @@ void DebuggerSendCommandFunction::SendResponseBody(
   results_ = SendCommand::Results::Create(result);
   SendResponse(true);
 }
+
+
+// DebuggerGetTargetsFunction -------------------------------------------------
 
 DebuggerGetTargetsFunction::DebuggerGetTargetsFunction() {}
 

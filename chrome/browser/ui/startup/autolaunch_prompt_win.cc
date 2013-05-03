@@ -31,6 +31,9 @@
 
 using content::BrowserThread;
 
+
+// AutolaunchInfoBarDelegate --------------------------------------------------
+
 namespace {
 
 // The delegate for the infobar shown when Chrome was auto-launched.
@@ -138,6 +141,9 @@ bool AutolaunchInfoBarDelegate::ShouldExpireInternal(
 }
 
 }  // namespace
+
+
+// Functions ------------------------------------------------------------------
 
 namespace chrome {
 

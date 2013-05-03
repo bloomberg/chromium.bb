@@ -29,6 +29,8 @@
 #include "ui/base/resource/resource_bundle.h"
 
 
+// SavePasswordInfoBarDelegate ------------------------------------------------
+
 // After a successful *new* login attempt, we take the PasswordFormManager in
 // provisional_save_manager_ and move it to a SavePasswordInfoBarDelegate while
 // the user makes up their mind with the "save password" infobar. Note if the
@@ -150,6 +152,7 @@ InfoBarDelegate::InfoBarAutomationType
     SavePasswordInfoBarDelegate::GetInfoBarAutomationType() const {
   return PASSWORD_INFOBAR;
 }
+
 
 // PasswordManagerDelegateImpl ------------------------------------------------
 

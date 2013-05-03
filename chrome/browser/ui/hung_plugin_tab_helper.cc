@@ -37,20 +37,17 @@
 #include "chrome/browser/hang_monitor/hang_crash_dump_win.h"
 #endif
 
+
 namespace {
 
 #if defined(OS_WIN)
 
+// OwnedHandleVector ----------------------------------------------------------
+
 class OwnedHandleVector {
  public:
-  OwnedHandleVector() {}
-
-  ~OwnedHandleVector() {
-    for (std::vector<HANDLE>::const_iterator iter = data_.begin();
-         iter != data_.end(); ++iter) {
-      ::CloseHandle(*iter);
-    }
-  }
+  OwnedHandleVector();
+  ~OwnedHandleVector();
 
   std::vector<HANDLE>& data() { return data_; }
 
@@ -59,6 +56,19 @@ class OwnedHandleVector {
 
   DISALLOW_COPY_AND_ASSIGN(OwnedHandleVector);
 };
+
+OwnedHandleVector::OwnedHandleVector() {
+}
+
+OwnedHandleVector::~OwnedHandleVector() {
+  for (std::vector<HANDLE>::const_iterator iter = data_.begin();
+       iter != data_.end(); ++iter) {
+    ::CloseHandle(*iter);
+  }
+}
+
+
+// Helpers --------------------------------------------------------------------
 
 const char kDumpChildProcessesSequenceName[] = "DumpChildProcesses";
 
@@ -117,6 +127,9 @@ void KillPluginOnIOThread(int child_id) {
 }
 
 }  // namespace
+
+
+// HungPluginInfoBarDelegate --------------------------------------------------
 
 class HungPluginInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
@@ -200,7 +213,8 @@ bool HungPluginInfoBarDelegate::Accept() {
   return true;
 }
 
-// -----------------------------------------------------------------------------
+
+// HungPluginTabHelper::PluginState -------------------------------------------
 
 // Per-plugin state (since there could be more than one plugin hung).  The
 // integer key is the child process ID of the plugin process.  This maintains
@@ -224,7 +238,7 @@ struct HungPluginTabHelper::PluginState {
   // Handles calling the helper when the infobar should be re-shown.
   base::Timer timer;
 
-  private:
+ private:
   // Delay in seconds before re-showing the hung plugin message. This will be
   // increased each time.
   static const int kInitialReshowDelaySec;
@@ -249,7 +263,8 @@ HungPluginTabHelper::PluginState::PluginState(const base::FilePath& p,
 HungPluginTabHelper::PluginState::~PluginState() {
 }
 
-// -----------------------------------------------------------------------------
+
+// HungPluginTabHelper --------------------------------------------------------
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(HungPluginTabHelper);
 
