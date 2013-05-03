@@ -48,7 +48,9 @@ UserFlow* MockUserManager::GetUserFlow(const std::string&) const {
 }
 
 User* MockUserManager::CreatePublicAccountUser(const std::string& email) {
-  return User::CreatePublicAccountUser(email);
+  delete user_;
+  user_ = User::CreatePublicAccountUser(email);
+  return user_;
 }
 
 }  // namespace chromeos

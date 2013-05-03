@@ -103,7 +103,8 @@ class MockUserManager : public UserManager {
   // Sets a new User instance.
   void SetActiveUser(const std::string& email);
 
-  // Creates a new public session user.
+  // Creates a new public session user. Users previously created by this
+  // MockUserManager become invalid.
   User* CreatePublicAccountUser(const std::string& email);
 
   User* user_;
