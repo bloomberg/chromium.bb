@@ -676,82 +676,102 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       new WebDatabaseObserverImpl(sync_message_filter()));
   WebKit::WebDatabase::setObserver(web_database_observer_impl_.get());
 
-  WebRuntimeFeatures::enableDatabase(
-      !command_line.HasSwitch(switches::kDisableDatabases));
+  WebRuntimeFeatures::enableDatabase(true);
+  if (command_line.HasSwitch(switches::kDisableDatabases))
+    WebRuntimeFeatures::enableDatabase(false);
 
-  WebRuntimeFeatures::enableApplicationCache(
-      !command_line.HasSwitch(switches::kDisableApplicationCache));
+  WebRuntimeFeatures::enableApplicationCache(true);
+  if (command_line.HasSwitch(switches::kDisableApplicationCache))
+    WebRuntimeFeatures::enableApplicationCache(false);
 
-  WebRuntimeFeatures::enableNotifications(
-      !command_line.HasSwitch(switches::kDisableDesktopNotifications));
+  WebRuntimeFeatures::enableNotifications(true);
+  if (command_line.HasSwitch(switches::kDisableDesktopNotifications))
+    WebRuntimeFeatures::enableNotifications(false);
 
-  WebRuntimeFeatures::enableLocalStorage(
-      !command_line.HasSwitch(switches::kDisableLocalStorage));
-  WebRuntimeFeatures::enableSessionStorage(
-      !command_line.HasSwitch(switches::kDisableSessionStorage));
+  WebRuntimeFeatures::enableLocalStorage(true);
+  if (command_line.HasSwitch(switches::kDisableLocalStorage))
+    WebRuntimeFeatures::enableLocalStorage(false);
+
+  WebRuntimeFeatures::enableSessionStorage(true);
+  if (command_line.HasSwitch(switches::kDisableSessionStorage))
+    WebRuntimeFeatures::enableSessionStorage(false);
 
   WebRuntimeFeatures::enableIndexedDatabase(true);
 
-  WebRuntimeFeatures::enableGeolocation(
-      !command_line.HasSwitch(switches::kDisableGeolocation));
+  WebRuntimeFeatures::enableGeolocation(true);
+  if (command_line.HasSwitch(switches::kDisableGeolocation))
+    WebRuntimeFeatures::enableGeolocation(false);
 
 #if defined(OS_ANDROID) && !defined(GOOGLE_TV)
-  WebKit::WebRuntimeFeatures::enableMediaSource(false);
+  WebRuntimeFeatures::enableMediaSource(false);
 #else
-  WebKit::WebRuntimeFeatures::enableMediaSource(
-      !command_line.HasSwitch(switches::kDisableMediaSource));
+  WebRuntimeFeatures::enableMediaSource(true);
+  if (command_line.HasSwitch(switches::kDisableMediaSource))
+    WebRuntimeFeatures::enableMediaSource(false);
 #endif
 
   WebRuntimeFeatures::enableMediaPlayer(
       media::IsMediaLibraryInitialized());
 
+  WebRuntimeFeatures::enableMediaStream(true);
 #if defined(OS_ANDROID)
-  WebKit::WebRuntimeFeatures::enableMediaStream(
-      !command_line.HasSwitch(switches::kDisableWebRTC));
-  WebKit::WebRuntimeFeatures::enablePeerConnection(
-      !command_line.HasSwitch(switches::kDisableWebRTC));
-#else
-  WebKit::WebRuntimeFeatures::enableMediaStream(true);
-  WebKit::WebRuntimeFeatures::enablePeerConnection(true);
+  if (command_line.HasSwitch(switches::kDisableWebRTC))
+    WebRuntimeFeatures::enableMediaStream(false);
 #endif
 
-  WebKit::WebRuntimeFeatures::enableFullScreenAPI(
-      !command_line.HasSwitch(switches::kDisableFullScreen));
-
-  WebKit::WebRuntimeFeatures::enableEncryptedMedia(
-      !command_line.HasSwitch(switches::kDisableEncryptedMedia));
-
+  WebRuntimeFeatures::enablePeerConnection(true);
 #if defined(OS_ANDROID)
-  WebRuntimeFeatures::enableWebAudio(
-      command_line.HasSwitch(switches::kEnableWebAudio) &&
-      media::IsMediaLibraryInitialized());
-#else
-  WebRuntimeFeatures::enableWebAudio(
-      !command_line.HasSwitch(switches::kDisableWebAudio) &&
-      media::IsMediaLibraryInitialized());
+  if (command_line.HasSwitch(switches::kDisableWebRTC))
+    WebRuntimeFeatures::enablePeerConnection(false);
 #endif
 
-  WebRuntimeFeatures::enableWebMIDI(
-      command_line.HasSwitch(switches::kEnableWebMIDI));
+  WebRuntimeFeatures::enableFullScreenAPI(true);
+  if (command_line.HasSwitch(switches::kDisableFullScreen))
+    WebRuntimeFeatures::enableFullScreenAPI(false);
 
-  WebRuntimeFeatures::enableDeviceMotion(
-      command_line.HasSwitch(switches::kEnableDeviceMotion));
+  WebRuntimeFeatures::enableEncryptedMedia(true);
+  if (command_line.HasSwitch(switches::kDisableEncryptedMedia))
+    WebRuntimeFeatures::enableEncryptedMedia(false);
 
-  WebRuntimeFeatures::enableDeviceOrientation(
-      !command_line.HasSwitch(switches::kDisableDeviceOrientation));
+#if defined(OS_ANDROID)
+  WebRuntimeFeatures::enableWebAudio(false);
+  if (command_line.HasSwitch(switches::kEnableWebAudio) &&
+      media::IsMediaLibraryInitialized())
+    WebRuntimeFeatures::enableWebAudio(true);
+#else
+  WebRuntimeFeatures::enableWebAudio(true);
+  if (command_line.HasSwitch(switches::kDisableWebAudio) ||
+      !media::IsMediaLibraryInitialized())
+    WebRuntimeFeatures::enableWebAudio(false);
+#endif
 
-  WebRuntimeFeatures::enableSpeechInput(
-      !command_line.HasSwitch(switches::kDisableSpeechInput));
+  WebRuntimeFeatures::enableWebMIDI(false);
+  if (command_line.HasSwitch(switches::kEnableWebMIDI))
+    WebRuntimeFeatures::enableWebMIDI(true);
+
+  WebRuntimeFeatures::enableDeviceMotion(false);
+  if (command_line.HasSwitch(switches::kEnableDeviceMotion))
+      WebRuntimeFeatures::enableDeviceMotion(true);
+
+  WebRuntimeFeatures::enableDeviceOrientation(true);
+  if (command_line.HasSwitch(switches::kDisableDeviceOrientation))
+    WebRuntimeFeatures::enableDeviceOrientation(false);
+
+  WebRuntimeFeatures::enableSpeechInput(true);
+  if (command_line.HasSwitch(switches::kDisableSpeechInput))
+    WebRuntimeFeatures::enableSpeechInput(false);
 
 #if defined(OS_ANDROID)
   // Web Speech API Speech recognition is not implemented on Android yet.
   WebRuntimeFeatures::enableScriptedSpeech(false);
+#else
+  WebRuntimeFeatures::enableScriptedSpeech(true);
+#endif
 
+#if defined(OS_ANDROID)
   // Android does not support the Gamepad API.
   WebRuntimeFeatures::enableGamepad(false);
 #else
-  WebRuntimeFeatures::enableScriptedSpeech(true);
-
   WebRuntimeFeatures::enableGamepad(true);
 #endif
 
@@ -760,11 +780,13 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableInputTypeWeek(false);
 #endif
 
-  WebRuntimeFeatures::enableFileSystem(
-      !command_line.HasSwitch(switches::kDisableFileSystem));
+  WebRuntimeFeatures::enableFileSystem(true);
+  if (command_line.HasSwitch(switches::kDisableFileSystem))
+    WebRuntimeFeatures::enableFileSystem(false);
 
-  WebRuntimeFeatures::enableJavaScriptI18NAPI(
-      !command_line.HasSwitch(switches::kDisableJavaScriptI18NAPI));
+  WebRuntimeFeatures::enableJavaScriptI18NAPI(true);
+  if (command_line.HasSwitch(switches::kDisableJavaScriptI18NAPI))
+    WebRuntimeFeatures::enableJavaScriptI18NAPI(false);
 
   WebRuntimeFeatures::enableQuota(true);
 
@@ -779,21 +801,25 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
     WebRuntimeFeatures::enableFontLoadEvents(true);
   }
 
-  WebRuntimeFeatures::enableSeamlessIFrames(
-      command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures));
+  WebRuntimeFeatures::enableSeamlessIFrames(false);
+  if (command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures))
+      WebRuntimeFeatures::enableSeamlessIFrames(true);
 
   // Enabled by default for testing.
   // TODO(urvang): Go back to using the command-line option after a few days.
   WebRuntimeFeatures::enableWebPInAcceptHeader(true);
 
-  WebRuntimeFeatures::enableExperimentalWebSocket(
-      command_line.HasSwitch(switches::kEnableExperimentalWebSocket));
+  WebRuntimeFeatures::enableExperimentalWebSocket(false);
+  if (command_line.HasSwitch(switches::kEnableExperimentalWebSocket))
+    WebRuntimeFeatures::enableExperimentalWebSocket(true);
 
-  WebRuntimeFeatures::enableExperimentalCanvasFeatures(
-      command_line.HasSwitch(switches::kEnableExperimentalCanvasFeatures));
+  WebRuntimeFeatures::enableExperimentalCanvasFeatures(false);
+  if (command_line.HasSwitch(switches::kEnableExperimentalCanvasFeatures))
+    WebRuntimeFeatures::enableExperimentalCanvasFeatures(true);
 
-  WebRuntimeFeatures::enableSpeechSynthesis(
-      command_line.HasSwitch(switches::kEnableSpeechSynthesis));
+  WebRuntimeFeatures::enableSpeechSynthesis(false);
+  if (command_line.HasSwitch(switches::kEnableSpeechSynthesis))
+      WebRuntimeFeatures::enableSpeechSynthesis(true);
 
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, WebKitInitialized());
 
