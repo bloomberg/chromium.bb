@@ -314,15 +314,20 @@ void BookmarkBubbleGtk::InitFolderComboModel() {
   GtkListStore* store = gtk_list_store_new(COLUMN_COUNT,
                                            G_TYPE_STRING, G_TYPE_BOOLEAN);
 
-  // We always have nodes + 1 entries in the combo. The last entry will be
-  // the 'Choose Another Folder...' entry that opens the Bookmark Editor.
+  // We always have nodes + 1 entries in the combo. The last entry is an entry
+  // that reads 'Choose Another Folder...' and when chosen Bookmark Editor is
+  // opened.
   for (int i = 0; i < folder_combo_model_->GetItemCount(); ++i) {
+    const bool is_separator = folder_combo_model_->IsItemSeparatorAt(i);
+    const std::string name = is_separator ?
+        std::string() : UTF16ToUTF8(folder_combo_model_->GetItemAt(i));
+
     GtkTreeIter iter;
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter,
-        COLUMN_NAME, UTF16ToUTF8(folder_combo_model_->GetItemAt(i)).c_str(),
-        COLUMN_IS_SEPARATOR, folder_combo_model_->IsItemSeparatorAt(i),
-        -1);
+                       COLUMN_NAME, name.c_str(),
+                       COLUMN_IS_SEPARATOR, is_separator,
+                       -1);
   }
 
   folder_combo_ = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
