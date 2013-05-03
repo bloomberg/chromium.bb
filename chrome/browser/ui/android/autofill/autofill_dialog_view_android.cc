@@ -206,7 +206,7 @@ std::vector<std::string> AutofillDialogViewAndroid::GetAvailableUserAccounts() {
 void AutofillDialogViewAndroid::ItemSelected(JNIEnv* env, jobject obj,
                                              jint section, jint index) {
   ui::MenuModel* menuModel =
-      controller_->MenuModelForSectionHack(static_cast<DialogSection>(section));
+      GetMenuModelForSection(static_cast<DialogSection>(section));
   if (menuModel)
     menuModel->ActivatedAt(index);
 }
@@ -217,10 +217,8 @@ ScopedJavaLocalRef<jobject> AutofillDialogViewAndroid::GetIconForField(
     jint field_id,
     jstring jinput) {
   string16 input = base::android::ConvertJavaStringToUTF16(env, jinput);
-  gfx::Image icon = controller_->
-      IconForField(static_cast<AutofillFieldType>(field_id), input);
-  const SkBitmap& sk_icon = icon.AsBitmap();
-  return gfx::ConvertToJavaBitmap(&sk_icon);
+  return GetJavaBitmap(controller_->IconForField(
+      static_cast<AutofillFieldType>(field_id), input));
 }
 
 ScopedJavaLocalRef<jstring> AutofillDialogViewAndroid::GetPlaceholderForField(
@@ -284,6 +282,15 @@ ScopedJavaLocalRef<jstring> AutofillDialogViewAndroid::GetProgressBarText(
       controller_->ProgressBarText());
 }
 
+jboolean AutofillDialogViewAndroid::IsTheAddItem(
+    JNIEnv* env,
+    jobject obj,
+    jint section,
+    jint index) {
+  return IsTheAddMenuItem(static_cast<DialogSection>(section),
+                          static_cast<int>(index));
+}
+
 void AutofillDialogViewAndroid::AccountSelected(JNIEnv* env, jobject obj,
                                                 jint index) {
   ui::MenuModel* model = controller_->MenuModelForAccountChooser();
@@ -315,6 +322,7 @@ void AutofillDialogViewAndroid::EditingStart(JNIEnv* env, jobject obj,
   }
 
   controller_->EditClickedForSection(section);
+  UpdateOrFillSectionToJava(section, false, UNKNOWN_TYPE);
 }
 
 jboolean AutofillDialogViewAndroid::EditingComplete(JNIEnv* env,
@@ -477,12 +485,12 @@ void AutofillDialogViewAndroid::UpdateOrFillSectionToJava(
   const DetailInputs& updated_inputs =
       controller_->RequestedFieldsForSection(section);
 
-  const size_t inputCount = updated_inputs.size();
+  const size_t input_count = updated_inputs.size();
   ScopedJavaLocalRef<jobjectArray> field_array =
       Java_AutofillDialogGlue_createAutofillDialogFieldArray(
-          env, inputCount);
+          env, input_count);
 
-  for (size_t i = 0; i < inputCount; ++i) {
+  for (size_t i = 0; i < input_count; ++i) {
     const DetailInput& input = updated_inputs[i];
 
     ScopedJavaLocalRef<jstring> autofilled =
@@ -504,24 +512,26 @@ void AutofillDialogViewAndroid::UpdateOrFillSectionToJava(
         autofilled.obj());
   }
 
-  ui::MenuModel* menuModel = controller_->MenuModelForSectionHack(section);
-  const int itemCount = menuModel->GetItemCount();
+  ui::MenuModel* menu_model = GetMenuModelForSection(section);
+  const int item_count = menu_model->GetItemCount();
+
+  // Never show the "Manage..." item.
+  // TODO(aruslan): fix this once we have UI design http://crbug.com/235639.
+  const int jitem_count = item_count >= 1 ? item_count - 1 : 0;
+
   ScopedJavaLocalRef<jobjectArray> menu_array =
       Java_AutofillDialogGlue_createAutofillDialogMenuItemArray(env,
-                                                                itemCount);
+                                                                jitem_count);
+  const int selected_item = GetSelectedItemIndexForSection(section);
 
-  int checkedItem = -1;
-
-  for (int i = 0; i < itemCount; ++i) {
-    const bool editable = IsMenuItemEditable(section, i);
-
-    string16 line1_value = menuModel->GetLabelAt(i);
-    string16 line2_value = menuModel->GetSublabelAt(i);
+  for (int i = 0; i < jitem_count; ++i) {
+    const MenuItemButtonType button_type = GetMenuItemButtonType(section, i);
+    string16 line1_value = menu_model->GetLabelAt(i);
+    string16 line2_value = menu_model->GetSublabelAt(i);
     gfx::Image icon_value;
-    menuModel->GetIconAt(i, &icon_value);
+    menu_model->GetIconAt(i, &icon_value);
 
-    if (menuModel->IsItemCheckedAt(i)) {
-      checkedItem = i;
+    if (i == selected_item) {
       CollapseUserDataIntoMenuItem(section,
                                    &line1_value, &line2_value,
                                    &icon_value);
@@ -531,14 +541,12 @@ void AutofillDialogViewAndroid::UpdateOrFillSectionToJava(
         base::android::ConvertUTF16ToJavaString(env, line1_value);
     ScopedJavaLocalRef<jstring> line2 =
         base::android::ConvertUTF16ToJavaString(env, line2_value);
-    ScopedJavaLocalRef<jobject> bitmap;
-    const SkBitmap& sk_icon = icon_value.AsBitmap();
-    if (!sk_icon.isNull() && sk_icon.bytesPerPixel() != 0)
-      bitmap = gfx::ConvertToJavaBitmap(&sk_icon);
+    ScopedJavaLocalRef<jobject> icon = GetJavaBitmap(icon_value);
 
     Java_AutofillDialogGlue_addToAutofillDialogMenuItemArray(
         env, menu_array.obj(), i,
-        line1.obj(), line2.obj(), bitmap.obj(), editable);
+        line1.obj(), line2.obj(), icon.obj(),
+        static_cast<int>(button_type));
   }
 
   Java_AutofillDialogGlue_updateSection(env,
@@ -547,7 +555,7 @@ void AutofillDialogViewAndroid::UpdateOrFillSectionToJava(
                                         controller_->SectionIsActive(section),
                                         field_array.obj(),
                                         menu_array.obj(),
-                                        checkedItem,
+                                        selected_item,
                                         clobber_inputs,
                                         field_type_to_always_clobber);
 
@@ -575,26 +583,90 @@ void AutofillDialogViewAndroid::GetUserInputImpl(
   }
 }
 
-// Whether the item at the |index| in the |section| menu model is editable.
-// TODO(aruslan): Remove/fix this once http://crbug.com/224162 is closed.
-bool AutofillDialogViewAndroid::IsMenuItemEditable(DialogSection section,
-                                                   int index) const {
+ui::MenuModel* AutofillDialogViewAndroid::GetMenuModelForSection(
+    DialogSection section) const {
+  // TODO(aruslan/estade): This should use MenuModelForSectionHack(), which
+  // never returns NULL.  Later the controller should return a proper platform-
+  // specific menu model to match the platform UI flow (or it shouldn't attempt
+  // to control the presentation details).
+  return controller_->MenuModelForSectionHack(section);
+}
+
+// Returns the index of the currently selected item in |section|, or -1.
+int AutofillDialogViewAndroid::GetSelectedItemIndexForSection(
+    DialogSection section) const {
+  ui::MenuModel* menuModel = GetMenuModelForSection(section);
+  if (!menuModel) return -1;
+
+  for (int i = 0; i < menuModel->GetItemCount(); ++i) {
+    if (menuModel->IsItemCheckedAt(i))
+      return i;
+  }
+
+  return -1;
+}
+
+// Returns true if the item at |index| in |section| is the "Add...".
+bool AutofillDialogViewAndroid::IsTheAddMenuItem(
+    DialogSection section, int index) const {
+  ui::MenuModel* menuModel = GetMenuModelForSection(section);
+  return menuModel && index == menuModel->GetItemCount() - 2;
+}
+
+// Returns true if the item at |index| in |section| is the "Manage...".
+bool AutofillDialogViewAndroid::IsTheManageMenuItem(
+    DialogSection section, int index) const {
+  ui::MenuModel* menuModel = GetMenuModelForSection(section);
+  return menuModel && index == menuModel->GetItemCount() - 1;
+}
+
+// Returns an |image| converted to a Java image, or null if |image| is empty.
+ScopedJavaLocalRef<jobject> AutofillDialogViewAndroid::GetJavaBitmap(
+    const gfx::Image& image) const {
+  ScopedJavaLocalRef<jobject> bitmap;
+  const SkBitmap& sk_bitmap = image.AsBitmap();
+  if (!sk_bitmap.isNull() && sk_bitmap.bytesPerPixel() != 0)
+    bitmap = gfx::ConvertToJavaBitmap(&sk_bitmap);
+  return bitmap;
+}
+
+// Returns a MenuItemButtonType for a menu item at |index| in |section|.
+AutofillDialogViewAndroid::MBT AutofillDialogViewAndroid::GetMenuItemButtonType(
+    DialogSection section,
+    int index) const {
+  // TODO(aruslan): Remove/fix this once http://crbug.com/224162 is closed.
+  ui::MenuModel* menu_model = GetMenuModelForSection(section);
+  if (!menu_model)
+    return MENU_ITEM_BUTTON_TYPE_NONE;
+
   // "Use billing for shipping" is not editable and it's always first.
   if (section == SECTION_SHIPPING && index == 0)
-    return false;
+    return MENU_ITEM_BUTTON_TYPE_NONE;
 
-  // Any items except the two last ("Add..." and "Manage...") are editable.
-  // An item is editable if
-  // - it's not a "Manage..." (the last one), and
-  // - it's a normal item, or it's an "Add..." and it has some data.
-  ui::MenuModel* menuModel = controller_->MenuModelForSectionHack(section);
-  string16 label, sublabel;
-  gfx::Image icon;
+  // The last item ("Manage...") is never editable.
+  if (IsTheManageMenuItem(section, index))
+    return MENU_ITEM_BUTTON_TYPE_NONE;
 
-  return menuModel &&
-         index != menuModel->GetItemCount() - 1 &&
-         (index < menuModel->GetItemCount() - 2 ||
-             CollapseUserDataIntoMenuItem(section, &label, &sublabel, &icon));
+  // The second last item ("Add..."):
+  if (IsTheAddMenuItem(section, index)) {
+    const bool currently_selected =
+        index == GetSelectedItemIndexForSection(section);
+    // - shouldn't show any button if not selected;
+    if (!currently_selected)
+      return MENU_ITEM_BUTTON_TYPE_NONE;
+
+    // - should show "Add..." button if selected and doesn't have user data;
+    string16 label, sublabel;
+    gfx::Image icon;
+    const bool has_user_data =
+        CollapseUserDataIntoMenuItem(section, &label, &sublabel, &icon);
+    if (!has_user_data)
+      return MENU_ITEM_BUTTON_TYPE_ADD;
+
+    // - otherwise, should show the "Edit..." button (as any "normal" items).
+  }
+
+  return MENU_ITEM_BUTTON_TYPE_EDIT;
 }
 
 // TODO(aruslan): Remove/fix this once http://crbug.com/230685 is closed.
@@ -698,7 +770,7 @@ bool AutofillDialogViewAndroid::CollapseUserDataIntoMenuItem(
       CreditCard card;
       GetBillingInfoFromOutputs(inputs, &card, NULL);
       AutofillCreditCardWrapper ccw(&card);
-      label = ccw.GetDisplayText();
+      label = card.Label();
       icon = ccw.GetIcon();
       break;
     }

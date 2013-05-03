@@ -51,6 +51,9 @@
       <message desc="Message for negative button while editing details on the autofill dialog. [CHAR-LIMIT=32]" name="IDS_AUTOFILL_NEGATIVE_BUTTON_EDITING">
         Cancel
       </message>
+      <message desc="Message for adding a single item on the autofill dialog. [CHAR-LIMIT=32]" name="IDS_AUTOFILL_ADD_BUTTON">
+        Add
+      </message>
       <message desc="Message for editing a single item on the autofill dialog. [CHAR-LIMIT=32]" name="IDS_AUTOFILL_EDIT_BUTTON">
         Edit
       </message>

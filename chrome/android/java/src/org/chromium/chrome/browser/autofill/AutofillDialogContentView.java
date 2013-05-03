@@ -440,8 +440,7 @@ public class AutofillDialogContentView extends LinearLayout {
         }
 
         private View initView(
-                final int position, View convertView, final ViewGroup parent,
-                boolean showEditButton) {
+                final int position, View convertView, final ViewGroup parent, boolean showButton) {
             if (convertView == null) {
                 convertView = View.inflate(getContext(),
                         R.layout.autofill_menu_item, null);
@@ -475,8 +474,8 @@ public class AutofillDialogContentView extends LinearLayout {
                 }
             }
             if (button != null) {
-                button.setText(R.string.autofill_edit_button);
-                if (showEditButton && item.mIsEditable) {
+                if (showButton && item.mShowButton) {
+                    button.setText(item.mButtonLabelResourceId);
                     button.setOnClickListener(new OnClickListener() {
                         // TODO(aruslan): http://crbug.com/236101.
                         @Override

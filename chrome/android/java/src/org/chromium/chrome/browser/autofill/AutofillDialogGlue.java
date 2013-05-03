@@ -14,6 +14,8 @@ import org.chromium.ui.ViewAndroid;
 import org.chromium.ui.ViewAndroidDelegate;
 import org.chromium.ui.WindowAndroid;
 
+import org.chromium.chrome.R;
+
 /**
 * JNI call glue for AutofillDialog C++ and Java objects.
 */
@@ -303,6 +305,11 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
         return nativeGetProgressBarText(mNativeDialogPopup);
     }
 
+    @Override
+    public boolean isTheAddItem(int section, int position) {
+        return nativeIsTheAddItem(mNativeDialogPopup, section, position);
+    }
+
     // Helper methods for AutofillDialogField and AutofillDialogItem ------------------------------
 
     @CalledByNative
@@ -353,8 +360,24 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
 
     @CalledByNative
     private static void addToAutofillDialogMenuItemArray(AutofillDialogMenuItem[] array, int index,
-            String line1, String line2, Bitmap icon, boolean editable) {
-        array[index] = new AutofillDialogMenuItem(index, line1, line2, icon, editable);
+            String line1, String line2, Bitmap icon, int buttonType) {
+        int buttonLabelResourceId = -1;
+        switch (buttonType) {
+            case AutofillDialogConstants.MENU_ITEM_BUTTON_TYPE_NONE:
+                break;
+            case AutofillDialogConstants.MENU_ITEM_BUTTON_TYPE_ADD:
+                buttonLabelResourceId = R.string.autofill_add_button;
+                break;
+            case AutofillDialogConstants.MENU_ITEM_BUTTON_TYPE_EDIT:
+                buttonLabelResourceId = R.string.autofill_edit_button;
+                break;
+            default:
+                assert false;
+        }
+        array[index] = new AutofillDialogMenuItem(
+                index, line1, line2, icon,
+                buttonType != AutofillDialogConstants.MENU_ITEM_BUTTON_TYPE_NONE,
+                buttonLabelResourceId, null);
     }
 
     @CalledByNative
@@ -405,4 +428,6 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
             int dialogButtonId);
     private native String nativeGetSaveLocallyText(int nativeAutofillDialogViewAndroid);
     private native String nativeGetProgressBarText(int nativeAutofillDialogViewAndroid);
+    private native boolean nativeIsTheAddItem(
+            int nativeAutofillDialogViewAndroid, int section, int index);
 }

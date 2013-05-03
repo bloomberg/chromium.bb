@@ -14,6 +14,12 @@ public class AutofillDialogConstants {
     public static final int DIALOG_BUTTON_OK = 1;
     public static final int DIALOG_BUTTON_CANCEL = 2;
 
+    // Menu item button types.
+    // This list should be kept in sync with MenuItemButtonType in autofill_dialog_view_android.h.
+    public static final int MENU_ITEM_BUTTON_TYPE_NONE = 0;
+    public static final int MENU_ITEM_BUTTON_TYPE_ADD = 1;
+    public static final int MENU_ITEM_BUTTON_TYPE_EDIT = 2;
+
     // Section ID constants. This list should be kept in sync with enum DialogSection in
     // autofill_dialog_types.h
 

@@ -195,6 +195,13 @@ public class AutofillDialog extends AlertDialog
          * @return The progress bar label.
          */
         public String getProgressBarText();
+
+        /**
+         * @param section The section.
+         * @param position The index of an item.
+         * @return Whether an item is the "Add..." item.
+         */
+        public boolean isTheAddItem(int section, int position);
     }
 
     protected AutofillDialog(Context context, AutofillDialogDelegate delegate) {
@@ -319,7 +326,7 @@ public class AutofillDialog extends AlertDialog
         }
 
         int section = AutofillDialogUtils.getSectionForSpinnerID(spinner.getId());
-        if (!isAnAddItem(spinner, section, position)) {
+        if (!isTheAddItem(spinner, section, position)) {
             mDelegate.itemSelected(section, position);
             return;
         }
@@ -346,10 +353,8 @@ public class AutofillDialog extends AlertDialog
      * @param position The position for the selected item in the dropdown.
      * @return Whether the selection is the "Add..." item.
      */
-    private boolean isAnAddItem(AdapterView<?> spinner, int section, int position) {
-        // TODO(aruslan): this ignores the "always" last "Manage..." and targets to the "Add...".
-        // TODO(aruslan): remove/fix this after http://crbug.com/224162.
-        return position == spinner.getCount() - 2;
+    private boolean isTheAddItem(AdapterView<?> spinner, int section, int position) {
+        return mDelegate.isTheAddItem(section, position);
     }
 
     /**

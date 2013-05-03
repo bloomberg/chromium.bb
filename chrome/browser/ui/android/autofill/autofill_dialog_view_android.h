@@ -92,10 +92,21 @@ class AutofillDialogViewAndroid : public AutofillDialogView {
                                                                 jobject obj);
   base::android::ScopedJavaLocalRef<jstring> GetProgressBarText(JNIEnv* env,
                                                                 jobject obj);
+  jboolean IsTheAddItem(JNIEnv* env, jobject obj, jint section, jint index);
 
   static bool RegisterAutofillDialogViewAndroid(JNIEnv* env);
 
  private:
+  // A button type for a menu item.
+  enum MenuItemButtonType {
+    MENU_ITEM_BUTTON_TYPE_NONE = 0,
+    MENU_ITEM_BUTTON_TYPE_ADD = 1,
+    MENU_ITEM_BUTTON_TYPE_EDIT = 2,
+  };
+
+  // To fit the return type and GetMenuItemButtonType() name into 80 chars.
+  typedef MenuItemButtonType MBT;
+
   // Returns the list of available user accounts.
   std::vector<std::string> GetAvailableUserAccounts();
   bool ValidateSection(DialogSection section,
@@ -118,8 +129,25 @@ class AutofillDialogViewAndroid : public AutofillDialogView {
   // Fills |output| with data the user manually input.
   void GetUserInputImpl(DialogSection section, DetailOutputMap* output) const;
 
-  // Whether the item at the |index| in the |section| menu model is editable.
-  bool IsMenuItemEditable(DialogSection section, int index) const;
+  // Returns the model for suggestions for fields that fall under |section|.
+  ui::MenuModel* GetMenuModelForSection(DialogSection section) const;
+
+  // Returns the index of the currently selected item in |section|, or -1.
+  int GetSelectedItemIndexForSection(DialogSection section) const;
+
+  // Returns true if the item at |index| in |section| is the "Add...".
+  bool IsTheAddMenuItem(DialogSection section, int index) const;
+
+  // Returns true if the item at |index| in |section| is the "Manage...".
+  bool IsTheManageMenuItem(DialogSection section, int index) const;
+
+  // Returns an |image| converted to a Java image, or null if |image| is empty.
+  base::android::ScopedJavaLocalRef<jobject> GetJavaBitmap(
+      const gfx::Image& image) const;
+
+  // Returns the button type for a menu item at |index| in |section|.
+  MenuItemButtonType GetMenuItemButtonType(
+      DialogSection section, int index) const;
 
   // Collapse the user input into a menu item.
   // TODO(aruslan): http://crbug.com/230685
