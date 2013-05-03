@@ -116,7 +116,7 @@ TEST_F(AutocompleteTextFieldCellTest, DISABLED_FocusedDisplay) {
   // indicate that they should be omitted.
   const CGFloat kVeryWide = 1000.0;
 
-  SelectedKeywordDecoration selected_keyword_decoration([view_ font]);
+  SelectedKeywordDecoration selected_keyword_decoration;
   selected_keyword_decoration.SetVisible(true);
   selected_keyword_decoration.SetKeyword(ASCIIToUTF16("Google"), false);
   [cell addLeftDecoration:&selected_keyword_decoration];
@@ -133,8 +133,7 @@ TEST_F(AutocompleteTextFieldCellTest, DISABLED_FocusedDisplay) {
   EXPECT_NE(location_icon_decoration.GetWidthForSpace(kVeryWide, 0),
             LocationBarDecoration::kOmittedWidth);
 
-  EVBubbleDecoration ev_bubble_decoration(&location_icon_decoration,
-                                          [view_ font]);
+  EVBubbleDecoration ev_bubble_decoration(&location_icon_decoration);
   ev_bubble_decoration.SetVisible(true);
   ev_bubble_decoration.SetImage([NSImage imageNamed:@"NSApplicationIcon"]);
   ev_bubble_decoration.SetLabel(@"Application");
@@ -148,7 +147,7 @@ TEST_F(AutocompleteTextFieldCellTest, DISABLED_FocusedDisplay) {
   EXPECT_NE(star_decoration.GetWidthForSpace(kVeryWide, 0),
             LocationBarDecoration::kOmittedWidth);
 
-  KeywordHintDecoration keyword_hint_decoration([view_ font]);
+  KeywordHintDecoration keyword_hint_decoration;
   keyword_hint_decoration.SetVisible(true);
   keyword_hint_decoration.SetKeyword(ASCIIToUTF16("google"), false);
   [cell addRightDecoration:&keyword_hint_decoration];

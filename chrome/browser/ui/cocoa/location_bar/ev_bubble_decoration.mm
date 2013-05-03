@@ -46,12 +46,8 @@ NSColor* ColorWithRGBBytes(int rr, int gg, int bb) {
 
 }  // namespace
 
-EVBubbleDecoration::EVBubbleDecoration(
-    LocationIconDecoration* location_icon,
-    NSFont* font)
-    : BubbleDecoration(font),
-      font_([font retain]),
-      location_icon_(location_icon) {
+EVBubbleDecoration::EVBubbleDecoration(LocationIconDecoration* location_icon)
+    : location_icon_(location_icon) {
   // Color tuples stolen from location_bar_view_gtk.cc.
   NSColor* border_color = ColorWithRGBBytes(0x90, 0xc3, 0x90);
   NSColor* background_color = ColorWithRGBBytes(0xef, 0xfc, 0xef);
@@ -91,8 +87,7 @@ CGFloat EVBubbleDecoration::GetWidthForSpace(CGFloat width,
 
   // Middle-elide the label to fit |width_left|.  This leaves the
   // prefix and the trailing country code in place.
-  gfx::Font font(base::SysNSStringToUTF8([font_ fontName]),
-                 [font_ pointSize]);
+  gfx::Font font(GetFont());
   NSString* elided_label = base::SysUTF16ToNSString(
       ui::ElideText(base::SysNSStringToUTF16(full_label_), font, width_left,
                     ui::ELIDE_IN_MIDDLE));

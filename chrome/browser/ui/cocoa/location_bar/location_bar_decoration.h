@@ -83,6 +83,17 @@ class LocationBarDecoration {
   // Called to get the right-click menu, return |nil| for no menu.
   virtual NSMenu* GetMenu();
 
+  // Gets the font used to draw text in the decoration.
+  virtual NSFont* GetFont() const;
+
+  static void DrawLabel(NSString* label,
+                        NSDictionary* attributes,
+                        const NSRect& frame);
+  static void DrawAttributedString(NSAttributedString* str,
+                                   const NSRect& frame);
+  static NSSize GetLabelSize(NSString* label,
+                             NSDictionary* attributes);
+
   // Returns the current |LocationBarDecoration| as a |ButtonDecoration|, if it
   // inherits from that class (i.e. if it needs to act as a button).
   virtual ButtonDecoration* AsButtonDecoration();
@@ -93,10 +104,6 @@ class LocationBarDecoration {
   // Width returned by |GetWidthForSpace()| when the item should be
   // omitted for this width;
   static const CGFloat kOmittedWidth;
-
-  // How far to inset the text area from the top and bottom. This vertically
-  // centers the text.
-  static const CGFloat kTextYInset;
 
  private:
   bool visible_;

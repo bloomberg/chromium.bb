@@ -229,13 +229,17 @@ CGFloat ContentSettingDecoration::MeasureTextWidth() {
 }
 
 scoped_nsobject<NSAttributedString>
-    ContentSettingDecoration::CreateAnimatedText() {
+ContentSettingDecoration::CreateAnimatedText() {
   NSString* text =
       l10n_util::GetNSString(
           content_setting_image_model_->explanatory_string_id());
-  NSDictionary* attributes =
-      [NSDictionary dictionaryWithObject:[NSFont labelFontOfSize:14]
-                                  forKey:NSFontAttributeName];
+  scoped_nsobject<NSMutableParagraphStyle> style(
+      [[NSMutableParagraphStyle alloc] init]);
+  // Set line break mode to clip the text, otherwise drawInRect: won't draw a
+  // word if it doesn't fit in the bounding box.
+  [style setLineBreakMode:NSLineBreakByClipping];
+  NSDictionary* attributes = @{ NSFontAttributeName : GetFont(),
+                                NSParagraphStyleAttributeName : style };
   return scoped_nsobject<NSAttributedString>(
       [[NSAttributedString alloc] initWithString:text attributes:attributes]);
 }
@@ -342,33 +346,26 @@ void ContentSettingDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
 
     gfx::ScopedNSGraphicsContextSaveGState scopedGState;
 
-    NSRectClip(frame);
-
-    frame = NSInsetRect(frame, 0.0, kBorderPadding);
-    [gradient_ drawInRect:frame angle:90.0];
+    NSRect background_rect = NSInsetRect(frame, 0.0, kBorderPadding);
+    [gradient_ drawInRect:background_rect angle:90.0];
     NSColor* border_color =
         [NSColor colorWithCalibratedRed:0.91 green:0.73 blue:0.4 alpha:1.0];
     [border_color set];
-    NSFrameRect(frame);
+    NSFrameRect(background_rect);
 
     // Draw the icon.
     NSImage* icon = GetImage();
-    NSRect icon_rect = frame;
+    NSRect icon_rect = background_rect;
     if (icon) {
       icon_rect.origin.x += kIconMarginPadding;
       icon_rect.size.width = [icon size].width;
       ImageDecoration::DrawInFrame(icon_rect, control_view);
     }
 
-    // Draw the text, clipped to fit on the right. While handling clipping,
-    // NSAttributedString's drawInRect: won't draw a word if it doesn't fit
-    // in the bounding box so instead use drawAtPoint: with a manual clip
-    // rect.
     NSRect remainder = frame;
     remainder.origin.x = NSMaxX(icon_rect);
-    NSInsetRect(remainder, kTextMarginPadding, kTextYInset);
-    // .get() needed to fix compiler warning (confusion with NSImageRep).
-    [animated_text_.get() drawAtPoint:remainder.origin];
+    remainder.size.width = NSMaxX(background_rect) - NSMinX(remainder);
+    DrawAttributedString(animated_text_, remainder);
   } else {
     // No animation, draw the image as normal.
     ImageDecoration::DrawInFrame(frame, control_view);

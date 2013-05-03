@@ -19,18 +19,17 @@ void SearchTokenDecoration::SetSearchTokenText(
     return;
   search_token_text_ = search_token_text;
 
-  NSDictionary* attributes = [NSDictionary dictionaryWithObjectsAndKeys:
-      OmniboxViewMac::GetFieldFont(), NSFontAttributeName,
-      OmniboxViewMac::SuggestTextColor(), NSForegroundColorAttributeName,
-      nil];
+  NSDictionary* attributes = @{
+      NSFontAttributeName : GetFont(),
+      NSForegroundColorAttributeName : OmniboxViewMac::SuggestTextColor()
+  };
   search_provider_attributed_string_.reset([[NSAttributedString alloc]
       initWithString:base::SysUTF16ToNSString(search_token_text_)
           attributes:attributes]);
 }
 
 void SearchTokenDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
-  NSRect text_rect = NSInsetRect(frame, 0, kTextYInset);
-  [search_provider_attributed_string_ drawInRect:text_rect];
+  DrawAttributedString(search_provider_attributed_string_, frame);
 }
 
 CGFloat SearchTokenDecoration::GetWidthForSpace(CGFloat width,

@@ -22,8 +22,7 @@ const CGFloat kNarrowWidth(5.0);
 
 class SelectedKeywordDecorationTest : public CocoaTest {
  public:
-  SelectedKeywordDecorationTest()
-      : decoration_([NSFont userFontOfSize:12]) {
+  SelectedKeywordDecorationTest() {
   }
 
   SelectedKeywordDecoration decoration_;

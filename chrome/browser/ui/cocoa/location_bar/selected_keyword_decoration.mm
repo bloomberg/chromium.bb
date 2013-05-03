@@ -11,8 +11,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
-SelectedKeywordDecoration::SelectedKeywordDecoration(NSFont* font)
-    : BubbleDecoration(font) {
+SelectedKeywordDecoration::SelectedKeywordDecoration() {
   search_image_.reset([OmniboxViewMac::ImageForResource(
       IDR_KEYWORD_SEARCH_MAGNIFIER) retain]);
 

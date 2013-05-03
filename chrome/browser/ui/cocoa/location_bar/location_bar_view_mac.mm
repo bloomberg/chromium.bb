@@ -95,17 +95,14 @@ LocationBarViewMac::LocationBarViewMac(
       disposition_(CURRENT_TAB),
       location_icon_decoration_(new LocationIconDecoration(this)),
       search_token_decoration_(new SearchTokenDecoration()),
-      selected_keyword_decoration_(
-          new SelectedKeywordDecoration(OmniboxViewMac::GetFieldFont())),
+      selected_keyword_decoration_(new SelectedKeywordDecoration()),
       separator_decoration_(new SeparatorDecoration()),
       ev_bubble_decoration_(
-          new EVBubbleDecoration(location_icon_decoration_.get(),
-                                 OmniboxViewMac::GetFieldFont())),
+          new EVBubbleDecoration(location_icon_decoration_.get())),
       plus_decoration_(NULL),
       star_decoration_(new StarDecoration(command_updater)),
       zoom_decoration_(new ZoomDecoration(this)),
-      keyword_hint_decoration_(
-          new KeywordHintDecoration(OmniboxViewMac::GetFieldFont())),
+      keyword_hint_decoration_(new KeywordHintDecoration()),
       profile_(profile),
       browser_(browser),
       toolbar_model_(toolbar_model),

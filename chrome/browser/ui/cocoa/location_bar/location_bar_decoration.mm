@@ -5,9 +5,10 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 
 #include "base/logging.h"
+#include "base/memory/scoped_nsobject.h"
+#include "ui/base/resource/resource_bundle.h"
 
 const CGFloat LocationBarDecoration::kOmittedWidth = 0.0;
-const CGFloat LocationBarDecoration::kTextYInset = 4.0;
 
 bool LocationBarDecoration::IsVisible() const {
   return visible_;
@@ -65,6 +66,35 @@ bool LocationBarDecoration::OnMousePressed(NSRect frame) {
 
 NSMenu* LocationBarDecoration::GetMenu() {
   return nil;
+}
+
+NSFont* LocationBarDecoration::GetFont() const {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  return rb.GetFont(ResourceBundle::BaseFont).GetNativeFont();
+}
+
+// static
+void LocationBarDecoration::DrawLabel(NSString* label,
+                                      NSDictionary* attributes,
+                                      const NSRect& frame) {
+  scoped_nsobject<NSAttributedString> str(
+      [[NSAttributedString alloc] initWithString:label attributes:attributes]);
+  DrawAttributedString(str, frame);
+}
+
+// static
+void LocationBarDecoration::DrawAttributedString(NSAttributedString* str,
+                                                 const NSRect& frame) {
+  NSRect text_rect = frame;
+  text_rect.size.height = [str size].height;
+  text_rect.origin.y = roundf(NSMidY(frame) - NSHeight(text_rect) / 2.0) - 1;
+  [str drawInRect:text_rect];
+}
+
+// static
+NSSize LocationBarDecoration::GetLabelSize(NSString* label,
+                                           NSDictionary* attributes) {
+  return [label sizeWithAttributes:attributes];
 }
 
 ButtonDecoration* LocationBarDecoration::AsButtonDecoration() {

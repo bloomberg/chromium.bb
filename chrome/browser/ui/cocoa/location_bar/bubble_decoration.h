@@ -16,8 +16,7 @@
 
 class BubbleDecoration : public LocationBarDecoration {
  public:
-  // |font| will be used when drawing the label, and cannot be |nil|.
-  BubbleDecoration(NSFont* font);
+  BubbleDecoration();
   virtual ~BubbleDecoration();
 
   // Setup the drawing parameters.
@@ -41,9 +40,6 @@ class BubbleDecoration : public LocationBarDecoration {
   // from.  |frame| is the decoration's frame in the containing cell.
   NSRect GetImageRectInFrame(NSRect frame);
 
-  // Contains font and color attribute for drawing |label_|.
-  scoped_nsobject<NSDictionary> attributes_;
-
  private:
   friend class SelectedKeywordDecorationTest;
   FRIEND_TEST_ALL_PREFIXES(SelectedKeywordDecorationTest,
@@ -54,6 +50,9 @@ class BubbleDecoration : public LocationBarDecoration {
 
   // Label to draw to right of image.  Can be |nil|.
   scoped_nsobject<NSString> label_;
+
+  // Contains attribute for drawing |label_|.
+  scoped_nsobject<NSMutableDictionary> attributes_;
 
   // Colors used to draw the bubble, should be set by the subclass
   // constructor.

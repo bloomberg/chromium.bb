@@ -22,7 +22,7 @@ class LocationIconDecoration;
 
 class EVBubbleDecoration : public BubbleDecoration {
  public:
-  EVBubbleDecoration(LocationIconDecoration* location_icon, NSFont* font);
+  explicit EVBubbleDecoration(LocationIconDecoration* location_icon);
   virtual ~EVBubbleDecoration();
 
   // |GetWidthForSpace()| will set |full_label| as the label, if it
@@ -43,9 +43,6 @@ class EVBubbleDecoration : public BubbleDecoration {
   virtual bool AcceptsMousePress() OVERRIDE;
 
  private:
-  // Keeps a reference to the font for use when eliding.
-  scoped_nsobject<NSFont> font_;
-
   // The real label.  BubbleDecoration's label may be elided.
   scoped_nsobject<NSString> full_label_;
 

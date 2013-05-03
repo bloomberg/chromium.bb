@@ -16,7 +16,7 @@
 
 class KeywordHintDecoration : public LocationBarDecoration {
  public:
-  KeywordHintDecoration(NSFont* font);
+  KeywordHintDecoration();
   virtual ~KeywordHintDecoration();
 
   // Calculates the message to display and where to place the [tab]

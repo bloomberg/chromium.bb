@@ -14,7 +14,7 @@
 
 class SelectedKeywordDecoration : public BubbleDecoration {
  public:
-  SelectedKeywordDecoration(NSFont* font);
+  SelectedKeywordDecoration();
   virtual ~SelectedKeywordDecoration();
 
   // Calculates appropriate full and partial label strings based on

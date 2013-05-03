@@ -14,8 +14,7 @@ namespace {
 
 class KeywordHintDecorationTest : public CocoaTest {
  public:
-  KeywordHintDecorationTest()
-      : decoration_(NULL) {
+  KeywordHintDecorationTest() {
   }
 
   KeywordHintDecoration decoration_;

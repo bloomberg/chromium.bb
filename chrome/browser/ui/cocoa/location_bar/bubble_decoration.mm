@@ -26,16 +26,14 @@ const CGFloat kBubbleCornerRadius = 2.0;
 // Padding between the icon and label.
 const CGFloat kIconLabelPadding = 4.0;
 
+// Inset for the background.
+const CGFloat kBackgroundYInset = 4.0;
+
 }  // namespace
 
-BubbleDecoration::BubbleDecoration(NSFont* font) {
-  DCHECK(font);
-  if (font) {
-    NSDictionary* attributes =
-        [NSDictionary dictionaryWithObject:font
-                                    forKey:NSFontAttributeName];
-    attributes_.reset([attributes retain]);
-  }
+BubbleDecoration::BubbleDecoration() {
+  attributes_.reset([[NSMutableDictionary alloc] init]);
+  [attributes_ setObject:GetFont() forKey:NSFontAttributeName];
 }
 
 BubbleDecoration::~BubbleDecoration() {
@@ -59,7 +57,7 @@ CGFloat BubbleDecoration::GetWidthForImageAndLabel(NSImage* image,
 }
 
 NSRect BubbleDecoration::GetImageRectInFrame(NSRect frame) {
-  NSRect imageRect = NSInsetRect(frame, 0.0, kTextYInset);
+  NSRect imageRect = NSInsetRect(frame, 0.0, kBackgroundYInset);
   if (image_) {
     // Center the image vertically.
     const NSSize imageSize = [image_ size];
@@ -83,7 +81,7 @@ CGFloat BubbleDecoration::GetWidthForSpace(CGFloat width, CGFloat text_width) {
 }
 
 void BubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
-  const NSRect decorationFrame = NSInsetRect(frame, 0.0, kTextYInset);
+  const NSRect decorationFrame = NSInsetRect(frame, 0.0, kBackgroundYInset);
 
   // The inset is to put the border down the middle of the pixel.
   NSRect bubbleFrame = NSInsetRect(decorationFrame, 0.5, 0.5);
@@ -119,10 +117,10 @@ void BubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
   }
 
   if (label_) {
-    NSRect textRect = decorationFrame;
+    NSRect textRect = frame;
     textRect.origin.x = textOffset;
     textRect.size.width = NSMaxX(decorationFrame) - NSMinX(textRect);
-    [label_ drawInRect:textRect withAttributes:attributes_];
+    DrawLabel(label_, attributes_, textRect);
   }
 }
 
@@ -147,8 +145,5 @@ void BubbleDecoration::SetColors(NSColor* border_color,
                                  NSColor* text_color) {
   border_color_.reset([border_color retain]);
   background_color_.reset([background_color retain]);
-
-  scoped_nsobject<NSMutableDictionary> attributes([attributes_ mutableCopy]);
-  [attributes setObject:text_color forKey:NSForegroundColorAttributeName];
-  attributes_.reset([attributes copy]);
+  [attributes_ setObject:text_color forKey:NSForegroundColorAttributeName];
 }

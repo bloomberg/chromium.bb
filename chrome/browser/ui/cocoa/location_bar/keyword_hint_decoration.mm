@@ -38,14 +38,11 @@ NSString* TrimAndConvert(const string16& s) {
 
 }  // namespace
 
-KeywordHintDecoration::KeywordHintDecoration(NSFont* font) {
+KeywordHintDecoration::KeywordHintDecoration() {
   NSColor* text_color = [NSColor lightGrayColor];
-  NSDictionary* attributes =
-      [NSDictionary dictionaryWithObjectsAndKeys:
-           font, NSFontAttributeName,
-           text_color, NSForegroundColorAttributeName,
-           nil];
-  attributes_.reset([attributes retain]);
+  attributes_.reset([@{ NSFontAttributeName : GetFont(),
+                        NSForegroundColorAttributeName : text_color
+                      } retain]);
 }
 
 KeywordHintDecoration::~KeywordHintDecoration() {
@@ -102,9 +99,9 @@ CGFloat KeywordHintDecoration::GetWidthForSpace(CGFloat width,
   // that any partially-drawn pixels don't look too close (or too
   // far).
   CGFloat full_width =
-      std::floor([hint_prefix_ sizeWithAttributes:attributes_].width + 0.5) +
+      std::floor(GetLabelSize(hint_prefix_, attributes_).width + 0.5) +
       kHintImagePadding + image_width + kHintImagePadding +
-      std::floor([hint_suffix_ sizeWithAttributes:attributes_].width + 0.5);
+      std::floor(GetLabelSize(hint_suffix_, attributes_).width + 0.5);
   if (full_width <= width * kHintAvailableRatio)
     return full_width;
 
@@ -118,11 +115,10 @@ void KeywordHintDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
   const bool draw_full = NSWidth(frame) > image_width;
 
   if (draw_full) {
-    NSRect prefix_rect = NSInsetRect(frame, 0.0, kTextYInset);
-    const CGFloat prefix_width =
-        [hint_prefix_ sizeWithAttributes:attributes_].width;
+    NSRect prefix_rect = frame;
+    const CGFloat prefix_width = GetLabelSize(hint_prefix_, attributes_).width;
     DCHECK_GE(NSWidth(prefix_rect), prefix_width);
-    [hint_prefix_ drawInRect:prefix_rect withAttributes:attributes_];
+    DrawLabel(hint_prefix_, attributes_, prefix_rect);
 
     // The image should be drawn at a pixel boundary, round the prefix
     // so that partial pixels aren't oddly close (or distant).
@@ -142,9 +138,8 @@ void KeywordHintDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
   frame.size.width -= NSWidth(image_rect);
 
   if (draw_full) {
-    NSRect suffix_rect = NSInsetRect(frame, 0.0, kTextYInset);
-    const CGFloat suffix_width =
-        [hint_suffix_ sizeWithAttributes:attributes_].width;
+    NSRect suffix_rect = frame;
+    const CGFloat suffix_width = GetLabelSize(hint_suffix_, attributes_).width;
 
     // Draw the text kHintImagePadding away from [tab] icon so that
     // equal amount of space is maintained on either side of the icon.
@@ -152,6 +147,6 @@ void KeywordHintDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
     // from [tab] icon in different web pages.
     suffix_rect.origin.x += kHintImagePadding;
     DCHECK_GE(NSWidth(suffix_rect), suffix_width);
-    [hint_suffix_ drawInRect:suffix_rect withAttributes:attributes_];
+    DrawLabel(hint_suffix_, attributes_, suffix_rect);
   }
 }

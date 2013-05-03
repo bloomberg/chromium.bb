@@ -13,8 +13,7 @@ namespace {
 
 class EVBubbleDecorationTest : public CocoaTest {
  public:
-  EVBubbleDecorationTest()
-      : decoration_(NULL, [NSFont userFontOfSize:12]) {
+  EVBubbleDecorationTest() : decoration_(NULL) {
   }
 
   EVBubbleDecoration decoration_;
