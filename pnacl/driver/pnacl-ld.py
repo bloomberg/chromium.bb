@@ -186,7 +186,7 @@ LDPatterns = [
   # Flags to pass to translate
   ( '-Wt,(.*)', "env.append('TRANSLATE_FLAGS_USER', *($0.split(',')))"),
 
-
+  ( '(--build-id)',               AddToNativeFlags),
   ( ('(--section-start)','(.*)'), AddToNativeFlags),
 
   # NOTE: -export-dynamic doesn't actually do anything to the bitcode link

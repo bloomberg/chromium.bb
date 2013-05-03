@@ -2886,7 +2886,18 @@ than via the compiler driver."""
   if env.IsNewLinker():
     args = ['-Trodata-segment=' + value]
   else:
-    args = ['--section-start', '.rodata=' + value]
+    # If we pass the --build-id option then read-only data segment starts
+    # with .note.gnu.build-id section and we don't do that then it starts
+    # with .rodata.
+    #
+    # If file is compiled via gcc it's probably IRT or something like this
+    # Embed build id and move .note.gnu.build-id to the desired position.
+    if via_compiler:
+      args = ['--build-id', '--section-start', '.note.gnu.build-id=' + value]
+    # If file is linked directly then it's probably some kind of low-level
+    # test so don't use build id and move .rodata to the desired position.
+    else:
+      args = ['--section-start', '.rodata=' + value]
   if via_compiler:
     args = ','.join(['-Wl'] + args)
   else:
