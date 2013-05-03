@@ -40,6 +40,8 @@ _TEST_CODE_EXCLUDED_PATHS = (
         _IMPLEMENTATION_EXTENSIONS,
     r'.+profile_sync_service_harness%s' % _IMPLEMENTATION_EXTENSIONS,
     r'.*[/\\](test|tool(s)?)[/\\].*',
+    # content_shell is used for running layout tests.
+    r'content[/\\]shell[/\\].*',
     # At request of folks maintaining this folder.
     r'chrome[/\\]browser[/\\]automation[/\\].*',
 )
