@@ -3280,3 +3280,16 @@ IN_PROC_BROWSER_TEST_F(
 
 // TODO(benjhayden) Test that the shelf is shown for download() both with and
 // without a WebContents.
+
+class DownloadsApiTest : public ExtensionApiTest {
+ public:
+  DownloadsApiTest() {}
+  virtual ~DownloadsApiTest() {}
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DownloadsApiTest);
+};
+
+
+IN_PROC_BROWSER_TEST_F(DownloadsApiTest, DownloadsApiTest) {
+  ASSERT_TRUE(RunExtensionTest("downloads")) << message_;
+}
