@@ -44,13 +44,14 @@ namespace {
 const int kMinScrollViewHeight = 100;
 const int kFooterMargin = 16;
 const int kFooterHeight = 24;
-const SkColor kMessageCenterBackgroundColor = SkColorSetRGB(0xe5, 0xe5, 0xe5);
+const SkColor kNoNotificationsTextColor = SkColorSetRGB(0xb4, 0xb4, 0xb4);
+const SkColor kMessageCenterBackgroundColor = SkColorSetRGB(0xf1, 0xf1, 0xf1);
 const SkColor kBorderDarkColor = SkColorSetRGB(0xaa, 0xaa, 0xaa);
 const SkColor kTransparentColor = SkColorSetARGB(0, 0, 0, 0);
 const SkColor kFooterDelimiterColor = SkColorSetRGB(0xcc, 0xcc, 0xcc);
-const SkColor kFooterTextColor = SkColorSetRGB(0x80, 0x80, 0x80);
-const SkColor kButtonTextHighlightColor = SkColorSetRGB(0x32, 0x32, 0x32);
-const SkColor kButtonTextHoverColor = SkColorSetRGB(0x32, 0x32, 0x32);
+const SkColor kFooterTextColor = SkColorSetRGB(0x7b, 0x7b, 0x7b);
+const SkColor kButtonTextHighlightColor = SkColorSetRGB(0x2a, 0x2a, 0x2a);
+const SkColor kButtonTextHoverColor = SkColorSetRGB(0x2a, 0x2a, 0x2a);
 
 // PoorMessageCenterButtonBar //////////////////////////////////////////////////
 
@@ -93,6 +94,9 @@ PoorMessageCenterButtonBar::PoorMessageCenterButtonBar(
       this, rb.GetLocalizedString(IDS_MESSAGE_CENTER_CLEAR_ALL));
   close_all_button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   close_all_button->set_request_focus_on_press(false);
+  close_all_button->SetTextColor(views::Button::STATE_NORMAL, kFooterTextColor);
+  close_all_button->SetTextColor(views::Button::STATE_HOVERED,
+                                 kButtonTextHoverColor);
 
   layout->AddPaddingRow(0, 4);
   layout->StartRow(0, 0);
@@ -187,6 +191,7 @@ RichMessageCenterButtonBar::RichMessageCenterButtonBar(
 
   notification_label_ = new views::Label(l10n_util::GetStringUTF16(
       IDS_MESSAGE_CENTER_FOOTER_TITLE));
+  notification_label_->SetAutoColorReadabilityEnabled(false);
   notification_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   notification_label_->SetElideBehavior(views::Label::ELIDE_AT_END);
   notification_label_->SetEnabledColor(kFooterTextColor);
@@ -319,11 +324,13 @@ class NoNotificationMessageView : public views::View {
 NoNotificationMessageView::NoNotificationMessageView() {
   label_ = new views::Label(l10n_util::GetStringUTF16(
       IDS_MESSAGE_CENTER_NO_MESSAGES));
-  label_->SetFont(label_->font().DeriveFont(1));
-  label_->SetEnabledColor(SK_ColorGRAY);
+  label_->SetAutoColorReadabilityEnabled(false);
+  label_->SetEnabledColor(kNoNotificationsTextColor);
   // Set transparent background to ensure that subpixel rendering
   // is disabled. See crbug.com/169056
+#if defined(OS_LINUX) && defined(OS_CHROMEOS)
   label_->SetBackgroundColor(kTransparentColor);
+#endif
   AddChildView(label_);
 }
 
