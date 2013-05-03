@@ -1237,7 +1237,7 @@ class MissingTextureAnimatingLayer : public DidDrawCheckLayer {
     set_skips_draw(skips_draw);
     if (!tile_missing) {
       ResourceProvider::ResourceId resource =
-          resource_provider->CreateResource(gfx::Size(),
+          resource_provider->CreateResource(gfx::Size(1, 1),
                                             GL_RGBA,
                                             ResourceProvider::TextureUsageAny);
       resource_provider->AllocateForTesting(resource);

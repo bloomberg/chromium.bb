@@ -172,6 +172,7 @@ bool ResourceProvider::InUseByConsumer(ResourceId id) {
 
 ResourceProvider::ResourceId ResourceProvider::CreateResource(
     gfx::Size size, GLenum format, TextureUsageHint hint) {
+  DCHECK(!size.IsEmpty());
   switch (default_resource_type_) {
     case GLTexture:
       return CreateGLTexture(
@@ -187,6 +188,7 @@ ResourceProvider::ResourceId ResourceProvider::CreateResource(
 
 ResourceProvider::ResourceId ResourceProvider::CreateManagedResource(
     gfx::Size size, GLenum format, TextureUsageHint hint) {
+  DCHECK(!size.IsEmpty());
   switch (default_resource_type_) {
     case GLTexture:
       return CreateGLTexture(
