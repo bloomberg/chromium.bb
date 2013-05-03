@@ -251,7 +251,7 @@ deps = {
     "/trunk/deps/third_party/libsrtp@189528",
 
   "src/third_party/speex":
-    "/trunk/deps/third_party/speex@177782",
+    "/trunk/deps/third_party/speex@198168",
 
   "src/third_party/yasm/source/patched-yasm":
     "/trunk/deps/third_party/yasm/patched-yasm@167605",
