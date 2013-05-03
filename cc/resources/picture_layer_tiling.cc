@@ -29,17 +29,6 @@ scoped_ptr<PictureLayerTiling> PictureLayerTiling::Create(
                                                 client));
 }
 
-scoped_ptr<PictureLayerTiling> PictureLayerTiling::Clone(
-    gfx::Size layer_bounds,
-    PictureLayerTilingClient* client) const {
-  scoped_ptr<PictureLayerTiling> out =
-    make_scoped_ptr(new PictureLayerTiling(contents_scale_,
-                                           layer_bounds,
-                                           client));
-  out->resolution_ = resolution_;
-  return out.Pass();
-}
-
 PictureLayerTiling::PictureLayerTiling(float contents_scale,
                                        gfx::Size layer_bounds,
                                        PictureLayerTilingClient* client)

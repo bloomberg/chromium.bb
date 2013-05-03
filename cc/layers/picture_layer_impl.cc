@@ -469,9 +469,6 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
 void PictureLayerImpl::SyncFromActiveLayer() {
   DCHECK(layer_tree_impl()->IsPendingTree());
 
-  // If there is an active tree version of this layer, get a copy of its
-  // tiles.  This needs to be done last, after setting invalidation and the
-  // pile.
   if (PictureLayerImpl* active_twin = ActiveTwin())
     SyncFromActiveLayer(active_twin);
 }
@@ -515,7 +512,8 @@ void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
   difference_region.Subtract(gfx::Rect(other->bounds()));
   invalidation_.Union(difference_region);
 
-  tilings_->CloneAll(*other->tilings_, MinimumContentsScale());
+  tilings_->RemoveAllTilings();
+  tilings_->AddTilingsToMatchScales(*other->tilings_, MinimumContentsScale());
   DCHECK(bounds() == tilings_->layer_bounds());
 }
 
@@ -523,7 +521,7 @@ void PictureLayerImpl::SyncTiling(
     const PictureLayerTiling* tiling) {
   if (!DrawsContent() || tiling->contents_scale() < MinimumContentsScale())
     return;
-  tilings_->Clone(tiling);
+  tilings_->AddTiling(tiling->contents_scale());
 }
 
 void PictureLayerImpl::SetIsMask(bool is_mask) {

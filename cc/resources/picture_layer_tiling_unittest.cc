@@ -4,6 +4,7 @@
 
 #include "cc/resources/picture_layer_tiling.h"
 
+#include "cc/resources/picture_layer_tiling_set.h"
 #include "cc/test/fake_picture_layer_tiling_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect_conversions.h"
@@ -651,46 +652,22 @@ TEST_F(PictureLayerTilingIteratorTest,
   VerifyTiles(1.f, gfx::Rect(), base::Bind(&TileExists, false));
 }
 
-TEST_F(PictureLayerTilingIteratorTest, Clone) {
+TEST_F(PictureLayerTilingIteratorTest, AddTilingsToMatchScale) {
   gfx::Size layer_bounds(1099, 801);
-  Initialize(gfx::Size(100, 100), 1.f, layer_bounds);
+  gfx::Size tile_size(100, 100);
 
-  VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, false));
+  client_.SetTileSize(tile_size);
 
-  tiling_->UpdateTilePriorities(
-      PENDING_TREE,
-      layer_bounds,  // device viewport
-      gfx::Rect(layer_bounds),  // viewport in layer space
-      gfx::Rect(layer_bounds),  // visible content rect
-      layer_bounds,  // last layer bounds
-      layer_bounds,  // current layer bounds
-      1.f,  // last contents scale
-      1.f,  // current contents scale
-      gfx::Transform(),  // last screen transform
-      gfx::Transform(),  // current screen transform
-      1.0,  // current frame time
-      false,  // store screen space quads on tiles
-      10000);  // max tiles in tile manager
-  tiling_->set_resolution(HIGH_RESOLUTION);
+  PictureLayerTilingSet active_set(&client_, layer_bounds);
 
-  // The pending tiling has tiles now.
-  VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, true));
-  EXPECT_EQ(HIGH_RESOLUTION, tiling_->resolution());
+  active_set.AddTiling(1.f);
 
-  // Clone to the active tiling.
-  scoped_ptr<PictureLayerTiling> active_tiling =
-      tiling_->Clone(layer_bounds, &client_);
-
-  // The active tiling starts with no tiles.
-  VerifyTiles(active_tiling.get(),
+  VerifyTiles(active_set.tiling_at(0),
               1.f,
               gfx::Rect(layer_bounds),
               base::Bind(&TileExists, false));
-  EXPECT_EQ(HIGH_RESOLUTION, tiling_->resolution());
 
-  // UpdateTilePriorities on the active tiling at the same frame time. The
-  // active tiling should get tiles.
-  active_tiling->UpdateTilePriorities(
+  active_set.UpdateTilePriorities(
       PENDING_TREE,
       layer_bounds,  // device viewport
       gfx::Rect(layer_bounds),  // viewport in layer space
@@ -704,7 +681,41 @@ TEST_F(PictureLayerTilingIteratorTest, Clone) {
       1.0,  // current frame time
       false,  // store screen space quads on tiles
       10000);  // max tiles in tile manager
-  VerifyTiles(active_tiling.get(),
+
+  // The active tiling has tiles now.
+  VerifyTiles(active_set.tiling_at(0),
+              1.f,
+              gfx::Rect(layer_bounds),
+              base::Bind(&TileExists, true));
+
+  // Add the same tilings to the pending set.
+  PictureLayerTilingSet pending_set(&client_, layer_bounds);
+  pending_set.AddTilingsToMatchScales(active_set, 0.f);
+
+  // The pending tiling starts with no tiles.
+  VerifyTiles(pending_set.tiling_at(0),
+              1.f,
+              gfx::Rect(layer_bounds),
+              base::Bind(&TileExists, false));
+
+  // UpdateTilePriorities on the pending tiling at the same frame time. The
+  // pending tiling should get tiles.
+  pending_set.UpdateTilePriorities(
+      PENDING_TREE,
+      layer_bounds,  // device viewport
+      gfx::Rect(layer_bounds),  // viewport in layer space
+      gfx::Rect(layer_bounds),  // visible content rect
+      layer_bounds,  // last layer bounds
+      layer_bounds,  // current layer bounds
+      1.f,  // last contents scale
+      1.f,  // current contents scale
+      gfx::Transform(),  // last screen transform
+      gfx::Transform(),  // current screen transform
+      1.0,  // current frame time
+      false,  // store screen space quads on tiles
+      10000);  // max tiles in tile manager
+
+  VerifyTiles(pending_set.tiling_at(0),
               1.f,
               gfx::Rect(layer_bounds),
               base::Bind(&TileExists, true));
@@ -806,7 +817,7 @@ TEST_F(PictureLayerTilingIteratorTest, LCDText_WithTwin) {
   twin_client.SetTileSize(tile_size);
 
   scoped_ptr<PictureLayerTiling> twin_tiling =
-      tiling_->Clone(layer_bounds, &twin_client);
+      PictureLayerTiling::Create(1.f, layer_bounds, &twin_client);
   client_.set_twin_tiling(twin_tiling.get());
 
   VerifyTiles(tiling_.get(),

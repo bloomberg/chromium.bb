@@ -20,11 +20,9 @@ class CC_EXPORT PictureLayerTilingSet {
 
   void SetClient(PictureLayerTilingClient* client);
 
-  // Shallow copies all data (except client and bounds from other).
-  void CloneAll(
+  void AddTilingsToMatchScales(
      const PictureLayerTilingSet& other,
      float minimum_contents_scale);
-  void Clone(const PictureLayerTiling* tiling);
 
   gfx::Size layer_bounds() const { return layer_bounds_; }
 

@@ -36,25 +36,19 @@ void PictureLayerTilingSet::SetClient(PictureLayerTilingClient* client) {
     tilings_[i]->SetClient(client_);
 }
 
-void PictureLayerTilingSet::CloneAll(
+void PictureLayerTilingSet::AddTilingsToMatchScales(
     const PictureLayerTilingSet& other,
     float minimum_contents_scale) {
-  tilings_.clear();
+  DCHECK(tilings_.empty());
   tilings_.reserve(other.tilings_.size());
   for (size_t i = 0; i < other.tilings_.size(); ++i) {
-    const PictureLayerTiling* tiling = other.tilings_[i];
-    if (tiling->contents_scale() < minimum_contents_scale)
+    float contents_scale = other.tilings_[i]->contents_scale();
+    if (contents_scale < minimum_contents_scale)
       continue;
-    tilings_.push_back(tiling->Clone(layer_bounds_, client_));
+    tilings_.push_back(PictureLayerTiling::Create(contents_scale,
+                                                  layer_bounds_,
+                                                  client_));
   }
-  tilings_.sort(LargestToSmallestScaleFunctor());
-}
-
-void PictureLayerTilingSet::Clone(const PictureLayerTiling* tiling) {
-  for (size_t i = 0; i < tilings_.size(); ++i)
-    DCHECK_NE(tilings_[i]->contents_scale(), tiling->contents_scale());
-
-  tilings_.push_back(tiling->Clone(layer_bounds_, client_));
   tilings_.sort(LargestToSmallestScaleFunctor());
 }
 
@@ -64,6 +58,9 @@ void PictureLayerTilingSet::DestroyAndRecreateTilesWithText() {
 }
 
 PictureLayerTiling* PictureLayerTilingSet::AddTiling(float contents_scale) {
+  for (size_t i = 0; i < tilings_.size(); ++i)
+    DCHECK_NE(tilings_[i]->contents_scale(), contents_scale);
+
   tilings_.push_back(PictureLayerTiling::Create(contents_scale,
                                                 layer_bounds_,
                                                 client_));

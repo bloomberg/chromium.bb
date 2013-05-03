@@ -53,8 +53,6 @@ class CC_EXPORT PictureLayerTiling {
       float contents_scale,
       gfx::Size layer_bounds,
       PictureLayerTilingClient* client);
-  scoped_ptr<PictureLayerTiling> Clone(gfx::Size layer_bounds,
-                                       PictureLayerTilingClient* client) const;
   gfx::Size layer_bounds() const { return layer_bounds_; }
   void DestroyAndRecreateTilesWithText();
 
