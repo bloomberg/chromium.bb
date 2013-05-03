@@ -133,10 +133,20 @@ DrawingBuffer::DrawingBuffer(GraphicsContext3D* context,
 {
     // Used by browser tests to detect the use of a DrawingBuffer.
     TRACE_EVENT_INSTANT0("test_gpu", "DrawingBufferCreation");
+    // Before enabling mailboxes for canvas, make sure the scenarios
+    // from http://crbug.com/234428 do not reproduce!
 #if !ENABLE(CANVAS_USES_MAILBOX)
     // We need a separate front and back textures if ...
     m_separateFrontTexture = m_preserveDrawingBuffer == Preserve // ... we have to preserve contents after compositing, which is done with a copy or ...
                              || WebKit::Platform::current()->isThreadedCompositingEnabled(); // ... if we're in threaded mode and need to double buffer.
+
+#if OS(DARWIN)
+    // http://crbug.com/234428 : always use a separate front texture
+    // on Mac OS. Doing this on all GPUs, not just NVIDIA GPUs,
+    // ensures consistent behavior and is much less code.
+    m_separateFrontTexture = true;
+#endif // OS(DARWIN)
+
 #endif // !ENABLE(CANVAS_USES_MAILBOX)
     initialize(size);
 }
