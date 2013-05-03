@@ -441,6 +441,7 @@
       'type': '<(gtest_target_type)',
       'sources': [
         # Tests.
+        'android/activity_status_unittest.cc',
         'android/jni_android_unittest.cc',
         'android/jni_array_unittest.cc',
         'android/jni_string_unittest.cc',
@@ -1124,6 +1125,7 @@
           'target_name': 'base_jni_headers',
           'type': 'none',
           'sources': [
+            'android/java/src/org/chromium/base/ActivityStatus.java',
             'android/java/src/org/chromium/base/BuildInfo.java',
             'android/java/src/org/chromium/base/CpuFeatures.java',
             'android/java/src/org/chromium/base/ImportantFileWriterAndroid.java',
@@ -1144,6 +1146,9 @@
           'variables': {
             'java_in_dir': '../base/android/java',
           },
+          'dependencies': [
+            'base_java_activity_state',
+          ],
           'includes': [ '../build/java.gypi' ],
           'conditions': [
             ['android_webview_build==0', {
@@ -1152,6 +1157,22 @@
               ],
             }]
           ],
+        },
+        {
+          'target_name': 'base_java_activity_state',
+          'type': 'none',
+          # This target is used to auto-generate ActivityState.java
+          # from a template file. The source file contains a list of
+          # Java constant declarations matching the ones in
+          # android/activity_state_list.h.
+          'sources': [
+            'android/java/src/org/chromium/base/ActivityState.template',
+          ],
+          'variables': {
+            'package_name': 'org/chromium/base',
+            'template_deps': ['android/activity_state_list.h'],
+          },
+          'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
         {
           'target_name': 'base_java_test_support',
