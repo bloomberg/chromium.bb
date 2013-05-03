@@ -145,7 +145,7 @@ private:
 
     RenderStyle* computedStyle(PseudoId = NOPSEUDO);
     virtual RenderStyle* virtualComputedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) { return computedStyle(pseudoElementSpecifier); }
-    virtual bool willRecalcStyle(StyleChange);
+    virtual void willRecalcStyle(StyleChange) OVERRIDE;
 
     virtual bool rendererIsNeeded(const NodeRenderingContext&) { return false; }
 

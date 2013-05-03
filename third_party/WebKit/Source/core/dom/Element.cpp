@@ -1368,10 +1368,8 @@ PassRefPtr<RenderStyle> Element::styleForRenderer()
 
 void Element::recalcStyle(StyleChange change)
 {
-    if (hasCustomStyleCallbacks()) {
-        if (!willRecalcStyle(change))
-            return;
-    }
+    if (hasCustomStyleCallbacks())
+        willRecalcStyle(change);
 
     // Ref currentStyle in case it would otherwise be deleted when setting the new style in the renderer.
     RefPtr<RenderStyle> currentStyle(renderStyle());
@@ -2810,10 +2808,9 @@ void Element::detachAllAttrNodesFromElement()
     removeAttrNodeListForElement(this);
 }
 
-bool Element::willRecalcStyle(StyleChange)
+void Element::willRecalcStyle(StyleChange)
 {
     ASSERT(hasCustomStyleCallbacks());
-    return true;
 }
 
 void Element::didRecalcStyle(StyleChange)

@@ -276,11 +276,10 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
     ASSERT_NOT_REACHED();
 }
 
-bool SVGUseElement::willRecalcStyle(StyleChange)
+void SVGUseElement::willRecalcStyle(StyleChange)
 {
     if (!m_wasInsertedByParser && m_needsShadowTreeRecreation && renderer() && needsStyleRecalc())
         buildPendingResource();
-    return true;
 }
 
 #ifdef DUMP_INSTANCE_TREE

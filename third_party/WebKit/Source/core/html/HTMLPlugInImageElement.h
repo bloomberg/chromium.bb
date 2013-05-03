@@ -98,7 +98,7 @@ protected:
 
 private:
     virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
-    virtual bool willRecalcStyle(StyleChange);
+    virtual void willRecalcStyle(StyleChange) OVERRIDE FINAL;
 
     virtual void finishParsingChildren();
 

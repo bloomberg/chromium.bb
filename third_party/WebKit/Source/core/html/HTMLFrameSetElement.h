@@ -77,7 +77,7 @@ private:
     
     virtual void defaultEventHandler(Event*);
 
-    virtual bool willRecalcStyle(StyleChange);
+    virtual void willRecalcStyle(StyleChange) OVERRIDE;
 
     OwnArrayPtr<Length> m_rowLengths;
     OwnArrayPtr<Length> m_colLengths;

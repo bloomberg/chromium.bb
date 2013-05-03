@@ -609,7 +609,7 @@ protected:
     virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0) OVERRIDE;
     virtual void removeAllEventListeners() OVERRIDE FINAL;
 
-    virtual bool willRecalcStyle(StyleChange);
+    virtual void willRecalcStyle(StyleChange);
     virtual void didRecalcStyle(StyleChange);
     virtual PassRefPtr<RenderStyle> customStyleForRenderer();
 

@@ -200,13 +200,12 @@ void HTMLFrameSetElement::defaultEventHandler(Event* evt)
     HTMLElement::defaultEventHandler(evt);
 }
 
-bool HTMLFrameSetElement::willRecalcStyle(StyleChange)
+void HTMLFrameSetElement::willRecalcStyle(StyleChange)
 {
     if (needsStyleRecalc() && renderer()) {
         renderer()->setNeedsLayout(true);
         clearNeedsStyleRecalc();
     }
-    return true;
 }
 
 } // namespace WebCore
