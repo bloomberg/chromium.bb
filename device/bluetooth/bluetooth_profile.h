@@ -99,10 +99,7 @@ class BluetoothProfile {
       scoped_refptr<BluetoothSocket>)> ConnectionCallback;
   virtual void SetConnectionCallback(const ConnectionCallback& callback) = 0;
 
- private:
-  friend class BluetoothProfileMac;
-  friend class MockBluetoothProfile;
-
+ protected:
   BluetoothProfile();
   virtual ~BluetoothProfile();
 };
