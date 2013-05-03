@@ -80,8 +80,8 @@
         'base/clipboard/clipboard.h',
         'base/clipboard/clipboard_android.cc',
         'base/clipboard/clipboard_android_initialization.h',
+        'base/clipboard/clipboard_aura.cc',
         'base/clipboard/clipboard_aurax11.cc',
-        'base/clipboard/clipboard_chromeos.cc',
         'base/clipboard/clipboard_gtk.cc',
         'base/clipboard/clipboard_mac.mm',
         'base/clipboard/clipboard_sourcetag.h',
@@ -289,6 +289,7 @@
         'base/touch/touch_device.cc',
         'base/touch/touch_device.h',
         'base/touch/touch_device_android.cc',
+        'base/touch/touch_device_aurax11.cc',
         'base/touch/touch_device_win.cc',
         'base/touch/touch_editing_controller.cc',
         'base/touch/touch_editing_controller.h',
@@ -692,14 +693,16 @@
             'gfx/image/cairo_cached_surface.h',
           ],
         }],
-        ['chromeos==1', {
-          'sources': [
-            'base/touch/touch_device_aurax11.cc',
-          ],
+        ['chromeos==1 or (use_aura==1 and OS=="linux" and use_x11==0)', {
           'sources!': [
             'base/clipboard/clipboard_aurax11.cc',
             'base/dragdrop/os_exchange_data_provider_aurax11.cc',
             'base/touch/touch_device.cc',
+          ],
+        }, {
+          'sources!': [
+            'base/clipboard/clipboard_aura.cc',
+            'base/touch/touch_device_aurax11.cc',
           ],
         }],
         ['OS=="win"', {
