@@ -1554,8 +1554,6 @@ webkit.org/b/91012 touchadjustment/focusout-on-touch.html [ Skip ]
 webkit.org/b/78159 compositing/iframes/scrolling-iframe.html [ Failure Pass ]
 webkit.org/b/78159 virtual/softwarecompositing/iframes/scrolling-iframe.html [ Failure Pass ]
 
-crbug.com/113063 [ Debug ] storage/indexeddb/basics-workers.html [ Crash Pass ]
-
 webkit.org/b/79224 [ Win ] fast/canvas/webgl/tex-image-with-format-and-type.html [ Failure Pass ]
 webkit.org/b/79224 [ Win ] virtual/gpu/fast/canvas/webgl/tex-image-with-format-and-type.html [ Failure Pass ]
 
@@ -2641,7 +2639,7 @@ crbug.com/234758 [ Debug ] fast/parser/nested-fragment-parser-crash.html [ Pass 
 crbug.com/234758 [ Debug ] http/tests/workers/terminate-during-sync-operation.html [ Pass Timeout ]
 crbug.com/234758 fast/frames/seamless/seamless-nested-crash.html [ Pass Timeout Crash ]
 crbug.com/234758 [ Debug ] inspector/elements/edit-style-attribute.html [ Pass Timeout Crash ]
-crbug.com/234758 [ Debug ] storage/indexeddb/dont-wedge.html [ Pass Crash ]
+crbug.com/237812 [ Debug ] storage/indexeddb/dont-wedge.html [ Pass Crash ]
 crbug.com/234758 [ Mac Debug ] http/tests/security/isolatedWorld/all-window-prototypes.html [ Failure Timeout Pass ]
 crbug.com/234758 [ Debug ] fast/workers/worker-document-leak.html [ Pass Timeout ]
 crbug.com/234758 webaudio/audiobuffersource-multi-channels.html [ Pass Crash ]
