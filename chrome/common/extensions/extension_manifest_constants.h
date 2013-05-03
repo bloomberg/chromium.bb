@@ -44,6 +44,7 @@ namespace extension_manifest_keys {
   extern const char kExternallyConnectable[];
   extern const char kFileAccessList[];
   extern const char kFileHandlers[];
+  extern const char kFileHandlerExtensions[];
   extern const char kFileHandlerTitle[];
   extern const char kFileHandlerTypes[];
   extern const char kFileFilters[];
@@ -241,6 +242,9 @@ namespace extension_manifest_errors {
   extern const char kInvalidFileFiltersList[];
   extern const char kInvalidFileFilterValue[];
   extern const char kInvalidFileHandlers[];
+  extern const char kInvalidFileHandlerExtension[];
+  extern const char kInvalidFileHandlerExtensionElement[];
+  extern const char kInvalidFileHandlerNoTypeOrExtension[];
   extern const char kInvalidFileHandlerTitle[];
   extern const char kInvalidFileHandlerType[];
   extern const char kInvalidFileHandlerTypeElement[];

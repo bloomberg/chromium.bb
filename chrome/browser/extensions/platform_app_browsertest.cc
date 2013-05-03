@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/prefs/pref_service.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -95,6 +96,20 @@ class TabsAddedNotificationObserver
 
   DISALLOW_COPY_AND_ASSIGN(TabsAddedNotificationObserver);
 };
+
+bool CopyTestDataAndSetCommandLineArg(
+    const base::FilePath& test_data_file,
+    const base::FilePath& temp_dir,
+    const char* filename) {
+  base::FilePath path = temp_dir.AppendASCII(
+      filename).NormalizePathSeparators();
+  if (!(file_util::CopyFile(test_data_file, path)))
+    return false;
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendArgPath(path);
+  return true;
+}
 
 const char kTestFilePath[] = "platform_apps/launch_files/test.txt";
 
@@ -437,6 +452,95 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithRelativeFile) {
     message_ = catcher.message();
     ASSERT_TRUE(0);
   }
+}
+
+// Tests that launch data is sent through if the file extension matches.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithFileExtension) {
+  SetCommandLineArg(kTestFilePath);
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_file_by_extension"))
+      << message_;
+}
+
+// Tests that launch data is sent through if the file extension and MIME type
+// both match.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       LaunchWithFileExtensionAndMimeType) {
+  SetCommandLineArg(kTestFilePath);
+  ASSERT_TRUE(RunPlatformAppTest(
+      "platform_apps/launch_file_by_extension_and_type")) << message_;
+}
+
+// Tests that launch data is sent through for a file with no extension if a
+// handler accepts "".
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithFileWithoutExtension) {
+  SetCommandLineArg("platform_apps/launch_files/test");
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_file_with_no_extension"))
+      << message_;
+}
+
+#if !defined(OS_WIN)
+// Tests that launch data is sent through for a file with an empty extension if
+// a handler accepts "".
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithFileEmptyExtension) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  ClearCommandLineArgs();
+  ASSERT_TRUE(CopyTestDataAndSetCommandLineArg(
+      test_data_dir_.AppendASCII(kTestFilePath),
+      temp_dir.path(),
+      "test."));
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_file_with_no_extension"))
+      << message_;
+}
+
+// Tests that launch data is sent through for a file with an empty extension if
+// a handler accepts *.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       LaunchWithFileEmptyExtensionAcceptAny) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  ClearCommandLineArgs();
+  ASSERT_TRUE(CopyTestDataAndSetCommandLineArg(
+      test_data_dir_.AppendASCII(kTestFilePath),
+      temp_dir.path(),
+      "test."));
+  ASSERT_TRUE(RunPlatformAppTest(
+      "platform_apps/launch_file_with_any_extension")) << message_;
+}
+#endif
+
+// Tests that launch data is sent through for a file with no extension if a
+// handler accepts *.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       LaunchWithFileWithoutExtensionAcceptAny) {
+  SetCommandLineArg("platform_apps/launch_files/test");
+  ASSERT_TRUE(RunPlatformAppTest(
+      "platform_apps/launch_file_with_any_extension")) << message_;
+}
+
+// Tests that launch data is sent through for a file with an extension if a
+// handler accepts *.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       LaunchWithFileAcceptAnyExtension) {
+  SetCommandLineArg(kTestFilePath);
+  ASSERT_TRUE(RunPlatformAppTest(
+      "platform_apps/launch_file_with_any_extension")) << message_;
+}
+
+// Tests that no launch data is sent through if the file has the wrong
+// extension.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithWrongExtension) {
+  SetCommandLineArg(kTestFilePath);
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_wrong_extension"))
+      << message_;
+}
+
+// Tests that no launch data is sent through if the file has no extension but
+// the handler requires a specific extension.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithWrongEmptyExtension) {
+  SetCommandLineArg("platform_apps/launch_files/test");
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_wrong_extension"))
+      << message_;
 }
 
 // Tests that no launch data is sent through if the file is of the wrong MIME
