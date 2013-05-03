@@ -26,6 +26,7 @@ class ProfileKeyedAPI : public ProfileKeyedService {
   // See ProfileKeyedBaseFactory for usage.
   static const bool kServiceRedirectedInIncognito = false;
   static const bool kServiceIsNULLWhileTesting = false;
+  static const bool kServiceHasOwnInstanceInIncognito = false;
 
   // Users of this factory template must define a GetFactoryInstance()
   // and manage their own instances (typically using LazyInstance or
@@ -103,6 +104,10 @@ class ProfileKeyedAPIFactory : public ProfileKeyedServiceFactory {
 
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE {
     return T::kServiceIsNULLWhileTesting;
+  }
+
+  virtual bool ServiceHasOwnInstanceInIncognito() const OVERRIDE {
+    return T::kServiceHasOwnInstanceInIncognito;
   }
 
   DISALLOW_COPY_AND_ASSIGN(ProfileKeyedAPIFactory);

@@ -151,6 +151,7 @@ class AlarmManager
   static const char* service_name() {
     return "AlarmManager";
   }
+  static const bool kServiceHasOwnInstanceInIncognito = true;
 
   Profile* const profile_;
   scoped_ptr<base::Clock> clock_;
