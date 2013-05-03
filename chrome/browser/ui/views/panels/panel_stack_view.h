@@ -82,9 +82,11 @@ class PanelStackView : public NativePanelStackWindow,
   // Updates the bounds of panels as specified in batch update data.
   void UpdatePanelsBounds();
 
-  // Updates the minimum bounds that could fit all panels.
+  // Computes/updates the minimum bounds that could fit all panels.
+  gfx::Rect GetStackWindowBounds() const;
   void UpdateStackWindowBounds();
 
+  views::Widget* CreateWindowWithBounds(const gfx::Rect& bounds);
   void EnsureWindowCreated();
 
   // Makes the stack window own the panel window such that multiple panels
@@ -106,7 +108,9 @@ class PanelStackView : public NativePanelStackWindow,
 
   NativePanelStackWindowDelegate* delegate_;
 
-  views::Widget* window_;
+  views::Widget* window_;  // Weak pointer, own us.
+
+  bool is_closing_;
 
   // Tracks all panels that are enclosed by this window.
   Panels panels_;

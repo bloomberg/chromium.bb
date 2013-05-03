@@ -46,6 +46,10 @@ const int kTitleAndButtonPadding = 11;
 // The padding in pixeles between buttons.
 static const int kButtonPadding = 5;
 
+// The number of times to flash the panel's taskbar icon in order to draw the
+// user's attention (Windows only).
+static const int kNumberOfTimesToFlashPanelForAttention = 30;
+
 // Different types of buttons that can be shown on panel's titlebar.
 enum TitlebarButtonType {
   CLOSE_BUTTON,

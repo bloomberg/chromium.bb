@@ -44,16 +44,19 @@ NativePanelStackWindow* NativePanelStackWindow::Create(
 PanelStackView::PanelStackView(NativePanelStackWindowDelegate* delegate)
     : delegate_(delegate),
       window_(NULL),
+      is_closing_(false),
       is_drawing_attention_(false),
       animate_bounds_updates_(false),
       bounds_updates_started_(false) {
   DCHECK(delegate);
+  views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);
 }
 
 PanelStackView::~PanelStackView() {
 }
 
 void PanelStackView::Close() {
+  is_closing_ = true;
   delegate_ = NULL;
   if (bounds_animator_)
     bounds_animator_.reset();
@@ -186,7 +189,40 @@ void PanelStackView::DrawSystemAttention(bool draw_attention) {
     return;
   is_drawing_attention_ = draw_attention;
 
-  window_->FlashFrame(draw_attention);
+#if defined(OS_WIN)
+  if (draw_attention) {
+    // The default implementation of Widget::FlashFrame only flashes 5 times.
+    // We need more than that.
+    FLASHWINFO fwi;
+    fwi.cbSize = sizeof(fwi);
+    fwi.hwnd = views::HWNDForWidget(window_);
+    fwi.dwFlags = FLASHW_ALL;
+    fwi.uCount = panel::kNumberOfTimesToFlashPanelForAttention;
+    fwi.dwTimeout = 0;
+    ::FlashWindowEx(&fwi);
+  } else {
+    // Calling FlashWindowEx with FLASHW_STOP flag does not always work.
+    // Occasionally the taskbar icon could still remain in the flashed state.
+    // To work around this problem, we recreate the underlying window.
+    views::Widget* old_window = window_;
+    window_ = CreateWindowWithBounds(GetStackWindowBounds());
+    // Make sure the new background window stays at the same z-order as the old
+    // one.
+    ::SetWindowPos(views::HWNDForWidget(window_),
+                   views::HWNDForWidget(old_window),
+                   0, 0, 0, 0,
+                   SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+    for (Panels::const_iterator iter = panels_.begin();
+         iter != panels_.end(); ++iter) {
+      MakeStackWindowOwnPanelWindow(*iter, this);
+    }
+    window_->UpdateWindowTitle();
+    window_->UpdateWindowIcon();
+    old_window->Close();
+  }
+#else
+  widget_->FlashFrame(draw_attention);
+#endif
 }
 
 string16 PanelStackView::GetWindowTitle() const {
@@ -218,11 +254,16 @@ const views::Widget* PanelStackView::GetWidget() const {
 }
 
 void PanelStackView::DeleteDelegate() {
-  delete this;
+  // |window_| could be closed when it is regenerated in order to clear the
+  // taskbar icon flash state. We should only delete this instance when the
+  // window is really being closed.
+  if (is_closing_)
+    delete this;
 }
 
 void PanelStackView::OnWidgetDestroying(views::Widget* widget) {
-  window_ = NULL;
+  if (widget == window_)
+    window_ = NULL;
 }
 
 void PanelStackView::OnWidgetActivationChanged(views::Widget* widget,
@@ -239,8 +280,10 @@ void PanelStackView::OnNativeFocusChange(gfx::NativeView focused_before,
   // background stack window, instead of the foreground panel window, receives
   // WM_SETFOCUS message. To deal with this, we listen to the focus change event
   // and activate the most recently active panel.
+  // Note that OnNativeFocusChange might be called when window_ has not be
+  // created yet.
 #if defined(OS_WIN)
-  if (!panels_.empty() && focused_now == window_->GetNativeView()) {
+  if (!panels_.empty() && window_ && focused_now == window_->GetNativeView()) {
     Panel* panel_to_focus =
         panels_.front()->stack()->most_recently_active_panel();
     if (panel_to_focus)
@@ -319,14 +362,18 @@ void PanelStackView::UpdatePanelsBounds() {
 #endif
 }
 
-void PanelStackView::UpdateStackWindowBounds() {
+gfx::Rect PanelStackView::GetStackWindowBounds() const {
   gfx::Rect enclosing_bounds;
   for (Panels::const_iterator iter = panels_.begin();
        iter != panels_.end(); ++iter) {
     Panel* panel = *iter;
     enclosing_bounds = UnionRects(enclosing_bounds, panel->GetBounds());
   }
-  window_->SetBounds(enclosing_bounds);
+  return enclosing_bounds;
+}
+
+void PanelStackView::UpdateStackWindowBounds() {
+  window_->SetBounds(GetStackWindowBounds());
 }
 
 // static
@@ -370,22 +417,17 @@ void PanelStackView::MakeStackWindowOwnPanelWindow(
 #endif
 }
 
-void PanelStackView::EnsureWindowCreated() {
-  if (window_)
-    return;
-
-  window_ = new views::Widget;
+views::Widget* PanelStackView::CreateWindowWithBounds(const gfx::Rect& bounds) {
+  views::Widget* window = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.delegate = this;
   params.remove_standard_frame = true;
-  // Empty size is not allowed so a temporary small size is passed. SetBounds
-  // will be called later to update the bounds.
-  params.bounds = gfx::Rect(0, 0, 1, 1);
-  window_->Init(params);
-  window_->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
-  window_->set_focus_on_creation(false);
-  window_->AddObserver(this);
-  window_->ShowInactive();
+  params.bounds = bounds;
+  window->Init(params);
+  window->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
+  window->set_focus_on_creation(false);
+  window->AddObserver(this);
+  window->ShowInactive();
 
 #if defined(OS_WIN)
   DCHECK(!panels_.empty());
@@ -393,10 +435,19 @@ void PanelStackView::EnsureWindowCreated() {
   ui::win::SetAppIdForWindow(
       ShellIntegration::GetAppModelIdForProfile(UTF8ToWide(panel->app_name()),
                                                 panel->profile()->GetPath()),
-      views::HWNDForWidget(window_));
+      views::HWNDForWidget(window));
 #endif
 
-  views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);
+  return window;
+}
+
+void PanelStackView::EnsureWindowCreated() {
+  if (window_)
+    return;
+
+  // Empty size is not allowed so a temporary small size is passed. SetBounds
+  // will be called later to update the bounds.
+  window_ = CreateWindowWithBounds(gfx::Rect(0, 0, 1, 1));
 }
 
 #if defined(OS_WIN)

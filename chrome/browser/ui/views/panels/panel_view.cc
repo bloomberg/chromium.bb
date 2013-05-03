@@ -520,8 +520,29 @@ void PanelView::DrawAttention(bool draw_attention) {
   is_drawing_attention_ = draw_attention;
   GetFrameView()->SchedulePaint();
 
-  if ((panel_->attention_mode() & Panel::USE_SYSTEM_ATTENTION) != 0)
+  if ((panel_->attention_mode() & Panel::USE_SYSTEM_ATTENTION) != 0) {
+#if defined(OS_WIN)
+    // The default implementation of Widget::FlashFrame only flashes 5 times.
+    // We need more than that.
+    FLASHWINFO fwi;
+    fwi.cbSize = sizeof(fwi);
+    fwi.hwnd = views::HWNDForWidget(window_);
+    if (draw_attention) {
+      fwi.dwFlags = FLASHW_ALL;
+      fwi.uCount = panel::kNumberOfTimesToFlashPanelForAttention;
+      fwi.dwTimeout = 0;
+    } else {
+      // TODO(jianli): calling FlashWindowEx with FLASHW_STOP flag for the
+      // panel window has the same problem as the stack window. However,
+      // we cannot take the similar fix since there is no background window
+      // to replace for the regular panel window. More investigation is needed.
+      fwi.dwFlags = FLASHW_STOP;
+    }
+    ::FlashWindowEx(&fwi);
+#else
     window_->FlashFrame(draw_attention);
+#endif
+  }
 }
 
 bool PanelView::IsDrawingAttention() const {
