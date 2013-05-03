@@ -37,6 +37,7 @@ def _FindChromite(path):
   roots = (
     ('.repo', 'chromite/.git'),
     ('.gclient', 'src/third_party/chromite/.git'),
+    ('src/.gitmodules', 'src/third_party/chromite/.git'),
   )
 
   while path != '/':
