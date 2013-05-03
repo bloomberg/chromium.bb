@@ -95,7 +95,7 @@ void CloudPrintAuth::AuthenticateWithRobotAuthCode(
   robot_email_ = robot_email;
   // Now that we have an auth code we need to get the refresh and access tokens.
   oauth_client_.reset(new gaia::GaiaOAuthClient(
-      gaia::kGaiaOAuth2Url,
+      GaiaUrls::GetInstance()->oauth2_token_url(),
       g_service_process->GetServiceURLRequestContextGetter()));
   oauth_client_->GetTokensFromAuthCode(oauth_client_info_,
                                        robot_oauth_auth_code,
@@ -105,7 +105,7 @@ void CloudPrintAuth::AuthenticateWithRobotAuthCode(
 
 void CloudPrintAuth::RefreshAccessToken() {
   oauth_client_.reset(new gaia::GaiaOAuthClient(
-      gaia::kGaiaOAuth2Url,
+      GaiaUrls::GetInstance()->oauth2_token_url(),
       g_service_process->GetServiceURLRequestContextGetter()));
   oauth_client_->RefreshToken(oauth_client_info_,
                               refresh_token_,
@@ -171,7 +171,7 @@ CloudPrintURLFetcher::ResponseAction CloudPrintAuth::HandleJSONData(
   json_data->GetString(kXMPPJidValue, &robot_email_);
   // Now that we have an auth code we need to get the refresh and access tokens.
   oauth_client_.reset(new gaia::GaiaOAuthClient(
-      gaia::kGaiaOAuth2Url,
+      GaiaUrls::GetInstance()->oauth2_token_url(),
       g_service_process->GetServiceURLRequestContextGetter()));
   oauth_client_->GetTokensFromAuthCode(oauth_client_info_,
                                        auth_code,

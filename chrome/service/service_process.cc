@@ -167,6 +167,10 @@ bool ServiceProcess::Initialize(MessageLoopForUI* message_loop,
           JsonPrefStore::GetTaskRunnerForFile(pref_path, blocking_pool_)));
   service_prefs_->ReadPrefs();
 
+  // This switch it required to run connector with test gaia.
+  if (command_line.HasSwitch(switches::kIgnoreUrlFetcherCertRequests))
+    net::URLFetcher::SetIgnoreCertificateRequests(true);
+
   // Check if a locale override has been specified on the command-line.
   std::string locale = command_line.GetSwitchValueASCII(switches::kLang);
   if (!locale.empty()) {

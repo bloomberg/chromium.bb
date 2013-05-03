@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "cloud_print/service/win/service_utils.h"
+#include "google_apis/gaia/gaia_switches.h"
 
 #include <windows.h>
 #include <security.h>  // NOLINT
@@ -50,6 +51,8 @@ void CopyChromeSwitchesFromCurrentProcess(CommandLine* destination) {
   static const char* const kSwitchesToCopy[] = {
     switches::kCloudPrintServiceURL,
     switches::kEnableLogging,
+    switches::kIgnoreUrlFetcherCertRequests,
+    switches::kLsoHost,
     switches::kV,
   };
   destination->CopySwitchesFrom(*CommandLine::ForCurrentProcess(),
