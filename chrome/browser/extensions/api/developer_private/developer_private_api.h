@@ -348,16 +348,17 @@ class DeveloperPrivateExportSyncfsFolderToLocalfsFunction
    // ExtensionFunction
    virtual bool RunImpl() OVERRIDE;
 
-   void ReadSyncFileSystemDirectory(
-       const base::FilePath::StringType& project_name);
+   void ClearPrexistingDirectoryContent(const base::FilePath& project_path);
+
+   void ReadSyncFileSystemDirectory(const base::FilePath& project_path);
 
    void ReadSyncFileSystemDirectoryCb(
-       const base::FilePath::StringType& project_name,
+       const base::FilePath& project_path,
        base::PlatformFileError result,
        const fileapi::FileSystemOperation::FileEntryList& file_list,
        bool has_more);
 
-   void CreateFolderAndSendResponse(const base::FilePath& folder_path);
+   void CreateFolderAndSendResponse(const base::FilePath& project_path);
 
    void SnapshotFileCallback(
        const base::FilePath& target_path,

@@ -795,17 +795,40 @@ bool DeveloperPrivateExportSyncfsFolderToLocalfsFunction::RunImpl() {
 
   context_ = content::BrowserContext::GetStoragePartition(profile(),
       render_view_host()->GetSiteInstance())->GetFileSystemContext();
-  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+
+  base::FilePath project_path(profile()->GetPath());
+  project_path = project_path.Append(kUnpackedAppsFolder);
+  project_path = project_path.Append(project_name);
+
+  content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
-                 ReadSyncFileSystemDirectory,
-                 this, project_name));
+                     ClearPrexistingDirectoryContent,
+                 this,
+                 project_path));
 
   return true;
 }
 
 void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
-    ReadSyncFileSystemDirectory(
-    const base::FilePath::StringType& project_name) {
+    ClearPrexistingDirectoryContent(const base::FilePath& project_path) {
+  if (!file_util::Delete(project_path, true/*recursive*/)) {
+    SetError("Error in copying files from sync filesystem.");
+    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
+                       SendResponse,
+                   this,
+                   false));
+    return;
+  }
+
+  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
+                 ReadSyncFileSystemDirectory,
+                 this, project_path));
+}
+
+void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
+    ReadSyncFileSystemDirectory(const base::FilePath& project_path) {
   std::string origin_url(
       Extension::GetBaseURLFromExtensionId(extension_id()).spec());
   fileapi::FileSystemURL url(sync_file_system::CreateSyncableFileSystemURL(
@@ -821,12 +844,12 @@ void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
 
   op->ReadDirectory(url, base::Bind(
       &DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
-          ReadSyncFileSystemDirectoryCb, this, project_name));
+          ReadSyncFileSystemDirectoryCb, this, project_path));
 }
 
 void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
     ReadSyncFileSystemDirectoryCb(
-    const base::FilePath::StringType& project_name,
+    const base::FilePath& project_path,
     base::PlatformFileError status,
     const fileapi::FileSystemOperation::FileEntryList& file_list,
     bool has_more) {
@@ -836,18 +859,13 @@ void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
     return;
   }
 
-  base::FilePath target_folder_path(profile()->GetPath());
-  target_folder_path =
-      target_folder_path.Append(kUnpackedAppsFolder);
-  target_folder_path = target_folder_path.Append(project_name);
-
   // Create an empty project folder if there are no files.
   if (!file_list.size()) {
     content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
                      CreateFolderAndSendResponse,
                  this,
-                 target_folder_path));
+                 project_path));
     return;
   }
 
@@ -860,7 +878,7 @@ void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
         GURL(origin_url),
         sync_file_system::DriveFileSyncService::kServiceName,
         base::FilePath(file_list[i].name)));
-    base::FilePath target_path = target_folder_path;
+    base::FilePath target_path = project_path;
     target_path = target_path.Append(file_list[i].name);
 
     base::PlatformFileError error_code;
@@ -884,8 +902,8 @@ void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
 }
 
 void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
-    CreateFolderAndSendResponse(const base::FilePath& folder_path) {
-  if (!(success_ = file_util::CreateDirectory(folder_path))) {
+    CreateFolderAndSendResponse(const base::FilePath& project_path) {
+  if (!(success_ = file_util::CreateDirectory(project_path))) {
     SetError("Error in copying files from sync filesystem.");
   }
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
