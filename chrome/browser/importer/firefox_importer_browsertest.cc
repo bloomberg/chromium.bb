@@ -30,7 +30,8 @@
 #if defined(OS_MACOSX) || (defined(OS_WIN) && defined(ARCH_CPU_X86_64))
 #define MAYBE_IMPORTER(x) DISABLED_##x
 #else
-#define MAYBE_IMPORTER(x) x
+// Flaky on all platforms. http://crbug.com/237707
+#define MAYBE_IMPORTER(x) DISABLED_##x
 #endif
 
 namespace {

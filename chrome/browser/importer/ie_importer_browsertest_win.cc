@@ -449,7 +449,8 @@ class IEImporterBrowserTest : public InProcessBrowserTest {
   base::win::RegKey temp_hkcu_hive_key_;
 };
 
-IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest, IEImporter) {
+// Flaky on all bots. http://crbug.com/237707
+IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest, DISABLED_IEImporter) {
   // Sets up a favorites folder.
   base::FilePath path = temp_dir_.path().AppendASCII("Favorites");
   CreateDirectory(path.value().c_str(), NULL);
@@ -534,8 +535,9 @@ IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest, IEImporter) {
   url_history_stg2.Release();
 }
 
+// Flaky on all bots. http://crbug.com/237707
 IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest,
-                       IEImporterMalformedFavoritesRegistry) {
+                       DISABLED_IEImporterMalformedFavoritesRegistry) {
   // Sets up a favorites folder.
   base::FilePath path = temp_dir_.path().AppendASCII("Favorites");
   CreateDirectory(path.value().c_str(), NULL);
