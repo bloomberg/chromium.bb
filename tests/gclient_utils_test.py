@@ -34,7 +34,8 @@ class GclientUtilsUnittest(GclientUtilBase):
         'GetGClientRootAndEntries', 'GetEditor', 'IsDateRevision',
         'MakeDateRevision', 'MakeFileAutoFlush', 'MakeFileAnnotated',
         'PathDifference', 'ParseCodereviewSettingsContent', 'NumLocalCpus',
-        'PrintableObject', 'RunEditor',
+        'PrintableObject', 'RunEditor', 'GCLIENT_CHILDREN',
+        'GCLIENT_CHILDREN_LOCK', 'GClientChildren',
         'SplitUrlRevision', 'SyntaxErrorToError', 'UpgradeToHttps', 'Wrapper',
         'WorkItem', 'codecs', 'lockedmethod', 'logging', 'os', 'Queue', 're',
         'rmtree', 'safe_makedirs', 'stat', 'subprocess', 'subprocess2', 'sys',
@@ -49,6 +50,7 @@ class CheckCallAndFilterTestCase(GclientUtilBase):
   class ProcessIdMock(object):
     def __init__(self, test_string):
       self.stdout = StringIO.StringIO(test_string)
+      self.pid = 9284
     def wait(self):
       pass
 

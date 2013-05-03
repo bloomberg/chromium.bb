@@ -323,6 +323,56 @@ def MakeFileAnnotated(fileobj, include_zero=False):
   return Annotated(fileobj)
 
 
+GCLIENT_CHILDREN = []
+GCLIENT_CHILDREN_LOCK = threading.Lock()
+
+
+class GClientChildren(object):
+  @staticmethod
+  def add(popen_obj):
+    with GCLIENT_CHILDREN_LOCK:
+      GCLIENT_CHILDREN.append(popen_obj)
+
+  @staticmethod
+  def remove(popen_obj):
+    with GCLIENT_CHILDREN_LOCK:
+      GCLIENT_CHILDREN.remove(popen_obj)
+
+  @staticmethod
+  def _attemptToKillChildren():
+    global GCLIENT_CHILDREN
+    with GCLIENT_CHILDREN_LOCK:
+      zombies = [c for c in GCLIENT_CHILDREN if c.poll() is None]
+
+    for zombie in zombies:
+      try:
+        zombie.kill()
+      except OSError:
+        pass
+
+    with GCLIENT_CHILDREN_LOCK:
+      GCLIENT_CHILDREN = [k for k in GCLIENT_CHILDREN if k.poll() is not None]
+
+  @staticmethod
+  def _areZombies():
+    with GCLIENT_CHILDREN_LOCK:
+      return bool(GCLIENT_CHILDREN)
+
+  @staticmethod
+  def KillAllRemainingChildren():
+    GClientChildren._attemptToKillChildren()
+
+    if GClientChildren._areZombies():
+      time.sleep(0.5)
+      GClientChildren._attemptToKillChildren()
+
+    with GCLIENT_CHILDREN_LOCK:
+      if GCLIENT_CHILDREN:
+        print >> sys.stderr, 'Could not kill the following subprocesses:'
+        for zombie in GCLIENT_CHILDREN:
+          print >> sys.stderr, '  ', zombie.pid
+
+
 def CheckCallAndFilter(args, stdout=None, filter_fn=None,
                        print_stdout=None, call_filter_on_first_line=False,
                        **kwargs):
@@ -343,6 +393,8 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
   kid = subprocess2.Popen(
       args, bufsize=0, stdout=subprocess2.PIPE, stderr=subprocess2.STDOUT,
       **kwargs)
+
+  GClientChildren.add(kid)
 
   # Do a flush of stdout before we begin reading from the subprocess2's stdout
   stdout.flush()
@@ -375,6 +427,11 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
       if len(in_line):
         filter_fn(in_line)
     rv = kid.wait()
+
+    # Don't put this in a 'finally,' since the child may still run if we get an
+    # exception.
+    GClientChildren.remove(kid)
+
   except KeyboardInterrupt:
     print >> sys.stderr, 'Failed while running "%s"' % ' '.join(args)
     raise
@@ -657,6 +714,7 @@ class ExecutionQueue(object):
       self.index = index
       self.args = args
       self.kwargs = kwargs
+      self.daemon = True
 
     def run(self):
       """Runs in its own thread."""
@@ -664,18 +722,23 @@ class ExecutionQueue(object):
       work_queue = self.kwargs['work_queue']
       try:
         self.item.run(*self.args, **self.kwargs)
+      except KeyboardInterrupt:
+        logging.info('Caught KeyboardInterrupt in thread %s' % self.item.name)
+        logging.info(str(sys.exc_info()))
+        work_queue.exceptions.put(sys.exc_info())
+        raise
       except Exception:
         # Catch exception location.
         logging.info('Caught exception in thread %s' % self.item.name)
         logging.info(str(sys.exc_info()))
         work_queue.exceptions.put(sys.exc_info())
-      logging.info('_Worker.run(%s) done' % self.item.name)
-
-      work_queue.ready_cond.acquire()
-      try:
-        work_queue.ready_cond.notifyAll()
       finally:
-        work_queue.ready_cond.release()
+        logging.info('_Worker.run(%s) done' % self.item.name)
+        work_queue.ready_cond.acquire()
+        try:
+          work_queue.ready_cond.notifyAll()
+        finally:
+          work_queue.ready_cond.release()
 
 
 def GetEditor(git, git_editor=None):

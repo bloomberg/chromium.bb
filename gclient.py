@@ -1777,6 +1777,9 @@ def Main(argv):
     # Not a known command. Default to help.
     GenUsage(parser, 'help')
     return CMDhelp(parser, argv)
+  except KeyboardInterrupt:
+    gclient_utils.GClientChildren.KillAllRemainingChildren()
+    raise
   except (gclient_utils.Error, subprocess2.CalledProcessError), e:
     print >> sys.stderr, 'Error: %s' % str(e)
     return 1
