@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
@@ -257,8 +258,9 @@ bool ShellWindowRegistry::Factory::ServiceIsNULLWhileTesting() const {
   return false;
 }
 
-bool ShellWindowRegistry::Factory::ServiceRedirectedInIncognito() const {
-  return true;
+content::BrowserContext* ShellWindowRegistry::Factory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
 }  // namespace extensions
