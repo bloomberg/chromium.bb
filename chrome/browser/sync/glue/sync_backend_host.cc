@@ -177,7 +177,7 @@ class SyncBackendHost::Core
   // Called at startup to download the control types. Will invoke
   // DoInitialProcessControlTypes on success, and OnControlTypesDownloadRetry
   // if an error occurred.
-  void DoDownloadControlTypes();
+  void DoDownloadControlTypes(syncer::ConfigureReason reason);
 
   // Ask the syncer to check for updates for the specified types.
   void DoRefreshTypes(syncer::ModelTypeSet types);
@@ -868,12 +868,18 @@ void SyncBackendHost::HandleSyncManagerInitializationOnFrontendLoop(
   notification_registrar_.Add(this, chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
                               content::Source<Profile>(profile_));
 
+  syncer::ConfigureReason reason =
+      (sync_prefs_->HasSyncSetupCompleted() ?
+       syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE :
+       syncer::CONFIGURE_REASON_NEW_CLIENT);
+
   // Kick off the next step in SyncBackendHost initialization by downloading
   // any necessary control types.
   sync_thread_.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&SyncBackendHost::Core::DoDownloadControlTypes,
-                 core_.get()));
+                 core_.get(),
+                 reason));
 }
 
 void SyncBackendHost::Observe(
@@ -966,7 +972,8 @@ void SyncBackendHost::Core::OnSyncCycleCompleted(
       snapshot);
 }
 
-void SyncBackendHost::Core::DoDownloadControlTypes() {
+void SyncBackendHost::Core::DoDownloadControlTypes(
+    syncer::ConfigureReason reason) {
   syncer::ModelTypeSet new_control_types = registrar_->ConfigureDataTypes(
       syncer::ControlTypes(), syncer::ModelTypeSet());
   syncer::ModelSafeRoutingInfo routing_info;
@@ -976,7 +983,7 @@ void SyncBackendHost::Core::DoDownloadControlTypes() {
             << " added; calling DoConfigureSyncer";
 
   sync_manager_->ConfigureSyncer(
-      syncer::CONFIGURE_REASON_NEW_CLIENT,
+      reason,
       new_control_types,
       syncer::ModelTypeSet(),
       routing_info,

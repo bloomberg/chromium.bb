@@ -30,7 +30,8 @@ FakeSyncManager::FakeSyncManager(ModelTypeSet initial_sync_ended_types,
                                  ModelTypeSet configure_fail_types) :
     initial_sync_ended_types_(initial_sync_ended_types),
     progress_marker_types_(progress_marker_types),
-    configure_fail_types_(configure_fail_types) {
+    configure_fail_types_(configure_fail_types),
+    last_configure_reason_(CONFIGURE_REASON_UNKNOWN) {
   fake_encryption_handler_.reset(new FakeSyncEncryptionHandler());
 }
 
@@ -52,6 +53,12 @@ ModelTypeSet FakeSyncManager::GetAndResetEnabledTypes() {
   ModelTypeSet enabled_types = enabled_types_;
   enabled_types_.Clear();
   return enabled_types;
+}
+
+ConfigureReason FakeSyncManager::GetAndResetConfigureReason() {
+  ConfigureReason reason = last_configure_reason_;
+  last_configure_reason_ = CONFIGURE_REASON_UNKNOWN;
+  return reason;
 }
 
 void FakeSyncManager::Invalidate(
@@ -190,6 +197,7 @@ void FakeSyncManager::ConfigureSyncer(
     const ModelSafeRoutingInfo& new_routing_info,
     const base::Closure& ready_task,
     const base::Closure& retry_task) {
+  last_configure_reason_ = reason;
   ModelTypeSet enabled_types = GetRoutingInfoTypes(new_routing_info);
   ModelTypeSet disabled_types = Difference(
       ModelTypeSet::All(), enabled_types);

@@ -748,6 +748,21 @@ TEST_F(SyncBackendHostTest, AttemptForwardLocalRefreshRequestLate) {
   backend_.reset();
 }
 
+// Test that configuration on signin sends the proper GU source.
+TEST_F(SyncBackendHostTest, DownloadControlTypesNewClient) {
+  InitializeBackend(true);
+  EXPECT_EQ(syncer::CONFIGURE_REASON_NEW_CLIENT,
+            fake_manager_->GetAndResetConfigureReason());
+}
+
+// Test that configuration on restart sends the proper GU source.
+TEST_F(SyncBackendHostTest, DownloadControlTypesRestart) {
+  sync_prefs_->SetSyncSetupCompleted();
+  InitializeBackend(true);
+  EXPECT_EQ(syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE,
+            fake_manager_->GetAndResetConfigureReason());
+}
+
 }  // namespace
 
 }  // namespace browser_sync
