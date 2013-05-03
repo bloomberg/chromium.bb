@@ -826,6 +826,9 @@ void LocationBarView::Layout() {
   // showing keyword hints and suggested text is minimal and we're not confident
   // this is the right approach for suggested text.
 
+  OmniboxViewViews* omnibox_views =
+      GetOmniboxViewViews(location_entry_.get());
+  int omnibox_views_margin = 0;
   if (suggested_text_view_) {
     // We do not display the suggested text when it contains a mix of RTL and
     // LTR characters since this could mean the suggestion should be displayed
@@ -845,14 +848,19 @@ void LocationBarView::Layout() {
       // the suggested text, or we have a mix of RTL and LTR characters.
       suggested_text_view_->SetBounds(0, 0, 0, 0);
     } else {
-      location_bounds.set_width(
+      location_needed_width =
           std::min(location_needed_width,
-                   location_bounds.width() - suggested_text_width));
+                   location_bounds.width() - suggested_text_width);
       // TODO(sky): figure out why this needs the -1.
-      gfx::Rect suggested_text_bounds(location_bounds.right() - 1,
-                                      location_bounds.y(),
-                                      suggested_text_width,
-                                      location_bounds.height());
+      gfx::Rect suggested_text_bounds(
+          location_bounds.x() + location_needed_width - 1,
+          location_bounds.y(),
+          suggested_text_width,
+          location_bounds.height());
+      // For non-views the omnibox needs to be shrunk so that the suggest text
+      // is visible.
+      if (!omnibox_views)
+        location_bounds.set_width(location_needed_width);
 
       // We reverse the order of the location entry and suggested text if:
       // - Chrome is RTL but the text is fully LTR, or
@@ -863,12 +871,22 @@ void LocationBarView::Layout() {
           text_direction == base::i18n::RIGHT_TO_LEFT) {
         // TODO(sky): Figure out why we need the +1.
         suggested_text_bounds.set_x(location_bounds.x() + 1);
-        location_bounds.set_x(
-            location_bounds.x() + suggested_text_bounds.width());
+        if (omnibox_views) {
+          // Use a margin to prevent the omnibox text from overlapping the
+          // suggest text.
+          omnibox_views_margin = suggested_text_bounds.width();
+        } else {
+          // Non-views doesn't support margins so move the omnibox over.
+          location_bounds.set_x(
+              location_bounds.x() + suggested_text_bounds.width());
+        }
       }
       suggested_text_view_->SetBoundsRect(suggested_text_bounds);
     }
   }
+
+  if (omnibox_views)
+    omnibox_views->SetHorizontalMargins(0, omnibox_views_margin);
 
   location_entry_view_->SetBoundsRect(location_bounds);
 }

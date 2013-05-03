@@ -603,7 +603,7 @@ void NativeTextfieldViews::UpdateHorizontalMargins() {
   gfx::Insets inset = GetInsets();
 
   text_border_->SetInsets(inset.top(), left, inset.bottom(), right);
-  OnCaretBoundsChanged();
+  OnBoundsChanged(GetBounds());
 }
 
 void NativeTextfieldViews::UpdateVerticalMargins() {
@@ -612,7 +612,7 @@ void NativeTextfieldViews::UpdateVerticalMargins() {
     return;
   gfx::Insets inset = GetInsets();
   text_border_->SetInsets(top, inset.left(), bottom, inset.right());
-  OnCaretBoundsChanged();
+  OnBoundsChanged(GetBounds());
 }
 
 bool NativeTextfieldViews::SetFocus() {
