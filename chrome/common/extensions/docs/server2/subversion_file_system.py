@@ -6,6 +6,7 @@ from file_system import FileSystem, FileNotFoundError, StatInfo, ToUnicode
 from future import Future
 import logging
 import re
+import posixpath
 import xml.dom.minidom as xml
 from xml.parsers.expat import ExpatError
 
@@ -118,15 +119,14 @@ class SubversionFileSystem(FileSystem):
     return StatInfo('0', {})
 
   def Stat(self, path):
-    directory = path.rsplit('/', 1)[0]
+    directory, filename = posixpath.split(path)
     result = self._stat_fetcher.Fetch(directory + '/')
     if result.status_code == 404:
       raise FileNotFoundError(
           'Got 404 when fetching %s from %s for Stat' % (path, directory))
     stat_info = self._CreateStatInfo(result.content)
-    if not path.endswith('/'):
-      filename = path.rsplit('/', 1)[-1]
-      if filename not in stat_info.child_versions:
-        raise FileNotFoundError('%s was not in child versions' % filename)
-      stat_info.version = stat_info.child_versions[filename]
-    return stat_info
+    if path.endswith('/'):
+      return stat_info
+    if filename not in stat_info.child_versions:
+      raise FileNotFoundError('%s was not in child versions' % filename)
+    return StatInfo(stat_info.child_versions[filename])
