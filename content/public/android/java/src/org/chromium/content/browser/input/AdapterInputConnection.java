@@ -392,6 +392,8 @@ public class AdapterInputConnection extends BaseInputConnection {
         if (DEBUG) Log.w(TAG, "setComposingRegion [" + start + " " + end + "]");
         int a = Math.min(start, end);
         int b = Math.max(start, end);
+        if (a < 0) a = 0;
+        if (b < 0) b = 0;
 
         if (a == b) {
             removeComposingSpans(getEditable());
