@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/shell_render_process_observer.h"
+#include "content/shell/renderer/shell_render_process_observer.h"
 
 #include "base/command_line.h"
 #include "content/public/common/content_client.h"
-#include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/public/renderer/render_view.h"
 #include "content/public/test/layouttest_support.h"
-#include "content/shell/shell_content_renderer_client.h"
+#include "content/shell/renderer/shell_content_renderer_client.h"
+#include "content/shell/renderer/webkit_test_runner.h"
 #include "content/shell/shell_messages.h"
 #include "content/shell/shell_switches.h"
-#include "content/shell/webkit_test_runner.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestInterfaces.h"
 #include "webkit/glue/webkit_glue.h"
