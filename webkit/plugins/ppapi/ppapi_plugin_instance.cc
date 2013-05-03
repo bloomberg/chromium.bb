@@ -1898,30 +1898,31 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
       desired_fullscreen_state_ != view_data_.is_fullscreen)
     return PP_FALSE;
 
-  bound_graphics_2d_platform_ = delegate_->GetGraphics2D(this, device);
+  PluginDelegate::PlatformGraphics2D* graphics_2d =
+      delegate_->GetGraphics2D(this, device);
   EnterResourceNoLock<PPB_Graphics3D_API> enter_3d(device, false);
   PPB_Graphics3D_Impl* graphics_3d = enter_3d.succeeded() ?
       static_cast<PPB_Graphics3D_Impl*>(enter_3d.object()) : NULL;
 
-  if (bound_graphics_2d_platform_) {
-    if (!bound_graphics_2d_platform_->BindToInstance(this))
-      return PP_FALSE;  // Can't bind to more than one instance.
+  if (graphics_2d) {
+    if (graphics_2d->BindToInstance(this)) {
+      bound_graphics_2d_platform_ = graphics_2d;
+      UpdateLayer();
+      return PP_TRUE;
+    }
   } else if (graphics_3d) {
     // Make sure graphics can only be bound to the instance it is
     // associated with.
-    if (graphics_3d->pp_instance() != pp_instance())
-      return PP_FALSE;
-    if (!graphics_3d->BindToInstance(true))
-      return PP_FALSE;
-
-    bound_graphics_3d_ = graphics_3d;
-  } else {
-    // The device is not a valid resource type.
-    return PP_FALSE;
+    if (graphics_3d->pp_instance() == pp_instance() &&
+        graphics_3d->BindToInstance(true)) {
+      bound_graphics_3d_ = graphics_3d;
+      UpdateLayer();
+      return PP_TRUE;
+    }
   }
-  UpdateLayer();
 
-  return PP_TRUE;
+  // The instance cannot be bound or the device is not a valid resource type.
+  return PP_FALSE;
 }
 
 PP_Bool PluginInstance::IsFullFrame(PP_Instance instance) {
