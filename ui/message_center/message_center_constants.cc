@@ -28,6 +28,7 @@ const int kTextTopPadding = 12;
 
 // Text sizes.
 const int kTitleFontSize = 14;
+const int kTitleLineHeight = 20;
 const int kMessageFontSize = 12;
 const int kMessageLineHeight = 18;
 

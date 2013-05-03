@@ -80,8 +80,10 @@ views::Border* MakeEmptyBorder(int top, int left, int bottom, int right) {
 }
 
 // static
-views::Border* MakeTextBorder(int top, int bottom) {
-  return MakeEmptyBorder(top, kTextLeftPadding, bottom, kTextRightPadding);
+views::Border* MakeTextBorder(int padding, int top, int bottom) {
+  // Split the padding between the top and the bottom, then add the extra space.
+  return MakeEmptyBorder(padding / 2 + top, kTextLeftPadding,
+                         (padding + 1) / 2 + bottom, kTextRightPadding);
 }
 
 // static
@@ -399,34 +401,38 @@ NotificationView::NotificationView(const Notification& notification,
   // Create the title view if appropriate.
   title_view_ = NULL;
   if (!notification.title().empty()) {
+    gfx::Font font = views::Label().font().DeriveFont(2);
+    int padding = kTitleLineHeight - font.GetHeight();
     title_view_ = new BoundedLabel(
-        ui::TruncateString(notification.title(), kTitleCharacterLimit),
-        views::Label().font().DeriveFont(2));
+        ui::TruncateString(notification.title(), kTitleCharacterLimit), font);
+    title_view_->SetLineHeight(kTitleLineHeight);
     title_view_->SetLineLimit(kTitleLineLimit);
     title_view_->SetColors(message_center::kRegularTextColor,
                            kRegularTextBackgroundColor);
-    title_view_->set_border(MakeTextBorder(3, 0));
+    title_view_->set_border(MakeTextBorder(padding, 3, 0));
     top_view_->AddChildView(title_view_);
   }
 
   // Create the message view if appropriate.
   message_view_ = NULL;
   if (!notification.message().empty()) {
+    int padding = kMessageLineHeight - views::Label().font().GetHeight();
     message_view_ = new BoundedLabel(
         ui::TruncateString(notification.message(), kMessageCharacterLimit));
     message_view_->SetLineHeight(kMessageLineHeight);
     message_view_->SetVisible(!is_expanded() || !notification.items().size());
     message_view_->SetColors(kDimTextColor, kDimTextBackgroundColor);
-    message_view_->set_border(MakeTextBorder(4, 1));
+    message_view_->set_border(MakeTextBorder(padding, 4, 0));
     top_view_->AddChildView(message_view_);
   }
 
   // Create the list item views (up to a maximum).
+  int padding = kMessageLineHeight - views::Label().font().GetHeight();
   std::vector<NotificationItem> items = notification.items();
   for (size_t i = 0; i < items.size() && i < kNotificationMaximumItems; ++i) {
     ItemView* item_view = new ItemView(items[i]);
     item_view->SetVisible(is_expanded());
-    item_view->set_border(MakeTextBorder(i > 0 ? 0 : 4, 1));
+    item_view->set_border(MakeTextBorder(padding, i ? 0 : 4, 0));
     item_views_.push_back(item_view);
     top_view_->AddChildView(item_view);
   }

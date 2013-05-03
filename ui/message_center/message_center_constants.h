@@ -33,6 +33,7 @@ extern const int kTextTopPadding;     // V space between text elements.
 
 // Text sizes.
 extern const int kTitleFontSize;      // For title only.
+extern const int kTitleLineHeight;    // In pixels.
 extern const int kMessageFontSize;    // For everything but title.
 extern const int kMessageLineHeight;  // In pixels.
 
