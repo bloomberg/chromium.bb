@@ -107,6 +107,8 @@ class SVNWrapperTestCase(BaseTestCase):
         'RunCommand',
         'cleanup',
         'diff',
+        'nag_max',
+        'nag_timer',
         'pack',
         'relpath',
         'revert',
@@ -496,6 +498,8 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.gclient_utils.CheckCallAndFilterAndHeader(
         ['svn', 'checkout', '--depth', 'empty', self.url, self.base_path],
         always=True,
+        nag_max=3,
+        nag_timer=30,
         cwd=self.root_dir)
     gclient_scm.scm.SVN.RunAndGetFileList(
         options.verbose,
@@ -530,7 +534,7 @@ class SVNWrapperTestCase(BaseTestCase):
     files_list = self.mox.CreateMockAnything()
     gclient_scm.gclient_utils.CheckCallAndFilterAndHeader(
         ['svn', 'export', join(self.url, 'DEPS'), join(self.base_path, 'DEPS')],
-        always=True, cwd=self.root_dir)
+        nag_timer=30, nag_max=3, always=True, cwd=self.root_dir)
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -563,6 +567,8 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.gclient_utils.CheckCallAndFilterAndHeader(
         ['svn', 'checkout', '--depth', 'empty', self.url, self.base_path],
         always=True,
+        nag_max=3,
+        nag_timer=30,
         cwd=self.root_dir)
     gclient_scm.scm.SVN.RunAndGetFileList(
         options.verbose,
@@ -787,6 +793,8 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
         'RunCommand',
         'cleanup',
         'diff',
+        'nag_max',
+        'nag_timer',
         'pack',
         'UpdateSubmoduleConfig',
         'relpath',

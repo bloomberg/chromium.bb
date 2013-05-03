@@ -375,7 +375,7 @@ class GClientChildren(object):
 
 def CheckCallAndFilter(args, stdout=None, filter_fn=None,
                        print_stdout=None, call_filter_on_first_line=False,
-                       **kwargs):
+                       nag_timer=None, nag_max=None, **kwargs):
   """Runs a command and calls back a filter function if needed.
 
   Accepts all subprocess2.Popen() parameters plus:
@@ -399,6 +399,21 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
   # Do a flush of stdout before we begin reading from the subprocess2's stdout
   stdout.flush()
 
+  nag = None
+  if nag_timer:
+    # Hack thread.index to force correct annotation.
+    index = getattr(threading.currentThread(), 'index', 0)
+    def _nag_cb(elapsed):
+      setattr(threading.currentThread(), 'index', index)
+      stdout.write('  No output for %.0f seconds from command:\n' % elapsed)
+      stdout.write('    %s\n' % kid.cmd_str)
+      if (nag_max and
+          int('%.0f' % (elapsed / nag_timer)) >= nag_max):
+        stdout.write('  ... killing it!\n')
+        kid.kill()
+    nag = subprocess2.NagTimer(nag_timer, _nag_cb)
+    nag.start()
+
   # Also, we need to forward stdout to prevent weird re-ordering of output.
   # This has to be done on a per byte basis to make sure it is not buffered:
   # normally buffering is done for each line, but if svn requests input, no
@@ -406,6 +421,8 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
   try:
     in_byte = kid.stdout.read(1)
     if in_byte:
+      if nag:
+        nag.event()
       if call_filter_on_first_line:
         filter_fn(None)
       in_line = ''
@@ -422,6 +439,8 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
           filter_fn(in_line)
           in_line = ''
         in_byte = kid.stdout.read(1)
+        if in_byte and nag:
+          nag.event()
       # Flush the rest of buffered output. This is only an issue with
       # stdout/stderr not ending with a \n.
       if len(in_line):
@@ -435,6 +454,9 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
   except KeyboardInterrupt:
     print >> sys.stderr, 'Failed while running "%s"' % ' '.join(args)
     raise
+  finally:
+    if nag:
+      nag.cancel()
 
   if rv:
     raise subprocess2.CalledProcessError(

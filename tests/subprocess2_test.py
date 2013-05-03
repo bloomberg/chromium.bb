@@ -78,7 +78,7 @@ class DefaultsTest(auto_stub.TestCase):
         results['args'] = args
       @staticmethod
       # pylint: disable=W0622
-      def communicate(input=None, timeout=None, nag_timer=None):
+      def communicate(input=None, timeout=None, nag_max=None, nag_timer=None):
         return None, None
     self.mock(subprocess2, 'Popen', fake_Popen)
     return results
