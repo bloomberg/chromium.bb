@@ -109,21 +109,26 @@ bool GetNetworkList(NetworkInterfaceList* networks) {
     struct sockaddr* addr = interface->ifa_addr;
     if (!addr)
       continue;
-    // Skip loopback addresses configured on non-loopback interfaces.
+    // Skip unspecified addresses (i.e. made of zeroes) and loopback addresses
+    // configured on non-loopback interfaces.
     int addr_size = 0;
     if (addr->sa_family == AF_INET6) {
       struct sockaddr_in6* addr_in6 =
           reinterpret_cast<struct sockaddr_in6*>(addr);
       struct in6_addr* sin6_addr = &addr_in6->sin6_addr;
       addr_size = sizeof(*addr_in6);
-      if (IN6_IS_ADDR_LOOPBACK(sin6_addr))
+      if (IN6_IS_ADDR_LOOPBACK(sin6_addr) ||
+          IN6_IS_ADDR_UNSPECIFIED(sin6_addr)) {
         continue;
+      }
     } else if (addr->sa_family == AF_INET) {
       struct sockaddr_in* addr_in =
           reinterpret_cast<struct sockaddr_in*>(addr);
       addr_size = sizeof(*addr_in);
-      if (addr_in->sin_addr.s_addr == INADDR_LOOPBACK)
+      if (addr_in->sin_addr.s_addr == INADDR_LOOPBACK ||
+          addr_in->sin_addr.s_addr == 0) {
         continue;
+      }
     } else {
       // Skip non-IP addresses.
       continue;
