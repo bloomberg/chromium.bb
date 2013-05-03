@@ -2579,6 +2579,11 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.SpdySession.CreateStreamWithSocketConnected"
+    enum="BooleanSuccess">
+  <summary>Socket connected status in SpdySession::CreateStream.</summary>
+</histogram>
+
 <histogram name="Net.SpdySessionErrorDetails" enum="SpdyProtocolErrorDetails"
     units="count">
   <obsolete>
