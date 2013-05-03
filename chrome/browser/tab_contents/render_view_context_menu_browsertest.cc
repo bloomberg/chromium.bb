@@ -85,6 +85,9 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 // GTK requires a X11-level mouse event to open a context menu correctly.
 #if defined(TOOLKIT_GTK)
 #define MAYBE_RealMenu DISABLED_RealMenu
+#elif defined(OS_CHROMEOS)
+// Flaky on linux_chromeos try bot. http://crbug.com/237819
+#define MAYBE_RealMenu DISABLED_RealMenu
 #else
 #define MAYBE_RealMenu RealMenu
 #endif

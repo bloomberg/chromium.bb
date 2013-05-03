@@ -27,6 +27,12 @@
 #define MAYBE_HttpsContextMenuOrigin DISABLED_HttpsContextMenuOrigin
 #define MAYBE_ContextMenuRedirect DISABLED_ContextMenuRedirect
 #define MAYBE_HttpsContextMenuRedirect DISABLED_HttpsContextMenuRedirect
+#elif defined(OS_CHROMEOS)
+// Flaky on linux_chromeos try bot. http://crbug.com/237819
+#define MAYBE_ContextMenuOrigin DISABLED_ContextMenuOrigin
+#define MAYBE_HttpsContextMenuOrigin DISABLED_HttpsContextMenuOrigin
+#define MAYBE_ContextMenuRedirect DISABLED_ContextMenuRedirect
+#define MAYBE_HttpsContextMenuRedirect DISABLED_HttpsContextMenuRedirect
 #else
 #define MAYBE_ContextMenuOrigin ContextMenuOrigin
 #define MAYBE_HttpsContextMenuOrigin HttpsContextMenuOrigin
