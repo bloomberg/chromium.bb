@@ -32,7 +32,6 @@
 #include <ApplicationServices/ApplicationServices.h>
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/SimpleFontData.h"
-#include "core/platform/mac/WebCoreSystemInterface.h"
 
 // Forward declare Mac SPIs.
 // Request for public API: rdar://13787589
@@ -72,10 +71,10 @@ bool GlyphPage::fill(unsigned offset, unsigned length, UChar* buffer, unsigned b
                 haveGlyphs = true;
             }
         }
-    } else if (!fontData->platformData().isCompositeFontReference() && ((fontData->platformData().widthVariant() == RegularWidth) ? WKGetVerticalGlyphsForCharacters(fontData->platformData().ctFont(), buffer, glyphs.data(), bufferLength)
-               : CTFontGetGlyphsForCharacters(fontData->platformData().ctFont(), buffer, glyphs.data(), bufferLength))) {
-        // When buffer consists of surrogate pairs, WKGetVerticalGlyphsForCharacters and CTFontGetGlyphsForCharacters
-        // place the glyphs at indices corresponding to the first character of each pair.
+    } else if (!fontData->platformData().isCompositeFontReference() && fontData->platformData().widthVariant() != RegularWidth
+               && CTFontGetGlyphsForCharacters(fontData->platformData().ctFont(), buffer, glyphs.data(), bufferLength)) {
+        // When buffer consists of surrogate pairs, CTFontGetGlyphsForCharacters
+        // places the glyphs at indices corresponding to the first character of each pair.
         unsigned glyphStep = bufferLength / length;
         for (unsigned i = 0; i < length; ++i) {
             if (!glyphs[i * glyphStep])

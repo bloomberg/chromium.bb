@@ -29,9 +29,14 @@
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/TextRun.h"
-#include "core/platform/mac/WebCoreSystemInterface.h"
 
 #include <ApplicationServices/ApplicationServices.h>
+
+// Forward declare Mac SPIs.
+extern "C" {
+// Request for public API: rdar://13803619
+CTLineRef CTLineCreateWithUniCharProvider(const UniChar* (*provide)(CFIndex stringIndex, CFIndex* charCount, CFDictionaryRef* attributes, void* context), void (*dispose)(const UniChar* chars, void* context), void* context);
+}
 
 @interface WebCascadeList : NSArray {
     @private
@@ -230,7 +235,7 @@ void ComplexTextController::collectComplexTextRunsForCharacters(const UChar* cp,
     } else {
         ProviderInfo info = { cp, length, stringAttributes.get() };
 
-        line.adoptCF(WKCreateCTLineWithUniCharProvider(&provideStringAndAttributes, 0, &info));
+        line.adoptCF(CTLineCreateWithUniCharProvider(&provideStringAndAttributes, 0, &info));
     }
 
     m_coreTextLines.append(line.get());

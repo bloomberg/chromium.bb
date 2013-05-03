@@ -29,7 +29,6 @@
 #include <sys/sysctl.h>
 #include <sys/time.h>
 #include "core/platform/PlatformWheelEvent.h"
-#include "core/platform/mac/WebCoreSystemInterface.h"
 
 #if ENABLE(RUBBER_BANDING)
 

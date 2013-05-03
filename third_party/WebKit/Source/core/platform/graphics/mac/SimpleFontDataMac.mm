@@ -38,7 +38,6 @@
 #import "core/platform/graphics/FontCache.h"
 #import "core/platform/graphics/FontDescription.h"
 #import "core/platform/mac/BlockExceptions.h"
-#import "core/platform/mac/WebCoreSystemInterface.h"
 #import <wtf/Assertions.h>
 #import <wtf/RetainPtr.h>
 #import <wtf/StdLibExtras.h>
@@ -48,10 +47,39 @@
 - (BOOL)_isFakeFixedPitch;
 @end
 
+// The names of these constants were taken from history
+// /trunk/WebKit/WebCoreSupport.subproj/WebTextRenderer.m@9311. The values
+// were derived from the assembly of libWebKitSystemInterfaceLeopard.a.
+enum CGFontRenderingMode {
+  kCGFontRenderingMode1BitPixelAligned = 0x0,
+  kCGFontRenderingModeAntialiasedPixelAligned = 0x1,
+  kCGFontRenderingModeAntialiased = 0xd
+};
+
+// Forward declare Mac SPIs.
+extern "C" {
+// Request for public API: rdar://13803586
+bool CGFontGetGlyphAdvancesForStyle(CGFontRef font, CGAffineTransform* transform, CGFontRenderingMode renderingMode, ATSGlyphRef* glyph, size_t count, CGSize* advance);
+
+// Request for public API: rdar://13803619
+CTLineRef CTLineCreateWithUniCharProvider(const UniChar* (*provide)(CFIndex stringIndex, CFIndex* charCount, CFDictionaryRef* attributes, void* context), void (*dispose)(const UniChar* chars, void* context), void* context);
+}
+
+static CGFontRenderingMode cgFontRenderingModeForNSFont(NSFont* font) {
+    if (!font)
+        return kCGFontRenderingModeAntialiasedPixelAligned;
+
+    switch ([font renderingMode]) {
+        case NSFontIntegerAdvancementsRenderingMode: return kCGFontRenderingMode1BitPixelAligned;
+        case NSFontAntialiasedIntegerAdvancementsRenderingMode: return kCGFontRenderingModeAntialiasedPixelAligned;
+        default: return kCGFontRenderingModeAntialiased;
+    }
+}
+
 using namespace std;
 
 namespace WebCore {
-  
+
 static bool fontHasVerticalGlyphs(CTFontRef ctFont)
 {
     // The check doesn't look neat but this is what AppKit does for vertical writing...
@@ -393,7 +421,7 @@ float SimpleFontData::platformWidthForGlyph(Glyph glyph) const
         else {
             float pointSize = platformData().m_size;
             CGAffineTransform m = CGAffineTransformMakeScale(pointSize, pointSize);
-            if (!WKGetGlyphTransformedAdvances(platformData().cgFont(), font, &m, &glyph, &advance)) {
+            if (!CGFontGetGlyphAdvancesForStyle(platformData().cgFont(), &m, cgFontRenderingModeForNSFont(font), &glyph, 1, &advance)) {
                 LOG_ERROR("Unable to cache glyph widths for %@ %f", [font displayName], pointSize);
                 advance.width = 0;
             }
@@ -435,7 +463,7 @@ bool SimpleFontData::canRenderCombiningCharacterSequence(const UChar* characters
     RetainPtr<CGFontRef> cgFont(AdoptCF, CTFontCopyGraphicsFont(platformData().ctFont(), 0));
 
     ProviderInfo info = { characters, length, getCFStringAttributes(0, platformData().orientation()) };
-    RetainPtr<CTLineRef> line(AdoptCF, WKCreateCTLineWithUniCharProvider(&provideStringAndAttributes, 0, &info));
+    RetainPtr<CTLineRef> line(AdoptCF, CTLineCreateWithUniCharProvider(&provideStringAndAttributes, 0, &info));
 
     CFArrayRef runArray = CTLineGetGlyphRuns(line.get());
     CFIndex runCount = CFArrayGetCount(runArray);

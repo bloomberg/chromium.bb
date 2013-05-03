@@ -25,7 +25,6 @@
 #import "core/platform/graphics/FontPlatformData.h"
 
 #import <AppKit/NSFont.h>
-#import "core/platform/mac/WebCoreSystemInterface.h"
 #import <wtf/text/WTFString.h>
 
 #if OS(DARWIN)

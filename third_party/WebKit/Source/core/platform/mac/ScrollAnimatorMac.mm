@@ -37,7 +37,6 @@
 #include "core/platform/mac/EmptyProtocolDefinitions.h"
 #include "core/platform/mac/NSScrollerImpDetails.h"
 #include "core/platform/mac/ScrollbarThemeMac.h"
-#include "core/platform/mac/WebCoreSystemInterface.h"
 #include <wtf/MainThread.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/UnusedParam.h>

@@ -35,7 +35,6 @@
 #include "core/platform/mac/LocalCurrentGraphicsContext.h"
 #include "core/platform/mac/NSScrollerImpDetails.h"
 #include "core/platform/mac/ScrollAnimatorMac.h"
-#include "core/platform/mac/WebCoreSystemInterface.h"
 #include <wtf/HashMap.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/TemporaryChange.h>

@@ -34,7 +34,6 @@
 #import "core/platform/graphics/Font.h"
 #import "core/platform/graphics/FontPlatformData.h"
 #import "core/platform/graphics/SimpleFontData.h"
-#import "core/platform/mac/WebCoreSystemInterface.h"
 #import "core/platform/mac/WebFontCache.h"
 #import <wtf/MainThread.h>
 #import <wtf/StdLibExtras.h>
@@ -44,6 +43,12 @@
 extern "C" {
 void CGFontSetShouldUseMulticache(bool enable);
 }
+
+// Request for public API: rdar://13803570
+@interface NSFont (WebKitSPI)
++ (NSFont*)findFontLike:(NSFont*)font forString:(NSString*)string withRange:(NSRange)range inLanguage:(id)useNil;
++ (NSFont*)findFontLike:(NSFont*)font forCharacter:(UniChar)uc inLanguage:(id)useNil;
+@end
 
 namespace WebCore {
 
@@ -100,11 +105,11 @@ PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacters(const Font& font,
     NSFont *nsFont = platformData.font();
 
     NSString *string = [[NSString alloc] initWithCharactersNoCopy:const_cast<UChar*>(characters) length:length freeWhenDone:NO];
-    NSFont *substituteFont = WKGetFontInLanguageForRange(nsFont, string, NSMakeRange(0, length));
+    NSFont *substituteFont = [NSFont findFontLike:nsFont forString:string withRange:NSMakeRange(0, length) inLanguage:nil];
     [string release];
 
     if (!substituteFont && length == 1)
-        substituteFont = WKGetFontInLanguageForCharacter(nsFont, characters[0]);
+        substituteFont = [NSFont findFontLike:nsFont forCharacter:characters[0] inLanguage:nil];
     if (!substituteFont)
         return 0;
 

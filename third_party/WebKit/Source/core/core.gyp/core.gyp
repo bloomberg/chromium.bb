@@ -73,56 +73,6 @@
     },
   },
 
-  'conditions': [
-    ['OS == "mac"', {
-      'targets': [
-        {
-          # On the Mac, libWebKitSystemInterface*.a is used to help WebCore
-          # interface with the system.  This library is supplied as a static
-          # library in binary format.  At present, it contains many global
-          # symbols not marked private_extern.  It should be considered an
-          # implementation detail of WebCore, and does not need these symbols
-          # to be exposed so widely.
-          #
-          # This target contains an action that cracks open the existing
-          # static library and rebuilds it with these global symbols
-          # transformed to private_extern.
-          'target_name': 'webkit_system_interface',
-          'type': 'none',
-          'variables': {
-            'adjusted_library_path':
-                '<(PRODUCT_DIR)/libWebKitSystemInterfaceLeopardPrivateExtern.a',
-          },
-          'actions': [
-            {
-              'action_name': 'Adjust Visibility',
-              'inputs': [
-                'mac/adjust_visibility.sh',
-                '<(DEPTH)/third_party/apple_webkit/libWebKitSystemInterfaceLeopard.a',
-              ],
-              'outputs': [
-                '<(adjusted_library_path)',
-              ],
-              'action': [
-                '<@(_inputs)',
-                '<@(_outputs)',
-                '<(INTERMEDIATE_DIR)/adjust_visibility',  # work directory
-              ],
-            },
-          ],  # actions
-          'link_settings': {
-            'libraries': [
-              '<(adjusted_library_path)',
-
-              # libWebKitSystemInterfaceLeopard.a references _kCIFormatRGBA8.
-              '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
-            ],
-          },  # link_settings
-        },  # target webkit_system_interface
-      ],  # targets
-    }],  # condition OS == "mac"
-  ],  # conditions
-
   'targets': [
     {
       'target_name': 'inspector_protocol_sources',
@@ -342,11 +292,6 @@
             '<(SHARED_INTERMEDIATE_DIR)/webkit/V8SVGElementWrapperFactory.cpp',
          ],
         }],
-        ['OS=="mac"', {
-          'include_dirs': [
-            '<(DEPTH)/third_party/apple_webkit',
-          ],
-        }],
         ['OS=="win"', {
           'defines': [
             'WEBCORE_NAVIGATOR_PLATFORM="Win32"',
@@ -419,9 +364,6 @@
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         '<(libjpeg_gyp_path):libjpeg',
       ],
-      # This is needed for mac because of webkit_system_interface. It'd be nice
-      # if this hard dependency could be split off the rest.
-      'hard_dependency': 1,
       'direct_dependent_settings': {
         'defines': [
           'WEBCORE_NAVIGATOR_VENDOR="Google Inc."',
@@ -480,12 +422,6 @@
           ],
         }],
         ['OS=="mac"', {
-          'dependencies': [
-            'webkit_system_interface',
-          ],
-          'export_dependent_settings': [
-            'webkit_system_interface',
-          ],
           'direct_dependent_settings': {
             'defines': [
               # Match Safari and Mozilla on Mac x86.
@@ -520,9 +456,6 @@
               'WebScrollbarPainterControllerDelegate=ChromiumWebCoreObjCWebScrollbarPainterControllerDelegate',
               'WebScrollbarPainterDelegate=ChromiumWebCoreObjCWebScrollbarPainterDelegate',
               'WebScrollbarPartAnimation=ChromiumWebCoreObjCWebScrollbarPartAnimation',
-            ],
-            'include_dirs': [
-              '<(DEPTH)/third_party/apple_webkit',
             ],
             'postbuilds': [
               {
@@ -647,9 +580,6 @@
       # Disable c4724 warnings which is generated in VS2012 due to improper
       # compiler optimizations, see crbug.com/237063
       'msvs_disabled_warnings': [ 4267, 4334, 4724 ],
-      # This is needed for mac because of webkit_system_interface. It'd be nice
-      # if this hard dependency could be split off the rest.
-      'hard_dependency': 1,
       'sources': [
         '<@(webcore_platform_files)',
       ],
@@ -723,12 +653,7 @@
           ],
         }],
         ['OS=="mac"', {
-          # Necessary for Mac .mm stuff.
-          'include_dirs': [
-            '<(DEPTH)/third_party/apple_webkit',
-          ],
           'dependencies': [
-            'webkit_system_interface',
             '<(DEPTH)/third_party/harfbuzz-ng/harfbuzz.gyp:harfbuzz-ng',
           ],
           'sources': [
@@ -1012,9 +937,6 @@
         '<(DEPTH)/third_party/v8-i18n/build/all.gyp:v8-i18n',
         'webcore_prerequisites',
       ],
-      # This is needed for mac because of webkit_system_interface. It'd be nice
-      # if this hard dependency could be split off the rest.
-      'hard_dependency': 1,
       'sources': [
         '<@(webcore_files)',
       ],
@@ -1101,7 +1023,6 @@
         ['OS=="mac"', {
           'direct_dependent_settings': {
             'include_dirs': [
-              '<(DEPTH)/third_party/apple_webkit',
               '../../WebKit/mac/WebCoreSupport',
             ],
           },
