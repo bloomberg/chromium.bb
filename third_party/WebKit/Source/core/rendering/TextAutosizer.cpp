@@ -352,7 +352,8 @@ bool TextAutosizer::isIndependentDescendant(const RenderBlock* renderer)
         || renderer->isFlexibleBoxIncludingDeprecated()
         || renderer->hasColumns()
         || renderer->containingBlock()->isHorizontalWritingMode() != renderer->isHorizontalWritingMode()
-        || renderer->style()->isDisplayReplacedType();
+        || renderer->style()->isDisplayReplacedType()
+        || renderer->isTextArea();
     // FIXME: Tables need special handling to multiply all their columns by
     // the same amount even if they're different widths; so do hasColumns()
     // containers, and probably flexboxes...
@@ -476,10 +477,17 @@ bool TextAutosizer::compositeClusterShouldBeAutosized(Vector<TextAutosizingClust
     // if a cluster contains very few lines of text then it's ok to have to zoom
     // in and pan from side to side to read each line, since if there are very
     // few lines of text you'll only need to pan across once or twice.
+    //
+    // An exception to the 4 lines of text are the textarea clusters, which are
+    // always autosized by default (i.e. threated as if they contain more than 4
+    // lines of text). This is to ensure that the text does not suddenly get
+    // autosized when the user enters more than 4 lines of text.
     float totalTextWidth = 0;
     const float minLinesOfText = 4;
     float minTextWidth = blockWidth * minLinesOfText;
     for (size_t i = 0; i < clusterInfos.size(); ++i) {
+        if (clusterInfos[i].root->isTextArea())
+            return true;
         measureDescendantTextWidth(clusterInfos[i].blockContainingAllText, clusterInfos[i], minTextWidth, totalTextWidth);
         if (totalTextWidth >= minTextWidth)
             return true;
