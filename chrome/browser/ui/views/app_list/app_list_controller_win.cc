@@ -831,6 +831,13 @@ gfx::Point AppListController::FindAnchorPoint(
   const int kSnapOffset = 3;
 
   gfx::Rect bounds_rect(display.work_area());
+  // Always subtract the taskbar area since work_area() will not subtract it if
+  // the taskbar is set to auto-hide, and the app list should never overlap the
+  // taskbar.
+  gfx::Rect taskbar_rect;
+  if (GetTaskbarRect(&taskbar_rect))
+    bounds_rect.Subtract(taskbar_rect);
+
   gfx::Size view_size(current_view_->GetPreferredSize());
   bounds_rect.Inset(view_size.width() / 2 + kSnapOffset,
                     view_size.height() / 2 + kSnapOffset);
