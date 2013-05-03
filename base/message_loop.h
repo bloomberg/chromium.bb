@@ -34,8 +34,8 @@
 
 #if defined(USE_AURA) && defined(USE_X11) && !defined(OS_NACL)
 #include "base/message_pump_aurax11.h"
-#elif defined(USE_MESSAGEPUMP_LINUX) && !defined(OS_NACL)
-#include "base/message_pump_linux.h"
+#elif defined(USE_OZONE) && !defined(OS_NACL)
+#include "base/message_pump_ozone.h"
 #else
 #include "base/message_pump_gtk.h"
 #endif

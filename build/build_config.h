@@ -68,11 +68,6 @@
 #define OS_POSIX 1
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID) && \
-    !defined(OS_NACL) && !defined(USE_MESSAGEPUMP_LINUX)
-#define USE_X11 1  // Use X for graphics.
-#endif
-
 // Use tcmalloc
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(NO_TCMALLOC)
 #define USE_TCMALLOC 1

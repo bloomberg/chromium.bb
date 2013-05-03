@@ -292,10 +292,10 @@
           'message_pump.h',
           'message_pump_android.cc',
           'message_pump_android.h',
-          'message_pump_linux.cc',
-          'message_pump_linux.h',
           'message_pump_default.cc',
           'message_pump_default.h',
+          'message_pump_ozone.cc',
+          'message_pump_ozone.h',
           'message_pump_win.cc',
           'message_pump_win.h',
           'metrics/sample_map.cc',
@@ -732,15 +732,11 @@
               'string16.cc',
             ],
           },],
-          ['<(use_messagepump_linux) == 1', {
+          ['<(use_ozone) == 1', {
             'sources!': [
               'message_pump_glib.cc',
               'message_pump_aurax11.cc',
             ]
-          }, { # use_message_pump_linux!=1
-            'sources!': [
-              'message_pump_linux.cc',
-            ],
           }],
           ['OS == "linux" and >(nacl_untrusted_build)==0', {
             'sources!': [

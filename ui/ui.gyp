@@ -816,7 +816,7 @@
             ['exclude', 'base/x/*'],
           ],
         }],
-        ['use_messagepump_linux==0', {
+        ['use_ozone==0', {
           'sources!': [
             'base/cursor/cursor_null.cc',
             'base/cursor/cursor_loader_null.cc',

@@ -2,11 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MESSAGE_PUMP_LINUX_H_
-#define BASE_MESSAGE_PUMP_LINUX_H_
-
-
-#include "base/message_pump.h"
+#ifndef BASE_MESSAGE_PUMP_OZONE_H_
+#define BASE_MESSAGE_PUMP_OZONE_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -19,13 +16,13 @@ namespace base {
 
 // This class implements a message-pump for processing events from input devices
 // Refer to MessagePump for further documentation.
-class BASE_EXPORT MessagePumpLinux : public MessagePumpLibevent,
+class BASE_EXPORT MessagePumpOzone : public MessagePumpLibevent,
                                      public MessagePumpDispatcher {
  public:
-  MessagePumpLinux();
+  MessagePumpOzone();
 
   // Returns the UI message pump.
-  static MessagePumpLinux* Current();
+  static MessagePumpOzone* Current();
 
   // Add/Remove the root window dispatcher.
   void AddDispatcherForRootWindow(MessagePumpDispatcher* dispatcher);
@@ -42,14 +39,14 @@ class BASE_EXPORT MessagePumpLinux : public MessagePumpLibevent,
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
  private:
-  virtual ~MessagePumpLinux();
+  virtual ~MessagePumpOzone();
   std::vector<MessagePumpDispatcher*> dispatcher_;
 
-  DISALLOW_COPY_AND_ASSIGN(MessagePumpLinux);
+  DISALLOW_COPY_AND_ASSIGN(MessagePumpOzone);
 };
 
-typedef MessagePumpLinux MessagePumpForUI;
+typedef MessagePumpOzone MessagePumpForUI;
 
 }  // namespace base
 
-#endif  // BASE_MESSAGE_PUMP_LINUX_H_
+#endif  // BASE_MESSAGE_PUMP_OZONE_H_

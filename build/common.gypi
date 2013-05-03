@@ -27,9 +27,6 @@
             # Whether or not we are building the Ash shell.
             'use_ash%': 0,
 
-            # Whether or not we are using the embedded messagepump.
-            'use_messagepump_linux%': 0,
-
             # Use a raw surface abstraction.
             'use_ozone%': 0,
           },
@@ -38,9 +35,6 @@
           'use_aura%': '<(use_aura)',
           'use_ash%': '<(use_ash)',
           'use_ozone%': '<(use_ozone)',
-
-          # Whether or not we are using the /dev/input/event* message pump.
-          'use_messagepump_linux%': '<(use_messagepump_linux)',
 
           # Whether we are using Views Toolkit
           'toolkit_views%': 0,
@@ -101,7 +95,6 @@
         'chromeos%': '<(chromeos)',
         'use_aura%': '<(use_aura)',
         'use_ash%': '<(use_ash)',
-        'use_messagepump_linux%': '<(use_messagepump_linux)',
         'use_ozone%': '<(use_ozone)',
         'use_openssl%': '<(use_openssl)',
         'enable_viewport%': '<(enable_viewport)',
@@ -140,7 +133,7 @@
           }],
 
           # Set toolkit_uses_gtk for the Chromium browser on Linux.
-          ['(OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris") and use_aura==0 and use_messagepump_linux==0', {
+          ['(OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris") and use_aura==0 and use_ozone==0', {
             'toolkit_uses_gtk%': 1,
           }, {
             'toolkit_uses_gtk%': 0,
@@ -186,7 +179,6 @@
       'toolkit_uses_gtk%': '<(toolkit_uses_gtk)',
       'use_aura%': '<(use_aura)',
       'use_ash%': '<(use_ash)',
-      'use_messagepump_linux%': '<(use_messagepump_linux)',
       'use_ozone%': '<(use_ozone)',
       'use_openssl%': '<(use_openssl)',
       'enable_viewport%': '<(enable_viewport)',
@@ -450,7 +442,7 @@
         }],
 
         # Flags to use X11 on non-Mac POSIX platforms.
-        ['OS=="win" or OS=="mac" or OS=="ios" or OS=="android" or use_messagepump_linux==1', {
+        ['OS=="win" or OS=="mac" or OS=="ios" or OS=="android" or use_ozone==1', {
           'use_x11%': 0,
         }, {
           'use_x11%': 1,
@@ -724,7 +716,6 @@
     'os_bsd%': '<(os_bsd)',
     'os_posix%': '<(os_posix)',
     'use_glib%': '<(use_glib)',
-    'use_messagepump_linux%': '<(use_messagepump_linux)',
     'use_ozone%': '<(use_ozone)',
     'toolkit_uses_gtk%': '<(toolkit_uses_gtk)',
     'use_x11%': '<(use_x11)',
@@ -1862,9 +1853,6 @@
       }],
       ['use_ash==1', {
         'defines': ['USE_ASH=1'],
-      }],
-      ['use_messagepump_linux==1', {
-        'defines': ['USE_MESSAGEPUMP_LINUX=1'],
       }],
       ['use_ozone==1', {
         'defines': ['USE_OZONE=1'],

@@ -407,7 +407,7 @@
             'libraries': [ '-lXcursor', ],
           },
         }],
-        ['use_messagepump_linux==0', {
+        ['use_ozone==0', {
           'sources!': [
             'webcursor_null.cc',
           ],

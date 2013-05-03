@@ -747,7 +747,7 @@
             'message_pump_glib_unittest.cc',
           ]
         }],
-        ['use_messagepump_linux == 1', {
+        ['use_ozone == 1', {
           'sources!': [
             'message_pump_glib_unittest.cc',
           ]
