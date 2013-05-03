@@ -10,6 +10,7 @@
 #include "ash/system/user/login_status.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_tray_delegate.h"
 #include "ui/views/bubble/tray_bubble_view.h"
@@ -48,7 +49,8 @@ class ASH_EXPORT WebNotificationTray
     : public internal::TrayBackgroundView,
       public views::TrayBubbleView::Delegate,
       public message_center::MessageCenterTrayDelegate,
-      public views::ButtonListener {
+      public views::ButtonListener,
+      public base::SupportsWeakPtr<WebNotificationTray> {
  public:
   explicit WebNotificationTray(
       internal::StatusAreaWidget* status_area_widget);
@@ -114,6 +116,8 @@ class ASH_EXPORT WebNotificationTray
                            ManyMessageCenterNotifications);
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, ManyPopupNotifications);
 
+  void UpdateTrayContent();
+
   // Queries login status and the status area widget to determine visibility of
   // the message center.
   bool ShouldShowMessageCenter();
@@ -145,6 +149,8 @@ class ASH_EXPORT WebNotificationTray
   internal::WebNotificationButton* button_;
 
   bool show_message_center_on_unlock_;
+
+  bool should_update_tray_content_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationTray);
 };

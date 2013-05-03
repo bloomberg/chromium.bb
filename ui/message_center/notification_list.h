@@ -109,6 +109,9 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   void MarkSinglePopupAsShown(const std::string& id,
                               bool mark_notification_as_read);
 
+  // Marks a specific popup item as displayed.
+  void MarkSinglePopupAsDisplayed(const std::string& id);
+
   // Marks the specified notification as expanded in the notification center.
   void MarkNotificationAsExpanded(const std::string& id);
 

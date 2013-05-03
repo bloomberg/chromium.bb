@@ -253,6 +253,11 @@ void MessageCenterImpl::MarkSinglePopupAsShown(const std::string& id,
 }
 
 void MessageCenterImpl::DisplayedNotification(const std::string& id) {
+  if (!HasNotification(id))
+    return;
+
+  if (HasPopupNotifications())
+    notification_list_->MarkSinglePopupAsDisplayed(id);
   FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
                     OnNotificationDisplayed(id));
 }

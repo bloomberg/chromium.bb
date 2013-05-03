@@ -122,7 +122,8 @@ MessageCenterTrayDelegate* CreateMessageCenterTray() {
 
 WebNotificationTrayWin::WebNotificationTrayWin()
     : status_icon_(NULL),
-      message_center_visible_(false) {
+      message_center_visible_(false),
+      should_update_tray_content_(true) {
   message_center_tray_.reset(new MessageCenterTray(
       this, g_browser_process->message_center()));
   StatusTray* status_tray = g_browser_process->status_tray();
@@ -203,7 +204,12 @@ void WebNotificationTrayWin::UpdatePopups() {
 };
 
 void WebNotificationTrayWin::OnMessageCenterTrayChanged() {
-  UpdateStatusIcon();
+  // See the comments in ash/system/web_notification/web_notification_tray.cc
+  // for why PostTask.
+  should_update_tray_content_ = true;
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&WebNotificationTrayWin::UpdateStatusIcon, AsWeakPtr()));
 }
 
 gfx::Rect WebNotificationTrayWin::GetMessageCenterAnchor() {
@@ -239,6 +245,10 @@ gfx::NativeView WebNotificationTrayWin::GetBubbleWindowContainer() {
 }
 
 void WebNotificationTrayWin::UpdateStatusIcon() {
+  if (!should_update_tray_content_)
+    return;
+  should_update_tray_content_ = false;
+
   int unread_notifications = message_center()->UnreadNotificationCount();
   status_icon_->SetImage(GetIcon(unread_notifications));
 

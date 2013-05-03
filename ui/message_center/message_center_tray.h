@@ -72,6 +72,8 @@ class MESSAGE_CENTER_EXPORT MessageCenterTray
   virtual void OnNotificationButtonClicked(
       const std::string& notification_id,
       int button_index) OVERRIDE;
+  virtual void OnNotificationDisplayed(
+      const std::string& notification_id) OVERRIDE;
 
   // Overridden from SimpleMenuModel::Delegate.
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;

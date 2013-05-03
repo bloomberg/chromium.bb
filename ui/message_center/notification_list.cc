@@ -53,22 +53,20 @@ void NotificationList::SetMessageCenterVisible(
     return;
 
   message_center_visible_ = visible;
-  // When the center appears, mark all notifications as shown, and
-  // when the center is hidden, clear the unread count, and mark all
-  // notifications as read.
+
   if (!visible)
-    unread_count_ = 0;
+    return;
+
+  unread_count_ = 0;
 
   for (Notifications::iterator iter = notifications_.begin();
        iter != notifications_.end(); ++iter) {
-    if (visible) {
-      if (updated_ids && !(*iter)->shown_as_popup())
-        updated_ids->insert((*iter)->id());
-      (*iter)->set_shown_as_popup(true);
-    } else {
-      if (updated_ids && !(*iter)->is_read())
-        updated_ids->insert((*iter)->id());
-      (*iter)->set_is_read(true);
+    Notification* notification = *iter;
+    notification->set_shown_as_popup(true);
+    notification->set_is_read(true);
+    if (updated_ids &&
+        !(notification->shown_as_popup() && notification->is_read())) {
+      updated_ids->insert(notification->id());
     }
   }
 }
@@ -259,9 +257,25 @@ void NotificationList::MarkSinglePopupAsShown(
 
   (*iter)->set_shown_as_popup(true);
 
-  if (mark_notification_as_read) {
-    --unread_count_;
+  // The popup notification is already marked as read when it's displayed.
+  // Set the is_read() back to false if necessary.
+  if (!mark_notification_as_read) {
+    (*iter)->set_is_read(false);
+    ++unread_count_;
+  }
+}
+
+void NotificationList::MarkSinglePopupAsDisplayed(const std::string& id) {
+  Notifications::iterator iter = GetNotification(id);
+  if (iter == notifications_.end())
+    return;
+
+  if ((*iter)->shown_as_popup())
+    return;
+
+  if (!(*iter)->is_read()) {
     (*iter)->set_is_read(true);
+    --unread_count_;
   }
 }
 

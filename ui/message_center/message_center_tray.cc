@@ -132,6 +132,11 @@ void MessageCenterTray::OnNotificationButtonClicked(
     OnMessageCenterChanged();
 }
 
+void MessageCenterTray::OnNotificationDisplayed(
+    const std::string& notification_id) {
+  NotifyMessageCenterTrayChanged();
+}
+
 void MessageCenterTray::OnMessageCenterChanged() {
   if (message_center_visible_) {
     if (message_center_->NotificationCount() == 0)

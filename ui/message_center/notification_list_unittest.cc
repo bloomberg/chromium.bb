@@ -135,13 +135,26 @@ TEST_F(NotificationListTest, MessageCenterVisible) {
   AddNotification(NULL);
   EXPECT_EQ(1u, notification_list()->NotificationCount());
   ASSERT_EQ(1u, notification_list()->unread_count());
+  ASSERT_EQ(1u, GetPopupCounts());
 
-  // Toggle the message center visibility. It resets the unread count when
-  // hidden.
+  // Make the message center visible. It resets the unread count and popup
+  // counts.
   notification_list()->SetMessageCenterVisible(true, NULL);
-  ASSERT_EQ(1u, notification_list()->unread_count());
-  notification_list()->SetMessageCenterVisible(false, NULL);
   ASSERT_EQ(0u, notification_list()->unread_count());
+  ASSERT_EQ(0u, GetPopupCounts());
+}
+
+TEST_F(NotificationListTest, UnreadCount) {
+  std::string id0 = AddNotification(NULL);
+  std::string id1 = AddNotification(NULL);
+  ASSERT_EQ(2u, notification_list()->unread_count());
+
+  notification_list()->MarkSinglePopupAsDisplayed(id0);
+  EXPECT_EQ(1u, notification_list()->unread_count());
+  notification_list()->MarkSinglePopupAsDisplayed(id0);
+  EXPECT_EQ(1u, notification_list()->unread_count());
+  notification_list()->MarkSinglePopupAsDisplayed(id1);
+  EXPECT_EQ(0u, notification_list()->unread_count());
 }
 
 TEST_F(NotificationListTest, UpdateNotification) {
@@ -383,11 +396,14 @@ TEST_F(NotificationListTest, MarkSinglePopupAsShown) {
   ASSERT_EQ(3u, notification_list()->NotificationCount());
   ASSERT_EQ(std::min(static_cast<size_t>(3u), kMaxVisiblePopupNotifications),
             GetPopupCounts());
+  notification_list()->MarkSinglePopupAsDisplayed(id1);
+  notification_list()->MarkSinglePopupAsDisplayed(id2);
+  notification_list()->MarkSinglePopupAsDisplayed(id3);
 
   notification_list()->MarkSinglePopupAsShown(id2, true);
   notification_list()->MarkSinglePopupAsShown(id3, false);
   EXPECT_EQ(3u, notification_list()->NotificationCount());
-  EXPECT_EQ(2u, notification_list()->unread_count());
+  EXPECT_EQ(1u, notification_list()->unread_count());
   EXPECT_EQ(1u, GetPopupCounts());
   NotificationList::PopupNotifications popups =
       notification_list()->GetPopupNotifications();
@@ -440,12 +456,14 @@ TEST_F(NotificationListTest, MarkSinglePopupAsShown) {
 TEST_F(NotificationListTest, UpdateAfterMarkedAsShown) {
   std::string id1 = AddNotification(NULL);
   std::string id2 = AddNotification(NULL);
+  notification_list()->MarkSinglePopupAsDisplayed(id1);
+  notification_list()->MarkSinglePopupAsDisplayed(id2);
 
   EXPECT_EQ(2u, GetPopupCounts());
 
   const Notification* n1 = GetNotification(id1);
   EXPECT_FALSE(n1->shown_as_popup());
-  EXPECT_FALSE(n1->is_read());
+  EXPECT_TRUE(n1->is_read());
 
   notification_list()->MarkSinglePopupAsShown(id1, true);
 

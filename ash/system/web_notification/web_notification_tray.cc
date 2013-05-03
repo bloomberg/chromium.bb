@@ -172,7 +172,8 @@ WebNotificationTray::WebNotificationTray(
     internal::StatusAreaWidget* status_area_widget)
     : TrayBackgroundView(status_area_widget),
       button_(NULL),
-      show_message_center_on_unlock_(false) {
+      show_message_center_on_unlock_(false),
+      should_update_tray_content_(false) {
   button_ = new internal::WebNotificationButton(this);
   button_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON);
@@ -464,6 +465,20 @@ void WebNotificationTray::ButtonPressed(views::Button* sender,
 }
 
 void WebNotificationTray::OnMessageCenterTrayChanged() {
+  // Do not update the tray contents directly. Multiple change events can happen
+  // consecutively, and calling Update in the middle of those events will show
+  // intermediate unread counts for a moment.
+  should_update_tray_content_ = true;
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&WebNotificationTray::UpdateTrayContent, AsWeakPtr()));
+}
+
+void WebNotificationTray::UpdateTrayContent() {
+  if (!should_update_tray_content_)
+    return;
+  should_update_tray_content_ = false;
+
   message_center::MessageCenter* message_center =
       message_center_tray_->message_center();
   button_->SetUnreadCount(message_center->UnreadNotificationCount());
