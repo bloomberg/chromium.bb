@@ -242,13 +242,6 @@ const QualifiedName* CustomElementHelpers::findLocalName(v8::Handle<v8::Object> 
     return 0;
 }
 
-bool CustomElementHelpers::isCustomElement(Element* element)
-{
-    // FIXME: This dynamically consults the "is" attribute; instead a
-    // bit should be marked on elements that are Custom Elements
-    return CustomElementRegistry::isCustomTagName(element->localName()) || CustomElementRegistry::isCustomTagName(element->getAttribute(HTMLNames::isAttr));
-}
-
 void CustomElementHelpers::invokeReadyCallbackIfNeeded(Element* element, v8::Handle<v8::Context> context)
 {
     v8::Handle<v8::Value> wrapperValue = toV8(element, context->Global(), context->GetIsolate());

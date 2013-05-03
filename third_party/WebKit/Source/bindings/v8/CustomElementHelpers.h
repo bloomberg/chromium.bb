@@ -88,8 +88,6 @@ public:
     // proper prototype instances accordingly.
     static v8::Handle<v8::Object> wrap(Element*, v8::Handle<v8::Object> creationContext, v8::Isolate*, const CreateWrapperFunction& createTypeExtensionUpgradeCandidateWrapper);
 
-    static bool isCustomElement(Element*);
-
 private:
     static void invokeReadyCallbackIfNeeded(Element*, v8::Handle<v8::Context>);
     static v8::Handle<v8::Object> createWrapper(PassRefPtr<Element>, v8::Handle<v8::Object>, v8::Isolate*, const CreateWrapperFunction& createTypeExtensionUpgradeCandidateWrapper);

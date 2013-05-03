@@ -174,13 +174,12 @@ PassRefPtr<CustomElementDefinition> CustomElementRegistry::findFor(Element* elem
 {
     ASSERT(element->document()->registry() == this);
 
-    // Most elements can be rejected with this quick screening.
-    if (!nameIncludesHyphen(element->tagName()) && !element->hasAttribute(HTMLNames::isAttr))
+    if (!element->isCustomElement())
         return 0;
 
     // When a custom tag and a type extension are provided as element
     // names at the same time, the custom tag takes precedence.
-    if (isValidName(element->localName())) {
+    if (isCustomTagName(element->localName())) {
         if (RefPtr<CustomElementDefinition> definition = findAndCheckNamespace(element->localName(), element->namespaceURI()))
             return definition->isTypeExtension() ? 0 : definition.release();
     }
@@ -222,7 +221,9 @@ PassRefPtr<Element> CustomElementRegistry::createCustomTagElement(const Qualifie
         element = SVGElement::create(tagName, document());
 #endif
     else
-        element = Element::create(tagName, document());
+        return Element::create(tagName, document());
+
+    element->setIsCustomElement();
 
     RefPtr<CustomElementDefinition> definition = findAndCheckNamespace(tagName.localName(), tagName.namespaceURI());
     if (definition && !definition->isTypeExtension())
@@ -233,6 +234,9 @@ PassRefPtr<Element> CustomElementRegistry::createCustomTagElement(const Qualifie
 
 void CustomElementRegistry::didGiveTypeExtension(Element* element)
 {
+    if (!element->isHTMLElement() && !element->isSVGElement())
+        return;
+    element->setIsCustomElement();
     RefPtr<CustomElementDefinition> definition = findFor(element);
     if (!definition || !definition->isTypeExtension())
         return;

@@ -1153,7 +1153,7 @@ END
     }
 
     Create$parameters{namespace}ElementWrapperFunction createWrapperFunction = map.get(element->localName().impl());
-    if (CustomElementHelpers::isCustomElement(element))
+    if (element->isCustomElement())
         return CustomElementHelpers::wrap(element, creationContext, isolate, CustomElementHelpers::CreateWrapperFunction(createWrapperFunction));
     if (createWrapperFunction)
     {

@@ -230,6 +230,9 @@ public:
     bool isAfterPseudoElement() const { return pseudoId() == AFTER; }
     PseudoId pseudoId() const { return (isElementNode() && hasCustomStyleCallbacks()) ? customPseudoId() : NOPSEUDO; }
 
+    bool isCustomElement() const { return getFlag(IsCustomElement); }
+    void setIsCustomElement();
+
     virtual bool isMediaControlElement() const { return false; }
     virtual bool isMediaControls() const { return false; }
     virtual bool isWebVTTElement() const { return false; }
@@ -712,11 +715,12 @@ private:
         V8CollectableDuringMinorGCFlag = 1 << 24,
         NeedsShadowTreeWalkerFlag = 1 << 25,
         IsInShadowTreeFlag = 1 << 26,
+        IsCustomElement = 1 << 27,
 
         DefaultNodeFlags = IsParsingChildrenFinishedFlag
     };
 
-    // 5 bits remaining
+    // 4 bits remaining
 
     bool getFlag(NodeFlags mask) const { return m_nodeFlags & mask; }
     void setFlag(bool f, NodeFlags mask) const { m_nodeFlags = (m_nodeFlags & ~mask) | (-(int32_t)f & mask); } 
