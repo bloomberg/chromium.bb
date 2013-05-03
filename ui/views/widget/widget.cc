@@ -778,10 +778,6 @@ void Widget::SetCursor(gfx::NativeCursor cursor) {
   native_widget_->SetCursor(cursor);
 }
 
-void Widget::ResetLastMouseMoveFlag() {
-  last_mouse_event_was_move_ = false;
-}
-
 void Widget::SetNativeWindowProperty(const char* name, void* value) {
   native_widget_->SetNativeWindowProperty(name, value);
 }
@@ -959,6 +955,15 @@ View* Widget::GetChildViewParent() {
 
 gfx::Rect Widget::GetWorkAreaBoundsInScreen() const {
   return native_widget_->GetWorkAreaBoundsInScreen();
+}
+
+void Widget::SynthesizeMouseMoveEvent() {
+  last_mouse_event_was_move_ = false;
+  ui::MouseEvent mouse_event(ui::ET_MOUSE_MOVED,
+                             last_mouse_event_position_,
+                             last_mouse_event_position_,
+                             ui::EF_IS_SYNTHESIZED);
+  root_view_->OnMouseMoved(mouse_event);
 }
 
 void Widget::OnOwnerClosing() {

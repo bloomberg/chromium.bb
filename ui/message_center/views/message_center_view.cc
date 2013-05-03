@@ -542,6 +542,9 @@ void RichMessageListView::OnBoundsAnimatorDone(
     has_deferred_task_ = false;
     DoUpdateIfPossible();
   }
+
+  if (GetWidget())
+    GetWidget()->SynthesizeMouseMoveEvent();
 }
 
 int RichMessageListView::GetActualIndex(int index) {

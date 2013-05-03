@@ -1641,6 +1641,33 @@ TEST_F(WidgetTest, EventHandlersOnRootView) {
   widget->CloseNow();
 }
 
+TEST_F(WidgetTest, SynthesizeMouseMoveEvent) {
+  Widget* widget = CreateTopLevelNativeWidget();
+  View* root_view = widget->GetRootView();
+
+  EventCountView* v1 = new EventCountView();
+  v1->SetBounds(0, 0, 10, 10);
+  root_view->AddChildView(v1);
+  EventCountView* v2 = new EventCountView();
+  v2->SetBounds(0, 10, 10, 10);
+  root_view->AddChildView(v2);
+
+  gfx::Point cursor_location(5, 5);
+  ui::MouseEvent move(ui::ET_MOUSE_MOVED, cursor_location, cursor_location,
+                      ui::EF_NONE);
+  widget->OnMouseEvent(&move);
+
+  EXPECT_EQ(1, v1->GetEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(0, v2->GetEventCount(ui::ET_MOUSE_ENTERED));
+
+  delete v1;
+  v2->SetBounds(0, 0, 10, 10);
+  EXPECT_EQ(0, v2->GetEventCount(ui::ET_MOUSE_ENTERED));
+
+  widget->SynthesizeMouseMoveEvent();
+  EXPECT_EQ(1, v2->GetEventCount(ui::ET_MOUSE_ENTERED));
+}
+
 // Used by SingleWindowClosing to count number of times WindowClosing() has
 // been invoked.
 class ClosingDelegate : public WidgetDelegate {

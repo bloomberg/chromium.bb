@@ -502,12 +502,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // before the current is restored.
   void SetCursor(gfx::NativeCursor cursor);
 
-  // Resets the last move flag so that we can go around the optimization
-  // that disregards duplicate mouse moves when ending animation requires
-  // a new hit-test to do some highlighting as in TabStrip::RemoveTabAnimation
-  // to cause the close button to highlight.
-  void ResetLastMouseMoveFlag();
-
   // Sets/Gets a native window property on the underlying native window object.
   // Returns NULL if the property does not exist. Setting the property value to
   // NULL removes the property.
@@ -643,6 +637,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Returns the work area bounds of the screen the Widget belongs to.
   gfx::Rect GetWorkAreaBoundsInScreen() const;
+
+  // Creates and dispatches synthesized mouse move event using the current
+  // mouse location to refresh hovering status in the widget.
+  void SynthesizeMouseMoveEvent();
 
   // Notification that our owner is closing.
   // NOTE: this is not invoked for aura as it's currently not needed there.
