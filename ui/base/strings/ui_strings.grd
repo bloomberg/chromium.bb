@@ -441,7 +441,7 @@ need to be translated for each locale.-->
         Settings
       </message>
       <message name="IDS_MESSAGE_CENTER_SETTINGS_DIALOG_DESCRIPTION" desc="The label to describe the settings dialog.">
-        Manage notification permissions for apps, extensions and websites.
+        Allow notifications from the following:
       </message>
       <message name="IDS_MESSAGE_CENTER_SETTINGS" desc="The menu entry or button for visiting the appropriate settings page.">
         Settings...
@@ -450,7 +450,7 @@ need to be translated for each locale.-->
         Clear All
       </message>
       <message name="IDS_MESSAGE_CENTER_NO_MESSAGES" desc="The message displayed in the message center when there are no notifications.">
-        You have no notifications. Relax!
+        Nothing to see here, move along.
       </message>
       <message name="IDS_MESSAGE_CENTER_QUIET_MODE" desc="The button label for quiet mode.">
         Quiet mode
