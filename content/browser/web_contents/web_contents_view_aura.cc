@@ -266,7 +266,7 @@ class WebDragSourceAura : public MessageLoopForUI::Observer,
           aura::Window* window = rvh->GetView()->GetNativeView();
           aura::Window::ConvertPointToTarget(window->GetRootWindow(),
               window, &client_loc);
-          rvh->DragSourceMovedTo(client_loc.x(), client_loc.y(),
+          contents_->DragSourceMovedTo(client_loc.x(), client_loc.y(),
               screen_loc.x(), screen_loc.y());
         }
         break;
@@ -754,8 +754,10 @@ void WebContentsViewAura::EndDrag(WebKit::WebDragOperationsMask ops) {
   RenderViewHost* rvh = web_contents_->GetRenderViewHost();
   aura::Window* window = rvh->GetView()->GetNativeView();
   aura::Window::ConvertPointToTarget(root_window, window, &client_loc);
-  rvh->DragSourceEndedAt(client_loc.x(), client_loc.y(), screen_loc.x(),
-      screen_loc.y(), ops);
+  if (!web_contents_)
+    return;
+  web_contents_->DragSourceEndedAt(client_loc.x(), client_loc.y(),
+      screen_loc.x(), screen_loc.y(), ops);
 }
 
 void WebContentsViewAura::PrepareOverscrollWindow() {

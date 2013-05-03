@@ -19,6 +19,7 @@ class OSExchangeData;
 namespace content {
 class RenderViewHost;
 class WebContents;
+class WebContentsImpl;
 
 // An IDropSource implementation for a WebContentsImpl. Handles notifications
 // sent by an active drag-drop operation as the user mouses over other drop
@@ -62,7 +63,7 @@ class WebDragSource : public ui::DragSourceWin,
   // We use this as a channel to the renderer to tell it about various drag
   // drop events that it needs to know about (such as when a drag operation it
   // initiated terminates).
-  RenderViewHost* render_view_host_;
+  WebContentsImpl* web_contents_;
 
   NotificationRegistrar registrar_;
 

@@ -10,6 +10,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/browser_plugin/browser_plugin_constants.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
+#include "content/common/drag_messages.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/user_metrics.h"
@@ -40,6 +41,28 @@ BrowserPluginEmbedder* BrowserPluginEmbedder::Create(
   return new BrowserPluginEmbedder(web_contents);
 }
 
+void BrowserPluginEmbedder::DragEnteredGuest(BrowserPluginGuest* guest) {
+  guest_dragging_over_ = guest->AsWeakPtr();
+}
+
+void BrowserPluginEmbedder::DragLeftGuest(BrowserPluginGuest* guest) {
+  // Avoid race conditions in switching between guests being hovered over by
+  // only un-setting if the caller is marked as the guest being dragged over.
+  if (guest_dragging_over_ == guest) {
+    guest_dragging_over_.reset();
+  }
+}
+
+void BrowserPluginEmbedder::StartDrag(BrowserPluginGuest* guest) {
+  guest_started_drag_ = guest->AsWeakPtr();
+}
+
+void BrowserPluginEmbedder::StopDrag(BrowserPluginGuest* guest) {
+  if (guest_started_drag_ == guest) {
+    guest_started_drag_.reset();
+  }
+}
+
 void BrowserPluginEmbedder::GetRenderViewHostAtPosition(
     int x, int y, const WebContents::GetRenderViewHostCallback& callback) {
   // Store the callback so we can call it later when we have the response.
@@ -64,9 +87,42 @@ bool BrowserPluginEmbedder::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Attach, OnAttach)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_PluginAtPositionResponse,
                         OnPluginAtPositionResponse)
+    IPC_MESSAGE_HANDLER_GENERIC(DragHostMsg_UpdateDragCursor,
+                                OnUpdateDragCursor(&handled));
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void BrowserPluginEmbedder::DragSourceEndedAt(int client_x, int client_y,
+    int screen_x, int screen_y, WebKit::WebDragOperation operation) {
+  if (guest_started_drag_) {
+    gfx::Point guest_offset =
+        guest_started_drag_->GetScreenCoordinates(gfx::Point());
+    guest_started_drag_->DragSourceEndedAt(client_x - guest_offset.x(),
+        client_y - guest_offset.y(), screen_x, screen_y, operation);
+  }
+}
+
+void BrowserPluginEmbedder::DragSourceMovedTo(int client_x, int client_y,
+                                              int screen_x, int screen_y) {
+  if (guest_started_drag_) {
+    gfx::Point guest_offset =
+        guest_started_drag_->GetScreenCoordinates(gfx::Point());
+    guest_started_drag_->DragSourceMovedTo(client_x - guest_offset.x(),
+        client_y - guest_offset.y(), screen_x, screen_y);
+  }
+}
+
+void BrowserPluginEmbedder::SystemDragEnded() {
+  if (guest_started_drag_ && (guest_started_drag_ != guest_dragging_over_))
+    guest_started_drag_->EndSystemDrag();
+  guest_started_drag_.reset();
+  guest_dragging_over_.reset();
+}
+
+void BrowserPluginEmbedder::OnUpdateDragCursor(bool* handled) {
+  *handled = (guest_dragging_over_ != NULL);
 }
 
 void BrowserPluginEmbedder::CleanUp() {

@@ -5,12 +5,14 @@
 #include "content/browser/web_contents/web_contents_view_guest.h"
 
 #include "build/build_config.h"
+#include "content/browser/browser_plugin/browser_plugin_embedder.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_guest.h"
 #include "content/browser/web_contents/interstitial_page_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/drag_messages.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/point.h"
@@ -159,7 +161,14 @@ WebDropData* WebContentsViewGuest::GetDropData() const {
 }
 
 void WebContentsViewGuest::UpdateDragCursor(WebDragOperation operation) {
-  NOTIMPLEMENTED();
+  RenderViewHostImpl* embedder_render_view_host =
+      static_cast<RenderViewHostImpl*>(
+          guest_->embedder_web_contents()->GetRenderViewHost());
+  CHECK(embedder_render_view_host);
+  RenderViewHostDelegateView* view =
+      embedder_render_view_host->GetDelegate()->GetDelegateView();
+  if (view)
+    view->UpdateDragCursor(operation);
 }
 
 void WebContentsViewGuest::GotFocus() {
@@ -191,7 +200,18 @@ void WebContentsViewGuest::StartDragging(
     const gfx::ImageSkia& image,
     const gfx::Vector2d& image_offset,
     const DragEventSourceInfo& event_info) {
-  NOTIMPLEMENTED();
+  WebContentsImpl* embedder_web_contents = guest_->embedder_web_contents();
+  embedder_web_contents->GetBrowserPluginEmbedder()->StartDrag(guest_);
+  RenderViewHostImpl* embedder_render_view_host =
+      static_cast<RenderViewHostImpl*>(
+          embedder_web_contents->GetRenderViewHost());
+  CHECK(embedder_render_view_host);
+  RenderViewHostDelegateView* view =
+      embedder_render_view_host->GetDelegate()->GetDelegateView();
+  if (view)
+    view->StartDragging(drop_data, ops, image, image_offset, event_info);
+  else
+    embedder_web_contents->SystemDragEnded();
 }
 
 }  // namespace content

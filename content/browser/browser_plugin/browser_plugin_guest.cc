@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -37,6 +38,7 @@
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/result_codes.h"
 #include "net/base/net_errors.h"
@@ -611,6 +613,29 @@ void BrowserPluginGuest::SendMessageToEmbedder(IPC::Message* msg) {
   embedder_web_contents_->Send(msg);
 }
 
+void BrowserPluginGuest::DragSourceEndedAt(int client_x, int client_y,
+    int screen_x, int screen_y, WebKit::WebDragOperation operation) {
+  web_contents()->GetRenderViewHost()->DragSourceEndedAt(client_x, client_y,
+      screen_x, screen_y, operation);
+}
+
+void BrowserPluginGuest::DragSourceMovedTo(int client_x, int client_y,
+                                           int screen_x, int screen_y) {
+  web_contents()->GetRenderViewHost()->DragSourceMovedTo(client_x, client_y,
+                                                         screen_x, screen_y);
+}
+
+void BrowserPluginGuest::EndSystemDrag() {
+  RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
+      GetWebContents()->GetRenderViewHost());
+  guest_rvh->DragSourceSystemDragEnded();
+  // Issue a MouseUp event to get out of a selection state.
+  WebKit::WebMouseEvent mouse_event;
+  mouse_event.type = WebKit::WebInputEvent::MouseUp;
+  mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
+  guest_rvh->ForwardMouseEvent(mouse_event);
+}
+
 void BrowserPluginGuest::LoadRedirect(
     const GURL& old_url,
     const GURL& new_url,
@@ -693,13 +718,22 @@ void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(
 }
 
 void BrowserPluginGuest::DidStopLoading(RenderViewHost* render_view_host) {
-  // Initiating a drag from inside a guest is currently not supported. So inject
-  // some JS to disable it. http://crbug.com/161112
-  const char script[] = "window.addEventListener('dragstart', function() { "
-                        "  window.event.preventDefault(); "
-                        "});";
-  render_view_host->ExecuteJavascriptInWebFrame(string16(),
-                                                ASCIIToUTF16(script));
+  bool disable_dragdrop = true;
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserPluginDragDrop))
+    disable_dragdrop = false;
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
+  if (disable_dragdrop) {
+    // Initiating a drag from inside a guest is currently not supported without
+    // the kEnableBrowserPluginDragDrop flag on a linux platform. So inject some
+    // JS to disable it. http://crbug.com/161112
+    const char script[] = "window.addEventListener('dragstart', function() { "
+                          "  window.event.preventDefault(); "
+                          "});";
+    render_view_host->ExecuteJavascriptInWebFrame(string16(),
+                                                  ASCIIToUTF16(script));
+  }
   SendMessageToEmbedder(new BrowserPluginMsg_LoadStop(instance_id()));
 }
 
@@ -800,7 +834,6 @@ bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UnlockMouse, OnUnlockMouse)
-    IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFrameName, OnUpdateFrameName)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnUpdateRect)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -886,16 +919,20 @@ void BrowserPluginGuest::OnDragStatusUpdate(int instance_id,
   RenderViewHost* host = GetWebContents()->GetRenderViewHost();
   switch (drag_status) {
     case WebKit::WebDragStatusEnter:
+      embedder_web_contents_->GetBrowserPluginEmbedder()->DragEnteredGuest(
+          this);
       host->DragTargetDragEnter(drop_data, location, location, mask, 0);
       break;
     case WebKit::WebDragStatusOver:
       host->DragTargetDragOver(location, location, mask, 0);
       break;
     case WebKit::WebDragStatusLeave:
+      embedder_web_contents_->GetBrowserPluginEmbedder()->DragLeftGuest(this);
       host->DragTargetDragLeave();
       break;
     case WebKit::WebDragStatusDrop:
       host->DragTargetDrop(location, location, 0);
+      EndSystemDrag();
       break;
     case WebKit::WebDragStatusUnknown:
       NOTREACHED();
@@ -1224,18 +1261,6 @@ void BrowserPluginGuest::OnShowWidget(int route_id,
 void BrowserPluginGuest::OnTakeFocus(bool reverse) {
   SendMessageToEmbedder(
       new BrowserPluginMsg_AdvanceFocus(instance_id(), reverse));
-}
-
-void BrowserPluginGuest::OnUpdateDragCursor(
-    WebKit::WebDragOperation operation) {
-  RenderViewHostImpl* embedder_render_view_host =
-      static_cast<RenderViewHostImpl*>(
-          embedder_web_contents_->GetRenderViewHost());
-  CHECK(embedder_render_view_host);
-  RenderViewHostDelegateView* view =
-      embedder_render_view_host->GetDelegate()->GetDelegateView();
-  if (view)
-    view->UpdateDragCursor(operation);
 }
 
 void BrowserPluginGuest::OnUpdateFrameName(int frame_id,

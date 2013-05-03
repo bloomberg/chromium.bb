@@ -1492,7 +1492,7 @@ bool BrowserPlugin::handleDragStatusUpdate(WebKit::WebDragStatus drag_status,
         WebDropData(drag_data),
         mask,
         position));
-  return false;
+  return true;
 }
 
 void BrowserPlugin::didReceiveResponse(

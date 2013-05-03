@@ -283,9 +283,8 @@ void PromiseWriterHelper(const WebDropData& drop_data,
     if (operation == (NSDragOperationMove | NSDragOperationCopy))
       operation &= ~NSDragOperationMove;
 
-    rvh->DragSourceEndedAt(localPoint.x, localPoint.y,
-                           screenPoint.x, screenPoint.y,
-                           static_cast<WebKit::WebDragOperation>(operation));
+    contents_->DragSourceEndedAt(localPoint.x, localPoint.y, screenPoint.x,
+        screenPoint.y, static_cast<WebKit::WebDragOperation>(operation));
   }
 
   // Make sure the pasteboard owner isn't us.
@@ -308,8 +307,8 @@ void PromiseWriterHelper(const WebDropData& drop_data,
     NSRect screenFrame = [[[contentsView_ window] screen] frame];
     screenPoint.y = screenFrame.size.height - screenPoint.y;
 
-    rvh->DragSourceMovedTo(localPoint.x, localPoint.y,
-                           screenPoint.x, screenPoint.y);
+    contents_->DragSourceMovedTo(localPoint.x, localPoint.y,
+                                 screenPoint.x, screenPoint.y);
   }
 }
 

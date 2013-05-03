@@ -25,6 +25,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/three_d_api_types.h"
 #include "net/base/load_states.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "ui/gfx/rect_f.h"
 #include "ui/gfx/size.h"
 #include "webkit/glue/resource_type.h"
@@ -171,6 +172,17 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Invoked before a form repost warning is shown.
   void NotifyBeforeFormRepostWarningShow();
+
+
+  // Informs the render view host and the BrowserPluginEmbedder, if present, of
+  // a Drag Source End.
+  void DragSourceEndedAt(int client_x, int client_y, int screen_x,
+      int screen_y, WebKit::WebDragOperation operation);
+
+  // Informs the render view host and the BrowserPluginEmbedder, if present, of
+  // a Drag Source Move.
+  void DragSourceMovedTo(int client_x, int client_y,
+                         int screen_x, int screen_y);
 
   // WebContents ------------------------------------------------------
   virtual WebContentsDelegate* GetDelegate() OVERRIDE;

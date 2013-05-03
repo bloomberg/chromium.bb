@@ -269,6 +269,10 @@ const char kDisableBrowserPluginCompositing[] =
 const char kEnableBrowserPluginForAllViewTypes[] =
     "enable-browser-plugin-for-all-view-types";
 
+// Enables Drag and Drop into and out of Browser Plugin.
+// kEnableBrowserPluginGuestViews must also be set at this time.
+const char kEnableBrowserPluginDragDrop[]   = "enable-browser-plugin-drag-drop";
+
 // Enable/Disable the creation of compositing layers for fixed position
 // elements. Three options are needed to support four possible scenarios:
 //  1. Default (disabled)

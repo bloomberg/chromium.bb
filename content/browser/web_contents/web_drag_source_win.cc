@@ -6,11 +6,11 @@
 
 #include "base/bind.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_drag_utils_win.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/web_contents.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 
 using WebKit::WebDragOperationNone;
@@ -36,7 +36,7 @@ WebDragSource::WebDragSource(gfx::NativeWindow source_wnd,
                              WebContents* web_contents)
     : ui::DragSourceWin(),
       source_wnd_(source_wnd),
-      render_view_host_(web_contents->GetRenderViewHost()),
+      web_contents_(static_cast<WebContentsImpl*>(web_contents)),
       effect_(DROPEFFECT_NONE),
       data_(NULL) {
   registrar_.Add(this, NOTIFICATION_WEB_CONTENTS_SWAPPED,
@@ -57,15 +57,15 @@ void WebDragSource::OnDragSourceCancel() {
     return;
   }
 
-  if (!render_view_host_)
+  if (!web_contents_)
     return;
 
   gfx::Point client;
   gfx::Point screen;
   GetCursorPositions(source_wnd_, &client, &screen);
-  render_view_host_->DragSourceEndedAt(client.x(), client.y(),
-                                       screen.x(), screen.y(),
-                                       WebDragOperationNone);
+  web_contents_->DragSourceEndedAt(client.x(), client.y(),
+                                   screen.x(), screen.y(),
+                                   WebDragOperationNone);
 }
 
 void WebDragSource::OnDragSourceDrop() {
@@ -82,15 +82,14 @@ void WebDragSource::OnDragSourceDrop() {
 }
 
 void WebDragSource::DelayedOnDragSourceDrop() {
-  if (!render_view_host_)
+  if (!web_contents_)
     return;
 
   gfx::Point client;
   gfx::Point screen;
   GetCursorPositions(source_wnd_, &client, &screen);
-  render_view_host_->DragSourceEndedAt(
-      client.x(), client.y(), screen.x(), screen.y(),
-      WinDragOpToWebDragOp(effect_));
+  web_contents_->DragSourceEndedAt(client.x(), client.y(), screen.x(),
+                                   screen.y(), WinDragOpToWebDragOp(effect_));
 }
 
 void WebDragSource::OnDragSourceMove() {
@@ -102,14 +101,14 @@ void WebDragSource::OnDragSourceMove() {
     return;
   }
 
-  if (!render_view_host_)
+  if (!web_contents_)
     return;
 
   gfx::Point client;
   gfx::Point screen;
   GetCursorPositions(source_wnd_, &client, &screen);
-  render_view_host_->DragSourceMovedTo(client.x(), client.y(),
-                                       screen.x(), screen.y());
+  web_contents_->DragSourceMovedTo(client.x(), client.y(),
+                                   screen.x(), screen.y());
 }
 
 void WebDragSource::Observe(int type,
@@ -119,12 +118,12 @@ void WebDragSource::Observe(int type,
     // When the WebContents get swapped, our render view host goes away.
     // That's OK, we can continue the drag, we just can't send messages back to
     // our drag source.
-    render_view_host_ = NULL;
+    web_contents_ = NULL;
   } else if (type == NOTIFICATION_WEB_CONTENTS_DISCONNECTED) {
     // This could be possible when we close the tab and the source is still
     // being used in DoDragDrop at the time that the virtual file is being
     // downloaded.
-    render_view_host_ = NULL;
+    web_contents_ = NULL;
   }
 }
 

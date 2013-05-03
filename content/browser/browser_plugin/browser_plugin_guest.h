@@ -257,6 +257,15 @@ class CONTENT_EXPORT BrowserPluginGuest
   // |message|.
   static bool ShouldForwardToBrowserPluginGuest(const IPC::Message& message);
 
+  void DragSourceEndedAt(int client_x, int client_y, int screen_x,
+      int screen_y, WebKit::WebDragOperation operation);
+
+  void DragSourceMovedTo(int client_x, int client_y,
+                         int screen_x, int screen_y);
+
+  // Called when the drag started by this guest ends at an OS-level.
+  void EndSystemDrag();
+
  private:
   typedef std::pair<MediaStreamRequest, MediaResponseCallback>
       MediaStreamRequestAndCallbackPair;
@@ -387,6 +396,7 @@ class CONTENT_EXPORT BrowserPluginGuest
 
   // Message handlers for messages from guest.
 
+  void OnDragStopped();
   void OnHandleInputEventAck(
       WebKit::WebInputEvent::Type event_type,
       InputEventAckState ack_result);
@@ -400,7 +410,6 @@ class CONTENT_EXPORT BrowserPluginGuest
   void OnShowWidget(int route_id, const gfx::Rect& initial_pos);
   // Overriden in tests.
   virtual void OnTakeFocus(bool reverse);
-  void OnUpdateDragCursor(WebKit::WebDragOperation operation);
   void OnUpdateFrameName(int frame_id,
                          bool is_top_level,
                          const std::string& name);
