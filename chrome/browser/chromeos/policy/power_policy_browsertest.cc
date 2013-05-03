@@ -7,10 +7,12 @@
 #include "base/compiler_specific.h"
 #include "base/run_loop.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/power/power_api_manager.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_types.h"
+#include "chrome/common/extensions/api/power.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
@@ -205,6 +207,43 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyBrowserTest, SetPowerPolicy) {
   SetUserPolicy(key::kPresentationIdleDelayScale,
                 base::Value::CreateIntegerValue(300));
   EXPECT_EQ(GetDebugString(power_management_policy),
+            GetDebugString(last_power_management_policy_));
+}
+
+IN_PROC_BROWSER_TEST_F(PowerPolicyBrowserTest, AllowScreenWakeLocks) {
+  pm::PowerManagementPolicy baseline_policy = last_power_management_policy_;
+
+  // Default settings should have delays.
+  pm::PowerManagementPolicy power_management_policy = baseline_policy;
+  EXPECT_NE(0, baseline_policy.ac_delays().screen_dim_ms());
+  EXPECT_NE(0, baseline_policy.ac_delays().screen_off_ms());
+  EXPECT_NE(0, baseline_policy.battery_delays().screen_dim_ms());
+  EXPECT_NE(0, baseline_policy.battery_delays().screen_off_ms());
+
+  // Pretend an extension grabs a screen wake lock.
+  const char kExtensionId[] = "abcdefghijklmnopabcdefghijlkmnop";
+  extensions::PowerApiManager::GetInstance()->AddRequest(
+      kExtensionId, extensions::api::power::LEVEL_DISPLAY);
+  base::RunLoop().RunUntilIdle();
+
+  // Check that the lock is in effect (ignoring idle_action and reason).
+  pm::PowerManagementPolicy policy = baseline_policy;
+  policy.mutable_ac_delays()->set_screen_dim_ms(0);
+  policy.mutable_ac_delays()->set_screen_off_ms(0);
+  policy.mutable_battery_delays()->set_screen_dim_ms(0);
+  policy.mutable_battery_delays()->set_screen_off_ms(0);
+  policy.set_idle_action(last_power_management_policy_.idle_action());
+  policy.set_reason(last_power_management_policy_.reason());
+  EXPECT_EQ(GetDebugString(policy),
+            GetDebugString(last_power_management_policy_));
+
+  // Engage the policy and verify that the defaults take effect again.
+  SetUserPolicy(key::kAllowScreenWakeLocks,
+                base::Value::CreateBooleanValue(false));
+  policy = baseline_policy;
+  policy.set_idle_action(last_power_management_policy_.idle_action());
+  policy.set_reason(last_power_management_policy_.reason());
+  EXPECT_EQ(GetDebugString(policy),
             GetDebugString(last_power_management_policy_));
 }
 

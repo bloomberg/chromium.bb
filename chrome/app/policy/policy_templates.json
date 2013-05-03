@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 202
+#   For your editing convenience: highest ID currently used: 203
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -4349,6 +4349,24 @@
           If this policy is unset, a default scale factor is used.
 
           The scale factor must be 100% or more. Values that would make the idle delay in presentation mode shorter than the regular idle delay are not allowed.''',
+        },
+        {
+          'name': 'AllowScreenWakeLocks',
+          'type': 'main',
+          'schema': { 'type': 'boolean' },
+          'supported_on': ['chrome_os:28-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': False,
+          'id': 203,
+          'caption': '''Allow screen wake locks''',
+          'desc': '''Specifies whether screen wake locks are allowed. Screen wake locks can be requested by extensions via the power management extension API.
+
+          If this policy is set to true or left not set, screen wake locks will be honored for power management.
+
+          If this policy is set to false, screen wake lock requests will get ignored.''',
         },
       ],
     },

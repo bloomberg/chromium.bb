@@ -1715,6 +1715,14 @@
     ]
   },
 
+  "AllowScreenWakeLocks": {
+    "os": ["chromeos"],
+    "test_policy": { "AllowScreenWakeLocks": false },
+    "pref_mappings": [
+      { "pref": "power.allow_screen_wake_locks" }
+    ]
+  },
+
   "TermsOfServiceURL": {
     "os": ["chromeos"],
     "test_policy": { "TermsOfServiceURL": "http://www.example.com/terms_of_service.txt" },
