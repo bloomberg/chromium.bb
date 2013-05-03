@@ -2,16 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/file_util.h"
+#include <list>
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/file_util_icu.h"
-#include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/path_service.h"
+#include "base/platform_file.h"
+#include "base/stringprintf.h"
 #include "net/base/directory_lister.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace net {
 
@@ -88,12 +91,56 @@ class ListerDelegate : public DirectoryLister::DirectoryListerDelegate {
   std::vector<base::FilePath> paths_;
 };
 
-TEST(DirectoryListerTest, BigDirTest) {
-  base::FilePath path;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &path));
+class DirectoryListerTest : public PlatformTest {
+ public:
 
+  virtual void SetUp() OVERRIDE {
+    const int kMaxDepth = 3;
+    const int kBranchingFactor = 4;
+    const int kFilesPerDirectory = 5;
+
+    // Randomly create a directory structure of depth 3 in a temporary root
+    // directory.
+    std::list<std::pair<base::FilePath, int> > directories;
+    ASSERT_TRUE(temp_root_dir_.CreateUniqueTempDir());
+    directories.push_back(std::make_pair(temp_root_dir_.path(), 0));
+    while (!directories.empty()) {
+      std::pair<base::FilePath, int> dir_data = directories.front();
+      directories.pop_front();
+      for (int i = 0; i < kFilesPerDirectory; i++) {
+        std::string file_name = base::StringPrintf("file_id_%d", i);
+        base::FilePath file_path = dir_data.first.AppendASCII(file_name);
+        base::PlatformFile file = base::CreatePlatformFile(
+            file_path,
+            base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE,
+            NULL,
+            NULL);
+        ASSERT_NE(base::kInvalidPlatformFileValue, file);
+        ASSERT_TRUE(base::ClosePlatformFile(file));
+      }
+      if (dir_data.second < kMaxDepth - 1) {
+        for (int i = 0; i < kBranchingFactor; i++) {
+          std::string dir_name = base::StringPrintf("child_dir_%d", i);
+          base::FilePath dir_path = dir_data.first.AppendASCII(dir_name);
+          ASSERT_TRUE(file_util::CreateDirectory(dir_path));
+          directories.push_back(std::make_pair(dir_path, dir_data.second + 1));
+        }
+      }
+    }
+    PlatformTest::SetUp();
+  }
+
+  const base::FilePath& root_path() const {
+    return temp_root_dir_.path();
+  }
+
+ private:
+  base::ScopedTempDir temp_root_dir_;
+};
+
+TEST_F(DirectoryListerTest, BigDirTest) {
   ListerDelegate delegate(false, false);
-  DirectoryLister lister(path, &delegate);
+  DirectoryLister lister(root_path(), &delegate);
   lister.Start();
 
   MessageLoop::current()->Run();
@@ -101,20 +148,10 @@ TEST(DirectoryListerTest, BigDirTest) {
   EXPECT_EQ(OK, delegate.error());
 }
 
-#if defined(NDEBUG)
-#define MAYBE_BigDirRecursiveTest BigDirRecursiveTest
-#else
-// Disabling DirectoryListerTest.BigDirRecursiveTest in debug builds as it has
-// been very flaky on debug try bots, http://crbug.com/236360.
-#define MAYBE_BigDirRecursiveTest DISABLED_BigDirRecursiveTest
-#endif
-
-TEST(DirectoryListerTest, MAYBE_BigDirRecursiveTest) {
-  base::FilePath path;
-  ASSERT_TRUE(PathService::Get(base::DIR_EXE, &path));
-
+TEST_F(DirectoryListerTest, BigDirRecursiveTest) {
   ListerDelegate delegate(true, false);
-  DirectoryLister lister(path, true, DirectoryLister::FULL_PATH, &delegate);
+  DirectoryLister lister(root_path(), true, DirectoryLister::FULL_PATH,
+                         &delegate);
   lister.Start();
 
   MessageLoop::current()->Run();
@@ -122,12 +159,9 @@ TEST(DirectoryListerTest, MAYBE_BigDirRecursiveTest) {
   EXPECT_EQ(OK, delegate.error());
 }
 
-TEST(DirectoryListerTest, CancelTest) {
-  base::FilePath path;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &path));
-
+TEST_F(DirectoryListerTest, CancelTest) {
   ListerDelegate delegate(false, true);
-  DirectoryLister lister(path, &delegate);
+  DirectoryLister lister(root_path(), &delegate);
   lister.Start();
 
   MessageLoop::current()->Run();
@@ -141,7 +175,7 @@ TEST(DirectoryListerTest, CancelTest) {
   EXPECT_EQ(num_files, delegate.num_files());
 }
 
-TEST(DirectoryListerTest, EmptyDirTest) {
+TEST_F(DirectoryListerTest, EmptyDirTest) {
   base::ScopedTempDir tempDir;
   EXPECT_TRUE(tempDir.CreateUniqueTempDir());
 
