@@ -21,6 +21,15 @@
 using content::BrowserThread;
 
 namespace drive {
+namespace {
+
+// Converts FileError code to net::Error code.
+int FileErrorToNetError(FileError error) {
+  return net::PlatformFileErrorToNetError(FileErrorToPlatformError(error));
+}
+
+}  // namespace
+
 namespace internal {
 namespace {
 
@@ -212,8 +221,7 @@ void NetworkReaderProxy::OnCompleted(FileError error) {
     return;
   }
 
-  error_code_ =
-      net::PlatformFileErrorToNetError(FileErrorToPlatformError(error));
+  error_code_ = FileErrorToNetError(error);
   pending_data_.clear();
 
   if (callback_.is_null()) {
@@ -341,7 +349,7 @@ void DriveFileStreamReader::InitializeAfterGetFileContentByPathInitialized(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, scoped_ptr<ResourceEntry>());
+    callback.Run(FileErrorToNetError(error), scoped_ptr<ResourceEntry>());
     return;
   }
   DCHECK(entry);
@@ -359,7 +367,7 @@ void DriveFileStreamReader::InitializeAfterGetFileContentByPathInitialized(
             range_offset, range_length,
             base::Bind(&google_apis::RunTaskOnUIThread,
                        ui_cancel_download_closure)));
-    callback.Run(FILE_ERROR_OK, entry.Pass());
+    callback.Run(net::OK, entry.Pass());
     return;
   }
 
@@ -388,13 +396,13 @@ void DriveFileStreamReader::InitializeAfterLocalFileOpen(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (open_result != net::OK) {
-    callback.Run(FILE_ERROR_FAILED, scoped_ptr<ResourceEntry>());
+    callback.Run(net::ERR_FAILED, scoped_ptr<ResourceEntry>());
     return;
   }
 
   reader_proxy_.reset(
       new internal::LocalReaderProxy(file_reader.Pass(), length));
-  callback.Run(FILE_ERROR_OK, entry.Pass());
+  callback.Run(net::OK, entry.Pass());
 }
 
 void DriveFileStreamReader::OnGetContent(google_apis::GDataErrorCode error_code,
@@ -423,7 +431,7 @@ void DriveFileStreamReader::OnGetFileContentByPathCompletion(
     // or may not be called. This is timing issue, and it is difficult to avoid
     // unfortunately.
     if (error != FILE_ERROR_OK) {
-      callback.Run(error, scoped_ptr<ResourceEntry>());
+      callback.Run(FileErrorToNetError(error), scoped_ptr<ResourceEntry>());
     }
   }
 }

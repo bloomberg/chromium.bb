@@ -65,8 +65,7 @@ class DriveURLRequestJob : public net::URLRequestJob {
  private:
   // Called when the initialization of DriveFileStreamReader is completed.
   void OnDriveFileStreamReaderInitialized(
-      FileError error,
-      scoped_ptr<ResourceEntry> entry);
+      int error, scoped_ptr<ResourceEntry> entry);
 
   // Called when DriveFileStreamReader::Read is completed.
   void OnReadCompleted(int read_result);

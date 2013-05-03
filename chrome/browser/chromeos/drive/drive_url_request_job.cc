@@ -151,15 +151,13 @@ DriveURLRequestJob::~DriveURLRequestJob() {
 }
 
 void DriveURLRequestJob::OnDriveFileStreamReaderInitialized(
-    FileError error,
-    scoped_ptr<ResourceEntry> entry) {
+    int error, scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(stream_reader_);
 
   if (error != FILE_ERROR_OK) {
-    NotifyStartError(net::URLRequestStatus(
-        net::URLRequestStatus::FAILED,
-        net::PlatformFileErrorToNetError(FileErrorToPlatformError(error))));
+    NotifyStartError(
+        net::URLRequestStatus(net::URLRequestStatus::FAILED, error));
     return;
   }
 

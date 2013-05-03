@@ -174,7 +174,7 @@ class DriveURLRequestJobTest : public testing::Test {
         base::Bind(&DriveURLRequestJobTest::GetFileSystem,
                    base::Unretained(this)),
         worker_thread->message_loop_proxy()));
-    FileError error = FILE_ERROR_FAILED;
+    int error = net::ERR_FAILED;
     scoped_ptr<ResourceEntry> entry;
     reader->Initialize(
         file_path,
@@ -184,7 +184,7 @@ class DriveURLRequestJobTest : public testing::Test {
             google_apis::test_util::CreateCopyResultCallback(
                 &error, &entry)));
     message_loop_.Run();
-    if (error != FILE_ERROR_OK || !entry)
+    if (error != net::OK || !entry)
       return false;
 
     // Read data from the reader.

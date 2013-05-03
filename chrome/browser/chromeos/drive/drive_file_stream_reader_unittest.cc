@@ -369,7 +369,7 @@ TEST_F(DriveFileStreamReaderTest, Read) {
       worker_thread_->message_loop_proxy()));
   EXPECT_FALSE(reader->IsInitialized());
 
-  FileError error = FILE_ERROR_FAILED;
+  int error = net::ERR_FAILED;
   scoped_ptr<ResourceEntry> entry;
   reader->Initialize(
       kDriveFile,
@@ -379,7 +379,7 @@ TEST_F(DriveFileStreamReaderTest, Read) {
                      google_apis::test_util::CreateCopyResultCallback(
                          &error, &entry)));
   message_loop_.Run();
-  EXPECT_EQ(FILE_ERROR_OK, error);
+  EXPECT_EQ(net::OK, error);
   ASSERT_TRUE(entry);
   EXPECT_TRUE(reader->IsInitialized());
   size_t content_size = entry->file_info().size();
@@ -396,7 +396,7 @@ TEST_F(DriveFileStreamReaderTest, Read) {
                                 worker_thread_->message_loop_proxy()));
   EXPECT_FALSE(reader->IsInitialized());
 
-  error = FILE_ERROR_FAILED;
+  error = net::ERR_FAILED;
   entry.reset();
   reader->Initialize(
       kDriveFile,
@@ -406,7 +406,7 @@ TEST_F(DriveFileStreamReaderTest, Read) {
                      google_apis::test_util::CreateCopyResultCallback(
                          &error, &entry)));
   message_loop_.Run();
-  EXPECT_EQ(FILE_ERROR_OK, error);
+  EXPECT_EQ(net::OK, error);
   ASSERT_TRUE(entry);
   EXPECT_TRUE(reader->IsInitialized());
 
@@ -435,7 +435,7 @@ TEST_F(DriveFileStreamReaderTest, ReadRange) {
       worker_thread_->message_loop_proxy()));
   EXPECT_FALSE(reader->IsInitialized());
 
-  FileError error = FILE_ERROR_FAILED;
+  int error = net::ERR_FAILED;
   scoped_ptr<ResourceEntry> entry;
   reader->Initialize(
       kDriveFile,
@@ -446,7 +446,7 @@ TEST_F(DriveFileStreamReaderTest, ReadRange) {
                      google_apis::test_util::CreateCopyResultCallback(
                          &error, &entry)));
   message_loop_.Run();
-  EXPECT_EQ(FILE_ERROR_OK, error);
+  EXPECT_EQ(net::OK, error);
   ASSERT_TRUE(entry);
   EXPECT_TRUE(reader->IsInitialized());
 
@@ -464,7 +464,7 @@ TEST_F(DriveFileStreamReaderTest, ReadRange) {
                                 worker_thread_->message_loop_proxy()));
   EXPECT_FALSE(reader->IsInitialized());
 
-  error = FILE_ERROR_FAILED;
+  error = net::ERR_FAILED;
   entry.reset();
   reader->Initialize(
       kDriveFile,
@@ -475,7 +475,7 @@ TEST_F(DriveFileStreamReaderTest, ReadRange) {
                      google_apis::test_util::CreateCopyResultCallback(
                          &error, &entry)));
   message_loop_.Run();
-  EXPECT_EQ(FILE_ERROR_OK, error);
+  EXPECT_EQ(net::OK, error);
   ASSERT_TRUE(entry);
   EXPECT_TRUE(reader->IsInitialized());
 

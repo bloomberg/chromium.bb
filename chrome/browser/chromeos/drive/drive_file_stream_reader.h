@@ -141,8 +141,8 @@ class DriveFileStreamReader {
   typedef base::Callback<FileSystemInterface*()> FileSystemGetter;
 
   // Callback to return the result of Initialize().
-  typedef base::Callback<void(FileError error,
-                              scoped_ptr<ResourceEntry> entry)>
+  // |error| is net::Error code.
+  typedef base::Callback<void(int error, scoped_ptr<ResourceEntry> entry)>
       InitializeCompletionCallback;
 
   DriveFileStreamReader(const FileSystemGetter& file_system_getter,
