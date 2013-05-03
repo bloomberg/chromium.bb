@@ -235,7 +235,7 @@ void BluetoothDeviceExperimentalChromeOS::Connect(
   VLOG(1) << object_path_.value() << ": Connecting, " << num_connecting_calls_
           << " in progress";
 
-  if (IsPaired() || IsConnected() || !pairing_delegate || !IsPairable()) {
+  if (IsPaired() || !pairing_delegate || !IsPairable()) {
     // No need to pair, or unable to, skip straight to connection.
     ConnectInternal(callback, error_callback);
   } else {

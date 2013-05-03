@@ -204,6 +204,11 @@ class BluetoothDevice {
   virtual bool IsPaired() const = 0;
 
   // Indicates whether the device is currently connected to the adapter.
+  // Note that if IsConnected() is true, does not imply that the device is
+  // connected to any application or service. If the device is not paired, it
+  // could be still connected to the adapter for other reason, for example, to
+  // request the adapter's SDP records. The same holds for paired devices, since
+  // they could be connected to the adapter but not to an application.
   virtual bool IsConnected() const = 0;
 
   // Indicates whether the paired device accepts connections initiated from the

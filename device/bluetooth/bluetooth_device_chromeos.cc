@@ -175,8 +175,8 @@ void BluetoothDeviceChromeOS::Connect(
       weak_ptr_factory_.GetWeakPtr(),
       error_callback);
 
-  if (IsPaired() || IsConnected()) {
-    // Connection to already paired or connected device.
+  if (IsPaired()) {
+    // Connection to already paired device.
     ConnectApplications(wrapped_callback, wrapped_error_callback);
 
   } else if (!pairing_delegate || !IsPairable()) {

@@ -261,7 +261,7 @@ void BluetoothAdapterExperimentalChromeOS::DevicePropertyChanged(
 
     for (DevicesMap::iterator iter = devices_.begin();
          iter != devices_.end(); ++iter) {
-      if (iter->second->IsConnected())
+      if (iter->second->IsPaired() && iter->second->IsConnected())
         ++count;
     }
 
