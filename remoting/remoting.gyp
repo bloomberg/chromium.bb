@@ -711,6 +711,27 @@
           ],
         },  # end of target 'remoting_host_plugin'
 
+        {
+          'target_name': 'remoting_native_messaging_host',
+          'type': 'executable',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'dependencies': [
+            '../base/base.gyp:base',
+            'remoting_host',
+            'remoting_host_logging',
+            'remoting_host_setup_base',
+          ],
+          'defines': [
+            'VERSION=<(version_full)',
+          ],
+          'sources': [
+            'host/setup/native_messaging_host.cc',
+            'host/setup/native_messaging_reader.cc',
+            'host/setup/native_messaging_reader.h',
+            'host/setup/native_messaging_writer.cc',
+            'host/setup/native_messaging_writer.h',
+          ],
+        },  # end of target 'remoting_native_messaging_host'
       ],  # end of 'targets'
     }],  # 'enable_remoting_host==1'
 

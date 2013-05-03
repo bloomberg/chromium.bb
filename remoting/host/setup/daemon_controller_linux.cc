@@ -117,8 +117,15 @@ static bool RunHostScriptWithTimeout(
     command_line.AppendArg(args[i]);
   }
   base::ProcessHandle process_handle;
-  if (!base::LaunchProcess(command_line, base::LaunchOptions(),
-                           &process_handle)) {
+
+  // Redirect the child's stdout to the parent's stderr. In the case where this
+  // parent process is a Native Messaging host, its stdout is used to send
+  // messages to the web-app.
+  base::FileHandleMappingVector fds_to_remap;
+  fds_to_remap.push_back(std::pair<int, int>(STDERR_FILENO, STDOUT_FILENO));
+  base::LaunchOptions options;
+  options.fds_to_remap = &fds_to_remap;
+  if (!base::LaunchProcess(command_line, options, &process_handle)) {
     return false;
   }
 
