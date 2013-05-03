@@ -71,7 +71,6 @@ def OverrideConfigForTrybot(build_config, options):
       useflags.remove(constants.USE_CHROME_PDF)
 
     my_config['upload_symbols'] = False
-    my_config['chromeos_official'] = False
     my_config['push_image'] = False
     if options.hwtest:
       my_config['upload_hw_test_artifacts'] = True
