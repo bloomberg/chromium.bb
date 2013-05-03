@@ -23,7 +23,7 @@ Ensure that we always get the same holder
 PASS currentHolder is lastHolder
 
 Ensure that returning undefined has removed the property 0 from the holder during filtering.
-PASS currentHolder.hasOwnProperty(0) is false
+FAIL currentHolder.hasOwnProperty(0) should be false. Was true.
 
 Ensure the holder for our array is indeed an array
 PASS Array.isArray(currentHolder) is true
@@ -51,12 +51,20 @@ PASS currentHolder.hasOwnProperty(3) is false
 Ensure that when visiting a deleted property value is undefined
 PASS value is undefined.
 
+Ensure the holder for our array is indeed an array
+PASS Array.isArray(currentHolder) is true
+FAIL currentHolder.length should be 3. Was 4.
+
+Ensure that we always get the same holder
+PASS currentHolder is lastHolder
+FAIL Did not call reviver for deleted property
+
 Ensure that we created the root holder as specified in ES5
 PASS '' in lastHolder is true
 PASS result is lastHolder['']
 
 Ensure that a deleted value is revived if the reviver function returns a value
-PASS result.hasOwnProperty(3) is true
+FAIL result.hasOwnProperty(3) should be true. Was false.
 
 Test behaviour of revivor used in conjunction with an object
 PASS currentHolder != globalObject is true
@@ -82,25 +90,15 @@ PASS currentHolder['and another property'] is "a replaced value"
 
 Ensure that the changed value is reflected in the arguments passed to the reviver
 PASS value is "a replaced value"
-PASS currentHolder != globalObject is true
-
-Ensure that we get the same holder object for each property
-PASS currentHolder is lastHolder
-
-Ensure that we visited a value that we have deleted, and that deletion is reflected while filtering.
-PASS currentHolder.hasOwnProperty('to delete') is false
-
-Ensure that when visiting a deleted property value is undefined
-PASS value is undefined.
 
 Ensure that we created the root holder as specified in ES5
 PASS lastHolder.hasOwnProperty('') is true
 PASS result.hasOwnProperty('a property') is false
-PASS result.hasOwnProperty('to delete') is true
+FAIL result.hasOwnProperty('to delete') should be true. Was false.
 PASS result is lastHolder['']
 
 Test behaviour of revivor that introduces a cycle
-PASS JSON.parse("[0,1]", reviveAddsCycle) threw exception RangeError: Maximum call stack size exceeded..
+PASS JSON.parse("[0,1]", reviveAddsCycle) threw exception RangeError: Maximum call stack size exceeded.
 
 Test behaviour of revivor that introduces a new array classed object (the result of a regex)
 PASS JSON.stringify(JSON.parse("[0,1]", reviveIntroducesNewArrayLikeObject)) is '[0,["a","a"]]'

@@ -1,0 +1,10 @@
+Test Chinese Segmentation.
+
+==================================
+FAILED test
+actual: 调控目
+expected: 调控
+==================================
+FAILED test
+actual: 控目标
+expected: 目标

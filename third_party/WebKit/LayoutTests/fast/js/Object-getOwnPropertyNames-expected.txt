@@ -30,35 +30,35 @@ PASS getSortedOwnPropertyNames(argumentsObject()) is ['callee', 'length']
 PASS getSortedOwnPropertyNames(argumentsObject(1)) is ['0', 'callee', 'length']
 PASS getSortedOwnPropertyNames(argumentsObject(1,2,3)) is ['0', '1', '2', 'callee', 'length']
 PASS getSortedOwnPropertyNames((function(){arguments.__proto__=[1,2,3];return arguments;})()) is ['callee', 'length']
-PASS getSortedOwnPropertyNames(parseInt) is ['length', 'name']
-PASS getSortedOwnPropertyNames(parseFloat) is ['length', 'name']
-PASS getSortedOwnPropertyNames(isNaN) is ['length', 'name']
-PASS getSortedOwnPropertyNames(isFinite) is ['length', 'name']
-PASS getSortedOwnPropertyNames(escape) is ['length', 'name']
-PASS getSortedOwnPropertyNames(unescape) is ['length', 'name']
-PASS getSortedOwnPropertyNames(decodeURI) is ['length', 'name']
-PASS getSortedOwnPropertyNames(decodeURIComponent) is ['length', 'name']
-PASS getSortedOwnPropertyNames(encodeURI) is ['length', 'name']
-PASS getSortedOwnPropertyNames(encodeURIComponent) is ['length', 'name']
-PASS getSortedOwnPropertyNames(Object) is ['create', 'defineProperties', 'defineProperty', 'freeze', 'getOwnPropertyDescriptor', 'getOwnPropertyNames', 'getPrototypeOf', 'isExtensible', 'isFrozen', 'isSealed', 'keys', 'length', 'name', 'preventExtensions', 'prototype', 'seal']
+FAIL getSortedOwnPropertyNames(parseInt) should be length,name. Was arguments,caller,length,name.
+FAIL getSortedOwnPropertyNames(parseFloat) should be length,name. Was arguments,caller,length,name.
+FAIL getSortedOwnPropertyNames(isNaN) should be length,name. Was arguments,caller,length,name.
+FAIL getSortedOwnPropertyNames(isFinite) should be length,name. Was arguments,caller,length,name.
+FAIL getSortedOwnPropertyNames(escape) should be length,name. Was arguments,caller,length,name.
+FAIL getSortedOwnPropertyNames(unescape) should be length,name. Was arguments,caller,length,name.
+FAIL getSortedOwnPropertyNames(decodeURI) should be length,name. Was arguments,caller,length,name.
+FAIL getSortedOwnPropertyNames(decodeURIComponent) should be length,name. Was arguments,caller,length,name.
+FAIL getSortedOwnPropertyNames(encodeURI) should be length,name. Was arguments,caller,length,name.
+FAIL getSortedOwnPropertyNames(encodeURIComponent) should be length,name. Was arguments,caller,length,name.
+FAIL getSortedOwnPropertyNames(Object) should be create,defineProperties,defineProperty,freeze,getOwnPropertyDescriptor,getOwnPropertyNames,getPrototypeOf,isExtensible,isFrozen,isSealed,keys,length,name,preventExtensions,prototype,seal. Was arguments,caller,create,defineProperties,defineProperty,freeze,getOwnPropertyDescriptor,getOwnPropertyNames,getPrototypeOf,is,isExtensible,isFrozen,isSealed,keys,length,name,preventExtensions,prototype,seal.
 PASS getSortedOwnPropertyNames(Object.prototype) is ['__defineGetter__', '__defineSetter__', '__lookupGetter__', '__lookupSetter__', '__proto__', 'constructor', 'hasOwnProperty', 'isPrototypeOf', 'propertyIsEnumerable', 'toLocaleString', 'toString', 'valueOf']
-PASS getSortedOwnPropertyNames(Function) is ['length', 'name', 'prototype']
-PASS getSortedOwnPropertyNames(Function.prototype) is ['apply', 'bind', 'call', 'constructor', 'length', 'name', 'toString']
-PASS getSortedOwnPropertyNames(Array) is ['isArray', 'length', 'name', 'prototype']
+FAIL getSortedOwnPropertyNames(Function) should be length,name,prototype. Was arguments,caller,length,name,prototype.
+FAIL getSortedOwnPropertyNames(Function.prototype) should be apply,bind,call,constructor,length,name,toString. Was apply,arguments,bind,call,caller,constructor,length,name,toString.
+FAIL getSortedOwnPropertyNames(Array) should be isArray,length,name,prototype. Was arguments,caller,isArray,length,name,prototype.
 PASS getSortedOwnPropertyNames(Array.prototype) is ['concat', 'constructor', 'every', 'filter', 'forEach', 'indexOf', 'join', 'lastIndexOf', 'length', 'map', 'pop', 'push', 'reduce', 'reduceRight', 'reverse', 'shift', 'slice', 'some', 'sort', 'splice', 'toLocaleString', 'toString', 'unshift']
-PASS getSortedOwnPropertyNames(String) is ['fromCharCode', 'length', 'name', 'prototype']
+FAIL getSortedOwnPropertyNames(String) should be fromCharCode,length,name,prototype. Was arguments,caller,fromCharCode,length,name,prototype.
 PASS getSortedOwnPropertyNames(String.prototype) is ['anchor', 'big', 'blink', 'bold', 'charAt', 'charCodeAt', 'concat', 'constructor', 'fixed', 'fontcolor', 'fontsize', 'indexOf', 'italics', 'lastIndexOf', 'length', 'link', 'localeCompare', 'match', 'replace', 'search', 'slice', 'small', 'split', 'strike', 'sub', 'substr', 'substring', 'sup', 'toLocaleLowerCase', 'toLocaleUpperCase', 'toLowerCase', 'toString', 'toUpperCase', 'trim', 'trimLeft', 'trimRight', 'valueOf']
-PASS getSortedOwnPropertyNames(Boolean) is ['length', 'name', 'prototype']
+FAIL getSortedOwnPropertyNames(Boolean) should be length,name,prototype. Was arguments,caller,length,name,prototype.
 PASS getSortedOwnPropertyNames(Boolean.prototype) is ['constructor', 'toString', 'valueOf']
-PASS getSortedOwnPropertyNames(Number) is ['MAX_VALUE', 'MIN_VALUE', 'NEGATIVE_INFINITY', 'NaN', 'POSITIVE_INFINITY', 'length', 'name', 'prototype']
+FAIL getSortedOwnPropertyNames(Number) should be MAX_VALUE,MIN_VALUE,NEGATIVE_INFINITY,NaN,POSITIVE_INFINITY,length,name,prototype. Was MAX_VALUE,MIN_VALUE,NEGATIVE_INFINITY,NaN,POSITIVE_INFINITY,arguments,caller,isFinite,isNaN,length,name,prototype.
 PASS getSortedOwnPropertyNames(Number.prototype) is ['constructor', 'toExponential', 'toFixed', 'toLocaleString', 'toPrecision', 'toString', 'valueOf']
-PASS getSortedOwnPropertyNames(Date) is ['UTC', 'length', 'name', 'now', 'parse', 'prototype']
+FAIL getSortedOwnPropertyNames(Date) should be UTC,length,name,now,parse,prototype. Was UTC,arguments,caller,length,name,now,parse,prototype.
 PASS getSortedOwnPropertyNames(Date.prototype) is ['constructor', 'getDate', 'getDay', 'getFullYear', 'getHours', 'getMilliseconds', 'getMinutes', 'getMonth', 'getSeconds', 'getTime', 'getTimezoneOffset', 'getUTCDate', 'getUTCDay', 'getUTCFullYear', 'getUTCHours', 'getUTCMilliseconds', 'getUTCMinutes', 'getUTCMonth', 'getUTCSeconds', 'getYear', 'setDate', 'setFullYear', 'setHours', 'setMilliseconds', 'setMinutes', 'setMonth', 'setSeconds', 'setTime', 'setUTCDate', 'setUTCFullYear', 'setUTCHours', 'setUTCMilliseconds', 'setUTCMinutes', 'setUTCMonth', 'setUTCSeconds', 'setYear', 'toDateString', 'toGMTString', 'toISOString', 'toJSON', 'toLocaleDateString', 'toLocaleString', 'toLocaleTimeString', 'toString', 'toTimeString', 'toUTCString', 'valueOf']
-PASS getSortedOwnPropertyNames(RegExp) is ['$&', "$'", '$*', '$+', '$1', '$2', '$3', '$4', '$5', '$6', '$7', '$8', '$9', '$_', '$`', 'input', 'lastMatch', 'lastParen', 'leftContext', 'length', 'multiline', 'name', 'prototype', 'rightContext']
+FAIL getSortedOwnPropertyNames(RegExp) should be $&,$',$*,$+,$1,$2,$3,$4,$5,$6,$7,$8,$9,$_,$`,input,lastMatch,lastParen,leftContext,length,multiline,name,prototype,rightContext. Was $&,$',$*,$+,$1,$2,$3,$4,$5,$6,$7,$8,$9,$_,$`,$input,arguments,caller,input,lastMatch,lastParen,leftContext,length,multiline,name,prototype,rightContext.
 PASS getSortedOwnPropertyNames(RegExp.prototype) is ['compile', 'constructor', 'exec', 'global', 'ignoreCase', 'lastIndex', 'multiline', 'source', 'test', 'toString']
-PASS getSortedOwnPropertyNames(Error) is ['length', 'name', 'prototype']
+FAIL getSortedOwnPropertyNames(Error) should be length,name,prototype. Was arguments,caller,captureStackTrace,length,name,prototype,stackTraceLimit.
 PASS getSortedOwnPropertyNames(Error.prototype) is ['constructor', 'message', 'name', 'toString']
-PASS getSortedOwnPropertyNames(Math) is ['E', 'LN10', 'LN2', 'LOG10E', 'LOG2E', 'PI', 'SQRT1_2', 'SQRT2', 'abs', 'acos', 'asin', 'atan', 'atan2', 'ceil', 'cos', 'exp', 'floor', 'log', 'max', 'min', 'pow', 'random', 'round', 'sin', 'sqrt', 'tan']
+FAIL getSortedOwnPropertyNames(Math) should be E,LN10,LN2,LOG10E,LOG2E,PI,SQRT1_2,SQRT2,abs,acos,asin,atan,atan2,ceil,cos,exp,floor,log,max,min,pow,random,round,sin,sqrt,tan. Was E,LN10,LN2,LOG10E,LOG2E,PI,SQRT1_2,SQRT2,abs,acos,asin,atan,atan2,ceil,cos,exp,floor,imul,log,max,min,pow,random,round,sin,sqrt,tan.
 PASS getSortedOwnPropertyNames(JSON) is ['parse', 'stringify']
 PASS globalPropertyNames.indexOf('NaN') != -1 is true
 PASS globalPropertyNames.indexOf('Infinity') != -1 is true

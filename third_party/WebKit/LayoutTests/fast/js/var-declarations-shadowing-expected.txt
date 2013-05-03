@@ -6,10 +6,10 @@ PASS: Node == undefined should be false and is.
 PASS: eval('Node == undefined') should be false and is.
 PASS: Element == undefined should be false and is.
 PASS: eval('Element == undefined') should be false and is.
-PASS: toString == undefined should be false and is.
-PASS: eval('toString == undefined') should be false and is.
-PASS: valueOf == undefined should be false and is.
-PASS: eval('valueOf == undefined') should be false and is.
+FAIL: toString == undefined should be false but instead is true.
+FAIL: eval('toString == undefined') should be false but instead is true.
+FAIL: valueOf == undefined should be false but instead is true.
+FAIL: eval('valueOf == undefined') should be false but instead is true.
 -----
 PASS: HTMLElement == marker should be true and is.
 PASS: eval('HTMLElement == marker') should be true and is.

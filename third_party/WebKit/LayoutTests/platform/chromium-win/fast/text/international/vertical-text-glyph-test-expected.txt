@@ -7,7 +7,7 @@ layer at (0,0) size 800x585
         RenderText {#text} at (0,0) size 134x23
           text run at (0,0) width 134: "Simple text path"
       RenderBlock (anonymous) at (0,45) size 784x216
-        RenderBlock {SPAN} at (0,-1) size 24x210
+        RenderBlock {SPAN} at (0,0) size 24x210
           RenderText {#text} at (0,0) size 23x210
             text run at (0,0) width 210: "string\x{300C}\x{3042}\x{3001}\x{5909}\x{3063}\x{FF01}\x{300D}\x{3002}"
         RenderText {#text} at (0,0) size 0x0

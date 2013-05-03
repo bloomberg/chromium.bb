@@ -3,7 +3,7 @@ Test that CSS rules don't lose custom properties on GC when only reachable throu
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS style.parentRule.foo is "bar"
+FAIL style.parentRule.foo should be bar. Threw exception TypeError: Cannot read property 'foo' of null
 PASS successfullyParsed is true
 
 TEST COMPLETE
