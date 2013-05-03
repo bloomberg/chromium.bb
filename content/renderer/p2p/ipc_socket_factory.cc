@@ -5,6 +5,7 @@
 #include "content/renderer/p2p/ipc_socket_factory.h"
 
 #include "base/compiler_specific.h"
+#include "base/debug/trace_event.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "content/renderer/p2p/socket_client.h"
@@ -196,6 +197,8 @@ int IpcPacketSocket::SendTo(const void *data, size_t data_size,
   }
 
   if (send_packets_pending_ > kMaxPendingPackets) {
+    TRACE_EVENT_INSTANT1("p2p", "MaxPendingPacketsWouldBlock",
+                         TRACE_EVENT_SCOPE_THREAD, "id", client_->socket_id());
     writable_signal_expected_ = true;
     error_ = EWOULDBLOCK;
     return -1;

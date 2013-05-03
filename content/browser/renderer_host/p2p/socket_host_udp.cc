@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/p2p/socket_host_udp.h"
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "content/common/p2p_messages.h"
 #include "ipc/ipc_sender.h"
 #include "net/base/io_buffer.h"
@@ -178,6 +179,8 @@ void P2PSocketHostUdp::Send(const net::IPEndPoint& to,
 }
 
 void P2PSocketHostUdp::DoSend(const PendingPacket& packet) {
+  TRACE_EVENT_ASYNC_BEGIN2("p2p", "Udp::DoSend", this,
+                           "id", id_, "size", packet.size);
   int result = socket_->SendTo(packet.data, packet.size, packet.to,
                                base::Bind(&P2PSocketHostUdp::OnSend,
                                           base::Unretained(this)));
@@ -214,6 +217,7 @@ void P2PSocketHostUdp::OnSend(int result) {
 }
 
 void P2PSocketHostUdp::HandleSendResult(int result) {
+  TRACE_EVENT_ASYNC_END1("p2p", "Udp::DoSend", this, "result", result);
   if (result > 0) {
     message_sender_->Send(new P2PMsg_OnSendComplete(id_));
   } else if (IsTransientError(result)) {
