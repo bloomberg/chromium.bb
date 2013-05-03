@@ -527,7 +527,7 @@ class AndroidCommands(object):
     """
     pids = self.ExtractPid(process)
     if pids:
-      self.RunShellCommand('kill ' + ' '.join(pids))
+      self.RunShellCommand('kill -9 ' + ' '.join(pids))
     return len(pids)
 
   def KillAllBlocking(self, process, timeout_sec):
