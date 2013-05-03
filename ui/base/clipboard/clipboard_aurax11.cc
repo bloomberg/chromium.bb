@@ -70,7 +70,7 @@ class SelectionChangeObserver : public base::MessagePumpObserver {
   friend struct DefaultSingletonTraits<SelectionChangeObserver>;
 
   SelectionChangeObserver();
-  ~SelectionChangeObserver();
+  virtual ~SelectionChangeObserver();
 
   // Overridden from base::MessagePumpObserver:
   virtual base::EventStatus WillProcessEvent(
@@ -225,7 +225,7 @@ bool Clipboard::FormatType::Equals(const FormatType& other) const {
 class Clipboard::AuraX11Details : public base::MessagePumpDispatcher {
  public:
   AuraX11Details();
-  ~AuraX11Details();
+  virtual ~AuraX11Details();
 
   X11AtomCache* atom_cache() { return &atom_cache_; }
 

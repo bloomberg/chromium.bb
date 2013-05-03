@@ -41,7 +41,7 @@ class BaseWindowFinder : public ui::EnumerateWindowsDelegate {
   }
 
   // Returns true if iteration should stop, false otherwise.
-  virtual bool ShouldStopIterating(XID window) {
+  virtual bool ShouldStopIterating(XID window) OVERRIDE {
     return false;
   }
 
@@ -68,7 +68,7 @@ class TopMostFinder : public BaseWindowFinder {
   }
 
  protected:
-  virtual bool ShouldStopIterating(XID window) {
+  virtual bool ShouldStopIterating(XID window) OVERRIDE {
     if (BaseWindowFinder::ShouldIgnoreWindow(window))
       return false;
 
@@ -135,7 +135,7 @@ class LocalProcessWindowFinder : public BaseWindowFinder {
   }
 
  protected:
-  virtual bool ShouldStopIterating(XID window) {
+  virtual bool ShouldStopIterating(XID window) OVERRIDE {
     if (BaseWindowFinder::ShouldIgnoreWindow(window))
       return false;
 

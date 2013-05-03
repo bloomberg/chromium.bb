@@ -121,7 +121,7 @@ class SectionRowView : public views::View {
     return child_at(2)->GetPreferredSize();
   }
 
-  virtual void Layout() {
+  virtual void Layout() OVERRIDE {
     const gfx::Rect bounds = GetContentsBounds();
 
     // Icon is left aligned.
