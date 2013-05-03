@@ -78,7 +78,7 @@
 #include "content/test/net/url_request_slow_download_job.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/plugins/npapi/mock_plugin_list.h"

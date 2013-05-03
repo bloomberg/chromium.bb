@@ -19,9 +19,9 @@
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
+#include "net/test/spawned_test_server.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
-#include "net/test/test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -81,8 +81,8 @@ using testing::StrEq;
 class HttpPipeliningCompatibilityClientTest : public testing::Test {
  public:
   HttpPipeliningCompatibilityClientTest()
-      : test_server_(net::TestServer::TYPE_HTTP,
-                     net::TestServer::kLocalhost,
+      : test_server_(net::SpawnedTestServer::TYPE_HTTP,
+                     net::SpawnedTestServer::kLocalhost,
                      base::FilePath(FILE_PATH_LITERAL(
                          "chrome/test/data/http_pipelining"))),
         io_thread_(BrowserThread::IO, &message_loop_) {
@@ -205,7 +205,7 @@ class HttpPipeliningCompatibilityClientTest : public testing::Test {
   }
 
   MessageLoopForIO message_loop_;
-  net::TestServer test_server_;
+  net::SpawnedTestServer test_server_;
   net::TestURLRequestContextGetter* context_;
   content::TestBrowserThread io_thread_;
 

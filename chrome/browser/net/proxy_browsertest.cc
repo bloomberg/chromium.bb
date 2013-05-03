@@ -22,7 +22,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/test_data_directory.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 
 namespace {
 
@@ -58,8 +58,8 @@ class LoginPromptObserver : public content::NotificationObserver {
 class ProxyBrowserTest : public InProcessBrowserTest {
  public:
   ProxyBrowserTest()
-      : proxy_server_(net::TestServer::TYPE_BASIC_AUTH_PROXY,
-                      net::TestServer::kLocalhost,
+      : proxy_server_(net::SpawnedTestServer::TYPE_BASIC_AUTH_PROXY,
+                      net::SpawnedTestServer::kLocalhost,
                       base::FilePath()) {
   }
 
@@ -74,7 +74,7 @@ class ProxyBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
-  net::TestServer proxy_server_;
+  net::SpawnedTestServer proxy_server_;
 
  private:
 
@@ -91,9 +91,9 @@ class ProxyBrowserTest : public InProcessBrowserTest {
 // that requires basic authentication.
 IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, MAYBE_BasicAuthWSConnect) {
   // Launch WebSocket server.
-  net::TestServer ws_server(net::TestServer::TYPE_WS,
-                            net::TestServer::kLocalhost,
-                            net::GetWebSocketTestDataDirectory());
+  net::SpawnedTestServer ws_server(net::SpawnedTestServer::TYPE_WS,
+                                   net::SpawnedTestServer::kLocalhost,
+                                   net::GetWebSocketTestDataDirectory());
   ASSERT_TRUE(ws_server.Start());
 
   content::WebContents* tab =

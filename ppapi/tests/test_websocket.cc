@@ -31,7 +31,7 @@
 #include "ppapi/tests/testing_instance.h"
 #include "ppapi/utility/websocket/websocket_api.h"
 
-// net::TestServer serves WebSocket service for testing.
+// net::SpawnedTestServer serves WebSocket service for testing.
 // Following URLs are handled by pywebsocket handlers in
 // net/data/websocket/*_wsh.py.
 const char kEchoServerURL[] = "echo-with-no-extension";

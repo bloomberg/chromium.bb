@@ -11,7 +11,7 @@
 #include "base/message_loop.h"
 #include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 
 static void PrintUsage() {
   printf("run_testserver --doc-root=relpath\n"
@@ -46,42 +46,43 @@ int main(int argc, const char* argv[]) {
     return -1;
   }
 
-  net::TestServer::Type server_type;
+  net::SpawnedTestServer::Type server_type;
   if (command_line->HasSwitch("http")) {
-    server_type = net::TestServer::TYPE_HTTP;
+    server_type = net::SpawnedTestServer::TYPE_HTTP;
   } else if (command_line->HasSwitch("https")) {
-    server_type = net::TestServer::TYPE_HTTPS;
+    server_type = net::SpawnedTestServer::TYPE_HTTPS;
   } else if (command_line->HasSwitch("ws")) {
-    server_type = net::TestServer::TYPE_WS;
+    server_type = net::SpawnedTestServer::TYPE_WS;
   } else if (command_line->HasSwitch("wss")) {
-    server_type = net::TestServer::TYPE_WSS;
+    server_type = net::SpawnedTestServer::TYPE_WSS;
   } else if (command_line->HasSwitch("ftp")) {
-    server_type = net::TestServer::TYPE_FTP;
+    server_type = net::SpawnedTestServer::TYPE_FTP;
   } else {
     // If no scheme switch is specified, select http or https scheme.
     // TODO(toyoshim): Remove this estimation.
     if (command_line->HasSwitch("ssl-cert"))
-      server_type = net::TestServer::TYPE_HTTPS;
+      server_type = net::SpawnedTestServer::TYPE_HTTPS;
     else
-      server_type = net::TestServer::TYPE_HTTP;
+      server_type = net::SpawnedTestServer::TYPE_HTTP;
   }
 
-  net::TestServer::SSLOptions ssl_options;
+  net::SpawnedTestServer::SSLOptions ssl_options;
   if (command_line->HasSwitch("ssl-cert")) {
-    if (!net::TestServer::UsingSSL(server_type)) {
+    if (!net::SpawnedTestServer::UsingSSL(server_type)) {
       printf("Error: --ssl-cert is specified on non-secure scheme\n");
       PrintUsage();
       return -1;
     }
     std::string cert_option = command_line->GetSwitchValueASCII("ssl-cert");
     if (cert_option == "ok") {
-      ssl_options.server_certificate = net::TestServer::SSLOptions::CERT_OK;
+      ssl_options.server_certificate =
+          net::SpawnedTestServer::SSLOptions::CERT_OK;
     } else if (cert_option == "mismatched-name") {
       ssl_options.server_certificate =
-          net::TestServer::SSLOptions::CERT_MISMATCHED_NAME;
+          net::SpawnedTestServer::SSLOptions::CERT_MISMATCHED_NAME;
     } else if (cert_option == "expired") {
       ssl_options.server_certificate =
-          net::TestServer::SSLOptions::CERT_EXPIRED;
+          net::SpawnedTestServer::SSLOptions::CERT_EXPIRED;
     } else {
       printf("Error: --ssl-cert has invalid value %s\n", cert_option.c_str());
       PrintUsage();
@@ -96,13 +97,15 @@ int main(int argc, const char* argv[]) {
     return -1;
   }
 
-  scoped_ptr<net::TestServer> test_server;
-  if (net::TestServer::UsingSSL(server_type)) {
-    test_server.reset(new net::TestServer(server_type, ssl_options, doc_root));
+  scoped_ptr<net::SpawnedTestServer> test_server;
+  if (net::SpawnedTestServer::UsingSSL(server_type)) {
+    test_server.reset(
+        new net::SpawnedTestServer(server_type, ssl_options, doc_root));
   } else {
-    test_server.reset(new net::TestServer(server_type,
-                                          net::TestServer::kLocalhost,
-                                          doc_root));
+    test_server.reset(new net::SpawnedTestServer(
+                          server_type,
+                          net::SpawnedTestServer::kLocalhost,
+                          doc_root));
   }
 
   if (!test_server->Start()) {

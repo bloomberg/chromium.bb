@@ -399,13 +399,13 @@ content::WebUIMessageHandler* NetInternalsTest::GetMockMessageHandler() {
 GURL NetInternalsTest::CreatePrerenderLoaderUrl(
     const GURL& prerender_url) {
   EXPECT_TRUE(StartTestServer());
-  std::vector<net::TestServer::StringPair> replacement_text;
+  std::vector<net::SpawnedTestServer::StringPair> replacement_text;
   replacement_text.push_back(
       make_pair("REPLACE_WITH_PRERENDER_URL", prerender_url.spec()));
   replacement_text.push_back(
       make_pair("REPLACE_WITH_DESTINATION_URL", prerender_url.spec()));
   std::string replacement_path;
-  EXPECT_TRUE(net::TestServer::GetFilePathWithReplacements(
+  EXPECT_TRUE(net::SpawnedTestServer::GetFilePathWithReplacements(
       "files/prerender/prerender_loader.html",
       replacement_text,
       &replacement_path));

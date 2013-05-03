@@ -181,7 +181,7 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   scoped_ptr<DictionaryValue> test_config_;
 
   // Hold the test WebSocket server.
-  scoped_ptr<net::TestServer> websocket_server_;
+  scoped_ptr<net::SpawnedTestServer> websocket_server_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_APITEST_H_

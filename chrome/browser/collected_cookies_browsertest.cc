@@ -13,7 +13,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 
 namespace {
 

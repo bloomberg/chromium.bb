@@ -177,9 +177,9 @@ void PPAPITestBase::RunTestViaHTTP(const std::string& test_case) {
   ASSERT_TRUE(ui_test_utils::GetRelativeBuildDirectory(&document_root));
   base::FilePath http_document_root;
   ASSERT_TRUE(ui_test_utils::GetRelativeBuildDirectory(&http_document_root));
-  net::TestServer http_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              document_root);
+  net::SpawnedTestServer http_server(net::SpawnedTestServer::TYPE_HTTP,
+                                     net::SpawnedTestServer::kLocalhost,
+                                     document_root);
   ASSERT_TRUE(http_server.Start());
   RunTestURL(GetTestURL(http_server, test_case, std::string()));
 }
@@ -187,12 +187,12 @@ void PPAPITestBase::RunTestViaHTTP(const std::string& test_case) {
 void PPAPITestBase::RunTestWithSSLServer(const std::string& test_case) {
   base::FilePath http_document_root;
   ASSERT_TRUE(ui_test_utils::GetRelativeBuildDirectory(&http_document_root));
-  net::TestServer http_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              http_document_root);
-  net::TestServer ssl_server(net::TestServer::TYPE_HTTPS,
-                             net::BaseTestServer::SSLOptions(),
-                             http_document_root);
+  net::SpawnedTestServer http_server(net::SpawnedTestServer::TYPE_HTTP,
+                                     net::SpawnedTestServer::kLocalhost,
+                                     http_document_root);
+  net::SpawnedTestServer ssl_server(net::SpawnedTestServer::TYPE_HTTPS,
+                                    net::BaseTestServer::SSLOptions(),
+                                    http_document_root);
   // Start the servers in parallel.
   ASSERT_TRUE(http_server.StartInBackground());
   ASSERT_TRUE(ssl_server.StartInBackground());
@@ -209,12 +209,12 @@ void PPAPITestBase::RunTestWithSSLServer(const std::string& test_case) {
 void PPAPITestBase::RunTestWithWebSocketServer(const std::string& test_case) {
   base::FilePath http_document_root;
   ASSERT_TRUE(ui_test_utils::GetRelativeBuildDirectory(&http_document_root));
-  net::TestServer http_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              http_document_root);
-  net::TestServer ws_server(net::TestServer::TYPE_WS,
-                            net::TestServer::kLocalhost,
-                            net::GetWebSocketTestDataDirectory());
+  net::SpawnedTestServer http_server(net::SpawnedTestServer::TYPE_HTTP,
+                                     net::SpawnedTestServer::kLocalhost,
+                                     http_document_root);
+  net::SpawnedTestServer ws_server(net::SpawnedTestServer::TYPE_WS,
+                                   net::SpawnedTestServer::kLocalhost,
+                                   net::GetWebSocketTestDataDirectory());
   // Start the servers in parallel.
   ASSERT_TRUE(http_server.StartInBackground());
   ASSERT_TRUE(ws_server.StartInBackground());
@@ -269,7 +269,7 @@ void PPAPITestBase::RunTestURL(const GURL& test_url) {
 }
 
 GURL PPAPITestBase::GetTestURL(
-    const net::TestServer& http_server,
+    const net::SpawnedTestServer& http_server,
     const std::string& test_case,
     const std::string& extra_params) {
   std::string query = BuildQuery("files/test_case.html?", test_case);

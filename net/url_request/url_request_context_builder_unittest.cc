@@ -5,7 +5,7 @@
 #include "net/url_request/url_request_context_builder.h"
 
 #include "build/build_config.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,19 +20,19 @@ namespace net {
 
 namespace {
 
-// A subclass of TestServer that uses a statically-configured hostname. This is
-// to work around mysterious failures in chrome_frame_net_tests. See:
+// A subclass of SpawnedTestServer that uses a statically-configured hostname.
+// This is to work around mysterious failures in chrome_frame_net_tests. See:
 // http://crbug.com/114369
-class LocalHttpTestServer : public TestServer {
+class LocalHttpTestServer : public SpawnedTestServer {
  public:
   explicit LocalHttpTestServer(const base::FilePath& document_root)
-      : TestServer(TestServer::TYPE_HTTP,
-                   ScopedCustomUrlRequestTestHttpHost::value(),
-                   document_root) {}
+      : SpawnedTestServer(SpawnedTestServer::TYPE_HTTP,
+                          ScopedCustomUrlRequestTestHttpHost::value(),
+                          document_root) {}
   LocalHttpTestServer()
-      : TestServer(TestServer::TYPE_HTTP,
-                   ScopedCustomUrlRequestTestHttpHost::value(),
-                   base::FilePath()) {}
+      : SpawnedTestServer(SpawnedTestServer::TYPE_HTTP,
+                          ScopedCustomUrlRequestTestHttpHost::value(),
+                          base::FilePath()) {}
 };
 
 class URLRequestContextBuilderTest : public PlatformTest {

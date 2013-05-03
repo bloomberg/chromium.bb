@@ -242,9 +242,10 @@ bool NaClBrowserTestBase::StartTestServer() {
   base::FilePath document_root;
   if (!GetDocumentRoot(&document_root))
     return false;
-  test_server_.reset(new net::TestServer(net::TestServer::TYPE_HTTP,
-                                         net::TestServer::kLocalhost,
-                                         document_root));
+  test_server_.reset(new net::SpawnedTestServer(
+                         net::SpawnedTestServer::TYPE_HTTP,
+                         net::SpawnedTestServer::kLocalhost,
+                         document_root));
   return test_server_->Start();
 }
 

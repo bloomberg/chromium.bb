@@ -207,7 +207,7 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
     return database_manager()->safe_browsing_thread_->message_loop();
   }
 
-  const net::TestServer& test_server() const {
+  const net::SpawnedTestServer& test_server() const {
     return *test_server_;
   }
 
@@ -264,7 +264,7 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
  private:
   SafeBrowsingService* safe_browsing_service_;
 
-  scoped_ptr<net::TestServer> test_server_;
+  scoped_ptr<net::SpawnedTestServer> test_server_;
 
   // Protects all variables below since they are read on UI thread
   // but updated on IO thread or safebrowsing thread.
@@ -370,7 +370,7 @@ class SafeBrowsingServerTestHelper
 
   // Calls test server to fetch database for verification.
   net::URLRequestStatus::Status FetchDBToVerify(
-      const net::TestServer& test_server,
+      const net::SpawnedTestServer& test_server,
       int test_step) {
     // TODO(lzheng): Remove chunk_type=add once it is not needed by the server.
     std::string path = base::StringPrintf(
@@ -381,7 +381,7 @@ class SafeBrowsingServerTestHelper
 
   // Calls test server to fetch URLs for verification.
   net::URLRequestStatus::Status FetchUrlsToVerify(
-      const net::TestServer& test_server,
+      const net::SpawnedTestServer& test_server,
       int test_step) {
     std::string path = base::StringPrintf(
         "%s?client=chromium&appver=1.0&pver=2.2&test_step=%d",
@@ -393,7 +393,7 @@ class SafeBrowsingServerTestHelper
   // bad URL that server expects test to fetch full hash but the test didn't,
   // this verification will fail.
   net::URLRequestStatus::Status VerifyTestComplete(
-      const net::TestServer& test_server,
+      const net::SpawnedTestServer& test_server,
       int test_step) {
     std::string path = base::StringPrintf(
         "%s?test_step=%d", kTestCompletePath, test_step);

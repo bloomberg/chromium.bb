@@ -20,7 +20,7 @@
 #include "content/test/net/url_request_failed_job.h"
 #include "content/test/net/url_request_mock_http_job.h"
 #include "net/base/net_errors.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 
 namespace content {
 

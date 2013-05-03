@@ -69,7 +69,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_MACOSX)
@@ -380,9 +380,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, SingleBeforeUnloadAfterRedirect) {
   // Create HTTP and HTTPS servers for cross-site transition.
   ASSERT_TRUE(test_server()->Start());
-  net::TestServer https_test_server(net::TestServer::TYPE_HTTPS,
-                                    net::TestServer::kLocalhost,
-                                    base::FilePath(kDocRoot));
+  net::SpawnedTestServer https_test_server(net::SpawnedTestServer::TYPE_HTTPS,
+                                           net::SpawnedTestServer::kLocalhost,
+                                           base::FilePath(kDocRoot));
   ASSERT_TRUE(https_test_server.Start());
 
   // Temporarily replace ContentBrowserClient with one that will cause a
@@ -606,9 +606,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
 
   // Create http and https servers for a cross-site transition.
   ASSERT_TRUE(test_server()->Start());
-  net::TestServer https_test_server(net::TestServer::TYPE_HTTPS,
-                                    net::TestServer::kLocalhost,
-                                    base::FilePath(kDocRoot));
+  net::SpawnedTestServer https_test_server(net::SpawnedTestServer::TYPE_HTTPS,
+                                           net::SpawnedTestServer::kLocalhost,
+                                           base::FilePath(kDocRoot));
   ASSERT_TRUE(https_test_server.Start());
   GURL http_url(test_server()->GetURL("files/title1.html"));
   GURL https_url(https_test_server.GetURL(std::string()));
@@ -695,9 +695,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
 
   // Create http and https servers for a cross-site transition.
   ASSERT_TRUE(test_server()->Start());
-  net::TestServer https_test_server(net::TestServer::TYPE_HTTPS,
-                                    net::TestServer::kLocalhost,
-                                    base::FilePath(kDocRoot));
+  net::SpawnedTestServer https_test_server(net::SpawnedTestServer::TYPE_HTTPS,
+                                           net::SpawnedTestServer::kLocalhost,
+                                           base::FilePath(kDocRoot));
   ASSERT_TRUE(https_test_server.Start());
   GURL http_url(test_server()->GetURL("files/title1.html"));
   GURL https_url(https_test_server.GetURL(std::string()));
@@ -810,9 +810,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutHttps) {
   CommandUpdater* command_updater =
       browser()->command_controller()->command_updater();
 
-  net::TestServer test_server(net::TestServer::TYPE_HTTPS,
-                              net::TestServer::kLocalhost,
-                              base::FilePath(kDocRoot));
+  net::SpawnedTestServer test_server(net::SpawnedTestServer::TYPE_HTTPS,
+                                     net::SpawnedTestServer::kLocalhost,
+                                     base::FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
   GURL https_url(test_server.GetURL("/"));
   ASSERT_TRUE(https_url.SchemeIs(chrome::kHttpsScheme));
@@ -824,9 +824,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutFtp) {
   CommandUpdater* command_updater =
       browser()->command_controller()->command_updater();
 
-  net::TestServer test_server(net::TestServer::TYPE_FTP,
-                              net::TestServer::kLocalhost,
-                              base::FilePath(kDocRoot));
+  net::SpawnedTestServer test_server(net::SpawnedTestServer::TYPE_FTP,
+                                     net::SpawnedTestServer::kLocalhost,
+                                     base::FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
   GURL ftp_url(test_server.GetURL(std::string()));
   ASSERT_TRUE(ftp_url.SchemeIs(chrome::kFtpScheme));

@@ -13,7 +13,7 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/perf/perf_test.h"
 #include "chrome/test/ui/ui_perf_test.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 
 namespace {
 
@@ -24,8 +24,8 @@ namespace {
 class MachPortsTest : public UIPerfTest {
  public:
   MachPortsTest()
-      : server_(net::TestServer::TYPE_HTTP,
-                net::TestServer::kLocalhost,
+      : server_(net::SpawnedTestServer::TYPE_HTTP,
+                net::SpawnedTestServer::kLocalhost,
                 base::FilePath(FILE_PATH_LITERAL("data/mach_ports/moz"))) {
   }
 
@@ -61,7 +61,7 @@ class MachPortsTest : public UIPerfTest {
   }
 
  private:
-  net::TestServer server_;
+  net::SpawnedTestServer server_;
   std::vector<int> port_counts_;
 };
 

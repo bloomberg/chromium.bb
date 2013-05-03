@@ -17,7 +17,7 @@
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
 #include "content/test/layout_browsertest.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 #include "webkit/quota/quota_manager.h"
 
 using quota::QuotaManager;

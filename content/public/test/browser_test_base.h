@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class CommandLine;
@@ -64,8 +64,10 @@ class BrowserTestBase : public testing::Test {
   virtual void RunTestOnMainThreadLoop() = 0;
 
   // Returns the testing server. Guaranteed to be non-NULL.
-  const net::TestServer* test_server() const { return test_server_.get(); }
-  net::TestServer* test_server() { return test_server_.get(); }
+  const net::SpawnedTestServer* test_server() const {
+    return test_server_.get();
+  }
+  net::SpawnedTestServer* test_server() { return test_server_.get(); }
 
 #if defined(OS_POSIX)
   // This is only needed by a test that raises SIGTERM to ensure that a specific
@@ -92,7 +94,7 @@ class BrowserTestBase : public testing::Test {
   void ProxyRunTestOnMainThreadLoop();
 
   // Testing server, started on demand.
-  scoped_ptr<net::TestServer> test_server_;
+  scoped_ptr<net::SpawnedTestServer> test_server_;
 
 #if defined(OS_POSIX)
   bool handle_sigterm_;

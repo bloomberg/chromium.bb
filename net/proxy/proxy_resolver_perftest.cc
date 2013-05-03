@@ -12,7 +12,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_resolver_v8.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
@@ -86,8 +86,8 @@ class PacPerfSuiteRunner {
       : resolver_(resolver),
         resolver_name_(resolver_name),
         test_server_(
-            net::TestServer::TYPE_HTTP,
-            net::TestServer::kLocalhost,
+            net::SpawnedTestServer::TYPE_HTTP,
+            net::SpawnedTestServer::kLocalhost,
             base::FilePath(
                 FILE_PATH_LITERAL("net/data/proxy_resolver_perftest"))) {
   }
@@ -178,7 +178,7 @@ class PacPerfSuiteRunner {
 
   net::ProxyResolver* resolver_;
   std::string resolver_name_;
-  net::TestServer test_server_;
+  net::SpawnedTestServer test_server_;
 };
 
 #if defined(OS_WIN)

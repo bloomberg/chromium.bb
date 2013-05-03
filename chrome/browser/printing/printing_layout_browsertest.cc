@@ -25,7 +25,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 #include "printing/image.h"
 #include "printing/printing_test.h"
 

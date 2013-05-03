@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/search/instant_overlay_model_observer.h"
 #include "chrome/common/search_types.h"
 #include "googleurl/src/gurl.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 
 class InstantController;
 class InstantModel;
@@ -57,7 +57,7 @@ class InstantTestBase {
  protected:
   InstantTestBase()
       : https_test_server_(
-            net::TestServer::TYPE_HTTPS,
+            net::SpawnedTestServer::TYPE_HTTPS,
             net::BaseTestServer::SSLOptions(),
             base::FilePath(FILE_PATH_LITERAL("chrome/test/data"))) {
   }
@@ -83,7 +83,7 @@ class InstantTestBase {
 
   const GURL& instant_url() const { return instant_url_; }
 
-  net::TestServer& https_test_server() { return https_test_server_; }
+  net::SpawnedTestServer& https_test_server() { return https_test_server_; }
 
   void KillInstantRenderView();
 
@@ -129,7 +129,7 @@ class InstantTestBase {
   Browser* browser_;
 
   // HTTPS Testing server, started on demand.
-  net::TestServer https_test_server_;
+  net::SpawnedTestServer https_test_server_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantTestBase);
 };

@@ -9,14 +9,14 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
-#include "chrome/browser/search_engines/template_url_fetcher_factory.h"
 #include "chrome/browser/search_engines/template_url_fetcher_callbacks.h"
+#include "chrome/browser/search_engines/template_url_fetcher_factory.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "googleurl/src/gurl.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class TemplateURLFetcherTest;
@@ -78,7 +78,7 @@ class TemplateURLFetcherTest : public testing::Test {
   void WaitForDownloadToFinish();
 
   TemplateURLServiceTestUtil test_util_;
-  net::TestServer test_server_;
+  net::SpawnedTestServer test_server_;
 
   // The last TemplateURL to come from a callback.
   scoped_ptr<TemplateURL> last_callback_template_url_;
@@ -108,8 +108,8 @@ void TemplateURLFetcherTestCallbacks::ConfirmAddSearchProvider(
 }
 
 TemplateURLFetcherTest::TemplateURLFetcherTest()
-    : test_server_(net::TestServer::TYPE_HTTP,
-                   net::TestServer::kLocalhost,
+    : test_server_(net::SpawnedTestServer::TYPE_HTTP,
+                   net::SpawnedTestServer::kLocalhost,
                    base::FilePath(FILE_PATH_LITERAL("chrome/test/data"))),
       callbacks_destroyed_(0),
       add_provider_called_(0),

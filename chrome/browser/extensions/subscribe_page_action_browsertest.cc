@@ -59,7 +59,7 @@ static const char kScriptError[] =
     "    \"No error\""
     ");";
 
-GURL GetFeedUrl(net::TestServer* server, const std::string& feed_page,
+GURL GetFeedUrl(net::SpawnedTestServer* server, const std::string& feed_page,
                 bool direct_url, std::string extension_id) {
   GURL feed_url = server->GetURL(feed_page);
   if (direct_url) {
@@ -96,7 +96,7 @@ bool ValidatePageElement(WebContents* tab,
 // extension to kick in, detect the feed and redirect to a feed preview page.
 // |sniff_xml_type| is generally set to true if the feed is sniffable and false
 // for invalid feeds.
-void NavigateToFeedAndValidate(net::TestServer* server,
+void NavigateToFeedAndValidate(net::SpawnedTestServer* server,
                                const std::string& url,
                                Browser* browser,
                                std::string extension_id,

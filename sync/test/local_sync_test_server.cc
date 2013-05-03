@@ -9,20 +9,22 @@
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "net/test/python_utils.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 
 namespace syncer {
 
 LocalSyncTestServer::LocalSyncTestServer()
-    : LocalTestServer(net::TestServer::TYPE_HTTP,  // Sync uses the HTTP scheme.
-                      net::TestServer::kLocalhost,
-                      base::FilePath()),
+    : LocalTestServer(
+        net::SpawnedTestServer::TYPE_HTTP,  // Sync uses the HTTP scheme.
+        net::SpawnedTestServer::kLocalhost,
+        base::FilePath()),
       xmpp_port_(0) {}
 
 LocalSyncTestServer::LocalSyncTestServer(uint16 port, uint16 xmpp_port)
-    : LocalTestServer(net::TestServer::TYPE_HTTP,  // Sync uses the HTTP scheme.
-                      net::TestServer::kLocalhost,
-                      base::FilePath()),
+    : LocalTestServer(
+        net::SpawnedTestServer::TYPE_HTTP,  // Sync uses the HTTP scheme.
+        net::SpawnedTestServer::kLocalhost,
+        base::FilePath()),
       xmpp_port_(xmpp_port) {
   SetPort(port);
 }

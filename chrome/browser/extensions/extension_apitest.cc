@@ -19,7 +19,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "net/base/net_util.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 
 namespace {
 
@@ -301,9 +301,9 @@ bool ExtensionApiTest::StartTestServer() {
 
 bool ExtensionApiTest::StartWebSocketServer(
     const base::FilePath& root_directory) {
-  websocket_server_.reset(new net::TestServer(
-      net::TestServer::TYPE_WS,
-      net::TestServer::kLocalhost,
+  websocket_server_.reset(new net::SpawnedTestServer(
+      net::SpawnedTestServer::TYPE_WS,
+      net::SpawnedTestServer::kLocalhost,
       root_directory));
 
   if (!websocket_server_->Start())

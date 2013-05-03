@@ -29,7 +29,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/net/url_request_mock_http_job.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
@@ -43,10 +43,10 @@ using content::URLRequestMockHTTPJob;
 class ContentSettingsTest : public InProcessBrowserTest {
  public:
   ContentSettingsTest()
-      : https_server_(
-            net::TestServer::TYPE_HTTPS,
-            net::TestServer::SSLOptions(net::TestServer::SSLOptions::CERT_OK),
-            base::FilePath(FILE_PATH_LITERAL("chrome/test/data"))) {
+      : https_server_(net::SpawnedTestServer::TYPE_HTTPS,
+                      net::SpawnedTestServer::SSLOptions(
+                          net::SpawnedTestServer::SSLOptions::CERT_OK),
+                      base::FilePath(FILE_PATH_LITERAL("chrome/test/data"))) {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -102,7 +102,7 @@ class ContentSettingsTest : public InProcessBrowserTest {
     ASSERT_FALSE(GetCookies(browser()->profile(), url).empty());
   }
 
-  net::TestServer https_server_;
+  net::SpawnedTestServer https_server_;
 };
 
 // Sanity check on cookies before we do other tests. While these can be written

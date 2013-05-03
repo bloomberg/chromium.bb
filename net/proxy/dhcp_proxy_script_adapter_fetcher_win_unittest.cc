@@ -12,7 +12,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/proxy/mock_proxy_script_fetcher.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -269,9 +269,9 @@ class MockDhcpRealFetchProxyScriptAdapterFetcher
 };
 
 TEST(DhcpProxyScriptAdapterFetcher, MockDhcpRealFetch) {
-  TestServer test_server(
-      TestServer::TYPE_HTTP,
-      net::TestServer::kLocalhost,
+  SpawnedTestServer test_server(
+      SpawnedTestServer::TYPE_HTTP,
+      SpawnedTestServer::kLocalhost,
       base::FilePath(
           FILE_PATH_LITERAL("net/data/proxy_script_fetcher_unittest")));
   ASSERT_TRUE(test_server.Start());

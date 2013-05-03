@@ -8,10 +8,10 @@
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "content/common/content_constants_internal.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/content_constants_internal.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
@@ -28,7 +28,7 @@
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
 #include "net/base/net_util.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 
 namespace content {
 
@@ -40,10 +40,10 @@ class RenderViewHostManagerTest : public ContentBrowserTest {
       const std::string& original_file_path,
       const net::HostPortPair& host_port_pair,
       std::string* replacement_path) {
-    std::vector<net::TestServer::StringPair> replacement_text;
+    std::vector<net::SpawnedTestServer::StringPair> replacement_text;
     replacement_text.push_back(
         make_pair("REPLACE_WITH_HOST_AND_PORT", host_port_pair.ToString()));
-    return net::TestServer::GetFilePathWithReplacements(
+    return net::SpawnedTestServer::GetFilePathWithReplacements(
         original_file_path, replacement_text, replacement_path);
   }
 };
@@ -52,9 +52,9 @@ class RenderViewHostManagerTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, NoScriptAccessAfterSwapOut) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
-  net::TestServer https_server(
-      net::TestServer::TYPE_HTTPS,
-      net::TestServer::kLocalhost,
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL("content/test/data")));
   ASSERT_TRUE(https_server.Start());
 
@@ -120,9 +120,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
                        SwapProcessWithRelNoreferrerAndTargetBlank) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
-  net::TestServer https_server(
-      net::TestServer::TYPE_HTTPS,
-      net::TestServer::kLocalhost,
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL("content/test/data")));
   ASSERT_TRUE(https_server.Start());
 
@@ -173,9 +173,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
                        SwapProcessWithSameSiteRelNoreferrer) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
-  net::TestServer https_server(
-      net::TestServer::TYPE_HTTPS,
-      net::TestServer::kLocalhost,
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL("content/test/data")));
   ASSERT_TRUE(https_server.Start());
 
@@ -226,9 +226,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
                        DontSwapProcessWithOnlyTargetBlank) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
-  net::TestServer https_server(
-      net::TestServer::TYPE_HTTPS,
-      net::TestServer::kLocalhost,
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL("content/test/data")));
   ASSERT_TRUE(https_server.Start());
 
@@ -274,9 +274,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
                        DontSwapProcessWithOnlyRelNoreferrer) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
-  net::TestServer https_server(
-      net::TestServer::TYPE_HTTPS,
-      net::TestServer::kLocalhost,
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL("content/test/data")));
   ASSERT_TRUE(https_server.Start());
 
@@ -320,9 +320,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
                        AllowTargetedNavigationsAfterSwap) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
-  net::TestServer https_server(
-      net::TestServer::TYPE_HTTPS,
-      net::TestServer::kLocalhost,
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL("content/test/data")));
   ASSERT_TRUE(https_server.Start());
 
@@ -403,9 +403,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, DisownOpener) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
-  net::TestServer https_server(
-      net::TestServer::TYPE_HTTPS,
-      net::TestServer::kLocalhost,
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL("content/test/data")));
   ASSERT_TRUE(https_server.Start());
 
@@ -505,9 +505,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
                        SupportCrossProcessPostMessage) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
-  net::TestServer https_server(
-      net::TestServer::TYPE_HTTPS,
-      net::TestServer::kLocalhost,
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL("content/test/data")));
   ASSERT_TRUE(https_server.Start());
 
@@ -643,9 +643,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
                        AllowTargetedNavigationsInOpenerAfterSwap) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
-  net::TestServer https_server(
-      net::TestServer::TYPE_HTTPS,
-      net::TestServer::kLocalhost,
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL("content/test/data")));
   ASSERT_TRUE(https_server.Start());
 
@@ -714,9 +714,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
                        ProcessExitWithSwappedOutViews) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
-  net::TestServer https_server(
-      net::TestServer::TYPE_HTTPS,
-      net::TestServer::kLocalhost,
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL("content/test/data")));
   ASSERT_TRUE(https_server.Start());
 
@@ -781,9 +781,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, ClickLinkAfter204Error) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
-  net::TestServer https_server(
-      net::TestServer::TYPE_HTTPS,
-      net::TestServer::kLocalhost,
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL("content/test/data")));
   ASSERT_TRUE(https_server.Start());
 
@@ -844,9 +844,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, BackForwardNotStale) {
 
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
-  net::TestServer https_server(
-      net::TestServer::TYPE_HTTPS,
-      net::TestServer::kLocalhost,
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL("content/test/data")));
   ASSERT_TRUE(https_server.Start());
 
@@ -959,9 +959,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
                        SwappedOutViewHasCorrectVisibilityState) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
-  net::TestServer https_server(
-      net::TestServer::TYPE_HTTPS,
-      net::TestServer::kLocalhost,
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL("content/test/data")));
   ASSERT_TRUE(https_server.Start());
 
@@ -1085,9 +1085,9 @@ class RenderViewHostObserverArray {
 IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, LeakingRenderViewHosts) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
-  net::TestServer https_server(
-      net::TestServer::TYPE_HTTPS,
-      net::TestServer::kLocalhost,
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL("content/test/data")));
   ASSERT_TRUE(https_server.Start());
 
@@ -1158,9 +1158,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
                        DontPreemptNavigationWithFrameTreeUpdate) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
-  net::TestServer https_server(
-      net::TestServer::TYPE_HTTPS,
-      net::TestServer::kLocalhost,
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL("content/test/data")));
   ASSERT_TRUE(https_server.Start());
 

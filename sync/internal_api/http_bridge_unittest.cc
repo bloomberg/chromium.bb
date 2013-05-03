@@ -5,7 +5,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_test_util.h"
@@ -23,8 +23,8 @@ const base::FilePath::CharType kDocRoot[] =
 class SyncHttpBridgeTest : public testing::Test {
  public:
   SyncHttpBridgeTest()
-      : test_server_(net::TestServer::TYPE_HTTP,
-                     net::TestServer::kLocalhost,
+      : test_server_(net::SpawnedTestServer::TYPE_HTTP,
+                     net::SpawnedTestServer::kLocalhost,
                      base::FilePath(kDocRoot)),
         fake_default_request_context_getter_(NULL),
         bridge_for_race_test_(NULL),
@@ -92,7 +92,7 @@ class SyncHttpBridgeTest : public testing::Test {
     return fake_default_request_context_getter_;
   }
 
-  net::TestServer test_server_;
+  net::SpawnedTestServer test_server_;
 
   base::Thread* io_thread() { return &io_thread_; }
 

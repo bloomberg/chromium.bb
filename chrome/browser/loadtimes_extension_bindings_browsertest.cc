@@ -8,7 +8,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 
 class LoadtimesExtensionBindingsTest : public InProcessBrowserTest {
  public:

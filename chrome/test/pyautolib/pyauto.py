@@ -636,7 +636,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """Get ftp:// url for the given path in the data dir.
 
     Args:
-      ftp_server: handle to ftp server, an instance of TestServer
+      ftp_server: handle to ftp server, an instance of SpawnedTestServer
       relative_path: any number of path elements
 
     The URL will be usable only after starting the ftp server.
@@ -849,11 +849,12 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       data_dir: path where ftp files should be served
 
     Returns:
-      handle to FTP Server, an instance of TestServer
+      handle to FTP Server, an instance of SpawnedTestServer
     """
-    ftp_server = pyautolib.TestServer(pyautolib.TestServer.TYPE_FTP,
-                                      '127.0.0.1',
-                                      pyautolib.FilePath(data_dir))
+    ftp_server = pyautolib.SpawnedTestServer(
+        pyautolib.SpawnedTestServer.TYPE_FTP,
+        '127.0.0.1',
+        pyautolib.FilePath(data_dir))
     assert ftp_server.Start(), 'Could not start ftp server'
     logging.debug('Started ftp server at "%s".', data_dir)
     return ftp_server
@@ -865,18 +866,19 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     logging.debug('Stopped ftp server.')
 
   def StartHTTPServer(self, data_dir):
-    """Starts a local HTTP TestServer serving files from |data_dir|.
+    """Starts a local HTTP SpawnedTestServer serving files from |data_dir|.
 
     Args:
-      data_dir: path where the TestServer should serve files from. This will be
-      appended to the source dir to get the final document root.
+      data_dir: path where the SpawnedTestServer should serve files from.
+      This will be appended to the source dir to get the final document root.
 
     Returns:
-      handle to the HTTP TestServer
+      handle to the HTTP SpawnedTestServer
     """
-    http_server = pyautolib.TestServer(pyautolib.TestServer.TYPE_HTTP,
-                                       '127.0.0.1',
-                                       pyautolib.FilePath(data_dir))
+    http_server = pyautolib.SpawnedTestServer(
+        pyautolib.SpawnedTestServer.TYPE_HTTP,
+        '127.0.0.1',
+        pyautolib.FilePath(data_dir))
     assert http_server.Start(), 'Could not start HTTP server'
     logging.debug('Started HTTP server at "%s".', data_dir)
     return http_server
@@ -887,19 +889,20 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     logging.debug('Stopped HTTP server.')
 
   def StartHttpsServer(self, cert_type, data_dir):
-    """Starts a local HTTPS TestServer serving files from |data_dir|.
+    """Starts a local HTTPS SpawnedTestServer serving files from |data_dir|.
 
     Args:
       cert_type: An instance of SSLOptions.ServerCertificate for three
                  certificate types: ok, expired, or mismatch.
-      data_dir: The path where TestServer should serve files from. This is
-                appended to the source dir to get the final document root.
+      data_dir: The path where SpawnedTestServer should serve files from.
+                This is appended to the source dir to get the final
+                document root.
 
     Returns:
-      Handle to the HTTPS TestServer
+      Handle to the HTTPS SpawnedTestServer
     """
-    https_server = pyautolib.TestServer(
-        pyautolib.TestServer.TYPE_HTTPS,
+    https_server = pyautolib.SpawnedTestServer(
+        pyautolib.SpawnedTestServer.TYPE_HTTPS,
         pyautolib.SSLOptions(cert_type),
         pyautolib.FilePath(data_dir))
     assert https_server.Start(), 'Could not start HTTPS server.'
@@ -5798,9 +5801,10 @@ class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):
     global _HTTP_SERVER
     assert not _HTTP_SERVER, 'HTTP Server already started'
     http_data_dir = _OPTIONS.http_data_dir
-    http_server = pyautolib.TestServer(pyautolib.TestServer.TYPE_HTTP,
-                                       '127.0.0.1',
-                                       pyautolib.FilePath(http_data_dir))
+    http_server = pyautolib.SpawnedTestServer(
+        pyautolib.SpawnedTestServer.TYPE_HTTP,
+        '127.0.0.1',
+        pyautolib.FilePath(http_data_dir))
     assert http_server.Start(), 'Could not start http server'
     _HTTP_SERVER = http_server
     logging.debug('Started http server at "%s".', http_data_dir)

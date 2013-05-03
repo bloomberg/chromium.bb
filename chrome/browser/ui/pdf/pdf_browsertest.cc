@@ -20,7 +20,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -44,15 +44,15 @@ class PDFBrowserTest : public InProcessBrowserTest,
       : snapshot_different_(true),
         next_dummy_search_value_(0),
         load_stop_notification_count_(0) {
-    pdf_test_server_.reset(new net::TestServer(
-        net::TestServer::TYPE_HTTP,
-        net::TestServer::kLocalhost,
+    pdf_test_server_.reset(new net::SpawnedTestServer(
+        net::SpawnedTestServer::TYPE_HTTP,
+        net::SpawnedTestServer::kLocalhost,
         base::FilePath(FILE_PATH_LITERAL("pdf/test"))));
   }
 
  protected:
   // Use our own TestServer so that we can serve files from the pdf directory.
-  net::TestServer* pdf_test_server() { return pdf_test_server_.get(); }
+  net::SpawnedTestServer* pdf_test_server() { return pdf_test_server_.get(); }
 
   int load_stop_notification_count() const {
     return load_stop_notification_count_;
@@ -206,7 +206,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
   // How many times we've seen chrome::LOAD_STOP.
   int load_stop_notification_count_;
 
-  scoped_ptr<net::TestServer> pdf_test_server_;
+  scoped_ptr<net::SpawnedTestServer> pdf_test_server_;
 };
 
 #if defined(OS_CHROMEOS)

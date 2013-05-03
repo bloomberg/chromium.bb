@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "content/public/browser/resource_request_info.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -109,9 +109,9 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
   std::string error;
   scoped_ptr<WebRequestConditionAttribute> result;
 
-  net::TestServer test_server(
-      net::TestServer::TYPE_HTTP,
-      net::TestServer::kLocalhost,
+  net::SpawnedTestServer test_server(
+      net::SpawnedTestServer::TYPE_HTTP,
+      net::SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL(
           "chrome/test/data/extensions/api_test/webrequest/declarative")));
   ASSERT_TRUE(test_server.Start());
@@ -479,9 +479,9 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
   // Necessary for TestURLRequest.
   MessageLoop message_loop(MessageLoop::TYPE_IO);
 
-  net::TestServer test_server(
-      net::TestServer::TYPE_HTTP,
-      net::TestServer::kLocalhost,
+  net::SpawnedTestServer test_server(
+      net::SpawnedTestServer::TYPE_HTTP,
+      net::SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL(
           "chrome/test/data/extensions/api_test/webrequest/declarative")));
   ASSERT_TRUE(test_server.Start());

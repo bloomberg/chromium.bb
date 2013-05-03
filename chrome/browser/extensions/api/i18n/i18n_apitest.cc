@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, I18N) {
   ASSERT_TRUE(StartTestServer());

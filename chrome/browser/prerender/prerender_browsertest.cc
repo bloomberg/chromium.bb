@@ -993,24 +993,25 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
       bool prerender_should_wait_for_ready_title) {
     dest_url_ = destination_url;
 
-    std::vector<net::TestServer::StringPair> replacement_text;
+    std::vector<net::SpawnedTestServer::StringPair> replacement_text;
     replacement_text.push_back(
         make_pair("REPLACE_WITH_PRERENDER_URL", prerender_url.spec()));
     replacement_text.push_back(
         make_pair("REPLACE_WITH_DESTINATION_URL", destination_url.spec()));
     std::string replacement_path;
-    ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
+    ASSERT_TRUE(net::SpawnedTestServer::GetFilePathWithReplacements(
         loader_path_,
         replacement_text,
         &replacement_path));
 
-    const net::TestServer* src_server = test_server();
-    scoped_ptr<net::TestServer> https_src_server;
+    const net::SpawnedTestServer* src_server = test_server();
+    scoped_ptr<net::SpawnedTestServer> https_src_server;
     if (use_https_src_server_) {
       https_src_server.reset(
-          new net::TestServer(
-                  net::TestServer::TYPE_HTTPS, net::TestServer::kLocalhost,
-                  base::FilePath(FILE_PATH_LITERAL("chrome/test/data"))));
+          new net::SpawnedTestServer(
+              net::SpawnedTestServer::TYPE_HTTPS,
+              net::SpawnedTestServer::kLocalhost,
+              base::FilePath(FILE_PATH_LITERAL("chrome/test/data"))));
       ASSERT_TRUE(https_src_server->Start());
       src_server = https_src_server.get();
     }
@@ -1513,8 +1514,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
 // Checks that a prerender for an https will prevent a prerender from happening.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHttps) {
-  net::TestServer https_server(
-      net::TestServer::TYPE_HTTPS, net::TestServer::kLocalhost,
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS, net::SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
@@ -1526,8 +1527,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHttps) {
 
 // Checks that client-issued redirects to an https page will cancel prerenders.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClientRedirectToHttps) {
-  net::TestServer https_server(
-      net::TestServer::TYPE_HTTPS, net::TestServer::kLocalhost,
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS, net::SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
@@ -1542,11 +1543,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClientRedirectToHttps) {
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClientRedirectInIframe) {
   std::string redirect_path = CreateClientRedirect(
       "/files/prerender/prerender_embedded_content.html");
-  std::vector<net::TestServer::StringPair> replacement_text;
+  std::vector<net::SpawnedTestServer::StringPair> replacement_text;
   replacement_text.push_back(
       std::make_pair("REPLACE_WITH_URL", "/" + redirect_path));
   std::string replacement_path;
-  ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
+  ASSERT_TRUE(net::SpawnedTestServer::GetFilePathWithReplacements(
       "files/prerender/prerender_with_iframe.html",
       replacement_text,
       &replacement_path));
@@ -1561,17 +1562,17 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClientRedirectInIframe) {
 // count as an "alias" for the prerendered page.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderClientRedirectToHttpsInIframe) {
-  net::TestServer https_server(
-      net::TestServer::TYPE_HTTPS, net::TestServer::kLocalhost,
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS, net::SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
   std::string redirect_path = CreateClientRedirect(https_url.spec());
-  std::vector<net::TestServer::StringPair> replacement_text;
+  std::vector<net::SpawnedTestServer::StringPair> replacement_text;
   replacement_text.push_back(
       std::make_pair("REPLACE_WITH_URL", "/" + redirect_path));
   std::string replacement_path;
-  ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
+  ASSERT_TRUE(net::SpawnedTestServer::GetFilePathWithReplacements(
       "files/prerender/prerender_with_iframe.html",
       replacement_text,
       &replacement_path));
@@ -1619,8 +1620,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 // location will cancel prerendering.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderServerRedirectToHttps) {
-  net::TestServer https_server(
-      net::TestServer::TYPE_HTTPS, net::TestServer::kLocalhost,
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS, net::SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
@@ -1635,11 +1636,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderServerRedirectInIframe) {
   std::string redirect_path = CreateServerRedirect(
       "/files/prerender/prerender_embedded_content.html");
-  std::vector<net::TestServer::StringPair> replacement_text;
+  std::vector<net::SpawnedTestServer::StringPair> replacement_text;
   replacement_text.push_back(
       std::make_pair("REPLACE_WITH_URL", "/" + redirect_path));
   std::string replacement_path;
-  ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
+  ASSERT_TRUE(net::SpawnedTestServer::GetFilePathWithReplacements(
       "files/prerender/prerender_with_iframe.html",
       replacement_text,
       &replacement_path));
@@ -1654,17 +1655,17 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderServerRedirectInIframe) {
 // count as an "alias" for the prerendered page.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderServerRedirectToHttpsInIframe) {
-  net::TestServer https_server(
-      net::TestServer::TYPE_HTTPS, net::TestServer::kLocalhost,
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS, net::SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
   std::string redirect_path = CreateServerRedirect(https_url.spec());
-  std::vector<net::TestServer::StringPair> replacement_text;
+  std::vector<net::SpawnedTestServer::StringPair> replacement_text;
   replacement_text.push_back(
       std::make_pair("REPLACE_WITH_URL", "/" + redirect_path));
   std::string replacement_path;
-  ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
+  ASSERT_TRUE(net::SpawnedTestServer::GetFilePathWithReplacements(
       "files/prerender/prerender_with_iframe.html",
       replacement_text,
       &replacement_path));
@@ -2130,11 +2131,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderXhrDelete) {
 
 // Checks that a top-level page which would trigger an SSL error is canceled.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorTopLevel) {
-  net::TestServer::SSLOptions ssl_options;
+  net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.server_certificate =
-      net::TestServer::SSLOptions::CERT_MISMATCHED_NAME;
-    net::TestServer https_server(
-        net::TestServer::TYPE_HTTPS, ssl_options,
+      net::SpawnedTestServer::SSLOptions::CERT_MISMATCHED_NAME;
+    net::SpawnedTestServer https_server(
+        net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
         base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
@@ -2147,19 +2148,19 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorTopLevel) {
 // the page. Non-main-frame requests are simply cancelled if they run into
 // an SSL problem.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorSubresource) {
-  net::TestServer::SSLOptions ssl_options;
+  net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.server_certificate =
-      net::TestServer::SSLOptions::CERT_MISMATCHED_NAME;
-    net::TestServer https_server(
-        net::TestServer::TYPE_HTTPS, ssl_options,
+      net::SpawnedTestServer::SSLOptions::CERT_MISMATCHED_NAME;
+    net::SpawnedTestServer https_server(
+        net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
         base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/image.jpeg");
-  std::vector<net::TestServer::StringPair> replacement_text;
+  std::vector<net::SpawnedTestServer::StringPair> replacement_text;
   replacement_text.push_back(
       std::make_pair("REPLACE_WITH_IMAGE_URL", https_url.spec()));
   std::string replacement_path;
-  ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
+  ASSERT_TRUE(net::SpawnedTestServer::GetFilePathWithReplacements(
       "files/prerender/prerender_with_image.html",
       replacement_text,
       &replacement_path));
@@ -2171,20 +2172,20 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorSubresource) {
 // the page. Non-main-frame requests are simply cancelled if they run into
 // an SSL problem.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorIframe) {
-  net::TestServer::SSLOptions ssl_options;
+  net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.server_certificate =
-      net::TestServer::SSLOptions::CERT_MISMATCHED_NAME;
-    net::TestServer https_server(
-        net::TestServer::TYPE_HTTPS, ssl_options,
+      net::SpawnedTestServer::SSLOptions::CERT_MISMATCHED_NAME;
+    net::SpawnedTestServer https_server(
+        net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
         base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL(
       "files/prerender/prerender_embedded_content.html");
-  std::vector<net::TestServer::StringPair> replacement_text;
+  std::vector<net::SpawnedTestServer::StringPair> replacement_text;
   replacement_text.push_back(
       std::make_pair("REPLACE_WITH_URL", https_url.spec()));
   std::string replacement_path;
-  ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
+  ASSERT_TRUE(net::SpawnedTestServer::GetFilePathWithReplacements(
       "files/prerender/prerender_with_iframe.html",
       replacement_text,
       &replacement_path));
@@ -2222,10 +2223,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 // Checks that a top-level page which would normally request an SSL client
 // certificate will never be seen since it's an https top-level resource.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLClientCertTopLevel) {
-  net::TestServer::SSLOptions ssl_options;
+  net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
-    net::TestServer https_server(
-        net::TestServer::TYPE_HTTPS, ssl_options,
+    net::SpawnedTestServer https_server(
+        net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
         base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
@@ -2236,18 +2237,18 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLClientCertTopLevel) {
 // subresource will cancel the prerendered page.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderSSLClientCertSubresource) {
-  net::TestServer::SSLOptions ssl_options;
+  net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
-    net::TestServer https_server(
-        net::TestServer::TYPE_HTTPS, ssl_options,
+    net::SpawnedTestServer https_server(
+        net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
         base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/image.jpeg");
-  std::vector<net::TestServer::StringPair> replacement_text;
+  std::vector<net::SpawnedTestServer::StringPair> replacement_text;
   replacement_text.push_back(
       std::make_pair("REPLACE_WITH_IMAGE_URL", https_url.spec()));
   std::string replacement_path;
-  ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
+  ASSERT_TRUE(net::SpawnedTestServer::GetFilePathWithReplacements(
       "files/prerender/prerender_with_image.html",
       replacement_text,
       &replacement_path));
@@ -2259,19 +2260,19 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 // Checks that an SSL Client Certificate request that originates from an
 // iframe will cancel the prerendered page.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLClientCertIframe) {
-  net::TestServer::SSLOptions ssl_options;
+  net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
-    net::TestServer https_server(
-        net::TestServer::TYPE_HTTPS, ssl_options,
+    net::SpawnedTestServer https_server(
+        net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
         base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL(
       "files/prerender/prerender_embedded_content.html");
-  std::vector<net::TestServer::StringPair> replacement_text;
+  std::vector<net::SpawnedTestServer::StringPair> replacement_text;
   replacement_text.push_back(
       std::make_pair("REPLACE_WITH_URL", https_url.spec()));
   std::string replacement_path;
-  ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
+  ASSERT_TRUE(net::SpawnedTestServer::GetFilePathWithReplacements(
       "files/prerender/prerender_with_iframe.html",
       replacement_text,
       &replacement_path));
@@ -2318,11 +2319,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSafeBrowsingSubresource) {
   GURL image_url = test_server()->GetURL("files/prerender/image.jpeg");
   GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
       image_url, SB_THREAT_TYPE_URL_MALWARE);
-  std::vector<net::TestServer::StringPair> replacement_text;
+  std::vector<net::SpawnedTestServer::StringPair> replacement_text;
   replacement_text.push_back(
       std::make_pair("REPLACE_WITH_IMAGE_URL", image_url.spec()));
   std::string replacement_path;
-  ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
+  ASSERT_TRUE(net::SpawnedTestServer::GetFilePathWithReplacements(
       "files/prerender/prerender_with_image.html",
       replacement_text,
       &replacement_path));
@@ -2337,11 +2338,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSafeBrowsingIframe) {
       "files/prerender/prerender_embedded_content.html");
   GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
       iframe_url, SB_THREAT_TYPE_URL_MALWARE);
-  std::vector<net::TestServer::StringPair> replacement_text;
+  std::vector<net::SpawnedTestServer::StringPair> replacement_text;
   replacement_text.push_back(
       std::make_pair("REPLACE_WITH_URL", iframe_url.spec()));
   std::string replacement_path;
-  ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
+  ASSERT_TRUE(net::SpawnedTestServer::GetFilePathWithReplacements(
       "files/prerender/prerender_with_iframe.html",
       replacement_text,
       &replacement_path));
@@ -2749,11 +2750,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, TabsApi) {
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderCancelSubresourceUnsupportedScheme) {
   GURL image_url = GURL("invalidscheme://www.google.com/test.jpg");
-  std::vector<net::TestServer::StringPair> replacement_text;
+  std::vector<net::SpawnedTestServer::StringPair> replacement_text;
   replacement_text.push_back(
       std::make_pair("REPLACE_WITH_IMAGE_URL", image_url.spec()));
   std::string replacement_path;
-  ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
+  ASSERT_TRUE(net::SpawnedTestServer::GetFilePathWithReplacements(
       "files/prerender/prerender_with_image.html",
       replacement_text,
       &replacement_path));
@@ -2766,11 +2767,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderCancelSubresourceRedirectUnsupportedScheme) {
   GURL image_url = test_server()->GetURL(
       CreateServerRedirect("invalidscheme://www.google.com/test.jpg"));
-  std::vector<net::TestServer::StringPair> replacement_text;
+  std::vector<net::SpawnedTestServer::StringPair> replacement_text;
   replacement_text.push_back(
       std::make_pair("REPLACE_WITH_IMAGE_URL", image_url.spec()));
   std::string replacement_path;
-  ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
+  ASSERT_TRUE(net::SpawnedTestServer::GetFilePathWithReplacements(
       "files/prerender/prerender_with_image.html",
       replacement_text,
       &replacement_path));

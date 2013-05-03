@@ -19,7 +19,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/http/http_status_code.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -38,7 +38,7 @@ const char kElementMainScriptPath[] = "pseudo_element_main.js";
 class TranslateBrowserTest : public InProcessBrowserTest {
  public:
   TranslateBrowserTest()
-      : https_server_(net::TestServer::TYPE_HTTPS,
+      : https_server_(net::SpawnedTestServer::TYPE_HTTPS,
                       SSLOptions(SSLOptions::CERT_OK),
                       base::FilePath(kTranslateRoot)) {}
 
@@ -58,9 +58,9 @@ class TranslateBrowserTest : public InProcessBrowserTest {
   }
 
  private:
-  net::TestServer https_server_;
+  net::SpawnedTestServer https_server_;
 
-  typedef net::TestServer::SSLOptions SSLOptions;
+  typedef net::SpawnedTestServer::SSLOptions SSLOptions;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateBrowserTest);
 };

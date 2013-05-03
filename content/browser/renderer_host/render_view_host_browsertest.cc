@@ -16,7 +16,7 @@
 #include "content/test/content_browser_test_utils.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_util.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 
 namespace content {
 

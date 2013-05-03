@@ -20,7 +20,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/ssl/ssl_config_service_defaults.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 #include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_job_factory_impl.h"
@@ -182,14 +182,14 @@ class BasicNetworkDelegate : public NetworkDelegate {
 class ProxyScriptFetcherImplTest : public PlatformTest {
  public:
   ProxyScriptFetcherImplTest()
-      : test_server_(TestServer::TYPE_HTTP,
-                     net::TestServer::kLocalhost,
+      : test_server_(SpawnedTestServer::TYPE_HTTP,
+                     net::SpawnedTestServer::kLocalhost,
                      base::FilePath(kDocRoot)) {
     context_.set_network_delegate(&network_delegate_);
   }
 
  protected:
-  TestServer test_server_;
+  SpawnedTestServer test_server_;
   BasicNetworkDelegate network_delegate_;
   RequestContext context_;
 };

@@ -42,7 +42,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/cert_status_flags.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 
 #if defined(USE_NSS)
 #include "net/cert/nss_cert_database.h"
@@ -94,16 +94,16 @@ class ProvisionalLoadWaiter : public content::WebContentsObserver {
 class SSLUITest : public InProcessBrowserTest {
  public:
   SSLUITest()
-      : https_server_(net::TestServer::TYPE_HTTPS,
+      : https_server_(net::SpawnedTestServer::TYPE_HTTPS,
                       SSLOptions(SSLOptions::CERT_OK),
                       base::FilePath(kDocRoot)),
-        https_server_expired_(net::TestServer::TYPE_HTTPS,
+        https_server_expired_(net::SpawnedTestServer::TYPE_HTTPS,
                               SSLOptions(SSLOptions::CERT_EXPIRED),
                               base::FilePath(kDocRoot)),
-        https_server_mismatched_(net::TestServer::TYPE_HTTPS,
+        https_server_mismatched_(net::SpawnedTestServer::TYPE_HTTPS,
                                  SSLOptions(SSLOptions::CERT_MISMATCHED_NAME),
                                  base::FilePath(kDocRoot)),
-        wss_server_expired_(net::TestServer::TYPE_WSS,
+        wss_server_expired_(net::SpawnedTestServer::TYPE_WSS,
                             SSLOptions(SSLOptions::CERT_EXPIRED),
                             net::GetWebSocketTestDataDirectory()) {}
 
@@ -225,16 +225,16 @@ class SSLUITest : public InProcessBrowserTest {
       const std::string& original_file_path,
       const net::HostPortPair& host_port_pair,
       std::string* replacement_path) {
-    std::vector<net::TestServer::StringPair> replacement_text;
+    std::vector<net::SpawnedTestServer::StringPair> replacement_text;
     replacement_text.push_back(
         make_pair("REPLACE_WITH_HOST_AND_PORT", host_port_pair.ToString()));
-    return net::TestServer::GetFilePathWithReplacements(
+    return net::SpawnedTestServer::GetFilePathWithReplacements(
         original_file_path, replacement_text, replacement_path);
   }
 
-  static bool GetTopFramePath(const net::TestServer& http_server,
-                              const net::TestServer& good_https_server,
-                              const net::TestServer& bad_https_server,
+  static bool GetTopFramePath(const net::SpawnedTestServer& http_server,
+                              const net::SpawnedTestServer& good_https_server,
+                              const net::SpawnedTestServer& bad_https_server,
                               std::string* top_frame_path) {
     // The "frame_left.html" page contained in the top_frame.html page contains
     // <a href>'s to three different servers. This sets up all of the
@@ -245,7 +245,7 @@ class SSLUITest : public InProcessBrowserTest {
     GURL bad_https_url = bad_https_server.GetURL(
         "files/ssl/bad_iframe.html");
 
-    std::vector<net::TestServer::StringPair> replacement_text_frame_left;
+    std::vector<net::SpawnedTestServer::StringPair> replacement_text_frame_left;
     replacement_text_frame_left.push_back(
         make_pair("REPLACE_WITH_HTTP_PAGE", http_url.spec()));
     replacement_text_frame_left.push_back(
@@ -253,56 +253,57 @@ class SSLUITest : public InProcessBrowserTest {
     replacement_text_frame_left.push_back(
         make_pair("REPLACE_WITH_BAD_HTTPS_PAGE", bad_https_url.spec()));
     std::string frame_left_path;
-    if (!net::TestServer::GetFilePathWithReplacements(
+    if (!net::SpawnedTestServer::GetFilePathWithReplacements(
             "frame_left.html",
             replacement_text_frame_left,
             &frame_left_path))
       return false;
 
     // Substitute the generated frame_left URL into the top_frame page.
-    std::vector<net::TestServer::StringPair> replacement_text_top_frame;
+    std::vector<net::SpawnedTestServer::StringPair> replacement_text_top_frame;
     replacement_text_top_frame.push_back(
         make_pair("REPLACE_WITH_FRAME_LEFT_PATH", frame_left_path));
-    return net::TestServer::GetFilePathWithReplacements(
+    return net::SpawnedTestServer::GetFilePathWithReplacements(
         "files/ssl/top_frame.html",
         replacement_text_top_frame,
         top_frame_path);
   }
 
   static bool GetPageWithUnsafeWorkerPath(
-      const net::TestServer& expired_https_server,
+      const net::SpawnedTestServer& expired_https_server,
       std::string* page_with_unsafe_worker_path) {
     // Get the "imported.js" URL from the expired https server and
     // substitute it into the unsafe_worker.js file.
     GURL imported_js_url = expired_https_server.GetURL("files/ssl/imported.js");
-    std::vector<net::TestServer::StringPair> replacement_text_for_unsafe_worker;
+    std::vector<net::SpawnedTestServer::StringPair>
+        replacement_text_for_unsafe_worker;
     replacement_text_for_unsafe_worker.push_back(
         make_pair("REPLACE_WITH_IMPORTED_JS_URL", imported_js_url.spec()));
     std::string unsafe_worker_path;
-    if (!net::TestServer::GetFilePathWithReplacements(
+    if (!net::SpawnedTestServer::GetFilePathWithReplacements(
         "unsafe_worker.js",
         replacement_text_for_unsafe_worker,
         &unsafe_worker_path))
       return false;
 
     // Now, substitute this into the page with unsafe worker.
-    std::vector<net::TestServer::StringPair>
+    std::vector<net::SpawnedTestServer::StringPair>
         replacement_text_for_page_with_unsafe_worker;
     replacement_text_for_page_with_unsafe_worker.push_back(
         make_pair("REPLACE_WITH_UNSAFE_WORKER_PATH", unsafe_worker_path));
-    return net::TestServer::GetFilePathWithReplacements(
+    return net::SpawnedTestServer::GetFilePathWithReplacements(
         "files/ssl/page_with_unsafe_worker.html",
         replacement_text_for_page_with_unsafe_worker,
         page_with_unsafe_worker_path);
   }
 
-  net::TestServer https_server_;
-  net::TestServer https_server_expired_;
-  net::TestServer https_server_mismatched_;
-  net::TestServer wss_server_expired_;
+  net::SpawnedTestServer https_server_;
+  net::SpawnedTestServer https_server_expired_;
+  net::SpawnedTestServer https_server_mismatched_;
+  net::SpawnedTestServer wss_server_expired_;
 
  private:
-  typedef net::TestServer::SSLOptions SSLOptions;
+  typedef net::SpawnedTestServer::SSLOptions SSLOptions;
 
   DISALLOW_COPY_AND_ASSIGN(SSLUITest);
 };
@@ -664,12 +665,13 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestWSSClientCert) {
                                                NULL));
 
   // Start WebSocket test server with TLS and client cert authentication.
-  net::TestServer::SSLOptions options(net::TestServer::SSLOptions::CERT_OK);
+  net::SpawnedTestServer::SSLOptions options(
+      net::SpawnedTestServer::SSLOptions::CERT_OK);
   options.request_client_certificate = true;
   base::FilePath ca_path = net::GetTestCertsDirectory().Append(
       FILE_PATH_LITERAL("websocket_cacert.pem"));
   options.client_authorities.push_back(ca_path);
-  net::TestServer wss_server(net::TestServer::TYPE_WSS,
+  net::SpawnedTestServer wss_server(net::SpawnedTestServer::TYPE_WSS,
                              options,
                              net::GetWebSocketTestDataDirectory());
   ASSERT_TRUE(wss_server.Start());

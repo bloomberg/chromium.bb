@@ -52,7 +52,7 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/pyautolib/pyautolib.h"
 #include "content/public/common/security_style.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 %}
 
 // Handle type uint32 conversions as int
@@ -186,11 +186,11 @@ class PyUITestBase {
 };
 
 namespace net {
-// TestServer
+// SpawnedTestServer
 %feature("docstring",
-         "TestServer. Serves files in data dir over a local http server")
-    TestServer;
-class TestServer {
+         "SpawnedTestServer. Serves files in data dir over a local http server")
+    SpawnedTestServer;
+class SpawnedTestServer {
  public:
   enum Type {
     TYPE_FTP,
@@ -198,18 +198,19 @@ class TestServer {
     TYPE_HTTPS,
   };
 
-  // Initialize a TestServer listening on the specified host (IP or hostname).
-  TestServer(Type type, const std::string& host,
-             const base::FilePath& document_root);
-  // Initialize a TestServer with a specific set of SSLOptions.
-  TestServer(Type type,
-             const SSLOptions& ssl_options,
-             const base::FilePath& document_root);
+  // Initialize a SpawnedTestServer listening on the specified host
+  // (IP or hostname).
+  SpawnedTestServer(Type type, const std::string& host,
+                    const base::FilePath& document_root);
+  // Initialize a SpawnedTestServer with a specific set of SSLOptions.
+  SpawnedTestServer(Type type,
+                    const SSLOptions& ssl_options,
+                    const base::FilePath& document_root);
 
-  %feature("docstring", "Start TestServer over an ephemeral port") Start;
+  %feature("docstring", "Start SpawnedTestServer over an ephemeral port") Start;
   bool Start();
 
-  %feature("docstring", "Stop TestServer") Stop;
+  %feature("docstring", "Stop SpawnedTestServer") Stop;
   bool Stop();
 
   %feature("docstring", "Get FilePath to the document root") document_root;
@@ -221,7 +222,7 @@ class TestServer {
   GURL GetURL(const std::string& path) const;
 };
 
-%extend TestServer {
+%extend SpawnedTestServer {
   %feature("docstring", "Get port number.") GetPort;
   int GetPort() const {
     int val = 0;
@@ -247,7 +248,7 @@ struct SSLOptions {
 };
 
 %{
-typedef net::TestServer::SSLOptions SSLOptions;
+typedef net::SpawnedTestServer::SSLOptions SSLOptions;
 %}
 
 %pointer_class(int, int_ptr);

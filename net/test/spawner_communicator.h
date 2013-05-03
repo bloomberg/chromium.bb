@@ -29,8 +29,8 @@ class ScopedPortException;
 // themselves continue running on the device. To control the test server on the
 // host machine, a second HTTP server is started, the spawner server, which
 // controls the life cycle of remote test servers. Calls to start/kill the
-// net::TestServer are then redirected to the spawner server via this spawner
-// communicator.
+// net::SpawnedTestServer are then redirected to the spawner server via
+// this spawner communicator.
 //
 // Currently only three commands are supported by spawner.
 //

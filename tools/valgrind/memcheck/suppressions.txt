@@ -932,10 +932,10 @@
    fun:_ZN7logging11InitLoggingEPKcNS_18LoggingDestinationENS_15LogLockingStateENS_20OldFileDeletionStateE
 }
 {
-   Linux tests don't bother to undo net::TestServer::LoadTestRootCert().
+   Linux tests don't bother to undo net::SpawnedTestServer::LoadTestRootCert().
    Memcheck:Leak
    ...
-   fun:_ZN3net10TestServer16LoadTestRootCertEv
+   fun:_ZN3net10SpawnedTestServer16LoadTestRootCertEv
 }
 {
    # uitest's ResourceDispatcherTest.CrossSiteAfterCrash crashes on purpose

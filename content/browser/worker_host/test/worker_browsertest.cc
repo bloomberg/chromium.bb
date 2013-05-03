@@ -24,7 +24,7 @@
 #include "content/test/layout_browsertest.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/test_data_directory.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 
 namespace content {
 
@@ -466,9 +466,9 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, DISABLED_QueuedSharedWorkerStartedFromOtherTa
 
 IN_PROC_BROWSER_TEST_F(WorkerTest, WebSocketSharedWorker) {
   // Launch WebSocket server.
-  net::TestServer ws_server(net::TestServer::TYPE_WS,
-                            net::TestServer::kLocalhost,
-                            net::GetWebSocketTestDataDirectory());
+  net::SpawnedTestServer ws_server(net::SpawnedTestServer::TYPE_WS,
+                                   net::SpawnedTestServer::kLocalhost,
+                                   net::GetWebSocketTestDataDirectory());
   ASSERT_TRUE(ws_server.Start());
 
   // Generate test URL.

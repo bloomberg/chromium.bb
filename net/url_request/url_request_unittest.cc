@@ -57,7 +57,7 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/test/cert_test_util.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 #include "net/url_request/ftp_protocol_handler.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request.h"
@@ -1763,21 +1763,21 @@ TEST_F(URLRequestTest, SetJobPriority) {
   EXPECT_EQ(MEDIUM, job->priority());
 }
 
-// TODO(droger): Support TestServer on iOS (see http://crbug.com/148666).
+// TODO(droger): Support SpawnedTestServer on iOS (see http://crbug.com/148666).
 #if !defined(OS_IOS)
-// A subclass of TestServer that uses a statically-configured hostname. This is
-// to work around mysterious failures in chrome_frame_net_tests. See:
+// A subclass of SpawnedTestServer that uses a statically-configured hostname.
+// This is to work around mysterious failures in chrome_frame_net_tests. See:
 // http://crbug.com/114369
-class LocalHttpTestServer : public TestServer {
+class LocalHttpTestServer : public SpawnedTestServer {
  public:
   explicit LocalHttpTestServer(const base::FilePath& document_root)
-      : TestServer(TestServer::TYPE_HTTP,
-                   ScopedCustomUrlRequestTestHttpHost::value(),
-                   document_root) {}
+      : SpawnedTestServer(SpawnedTestServer::TYPE_HTTP,
+                          ScopedCustomUrlRequestTestHttpHost::value(),
+                          document_root) {}
   LocalHttpTestServer()
-      : TestServer(TestServer::TYPE_HTTP,
-                   ScopedCustomUrlRequestTestHttpHost::value(),
-                   base::FilePath()) {}
+      : SpawnedTestServer(SpawnedTestServer::TYPE_HTTP,
+                          ScopedCustomUrlRequestTestHttpHost::value(),
+                          base::FilePath()) {}
 };
 
 TEST_F(URLRequestTest, DelayedCookieCallback) {
@@ -3308,8 +3308,8 @@ TEST_F(URLRequestTestHTTP, GetZippedTest) {
 TEST_F(URLRequestTestHTTP, HTTPSToHTTPRedirectNoRefererTest) {
   ASSERT_TRUE(test_server_.Start());
 
-  TestServer https_test_server(
-      TestServer::TYPE_HTTPS, TestServer::kLocalhost,
+  SpawnedTestServer https_test_server(
+      SpawnedTestServer::TYPE_HTTPS, SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(https_test_server.Start());
 
@@ -3750,9 +3750,9 @@ TEST_F(URLRequestTestHTTP, ResponseHeadersTest) {
 }
 
 TEST_F(URLRequestTestHTTP, ProcessSTS) {
-  TestServer::SSLOptions ssl_options;
-  TestServer https_test_server(
-      TestServer::TYPE_HTTPS,
+  SpawnedTestServer::SSLOptions ssl_options;
+  SpawnedTestServer https_test_server(
+      SpawnedTestServer::TYPE_HTTPS,
       ssl_options,
       base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
   ASSERT_TRUE(https_test_server.Start());
@@ -3770,16 +3770,16 @@ TEST_F(URLRequestTestHTTP, ProcessSTS) {
   bool sni_available = true;
   TransportSecurityState::DomainState domain_state;
   EXPECT_TRUE(security_state->GetDomainState(
-      TestServer::kLocalhost, sni_available, &domain_state));
+      SpawnedTestServer::kLocalhost, sni_available, &domain_state));
   EXPECT_EQ(TransportSecurityState::DomainState::MODE_FORCE_HTTPS,
             domain_state.upgrade_mode);
   EXPECT_TRUE(domain_state.include_subdomains);
 }
 
 TEST_F(URLRequestTestHTTP, ProcessSTSOnce) {
-  TestServer::SSLOptions ssl_options;
-  TestServer https_test_server(
-      TestServer::TYPE_HTTPS,
+  SpawnedTestServer::SSLOptions ssl_options;
+  SpawnedTestServer https_test_server(
+      SpawnedTestServer::TYPE_HTTPS,
       ssl_options,
       base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
   ASSERT_TRUE(https_test_server.Start());
@@ -3798,16 +3798,16 @@ TEST_F(URLRequestTestHTTP, ProcessSTSOnce) {
   bool sni_available = true;
   TransportSecurityState::DomainState domain_state;
   EXPECT_TRUE(security_state->GetDomainState(
-      TestServer::kLocalhost, sni_available, &domain_state));
+      SpawnedTestServer::kLocalhost, sni_available, &domain_state));
   EXPECT_EQ(TransportSecurityState::DomainState::MODE_FORCE_HTTPS,
             domain_state.upgrade_mode);
   EXPECT_FALSE(domain_state.include_subdomains);
 }
 
 TEST_F(URLRequestTestHTTP, ProcessSTSAndPKP) {
-  TestServer::SSLOptions ssl_options;
-  TestServer https_test_server(
-      TestServer::TYPE_HTTPS,
+  SpawnedTestServer::SSLOptions ssl_options;
+  SpawnedTestServer https_test_server(
+      SpawnedTestServer::TYPE_HTTPS,
       ssl_options,
       base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
   ASSERT_TRUE(https_test_server.Start());
@@ -3826,7 +3826,7 @@ TEST_F(URLRequestTestHTTP, ProcessSTSAndPKP) {
   bool sni_available = true;
   TransportSecurityState::DomainState domain_state;
   EXPECT_TRUE(security_state->GetDomainState(
-      TestServer::kLocalhost, sni_available, &domain_state));
+      SpawnedTestServer::kLocalhost, sni_available, &domain_state));
   EXPECT_EQ(TransportSecurityState::DomainState::MODE_FORCE_HTTPS,
             domain_state.upgrade_mode);
 #if defined(OS_ANDROID)
@@ -4552,9 +4552,10 @@ class HTTPSRequestTest : public testing::Test {
 };
 
 TEST_F(HTTPSRequestTest, HTTPSGetTest) {
-  TestServer test_server(TestServer::TYPE_HTTPS,
-                         TestServer::kLocalhost,
-                         base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  SpawnedTestServer test_server(
+      SpawnedTestServer::TYPE_HTTPS,
+      SpawnedTestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
   TestDelegate d;
@@ -4577,11 +4578,12 @@ TEST_F(HTTPSRequestTest, HTTPSGetTest) {
 }
 
 TEST_F(HTTPSRequestTest, HTTPSMismatchedTest) {
-  TestServer::SSLOptions ssl_options(
-      TestServer::SSLOptions::CERT_MISMATCHED_NAME);
-  TestServer test_server(TestServer::TYPE_HTTPS,
-                         ssl_options,
-                         base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_MISMATCHED_NAME);
+  SpawnedTestServer test_server(
+      SpawnedTestServer::TYPE_HTTPS,
+      ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
   bool err_allowed = true;
@@ -4610,11 +4612,12 @@ TEST_F(HTTPSRequestTest, HTTPSMismatchedTest) {
 }
 
 TEST_F(HTTPSRequestTest, HTTPSExpiredTest) {
-  TestServer::SSLOptions ssl_options(
-      TestServer::SSLOptions::CERT_EXPIRED);
-  TestServer test_server(TestServer::TYPE_HTTPS,
-                         ssl_options,
-                         base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_EXPIRED);
+  SpawnedTestServer test_server(
+      SpawnedTestServer::TYPE_HTTPS,
+      ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
   // Iterate from false to true, just so that we do the opposite of the
@@ -4655,13 +4658,14 @@ TEST_F(HTTPSRequestTest, TLSv1Fallback) {
   if (default_version_max <= SSL_PROTOCOL_VERSION_TLS1)
     return;
 
-  TestServer::SSLOptions ssl_options(
-      TestServer::SSLOptions::CERT_OK);
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_OK);
   ssl_options.tls_intolerant =
-      TestServer::SSLOptions::TLS_INTOLERANT_TLS1_1;
-  TestServer test_server(TestServer::TYPE_HTTPS,
-                         ssl_options,
-                         base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_1;
+  SpawnedTestServer test_server(
+      SpawnedTestServer::TYPE_HTTPS,
+      ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
   TestDelegate d;
@@ -4684,11 +4688,12 @@ TEST_F(HTTPSRequestTest, TLSv1Fallback) {
 // the |certificate_errors_are_fatal| flag correctly. This flag will cause
 // the interstitial to be fatal.
 TEST_F(HTTPSRequestTest, HTTPSPreloadedHSTSTest) {
-  TestServer::SSLOptions ssl_options(
-      TestServer::SSLOptions::CERT_MISMATCHED_NAME);
-  TestServer test_server(TestServer::TYPE_HTTPS,
-                         ssl_options,
-                         base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_MISMATCHED_NAME);
+  SpawnedTestServer test_server(
+      SpawnedTestServer::TYPE_HTTPS,
+      ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
   // We require that the URL be www.google.com in order to pick up the
@@ -4727,11 +4732,12 @@ TEST_F(HTTPSRequestTest, HTTPSPreloadedHSTSTest) {
 TEST_F(HTTPSRequestTest, HTTPSErrorsNoClobberTSSTest) {
   // The actual problem -- CERT_MISMATCHED_NAME in this case -- doesn't
   // matter. It just has to be any error.
-  TestServer::SSLOptions ssl_options(
-      TestServer::SSLOptions::CERT_MISMATCHED_NAME);
-  TestServer test_server(TestServer::TYPE_HTTPS,
-                         ssl_options,
-                         base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_MISMATCHED_NAME);
+  SpawnedTestServer test_server(
+      SpawnedTestServer::TYPE_HTTPS,
+      ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
   // We require that the URL be www.google.com in order to pick up the
@@ -4787,16 +4793,19 @@ TEST_F(HTTPSRequestTest, HTTPSErrorsNoClobberTSSTest) {
 TEST_F(HTTPSRequestTest, HSTSPreservesPosts) {
   static const char kData[] = "hello world";
 
-  TestServer::SSLOptions ssl_options(TestServer::SSLOptions::CERT_OK);
-  TestServer test_server(TestServer::TYPE_HTTPS,
-                         ssl_options,
-                         base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_OK);
+  SpawnedTestServer test_server(
+      SpawnedTestServer::TYPE_HTTPS,
+      ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
 
   // Per spec, TransportSecurityState expects a domain name, rather than an IP
   // address, so a MockHostResolver is needed to redirect www.somewhere.com to
-  // the TestServer.  By default, MockHostResolver maps all hosts to 127.0.0.1.
+  // the SpawnedTestServer.  By default, MockHostResolver maps all hosts
+  // to 127.0.0.1.
   MockHostResolver host_resolver;
 
   // Force https for www.somewhere.com.
@@ -4835,12 +4844,14 @@ TEST_F(HTTPSRequestTest, HSTSPreservesPosts) {
 }
 
 TEST_F(HTTPSRequestTest, SSLv3Fallback) {
-  TestServer::SSLOptions ssl_options(
-      TestServer::SSLOptions::CERT_OK);
-  ssl_options.tls_intolerant = TestServer::SSLOptions::TLS_INTOLERANT_ALL;
-  TestServer test_server(TestServer::TYPE_HTTPS,
-                         ssl_options,
-                         base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_OK);
+  ssl_options.tls_intolerant =
+      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_ALL;
+  SpawnedTestServer test_server(
+      SpawnedTestServer::TYPE_HTTPS,
+      ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
   TestDelegate d;
@@ -4886,11 +4897,12 @@ class SSLClientAuthTestDelegate : public TestDelegate {
 // - Getting a certificate request in an SSL renegotiation sending the
 //   HTTP request.
 TEST_F(HTTPSRequestTest, ClientAuthTest) {
-  TestServer::SSLOptions ssl_options;
+  SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
-  TestServer test_server(TestServer::TYPE_HTTPS,
-                         ssl_options,
-                         base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  SpawnedTestServer test_server(
+      SpawnedTestServer::TYPE_HTTPS,
+      ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
   SSLClientAuthTestDelegate d;
@@ -4922,11 +4934,12 @@ TEST_F(HTTPSRequestTest, ClientAuthTest) {
 TEST_F(HTTPSRequestTest, ResumeTest) {
   // Test that we attempt a session resume when making two connections to the
   // same host.
-  TestServer::SSLOptions ssl_options;
+  SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.record_resume = true;
-  TestServer test_server(TestServer::TYPE_HTTPS,
-                         ssl_options,
-                         base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  SpawnedTestServer test_server(
+      SpawnedTestServer::TYPE_HTTPS,
+      ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
   SSLClientSocket::ClearSessionCache();
@@ -4990,11 +5003,12 @@ TEST_F(HTTPSRequestTest, ResumeTest) {
 TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
   // Test that sessions aren't resumed when the value of ssl_session_cache_shard
   // differs.
-  TestServer::SSLOptions ssl_options;
+  SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.record_resume = true;
-  TestServer test_server(TestServer::TYPE_HTTPS,
-                         ssl_options,
-                         base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  SpawnedTestServer test_server(
+      SpawnedTestServer::TYPE_HTTPS,
+      ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
   SSLClientSocket::ClearSessionCache();
@@ -5124,13 +5138,14 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
 #endif
   }
 
-  void DoConnection(const TestServer::SSLOptions& ssl_options,
+  void DoConnection(const SpawnedTestServer::SSLOptions& ssl_options,
                     CertStatus* out_cert_status) {
     // We always overwrite out_cert_status.
     *out_cert_status = 0;
-    TestServer test_server(TestServer::TYPE_HTTPS,
-                           ssl_options,
-                           base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+    SpawnedTestServer test_server(
+        SpawnedTestServer::TYPE_HTTPS,
+        ssl_options,
+        base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
     ASSERT_TRUE(test_server.Start());
 
     TestDelegate d;
@@ -5212,8 +5227,9 @@ TEST_F(HTTPSOCSPTest, Valid) {
     return;
   }
 
-  TestServer::SSLOptions ssl_options(TestServer::SSLOptions::CERT_AUTO);
-  ssl_options.ocsp_status = TestServer::SSLOptions::OCSP_OK;
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_AUTO);
+  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_OK;
 
   CertStatus cert_status;
   DoConnection(ssl_options, &cert_status);
@@ -5232,9 +5248,9 @@ TEST_F(HTTPSOCSPTest, Revoked) {
     return;
   }
 
-  TestServer::SSLOptions ssl_options(
-      TestServer::SSLOptions::CERT_AUTO);
-  ssl_options.ocsp_status = TestServer::SSLOptions::OCSP_REVOKED;
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_AUTO);
+  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_REVOKED;
 
   CertStatus cert_status;
   DoConnection(ssl_options, &cert_status);
@@ -5253,9 +5269,9 @@ TEST_F(HTTPSOCSPTest, Invalid) {
     return;
   }
 
-  TestServer::SSLOptions ssl_options(
-      TestServer::SSLOptions::CERT_AUTO);
-  ssl_options.ocsp_status = TestServer::SSLOptions::OCSP_INVALID;
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_AUTO);
+  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_INVALID;
 
   CertStatus cert_status;
   DoConnection(ssl_options, &cert_status);
@@ -5283,9 +5299,9 @@ TEST_F(HTTPSEVCRLSetTest, MissingCRLSetAndInvalidOCSP) {
     return;
   }
 
-  TestServer::SSLOptions ssl_options(
-      TestServer::SSLOptions::CERT_AUTO);
-  ssl_options.ocsp_status = TestServer::SSLOptions::OCSP_INVALID;
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_AUTO);
+  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_INVALID;
   SSLConfigService::SetCRLSet(scoped_refptr<CRLSet>());
 
   CertStatus cert_status;
@@ -5305,9 +5321,9 @@ TEST_F(HTTPSEVCRLSetTest, MissingCRLSetAndGoodOCSP) {
     return;
   }
 
-  TestServer::SSLOptions ssl_options(
-      TestServer::SSLOptions::CERT_AUTO);
-  ssl_options.ocsp_status = TestServer::SSLOptions::OCSP_OK;
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_AUTO);
+  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_OK;
   SSLConfigService::SetCRLSet(scoped_refptr<CRLSet>());
 
   CertStatus cert_status;
@@ -5327,9 +5343,9 @@ TEST_F(HTTPSEVCRLSetTest, ExpiredCRLSet) {
     return;
   }
 
-  TestServer::SSLOptions ssl_options(
-      TestServer::SSLOptions::CERT_AUTO);
-  ssl_options.ocsp_status = TestServer::SSLOptions::OCSP_INVALID;
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_AUTO);
+  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_INVALID;
   SSLConfigService::SetCRLSet(
       scoped_refptr<CRLSet>(CRLSet::ExpiredCRLSetForTesting()));
 
@@ -5345,9 +5361,9 @@ TEST_F(HTTPSEVCRLSetTest, ExpiredCRLSet) {
 }
 
 TEST_F(HTTPSEVCRLSetTest, FreshCRLSet) {
-  TestServer::SSLOptions ssl_options(
-      TestServer::SSLOptions::CERT_AUTO);
-  ssl_options.ocsp_status = TestServer::SSLOptions::OCSP_INVALID;
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_AUTO);
+  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_INVALID;
   SSLConfigService::SetCRLSet(
       scoped_refptr<CRLSet>(CRLSet::EmptyCRLSetForTesting()));
 
@@ -5377,9 +5393,9 @@ TEST_F(HTTPSEVCRLSetTest, ExpiredCRLSetAndRevokedNonEVCert) {
   // checking (as per the user preference)
   ev_test_policy_.reset();
 
-  TestServer::SSLOptions ssl_options(
-      TestServer::SSLOptions::CERT_AUTO);
-  ssl_options.ocsp_status = TestServer::SSLOptions::OCSP_REVOKED;
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_AUTO);
+  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_REVOKED;
   SSLConfigService::SetCRLSet(
       scoped_refptr<CRLSet>(CRLSet::ExpiredCRLSetForTesting()));
 
@@ -5402,9 +5418,9 @@ class HTTPSCRLSetTest : public HTTPSOCSPTest {
 };
 
 TEST_F(HTTPSCRLSetTest, ExpiredCRLSet) {
-  TestServer::SSLOptions ssl_options(
-      TestServer::SSLOptions::CERT_AUTO);
-  ssl_options.ocsp_status = TestServer::SSLOptions::OCSP_INVALID;
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_AUTO);
+  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_INVALID;
   SSLConfigService::SetCRLSet(
       scoped_refptr<CRLSet>(CRLSet::ExpiredCRLSetForTesting()));
 
@@ -5423,12 +5439,12 @@ TEST_F(HTTPSCRLSetTest, ExpiredCRLSet) {
 class URLRequestTestFTP : public URLRequestTest {
  public:
   URLRequestTestFTP()
-      : test_server_(TestServer::TYPE_FTP, TestServer::kLocalhost,
+      : test_server_(SpawnedTestServer::TYPE_FTP, SpawnedTestServer::kLocalhost,
                      base::FilePath()) {
   }
 
  protected:
-  TestServer test_server_;
+  SpawnedTestServer test_server_;
 };
 
 // Make sure an FTP request using an unsafe ports fails.

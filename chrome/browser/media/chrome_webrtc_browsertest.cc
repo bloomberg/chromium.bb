@@ -21,7 +21,7 @@
 #include "chrome/test/ui/ui_test.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 
 static const base::FilePath::CharType kPeerConnectionServer[] =
 #if defined(OS_WIN)

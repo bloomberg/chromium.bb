@@ -17,7 +17,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/ui/ui_test.h"
 #include "content/public/browser/notification_service.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 
 class InfoBarsTest : public InProcessBrowserTest {
  public:

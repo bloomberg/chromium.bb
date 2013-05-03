@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/javascript_test_observer.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 
 namespace content {
 class RenderViewHost;
@@ -82,7 +82,7 @@ class PPAPITestBase : public InProcessBrowserTest {
   void RunTestURL(const GURL& test_url);
   // Gets the URL of the the given |test_case| for the given HTTP test server.
   // If |extra_params| is non-empty, it will be appended as URL parameters.
-  GURL GetTestURL(const net::TestServer& http_server,
+  GURL GetTestURL(const net::SpawnedTestServer& http_server,
                   const std::string& test_case,
                   const std::string& extra_params);
 

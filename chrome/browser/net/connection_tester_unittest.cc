@@ -17,7 +17,7 @@
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -89,8 +89,8 @@ class ConnectionTesterTest : public PlatformTest {
   ConnectionTesterTest()
       : message_loop_(MessageLoop::TYPE_IO),
         io_thread_(BrowserThread::IO, &message_loop_),
-        test_server_(net::TestServer::TYPE_HTTP,
-                     net::TestServer::kLocalhost,
+        test_server_(net::SpawnedTestServer::TYPE_HTTP,
+                     net::SpawnedTestServer::kLocalhost,
                      // Nothing is read in this directory.
                      base::FilePath(FILE_PATH_LITERAL("chrome"))),
         proxy_script_fetcher_context_(new net::URLRequestContext) {
@@ -105,7 +105,7 @@ class ConnectionTesterTest : public PlatformTest {
   // no-op, and the ObserverList will contain invalid entries.
   MessageLoop message_loop_;
   content::TestBrowserThread io_thread_;
-  net::TestServer test_server_;
+  net::SpawnedTestServer test_server_;
   ConnectionTesterDelegate test_delegate_;
   net::MockHostResolver host_resolver_;
   scoped_ptr<net::CertVerifier> cert_verifier_;

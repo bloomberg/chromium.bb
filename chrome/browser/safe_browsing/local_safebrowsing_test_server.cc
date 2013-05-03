@@ -9,12 +9,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "net/test/python_utils.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 
 LocalSafeBrowsingTestServer::LocalSafeBrowsingTestServer(
     const base::FilePath& data_file)
-    : net::LocalTestServer(net::TestServer::TYPE_HTTP,
-                           net::TestServer::kLocalhost,
+    : net::LocalTestServer(net::SpawnedTestServer::TYPE_HTTP,
+                           net::SpawnedTestServer::kLocalhost,
                            base::FilePath()),
       data_file_(data_file) {
 }

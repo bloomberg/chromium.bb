@@ -6,7 +6,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "googleurl/src/gurl.h"
-#include "net/test/test_server.h"
+#include "net/test/spawned_test_server.h"
 
 // Tests that we throw errors when you try using extension APIs that aren't
 // supported in content scripts.
