@@ -5,9 +5,9 @@
 import logging
 
 from telemetry.core import util
-from telemetry.page import page_benchmark
+from telemetry.page import page_measurement
 
-class SpaceportBenchmark(page_benchmark.PageBenchmark):
+class SpaceportMeasurement(page_measurement.PageMeasurement):
   def CustomizeBrowserOptions(self, options):
     options.extra_browser_args.extend(['--disable-gpu-vsync'])
 
@@ -29,13 +29,14 @@ class SpaceportBenchmark(page_benchmark.PageBenchmark):
     js_get_results = 'JSON.stringify(window.__results)'
     num_tests_complete = [0]  # A list to work around closure issue.
     def _IsDone():
-      num_tests_in_benchmark = 24
+      num_tests_in_measurement = 24
       num_results = len(eval(tab.EvaluateJavaScript(js_get_results)))
       if num_results > num_tests_complete[0]:
         num_tests_complete[0] = num_results
-        logging.info('Completed benchmark %d of %d' % (num_tests_complete[0],
-                                                       num_tests_in_benchmark))
-      return num_tests_complete[0] >= num_tests_in_benchmark
+        logging.info('Completed measurement %d of %d'
+                     % (num_tests_complete[0],
+                        num_tests_in_measurement))
+      return num_tests_complete[0] >= num_tests_in_measurement
     util.WaitFor(_IsDone, 1200, poll_interval=5)
 
     result_dict = eval(tab.EvaluateJavaScript(js_get_results))

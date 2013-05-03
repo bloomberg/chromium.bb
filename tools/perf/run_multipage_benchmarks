@@ -54,8 +54,33 @@ if __name__ == '__main__':
     print ListBootstrapDeps()
     sys.exit(0)
 
-  from telemetry.page import page_benchmark_runner
+  from telemetry.page import page_measurement_runner
   import page_sets
-  benchmark_dir = os.path.dirname(perf_tools.__file__)
+  measurement_dir = os.path.dirname(perf_tools.__file__)
   page_set_filenames = page_sets.GetAllPageSetFilenames()
-  sys.exit(page_benchmark_runner.Main(benchmark_dir, page_set_filenames))
+
+  old_benchmark_names = {
+    "cheapness_predictor_benchmark": "cheapness_predictor_measurement",
+    "image_decoding_benchmark": "image_decoding_measurement",
+    "loading_benchmark": "loading_measurement",
+    "memory_benchmark": "memory_measurement",
+    "rasterize_and_record_benchmark": "rasterize_and_record_benchmark",
+    "scrolling_benchmark": "smoothness_measurement",
+    "smoothness_benchmark": "smoothness_measurement",
+    "startup_benchmark": "startup_measurement"
+  }
+
+  # There are bots that are hard-coded to run some specific named tests.
+  # Convert these to the current naming conventions by overriding them in the runner.
+  class MeasurementRunner(page_measurement_runner.PageMeasurementRunner):
+    def GetModernizedTestName(self, arg):
+      if arg not in old_benchmark_names:
+        return arg
+      sys.stderr.write(
+        'An old name %s was given. Please use %s in the future.\n' % (
+          arg,
+          old_benchmark_names.get(arg)))
+      return old_benchmark_names[arg]
+
+  runner = MeasurementRunner()
+  sys.exit(runner.Run(measurement_dir, page_set_filenames))

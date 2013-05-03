@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry.page import page_benchmark
+from telemetry.page import page_measurement
 
 
-class ImageDecoding(page_benchmark.PageBenchmark):
+class ImageDecoding(page_measurement.PageMeasurement):
   def WillNavigateToPage(self, page, tab):
     tab.StartTimelineRecording()
 
@@ -17,11 +17,11 @@ class ImageDecoding(page_benchmark.PageBenchmark):
     decode_image_events = \
         tab.timeline_model.GetAllOfName('DecodeImage')
 
-    # If it is a real image benchmark, then store only the last-minIterations
+    # If it is a real image page, then store only the last-minIterations
     # decode tasks.
     if (hasattr(page,
-               'image_decoding_benchmark_limit_results_to_min_iterations') and
-        page.image_decoding_benchmark_limit_results_to_min_iterations):
+               'image_decoding_measurement_limit_results_to_min_iterations') and
+        page.image_decoding_measurement_limit_results_to_min_iterations):
       assert _IsDone()
       min_iterations = tab.EvaluateJavaScript('minIterations')
       decode_image_events = decode_image_events[-min_iterations:]

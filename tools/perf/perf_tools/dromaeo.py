@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 
 from telemetry.core import util
-from telemetry.page import page_benchmark
+from telemetry.page import page_measurement
 
-class Dromaeo(page_benchmark.PageBenchmark):
+class Dromaeo(page_measurement.PageMeasurement):
   def MeasurePage(self, page, tab, results):
     js_is_done = 'window.document.cookie.indexOf("__done=1") >= 0'
     def _IsDone():

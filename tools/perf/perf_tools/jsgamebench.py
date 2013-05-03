@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 
 from telemetry.core import util
-from telemetry.page import page_benchmark
+from telemetry.page import page_measurement
 
-class JsGameBench(page_benchmark.PageBenchmark):
+class JsGameBench(page_measurement.PageMeasurement):
   def MeasurePage(self, _, tab, results):
     tab.ExecuteJavaScript('UI.call({}, "perftest")')
 

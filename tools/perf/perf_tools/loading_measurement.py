@@ -5,9 +5,9 @@
 import collections
 
 from telemetry.core import util
-from telemetry.page import page_benchmark
+from telemetry.page import page_measurement
 
-class LoadingBenchmark(page_benchmark.PageBenchmark):
+class LoadingMeasurement(page_measurement.PageMeasurement):
   @property
   def results_are_the_same_on_every_page(self):
     return False

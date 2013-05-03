@@ -6,7 +6,7 @@ from perf_tools import histogram as histogram_module
 BROWSER_HISTOGRAM = 'browser_histogram'
 RENDERER_HISTOGRAM = 'renderer_histogram'
 
-class HistogramMeasurement(object):
+class HistogramMetric(object):
   def __init__(self, histogram, histogram_type):
     self.name = histogram['name']
     self.units = histogram['units']

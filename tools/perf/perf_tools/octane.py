@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.core import util
-from telemetry.page import page_benchmark
+from telemetry.page import page_measurement
 
-class Octane(page_benchmark.PageBenchmark):
+class Octane(page_measurement.PageMeasurement):
   def MeasurePage(self, _, tab, results):
     js_is_done = """
 completed && !document.getElementById("progress-bar-container")"""

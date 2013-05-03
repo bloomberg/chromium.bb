@@ -4,8 +4,8 @@
 
 import time
 
-from perf_tools import smoothness_measurement
-from telemetry.page import page_benchmark
+from perf_tools import smoothness_metrics
+from telemetry.page import page_measurement
 
 def DivideIfPossibleOrZero(numerator, denominator):
   if denominator == 0:
@@ -52,10 +52,10 @@ def CalcPaintingResults(rendering_stats_deltas, results):
   results.Add('total_record_and_rasterize_time', 'seconds', totalRecordTime +
               totalRasterizeTime, data_type='unimportant')
 
-class RasterizeAndPaintBenchmark(page_benchmark.PageBenchmark):
+class RasterizeAndPaintMeasurement(page_measurement.PageMeasurement):
   def __init__(self):
-    super(RasterizeAndPaintBenchmark, self).__init__('', True)
-    self._measurement = None
+    super(RasterizeAndPaintMeasurement, self).__init__('', True)
+    self._metrics = None
 
   def AddCommandLineOptions(self, parser):
     parser.add_option('--report-all-results', dest='report_all_results',
@@ -70,22 +70,22 @@ class RasterizeAndPaintBenchmark(page_benchmark.PageBenchmark):
     options.extra_browser_args.append('--slow-down-raster-scale-factor=100')
 
   def MeasurePage(self, page, tab, results):
-    self._measurement = smoothness_measurement.SmoothnessMeasurement(tab)
+    self._metrics = smoothness_metrics.SmoothnessMetrics(tab)
 
     # Wait until the page has loaded and come to a somewhat steady state
     # (empirical wait time)
     time.sleep(5)
 
-    self._measurement.SetNeedsDisplayOnAllLayersAndStart()
+    self._metrics.SetNeedsDisplayOnAllLayersAndStart()
 
     # Wait until all rasterization tasks are completed  (empirical wait time)
     # TODO(ernstm): Replace by a more accurate mechanism to measure stats for
     # exactly one frame.
     time.sleep(5)
 
-    self._measurement.Stop()
+    self._metrics.Stop()
 
-    rendering_stats_deltas = self._measurement.deltas
+    rendering_stats_deltas = self._metrics.deltas
 
     CalcPaintingResults(rendering_stats_deltas, results)
 

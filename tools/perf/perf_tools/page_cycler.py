@@ -2,14 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""The page cycler benchmark.
+"""The page cycler measurement.
 
-This benchmark registers a window load handler in which is forces a layout and
+This measurement registers a window load handler in which is forces a layout and
 then records the value of performance.now(). This call to now() measures the
 time from navigationStart (immediately after the previous page's beforeunload
 event) until after the layout in the page's load event. In addition, two garbage
 collections are performed in between the page loads (in the beforeunload event).
-This extra garbage collection time is not included in the benchmark times.
+This extra garbage collection time is not included in the measurement times.
 
 Finally, various memory and IO statistics are gathered at the very end of
 cycling all pages.
@@ -18,16 +18,16 @@ cycling all pages.
 import os
 import sys
 
-from perf_tools import histogram_measurement
+from perf_tools import histogram_metric
 from telemetry.core import util
-from telemetry.page import page_benchmark
+from telemetry.page import page_measurement
 
 MEMORY_HISTOGRAMS = [
     {'name': 'V8.MemoryExternalFragmentationTotal', 'units': 'percent'},
     {'name': 'V8.MemoryHeapSampleTotalCommitted', 'units': 'kb'},
     {'name': 'V8.MemoryHeapSampleTotalUsed', 'units': 'kb'}]
 
-class PageCycler(page_benchmark.PageBenchmark):
+class PageCycler(page_measurement.PageMeasurement):
   def AddCommandLineOptions(self, parser):
     # The page cyclers should default to 10 iterations. In order to change the
     # default of an option, we must remove and re-add it.
@@ -50,8 +50,8 @@ class PageCycler(page_benchmark.PageBenchmark):
     self.start_commit_charge = tab.browser.memory_stats['SystemCommitCharge']
 
     # pylint: disable=W0201
-    self.histograms = [histogram_measurement.HistogramMeasurement(
-                           h, histogram_measurement.RENDERER_HISTOGRAM)
+    self.histograms = [histogram_metric.HistogramMetric(
+                           h, histogram_metric.RENDERER_HISTOGRAM)
                        for h in MEMORY_HISTOGRAMS]
 
   def WillNavigateToPage(self, page, tab):

@@ -4,10 +4,10 @@
 
 import json
 
-from telemetry.page import page_benchmark
+from telemetry.page import page_measurement
 
 # Test how long Chrome takes to load when warm.
-class PerfWarm(page_benchmark.PageBenchmark):
+class PerfWarm(page_measurement.PageMeasurement):
   def __init__(self):
     super(PerfWarm, self).__init__(needs_browser_restart_after_each_run=True,
                                    discard_first_result=True)

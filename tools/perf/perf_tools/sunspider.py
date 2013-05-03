@@ -6,10 +6,10 @@ import collections
 import json
 
 from telemetry.core import util
-from telemetry.page import page_benchmark
+from telemetry.page import page_measurement
 
 
-class SunSpiderBenchark(page_benchmark.PageBenchmark):
+class SunSpiderMeasurement(page_measurement.PageMeasurement):
   def MeasurePage(self, _, tab, results):
     js_is_done = """
 window.location.pathname.indexOf('sunspider-results') >= 0"""

@@ -1,8 +1,8 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-from perf_tools import histogram_measurement
-from telemetry.page import page_benchmark
+from perf_tools import histogram_metric
+from telemetry.page import page_measurement
 
 MEMORY_HISTOGRAMS = [
     {'name': 'V8.MemoryExternalFragmentationTotal', 'units': 'percent'},
@@ -13,15 +13,15 @@ MEMORY_HISTOGRAMS = [
 BROWSER_MEMORY_HISTOGRAMS =  [
     {'name': 'Memory.BrowserUsed', 'units': 'kb'}]
 
-class MemoryBenchmark(page_benchmark.PageBenchmark):
+class MemoryMeasurement(page_measurement.PageMeasurement):
   def __init__(self):
-    super(MemoryBenchmark, self).__init__('stress_memory')
+    super(MemoryMeasurement, self).__init__('stress_memory')
     self.histograms = (
-        [histogram_measurement.HistogramMeasurement(
-            h, histogram_measurement.RENDERER_HISTOGRAM)
+        [histogram_metric.HistogramMetric(
+            h, histogram_metric.RENDERER_HISTOGRAM)
          for h in MEMORY_HISTOGRAMS] +
-        [histogram_measurement.HistogramMeasurement(
-            h, histogram_measurement.BROWSER_HISTOGRAM)
+        [histogram_metric.HistogramMetric(
+            h, histogram_metric.BROWSER_HISTOGRAM)
          for h in BROWSER_MEMORY_HISTOGRAMS])
 
   def DidNavigateToPage(self, page, tab):

@@ -1,86 +1,42 @@
 # Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import json
+from perf_tools import cheapness_predictor_metrics
+from telemetry.page import page_measurement
 
-class CheapnessPredictorMeasurement(object):
-  def __init__(self, tab):
-    self._tab = tab
-    self._initial_stats = {}
-    self.stats = {}
+PREDICTOR_STATS = [
+  {'name': 'picture_pile_count', 'units': ''},
+  {'name': 'predictor_accuracy', 'units': 'percent'},
+  {'name': 'predictor_safely_wrong_count', 'units': ''},
+  {'name': 'predictor_badly_wrong_count', 'units': ''}]
 
-  def GatherInitialStats(self):
-    self._initial_stats = self._GatherStats()
+class CheapnessPredictorMeasurement(page_measurement.PageMeasurement):
+  def __init__(self):
+    super(CheapnessPredictorMeasurement, self).__init__('smoothness')
+    self._metrics = None
 
-  def GatherDeltaStats(self):
-    final_stats = self._GatherStats()
+  def CustomizeBrowserOptions(self, options):
+    options.AppendExtraBrowserArg('--dom-automation')
+    options.AppendExtraBrowserArg('--enable-prediction-benchmarking')
+    options.AppendExtraBrowserArg('--enable-gpu-benchmarking')
+    options.AppendExtraBrowserArg('--enable-threaded-compositing')
+    options.AppendExtraBrowserArg('--enable-impl-side-painting')
 
-    correct_count = final_stats['predictor_correct_count'] - \
-                    self._initial_stats['predictor_correct_count']
+  def DidNavigateToPage(self, page, tab):
+    self._metrics = \
+      cheapness_predictor_metrics.CheapnessPredictorMetrics(tab)
+    self._metrics.GatherInitialStats()
 
-    incorrect_count = final_stats['predictor_incorrect_count'] - \
-                      self._initial_stats['predictor_incorrect_count']
+  def DidRunAction(self, page, tab, action):
+    self._metrics.GatherDeltaStats()
 
-    percent, total = self._GetPercentAndTotal(correct_count, incorrect_count)
+  def CanRunForPage(self, page):
+    return hasattr(page, 'smoothness')
 
-    self.stats['picture_pile_count'] = total
-    self.stats['predictor_correct_count'] = correct_count
-    self.stats['predictor_incorrect_count'] = incorrect_count
-    self.stats['predictor_accuracy'] = percent
-    self.stats['predictor_safely_wrong_count'] = \
-      final_stats['predictor_safely_wrong_count'] - \
-      self._initial_stats['predictor_safely_wrong_count']
-    self.stats['predictor_badly_wrong_count'] = \
-      final_stats['predictor_badly_wrong_count'] - \
-      self._initial_stats['predictor_badly_wrong_count']
+  def MeasurePage(self, page, tab, results):
+    predictor_stats = self._metrics.stats
 
-  def _GatherStats(self):
-    stats = {}
-
-    incorrect_count, correct_count = \
-      self._GetBooleanHistogramCounts(self._tab,
-                                      'Renderer4.CheapPredictorAccuracy')
-
-    percent, total = self._GetPercentAndTotal(correct_count, incorrect_count)
-    stats['picture_pile_count'] = total
-    stats['predictor_correct_count'] = correct_count
-    stats['predictor_incorrect_count'] = incorrect_count
-    stats['predictor_accuracy'] = percent
-
-    _, safely_wrong_count = \
-      self._GetBooleanHistogramCounts(self._tab,
-                                      'Renderer4.CheapPredictorSafelyWrong')
-    stats['predictor_safely_wrong_count'] = safely_wrong_count
-
-    _, badly_wrong_count = \
-      self._GetBooleanHistogramCounts(self._tab,
-                                      'Renderer4.CheapPredictorBadlyWrong')
-    stats['predictor_badly_wrong_count'] = badly_wrong_count
-
-    return stats
-
-
-  def _GetPercentAndTotal(self, correct_count, incorrect_count):
-    total = incorrect_count + correct_count
-    percent = 0
-    if total > 0:
-      percent = 100 * correct_count / float(total)
-    return percent, total
-
-  def _GetBooleanHistogramCounts(self, tab, histogram_name):
-    count = [0, 0]
-    js = ('window.domAutomationController.getHistogram ? '
-          'window.domAutomationController.getHistogram('
-          '"%s") : ""' % (histogram_name))
-    data = tab.EvaluateJavaScript(js)
-    if not data:
-      return count
-
-    histogram = json.loads(data)
-    if histogram:
-      for bucket in histogram['buckets']:
-        if bucket['low'] > 1:
-          continue
-        count[bucket['low']] += bucket['count']
-
-    return count
+    for stat_to_gather in PREDICTOR_STATS:
+      results.Add(stat_to_gather['name'],
+                  stat_to_gather['units'],
+                  predictor_stats[stat_to_gather['name']])
