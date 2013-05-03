@@ -44,6 +44,7 @@
           '../third_party/pyftpdlib/',
           '../third_party/pywebsocket/',
           '../third_party/tlslite/',
+          '../third_party/zlib/google/test/data/',
           '../tools/swarm_client/',
           '<(PRODUCT_DIR)/pyproto/',
           'test/data/',

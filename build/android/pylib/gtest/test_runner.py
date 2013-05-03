@@ -68,6 +68,7 @@ def _GetDataFilesForTestSuite(test_suite_basename):
         'chrome/third_party/mock4js/',
         'net/data/ssl/certificates',
         'third_party/accessibility-developer-tools/gen/axs_testing.js',
+        'third_party/zlib/google/test/data',
     ]
     # The following are spell check data. Now only list the data under
     # third_party/hunspell_dictionaries which are used by unit tests.
@@ -76,10 +77,6 @@ def _GetDataFilesForTestSuite(test_suite_basename):
     test_files += glob.glob('third_party/hunspell_dictionaries/*.bdic')
     os.chdir(old_cwd)
     return test_files
-  elif test_suite_basename == 'components_unittests':
-    return [
-        'components/test/data/zip',
-    ]
   elif test_suite_basename == 'media_unittests':
     return [
         'media/test/data',

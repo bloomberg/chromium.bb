@@ -10,10 +10,10 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
-#include "components/zip/zip.h"
-#include "components/zip/zip_reader.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "third_party/zlib/google/zip.h"
+#include "third_party/zlib/google/zip_reader.h"
 
 namespace {
 
@@ -54,7 +54,9 @@ class ZipTest : public PlatformTest {
     EXPECT_TRUE(success);
     if (!success)
       return false;
-    *path = path->AppendASCII("components");
+    *path = path->AppendASCII("third_party");
+    *path = path->AppendASCII("zlib");
+    *path = path->AppendASCII("google");
     *path = path->AppendASCII("test");
     *path = path->AppendASCII("data");
     return true;
@@ -64,7 +66,6 @@ class ZipTest : public PlatformTest {
                      bool expect_hidden_files) {
     base::FilePath test_dir;
     ASSERT_TRUE(GetTestDataDirectory(&test_dir));
-    test_dir = test_dir.AppendASCII("zip");
     TestUnzipFile(test_dir.Append(filename), expect_hidden_files);
   }
 
@@ -120,7 +121,7 @@ TEST_F(ZipTest, UnzipUncompressed) {
 TEST_F(ZipTest, UnzipEvil) {
   base::FilePath path;
   ASSERT_TRUE(GetTestDataDirectory(&path));
-  path = path.AppendASCII("zip").AppendASCII("evil.zip");
+  path = path.AppendASCII("evil.zip");
   // Unzip the zip file into a sub directory of test_dir_ so evil.zip
   // won't create a persistent file outside test_dir_ in case of a
   // failure.
@@ -137,7 +138,7 @@ TEST_F(ZipTest, UnzipEvil2) {
   ASSERT_TRUE(GetTestDataDirectory(&path));
   // The zip file contains an evil file with invalid UTF-8 in its file
   // name.
-  path = path.AppendASCII("zip").AppendASCII("evil_via_invalid_utf8.zip");
+  path = path.AppendASCII("evil_via_invalid_utf8.zip");
   // See the comment at UnzipEvil() for why we do this.
   base::FilePath output_dir = test_dir_.AppendASCII("out");
   // This should fail as it contains an evil file.
@@ -150,7 +151,7 @@ TEST_F(ZipTest, UnzipEvil2) {
 TEST_F(ZipTest, Zip) {
   base::FilePath src_dir;
   ASSERT_TRUE(GetTestDataDirectory(&src_dir));
-  src_dir = src_dir.AppendASCII("zip").AppendASCII("test");
+  src_dir = src_dir.AppendASCII("test");
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -163,7 +164,7 @@ TEST_F(ZipTest, Zip) {
 TEST_F(ZipTest, ZipIgnoreHidden) {
   base::FilePath src_dir;
   ASSERT_TRUE(GetTestDataDirectory(&src_dir));
-  src_dir = src_dir.AppendASCII("zip").AppendASCII("test");
+  src_dir = src_dir.AppendASCII("test");
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -177,7 +178,7 @@ TEST_F(ZipTest, ZipIgnoreHidden) {
 TEST_F(ZipTest, ZipFiles) {
   base::FilePath src_dir;
   ASSERT_TRUE(GetTestDataDirectory(&src_dir));
-  src_dir = src_dir.AppendASCII("zip").AppendASCII("test");
+  src_dir = src_dir.AppendASCII("test");
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());

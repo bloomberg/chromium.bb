@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ZIP_ZIP_READER_H_
-#define COMPONENTS_ZIP_ZIP_READER_H_
+#ifndef THIRD_PARTY_ZLIB_GOOGLE_ZIP_READER_H_
+#define THIRD_PARTY_ZLIB_GOOGLE_ZIP_READER_H_
 
 #include <string>
 
@@ -174,4 +174,4 @@ class ZipReader {
 
 }  // namespace zip
 
-#endif  // COMPONENTS_ZIP_ZIP_READER_H_
+#endif  // THIRD_PARTY_ZLIB_GOOGLE_ZIP_READER_H_

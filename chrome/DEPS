@@ -26,7 +26,6 @@ include_rules = [
   "+chrome/test",
   "+components/sessions",
   "+components/visitedlink/common",
-  "+components/zip",
   "+content/public/common",
   "+content/public/test",
   "+content/test/gpu",
@@ -50,6 +49,7 @@ include_rules = [
   "+third_party/npapi",       # NPAPI interface headers.
   "+third_party/skia",
   "+third_party/tcmalloc",
+  "+third_party/zlib/google",
   "+third_party/GTM",         # Google Toolbox for Mac.
 
   "+ui",

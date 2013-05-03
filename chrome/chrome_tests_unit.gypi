@@ -1778,6 +1778,8 @@
         '../skia/ext/vector_canvas_unittest.cc',
         '../testing/gtest_mac_unittest.mm',
         '../third_party/cld/encodings/compact_lang_det/compact_lang_det_unittest_small.cc',
+        '../third_party/zlib/google/zip_reader_unittest.cc',
+        '../third_party/zlib/google/zip_unittest.cc',
         '../tools/json_schema_compiler/test/additional_properties_unittest.cc',
         '../tools/json_schema_compiler/test/any_unittest.cc',
         '../tools/json_schema_compiler/test/arrays_unittest.cc',
