@@ -158,7 +158,7 @@ void EventSource::networkRequestEnded()
 void EventSource::scheduleReconnect()
 {
     m_state = CONNECTING;
-    m_reconnectTimer.startOneShot(m_reconnectDelay / 1000);
+    m_reconnectTimer.startOneShot(m_reconnectDelay / 1000.0);
     dispatchEvent(Event::create(eventNames().errorEvent, false, false));
 }
 
