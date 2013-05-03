@@ -398,6 +398,9 @@ bool UITestBase::CloseBrowser(BrowserProxy* browser,
 
   bool result = true;
 
+  ChromeProcessList processes = GetRunningChromeProcesses(
+      browser_process_id());
+
   bool succeeded = automation()->Send(new AutomationMsg_CloseBrowser(
       browser->handle(), &result, application_closed));
 
@@ -409,6 +412,8 @@ bool UITestBase::CloseBrowser(BrowserProxy* browser,
     EXPECT_TRUE(launcher_->WaitForBrowserProcessToQuit(
         TestTimeouts::action_max_timeout(), &exit_code));
     EXPECT_EQ(0, exit_code);  // Expect a clean shutown.
+    // Ensure no child processes are left dangling.
+    TerminateAllChromeProcesses(processes);
   }
 
   return result;

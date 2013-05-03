@@ -525,7 +525,9 @@ void Automation::Terminate() {
     if (!launcher_->WaitForBrowserProcessToQuit(
             base::TimeDelta::FromSeconds(10), &exit_code)) {
       logger_.Log(kWarningLogLevel, "Chrome still running, terminating...");
-      TerminateAllChromeProcesses(launcher_->process_id());
+      ChromeProcessList process_pids(GetRunningChromeProcesses(
+          launcher_->process_id()));
+      TerminateAllChromeProcesses(process_pids);
     }
     base::CloseProcessHandle(launcher_->process());
     logger_.Log(kInfoLogLevel, "Chrome shutdown");

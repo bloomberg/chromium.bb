@@ -18,9 +18,7 @@
 using base::TimeDelta;
 using base::TimeTicks;
 
-void TerminateAllChromeProcesses(base::ProcessId browser_pid) {
-  ChromeProcessList process_pids(GetRunningChromeProcesses(browser_pid));
-
+void TerminateAllChromeProcesses(const ChromeProcessList& process_pids) {
   ChromeProcessList::const_iterator it;
   for (it = process_pids.begin(); it != process_pids.end(); ++it) {
     base::ProcessHandle handle;

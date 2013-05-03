@@ -22,9 +22,8 @@ const base::FilePath::CharType* GetRunningHelperExecutableName();
 // based on |browser_pid|, the PID of the main browser process.
 ChromeProcessList GetRunningChromeProcesses(base::ProcessId browser_pid);
 
-// Attempts to terminate all chrome processes launched by (and including)
-// |browser_pid|.
-void TerminateAllChromeProcesses(base::ProcessId browser_pid);
+// Attempts to terminate all chrome processes in |process_list|.
+void TerminateAllChromeProcesses(const ChromeProcessList& process_list);
 
 // A wrapper class for tests to use in fetching process metrics.
 // Delegates everything we need to base::ProcessMetrics, except

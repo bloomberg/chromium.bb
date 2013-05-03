@@ -282,6 +282,8 @@ void ProxyLauncher::QuitBrowser() {
     NOTREACHED() << "Invalid shutdown type " << shutdown_type_;
   }
 
+  ChromeProcessList processes = GetRunningChromeProcesses(process_id_);
+
   // Now, drop the automation IPC channel so that the automation provider in
   // the browser notices and drops its reference to the browser process.
   if (automation_proxy_.get())
@@ -295,6 +297,9 @@ void ProxyLauncher::QuitBrowser() {
   EXPECT_EQ(0, exit_code);  // Expect a clean shutdown.
 
   browser_quit_time_ = base::TimeTicks::Now() - quit_start;
+
+  // Ensure no child processes are left dangling.
+  TerminateAllChromeProcesses(processes);
 }
 
 void ProxyLauncher::TerminateBrowser() {
@@ -311,6 +316,8 @@ void ProxyLauncher::TerminateBrowser() {
   ASSERT_TRUE(browser->TerminateSession());
 #endif  // defined(OS_WIN)
 
+  ChromeProcessList processes = GetRunningChromeProcesses(process_id_);
+
   // Now, drop the automation IPC channel so that the automation provider in
   // the browser notices and drops its reference to the browser process.
   if (automation_proxy_.get())
@@ -326,6 +333,9 @@ void ProxyLauncher::TerminateBrowser() {
   EXPECT_EQ(0, exit_code);  // Expect a clean shutdown.
 
   browser_quit_time_ = base::TimeTicks::Now() - quit_start;
+
+  // Ensure no child processes are left dangling.
+  TerminateAllChromeProcesses(processes);
 }
 
 void ProxyLauncher::AssertAppNotRunning(const std::string& error_message) {
@@ -355,9 +365,6 @@ bool ProxyLauncher::WaitForBrowserProcessToQuit(
   // chance of making it through.
   if (!automation_proxy_->channel_disconnected_on_failure())
     success = base::WaitForExitCodeWithTimeout(process_, exit_code, timeout);
-
-  if (!success)
-    TerminateAllChromeProcesses(process_id_);
 
   base::CloseProcessHandle(process_);
   process_ = base::kNullProcessHandle;
