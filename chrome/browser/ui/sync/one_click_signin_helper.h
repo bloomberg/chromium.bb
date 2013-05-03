@@ -243,9 +243,10 @@ class OneClickSigninHelper
   int untrusted_navigations_since_signin_visit_;
 
   // Whether a Gaia URL during the sign in process was not handled by the
-  // dedicated sign in process.  This is set to false if at least one such
-  // URL is detected.
-  bool is_trusted_;
+  // dedicated sign in process (e.g. SAML login, which redirects to a
+  // non-google-controlled domain).
+  // This is set to true if at least one such URL is detected.
+  bool confirmation_required_;
 
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninHelper);
 };

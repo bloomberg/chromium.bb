@@ -40,13 +40,16 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer {
 
   // |profile| must not be NULL, however |browser| can be. When using the
   // OneClickSigninSyncStarter from a browser, provide both.
+  // If |display_confirmation| is true, the user will be prompted to confirm the
+  // signin before signin completes.
   OneClickSigninSyncStarter(Profile* profile,
                             Browser* browser,
                             const std::string& session_index,
                             const std::string& email,
                             const std::string& password,
                             StartSyncMode start_mode,
-                            bool force_same_tab_navigation);
+                            bool force_same_tab_navigation,
+                            bool display_confirmation);
 
  private:
   virtual ~OneClickSigninSyncStarter();
@@ -85,14 +88,25 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer {
 
   // Cancels the in-progress signin for this profile.
   void CancelSigninAndDelete();
-
-  // Callback invoked to check whether the user needs policy (in which case
-  // we have to prompt the user first).
-  void CheckForPolicy(const std::string& oauth_token);
 #endif  // defined(ENABLE_CONFIGURATION_POLICY)
+
+  // Callback invoked to check whether the user needs policy or if a
+  // confirmation is required (in which case we have to prompt the user first).
+  void ConfirmSignin(const std::string& oauth_token);
+
+  // Displays confirmation UI to the user if confirmation_required_ is true,
+  // otherwise completes the pending signin process.
+  void SigninAfterSAMLConfirmation();
+
+  // Callback invoked once the user has responded to the signin confirmation UI.
+  // If response == UNDO_SYNC, the signin is cancelled, otherwise the pending
+  // signin is completed.
+  void SigninConfirmationComplete(StartSyncMode response);
 
   ProfileSyncService* GetProfileSyncService();
 
+  // Displays the sync configuration UI, then frees this object.
+  void ConfigureSync();
   void ShowSyncSettingsPageOnSameTab();
 
   Profile* profile_;
@@ -101,6 +115,7 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer {
   StartSyncMode start_mode_;
   chrome::HostDesktopType desktop_type_;
   bool force_same_tab_navigation_;
+  bool confirmation_required_;
   base::WeakPtrFactory<OneClickSigninSyncStarter> weak_pointer_factory_;
 
 #if defined(ENABLE_CONFIGURATION_POLICY)

@@ -88,7 +88,8 @@ struct StartSyncArgs {
                 const std::string& session_index,
                 const std::string& email,
                 const std::string& password,
-                bool force_same_tab_navigation);
+                bool force_same_tab_navigation,
+                bool confirmation_required);
 
   Profile* profile;
   Browser* browser;
@@ -97,6 +98,7 @@ struct StartSyncArgs {
   std::string email;
   std::string password;
   bool force_same_tab_navigation;
+  bool confirmation_required;
 };
 
 StartSyncArgs::StartSyncArgs(Profile* profile,
@@ -105,14 +107,16 @@ StartSyncArgs::StartSyncArgs(Profile* profile,
                              const std::string& session_index,
                              const std::string& email,
                              const std::string& password,
-                             bool force_same_tab_navigation)
+                             bool force_same_tab_navigation,
+                             bool confirmation_required)
     : profile(profile),
       browser(browser),
       auto_accept(auto_accept),
       session_index(session_index),
       email(email),
       password(password),
-      force_same_tab_navigation(force_same_tab_navigation) {
+      force_same_tab_navigation(force_same_tab_navigation),
+      confirmation_required(confirmation_required) {
 }
 
 
@@ -183,7 +187,8 @@ void StartSync(const StartSyncArgs& args,
   // The starter deletes itself once its done.
   new OneClickSigninSyncStarter(args.profile, args.browser, args.session_index,
                                 args.email, args.password, start_mode,
-                                args.force_same_tab_navigation);
+                                args.force_same_tab_navigation,
+                                args.confirmation_required);
 
   int action = one_click_signin::HISTOGRAM_MAX;
   switch (args.auto_accept) {
@@ -466,7 +471,7 @@ OneClickSigninHelper::OneClickSigninHelper(content::WebContents* web_contents)
       switched_to_advanced_(false),
       original_source_(SyncPromoUI::SOURCE_UNKNOWN),
       untrusted_navigations_since_signin_visit_(0),
-      is_trusted_(true) {
+      confirmation_required_(false) {
 }
 
 OneClickSigninHelper::~OneClickSigninHelper() {
@@ -833,7 +838,8 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   SigninManager* manager = profile ?
       SigninManagerFactory::GetForProfile(profile) : NULL;
-  helper->is_trusted_ &= manager && manager->IsSigninProcess(child_id);
+  helper->confirmation_required_ |= (manager &&
+                                     !manager->IsSigninProcess(child_id));
 
   // Save the email in the one-click signin manager.  The manager may
   // not exist if the contents is incognito or if the profile is already
@@ -868,7 +874,7 @@ void OneClickSigninHelper::ShowSyncConfirmationBubble(bool show_bubble) {
         base::Bind(&StartSync,
                    StartSyncArgs(profile, browser, AUTO_ACCEPT_ACCEPTED,
                                  session_index_, email_, password_,
-                                 false)));
+                                 false, confirmation_required_)));
   }
   error_message_.clear();
 }
@@ -918,7 +924,7 @@ void OneClickSigninHelper::CleanTransientState() {
   original_source_ = SyncPromoUI::SOURCE_UNKNOWN;
   continue_url_ = GURL();
   untrusted_navigations_since_signin_visit_ = 0;
-  is_trusted_ = true;
+  confirmation_required_ = false;
 
   // Post to IO thread to clear pending email.
   Profile* profile =
@@ -1127,7 +1133,8 @@ void OneClickSigninHelper::DidStopLoading(
           base::Bind(&StartSync,
                      StartSyncArgs(profile, browser, auto_accept_,
                                    session_index_, email_, password_,
-                                   false /* force_same_tab_navigation */)));
+                                   false /* force_same_tab_navigation */,
+                                   confirmation_required_)));
       break;
     case AUTO_ACCEPT_CONFIGURE:
       LogOneClickHistogramValue(one_click_signin::HISTOGRAM_ACCEPTED);
@@ -1135,7 +1142,8 @@ void OneClickSigninHelper::DidStopLoading(
       SigninManager::DisableOneClickSignIn(profile);
       StartSync(
           StartSyncArgs(profile, browser, auto_accept_, session_index_, email_,
-                        password_, false /* force_same_tab_navigation */),
+                        password_, false /* force_same_tab_navigation */,
+                        confirmation_required_),
           OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST);
       break;
     case AUTO_ACCEPT_EXPLICIT: {
@@ -1156,22 +1164,12 @@ void OneClickSigninHelper::DidStopLoading(
       std::string last_email =
           profile->GetPrefs()->GetString(prefs::kGoogleServicesLastUsername);
 
-      if (!is_trusted_) {
-        // The user has navigated away from valid Gaia URLs during sign in,
-        // verify this sign in is desired.
-        // TODO(atwilson): Move this into OneClickSyncStarter so we can avoid
-        // prompting policy-based users twice (http://crbug.com/232339).
-        browser->window()->ShowOneClickSigninBubble(
-            BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_SAML_MODAL_DIALOG,
-            UTF8ToUTF16(email_),
-            string16(), /* no error message to display */
-            base::Bind(&StartSync,
-                       StartSyncArgs(profile, browser, auto_accept_,
-                                     session_index_, email_, password_,
-                                     force_same_tab_navigation)));
-      } else if (!last_email.empty() && last_email != email_) {
+      if (!last_email.empty() && last_email != email_) {
         // If the new email address is different from the email address that
         // just signed in, show a confirmation dialog.
+
+        // No need to display a second confirmation.
+        confirmation_required_ = false;
         ConfirmEmailDialogDelegate::AskForConfirmation(
             contents,
             last_email,
@@ -1180,13 +1178,15 @@ void OneClickSigninHelper::DidStopLoading(
                 &StartExplicitSync,
                 StartSyncArgs(profile, browser, auto_accept_,
                               session_index_, email_, password_,
-                              force_same_tab_navigation),
+                              force_same_tab_navigation,
+                              confirmation_required_),
                 contents,
                 start_mode));
       } else {
         StartExplicitSync(
             StartSyncArgs(profile, browser, auto_accept_, session_index_,
-                          email_, password_, force_same_tab_navigation),
+                          email_, password_, force_same_tab_navigation,
+                          confirmation_required_),
             contents,
             start_mode,
             IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_CANCEL_BUTTON);
