@@ -417,11 +417,11 @@ void V8GCController::hintForCollectGarbage()
 
 void V8GCController::collectGarbage()
 {
-    v8::HandleScope handleScope;
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope handleScope(isolate);
 
     ScopedPersistent<v8::Context> context;
-
-    context.adopt(v8::Context::New());
+    context.set(v8::Context::New(isolate));
     if (context.isEmpty())
         return;
 

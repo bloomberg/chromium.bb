@@ -295,7 +295,8 @@ void V8DOMWindowShell::createContext()
     }
     v8::ExtensionConfiguration extensionConfiguration(index, extensionNames.get());
 
-    m_context.adopt(v8::Context::New(&extensionConfiguration, globalTemplate, m_global.get()));
+    v8::HandleScope handleScope(m_isolate);
+    m_context.set(v8::Context::New(m_isolate, &extensionConfiguration, globalTemplate, m_global.get()));
 
     double contextCreationDurationInMilliseconds = (currentTime() - contextCreationStartInSeconds) * 1000;
     const char* histogramName = "WebCore.V8DOMWindowShell.createContext.MainWorld";

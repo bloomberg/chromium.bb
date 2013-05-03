@@ -61,7 +61,6 @@ private:
     typedef HashMap<WorkerContext*, ScriptDebugListener*> ListenersMap;
     ScriptDebugListener* m_listener;
     WorkerContext* m_workerContext;
-    v8::Isolate* m_isolate;
     String m_debuggerTaskMode;
 };
 

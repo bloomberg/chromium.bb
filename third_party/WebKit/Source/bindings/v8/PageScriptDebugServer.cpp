@@ -70,7 +70,7 @@ PageScriptDebugServer& PageScriptDebugServer::shared()
 }
 
 PageScriptDebugServer::PageScriptDebugServer()
-    : ScriptDebugServer()
+    : ScriptDebugServer(v8::Isolate::GetCurrent())
     , m_pausedPage(0)
 {
 }
@@ -81,7 +81,7 @@ void PageScriptDebugServer::addListener(ScriptDebugListener* listener, Page* pag
     if (!scriptController->canExecuteScripts(NotAboutToExecuteScript))
         return;
 
-    v8::HandleScope scope;
+    v8::HandleScope scope(m_isolate);
     v8::Local<v8::Context> debuggerContext = v8::Debug::GetDebugContext();
     v8::Context::Scope contextScope(debuggerContext);
 
@@ -194,4 +194,3 @@ void PageScriptDebugServer::quitMessageLoopOnPause()
 }
 
 } // namespace WebCore
-

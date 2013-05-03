@@ -42,10 +42,9 @@
 namespace WebCore {
 
 WorkerScriptDebugServer::WorkerScriptDebugServer(WorkerContext* workerContext, const String& mode)
-    : ScriptDebugServer()
+    : ScriptDebugServer(v8::Isolate::GetCurrent())
     , m_listener(0)
     , m_workerContext(workerContext)
-    , m_isolate(v8::Isolate::GetCurrent())
     , m_debuggerTaskMode(mode)
 {
     ASSERT(m_isolate);

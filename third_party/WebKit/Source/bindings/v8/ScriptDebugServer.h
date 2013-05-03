@@ -98,7 +98,7 @@ public:
     virtual void runScript(ScriptState*, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionMessage);
 
 protected:
-    ScriptDebugServer();
+    ScriptDebugServer(v8::Isolate*);
     virtual ~ScriptDebugServer();
     
     ScriptValue currentCallFrame();
@@ -128,6 +128,7 @@ protected:
     bool m_breakpointsActivated;
     ScopedPersistent<v8::FunctionTemplate> m_breakProgramCallbackTemplate;
     HashMap<String, OwnPtr<ScopedPersistent<v8::Script> > > m_compiledScripts;
+    v8::Isolate* m_isolate;
     
 private:
     class ScriptPreprocessor;

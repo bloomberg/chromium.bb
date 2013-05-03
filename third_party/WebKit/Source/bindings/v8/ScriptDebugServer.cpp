@@ -85,11 +85,11 @@ v8::Local<v8::Value> ScriptDebugServer::callDebuggerMethod(const char* functionN
 class ScriptDebugServer::ScriptPreprocessor {
     WTF_MAKE_NONCOPYABLE(ScriptPreprocessor);
 public:
-    explicit ScriptPreprocessor(const String& preprocessorScript)
+    explicit ScriptPreprocessor(const String& preprocessorScript, v8::Isolate* isolate)
     {
-        v8::HandleScope scope;
+        v8::HandleScope scope(isolate);
 
-        m_utilityContext.set(v8::Context::New());
+        m_utilityContext.set(v8::Context::New(isolate));
         if (m_utilityContext.isEmpty())
             return;
 
@@ -153,10 +153,11 @@ private:
     ScopedPersistent<v8::Function> m_preprocessorFunction;
 };
 
-ScriptDebugServer::ScriptDebugServer()
+ScriptDebugServer::ScriptDebugServer(v8::Isolate* isolate)
     : m_pauseOnExceptionsState(DontPauseOnExceptions)
     , m_breakpointsActivated(true)
     , m_runningNestedMessageLoop(false)
+    , m_isolate(isolate)
 {
 }
 
@@ -365,7 +366,7 @@ void ScriptDebugServer::setScriptPreprocessor(const String& preprocessorBody)
 {
     m_scriptPreprocessor.clear();
     if (!preprocessorBody.isEmpty())
-        m_scriptPreprocessor = adoptPtr(new ScriptPreprocessor(preprocessorBody));
+        m_scriptPreprocessor = adoptPtr(new ScriptPreprocessor(preprocessorBody, m_isolate));
 }
 
 ScriptValue ScriptDebugServer::currentCallFrame()
@@ -639,4 +640,3 @@ void ScriptDebugServer::runScript(ScriptState* state, const String& scriptId, Sc
 }
 
 } // namespace WebCore
-

@@ -158,8 +158,10 @@ v8::Persistent<v8::FunctionTemplate> V8PerIsolateData::rawTemplate(WrapperTypeIn
 
 v8::Local<v8::Context> V8PerIsolateData::ensureRegexContext()
 {
-    if (m_regexContext.isEmpty())
-        m_regexContext.set(v8::Context::New());
+    if (m_regexContext.isEmpty()) {
+        v8::HandleScope handleScope(m_isolate);
+        m_regexContext.set(v8::Context::New(m_isolate));
+    }
     return v8::Local<v8::Context>::New(m_regexContext.get());
 }
 

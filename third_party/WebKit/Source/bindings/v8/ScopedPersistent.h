@@ -63,12 +63,6 @@ public:
         m_handle = v8::Persistent<T>::New(v8::Isolate::GetCurrent(), handle);
     }
 
-    void adopt(v8::Persistent<T> handle)
-    {
-        clear();
-        m_handle = handle;
-    }
-
     // Note: This is clear in the OwnPtr sense, not the v8::Handle sense.
     void clear()
     {
