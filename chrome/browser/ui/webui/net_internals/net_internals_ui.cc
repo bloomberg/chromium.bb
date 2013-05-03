@@ -173,6 +173,26 @@ Value* RequestStateToValue(const net::URLRequest* request,
   dict->SetString("method", request->method());
   dict->SetBoolean("has_upload", request->has_upload());
   dict->SetBoolean("is_pending", request->is_pending());
+
+  // Add the status of the request.  The status should always be IO_PENDING, and
+  // the error should always be OK, unless something is holding onto a request
+  // that has finished or a request was leaked.  Neither of these should happen.
+  switch (request->status().status()) {
+    case net::URLRequestStatus::SUCCESS:
+      dict->SetString("status", "SUCCESS");
+      break;
+    case net::URLRequestStatus::IO_PENDING:
+      dict->SetString("status", "IO_PENDING");
+      break;
+    case net::URLRequestStatus::CANCELED:
+      dict->SetString("status", "CANCELED");
+      break;
+    case net::URLRequestStatus::FAILED:
+      dict->SetString("status", "FAILED");
+      break;
+  }
+  if (request->status().error() != net::OK)
+    dict->SetInteger("net_error", request->status().error());
   return dict;
 }
 
