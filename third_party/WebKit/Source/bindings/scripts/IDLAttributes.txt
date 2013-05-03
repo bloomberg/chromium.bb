@@ -75,7 +75,6 @@ RaisesException
 ReadOnly
 Reflect=*
 Replaceable
-ReturnNewObject
 SetterRaisesException
 SkipVTableValidation
 StrictTypeChecking
