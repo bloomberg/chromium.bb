@@ -95,8 +95,7 @@ body:not(.has-results) #search-field:not(:valid) {
   -webkit-padding-end: 0;
 }
 
-button.remove-entry {
-  -webkit-margin-start: auto;
+.remove-entry {
   background: url('../../../../ui/webui/resources/images/2x/x-thin.png')
       no-repeat center center;
   background-size: 13px;
@@ -109,7 +108,7 @@ button.remove-entry {
   width: 45px;
 }
 
-button.remove-entry:active {
+.remove-entry:active {
   opacity: 1.0;
 }
 
@@ -165,6 +164,13 @@ input {
   margin: 0;
 }
 
+<if expr="pp_ifdef('ios')">
+/* Add extra spacing caused by the missing search bar on iOS. */
+h3:first-of-type {
+  margin-top: 16px;
+}
+</if>
+
 /* Fade out the entry-box, rather than its parent node, so that the dividing
    line between entries doesn't fade out. */
 .entry.fade-out .entry-box {
@@ -208,6 +214,23 @@ input {
 #loading-spinner {
   margin-top: 16px;
 }
+
+<if expr="pp_ifdef('ios')">
+/* iOS does not support the latest flexbox syntax, only the 2009 working draft
+   syntax (http://www.w3.org/TR/2009/WD-css3-flexbox-20090723/). */
+.entry-box,
+.site-domain-wrapper {
+  -wekbit-box-align: center;
+  display: -webkit-box;
+}
+
+.entry .title-and-domain {
+  -webkit-box-flex: 1;
+  -webkit-box-orient: vertical;
+  -webkit-box-pack: center;
+  display: -webkit-box;
+}
+</if>
 
 @media only screen and (max-width:600px) {
 

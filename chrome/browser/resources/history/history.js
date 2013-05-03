@@ -168,8 +168,7 @@ Visit.prototype.getResultDOM = function(propertyBag) {
   titleAndDomainWrapper.appendChild(domain);
 
   if (isMobileVersion()) {
-    var removeButton = createElementWithClassName('button', 'remove-entry');
-    removeButton.classList.add('custom-appearance');
+    var removeButton = createElementWithClassName('div', 'remove-entry');
     removeButton.addEventListener('click', function(e) {
       self.removeFromHistory();
       e.stopPropagation();
@@ -1537,9 +1536,11 @@ function load() {
       historyView.positionNotificationBar.bind(historyView));
 
   if (isMobileVersion()) {
-    // Move the search box out of the header.
-    var resultsDisplay = $('results-display');
-    resultsDisplay.parentNode.insertBefore($('search-field'), resultsDisplay);
+    if (searchField) {
+      // Move the search box out of the header.
+      var resultsDisplay = $('results-display');
+      resultsDisplay.parentNode.insertBefore($('search-field'), resultsDisplay);
+    }
 
     // Move the button to the bottom of the body.
     document.body.appendChild($('clear-browsing-data'));
