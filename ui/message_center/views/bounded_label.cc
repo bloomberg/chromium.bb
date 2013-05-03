@@ -41,6 +41,7 @@ class InnerBoundedLabel : public views::Label {
   // Pass in a -1 width to use the preferred width, a -1 limit to skip limits.
   int GetLinesForWidthAndLimit(int width, int limit);
   gfx::Size GetSizeForWidthAndLines(int width, int lines);
+
   std::vector<string16> GetWrappedText(int width, int lines);
 
  protected:
@@ -137,16 +138,12 @@ std::vector<string16> InnerBoundedLabel::GetWrappedText(int width, int lines) {
     height = (lines + 1) * line_height;
   }
 
-  // Try to ensure that the width is no smaller than the width of the text's
-  // characters to avoid the http://crbug.com/237700 infinite loop.
-  // TODO(dharcourt): Remove when http://crbug.com/237700 is fixed.
-  width = std::max(width, 4 * font().GetHeight());
-
-  // Wrap, using INT_MAX for -1 widths that indicate no wrapping.
+  // Wrap, using ui::IGNORE_LONG_WORDS instead of ui::WRAP_LONG_WORDS to
+  // avoid an infinite loop in ui::ElideRectangleText() for small widths.
   std::vector<string16> wrapped;
   ui::ElideRectangleText(text(), font(),
                          (width < 0) ? std::numeric_limits<int>::max() : width,
-                         height, ui::WRAP_LONG_WORDS, &wrapped);
+                         height, ui::IGNORE_LONG_WORDS, &wrapped);
 
   // Elide if necessary.
   if (lines > 0 && wrapped.size() > static_cast<unsigned int>(lines)) {
