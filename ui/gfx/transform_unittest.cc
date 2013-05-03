@@ -688,7 +688,7 @@ TEST(XFormTest, BlendRotate) {
   }
 }
 
-TEST(XFormTest, CannotBlend180DegreeRotation) {
+TEST(XFormTest, CanBlend180DegreeRotation) {
   Vector3dF axes[] = {
     Vector3dF(1, 0, 0),
     Vector3dF(0, 1, 0),
@@ -697,9 +697,17 @@ TEST(XFormTest, CannotBlend180DegreeRotation) {
   };
   Transform from;
   for (size_t index = 0; index < ARRAYSIZE_UNSAFE(axes); ++index) {
+    for (int i = 0; i < 10; ++i) {
       Transform to;
       to.RotateAbout(axes[index], 180);
-      EXPECT_FALSE(to.Blend(from, 0.5));
+      double t = i / 9.0;
+      EXPECT_TRUE(to.Blend(from, t));
+
+      Transform expected;
+      expected.RotateAbout(axes[index], 180 * t);
+
+      EXPECT_TRUE(MatricesAreNearlyEqual(expected, to));
+    }
   }
 }
 

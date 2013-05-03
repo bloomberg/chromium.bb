@@ -65,11 +65,6 @@ bool Slerp(double out[4],
     return true;
   }
 
-  if (std::abs(product) < epsilon) {
-    // Rotation by 180 degrees. We'll fail. It's ambiguous how to interpolate.
-    return false;
-  }
-
   double denom = std::sqrt(1 - product * product);
   double theta = std::acos(product);
   double w = std::sin(progress * theta) * (1 / denom);
