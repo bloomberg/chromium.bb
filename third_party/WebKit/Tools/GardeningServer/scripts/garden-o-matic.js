@@ -93,9 +93,13 @@ function update()
             latestRevisionSpan.appendChild(base.createLinkNode(trac.changesetURL(latestRevision), latestRevision));
             
             var totRevision = model.latestRevision();
-            latestRevisionSpan.appendChild(document.createTextNode(' (trunk is at '));
+            latestRevisionSpan.appendChild(document.createTextNode(', trunk is at '));
             latestRevisionSpan.appendChild(base.createLinkNode(trac.changesetURL(totRevision), totRevision));
-            latestRevisionSpan.appendChild(document.createTextNode(')'));
+
+            checkout.lastBlinkRollRevision(function(revision) {
+                latestRevisionSpan.appendChild(document.createTextNode(', last roll is to '));
+                latestRevisionSpan.appendChild(base.createLinkNode(trac.changesetURL(totRevision), revision));
+            }, function() {});
             
             g_revisionHint.updateWithNode(latestRevisionSpan);
             

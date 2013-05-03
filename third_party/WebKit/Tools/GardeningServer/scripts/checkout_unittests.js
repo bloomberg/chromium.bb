@@ -27,8 +27,33 @@
 
 module("checkout");
 
-test("subversionURLForTest", 1, function() {
-    equals(checkout.subversionURLForTest("path/to/test.html"), "http://svn.webkit.org/repository/webkit/trunk/LayoutTests/path/to/test.html");
+test("lastBlinkRollRevision", 0, function() {
+    var simulator = new NetworkSimulator();
+
+    var requests = [];
+    simulator.get = function(url, callback)
+    {
+        requests.push([url]);
+        simulator.scheduleCallback(callback);
+    };
+    simulator.ajax = function(options)
+    {
+        if (options.url.indexOf('/ping') == -1)
+            ok(false, 'Received non-ping ajax request: ' + options.url);
+        simulator.scheduleCallback(options.success);
+    };
+
+    simulator.runTest(function() {
+        checkout.lastBlinkRollRevision(function() {
+            ok(true);
+        }, function() {
+            ok(false, 'Checkout should be available.');
+        });
+    });
+
+    deepEqual(requests, [
+        ["/lastroll"]
+    ]);
 });
 
 test("rebaseline", 3, function() {

@@ -27,8 +27,6 @@ var checkout = checkout || {};
 
 (function() {
 
-var kWebKitTrunk = 'http://svn.webkit.org/repository/webkit/trunk/';
-
 var g_haveSeenCheckoutAvailable = false;
 
 function callIfCheckoutAvailable(callback, checkoutUnavailable)
@@ -48,11 +46,6 @@ function callIfCheckoutAvailable(callback, checkoutUnavailable)
     });
 }
 
-checkout.subversionURLForTest = function(testName)
-{
-    return kWebKitTrunk + 'LayoutTests/' + testName;
-};
-
 checkout.isAvailable = function(callback)
 {
     net.ajax({
@@ -65,6 +58,13 @@ checkout.isAvailable = function(callback)
         },
     });
 };
+
+checkout.lastBlinkRollRevision = function(callback, checkoutUnavailable)
+{
+    callIfCheckoutAvailable(function() {
+        net.get('/lastroll', callback);
+    }, checkoutUnavailable);
+}
 
 checkout.rollout = function(revision, reason, callback, checkoutUnavailable)
 {
