@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/file_util.h"
+#include "base/i18n/file_util_icu.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -91,18 +92,9 @@ std::vector<base::FilePath> ListFolder(const base::FilePath path) {
 }
 
 bool ValidateFolderName(const base::FilePath::StringType& name) {
-  if (!name.length() || name[0] == '.' || name[0] == '-')
-    return false;
-
-  for (size_t i = 0; i < name.length(); ++i) {
-    if (!((name[i] >= 'A' && name[i] <= 'Z') ||
-          (name[i] >= 'a' && name[i] <= 'z') ||
-          (name[i] >= '0' && name[i] <= '9') ||
-           (name[i] == '_' || name[i] == '-' || name[i] == '.'))) {
-      return false;
-    }
-  }
-  return true;
+  base::FilePath::StringType name_sanitized(name);
+  file_util::ReplaceIllegalCharactersInPath(&name_sanitized, '_');
+  return name == name_sanitized;
 }
 
 }  // namespace
@@ -844,6 +836,23 @@ void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
     return;
   }
 
+  base::FilePath target_folder_path(profile()->GetPath());
+  target_folder_path =
+      target_folder_path.Append(kUnpackedAppsFolder);
+  target_folder_path = target_folder_path.Append(project_name);
+
+  // Create an empty project folder if there are no files.
+  if (!file_list.size()) {
+    content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
+                     CreateFolderAndSendResponse,
+                 this,
+                 target_folder_path));
+    return;
+  }
+
+  pendingCallbacksCount_ = file_list.size();
+
   for (size_t i = 0; i < file_list.size(); ++i) {
     std::string origin_url(
         Extension::GetBaseURLFromExtensionId(extension_id()).spec());
@@ -851,10 +860,7 @@ void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
         GURL(origin_url),
         sync_file_system::DriveFileSyncService::kServiceName,
         base::FilePath(file_list[i].name)));
-    base::FilePath target_path(profile()->GetPath());
-    target_path =
-        target_path.Append(kUnpackedAppsFolder);
-    target_path = target_path.Append(project_name);
+    base::FilePath target_path = target_folder_path;
     target_path = target_path.Append(file_list[i].name);
 
     base::PlatformFileError error_code;
@@ -877,6 +883,18 @@ void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
   }
 }
 
+void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
+    CreateFolderAndSendResponse(const base::FilePath& folder_path) {
+  if (!(success_ = file_util::CreateDirectory(folder_path))) {
+    SetError("Error in copying files from sync filesystem.");
+  }
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
+                     SendResponse,
+                 this,
+                 success_));
+}
+
 void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::SnapshotFileCallback(
     const base::FilePath& target_path,
     base::PlatformFileError result,
@@ -884,7 +902,8 @@ void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::SnapshotFileCallback(
     const base::FilePath& src_path,
     const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
   if (result != base::PLATFORM_FILE_OK) {
-    DLOG(ERROR) << "Error in copying files from sync filesystem.";
+    SetError("Error in copying files from sync filesystem.");
+    success_ = false;
     return;
   }
 
@@ -898,17 +917,29 @@ void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::SnapshotFileCallback(
 void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::CopyFile(
     const base::FilePath& src_path,
     const base::FilePath& target_path) {
-  // Return silently if the directory creation fails.
   if (!file_util::CreateDirectory(target_path.DirName())) {
-    DLOG(ERROR) << "Error in copying files from sync filesystem.";
-    return;
+    SetError("Error in copying files from sync filesystem.");
+    success_ = false;
   }
 
-  file_util::CopyFile(src_path, target_path);
+  if (success_)
+    file_util::CopyFile(src_path, target_path);
+
+  CHECK(pendingCallbacksCount_ > 0);
+  pendingCallbacksCount_--;
+
+  if (!pendingCallbacksCount_) {
+    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
+                       SendResponse,
+                   this,
+                   success_));
+  }
 }
 
 DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
-    DeveloperPrivateExportSyncfsFolderToLocalfsFunction() {}
+    DeveloperPrivateExportSyncfsFolderToLocalfsFunction()
+    : pendingCallbacksCount_(0), success_(true) {}
 
 DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
     ~DeveloperPrivateExportSyncfsFolderToLocalfsFunction() {}
@@ -979,6 +1010,7 @@ void DeveloperPrivateLoadProjectToSyncfsFunction::CopyFiles(
 void DeveloperPrivateLoadProjectToSyncfsFunction::CopyFilesCallback(
     const base::PlatformFileError result) {
 
+  CHECK(pendingCallbacksCount_);
   pendingCallbacksCount_--;
 
   if (success_ && result != base::PLATFORM_FILE_OK) {

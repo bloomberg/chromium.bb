@@ -335,7 +335,7 @@ class DeveloperPrivateGetStringsFunction : public SyncExtensionFunction {
 };
 
 class DeveloperPrivateExportSyncfsFolderToLocalfsFunction
-    : public SyncExtensionFunction {
+    : public AsyncExtensionFunction {
   public:
    DECLARE_EXTENSION_FUNCTION("developerPrivate.exportSyncfsFolderToLocalfs",
                               DEVELOPERPRIVATE_LOADUNPACKEDCROS);
@@ -357,6 +357,8 @@ class DeveloperPrivateExportSyncfsFolderToLocalfsFunction
        const fileapi::FileSystemOperation::FileEntryList& file_list,
        bool has_more);
 
+   void CreateFolderAndSendResponse(const base::FilePath& folder_path);
+
    void SnapshotFileCallback(
        const base::FilePath& target_path,
        base::PlatformFileError result,
@@ -368,10 +370,17 @@ class DeveloperPrivateExportSyncfsFolderToLocalfsFunction
                  const base::FilePath& dest_path);
 
    scoped_refptr<fileapi::FileSystemContext> context_;
+
+  private:
+   int pendingCallbacksCount_;
+
+   // This is set to false if any of the copyFile operations fail on
+   // call of the API. It is returned as a response of the API call.
+   bool success_;
 };
 
 class DeveloperPrivateLoadProjectToSyncfsFunction
-    : public SyncExtensionFunction {
+    : public AsyncExtensionFunction {
   public:
    DECLARE_EXTENSION_FUNCTION("developerPrivate.loadProjectToSyncfs",
                               DEVELOPERPRIVATE_LOADPROJECTTOSYNCFS);
