@@ -62,7 +62,6 @@
             'Int8Array.h',
             'IntegralTypedArrayBase.h',
             'ListHashSet.h',
-            'ListRefPtr.h',
             'Locker.h',
             'MD5.cpp',
             'MD5.h',
