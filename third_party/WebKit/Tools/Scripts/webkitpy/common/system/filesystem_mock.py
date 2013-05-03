@@ -339,27 +339,32 @@ class MockFileSystem(object):
         start = self.abspath(start)
         path = self.abspath(path)
 
-        if not path.lower().startswith(start.lower()):
-            # path is outside the directory given by start; compute path from root
-            return '../' * start.count('/') + path
+        common_root = start
+        dot_dot = ''
+        while not common_root == '':
+            if path.startswith(common_root):
+                 break
+            common_root = self.dirname(common_root)
+            dot_dot += '..' + self.sep
 
-        rel_path = path[len(start):]
+        rel_path = path[len(common_root):]
 
         if not rel_path:
-            # Then the paths are the same.
-            pass
-        elif rel_path[0] == self.sep:
+            return '.'
+
+        if rel_path[0] == self.sep:
             # It is probably sufficient to remove just the first character
             # since os.path.normpath() collapses separators, but we use
             # lstrip() just to be sure.
             rel_path = rel_path.lstrip(self.sep)
-        else:
+        elif not common_root == '/':
             # We are in the case typified by the following example:
             # path = "/tmp/foobar", start = "/tmp/foo" -> rel_path = "bar"
-            # FIXME: We return a less-than-optimal result here.
-            return '../' * start.count('/') + path
+            common_root = self.dirname(common_root)
+            dot_dot += '..' + self.sep
+            rel_path = path[len(common_root) + 1:]
 
-        return rel_path
+        return dot_dot + rel_path
 
     def remove(self, path):
         if self.files[path] is None:
@@ -371,10 +376,12 @@ class MockFileSystem(object):
         path = self.normpath(path)
 
         for f in self.files:
-            if f.startswith(path):
+            # We need to add a trailing separator to path to avoid matching
+            # cases like path='/foo/b' and f='/foo/bar/baz'.
+            if f == path or f.startswith(path + self.sep):
                 self.files[f] = None
 
-        self.dirs = set(filter(lambda d: not d.startswith(path), self.dirs))
+        self.dirs = set(filter(lambda d: not (d == path or d.startswith(path + self.sep)), self.dirs))
 
     def copytree(self, source, destination):
         source = self.normpath(source)

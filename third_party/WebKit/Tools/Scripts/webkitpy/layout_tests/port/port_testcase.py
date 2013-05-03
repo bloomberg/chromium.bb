@@ -219,7 +219,7 @@ class PortTestCase(unittest.TestCase):
 
     def integration_test_image_diff(self):
         port = self.make_port()
-        # FIXME: This test will never run since we are using a MockFilesystem for these tests!?!?
+        # FIXME: This test will never run since we are using MockFileSystem for these tests!?!?
         if not port.check_image_diff():
             # The port hasn't been built - don't run the tests.
             return

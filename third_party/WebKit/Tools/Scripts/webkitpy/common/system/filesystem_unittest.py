@@ -74,6 +74,31 @@ class GenericFileSystemTests(object):
         self.fs.chdir(self.generic_test_dir)
         self.assertEqual(set(self.fs.glob('foo.*')), set(['foo.txt']))
 
+    def test_relpath(self):
+        self.assertEqual(self.fs.relpath('aaa/bbb'), 'aaa/bbb')
+        self.assertEqual(self.fs.relpath('aaa/bbb/'), 'aaa/bbb')
+        self.assertEqual(self.fs.relpath('aaa/bbb/.'), 'aaa/bbb')
+        self.assertEqual(self.fs.relpath('aaa/./bbb'), 'aaa/bbb')
+        self.assertEqual(self.fs.relpath('aaa/../bbb/'), 'bbb')
+        self.assertEqual(self.fs.relpath('aaa/bbb', 'aaa/bbb'), '.')
+        self.assertEqual(self.fs.relpath('aaa/bbb/ccc', 'aaa/bbb'), 'ccc')
+        self.assertEqual(self.fs.relpath('aaa/./ccc', 'aaa/bbb'), '../ccc')
+        self.assertEqual(self.fs.relpath('aaa/../ccc', 'aaa/bbb'), '../../ccc')
+        self.assertEqual(self.fs.relpath('aaa/bbb', 'aaa/ccc'), '../bbb')
+        self.assertEqual(self.fs.relpath('aaa/bbb', 'ccc/ddd'), '../../aaa/bbb')
+        self.assertEqual(self.fs.relpath('aaa/bbb', 'aaa/b'), '../bbb')
+        self.assertEqual(self.fs.relpath('aaa/bbb', 'a/bbb'), '../../aaa/bbb')
+
+    def test_rmtree(self):
+        self.fs.chdir(self.generic_test_dir)
+        self.fs.rmtree('foo')
+        self.assertTrue(self.fs.exists('foodir'))
+        self.assertTrue(self.fs.exists(self.fs.join('foodir', 'baz')))
+        self.fs.rmtree('foodir')
+        self.assertFalse(self.fs.exists('foodir'))
+        self.assertFalse(self.fs.exists(self.fs.join('foodir', 'baz')))
+
+
 class RealFileSystemTest(unittest.TestCase, GenericFileSystemTests):
     def setUp(self):
         self.fs = FileSystem()
