@@ -112,6 +112,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_thread_impl.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_platform_file.h"
@@ -406,7 +407,9 @@ RenderProcessHostImpl::RenderProcessHostImpl(
   // Initialize |child_process_activity_time_| to a reasonable value.
   mark_child_process_activity_time();
 
-  if (!GetBrowserContext()->IsOffTheRecord()) {
+  if (!GetBrowserContext()->IsOffTheRecord() &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGpuShaderDiskCache)) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                             base::Bind(&CacheShaderInfo, GetID(),
                                        storage_partition_impl_->GetPath()));
@@ -432,8 +435,11 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
   ClearTransportDIBCache();
   UnregisterHost(GetID());
 
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&RemoveShaderInfo, GetID()));
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableGpuShaderDiskCache)) {
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(&RemoveShaderInfo, GetID()));
+  }
 }
 
 void RenderProcessHostImpl::EnableSendQueue() {

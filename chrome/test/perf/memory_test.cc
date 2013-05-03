@@ -77,6 +77,7 @@ class MemoryTest : public UIPerfTest {
       // Use the playback cache, but don't use playback events.
       launch_arguments_.AppendSwitch(switches::kPlaybackMode);
       launch_arguments_.AppendSwitch(switches::kNoEvents);
+      launch_arguments_.AppendSwitch(switches::kDisableGpuShaderDiskCache);
 
       // Get the specified user data dir (optional)
       base::FilePath profile_dir =
