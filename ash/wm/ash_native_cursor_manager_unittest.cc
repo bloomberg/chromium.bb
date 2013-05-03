@@ -118,16 +118,11 @@ TEST_F(AshNativeCursorManagerTest, SetDeviceScaleFactorAndRotation) {
   EXPECT_EQ(gfx::Display::ROTATE_270, test_api.GetDisplay().rotation());
 }
 
-#if defined(OS_WIN)
-// Temporarily disabled for windows. See crbug.com/112222.
-#define MAYBE_DisabledMouseEventsLocation DISABLED_DisabledMouseEventsLocation
-#else
-#define MAYBE_DisabledMouseEventsLocation DisabledMouseEventsLocation
-#endif  // defined(OS_WIN)
-
+// Disabled for Windows. See crbug.com/112222.
+// Disabled for ChromeOS. See crbug.com/237659
 // Verifies that RootWindow generates a mouse event located outside of a window
 // when mouse events are disabled.
-TEST_F(AshNativeCursorManagerTest, MAYBE_DisabledMouseEventsLocation) {
+TEST_F(AshNativeCursorManagerTest, DISABLED_DisabledMouseEventsLocation) {
   scoped_ptr<MouseEventLocationDelegate> delegate(
       new MouseEventLocationDelegate());
   const int kWindowWidth = 123;
