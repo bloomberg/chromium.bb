@@ -129,17 +129,14 @@
                 ],
               },
             ],
-          }
-        ],
-        ['OS == "ios"',
-          {
+          }, {  # else OS == "ios"
             'actions': [
               {
                 'message': 'TEMPORARY: Copying url_unittests to googleurl_unittests',
                 'action_name': 'copy_url_unittests',
                 'variables': {
-                  'source_file': '<(PRODUCT_DIR)/url_unittests.app/url_unittests',
-                  'dest_file': '<(PRODUCT_DIR)/googleurl_unittests.app/googleurl_unittests',
+                  'source_file': '<(PRODUCT_DIR)/url_unittests.app/',
+                  'dest_file': '<(PRODUCT_DIR)/googleurl_unittests.app',
                 },
                 'inputs': [
                   '../build/cp.py',
@@ -149,7 +146,7 @@
                   '<(dest_file)',
                 ],
                 'action': [
-                  'python', '../build/cp.py', '<(source_file)', '<(dest_file)',
+                  'cp', '-R', '<(source_file)', '<(dest_file)',
                 ],
               },
             ],
