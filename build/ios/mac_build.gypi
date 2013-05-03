@@ -39,6 +39,10 @@
 # }
 {
   'variables': {
+    'variables': {
+     'parent_generator%': '<(GENERATOR)',
+    },
+    'parent_generator%': '<(parent_generator)',
     # Common ninja command line flags.
     'ninja_cmd': [
       # Bounce through clean_env to clean up the environment so things
@@ -67,6 +71,7 @@
       '-Dios_mac_build=1',
       # Pass through the Mac SDK version.
       '-Dmac_sdk=<(mac_sdk)',
+      '-Dparent_generator=<(parent_generator)'
     ],
 
     # Rerun gyp for each of the projects needed. This is what actually

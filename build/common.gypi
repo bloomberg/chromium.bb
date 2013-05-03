@@ -4032,17 +4032,22 @@
                 },
               },
             },
-            'xcode_settings': {
-              'conditions': [
-                ['chromium_ios_signing', {
-                  # iOS SDK wants everything for device signed.
-                  'CODE_SIGN_IDENTITY[sdk=iphoneos*]': 'iPhone Developer',
-                }, {
-                  'CODE_SIGNING_REQUIRED': 'NO',
-                  'CODE_SIGN_IDENTITY[sdk=iphoneos*]': '',
-                }],
-              ],
-            },
+            'conditions': [
+              # TODO(justincohen): ninja builds don't support signing yet.
+              ['"<(GENERATOR)"!="ninja"', {
+                'xcode_settings': {
+                  'conditions': [
+                    ['chromium_ios_signing', {
+                      # iOS SDK wants everything for device signed.
+                      'CODE_SIGN_IDENTITY[sdk=iphoneos*]': 'iPhone Developer',
+                    }, {
+                      'CODE_SIGNING_REQUIRED': 'NO',
+                      'CODE_SIGN_IDENTITY[sdk=iphoneos*]': '',
+                    }],
+                  ],
+                },
+              }],
+            ],
           }],
         ],  # target_conditions
       },  # target_defaults
@@ -4391,7 +4396,14 @@
       ['OS=="ios"', {
         'conditions': [
           ['ios_sdk_path==""', {
-            'SDKROOT': 'iphoneos<(ios_sdk)',  # -isysroot
+            'conditions': [
+              # TODO(justincohen): Ninja only supports simulator for now.
+              ['"<(GENERATOR)"=="ninja"', {
+                'SDKROOT': 'iphonesimulator<(ios_sdk)',  # -isysroot
+              }, {
+                'SDKROOT': 'iphoneos<(ios_sdk)',  # -isysroot
+              }],
+            ],
           }, {
             'SDKROOT': '<(ios_sdk_path)',  # -isysroot
           }],
