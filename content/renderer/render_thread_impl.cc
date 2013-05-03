@@ -622,6 +622,98 @@ void RenderThreadImpl::WidgetRestored() {
   ScheduleIdleHandler(kLongIdleHandlerDelayMs);
 }
 
+static void AdjustRuntimeFeatureDefaultsForPlatform() {
+#if defined(OS_ANDROID) && !defined(GOOGLE_TV)
+  WebRuntimeFeatures::enableMediaSource(false);
+#endif
+
+#if defined(OS_ANDROID)
+  WebRuntimeFeatures::enableWebAudio(false);
+  // Web Speech API Speech recognition is not implemented on Android yet.
+  WebRuntimeFeatures::enableScriptedSpeech(false);
+  // Android does not support the Gamepad API.
+  WebRuntimeFeatures::enableGamepad(false);
+  // input[type=week] in Android is incomplete. crbug.com/135938
+  WebRuntimeFeatures::enableInputTypeWeek(false);
+#endif
+}
+
+static void AdjustRuntimeFeaturesFromArgs(const CommandLine& command_line) {
+  if (command_line.HasSwitch(switches::kDisableDatabases))
+    WebRuntimeFeatures::enableDatabase(false);
+
+  if (command_line.HasSwitch(switches::kDisableApplicationCache))
+    WebRuntimeFeatures::enableApplicationCache(false);
+
+  if (command_line.HasSwitch(switches::kDisableDesktopNotifications))
+    WebRuntimeFeatures::enableNotifications(false);
+
+  if (command_line.HasSwitch(switches::kDisableLocalStorage))
+    WebRuntimeFeatures::enableLocalStorage(false);
+
+  if (command_line.HasSwitch(switches::kDisableSessionStorage))
+    WebRuntimeFeatures::enableSessionStorage(false);
+
+  if (command_line.HasSwitch(switches::kDisableGeolocation))
+    WebRuntimeFeatures::enableGeolocation(false);
+
+#if !defined(OS_ANDROID) || defined(GOOGLE_TV)
+  if (command_line.HasSwitch(switches::kDisableMediaSource))
+    WebRuntimeFeatures::enableMediaSource(false);
+#endif
+
+#if defined(OS_ANDROID)
+  if (command_line.HasSwitch(switches::kDisableWebRTC))
+    WebRuntimeFeatures::enableMediaStream(false);
+#endif
+
+#if defined(OS_ANDROID)
+  if (command_line.HasSwitch(switches::kDisableWebRTC))
+    WebRuntimeFeatures::enablePeerConnection(false);
+#endif
+
+  if (command_line.HasSwitch(switches::kDisableFullScreen))
+    WebRuntimeFeatures::enableFullScreenAPI(false);
+
+  if (command_line.HasSwitch(switches::kDisableEncryptedMedia))
+    WebRuntimeFeatures::enableEncryptedMedia(false);
+
+#if defined(OS_ANDROID)
+  if (command_line.HasSwitch(switches::kEnableWebAudio))
+    WebRuntimeFeatures::enableWebAudio(true);
+#else
+  if (command_line.HasSwitch(switches::kDisableWebAudio))
+    WebRuntimeFeatures::enableWebAudio(false);
+#endif
+
+  if (command_line.HasSwitch(switches::kEnableWebMIDI))
+    WebRuntimeFeatures::enableWebMIDI(true);
+
+  if (command_line.HasSwitch(switches::kEnableDeviceMotion))
+      WebRuntimeFeatures::enableDeviceMotion(true);
+
+  if (command_line.HasSwitch(switches::kDisableDeviceOrientation))
+    WebRuntimeFeatures::enableDeviceOrientation(false);
+
+  if (command_line.HasSwitch(switches::kDisableSpeechInput))
+    WebRuntimeFeatures::enableSpeechInput(false);
+
+  if (command_line.HasSwitch(switches::kDisableFileSystem))
+    WebRuntimeFeatures::enableFileSystem(false);
+
+  if (command_line.HasSwitch(switches::kDisableJavaScriptI18NAPI))
+    WebRuntimeFeatures::enableJavaScriptI18NAPI(false);
+
+  if (command_line.HasSwitch(switches::kEnableExperimentalWebSocket))
+    WebRuntimeFeatures::enableExperimentalWebSocket(true);
+
+  if (command_line.HasSwitch(switches::kEnableExperimentalCanvasFeatures))
+    WebRuntimeFeatures::enableExperimentalCanvasFeatures(true);
+
+  if (command_line.HasSwitch(switches::kEnableSpeechSynthesis))
+    WebRuntimeFeatures::enableSpeechSynthesis(true);
+}
+
 void RenderThreadImpl::EnsureWebKitInitialized() {
   if (webkit_platform_support_)
     return;
@@ -676,119 +768,34 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       new WebDatabaseObserverImpl(sync_message_filter()));
   WebKit::WebDatabase::setObserver(web_database_observer_impl_.get());
 
+  // Default values for the "stable" feature configuration.
   WebRuntimeFeatures::enableDatabase(true);
-  if (command_line.HasSwitch(switches::kDisableDatabases))
-    WebRuntimeFeatures::enableDatabase(false);
-
   WebRuntimeFeatures::enableApplicationCache(true);
-  if (command_line.HasSwitch(switches::kDisableApplicationCache))
-    WebRuntimeFeatures::enableApplicationCache(false);
-
   WebRuntimeFeatures::enableNotifications(true);
-  if (command_line.HasSwitch(switches::kDisableDesktopNotifications))
-    WebRuntimeFeatures::enableNotifications(false);
-
   WebRuntimeFeatures::enableLocalStorage(true);
-  if (command_line.HasSwitch(switches::kDisableLocalStorage))
-    WebRuntimeFeatures::enableLocalStorage(false);
-
   WebRuntimeFeatures::enableSessionStorage(true);
-  if (command_line.HasSwitch(switches::kDisableSessionStorage))
-    WebRuntimeFeatures::enableSessionStorage(false);
-
   WebRuntimeFeatures::enableIndexedDatabase(true);
-
   WebRuntimeFeatures::enableGeolocation(true);
-  if (command_line.HasSwitch(switches::kDisableGeolocation))
-    WebRuntimeFeatures::enableGeolocation(false);
-
-#if defined(OS_ANDROID) && !defined(GOOGLE_TV)
-  WebRuntimeFeatures::enableMediaSource(false);
-#else
   WebRuntimeFeatures::enableMediaSource(true);
-  if (command_line.HasSwitch(switches::kDisableMediaSource))
-    WebRuntimeFeatures::enableMediaSource(false);
-#endif
-
-  WebRuntimeFeatures::enableMediaPlayer(
-      media::IsMediaLibraryInitialized());
-
+  WebRuntimeFeatures::enableMediaPlayer(true);
   WebRuntimeFeatures::enableMediaStream(true);
-#if defined(OS_ANDROID)
-  if (command_line.HasSwitch(switches::kDisableWebRTC))
-    WebRuntimeFeatures::enableMediaStream(false);
-#endif
-
   WebRuntimeFeatures::enablePeerConnection(true);
-#if defined(OS_ANDROID)
-  if (command_line.HasSwitch(switches::kDisableWebRTC))
-    WebRuntimeFeatures::enablePeerConnection(false);
-#endif
-
   WebRuntimeFeatures::enableFullScreenAPI(true);
-  if (command_line.HasSwitch(switches::kDisableFullScreen))
-    WebRuntimeFeatures::enableFullScreenAPI(false);
-
   WebRuntimeFeatures::enableEncryptedMedia(true);
-  if (command_line.HasSwitch(switches::kDisableEncryptedMedia))
-    WebRuntimeFeatures::enableEncryptedMedia(false);
-
-#if defined(OS_ANDROID)
-  WebRuntimeFeatures::enableWebAudio(false);
-  if (command_line.HasSwitch(switches::kEnableWebAudio) &&
-      media::IsMediaLibraryInitialized())
-    WebRuntimeFeatures::enableWebAudio(true);
-#else
   WebRuntimeFeatures::enableWebAudio(true);
-  if (command_line.HasSwitch(switches::kDisableWebAudio) ||
-      !media::IsMediaLibraryInitialized())
-    WebRuntimeFeatures::enableWebAudio(false);
-#endif
-
   WebRuntimeFeatures::enableWebMIDI(false);
-  if (command_line.HasSwitch(switches::kEnableWebMIDI))
-    WebRuntimeFeatures::enableWebMIDI(true);
-
   WebRuntimeFeatures::enableDeviceMotion(false);
-  if (command_line.HasSwitch(switches::kEnableDeviceMotion))
-      WebRuntimeFeatures::enableDeviceMotion(true);
-
   WebRuntimeFeatures::enableDeviceOrientation(true);
-  if (command_line.HasSwitch(switches::kDisableDeviceOrientation))
-    WebRuntimeFeatures::enableDeviceOrientation(false);
-
   WebRuntimeFeatures::enableSpeechInput(true);
-  if (command_line.HasSwitch(switches::kDisableSpeechInput))
-    WebRuntimeFeatures::enableSpeechInput(false);
-
-#if defined(OS_ANDROID)
-  // Web Speech API Speech recognition is not implemented on Android yet.
-  WebRuntimeFeatures::enableScriptedSpeech(false);
-#else
   WebRuntimeFeatures::enableScriptedSpeech(true);
-#endif
-
-#if defined(OS_ANDROID)
-  // Android does not support the Gamepad API.
-  WebRuntimeFeatures::enableGamepad(false);
-#else
   WebRuntimeFeatures::enableGamepad(true);
-#endif
-
-#if defined(OS_ANDROID)
-  // input[type=week] in Android is incomplete. crbug.com/135938
-  WebRuntimeFeatures::enableInputTypeWeek(false);
-#endif
-
   WebRuntimeFeatures::enableFileSystem(true);
-  if (command_line.HasSwitch(switches::kDisableFileSystem))
-    WebRuntimeFeatures::enableFileSystem(false);
-
   WebRuntimeFeatures::enableJavaScriptI18NAPI(true);
-  if (command_line.HasSwitch(switches::kDisableJavaScriptI18NAPI))
-    WebRuntimeFeatures::enableJavaScriptI18NAPI(false);
-
   WebRuntimeFeatures::enableQuota(true);
+  WebRuntimeFeatures::enableSeamlessIFrames(false);
+  WebRuntimeFeatures::enableExperimentalWebSocket(false);
+  WebRuntimeFeatures::enableExperimentalCanvasFeatures(false);
+  WebRuntimeFeatures::enableSpeechSynthesis(false);
 
   if (command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures)) {
     WebRuntimeFeatures::enableStyleScoped(true);
@@ -799,27 +806,21 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
     WebRuntimeFeatures::enableCSSCompositing(true);
     WebRuntimeFeatures::enableDialogElement(true);
     WebRuntimeFeatures::enableFontLoadEvents(true);
+    WebRuntimeFeatures::enableSeamlessIFrames(true);
   }
 
-  WebRuntimeFeatures::enableSeamlessIFrames(false);
-  if (command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures))
-      WebRuntimeFeatures::enableSeamlessIFrames(true);
+  AdjustRuntimeFeatureDefaultsForPlatform();
+  AdjustRuntimeFeaturesFromArgs(command_line);
 
   // Enabled by default for testing.
   // TODO(urvang): Go back to using the command-line option after a few days.
+  // https://code.google.com/p/chromium/issues/detail?id=234437
   WebRuntimeFeatures::enableWebPInAcceptHeader(true);
 
-  WebRuntimeFeatures::enableExperimentalWebSocket(false);
-  if (command_line.HasSwitch(switches::kEnableExperimentalWebSocket))
-    WebRuntimeFeatures::enableExperimentalWebSocket(true);
-
-  WebRuntimeFeatures::enableExperimentalCanvasFeatures(false);
-  if (command_line.HasSwitch(switches::kEnableExperimentalCanvasFeatures))
-    WebRuntimeFeatures::enableExperimentalCanvasFeatures(true);
-
-  WebRuntimeFeatures::enableSpeechSynthesis(false);
-  if (command_line.HasSwitch(switches::kEnableSpeechSynthesis))
-      WebRuntimeFeatures::enableSpeechSynthesis(true);
+  if (!media::IsMediaLibraryInitialized()) {
+    WebRuntimeFeatures::enableMediaPlayer(false);
+    WebRuntimeFeatures::enableWebAudio(false);
+  }
 
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, WebKitInitialized());
 
