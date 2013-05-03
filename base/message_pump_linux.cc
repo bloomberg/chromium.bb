@@ -44,7 +44,6 @@ void MessagePumpLinux::RemoveDispatcherForRootWindow(
 }
 
 bool MessagePumpLinux::Dispatch(const base::NativeEvent& dev) {
-  // fprintf(stderr, "MessagePumpLinux::Dispatch... got event\n");
   if (dispatcher_.size() > 0)
     return dispatcher_[0]->Dispatch(dev);
   else
