@@ -109,6 +109,8 @@ def _GetDataFilesForTestSuite(test_suite_basename):
     ]
   elif test_suite_basename == 'content_unittests':
     return [
+        'content/browser/gpu/gpu_driver_bug_list.json',
+        'content/browser/gpu/gpu_switching_list.json',
         'content/browser/gpu/software_rendering_list.json',
         'content/test/data/gpu/webgl_conformance_test_expectations.txt',
         'net/data/ssl/certificates/',

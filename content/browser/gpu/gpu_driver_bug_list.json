@@ -38,27 +38,8 @@
 // 16. "gpu_count" is a INT structure (defined below).
 // 17  "cpu_info" is a STRING structure (defined below).
 // 18. "exceptions" is a list of entries.
-// 19. "features" is a list of driver bug types, including
-//         "clear_alpha_in_readpixels",
-//         "clear_uniforms_before_program_use",
-//         "delete_instead_of_resize_fbo",
-//         "disable_angle_framebuffer_multisample",
-//         "disable_depth_texture",
-//         "disable_ext_occlusion_query",
-//         "enable_chromium_fast_npot_mo8_textures",
-//         "exit_on_context_lost",
-//         "flush_on_context_switch",
-//         "max_cube_map_texture_size_limit_1024",
-//         "max_cube_map_texture_size_limit_4096",
-//         "max_cube_map_texture_size_limit_512",
-//         "max_texture_size_limit_4096",
-//         "needs_glsl_built_in_function_emulation",
-//         "needs_offscreen_buffer_workaround",
-//         "restore_scissor_on_fbo_change",
-//         "reverse_point_sprite_coord_origin",
-//         "set_texture_filter_before_generating_mipmap",
-//         "use_client_side_arrays_for_stream_buffers",
-//         "use_current_program_after_successful_link".
+// 19. "features" is a list of driver bug types. For a list of supported types,
+//     see src/gpu/command_buffer/service/gpu_driver_bug_workaround_type.h
 //     This field is mandatory.
 // 20. "description" has the description of the entry.
 // 21. "webkit_bugs" is an array of associated webkit bug numbers.
@@ -91,7 +72,7 @@
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "1.2",
+  "version": "1.3",
   "entries": [
     {
       "id": 1,
@@ -220,7 +201,7 @@
       ]
     },
     {
-      "id": 12,
+      "id": 13,
       "os": {
         "type": "macosx",
         "version": {
@@ -234,7 +215,7 @@
       ]
     },
     {
-      "id": 13,
+      "id": 14,
       "os": {
         "type": "macosx"
       },
@@ -245,7 +226,7 @@
       ]
     },
     {
-      "id": 14,
+      "id": 15,
       "description": "Some Android Qualcomm drivers falsely report GL_ANGLE_framebuffer_multisample",
       "cr_bugs": [165736],
       "os": {
@@ -260,7 +241,7 @@
       ]
     },
     {
-      "id": 15,
+      "id": 16,
       "description": "Intel drivers on Linux appear to be buggy",
       "os": {
         "type": "linux"
@@ -271,7 +252,7 @@
       ]
     },
     {
-      "id": 16,
+      "id": 17,
       "description": "Some drivers are unable to reset the D3D device in the GPU process sandbox",
       "os": {
         "type": "win"
@@ -281,7 +262,7 @@
       ]
     },
     {
-      "id": 17,
+      "id": 18,
       "description": "Everything except async + NPOT + multiple-of-8 textures are brutally slow for Imagination drivers",
       "os": {
         "type": "android"
@@ -295,7 +276,7 @@
       ]
     },
     {
-      "id": 17,
+      "id": 19,
       "os": {
         "type": "android"
       },
@@ -308,7 +289,7 @@
       ]
     },
     {
-      "id": 18,
+      "id": 20,
       "description": "Disable EXT_draw_buffers on GeForce GT 650M on Mac OS X due to driver bugs.",
       "os": {
         "type": "macosx"
