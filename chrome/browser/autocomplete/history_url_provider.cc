@@ -324,9 +324,7 @@ HistoryURLProvider::HistoryURLProvider(AutocompleteProviderListener* listener,
           !OmniboxFieldTrial::
               InHUPCreateShorterMatchFieldTrialExperimentGroup()),
       search_url_database_(
-          !OmniboxFieldTrial::InHQPReplaceHUPScoringFieldTrial() ||
-          !OmniboxFieldTrial::
-              InHQPReplaceHUPScoringFieldTrialExperimentGroup()) {
+          !OmniboxFieldTrial::InHQPReplaceHUPScoringExperimentGroup()) {
 }
 
 // static

@@ -18,12 +18,11 @@ namespace {
 
 // Field trial names.
 const char kDisallowInlineHQPFieldTrialName[] = "OmniboxDisallowInlineHQP";
-const char kHQPNewScoringFieldTrialName[] = "OmniboxHQPNewScoringMax1400";
+const char kHQPReplaceHUPAndNewScoringFieldTrialName[] =
+    "OmniboxReplaceHUPAndNewScoring";
 const char kHUPCullRedirectsFieldTrialName[] = "OmniboxHUPCullRedirects";
 const char kHUPCreateShorterMatchFieldTrialName[] =
     "OmniboxHUPCreateShorterMatch";
-const char kHQPReplaceHUPScoringFieldTrialName[] =
-    "OmniboxHQPReplaceHUPProhibitTrumpingInlineableResult";
 const char kStopTimerFieldTrialName[] = "OmniboxStopTimer";
 
 // The autocomplete dynamic field trial name prefix.  Each field trial is
@@ -40,12 +39,6 @@ const int kMaxAutocompleteDynamicFieldTrials = 5;
 const base::FieldTrial::Probability kDisallowInlineHQPFieldTrialDivisor = 100;
 const base::FieldTrial::Probability
     kDisallowInlineHQPFieldTrialExperimentFraction = 0;
-
-// For History Quick Provider new scoring field trial, put 0% ( = 0/100 )
-// of the users in the new scoring experiment group.
-const base::FieldTrial::Probability kHQPNewScoringFieldTrialDivisor = 100;
-const base::FieldTrial::Probability
-    kHQPNewScoringFieldTrialExperimentFraction = 0;
 
 // For HistoryURL provider cull redirects field trial, put 0% ( = 0/100 )
 // of the users in the don't-cull-redirects experiment group.
@@ -65,15 +58,6 @@ const base::FieldTrial::Probability
 const base::FieldTrial::Probability
     kHUPCreateShorterMatchFieldTrialExperimentFraction = 0;
 
-// For the field trial that removes searching/scoring URLs from
-// HistoryURL provider and adds a HistoryURL-provider-like scoring
-// mode to HistoryQuick provider, put 0% ( = 0/100 ) of the users in
-// the experiment group.
-const base::FieldTrial::Probability
-    kHQPReplaceHUPScoringFieldTrialDivisor = 100;
-const base::FieldTrial::Probability
-    kHQPReplaceHUPScoringFieldTrialExperimentFraction = 0;
-
 // Experiment group names.
 
 const char kStopTimerExperimentGroupName[] = "UseStopTimer";
@@ -90,19 +74,12 @@ bool static_field_trials_initialized = false;
 // experiment group.
 int disallow_inline_hqp_experiment_group = 0;
 
-// Field trial ID for the History Quick Provider new scoring experiment group.
-int hqp_new_scoring_experiment_group = 0;
-
 // Field trial ID for the HistoryURL provider cull redirects experiment group.
 int hup_dont_cull_redirects_experiment_group = 0;
 
 // Field trial ID for the HistoryURL provider create shorter match
 // experiment group.
 int hup_dont_create_shorter_match_experiment_group = 0;
-
-// Field trial ID for the HistoryQuick provider replaces HistoryURL provider
-// experiment group.
-int hqp_replace_hup_scoring_experiment_group = 0;
 
 
 // Concatenates the autocomplete dynamic field trial prefix with a field trial
@@ -134,15 +111,6 @@ void OmniboxFieldTrial::ActivateStaticTrials() {
   disallow_inline_hqp_experiment_group = trial->AppendGroup("DisallowInline",
       kDisallowInlineHQPFieldTrialExperimentFraction);
 
-  // Create inline History Quick Provider new scoring field trial.
-  // Make it expire on April 14, 2013.
-  trial = base::FieldTrialList::FactoryGetFieldTrial(
-      kHQPNewScoringFieldTrialName, kHQPNewScoringFieldTrialDivisor,
-      "Standard", 2013, 4, 14, NULL);
-  trial->UseOneTimeRandomization();
-  hqp_new_scoring_experiment_group = trial->AppendGroup("NewScoring",
-      kHQPNewScoringFieldTrialExperimentFraction);
-
   // Create the HistoryURL provider cull redirects field trial.
   // Make it expire on March 1, 2013.
   trial = base::FieldTrialList::FactoryGetFieldTrial(
@@ -162,17 +130,6 @@ void OmniboxFieldTrial::ActivateStaticTrials() {
   hup_dont_create_shorter_match_experiment_group =
       trial->AppendGroup("DontCreateShorterMatch",
                          kHUPCreateShorterMatchFieldTrialExperimentFraction);
-
-  // Create the field trial that makes HistoryQuick provider score
-  // some results like HistoryURL provider and simultaneously disable
-  // HistoryURL provider from searching the URL database.  Make it
-  // expire on June 23, 2013.
-  trial = base::FieldTrialList::FactoryGetFieldTrial(
-    kHQPReplaceHUPScoringFieldTrialName, kHQPReplaceHUPScoringFieldTrialDivisor,
-      "Standard", 2013, 6, 23, NULL);
-  trial->UseOneTimeRandomization();
-  hqp_replace_hup_scoring_experiment_group = trial->AppendGroup("HQPReplaceHUP",
-      kHQPReplaceHUPScoringFieldTrialExperimentFraction);
 
   static_field_trials_initialized = true;
 }
@@ -236,18 +193,16 @@ void OmniboxFieldTrial::GetActiveSuggestFieldTrialHashes(
   }
 }
 
-bool OmniboxFieldTrial::InHQPNewScoringFieldTrial() {
-  return base::FieldTrialList::TrialExists(kHQPNewScoringFieldTrialName);
+bool OmniboxFieldTrial::InHQPNewScoringExperimentGroup() {
+  return base::FieldTrialList::FindFullName(
+              kHQPReplaceHUPAndNewScoringFieldTrialName).find(
+              "NewScoring") != std::string::npos;
 }
 
-bool OmniboxFieldTrial::InHQPNewScoringFieldTrialExperimentGroup() {
-  if (!InHQPNewScoringFieldTrial())
-    return false;
-
-  // Return true if we're in the experiment group.
-  const int group = base::FieldTrialList::FindValue(
-      kHQPNewScoringFieldTrialName);
-  return group == hqp_new_scoring_experiment_group;
+bool OmniboxFieldTrial::InHQPReplaceHUPScoringExperimentGroup() {
+  return base::FieldTrialList::FindFullName(
+              kHQPReplaceHUPAndNewScoringFieldTrialName).find(
+              "HQPReplaceHUP") != std::string::npos;
 }
 
 bool OmniboxFieldTrial::InHUPCullRedirectsFieldTrial() {
@@ -277,20 +232,6 @@ bool OmniboxFieldTrial::InHUPCreateShorterMatchFieldTrialExperimentGroup() {
   const int group = base::FieldTrialList::FindValue(
       kHUPCreateShorterMatchFieldTrialName);
   return group == hup_dont_create_shorter_match_experiment_group;
-}
-
-bool OmniboxFieldTrial::InHQPReplaceHUPScoringFieldTrial() {
-  return base::FieldTrialList::TrialExists(kHQPReplaceHUPScoringFieldTrialName);
-}
-
-bool OmniboxFieldTrial::InHQPReplaceHUPScoringFieldTrialExperimentGroup() {
-  if (!InHQPReplaceHUPScoringFieldTrial())
-    return false;
-
-  // Return true if we're in the experiment group.
-  const int group = base::FieldTrialList::FindValue(
-      kHQPReplaceHUPScoringFieldTrialName);
-  return group == hqp_replace_hup_scoring_experiment_group;
 }
 
 bool OmniboxFieldTrial::InStopTimerFieldTrialExperimentGroup() {

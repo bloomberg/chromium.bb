@@ -55,19 +55,22 @@ class OmniboxFieldTrial {
       std::vector<uint32>* field_trial_hash);
 
   // ---------------------------------------------------------
-  // For the History Quick Provider new scoring field trial.
+  // For the HistoryQuick provider field trial that combines replacing
+  // the HistoryURL provider and turning on "new scoring" in HistoryQuick
+  // provider.
 
-  // Returns whether the user is in any field trial group for this
-  // field trial.  False indicates that the field trial wasn't
-  // successfully created for some reason.
-  static bool InHQPNewScoringFieldTrial();
+  // Returns whether the user should get "new scoring" in HistoryQuick
+  // provider or the default scoring.  "New scoring" is based on the
+  // frequency of recent visits to the URL, a.k.a. "frecency"
+  // scoring).
+  static bool InHQPNewScoringExperimentGroup();
 
-  // Returns whether the user should get the experimental setup or
-  // the default setup for this field trial.  The experiment
-  // group uses "new scoring" (a complex multiplicative calculation
-  // that, among other differences from "old scoring", uses word
-  // break information).
-  static bool InHQPNewScoringFieldTrialExperimentGroup();
+  // Returns whether the user experiment the replace HUP behavior or
+  // the default behavior.  The experiment group simultaneously
+  // disables HistoryURL provider from searching the URL database and
+  // directs HistoryQuick provider to calculate both HUP-style and
+  // HQP-style scores for matches, then return whichever is larger.
+  static bool InHQPReplaceHUPScoringExperimentGroup();
 
   // ---------------------------------------------------------
   // For the HistoryURL provider disable culling redirects field trial.
@@ -91,22 +94,6 @@ class OmniboxFieldTrial {
   // Returns whether we should disable creating a shorter match in
   // HistoryURL provider.
   static bool InHUPCreateShorterMatchFieldTrialExperimentGroup();
-
-  // ---------------------------------------------------------
-  // For the HistoryQuick provider replace HistoryURL provider field trial.
-
-  // Returns whether the user is in any field trial group for this
-  // field trial.  False indicates that the field trial wasn't
-  // successfully created for some reason.
-  static bool InHQPReplaceHUPScoringFieldTrial();
-
-  // Returns whether the user should get the experimental setup or the
-  // default setup for this field trial.  The experiment group
-  // simultaneously disables HistoryURL provider from searching the
-  // URL database and directs HistoryQuick provider to calculate both
-  // HUP-style and HQP-style scores for matches, then return whichever
-  // is larger.
-  static bool InHQPReplaceHUPScoringFieldTrialExperimentGroup();
 
   // ---------------------------------------------------------
   // For the AutocompleteController "stop timer" field trial.

@@ -711,14 +711,12 @@ void ScoredHistoryMatch::InitializeNewScoringField() {
   DCHECK(!content::BrowserThread::IsWellKnownThread(
              content::BrowserThread::UI) ||
          content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  use_new_scoring = OmniboxFieldTrial::InHQPNewScoringFieldTrial() &&
-      OmniboxFieldTrial::InHQPNewScoringFieldTrialExperimentGroup();
+  use_new_scoring = OmniboxFieldTrial::InHQPNewScoringExperimentGroup();
 }
 
 void ScoredHistoryMatch::InitializeAlsoDoHUPLikeScoringFieldAndMaxScoreField() {
   also_do_hup_like_scoring =
-      OmniboxFieldTrial::InHQPReplaceHUPScoringFieldTrial() &&
-      OmniboxFieldTrial::InHQPReplaceHUPScoringFieldTrialExperimentGroup();
+      OmniboxFieldTrial::InHQPReplaceHUPScoringExperimentGroup();
   // When doing HUP-like scoring, don't allow a non-inlineable match
   // to beat the score of good inlineable matches.  This is a problem
   // because if a non-inlineable match ends up with the highest score
