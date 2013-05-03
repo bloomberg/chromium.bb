@@ -777,6 +777,14 @@ void GpuProcessHost::OnChannelEstablished(
     const IPC::ChannelHandle& channel_handle) {
   TRACE_EVENT0("gpu", "GpuProcessHost::OnChannelEstablished");
 
+  if (channel_requests_.empty()) {
+    // This happens when GPU process is compromised.
+    RouteOnUIThread(GpuHostMsg_OnLogMessage(
+        logging::LOG_WARNING,
+        "WARNING",
+        "Received a ChannelEstablished message but no requests in queue."));
+    return;
+  }
   EstablishChannelCallback callback = channel_requests_.front();
   channel_requests_.pop();
 
