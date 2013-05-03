@@ -4,7 +4,7 @@
 
 #include "base/android/base_jni_registrar.h"
 
-#include "base/android/activity_status.h"
+#include "base/basictypes.h"
 #include "base/android/build_info.h"
 #include "base/android/cpu_features.h"
 #include "base/android/important_file_writer_android.h"
@@ -13,7 +13,6 @@
 #include "base/android/path_service_android.h"
 #include "base/android/path_utils.h"
 #include "base/android/thread_utils.h"
-#include "base/basictypes.h"
 #include "base/debug/trace_event.h"
 #include "base/message_pump_android.h"
 #include "base/power_monitor/power_monitor_android.h"
@@ -22,7 +21,6 @@ namespace base {
 namespace android {
 
 static RegistrationMethod kBaseRegisteredMethods[] = {
-  { "ActivityStatus", base::android::ActivityStatus::RegisterBindings },
   { "BuildInfo", base::android::BuildInfo::RegisterBindings },
   { "CpuFeatures", base::android::RegisterCpuFeatures },
   { "ImportantFileWriterAndroid",

@@ -33,8 +33,6 @@
           'allocator/allocator_extension.h',
           'allocator/type_profiler_control.cc',
           'allocator/type_profiler_control.h',
-          'android/activity_status.cc',
-          'android/activity_status.h',
           'android/base_jni_registrar.cc',
           'android/base_jni_registrar.h',
           'android/build_info.cc',
