@@ -38,15 +38,19 @@ class CONTENT_EXPORT OfflinePolicy {
   // policy object (e.g. in the case of a main frame load).
   int GetAdditionalLoadFlags(int current_flags, bool reset_state);
 
-  // Incorporate online/offline information from a completed request.
-  void UpdateStateForCompletedRequest(
+  // Incorporate online/offline information from a successfully started request.
+  void UpdateStateForSuccessfullyStartedRequest(
       const net::HttpResponseInfo& response_info);
 
 private:
   enum State { INIT, ONLINE, OFFLINE };
 
+  void RecordAndResetStats();
+
   bool enabled_;
   State state_;
+  int resource_loads_initiated_;
+  int resource_loads_successfully_started_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePolicy);
 };

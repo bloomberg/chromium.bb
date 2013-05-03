@@ -716,8 +716,8 @@ void ResourceDispatcherHostImpl::DidReceiveResponse(ResourceLoader* loader) {
   // request.
   GlobalRoutingID routing_id(info->GetGlobalRoutingID());
   DCHECK(offline_policy_map_.end() != offline_policy_map_.find(routing_id));
-  offline_policy_map_[routing_id]->
-      UpdateStateForCompletedRequest(loader->request()->response_info());
+  offline_policy_map_[routing_id]->UpdateStateForSuccessfullyStartedRequest(
+      loader->request()->response_info());
 
   int render_process_id, render_view_id;
   if (!info->GetAssociatedRenderView(&render_process_id, &render_view_id))

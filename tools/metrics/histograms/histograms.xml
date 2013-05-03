@@ -4429,6 +4429,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="OfflinePolicy.SuccessfulResourceLoadPercentage" units="%">
+  <summary>
+    When a page is loaded in offline mode, the percentage of resources on that
+    page that were successfully loaded.
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.AggressiveHistoryURLProviderFieldTrialBeacon"
     enum="OmniboxAggressiveHistoryURLProviderFieldTrialBeacon">
   <obsolete>

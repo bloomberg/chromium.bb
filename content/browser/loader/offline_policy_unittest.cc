@@ -32,7 +32,7 @@ class OfflinePolicyTest : public testing::Test {
 // Confirm that the initial state of an offline object is to return
 // LOAD_FROM_CACHE_IF_OFFLINE until it gets changed.
 TEST_F(OfflinePolicyTest, InitialState) {
-  // Two loads without any reset, no UpdateStateForCompletedRequest.
+  // Two loads without any reset, no UpdateStateForSuccessfullyStartedRequest.
   EXPECT_EQ(net::LOAD_FROM_CACHE_IF_OFFLINE,
             policy_->GetAdditionalLoadFlags(0, true));
   EXPECT_EQ(net::LOAD_FROM_CACHE_IF_OFFLINE,
@@ -44,7 +44,7 @@ TEST_F(OfflinePolicyTest, CompletedUncertain) {
   EXPECT_EQ(net::LOAD_FROM_CACHE_IF_OFFLINE,
             policy_->GetAdditionalLoadFlags(0, true));
   net::HttpResponseInfo response_info;
-  policy_->UpdateStateForCompletedRequest(response_info);
+  policy_->UpdateStateForSuccessfullyStartedRequest(response_info);
   EXPECT_EQ(net::LOAD_FROM_CACHE_IF_OFFLINE,
             policy_->GetAdditionalLoadFlags(0, false));
 }
@@ -55,7 +55,7 @@ TEST_F(OfflinePolicyTest, CompletedNoNetwork) {
             policy_->GetAdditionalLoadFlags(0, true));
   net::HttpResponseInfo response_info;
   response_info.server_data_unavailable = true;
-  policy_->UpdateStateForCompletedRequest(response_info);
+  policy_->UpdateStateForSuccessfullyStartedRequest(response_info);
   EXPECT_EQ(net::LOAD_ONLY_FROM_CACHE,
             policy_->GetAdditionalLoadFlags(0, false));
 }
@@ -66,7 +66,7 @@ TEST_F(OfflinePolicyTest, CompletedNetwork) {
             policy_->GetAdditionalLoadFlags(0, true));
   net::HttpResponseInfo response_info;
   response_info.network_accessed = true;
-  policy_->UpdateStateForCompletedRequest(response_info);
+  policy_->UpdateStateForSuccessfullyStartedRequest(response_info);
   EXPECT_EQ(0, policy_->GetAdditionalLoadFlags(0, false));
 }
 
@@ -76,7 +76,7 @@ TEST_F(OfflinePolicyTest, NewNavigationReset) {
             policy_->GetAdditionalLoadFlags(0, true));
   net::HttpResponseInfo response_info;
   response_info.network_accessed = true;
-  policy_->UpdateStateForCompletedRequest(response_info);
+  policy_->UpdateStateForSuccessfullyStartedRequest(response_info);
   EXPECT_EQ(0, policy_->GetAdditionalLoadFlags(0, false));
   EXPECT_EQ(net::LOAD_FROM_CACHE_IF_OFFLINE,
             policy_->GetAdditionalLoadFlags(0, true));
@@ -89,7 +89,7 @@ TEST_F(OfflinePolicyTest, ConsumerFlagOverride) {
   EXPECT_EQ(0, policy_->GetAdditionalLoadFlags(net::LOAD_BYPASS_CACHE, true));
   net::HttpResponseInfo response_info;
   response_info.server_data_unavailable = true;
-  policy_->UpdateStateForCompletedRequest(response_info);
+  policy_->UpdateStateForSuccessfullyStartedRequest(response_info);
   EXPECT_EQ(0, policy_->GetAdditionalLoadFlags(net::LOAD_BYPASS_CACHE, false));
 }
 
