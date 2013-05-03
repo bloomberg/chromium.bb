@@ -43,7 +43,7 @@ using google::protobuf::RepeatedPtrField;
 using in_memory_url_index::InMemoryURLIndexCacheItem;
 
 namespace {
-static const size_t kMaxVisitsToUse = 10u;
+static const size_t kMaxVisitsToStoreInCache = 10u;
 }  // anonymous namespace
 
 namespace history {
@@ -120,8 +120,11 @@ UpdateRecentVisitsFromHistoryDBTask::UpdateRecentVisitsFromHistoryDBTask(
 bool UpdateRecentVisitsFromHistoryDBTask::RunOnDBThread(
     HistoryBackend* backend,
     HistoryDatabase* db) {
+  // Make sure the private data is going to get as many recent visits as
+  // ScoredHistoryMatch::GetFrecency() hopes to use.
+  DCHECK_GE(kMaxVisitsToStoreInCache, ScoredHistoryMatch::kMaxVisitsToScore);
   succeeded_ = db->GetMostRecentVisitsForURL(url_id_,
-                                             kMaxVisitsToUse,
+                                             kMaxVisitsToStoreInCache,
                                              &recent_visits_);
   if (!succeeded_)
     recent_visits_.clear();
@@ -339,7 +342,8 @@ void URLIndexPrivateData::UpdateRecentVisits(
   if (row_pos != history_info_map_.end()) {
     VisitInfoVector* visits = &row_pos->second.visits;
     visits->clear();
-    const size_t size = std::min(recent_visits.size(), kMaxVisitsToUse);
+    const size_t size =
+        std::min(recent_visits.size(), kMaxVisitsToStoreInCache);
     visits->reserve(size);
     for (size_t i = 0; i < size; i++) {
       // Copy from the VisitVector the only fields visits needs.
@@ -728,8 +732,11 @@ bool URLIndexPrivateData::IndexRow(
     // However, unittest code actually calls this on the UI thread.
     // So we don't do any thread checks.
     VisitVector recent_visits;
+    // Make sure the private data is going to get as many recent visits as
+    // ScoredHistoryMatch::GetFrecency() hopes to use.
+    DCHECK_GE(kMaxVisitsToStoreInCache, ScoredHistoryMatch::kMaxVisitsToScore);
     if (history_db->GetMostRecentVisitsForURL(row_id,
-                                              kMaxVisitsToUse,
+                                              kMaxVisitsToStoreInCache,
                                               &recent_visits))
       UpdateRecentVisits(row_id, recent_visits);
   } else {
@@ -1270,11 +1277,13 @@ void URLIndexPrivateData::AddHistoryMatch::operator()(
       private_data_.history_info_map_.find(history_id);
   if (hist_pos != private_data_.history_info_map_.end()) {
     const URLRow& hist_item = hist_pos->second.url_row;
+    const VisitInfoVector& visits = hist_pos->second.visits;
     WordStartsMap::const_iterator starts_pos =
         private_data_.word_starts_map_.find(history_id);
     DCHECK(starts_pos != private_data_.word_starts_map_.end());
-    ScoredHistoryMatch match(hist_item, languages_, lower_string_, lower_terms_,
-                             starts_pos->second, now_, bookmark_service_);
+    ScoredHistoryMatch match(hist_item, visits, languages_, lower_string_,
+                             lower_terms_, starts_pos->second, now_,
+                             bookmark_service_);
     if (match.raw_score > 0)
       scored_matches_.push_back(match);
   }

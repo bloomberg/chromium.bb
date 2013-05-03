@@ -39,6 +39,7 @@ const int kScoreRank[] = { 1450, 1200, 900, 400 };
 
 bool ScoredHistoryMatch::initialized_ = false;
 bool ScoredHistoryMatch::use_new_scoring = false;
+const size_t ScoredHistoryMatch::kMaxVisitsToScore = 10u;
 bool ScoredHistoryMatch::also_do_hup_like_scoring = false;
 int ScoredHistoryMatch::max_assigned_score_for_non_inlineable_matches = -1;
 
@@ -53,6 +54,7 @@ ScoredHistoryMatch::ScoredHistoryMatch()
 }
 
 ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
+                                       const VisitInfoVector& visits,
                                        const std::string& languages,
                                        const string16& lower_string,
                                        const String16Vector& terms,
@@ -163,12 +165,8 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
   if (use_new_scoring) {
     const float topicality_score = GetTopicalityScore(
         terms.size(), url, url_matches, title_matches, word_starts);
-    const float recency_score = GetRecencyScore(
-        (now - row.last_visit()).InDays());
-    const float popularity_score = GetPopularityScore(
-        row.typed_count() + bookmark_boost, row.visit_count());
-    raw_score = GetFinalRelevancyScore(
-        topicality_score, recency_score, popularity_score);
+    const float frecency_score = GetFrecency(now, visits);
+    raw_score = GetFinalRelevancyScore(topicality_score, frecency_score);
     raw_score =
         (raw_score <= kint32max) ? static_cast<int>(raw_score) : kint32max;
   } else {  // "old" scoring
@@ -458,6 +456,7 @@ float ScoredHistoryMatch::GetTopicalityScore(
   // Everything else is less.  In general, a match that's not at a word
   // boundary is worth about 1/4th or 1/5th of a match at the word boundary
   // in the same part of the URL/title.
+  DCHECK_GT(num_terms, 0);
   std::vector<int> term_scores(num_terms, 0);
   std::vector<size_t>::const_iterator next_word_starts =
       word_starts.url_word_starts_.begin();
@@ -496,7 +495,7 @@ float ScoredHistoryMatch::GetTopicalityScore(
     } else if ((end_of_hostname_pos != std::string::npos) &&
         (iter->offset > end_of_hostname_pos)) {
       // match in path
-      term_scores[iter->term_num] += at_word_boundary ? 8 : 1;
+      term_scores[iter->term_num] += at_word_boundary ? 8 : 0;
     } else if ((colon_pos == std::string::npos) ||
          (iter->offset > colon_pos)) {
       // match in hostname
@@ -538,15 +537,21 @@ float ScoredHistoryMatch::GetTopicalityScore(
   // Compute the topicality_score as the sum of transformed term_scores.
   float topicality_score = 0;
   for (size_t i = 0; i < term_scores.size(); ++i) {
+    // Drop this URL if it seems like a term didn't appear or, more precisely,
+    // didn't appear in a part of the URL or title that we trust enough
+    // to give it credit for.  For instance, terms that appear in the middle
+    // of a CGI parameter get no credit.  Almost all the matches dropped
+    // due to this test would look stupid if shown to the user.
+    if (term_scores[i] == 0)
+      return 0;
     topicality_score += raw_term_score_to_topicality_score[
-        (term_scores[i] >= kMaxRawTermScore)? kMaxRawTermScore - 1:
+        (term_scores[i] >= kMaxRawTermScore) ? (kMaxRawTermScore - 1) :
         term_scores[i]];
   }
   // TODO(mpearson): If there are multiple terms, consider taking the
-  // geometric mean of per-term scores rather than sum as we're doing now
-  // (which is equivalent to the arthimatic mean).
+  // geometric mean of per-term scores rather than the arithmetic mean.
 
-  return topicality_score;
+  return topicality_score / num_terms;
 }
 
 // static
@@ -604,19 +609,20 @@ void ScoredHistoryMatch::FillInDaysAgoToRecencyScoreArray() {
   for (int days_ago = 0; days_ago < kDaysToPrecomputeRecencyScoresFor;
        days_ago++) {
     int unnormalized_recency_score;
-    if (days_ago <= 1) {
+    if (days_ago <= 4) {
       unnormalized_recency_score = 100;
-    } else if (days_ago <= 7) {
-      // Linearly extrapolate between 1 and 7 days so 7 days has a score of 70.
-      unnormalized_recency_score = 70 + (7 - days_ago) * (100 - 70) / (7 - 1);
-    } else if (days_ago <= 30) {
-      // Linearly extrapolate between 7 and 30 days so 30 days has a score
+    } else if (days_ago <= 14) {
+      // Linearly extrapolate between 4 and 14 days so 14 days has a score
+      // of 70.
+      unnormalized_recency_score = 70 + (14 - days_ago) * (100 - 70) / (14 - 4);
+    } else if (days_ago <= 31) {
+      // Linearly extrapolate between 14 and 31 days so 31 days has a score
       // of 50.
-      unnormalized_recency_score = 50 + (30 - days_ago) * (70 - 50) / (30 - 7);
+      unnormalized_recency_score = 50 + (31 - days_ago) * (70 - 50) / (31 - 14);
     } else if (days_ago <= 90) {
       // Linearly extrapolate between 30 and 90 days so 90 days has a score
-      // of 20.
-      unnormalized_recency_score = 20 + (90 - days_ago) * (50 - 20) / (90 - 30);
+      // of 30.
+      unnormalized_recency_score = 30 + (90 - days_ago) * (50 - 30) / (90 - 30);
     } else {
       // Linearly extrapolate between 90 and 365 days so 365 days has a score
       // of 10.
@@ -632,36 +638,65 @@ void ScoredHistoryMatch::FillInDaysAgoToRecencyScoreArray() {
 }
 
 // static
-float ScoredHistoryMatch::GetPopularityScore(int typed_count,
-                                             int visit_count) {
-  // The max()s are to guard against database corruption.
-  return (std::max(typed_count, 0) * 5.0 + std::max(visit_count, 0) * 3.0) /
-      (5.0 + 3.0);
+float ScoredHistoryMatch::GetFrecency(const base::Time& now,
+                                      const VisitInfoVector& visits) {
+  // Compute the weighted average |value_of_transition| over the last at
+  // most kMaxVisitsToScore visits, where each visit is weighted using
+  // GetRecencyScore() based on how many days ago it happened.  Use
+  // kMaxVisitsToScore as the denominator for the average regardless of
+  // how many visits there were in order to penalize a match that has
+  // fewer visits than kMaxVisitsToScore.
+  const int total_sampled_visits = std::min(visits.size(), kMaxVisitsToScore);
+  float summed_visit_points = 0;
+  for (int i = 0; i < total_sampled_visits; ++i) {
+    const int value_of_transition =
+        (visits[i].second == content::PAGE_TRANSITION_TYPED) ? 20 : 1;
+    const float bucket_weight =
+        GetRecencyScore((now - visits[i].first).InDays());
+    summed_visit_points += (value_of_transition * bucket_weight);
+  }
+  return visits.size() * summed_visit_points / total_sampled_visits;
 }
 
 // static
-float ScoredHistoryMatch::GetFinalRelevancyScore(
-    float topicality_score, float recency_score, float popularity_score) {
+float ScoredHistoryMatch::GetFinalRelevancyScore(float topicality_score,
+                                                 float frecency_score) {
+  if (topicality_score == 0)
+    return 0;
   // Here's how to interpret intermediate_score: Suppose the omnibox
-  // has one input term.  Suppose we have a URL that has 5 typed
-  // visits with the most recent being within a day and the omnibox
-  // input term has a single URL hostname hit at a word boundary.
-  // This URL will have an intermediate_score of 5.0 (= 1 topicality *
-  // 1 recency * 5 popularity).
-  float intermediate_score =
-      topicality_score * recency_score * popularity_score;
-  // The below code takes intermediate_score from [0, infinity) to
-  // relevancy scores in the range [0, 1400).
-  float attenuating_factor = 1.0;
-  if (intermediate_score < 4) {
-    // The formula in the final return line in this function only works if
-    // intermediate_score > 4.  For lower scores, we linearly interpolate
-    // between 0 and the formula when intermediate_score = 4.0.
-    attenuating_factor = intermediate_score / 4.0;
-    intermediate_score = 4.0;
+  // has one input term.  Suppose we have a URL for which the omnibox
+  // input term has a single URL hostname hit at a word boundary.  (This
+  // implies topicality_score = 1.0.).  Then the intermediate_score for
+  // this URL will depend entirely on the frecency_score with
+  // this interpretation:
+  // - a single typed visit more than three months ago, no other visits -> 0.2
+  // - a visit every three days, no typed visits -> 0.706
+  // - a visit every day, no typed visits -> 0.916
+  // - a single typed visit yesterday, no other visits -> 2.0
+  // - a typed visit once a week -> 11.77
+  // - a typed visit every three days -> 14.12
+  // - at least ten typed visits today -> 20.0 (maximum score)
+  const float intermediate_score = topicality_score * frecency_score;
+  // The below code maps intermediate_score to the range [0, 1399].
+  // The score maxes out at 1400 (i.e., cannot beat a good inline result).
+  if (intermediate_score <= 1) {
+    // Linearly extrapolate between 0 and 1.5 so 0 has a score of 400
+    // and 1.5 has a score of 600.
+    const float slope = (600 - 400) / (1.5f - 0.0f);
+    return 400 + slope * intermediate_score;
   }
-  DCHECK_GE(intermediate_score, 4.0);
-  return attenuating_factor * 1400.0 * (2.0 - exp(2.0 / intermediate_score));
+  if (intermediate_score <= 12.0) {
+    // Linearly extrapolate up to 12 so 12 has a score of 1300.
+    const float slope = (1300 - 600) / (12.0f - 1.5f);
+    return 600 + slope * (intermediate_score - 1.5);
+  }
+  // Linearly extrapolate so a score of 20 (or more) has a score of 1399.
+  // (Scores above 20 are possible for URLs that have multiple term hits
+  // in the URL and/or title and that are visited practically all
+  // the time using typed visits.  We don't attempt to distinguish
+  // between these very good results.)
+  const float slope = (1399 - 1300) / (20.0f - 12.0f);
+  return std::min(1399.0, 1300 + slope * (intermediate_score - 12.0));
 }
 
 void ScoredHistoryMatch::InitializeNewScoringField() {

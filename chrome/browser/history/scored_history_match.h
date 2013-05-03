@@ -23,8 +23,9 @@ namespace history {
 struct ScoredHistoryMatch : public history::HistoryMatch {
   ScoredHistoryMatch();  // Required by STL.
 
-  // Creates a new match with a raw score calculated for the history item given
-  // in |row|. First determines if the row qualifies by seeing if all of the
+  // Creates a new match with a raw score calculated for the history
+  // item given in |row| with recent visits as indicated in |visits|.
+  // First determines if the row qualifies by seeing if all of the
   // terms in |terms_vector| occur in |row|. If so, calculates a raw score.
   // This raw score allows the matches to be ordered and can be used to
   // influence the final score calculated by the client of this index.
@@ -33,6 +34,7 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // |languages| is used to help parse/format the URL before looking for
   // the terms.
   ScoredHistoryMatch(const URLRow& row,
+                     const VisitInfoVector& visits,
                      const std::string& languages,
                      const string16& lower_string,
                      const String16Vector& terms_vector,
@@ -112,17 +114,18 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // GetRecencyScore().
   static void FillInDaysAgoToRecencyScoreArray();
 
-  // Returns a popularity score based on |typed_count| and
-  // |visit_count|.
-  static float GetPopularityScore(int typed_count,
-                                  int visit_count);
+  // Examines the first kMaxVisitsToScore and return a score (higher is
+  // better) based the rate of visits and how often those visits are
+  // typed navigations (i.e., explicitly invoked by the user).
+  // |now| is passed in to avoid unnecessarily recomputing it frequently.
+  static float GetFrecency(const base::Time& now,
+                           const VisitInfoVector& visits);
 
-  // Combines the three component scores into a final score that's
+  // Combines the two component scores into a final score that's
   // an appropriate value to use as a relevancy score.
   static float GetFinalRelevancyScore(
       float topicality_score,
-      float recency_score,
-      float popularity_score);
+      float frecency_score);
 
   // Sets use_new_scoring based on command line flags and/or
   // field trial state.
@@ -172,6 +175,9 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // affect on HistoryURLProvider-like scoring that can happen in this
   // class as well (see boolean below).
   static bool use_new_scoring;
+
+  // The maximum number of recent visits to examine in GetFrecency().
+  static const size_t kMaxVisitsToScore;
 
   // If true, assign raw scores to be max(whatever it normally would be,
   // a score that's similar to the score HistoryURL provider would assign).
