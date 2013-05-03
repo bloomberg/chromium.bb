@@ -5,7 +5,6 @@
 #include "content/renderer/pepper/pepper_platform_audio_output_impl.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "build/build_config.h"
@@ -14,7 +13,6 @@
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/audio_hardware_config.h"
-#include "media/base/media_switches.h"
 
 namespace content {
 
@@ -125,29 +123,9 @@ bool PepperPlatformAudioOutputImpl::Initialize(
       CreateAudioOutputIPC(source_render_view_id);
   CHECK(ipc_);
 
-  media::AudioParameters::Format format;
-  const int kMaxFramesForLowLatency = 2047;
-
-  media::AudioHardwareConfig* hardware_config =
-      render_thread->GetAudioHardwareConfig();
-
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  if (!cmd_line->HasSwitch(switches::kDisableAudioOutputResampler)) {
-    // Rely on AudioOutputResampler to handle any inconsistencies between the
-    // hardware params required for low latency and the requested params.
-    format = media::AudioParameters::AUDIO_PCM_LOW_LATENCY;
-  } else if (sample_rate == hardware_config->GetOutputSampleRate() &&
-             frames_per_buffer <= kMaxFramesForLowLatency &&
-             frames_per_buffer % hardware_config->GetOutputBufferSize() == 0) {
-    // Use the low latency back end if the client request is compatible, and
-    // the sample count is low enough to justify using AUDIO_PCM_LOW_LATENCY.
-    format = media::AudioParameters::AUDIO_PCM_LOW_LATENCY;
-  } else {
-    format = media::AudioParameters::AUDIO_PCM_LINEAR;
-  }
-
-  media::AudioParameters params(format, media::CHANNEL_LAYOUT_STEREO,
-                                sample_rate, 16, frames_per_buffer);
+  media::AudioParameters params(
+      media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+      media::CHANNEL_LAYOUT_STEREO, sample_rate, 16, frames_per_buffer);
 
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,

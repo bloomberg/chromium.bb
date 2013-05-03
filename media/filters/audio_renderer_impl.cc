@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
@@ -20,7 +19,6 @@
 #include "media/base/bind_to_loop.h"
 #include "media/base/data_buffer.h"
 #include "media/base/demuxer_stream.h"
-#include "media/base/media_switches.h"
 #include "media/filters/audio_decoder_selector.h"
 #include "media/filters/decrypting_demuxer_stream.h"
 
@@ -251,39 +249,13 @@ void AudioRendererImpl::OnDecoderSelected(
   decrypting_demuxer_stream_ = decrypting_demuxer_stream.Pass();
 
   int sample_rate = decoder_->samples_per_second();
-  int buffer_size = GetHighLatencyOutputBufferSize(sample_rate);
-  AudioParameters::Format format = AudioParameters::AUDIO_PCM_LINEAR;
 
-  // Either AudioOutputResampler or renderer side mixing must be enabled to use
-  // the low latency pipeline.
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  if (!cmd_line->HasSwitch(switches::kDisableRendererSideMixing) ||
-      !cmd_line->HasSwitch(switches::kDisableAudioOutputResampler)) {
-    // There are two cases here:
-    //
-    // 1. Renderer side mixing is enabled and the buffer size is actually
-    //    controlled by the size of the AudioBus provided to Render().  In this
-    //    case the buffer size below is ignored.
-    //
-    // 2. Renderer side mixing is disabled and AudioOutputResampler on the
-    //    browser side is rebuffering to the hardware size on the fly.
-    //
-    // In the second case we need to choose a a buffer size small enough that
-    // the decoder can fulfill the high frequency low latency audio callbacks,
-    // but not so small that it's less than the hardware buffer size (or we'll
-    // run into issues since the shared memory sync is non-blocking).
-    //
-    // The buffer size below is arbitrarily the same size used by Pepper Flash
-    // for consistency.  Since renderer side mixing is only disabled for debug
-    // purposes it's okay that this buffer size might lead to jitter since it's
-    // not a multiple of the hardware buffer size.
-    format = AudioParameters::AUDIO_PCM_LOW_LATENCY;
-    buffer_size = 2048;
-  }
-
+  // The actual buffer size is controlled via the size of the AudioBus provided
+  // to Render(), so just choose something reasonable here for looks.
+  int buffer_size = decoder_->samples_per_second() / 100;
   audio_parameters_ = AudioParameters(
-      format, decoder_->channel_layout(), sample_rate,
-      decoder_->bits_per_channel(), buffer_size);
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, decoder_->channel_layout(),
+      sample_rate, decoder_->bits_per_channel(), buffer_size);
   if (!audio_parameters_.IsValid()) {
     base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_INITIALIZATION_FAILED);
     return;

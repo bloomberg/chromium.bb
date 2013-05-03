@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/message_loop_proxy.h"
 #include "base/threading/thread.h"
 #include "media/audio/audio_output_dispatcher_impl.h"
@@ -15,7 +14,6 @@
 #include "media/audio/audio_util.h"
 #include "media/audio/fake_audio_input_stream.h"
 #include "media/audio/fake_audio_output_stream.h"
-#include "media/base/media_switches.h"
 
 namespace media {
 
@@ -175,15 +173,10 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
 #else
   DCHECK(message_loop_->BelongsToCurrentThread());
 
-  bool use_audio_output_resampler =
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableAudioOutputResampler) &&
-      params.format() == AudioParameters::AUDIO_PCM_LOW_LATENCY;
-
   // If we're not using AudioOutputResampler our output parameters are the same
   // as our input parameters.
   AudioParameters output_params = params;
-  if (use_audio_output_resampler) {
+  if (params.format() == AudioParameters::AUDIO_PCM_LOW_LATENCY) {
     output_params = GetPreferredOutputStreamParameters(params);
 
     // Ensure we only pass on valid output parameters.
@@ -213,19 +206,18 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
   if (it != output_dispatchers_.end())
     return new AudioOutputProxy(it->second);
 
-  base::TimeDelta close_delay =
+  const base::TimeDelta kCloseDelay =
       base::TimeDelta::FromSeconds(kStreamCloseDelaySeconds);
 
-  if (use_audio_output_resampler &&
-      output_params.format() != AudioParameters::AUDIO_FAKE) {
+  if (output_params.format() != AudioParameters::AUDIO_FAKE) {
     scoped_refptr<AudioOutputDispatcher> dispatcher =
-        new AudioOutputResampler(this, params, output_params, close_delay);
+        new AudioOutputResampler(this, params, output_params, kCloseDelay);
     output_dispatchers_[dispatcher_key] = dispatcher;
     return new AudioOutputProxy(dispatcher);
   }
 
   scoped_refptr<AudioOutputDispatcher> dispatcher =
-      new AudioOutputDispatcherImpl(this, output_params, close_delay);
+      new AudioOutputDispatcherImpl(this, output_params, kCloseDelay);
   output_dispatchers_[dispatcher_key] = dispatcher;
   return new AudioOutputProxy(dispatcher);
 #endif  // defined(OS_IOS)

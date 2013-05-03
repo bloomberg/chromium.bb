@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -19,7 +18,6 @@
 #include "media/audio/sample_rates.h"
 #include "media/base/audio_converter.h"
 #include "media/base/limits.h"
-#include "media/base/media_switches.h"
 
 namespace media {
 
@@ -198,13 +196,6 @@ bool AudioOutputResampler::OpenStream() {
   }
 
   DCHECK_EQ(output_params_.format(), AudioParameters::AUDIO_PCM_LOW_LATENCY);
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableAudioFallback)) {
-    LOG(ERROR) << "Open failed and automatic fallback to high latency audio "
-               << "path is disabled, aborting.";
-    return false;
-  }
 
   // Record UMA statistics about the hardware which triggered the failure so
   // we can debug and triage later.

@@ -2733,17 +2733,9 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
 
   scoped_refptr<media::AudioRendererSink> sink;
   if (!cmd_line->HasSwitch(switches::kDisableAudio)) {
-    if (!cmd_line->HasSwitch(switches::kDisableRendererSideMixing)) {
-      sink = RenderThreadImpl::current()->GetAudioRendererMixerManager()->
-          CreateInput(routing_id_);
-      DVLOG(1) << "Using AudioRendererMixerManager-provided sink: " << sink;
-    } else {
-      // The RenderView creating AudioRendererSink will be the source of
-      // the audio (WebMediaPlayer is always associated with a document in a
-      // frame at the time RenderAudioSourceProvider is instantiated).
-      sink = AudioDeviceFactory::NewOutputDevice(routing_id_);
-      DVLOG(1) << "Using AudioDeviceFactory-provided sink: " << sink;
-    }
+    sink = RenderThreadImpl::current()->GetAudioRendererMixerManager()->
+        CreateInput(routing_id_);
+    DVLOG(1) << "Using AudioRendererMixerManager-provided sink: " << sink;
   }
 
   scoped_refptr<media::GpuVideoDecoder::Factories> gpu_factories;

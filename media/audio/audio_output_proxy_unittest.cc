@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "media/audio/audio_output_dispatcher_impl.h"
@@ -13,7 +12,6 @@
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/fake_audio_output_stream.h"
-#include "media/base/media_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -563,12 +561,6 @@ TEST_F(AudioOutputResamplerTest, TwoStreams_BothPlaying) {
 
 TEST_F(AudioOutputProxyTest, OpenFailed) {
   OpenFailed(dispatcher_impl_);
-}
-
-TEST_F(AudioOutputResamplerTest, OpenFailed) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisableAudioFallback);
-  OpenFailed(resampler_);
 }
 
 // Start() method failed.
