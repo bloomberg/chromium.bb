@@ -61,7 +61,9 @@ KEYCODE_DPAD_RIGHT = 22
 KEYCODE_ENTER = 66
 KEYCODE_MENU = 82
 
-MD5SUM_DEVICE_PATH = '/data/local/tmp/md5sum_bin'
+MD5SUM_DEVICE_FOLDER = constants.TEST_EXECUTABLE_DIR + '/md5sum/'
+MD5SUM_DEVICE_PATH = MD5SUM_DEVICE_FOLDER + 'md5sum_bin'
+MD5SUM_LD_LIBRARY_PATH = 'LD_LIBRARY_PATH=%s' % MD5SUM_DEVICE_FOLDER
 
 def GetEmulators():
   """Returns a list of emulators.  Does not filter by status (e.g. offline).
@@ -212,7 +214,7 @@ class AndroidCommands(object):
     self._logcat_tmpoutfile = None
     self._pushed_files = []
     self._device_utc_offset = self.RunShellCommand('date +%z')[0]
-    self._md5sum_path = ''
+    self._md5sum_build_dir = ''
     self._external_storage = ''
     self._util_wrapper = ''
 
@@ -670,6 +672,33 @@ class AndroidCommands(object):
     """
     self.RunShellCommand('input keyevent %d' % keycode)
 
+  def CheckMd5Sum(self, local_path, device_path):
+    assert os.path.exists(local_path), 'Local path not found %s' % local_path
+
+    if not self._md5sum_build_dir:
+      default_build_type = os.environ.get('BUILD_TYPE', 'Debug')
+      build_dir = '%s/%s/' % (
+          cmd_helper.OutDirectory().get(), default_build_type)
+      md5sum_dist_path = '%s/md5sum_dist' % build_dir
+      if not os.path.exists(md5sum_dist_path):
+        build_dir = '%s/Release/' % cmd_helper.OutDirectory().get()
+        md5sum_dist_path = '%s/md5sum_dist' % build_dir
+        assert os.path.exists(md5sum_dist_path), 'Please build md5sum.'
+      command = 'push %s %s' % (md5sum_dist_path, MD5SUM_DEVICE_FOLDER)
+      assert _HasAdbPushSucceeded(self._adb.SendCommand(command))
+      self._md5sum_build_dir = build_dir
+
+    self._pushed_files.append(device_path)
+    hashes_on_device = _ComputeFileListHash(
+        self.RunShellCommand(MD5SUM_LD_LIBRARY_PATH + ' ' + self._util_wrapper +
+            ' ' + MD5SUM_DEVICE_PATH + ' ' + device_path))
+    assert os.path.exists(local_path), 'Local path not found %s' % local_path
+    md5sum_output = cmd_helper.GetCmdOutput(
+        ['%s/md5sum_bin_host' % self._md5sum_build_dir, local_path])
+    hashes_on_host = _ComputeFileListHash(md5sum_output.splitlines())
+
+    return hashes_on_device == hashes_on_host
+
   def PushIfNeeded(self, local_path, device_path):
     """Pushes |local_path| to |device_path|.
 
@@ -678,28 +707,7 @@ class AndroidCommands(object):
 
     All pushed files can be removed by calling RemovePushedFiles().
     """
-    assert os.path.exists(local_path), 'Local path not found %s' % local_path
-
-    if not self._md5sum_path:
-      default_build_type = os.environ.get('BUILD_TYPE', 'Debug')
-      md5sum_path = '%s/%s/md5sum_bin' % (cmd_helper.OutDirectory.get(),
-          default_build_type)
-      if not os.path.exists(md5sum_path):
-        md5sum_path = '%s/Release/md5sum_bin' % cmd_helper.OutDirectory.get()
-        assert os.path.exists(md5sum_path), 'Please build md5sum.'
-      command = 'push %s %s' % (md5sum_path, MD5SUM_DEVICE_PATH)
-      assert _HasAdbPushSucceeded(self._adb.SendCommand(command))
-      self._md5sum_path = md5sum_path
-
-    self._pushed_files.append(device_path)
-    hashes_on_device = _ComputeFileListHash(
-        self.RunShellCommand(self._util_wrapper + ' ' + MD5SUM_DEVICE_PATH +
-                             ' ' + device_path))
-    assert os.path.exists(local_path), 'Local path not found %s' % local_path
-    md5sum_output = cmd_helper.GetCmdOutput(
-        ['%s_host' % self._md5sum_path, local_path])
-    hashes_on_host = _ComputeFileListHash(md5sum_output.splitlines())
-    if hashes_on_device == hashes_on_host:
+    if self.CheckMd5Sum(local_path, device_path):
       return
 
     # They don't match, so remove everything first and then create it.

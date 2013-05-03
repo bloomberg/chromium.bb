@@ -11,6 +11,13 @@
         'md5sum_stripped_device_bin',
         'md5sum_bin_host#host',
       ],
+      # For the component build, ensure dependent shared libraries are stripped
+      # and put alongside md5sum to simplify pushing to the device.
+      'variables': {
+         'output_dir': '<(PRODUCT_DIR)/md5sum_dist/',
+         'native_binary': '<(PRODUCT_DIR)/md5sum_bin',
+      },
+      'includes': ['../../../build/android/native_app_dependencies.gypi'],
     },
     {
       'target_name': 'md5sum_device_bin',
