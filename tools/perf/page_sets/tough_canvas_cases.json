@@ -37,10 +37,13 @@
     { "url":"http://ie.microsoft.com/testdrive/Graphics/VideoCity/Default.html" },
     { "url":"http://ie.microsoft.com/testdrive/Performance/AsteroidBelt/Default.html" },
     { "url":"http://www.smashcat.org/av/canvas_test/" },
+    { "url":"http://www.khronos.org/registry/webgl/sdk/demos/google/particles/index.html" },
     { "url": "file:///tough_canvas_cases/compositing_huge_div/index.html" },
     { "url": "file:///tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=canvas_sprite&back=canvas" },
     { "url": "file:///tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=image_with_shadow&back=image" },
     { "url": "file:///tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=filled_path&back=gradient" },
-    { "url": "file:///tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=text&back=white&ball_count=15" }
+    { "url": "file:///tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=text&back=white&ball_count=15" },
+    { "url": "file:///tough_canvas_cases/many_images/single_image.html" },
+    { "url": "file:///tough_canvas_cases/many_images/many_images.html" }
   ]
 }
