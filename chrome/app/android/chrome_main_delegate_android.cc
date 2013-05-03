@@ -5,6 +5,7 @@
 #include "chrome/app/android/chrome_main_delegate_android.h"
 
 #include "base/android/jni_android.h"
+#include "base/debug/trace_event.h"
 #include "chrome/browser/android/chrome_jni_registrar.h"
 #include "chrome/browser/android/chrome_startup_flags.h"
 #include "content/public/browser/browser_main_runner.h"
@@ -26,6 +27,7 @@ void ChromeMainDelegateAndroid::SandboxInitialized(
 int ChromeMainDelegateAndroid::RunProcess(
     const std::string& process_type,
     const content::MainFunctionParams& main_function_params) {
+  TRACE_EVENT0("startup", "ChromeMainDelegateAndroid::RunProcess")
   if (process_type.empty()) {
     JNIEnv* env = base::android::AttachCurrentThread();
     RegisterApplicationNativeMethods(env);

@@ -239,6 +239,7 @@ PrefService* InitializeLocalState(
     base::SequencedTaskRunner* local_state_task_runner,
     const CommandLine& parsed_command_line,
     bool is_first_run) {
+  TRACE_EVENT0("startup", "ChromeBrowserMainParts::InitializeLocalState")
   base::FilePath local_state_path;
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
   bool local_state_file_exists = file_util::PathExists(local_state_path);
@@ -334,6 +335,7 @@ base::FilePath GetStartupProfilePath(const base::FilePath& user_data_dir,
 Profile* CreateProfile(const content::MainFunctionParams& parameters,
                        const base::FilePath& user_data_dir,
                        const CommandLine& parsed_command_line) {
+  TRACE_EVENT0("startup", "ChromeBrowserMainParts::CreateProfile")
   if (ProfileManager::IsMultipleProfilesEnabled() &&
       parsed_command_line.HasSwitch(switches::kProfileDirectory)) {
     g_browser_process->local_state()->SetString(prefs::kProfileLastUsed,
@@ -571,6 +573,7 @@ ChromeBrowserMainParts::~ChromeBrowserMainParts() {
 
 // This will be called after the command-line has been mutated by about:flags
 void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
+  TRACE_EVENT0("startup", "ChromeBrowserMainParts::SetupMetricsAndFieldTrials");
   // Must initialize metrics after labs have been converted into switches,
   // but before field trials are set up (so that client ID is available for
   // one-time randomized field trials).
@@ -625,6 +628,7 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
 // ChromeBrowserMainParts: |SetupMetricsAndFieldTrials()| related --------------
 
 void ChromeBrowserMainParts::StartMetricsRecording() {
+  TRACE_EVENT0("startup", "ChromeBrowserMainParts::StartMetricsRecording");
   MetricsService* metrics = g_browser_process->metrics_service();
 
   // TODO(miu): Metrics reporting is disabled in DEBUG builds until ill-fired
@@ -695,31 +699,37 @@ DLLEXPORT void __cdecl RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
 // content::BrowserMainParts implementation ------------------------------------
 
 void ChromeBrowserMainParts::PreEarlyInitialization() {
+  TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreEarlyInitialization");
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PreEarlyInitialization();
 }
 
 void ChromeBrowserMainParts::PostEarlyInitialization() {
+  TRACE_EVENT0("startup", "ChromeBrowserMainParts::PostEarlyInitialization");
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PostEarlyInitialization();
 }
 
 void ChromeBrowserMainParts::ToolkitInitialized() {
+  TRACE_EVENT0("startup", "ChromeBrowserMainParts::ToolkitInitialized");
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->ToolkitInitialized();
 }
 
 void ChromeBrowserMainParts::PreMainMessageLoopStart() {
+  TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreMainMessageLoopStart");
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PreMainMessageLoopStart();
 }
 
 void ChromeBrowserMainParts::PostMainMessageLoopStart() {
+  TRACE_EVENT0("startup", "ChromeBrowserMainParts::PostMainMessageLoopStart");
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PostMainMessageLoopStart();
 }
 
 int ChromeBrowserMainParts::PreCreateThreads() {
+  TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreCreateThreads");
   result_code_ = PreCreateThreadsImpl();
   // These members must be initialized before returning from this function.
   DCHECK(master_prefs_.get());
@@ -736,8 +746,13 @@ int ChromeBrowserMainParts::PreCreateThreads() {
 }
 
 int ChromeBrowserMainParts::PreCreateThreadsImpl() {
+  TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreCreateThreadsImpl")
   run_message_loop_ = false;
-  user_data_dir_ = chrome::GetUserDataDir(parameters());
+  {
+    TRACE_EVENT0("startup",
+      "ChromeBrowserMainParts::PreCreateThreadsImpl:GetUserDataDir");
+    user_data_dir_ = chrome::GetUserDataDir(parameters());
+  }
 
   // Whether this is First Run. |do_first_run_tasks_| should be prefered to this
   // unless the desire is actually to know whether this is really First Run
@@ -763,10 +778,17 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
       JsonPrefStore::GetTaskRunnerForFile(
           base::FilePath(chrome::kLocalStorePoolName),
           BrowserThread::GetBlockingPool());
-  browser_process_.reset(new BrowserProcessImpl(local_state_task_runner,
-                                                parsed_command_line()));
+
+  {
+    TRACE_EVENT0("startup",
+      "ChromeBrowserMainParts::PreCreateThreadsImpl:InitBrowswerProcessImpl");
+    browser_process_.reset(new BrowserProcessImpl(local_state_task_runner,
+                                                  parsed_command_line()));
+  }
 
   if (parsed_command_line().HasSwitch(switches::kEnableProfiling)) {
+    TRACE_EVENT0("startup",
+        "ChromeBrowserMainParts::PreCreateThreadsImpl:InitProfiling");
     // User wants to override default tracking status.
     std::string flag =
       parsed_command_line().GetSwitchValueASCII(switches::kEnableProfiling);
@@ -804,8 +826,13 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // ResourceBundle::InitSharedInstanceWithLocale as some loaded resources are
   // affected by experiment flags (--touch-optimized-ui in particular). Not
   // needed on Android as there aren't experimental flags.
-  about_flags::ConvertFlagsToSwitches(local_state_,
-                                      CommandLine::ForCurrentProcess());
+  {
+    TRACE_EVENT0("startup",
+        "ChromeBrowserMainParts::PreCreateThreadsImpl:ConvertFlags");
+    about_flags::ConvertFlagsToSwitches(local_state_,
+                                        CommandLine::ForCurrentProcess());
+  }
+
   local_state_->UpdateCommandLinePrefStore(
       new CommandLinePrefStore(CommandLine::ForCurrentProcess()));
 
@@ -827,10 +854,17 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 #else
     const std::string locale =
         local_state_->GetString(prefs::kApplicationLocale);
+
     // On a POSIX OS other than ChromeOS, the parameter that is passed to the
     // method InitSharedInstance is ignored.
+
+    TRACE_EVENT_BEGIN0("startup",
+        "ChromeBrowserMainParts::PreCreateThreadsImpl:InitResourceBundle");
     const std::string loaded_locale =
         ResourceBundle::InitSharedInstanceWithLocale(locale, NULL);
+    TRACE_EVENT_END0("startup",
+        "ChromeBrowserMainParts::PreCreateThreadsImpl:InitResourceBundle");
+
     if (loaded_locale.empty() &&
         !parsed_command_line().HasSwitch(switches::kNoErrorDialogs)) {
       ShowMissingLocaleMessageBox();
@@ -841,8 +875,12 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
     base::FilePath resources_pack_path;
     PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
-    ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-        resources_pack_path, ui::SCALE_FACTOR_NONE);
+    {
+      TRACE_EVENT0("startup",
+          "ChromeBrowserMainParts::PreCreateThreadsImpl:AddDataPack");
+      ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+          resources_pack_path, ui::SCALE_FACTOR_NONE);
+    }
 #endif  // defined(OS_MACOSX)
   }
 
@@ -960,6 +998,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 }
 
 void ChromeBrowserMainParts::PreMainMessageLoopRun() {
+  TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreMainMessageLoopRun");
   result_code_ = PreMainMessageLoopRunImpl();
 
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
@@ -978,17 +1017,20 @@ void ChromeBrowserMainParts::PreMainMessageLoopRun() {
 //   PostBrowserStart()
 
 void ChromeBrowserMainParts::PreProfileInit() {
+  TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreProfileInit");
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PreProfileInit();
 }
 
 void ChromeBrowserMainParts::PostProfileInit() {
+  TRACE_EVENT0("startup", "ChromeBrowserMainParts::PostProfileInit");
   LaunchDevToolsHandlerIfNeeded(profile(), parsed_command_line());
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PostProfileInit();
 }
 
 void ChromeBrowserMainParts::PreBrowserStart() {
+  TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreBrowserStart");
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PreBrowserStart();
 
@@ -996,6 +1038,7 @@ void ChromeBrowserMainParts::PreBrowserStart() {
 }
 
 void ChromeBrowserMainParts::PostBrowserStart() {
+  TRACE_EVENT0("startup", "ChromeBrowserMainParts::PostBrowserStart");
 #if !defined(OS_ANDROID)
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kVisitURLs))
     RunPageCycler();
@@ -1036,6 +1079,7 @@ void ChromeBrowserMainParts::SetupPlatformFieldTrials() {
 }
 
 int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
+  TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreMainMessageLoopRunImpl");
 #if !defined(OS_ANDROID)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kTrackActiveVisitTime)) {
@@ -1564,6 +1608,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 }
 
 bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
+  TRACE_EVENT0("startup", "ChromeBrowserMainParts::MainMessageLoopRun");
 #if defined(OS_ANDROID)
   // Chrome on Android does not use default MessageLoop. It has its own
   // Android specific MessageLoop
@@ -1602,6 +1647,7 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
 }
 
 void ChromeBrowserMainParts::PostMainMessageLoopRun() {
+  TRACE_EVENT0("startup", "ChromeBrowserMainParts::PostMainMessageLoopRun");
 #if defined(OS_ANDROID)
   // Chrome on Android does not use default MessageLoop. It has its own
   // Android specific MessageLoop

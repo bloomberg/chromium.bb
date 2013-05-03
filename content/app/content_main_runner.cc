@@ -507,6 +507,13 @@ class ContentMainRunnerImpl : public ContentMainRunner {
                          const char** argv,
                          ContentMainDelegate* delegate) OVERRIDE {
 
+#if defined(OS_ANDROID)
+    // See note at the initialization of ExitManager, below; basically,
+    // only Android builds have the ctor/dtor handlers set up to use
+    // TRACE_EVENT right away.
+    TRACE_EVENT0("startup", "ContentMainRunnerImpl::Initialize");
+#endif  // OS_ANDROID
+
     // NOTE(willchan): One might ask why these TCMalloc-related calls are done
     // here rather than in process_util_linux.cc with the definition of
     // EnableTerminationOnOutOfMemory().  That's because base shouldn't have a
@@ -576,6 +583,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     // The exit manager is in charge of calling the dtors of singleton objects.
     // On Android, AtExitManager is set up when library is loaded.
     // On iOS, it's set up in main(), which can't call directly through to here.
+    // A consequence of this is that you can't use the ctor/dtor-based
+    // TRACE_EVENT methods on Linux or iOS builds till after we set this up.
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
     exit_manager_.reset(new base::AtExitManager);
 #endif  // !OS_ANDROID && !OS_IOS
@@ -588,10 +597,11 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     autorelease_pool_.reset(new base::mac::ScopedNSAutoreleasePool());
 #endif
 
-    // On Android, the command line is initialized when library is loaded.
+    // On Android, the command line is initialized when library is loaded and
+    // we have already started our TRACE_EVENT0.
 #if !defined(OS_ANDROID)
     CommandLine::Init(argc, argv);
-#endif
+#endif // !OS_ANDROID
 
     int exit_code;
     if (delegate && delegate->BasicStartupComplete(&exit_code))
@@ -622,6 +632,12 @@ class ContentMainRunnerImpl : public ContentMainRunner {
           category_filter,
           base::debug::TraceLog::RECORD_UNTIL_FULL);
     }
+#if !defined(OS_ANDROID)
+    // Android tracing started at the beginning of the method.
+    // Other OSes have to wait till we get here in order for all the memory
+    // management setup to be completed.
+    TRACE_EVENT0("startup", "ContentMainRunnerImpl::Initialize");
+#endif // !OS_ANDROID
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
     // We need to allocate the IO Ports before the Sandbox is initialized or

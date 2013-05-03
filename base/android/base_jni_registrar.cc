@@ -13,6 +13,7 @@
 #include "base/android/path_service_android.h"
 #include "base/android/path_utils.h"
 #include "base/android/thread_utils.h"
+#include "base/debug/trace_event.h"
 #include "base/message_pump_android.h"
 #include "base/power_monitor/power_monitor_android.h"
 
@@ -32,6 +33,7 @@ static RegistrationMethod kBaseRegisteredMethods[] = {
 };
 
 bool RegisterJni(JNIEnv* env) {
+  TRACE_EVENT0("startup", "base_android::RegisterJni");
   return RegisterNativeMethods(env, kBaseRegisteredMethods,
                                arraysize(kBaseRegisteredMethods));
 }

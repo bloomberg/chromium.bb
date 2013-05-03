@@ -293,6 +293,7 @@ BrowserMainLoop::~BrowserMainLoop() {
 }
 
 void BrowserMainLoop::Init() {
+  TRACE_EVENT0("startup", "BrowserMainLoop::Init")
   parts_.reset(
       GetContentClient()->browser()->CreateBrowserMainParts(parameters_));
 }
@@ -300,6 +301,7 @@ void BrowserMainLoop::Init() {
 // BrowserMainLoop stages ==================================================
 
 void BrowserMainLoop::EarlyInitialization() {
+  TRACE_EVENT0("startup", "BrowserMainLoop::EarlyInitialization")
 #if defined(USE_X11)
   if (parsed_command_line_.HasSwitch(switches::kSingleProcess) ||
       parsed_command_line_.HasSwitch(switches::kInProcessGPU)) {
@@ -344,8 +346,12 @@ void BrowserMainLoop::EarlyInitialization() {
 }
 
 void BrowserMainLoop::MainMessageLoopStart() {
-  if (parts_)
+  TRACE_EVENT0("startup", "BrowserMainLoop::MainMessageLoopStart")
+  if (parts_) {
+    TRACE_EVENT0("startup",
+        "BrowserMainLoop::MainMessageLoopStart:PreMainMessageLoopStart");
     parts_->PreMainMessageLoopStart();
+  }
 
 #if defined(OS_WIN)
   // If we're running tests (ui_task is non-null), then the ResourceBundle
@@ -410,8 +416,13 @@ void BrowserMainLoop::MainMessageLoopStart() {
 }
 
 void BrowserMainLoop::CreateThreads() {
-  if (parts_)
+  TRACE_EVENT0("startup", "BrowserMainLoop::CreateThreads")
+
+  if (parts_) {
+    TRACE_EVENT0("startup",
+        "BrowserMainLoop::MainMessageLoopStart:PreCreateThreads");
     result_code_ = parts_->PreCreateThreads();
+  }
 
 #if !defined(OS_IOS) && (!defined(GOOGLE_CHROME_BUILD) || defined(OS_ANDROID))
   // Single-process is an unsupported and not fully tested mode, so
@@ -442,16 +453,28 @@ void BrowserMainLoop::CreateThreads() {
 
     switch (thread_id) {
       case BrowserThread::DB:
+        TRACE_EVENT_BEGIN1("startup",
+            "BrowserMainLoop::CreateThreads:start",
+            "Thread", "BrowserThread::DB");
         thread_to_start = &db_thread_;
         break;
       case BrowserThread::WEBKIT_DEPRECATED:
         // Special case as WebKitThread is a separate
         // type.  |thread_to_start| is not used in this case.
+        TRACE_EVENT_BEGIN1("startup",
+            "BrowserMainLoop::CreateThreads:start",
+            "Thread", "BrowserThread::WEBKIT_DEPRECATED");
         break;
       case BrowserThread::FILE_USER_BLOCKING:
+        TRACE_EVENT_BEGIN1("startup",
+            "BrowserMainLoop::CreateThreads:start",
+            "Thread", "BrowserThread::FILE_USER_BLOCKING");
         thread_to_start = &file_user_blocking_thread_;
         break;
       case BrowserThread::FILE:
+        TRACE_EVENT_BEGIN1("startup",
+            "BrowserMainLoop::CreateThreads:start",
+            "Thread", "BrowserThread::FILE");
         thread_to_start = &file_thread_;
 #if defined(OS_WIN)
         // On Windows, the FILE thread needs to be have a UI message loop
@@ -463,13 +486,22 @@ void BrowserMainLoop::CreateThreads() {
 #endif
         break;
       case BrowserThread::PROCESS_LAUNCHER:
+        TRACE_EVENT_BEGIN1("startup",
+            "BrowserMainLoop::CreateThreads:start",
+            "Thread", "BrowserThread::PROCESS_LAUNCHER");
         thread_to_start = &process_launcher_thread_;
         break;
       case BrowserThread::CACHE:
+        TRACE_EVENT_BEGIN1("startup",
+            "BrowserMainLoop::CreateThreads:start",
+            "Thread", "BrowserThread::CACHE");
         thread_to_start = &cache_thread_;
         options = &io_message_loop_options;
         break;
       case BrowserThread::IO:
+        TRACE_EVENT_BEGIN1("startup",
+            "BrowserMainLoop::CreateThreads:start",
+            "Thread", "BrowserThread::IO");
         thread_to_start = &io_thread_;
         options = &io_message_loop_options;
         break;
@@ -493,12 +525,18 @@ void BrowserMainLoop::CreateThreads() {
     } else {
       NOTREACHED();
     }
+
+    TRACE_EVENT_END0("startup", "BrowserMainLoop::CreateThreads:start");
+
   }
 
   BrowserThreadsStarted();
 
-  if (parts_)
+  if (parts_) {
+    TRACE_EVENT0("startup",
+        "BrowserMainLoop::CreateThreads:PreMainMessageLoopRun");
     parts_->PreMainMessageLoopRun();
+  }
 
   // If the UI thread blocks, the whole UI is unresponsive.
   // Do not allow disk IO from the UI thread.
@@ -686,6 +724,7 @@ void SetHighThreadPriority() {
 #endif
 
 void BrowserMainLoop::BrowserThreadsStarted() {
+  TRACE_EVENT0("startup", "BrowserMainLoop::BrowserThreadsStarted")
 #if defined(OS_ANDROID)
 // TODO(epenner): Move thread priorities to base. (crbug.com/170549)
   BrowserThread::PostTask(BrowserThread::UI,
@@ -710,11 +749,19 @@ void BrowserMainLoop::BrowserThreadsStarted() {
   device_monitor_mac_.reset(new DeviceMonitorMac());
 #endif
 
-  // RDH needs the IO thread to be created.
-  resource_dispatcher_host_.reset(new ResourceDispatcherHostImpl());
+  // RDH needs the IO thread to be created
+  {
+    TRACE_EVENT0("startup",
+      "BrowserMainLoop::BrowserThreadsStarted:InitResourceDispatcherHost");
+    resource_dispatcher_host_.reset(new ResourceDispatcherHostImpl());
+  }
 
   // MediaStreamManager needs the IO thread to be created.
-  media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
+  {
+    TRACE_EVENT0("startup",
+      "BrowserMainLoop::BrowserThreadsStarted:InitMediaStreamManager");
+    media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
+  }
 
   // Initialize the GpuDataManager before we set up the MessageLoops because
   // otherwise we'll trigger the assertion about doing IO on the UI thread.
@@ -722,7 +769,11 @@ void BrowserMainLoop::BrowserThreadsStarted() {
 #endif  // !OS_IOS
 
 #if defined(ENABLE_INPUT_SPEECH)
-  speech_recognition_manager_.reset(new SpeechRecognitionManagerImpl());
+  {
+    TRACE_EVENT0("startup",
+      "BrowserMainLoop::BrowserThreadsStarted:InitSpeechRecognition");
+    speech_recognition_manager_.reset(new SpeechRecognitionManagerImpl());
+  }
 #endif
 
 #if !defined(OS_IOS)
@@ -758,6 +809,7 @@ void BrowserMainLoop::BrowserThreadsStarted() {
 }
 
 void BrowserMainLoop::InitializeToolkit() {
+  TRACE_EVENT0("startup", "BrowserMainLoop::InitializeToolkit")
   // TODO(evan): this function is rather subtle, due to the variety
   // of intersecting ifdefs we have.  To keep it easy to follow, there
   // are no #else branches on any #ifs.

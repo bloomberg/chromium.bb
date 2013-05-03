@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
@@ -79,6 +80,7 @@ std::string GetVersionFromString(const std::string& version_string) {
 namespace gpu_info_collector {
 
 bool CollectGraphicsInfoGL(content::GPUInfo* gpu_info) {
+  TRACE_EVENT0("startup", "gpu_info_collector::CollectGraphicsInfoGL");
   if (!gfx::GLSurface::InitializeOneOff()) {
     LOG(ERROR) << "gfx::GLSurface::InitializeOneOff() failed";
     return false;

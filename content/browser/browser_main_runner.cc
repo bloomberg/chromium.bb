@@ -43,6 +43,7 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
 
   virtual int Initialize(const MainFunctionParams& parameters)
       OVERRIDE {
+    TRACE_EVENT0("startup", "BrowserMainRunnerImpl::Initialize")
     is_initialized_ = true;
 
 #if !defined(OS_IOS)

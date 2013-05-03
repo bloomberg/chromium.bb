@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
@@ -311,12 +312,17 @@ void GpuDataManagerImpl::GetGLStrings(std::string* gl_vendor,
 
 
 void GpuDataManagerImpl::Initialize() {
+  TRACE_EVENT0("startup", "GpuDataManagerImpl::Initialize");
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kSkipGpuDataLoading))
     return;
 
   GPUInfo gpu_info;
-  gpu_info_collector::CollectBasicGraphicsInfo(&gpu_info);
+  {
+    TRACE_EVENT0("startup",
+      "GpuDataManagerImpl::Initialize:CollectBasicGraphicsInfo");
+    gpu_info_collector::CollectBasicGraphicsInfo(&gpu_info);
+  }
 #if defined(ARCH_CPU_X86_FAMILY)
   if (!gpu_info.gpu.vendor_id || !gpu_info.gpu.device_id)
     gpu_info.finalized = true;

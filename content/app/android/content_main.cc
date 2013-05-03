@@ -7,6 +7,7 @@
 #include "base/at_exit.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "content/public/app/content_main.h"
 #include "content/public/app/content_main_delegate.h"
@@ -35,6 +36,7 @@ static void InitApplicationContext(JNIEnv* env, jclass clazz, jobject context) {
 }
 
 static jint Start(JNIEnv* env, jclass clazz) {
+  TRACE_EVENT0("startup", "content::Start");
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
 
   // This is only for browser process. We want to start waiting as early as

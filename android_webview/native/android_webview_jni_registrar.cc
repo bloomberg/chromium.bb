@@ -19,6 +19,7 @@
 #include "android_webview/native/java_browser_view_renderer_helper.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
+#include "base/debug/trace_event.h"
 
 namespace android_webview {
 
@@ -40,6 +41,7 @@ static base::android::RegistrationMethod kWebViewRegisteredMethods[] = {
 };
 
 bool RegisterJni(JNIEnv* env) {
+  TRACE_EVENT0("startup", "android_webview::RegisterJni");
   return RegisterNativeMethods(env,
       kWebViewRegisteredMethods, arraysize(kWebViewRegisteredMethods));
 }
