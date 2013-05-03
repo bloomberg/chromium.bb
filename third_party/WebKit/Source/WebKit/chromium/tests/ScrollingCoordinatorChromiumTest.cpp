@@ -147,9 +147,6 @@ TEST_F(ScrollingCoordinatorChromiumTest, fastScrollingForFixedPosition)
     registerMockedHttpURLLoad("fixed-position.html");
     navigateTo(m_baseURL + "fixed-position.html");
 
-    Page* page = m_webViewImpl->mainFrameImpl()->frame()->page();
-    ASSERT_TRUE(page->scrollingCoordinator()->supportsFixedPositionLayers());
-
     // Fixed position should not fall back to main thread scrolling.
     WebLayer* rootScrollLayer = getRootScrollLayer();
     ASSERT_FALSE(rootScrollLayer->shouldScrollOnMainThread());

@@ -591,9 +591,7 @@ MainThreadScrollingReasons ScrollingCoordinator::mainThreadScrollingReasons() co
 
     if (frameView->hasSlowRepaintObjects())
         mainThreadScrollingReasons |= HasSlowRepaintObjects;
-    if (!supportsFixedPositionLayers() && frameView->hasViewportConstrainedObjects())
-        mainThreadScrollingReasons |= HasViewportConstrainedObjectsWithoutSupportingFixedLayers;
-    if (supportsFixedPositionLayers() && hasVisibleSlowRepaintViewportConstrainedObjects(frameView))
+    if (hasVisibleSlowRepaintViewportConstrainedObjects(frameView))
         mainThreadScrollingReasons |= HasNonLayerViewportConstrainedObjects;
 
     return mainThreadScrollingReasons;

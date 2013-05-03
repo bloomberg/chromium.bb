@@ -733,9 +733,6 @@ void RenderLayerBacking::registerScrollingLayers()
 
     compositor()->updateViewportConstraintStatus(m_owningLayer);
 
-    if (!scrollingCoordinator->supportsFixedPositionLayers())
-        return;
-
     scrollingCoordinator->updateLayerPositionConstraint(m_owningLayer);
 
     // Page scale is applied as a transform on the root render view layer. Because the scroll
