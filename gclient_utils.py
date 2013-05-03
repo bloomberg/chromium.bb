@@ -678,12 +678,28 @@ class ExecutionQueue(object):
         work_queue.ready_cond.release()
 
 
-def GetEditor(git):
-  """Returns the most plausible editor to use."""
+def GetEditor(git, git_editor=None):
+  """Returns the most plausible editor to use.
+
+  In order of preference:
+  - GIT_EDITOR/SVN_EDITOR environment variable
+  - core.editor git configuration variable (if supplied by git-cl)
+  - VISUAL environment variable
+  - EDITOR environment variable
+  - vim (non-Windows) or notepad (Windows)
+
+  In the case of git-cl, this matches git's behaviour, except that it does not
+  include dumb terminal detection.
+
+  In the case of gcl, this matches svn's behaviour, except that it does not
+  accept a command-line flag or check the editor-cmd configuration variable.
+  """
   if git:
-    editor = os.environ.get('GIT_EDITOR')
+    editor = os.environ.get('GIT_EDITOR') or git_editor
   else:
     editor = os.environ.get('SVN_EDITOR')
+  if not editor:
+    editor = os.environ.get('VISUAL')
   if not editor:
     editor = os.environ.get('EDITOR')
   if not editor:
@@ -694,7 +710,7 @@ def GetEditor(git):
   return editor
 
 
-def RunEditor(content, git):
+def RunEditor(content, git, git_editor=None):
   """Opens up the default editor in the system to get the CL description."""
   file_handle, filename = tempfile.mkstemp(text=True)
   # Make sure CRLF is handled properly by requiring none.
@@ -707,7 +723,10 @@ def RunEditor(content, git):
   fileobj.close()
 
   try:
-    cmd = '%s %s' % (GetEditor(git), filename)
+    editor = GetEditor(git, git_editor=git_editor)
+    if not editor:
+      return None
+    cmd = '%s %s' % (editor, filename)
     if sys.platform == 'win32' and os.environ.get('TERM') == 'msys':
       # Msysgit requires the usage of 'env' to be present.
       cmd = 'env ' + cmd

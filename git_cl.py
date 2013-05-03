@@ -245,6 +245,7 @@ class Settings(object):
     self.viewvc_url = None
     self.updated = False
     self.is_gerrit = None
+    self.git_editor = None
 
   def LazyUpdateIfNeeded(self):
     """Updates the settings from a codereview.settings file, if available."""
@@ -368,6 +369,12 @@ class Settings(object):
     if self.is_gerrit is None:
       self.is_gerrit = self._GetConfig('gerrit.host', error_ok=True)
     return self.is_gerrit
+
+  def GetGitEditor(self):
+    """Return the editor specified in the git config, or None if none is."""
+    if self.git_editor is None:
+      self.git_editor = self._GetConfig('core.editor', error_ok=True)
+    return self.git_editor or None
 
   def _GetConfig(self, param, **kwargs):
     self.LazyUpdateIfNeeded()
@@ -853,7 +860,8 @@ class ChangeDescription(object):
 
     if '\nBUG=' not in self._description:
       self.append_footer('BUG=')
-    content = gclient_utils.RunEditor(self._description, True)
+    content = gclient_utils.RunEditor(self._description, True,
+                                      git_editor=settings.GetGitEditor())
     if not content:
       DieWithError('Running editor failed')
 

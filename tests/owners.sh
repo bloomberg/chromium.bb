@@ -16,7 +16,7 @@ setup_gitsvn
   set -e
   cd git-svn
   git config rietveld.server localhost:8080
-  export EDITOR=$(which true)
+  export GIT_EDITOR=$(which true)
 
   git checkout -q -b work
   echo "ben@chromium.org" > OWNERS

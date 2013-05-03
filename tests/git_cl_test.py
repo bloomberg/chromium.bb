@@ -114,6 +114,11 @@ class TestGitCl(TestCase):
             cls._git_upload_calls())
 
   @classmethod
+  def _upload_no_rev_calls(cls, similarity, find_copies):
+    return (cls._git_base_calls(similarity, find_copies) +
+            cls._git_upload_no_rev_calls())
+
+  @classmethod
   def _git_base_calls(cls, similarity, find_copies):
     if similarity is None:
       similarity = '50'
@@ -175,8 +180,15 @@ class TestGitCl(TestCase):
     ]
 
   @classmethod
+  def _git_upload_no_rev_calls(cls):
+    return [
+      ((['git', '--no-pager', 'config', 'core.editor'],), ''),
+    ]
+
+  @classmethod
   def _git_upload_calls(cls):
     return [
+      ((['git', '--no-pager', 'config', 'core.editor'],), ''),
       ((['git', '--no-pager', 'config', 'rietveld.cc'],), ''),
       ((['git', '--no-pager', 'config', 'branch.master.base-url'],), ''),
       ((['git', '--no-pager',
@@ -358,7 +370,7 @@ class TestGitCl(TestCase):
       find_copies = None
 
     self.calls = self._upload_calls(similarity, find_copies)
-    def RunEditor(desc, _):
+    def RunEditor(desc, _, **kwargs):
       self.assertEquals(
           '# Enter a description of the change.\n'
           '# This will be displayed on the codereview site.\n'
@@ -450,8 +462,8 @@ class TestGitCl(TestCase):
 
     mock = FileMock()
     try:
-      self.calls = self._git_base_calls(None, None)
-      def RunEditor(desc, _):
+      self.calls = self._upload_no_rev_calls(None, None)
+      def RunEditor(desc, _, **kwargs):
         return desc
       self.mock(git_cl.gclient_utils, 'RunEditor', RunEditor)
       self.mock(sys, 'stderr', mock)
