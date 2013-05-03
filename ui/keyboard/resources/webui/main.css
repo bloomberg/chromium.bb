@@ -70,6 +70,10 @@ div.row > div {
   background-image: url('images/mic.svg');
 }
 
+.mic.start > div {
+  background-image: url('images/mic-green.svg');
+}
+
 .button {
   background: -webkit-linear-gradient(rgb(90, 97, 111), rgb(80, 86, 98));
 }
