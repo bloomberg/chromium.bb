@@ -53,7 +53,6 @@
 #include "core/workers/WorkerObjectProxy.h"
 #include "core/workers/WorkerScriptLoader.h"
 #include "core/workers/WorkerThread.h"
-#include "core/xml/XMLHttpRequestException.h"
 #include <wtf/RefPtr.h>
 #include <wtf/UnusedParam.h>
 
@@ -245,7 +244,7 @@ void WorkerContext::importScripts(const Vector<String>& urls, ExceptionCode& ec)
 
         // If the fetching attempt failed, throw a NETWORK_ERR exception and abort all these steps.
         if (scriptLoader->failed()) {
-            ec = XMLHttpRequestException::NETWORK_ERR;
+            ec = NETWORK_ERR;
             return;
         }
 

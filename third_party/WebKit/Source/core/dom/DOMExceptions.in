@@ -6,5 +6,4 @@ core/fileapi/FileException
 core/dom/RangeException
 modules/webdatabase/SQLException
 core/svg/SVGException conditional=SVG
-core/xml/XMLHttpRequestException
 core/xml/XPathException

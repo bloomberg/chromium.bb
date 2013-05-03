@@ -555,7 +555,6 @@
     attribute XMLSerializerConstructor XMLSerializer;
     attribute XMLHttpRequestConstructor XMLHttpRequest; // Usable with the new operator
     attribute XMLHttpRequestUploadConstructor XMLHttpRequestUpload;
-    attribute XMLHttpRequestExceptionConstructor XMLHttpRequestException;
     attribute XSLTProcessorConstructor XSLTProcessor; // Usable with the new operator
 
     attribute MessagePortConstructor MessagePort;

@@ -55,7 +55,6 @@
 #include "core/platform/network/ParsedContentType.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
-#include "core/xml/XMLHttpRequestException.h"
 #include "core/xml/XMLHttpRequestProgressEvent.h"
 #include "core/xml/XMLHttpRequestUpload.h"
 #include <wtf/ArrayBuffer.h>
@@ -712,7 +711,7 @@ void XMLHttpRequest::createRequest(ExceptionCode& ec)
 {
     // Only GET request is supported for blob URL.
     if (m_url.protocolIs("blob") && m_method != "GET") {
-        ec = XMLHttpRequestException::NETWORK_ERR;
+        ec = NETWORK_ERR;
         return;
     }
 
@@ -788,7 +787,7 @@ void XMLHttpRequest::createRequest(ExceptionCode& ec)
     }
 
     if (!m_exceptionCode && m_error)
-        m_exceptionCode = XMLHttpRequestException::NETWORK_ERR;
+        m_exceptionCode = NETWORK_ERR;
     ec = m_exceptionCode;
 }
 
@@ -1058,7 +1057,7 @@ void XMLHttpRequest::didFail(const ResourceError& error)
         return;
 
     if (error.isCancellation()) {
-        m_exceptionCode = XMLHttpRequestException::ABORT_ERR;
+        m_exceptionCode = ABORT_ERR;
         abortError();
         return;
     }
@@ -1074,7 +1073,7 @@ void XMLHttpRequest::didFail(const ResourceError& error)
     if (error.domain() == errorDomainWebKitInternal)
         logConsoleError(scriptExecutionContext(), "XMLHttpRequest cannot load " + error.failingURL() + ". " + error.localizedDescription());
 
-    m_exceptionCode = XMLHttpRequestException::NETWORK_ERR;
+    m_exceptionCode = NETWORK_ERR;
     networkError();
 }
 
@@ -1205,7 +1204,7 @@ void XMLHttpRequest::didTimeout()
     clearRequest();
 
     m_error = true;
-    m_exceptionCode = XMLHttpRequestException::TIMEOUT_ERR;
+    m_exceptionCode = TIMEOUT_ERR;
 
     if (!m_async) {
         m_state = DONE;

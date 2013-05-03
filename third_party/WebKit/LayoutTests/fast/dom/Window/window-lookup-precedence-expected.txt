@@ -308,8 +308,6 @@ PASS 'function Document() { [native code] }' is 'function Document() { [native c
 PASS 'function Document() { [native code] }' is 'function Document() { [native code] }'
 PASS 'function XMLHttpRequest() { [native code] }' is 'function XMLHttpRequest() { [native code] }'
 PASS 'function XMLHttpRequest() { [native code] }' is 'function XMLHttpRequest() { [native code] }'
-PASS 'function XMLHttpRequestException() { [native code] }' is 'function XMLHttpRequestException() { [native code] }'
-PASS 'function XMLHttpRequestException() { [native code] }' is 'function XMLHttpRequestException() { [native code] }'
 PASS 'function XMLSerializer() { [native code] }' is 'function XMLSerializer() { [native code] }'
 PASS 'function XMLSerializer() { [native code] }' is 'function XMLSerializer() { [native code] }'
 PASS 'function XPathEvaluator() { [native code] }' is 'function XPathEvaluator() { [native code] }'
