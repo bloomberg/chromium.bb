@@ -409,8 +409,10 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
       fake_speech_recognition_manager_;
 };
 
-// http://crbug.com/176122: This test is flaky on Windows.
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+// This test is flaky on Windows, Chrome OS, and Mac (all platforms that
+// have threaded compositing enabled).
+// http://crbug.com/176122
+#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_MACOSX)
 #define MAYBE_Shim DISABLED_Shim
 #else
 #define MAYBE_Shim Shim
