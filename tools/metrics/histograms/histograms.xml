@@ -919,6 +919,13 @@ other types of suffix sets.
   <summary>Errno of errors encountered in WritableFileFlush.</summary>
 </histogram>
 
+<histogram name="LevelDBEnv.IDB.MaxFDs" units="files">
+  <summary>
+    File descriptor limit recorded every time LevelDB calls NewRandomAccessFile
+    for IndexedDB.
+  </summary>
+</histogram>
+
 <histogram name="LevelDBEnv.IDB.TimeTo" units="milliseconds">
   <obsolete>
     Deprecated 2013-04. As of m28 use LevelDBEnv.IDB.TimeUntilSuccessFor.
@@ -967,6 +974,13 @@ other types of suffix sets.
 
 <histogram name="LevelDBEnv.IOError.WritableFileFlush" enum="OSAgnosticErrno">
   <summary>Errno of errors encountered in WritableFileFlush.</summary>
+</histogram>
+
+<histogram name="LevelDBEnv.MaxFDs" units="files">
+  <summary>
+    File descriptor limit recorded every time LevelDB calls NewRandomAccessFile
+    for clients other than IndexedDB.
+  </summary>
 </histogram>
 
 <histogram name="LevelDBEnv.TimeTo" units="milliseconds">
@@ -10908,6 +10922,19 @@ other types of suffix sets.
   <group name="LockFile" label="LockFile"/>
   <affected-histogram name="LevelDBEnv.IDB.TimeUntilSuccessFor"/>
   <affected-histogram name="LevelDBEnv.TimeUntilSuccessFor"/>
+</fieldtrial>
+
+<fieldtrial name="LevelDBEnvMaxFDs" separator=".">
+  <group name="Success"
+      label="This histogram shows the limit when open succeeded."/>
+  <group name="TooManyOpened"
+      label="This histogram shows the limit when open failed because the
+             limit had been reached."/>
+  <group name="OtherError"
+      label="This histogram shows the limit when open failed for reasons
+             other than exceeding the limit."/>
+  <affected-histogram name="LevelDBEnv.IDB.MaxFDs"/>
+  <affected-histogram name="LevelDBEnv.MaxFDs"/>
 </fieldtrial>
 
 <fieldtrial name="LevelDBEnvPlatformFileErrors" separator="">

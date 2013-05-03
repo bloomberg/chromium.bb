@@ -34,8 +34,10 @@
 #include "base/win/win_util.h"
 #endif
 
-#if !defined(OS_WIN)
+#if defined(OS_POSIX)
 #include <fcntl.h>
+#include <sys/resource.h>
+#include <sys/time.h>
 #endif
 
 namespace {
@@ -397,6 +399,15 @@ class ChromiumEnv : public Env, public UMALogger {
     }
   }
 
+  void RecordOpenFilesLimit(const std::string& type) {
+#if defined(OS_POSIX)
+    struct rlimit nofile;
+    if (getrlimit(RLIMIT_NOFILE, &nofile))
+      return;
+    GetMaxFDHistogram(type)->Add(nofile.rlim_cur);
+#endif
+  }
+
   virtual Status NewRandomAccessFile(const std::string& fname,
                                      RandomAccessFile** result) {
     int flags = ::base::PLATFORM_FILE_READ | ::base::PLATFORM_FILE_OPEN;
@@ -404,13 +415,18 @@ class ChromiumEnv : public Env, public UMALogger {
     ::base::PlatformFileError error_code;
     ::base::PlatformFile file = ::base::CreatePlatformFile(
         CreateFilePath(fname), flags, &created, &error_code);
-    if (error_code != ::base::PLATFORM_FILE_OK) {
-      *result = NULL;
-      RecordOSError(kNewRandomAccessFile, error_code);
-      return Status::IOError(fname, PlatformFileErrorString(error_code));
+    if (error_code == ::base::PLATFORM_FILE_OK) {
+      *result = new ChromiumRandomAccessFile(fname, file, this);
+      RecordOpenFilesLimit("Success");
+      return Status::OK();
     }
-    *result = new ChromiumRandomAccessFile(fname, file, this);
-    return Status::OK();
+    if (error_code == ::base::PLATFORM_FILE_ERROR_TOO_MANY_OPENED)
+      RecordOpenFilesLimit("TooManyOpened");
+    else
+      RecordOpenFilesLimit("OtherError");
+    *result = NULL;
+    RecordOSError(kNewRandomAccessFile, error_code);
+    return Status::IOError(fname, PlatformFileErrorString(error_code));
   }
 
   virtual Status NewWritableFile(const std::string& fname,
@@ -675,6 +691,7 @@ class ChromiumEnv : public Env, public UMALogger {
   base::HistogramBase* GetOSErrorHistogram(MethodID method, int limit) const;
   base::HistogramBase* GetRetryTimeHistogram(MethodID method) const;
   base::HistogramBase* GetMethodIOErrorHistogram() const;
+  base::HistogramBase* GetMaxFDHistogram(const std::string& type);
   base::FilePath test_directory_;
 
   size_t page_size_;
@@ -725,6 +742,19 @@ base::HistogramBase* ChromiumEnv::GetMethodIOErrorHistogram() const {
   uma_name.append(".IOError");
   return base::LinearHistogram::FactoryGet(uma_name, 1, kNumEntries,
       kNumEntries + 1, base::Histogram::kUmaTargetedHistogramFlag);
+}
+
+base::HistogramBase* ChromiumEnv::GetMaxFDHistogram(
+    const std::string& type) {
+  std::string uma_name(name_);
+  uma_name.append(".MaxFDs.").append(type);
+  // These numbers make each bucket twice as large as the previous bucket.
+  const int kFirstEntry = 1;
+  const int kLastEntry = 65536;
+  const int kNumBuckets = 18;
+  return base::Histogram::FactoryGet(
+      uma_name, kFirstEntry, kLastEntry, kNumBuckets,
+      base::Histogram::kUmaTargetedHistogramFlag);
 }
 
 class Thread : public ::base::PlatformThread::Delegate {
