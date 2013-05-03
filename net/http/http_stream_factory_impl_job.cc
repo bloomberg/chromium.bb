@@ -696,8 +696,10 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
       // TODO(rch): support QUIC proxies.
       return ERR_NOT_IMPLEMENTED;
     }
-    next_state_ = STATE_CREATE_STREAM;
-    return OK;
+    next_state_ = STATE_INIT_CONNECTION_COMPLETE;
+    const ProxyServer& proxy_server = proxy_info_.proxy_server();
+    return quic_request_.Request(HostPortProxyPair(origin_, proxy_server),
+                                 net_log_, io_callback_);
   }
 
   // Check first if we have a spdy session for this group.  If so, then go
@@ -895,6 +897,12 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
     return result;
   }
 
+  if (using_quic_) {
+    stream_ = quic_request_.ReleaseStream();
+    next_state_ = STATE_NONE;
+    return OK;
+  }
+
   if (result < 0 && !ssl_started)
     return ReconsiderProxyAfterError(result);
   establishing_tunnel_ = false;
@@ -955,13 +963,6 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
   if (connection_->socket() && !connection_->is_reused())
     SetSocketMotivation();
 
-  const ProxyServer& proxy_server = proxy_info_.proxy_server();
-
-  if (using_quic_) {
-    return quic_request_.Request(HostPortProxyPair(origin_, proxy_server),
-                                 net_log_, io_callback_);
-  }
-
   if (!using_spdy_) {
     // We may get ftp scheme when fetching ftp resources through proxy.
     bool using_proxy = (proxy_info_.is_http() || proxy_info_.is_https()) &&
@@ -995,6 +996,7 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
   CHECK(!stream_.get());
 
   bool direct = true;
+  const ProxyServer& proxy_server = proxy_info_.proxy_server();
   HostPortProxyPair pair(origin_, proxy_server);
   if (IsHttpsProxyAndHttpUrl()) {
     // If we don't have a direct SPDY session, and we're using an HTTPS
@@ -1045,10 +1047,6 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
 int HttpStreamFactoryImpl::Job::DoCreateStreamComplete(int result) {
   if (result < 0)
     return result;
-
-  if (using_quic_) {
-    stream_ = quic_request_.ReleaseStream();
-  }
 
   session_->proxy_service()->ReportSuccess(proxy_info_);
   next_state_ = STATE_NONE;

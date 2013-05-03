@@ -101,6 +101,27 @@ class QuicNetworkTransactionTest : public PlatformTest {
         ConstructPacket(header, QuicFrame(&rst)));
   }
 
+  scoped_ptr<QuicEncryptedPacket> ConstructConnectionClosePacket(
+      QuicPacketSequenceNumber num) {
+    QuicPacketHeader header;
+    header.public_header.guid = 0xDEADBEEF;
+    header.public_header.reset_flag = false;
+    header.public_header.version_flag = false;
+    header.packet_sequence_number = num;
+    header.entropy_flag = false;
+    header.fec_flag = false;
+    header.fec_entropy_flag = false;
+    header.fec_group = 0;
+
+    QuicAckFrame ack_frame(0, QuicTime::Zero(), 0);
+    QuicConnectionCloseFrame close;
+    close.error_code = QUIC_CRYPTO_VERSION_NOT_SUPPORTED;
+    close.error_details = "Time to panic!";
+    close.ack_frame = ack_frame;
+    return scoped_ptr<QuicEncryptedPacket>(
+        ConstructPacket(header, QuicFrame(&close)));
+  }
+
   scoped_ptr<QuicEncryptedPacket> ConstructAckPacket(
       QuicPacketSequenceNumber largest_received,
       QuicPacketSequenceNumber least_unacked) {
@@ -550,6 +571,75 @@ TEST_F(QuicNetworkTransactionTest, ZeroRTT) {
   std::string response_data;
   ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
   EXPECT_EQ("hello!", response_data);
+}
+
+TEST_F(QuicNetworkTransactionTest, BrokenAlternateProtocol) {
+  HttpStreamFactory::set_use_alternate_protocols(true);
+  HttpStreamFactory::SetNextProtos(QuicNextProtos());
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.google.com/");
+  request.load_flags = 0;
+
+  // Alternate-protocol job
+  scoped_ptr<QuicEncryptedPacket> close(ConstructConnectionClosePacket(1));
+  MockRead quic_reads[] = {
+    MockRead(ASYNC, close->data(), close->length()),
+    MockRead(ASYNC, OK),  // EOF
+  };
+  StaticSocketDataProvider quic_data(quic_reads, arraysize(quic_reads),
+                                     NULL, 0);
+  socket_factory_.AddSocketDataProvider(&quic_data);
+
+  // Main job which will succeed even though the alternate job fails.
+  MockRead http_reads[] = {
+    MockRead("HTTP/1.1 200 OK\r\n\r\n"),
+    MockRead("hello from http"),
+    MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+    MockRead(ASYNC, OK)
+  };
+
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
+                                     NULL, 0);
+  socket_factory_.AddSocketDataProvider(&http_data);
+
+  TestCompletionCallback callback;
+
+  CreateSession();
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::COLD_START);
+
+  // Port must be < 1024, or the header will be ignored (since initial port was
+  // port 80 (another restricted port).
+  session_->http_server_properties()->SetAlternateProtocol(
+      HostPortPair::FromURL(request.url),
+      666 /* port is ignored by MockConnect anyway */,
+      QUIC);
+
+  scoped_ptr<HttpNetworkTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_));
+  EXPECT_EQ(ERR_IO_PENDING,
+            trans->Start(&request, callback.callback(), BoundNetLog()));
+  EXPECT_EQ(OK, callback.WaitForResult());
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response != NULL);
+  ASSERT_TRUE(response->headers != NULL);
+  EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+  EXPECT_FALSE(response->was_fetched_via_spdy);
+  EXPECT_FALSE(response->was_npn_negotiated);
+
+  std::string response_data;
+  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  EXPECT_EQ("hello from http", response_data);
+
+  ASSERT_TRUE(session_->http_server_properties()->HasAlternateProtocol(
+      HostPortPair::FromURL(request.url)));
+  const PortAlternateProtocolPair alternate =
+      session_->http_server_properties()->GetAlternateProtocol(
+          HostPortPair::FromURL(request.url));
+  EXPECT_EQ(ALTERNATE_PROTOCOL_BROKEN, alternate.protocol);
 }
 
 }  // namespace test

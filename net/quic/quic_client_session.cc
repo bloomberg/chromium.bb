@@ -123,7 +123,7 @@ void QuicClientSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
 
 void QuicClientSession::ConnectionClose(QuicErrorCode error, bool from_peer) {
   if (!callback_.is_null()) {
-    base::ResetAndReturn(&callback_).Run(error);
+    base::ResetAndReturn(&callback_).Run(ERR_QUIC_PROTOCOL_ERROR);
   }
   QuicSession::ConnectionClose(error, from_peer);
 }

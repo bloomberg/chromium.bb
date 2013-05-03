@@ -25,17 +25,28 @@ void MockCryptoClientStream::OnHandshakeMessage(
 }
 
 bool MockCryptoClientStream::CryptoConnect() {
-  if (handshake_mode_ == ZERO_RTT) {
-    encryption_established_ = true;
-    handshake_confirmed_ = false;
-    session()->OnCryptoHandshakeEvent(
-        QuicSession::ENCRYPTION_FIRST_ESTABLISHED);
-    return true;
-  }
+  switch (handshake_mode_) {
+    case ZERO_RTT: {
+      encryption_established_ = true;
+      handshake_confirmed_ = false;
+      session()->OnCryptoHandshakeEvent(
+          QuicSession::ENCRYPTION_FIRST_ESTABLISHED);
+      break;
+    }
 
-  encryption_established_ = true;
-  handshake_confirmed_ = true;
-  session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
+    case CONFIRM_HANDSHAKE: {
+      encryption_established_ = true;
+      handshake_confirmed_ = true;
+      session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
+      break;
+    }
+
+    case COLD_START: {
+      handshake_confirmed_ = false;
+      encryption_established_ = false;
+      break;
+    }
+  }
   return true;
 }
 

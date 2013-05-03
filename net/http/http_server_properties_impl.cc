@@ -179,7 +179,7 @@ void HttpServerPropertiesImpl::SetAlternateProtocol(
     uint16 alternate_port,
     AlternateProtocol alternate_protocol) {
   if (alternate_protocol == ALTERNATE_PROTOCOL_BROKEN) {
-    LOG(DFATAL) << "Call MarkBrokenAlternateProtocolFor() instead.";
+    LOG(DFATAL) << "Call SetBrokenAlternateProtocol() instead.";
     return;
   }
 
