@@ -12,9 +12,8 @@
 ValidationMessageAgent::ValidationMessageAgent(content::RenderView* render_view)
     : content::RenderViewObserver(render_view)
 {
-#if defined(OS_MACOSX) || defined(TOOLKIT_VIEWS)
-  // TODO(tkent): enable this for other platforms.
-  // crbug.com/235717, crbug.com/235721.
+#if !defined(OS_ANDROID)
+  // TODO(tkent): enable this for Android. crbug.com/235721.
   render_view->GetWebView()->setValidationMessageClient(this);
 #endif
 }
