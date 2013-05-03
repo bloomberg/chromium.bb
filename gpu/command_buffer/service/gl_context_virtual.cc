@@ -29,12 +29,19 @@ bool GLContextVirtual::Initialize(
     gfx::GLSurface* compatible_surface, gfx::GpuPreference gpu_preference) {
   display_ = static_cast<gfx::Display*>(compatible_surface->GetDisplay());
 
-  if (!shared_context_->MakeCurrent(compatible_surface))
-    return false;
+  // Virtual contexts obviously can't make a context that is compatible
+  // with the surface (the context already exists), but we do need to
+  // make a context current for SetupForVirtualization() below.
+  if (!IsCurrent(compatible_surface)) {
+    if (!shared_context_->MakeCurrent(compatible_surface)) {
+      // This is likely an error. The real context should be made as
+      // compatible with all required surfaces when it was created.
+      LOG(ERROR) << "Failed MakeCurrent(compatible_surface)";
+      return false;
+    }
+  }
 
   shared_context_->SetupForVirtualization();
-
-  shared_context_->ReleaseCurrent(compatible_surface);
   return true;
 }
 
@@ -58,18 +65,14 @@ void GLContextVirtual::ReleaseCurrent(gfx::GLSurface* surface) {
 }
 
 bool GLContextVirtual::IsCurrent(gfx::GLSurface* surface) {
-  bool context_current = shared_context_->IsCurrent(NULL);
-  if (!context_current)
-    return false;
+  // If it's a real surface it needs to be current.
+  if (surface &&
+      !surface->GetBackingFrameBufferObject() &&
+      !surface->IsOffscreen())
+    return shared_context_->IsCurrent(surface);
 
-  if (!surface)
-    return true;
-
-  gfx::GLSurface* current_surface = gfx::GLSurface::GetCurrent();
-  return surface->GetBackingFrameBufferObject() ||
-      surface->IsOffscreen() ||
-      (current_surface &&
-       current_surface->GetHandle() == surface->GetHandle());
+  // Otherwise, only insure the context itself is current.
+  return shared_context_->IsCurrent(NULL);
 }
 
 void* GLContextVirtual::GetHandle() {

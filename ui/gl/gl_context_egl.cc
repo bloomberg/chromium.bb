@@ -133,6 +133,9 @@ void GLContextEGL::ReleaseCurrent(GLSurface* surface) {
   if (!IsCurrent(surface))
     return;
 
+  if (unbind_fbo_on_makecurrent_)
+    glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+
   SetCurrent(NULL, NULL);
   eglMakeCurrent(display_,
                  EGL_NO_SURFACE,

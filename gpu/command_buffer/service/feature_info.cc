@@ -227,7 +227,7 @@ void FeatureInfo::AddFeatures(const CommandLine& command_line) {
       workarounds_.flush_on_context_switch = true;
       workarounds_.delete_instead_of_resize_fbo = true;
     }
-    if (is_vivante) {
+    if (is_vivante || is_imagination) {
       workarounds_.unbind_fbo_on_context_switch = true;
     }
 #if defined(OS_MACOSX)
