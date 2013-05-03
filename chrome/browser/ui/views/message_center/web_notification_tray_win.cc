@@ -126,22 +126,15 @@ WebNotificationTrayWin::WebNotificationTrayWin()
       should_update_tray_content_(true) {
   message_center_tray_.reset(new MessageCenterTray(
       this, g_browser_process->message_center()));
-  StatusTray* status_tray = g_browser_process->status_tray();
-  status_icon_ = status_tray->CreateStatusIcon();
-  status_icon_->AddObserver(this);
-
+  GetStatusIcon();
   UpdateStatusIcon();
-  AddQuietModeMenu(status_icon_);
 }
 
 WebNotificationTrayWin::~WebNotificationTrayWin() {
   // Reset this early so that delegated events during destruction don't cause
   // problems.
   message_center_tray_.reset();
-  status_icon_->RemoveObserver(this);
-  StatusTray* status_tray = g_browser_process->status_tray();
-  status_tray->RemoveStatusIcon(status_icon_);
-  status_icon_ = NULL;
+  DestroyStatusIcon();
 }
 
 message_center::MessageCenter* WebNotificationTrayWin::message_center() {
@@ -250,15 +243,19 @@ void WebNotificationTrayWin::UpdateStatusIcon() {
   should_update_tray_content_ = false;
 
   int unread_notifications = message_center()->UnreadNotificationCount();
-  status_icon_->SetImage(GetIcon(unread_notifications));
+  StatusIcon* status_icon = GetStatusIcon();
+  if (!status_icon)
+    return;
+
+  status_icon->SetImage(GetIcon(unread_notifications));
 
   string16 product_name(l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
   if (unread_notifications > 0) {
     string16 str_unread_count = base::FormatNumber(unread_notifications);
-    status_icon_->SetToolTip(l10n_util::GetStringFUTF16(
+    status_icon->SetToolTip(l10n_util::GetStringFUTF16(
         IDS_MESSAGE_CENTER_TOOLTIP_UNREAD, product_name, str_unread_count));
   } else {
-    status_icon_->SetToolTip(l10n_util::GetStringFUTF16(
+    status_icon->SetToolTip(l10n_util::GetStringFUTF16(
         IDS_MESSAGE_CENTER_TOOLTIP, product_name));
   }
 }
@@ -276,6 +273,36 @@ void WebNotificationTrayWin::HideBubbleWithView(
       bubble_view == message_center_bubble_->bubble_view()) {
     message_center_tray_->HideMessageCenterBubble();
   }
+}
+
+StatusIcon* WebNotificationTrayWin::GetStatusIcon() {
+  if (status_icon_)
+    return status_icon_;
+
+  StatusTray* status_tray = g_browser_process->status_tray();
+  if (!status_tray)
+    return NULL;
+
+  StatusIcon* status_icon = status_tray->CreateStatusIcon();
+  if (!status_icon)
+    return NULL;
+
+  status_icon_ = status_icon;
+  status_icon_->AddObserver(this);
+  AddQuietModeMenu(status_icon_);
+
+  return status_icon_;
+}
+
+void WebNotificationTrayWin::DestroyStatusIcon() {
+  if (!status_icon_)
+    return;
+
+  status_icon_->RemoveObserver(this);
+  StatusTray* status_tray = g_browser_process->status_tray();
+  if (status_tray)
+    status_tray->RemoveStatusIcon(status_icon_);
+  status_icon_ = NULL;
 }
 
 void WebNotificationTrayWin::AddQuietModeMenu(StatusIcon* status_icon) {

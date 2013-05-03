@@ -75,6 +75,8 @@ class WebNotificationTrayWin
                            ManyMessageCenterNotifications);
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayWinTest, ManyPopupNotifications);
 
+  StatusIcon* GetStatusIcon();
+  void DestroyStatusIcon();
   void AddQuietModeMenu(StatusIcon* status_icon);
   message_center::MessageCenterBubble* GetMessageCenterBubbleForTest();
 
