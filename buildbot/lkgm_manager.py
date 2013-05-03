@@ -348,6 +348,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       self.InitializeManifestVariables(self.GetCurrentVersionInfo())
       if self.latest_unprocessed:
         return self.latest_unprocessed
+      elif self.dry_run and self.latest:
+        return self.latest
       else:
         logging.info('Found nothing new to build, trying again later.')
         logging.info('If this is a PFQ, then you should have forced the master'
