@@ -74,11 +74,11 @@ endef
 #
 #
 define LIB_RULE
-$(STAMPDIR)/$(1).stamp : $(NACL_SDK_ROOT)/lib/$(OSNAME)_x86_32_host/$(CONFIG)/$(1).lib
+$(STAMPDIR)/$(1).stamp : $(LIBDIR)/$(OSNAME)_x86_32_host/$(CONFIG)/$(1).lib
 	@echo "TOUCHED $$@" > $(STAMPDIR)/$(1).stamp
 
-all:$(NACL_SDK_ROOT)/lib/$(OSNAME)_x86_32_host/$(CONFIG)/$(1).lib
-$(NACL_SDK_ROOT)/lib/$(OSNAME)_x86_32_host/$(CONFIG)/$(1).lib : $(foreach src,$(2),$(OUTDIR)/$(basename $(src)).o)
+all:$(LIBDIR)/$(OSNAME)_x86_32_host/$(CONFIG)/$(1).lib
+$(LIBDIR)/$(OSNAME)_x86_32_host/$(CONFIG)/$(1).lib : $(foreach src,$(2),$(OUTDIR)/$(basename $(src)).o)
 	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,LIB,$$@,$(HOST_LIB) /OUT:$$@ $$^ $(WIN_LDFLAGS))
 endef

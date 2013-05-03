@@ -84,11 +84,11 @@ endef
 #
 #
 define LIB_RULE
-$(STAMPDIR)/$(1).stamp: $(NACL_SDK_ROOT)/lib/$(OSNAME)_host/$(CONFIG)/lib$(1).a
+$(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(OSNAME)_host/$(CONFIG)/lib$(1).a
 	@echo "TOUCHED $$@" > $(STAMPDIR)/$(1).stamp
 
-all: $(NACL_SDK_ROOT)/lib/$(OSNAME)_host/$(CONFIG)/lib$(1).a
-$(NACL_SDK_ROOT)/lib/$(OSNAME)_host/$(CONFIG)/lib$(1).a : $(foreach src,$(2),$(call SRC_TO_OBJ,$(src)))
+all: $(LIBDIR)/$(OSNAME)_host/$(CONFIG)/lib$(1).a
+$(LIBDIR)/$(OSNAME)_host/$(CONFIG)/lib$(1).a : $(foreach src,$(2),$(call SRC_TO_OBJ,$(src)))
 	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,LIB,$$@,$(HOST_LIB) $$@ $$^)
 endef

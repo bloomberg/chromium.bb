@@ -71,11 +71,11 @@ endef
 # $3 = POSIX Link Flags
 # $4 = VC Link Flags (unused)
 define LIB_RULE
-$(STAMPDIR)/$(1).stamp: $(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)/$(CONFIG)/lib$(1).a
+$(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)/$(CONFIG)/lib$(1).a
 	@echo "TOUCHED $$@" > $(STAMPDIR)/$(1).stamp
 
-all: $(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)/$(CONFIG)/lib$(1).a
-$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)/$(CONFIG)/lib$(1).a: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_pnacl))
+all: $(LIBDIR)/$(TOOLCHAIN)/$(CONFIG)/lib$(1).a
+$(LIBDIR)/$(TOOLCHAIN)/$(CONFIG)/lib$(1).a: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_pnacl))
 	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,LIB,$$@,$(PNACL_LIB) $$@ $$^ $(3))
 endef

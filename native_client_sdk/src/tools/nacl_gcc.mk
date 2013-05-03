@@ -144,29 +144,29 @@ endef
 # $4 = VC Link Flags (unused)
 #
 define LIB_RULE
-$(STAMPDIR)/$(1).stamp : $(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).a
-$(STAMPDIR)/$(1).stamp : $(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).a
+$(STAMPDIR)/$(1).stamp : $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).a
+$(STAMPDIR)/$(1).stamp : $(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).a
 ifneq ('glibc','$(TOOLCHAIN)')
-$(STAMPDIR)/$(1).stamp : $(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).a
+$(STAMPDIR)/$(1).stamp : $(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).a
 endif
 
 $(STAMPDIR)/$(1).stamp :
 	@echo "TOUCHED $$@" > $(STAMPDIR)/$(1).stamp
 
-all: $(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).a
-$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).a : $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_32))
+all: $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).a
+$(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).a : $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_32))
 	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,LIB,$$@,$(X86_32_LIB) -r $$@ $$^)
 
-all: $(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).a
-$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).a : $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_64))
+all: $(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).a
+$(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).a : $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_64))
 	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,LIB,$$@,$(X86_64_LIB) -r $$@ $$^)
 
 ifneq ('glibc','$(TOOLCHAIN)')
-all: $(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).a
+all: $(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).a
 endif
-$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).a : $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_arm))
+$(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).a : $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_arm))
 	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,LIB,$$@,$(ARM_LIB) -r $$@ $$^)
 endef
