@@ -57,7 +57,11 @@ v8::Handle<v8::Object> CustomElementHelpers::createWrapper(PassRefPtr<Element> i
     // The constructor and registered lifecycle callbacks should be visible only from main world.
     // FIXME: This shouldn't be needed once each custom element has its own FunctionTemplate
     // https://bugs.webkit.org/show_bug.cgi?id=108138
-    if (!CustomElementHelpers::isFeatureAllowed(creationContext->CreationContext())) {
+
+    // FIXME: creationContext.IsEmpty() should never happen. Remove
+    // this when callers (like InspectorController::inspect) are fixed
+    // to never pass an empty creation context.
+    if (!CustomElementHelpers::isFeatureAllowed(creationContext.IsEmpty() ? v8::Context::GetCurrent() : creationContext->CreationContext())) {
         v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &V8HTMLElement::info, impl.get(), isolate);
         if (!wrapper.IsEmpty())
             V8DOMWrapper::associateObjectWithWrapper(impl, &V8HTMLElement::info, wrapper, isolate, WrapperConfiguration::Dependent);
