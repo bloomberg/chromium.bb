@@ -340,12 +340,12 @@ void ContentSettingsHandler::GetLocalizedValues(
     { "mouselock_allow", IDS_MOUSE_LOCK_ALLOW_RADIO },
     { "mouselock_ask", IDS_MOUSE_LOCK_ASK_RADIO },
     { "mouselock_block", IDS_MOUSE_LOCK_BLOCK_RADIO },
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
     // Protected Content filter
     { "protectedContentTabLabel", IDS_PROTECTED_CONTENT_TAB_LABEL },
     { "protectedContentInfo", IDS_PROTECTED_CONTENT_INFO },
     { "protectedContentEnable", IDS_PROTECTED_CONTENT_ENABLE},
-#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS) || defined(OS_WIN)
     // Media stream capture device filter.
     { "mediaStreamTabLabel", IDS_MEDIA_STREAM_TAB_LABEL },
     { "media-stream_header", IDS_MEDIA_STREAM_HEADER },

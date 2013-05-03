@@ -8609,7 +8609,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_MOUSE_LOCK_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for blocking all sites ability to disable the mouse cursor.">
         Do not allow any site to disable the mouse cursor
       </message>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="pp_ifdef('chromeos') or is_win">
         <message name="IDS_PROTECTED_CONTENT_TAB_LABEL" desc="Label for the Protected Content tab on the Content Settings dialog.">
           Protected content
         </message>
