@@ -30,7 +30,12 @@ using WebKit::WebString;
 #define EXPECT_WV(a) \
     EXPECT_EQ((std::string(gnu_get_libc_version()) != "2.11.1"), (a))
 #else
+// See http://crbug.com/237627.
+#if defined(DISABLE_WIDEVINE_CDM_CANPLAYTYPE)
+#define EXPECT_WV EXPECT_FALSE
+#else
 #define EXPECT_WV EXPECT_TRUE
+#endif  // defined(DISABLE_WIDEVINE_CDM_CANPLAYTYPE)
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 #if defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)

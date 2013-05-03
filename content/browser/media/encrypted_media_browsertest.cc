@@ -124,7 +124,7 @@ class EncryptedMediaTest : public testing::WithParamInterface<const char*>,
 #endif
     EXPECT_TRUE(file_util::PathExists(plugin_lib));
     base::FilePath::StringType pepper_plugin = plugin_lib.value();
-    pepper_plugin.append(FILE_PATH_LITERAL("#Key CDM#0.1.0.0;"));
+    pepper_plugin.append(FILE_PATH_LITERAL("#CDM#0.1.0.0;"));
 #if defined(OS_WIN)
     pepper_plugin.append(ASCIIToWide(webkit_media::GetPluginType(key_system)));
 #else
@@ -235,6 +235,8 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4) {
 
 // Run only when WV CDM is available.
 #if defined(WIDEVINE_CDM_AVAILABLE)
+// See http://crbug.com/237636.
+#if !defined(DISABLE_WIDEVINE_CDM_BROWSERTESTS)
 IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, Playback_AudioOnly_WebM) {
   TestSimplePlayback("bear-a-enc_a.webm", kWebMAudioOnly, kWidevineKeySystem);
 }
@@ -270,6 +272,7 @@ IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, Playback_AudioOnly_MP4) {
                      kWidevineKeySystem);
 }
 #endif  // defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+#endif  // !defined(DISABLE_WIDEVINE_CDM_BROWSERTESTS)
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
 }  // namespace content

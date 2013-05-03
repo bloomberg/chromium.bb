@@ -66,6 +66,10 @@ const MediaFormatAndKeySystem kSupportedFormatKeySystemCombinations[] = {
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
   // Widevine.
+  // See http://crbug.com/237627.
+#if defined(DISABLE_WIDEVINE_CDM_CANPLAYTYPE)
+  { "", "", kWidevineKeySystem },
+#else
   { "video/webm", "vorbis,vp8,vp8.0", kWidevineKeySystem },
   { "audio/webm", "vorbis", kWidevineKeySystem },
   { "video/webm", "vorbis,vp8,vp8.0", kWidevineBaseKeySystem },
@@ -78,6 +82,7 @@ const MediaFormatAndKeySystem kSupportedFormatKeySystemCombinations[] = {
   { "audio/mp4", kWidevineAudioMp4Codecs, kWidevineBaseKeySystem },
 #endif  // defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
 #endif  // defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+#endif  // defined(DISABLE_WIDEVINE_CDM_CANPLAYTYPE)
 #endif  // WIDEVINE_CDM_AVAILABLE
 };
 
