@@ -745,17 +745,17 @@ class ExecutionQueue(object):
       try:
         self.item.run(*self.args, **self.kwargs)
       except KeyboardInterrupt:
-        logging.info('Caught KeyboardInterrupt in thread %s' % self.item.name)
+        logging.info('Caught KeyboardInterrupt in thread %s', self.item.name)
         logging.info(str(sys.exc_info()))
         work_queue.exceptions.put(sys.exc_info())
         raise
       except Exception:
         # Catch exception location.
-        logging.info('Caught exception in thread %s' % self.item.name)
+        logging.info('Caught exception in thread %s', self.item.name)
         logging.info(str(sys.exc_info()))
         work_queue.exceptions.put(sys.exc_info())
       finally:
-        logging.info('_Worker.run(%s) done' % self.item.name)
+        logging.info('_Worker.run(%s) done', self.item.name)
         work_queue.ready_cond.acquire()
         try:
           work_queue.ready_cond.notifyAll()
