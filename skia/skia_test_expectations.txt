@@ -86,4 +86,8 @@ crbug.com/233548 svg/filters/feImage-preserveAspectRatio-all.svg [ ImageOnlyFail
 crbug.com/233548 virtual/gpu/compositedscrolling/scrollbars/listbox-scrollbar-combinations.html [ ImageOnlyFailure ]
 crbug.com/233548 virtual/gpu/compositedscrolling/scrollbars/overflow-scrollbar-combinations.html [ ImageOnlyFailure ]
 
+# In r8961 the way Skia draws rotated rects was changed. This resulted
+# in a change to the following image
+crbug.com/237634  virtual/gpu/fast/canvas/image-pattern-rotate.html [ ImageOnlyFailure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
