@@ -60,6 +60,13 @@ class MultitouchMouseInterpreter : public Interpreter, public PropertyDelegate {
 
   Origin origin_;
 
+  // This keeps track of where fingers started. Usually this is their original
+  // position, but if the mouse is moved, we reset the positions at that time.
+  map<short, Vector2, kMaxFingers> start_position_;
+
+  // These fingers have started moving and should cause gestures.
+  set<short, kMaxFingers> moving_;
+
   // Depth of recent scroll event buffer used to compute click.
   IntProperty click_buffer_depth_;
   // Maximum distance for a click
@@ -68,6 +75,13 @@ class MultitouchMouseInterpreter : public Interpreter, public PropertyDelegate {
   // Lead time of a button going up versus a finger lifting off
   DoubleProperty click_left_button_going_up_lead_time_;
   DoubleProperty click_right_button_going_up_lead_time_;
+
+  // Distance [mm] a finger must deviate from the start position to be
+  // considered moving.
+  DoubleProperty min_finger_move_distance_;
+  // If there is relative motion at or above this magnitude [mm], start
+  // positions are reset.
+  DoubleProperty moving_min_rel_amount_;
 };
 
 }  // namespace gestures

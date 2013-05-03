@@ -46,7 +46,10 @@ MultitouchMouseInterpreter::MultitouchMouseInterpreter(
       click_left_button_going_up_lead_time_(prop_reg,
           "Click Left Button Going Up Lead Time", 0.01),
       click_right_button_going_up_lead_time_(prop_reg,
-          "Click Right Button Going Up Lead Time", 0.1) {
+          "Click Right Button Going Up Lead Time", 0.1),
+      min_finger_move_distance_(prop_reg, "Minimum Mouse Finger Move Distance",
+                                1.5),
+      moving_min_rel_amount_(prop_reg, "Moving Min Rel Magnitude", 0.1) {
   InitName();
 }
 
@@ -55,6 +58,39 @@ void MultitouchMouseInterpreter::SyncInterpretImpl(HardwareState* hwstate,
   if (!state_buffer_.Get(0)->fingers) {
     Err("Must call SetHardwareProperties() before interpreting anything.");
     return;
+  }
+
+  // Should we remove all fingers from our structures, or just removed ones?
+  if ((hwstate->rel_x * hwstate->rel_x + hwstate->rel_y * hwstate->rel_y) >
+      moving_min_rel_amount_.val_ * moving_min_rel_amount_.val_) {
+    start_position_.clear();
+    moving_.clear();
+  } else {
+    RemoveMissingIdsFromMap(&start_position_, *hwstate);
+    RemoveMissingIdsFromSet(&moving_, *hwstate);
+  }
+
+  // Set start positions/moving
+  for (size_t i = 0; i < hwstate->finger_cnt; i++) {
+    const FingerState& fs = hwstate->fingers[i];
+    if (MapContainsKey(start_position_, fs.tracking_id)) {
+      // Is moving?
+      if (!SetContainsValue(moving_, fs.tracking_id) &&  // not already moving &
+          start_position_[fs.tracking_id].Sub(Vector2(fs)).MagSq() >=  // moving
+          min_finger_move_distance_.val_ * min_finger_move_distance_.val_) {
+        moving_.insert(fs.tracking_id);
+      }
+      continue;
+    }
+    start_position_[fs.tracking_id] = Vector2(fs);
+  }
+
+  // Mark all non-moving fingers as unable to cause scroll
+  for (size_t i = 0; i < hwstate->finger_cnt; i++) {
+    FingerState* fs = &hwstate->fingers[i];
+    if (!SetContainsValue(moving_, fs->tracking_id))
+      fs->flags |=
+          GESTURES_FINGER_WARP_X_NON_MOVE | GESTURES_FINGER_WARP_Y_NON_MOVE;
   }
 
   // Record current HardwareState now.

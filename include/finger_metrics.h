@@ -37,6 +37,12 @@ struct Vector2 {
   float Mag() const {
     return sqrtf(MagSq());
   }
+  bool operator==(const Vector2& that) const {
+    return x == that.x && y == that.y;
+  }
+  bool operator!=(const Vector2& that) const {
+    return !(*this == that);
+  }
 
   float x;
   float y;
