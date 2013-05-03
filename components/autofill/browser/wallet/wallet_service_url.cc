@@ -120,8 +120,8 @@ GURL GetEscrowUrl() {
 
 GURL GetSignInUrl() {
   GURL url(GaiaUrls::GetInstance()->service_login_url());
-  url = net::AppendQueryParameter(url, "service", "sierra");
-  url = net::AppendQueryParameter(url, "btmpl", "popup");
+  url = net::AppendQueryParameter(url, "service", "toolbar");
+  url = net::AppendQueryParameter(url, "nui", "1");
   url = net::AppendQueryParameter(url,
                                   "continue",
                                   GetSignInContinueUrl().spec());
