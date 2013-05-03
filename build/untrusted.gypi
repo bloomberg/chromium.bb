@@ -15,7 +15,7 @@
           'NACL_RODATA_FLAG%': '-Trodata-segment',
         }, {
           # Settings for the older GCC version used on x86_32 and x86_64.
-          'NACL_RODATA_FLAG%': '--build-id,--section-start,.note.gnu.build-id',
+          'NACL_RODATA_FLAG%': '--section-start,.rodata',
         }]
       ],
     },
