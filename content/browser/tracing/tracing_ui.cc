@@ -12,6 +12,7 @@
 #include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -487,7 +488,11 @@ void TracingMessageHandler::OnTraceDataCollected(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   std::string javascript("window.traceData += '");
-  javascript += trace_fragment->data();
+
+  std::string escaped_data;
+  ReplaceChars(trace_fragment->data(), "\\", "\\\\", &escaped_data);
+  javascript += escaped_data;
+
   // Intentionally append a , to the traceData. This technically causes all
   // traceData that we pass back to JS to end with a comma, but that is actually
   // something the JS side strips away anyway
