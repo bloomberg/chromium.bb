@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/install_tracker.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 
@@ -41,10 +42,11 @@ ProfileKeyedService* InstallTrackerFactory::BuildServiceInstanceFor(
   return new InstallTracker(profile, service->extension_prefs());
 }
 
-bool InstallTrackerFactory::ServiceRedirectedInIncognito() const {
+content::BrowserContext* InstallTrackerFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
   // The installs themselves are routed to the non-incognito profile and so
   // should the install progress.
-  return true;
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
 }  // namespace extensions

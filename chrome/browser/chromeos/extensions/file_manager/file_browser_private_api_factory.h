@@ -22,7 +22,8 @@ class FileBrowserPrivateAPIFactory : public ProfileKeyedServiceFactory {
 
  protected:
   // ProfileKeyedBaseFactory overrides:
-  virtual bool ServiceHasOwnInstanceInIncognito() const OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const OVERRIDE;
   virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 

@@ -31,7 +31,8 @@ class AutocompleteClassifierFactory : public ProfileKeyedServiceFactory {
   virtual ~AutocompleteClassifierFactory();
 
   // ProfileKeyedServiceFactory:
-  virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;

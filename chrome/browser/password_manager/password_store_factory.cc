@@ -10,6 +10,7 @@
 #include "chrome/browser/password_manager/login_database.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_default.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
@@ -206,8 +207,9 @@ void PasswordStoreFactory::RegisterUserPrefs(PrefRegistrySyncable* registry) {
 #endif
 }
 
-bool PasswordStoreFactory::ServiceRedirectedInIncognito() const {
-  return true;
+content::BrowserContext* PasswordStoreFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
 bool PasswordStoreFactory::ServiceIsNULLWhileTesting() const {

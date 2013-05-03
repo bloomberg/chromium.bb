@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
@@ -41,10 +42,11 @@ class TtsExtensionLoaderChromeOsFactory : public ProfileKeyedServiceFactory {
 
   virtual ~TtsExtensionLoaderChromeOsFactory() {}
 
-  virtual bool ServiceRedirectedInIncognito() const OVERRIDE {
+  virtual content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const OVERRIDE{
     // If given an incognito profile (including the Chrome OS login
     // profile), share the service with the original profile.
-    return true;
+    return chrome::GetBrowserContextRedirectedInIncognito(context);
   }
 
   virtual ProfileKeyedService* BuildServiceInstanceFor(

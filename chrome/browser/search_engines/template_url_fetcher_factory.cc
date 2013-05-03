@@ -4,6 +4,7 @@
 
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
 
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
@@ -42,6 +43,7 @@ ProfileKeyedService* TemplateURLFetcherFactory::BuildServiceInstanceFor(
   return new TemplateURLFetcher(static_cast<Profile*>(profile));
 }
 
-bool TemplateURLFetcherFactory::ServiceRedirectedInIncognito() const {
-  return true;
+content::BrowserContext* TemplateURLFetcherFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }

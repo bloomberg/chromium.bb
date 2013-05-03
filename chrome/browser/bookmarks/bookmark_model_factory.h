@@ -35,7 +35,8 @@ class BookmarkModelFactory : public ProfileKeyedServiceFactory {
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
   virtual void RegisterUserPrefs(PrefRegistrySyncable* registry) OVERRIDE;
-  virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkModelFactory);

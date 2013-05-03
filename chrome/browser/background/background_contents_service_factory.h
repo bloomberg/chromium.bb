@@ -32,8 +32,8 @@ class BackgroundContentsServiceFactory : public ProfileKeyedServiceFactory {
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual void RegisterUserPrefs(PrefRegistrySyncable* registry) OVERRIDE;
-  // Use a separate background contents service for incognito.
-  virtual bool ServiceHasOwnInstanceInIncognito() const OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const OVERRIDE;
   virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 };

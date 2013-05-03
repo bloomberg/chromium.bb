@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
@@ -180,8 +181,9 @@ WebDataServiceFactory* WebDataServiceFactory::GetInstance() {
   return Singleton<WebDataServiceFactory>::get();
 }
 
-bool WebDataServiceFactory::ServiceRedirectedInIncognito() const {
-  return true;
+content::BrowserContext* WebDataServiceFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
 ProfileKeyedService* WebDataServiceFactory::BuildServiceInstanceFor(

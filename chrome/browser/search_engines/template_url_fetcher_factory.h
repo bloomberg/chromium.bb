@@ -33,7 +33,8 @@ class TemplateURLFetcherFactory : public ProfileKeyedServiceFactory {
   // ProfileKeyedServiceFactory:
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
-  virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLFetcherFactory);
 };

@@ -29,7 +29,8 @@ class UserStyleSheetWatcherFactory
   // ProfileKeyedServiceFactory:
   virtual scoped_refptr<RefcountedProfileKeyedService> BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
-  virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(UserStyleSheetWatcherFactory);

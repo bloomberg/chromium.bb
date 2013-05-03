@@ -4,6 +4,7 @@
 
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context_factory.h"
 
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/common/pref_names.h"
@@ -81,12 +82,8 @@ void ChromeGeolocationPermissionContextFactory::RegisterUserPrefs(
 #endif
 }
 
-bool ChromeGeolocationPermissionContextFactory::
-ServiceRedirectedInIncognito() const {
-  return false;
-}
-
-bool ChromeGeolocationPermissionContextFactory::
-ServiceHasOwnInstanceInIncognito() const {
-  return true;
+content::BrowserContext*
+ChromeGeolocationPermissionContextFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }

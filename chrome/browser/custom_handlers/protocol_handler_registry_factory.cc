@@ -7,6 +7,7 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 
@@ -38,8 +39,9 @@ bool ProtocolHandlerRegistryFactory::ServiceIsCreatedWithProfile() const {
 }
 
 // Allows the produced registry to be used in incognito mode.
-bool ProtocolHandlerRegistryFactory::ServiceRedirectedInIncognito() const {
-  return true;
+content::BrowserContext* ProtocolHandlerRegistryFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
 // Do not create this service for tests. MANY tests will fail

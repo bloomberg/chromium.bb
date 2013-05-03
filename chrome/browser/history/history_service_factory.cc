@@ -8,6 +8,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/common/pref_names.h"
 
@@ -75,8 +76,9 @@ HistoryServiceFactory::BuildServiceInstanceFor(
   return history_service;
 }
 
-bool HistoryServiceFactory::ServiceRedirectedInIncognito() const {
-  return true;
+content::BrowserContext* HistoryServiceFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
 bool HistoryServiceFactory::ServiceIsNULLWhileTesting() const {

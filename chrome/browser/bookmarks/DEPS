@@ -18,6 +18,7 @@ include_rules = [
   "!chrome/browser/history/query_parser.h",
   "!chrome/browser/history/snippet.h",
   "!chrome/browser/history/url_database.h",
+  "!chrome/browser/profiles/incognito_helpers.h",
   "!chrome/browser/profiles/profile.h",
   "!chrome/browser/profiles/profile_dependency_manager.h",
   "!chrome/browser/profiles/profile_keyed_service.h",

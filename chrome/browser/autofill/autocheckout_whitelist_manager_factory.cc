@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "components/autofill/browser/autocheckout/whitelist_manager.h"
@@ -77,8 +78,9 @@ WhitelistManagerFactory::BuildServiceInstanceFor(
   return service;
 }
 
-bool WhitelistManagerFactory::ServiceRedirectedInIncognito() const {
-  return true;
+content::BrowserContext* WhitelistManagerFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
 bool WhitelistManagerFactory::ServiceIsNULLWhileTesting() const {

@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/blocked_actions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -134,8 +135,9 @@ ProfileKeyedService* ActivityLogFactory::BuildServiceInstanceFor(
   return new ActivityLog(static_cast<Profile*>(profile));
 }
 
-bool ActivityLogFactory::ServiceRedirectedInIncognito() const {
-  return true;
+content::BrowserContext* ActivityLogFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
 // ActivityLog

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/api/autotest_private/autotest_private_api.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 
@@ -36,8 +37,9 @@ ProfileKeyedService* AutotestPrivateAPIFactory::BuildServiceInstanceFor(
   return new AutotestPrivateAPI();
 }
 
-bool AutotestPrivateAPIFactory::ServiceRedirectedInIncognito() const {
-  return true;
+content::BrowserContext* AutotestPrivateAPIFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
 bool AutotestPrivateAPIFactory::ServiceIsCreatedWithProfile() const {

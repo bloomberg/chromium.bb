@@ -54,7 +54,7 @@ scoped_refptr<RefcountedProfileKeyedService>
 RefcountedProfileKeyedServiceFactory::GetServiceForProfile(
     content::BrowserContext* profile,
     bool create) {
-  profile = GetProfileToUse(profile);
+  profile = GetBrowserContextToUse(profile);
   if (!profile)
     return NULL;
 

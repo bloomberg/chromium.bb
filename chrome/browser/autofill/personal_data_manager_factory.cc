@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
@@ -82,8 +83,9 @@ ProfileKeyedService* PersonalDataManagerFactory::BuildServiceInstanceFor(
   return service;
 }
 
-bool PersonalDataManagerFactory::ServiceHasOwnInstanceInIncognito() const {
-  return true;
+content::BrowserContext* PersonalDataManagerFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }
 
 }  // namespace autofill

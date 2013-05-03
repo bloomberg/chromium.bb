@@ -37,7 +37,8 @@ class PluginPrefsFactory : public RefcountedProfileKeyedServiceFactory {
 
   // ProfileKeyedServiceFactory methods:
   virtual void RegisterUserPrefs(PrefRegistrySyncable* registry) OVERRIDE;
-  virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
   virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
 };

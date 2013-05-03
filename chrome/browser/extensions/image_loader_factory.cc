@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/image_loader_factory.h"
 
 #include "chrome/browser/extensions/image_loader.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 
@@ -44,8 +45,9 @@ bool ImageLoaderFactory::ServiceIsCreatedWithProfile() const {
   return false;
 }
 
-bool ImageLoaderFactory::ServiceRedirectedInIncognito() const {
-  return true;
+content::BrowserContext* ImageLoaderFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
 }  // namespace extensions

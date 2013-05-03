@@ -4,6 +4,7 @@
 
 #include "chrome/browser/user_style_sheet_watcher_factory.h"
 
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
@@ -39,8 +40,9 @@ UserStyleSheetWatcherFactory::BuildServiceInstanceFor(
   return user_style_sheet_watcher;
 }
 
-bool UserStyleSheetWatcherFactory::ServiceRedirectedInIncognito() const {
-  return true;
+content::BrowserContext* UserStyleSheetWatcherFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
 bool UserStyleSheetWatcherFactory::ServiceIsNULLWhileTesting() const {

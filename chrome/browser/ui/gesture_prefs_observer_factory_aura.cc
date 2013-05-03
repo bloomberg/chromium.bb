@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -534,9 +535,11 @@ bool GesturePrefsObserverFactoryAura::ServiceIsCreatedWithProfile() const {
   return true;
 }
 
-bool GesturePrefsObserverFactoryAura::ServiceRedirectedInIncognito() const {
+content::BrowserContext*
+GesturePrefsObserverFactoryAura::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
   // Use same gesture preferences on incognito windows.
-  return true;
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
 bool GesturePrefsObserverFactoryAura::ServiceIsNULLWhileTesting() const {

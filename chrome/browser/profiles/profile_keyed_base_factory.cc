@@ -28,8 +28,8 @@ void ProfileKeyedBaseFactory::DependsOn(ProfileKeyedBaseFactory* rhs) {
   dependency_manager_->AddEdge(rhs, this);
 }
 
-content::BrowserContext* ProfileKeyedBaseFactory::GetProfileToUse(
-    content::BrowserContext* context) {
+content::BrowserContext* ProfileKeyedBaseFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
   DCHECK(CalledOnValidThread());
 
   Profile* profile = static_cast<Profile*>(context);
@@ -38,20 +38,9 @@ content::BrowserContext* ProfileKeyedBaseFactory::GetProfileToUse(
   dependency_manager_->AssertProfileWasntDestroyed(profile);
 #endif
 
-  // Possibly handle Incognito mode.
-  if (profile->IsOffTheRecord()) {
-    if (ServiceRedirectedInIncognito()) {
-      profile = profile->GetOriginalProfile();
-
-#ifndef NDEBUG
-      dependency_manager_->AssertProfileWasntDestroyed(profile);
-#endif
-    } else if (ServiceHasOwnInstanceInIncognito()) {
-      // No-op; the pointers are already set correctly.
-    } else {
-      return NULL;
-    }
-  }
+  // Safe default for the Incognito mode: no service.
+  if (profile->IsOffTheRecord())
+    return NULL;
 
   return profile;
 }
@@ -90,14 +79,6 @@ void ProfileKeyedBaseFactory::RegisterUserPrefsOnProfile(
     RegisterUserPrefs(registry);
     registered_preferences_.insert(profile);
   }
-}
-
-bool ProfileKeyedBaseFactory::ServiceRedirectedInIncognito() const {
-  return false;
-}
-
-bool ProfileKeyedBaseFactory::ServiceHasOwnInstanceInIncognito() const {
-  return false;
 }
 
 bool ProfileKeyedBaseFactory::ServiceIsCreatedWithProfile() const {

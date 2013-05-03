@@ -121,7 +121,8 @@ class CookieSettings
 
     // |ProfileKeyedBaseFactory| methods:
     virtual void RegisterUserPrefs(PrefRegistrySyncable* registry) OVERRIDE;
-    virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
+    virtual content::BrowserContext* GetBrowserContextToUse(
+        content::BrowserContext* context) const OVERRIDE;
     virtual scoped_refptr<RefcountedProfileKeyedService>
         BuildServiceInstanceFor(
             content::BrowserContext* context) const OVERRIDE;

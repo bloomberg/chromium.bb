@@ -9,6 +9,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/predictors/predictor_database_factory.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 
@@ -60,8 +61,9 @@ ProfileKeyedService* PrerenderManagerFactory::BuildServiceInstanceFor(
   return prerender_manager;
 }
 
-bool PrerenderManagerFactory::ServiceHasOwnInstanceInIncognito() const {
-  return true;
+content::BrowserContext* PrerenderManagerFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }
 
 }  // namespace prerender

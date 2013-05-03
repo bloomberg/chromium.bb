@@ -35,10 +35,6 @@ scoped_refptr<RefcountedProfileKeyedService>
   return scoped_refptr<DialAPI>(new DialAPI(static_cast<Profile*>(profile)));
 }
 
-bool DialAPIFactory::ServiceRedirectedInIncognito() const {
-  return false;
-}
-
 bool DialAPIFactory::ServiceIsCreatedWithProfile() const {
   return true;
 }

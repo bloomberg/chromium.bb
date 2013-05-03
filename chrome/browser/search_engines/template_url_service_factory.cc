@@ -7,6 +7,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
@@ -88,8 +89,9 @@ void TemplateURLServiceFactory::RegisterUserPrefs(
       PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
-bool TemplateURLServiceFactory::ServiceRedirectedInIncognito() const {
-  return true;
+content::BrowserContext* TemplateURLServiceFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
 bool TemplateURLServiceFactory::ServiceIsNULLWhileTesting() const {

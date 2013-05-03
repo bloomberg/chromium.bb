@@ -31,6 +31,7 @@ include_rules = [
   "!chrome/browser/prerender/prerender_contents.h",
   "!chrome/browser/prerender/prerender_manager.h",
   "!chrome/browser/prerender/prerender_manager_factory.h",
+  "!chrome/browser/profiles/incognito_helpers.h",
   "!chrome/browser/profiles/profile.h",
   "!chrome/browser/profiles/profile_dependency_manager.h",
   "!chrome/browser/profiles/profile_manager.h",

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 
@@ -36,8 +37,9 @@ ProfileKeyedService* BluetoothAPIFactory::BuildServiceInstanceFor(
   return new BluetoothAPI(static_cast<Profile*>(profile));
 }
 
-bool BluetoothAPIFactory::ServiceRedirectedInIncognito() const {
-  return true;
+content::BrowserContext* BluetoothAPIFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
 bool BluetoothAPIFactory::ServiceIsCreatedWithProfile() const {

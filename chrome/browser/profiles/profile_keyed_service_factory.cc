@@ -52,7 +52,7 @@ ProfileKeyedServiceFactory::~ProfileKeyedServiceFactory() {
 ProfileKeyedService* ProfileKeyedServiceFactory::GetServiceForProfile(
     content::BrowserContext* profile,
     bool create) {
-  profile = GetProfileToUse(profile);
+  profile = GetBrowserContextToUse(profile);
   if (!profile)
     return NULL;
 

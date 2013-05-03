@@ -79,11 +79,6 @@ void ChromeSpeechRecognitionPreferences::Factory::RegisterUserPrefs(
 }
 
 bool ChromeSpeechRecognitionPreferences::Factory::
-ServiceRedirectedInIncognito() const {
-  return false;
-}
-
-bool ChromeSpeechRecognitionPreferences::Factory::
 ServiceIsNULLWhileTesting() const {
   return true;
 }

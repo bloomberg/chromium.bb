@@ -28,7 +28,8 @@ class ProtocolHandlerRegistryFactory : public ProfileKeyedServiceFactory {
  protected:
   // ProfileKeyedServiceFactory implementation.
   virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
-  virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 
  private:

@@ -28,7 +28,8 @@ class PrerenderLinkManagerFactory : public ProfileKeyedServiceFactory {
 
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
-  virtual bool ServiceHasOwnInstanceInIncognito() const OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const OVERRIDE;
 };
 
 }  // namespace prerender

@@ -8,6 +8,7 @@
 #include "base/memory/singleton.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/startup_task_runner_service.h"
@@ -57,8 +58,9 @@ void BookmarkModelFactory::RegisterUserPrefs(PrefRegistrySyncable* registry) {
                              PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
-bool BookmarkModelFactory::ServiceRedirectedInIncognito() const {
-  return true;
+content::BrowserContext* BookmarkModelFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
 bool BookmarkModelFactory::ServiceIsNULLWhileTesting() const {

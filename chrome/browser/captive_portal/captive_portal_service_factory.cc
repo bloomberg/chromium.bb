@@ -5,6 +5,7 @@
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
 
 #include "chrome/browser/captive_portal/captive_portal_service.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 
@@ -35,8 +36,9 @@ ProfileKeyedService* CaptivePortalServiceFactory::BuildServiceInstanceFor(
   return new CaptivePortalService(static_cast<Profile*>(profile));
 }
 
-bool CaptivePortalServiceFactory::ServiceHasOwnInstanceInIncognito() const {
-  return true;
+content::BrowserContext* CaptivePortalServiceFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }
 
 }  // namespace captive_portal

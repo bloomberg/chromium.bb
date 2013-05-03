@@ -6,6 +6,7 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
@@ -90,8 +91,9 @@ void SpellcheckServiceFactory::RegisterUserPrefs(
                                   PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
-bool SpellcheckServiceFactory::ServiceRedirectedInIncognito() const {
-  return true;
+content::BrowserContext* SpellcheckServiceFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
 bool SpellcheckServiceFactory::ServiceIsNULLWhileTesting() const {

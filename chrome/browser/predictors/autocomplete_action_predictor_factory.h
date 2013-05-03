@@ -29,7 +29,8 @@ class AutocompleteActionPredictorFactory : public ProfileKeyedServiceFactory {
   virtual ~AutocompleteActionPredictorFactory();
 
   // ProfileKeyedServiceFactory:
-  virtual bool ServiceHasOwnInstanceInIncognito() const OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const OVERRIDE;
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
 

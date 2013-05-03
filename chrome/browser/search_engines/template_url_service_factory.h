@@ -33,7 +33,8 @@ class TemplateURLServiceFactory : public ProfileKeyedServiceFactory {
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual void RegisterUserPrefs(PrefRegistrySyncable* registry) OVERRIDE;
-  virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
   virtual void ProfileShutdown(content::BrowserContext* profile) OVERRIDE;
   virtual void ProfileDestroyed(content::BrowserContext* profile) OVERRIDE;

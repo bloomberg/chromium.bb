@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/api/system_indicator/system_indicator_manager_factory.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
@@ -48,8 +49,9 @@ class ExtensionActionManagerFactory : public ProfileKeyedServiceFactory {
     return new ExtensionActionManager(static_cast<Profile*>(profile));
   }
 
-  virtual bool ServiceRedirectedInIncognito() const OVERRIDE {
-    return true;
+  virtual content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const OVERRIDE {
+    return chrome::GetBrowserContextRedirectedInIncognito(context);
   }
 };
 

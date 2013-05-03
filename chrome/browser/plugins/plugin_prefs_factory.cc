@@ -7,6 +7,7 @@
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
@@ -79,8 +80,9 @@ void PluginPrefsFactory::RegisterUserPrefs(PrefRegistrySyncable* registry) {
                              PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
-bool PluginPrefsFactory::ServiceRedirectedInIncognito() const {
-  return true;
+content::BrowserContext* PluginPrefsFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
 bool PluginPrefsFactory::ServiceIsNULLWhileTesting() const {

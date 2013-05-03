@@ -6,6 +6,7 @@
 
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 
 // static
@@ -40,6 +41,7 @@ ProfileKeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
   return service;
 }
 
-bool DownloadServiceFactory::ServiceHasOwnInstanceInIncognito() const {
-  return true;
+content::BrowserContext* DownloadServiceFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }

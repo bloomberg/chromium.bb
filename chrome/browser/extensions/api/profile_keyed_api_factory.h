@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_PROFILE_KEYED_API_FACTORY_H_
 
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
@@ -94,8 +95,15 @@ class ProfileKeyedAPIFactory : public ProfileKeyedServiceFactory {
 
   // ProfileKeyedBaseFactory implementation.
   // These can be effectively overridden with template specializations.
-  virtual bool ServiceRedirectedInIncognito() const OVERRIDE {
-    return T::kServiceRedirectedInIncognito;
+  virtual content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const OVERRIDE {
+    if (T::kServiceRedirectedInIncognito)
+      return chrome::GetBrowserContextRedirectedInIncognito(context);
+
+    if (T::kServiceHasOwnInstanceInIncognito)
+      return chrome::GetBrowserContextOwnInstanceInIncognito(context);
+
+    return ProfileKeyedServiceFactory::GetBrowserContextToUse(context);
   }
 
   virtual bool ServiceIsCreatedWithProfile() const OVERRIDE {
@@ -104,10 +112,6 @@ class ProfileKeyedAPIFactory : public ProfileKeyedServiceFactory {
 
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE {
     return T::kServiceIsNULLWhileTesting;
-  }
-
-  virtual bool ServiceHasOwnInstanceInIncognito() const OVERRIDE {
-    return T::kServiceHasOwnInstanceInIncognito;
   }
 
   DISALLOW_COPY_AND_ASSIGN(ProfileKeyedAPIFactory);

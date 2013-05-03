@@ -50,22 +50,16 @@ class ProfileKeyedBaseFactory : public base::NonThreadSafe,
   // created by factories.
   void DependsOn(ProfileKeyedBaseFactory* rhs);
 
-  // Finds which profile (if any) to use using the Service.*Incognito methods.
-  content::BrowserContext* GetProfileToUse(content::BrowserContext* profile);
-
   // Interface for people building a concrete FooServiceFactory: --------------
+
+  // Finds which browser context (if any) to use.
+  virtual content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const;
 
   // Register any user preferences on this service. This is called during
   // CreateProfileService() since preferences are registered on a per Profile
   // basis.
   virtual void RegisterUserPrefs(PrefRegistrySyncable* registry) {}
-
-  // By default, if we are asked for a service with an Incognito profile, we
-  // pass back NULL. To redirect to the Incognito's original profile or to
-  // create another instance, even for Incognito windows, override one of the
-  // following methods:
-  virtual bool ServiceRedirectedInIncognito() const;
-  virtual bool ServiceHasOwnInstanceInIncognito() const;
 
   // By default, we create instances of a service lazily and wait until
   // GetForProfile() is called on our subclass. Some services need to be

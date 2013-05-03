@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -79,8 +80,9 @@ void ThemeServiceFactory::RegisterUserPrefs(PrefRegistrySyncable* registry) {
                                    PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
-bool ThemeServiceFactory::ServiceRedirectedInIncognito() const {
-  return true;
+content::BrowserContext* ThemeServiceFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
 bool ThemeServiceFactory::ServiceIsCreatedWithProfile() const {

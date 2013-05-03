@@ -27,7 +27,6 @@ class DialAPIFactory : public RefcountedProfileKeyedServiceFactory {
   // ProfileKeyedServiceFactory:
   virtual scoped_refptr<RefcountedProfileKeyedService> BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
-  virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
   virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 

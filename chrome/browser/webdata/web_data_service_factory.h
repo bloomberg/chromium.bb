@@ -67,7 +67,8 @@ class WebDataServiceFactory : public ProfileKeyedServiceFactory {
   virtual ~WebDataServiceFactory();
 
   // |ProfileKeyedBaseFactory| methods:
-  virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const OVERRIDE;
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;

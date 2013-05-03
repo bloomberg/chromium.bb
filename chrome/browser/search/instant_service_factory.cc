@@ -4,6 +4,7 @@
 
 #include "chrome/browser/search/instant_service_factory.h"
 
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/search/instant_service.h"
@@ -28,8 +29,9 @@ InstantServiceFactory::InstantServiceFactory()
 InstantServiceFactory::~InstantServiceFactory() {
 }
 
-bool InstantServiceFactory::ServiceHasOwnInstanceInIncognito() const {
-  return true;
+content::BrowserContext* InstantServiceFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }
 
 ProfileKeyedService* InstantServiceFactory::BuildServiceInstanceFor(

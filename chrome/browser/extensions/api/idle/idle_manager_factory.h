@@ -26,7 +26,8 @@ class IdleManagerFactory : public ProfileKeyedServiceFactory {
   // ProfileKeyedBaseFactory implementation.
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
-  virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const OVERRIDE;
   virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 };
