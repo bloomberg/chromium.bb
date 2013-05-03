@@ -4048,7 +4048,8 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
 }
 
 // Tests loading single extensions (like --load-extension)
-TEST_F(ExtensionServiceTest, LoadExtension) {
+// Flaky crashes. http://crbug.com/231806
+TEST_F(ExtensionServiceTest, DISABLED_LoadExtension) {
   InitializeEmptyExtensionService();
 
   base::FilePath ext1 = data_dir_
