@@ -528,21 +528,28 @@ class Builder(object):
     # Strip from foo.debug to foo.untagged.
     strip_name = self.GetStrip()
     strip_option = '--strip-all' if self.strip_all else '--strip-debug'
-    cmd_line = [strip_name, strip_option, src, '-o', pre_debug_tagging]
-    err = self.RunWithRetry(cmd_line, pre_debug_tagging)
-    if err:
-      ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
+    # pnacl does not have an objcopy so there are no way to embed a link
+    if self.is_pnacl_toolchain:
+      cmd_line = [strip_name, strip_option, src, '-o', out]
+      err = self.RunWithRetry(cmd_line, out)
+      if err:
+        ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
+    else:
+      cmd_line = [strip_name, strip_option, src, '-o', pre_debug_tagging]
+      err = self.RunWithRetry(cmd_line, pre_debug_tagging)
+      if err:
+        ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
 
-    # Tag with a debug link to foo.debug copying from foo.untagged to foo.
-    objcopy_name = self.GetObjCopy()
-    cmd_line = [objcopy_name, '--add-gnu-debuglink', src,
-                pre_debug_tagging, out]
-    err = self.RunWithRetry(cmd_line, out)
-    if err:
-      ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
+      # Tag with a debug link to foo.debug copying from foo.untagged to foo.
+      objcopy_name = self.GetObjCopy()
+      cmd_line = [objcopy_name, '--add-gnu-debuglink', src,
+                  pre_debug_tagging, out]
+      err = self.RunWithRetry(cmd_line, out)
+      if err:
+        ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
 
-    # Drop the untagged intermediate.
-    self.CleanOutput(pre_debug_tagging)
+      # Drop the untagged intermediate.
+      self.CleanOutput(pre_debug_tagging)
 
     return out
 
