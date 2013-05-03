@@ -97,7 +97,7 @@ class BoundedLabelTest : public testing::Test {
 
 /* Elision tests **************************************************************/
 
-TEST_F(BoundedLabelTest, ElisionTest) {
+TEST_F(BoundedLabelTest, GetWrappedTextTest) {
   // One word per line: No ellision should be made when not necessary.
   TEST_WRAP("123", "123", 301, 1);
   TEST_WRAP("123", "123", 301, 2);
@@ -162,6 +162,9 @@ TEST_F(BoundedLabelTest, ElisionTest) {
   TEST_WRAP("123\n456...", "123         456         789", 391, 2);
   TEST_WRAP("123  456\n789  012", "123  456  789  012", 641, 2);
   TEST_WRAP("123  456\n789  012...", "123  456  789  012  345  678", 641, 2);
+
+  // Long words without spaces should be wrapped when necessary.
+  TEST_WRAP("123\n456", "123456", 300, 9);
 
   // TODO(dharcourt): Add test cases to verify that:
   // - Spaces before elisions are removed
