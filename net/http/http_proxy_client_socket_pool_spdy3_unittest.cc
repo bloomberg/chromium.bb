@@ -15,6 +15,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool_histograms.h"
+#include "net/socket/next_proto.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/spdy/spdy_test_util_spdy3.h"
@@ -46,7 +47,8 @@ typedef ::testing::TestWithParam<HttpProxyType> TestWithHttpParam;
 class HttpProxyClientSocketPoolSpdy3Test : public TestWithHttpParam {
  protected:
   HttpProxyClientSocketPoolSpdy3Test()
-      : ssl_config_(),
+      : session_deps_(kProtoSPDY3),
+        ssl_config_(),
         ignored_transport_socket_params_(
             new TransportSocketParams(HostPortPair("proxy", 80),
                                       LOWEST,
@@ -94,7 +96,8 @@ class HttpProxyClientSocketPoolSpdy3Test : public TestWithHttpParam {
               NULL,
               &transport_socket_pool_,
               &ssl_socket_pool_,
-              NULL) {}
+              NULL) {
+  }
 
   virtual ~HttpProxyClientSocketPoolSpdy3Test() {
   }

@@ -17,6 +17,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/socket/client_socket_factory.h"
+#include "net/socket/next_proto.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/spdy/buffered_spdy_framer.h"
@@ -139,7 +140,7 @@ SpdyProxyClientSocketSpdy2Test::SpdyProxyClientSocketSpdy2Test()
       data_(NULL),
       session_(NULL),
       read_buf_(NULL),
-      session_deps_(),
+      session_deps_(kProtoSPDY2),
       connect_data_(SYNCHRONOUS, OK),
       spdy_session_(NULL),
       spdy_stream_(NULL),

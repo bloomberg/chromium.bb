@@ -6,11 +6,24 @@
 #define NET_SPDY_SPDY_TEST_UTIL_COMMON_H_
 
 #include "base/memory/ref_counted.h"
+#include "crypto/ec_private_key.h"
+#include "crypto/ec_signature_creator.h"
 #include "net/base/completion_callback.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
+#include "net/cert/cert_verifier.h"
+#include "net/dns/mock_host_resolver.h"
+#include "net/http/http_auth_handler_factory.h"
+#include "net/http/http_network_session.h"
+#include "net/http/http_server_properties_impl.h"
+#include "net/proxy/proxy_service.h"
+#include "net/socket/next_proto.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_protocol.h"
+#include "net/ssl/ssl_config_service_defaults.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_storage.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 class GURL;
 
@@ -158,6 +171,104 @@ struct SpdyHeaderInfo {
   const char* data;
   uint32 data_length;
   SpdyDataFlags data_flags;
+};
+
+// An ECSignatureCreator that returns deterministic signatures.
+class MockECSignatureCreator : public crypto::ECSignatureCreator {
+ public:
+  explicit MockECSignatureCreator(crypto::ECPrivateKey* key);
+
+  // crypto::ECSignatureCreator
+  virtual bool Sign(const uint8* data,
+                    int data_len,
+                    std::vector<uint8>* signature) OVERRIDE;
+  virtual bool DecodeSignature(const std::vector<uint8>& signature,
+                               std::vector<uint8>* out_raw_sig) OVERRIDE;
+
+ private:
+  crypto::ECPrivateKey* key_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockECSignatureCreator);
+};
+
+// An ECSignatureCreatorFactory creates MockECSignatureCreator.
+class MockECSignatureCreatorFactory : public crypto::ECSignatureCreatorFactory {
+ public:
+  MockECSignatureCreatorFactory();
+  virtual ~MockECSignatureCreatorFactory();
+
+  // crypto::ECSignatureCreatorFactory
+  virtual crypto::ECSignatureCreator* Create(
+      crypto::ECPrivateKey* key) OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockECSignatureCreatorFactory);
+};
+
+// Helper to manage the lifetimes of the dependencies for a
+// HttpNetworkTransaction.
+struct SpdySessionDependencies {
+  // Default set of dependencies -- "null" proxy service.
+  explicit SpdySessionDependencies(NextProto protocol);
+
+  // Custom proxy service dependency.
+  SpdySessionDependencies(NextProto protocol, ProxyService* proxy_service);
+
+  ~SpdySessionDependencies();
+
+  static HttpNetworkSession* SpdyCreateSession(
+      SpdySessionDependencies* session_deps);
+  static HttpNetworkSession* SpdyCreateSessionDeterministic(
+      SpdySessionDependencies* session_deps);
+  static HttpNetworkSession::Params CreateSessionParams(
+      SpdySessionDependencies* session_deps);
+
+  // NOTE: host_resolver must be ordered before http_auth_handler_factory.
+  scoped_ptr<MockHostResolverBase> host_resolver;
+  scoped_ptr<CertVerifier> cert_verifier;
+  scoped_ptr<ProxyService> proxy_service;
+  scoped_refptr<SSLConfigService> ssl_config_service;
+  scoped_ptr<MockClientSocketFactory> socket_factory;
+  scoped_ptr<DeterministicMockClientSocketFactory> deterministic_socket_factory;
+  scoped_ptr<HttpAuthHandlerFactory> http_auth_handler_factory;
+  HttpServerPropertiesImpl http_server_properties;
+  bool enable_ip_pooling;
+  bool enable_compression;
+  bool enable_ping;
+  bool enable_user_alternate_protocol_ports;
+  NextProto protocol;
+  size_t stream_initial_recv_window_size;
+  SpdySession::TimeFunc time_func;
+  std::string trusted_spdy_proxy;
+  NetLog* net_log;
+};
+
+class SpdyURLRequestContext : public URLRequestContext {
+ public:
+  explicit SpdyURLRequestContext(NextProto protocol);
+  virtual ~SpdyURLRequestContext();
+
+  MockClientSocketFactory& socket_factory() { return socket_factory_; }
+
+ private:
+  MockClientSocketFactory socket_factory_;
+  net::URLRequestContextStorage storage_;
+};
+
+class SpdySessionPoolPeer {
+ public:
+  explicit SpdySessionPoolPeer(SpdySessionPool* pool);;;;
+
+  void AddAlias(const IPEndPoint& address, const HostPortProxyPair& pair);
+  void RemoveAliases(const HostPortProxyPair& pair);
+  void RemoveSpdySession(const scoped_refptr<SpdySession>& session);
+  void DisableDomainAuthenticationVerification();
+  void EnableSendingInitialSettings(bool enabled);
+
+ private:
+  SpdySessionPool* const pool_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpdySessionPoolPeer);
 };
 
 }  // namespace net

@@ -14,6 +14,7 @@
 #include "net/base/test_data_directory.h"
 #include "net/base/test_data_stream.h"
 #include "net/dns/host_cache.h"
+#include "net/socket/next_proto.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_session_test_util.h"
@@ -96,7 +97,8 @@ class SpdySessionSpdy3Test : public PlatformTest {
 
  protected:
   SpdySessionSpdy3Test()
-      : spdy_session_pool_(NULL),
+      : session_deps_(kProtoSPDY3),
+        spdy_session_pool_(NULL),
         test_url_(kTestUrl),
         test_host_port_pair_(kTestHost, kTestPort),
         pair_(test_host_port_pair_, ProxyServer::Direct()) {
@@ -922,7 +924,7 @@ void IPPoolingTest(SpdyPoolCloseSessionsType close_sessions_type) {
     },
   };
 
-  SpdySessionDependencies session_deps;
+  SpdySessionDependencies session_deps(kProtoSPDY3);
   session_deps.host_resolver->set_synchronous_mode(true);
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_hosts); i++) {
     session_deps.host_resolver->rules()->AddIPLiteralRule(
@@ -2308,7 +2310,7 @@ TEST_F(SpdySessionSpdy3Test, ProtocolNegotiation) {
 // SpdySession should be initialized with flow control enabled for
 // streams and sessions and with protocol version 3.
 TEST_F(SpdySessionSpdy3Test, ProtocolNegotiation31) {
-  session_deps_.enable_spdy_31 = true;
+  session_deps_.protocol = kProtoSPDY31;
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   MockConnect connect_data(SYNCHRONOUS, OK);
@@ -2346,7 +2348,7 @@ TEST_F(SpdySessionSpdy3Test, ProtocolNegotiation31) {
 // NOTE(akalin): We are still figuring out the story for SPDY4 test
 // coverage.
 TEST_F(SpdySessionSpdy3Test, ProtocolNegotiation4) {
-  session_deps_.enable_spdy_4 = true;
+  session_deps_.protocol = kProtoSPDY4a1;
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   MockConnect connect_data(SYNCHRONOUS, OK);
@@ -2383,7 +2385,7 @@ TEST_F(SpdySessionSpdy3Test, ProtocolNegotiation4) {
 // should trigger sending a WINDOW_UPDATE frame for a large enough
 // delta.
 TEST_F(SpdySessionSpdy3Test, AdjustRecvWindowSize31) {
-  session_deps_.enable_spdy_31 = true;
+  session_deps_.protocol = kProtoSPDY31;
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   const int32 delta_window_size = 100;
@@ -2447,7 +2449,7 @@ TEST_F(SpdySessionSpdy3Test, AdjustRecvWindowSize31) {
 // adjust the session send window size when the "enable_spdy_31" flag
 // is set.
 TEST_F(SpdySessionSpdy3Test, AdjustSendWindowSize31) {
-  session_deps_.enable_spdy_31 = true;
+  session_deps_.protocol = kProtoSPDY31;
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   MockConnect connect_data(SYNCHRONOUS, OK);
@@ -2480,7 +2482,7 @@ TEST_F(SpdySessionSpdy3Test, AdjustSendWindowSize31) {
 // Incoming data for an inactive stream should not cause the session
 // receive window size to decrease.
 TEST_F(SpdySessionSpdy3Test, SessionFlowControlInactiveStream31) {
-  session_deps_.enable_spdy_31 = true;
+  session_deps_.protocol = kProtoSPDY31;
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   MockConnect connect_data(SYNCHRONOUS, OK);
@@ -2542,7 +2544,7 @@ class DropReceivedDataDelegate : public test::StreamDelegateSendImmediate {
 TEST_F(SpdySessionSpdy3Test, SessionFlowControlNoReceiveLeaks31) {
   const char kStreamUrl[] = "http://www.google.com/";
 
-  session_deps_.enable_spdy_31 = true;
+  session_deps_.protocol = kProtoSPDY31;
 
   const int32 msg_data_size = 100;
   const std::string msg_data(msg_data_size, 'a');
@@ -2628,7 +2630,7 @@ TEST_F(SpdySessionSpdy3Test, SessionFlowControlNoReceiveLeaks31) {
 TEST_F(SpdySessionSpdy3Test, SessionFlowControlNoSendLeaks31) {
   const char kStreamUrl[] = "http://www.google.com/";
 
-  session_deps_.enable_spdy_31 = true;
+  session_deps_.protocol = kProtoSPDY31;
 
   const int32 msg_data_size = 100;
   const std::string msg_data(msg_data_size, 'a');
@@ -2708,7 +2710,7 @@ TEST_F(SpdySessionSpdy3Test, SessionFlowControlNoSendLeaks31) {
 TEST_F(SpdySessionSpdy3Test, SessionFlowControlEndToEnd31) {
   const char kStreamUrl[] = "http://www.google.com/";
 
-  session_deps_.enable_spdy_31 = true;
+  session_deps_.protocol = kProtoSPDY31;
 
   const int32 msg_data_size = 100;
   const std::string msg_data(msg_data_size, 'a');
@@ -2838,7 +2840,7 @@ void SpdySessionSpdy3Test::RunResumeAfterUnstallTest31(
   const char kStreamUrl[] = "http://www.google.com/";
   GURL url(kStreamUrl);
 
-  session_deps_.enable_spdy_31 = true;
+  session_deps_.protocol = kProtoSPDY31;
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   scoped_ptr<SpdyFrame> initial_window_update(
@@ -2983,7 +2985,7 @@ TEST_F(SpdySessionSpdy3Test, ResumeByPriorityAfterSendWindowSizeIncrease31) {
   const char kStreamUrl[] = "http://www.google.com/";
   GURL url(kStreamUrl);
 
-  session_deps_.enable_spdy_31 = true;
+  session_deps_.protocol = kProtoSPDY31;
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   scoped_ptr<SpdyFrame> initial_window_update(
@@ -3150,7 +3152,7 @@ TEST_F(SpdySessionSpdy3Test, SendWindowSizeIncreaseWithDeletedStreams31) {
   const char kStreamUrl[] = "http://www.google.com/";
   GURL url(kStreamUrl);
 
-  session_deps_.enable_spdy_31 = true;
+  session_deps_.protocol = kProtoSPDY31;
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   scoped_ptr<SpdyFrame> initial_window_update(
@@ -3355,7 +3357,7 @@ TEST_F(SpdySessionSpdy3Test, SendWindowSizeIncreaseWithDeletedSession31) {
   const char kStreamUrl[] = "http://www.google.com/";
   GURL url(kStreamUrl);
 
-  session_deps_.enable_spdy_31 = true;
+  session_deps_.protocol = kProtoSPDY31;
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   scoped_ptr<SpdyFrame> initial_window_update(

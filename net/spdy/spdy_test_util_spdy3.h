@@ -8,25 +8,14 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
-#include "crypto/ec_private_key.h"
-#include "crypto/ec_signature_creator.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/request_priority.h"
-#include "net/cert/cert_verifier.h"
-#include "net/dns/mock_host_resolver.h"
-#include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
-#include "net/http/http_network_session.h"
-#include "net/http/http_server_properties_impl.h"
 #include "net/http/http_transaction_factory.h"
-#include "net/proxy/proxy_service.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_test_util_common.h"
-#include "net/ssl/ssl_config_service_defaults.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_storage.h"
 
 namespace crypto {
 class ECSignatureCreatorFactory;
@@ -35,38 +24,6 @@ class ECSignatureCreatorFactory;
 namespace net {
 
 namespace test_spdy3 {
-
-// An ECSignatureCreator that returns deterministic signatures.
-class MockECSignatureCreator : public crypto::ECSignatureCreator {
- public:
-  explicit MockECSignatureCreator(crypto::ECPrivateKey* key);
-
-  // crypto::ECSignatureCreator
-  virtual bool Sign(const uint8* data,
-                    int data_len,
-                    std::vector<uint8>* signature) OVERRIDE;
-  virtual bool DecodeSignature(const std::vector<uint8>& signature,
-                               std::vector<uint8>* out_raw_sig) OVERRIDE;
-
- private:
-  crypto::ECPrivateKey* key_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockECSignatureCreator);
-};
-
-// An ECSignatureCreatorFactory creates MockECSignatureCreator.
-class MockECSignatureCreatorFactory : public crypto::ECSignatureCreatorFactory {
- public:
-  MockECSignatureCreatorFactory();
-  virtual ~MockECSignatureCreatorFactory();
-
-  // crypto::ECSignatureCreatorFactory
-  virtual crypto::ECSignatureCreator* Create(
-      crypto::ECPrivateKey* key) OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockECSignatureCreatorFactory);
-};
 
 // Constructs a HeaderBlock for the given URL.
 scoped_ptr<SpdyHeaderBlock> ConstructGetHeaderBlock(base::StringPiece url);
@@ -344,89 +301,7 @@ SpdyFrame* ConstructSpdyBodyFrame(int stream_id, const char* data,
 SpdyFrame* ConstructWrappedSpdyFrame(const scoped_ptr<SpdyFrame>& frame,
                                      int stream_id);
 
-// Helper to manage the lifetimes of the dependencies for a
-// HttpNetworkTransaction.
-struct SpdySessionDependencies {
-  // Default set of dependencies -- "null" proxy service.
-  SpdySessionDependencies();
-
-  // Custom proxy service dependency.
-  explicit SpdySessionDependencies(ProxyService* proxy_service);
-
-  ~SpdySessionDependencies();
-
-  static HttpNetworkSession* SpdyCreateSession(
-      SpdySessionDependencies* session_deps);
-  static HttpNetworkSession* SpdyCreateSessionDeterministic(
-      SpdySessionDependencies* session_deps);
-  static HttpNetworkSession::Params CreateSessionParams(
-      SpdySessionDependencies* session_deps);
-
-  // NOTE: host_resolver must be ordered before http_auth_handler_factory.
-  scoped_ptr<MockHostResolverBase> host_resolver;
-  scoped_ptr<CertVerifier> cert_verifier;
-  scoped_ptr<ProxyService> proxy_service;
-  scoped_refptr<SSLConfigService> ssl_config_service;
-  scoped_ptr<MockClientSocketFactory> socket_factory;
-  scoped_ptr<DeterministicMockClientSocketFactory> deterministic_socket_factory;
-  scoped_ptr<HttpAuthHandlerFactory> http_auth_handler_factory;
-  HttpServerPropertiesImpl http_server_properties;
-  bool enable_ip_pooling;
-  bool enable_compression;
-  bool enable_ping;
-  bool enable_user_alternate_protocol_ports;
-  bool enable_spdy_31;
-  bool enable_spdy_4;
-  size_t stream_initial_recv_window_size;
-  SpdySession::TimeFunc time_func;
-  std::string trusted_spdy_proxy;
-  NetLog* net_log;
-};
-
-class SpdyURLRequestContext : public URLRequestContext {
- public:
-  SpdyURLRequestContext();
-  virtual ~SpdyURLRequestContext();
-
-  MockClientSocketFactory& socket_factory() { return socket_factory_; }
-
- private:
-  MockClientSocketFactory socket_factory_;
-  net::URLRequestContextStorage storage_;
-};
-
 const SpdyHeaderInfo MakeSpdyHeader(SpdyFrameType type);
-
-class SpdySessionPoolPeer {
- public:
-  explicit SpdySessionPoolPeer(SpdySessionPool* pool)
-      : pool_(pool) {}
-
-  void AddAlias(const IPEndPoint& address, const HostPortProxyPair& pair) {
-    pool_->AddAlias(address, pair);
-  }
-
-  void RemoveAliases(const HostPortProxyPair& pair) {
-    pool_->RemoveAliases(pair);
-  }
-
-  void RemoveSpdySession(const scoped_refptr<SpdySession>& session) {
-    pool_->Remove(session);
-  }
-
-  void DisableDomainAuthenticationVerification() {
-    pool_->verify_domain_authentication_ = false;
-  }
-
-  void EnableSendingInitialSettings(bool enabled) {
-    pool_->enable_sending_initial_settings_ = enabled;
-  }
-
- private:
-  SpdySessionPool* const pool_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpdySessionPoolPeer);
-};
 
 }  // namespace test_spdy3
 

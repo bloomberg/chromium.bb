@@ -21,6 +21,7 @@
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
+#include "net/socket/next_proto.h"
 #include "net/spdy/spdy_credential_builder.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_session.h"
@@ -65,7 +66,7 @@ void TestLoadTimingNotReused(const HttpStream& stream) {
 
 class SpdyHttpStreamSpdy3Test : public testing::Test {
  public:
-  SpdyHttpStreamSpdy3Test() {
+  SpdyHttpStreamSpdy3Test() : session_deps_(kProtoSPDY3) {
     session_deps_.net_log = &net_log_;
   }
 
@@ -393,7 +394,7 @@ TEST_F(SpdyHttpStreamSpdy3Test, SendChunkedPost) {
 }
 
 TEST_F(SpdyHttpStreamSpdy3Test, SendChunkedPost4) {
-  session_deps_.enable_spdy_4 = true;
+  session_deps_.protocol = kProtoSPDY4a1;
   RunSendChunkedPostTest(kSpdyVersion4);
 }
 

@@ -139,8 +139,7 @@ class NET_EXPORT SpdySessionPool
   virtual void OnCertTrustChanged(const X509Certificate* cert) OVERRIDE;
 
  private:
-  friend class test_spdy2::SpdySessionPoolPeer;  // For testing.
-  friend class test_spdy3::SpdySessionPoolPeer;  // For testing.
+  friend class SpdySessionPoolPeer;  // For testing.
   friend class SpdyNetworkTransactionSpdy2Test;  // For testing.
   friend class SpdyNetworkTransactionSpdy3Test;  // For testing.
   FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionSpdy2Test,

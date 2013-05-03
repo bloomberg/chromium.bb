@@ -12,6 +12,7 @@
 #include "net/base/test_data_directory.h"
 #include "net/base/test_data_stream.h"
 #include "net/dns/host_cache.h"
+#include "net/socket/next_proto.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_session_test_util.h"
 #include "net/spdy/spdy_stream.h"
@@ -42,7 +43,8 @@ base::TimeTicks TheNearFuture() {
 class SpdySessionSpdy2Test : public PlatformTest {
  protected:
   SpdySessionSpdy2Test()
-      : spdy_session_pool_(NULL),
+      : session_deps_(kProtoSPDY2),
+        spdy_session_pool_(NULL),
         test_url_(kTestUrl),
         test_host_port_pair_(kTestHost, kTestPort),
         pair_(test_host_port_pair_, ProxyServer::Direct()) {
@@ -831,7 +833,7 @@ void IPPoolingTest(SpdyPoolCloseSessionsType close_sessions_type) {
     },
   };
 
-  SpdySessionDependencies session_deps;
+  SpdySessionDependencies session_deps(kProtoSPDY2);
   session_deps.host_resolver->set_synchronous_mode(true);
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_hosts); i++) {
     session_deps.host_resolver->rules()->AddIPLiteralRule(

@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "net/base/completion_callback.h"
 #include "net/proxy/proxy_server.h"
+#include "net/socket/next_proto.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_protocol.h"
@@ -187,7 +188,7 @@ class SpdyWebSocketStreamSpdy3Test : public testing::Test {
   }
 
  protected:
-  SpdyWebSocketStreamSpdy3Test() {}
+  SpdyWebSocketStreamSpdy3Test() : session_deps_(kProtoSPDY3) {}
   virtual ~SpdyWebSocketStreamSpdy3Test() {}
 
   virtual void SetUp() {

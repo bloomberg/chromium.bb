@@ -10,21 +10,12 @@
 #include "base/strings/string_piece.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/request_priority.h"
-#include "net/cert/cert_verifier.h"
-#include "net/dns/mock_host_resolver.h"
-#include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
-#include "net/http/http_network_session.h"
-#include "net/http/http_server_properties_impl.h"
 #include "net/http/http_transaction_factory.h"
-#include "net/proxy/proxy_service.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_test_util_common.h"
-#include "net/ssl/ssl_config_service_defaults.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_storage.h"
 
 namespace net {
 
@@ -251,86 +242,7 @@ SpdyFrame* ConstructSpdyBodyFrame(int stream_id, const char* data,
 SpdyFrame* ConstructWrappedSpdyFrame(const scoped_ptr<SpdyFrame>& frame,
                                      int stream_id);
 
-// Helper to manage the lifetimes of the dependencies for a
-// HttpNetworkTransaction.
-struct SpdySessionDependencies {
-  // Default set of dependencies -- "null" proxy service.
-  SpdySessionDependencies();
-
-  // Custom proxy service dependency.
-  explicit SpdySessionDependencies(ProxyService* proxy_service);
-
-  ~SpdySessionDependencies();
-
-  static HttpNetworkSession* SpdyCreateSession(
-      SpdySessionDependencies* session_deps);
-  static HttpNetworkSession* SpdyCreateSessionDeterministic(
-      SpdySessionDependencies* session_deps);
-  static HttpNetworkSession::Params CreateSessionParams(
-      SpdySessionDependencies* session_deps);
-
-  // NOTE: host_resolver must be ordered before http_auth_handler_factory.
-  scoped_ptr<MockHostResolverBase> host_resolver;
-  scoped_ptr<CertVerifier> cert_verifier;
-  scoped_ptr<ProxyService> proxy_service;
-  scoped_refptr<SSLConfigService> ssl_config_service;
-  scoped_ptr<MockClientSocketFactory> socket_factory;
-  scoped_ptr<DeterministicMockClientSocketFactory> deterministic_socket_factory;
-  scoped_ptr<HttpAuthHandlerFactory> http_auth_handler_factory;
-  HttpServerPropertiesImpl http_server_properties;
-  bool enable_ip_pooling;
-  bool enable_compression;
-  bool enable_ping;
-  bool enable_user_alternate_protocol_ports;
-  SpdySession::TimeFunc time_func;
-  std::string trusted_spdy_proxy;
-  NetLog* net_log;
-};
-
-class SpdyURLRequestContext : public URLRequestContext {
- public:
-  SpdyURLRequestContext();
-  virtual ~SpdyURLRequestContext();
-
-  MockClientSocketFactory& socket_factory() { return socket_factory_; }
-
- private:
-  MockClientSocketFactory socket_factory_;
-  net::URLRequestContextStorage storage_;
-};
-
 const SpdyHeaderInfo MakeSpdyHeader(SpdyFrameType type);
-
-class SpdySessionPoolPeer {
- public:
-  explicit SpdySessionPoolPeer(SpdySessionPool* pool)
-      : pool_(pool) {}
-
-  void AddAlias(const IPEndPoint& address, const HostPortProxyPair& pair) {
-    pool_->AddAlias(address, pair);
-  }
-
-  void RemoveAliases(const HostPortProxyPair& pair) {
-    pool_->RemoveAliases(pair);
-  }
-
-  void RemoveSpdySession(const scoped_refptr<SpdySession>& session) {
-    pool_->Remove(session);
-  }
-
-  void DisableDomainAuthenticationVerification() {
-    pool_->verify_domain_authentication_ = false;
-  }
-
-  void EnableSendingInitialSettings(bool enabled) {
-    pool_->enable_sending_initial_settings_ = enabled;
-  }
-
- private:
-  SpdySessionPool* const pool_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpdySessionPoolPeer);
-};
 
 }  // namespace test_spdy2
 

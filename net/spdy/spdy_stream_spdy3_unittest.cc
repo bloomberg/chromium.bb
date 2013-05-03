@@ -9,6 +9,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/net_log_unittest.h"
 #include "net/base/request_priority.h"
+#include "net/socket/next_proto.h"
 #include "net/spdy/buffered_spdy_framer.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_protocol.h"
@@ -37,8 +38,9 @@ const base::StringPiece kPostBodyStringPiece(kPostBody, kPostBodyLength);
 
 class SpdyStreamSpdy3Test : public testing::Test {
  protected:
-  SpdyStreamSpdy3Test() : host_port_pair_("www.google.com", 80) {
-  }
+  SpdyStreamSpdy3Test()
+      : host_port_pair_("www.google.com", 80),
+        session_deps_(kProtoSPDY3) {}
 
   scoped_refptr<SpdySession> CreateSpdySession() {
     HostPortProxyPair pair(host_port_pair_, ProxyServer::Direct());

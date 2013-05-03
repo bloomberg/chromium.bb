@@ -12,9 +12,6 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "net/cert/mock_cert_verifier.h"
-#include "net/http/http_network_session.h"
-#include "net/http/http_network_transaction.h"
-#include "net/http/http_server_properties_impl.h"
 #include "net/spdy/buffered_spdy_framer.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_session.h"
@@ -42,48 +39,6 @@ void ParseUrl(const char* const url, std::string* scheme, std::string* host,
 
 }  // namespace
 
-
-MockECSignatureCreator::MockECSignatureCreator(crypto::ECPrivateKey* key)
-    : key_(key) {
-}
-
-bool MockECSignatureCreator::Sign(const uint8* data,
-                                  int data_len,
-                                  std::vector<uint8>* signature) {
-  std::vector<uint8> private_key_value;
-  key_->ExportValue(&private_key_value);
-  std::string head = "fakesignature";
-  std::string tail = "/fakesignature";
-
-  signature->clear();
-  signature->insert(signature->end(), head.begin(), head.end());
-  signature->insert(signature->end(), private_key_value.begin(),
-                    private_key_value.end());
-  signature->insert(signature->end(), '-');
-  signature->insert(signature->end(), data, data + data_len);
-  signature->insert(signature->end(), tail.begin(), tail.end());
-  return true;
-}
-
-bool MockECSignatureCreator::DecodeSignature(
-    const std::vector<uint8>& signature,
-    std::vector<uint8>* out_raw_sig) {
-  *out_raw_sig = signature;
-  return true;
-}
-
-MockECSignatureCreatorFactory::MockECSignatureCreatorFactory() {
-  crypto::ECSignatureCreator::SetFactoryForTesting(this);
-}
-
-MockECSignatureCreatorFactory::~MockECSignatureCreatorFactory() {
-  crypto::ECSignatureCreator::SetFactoryForTesting(NULL);
-}
-
-crypto::ECSignatureCreator* MockECSignatureCreatorFactory::Create(
-    crypto::ECPrivateKey* key) {
-  return new MockECSignatureCreator(key);
-}
 
 scoped_ptr<SpdyHeaderBlock> ConstructGetHeaderBlock(base::StringPiece url) {
   std::string scheme, host, path;
@@ -729,136 +684,6 @@ int ConstructSpdyReplyString(const char* const extra_headers[],
                                  &buffer_left);
   }
   return frame_size;
-}
-
-SpdySessionDependencies::SpdySessionDependencies()
-    : host_resolver(new MockCachingHostResolver),
-      cert_verifier(new MockCertVerifier),
-      proxy_service(ProxyService::CreateDirect()),
-      ssl_config_service(new SSLConfigServiceDefaults),
-      socket_factory(new MockClientSocketFactory),
-      deterministic_socket_factory(new DeterministicMockClientSocketFactory),
-      http_auth_handler_factory(
-          HttpAuthHandlerFactory::CreateDefault(host_resolver.get())),
-      enable_ip_pooling(true),
-      enable_compression(false),
-      enable_ping(false),
-      enable_user_alternate_protocol_ports(false),
-      enable_spdy_31(false),
-      enable_spdy_4(false),
-      stream_initial_recv_window_size(kSpdyStreamInitialWindowSize),
-      time_func(&base::TimeTicks::Now),
-      net_log(NULL) {
-  // Note: The CancelledTransaction test does cleanup by running all
-  // tasks in the message loop (RunAllPending).  Unfortunately, that
-  // doesn't clean up tasks on the host resolver thread; and
-  // TCPConnectJob is currently not cancellable.  Using synchronous
-  // lookups allows the test to shutdown cleanly.  Until we have
-  // cancellable TCPConnectJobs, use synchronous lookups.
-  host_resolver->set_synchronous_mode(true);
-}
-
-SpdySessionDependencies::SpdySessionDependencies(ProxyService* proxy_service)
-    : host_resolver(new MockHostResolver),
-      cert_verifier(new MockCertVerifier),
-      proxy_service(proxy_service),
-      ssl_config_service(new SSLConfigServiceDefaults),
-      socket_factory(new MockClientSocketFactory),
-      deterministic_socket_factory(new DeterministicMockClientSocketFactory),
-      http_auth_handler_factory(
-          HttpAuthHandlerFactory::CreateDefault(host_resolver.get())),
-      enable_ip_pooling(true),
-      enable_compression(false),
-      enable_ping(false),
-      enable_user_alternate_protocol_ports(false),
-      enable_spdy_31(false),
-      enable_spdy_4(false),
-      stream_initial_recv_window_size(kSpdyStreamInitialWindowSize),
-      time_func(&base::TimeTicks::Now),
-      net_log(NULL) {}
-
-SpdySessionDependencies::~SpdySessionDependencies() {}
-
-// static
-HttpNetworkSession* SpdySessionDependencies::SpdyCreateSession(
-    SpdySessionDependencies* session_deps) {
-  net::HttpNetworkSession::Params params = CreateSessionParams(session_deps);
-  params.client_socket_factory = session_deps->socket_factory.get();
-  HttpNetworkSession* http_session = new HttpNetworkSession(params);
-  SpdySessionPoolPeer pool_peer(http_session->spdy_session_pool());
-  pool_peer.EnableSendingInitialSettings(false);
-  return http_session;
-}
-
-// static
-HttpNetworkSession* SpdySessionDependencies::SpdyCreateSessionDeterministic(
-    SpdySessionDependencies* session_deps) {
-  net::HttpNetworkSession::Params params = CreateSessionParams(session_deps);
-  params.client_socket_factory =
-      session_deps->deterministic_socket_factory.get();
-  HttpNetworkSession* http_session = new HttpNetworkSession(params);
-  SpdySessionPoolPeer pool_peer(http_session->spdy_session_pool());
-  pool_peer.EnableSendingInitialSettings(false);
-  return http_session;
-}
-
-// static
-net::HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
-    SpdySessionDependencies* session_deps) {
-  net::HttpNetworkSession::Params params;
-  params.host_resolver = session_deps->host_resolver.get();
-  params.cert_verifier = session_deps->cert_verifier.get();
-  params.proxy_service = session_deps->proxy_service.get();
-  params.ssl_config_service = session_deps->ssl_config_service;
-  params.http_auth_handler_factory =
-      session_deps->http_auth_handler_factory.get();
-  params.http_server_properties = &session_deps->http_server_properties;
-  params.enable_spdy_compression = session_deps->enable_compression;
-  params.enable_spdy_ping_based_connection_checking = session_deps->enable_ping;
-  params.enable_user_alternate_protocol_ports =
-      session_deps->enable_user_alternate_protocol_ports;
-  params.spdy_default_protocol =
-      session_deps->enable_spdy_4 ? kProtoSPDY4a1 :
-      session_deps->enable_spdy_31 ? kProtoSPDY31 : kProtoSPDY3;
-  params.spdy_stream_initial_recv_window_size =
-      session_deps->stream_initial_recv_window_size;
-  params.time_func = session_deps->time_func;
-  params.trusted_spdy_proxy = session_deps->trusted_spdy_proxy;
-  params.net_log = session_deps->net_log;
-  return params;
-}
-
-SpdyURLRequestContext::SpdyURLRequestContext()
-    : storage_(this) {
-  storage_.set_host_resolver(scoped_ptr<HostResolver>(new MockHostResolver));
-  storage_.set_cert_verifier(new MockCertVerifier);
-  storage_.set_proxy_service(ProxyService::CreateDirect());
-  storage_.set_ssl_config_service(new SSLConfigServiceDefaults);
-  storage_.set_http_auth_handler_factory(HttpAuthHandlerFactory::CreateDefault(
-      host_resolver()));
-  storage_.set_http_server_properties(new HttpServerPropertiesImpl);
-  net::HttpNetworkSession::Params params;
-  params.client_socket_factory = &socket_factory_;
-  params.host_resolver = host_resolver();
-  params.cert_verifier = cert_verifier();
-  params.proxy_service = proxy_service();
-  params.ssl_config_service = ssl_config_service();
-  params.http_auth_handler_factory = http_auth_handler_factory();
-  params.network_delegate = network_delegate();
-  params.enable_spdy_compression = false;
-  params.enable_spdy_ping_based_connection_checking = false;
-  params.spdy_default_protocol = kProtoSPDY3;
-  params.http_server_properties = http_server_properties();
-  scoped_refptr<HttpNetworkSession> network_session(
-      new HttpNetworkSession(params));
-  SpdySessionPoolPeer pool_peer(network_session->spdy_session_pool());
-  pool_peer.EnableSendingInitialSettings(false);
-  storage_.set_http_transaction_factory(new HttpCache(
-      network_session,
-      HttpCache::DefaultBackend::InMemory(0)));
-}
-
-SpdyURLRequestContext::~SpdyURLRequestContext() {
 }
 
 const SpdyHeaderInfo MakeSpdyHeader(SpdyFrameType type) {

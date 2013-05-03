@@ -16,6 +16,7 @@
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
+#include "net/socket/next_proto.h"
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_test_util_spdy2.h"
 #include "net/ssl/default_server_bound_cert_store.h"
@@ -58,7 +59,7 @@ void TestLoadTimingNotReused(const HttpStream& stream) {
 
 class SpdyHttpStreamSpdy2Test : public testing::Test {
  public:
-  SpdyHttpStreamSpdy2Test() {
+  SpdyHttpStreamSpdy2Test() : session_deps_(kProtoSPDY2) {
     session_deps_.net_log = &net_log_;
   }
 
