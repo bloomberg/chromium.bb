@@ -217,7 +217,7 @@ TEST(IDBDatabaseBackendTest, ForcedClose)
 
     const int64_t transactionId = 123;
     const Vector<int64_t> scope;
-    backend->createTransaction(transactionId, connectionProxy, scope, IndexedDB::TransactionReadOnly);
+    webDatabase.createTransaction(transactionId, 0, scope, IndexedDB::TransactionReadOnly);
 
     webDatabase.forceClose();
 

@@ -69,9 +69,10 @@ void IDBDatabaseBackendProxy::deleteObjectStore(int64_t transactionId, int64_t o
         m_webIDBDatabase->deleteObjectStore(transactionId, objectStoreId);
 }
 
-void IDBDatabaseBackendProxy::createTransaction(int64_t id, PassRefPtr<IDBDatabaseCallbacks> callbacks, const Vector<int64_t>& objectStoreIds, unsigned short mode)
+void IDBDatabaseBackendProxy::createTransaction(int64_t id, PassRefPtr<IDBDatabaseCallbacks>, const Vector<int64_t>& objectStoreIds, unsigned short mode)
 {
-    m_webIDBDatabase->createTransaction(id, new WebIDBDatabaseCallbacksImpl(callbacks), objectStoreIds, mode);
+    // WebIDBDatabaseImpl holds on to the specific callbacks object for this connection.
+    m_webIDBDatabase->createTransaction(id, 0, objectStoreIds, mode);
 }
 
 void IDBDatabaseBackendProxy::commit(int64_t transactionId)

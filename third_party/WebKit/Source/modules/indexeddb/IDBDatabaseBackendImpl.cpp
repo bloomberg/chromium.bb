@@ -1178,9 +1178,12 @@ void IDBDatabaseBackendImpl::processPendingCalls()
     }
 }
 
-void IDBDatabaseBackendImpl::createTransaction(int64_t transactionId, PassRefPtr<IDBDatabaseCallbacks> callbacks, const Vector<int64_t>& objectStoreIds, unsigned short mode)
+void IDBDatabaseBackendImpl::createTransaction(int64_t transactionId, PassRefPtr<IDBDatabaseCallbacks> prpCallbacks, const Vector<int64_t>& objectStoreIds, unsigned short mode)
 {
-    RefPtr<IDBTransactionBackendImpl> transaction = IDBTransactionBackendImpl::create(transactionId, callbacks, objectStoreIds, static_cast<IndexedDB::TransactionMode>(mode), this);
+    RefPtr<IDBDatabaseCallbacks> callbacks = prpCallbacks;
+    ASSERT(m_databaseCallbacksSet.contains(callbacks));
+
+    RefPtr<IDBTransactionBackendImpl> transaction = IDBTransactionBackendImpl::create(transactionId, callbacks.release(), objectStoreIds, static_cast<IndexedDB::TransactionMode>(mode), this);
     ASSERT(!m_transactions.contains(transactionId));
     m_transactions.add(transactionId, transaction.get());
 }

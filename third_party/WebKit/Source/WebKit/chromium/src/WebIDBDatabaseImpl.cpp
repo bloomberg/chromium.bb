@@ -66,13 +66,14 @@ void WebIDBDatabaseImpl::deleteObjectStore(long long transactionId, long long ob
 }
 
 
-void WebIDBDatabaseImpl::createTransaction(long long id, WebIDBDatabaseCallbacks* callbacks, const WebVector<long long>& objectStoreIds, unsigned short mode)
+void WebIDBDatabaseImpl::createTransaction(long long id, WebIDBDatabaseCallbacks*, const WebVector<long long>& objectStoreIds, unsigned short mode)
 {
+    if (!m_databaseCallbacks)
+        return;
     Vector<int64_t> objectStoreIdList(objectStoreIds.size());
     for (size_t i = 0; i < objectStoreIds.size(); ++i)
         objectStoreIdList[i] = objectStoreIds[i];
-    RefPtr<IDBDatabaseCallbacksProxy> databaseCallbacksProxy = IDBDatabaseCallbacksProxy::create(adoptPtr(callbacks));
-    m_databaseBackend->createTransaction(id, databaseCallbacksProxy.get(), objectStoreIdList, mode);
+    m_databaseBackend->createTransaction(id, m_databaseCallbacks.get(), objectStoreIdList, mode);
 }
 
 void WebIDBDatabaseImpl::close()
