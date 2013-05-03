@@ -9,6 +9,7 @@
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
@@ -48,7 +49,7 @@ void InstantLoader::Init(const GURL& instant_url,
                          const base::Closure& on_stale_callback) {
   content::WebContents::CreateParams create_params(profile);
   create_params.site_instance = content::SiteInstance::CreateForURL(
-      profile, instant_url);
+      profile, chrome::GetPrivilegedURLForInstant(instant_url, profile));
   SetContents(scoped_ptr<content::WebContents>(
       content::WebContents::Create(create_params)));
   instant_url_ = instant_url;

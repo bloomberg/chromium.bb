@@ -123,6 +123,24 @@ bool ShouldPreferRemoteNTPOnStartup();
 // Returns true if |my_url| matches |other_url|.
 bool MatchesOriginAndPath(const GURL& my_url, const GURL& other_url);
 
+// Transforms the input |url| into its "privileged URL". The returned URL
+// facilitates grouping process-per-site. The |url| is transformed, for
+// example, from
+//
+//   https://www.google.com/search?espv=1&q=tractors
+//
+// to the privileged URL
+//
+//   chrome-search://www.google.com/search?espv=1&q=tractors
+//
+// Notice the scheme change.
+//
+// If the input is already a privileged URL then that same URL is returned.
+GURL GetPrivilegedURLForInstant(const GURL& url, Profile* profile);
+
+// Returns true if the input |url| is a privileged Instant URL.
+bool IsPrivilegedURLForInstant(const GURL& url);
+
 // -----------------------------------------------------
 // The following APIs are exposed for use in tests only.
 // -----------------------------------------------------

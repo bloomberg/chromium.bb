@@ -433,37 +433,6 @@ int GetCrashSignalFD(const CommandLine& command_line) {
 }
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
-// Transforms the input |url| into its "effective URL". The returned URL
-// facilitates grouping process-per-site. The |url| is transformed, for
-// example, from
-//
-//   https://www.google.com/search?espv=1&q=tractors
-//
-// to the effective URL
-//
-//   chrome-search://www.google.com/search?espv=1&q=tractors
-//
-// Notice the scheme change.
-//
-// If the input is already an effective URL then that same URL is returned.
-GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile) {
-  CHECK(chrome::ShouldAssignURLToInstantRenderer(url, profile))
-      << "Error granting Instant access.";
-
-  if (url.SchemeIs(chrome::kChromeSearchScheme))
-    return url;
-
-  GURL effective_url(url);
-
-  // Replace the scheme with "chrome-search:".
-  url_canon::Replacements<char> replacements;
-  std::string search_scheme(chrome::kChromeSearchScheme);
-  replacements.SetScheme(search_scheme.data(),
-                         url_parse::Component(0, search_scheme.length()));
-  effective_url = effective_url.ReplaceComponents(replacements);
-  return effective_url;
-}
-
 #if !defined(OS_CHROMEOS)
 GURL GetEffectiveURLForSignin(const GURL& url) {
   CHECK(SigninManager::IsWebBasedSigninFlowURL(url));
@@ -741,16 +710,41 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
   host->Send(new ChromeViewMsg_SetContentSettingRules(rules));
 }
 
+GURL ChromeContentBrowserClient::GetPossiblyPrivilegedURL(
+    content::BrowserContext* browser_context,
+    const GURL& url,
+    bool is_renderer_initiated,
+    content::SiteInstance* current_instance) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  if (!profile)
+    return url;
+
+  // Only return the privileged instant URL if we are entering from a browser-
+  // initiated navigation or if we are already in the instant process.
+  bool is_instant_process = false;
+  int process_id = current_instance->GetProcess()->GetID();
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile);
+  if (instant_service)
+    is_instant_process = instant_service->IsInstantProcess(process_id);
+
+  DCHECK_EQ(is_instant_process,
+            chrome::IsPrivilegedURLForInstant(current_instance->GetSiteURL()));
+  if (!is_renderer_initiated || is_instant_process) {
+    // If the input |url| should be assigned to the Instant renderer, make its
+    // privileged URL distinct from other URLs on the search provider's domain.
+    if (chrome::ShouldAssignURLToInstantRenderer(url, profile))
+      return chrome::GetPrivilegedURLForInstant(url, profile);
+  }
+
+  return url;
+}
+
 GURL ChromeContentBrowserClient::GetEffectiveURL(
     content::BrowserContext* browser_context, const GURL& url) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   if (!profile)
     return url;
-
-  // If the input |url| should be assigned to the Instant renderer, make its
-  // effective URL distinct from other URLs on the search provider's domain.
-  if (chrome::ShouldAssignURLToInstantRenderer(url, profile))
-    return GetEffectiveURLForInstant(url, profile);
 
 #if !defined(OS_CHROMEOS)
   // If the input |url| should be assigned to the Signin renderer, make its

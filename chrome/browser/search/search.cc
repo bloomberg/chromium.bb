@@ -499,6 +499,28 @@ bool MatchesOriginAndPath(const GURL& my_url, const GURL& other_url) {
   return MatchesOrigin(my_url, other_url) && my_url.path() == other_url.path();
 }
 
+GURL GetPrivilegedURLForInstant(const GURL& url, Profile* profile) {
+  CHECK(ShouldAssignURLToInstantRenderer(url, profile))
+      << "Error granting Instant access.";
+
+  if (IsPrivilegedURLForInstant(url))
+    return url;
+
+  GURL privileged_url(url);
+
+  // Replace the scheme with "chrome-search:".
+  url_canon::Replacements<char> replacements;
+  std::string search_scheme(chrome::kChromeSearchScheme);
+  replacements.SetScheme(search_scheme.data(),
+                         url_parse::Component(0, search_scheme.length()));
+  privileged_url = privileged_url.ReplaceComponents(replacements);
+  return privileged_url;
+}
+
+bool IsPrivilegedURLForInstant(const GURL& url) {
+  return url.SchemeIs(chrome::kChromeSearchScheme);
+}
+
 void EnableInstantExtendedAPIForTesting() {
   CommandLine* cl = CommandLine::ForCurrentProcess();
   cl->AppendSwitch(switches::kEnableInstantExtendedAPI);

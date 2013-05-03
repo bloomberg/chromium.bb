@@ -9,8 +9,6 @@
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
-#include "chrome/browser/search/instant_service.h"
-#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -151,9 +149,14 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
  protected:
 
   void ResetDefaultTemplateURL() {
+    ResetTemplateURLForInstant(GURL("http://does/not/exist"));
+  }
+
+  void ResetTemplateURLForInstant(const GURL& instant_url) {
     TemplateURLData data;
+    data.short_name = ASCIIToUTF16("Google");
     data.SetURL("http://google.com/search?q={searchTerms}");
-    data.instant_url = "http://does/not/exist";
+    data.instant_url = instant_url.spec();
     data.search_terms_replacement_key = "{google:instantExtendedEnabledKey}";
     TemplateURL* search_template_url = new TemplateURL(profile(), data);
     TemplateURLService* template_url_service =
@@ -205,17 +208,14 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
                                 const string16 expected_text,
                                 ToolbarModel::SearchTermsType search_terms_type,
                                 bool should_display) {
+    // The URL being navigated to should be treated as the Instant URL. Else
+    // there will be no search term extraction.
+    ResetTemplateURLForInstant(url);
+
     WebContents* contents = browser()->tab_strip_model()->GetWebContentsAt(0);
     browser()->OpenURL(OpenURLParams(
         url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED,
         false));
-
-    // Query terms replacement requires that the renderer process be a
-    // recognized Instant renderer. Fake it.
-    InstantService* instant_service =
-        InstantServiceFactory::GetForProfile(profile());
-    int process_id = contents->GetRenderProcessHost()->GetID();
-    instant_service->AddInstantProcess(process_id);
 
     ToolbarModel* toolbar_model = browser()->toolbar_model();
 
@@ -338,10 +338,6 @@ TEST_F(ToolbarModelTest, SearchTermSecurityLevel) {
       content::Referrer(),
       content::PAGE_TRANSITION_LINK,
       std::string());
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(profile());
-  int process_id = contents->GetRenderProcessHost()->GetID();
-  instant_service->AddInstantProcess(process_id);
 
   // While loading search term type should be normal.
   ToolbarModel* toolbar_model = browser()->toolbar_model();
