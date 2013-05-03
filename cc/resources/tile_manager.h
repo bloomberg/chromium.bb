@@ -128,8 +128,7 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
     client_->ScheduleManageTiles();
     manage_tiles_pending_ = true;
   }
-  void GatherPixelRefsForTile(Tile* tile);
-  void DispatchImageDecodeTasksForTile(Tile* tile);
+  bool DispatchImageDecodeTasksForTile(Tile* tile);
   void DispatchOneImageDecodeTask(
       scoped_refptr<Tile> tile, skia::LazyPixelRef* pixel_ref);
   void OnImageDecodeTaskCompleted(
@@ -189,8 +188,8 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   TileVector tiles_;
   TileVector tiles_that_need_to_be_rasterized_;
 
-  typedef base::hash_map<uint32_t, skia::LazyPixelRef*> PixelRefMap;
-  PixelRefMap pending_decode_tasks_;
+  typedef base::hash_set<uint32_t> PixelRefSet;
+  PixelRefSet pending_decode_tasks_;
 
   typedef std::queue<scoped_refptr<Tile> > TileQueue;
   TileQueue tiles_with_pending_upload_;

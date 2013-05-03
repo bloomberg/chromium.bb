@@ -109,7 +109,7 @@ TEST(PictureTest, AsBase64String) {
   // Single full-size rect picture.
   content_layer_client.add_draw_rect(layer_rect, red_paint);
   scoped_refptr<Picture> one_rect_picture = Picture::Create(layer_rect);
-  one_rect_picture->Record(&content_layer_client, NULL, tile_grid_info);
+  one_rect_picture->Record(&content_layer_client, tile_grid_info, NULL);
   std::string serialized_one_rect;
   one_rect_picture->AsBase64String(&serialized_one_rect);
 
@@ -134,7 +134,7 @@ TEST(PictureTest, AsBase64String) {
   // Two rect picture.
   content_layer_client.add_draw_rect(gfx::Rect(25, 25, 50, 50), green_paint);
   scoped_refptr<Picture> two_rect_picture = Picture::Create(layer_rect);
-  two_rect_picture->Record(&content_layer_client, NULL, tile_grid_info);
+  two_rect_picture->Record(&content_layer_client, tile_grid_info, NULL);
   std::string serialized_two_rect;
   two_rect_picture->AsBase64String(&serialized_two_rect);
 
@@ -190,7 +190,8 @@ TEST(PictureTest, PixelRefIterator) {
   }
 
   scoped_refptr<Picture> picture = Picture::Create(layer_rect);
-  picture->Record(&content_layer_client, NULL, tile_grid_info);
+  picture->Record(&content_layer_client, tile_grid_info, NULL);
+  picture->GatherPixelRefs(tile_grid_info, NULL);
 
   // Default iterator does not have any pixel refs
   {
@@ -287,7 +288,8 @@ TEST(PictureTest, PixelRefIteratorNonZeroLayer) {
   }
 
   scoped_refptr<Picture> picture = Picture::Create(layer_rect);
-  picture->Record(&content_layer_client, NULL, tile_grid_info);
+  picture->Record(&content_layer_client, tile_grid_info, NULL);
+  picture->GatherPixelRefs(tile_grid_info, NULL);
 
   // Default iterator does not have any pixel refs
   {
@@ -412,7 +414,8 @@ TEST(PictureTest, PixelRefIteratorOnePixelQuery) {
   }
 
   scoped_refptr<Picture> picture = Picture::Create(layer_rect);
-  picture->Record(&content_layer_client, NULL, tile_grid_info);
+  picture->Record(&content_layer_client, tile_grid_info, NULL);
+  picture->GatherPixelRefs(tile_grid_info, NULL);
 
   for (int y = 0; y < 4; ++y) {
     for (int x = 0; x < 4; ++x) {

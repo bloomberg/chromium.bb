@@ -35,8 +35,7 @@ scoped_ptr<base::Value> MemoryStateAsValue(DrawingInfoMemoryState state) {
 }  // namespace
 
 ManagedTileState::ManagedTileState()
-    : need_to_gather_pixel_refs(true),
-      picture_pile_analyzed(false),
+    : picture_pile_analyzed(false),
       gpu_memmgr_stats_bin(NEVER_BIN),
       resolution(NON_IDEAL_RESOLUTION),
       time_to_needed_in_seconds(std::numeric_limits<float>::infinity()),

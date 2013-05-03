@@ -5,8 +5,7 @@
 #ifndef CC_RESOURCES_MANAGED_TILE_STATE_H_
 #define CC_RESOURCES_MANAGED_TILE_STATE_H_
 
-#include <list>
-
+#include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/resources/platform_color.h"
 #include "cc/resources/resource_pool.h"
@@ -111,8 +110,8 @@ class CC_EXPORT ManagedTileState {
   scoped_ptr<base::Value> AsValue() const;
 
   // Persisted state: valid all the time.
-  bool need_to_gather_pixel_refs;
-  std::list<skia::LazyPixelRef*> pending_pixel_refs;
+  typedef base::hash_set<uint32_t> PixelRefSet;
+  PixelRefSet decoded_pixel_refs;
   DrawingInfo drawing_info;
   PicturePileImpl::Analysis picture_pile_analysis;
   bool picture_pile_analyzed;

@@ -601,8 +601,7 @@ void TileManager::DispatchMoreTasks() {
 
     DCHECK(tile->drawing_info().requires_resource());
 
-    DispatchImageDecodeTasksForTile(tile);
-    if (!tile->managed_state().pending_pixel_refs.empty()) {
+    if (DispatchImageDecodeTasksForTile(tile)) {
       tiles_with_image_decoding_tasks.push_back(tile);
     } else if (!CanDispatchRasterTask(tile)) {
         break;
@@ -625,51 +624,43 @@ void TileManager::DispatchMoreTasks() {
   }
 }
 
-void TileManager::GatherPixelRefsForTile(Tile* tile) {
-  // TODO(vmpstr): Remove this function and pending_pixel_refs
-  // when reveman's improvements to worker pool go in.
-  TRACE_EVENT0("cc", "TileManager::GatherPixelRefsForTile");
-  ManagedTileState& managed_tile_state = tile->managed_state();
-  if (managed_tile_state.need_to_gather_pixel_refs) {
-    base::TimeTicks start_time =
-        rendering_stats_instrumentation_->StartRecording();
-    for (PicturePileImpl::PixelRefIterator pixel_ref_iter(
-            tile->content_rect(),
-            tile->contents_scale(),
-            tile->picture_pile());
-        pixel_ref_iter;
-        ++pixel_ref_iter) {
-      managed_tile_state.pending_pixel_refs.push_back(*pixel_ref_iter);
-    }
-    managed_tile_state.need_to_gather_pixel_refs = false;
-    base::TimeDelta duration =
-        rendering_stats_instrumentation_->EndRecording(start_time);
-    rendering_stats_instrumentation_->AddImageGathering(duration);
-  }
-}
+bool TileManager::DispatchImageDecodeTasksForTile(Tile* tile) {
+  TRACE_EVENT0("cc", "TileManager::DispatchImageDecodeTasksForTile");
+  ManagedTileState& mts = tile->managed_state();
+  bool pending_decode_tasks = false;
 
-void TileManager::DispatchImageDecodeTasksForTile(Tile* tile) {
-  GatherPixelRefsForTile(tile);
-  std::list<skia::LazyPixelRef*>& pending_pixel_refs =
-      tile->managed_state().pending_pixel_refs;
-  std::list<skia::LazyPixelRef*>::iterator it = pending_pixel_refs.begin();
-  while (it != pending_pixel_refs.end()) {
-    if (pending_decode_tasks_.end() != pending_decode_tasks_.find(
-        (*it)->getGenerationID())) {
-      ++it;
+  for (PicturePileImpl::PixelRefIterator iter(tile->content_rect(),
+                                              tile->contents_scale(),
+                                              tile->picture_pile());
+       iter; ++iter) {
+    skia::LazyPixelRef* pixel_ref = *iter;
+    uint32_t id = pixel_ref->getGenerationID();
+
+    // Check if image has already been decoded.
+    if (mts.decoded_pixel_refs.find(id) != mts.decoded_pixel_refs.end())
+      continue;
+
+    // Check if decode task is already pending.
+    if (pending_decode_tasks_.find(id) != pending_decode_tasks_.end()) {
+      pending_decode_tasks = true;
       continue;
     }
+
     // TODO(qinmin): passing correct image size to PrepareToDecode().
-    if ((*it)->PrepareToDecode(skia::LazyPixelRef::PrepareParams())) {
+    if (pixel_ref->PrepareToDecode(skia::LazyPixelRef::PrepareParams())) {
       rendering_stats_instrumentation_->IncrementDeferredImageCacheHitCount();
-      pending_pixel_refs.erase(it++);
-    } else {
-      if (pending_tasks_ >= max_pending_tasks_)
-        return;
-      DispatchOneImageDecodeTask(tile, *it);
-      ++it;
+      mts.decoded_pixel_refs.insert(id);
+      continue;
     }
+
+    if (pending_tasks_ >= max_pending_tasks_)
+      break;
+
+    DispatchOneImageDecodeTask(tile, pixel_ref);
+    pending_decode_tasks = true;
   }
+
+  return pending_decode_tasks;
 }
 
 void TileManager::DispatchOneImageDecodeTask(
@@ -678,7 +669,7 @@ void TileManager::DispatchOneImageDecodeTask(
   uint32_t pixel_ref_id = pixel_ref->getGenerationID();
   DCHECK(pending_decode_tasks_.end() ==
       pending_decode_tasks_.find(pixel_ref_id));
-  pending_decode_tasks_[pixel_ref_id] = pixel_ref;
+  pending_decode_tasks_.insert(pixel_ref_id);
 
   raster_worker_pool_->PostTaskAndReply(
       base::Bind(&TileManager::RunImageDecodeTask,
@@ -694,21 +685,10 @@ void TileManager::DispatchOneImageDecodeTask(
 void TileManager::OnImageDecodeTaskCompleted(
     scoped_refptr<Tile> tile, uint32_t pixel_ref_id) {
   TRACE_EVENT0("cc", "TileManager::OnImageDecodeTaskCompleted");
+  ManagedTileState& mts = tile->managed_state();
+  mts.decoded_pixel_refs.insert(pixel_ref_id);
   pending_decode_tasks_.erase(pixel_ref_id);
   pending_tasks_--;
-
-  for (TileVector::iterator it = tiles_that_need_to_be_rasterized_.begin();
-       it != tiles_that_need_to_be_rasterized_.end(); ++it) {
-    std::list<skia::LazyPixelRef*>& pixel_refs =
-        (*it)->managed_state().pending_pixel_refs;
-    for (std::list<skia::LazyPixelRef*>::iterator pixel_it =
-        pixel_refs.begin(); pixel_it != pixel_refs.end(); ++pixel_it) {
-      if (pixel_ref_id == (*pixel_it)->getGenerationID()) {
-        pixel_refs.erase(pixel_it);
-        break;
-      }
-    }
-  }
 }
 
 scoped_ptr<ResourcePool::Resource> TileManager::PrepareTileForRaster(
