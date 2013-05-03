@@ -390,7 +390,9 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
 #endif
   TokenCacheServiceFactory::GetInstance();
   TokenServiceFactory::GetInstance();
+#if !defined(OS_ANDROID)
   UserStyleSheetWatcherFactory::GetInstance();
+#endif
   WebDataServiceFactory::GetInstance();
 
   built_factories_ = true;

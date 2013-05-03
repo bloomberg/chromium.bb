@@ -2281,6 +2281,8 @@
             'browser/google_apis/gdata_wapi_operations_unittest.cc',
             'browser/google_apis/gdata_wapi_parser_unittest.cc',
 
+            'browser/user_style_sheet_watcher_unittest.cc',
+
             # The autofill popup is implemented in mostly native code on
             # Android.
             'browser/ui/autofill/autofill_popup_controller_unittest.cc',

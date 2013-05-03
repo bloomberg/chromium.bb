@@ -1887,6 +1887,9 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 #endif
   web_prefs->password_echo_enabled = browser_defaults::kPasswordEchoEnabled;
 
+#if defined(OS_ANDROID)
+  web_prefs->user_style_sheet_enabled = false;
+#else
   // The user stylesheet watcher may not exist in a testing profile.
   UserStyleSheetWatcher* user_style_sheet_watcher =
       UserStyleSheetWatcherFactory::GetForProfile(profile);
@@ -1897,6 +1900,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   } else {
     web_prefs->user_style_sheet_enabled = false;
   }
+#endif
 
   web_prefs->asynchronous_spell_checking_enabled = true;
   web_prefs->unified_textchecker_enabled = true;

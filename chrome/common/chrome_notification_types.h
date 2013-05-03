@@ -451,10 +451,12 @@ enum NotificationType {
   // pointer to SharedMemory containing the new scripts.
   NOTIFICATION_USER_SCRIPTS_UPDATED,
 
+#if !defined(OS_ANDROID)
   // User Style Sheet --------------------------------------------------------
 
   // Sent when the user style sheet has changed.
   NOTIFICATION_USER_STYLE_SHEET_UPDATED,
+#endif
 
   // Extensions --------------------------------------------------------------
 

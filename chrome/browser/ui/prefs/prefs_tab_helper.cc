@@ -445,8 +445,10 @@ PrefsTabHelper::PrefsTabHelper(WebContents* contents)
   renderer_preferences_util::UpdateFromSystemSettings(
       web_contents_->GetMutableRendererPrefs(), GetProfile());
 
+#if !defined(OS_ANDROID)
   registrar_.Add(this, chrome::NOTIFICATION_USER_STYLE_SHEET_UPDATED,
                  content::NotificationService::AllSources());
+#endif
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && defined(ENABLE_THEMES)
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
@@ -614,9 +616,11 @@ void PrefsTabHelper::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
   switch (type) {
+#if !defined(OS_ANDROID)
     case chrome::NOTIFICATION_USER_STYLE_SHEET_UPDATED:
       UpdateWebPreferences();
       break;
+#endif // !defined(OS_ANDROID)
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && defined(ENABLE_THEMES)
     case chrome::NOTIFICATION_BROWSER_THEME_CHANGED: {
       UpdateRendererPreferences();

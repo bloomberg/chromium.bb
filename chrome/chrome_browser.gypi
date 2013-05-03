@@ -2764,6 +2764,12 @@
             'browser/upgrade_detector_impl.cc',
             'browser/upgrade_detector_impl.h',
 
+            # User Stylesheet unsupported on Android (crbug.com/236696)
+            'browser/user_style_sheet_watcher.cc',
+            'browser/user_style_sheet_watcher.h',
+            'browser/user_style_sheet_watcher_factory.cc',
+            'browser/user_style_sheet_watcher_factory.h',
+
             # Not used by Android
             'browser/chrome_browser_main_posix.cc',
             'browser/chrome_browser_main_posix.h',
