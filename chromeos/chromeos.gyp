@@ -7,7 +7,8 @@
     'chromium_code': 1,
   },
   'includes': [
-    'chromeos_tools.gypi'
+    'chromeos_memory.gypi',
+    'chromeos_tools.gypi',
   ],
   'targets': [
     {
