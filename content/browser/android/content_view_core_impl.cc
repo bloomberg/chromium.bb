@@ -860,6 +860,14 @@ void ContentViewCoreImpl::SetInputHandler(
   input_event_filter_->SetInputHandler(input_handler);
 }
 
+void ContentViewCoreImpl::RequestContentClipping(
+    const gfx::Rect& clipping,
+    const gfx::Size& content_size) {
+  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
+  if (rwhv)
+    rwhv->RequestContentClipping(clipping, content_size);
+}
+
 jboolean ContentViewCoreImpl::SendMouseMoveEvent(JNIEnv* env,
                                                  jobject obj,
                                                  jlong time_ms,

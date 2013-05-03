@@ -184,6 +184,9 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase,
 
   void MoveCaret(const gfx::Point& point);
 
+  void RequestContentClipping(const gfx::Rect& clipping,
+                              const gfx::Size& content_size);
+
  private:
   void BuffersSwapped(const gpu::Mailbox& mailbox,
                       const gfx::Size texture_size,
@@ -191,6 +194,9 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase,
                       const base::Closure& ack_callback);
 
   void RunAckCallbacks();
+
+  void ResetClipping();
+  void ClipContents(const gfx::Rect& clipping, const gfx::Size& content_size);
 
   // The model object.
   RenderWidgetHostImpl* host_;
@@ -222,6 +228,9 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase,
 
   // The most recent texture size that was pushed to the texture layer.
   gfx::Size texture_size_in_layer_;
+
+  // The most recent content size that was pushed to the texture layer.
+  gfx::Size content_size_in_layer_;
 
   // Used for image transport when needing to share resources across threads.
   scoped_ptr<SurfaceTextureTransportClient> surface_texture_transport_;

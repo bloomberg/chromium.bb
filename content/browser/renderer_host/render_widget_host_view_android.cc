@@ -276,6 +276,7 @@ void RenderWidgetHostViewAndroid::MovePluginWindows(
 void RenderWidgetHostViewAndroid::Focus() {
   host_->Focus();
   host_->SetInputMethodActive(true);
+  ResetClipping();
 }
 
 void RenderWidgetHostViewAndroid::Blur() {
@@ -619,19 +620,12 @@ void RenderWidgetHostViewAndroid::BuffersSwapped(
   ImageTransportFactoryAndroid::GetInstance()->AcquireTexture(
       texture_id_in_layer_, mailbox.name);
 
-  texture_layer_->SetNeedsDisplay();
-  texture_layer_->SetBounds(gfx::Size(content_size.width(),
-                                      content_size.height()));
-
-  // Calculate the uv_max based on the content size relative to the texture
-  // size.
-  gfx::PointF uv_max;
-  if (texture_size.GetArea() > 0) {
-    uv_max.SetPoint(content_size.width() / texture_size.width(),
-                    content_size.height() / texture_size.height());
-  }
-  texture_layer_->SetUV(gfx::PointF(0, 0), uv_max);
   texture_size_in_layer_ = texture_size;
+  content_size_in_layer_ = gfx::Size(content_size.width(),
+                                     content_size.height());
+
+  ResetClipping();
+
   current_mailbox_ = mailbox;
 
   if (host_->is_hidden())
@@ -772,6 +766,50 @@ void RenderWidgetHostViewAndroid::SelectRange(const gfx::Point& start,
 void RenderWidgetHostViewAndroid::MoveCaret(const gfx::Point& point) {
   if (host_)
     host_->MoveCaret(point);
+}
+
+void RenderWidgetHostViewAndroid::RequestContentClipping(
+    const gfx::Rect& clipping,
+    const gfx::Size& content_size) {
+  // A focused view provides its own clipping.
+  if (HasFocus())
+    return;
+
+  ClipContents(clipping, content_size);
+}
+
+void RenderWidgetHostViewAndroid::ResetClipping() {
+  ClipContents(gfx::Rect(gfx::Point(), content_size_in_layer_),
+               content_size_in_layer_);
+}
+
+void RenderWidgetHostViewAndroid::ClipContents(const gfx::Rect& clipping,
+                                               const gfx::Size& content_size) {
+  if (!texture_id_in_layer_ || content_size_in_layer_.IsEmpty())
+    return;
+
+  gfx::Size clipped_content(content_size_in_layer_);
+  clipped_content.ClampToMax(clipping.size());
+  texture_layer_->SetBounds(clipped_content);
+  texture_layer_->SetNeedsDisplay();
+
+  if (texture_size_in_layer_.IsEmpty()) {
+    texture_layer_->SetUV(gfx::PointF(), gfx::PointF());
+    return;
+  }
+
+  gfx::PointF offset(
+      clipping.x() + content_size_in_layer_.width() - content_size.width(),
+      clipping.y() + content_size_in_layer_.height() - content_size.height());
+  offset.ClampToMin(gfx::PointF());
+
+  gfx::Vector2dF uv_scale(1.f / texture_size_in_layer_.width(),
+                          1.f / texture_size_in_layer_.height());
+  texture_layer_->SetUV(
+      gfx::PointF(offset.x() * uv_scale.x(),
+                  offset.y() * uv_scale.y()),
+      gfx::PointF((offset.x() + clipped_content.width()) * uv_scale.x(),
+                  (offset.y() + clipped_content.height()) * uv_scale.y()));
 }
 
 SkColor RenderWidgetHostViewAndroid::GetCachedBackgroundColor() const {

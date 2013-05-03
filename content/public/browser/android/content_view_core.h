@@ -17,6 +17,7 @@ class Layer;
 }
 
 namespace gfx {
+class Rect;
 class Size;
 class SizeF;
 class Vector2dF;
@@ -57,6 +58,8 @@ class CONTENT_EXPORT ContentViewCore {
   virtual float GetDpiScale() const = 0;
   virtual void SetInputHandler(
       WebKit::WebCompositorInputHandler* input_handler) = 0;
+  virtual void RequestContentClipping(const gfx::Rect& clipping,
+                                      const gfx::Size& content_size) = 0;
 
   // Observer callback for frame metadata updates.
   typedef base::Callback<void(
