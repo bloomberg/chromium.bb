@@ -81,6 +81,7 @@ void DriveURLRequestJob::Start() {
       new DriveFileStreamReader(file_system_getter_, file_task_runner_));
   stream_reader_->Initialize(
       drive_file_path,
+      0, kuint64max,
       base::Bind(&DriveURLRequestJob::OnDriveFileStreamReaderInitialized,
                  weak_ptr_factory_.GetWeakPtr()));
 }

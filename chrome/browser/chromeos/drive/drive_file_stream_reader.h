@@ -154,8 +154,9 @@ class DriveFileStreamReader {
 
   // Initializes the stream for the |drive_file_path|.
   // |callback| must not be null.
-  // TODO(hidehiko): Support reading range (crbug.com/168258).
   void Initialize(const base::FilePath& drive_file_path,
+                  uint64 range_offset,
+                  uint64 range_length,
                   const InitializeCompletionCallback& callback);
 
   // Reads the data into |buffer| at most |buffer_length|, and returns
@@ -170,10 +171,13 @@ class DriveFileStreamReader {
            const net::CompletionCallback& callback);
 
  private:
+  // The range of the data to be read.
+  struct Range;
+
   // Part of Initialize. Called after GetFileContentByPath's initialization
   // is done.
   void InitializeAfterGetFileContentByPathInitialized(
-      const base::FilePath& drive_file_path,
+      const Range& range,
       const InitializeCompletionCallback& callback,
       FileError error,
       scoped_ptr<ResourceEntry> entry,
@@ -182,6 +186,7 @@ class DriveFileStreamReader {
 
   // Part of Initialize. Called when the local file open process is done.
   void InitializeAfterLocalFileOpen(
+      uint64 length,
       const InitializeCompletionCallback& callback,
       scoped_ptr<ResourceEntry> entry,
       scoped_ptr<util::FileReader> file_reader,

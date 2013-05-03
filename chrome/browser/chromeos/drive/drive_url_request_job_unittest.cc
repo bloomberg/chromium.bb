@@ -178,6 +178,7 @@ class DriveURLRequestJobTest : public testing::Test {
     scoped_ptr<ResourceEntry> entry;
     reader->Initialize(
         file_path,
+        0, kuint64max,
         google_apis::CreateComposedCallback(
             base::Bind(&google_apis::test_util::RunAndQuit),
             google_apis::test_util::CreateCopyResultCallback(

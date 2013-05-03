@@ -373,6 +373,7 @@ TEST_F(DriveFileStreamReaderTest, Read) {
   scoped_ptr<ResourceEntry> entry;
   reader->Initialize(
       kDriveFile,
+      0, kuint64max,
       google_apis::CreateComposedCallback(
           base::Bind(&google_apis::test_util::RunAndQuit),
                      google_apis::test_util::CreateCopyResultCallback(
@@ -399,6 +400,7 @@ TEST_F(DriveFileStreamReaderTest, Read) {
   entry.reset();
   reader->Initialize(
       kDriveFile,
+      0, kuint64max,
       google_apis::CreateComposedCallback(
           base::Bind(&google_apis::test_util::RunAndQuit),
                      google_apis::test_util::CreateCopyResultCallback(
@@ -410,6 +412,72 @@ TEST_F(DriveFileStreamReaderTest, Read) {
 
   // The size should be same.
   EXPECT_EQ(content_size, static_cast<size_t>(entry->file_info().size()));
+
+  // Read data from the reader, again.
+  std::string second_content;
+  ASSERT_EQ(net::OK, test_util::ReadAllData(reader.get(), &second_content));
+
+  // The same content is expected.
+  EXPECT_EQ(first_content, second_content);
+}
+
+TEST_F(DriveFileStreamReaderTest, ReadRange) {
+  // In this test case, we just confirm that the part of file is read.
+  const uint64 kRangeOffset = 3;
+  const uint64 kRangeLength = 4;
+
+  const base::FilePath kDriveFile =
+      util::GetDriveMyDriveRootPath().AppendASCII("File 1.txt");
+  // Create the reader, and initialize it.
+  // In this case, the file is not yet locally cached.
+  scoped_ptr<DriveFileStreamReader> reader(new DriveFileStreamReader(
+      GetFileSystemGetter(),
+      worker_thread_->message_loop_proxy()));
+  EXPECT_FALSE(reader->IsInitialized());
+
+  FileError error = FILE_ERROR_FAILED;
+  scoped_ptr<ResourceEntry> entry;
+  reader->Initialize(
+      kDriveFile,
+      kRangeOffset,
+      kRangeLength,
+      google_apis::CreateComposedCallback(
+          base::Bind(&google_apis::test_util::RunAndQuit),
+                     google_apis::test_util::CreateCopyResultCallback(
+                         &error, &entry)));
+  message_loop_.Run();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  ASSERT_TRUE(entry);
+  EXPECT_TRUE(reader->IsInitialized());
+
+  // Read data from the reader.
+  std::string first_content;
+  ASSERT_EQ(net::OK, test_util::ReadAllData(reader.get(), &first_content));
+
+  // The length should be equal to range length.
+  EXPECT_EQ(kRangeLength, first_content.size());
+
+  // Create second instance and initialize it.
+  // In this case, the file should be cached one.
+  reader.reset(
+      new DriveFileStreamReader(GetFileSystemGetter(),
+                                worker_thread_->message_loop_proxy()));
+  EXPECT_FALSE(reader->IsInitialized());
+
+  error = FILE_ERROR_FAILED;
+  entry.reset();
+  reader->Initialize(
+      kDriveFile,
+      kRangeOffset,
+      kRangeLength,
+      google_apis::CreateComposedCallback(
+          base::Bind(&google_apis::test_util::RunAndQuit),
+                     google_apis::test_util::CreateCopyResultCallback(
+                         &error, &entry)));
+  message_loop_.Run();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  ASSERT_TRUE(entry);
+  EXPECT_TRUE(reader->IsInitialized());
 
   // Read data from the reader, again.
   std::string second_content;
