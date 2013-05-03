@@ -157,6 +157,10 @@ class CC_EXPORT PictureLayerTiling {
       int64 target_area,
       gfx::Rect bounding_rect);
 
+  bool has_ever_been_updated() const {
+    return last_impl_frame_time_in_seconds_ != 0.0;
+  }
+
  protected:
   typedef std::pair<int, int> TileMapKey;
   typedef base::hash_map<TileMapKey, scoped_refptr<Tile> > TileMap;

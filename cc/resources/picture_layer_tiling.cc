@@ -288,10 +288,15 @@ void PictureLayerTiling::UpdateTilePriorities(
     double current_frame_time_in_seconds,
     bool store_screen_space_quads_on_tiles,
     size_t max_tiles_for_interest_area) {
-  if (ContentRect().IsEmpty())
+  if (!NeedsUpdateForFrameAtTime(current_frame_time_in_seconds)) {
+    // This should never be zero for the purposes of has_ever_been_updated().
+    DCHECK_NE(current_frame_time_in_seconds, 0.0);
     return;
-  if (!NeedsUpdateForFrameAtTime(current_frame_time_in_seconds))
+  }
+  if (ContentRect().IsEmpty()) {
+    last_impl_frame_time_in_seconds_ = current_frame_time_in_seconds;
     return;
+  }
 
   gfx::Rect viewport_in_content_space =
       gfx::ToEnclosingRect(gfx::ScaleRect(viewport_in_layer_space,

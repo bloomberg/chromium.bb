@@ -522,6 +522,13 @@ void PictureLayerImpl::SyncTiling(
   if (!DrawsContent() || tiling->contents_scale() < MinimumContentsScale())
     return;
   tilings_->AddTiling(tiling->contents_scale());
+
+  // If this tree needs update draw properties, then the tiling will
+  // get updated prior to drawing or activation.  If this tree does not
+  // need update draw properties, then its transforms are up to date and
+  // we can create tiles for this tiling immediately.
+  if (!layer_tree_impl()->needs_update_draw_properties())
+    UpdateTilePriorities();
 }
 
 void PictureLayerImpl::SetIsMask(bool is_mask) {
@@ -555,6 +562,7 @@ ResourceProvider::ResourceId PictureLayerImpl::ContentsResourceId() const {
 
 bool PictureLayerImpl::AreVisibleResourcesReady() const {
   DCHECK(layer_tree_impl()->IsPendingTree());
+  DCHECK(!layer_tree_impl()->needs_update_draw_properties());
   DCHECK(ideal_contents_scale_);
 
   if (!tilings_->num_tilings())
@@ -586,6 +594,7 @@ bool PictureLayerImpl::AreVisibleResourcesReady() const {
   Region missing_region = rect;
   for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = tilings_->tiling_at(i);
+    DCHECK(tiling->has_ever_been_updated());
 
     if (tiling->contents_scale() < min_acceptable_scale)
       continue;

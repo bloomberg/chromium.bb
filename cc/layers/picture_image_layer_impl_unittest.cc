@@ -9,6 +9,7 @@
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_picture_layer_tiling_client.h"
 #include "cc/test/impl_side_painting_settings.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -41,6 +42,10 @@ class PictureImageLayerImplTest : public testing::Test {
     return make_scoped_ptr(layer);
   }
 
+  void UpdateDrawProperties() {
+    host_impl_.pending_tree()->UpdateDrawProperties();
+  }
+
  private:
   FakeImplProxy proxy_;
   FakeLayerTreeHostImpl host_impl_;
@@ -67,12 +72,15 @@ TEST_F(PictureImageLayerImplTest, AreVisibleResourcesReady) {
   layer->SetBounds(gfx::Size(100, 200));
   layer->SetDrawsContent(true);
 
+  UpdateDrawProperties();
+
   float contents_scale_x;
   float contents_scale_y;
   gfx::Size content_bounds;
   layer->CalculateContentsScale(2.f, false,
                                 &contents_scale_x, &contents_scale_y,
                                 &content_bounds);
+  layer->UpdateTilePriorities();
 
   EXPECT_TRUE(layer->AreVisibleResourcesReady());
 }
