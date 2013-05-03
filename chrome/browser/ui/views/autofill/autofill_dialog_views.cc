@@ -841,7 +841,7 @@ void AutofillDialogViews::UpdateProgressBar(double value) {
 void AutofillDialogViews::ModelChanged() {
   menu_runner_.reset();
 
-  for (DetailGroupMap::iterator iter = detail_groups_.begin();
+  for (DetailGroupMap::const_iterator iter = detail_groups_.begin();
        iter != detail_groups_.end(); ++iter) {
     UpdateDetailsGroupState(iter->second);
   }
@@ -1070,7 +1070,7 @@ void AutofillDialogViews::OnDidChangeFocus(
   // If user leaves an edit-field, revalidate the group it belongs to.
   DetailsGroup* group = GroupForView(focused_before);
   if (group && group->container->visible())
-    ValidateGroup(group, AutofillDialogController::VALIDATE_EDIT);
+    ValidateGroup(*group, AutofillDialogController::VALIDATE_EDIT);
 }
 
 void AutofillDialogViews::LinkClicked(views::Link* source, int event_flags) {
@@ -1086,8 +1086,7 @@ void AutofillDialogViews::LinkClicked(views::Link* source, int event_flags) {
 
 void AutofillDialogViews::OnSelectedIndexChanged(views::Combobox* combobox) {
   DetailsGroup* group = GroupForView(combobox);
-  DCHECK(group);
-  ValidateGroup(group, AutofillDialogController::VALIDATE_EDIT);
+  ValidateGroup(*group, AutofillDialogController::VALIDATE_EDIT);
 }
 
 void AutofillDialogViews::StyledLabelLinkClicked(const ui::Range& range,
@@ -1348,8 +1347,6 @@ void AutofillDialogViews::UpdateSectionImpl(
   }
 
   UpdateDetailsGroupState(*group);
-  if (group->container && group->container->visible())
-    ValidateGroup(group, AutofillDialogController::VALIDATE_EDIT);
 }
 
 void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
@@ -1384,30 +1381,32 @@ void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
   if (group.container) {
     group.container->SetForwardMouseEvents(has_suggestions && show_suggestions);
     group.container->SetVisible(controller_->SectionIsActive(group.section));
+    if (group.container->visible())
+      ValidateGroup(group, AutofillDialogController::VALIDATE_EDIT);
   }
 
   ContentsPreferredSizeChanged();
 }
 
 bool AutofillDialogViews::ValidateGroup(
-    DetailsGroup* group,
+    const DetailsGroup& group,
     AutofillDialogController::ValidationType validation_type) {
-  DCHECK(group->container->visible());
+  DCHECK(group.container->visible());
 
   scoped_ptr<DetailInput> cvc_input;
   DetailOutputMap detail_outputs;
   std::map<AutofillFieldType, base::Callback<void(bool)> > field_map;
 
-  if (group->manual_input->visible()) {
-    for (TextfieldMap::iterator iter = group->textfields.begin();
-         iter != group->textfields.end(); ++iter) {
+  if (group.manual_input->visible()) {
+    for (TextfieldMap::const_iterator iter = group.textfields.begin();
+         iter != group.textfields.end(); ++iter) {
       detail_outputs[iter->first] = iter->second->textfield()->text();
       field_map[iter->first->type] =
           base::Bind(&DecoratedTextfield::SetInvalid,
                      base::Unretained(iter->second));
     }
-    for (ComboboxMap::iterator iter = group->comboboxes.begin();
-         iter != group->comboboxes.end(); ++iter) {
+    for (ComboboxMap::const_iterator iter = group.comboboxes.begin();
+         iter != group.comboboxes.end(); ++iter) {
       views::Combobox* combobox = iter->second;
       string16 item =
           combobox->model()->GetItemAt(combobox->selected_index());
@@ -1416,9 +1415,9 @@ bool AutofillDialogViews::ValidateGroup(
           base::Bind(&views::Combobox::SetInvalid,
                      base::Unretained(iter->second));
     }
-  } else if (group->section == SECTION_CC) {
+  } else if (group.section == SECTION_CC) {
     DecoratedTextfield* decorated_cvc =
-        group->suggested_info->decorated_textfield();
+        group.suggested_info->decorated_textfield();
     cvc_input.reset(new DetailInput);
     cvc_input->type = CREDIT_CARD_VERIFICATION_CODE;
     detail_outputs[cvc_input.get()] = decorated_cvc->textfield()->text();
@@ -1449,8 +1448,8 @@ bool AutofillDialogViews::ValidateForm() {
   bool all_valid = true;
   for (DetailGroupMap::iterator iter = detail_groups_.begin();
        iter != detail_groups_.end(); ++iter) {
-    DetailsGroup* group = &iter->second;
-    if (!group->container->visible())
+    const DetailsGroup& group = iter->second;
+    if (!group.container->visible())
       continue;
 
     if (!ValidateGroup(group, AutofillDialogController::VALIDATE_FINAL))
@@ -1505,7 +1504,7 @@ void AutofillDialogViews::TextfieldEditedOrActivated(
     // If the field transitioned from invalid to valid, re-validate the group,
     // since inter-field checks become meaningful with valid fields.
     if (!decorated->invalid())
-      ValidateGroup(group, AutofillDialogController::VALIDATE_EDIT);
+      ValidateGroup(*group, AutofillDialogController::VALIDATE_EDIT);
   }
 
   gfx::Image icon = controller_->IconForField(type, textfield->text());

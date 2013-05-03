@@ -18,7 +18,7 @@ namespace {
 const char kFullWalletValidResponse[] =
     "{"
     "  \"expiration_month\":12,"
-    "  \"expiration_year\":2012,"
+    "  \"expiration_year\":3000,"
     "  \"iin\":\"iin\","
     "  \"rest\":\"rest\","
     "  \"billing_address\":"
@@ -35,7 +35,7 @@ const char kFullWalletValidResponse[] =
     "      \"locality_name\":\"locality_name\","
     "      \"administrative_area_name\":\"admin_area_name\","
     "      \"postal_code_number\":\"postal_code_number\","
-    "      \"country_name_code\":\"country_name_code\""
+    "      \"country_name_code\":\"US\""
     "    }"
     "  },"
     "  \"shipping_address\":"
@@ -53,7 +53,7 @@ const char kFullWalletValidResponse[] =
     "      \"locality_name\":\"ship_locality_name\","
     "      \"administrative_area_name\":\"ship_admin_area_name\","
     "      \"postal_code_number\":\"ship_postal_code_number\","
-    "      \"country_name_code\":\"ship_country_name_code\""
+    "      \"country_name_code\":\"US\""
     "    }"
     "  },"
     "  \"required_action\":"
@@ -430,7 +430,7 @@ TEST_F(FullWalletTest, CreateFullWallet) {
   SetUpDictionary(kFullWalletValidResponse);
   std::vector<RequiredAction> required_actions;
   FullWallet full_wallet(12,
-                         2012,
+                         3000,
                          "iin",
                          "rest",
                          GetTestAddress(),

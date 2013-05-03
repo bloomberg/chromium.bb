@@ -29,6 +29,8 @@ class Image;
 namespace autofill {
 
 FORWARD_DECLARE_TEST(WalletInstrumentWrapperTest, GetInfoCreditCardExpMonth);
+FORWARD_DECLARE_TEST(WalletInstrumentWrapperTest,
+                     GetDisplayTextEmptyWhenExpired);
 
 namespace wallet {
 
@@ -110,6 +112,8 @@ class WalletItems {
         const std::string&);
     FRIEND_TEST_ALL_PREFIXES(::autofill::WalletInstrumentWrapperTest,
                              GetInfoCreditCardExpMonth);
+    FRIEND_TEST_ALL_PREFIXES(::autofill::WalletInstrumentWrapperTest,
+                             GetDisplayTextEmptyWhenExpired);
     FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, CreateMaskedInstrument);
     FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, CreateWalletItems);
 

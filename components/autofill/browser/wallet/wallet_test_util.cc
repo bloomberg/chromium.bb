@@ -19,22 +19,31 @@
 namespace autofill {
 namespace wallet {
 
+namespace {
+
+int FutureYear() {
+  // "In the Year 3000." - Richie "LaBamba" Rosenberg
+  return 3000;
+}
+
+}  // namespace
+
 scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrumentWithId(
     const std::string& id) {
   return scoped_ptr<WalletItems::MaskedInstrument>(
       new WalletItems::MaskedInstrument(ASCIIToUTF16("descriptive_name"),
-                                        WalletItems::MaskedInstrument::UNKNOWN,
+                                        WalletItems::MaskedInstrument::VISA,
                                         std::vector<base::string16>(),
-                                        ASCIIToUTF16("last_four_digits"),
+                                        ASCIIToUTF16("1111"),
                                         12,
-                                        2012,
+                                        FutureYear(),
                                         GetTestAddress(),
-                                        WalletItems::MaskedInstrument::EXPIRED,
+                                        WalletItems::MaskedInstrument::VALID,
                                         id));
 }
 
 scoped_ptr<Address> GetTestAddress() {
-  return scoped_ptr<Address>(new Address("country_name_code",
+  return scoped_ptr<Address>(new Address("US",
                                          ASCIIToUTF16("recipient_name"),
                                          ASCIIToUTF16("address_line_1"),
                                          ASCIIToUTF16("address_line_2"),
@@ -48,8 +57,8 @@ scoped_ptr<Address> GetTestAddress() {
 scoped_ptr<FullWallet> GetTestFullWallet() {
   base::Time::Exploded exploded;
   base::Time::Now().LocalExplode(&exploded);
-  return scoped_ptr<FullWallet>(new FullWallet(exploded.year + 3,
-                                               exploded.month,
+  return scoped_ptr<FullWallet>(new FullWallet(FutureYear(),
+                                               12,
                                                "iin",
                                                "rest",
                                                GetTestAddress(),
@@ -61,7 +70,7 @@ scoped_ptr<Instrument> GetTestInstrument() {
   return scoped_ptr<Instrument>(new Instrument(ASCIIToUTF16("4444444444444448"),
                                                ASCIIToUTF16("123"),
                                                12,
-                                               2012,
+                                               FutureYear(),
                                                Instrument::VISA,
                                                GetTestAddress()));
 }
@@ -83,7 +92,7 @@ scoped_ptr<WalletItems::MaskedInstrument> GetTestNonDefaultMaskedInstrument() {
 
 scoped_ptr<Address> GetTestSaveableAddress() {
   return scoped_ptr<Address>(new Address(
-      "save_country_name_code",
+      "US",
       ASCIIToUTF16("save_recipient_name"),
       ASCIIToUTF16("save_address_line_1"),
       ASCIIToUTF16("save_address_line_2"),
@@ -96,7 +105,7 @@ scoped_ptr<Address> GetTestSaveableAddress() {
 
 scoped_ptr<Address> GetTestShippingAddress() {
   return scoped_ptr<Address>(new Address(
-      "ship_country_name_code",
+      "US",
       ASCIIToUTF16("ship_recipient_name"),
       ASCIIToUTF16("ship_address_line_1"),
       ASCIIToUTF16("ship_address_line_2"),

@@ -13,6 +13,7 @@
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/credit_card.h"
 #include "components/autofill/browser/form_structure.h"
+#include "components/autofill/browser/validation.h"
 #include "components/autofill/browser/wallet/full_wallet.h"
 #include "components/autofill/browser/wallet/wallet_address.h"
 #include "components/autofill/browser/wallet/wallet_items.h"
@@ -125,6 +126,13 @@ gfx::Image AutofillCreditCardWrapper::GetIcon() {
 }
 
 string16 AutofillCreditCardWrapper::GetDisplayText() {
+  if (!autofill::IsValidCreditCardExpirationDate(
+           card_->GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR),
+           card_->GetRawInfo(CREDIT_CARD_EXP_MONTH),
+           base::Time::Now())) {
+    return string16();
+  }
+
   return card_->TypeAndLastFourDigits();
 }
 
@@ -174,6 +182,10 @@ gfx::Image WalletInstrumentWrapper::GetIcon() {
 }
 
 string16 WalletInstrumentWrapper::GetDisplayText() {
+  // TODO(dbeam): handle other instrument statuses? http://crbug.com/233048
+  if (instrument_->status() == wallet::WalletItems::MaskedInstrument::EXPIRED)
+    return string16();
+
   // TODO(estade): descriptive_name() is user-provided. Should we use it or
   // just type + last 4 digits?
   string16 line1 = instrument_->descriptive_name();
@@ -196,6 +208,14 @@ string16 FullWalletBillingWrapper::GetInfo(AutofillFieldType type) {
 
   return full_wallet_->billing_address()->GetInfo(
       type, g_browser_process->GetApplicationLocale());
+}
+
+string16 FullWalletBillingWrapper::GetDisplayText() {
+  // TODO(dbeam): handle other required actions? http://crbug.com/163508
+  if (full_wallet_->HasRequiredAction(wallet::UPDATE_EXPIRATION_DATE))
+    return string16();
+
+  return DataModelWrapper::GetDisplayText();
 }
 
 // FullWalletShippingWrapper

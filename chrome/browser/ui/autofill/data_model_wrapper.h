@@ -157,6 +157,7 @@ class FullWalletBillingWrapper : public DataModelWrapper {
   virtual ~FullWalletBillingWrapper();
 
   virtual string16 GetInfo(AutofillFieldType type) OVERRIDE;
+  virtual string16 GetDisplayText() OVERRIDE;
 
  private:
   wallet::FullWallet* full_wallet_;

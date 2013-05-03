@@ -160,8 +160,7 @@ TEST(Instrument, ToDictionary) {
   expected.SetInteger("credit_card.exp_year", 2015);
   expected.SetString("credit_card.last_4_digits", kLastFourDigits);
   expected.SetString("credit_card.fop_type", "VISA");
-  expected.SetString("credit_card.address.country_name_code",
-                     "ship_country_name_code");
+  expected.SetString("credit_card.address.country_name_code", "US");
   expected.SetString("credit_card.address.recipient_name",
                      "ship_recipient_name");
   expected.SetString("credit_card.address.locality_name",

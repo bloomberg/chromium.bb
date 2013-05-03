@@ -645,12 +645,27 @@ void AutofillDialogControllerImpl::EnsureLegalDocumentsText() {
   legal_documents_text_ = text;
 }
 
-void AutofillDialogControllerImpl::ResetManualInputForSection(
+void AutofillDialogControllerImpl::PrepareDetailInputsForSection(
     DialogSection section) {
+  // Reset all previously entered data and stop editing |section|.
   DetailInputs* inputs = MutableRequestedFieldsForSection(section);
-  for (size_t i = 0; i < inputs->size(); ++i)
+  for (size_t i = 0; i < inputs->size(); ++i) {
     (*inputs)[i].initial_value.clear();
+  }
   section_editing_state_[section] = false;
+
+  // If the chosen item in |model| yields an empty suggestion text, it is
+  // invalid. In this case, show the editing UI with invalid fields highlighted.
+  SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
+  if (IsASuggestionItemKey(model->GetItemKeyForCheckedItem()) &&
+      SuggestionTextForSection(section).empty()) {
+    scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
+    wrapper->FillInputs(MutableRequestedFieldsForSection(section));
+    section_editing_state_[section] = true;
+  }
+
+  if (view_)
+    view_->UpdateSection(section);
 }
 
 const DetailInputs& AutofillDialogControllerImpl::RequestedFieldsForSection(
@@ -755,8 +770,9 @@ string16 AutofillDialogControllerImpl::SuggestionTextForSection(
   if (!action_text.empty())
     return action_text;
 
-  // When the user has clicked 'edit', don't show a suggestion (even though
-  // there is a profile selected in the model).
+  // When the user has clicked 'edit' or a suggestion is somehow invalid (e.g. a
+  // user selects a credit card that has expired), don't show a suggestion (even
+  // though there is a profile selected in the model).
   if (section_editing_state_[section])
     return string16();
 
@@ -906,9 +922,8 @@ bool AutofillDialogControllerImpl::EditEnabledForSection(
 
 void AutofillDialogControllerImpl::EditClickedForSection(
     DialogSection section) {
-  DetailInputs* inputs = MutableRequestedFieldsForSection(section);
   scoped_ptr<DataModelWrapper> model = CreateWrapper(section);
-  model->FillInputs(inputs);
+  model->FillInputs(MutableRequestedFieldsForSection(section));
   section_editing_state_[section] = true;
   view_->UpdateSection(section);
 
@@ -918,8 +933,7 @@ void AutofillDialogControllerImpl::EditClickedForSection(
 
 void AutofillDialogControllerImpl::EditCancelledForSection(
     DialogSection section) {
-  ResetManualInputForSection(section);
-  view_->UpdateSection(section);
+  PrepareDetailInputsForSection(section);
 }
 
 gfx::Image AutofillDialogControllerImpl::IconForField(
@@ -1401,7 +1415,7 @@ void AutofillDialogControllerImpl::SuggestionItemSelected(
   }
 
   model->SetCheckedIndex(index);
-  EditCancelledForSection(SectionForSuggestionsMenuModel(*model));
+  PrepareDetailInputsForSection(SectionForSuggestionsMenuModel(*model));
 
   LogSuggestionItemSelectedMetric(*model);
 }
@@ -1578,13 +1592,6 @@ void AutofillDialogControllerImpl::OnPersonalDataChanged() {
 // AccountChooserModelDelegate implementation.
 
 void AutofillDialogControllerImpl::AccountChoiceChanged() {
-  // Whenever the user changes the account, all manual inputs should be reset.
-  ResetManualInputForSection(SECTION_EMAIL);
-  ResetManualInputForSection(SECTION_CC);
-  ResetManualInputForSection(SECTION_BILLING);
-  ResetManualInputForSection(SECTION_CC_BILLING);
-  ResetManualInputForSection(SECTION_SHIPPING);
-
   if (is_submitting_)
     GetWalletClient()->CancelRequests();
 
@@ -1834,6 +1841,7 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
   suggested_shipping_.AddKeyedItem(
       kManageItemsKey,
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_MANAGE_SHIPPING_ADDRESS));
+
   if (!IsPayingWithWallet()) {
     // When using Autofill, the default option is the first suggestion, if
     // one exists. Otherwise it's the "Use shipping for billing" item.
@@ -1845,6 +1853,10 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
 
   if (view_)
     view_->ModelChanged();
+
+  for (size_t section = SECTION_MIN; section <= SECTION_MAX; ++section) {
+    PrepareDetailInputsForSection(static_cast<DialogSection>(section));
+  }
 }
 
 bool AutofillDialogControllerImpl::IsCompleteProfile(
@@ -2326,7 +2338,6 @@ void AutofillDialogControllerImpl::LogSuggestionItemSelectedMetric(
     dialog_ui_event = DialogSectionToUiItemAddedEvent(section);
   } else if (IsASuggestionItemKey(model.GetItemKeyForCheckedItem())) {
     // Selected an existing item.
-    DCHECK(!section_editing_state_[section]);
     dialog_ui_event = DialogSectionToUiSelectionChangedEvent(section);
   } else {
     // TODO(estade): add logging for "Manage items" or "Use billing for
