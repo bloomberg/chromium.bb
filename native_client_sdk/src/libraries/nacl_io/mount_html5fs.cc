@@ -25,8 +25,10 @@ int64_t strtoull(const char* nptr, char** endptr, int base) {
 }  // namespace
 
 MountNode *MountHtml5Fs::Open(const Path& path, int mode) {
-  if (BlockUntilFilesystemOpen() != PP_OK)
+  if (BlockUntilFilesystemOpen() != PP_OK) {
+    errno = ENODEV;
     return NULL;
+  }
 
   PP_Resource fileref = ppapi()->GetFileRefInterface()->Create(
       filesystem_resource_, path.Join().c_str());

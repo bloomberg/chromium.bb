@@ -30,6 +30,7 @@ function attachListeners() {
   document.getElementById('freadExecute').addEventListener('click', fread);
   document.getElementById('fwriteExecute').addEventListener('click', fwrite);
   document.getElementById('fseekExecute').addEventListener('click', fseek);
+  document.getElementById('statExecute').addEventListener('click', stat);
 }
 
 function onRadioClicked(e) {
@@ -74,7 +75,7 @@ function fopen(e) {
   nacl_module.postMessage(makeCall('fopen', filename, access));
 }
 
-function fopen_result(filename, filehandle) {
+function fopenResult(filename, filehandle) {
   filehandle_map[filehandle] = filename;
 
   addFilenameToSelectElements(filehandle, filename)
@@ -86,7 +87,7 @@ function fclose(e) {
   nacl_module.postMessage(makeCall('fclose', filehandle));
 }
 
-function fclose_result(filehandle) {
+function fcloseResult(filehandle) {
   var filename = filehandle_map[filehandle];
   removeFilenameFromSelectElements(filehandle, filename);
   common.logMessage('File ' + filename + ' closed successfully.\n');
@@ -98,7 +99,7 @@ function fread(e) {
   nacl_module.postMessage(makeCall('fread', filehandle, numBytes));
 }
 
-function fread_result(filehandle, data) {
+function freadResult(filehandle, data) {
   var filename = filehandle_map[filehandle];
   common.logMessage('Read "' + data + '" from file ' + filename + '.\n');
 }
@@ -109,7 +110,7 @@ function fwrite(e) {
   nacl_module.postMessage(makeCall('fwrite', filehandle, data));
 }
 
-function fwrite_result(filehandle, bytes_written) {
+function fwriteResult(filehandle, bytes_written) {
   var filename = filehandle_map[filehandle];
   common.logMessage('Wrote ' + bytes_written + ' bytes to file ' + filename +
       '.\n');
@@ -122,10 +123,19 @@ function fseek(e) {
   nacl_module.postMessage(makeCall('fseek', filehandle, offset, whence));
 }
 
-function fseek_result(filehandle, filepos) {
+function fseekResult(filehandle, filepos) {
   var filename = filehandle_map[filehandle];
   common.logMessage('Seeked to location ' + filepos + ' in file ' + filename +
       '.\n');
+}
+
+function stat(e) {
+  var filename = document.getElementById('statFilename').value;
+  nacl_module.postMessage(makeCall('stat', filename));
+}
+
+function statResult(filename, size) {
+  common.logMessage('File ' + filename + ' has size ' + size + '.\n');
 }
 
 /**
@@ -157,15 +167,15 @@ function handleMessage(message_event) {
   } else {
     // Result from a function call.
     var params = msg.split('\1');
-    var func_name = params[0];
-    var func_result_name = func_name + '_result';
-    var result_func = window[func_result_name];
+    var funcName = params[0];
+    var funcResultName = funcName + 'Result';
+    var resultFunc = window[funcResultName];
 
-    if (!result_func) {
+    if (!resultFunc) {
       common.logMessage('Error: Bad message received from NaCl module.\n');
       return;
     }
 
-    result_func.apply(null, params.slice(1));
+    resultFunc.apply(null, params.slice(1));
   }
 }

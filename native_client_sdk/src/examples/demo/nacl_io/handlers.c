@@ -6,9 +6,11 @@
 #include "handlers.h"
 
 #include <assert.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include "hello_nacl_io.h"
 
@@ -318,5 +320,45 @@ int HandleFclose(int num_params, char** params, char** output) {
   RemoveFileFromMap(file_index);
 
   *output = PrintfToNewString("fclose\1%s", file_index_string);
+  return 0;
+}
+
+/**
+ * Handle a call to stat() made by JavaScript.
+ *
+ * stat expects 1 parameter:
+ *   0: The name of the file
+ * on success, stat returns a result in |output| separated by \1:
+ *   0: "stat"
+ *   1: the file name
+ *   2: the size of the file
+ * on failure, stat returns an error string in |output|.
+ *
+ * @param[in] num_params The number of params in |params|.
+ * @param[in] params An array of strings, parameters to this function.
+ * @param[out] output A string to write informational function output to.
+ * @return An errorcode; 0 means success, anything else is a failure. */
+int HandleStat(int num_params, char** params, char** output) {
+  FILE* file;
+  int file_index;
+  const char* filename;
+  const char* mode;
+
+  if (num_params != 1) {
+    *output = PrintfToNewString("Error: stat takes 1 parameter.");
+    return 1;
+  }
+
+  filename = params[0];
+
+  struct stat buf;
+  memset(&buf, 0, sizeof(buf));
+  int result = stat(filename, &buf);
+  if (result == -1) {
+    *output = PrintfToNewString("Error: stat returned error %d.", errno);
+    return 2;
+  }
+
+  *output = PrintfToNewString("stat\1%s\1%d", filename, buf.st_size);
   return 0;
 }
