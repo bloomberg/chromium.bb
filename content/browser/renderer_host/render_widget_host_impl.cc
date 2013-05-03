@@ -196,7 +196,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   process_->WidgetRestored();
 
   accessibility_mode_ =
-      BrowserAccessibilityStateImpl::GetInstance()->GetAccessibilityMode();
+      BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode();
 
 #if defined(USE_AURA)
   bool overscroll_enabled = CommandLine::ForCurrentProcess()->

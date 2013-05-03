@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_BROWSER_ACCESSIBILITY_STATE_H_
 
 #include "base/callback_forward.h"
+
 #include "content/common/content_export.h"
 
 namespace content {
@@ -20,8 +21,11 @@ class CONTENT_EXPORT BrowserAccessibilityState {
   // Returns the singleton instance.
   static BrowserAccessibilityState* GetInstance();
 
-  // Called when accessibility is enabled manually (via command-line flag).
-  virtual void OnAccessibilityEnabledManually() = 0;
+  // Enables accessibility for all running tabs.
+  virtual void EnableAccessibility() = 0;
+
+  // Disables accessibility for all running tabs.
+  virtual void DisableAccessibility() = 0;
 
   // Called when screen reader client is detected.
   virtual void OnScreenReaderDetected() = 0;

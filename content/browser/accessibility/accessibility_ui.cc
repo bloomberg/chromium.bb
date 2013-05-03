@@ -121,7 +121,7 @@ void SendTargetsData(
   scoped_ptr<DictionaryValue> data(new DictionaryValue());
   data->Set("list", rvh_list.release());
   scoped_ptr<FundamentalValue> a11y_mode(new FundamentalValue(
-      BrowserAccessibilityStateImpl::GetInstance()->GetAccessibilityMode()));
+      BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode()));
   data->Set("global_a11y_mode", a11y_mode.release());
 
   std::string json_string;
@@ -205,32 +205,11 @@ void AccessibilityUI::ToggleAccessibility(const base::ListValue* args) {
 void AccessibilityUI::ToggleGlobalAccessibility(const base::ListValue* args) {
   BrowserAccessibilityStateImpl* state =
       BrowserAccessibilityStateImpl::GetInstance();
-  AccessibilityMode mode = state->GetAccessibilityMode();
+  AccessibilityMode mode = state->accessibility_mode();
   AccessibilityMode new_mode = (mode == AccessibilityModeOff
                                 ? AccessibilityModeComplete
                                 : AccessibilityModeOff);
   state->SetAccessibilityMode(new_mode);
-  for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
-       !it.IsAtEnd(); it.Advance()) {
-    RenderProcessHost* render_process_host = it.GetCurrentValue();
-    DCHECK(render_process_host);
-
-    // Ignore processes that don't have a connection, such as crashed tabs.
-    if (!render_process_host->HasConnection())
-      continue;
-
-    RenderProcessHost::RenderWidgetHostsIterator rwit(
-        render_process_host->GetRenderWidgetHostsIterator());
-    for (; !rwit.IsAtEnd(); rwit.Advance()) {
-      RenderWidgetHost* rwh = const_cast<RenderWidgetHost*>(
-          rwit.GetCurrentValue());
-      DCHECK(rwh);
-      if (!rwh || !rwh->IsRenderView())
-        continue;
-      RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
-      rwhi->SetAccessibilityMode(new_mode);
-    }
-  }
 }
 
 void AccessibilityUI::RequestAccessibilityTree(const base::ListValue* args) {

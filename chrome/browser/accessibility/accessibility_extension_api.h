@@ -80,6 +80,16 @@ class AccessibilitySetAccessibilityEnabledFunction
       EXPERIMENTAL_ACCESSIBILITY_SETACCESSIBILITYENABLED)
 };
 
+// API function that enables or disables web content accessibility support.
+class AccessibilitySetNativeAccessibilityEnabledFunction
+    : public SyncExtensionFunction {
+  virtual ~AccessibilitySetNativeAccessibilityEnabledFunction() {}
+  virtual bool RunImpl() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION(
+      "experimental.accessibility.setNativeAccessibilityEnabled",
+      EXPERIMENTAL_ACCESSIBILITY_SETNATIVEACCESSIBILITYENABLED)
+};
+
 // API function that returns the most recent focused control.
 class AccessibilityGetFocusedControlFunction : public SyncExtensionFunction {
   virtual ~AccessibilityGetFocusedControlFunction() {}

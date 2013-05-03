@@ -154,6 +154,18 @@
         ]
       },
       {
+        "name": "setNativeAccessibilityEnabled",
+        "type": "function",
+        "description": "Enables or disables native accessibility support. Once disabled, it is up to the calling extension to provide accessibility for web contents.",
+        "parameters": [
+          {
+            "type": "boolean",
+            "name": "enabled",
+            "description": "True if native accessibility support should be enabled."
+          }
+        ]
+      },
+      {
         "name": "getFocusedControl",
         "type": "function",
         "description": "Gets information about the currently focused control.",

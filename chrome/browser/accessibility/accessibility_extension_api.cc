@@ -17,6 +17,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/common/error_utils.h"
 
@@ -176,6 +177,19 @@ bool AccessibilitySetAccessibilityEnabledFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &enabled));
   ExtensionAccessibilityEventRouter::GetInstance()
       ->SetAccessibilityEnabled(enabled);
+  return true;
+}
+
+bool AccessibilitySetNativeAccessibilityEnabledFunction::RunImpl() {
+  bool enabled;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &enabled));
+  if (enabled) {
+    content::BrowserAccessibilityState::GetInstance()->
+        EnableAccessibility();
+  } else {
+    content::BrowserAccessibilityState::GetInstance()->
+        DisableAccessibility();
+  }
   return true;
 }
 

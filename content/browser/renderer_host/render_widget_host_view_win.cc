@@ -2645,7 +2645,7 @@ LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
     // active windows screen reader.
     BrowserAccessibilityState::GetInstance()->OnScreenReaderDetected();
     render_widget_host_->SetAccessibilityMode(
-        BrowserAccessibilityStateImpl::GetInstance()->GetAccessibilityMode());
+        BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode());
 
     // Return with failure.
     return static_cast<LRESULT>(0L);
