@@ -37,6 +37,7 @@ extern const char kUserRejected[];
 extern const char kUserNotSignedIn[];
 extern const char kInteractionRequired[];
 extern const char kInvalidRedirect[];
+extern const char kOffTheRecord[];
 }  // namespace identity_constants
 
 // identity.getAuthToken fetches an OAuth 2 function for the
@@ -62,8 +63,8 @@ class IdentityGetAuthTokenFunction : public AsyncExtensionFunction,
                                      public OAuth2MintTokenFlow::Delegate,
                                      public IdentitySigninFlow::Delegate {
  public:
-  DECLARE_EXTENSION_FUNCTION("experimental.identity.getAuthToken",
-                             EXPERIMENTAL_IDENTITY_GETAUTHTOKEN)
+  DECLARE_EXTENSION_FUNCTION("identity.getAuthToken",
+                             EXPERIMENTAL_IDENTITY_GETAUTHTOKEN);
 
   IdentityGetAuthTokenFunction();
 
@@ -133,7 +134,7 @@ class IdentityGetAuthTokenFunction : public AsyncExtensionFunction,
 
 class IdentityRemoveCachedAuthTokenFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("experimental.identity.removeCachedAuthToken",
+  DECLARE_EXTENSION_FUNCTION("identity.removeCachedAuthToken",
                              EXPERIMENTAL_IDENTITY_REMOVECACHEDAUTHTOKEN)
   IdentityRemoveCachedAuthTokenFunction();
 
@@ -147,8 +148,8 @@ class IdentityRemoveCachedAuthTokenFunction : public SyncExtensionFunction {
 class IdentityLaunchWebAuthFlowFunction : public AsyncExtensionFunction,
                                           public WebAuthFlow::Delegate {
  public:
-  DECLARE_EXTENSION_FUNCTION("experimental.identity.launchWebAuthFlow",
-                             EXPERIMENTAL_IDENTITY_LAUNCHWEBAUTHFLOW)
+  DECLARE_EXTENSION_FUNCTION("identity.launchWebAuthFlow",
+                             EXPERIMENTAL_IDENTITY_LAUNCHWEBAUTHFLOW);
 
   IdentityLaunchWebAuthFlowFunction();
 

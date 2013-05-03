@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_function_registry.h"
 
 #include "chrome/browser/extensions/api/browsing_data/browsing_data_api.h"
+#include "chrome/browser/extensions/api/identity/experimental_identity_api.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
@@ -77,6 +78,10 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<extensions::RuntimeGetBackgroundPageFunction>();
   RegisterFunction<extensions::RuntimeReloadFunction>();
   RegisterFunction<extensions::RuntimeRequestUpdateCheckFunction>();
+
+  // ExperimentalIdentity.
+  RegisterFunction<extensions::ExperimentalIdentityGetAuthTokenFunction>();
+  RegisterFunction<extensions::ExperimentalIdentityLaunchWebAuthFlowFunction>();
 
   // Generated APIs
   extensions::api::GeneratedFunctionRegistry::RegisterAll(this);

@@ -685,6 +685,9 @@ TEST_F(PermissionsTest, PermissionMessages) {
   // to warn you further.
   skip.insert(APIPermission::kExperimental);
 
+  // The Identity API has its own server-driven permission prompts.
+  skip.insert(APIPermission::kIdentity);
+
   // These are private.
   skip.insert(APIPermission::kAutoTestPrivate);
   skip.insert(APIPermission::kBookmarkManagerPrivate);

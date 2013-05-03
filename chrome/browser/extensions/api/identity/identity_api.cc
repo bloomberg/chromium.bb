@@ -22,7 +22,7 @@
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/extensions/api/experimental_identity.h"
+#include "chrome/common/extensions/api/identity.h"
 #include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -60,11 +60,7 @@ static const char kChromiumDomainRedirectUrlPattern[] =
 
 }  // namespace
 
-namespace GetAuthToken = api::experimental_identity::GetAuthToken;
-namespace RemoveCachedAuthToken =
-    api::experimental_identity::RemoveCachedAuthToken;
-namespace LaunchWebAuthFlow = api::experimental_identity::LaunchWebAuthFlow;
-namespace identity = api::experimental_identity;
+namespace identity = api::identity;
 
 IdentityGetAuthTokenFunction::IdentityGetAuthTokenFunction()
     : should_prompt_for_scopes_(false),
@@ -78,7 +74,8 @@ bool IdentityGetAuthTokenFunction::RunImpl() {
     return false;
   }
 
-  scoped_ptr<GetAuthToken::Params> params(GetAuthToken::Params::Create(*args_));
+  scoped_ptr<identity::GetAuthToken::Params> params(
+      identity::GetAuthToken::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   bool interactive = params->details.get() &&
       params->details->interactive.get() &&
@@ -296,7 +293,6 @@ void IdentityGetAuthTokenFunction::SigninFailed() {
 }
 
 void IdentityGetAuthTokenFunction::InstallUIProceed() {
-  DCHECK(install_ui_->record_oauth2_grant());
   // The user has accepted the scopes, so we may now force (recording a grant
   // and receiving a token).
   StartGaiaRequest(OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE);
@@ -368,12 +364,11 @@ bool IdentityRemoveCachedAuthTokenFunction::RunImpl() {
     return false;
   }
 
-  scoped_ptr<RemoveCachedAuthToken::Params> params(
-      RemoveCachedAuthToken::Params::Create(*args_));
+  scoped_ptr<identity::RemoveCachedAuthToken::Params> params(
+      identity::RemoveCachedAuthToken::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  const identity::InvalidTokenDetails& details = params->details;
   IdentityAPI::GetFactoryInstance()->GetForProfile(profile())->EraseCachedToken(
-      GetExtension()->id(), details.token);
+      GetExtension()->id(), params->details.token);
   return true;
 }
 
@@ -386,29 +381,20 @@ bool IdentityLaunchWebAuthFlowFunction::RunImpl() {
     return false;
   }
 
-  scoped_ptr<LaunchWebAuthFlow::Params> params(
-      LaunchWebAuthFlow::Params::Create(*args_));
+  scoped_ptr<identity::LaunchWebAuthFlow::Params> params(
+      identity::LaunchWebAuthFlow::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  const identity::WebAuthFlowDetails& details = params->details;
 
-  GURL auth_url(details.url);
+  GURL auth_url(params->details.url);
   WebAuthFlow::Mode mode =
-      details.interactive && *details.interactive ?
+      params->details.interactive && *params->details.interactive ?
       WebAuthFlow::INTERACTIVE : WebAuthFlow::SILENT;
 
+  // Set up acceptable target URLs. (Does not include chrome-extension
+  // scheme for this version of the API.)
   InitFinalRedirectURLPrefixes(GetExtension()->id());
 
-  // The bounds attributes are optional, but using 0 when they're not available
-  // does the right thing.
   gfx::Rect initial_bounds;
-  if (details.width)
-    initial_bounds.set_width(*details.width);
-  if (details.height)
-    initial_bounds.set_height(*details.height);
-  if (details.left)
-    initial_bounds.set_x(*details.left);
-  if (details.top)
-    initial_bounds.set_y(*details.top);
 
   AddRef();  // Balanced in OnAuthFlowSuccess/Failure.
 
@@ -441,8 +427,6 @@ void IdentityLaunchWebAuthFlowFunction::InitFinalRedirectURLPrefixesForTest(
 
 void IdentityLaunchWebAuthFlowFunction::InitFinalRedirectURLPrefixes(
     const std::string& extension_id) {
-  final_prefixes_.push_back(
-      Extension::GetBaseURLFromExtensionId(extension_id));
   final_prefixes_.push_back(GURL(base::StringPrintf(
       kChromiumDomainRedirectUrlPattern, extension_id.c_str())));
 }

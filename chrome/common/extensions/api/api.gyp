@@ -61,6 +61,7 @@
           'font_settings.json',
           'history.json',
           'i18n.json',
+          'identity.idl',
           'idle.json',
           'managed_mode_private.json',
           'management.json',

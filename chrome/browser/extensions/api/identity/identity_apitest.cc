@@ -12,7 +12,6 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -224,7 +223,6 @@ class MockGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
   virtual void ShowOAuthApprovalDialog(
       const IssueAdviceInfo& issue_advice) OVERRIDE {
     install_ui_shown_ = true;
-    install_ui_->record_oauth2_grant_ = true;
     // Call InstallUIProceed or InstallUIAbort based on the flag.
     if (install_ui_result_)
       InstallUIProceed();
@@ -343,7 +341,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_CALL(*func.get(), CreateMintTokenFlow(_)).WillOnce(Return(flow));
   std::string error = utils::RunFunctionAndReturnError(
       func.get(), "[{}]", browser());
-  EXPECT_TRUE(StartsWithASCII(error, errors::kNoGrant, false));
+  EXPECT_EQ(std::string(errors::kNoGrant), error);
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->install_ui_shown());
 
@@ -919,78 +917,7 @@ IN_PROC_BROWSER_TEST_F(RemoveCachedAuthTokenFunctionTest, MatchingToken) {
 }
 
 class LaunchWebAuthFlowFunctionTest : public AsyncExtensionBrowserTest {
- protected:
-  void RunAndCheckBounds(
-      const std::string& extra_params,
-      int expected_x,
-      int expected_y,
-      int expected_width,
-      int expected_height) {
-    content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_BROWSER_WINDOW_READY,
-        content::NotificationService::AllSources());
-
-    scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
-      new IdentityLaunchWebAuthFlowFunction());
-
-    std::string args = base::StringPrintf(
-        "[{\"interactive\": true, \"url\": \"data:text/html,auth\"%s%s}]",
-        extra_params.length() ? "," : "",
-        extra_params.c_str());
-
-    RunFunctionAsync(function, args);
-
-    observer.Wait();
-
-    Browser* web_auth_flow_browser =
-        content::Source<Browser>(observer.source()).ptr();
-    EXPECT_EQ(expected_x, web_auth_flow_browser->override_bounds().x());
-    EXPECT_EQ(expected_y, web_auth_flow_browser->override_bounds().y());
-    EXPECT_EQ(expected_width, web_auth_flow_browser->override_bounds().width());
-    EXPECT_EQ(
-        expected_height, web_auth_flow_browser->override_bounds().height());
-
-    web_auth_flow_browser->window()->Close();
-  }
 };
-
-IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, Bounds) {
-  RunAndCheckBounds(std::string(), 0, 0, 0, 0);
-  RunAndCheckBounds("\"width\": 100, \"height\": 200", 0, 0, 100, 200);
-  RunAndCheckBounds("\"left\": 100, \"top\": 200", 100, 200, 0, 0);
-  RunAndCheckBounds(
-      "\"left\": 100, \"top\": 200, \"width\": 300, \"height\": 400",
-      100, 200, 300, 400);
-}
-
-IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, RedirectMatching) {
-  scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
-      new IdentityLaunchWebAuthFlowFunction());
-
-  function->InitFinalRedirectURLPrefixesForTest("abcdefghij");
-  // Positive cases.
-  EXPECT_TRUE(function->IsFinalRedirectURL(
-      GURL("https://abcdefghij.chromiumapp.org/")));
-  EXPECT_TRUE(function->IsFinalRedirectURL(
-      GURL("https://abcdefghij.chromiumapp.org/callback")));
-  EXPECT_TRUE(function->IsFinalRedirectURL(
-      GURL("chrome-extension://abcdefghij/")));
-  EXPECT_TRUE(function->IsFinalRedirectURL(
-      GURL("chrome-extension://abcdefghij/callback")));
-
-  // Negative cases.
-  EXPECT_FALSE(function->IsFinalRedirectURL(
-      GURL("https://www.foo.com/")));
-  // http scheme is not allowed.
-  EXPECT_FALSE(function->IsFinalRedirectURL(
-      GURL("http://abcdefghij.chromiumapp.org/callback")));
-  EXPECT_FALSE(function->IsFinalRedirectURL(
-      GURL("https://abcd.chromiumapp.org/callback")));
-  EXPECT_FALSE(function->IsFinalRedirectURL(
-      GURL("chrome-extension://abcd/callback")));
-  EXPECT_FALSE(function->IsFinalRedirectURL(
-      GURL("chrome-extension://abcdefghijkl/")));
-}
 
 IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, UserCloseWindow) {
   content::WindowedNotificationObserver observer(

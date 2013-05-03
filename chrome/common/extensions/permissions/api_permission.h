@@ -79,6 +79,7 @@ class APIPermission {
     kFullscreen,
     kGeolocation,
     kHistory,
+    kIdentity,
     kIdle,
     kInput,
     kInputMethodPrivate,

@@ -50,6 +50,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
     { APIPermission::kDownloads, "downloads", APIPermissionInfo::kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_DOWNLOADS,
       PermissionMessage::kDownloads },
+    { APIPermission::kIdentity, "identity" },
     { APIPermission::kExperimental, "experimental",
       APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kGeolocation, "geolocation",

@@ -1,0 +1,57 @@
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+namespace identity {
+
+  [nodoc] dictionary TokenDetails {
+    // Whether to prompt the user to log in or grant scope permissions (if they
+    // have not already done so). Default is false.
+    boolean? interactive;
+  };
+
+  [nodoc] dictionary InvalidTokenDetails {
+    // The specific token that should be removed from the cache.
+    DOMString token;
+  };
+
+  [nodoc] dictionary WebAuthFlowDetails {
+    // The URL that initiates the auth flow.
+    DOMString url;
+
+    // Whether to launch auth flow in interactive mode. Default is false.
+    boolean? interactive;
+  };
+
+  [nodoc] callback GetAuthTokenCallback = void (optional DOMString token);
+  [nodoc] callback InvalidateAuthTokenCallback = void ();
+  [nodoc] callback LaunchWebAuthFlowCallback = void (optional DOMString responseUrl);
+
+  interface Functions {
+    // Gets an OAuth2 access token as specified by the manifest.
+    //
+    // |details| : Token options.
+    // |callback| : Called with an OAuth2 access token as specified by the
+    // manifest, or undefined if there was an error.
+    [nodoc] static void getAuthToken(optional TokenDetails details,
+                                     GetAuthTokenCallback callback);
+
+    // Removes an OAuth2 access token from the Identity API's token cache.
+    // When an access token is discovered to be invalid, it should be
+    // passed to removeCachedAuthToken to remove it from the cache. The
+    // app may then retrieve a fresh token with getAuthToken.
+    //
+    // |details| : Token information.
+    // |callback| : Called when the token has been removed from the cache.
+    [nodoc] static void removeCachedAuthToken(
+        InvalidTokenDetails details, InvalidateAuthTokenCallback callback);
+
+    // Starts an auth flow at the specified URL.
+    //
+    // |details| : WebAuth flow options.
+    // |callback| : Called with the URL redirected back to your application.
+    [nodoc] static void launchWebAuthFlow(WebAuthFlowDetails details,
+                                          LaunchWebAuthFlowCallback callback);
+  }
+  ;
+};
