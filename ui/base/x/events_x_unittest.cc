@@ -42,6 +42,7 @@ void InitButtonEvent(XEvent* event,
 TEST(EventsXTest, ButtonEvents) {
   XEvent event;
   gfx::Point location(5, 10);
+  gfx::Vector2d offset;
 
   InitButtonEvent(&event, true, location, 1, 0);
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, ui::EventTypeFromNative(&event));
@@ -69,7 +70,9 @@ TEST(EventsXTest, ButtonEvents) {
   EXPECT_EQ(0, ui::EventFlagsFromNative(&event));
   EXPECT_EQ(location, ui::EventLocationFromNative(&event));
   EXPECT_TRUE(ui::IsMouseEvent(&event));
-  EXPECT_GT(ui::GetMouseWheelOffset(&event), 0);
+  offset = ui::GetMouseWheelOffset(&event);
+  EXPECT_GT(offset.y(), 0);
+  EXPECT_EQ(0, offset.x());
 
   // Scroll down.
   InitButtonEvent(&event, true, location, 5, 0);
@@ -77,7 +80,9 @@ TEST(EventsXTest, ButtonEvents) {
   EXPECT_EQ(0, ui::EventFlagsFromNative(&event));
   EXPECT_EQ(location, ui::EventLocationFromNative(&event));
   EXPECT_TRUE(ui::IsMouseEvent(&event));
-  EXPECT_LT(ui::GetMouseWheelOffset(&event), 0);
+  offset = ui::GetMouseWheelOffset(&event);
+  EXPECT_LT(offset.y(), 0);
+  EXPECT_EQ(0, offset.x());
 
   // Scroll left, typically.
   InitButtonEvent(&event, true, location, 6, 0);
@@ -85,7 +90,9 @@ TEST(EventsXTest, ButtonEvents) {
   EXPECT_EQ(0, ui::EventFlagsFromNative(&event));
   EXPECT_EQ(location, ui::EventLocationFromNative(&event));
   EXPECT_TRUE(ui::IsMouseEvent(&event));
-  EXPECT_EQ(0, ui::GetMouseWheelOffset(&event));
+  offset = ui::GetMouseWheelOffset(&event);
+  EXPECT_EQ(0, offset.y());
+  EXPECT_EQ(0, offset.x());
 
   // Scroll right, typically.
   InitButtonEvent(&event, true, location, 7, 0);
@@ -93,7 +100,9 @@ TEST(EventsXTest, ButtonEvents) {
   EXPECT_EQ(0, ui::EventFlagsFromNative(&event));
   EXPECT_EQ(location, ui::EventLocationFromNative(&event));
   EXPECT_TRUE(ui::IsMouseEvent(&event));
-  EXPECT_EQ(0, ui::GetMouseWheelOffset(&event));
+  offset = ui::GetMouseWheelOffset(&event);
+  EXPECT_EQ(0, offset.y());
+  EXPECT_EQ(0, offset.x());
 
   // TODO(derat): Test XInput code.
 }

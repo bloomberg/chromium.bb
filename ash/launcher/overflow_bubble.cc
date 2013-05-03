@@ -172,10 +172,14 @@ void OverflowBubbleView::ChildPreferredSizeChanged(views::View* child) {
 }
 
 bool OverflowBubbleView::OnMouseWheel(const ui::MouseWheelEvent& event) {
+  // The MouseWheelEvent was changed to support both X and Y offsets
+  // recently, but the behavior of this function was retained to continue
+  // using Y offsets only. Might be good to simply scroll in both
+  // directions as in OverflowBubbleView::OnScrollEvent.
   if (IsHorizontalAlignment())
-    ScrollByXOffset(-event.offset());
+    ScrollByXOffset(-event.y_offset());
   else
-    ScrollByYOffset(-event.offset());
+    ScrollByYOffset(-event.y_offset());
   Layout();
 
   return true;

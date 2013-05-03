@@ -178,9 +178,11 @@ bool ContentsView::OnMouseWheel(const ui::MouseWheelEvent& event) {
   if (show_state_ != SHOW_APPS)
     return false;
 
-  if (abs(event.offset()) > kMinMouseWheelToSwitchPage) {
-    if (!pagination_model_->has_transition())
-      pagination_model_->SelectPageRelative(event.offset() > 0 ? -1 : 1, true);
+  if (abs(event.y_offset()) > kMinMouseWheelToSwitchPage) {
+    if (!pagination_model_->has_transition()) {
+      pagination_model_->SelectPageRelative(
+          event.y_offset() > 0 ? -1 : 1, true);
+    }
     return true;
   }
 

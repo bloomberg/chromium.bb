@@ -406,7 +406,7 @@ class UI_EXPORT MouseWheelEvent : public MouseEvent {
 
   explicit MouseWheelEvent(const base::NativeEvent& native_event);
   explicit MouseWheelEvent(const ScrollEvent& scroll_event);
-  MouseWheelEvent(const MouseEvent& mouse_event, int offset);
+  MouseWheelEvent(const MouseEvent& mouse_event, int x_offset, int y_offset);
 
   template <class T>
   MouseWheelEvent(const MouseWheelEvent& model,
@@ -415,15 +415,16 @@ class UI_EXPORT MouseWheelEvent : public MouseEvent {
                   EventType type,
                   int flags)
       : MouseEvent(model, source, target, type, flags),
-        offset_(model.offset_) {
+        offset_(model.x_offset(), model.y_offset()){
   }
 
   // The amount to scroll. This is in multiples of kWheelDelta.
-  // Note: offset() > 0 means scroll up / left.
-  int offset() const { return offset_; }
+  // Note: x_offset() > 0/y_offset() > 0 means scroll left/up.
+  int x_offset() const { return offset_.x(); }
+  int y_offset() const { return offset_.y(); }
 
  private:
-  int offset_;
+  gfx::Vector2d offset_;
 
   DISALLOW_COPY_AND_ASSIGN(MouseWheelEvent);
 };

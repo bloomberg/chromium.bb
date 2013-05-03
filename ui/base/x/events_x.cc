@@ -979,23 +979,26 @@ int GetChangedMouseButtonFlagsFromNative(
   return 0;
 }
 
-int GetMouseWheelOffset(const base::NativeEvent& native_event) {
-  float offset = 0;
+gfx::Vector2d GetMouseWheelOffset(const base::NativeEvent& native_event) {
+  float x_offset = 0;
+  float y_offset = 0;
   if (native_event->type == GenericEvent &&
-      GetScrollOffsets(native_event, NULL, &offset, NULL, NULL, NULL))
-    return static_cast<int>(offset);
+      GetScrollOffsets(native_event, &x_offset, &y_offset, NULL, NULL, NULL)) {
+    return gfx::Vector2d(static_cast<int>(x_offset),
+                         static_cast<int>(y_offset));
+  }
 
   int button = native_event->type == GenericEvent ?
       EventButtonFromNative(native_event) : native_event->xbutton.button;
 
   switch (button) {
     case 4:
-      return kWheelScrollAmount;
+      return gfx::Vector2d(0, kWheelScrollAmount);
     case 5:
-      return -kWheelScrollAmount;
+      return gfx::Vector2d(0, -kWheelScrollAmount);
     default:
       // TODO(derat): Do something for horizontal scrolls (buttons 6 and 7)?
-      return 0;
+      return gfx::Vector2d();
   }
 }
 

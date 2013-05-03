@@ -16,6 +16,7 @@
 
 namespace gfx {
 class Point;
+class Vector2d;
 }
 
 namespace base {
@@ -72,8 +73,9 @@ UI_EXPORT bool IsMouseEvent(const base::NativeEvent& native_event);
 UI_EXPORT int GetChangedMouseButtonFlagsFromNative(
     const base::NativeEvent& native_event);
 
-// Gets the mouse wheel offset from a native event.
-UI_EXPORT int GetMouseWheelOffset(const base::NativeEvent& native_event);
+// Gets the mouse wheel offsets from a native event.
+UI_EXPORT gfx::Vector2d GetMouseWheelOffset(
+    const base::NativeEvent& native_event);
 
 // Gets the touch id from a native event.
 UI_EXPORT int GetTouchId(const base::NativeEvent& native_event);

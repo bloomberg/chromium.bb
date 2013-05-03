@@ -350,7 +350,7 @@ void RemoteRootWindowHostWin::OnMouseButton(
   mouse_event.set_flags(flags);
 
   if (type == ui::ET_MOUSEWHEEL) {
-    ui::MouseWheelEvent wheel_event(mouse_event, extra);
+    ui::MouseWheelEvent wheel_event(mouse_event, 0, extra);
     delegate_->OnHostMouseEvent(&wheel_event);
   } else {
     mouse_event.SetClickCount(1);

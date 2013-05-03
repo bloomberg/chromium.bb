@@ -151,10 +151,10 @@ bool IsMouseEvent(const base::NativeEvent& native_event) {
          type == ET_MOUSE_EXITED;
 }
 
-int GetMouseWheelOffset(const base::NativeEvent& native_event) {
+gfx::Vector2d GetMouseWheelOffset(const base::NativeEvent& native_event) {
   // TODO(dhollowa): Come back to this once comparisons can be made with other
   // platforms.
-  return [native_event deltaY];
+  return gfx::Vector2d([native_event deltaX], [native_event deltaY]);
 }
 
 int GetTouchId(const base::NativeEvent& native_event) {

@@ -394,12 +394,14 @@ MouseWheelEvent::MouseWheelEvent(const base::NativeEvent& native_event)
 
 MouseWheelEvent::MouseWheelEvent(const ScrollEvent& scroll_event)
     : MouseEvent(scroll_event),
-      offset_(scroll_event.y_offset()) {
+      offset_(scroll_event.x_offset(), scroll_event.y_offset()){
   SetType(ET_MOUSEWHEEL);
 }
 
-MouseWheelEvent::MouseWheelEvent(const MouseEvent& mouse_event, int offset)
-    : MouseEvent(mouse_event), offset_(offset) {
+MouseWheelEvent::MouseWheelEvent(const MouseEvent& mouse_event,
+                                 int x_offset,
+                                 int y_offset)
+    : MouseEvent(mouse_event), offset_(x_offset, y_offset) {
   DCHECK(type() == ET_MOUSEWHEEL);
 }
 
