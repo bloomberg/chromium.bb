@@ -51,6 +51,8 @@ const int kDisclosureArrowRightPadding = 7;
 // Define the id of the first item in the menu (since it needs to be > 0)
 const int kFirstMenuItemId = 1000;
 
+const SkColor kInvalidTextColor = SK_ColorWHITE;
+
 // The background to use for invalid comboboxes.
 class InvalidBackground : public Background {
  public:
@@ -329,9 +331,9 @@ void NativeComboboxViews::PaintText(gfx::Canvas* canvas) {
   int x = insets.left();
   int y = insets.top();
   int text_height = height() - insets.height();
-  SkColor text_color = GetNativeTheme()->GetSystemColor(
-      combobox_->invalid() ? ui::NativeTheme::kColorId_LabelDisabledColor :
-      ui::NativeTheme::kColorId_LabelEnabledColor);
+  SkColor text_color = combobox_->invalid() ? kInvalidTextColor :
+      GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_LabelEnabledColor);
 
   int index = GetSelectedIndex();
   if (index < 0 || index > combobox_->model()->GetItemCount())
