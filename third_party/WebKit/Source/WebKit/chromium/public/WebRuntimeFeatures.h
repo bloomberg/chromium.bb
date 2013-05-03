@@ -41,6 +41,10 @@ namespace WebKit {
 // certain level of maturity.
 class WebRuntimeFeatures {
 public:
+    WEBKIT_EXPORT static void enableStableFeatures(bool);
+    WEBKIT_EXPORT static void enableExperimentalFeatures(bool);
+    WEBKIT_EXPORT static void enableTestOnlyFeatures(bool);
+
     WEBKIT_EXPORT static void enableDatabase(bool);
     WEBKIT_EXPORT static bool isDatabaseEnabled();
 

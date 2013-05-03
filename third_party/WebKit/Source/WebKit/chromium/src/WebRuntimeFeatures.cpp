@@ -41,6 +41,72 @@ using namespace WebCore;
 
 namespace WebKit {
 
+void WebRuntimeFeatures::enableStableFeatures(bool enable)
+{
+    // FIXME: Actually respect the enable arg once the 3-part
+    // change dance with content/ is over.
+    ASSERT_UNUSED(enable, enable);
+
+    // These are copied directly from RenderThreadImpl::InitializeWebKit.
+    // All the "false" values should be removed, and all the flags
+    // which default to "true" in RuntimeEnabledFeatures.cpp
+    // should be moved here or enableTestingFeatures instead.
+    enableDatabase(true);
+    enableApplicationCache(true);
+    enableNotifications(true);
+    enableLocalStorage(true);
+    enableSessionStorage(true);
+    enableIndexedDatabase(true);
+    enableGeolocation(true);
+    enableMediaSource(true);
+    enableMediaPlayer(true);
+    enableMediaStream(true);
+    enablePeerConnection(true);
+    enableFullScreenAPI(true);
+    enableEncryptedMedia(true);
+    enableWebAudio(true);
+    enableWebMIDI(false);
+    enableDeviceMotion(false);
+    enableDeviceOrientation(true);
+    enableSpeechInput(true);
+    enableScriptedSpeech(true);
+    enableGamepad(true);
+    enableFileSystem(true);
+    enableJavaScriptI18NAPI(true);
+    enableQuota(true);
+    enableSeamlessIFrames(false);
+    enableExperimentalWebSocket(false);
+    enableExperimentalCanvasFeatures(false);
+    enableSpeechSynthesis(false);
+}
+
+void WebRuntimeFeatures::enableExperimentalFeatures(bool enable)
+{
+    // FIXME: Actually respect the enable arg once the 3-part
+    // change dance with content/ is over.
+    ASSERT_UNUSED(enable, enable);
+
+    enableStyleScoped(true);
+    enableCustomDOMElements(true);
+    enableCSSExclusions(true);
+    enableExperimentalContentSecurityPolicyFeatures(true);
+    enableCSSRegions(true);
+    enableCSSCompositing(true);
+    enableDialogElement(true);
+    enableFontLoadEvents(true);
+    enableSeamlessIFrames(true);
+}
+
+void WebRuntimeFeatures::enableTestOnlyFeatures(bool enable)
+{
+    // FIXME: This will be populated with features which
+    // are currently initialized true, but always set
+    // to false in enableStableFeatures.
+    // This method should be used by ContentShell
+    // to enable features which should be enabled for
+    // the layout tests but are not yet "experimental".
+}
+
 void WebRuntimeFeatures::enableDatabase(bool enable)
 {
     RuntimeEnabledFeatures::setDatabaseEnabled(enable);
