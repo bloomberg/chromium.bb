@@ -8,12 +8,14 @@
 
 import contextlib
 import copy
+import cPickle
 import json
 import mox
 import os
 import signal
 import StringIO
 import sys
+import tempfile
 import time
 
 import constants
@@ -34,7 +36,6 @@ from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import gerrit
 from chromite.lib import git
-from chromite.lib import gs
 from chromite.lib import gs_unittest
 from chromite.lib import osutils
 from chromite.lib import parallel
@@ -46,27 +47,13 @@ from chromite.scripts import cbuildbot
 # Until then, this has to be after the chromite imports.
 import mock
 
-
-# pylint: disable=E1111,E1120,W0212,R0904
-class AbstractStageTest(cros_test_lib.MoxTempDirTestCase,
-                        cros_test_lib.MockTestCase):
-  """Base class for tests that test a particular build stage.
-
-  Abstract base class that sets up the build config and options with some
-  default values for testing BuilderStage and its derivatives.
-  """
-
+# pylint: disable=E1111,E1120,W0212,R0901,R0904
+class StageTest(cros_test_lib.MoxTempDirTestCase,
+                cros_test_lib.MockTestCase):
   TARGET_MANIFEST_BRANCH = 'ooga_booga'
   BUILDROOT = 'buildroot'
 
-  def ConstructStage(self):
-    """Returns an instance of the stage to be tested.
-    Implement in subclasses.
-    """
-    raise NotImplementedError(self, "ConstructStage: Implement in your test")
-
   def setUp(self):
-    # Always stub RunCommmand out as we use it in every method.
     self.bot_id = 'x86-generic-paladin'
     self.build_config = copy.deepcopy(config.config[self.bot_id])
     self.build_root = os.path.join(self.tempdir, self.BUILDROOT)
@@ -93,6 +80,30 @@ class AbstractStageTest(cros_test_lib.MoxTempDirTestCase,
     bs.BuilderStage.SetManifestBranch(self.TARGET_MANIFEST_BRANCH)
     portage_utilities._OVERLAY_LIST_CMD = '/bin/true'
 
+  def AutoPatch(self, to_patch):
+    """Patch a list of objects with autospec=True.
+
+    Arguments:
+      to_patch: A list of tuples in the form (target, attr) to patch.  Will be
+      directly passed to mock.patch.object.
+    """
+    for item in to_patch:
+      self.PatchObject(*item, autospec=True)
+
+
+class AbstractStageTest(StageTest):
+  """Base class for tests that test a particular build stage.
+
+  Abstract base class that sets up the build config and options with some
+  default values for testing BuilderStage and its derivatives.
+  """
+
+  def ConstructStage(self):
+    """Returns an instance of the stage to be tested.
+    Implement in subclasses.
+    """
+    raise NotImplementedError(self, "ConstructStage: Implement in your test")
+
   def RunStage(self):
     """Creates and runs an instance of the stage to be tested.
     Requires ConstructStage() to be implemented.
@@ -107,16 +118,6 @@ class AbstractStageTest(cros_test_lib.MoxTempDirTestCase,
     stage = self.ConstructStage()
     stage.Run()
     self.assertTrue(results_lib.Results.BuildSucceededSoFar())
-
-  def AutoPatch(self, to_patch):
-    """Patch a list of objects with autospec=True.
-
-    Arguments:
-      to_patch: A list of tuples in the form (target, attr) to patch.  Will be
-      directly passed to mock.patch.object.
-    """
-    for item in to_patch:
-      self.PatchObject(*item, autospec=True)
 
 
 def patch(*args, **kwargs):
@@ -1510,36 +1511,137 @@ class MockPatch(mock.MagicMock):
   project = 'chromiumos/chromite'
 
 
-class PreCQLauncherStageTest(AbstractStageTest):
+class BaseCQTest(StageTest):
+  """Helper class for testing the CommitQueueSync stage"""
   BUILDROOT = constants.SOURCE_ROOT
+  MANIFEST_CONTENTS = '<manifest/>'
+  PALADIN_BOT_ID = None
 
   def setUp(self):
+    """Setup patchers for specified bot id."""
+    self.build_config = copy.deepcopy(config.config[self.PALADIN_BOT_ID])
+    self.sync_stage = stages.CommitQueueSyncStage(self.options,
+                                                  self.build_config)
+
+    # TODO(davidjames): Use a fake build root instead of using the source tree.
     self.manifest = git.ManifestCheckout.Cached(self.BUILDROOT)
-    self.PatchObject(validation_pool.ValidationPool, 'MAX_TIMEOUT', 0.5)
-    self.PatchObject(git.ManifestCheckout, 'Cached', return_value=self.manifest)
-    self.PatchObject(validation_pool.ValidationPool, '_FilterNonCrosProjects',
-                     side_effect=lambda x, _: (x, []))
-    old_sleep = time.sleep
-    self.PatchObject(time, 'sleep', side_effect=lambda x: old_sleep(0.1))
-    self.PatchObject(gs.GSContext, '_CheckFile', return_value=True)
+
+    # Setup a simple manifest to help with testing.
+    self.manifest_path = os.path.join(self.tempdir, 'manifest.xml')
+    osutils.WriteFile(self.manifest_path, self.MANIFEST_CONTENTS)
+
+    # Mock out methods as needed.
+    self.AutoPatch([[gerrit.GerritHelper, '_SqlQuery'],
+                    [lkgm_manager, 'GenerateBlameList']])
+    self.PatchObject(git.ManifestCheckout, 'Cached', return_value=self.manifest,
+                     autospec=True)
     self.PatchObject(repository.RepoRepository, 'ExportManifest',
-                     return_value='')
-    self.PatchObject(lkgm_manager, 'GenerateBlameList')
+                     return_value=self.MANIFEST_CONTENTS, autospec=True)
+    self.PatchObject(validation_pool.ValidationPool, 'MAX_TIMEOUT', 0.5)
     rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
     rc_mock.SetDefaultCmdResult()
 
-  def ConstructStage(self):
-    return stages.PreCQLauncherStage(self.options, self.build_config)
-
-  def testSimple(self, tree_open=True):
+  def PerformSync(self, remote='cros', committed=True, tree_open=True,
+                  tracking_branch='master', num_patches=1):
+    """Helper to perform a basic sync for master commit queue."""
+    p = MockPatch(remote=remote, tracking_branch=tracking_branch)
+    my_patches = [p] * num_patches
+    self.PatchObject(gerrit.GerritHelper, 'IsChangeCommitted',
+                     return_value=committed, autospec=True)
+    self.PatchObject(gerrit.GerritHelper, 'Query', return_value=my_patches,
+                     autospec=True)
     self.PatchObject(cros_build_lib, 'TreeOpen', return_value=tree_open,
                      autospec=True)
-    self.PatchObject(gerrit.GerritHelper, 'Query', return_value=[MockPatch()],
-                     autospec=True)
-    self.RunStage()
+    self.sync_stage.PerformStage()
 
-  def testClosedTree(self):
-    self.testSimple(tree_open=False)
+  def ReloadPool(self):
+    """Save the pool to disk and reload it."""
+    with tempfile.NamedTemporaryFile() as f:
+      cPickle.dump(self.sync_stage.pool, f)
+      f.flush()
+      self.options.validation_pool = f.name
+      self.sync_stage = stages.CommitQueueSyncStage(self.options,
+                                                    self.build_config)
+      self.sync_stage.HandleSkip()
+
+
+class SlaveCQSyncTest(BaseCQTest):
+  """Tests the CommitQueueSync stage for the paladin slaves."""
+  PALADIN_BOT_ID = 'alex-paladin'
+
+  def testReload(self):
+    """Test basic ability to sync and reload the patches from disk."""
+    self.PatchObject(lkgm_manager.LKGMManager, 'GetLatestCandidate',
+                     return_value=self.manifest_path, autospec=True)
+    self.sync_stage.PerformStage()
+    self.ReloadPool()
+
+
+class MasterCQSyncTest(BaseCQTest):
+  """Tests the CommitQueueSync stage for the paladin masters.
+
+  Tests in this class should apply both to the paladin masters and to the
+  Pre-CQ Launcher.
+  """
+  PALADIN_BOT_ID = 'mario-paladin'
+
+  def setUp(self):
+    """Setup patchers for specified bot id."""
+    self.AutoPatch([[validation_pool.ValidationPool, 'ApplyPoolIntoRepo']])
+    self.PatchObject(lkgm_manager.LKGMManager, 'CreateNewCandidate',
+                     return_value=self.manifest_path, autospec=True)
+
+  def testCommitNonManifestChange(self, **kwargs):
+    """Test the commit of a non-manifest change."""
+    # Setting tracking_branch=foo makes this a non-manifest change.
+    self.PerformSync(tracking_branch='foo', **kwargs)
+
+  def testFailedCommitOfNonManifestChange(self):
+    """Test that the commit of a non-manifest change fails."""
+    self.testCommitNonManifestChange(committed=False)
+
+  def testDefaultSync(self):
+    """Test basic ability to sync with standard options."""
+    self.PerformSync()
+
+  def testNoGerritHelper(self):
+    """Test that setting a non-standard remote raises an exception."""
+    self.assertRaises(validation_pool.GerritHelperNotAvailable,
+                      self.testCommitNonManifestChange, remote='foo')
+
+
+class ExtendedMasterCQSyncTest(MasterCQSyncTest):
+  """Additional tests for the CommitQueueSync stage.
+
+  These only apply to the paladin master and not to any other stages.
+  """
+
+  def testReload(self):
+    """Test basic ability to sync and reload the patches from disk."""
+    # Use zero patches because MockPatches can't be pickled. Also set debug mode
+    # so that the CQ won't wait for more patches.
+    self.options.debug = True
+    self.PerformSync(num_patches=0)
+    self.ReloadPool()
+
+  def testTreeClosureBlocksCommit(self):
+    """Test that tree closures block commits."""
+    self.assertRaises(SystemExit, self.testCommitNonManifestChange,
+                      tree_open=False)
+
+
+class PreCQLauncherStageTest(MasterCQSyncTest):
+  """Tests for the PreCQLauncherStage."""
+  PALADIN_BOT_ID = 'pre-cq-launcher'
+
+  def setUp(self):
+    old_sleep = time.sleep
+    self.PatchObject(time, 'sleep', side_effect=lambda x: old_sleep(0.1))
+    self.sync_stage = stages.PreCQLauncherStage(self.options, self.build_config)
+
+  def testTreeClosureIsOK(self):
+    """Test that tree closures block commits."""
+    self.testCommitNonManifestChange(tree_open=False)
 
 
 if __name__ == '__main__':
