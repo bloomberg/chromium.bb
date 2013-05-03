@@ -3001,7 +3001,6 @@
             'platform/mac/ScrollbarThemeMac.mm',
             'platform/mac/ThemeMac.h',
             'platform/mac/ThemeMac.mm',
-            'platform/mac/WebCoreSystemInterface.h',
             'platform/mac/WebFontCache.mm',
             'platform/mediastream/MediaConstraints.h',
             'platform/mediastream/MediaStreamCenter.cpp',
