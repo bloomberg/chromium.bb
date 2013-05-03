@@ -804,6 +804,7 @@ public:
         NotCompositedForBoundsOutOfView,
         NotCompositedForNonViewContainer,
         NotCompositedForNoVisibleContent,
+        NotCompositedForUnscrollableAncestors,
     };
 
     void setViewportConstrainedNotCompositedReason(ViewportConstrainedNotCompositedReason reason) { m_compositingProperties.viewportConstrainedNotCompositedReason = reason; }

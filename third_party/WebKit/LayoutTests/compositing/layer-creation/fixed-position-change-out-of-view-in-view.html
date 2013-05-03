@@ -26,7 +26,10 @@
   </script>
 </head>
 
-<body>
+<!-- Fixed position elements may skip compositing without a scrollable
+ancestor. To make sure this test covers the intended scenario, we force the
+body element to be tall, so that the FrameView is scrolling. -->
+<body style="height: 4000px;">
   Layer tree when the fixed elements are out-of-view (should be blank):
   <pre id="layerTree1"></pre>
   Layer tree when the fixed elements are in-view (both fixed elements should have layers):

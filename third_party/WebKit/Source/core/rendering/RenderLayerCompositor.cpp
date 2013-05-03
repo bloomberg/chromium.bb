@@ -1967,6 +1967,32 @@ bool RenderLayerCompositor::requiresCompositingForPosition(RenderObject* rendere
         return false;
     }
     
+    // If the fixed-position element does not have any scrollable ancestor between it and
+    // its container, then we do not need to spend compositor resources for it. Start by
+    // assuming we can opt-out (i.e. no scrollable ancestor), and refine the answer below.
+    bool hasScrollableAncestor = false;
+
+    // The FrameView has the scrollbars associated with the top level viewport, so we have to
+    // check the FrameView in addition to the hierarchy of ancestors.
+    FrameView* frameView = m_renderView->frameView();
+    if (frameView && frameView->isScrollable())
+        hasScrollableAncestor = true;
+
+    RenderLayer* ancestor = layer->parent();
+    while (ancestor && !hasScrollableAncestor) {
+        if (frameView->containsScrollableArea(ancestor))
+            hasScrollableAncestor = true;
+        if (ancestor->renderer() == m_renderView)
+            break;
+        ancestor = ancestor->parent();
+    }
+
+    if (!hasScrollableAncestor) {
+        if (viewportConstrainedNotCompositedReason)
+            *viewportConstrainedNotCompositedReason = RenderLayer::NotCompositedForUnscrollableAncestors;
+        return false;
+    }
+
     // Subsequent tests depend on layout. If we can't tell now, just keep things the way they are until layout is done.
     if (!m_inPostLayoutUpdate) {
         m_reevaluateCompositingAfterLayout = true;

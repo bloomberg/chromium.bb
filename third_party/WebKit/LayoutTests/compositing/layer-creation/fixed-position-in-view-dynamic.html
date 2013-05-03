@@ -30,7 +30,10 @@
   </script>
 </head>
 
-<body>
+<!-- Fixed position elements may skip compositing without a scrollable
+ancestor. To make sure this test covers the intended scenario, we force the
+body element to be tall, so that the FrameView is scrolling. -->
+<body style="height: 4000px;">
   <pre id="result"></pre>
 </body>
 </html>
