@@ -97,6 +97,10 @@ class ActivityLog {
   static const char kKeyHardwareStateButtonsDown[];
   static const char kKeyHardwareStateTouchCnt[];
   static const char kKeyHardwareStateFingers[];
+  static const char kKeyHardwareStateRelX[];
+  static const char kKeyHardwareStateRelY[];
+  static const char kKeyHardwareStateRelWheel[];
+  static const char kKeyHardwareStateRelHWheel[];
   // FingerState keys (part of HardwareState):
   static const char kKeyFingerStateTouchMajor[];
   static const char kKeyFingerStateTouchMinor[];

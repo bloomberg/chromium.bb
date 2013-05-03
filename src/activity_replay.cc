@@ -233,6 +233,31 @@ bool ActivityReplay::ParseHardwareState(DictionaryValue* entry) {
   }
   hs.fingers = fs;
   hs.finger_cnt = fingers->GetSize();
+  double temp_double;
+  if (!entry->GetDouble(ActivityLog::kKeyHardwareStateRelX,
+                        &temp_double)) {
+    Err("Unable to parse hardware state rel_x");
+    return false;
+  }
+  hs.rel_x = temp_double;
+  if (!entry->GetDouble(ActivityLog::kKeyHardwareStateRelY,
+                        &temp_double)) {
+    Err("Unable to parse hardware state rel_y");
+    return false;
+  }
+  hs.rel_y = temp_double;
+  if (!entry->GetDouble(ActivityLog::kKeyHardwareStateRelWheel,
+                        &temp_double)) {
+    Err("Unable to parse hardware state rel_wheel");
+    return false;
+  }
+  hs.rel_wheel = temp_double;
+  if (!entry->GetDouble(ActivityLog::kKeyHardwareStateRelHWheel,
+                        &temp_double)) {
+    Err("Unable to parse hardware state rel_hwheel");
+    return false;
+  }
+  hs.rel_hwheel = temp_double;
   log_.LogHardwareState(hs);
   return true;
 }

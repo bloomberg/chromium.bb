@@ -170,6 +170,14 @@ const char kSubSubEntryPadding[] = "      ";
     fingers->Append(finger);
   }
   ret->Set(kKeyHardwareStateFingers, fingers);
+  ret->Set(kKeyHardwareStateRelX,
+           new FundamentalValue(hwstate.rel_x));
+  ret->Set(kKeyHardwareStateRelY,
+           new FundamentalValue(hwstate.rel_y));
+  ret->Set(kKeyHardwareStateRelWheel,
+           new FundamentalValue(hwstate.rel_wheel));
+  ret->Set(kKeyHardwareStateRelHWheel,
+           new FundamentalValue(hwstate.rel_hwheel));
   return ret;
 }
 
@@ -386,6 +394,10 @@ const char ActivityLog::kKeyHardwareStateTimestamp[] = "timestamp";
 const char ActivityLog::kKeyHardwareStateButtonsDown[] = "buttonsDown";
 const char ActivityLog::kKeyHardwareStateTouchCnt[] = "touchCount";
 const char ActivityLog::kKeyHardwareStateFingers[] = "fingers";
+const char ActivityLog::kKeyHardwareStateRelX[] = "relX";
+const char ActivityLog::kKeyHardwareStateRelY[] = "relY";
+const char ActivityLog::kKeyHardwareStateRelWheel[] = "relWheel";
+const char ActivityLog::kKeyHardwareStateRelHWheel[] = "relHWheel";
 const char ActivityLog::kKeyFingerStateTouchMajor[] = "touchMajor";
 const char ActivityLog::kKeyFingerStateTouchMinor[] = "touchMinor";
 const char ActivityLog::kKeyFingerStateWidthMajor[] = "widthMajor";
