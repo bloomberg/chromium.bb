@@ -20,8 +20,6 @@
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "chrome/installer/util/util_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "grit/chromium_strings.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_family.h"
@@ -274,6 +272,8 @@ bool CreatePlatformShortcuts(
 void UpdatePlatformShortcuts(
     const base::FilePath& web_app_path,
     const ShellIntegration::ShortcutInfo& shortcut_info) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+
   // Generates file name to use with persisted ico and shortcut file.
   base::FilePath file_name =
       web_app::internals::GetSanitizedFileName(shortcut_info.title);
@@ -300,8 +300,7 @@ void DeletePlatformShortcuts(
   // Delete shortcuts from the Chrome Apps subdirectory.
   // This matches the subdir name set by CreateApplicationShortcutView::Accept
   // for Chrome apps (not URL apps, but this function does not apply for them).
-  string16 start_menu_subdir =
-      l10n_util::GetStringUTF16(IDS_APP_SHORTCUTS_SUBDIR_NAME);
+  string16 start_menu_subdir = GetAppShortcutsSubdirName();
   all_shortcut_locations.applications_menu_subdir = start_menu_subdir;
   std::vector<base::FilePath> shortcut_paths = GetShortcutPaths(
       all_shortcut_locations);

@@ -16,6 +16,8 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
+#include "grit/chromium_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 
@@ -224,5 +226,9 @@ std::string GetWMClassFromAppName(std::string app_name) {
   return app_name;
 }
 #endif
+
+string16 GetAppShortcutsSubdirName() {
+  return l10n_util::GetStringUTF16(IDS_APP_SHORTCUTS_SUBDIR_NAME);
+}
 
 }  // namespace web_app

@@ -45,6 +45,10 @@ void UpdatePlatformShortcuts(
   // not show it in the menu.
   creation_locations.hidden = true;
 
+  // Always create the shortcut in the Chrome Apps subdir (even if it is
+  // currently in a different location).
+  creation_locations.applications_menu_subdir = GetAppShortcutsSubdirName();
+
   CreatePlatformShortcuts(web_app_path, shortcut_info, creation_locations);
 }
 

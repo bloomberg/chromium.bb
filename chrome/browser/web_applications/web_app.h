@@ -61,7 +61,8 @@ void CreateShortcuts(
 // |shortcut_data| in the profile with |profile_path|.
 void DeleteAllShortcuts(const ShellIntegration::ShortcutInfo& shortcut_info);
 
-// Updates shortcuts for web application based on given shortcut data.
+// Updates shortcuts for web application based on given shortcut data. This
+// refreshes existing shortcuts and their icons, but does not create new ones.
 // |shortcut_info| contains information about the shortcuts to update.
 void UpdateAllShortcuts(const ShellIntegration::ShortcutInfo& shortcut_info);
 
@@ -90,6 +91,9 @@ void GetIconsInfo(const WebApplicationInfo& app_info,
 // them as a separate application.
 std::string GetWMClassFromAppName(std::string app_name);
 #endif
+
+// Gets the name of the Chrome Apps menu folder in which to place app shortcuts.
+string16 GetAppShortcutsSubdirName();
 
 namespace internals {
 
