@@ -366,6 +366,11 @@ TEST_F(AutofillDialogControllerTest, AutofillProfiles) {
   // Since the PersonalDataManager is empty, this should only have the
   // "use billing", "add new" and "manage" menu items.
   EXPECT_EQ(3, shipping_model->GetItemCount());
+  // On the other hand, the other models should be NULL when there's no
+  // suggestion.
+  EXPECT_FALSE(controller()->MenuModelForSection(SECTION_CC));
+  EXPECT_FALSE(controller()->MenuModelForSection(SECTION_BILLING));
+  EXPECT_FALSE(controller()->MenuModelForSection(SECTION_EMAIL));
 
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(2);
 
@@ -375,6 +380,7 @@ TEST_F(AutofillDialogControllerTest, AutofillProfiles) {
   controller()->GetTestingManager()->AddTestingProfile(&empty_profile);
   shipping_model = controller()->MenuModelForSection(SECTION_SHIPPING);
   EXPECT_EQ(3, shipping_model->GetItemCount());
+  EXPECT_FALSE(controller()->MenuModelForSection(SECTION_EMAIL));
 
   // A full profile should be picked up.
   AutofillProfile full_profile(test::GetFullProfile());
@@ -383,13 +389,14 @@ TEST_F(AutofillDialogControllerTest, AutofillProfiles) {
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
   shipping_model = controller()->MenuModelForSection(SECTION_SHIPPING);
   EXPECT_EQ(4, shipping_model->GetItemCount());
+  EXPECT_TRUE(!!controller()->MenuModelForSection(SECTION_EMAIL));
 }
 
 TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
   ui::MenuModel* email_model =
       controller()->MenuModelForSection(SECTION_EMAIL);
-  EXPECT_EQ(2, email_model->GetItemCount());
+  EXPECT_FALSE(email_model);
 
   // Set up some variant data.
   AutofillProfile full_profile(test::GetFullProfile());
@@ -410,6 +417,7 @@ TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
       controller()->MenuModelForSection(SECTION_SHIPPING);
   EXPECT_EQ(4, shipping_model->GetItemCount());
   email_model = controller()->MenuModelForSection(SECTION_EMAIL);
+  ASSERT_TRUE(!!email_model);
   EXPECT_EQ(4, email_model->GetItemCount());
 
   email_model->ActivatedAt(0);
@@ -658,8 +666,7 @@ TEST_F(AutofillDialogControllerTest, VerifyCvv) {
   suggestion_state =
       controller()->SuggestionStateForSection(SECTION_CC_BILLING);
   EXPECT_FALSE(suggestion_state.extra_text.empty());
-  EXPECT_EQ(
-      0, controller()->MenuModelForSection(SECTION_CC_BILLING)->GetItemCount());
+  EXPECT_FALSE(controller()->MenuModelForSection(SECTION_CC_BILLING));
 
   EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
   EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));

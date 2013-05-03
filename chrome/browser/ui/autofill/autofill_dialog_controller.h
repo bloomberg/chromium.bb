@@ -103,7 +103,15 @@ class AutofillDialogController {
       AutofillFieldType type) = 0;
 
   // Returns the model for suggestions for fields that fall under |section|.
+  // This may return NULL, in which case no menu should be shown for that
+  // section.
   virtual ui::MenuModel* MenuModelForSection(DialogSection section) = 0;
+
+#if defined(OS_ANDROID)
+  // As the above, but will never return NULL. TODO(estade): android should
+  // stop relying on this and it should be removed.
+  virtual ui::MenuModel* MenuModelForSectionHack(DialogSection section) = 0;
+#endif
 
   // Returns the label text used to describe the section (i.e. Billing).
   virtual string16 LabelForSection(DialogSection section) const = 0;

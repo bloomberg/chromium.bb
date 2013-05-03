@@ -706,8 +706,27 @@ ui::ComboboxModel* AutofillDialogControllerImpl::ComboboxModelForAutofillType(
 
 ui::MenuModel* AutofillDialogControllerImpl::MenuModelForSection(
     DialogSection section) {
+  SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
+  // The shipping section menu is special. It will always show because there is
+  // a choice between "Use billing" and "enter new".
+  if (section == SECTION_SHIPPING)
+    return model;
+
+  // For other sections, only show a menu if there's at least one suggestion.
+  for (int i = 0; i < model->GetItemCount(); ++i) {
+    if (IsASuggestionItemKey(model->GetItemKeyAt(i)))
+      return model;
+  }
+
+  return NULL;
+}
+
+#if defined(OS_ANDROID)
+ui::MenuModel* AutofillDialogControllerImpl::MenuModelForSectionHack(
+    DialogSection section) {
   return SuggestionsMenuModelForSection(section);
 }
+#endif
 
 ui::MenuModel* AutofillDialogControllerImpl::MenuModelForAccountChooser() {
   // If there were unrecoverable Wallet errors, or if there are choices other

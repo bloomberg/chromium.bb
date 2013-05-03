@@ -206,7 +206,7 @@ std::vector<std::string> AutofillDialogViewAndroid::GetAvailableUserAccounts() {
 void AutofillDialogViewAndroid::ItemSelected(JNIEnv* env, jobject obj,
                                              jint section, jint index) {
   ui::MenuModel* menuModel =
-      controller_->MenuModelForSection(static_cast<DialogSection>(section));
+      controller_->MenuModelForSectionHack(static_cast<DialogSection>(section));
   if (menuModel)
     menuModel->ActivatedAt(index);
 }
@@ -504,7 +504,7 @@ void AutofillDialogViewAndroid::UpdateOrFillSectionToJava(
         autofilled.obj());
   }
 
-  ui::MenuModel* menuModel = controller_->MenuModelForSection(section);
+  ui::MenuModel* menuModel = controller_->MenuModelForSectionHack(section);
   const int itemCount = menuModel->GetItemCount();
   ScopedJavaLocalRef<jobjectArray> menu_array =
       Java_AutofillDialogGlue_createAutofillDialogMenuItemArray(env,
@@ -587,7 +587,7 @@ bool AutofillDialogViewAndroid::IsMenuItemEditable(DialogSection section,
   // An item is editable if
   // - it's not a "Manage..." (the last one), and
   // - it's a normal item, or it's an "Add..." and it has some data.
-  ui::MenuModel* menuModel = controller_->MenuModelForSection(section);
+  ui::MenuModel* menuModel = controller_->MenuModelForSectionHack(section);
   string16 label, sublabel;
   gfx::Image icon;
 

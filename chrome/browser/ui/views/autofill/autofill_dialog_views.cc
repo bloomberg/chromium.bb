@@ -1372,14 +1372,13 @@ void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
   save_in_chrome_checkbox_->SetVisible(
       controller_->ShouldOfferToSaveInChrome());
 
-  const bool has_suggestions =
-      controller_->MenuModelForSection(group.section)->GetItemCount() > 0;
+  const bool has_menu = !!controller_->MenuModelForSection(group.section);
 
   if (group.suggested_button)
-    group.suggested_button->SetVisible(has_suggestions);
+    group.suggested_button->SetVisible(has_menu);
 
   if (group.container) {
-    group.container->SetForwardMouseEvents(has_suggestions && show_suggestions);
+    group.container->SetForwardMouseEvents(has_menu && show_suggestions);
     group.container->SetVisible(controller_->SectionIsActive(group.section));
     if (group.container->visible())
       ValidateGroup(group, AutofillDialogController::VALIDATE_EDIT);
