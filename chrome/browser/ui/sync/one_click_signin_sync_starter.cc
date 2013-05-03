@@ -289,6 +289,7 @@ void OneClickSigninSyncStarter::SigninSuccess() {
       break;
     case CONFIGURE_SYNC_FIRST:
       ConfigureSync();
+      break;
     default:
       NOTREACHED() << "Invalid start_mode=" << start_mode_;
   }
