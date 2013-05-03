@@ -608,5 +608,46 @@
         },
       ],
     }],
+    # TODO(pvalenzuela): Remove these OS restrictions when moving end-to-end
+    # tests to other platforms.
+    ['OS != "ios" and OS != "win"', {
+      'targets': [
+        # Test support files for using the Test Accounts service.
+        {
+          'target_name': 'test_support_accounts_client',
+          'type': 'static_library',
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '..',
+            ],
+          },
+          'dependencies': [
+            '../base/base.gyp:base',
+          ],
+          'sources': [
+            'test/accounts_client/test_accounts_client.cc',
+            'test/accounts_client/test_accounts_client.h',
+          ],
+          'link_settings': {
+            'libraries': [ '-lcurl', ],
+          },
+        },
+        
+        # The Sync end-to-end (and associated infrastructure) tests.
+        {
+          'target_name': 'sync_endtoend_tests',
+          'type': '<(gtest_target_type)',
+          'dependencies': [
+            '../base/base.gyp:run_all_unittests',
+            '../testing/gmock.gyp:gmock',
+            '../testing/gtest.gyp:gtest',
+            'test_support_accounts_client',
+          ],
+          'sources': [
+            'test/accounts_client/test_accounts_client_unittest.cc',
+          ],
+        },
+      ]
+    }],
   ],
 }
