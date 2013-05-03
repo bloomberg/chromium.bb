@@ -46,22 +46,22 @@ void AttestationCAClient::OnURLFetchComplete(const net::URLFetcher* source) {
     return;
   }
 
+  DataCallback callback = iter->second;
+  pending_requests_.erase(iter);
+  scoped_ptr<const net::URLFetcher> scoped_source(source);
+
   if (source->GetStatus().status() != net::URLRequestStatus::SUCCESS) {
     LOG(ERROR) << "Attestation CA request failed, status: "
                << source->GetStatus().status() << ", error: "
                << source->GetStatus().error();
-    iter->second.Run(false, "");
-    pending_requests_.erase(source);
-    delete source;
+    callback.Run(false, "");
     return;
   }
 
   if (source->GetResponseCode() != net::HTTP_OK) {
     LOG(ERROR) << "Attestation CA sent an error response: "
                << source->GetResponseCode();
-    iter->second.Run(false, "");
-    pending_requests_.erase(source);
-    delete source;
+    callback.Run(false, "");
     return;
   }
 
@@ -69,9 +69,8 @@ void AttestationCAClient::OnURLFetchComplete(const net::URLFetcher* source) {
   bool result = source->GetResponseAsString(&response);
   DCHECK(result) << "Invalid fetcher setting.";
 
-  iter->second.Run(true, response);
-  pending_requests_.erase(source);
-  delete source;
+  // Run the callback last because it may delete |this|.
+  callback.Run(true, response);
 }
 
 void AttestationCAClient::FetchURL(const std::string& url,

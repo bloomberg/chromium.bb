@@ -10,10 +10,7 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using testing::StrictMock;
 
 namespace chromeos {
 namespace attestation {
@@ -21,13 +18,26 @@ namespace attestation {
 class AttestationCAClientTest : public ::testing::Test {
  public:
   AttestationCAClientTest()
-      : io_thread_(content::BrowserThread::IO, &message_loop_) {
+      : io_thread_(content::BrowserThread::IO, &message_loop_),
+        num_invocations_(0),
+        result_(false) {
   }
 
   virtual ~AttestationCAClientTest() {
   }
 
-  MOCK_METHOD2(DataCallback, void(bool result, const std::string& data));
+  void DataCallback (bool result, const std::string& data) {
+    ++num_invocations_;
+    result_ = result;
+    data_ = data;
+  }
+
+  void DeleteClientDataCallback (AttestationCAClient* client,
+                                 bool result,
+                                 const std::string& data) {
+    delete client;
+    DataCallback(result, data);
+  }
 
  protected:
   void SendResponse(net::URLRequestStatus::Status status, int response_code) {
@@ -42,46 +52,77 @@ class AttestationCAClientTest : public ::testing::Test {
   MessageLoop message_loop_;
   content::TestBrowserThread io_thread_;
   net::TestURLFetcherFactory url_fetcher_factory_;
+
+  // For use with DataCallback.
+  int num_invocations_;
+  bool result_;
+  std::string data_;
 };
 
 TEST_F(AttestationCAClientTest, EnrollRequest) {
   AttestationCAClient client;
-  EXPECT_CALL(*this, DataCallback(true, "enroll_response")).Times(1);
   client.SendEnrollRequest(
       "enroll",
       base::Bind(&AttestationCAClientTest::DataCallback,
                  base::Unretained(this)));
   SendResponse(net::URLRequestStatus::SUCCESS, net::HTTP_OK);
+
+  EXPECT_EQ(1, num_invocations_);
+  EXPECT_TRUE(result_);
+  EXPECT_EQ("enroll_response", data_);
 }
 
 TEST_F(AttestationCAClientTest, CertificateRequest) {
   AttestationCAClient client;
-  EXPECT_CALL(*this, DataCallback(true, "certificate_response")).Times(1);
   client.SendCertificateRequest(
       "certificate",
       base::Bind(&AttestationCAClientTest::DataCallback,
                  base::Unretained(this)));
   SendResponse(net::URLRequestStatus::SUCCESS, net::HTTP_OK);
+
+  EXPECT_EQ(1, num_invocations_);
+  EXPECT_TRUE(result_);
+  EXPECT_EQ("certificate_response", data_);
 }
 
 TEST_F(AttestationCAClientTest, CertificateRequestNetworkFailure) {
   AttestationCAClient client;
-  EXPECT_CALL(*this, DataCallback(false, "")).Times(1);
   client.SendCertificateRequest(
       "certificate",
       base::Bind(&AttestationCAClientTest::DataCallback,
                  base::Unretained(this)));
   SendResponse(net::URLRequestStatus::FAILED, net::HTTP_OK);
+
+  EXPECT_EQ(1, num_invocations_);
+  EXPECT_FALSE(result_);
+  EXPECT_EQ("", data_);
 }
 
 TEST_F(AttestationCAClientTest, CertificateRequestHttpError) {
   AttestationCAClient client;
-  EXPECT_CALL(*this, DataCallback(false, "")).Times(1);
   client.SendCertificateRequest(
       "certificate",
       base::Bind(&AttestationCAClientTest::DataCallback,
                  base::Unretained(this)));
   SendResponse(net::URLRequestStatus::SUCCESS, net::HTTP_NOT_FOUND);
+
+  EXPECT_EQ(1, num_invocations_);
+  EXPECT_FALSE(result_);
+  EXPECT_EQ("", data_);
+}
+
+TEST_F(AttestationCAClientTest, DeleteOnCallback) {
+  AttestationCAClient* client = new AttestationCAClient();
+  client->SendCertificateRequest(
+      "certificate",
+      base::Bind(&AttestationCAClientTest::DeleteClientDataCallback,
+                 base::Unretained(this),
+                 client));
+  SendResponse(net::URLRequestStatus::SUCCESS, net::HTTP_OK);
+
+  EXPECT_EQ(1, num_invocations_);
+  EXPECT_TRUE(result_);
+  EXPECT_EQ("certificate_response", data_);
 }
 
 }  // namespace attestation
