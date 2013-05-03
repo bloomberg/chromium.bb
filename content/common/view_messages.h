@@ -2226,9 +2226,10 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_ImeBatchStateChanged_ACK,
                     bool /* is_begin */)
 
 // This message runs the MediaCodec for decoding audio for webaudio.
-IPC_MESSAGE_CONTROL2(ViewHostMsg_RunWebAudioMediaCodec,
+IPC_MESSAGE_CONTROL3(ViewHostMsg_RunWebAudioMediaCodec,
                      base::SharedMemoryHandle /* encoded_data_handle */,
-                     base::FileDescriptor /* pcm_output */)
+                     base::FileDescriptor /* pcm_output */,
+                     size_t /* data_size*/)
 
 // Sent by renderer to request a ViewMsg_VSync message for upcoming display
 // vsync events. If |enabled| is true, the vsync message will continue to be be

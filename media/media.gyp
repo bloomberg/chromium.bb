@@ -1550,6 +1550,7 @@
             'base/android/media_player_listener.h',
             'base/android/webaudio_media_codec_bridge.cc',
             'base/android/webaudio_media_codec_bridge.h',
+            'base/android/webaudio_media_codec_info.h',
           ],
           'conditions': [
             ['google_tv == 1', {

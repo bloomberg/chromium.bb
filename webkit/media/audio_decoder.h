@@ -24,7 +24,9 @@ bool DecodeAudioFileData(WebKit::WebAudioBus* destination_bus, const char* data,
                          size_t data_size, double sample_rate);
 #else
 
-typedef base::Callback<void (base::SharedMemoryHandle, base::FileDescriptor)>
+typedef base::Callback<void (base::SharedMemoryHandle,
+                             base::FileDescriptor,
+                             size_t)>
     WebAudioMediaCodecRunner;
 
 bool DecodeAudioFileData(WebKit::WebAudioBus* destination_bus, const char* data,

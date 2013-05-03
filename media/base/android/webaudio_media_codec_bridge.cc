@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "jni/WebAudioMediaCodecBridge_jni.h"
+#include "media/base/android/webaudio_media_codec_info.h"
 
 
 using base::android::AttachCurrentThread;
@@ -23,17 +24,20 @@ namespace media {
 
 void WebAudioMediaCodecBridge::RunWebAudioMediaCodec(
     base::SharedMemoryHandle encoded_audio_handle,
-    base::FileDescriptor pcm_output) {
-  WebAudioMediaCodecBridge bridge(encoded_audio_handle, pcm_output);
+    base::FileDescriptor pcm_output,
+    size_t data_size) {
+  WebAudioMediaCodecBridge bridge(encoded_audio_handle, pcm_output, data_size);
 
   bridge.DecodeInMemoryAudioFile();
 }
 
 WebAudioMediaCodecBridge::WebAudioMediaCodecBridge(
     base::SharedMemoryHandle encoded_audio_handle,
-    base::FileDescriptor pcm_output)
+    base::FileDescriptor pcm_output,
+    size_t data_size)
     : encoded_audio_handle_(encoded_audio_handle.fd),
-      pcm_output_(pcm_output.fd) {
+      pcm_output_(pcm_output.fd),
+      data_size_(data_size) {
   DVLOG(1) << "WebAudioMediaCodecBridge start **********************"
            << "input fd = " << encoded_audio_handle_
            << " output fd = " << pcm_output.fd;
@@ -60,7 +64,8 @@ bool WebAudioMediaCodecBridge::DecodeInMemoryAudioFile() {
       env,
       base::android::GetApplicationContext(),
       reinterpret_cast<intptr_t>(this),
-      encoded_audio_handle_);
+      encoded_audio_handle_,
+      data_size_);
 
   DVLOG(1) << "decoded = " << decoded;
   return decoded;
@@ -71,29 +76,25 @@ void WebAudioMediaCodecBridge::InitializeDestination(
     jobject /*java object*/,
     jint channel_count,
     jint sample_rate,
-    jlong duration_microsec,
-    jboolean is_vorbis) {
+    jlong duration_microsec) {
   // Send information about this audio file: number of channels,
-  // sample rate (Hz), number of frames, a flag indicating whether
-  // this file is an audio/vorbis file.  Information is sent as a set of
-  // 4 longs. This must be coordinated with DecodeAudioFileData!
-
-  unsigned long info[4] = {static_cast<unsigned long>(channel_count),
-                           static_cast<unsigned long>(sample_rate),
-                           // The number of frames is the duration of the file
-                           // (in microseconds) times the sample rate.
-                           static_cast<unsigned long>(
-                               0.5 + (duration_microsec * 0.000001 *
-                                      sample_rate)),
-                           is_vorbis ? 1ul : 0ul};
+  // sample rate (Hz), and the number of frames.
+  struct WebAudioMediaCodecInfo info = {
+    static_cast<unsigned long>(channel_count),
+    static_cast<unsigned long>(sample_rate),
+    // The number of frames is the duration of the file
+    // (in microseconds) times the sample rate.
+    static_cast<unsigned long>(
+        0.5 + (duration_microsec * 0.000001 *
+               sample_rate))
+  };
 
   DVLOG(1) << "InitializeDestination:"
            << "  channel count = " << channel_count
            << "  rate = " << sample_rate
-           << "  duration = " << duration_microsec << " microsec"
-           << "  vorbis = " << (is_vorbis ? "yes" : "no");
+           << "  duration = " << duration_microsec << " microsec";
 
-  HANDLE_EINTR(write(pcm_output_, info, sizeof(info)));
+  HANDLE_EINTR(write(pcm_output_, &info, sizeof(info)));
 }
 
 void WebAudioMediaCodecBridge::OnChunkDecoded(

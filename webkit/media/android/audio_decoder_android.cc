@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/shared_memory.h"
+#include "media/base/android/webaudio_media_codec_info.h"
 #include "media/base/audio_bus.h"
 #include "media/base/limits.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebAudioBus.h"
@@ -118,7 +119,7 @@ bool DecodeAudioFileData(WebKit::WebAudioBus* destination_bus, const char* data,
   // encoded_data_handle for our shared memory and write the decoded
   // PCM samples (16-bit integer) to our pipe.
 
-  runner.Run(encoded_data_handle, fd);
+  runner.Run(encoded_data_handle, fd, data_size);
 
   // First, read the number of channels, the sample rate, and the
   // number of frames and a flag indicating if the file is an
@@ -131,21 +132,20 @@ bool DecodeAudioFileData(WebKit::WebAudioBus* destination_bus, const char* data,
   // the bus.
 
   int input_fd = audio_decoder.read_fd();
-  unsigned long info[4];
+  struct media::WebAudioMediaCodecInfo info;
 
   DVLOG(1) << "Reading audio file info from fd " << input_fd;
-  ssize_t nread = HANDLE_EINTR(read(input_fd, info, sizeof(info)));
+  ssize_t nread = HANDLE_EINTR(read(input_fd, &info, sizeof(info)));
   DVLOG(1) << "read:  " << nread << " bytes:\n"
-           << " 0: number of channels = " << info[0] << "\n"
-           << " 1: sample rate        = " << info[1] << "\n"
-           << " 2: number of frames   = " << info[2] << "\n"
-           << " 3: is vorbis          = " << info[3];
+           << " 0: number of channels = " << info.channel_count << "\n"
+           << " 1: sample rate        = " << info.sample_rate << "\n"
+           << " 2: number of frames   = " << info.number_of_frames << "\n";
 
   if (nread != sizeof(info))
     return false;
 
-  unsigned number_of_channels = info[0];
-  double file_sample_rate = static_cast<double>(info[1]);
+  unsigned number_of_channels = info.channel_count;
+  double file_sample_rate = static_cast<double>(info.sample_rate);
 
   // Sanity checks
   if (!number_of_channels ||

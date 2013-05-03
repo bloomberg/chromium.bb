@@ -17,10 +17,12 @@
 namespace {
 void RunWebAudioMediaCodec(
     base::SharedMemoryHandle encoded_data_handle,
-    base::FileDescriptor pcm_output) {
+    base::FileDescriptor pcm_output,
+    size_t data_size) {
   content::ChildThread::current()->Send(
       new ViewHostMsg_RunWebAudioMediaCodec(encoded_data_handle,
-                                            pcm_output));
+                                            pcm_output,
+                                            data_size));
 }
 
 } // anonymous namespace
