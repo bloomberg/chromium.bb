@@ -442,8 +442,8 @@ class ChromiumPort(Port):
 
     def _build_path_with_configuration(self, configuration, *comps):
         # Note that we don't implement --root or do the option caching that the
-        # base class does, because chromium doesn't use 'webkit-build-directory' and
-        # hence finding the right directory is relatively fast.
+        # base class does, because finding the right directory is relatively
+        # fast.
         configuration = configuration or self.get_option('configuration')
         return self._static_build_path(self._filesystem, self.get_option('build_directory'),
             self.path_from_chromium_base(), self.path_from_webkit_base(), configuration, comps)
