@@ -224,7 +224,7 @@ String mimeTypeFromDataURL(const String& url)
         index = url.find(',');
     if (index != notFound) {
         if (index > 5)
-            return url.substring(5, index - 5);
+            return url.substring(5, index - 5).lower();
         return "text/plain"; // Data URLs with no MIME type are considered text/plain.
     }
     return "";
