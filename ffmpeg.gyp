@@ -7,10 +7,6 @@
 #     Controls whether we build the Chromium or Google Chrome version of
 #     FFmpeg.  The Google Chrome version contains additional codecs.
 #     Typical values are Chromium, Chrome, ChromiumOS, and ChromeOS.
-#   use_system_ffmpeg
-#     When set to non-zero will build Chromium against the system FFmpeg
-#     headers via pkg-config.  When Chromium is launched it will assume that
-#     FFmpeg is present in the system library path.  Default value is 0.
 #   build_ffmpegsumo
 #     When set to zero will build Chromium against Chrome's FFmpeg headers, but
 #     not build ffmpegsumo itself.  Users are expected to build and provide
@@ -64,7 +60,6 @@
 
     'ffmpeg_variant%': '<(target_arch)',
 
-    'use_system_ffmpeg%': 0,
     'build_ffmpegsumo%': 1,
 
     # Locations for generated artifacts.
@@ -76,7 +71,7 @@
     'extra_header': 'chromium/ffmpeg_stub_headers.fragment',
   },
   'conditions': [
-    ['OS != "win" and use_system_ffmpeg == 0 and build_ffmpegsumo != 0', {
+    ['OS != "win" and build_ffmpegsumo != 0', {
       'variables': {
         # Path to platform configuration files.
         'platform_config_root': 'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
@@ -435,8 +430,6 @@
       # Do not fear the massive conditional blocks!  They do the following:
       #   1) Use the Window stub generator on Windows
       #   2) Else, use the POSIX stub generator on non-Windows
-      #     a) Use system includes when use_system_ffmpeg != 0
-      #     b) Else, use our local copy
       'conditions': [
         ['OS == "win"', {
           'msvs_guid': 'D7A94F58-576A-45D9-A45F-EB87C63ABBB0',
@@ -514,6 +507,8 @@
           'include_dirs': [
             '<(output_root)',
             '../..',  # The chromium 'src' directory.
+            '<(platform_config_root)',
+            '.',
           ],
           'dependencies': [
             # Required for the logging done in the stubs generator.
@@ -526,39 +521,37 @@
             'include_dirs': [
               '<(output_root)',
               '../..',  # The chromium 'src' directory.
+              '<(platform_config_root)',
+              '.',
             ],
           },
-          'conditions': [
-            ['use_system_ffmpeg==0', {
-              'actions': [
-                {
-                  'action_name': 'generate_stubs',
-                  'inputs': [
-                    '<(generate_stubs_script)',
-                    '<(extra_header)',
-                    '<@(sig_files)',
-                  ],
-                  'outputs': [
-                    '<(intermediate_dir)/<(stubs_filename_root).cc',
-                    '<(output_root)/<(project_path)/<(stubs_filename_root).h',
-                  ],
-                  'action': ['python',
-                             '<(generate_stubs_script)',
-                             '-i', '<(intermediate_dir)',
-                             '-o', '<(output_root)/<(project_path)',
-                             '-t', '<(outfile_type)',
-                             '-e', '<(extra_header)',
-                             '-s', '<(stubs_filename_root)',
-                             '-p', '<(project_path)',
-                             '<@(_inputs)',
-                  ],
-                  'process_outputs_as_sources': 1,
-                  'message': 'Generating FFmpeg stubs for dynamic loading.',
-                },
+          'actions': [
+            {
+              'action_name': 'generate_stubs',
+              'inputs': [
+                '<(generate_stubs_script)',
+                '<(extra_header)',
+                '<@(sig_files)',
               ],
-
-            }],
-
+              'outputs': [
+                '<(intermediate_dir)/<(stubs_filename_root).cc',
+                '<(output_root)/<(project_path)/<(stubs_filename_root).h',
+              ],
+              'action': ['python',
+                         '<(generate_stubs_script)',
+                         '-i', '<(intermediate_dir)',
+                         '-o', '<(output_root)/<(project_path)',
+                         '-t', '<(outfile_type)',
+                         '-e', '<(extra_header)',
+                         '-s', '<(stubs_filename_root)',
+                         '-p', '<(project_path)',
+                         '<@(_inputs)',
+              ],
+              'process_outputs_as_sources': 1,
+              'message': 'Generating FFmpeg stubs for dynamic loading.',
+            },
+          ],
+          'conditions': [
             # Linux/Solaris need libdl for dlopen() and friends.
             ['OS == "linux" or OS == "solaris"', {
               'link_settings': {
@@ -567,52 +560,15 @@
                 ],
               },
             }],
-
             ['component == "shared_library"', {
               'cflags!': ['-fvisibility=hidden'],
               'xcode_settings': {
                 'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',  # no -fvisibility=hidden
               },
             }],
-
-            # Add pkg-config result to include path when use_system_ffmpeg != 0
-            ['use_system_ffmpeg != 0', {
-              'cflags': [
-                '<!@(pkg-config --cflags libavcodec libavformat libavutil)',
-              ],
-              'direct_dependent_settings': {
-                'cflags': [
-                  '<!@(pkg-config --cflags libavcodec libavformat libavutil)',
-                ],
-                'defines': [
-                  'USE_SYSTEM_FFMPEG',
-                ],
-              },
-              'link_settings': {
-                'ldflags': [
-                  '<!@(pkg-config --libs-only-L --libs-only-other libavcodec libavformat libavutil)',
-                ],
-                'libraries': [
-                  '<!@(pkg-config --libs-only-l libavcodec libavformat libavutil)',
-                ],
-              },
-            }, {  # else use_system_ffmpeg == 0, add local copy to include path
-              'include_dirs': [
-                '<(platform_config_root)',
-                '.',
-              ],
-              'direct_dependent_settings': {
-                'include_dirs': [
-                 '<(platform_config_root)',
-                  '.',
-                ],
-              },
-              'conditions': [
-                ['build_ffmpegsumo != 0', {
-                  'dependencies': [
-                    'ffmpegsumo',
-                  ],
-                }],
+            ['build_ffmpegsumo != 0', {
+              'dependencies': [
+                'ffmpegsumo',
               ],
             }],
           ],  # conditions
