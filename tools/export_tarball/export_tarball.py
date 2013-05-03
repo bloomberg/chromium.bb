@@ -116,13 +116,14 @@ def main(argv):
                     dest="remove_nonessential_files",
                     action="store_true", default=False)
   parser.add_option("--test-data", action="store_true")
+  # TODO(phajdan.jr): Remove --xz option when it's not needed for compatibility.
   parser.add_option("--xz", action="store_true")
 
   options, args = parser.parse_args(argv)
 
   if len(args) != 1:
     print 'You must provide only one argument: output file name'
-    print '(without .tar.bz2 extension).'
+    print '(without .tar.xz extension).'
     return 1
 
   if not os.path.exists(GetSourceDirectory()):
@@ -135,17 +136,10 @@ def main(argv):
     print 'Could not run build/util/lastchange.py to update LASTCHANGE.'
     return 1
 
-  if options.xz:
-    output_fullname = args[0] + '.tar'
-  else:
-    output_fullname = args[0] + '.tar.bz2'
-
+  output_fullname = args[0] + '.tar'
   output_basename = options.basename or os.path.basename(args[0])
 
-  if options.xz:
-    archive = MyTarFile.open(output_fullname, 'w')
-  else:
-    archive = MyTarFile.open(output_fullname, 'w:bz2')
+  archive = MyTarFile.open(output_fullname, 'w')
   archive.set_remove_nonessential_files(options.remove_nonessential_files)
   try:
     if options.test_data:
@@ -157,10 +151,9 @@ def main(argv):
   finally:
     archive.close()
 
-  if options.xz:
-    if subprocess.call(['xz', '-9', output_fullname]) != 0:
-      print 'xz -9 failed!'
-      return 1
+  if subprocess.call(['xz', '-9', output_fullname]) != 0:
+    print 'xz -9 failed!'
+    return 1
 
   return 0
 
