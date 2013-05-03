@@ -27,6 +27,7 @@
 #include "core/css/CSSSelector.h"
 
 #include "HTMLNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "core/css/CSSOMUtils.h"
 #include "core/css/CSSSelectorList.h"
 #include <wtf/Assertions.h>
@@ -246,6 +247,7 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
     case PseudoPastCue:
     case PseudoSeamlessDocument:
     case PseudoDistributed:
+    case PseudoUnresolved:
         return NOPSEUDO;
     case PseudoNotParsed:
         ASSERT_NOT_REACHED();
@@ -334,6 +336,7 @@ static HashMap<AtomicStringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap(
     DEFINE_STATIC_LOCAL(AtomicString, inRange, ("in-range", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, outOfRange, ("out-of-range", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, scope, ("scope", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, unresolved, ("unresolved", AtomicString::ConstructFromLiteral));
 
     static HashMap<AtomicStringImpl*, CSSSelector::PseudoType>* nameToPseudoType = 0;
     if (!nameToPseudoType) {
@@ -413,6 +416,8 @@ static HashMap<AtomicStringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap(
         nameToPseudoType->set(distributed.impl(), CSSSelector::PseudoDistributed);
         nameToPseudoType->set(inRange.impl(), CSSSelector::PseudoInRange);
         nameToPseudoType->set(outOfRange.impl(), CSSSelector::PseudoOutOfRange);
+        if (RuntimeEnabledFeatures::customDOMElementsEnabled())
+            nameToPseudoType->set(unresolved.impl(), CSSSelector::PseudoUnresolved);
     }
     return nameToPseudoType;
 }
@@ -527,6 +532,7 @@ void CSSSelector::extractPseudoType() const
     case PseudoOutOfRange:
     case PseudoFutureCue:
     case PseudoPastCue:
+    case PseudoUnresolved:
         break;
     case PseudoFirstPage:
     case PseudoLeftPage:
@@ -542,7 +548,7 @@ void CSSSelector::extractPseudoType() const
         if (!compat)
             m_pseudoType = PseudoUnknown;
         else
-           m_match = PseudoElement;
+            m_match = PseudoElement;
     } else if (m_match == PseudoElement && !element)
         m_pseudoType = PseudoUnknown;
 }

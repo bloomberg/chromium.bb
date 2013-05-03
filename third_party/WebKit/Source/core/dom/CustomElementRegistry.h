@@ -79,6 +79,7 @@ public:
 
     PassRefPtr<CustomElementConstructor> registerElement(WebCore::ScriptState*, const AtomicString& name, const Dictionary& options, ExceptionCode&);
 
+    bool isUnresolved(Element*) const;
     PassRefPtr<CustomElementDefinition> findFor(Element*) const;
     PassRefPtr<CustomElementDefinition> findAndCheckNamespace(const AtomicString& type, const AtomicString& namespaceURI) const;
 
@@ -87,6 +88,7 @@ public:
     Document* document() const;
 
     void didGiveTypeExtension(Element*);
+    void customElementWasDestroyed(Element*);
 
     static bool isCustomTagName(const AtomicString& name) { return isValidName(name); }
 
@@ -97,6 +99,7 @@ private:
     typedef HashMap<AtomicString, RefPtr<CustomElementDefinition> > DefinitionMap;
     typedef HashSet<AtomicString> NameSet;
     typedef ListHashSet<CustomElementRegistry*> InstanceSet;
+    typedef HashSet<Element*> ElementSet;
 
     static bool isValidName(const AtomicString&);
 
@@ -106,9 +109,11 @@ private:
     void deliverLifecycleCallbacks();
 
     void didCreateCustomTagElement(Element*);
+    void didCreateUnresolvedElement(Element*);
 
     DefinitionMap m_definitions;
     Vector<CustomElementInvocation> m_invocations;
+    ElementSet m_unresolvedElements;
 };
 
 inline void CustomElementRegistry::deliverAllLifecycleCallbacksIfNeeded()

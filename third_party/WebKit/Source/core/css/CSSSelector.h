@@ -163,7 +163,8 @@ namespace WebCore {
             PseudoFutureCue,
             PseudoPastCue,
             PseudoSeamlessDocument,
-            PseudoDistributed
+            PseudoDistributed,
+            PseudoUnresolved
         };
 
         enum MarginBoxType {

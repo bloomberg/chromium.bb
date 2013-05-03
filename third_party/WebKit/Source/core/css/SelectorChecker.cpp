@@ -32,6 +32,7 @@
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/SiblingTraversalStrategies.h"
+#include "core/dom/CustomElementRegistry.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/ShadowRoot.h"
@@ -714,6 +715,11 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                     return true;
                 break;
             }
+
+        case CSSSelector::PseudoUnresolved:
+            if (element->isUnresolvedCustomElement())
+                return true;
+            break;
 
         case CSSSelector::PseudoHorizontal:
         case CSSSelector::PseudoVertical:

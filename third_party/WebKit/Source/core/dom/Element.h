@@ -454,6 +454,8 @@ public:
     void setIsInCanvasSubtree(bool);
     bool isInCanvasSubtree() const;
 
+    bool isUnresolvedCustomElement();
+
     AtomicString computeInheritedLanguage() const;
     Locale& locale() const;
 

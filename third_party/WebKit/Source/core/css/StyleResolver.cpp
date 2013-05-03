@@ -865,6 +865,9 @@ bool StyleResolver::canShareStyleWithElement(StyledElement* element) const
     if (element->isLink() && state.elementLinkState() != style->insideLink())
         return false;
 
+    if (element->isUnresolvedCustomElement() != state.element()->isUnresolvedCustomElement())
+        return false;
+
     // Deny sharing styles between WebVTT and non-WebVTT nodes.
     if (element->isWebVTTElement() != state.element()->isWebVTTElement())
         return false;

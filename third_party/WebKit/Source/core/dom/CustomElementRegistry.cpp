@@ -170,6 +170,11 @@ PassRefPtr<CustomElementConstructor> CustomElementRegistry::registerElement(Scri
     return constructor.release();
 }
 
+bool CustomElementRegistry::isUnresolved(Element* element) const
+{
+    return m_unresolvedElements.contains(element);
+}
+
 PassRefPtr<CustomElementDefinition> CustomElementRegistry::findFor(Element* element) const
 {
     ASSERT(element->document()->registry() == this);
@@ -226,8 +231,13 @@ PassRefPtr<Element> CustomElementRegistry::createCustomTagElement(const Qualifie
     element->setIsCustomElement();
 
     RefPtr<CustomElementDefinition> definition = findAndCheckNamespace(tagName.localName(), tagName.namespaceURI());
-    if (definition && !definition->isTypeExtension())
+    if (!definition || definition->isTypeExtension()) {
+        // If a definition for a type extension was available, this
+        // custom tag element will be unresolved in perpetuity.
+        didCreateUnresolvedElement(element.get());
+    } else {
         didCreateCustomTagElement(element.get());
+    }
 
     return element.release();
 }
@@ -238,14 +248,29 @@ void CustomElementRegistry::didGiveTypeExtension(Element* element)
         return;
     element->setIsCustomElement();
     RefPtr<CustomElementDefinition> definition = findFor(element);
-    if (!definition || !definition->isTypeExtension())
-        return;
-    activate(CustomElementInvocation(element));
+    if (!definition || !definition->isTypeExtension()) {
+        // If a definition for a custom tag was available, this type
+        // extension element will be unresolved in perpetuity.
+        didCreateUnresolvedElement(element);
+    } else {
+        activate(CustomElementInvocation(element));
+    }
 }
 
 void CustomElementRegistry::didCreateCustomTagElement(Element* element)
 {
     activate(CustomElementInvocation(element));
+}
+
+void CustomElementRegistry::didCreateUnresolvedElement(Element* element)
+{
+    m_unresolvedElements.add(element);
+}
+
+void CustomElementRegistry::customElementWasDestroyed(Element* element)
+{
+    ASSERT(element->isCustomElement());
+    m_unresolvedElements.remove(element);
 }
 
 void CustomElementRegistry::activate(const CustomElementInvocation& invocation)

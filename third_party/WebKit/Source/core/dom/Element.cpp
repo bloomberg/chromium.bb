@@ -213,6 +213,10 @@ Element::~Element()
         data->clearShadow();
     }
 
+    if (isCustomElement() && document() && document()->registry()) {
+        document()->registry()->customElementWasDestroyed(this);
+    }
+
     if (hasSyntheticAttrChildNodes())
         detachAllAttrNodesFromElement();
 
@@ -2200,6 +2204,11 @@ void Element::setIsInCanvasSubtree(bool isInCanvasSubtree)
 bool Element::isInCanvasSubtree() const
 {
     return hasRareData() && elementRareData()->isInCanvasSubtree();
+}
+
+bool Element::isUnresolvedCustomElement()
+{
+    return isCustomElement() && document()->registry()->isUnresolved(this);
 }
 
 AtomicString Element::computeInheritedLanguage() const
