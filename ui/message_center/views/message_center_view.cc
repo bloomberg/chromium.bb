@@ -41,7 +41,7 @@ namespace message_center {
 
 namespace {
 
-const int kMinHeight = 80;
+const int kMinScrollViewHeight = 100;
 const int kFooterMargin = 16;
 const int kFooterHeight = 24;
 const SkColor kMessageCenterBackgroundColor = SkColorSetRGB(0xe5, 0xe5, 0xe5);
@@ -298,6 +298,51 @@ void BoundedScrollView::Layout() {
   if (contents()->bounds().size() != gfx::Size(content_width, content_height))
     contents()->SetBounds(0, 0, content_width, content_height);
   views::ScrollView::Layout();
+}
+
+class NoNotificationMessageView : public views::View {
+ public:
+  NoNotificationMessageView();
+  virtual ~NoNotificationMessageView();
+
+  // Overridden from views::View.
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual int GetHeightForWidth(int width) OVERRIDE;
+  virtual void Layout() OVERRIDE;
+
+ private:
+  views::Label* label_;
+
+  DISALLOW_COPY_AND_ASSIGN(NoNotificationMessageView);
+};
+
+NoNotificationMessageView::NoNotificationMessageView() {
+  label_ = new views::Label(l10n_util::GetStringUTF16(
+      IDS_MESSAGE_CENTER_NO_MESSAGES));
+  label_->SetFont(label_->font().DeriveFont(1));
+  label_->SetEnabledColor(SK_ColorGRAY);
+  // Set transparent background to ensure that subpixel rendering
+  // is disabled. See crbug.com/169056
+  label_->SetBackgroundColor(kTransparentColor);
+  AddChildView(label_);
+}
+
+NoNotificationMessageView::~NoNotificationMessageView() {
+}
+
+gfx::Size NoNotificationMessageView::GetPreferredSize() {
+  return gfx::Size(kMinScrollViewHeight, label_->GetPreferredSize().width());
+}
+
+int NoNotificationMessageView::GetHeightForWidth(int width) {
+  return kMinScrollViewHeight;
+}
+
+void NoNotificationMessageView::Layout() {
+  DCHECK_EQ(100, height());
+  int text_height = label_->GetHeightForWidth(width());
+  int margin = (height() - text_height) / 2;
+  label_->SetBounds(0, margin, width(), text_height);
 }
 
 }  // namespace
@@ -663,7 +708,7 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
     button_bar_ = new PoorMessageCenterButtonBar(message_center);
 
   const int button_height = button_bar_->GetPreferredSize().height();
-  scroller_ = new BoundedScrollView(kMinHeight - button_height,
+  scroller_ = new BoundedScrollView(kMinScrollViewHeight,
                                     max_height - button_height);
 
   if (get_use_acceleration_when_possible()) {
@@ -806,14 +851,7 @@ void MessageCenterView::NotificationsChanged() {
     button_bar_->SetCloseAllVisible(true);
     scroller_->set_focusable(true);
   } else if (!message_list_view_->has_children()) {
-    views::Label* label = new views::Label(l10n_util::GetStringUTF16(
-        IDS_MESSAGE_CENTER_NO_MESSAGES));
-    label->SetFont(label->font().DeriveFont(1));
-    label->SetEnabledColor(SK_ColorGRAY);
-    // Set transparent background to ensure that subpixel rendering
-    // is disabled. See crbug.com/169056
-    label->SetBackgroundColor(kTransparentColor);
-    message_list_view_->AddChildView(label);
+    message_list_view_->AddChildView(new NoNotificationMessageView());
     button_bar_->SetCloseAllVisible(false);
     scroller_->set_focusable(false);
   }
