@@ -49,11 +49,10 @@ remoting.HostNativeMessaging = function() {
  * @return {void} Nothing.
  */
 remoting.HostNativeMessaging.prototype.initialize = function(onDone) {
-  // TODO(lambroslambrou): Remove this once the Chrome Remote Desktop native
-  // messaging API is stable.
-  onDone(false);
-
-  if (!chrome.runtime.connectNative) {
+  // TODO(lambroslambrou): Remove 'alwaysTrue ||' once the Chrome Remote Desktop
+  // native messaging API is stable.
+  var alwaysTrue = true;
+  if (alwaysTrue || !chrome.runtime.connectNative) {
     console.log('Native Messaging API not available');
     onDone(false);
     return;
