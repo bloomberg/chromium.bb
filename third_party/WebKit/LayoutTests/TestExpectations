@@ -1538,7 +1538,10 @@ webkit.org/b/100955 http/tests/security/contentSecurityPolicy/object-src-none-bl
 
 webkit.org/b/101377 [ Linux MountainLion ] platform/chromium-linux/fast/text/international/complex-joining-using-gpos.html [ Failure ImageOnlyFailure Pass Crash ]
 
+webkit.org/b/101986 [ Linux Release ] compositing/force-compositing-mode/overflow-iframe-layer.html [ Failure ]
+webkit.org/b/101986 [ Win Debug ] compositing/force-compositing-mode/overflow-iframe-layer.html [ Failure ]
 webkit.org/b/101986 [ Linux Win Debug ] virtual/softwarecompositing/force-compositing-mode/overflow-iframe-layer.html [ Failure ]
+
 webkit.org/b/102131 [ Win Linux ] fast/workers/worker-exception-during-navigation.html [ Pass Crash ]
 webkit.org/b/102264 [ Debug ] css3/filters/custom/custom-filter-property-computed-style.html [ Pass Timeout ]
 webkit.org/b/102277 fast/events/frame-scroll-fake-mouse-move.html [ Pass Failure ]
@@ -1768,6 +1771,8 @@ crbug.com/230315 fast/events/scale-and-scroll-window.html [ Pass ImageOnlyFailur
 crbug.com/230554 [ Linux Debug ] plugins/drag-events.html [ Crash ]
 
 # Failing tests after r148246
+crbug.com/230771 [ SnowLeopard Debug ] editing/pasteboard/drop-file-svg.html [ Failure ]
+crbug.com/230771 [ SnowLeopard Debug ] editing/pasteboard/file-drag-to-editable.html [ Failure ]
 crbug.com/230771 [ Linux Mac ] fast/forms/file/file-input-reset.html [ ImageOnlyFailure ]
 
 # From WebKit's generic expectations.
@@ -1845,3 +1850,16 @@ crbug.com/14885 [ Debug ] fast/js/JSON-stringify.html [ Failure ]
 
 # Caused by http://trac.webkit.org/changeset/56394.
 crbug.com/143475 [ Win ] http/tests/xmlhttprequest/xmlhttprequest-50ms-download-dispatch.html [ Failure Pass Timeout ]
+
+crbug.com/86338 fast/loader/file-protocol-fragment.html [ Failure Pass ]
+webkit.org/b/81697 fast/notifications/notifications-request-permission.html [ Failure Pass ]
+crbug.com/225883 [ Win ] inspector/profiler/memory-instrumentation-external-array.html [ Failure Pass ]
+crbug.com/225184 [ Win Mac Debug ] scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure ]
+Bug(ojan) virtual/gpu/compositedscrolling/overflow/overflow-auto-with-touch.html [ Failure Pass ]
+Bug(ojan) virtual/gpu/compositedscrolling/overflow/overflow-auto-with-touch-toggle.html [ Failure Pass ]
+Bug(ojan) virtual/gpu/compositedscrolling/overflow/overflow-overlay-with-touch.html [ Failure Pass ]
+Bug(ojan) virtual/softwarecompositing/backface-visibility/backface-visibility-non3d.html [ ImageOnlyFailure Pass ]
+Bug(ojan) virtual/softwarecompositing/culling/tile-occlusion-boundaries.html [ ImageOnlyFailure Pass ]
+
+crbug.com/88588 [ Mac Debug ] fast/lists/inlineBoxWrapperNullCheck.html [ Failure ]
+
