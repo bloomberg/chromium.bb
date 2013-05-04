@@ -640,30 +640,26 @@ static inline void CalculateContentsScale(LayerType* layer,
 
 static inline void UpdateLayerContentsScale(
     LayerImpl* layer,
-    const gfx::Transform& combined_transform,
+    float ideal_contents_scale,
     float device_scale_factor,
     float page_scale_factor,
     bool animating_transform_to_screen) {
-  gfx::Vector2dF transform_scale = MathUtil::ComputeTransform2dScaleComponents(
-      combined_transform, device_scale_factor * page_scale_factor);
-  float contents_scale = std::max(transform_scale.x(), transform_scale.y());
-  CalculateContentsScale(layer, contents_scale, animating_transform_to_screen);
+  CalculateContentsScale(layer,
+                         ideal_contents_scale,
+                         animating_transform_to_screen);
 }
 
 static inline void UpdateLayerContentsScale(
     Layer* layer,
-    const gfx::Transform& combined_transform,
+    float ideal_contents_scale,
     float device_scale_factor,
     float page_scale_factor,
     bool animating_transform_to_screen) {
   float raster_scale = layer->raster_scale();
 
   if (layer->automatically_compute_raster_scale()) {
-    gfx::Vector2dF transform_scale =
-        MathUtil::ComputeTransform2dScaleComponents(combined_transform, 0.f);
-    float combined_scale = std::max(transform_scale.x(), transform_scale.y());
-    float ideal_raster_scale = combined_scale /
-          (device_scale_factor * page_scale_factor);
+    float ideal_raster_scale =
+        ideal_contents_scale / (device_scale_factor * page_scale_factor);
 
     bool need_to_set_raster_scale = !raster_scale;
 
@@ -689,7 +685,6 @@ static inline void UpdateLayerContentsScale(
     raster_scale = 1.f;
 
   float contents_scale = raster_scale * device_scale_factor * page_scale_factor;
-
   CalculateContentsScale(layer, contents_scale, animating_transform_to_screen);
 }
 
@@ -980,7 +975,7 @@ static void CalculateDrawPropertiesInternal(
     page_scale_factor_for_transforms = page_scale_factor;
   }
 
-  float page_scale_factor_for_contents_scale =
+  float page_scale_factor_applied_to_layer =
       in_subtree_of_page_scale_application_layer ? page_scale_factor : 1.f;
 
   // Note carefully: this is Concat, not Preconcat (page_scale_matrix *
@@ -991,15 +986,6 @@ static void CalculateDrawPropertiesInternal(
                             page_scale_factor_for_transforms);
     combined_transform.ConcatTransform(page_scale_matrix);
   }
-
-  // The layer's contents_scale is determined from the combined_transform, which
-  // then informs the layer's draw_transform.
-  UpdateLayerContentsScale(
-      layer,
-      combined_transform,
-      device_scale_factor,
-      page_scale_factor_for_contents_scale,
-      animating_transform_to_screen);
 
   if (!animating_transform_to_target && layer->scrollable() &&
       combined_transform.IsScaleOrTranslation()) {
@@ -1012,6 +998,21 @@ static void CalculateDrawPropertiesInternal(
   // Apply adjustment from position constraints.
   ApplyPositionAdjustment(layer, current_fixed_container,
       current_scroll_compensation_matrix, &combined_transform);
+
+  // Compute the 2d scale components of the transform hierarchy up to the target
+  // surface. From there, we can decide on a contents scale for the layer.
+  gfx::Vector2dF combined_transform_scales =
+      MathUtil::ComputeTransform2dScaleComponents(
+          combined_transform,
+          device_scale_factor * page_scale_factor_applied_to_layer);
+  float ideal_contents_scale =
+      std::max(combined_transform_scales.x(), combined_transform_scales.y());
+  UpdateLayerContentsScale(
+      layer,
+      ideal_contents_scale,
+      device_scale_factor,
+      page_scale_factor_applied_to_layer,
+      animating_transform_to_screen);
 
   // The draw_transform that gets computed below is effectively the layer's
   // draw_transform, unless the layer itself creates a render_surface. In that
@@ -1049,9 +1050,7 @@ static void CalculateDrawPropertiesInternal(
   gfx::Transform next_hierarchy_matrix = full_hierarchy_matrix;
   gfx::Transform sublayer_matrix;
 
-  gfx::Vector2dF render_surface_sublayer_scale =
-      MathUtil::ComputeTransform2dScaleComponents(
-          combined_transform, device_scale_factor * page_scale_factor);
+  gfx::Vector2dF render_surface_sublayer_scale = combined_transform_scales;
 
   if (SubtreeShouldRenderToSeparateSurface(
           layer, combined_transform.IsScaleOrTranslation())) {
@@ -1085,7 +1084,10 @@ static void CalculateDrawPropertiesInternal(
 
     // Inside the surface's subtree, we scale everything to the owning layer's
     // scale.  The sublayer matrix transforms layer rects into target surface
-    // content space.
+    // content space.  Conceptually, all layers in the subtree inherit the scale
+    // at the point of the render surface in the transform hierarchy, but we
+    // apply it explicitly to the owning layer and the remainder of the subtree
+    // indenpendently.
     DCHECK(sublayer_matrix.IsIdentity());
     sublayer_matrix.Scale(render_surface_sublayer_scale.x(),
                           render_surface_sublayer_scale.y());

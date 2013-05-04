@@ -6158,12 +6158,11 @@ TEST(LayerTreeHostCommonTest, SurfaceLayerTransformsInHighDPI) {
   expected_scale_surface_draw_transform.Translate(
       device_scale_factor * page_scale_factor * scale_surface->position().x(),
       device_scale_factor * page_scale_factor * scale_surface->position().y());
-  gfx::Transform expected_scale_surface_layer_draw_transform;
-  expected_scale_surface_layer_draw_transform.PreconcatTransform(
-      scale_small_matrix);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_scale_surface_draw_transform,
       scale_surface->render_surface()->draw_transform());
+  gfx::Transform expected_scale_surface_layer_draw_transform =
+      scale_small_matrix;
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_scale_surface_layer_draw_transform,
                                   scale_surface->draw_transform());
 
