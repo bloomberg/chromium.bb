@@ -625,6 +625,12 @@ class ProfileSyncService : public ProfileSyncServiceBase,
       const invalidation::ObjectId& id,
       const std::string& payload);
 
+  // Called when a datatype (SyncableService) has a need for sync to start
+  // ASAP, presumably because a local change event has occurred but we're
+  // still in deferred start mode, meaning the SyncableService hasn't been
+  // told to MergeDataAndStartSyncing yet.
+  void OnDataTypeRequestsSyncStartup(syncer::ModelType type);
+
  protected:
   // Used by test classes that derive from ProfileSyncService.
   virtual browser_sync::SyncBackendHost* GetBackendForTest();
@@ -742,10 +748,8 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   };
   void StartUp(StartUpDeferredOption deferred_option);
 
-  // Starts up the backend sync components. |deferred_option| specifies whether
-  // this is being called as part of an immediate startup or startup was
-  // originally deferred and we're finally getting around to finishing.
-  void StartUpSlowBackendComponents(StartUpDeferredOption deferred_option);
+  // Starts up the backend sync components.
+  void StartUpSlowBackendComponents();
 
   // About-flags experiment names for datatypes that aren't enabled by default
   // yet.
@@ -824,6 +828,12 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // never been called, and is reset to zero once OnBackendInitialized() is
   // called.
   base::Time start_up_time_;
+
+  // Whether we have received a signal from a SyncableService requesting that
+  // sync starts as soon as possible.
+  // TODO(tim): Move this and other TryStart related logic + state to separate
+  // class. Bug 80149.
+  bool data_type_requested_sync_startup_;
 
   // The time that OnConfigureStart is called. This member is zero if
   // OnConfigureStart has not yet been called, and is reset to zero once

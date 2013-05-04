@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
 #include "chrome/browser/webdata/autofill_profile_syncable_service.h"
@@ -40,12 +41,15 @@ void ProfileErrorCallback(sql::InitStatus status) {
 
 void InitSyncableServicesOnDBThread(
     scoped_refptr<AutofillWebDataService> autofill_web_data,
+    const syncer::SyncableService::StartSyncFlare& flare,
     const std::string& app_locale) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
   // Currently only Autocomplete and Autofill profiles use the new Sync API, but
   // all the database data should migrate to this API over time.
   AutocompleteSyncableService::CreateForWebDataService(autofill_web_data);
+  AutocompleteSyncableService::FromWebDataService(
+      autofill_web_data)->InjectStartSyncFlare(flare);
   AutofillProfileSyncableService::CreateForWebDataService(
       autofill_web_data, app_locale);
 }
@@ -95,6 +99,7 @@ WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
       BrowserThread::DB, FROM_HERE,
       base::Bind(&InitSyncableServicesOnDBThread,
                  autofill_web_data_,
+                 sync_start_util::GetFlareForSyncableService(path),
                  g_browser_process->GetApplicationLocale()));
 }
 

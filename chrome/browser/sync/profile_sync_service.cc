@@ -140,6 +140,7 @@ ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
       sync_prefs_(profile_ ? profile_->GetPrefs() : NULL),
       invalidator_storage_(profile_ ? profile_->GetPrefs(): NULL),
       sync_service_url_(kDevServerUrl),
+      data_type_requested_sync_startup_(false),
       is_first_time_sync_configure_(false),
       backend_initialized_(false),
       is_auth_in_progress_(false),
@@ -305,7 +306,12 @@ void ProfileSyncService::TryStart() {
   // for performance reasons and maximizing parallelism at chrome startup, we
   // defer the heavy lifting for sync init until things have calmed down.
   if (HasSyncSetupCompleted()) {
-    StartUp(STARTUP_BACKEND_DEFERRED);
+    if (!data_type_requested_sync_startup_)
+      StartUp(STARTUP_BACKEND_DEFERRED);
+    else if (start_up_time_.is_null())
+      StartUp(STARTUP_IMMEDIATE);
+    else
+      StartUpSlowBackendComponents();
   } else if (setup_in_progress_ || auto_start_enabled_) {
     // We haven't completed sync setup. Start immediately if the user explicitly
     // kicked this off or we're supposed to automatically start syncing.
@@ -527,21 +533,56 @@ void ProfileSyncService::StartUp(StartUpDeferredOption deferred_option) {
     return;
   }
 
-  StartUpSlowBackendComponents(STARTUP_IMMEDIATE);
+  StartUpSlowBackendComponents();
 }
 
-void ProfileSyncService::StartUpSlowBackendComponents(
-    StartUpDeferredOption deferred_option) {
+void ProfileSyncService::OnDataTypeRequestsSyncStartup(
+    syncer::ModelType type) {
+  DCHECK(syncer::UserTypes().Has(type));
+  if (backend_.get()) {
+    DVLOG(1) << "A data type requested sync startup, but it looks like "
+                "something else beat it to the punch.";
+    return;
+  }
+
+  if (!GetPreferredDataTypes().Has(type)) {
+    // We can get here as datatype SyncableServices are typically wired up
+    // to the native datatype even if sync isn't enabled.
+    DVLOG(1) << "Dropping sync startup request because type "
+             << syncer::ModelTypeToString(type) << "not enabled.";
+    return;
+  }
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSyncEnableDeferredStartup)) {
+    DVLOG(2) << "Data type requesting sync startup: "
+             << syncer::ModelTypeToString(type);
+    // Measure the time spent waiting for init and the type that triggered it.
+    // We could measure the time spent deferred on a per-datatype basis, but
+    // for now this is probably sufficient.
+    if (!start_up_time_.is_null()) {
+      // TODO(tim): Cache |type| and move this tracking to StartUp.  I'd like
+      // to pull all the complicated init logic and state out of
+      // ProfileSyncService and have only a StartUp method, though. One step
+      // at a time. Bug 80149.
+      base::TimeDelta time_deferred = base::Time::Now() - start_up_time_;
+      UMA_HISTOGRAM_TIMES("Sync.Startup.TimeDeferred", time_deferred);
+      UMA_HISTOGRAM_ENUMERATION("Sync.Startup.TypeTriggeringInit",
+                                ModelTypeToHistogramInt(type),
+                                syncer::MODEL_TYPE_COUNT);
+    }
+    data_type_requested_sync_startup_ = true;
+    TryStart();
+  }
+  DVLOG(2) << "Ignoring data type request for sync startup: "
+           << syncer::ModelTypeToString(type);
+}
+
+void ProfileSyncService::StartUpSlowBackendComponents() {
   // Don't start up multiple times.
   if (backend_) {
     DVLOG(1) << "Skipping bringing up backend host.";
     return;
-  }
-
-  DCHECK(!start_up_time_.is_null());
-  if (deferred_option == STARTUP_BACKEND_DEFERRED) {
-    base::TimeDelta time_deferred = base::Time::Now() - start_up_time_;
-    UMA_HISTOGRAM_TIMES("Sync.Startup.TimeDeferred", time_deferred);
   }
 
   DCHECK(IsSyncEnabledAndLoggedIn());

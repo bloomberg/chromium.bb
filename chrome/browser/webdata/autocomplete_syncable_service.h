@@ -79,6 +79,11 @@ class AutocompleteSyncableService
   void UpdateCullSetting(bool cull_expired_entries);
   bool cull_expired_entries() const { return cull_expired_entries_; }
 
+  // Provides a StartSyncFlare to the SyncableService. See
+  // sync_start_util for more.
+  void InjectStartSyncFlare(
+      const syncer::SyncableService::StartSyncFlare& flare);
+
  protected:
   explicit AutocompleteSyncableService(
       autofill::AutofillWebDataService* web_data_service);
@@ -164,6 +169,8 @@ class AutocompleteSyncableService
   // Whether we should cull expired autofill entries, can be updated by sync
   // via UpdateCullingSetting.
   bool cull_expired_entries_;
+
+  syncer::SyncableService::StartSyncFlare flare_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteSyncableService);
 };

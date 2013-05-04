@@ -127,6 +127,11 @@ AutocompleteSyncableService::AutocompleteSyncableService()
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 }
 
+void AutocompleteSyncableService::InjectStartSyncFlare(
+    const syncer::SyncableService::StartSyncFlare& flare) {
+  flare_ = flare;
+}
+
 syncer::SyncMergeResult AutocompleteSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
@@ -304,12 +309,16 @@ syncer::SyncError AutocompleteSyncableService::ProcessSyncChanges(
 
 void AutocompleteSyncableService::AutofillEntriesChanged(
     const AutofillChangeList& changes) {
-  // Check if sync is on. If we receive notification prior to the sync being set
-  // up we are going to process all when MergeData..() is called. If we receive
-  // notification after the sync exited, it will be sinced next time Chrome
-  // starts.
-  if (sync_processor_.get())
+  // Check if sync is on. If we recieve this notification prior to sync being
+  // started, we'll notify sync to start as soon as it can and later process
+  // all entries when MergeData..() is called. If we receive this notification
+  // sync has exited, it will be synced next time Chrome starts.
+  if (sync_processor_.get()) {
     ActOnChanges(changes);
+  } else if (!flare_.is_null()) {
+    flare_.Run(syncer::AUTOFILL);
+    flare_.Reset();
+  }
 }
 
 bool AutocompleteSyncableService::LoadAutofillData(
