@@ -3,55 +3,52 @@
 // the method names must line up with the JavaScript method they enable for code
 // generation to work properly.
 
-// NOTE: These are not sorted yet to allow easy comparison of the generated file
-// with the previous hand-edited file.
-
-LocalStorage default=true
-SessionStorage default=true
-WebkitNotifications
 ApplicationCache default=true
-Geolocation default=true
-IndexedDB
+AudioContext condition=WEB_AUDIO
+AuthorShadowDOMForAnyElement
 CanvasPath
+CSSCompositing condition=CSS_COMPOSITING
 CSSExclusions
 CSSRegions
-CSSCompositing condition=CSS_COMPOSITING
-FontLoadEvents
-Fullscreen default=true
-Media custom
-SharedWorker custom
+CustomDOMElements
 Database default=true
-AudioContext condition=WEB_AUDIO
-WebMIDI
-Touch default=true
 DeviceMotion default=true
 DeviceOrientation default=true
-SpeechInput default=true
-ScriptedSpeech
-FileSystem
-JavaScriptI18NAPI condition=JAVASCRIPT_I18N_API
-MediaStream default=true
-PeerConnection default=true, depends_on=MediaStream
-WebkitGetGamepads
-Quota
-MediaSource
+DialogElement
+DirectoryUpload default=true
 EncryptedMedia condition=ENCRYPTED_MEDIA
-WebkitVideoTrack default=true
+ExperimentalCanvasFeatures
+ExperimentalContentSecurityPolicyFeatures
 ExperimentalShadowDOM
-AuthorShadowDOMForAnyElement
-CustomDOMElements
-StyleScoped
+ExperimentalWebSocket
+FileSystem
+FontLoadEvents
+Fullscreen default=true
+Geolocation default=true
+IMEAPI
+IndexedDB
 InputTypeDateTime condition=INPUT_TYPE_DATETIME_INCOMPLETE
 InputTypeWeek default=true
-DialogElement
-LazyLayout
-ExperimentalContentSecurityPolicyFeatures
-SeamlessIFrames
+JavaScriptI18NAPI condition=JAVASCRIPT_I18N_API
 LangAttributeAwareFormControlUI
+LazyLayout
+LocalStorage default=true
+Media custom
+MediaSource
+MediaStream default=true
+PeerConnection default=true, depends_on=MediaStream
+Quota
 RequestAutocomplete
-WebPInAcceptHeader
-DirectoryUpload default=true
-ExperimentalWebSocket
-IMEAPI
-ExperimentalCanvasFeatures
+ScriptedSpeech
+SeamlessIFrames
+SessionStorage default=true
+SharedWorker custom
+SpeechInput default=true
 SpeechSynthesis
+StyleScoped
+Touch default=true
+WebkitGetGamepads
+WebkitNotifications
+WebkitVideoTrack default=true
+WebMIDI
+WebPInAcceptHeader
