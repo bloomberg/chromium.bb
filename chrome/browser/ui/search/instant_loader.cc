@@ -24,8 +24,6 @@
 
 namespace {
 
-const int kStalePageTimeoutMS = 3 * 3600 * 1000;  // 3 hours
-
 // This HTTP header and value are set on loads that originate from Instant.
 const char kInstantHeader[] = "X-Purpose: Instant";
 
@@ -62,10 +60,15 @@ void InstantLoader::Load() {
       instant_url_, content::Referrer(),
       content::PAGE_TRANSITION_GENERATED, kInstantHeader);
   contents_->WasHidden();
-  stale_page_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kStalePageTimeoutMS),
-      on_stale_callback_);
+
+  int staleness_timeout_ms = chrome::GetInstantLoaderStalenessTimeoutSec() *
+      1000;
+  if (staleness_timeout_ms > 0) {
+    stale_page_timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(staleness_timeout_ms),
+        on_stale_callback_);
+  }
 }
 
 void InstantLoader::SetContents(scoped_ptr<content::WebContents> new_contents) {

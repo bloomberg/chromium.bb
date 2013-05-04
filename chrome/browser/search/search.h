@@ -141,6 +141,10 @@ GURL GetPrivilegedURLForInstant(const GURL& url, Profile* profile);
 // Returns true if the input |url| is a privileged Instant URL.
 bool IsPrivilegedURLForInstant(const GURL& url);
 
+// Returns the staleness timeout (in seconds) that should be used to refresh the
+// InstantLoader.
+int GetInstantLoaderStalenessTimeoutSec();
+
 // -----------------------------------------------------
 // The following APIs are exposed for use in tests only.
 // -----------------------------------------------------

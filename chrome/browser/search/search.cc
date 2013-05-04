@@ -8,6 +8,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/profiles/profile.h"
@@ -52,6 +53,11 @@ const uint64 kEmbeddedPageVersionDefault = 1;
 #else
 const uint64 kEmbeddedPageVersionDefault = 2;
 #endif
+
+// The staleness timeout can be set (in seconds) via this config.
+const char kStalePageTimeoutFlagName[] = "stale";
+const int kStalePageTimeoutDefault = 3 * 3600;  // 3 hours.
+const int kStalePageTimeoutDisabled = 0;
 
 const char kInstantExtendedActivationName[] = "instant";
 const InstantExtendedDefault kInstantExtendedActivationDefault =
@@ -519,6 +525,27 @@ GURL GetPrivilegedURLForInstant(const GURL& url, Profile* profile) {
 
 bool IsPrivilegedURLForInstant(const GURL& url) {
   return url.SchemeIs(chrome::kChromeSearchScheme);
+}
+
+int GetInstantLoaderStalenessTimeoutSec() {
+  int timeout_sec = kStalePageTimeoutDefault;
+  FieldTrialFlags flags;
+  if (GetFieldTrialInfo(
+          base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
+          &flags, NULL)) {
+    timeout_sec = GetUInt64ValueForFlagWithDefault(kStalePageTimeoutFlagName,
+                                                   kStalePageTimeoutDefault,
+                                                   flags);
+  }
+
+  // Require a minimum 5 minute timeout.
+  if (timeout_sec < 0 || (timeout_sec > 0 && timeout_sec < 300))
+    timeout_sec = kStalePageTimeoutDefault;
+
+  // Randomize by upto 15% either side.
+  timeout_sec = base::RandInt(timeout_sec * 0.85, timeout_sec * 1.15);
+
+  return timeout_sec;
 }
 
 void EnableInstantExtendedAPIForTesting() {
