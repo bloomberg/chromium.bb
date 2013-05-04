@@ -78,6 +78,10 @@ void SearchBoxView::SetModel(SearchBoxModel* model) {
   }
 }
 
+bool SearchBoxView::HasSearch() const {
+  return !search_box_->text().empty();
+}
+
 void SearchBoxView::ClearSearch() {
   search_box_->SetText(string16());
   // Updates model and fires query changed manually because SetText() above
@@ -147,14 +151,6 @@ void SearchBoxView::ContentsChanged(views::Textfield* sender,
 
 bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
                                    const ui::KeyEvent& key_event) {
-  bool has_query = !search_box_->text().empty();
-
-  // Escape with non-empty query text clears the search box.
-  if (has_query && key_event.key_code() == ui::VKEY_ESCAPE) {
-    ClearSearch();
-    return true;
-  }
-
   bool handled = false;
   if (contents_view_ && contents_view_->visible())
     handled = contents_view_->OnKeyPressed(key_event);

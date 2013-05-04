@@ -40,6 +40,7 @@ class SearchBoxView : public views::View,
 
   void SetModel(SearchBoxModel* model);
 
+  bool HasSearch() const;
   void ClearSearch();
 
   views::Textfield* search_box() { return search_box_; }
