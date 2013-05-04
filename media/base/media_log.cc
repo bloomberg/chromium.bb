@@ -179,12 +179,14 @@ scoped_ptr<MediaLogEvent> MediaLog::CreateVideoSizeSetEvent(
 }
 
 scoped_ptr<MediaLogEvent> MediaLog::CreateBufferedExtentsChangedEvent(
-    size_t start, size_t current, size_t end) {
+    int64 start, int64 current, int64 end) {
   scoped_ptr<MediaLogEvent> event(
       CreateEvent(MediaLogEvent::BUFFERED_EXTENTS_CHANGED));
-  event->params.SetInteger("buffer_start", start);
-  event->params.SetInteger("buffer_current", current);
-  event->params.SetInteger("buffer_end", end);
+  // These values are headed to JS where there is no int64 so we use a double
+  // and accept loss of precision above 2^53 bytes (8 Exabytes).
+  event->params.SetDouble("buffer_start", start);
+  event->params.SetDouble("buffer_current", current);
+  event->params.SetDouble("buffer_end", end);
   return event.Pass();
 }
 
