@@ -11,19 +11,20 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_checker.h"
+#include "dbus/bus.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_daemon_client.h"
 #include "device/media_transfer_protocol/mtp_file_entry.pb.h"
 #include "device/media_transfer_protocol/mtp_storage_info.pb.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
-#else
-#include "dbus/bus.h"
 #endif
 
 namespace device {
@@ -38,14 +39,8 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   explicit MediaTransferProtocolManagerImpl(
       scoped_refptr<base::SequencedTaskRunner> task_runner)
       : weak_ptr_factory_(this) {
-    dbus::Bus* bus = NULL;
 #if defined(OS_CHROMEOS)
     DCHECK(!task_runner.get());
-    chromeos::DBusThreadManager* dbus_thread_manager =
-        chromeos::DBusThreadManager::Get();
-    bus = dbus_thread_manager->GetSystemBus();
-    if (!bus)
-      return;
 #else
     DCHECK(task_runner.get());
     dbus::Bus::Options options;
@@ -53,21 +48,12 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
     options.connection_type = dbus::Bus::PRIVATE;
     options.dbus_task_runner = task_runner;
     session_bus_ = new dbus::Bus(options);
-    bus = session_bus_.get();
 #endif
 
-    DCHECK(bus);
-    mtp_client_.reset(
-        MediaTransferProtocolDaemonClient::Create(bus, false /* not stub */));
-
-    // Set up signals and start initializing |storage_info_map_|.
-    mtp_client_->SetUpConnections(
-        base::Bind(&MediaTransferProtocolManagerImpl::OnStorageChanged,
-                   weak_ptr_factory_.GetWeakPtr()));
-    mtp_client_->EnumerateStorages(
-        base::Bind(&MediaTransferProtocolManagerImpl::OnEnumerateStorages,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&base::DoNothing));
+    dbus::Bus::GetServiceOwnerCallback reply_task =
+        base::Bind(&MediaTransferProtocolManagerImpl::FinishSetupOnOriginThread,
+                   weak_ptr_factory_.GetWeakPtr());
+    GetBus()->GetServiceOwner(mtpd::kMtpdServiceName, reply_task);
   }
 
   virtual ~MediaTransferProtocolManagerImpl() {
@@ -103,9 +89,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
       const std::string& storage_name) const OVERRIDE {
     DCHECK(thread_checker_.CalledOnValidThread());
     StorageInfoMap::const_iterator it = storage_info_map_.find(storage_name);
-    if (it == storage_info_map_.end())
-      return NULL;
-    return &it->second;
+    return it != storage_info_map_.end() ? &it->second : NULL;
   }
 
   // MediaTransferProtocolManager override.
@@ -399,6 +383,45 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
     DCHECK(thread_checker_.CalledOnValidThread());
     get_file_info_callbacks_.front().Run(MtpFileEntry(), true);
     get_file_info_callbacks_.pop();
+  }
+
+  // Get the Bus object used to communicate with mtpd.
+  dbus::Bus* GetBus() {
+    DCHECK(thread_checker_.CalledOnValidThread());
+#if defined(OS_CHROMEOS)
+    return chromeos::DBusThreadManager::Get()->GetSystemBus();
+#else
+    return session_bus_.get();
+#endif
+  }
+
+  // Callback to finish initialization after figuring out if the mtp service
+  // has an owner.
+  // |service_owner| contains the name of the current owner, if any.
+  void FinishSetupOnOriginThread(const std::string& service_owner) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+
+    if (service_owner.empty()) {
+#if !defined(OS_CHROMEOS)
+      // |session_bus_| will not get used. Manually shut it down.
+      session_bus_->PostTaskToDBusThread(
+          FROM_HERE, base::Bind(&dbus::Bus::ShutdownAndBlock, session_bus_));
+#endif
+      return;
+    }
+
+    mtp_client_.reset(
+        MediaTransferProtocolDaemonClient::Create(GetBus(),
+                                                  false /* not stub */));
+
+    // Set up signals and start initializing |storage_info_map_|.
+    mtp_client_->SetUpConnections(
+        base::Bind(&MediaTransferProtocolManagerImpl::OnStorageChanged,
+                   weak_ptr_factory_.GetWeakPtr()));
+    mtp_client_->EnumerateStorages(
+        base::Bind(&MediaTransferProtocolManagerImpl::OnEnumerateStorages,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&base::DoNothing));
   }
 
   // Mtpd DBus client.

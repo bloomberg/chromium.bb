@@ -832,6 +832,64 @@ void Bus::AssertOnDBusThread() {
   }
 }
 
+std::string Bus::GetServiceOwnerAndBlock(const std::string& service_name,
+                                         GetServiceOwnerOption options) {
+  AssertOnDBusThread();
+
+  MethodCall get_name_owner_call("org.freedesktop.DBus", "GetNameOwner");
+  MessageWriter writer(&get_name_owner_call);
+  writer.AppendString(service_name);
+  VLOG(1) << "Method call: " << get_name_owner_call.ToString();
+
+  const ObjectPath obj_path("/org/freedesktop/DBus");
+  if (!get_name_owner_call.SetDestination("org.freedesktop.DBus") ||
+      !get_name_owner_call.SetPath(obj_path)) {
+    if (options == REPORT_ERRORS)
+      LOG(ERROR) << "Failed to get name owner.";
+    return "";
+  }
+
+  ScopedDBusError error;
+  DBusMessage* response_message =
+      SendWithReplyAndBlock(get_name_owner_call.raw_message(),
+                            ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            error.get());
+  if (!response_message) {
+    if (options == REPORT_ERRORS) {
+      LOG(ERROR) << "Failed to get name owner. Got " << error.name() << ": "
+                 << error.message();
+    }
+    return "";
+  }
+
+  scoped_ptr<Response> response(Response::FromRawMessage(response_message));
+  MessageReader reader(response.get());
+
+  std::string service_owner;
+  if (!reader.PopString(&service_owner))
+    service_owner.clear();
+  return service_owner;
+}
+
+void Bus::GetServiceOwner(const std::string& service_name,
+                          const GetServiceOwnerCallback& callback) {
+  AssertOnOriginThread();
+
+  PostTaskToDBusThread(
+      FROM_HERE,
+      base::Bind(&Bus::GetServiceOwnerInternal, this, service_name, callback));
+}
+
+void Bus::GetServiceOwnerInternal(const std::string& service_name,
+                                  const GetServiceOwnerCallback& callback) {
+  AssertOnDBusThread();
+
+  std::string service_owner;
+  if (Connect())
+    service_owner = GetServiceOwnerAndBlock(service_name, REPORT_ERRORS);
+  PostTaskToOriginThread(FROM_HERE, base::Bind(callback, service_owner));
+}
+
 dbus_bool_t Bus::OnAddWatch(DBusWatch* raw_watch) {
   AssertOnDBusThread();
 

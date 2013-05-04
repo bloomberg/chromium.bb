@@ -161,6 +161,13 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
     SHARED,
   };
 
+  // Specifies whether the GetServiceOwnerAndBlock call should report or
+  // suppress errors.
+  enum GetServiceOwnerOption {
+    REPORT_ERRORS,
+    SUPPRESS_ERRORS,
+  };
+
   // Options used to create a Bus object.
   struct CHROME_DBUS_EXPORT Options {
     Options();
@@ -211,6 +218,12 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   // - the requested service name.
   // - whether ownership has been obtained or not.
   typedef base::Callback<void (const std::string&, bool)> OnOwnershipCallback;
+
+  // Called when GetServiceOwner() completes.
+  // |service_owner| is the return value from GetServiceOwnerAndBlock().
+  typedef base::Callback<void (const std::string& service_owner)>
+      GetServiceOwnerCallback;
+
   // TODO(satorux): Remove the service name parameter as the caller of
   // RequestOwnership() knows the service name.
 
@@ -530,6 +543,19 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   // AssertOnOriginThread().
   virtual void AssertOnDBusThread();
 
+  // Gets the owner for |service_name| via org.freedesktop.DBus.GetNameOwner.
+  // Returns the owner name, if any, or an empty string on failure.
+  // |options| specifies where to printing error messages or not.
+  //
+  // BLOCKING CALL.
+  virtual std::string GetServiceOwnerAndBlock(const std::string& service_name,
+                                              GetServiceOwnerOption options);
+
+  // A non-blocking version of GetServiceOwnerAndBlock().
+  // Must be called in the origin thread.
+  virtual void GetServiceOwner(const std::string& service_name,
+                               const GetServiceOwnerCallback& callback);
+
   // Returns true if the bus is connected to D-Bus.
   bool is_connected() { return connection_ != NULL; }
 
@@ -554,6 +580,10 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   // Helper function used for RequestOwnership().
   void RequestOwnershipInternal(const std::string& service_name,
                                 OnOwnershipCallback on_ownership_callback);
+
+  // Helper function used for GetServiceOwner().
+  void GetServiceOwnerInternal(const std::string& service_name,
+                               const GetServiceOwnerCallback& callback);
 
   // Processes the all incoming data to the connection, if any.
   //
