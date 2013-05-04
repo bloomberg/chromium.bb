@@ -25,7 +25,7 @@ crbug.com/24182 [ Debug ] jquery/data.html [ Slow ]
 crbug.com/24182 [ Debug ] jquery/dimensions.html [ Slow ]
 crbug.com/24182 [ Debug ] jquery/event.html [ Timeout ]
 crbug.com/24182 jquery/manipulation.html [ Pass Timeout ]
-crbug.com/24182 [ Debug ] jquery/offset.html [ Slow ]
+crbug.com/24182 [ Debug ] jquery/offset.html [ Slow Pass Failure ]
 crbug.com/24182 [ Debug ] css3/flexbox/position-absolute-child.html [ Slow ]
 crbug.com/24182 [ Debug ] fast/events/tabindex-focus-blur-all.html [ Slow ]
 crbug.com/24182 [ Win Linux Debug ] fast/frames/invalid.html [ Slow ]
@@ -1853,7 +1853,7 @@ crbug.com/143475 [ Win ] http/tests/xmlhttprequest/xmlhttprequest-50ms-download-
 
 crbug.com/86338 fast/loader/file-protocol-fragment.html [ Failure Pass ]
 webkit.org/b/81697 fast/notifications/notifications-request-permission.html [ Failure Pass ]
-crbug.com/225883 [ Win ] inspector/profiler/memory-instrumentation-external-array.html [ Failure Pass ]
+crbug.com/225883 [ Win Debug ] inspector/profiler/memory-instrumentation-external-array.html [ Failure ]
 crbug.com/225184 [ Win Mac Debug ] scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure ]
 Bug(ojan) virtual/gpu/compositedscrolling/overflow/overflow-auto-with-touch.html [ Failure Pass ]
 Bug(ojan) virtual/gpu/compositedscrolling/overflow/overflow-auto-with-touch-toggle.html [ Failure Pass ]
@@ -1862,4 +1862,4 @@ Bug(ojan) virtual/softwarecompositing/backface-visibility/backface-visibility-no
 Bug(ojan) virtual/softwarecompositing/culling/tile-occlusion-boundaries.html [ ImageOnlyFailure Pass ]
 crbug.com/237270 fast/js/stack-overflow-arrity-catch.html [ Failure Pass ]
 
-crbug.com/88588 [ Mac Debug ] fast/lists/inlineBoxWrapperNullCheck.html [ Failure ]
+crbug.com/88588 [ Mac Win Debug ] fast/lists/inlineBoxWrapperNullCheck.html [ Failure Pass ]
