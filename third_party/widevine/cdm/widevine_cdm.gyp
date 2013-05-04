@@ -70,16 +70,8 @@
                 '<(PRODUCT_DIR)/libwidevinecdm.so',
               ],
             }],
-            [ 'OS == "win"', {
+            [ 'OS == "win" and 0', {
               'type': 'shared_library',
-              # See http://crbug.com/237636.
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  'AdditionalOptions': [
-                    '/FORCE:UNRESOLVED',
-                  ],
-                },
-              },
             }],
             [ 'OS == "mac"', {
               'type': 'loadable_module',
