@@ -32,6 +32,8 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/download/download_util.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
@@ -44,6 +46,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -419,6 +422,7 @@ class NetInternalsMessageHandler
   void OnClearBrowserCache(const ListValue* list);
   void OnGetPrerenderInfo(const ListValue* list);
   void OnGetHistoricNetworkStats(const ListValue* list);
+  void OnGetExtensionInfo(const ListValue* list);
 #if defined(OS_CHROMEOS)
   void OnRefreshSystemLogs(const ListValue* list);
   void OnGetSystemLog(const ListValue* list);
@@ -810,6 +814,10 @@ void NetInternalsMessageHandler::RegisterMessages() {
       "getHistoricNetworkStats",
       base::Bind(&NetInternalsMessageHandler::OnGetHistoricNetworkStats,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getExtensionInfo",
+      base::Bind(&NetInternalsMessageHandler::OnGetExtensionInfo,
+                 base::Unretained(this)));
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
       "refreshSystemLogs",
@@ -883,6 +891,29 @@ void NetInternalsMessageHandler::OnGetHistoricNetworkStats(
   Value* historic_network_info =
       ChromeNetworkDelegate::HistoricNetworkStatsInfoToValue();
   SendJavascriptCommand("receivedHistoricNetworkStats", historic_network_info);
+}
+
+void NetInternalsMessageHandler::OnGetExtensionInfo(const ListValue* list) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  ListValue* extension_list = new ListValue();
+  Profile* profile = Profile::FromWebUI(web_ui());
+  extensions::ExtensionSystem* extension_system =
+      extensions::ExtensionSystem::Get(profile);
+  if (extension_system) {
+    ExtensionService* extension_service = extension_system->extension_service();
+    if (extension_service) {
+      scoped_ptr<const ExtensionSet> extensions(
+          extension_service->GenerateInstalledExtensionsSet());
+      for (ExtensionSet::const_iterator it = extensions->begin();
+           it != extensions->end(); ++it) {
+        DictionaryValue* extension_info = new DictionaryValue();
+        bool enabled = extension_service->IsExtensionEnabled((*it)->id());
+        (*it)->GetBasicInfo(enabled, extension_info);
+        extension_list->Append(extension_info);
+      }
+    }
+  }
+  SendJavascriptCommand("receivedExtensionInfo", extension_list);
 }
 
 #if defined(OS_CHROMEOS)

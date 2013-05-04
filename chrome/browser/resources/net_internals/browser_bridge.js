@@ -78,6 +78,9 @@ var BrowserBridge = (function() {
     this.pollableDataHelpers_.httpPipeliningStatus =
         new PollableDataHelper('onHttpPipeliningStatusChanged',
                                this.sendGetHttpPipeliningStatus.bind(this));
+    this.pollableDataHelpers_.extensionInfo =
+        new PollableDataHelper('onExtensionInfoChanged',
+                               this.sendGetExtensionInfo.bind(this));
 
     // Setting this to true will cause messages from the browser to be ignored,
     // and no messages will be sent to the browser, either.  Intended for use
@@ -239,6 +242,14 @@ var BrowserBridge = (function() {
       this.send('getPrerenderInfo');
     },
 
+    sendGetHttpPipeliningStatus: function() {
+      this.send('getHttpPipeliningStatus');
+    },
+
+    sendGetExtensionInfo: function() {
+      this.send('getExtensionInfo');
+    },
+
     enableIPv6: function() {
       this.send('enableIPv6');
     },
@@ -265,10 +276,6 @@ var BrowserBridge = (function() {
 
     setNetworkDebugMode: function(subsystem) {
       this.send('setNetworkDebugMode', [subsystem]);
-    },
-
-    sendGetHttpPipeliningStatus: function() {
-      this.send('getHttpPipeliningStatus');
     },
 
     //--------------------------------------------------------------------------
@@ -411,6 +418,10 @@ var BrowserBridge = (function() {
     receivedHttpPipeliningStatus: function(httpPipeliningStatus) {
       this.pollableDataHelpers_.httpPipeliningStatus.update(
           httpPipeliningStatus);
+    },
+
+    receivedExtensionInfo: function(extensionInfo) {
+      this.pollableDataHelpers_.extensionInfo.update(extensionInfo);
     },
 
     //--------------------------------------------------------------------------
@@ -670,6 +681,17 @@ var BrowserBridge = (function() {
      */
     addHttpPipeliningStatusObserver: function(observer, ignoreWhenUnchanged) {
       this.pollableDataHelpers_.httpPipeliningStatus.addObserver(
+          observer, ignoreWhenUnchanged);
+    },
+
+    /**
+     * Adds a listener of extension information. |observer| will be called
+     * back when data is received, through:
+     *
+     *   observer.onExtensionInfoChanged(extensionInfo)
+     */
+    addExtensionInfoObserver: function(observer, ignoreWhenUnchanged) {
+      this.pollableDataHelpers_.extensionInfo.addObserver(
           observer, ignoreWhenUnchanged);
     },
 

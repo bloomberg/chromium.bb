@@ -33,7 +33,7 @@ TEST_F('NetInternalsTest', 'netInternalsTourTabs', function() {
     quic: true,
     httpPipeline: true,
     httpCache: true,
-    serviceProviders: cr.isWindows,
+    modules: true,
     tests: true,
     hsts: true,
     logs: cr.isChromeOS,

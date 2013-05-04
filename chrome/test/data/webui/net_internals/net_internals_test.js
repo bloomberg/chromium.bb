@@ -272,7 +272,7 @@ var NetInternalsTest = (function() {
       quic: QuicView.TAB_ID,
       httpPipeline: HttpPipelineView.TAB_ID,
       httpCache: HttpCacheView.TAB_ID,
-      serviceProviders: ServiceProvidersView.TAB_ID,
+      modules: ModulesView.TAB_ID,
       tests: TestView.TAB_ID,
       hsts: HSTSView.TAB_ID,
       logs: LogsView.TAB_ID,

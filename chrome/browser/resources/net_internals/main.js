@@ -190,7 +190,7 @@ var MainView = (function() {
       addTab(QuicView);
       addTab(HttpPipelineView);
       addTab(HttpCacheView);
-      addTab(ServiceProvidersView);
+      addTab(ModulesView);
       addTab(TestView);
       addTab(HSTSView);
       addTab(LogsView);
@@ -198,7 +198,6 @@ var MainView = (function() {
       addTab(PrerenderView);
       addTab(CrosView);
 
-      this.tabSwitcher_.showMenuItem(ServiceProvidersView.TAB_ID, cr.isWindows);
       this.tabSwitcher_.showMenuItem(LogsView.TAB_ID, cr.isChromeOS);
       this.tabSwitcher_.showMenuItem(CrosView.TAB_ID, cr.isChromeOS);
     },
