@@ -173,7 +173,8 @@ void AnalysisDevice::clear(SkColor color) {
 
 void AnalysisDevice::drawPaint(const SkDraw&, const SkPaint& paint) {
   addBitmapFromPaint(paint);
-  isSolidColor_ = false;
+  isSolidColor_ =
+      (isSolidColor_ && isSolidColorPaint(paint) && paint.getColor() == color_);
   isTransparent_ = false;
 }
 
@@ -221,9 +222,12 @@ void AnalysisDevice::drawRect(const SkDraw& draw, const SkRect& rect,
   // - We're not in "forced not solid" mode
   // - Paint is solid color
   // - The quad is a full tile quad
+  //    - The exception is if the tile is already solid tile,
+  //      and we're drawing the same solid color paint then
+  //      the tile remains solid.
   if (!isForcedNotSolid_ &&
       isSolidColorPaint(paint) &&
-      doesCoverCanvas) {
+      (doesCoverCanvas || (isSolidColor_ && paint.getColor() == color_))) {
     isSolidColor_ = true;
     color_ = paint.getColor();
     hasText_ = false;

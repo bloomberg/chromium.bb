@@ -198,16 +198,6 @@ void Picture::Record(ContentLayerClient* painter,
   canvas->translate(SkFloatToScalar(-layer_rect_.x()),
                     SkFloatToScalar(-layer_rect_.y()));
 
-  SkPaint paint;
-  paint.setAntiAlias(false);
-  paint.setXfermodeMode(SkXfermode::kClear_Mode);
-  SkRect layer_skrect = SkRect::MakeXYWH(layer_rect_.x(),
-                                         layer_rect_.y(),
-                                         layer_rect_.width(),
-                                         layer_rect_.height());
-  canvas->clipRect(layer_skrect);
-  canvas->drawRect(layer_skrect, paint);
-
   gfx::RectF opaque_layer_rect;
   base::TimeTicks begin_record_time;
   if (stats)
