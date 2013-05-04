@@ -80,6 +80,15 @@ const base::FilePath::CharType* test_video_data =
     // FILE_PATH_LITERAL("test-25fps.vp8:320:240:250:250:50:175:11");
     FILE_PATH_LITERAL("test-25fps.h264:320:240:250:258:50:175:1");
 
+// Magic constants for differentiating the reasons for NotifyResetDone being
+// called.
+enum ResetPoint {
+  MID_STREAM_RESET = -2,
+  END_OF_STREAM_RESET = -1
+};
+
+const int kMaxResetAfterFrameNum = 100;
+
 struct TestVideoFile {
   explicit TestVideoFile(base::FilePath::StringType file_name)
       : file_name(file_name),
@@ -89,7 +98,8 @@ struct TestVideoFile {
         num_fragments(-1),
         min_fps_render(-1),
         min_fps_no_render(-1),
-        profile(-1) {
+        profile(-1),
+        reset_after_frame_num(END_OF_STREAM_RESET) {
   }
 
   base::FilePath::StringType file_name;
@@ -100,6 +110,7 @@ struct TestVideoFile {
   int min_fps_render;
   int min_fps_no_render;
   int profile;
+  int reset_after_frame_num;
   std::string data_str;
 };
 
@@ -108,7 +119,7 @@ struct TestVideoFile {
 // missing required data. Unspecified optional fields are set to -1.
 void ParseAndReadTestVideoData(base::FilePath::StringType data,
                                size_t num_concurrent_decoders,
-                               int reset_after_frame_num,
+                               int reset_point,
                                std::vector<TestVideoFile*>* test_video_files) {
   std::vector<base::FilePath::StringType> entries;
   base::SplitString(data, ';', &entries);
@@ -127,8 +138,14 @@ void ParseAndReadTestVideoData(base::FilePath::StringType data,
       CHECK(base::StringToInt(fields[3], &video_file->num_frames));
       // If we reset mid-stream and start playback over, account for frames
       // that are decoded twice in our expectations.
-      if (video_file->num_frames > 0 && reset_after_frame_num >= 0)
-        video_file->num_frames += reset_after_frame_num;
+      if (video_file->num_frames > 0 && reset_point == MID_STREAM_RESET) {
+        // Reset should not go beyond the last frame; reset after the first
+        // frame for short videos.
+        video_file->reset_after_frame_num = kMaxResetAfterFrameNum;
+        if (video_file->num_frames <= kMaxResetAfterFrameNum)
+          video_file->reset_after_frame_num = 1;
+        video_file->num_frames += video_file->reset_after_frame_num;
+      }
     }
     if (!fields[4].empty())
       CHECK(base::StringToInt(fields[4], &video_file->num_fragments));
@@ -205,13 +222,6 @@ ClientState ClientStateNotification::Wait() {
   pending_states_for_notification_.pop();
   return ret;
 }
-
-// Magic constants for differentiating the reasons for NotifyResetDone being
-// called.
-enum ResetPoint {
-  MID_STREAM_RESET = -2,
-  END_OF_STREAM_RESET = -1
-};
 
 // Client that can accept callbacks from a VideoDecodeAccelerator and is used by
 // the TESTs below.
@@ -704,12 +714,12 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
   const size_t num_concurrent_decoders = GetParam().b;
   const size_t num_in_flight_decodes = GetParam().c;
   const int num_play_throughs = GetParam().d;
-  const int reset_after_frame_num = GetParam().e;
+  const int reset_point = GetParam().e;
   const int delete_decoder_state = GetParam().f;
 
   std::vector<TestVideoFile*> test_video_files;
   ParseAndReadTestVideoData(test_video_data, num_concurrent_decoders,
-                            reset_after_frame_num, &test_video_files);
+                            reset_point, &test_video_files);
 
   // Suppress GL swapping in all but a few tests, to cut down overall test
   // runtime.
@@ -754,8 +764,8 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
     GLRenderingVDAClient* client = new GLRenderingVDAClient(
         rendering_helper.get(), index, note, video_file->data_str,
         num_fragments_per_decode, num_in_flight_decodes, num_play_throughs,
-        reset_after_frame_num, delete_decoder_state, video_file->width,
-        video_file->height, video_file->profile);
+        video_file->reset_after_frame_num, delete_decoder_state,
+        video_file->width, video_file->height, video_file->profile);
     clients[index] = client;
 
     rendering_thread.message_loop()->PostTask(
@@ -813,9 +823,15 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
       continue;
     GLRenderingVDAClient* client = clients[i];
     TestVideoFile* video_file = test_video_files[i % test_video_files.size()];
-    if (video_file->num_frames > 0)
-      EXPECT_EQ(client->num_decoded_frames(), video_file->num_frames);
-    if (reset_after_frame_num < 0) {
+    if (video_file->num_frames > 0) {
+      // Expect the decoded frames may be more than the video frames as frames
+      // could still be returned until resetting done.
+      if (video_file->reset_after_frame_num > 0)
+        EXPECT_GE(client->num_decoded_frames(), video_file->num_frames);
+      else
+        EXPECT_EQ(client->num_decoded_frames(), video_file->num_frames);
+    }
+    if (reset_point == END_OF_STREAM_RESET) {
       EXPECT_EQ(video_file->num_fragments, client->num_skipped_fragments() +
                 client->num_queued_fragments());
       EXPECT_EQ(client->num_done_bitstream_buffers(),
@@ -861,7 +877,7 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(
     MidStreamReset, VideoDecodeAcceleratorTest,
     ::testing::Values(
-        MakeTuple(1, 1, 1, 1, static_cast<ResetPoint>(100), CS_RESET)));
+        MakeTuple(1, 1, 1, 1, MID_STREAM_RESET, CS_RESET)));
 
 // Test that Destroy() mid-stream works fine (primarily this is testing that no
 // crashes occur).

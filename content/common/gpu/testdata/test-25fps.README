@@ -1,4 +1,4 @@
-Files in this directory and their provenance:
+test-25fps video files in this directory and their provenance:
 
 test-25fps.h264:
   Using ffmpeg SVN-r0.5.9-4:0.5.9-0ubuntu0.10.04.1 @ WebKit r122718, generated
