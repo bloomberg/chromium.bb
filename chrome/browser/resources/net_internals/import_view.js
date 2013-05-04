@@ -34,27 +34,18 @@ var ImportView = (function() {
     dropTarget.ondragenter = this.onDrag.bind(this);
     dropTarget.ondragover = this.onDrag.bind(this);
     dropTarget.ondrop = this.onDrop.bind(this);
-
-    this.loadedInfoBuildName_ = $(ImportView.LOADED_INFO_BUILD_NAME_ID);
-    this.loadedInfoExportDate_ = $(ImportView.LOADED_INFO_EXPORT_DATE_ID);
-    this.loadedInfoOsType_ = $(ImportView.LOADED_INFO_OS_TYPE_ID);
-    this.loadedInfoCommandLine_ = $(ImportView.LOADED_INFO_COMMAND_LINE_ID);
-    this.loadedInfoUserComments_ = $(ImportView.LOADED_INFO_USER_COMMENTS_ID);
   }
 
   ImportView.TAB_ID = 'tab-handle-import';
   ImportView.TAB_NAME = 'Import';
   ImportView.TAB_HASH = '#import';
 
-  // IDs for special HTML elements in import_view.html
+  // IDs for special HTML elements in import_view.html.
   ImportView.MAIN_BOX_ID = 'import-view-tab-content';
   ImportView.LOADED_DIV_ID = 'import-view-loaded-div';
   ImportView.LOAD_LOG_FILE_ID = 'import-view-load-log-file';
   ImportView.LOAD_STATUS_TEXT_ID = 'import-view-load-status-text';
-  ImportView.LOADED_INFO_EXPORT_DATE_ID = 'import-view-export-date';
-  ImportView.LOADED_INFO_BUILD_NAME_ID = 'import-view-build-name';
-  ImportView.LOADED_INFO_OS_TYPE_ID = 'import-view-os-type';
-  ImportView.LOADED_INFO_COMMAND_LINE_ID = 'import-view-command-line';
+  // Used in tests.
   ImportView.LOADED_INFO_USER_COMMENTS_ID = 'import-view-user-comments';
 
   cr.addSingletonGetter(ImportView);
@@ -68,9 +59,11 @@ var ImportView = (function() {
      * loading the new ones.  Returns true to indicate the view should
      * still be visible.
      */
-    onLoadLogFinish: function(data, unused, logDump) {
+    onLoadLogFinish: function(polledData, unused, logDump) {
+      var input = new JsEvalContext(logDump);
+      jstProcess(input, $(ImportView.LOADED_DIV_ID));
+
       setNodeDisplay(this.loadedDiv_, true);
-      this.updateLoadedClientInfo(logDump.userComments);
       return true;
     },
 
@@ -190,40 +183,6 @@ var ImportView = (function() {
     enableLoadFileElement_: function(enabled) {
       this.loadFileElement_.disabled = !enabled;
     },
-
-    /**
-     * Prints some basic information about the environment when the log was
-     * made.
-     */
-    updateLoadedClientInfo: function(userComments) {
-      // Reset all the fields (in case we early-return).
-      this.loadedInfoExportDate_.innerText = '';
-      this.loadedInfoBuildName_.innerText = '';
-      this.loadedInfoOsType_.innerText = '';
-      this.loadedInfoCommandLine_.innerText = '';
-      this.loadedInfoUserComments_.innerText = '';
-
-      if (typeof(ClientInfo) != 'object')
-        return;
-
-      timeutil.addNodeWithDate(this.loadedInfoExportDate_,
-                               new Date(ClientInfo.numericDate));
-
-      var buildName =
-          ClientInfo.name +
-          ' ' + ClientInfo.version +
-          ' (' + ClientInfo.official +
-          ' ' + ClientInfo.cl +
-          ') ' + ClientInfo.version_mod;
-
-      this.loadedInfoBuildName_.innerText = buildName;
-
-      this.loadedInfoOsType_.innerText = ClientInfo.os_type;
-      this.loadedInfoCommandLine_.innerText = ClientInfo.command_line;
-
-      // User comments will not be available when dumped from command line.
-      this.loadedInfoUserComments_.innerText = userComments || '';
-    }
   };
 
   return ImportView;

@@ -44,23 +44,31 @@
     <table class=styled-table>
     <tr>
       <th>Export date</th>
-      <td id=import-view-export-date></td>
+      <td jscontent="timeutil.dateToString(new Date(constants.clientInfo.numericDate))"></td>
     </tr>
     <tr>
       <th>Build</th>
-      <td id=import-view-build-name></td>
+      <td><span jscontent="constants.clientInfo.name"></span>
+        <span jscontent="constants.clientInfo.version"></span>
+        (<span jscontent="constants.clientInfo.official"></span>
+          <span jscontent="constants.clientInfo.cl"></span>)
+        <span jscontent="constants.clientInfo.version_mod">
+      </td>
     </tr>
     <tr>
       <th>OS type</th>
-      <td id=import-view-os-type></td>
+      <td jscontent="constants.clientInfo.os_type"></td>
     </tr>
     <tr>
       <th>Command line</th>
-      <td><pre id=import-view-command-line></pre></td>
+      <td><pre jscontent="constants.clientInfo.command_line"></pre></td>
     </tr>
     <tr>
       <th>User comments</th>
-      <td><pre id=import-view-user-comments></pre></td>
+      <td>
+        <pre id=import-view-user-comments jscontent="userComments"
+            jsdisplay="typeof userComments != 'undefined'"></pre>
+      </td>
     </tr>
     </table>
   </div>
