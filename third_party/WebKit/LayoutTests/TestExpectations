@@ -1941,8 +1941,8 @@ webkit.org/b/107953 inspector-protocol/debugger-terminate-dedicated-worker-while
 webkit.org/b/108286 virtual/softwarecompositing/geometry/fixed-position-composited-page-scale-down.html [ ImageOnlyFailure ]
 webkit.org/b/108286 virtual/softwarecompositing/geometry/fixed-position-iframe-composited-page-scale-down.html [ ImageOnlyFailure ]
 
-webkit.org/b/108876 [ Linux ] media/track/track-cues-cuechange.html [ Slow ]
-webkit.org/b/108876 [ Linux ] media/track/track-cues-enter-exit.html [ Slow ]
+webkit.org/b/108876 [ Linux Win ] media/track/track-cues-cuechange.html [ Slow ]
+webkit.org/b/108876 [ Linux Win ] media/track/track-cues-enter-exit.html [ Slow ]
 
 webkit.org/b/108912 inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.html [ Pass Failure ]
 
