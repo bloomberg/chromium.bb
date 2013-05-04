@@ -488,14 +488,87 @@ crbug.com/10343 [ Linux ] fast/text/large-text-composed-char.html
 # This test sometimes fails indefinitely, other times it takes 1-2 seconds.
 crbug.com/14009 [ Win ] http/tests/misc/dns-prefetch-control.html [ Pass Timeout ]
 
-# Newly introduced Reftest fails on Chrome/Mac
-webkit.org/b/110203 [ MountainLion ] fast/multicol/seamless-flowed-through-columns.html [ ImageOnlyFailure ]
-
 webkit.org/b/110296 [ Linux MountainLion ] fast/multicol/newmulticol/column-rules-fixed-height.html [ ImageOnlyFailure ]
+
+# There seems to be some endemic MountainLion reftest failure.
+# In theory, this shouldn't happen with reftests. Indicates a likely genuine
+# MountainLion Blink bug.
+webkit.org/b/110203 [ MountainLion ] fast/multicol/seamless-flowed-through-columns.html [ ImageOnlyFailure ]
 webkit.org/b/110377 [ MountainLion ] fast/multicol/newmulticol/layers-in-multicol.html [ ImageOnlyFailure ]
 webkit.org/b/110377 [ MountainLion ] fast/multicol/newmulticol/float-paginate-complex.html [ ImageOnlyFailure ]
 webkit.org/b/110377 [ MountainLion ] fast/multicol/newmulticol/float-paginate.html [ ImageOnlyFailure ]
 webkit.org/b/110377 [ MountainLion ] fast/multicol/newmulticol/positioned-with-constrained-height.html [ ImageOnlyFailure ]
+webkit.org/b/102163 [ MountainLion ] ietestcenter/css3/multicolumn/column-block-formatting-context-001.htm [ ImageOnlyFailure ]
+webkit.org/b/102163 [ MountainLion ] ietestcenter/css3/multicolumn/column-containing-block-003.htm [ ImageOnlyFailure ]
+webkit.org/b/102163 [ MountainLion ] ietestcenter/css3/multicolumn/column-width-applies-to-001.htm [ ImageOnlyFailure ]
+webkit.org/b/102163 [ MountainLion ] ietestcenter/css3/multicolumn/column-width-applies-to-002.htm [ ImageOnlyFailure ]
+webkit.org/b/102163 [ MountainLion ] ietestcenter/css3/multicolumn/column-width-applies-to-003.htm [ ImageOnlyFailure ]
+webkit.org/b/102163 [ MountainLion ] ietestcenter/css3/multicolumn/column-width-applies-to-004.htm [ ImageOnlyFailure ]
+webkit.org/b/102163 [ MountainLion ] ietestcenter/css3/multicolumn/column-width-applies-to-013.htm [ ImageOnlyFailure ]
+webkit.org/b/102163 [ MountainLion ] ietestcenter/css3/multicolumn/column-width-applies-to-014.htm [ ImageOnlyFailure ]
+webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-allregions-nobreaks.html [ ImageOnlyFailure ]
+webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-allregions.html [ ImageOnlyFailure ]
+webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-breakafteralways-maxheight.html [ ImageOnlyFailure ]
+webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-breakbeforealways.html [ ImageOnlyFailure ]
+webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-definedheight-changenotdetected.html [ ImageOnlyFailure ]
+webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-firstregion-breakalways.html [ ImageOnlyFailure ]
+webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-horizontal-bt.html [ ImageOnlyFailure ]
+webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-lastregion-overflowauto-breaksignored.html [ ImageOnlyFailure ]
+webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-lastregion-overflowauto.html [ ImageOnlyFailure ]
+webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-maxheight-region.html [ ImageOnlyFailure ]
+webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-middleregion.html [ ImageOnlyFailure ]
+webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-secondregion-breakoutside.html [ ImageOnlyFailure ]
+webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-secondregion.html [ ImageOnlyFailure ]
+webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-singleregion-breakafteralways-maxheight.html [ ImageOnlyFailure ]
+webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-singleregion-breakafteralways.html [ ImageOnlyFailure ]
+webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-singleregion-breakaftermargin.html [ ImageOnlyFailure ]
+webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-singleregion-breakbeforealways.html [ ImageOnlyFailure ]
+webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-singleregion-multiplebreaks.html [ ImageOnlyFailure ]
+webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-singleregion-overflowauto-breaksignored.html [ ImageOnlyFailure ]
+webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-singleregion-overflowauto.html [ ImageOnlyFailure ]
+webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-vertical-lr.html [ ImageOnlyFailure ]
+webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-vertical-rl.html [ ImageOnlyFailure ]
+webkit.org/b/102164 [ MountainLion ] fast/regions/autowidth-normalflow-minmaxwidth.html [ ImageOnlyFailure ]
+webkit.org/b/102164 [ MountainLion ] fast/regions/autowidth-normalflow-minwidth.html [ ImageOnlyFailure ]
+webkit.org/b/102164 [ MountainLion ] fast/regions/autowidth-normalflow-vertrl.html [ ImageOnlyFailure ]
+webkit.org/b/102164 [ MountainLion ] fast/regions/region-style-image-background-color.html [ ImageOnlyFailure ]
+webkit.org/b/102164 [ MountainLion ] fast/regions/render-region-custom-style-mark.html [ ImageOnlyFailure ]
+webkit.org/b/102165 [ MountainLion ] compositing/text-on-scaled-layer.html [ ImageOnlyFailure ]
+webkit.org/b/102165 [ MountainLion ] compositing/text-on-scaled-surface.html [ ImageOnlyFailure ]
+webkit.org/b/102165 [ MountainLion ] virtual/softwarecompositing/text-on-scaled-layer.html [ ImageOnlyFailure ]
+webkit.org/b/102165 [ MountainLion ] virtual/softwarecompositing/text-on-scaled-surface.html [ ImageOnlyFailure ]
+# issues w/ ahem glyph rendering causing failures for reftests on ML?
+webkit.org/b/102166 [ MountainLion ] css2.1/20110323/border-conflict-element-001d.htm [ ImageOnlyFailure ]
+webkit.org/b/102166 [ MountainLion ] css2.1/20110323/c541-word-sp-001.htm [ ImageOnlyFailure ]
+webkit.org/b/102166 [ MountainLion ] css2.1/20110323/text-indent-014.htm [ ImageOnlyFailure ]
+webkit.org/b/102166 [ MountainLion ] css2.1/20110323/overflow-applies-to-007.htm [ ImageOnlyFailure ]
+webkit.org/b/102166 [ MountainLion ] css2.1/20110323/overflow-applies-to-010.htm [ ImageOnlyFailure ]
+webkit.org/b/102166 [ MountainLion ] css2.1/20110323/overflow-applies-to-012.htm [ ImageOnlyFailure ]
+webkit.org/b/102166 [ MountainLion ] css2.1/20110323/overflow-applies-to-013.htm [ ImageOnlyFailure ]
+webkit.org/b/102166 [ MountainLion ] css2.1/20110323/overflow-applies-to-014.htm [ ImageOnlyFailure ]
+webkit.org/b/102166 [ MountainLion ] css2.1/20110323/overflow-applies-to-015.htm [ ImageOnlyFailure ]
+webkit.org/b/102166 [ MountainLion ] fast/block/float/floats-wrap-inside-inline-003.htm [ ImageOnlyFailure ]
+webkit.org/b/102166 [ MountainLion ] fast/css/text-indent-first-line-001.html [ ImageOnlyFailure ]
+webkit.org/b/102166 [ MountainLion ] fast/css/text-indent-first-line-002.html [ ImageOnlyFailure ]
+webkit.org/b/102166 [ MountainLion ] fast/css/text-indent-first-line-003.html [ ImageOnlyFailure ]
+webkit.org/b/102166 [ MountainLion ] fast/css/text-indent-first-line-004.html [ ImageOnlyFailure ]
+webkit.org/b/102166 [ MountainLion ] fast/css/text-indent-first-line-005.html [ ImageOnlyFailure ]
+webkit.org/b/102166 [ MountainLion ] fast/css/text-indent-first-line-006.html [ ImageOnlyFailure ]
+webkit.org/b/103609 [ MountainLion ] fast/regions/autoheight-dynamic-update.html [ ImageOnlyFailure ]
+webkit.org/b/103609 [ MountainLion ] fast/regions/firstletter-inside-flowthread.html [ ImageOnlyFailure ]
+webkit.org/b/103609 [ MountainLion ] fast/regions/listmarker-inside-flowthread.html [ ImageOnlyFailure ]
+webkit.org/b/47975 [ MountainLion ] fast/block/float/max-width-clear-float-with-overflow-hidden.html [ ImageOnlyFailure ]
+webkit.org/b/104715 [ MountainLion ] fast/block/float/floats-wrap-inside-inline-007.html [ ImageOnlyFailure ]
+webkit.org/b/107893 [ MountainLion ] fast/exclusions/shape-inside/shape-inside-first-fit-001.html [ ImageOnlyFailure ]  
+webkit.org/b/109283 [ MountainLion ] fast/regions/selecting-text-through-different-region-flows.html [ ImageOnlyFailure ]
+webkit.org/b/110568 [ MountainLion ] fast/multicol/newmulticol/positioned-split.html [ ImageOnlyFailure ]
+webkit.org/b/110739 [ MountainLion ] fast/regions/shape-inside/shape-inside-on-regions.html [ ImageOnlyFailure ]
+crbug.com/225778 [ MountainLion ] ietestcenter/css3/grid/grid-column-002.htm [ ImageOnlyFailure ]
+crbug.com/225880 [ MountainLion ] fast/exclusions/shape-outside-floats/shape-outside-floats-overflow-hidden.html [ ImageOnlyFailure ]
+crbug.com/234061 [ MountainLion ] fast/regions/shape-inside/shape-inside-recursive-layout.html [ ImageOnlyFailure ]
+crbug.com/237083 [ MountainLion ] ietestcenter/css3/grid/grid-column-003.htm [ ImageOnlyFailure ]
+# Failing since r144633
+webkit.org/b/111510 [ MountainLion ] fast/regions/region-style-in-columns.html [ ImageOnlyFailure ]
 
 webkit.org/b/111141 fast/regions/seamless-iframe-flowed-into-regions.html [ ImageOnlyFailure ]
 
@@ -1022,15 +1095,6 @@ webkit.org/b/84772 ietestcenter/css3/multicolumn/column-width-applies-to-010.htm
 webkit.org/b/84773 ietestcenter/css3/multicolumn/column-width-applies-to-012.htm [ ImageOnlyFailure ]
 webkit.org/b/84777 ietestcenter/css3/multicolumn/column-width-applies-to-015.htm [ ImageOnlyFailure ]
 
-webkit.org/b/102163 [ MountainLion ] ietestcenter/css3/multicolumn/column-block-formatting-context-001.htm [ ImageOnlyFailure ]
-webkit.org/b/102163 [ MountainLion ] ietestcenter/css3/multicolumn/column-containing-block-003.htm [ ImageOnlyFailure ]
-webkit.org/b/102163 [ MountainLion ] ietestcenter/css3/multicolumn/column-width-applies-to-001.htm [ ImageOnlyFailure ]
-webkit.org/b/102163 [ MountainLion ] ietestcenter/css3/multicolumn/column-width-applies-to-002.htm [ ImageOnlyFailure ]
-webkit.org/b/102163 [ MountainLion ] ietestcenter/css3/multicolumn/column-width-applies-to-003.htm [ ImageOnlyFailure ]
-webkit.org/b/102163 [ MountainLion ] ietestcenter/css3/multicolumn/column-width-applies-to-004.htm [ ImageOnlyFailure ]
-webkit.org/b/102163 [ MountainLion ] ietestcenter/css3/multicolumn/column-width-applies-to-013.htm [ ImageOnlyFailure ]
-webkit.org/b/102163 [ MountainLion ] ietestcenter/css3/multicolumn/column-width-applies-to-014.htm [ ImageOnlyFailure ]
-#
 # IETC flexbox failures
 webkit.org/b/85211 ietestcenter/css3/flexbox/flexbox-align-stretch-001.htm [ ImageOnlyFailure ]
 webkit.org/b/85212 ietestcenter/css3/flexbox/flexbox-layout-002.htm [ ImageOnlyFailure ]
@@ -1075,33 +1139,6 @@ webkit.org/b/86909 [ Win ] http/tests/inspector/network/network-content-replacem
 webkit.org/b/87175 fast/regions/floats-basic-in-variable-width-regions.html
 webkit.org/b/87175 fast/regions/overflow-in-uniform-regions.html
 webkit.org/b/87175 fast/regions/render-region-renderer.html
-webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-allregions-nobreaks.html [ ImageOnlyFailure ]
-webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-allregions.html [ ImageOnlyFailure ]
-webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-breakafteralways-maxheight.html [ ImageOnlyFailure ]
-webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-breakbeforealways.html [ ImageOnlyFailure ]
-webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-definedheight-changenotdetected.html [ ImageOnlyFailure ]
-webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-firstregion-breakalways.html [ ImageOnlyFailure ]
-webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-horizontal-bt.html [ ImageOnlyFailure ]
-webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-lastregion-overflowauto-breaksignored.html [ ImageOnlyFailure ]
-webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-lastregion-overflowauto.html [ ImageOnlyFailure ]
-webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-maxheight-region.html [ ImageOnlyFailure ]
-webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-middleregion.html [ ImageOnlyFailure ]
-webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-secondregion-breakoutside.html [ ImageOnlyFailure ]
-webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-secondregion.html [ ImageOnlyFailure ]
-webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-singleregion-breakafteralways-maxheight.html [ ImageOnlyFailure ]
-webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-singleregion-breakafteralways.html [ ImageOnlyFailure ]
-webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-singleregion-breakaftermargin.html [ ImageOnlyFailure ]
-webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-singleregion-breakbeforealways.html [ ImageOnlyFailure ]
-webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-singleregion-multiplebreaks.html [ ImageOnlyFailure ]
-webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-singleregion-overflowauto-breaksignored.html [ ImageOnlyFailure ]
-webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-singleregion-overflowauto.html [ ImageOnlyFailure ]
-webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-vertical-lr.html [ ImageOnlyFailure ]
-webkit.org/b/102164 [ MountainLion ] fast/regions/autoheight-vertical-rl.html [ ImageOnlyFailure ]
-webkit.org/b/102164 [ MountainLion ] fast/regions/autowidth-normalflow-minmaxwidth.html [ ImageOnlyFailure ]
-webkit.org/b/102164 [ MountainLion ] fast/regions/autowidth-normalflow-minwidth.html [ ImageOnlyFailure ]
-webkit.org/b/102164 [ MountainLion ] fast/regions/autowidth-normalflow-vertrl.html [ ImageOnlyFailure ]
-webkit.org/b/102164 [ MountainLion ] fast/regions/region-style-image-background-color.html [ ImageOnlyFailure ]
-webkit.org/b/102164 [ MountainLion ] fast/regions/render-region-custom-style-mark.html [ ImageOnlyFailure ]
 
 webkit.org/b/87321 [ XP Release ] fast/history/history-subframe-with-name.html [ Failure Pass ]
 webkit.org/b/87321 [ Debug ] fast/history/history-subframe-with-name.html [ Pass Timeout ]
@@ -1280,30 +1317,6 @@ webkit.org/b/101229 [ Debug ] inspector-protocol/debugger-pause-dedicated-worker
 # Flaky on win7 since at least r162410
 webkit.org/b/99886 [ Win7 Debug ] fast/dom/shadow/input-with-validation.html [ ImageOnlyFailure Pass ]
 
-# reftest failures that might be rounding issues.
-webkit.org/b/102165 [ MountainLion ] compositing/text-on-scaled-layer.html [ ImageOnlyFailure ]
-webkit.org/b/102165 [ MountainLion ] compositing/text-on-scaled-surface.html [ ImageOnlyFailure ]
-webkit.org/b/102165 [ MountainLion ] virtual/softwarecompositing/text-on-scaled-layer.html [ ImageOnlyFailure ]
-webkit.org/b/102165 [ MountainLion ] virtual/softwarecompositing/text-on-scaled-surface.html [ ImageOnlyFailure ]
-
-# issues w/ ahem glyph rendering causing failures for reftests on ML?
-webkit.org/b/102166 [ MountainLion ] css2.1/20110323/border-conflict-element-001d.htm [ ImageOnlyFailure ]
-webkit.org/b/102166 [ MountainLion ] css2.1/20110323/c541-word-sp-001.htm [ ImageOnlyFailure ]
-webkit.org/b/102166 [ MountainLion ] css2.1/20110323/text-indent-014.htm [ ImageOnlyFailure ]
-webkit.org/b/102166 [ MountainLion ] css2.1/20110323/overflow-applies-to-007.htm [ ImageOnlyFailure ]
-webkit.org/b/102166 [ MountainLion ] css2.1/20110323/overflow-applies-to-010.htm [ ImageOnlyFailure ]
-webkit.org/b/102166 [ MountainLion ] css2.1/20110323/overflow-applies-to-012.htm [ ImageOnlyFailure ]
-webkit.org/b/102166 [ MountainLion ] css2.1/20110323/overflow-applies-to-013.htm [ ImageOnlyFailure ]
-webkit.org/b/102166 [ MountainLion ] css2.1/20110323/overflow-applies-to-014.htm [ ImageOnlyFailure ]
-webkit.org/b/102166 [ MountainLion ] css2.1/20110323/overflow-applies-to-015.htm [ ImageOnlyFailure ]
-webkit.org/b/102166 [ MountainLion ] fast/block/float/floats-wrap-inside-inline-003.htm [ ImageOnlyFailure ]
-webkit.org/b/102166 [ MountainLion ] fast/css/text-indent-first-line-001.html [ ImageOnlyFailure ]
-webkit.org/b/102166 [ MountainLion ] fast/css/text-indent-first-line-002.html [ ImageOnlyFailure ]
-webkit.org/b/102166 [ MountainLion ] fast/css/text-indent-first-line-003.html [ ImageOnlyFailure ]
-webkit.org/b/102166 [ MountainLion ] fast/css/text-indent-first-line-004.html [ ImageOnlyFailure ]
-webkit.org/b/102166 [ MountainLion ] fast/css/text-indent-first-line-005.html [ ImageOnlyFailure ]
-webkit.org/b/102166 [ MountainLion ] fast/css/text-indent-first-line-006.html [ ImageOnlyFailure ]
-
 webkit.org/b/79446 [ Debug ] svg/repaint/image-with-clip-path.svg [ Pass ImageOnlyFailure ]
 
 # Only ready for JSC so far, not fixed in v8 yet.
@@ -1349,10 +1362,6 @@ webkit.org/b/103148 [ Linux ] fast/text/atsui-small-caps-punctuation-size.html [
 webkit.org/b/103446 [ Mac ] http/tests/canvas/canvas-slow-font-loading.html [ ImageOnlyFailure ]
 webkit.org/b/103471 http/tests/navigation/slowmetaredirect-basic.html [ Pass Timeout ]
 
-webkit.org/b/103609 [ MountainLion ] fast/regions/autoheight-dynamic-update.html [ ImageOnlyFailure ]
-webkit.org/b/103609 [ MountainLion ] fast/regions/firstletter-inside-flowthread.html [ ImageOnlyFailure ]
-webkit.org/b/103609 [ MountainLion ] fast/regions/listmarker-inside-flowthread.html [ ImageOnlyFailure ]
-
 # New tests added in r136492 that do not work in chromium
 webkit.org/b/99800 fast/harness/perftests/runs-per-second-iterations.html [ Timeout Pass ]
 
@@ -1379,11 +1388,7 @@ webkit.org/b/103767  [ Win Mac Linux ] media/track/track-in-band-legacy-api.html
 webkit.org/b/104489 http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_attribute_order.html [ Failure Timeout Pass ]
 webkit.org/b/104489 http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_script_types.html [ Failure Timeout Pass ]
 
-# New test added in r137331
-webkit.org/b/104715 [ MountainLion ] fast/block/float/floats-wrap-inside-inline-007.html [ ImageOnlyFailure ]
-
 webkit.org/b/105595 [ Mac ] svg/text/alt-glyph-for-surrogate-pair.svg [ ImageOnlyFailure ]
-webkit.org/b/47975 [ MountainLion ] fast/block/float/max-width-clear-float-with-overflow-hidden.html [ ImageOnlyFailure ]
 
 webkit.org/b/106238 [ Win ] svg/dynamic-updates/SVGUseElement-dom-href1-attr.html [ ImageOnlyFailure Pass ]
 webkit.org/b/106238 [ Win ] svg/dynamic-updates/SVGUseElement-svgdom-href1-prop.html [ ImageOnlyFailure Pass ]
@@ -1406,13 +1411,10 @@ webkit.org/b/107341 [ Debug ] inspector/profiler/memory-instrumentation-cached-i
 
 webkit.org/b/107962 [ Release ] http/tests/loading/redirect-methods.html [ Pass Failure ]
 
-webkit.org/b/107893 [ MountainLion ] fast/exclusions/shape-inside/shape-inside-first-fit-001.html [ ImageOnlyFailure ]  
 webkit.org/b/108876 [ Win ] media/track/track-cues-cuechange.html [ Slow ]
 webkit.org/b/108876 [ Win ] media/track/track-cues-enter-exit.html [ Slow ]
 
 webkit.org/b/108912 inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.html [ Pass Failure ]
-
-webkit.org/b/109283 [ MountainLion ] fast/regions/selecting-text-through-different-region-flows.html [ ImageOnlyFailure ]
 
 webkit.org/b/109312 fast/canvas/canvas-drawImage-shadow.html [ Pass Failure ]
 webkit.org/b/109312 virtual/gpu/fast/canvas/canvas-drawImage-shadow.html [ Pass Failure ]
@@ -1424,10 +1426,6 @@ webkit.org/b/97037 media/encrypted-media/encrypted-media-v2-syntax.html [ Timeou
 webkit.org/b/109963 [ Debug ] inspector/profiler/heap-snapshot-get-profile-crash.html [ Pass Crash ]
 
 webkit.org/b/110247 [ Debug ] fast/workers/storage/interrupt-database.html [ Pass Crash Slow ]
-
-webkit.org/b/110568 [ MountainLion ] fast/multicol/newmulticol/positioned-split.html [ ImageOnlyFailure ]
-
-webkit.org/b/110739 [ MountainLion ] fast/regions/shape-inside/shape-inside-on-regions.html [ ImageOnlyFailure ]
 
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
@@ -1448,9 +1446,6 @@ crbug.com/192172 [ Debug ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-over
 # The html5lib tests are all too slow to run in Debug, largely due to v8 per-document boot-up.
 # V8 bug: https://code.google.com/p/v8/issues/detail?id=2567
 webkit.org/b/110876 [ Debug ] html5lib/generated/ [ Skip ]
-
-# Failing since r144633
-webkit.org/b/111510 [ MountainLion ] fast/regions/region-style-in-columns.html [ ImageOnlyFailure ]
 
 webkit.org/b/111524 [ Debug ] fast/dom/HTMLDocument/document-special-properties.html [ Pass Timeout ]
 
@@ -1499,9 +1494,6 @@ webkit.org/b/113487 [ Debug ] plugins/npruntime/npruntime-calls-with-null-npp.ht
 
 webkit.org/b/113555 fast/forms/state-restore-per-form.html [ Pass Timeout ]
 
-crbug.com/225778 [ MountainLion ] ietestcenter/css3/grid/grid-column-002.htm [ ImageOnlyFailure ]
-crbug.com/225880 [ MountainLion ] fast/exclusions/shape-outside-floats/shape-outside-floats-overflow-hidden.html [ ImageOnlyFailure ]
-
 crbug.com/229113 [ Win Mac ] http/tests/history/redirect-js-location-assign-0-seconds.html [ Pass Failure ]
 crbug.com/229698 http/tests/security/mixedContent/about-blank-iframe-in-main-frame.html [ Pass Failure ]
 
@@ -1529,7 +1521,6 @@ crbug.com/233260 [ Win ] fast/preloader/script.html [ Failure ]
 crbug.com/233585 media/media-document-audio-repaint.html [ ImageOnlyFailure ]
 crbug.com/233700 [ Debug ] inspector/debugger/debugger-script-preprocessor.html [ Pass Timeout Crash ]
 
-crbug.com/234061 [ MountainLion ] fast/regions/shape-inside/shape-inside-recursive-layout.html [ ImageOnlyFailure ]
 crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined.html [ Pass Failure ]
 
 crbug.com/234555 [ Debug ] fast/ruby/ruby-svg-crash.html [ Failure ]
@@ -1556,7 +1547,6 @@ crbug.com/236992 [ Debug ] css3/filters/filter-property-computed-style.html [ Sl
 crbug.com/236992 [ Debug ] css3/flexbox/position-absolute-children.html [ Slow ]
 crbug.com/236992 [ Debug ] fast/css/css-selector-deeply-nested.html [ Slow ]
 
-crbug.com/237083 [ MountainLion ] ietestcenter/css3/grid/grid-column-003.htm [ ImageOnlyFailure ]
 crbug.com/237245 editing/selection/programmatic-selection-on-mac-is-directionless.html [ Slow ]
 crbug.com/237250 [ SnowLeopard Debug ] media/video-source-load.html [ Pass Crash ]
 crbug.com/237250 [ SnowLeopard Debug ] media/media-fragments/TC0081.html [ Pass Crash ]
