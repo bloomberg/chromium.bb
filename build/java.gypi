@@ -83,14 +83,21 @@
       'variables': {
         'res_dir': '<(java_in_dir)/res',
         'res_crunched_dir': '<(intermediate_dir)/res_crunched',
+        'res_v14_dir': '<(intermediate_dir)/res_v14',
+        'res_v14_stamp': '<(intermediate_dir)/res_v14.stamp',
+        'res_v17_dir': '<(intermediate_dir)/res_v17',
+        'res_v17_stamp': '<(intermediate_dir)/res_v17.stamp',
         'res_input_dirs': ['<(res_dir)', '<@(res_extra_dirs)'],
         'resource_input_paths': ['<!@(find <(res_dir) -type f)'],
         'R_dir': '<(intermediate_dir)/java_R',
         'R_text_file': '<(R_dir)/R.txt',
         'R_stamp': '<(intermediate_dir)/resources.stamp',
         'generated_src_dirs': ['<(R_dir)'],
-        'additional_input_paths': ['<(R_stamp)'],
+        'additional_input_paths': ['<(R_stamp)',
+                                   '<(res_v14_stamp)',
+                                   '<(res_v17_stamp)',],
         'additional_res_dirs': [],
+        'dependencies_res_input_dirs': [],
         'dependencies_res_files': [],
       },
       'all_dependent_settings': {
@@ -99,13 +106,20 @@
           # generated_R_dirs and include its resources via
           # dependencies_res_files.
           'generated_R_dirs': ['<(R_dir)'],
-          'additional_input_paths': ['<(R_stamp)'],
+          'additional_input_paths': ['<(R_stamp)',
+                                     '<(res_v14_stamp)',
+                                     '<(res_v17_stamp)',],
           'dependencies_res_files': ['<@(resource_input_paths)'],
+
+          'dependencies_res_input_dirs': ['<@(res_input_dirs)'],
 
           # Dependent APKs include this target's resources via
           # additional_res_dirs, additional_res_packages, and
           # additional_R_text_files.
-          'additional_res_dirs': ['<(res_crunched_dir)', '<@(res_input_dirs)'],
+          'additional_res_dirs': ['<(res_crunched_dir)',
+                                  '<(res_v14_dir)',
+                                  '<(res_v17_dir)',
+                                  '<@(res_input_dirs)'],
           'additional_res_packages': ['<(R_package)'],
           'additional_R_text_files': ['<(R_text_file)'],
         },
@@ -141,7 +155,8 @@
             'android_manifest': '<(DEPTH)/build/android/AndroidManifest.xml',
             # Include the dependencies' res dirs so that references to
             # resources in dependencies can be resolved.
-            'all_res_dirs': ['<@(res_input_dirs)', '>@(additional_res_dirs)'],
+            'all_res_dirs': ['<@(res_input_dirs)',
+                             '>@(dependencies_res_input_dirs)',],
           },
           'inputs': [
             '<(DEPTH)/build/android/gyp/util/build_utils.py',
@@ -170,6 +185,44 @@
             # TODO(newt): remove this once crbug.com/177552 is fixed in ninja.
             '--ignore=>!(echo \'>(_inputs)\' | md5sum)',
           ],
+        },
+        # Copy API 17 resources.
+        {
+          'action_name': 'copy_v17_resources_<(_target_name)',
+          'message': 'Copying Android API 17 resources <(_target_name)',
+          'inputs': [
+            '<(DEPTH)/build/android/gyp/util/build_utils.py',
+            '<(DEPTH)/build/android/gyp/copy_v17_resources.py',
+            '>@(resource_input_paths)',
+          ],
+          'outputs': [
+            '<(res_v17_stamp)',
+          ],
+          'action': [
+            'python', '<(DEPTH)/build/android/gyp/copy_v17_resources.py',
+            '--res-dir=<(res_dir)',
+            '--res-v17-dir=<(res_v17_dir)',
+            '--stamp', '<(res_v17_stamp)',
+          ]
+        },
+        # Generate API 14 resources.
+        {
+          'action_name': 'generate_api_14_resources_<(_target_name)',
+          'message': 'Generating Android API 14 resources <(_target_name)',
+          'inputs': [
+            '<(DEPTH)/build/android/gyp/util/build_utils.py',
+            '<(DEPTH)/build/android/gyp/generate_v14_resources.py',
+            '>@(resource_input_paths)',
+          ],
+          'outputs': [
+            '<(res_v14_stamp)',
+          ],
+          'action': [
+            'python', '<(DEPTH)/build/android/gyp/generate_v14_resources.py',
+            '--res-dir=<(res_dir)',
+            '--res-v14-dir=<(res_v14_dir)',
+            '--stamp', '<(res_v14_stamp)',
+          ]
         },
       ],
     }],
