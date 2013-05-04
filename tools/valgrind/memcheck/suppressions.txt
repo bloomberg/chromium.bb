@@ -2072,13 +2072,6 @@
    fun:_ZN11webkit_glue16WebURLLoaderImpl7Context18OnReceivedResponseERKNS_20ResourceResponseInfoEb
 }
 {
-   bug_58449
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN11ProfileImpl18GetDownloadManagerEv
-}
-{
    bug_58546
    Memcheck:Leak
    fun:_Znw*
