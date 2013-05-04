@@ -142,7 +142,10 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
 #if !defined(OS_ANDROID)
     // The user isn't signed in, show the sync promo.
     if (SyncPromoUI::ShouldShowSyncPromo(profile)) {
-      chrome::ShowBrowserSignin(browser, SyncPromoUI::SOURCE_NTP_LINK);
+      SyncPromoUI::Source source =
+          (web_contents->GetURL().spec() == chrome::kChromeUIAppsURL) ?
+              SyncPromoUI::SOURCE_APPS_PAGE_LINK : SyncPromoUI::SOURCE_NTP_LINK;
+      chrome::ShowBrowserSignin(browser, source);
       RecordInHistogram(NTP_SIGN_IN_PROMO_CLICKED);
     }
 #endif

@@ -164,6 +164,10 @@ void LogHistogramValue(SyncPromoUI::Source source, int action) {
       UMA_HISTOGRAM_ENUMERATION("Signin.AppLauncherActions", action,
                                 one_click_signin::HISTOGRAM_MAX);
       break;
+    case SyncPromoUI::SOURCE_APPS_PAGE_LINK:
+      UMA_HISTOGRAM_ENUMERATION("Signin.AppsPageLinkActions", action,
+                                one_click_signin::HISTOGRAM_MAX);
+      break;
     default:
       NOTREACHED() << "Invalid Source";
       return;
@@ -887,7 +891,7 @@ void OneClickSigninHelper::RedirectToNtpOrAppsPage(bool show_bubble) {
 
   // Redirect to NTP/Apps page and display a confirmation bubble
   content::WebContents* contents = web_contents();
-  GURL url(chrome::IsInstantExtendedAPIEnabled() ?
+  GURL url(source_ == SyncPromoUI::SOURCE_APPS_PAGE_LINK ?
            chrome::kChromeUIAppsURL : chrome::kChromeUINewTabURL);
   content::OpenURLParams params(url,
                                 content::Referrer(),
