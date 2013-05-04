@@ -398,6 +398,10 @@ void TestWebGraphicsContext3D::bufferData(WebKit::WGC3Denum target,
                                           WebKit::WGC3Denum usage) {
   DCHECK_GT(buffers_.count(bound_buffer_), 0u);
   DCHECK_EQ(target, buffers_.get(bound_buffer_)->target);
+  if (context_lost_) {
+    buffers_.get(bound_buffer_)->pixels.reset();
+    return;
+  }
   buffers_.get(bound_buffer_)->pixels.reset(new uint8[size]);
   if (data != NULL)
     memcpy(buffers_.get(bound_buffer_)->pixels.get(), data, size);

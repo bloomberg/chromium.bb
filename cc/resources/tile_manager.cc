@@ -707,11 +707,14 @@ void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
   TRACE_EVENT0("cc", "TileManager::DispatchOneRasterTask");
   scoped_ptr<ResourcePool::Resource> resource = PrepareTileForRaster(tile);
   ResourceProvider::ResourceId resource_id = resource->id();
-  uint8* buffer =
-      resource_pool_->resource_provider()->MapPixelBuffer(resource_id);
   PicturePileImpl::Analysis* analysis = new PicturePileImpl::Analysis;
 
-  CHECK(buffer);
+  // MapPixelBuffer() returns NULL if context was lost at the time
+  // AcquirePixelBuffer() was called. For simplicity we still post
+  // a raster task that is essentially a noop in these situations.
+  uint8* buffer = resource_pool_->resource_provider()->MapPixelBuffer(
+      resource_id);
+
   // skia requires that our buffer be 4-byte aligned
   CHECK(!(reinterpret_cast<intptr_t>(buffer) & 3));
 
@@ -888,7 +891,10 @@ void TileManager::RunRasterTask(
 
   DCHECK(picture_pile);
   DCHECK(analysis);
-  DCHECK(buffer);
+
+  // |buffer| can be NULL in lost context situations.
+  if (!buffer)
+    return;
 
   if (analysis->is_solid_color)
     return;

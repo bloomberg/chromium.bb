@@ -1270,7 +1270,7 @@ void GLES2Implementation::BufferDataHelper(
     // Create new buffer.
     buffer = buffer_tracker_->CreateBuffer(buffer_id, size);
     GPU_DCHECK(buffer);
-    if (data)
+    if (buffer->address() && data)
       memcpy(buffer->address(), data, size);
     return;
   }
@@ -1349,7 +1349,7 @@ void GLES2Implementation::BufferSubDataHelper(
       return;
     }
 
-    if (data)
+    if (buffer->address() && data)
       memcpy(static_cast<uint8*>(buffer->address()) + offset, data, size);
     return;
   }
@@ -1464,7 +1464,7 @@ void GLES2Implementation::CompressedTexImage2D(
     BufferTracker::Buffer* buffer = GetBoundPixelUnpackTransferBufferIfValid(
         bound_pixel_unpack_transfer_buffer_id_,
         "glCompressedTexImage2D", offset, image_size);
-    if (buffer) {
+    if (buffer && buffer->shm_id() != -1) {
       helper_->CompressedTexImage2D(
           target, level, internalformat, width, height, border, image_size,
           buffer->shm_id(), buffer->shm_offset() + offset);
@@ -1505,7 +1505,7 @@ void GLES2Implementation::CompressedTexSubImage2D(
     BufferTracker::Buffer* buffer = GetBoundPixelUnpackTransferBufferIfValid(
         bound_pixel_unpack_transfer_buffer_id_,
         "glCompressedTexSubImage2D", offset, image_size);
-    if (buffer) {
+    if (buffer && buffer->shm_id() != -1) {
       helper_->CompressedTexSubImage2D(
           target, level, xoffset, yoffset, width, height, format, image_size,
           buffer->shm_id(), buffer->shm_offset() + offset);
@@ -1592,7 +1592,7 @@ void GLES2Implementation::TexImage2D(
     BufferTracker::Buffer* buffer = GetBoundPixelUnpackTransferBufferIfValid(
         bound_pixel_unpack_transfer_buffer_id_,
         "glTexImage2D", offset, size);
-    if (buffer) {
+    if (buffer && buffer->shm_id() != -1) {
       helper_->TexImage2D(
           target, level, internalformat, width, height, border, format, type,
           buffer->shm_id(), buffer->shm_offset() + offset);
@@ -1698,7 +1698,7 @@ void GLES2Implementation::TexSubImage2D(
     BufferTracker::Buffer* buffer = GetBoundPixelUnpackTransferBufferIfValid(
         bound_pixel_unpack_transfer_buffer_id_,
         "glTexSubImage2D", offset, temp_size);
-    if (buffer) {
+    if (buffer && buffer->shm_id() != -1) {
       helper_->TexSubImage2D(
           target, level, xoffset, yoffset, width, height, format, type,
           buffer->shm_id(), buffer->shm_offset() + offset, false);
@@ -2163,7 +2163,7 @@ void GLES2Implementation::ReadPixels(
     BufferTracker::Buffer* buffer = GetBoundPixelUnpackTransferBufferIfValid(
         bound_pixel_pack_transfer_buffer_id_,
         "glReadPixels", offset, temp_size);
-    if (buffer) {
+    if (buffer && buffer->shm_id() != -1) {
       helper_->ReadPixels(xoffset, yoffset, width, height, format, type,
                           buffer->shm_id(), buffer->shm_offset(),
                           0, 0);
@@ -3420,7 +3420,6 @@ void* GLES2Implementation::MapBufferCHROMIUM(GLuint target, GLenum access) {
   }
   buffer->set_mapped(true);
 
-  GPU_DCHECK(buffer->address());
   GPU_CLIENT_LOG("  returned " << buffer->address());
   CheckGLError();
   return buffer->address();
@@ -3494,13 +3493,11 @@ void GLES2Implementation::AsyncTexImage2DCHROMIUM(
   BufferTracker::Buffer* buffer = GetBoundPixelUnpackTransferBufferIfValid(
       bound_pixel_unpack_transfer_buffer_id_,
       "glAsyncTexImage2DCHROMIUM", offset, size);
-  if (!buffer)
-    return;
-
-  helper_->AsyncTexImage2DCHROMIUM(
-      target, level, internalformat, width, height, border, format, type,
-      buffer->shm_id(), buffer->shm_offset() + offset);
-  return;
+  if (buffer && buffer->shm_id() != -1) {
+    helper_->AsyncTexImage2DCHROMIUM(
+        target, level, internalformat, width, height, border, format, type,
+        buffer->shm_id(), buffer->shm_offset() + offset);
+  }
 }
 
 void GLES2Implementation::AsyncTexSubImage2DCHROMIUM(
@@ -3540,13 +3537,11 @@ void GLES2Implementation::AsyncTexSubImage2DCHROMIUM(
   BufferTracker::Buffer* buffer = GetBoundPixelUnpackTransferBufferIfValid(
       bound_pixel_unpack_transfer_buffer_id_,
       "glAsyncTexSubImage2DCHROMIUM", offset, size);
-  if (!buffer)
-    return;
-
-  helper_->AsyncTexSubImage2DCHROMIUM(
-      target, level, xoffset, yoffset, width, height, format, type,
-      buffer->shm_id(), buffer->shm_offset() + offset);
-  return;
+  if (buffer && buffer->shm_id() != -1) {
+    helper_->AsyncTexSubImage2DCHROMIUM(
+        target, level, xoffset, yoffset, width, height, format, type,
+        buffer->shm_id(), buffer->shm_offset() + offset);
+  }
 }
 
 void GLES2Implementation::WaitAsyncTexImage2DCHROMIUM(GLenum target) {

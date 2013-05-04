@@ -28,12 +28,8 @@ BufferTracker::Buffer* BufferTracker::CreateBuffer(
   int32 shm_id = -1;
   uint32 shm_offset = 0;
   void* address = NULL;
-  if (size) {
+  if (size)
     address = mapped_memory_->Alloc(size, &shm_id, &shm_offset);
-    if (!address) {
-      return NULL;
-    }
-  }
 
   Buffer* buffer = new Buffer(id, size, shm_id, shm_offset, address);
   std::pair<BufferMap::iterator, bool> result =

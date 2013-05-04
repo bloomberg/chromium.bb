@@ -966,7 +966,6 @@ uint8_t* ResourceProvider::MapPixelBuffer(ResourceId id) {
         context3d->mapBufferCHROMIUM(
             GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM, GL_WRITE_ONLY));
     context3d->bindBuffer(GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM, 0);
-    DCHECK(image);
     return image;
   }
 

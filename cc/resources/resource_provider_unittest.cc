@@ -1386,6 +1386,37 @@ TEST_P(ResourceProviderTest, AbortForcedAsyncUpload) {
   Mock::VerifyAndClearExpectations(context);
 }
 
+TEST_P(ResourceProviderTest, PixelBufferLostContext) {
+  scoped_ptr<WebKit::WebGraphicsContext3D> mock_context(
+      static_cast<WebKit::WebGraphicsContext3D*>(
+          new NiceMock<AllocationTrackingContext3D>));
+  scoped_ptr<OutputSurface> output_surface(
+      FakeOutputSurface::Create3d(mock_context.Pass()));
+
+  gfx::Size size(2, 2);
+  WGC3Denum format = GL_RGBA;
+  ResourceProvider::ResourceId id = 0;
+  int texture_id = 123;
+
+  AllocationTrackingContext3D* context =
+      static_cast<AllocationTrackingContext3D*>(output_surface->context3d());
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(), 0));
+
+  EXPECT_CALL(*context, createTexture()).WillRepeatedly(Return(texture_id));
+
+  id = resource_provider->CreateResource(
+      size, format, ResourceProvider::TextureUsageAny);
+  context->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
+                               GL_INNOCENT_CONTEXT_RESET_ARB);
+  resource_provider->AcquirePixelBuffer(id);
+  uint8_t* buffer = resource_provider->MapPixelBuffer(id);
+  EXPECT_TRUE(buffer == NULL);
+  resource_provider->UnmapPixelBuffer(id);
+  resource_provider->ReleasePixelBuffer(id);
+  Mock::VerifyAndClearExpectations(context);
+}
+
 INSTANTIATE_TEST_CASE_P(
     ResourceProviderTests,
     ResourceProviderTest,
