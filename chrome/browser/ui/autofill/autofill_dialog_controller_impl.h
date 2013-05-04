@@ -257,6 +257,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Exposed and virtual for testing.
   virtual bool IsFirstRun() const;
 
+  // Opens the given URL in a new foreground tab.
+  virtual void OpenTabWithUrl(const GURL& url);
+
  private:
   // Whether or not the current request wants credit info back.
   bool RequestingCreditCardInfo() const;
@@ -434,9 +437,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Returns the metric corresponding to the user's initial state when
   // interacting with this dialog.
   AutofillMetrics::DialogInitialUserStateMetric GetInitialUserState() const;
-
-  // Opens the given URL in a new foreground tab.
-  void OpenTabWithUrl(const GURL& url);
 
   // The |profile| for |contents_|.
   Profile* const profile_;

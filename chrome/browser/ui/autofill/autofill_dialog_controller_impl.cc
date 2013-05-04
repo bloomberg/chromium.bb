@@ -1422,14 +1422,9 @@ void AutofillDialogControllerImpl::SuggestionItemSelected(
     SuggestionsMenuModel* model,
     size_t index) {
   if (model->GetItemKeyAt(index) == kManageItemsKey) {
-    if (!IsPayingWithWallet()) {
-      OpenTabWithUrl(GURL(std::string(chrome::kChromeUISettingsURL) +
-          chrome::kAutofillSubPage));
-    } else {
-      // TODO(estade): show a wallet URL.
-      NOTIMPLEMENTED();
-    }
-
+    GURL url = IsPayingWithWallet() ? wallet::GetManageItemsUrl() :
+        GURL(chrome::kChromeUISettingsURL).Resolve(chrome::kAutofillSubPage);
+    OpenTabWithUrl(url);
     return;
   }
 
@@ -1726,6 +1721,19 @@ bool AutofillDialogControllerImpl::IsPayingWithWallet() const {
 
 bool AutofillDialogControllerImpl::IsFirstRun() const {
   return is_first_run_;
+}
+
+void AutofillDialogControllerImpl::OpenTabWithUrl(const GURL& url) {
+#if !defined(OS_ANDROID)
+  chrome::NavigateParams params(
+      chrome::FindBrowserWithWebContents(web_contents()),
+      url,
+      content::PAGE_TRANSITION_AUTO_BOOKMARK);
+  params.disposition = NEW_FOREGROUND_TAB;
+  chrome::Navigate(&params);
+#else
+  // TODO(estade): use TabModelList?
+#endif
 }
 
 void AutofillDialogControllerImpl::DisableWallet() {
@@ -2405,19 +2413,6 @@ AutofillMetrics::DialogInitialUserStateMetric
   return has_autofill_profiles ?
       AutofillMetrics::DIALOG_USER_SIGNED_IN_HAS_WALLET_HAS_AUTOFILL :
       AutofillMetrics::DIALOG_USER_SIGNED_IN_HAS_WALLET_NO_AUTOFILL;
-}
-
-void AutofillDialogControllerImpl::OpenTabWithUrl(const GURL& url) {
-#if !defined(OS_ANDROID)
-  chrome::NavigateParams params(
-      chrome::FindBrowserWithWebContents(web_contents()),
-      url,
-      content::PAGE_TRANSITION_AUTO_BOOKMARK);
-  params.disposition = NEW_FOREGROUND_TAB;
-  chrome::Navigate(&params);
-#else
-  // TODO(estade): use TabModelList?
-#endif
 }
 
 }  // namespace autofill

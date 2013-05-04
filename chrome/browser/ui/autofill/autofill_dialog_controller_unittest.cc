@@ -181,6 +181,8 @@ class TestAutofillDialogController
 
   void set_is_first_run(bool is_first_run) { is_first_run_ = is_first_run; }
 
+  const GURL& open_tab_url() { return open_tab_url_; }
+
  protected:
   virtual PersonalDataManager* GetManager() OVERRIDE {
     return &test_manager_;
@@ -194,6 +196,10 @@ class TestAutofillDialogController
     return is_first_run_;
   }
 
+  virtual void OpenTabWithUrl(const GURL& url) OVERRIDE {
+    open_tab_url_ = url;
+  }
+
  private:
   // To specify our own metric logger.
   virtual const AutofillMetrics& GetMetricLogger() const OVERRIDE {
@@ -204,6 +210,7 @@ class TestAutofillDialogController
   TestPersonalDataManager test_manager_;
   testing::NiceMock<TestWalletClient> test_wallet_client_;
   bool is_first_run_;
+  GURL open_tab_url_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDialogController);
 };
@@ -512,6 +519,30 @@ TEST_F(AutofillDialogControllerTest, CancelNoSave) {
 
   controller()->OnDidGetWalletItems(wallet::GetTestWalletItems());
   controller()->OnCancel();
+}
+
+// Checks that clicking the Manage menu item opens a new tab with a different
+// URL for Wallet and Autofill.
+TEST_F(AutofillDialogControllerTest, ManageItem) {
+  AutofillProfile full_profile(test::GetFullProfile());
+  full_profile.set_origin(kSettingsOrigin);
+  full_profile.SetRawInfo(ADDRESS_HOME_LINE2, string16());
+  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+  SwitchToAutofill();
+
+  SuggestionsMenuModel* model = static_cast<SuggestionsMenuModel*>(
+      controller()->MenuModelForSection(SECTION_SHIPPING));
+  model->ExecuteCommand(model->GetItemCount() - 1, 0);
+  GURL autofill_manage_url = controller()->open_tab_url();
+  EXPECT_EQ("chrome", autofill_manage_url.scheme());
+
+  SwitchToWallet();
+  controller()->OnDidGetWalletItems(wallet::GetTestWalletItems());
+  controller()->SuggestionItemSelected(model, model->GetItemCount() - 1);
+  GURL wallet_manage_url = controller()->open_tab_url();
+  EXPECT_EQ("https", wallet_manage_url.scheme());
+
+  EXPECT_NE(autofill_manage_url, wallet_manage_url);
 }
 
 TEST_F(AutofillDialogControllerTest, EditClickedCancelled) {
