@@ -33,6 +33,7 @@
 
 #include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"
+#include "core/page/FocusController.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
@@ -87,7 +88,7 @@ void InspectorInputAgent::dispatchKeyEvent(ErrorString* error, const String& typ
         isSystemKey ? *isSystemKey : false,
         static_cast<PlatformEvent::Modifiers>(modifiers ? *modifiers : 0),
         timestamp ? *timestamp : currentTime());
-    m_page->mainFrame()->eventHandler()->keyEvent(event);
+    m_page->focusController()->focusedOrMainFrame()->eventHandler()->keyEvent(event);
 }
 
 void InspectorInputAgent::dispatchMouseEvent(ErrorString* error, const String& type, int x, int y, const int* modifiers, const double* timestamp, const String* button, const int* clickCount)
