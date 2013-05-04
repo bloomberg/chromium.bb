@@ -65,6 +65,15 @@ class PowerStatusView : public views::View {
   // Index of the current icon in the icon array image, or -1 if unknown.
   int icon_image_index_;
 
+  // Horizontal offset of the current icon in the icon array image.
+  int icon_image_offset_;
+
+  // Battery charging may be unreliable for non-standard power supplies.
+  // It may change from charging to discharging frequently depending on
+  // charger power and current power consumption. We show different UIs
+  // when in this state. See TrayPower::IsBatteryChargingUnreliable.
+  bool battery_charging_unreliable_;
+
   ViewType view_type_;
 
   PowerSupplyStatus supply_status_;

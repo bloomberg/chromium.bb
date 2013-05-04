@@ -33,13 +33,28 @@ class TrayPower : public SystemTrayItem,
   explicit TrayPower(SystemTray* system_tray);
   virtual ~TrayPower();
 
+  // Gets whether battery charging is unreliable for |supply_status|.
+  // When a non-standard power supply is connected, the battery may
+  // change from being charged to discharged frequently depending on the
+  // charger power and power consumption, i.e usage. In this case we
+  // do not want to show either a charging or discharging state.
+  static bool IsBatteryChargingUnreliable(
+      const PowerSupplyStatus& supply_status);
+
   // Gets the icon index in the battery icon array image based on
   // |supply_status|.  If |supply_status| is uncertain about the power state,
   // returns -1.
   static int GetBatteryImageIndex(const PowerSupplyStatus& supply_status);
 
+  // Gets the horizontal offset in the battery icon array image based on
+  // |supply_status|.
+  static int GetBatteryImageOffset(const PowerSupplyStatus& supply_status);
+
   // Looks up the actual icon in the icon array image for |image_index|.
-  static gfx::ImageSkia GetBatteryImage(int image_index, IconSet icon_set);
+  static gfx::ImageSkia GetBatteryImage(int image_index,
+                                        int image_offset,
+                                        bool charging_unreliable,
+                                        IconSet icon_set);
 
   // Gets the battery accessible string for |supply_status|.
   static base::string16 GetAccessibleNameString(

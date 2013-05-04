@@ -398,6 +398,9 @@ Press Shift + Alt to switch.
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL_SHORT" desc="The label in the tray bubble settings row to show a time estimate until the battery is fully charged.">
         <ph name="hour">$1<ex>2</ex></ph>:<ph name="minute">$2<ex>53</ex></ph> until full
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE" desc="The label in the tray dialog to indicate that battery charging is unreliable.">
+        Charging not reliable
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_FULL_CHARGE_ACCESSIBLE" desc="The message used by accessibility to show battery is full and charging.">
         Battery is full and charging.
       </message>
@@ -418,6 +421,9 @@ Press Shift + Alt to switch.
       </message>
       <message name = "IDS_ASH_STATUS_TRAY_BATTERY_TIME_ACCESSIBLE" desc="The message used by accessibility to read battery time, which includes both non-zero hours and minutes.">
         <ph name="hour">$1<ex> 1 hour</ex></ph> and <ph name="minute">$2<ex>15 minutes</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE_ACCESSIBLE" desc="The message used by accessibility to indicate that battery charging is unreliable.">
+        Plugged in to a non-standard power supply. Battery charging may not be reliable.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_HELP" desc="The accessible text for the help button.">
         Help

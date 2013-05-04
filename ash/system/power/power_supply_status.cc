@@ -17,7 +17,8 @@ PowerSupplyStatus::PowerSupplyStatus()
       battery_seconds_to_empty(0),
       battery_seconds_to_full(0),
       battery_percentage(0),
-      is_calculating_battery_time(false) {}
+      is_calculating_battery_time(false),
+      battery_state(CHARGING) {}
 
 std::string PowerSupplyStatus::ToString() const {
   std::string result;
@@ -42,6 +43,9 @@ std::string PowerSupplyStatus::ToString() const {
   base::StringAppendF(&result,
                       "is_calculating_battery_time = %s ",
                       is_calculating_battery_time ? "true" : "false");
+  base::StringAppendF(&result,
+                      "battery_state = %d ",
+                      battery_state);
   return result;
 }
 #endif  // !defined(OS_CHROMEOS)

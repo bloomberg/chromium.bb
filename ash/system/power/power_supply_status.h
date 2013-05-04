@@ -21,6 +21,24 @@ typedef chromeos::PowerSupplyStatus PowerSupplyStatus;
 #else
 // Define local struct when not building for Chrome OS.
 struct ASH_EXPORT PowerSupplyStatus {
+  enum BatteryState {
+    // Line power is connected and the battery is full or being charged.
+    CHARGING = 0,
+
+    // Line power is disconnected.
+    DISCHARGING = 1,
+
+    // Line power is connected and the battery isn't full, but it also
+    // isn't charging (or discharging).  This can occur if the EC believes
+    // that the battery isn't authentic and chooses to run directly off
+    // line power.
+    NEITHER_CHARGING_NOR_DISCHARGING = 2,
+
+    // A USB power source (DCP, CDP, or ACA) is connected.  The battery may
+    // be charging or discharging depending on the negotiated current.
+    CONNECTED_TO_USB = 3,
+  };
+
   bool line_power_on;
 
   bool battery_is_present;
@@ -33,6 +51,8 @@ struct ASH_EXPORT PowerSupplyStatus {
   double battery_percentage;
 
   bool is_calculating_battery_time;
+
+  BatteryState battery_state;
 
   PowerSupplyStatus();
   std::string ToString() const;

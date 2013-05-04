@@ -411,7 +411,25 @@ class PowerManagerClientImpl : public PowerManagerClient {
         power_manager::PowerSupplyProperties_BatteryState_CHARGING &&
         protobuf.battery_percent() >= 99.9999;
     status.is_calculating_battery_time = protobuf.is_calculating_battery_time();
-
+    switch (protobuf.battery_state()) {
+      case power_manager::PowerSupplyProperties_BatteryState_CHARGING:
+        status.battery_state = PowerSupplyStatus::CHARGING;
+        break;
+      case power_manager::PowerSupplyProperties_BatteryState_DISCHARGING:
+        status.battery_state = PowerSupplyStatus::DISCHARGING;
+        break;
+      case power_manager::
+          PowerSupplyProperties_BatteryState_NEITHER_CHARGING_NOR_DISCHARGING:
+        status.battery_state =
+            PowerSupplyStatus::NEITHER_CHARGING_NOR_DISCHARGING;
+        break;
+      case power_manager::PowerSupplyProperties_BatteryState_CONNECTED_TO_USB:
+        status.battery_state = PowerSupplyStatus::CONNECTED_TO_USB;
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
     VLOG(1) << "Power status: " << status.ToString();
     FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(status));
   }
@@ -674,7 +692,8 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
       : discharging_(true),
         battery_percentage_(40),
         brightness_(50.0),
-        pause_count_(2) {
+        pause_count_(2),
+        cycle_count_(0) {
   }
 
   virtual ~PowerManagerClientStubImpl() {}
@@ -774,6 +793,8 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
       if (battery_percentage_ == 0 || battery_percentage_ == 100) {
         discharging_ = !discharging_;
         pause_count_ = 4;
+        if (battery_percentage_ == 100)
+          cycle_count_ = (cycle_count_ + 1) % 3;
       }
     }
     const int kSecondsToEmptyFullBattery(3 * 60 * 60);  // 3 hours.
@@ -787,6 +808,15 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
     status_.battery_seconds_to_full =
         std::max(static_cast<int64>(1),
                  kSecondsToEmptyFullBattery - status_.battery_seconds_to_empty);
+
+    if (cycle_count_ != 2) {
+      status_.battery_state = discharging_ ?
+          PowerSupplyStatus::DISCHARGING : PowerSupplyStatus::CHARGING;
+    } else {
+      // Simulating a non-standard weak power supply.
+      status_.battery_state =
+          PowerSupplyStatus::NEITHER_CHARGING_NOR_DISCHARGING;
+    }
 
     FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(status_));
   }
@@ -806,6 +836,7 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
   int battery_percentage_;
   double brightness_;
   int pause_count_;
+  int cycle_count_;
   ObserverList<Observer> observers_;
   base::RepeatingTimer<PowerManagerClientStubImpl> timer_;
   PowerSupplyStatus status_;
