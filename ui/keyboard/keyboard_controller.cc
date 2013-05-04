@@ -150,9 +150,10 @@ void KeyboardController::RemoveObserver(KeyboardControllerObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void KeyboardController::OnWindowParentChanged(aura::Window* window,
-                                               aura::Window* parent) {
-  OnTextInputStateChanged(proxy_->GetInputMethod()->GetTextInputClient());
+void KeyboardController::OnWindowHierarchyChanged(
+    const HierarchyChangeParams& params) {
+  if (params.new_parent && params.target == container_)
+    OnTextInputStateChanged(proxy_->GetInputMethod()->GetTextInputClient());
 }
 
 void KeyboardController::OnWindowDestroying(aura::Window* window) {

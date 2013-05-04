@@ -51,8 +51,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   friend class KeyboardControllerTest;
 
   // aura::WindowObserver overrides
-  virtual void OnWindowParentChanged(aura::Window* window,
-                                     aura::Window* parent) OVERRIDE;
+  virtual void OnWindowHierarchyChanged(
+      const HierarchyChangeParams& params) OVERRIDE;
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
   // InputMethodObserver overrides
